@@ -26,6 +26,10 @@ module.exports = function plugin (options) {
         css.eachDecl(function (declaration) {
             declaration.value = declaration.value.replace(multiline, '');
             eachFunction(declaration, 'url', function (substring) {
+                // Don't mangle embedded base64 or svg images
+                if (~substring.indexOf('data:image/')) {
+                    return substring;
+                }
                 var url = substring.replace(extractUrl, '$1').trim();
                 url = url.replace(unquote, function (m, quote, body) {
                     return quote + convert(body.trim()) + quote;

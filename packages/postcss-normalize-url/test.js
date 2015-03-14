@@ -75,6 +75,10 @@ var tests = [{
     fixture: 'h1{background:url(   "./test/../foo/bar.jpg"  ), url("http://website.com/img.jpg")}',
     expected: 'h1{background:url(foo/bar.jpg), url("http://website.com/img.jpg")}'
 }, {
+    message: 'should not mangle data urls',
+    fixture: '.has-svg:before{content:url("data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="-0.5 0 20 15"><rect fill="white" stroke="none" transform="rotate(45 4.0033 8.87436)" height="5" width="6.32304" y="6.37436" x="0.84178"></rect><rect fill="white" stroke="none" transform="rotate(45 11.1776 7.7066)" width="5" height="16.79756" y="-0.69218" x="8.67764"></rect></svg>")}',
+    expected: '.has-svg:before{content:url("data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="-0.5 0 20 15"><rect fill="white" stroke="none" transform="rotate(45 4.0033 8.87436)" height="5" width="6.32304" y="6.37436" x="0.84178"></rect><rect fill="white" stroke="none" transform="rotate(45 11.1776 7.7066)" width="5" height="16.79756" y="-0.69218" x="8.67764"></rect></svg>")}',
+}, {
     message: 'should pass through when it doesn\'t find a url function',
     fixture: 'h1{color:black;font-weight:bold}',
     expected: 'h1{color:black;font-weight:bold}'
