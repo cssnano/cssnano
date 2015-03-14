@@ -11,6 +11,8 @@
     "normalize",
     "optimise",
     "optimisation",
+    "postcss",
+    "postcss-plugins",
     "url"
   ],
   "license": "MIT",
