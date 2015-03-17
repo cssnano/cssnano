@@ -1,0 +1,34 @@
+{
+  "name": "postcss-zindex",
+  "version": "0.0.0",
+  "description": "Reduce z-index values with PostCSS.",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test.js | tap-spec"
+  },
+  "keywords": [
+    "css",
+    "normalize",
+    "optimise",
+    "optimisation",
+    "postcss",
+    "postcss-plugins",
+    "z-index"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "postcss": "^4.0.6",
+    "tap-spec": "^2.2.2",
+    "tape": "^3.5.0"
+  },
+  "homepage": "https://github.com/ben-eb/postcss-zindex",
+  "author": {
+    "name": "Ben Briggs",
+    "email": "therealbenbriggs@hotmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ben-eb/postcss-zindex.git"
+  }
+}
