@@ -1,0 +1,34 @@
+{
+  "name": "postcss-discard-comments",
+  "version": "0.0.0",
+  "description": "Discard comments in your CSS files with PostCSS.",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test.js | tap-spec"
+  },
+  "keywords": [
+    "css",
+    "comments",
+    "postcss",
+    "postcss-plugins"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "tap-spec": "^2.2.2",
+    "tape": "^3.5.0"
+  },
+  "homepage": "https://github.com/ben-eb/postcss-discard-comments",
+  "author": {
+    "name": "Ben Briggs",
+    "email": "therealbenbriggs@hotmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ben-eb/postcss-discard-comments.git"
+  },
+  "dependencies": {
+    "node-balanced": "0.0.14",
+    "postcss": "^4.0.6"
+  }
+}
