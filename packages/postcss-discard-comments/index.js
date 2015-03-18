@@ -5,11 +5,14 @@ var balanced = require('node-balanced');
 var CommentRemover = require('./lib/commentRemover');
 
 module.exports = function (options) {
-    var remover = new CommentRemover(options);
+    var remover = new CommentRemover(options || {});
     var hasFirst = false;
     options = options || {};
 
     function replaceComments (source) {
+        if (!source) {
+            return;
+        }
         var b = balanced.replacements({
             source: source,
             open: '/*',
@@ -48,11 +51,13 @@ module.exports = function (options) {
         });
 
         css.eachAtRule(function (rule) {
-            var commentsReplaced = replaceComments(rule.afterName);
-            if (!commentsReplaced.length) {
-                rule.afterName = commentsReplaced + ' ';
-            } else {
-                rule.afterName = ' ' + commentsReplaced + ' ';
+            if (rule.afterName) {
+                var commentsReplaced = replaceComments(rule.afterName);
+                if (!commentsReplaced.length) {
+                    rule.afterName = commentsReplaced + ' ';
+                } else {
+                    rule.afterName = ' ' + commentsReplaced + ' ';
+                }
             }
             if (rule._params && rule._params.raw) {
                 rule._params.raw = replaceComments(rule._params.raw);
