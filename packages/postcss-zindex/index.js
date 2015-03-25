@@ -13,5 +13,5 @@ module.exports = function () {
             // AST is updated correctly
             declaration.value = '' + cache.convert(declaration.value);
         });
-    }
-}
+    };
+};
