@@ -19,6 +19,6 @@ CommentRemover.prototype.canRemove = function (comment) {
             return false;
         }
     }
-}
+};
 
 module.exports = CommentRemover;

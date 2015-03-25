@@ -4,6 +4,7 @@
   "description": "Discard comments in your CSS files with PostCSS.",
   "main": "index.js",
   "scripts": {
+    "lint": "jshint index.js lib/commentRemover.js --reporter node_modules/jshint-stylish/stylish.js",
     "test": "tape test.js | tap-spec"
   },
   "keywords": [
@@ -14,6 +15,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "jshint": "^2.6.3",
+    "jshint-stylish": "^1.0.1",
     "tap-spec": "^2.2.2",
     "tape": "^3.5.0"
   },

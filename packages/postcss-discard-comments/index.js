@@ -6,8 +6,6 @@ var CommentRemover = require('./lib/commentRemover');
 
 module.exports = function (options) {
     var remover = new CommentRemover(options || {});
-    var hasFirst = false;
-    options = options || {};
 
     function replaceComments (source) {
         if (!source) {
@@ -66,5 +64,5 @@ module.exports = function (options) {
                 rule.between = replaceComments(rule.between);
             }
         });
-    }
+    };
 };
