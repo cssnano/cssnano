@@ -12,4 +12,4 @@ module.exports = function eachFunction (decl, type, callback) {
             locs.shift();
         }
     }
-}
+};
