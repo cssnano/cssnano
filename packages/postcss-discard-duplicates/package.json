@@ -1,0 +1,35 @@
+{
+  "name": "postcss-discard-duplicates",
+  "version": "0.0.0",
+  "description": "Discard duplicate rules in your CSS files with PostCSS.",
+  "main": "index.js",
+  "scripts": {
+    "lint": "jshint index.js --reporter node_modules/jshint-stylish/stylish.js",
+    "test": "tape test.js | tap-spec"
+  },
+  "keywords": [
+    "css",
+    "dedupe",
+    "optimise",
+    "postcss",
+    "postcss-plugins"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "jshint": "^2.6.3",
+    "jshint-stylish": "^1.0.1",
+    "postcss": "^4.0.6",
+    "tap-spec": "^2.2.2",
+    "tape": "^3.5.0"
+  },
+  "homepage": "https://github.com/ben-eb/postcss-discard-duplicates",
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ben-eb/postcss-discard-duplicates.git"
+  }
+}
