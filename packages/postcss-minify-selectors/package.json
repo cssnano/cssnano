@@ -1,0 +1,40 @@
+{
+  "name": "postcss-minify-selectors",
+  "version": "0.0.0",
+  "description": "Minify selectors with PostCSS.",
+  "main": "index.js",
+  "scripts": {
+    "lint": "jshint index.js lib/*.js --reporter node_modules/jshint-stylish/stylish.js",
+    "test": "tape test.js | tap-spec"
+  },
+  "keywords": [
+    "css",
+    "comments",
+    "postcss",
+    "postcss-plugins"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "jshint": "^2.6.3",
+    "jshint-stylish": "^1.0.1",
+    "tap-spec": "^2.2.2",
+    "tape": "^3.5.0"
+  },
+  "homepage": "https://github.com/ben-eb/postcss-minify-selectors",
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ben-eb/postcss-minify-selectors.git"
+  },
+  "dependencies": {
+    "javascript-natural-sort": "^0.7.1",
+    "node-balanced": "0.0.14",
+    "normalize-selector": "0.0.3-a",
+    "postcss": "^4.0.6",
+    "uniqs": "^2.0.0"
+  }
+}
