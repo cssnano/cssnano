@@ -119,6 +119,10 @@ var tests = [{
     fixture: 'h2{color:red;margin-bottom:20px}h1{color:red;margin:10px;margin-bottom:20px}',
     expected: 'h2{margin-bottom:20px}h2,h1{color:red}h1{margin:10px;margin-bottom:20px}'
 }, {
+    message: 'should not incorrectly extract display properties',
+    fixture: '.box1{display:inline-block;display:block}.box2{display:inline-block}',
+    expected: '.box1{display:inline-block;display:block}.box2{display:inline-block}'
+}, {
     message: 'should not be responsible for deduping declarations when merging',
     fixture: 'h1{display:block;display:block}h2{display:block;display:block}',
     expected: 'h1,h2{display:block;display:block}'

@@ -12,9 +12,15 @@ function intersect (a, b) {
 }
 
 function different (a, b) {
-    return a.filter(function (c) {
+    var ab = a.filter(function (c) {
         return !~b.indexOf(c);
     });
+
+    var ba = b.filter(function (c) {
+        return !~a.indexOf(c);
+    });
+
+    return ab.concat(ba);
 }
 
 function filterPrefixes (selector) {
