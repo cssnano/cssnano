@@ -11,6 +11,12 @@ function intersect (a, b) {
     });
 }
 
+function different (a, b) {
+    return a.filter(function (c) {
+        return !~b.indexOf(c);
+    });
+}
+
 function filterPrefixes (selector) {
     return intersect(prefixes, selector);
 }
@@ -85,22 +91,33 @@ function selectorMerger () {
             var merged = joinSelectors(cache, rule) + '{' + decls + '}';
             var shouldMerge = merged.length < (decls + decls).length;
             if (shouldMerge) {
+                var difference = different(ruleDecls, cacheDecls);
+                difference = difference.map(function (d) {
+                    return d.split(':')[0].split('-')[0];
+                });
                 var recievingBlock = cache.cloneAfter({
                    selector: joinSelectors(cache, rule),
-                   nodes: []
+                   nodes: [],
+                   before: ''
                 });
-                cache.eachInside(function (decl) {
-                    if (~intersection.indexOf('' + decl)) {
-                        decl.moveTo(recievingBlock);
-                    }
-                });
-                rule.eachInside(function (decl) {
-                    if (~intersection.indexOf('' + decl)) {
-                        decl.removeSelf();
-                    }
-                });
-                // Clean up the original declarations if we removed their rules
-                [rule, cache].forEach(function (r) {
+                var moveDecl = function (callback) {
+                    return function (decl) {
+                        var intersects = ~intersection.indexOf('' + decl);
+                        var baseProperty = decl.prop.split('-')[0];
+                        var canMove = !~difference.indexOf(baseProperty);
+                        if (intersects && (canMove || baseProperty === 'text')) {
+                            callback.call(this, decl);
+                        }
+                    };
+                };
+                cache.eachInside(moveDecl(function (decl) {
+                    decl.moveTo(recievingBlock);
+                }));
+                rule.eachInside(moveDecl(function (decl) {
+                    decl.removeSelf();
+                }));
+                // Clean up any rules that have no declarations left
+                [rule, recievingBlock, cache].forEach(function (r) {
                     if (!r.nodes.length) {
                         r.removeSelf();
                     }

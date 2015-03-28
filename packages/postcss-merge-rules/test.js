@@ -83,6 +83,42 @@ var tests = [{
     fixture: 'code ::selection{background:red}code ::-moz-selection{background:red}',
     expected: 'code ::selection{background:red}code ::-moz-selection{background:red}'
 }, {
+    message: 'should merge text-* properties',
+    fixture: 'h1{color:red;text-align:right;text-decoration:underline}h2{text-align:right;text-decoration:underline}',
+    expected: 'h1{color:red}h1,h2{text-align:right;text-decoration:underline}'
+}, {
+    message: 'should merge text-* properties (2)',
+    fixture: 'h1{color:red;text-align:right;text-decoration:underline}h2{text-align:right;text-decoration:underline;color:green}',
+    expected: 'h1{color:red}h1,h2{text-align:right;text-decoration:underline}h2{color:green}'
+}, {
+    message: 'should merge text-* properties (3)',
+    fixture: 'h1{background:white;color:red;text-align:right;text-decoration:underline}h2{text-align:right;text-decoration:underline;color:red}',
+    expected: 'h1{background:white}h1,h2{color:red;text-align:right;text-decoration:underline}'
+}, {
+    message: 'should merge text-* properties (4)',
+    fixture: 'h1{color:red;text-align:center;text-transform:small-caps}h2{text-align:center;color:red}',
+    expected: 'h1{text-transform:small-caps}h1,h2{color:red;text-align:center}'
+}, {
+    message: 'should merge text-* properties (5)',
+    fixture: 'h1{text-align:left;text-transform:small-caps}h2{text-align:right;text-transform:small-caps}',
+    expected: 'h1{text-align:left}h1,h2{text-transform:small-caps}h2{text-align:right}'
+}, {
+    message: 'should not incorrectly extract transform properties',
+    fixture: '@keyframes a {0%{transform-origin:right bottom;transform:rotate(-90deg);opacity:0}100%{transform-origin:right bottom;transform:rotate(0);opacity:1}}',
+    expected: '@keyframes a {0%{transform-origin:right bottom;transform:rotate(-90deg);opacity:0}100%{transform-origin:right bottom;transform:rotate(0);opacity:1}}'
+}, {
+    message: 'should not incorrectly extract background properties',
+    fixture: '.iPhone{background:url(a.png);background-image:url(../../../sprites/c.png);background-repeat:no-repeat;background-position:-102px -74px}.logo{background:url(b.png);background-image:url(../../../sprites/c.png);background-repeat:no-repeat;background-position:-2px -146px}',
+    expected: '.iPhone{background:url(a.png);background-image:url(../../../sprites/c.png);background-repeat:no-repeat;background-position:-102px -74px}.logo{background:url(b.png);background-image:url(../../../sprites/c.png);background-repeat:no-repeat;background-position:-2px -146px}'
+}, {
+    message: 'should not incorrectly extract margin properties',
+    fixture: 'h2{margin-bottom:20px}h1{margin:10px;margin-bottom:20px}',
+    expected: 'h2{margin-bottom:20px}h1{margin:10px;margin-bottom:20px}'
+}, {
+    message: 'should not incorrectly extract margin properties (2)' ,
+    fixture: 'h2{color:red;margin-bottom:20px}h1{color:red;margin:10px;margin-bottom:20px}',
+    expected: 'h2{margin-bottom:20px}h2,h1{color:red}h1{margin:10px;margin-bottom:20px}'
+}, {
     message: 'should not be responsible for deduping declarations when merging',
     fixture: 'h1{display:block;display:block}h2{display:block;display:block}',
     expected: 'h1,h2{display:block;display:block}'
