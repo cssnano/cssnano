@@ -91,6 +91,10 @@ var tests = [{
     fixture: '@media only screen and (min-width: 400px; min-height: 500px){h1{color:blue}}',
     expected: '@media only screen and (min-width:400px;min-height:500px){h1{color:blue}}'
 }, {
+    message: 'should convert @keyframe from & 100%',
+    fixture: '@keyframes test{from{color:red}100%{color:blue}}',
+    expected: '@keyframes test{0%{color:red}to{color:blue}}'
+}, {
     message: 'should not be responsible for normalising comments',
     fixture: 'h1 /*!test comment*/, h2{color:blue}',
     expected: 'h1 /*!test comment*/,h2{color:blue}'

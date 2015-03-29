@@ -38,6 +38,10 @@ function optimiseSelector (rule) {
             return head + uniq(body) + tail;
         }
     });
+    // Minimise from and 100% in keyframe rules
+    if (rule.parent.type !== 'root' && ~rule.parent.name.indexOf('keyframes')) {
+        selector = selector.replace('from', '0%').replace('100%', 'to');
+    }
     // Trim whitespace around selector combinators
     rule.selector = selector.replace(/\s*([>+~])\s*/g, '$1');
 }
