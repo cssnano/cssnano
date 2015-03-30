@@ -1,3 +1,8 @@
+# 1.2.0
+
+* Does not touch quoted values in attribute selectors.
+* No longer will mangle values such as `2100%` in keyframes.
+
 # 1.1.0
 
 * Now minifies `from` to `0%` and `100%` to `to` in keyframe declarations.

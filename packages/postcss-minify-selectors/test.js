@@ -39,6 +39,18 @@ var tests = [{
     fixture: '/*comment*/*/*comment*/{color:blue}',
     expected: '/*comment*/*/*comment*/{color:blue}'
 }, {
+    message: 'should preserve the universal selector in attribute selectors',
+    fixture: 'h1[class=" *.js "] + *.js{color:blue}',
+    expected: 'h1[class=" *.js "]+.js{color:blue}'
+}, {
+    message: 'should preserve the universal selector in filenames',
+    fixture: '[filename="*.js"]{color:blue}',
+    expected: '[filename="*.js"]{color:blue}'
+}, {
+    message: 'should preserve the universal selector in file globs',
+    fixture: '[glob="/**/*.js"]{color:blue}',
+    expected: '[glob="/**/*.js"]{color:blue}'
+}, {
     message: 'should preserve escaped zero plus sequences',
     fixture: '.\31 0\+,.\31 5\+,.\32 0\+{color:blue}',
     expected: '.\31 0\+,.\31 5\+,.\32 0\+{color:blue}'
@@ -95,6 +107,10 @@ var tests = [{
     fixture: '@keyframes test{from{color:red}100%{color:blue}}',
     expected: '@keyframes test{0%{color:red}to{color:blue}}'
 }, {
+    message: 'should not mangle @keyframe from & 100% in other values',
+    fixture: '@keyframes test{x-from-tag{color:red}5100%{color:blue}}',
+    expected: '@keyframes test{x-from-tag{color:red}5100%{color:blue}}'
+}, {
     message: 'should not be responsible for normalising comments',
     fixture: 'h1 /*!test comment*/, h2{color:blue}',
     expected: 'h1 /*!test comment*/,h2{color:blue}'
@@ -102,6 +118,10 @@ var tests = [{
     message: 'should not be responsible for normalising coments (2)',
     fixture: '/*!test   comment*/h1, h2{color:blue}',
     expected: '/*!test   comment*/h1,h2{color:blue}'
+}, {
+    message: 'should not change strings',
+    fixture:  ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:blue}',
+    expected: ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:blue}'
 }];
 
 function process (css, options) {
