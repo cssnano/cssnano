@@ -1,3 +1,7 @@
+# 1.1.0
+
+* Now supports optimisation of colors in gradient values.
+
 # 1.0.0
 
 * Initial release.

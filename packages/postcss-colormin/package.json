@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "colormin": "^1.0.1",
-    "postcss": "^4.0.6"
+    "postcss": "^4.0.6",
+    "reduce-function-call": "^1.0.1"
   }
 }

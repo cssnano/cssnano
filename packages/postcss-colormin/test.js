@@ -19,6 +19,18 @@ var tests = [{
     fixture: 'h1{text-shadow: 1px 1px 2px #000000}',
     expected: 'h1{text-shadow: 1px 1px 2px #000}'
 }, {
+    message: 'should minify color values in background gradients',
+    fixture: 'h1{background: linear-gradient(#ff0000,yellow)}',
+    expected: 'h1{background: linear-gradient(red,#ff0)}'
+}, {
+    message: 'should minify color values in background gradients (2)',
+    fixture: 'h1{background: linear-gradient(yellow, orange), linear-gradient(black, rgba(255, 255, 255, 0)); }',
+    expected: 'h1{background: linear-gradient(#ff0,orange), linear-gradient(#000,hsla(0,0%,100%,0)); }'
+}, {
+    message: 'should minify color values in background gradients (3)',
+    fixture: 'h1{background: linear-gradient(0deg, yellow, black 40%, red)}',
+    expected: 'h1{background: linear-gradient(0deg,#ff0,#000 40%,red)}'
+}, {
     message: 'should not minify in font properties',
     fixture: 'h1{font-family: black}',
     expected: 'h1{font-family: black}'
