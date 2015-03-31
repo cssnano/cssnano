@@ -1,3 +1,7 @@
+# 1.2.1
+
+* Passes original test case in issue 1.
+
 # 1.2.0
 
 * Does not touch quoted values in attribute selectors.

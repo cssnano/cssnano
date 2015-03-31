@@ -122,6 +122,10 @@ var tests = [{
     message: 'should not change strings',
     fixture:  ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:blue}',
     expected: ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:blue}'
+}, {
+    message: 'should not change strings (2)',
+    fixture: ':not([attr="  h1       a + b /* not a comment */ not end of `:not`:  )  from 100% "]){color:blue}',
+    expected: ':not([attr="  h1       a + b /* not a comment */ not end of `:not`:  )  from 100% "]){color:blue}'
 }];
 
 function process (css, options) {
