@@ -1,6 +1,7 @@
 var test = require('tape');
 var postcss = require('postcss');
 var plugin = require('./');
+var name = require('./package.json').name;
 
 var tests = [{
     message: 'should trim spaces in simple selectors',
@@ -126,17 +127,35 @@ var tests = [{
     message: 'should not change strings (2)',
     fixture: ':not([attr="  h1       a + b /* not a comment */ not end of `:not`:  )  from 100% "]){color:blue}',
     expected: ':not([attr="  h1       a + b /* not a comment */ not end of `:not`:  )  from 100% "]){color:blue}'
+}, {
+    message: 'should not change strings (3)',
+    fixture: '[a=":not( *.b, h1, h1 )"]{color:blue}',
+    expected: '[a=":not( *.b, h1, h1 )"]{color:blue}'
+}, {
+    message: 'should not change strings (4)',
+    fixture: '[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:blue}',
+    expected: '[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:blue}'
+}, {
+    message: 'should not change strings (5)',
+    fixture: "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}",
+    expected: "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}"
 }];
 
 function process (css, options) {
     return postcss(plugin(options)).process(css).css;
 }
 
-test(require('./package.json').name, function (t) {
+test(name, function (t) {
     t.plan(tests.length);
 
     tests.forEach(function (test) {
         var options = test.options || {};
         t.equal(process(test.fixture, options), test.expected, test.message);
     });
+});
+
+test('should use the postcss plugin api', function (t) {
+    t.plan(2);
+    t.ok(plugin().postcssVersion, 'should be able to access version');
+    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
 });

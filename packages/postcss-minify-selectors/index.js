@@ -2,14 +2,15 @@
 
 var uniqs = require('uniqs');
 var minAttributes = require('./lib/transformAttributes');
-var list = require('postcss/lib/list');
+var postcss = require('postcss');
+var comma = postcss.list.comma;
 var normalize = require('normalize-selector');
 var balanced = require('node-balanced');
 var natural = require('javascript-natural-sort');
 var roq = require('./lib/replaceOutsideQuotes');
 
 function uniq (params, map) {
-    var transform = uniqs(list.comma(params).map(function (selector) {
+    var transform = uniqs(comma(params).map(function (selector) {
         // Join selectors that are split over new lines
         return selector.replace(/\\\n/g, '');
     })).sort(natural);
@@ -33,7 +34,7 @@ function optimiseSelector (rule) {
     }).map(minAttributes).join(',');
     // Minimise from and 100% in keyframe rules
     if (rule.parent.type !== 'root' && ~rule.parent.name.indexOf('keyframes')) {
-        selector = list.comma(selector).map(function (value) {
+        selector = comma(selector).map(function (value) {
             if (value === 'from') {
                 return '0%';
             }
@@ -62,9 +63,9 @@ function optimiseAtRule (rule) {
     rule.params = normalize(uniq(rule.params));
 }
 
-module.exports = function () {
+module.exports = postcss.plugin('postcss-minify-selectors', function () {
     return function (css) {
         css.eachRule(optimiseSelector);
         css.eachAtRule(optimiseAtRule);
     };
-};
+});

@@ -1,3 +1,7 @@
+# 1.3.0
+
+* Now uses the PostCSS `4.1` plugin API.
+
 # 1.2.1
 
 * Passes original test case in issue 1.

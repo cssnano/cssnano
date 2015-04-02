@@ -34,7 +34,7 @@
     "javascript-natural-sort": "^0.7.1",
     "node-balanced": "0.0.14",
     "normalize-selector": "0.0.3-a",
-    "postcss": "^4.0.6",
+    "postcss": "^4.1.2",
     "uniqs": "^2.0.0"
   }
 }
