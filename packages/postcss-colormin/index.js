@@ -1,10 +1,11 @@
 'use strict';
 
 var colormin = require('colormin');
-var list = require('postcss/lib/list');
+var postcss = require('postcss');
+var list = postcss.list;
 var reduce = require('reduce-function-call');
 
-module.exports = function () {
+module.exports = postcss.plugin('postcss-colormin', function () {
     return function (css) {
         css.eachDecl(/^(?!font)/, function (decl) {
             decl.value = list.space(decl.value).map(colormin).join(' ');
@@ -15,4 +16,4 @@ module.exports = function () {
             });
         });
     };
-};
+});
