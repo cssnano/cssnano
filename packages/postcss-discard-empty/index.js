@@ -1,12 +1,14 @@
 'use strict';
 
+var postcss = require('postcss');
+
 function remove (callback) {
     return function (node) {
         callback.call(this, node) && node.removeSelf();
     };
 }
 
-module.exports = function () {
+module.exports = postcss.plugin('postcss-discard-empty', function () {
     return function (css) {
         css.eachDecl(remove(function (decl) {
             return !decl.value;
@@ -21,4 +23,4 @@ module.exports = function () {
             return !rule.params;
         }));
     };
-};
+});
