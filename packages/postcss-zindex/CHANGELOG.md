@@ -1,3 +1,7 @@
+# 1.1.1
+
+* Corrected dependency tree when installing from npm.
+
 # 1.1.0
 
 * Now uses the PostCSS `4.1` plugin API.
