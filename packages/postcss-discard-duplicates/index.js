@@ -1,5 +1,7 @@
 'use strict';
 
+var postcss = require('postcss')
+
 function getIdent (rule) {
     return '' + rule;
 }
@@ -24,7 +26,7 @@ function dedupe () {
     };
 }
 
-module.exports = function () {
+module.exports = postcss.plugin('postcss-discard-duplicates', function () {
     return function (css) {
         css.eachAtRule(dedupe());
         css.eachRule(function (rule) {
@@ -32,4 +34,4 @@ module.exports = function () {
         });
         css.eachRule(dedupe());
     };
-};
+});
