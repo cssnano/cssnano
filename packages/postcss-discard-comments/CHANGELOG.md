@@ -1,6 +1,7 @@
 # 1.1.0
 
 * Now uses the PostCSS `4.1` plugin API.
+* Adds support for transforming comments inside `!important` values.
 
 # 1.0.2
 

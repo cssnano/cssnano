@@ -52,6 +52,10 @@ var tests = [{
     fixture: 'h1{margin/*test*/:20px}',
     expected: 'h1{margin:20px}'
 }, {
+    message: 'should remove non-special comments 13',
+    fixture: 'h1{margin:20px! /* test */ important}',
+    expected: 'h1{margin:20px!important}'
+}, {
     message: 'should keep special comments',
     fixture: 'h1{font-weight:bold!important/*!test comment*/}',
     expected: 'h1{font-weight:bold!important/*!test comment*/}'
@@ -99,6 +103,10 @@ var tests = [{
     message: 'should keep special comments 12',
     fixture: 'h1{margin/*!test*/:20px}',
     expected: 'h1{margin/*!test*/:20px}'
+}, {
+    message: 'should keep special comments 13',
+    fixture: 'h1{margin:20px! /*! test */ important}',
+    expected: 'h1{margin:20px! /*! test */ important}'
 }, {
     message: 'should remove all important comments, with a flag',
     fixture: '/*!license*/h1{font-weight:bold}/*!license 2*/h2{color:#000}',
