@@ -1,10 +1,11 @@
 'use strict';
 
-var list = require('postcss/lib/list');
 var balanced = require('node-balanced');
 var CommentRemover = require('./lib/commentRemover');
+var postcss = require('postcss');
+var space = postcss.list.space;
 
-module.exports = function (options) {
+module.exports = postcss.plugin('postcss-discard-comments', function (options) {
     var remover = new CommentRemover(options || {});
 
     function replaceComments (source) {
@@ -22,7 +23,7 @@ module.exports = function (options) {
                 return head + comment + tail;
             }
         });
-        return list.space(b).join(' ');
+        return space(b).join(' ');
     }
 
     return function (css) {
@@ -65,4 +66,4 @@ module.exports = function (options) {
             }
         });
     };
-};
+});

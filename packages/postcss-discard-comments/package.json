@@ -23,7 +23,7 @@
   "homepage": "https://github.com/ben-eb/postcss-discard-comments",
   "author": {
     "name": "Ben Briggs",
-    "email": "therealbenbriggs@hotmail.com",
+    "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
   "repository": {
@@ -32,6 +32,6 @@
   },
   "dependencies": {
     "node-balanced": "0.0.14",
-    "postcss": "^4.0.6"
+    "postcss": "^4.1.2"
   }
 }
