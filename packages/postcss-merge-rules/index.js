@@ -1,6 +1,7 @@
 'use strict';
 
-var list = require('postcss/lib/list');
+var postcss = require('postcss');
+var list = postcss.list;
 var flatten = require('flatten');
 
 var prefixes = ['-webkit-', '-moz-', '-ms-', '-o-'];
@@ -135,8 +136,8 @@ function selectorMerger () {
     };
 }
 
-module.exports = function () {
+module.exports = postcss.plugin('postcss-merge-rules', function () {
     return function (css) {
         css.eachRule(selectorMerger());
     };
-};
+});

@@ -1,3 +1,7 @@
+# 1.2.0
+
+* Now uses the PostCSS `4.1` plugin API.
+
 # 1.1.1
 
 * Bugfix of last release, now difference is calculated in both directions.

@@ -32,6 +32,6 @@
   },
   "dependencies": {
     "flatten": "0.0.1",
-    "postcss": "^4.0.6"
+    "postcss": "^4.1.2"
   }
 }
