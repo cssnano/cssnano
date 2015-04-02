@@ -1,6 +1,6 @@
 'use strict';
 
-var postcss = require('postcss')
+var postcss = require('postcss');
 
 function getIdent (rule) {
     return '' + rule;
