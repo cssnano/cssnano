@@ -1,6 +1,7 @@
 'use strict';
 
 var eachFunction = require('./lib/eachFunction');
+var postcss = require('postcss');
 var shorter = require('./lib/shorter');
 var normalize = require('normalize-url');
 var isAbsolute = require('is-absolute-url');
@@ -12,7 +13,7 @@ var unquote = /^("|')(.*)\1$/;
 var escapeChars = /[\s\(\)'"]/;
 var replaceEscapeChars = /([\s\(\)"'])/g;
 
-module.exports = function plugin (options) {
+module.exports = postcss.plugin('postcss-normalize-url', function (options) {
     options = { normalizeProtocol: false, stripFragment: false } || {};
 
     var convert = function (url) {
@@ -49,4 +50,4 @@ module.exports = function plugin (options) {
             });
         });
     };
-};
+});
