@@ -1,6 +1,8 @@
 'use strict';
 
-module.exports = function () {
+var postcss = require('postcss');
+
+module.exports = postcss.plugin('postcss-zindex', function () {
     return function (css) {
         var cache = require('./lib/layerCache')();
         // First pass; cache all z indexes
@@ -14,4 +16,4 @@ module.exports = function () {
             declaration.value = '' + cache.convert(declaration.value);
         });
     };
-};
+});

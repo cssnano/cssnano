@@ -20,14 +20,14 @@
   "devDependencies": {
     "jshint": "^2.6.3",
     "jshint-stylish": "^1.0.1",
-    "postcss": "^4.0.6",
+    "postcss": "^4.1.2",
     "tap-spec": "^2.2.2",
     "tape": "^3.5.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-zindex",
   "author": {
     "name": "Ben Briggs",
-    "email": "therealbenbriggs@hotmail.com",
+    "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
   "repository": {
