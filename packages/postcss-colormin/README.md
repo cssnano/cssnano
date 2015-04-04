@@ -2,7 +2,9 @@
 
 > Minify colors in your CSS files with PostCSS and [colormin][colormin].
 
-Install via [npm](https://npmjs.org/package/postcss-colormin):
+## Install
+
+With [npm](https://npmjs.org/package/postcss-colormin) do:
 
 ```
 npm install postcss-colormin --save
@@ -29,7 +31,7 @@ to cover it.
 
 ## License
 
-MIT © Ben Briggs
+MIT © [Ben Briggs](http://beneb.info)
 
 [colormin]: https://github.com/ben-eb/colormin
 [ci]:       https://travis-ci.org/ben-eb/postcss-colormin

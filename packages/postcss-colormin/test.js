@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var postcss = require('postcss');
 var plugin = require('./');

@@ -29,10 +29,7 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/ben-eb/postcss-colormin.git"
-  },
+  "repository": "ben-eb/postcss-colormin",
   "dependencies": {
     "colormin": "^1.0.1",
     "postcss": "^4.1.2",
