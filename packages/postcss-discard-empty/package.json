@@ -9,13 +9,13 @@
   },
   "keywords": [
     "css",
-    "comments",
+    "empty",
     "postcss",
     "postcss-plugins"
   ],
   "license": "MIT",
   "dependencies": {
-    "postcss": "^4.1.2"
+    "postcss": "^4.1.4"
   },
   "devDependencies": {
     "jshint": "^2.6.3",
@@ -29,8 +29,6 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/ben-eb/postcss-discard-empty.git"
+  "repository": "ben-eb/postcss-discard-empty"
   }
 }
