@@ -20,6 +20,10 @@ function shortest (list) {
     });
 }
 
+function appendUnit (unit) {
+    return typeof unit === 'string' ? unit : '';
+}
+
 module.exports = function convert (number, unit) {
     var conversion = conversions.filter(function (area) {
         return unit in area;
@@ -27,7 +31,7 @@ module.exports = function convert (number, unit) {
 
     // Return if unrecognised
     if (!conversion) {
-        return leadingZero(number) + unit;
+        return leadingZero(number) + appendUnit(unit);
     }
 
     var base = number / conversion[unit];

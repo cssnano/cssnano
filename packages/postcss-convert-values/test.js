@@ -48,6 +48,10 @@ var tests = [{
     fixture: 'h1{flex-basis:0%}',
     expected: 'h1{flex-basis:0%}'
 }, {
+    message: 'should not mangle values without units',
+    fixture: 'h1{z-index:5}',
+    expected: 'h1{z-index:5}'
+}, {
     message: 'should operate in calc values',
     fixture: 'h1{width:calc(192px + 2em)}',
     expected: 'h1{width:calc(2in + 2em)}'
