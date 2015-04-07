@@ -1,3 +1,7 @@
+# 1.2.1
+
+* Patch to address incorrect transformation of `@document` rules.
+
 # 1.2.0
 
 * Fixes an issue where options could not be passed through.

@@ -67,6 +67,6 @@ module.exports = postcss.plugin('postcss-normalize-url', function (options) {
                 });
             });
         });
-        css.eachAtRule(namespaceOptimiser(options));
+        css.eachAtRule('namespace', namespaceOptimiser(options));
     };
 });
