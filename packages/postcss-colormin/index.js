@@ -5,8 +5,10 @@ var postcss = require('postcss');
 var list = postcss.list;
 var reduce = require('reduce-function-call');
 
-function eachVal (value) {
-    return list.space(value).map(colormin).join(' ');
+function eachVal (values) {
+    return list.comma(values).map(function (value) {
+        return list.space(value).map(colormin).join(' ');
+    }).join(',');
 }
 
 module.exports = postcss.plugin('postcss-colormin', function () {

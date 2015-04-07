@@ -1,3 +1,8 @@
+# 1.2.2
+
+* Fixed a bug where the module crashed on parsing comma separated values for
+  properties such as `box-shadow`.
+
 # 1.2.1
 
 * Extracted each color logic into a function for better readability.

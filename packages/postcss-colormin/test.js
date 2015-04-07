@@ -28,7 +28,7 @@ var tests = [{
 }, {
     message: 'should minify color values in background gradients (2)',
     fixture: 'h1{background: linear-gradient(yellow, orange), linear-gradient(black, rgba(255, 255, 255, 0)); }',
-    expected: 'h1{background: linear-gradient(#ff0,orange), linear-gradient(#000,hsla(0,0%,100%,0)); }'
+    expected: 'h1{background: linear-gradient(#ff0,orange),linear-gradient(#000,hsla(0,0%,100%,0)); }'
 }, {
     message: 'should minify color values in background gradients (3)',
     fixture: 'h1{background: linear-gradient(0deg, yellow, black 40%, red)}',
@@ -37,6 +37,10 @@ var tests = [{
     message: 'should not minify in font properties',
     fixture: 'h1{font-family: black}',
     expected: 'h1{font-family: black}'
+}, {
+    message: 'should correctly parse multiple box shadow values',
+    fixture: 'h1{box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6)}',
+    expected: 'h1{box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)}'
 }];
 
 function process (css, options) {
