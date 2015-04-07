@@ -56,6 +56,10 @@ var tests = [{
     fixture: 'h1{width:calc(192px + 2em)}',
     expected: 'h1{width:calc(2in + 2em)}'
 }, {
+    message: 'should not mangle values outside of its domain',
+    fixture: 'h1{background:url(a.png)}',
+    expected: 'h1{background:url(a.png)}'
+}, {
     message: 'should optimise fractions',
     fixture: 'h1{opacity:1.}h2{opacity:.0}',
     expected: 'h1{opacity:1}h2{opacity:0}'

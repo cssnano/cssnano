@@ -1,3 +1,7 @@
+# 1.0.3
+
+* Fixed a bug where filenames were being incorrectly transformed.
+
 # 1.0.2
 
 * Fixed a bug where `1.` and `.0` were not being optimised to `1` and `0`,

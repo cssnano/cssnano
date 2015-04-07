@@ -7,7 +7,7 @@ var reduce = require('reduce-function-call');
 
 var duration = /^((?:[-+]?[\d]+?)(?:\.?(?:[\d]+?))?)(s|ms)/;
 var length = /^((?:[-+]?[\d]+?)(?:\.?(?:[\d]+?))?)?(%|em|ex|in|cm|mm|pt|pc|px)?$/;
-var tidyValue = /([\d]*)?\.([^1-9]*)?$/;
+var tidyValue = /^([\d]*)?\.([^1-9]*)?$/;
 
 function durationOptimiser (value) {
     if (duration.test(value)) {
