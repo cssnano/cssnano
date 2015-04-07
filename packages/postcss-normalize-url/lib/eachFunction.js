@@ -2,14 +2,15 @@
 
 var indexesOf = require('indexes-of');
 
-module.exports = function eachFunction (decl, type, callback) {
-    if (~decl.value.indexOf(type + '(')) {
-        var locs = indexesOf(decl.value, type);
-        locs.push(decl.value.length);
+module.exports = function eachFunction (value, type, callback) {
+    if (~value.indexOf(type + '(')) {
+        var locs = indexesOf(value, type);
+        locs.push(value.length);
         while (locs.length > 1) {
-            var sub = decl.value.substring(locs[0], locs[1]);
-            decl.value = decl.value.replace(sub, callback.call(this, sub));
+            var sub = value.substring(locs[0], locs[1]);
+            value = value.replace(sub, callback.call(this, sub));
             locs.shift();
         }
     }
+    return value;
 };

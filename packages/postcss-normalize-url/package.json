@@ -21,6 +21,7 @@
     "indexes-of": "^1.0.1",
     "is-absolute-url": "^1.0.0",
     "normalize-url": "^1.2.0",
+    "object-assign": "^2.0.0",
     "postcss": "^4.1.2"
   },
   "devDependencies": {
@@ -35,8 +36,5 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/ben-eb/postcss-normalize-url.git"
-  }
+  "repository": "ben-eb/postcss-normalize-url"
 }
