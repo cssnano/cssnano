@@ -10,6 +10,11 @@ function filterIdent (cache) {
     return function (node) {
         // Ensure we don't dedupe in different contexts
         var sameContext = node.parent.type === cache.parent.type;
+        // Ensure that at rules have exactly the same name; this accounts for
+        // vendor prefixes
+        if (node.parent.type !== 'root') {
+            sameContext = sameContext && node.parent.name === cache.parent.name;
+        }
         return sameContext && getIdent(node) === getIdent(cache);
     };
 }
@@ -30,7 +35,7 @@ module.exports = postcss.plugin('postcss-discard-duplicates', function () {
     return function (css) {
         css.eachAtRule(dedupe());
         css.eachRule(function (rule) {
-            rule.eachInside(dedupe());
+            rule.eachDecl(dedupe());
         });
         css.eachRule(dedupe());
     };

@@ -20,6 +20,18 @@ var tests = [{
     fixture: '@charset "utf-8";@charset "utf-8";',
     expected: '@charset "utf-8";'
 }, {
+    message: 'should remove duplicates inside @media queries',
+    fixture: '@media print{h1{display:block}h1{display:block}}',
+    expected: '@media print{h1{display:block}}'
+}, {
+    message: 'should remove duplicate @media queries',
+    fixture: '@media print{h1{display:block}}@media print{h1{display:block}}',
+    expected: '@media print{h1{display:block}}'
+}, {
+    message: 'should not mangle same keyframe rules but with different vendors',
+    fixture: '@-webkit-keyframes flash{0%,50%,100%{opacity:1}25%,75%{opacity:0}}@keyframes flash{0%,50%,100%{opacity:1}25%,75%{opacity:0}}',
+    expected: '@-webkit-keyframes flash{0%,50%,100%{opacity:1}25%,75%{opacity:0}}@keyframes flash{0%,50%,100%{opacity:1}25%,75%{opacity:0}}'
+}, {
     message: 'should remove declarations before rules',
     fixture: 'h1{font-weight:bold;font-weight:bold}h1{font-weight:bold}',
     expected: 'h1{font-weight:bold}'
