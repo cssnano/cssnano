@@ -55,6 +55,18 @@ var tests = [{
     message: 'should operate in calc values',
     fixture: 'h1{width:calc(192px + 2em)}',
     expected: 'h1{width:calc(2in + 2em)}'
+}, {
+    message: 'should optimise fractions',
+    fixture: 'h1{opacity:1.}h2{opacity:.0}',
+    expected: 'h1{opacity:1}h2{opacity:0}'
+}, {
+    message: 'should optimise fractions with units',
+    fixture: 'h1{width:10.px}h2{width:.0px}',
+    expected: 'h1{width:10px}h2{width:0}'
+}, {
+    message: 'should optimise fractions inside calc',
+    fixture: 'h1{width:calc(10.px + .0px)}',
+    expected: 'h1{width:calc(10px + 0)}'
 }];
 
 function process (css, options) {

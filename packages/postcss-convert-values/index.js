@@ -7,6 +7,7 @@ var reduce = require('reduce-function-call');
 
 var duration = /^((?:[-+]?[\d]+?)(?:\.?(?:[\d]+?))?)(s|ms)/;
 var length = /^((?:[-+]?[\d]+?)(?:\.?(?:[\d]+?))?)?(%|em|ex|in|cm|mm|pt|pc|px)?$/;
+var tidyValue = /([\d]*)?\.([^1-9]*)?$/;
 
 function durationOptimiser (value) {
     if (duration.test(value)) {
@@ -33,6 +34,14 @@ function lengthOptimiser (value, prop) {
 
 function eachValue (decl) {
     return function (value) {
+        var match = tidyValue.exec(value);
+        if (match) {
+            if (!/\d/.test(match[2])) {
+                value = value.replace(tidyValue, '$1$2');
+            } else if (!match[1]) {
+                value = value.replace(tidyValue, '0');
+            }
+        }
         value = durationOptimiser(value);
         value = lengthOptimiser(value, decl.prop);
         return value;
