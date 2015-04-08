@@ -19,24 +19,31 @@ function filterIdent (cache) {
     };
 }
 
-function dedupe () {
+function dedupe (callback) {
     var cache = [];
     return function (rule) {
-        var cached = cache.filter(filterIdent(rule));
-        if (cached.length) {
-            cached[0].removeSelf();
-            cache.splice([cache.indexOf(cached[0])], 1);
+        if (!callback || callback.call(this, rule)) {
+            var cached = cache.filter(filterIdent(rule));
+            if (cached.length) {
+                cached[0].removeSelf();
+                cache.splice([cache.indexOf(cached[0])], 1);
+            }
+            cache.push(rule);
         }
-        cache.push(rule);
     };
 }
 
 module.exports = postcss.plugin('postcss-discard-duplicates', function () {
     return function (css) {
         css.eachAtRule(dedupe());
+        css.eachAtRule(function (rule) {
+            rule.eachRule(dedupe());
+        });
         css.eachRule(function (rule) {
             rule.eachDecl(dedupe());
         });
-        css.eachRule(dedupe());
+        css.eachRule(dedupe(function (rule) {
+            return rule.parent.type === 'root';
+        }));
     };
 });

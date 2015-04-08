@@ -1,3 +1,8 @@
+# 1.1.2
+
+* Fixed an issue where declarations inside similar keyframes were being
+  discarded incorrectly.
+
 # 1.1.1
 
 * Fixed a bug where keyframe rules were being incorrectly discarded, if they had
