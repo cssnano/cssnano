@@ -40,6 +40,14 @@ var tests = [{
     fixture: 'h3{text-decoration:none}@media print{h1{color:red;text-decoration:none}h2{text-decoration:none}}',
     expected: 'h3{text-decoration:none}@media print{h1{color:red}h1,h2{text-decoration:none}}'
 }, {
+    message: 'should not merge across media queries',
+    fixture: '@media screen and (max-width:480px){h1{display:block}}@media screen and (min-width:480px){h2{display:block}}',
+    expected: '@media screen and (max-width:480px){h1{display:block}}@media screen and (min-width:480px){h2{display:block}}'
+}, {
+    message: 'should not merge across media queries (2)',
+    fixture: '@media screen and (max-width:200px){h1{color:red}}@media screen and (min-width:480px){h1{display:block}}',
+    expected: '@media screen and (max-width:200px){h1{color:red}}@media screen and (min-width:480px){h1{display:block}}'
+}, {
     message: 'should not merge in different contexts',
     fixture: 'h1{display:block}@media print{h1{color:red}}',
     expected: 'h1{display:block}@media print{h1{color:red}}'

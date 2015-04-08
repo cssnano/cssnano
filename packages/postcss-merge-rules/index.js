@@ -41,7 +41,12 @@ function noVendor (selector) {
 
 function sameParent (ruleA, ruleB) {
     var hasParent = ruleA.parent && ruleB.parent;
-    return hasParent ? ruleA.parent.type === ruleB.parent.type : true;
+    var sameType = hasParent && ruleA.parent.type === ruleB.parent.type;
+    // If an at rule, ensure that the parameters are the same
+    if (ruleA.parent.type !== 'root' && ruleB.parent.type !== 'root') {
+        sameType = sameType && ruleA.parent.params === ruleB.parent.params;
+    }
+    return hasParent ? sameType : true;
 }
 
 function canMerge (ruleA, ruleB) {

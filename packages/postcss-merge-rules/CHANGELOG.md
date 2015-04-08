@@ -1,3 +1,8 @@
+# 1.2.1
+
+* Fixed a bug where media queries were being merged when their parameters were
+  different.
+
 # 1.2.0
 
 * Now uses the PostCSS `4.1` plugin API.
@@ -9,7 +14,7 @@
 # 1.1.0
 
 * Less eager moving of properties, to avoid cases where moving a longhand
-property would allow a shorthand property to override it.
+  property would allow a shorthand property to override it.
 
 # 1.0.0
 
