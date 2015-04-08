@@ -1,3 +1,8 @@
+# 1.1.1
+
+* Fixes a bug where non-special comments, with an exclamation mark in any part
+  of the text, were not being removed.
+
 # 1.1.0
 
 * Now uses the PostCSS `4.1` plugin API.

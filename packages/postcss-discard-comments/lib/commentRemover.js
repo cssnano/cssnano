@@ -8,7 +8,7 @@ function CommentRemover (options) {
 }
 
 CommentRemover.prototype.canRemove = function (comment) {
-    var isImportant = ~comment.indexOf('!');
+    var isImportant = comment.indexOf('!') === 0;
     if (!isImportant && comment.indexOf('#') !== 0) {
         return true;
     } else if (isImportant) {

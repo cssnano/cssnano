@@ -118,6 +118,10 @@ var tests = [{
     expected: '/*!license*/h1{font-weight:700}h2{color:#000}',
     options: {removeAllButFirst: true}
 }, {
+    message: 'should remove non-special comments that have exclamation marks',
+    fixture: '/* This makes a heading black! Wow! */h1{color:#000}',
+    expected: 'h1{color:#000}'
+}, {
     message: 'should pass through when it doesn\'t find a comment',
     fixture: 'h1{color:#000;font-weight:700}',
     expected: 'h1{color:#000;font-weight:700}'
