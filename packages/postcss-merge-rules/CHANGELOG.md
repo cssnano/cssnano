@@ -1,3 +1,7 @@
+# 1.2.2
+
+* Fixed an issue where the plugin crashed if node.parent was undefined.
+
 # 1.2.1
 
 * Fixed a bug where media queries were being merged when their parameters were
