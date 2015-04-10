@@ -43,7 +43,7 @@ The following example will not be transformed in any way:
 ```
 
 It works for `@keyframes`, `@counter-style` and custom `counter` values. See the
-[documentation][ident] for more information, or the [tests][test.js] for more
+[documentation][idents] for more information, or the [tests](test.js) for more
 examples.
 
 ## Contributing
@@ -57,6 +57,6 @@ MIT © [Ben Briggs](http://beneb.info)
 
 [ci]:      https://travis-ci.org/ben-eb/postcss-reduce-idents
 [deps]:    https://gemnasium.com/ben-eb/postcss-reduce-idents
-[ident]:   https://developer.mozilla.org/en-US/docs/Web/CSS/custom-ident
+[idents]:  https://developer.mozilla.org/en-US/docs/Web/CSS/custom-ident
 [npm]:     http://badge.fury.io/js/postcss-reduce-idents
 [postcss]: https://github.com/postcss/postcss
