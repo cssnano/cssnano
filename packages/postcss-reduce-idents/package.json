@@ -1,0 +1,30 @@
+{
+  "name": "postcss-reduce-idents",
+  "version": "0.0.0",
+  "description": "Reduce custom identifiers with PostCSS.",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test.js | tap-spec"
+  },
+  "keywords": [
+    "css",
+    "postcss",
+    "postcss-plugins"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "tap-spec": "^2.2.2",
+    "tape": "^3.5.0"
+  },
+  "homepage": "https://github.com/ben-eb/postcss-reduce-idents",
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": "ben-eb/postcss-reduce-idents",
+  "dependencies": {
+    "postcss": "^4.1.2",
+    "reduce-function-call": "^1.0.1"
+  }
+}
