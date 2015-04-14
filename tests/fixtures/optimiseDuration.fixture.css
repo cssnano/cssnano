@@ -1,0 +1,11 @@
+.short {
+    animation-duration: 200ms;
+}
+
+.long {
+    animation-duration: 2s;
+}
+
+.negative {
+    animation-duration: -569ms;
+}

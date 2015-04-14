@@ -1,0 +1,19 @@
+h1 {
+    /* No expected optimisation */
+    margin: 10px 20px 30px 40px;
+}
+
+h2 {
+    /* Expected to transform to 3 values */
+    margin: 10px 20px 30px 20px;
+}
+
+h3 {
+    /* Expected to transform to 2 values */
+    margin: 10px 20px 10px 20px;
+}
+
+h4 {
+    /* Expected to transform to 1 value */
+    margin: 10px 10px 10px 10px;
+}

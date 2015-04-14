@@ -1,0 +1,11 @@
+p + p {
+    font-style: italic;
+}
+
+h1 ~ p {
+    font-size: 2em;
+}
+
+p > a {
+    font-weight: 700;
+}
