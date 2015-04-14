@@ -49,6 +49,10 @@ To see all available options, do:
 cssnano --help
 ```
 
+### gulp
+
+Use [`gulp-cssnano`].
+
 ### Scripting
 
 cssnano can be used directly via its node.js API, or consumed as a PostCSS
@@ -180,6 +184,8 @@ MIT © [Ben Briggs](http://beneb.info)
 [`postcss-reduce-idents`]:      https://github.com/ben-eb/postcss-reduce-idents
 [`postcss-single-charset`]:     https://github.com/hail2u/postcss-single-charset
 [`postcss-zindex`]:             https://github.com/ben-eb/postcss-zindex
+
+[`gulp-cssnano]:                https://github.com/ben-eb/gulp-cssnano
 
 [ci]:                           https://travis-ci.org/ben-eb/cssnano
 [deps]:                         https://gemnasium.com/ben-eb/cssnano

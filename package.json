@@ -47,5 +47,5 @@
     "tap-spec": "^3.0.0",
     "tape": "^4.0.0"
   },
-  "homepage": "https://github.com/ben-eb/css-nano"
+  "homepage": "https://github.com/ben-eb/cssnano"
 }
