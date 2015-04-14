@@ -185,7 +185,7 @@ MIT © [Ben Briggs](http://beneb.info)
 [`postcss-single-charset`]:     https://github.com/hail2u/postcss-single-charset
 [`postcss-zindex`]:             https://github.com/ben-eb/postcss-zindex
 
-[`gulp-cssnano]:                https://github.com/ben-eb/gulp-cssnano
+[`gulp-cssnano`]:                https://github.com/ben-eb/gulp-cssnano
 
 [ci]:                           https://travis-ci.org/ben-eb/cssnano
 [deps]:                         https://gemnasium.com/ben-eb/cssnano
