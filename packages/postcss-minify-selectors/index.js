@@ -46,16 +46,19 @@ function optimiseSelector (rule) {
     }
     // Trim whitespace around selector combinators
     rule.selector = roq(selector, function (range) {
-    // Trim any useless space inside negation pseudo classes
-        range = balanced.replacements({
-            source: range,
-            open: ':not(',
-            close: ')',
-            replace: function (body, head, tail) {
-                return head + uniq(body) + tail;
-            }
-        });
-        return range.replace(/\s*([>+~])\s*/g, '$1');
+        // Trim any useless space inside negation pseudo classes
+        if (range) {
+            range = balanced.replacements({
+                source: range,
+                open: ':not(',
+                close: ')',
+                replace: function (body, head, tail) {
+                    return head + uniq(body) + tail;
+                }
+            });
+            return range.replace(/\s*([>+~])\s*/g, '$1');
+        }
+        return range;
     });
 }
 

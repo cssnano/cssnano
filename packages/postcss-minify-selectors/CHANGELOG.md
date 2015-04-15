@@ -1,3 +1,7 @@
+# 1.3.1
+
+* Fixes a crash when nothing was passed to `node-balanced`.
+
 # 1.3.0
 
 * Now uses the PostCSS `4.1` plugin API.
