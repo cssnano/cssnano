@@ -40,7 +40,7 @@ cssnano main.css main.min.css
 You can also use stdin & stdout redirections:
 
 ```
-cat main.css | cssnano > main.min.css
+cssnano < main.css > main.min.css
 ```
 
 To see all available options, do:
