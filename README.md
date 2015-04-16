@@ -57,6 +57,10 @@ Use [`gulp-cssnano`].
 
 Use [`grunt-cssnano`].
 
+### broccoli
+
+Use [`broccoli-cssnano`].
+
 ### Scripting
 
 cssnano can be used directly via its node.js API, or consumed as a PostCSS
@@ -191,6 +195,7 @@ MIT © [Ben Briggs](http://beneb.info)
 
 [`gulp-cssnano`]:               https://github.com/ben-eb/gulp-cssnano
 [`grunt-cssnano`]:              https://github.com/sindresorhus/grunt-cssnano
+[`broccoli-cssnano`]:           https://github.com/sindresorhus/broccoli-cssnano
 
 [ci]:                           https://travis-ci.org/ben-eb/cssnano
 [deps]:                         https://gemnasium.com/ben-eb/cssnano
