@@ -1,4 +1,4 @@
-# cssnano [![Build Status](https://travis-ci.org/ben-eb/cssnano.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/cssnano.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/cssnano.svg)][deps]
+# cssnano [![Build Status](https://travis-ci.org/ben-eb/cssnano.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/cssnano.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/cssnano.svg)][deps] [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/ben-eb/cssnano?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 > A modular minifier, built on top of the [PostCSS] ecosystem.
 
