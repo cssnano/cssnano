@@ -1,3 +1,7 @@
+# 1.1.0
+
+* Adds support for removing leading zeroes from `rem` values.
+
 # 1.0.3
 
 * Fixed a bug where filenames were being incorrectly transformed.
