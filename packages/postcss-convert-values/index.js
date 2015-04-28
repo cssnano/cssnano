@@ -20,14 +20,19 @@ function durationOptimiser (value) {
 
 function lengthOptimiser (value, prop) {
     if (length.test(value)) {
-        var isZero = false;
-        value = value.replace(length, function (_, num, unit) {
-            isZero = parseFloat(num) === 0;
-            return converter(num, unit);
-        });
-        if (!~prop.indexOf('flex') && isZero) {
-            return '0';
+        var match = value.match(length),
+            num = match[1],
+            integer = parseInt(num),
+            unit = match[2];
+        if (parseFloat(num) === integer) {
+            num = integer;
         }
+        if (num !== 0) {
+            num = converter(num, unit);
+        } else if (~prop.indexOf('flex')) {
+            return value;
+        }
+        return num;
     }
     return value;
 }

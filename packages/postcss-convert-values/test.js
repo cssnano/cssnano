@@ -44,6 +44,10 @@ var tests = [{
     fixture: 'h1{width:0.00px}',
     expected: 'h1{width:0}'
 }, {
+    message: 'should trim trailing zeros without unit',
+    fixture: 'h1{width:100.00%}',
+    expected: 'h1{width:100%}'
+}, {
     message: 'should not mangle flex basis',
     fixture: 'h1{flex-basis:0%}',
     expected: 'h1{flex-basis:0%}'
