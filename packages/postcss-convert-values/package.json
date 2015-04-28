@@ -1,6 +1,6 @@
 {
   "name": "postcss-convert-values",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Convert values with PostCSS (e.g. ms -> s)",
   "main": "index.js",
   "scripts": {
