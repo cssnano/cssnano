@@ -71,6 +71,10 @@ var tests = [{
     message: 'should optimise fractions inside calc',
     fixture: 'h1{width:calc(10.px + .0px)}',
     expected: 'h1{width:calc(10px + 0)}'
+}, {
+    message: 'should handle leading zero in rem values',
+    fixture: '.one{top:0.25rem}',
+    expected: '.one{top:.25rem}'
 }];
 
 function process (css, options) {
