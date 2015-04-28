@@ -1,3 +1,8 @@
+# 1.1.1
+
+* Fixes an issue where trailing zeroes were not being removed in
+  values that were not `0`.
+
 # 1.1.0
 
 * Adds support for removing leading zeroes from `rem` values.
