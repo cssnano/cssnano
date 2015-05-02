@@ -1,67 +1,75 @@
 'use strict';
 
-var postcss = require('postcss');
+var Postcss = require('postcss');
 
-function createProcessor (module, namespace) {
-    return function (options) {
-        var opts = options && namespace ? options[namespace] : opts;
-        var ns = require(module)(opts);
-        ns._disabled = opts === false;
-        return ns;
-    };
-}
-
-var pipeline = {
-    discardComments: createProcessor('postcss-discard-comments', 'comments'),
-    zindex: createProcessor('postcss-zindex', 'zindex'),
-    discardEmpty: createProcessor('postcss-discard-empty'),
-    minifyFontWeight: createProcessor('postcss-minify-font-weight'),
-    convertValues: createProcessor('postcss-convert-values'),
-    calc: createProcessor('postcss-calc', 'calc'),
-    colormin: createProcessor('postcss-colormin'),
-    pseudoElements: createProcessor('postcss-pseudoelements'),
-    filterOptimiser: createProcessor('./lib/filterOptimiser'),
-    longhandOptimiser: createProcessor('./lib/longhandOptimiser'),
-    minifySelectors: createProcessor('postcss-minify-selectors'),
-    singleCharset: createProcessor('postcss-single-charset'),
-    // font-family should be run before discard-font-face
-    fontFamily: createProcessor('postcss-font-family'),
-    discardFontFace: createProcessor('postcss-discard-font-face'),
-    normalizeUrl: createProcessor('postcss-normalize-url', 'urls'),
-    reduceIdents: createProcessor('postcss-reduce-idents', 'idents'),
-    core: createProcessor('./lib/core'),
-    // Optimisations after this are sensitive to previous optimisations in
-    // the pipe, such as whitespace normalising/selector re-ordering
-    borderOptimiser: createProcessor('./lib/borderOptimiser'),
-    discardDuplicates: createProcessor('postcss-discard-duplicates'),
-    functionOptimiser: createProcessor('./lib/functionOptimiser'),
-    mergeRules: createProcessor('postcss-merge-rules', 'merge')
+var processors = {
+  'postcss-discard-comments': 'comments',
+  'postcss-zindex': 'zindex',
+  'postcss-discard-empty': null,
+  'postcss-minify-font-weight': null,
+  'postcss-convert-values': null,
+  'postcss-calc': 'calc',
+  'postcss-colormin': null,
+  'postcss-pseudoelements': null,
+  './lib/filterOptimiser': null,
+  './lib/longhandOptimiser': null,
+  'postcss-minify-selectors': null,
+  'postcss-single-charset': null,
+  // font-family should be run before discard-font-face
+  'postcss-font-family': null,
+  'postcss-discard-font-face': null,
+  'postcss-normalize-url': 'urls',
+  'postcss-reduce-idents': 'idents',
+  './lib/core': null,
+  // Optimisations after this are sensitive to previous optimisations in
+  // the pipe, such as whitespace normalising/selector re-ordering
+  './lib/borderOptimiser': null,
+  'postcss-discard-duplicates': null,
+  './lib/functionOptimiser': null,
+  'postcss-merge-rules': 'merge'
 };
 
-function cssnano (css, options) {
-    if (typeof css === 'object') {
-        options = css;
-    }
-    options = options || {};
-    options.map = options.map || (options.sourcemap ? true : null);
-    var processor = postcss();
-    Object.keys(pipeline).forEach(function (module) {
-        var fn = pipeline[module](options);
-        if (!fn._disabled) {
-            processor.use(fn);
-        }
-    });
-    if (typeof css === 'string') {
-        var result = processor.process(css, options);
-        // return a css string if inline/no sourcemap.
-        if (options.map === null || (options.map === true || options.map.inline)) {
-            return result.css;
-        }
-        // otherwise return an object of css & map
-        return result;
-    } else {
-        return processor;
-    }
-}
+module.exports = function cssnano(css, options) {
+  if (typeof css === 'object') {
+    options = css;
+    css = null;
+  }
+  options = options || {};
+  options = typeof options === 'object' ? options : {};
+  options.map = options.map || (options.sourcemap ? true : null);
+  var postcss = Postcss();
+  var plugins = Object.keys(processors);
+  var len = plugins.length;
+  var i = 0;
 
-module.exports = cssnano;
+  while (i < len) {
+    var plugin = plugins[i++];
+    var ns = processors[plugin];
+    var opts = options;
+
+    if (typeof ns === 'string') {
+      if (opts[ns] === false) {
+        continue;
+      }
+      opts = opts[ns] || opts || {};
+    }
+
+    if (opts.disable) {
+      continue;
+    }
+
+    postcss.use(require(plugin)(opts));
+  }
+
+  if (typeof css === 'string') {
+    var result = postcss.process(css, options);
+    // return a css string if inline/no sourcemap.
+    if (options.map === null || options.map === true || (options.map && options.map.inline)) {
+      return result.css;
+    }
+    // otherwise return an object of css & map
+    return result;
+  }
+
+  return postcss;
+};

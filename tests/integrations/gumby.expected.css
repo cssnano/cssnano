@@ -981,7 +981,7 @@ img{-ms-interpolation-mode:bicubic}
 .btn.medium.icon-right a,.skiplink.medium.icon-right a{padding-right:36px}
 .btn.medium.icon-right a:after,.skiplink.medium.icon-right a:after{right:10.66667px}
 .btn.medium a,.skiplink.medium a{padding:0 18px}
-.btn.small,.skiplink.small{font-size:10px;font-size:0.625rem;height:23px;line-height:21px}
+.btn.small,.skiplink.small{font-size:10px;font-size:.625rem;height:23px;line-height:21px}
 .btn.small a,.skiplink.small a{position:relative;padding:0 10px}
 .btn.small.icon-left a,.skiplink.small.icon-left a{padding-left:23px}
 .btn.small.icon-left a:before,.skiplink.small.icon-left a:before{left:6.66667px}
@@ -1164,9 +1164,9 @@ label+.narrow:last-child,label+.normal:last-child,label+.wide:last-child,label+.
 .badge.light,.label.light{background:#fff;color:#555;border:1px solid #f2f2f2}
 .badge.light a,.label.light a{color:#d04526}
 .badge.dark,.label.dark{background:#212121;border:1px solid #212121}
-.badge{padding:0 10px;font-size:14px;font-size:0.875rem;-moz-border-radius:10px;-webkit-border-radius:10px;border-radius:10px}
-.label{padding:0 10px;font-size:9pt;font-size:0.75rem;-moz-border-radius:2px;-webkit-border-radius:2px;border-radius:2px}
-.alert{padding:0 10px;font-family:Open Sans;font-weight:600;list-style-type:none;word-wrap:break-word;margin-bottom:8px;font-size:14px;font-size:0.875rem;-moz-border-radius:4px;-webkit-border-radius:4px;border-radius:4px}
+.badge{padding:0 10px;font-size:14px;font-size:.875rem;-moz-border-radius:10px;-webkit-border-radius:10px;border-radius:10px}
+.label{padding:0 10px;font-size:9pt;font-size:.75rem;-moz-border-radius:2px;-webkit-border-radius:2px;border-radius:2px}
+.alert{padding:0 10px;font-family:Open Sans;font-weight:600;list-style-type:none;word-wrap:break-word;margin-bottom:8px;font-size:14px;font-size:.875rem;-moz-border-radius:4px;-webkit-border-radius:4px;border-radius:4px}
 .alert.primary{background:#85b7e7;border:1px solid #3085d6;color:#1a5186}
 .alert.secondary{background:#80cb92;border:1px solid #42a35a;color:#255a32}
 .alert.default{background:#fff;color:#bfbfbf;color:#555;border:1px solid #f2f2f2}
