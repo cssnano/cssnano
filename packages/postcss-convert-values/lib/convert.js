@@ -34,16 +34,14 @@ module.exports = function (number, unit) {
     if (conversion) {
         base = number / conversion[unit];
 
-        value = Object.keys(conversion)
+        return Object.keys(conversion)
             .map(function (u) {
                 return dropLeadingZero(base / conversion[u]) + u;
             })
             .reduce(function (a, b) {
                 return a.length < b.length ? a : b;
             });
-    } else {
-        value = dropLeadingZero(number) + (unit ? unit : '');
     }
 
-    return value;
+    return dropLeadingZero(number) + (unit ? unit : '');
 };

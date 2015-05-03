@@ -16,7 +16,7 @@ module.exports = function eachValue (value, callback) {
         if (type === 'func') {
             index = value.indexOf('(');
             name = value.substring(0, index);
-            if (name.indexOf('calc') > -1) {
+            if (~name.indexOf('calc')) {
                 match = balanced('(', ')', value);
                 if (match) {
                     return name + '(' + eachValue(match.body, callback) + ')';
