@@ -36,7 +36,8 @@ module.exports = postcss.plugin('postcss-discard-comments', function (options) {
         css.eachDecl(function (decl) {
             decl.between = replaceComments(decl.between);
             if (decl._value && decl._value.raw) {
-                decl._value.raw = replaceComments(decl._value.raw);
+                var replaced = replaceComments(decl._value.raw);
+                decl._value.raw = decl._value.value = decl.value = replaced;
             }
             if (decl._important) {
                 decl._important = replaceComments(decl._important);

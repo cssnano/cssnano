@@ -1,3 +1,10 @@
+# 1.1.2
+
+* Fixes an issue where comment separated values were being incorrectly
+  transformed to not have spaces separating them instead, in `decl.value`.
+  e.g. `10px/*test*/20px` became `10px20px` in `decl.value` but not
+  `decl._value.raw`.
+
 # 1.1.1
 
 * Fixes a bug where non-special comments, with an exclamation mark in any part
