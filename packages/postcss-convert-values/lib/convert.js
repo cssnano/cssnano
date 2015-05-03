@@ -46,7 +46,7 @@ module.exports = function (number, unit) {
                 return a.length < b.length ? a : b;
             });
 
-        if(converted.length < value.length) {
+        if (converted.length < value.length) {
             value = converted;
         }
     }
