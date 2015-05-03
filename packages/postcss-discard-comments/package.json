@@ -1,6 +1,6 @@
 {
   "name": "postcss-discard-comments",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Discard comments in your CSS files with PostCSS.",
   "main": "index.js",
   "scripts": {
