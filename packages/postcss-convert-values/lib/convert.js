@@ -19,6 +19,10 @@ function dropLeadingZero (number) {
         return value.substring(1);
     }
 
+    if (value[0] === '-' && value[1] === '0' && number % 1) {
+        return '-' + value.substring(2);
+    }
+
     return value;
 }
 

@@ -1,3 +1,8 @@
+# 1.2.1
+
+* Fixes regressions introduced by the previous patch. Better support for
+  negative value transforms.
+
 # 1.2.0
 
 * Adds support for slash/comma separated values (thanks to @TrySound).

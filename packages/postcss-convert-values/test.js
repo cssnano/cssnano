@@ -95,6 +95,10 @@ var tests = [{
     message: 'should not mangle padding values',
     fixture: 'h1{padding:10px 20px 30px 40px}h2{padding:10px 20px 30px}h3{padding:10px 20px}h4{padding:10px}',
     expected: 'h1{padding:10px 20px 30px 40px}h2{padding:10px 20px 30px}h3{padding:10px 20px}h4{padding:10px}'
+}, {
+    message: 'should trim leading zeroes from negative values',
+    fixture: 'h1,h2{letter-spacing:-0.1rem}',
+    expected: 'h1,h2{letter-spacing:-.1rem}'
 }];
 
 function process (css, options) {
