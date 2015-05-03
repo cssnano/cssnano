@@ -87,6 +87,14 @@ var tests = [{
     message: 'should handle comma separated values',
     fixture: '.one{background: 50% .0% ,100.0% 100.0%}',
     expected: '.one{background: 50% 0 ,100% 100%}'
+}, {
+    message: 'should not mangle duration values',
+    fixture: '.long{animation-duration:2s}',
+    expected: '.long{animation-duration:2s}'
+}, {
+    message: 'should not mangle padding values',
+    fixture: 'h1{padding:10px 20px 30px 40px}h2{padding:10px 20px 30px}h3{padding:10px 20px}h4{padding:10px}',
+    expected: 'h1{padding:10px 20px 30px 40px}h2{padding:10px 20px 30px}h3{padding:10px 20px}h4{padding:10px}'
 }];
 
 function process (css, options) {

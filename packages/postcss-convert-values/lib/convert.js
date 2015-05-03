@@ -23,7 +23,8 @@ function dropLeadingZero (number) {
 }
 
 module.exports = function (number, unit) {
-    var value,
+    var converted,
+        value = dropLeadingZero(number) + (unit ? unit : ''),
         conversion,
         base;
 
@@ -34,14 +35,21 @@ module.exports = function (number, unit) {
     if (conversion) {
         base = number / conversion[unit];
 
-        return Object.keys(conversion)
+        converted = Object.keys(conversion)
+            .filter(function (u) {
+                return unit !== u;
+            })
             .map(function (u) {
                 return dropLeadingZero(base / conversion[u]) + u;
             })
             .reduce(function (a, b) {
                 return a.length < b.length ? a : b;
             });
+
+        if(converted.length < value.length) {
+            value = converted;
+        }
     }
 
-    return dropLeadingZero(number) + (unit ? unit : '');
+    return value;
 };
