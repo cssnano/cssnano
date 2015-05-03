@@ -79,6 +79,14 @@ var tests = [{
     message: 'should handle leading zero in rem values',
     fixture: '.one{top:0.25rem}',
     expected: '.one{top:.25rem}'
+}, {
+    message: 'should handle slash separated values',
+    fixture: '.one{background: 50% .0%/100.0% 100.0%}',
+    expected: '.one{background: 50% 0/100% 100%}'
+}, {
+    message: 'should handle comma separated values',
+    fixture: '.one{background: 50% .0% ,100.0% 100.0%}',
+    expected: '.one{background: 50% 0 ,100% 100%}'
 }];
 
 function process (css, options) {
