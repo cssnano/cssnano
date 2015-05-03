@@ -1,8 +1,9 @@
 # 1.0.2
 
 * Improve module loading logic (thanks to @tunnckoCore).
-* Improve minification of numeric values, with better support for `rem` and
-  trailing zeroes (thanks to @TrySound & @tunnckoCore).
+* Improve minification of numeric values, with better support for `rem`,
+  trailing zeroes and slash/comma separated values
+  (thanks to @TrySound & @tunnckoCore).
 * Add MIT license file.
 
 # 1.0.1
