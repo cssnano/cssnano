@@ -833,7 +833,7 @@ img{-ms-interpolation-mode:bicubic}
 .row{*zoom:1}
 .row:after,.row:before{content:"";display:table}
 .row:after{clear:both}
-.valign:before{content:' ';display:inline-block;height:25pc;vertical-align:middle;margin-right:-0.25em}
+.valign:before{content:' ';display:inline-block;height:25pc;vertical-align:middle;margin-right:-.25em}
 .valign>article,.valign>div,.valign>figure,.valign>section{display:inline-block;vertical-align:middle}
 @media only screen and (max-width:767px){
   body{-webkit-text-size-adjust:none;-ms-text-size-adjust:none;width:100%;min-width:0}
