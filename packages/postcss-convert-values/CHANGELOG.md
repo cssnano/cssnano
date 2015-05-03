@@ -1,11 +1,16 @@
+# 1.2.0
+
+* Adds support for slash/comma separated values (thanks to @TrySound).
+
 # 1.1.1
 
 * Fixes an issue where trailing zeroes were not being removed in
-  values that were not `0`.
+  values that were not `0`. (thanks to @TrySound)
 
 # 1.1.0
 
 * Adds support for removing leading zeroes from `rem` values.
+  (thanks to @tunnckoCore)
 
 # 1.0.3
 
