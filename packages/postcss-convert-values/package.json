@@ -4,7 +4,8 @@
   "description": "Convert values with PostCSS (e.g. ms -> s)",
   "main": "index.js",
   "scripts": {
-    "test": "tape test.js | tap-spec"
+    "test": "tape test.js | tap-spec",
+    "jscs": "jscs index.js test.js lib/*.js"
   },
   "keywords": [
     "css",
