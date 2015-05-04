@@ -35,7 +35,6 @@ module.exports = function cssnano(css, options) {
         css = null;
     }
 
-    options = options || {};
     options = typeof options === 'object' ? options : {};
     options.map = options.map || (options.sourcemap ? true : null);
 
@@ -47,16 +46,9 @@ module.exports = function cssnano(css, options) {
     while (i < len) {
         var plugin = plugins[i++];
         var ns = processors[plugin];
-        var opts = options;
+        var opts = options[ns] || options;
 
-        if (typeof ns === 'string') {
-            if (opts[ns] === false) {
-                continue;
-            }
-            opts = opts[ns] || opts || {};
-        }
-
-        if (opts.disable) {
+        if (opts[ns] === false || opts.disable) {
             continue;
         }
 

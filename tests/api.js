@@ -14,6 +14,16 @@ test('can be used as a postcss plugin', function (t) {
     t.equal(out, min, specName('beConsumedByPostCSS'));
 });
 
+test('can be used as a postcss plugin (2)', function (t) {
+    var css = 'h1 { color: #ffffff }';
+    var min = 'h1{color:#fff}';
+
+    var out = postcss([nano()]).process(css).css;
+
+    t.plan(1);
+    t.equal(out, min, specName('beConsumedByPostCSS'));
+});
+
 test('can be used as a postcss plugin, with options', function (t) {
     var css = read(__dirname + '/fixtures/reduceCalc.fixture.css', 'utf-8');
     var exp = read(__dirname + '/fixtures/reduceCalc.disabled.css', 'utf-8');
