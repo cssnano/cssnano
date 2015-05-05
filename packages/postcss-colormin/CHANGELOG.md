@@ -1,3 +1,8 @@
+# 1.2.3
+
+* Fixed an issue where `-webkit-tap-highlight-color` was being incorrectly
+  transformed to `transparent`. This is not supported in Safari.
+
 # 1.2.2
 
 * Fixed a bug where the module crashed on parsing comma separated values for

@@ -41,6 +41,14 @@ var tests = module.exports = [{
     message: 'should correctly parse multiple box shadow values',
     fixture: 'h1{box-shadow:inset 0 1px 1px rgba(0, 0, 0, .075),0 0 8px rgba(102, 175, 233, .6)}',
     expected: 'h1{box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)}'
+}, {
+    message: 'should make an exception for webkit tap highlight color (issue 1)',
+    fixture: 'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}',
+    expected: 'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}'
+}, {
+    message: 'should still minify spaces in webkit tap highlight color)',
+    fixture: 'h1{-webkit-tap-highlight-color:rgba(0, 0, 0, 0)}',
+    expected: 'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}'
 }];
 
 function process (css, options) {
