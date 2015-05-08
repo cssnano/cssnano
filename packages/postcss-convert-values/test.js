@@ -99,6 +99,10 @@ var tests = [{
     message: 'should trim leading zeroes from negative values',
     fixture: 'h1,h2{letter-spacing:-0.1rem}',
     expected: 'h1,h2{letter-spacing:-.1rem}'
+}, {
+    message: 'should support viewports units',
+    fixture: 'h1,h2{letter-spacing:-0.1vmin}',
+    expected: 'h1,h2{letter-spacing:-.1vmin}'
 }];
 
 function process (css, options) {

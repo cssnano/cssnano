@@ -1,3 +1,7 @@
+# 1.2.2
+
+* Added support for viewport units (thanks to @TrySound).
+
 # 1.2.1
 
 * Fixes regressions introduced by the previous patch. Better support for
@@ -10,12 +14,12 @@
 # 1.1.1
 
 * Fixes an issue where trailing zeroes were not being removed in
-  values that were not `0`. (thanks to @TrySound)
+  values that were not `0` (thanks to @TrySound).
 
 # 1.1.0
 
-* Adds support for removing leading zeroes from `rem` values.
-  (thanks to @tunnckoCore)
+* Adds support for removing leading zeroes from `rem` values
+  (thanks to @tunnckoCore).
 
 # 1.0.3
 
