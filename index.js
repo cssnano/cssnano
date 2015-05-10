@@ -19,10 +19,11 @@ var processors = {
     'postcss-font-family': null,
     'postcss-discard-font-face': null,
     'postcss-normalize-url': 'urls',
-    'postcss-reduce-idents': 'idents',
     './lib/core': null,
     // Optimisations after this are sensitive to previous optimisations in
     // the pipe, such as whitespace normalising/selector re-ordering
+    'postcss-merge-idents': 'idents',
+    'postcss-reduce-idents': 'idents',
     './lib/borderOptimiser': null,
     'postcss-discard-duplicates': null,
     './lib/functionOptimiser': null,

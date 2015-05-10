@@ -1,3 +1,8 @@
+# 1.1.0
+
+* Now can merge identifiers such as `@keyframes` and `@counter-style` if they
+  have duplicated properties but are named differently.
+
 # 1.0.2
 
 * Improve module loading logic (thanks to @tunnckoCore).
