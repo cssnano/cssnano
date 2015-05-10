@@ -18,11 +18,11 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "indexes-of": "^1.0.1",
+    "css-list": "0.0.3",
     "is-absolute-url": "^1.0.0",
     "normalize-url": "^1.2.0",
     "object-assign": "^2.0.0",
-    "postcss": "^4.1.2"
+    "postcss": "^4.1.9"
   },
   "devDependencies": {
     "jshint": "^2.6.3",

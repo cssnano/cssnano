@@ -1,3 +1,7 @@
+# 1.3.0
+
+* Improved URL detection when using two or more in the same declaration.
+
 # 1.2.1
 
 * Patch to address incorrect transformation of `@document` rules.
