@@ -1,6 +1,7 @@
-# 1.3.0
+# 2.0.0
 
 * Improved URL detection when using two or more in the same declaration.
+* node 0.10 is no longer supported.
 
 # 1.2.1
 
