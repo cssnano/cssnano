@@ -149,6 +149,8 @@ following modules:
 * [`postcss-discard-font-face`]: Discard unused `@font-face` rules.
 * [`postcss-font-family`]: Optimise whitespace/quoting of `font-family`
   properties.
+* [`postcss-merge-idents`]: Merge duplicated `@keyframes` and `@counter-style`
+  identifiers with different names.
 * [`postcss-merge-rules`]: Merge adjacent rules together.
 * [`postcss-minify-font-weight`]: Convert `bold` -> `700` and `normal` -> `400`
 * [`postcss-minify-selectors`]: Optimise whitespace/quoting of selectors.
@@ -184,6 +186,7 @@ MIT © [Ben Briggs](http://beneb.info)
 [`postcss-discard-empty`]:      https://github.com/ben-eb/postcss-discard-empty
 [`postcss-discard-font-face`]:  https://github.com/ben-eb/postcss-discard-font-face
 [`postcss-font-family`]:        https://github.com/ben-eb/postcss-font-family
+[`postcss-merge-idents`]:       https://github.com/ben-eb/postcss-merge-idents
 [`postcss-merge-rules`]:        https://github.com/ben-eb/postcss-merge-rules
 [`postcss-minify-font-weight`]: https://github.com/ben-eb/postcss-minify-font-weight
 [`postcss-minify-selectors`]:   https://github.com/ben-eb/postcss-minify-selectors
