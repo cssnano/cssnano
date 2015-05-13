@@ -5,7 +5,7 @@ var map = require('css-list').map;
 
 function canonical (obj) {
     return function recurse (key) {
-        if (obj[key]) {
+        if (obj[key] && obj[key] !== key) {
             return recurse(obj[key]);
         }
         return key;

@@ -24,6 +24,14 @@ var tests = [{
     fixture: '@-webkit-keyframes a{0%{color:#fff}to{color:#000}}@keyframes a{0%{color:#fff}to{color:#000}}',
     expected: '@-webkit-keyframes a{0%{color:#fff}to{color:#000}}@keyframes a{0%{color:#fff}to{color:#000}}'
 }, {
+    message: 'should merge duplicated keyframes with the same name',
+    fixture: '@keyframes a{0%{opacity:1}to{opacity:0}}@keyframes a{0%{opacity:1}to{opacity:0}}',
+    expected: '@keyframes a{0%{opacity:1}to{opacity:0}}'
+}, {
+    message: 'should merge duplicated counter styles with the same name',
+    fixture: '@counter-style a{system:extends decimal;suffix:"> "}@counter-style a{system:extends decimal;suffix:"> "}',
+    expected: '@counter-style a{system:extends decimal;suffix:"> "}'
+}, {
     message: 'should merge counter style identifiers',
     fixture: '@counter-style a{system:extends decimal;suffix:"> "}@counter-style b{system:extends decimal;suffix:"> "}',
     expected: '@counter-style b{system:extends decimal;suffix:"> "}',
