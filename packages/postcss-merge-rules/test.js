@@ -85,8 +85,8 @@ var tests = [{
     expected: 'h1{color:red}h1,h2{font-weight:bold}h3{text-decoration:none}'
 }, {
     message: 'should not perform partial merging of selectors if the output would be longer',
-    fixture: '.test0{color:red;border:none;margin:0}.longlonglong{color:green;border:none;margin:0}',
-    expected: '.test0{color:red;border:none;margin:0}.longlonglong{color:green;border:none;margin:0}'
+    fixture: '.test0{color:red;border:none;margin:0}.longlonglonglong{color:green;border:none;margin:0}',
+    expected: '.test0{color:red;border:none;margin:0}.longlonglonglong{color:green;border:none;margin:0}'
 }, {
     message: 'should merge vendor prefixed selectors when vendors are the same',
     fixture: 'code ::-moz-selection{background:red}code::-moz-selection{background:red}',

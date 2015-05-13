@@ -3,25 +3,19 @@
 var postcss = require('postcss');
 var list = postcss.list;
 var flatten = require('flatten');
+var clone = require('./lib/clone');
 
 var prefixes = ['-webkit-', '-moz-', '-ms-', '-o-'];
 
-function intersect (a, b) {
+function intersect (a, b, not) {
     return a.filter(function (c) {
-        return ~b.indexOf(c);
+        var index = ~b.indexOf(c);
+        return not ? !index : index;
     });
 }
 
 function different (a, b) {
-    var ab = a.filter(function (c) {
-        return !~b.indexOf(c);
-    });
-
-    var ba = b.filter(function (c) {
-        return !~a.indexOf(c);
-    });
-
-    return ab.concat(ba);
+    return intersect(a, b, true).concat(intersect(b, a, true));
 }
 
 function filterPrefixes (selector) {
@@ -61,10 +55,14 @@ function getDeclarations (rule) {
     return rule.nodes.map(String);
 }
 
-function joinSelectors () {
-    var selectors = Array.prototype.slice.call(arguments);
-    selectors = selectors.map(function (s) { return s.selector; });
-    return Array.prototype.concat.apply([], selectors).join(',');
+function joinSelectors (/* rules... */) {
+    var args = Array.prototype.slice.call(arguments);
+    return flatten(args.map(function (s) { return s.selector; })).join(',');
+}
+
+function ruleLength (/* rules... */) {
+    var args = Array.prototype.slice.call(arguments);
+    return args.map(String).join('').length;
 }
 
 function selectorMerger () {
@@ -99,35 +97,41 @@ function selectorMerger () {
         // so create a joined selector with the subset, if smaller.
         var intersection = intersect(cacheDecls, ruleDecls);
         if (intersection.length) {
-            var decls = intersection.join(';');
-            var merged = joinSelectors(cache, rule) + '{' + decls + '}';
-            var shouldMerge = merged.length < (decls + decls).length;
-            if (shouldMerge) {
-                var difference = different(ruleDecls, cacheDecls);
-                difference = difference.map(function (d) {
-                    return d.split(':')[0].split('-')[0];
-                });
-                var recievingBlock = cache.cloneAfter({
-                   selector: joinSelectors(cache, rule),
-                   nodes: [],
-                   before: ''
-                });
-                var moveDecl = function (callback) {
-                    return function (decl) {
-                        var intersects = ~intersection.indexOf('' + decl);
-                        var baseProperty = decl.prop.split('-')[0];
-                        var canMove = !~difference.indexOf(baseProperty);
-                        if (intersects && (canMove || baseProperty === 'text')) {
-                            callback.call(this, decl);
-                        }
-                    };
+            var difference = different(ruleDecls, cacheDecls);
+            difference = difference.map(function (d) {
+                return d.split(':')[0].split('-')[0];
+            });
+            var cacheClone = clone(cache);
+            var ruleClone = clone(rule);
+            var recievingBlock = cache.cloneAfter({
+               selector: joinSelectors(cache, rule),
+               nodes: [],
+               before: ''
+            });
+            var moveDecl = function (callback) {
+                return function (decl) {
+                    var intersects = ~intersection.indexOf('' + decl);
+                    var baseProperty = decl.prop.split('-')[0];
+                    var canMove = !~difference.indexOf(baseProperty);
+                    if (intersects && (canMove || baseProperty === 'text')) {
+                        callback.call(this, decl);
+                    }
                 };
-                cache.eachInside(moveDecl(function (decl) {
-                    decl.moveTo(recievingBlock);
-                }));
-                rule.eachInside(moveDecl(function (decl) {
-                    decl.removeSelf();
-                }));
+            };
+            cache.eachInside(moveDecl(function (decl) {
+                decl.moveTo(recievingBlock);
+            }));
+            rule.eachInside(moveDecl(function (decl) {
+                decl.removeSelf();
+            }));
+            var merged = ruleLength(cache, recievingBlock, rule);
+            var original = ruleLength(cacheClone, ruleClone);
+            if (merged > original) {
+                cache.replaceWith(cacheClone);
+                rule.replaceWith(ruleClone);
+                rule = ruleClone;
+                recievingBlock.removeSelf();
+            } else {
                 // Clean up any rules that have no declarations left
                 [rule, recievingBlock, cache].forEach(function (r) {
                     if (!r.nodes.length) {
