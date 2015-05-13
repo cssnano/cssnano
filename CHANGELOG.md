@@ -2,6 +2,8 @@
 
 * Now can merge identifiers such as `@keyframes` and `@counter-style` if they
   have duplicated properties but are named differently.
+* Fixes an issue where duplicated keyframes with the same name would cause
+  an infinite loop.
 
 # 1.0.2
 
