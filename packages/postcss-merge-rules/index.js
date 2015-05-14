@@ -62,7 +62,9 @@ function joinSelectors (/* rules... */) {
 
 function ruleLength (/* rules... */) {
     var args = Array.prototype.slice.call(arguments);
-    return args.map(String).join('').length;
+    return args.map(function (selector) {
+        return selector.nodes.length ? String(selector) : '';
+    }).join('').length;
 }
 
 function selectorMerger () {
@@ -98,9 +100,6 @@ function selectorMerger () {
         var intersection = intersect(cacheDecls, ruleDecls);
         if (intersection.length) {
             var difference = different(ruleDecls, cacheDecls);
-            difference = difference.map(function (d) {
-                return d.split(':')[0].split('-')[0];
-            });
             var cacheClone = clone(cache);
             var ruleClone = clone(rule);
             var recievingBlock = cache.cloneAfter({
@@ -110,10 +109,12 @@ function selectorMerger () {
             });
             var moveDecl = function (callback) {
                 return function (decl) {
-                    var intersects = ~intersection.indexOf('' + decl);
+                    var intersects = ~intersection.indexOf(String(decl));
                     var baseProperty = decl.prop.split('-')[0];
-                    var canMove = !~difference.indexOf(baseProperty);
-                    if (intersects && (canMove || baseProperty === 'text')) {
+                    var canMove = difference.every(function (d) {
+                        return d.split(':')[0] !== baseProperty;
+                    });
+                    if (intersects && canMove) {
                         callback.call(this, decl);
                     }
                 };

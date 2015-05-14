@@ -12,6 +12,10 @@ var tests = [{
     fixture: 'h1{color:red;line-height:1.5;font-size:2em}h2{color:red;line-height:1.5;font-size:2em}',
     expected: 'h1,h2{color:red;line-height:1.5;font-size:2em}'
 }, {
+    message: 'should merge based on declarations, with a different property order',
+    fixture: 'h1{color:red;line-height:1.5;font-size:2em}h2{font-size:2em;color:red;line-height:1.5}',
+    expected: 'h1,h2{color:red;line-height:1.5;font-size:2em}'
+}, {
     message: 'should merge based on selectors',
     fixture: 'h1{display:block}h1{text-decoration:underline}',
     expected: 'h1{display:block;text-decoration:underline}'
@@ -83,6 +87,14 @@ var tests = [{
     message: 'should perform partial merging of selectors (5)',
     fixture: 'h1{color:red;font-weight:bold}h2{font-weight:bold}h3{text-decoration:none}',
     expected: 'h1{color:red}h1,h2{font-weight:bold}h3{text-decoration:none}'
+}, {
+    message: 'should perform partial merging of selectors (6)',
+    fixture: '.test-1,.test-2{margin-top:10px}.another-test{margin-top:10px;margin-bottom:30px}',
+    expected: '.test-1,.test-2,.another-test{margin-top:10px}.another-test{margin-bottom:30px}'
+}, {
+    message: 'should perform partial merging of selectors (7)',
+    fixture: '.test-1{margin-top:10px;margin-bottom:20px}.test-2{margin-top:10px}.another-test{margin-top:10px;margin-bottom:30px}',
+    expected: '.test-1{margin-bottom:20px}.test-1,.test-2{margin-top:10px}.another-test{margin-top:10px;margin-bottom:30px}'
 }, {
     message: 'should not perform partial merging of selectors if the output would be longer',
     fixture: '.test0{color:red;border:none;margin:0}.longlonglonglong{color:green;border:none;margin:0}',
