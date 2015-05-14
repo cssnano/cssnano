@@ -67,6 +67,61 @@ function ruleLength (/* rules... */) {
     }).join('').length;
 }
 
+function partialMerge (first, second) {
+    var intersection = intersect(getDeclarations(first), getDeclarations(second));
+    if (!intersection.length) {
+        return second;
+    }
+    var nextRule = second.next();
+    if (nextRule) {
+        var nextIntersection = intersect(getDeclarations(second), getDeclarations(nextRule));
+        if (nextIntersection.length > intersection.length) {
+            first = second; second = nextRule; intersection = nextIntersection;
+        }
+    }
+    var recievingBlock = second.cloneBefore({
+        selector: joinSelectors(first, second),
+        nodes: [],
+        before: ''
+    });
+    var difference = different(getDeclarations(first), getDeclarations(second));
+    var firstClone = clone(first);
+    var secondClone = clone(second);
+    var moveDecl = function (callback) {
+        return function (decl) {
+            var intersects = ~intersection.indexOf(String(decl));
+            var baseProperty = decl.prop.split('-')[0];
+            var canMove = difference.every(function (d) {
+                return d.split(':')[0] !== baseProperty;
+            });
+            if (intersects && canMove) {
+                callback.call(this, decl);
+            }
+        };
+    };
+    firstClone.eachInside(moveDecl(function (decl) {
+        decl.moveTo(recievingBlock);
+    }));
+    secondClone.eachInside(moveDecl(function (decl) {
+        decl.removeSelf();
+    }));
+    var merged = ruleLength(firstClone, recievingBlock, secondClone);
+    var original = ruleLength(first, second);
+    if (merged < original) {
+        first.replaceWith(firstClone);
+        second.replaceWith(secondClone);
+        [firstClone, recievingBlock, secondClone].forEach(function (r) {
+            if (!r.nodes.length) {
+                r.removeSelf();
+            }
+        });
+        return secondClone;
+    } else {
+        recievingBlock.removeSelf();
+        return first;
+    }
+}
+
 function selectorMerger () {
     var cache = null;
     return function (rule) {
@@ -97,52 +152,7 @@ function selectorMerger () {
         }
         // Partial merge: check if the rule contains a subset of the last; if
         // so create a joined selector with the subset, if smaller.
-        var intersection = intersect(cacheDecls, ruleDecls);
-        if (intersection.length) {
-            var difference = different(ruleDecls, cacheDecls);
-            var cacheClone = clone(cache);
-            var ruleClone = clone(rule);
-            var recievingBlock = cache.cloneAfter({
-               selector: joinSelectors(cache, rule),
-               nodes: [],
-               before: ''
-            });
-            var moveDecl = function (callback) {
-                return function (decl) {
-                    var intersects = ~intersection.indexOf(String(decl));
-                    var baseProperty = decl.prop.split('-')[0];
-                    var canMove = difference.every(function (d) {
-                        return d.split(':')[0] !== baseProperty;
-                    });
-                    if (intersects && canMove) {
-                        callback.call(this, decl);
-                    }
-                };
-            };
-            cache.eachInside(moveDecl(function (decl) {
-                decl.moveTo(recievingBlock);
-            }));
-            rule.eachInside(moveDecl(function (decl) {
-                decl.removeSelf();
-            }));
-            var merged = ruleLength(cache, recievingBlock, rule);
-            var original = ruleLength(cacheClone, ruleClone);
-            if (merged > original) {
-                cache.replaceWith(cacheClone);
-                rule.replaceWith(ruleClone);
-                rule = ruleClone;
-                recievingBlock.removeSelf();
-            } else {
-                // Clean up any rules that have no declarations left
-                [rule, recievingBlock, cache].forEach(function (r) {
-                    if (!r.nodes.length) {
-                        r.removeSelf();
-                    }
-                });
-            }
-        }
-
-        cache = rule;
+        cache = partialMerge(cache, rule);
     };
 }
 

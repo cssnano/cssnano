@@ -96,6 +96,10 @@ var tests = [{
     fixture: '.test-1{margin-top:10px;margin-bottom:20px}.test-2{margin-top:10px}.another-test{margin-top:10px;margin-bottom:30px}',
     expected: '.test-1{margin-bottom:20px}.test-1,.test-2{margin-top:10px}.another-test{margin-top:10px;margin-bottom:30px}'
 }, {
+    message: 'should perform partial merging of selectors in the opposite direction',
+    fixture: 'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
+    expected: 'h1{color:black}h2,h3{color:black;font-weight:bold}'
+}, {
     message: 'should not perform partial merging of selectors if the output would be longer',
     fixture: '.test0{color:red;border:none;margin:0}.longlonglonglong{color:green;border:none;margin:0}',
     expected: '.test0{color:red;border:none;margin:0}.longlonglonglong{color:green;border:none;margin:0}'
