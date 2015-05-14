@@ -1,3 +1,10 @@
+# 1.3.0
+
+* Better support for merging properties without the existance of a shorthand
+  override.
+* Can now 'merge forward' adjacent rules as well as the previous 'merge behind'
+  behaviour, leading to better compression.
+
 # 1.2.2
 
 * Fixed an issue where the plugin crashed if node.parent was undefined.
