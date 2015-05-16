@@ -1,3 +1,8 @@
+# 1.1.3
+
+* Improved documentation for compatibility with the plugin guidelines.
+* Simplify main source code.
+
 # 1.1.2
 
 * Fixed an issue where declarations inside similar keyframes were being

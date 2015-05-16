@@ -2,10 +2,6 @@
 
 var postcss = require('postcss');
 
-function getIdent (rule) {
-    return '' + rule;
-}
-
 function filterIdent (cache) {
     return function (node) {
         // Ensure we don't dedupe in different contexts
@@ -15,7 +11,7 @@ function filterIdent (cache) {
         if (node.parent.type !== 'root') {
             sameContext = sameContext && node.parent.name === cache.parent.name;
         }
-        return sameContext && getIdent(node) === getIdent(cache);
+        return sameContext && String(node) === String(cache);
     };
 }
 
@@ -26,7 +22,7 @@ function dedupe (callback) {
             var cached = cache.filter(filterIdent(rule));
             if (cached.length) {
                 cached[0].removeSelf();
-                cache.splice([cache.indexOf(cached[0])], 1);
+                cache.splice(cache.indexOf(cached[0]), 1);
             }
             cache.push(rule);
         }

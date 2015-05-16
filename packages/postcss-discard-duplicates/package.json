@@ -12,11 +12,11 @@
     "dedupe",
     "optimise",
     "postcss",
-    "postcss-plugins"
+    "postcss-plugin"
   ],
   "license": "MIT",
   "dependencies": {
-    "postcss": "^4.1.2"
+    "postcss": "^4.1.10"
   },
   "devDependencies": {
     "jshint": "^2.6.3",

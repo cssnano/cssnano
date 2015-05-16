@@ -2,23 +2,15 @@
 
 > Discard duplicate rules in your CSS files with PostCSS.
 
-Install via [npm](https://npmjs.org/package/postcss-discard-duplicates):
+## Install
+
+With [npm](https://npmjs.org/package/postcss-discard-duplicates) do:
 
 ```
 npm install postcss-discard-duplicates --save
 ```
 
 ## Example
-
-```js
-var postcss = require('postcss')
-var duplicates = require('postcss-discard-duplicates');
-
-var css = 'h1{margin:0 auto;margin:0 auto}h1{margin:0 auto}';
-console.log(postcss(duplicates()).process(css).css);
-
-// => 'h1{margin:0 auto}'
-```
 
 This module will remove all duplicate rules from your stylesheets. It works on
 at rules, normal rules and declarations. Note that this module does not have any
@@ -37,6 +29,32 @@ h2, h1 {
 
 It has to assume that your rules have already been transformed by another
 processor, otherwise it would be responsible for too many things.
+
+### Input
+
+```css
+h1 {
+    margin: 0 auto;
+    margin: 0 auto
+}
+
+h1 {
+    margin: 0 auto
+}
+```
+
+### Output
+
+```css
+h1 {
+    margin: 0 auto
+}
+```
+
+## Usage
+
+See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
+examples for your environment.
 
 ## Contributing
 
