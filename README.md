@@ -161,6 +161,7 @@ following modules:
   identifiers to save space.
 * [`postcss-single-charset`]: Ensure that there is only one `@charset` in the
   CSS file.
+* [`postcss-unique-selectors`]: Ensure selectors are unique.
 * [`postcss-zindex`]: Rebase `z-index` values to save space.
 
 There are some optimisations that are not quite ready to be released as
@@ -194,6 +195,7 @@ MIT © [Ben Briggs](http://beneb.info)
 [`postcss-pseudoelements`]:     https://github.com/axa-ch/postcss-pseudoelements
 [`postcss-reduce-idents`]:      https://github.com/ben-eb/postcss-reduce-idents
 [`postcss-single-charset`]:     https://github.com/hail2u/postcss-single-charset
+[`postcss-unique-selectors`]:   https://github.com/ben-eb/postcss-unique-selectors
 [`postcss-zindex`]:             https://github.com/ben-eb/postcss-zindex
 
 [`gulp-cssnano`]:               https://github.com/ben-eb/gulp-cssnano
