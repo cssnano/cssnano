@@ -8,6 +8,10 @@ module.exports.tests = [{
     fixture: 'h1{color:red;line-height:1.5;font-size:2em}h2{color:red;line-height:1.5;font-size:2em}',
     expected: 'h1,h2{color:red;line-height:1.5;font-size:2em}'
 }, {
+    message: 'should merge based on declarations, with a different property order',
+    fixture: 'h1{color:red;line-height:1.5;font-size:2em}h2{font-size:2em;color:red;line-height:1.5}',
+    expected: 'h1,h2{color:red;line-height:1.5;font-size:2em}'
+}, {
     message: 'should merge based on selectors',
     fixture: 'h1{display:block}h1{text-decoration:underline}',
     expected: 'h1{display:block;text-decoration:underline}'
@@ -80,9 +84,21 @@ module.exports.tests = [{
     fixture: 'h1{color:red;font-weight:bold}h2{font-weight:bold}h3{text-decoration:none}',
     expected: 'h1{color:red}h1,h2{font-weight:700}h3{text-decoration:none}'
 }, {
+    message: 'should perform partial merging of selectors (6)',
+    fixture: '.test-1,.test-2{margin-top:10px}.another-test{margin-top:10px;margin-bottom:30px}',
+    expected: '.another-test,.test-1,.test-2{margin-top:10px}.another-test{margin-bottom:30px}'
+}, {
+    message: 'should perform partial merging of selectors (7)',
+    fixture: '.test-1{margin-top:10px;margin-bottom:20px}.test-2{margin-top:10px}.another-test{margin-top:10px;margin-bottom:30px}',
+    expected: '.test-1{margin-bottom:20px}.test-1,.test-2{margin-top:10px}.another-test{margin-top:10px;margin-bottom:30px}'
+}, {
+    message: 'should perform partial merging of selectors in the opposite direction',
+    fixture: 'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
+    expected: 'h1{color:#000}h2,h3{color:#000;font-weight:700}'
+}, {
     message: 'should not perform partial merging of selectors if the output would be longer',
-    fixture: '.test0{color:red;border:none;margin:0}.longlonglong{color:green;border:none;margin:0}',
-    expected: '.test0{color:red;border:0 0;margin:0}.longlonglong{color:green;border:0 0;margin:0}'
+    fixture: '.test0{color:red;border:none;margin:0}.longlonglonglong{color:green;border:none;margin:0}',
+    expected: '.test0{color:red;border:0 0;margin:0}.longlonglonglong{color:green;border:0 0;margin:0}'
 }, {
     message: 'should merge vendor prefixed selectors when vendors are the same',
     fixture: 'code ::-moz-selection{background:red}code::-moz-selection{background:red}',
@@ -117,7 +133,7 @@ module.exports.tests = [{
     expected: 'h1{text-align:left}h1,h2{text-transform:small-caps}h2{text-align:right}'
 }, {
     message: 'should not incorrectly extract transform properties',
-    fixture: '@keyframes a {0%{transform-origin:right bottom;transform:rotate(-90deg);opacity:0}100%{transform-origin:right bottom;transform:rotate(0);opacity:1}}',
+    fixture: '@keyframes a{0%{transform-origin:right bottom;transform:rotate(-90deg);opacity:0}100%{transform-origin:right bottom;transform:rotate(0);opacity:1}}',
     expected: '@keyframes a{0%{transform-origin:right bottom;transform:rotate(-90deg);opacity:0}to{transform-origin:right bottom;transform:rotate(0);opacity:1}}'
 }, {
     message: 'should not incorrectly extract background properties',
@@ -130,7 +146,7 @@ module.exports.tests = [{
 }, {
     message: 'should not incorrectly extract margin properties (2)' ,
     fixture: 'h2{color:red;margin-bottom:20px}h1{color:red;margin:10px;margin-bottom:20px}',
-    expected: 'h2{margin-bottom:20px}h2,h1{color:red}h1{margin:10px;margin-bottom:20px}'
+    expected: 'h2{margin-bottom:20px}h1,h2{color:red}h1{margin:10px;margin-bottom:20px}'
 }, {
     message: 'should not incorrectly extract display properties',
     fixture: '.box1{display:inline-block;display:block}.box2{display:inline-block}',

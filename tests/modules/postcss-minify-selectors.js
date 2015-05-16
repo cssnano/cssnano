@@ -30,7 +30,7 @@ module.exports.tests = [{
 }, {
     message: 'should not remove meaningful universal selectors',
     fixture: '* + *, * > *, * h1, * ~ *{color:blue}',
-    expected: '*+*,*>*,* h1,*~*{color:blue}'
+    expected: '* h1,*+*,*>*,*~*{color:blue}'
 }, {
     message: 'should preserve the universal selector in attribute selectors',
     fixture: 'h1[class=" *.js "] + *.js{color:blue}',
@@ -45,8 +45,8 @@ module.exports.tests = [{
     expected: '[glob="/**/*.js"]{color:blue}'
 }, {
     message: 'should preserve escaped zero plus sequences',
-    fixture: '.\31 0\+,.\31 5\+,.\32 0\+{color:blue}',
-    expected: '.\31 0\+,.\31 5\+,.\32 0\+{color:blue}'
+    fixture: '.\\31 0\\+,.\\31 5\\+,.\\32 0\\+{color:blue}',
+    expected: '.\\31 0\\+,.\\31 5\\+,.\\32 0\\+{color:blue}'
 }, {
     message: 'should handle deep combinators',
     fixture: 'body /deep/ .theme-element{color:blue}',

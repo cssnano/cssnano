@@ -1,3 +1,12 @@
+# 1.2.0
+
+* Better support for merging properties without the existance of a shorthand
+  override.
+* Can now 'merge forward' adjacent rules as well as the previous 'merge behind'
+  behaviour, leading to better compression.
+* Selector re-ordering now happens last in the chain of plugins, to help clean
+  up merged selectors.
+
 # 1.1.0
 
 * Now can merge identifiers such as `@keyframes` and `@counter-style` if they

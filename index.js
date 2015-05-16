@@ -27,7 +27,8 @@ var processors = {
     './lib/borderOptimiser': null,
     'postcss-discard-duplicates': null,
     './lib/functionOptimiser': null,
-    'postcss-merge-rules': 'merge'
+    'postcss-merge-rules': 'merge',
+    'postcss-unique-selectors': null
 };
 
 module.exports = function cssnano(css, options) {

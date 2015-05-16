@@ -1,5 +1,5 @@
 .container{position:relative;max-width:60pc;margin:0 auto;padding:0 20px}
-.container,.column,.columns{width:100%;box-sizing:border-box}
+.column,.columns,.container{width:100%;box-sizing:border-box}
 .column,.columns{float:left}
 @media (min-width:400px){
   .container{width:85%;padding:0}
