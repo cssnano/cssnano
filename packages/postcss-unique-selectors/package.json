@@ -1,0 +1,32 @@
+{
+  "name": "postcss-unique-selectors",
+  "version": "0.0.0",
+  "description": "Ensure CSS selectors are unique.",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test.js | tap-spec"
+  },
+  "keywords": [
+    "css",
+    "postcss",
+    "postcss-plugin"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "tap-spec": "^2.2.2",
+    "tape": "^3.5.0"
+  },
+  "homepage": "https://github.com/ben-eb/postcss-unique-selectors",
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": "ben-eb/postcss-unique-selectors",
+  "dependencies": {
+    "css-list": "^0.1.0",
+    "javascript-natural-sort": "^0.7.1",
+    "postcss": "^4.1.10",
+    "uniqs": "^2.0.0"
+  }
+}
