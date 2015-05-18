@@ -156,6 +156,10 @@ var tests = [{
     fixture: '.box1{display:inline-block;display:block}.box2{display:inline-block}',
     expected: '.box1{display:inline-block;display:block}.box2{display:inline-block}'
 }, {
+    message: 'should handle empty rulesets',
+    fixture: 'h1{h2{}h3{}}',
+    expected: 'h1{h2,h3{}}'
+}, {
     message: 'should not be responsible for deduping declarations when merging',
     fixture: 'h1{display:block;display:block}h2{display:block;display:block}',
     expected: 'h1,h2{display:block;display:block}'
