@@ -1,3 +1,8 @@
+# 1.2.1
+
+* Fixed a bug where a CSS function keyword inside its value would throw
+  an error.
+
 # 1.2.0
 
 * Better support for merging properties without the existance of a shorthand
