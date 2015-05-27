@@ -3,32 +3,32 @@
 var Postcss = require('postcss');
 
 var processors = {
-    'postcss-discard-comments': 'comments',
-    'postcss-zindex': 'zindex',
-    'postcss-discard-empty': null,
-    'postcss-minify-font-weight': null,
-    'postcss-convert-values': null,
-    'postcss-calc': 'calc',
-    'postcss-colormin': null,
-    'postcss-pseudoelements': null,
-    './lib/filterOptimiser': null,
-    './lib/longhandOptimiser': null,
-    'postcss-minify-selectors': null,
-    'postcss-single-charset': null,
+    discardComments: {fn: require('postcss-discard-comments'), ns: 'comments'},
+    zindex: {fn: require('postcss-zindex'), ns: 'zindex'},
+    discardEmpty: require('postcss-discard-empty'),
+    minifyFontWeight: require('postcss-minify-font-weight'),
+    convertValues: require('postcss-convert-values'),
+    calc: {fn: require('postcss-calc'), ns: 'calc'},
+    colormin: require('postcss-colormin'),
+    pseudoelements: require('postcss-pseudoelements'),
+    filterOptimiser: require('./lib/filterOptimiser'),
+    longhandOptimiser: require('./lib/longhandOptimiser'),
+    minifySelectors: require('postcss-minify-selectors'),
+    singleCharset: require('postcss-single-charset'),
     // font-family should be run before discard-font-face
-    'postcss-font-family': null,
-    'postcss-discard-font-face': null,
-    'postcss-normalize-url': 'urls',
-    './lib/core': null,
+    fontFamily: require('postcss-font-family'),
+    discardFontFace: require('postcss-discard-font-face'),
+    normalizeUrl: require('postcss-normalize-url'),
+    core: require('./lib/core'),
     // Optimisations after this are sensitive to previous optimisations in
     // the pipe, such as whitespace normalising/selector re-ordering
-    'postcss-merge-idents': 'idents',
-    'postcss-reduce-idents': 'idents',
-    './lib/borderOptimiser': null,
-    'postcss-discard-duplicates': null,
-    './lib/functionOptimiser': null,
-    'postcss-merge-rules': 'merge',
-    'postcss-unique-selectors': null
+    mergeIdents: {fn: require('postcss-merge-idents'), ns: 'idents'},
+    reduceIdents: {fn: require('postcss-reduce-idents'), ns: 'idents'},
+    borderOptimiser: require('./lib/borderOptimiser'),
+    discardDuplicates: require('postcss-discard-duplicates'),
+    functionOptimiser: require('./lib/functionOptimiser'),
+    mergeRules: {fn: require('postcss-merge-rules'), ns: 'merge'},
+    uniqueSelectors: require('postcss-unique-selectors')
 };
 
 module.exports = function cssnano(css, options) {
@@ -47,14 +47,18 @@ module.exports = function cssnano(css, options) {
 
     while (i < len) {
         var plugin = plugins[i++];
-        var ns = processors[plugin];
-        var opts = options[ns] || options;
-
-        if (opts[ns] === false || opts.disable) {
-            continue;
+        var processor = processors[plugin];
+        var opts = options[processor.ns] || options;
+        var method;
+        if (typeof processor === 'function') {
+            method = processor;
+        } else {
+            if (opts[processor.ns] === false || opts.disable) {
+                continue;
+            }
+            method = processor.fn;
         }
-
-        postcss.use(require(plugin)(opts));
+        postcss.use(method(opts));
     }
 
     if (typeof css === 'string') {
