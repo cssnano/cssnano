@@ -1,3 +1,7 @@
+# 1.3.0
+
+* Added support for bundling cssnano using webpack (thanks to @MoOx).
+
 # 1.2.1
 
 * Fixed a bug where a CSS function keyword inside its value would throw
