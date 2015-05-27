@@ -1,26 +1,35 @@
 var test = require('tape');
 var webpack = require('webpack');
-var assign = require('object-assign');
 
 var conf = {
+    entry: {
+        index: ".."
+    },
     output: {
         path: "./output/",
         filename: "bundle.js"
     },
     module: {
         loaders: [{
-            test: /\.js$/,
-            loader: "./index",
-            exclude: /node_modules/
+            test: /\.json$/,
+            loader: "json"
         }]
+    },
+    // because client side doesn't have fs :)
+    node: {
+        fs: "empty"
     }
 };
 
 test('cssnano should be consumed by webpack', function (t) {
-    webpack(assign(conf, {entry: "../"}), function (err, stats) {
-        t.plan(3);
-        t.equal(err, null);
-        t.notOk(stats.hasErrors());
-        t.notOk(stats.hasWarnings());
+    webpack(conf, function (err, stats) {
+        if (err) {
+            t.fail()
+            throw err;
+        }
+
+        t.plan(2);
+        t.notOk(stats.hasErrors(), "should not report any error");
+        t.notOk(stats.hasWarnings(), "should not report any warning");
     });
 });

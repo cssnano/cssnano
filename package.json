@@ -49,8 +49,8 @@
   "devDependencies": {
     "decamelize": "^1.0.0",
     "faucet": "0.0.1",
+    "json-loader": "^0.5.2",
     "node-libs-browser": "^0.5.2",
-    "object-assign": "^2.0.0",
     "tape": "^4.0.0",
     "webpack": "^1.9.10"
   },
