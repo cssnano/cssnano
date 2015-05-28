@@ -1,7 +1,6 @@
 'use strict';
 
 var postcss = require('postcss');
-var space = postcss.list.space;
 var shorter = require('./lib/shorter');
 var normalize = require('normalize-url');
 var isAbsolute = require('is-absolute-url');
@@ -23,19 +22,19 @@ function convert (url, options) {
 
 function namespaceOptimiser (options) {
     return function (rule) {
-        rule.params = space(rule.params).map(function (param) {
+        rule.params = cssList.map(rule.params, function (param) {
             if (/^url/.test(param)) {
                 param = param.replace(/^url\((.*)\)$/, '$1');
             }
             return param.replace(/^("|')(.*)\1$/, function (_, quo, body) {
                 return quo + convert(body.trim(), options) + quo;
             });
-        }).join(' ');
+        });
     }
 }
 
 function eachValue (val, options) {
-    return cssList.map(val, [' ', '\n', '\t', ',', '/'], function (value, type) {
+    return cssList.map(val, function (value, type) {
         if (type !== 'func' || value.indexOf('url') !== 0 || ~value.indexOf('data:image/')) {
             return value;
         }

@@ -18,7 +18,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "css-list": "0.0.3",
+    "css-list": "^0.1.0",
     "is-absolute-url": "^1.0.0",
     "normalize-url": "^1.2.0",
     "object-assign": "^2.0.0",

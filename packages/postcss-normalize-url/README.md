@@ -2,7 +2,9 @@
 
 > [Normalize URLs](https://github.com/sindresorhus/normalize-url) with PostCSS.
 
-Install via [npm](https://npmjs.org/package/postcss-normalize-url):
+## Install
+
+With [npm](https://npmjs.org/package/postcss-normalize-url) do:
 
 ```
 npm install postcss-normalize-url --save
@@ -10,18 +12,29 @@ npm install postcss-normalize-url --save
 
 ## Example
 
-```js
-var postcss = require('postcss')
-var normalize = require('postcss-normalize-url');
+### Input
 
-var css = 'h1 { background: url("http://site.com:80/image.jpg") }';
-console.log(postcss(normalize()).process(css).css);
+```css
+h1 {
+    background: url("http://site.com:80/image.jpg")
+}
+```
 
-// => 'h1 { background: url(http://site.com/image.jpg) }'
+### Output
+
+```css
+h1 {
+    background: url(http://site.com/image.jpg)
+}
 ```
 
 Note that this module will also try to normalize relative URLs, and is capable
 of stripping unnecessary quotes. For more examples, see the [tests](test.js).
+
+## Usage
+
+See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
+examples for your environment.
 
 ## API
 
@@ -37,7 +50,7 @@ to cover it.
 
 ## License
 
-MIT © Ben Briggs
+MIT © [Ben Briggs](http://beneb.info)
 
 [docs]: https://github.com/sindresorhus/normalize-url#options
 

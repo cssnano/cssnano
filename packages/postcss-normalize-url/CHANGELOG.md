@@ -1,3 +1,9 @@
+# 2.0.1
+
+* Documentation/metadata tweaks for plugin guidelines compatibility.
+* Bump css-list to 0.1.0, use instead of postcss.list.space for namespace
+  rule normalization.
+
 # 2.0.0
 
 * Improved URL detection when using two or more in the same declaration.
