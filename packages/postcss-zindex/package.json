@@ -13,7 +13,7 @@
     "optimise",
     "optimisation",
     "postcss",
-    "postcss-plugins",
+    "postcss-plugin",
     "z-index"
   ],
   "license": "MIT",
@@ -32,8 +32,5 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/ben-eb/postcss-zindex.git"
-  }
+  "repository": "ben-eb/postcss-zindex"
 }

@@ -1,3 +1,7 @@
+# 1.1.2
+
+* Documentation/metadata tweaks for plugin guidelines compatibility.
+
 # 1.1.1
 
 * Corrected dependency tree when installing from npm.

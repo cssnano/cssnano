@@ -2,23 +2,15 @@
 
 > Reduce z-index values with PostCSS.
 
-Install via [npm](https://npmjs.org/package/postcss-zindex):
+## Install
+
+With [npm](https://npmjs.org/package/postcss-zindex) do:
 
 ```
 npm install postcss-zindex --save
 ```
 
 ## Example
-
-```js
-var postcss = require('postcss')
-var zIndex = require('postcss-zindex');
-
-var css = 'h1 { z-index: 1000 }';
-console.log(postcss(zIndex()).process(css).css);
-
-// => 'h1 { z-index: 1 }'
-```
 
 Sometimes, you may introduce z-index values into your CSS that are larger than
 necessary, in order to improve your understanding of how each stack relates to
@@ -30,10 +22,39 @@ smaller values would suffice. This module will reduce all z-index declarations
 whilst respecting your original intent; such that the overlay becomes `1` and
 the dialog becomes `2`. For more examples, see the [tests](test.js).
 
+### Input
+
+```css
+.modal {
+    z-index: 5000
+}
+
+.modal-overlay {
+    z-index: 5500
+}
+```
+
+### Output
+
+```css
+.modal {
+    z-index: 1
+}
+
+.modal-overlay {
+    z-index: 2
+}
+```
+
 Note that this module does not attempt to normalize relative z-index values,
 such as `-1`. Be careful with using this module alongside JavaScript injected
 CSS; ideally you should have already extracted all of your stacking context
 into CSS.
+
+## Usage
+
+See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
+examples for your environment.
 
 ## Contributing
 
@@ -42,7 +63,7 @@ to cover it.
 
 ## License
 
-MIT © Ben Briggs
+MIT © [Ben Briggs](http://beneb.info)
 
 [ci]:      https://travis-ci.org/ben-eb/postcss-zindex
 [deps]:    https://gemnasium.com/ben-eb/postcss-zindex
