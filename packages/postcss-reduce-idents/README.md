@@ -12,14 +12,7 @@ npm install postcss-reduce-idents --save
 
 ## Example
 
-```js
-var postcss = require('postcss');
-
-var css = '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}';
-console.log(postcss([ require('postcss-reduce-idents') ]).process(css).css);
-
-// => '@keyframes a{0%{color:#fff}to{color:#000}}.one{animation-name:a}'
-```
+### Input
 
 This module will rename custom identifiers in your CSS files; it does so by
 converting each name to a index, which is then encoded into a legal identifier.
@@ -27,6 +20,38 @@ A legal custom identifier in CSS is case sensitive and must start with a
 letter, but can contain digits, hyphens and underscores. There are over 3,000
 possible two character identifiers, and 51 possible single character identifiers
 that will be generated.
+
+```css
+@keyframes whiteToBlack {
+    0% {
+        color: #fff
+    }
+    to {
+        color: #000
+    }
+}
+
+.one {
+    animation-name: whiteToBlack
+}
+```
+
+### Output
+
+```css
+@keyframes a {
+    0% {
+        color: #fff
+    }
+    to {
+        color: #000
+    }
+}
+
+.one {
+    animation-name: a
+}
+```
 
 Note that this module does not handle identifiers that are not linked together.
 The following example will not be transformed in any way:
@@ -45,6 +70,11 @@ The following example will not be transformed in any way:
 It works for `@keyframes`, `@counter-style` and custom `counter` values. See the
 [documentation][idents] for more information, or the [tests](test.js) for more
 examples.
+
+## Usage
+
+See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
+examples for your environment.
 
 ## Contributing
 

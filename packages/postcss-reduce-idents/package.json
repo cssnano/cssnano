@@ -9,7 +9,7 @@
   "keywords": [
     "css",
     "postcss",
-    "postcss-plugins"
+    "postcss-plugin"
   ],
   "license": "MIT",
   "devDependencies": {
