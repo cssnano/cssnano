@@ -160,6 +160,10 @@ var tests = [{
     fixture: 'h1{h2{}h3{}}',
     expected: 'h1{h2,h3{}}'
 }, {
+    message: 'should not throw on charset declarations',
+    fixture: '@charset "utf-8";@charset "utf-8";@charset "utf-8";h1{}h2{}',
+    expected: '@charset "utf-8";@charset "utf-8";@charset "utf-8";h1,h2{}'
+}, {
     message: 'should not be responsible for deduping declarations when merging',
     fixture: 'h1{display:block;display:block}h2{display:block;display:block}',
     expected: 'h1,h2{display:block;display:block}'
