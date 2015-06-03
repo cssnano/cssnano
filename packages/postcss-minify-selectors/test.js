@@ -53,8 +53,8 @@ var tests = [{
     expected: '[glob="/**/*.js"]{color:blue}'
 }, {
     message: 'should preserve escaped zero plus sequences',
-    fixture: '.\31 0\+,.\31 5\+,.\32 0\+{color:blue}',
-    expected: '.\31 0\+,.\31 5\+,.\32 0\+{color:blue}'
+    fixture: '.\\31 0\\+,.\\31 5\\+,.\\32 0\\+{color:blue}',
+    expected: '.\\31 0\\+,.\\31 5\\+,.\\32 0\\+{color:blue}'
 }, {
     message: 'should handle deep combinators',
     fixture: 'body /deep/ .theme-element{color:blue}',
@@ -139,6 +139,18 @@ var tests = [{
     message: 'should not change strings (5)',
     fixture: "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}",
     expected: "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}"
+}, {
+    message: 'should transform qualified attribute selector inside not',
+    fixture: ':not( *[href="foo"] ){color:blue}',
+    expected: ':not([href=foo]){color:blue}'
+}, {
+    message: 'should not mangle attribute selectors',
+    fixture: '[class*=" icon-"]+.label, [class^="icon-"]+.label{color:blue}',
+    expected: '[class*=" icon-"]+.label,[class^=icon-]+.label{color:blue}'
+}, {
+    message: 'should not mangle attribute selectors (2)',
+    fixture: '.control-group-inline>input[type="radio"]{color:blue}',
+    expected: '.control-group-inline>input[type=radio]{color:blue}'
 }];
 
 function process (css, options) {
