@@ -1,3 +1,7 @@
+# 1.3.1
+
+* Fixes crash on undefined `decl.before` from prior AST.
+
 # 1.3.0
 
 * Added support for bundling cssnano using webpack (thanks to @MoOx).
