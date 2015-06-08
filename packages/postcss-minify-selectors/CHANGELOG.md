@@ -1,3 +1,7 @@
+# 1.4.0
+
+* Update to postcss-selector-parser to greatly improve parsing logic.
+
 # 1.3.1
 
 * Fixes a crash when nothing was passed to `node-balanced`.
