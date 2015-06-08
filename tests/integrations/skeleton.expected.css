@@ -60,13 +60,13 @@ p{margin-top:0}
 a{color:#1eaedb}
 a:hover{color:#0fa0ce}
 .button,button,input[type=button],input[type=reset],input[type=submit]{display:inline-block;height:38px;padding:0 30px;color:#555;text-align:center;font-size:11px;font-weight:600;line-height:38px;letter-spacing:.1rem;text-transform:uppercase;text-decoration:none;white-space:nowrap;background-color:transparent;border-radius:4px;border:1px solid #bbb;cursor:pointer;box-sizing:border-box}
-.button:focus,.button:hover,button:focus,button:hover,input[type="button"]:focus,input[type="button"]:hover,input[type="reset"]:focus,input[type="reset"]:hover,input[type="submit"]:focus,input[type="submit"]:hover{color:#333;border-color:#888;outline:0}
-.button.button-primary,button.button-primary,input[type="button"].button-primary,input[type="reset"].button-primary,input[type="submit"].button-primary{color:#fff;background-color:#33c3f0;border-color:#33c3f0}
-.button.button-primary:focus,.button.button-primary:hover,button.button-primary:focus,button.button-primary:hover,input[type="button"].button-primary:focus,input[type="button"].button-primary:hover,input[type="reset"].button-primary:focus,input[type="reset"].button-primary:hover,input[type="submit"].button-primary:focus,input[type="submit"].button-primary:hover{color:#fff;background-color:#1eaedb;border-color:#1eaedb}
+.button:focus,.button:hover,button:focus,button:hover,input[type=button]:focus,input[type=button]:hover,input[type=reset]:focus,input[type=reset]:hover,input[type=submit]:focus,input[type=submit]:hover{color:#333;border-color:#888;outline:0}
+.button.button-primary,button.button-primary,input[type=button].button-primary,input[type=reset].button-primary,input[type=submit].button-primary{color:#fff;background-color:#33c3f0;border-color:#33c3f0}
+.button.button-primary:focus,.button.button-primary:hover,button.button-primary:focus,button.button-primary:hover,input[type=button].button-primary:focus,input[type=button].button-primary:hover,input[type=reset].button-primary:focus,input[type=reset].button-primary:hover,input[type=submit].button-primary:focus,input[type=submit].button-primary:hover{color:#fff;background-color:#1eaedb;border-color:#1eaedb}
 input[type=email],input[type=number],input[type=password],input[type=search],input[type=tel],input[type=text],input[type=url],select,textarea{height:38px;padding:6px 10px;background-color:#fff;border:1px solid #d1d1d1;border-radius:4px;box-shadow:none;box-sizing:border-box}
 input[type=email],input[type=number],input[type=password],input[type=search],input[type=tel],input[type=text],input[type=url],textarea{-webkit-appearance:none;-moz-appearance:none;appearance:none}
 textarea{min-height:65px;padding-top:6px;padding-bottom:6px}
-input[type="email"]:focus,input[type="number"]:focus,input[type="password"]:focus,input[type="search"]:focus,input[type="tel"]:focus,input[type="text"]:focus,input[type="url"]:focus,select:focus,textarea:focus{border:1px solid #33c3f0;outline:0}
+input[type=email]:focus,input[type=number]:focus,input[type=password]:focus,input[type=search]:focus,input[type=tel]:focus,input[type=text]:focus,input[type=url]:focus,select:focus,textarea:focus{border:1px solid #33c3f0;outline:0}
 label,legend{display:block;margin-bottom:.5rem;font-weight:600}
 fieldset{padding:0;border-width:0}
 input[type=checkbox],input[type=radio]{display:inline}

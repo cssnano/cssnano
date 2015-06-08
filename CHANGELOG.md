@@ -1,3 +1,8 @@
+# 1.3.2
+
+* Improved selector minifying logic, leading to better compression of attribute
+  selectors.
+
 # 1.3.1
 
 * Fixes crash on undefined `decl.before` from prior AST.

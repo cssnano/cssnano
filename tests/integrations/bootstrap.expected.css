@@ -31,14 +31,14 @@ code,kbd,pre,samp{font-family:monospace;font-size:1em}
 button,input,optgroup,select,textarea{margin:0;font:inherit;color:inherit}
 button{overflow:visible}
 button,select{text-transform:none}
-button,html input[type="button"],input[type=reset],input[type=submit]{-webkit-appearance:button;cursor:pointer}
+button,html input[type=button],input[type=reset],input[type=submit]{-webkit-appearance:button;cursor:pointer}
 button[disabled],html input[disabled]{cursor:default}
 button::-moz-focus-inner,input::-moz-focus-inner{padding:0;border:0}
 input{line-height:normal}
 input[type=checkbox],input[type=radio]{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;padding:0}
-input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{height:auto}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{height:auto}
 input[type=search]{-webkit-box-sizing:content-box;-moz-box-sizing:content-box;box-sizing:content-box;-webkit-appearance:textfield}
-input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit-search-decoration{-webkit-appearance:none}
+input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none}
 fieldset{padding:.35em .625em .75em;margin:0 2px;border:1px solid silver}
 legend{padding:0;border:0}
 textarea{overflow:auto}
@@ -663,8 +663,8 @@ caption,th{text-align:left}
 .table-bordered>thead>tr>td,.table-bordered>thead>tr>th{border-bottom-width:2px}
 .table-striped>tbody>tr:nth-of-type(odd){background-color:#f9f9f9}
 .table-hover>tbody>tr:hover{background-color:#f5f5f5}
-table col[class*="col-"]{position:static;display:table-column;float:none}
-table td[class*="col-"],table th[class*="col-"]{position:static;display:table-cell;float:none}
+table col[class*=col-]{position:static;display:table-column;float:none}
+table td[class*=col-],table th[class*=col-]{position:static;display:table-cell;float:none}
 .table>tbody>tr.active>td,.table>tbody>tr.active>th,.table>tbody>tr>td.active,.table>tbody>tr>th.active,.table>tfoot>tr.active>td,.table>tfoot>tr.active>th,.table>tfoot>tr>td.active,.table>tfoot>tr>th.active,.table>thead>tr.active>td,.table>thead>tr.active>th,.table>thead>tr>td.active,.table>thead>tr>th.active{background-color:#f5f5f5}
 .table-hover>tbody>tr.active:hover>td,.table-hover>tbody>tr.active:hover>th,.table-hover>tbody>tr:hover>.active,.table-hover>tbody>tr>td.active:hover,.table-hover>tbody>tr>th.active:hover{background-color:#e8e8e8}
 .table>tbody>tr.success>td,.table>tbody>tr.success>th,.table>tbody>tr>td.success,.table>tbody>tr>th.success,.table>tfoot>tr.success>td,.table>tfoot>tr.success>th,.table>tfoot>tr>td.success,.table>tfoot>tr>th.success,.table>thead>tr.success>td,.table>thead>tr.success>th,.table>thead>tr>td.success,.table>thead>tr>th.success{background-color:#dff0d8}
@@ -694,7 +694,7 @@ input[type=checkbox],input[type=radio]{margin:4px 0 0;margin-top:1px\9;line-heig
 input[type=file]{display:block}
 input[type=range]{display:block;width:100%}
 select[multiple],select[size]{height:auto}
-input[type="checkbox"]:focus,input[type="file"]:focus,input[type="radio"]:focus{outline:thin dotted;outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}
+input[type=checkbox]:focus,input[type=file]:focus,input[type=radio]:focus{outline:thin dotted;outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}
 output{padding-top:7px}
 .form-control,output{display:block;font-size:14px;line-height:1.42857143;color:#555}
 .form-control{width:100%;height:34px;padding:6px 9pt;background-color:#fff;background-image:none;border:1px solid #ccc;border-radius:4px;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,.075);box-shadow:inset 0 1px 1px rgba(0,0,0,.075);-webkit-transition:border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;-o-transition:border-color ease-in-out .15s,box-shadow ease-in-out .15s;transition:border-color ease-in-out .15s,box-shadow ease-in-out .15s}
@@ -708,17 +708,17 @@ textarea.form-control{height:auto}
 input[type=search]{-webkit-appearance:none}
 @media screen and (-webkit-min-device-pixel-ratio:0){
   input[type=date],input[type=datetime-local],input[type=month],input[type=time]{line-height:34px}
-  .input-group-sm input[type="date"],.input-group-sm input[type="datetime-local"],.input-group-sm input[type="month"],.input-group-sm input[type="time"],input[type="date"].input-sm,input[type="datetime-local"].input-sm,input[type="month"].input-sm,input[type="time"].input-sm{line-height:30px}
-  .input-group-lg input[type="date"],.input-group-lg input[type="datetime-local"],.input-group-lg input[type="month"],.input-group-lg input[type="time"],input[type="date"].input-lg,input[type="datetime-local"].input-lg,input[type="month"].input-lg,input[type="time"].input-lg{line-height:46px}
+  .input-group-sm input[type=date],.input-group-sm input[type=datetime-local],.input-group-sm input[type=month],.input-group-sm input[type=time],input[type=date].input-sm,input[type=datetime-local].input-sm,input[type=month].input-sm,input[type=time].input-sm{line-height:30px}
+  .input-group-lg input[type=date],.input-group-lg input[type=datetime-local],.input-group-lg input[type=month],.input-group-lg input[type=time],input[type=date].input-lg,input[type=datetime-local].input-lg,input[type=month].input-lg,input[type=time].input-lg{line-height:46px}
 }
 .form-group{margin-bottom:15px}
 .checkbox,.radio{position:relative;display:block;margin-top:10px;margin-bottom:10px}
 .checkbox label,.radio label{min-height:20px;padding-left:20px;margin-bottom:0;font-weight:400;cursor:pointer}
-.checkbox input[type="checkbox"],.checkbox-inline input[type="checkbox"],.radio input[type="radio"],.radio-inline input[type="radio"]{position:absolute;margin-top:4px\9;margin-left:-20px}
+.checkbox input[type=checkbox],.checkbox-inline input[type=checkbox],.radio input[type=radio],.radio-inline input[type=radio]{position:absolute;margin-top:4px\9;margin-left:-20px}
 .checkbox+.checkbox,.radio+.radio{margin-top:-5px}
 .checkbox-inline,.radio-inline{position:relative;display:inline-block;padding-left:20px;margin-bottom:0;font-weight:400;vertical-align:middle;cursor:pointer}
 .checkbox-inline+.checkbox-inline,.radio-inline+.radio-inline{margin-top:0;margin-left:10px}
-.checkbox-inline.disabled,.checkbox.disabled label,.radio-inline.disabled,.radio.disabled label,fieldset[disabled] .checkbox label,fieldset[disabled] .checkbox-inline,fieldset[disabled] .radio label,fieldset[disabled] .radio-inline,fieldset[disabled] input[type=checkbox],fieldset[disabled] input[type=radio],input[type="checkbox"].disabled,input[type="checkbox"][disabled],input[type="radio"].disabled,input[type="radio"][disabled]{cursor:not-allowed}
+.checkbox-inline.disabled,.checkbox.disabled label,.radio-inline.disabled,.radio.disabled label,fieldset[disabled] .checkbox label,fieldset[disabled] .checkbox-inline,fieldset[disabled] .radio label,fieldset[disabled] .radio-inline,fieldset[disabled] input[type=checkbox],fieldset[disabled] input[type=radio],input[type=checkbox].disabled,input[type=checkbox][disabled],input[type=radio].disabled,input[type=radio][disabled]{cursor:not-allowed}
 .form-control-static{min-height:34px;padding-top:7px;padding-bottom:7px;margin-bottom:0}
 .form-control-static.input-lg,.form-control-static.input-sm{padding-right:0;padding-left:0}
 .input-sm{height:30px;padding:5px 10px;font-size:9pt;line-height:1.5;border-radius:3px}
@@ -768,7 +768,7 @@ select[multiple].input-lg,textarea.input-lg{height:auto}
   .form-inline .control-label{margin-bottom:0;vertical-align:middle}
   .form-inline .checkbox,.form-inline .radio{display:inline-block;margin-top:0;margin-bottom:0;vertical-align:middle}
   .form-inline .checkbox label,.form-inline .radio label{padding-left:0}
-  .form-inline .checkbox input[type="checkbox"],.form-inline .radio input[type="radio"]{position:relative;margin-left:0}
+  .form-inline .checkbox input[type=checkbox],.form-inline .radio input[type=radio]{position:relative;margin-left:0}
   .form-inline .has-feedback .form-control-feedback{top:0}
 }
 .form-horizontal .checkbox,.form-horizontal .checkbox-inline,.form-horizontal .radio,.form-horizontal .radio-inline{padding-top:7px;margin-top:0;margin-bottom:0}
@@ -842,7 +842,7 @@ a.btn.disabled,fieldset[disabled] a.btn{pointer-events:none}
 .btn-group-xs>.btn,.btn-xs{padding:1px 5px;font-size:9pt;line-height:1.5;border-radius:3px}
 .btn-block{display:block;width:100%}
 .btn-block+.btn-block{margin-top:5px}
-input[type="button"].btn-block,input[type="reset"].btn-block,input[type="submit"].btn-block{width:100%}
+input[type=button].btn-block,input[type=reset].btn-block,input[type=submit].btn-block{width:100%}
 .fade{opacity:0;-webkit-transition:opacity .15s linear;-o-transition:opacity .15s linear;transition:opacity .15s linear}
 .fade.in{opacity:1}
 .collapse{display:none}
@@ -910,9 +910,9 @@ tbody.collapse.in{display:table-row-group}
 .btn-group-justified>.btn,.btn-group-justified>.btn-group{display:table-cell;float:none;width:1%}
 .btn-group-justified>.btn-group .btn{width:100%}
 .btn-group-justified>.btn-group .dropdown-menu{left:auto}
-[data-toggle="buttons">.btn input[type="checkbox"[data-toggle="b"buttons">.btn input[type="r"radio"data-toggle="bu"buttons" .btn-group>.btn input[type="ch"checkbox"ta-toggle="butt"buttons"btn-group>.btn input[type="radi"radio"]{position:absolute;clip:rect(0,0,0,0);pointer-events:none}
+[data-toggle=buttons]>.btn input[type=checkbox],[data-toggle=buttons]>.btn input[type=radio],[data-toggle=buttons]>.btn-group>.btn input[type=checkbox],[data-toggle=buttons]>.btn-group>.btn input[type=radio]{position:absolute;clip:rect(0,0,0,0);pointer-events:none}
 .input-group{position:relative;display:table;border-collapse:separate}
-.input-group[class*="col-"]{float:none;padding-right:0;padding-left:0}
+.input-group[class*=col-]{float:none;padding-right:0;padding-left:0}
 .input-group .form-control{position:relative;z-index:1;float:left;width:100%;margin-bottom:0}
 .input-group-lg>.form-control,.input-group-lg>.input-group-addon,.input-group-lg>.input-group-btn>.btn{height:46px;padding:10px 1pc;font-size:18px;line-height:1.3333333;border-radius:6px}
 select.input-group-lg>.form-control,select.input-group-lg>.input-group-addon,select.input-group-lg>.input-group-btn>.btn{height:46px;line-height:46px}
@@ -926,7 +926,7 @@ select[multiple].input-group-sm>.form-control,select[multiple].input-group-sm>.i
 .input-group-addon{padding:6px 9pt;font-size:14px;font-weight:400;line-height:1;color:#555;text-align:center;background-color:#eee;border:1px solid #ccc;border-radius:4px}
 .input-group-addon.input-sm{padding:5px 10px;font-size:9pt;border-radius:3px}
 .input-group-addon.input-lg{padding:10px 1pc;font-size:18px;border-radius:6px}
-.input-group-addon input[type="checkbox"],.input-group-addon input[type="radio"]{margin-top:0}
+.input-group-addon input[type=checkbox],.input-group-addon input[type=radio]{margin-top:0}
 .input-group .form-control:first-child,.input-group-addon:first-child,.input-group-btn:first-child>.btn,.input-group-btn:first-child>.btn-group>.btn,.input-group-btn:first-child>.dropdown-toggle,.input-group-btn:last-child>.btn-group:not(:last-child)>.btn,.input-group-btn:last-child>.btn:not(:last-child):not(.dropdown-toggle){border-top-right-radius:0;border-bottom-right-radius:0}
 .input-group-addon:first-child{border-right:0}
 .input-group .form-control:last-child,.input-group-addon:last-child,.input-group-btn:first-child>.btn-group:not(:first-child)>.btn,.input-group-btn:first-child>.btn:not(:first-child),.input-group-btn:last-child>.btn,.input-group-btn:last-child>.btn-group>.btn,.input-group-btn:last-child>.dropdown-toggle{border-top-left-radius:0;border-bottom-left-radius:0}
@@ -1059,7 +1059,7 @@ select[multiple].input-group-sm>.form-control,select[multiple].input-group-sm>.i
   .navbar-form .control-label{margin-bottom:0;vertical-align:middle}
   .navbar-form .checkbox,.navbar-form .radio{display:inline-block;margin-top:0;margin-bottom:0;vertical-align:middle}
   .navbar-form .checkbox label,.navbar-form .radio label{padding-left:0}
-  .navbar-form .checkbox input[type="checkbox"],.navbar-form .radio input[type="radio"]{position:relative;margin-left:0}
+  .navbar-form .checkbox input[type=checkbox],.navbar-form .radio input[type=radio]{position:relative;margin-left:0}
   .navbar-form .has-feedback .form-control-feedback{top:0}
 }
 @media (max-width:767px){
