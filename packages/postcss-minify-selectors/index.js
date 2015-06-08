@@ -73,7 +73,7 @@ function optimise (rule) {
                 var value = selector.value.trim();
                 selector.value = value.length ? value : ' ';
             }
-            if (selector.type === 'selector' && selector.type !== 'pseudo') {
+            if (selector.type === 'selector' && selector.parent.type !== 'pseudo') {
                 if (!~uniques.indexOf(String(selector))) {
                     uniques.push(String(selector));
                 } else {
@@ -81,10 +81,10 @@ function optimise (rule) {
                 }
             }
         });
-        uniques = [];
         selectors.eachPseudo(function (pseudo) {
+            uniques = [];
             pseudo.eachInside(function (selector) {
-                if (selector.type === 'selector' && selector.type !== 'pseudo') {
+                if (selector.type === 'selector') {
                     if (!~uniques.indexOf(String(selector))) {
                         uniques.push(String(selector));
                     } else {

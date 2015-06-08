@@ -1,3 +1,7 @@
+# 1.4.1
+
+* Fixes incorrect deduplication of pseudo selector rules.
+
 # 1.4.0
 
 * Update to postcss-selector-parser to greatly improve parsing logic.

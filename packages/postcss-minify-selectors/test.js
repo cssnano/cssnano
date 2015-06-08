@@ -151,6 +151,14 @@ var tests = [{
     message: 'should not mangle attribute selectors (2)',
     fixture: '.control-group-inline>input[type="radio"]{color:blue}',
     expected: '.control-group-inline>input[type=radio]{color:blue}'
+}, {
+    message: 'should not mangle pseudo classes',
+    fixture: '.btn-group>.btn:last-child:not(:first-child),.btn-group>.dropdown-toggle:not(:first-child){color:blue}',
+    expected: '.btn-group>.btn:last-child:not(:first-child),.btn-group>.dropdown-toggle:not(:first-child){color:blue}'
+}, {
+    message: 'should not mangle pseudo classes (2)',
+    fixture: '.btn-group>.btn-group:first-child:not(:last-child)>.btn:last-child,.btn-group>.btn-group:first-child:not(:last-child)>.dropdown-toggle{color:blue}',
+    expected: '.btn-group>.btn-group:first-child:not(:last-child)>.btn:last-child,.btn-group>.btn-group:first-child:not(:last-child)>.dropdown-toggle{color:blue}',
 }];
 
 function process (css, options) {
