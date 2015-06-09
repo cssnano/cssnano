@@ -2,6 +2,7 @@
 
 * Improved selector minifying logic, leading to better compression of attribute
   selectors.
+* Improved comment discarding logic.
 
 # 1.3.1
 
