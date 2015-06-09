@@ -30,6 +30,27 @@ all regular comments (`/* comment */`) and preserve comments marked as important
 
 #### options
 
+##### remove(function)
+
+Type: `function`
+Return: `boolean`
+Variable: `comment` contains a comment without `/**/`
+
+For each comment, return true to remove, or false to keep the comment.
+
+```js
+function(comment) {}
+```
+
+```js
+var css = '/* headings *//*@ h1 */h1{margin:0 auto}/*@ h2 */h2{color:red}';
+console.log(postcss(comments({
+    remove: function(comment) { return comment[0] == "@"; }
+})).process(css).css);
+//=> /* headings */h1{margin:0 auto}h2{color:red}
+```
+**NOTE:** If you use the `remove` function other options will not be available.
+
 ##### removeAll
 
 Type: `boolean`

@@ -8,15 +8,20 @@ function CommentRemover (options) {
 }
 
 CommentRemover.prototype.canRemove = function (comment) {
-    var isImportant = comment.indexOf('!') === 0;
-    if (!isImportant) {
-        return true;
-    } else if (isImportant) {
-        if (this.options.removeAll || this._hasFirst) {
+    var remove = this.options.remove;
+    if (remove) {
+        return remove(comment);
+    } else {
+        var isImportant = comment.indexOf('!') === 0;
+        if (!isImportant) {
             return true;
-        } else if (this.options.removeAllButFirst && !this._hasFirst) {
-            this._hasFirst = true;
-            return false;
+        } else if (isImportant) {
+            if (this.options.removeAll || this._hasFirst) {
+                return true;
+            } else if (this.options.removeAllButFirst && !this._hasFirst) {
+                this._hasFirst = true;
+                return false;
+            }
         }
     }
 };
