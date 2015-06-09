@@ -6,27 +6,27 @@ var postcss = require('postcss');
 var space = postcss.list.space;
 
 module.exports = postcss.plugin('postcss-discard-comments', function (options) {
-    var remover = new CommentRemover(options || {});
-
-    function replaceComments (source) {
-        if (!source) {
-            return;
-        }
-        var b = balanced.replacements({
-            source: source,
-            open: '/*',
-            close: '*/',
-            replace: function (comment, head, tail) {
-                if (remover.canRemove(comment)) {
-                    return ' ';
-                }
-                return head + comment + tail;
-            }
-        });
-        return space(b).join(' ');
-    }
-
     return function (css) {
+        var remover = new CommentRemover(options || {});
+
+        function replaceComments (source) {
+            if (!source) {
+                return;
+            }
+            var b = balanced.replacements({
+                source: source,
+                open: '/*',
+                close: '*/',
+                replace: function (comment, head, tail) {
+                    if (remover.canRemove(comment)) {
+                        return ' ';
+                    }
+                    return head + comment + tail;
+                }
+            });
+            return space(b).join(' ');
+        }
+
         css.eachComment(function (comment) {
             if (remover.canRemove(comment.text)) {
                 comment.removeSelf();
