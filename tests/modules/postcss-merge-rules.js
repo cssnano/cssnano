@@ -78,7 +78,7 @@ module.exports.tests = [{
 }, {
     message: 'should perform partial merging of selectors (4)',
     fixture: '.test0{color:red;border:none;margin:0}.test1{color:green;border:none;margin:0}',
-    expected: '.test0{color:red}.test0,.test1{border:0 0;margin:0}.test1{color:green}'
+    expected: '.test0{color:red}.test0,.test1{border:none;margin:0}.test1{color:green}'
 }, {
     message: 'should perform partial merging of selectors (5)',
     fixture: 'h1{color:red;font-weight:bold}h2{font-weight:bold}h3{text-decoration:none}',
@@ -98,7 +98,7 @@ module.exports.tests = [{
 }, {
     message: 'should not perform partial merging of selectors if the output would be longer',
     fixture: '.test0{color:red;border:none;margin:0}.longlonglonglong{color:green;border:none;margin:0}',
-    expected: '.test0{color:red;border:0 0;margin:0}.longlonglonglong{color:green;border:0 0;margin:0}'
+    expected: '.test0{color:red;border:none;margin:0}.longlonglonglong{color:green;border:none;margin:0}'
 }, {
     message: 'should merge vendor prefixed selectors when vendors are the same',
     fixture: 'code ::-moz-selection{background:red}code::-moz-selection{background:red}',

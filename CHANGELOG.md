@@ -1,3 +1,7 @@
+# 1.3.3
+
+* Fixes incorrect minification of `border:none` to `border:0 0`.
+
 # 1.3.2
 
 * Improved selector minifying logic, leading to better compression of attribute
