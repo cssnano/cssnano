@@ -9,7 +9,7 @@ function CommentRemover (options) {
 
 CommentRemover.prototype.canRemove = function (comment) {
     var isImportant = comment.indexOf('!') === 0;
-    if (!isImportant && comment.indexOf('#') !== 0) {
+    if (!isImportant) {
         return true;
     } else if (isImportant) {
         if (this.options.removeAll || this._hasFirst) {

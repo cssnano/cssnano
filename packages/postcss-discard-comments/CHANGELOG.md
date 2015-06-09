@@ -1,3 +1,9 @@
+# 1.1.3
+
+* As PostCSS handles the source map content, there is no need to check for
+  the existence of a '#' at position 0 of the comment. This patch fixes this
+  behaviour.
+
 # 1.1.2
 
 * Fixes an issue where comment separated values were being incorrectly

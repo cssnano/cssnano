@@ -122,6 +122,10 @@ var tests = [{
     fixture: '/* This makes a heading black! Wow! */h1{color:#000}',
     expected: 'h1{color:#000}'
 }, {
+    message: 'should remove block comments',
+    fixture: '/*\n\n# Pagination\n\n...\n\n*/.pagination{color:#000}',
+    expected: '.pagination{color:#000}'
+}, {
     message: 'should pass through when it doesn\'t find a comment',
     fixture: 'h1{color:#000;font-weight:700}',
     expected: 'h1{color:#000;font-weight:700}'
