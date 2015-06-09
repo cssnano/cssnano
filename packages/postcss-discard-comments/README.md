@@ -10,14 +10,20 @@ npm install postcss-discard-comments --save
 
 ## Example
 
-```js
-var postcss = require('postcss')
-var comments = require('postcss-discard-comments');
+### Input
 
-var css = 'h1/* heading */{margin:0 auto}';
-console.log(postcss(comments()).process(css).css);
+```css
+h1/* heading */{
+    margin: 0 auto
+}
+```
 
-// => 'h1{margin:0 auto}'
+### Output
+
+```css
+h1 {
+    margin: 0 auto
+}
 ```
 
 This module discards comments from your CSS files; by default, it will remove
@@ -76,6 +82,11 @@ var css = '/*! heading */h1{margin:0 auto}/*! heading 2 */h2{color:red}';
 console.log(postcss(comments({removeAllButFirst: true})).process(css).css);
 //=> /*! heading */h1{margin:0 auto}h2{color:red}
 ```
+
+## Usage
+
+See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
+examples for your environment.
 
 ## Contributing
 

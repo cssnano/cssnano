@@ -11,7 +11,7 @@
     "css",
     "comments",
     "postcss",
-    "postcss-plugins"
+    "postcss-plugin"
   ],
   "license": "MIT",
   "devDependencies": {

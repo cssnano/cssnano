@@ -4,6 +4,7 @@
   option (thanks to @dmitrykiselyov).
 * `removeAllButFirst` now operates on each CSS tree, rather than the first one
   passed to the plugin.
+* Fixes to pass the PostCSS plugin guidelines.
 
 # 1.1.3
 
