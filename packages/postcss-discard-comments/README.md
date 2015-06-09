@@ -2,7 +2,9 @@
 
 > Discard comments in your CSS files with PostCSS.
 
-Install via [npm](https://npmjs.org/package/postcss-discard-comments):
+## Install
+
+With [npm](https://npmjs.org/package/postcss-discard-comments) do:
 
 ```
 npm install postcss-discard-comments --save
