@@ -120,6 +120,10 @@ Set this to `false` to disable custom identifier reduction.
 
 Set this to `false` to disable merging of rules.
 
+##### unused
+
+Set this to `false` to disable unused at-rule removal.
+
 ##### comments
 
 If this is an object, it will be passed as the options to
@@ -146,7 +150,7 @@ following modules:
 * [`postcss-discard-comments`]: Discard comments, unless marked as special.
 * [`postcss-discard-duplicates`]: Discard duplicate rules.
 * [`postcss-discard-empty`]: Discard empty rules and media queries.
-* [`postcss-discard-font-face`]: Discard unused `@font-face` rules.
+* [`postcss-discard-unused`]: Discard unused at-rules.
 * [`postcss-font-family`]: Optimise whitespace/quoting of `font-family`
   properties.
 * [`postcss-merge-idents`]: Merge duplicated `@keyframes` and `@counter-style`
@@ -185,7 +189,7 @@ MIT © [Ben Briggs](http://beneb.info)
 [`postcss-discard-comments`]:   https://github.com/ben-eb/postcss-discard-comments
 [`postcss-discard-duplicates`]: https://github.com/ben-eb/postcss-discard-duplicates
 [`postcss-discard-empty`]:      https://github.com/ben-eb/postcss-discard-empty
-[`postcss-discard-font-face`]:  https://github.com/ben-eb/postcss-discard-font-face
+[`postcss-discard-unused`]:     https://github.com/ben-eb/postcss-discard-unused
 [`postcss-font-family`]:        https://github.com/ben-eb/postcss-font-family
 [`postcss-merge-idents`]:       https://github.com/ben-eb/postcss-merge-idents
 [`postcss-merge-rules`]:        https://github.com/ben-eb/postcss-merge-rules

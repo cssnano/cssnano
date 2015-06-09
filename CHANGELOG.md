@@ -1,3 +1,7 @@
+# 1.4.0
+
+* Adds support for removal of unused `@keyframes` and `@counter-style` at-rules.
+
 # 1.3.3
 
 * Fixes incorrect minification of `border:none` to `border:0 0`.

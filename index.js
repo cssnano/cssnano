@@ -15,9 +15,9 @@ var processors = {
     longhandOptimiser: require('./lib/longhandOptimiser'),
     minifySelectors: require('postcss-minify-selectors'),
     singleCharset: require('postcss-single-charset'),
-    // font-family should be run before discard-font-face
+    // font-family should be run before discard-unused
     fontFamily: require('postcss-font-family'),
-    discardFontFace: require('postcss-discard-font-face'),
+    discardUnused: {fn: require('postcss-discard-unused'), ns: 'unused'},
     normalizeUrl: require('postcss-normalize-url'),
     core: require('./lib/core'),
     // Optimisations after this are sensitive to previous optimisations in

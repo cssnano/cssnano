@@ -33,8 +33,8 @@ module.exports.tests = [{
     expected: 'h1,h2,h3{margin:20px}'
 }, {
     message: 'should remove non-special comments 9',
-    fixture: '@keyframes /*test*/ fade{0%{opacity:0}100%{opacity:1}}',
-    expected: '@keyframes fade{0%{opacity:0}to{opacity:1}}'
+    fixture: '@keyframes /*test*/ fade{0%{opacity:0}100%{opacity:1}}a{animation:fade}',
+    expected: '@keyframes a{0%{opacity:0}to{opacity:1}}a{animation:a}'
 }, {
     message: 'should remove non-special comments 10',
     fixture: '@media only screen /*desktop*/ and (min-width:900px){body{margin:0 auto}}',

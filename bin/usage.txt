@@ -14,6 +14,8 @@ Options:
 
     --no-merge          Disable merging of rules.
 
+    --no-unused         Disable unused at-rule removal.
+
     --version,    -v    Outputs the version number.
 
     --help,       -h    Outputs this help screen.

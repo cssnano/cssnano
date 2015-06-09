@@ -97,12 +97,12 @@ module.exports.tests = [{
     expected: '@media only screen and (min-width:400px;min-height:500px){h1{color:blue}}'
 }, {
     message: 'should convert @keyframe from & 100%',
-    fixture: '@keyframes test{from{color:red}100%{color:blue}}',
-    expected: '@keyframes test{0%{color:red}to{color:blue}}'
+    fixture: '@keyframes test{from{color:red}100%{color:blue}}a{animation:test}',
+    expected: '@keyframes a{0%{color:red}to{color:blue}}a{animation:a}'
 }, {
     message: 'should not mangle @keyframe from & 100% in other values',
-    fixture: '@keyframes test{x-from-tag{color:red}5100%{color:blue}}',
-    expected: '@keyframes test{x-from-tag{color:red}5100%{color:blue}}'
+    fixture: '@keyframes test{x-from-tag{color:red}5100%{color:blue}}a{animation:test}',
+    expected: '@keyframes a{x-from-tag{color:red}5100%{color:blue}}a{animation:a}'
 }, {
     message: 'should not be responsible for normalising comments',
     fixture: 'h1 /*!test comment*/, h2{color:blue}',

@@ -16,13 +16,9 @@ module.exports.tests = [{
     fixture: '.one{animation-name:fadeInUp}',
     expected: '.one{animation-name:fadeInUp}'
 }, {
-    message: 'should not touch keyframes that are not referenced in the file',
-    fixture: '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}',
-    expected: '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}'
-}, {
     message: 'should not touch keyframes & animation names, combined',
     fixture: '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:fadeInUp}',
-    expected: '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:fadeInUp}'
+    expected: '.one{animation-name:fadeInUp}'
 }, {
     message: 'should rename counter styles',
     fixture: '@counter-style custom{system:extends decimal;suffix:"> "}ol{list-style:custom}',
@@ -31,10 +27,6 @@ module.exports.tests = [{
     message: 'should rename multiple counter styles & be aware of extensions',
     fixture: '@counter-style custom{system:extends decimal;suffix:"> "}@counter-style custom2{system:extends custom;prefix:"-"}ol{list-style:custom2}',
     expected: '@counter-style a{system:extends decimal;suffix:"> "}@counter-style b{system:extends a;prefix:"-"}ol{list-style:b}'
-}, {
-    message: 'should not touch counter styles that are not referenced in the file',
-    fixture: '@counter-style custom{system:extends decimal;suffix:"> "}',
-    expected: '@counter-style custom{system:extends decimal;suffix:"> "}'
 }, {
     message: 'should not touch list-styles that are not defined in the file',
     fixture: 'ol{list-style:custom2}',
