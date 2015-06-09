@@ -1,3 +1,10 @@
+# 1.2.0
+
+* Adds support for user-directed removal of comments, with the `remove`
+  option (thanks to @dmitrykiselyov).
+* `removeAllButFirst` now operates on each CSS tree, rather than the first one
+  passed to the plugin.
+
 # 1.1.3
 
 * As PostCSS handles the source map content, there is no need to check for
