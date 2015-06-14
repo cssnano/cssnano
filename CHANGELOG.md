@@ -1,3 +1,7 @@
+# 1.4.2
+
+* Fixes an issue with nested URLs inside `url()` functions.
+
 # 1.4.1
 
 * Addresses an issue where whitespace removal after a CSS function would cause

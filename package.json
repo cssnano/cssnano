@@ -7,6 +7,7 @@
     "cssnano": "bin/cmd.js"
   },
   "scripts": {
+    "test-integrations": "tape tests/integrations.js",
     "test-fixtures": "tape tests/fixtures.js | faucet",
     "test-modules": "tape tests/modules.js | faucet",
     "test-webpack": "tape tests/webpack.js | faucet",
@@ -22,6 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "balanced-match": "^0.2.0",
+    "css-list": "^0.1.0",
     "flatten": "0.0.1",
     "indexes-of": "^1.0.1",
     "minimist": "^1.1.1",
