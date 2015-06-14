@@ -1,3 +1,8 @@
+# 1.4.1
+
+* Addresses an issue where whitespace removal after a CSS function would cause
+  rendering issues in Internet Explorer.
+
 # 1.4.0
 
 * Adds support for removal of unused `@keyframes` and `@counter-style` at-rules.
