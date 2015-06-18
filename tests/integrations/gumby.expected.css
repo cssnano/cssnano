@@ -962,7 +962,7 @@ img{-ms-interpolation-mode:bicubic}
 .subnav dd.active a,.subnav li.active a{background:#4a4d50;padding:5px 9px;text-shadow:0 1px 1px #4a4d50}
 .btn,.skiplink{display:inline-block;width:auto;background:#f2f2f2;-webkit-appearance:none;font-family:Open Sans;font-weight:600;padding:0!important;text-align:center}
 .btn button,.btn input,.btn>a,.skiplink button,.skiplink input,.skiplink>a{display:block;padding:0 18px;color:#fff;height:100%}
-.btn button,.btn input,.skiplink button,.skiplink input{background:0 0;border:none;width:100%;font-size:100%;cursor:pointer;font-weight:400;-moz-appearance:none;-webkit-appearance:none}
+.btn button,.btn input,.skiplink button,.skiplink input{background:none;border:none;width:100%;font-size:100%;cursor:pointer;font-weight:400;-moz-appearance:none;-webkit-appearance:none}
 .btn.xlarge,.skiplink.xlarge{font-size:30px;font-size:1.875rem;height:66px;line-height:4pc}
 .btn.xlarge a,.skiplink.xlarge a{position:relative;padding:0 30px}
 .btn.xlarge.icon-left a,.skiplink.xlarge.icon-left a{padding-left:66px}

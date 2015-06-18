@@ -62,7 +62,7 @@ code,kbd,output,pre,samp,var{font-size:90%;font-style:normal;font-family:Menlo,M
 pre{margin-top:1.65em;font-size:100%;line-height:1.5;color:#222;overflow:auto}
 code,kbd,samp{padding:3px 6px 2px;display:inline-block;line-height:1;border-radius:2px}
 code{background:#f4f4f4;border:1px solid #d4d4d4}
-pre code{font-size:100%;border:none;padding:0;background:0 0;line-height:1.65em}
+pre code{font-size:100%;border:none;padding:0;background:none;line-height:1.65em}
 var{color:rgba(0,0,0,.5)}
 samp{background:#d3e3fb;border:1px solid #b2cef8}
 kbd{background:#0f0f0f;color:hsla(0,0%,100%,.85);white-space:nowrap}
@@ -284,70 +284,70 @@ input.input-smaller{font-size:11.25px}
 .btn-small,input[type=submit].btn-small{font-size:12.75px}
 .btn-smaller,input[type=submit].btn-smaller{font-size:11.25px;vertical-align:baseline}
 .btn-round{border-radius:15px}
-.btn-outline,input[type=submit].btn-outline{background:0 0;padding:.48750000000000004em 2.5em;border:1px solid #0f0f0f}
+.btn-outline,input[type=submit].btn-outline{background:none;padding:.48750000000000004em 2.5em;border:1px solid #0f0f0f}
 .btn-outline:hover,input[type=submit].btn-outline:hover{border-color:#b3b6b7}
 .btn-outline.btn-active{padding:.55em 2.5em}
 .btn-outline.bold{border-width:2px;padding:.42500000000000004em 2.5em}
-.btn-active,.btn-disabled,.btn[disabled]{background:0 0;background:#b3b6b7;color:rgba(0,0,0,.5)}
+.btn-active,.btn-disabled,.btn[disabled]{background:none;background:#b3b6b7;color:rgba(0,0,0,.5)}
 .btn-active:hover,.btn-disabled:hover,.btn[disabled]:hover{color:rgba(0,0,0,.5);background:#b3b6b7}
 .btn-active{box-shadow:0 1px 3px rgba(0,0,0,.4) inset}
-.btn-outline.btn-disabled,.btn-outline.btn[disabled]{background:0 0;box-shadow:none;color:rgba(0,0,0,.3);border:1px solid rgba(0,0,0,.1)}
-.btn-outline.btn-active{background:0 0;color:rgba(0,0,0,.4);border:none;box-shadow:0 1px 3px rgba(0,0,0,.2) inset}
+.btn-outline.btn-disabled,.btn-outline.btn[disabled]{background:none;box-shadow:none;color:rgba(0,0,0,.3);border:1px solid rgba(0,0,0,.1)}
+.btn-outline.btn-active{background:none;color:rgba(0,0,0,.4);border:none;box-shadow:0 1px 3px rgba(0,0,0,.2) inset}
 .btn-disabled,.btn[disabled]{cursor:default;box-shadow:none}
 .btn-blue,input[type=submit].btn-blue{color:hsla(0,0%,100%,.9);background:#2575ed}
 .btn-blue:hover,input[type=submit].btn-blue:hover{color:hsla(0,0%,100%,.6);background:#1a52a5}
 .btn-blue.btn-active,input[type=submit].btn-blue.btn-active{box-shadow:0 1px 4px rgba(0,0,0,.5) inset}
 .btn-blue.btn-active,.btn-blue.btn-disabled,.btn-blue.btn[disabled],input[type=submit].btn-blue.btn-active,input[type=submit].btn-blue.btn-disabled,input[type=submit].btn-blue.btn[disabled]{color:hsla(0,0%,100%,.5);background:#1a52a5}
 .btn-blue.btn-active:hover,.btn-blue.btn-disabled:hover,.btn-blue.btn[disabled]:hover,input[type=submit].btn-blue.btn-active:hover,input[type=submit].btn-blue.btn-disabled:hover,input[type=submit].btn-blue.btn[disabled]:hover{color:hsla(0,0%,100%,.5)}
-.btn-blue.btn-outline,input[type=submit].btn-blue.btn-outline{background:0 0;border-color:#2575ed;color:#2575ed}
+.btn-blue.btn-outline,input[type=submit].btn-blue.btn-outline{background:none;border-color:#2575ed;color:#2575ed}
 .btn-blue.btn-outline:hover,input[type=submit].btn-blue.btn-outline:hover{color:hsla(0,0%,100%,.9);background:#2575ed}
-.btn-blue.btn-outline.btn-disabled,.btn-blue.btn-outline.btn[disabled],input[type=submit].btn-blue.btn-outline.btn-disabled,input[type=submit].btn-blue.btn-outline.btn[disabled]{background:0 0;box-shadow:none;color:rgba(37,117,237,.4);border:1px solid rgba(37,117,237,.3)}
-.btn-blue.btn-outline.btn-active,input[type=submit].btn-blue.btn-outline.btn-active{background:0 0;color:rgba(37,117,237,.6);border:none;box-shadow:0 1px 3px rgba(26,82,165,.6) inset}
+.btn-blue.btn-outline.btn-disabled,.btn-blue.btn-outline.btn[disabled],input[type=submit].btn-blue.btn-outline.btn-disabled,input[type=submit].btn-blue.btn-outline.btn[disabled]{background:none;box-shadow:none;color:rgba(37,117,237,.4);border:1px solid rgba(37,117,237,.3)}
+.btn-blue.btn-outline.btn-active,input[type=submit].btn-blue.btn-outline.btn-active{background:none;color:rgba(37,117,237,.6);border:none;box-shadow:0 1px 3px rgba(26,82,165,.6) inset}
 .btn-red,input[type=submit].btn-red{color:hsla(0,0%,100%,.9);background:#de2c3b}
 .btn-red:hover,input[type=submit].btn-red:hover{color:hsla(0,0%,100%,.6);background:#b2232f}
 .btn-red.btn-active,input[type=submit].btn-red.btn-active{box-shadow:0 1px 4px rgba(0,0,0,.5) inset}
 .btn-red.btn-active,.btn-red.btn-disabled,.btn-red.btn[disabled],input[type=submit].btn-red.btn-active,input[type=submit].btn-red.btn-disabled,input[type=submit].btn-red.btn[disabled]{color:hsla(0,0%,100%,.5);background:#b2232f}
 .btn-red.btn-active:hover,.btn-red.btn-disabled:hover,.btn-red.btn[disabled]:hover,input[type=submit].btn-red.btn-active:hover,input[type=submit].btn-red.btn-disabled:hover,input[type=submit].btn-red.btn[disabled]:hover{color:hsla(0,0%,100%,.5)}
-.btn-red.btn-outline,input[type=submit].btn-red.btn-outline{background:0 0;border-color:#de2c3b;color:#de2c3b}
+.btn-red.btn-outline,input[type=submit].btn-red.btn-outline{background:none;border-color:#de2c3b;color:#de2c3b}
 .btn-red.btn-outline:hover,input[type=submit].btn-red.btn-outline:hover{color:hsla(0,0%,100%,.9);background:#de2c3b}
-.btn-red.btn-outline.btn-disabled,.btn-red.btn-outline.btn[disabled],input[type=submit].btn-red.btn-outline.btn-disabled,input[type=submit].btn-red.btn-outline.btn[disabled]{background:0 0;box-shadow:none;color:rgba(222,44,59,.4);border:1px solid rgba(222,44,59,.3)}
-.btn-red.btn-outline.btn-active,input[type=submit].btn-red.btn-outline.btn-active{background:0 0;color:rgba(222,44,59,.6);border:none;box-shadow:0 1px 3px rgba(178,35,47,.6) inset}
+.btn-red.btn-outline.btn-disabled,.btn-red.btn-outline.btn[disabled],input[type=submit].btn-red.btn-outline.btn-disabled,input[type=submit].btn-red.btn-outline.btn[disabled]{background:none;box-shadow:none;color:rgba(222,44,59,.4);border:1px solid rgba(222,44,59,.3)}
+.btn-red.btn-outline.btn-active,input[type=submit].btn-red.btn-outline.btn-active{background:none;color:rgba(222,44,59,.6);border:none;box-shadow:0 1px 3px rgba(178,35,47,.6) inset}
 .btn-green,input[type=submit].btn-green{color:hsla(0,0%,100%,.9);background:#2c9f42}
 .btn-green:hover,input[type=submit].btn-green:hover{color:hsla(0,0%,100%,.6);background:#237f35}
 .btn-green.btn-active,input[type=submit].btn-green.btn-active{box-shadow:0 1px 4px rgba(0,0,0,.5) inset}
 .btn-green.btn-active,.btn-green.btn-disabled,.btn-green.btn[disabled],input[type=submit].btn-green.btn-active,input[type=submit].btn-green.btn-disabled,input[type=submit].btn-green.btn[disabled]{color:hsla(0,0%,100%,.5);background:#237f35}
 .btn-green.btn-active:hover,.btn-green.btn-disabled:hover,.btn-green.btn[disabled]:hover,input[type=submit].btn-green.btn-active:hover,input[type=submit].btn-green.btn-disabled:hover,input[type=submit].btn-green.btn[disabled]:hover{color:hsla(0,0%,100%,.5)}
-.btn-green.btn-outline,input[type=submit].btn-green.btn-outline{background:0 0;border-color:#2c9f42;color:#2c9f42}
+.btn-green.btn-outline,input[type=submit].btn-green.btn-outline{background:none;border-color:#2c9f42;color:#2c9f42}
 .btn-green.btn-outline:hover,input[type=submit].btn-green.btn-outline:hover{color:hsla(0,0%,100%,.9);background:#2c9f42}
-.btn-green.btn-outline.btn-disabled,.btn-green.btn-outline.btn[disabled],input[type=submit].btn-green.btn-outline.btn-disabled,input[type=submit].btn-green.btn-outline.btn[disabled]{background:0 0;box-shadow:none;color:rgba(44,159,66,.4);border:1px solid rgba(44,159,66,.3)}
-.btn-green.btn-outline.btn-active,input[type=submit].btn-green.btn-outline.btn-active{background:0 0;color:rgba(44,159,66,.6);border:none;box-shadow:0 1px 3px rgba(35,127,53,.6) inset}
+.btn-green.btn-outline.btn-disabled,.btn-green.btn-outline.btn[disabled],input[type=submit].btn-green.btn-outline.btn-disabled,input[type=submit].btn-green.btn-outline.btn[disabled]{background:none;box-shadow:none;color:rgba(44,159,66,.4);border:1px solid rgba(44,159,66,.3)}
+.btn-green.btn-outline.btn-active,input[type=submit].btn-green.btn-outline.btn-active{background:none;color:rgba(44,159,66,.6);border:none;box-shadow:0 1px 3px rgba(35,127,53,.6) inset}
 .btn-black,input[type=submit].btn-black{color:hsla(0,0%,100%,.9);background:#0f0f0f}
 .btn-black:hover,input[type=submit].btn-black:hover{color:hsla(0,0%,100%,.6);background:#363738}
 .btn-black.btn-active,input[type=submit].btn-black.btn-active{box-shadow:0 1px 4px rgba(0,0,0,.7) inset}
 .btn-black.btn-active,.btn-black.btn-disabled,.btn-black.btn[disabled],input[type=submit].btn-black.btn-active,input[type=submit].btn-black.btn-disabled,input[type=submit].btn-black.btn[disabled]{color:hsla(0,0%,100%,.5);background:#363738}
 .btn-black.btn-active:hover,.btn-black.btn-disabled:hover,.btn-black.btn[disabled]:hover,input[type=submit].btn-black.btn-active:hover,input[type=submit].btn-black.btn-disabled:hover,input[type=submit].btn-black.btn[disabled]:hover{color:hsla(0,0%,100%,.5)}
-.btn-black.btn-outline,input[type=submit].btn-black.btn-outline{background:0 0;border-color:#0f0f0f;color:#0f0f0f}
+.btn-black.btn-outline,input[type=submit].btn-black.btn-outline{background:none;border-color:#0f0f0f;color:#0f0f0f}
 .btn-black.btn-outline:hover,input[type=submit].btn-black.btn-outline:hover{color:hsla(0,0%,100%,.9);background:#0f0f0f}
-.btn-black.btn-outline.btn-disabled,.btn-black.btn-outline.btn[disabled],input[type=submit].btn-black.btn-outline.btn-disabled,input[type=submit].btn-black.btn-outline.btn[disabled]{background:0 0;box-shadow:none;color:hsla(0,0%,6%,.4);border:1px solid hsla(0,0%,6%,.3)}
-.btn-black.btn-outline.btn-active,input[type=submit].btn-black.btn-outline.btn-active{background:0 0;color:hsla(0,0%,6%,.6);border:none;box-shadow:0 1px 3px rgba(54,55,56,.6) inset}
+.btn-black.btn-outline.btn-disabled,.btn-black.btn-outline.btn[disabled],input[type=submit].btn-black.btn-outline.btn-disabled,input[type=submit].btn-black.btn-outline.btn[disabled]{background:none;box-shadow:none;color:hsla(0,0%,6%,.4);border:1px solid hsla(0,0%,6%,.3)}
+.btn-black.btn-outline.btn-active,input[type=submit].btn-black.btn-outline.btn-active{background:none;color:hsla(0,0%,6%,.6);border:none;box-shadow:0 1px 3px rgba(54,55,56,.6) inset}
 .btn-yellow,input[type=submit].btn-yellow{color:rgba(0,0,0,.9);background:#ffc800}
 .btn-yellow:hover,input[type=submit].btn-yellow:hover{color:rgba(0,0,0,.6);background:#cca000}
 .btn-yellow.btn-active,input[type=submit].btn-yellow.btn-active{box-shadow:0 1px 4px rgba(0,0,0,.5) inset}
 .btn-yellow.btn-active,.btn-yellow.btn-disabled,.btn-yellow.btn[disabled],input[type=submit].btn-yellow.btn-active,input[type=submit].btn-yellow.btn-disabled,input[type=submit].btn-yellow.btn[disabled]{color:rgba(0,0,0,.5);background:#cca000}
 .btn-yellow.btn-active:hover,.btn-yellow.btn-disabled:hover,.btn-yellow.btn[disabled]:hover,input[type=submit].btn-yellow.btn-active:hover,input[type=submit].btn-yellow.btn-disabled:hover,input[type=submit].btn-yellow.btn[disabled]:hover{color:rgba(0,0,0,.5)}
-.btn-yellow.btn-outline,input[type=submit].btn-yellow.btn-outline{background:0 0;border-color:#ffc800;color:#ffc800}
+.btn-yellow.btn-outline,input[type=submit].btn-yellow.btn-outline{background:none;border-color:#ffc800;color:#ffc800}
 .btn-yellow.btn-outline:hover,input[type=submit].btn-yellow.btn-outline:hover{color:rgba(0,0,0,.9);background:#ffc800}
-.btn-yellow.btn-outline.btn-disabled,.btn-yellow.btn-outline.btn[disabled],input[type=submit].btn-yellow.btn-outline.btn-disabled,input[type=submit].btn-yellow.btn-outline.btn[disabled]{background:0 0;box-shadow:none;color:rgba(255,200,0,.4);border:1px solid rgba(255,200,0,.3)}
-.btn-yellow.btn-outline.btn-active,input[type=submit].btn-yellow.btn-outline.btn-active{background:0 0;color:rgba(255,200,0,.6);border:none;box-shadow:0 1px 3px rgba(204,160,0,.6) inset}
+.btn-yellow.btn-outline.btn-disabled,.btn-yellow.btn-outline.btn[disabled],input[type=submit].btn-yellow.btn-outline.btn-disabled,input[type=submit].btn-yellow.btn-outline.btn[disabled]{background:none;box-shadow:none;color:rgba(255,200,0,.4);border:1px solid rgba(255,200,0,.3)}
+.btn-yellow.btn-outline.btn-active,input[type=submit].btn-yellow.btn-outline.btn-active{background:none;color:rgba(255,200,0,.6);border:none;box-shadow:0 1px 3px rgba(204,160,0,.6) inset}
 .btn-white,input[type=submit].btn-white{color:rgba(0,0,0,.9);background:#fff}
 .btn-white:hover,input[type=submit].btn-white:hover{color:rgba(0,0,0,.6);background:#ededed}
 .btn-white.btn-active,input[type=submit].btn-white.btn-active{box-shadow:0 1px 4px rgba(0,0,0,.2) inset}
 .btn-white.btn-active,.btn-white.btn-disabled,.btn-white.btn[disabled],input[type=submit].btn-white.btn-active,input[type=submit].btn-white.btn-disabled,input[type=submit].btn-white.btn[disabled]{color:rgba(0,0,0,.5);background:#ededed}
 .btn-white.btn-active:hover,.btn-white.btn-disabled:hover,.btn-white.btn[disabled]:hover,input[type=submit].btn-white.btn-active:hover,input[type=submit].btn-white.btn-disabled:hover,input[type=submit].btn-white.btn[disabled]:hover{color:rgba(0,0,0,.5)}
-.btn-white.btn-outline,input[type=submit].btn-white.btn-outline{background:0 0;border-color:#fff;color:#fff}
+.btn-white.btn-outline,input[type=submit].btn-white.btn-outline{background:none;border-color:#fff;color:#fff}
 .btn-white.btn-outline:hover,input[type=submit].btn-white.btn-outline:hover{color:rgba(0,0,0,.9);background:#fff}
-.btn-white.btn-outline.btn-disabled,.btn-white.btn-outline.btn[disabled],input[type=submit].btn-white.btn-outline.btn-disabled,input[type=submit].btn-white.btn-outline.btn[disabled]{background:0 0;box-shadow:none;color:hsla(0,0%,100%,.4);border:1px solid hsla(0,0%,100%,.3)}
-.btn-white.btn-outline.btn-active,input[type=submit].btn-white.btn-outline.btn-active{background:0 0;color:hsla(0,0%,100%,.6);border:none;box-shadow:0 1px 3px hsla(0,0%,93%,.6) inset}
+.btn-white.btn-outline.btn-disabled,.btn-white.btn-outline.btn[disabled],input[type=submit].btn-white.btn-outline.btn-disabled,input[type=submit].btn-white.btn-outline.btn[disabled]{background:none;box-shadow:none;color:hsla(0,0%,100%,.4);border:1px solid hsla(0,0%,100%,.3)}
+.btn-white.btn-outline.btn-active,input[type=submit].btn-white.btn-outline.btn-active{background:none;color:hsla(0,0%,100%,.6);border:none;box-shadow:0 1px 3px hsla(0,0%,93%,.6) inset}
 .btn-white.btn-outline.btn-active{box-shadow:none;border:1px solid hsla(0,0%,100%,.3);padding:.48750000000000004em 2.5em}
 .btn-group,.btn-single{display:inline-block;margin-right:2px;vertical-align:bottom}
 .btn-group:after,.btn-single:after{content:"";display:table;clear:both}
@@ -373,7 +373,7 @@ input.input-smaller{font-size:11.25px}
 .tools-alert-yellow{background:#fff4cc}
 .tools-alert-green{background:#d5ecd9}
 .badge,.label{background:#e0e3e5;font-size:12.75px;display:inline-block;line-height:1;padding:4px 7px 3px;color:#0f0f0f;text-align:center;font-weight:400;text-transform:uppercase;text-decoration:none}
-.label-outline{background:0 0;border:1px solid #0f0f0f;padding:3px 6px 2px}
+.label-outline{background:none;border:1px solid #0f0f0f;padding:3px 6px 2px}
 .badge{border-radius:15px}
 .badge-small{font-size:11.25px;padding:3px 5px}
 .badge-black,.badge-blue,.badge-green,.badge-red,.label-black,.label-blue,.label-green,.label-red{color:#fff}
@@ -383,7 +383,7 @@ input.input-smaller{font-size:11.25px}
 .badge-green,.label-green{background:#2c9f42}
 .badge-yellow,.label-yellow{background:#ffc800}
 .badge-white,.label-white{background:#fff}
-.label-black.label-outline,.label-blue.label-outline,.label-green.label-outline,.label-red.label-outline,.label-white.label-outline,.label-yellow.label-outline{background:0 0;color:#0f0f0f}
+.label-black.label-outline,.label-blue.label-outline,.label-green.label-outline,.label-red.label-outline,.label-white.label-outline,.label-yellow.label-outline{background:none;color:#0f0f0f}
 .label-blue.label-outline{border-color:#2575ed;color:#2575ed}
 .label-red.label-outline{border-color:#de2c3b;color:#de2c3b}
 .label-green.label-outline{border-color:#2c9f42;color:#2c9f42}

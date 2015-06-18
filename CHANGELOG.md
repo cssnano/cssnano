@@ -1,3 +1,7 @@
+# 1.4.3
+
+* Fixes incorrect minification of `background:none` to `background:0 0`.
+
 # 1.4.2
 
 * Fixes an issue with nested URLs inside `url()` functions.
