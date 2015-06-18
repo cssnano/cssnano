@@ -313,7 +313,7 @@ body,html{height:100%}
 .text-center{text-align:center}
 .text-left{text-align:left}
 .text-right{text-align:right}
-@font-face{font-family:entypo;font-style:normal;font-weight:400;src:url(../fonts/icons/entypo.eot);src:url("../fonts/icons/entypo.eot?#iefix") format("ie9-skip-eot"),url("../fonts/icons/entypo.woff") format("woff"),url("../fonts/icons/entypo.ttf") format("truetype")}
+@font-face{font-family:entypo;font-style:normal;font-weight:400;src:url(../fonts/icons/entypo.eot);src:url(../fonts/icons/entypo.eot?#iefix) format("ie9-skip-eot"),url(../fonts/icons/entypo.woff) format("woff"),url(../fonts/icons/entypo.ttf) format("truetype")}
 h1,h2,h3,h4,h5,h6{font-family:Open Sans;font-weight:300;color:#444;text-rendering:optimizeLegibility;padding-top:.273em;line-height:1.15538em;padding-bottom:.273em}
 h1 a,h2 a,h3 a,h4 a,h5 a,h6 a{color:#d04526}
 h1 a:hover,h2 a:hover,h3 a:hover,h4 a:hover,h5 a:hover,h6 a:hover{color:#c03d20}
