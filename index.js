@@ -31,14 +31,8 @@ var processors = {
     uniqueSelectors: require('postcss-unique-selectors')
 };
 
-module.exports = function cssnano(css, options) {
-    if (typeof css === 'object') {
-        options = css;
-        css = null;
-    }
-
-    options = typeof options === 'object' ? options : {};
-    options.map = options.map || (options.sourcemap ? true : null);
+var cssnano = Postcss.plugin('cssnano', function (options) {
+    options = options || {};
 
     var postcss = Postcss();
     var plugins = Object.keys(processors);
@@ -61,15 +55,19 @@ module.exports = function cssnano(css, options) {
         postcss.use(method(opts));
     }
 
-    if (typeof css === 'string') {
-        var result = postcss.process(css, options);
-        // return a css string if inline/no sourcemap.
-        if (options.map === null || options.map === true || (options.map && options.map.inline)) {
-            return result.css;
-        }
-        // otherwise return an object of css & map
-        return result;
-    }
-
     return postcss;
-};
+});
+
+module.exports = cssnano;
+
+module.exports.process = function (css, options) {
+    options = typeof options === 'object' ? options : {};
+    options.map = options.map || (options.sourcemap ? true : null);
+    var result = Postcss([cssnano(options)]).process(css, options);
+    // return a css string if inline/no sourcemap.
+    if (options.map === null || options.map === true || (options.map && options.map.inline)) {
+        return result.css;
+    }
+    // otherwise return an object of css & map
+    return result;
+}

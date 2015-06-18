@@ -66,7 +66,7 @@ Use [`broccoli-cssnano`].
 cssnano can be used directly via its node.js API, or consumed as a PostCSS
 plugin.
 
-#### node.js (`nano(css, [options])`)
+#### node.js (`nano.process(css, [options])`)
 
 ```js
 var nano      = require('cssnano');
@@ -75,7 +75,7 @@ var writeFile = require('fs').writeFileSync;
 
 var input = readFile('main.css', 'utf8');
 
-writeFile('main.min.css', nano(input));
+writeFile('main.min.css', nano.process(input));
 ```
 
 #### PostCSS (`nano([options])`)
