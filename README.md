@@ -98,6 +98,11 @@ writeFile('main.min.css', output);
 
 Set this to `true` to generate an inline source map.
 
+##### autoprefixer
+
+Set this to `false` to disable removal of outdated vendor prefixes. If it is
+an object, it will be passed as the options to [`autoprefixer`].
+
 ##### zindex
 
 Set this to `false` to disable z-index transforms.
@@ -141,6 +146,7 @@ project's aim is, eventually, to become entirely composed of node modules that
 are responsible for small CSS optimisations. At present, it is composed of the
 following modules:
 
+* [`autoprefixer`]: Removes old prefixes from the CSS.
 * [`postcss-calc`]: Convert `calc()` functions where possible.
   `calc(5 * 10px)` -> `50px`
 * [`postcss-colormin`]: Convert colors into their smallest representation.
@@ -183,6 +189,7 @@ MIT © [Ben Briggs](http://beneb.info)
 [modules]:                      https://github.com/ben-eb/css-minifiers
 [PostCSS]:                      https://github.com/postcss/postcss
 
+[`autoprefixer`]:               https://github.com/postcss/autoprefixer
 [`postcss-calc`]:               https://github.com/postcss/postcss-calc
 [`postcss-colormin`]:           https://github.com/ben-eb/postcss-colormin
 [`postcss-convert-values`]:     https://github.com/ben-eb/postcss-convert-values

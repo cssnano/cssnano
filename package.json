@@ -23,6 +23,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "autoprefixer-core": "^5.2.0",
     "balanced-match": "^0.2.0",
     "css-list": "^0.1.0",
     "flatten": "0.0.1",

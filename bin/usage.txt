@@ -4,6 +4,8 @@ Options:
 
     --sourcemap,  -s    Generate a sourcemap within the minified output.
 
+    --no-autoprefixer   Disable removal of old vendor prefixed properties.
+
     --no-zindex         Disable z-index transforms.
 
     --no-calc           Disable calc transforms.

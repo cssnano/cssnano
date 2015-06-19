@@ -4,6 +4,7 @@ var Postcss = require('postcss');
 
 var processors = {
     discardComments: {fn: require('postcss-discard-comments'), ns: 'comments'},
+    autoprefixer: {fn: require('autoprefixer-core'), ns: 'autoprefixer'},
     zindex: {fn: require('postcss-zindex'), ns: 'zindex'},
     discardEmpty: require('postcss-discard-empty'),
     minifyFontWeight: require('postcss-minify-font-weight'),
@@ -49,6 +50,9 @@ var cssnano = Postcss.plugin('cssnano', function (options) {
         } else {
             if (opts[processor.ns] === false || opts.disable) {
                 continue;
+            }
+            if (plugin === 'autoprefixer') {
+                opts.add = false;
             }
             method = processor.fn;
         }
