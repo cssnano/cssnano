@@ -65,7 +65,7 @@ var cssnano = Postcss.plugin('cssnano', function (options) {
 module.exports = cssnano;
 
 module.exports.process = function (css, options) {
-    options = typeof options === 'object' ? options : {};
+    options = options || {};
     options.map = options.map || (options.sourcemap ? true : null);
     var result = Postcss([cssnano(options)]).process(css, options);
     // return a css string if inline/no sourcemap.
