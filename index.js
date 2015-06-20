@@ -3,6 +3,7 @@
 var Postcss = require('postcss');
 
 var processors = {
+    pluginFilter: require('./lib/pluginFilter'),
     discardComments: {fn: require('postcss-discard-comments'), ns: 'comments'},
     autoprefixer: {fn: require('autoprefixer-core'), ns: 'autoprefixer'},
     zindex: {fn: require('postcss-zindex'), ns: 'zindex'},

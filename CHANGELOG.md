@@ -1,6 +1,8 @@
 # *current*
 
 * Adds removal of outdated vendor prefixes based on browser support.
+* cssnano will now detect previous plugins and silently disable them when the
+  functionality overlaps. This is to enable faster interoperation with cssnext.
 * cssnano now exports as a PostCSS plugin. The simple interface is exposed
   at `cssnano.process(css, opts)` instead of `cssnano(css, opts)`.
 * Improved URL detection when using two or more in the same declaration.

@@ -3,6 +3,7 @@ var test = require('tape');
 var nano = require('../');
 var specName = require('./util/specName');
 var read = require('fs').readFileSync;
+var autoprefixer = require('autoprefixer-core');
 
 test('can be used as a postcss plugin', function (t) {
     var css = 'h1 { color: #ffffff }';
@@ -32,4 +33,13 @@ test('can be used as a postcss plugin, with options', function (t) {
 
     t.plan(1);
     t.equal(out, exp, specName('notTransformCalcProperty'));
+});
+
+test('should silently disable features if they are already consumed by postcss', function (t) {
+    var css = 'h1{-webkit-border-radius:5px;border-radius:5px}';
+    var exp = 'h1{-webkit-border-radius:5px;border-radius:5px}';
+    var out = postcss([ autoprefixer({browsers: 'Safari < 5'}), nano() ]).process(css).css;
+
+    t.plan(1);
+    t.equal(out, exp, specName('notIncludeAutoprefixerTwice'));
 });
