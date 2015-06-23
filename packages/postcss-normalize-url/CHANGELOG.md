@@ -1,3 +1,8 @@
+# 2.0.2
+
+* Addresses an issue where relative path separators were converted to
+  backslashes on Windows.
+
 # 2.0.1
 
 * Documentation/metadata tweaks for plugin guidelines compatibility.

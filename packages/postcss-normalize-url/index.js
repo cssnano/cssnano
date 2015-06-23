@@ -17,7 +17,7 @@ function convert (url, options) {
     if (isAbsolute(url)) {
         return normalize(url, options);
     }
-    return path.normalize(url);
+    return path.normalize(url).replace(new RegExp('\\' + path.sep, 'g'), '/');
 }
 
 function namespaceOptimiser (options) {
