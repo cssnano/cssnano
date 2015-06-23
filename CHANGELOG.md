@@ -1,6 +1,8 @@
 # *current*
 
 * Adds removal of outdated vendor prefixes based on browser support.
+* Addresses an issue where relative path separators were converted to
+  backslashes on Windows.
 * cssnano will now detect previous plugins and silently disable them when the
   functionality overlaps. This is to enable faster interoperation with cssnext.
 * cssnano now exports as a PostCSS plugin. The simple interface is exposed
