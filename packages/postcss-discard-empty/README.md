@@ -2,7 +2,9 @@
 
 > Discard empty rules and values with PostCSS.
 
-Install via [npm](https://npmjs.org/package/postcss-discard-empty):
+## Install
+
+With [npm](https://npmjs.org/package/postcss-discard-empty) do:
 
 ```
 npm install postcss-discard-empty --save
@@ -10,17 +12,28 @@ npm install postcss-discard-empty --save
 
 ## Example
 
-```js
-var postcss = require('postcss')
-var empty = require('postcss-discard-empty');
+For more examples see the [tests](test.js).
 
-var css = '@font-face; h1 {} {color:blue} h2 {color:} h3 {color:red}';
-console.log(postcss(empty()).process(css).css);
+### Input
 
-// => 'h3 {color:red}'
+```css
+@font-face;
+h1 {}
+{color:blue}
+h2 {color:}
+h3 {color:red}
 ```
 
-For more examples see the [tests](test.js).
+### Output
+
+```css
+h3 {color:red}
+```
+
+## Usage
+
+See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
+examples for your environment.
 
 ## Contributing
 
@@ -29,7 +42,7 @@ to cover it.
 
 ## License
 
-MIT © Ben Briggs
+MIT © [Ben Briggs](http://beneb.info)
 
 [ci]:      https://travis-ci.org/ben-eb/postcss-discard-empty
 [deps]:    https://gemnasium.com/ben-eb/postcss-discard-empty
