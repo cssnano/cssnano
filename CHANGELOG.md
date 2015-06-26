@@ -1,4 +1,4 @@
-# *current*
+# 2.0.0
 
 * Adds removal of outdated vendor prefixes based on browser support.
 * Addresses an issue where relative path separators were converted to
@@ -9,8 +9,6 @@
   at `cssnano.process(css, opts)` instead of `cssnano(css, opts)`.
 * Improved URL detection when using two or more in the same declaration.
 * node 0.10 is no longer officially supported.
-
----
 
 # 1.4.3
 
