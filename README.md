@@ -1,10 +1,12 @@
-# cssnano [![Build Status](https://travis-ci.org/ben-eb/cssnano.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/cssnano.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/cssnano.svg)][deps] [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/ben-eb/cssnano?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+<h1 align="center">
+    <br>
+    <img width="360" src="https://rawgit.com/ben-eb/cssnano/2.0/media/logo.svg" alt="cssnano">
+    <br>
+</h1>
 
 > A modular minifier, built on top of the [PostCSS] ecosystem.
 
-*Note that this project is still a work in progress, and needs more testing
-before it can be recommended to use in production. There are some optimisations
-that need to be further expanded upon, and others yet to be written.*
+[![Build Status](https://travis-ci.org/ben-eb/cssnano.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/cssnano.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/cssnano.svg)][deps] [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/ben-eb/cssnano?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 cssnano is a modular minifier that aims to utilise small modules from the
 PostCSS ecosystem, rather than being an all-encompassing module that may be
