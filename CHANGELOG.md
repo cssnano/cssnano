@@ -1,3 +1,9 @@
+# current
+
+* Add `postcss-plugin` keyword to package.json
+
+---
+
 # 2.0.0
 
 * Adds removal of outdated vendor prefixes based on browser support.

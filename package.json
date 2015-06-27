@@ -16,10 +16,12 @@
   },
   "keywords": [
     "css",
+    "compress",
     "minify",
     "optimise",
     "optimisation",
-    "postcss"
+    "postcss",
+    "postcss-plugin"
   ],
   "license": "MIT",
   "dependencies": {
