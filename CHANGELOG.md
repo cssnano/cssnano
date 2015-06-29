@@ -2,6 +2,7 @@
 
 * Extract trbl value reducing into a separate module.
 * Refactor core longhand optimiser to not rely on trbl cache.
+* Fixes parsing of some selector hacks.
 
 ---
 
