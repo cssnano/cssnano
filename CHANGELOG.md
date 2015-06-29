@@ -1,10 +1,12 @@
 # current
 
+---
+
+# 2.0.2
+
 * Extract trbl value reducing into a separate module.
 * Refactor core longhand optimiser to not rely on trbl cache.
 * Fixes parsing of some selector hacks.
-
----
 
 # 2.0.1
 
