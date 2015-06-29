@@ -1,8 +1,11 @@
 # current
 
-* Add `postcss-plugin` keyword to package.json
-
 ---
+
+# 2.0.1
+
+* Add `postcss-plugin` keyword to package.json.
+* Wraps all core processors with the PostCSS 4.1 plugin API.
 
 # 2.0.0
 
