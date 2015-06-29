@@ -21,6 +21,7 @@ var processors = {
     fontFamily: require('postcss-font-family'),
     discardUnused: {fn: require('postcss-discard-unused'), ns: 'unused'},
     normalizeUrl: require('postcss-normalize-url'),
+    minifyTrbl: require('postcss-minify-trbl'),
     core: require('./lib/core'),
     // Optimisations after this are sensitive to previous optimisations in
     // the pipe, such as whitespace normalising/selector re-ordering
