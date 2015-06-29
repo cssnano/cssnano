@@ -1,3 +1,7 @@
+# 1.4.2
+
+* Bump dependencies.
+
 # 1.4.1
 
 * Fixes incorrect deduplication of pseudo selector rules.
