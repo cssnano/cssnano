@@ -9,9 +9,11 @@
   },
   "keywords": [
     "css",
-    "comments",
+    "minify",
+    "optimise",
     "postcss",
-    "postcss-plugins"
+    "postcss-plugin",
+    "selectors"
   ],
   "license": "MIT",
   "devDependencies": {

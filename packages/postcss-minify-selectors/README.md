@@ -2,7 +2,9 @@
 
 > Minify selectors with PostCSS.
 
-Install via [npm](https://npmjs.org/package/postcss-minify-selectors):
+## Install
+
+With [npm](https://npmjs.org/package/postcss-minify-selectors) do:
 
 ```
 npm install postcss-minify-selectors --save
@@ -10,17 +12,24 @@ npm install postcss-minify-selectors --save
 
 ## Example
 
-```js
-var postcss = require('postcss')
-var selectors = require('postcss-minify-selectors');
+### Input
 
-var css = 'h1 + p, h2, h3, h2{color:blue}';
-console.log(postcss(selectors()).process(css).css);
+```css
+h1 + p, h2, h3, h2{color:blue}
+```
 
-// => 'h1+p,h2,h3{color:blue}'
+### Output
+
+```css
+h1+p,h2,h3{color:blue}
 ```
 
 For more examples see the [tests](test.js).
+
+## Usage
+
+See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
+examples for your environment.
 
 ## Contributing
 
@@ -29,7 +38,7 @@ to cover it.
 
 ## License
 
-MIT © Ben Briggs
+MIT © [Ben Briggs](http://beneb.info)
 
 [ci]:      https://travis-ci.org/ben-eb/postcss-minify-selectors
 [deps]:    https://gemnasium.com/ben-eb/postcss-minify-selectors

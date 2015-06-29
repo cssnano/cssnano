@@ -1,6 +1,7 @@
 # 1.4.2
 
 * Bump dependencies.
+* Fixes for PostCSS plugin guidelines.
 
 # 1.4.1
 
