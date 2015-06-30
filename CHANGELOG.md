@@ -7,6 +7,8 @@
 * Extract trbl value reducing into a separate module.
 * Refactor core longhand optimiser to not rely on trbl cache.
 * Fixes parsing of some selector hacks.
+* Fixes an issue where embedded base 64 data was being converted as if it were
+  a URL.
 
 # 2.0.1
 

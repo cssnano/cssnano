@@ -45,7 +45,7 @@
     "postcss-minify-font-weight": "^1.0.1",
     "postcss-minify-selectors": "^1.4.2",
     "postcss-minify-trbl": "^1.0.0",
-    "postcss-normalize-url": "^2.0.2",
+    "postcss-normalize-url": "^2.0.3",
     "postcss-pseudoelements": "^2.2.0",
     "postcss-reduce-idents": "^1.0.1",
     "postcss-single-charset": "^0.3.0",
