@@ -27,7 +27,7 @@
   "repository": "ben-eb/postcss-convert-values",
   "dependencies": {
     "balanced-match": "^0.2.0",
-    "css-list": "0.0.3",
+    "css-list": "^0.1.0",
     "postcss": "^4.1.4"
   }
 }

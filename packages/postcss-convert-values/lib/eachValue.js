@@ -4,7 +4,7 @@ var balanced = require('balanced-match');
 var list = require('css-list');
 
 module.exports = function eachValue (value, callback) {
-    return list.map(value, [' ', '\n', '\t', ',', '/'], function (value, type) {
+    return list.map(value, function (value, type) {
         var name,
             match,
             index;
