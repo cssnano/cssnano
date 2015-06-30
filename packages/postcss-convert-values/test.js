@@ -103,6 +103,10 @@ var tests = [{
     message: 'should support viewports units',
     fixture: 'h1,h2{letter-spacing:-0.1vmin}',
     expected: 'h1,h2{letter-spacing:-.1vmin}'
+}, {
+    message: 'should support ch units',
+    fixture: 'a{line-height:1.1ch}',
+    expected: 'a{line-height:1.1ch}'
 }];
 
 function process (css, options) {

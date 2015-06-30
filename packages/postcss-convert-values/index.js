@@ -8,10 +8,13 @@ var parseUnit = require('./lib/parseUnit');
 module.exports = postcss.plugin('postcss-convert-values', function () {
     return function (css) {
         css.eachDecl(function (decl) {
+            if (~decl.prop.indexOf('flex')) {
+                return;
+            }
             decl.value = eachValue(decl.value, function (value) {
                 var number, unit;
 
-                if (!~decl.prop.indexOf('flex') && !isNaN(number = parseFloat(value))) {
+                if (!isNaN(number = parseFloat(value))) {
                     unit = parseUnit(value);
 
                     if (number === 0) {

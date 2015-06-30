@@ -1,3 +1,8 @@
+# 1.2.3
+
+* Adds support for `ch` units; previously they were removed.
+* Upgrades css-list to `0.1.0`, code tidied up.
+
 # 1.2.2
 
 * Added support for viewport units (thanks to @TrySound).
