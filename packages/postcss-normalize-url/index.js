@@ -35,7 +35,12 @@ function namespaceOptimiser (options) {
 
 function eachValue (val, options) {
     return cssList.map(val, function (value, type) {
-        if (type !== 'func' || value.indexOf('url') !== 0 || ~value.indexOf('data:image/')) {
+        if (
+            type !== 'func' ||
+            value.indexOf('url') !== 0 ||
+            ~value.indexOf('data:image/') ||
+            ~value.indexOf('data:application/')
+        ) {
             return value;
         }
         var url = value.substring(4, value.length - 1).trim();

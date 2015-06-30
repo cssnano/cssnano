@@ -1,3 +1,8 @@
+# 2.0.3
+
+* Fixes an issue where embedded base 64 data was being converted as if it were
+  a URL.
+
 # 2.0.2
 
 * Addresses an issue where relative path separators were converted to
