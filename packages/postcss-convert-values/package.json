@@ -15,8 +15,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "tap-spec": "^2.2.2",
-    "tape": "^3.5.0"
+    "tap-spec": "^4.0.2",
+    "tape": "^4.0.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-convert-values",
   "author": {
@@ -28,6 +28,6 @@
   "dependencies": {
     "balanced-match": "^0.2.0",
     "css-list": "^0.1.0",
-    "postcss": "^4.1.4"
+    "postcss": "^4.1.13"
   }
 }
