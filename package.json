@@ -7,6 +7,7 @@
     "cssnano": "bin/cmd.js"
   },
   "scripts": {
+    "bench": "tape benchmark/index.js",
     "test-cli": "tape tests/cli.js",
     "test-integrations": "tape tests/integrations.js",
     "test-fixtures": "tape tests/fixtures.js | faucet",
