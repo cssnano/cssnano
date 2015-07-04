@@ -2,6 +2,11 @@
 
 ---
 
+# 2.0.3
+
+* cssnano can now be consumed with the parentheses-less method in PostCSS; e.g.
+  `postcss([ cssnano ])`.
+
 # 2.0.2
 
 * Extract trbl value reducing into a separate module.
