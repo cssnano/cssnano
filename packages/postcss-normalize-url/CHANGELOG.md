@@ -1,3 +1,8 @@
+# 2.1.0
+
+* Adds `keepWWW` option.
+* Compatibility fixes for `is-absolute-url@2.0.0`.
+
 # 2.0.3
 
 * Fixes an issue where embedded base 64 data was being converted as if it were

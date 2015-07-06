@@ -104,6 +104,10 @@ var tests = [{
     fixture: '@document url(http://www.w3.org/),url-prefix(http://www.w3.org/Style/){body{font-size:2em}}',
     expected: '@document url(http://www.w3.org/),url-prefix(http://www.w3.org/Style/){body{font-size:2em}}'
 }, {
+    message: 'should handle protocol relative urls',
+    fixture: 'h1{background:url(//website.com:80/image.png)}',
+    expected: 'h1{background:url(//website.com/image.png)}'
+}, {
     message: 'should pass through when it doesn\'t find a url function',
     fixture: 'h1{color:black;font-weight:bold}',
     expected: 'h1{color:black;font-weight:bold}'

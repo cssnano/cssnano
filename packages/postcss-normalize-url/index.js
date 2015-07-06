@@ -14,7 +14,7 @@ var unquote = /^("|')(.*)\1$/;
 var escapeChars = /([\s\(\)"'])/g;
 
 function convert (url, options) {
-    if (isAbsolute(url)) {
+    if (isAbsolute(url) || !url.indexOf('//')) {
         return normalize(url, options);
     }
     return path.normalize(url).replace(new RegExp('\\' + path.sep, 'g'), '/');
@@ -60,7 +60,8 @@ function eachValue (val, options) {
 module.exports = postcss.plugin('postcss-normalize-url', function (options) {
     options = assign({
         normalizeProtocol: false,
-        stripFragment: false
+        stripFragment: false,
+        stripWWW: true
     }, options);
 
     return function (css) {
