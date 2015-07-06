@@ -1,0 +1,56 @@
+{
+  "name": "stylehacks",
+  "version": "0.0.0",
+  "description": "Detect/remove browser hacks from CSS files.",
+  "main": "dist/index.js",
+  "bin": {
+    "stylehacks": "bin/cmd.js"
+  },
+  "files": [
+    "bin",
+    "LICENSE-MIT",
+    "dist"
+  ],
+  "scripts": {
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/",
+    "test-unformatted": "babel-tape-runner \"src/**/__tests__/*.js\"",
+    "test": "npm run test-unformatted | faucet"
+  },
+  "keywords": [
+    "browsers",
+    "css",
+    "hack",
+    "hacks",
+    "optimise",
+    "postcss",
+    "postcss-plugin",
+    "stylehacks"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "babel": "^5.6.14",
+    "babel-tape-runner": "^1.1.0",
+    "faucet": "0.0.1",
+    "tape": "^4.0.0"
+  },
+  "homepage": "https://github.com/ben-eb/stylehacks",
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": "ben-eb/stylehacks",
+  "dependencies": {
+    "browserslist": "^0.5.0",
+    "chalk": "^1.1.0",
+    "log-symbols": "^1.0.2",
+    "minimist": "^1.1.1",
+    "plur": "^2.0.0",
+    "postcss": "^4.1.14",
+    "postcss-reporter": "^0.1.0",
+    "postcss-selector-parser": "^1.1.2",
+    "read-file-stdin": "^0.2.0",
+    "text-table": "^0.2.0",
+    "write-file-stdout": "0.0.2"
+  }
+}
