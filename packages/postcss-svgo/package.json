@@ -8,6 +8,10 @@
     "test-unformatted": "babel-tape-runner \"src/**/__tests__/*.js\"",
     "test": "npm run test-unformatted | faucet"
   },
+  "files": [
+    "LICENSE-MIT",
+    "dist"
+  ],
   "keywords": [
     "css",
     "minify",
