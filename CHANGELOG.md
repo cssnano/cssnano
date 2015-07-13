@@ -6,6 +6,8 @@
 
 * cssnano can now be consumed with the parentheses-less method in PostCSS; e.g.
   `postcss([ cssnano ])`.
+* Fixes an issue where 'Din' was being picked up by the logic as a numeric
+  value, causing the full font name to be incorrectly rearranged.
 
 # 2.0.2
 
