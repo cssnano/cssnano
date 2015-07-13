@@ -85,6 +85,13 @@ stylehacks also ships with a CLI app. To see the available options, just run:
 $ stylehacks --help
 ```
 
+## Related
+
+stylehacks works well with your existing PostCSS setup:
+
+* [stylelint] - Comprehensive & modern CSS linter, to ensure that your code
+  style rules are respected.
+
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests
@@ -94,7 +101,8 @@ to cover it.
 
 MIT © [Ben Briggs](http://beneb.info)
 
-[ci]:      https://travis-ci.org/ben-eb/stylehacks
-[deps]:    https://gemnasium.com/ben-eb/stylehacks
-[npm]:     http://badge.fury.io/js/stylehacks
-[postcss]: https://github.com/postcss/postcss
+[ci]:        https://travis-ci.org/ben-eb/stylehacks
+[deps]:      https://gemnasium.com/ben-eb/stylehacks
+[npm]:       http://badge.fury.io/js/stylehacks
+[postcss]:   https://github.com/postcss/postcss
+[stylelint]: https://github.com/stylelint/stylelint
