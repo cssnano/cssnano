@@ -18,7 +18,7 @@ var processors = {
     minifySelectors: require('postcss-minify-selectors'),
     singleCharset: require('postcss-single-charset'),
     // font-family should be run before discard-unused
-    fontFamily: require('postcss-font-family'),
+    fontFamily: {fn: require('postcss-font-family'), ns: 'fonts'},
     discardUnused: {fn: require('postcss-discard-unused'), ns: 'unused'},
     normalizeUrl: require('postcss-normalize-url'),
     minifyTrbl: require('postcss-minify-trbl'),

@@ -1,5 +1,7 @@
 # current
 
+* Allow `postcss-font-family` to be disabled.
+
 ---
 
 # 2.0.3
