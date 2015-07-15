@@ -164,6 +164,10 @@ var tests = [{
     fixture: '@charset "utf-8";@charset "utf-8";@charset "utf-8";h1{}h2{}',
     expected: '@charset "utf-8";@charset "utf-8";@charset "utf-8";h1,h2{}'
 }, {
+    message: 'should not throw on comment nodes',
+    fixture: '.navbar-soft .navbar-nav > .active > a{color:#fff;background-color:#303030}.navbar-soft .navbar-nav > .open > a{color:#fff;background-color:rgba(48,48,48,0.8)}/* caret */.navbar-soft .navbar-nav > .dropdown > a .caret{border-top-color:#777;border-bottom-color:#777}',
+    expected: '.navbar-soft .navbar-nav > .active > a{color:#fff;background-color:#303030}.navbar-soft .navbar-nav > .open > a{color:#fff;background-color:rgba(48,48,48,0.8)}/* caret */.navbar-soft .navbar-nav > .dropdown > a .caret{border-top-color:#777;border-bottom-color:#777}',
+}, {
     message: 'should not be responsible for deduping declarations when merging',
     fixture: 'h1{display:block;display:block}h2{display:block;display:block}',
     expected: 'h1,h2{display:block;display:block}'

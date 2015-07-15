@@ -73,7 +73,7 @@ function partialMerge (first, second) {
         return second;
     }
     var nextRule = second.next();
-    if (nextRule) {
+    if (nextRule && nextRule.type !== 'comment') {
         var nextIntersection = intersect(getDeclarations(second), getDeclarations(nextRule));
         if (nextIntersection.length > intersection.length) {
             first = second; second = nextRule; intersection = nextIntersection;

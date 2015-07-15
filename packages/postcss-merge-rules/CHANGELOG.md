@@ -1,3 +1,8 @@
+# 1.3.1
+
+* Fixes a behaviour in which rule adjacent forward nodes were not being type
+  checked before they were merged.
+
 # 1.3.0
 
 * Better support for merging properties without the existance of a shorthand
