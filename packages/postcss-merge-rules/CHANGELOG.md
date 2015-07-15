@@ -2,6 +2,7 @@
 
 * Fixes a behaviour in which rule adjacent forward nodes were not being type
   checked before they were merged.
+* Compatibility fixes for the PostCSS plugin guidelines.
 
 # 1.3.0
 

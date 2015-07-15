@@ -2,27 +2,21 @@
 
 > Merge CSS rules with PostCSS.
 
-Install via [npm](https://npmjs.org/package/postcss-merge-rules):
+## Install
+
+With [npm](https://npmjs.org/package/postcss-merge-rules) do:
 
 ```
 npm install postcss-merge-rules --save
 ```
 
-## Example
-
-```js
-var postcss = require('postcss');
-var mergeRules = require('postcss-merge-rules');
-
-var css = 'a{color:blue}a{font-weight:bold}';
-console.log(postcss(mergeRules()).process(css).css);
-
-// => 'a{color:blue;font-weight:bold}'
-```
+## Examples
 
 This module will attempt to merge *adjacent* CSS rules:
 
 ### By declarations
+
+#### Input
 
 ```css
 a {
@@ -36,7 +30,7 @@ p {
 }
 ```
 
-Becomes:
+#### Output
 
 ```css
 a,p {
@@ -47,6 +41,8 @@ a,p {
 
 ### By selectors
 
+#### Input
+
 ```css
 a {
     color: blue
@@ -57,7 +53,7 @@ a {
 }
 ```
 
-Becomes:
+#### Output
 
 ```css
 a {
@@ -67,6 +63,8 @@ a {
 ```
 
 ### By partial declarations
+
+#### Input
 
 ```css
 a {
@@ -79,7 +77,7 @@ p {
 }
 ```
 
-Becomes:
+#### Output
 
 ```css
 a,p {
@@ -91,6 +89,11 @@ p {
 }
 ```
 
+## Usage
+
+See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
+examples for your environment.
+
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests
@@ -98,7 +101,7 @@ to cover it.
 
 ## License
 
-MIT © Ben Briggs
+MIT © [Ben Briggs](http://beneb.info)
 
 [ci]:      https://travis-ci.org/ben-eb/postcss-merge-rules
 [deps]:    https://gemnasium.com/ben-eb/postcss-merge-rules
