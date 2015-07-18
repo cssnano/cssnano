@@ -1,3 +1,8 @@
+# 1.1.0
+
+* Adds support for uri-encoded SVG files, for better compatibility
+  with postcss-svg.
+
 # 1.0.1
 
 * Push ES5 build to npm.
