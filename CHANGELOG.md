@@ -2,6 +2,10 @@
 
 ---
 
+# 2.1.1
+
+* Fixes an issue where options were not passed to normalize-url.
+
 # 2.1.0
 
 * Allow `postcss-font-family` to be disabled.

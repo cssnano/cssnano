@@ -20,7 +20,7 @@ var processors = {
     // font-family should be run before discard-unused
     fontFamily: {fn: require('postcss-font-family'), ns: 'fonts'},
     discardUnused: {fn: require('postcss-discard-unused'), ns: 'unused'},
-    normalizeUrl: require('postcss-normalize-url'),
+    normalizeUrl: {fn: require('postcss-normalize-url'), ns: 'urls'},
     minifyTrbl: require('postcss-minify-trbl'),
     core: require('./lib/core'),
     // Optimisations after this are sensitive to previous optimisations in
