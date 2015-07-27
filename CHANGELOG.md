@@ -1,5 +1,7 @@
 # current
 
+* Replaced integrated plugin filter with postcss-filter-plugins.
+
 ---
 
 # 2.1.1
