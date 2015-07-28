@@ -43,23 +43,37 @@ var cssnano = Postcss.plugin('cssnano', function (options) {
     var plugins = Object.keys(processors);
     var len = plugins.length;
     var i = 0;
-
+    
     while (i < len) {
         var plugin = plugins[i++];
         var processor = processors[plugin];
-        var opts = options[processor.ns] || options;
+        
+        var opts = options[plugin];
+        if(typeof opts === 'undefined') {
+            opts = options[processor.ns];
+        }
+        
+        if (opts === false) {
+            continue;
+        }
+        
+        opts = opts || {};
+        
+        if (plugin === 'autoprefixer') {
+            opts.add = false;
+        }
+        
+        if (opts.disable) {
+            continue;
+        }
+        
         var method;
         if (typeof processor === 'function') {
             method = processor;
         } else {
-            if (opts[processor.ns] === false || opts.disable) {
-                continue;
-            }
-            if (plugin === 'autoprefixer') {
-                opts.add = false;
-            }
             method = processor.fn;
         }
+        
         postcss.use(method(opts));
     }
 
