@@ -152,6 +152,10 @@ var tests = [{
     fixture: '.control-group-inline>input[type="radio"]{color:blue}',
     expected: '.control-group-inline>input[type=radio]{color:blue}'
 }, {
+    message: 'should not mangle .from/#from etc',
+    fixture: '#from,.from{color:blue}',
+    expected: '#from,.from{color:blue}'
+}, {
     message: 'should not mangle pseudo classes',
     fixture: '.btn-group>.btn:last-child:not(:first-child),.btn-group>.dropdown-toggle:not(:first-child){color:blue}',
     expected: '.btn-group>.btn:last-child:not(:first-child),.btn-group>.dropdown-toggle:not(:first-child){color:blue}'

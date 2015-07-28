@@ -67,8 +67,8 @@ function optimise (rule) {
             // Trim whitespace around the value
             selector.spaces.before = selector.spaces.after = '';
             // Minimise from/100%
-            if (selector.value === 'from') { selector.value = '0%'; }
-            if (selector.value === '100%') { selector.value = 'to'; }
+            if (selector.value === 'from' && selector.type === 'tag') { selector.value = '0%'; }
+            if (selector.value === '100%' && selector.type === 'tag') { selector.value = 'to'; }
             if (selector.type === 'combinator') {
                 var value = selector.value.trim();
                 selector.value = value.length ? value : ' ';

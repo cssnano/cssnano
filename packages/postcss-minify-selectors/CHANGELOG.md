@@ -1,3 +1,7 @@
+# 1.4.3
+
+* Fixed an issue where `.from` was transformed to `0%`.
+
 # 1.4.2
 
 * Bump dependencies.
