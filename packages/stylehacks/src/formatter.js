@@ -21,7 +21,7 @@ export default input => {
     let source = input.source;
 
     if (!messages.length) {
-        return '  ' + logSymbols.success + '  No hacks found.';
+        return `  ${logSymbols.success}  No hacks found.`;
     }
 
     return `${chalk.underline(logFrom(source))}\n` + table(messages.map(msg => {

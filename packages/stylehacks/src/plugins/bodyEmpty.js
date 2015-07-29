@@ -8,7 +8,7 @@ let hack = 'stylehacks-body-empty';
 let targets = ['firefox 2'];
 
 function analyse (ctx, rule) {
-    return function (selectors) {
+    return selectors => {
         selectors.each(selector => {
             if (
                 exists(selector, 0, 'body') &&

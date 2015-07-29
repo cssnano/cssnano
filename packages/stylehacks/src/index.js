@@ -36,9 +36,7 @@ let stylehacks = postcss.plugin('stylehacks', (opts = {}) => {
         plugins.forEach(Plugin => {
             let hack = new Plugin(css, result);
             let applied = browsers.some(browser => {
-                return hack.targets.some(target => {
-                    return browser === target;
-                });
+                return hack.targets.some(target => browser === target);
             });
             if (applied) {
                 return;

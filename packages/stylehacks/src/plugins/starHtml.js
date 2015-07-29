@@ -8,7 +8,7 @@ let hack = 'stylehacks-star-html';
 let targets = ['ie 6', 'ie 5.5'];
 
 function analyse (ctx, rule) {
-    return function (selectors) {
+    return selectors => {
         selectors.each(selector => {
             if (
                 exists(selector, 0, '*') &&
