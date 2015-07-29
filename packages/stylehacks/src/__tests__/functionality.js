@@ -59,6 +59,13 @@ let tests = [{
     target: 'opera 9',
     unaffected: 'safari 8',
     warnings: 1
+}, {
+    message: 'firefox empty body hack',
+    fixture: 'body:empty h1 { color: red }',
+    resolution: '',
+    target: 'firefox 2',
+    unaffected: 'firefox 3',
+    warnings: 1
 }];
 
 let process = (css, options, callback) => {

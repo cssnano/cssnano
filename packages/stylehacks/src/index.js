@@ -6,6 +6,7 @@ import browserslist from 'browserslist';
 import formatter from './formatter';
 
 // plugins
+import bodyEmpty from './plugins/bodyEmpty';
 import htmlFirstChild from './plugins/htmlFirstChild';
 import important from './plugins/important';
 import leadingStar from './plugins/leadingStar';
@@ -16,6 +17,7 @@ import starHtml from './plugins/starHtml';
 import trailingSlashComma from './plugins/trailingSlashComma';
 
 let plugins = [
+    bodyEmpty,
     htmlFirstChild,
     important,
     leadingStar,
