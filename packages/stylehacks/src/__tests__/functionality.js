@@ -52,6 +52,13 @@ let tests = [{
     target: 'ie 6',
     unaffected: 'ie 7',
     warnings: 1
+}, {
+    message: 'opera html:first-child hack',
+    fixture: 'html:first-child h1 { color: red }',
+    resolution: '',
+    target: 'opera 9',
+    unaffected: 'safari 8',
+    warnings: 1
 }];
 
 let process = (css, options, callback) => {
