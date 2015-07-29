@@ -1,15 +1,11 @@
 'use strict';
 
+import exists from '../exists';
 import plugin from '../plugin';
 import parser from 'postcss-selector-parser';
 
 let hack = 'stylehacks-star-html';
 let targets = ['ie 6', 'ie 5.5'];
-
-function exists (selector, index, value) {
-    let node = selector.at(index);
-    return node && node.value === value;
-}
 
 function analyse (ctx, rule) {
     return function (selectors) {
