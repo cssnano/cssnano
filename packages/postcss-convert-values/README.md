@@ -12,6 +12,10 @@ npm install postcss-convert-values --save
 
 ## Example
 
+This plugin reduces CSS size by converting values to use different units
+where possible; for example, `500ms` can be represented as `.5s`. You can
+read more about these units in [this article][csstricks].
+
 ```js
 var postcss = require('postcss');
 
@@ -38,3 +42,5 @@ MIT © [Ben Briggs](http://beneb.info)
 [deps]:     https://gemnasium.com/ben-eb/postcss-convert-values
 [npm]:      http://badge.fury.io/js/postcss-convert-values
 [postcss]:  https://github.com/postcss/postcss
+
+[csstricks]: https://css-tricks.com/the-lengths-of-css/
