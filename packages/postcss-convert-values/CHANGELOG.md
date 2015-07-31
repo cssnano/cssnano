@@ -1,3 +1,7 @@
+# 1.2.4
+
+* Fixes convert not px or ms
+
 # 1.2.3
 
 * Adds support for `ch` units; previously they were removed.

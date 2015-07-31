@@ -37,7 +37,11 @@ module.exports = function (number, unit) {
     })[0];
 
     if (conversion) {
-        base = number / conversion[unit];
+        if(unit === 'ms' || unit === 'px') {
+            base = number / conversion[unit];
+        } else {
+            base = number * conversion[unit];
+        }
 
         converted = Object.keys(conversion)
             .filter(function (u) {

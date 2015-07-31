@@ -8,6 +8,10 @@ var tests = [{
     fixture: 'h1{transition-duration:500ms}',
     expected: 'h1{transition-duration:.5s}'
 }, {
+    message: 'should convert seconds to milliseconds',
+    fixture: 'h1{transition-duration:.005s}',
+    expected: 'h1{transition-duration:5ms}'
+}, {
     message: 'should not convert negative milliseconds to seconds',
     fixture: 'h1{animation-duration:-569ms}',
     expected: 'h1{animation-duration:-569ms}'
@@ -31,6 +35,10 @@ var tests = [{
     message: 'should convert px to in',
     fixture: 'h1{width:192px}',
     expected: 'h1{width:2in}'
+}, {
+    message: 'should not convert in to px',
+    fixture: 'h1{width:192in}',
+    expected: 'h1{width:192in}'
 }, {
     message: 'should strip the units from length properties',
     fixture: 'h1{margin: 0em 0% 0px 0pc}',
