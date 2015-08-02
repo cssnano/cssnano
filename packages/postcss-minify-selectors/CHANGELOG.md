@@ -1,3 +1,7 @@
+# 1.4.4
+
+* Fixed an integration issue with postcss-font-magician.
+
 # 1.4.3
 
 * Fixed an issue where `.from` was transformed to `0%`.

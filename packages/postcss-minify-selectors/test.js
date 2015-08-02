@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var postcss = require('postcss');
 var plugin = require('./');
@@ -175,6 +177,16 @@ test(name, function (t) {
     tests.forEach(function (test) {
         var options = test.options || {};
         t.equal(process(test.fixture, options), test.expected, test.message);
+    });
+});
+
+test('cssnano issue 39', function (t) {
+    t.plan(1);
+
+    var css = 'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
+
+    t.doesNotThrow(function () {
+        return postcss([ require('postcss-font-magician'), plugin() ]).process(css).css;
     });
 });
 

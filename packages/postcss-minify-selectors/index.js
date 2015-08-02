@@ -18,6 +18,9 @@ function uniq (params, map) {
 }
 
 function optimiseAtRule (rule) {
+    if (!rule.params) {
+        return;
+    }
     rule.params = normalize(uniq(rule.params));
 }
 
