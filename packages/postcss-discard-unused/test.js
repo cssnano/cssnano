@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var postcss = require('postcss');
 var plugin = require('./');
@@ -31,6 +33,10 @@ var tests = [{
     message: 'should remove keyframes if they have no identifier',
     fixture: '@keyframes {0%{opacity:0}to{opacity:1}}',
     expected: ''
+}, {
+    message: 'should support multiple animations',
+    fixture: '@keyframes one{0%{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes two{0%{border-width:0;opacity:0}}.loader{animation:one 1250ms infinite linear,two .3s ease-out both}',
+    expected: '@keyframes one{0%{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes two{0%{border-width:0;opacity:0}}.loader{animation:one 1250ms infinite linear,two .3s ease-out both}'
 }, {
     message: 'should remove unused fonts',
     fixture: '@font-face {font-family:"Does Not Exist";src:url("fonts/does-not-exist.ttf") format("truetype")}',

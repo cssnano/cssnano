@@ -9,7 +9,9 @@ var space = postcss.list.space;
 function filterAtRule (css, properties, atrule) {
     var cache = [];
     css.eachDecl(properties, function (decl) {
-        cache.push(space(decl.value));
+        comma(decl.value).forEach(function (val) {
+            cache.push(space(val));
+        });
     });
     cache = uniqs(flatten(cache));
     css.eachAtRule(atrule, function (rule) {
