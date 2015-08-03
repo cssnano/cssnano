@@ -1,3 +1,7 @@
+# 1.2.4
+
+* Fixed an issue caused by upgrading colormin to use ES6.
+
 # 1.2.3
 
 * Fixed an issue where `-webkit-tap-highlight-color` was being incorrectly

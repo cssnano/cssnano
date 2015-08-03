@@ -5,7 +5,7 @@ var postcss = require('postcss');
 var list = postcss.list;
 var reduce = require('reduce-function-call');
 var color = require('color');
-var trim = require('colormin/lib/stripWhitespace');
+var trim = require('colormin/dist/lib/stripWhitespace');
 
 function eachVal (values) {
     return list.comma(values).map(function (value) {
