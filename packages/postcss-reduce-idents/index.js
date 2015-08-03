@@ -6,7 +6,9 @@ var encode = require('./lib/encode');
 var list = postcss.list;
 
 function eachValue (value, callback) {
-    return list.space(value).map(callback).join(' ');
+    return list.space(value).map(function (val) {
+        return list.comma(val).map(callback).join(',');
+    }).join(' ');
 }
 
 function transformAtRule (css, atRuleRegex, propRegex) {

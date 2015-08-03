@@ -19,6 +19,10 @@ var tests = [{
     fixture: '@-webkit-keyframes whiteToBlack{0%{color:#fff}to{color:#000}}@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}div{-webkit-animation-name:whiteToBlack;animation-name:whiteToBlack}',
     expected: '@-webkit-keyframes a{0%{color:#fff}to{color:#000}}@keyframes a{0%{color:#fff}to{color:#000}}div{-webkit-animation-name:a;animation-name:a}'
 }, {
+    message: 'should support multiple animations',
+    fixture: '@keyframes one{0%{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes two{0%{border-width:0;opacity:0}}.loader{animation:one 1250ms infinite linear,two .3s ease-out both}',
+    expected: '@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes b{0%{border-width:0;opacity:0}}.loader{animation:a 1250ms infinite linear,b .3s ease-out both}'
+}, {
     message: 'should not touch animation names that are not defined in the file',
     fixture: '.one{animation-name:fadeInUp}',
     expected: '.one{animation-name:fadeInUp}'
