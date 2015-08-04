@@ -1,3 +1,7 @@
+# 1.4.5
+
+* Update normalize-selector to cut down package weight.
+
 # 1.4.4
 
 * Fixed an integration issue with postcss-font-magician.
