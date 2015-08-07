@@ -35,6 +35,7 @@ module.exports = postcss.plugin('postcss-discard-unused', function () {
         });
         cache = uniqs(flatten(cache));
         css.eachAtRule('font-face', function (rule) {
+            if (!rule.nodes) { return; }
             var fontFamilies = rule.nodes.filter(function (node) {
                 return node.prop === 'font-family';
             });
