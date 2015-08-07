@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var nano = require('../');
 var directory = require('fs').readdirSync;

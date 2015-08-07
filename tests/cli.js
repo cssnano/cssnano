@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var spawn = require('child_process').spawn;
 var path = require('path');
@@ -41,7 +43,7 @@ test('cli: disabling processors', function (t) {
         var expected = read('fixtures/reduceCalc.disabled.css', 'utf-8');
         t.equal(out, expected, 'should disable the calc optimisation');
     });
-})
+});
 
 test('cli: usage with sourcemaps', function (t) {
     t.plan(1);

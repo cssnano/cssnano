@@ -1,4 +1,4 @@
-module.exports.name = 'css-nano/postcss-merge-idents';
+module.exports.name = 'cssnano/postcss-merge-idents';
 module.exports.tests = [{
     message: 'should merge keyframe identifiers',
     fixture: '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes b{0%{color:#fff}to{color:#000}}a{animation:b}',

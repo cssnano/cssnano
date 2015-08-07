@@ -1,4 +1,4 @@
-module.exports.name = 'css-nano/postcss-discard-comments';
+module.exports.name = 'cssnano/postcss-discard-comments';
 module.exports.tests = [{
     message: 'should remove non-special comments',
     fixture: 'h1{font-weight:700!important/*test comment*/}',

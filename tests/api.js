@@ -1,3 +1,5 @@
+'use strict';
+
 var postcss = require('postcss');
 var test = require('tape');
 var nano = require('../');

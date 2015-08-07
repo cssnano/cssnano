@@ -1,4 +1,4 @@
-module.exports.name = 'css-nano/postcss-merge-rules';
+module.exports.name = 'cssnano/postcss-merge-rules';
 module.exports.tests = [{
     message: 'should merge based on declarations',
     fixture: 'h1{display:block}h2{display:block}',

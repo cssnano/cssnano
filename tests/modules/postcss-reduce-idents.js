@@ -1,4 +1,4 @@
-module.exports.name = 'css-nano/postcss-reduce-idents';
+module.exports.name = 'cssnano/postcss-reduce-idents';
 module.exports.tests = [{
     message: 'should rename keyframes',
     fixture: '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}',

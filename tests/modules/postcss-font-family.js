@@ -1,4 +1,4 @@
-module.exports.name = 'css-nano/postcss-fontfamily';
+module.exports.name = 'cssnano/postcss-fontfamily';
 module.exports.tests = [{
     message: 'should unquote font names',
     fixture: 'h1{font-family:"Helvetica Neue"}',

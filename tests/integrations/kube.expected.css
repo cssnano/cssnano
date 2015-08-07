@@ -568,12 +568,12 @@ ul.dropdown li.divider{border-bottom:1px solid #e2e2e2}
   .forms-list label{display:inline-block}
 }
 @media print{
-  *{text-shadow:none!important;color:#000!important;background:transparent!important;box-shadow:none!important;font-size:9px}
-  .h1,h1{font-size:36pt}
-  .h2,h2{font-size:24pt}
+  *{text-shadow:none!important;color:#000!important;background:transparent!important;box-shadow:none!important;font-size:1pc}
+  .h1,h1{font-size:3pc}
+  .h2,h2{font-size:2pc}
   .h3,h3{font-size:18pt}
   .h4,h4{font-size:14pt}
-  .h5,.h6,h5,h6{font-size:9px}
+  .h5,.h6,h5,h6{font-size:1pc}
   a,a:visited{text-decoration:underline}
   a[href]:after{content:" (" attr(href) ")"}
   abbr[title]:after{content:" (" attr(title) ")"}

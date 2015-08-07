@@ -1,4 +1,4 @@
-module.exports.name = 'css-nano/postcss-discard-duplicates';
+module.exports.name = 'cssnano/postcss-discard-duplicates';
 module.exports.tests = [{
     message: 'should remove duplicate rules',
     fixture: 'h1{font-weight:700}h1{font-weight:700}',

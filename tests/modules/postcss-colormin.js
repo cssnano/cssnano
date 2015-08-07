@@ -1,4 +1,4 @@
-module.exports.name = 'css-nano/postcss-colormin';
+module.exports.name = 'cssnano/postcss-colormin';
 module.exports.tests = [{
     message: 'should minify color values',
     fixture: 'h1{color:yellow}',

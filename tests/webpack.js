@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var webpack = require('webpack');
 
@@ -24,7 +26,7 @@ var conf = {
 test('cssnano should be consumed by webpack', function (t) {
     webpack(conf, function (err, stats) {
         if (err) {
-            t.fail()
+            t.fail();
             throw err;
         }
 

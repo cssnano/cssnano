@@ -1,4 +1,4 @@
-module.exports.name = 'css-nano/postcss-discard-unused';
+module.exports.name = 'cssnano/postcss-discard-unused';
 module.exports.tests = [{
     message: 'should remove unused counter styles',
     fixture: '@counter-style custom{system:extends decimal;suffix:"> "}',

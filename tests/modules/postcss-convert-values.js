@@ -1,4 +1,4 @@
-module.exports.name = 'css-nano/postcss-convert-values';
+module.exports.name = 'cssnano/postcss-convert-values';
 module.exports.tests = [{
     message: 'should convert milliseconds to seconds',
     fixture: 'h1{transition-duration:500ms}',

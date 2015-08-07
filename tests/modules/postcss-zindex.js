@@ -1,4 +1,4 @@
-module.exports.name = 'css-nano/postcss-zindex';
+module.exports.name = 'cssnano/postcss-zindex';
 module.exports.tests = [{
     message: 'should optimise large z-index values',
     fixture: 'h1{z-index:9999}',
