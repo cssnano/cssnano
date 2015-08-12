@@ -99,10 +99,10 @@ function partialMerge (first, second) {
             }
         };
     };
-    firstClone.eachInside(moveDecl(function (decl) {
+    firstClone.eachDecl(moveDecl(function (decl) {
         decl.moveTo(recievingBlock);
     }));
-    secondClone.eachInside(moveDecl(function (decl) {
+    secondClone.eachDecl(moveDecl(function (decl) {
         decl.removeSelf();
     }));
     var merged = ruleLength(firstClone, recievingBlock, secondClone);

@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var postcss = require('postcss');
 var plugin = require('./');
@@ -167,6 +169,10 @@ var tests = [{
     message: 'should not throw on comment nodes',
     fixture: '.navbar-soft .navbar-nav > .active > a{color:#fff;background-color:#303030}.navbar-soft .navbar-nav > .open > a{color:#fff;background-color:rgba(48,48,48,0.8)}/* caret */.navbar-soft .navbar-nav > .dropdown > a .caret{border-top-color:#777;border-bottom-color:#777}',
     expected: '.navbar-soft .navbar-nav > .active > a{color:#fff;background-color:#303030}.navbar-soft .navbar-nav > .open > a{color:#fff;background-color:rgba(48,48,48,0.8)}/* caret */.navbar-soft .navbar-nav > .dropdown > a .caret{border-top-color:#777;border-bottom-color:#777}',
+}, {
+    message: 'should not throw on comment nodes (2)',
+    fixture: 'h1{color:black;background:blue/*test*/}h2{background:blue}',
+    expected: 'h1{color:black/*test*/}h1,h2{background:blue}'
 }, {
     message: 'should not be responsible for deduping declarations when merging',
     fixture: 'h1{display:block;display:block}h2{display:block;display:block}',

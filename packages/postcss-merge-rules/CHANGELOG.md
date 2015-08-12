@@ -1,3 +1,8 @@
+# 1.3.2
+
+* Fixes a behaviour in which comment nodes were being processed by the
+  partial declaration merging logic.
+
 # 1.3.1
 
 * Fixes a behaviour in which rule adjacent forward nodes were not being type
