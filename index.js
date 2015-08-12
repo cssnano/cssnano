@@ -1,15 +1,14 @@
 'use strict';
 
-var Postcss = require('postcss');
+var postcss = require('postcss');
 
 var processors = {
     pluginFilter: function () {
-        return require('postcss-filter-plugins')({silent: true})
+        return require('postcss-filter-plugins')({silent: true});
     },
     discardComments: {fn: require('postcss-discard-comments'), ns: 'comments'},
     autoprefixer: {fn: require('autoprefixer-core'), ns: 'autoprefixer'},
     zindex: {fn: require('postcss-zindex'), ns: 'zindex'},
-    discardEmpty: require('postcss-discard-empty'),
     minifyFontWeight: require('postcss-minify-font-weight'),
     convertValues: require('postcss-convert-values'),
     calc: {fn: require('postcss-calc'), ns: 'calc'},
@@ -33,13 +32,15 @@ var processors = {
     discardDuplicates: require('postcss-discard-duplicates'),
     functionOptimiser: require('./lib/functionOptimiser'),
     mergeRules: {fn: require('postcss-merge-rules'), ns: 'merge'},
-    uniqueSelectors: require('postcss-unique-selectors')
+    discardEmpty: require('postcss-discard-empty'),
+    uniqueSelectors: require('postcss-unique-selectors'),
+    styleCache: require('./lib/styleCache')
 };
 
-var cssnano = Postcss.plugin('cssnano', function (options) {
+var cssnano = postcss.plugin('cssnano', function (options) {
     options = options || {};
 
-    var postcss = Postcss();
+    var proc = postcss();
     var plugins = Object.keys(processors);
     var len = plugins.length;
     var i = 0;
@@ -60,10 +61,10 @@ var cssnano = Postcss.plugin('cssnano', function (options) {
             }
             method = processor.fn;
         }
-        postcss.use(method(opts));
+        proc.use(method(opts));
     }
 
-    return postcss;
+    return proc;
 });
 
 module.exports = cssnano;
@@ -71,11 +72,11 @@ module.exports = cssnano;
 module.exports.process = function (css, options) {
     options = options || {};
     options.map = options.map || (options.sourcemap ? true : null);
-    var result = Postcss([cssnano(options)]).process(css, options);
+    var result = postcss([cssnano(options)]).process(css, options);
     // return a css string if inline/no sourcemap.
     if (options.map === null || options.map === true || (options.map && options.map.inline)) {
         return result.css;
     }
     // otherwise return an object of css & map
     return result;
-}
+};
