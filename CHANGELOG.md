@@ -1,8 +1,8 @@
-# current
+# 2.2.0
 
 * Replaced integrated plugin filter with postcss-filter-plugins.
-
----
+* cssnano will now perform better whitespace compression when used with other
+  PostCSS plugins.
 
 # 2.1.1
 
