@@ -2,19 +2,31 @@
   "name": "postcss-discard-unused",
   "version": "1.0.2",
   "description": "Discard unused counter styles, keyframes and fonts.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "bin",
+    "LICENSE-MIT",
+    "dist"
+  ],
   "scripts": {
-    "test": "tape test.js | tap-spec"
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/",
+    "test-unformatted": "babel-tape-runner \"src/**/__tests__/*.js\"",
+    "test": "npm run test-unformatted | faucet"
   },
   "keywords": [
     "css",
+    "minify",
+    "optimise",
     "postcss",
-    "postcss-plugin"
+    "postcss-plugin",
+    "unused"
   ],
   "license": "MIT",
   "devDependencies": {
-    "tap-spec": "^2.2.2",
-    "tape": "^3.5.0"
+    "babel": "^5.8.21",
+    "babel-tape-runner": "^1.2.0",
+    "faucet": "0.0.1",
+    "tape": "^4.1.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-discard-unused",
   "author": {
@@ -25,7 +37,7 @@
   "repository": "ben-eb/postcss-discard-unused",
   "dependencies": {
     "flatten": "0.0.1",
-    "postcss": "^4.1.11",
+    "postcss": "^4.1.16",
     "uniqs": "^2.0.0"
   }
 }
