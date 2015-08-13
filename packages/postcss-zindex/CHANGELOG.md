@@ -1,3 +1,7 @@
+# 1.1.3
+
+* Improved performance by iterating the AST in a single pass and caching nodes for the second iteration.
+
 # 1.1.2
 
 * Documentation/metadata tweaks for plugin guidelines compatibility.

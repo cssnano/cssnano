@@ -22,9 +22,9 @@
   },
   "devDependencies": {
     "jshint": "^2.6.3",
-    "jshint-stylish": "^1.0.1",
-    "tap-spec": "^2.2.2",
-    "tape": "^3.5.0"
+    "jshint-stylish": "^2.0.1",
+    "tap-spec": "^4.0.2",
+    "tape": "^4.1.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-zindex",
   "author": {
