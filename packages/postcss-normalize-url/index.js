@@ -30,7 +30,7 @@ function namespaceOptimiser (options) {
                 return quo + convert(body.trim(), options) + quo;
             });
         });
-    }
+    };
 }
 
 function eachValue (val, options) {
@@ -57,17 +57,22 @@ function eachValue (val, options) {
     });
 }
 
-module.exports = postcss.plugin('postcss-normalize-url', function (options) {
-    options = assign({
+module.exports = postcss.plugin('postcss-normalize-url', function (opts) {
+    opts = assign({
         normalizeProtocol: false,
         stripFragment: false,
         stripWWW: true
-    }, options);
+    }, opts);
 
     return function (css) {
-        css.eachDecl(function (decl) {
-            decl.value = eachValue(decl.value.replace(multiline, ''), options);
+        css.eachInside(function (node) {
+            if (node.type === 'decl') {
+                node.value = eachValue(node.value.replace(multiline, ''), opts);
+                return;
+            }
+            if (node.type === 'atrule' && node.name === 'namespace') {
+                return namespaceOptimiser(opts)(node);
+            }
         });
-        css.eachAtRule('namespace', namespaceOptimiser(options));
     };
 });

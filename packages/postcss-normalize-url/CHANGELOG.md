@@ -1,3 +1,7 @@
+# 2.1.1
+
+* Increased performance by using a single call to `eachInside` rather than two.
+
 # 2.1.0
 
 * Adds `keepWWW` option.
