@@ -1,3 +1,7 @@
+# 1.2.5
+
+* Speed up node iteration by calling `eachDecl` once rather than twice.
+
 # 1.2.4
 
 * Fixed an issue caused by upgrading colormin to use ES6.

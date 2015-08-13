@@ -15,14 +15,16 @@ function eachVal (values) {
 
 module.exports = postcss.plugin('postcss-colormin', function () {
     return function (css) {
-        css.eachDecl(/^(?!font|-webkit-tap-highlight-color)/, function (decl) {
-            decl.value = eachVal(decl.value);
-            decl.value = reduce(decl.value, 'gradient', function (body, fn) {
-                return fn + '(' + list.comma(body).map(eachVal).join(',') + ')';
-            });
-        });
-        css.eachDecl('-webkit-tap-highlight-color', function (decl) {
-            decl.value = trim(color(decl.value).rgbString());
+        css.eachDecl(function (decl) {
+            if(/^(?!font|-webkit-tap-highlight-color)/.test(decl.prop)) {
+                decl.value = eachVal(decl.value);
+                decl.value = reduce(decl.value, 'gradient', function (body, fn) {
+                    return fn + '(' + list.comma(body).map(eachVal).join(',') + ')';
+                });
+            }
+            if(decl.prop === '-webkit-tap-highlight-color') {
+                decl.value = trim(color(decl.value).rgbString());
+            }
         });
     };
 });
