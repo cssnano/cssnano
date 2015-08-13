@@ -27,52 +27,49 @@ module.exports = postcss.plugin('postcss-discard-comments', function (options) {
             return space(b).join(' ');
         }
 
-        css.eachComment(function (comment) {
-            if (remover.canRemove(comment.text)) {
-                comment.removeSelf();
+        css.eachInside(function (node) {
+            if (node.type === 'comment' && remover.canRemove(node.text)) {
+                return node.removeSelf();
             }
-        });
 
-        css.eachDecl(function (decl) {
-            decl.between = replaceComments(decl.between);
-            if (decl._value && decl._value.raw) {
-                var replaced = replaceComments(decl._value.raw);
-                decl._value.raw = decl._value.value = decl.value = replaced;
+            if (node.between) {
+                node.between = replaceComments(node.between);
             }
-            if (decl._important) {
-                decl._important = replaceComments(decl._important);
-                var b = balanced.matches({
-                    source: decl._important,
-                    open: '/*',
-                    close: '*/'
-                });
-                decl._important = b.length ? decl._important : '!important';
-            }
-        });
 
-        css.eachRule(function (rule) {
-            if (rule.between) {
-                rule.between = replaceComments(rule.between);
-            }
-            if (rule._selector && rule._selector.raw) {
-                rule._selector.raw = replaceComments(rule._selector.raw);
-            }
-        });
-
-        css.eachAtRule(function (rule) {
-            if (rule.afterName) {
-                var commentsReplaced = replaceComments(rule.afterName);
-                if (!commentsReplaced.length) {
-                    rule.afterName = commentsReplaced + ' ';
-                } else {
-                    rule.afterName = ' ' + commentsReplaced + ' ';
+            if (node.type === 'decl') {
+                if (node._value && node._value.raw) {
+                    var replaced = replaceComments(node._value.raw);
+                    node._value.raw = node._value.value = node.value = replaced;
                 }
+                if (node._important) {
+                    node._important = replaceComments(node._important);
+                    var b = balanced.matches({
+                        source: node._important,
+                        open: '/*',
+                        close: '*/'
+                    });
+                    node._important = b.length ? node._important : '!important';
+                }
+                return;
             }
-            if (rule._params && rule._params.raw) {
-                rule._params.raw = replaceComments(rule._params.raw);
+
+            if (node.type === 'rule' && node._selector && node._selector.raw) {
+                node._selector.raw = replaceComments(node._selector.raw);
+                return;
             }
-            if (rule.between) {
-                rule.between = replaceComments(rule.between);
+
+            if (node.type === 'atrule') {
+                if (node.afterName) {
+                    var commentsReplaced = replaceComments(node.afterName);
+                    if (!commentsReplaced.length) {
+                        node.afterName = commentsReplaced + ' ';
+                    } else {
+                        node.afterName = ' ' + commentsReplaced + ' ';
+                    }
+                }
+                if (node._params && node._params.raw) {
+                    node._params.raw = replaceComments(node._params.raw);
+                }
             }
         });
     };

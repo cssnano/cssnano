@@ -1,3 +1,7 @@
+# 1.2.1
+
+* Improved performance by iterating the AST in a single pass.
+
 # 1.2.0
 
 * Adds support for user-directed removal of comments, with the `remove`

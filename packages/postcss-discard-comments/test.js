@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var postcss = require('postcss');
 var plugin = require('./');
@@ -111,7 +113,7 @@ var tests = [{
     message: 'should remove comments marked as @ but keep other',
     fixture: '/* keep *//*@ remove */h1{color:#000;/*@ remove */font-weight:700}',
     expected: '/* keep */h1{color:#000;font-weight:700}',
-    options: {remove: function(comment) { return comment[0] == "@"; }}
+    options: {remove: function (comment) { return comment[0] === "@"; }}
 }, {
     message: 'should remove all important comments, with a flag',
     fixture: '/*!license*/h1{font-weight:700}/*!license 2*/h2{color:#000}',
