@@ -107,7 +107,9 @@ function optimise (rule) {
 
 module.exports = postcss.plugin('postcss-minify-selectors', function () {
     return function (css) {
-        css.eachRule(optimise);
-        css.eachAtRule(optimiseAtRule);
+        css.eachInside(function (node) {
+            if (node.type === 'rule') { return optimise(node); }
+            if (node.type === 'atrule') { return optimiseAtRule(node); }
+        });
     };
 });

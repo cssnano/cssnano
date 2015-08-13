@@ -1,3 +1,8 @@
+# 1.4.6
+
+* Bump normalize-selector to `0.2.0`, decreases overall package weight.
+* Speed up node iteration by calling `eachInside` once rather than twice.
+
 # 1.4.5
 
 * Update normalize-selector to cut down package weight.
