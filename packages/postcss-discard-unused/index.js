@@ -7,19 +7,29 @@ var comma = postcss.list.comma;
 var space = postcss.list.space;
 
 function filterAtRule (css, properties, atrule) {
-    var cache = [];
-    css.eachDecl(properties, function (decl) {
-        comma(decl.value).forEach(function (val) {
-            cache.push(space(val));
-        });
+    var atRules = [];
+    var values = [];
+    css.eachInside(function (node) {
+        if (node.type === 'decl' && properties.test(node.prop)) {
+            return comma(node.value).forEach(function (val) {
+                values.push(space(val));
+            });
+        }
+        if (node.type === 'atrule') {
+            if (typeof atrule === 'string' && node.name === atrule) {
+                atRules.push(node);
+            } else if (atrule instanceof RegExp && atrule.test(node.name)) {
+                atRules.push(node);
+            }
+        }
     });
-    cache = uniqs(flatten(cache));
-    css.eachAtRule(atrule, function (rule) {
-        var hasAtRule = cache.some(function (c) {
-            return c === rule.params;
+    values = uniqs(flatten(values));
+    atRules.forEach(function (node) {
+        var hasAtRule = values.some(function (c) {
+            return c === node.params;
         });
         if (!hasAtRule) {
-            rule.removeSelf();
+            node.removeSelf();
         }
     });
 }
@@ -27,15 +37,21 @@ function filterAtRule (css, properties, atrule) {
 module.exports = postcss.plugin('postcss-discard-unused', function () {
     return function (css) {
         // fonts have slightly different logic
-        var cache = [];
-        css.eachRule(function (rule) {
-            rule.eachDecl(/font(|-family)/, function (decl) {
-                cache.push(comma(decl.value));
-            });
+        var atRules = [];
+        var values = [];
+        css.eachInside(function (node) {
+            if (node.type === 'decl' &&
+                node.parent.type === 'rule' &&
+                /font(|-family)/.test(node.prop)
+            ) {
+                return values.push(comma(node.value));
+            }
+            if (node.type === 'atrule' && node.name === 'font-face' && node.nodes) {
+                atRules.push(node);
+            }
         });
-        cache = uniqs(flatten(cache));
-        css.eachAtRule('font-face', function (rule) {
-            if (!rule.nodes) { return; }
+        values = uniqs(flatten(values));
+        atRules.forEach(function (rule) {
             var fontFamilies = rule.nodes.filter(function (node) {
                 return node.prop === 'font-family';
             });
@@ -45,7 +61,7 @@ module.exports = postcss.plugin('postcss-discard-unused', function () {
             }
             fontFamilies.forEach(function (family) {
                 var hasFont = comma(family.value).some(function (font) {
-                    return cache.some(function (c) {
+                    return values.some(function (c) {
                         return ~c.indexOf(font);
                     });
                 });
