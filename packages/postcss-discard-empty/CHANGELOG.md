@@ -1,3 +1,8 @@
+# 1.1.2
+
+* Increased performance by iterating the AST in a single pass.
+  (thanks @andyjansson)
+
 # 1.1.1
 
 * Tweaks for compatibility with the plugin guidelines.
