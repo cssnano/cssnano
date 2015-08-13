@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var postcss = require('postcss');
 var plugin = require('./');
@@ -7,6 +9,10 @@ var tests = [{
     message: 'should remove duplicate rules',
     fixture: 'h1{font-weight:bold}h1{font-weight:bold}',
     expected: 'h1{font-weight:bold}'
+}, {
+    message: 'should remove duplicate rules (2)',
+    fixture: 'h1{color:#000}h2{color:#fff}h1{color:#000}',
+    expected: 'h2{color:#fff}h1{color:#000}',
 }, {
     message: 'should remove duplicate declarations',
     fixture: 'h1{font-weight:bold;font-weight:bold}',
@@ -19,6 +25,10 @@ var tests = [{
     message: 'should remove duplicate @rules',
     fixture: '@charset "utf-8";@charset "utf-8";',
     expected: '@charset "utf-8";'
+}, {
+    message: 'should remove duplicate @rules (2)',
+    fixture: '@charset "utf-8";@charset "hello!";@charset "utf-8";',
+    expected: '@charset "hello!";@charset "utf-8";',
 }, {
     message: 'should remove duplicates inside @media queries',
     fixture: '@media print{h1{display:block}h1{display:block}}',

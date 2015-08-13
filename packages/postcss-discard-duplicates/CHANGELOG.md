@@ -1,3 +1,7 @@
+# 1.1.4
+
+* Improved performance by making all AST iterations in a single pass.
+
 # 1.1.3
 
 * Improved documentation for compatibility with the plugin guidelines.
