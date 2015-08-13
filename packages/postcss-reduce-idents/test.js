@@ -59,6 +59,10 @@ var tests = [{
     fixture: 'h1:before{counter-reset:chapter 1 section page 1;content: counter(chapter) "." counter(section) " (pg." counter(page) ") "}',
     expected: 'h1:before{counter-reset:a 1 b c 1;content: counter(a) "." counter(b) " (pg." counter(c) ") "}'
 }, {
+    message: 'should rename multiple counters with random order',
+    fixture: 'h1:before{content: counter(chapter) "." counter(section) " (pg." counter(page) ") ";counter-reset:chapter 1 section page 1}',
+    expected: 'h1:before{content: counter(a) "." counter(b) " (pg." counter(c) ") ";counter-reset:a 1 b c 1}'
+}, {
     message: 'should not touch counters that are not outputted',
     fixture: 'h1{counter-reset:chapter 1 section page 1}',
     expected: 'h1{counter-reset:chapter 1 section page 1}'
