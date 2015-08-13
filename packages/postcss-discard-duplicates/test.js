@@ -54,6 +54,10 @@ var tests = [{
     fixture: 'h1{font-weight:bold;font-weight:bold}h1{font-weight:bold}',
     expected: 'h1{font-weight:bold}'
 }, {
+    message: 'should not deduplicate comments',
+    fixture: 'h1{color:#000}/*test*/h2{color:#fff}/*test*/',
+    expected: 'h1{color:#000}/*test*/h2{color:#fff}/*test*/'
+}, {
     message: 'should not remove declarations when selectors are different',
     fixture: 'h1{font-weight:bold}h2{font-weight:bold}',
     expected: 'h1{font-weight:bold}h2{font-weight:bold}'

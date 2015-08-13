@@ -1,3 +1,7 @@
+# 1.1.5
+
+* Fixed an issue where comments were being deduplicated.
+
 # 1.1.4
 
 * Improved performance by making all AST iterations in a single pass.
