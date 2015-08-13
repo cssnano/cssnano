@@ -1,26 +1,20 @@
 'use strict';
-
 var postcss = require('postcss');
 
-function remove (callback) {
-    return function (node) {
-        callback.call(this, node) && node.removeSelf();
-    };
-}
+function discardEmpty(node) {
+	if (node.nodes) node.each(discardEmpty);
+
+	if (
+		(node.type == 'decl' && !node.value) ||
+		(node.type == 'rule' && !node.selector || (node.nodes && !node.nodes.length)) ||
+		(node.type == 'atrule' && ((!node.nodes && !node.params) || (!node.params && !node.nodes.length)))
+		) {
+		node.removeSelf();
+	}
+};
 
 module.exports = postcss.plugin('postcss-discard-empty', function () {
-    return function (css) {
-        css.eachDecl(remove(function (decl) {
-            return !decl.value;
-        }));
-        css.eachRule(remove(function (rule) {
-            return !rule.selector.length || !rule.nodes.length;
-        }));
-        css.eachAtRule(remove(function (rule) {
-            if (rule.nodes) {
-                return !rule.nodes.length;
-            }
-            return !rule.params;
-        }));
-    };
+	return function (css) {
+		css.each(discardEmpty);
+	};
 });
