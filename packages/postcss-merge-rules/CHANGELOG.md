@@ -1,3 +1,8 @@
+# 1.3.4
+
+* Fixes an issue where in some cases, non-adjacent rule merging was being
+  performed.
+
 # 1.3.3
 
 * Fixes an issue where the wildcard hack (`*zoom: 1`) was being propagated to

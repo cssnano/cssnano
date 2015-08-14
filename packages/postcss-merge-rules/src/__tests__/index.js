@@ -102,6 +102,14 @@ let tests = [{
     fixture: '.foo{margin:0;display:block}.barim{display:block;line-height:1}.bazaz{font-size:3em;margin:0}',
     expected: '.foo{margin:0}.foo,.barim{display:block}.barim{line-height:1}.bazaz{font-size:3em;margin:0}',
 }, {
+    message: 'should not merge over-eagerly (cssnano#36 [case 3])',
+    fixture: '.foobam{font-family:serif;display:block}.barim{display:block;line-height:1}.bazaz{font-size:3em;font-family:serif}',
+    expected: '.foobam{font-family:serif;display:block}.barim{display:block;line-height:1}.bazaz{font-size:3em;font-family:serif}',
+}, {
+    message: 'should not merge over-eagerly (cssnano#36 [case 4])',
+    fixture: '.foo{font-family:serif;display:block}.barim{display:block;line-height:1}.bazaz{font-size:3em;font-family:serif}',
+    expected: '.foo{font-family:serif}.foo,.barim{display:block}.barim{line-height:1}.bazaz{font-size:3em;font-family:serif}'
+}, {
     message: 'should perform partial merging of selectors in the opposite direction',
     fixture: 'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
     expected: 'h1{color:black}h2,h3{color:black;font-weight:bold}'

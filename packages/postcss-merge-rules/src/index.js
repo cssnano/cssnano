@@ -99,7 +99,7 @@ function partialMerge (first, second) {
         return secondClone;
     } else {
         recievingBlock.removeSelf();
-        return first;
+        return second;
     }
 }
 
