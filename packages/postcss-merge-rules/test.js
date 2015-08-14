@@ -96,7 +96,11 @@ var tests = [{
 }, {
     message: 'should perform partial merging of selectors (7)',
     fixture: '.test-1{margin-top:10px;margin-bottom:20px}.test-2{margin-top:10px}.another-test{margin-top:10px;margin-bottom:30px}',
-    expected: '.test-1{margin-bottom:20px}.test-1,.test-2{margin-top:10px}.another-test{margin-top:10px;margin-bottom:30px}'
+    expected: '.test-1{margin-bottom:20px}.test-1,.test-2,.another-test{margin-top:10px}.another-test{margin-bottom:30px}'
+}, {
+    message: 'should perform partial merging of selectors (8)',
+    fixture: '.foo{margin:0;display:block}.barim{display:block;line-height:1}.bazaz{font-size:3em;margin:0}',
+    expected: '.foo{margin:0}.foo,.barim{display:block}.barim{line-height:1}.bazaz{font-size:3em;margin:0}',
 }, {
     message: 'should perform partial merging of selectors in the opposite direction',
     fixture: 'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
@@ -157,6 +161,10 @@ var tests = [{
     message: 'should not incorrectly extract display properties',
     fixture: '.box1{display:inline-block;display:block}.box2{display:inline-block}',
     expected: '.box1{display:inline-block;display:block}.box2{display:inline-block}'
+}, {
+    message: 'should handle selector hacks',
+    fixture: '.classA{*zoom:1}.classB{box-sizing:border-box;position:relative;min-height:100%}.classC{box-sizing:border-box;position:relative}.classD{box-sizing:border-box;position:relative}',
+    expected: '.classA{*zoom:1}.classB{min-height:100%}.classB,.classC,.classD{box-sizing:border-box;position:relative}'
 }, {
     message: 'should handle empty rulesets',
     fixture: 'h1{h2{}h3{}}',

@@ -1,3 +1,9 @@
+# 1.3.3
+
+* Fixes an issue where the wildcard hack (`*zoom: 1`) was being propagated to
+  other properties erroneously.
+* Better merging logic in some cases.
+
 # 1.3.2
 
 * Fixes a behaviour in which comment nodes were being processed by the

@@ -100,7 +100,8 @@ function partialMerge (first, second) {
         };
     };
     firstClone.eachDecl(moveDecl(function (decl) {
-        decl.moveTo(recievingBlock);
+        decl.removeSelf();
+        recievingBlock.append(decl);
     }));
     secondClone.eachDecl(moveDecl(function (decl) {
         decl.removeSelf();
@@ -115,6 +116,9 @@ function partialMerge (first, second) {
                 r.removeSelf();
             }
         });
+        if (!secondClone.parent) {
+            return recievingBlock;
+        }
         return secondClone;
     } else {
         recievingBlock.removeSelf();
@@ -128,6 +132,12 @@ function selectorMerger () {
         // Prime the cache with the first rule, or alternately ensure that it is
         // safe to merge both declarations before continuing
         if (!cache || !canMerge(rule, cache)) {
+            cache = rule;
+            return;
+        }
+        // Ensure that we don't deduplicate the same rule; this is sometimes
+        // caused by a partial merge
+        if (cache === rule) {
             cache = rule;
             return;
         }
