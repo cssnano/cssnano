@@ -2,10 +2,15 @@
   "name": "postcss-merge-rules",
   "version": "1.3.3",
   "description": "Merge CSS rules with PostCSS.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "LICENSE-MIT",
+    "dist"
+  ],
   "scripts": {
-    "lint": "jshint index.js lib/*.js --reporter node_modules/jshint-stylish/stylish.js",
-    "test": "tape test.js | tap-spec"
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/",
+    "test-unformatted": "babel-tape-runner \"src/**/__tests__/*.js\"",
+    "test": "npm run test-unformatted | faucet"
   },
   "keywords": [
     "css",
@@ -15,10 +20,10 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "jshint": "^2.8.0",
-    "jshint-stylish": "^2.0.1",
-    "tap-spec": "^4.0.2",
-    "tape": "^4.0.0"
+    "babel": "^5.8.21",
+    "babel-tape-runner": "^1.2.0",
+    "faucet": "0.0.1",
+    "tape": "^4.1.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-merge-rules",
   "author": {
@@ -26,12 +31,8 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/ben-eb/postcss-merge-rules.git"
-  },
+  "repository": "ben-eb/postcss-merge-rules",
   "dependencies": {
-    "flatten": "0.0.1",
     "postcss": "^4.1.16"
   }
 }
