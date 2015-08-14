@@ -1122,10 +1122,9 @@ label+.narrow:last-child,label+.normal:last-child,label+.wide:last-child,label+.
 .field.success.append:after,.field.success.prepend:after{content:""}
 .field.success .checkbox span,.field.success .input,.field.success .picker,.field.success .radio span,.field.success .textarea,.field.success input,.field.success textarea{border-color:#58c026;background:#c0eeaa}
 .field.success .checkbox span,.field.success .input,.field.success .picker,.field.success .radio span,.field.success .textarea,.field.success input,.field.success input:-moz-placeholder,.field.success input::-webkit-input-placeholder,.field.success textarea,.field.success textarea:-moz-placeholder textarea,.field.success textarea::-webkit-input-placeholder{color:#58c026}
-.field .picker.danger{border-color:#ca3838;color:#ca3838;background:#f0c5c5}
+.field .picker.danger{border-color:#ca3838;color:#ca3838;background:#f0c5c5;-webkit-transition-duration:.2s;transition-duration:.2s}
 .field .picker.danger select,.field .picker.danger:after{color:#ca3838}
-.field .picker.danger,.field .picker.warning{-webkit-transition-duration:.2s;transition-duration:.2s}
-.field .picker.warning{border-color:#f6b83f;color:#f6b83f;background:#fef7ea}
+.field .picker.warning{border-color:#f6b83f;color:#f6b83f;background:#fef7ea;-webkit-transition-duration:.2s;transition-duration:.2s}
 .field .picker.warning select,.field .picker.warning:after{color:#f6b83f}
 .field .picker.success{border-color:#58c026;color:#58c026;background:#c0eeaa;-webkit-transition-duration:.2s;transition-duration:.2s}
 .field .picker.success select,.field .picker.success:after{color:#58c026}
