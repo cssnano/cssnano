@@ -1,6 +1,9 @@
 # 2.2.0
 
 * Replaced integrated plugin filter with postcss-filter-plugins.
+* Improved rule merging logic.
+* Improved performance across the board by reducing AST iterations where it
+  was possible to do so.
 * cssnano will now perform better whitespace compression when used with other
   PostCSS plugins.
 
