@@ -1,3 +1,8 @@
+# 2.3.0
+
+* Consolidated postcss-minify-trbl & two integrated modules into
+  postcss-merge-longhand.
+
 # 2.2.0
 
 * Replaced integrated plugin filter with postcss-filter-plugins.

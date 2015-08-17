@@ -1054,7 +1054,7 @@ form label.inline{display:inline-block;padding-right:20px}
 form dt{margin:0}
 form textarea{height:150px}
 form ul,form ul li{margin-left:0;list-style-type:none}
-form fieldset{border:.0625em solid #d8d8d8;padding:1.5625em;margin:18px 0}
+form fieldset{padding:1.5625em;border:.0625em solid #d8d8d8;margin:18px 0}
 form fieldset legend{padding:5px 10px}
 .field{position:relative;max-width:100%;margin-bottom:10px;vertical-align:middle;font-size:1pc;overflow:hidden}
 .field .metro,.field.metro{border-radius:0}

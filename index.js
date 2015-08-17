@@ -15,20 +15,18 @@ var processors = {
     colormin: require('postcss-colormin'),
     pseudoelements: require('postcss-pseudoelements'),
     filterOptimiser: require('./lib/filterOptimiser'),
-    longhandOptimiser: require('./lib/longhandOptimiser'),
     minifySelectors: require('postcss-minify-selectors'),
     singleCharset: require('postcss-single-charset'),
     // font-family should be run before discard-unused
     fontFamily: {fn: require('postcss-font-family'), ns: 'fonts'},
     discardUnused: {fn: require('postcss-discard-unused'), ns: 'unused'},
     normalizeUrl: {fn: require('postcss-normalize-url'), ns: 'urls'},
-    minifyTrbl: require('postcss-minify-trbl'),
     core: require('./lib/core'),
     // Optimisations after this are sensitive to previous optimisations in
     // the pipe, such as whitespace normalising/selector re-ordering
     mergeIdents: {fn: require('postcss-merge-idents'), ns: 'idents'},
     reduceIdents: {fn: require('postcss-reduce-idents'), ns: 'idents'},
-    borderOptimiser: require('./lib/borderOptimiser'),
+    mergeLonghand: require('postcss-merge-longhand'),
     discardDuplicates: require('postcss-discard-duplicates'),
     functionOptimiser: require('./lib/functionOptimiser'),
     mergeRules: {fn: require('postcss-merge-rules'), ns: 'merge'},
