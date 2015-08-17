@@ -101,6 +101,10 @@ let tests = [{
     message: 'should convert 4 values to 4',
     fixture: 'h1{margin:10px 20px 30px 40px}',
     expected: 'h1{margin:10px 20px 30px 40px}'
+}, {
+    message: 'should not mangle calc values',
+    fixture: 'h1{margin:1px 1px calc(0.5em + 1px)}',
+    expected: 'h1{margin:1px 1px calc(0.5em + 1px)}',
 }];
 
 function process (css, options) {

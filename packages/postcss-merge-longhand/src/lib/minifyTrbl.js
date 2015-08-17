@@ -1,7 +1,9 @@
 'use strict';
 
+import {list} from 'postcss';
+
 export default v => {
-    let s = typeof v === 'string' ? v.split(' ') : v;
+    let s = typeof v === 'string' ? list.space(v) : v;
     let value = [
         s[0],                // top
         s[1] || s[0],        // right
