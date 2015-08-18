@@ -1,3 +1,8 @@
+# 1.5.0
+
+* Added support for converting pseudo elements with double colon syntax to
+  the single colon syntax.
+
 # 1.4.7
 
 * Further performance improvements by using less postcss-selector-parser

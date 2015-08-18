@@ -6,8 +6,9 @@ var comma = postcss.list.comma;
 var normalize = require('normalize-selector');
 var natural = require('javascript-natural-sort');
 var unquote = require('./lib/unquote');
-
 var parser = require('postcss-selector-parser');
+
+var pseudoElements = ['::before', '::after', '::first-letter', '::first-line'];
 
 function uniq (params, map) {
     var transform = uniqs(comma(params).map(function (selector) {
@@ -84,6 +85,9 @@ function optimise (rule) {
                         }
                     }
                 });
+                if (~pseudoElements.indexOf(selector.value)) {
+                    selector.value = selector.value.slice(1);
+                }
             }
             if (selector.type === 'selector' && selector.parent.type !== 'pseudo') {
                 if (!~uniqueSelectors.indexOf(toString)) {

@@ -122,6 +122,22 @@ var tests = [{
     fixture: '/*!test   comment*/h1, h2{color:blue}',
     expected: '/*!test   comment*/h1,h2{color:blue}'
 }, {
+    message: 'should transform ::before to :before',
+    fixture: 'h1::before{color:blue}',
+    expected: 'h1:before{color:blue}'
+}, {
+    message: 'should transform ::after to :after',
+    fixture: 'h1::after{color:blue}',
+    expected: 'h1:after{color:blue}'
+}, {
+    message: 'should transform ::first-letter to :first-letter',
+    fixture: 'h1::first-letter{color:blue}',
+    expected: 'h1:first-letter{color:blue}'
+}, {
+    message: 'should transform ::first-line to :first-line',
+    fixture: 'h1::first-line{color:blue}',
+    expected: 'h1:first-line{color:blue}'
+}, {
     message: 'should not change strings',
     fixture:  ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:blue}',
     expected: ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:blue}'
