@@ -13,7 +13,6 @@ var processors = {
     convertValues: require('postcss-convert-values'),
     calc: {fn: require('postcss-calc'), ns: 'calc'},
     colormin: require('postcss-colormin'),
-    pseudoelements: require('postcss-pseudoelements'),
     filterOptimiser: require('./lib/filterOptimiser'),
     minifySelectors: require('postcss-minify-selectors'),
     singleCharset: require('postcss-single-charset'),

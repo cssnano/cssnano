@@ -1,3 +1,9 @@
+# 2.4.0
+
+* postcss-minify-selectors was extended to add support for conversion of
+  `::before` to `:before`; this release removes the dedicated
+  postcss-pseudoelements module.
+
 # 2.3.0
 
 * Consolidated postcss-minify-trbl & two integrated modules into
