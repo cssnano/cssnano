@@ -51,55 +51,55 @@ function optimise (rule) {
         selectors.nodes.sort(function (a, b) {
             return natural(String(a), String(b));
         });
-        selectors.eachAttribute(function (selector) {
-            if (selector.value) {
-                // Join selectors that are split over new lines
-                selector.value = selector.value.replace(/\\\n/g, '').trim();
-                if (canUnquote(selector.value)) {
-                    selector.value = unquote(selector.value);
-                }
-                selector.operator = selector.operator.trim();
-            }
-            if (selector.raw) {
-                selector.raw.insensitive = '';
-            }
-            selector.attribute = selector.attribute.trim();
-        });
-        var uniques = [];
+        var uniqueSelectors = [];
         selectors.eachInside(function (selector) {
+            var next = selector.next();
+            var toString = String(selector);
             // Trim whitespace around the value
             selector.spaces.before = selector.spaces.after = '';
-            // Minimise from/100%
-            if (selector.value === 'from' && selector.type === 'tag') { selector.value = '0%'; }
-            if (selector.value === '100%' && selector.type === 'tag') { selector.value = 'to'; }
+            if (selector.type === 'attribute') {
+                if (selector.value) {
+                    // Join selectors that are split over new lines
+                    selector.value = selector.value.replace(/\\\n/g, '').trim();
+                    if (canUnquote(selector.value)) {
+                        selector.value = unquote(selector.value);
+                    }
+                    selector.operator = selector.operator.trim();
+                }
+                if (selector.raw) { selector.raw.insensitive = ''; }
+                selector.attribute = selector.attribute.trim();
+            }
             if (selector.type === 'combinator') {
                 var value = selector.value.trim();
                 selector.value = value.length ? value : ' ';
             }
+            if (selector.type === 'pseudo') {
+                var uniques = [];
+                selector.eachInside(function (child) {
+                    if (child.type === 'selector') {
+                        if (!~uniques.indexOf(String(child))) {
+                            uniques.push(String(child));
+                        } else {
+                            child.removeSelf();
+                        }
+                    }
+                });
+            }
             if (selector.type === 'selector' && selector.parent.type !== 'pseudo') {
-                if (!~uniques.indexOf(String(selector))) {
-                    uniques.push(String(selector));
+                if (!~uniqueSelectors.indexOf(toString)) {
+                    uniqueSelectors.push(toString);
                 } else {
                     selector.removeSelf();
                 }
             }
-        });
-        selectors.eachPseudo(function (pseudo) {
-            uniques = [];
-            pseudo.eachInside(function (selector) {
-                if (selector.type === 'selector') {
-                    if (!~uniques.indexOf(String(selector))) {
-                        uniques.push(String(selector));
-                    } else {
-                        selector.removeSelf();
-                    }
+            if (selector.type === 'tag') {
+                if (selector.value === 'from') { selector.value = '0%'; }
+                if (selector.value === '100%') { selector.value = 'to'; }
+            }
+            if (selector.type === 'universal') {
+                if (next && next.type !== 'combinator') {
+                    selector.removeSelf();
                 }
-            });
-        });
-        selectors.eachUniversal(function (selector) {
-            var next = selector.next();
-            if (next && next.type !== 'combinator') {
-                selector.removeSelf();
             }
         });
     });

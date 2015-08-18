@@ -1,3 +1,8 @@
+# 1.4.7
+
+* Further performance improvements by using less postcss-selector-parser
+  iterations.
+
 # 1.4.6
 
 * Bump normalize-selector to `0.2.0`, decreases overall package weight.
