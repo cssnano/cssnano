@@ -1,3 +1,8 @@
+# 2.5.0
+
+* Adds support for disabling modules of the user's choosing, with new option
+  names. The old options (such as `merge` & `fonts`) will be removed in `3.0`.
+
 # 2.4.0
 
 * postcss-minify-selectors was extended to add support for conversion of
