@@ -68,14 +68,14 @@ module.exports.tests = [{
     fixture: '/*!license*/h1{font-weight:700}/*!license 2*/h2{color:#000}',
     expected: 'h1{font-weight:700}h2{color:#000}',
     options: {
-        comments: {removeAll: true}
+        discardComments: {removeAll: true}
     }
 }, {
     message: 'should remove all important comments but the first, with a flag',
     fixture: '/*!license*/h1{font-weight:700}/*!license 2*/h2{color:#000}',
     expected: '/*!license*/h1{font-weight:700}h2{color:#000}',
     options: {
-        comments: {removeAllButFirst: true}
+        discardComments: {removeAllButFirst: true}
     }
 }, {
     message: 'should pass through when it doesn\'t find a comment',

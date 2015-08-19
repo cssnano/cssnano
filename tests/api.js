@@ -62,3 +62,39 @@ test('should silently disable features if they are already consumed by postcss',
     t.plan(1);
     t.equal(out, exp, specName('notIncludeAutoprefixerTwice'));
 });
+
+test('should disable features if the user specifies so (1)', function (t) {
+    var css = 'h1 { color: #ffffff }';
+    var min = 'h1{color:#ffffff}';
+
+    var out = postcss().use(nano({
+        'postcss-colormin': false
+    })).process(css).css;
+
+    t.plan(1);
+    t.equal(out, min, specName('disableColourMinification'));
+});
+
+test('should disable features if the user specifies so (2)', function (t) {
+    var css = 'h1 { color: #ffffff }';
+    var min = 'h1{color:#ffffff}';
+
+    var out = postcss().use(nano({
+        postcssColormin: false
+    })).process(css).css;
+
+    t.plan(1);
+    t.equal(out, min, specName('disableColourMinification'));
+});
+
+test('should disable features if the user specifies so (3)', function (t) {
+    var css = 'h1 { color: #ffffff }';
+    var min = 'h1{color:#ffffff}';
+
+    var out = postcss().use(nano({
+        colormin: false
+    })).process(css).css;
+
+    t.plan(1);
+    t.equal(out, min, specName('disableColourMinification'));
+});
