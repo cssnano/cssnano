@@ -18,6 +18,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "babel": "^5.8.21",
+    "babel-tape-runner": "^1.2.0",
     "tap-spec": "^4.0.2",
     "tape": "^4.2.0"
   },
