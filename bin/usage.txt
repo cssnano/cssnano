@@ -7,14 +7,15 @@ Options:
     --no-[featureName]  Disable any individual processor module by its name.
                         [featureName] can be any one of these:
 
-                        autoprefixer       discardUnused      minifyFontWeight
-                        calc               filterOptimiser    minifySelectors
-                        colormin           filterPlugins      normalizeUrl
-                        convertValues      fontFamily         reduceIdents
-                        core               functionOptimiser  singleCharset
-                        discardComments    mergeIdents        styleCache
-                        discardDuplicates  mergeLonghand      uniqueSelectors
-                        discardEmpty       mergeRules         zindex
+                        autoprefixer       filterOptimiser    normalizeUrl
+                        calc               filterPlugins      orderedValues
+                        colormin           fontFamily         reduceIdents
+                        convertValues      functionOptimiser  singleCharset
+                        core               mergeIdents        styleCache
+                        discardComments    mergeLonghand      uniqueSelectors
+                        discardDuplicates  mergeRules         zindex
+                        discardEmpty       minifyFontWeight
+                        discardUnused      minifySelectors
 
     --version,    -v    Outputs the version number.
 

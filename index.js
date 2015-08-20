@@ -16,6 +16,7 @@ var processors = {
     postcssConvertValues: require('postcss-convert-values'),
     postcssCalc: {fn: require('postcss-calc')},
     postcssColormin: require('postcss-colormin'),
+    postcssOrderedValues: require('postcss-ordered-values'),
     filterOptimiser: require('./lib/filterOptimiser'),
     postcssMinifySelectors: require('postcss-minify-selectors'),
     postcssSingleCharset: require('postcss-single-charset'),

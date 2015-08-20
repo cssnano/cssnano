@@ -1,3 +1,9 @@
+# 2.6.0
+
+* Adds a new optimisation which re-orders properties that accept values in
+  an arbitrary order. This can lead to improved merging behaviour in certain
+  cases.
+
 # 2.5.0
 
 * Adds support for disabling modules of the user's choosing, with new option

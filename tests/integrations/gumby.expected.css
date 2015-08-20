@@ -1140,7 +1140,7 @@ label+.narrow:last-child,label+.normal:last-child,label+.wide:last-child,label+.
 .js .field .checkbox.success i,.js .field .radio.success i{color:#58c026}
 .js .field .checkbox.success span,.js .field .radio.success span{border-color:#58c026;color:#58c026;background:#c0eeaa;-webkit-transition-duration:.2s;transition-duration:.2s}
 .js .field .checkbox.checked i,.js .field .radio.checked i{position:absolute;top:-1px;left:-8px;line-height:1pc}
-.js .field .checkbox span,.js .field .radio span{display:inline-block;width:1pc;height:1pc;position:relative;top:2px;border:solid 1px #ccc;background:#fefefe}
+.js .field .checkbox span,.js .field .radio span{display:inline-block;width:1pc;height:1pc;position:relative;top:2px;border:1px solid #ccc;background:#fefefe}
 .js .field .checkbox input[type=checkbox],.js .field .checkbox input[type=radio],.js .field .radio input[type=checkbox],.js .field .radio input[type=radio]{display:none}
 .js .field .radio span{border-radius:8px}
 .js .field .checkbox span{border-radius:3px}
