@@ -20,6 +20,7 @@ const borderWidths = [
 
 const borderStyles = [
     'none',
+    'auto',
     'hidden',
     'dotted',
     'dashed',

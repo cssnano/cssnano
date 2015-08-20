@@ -29,6 +29,10 @@ let tests = [{
     message: 'should order outline consistently',
     fixture: 'h1{outline:solid red 1px}',
     expected: 'h1{outline:1px solid red}'
+}, {
+    message: 'should handle -webkit-focus-ring & auto',
+    fixture: 'h1{outline:-webkit-focus-ring-color 5px auto}',
+    expected: 'h1{outline:5px auto -webkit-focus-ring-color}'
 }];
 
 function process (css, options) {
