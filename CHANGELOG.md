@@ -1,3 +1,7 @@
+# 2.6.1
+
+* Improved performance of the core module `functionOptimiser`.
+
 # 2.6.0
 
 * Adds a new optimisation which re-orders properties that accept values in
