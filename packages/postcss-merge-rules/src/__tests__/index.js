@@ -110,6 +110,10 @@ let tests = [{
     fixture: '.foo{font-family:serif;display:block}.barim{display:block;line-height:1}.bazaz{font-size:3em;font-family:serif}',
     expected: '.foo{font-family:serif}.foo,.barim{display:block}.barim{line-height:1}.bazaz{font-size:3em;font-family:serif}'
 }, {
+    message: 'should merge multiple values (cssnano#49)',
+    fixture: 'h1{border:1px solid red;background-color:red;background-position:50% 100%}h1{border:1px solid red;background-color:red}h1{border:1px solid red}',
+    expected: 'h1{border:1px solid red;background-color:red;background-position:50% 100%}'
+}, {
     message: 'should perform partial merging of selectors in the opposite direction',
     fixture: 'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
     expected: 'h1{color:black}h2,h3{color:black;font-weight:bold}'

@@ -1,3 +1,7 @@
+# 1.3.5
+
+* Improves merging of adjacent rules with identical selectors.
+
 # 1.3.4
 
 * Fixes an issue where in some cases, non-adjacent rule merging was being
