@@ -3,6 +3,8 @@
 import postcss from 'postcss';
 import parser, {unit} from 'postcss-value-parser';
 
+// border: <line-width> || <line-style> || <color>
+// outline: <outline-color> || <outline-style> || <outline-width>
 const borderProps = [
     'border',
     'border-top',
@@ -20,7 +22,7 @@ const borderWidths = [
 
 const borderStyles = [
     'none',
-    'auto',
+    'auto', // only in outline-style
     'hidden',
     'dotted',
     'dashed',
@@ -31,6 +33,23 @@ const borderStyles = [
     'inset',
     'outset'
 ];
+
+// flex-flow: <flex-direction> || <flex-wrap>
+const flexFlowProps = 'flex-flow';
+
+const flexDirection = [
+    'row',
+    'row-reverse',
+    'column',
+    'column-reverse'
+];
+
+const flexWrap = [
+    'nowrap ',
+    'wrap',
+    'wrap-reverse'
+];
+
 
 let normalizeBorder = decl => {
     if (!~borderProps.indexOf(decl.prop)) {
@@ -61,10 +80,33 @@ let normalizeBorder = decl => {
     }
 };
 
+let normalizeFlexFlow = decl => {
+    if (!~flexFlowProps.indexOf(decl.prop)) {
+        return;
+    }
+    let order = {direction: '', wrap: ''};
+    let flexFlow = parser(decl.value);
+    flexFlow = flexFlow.nodes.filter(n => n.type !== 'space');
+    if (flexFlow.length > 1) {
+        flexFlow.forEach(node => {
+            if (~flexDirection.indexOf(node.value)) {
+                order.direction = node.value + ' ';
+                return;
+            }
+            if (~flexWrap.indexOf(node.value)) {
+                order.wrap = node.value + ' ';
+                return;
+            }
+        });
+        decl.value = `${order.direction}${order.wrap}`.trim();
+    }
+};
+
 export default postcss.plugin('postcss-ordered-values', () => {
     return css => {
         css.eachDecl(decl => {
             normalizeBorder(decl);
+            normalizeFlexFlow(decl);
         });
     };
 });

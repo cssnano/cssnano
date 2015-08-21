@@ -17,15 +17,13 @@ it is entirely possible that different developers will write their values in
 different orders. This module normalizes the order, making it easier for other
 modules to understand which declarations are duplicates.
 
-Currently, `border` & `outline` are supported. For more examples, see
-the [tests](src/__tests__/index.js).
-
 ### Input
 
 ```css
 h1 {
     border: solid 1px red;
-    border: red solid 1px;
+    border: red solid .5em;
+    border: rgba(0, 30, 105, 0.8) solid 1px;
     border: 1px solid red;
 }
 ```
@@ -35,10 +33,19 @@ h1 {
 ```css
 h1 {
     border: 1px solid red;
-    border: 1px solid red;
+    border: .5em solid red;
+    border: 1px solid rgba(0, 30, 105, 0.8);
     border: 1px solid red;
 }
 ```
+
+## Support List
+
+For more examples, see the [tests](src/__tests__/index.js).
+
+* border(border-left|right|top|bottom)
+* outline
+* flex-flow
 
 ## Usage
 

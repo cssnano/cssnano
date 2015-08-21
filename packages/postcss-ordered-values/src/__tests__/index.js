@@ -22,17 +22,49 @@ let tests = [{
     fixture: 'h1{border-left:solid 2px red;border-right:#fff 3px dashed;border-top:dotted #000 1px;border-bottom:4px navy groove}',
     expected: 'h1{border-left:2px solid red;border-right:3px dashed #fff;border-top:1px dotted #000;border-bottom:4px groove navy}',
 }, {
-    message: 'should skip inherit',
+    message: 'should order width currentColor',
+    fixture: 'h1{border:solid 2vmin currentColor}',
+    expected: 'h1{border:2vmin solid currentColor}'
+}, {
+    message: 'should skip border:inherit',
     fixture: 'h1{border:inherit}',
     expected: 'h1{border:inherit}'
 }, {
+    message: 'should skip border:initial',
+    fixture: 'h1{border:initial}',
+    expected: 'h1{border:initial}'
+}, {
+    message: 'should skip border:unset',
+    fixture: 'h1{border:unset}',
+    expected: 'h1{border:unset}'
+}, {
     message: 'should order outline consistently',
-    fixture: 'h1{outline:solid red 1px}',
-    expected: 'h1{outline:1px solid red}'
+    fixture: 'h1{outline:solid red .6em}',
+    expected: 'h1{outline:.6em solid red}'
+}, {
+    message: 'should order outline(outline-color is invert)',
+    fixture: 'h1{outline:solid invert 1px}',
+    expected: 'h1{outline:1px solid invert}'
 }, {
     message: 'should handle -webkit-focus-ring & auto',
     fixture: 'h1{outline:-webkit-focus-ring-color 5px auto}',
     expected: 'h1{outline:5px auto -webkit-focus-ring-color}'
+}, {
+    message: 'should order flex-flow',
+    fixture: 'h1{flex-flow: wrap column}',
+    expected: 'h1{flex-flow: column wrap}'
+}, {
+    message: 'should order flex-flow',
+    fixture: 'h1{flex-flow: row-reverse wrap-reverse}',
+    expected: 'h1{flex-flow: row-reverse wrap-reverse}'
+}, {
+    message: 'should skip flex-flow:inherit',
+    fixture: 'h1{flex-flow:inherit}',
+    expected: 'h1{flex-flow:inherit}'
+}, {
+    message: 'should skip flex-flow:unset',
+    fixture: 'h1{flex-flow: unset}',
+    expected: 'h1{flex-flow: unset}'
 }];
 
 function process (css, options) {
