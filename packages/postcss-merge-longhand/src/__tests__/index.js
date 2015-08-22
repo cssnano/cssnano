@@ -105,6 +105,10 @@ let tests = [{
     message: 'should not mangle calc values',
     fixture: 'h1{margin:1px 1px calc(0.5em + 1px)}',
     expected: 'h1{margin:1px 1px calc(0.5em + 1px)}',
+}, {
+    message: 'should not merge rules with the inherit keyword',
+    fixture: 'h1{border-width:3px;border-style:solid;border-color:inherit}',
+    expected: 'h1{border-width:3px;border-style:solid;border-color:inherit}',
 }];
 
 function process (css, options) {
