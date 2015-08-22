@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var postcss = require('postcss');
 var plugin = require('./');
@@ -115,6 +117,10 @@ var tests = [{
     message: 'should support ch units',
     fixture: 'a{line-height:1.1ch}',
     expected: 'a{line-height:1.1ch}'
+}, {
+    message: 'should support PX units',
+    fixture: 'h1{font-size:20PX}',
+    expected: 'h1{font-size:20px}'
 }];
 
 function process (css, options) {

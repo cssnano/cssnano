@@ -26,7 +26,7 @@ module.exports = function (value) {
     var max, index;
 
     for (max = 4; max !== 0; max -= 1) {
-        index = units.indexOf(value.slice(-max));
+        index = units.indexOf(value.slice(-max).toLowerCase());
         if (~index) {
             return units[index];
         }

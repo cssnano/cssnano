@@ -1,3 +1,7 @@
+# 1.2.5
+
+* Fixes an issue where uppercase units (such as PX) were being deleted.
+
 # 1.2.4
 
 * Fixes convert not px or ms
