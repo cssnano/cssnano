@@ -65,6 +65,14 @@ let tests = [{
     message: 'should skip flex-flow:unset',
     fixture: 'h1{flex-flow: unset}',
     expected: 'h1{flex-flow: unset}'
+}, {
+    message: 'should skip flex: 1 0 auto',
+    fixture: 'h1{flex: 1 0 auto;}',
+    expected: 'h1{flex: 1 0 auto;}'
+}, {
+    message: 'should skip flex: 0 1 auto',
+    fixture: 'h1{flex: 0 1 auto;}',
+    expected: 'h1{flex: 0 1 auto;}'
 }];
 
 function process (css, options) {

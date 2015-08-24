@@ -35,7 +35,7 @@ const borderStyles = [
 ];
 
 // flex-flow: <flex-direction> || <flex-wrap>
-const flexFlowProps = 'flex-flow';
+const flexFlowProps = ['flex-flow'];
 
 const flexDirection = [
     'row',
