@@ -16,13 +16,22 @@ This plugin reduces CSS size by converting values to use different units
 where possible; for example, `500ms` can be represented as `.5s`. You can
 read more about these units in [this article][csstricks].
 
-```js
-var postcss = require('postcss');
+### Input
 
-var css = 'h1 { font-size: 16px; width: 0em }';
-console.log(postcss([ require('postcss-convert-values') ]).process(css).css);
+```css
+h1 {
+    font-size: 16px;
+    width: 0em
+}
+```
 
-// => 'h1 { font-size: 1pc; width: 0 }'
+### Output
+
+```css
+h1 {
+    font-size: 1pc;
+    width: 0
+}
 ```
 
 Note that this plugin only covers conversions for duration and absolute length
