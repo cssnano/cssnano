@@ -1,3 +1,8 @@
+# 1.3.1
+
+* Fixes an issue where the module would convert values in gradient/url functions
+  since 1.3.0.
+
 # 1.3.0
 
 * Converted the module to use ES6.

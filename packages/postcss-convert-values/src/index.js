@@ -8,7 +8,10 @@ let optimise = decl => {
     if (~decl.prop.indexOf('flex')) {
         return;
     }
-    decl.value = valueParser(decl.value).walk(node => {
+
+    let parsed = valueParser(decl.value);
+
+    let transform = node => {
         if (node.type === 'word') {
             let number = unit(node.value);
             if (number) {
@@ -21,8 +24,15 @@ let optimise = decl => {
                 }
                 node.value = convert(num, u);
             }
+            return;
         }
-    }).toString();
+        if (node.type === 'function' && node.value === 'calc') {
+            return node.nodes.forEach(transform);
+        }
+    };
+
+    parsed.nodes.forEach(transform);
+    decl.value = parsed.toString();
 };
 
 export default postcss.plugin('postcss-convert-values', () => {
