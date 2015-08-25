@@ -1,3 +1,10 @@
+# 1.3.0
+
+* Converted the module to use ES6.
+* balanced-match, css-list & some integrated code has been replaced with
+  postcss-value-parser; reducing the number of moving parts in this module, and
+  providing a more futureproof way of parsing CSS numeric values.
+
 # 1.2.5
 
 * Fixes an issue where uppercase units (such as PX) were being deleted.
