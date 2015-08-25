@@ -2,21 +2,27 @@
   "name": "postcss-convert-values",
   "version": "1.2.5",
   "description": "Convert values with PostCSS (e.g. ms -> s)",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "LICENSE-MIT",
+    "dist"
+  ],
   "scripts": {
-    "test": "tape test.js | tap-spec",
-    "jscs": "jscs index.js test.js lib/*.js"
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/",
+    "test": "babel-tape-runner \"src/**/__tests__/*.js\" | tap-spec"
   },
   "keywords": [
     "css",
     "optimisation",
     "postcss",
-    "postcss-plugins"
+    "postcss-plugin"
   ],
   "license": "MIT",
   "devDependencies": {
-    "tap-spec": "^4.0.2",
-    "tape": "^4.0.0"
+    "babel": "^5.8.21",
+    "babel-tape-runner": "^1.2.0",
+    "tap-spec": "^4.1.0",
+    "tape": "^4.2.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-convert-values",
   "author": {
@@ -26,8 +32,7 @@
   },
   "repository": "ben-eb/postcss-convert-values",
   "dependencies": {
-    "balanced-match": "^0.2.0",
-    "css-list": "^0.1.0",
-    "postcss": "^4.1.13"
+    "postcss": "^4.1.16",
+    "postcss-value-parser": "^1.1.0"
   }
 }

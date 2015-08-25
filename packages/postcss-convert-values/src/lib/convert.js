@@ -1,6 +1,6 @@
 'use strict';
 
-var conversions = [{
+const conversions = [{
     // Length
     'in': 96,
     'px': 1,
@@ -13,7 +13,7 @@ var conversions = [{
 }];
 
 function dropLeadingZero (number) {
-    var value = number.toString();
+    let value = String(number);
 
     if (value[0] === '0' && number % 1) {
         return value.substring(1);
@@ -26,33 +26,25 @@ function dropLeadingZero (number) {
     return value;
 }
 
-module.exports = function (number, unit) {
-    var converted,
+export default function (number, unit) {
+    let converted,
         value = dropLeadingZero(number) + (unit ? unit : ''),
         conversion,
         base;
 
-    conversion = conversions.filter(function (area) {
-        return unit in area;
-    })[0];
+    conversion = conversions.filter(area => unit in area)[0];
 
     if (conversion) {
-        if(unit === 'ms' || unit === 'px') {
+        if (unit === 'ms' || unit === 'px') {
             base = number / conversion[unit];
         } else {
             base = number * conversion[unit];
         }
 
         converted = Object.keys(conversion)
-            .filter(function (u) {
-                return unit !== u;
-            })
-            .map(function (u) {
-                return dropLeadingZero(base / conversion[u]) + u;
-            })
-            .reduce(function (a, b) {
-                return a.length < b.length ? a : b;
-            });
+            .filter(u => unit !== u)
+            .map(u => dropLeadingZero(base / conversion[u]) + u)
+            .reduce((a, b) => a.length < b.length ? a : b);
 
         if (converted.length < value.length) {
             value = converted;
@@ -60,4 +52,4 @@ module.exports = function (number, unit) {
     }
 
     return value;
-};
+}
