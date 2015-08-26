@@ -55,6 +55,10 @@ var tests = [{
     fixture: 'body{counter-reset:section}h3:before{counter-increment:section;content:"Section" counter(section) ": "}',
     expected: 'body{counter-reset:a}h3:before{counter-increment:a;content:"Section" counter(a) ": "}'
 }, {
+    message: 'should rename counters (2)',
+    fixture: 'h3:before{content:counter(section);counter-increment:section}',
+    expected: 'h3:before{content:counter(a);counter-increment:a}'
+}, {
     message: 'should rename multiple counters',
     fixture: 'h1:before{counter-reset:chapter 1 section page 1;content: counter(chapter) "." counter(section) " (pg." counter(page) ") "}',
     expected: 'h1:before{counter-reset:a 1 b c 1;content: counter(a) "." counter(b) " (pg." counter(c) ") "}'

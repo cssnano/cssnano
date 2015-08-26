@@ -9,11 +9,11 @@ module.exports = function encode (num) {
     if (remainder) {
         base = 64;
         characters = characters + '0123456789-_';
-    }
-    while (remainder) {
-        character = remainder % base;
-        remainder = Math.floor(remainder / base);
-        result = result + characters[character];
+        while (remainder) {
+            character = remainder % base;
+            remainder = Math.floor(remainder / base);
+            result = result + characters[character];
+        }
     }
     return result;
 };

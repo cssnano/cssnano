@@ -7,12 +7,13 @@ var list = postcss.list;
 
 function eachValue (value, callback) {
     return list.space(value).map(function (val) {
-        return list.comma(val).map(callback).join(',');
+        return list.comma(val).map(callback).join();
     }).join(' ');
 }
 
 function transformAtRule (css, atRuleRegex, propRegex) {
     var cache = {};
+    var ruleCache = [];
     // Encode at rule names and cache the result
     css.eachAtRule(atRuleRegex, function (rule) {
         if (!cache[rule.params]) {
@@ -22,6 +23,7 @@ function transformAtRule (css, atRuleRegex, propRegex) {
             };
         }
         rule.params = cache[rule.params].ident;
+        ruleCache.push(rule);
     });
     // Iterate each property and change their names
     css.eachDecl(propRegex, function (decl) {
@@ -34,7 +36,7 @@ function transformAtRule (css, atRuleRegex, propRegex) {
         });
     });
     // Ensure that at rules with no references to them are left unchanged
-    css.eachAtRule(atRuleRegex, function (rule) {
+    ruleCache.forEach(function (rule) {
         Object.keys(cache).forEach(function (key) {
             var k = cache[key];
             if (k.ident === rule.params && !k.count) {
@@ -47,6 +49,7 @@ function transformAtRule (css, atRuleRegex, propRegex) {
 module.exports = postcss.plugin('postcss-reduce-idents', function () {
     return function (css) {
         var cache = {};
+        var declCache = [];
         css.eachDecl(/counter-(reset|increment)/, function (decl) {
             decl.value = eachValue(decl.value, function (value) {
                 if (!/^-?\d*$/.test(value)) {
@@ -60,6 +63,7 @@ module.exports = postcss.plugin('postcss-reduce-idents', function () {
                 }
                 return value;
             });
+            declCache.push(decl);
         });
         css.eachDecl('content', function (decl) {
             decl.value = eachValue(decl.value, function (value) {
@@ -75,7 +79,7 @@ module.exports = postcss.plugin('postcss-reduce-idents', function () {
                 });
             });
         });
-        css.eachDecl(/counter-(reset|increment)/, function (decl) {
+        declCache.forEach(function (decl) {
             decl.value = eachValue(decl.value, function (value) {
                 if (!/^-?\d*$/.test(value)) {
                     Object.keys(cache).forEach(function (key) {

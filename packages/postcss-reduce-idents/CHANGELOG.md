@@ -1,3 +1,7 @@
+# 1.0.3
+
+* Improved performance by iterating the AST less times.
+
 # 1.0.2
 
 * Fixes an issue where multiple, comma separated animations with insufficient
