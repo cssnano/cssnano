@@ -23,6 +23,8 @@ test('fixture testing', function (t) {
 
     Object.keys(specs).forEach(function (name) {
         var spec = specs[name];
-        t.equal(nano.process(spec.fixture), spec.expected, specName(name));
+        nano.process(spec.fixture).then(function (result) {
+            t.equal(result.css, spec.expected, specName(name));
+        });
     });
 });

@@ -36,5 +36,7 @@ read(file, function (err, buf) {
     if (out) {
         opts.to = out;
     }
-    write(out, nano.process(String(buf), opts));
+    nano.process(String(buf), opts).then(function (result) {
+        write(out, result.css);
+    });
 });

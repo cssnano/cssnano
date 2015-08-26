@@ -10,6 +10,7 @@ var processors = {
         return require('postcss-filter-plugins')({silent: true});
     },
     postcssDiscardComments: {fn: require('postcss-discard-comments'), ns: 'comments'},
+    postcssSvgo: require('postcss-svgo'),
     autoprefixer: require('autoprefixer-core'),
     postcssZindex: {fn: require('postcss-zindex')},
     postcssMinifyFontWeight: require('postcss-minify-font-weight'),
@@ -89,11 +90,5 @@ module.exports = cssnano;
 module.exports.process = function (css, options) {
     options = options || {};
     options.map = options.map || (options.sourcemap ? true : null);
-    var result = postcss([cssnano(options)]).process(css, options);
-    // return a css string if inline/no sourcemap.
-    if (options.map === null || options.map === true || (options.map && options.map.inline)) {
-        return result.css;
-    }
-    // otherwise return an object of css & map
-    return result;
+    return postcss([cssnano(options)]).process(css, options);
 };

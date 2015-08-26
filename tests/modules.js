@@ -14,7 +14,9 @@ directory(base).forEach(function (file) {
 
         module.tests.forEach(function (test) {
             var options = test.options || {};
-            t.equal(nano.process(test.fixture, options), test.expected, test.message);
+            nano.process(test.fixture, options).then(function (result) {
+                t.equal(result.css, test.expected, test.message);
+            });
         });
     });
 });

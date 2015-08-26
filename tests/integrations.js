@@ -12,7 +12,7 @@ var path = require('path');
 var base = path.join(__dirname, 'integrations');
 
 function formatted (css) {
-    return postcss().use(nano()).use(formatter).process(css).css;
+    return postcss().use(nano()).use(formatter).process(css);
 }
 
 test('integration testing', function (t) {
@@ -30,6 +30,8 @@ test('integration testing', function (t) {
     Object.keys(specs).forEach(function (name) {
         var spec = specs[name];
         var testName = 'produceTheExpectedResultFor: ' + name + '.css';
-        t.equal(formatted(spec.fixture), spec.expected, specName(testName));
+        formatted(spec.fixture).then(function (result) {
+            t.equal(result.css, spec.expected, specName(testName));
+        });
     });
 });
