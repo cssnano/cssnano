@@ -1,16 +1,14 @@
 'use strict';
 
 var postcss = require('postcss');
-var shorter = require('./lib/shorter');
+var parser = require('postcss-value-parser');
+var stringify = parser.stringify;
 var normalize = require('normalize-url');
 var isAbsolute = require('is-absolute-url');
 var path = require('path');
 var assign = require('object-assign');
 
-var cssList = require('css-list');
-
 var multiline = /\\[\r\n]/;
-var unquote = /^("|')(.*)\1$/;
 var escapeChars = /([\s\(\)"'])/g;
 
 function convert (url, options) {
@@ -20,41 +18,80 @@ function convert (url, options) {
     return path.normalize(url).replace(new RegExp('\\' + path.sep, 'g'), '/');
 }
 
+function trimSpaceNodes(nodes) {
+    var first = nodes[0];
+    if (first && first.type === 'space') {
+        nodes.shift();
+    }
+
+    var last = nodes[nodes.length - 1];
+    if (last && last.type === 'space') {
+        nodes.pop();
+    }
+}
+
 function namespaceOptimiser (options) {
     return function (rule) {
-        rule.params = cssList.map(rule.params, function (param) {
-            if (/^url/.test(param)) {
-                param = param.replace(/^url\((.*)\)$/, '$1');
+        rule.params = parser(rule.params).walk(function (node, i, parentNodes) {
+            var nodes = node.nodes;
+            if (node.type === 'function' && node.value === 'url') {
+                trimSpaceNodes(node.nodes);
+                if (nodes.length === 1 && nodes[0].type === 'string' && nodes[0].quote) {
+                    node = nodes[0];
+                } else {
+                    node = { type: 'string', quote: '"', value: stringify(nodes) };
+                }
+                parentNodes[i] = node;
             }
-            return param.replace(/^("|')(.*)\1$/, function (_, quo, body) {
-                return quo + convert(body.trim(), options) + quo;
-            });
-        });
+
+            if (node.type === 'string') {
+                node.value = convert(node.value.trim(), options);
+            }
+
+            return false;
+        }).toString();
     };
 }
 
-function eachValue (val, options) {
-    return cssList.map(val, function (value, type) {
-        if (
-            type !== 'func' ||
-            value.indexOf('url') !== 0 ||
-            ~value.indexOf('data:image/') ||
-            ~value.indexOf('data:application/')
-        ) {
-            return value;
+function transformDecl(decl, opts) {
+    decl.value = decl.value.replace(multiline, '');
+    decl.value = parser(decl.value).walk('url', function (node) {
+        var nodes = node.nodes;
+        var url;
+        var escaped;
+
+        if (node.type !== 'function') {
+            return;
         }
-        var url = value.substring(4, value.length - 1).trim();
-        url = url.replace(unquote, function (_, quote, body) {
-            return quote + convert(body.trim(), options) + quote;
-        });
-        var trimmed = url.replace(unquote, '$2').trim();
-        var optimised = convert(trimmed, options);
-        if (escapeChars.test(trimmed)) {
-            var isEscaped = trimmed.replace(escapeChars, '\\$1');
-            optimised = shorter(isEscaped, url);
+
+        trimSpaceNodes(nodes);
+
+        if (nodes.length === 1 && nodes[0].type === 'string' && nodes[0].quote) {
+            url = nodes[0];
+        } else {
+            url = { type: 'word', value: stringify(nodes) };
         }
-        return 'url(' + optimised + ')';
-    });
+        node.nodes = [url];
+
+        if (~url.value.indexOf('data:image/') || ~url.value.indexOf('data:application/')) {
+            return false;
+        }
+
+        url.value = url.value.trim()
+        url.value = convert(url.value, opts);
+
+        if (escapeChars.test(url.value)) {
+            escaped = url.value.replace(escapeChars, '\\$1');
+            if (escaped.length < url.value.length + (url.type === 'string' ? 2 : 0)) {
+                url.value = escaped;
+                url.type = 'word';
+            }
+        } else {
+            url.type = 'word';
+        }
+
+        return false;
+    }).toString();
 }
 
 module.exports = postcss.plugin('postcss-normalize-url', function (opts) {
@@ -67,8 +104,7 @@ module.exports = postcss.plugin('postcss-normalize-url', function (opts) {
     return function (css) {
         css.eachInside(function (node) {
             if (node.type === 'decl') {
-                node.value = eachValue(node.value.replace(multiline, ''), opts);
-                return;
+                return transformDecl(node, opts);
             }
             if (node.type === 'atrule' && node.name === 'namespace') {
                 return namespaceOptimiser(opts)(node);
