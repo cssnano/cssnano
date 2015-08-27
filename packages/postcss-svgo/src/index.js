@@ -39,7 +39,7 @@ module.exports = postcss.plugin('postcss-svgo', opts => {
     return css => {
         return new Promise((resolve, reject) => {
             let promises = [];
-            css.eachDecl(decl => {
+            css.walkDecls(decl => {
                 if (dataURI.test(decl.value)) {
                     promises.push(minifyPromise(svgo, decl));
                 }

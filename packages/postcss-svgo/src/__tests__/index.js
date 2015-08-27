@@ -36,7 +36,7 @@ let tests = [{
 }];
 
 function process (css, options, callback) {
-    return postcss([ filters(), plugin(options)]).process(css).then(callback);
+    return postcss([ filters(), plugin(options) ]).process(css).then(callback);
 }
 
 test(name, (t) => {

@@ -6,7 +6,7 @@
   "scripts": {
     "prepublish": "babel src --out-dir dist --ignore /__tests__/",
     "test-unformatted": "babel-tape-runner \"src/**/__tests__/*.js\"",
-    "test": "npm run test-unformatted | faucet"
+    "test": "npm run test-unformatted | tap-spec"
   },
   "files": [
     "LICENSE-MIT",
@@ -23,11 +23,11 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel": "^5.6.2",
-    "babel-tape-runner": "^1.1.0",
-    "faucet": "0.0.1",
+    "babel": "^5.8.21",
+    "babel-tape-runner": "^1.2.0",
     "pleeease-filters": "^1.0.1",
-    "tape": "^4.0.0"
+    "tap-spec": "^4.1.0",
+    "tape": "^4.2.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-svgo",
   "author": {
@@ -39,7 +39,7 @@
   "dependencies": {
     "async-replace": "^1.0.0",
     "is-svg": "^1.1.1",
-    "postcss": "^4.1.11",
-    "svgo": "^0.5.2"
+    "postcss": "^5.0.2",
+    "svgo": "^0.5.6"
   }
 }
