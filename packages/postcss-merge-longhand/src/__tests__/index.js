@@ -113,6 +113,14 @@ let tests = [{
     message: 'should not crash on comments',
     fixture: 'h1{\n  border-width:3px;/* 1 */\n  border-style:solid;/* 2 */\n  border-color:red;/* 3 */}',
     expected: 'h1{/* 1 *//* 2 */\n  border:3px solid red;/* 3 */}'
+}, {
+	message: 'should merge margin-left with margin',
+	fixture: 'h1{margin:10px 20px;margin-left:10px}',
+	expected: 'h1{margin:10px 20px 10px 10px}'
+}, {
+	message: 'should merge !important and normal margin values',
+	fixture: 'h1{margin-left:10px;margin-left:20px!important;margin-right:10px;margin-right:20px!important;margin-top:10px;margin-top:20px!important;margin-bottom:10px;margin-bottom:20px!important}',
+	expected: 'h1{margin:10px;margin:20px!important}'
 }];
 
 function process (css, options) {

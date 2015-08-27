@@ -33,6 +33,7 @@
   },
   "repository": "ben-eb/postcss-merge-longhand",
   "dependencies": {
-    "postcss": "^5.0.4"
+    "postcss": "^5.0.4",
+    "postcss-value-parser": "^1.2.2"
   }
 }
