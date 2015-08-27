@@ -1,3 +1,9 @@
+# 2.1.2
+
+* postcss-normalize-url now uses postcss-value-parser to iterate
+  url values (thanks to @TrySound).
+* Fixed `@namespace` URL reduction behaviour. (thanks to @TrySound).
+
 # 2.1.1
 
 * Increased performance by using a single call to `eachInside` rather than two.
