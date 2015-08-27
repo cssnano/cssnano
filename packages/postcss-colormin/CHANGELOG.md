@@ -1,3 +1,8 @@
+# 1.2.6
+
+* Fixed a crash when specifying `inherit` as a value
+  to `-webkit-tap-highlight-color`.
+
 # 1.2.5
 
 * Speed up node iteration by calling `eachDecl` once rather than twice.

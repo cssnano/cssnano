@@ -46,9 +46,17 @@ var tests = module.exports = [{
     fixture: 'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}',
     expected: 'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}'
 }, {
-    message: 'should still minify spaces in webkit tap highlight color)',
+    message: 'should still minify spaces in webkit tap highlight color',
     fixture: 'h1{-webkit-tap-highlight-color:rgba(0, 0, 0, 0)}',
     expected: 'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}'
+}, {
+    message: 'should not crash on transparent in webkit tap highlight color',
+    fixture: 'h1{-webkit-tap-highlight-color:transparent}',
+    expected: 'h1{-webkit-tap-highlight-color:transparent}'
+}, {
+    message: 'should not crash on inherit in webkit tap highlight color',
+    fixture: 'h1{-webkit-tap-highlight-color:inherit}',
+    expected: 'h1{-webkit-tap-highlight-color:inherit}'
 }];
 
 function process (css, options) {
