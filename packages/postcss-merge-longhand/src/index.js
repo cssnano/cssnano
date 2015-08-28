@@ -15,7 +15,7 @@ export default postcss.plugin('postcss-merge-longhand', () => {
   return css => {
     css.eachRule(rule => {
       processors.forEach(processor => processor.explode(rule));
-      processors.reverse().forEach(processor => processor.merge(rule));
+      processors.slice().reverse().forEach(processor => processor.merge(rule));
     });
   };
 });
