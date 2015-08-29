@@ -121,6 +121,18 @@ let tests = [{
 	message: 'should merge !important and normal margin values',
 	fixture: 'h1{margin-left:10px;margin-left:20px!important;margin-right:10px;margin-right:20px!important;margin-top:10px;margin-top:20px!important;margin-bottom:10px;margin-bottom:20px!important}',
 	expected: 'h1{margin:10px;margin:20px!important}'
+}, {
+	message: 'should merge column values',
+	fixture: 'h1{column-width:12em;column-count:auto}',
+	expected: 'h1{columns:12em auto}'
+}, {
+	message: 'should minify column values',
+	fixture: 'h1{column-width:auto;column-count:auto}',
+	expected: 'h1{columns:auto}'
+}, {
+	message: 'should merge column-width with columns',
+	fixture: 'h1{columns:12em auto;column-width:11em}',
+	expected: 'h1{columns:11em auto}'
 }];
 
 function process (css, options) {

@@ -8,6 +8,7 @@ import borderTop from './lib/decl/border-top';
 import borderRight from './lib/decl/border-right';
 import borderBottom from './lib/decl/border-bottom';
 import borderLeft from './lib/decl/border-left';
+import columns from './lib/decl/columns';
 
 const processors = [
   margin,
@@ -16,7 +17,8 @@ const processors = [
   borderTop,
   borderRight,
   borderBottom,
-  borderLeft
+  borderLeft,
+  columns
 ];
 
 export default postcss.plugin('postcss-merge-longhand', () => {
