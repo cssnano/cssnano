@@ -9,15 +9,15 @@ function canonical (obj) {
             return recurse(obj[key]);
         }
         return key;
-    }
+    };
 }
 
 function mergeAtRules (css, atrule, declaration) {
     var cache = [], replacements = {};
     css.eachAtRule(atrule, function (rule) {
+        var toString = String(rule.nodes);
         var cached = cache.filter(function (c) {
-            var sameContents = String(c.nodes) === String(rule.nodes);
-            return sameContents && c.name === rule.name;
+            return String(c.nodes) === toString && c.name === rule.name;
         });
         if (cached.length) {
             replacements[cached[0].params] = rule.params;
