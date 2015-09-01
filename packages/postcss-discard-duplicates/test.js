@@ -77,6 +77,10 @@ var tests = [{
     message: 'should not be responsible for normalising declarations',
     fixture: 'h1{margin:10px 0 10px 0;margin:10px 0}',
     expected: 'h1{margin:10px 0 10px 0;margin:10px 0}'
+}, {
+    message: 'should remove duplicate rules and declarations',
+    fixture: 'h1{color:#000}h2{color:#fff}h1{color:#000;color:#000}',
+    expected: 'h2{color:#fff}h1{color:#000}',
 }];
 
 function process (css, options) {
