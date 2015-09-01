@@ -1,3 +1,7 @@
+# 1.2.0
+
+* Improved duplicate detection (thanks to @TrySound).
+
 # 1.1.6
 
 * Improved performance by caching string representations of nodes, and
