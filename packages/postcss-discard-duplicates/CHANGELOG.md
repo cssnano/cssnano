@@ -1,3 +1,8 @@
+# 1.1.6
+
+* Improved performance by caching string representations of nodes, and
+  minimising stringifying as much as possible (thanks to @TrySound).
+
 # 1.1.5
 
 * Fixed an issue where comments were being deduplicated.

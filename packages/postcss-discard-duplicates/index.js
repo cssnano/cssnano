@@ -2,17 +2,24 @@
 
 var postcss = require('postcss');
 
-function dedupe (node) {
+function dedupe (node, index) {
+    if (node.type === 'comment') { return; }
     if (node.nodes) { node.each(dedupe); }
 
-    if (node.type === 'comment') { return; }
+    var toString = String(node);
+    var nodes = node.parent.nodes;
+    var result = [node];
+    var i = index + 1;
+    var max = nodes.length;
 
-    var nodes = node.parent.nodes.filter(function (n) {
-        return String(n) === String(node);
-    });
+    for (; i < max; i++) {
+        if (String(nodes[i]) === toString) {
+            result.push(nodes[i]);
+        }
+    }
 
-    nodes.forEach(function (n, i) {
-        if (i !== nodes.length - 1) {
+    result.forEach(function (n, i) {
+        if (i !== result.length - 1) {
             n.removeSelf();
         }
     });
