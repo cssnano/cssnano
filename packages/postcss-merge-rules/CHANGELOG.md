@@ -1,3 +1,7 @@
+# 1.3.6
+
+* Minor boost in performance with reduced stringify passes.
+
 # 1.3.5
 
 * Improves merging of adjacent rules with identical selectors.

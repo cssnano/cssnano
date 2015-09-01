@@ -129,8 +129,9 @@ function selectorMerger () {
         // Merge when both selectors are exactly equal
         // e.g. a { color: blue } a { font-weight: bold }
         if (cache.selector === rule.selector) {
+            var toString = String(cache);
             rule.eachInside(decl => {
-                if (~String(cache).indexOf(String(decl))) {
+                if (~toString.indexOf(String(decl))) {
                     return decl.removeSelf();
                 }
                 decl.moveTo(cache);
