@@ -11,21 +11,21 @@ import borderLeft from './lib/decl/border-left';
 import columns from './lib/decl/columns';
 
 const processors = [
-  margin,
-  padding,
-  border,
-  borderTop,
-  borderRight,
-  borderBottom,
-  borderLeft,
-  columns
+    margin,
+    padding,
+    border,
+    borderTop,
+    borderRight,
+    borderBottom,
+    borderLeft,
+    columns
 ];
 
 export default postcss.plugin('postcss-merge-longhand', () => {
-  return css => {
-    css.eachRule(rule => {
-      processors.forEach(processor => processor.explode(rule));
-      processors.slice().reverse().forEach(processor => processor.merge(rule));
-    });
-  };
+    return css => {
+        css.eachRule(rule => {
+            processors.forEach(p => p.explode(rule));
+            processors.slice().reverse().forEach(p => p.merge(rule));
+        });
+    };
 });
