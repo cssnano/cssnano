@@ -133,6 +133,22 @@ let tests = [{
 	message: 'should merge column-width with columns',
 	fixture: 'h1{columns:12em auto;column-width:11em}',
 	expected: 'h1{columns:11em auto}'
+}, {
+    message: 'should merge border-top-width',
+    fixture: 'h1{border-top-width:5px;border-top-style:solid;border-top-color:red}',
+    expected: 'h1{border-top:5px solid red}'
+}, {
+    message: 'should merge border-right-width',
+    fixture: 'h1{border-right-width:5px;border-right-style:solid;border-right-color:red}',
+    expected: 'h1{border-right:5px solid red}'
+}, {
+    message: 'should merge border-bottom-width',
+    fixture: 'h1{border-bottom-width:5px;border-bottom-style:solid;border-bottom-color:red}',
+    expected: 'h1{border-bottom:5px solid red}'
+}, {
+    message: 'should merge border-left-width',
+    fixture: 'h1{border-left-width:5px;border-left-style:solid;border-left-color:red}',
+    expected: 'h1{border-left:5px solid red}'
 }];
 
 function process (css, options) {
