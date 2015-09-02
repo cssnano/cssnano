@@ -1,3 +1,8 @@
+# 2.1.3
+
+* Replaces trim space nodes function with a built in method
+  of postcss-value-parser.
+
 # 2.1.2
 
 * postcss-normalize-url now uses postcss-value-parser to iterate
