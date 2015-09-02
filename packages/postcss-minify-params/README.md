@@ -26,7 +26,7 @@ postcss([ require('postcss-minify-params') ])
 
 See [PostCSS] docs for examples for your environment.
 
-MIT © [Bogdan Chadkin](trysound@yandex.ru)
+MIT © [Bogdan Chadkin](mailto:trysound@yandex.ru)
 
 [PostCSS]: https://github.com/postcss/postcss
 [ci-img]:  https://travis-ci.org/TrySound/postcss-minify-params.svg
