@@ -2,6 +2,7 @@
 
 var postcss = require('postcss');
 var parser = require('postcss-value-parser');
+var trimSpaceNodes = parser.trim;
 var stringify = parser.stringify;
 var normalize = require('normalize-url');
 var isAbsolute = require('is-absolute-url');
@@ -16,18 +17,6 @@ function convert (url, options) {
         return normalize(url, options);
     }
     return path.normalize(url).replace(new RegExp('\\' + path.sep, 'g'), '/');
-}
-
-function trimSpaceNodes(nodes) {
-    var first = nodes[0];
-    if (first && first.type === 'space') {
-        nodes.shift();
-    }
-
-    var last = nodes[nodes.length - 1];
-    if (last && last.type === 'space') {
-        nodes.pop();
-    }
 }
 
 function namespaceOptimiser (options) {
