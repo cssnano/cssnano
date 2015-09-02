@@ -1,22 +1,9 @@
 var postcss = require('postcss');
 var parser = require('postcss-value-parser');
 var stringify = parser.stringify;
+var trim = parser.trim;
 var natural = require('javascript-natural-sort');
 var uniqs = require('uniqs');
-
-function trim(nodes) {
-    if (nodes.length) {
-        if (nodes[0].type === 'space') {
-            nodes.shift();
-        }
-    }
-
-    if (nodes.length) {
-        if (nodes[nodes.length - 1].type === 'space') {
-            nodes.pop();
-        }
-    }
-}
 
 function split(nodes, div) {
     var i, max, node;
