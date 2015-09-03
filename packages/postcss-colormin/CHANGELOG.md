@@ -1,3 +1,8 @@
+# 1.2.7
+
+* Fixes an issue where IE filter properties were being converted
+  erroneously (thanks to @faddee).
+
 # 1.2.6
 
 * Fixed a crash when specifying `inherit` as a value
