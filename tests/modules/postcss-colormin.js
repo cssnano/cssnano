@@ -35,4 +35,24 @@ module.exports.tests = [{
     message: 'should correctly parse multiple box shadow values',
     fixture: 'h1{box-shadow:inset 0 1px 1px rgba(0, 0, 0, .075),0 0 8px rgba(102, 175, 233, .6)}',
     expected: 'h1{box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)}'
+}, {
+    message: 'should make an exception for webkit tap highlight color (issue 1)',
+    fixture: 'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}',
+    expected: 'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}'
+}, {
+    message: 'should still minify spaces in webkit tap highlight color',
+    fixture: 'h1{-webkit-tap-highlight-color:rgba(0, 0, 0, 0)}',
+    expected: 'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}'
+}, {
+    message: 'should not crash on transparent in webkit tap highlight color',
+    fixture: 'h1{-webkit-tap-highlight-color:transparent}',
+    expected: 'h1{-webkit-tap-highlight-color:transparent}'
+}, {
+    message: 'should not crash on inherit in webkit tap highlight color',
+    fixture: 'h1{-webkit-tap-highlight-color:inherit}',
+    expected: 'h1{-webkit-tap-highlight-color:inherit}'
+}, {
+    message: 'should not minify in filter properties',
+    fixture: 'h1{filter:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff)}',
+    expected: 'h1{filter:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff)}'
 }];
