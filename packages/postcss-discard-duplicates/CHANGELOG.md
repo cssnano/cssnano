@@ -1,3 +1,8 @@
+# 1.2.1
+
+* Fixes an integration test failure with cssnano; use PostCSS `each` rather
+  than native `forEach` (thanks to @TrySound).
+
 # 1.2.0
 
 * Improved duplicate detection (thanks to @TrySound).
