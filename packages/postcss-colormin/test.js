@@ -57,6 +57,10 @@ var tests = module.exports = [{
     message: 'should not crash on inherit in webkit tap highlight color',
     fixture: 'h1{-webkit-tap-highlight-color:inherit}',
     expected: 'h1{-webkit-tap-highlight-color:inherit}'
+}, {
+    message: 'should not minify in filter properties',
+    fixture: 'h1{filter:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff);}',
+    expected: 'h1{filter:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff);}'
 }];
 
 function process (css, options) {
