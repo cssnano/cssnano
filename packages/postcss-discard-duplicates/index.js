@@ -3,13 +3,14 @@
 var postcss = require('postcss');
 
 function dedupe (root) {
-    root.nodes.forEach(function (node) {
+    root.each(function (node) {
         if (node.nodes) { dedupe(node); }
     });
 
-    root.nodes.forEach(function (node, index, nodes) {
+    root.each(function (node, index) {
         if (node.type === 'comment') { return; }
 
+        var nodes = node.parent.nodes;
         var toString = node.toString();
         var result = [node];
         var i = index + 1;
