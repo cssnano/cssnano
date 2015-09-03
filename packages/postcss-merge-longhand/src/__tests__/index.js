@@ -149,6 +149,18 @@ let tests = [{
     message: 'should merge border-left-width',
     fixture: 'h1{border-left-width:5px;border-left-style:solid;border-left-color:red}',
     expected: 'h1{border-left:5px solid red}'
+}, {
+    message: 'should not convert border: 0 to border-width: 0',
+    fixture: 'h1{border:0}',
+    expected: 'h1{border:0}'
+}, {
+    message: 'should not merge border-left values with mixed !important',
+    fixture: 'h1{border-left-color:red;border-left-width:1px!important;border-left-style:dashed!important}',
+    expected: 'h1{border-left-color:red;border-left-width:1px!important;border-left-style:dashed!important}'
+}, {
+    message: 'should minimize default border values',
+    fixture: 'h1{border:medium none currentColor}',
+    expected: 'h1{border:medium}'
 }];
 
 function process (css, options) {

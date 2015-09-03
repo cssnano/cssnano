@@ -8,15 +8,19 @@ import canMerge from '../canMerge';
 
 export default direction => {
     let wsc = ['width', 'style', 'color'].map(d => `border-${direction}-${d}`);
+    let defaults = ['medium', 'none', 'currentColor'];
     let declaration = 'border-' + direction;
     let processor = {
         explode: rule => {
             rule.eachDecl(declaration, decl => {
-                let values =  list.space(decl.value);
+                let values = list.space(decl.value);
                 wsc.forEach((prop, index) => {
                     let node = clone(decl);
                     node.prop = prop;
                     node.value = values[index];
+                    if (node.value === undefined) {
+                        node.value = defaults[index];
+                    }
                     rule.insertAfter(decl, node);
                 });
                 decl.removeSelf();
@@ -29,9 +33,18 @@ export default direction => {
                 let props = decls.filter(node => node.important === lastNode.important);
                 if (hasAllProps.apply(this, [props].concat(wsc)) && canMerge.apply(this, props)) {
                     let values = wsc.map(prop => getLastNode(props, prop).value);
+                    let value = values.concat(['']).reduceRight((prev, cur, i) => {
+                        if (prev === '' && cur === defaults[i]) {
+                            return prev;
+                        }
+                        return cur + " " + prev;
+                    }).trim();
+                    if (value === '') {
+                        value = defaults[0];
+                    }
                     let shorthand = clone(lastNode);
                     shorthand.prop = declaration;
-                    shorthand.value = values.join(' ');
+                    shorthand.value = value;
                     rule.insertAfter(lastNode, shorthand);
                     props.forEach(prop => prop.removeSelf());
                 }
