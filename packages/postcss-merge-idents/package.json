@@ -13,8 +13,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "tap-spec": "^2.2.2",
-    "tape": "^3.5.0"
+    "tap-spec": "^4.1.0",
+    "tape": "^4.2.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-merge-idents",
   "author": {
@@ -24,7 +24,7 @@
   },
   "repository": "ben-eb/postcss-merge-idents",
   "dependencies": {
-    "css-list": "^0.1.0",
-    "postcss": "^4.1.9"
+    "css-list": "^0.1.2",
+    "postcss": "^5.0.4"
   }
 }

@@ -14,14 +14,14 @@ function canonical (obj) {
 
 function mergeAtRules (css, atrule, declaration) {
     var cache = [], replacements = {};
-    css.eachAtRule(atrule, function (rule) {
+    css.walkAtRules(atrule, function (rule) {
         var toString = String(rule.nodes);
         var cached = cache.filter(function (c) {
             return String(c.nodes) === toString && c.name === rule.name;
         });
         if (cached.length) {
             replacements[cached[0].params] = rule.params;
-            cached[0].removeSelf();
+            cached[0].remove();
             cache = cache.splice(cache.indexOf(cached[0]) + 1, 1);
         }
         cache.push(rule);
@@ -29,7 +29,7 @@ function mergeAtRules (css, atrule, declaration) {
 
     var canon = canonical(replacements);
 
-    css.eachDecl(declaration, function (decl) {
+    css.walkDecls(declaration, function (decl) {
         decl.value = map(decl.value, function (value) {
             return canon(value);
         });
