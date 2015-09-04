@@ -6,7 +6,7 @@ var postcss = require('postcss');
 
 module.exports = postcss.plugin('postcss-unique-selectors', function () {
     return function (css) {
-        css.eachRule(function (rule) {
+        css.walkRules(function (rule) {
             rule.selector = uniqs(rule.selectors).sort(natural).join();
         });
     };

@@ -17,8 +17,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "tap-spec": "^2.2.2",
-    "tape": "^3.5.0"
+    "tap-spec": "^4.1.0",
+    "tape": "^4.2.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-unique-selectors",
   "author": {
@@ -29,7 +29,7 @@
   "repository": "ben-eb/postcss-unique-selectors",
   "dependencies": {
     "javascript-natural-sort": "^0.7.1",
-    "postcss": "^4.1.10",
+    "postcss": "^5.0.4",
     "uniqs": "^2.0.0"
   }
 }
