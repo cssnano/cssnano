@@ -5,7 +5,7 @@ var test = require('tape');
 var nano = require('../');
 var specName = require('./util/specName');
 var read = require('fs').readFileSync;
-var autoprefixer = require('autoprefixer-core');
+var autoprefixer = require('autoprefixer');
 var name = require('../package.json').name;
 
 test('can be used as a postcss plugin', function (t) {

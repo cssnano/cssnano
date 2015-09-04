@@ -14,10 +14,10 @@ test('it should compress whitespace after node.clone()', function (t) {
 
     var processor = postcss([
       postcss.plugin('cloner', function () {
-        return function (css) {
-          css.eachAtRule(function (rule) {
+        return function (css, result) {
+          css.walkAtRules(function (rule) {
             css.prepend(rule.clone());
-            rule.removeSelf();
+            rule.remove();
           });
         };
       }),

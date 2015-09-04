@@ -11,7 +11,7 @@ var processors = {
     },
     postcssDiscardComments: require('postcss-discard-comments'),
     postcssSvgo: require('postcss-svgo'),
-    autoprefixer: require('autoprefixer-core'),
+    autoprefixer: require('autoprefixer'),
     postcssZindex: require('postcss-zindex'),
     postcssMinifyFontWeight: require('postcss-minify-font-weight'),
     postcssConvertValues: require('postcss-convert-values'),

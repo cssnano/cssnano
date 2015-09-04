@@ -1,22 +1,24 @@
+'use strict';
+
 var postcss = require('postcss');
 
 module.exports = postcss.plugin('_formatter', function () {
     return function (css) {
-        css.eachRule(function (rule) {
+        css.walkRules(function (rule) {
             if (rule !== css.first) {
-                rule.before = '\n';
+                rule.raws.before = '\n';
             }
         });
-        css.eachAtRule(function (rule) {
+        css.walkAtRules(function (rule) {
             if (rule !== css.first) {
-                rule.before = '\n';
+                rule.raws.before = '\n';
             }
             var name = rule.name;
             if (~name.indexOf('media') || ~name.indexOf('keyframes')) {
-                rule.after = '\n';
+                rule.raws.after = '\n';
             }
-            rule.eachRule(function (r) {
-                r.before = '\n  ';
+            rule.walkRules(function (r) {
+                r.raws.before = '\n  ';
             });
         });
     };
