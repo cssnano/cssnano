@@ -1,3 +1,7 @@
+# 2.0.0
+
+* Upgraded to PostCSS 5.
+
 # 1.0.2
 
 * Fixes an issue where properties with the `inherit` keyword were being merged.
