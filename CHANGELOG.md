@@ -1,3 +1,23 @@
+# 3.0.0
+
+* All cssnano plugins and cssnano itself have migrated to PostCSS 5.x. Please
+  make sure that when using the 3.x releases that you use a 5.x compatible
+  PostCSS runner.
+* cssnano will now compress inline SVG through SVGO. Because of this change,
+  interfacing with cssnano must now be done through an asynchronous API. The
+  main `process` method has the same signature as a PostCSS processor instance.
+* The old options such as `merge` & `fonts` that were deprecated in
+  release `2.5.0` were removed. The new architecture allows you to specify any
+  module name to disable it.
+* postcss-minify-selectors' at-rule compression was extracted out into
+  postcss-minify-params (thanks to @TrySound).
+* Overall performance of the module has improved dramatically, thanks to work
+  by @TrySound and input from the community.
+* Improved selector merging/deduplication in certain use cases.
+* cssnano no longer compresses hex colours in filter properties, to better
+  support old versions of Internet Explorer (thanks to @faddee).
+* cssnano will not merge properties together that have an `inherit` keyword.
+
 # 2.6.1
 
 * Improved performance of the core module `functionOptimiser`.
