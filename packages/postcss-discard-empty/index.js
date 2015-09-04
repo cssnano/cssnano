@@ -9,7 +9,7 @@ function discardEmpty(node) {
 		(node.type === 'rule' && !node.selector || (node.nodes && !node.nodes.length)) ||
 		(node.type === 'atrule' && ((!node.nodes && !node.params) || (!node.params && !node.nodes.length)))
 		) {
-		node.removeSelf();
+		node.remove();
 	}
 }
 
