@@ -9,7 +9,7 @@ let {comma: comma, space: space} = list;
 let filterAtRule = (css, properties, atrule) => {
     let atRules = [];
     let values = [];
-    css.eachInside(node => {
+    css.walk(node => {
         if (node.type === 'decl' && properties.test(node.prop)) {
             return comma(node.value).forEach(val => values.push(space(val)));
         }
@@ -25,7 +25,7 @@ let filterAtRule = (css, properties, atrule) => {
     atRules.forEach(node => {
         let hasAtRule = values.some(value => value === node.params);
         if (!hasAtRule) {
-            node.removeSelf();
+            node.remove();
         }
     });
 };
@@ -39,7 +39,7 @@ module.exports = postcss.plugin('postcss-discard-unused', () => {
         // fonts have slightly different logic
         let atRules = [];
         let values = [];
-        css.eachInside(node => {
+        css.walk(node => {
             if (node.type === 'decl' &&
                 node.parent.type === 'rule' &&
                 /font(|-family)/.test(node.prop)
@@ -55,11 +55,11 @@ module.exports = postcss.plugin('postcss-discard-unused', () => {
             let families = rule.nodes.filter(node => node.prop === 'font-family');
             // Discard the @font-face if it has no font-family
             if (!families.length) {
-                return rule.removeSelf();
+                return rule.remove();
             }
             families.forEach(family => {
                 if (!hasFont(family.value, values)) {
-                    rule.removeSelf();
+                    rule.remove();
                 }
             });
         });
