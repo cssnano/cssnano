@@ -1,3 +1,9 @@
+# 2.0.0
+
+* Upgraded to PostCSS 5.
+* At-rule parameter minification was extracted out of this module into
+  postcss-minify-params (thanks to @TrySound).
+
 # 1.5.0
 
 * Added support for converting pseudo elements with double colon syntax to

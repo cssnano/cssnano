@@ -1,29 +1,11 @@
 'use strict';
 
-var uniqs = require('uniqs');
 var postcss = require('postcss');
-var comma = postcss.list.comma;
-var normalize = require('normalize-selector');
 var natural = require('javascript-natural-sort');
 var unquote = require('./lib/unquote');
 var parser = require('postcss-selector-parser');
 
 var pseudoElements = ['::before', '::after', '::first-letter', '::first-line'];
-
-function uniq (params, map) {
-    var transform = uniqs(comma(params).map(function (selector) {
-        // Join selectors that are split over new lines
-        return selector.replace(/\\\n/g, '');
-    })).sort(natural);
-    return map ? transform : transform.join(',');
-}
-
-function optimiseAtRule (rule) {
-    if (!rule.params) {
-        return;
-    }
-    rule.params = normalize(uniq(rule.params));
-}
 
 function getParsed (selectors, callback) {
     return parser(callback).process(selectors).result;
@@ -47,7 +29,7 @@ function canUnquote (value) {
 }
 
 function optimise (rule) {
-    var selector = rule._selector && rule._selector.raw || rule.selector;
+    var selector = rule.raws.selector && rule.raws.selector.raw || rule.selector;
     rule.selector = getParsed(selector, function (selectors) {
         selectors.nodes.sort(function (a, b) {
             return natural(String(a), String(b));
@@ -111,9 +93,8 @@ function optimise (rule) {
 
 module.exports = postcss.plugin('postcss-minify-selectors', function () {
     return function (css) {
-        css.eachInside(function (node) {
-            if (node.type === 'rule') { return optimise(node); }
-            if (node.type === 'atrule') { return optimiseAtRule(node); }
+        css.walkRules(function (rule) {
+            return optimise(rule);
         });
     };
 });
