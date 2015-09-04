@@ -17,8 +17,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "tap-spec": "^4.0.2",
-    "tape": "^4.0.1"
+    "tap-spec": "^4.1.0",
+    "tape": "^4.2.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-colormin",
   "author": {
@@ -29,8 +29,8 @@
   "repository": "ben-eb/postcss-colormin",
   "dependencies": {
     "color": "^0.10.1",
-    "colormin": "^1.0.3",
-    "postcss": "^4.1.16",
+    "colormin": "^1.0.4",
+    "postcss": "^5.0.4",
     "reduce-function-call": "^1.0.1"
   }
 }

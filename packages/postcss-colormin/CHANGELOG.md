@@ -1,3 +1,7 @@
+# 2.0.0
+
+* Upgraded to PostCSS 5.
+
 # 1.2.7
 
 * Fixes an issue where IE filter properties were being converted
