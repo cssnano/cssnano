@@ -1,3 +1,7 @@
+# 2.0.0
+
+* Upgraded to PostCSS 5.
+
 # 1.1.3
 
 * Improved performance by iterating the AST in a single pass and caching nodes for the second iteration.

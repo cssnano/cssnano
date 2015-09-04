@@ -7,7 +7,7 @@ module.exports = postcss.plugin('postcss-zindex', function () {
         var cache = require('./lib/layerCache')();
         var nodes = [];
         // First pass; cache all z indexes
-        css.eachDecl('z-index', function (decl) {
+        css.walkDecls('z-index', function (decl) {
             nodes.push(decl);
             cache.addValue(decl.value);
         });
@@ -16,6 +16,6 @@ module.exports = postcss.plugin('postcss-zindex', function () {
             // Need to coerce to string so that the
             // AST is updated correctly
             decl.value = '' + cache.convert(decl.value);
-        })
+        });
     };
 });
