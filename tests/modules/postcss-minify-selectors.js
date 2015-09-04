@@ -88,14 +88,6 @@ module.exports.tests = [{
     fixture: 'a[class="woop \\\nwoop woop"]{color:blue}',
     expected: 'a[class="woop woop woop"]{color:blue}'
 }, {
-    message: 'should normalise @media queries',
-    fixture: '@media screen,print{h1{color:red}}@media print,screen{h2{color:blue}}',
-    expected: '@media print,screen{h1{color:red}}@media print,screen{h2{color:blue}}'
-}, {
-    message: 'should normalise @media queries (2)',
-    fixture: '@media only screen and (min-width: 400px; min-height: 500px){h1{color:blue}}',
-    expected: '@media only screen and (min-width:400px;min-height:500px){h1{color:blue}}'
-}, {
     message: 'should convert @keyframe from & 100%',
     fixture: '@keyframes test{from{color:red}100%{color:blue}}a{animation:test}',
     expected: '@keyframes a{0%{color:red}to{color:blue}}a{animation:a}'

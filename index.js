@@ -20,6 +20,7 @@ var processors = {
     postcssOrderedValues: require('postcss-ordered-values'),
     filterOptimiser: require('./lib/filterOptimiser'),
     postcssMinifySelectors: require('postcss-minify-selectors'),
+    postcssMinifyParams: require('postcss-minify-params'),
     postcssSingleCharset: require('postcss-single-charset'),
     // font-family should be run before discard-unused
     postcssFontFamily: require('postcss-font-family'),
