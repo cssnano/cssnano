@@ -1,3 +1,7 @@
+# 2.0.0
+
+* Upgraded to PostCSS 5.
+
 # 1.1.1
 
 * Fixes an issue where `flex` properties were being mangled by the module.

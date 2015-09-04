@@ -104,7 +104,7 @@ let normalizeFlexFlow = decl => {
 
 export default postcss.plugin('postcss-ordered-values', () => {
     return css => {
-        css.eachDecl(decl => {
+        css.walkDecls(decl => {
             normalizeBorder(decl);
             normalizeFlexFlow(decl);
         });
