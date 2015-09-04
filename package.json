@@ -51,7 +51,7 @@
     "postcss-minify-selectors": "^2.0.0",
     "postcss-normalize-url": "^3.0.0",
     "postcss-ordered-values": "^2.0.0",
-    "postcss-reduce-idents": "^1.0.3",
+    "postcss-reduce-idents": "^2.0.0",
     "postcss-single-charset": "^1.0.0",
     "postcss-svgo": "^2.0.0",
     "postcss-unique-selectors": "^2.0.0",
