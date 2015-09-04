@@ -1,3 +1,7 @@
+# 3.0.0
+
+* Upgraded to PostCSS 5.
+
 # 2.1.3
 
 * Replaces trim space nodes function with a built in method

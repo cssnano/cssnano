@@ -66,7 +66,7 @@ function transformDecl(decl, opts) {
             return false;
         }
 
-        url.value = url.value.trim()
+        url.value = url.value.trim();
         url.value = convert(url.value, opts);
 
         if (escapeChars.test(url.value)) {
@@ -91,7 +91,7 @@ module.exports = postcss.plugin('postcss-normalize-url', function (opts) {
     }, opts);
 
     return function (css) {
-        css.eachInside(function (node) {
+        css.walk(function (node) {
             if (node.type === 'decl') {
                 return transformDecl(node, opts);
             }
