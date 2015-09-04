@@ -23,7 +23,7 @@ function dedupe (root) {
         }
 
         for(i = result.length - 2; ~i; i -= 1) {
-            result[i].removeSelf();
+            result[i].remove();
         }
     });
 }

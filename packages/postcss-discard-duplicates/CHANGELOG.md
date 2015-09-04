@@ -1,3 +1,7 @@
+# 2.0.0
+
+* Upgraded to PostCSS 5.
+
 # 1.2.1
 
 * Fixes an integration test failure with cssnano; use PostCSS `each` rather
