@@ -27,48 +27,48 @@ module.exports = postcss.plugin('postcss-discard-comments', function (options) {
             return space(b).join(' ');
         }
 
-        css.eachInside(function (node) {
+        css.walk(function (node) {
             if (node.type === 'comment' && remover.canRemove(node.text)) {
-                return node.removeSelf();
+                return node.remove();
             }
 
-            if (node.between) {
-                node.between = replaceComments(node.between);
+            if (node.raws.between) {
+                node.raws.between = replaceComments(node.raws.between);
             }
 
             if (node.type === 'decl') {
-                if (node._value && node._value.raw) {
-                    var replaced = replaceComments(node._value.raw);
-                    node._value.raw = node._value.value = node.value = replaced;
+                if (node.raws.value && node.raws.value.raw) {
+                    var replaced = replaceComments(node.raws.value.raw);
+                    node.raws.value.raw = node.raws.value.value = node.value = replaced;
                 }
-                if (node._important) {
-                    node._important = replaceComments(node._important);
+                if (node.raws.important) {
+                    node.raws.important = replaceComments(node.raws.important);
                     var b = balanced.matches({
-                        source: node._important,
+                        source: node.raws.important,
                         open: '/*',
                         close: '*/'
                     });
-                    node._important = b.length ? node._important : '!important';
+                    node.raws.important = b.length ? node.raws.important : '!important';
                 }
                 return;
             }
 
-            if (node.type === 'rule' && node._selector && node._selector.raw) {
-                node._selector.raw = replaceComments(node._selector.raw);
+            if (node.type === 'rule' && node.raws.selector && node.raws.selector.raw) {
+                node.raws.selector.raw = replaceComments(node.raws.selector.raw);
                 return;
             }
 
             if (node.type === 'atrule') {
-                if (node.afterName) {
-                    var commentsReplaced = replaceComments(node.afterName);
+                if (node.raws.afterName) {
+                    var commentsReplaced = replaceComments(node.raws.afterName);
                     if (!commentsReplaced.length) {
-                        node.afterName = commentsReplaced + ' ';
+                        node.raws.afterName = commentsReplaced + ' ';
                     } else {
-                        node.afterName = ' ' + commentsReplaced + ' ';
+                        node.raws.afterName = ' ' + commentsReplaced + ' ';
                     }
                 }
-                if (node._params && node._params.raw) {
-                    node._params.raw = replaceComments(node._params.raw);
+                if (node.raws.params && node.raws.params.raw) {
+                    node.raws.params.raw = replaceComments(node.raws.params.raw);
                 }
             }
         });

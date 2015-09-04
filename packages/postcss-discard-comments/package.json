@@ -29,6 +29,6 @@
   },
   "dependencies": {
     "node-balanced": "0.0.14",
-    "postcss": "^4.1.16"
+    "postcss": "^5.0.4"
   }
 }
