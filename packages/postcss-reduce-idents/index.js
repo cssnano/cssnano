@@ -15,7 +15,7 @@ function transformAtRule (css, atRuleRegex, propRegex) {
     var cache = {};
     var ruleCache = [];
     // Encode at rule names and cache the result
-    css.eachAtRule(atRuleRegex, function (rule) {
+    css.walkAtRules(atRuleRegex, function (rule) {
         if (!cache[rule.params]) {
             cache[rule.params] = {
                 ident: encode(Object.keys(cache).length),
@@ -26,7 +26,7 @@ function transformAtRule (css, atRuleRegex, propRegex) {
         ruleCache.push(rule);
     });
     // Iterate each property and change their names
-    css.eachDecl(propRegex, function (decl) {
+    css.walkDecls(propRegex, function (decl) {
         decl.value = eachValue(decl.value, function (value) {
             if (value in cache) {
                 cache[value].count++;
@@ -50,7 +50,7 @@ module.exports = postcss.plugin('postcss-reduce-idents', function () {
     return function (css) {
         var cache = {};
         var declCache = [];
-        css.eachDecl(/counter-(reset|increment)/, function (decl) {
+        css.walkDecls(/counter-(reset|increment)/, function (decl) {
             decl.value = eachValue(decl.value, function (value) {
                 if (!/^-?\d*$/.test(value)) {
                     if (!cache[value]) {
@@ -65,7 +65,7 @@ module.exports = postcss.plugin('postcss-reduce-idents', function () {
             });
             declCache.push(decl);
         });
-        css.eachDecl('content', function (decl) {
+        css.walkDecls('content', function (decl) {
             decl.value = eachValue(decl.value, function (value) {
                 return reduce(value, /(counters?)\(/, function (body, fn) {
                     var counters = list.comma(body).map(function (counter) {
@@ -74,7 +74,7 @@ module.exports = postcss.plugin('postcss-reduce-idents', function () {
                             return cache[counter].ident;
                         }
                         return counter;
-                    }).join(',');
+                    }).join();
                     return fn + '(' + counters + ')';
                 });
             });
