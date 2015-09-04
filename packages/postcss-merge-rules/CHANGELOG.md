@@ -1,3 +1,7 @@
+# 2.0.0
+
+* Upgraded to PostCSS 5.
+
 # 1.3.6
 
 * Minor boost in performance with reduced stringify passes.

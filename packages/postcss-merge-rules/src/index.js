@@ -62,8 +62,7 @@ function partialMerge (first, second) {
     }
     let recievingBlock = second.cloneBefore({
         selector: joinSelectors(first, second),
-        nodes: [],
-        before: ''
+        nodes: []
     });
     let difference = different(getDecls(first), getDecls(second));
     let firstClone = clone(first);
@@ -78,11 +77,11 @@ function partialMerge (first, second) {
             }
         };
     };
-    firstClone.eachDecl(moveDecl(decl => {
-        decl.removeSelf();
+    firstClone.walkDecls(moveDecl(decl => {
+        decl.remove();
         recievingBlock.append(decl);
     }));
-    secondClone.eachDecl(moveDecl(decl => decl.removeSelf()));
+    secondClone.walkDecls(moveDecl(decl => decl.remove()));
     let merged = ruleLength(firstClone, recievingBlock, secondClone);
     let original = ruleLength(first, second);
     if (merged < original) {
@@ -90,7 +89,7 @@ function partialMerge (first, second) {
         second.replaceWith(secondClone);
         [firstClone, recievingBlock, secondClone].forEach(r => {
             if (!r.nodes.length) {
-                r.removeSelf();
+                r.remove();
             }
         });
         if (!secondClone.parent) {
@@ -98,7 +97,7 @@ function partialMerge (first, second) {
         }
         return secondClone;
     } else {
-        recievingBlock.removeSelf();
+        recievingBlock.remove();
         return second;
     }
 }
@@ -122,7 +121,7 @@ function selectorMerger () {
         // e.g. h1 { color: red } h2 { color: red }
         if (getDecls(rule).join(';') === getDecls(cache).join(';')) {
             rule.selector = joinSelectors(cache, rule);
-            cache.removeSelf();
+            cache.remove();
             cache = rule;
             return;
         }
@@ -130,13 +129,13 @@ function selectorMerger () {
         // e.g. a { color: blue } a { font-weight: bold }
         if (cache.selector === rule.selector) {
             var toString = String(cache);
-            rule.eachInside(decl => {
+            rule.walk(decl => {
                 if (~toString.indexOf(String(decl))) {
-                    return decl.removeSelf();
+                    return decl.remove();
                 }
                 decl.moveTo(cache);
             });
-            rule.removeSelf();
+            rule.remove();
             return;
         }
         // Partial merge: check if the rule contains a subset of the last; if
@@ -147,6 +146,6 @@ function selectorMerger () {
 
 export default postcss.plugin('postcss-merge-rules', () => {
     return css => {
-        css.eachRule(selectorMerger());
+        css.walkRules(selectorMerger());
     };
 });
