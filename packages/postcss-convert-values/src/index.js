@@ -37,6 +37,6 @@ let optimise = decl => {
 
 export default postcss.plugin('postcss-convert-values', () => {
     return css => {
-        css.eachDecl(optimise);
+        css.walkDecls(optimise);
     };
 });

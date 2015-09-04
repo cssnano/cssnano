@@ -1,3 +1,7 @@
+# 2.0.0
+
+* Upgraded to PostCSS 5.
+
 # 1.3.1
 
 * Fixes an issue where the module would convert values in gradient/url functions
