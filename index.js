@@ -13,7 +13,6 @@ var processors = {
     postcssSvgo: require('postcss-svgo'),
     autoprefixer: require('autoprefixer'),
     postcssZindex: require('postcss-zindex'),
-    postcssMinifyFontWeight: require('postcss-minify-font-weight'),
     postcssConvertValues: require('postcss-convert-values'),
     postcssCalc: require('postcss-calc'),
     postcssColormin: require('postcss-colormin'),
@@ -22,8 +21,8 @@ var processors = {
     postcssMinifySelectors: require('postcss-minify-selectors'),
     postcssMinifyParams: require('postcss-minify-params'),
     postcssSingleCharset: require('postcss-single-charset'),
-    // font-family should be run before discard-unused
-    postcssFontFamily: require('postcss-font-family'),
+    // minify-font-values should be run before discard-unused
+    postcssMinifyFontValues: require('postcss-minify-font-values'),
     postcssDiscardUnused: require('postcss-discard-unused'),
     postcssNormalizeUrl: require('postcss-normalize-url'),
     core: require('./lib/core'),
@@ -48,6 +47,14 @@ var cssnano = postcss.plugin('cssnano', function (options) {
     var len = plugins.length;
     var i = 0;
 
+    if (typeof options.fontFamily !== 'undefined' || typeof options.minifyFontWeight !== 'undefined') {
+        warnOnce('The fontFamily & minifyFontWeight options have been ' +
+                 'consolidated into minifyFontValues, and are now deprecated.');
+        if (!options.minifyFontValues) {
+            options.minifyFontValues = options.fontFamily;
+        }
+    }
+
     while (i < len) {
         var plugin = plugins[i++];
         var processor = processors[plugin];
@@ -55,15 +62,6 @@ var cssnano = postcss.plugin('cssnano', function (options) {
 
         var shortName = plugin.replace('postcss', '');
         shortName = shortName.slice(0, 1).toLowerCase() + shortName.slice(1);
-
-        if (typeof processor !== 'function') {
-            if (typeof options[processor.ns] !== 'undefined') {
-                warnOnce('The ' + processor.ns + ' option is deprecated. ' +
-                         'Please use options.' + shortName + ' instead.');
-                options[plugin] = options[processor.ns];
-            }
-            method = processor.fn;
-        }
 
         var opts = defined(
             options[shortName],

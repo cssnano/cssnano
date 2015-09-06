@@ -34,7 +34,7 @@ abbr,acronym{border-bottom:1px dotted #666}
 address{margin:0 0 1.5em;font-style:italic}
 del{color:#666}
 pre{margin:1.5em 0;white-space:pre}
-code,pre,tt{font:1em 'andale mono',lucida console,monospace;line-height:1.5}
+code,pre,tt{font:1em andale mono,lucida console,monospace;line-height:1.5}
 li ol,li ul{margin:0}
 ol,ul{margin:0 1.5em 1.5em 0;padding-left:1.5em}
 ul{list-style-type:disc}

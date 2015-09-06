@@ -1,4 +1,4 @@
-module.exports.name = 'cssnano/postcss-minify-font-weight';
+module.exports.name = 'cssnano/postcss-minify-font-values';
 module.exports.tests = [{
     message: 'should convert normal to 400',
     fixture: 'h1{font-weight: normal}',

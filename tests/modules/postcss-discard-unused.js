@@ -42,7 +42,7 @@ module.exports.tests = [{
 }, {
     message: 'should work with the font shorthand',
     fixture: '@font-face {font-family:"Does Exist";src: url("fonts/does-exist.ttf") format("truetype")}body{font: 10px/1.5 "Does Exist",Helvetica,Arial,sans-serif}',
-    expected: '@font-face{font-family:Does Exist;src:url(fonts/does-exist.ttf) format("truetype")}body{font:10px/1.5 "Does Exist",Helvetica,Arial,sans-serif}'
+    expected: '@font-face{font-family:Does Exist;src:url(fonts/does-exist.ttf) format("truetype")}body{font:10px/1.5 Does Exist,Helvetica,Arial,sans-serif}'
 }, {
     message: 'should remove font faces if they have no font-family property',
     fixture: '@font-face {src:url(fonts/does-not-exist.ttf) format("truetype")}',

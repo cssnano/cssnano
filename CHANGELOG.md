@@ -17,6 +17,9 @@
 * cssnano no longer compresses hex colours in filter properties, to better
   support old versions of Internet Explorer (thanks to @faddee).
 * cssnano will not merge properties together that have an `inherit` keyword.
+* postcss-minify-font-weight & postcss-font-family were consolidated into
+  postcss-minify-font-values. Using the old options will print deprecation
+  warnings (thanks to @TrySound).
 
 # 2.6.1
 
