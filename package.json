@@ -3,9 +3,6 @@
   "version": "2.6.1",
   "description": "A modular minifier, built on top of the PostCSS ecosystem.",
   "main": "index.js",
-  "bin": {
-    "cssnano": "bin/cmd.js"
-  },
   "scripts": {
     "bench": "tape benchmark/index.js",
     "test-integrations": "tape tests/integrations.js",
@@ -67,5 +64,10 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/cssnano"
+  "repository": "ben-eb/cssnano",
+  "files": [
+    "index.js",
+    "lib",
+    "LICENSE-MIT"
+  ]
 }
