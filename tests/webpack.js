@@ -2,10 +2,11 @@
 
 var test = require('tape');
 var webpack = require('webpack');
+var path = require('path');
 
 var conf = {
     entry: {
-        index: ".."
+        index: path.join(__dirname, '..')
     },
     output: {
         path: "./output/",
