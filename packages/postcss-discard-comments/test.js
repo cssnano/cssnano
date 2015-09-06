@@ -156,3 +156,11 @@ test('should use the postcss plugin api', function (t) {
     t.ok(plugin().postcssVersion, 'should be able to access version');
     t.equal(plugin().postcssPlugin, name, 'should be able to access name');
 });
+
+test('should work with single line comments', function (t) {
+    var css = '//!wow\n//wow\nh1{//color:red\n}';
+    var res = postcss(plugin).process(css, {syntax: require('postcss-scss')}).css;
+
+    t.plan(1);
+    t.equal(res, '//!wow\nh1{\n}');
+});
