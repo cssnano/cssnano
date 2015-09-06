@@ -8,7 +8,6 @@
   },
   "scripts": {
     "bench": "tape benchmark/index.js",
-    "test-cli": "tape tests/cli.js",
     "test-integrations": "tape tests/integrations.js",
     "test-fixtures": "tape tests/fixtures.js | tap-spec",
     "test-modules": "tape tests/modules.js | tap-spec",
@@ -32,7 +31,6 @@
     "decamelize": "^1.0.0",
     "defined": "^1.0.0",
     "indexes-of": "^1.0.1",
-    "minimist": "^1.2.0",
     "postcss": "^5.0.4",
     "postcss-calc": "^5.0.0",
     "postcss-colormin": "^2.0.0",
@@ -54,9 +52,7 @@
     "postcss-single-charset": "^1.0.0",
     "postcss-svgo": "^2.0.0",
     "postcss-unique-selectors": "^2.0.0",
-    "postcss-zindex": "^2.0.0",
-    "read-file-stdin": "^0.2.0",
-    "write-file-stdout": "0.0.2"
+    "postcss-zindex": "^2.0.0"
   },
   "devDependencies": {
     "json-loader": "^0.5.2",

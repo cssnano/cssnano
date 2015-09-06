@@ -20,6 +20,8 @@
 * postcss-minify-font-weight & postcss-font-family were consolidated into
   postcss-minify-font-values. Using the old options will print deprecation
   warnings (thanks to @TrySound).
+* The cssnano CLI was extracted into a separate module, so that dependent
+  modules such as gulp-cssnano don't download unnecessary extras.
 
 # 2.6.1
 
