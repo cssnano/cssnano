@@ -30,5 +30,13 @@
     "postcss": "^5.0.4",
     "postcss-value-parser": "^2.0.0",
     "uniqs": "^2.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TrySound/postcss-minify-font-values.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TrySound/postcss-minify-font-values/issues"
+  },
+  "homepage": "https://github.com/TrySound/postcss-minify-font-values"
 }
