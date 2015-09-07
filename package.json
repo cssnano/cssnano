@@ -23,8 +23,6 @@
   "license": "MIT",
   "dependencies": {
     "autoprefixer": "^6.0.0",
-    "balanced-match": "^0.2.0",
-    "css-list": "^0.1.2",
     "decamelize": "^1.0.0",
     "defined": "^1.0.0",
     "indexes-of": "^1.0.1",
@@ -49,6 +47,7 @@
     "postcss-single-charset": "^1.0.0",
     "postcss-svgo": "^2.0.0",
     "postcss-unique-selectors": "^2.0.0",
+    "postcss-value-parser": "^2.0.0",
     "postcss-zindex": "^2.0.0"
   },
   "devDependencies": {
