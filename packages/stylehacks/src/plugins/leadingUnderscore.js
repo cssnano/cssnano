@@ -6,12 +6,13 @@ let hack = 'stylehacks-leading-underscore';
 let targets = ['ie 6'];
 
 export default plugin(hack, targets, function () {
-    this.css.eachDecl(decl => {
-        if (!decl.before) {
+    this.css.walkDecls(decl => {
+        let before = decl.raws.before;
+        if (!before) {
             return;
         }
-        if (~decl.before.indexOf('_') || ~decl.before.indexOf('-')) {
-            this.push(decl, `Bad property: ${decl.before.trim()}${decl.prop}`);
+        if (~before.indexOf('_') || ~before.indexOf('-')) {
+            this.push(decl, `Bad property: ${before.trim()}${decl.prop}`);
         }
     });
 });

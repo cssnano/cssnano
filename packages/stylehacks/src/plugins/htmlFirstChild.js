@@ -23,7 +23,7 @@ function analyse (ctx, rule) {
 }
 
 export default plugin(hack, targets, function () {
-    this.css.eachRule(rule => {
+    this.css.walkRules(rule => {
         if (rule.selector) {
             parser(analyse(this, rule)).process(rule.selector);
         }

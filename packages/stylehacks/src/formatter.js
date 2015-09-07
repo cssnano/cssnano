@@ -7,14 +7,16 @@ import logSymbols from 'log-symbols';
 import plur from 'plur';
 
 let logFrom = fromValue => {
-    if (!fromValue.indexOf('<')) return fromValue;
+    if (!fromValue.indexOf('<')) {
+        return fromValue;
+    }
     return path.relative(process.cwd(), fromValue);
-}
+};
 
 let hacksFound = messages => {
     let num = messages.length + plur(' hack', messages.length);
     return `\n\n  ${logSymbols.error}  ${num} found.\n`;
-}
+};
 
 export default input => {
     let messages = input.messages;
@@ -34,4 +36,4 @@ export default input => {
             chalk.red(parts[1])
         ];
     })) + hacksFound(messages);
-}
+};

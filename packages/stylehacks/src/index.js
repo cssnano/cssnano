@@ -46,7 +46,7 @@ let stylehacks = postcss.plugin('stylehacks', (opts = {}) => {
             }
             return hack.detectAndResolve();
         });
-    }
+    };
 });
 
 stylehacks.process = (css, opts = {}) => {
@@ -58,6 +58,6 @@ stylehacks.process = (css, opts = {}) => {
         processor.use(reporter(opts.reporter));
     }
     return processor.process(css, opts);
-}
+};
 
 export default stylehacks;

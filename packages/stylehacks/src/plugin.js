@@ -31,7 +31,7 @@ export default function plugin (hack, targets, detect) {
         }
 
         resolve () {
-            return this.nodes.forEach(node => node.removeSelf());
+            return this.nodes.forEach(node => node.remove());
         }
 
         warn () {
