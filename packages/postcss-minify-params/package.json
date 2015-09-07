@@ -23,7 +23,7 @@
   "dependencies": {
     "javascript-natural-sort": "^0.7.1",
     "postcss": "^5.0.2",
-    "postcss-value-parser": "^1.4.2",
+    "postcss-value-parser": "^2.0.1",
     "uniqs": "^2.0.0"
   },
   "scripts": {
