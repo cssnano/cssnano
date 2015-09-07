@@ -33,6 +33,6 @@
   "repository": "ben-eb/postcss-convert-values",
   "dependencies": {
     "postcss": "^5.0.4",
-    "postcss-value-parser": "^1.4.2"
+    "postcss-value-parser": "^2.0.1"
   }
 }
