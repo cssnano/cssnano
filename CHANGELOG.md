@@ -1,3 +1,8 @@
+# 3.0.1
+
+* Replaced css-list & balanced-match with postcss-value-parser, reducing the
+  module's overall size (thanks to @TrySound).
+
 # 3.0.0
 
 * All cssnano plugins and cssnano itself have migrated to PostCSS 5.x. Please

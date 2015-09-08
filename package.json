@@ -47,7 +47,7 @@
     "postcss-single-charset": "^1.0.0",
     "postcss-svgo": "^2.0.0",
     "postcss-unique-selectors": "^2.0.0",
-    "postcss-value-parser": "^2.0.0",
+    "postcss-value-parser": "^2.0.2",
     "postcss-zindex": "^2.0.0"
   },
   "devDependencies": {
