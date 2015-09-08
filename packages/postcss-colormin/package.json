@@ -28,7 +28,6 @@
   },
   "repository": "ben-eb/postcss-colormin",
   "dependencies": {
-    "color": "^0.10.1",
     "colormin": "^1.0.4",
     "postcss": "^5.0.4",
     "postcss-value-parser": "^2.0.2"

@@ -47,7 +47,7 @@ var tests = module.exports = [{
     expected: 'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}'
 }, {
     message: 'should still minify spaces in webkit tap highlight color',
-    fixture: 'h1{-webkit-tap-highlight-color:rgba(0, 0, 0, 0)}',
+    fixture: 'h1{-webkit-tap-highlight-color:rgba( 0, 0, 0, 0)}',
     expected: 'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}'
 }, {
     message: 'should not crash on transparent in webkit tap highlight color',

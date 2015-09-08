@@ -2,9 +2,9 @@
 
 var colormin = require('colormin');
 var postcss = require('postcss');
-var color = require('color');
-var trim = require('colormin/dist/lib/stripWhitespace');
 var parser = require('postcss-value-parser');
+var stringify = parser.stringify;
+var trim = parser.trim;
 
 module.exports = postcss.plugin('postcss-colormin', function () {
     return function (css) {
@@ -13,10 +13,10 @@ module.exports = postcss.plugin('postcss-colormin', function () {
                 decl.value = parser(decl.value).walk(function (node) {
                     if (node.type === 'function') {
                         if (/^(rgb|hsl)a?$/.test(node.value)) {
-                            node.value = colormin(parser.stringify(node));
+                            node.value = colormin(stringify(node));
                             node.type = 'word';
                         } else {
-                            parser.trim(node.nodes);
+                            trim(node.nodes);
                         }
                     } else if (node.type === 'div') {
                         node.before = '';
@@ -32,7 +32,14 @@ module.exports = postcss.plugin('postcss-colormin', function () {
                 if (decl.value === 'inherit' || decl.value === 'transparent') {
                     return;
                 }
-                decl.value = trim(color(decl.value).rgbString());
+                decl.value = parser(decl.value).walk(function (node) {
+                    if (node.type === 'function') {
+                        trim(node.nodes);
+                    } else if (node.type === 'div') {
+                        node.before = '';
+                        node.after = '';
+                    }
+                }).toString();
             }
         });
     };
