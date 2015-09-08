@@ -23,7 +23,7 @@ var tests = module.exports = [{
     expected: 'h1{text-shadow:1px 1px 2px #000}'
 }, {
     message: 'should minify color values in background gradients',
-    fixture: 'h1{background:linear-gradient(#ff0000,yellow)}',
+    fixture: 'h1{background:linear-gradient( #ff0000,yellow )}',
     expected: 'h1{background:linear-gradient(red,#ff0)}'
 }, {
     message: 'should minify color values in background gradients (2)',

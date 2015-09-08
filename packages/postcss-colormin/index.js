@@ -2,25 +2,31 @@
 
 var colormin = require('colormin');
 var postcss = require('postcss');
-var list = postcss.list;
-var reduce = require('reduce-function-call');
 var color = require('color');
 var trim = require('colormin/dist/lib/stripWhitespace');
-
-function eachVal (values) {
-    return list.comma(values).map(function (value) {
-        return list.space(value).map(colormin).join(' ');
-    }).join();
-}
+var parser = require('postcss-value-parser');
 
 module.exports = postcss.plugin('postcss-colormin', function () {
     return function (css) {
         css.walkDecls(function (decl) {
             if (/^(?!font|filter|-webkit-tap-highlight-color)/.test(decl.prop)) {
-                decl.value = eachVal(decl.value);
-                decl.value = reduce(decl.value, 'gradient', function (body, fn) {
-                    return fn + '(' + list.comma(body).map(eachVal).join() + ')';
-                });
+                decl.value = parser(decl.value).walk(function (node) {
+                    if (node.type === 'function') {
+                        if (/^(rgb|hsl)a?$/.test(node.value)) {
+                            node.value = colormin(parser.stringify(node));
+                            node.type = 'word';
+                        } else {
+                            parser.trim(node.nodes);
+                        }
+                    } else if (node.type === 'div') {
+                        node.before = '';
+                        node.after = '';
+                    } else if (node.type === 'space') {
+                        node.value = ' ';
+                    } else {
+                        node.value = colormin(node.value);
+                    }
+                }).toString();
             }
             if (decl.prop === '-webkit-tap-highlight-color') {
                 if (decl.value === 'inherit' || decl.value === 'transparent') {
