@@ -1,3 +1,7 @@
+# 3.0.1
+
+* Bump postcss-value-parser to `2.0.2`.
+
 # 3.0.0
 
 * Upgraded to PostCSS 5.
