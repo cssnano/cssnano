@@ -61,7 +61,7 @@ h2 {
 }
 ```
 
-However, you can mitigate this by including [postcss-font-family][fontfam]
+However, you can mitigate this by including [postcss-minify-font-values][mfv]
 *before* this plugin, which will take care of normalising quotes, and
 deduplicating. For more examples, see the [tests](test.js).
 
@@ -83,3 +83,4 @@ MIT © [Ben Briggs](http://beneb.info)
 [deps]:    https://gemnasium.com/ben-eb/postcss-discard-unused
 [npm]:     http://badge.fury.io/js/postcss-discard-unused
 [postcss]: https://github.com/postcss/postcss
+[mfv]:     https://github.com/trysound/postcss-minify-font-values
