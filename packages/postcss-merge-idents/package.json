@@ -3,6 +3,10 @@
   "version": "2.0.0",
   "description": "Merge keyframe and counter style identifiers.",
   "main": "index.js",
+  "files": [
+    "index.js",
+    "LICENSE-MIT"
+  ],
   "scripts": {
     "test": "tape test.js | tap-spec"
   },
