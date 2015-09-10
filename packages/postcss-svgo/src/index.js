@@ -22,7 +22,7 @@ function minifyPromise (svgo, decl) {
                     return reject(`Error parsing SVG: ${result.error}`);
                 }
                 let data = isUriEncoded ? encode(result.data) : result.data;
-                let o = `url(${quote}data:image/svg+xml;utf-8,${data}${quote})`;
+                let o = `url(${quote}data:image/svg+xml;charset=utf-8,${data}${quote})`;
                 return cb(null, o);
             });
         };
