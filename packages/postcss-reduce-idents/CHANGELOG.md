@@ -1,3 +1,7 @@
+# 2.1.0
+
+* Replaced reduce-function-call with postcss-value-parser (thanks to @TrySound).
+
 # 2.0.0
 
 * Upgraded to PostCSS 5.
