@@ -3,6 +3,11 @@
   "version": "2.0.0",
   "description": "Reduce custom identifiers with PostCSS.",
   "main": "index.js",
+  "files": [
+    "index.js",
+    "lib",
+    "LICENSE-MIT"
+  ],
   "scripts": {
     "test": "tape test.js | tap-spec"
   },
@@ -25,6 +30,6 @@
   "repository": "ben-eb/postcss-reduce-idents",
   "dependencies": {
     "postcss": "^5.0.4",
-    "reduce-function-call": "^1.0.1"
+    "postcss-value-parser": "^2.0.3"
   }
 }

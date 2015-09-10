@@ -1,15 +1,8 @@
 'use strict';
 
 var postcss = require('postcss');
-var reduce = require('reduce-function-call');
+var parser = require('postcss-value-parser');
 var encode = require('./lib/encode');
-var list = postcss.list;
-
-function eachValue (value, callback) {
-    return list.space(value).map(function (val) {
-        return list.comma(val).map(callback).join();
-    }).join(' ');
-}
 
 function transformAtRule (css, atRuleRegex, propRegex) {
     var cache = {};
@@ -27,13 +20,19 @@ function transformAtRule (css, atRuleRegex, propRegex) {
     });
     // Iterate each property and change their names
     css.walkDecls(propRegex, function (decl) {
-        decl.value = eachValue(decl.value, function (value) {
-            if (value in cache) {
-                cache[value].count++;
-                return cache[value].ident;
+        decl.value = parser(decl.value).walk(function (node) {
+            if (node.type === 'word' && node.value in cache) {
+                cache[node.value].count++;
+                node.value = cache[node.value].ident;
             }
-            return value;
-        });
+            if (node.type === 'space') {
+                node.value = ' ';
+            }
+            if (node.type === 'div') {
+                node.before = '';
+                node.after = '';
+            }
+        }).toString();
     });
     // Ensure that at rules with no references to them are left unchanged
     ruleCache.forEach(function (rule) {
@@ -51,47 +50,55 @@ module.exports = postcss.plugin('postcss-reduce-idents', function () {
         var cache = {};
         var declCache = [];
         css.walkDecls(/counter-(reset|increment)/, function (decl) {
-            decl.value = eachValue(decl.value, function (value) {
-                if (!/^-?\d*$/.test(value)) {
-                    if (!cache[value]) {
-                        cache[value] = {
+            decl.value = parser(decl.value).walk(function (node) {
+                if (node.type === 'word' && !/^-?\d*$/.test(node.value)) {
+                    if (!cache[node.value]) {
+                        cache[node.value] = {
                             ident: encode(Object.keys(cache).length),
                             count: 0
                         };
                     }
-                    return cache[value].ident;
+                    node.value = cache[node.value].ident;
                 }
-                return value;
+                if (node.type === 'space') {
+                    node.value = ' ';
+                }
             });
             declCache.push(decl);
         });
         css.walkDecls('content', function (decl) {
-            decl.value = eachValue(decl.value, function (value) {
-                return reduce(value, /(counters?)\(/, function (body, fn) {
-                    var counters = list.comma(body).map(function (counter) {
-                        if (counter in cache) {
-                            cache[counter].count++;
-                            return cache[counter].ident;
-                        }
-                        return counter;
-                    }).join();
-                    return fn + '(' + counters + ')';
-                });
-            });
+            decl.value = parser(decl.value).walk(function (node) {
+                if (node.type === 'function') {
+                    if (node.value === 'counter' || node.value === 'counters') {
+                        node.nodes.forEach(function (node) {
+                            if (node.type === 'word' && node.value in cache) {
+                                cache[node.value].count++;
+                                node.value = cache[node.value].ident;
+                            }
+                            if (node.type === 'div') {
+                                node.before = '';
+                                node.after = '';
+                            }
+                        });
+                    }
+                    return false;
+                }
+                if (node.type === 'space') {
+                    node.value = ' ';
+                }
+            }).toString();
         });
         declCache.forEach(function (decl) {
-            decl.value = eachValue(decl.value, function (value) {
-                if (!/^-?\d*$/.test(value)) {
+            decl.value = decl.value.walk(function (node) {
+                if (node.type === 'word' && !/^-?\d*$/.test(node.value)) {
                     Object.keys(cache).forEach(function (key) {
                         var k = cache[key];
-                        if (k.ident === value && !k.count) {
-                            value = key;
+                        if (k.ident === node.value && !k.count) {
+                            node.value = key;
                         }
                     });
-                    return value;
                 }
-                return value;
-            });
+            }).toString();
         });
         // Transform @keyframes, @counter-style
         transformAtRule(css, /keyframes/, /animation/);
