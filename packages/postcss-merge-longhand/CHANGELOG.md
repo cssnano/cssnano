@@ -1,3 +1,8 @@
+# 2.0.1
+
+* Fixed a crash when the module was trying to retrieve declarations
+  from a rule which contained comments in it.
+
 # 2.0.0
 
 * Upgraded to PostCSS 5.
