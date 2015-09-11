@@ -1,3 +1,8 @@
+# 2.0.1
+
+* Fixed an issue where the `charset` definition was being removed from the
+  SVG source, breaking IE compatibility (thanks to @ophyros).
+
 # 2.0.0
 
 * Upgraded to PostCSS 5.0.
