@@ -1,5 +1,7 @@
 'use strict';
 
+import dropLeadingZero from './drop-leading-zero';
+
 const conversions = [{
     // Length
     'in': 96,
@@ -11,20 +13,6 @@ const conversions = [{
     's': 1000,
     'ms': 1
 }];
-
-function dropLeadingZero (number) {
-    let value = String(number);
-
-    if (value[0] === '0' && number % 1) {
-        return value.substring(1);
-    }
-
-    if (value[0] === '-' && value[1] === '0' && number % 1) {
-        return '-' + value.substring(2);
-    }
-
-    return value;
-}
 
 export default function (number, unit) {
     let converted,
