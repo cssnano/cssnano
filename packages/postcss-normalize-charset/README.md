@@ -18,7 +18,7 @@ a{
 ## Usage
 
 ```js
-postcss([ require('postcss-charset') ])
+postcss([ require('postcss-normalize-charset') ])
 ```
 
 See [PostCSS] docs for examples for your environment.
@@ -26,5 +26,5 @@ See [PostCSS] docs for examples for your environment.
 MIT © [Bogdan Chadkin](mailto:trysound@yandex.ru)
 
 [PostCSS]: https://github.com/postcss/postcss
-[ci-img]:  https://travis-ci.org/TrySound/postcss-charset.svg
-[ci]:      https://travis-ci.org/TrySound/postcss-charset
+[ci-img]:  https://travis-ci.org/TrySound/postcss-normalize-charset.svg
+[ci]:      https://travis-ci.org/TrySound/postcss-normalize-charset
