@@ -1,3 +1,7 @@
+# 2.1.0
+
+* Adds options to enable/disable unit conversion for time & length values.
+
 # 2.0.1
 
 * Bump postcss-value-parser to `2.0.2`.

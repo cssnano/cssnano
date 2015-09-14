@@ -37,6 +37,27 @@ h1 {
 Note that this plugin only covers conversions for duration and absolute length
 values. For color conversions, use [postcss-colormin][colormin].
 
+## API
+
+### convertValues([options])
+
+#### options
+
+##### convertLength
+
+Type: `boolean`
+Default: `true`
+
+Pass `false` to disable conversion from `px` to other absolute length units,
+such as `pc` & `pt` & vice versa.
+
+##### convertTime
+
+Type: `boolean`
+Default: `true`
+
+Pass `false` to disable conversion from `ms` to `s` & vice versa.
+
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests
