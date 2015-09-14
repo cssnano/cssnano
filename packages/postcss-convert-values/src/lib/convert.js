@@ -1,42 +1,67 @@
 'use strict';
 
-import dropLeadingZero from './drop-leading-zero';
-
-const conversions = [{
-    // Length
+const length = {
     'in': 96,
     'px': 1,
     'pt': 4 / 3,
     'pc': 16
-}, {
-    // Time
+};
+
+const time = {
     's': 1000,
     'ms': 1
-}];
+};
 
-export default function (number, unit) {
-    let converted,
-        value = dropLeadingZero(number) + (unit ? unit : ''),
-        conversion,
-        base;
+function dropLeadingZero (number) {
+    let value = String(number);
 
-    conversion = conversions.filter(area => unit in area)[0];
-
-    if (conversion) {
-        if (unit === 'ms' || unit === 'px') {
-            base = number / conversion[unit];
-        } else {
-            base = number * conversion[unit];
+    if (number % 1) {
+        if (value[0] === '0') {
+            return value.slice(1);
         }
 
-        converted = Object.keys(conversion)
-            .filter(u => unit !== u)
-            .map(u => dropLeadingZero(base / conversion[u]) + u)
-            .reduce((a, b) => a.length < b.length ? a : b);
-
-        if (converted.length < value.length) {
-            value = converted;
+        if (value[0] === '-' && value[1] === '0') {
+            return '-' + value.slice(2);
         }
+    }
+
+    return value;
+}
+
+function transform (number, unit, conversion) {
+    let one, base;
+    let convertionUnits = Object.keys(conversion).filter(u => {
+        if (conversion[u] === 1) {
+            one = u;
+        }
+        return unit !== u;
+    });
+
+    if (unit === one) {
+        base = number / conversion[unit];
+    } else {
+        base = number * conversion[unit];
+    }
+
+    return convertionUnits
+        .map(u => dropLeadingZero(base / conversion[u]) + u)
+        .reduce((a, b) => a.length < b.length ? a : b);
+}
+
+export default function (number, unit, {convertTime, convertLength}) {
+    let value = dropLeadingZero(number) + (unit ? unit : '');
+    let converted;
+
+    if (convertLength !== false && unit in length) {
+        converted = transform(number, unit, length);
+    }
+
+    if (convertTime !== false && unit in time) {
+        converted = transform(number, unit, time);
+    }
+
+    if (converted && converted.length < value.length) {
+        value = converted;
     }
 
     return value;

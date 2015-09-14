@@ -3,9 +3,8 @@
 import postcss from 'postcss';
 import convert from './lib/convert';
 import valueParser, {unit} from 'postcss-value-parser';
-import dropLeadingZero from './lib/drop-leading-zero';
 
-function transform(opts) {
+function transform (opts) {
     return decl => {
         if (~decl.prop.indexOf('flex')) {
             return;
@@ -18,12 +17,9 @@ function transform(opts) {
                     let num = Number(pair.number);
                     let u = pair.unit.toLowerCase();
                     if (num === 0) {
-                        let value = (u === 'ms' || u === 's') ? 0 + u : 0;
-                        node.value = value;
-                    } else if (opts.convertUnit !== false) {
-                        node.value = convert(num, u);
+                        node.value = (u === 'ms' || u === 's') ? 0 + u : 0;
                     } else {
-                        node.value = dropLeadingZero(num) + u;
+                        node.value = convert(num, u, opts);
                     }
                 }
             }
