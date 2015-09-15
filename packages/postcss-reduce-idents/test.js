@@ -74,6 +74,45 @@ var tests = [{
     message: 'should not touch counter functions which are not defined',
     fixture: 'h1:before{content:counter(chapter) ". "}',
     expected: 'h1:before{content:counter(chapter) ". "}'
+}, {
+    message: 'should not touch keyframes names',
+    fixture: [
+        '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}',
+        '@counter-style custom{system:extends decimal;suffix:"> "}ol{list-style:custom}',
+        'body{counter-reset:section}h3:before{counter-increment:section;content:"Section" counter(section) ": "}'
+    ].join(''),
+    expected: [
+        '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}',
+        '@counter-style a{system:extends decimal;suffix:"> "}ol{list-style:a}',
+        'body{counter-reset:a}h3:before{counter-increment:a;content:"Section" counter(a) ": "}'
+    ].join(''),
+    options: { keyframes: false }
+}, {
+    message: 'should not touch counter styles',
+    fixture: [
+        '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}',
+        '@counter-style custom{system:extends decimal;suffix:"> "}ol{list-style:custom}',
+        'body{counter-reset:section}h3:before{counter-increment:section;content:"Section" counter(section) ": "}'
+    ].join(''),
+    expected: [
+        '@keyframes a{0%{color:#fff}to{color:#000}}.one{animation-name:a}',
+        '@counter-style custom{system:extends decimal;suffix:"> "}ol{list-style:custom}',
+        'body{counter-reset:a}h3:before{counter-increment:a;content:"Section" counter(a) ": "}'
+    ].join(''),
+    options: { counterStyle: false }
+}, {
+    message: 'should not touch counter functions',
+    fixture: [
+        '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}',
+        '@counter-style custom{system:extends decimal;suffix:"> "}ol{list-style:custom}',
+        'body{counter-reset:section}h3:before{counter-increment:section;content:"Section" counter(section) ": "}'
+    ].join(''),
+    expected: [
+        '@keyframes a{0%{color:#fff}to{color:#000}}.one{animation-name:a}',
+        '@counter-style a{system:extends decimal;suffix:"> "}ol{list-style:a}',
+        'body{counter-reset:section}h3:before{counter-increment:section;content:"Section" counter(section) ": "}'
+    ].join(''),
+    options: { counter: false }
 }];
 
 function process (css, options) {

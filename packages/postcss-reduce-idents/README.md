@@ -76,6 +76,33 @@ examples.
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
 examples for your environment.
 
+## API
+
+### reduceIdents([options])
+
+#### options
+
+##### counter
+
+Type: `boolean`
+Default: `true`
+
+Pass `false` to disable reducing `content`, `counter-reset` and `counter-increment` declarations.
+
+##### keyframes
+
+Type: `boolean`
+Default: `true`
+
+Pass `false` to disable reducing `keyframes` rules and `animation` declarations.
+
+##### counterStyle
+
+Type: `boolean`
+Default: `true`
+
+Pass `false` to disable reducing `counter-style` rules and `list-style` and `system` declarations.
+
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests

@@ -7,19 +7,25 @@ var encode = require('./lib/encode');
 function transformAtRule (css, atRuleRegex, propRegex) {
     var cache = {};
     var ruleCache = [];
+    var declCache = [];
     // Encode at rule names and cache the result
-    css.walkAtRules(atRuleRegex, function (rule) {
-        if (!cache[rule.params]) {
-            cache[rule.params] = {
-                ident: encode(Object.keys(cache).length),
-                count: 0
-            };
+    css.walk(function (node) {
+        if (node.type === 'atrule' && atRuleRegex.test(node.name)) {
+            if (!cache[node.params]) {
+                cache[node.params] = {
+                    ident: encode(Object.keys(cache).length),
+                    count: 0
+                };
+            }
+            node.params = cache[node.params].ident;
+            ruleCache.push(node);
         }
-        rule.params = cache[rule.params].ident;
-        ruleCache.push(rule);
+        if (node.type === 'decl' && propRegex.test(node.prop)) {
+            declCache.push(node);
+        }
     });
     // Iterate each property and change their names
-    css.walkDecls(propRegex, function (decl) {
+    declCache.forEach(function (decl) {
         decl.value = parser(decl.value).walk(function (node) {
             if (node.type === 'word' && node.value in cache) {
                 cache[node.value].count++;
@@ -45,11 +51,12 @@ function transformAtRule (css, atRuleRegex, propRegex) {
     });
 }
 
-module.exports = postcss.plugin('postcss-reduce-idents', function () {
-    return function (css) {
-        var cache = {};
-        var declCache = [];
-        css.walkDecls(/counter-(reset|increment)/, function (decl) {
+function transformDecl (css, propOneRegex, propTwoRegex) {
+    var cache = {};
+    var declOneCache = [];
+    var declTwoCache = [];
+    css.walkDecls(function (decl) {
+        if (propOneRegex.test(decl.prop)) {
             decl.value = parser(decl.value).walk(function (node) {
                 if (node.type === 'word' && !/^-?\d*$/.test(node.value)) {
                     if (!cache[node.value]) {
@@ -64,44 +71,59 @@ module.exports = postcss.plugin('postcss-reduce-idents', function () {
                     node.value = ' ';
                 }
             });
-            declCache.push(decl);
-        });
-        css.walkDecls('content', function (decl) {
-            decl.value = parser(decl.value).walk(function (node) {
-                if (node.type === 'function') {
-                    if (node.value === 'counter' || node.value === 'counters') {
-                        node.nodes.forEach(function (node) {
-                            if (node.type === 'word' && node.value in cache) {
-                                cache[node.value].count++;
-                                node.value = cache[node.value].ident;
-                            }
-                            if (node.type === 'div') {
-                                node.before = '';
-                                node.after = '';
-                            }
-                        });
-                    }
-                    return false;
-                }
-                if (node.type === 'space') {
-                    node.value = ' ';
-                }
-            }).toString();
-        });
-        declCache.forEach(function (decl) {
-            decl.value = decl.value.walk(function (node) {
-                if (node.type === 'word' && !/^-?\d*$/.test(node.value)) {
-                    Object.keys(cache).forEach(function (key) {
-                        var k = cache[key];
-                        if (k.ident === node.value && !k.count) {
-                            node.value = key;
+            declOneCache.push(decl);
+        }
+        if (propTwoRegex.test(decl.prop)) {
+            declTwoCache.push(decl);
+        }
+    });
+    declTwoCache.forEach(function (decl) {
+        decl.value = parser(decl.value).walk(function (node) {
+            if (node.type === 'function') {
+                if (node.value === 'counter' || node.value === 'counters') {
+                    node.nodes.forEach(function (node) {
+                        if (node.type === 'word' && node.value in cache) {
+                            cache[node.value].count++;
+                            node.value = cache[node.value].ident;
+                        }
+                        if (node.type === 'div') {
+                            node.before = '';
+                            node.after = '';
                         }
                     });
                 }
-            }).toString();
-        });
-        // Transform @keyframes, @counter-style
-        transformAtRule(css, /keyframes/, /animation/);
-        transformAtRule(css, 'counter-style', /(list-style|system)/);
+                return false;
+            }
+            if (node.type === 'space') {
+                node.value = ' ';
+            }
+        }).toString();
+    });
+    declOneCache.forEach(function (decl) {
+        decl.value = decl.value.walk(function (node) {
+            if (node.type === 'word' && !/^-?\d*$/.test(node.value)) {
+                Object.keys(cache).forEach(function (key) {
+                    var k = cache[key];
+                    if (k.ident === node.value && !k.count) {
+                        node.value = key;
+                    }
+                });
+            }
+        }).toString();
+    });
+}
+
+module.exports = postcss.plugin('postcss-reduce-idents', function (opts) {
+    opts = opts || {};
+    return function (css) {
+        if (opts.counter !== false) {
+            transformDecl(css, /counter-(reset|increment)/, /content/);
+        }
+        if (opts.keyframes !== false) {
+            transformAtRule(css, /keyframes/, /animation/);
+        }
+        if (opts.counterStyle !== false) {
+            transformAtRule(css, /counter-style/, /(list-style|system)/);
+        }
     };
 });
