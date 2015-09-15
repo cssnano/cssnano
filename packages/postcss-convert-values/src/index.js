@@ -33,6 +33,14 @@ function transform (opts) {
 
 export default postcss.plugin('postcss-convert-values', (opts) => {
     opts = opts || {};
+    if (opts.length === undefined && opts.convertLength !== undefined) {
+        console.warn('postcss-convert-values: `convertLength` option is deprecated. Use `length`');
+        opts.length = opts.convertLength;
+    }
+    if (opts.length === undefined && opts.convertTime !== undefined) {
+        console.warn('postcss-convert-values: `convertTime` option is deprecated. Use `time`');
+        opts.time = opts.convertTime;
+    }
     return css => {
         css.walkDecls(transform(opts));
     };

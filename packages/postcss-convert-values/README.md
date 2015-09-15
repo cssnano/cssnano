@@ -43,7 +43,7 @@ values. For color conversions, use [postcss-colormin][colormin].
 
 #### options
 
-##### convertLength
+##### length
 
 Type: `boolean`
 Default: `true`
@@ -51,7 +51,7 @@ Default: `true`
 Pass `false` to disable conversion from `px` to other absolute length units,
 such as `pc` & `pt` & vice versa.
 
-##### convertTime
+##### time
 
 Type: `boolean`
 Default: `true`

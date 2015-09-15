@@ -129,9 +129,19 @@ let tests = [{
     message: 'should not convert units',
     fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
     expected: 'h1{transition-duration:.5s; width:calc(192px + 2em); width:14px; letter-spacing:-.1vmin}',
-    options: { convertLength: false }
+    options: { length: false }
 }, {
     message: 'should not convert units',
+    fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
+    expected: 'h1{transition-duration:500ms; width:calc(2in + 2em); width:14px; letter-spacing:-.1vmin}',
+    options: { time: false }
+}, {
+    message: 'should not convert units with deprecated option',
+    fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
+    expected: 'h1{transition-duration:.5s; width:calc(192px + 2em); width:14px; letter-spacing:-.1vmin}',
+    options: { convertLength: false }
+}, {
+    message: 'should not convert units with deprecated option',
     fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
     expected: 'h1{transition-duration:500ms; width:calc(2in + 2em); width:14px; letter-spacing:-.1vmin}',
     options: { convertTime: false }

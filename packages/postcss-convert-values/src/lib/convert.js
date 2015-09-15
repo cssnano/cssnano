@@ -1,13 +1,13 @@
 'use strict';
 
-const length = {
+const lengthConv = {
     'in': 96,
     'px': 1,
     'pt': 4 / 3,
     'pc': 16
 };
 
-const time = {
+const timeConv = {
     's': 1000,
     'ms': 1
 };
@@ -48,16 +48,16 @@ function transform (number, unit, conversion) {
         .reduce((a, b) => a.length < b.length ? a : b);
 }
 
-export default function (number, unit, {convertTime, convertLength}) {
+export default function (number, unit, {time, length}) {
     let value = dropLeadingZero(number) + (unit ? unit : '');
     let converted;
 
-    if (convertLength !== false && unit in length) {
-        converted = transform(number, unit, length);
+    if (length !== false && unit in lengthConv) {
+        converted = transform(number, unit, lengthConv);
     }
 
-    if (convertTime !== false && unit in time) {
-        converted = transform(number, unit, time);
+    if (time !== false && unit in timeConv) {
+        converted = transform(number, unit, timeConv);
     }
 
     if (converted && converted.length < value.length) {
