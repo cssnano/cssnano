@@ -38,7 +38,7 @@ export default {
 		});
 
 		// border-wsc -> border-tlbr-wsc
-		wsc.forEach((d, i) => {
+		wsc.forEach(d => {
 			rule.walkDecls(`border-${d}`, decl => {
 				let values = parseTrbl(decl.value);
 				values.forEach((value, i) => {
@@ -62,8 +62,7 @@ export default {
 				let props = decls.filter(node => node.important === lastNode.important);
 				let rules = names.map(prop => getLastNode(props, prop)).filter(Boolean);
 				if (hasAllProps.apply(this, [rules].concat(names)) && canMerge.apply(this, rules)) {
-					let values = rules.map(node => node.value);
-					let value = values.join(' ');
+					let value = rules.map(node => node.value).join(' ');
 					let decl = clone(lastNode);
 					decl.prop = `border-${direction}`;
 					decl.value = value;
@@ -139,7 +138,7 @@ export default {
 					}
 
 					let value = values.concat(['']).reduceRight((prev, cur, i) => {
-						if (prev === '' && cur === defaults[i]) return prev;
+						if (prev === '' && cur === defaults[i]) { return prev; }
 						return cur + " " + prev;
 					}).trim() || defaults[0];
 
@@ -154,20 +153,20 @@ export default {
 					let mapped = [0, 1, 2, 3].map(i => {
 						let vals = [values[0][i], values[1][i], values[2][i]];
 						return vals.concat(['']).reduceRight((prev, cur, i) => {
-							if (prev === '' && cur === defaults[i]) return prev;
+							if (prev === '' && cur === defaults[i]) { return prev; }
 							return cur + " " + prev;
 						}).trim() || defaults[0];
 					});
 
-					let canMerge = (mapped[0] == mapped[1] && mapped[1] == mapped[2])
-						|| (mapped[1] == mapped[2] && mapped[2] == mapped[3])
-						|| (mapped[2] == mapped[3] && mapped[3] == mapped[0])
-						|| (mapped[3] == mapped[0] && mapped[0] == mapped[1]);
+					let canMerge = (mapped[0] === mapped[1] && mapped[1] === mapped[2]) ||
+						(mapped[1] === mapped[2] && mapped[2] === mapped[3]) ||
+						(mapped[2] === mapped[3] && mapped[3] === mapped[0]) ||
+						(mapped[3] === mapped[0] && mapped[0] === mapped[1]);
 
 					if (canMerge) {
 						let reduced = mapped.reduce((a, b) => {
 							a = Array.isArray(a) ? a : [a];
-							if (!~a.indexOf(b)) a.push(b);
+							if (!~a.indexOf(b)) { a.push(b); }
 							return a;
 						});
 
