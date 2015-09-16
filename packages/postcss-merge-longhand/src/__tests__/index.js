@@ -165,6 +165,10 @@ let tests = [{
     message: 'should optimize border merging for length',
     fixture: 'h1{border:1px solid #ddd;border-bottom:1px solid #fff}',
     expected: 'h1{border:1px solid;border-color:#ddd #ddd #fff}'
+}, {
+    message: 'should not mangle borders',
+    fixture: 'hr{display:block;height:1px;border:0;border-top:1px solid #ddd}',
+    expected: 'hr{display:block;height:1px;border:0;border-top:1px solid #ddd}'
 }];
 
 function process (css, options) {

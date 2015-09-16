@@ -93,7 +93,7 @@ export default {
 				decls = decls.filter(node => !~rules.indexOf(node));
 			}
 		});
-		
+
 		// border-tlbr -> border-wsc
 		let names = tlbr.map(direction => `border-${direction}`);
 		let decls = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop));
@@ -115,6 +115,8 @@ export default {
 		}
 
 		// border-wsc -> border
+		// border-wsc -> border + border-color
+		// border-wsc -> border + border-dir
 		names = wsc.map(d => `border-${d}`);
 		decls = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop));
 		while (decls.length) {
@@ -138,9 +140,8 @@ export default {
 
 					let value = values.concat(['']).reduceRight((prev, cur, i) => {
 						if (prev === '' && cur === defaults[i]) return prev;
-					return cur + " " + prev;
-					}).trim();
-					if (value === '') value = defaults[0];
+						return cur + " " + prev;
+					}).trim() || defaults[0];
 
 					let decl = clone(lastNode);
 					decl.prop = `border`;
@@ -148,9 +149,48 @@ export default {
 					rule.insertBefore(color, decl);
 					del.forEach(prop => prop.remove());
 				}
+				else {
+					let values = [width, style, color].map(node => parseTrbl(node.value));
+					let mapped = [0, 1, 2, 3].map(i => {
+						let vals = [values[0][i], values[1][i], values[2][i]];
+						return vals.concat(['']).reduceRight((prev, cur, i) => {
+							if (prev === '' && cur === defaults[i]) return prev;
+							return cur + " " + prev;
+						}).trim() || defaults[0];
+					});
+
+					let canMerge = (mapped[0] == mapped[1] && mapped[1] == mapped[2])
+						|| (mapped[1] == mapped[2] && mapped[2] == mapped[3])
+						|| (mapped[2] == mapped[3] && mapped[3] == mapped[0])
+						|| (mapped[3] == mapped[0] && mapped[0] == mapped[1]);
+
+					if (canMerge) {
+						let reduced = mapped.reduce((a, b) => {
+							a = Array.isArray(a) ? a : [a];
+							if (!a.includes(b)) a.push(b);
+							return a;
+						});
+
+						let first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
+						let borderValue = first ? reduced[0] : reduced[1];
+						let offValue = first ? reduced[1] : reduced[0];
+						let direction = tlbr[mapped.indexOf(offValue)];
+
+						let border = clone(lastNode);
+						border.prop = `border`;
+						border.value = borderValue;
+						rule.insertAfter(lastNode, border);
+
+						let offBorder = clone(lastNode);
+						offBorder.prop = `border-${direction}`;
+						offBorder.value = offValue;
+						rule.insertAfter(border, offBorder);
+
+						[width, style, color].forEach(prop => prop.remove());
+					}
+				}
 			}
 			decls = decls.filter(node => !~props.indexOf(node));
 		}
-
 	}
 };
