@@ -59,16 +59,16 @@ let tests = [{
     expected: 'h1{border:1px solid red}'
 }, {
     message: 'should merge border value shorthands',
-    fixture: 'h1{border-color:red blue red blue;border-width:10px 20px 10px 20px;border-style:solid}',
-    expected: 'h1{border-color:red blue;border-width:10px 20px;border-style:solid}'
+    fixture: 'h1{border-color:red blue red blue;border-style:solid;border-width:10px 20px 10px 20px}',
+    expected: 'h1{border-color:red blue;border-style:solid;border-width:10px 20px}'
 }, {
     message: 'should not merge border values with mixed !important',
     fixture: 'h1{border-color:red;border-width:1px!important;border-style:dashed!important}',
     expected: 'h1{border-color:red;border-width:1px!important;border-style:dashed!important}'
 }, {
     message: 'should not merge border values with more than 3 values',
-    fixture: 'h1{border-color:red;border-width:1px 5px;border-style:dashed}',
-    expected: 'h1{border-color:red;border-width:1px 5px;border-style:dashed}',
+    fixture: 'h1{border-color:red;border-style:dashed;border-width:1px 5px}',
+    expected: 'h1{border-color:red;border-style:dashed;border-width:1px 5px}',
 }, {
     message: 'should convert 4 values to 1',
     fixture: 'h1{margin:10px 10px 10px 10px}',

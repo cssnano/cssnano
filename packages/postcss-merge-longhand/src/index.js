@@ -3,21 +3,13 @@
 import postcss from 'postcss';
 import margin from './lib/decl/margin';
 import padding from './lib/decl/padding';
-import border from './lib/decl/border';
-import borderTop from './lib/decl/border-top';
-import borderRight from './lib/decl/border-right';
-import borderBottom from './lib/decl/border-bottom';
-import borderLeft from './lib/decl/border-left';
+import borders from './lib/decl/borders';
 import columns from './lib/decl/columns';
 
 const processors = [
     margin,
     padding,
-    border,
-    borderTop,
-    borderRight,
-    borderBottom,
-    borderLeft,
+    borders,
     columns
 ];
 
