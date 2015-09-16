@@ -9,16 +9,10 @@ var formatter = require('./formatter');
 var path = require('path');
 var base = path.join(__dirname, '../integrations');
 
-function formatted (css, cb) {
-    return postcss([ nano(), formatter ]).process(css).then(function (res) {
-        cb(res.css);
-    });
-}
-
 directory(base).forEach(function (f) {
     if (~f.indexOf('fixture')) {
-        formatted(file(base + '/' + f), function (res) {
-            write(path.join(base, f.replace('fixture', 'expected')), res);
+        postcss([nano(), formatter]).process(file(base + '/' + f)).then(function (res) {
+            write(path.join(base, f.replace('fixture', 'expected')), res.css);
         });
     }
 });
