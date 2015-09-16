@@ -4,6 +4,10 @@ var postcss = require('postcss');
 var parser = require('postcss-value-parser');
 var encode = require('./lib/encode');
 
+function isNum (node) {
+    return parser.unit(node.value);
+}
+
 function transformAtRule (css, atRuleRegex, propRegex) {
     var cache = {};
     var ruleCache = [];
@@ -58,7 +62,7 @@ function transformDecl (css, propOneRegex, propTwoRegex) {
     css.walkDecls(function (decl) {
         if (propOneRegex.test(decl.prop)) {
             decl.value = parser(decl.value).walk(function (node) {
-                if (node.type === 'word' && !/^-?\d*$/.test(node.value)) {
+                if (node.type === 'word' && !isNum(node)) {
                     if (!cache[node.value]) {
                         cache[node.value] = {
                             ident: encode(Object.keys(cache).length),
@@ -101,7 +105,7 @@ function transformDecl (css, propOneRegex, propTwoRegex) {
     });
     declOneCache.forEach(function (decl) {
         decl.value = decl.value.walk(function (node) {
-            if (node.type === 'word' && !/^-?\d*$/.test(node.value)) {
+            if (node.type === 'word' && !isNum(node)) {
                 Object.keys(cache).forEach(function (key) {
                     var k = cache[key];
                     if (k.ident === node.value && !k.count) {

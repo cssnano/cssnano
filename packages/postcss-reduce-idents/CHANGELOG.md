@@ -1,3 +1,8 @@
+# 2.2.0
+
+* Added options for customising what the module reduces (thanks to @TrySound).
+* Replaced regex number test with postcss-value-parser unit method.
+
 # 2.1.0
 
 * Replaced reduce-function-call with postcss-value-parser (thanks to @TrySound).
