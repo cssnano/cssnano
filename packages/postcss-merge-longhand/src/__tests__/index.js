@@ -108,7 +108,7 @@ let tests = [{
 }, {
     message: 'should not merge rules with the inherit keyword',
     fixture: 'h1{border-width:3px;border-style:solid;border-color:inherit}',
-    expected: 'h1{border-width:3px;border-style:solid;border-color:inherit}',
+    expected: 'h1{border:3px solid;border-color:inherit}',
 }, {
     message: 'should not crash on comments',
     fixture: 'h1{\n  border-width:3px;/* 1 */\n  border-style:solid;/* 2 */\n  border-color:red;/* 3 */}',
@@ -161,6 +161,10 @@ let tests = [{
     message: 'should minimize default border values',
     fixture: 'h1{border:medium none currentColor}',
     expected: 'h1{border:medium}'
+}, {
+    message: 'should optimize border merging for length',
+    fixture: 'h1{border:1px solid #ddd;border-bottom:1px solid #fff}',
+    expected: 'h1{border:1px solid;border-color:#ddd #ddd #fff}'
 }];
 
 function process (css, options) {
