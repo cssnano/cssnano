@@ -70,6 +70,33 @@ deduplicating. For more examples, see the [tests](test.js).
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
 examples for your environment.
 
+## API
+
+### discardUnused([options])
+
+#### options
+
+##### fontFace
+
+Type: `boolean`
+Default: `true`
+
+Pass `false` to disable discarding unused font face rules.
+
+##### counterStyle
+
+Type: `boolean`
+Default: `true`
+
+Pass `false` to disable discarding unused counter style rules.
+
+##### keyframes
+
+Type: `boolean`
+Default: `true`
+
+Pass `false` to disable discarding unused keyframe rules.
+
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests

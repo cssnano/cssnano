@@ -61,6 +61,39 @@ let tests = [{
     message: 'should remove font faces if they have no font-family property',
     fixture: '@font-face {src:url("fonts/does-not-exist.ttf") format("truetype")}',
     expected: ''
+}, {
+    message: 'shouldn\'t remove font fames',
+    fixture: [
+        '@font-face {src:url("fonts/does-not-exist.ttf") format("truetype")}',
+        '@keyframes {0%{opacity:0}to{opacity:1}}',
+        '@counter-style custom{system:extends decimal;suffix:"> "}'
+    ].join(''),
+    expected: '@font-face {src:url("fonts/does-not-exist.ttf") format("truetype")}',
+    options: {
+        fontFace: false
+    }
+}, {
+    message: 'shouldn\'t remove keyframes if they have no identifier',
+    fixture: [
+        '@keyframes {0%{opacity:0}to{opacity:1}}',
+        '@font-face {src:url("fonts/does-not-exist.ttf") format("truetype")}',
+        '@counter-style custom{system:extends decimal;suffix:"> "}'
+    ].join(''),
+    expected: '@keyframes {0%{opacity:0}to{opacity:1}}',
+    options: {
+        keyframes: false
+    }
+}, {
+    message: 'shouldn\'t remove unused counter styles',
+    fixture: [
+        '@counter-style custom{system:extends decimal;suffix:"> "}',
+        '@font-face {src:url("fonts/does-not-exist.ttf") format("truetype")}',
+        '@keyframes {0%{opacity:0}to{opacity:1}}'
+    ].join(''),
+    expected: '@counter-style custom{system:extends decimal;suffix:"> "}',
+    options: {
+        counterStyle: false
+    }
 }];
 
 function process (css, options) {
