@@ -61,6 +61,10 @@ var tests = module.exports = [{
     message: 'should not minify in filter properties',
     fixture: 'h1{filter:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff);}',
     expected: 'h1{filter:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff);}'
+}, {
+    message: 'should minify color stops',
+    fixture: 'h1{background-image:-webkit-gradient(linear,50% 0%,50% 100%,color-stop(1px, #fbfbfb),color-stop(1px, #ffffff),color-stop(2px, #ffffff),color-stop(2px, #fbfbfb),color-stop(100%, #ececec))}',
+    expected: 'h1{background-image:-webkit-gradient(linear,50% 0%,50% 100%,color-stop(1px,#fbfbfb),color-stop(1px,#fff),color-stop(2px,#fff),color-stop(2px,#fbfbfb),color-stop(100%,#ececec))}'
 }];
 
 function process (css, options) {
