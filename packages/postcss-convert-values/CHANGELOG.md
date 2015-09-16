@@ -1,3 +1,9 @@
+# 2.2.0
+
+* Renames `opts.convertLength` & `opts.convertTime` to
+  `opts.length` & `opts.time`; the old options will now print deprecation
+  warnings (thanks to @TrySound).
+
 # 2.1.0
 
 * Adds options to enable/disable unit conversion for time & length values.
