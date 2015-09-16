@@ -118,6 +118,7 @@ export default {
 		// border-wsc -> border + border-dir
 		names = wsc.map(d => `border-${d}`);
 		decls = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop));
+
 		while (decls.length) {
 			let lastNode = decls[decls.length - 1];
 			let props = decls.filter(node => node.important === lastNode.important);
@@ -126,30 +127,10 @@ export default {
 				let style = getLastNode(props, names[1]);
 				let color = getLastNode(props, names[2]);
 
-				if (list.space(width.value).length === 1 && list.space(style.value).length === 1) {
-					let values;
-					let del = props;
-					if (list.space(color.value).length === 1 && color.value !== 'inherit') {
-						values = [width, style, color].map(node => node.value);
-					}
-					else {
-						values = [width, style].map(node => node.value);
-						del = del.filter(node => node.prop !== names[2]);
-					}
+				if (hasAllProps.apply(this, [props].concat(names))) {
+					let rules = names.map(prop => getLastNode(props, prop));
+					let values = rules.map(node => parseTrbl(node.value));
 
-					let value = values.concat(['']).reduceRight((prev, cur, i) => {
-						if (prev === '' && cur === defaults[i]) { return prev; }
-						return cur + " " + prev;
-					}).trim() || defaults[0];
-
-					let decl = clone(lastNode);
-					decl.prop = `border`;
-					decl.value = value;
-					rule.insertBefore(color, decl);
-					del.forEach(prop => prop.remove());
-				}
-				else {
-					let values = [width, style, color].map(node => parseTrbl(node.value));
 					let mapped = [0, 1, 2, 3].map(i => {
 						let vals = [values[0][i], values[1][i], values[2][i]];
 						return vals.concat(['']).reduceRight((prev, cur, i) => {
@@ -158,38 +139,82 @@ export default {
 						}).trim() || defaults[0];
 					});
 
-					let canMerge = (mapped[0] === mapped[1] && mapped[1] === mapped[2]) ||
-						(mapped[1] === mapped[2] && mapped[2] === mapped[3]) ||
-						(mapped[2] === mapped[3] && mapped[3] === mapped[0]) ||
-						(mapped[3] === mapped[0] && mapped[0] === mapped[1]);
+					let closeEnough = (mapped[0] == mapped[1] && mapped[1] == mapped[2])
+						|| (mapped[1] == mapped[2] && mapped[2] == mapped[3])
+						|| (mapped[2] == mapped[3] && mapped[3] == mapped[0])
+						|| (mapped[3] == mapped[0] && mapped[0] == mapped[1]);
 
-					if (canMerge) {
-						let reduced = mapped.reduce((a, b) => {
-							a = Array.isArray(a) ? a : [a];
-							if (!~a.indexOf(b)) { a.push(b); }
-							return a;
-						});
+					let reduced = mapped.reduce((a, b) => {
+						a = Array.isArray(a) ? a : [a];
+						if (a.indexOf(b) === -1) a.push(b);
+						return a;
+					});
 
+					if (closeEnough && canMerge.apply(this, rules)) {
 						let first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
 						let borderValue = first ? reduced[0] : reduced[1];
-						let offValue = first ? reduced[1] : reduced[0];
-						let direction = tlbr[mapped.indexOf(offValue)];
 
 						let border = clone(lastNode);
 						border.prop = `border`;
 						border.value = borderValue;
 						rule.insertAfter(lastNode, border);
 
-						let offBorder = clone(lastNode);
-						offBorder.prop = `border-${direction}`;
-						offBorder.value = offValue;
-						rule.insertAfter(border, offBorder);
+						if (reduced[1]) {
+							let offValue = first ? reduced[1] : reduced[0];
+							let direction = tlbr[mapped.indexOf(offValue)];
 
-						[width, style, color].forEach(prop => prop.remove());
+							let offBorder = clone(lastNode);
+							offBorder.prop = `border-${direction}`;
+							offBorder.value = offValue;
+							rule.insertAfter(border, offBorder);
+						}
+						props.forEach(prop => prop.remove());
+					}
+					else if (reduced.length === 1) {
+						values = [width, style].map(node => node.value);
+						let value = values.concat(['']).reduceRight((prev, cur, i) => {
+							if (prev === '' && cur === defaults[i]) return prev;
+							return cur + " " + prev;
+						}).trim() || defaults[0];
+
+						let decl = clone(lastNode);
+						decl.prop = `border`;
+						decl.value = value;
+						rule.insertBefore(color, decl);
+						props.filter(node => node.prop !== names[2]).forEach(prop => prop.remove());
 					}
 				}
 			}
 			decls = decls.filter(node => !~props.indexOf(node));
 		}
+
+		names = tlbr.map(direction => `border-${direction}`);
+		rule.walkDecls('border', decl => {
+			let next = decl.next();
+			if (next && next.type === 'decl') {
+				var index = names.indexOf(next.prop);
+				if (index > -1) {
+					let values = list.space(decl.value);
+					let dirValues = list.space(next.value);
+
+					if ( values[0] === dirValues[0] && values[1] === dirValues[1] && values[2] && dirValues[2]) {
+						let colors = parseTrbl(values[2]);
+						colors[index] = dirValues[2];
+						values.pop();
+						let borderValue = values.join(' ');
+						let colorValue = minifyTrbl(colors);
+
+						var origLength = decl.value.length + next.prop.length + next.value.length;
+						var newLength = borderValue.length + 12 + colorValue.length;
+
+						if (newLength < origLength) {
+							decl.value = borderValue;
+							next.prop = `border-color`;
+							next.value = colorValue;
+						}
+					}
+				}
+			}
+		});
 	}
 };

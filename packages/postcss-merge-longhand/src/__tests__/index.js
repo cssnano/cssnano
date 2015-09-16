@@ -169,6 +169,10 @@ let tests = [{
     message: 'should not mangle borders',
     fixture: 'hr{display:block;height:1px;border:0;border-top:1px solid #ddd}',
     expected: 'hr{display:block;height:1px;border:0;border-top:1px solid #ddd}'
+}, {
+    message: 'should use shorter equivalent rules',
+    fixture: 'h1{border:5px solid;border-color:#222 transparent transparent}',
+    expected: 'h1{border:5px solid transparent;border-top:5px solid #222}'
 }];
 
 function process (css, options) {
