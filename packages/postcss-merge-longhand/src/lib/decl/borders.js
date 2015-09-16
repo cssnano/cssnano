@@ -167,7 +167,7 @@ export default {
 					if (canMerge) {
 						let reduced = mapped.reduce((a, b) => {
 							a = Array.isArray(a) ? a : [a];
-							if (!a.includes(b)) a.push(b);
+							if (!~a.indexOf(b)) a.push(b);
 							return a;
 						});
 
