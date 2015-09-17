@@ -1,3 +1,8 @@
+# 3.0.2
+
+* Fixes an issue where cssnano was removing spaces around forward slashes in
+  calc functions.
+
 # 3.0.1
 
 * Replaced css-list & balanced-match with postcss-value-parser, reducing the
