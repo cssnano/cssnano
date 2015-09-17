@@ -28,7 +28,7 @@
     "indexes-of": "^1.0.1",
     "postcss": "^5.0.5",
     "postcss-calc": "^5.0.0",
-    "postcss-colormin": "^2.1.0",
+    "postcss-colormin": "^2.1.1",
     "postcss-convert-values": "^2.2.0",
     "postcss-discard-comments": "^2.0.0",
     "postcss-discard-duplicates": "^2.0.0",
