@@ -130,14 +130,7 @@ export default {
 				if (hasAllProps.apply(this, [props].concat(names))) {
 					let rules = names.map(prop => getLastNode(props, prop));
 					let values = rules.map(node => parseTrbl(node.value));
-
-					let mapped = [0, 1, 2, 3].map(i => {
-						let vals = [values[0][i], values[1][i], values[2][i]];
-						return vals.concat(['']).reduceRight((prev, cur, i) => {
-							if (prev === '' && cur === defaults[i]) { return prev; }
-							return cur + " " + prev;
-						}).trim() || defaults[0];
-					});
+					let mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
 
 					let closeEnough = (mapped[0] == mapped[1] && mapped[1] == mapped[2])
 						|| (mapped[1] == mapped[2] && mapped[2] == mapped[3])
@@ -172,14 +165,9 @@ export default {
 					}
 					else if (reduced.length === 1) {
 						values = [width, style].map(node => node.value);
-						let value = values.concat(['']).reduceRight((prev, cur, i) => {
-							if (prev === '' && cur === defaults[i]) return prev;
-							return cur + " " + prev;
-						}).trim() || defaults[0];
-
 						let decl = clone(lastNode);
 						decl.prop = `border`;
-						decl.value = value;
+						decl.value = values.join(' ');
 						rule.insertBefore(color, decl);
 						props.filter(node => node.prop !== names[2]).forEach(prop => prop.remove());
 					}
@@ -215,6 +203,17 @@ export default {
 					}
 				}
 			}
+		});
+
+		// clean-up values
+		rule.walkDecls(/^border(-(top|right|bottom|left))?/, decl => {
+			decl.value = list.space(decl.value).concat(['']).reduceRight((prev, cur, i) => {
+				if (prev === '' && cur === defaults[i]) { return prev; }
+				return cur + " " + prev;
+			}).trim() || defaults[0];
+		});
+		rule.walkDecls(/^border(-(top|right|bottom|left))?(-(width|style|color))/, decl => {
+			decl.value = minifyTrbl(decl.value);
 		});
 	}
 };
