@@ -16,7 +16,7 @@ function optimise (decl) {
                 } else {
                     trim(node.nodes);
                 }
-            } else if (node.type === 'div') {
+            } else if (node.type === 'div' && node.value !== '/') {
                 node.before = '';
                 node.after = '';
             } else if (node.type === 'space') {

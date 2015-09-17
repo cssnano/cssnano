@@ -65,6 +65,10 @@ var tests = module.exports = [{
     message: 'should minify color stops',
     fixture: 'h1{background-image:-webkit-gradient(linear,50% 0%,50% 100%,color-stop(1px, #fbfbfb),color-stop(1px, #ffffff),color-stop(2px, #ffffff),color-stop(2px, #fbfbfb),color-stop(100%, #ececec))}',
     expected: 'h1{background-image:-webkit-gradient(linear,50% 0%,50% 100%,color-stop(1px,#fbfbfb),color-stop(1px,#fff),color-stop(2px,#fff),color-stop(2px,#fbfbfb),color-stop(100%,#ececec))}'
+}, {
+    message: 'should not minify in calc values',
+    fixture: 'h1{width:calc(100vw / 2 - 6px + 0)}',
+    expected: 'h1{width:calc(100vw / 2 - 6px + 0)}',
 }];
 
 function process (css, options) {

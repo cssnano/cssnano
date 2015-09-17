@@ -1,3 +1,8 @@
+# 2.1.1
+
+* Fixed a regression that was compressing space around forward slashes in
+  calc functions.
+
 # 2.1.0
 
 * Better support for minifying colors in legacy CSS gradients, switched to
