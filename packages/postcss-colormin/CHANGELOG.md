@@ -1,3 +1,8 @@
+# 2.1.0
+
+* Better support for minifying colors in legacy CSS gradients, switched to
+  postcss-value-parser (thanks to @TrySound).
+
 # 2.0.0
 
 * Upgraded to PostCSS 5.
