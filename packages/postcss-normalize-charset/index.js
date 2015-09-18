@@ -1,6 +1,8 @@
 var postcss = require('postcss');
 
-module.exports = postcss.plugin('postcss-normalize-charset', function () {
+module.exports = postcss.plugin('postcss-normalize-charset', function (opts) {
+    opts = opts || {};
+
     return function (css) {
         var charsetRule;
         var nonAsciiNode;
@@ -18,14 +20,16 @@ module.exports = postcss.plugin('postcss-normalize-charset', function () {
         });
 
         if (nonAsciiNode) {
-            if (!charsetRule) {
+            if (!charsetRule && opts.add !== false) {
                 charsetRule = postcss.atRule({
                     name: 'charset',
                     params: '"utf-8"'
                 });
             }
-            charsetRule.source = nonAsciiNode.source;
-            css.root().prepend(charsetRule);
+            if (charsetRule) {
+                charsetRule.source = nonAsciiNode.source;
+                css.root().prepend(charsetRule);
+            }
         }
     };
 });

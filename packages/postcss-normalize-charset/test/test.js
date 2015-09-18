@@ -22,6 +22,11 @@ var tests = [
         message: 'should remove all charset rules if source doesn\'t contain non-ascii',
         fixture: 'a{content:"c"}@charset "utf-8";@charset "windows-1251";',
         expected: 'a{content:"c"}'
+    }, {
+        message: 'should not add a charset with add set to false',
+        fixture: 'a{content:"©"}',
+        expected: 'a{content:"©"}',
+        options: {add: false}
     }
 ];
 
