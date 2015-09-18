@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.name = 'cssnano/postcss-normalize-url';
 module.exports.tests = [{
     message: 'should strip double quotes',

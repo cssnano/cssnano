@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.name = 'cssnano/postcss-discard-comments';
 module.exports.tests = [{
     message: 'should remove non-special comments',

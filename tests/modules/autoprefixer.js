@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.name = 'autoprefixer';
 module.exports.tests = [{
     message: 'should remove outdated vendor prefixes',

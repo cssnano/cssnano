@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.name = 'cssnano/postcss-colormin';
 module.exports.tests = [{
     message: 'should minify color values',

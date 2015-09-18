@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.name = 'cssnano/postcss-minify-selectors';
 module.exports.tests = [{
     message: 'should trim spaces in simple selectors',

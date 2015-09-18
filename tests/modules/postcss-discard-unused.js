@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.name = 'cssnano/postcss-discard-unused';
 module.exports.tests = [{
     message: 'should remove unused counter styles',

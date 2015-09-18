@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "bench": "tape benchmark/index.js",
+    "lint": "eslint index.js lib tests",
     "test-integrations": "tape tests/integrations.js",
     "test-fixtures": "tape tests/fixtures.js | tap-spec",
     "test-modules": "tape tests/modules.js | tap-spec",
     "test-webpack": "tape tests/webpack.js | tap-spec",
-    "test": "tape tests/*.js | tap-spec"
+    "test": "npm run lint && tape tests/*.js | tap-spec"
   },
   "keywords": [
     "css",
@@ -51,6 +52,7 @@
     "postcss-zindex": "^2.0.0"
   },
   "devDependencies": {
+    "eslint": "^1.4.3",
     "json-loader": "^0.5.3",
     "node-libs-browser": "^0.5.3",
     "tap-spec": "^4.1.0",

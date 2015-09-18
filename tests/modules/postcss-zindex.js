@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.name = 'cssnano/postcss-zindex';
 module.exports.tests = [{
     message: 'should optimise large z-index values',

@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.name = 'cssnano/postcss-discard-empty';
 module.exports.tests = [{
     message: 'should remove empty @ rules',

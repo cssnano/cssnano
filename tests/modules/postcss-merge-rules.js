@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.name = 'cssnano/postcss-merge-rules';
 module.exports.tests = [{
     message: 'should merge based on declarations',
@@ -144,7 +146,7 @@ module.exports.tests = [{
     fixture: 'h2{margin-bottom:20px}h1{margin:10px;margin-bottom:20px}',
     expected: 'h2{margin-bottom:20px}h1{margin:10px;margin-bottom:20px}'
 }, {
-    message: 'should not incorrectly extract margin properties (2)' ,
+    message: 'should not incorrectly extract margin properties (2)',
     fixture: 'h2{color:red;margin-bottom:20px}h1{color:red;margin:10px;margin-bottom:20px}',
     expected: 'h2{margin-bottom:20px}h1,h2{color:red}h1{margin:10px;margin-bottom:20px}'
 }, {

@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var tape = require('tape');
 var nano = require('../');
 var path = require('path');
 
@@ -9,7 +9,7 @@ var base = path.join(__dirname, '/modules');
 
 directory(base).forEach(function (file) {
     var module = require(path.join(base, file));
-    test(module.name, function (t) {
+    tape(module.name, function (t) {
         t.plan(module.tests.length);
 
         module.tests.forEach(function (test) {

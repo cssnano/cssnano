@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.name = 'cssnano/postcss-convert-values';
 module.exports.tests = [{
     message: 'should convert milliseconds to seconds',

@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.name = 'cssnano/postcss-minify-selectors';
 module.exports.tests = [{
     message: 'should normalise @media queries (2)',

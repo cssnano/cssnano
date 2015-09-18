@@ -1,3 +1,5 @@
+'use strict';
+
 var decamelize = require('decamelize');
 
 function bracketize (num) {
@@ -6,4 +8,4 @@ function bracketize (num) {
 
 module.exports = function specName (testFile) {
     return 'should ' + decamelize(testFile, ' ').replace(/\d/g, bracketize);
-}
+};
