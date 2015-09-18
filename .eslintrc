@@ -1,7 +1,7 @@
 root: true
 
 rules:
-    brace-style: [2, '1tbs', { allowSingleLine: false }]
+    brace-style: [2, '1tbs', {allowSingleLine: false}]
     camelcase: [2]
     comma-spacing: [2]
     curly: [2, 'all']
@@ -32,6 +32,7 @@ rules:
     no-void: [2]
     no-warning-comments: [2]
     no-with: [2]
+    object-curly-spacing: [2, 'never']
     quote-props: [2, 'as-needed']
     radix: [2]
     semi: [2, 'always']
@@ -40,6 +41,7 @@ rules:
     space-before-function-paren: [2, 'always']
     space-before-blocks: [2, 'always']
     space-return-throw-case: [2]
+    spaced-comment: [2, 'always']
     strict: [2, 'global']
     yoda: [2, 'never']
 
