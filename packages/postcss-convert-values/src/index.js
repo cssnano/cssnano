@@ -4,6 +4,19 @@ import postcss from 'postcss';
 import convert from './lib/convert';
 import valueParser, {unit} from 'postcss-value-parser';
 
+function parseWord (node, opts, stripZeroUnit) {
+    let pair = unit(node.value);
+    if (pair) {
+        let num = Number(pair.number);
+        let u = pair.unit.toLowerCase();
+        if (num === 0) {
+            node.value = (stripZeroUnit || u === 'ms' || u === 's') ? 0 + u : 0;
+        } else {
+            node.value = convert(num, u, opts);
+        }
+    }
+}
+
 function transform (opts) {
     return decl => {
         if (~decl.prop.indexOf('flex')) {
@@ -12,18 +25,19 @@ function transform (opts) {
 
         decl.value = valueParser(decl.value).walk(function (node) {
             if (node.type === 'word') {
-                let pair = unit(node.value);
-                if (pair) {
-                    let num = Number(pair.number);
-                    let u = pair.unit.toLowerCase();
-                    if (num === 0) {
-                        node.value = (u === 'ms' || u === 's') ? 0 + u : 0;
-                    } else {
-                        node.value = convert(num, u, opts);
-                    }
-                }
+                parseWord(node, opts);
             }
-            if (node.type === 'function' && node.value !== 'calc') {
+            if (node.type === 'function') {
+                if (node.value === 'calc') {
+                    node.nodes.forEach(function walkNodes (node) {
+                        if (node.type === 'word') {
+                            parseWord(node, opts, true);
+                        }
+                        if (node.type === 'function') {
+                            node.nodes.forEach(walkNodes);
+                        }
+                    });
+                }
                 return false;
             }
         }).toString();
