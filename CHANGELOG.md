@@ -1,3 +1,8 @@
+# 3.0.3
+
+* Fixes an issue where cssnano was removing spaces around forward slashes in
+  string literals (thanks to @TrySound).
+
 # 3.0.2
 
 * Fixes an issue where cssnano was removing spaces around forward slashes in
