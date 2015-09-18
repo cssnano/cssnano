@@ -17,7 +17,6 @@ var processors = {
     postcssCalc: require('postcss-calc'),
     postcssColormin: require('postcss-colormin'),
     postcssOrderedValues: require('postcss-ordered-values'),
-    filterOptimiser: require('./lib/filterOptimiser'),
     postcssMinifySelectors: require('postcss-minify-selectors'),
     postcssMinifyParams: require('postcss-minify-params'),
     postcssSingleCharset: require('postcss-single-charset'),
@@ -25,6 +24,8 @@ var processors = {
     postcssMinifyFontValues: require('postcss-minify-font-values'),
     postcssDiscardUnused: require('postcss-discard-unused'),
     postcssNormalizeUrl: require('postcss-normalize-url'),
+    functionOptimiser: require('./lib/functionOptimiser'),
+    filterOptimiser: require('./lib/filterOptimiser'),
     core: require('./lib/core'),
     // Optimisations after this are sensitive to previous optimisations in
     // the pipe, such as whitespace normalising/selector re-ordering
@@ -32,7 +33,6 @@ var processors = {
     postcssReduceIdents: require('postcss-reduce-idents'),
     postcssMergeLonghand: require('postcss-merge-longhand'),
     postcssDiscardDuplicates: require('postcss-discard-duplicates'),
-    functionOptimiser: require('./lib/functionOptimiser'),
     postcssMergeRules: require('postcss-merge-rules'),
     postcssDiscardEmpty: require('postcss-discard-empty'),
     postcssUniqueSelectors: require('postcss-unique-selectors'),

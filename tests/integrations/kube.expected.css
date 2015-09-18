@@ -267,7 +267,7 @@ input.input-smaller{font-size:11.25px}
 .breadcrumbs ul:after{content:"";display:table;clear:both}
 .breadcrumbs li{float:left;margin-right:5px}
 .breadcrumbs li+li:before{content:" > ";color:#aaa;font-size:9pt;margin:0 7px 0 5px;position:relative;top:-1px}
-.breadcrumbs.breadcrumbs-path li+li:before{content:"/";top:0}
+.breadcrumbs.breadcrumbs-path li+li:before{content:" / ";top:0}
 .breadcrumbs a{color:#0f0f0f;text-decoration:none}
 .breadcrumbs a:hover{color:#0f0f0f;text-decoration:underline}
 .breadcrumbs li.active a,.breadcrumbs li.active a:hover,.breadcrumbs span{text-decoration:none;cursor:text;color:rgba(0,0,0,.4)}
