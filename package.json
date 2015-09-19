@@ -27,6 +27,7 @@
     "decamelize": "^1.0.0",
     "defined": "^1.0.0",
     "indexes-of": "^1.0.1",
+    "object-assign": "^4.0.1",
     "postcss": "^5.0.5",
     "postcss-calc": "^5.0.0",
     "postcss-colormin": "^2.1.1",

@@ -2,6 +2,7 @@
 
 var decamelize = require('decamelize');
 var defined = require('defined');
+var assign = require('object-assign');
 var postcss = require('postcss');
 var warnOnce = require('./lib/warnOnce');
 
@@ -39,13 +40,30 @@ var processors = {
     styleCache: require('./lib/styleCache')
 };
 
+var defaultOptions = {
+    autoprefixer: {
+        add: false
+    }
+};
+
+var safeOptions = {
+    postcssConvertValues: {
+        length: false
+    },
+    postcssReduceIdents: {
+        counterStyle: false,
+        keyframes: false
+    },
+    postcssZindex: {
+      disable: true
+    }
+};
+
 var cssnano = postcss.plugin('cssnano', function (options) {
     options = options || {};
 
+    var safe = options.safe === true;
     var proc = postcss();
-    var plugins = Object.keys(processors);
-    var len = plugins.length;
-    var i = 0;
 
     if (typeof options.fontFamily !== 'undefined' || typeof options.minifyFontWeight !== 'undefined') {
         warnOnce('The fontFamily & minifyFontWeight options have been ' +
@@ -55,31 +73,33 @@ var cssnano = postcss.plugin('cssnano', function (options) {
         }
     }
 
-    while (i < len) {
-        var plugin = plugins[i++];
-        var processor = processors[plugin];
-        var method = processor;
-
+    Object.keys(processors).forEach(function (plugin) {
         var shortName = plugin.replace('postcss', '');
         shortName = shortName.slice(0, 1).toLowerCase() + shortName.slice(1);
 
         var opts = defined(
             options[shortName],
             options[plugin],
-            options[decamelize(plugin, '-')],
-            {}
+            options[decamelize(plugin, '-')]
         );
 
-        if (opts === false || opts.disable) {
-            continue;
+        if (opts === false) {
+          opts = {
+            disable: true
+          };
         }
 
-        if (plugin === 'autoprefixer') {
-            opts.add = false;
+        opts = assign({},
+            defaultOptions[plugin],
+            safe ? safeOptions[plugin] : null,
+            opts
+        );
+
+        if (!opts.disable) {
+            proc.use(processors[plugin](opts));
         }
 
-        proc.use(method(opts));
-    }
+    });
 
     return proc;
 });
