@@ -60,7 +60,8 @@ module.exports.tests = [{
 }, {
     message: 'should not escape legal characters',
     fixture: 'h1{font-family:€42}',
-    expected: 'h1{font-family:€42}'
+    expected: 'h1{font-family:€42}',
+    options: {normalizeCharset: false}
 }, {
     message: 'should not join identifiers in the shorthand property',
     fixture: 'h1{font:italic "Bond 007 008 009",sans-serif}',

@@ -12,7 +12,8 @@ module.exports.tests = [{
 }, {
     message: 'should remove duplicate @rules',
     fixture: '@charset "utf-8";@charset "utf-8";',
-    expected: '@charset "utf-8";'
+    expected: '@charset "utf-8";',
+    options: {normalizeCharset: false}
 }, {
     message: 'should remove duplicates inside @media queries',
     fixture: '@media print{h1{display:block}h1{display:block}}',

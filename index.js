@@ -19,7 +19,7 @@ var processors = {
     postcssOrderedValues: require('postcss-ordered-values'),
     postcssMinifySelectors: require('postcss-minify-selectors'),
     postcssMinifyParams: require('postcss-minify-params'),
-    postcssSingleCharset: require('postcss-single-charset'),
+    postcssNormalizeCharset: require('postcss-normalize-charset'),
     // minify-font-values should be run before discard-unused
     postcssMinifyFontValues: require('postcss-minify-font-values'),
     postcssDiscardUnused: require('postcss-discard-unused'),
@@ -55,6 +55,12 @@ var cssnano = postcss.plugin('cssnano', function (options) {
         }
     }
 
+    if (typeof options.singleCharset !== 'undefined') {
+        warnOnce('The singleCharset option has been renamed to ' +
+                 'normalizeCharset, and is now deprecated.');
+        options.normalizeCharset = options.singleCharset;
+    }
+
     while (i < len) {
         var plugin = plugins[i++];
         var processor = processors[plugin];
@@ -74,7 +80,7 @@ var cssnano = postcss.plugin('cssnano', function (options) {
             continue;
         }
 
-        if (plugin === 'autoprefixer') {
+        if (plugin === 'autoprefixer' || plugin === 'postcssNormalizeCharset') {
             opts.add = false;
         }
 
