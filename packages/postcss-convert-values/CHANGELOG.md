@@ -1,3 +1,8 @@
+# 2.2.1
+
+* Fixes a behaviour where the module would remove units from zero values inside
+  calc functions (thanks to @marek-saji & @TrySound).
+
 # 2.2.0
 
 * Renames `opts.convertLength` & `opts.convertTime` to
