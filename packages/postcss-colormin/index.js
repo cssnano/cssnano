@@ -24,7 +24,7 @@ function optimise (decl) {
             } else {
                 node.value = colormin(node.value);
             }
-        }).toString().trim();
+        }).toString();
     }
     if (decl.prop === '-webkit-tap-highlight-color') {
         if (decl.value === 'inherit' || decl.value === 'transparent') {
