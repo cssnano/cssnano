@@ -6,6 +6,8 @@
   charset to the output automatically (thanks to @TrySound).
 * A `safe` option was added, which disables more aggressive optimisations, as
   a convenient preset configuration (thanks to @TrySound).
+* Added an option to convert from `deg` to `turn` & vice versa, & improved
+  minification performance in functions (thanks to @TrySound).
 
 # 3.0.3
 
