@@ -15,8 +15,8 @@ const trbl = ['top', 'right', 'bottom', 'left'];
 export default property => {
     let processor = {
         explode: rule => {
-            if (!canMerge.apply(this, rule.nodes)) {
-                return;
+            if (rule.nodes.some(detect)) {
+                return false;
             }
             rule.walkDecls(property, decl => {
                 let values = parseTrbl(decl.value);

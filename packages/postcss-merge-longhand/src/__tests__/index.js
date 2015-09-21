@@ -181,6 +181,10 @@ let tests = [{
     message: 'should not merge declarations with hacks (2)',
     fixture: 'h1{margin:4px 0;margin-top:1px\\9}',
     expected: 'h1{margin:4px 0;margin-top:1px\\9}'
+}, {
+    message: 'should convert 2 values to 1 with an unrelated inherit',
+    fixture: '.ui.table td{padding:0.71428571em 0.71428571em;text-align:inherit}',
+    expected: '.ui.table td{padding:0.71428571em;text-align:inherit}'
 }];
 
 function process (css, options) {
