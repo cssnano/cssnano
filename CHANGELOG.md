@@ -1,3 +1,12 @@
+# 3.1.0
+
+* This release swaps postcss-single-charset for postcss-normalize-charset,
+  which can detect encoding to determine whether a charset is necessary.
+  Optionally, you can set the `add` option to `true` to prepend a UTF-8
+  charset to the output automatically (thanks to @TrySound).
+* A `safe` option was added, which disables more aggressive optimisations, as
+  a convenient preset configuration (thanks to @TrySound).
+
 # 3.0.3
 
 * Fixes an issue where cssnano was removing spaces around forward slashes in
