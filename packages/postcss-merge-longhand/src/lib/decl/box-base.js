@@ -1,5 +1,3 @@
-'use strict';
-
 import hasAllProps from '../hasAllProps';
 import canMerge from '../canMerge';
 import minifyTrbl from '../minifyTrbl';
@@ -51,7 +49,7 @@ export default property => {
             if (hasAllProps.apply(this, [rule].concat(properties))) {
                 let rules = properties.map(p => getLastNode(rule.nodes, p));
                 if (canMerge.apply(this, rules)) {
-                    rules.slice(0, 3).forEach(rule => rule.removeSelf());
+                    rules.slice(0, 3).forEach(r => r.remove());
                     rules[3].value = minifyTrbl(mergeValues.apply(this, rules));
                     rules[3].prop = property;
                 }

@@ -1,5 +1,3 @@
-'use strict';
-
 import {list} from 'postcss';
 
 const space = list.space;

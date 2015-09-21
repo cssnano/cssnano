@@ -1,4 +1,3 @@
-'use strict';
 import {list} from 'postcss';
 import unit from 'postcss-value-parser/lib/unit';
 import clone from '../clone';
@@ -37,7 +36,9 @@ export default {
             let lastNode = decls[decls.length - 1];
             let props = decls.filter(node => node.important === lastNode.important);
             let values = wc.map(prop => getLastNode(props, prop).value);
-            if (values.length > 1 && values[0] === values[1]) { values.pop(); }
+            if (values.length > 1 && values[0] === values[1]) {
+                values.pop();
+            }
             let shorthand = clone(lastNode);
             shorthand.prop = 'columns';
             shorthand.value = values.join(' ');

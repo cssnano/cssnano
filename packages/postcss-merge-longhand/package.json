@@ -8,8 +8,9 @@
     "dist"
   ],
   "scripts": {
+    "lint": "eslint src",
     "prepublish": "babel src --out-dir dist --ignore /__tests__/",
-    "test": "babel-tape-runner \"src/**/__tests__/*.js\" | tap-spec"
+    "test": "npm run lint && babel-tape-runner \"src/**/__tests__/*.js\" | tap-spec"
   },
   "keywords": [
     "css",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "babel": "^5.8.23",
     "babel-tape-runner": "^1.2.0",
+    "eslint": "^1.5.0",
     "tap-spec": "^4.1.0",
     "tape": "^4.2.0"
   },

@@ -1,4 +1,3 @@
-'use strict';
 import clone from '../clone';
 import {list} from 'postcss';
 import parseTrbl from '../parseTrbl';
@@ -131,15 +130,16 @@ export default {
 					let rules = names.map(prop => getLastNode(props, prop));
 					let values = rules.map(node => parseTrbl(node.value));
 					let mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
-
-					let closeEnough = (mapped[0] == mapped[1] && mapped[1] == mapped[2])
-						|| (mapped[1] == mapped[2] && mapped[2] == mapped[3])
-						|| (mapped[2] == mapped[3] && mapped[3] == mapped[0])
-						|| (mapped[3] == mapped[0] && mapped[0] == mapped[1]);
+					let closeEnough = (mapped[0] === mapped[1] && mapped[1] === mapped[2]) ||
+						(mapped[1] === mapped[2] && mapped[2] === mapped[3]) ||
+						(mapped[2] === mapped[3] && mapped[3] === mapped[0]) ||
+						(mapped[3] === mapped[0] && mapped[0] === mapped[1]);
 
 					let reduced = mapped.reduce((a, b) => {
 						a = Array.isArray(a) ? a : [a];
-						if (a.indexOf(b) === -1) a.push(b);
+						if (!~a.indexOf(b)) {
+							a.push(b);
+						}
 						return a;
 					});
 
@@ -162,8 +162,7 @@ export default {
 							rule.insertAfter(border, offBorder);
 						}
 						props.forEach(prop => prop.remove());
-					}
-					else if (reduced.length === 1) {
+					} else if (reduced.length === 1) {
 						values = [width, style].map(node => node.value);
 						let decl = clone(lastNode);
 						decl.prop = `border`;
@@ -208,7 +207,9 @@ export default {
 		// clean-up values
 		rule.walkDecls(/^border(-(top|right|bottom|left))?/, decl => {
 			decl.value = list.space(decl.value).concat(['']).reduceRight((prev, cur, i) => {
-				if (prev === '' && cur === defaults[i]) { return prev; }
+				if (prev === '' && cur === defaults[i]) {
+					return prev;
+				}
 				return cur + " " + prev;
 			}).trim() || defaults[0];
 		});

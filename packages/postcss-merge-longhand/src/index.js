@@ -1,5 +1,3 @@
-'use strict';
-
 import postcss from 'postcss';
 import margin from './lib/decl/margin';
 import padding from './lib/decl/padding';

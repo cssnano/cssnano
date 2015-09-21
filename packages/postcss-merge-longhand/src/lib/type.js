@@ -1,5 +1,3 @@
-'use strict';
-
 import valueParser from 'postcss-value-parser';
 
 export default (node) => {
