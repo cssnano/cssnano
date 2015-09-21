@@ -1,3 +1,8 @@
+# 2.1.2
+
+* Removed an unnecessary `trim` method that was used to work around a now
+  resolved issue in PostCSS (thanks to @TrySound).
+
 # 2.1.1
 
 * Fixed a regression that was compressing space around forward slashes in
