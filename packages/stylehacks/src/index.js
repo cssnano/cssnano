@@ -7,6 +7,7 @@ import formatter from './formatter';
 
 // plugins
 import bodyEmpty from './plugins/bodyEmpty';
+import htmlCombinatorCommentBody from './plugins/htmlCombinatorCommentBody';
 import htmlFirstChild from './plugins/htmlFirstChild';
 import important from './plugins/important';
 import leadingStar from './plugins/leadingStar';
@@ -18,6 +19,7 @@ import trailingSlashComma from './plugins/trailingSlashComma';
 
 let plugins = [
     bodyEmpty,
+    htmlCombinatorCommentBody,
     htmlFirstChild,
     important,
     leadingStar,

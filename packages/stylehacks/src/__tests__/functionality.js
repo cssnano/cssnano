@@ -66,6 +66,13 @@ let tests = [{
     target: 'firefox 2',
     unaffected: 'firefox 3',
     warnings: 1
+}, {
+    message: 'html combinator comment body hack',
+    fixture: 'html > /**/ body h1 { color: red } html ~ /**/ body h1 { color: red }',
+    resolution: '',
+    target: 'ie 6',
+    unaffected: 'ie 8',
+    warnings: 2
 }];
 
 let process = (css, options, callback) => {
