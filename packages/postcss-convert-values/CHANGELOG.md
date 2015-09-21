@@ -1,3 +1,7 @@
+# 2.3.1
+
+* Fixed a behaviour where `0deg` was being converted to `0`.
+
 # 2.3.0
 
 * Added an option to convert between `turn` & `deg` (thanks to @TrySound).

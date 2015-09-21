@@ -158,6 +158,14 @@ let tests = [{
     fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
     expected: 'h1{transition-duration:500ms; width:calc(2in + 2em); width:14px; letter-spacing:-.1vmin}',
     options: { convertTime: false }
+}, {
+    message: 'should not remove units from angle values',
+    fixture: 'h1{transform:rotate(0deg)}',
+    expected: 'h1{transform:rotate(0deg)}'
+}, {
+    message: 'should not remove units from angle values (2)',
+    fixture: 'h1{transform:rotate(0turn)}',
+    expected: 'h1{transform:rotate(0turn)}'
 }];
 
 function process (css, options) {

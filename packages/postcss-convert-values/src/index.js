@@ -10,7 +10,12 @@ function parseWord (node, opts, stripZeroUnit) {
         let num = Number(pair.number);
         let u = pair.unit.toLowerCase();
         if (num === 0) {
-            node.value = (stripZeroUnit || u === 'ms' || u === 's') ? 0 + u : 0;
+            node.value = (
+                stripZeroUnit ||
+                u === 'ms' ||
+                u === 's' ||
+                u === 'deg'||
+                u === 'turn') ? 0 + u : 0;
         } else {
             node.value = convert(num, u, opts);
         }
