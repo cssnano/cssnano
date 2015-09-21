@@ -1,3 +1,7 @@
+# 2.1.0
+
+* Added options to customise what the module discards (thanks to @TrySound).
+
 # 2.0.0
 
 * Upgraded to PostCSS 5.
