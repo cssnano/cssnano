@@ -1,3 +1,8 @@
+# 2.3.2
+
+* Fixed a regression where `0%` in color functions was being transformed to `0`
+  (thanks to @TrySound).
+
 # 2.3.1
 
 * Fixed a behaviour where `0deg` was being converted to `0`.
