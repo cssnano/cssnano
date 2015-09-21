@@ -3559,7 +3559,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.structured.basic.table th{border-left:none;border-right:none}
 .ui.structured.celled.table tr td,.ui.structured.celled.table tr th{border-left:1px solid rgba(34,36,38,.1);border-right:1px solid rgba(34,36,38,.1)}
 .ui.definition.table thead:not(.full-width) th:first-child{pointer-events:none;background:transparent;font-weight:400;color:rgba(0,0,0,.4);box-shadow:-1px -1px 0 1px #fff}
-.ui.definition.table tfoot:not(.full-width) th:first-child{pointer-events:none;background:transparent;font-weight:rgba(0, 0, 0, .4);color:normal;box-shadow:1px 1px 0 1px #fff}
+.ui.definition.table tfoot:not(.full-width) th:first-child{pointer-events:none;background:transparent;font-weight:rgba(0,0,0,.4);color:normal;box-shadow:1px 1px 0 1px #fff}
 .ui.celled.definition.table thead:not(.full-width) th:first-child{box-shadow:0 -1px 0 1px #fff}
 .ui.celled.definition.table tfoot:not(.full-width) th:first-child{box-shadow:0 1px 0 1px #fff}
 .ui.definition.table tr td:first-child{background:rgba(0,0,0,.03);font-weight:700;color:rgba(0,0,0,.95)}
