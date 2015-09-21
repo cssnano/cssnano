@@ -12,6 +12,11 @@ const timeConv = {
     'ms': 1
 };
 
+const angleConv = {
+    'turn': 360,
+    'deg': 1
+};
+
 function dropLeadingZero (number) {
     let value = String(number);
 
@@ -48,7 +53,7 @@ function transform (number, unit, conversion) {
         .reduce((a, b) => a.length < b.length ? a : b);
 }
 
-export default function (number, unit, {time, length}) {
+export default function (number, unit, {time, length, angle}) {
     let value = dropLeadingZero(number) + (unit ? unit : '');
     let converted;
 
@@ -58,6 +63,10 @@ export default function (number, unit, {time, length}) {
 
     if (time !== false && unit in timeConv) {
         converted = transform(number, unit, timeConv);
+    }
+
+    if (angle !== false && unit in angleConv) {
+        converted = transform(number, unit, angleConv);
     }
 
     if (converted && converted.length < value.length) {

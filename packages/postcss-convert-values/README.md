@@ -58,6 +58,13 @@ Default: `true`
 
 Pass `false` to disable conversion from `ms` to `s` & vice versa.
 
+##### angle
+
+Type: `boolean`
+Default: `true`
+
+Pass `false` to disable conversion from `deg` to `turn` & vice versa.
+
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests

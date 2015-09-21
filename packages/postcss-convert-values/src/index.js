@@ -26,8 +26,7 @@ function transform (opts) {
         decl.value = valueParser(decl.value).walk(function (node) {
             if (node.type === 'word') {
                 parseWord(node, opts);
-            }
-            if (node.type === 'function') {
+            } else if (node.type === 'function') {
                 if (node.value === 'calc') {
                     node.nodes.forEach(function walkNodes (node) {
                         if (node.type === 'word') {
@@ -37,8 +36,10 @@ function transform (opts) {
                             node.nodes.forEach(walkNodes);
                         }
                     });
+                    return false;
+                } else if (node.value === 'url') {
+                    return false;
                 }
-                return false;
             }
         }).toString();
     };

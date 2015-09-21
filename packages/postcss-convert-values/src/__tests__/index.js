@@ -130,22 +130,31 @@ let tests = [{
     fixture: '.has-svg:before{content:url("data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="-0.5 0 20 15"><rect fill="white" stroke="none" transform="rotate(45 4.0033 8.87436)" height="5" width="6.32304" y="6.37436" x="0.84178"></rect><rect fill="white" stroke="none" transform="rotate(45 11.1776 7.7066)" width="5" height="16.79756" y="-0.69218" x="8.67764"></rect></svg>")}',
     expected: '.has-svg:before{content:url("data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="-0.5 0 20 15"><rect fill="white" stroke="none" transform="rotate(45 4.0033 8.87436)" height="5" width="6.32304" y="6.37436" x="0.84178"></rect><rect fill="white" stroke="none" transform="rotate(45 11.1776 7.7066)" width="5" height="16.79756" y="-0.69218" x="8.67764"></rect></svg>")}'
 }, {
-    message: 'should not convert units',
+    message: 'should convert angle units',
+    fixture: 'h1{transform: rotate(0.25turn);transform: rotate(0.25TURN)}',
+    expected: 'h1{transform: rotate(90deg);transform: rotate(90deg)}'
+}, {
+    message: 'should not convert length units',
     fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
     expected: 'h1{transition-duration:.5s; width:calc(192px + 2em); width:14px; letter-spacing:-.1vmin}',
     options: { length: false }
 }, {
-    message: 'should not convert units',
+    message: 'should not convert time units',
     fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
     expected: 'h1{transition-duration:500ms; width:calc(2in + 2em); width:14px; letter-spacing:-.1vmin}',
     options: { time: false }
 }, {
-    message: 'should not convert units with deprecated option',
+    message: 'should not convert angle units',
+    fixture: 'h1{transform: rotate(0.25turn);transform: rotate(0.25TURN)}',
+    expected: 'h1{transform: rotate(.25turn);transform: rotate(.25turn)}',
+    options: { angle: false }
+}, {
+    message: 'should not convert length units with deprecated option',
     fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
     expected: 'h1{transition-duration:.5s; width:calc(192px + 2em); width:14px; letter-spacing:-.1vmin}',
     options: { convertLength: false }
 }, {
-    message: 'should not convert units with deprecated option',
+    message: 'should not convert time units with deprecated option',
     fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
     expected: 'h1{transition-duration:500ms; width:calc(2in + 2em); width:14px; letter-spacing:-.1vmin}',
     options: { convertTime: false }
