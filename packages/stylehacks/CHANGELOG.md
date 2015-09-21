@@ -1,3 +1,7 @@
+# 2.2.0
+
+* Added `value\9` hack.
+
 # 2.1.0
 
 * Added `html ~ /**/ body .selector` hack.

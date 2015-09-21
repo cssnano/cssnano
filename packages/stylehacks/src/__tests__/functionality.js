@@ -73,6 +73,13 @@ let tests = [{
     target: 'ie 6',
     unaffected: 'ie 8',
     warnings: 2
+}, {
+    message: 'ie 6-8 \\9 hack',
+    fixture: 'h1 { margin-top: 1px\\9; }',
+    resolution: 'h1 { }',
+    target: 'ie 8',
+    unaffected: 'ie 9',
+    warnings: 1
 }];
 
 let process = (css, options, callback) => {

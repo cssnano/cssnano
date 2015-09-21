@@ -14,6 +14,7 @@ import leadingStar from './plugins/leadingStar';
 import leadingUnderscore from './plugins/leadingUnderscore';
 import mediaSlash0 from './plugins/mediaSlash0';
 import mediaSlash9 from './plugins/mediaSlash9';
+import slash9 from './plugins/slash9';
 import starHtml from './plugins/starHtml';
 import trailingSlashComma from './plugins/trailingSlashComma';
 
@@ -26,6 +27,7 @@ let plugins = [
     leadingUnderscore,
     mediaSlash0,
     mediaSlash9,
+    slash9,
     starHtml,
     trailingSlashComma
 ];
