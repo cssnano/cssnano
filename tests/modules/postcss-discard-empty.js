@@ -12,7 +12,8 @@ module.exports.tests = [{
 }, {
     message: 'should not mangle @ rules with parameters',
     fixture: '@charset "utf-8";',
-    expected: '@charset "utf-8";'
+    expected: '@charset "utf-8";',
+    options: {normalizeCharset: false}
 }, {
     message: 'should remove empty rules',
     fixture: 'h1{}h2{}h4{}h5,h6{}',
