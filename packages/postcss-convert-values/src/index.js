@@ -34,7 +34,9 @@ function transform (opts) {
             if (node.type === 'word') {
                 parseWord(node, opts);
             } else if (node.type === 'function') {
-                if (node.value === 'calc') {
+                if (node.value === 'calc' ||
+                    node.value === 'hsl' ||
+                    node.value === 'hsla') {
                     node.nodes.forEach(function walkNodes (node) {
                         if (node.type === 'word') {
                             parseWord(node, opts, true);

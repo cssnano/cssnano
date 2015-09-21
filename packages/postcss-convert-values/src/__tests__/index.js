@@ -166,6 +166,10 @@ let tests = [{
     message: 'should not remove units from angle values (2)',
     fixture: 'h1{transform:rotate(0turn)}',
     expected: 'h1{transform:rotate(0turn)}'
+}, {
+    message: 'should not remove unit with zero value in hsl and hsla functions',
+    fixture: 'h1{color:hsl(0, 0%, 244%); background:hsl(0, 0%, 0%)}',
+    expected: 'h1{color:hsl(0, 0%, 244%); background:hsl(0, 0%, 0%)}'
 }];
 
 function process (css, options) {
