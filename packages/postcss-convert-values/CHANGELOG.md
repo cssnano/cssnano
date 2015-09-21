@@ -1,3 +1,7 @@
+# 2.3.0
+
+* Added an option to convert between `turn` & `deg` (thanks to @TrySound).
+
 # 2.2.1
 
 * Fixes a behaviour where the module would remove units from zero values inside
