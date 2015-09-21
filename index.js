@@ -50,6 +50,9 @@ var safeOptions = {
     postcssConvertValues: {
         length: false
     },
+    postcssDiscardUnused: {
+        disable: true
+    },
     postcssReduceIdents: {
         counterStyle: false,
         keyframes: false
