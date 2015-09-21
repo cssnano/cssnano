@@ -1,4 +1,5 @@
 import clone from '../clone';
+import insertCloned from '../insertCloned';
 import {list} from 'postcss';
 import parseTrbl from '../parseTrbl';
 import hasAllProps from '../hasAllProps';
@@ -15,9 +16,9 @@ export default {
 		// border -> border-tlbr
 		rule.walkDecls('border', decl => {
 			tlbr.forEach(direction => {
-				let node = clone(decl);
-				node.prop = `border-${direction}`;
-				rule.insertAfter(decl, node);
+				insertCloned(rule, decl, {
+					prop: `border-${direction}`
+				});
 			});
 			decl.remove();
 		});
@@ -27,10 +28,10 @@ export default {
 			rule.walkDecls(`border-${direction}`, decl => {
 				let values = list.space(decl.value);
 				wsc.forEach((d, i) => {
-					let node = clone(decl);
-					node.prop = `border-${direction}-${d}`;
-					node.value = values[i] !== undefined ? values[i] : defaults[i];
-					rule.insertAfter(decl, node);
+					insertCloned(rule, decl, {
+						prop: `border-${direction}-${d}`,
+						value: values[i] !== undefined ? values[i] : defaults[i]
+					});
 				});
 				decl.remove();
 			});
@@ -41,11 +42,10 @@ export default {
 			rule.walkDecls(`border-${d}`, decl => {
 				let values = parseTrbl(decl.value);
 				values.forEach((value, i) => {
-					let node = clone(decl);
-					let direction = tlbr[i];
-					node.prop = `border-${direction}-${d}`;
-					node.value = value;
-					rule.insertAfter(decl, node);
+					insertCloned(rule, decl, {
+						prop: `border-${tlbr[i]}-${d}`,
+						value: value
+					});
 				});
 				decl.remove();
 			});
@@ -61,11 +61,10 @@ export default {
 				let props = decls.filter(node => node.important === lastNode.important);
 				let rules = names.map(prop => getLastNode(props, prop)).filter(Boolean);
 				if (hasAllProps.apply(this, [rules].concat(names)) && canMerge.apply(this, rules)) {
-					let value = rules.map(node => node.value).join(' ');
-					let decl = clone(lastNode);
-					decl.prop = `border-${direction}`;
-					decl.value = value;
-					rule.insertAfter(lastNode, decl);
+					insertCloned(rule, lastNode, {
+						prop: `border-${direction}`,
+						value: rules.map(node => node.value).join(' ')
+					});
 					rules.forEach(prop => prop.remove());
 				}
 				decls = decls.filter(node => !~rules.indexOf(node));
@@ -81,11 +80,10 @@ export default {
 				let props = decls.filter(node => node.important === lastNode.important);
 				let rules = names.map(prop => getLastNode(props, prop)).filter(Boolean);
 				if (hasAllProps.apply(this, [props].concat(names))) {
-					let value = rules.map(node => node.value).join(' ');
-					let decl = clone(lastNode);
-					decl.prop = `border-${d}`;
-					decl.value = minifyTrbl(value);
-					rule.insertAfter(lastNode, decl);
+					insertCloned(rule, lastNode, {
+						prop: `border-${d}`,
+						value: minifyTrbl(rules.map(node => node.value).join(' '))
+					});
 					rules.forEach(prop => prop.remove());
 				}
 				decls = decls.filter(node => !~rules.indexOf(node));
@@ -101,11 +99,10 @@ export default {
 			let rules = names.map(prop => getLastNode(props, prop)).filter(Boolean);
 			if (hasAllProps.apply(this, [props].concat(names))) {
 				wsc.forEach((d, i) => {
-					let value = rules.map(node => list.space(node.value)[i]);
-					let decl = clone(lastNode);
-					decl.prop = `border-${d}`;
-					decl.value = minifyTrbl(value);
-					rule.insertAfter(lastNode, decl);
+					insertCloned(rule, lastNode, {
+						prop: `border-${d}`,
+						value: minifyTrbl(rules.map(node => list.space(node.value)[i]))
+					});
 				});
 				props.forEach(prop => prop.remove());
 			}
@@ -145,12 +142,11 @@ export default {
 
 					if (closeEnough && canMerge.apply(this, rules)) {
 						let first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
-						let borderValue = first ? reduced[0] : reduced[1];
 
-						let border = clone(lastNode);
-						border.prop = `border`;
-						border.value = borderValue;
-						rule.insertAfter(lastNode, border);
+						let border = insertCloned(rule, lastNode, {
+							prop: 'border',
+							value: first ? reduced[0] : reduced[1]
+						});
 
 						if (reduced[1]) {
 							let offValue = first ? reduced[1] : reduced[0];

@@ -3,9 +3,9 @@ import canMerge from '../canMerge';
 import minifyTrbl from '../minifyTrbl';
 import parseTrbl from '../parseTrbl';
 import getLastNode from '../getLastNode';
+import insertCloned from '../insertCloned';
 import mergeValues from '../mergeValues';
 import valueType from '../type';
-import clone from '../clone';
 import {detect} from 'stylehacks';
 
 const trbl = ['top', 'right', 'bottom', 'left'];
@@ -19,10 +19,10 @@ export default property => {
             rule.walkDecls(property, decl => {
                 let values = parseTrbl(decl.value);
                 trbl.forEach((direction, index) => {
-                    let prop = clone(decl);
-                    prop.prop = `${property}-${direction}`;
-                    prop.value = values[index];
-                    decl.parent.insertAfter(decl, prop);
+                    insertCloned(rule, decl, {
+                        prop: `${property}-${direction}`,
+                        value: values[index]
+                    });
                 });
                 decl.removeSelf();
             });
@@ -37,11 +37,11 @@ export default property => {
                 let props = decls.filter(node => valueType(node) === type && node.important === lastNode.important);
                 if (hasAllProps.apply(this, [props].concat(properties))) {
                     let rules = properties.map(prop => getLastNode(props, prop));
-                    let shorthand = clone(lastNode);
-                    shorthand.prop = property;
-                    shorthand.value = minifyTrbl(mergeValues.apply(this, rules));
-                    rule.insertAfter(lastNode, shorthand);
-                    props.forEach(prop => prop.removeSelf());
+                    insertCloned(rule, lastNode, {
+                        prop: property,
+                        value: minifyTrbl(mergeValues.apply(this, rules))
+                    });
+                    props.forEach(prop => prop.remove());
                 }
                 decls = decls.filter(node => !~props.indexOf(node));
             }

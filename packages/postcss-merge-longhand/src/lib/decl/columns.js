@@ -1,6 +1,6 @@
 import {list} from 'postcss';
+import insertCloned from '../insertCloned';
 import unit from 'postcss-value-parser/lib/unit';
-import clone from '../clone';
 import getLastNode from '../getLastNode';
 
 let wc = ['column-width', 'column-count'];
@@ -22,10 +22,10 @@ export default {
                     name = 'column-width';
                 }
 
-                let prop = clone(decl);
-                prop.prop = name;
-                prop.value = value;
-                rule.insertAfter(decl, prop);
+                insertCloned(rule, decl, {
+                    prop: name,
+                    value: value
+                });
             });
             decl.removeSelf();
         });
@@ -39,11 +39,11 @@ export default {
             if (values.length > 1 && values[0] === values[1]) {
                 values.pop();
             }
-            let shorthand = clone(lastNode);
-            shorthand.prop = 'columns';
-            shorthand.value = values.join(' ');
-            rule.insertAfter(lastNode, shorthand);
-            props.forEach(prop => prop.removeSelf());
+            insertCloned(rule, lastNode, {
+                prop: 'columns',
+                value: values.join(' ')
+            });
+            props.forEach(prop => prop.remove());
             decls = decls.filter(node => !~props.indexOf(node));
         }
     }
