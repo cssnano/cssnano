@@ -173,6 +173,14 @@ let tests = [{
     message: 'should use shorter equivalent rules',
     fixture: 'h1{border:5px solid;border-color:#222 transparent transparent}',
     expected: 'h1{border:5px solid transparent;border-top:5px solid #222}'
+}, {
+    message: 'should not merge declarations with hacks',
+    fixture: 'h1{margin:4px 0;_margin-top:1px}',
+    expected: 'h1{margin:4px 0;_margin-top:1px}'
+}, {
+    message: 'should not merge declarations with hacks (2)',
+    fixture: 'h1{margin:4px 0;margin-top:1px\\9}',
+    expected: 'h1{margin:4px 0;margin-top:1px\\9}'
 }];
 
 function process (css, options) {

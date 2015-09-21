@@ -8,13 +8,17 @@ import getLastNode from '../getLastNode';
 import mergeValues from '../mergeValues';
 import valueType from '../type';
 import clone from '../clone';
+import {detect} from 'stylehacks';
 
 const trbl = ['top', 'right', 'bottom', 'left'];
 
 export default property => {
     let processor = {
         explode: rule => {
-            rule.eachDecl(property, decl => {
+            if (!canMerge.apply(this, rule.nodes)) {
+                return;
+            }
+            rule.walkDecls(property, decl => {
                 let values = parseTrbl(decl.value);
                 trbl.forEach((direction, index) => {
                     let prop = clone(decl);
