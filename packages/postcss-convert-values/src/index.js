@@ -15,6 +15,8 @@ function parseWord (node, opts, stripZeroUnit) {
                 u === 'ms' ||
                 u === 's' ||
                 u === 'deg'||
+                u === 'rad' ||
+                u === 'grad' ||
                 u === 'turn') ? 0 + u : 0;
         } else {
             node.value = convert(num, u, opts);
