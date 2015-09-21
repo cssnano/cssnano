@@ -22,10 +22,8 @@ function analyse (ctx, rule) {
     };
 }
 
-export default plugin(targets, function () {
-    this.css.walkRules(rule => {
-        if (rule.selector) {
-            parser(analyse(this, rule)).process(rule.selector);
-        }
-    });
+export default plugin(targets, ['rule'], function (rule) {
+    if (rule.selector) {
+        parser(analyse(this, rule)).process(rule.selector);
+    }
 });

@@ -1,12 +1,13 @@
 'use strict';
 
-export default function plugin (targets, detect) {
+export default function plugin (targets, nodeTypes, detect) {
     class Plugin {
         constructor (css, result) {
             this.nodes = [];
             this.css = css;
             this.result = result;
             this.targets = targets;
+            this.nodeTypes = nodeTypes;
         }
 
         push (node, message) {
@@ -15,7 +16,11 @@ export default function plugin (targets, detect) {
         }
 
         detect () {
-            return detect.apply(this, arguments);
+            this.css.walk(function (node) {
+                if (~this.nodeTypes.indexOf(node.type)) {
+                    return detect.apply(this, arguments);
+                }
+            }.bind(this));
         }
 
         detectAndResolve () {
