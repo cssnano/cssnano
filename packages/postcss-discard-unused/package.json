@@ -1,6 +1,6 @@
 {
   "name": "postcss-discard-unused",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Discard unused counter styles, keyframes and fonts.",
   "main": "dist/index.js",
   "files": [
