@@ -51,6 +51,15 @@ let stylehacks = postcss.plugin('stylehacks', (opts = {}) => {
     };
 });
 
+stylehacks.detect = node => {
+    let hacked = plugins.some(Plugin => {
+        let hack = new Plugin();
+        return hack.any(node);
+    });
+
+    return hacked;
+};
+
 stylehacks.process = (css, opts = {}) => {
     opts.reporter = {};
     opts.reporter.formatter = formatter;

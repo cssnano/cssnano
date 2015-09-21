@@ -42,3 +42,43 @@ tape('should use the postcss plugin api', t => {
     t.ok(stylehacks().postcssVersion, 'should be able to access version');
     t.equal(stylehacks().postcssPlugin, name, 'should be able to access name');
 });
+
+tape('should have a separate detect method', t => {
+    t.plan(1);
+
+    let counter = 0;
+
+    let plugin = postcss.plugin('test', () => {
+        return css => {
+            css.walkDecls(decl => {
+                if (stylehacks.detect(decl)) {
+                    counter++;
+                }
+            });
+        };
+    });
+
+    postcss(plugin).process('h1 { _color: red; =color: black }').then(() => {
+        t.equal(counter, 2);
+    });
+});
+
+tape('should have a separate detect method (2)', t => {
+    t.plan(1);
+
+    let counter = 0;
+
+    let plugin = postcss.plugin('test', () => {
+        return css => {
+            css.walkRules(rule => {
+                if (stylehacks.detect(rule)) {
+                    counter++;
+                }
+            });
+        };
+    });
+
+    postcss(plugin).process('h1 { _color: red; =color: black }').then(() => {
+        t.equal(counter, 0);
+    });
+});

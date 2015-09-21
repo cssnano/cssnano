@@ -34,6 +34,21 @@ h1 {
 
 ## API
 
+### `stylehacks.detect(node)`
+
+Type: `function`
+Returns: `boolean`
+
+This method will take any PostCSS *node*, run applicable plugins depending on
+its type, then will return a boolean depending on whether it found any of
+the supported hacks. For example, if the `decl` node found below is passed to
+the `detect` function, it will return `true`. But if the `rule` node is passed,
+it will return `false` instead.
+
+```css
+h1 { _color: red }
+```
+
 ### `stylehacks.process(css, [options]).then(function(result) {})`
 
 #### options
