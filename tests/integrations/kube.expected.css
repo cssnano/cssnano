@@ -66,10 +66,10 @@ pre code{font-size:100%;border:none;padding:0;background:none;line-height:1.65em
 var{color:rgba(0,0,0,.5)}
 samp{background:#d3e3fb;border:1px solid #b2cef8}
 kbd{background:#0f0f0f;color:hsla(0,0%,100%,.85);white-space:nowrap}
-button:active,button:focus{outline:0}
+button:active,button:focus{outline:none}
 select,textarea{font-family:Helvetica Neue,Helvetica,Tahoma,sans-serif;font-size:1em;box-shadow:none}
 select[multiple=multiple],select[multiple],textarea{padding:.3em .35em;line-height:1.35em;width:100%}
-input[type=color],input[type=date],input[type=datetime-local],input[type=datetime],input[type=email],input[type=month],input[type=number],input[type=password],input[type=phone],input[type=search],input[type=tel],input[type=text],input[type=time],input[type=url]{font-family:Helvetica Neue,Helvetica,Tahoma,sans-serif;font-size:1em;box-shadow:none;padding:.3em .35em;line-height:1.65em;border-radius:0;outline:0}
+input[type=color],input[type=date],input[type=datetime-local],input[type=datetime],input[type=email],input[type=month],input[type=number],input[type=password],input[type=phone],input[type=search],input[type=tel],input[type=text],input[type=time],input[type=url]{font-family:Helvetica Neue,Helvetica,Tahoma,sans-serif;font-size:1em;box-shadow:none;padding:.3em .35em;line-height:1.65em;border-radius:0;outline:none}
 input[type=color],input[type=date],input[type=datetime-local],input[type=datetime],input[type=email],input[type=month],input[type=number],input[type=password],input[type=phone],input[type=search],input[type=tel],input[type=text],input[type=time],input[type=url],select[multiple=multiple],select[multiple],textarea{background:#fff;border:1px solid #ccc;position:relative;z-index:2;-webkit-appearance:none}
 input[type=color][disabled],input[type=date][disabled],input[type=datetime-local][disabled],input[type=datetime][disabled],input[type=email][disabled],input[type=month][disabled],input[type=number][disabled],input[type=password][disabled],input[type=phone][disabled],input[type=search][disabled],input[type=tel][disabled],input[type=text][disabled],input[type=time][disabled],input[type=url][disabled],textarea[disabled]{resize:none;color:rgba(0,0,0,.8)}
 input[type=checkbox][disabled],input[type=radio][disabled],select[disabled]{cursor:default}
@@ -191,7 +191,7 @@ input[type=color],input[type=date],input[type=datetime-local],input[type=datetim
 .input-error,input.input-error,select.input-error,textarea.input-error{border-color:#de2c3b;box-shadow:0 0 0 2px rgba(222,44,59,.3),0 1px 2px rgba(0,0,0,.2) inset}
 .input-success,input.input-success,select.input-success,textarea.input-success{border-color:#2c9f42;box-shadow:0 0 0 2px rgba(44,159,66,.3),0 1px 2px rgba(0,0,0,.2) inset}
 .input-gray,input.input-gray,select.input-gray,textarea.input-gray{border-color:#b3b6b7;box-shadow:0 0 0 2px hsla(195,3%,71%,.4),0 1px 2px rgba(0,0,0,.2) inset}
-input[type=color]:focus,input[type=date]:focus,input[type=datetime-local]:focus,input[type=datetime]:focus,input[type=email]:focus,input[type=month]:focus,input[type=number]:focus,input[type=password]:focus,input[type=phone]:focus,input[type=search]:focus,input[type=tel]:focus,input[type=text]:focus,input[type=time]:focus,input[type=url]:focus,textarea:focus{outline:0;border-color:#2575ed;box-shadow:0 0 0 2px rgba(37,117,237,.3),0 1px 2px rgba(0,0,0,.2) inset}
+input[type=color]:focus,input[type=date]:focus,input[type=datetime-local]:focus,input[type=datetime]:focus,input[type=email]:focus,input[type=month]:focus,input[type=number]:focus,input[type=password]:focus,input[type=phone]:focus,input[type=search]:focus,input[type=tel]:focus,input[type=text]:focus,input[type=time]:focus,input[type=url]:focus,textarea:focus{outline:none;border-color:#2575ed;box-shadow:0 0 0 2px rgba(37,117,237,.3),0 1px 2px rgba(0,0,0,.2) inset}
 input.input-search,input[type=search]{padding-right:.5em;padding-left:.5em;margin-bottom:0;border-radius:15px}
 input.input-on-black{border:1px solid hsla(0,0%,100%,.1);background:hsla(0,0%,100%,.35)}
 input.input-on-black::-webkit-input-placeholder{color:hsla(0,0%,100%,.6)}
@@ -277,7 +277,7 @@ input.input-smaller{font-size:11.25px}
 .pagination a,.pagination span{display:block;padding:7px 9px;line-height:1;border-radius:2px;color:#0f0f0f;text-decoration:none}
 .pagination li.active a,.pagination li.active a:hover,.pagination span{color:#fff;background-color:#0f0f0f;cursor:text}
 .pagination a:focus,.pagination a:hover{text-decoration:none;background-color:#0f0f0f;color:#fff}
-.btn,input[type=submit].btn{display:inline-block;vertical-align:top;font-family:Helvetica Neue,Helvetica,Tahoma,sans-serif;font-size:1em;font-weight:400;line-height:1.65em;text-align:center;text-decoration:none;-webkit-appearance:none;outline:0;margin:0;border:none;border-radius:2px;box-shadow:none;cursor:pointer;padding:.55em 2.5em;color:#222;background:#e0e3e5}
+.btn,input[type=submit].btn{display:inline-block;vertical-align:top;font-family:Helvetica Neue,Helvetica,Tahoma,sans-serif;font-size:1em;font-weight:400;line-height:1.65em;text-align:center;text-decoration:none;-webkit-appearance:none;outline:none;margin:0;border:none;border-radius:2px;box-shadow:none;cursor:pointer;padding:.55em 2.5em;color:#222;background:#e0e3e5}
 .btn:hover,input[type=submit].btn:hover{color:rgba(0,0,0,.5);background:#b3b6b7}
 .btn::-moz-focus-inner{border:0;padding:0}
 .btn-big,input[type=submit].btn-big{font-size:18px}
