@@ -4,7 +4,6 @@ import exists from '../exists';
 import plugin from '../plugin';
 import parser from 'postcss-selector-parser';
 
-let hack = 'stylehacks-html-combinator-comment-body';
 let targets = ['ie 7', 'ie 6', 'ie 5.5'];
 
 function analyse (ctx, rule) {
@@ -25,7 +24,7 @@ function analyse (ctx, rule) {
     };
 }
 
-export default plugin(hack, targets, function () {
+export default plugin(targets, function () {
     this.css.walkRules(rule => {
         if (rule.selector && rule.raws.selector && rule.raws.selector.raw) {
             parser(analyse(this, rule)).process(rule.raws.selector.raw);

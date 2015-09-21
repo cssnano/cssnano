@@ -2,10 +2,9 @@
 
 import plugin from '../plugin';
 
-let hack = 'stylehacks-leading-star';
 let targets = ['ie 5.5', 'ie 6', 'ie 7'];
 
-export default plugin(hack, targets, function () {
+export default plugin(targets, function () {
     this.css.walkDecls(decl => {
         let before = decl.raws.before;
         if (!before) {

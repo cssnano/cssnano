@@ -4,7 +4,6 @@ import exists from '../exists';
 import plugin from '../plugin';
 import parser from 'postcss-selector-parser';
 
-let hack = 'stylehacks-body-empty';
 let targets = ['firefox 2'];
 
 function analyse (ctx, rule) {
@@ -22,7 +21,7 @@ function analyse (ctx, rule) {
     };
 }
 
-export default plugin(hack, targets, function () {
+export default plugin(targets, function () {
     this.css.walkRules(rule => {
         if (rule.selector) {
             parser(analyse(this, rule)).process(rule.selector);

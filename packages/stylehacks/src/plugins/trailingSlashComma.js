@@ -2,10 +2,9 @@
 
 import plugin from '../plugin';
 
-let hack = 'stylehacks-trailing-slash-comma';
 let targets = ['ie 7', 'ie 6', 'ie 5.5'];
 
-export default plugin(hack, targets, function () {
+export default plugin(targets, function () {
     this.css.walkRules(rule => {
         if (rule.selector) {
             var sel = rule.selector;

@@ -1,17 +1,15 @@
 'use strict';
 
-export default function plugin (hack, targets, detect) {
+export default function plugin (targets, detect) {
     class Plugin {
         constructor (css, result) {
             this.nodes = [];
             this.css = css;
             this.result = result;
             this.targets = targets;
-            this.id = hack;
         }
 
         push (node, message) {
-            if (!message) { message = this.id; }
             node._stylehacks = message;
             this.nodes.push(node);
         }

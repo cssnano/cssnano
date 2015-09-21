@@ -2,10 +2,9 @@
 
 import plugin from '../plugin';
 
-let hack = 'stylehacks-important';
 let targets = ['ie 5.5', 'ie 6', 'ie 7'];
 
-export default plugin(hack, targets, function () {
+export default plugin(targets, function () {
     this.css.walkDecls(decl => {
         let match = decl.value.match(/!\w/);
         if (match) {

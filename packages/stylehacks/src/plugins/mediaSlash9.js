@@ -2,10 +2,9 @@
 
 import plugin from '../plugin';
 
-let hack = 'stylehacks-media-slash9';
 let targets = ['ie 5.5', 'ie 6', 'ie 7'];
 
-export default plugin(hack, targets, function () {
+export default plugin(targets, function () {
     this.css.walkAtRules('media', rule => {
         var params = rule.params.trim();
         if (params === 'screen\\9') {
