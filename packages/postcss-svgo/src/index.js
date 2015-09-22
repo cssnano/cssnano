@@ -11,12 +11,21 @@ let decode = decodeURIComponent;
 
 function minifyPromise (svgo, decl) {
     return new Promise((resolve, reject) => {
-        let isUriEncoded = decode(decl.value) !== decl.value;
+        let isUriEncoded;
+        try {
+            isUriEncoded = decode(decl.value) !== decl.value;
+        } catch (err) {
+            isUriEncoded = false;
+        }
         let minify = (_, quote, svg, offset, str, cb) => {
             if (!dataURI.test(svg) || !isSvg(svg)) {
                 return cb(null, str);
             }
-            if (typeof quote === 'undefined') { quote = ''; }
+            if (typeof quote === 'undefined') {
+                quote = '';
+            } else if (quote === '"') {
+                quote = "'";
+            }
             svgo.optimize(svg.replace(dataURI, ''), (result) => {
                 if (result.error) {
                     return reject(`Error parsing SVG: ${result.error}`);

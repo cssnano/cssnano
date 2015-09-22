@@ -1,3 +1,10 @@
+# 2.0.2
+
+* Fixed an issue where the module was not handling exceptions from
+  decoding URLs.
+* The module will now convert all SVG wrapping quotes to single quotes, which
+  is consistent with SVGO's output.
+
 # 2.0.1
 
 * Fixed an issue where the `charset` definition was being removed from the

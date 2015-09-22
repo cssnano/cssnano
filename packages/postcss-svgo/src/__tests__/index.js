@@ -33,6 +33,10 @@ let tests = [{
     message: 'should not mangle filter effects',
     fixture: 'h1{filter:blur(5px)}',
     expected: 'h1{filter:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><filter id="filter"><feGaussianBlur stdDeviation="5" /></filter></svg>#filter\');filter:blur(5px)}'
+}, {
+    message: 'should not throw when decoding a svg',
+    fixture: 'h1{-webkit-mask-box-image: url("data:image/svg+xml;charset=utf-8,<svg height=\'35\' viewBox=\'0 0 96 70\' width=\'48\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'m84 35c1 7-5 37-42 35-37 2-43-28-42-35-1-7 5-37 42-35 37-2 43 28 42 35z\'/></svg>") 50% 56% 46% 42%;}',
+    expected: 'h1{-webkit-mask-box-image: url(\'data:image/svg+xml;charset=utf-8,<svg height="35" viewBox="0 0 96 70" width="48" xmlns="http://www.w3.org/2000/svg"><path d="M84 35c1 7-5 37-42 35C5 72-1 42 0 35-1 28 5-2 42 0c37-2 43 28 42 35z"/></svg>\') 50% 56% 46% 42%;}'
 }];
 
 function process (css, options, callback) {
