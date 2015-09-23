@@ -267,7 +267,7 @@ input[type=range]{vertical-align:middle;background-color:transparent}
 .range-light:focus{outline:none}
 .range-light:focus::-webkit-slider-thumb{outline:none;border:0;box-shadow:0 0 1px 2px currentcolor}
 .range-light:focus::-moz-range-thumb{outline:none;border:0;box-shadow:0 0 1px 2px currentcolor}
-.progress{display:block;width:100%;height:.5625rem;margin:.5rem 0;background-color:rgba(0,0,0,.125);border:0;border-radius:625pc;overflow:hidden;-webkit-appearance:none;cursor:pointer}
+.progress{display:block;width:100%;height:.5625rem;margin:.5rem 0;background-color:rgba(0,0,0,.125);border:0;border-radius:10000px;overflow:hidden;-webkit-appearance:none;cursor:pointer}
 .progress::-webkit-progress-bar{-webkit-appearance:none;background-color:rgba(0,0,0,.125)}
 .progress::-webkit-progress-value{-webkit-appearance:none;background-color:currentColor}
 .progress::-moz-progress-bar{background-color:currentColor}

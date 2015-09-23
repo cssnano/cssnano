@@ -44,6 +44,9 @@ var defaultOptions = {
     autoprefixer: {
         add: false
     },
+    postcssConvertValues: {
+        length: false
+    },
     postcssNormalizeCharset: {
         add: false
     }

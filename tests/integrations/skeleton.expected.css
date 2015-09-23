@@ -1,4 +1,4 @@
-.container{position:relative;max-width:60pc;margin:0 auto;padding:0 20px}
+.container{position:relative;max-width:960px;margin:0 auto;padding:0 20px}
 .column,.columns,.container{width:100%;box-sizing:border-box}
 .column,.columns{float:left}
 @media (min-width:400px){
@@ -78,7 +78,7 @@ ol ol,ol ul,ul ol,ul ul{margin:1.5rem 0 1.5rem 3rem;font-size:90%}
 li{margin-bottom:1rem}
 code{padding:.2rem .5rem;margin:0 .2rem;font-size:90%;white-space:nowrap;background:#f1f1f1;border:1px solid #e1e1e1;border-radius:4px}
 pre>code{display:block;padding:1rem 1.5rem;white-space:pre}
-td,th{padding:9pt 15px;text-align:left;border-bottom:1px solid #e1e1e1}
+td,th{padding:12px 15px;text-align:left;border-bottom:1px solid #e1e1e1}
 td:first-child,th:first-child{padding-left:0}
 td:last-child,th:last-child{padding-right:0}
 .button,button{margin-bottom:1rem}

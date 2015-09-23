@@ -20,15 +20,18 @@ module.exports.tests = [{
 }, {
     message: 'should convert px to pc',
     fixture: 'h1{width:16px}',
-    expected: 'h1{width:1pc}'
+    expected: 'h1{width:1pc}',
+    options: {convertValues:{length: true}}
 }, {
     message: 'should convert px to pt',
     fixture: 'h1{width:120px}',
-    expected: 'h1{width:90pt}'
+    expected: 'h1{width:90pt}',
+    options: {convertValues:{length: true}}
 }, {
     message: 'should convert px to in',
     fixture: 'h1{width:192px}',
-    expected: 'h1{width:2in}'
+    expected: 'h1{width:2in}',
+    options: {convertValues:{length: true}}
 }, {
     message: 'should strip the units from length properties',
     fixture: 'h1{margin:0em 0% 0px 0pc}',
@@ -52,7 +55,8 @@ module.exports.tests = [{
 }, {
     message: 'should operate in calc values',
     fixture: 'h1{width:calc(192px + 2em)}',
-    expected: 'h1{width:calc(2in + 2em)}'
+    expected: 'h1{width:calc(2in + 2em)}',
+    options: {convertValues:{length: true}}
 }, {
     message: 'should not mangle values outside of its domain',
     fixture: 'h1{background:url(a.png)}',
