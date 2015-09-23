@@ -1,3 +1,11 @@
+# 3.2.0
+
+* cssnano no longer converts `outline: none` to `outline: 0`, as there are
+  some cases where the values are not equivalent (thanks to @TrySound).
+* cssnano no longer converts for example `16px` to `1pc` *by default*. Length
+  optimisations can be turned on via `{convertValues: {length: true}}`.
+* Improved minimization of css functions (thanks to @TrySound).
+
 # 3.1.0
 
 * This release swaps postcss-single-charset for postcss-normalize-charset,
