@@ -100,7 +100,7 @@ input::selection,textarea::selection{background-color:hsla(0,0%,39%,.4);color:rg
 * http://opensource.org/licenses/MIT
 *
 */
-.ui.button{cursor:pointer;display:inline-block;min-height:1em;outline:0;border:none;vertical-align:baseline;background:#e0e1e2 none;color:rgba(0,0,0,.6);font-family:Lato,Helvetica Neue,Arial,Helvetica,sans-serif;margin:0 .25em 0 0;padding:.78571429em 1.5em;text-transform:none;text-shadow:none;font-weight:700;line-height:1em;font-style:normal;text-align:center;text-decoration:none;border-radius:.28571429rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-transition:opacity .1s ease,background-color .1s ease,color .1s ease,box-shadow .1s ease,background .1s ease;transition:opacity .1s ease,background-color .1s ease,color .1s ease,box-shadow .1s ease,background .1s ease;will-change:'';-webkit-tap-highlight-color:transparent}
+.ui.button{cursor:pointer;display:inline-block;min-height:1em;outline:none;border:none;vertical-align:baseline;background:#e0e1e2 none;color:rgba(0,0,0,.6);font-family:Lato,Helvetica Neue,Arial,Helvetica,sans-serif;margin:0 .25em 0 0;padding:.78571429em 1.5em;text-transform:none;text-shadow:none;font-weight:700;line-height:1em;font-style:normal;text-align:center;text-decoration:none;border-radius:.28571429rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-transition:opacity .1s ease,background-color .1s ease,color .1s ease,box-shadow .1s ease,background .1s ease;transition:opacity .1s ease,background-color .1s ease,color .1s ease,box-shadow .1s ease,background .1s ease;will-change:'';-webkit-tap-highlight-color:transparent}
 .ui.button,.ui.button:hover{box-shadow:0 0 0 1px transparent inset,0 0 0 0 rgba(34,36,38,.15) inset}
 .ui.button:hover{background-color:#cacbcd;background-image:none;color:rgba(0,0,0,.8)}
 .ui.button:hover .icon{opacity:.85}
@@ -1882,7 +1882,7 @@ img.ui.image{display:block}
 *
 */
 .ui.input{position:relative;font-weight:400;font-style:normal;display:-webkit-inline-box;display:-webkit-inline-flex;display:-ms-inline-flexbox;display:inline-flex;color:rgba(0,0,0,.87)}
-.ui.input input{margin:0;max-width:100%;-webkit-box-flex:1;-webkit-flex:1 0 auto;-ms-flex:1 0 auto;flex:1 0 auto;outline:0;-webkit-tap-highlight-color:rgba(255,255,255,0);text-align:left;line-height:1.2142em;font-family:Lato,Helvetica Neue,Arial,Helvetica,sans-serif;padding:.67861429em 1em;background:#fff;border:1px solid rgba(34,36,38,.15);color:rgba(0,0,0,.87);border-radius:.28571429rem;-webkit-transition:box-shadow .1s ease,border-color .1s ease;transition:box-shadow .1s ease,border-color .1s ease;box-shadow:none}
+.ui.input input{margin:0;max-width:100%;-webkit-box-flex:1;-webkit-flex:1 0 auto;-ms-flex:1 0 auto;flex:1 0 auto;outline:none;-webkit-tap-highlight-color:rgba(255,255,255,0);text-align:left;line-height:1.2142em;font-family:Lato,Helvetica Neue,Arial,Helvetica,sans-serif;padding:.67861429em 1em;background:#fff;border:1px solid rgba(34,36,38,.15);color:rgba(0,0,0,.87);border-radius:.28571429rem;-webkit-transition:box-shadow .1s ease,border-color .1s ease;transition:box-shadow .1s ease,border-color .1s ease;box-shadow:none}
 .ui.input input::-webkit-input-placeholder{color:rgba(0,0,0,.4)}
 .ui.input input::-moz-placeholder{color:rgba(0,0,0,.4)}
 .ui.input input::-ms-input-placeholder{color:rgba(0,0,0,.4)}
@@ -2670,7 +2670,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.form input:not([type]),.ui.form input[type=date],.ui.form input[type=datetime-local],.ui.form input[type=email],.ui.form input[type=number],.ui.form input[type=password],.ui.form input[type=search],.ui.form input[type=tel],.ui.form input[type=text],.ui.form input[type=time],.ui.form input[type=url],.ui.form textarea{width:100%;vertical-align:top}
 .ui.form ::-webkit-datetime-edit,.ui.form ::-webkit-inner-spin-button{height:1.2142em}
 .ui.form input:not([type]),.ui.form input[type=date],.ui.form input[type=datetime-local],.ui.form input[type=email],.ui.form input[type=number],.ui.form input[type=password],.ui.form input[type=search],.ui.form input[type=tel],.ui.form input[type=text],.ui.form input[type=time],.ui.form input[type=url]{font-family:Lato,Helvetica Neue,Arial,Helvetica,sans-serif;line-height:1.2142em;padding:.67861429em 1em}
-.ui.form input:not([type]),.ui.form input[type=date],.ui.form input[type=datetime-local],.ui.form input[type=email],.ui.form input[type=number],.ui.form input[type=password],.ui.form input[type=search],.ui.form input[type=tel],.ui.form input[type=text],.ui.form input[type=time],.ui.form input[type=url],.ui.form textarea{margin:0;outline:0;-webkit-appearance:none;tap-highlight-color:hsla(0,0%,100%,0);font-size:1em;background:#fff;border:1px solid rgba(34,36,38,.15);color:rgba(0,0,0,.87);border-radius:.28571429rem;box-shadow:0 0 0 0 transparent inset;-webkit-transition:color .1s ease,border-color .1s ease;transition:color .1s ease,border-color .1s ease}
+.ui.form input:not([type]),.ui.form input[type=date],.ui.form input[type=datetime-local],.ui.form input[type=email],.ui.form input[type=number],.ui.form input[type=password],.ui.form input[type=search],.ui.form input[type=tel],.ui.form input[type=text],.ui.form input[type=time],.ui.form input[type=url],.ui.form textarea{margin:0;outline:none;-webkit-appearance:none;tap-highlight-color:hsla(0,0%,100%,0);font-size:1em;background:#fff;border:1px solid rgba(34,36,38,.15);color:rgba(0,0,0,.87);border-radius:.28571429rem;box-shadow:0 0 0 0 transparent inset;-webkit-transition:color .1s ease,border-color .1s ease;transition:color .1s ease,border-color .1s ease}
 .ui.form textarea{padding:.78571429em 1em;line-height:1.2857;resize:vertical}
 .ui.form textarea:not([rows]){height:12em;min-height:8em;max-height:24em}
 .ui.form input[type=checkbox],.ui.form textarea{vertical-align:top}
@@ -3559,7 +3559,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.structured.basic.table th{border-left:none;border-right:none}
 .ui.structured.celled.table tr td,.ui.structured.celled.table tr th{border-left:1px solid rgba(34,36,38,.1);border-right:1px solid rgba(34,36,38,.1)}
 .ui.definition.table thead:not(.full-width) th:first-child{pointer-events:none;background:transparent;font-weight:400;color:rgba(0,0,0,.4);box-shadow:-1px -1px 0 1px #fff}
-.ui.definition.table tfoot:not(.full-width) th:first-child{pointer-events:none;background:transparent;font-weight:rgba(0, 0, 0, .4);color:normal;box-shadow:1px 1px 0 1px #fff}
+.ui.definition.table tfoot:not(.full-width) th:first-child{pointer-events:none;background:transparent;font-weight:rgba(0,0,0,.4);color:normal;box-shadow:1px 1px 0 1px #fff}
 .ui.celled.definition.table thead:not(.full-width) th:first-child{box-shadow:0 -1px 0 1px #fff}
 .ui.celled.definition.table tfoot:not(.full-width) th:first-child{box-shadow:0 1px 0 1px #fff}
 .ui.definition.table tr td:first-child{background:rgba(0,0,0,.03);font-weight:700;color:rgba(0,0,0,.95)}
@@ -4221,9 +4221,9 @@ ol.ui.list li[value]:before{content:attr(value)}
 * http://opensource.org/licenses/MIT
 *
 */
-.ui.checkbox{position:relative;display:inline-block;-webkit-backface-visibility:hidden;backface-visibility:hidden;outline:0;vertical-align:baseline;font-style:normal;min-height:17px;font-size:1rem;line-height:17px;min-width:17px}
-.ui.checkbox input[type=checkbox],.ui.checkbox input[type=radio]{cursor:pointer;position:absolute;top:0;left:0;opacity:0!important;outline:0;z-index:3;width:17px;height:17px}
-.ui.checkbox .box,.ui.checkbox label{cursor:auto;position:relative;display:block;padding-left:1.85714em;outline:0;font-size:1em}
+.ui.checkbox{position:relative;display:inline-block;-webkit-backface-visibility:hidden;backface-visibility:hidden;outline:none;vertical-align:baseline;font-style:normal;min-height:17px;font-size:1rem;line-height:17px;min-width:17px}
+.ui.checkbox input[type=checkbox],.ui.checkbox input[type=radio]{cursor:pointer;position:absolute;top:0;left:0;opacity:0!important;outline:none;z-index:3;width:17px;height:17px}
+.ui.checkbox .box,.ui.checkbox label{cursor:auto;position:relative;display:block;padding-left:1.85714em;outline:none;font-size:1em}
 .ui.checkbox .box:before,.ui.checkbox label:before{content:'';background:#fff;border-radius:.21428571rem;border:1px solid #d4d4d5}
 .ui.checkbox .box:after,.ui.checkbox .box:before,.ui.checkbox label:after,.ui.checkbox label:before{position:absolute;top:0;left:0;width:17px;height:17px;-webkit-transition:border .1s ease,opacity .1s ease,-webkit-transform .1s ease,box-shadow .1s ease;transition:border .1s ease,opacity .1s ease,transform .1s ease,box-shadow .1s ease}
 .ui.checkbox .box:after,.ui.checkbox label:after{font-size:14px;text-align:center;opacity:0;color:rgba(0,0,0,.87)}
@@ -4331,8 +4331,8 @@ body.dimmable>.dimmer{position:fixed}
 * http://opensource.org/licenses/MIT
 *
 */
-.ui.dropdown{cursor:pointer;position:relative;display:inline-block;outline:0;text-align:left;-webkit-transition:box-shadow .1s ease,width .1s ease;transition:box-shadow .1s ease,width .1s ease;-webkit-tap-highlight-color:rgba(0,0,0,0)}
-.ui.dropdown .menu{cursor:auto;position:absolute;display:none;outline:0;top:100%;min-width:-webkit-max-content;min-width:-moz-max-content;min-width:max-content;margin:0;padding:0;background:#fff;font-size:1em;text-shadow:none;text-align:left;box-shadow:0 2px 3px 0 rgba(34,36,38,.15);border:1px solid rgba(34,36,38,.15);border-radius:.28571429rem;-webkit-transition:opacity .1s ease;transition:opacity .1s ease;z-index:7;will-change:transform,opacity}
+.ui.dropdown{cursor:pointer;position:relative;display:inline-block;outline:none;text-align:left;-webkit-transition:box-shadow .1s ease,width .1s ease;transition:box-shadow .1s ease,width .1s ease;-webkit-tap-highlight-color:rgba(0,0,0,0)}
+.ui.dropdown .menu{cursor:auto;position:absolute;display:none;outline:none;top:100%;min-width:-webkit-max-content;min-width:-moz-max-content;min-width:max-content;margin:0;padding:0;background:#fff;font-size:1em;text-shadow:none;text-align:left;box-shadow:0 2px 3px 0 rgba(34,36,38,.15);border:1px solid rgba(34,36,38,.15);border-radius:.28571429rem;-webkit-transition:opacity .1s ease;transition:opacity .1s ease;z-index:7;will-change:transform,opacity}
 .ui.dropdown .menu>*{white-space:nowrap}
 .ui.dropdown>input:not(.search):first-child,.ui.dropdown>select{display:none!important}
 .ui.dropdown>.dropdown.icon{position:relative;width:auto;font-size:.85714286em;margin:0 0 0 1em}
@@ -4369,7 +4369,7 @@ body.dimmable>.dimmer{position:fixed}
 select.ui.dropdown{height:38px;padding:.5em;border:1px solid rgba(34,36,38,.15);visibility:visible}
 .ui.selection.dropdown>.delete.icon,.ui.selection.dropdown>.dropdown.icon,.ui.selection.dropdown>.search.icon{cursor:pointer;position:absolute;top:auto;width:auto;z-index:3;margin:-.78571429em;padding:.78571429em;right:1em;opacity:.8;-webkit-transition:opacity .1s ease;transition:opacity .1s ease}
 .ui.compact.selection.dropdown{min-width:0}
-.ui.selection.dropdown .menu{overflow-x:hidden;overflow-y:auto;-webkit-backface-visibility:hidden;backface-visibility:hidden;-webkit-overflow-scrolling:touch;border-top-width:0!important;width:auto;outline:0;margin:0 -1px;min-width:calc(100% + 2px);width:calc(100% + 2px);border-radius:0 0 .28571429rem .28571429rem;box-shadow:0 2px 3px 0 rgba(34,36,38,.15);-webkit-transition:opacity .1s ease;transition:opacity .1s ease}
+.ui.selection.dropdown .menu{overflow-x:hidden;overflow-y:auto;-webkit-backface-visibility:hidden;backface-visibility:hidden;-webkit-overflow-scrolling:touch;border-top-width:0!important;width:auto;outline:none;margin:0 -1px;min-width:calc(100% + 2px);width:calc(100% + 2px);border-radius:0 0 .28571429rem .28571429rem;box-shadow:0 2px 3px 0 rgba(34,36,38,.15);-webkit-transition:opacity .1s ease;transition:opacity .1s ease}
 .ui.selection.dropdown .menu:after,.ui.selection.dropdown .menu:before{display:none}
 .ui.selection.dropdown .menu>.message{padding:.71428571rem 1.14285714rem}
 @media only screen and (max-width:767px){
@@ -4394,7 +4394,7 @@ select.ui.dropdown{height:38px;padding:.5em;border:1px solid rgba(34,36,38,.15);
 .ui.active.selection.dropdown>.dropdown.icon,.ui.visible.selection.dropdown>.dropdown.icon{opacity:1;z-index:3}
 .ui.active.selection.dropdown{border-bottom-left-radius:0!important;border-bottom-right-radius:0!important}
 .ui.search.dropdown{min-width:''}
-.ui.search.dropdown>input.search{background:none transparent!important;border:none!important;box-shadow:none!important;cursor:pointer;top:0;left:0;width:100%;outline:0;-webkit-tap-highlight-color:rgba(255,255,255,0);padding:inherit;position:absolute;z-index:2}
+.ui.search.dropdown>input.search{background:none transparent!important;border:none!important;box-shadow:none!important;cursor:pointer;top:0;left:0;width:100%;outline:none;-webkit-tap-highlight-color:rgba(255,255,255,0);padding:inherit;position:absolute;z-index:2}
 .ui.search.dropdown>.text{cursor:text;position:relative;z-index:3}
 .ui.search.selection.dropdown>input.search{line-height:1.2142em;padding:.67861429em 2.6em .67861429em 1em}
 .ui.search.dropdown.active>input.search,.ui.search.dropdown.visible>input.search{cursor:auto}
@@ -4903,7 +4903,7 @@ a.ui.nag{cursor:pointer}
 *
 */
 .ui.search{position:relative}
-.ui.search>.prompt{margin:0;outline:0;-webkit-appearance:none;-webkit-tap-highlight-color:rgba(255,255,255,0);text-shadow:none;font-style:normal;font-weight:400;line-height:1.2142em;padding:.67861429em 1em;font-size:1em;background:#fff;border:1px solid rgba(34,36,38,.15);color:rgba(0,0,0,.87);box-shadow:0 0 0 0 transparent inset;-webkit-transition:background-color .1s ease,color .1s ease,box-shadow .1s ease,border-color .1s ease;transition:background-color .1s ease,color .1s ease,box-shadow .1s ease,border-color .1s ease}
+.ui.search>.prompt{margin:0;outline:none;-webkit-appearance:none;-webkit-tap-highlight-color:rgba(255,255,255,0);text-shadow:none;font-style:normal;font-weight:400;line-height:1.2142em;padding:.67861429em 1em;font-size:1em;background:#fff;border:1px solid rgba(34,36,38,.15);color:rgba(0,0,0,.87);box-shadow:0 0 0 0 transparent inset;-webkit-transition:background-color .1s ease,color .1s ease,box-shadow .1s ease,border-color .1s ease;transition:background-color .1s ease,color .1s ease,box-shadow .1s ease,border-color .1s ease}
 .ui.search .prompt{border-radius:500rem}
 .ui.search .prompt~.search.icon{cursor:pointer}
 .ui.search>.results{display:none;position:absolute;top:100%;left:0;-webkit-transform-origin:center top;-ms-transform-origin:center top;transform-origin:center top;background:#fff;margin-top:.5em;width:18em;border-radius:.28571429rem;box-shadow:0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);border:1px solid #d4d4d5;z-index:15}
