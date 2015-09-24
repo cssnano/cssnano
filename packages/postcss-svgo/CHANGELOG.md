@@ -1,3 +1,8 @@
+# 2.0.3
+
+* Uses postcss-value-parser instead of async-replace to reduce cssnano's
+  download size (thanks to @TrySound).
+
 # 2.0.2
 
 * Fixed an issue where the module was not handling exceptions from
