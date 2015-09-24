@@ -1,8 +1,8 @@
 'use strict';
 
-import replace from 'async-replace';
-import SVGO from 'svgo';
 import postcss from 'postcss';
+import parser from 'postcss-value-parser';
+import SVGO from 'svgo';
 import isSvg from 'is-svg';
 
 const dataURI = /data:image\/svg\+xml(;(charset=)?utf-8)?,/;
@@ -10,36 +10,53 @@ let encode = encodeURIComponent;
 let decode = decodeURIComponent;
 
 function minifyPromise (svgo, decl) {
-    return new Promise((resolve, reject) => {
-        let isUriEncoded;
-        try {
-            isUriEncoded = decode(decl.value) !== decl.value;
-        } catch (err) {
-            isUriEncoded = false;
-        }
-        let minify = (_, quote, svg, offset, str, cb) => {
-            if (!dataURI.test(svg) || !isSvg(svg)) {
-                return cb(null, str);
-            }
+    var promises = [];
+
+    decl.value = parser(decl.value).walk(function (node) {
+        if (node.type === 'function' && node.value === 'url' && node.nodes.length) {
+            parser.trim(node.nodes);
+            let quote = node.nodes[0].quote;
             if (typeof quote === 'undefined') {
                 quote = '';
             } else if (quote === '"') {
                 quote = "'";
             }
-            svgo.optimize(svg.replace(dataURI, ''), (result) => {
-                if (result.error) {
-                    return reject(`Error parsing SVG: ${result.error}`);
+            let lastType = node.nodes[0].type;
+            node.nodes[0].type = 'word';
+            let value = parser.stringify(node.nodes);
+            let isUriEncoded;
+            try {
+                let encodedUri = decode(value);
+                isUriEncoded = encodedUri !== value;
+                if (isUriEncoded) {
+                    value = encodedUri;
                 }
-                let data = isUriEncoded ? encode(result.data) : result.data;
-                let o = `url(${quote}data:image/svg+xml;charset=utf-8,${data}${quote})`;
-                return cb(null, o);
-            });
-        };
-        replace(isUriEncoded ? decode(decl.value) : decl.value,
-            /url\(("|')?(.*)\1\)/g, minify, (err, result) => {
-            decl.value = result;
-            resolve();
-        });
+            } catch (err) {
+                isUriEncoded = false;
+            }
+            if (!dataURI.test(value) || !isSvg(value)) {
+                node.nodes[0].type = lastType;
+                return;
+            }
+            promises.push(new Promise((resolve, reject) => {
+                svgo.optimize(value.replace(dataURI, ''), result => {
+                    if (result.error) {
+                        return reject(`Error parsing SVG: ${result.error}`);
+                    }
+                    let data = isUriEncoded ? encode(result.data) : result.data;
+                    node.nodes = [{
+                        type: 'string',
+                        quote,
+                        value: 'data:image/svg+xml;charset=utf-8,' + data
+                    }];
+                    resolve();
+                });
+            }))
+        }
+    });
+
+    return Promise.all(promises).then(function () {
+        decl.value = decl.value.toString();
     });
 }
 
