@@ -4,7 +4,6 @@
   "description": "A modular minifier, built on top of the PostCSS ecosystem.",
   "main": "index.js",
   "scripts": {
-    "bench": "tape benchmark/index.js",
     "lint": "eslint index.js lib tests",
     "test-integrations": "tape tests/integrations.js",
     "test-fixtures": "tape tests/fixtures.js | tap-spec",
