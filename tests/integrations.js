@@ -2,12 +2,12 @@
 
 var test = require('tape');
 var nano = require('../');
-var directory = require('fs').readdirSync;
 var file = require('fs').readFileSync;
 var postcss = require('postcss');
 var specName = require('./util/specName');
 var formatter = require('./util/formatter');
 var path = require('path');
+var frameworks = require('css-frameworks');
 
 var base = path.join(__dirname, 'integrations');
 
@@ -16,22 +16,16 @@ function formatted (css) {
 }
 
 test('integration testing', function (t) {
-    var specs = directory(base).reduce(function (tests, cssFile) {
-        var parts = cssFile.split('.');
-        if (!tests[parts[0]]) {
-            tests[parts[0]] = {};
-        }
-        tests[parts[0]][parts[1]] = file(path.join(base, cssFile), 'utf-8');
-        return tests;
-    }, {});
+    var keys = Object.keys(frameworks);
 
-    t.plan(Object.keys(specs).length);
+    t.plan(keys.length);
 
-    Object.keys(specs).forEach(function (name) {
-        var spec = specs[name];
-        var testName = 'produceTheExpectedResultFor: ' + name + '.css';
-        formatted(spec.fixture).then(function (result) {
-            t.equal(result.css, spec.expected, specName(testName));
+    keys.forEach(function (framework) {
+        var testName = 'produceTheExpectedResultFor: ' + framework + '.css';
+
+        formatted(frameworks[framework]).then(function (result) {
+            var expected = file(path.join(base, framework) + '.css', 'utf-8');
+            t.equal(result.css, expected, specName(testName));
         });
     });
 });

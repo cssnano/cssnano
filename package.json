@@ -53,6 +53,7 @@
     "postcss-zindex": "^2.0.0"
   },
   "devDependencies": {
+    "css-frameworks": "git+https://git@github.com/ben-eb/css-frameworks.git",
     "eslint": "^1.5.0",
     "json-loader": "^0.5.3",
     "node-libs-browser": "^0.5.3",
