@@ -2,7 +2,7 @@ var postcss = require('postcss');
 var parser = require('postcss-value-parser');
 var stringify = parser.stringify;
 var trim = parser.trim;
-var natural = require('javascript-natural-sort');
+var sort = require('alphanum-sort');
 var uniqs = require('uniqs');
 
 function split(nodes, div) {
@@ -49,7 +49,7 @@ module.exports = postcss.plugin('postcss-minify-params', function () {
                 }
             }, true);
 
-            rule.params = uniqs(split(params.nodes, ',')).sort(natural).join();
+            rule.params = sort(uniqs(split(params.nodes, ',')), { insensitive: true }).join();
         });
     };
 });

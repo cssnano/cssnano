@@ -4,8 +4,8 @@ var test  = require('tape');
 
 var tests = [{
     message: 'should normalise @media queries',
-    fixture: '@media screen ,\tprint {h1{color:red}}@media print,screen{h2{color:blue}}',
-    expected: '@media print,screen {h1{color:red}}@media print,screen{h2{color:blue}}'
+    fixture: '@media SCREEN ,\tprint {h1{color:red}}@media print,screen{h2{color:blue}}',
+    expected: '@media print,SCREEN {h1{color:red}}@media print,screen{h2{color:blue}}'
 }, {
     message: 'should normalise @media queries (2)',
     fixture: '@media only screen \n and ( min-width: 400px, min-height: 500px ){h1{color:blue}}',
