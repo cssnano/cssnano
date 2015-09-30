@@ -11,8 +11,8 @@ var tests = [{
     expected: 'h1{color:red}'
 }, {
     message: 'should natural sort selectors',
-    fixture: 'h1,h10,h2,h7{color:red}',
-    expected: 'h1,h2,h7,h10{color:red}'
+    fixture: 'h1,h10,H2,h7{color:red}',
+    expected: 'h1,H2,h7,h10{color:red}'
 }];
 
 function process (css, options) {

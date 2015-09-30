@@ -1,13 +1,13 @@
 'use strict';
 
 var uniqs = require('uniqs');
-var natural = require('javascript-natural-sort');
+var sort = require('alphanum-sort');
 var postcss = require('postcss');
 
 module.exports = postcss.plugin('postcss-unique-selectors', function () {
     return function (css) {
         css.walkRules(function (rule) {
-            rule.selector = uniqs(rule.selectors).sort(natural).join();
+            rule.selector = sort(uniqs(rule.selectors), {insensitive: true}).join();
         });
     };
 });

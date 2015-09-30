@@ -28,7 +28,7 @@
   },
   "repository": "ben-eb/postcss-unique-selectors",
   "dependencies": {
-    "javascript-natural-sort": "^0.7.1",
+    "alphanum-sort": "^1.0.1",
     "postcss": "^5.0.4",
     "uniqs": "^2.0.0"
   }
