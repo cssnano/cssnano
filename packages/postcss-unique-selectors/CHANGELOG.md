@@ -1,3 +1,7 @@
+# 2.0.1
+
+* Replaced javascript-natural-sort with alphanum-sort (thanks to @TrySound).
+
 # 2.0.0
 
 * Upgraded to PostCSS 5.
