@@ -3,6 +3,11 @@
   "version": "2.0.0",
   "description": "Minify selectors with PostCSS.",
   "main": "index.js",
+  "files": [
+    "index.js",
+    "lib",
+    "LICENSE-MIT"
+  ],
   "scripts": {
     "lint": "jshint index.js lib/*.js --reporter node_modules/jshint-stylish/stylish.js",
     "test": "tape test.js | tap-spec"
@@ -34,7 +39,7 @@
     "url": "git://github.com/ben-eb/postcss-minify-selectors.git"
   },
   "dependencies": {
-    "javascript-natural-sort": "^0.7.1",
+    "alphanum-sort": "^1.0.1",
     "postcss": "^5.0.4",
     "postcss-selector-parser": "^1.1.4"
   }

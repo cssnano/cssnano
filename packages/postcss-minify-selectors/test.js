@@ -15,8 +15,8 @@ var tests = [{
     expected: 'h1+p,h1>p,h1~p{color:blue}'
 }, {
     message: 'should not trim meaningful spaces',
-    fixture: 'h1 p,h2 p{color:blue}',
-    expected: 'h1 p,h2 p{color:blue}'
+    fixture: 'h1 p,H2 p{color:blue}',
+    expected: 'h1 p,H2 p{color:blue}'
 }, {
     message: 'should reduce meaningful spaces',
     fixture: 'h1    p,h2     p{color:blue}',

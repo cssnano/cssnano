@@ -1,7 +1,7 @@
 'use strict';
 
 var postcss = require('postcss');
-var natural = require('javascript-natural-sort');
+var sort = require('alphanum-sort');
 var unquote = require('./lib/unquote');
 var parser = require('postcss-selector-parser');
 
@@ -31,9 +31,7 @@ function canUnquote (value) {
 function optimise (rule) {
     var selector = rule.raws.selector && rule.raws.selector.raw || rule.selector;
     rule.selector = getParsed(selector, function (selectors) {
-        selectors.nodes.sort(function (a, b) {
-            return natural(String(a), String(b));
-        });
+        selectors.nodes = sort(selectors.nodes, {insensitive: true});
         var uniqueSelectors = [];
         selectors.eachInside(function (selector) {
             var next = selector.next();
