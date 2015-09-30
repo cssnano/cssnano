@@ -179,9 +179,9 @@ table.table-hovered tbody tr:hover td{background-color:#f4f4f4}
 .forms .btn-outline.bold{padding:.2375em 1.3em}
 .forms label{margin-bottom:1.0999999999999999em}
 .forms input[type=color],.forms input[type=date],.forms input[type=datetime-local],.forms input[type=datetime],.forms input[type=email],.forms input[type=file],.forms input[type=month],.forms input[type=number],.forms input[type=password],.forms input[type=phone],.forms input[type=range],.forms input[type=search],.forms input[type=tel],.forms input[type=text],.forms input[type=time],.forms input[type=url],.forms label,.forms select,.forms textarea{display:block}
-.forms-inline input[type=color],.forms-inline input[type=date],.forms-inline input[type=datetime-local],.forms-inline input[type=datetime],.forms-inline input[type=email],.forms-inline input[type=file],.forms-inline input[type=month],.forms-inline input[type=number],.forms-inline input[type=password],.forms-inline input[type=phone],.forms-inline input[type=range],.forms-inline input[type=search],.forms-inline input[type=tel],.forms-inline input[type=text],.forms-inline input[type=time],.forms-inline input[type=url],.forms-inline select,.forms-inline textarea,.forms-inline-list input[type=color],.forms-inline-list input[type=date],.forms-inline-list input[type=datetime-local],.forms-inline-list input[type=datetime],.forms-inline-list input[type=email],.forms-inline-list input[type=file],.forms-inline-list input[type=month],.forms-inline-list input[type=number],.forms-inline-list input[type=password],.forms-inline-list input[type=phone],.forms-inline-list input[type=range],.forms-inline-list input[type=search],.forms-inline-list input[type=tel],.forms-inline-list input[type=text],.forms-inline-list input[type=time],.forms-inline-list input[type=url],.forms-inline-list select,.forms-inline-list textarea{display:inline-block}
+.forms-inline-list input[type=color],.forms-inline-list input[type=date],.forms-inline-list input[type=datetime-local],.forms-inline-list input[type=datetime],.forms-inline-list input[type=email],.forms-inline-list input[type=file],.forms-inline-list input[type=month],.forms-inline-list input[type=number],.forms-inline-list input[type=password],.forms-inline-list input[type=phone],.forms-inline-list input[type=range],.forms-inline-list input[type=search],.forms-inline-list input[type=tel],.forms-inline-list input[type=text],.forms-inline-list input[type=time],.forms-inline-list input[type=url],.forms-inline-list select,.forms-inline-list textarea,.forms-inline input[type=color],.forms-inline input[type=date],.forms-inline input[type=datetime-local],.forms-inline input[type=datetime],.forms-inline input[type=email],.forms-inline input[type=file],.forms-inline input[type=month],.forms-inline input[type=number],.forms-inline input[type=password],.forms-inline input[type=phone],.forms-inline input[type=range],.forms-inline input[type=search],.forms-inline input[type=tel],.forms-inline input[type=text],.forms-inline input[type=time],.forms-inline input[type=url],.forms-inline select,.forms-inline textarea{display:inline-block}
 .forms-inline,.forms-inline-list,.forms-list{margin:0;padding:0;margin-bottom:1.0999999999999999em;list-style:none}
-.forms-inline label,.forms-inline-list li,.forms-inline-list li label,.forms-list label{display:inline-block;margin-bottom:0}
+.forms-inline-list li,.forms-inline-list li label,.forms-inline label,.forms-list label{display:inline-block;margin-bottom:0}
 .forms-inline-list li label{margin-right:.825em}
 .forms-inline-list li{margin-bottom:3px}
 .forms-list li{margin-bottom:6px}
@@ -401,7 +401,7 @@ input.input-smaller{font-size:11.25px}
 }
 .accordion-title{position:relative;display:block;margin:0;margin-bottom:2px;padding:12px 50px 12px 18px;color:#000;text-decoration:none;font-weight:400;font-size:.9375em;line-height:1,4em;background:#f7f8f8;cursor:pointer;-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
 .accordion-title.accordion-title-opened{margin-bottom:0;font-weight:700;background:#f0f1f2}
-.accordion-title a,.accordion-title:hover{color:#000;text-decoration:none}
+.accordion-title:hover,.accordion-title a{color:#000;text-decoration:none}
 .accordion-panel{padding:1.65em;margin-bottom:10px}
 .accordion-toggle{position:absolute;top:50%;margin-top:-8px;right:20px;padding:0;font-size:0;line-height:1}
 .accordion-toggle-closed{background:#000;width:1px;height:15px;margin-left:1px}
@@ -559,8 +559,8 @@ ul.dropdown li.divider{border-bottom:1px solid #e2e2e2}
   blockquote{margin-left:0}
 }
 @media only screen and (max-width:767px){
-  .navbar li,.navbar.navbar-left,.navbar.navbar-left li,.navbar.navbar-right,.navbar.navbar-right li{float:none;text-align:left;width:auto}
-  .navbar li,.navbar.navbar-right li{margin-left:0;margin-right:0}
+  .navbar.navbar-left,.navbar.navbar-left li,.navbar.navbar-right,.navbar.navbar-right li,.navbar li{float:none;text-align:left;width:auto}
+  .navbar.navbar-right li,.navbar li{margin-left:0;margin-right:0}
   .nav-fullwidth li,.nav-fullwidth ul{width:auto}
   .nav-fullwidth li{display:block}
 }

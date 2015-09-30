@@ -1846,15 +1846,15 @@ img.ui.image{display:block}
 .ui.hidden.image,.ui.hidden.images{display:none}
 .ui.disabled.image,.ui.disabled.images{cursor:default;opacity:.45}
 .ui.inline.image,.ui.inline.image img,.ui.inline.image svg{display:inline-block}
-.ui.top.aligned.image,.ui.top.aligned.image img,.ui.top.aligned.image svg,.ui.top.aligned.images .image{display:inline-block;vertical-align:top}
-.ui.middle.aligned.image,.ui.middle.aligned.image img,.ui.middle.aligned.image svg,.ui.middle.aligned.images .image{display:inline-block;vertical-align:middle}
-.ui.bottom.aligned.image,.ui.bottom.aligned.image img,.ui.bottom.aligned.image svg,.ui.bottom.aligned.images .image{display:inline-block;vertical-align:bottom}
+.ui.top.aligned.image,.ui.top.aligned.image img,.ui.top.aligned.images .image,.ui.top.aligned.image svg{display:inline-block;vertical-align:top}
+.ui.middle.aligned.image,.ui.middle.aligned.image img,.ui.middle.aligned.images .image,.ui.middle.aligned.image svg{display:inline-block;vertical-align:middle}
+.ui.bottom.aligned.image,.ui.bottom.aligned.image img,.ui.bottom.aligned.images .image,.ui.bottom.aligned.image svg{display:inline-block;vertical-align:bottom}
 .ui.rounded.image,.ui.rounded.image>*,.ui.rounded.images .image,.ui.rounded.images .image>*{border-radius:.3125em}
-.ui.bordered.image img,.ui.bordered.image svg,.ui.bordered.images .image,.ui.bordered.images img,.ui.bordered.images svg,img.ui.bordered.image{border:1px solid rgba(0,0,0,.1)}
+.ui.bordered.image img,.ui.bordered.images .image,.ui.bordered.images img,.ui.bordered.images svg,.ui.bordered.image svg,img.ui.bordered.image{border:1px solid rgba(0,0,0,.1)}
 .ui.circular.image,.ui.circular.images{overflow:hidden}
 .ui.circular.image,.ui.circular.image>*,.ui.circular.images .image,.ui.circular.images .image>*{border-radius:500rem}
-.ui.fluid.image,.ui.fluid.image img,.ui.fluid.image svg,.ui.fluid.images,.ui.fluid.images img,.ui.fluid.images svg{display:block;width:100%;height:auto}
-.ui.avatar.image,.ui.avatar.image img,.ui.avatar.image svg,.ui.avatar.images .image,.ui.avatar.images img,.ui.avatar.images svg{margin-right:.25em;display:inline-block;width:2em;height:2em;border-radius:500rem}
+.ui.fluid.image,.ui.fluid.image img,.ui.fluid.images,.ui.fluid.images img,.ui.fluid.images svg,.ui.fluid.image svg{display:block;width:100%;height:auto}
+.ui.avatar.image,.ui.avatar.image img,.ui.avatar.images .image,.ui.avatar.images img,.ui.avatar.images svg,.ui.avatar.image svg{margin-right:.25em;display:inline-block;width:2em;height:2em;border-radius:500rem}
 .ui.spaced.image{display:inline-block!important;margin-left:.5em;margin-right:.5em}
 .ui[class*="left spaced"].image{margin-left:.5em;margin-right:0}
 .ui[class*="right spaced"].image{margin-left:0;margin-right:.5em}
@@ -1889,14 +1889,14 @@ img.ui.image{display:block}
 .ui.input input::-ms-input-placeholder{color:rgba(0,0,0,.4)}
 .ui.disabled.input,.ui.input input[disabled]{opacity:.45}
 .ui.disabled.input input{pointer-events:none}
-.ui.input input:active,.ui.input.down input{border-color:rgba(0,0,0,.3);background:#fafafa;color:rgba(0,0,0,.87);box-shadow:none}
+.ui.input.down input,.ui.input input:active{border-color:rgba(0,0,0,.3);background:#fafafa;color:rgba(0,0,0,.87);box-shadow:none}
 .ui.loading.loading.input>i.icon:before{border-radius:500rem;border:.2em solid rgba(0,0,0,.1)}
 .ui.loading.loading.input>i.icon:after,.ui.loading.loading.input>i.icon:before{position:absolute;content:'';top:50%;left:50%;margin:-.64285714em 0 0 -.64285714em;width:1.28571429em;height:1.28571429em}
 .ui.loading.loading.input>i.icon:after{-webkit-animation:a .6s linear;animation:a .6s linear;-webkit-animation-iteration-count:infinite;animation-iteration-count:infinite;border-radius:500rem;border-color:#767676 transparent transparent;border-style:solid;border-width:.2em;box-shadow:0 0 0 1px transparent}
-.ui.input input:focus,.ui.input.focus input{border-color:#85b7d9;background:#fff;color:rgba(0,0,0,.8);box-shadow:none}
-.ui.input input:focus::-webkit-input-placeholder,.ui.input.focus input::-webkit-input-placeholder{color:rgba(0,0,0,.87)}
-.ui.input input:focus::-moz-placeholder,.ui.input.focus input::-moz-placeholder{color:rgba(0,0,0,.87)}
-.ui.input input:focus::-ms-input-placeholder,.ui.input.focus input::-ms-input-placeholder{color:rgba(0,0,0,.87)}
+.ui.input.focus input,.ui.input input:focus{border-color:#85b7d9;background:#fff;color:rgba(0,0,0,.8);box-shadow:none}
+.ui.input.focus input::-webkit-input-placeholder,.ui.input input:focus::-webkit-input-placeholder{color:rgba(0,0,0,.87)}
+.ui.input.focus input::-moz-placeholder,.ui.input input:focus::-moz-placeholder{color:rgba(0,0,0,.87)}
+.ui.input.focus input::-ms-input-placeholder,.ui.input input:focus::-ms-input-placeholder{color:rgba(0,0,0,.87)}
 .ui.input.error input{background-color:#fff6f6;border-color:#e0b4b4;color:#9f3a38;box-shadow:none}
 .ui.input.error input::-webkit-input-placeholder{color:#e7bdbc}
 .ui.input.error input::-moz-placeholder{color:#e7bdbc}
@@ -3570,7 +3570,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.table td.error,.ui.table tr.error{box-shadow:0 0 0 #e0b4b4 inset;background:#fff6f6!important;color:#9f3a38!important}
 .ui.table td.warning,.ui.table tr.warning{box-shadow:0 0 0 #c9ba9b inset;background:#fffaf3!important;color:#573a08!important}
 .ui.table td.active,.ui.table tr.active{box-shadow:0 0 0 rgba(0,0,0,.87) inset;background:#e0e0e0!important;color:rgba(0,0,0,.87)!important}
-.ui.table tr td.disabled,.ui.table tr.disabled td,.ui.table tr.disabled:hover,.ui.table tr:hover td.disabled{pointer-events:none;color:rgba(40,40,40,.3)}
+.ui.table tr.disabled:hover,.ui.table tr.disabled td,.ui.table tr:hover td.disabled,.ui.table tr td.disabled{pointer-events:none;color:rgba(40,40,40,.3)}
 @media only screen and (max-width:991px){
   .ui[class*="tablet stackable"].table,.ui[class*="tablet stackable"].table tbody,.ui[class*="tablet stackable"].table tr,.ui[class*="tablet stackable"].table tr>td,.ui[class*="tablet stackable"].table tr>th{width:100%!important;display:block!important}
   .ui[class*="tablet stackable"].table{padding:0}
@@ -3579,12 +3579,12 @@ ol.ui.list li[value]:before{content:attr(value)}
   .ui[class*="tablet stackable"].table tr>td,.ui[class*="tablet stackable"].table tr>th{background:none;border:none!important;padding:.25em .75em;box-shadow:none!important}
   .ui.definition[class*="tablet stackable"].table thead th:first-child{box-shadow:none!important}
 }
-.ui.table [class*="left aligned"],.ui.table[class*="left aligned"]{text-align:left}
-.ui.table [class*="center aligned"],.ui.table[class*="center aligned"]{text-align:center}
-.ui.table [class*="right aligned"],.ui.table[class*="right aligned"]{text-align:right}
-.ui.table [class*="top aligned"],.ui.table[class*="top aligned"]{vertical-align:top}
-.ui.table [class*="middle aligned"],.ui.table[class*="middle aligned"]{vertical-align:middle}
-.ui.table [class*="bottom aligned"],.ui.table[class*="bottom aligned"]{vertical-align:bottom}
+.ui.table[class*="left aligned"],.ui.table [class*="left aligned"]{text-align:left}
+.ui.table[class*="center aligned"],.ui.table [class*="center aligned"]{text-align:center}
+.ui.table[class*="right aligned"],.ui.table [class*="right aligned"]{text-align:right}
+.ui.table[class*="top aligned"],.ui.table [class*="top aligned"]{vertical-align:top}
+.ui.table[class*="middle aligned"],.ui.table [class*="middle aligned"]{vertical-align:middle}
+.ui.table[class*="bottom aligned"],.ui.table [class*="bottom aligned"]{vertical-align:bottom}
 .ui.table td.collapsing,.ui.table th.collapsing{width:1px;white-space:nowrap}
 .ui.fixed.table{table-layout:fixed}
 .ui.fixed.table td,.ui.fixed.table th{overflow:hidden;text-overflow:ellipsis}
@@ -3601,9 +3601,9 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.table[class*="top attached"]:first-child{margin-top:0}
 .ui[class*="bottom attached"].table{bottom:0;margin-top:0;top:0;margin-bottom:1em;box-shadow:none,none;border-radius:0 0 .28571429rem .28571429rem}
 .ui[class*="bottom attached"].table:last-child{margin-bottom:0}
-.ui.striped.table tbody tr:nth-child(2n),.ui.striped.table>tr:nth-child(2n){background-color:rgba(0,0,50,.02)}
-.ui.inverted.striped.table tbody tr:nth-child(2n),.ui.inverted.striped.table>tr:nth-child(2n){background-color:hsla(0,0%,100%,.05)}
-.ui.table [class*="single line"],.ui.table[class*="single line"]{white-space:nowrap}
+.ui.striped.table>tr:nth-child(2n),.ui.striped.table tbody tr:nth-child(2n){background-color:rgba(0,0,50,.02)}
+.ui.inverted.striped.table>tr:nth-child(2n),.ui.inverted.striped.table tbody tr:nth-child(2n){background-color:hsla(0,0%,100%,.05)}
+.ui.table[class*="single line"],.ui.table [class*="single line"]{white-space:nowrap}
 .ui.red.table{border-top:.2em solid #db2828}
 .ui.inverted.red.table{background-color:#db2828!important;color:#fff!important}
 .ui.orange.table{border-top:.2em solid #f2711c}
@@ -3678,7 +3678,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.inverted.table{background:#333;color:hsla(0,0%,100%,.9);border:none}
 .ui.inverted.table th{background-color:rgba(0,0,0,.15);color:hsla(0,0%,100%,.9)}
 .ui.inverted.table th,.ui.inverted.table tr td{border-color:hsla(0,0%,100%,.1)!important}
-.ui.inverted.table tr td.disabled,.ui.inverted.table tr.disabled td,.ui.inverted.table tr.disabled:hover td,.ui.inverted.table tr:hover td.disabled{pointer-events:none;color:hsla(0,0%,88%,.3)}
+.ui.inverted.table tr.disabled:hover td,.ui.inverted.table tr.disabled td,.ui.inverted.table tr:hover td.disabled,.ui.inverted.table tr td.disabled{pointer-events:none;color:hsla(0,0%,88%,.3)}
 .ui.inverted.definition.table tfoot:not(.full-width) th:first-child,.ui.inverted.definition.table thead:not(.full-width) th:first-child{background:#fff}
 .ui.inverted.definition.table tr td:first-child{background:hsla(0,0%,100%,.02);color:#fff}
 .ui.collapsing.table{width:auto}
@@ -3994,8 +3994,8 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.feed>.event>.content .meta .active.like .icon{color:#ef404a}
 .ui.feed>.event>.content .meta>:first-child{margin-left:0}
 .ui.feed>.event>.content .meta>:first-child:after{display:none}
-.ui.feed>.event>.content .meta a,.ui.feed>.event>.content .meta>.icon{cursor:pointer;opacity:1;color:rgba(0,0,0,.5);-webkit-transition:color .1s ease;transition:color .1s ease}
-.ui.feed>.event>.content .meta a:hover,.ui.feed>.event>.content .meta a:hover .icon,.ui.feed>.event>.content .meta>.icon:hover{color:rgba(0,0,0,.95)}
+.ui.feed>.event>.content .meta>.icon,.ui.feed>.event>.content .meta a{cursor:pointer;opacity:1;color:rgba(0,0,0,.5);-webkit-transition:color .1s ease;transition:color .1s ease}
+.ui.feed>.event>.content .meta>.icon:hover,.ui.feed>.event>.content .meta a:hover,.ui.feed>.event>.content .meta a:hover .icon{color:rgba(0,0,0,.95)}
 .ui.small.feed{font-size:.92857143rem}
 .ui.feed{font-size:1rem}
 .ui.large.feed{font-size:1.14285714rem}
@@ -4228,10 +4228,10 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.checkbox .box:before,.ui.checkbox label:before{content:'';background:#fff;border-radius:.21428571rem;border:1px solid #d4d4d5}
 .ui.checkbox .box:after,.ui.checkbox .box:before,.ui.checkbox label:after,.ui.checkbox label:before{position:absolute;top:0;left:0;width:17px;height:17px;-webkit-transition:border .1s ease,opacity .1s ease,-webkit-transform .1s ease,box-shadow .1s ease;transition:border .1s ease,opacity .1s ease,transform .1s ease,box-shadow .1s ease}
 .ui.checkbox .box:after,.ui.checkbox label:after{font-size:14px;text-align:center;opacity:0;color:rgba(0,0,0,.87)}
-.ui.checkbox label,.ui.checkbox+label{color:rgba(0,0,0,.87);-webkit-transition:color .1s ease;transition:color .1s ease}
+.ui.checkbox+label,.ui.checkbox label{color:rgba(0,0,0,.87);-webkit-transition:color .1s ease;transition:color .1s ease}
 .ui.checkbox+label{vertical-align:middle}
 .ui.checkbox .box:hover:before,.ui.checkbox label:hover:before{background:#fff;border-color:rgba(34,36,38,.35)}
-.ui.checkbox label:hover,.ui.checkbox+label:hover{color:rgba(0,0,0,.8)}
+.ui.checkbox+label:hover,.ui.checkbox label:hover{color:rgba(0,0,0,.8)}
 .ui.checkbox .box:active:before,.ui.checkbox label:active:before{background:#f9fafb;border-color:rgba(34,36,38,.35)}
 .ui.checkbox .box:active:after,.ui.checkbox input:active~label,.ui.checkbox label:active:after{color:rgba(0,0,0,.95)}
 .ui.checkbox input:focus~.box:before,.ui.checkbox input:focus~label:before{background:#fff;border-color:#96c8da}

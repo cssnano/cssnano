@@ -293,7 +293,7 @@ button::-moz-focus-inner,input::-moz-focus-inner{padding:0;border:0}
 .button:after{clear:both}
 .button:last-child{margin-right:0}
 .button .icon{vertical-align:top;top:-2px}
-.button .icon,.button.has-icon-divider{position:relative}
+.button.has-icon-divider,.button .icon{position:relative}
 .button.has-icon-divider .icon.icon-prepend{margin-right:21.6px}
 .button.has-icon-divider:before{content:"";display:block;position:absolute;width:1px;height:100%;background:rgba(0,0,0,.2);left:38px;top:0}
 .button:hover{background-image:-webkit-gradient(linear,50% 0,50% 100%,color-stop(0,#fff),color-stop(1px,#fff),color-stop(100%,#f3f3f3));background-image:-webkit-linear-gradient(top,#fff 0,#fff 1px,#f3f3f3 100%);background-image:linear-gradient(top,#fff 0,#fff 1px,#f3f3f3 100%);color:#444;text-decoration:none}
