@@ -104,7 +104,7 @@ module.exports.tests = [{
 }, {
     message: 'should merge vendor prefixed selectors when vendors are the same',
     fixture: 'code ::-moz-selection{background:red}code::-moz-selection{background:red}',
-    expected: 'code ::-moz-selection,code::-moz-selection{background:red}'
+    expected: 'code::-moz-selection,code ::-moz-selection{background:red}'
 }, {
     message: 'should not merge mixed vendor prefixes',
     fixture: 'code ::-webkit-selection{background:red}code::-moz-selection{background:red}',

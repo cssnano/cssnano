@@ -32,7 +32,7 @@ module.exports.tests = [{
 }, {
     message: 'should not remove meaningful universal selectors',
     fixture: '* + *, * > *, * h1, * ~ *{color:blue}',
-    expected: '* h1,*+*,*>*,*~*{color:blue}'
+    expected: '*+*,*>*,* h1,*~*{color:blue}'
 }, {
     message: 'should preserve the universal selector in attribute selectors',
     fixture: 'h1[class=" *.js "] + *.js{color:blue}',
