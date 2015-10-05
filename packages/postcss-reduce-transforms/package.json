@@ -1,0 +1,34 @@
+{
+  "name": "postcss-reduce-transforms",
+  "version": "0.0.0",
+  "description": "Reduce transform functions with PostCSS.",
+  "main": "dist/index.js",
+  "scripts": {
+    "lint": "eslint src",
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/",
+    "test": "npm run lint && babel-tape-runner \"src/**/__tests__/*.js\" | tap-spec"
+  },
+  "files": [
+    "LICENSE-MIT",
+    "dist"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "babel": "^5.8.23",
+    "babel-tape-runner": "^1.2.0",
+    "eslint": "^1.6.0",
+    "tap-spec": "^4.1.0",
+    "tape": "^4.2.1"
+  },
+  "homepage": "https://github.com/ben-eb/postcss-reduce-transforms",
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": "ben-eb/postcss-reduce-transforms",
+  "dependencies": {
+    "postcss": "^5.0.8",
+    "postcss-value-parser": "^3.0.1"
+  }
+}
