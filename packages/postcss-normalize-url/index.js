@@ -67,7 +67,9 @@ function transformDecl(decl, opts) {
         }
 
         url.value = url.value.trim();
-        url.value = convert(url.value, opts);
+        if (!~url.value.indexOf('chrome-extension')) {
+            url.value = convert(url.value, opts);
+        }
 
         if (escapeChars.test(url.value)) {
             escaped = url.value.replace(escapeChars, '\\$1');

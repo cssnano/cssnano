@@ -1,3 +1,7 @@
+# 3.0.2
+
+* Fixes incorrect minification of chrome-extension urls.
+
 # 3.0.1
 
 * Bump postcss-value-parser to `2.0.2`.
