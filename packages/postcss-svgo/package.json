@@ -39,7 +39,7 @@
   "dependencies": {
     "is-svg": "^1.1.1",
     "postcss": "^5.0.2",
-    "postcss-value-parser": "^2.0.5",
+    "postcss-value-parser": "^3.0.1",
     "svgo": "^0.5.6"
   }
 }

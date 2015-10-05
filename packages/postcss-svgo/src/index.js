@@ -1,7 +1,7 @@
 'use strict';
 
 import postcss from 'postcss';
-import parser from 'postcss-value-parser';
+import valueParser from 'postcss-value-parser';
 import SVGO from 'svgo';
 import isSvg from 'is-svg';
 
@@ -12,50 +12,43 @@ let decode = decodeURIComponent;
 function minifyPromise (svgo, decl) {
     var promises = [];
 
-    decl.value = parser(decl.value).walk(function (node) {
-        if (node.type === 'function' && node.value === 'url' && node.nodes.length) {
-            parser.trim(node.nodes);
-            let quote = node.nodes[0].quote;
-            if (typeof quote === 'undefined') {
-                quote = '';
-            } else if (quote === '"') {
-                quote = "'";
-            }
-            let lastType = node.nodes[0].type;
-            node.nodes[0].type = 'word';
-            let value = parser.stringify(node.nodes);
-            let isUriEncoded;
-            try {
-                let encodedUri = decode(value);
-                isUriEncoded = encodedUri !== value;
-                if (isUriEncoded) {
-                    value = encodedUri;
-                }
-            } catch (err) {
-                isUriEncoded = false;
-            }
-            if (!dataURI.test(value) || !isSvg(value)) {
-                node.nodes[0].type = lastType;
-                return;
-            }
-            promises.push(new Promise((resolve, reject) => {
-                svgo.optimize(value.replace(dataURI, ''), result => {
-                    if (result.error) {
-                        return reject(`Error parsing SVG: ${result.error}`);
-                    }
-                    let data = isUriEncoded ? encode(result.data) : result.data;
-                    node.nodes = [{
-                        type: 'string',
-                        quote,
-                        value: 'data:image/svg+xml;charset=utf-8,' + data
-                    }];
-                    resolve();
-                });
-            }))
+    decl.value = valueParser(decl.value).walk(node => {
+        if (node.type !== 'function' || node.value !== 'url' || !node.nodes.length) {
+            return;
         }
+        let value = node.nodes[0].value;
+        let isUriEncoded;
+        try {
+            let encodedUri = decode(value);
+            isUriEncoded = encodedUri !== value;
+            if (isUriEncoded) {
+                value = encodedUri;
+            }
+        } catch (err) {
+            isUriEncoded = false;
+        }
+        if (!dataURI.test(value) || !isSvg(value)) {
+            return;
+        }
+        promises.push(new Promise((resolve, reject) => {
+            svgo.optimize(value.replace(dataURI, ''), result => {
+                if (result.error) {
+                    return reject(`Error parsing SVG: ${result.error}`);
+                }
+                node.before = node.after = '';
+                let data = isUriEncoded ? encode(result.data) : result.data;
+                node.nodes[0].value = 'data:image/svg+xml;charset=utf-8,' + data;
+                if (node.nodes[0].type === 'string') {
+                    node.nodes[0].quote = '\'';
+                }
+                resolve();
+            });
+        }));
+
+        return false;
     });
 
-    return Promise.all(promises).then(function () {
+    return Promise.all(promises).then(() => {
         decl.value = decl.value.toString();
     });
 }
