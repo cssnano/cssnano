@@ -1360,8 +1360,8 @@ a.list-group-item-danger.active,a.list-group-item-danger.active:focus,a.list-gro
 button.close{-webkit-appearance:none;padding:0;cursor:pointer;background:transparent;border:0}
 .modal,.modal-open{overflow:hidden}
 .modal{position:fixed;top:0;right:0;bottom:0;left:0;z-index:10;display:none;-webkit-overflow-scrolling:touch;outline:0}
-.modal.fade .modal-dialog{-webkit-transition:-webkit-transform .3s ease-out;transition:transform .3s ease-out;-webkit-transform:translate(0,-25%);-ms-transform:translate(0,-25%);transform:translate(0,-25%)}
-.modal.in .modal-dialog{-webkit-transform:translate(0,0);-ms-transform:translate(0,0);transform:translate(0,0)}
+.modal.fade .modal-dialog{-webkit-transition:-webkit-transform .3s ease-out;transition:transform .3s ease-out;-webkit-transform:translateY(-25%);-ms-transform:translateY(-25%);transform:translateY(-25%)}
+.modal.in .modal-dialog{-webkit-transform:translate(0);-ms-transform:translate(0);transform:translate(0)}
 .modal-open .modal{overflow-x:hidden;overflow-y:auto}
 .modal-dialog{position:relative;width:auto;margin:10px}
 .modal-content{position:relative;background-color:#fff;background-clip:padding-box;border:1px solid #999;border:1px solid rgba(0,0,0,.2);border-radius:6px;outline:0;box-shadow:0 3px 9px rgba(0,0,0,.5)}
@@ -1428,7 +1428,7 @@ button.close{-webkit-appearance:none;padding:0;cursor:pointer;background:transpa
   .carousel-inner>.item{-webkit-transition:-webkit-transform .6s ease-in-out;transition:transform .6s ease-in-out;-webkit-backface-visibility:hidden;backface-visibility:hidden;-webkit-perspective:1000;perspective:1000}
   .carousel-inner>.item.active.right,.carousel-inner>.item.next{left:0;-webkit-transform:translate3d(100%,0,0);transform:translate3d(100%,0,0)}
   .carousel-inner>.item.active.left,.carousel-inner>.item.prev{left:0;-webkit-transform:translate3d(-100%,0,0);transform:translate3d(-100%,0,0)}
-  .carousel-inner>.item.active,.carousel-inner>.item.next.left,.carousel-inner>.item.prev.right{left:0;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0)}
+  .carousel-inner>.item.active,.carousel-inner>.item.next.left,.carousel-inner>.item.prev.right{left:0;-webkit-transform:translateZ(0);transform:translateZ(0)}
 }
 .carousel-inner>.active,.carousel-inner>.next,.carousel-inner>.prev{display:block}
 .carousel-inner>.active{left:0}
