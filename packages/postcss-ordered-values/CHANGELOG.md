@@ -1,3 +1,9 @@
+# 2.0.2
+
+* Bump postcss-value-parser to `3.0.1` (thanks to @TrySound).
+* Fixes an issue where the module was discarding color codes if a `calc`
+  function was found (thanks to @TrySound).
+
 # 2.0.1
 
 * Bump postcss-value-parser to `2.0.2`.
