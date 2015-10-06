@@ -1,9 +1,6 @@
 'use strict';
 
 function CommentRemover (options) {
-    if (!(this instanceof CommentRemover)) {
-        return new CommentRemover(options);
-    }
     this.options = options;
 }
 

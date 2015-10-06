@@ -1,32 +1,37 @@
 'use strict';
 
-var balanced = require('node-balanced');
 var CommentRemover = require('./lib/commentRemover');
+var commentParser = require('./lib/commentParser');
 var postcss = require('postcss');
 var space = postcss.list.space;
 
 module.exports = postcss.plugin('postcss-discard-comments', function (options) {
-    return function (css) {
-        var remover = new CommentRemover(options || {});
+    var remover = new CommentRemover(options || {});
 
-        function replaceComments (source) {
-            if (!source) {
-                return;
-            }
-            var b = balanced.replacements({
-                source: source,
-                open: '/*',
-                close: '*/',
-                replace: function (comment, head, tail) {
-                    if (remover.canRemove(comment)) {
-                        return ' ';
-                    }
-                    return head + comment + tail;
-                }
-            });
-            return space(b).join(' ');
+    function matchesComments (source) {
+        return commentParser(source).filter(function (node) {
+            return node.type === 'comment';
+        });
+    }
+
+    function replaceComments (source) {
+        if (!source) {
+            return;
         }
+        var parsed = commentParser(source).reduce(function (value, node) {
+            if (node.type !== 'comment') {
+                return value + node.value;
+            }
+            if (remover.canRemove(node.value)) {
+                return value + ' ';
+            }
+            return value + '/*' + node.value + '*/';
+        }, '');
 
+        return space(parsed).join(' ');
+    }
+
+    return function (css) {
         css.walk(function (node) {
             if (node.type === 'comment' && remover.canRemove(node.text)) {
                 return node.remove();
@@ -43,11 +48,7 @@ module.exports = postcss.plugin('postcss-discard-comments', function (options) {
                 }
                 if (node.raws.important) {
                     node.raws.important = replaceComments(node.raws.important);
-                    var b = balanced.matches({
-                        source: node.raws.important,
-                        open: '/*',
-                        close: '*/'
-                    });
+                    var b = matchesComments(node.raws.important);
                     node.raws.important = b.length ? node.raws.important : '!important';
                 }
                 return;
