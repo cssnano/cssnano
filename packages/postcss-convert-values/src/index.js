@@ -2,7 +2,7 @@
 
 import postcss from 'postcss';
 import convert from './lib/convert';
-import valueParser, {unit} from 'postcss-value-parser';
+import valueParser, {unit, walk} from 'postcss-value-parser';
 
 function parseWord (node, opts, stripZeroUnit) {
     let pair = unit(node.value);
@@ -30,23 +30,21 @@ function transform (opts) {
             return;
         }
 
-        decl.value = valueParser(decl.value).walk(function (node) {
+        decl.value = valueParser(decl.value).walk(node => {
             if (node.type === 'word') {
                 parseWord(node, opts);
             } else if (node.type === 'function') {
                 if (node.value === 'calc' ||
                     node.value === 'hsl' ||
                     node.value === 'hsla') {
-                    node.nodes.forEach(function walkNodes (node) {
+                    walk(node.nodes, node => {
                         if (node.type === 'word') {
                             parseWord(node, opts, true);
                         }
-                        if (node.type === 'function') {
-                            node.nodes.forEach(walkNodes);
-                        }
                     });
                     return false;
-                } else if (node.value === 'url') {
+                }
+                if (node.value === 'url') {
                     return false;
                 }
             }

@@ -22,7 +22,7 @@
     "babel": "^5.8.23",
     "babel-tape-runner": "^1.2.0",
     "tap-spec": "^4.1.0",
-    "tape": "^4.2.0"
+    "tape": "^4.2.1"
   },
   "homepage": "https://github.com/ben-eb/postcss-convert-values",
   "author": {
@@ -32,7 +32,7 @@
   },
   "repository": "ben-eb/postcss-convert-values",
   "dependencies": {
-    "postcss": "^5.0.4",
-    "postcss-value-parser": "^2.0.2"
+    "postcss": "^5.0.8",
+    "postcss-value-parser": "^3.0.2"
   }
 }
