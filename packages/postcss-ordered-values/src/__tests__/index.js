@@ -73,6 +73,10 @@ let tests = [{
     message: 'should skip flex: 0 1 auto',
     fixture: 'h1{flex: 0 1 auto;}',
     expected: 'h1{flex: 0 1 auto;}'
+}, {
+    message: 'should support calc width in borders',
+    fixture: 'h1 {border: solid red calc(20px - 10px);}',
+    expected: 'h1 {border: calc(20px - 10px) solid red;}'
 }];
 
 function process (css, options) {

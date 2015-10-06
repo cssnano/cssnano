@@ -1,7 +1,7 @@
 'use strict';
 
 import postcss from 'postcss';
-import parser, {unit} from 'postcss-value-parser';
+import valueParser, {unit, stringify} from 'postcss-value-parser';
 
 // border: <line-width> || <line-style> || <color>
 // outline: <outline-color> || <outline-style> || <outline-width>
@@ -35,7 +35,9 @@ const borderStyles = [
 ];
 
 // flex-flow: <flex-direction> || <flex-wrap>
-const flexFlowProps = ['flex-flow'];
+const flexFlowProps = [
+    'flex-flow'
+];
 
 const flexDirection = [
     'row',
@@ -51,62 +53,65 @@ const flexWrap = [
 ];
 
 
-let normalizeBorder = decl => {
-    if (!~borderProps.indexOf(decl.prop)) {
-        return;
-    }
+function normalizeBorder (decl) {
     let order = {width: '', style: '', color: ''};
-    let border = parser(decl.value);
-    border = border.nodes.filter(n => n.type !== 'space');
-    if (border.length > 1) {
-        border.forEach(node => {
-            let number = unit(node.value);
-            if (number || ~borderWidths.indexOf(node.value)) {
-                order.width = node.value + ' ';
-                return;
-            }
-            if (~borderStyles.indexOf(node.value)) {
-                order.style = node.value + ' ';
+    let border = valueParser(decl.value);
+    if (border.nodes.length > 2) {
+        border.walk(node => {
+            if (node.type === 'word') {
+                if (~borderStyles.indexOf(node.value)) {
+                    order.style = node.value;
+                    return;
+                }
+                if (~borderWidths.indexOf(node.value) || unit(node.value)) {
+                    order.width = node.value;
+                    return;
+                }
+                order.color = node.value;
                 return;
             }
             if (node.type === 'function') {
-                let value = node.nodes.map(n => n.value).join('');
-                order.color = `${node.value}(${value})`;
-                return;
+                if (node.value === 'calc') {
+                    order.width = stringify(node);
+                } else {
+                    order.color = stringify(node);
+                }
+                return false;
             }
-            order.color = node.value;
         });
-        decl.value = `${order.width}${order.style}${order.color}`.trim();
+        decl.value = `${order.width} ${order.style} ${order.color}`.trim();
     }
 };
 
-let normalizeFlexFlow = decl => {
-    if (!~flexFlowProps.indexOf(decl.prop)) {
-        return;
-    }
+function normalizeFlexFlow (decl) {
     let order = {direction: '', wrap: ''};
-    let flexFlow = parser(decl.value);
-    flexFlow = flexFlow.nodes.filter(n => n.type !== 'space');
-    if (flexFlow.length > 1) {
-        flexFlow.forEach(node => {
+    let flexFlow = valueParser(decl.value);
+    if (flexFlow.nodes.length > 2) {
+        flexFlow.walk(node => {
             if (~flexDirection.indexOf(node.value)) {
-                order.direction = node.value + ' ';
+                order.direction = node.value;
                 return;
             }
             if (~flexWrap.indexOf(node.value)) {
-                order.wrap = node.value + ' ';
+                order.wrap = node.value;
                 return;
             }
         });
-        decl.value = `${order.direction}${order.wrap}`.trim();
+        decl.value = `${order.direction} ${order.wrap}`.trim();
     }
 };
 
 export default postcss.plugin('postcss-ordered-values', () => {
     return css => {
         css.walkDecls(decl => {
-            normalizeBorder(decl);
-            normalizeFlexFlow(decl);
+            if (~borderProps.indexOf(decl.prop)) {
+                normalizeBorder(decl);
+                return;
+            }
+            if (~flexFlowProps.indexOf(decl.prop)) {
+                normalizeFlexFlow(decl);
+                return;
+            }
         });
     };
 });
