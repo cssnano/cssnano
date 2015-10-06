@@ -1,9 +1,7 @@
 'use strict';
 
 var postcss = require('postcss');
-var parser = require('postcss-value-parser');
-var trimSpaceNodes = parser.trim;
-var stringify = parser.stringify;
+var valueParser = require('postcss-value-parser');
 var normalize = require('normalize-url');
 var isAbsolute = require('is-absolute-url');
 var path = require('path');
@@ -19,54 +17,38 @@ function convert (url, options) {
     return path.normalize(url).replace(new RegExp('\\' + path.sep, 'g'), '/');
 }
 
-function namespaceOptimiser (options) {
-    return function (rule) {
-        rule.params = parser(rule.params).walk(function (node, i, parentNodes) {
-            var nodes = node.nodes;
-            if (node.type === 'function' && node.value === 'url') {
-                trimSpaceNodes(node.nodes);
-                if (nodes.length === 1 && nodes[0].type === 'string' && nodes[0].quote) {
-                    node = nodes[0];
-                } else {
-                    node = { type: 'string', quote: '"', value: stringify(nodes) };
-                }
-                parentNodes[i] = node;
-            }
+function transformNamespace (rule, opts) {
+    rule.params = valueParser(rule.params).walk(function (node) {
+        if (node.type === 'function' && node.value === 'url' && node.nodes.length) {
+            node.type = 'string';
+            node.quote = node.nodes[0].quote || '"';
+            node.value = node.nodes[0].value;
+        }
 
-            if (node.type === 'string') {
-                node.value = convert(node.value.trim(), options);
-            }
+        if (node.type === 'string') {
+            node.value = convert(node.value.trim(), opts);
+        }
 
-            return false;
-        }).toString();
-    };
+        return false;
+    }).toString();
 }
 
-function transformDecl(decl, opts) {
-    decl.value = decl.value.replace(multiline, '');
-    decl.value = parser(decl.value).walk('url', function (node) {
-        var nodes = node.nodes;
-        var url;
-        var escaped;
-
-        if (node.type !== 'function') {
+function transformDecl (decl, opts) {
+    decl.value = valueParser(decl.value).walk(function (node) {
+        if (node.type !== 'function' || node.value !== 'url' && node.nodes.length) {
             return;
         }
 
-        trimSpaceNodes(nodes);
+        var url = node.nodes[0];
+        var escaped;
 
-        if (nodes.length === 1 && nodes[0].type === 'string' && nodes[0].quote) {
-            url = nodes[0];
-        } else {
-            url = { type: 'word', value: stringify(nodes) };
-        }
-        node.nodes = [url];
+        node.before = node.after = '';
+        url.value = url.value.trim().replace(multiline, '');
 
         if (~url.value.indexOf('data:image/') || ~url.value.indexOf('data:application/')) {
             return false;
         }
 
-        url.value = url.value.trim();
         if (!~url.value.indexOf('chrome-extension')) {
             url.value = convert(url.value, opts);
         }
@@ -96,9 +78,8 @@ module.exports = postcss.plugin('postcss-normalize-url', function (opts) {
         css.walk(function (node) {
             if (node.type === 'decl') {
                 return transformDecl(node, opts);
-            }
-            if (node.type === 'atrule' && node.name === 'namespace') {
-                return namespaceOptimiser(opts)(node);
+            } else if (node.type === 'atrule' && node.name === 'namespace') {
+                return transformNamespace(node, opts);
             }
         });
     };

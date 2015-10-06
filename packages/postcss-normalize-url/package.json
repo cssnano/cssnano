@@ -26,7 +26,7 @@
     "normalize-url": "^1.3.1",
     "object-assign": "^4.0.1",
     "postcss": "^5.0.8",
-    "postcss-value-parser": "^2.0.2"
+    "postcss-value-parser": "^3.0.1"
   },
   "devDependencies": {
     "jshint": "^2.8.0",
