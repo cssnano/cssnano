@@ -1,11 +1,13 @@
 'use strict';
 
 var postcss = require('postcss');
-var parser = require('postcss-value-parser');
+var valueParser = require('postcss-value-parser');
+var walk = valueParser.walk;
+var unit = valueParser.unit;
 var encode = require('./lib/encode');
 
 function isNum (node) {
-    return parser.unit(node.value);
+    return unit(node.value);
 }
 
 function transformAtRule (css, atRuleRegex, propRegex) {
@@ -23,24 +25,20 @@ function transformAtRule (css, atRuleRegex, propRegex) {
             }
             node.params = cache[node.params].ident;
             ruleCache.push(node);
-        }
-        if (node.type === 'decl' && propRegex.test(node.prop)) {
+        } else if (node.type === 'decl' && propRegex.test(node.prop)) {
             declCache.push(node);
         }
     });
     // Iterate each property and change their names
     declCache.forEach(function (decl) {
-        decl.value = parser(decl.value).walk(function (node) {
+        decl.value = valueParser(decl.value).walk(function (node) {
             if (node.type === 'word' && node.value in cache) {
                 cache[node.value].count++;
                 node.value = cache[node.value].ident;
-            }
-            if (node.type === 'space') {
+            } else if (node.type === 'space') {
                 node.value = ' ';
-            }
-            if (node.type === 'div') {
-                node.before = '';
-                node.after = '';
+            } else if (node.type === 'div') {
+                node.before = node.after = '';
             }
         }).toString();
     });
@@ -61,7 +59,7 @@ function transformDecl (css, propOneRegex, propTwoRegex) {
     var declTwoCache = [];
     css.walkDecls(function (decl) {
         if (propOneRegex.test(decl.prop)) {
-            decl.value = parser(decl.value).walk(function (node) {
+            decl.value = valueParser(decl.value).walk(function (node) {
                 if (node.type === 'word' && !isNum(node)) {
                     if (!cache[node.value]) {
                         cache[node.value] = {
@@ -70,29 +68,25 @@ function transformDecl (css, propOneRegex, propTwoRegex) {
                         };
                     }
                     node.value = cache[node.value].ident;
-                }
-                if (node.type === 'space') {
+                } else if (node.type === 'space') {
                     node.value = ' ';
                 }
             });
             declOneCache.push(decl);
-        }
-        if (propTwoRegex.test(decl.prop)) {
+        } else if (propTwoRegex.test(decl.prop)) {
             declTwoCache.push(decl);
         }
     });
     declTwoCache.forEach(function (decl) {
-        decl.value = parser(decl.value).walk(function (node) {
+        decl.value = valueParser(decl.value).walk(function (node) {
             if (node.type === 'function') {
                 if (node.value === 'counter' || node.value === 'counters') {
-                    node.nodes.forEach(function (node) {
+                    walk(node.nodes, function (node) {
                         if (node.type === 'word' && node.value in cache) {
                             cache[node.value].count++;
                             node.value = cache[node.value].ident;
-                        }
-                        if (node.type === 'div') {
-                            node.before = '';
-                            node.after = '';
+                        } else if (node.type === 'div') {
+                            node.before = node.after = '';
                         }
                     });
                 }

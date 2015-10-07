@@ -30,6 +30,6 @@
   "repository": "ben-eb/postcss-reduce-idents",
   "dependencies": {
     "postcss": "^5.0.4",
-    "postcss-value-parser": "^2.0.3"
+    "postcss-value-parser": "^3.0.2"
   }
 }
