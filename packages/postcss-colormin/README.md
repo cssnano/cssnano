@@ -1,6 +1,6 @@
 # [postcss][postcss]-colormin [![Build Status](https://travis-ci.org/ben-eb/postcss-colormin.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/postcss-colormin.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/postcss-colormin.svg)][deps]
 
-> Minify colors in your CSS files with PostCSS and [colormin][colormin].
+> Minify colors in your CSS files with PostCSS.
 
 ## Install
 
@@ -33,7 +33,6 @@ to cover it.
 
 MIT © [Ben Briggs](http://beneb.info)
 
-[colormin]: https://github.com/ben-eb/colormin
 [ci]:       https://travis-ci.org/ben-eb/postcss-colormin
 [deps]:     https://gemnasium.com/ben-eb/postcss-colormin
 [npm]:      http://badge.fury.io/js/postcss-colormin

@@ -1,7 +1,7 @@
 {
   "name": "postcss-colormin",
   "version": "2.1.2",
-  "description": "Minify colors in your CSS files with PostCSS and colormin.",
+  "description": "Minify colors in your CSS files with PostCSS.",
   "main": "index.js",
   "files": [
     "index.js",
@@ -32,8 +32,9 @@
   },
   "repository": "ben-eb/postcss-colormin",
   "dependencies": {
-    "colormin": "^1.0.4",
+    "colr-convert": "^1.0.5",
+    "css-color-names": "0.0.2",
     "postcss": "^5.0.4",
-    "postcss-value-parser": "^2.0.2"
+    "postcss-value-parser": "^3.0.2"
   }
 }
