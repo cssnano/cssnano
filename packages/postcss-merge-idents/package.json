@@ -29,6 +29,6 @@
   "repository": "ben-eb/postcss-merge-idents",
   "dependencies": {
     "postcss": "^5.0.4",
-    "postcss-value-parser": "^2.0.4"
+    "postcss-value-parser": "^3.0.2"
   }
 }

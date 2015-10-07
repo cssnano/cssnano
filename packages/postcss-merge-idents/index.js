@@ -1,7 +1,7 @@
 'use strict';
 
 var postcss = require('postcss');
-var parser = require('postcss-value-parser');
+var valueParser = require('postcss-value-parser');
 
 function canonical (obj) {
     return function recurse (key) {
@@ -51,7 +51,7 @@ function mergeAtRules (css, pairs) {
     pairs.forEach(function (pair) {
         var canon = canonical(pair.replacements);
         pair.decls.forEach(function (decl) {
-            decl.value = parser(decl.value).walk(function (node) {
+            decl.value = valueParser(decl.value).walk(function (node) {
                 if (node.type === 'word') {
                     node.value = canon(node.value);
                 }
@@ -59,8 +59,7 @@ function mergeAtRules (css, pairs) {
                     node.value = ' ';
                 }
                 if (node.type === 'div') {
-                    node.before = '';
-                    node.after = '';
+                    node.before = node.after = '';
                 }
             }).toString();
         });
