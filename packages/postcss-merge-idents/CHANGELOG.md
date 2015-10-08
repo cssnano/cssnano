@@ -1,3 +1,7 @@
+# 2.1.1
+
+* Updates postcss-value-parser to version 3 (thanks to @TrySound).
+
 # 2.1.0
 
 * Replaced css-list with postcss-value-parser, reduced AST iterations from 4
