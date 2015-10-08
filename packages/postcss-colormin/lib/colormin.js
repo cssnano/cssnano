@@ -82,16 +82,16 @@ module.exports = function (name, args) {
             }
             return shorter('hsla(' + hsl.join() + ')', 'rgba(' + rgb.join() + ')');
         }
-    } else {
-        if (name[0] === '#') {
-            name = hexToLonghand(name);
-        }
+    } else if (name[0] === '#') {
+        name = hexToLonghand(name);
     }
 
     if (name in hexes) {
         name = shorter(hexToShorthand(name), hexes[name]);
     } else if (name in keywords) {
         name = shorter(name, hexToShorthand(keywords[name]));
+    } else if (name[0] === '#' && name.length === 7) {
+        name = hexToShorthand(name);
     }
 
     return name;

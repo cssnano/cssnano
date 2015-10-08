@@ -77,6 +77,10 @@ var tests = module.exports = [{
     message: 'should not minify in calc values',
     fixture: 'h1{width:calc(100vw / 2 - 6px + 0)}',
     expected: 'h1{width:calc(100vw / 2 - 6px + 0)}',
+}, {
+    message: 'should minify hex colors without keywords',
+    fixture: 'h1{background:linear-gradient(#ffffff,#999999) no-repeat;}',
+    expected: 'h1{background:linear-gradient(#fff,#999) no-repeat;}',
 }];
 
 function process (css, options) {
