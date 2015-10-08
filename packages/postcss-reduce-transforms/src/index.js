@@ -68,16 +68,12 @@ function reduce (node) {
         return false;
     }
     if (node.value === 'scale' || node.value === 'translate') {
-        // scale(sx, sy) => scale(sx)
-        // translate(tx, ty) => translate(tx)
-        if (node.nodes[0] &&
-            node.nodes[2] &&
-            node.nodes[0].value === node.nodes[2].value
-        ) {
-            node.nodes = [node.nodes[0]];
-            return false;
-        }
         if (node.value === 'scale' && node.nodes[2]) {
+            // scale(sx, sy) => scale(sx)
+            if (node.nodes[0].value === node.nodes[2].value) {
+                node.nodes = [node.nodes[0]];
+                return false;
+            }
             // scale(sx, 1) => scaleX(sx)
             if (parseFloat(node.nodes[2].value) === 1) {
                 node.value = 'scaleX';

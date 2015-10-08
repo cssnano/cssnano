@@ -50,9 +50,9 @@ let tests = [{
     fixture: 'h1{transform:scale3d(1, 1, 1.5)}',
     expected: 'h1{transform:scaleZ(1.5)}'
 }, {
-    message: 'should shorten translate(tx, ty) to translate(tx)',
+    message: 'should not shorten translate(tx, ty) to translate(tx)',
     fixture: 'h1{transform:translate(5, 5)}',
-    expected: 'h1{transform:translate(5)}'
+    expected: 'h1{transform:translate(5, 5)}'
 }, {
     message: 'should shorten translate(tx, 0) to translateX(tx)',
     fixture: 'h1{transform:translate(5, 0)}',
