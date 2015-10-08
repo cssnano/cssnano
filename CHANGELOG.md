@@ -1,3 +1,9 @@
+# 3.3.0
+
+* Updated modules to use postcss-value-parser version 3 (thanks to @TrySound).
+* Now converts between transform functions with postcss-reduce-transforms.
+  e.g. `translate3d(0, 0, 0)` becomes `translateZ(0)`.
+
 # 3.2.0
 
 * cssnano no longer converts `outline: none` to `outline: 0`, as there are
