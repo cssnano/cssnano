@@ -1,3 +1,7 @@
+# 2.1.4
+
+* Fixes an error in the last patch where the `lib` directory was ignored by npm.
+
 # 2.1.3
 
 * Updates postcss-value-parser to version 3 (thanks to @TrySound).

@@ -4,6 +4,7 @@
   "description": "Minify colors in your CSS files with PostCSS.",
   "main": "index.js",
   "files": [
+    "lib",
     "index.js",
     "LICENSE-MIT"
   ],
