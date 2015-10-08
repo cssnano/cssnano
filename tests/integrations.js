@@ -26,6 +26,8 @@ test('integration testing', function (t) {
         formatted(frameworks[framework]).then(function (result) {
             var expected = file(path.join(base, framework) + '.css', 'utf-8');
             t.equal(result.css, expected, specName(testName));
+        }, function (err) {
+            t.notOk(err.stack);
         });
     });
 });
