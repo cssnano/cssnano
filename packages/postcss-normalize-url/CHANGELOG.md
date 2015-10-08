@@ -1,3 +1,7 @@
+# 3.0.3
+
+* Updates postcss-value-parser to version 3 (thanks to @TrySound).
+
 # 3.0.2
 
 * Fixes incorrect minification of chrome-extension urls.
