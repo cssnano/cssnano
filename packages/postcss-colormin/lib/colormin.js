@@ -1,3 +1,5 @@
+'use strict';
+
 var convert = require('colr-convert');
 var keywords = require('css-color-names');
 var hexes = {};
@@ -9,7 +11,7 @@ Object.keys(keywords).forEach(function (keyword) {
 
 function shorter (a, b) {
     return (a && a.length < b.length ? a : b).toLowerCase();
-};
+}
 
 function hexToLonghand (hex) {
     var h = hex.substring(1);
@@ -17,14 +19,14 @@ function hexToLonghand (hex) {
     var g = h[1];
     var b = h[2];
     return h.length === 3 && '#' + r + r + g + g + b + b || hex;
-};
+}
 
 function hexToShorthand (hex) {
     if (hex[1] === hex[2] && hex[3] === hex[4] && hex[5] === hex[6]) {
         return '#' + hex[2] + hex[4] + hex[6];
     }
     return hex;
-};
+}
 
 function dropLeadingZero (number) {
     var value = String(number);
@@ -43,7 +45,7 @@ function dropLeadingZero (number) {
 }
 
 module.exports = function (name, args) {
-    var opacity, rgb, hsl;
+    var rgb, hsl;
     if (name === 'rgb' || name === 'rgba' || name === 'hsl' || name === 'hsla') {
         if (name === 'rgba' || name === 'hsla') {
             if (args[3] === 1) {
