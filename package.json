@@ -48,7 +48,7 @@
     "postcss-reduce-idents": "^2.2.0",
     "postcss-svgo": "^2.0.3",
     "postcss-unique-selectors": "^2.0.1",
-    "postcss-value-parser": "^2.0.5",
+    "postcss-value-parser": "^3.0.1",
     "postcss-zindex": "^2.0.0"
   },
   "devDependencies": {
