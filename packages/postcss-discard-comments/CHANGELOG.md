@@ -1,3 +1,7 @@
+# 2.0.1
+
+* Replaces a dependency on node-balanced with internal comments parser.
+
 # 2.0.0
 
 * Upgraded to PostCSS 5 (thanks to @avanes).
