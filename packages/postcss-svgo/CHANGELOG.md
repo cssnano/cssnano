@@ -1,3 +1,7 @@
+# 2.0.4
+
+* Updates postcss-value-parser to version 3 (thanks to @TrySound).
+
 # 2.0.3
 
 * Uses postcss-value-parser instead of async-replace to reduce cssnano's
