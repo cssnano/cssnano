@@ -1,4 +1,4 @@
-var parser = require('postcss-value-parser');
+var unit = require('postcss-value-parser').unit;
 var keywords = require('./keywords');
 var minifyFamily = require('./minify-family');
 var minifyWeight = require('./minify-weight');
@@ -22,7 +22,7 @@ module.exports = function (nodes, opts) {
                     node.value = minifyWeight(node.value, opts);
                     familyStart = i;
                 }
-            } else if (~keywords.size.indexOf(node.value) || parser.unit(node.value)) {
+            } else if (~keywords.size.indexOf(node.value) || unit(node.value)) {
                 if (!hasSize) {
                     familyStart = i;
                     hasSize = true;

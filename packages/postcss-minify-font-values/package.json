@@ -8,7 +8,7 @@
     "lib"
   ],
   "scripts": {
-    "test": "eslint index.js lib test && tape test/*.js"
+    "test": "eslint index.js lib test && tape test/*.js | tap-spec"
   },
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "license": "MIT",
@@ -28,7 +28,7 @@
   "dependencies": {
     "object-assign": "^4.0.1",
     "postcss": "^5.0.4",
-    "postcss-value-parser": "^2.0.0",
+    "postcss-value-parser": "^3.0.2",
     "uniqs": "^2.0.0"
   },
   "repository": {
