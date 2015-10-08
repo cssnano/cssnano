@@ -1,7 +1,6 @@
 var postcss = require('postcss');
-var parser = require('postcss-value-parser');
-var stringify = parser.stringify;
-var trim = parser.trim;
+var valueParser = require('postcss-value-parser');
+var stringify = valueParser.stringify;
 var sort = require('alphanum-sort');
 var uniqs = require('uniqs');
 
@@ -32,20 +31,13 @@ module.exports = postcss.plugin('postcss-minify-params', function () {
                 return;
             }
 
-            var params = parser(rule.params);
+            var params = valueParser(rule.params);
 
             params.walk(function (node) {
-                if (node.type === 'div') {
-                    node.before = '';
-                    node.after = '';
-                }
-
-                if (node.type === 'space') {
+                if (node.type === 'div' || node.type === 'function') {
+                    node.before = node.after = '';
+                } else if (node.type === 'space') {
                     node.value = ' ';
-                }
-
-                if (node.type === 'function') {
-                    trim(node.nodes);
                 }
             }, true);
 
