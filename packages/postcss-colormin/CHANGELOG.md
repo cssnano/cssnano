@@ -1,3 +1,8 @@
+# 2.1.3
+
+* Updates postcss-value-parser to version 3 (thanks to @TrySound).
+* Removes the dependency on colormin, conversion is now done in-module.
+
 # 2.1.2
 
 * Removed an unnecessary `trim` method that was used to work around a now
