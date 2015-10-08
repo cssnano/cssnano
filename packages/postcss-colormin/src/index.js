@@ -1,15 +1,18 @@
 'use strict';
 
-var colormin = require('./lib/colormin');
-var postcss = require('postcss');
-var parser = require('postcss-value-parser');
+import postcss from 'postcss';
+import valueParser from 'postcss-value-parser';
+import colormin from './lib/colormin';
 
 function extractColorArguments(nodes) {
-    var i, max;
-    var result = [];
-    for (i = 0, max = nodes.length; i < max; i += 1) {
+    let result = [];
+    for (let i = 0, max = nodes.length; i < max; i += 1) {
         if (nodes[i].type === 'word') {
-            result.push(parseFloat(nodes[i].value));
+            let val = parseFloat(nodes[i].value);
+            if (isNaN(val)) {
+                return false;
+            }
+            result.push(val);
         }
     }
 
@@ -17,13 +20,14 @@ function extractColorArguments(nodes) {
 }
 
 function reduceColor (decl) {
-    decl.value = parser(decl.value).walk(function (node) {
+    decl.value = valueParser(decl.value).walk(node => {
         if (node.type === 'function') {
             if (/^(rgb|hsl)a?$/.test(node.value)) {
-                node.value = colormin(node.value, extractColorArguments(node.nodes));
-                node.type = 'word';
-            } else {
-                node.before = node.after = '';
+                let args = extractColorArguments(node.nodes);
+                if (args) {
+                    node.value = colormin(node.value, args);
+                    node.type = 'word';
+                }
             }
         } else if (node.type === 'word') {
             node.value = colormin(node.value);
@@ -32,7 +36,7 @@ function reduceColor (decl) {
 }
 
 function reduceWhitespaces (decl) {
-    decl.value = parser(decl.value).walk(function (node) {
+    decl.value = valueParser(decl.value).walk(node => {
         if (node.type === 'function' || node.type === 'div') {
             node.before = node.after = '';
         }
@@ -50,7 +54,7 @@ function transform (decl) {
     }
 }
 
-module.exports = postcss.plugin('postcss-colormin', function () {
+export default postcss.plugin('postcss-colormin', () => {
     return function (css) {
         css.walkDecls(transform);
     };
