@@ -1,3 +1,7 @@
+# 2.2.1
+
+* Updates postcss-value-parser to version 3 (thanks to @TrySound).
+
 # 2.2.0
 
 * Added options for customising what the module reduces (thanks to @TrySound).
