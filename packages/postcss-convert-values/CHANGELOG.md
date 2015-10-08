@@ -1,3 +1,7 @@
+# 2.3.3
+
+* Updates postcss-value-parser to version 3 (thanks to @TrySound).
+
 # 2.3.2
 
 * Fixed a regression where `0%` in color functions was being transformed to `0`
