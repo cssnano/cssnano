@@ -1,3 +1,8 @@
+# 3.3.1
+
+* Unpins postcss-colormin from `2.1.2`, as the `2.1.3` & `2.1.4` patches had
+  optimization regressions that are now resolved in `2.1.5`.
+
 # 3.3.0
 
 * Updated modules to use postcss-value-parser version 3 (thanks to @TrySound).
