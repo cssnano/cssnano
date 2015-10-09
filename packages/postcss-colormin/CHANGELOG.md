@@ -1,3 +1,9 @@
+# 2.1.5
+
+* Fixes several regressions from 2.1.3 - shorthand hex color minification,
+  incorrect conversion to `transparent` from `rgba(255, 255, 255, 0)`
+  (thanks to @TrySound).
+
 # 2.1.4
 
 * Fixes an error in the last patch where the `lib` directory was ignored by npm.
