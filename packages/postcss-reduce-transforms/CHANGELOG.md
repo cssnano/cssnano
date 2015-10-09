@@ -1,3 +1,8 @@
+# 1.0.3
+
+* The `translate(tx, 0)` compression was changed from `translateX(tx)`
+  to `translate(tx)`.
+
 # 1.0.2
 
 * Fixes an incorrect conversion of `translate(5, 5)` to `translate(5)`.
