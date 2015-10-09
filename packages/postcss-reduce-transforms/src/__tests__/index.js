@@ -54,9 +54,9 @@ let tests = [{
     fixture: 'h1{transform:translate(5, 5)}',
     expected: 'h1{transform:translate(5, 5)}'
 }, {
-    message: 'should shorten translate(tx, 0) to translateX(tx)',
+    message: 'should shorten translate(tx, 0) to translate(tx)',
     fixture: 'h1{transform:translate(5, 0)}',
-    expected: 'h1{transform:translateX(5)}'
+    expected: 'h1{transform:translate(5)}'
 }, {
     message: 'should shorten translate(0, ty) to translateY(ty)',
     fixture: 'h1{transform:translate(0, 5)}',

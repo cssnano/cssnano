@@ -89,9 +89,9 @@ function reduce (node) {
             return false;
         }
         if (node.value === 'translate' && node.nodes[2]) {
-            // translate(tx, 0) => translateX(tx)
+            // translate(tx, 0) => translate(tx)
             if (parseFloat(node.nodes[2].value) === 0) {
-                node.value = 'translateX',
+                node.value = 'translate',
                 node.nodes = [node.nodes[0]];
                 return false;
             }
