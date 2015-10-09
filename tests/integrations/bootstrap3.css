@@ -1361,7 +1361,7 @@ button.close{-webkit-appearance:none;padding:0;cursor:pointer;background:transpa
 .modal,.modal-open{overflow:hidden}
 .modal{position:fixed;top:0;right:0;bottom:0;left:0;z-index:10;display:none;-webkit-overflow-scrolling:touch;outline:0}
 .modal.fade .modal-dialog{-webkit-transition:-webkit-transform .3s ease-out;transition:transform .3s ease-out;-webkit-transform:translateY(-25%);-ms-transform:translateY(-25%);transform:translateY(-25%)}
-.modal.in .modal-dialog{-webkit-transform:translate(0);-ms-transform:translate(0);transform:translate(0)}
+.modal.in .modal-dialog{-webkit-transform:translateX(0);-ms-transform:translateX(0);transform:translateX(0)}
 .modal-open .modal{overflow-x:hidden;overflow-y:auto}
 .modal-dialog{position:relative;width:auto;margin:10px}
 .modal-content{position:relative;background-color:#fff;background-clip:padding-box;border:1px solid #999;border:1px solid rgba(0,0,0,.2);border-radius:6px;outline:0;box-shadow:0 3px 9px rgba(0,0,0,.5)}
