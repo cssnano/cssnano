@@ -11,6 +11,23 @@ Object.keys(keywords).forEach(keyword => hexes[keywords[keyword]] = keyword);
 
 let shorter = (a, b) => (a && a.length < b.length ? a : b);
 
+function clamp (max) {
+    return function (value) {
+        return Math.max(0, Math.min(value, max));
+    };
+}
+
+function clampRgb (value) {
+    return clamp(255)(value);
+}
+
+function clampHsl (value, index) {
+    if (!index) {
+        return clamp(360)(value);
+    }
+    return index < 4 ? clamp(100)(value) : value;
+}
+
 export default function (name, args) {
     var word = name.toLowerCase();
     if (word === 'rgb' || word === 'rgba' || word === 'hsl' || word === 'hsla') {
@@ -31,26 +48,26 @@ export default function (name, args) {
         }
         if (word === 'hsl') {
             word = 'rgb';
-            args = convert.hsl.rgb(args);
+            args = convert.hsl.rgb(args.map(clampHsl));
             args[0] = round(args[0]);
             args[1] = round(args[1]);
             args[2] = round(args[2]);
         }
         if (word === 'rgb') {
-            word = convert.rgb.hex(args);
+            word = convert.rgb.hex(args.map(clampRgb));
         } else {
             let rgba, hsla;
             // alpha conversion
             if (word === 'rgba') {
-                rgba = args;
+                rgba = args.slice(0, 3).map(clampRgb).concat(args[3]);
                 hsla = convert.rgb.hsl(args);
                 hsla[0] = round(hsla[0]);
                 hsla[1] = round(hsla[1]);
                 hsla[2] = round(hsla[2]);
                 hsla.push(args[3]);
             } else {
-                hsla = args;
-                rgba = convert.hsl.rgb(args);
+                hsla = args.map(clampHsl);
+                rgba = convert.hsl.rgb(hsla);
                 rgba[0] = round(rgba[0]);
                 rgba[1] = round(rgba[1]);
                 rgba[2] = round(rgba[2]);
@@ -75,4 +92,4 @@ export default function (name, args) {
     }
 
     return name;
-};
+}

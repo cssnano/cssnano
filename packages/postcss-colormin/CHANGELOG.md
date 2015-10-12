@@ -1,3 +1,8 @@
+# 2.1.6
+
+* Fixes a regression where codes for `rgba` & `hsla` were not correctly
+  capped at minimum/maximum values.
+
 # 2.1.5
 
 * Fixes several regressions from 2.1.3 - shorthand hex color minification,
