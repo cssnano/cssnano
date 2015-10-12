@@ -1,3 +1,8 @@
+# 2.1.7
+
+* Fixes another regression where `hsla(0,0%,100%,.5)` was converted to
+  `hsla(0,0%,100%,0.5)`.
+
 # 2.1.6
 
 * Fixes a regression where codes for `rgba` & `hsla` were not correctly

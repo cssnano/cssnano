@@ -4,7 +4,7 @@ import test from 'tape';
 import min from '../lib/colormin';
 
 test('should return the smallest colour', t => {
-    t.plan(24);
+    t.plan(25);
     t.equal(min('RED'), 'red', 'should lowercase keywords');
     t.equal(min('#f00'), 'red', 'should convert shorthand hex to keyword');
     t.equal(min('#ff0000'), 'red', 'should convert longhand hex to keyword');
@@ -29,6 +29,7 @@ test('should return the smallest colour', t => {
     t.equal(min('hsla', [-400, 50, 10, 0.5]), 'rgba(38,13,13,.5)', 'should convert signed numbers (2)');
     t.equal(min('rgb', [400, 400, 400]), '#fff', 'should cap values at their maximum');
     t.equal(min('hsl', [400, 400, 50]), 'red', 'should cap values at their maximum (2)');
+    t.equal(min('hsla', [0, 0, 100, 0.5]), 'hsla(0,0%,100%,.5)', 'should remove leading zeros');
 });
 
 test('should pass through if not recognised', t => {

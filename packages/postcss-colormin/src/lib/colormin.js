@@ -72,6 +72,7 @@ export default function (name, args) {
                 rgba[1] = round(rgba[1]);
                 rgba[2] = round(rgba[2]);
                 rgba.push(args[3]);
+                hsla[3] = args[3];
             }
             hsla[1] = hsla[1] + '%';
             hsla[2] = hsla[2] + '%';
