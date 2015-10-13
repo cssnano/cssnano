@@ -170,6 +170,14 @@ let tests = [{
     message: 'should not remove unit with zero value in hsl and hsla functions',
     fixture: 'h1{color:hsl(0, 0%, 244%); background:hsl(0, 0%, 0%)}',
     expected: 'h1{color:hsl(0, 0%, 244%); background:hsl(0, 0%, 0%)}'
+}, {
+    message: 'should strip trailing zeroes from percentage heights',
+    fixture: 'h1{height:12.500%}',
+    expected: 'h1{height:12.5%}'
+}, {
+    message: 'should not strip the percentage from 0 in max-height & height props',
+    fixture: 'h1{height:0%;max-height:0%}',
+    expected: 'h1{height:0%;max-height:0%}'
 }];
 
 function process (css, options) {

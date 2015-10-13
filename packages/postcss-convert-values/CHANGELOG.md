@@ -1,3 +1,8 @@
+# 2.3.4
+
+* Does not convert `height:0%` to `height:0` (and the same for `max-height`), as
+  they produce different results.
+
 # 2.3.3
 
 * Updates postcss-value-parser to version 3 (thanks to @TrySound).

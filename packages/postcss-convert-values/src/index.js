@@ -32,7 +32,14 @@ function transform (opts) {
 
         decl.value = valueParser(decl.value).walk(node => {
             if (node.type === 'word') {
-                parseWord(node, opts);
+                if (
+                    (decl.prop === 'max-height' || decl.prop === 'height') &&
+                    ~decl.value.indexOf('%')
+                ) {
+                    parseWord(node, opts, true);
+                } else {
+                    parseWord(node, opts);
+                }
             } else if (node.type === 'function') {
                 if (node.value === 'calc' ||
                     node.value === 'hsl' ||
