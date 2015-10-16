@@ -1,3 +1,9 @@
+# 2.0.2
+
+* Fixes an integration issue where comments inside values transformed by other
+  processors had their values reset to their original state before the
+  comments were removed.
+
 # 2.0.1
 
 * Replaces a dependency on node-balanced with internal comments parser.

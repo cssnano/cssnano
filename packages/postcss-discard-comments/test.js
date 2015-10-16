@@ -164,3 +164,11 @@ test('should work with single line comments', function (t) {
     t.plan(1);
     t.equal(res, '//!wow\nh1{\n}');
 });
+
+test('should handle comments from other plugins', function (t) {
+    var css = '$color: red; :root { box-shadow: inset 0 -10px 12px 0 $color, /* some comment */ inset 0 0 5px 0 $color; }';
+    var res = postcss([ require('postcss-simple-vars'), plugin]).process(css).css;
+
+    t.plan(1);
+    t.equal(res, ':root{ box-shadow:inset 0 -10px 12px 0 red, inset 0 0 5px 0 red; }');
+});

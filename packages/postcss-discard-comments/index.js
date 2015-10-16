@@ -43,8 +43,13 @@ module.exports = postcss.plugin('postcss-discard-comments', function (options) {
 
             if (node.type === 'decl') {
                 if (node.raws.value && node.raws.value.raw) {
-                    var replaced = replaceComments(node.raws.value.raw);
-                    node.raws.value.raw = node.raws.value.value = node.value = replaced;
+                    if (node.raws.value.value === node.value) {
+                        var replaced = replaceComments(node.raws.value.raw);
+                        node.value = replaced;
+                    } else {
+                        node.value = replaceComments(node.value);
+                    }
+                    delete node.raws.value;
                 }
                 if (node.raws.important) {
                     node.raws.important = replaceComments(node.raws.important);
