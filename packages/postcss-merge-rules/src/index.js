@@ -41,7 +41,7 @@ function canMerge (ruleA, ruleB) {
     return parent && (a.concat(b).every(noVendor) || sameVendor(a, b));
 }
 
-let getDecls = rule => rule.nodes.map(String);
+let getDecls = rule => rule.nodes ? rule.nodes.map(String) : '';
 let joinSelectors = (...rules) => rules.map(s => s.selector).join();
 
 function ruleLength (...rules) {
