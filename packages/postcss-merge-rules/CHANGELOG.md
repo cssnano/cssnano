@@ -1,3 +1,7 @@
+# 2.0.1
+
+* Fixed a crash when `rule.nodes` was not defined.
+
 # 2.0.0
 
 * Upgraded to PostCSS 5.
