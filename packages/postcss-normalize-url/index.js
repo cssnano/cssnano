@@ -35,7 +35,7 @@ function transformNamespace (rule, opts) {
 
 function transformDecl (decl, opts) {
     decl.value = valueParser(decl.value).walk(function (node) {
-        if (node.type !== 'function' || node.value !== 'url' && node.nodes.length) {
+        if (node.type !== 'function' || node.value !== 'url' || !node.nodes.length) {
             return;
         }
 

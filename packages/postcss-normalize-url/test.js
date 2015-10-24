@@ -121,18 +121,17 @@ var tests = [{
     message: 'should pass through when it doesn\'t find a url function',
     fixture: 'h1{color:black;font-weight:bold}',
     expected: 'h1{color:black;font-weight:bold}'
+}, {
+    message: 'should process non-url empty functions',
+    fixture: 'h1{shape-outside: circle()}',
+    expected: 'h1{shape-outside: circle()}'
 }];
-
-function process (css) {
-    return postcss(plugin()).process(css).css;
-}
 
 test(name, function (t) {
     t.plan(tests.length);
 
     tests.forEach(function (test) {
-        var options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
+        t.equal(plugin.process(test.fixture).css, test.expected, test.message);
     });
 });
 

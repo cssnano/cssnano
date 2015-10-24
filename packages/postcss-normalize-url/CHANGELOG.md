@@ -1,3 +1,7 @@
+# 3.0.4
+
+* Fixes incorrect minification of empty non-url functions.
+
 # 3.0.3
 
 * Updates postcss-value-parser to version 3 (thanks to @TrySound).
