@@ -2322,7 +2322,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.inverted.dimmer .ui.loader:before{border-color:rgba(0,0,0,.1)}
 .ui.inverted.dimmer .ui.loader:after{border-color:#767676 transparent transparent}
 .ui.text.loader{width:auto!important;height:auto!important;text-align:center;font-style:normal}
-.ui.indeterminate.loader:after{-webkit-animation-direction:function reverse() { [native code] };animation-direction:function reverse() { [native code] };-webkit-animation-duration:1.2s;animation-duration:1.2s}
+.ui.indeterminate.loader:after{-webkit-animation-direction:reverse;animation-direction:reverse;-webkit-animation-duration:1.2s;animation-duration:1.2s}
 .ui.loader.active,.ui.loader.visible{display:block}
 .ui.loader.disabled,.ui.loader.hidden{display:none}
 .ui.inverted.dimmer .ui.mini.loader,.ui.mini.loader{width:1.2857em;height:1.2857em;font-size:.71428571em}
