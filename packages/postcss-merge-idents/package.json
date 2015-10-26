@@ -1,6 +1,6 @@
 {
   "name": "postcss-merge-idents",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Merge keyframe and counter style identifiers.",
   "main": "index.js",
   "files": [
