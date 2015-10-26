@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var postcss = require('postcss');
 var plugin = require('./');
@@ -51,6 +53,10 @@ var tests = [{
     message: 'should update relevant system declarations',
     fixture: '@counter-style a{system:extends decimal;suffix:"> "}@counter-style b{system:extends a;suffix:"> "}@counter-style c{system:extends a;suffix:"> "}ol{list-style:c}',
     expected: '@counter-style a{system:extends decimal;suffix:"> "}@counter-style c{system:extends a;suffix:"> "}ol{list-style:c}'
+}, {
+    message: 'should not output JS functions',
+    fixture: '.ui.indeterminate.loader:after{-webkit-animation-direction:reverse;animation-direction:reverse;-webkit-animation-duration:1.2s;animation-duration:1.2s}',
+    expected: '.ui.indeterminate.loader:after{-webkit-animation-direction:reverse;animation-direction:reverse;-webkit-animation-duration:1.2s;animation-duration:1.2s}'
 }];
 
 function process (css, options) {

@@ -1,3 +1,7 @@
+# 2.1.2
+
+* Fixes a bug where sometimes values would be substituted by JS code.
+
 # 2.1.1
 
 * Updates postcss-value-parser to version 3 (thanks to @TrySound).

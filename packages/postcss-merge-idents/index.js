@@ -1,11 +1,12 @@
 'use strict';
 
+var hasOwn = require('has-own');
 var postcss = require('postcss');
 var valueParser = require('postcss-value-parser');
 
 function canonical (obj) {
     return function recurse (key) {
-        if (obj[key] && obj[key] !== key) {
+        if (hasOwn(key, obj)) {
             return recurse(obj[key]);
         }
         return key;
