@@ -1,3 +1,7 @@
+# 2.1.3
+
+* Fixed an infinite loop regression in the last patch.
+
 # 2.1.2
 
 * Fixes a bug where sometimes values would be substituted by JS code.

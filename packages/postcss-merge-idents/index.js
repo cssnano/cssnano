@@ -6,7 +6,7 @@ var valueParser = require('postcss-value-parser');
 
 function canonical (obj) {
     return function recurse (key) {
-        if (hasOwn(key, obj)) {
+        if (hasOwn(key, obj) && obj[key] !== key) {
             return recurse(obj[key]);
         }
         return key;
