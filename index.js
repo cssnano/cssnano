@@ -65,14 +65,19 @@ var safeOptions = {
         keyframes: false
     },
     postcssZindex: {
-      disable: true
+        disable: true
     }
 };
 
 var cssnano = postcss.plugin('cssnano', function (options) {
+    if (options && options.safe) {
+        options.isSafe = options.safe;
+        options.safe = null;
+    }
+
     options = options || {};
 
-    var safe = options.safe === true;
+    var safe = options.isSafe === true;
     var proc = postcss();
 
     if (typeof options.fontFamily !== 'undefined' || typeof options.minifyFontWeight !== 'undefined') {
@@ -100,9 +105,7 @@ var cssnano = postcss.plugin('cssnano', function (options) {
         );
 
         if (opts === false) {
-          opts = {
-            disable: true
-          };
+            opts = {disable: true};
         }
 
         opts = assign({},
