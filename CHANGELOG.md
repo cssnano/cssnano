@@ -1,3 +1,9 @@
+# 3.3.2
+
+* Fixes an issue where using `options.safe` threw an error when cssnano was
+  not used as part of a PostCSS instance, but standalone (such as in modules
+  like gulp-cssnano). cssnano now renames `safe` internally to `isSafe`.
+
 # 3.3.1
 
 * Unpins postcss-colormin from `2.1.2`, as the `2.1.3` & `2.1.4` patches had
