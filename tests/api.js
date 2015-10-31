@@ -99,3 +99,13 @@ test('should disable features if the user specifies so (3)', function (t) {
         t.equal(result.css, min, specName('disableColourMinification'));
     });
 });
+
+test('should not fail when options.safe is enabled', function (t) {
+    var css = 'h1 { z-index: 100 }';
+    var min = 'h1{z-index:100}';
+
+    nano.process(css, {safe: true}).then(function (result) {
+        t.plan(1);
+        t.equal(result.css, min, specName('beConsumedByPostCSS'));
+    });
+});
