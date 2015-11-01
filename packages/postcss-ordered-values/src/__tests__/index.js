@@ -1,6 +1,4 @@
-'use strict';
-
-import test from 'tape';
+import tape from 'tape';
 import postcss from 'postcss';
 import plugin from '..';
 import {name} from '../../package.json';
@@ -83,7 +81,7 @@ function process (css, options) {
     return postcss(plugin(options)).process(css).css;
 }
 
-test(name, t => {
+tape(name, t => {
     t.plan(tests.length);
 
     tests.forEach(test => {
@@ -92,7 +90,7 @@ test(name, t => {
     });
 });
 
-test('should use the postcss plugin api', t => {
+tape('should use the postcss plugin api', t => {
     t.plan(2);
     t.ok(plugin().postcssVersion, 'should be able to access version');
     t.equal(plugin().postcssPlugin, name, 'should be able to access name');
