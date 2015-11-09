@@ -6,10 +6,16 @@ import SVGO from 'svgo';
 import isSvg from 'is-svg';
 
 const dataURI = /data:image\/svg\+xml(;(charset=)?utf-8)?,/;
-let encode = encodeURIComponent;
+let encode = data => data
+    .replace(/"/g,'\'')
+    .replace(/</g,'%3C')
+    .replace(/>/g,'%3E')
+    .replace(/&/g,'%26')
+    .replace(/#/g,'%23')
+    .replace(/\s+/g,' ');
 let decode = decodeURIComponent;
 
-function minifyPromise (svgo, decl) {
+function minifyPromise (svgo, decl, opts) {
     var promises = [];
 
     decl.value = valueParser(decl.value).walk(node => {
@@ -17,16 +23,16 @@ function minifyPromise (svgo, decl) {
             return;
         }
         let value = node.nodes[0].value;
-        let isUriEncoded;
-        try {
-            let encodedUri = decode(value);
-            isUriEncoded = encodedUri !== value;
-            if (isUriEncoded) {
-                value = encodedUri;
-            }
-        } catch (err) {
-            isUriEncoded = false;
+
+        let decodedUri = decode(value);
+        let isUriEncoded = decodedUri !== value;
+        if (isUriEncoded) {
+            value = decodedUri;
         }
+        if (opts.encode !== undefined) {
+            isUriEncoded = opts.encode;
+        }
+
         if (!dataURI.test(value) || !isSvg(value)) {
             return;
         }
@@ -38,9 +44,8 @@ function minifyPromise (svgo, decl) {
                 node.before = node.after = '';
                 let data = isUriEncoded ? encode(result.data) : result.data;
                 node.nodes[0].value = 'data:image/svg+xml;charset=utf-8,' + data;
-                if (node.nodes[0].type === 'string') {
-                    node.nodes[0].quote = '\'';
-                }
+                node.nodes[0].quote = isUriEncoded ? '"' : '\'';
+                node.nodes[0].type = 'string';
                 resolve();
             });
         }));
@@ -53,14 +58,14 @@ function minifyPromise (svgo, decl) {
     });
 }
 
-module.exports = postcss.plugin('postcss-svgo', opts => {
+export default postcss.plugin('postcss-svgo', (opts = {}) => {
     let svgo = new SVGO(opts);
     return css => {
         return new Promise((resolve, reject) => {
             let promises = [];
             css.walkDecls(decl => {
                 if (dataURI.test(decl.value)) {
-                    promises.push(minifyPromise(svgo, decl));
+                    promises.push(minifyPromise(svgo, decl, opts));
                 }
             });
             Promise.all(promises).then(resolve, reject);
