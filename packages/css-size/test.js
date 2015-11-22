@@ -3,7 +3,7 @@
 var test = require('ava');
 var spawn = require('child_process').spawn;
 var path = require('path');
-var size = require('.');
+var size = require('./');
 var read = require('fs').readFileSync;
 
 function setup (args, callback) {

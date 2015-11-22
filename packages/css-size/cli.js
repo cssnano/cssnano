@@ -4,7 +4,7 @@
 
 var fs = require('fs');
 var read = require('read-file-stdin');
-var size = require('.').table;
+var size = require('./').table;
 
 var opts = require('minimist')(process.argv.slice(2), {
     alias: {
