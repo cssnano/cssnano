@@ -1,0 +1,7 @@
+Usage: css-size [input] {OPTIONS}
+
+Options:
+
+    --version,    -v    Outputs the version number.
+
+    --help,       -h    Outputs this help screen.

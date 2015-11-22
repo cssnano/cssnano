@@ -1,0 +1,45 @@
+{
+  "name": "css-size",
+  "version": "0.0.0",
+  "description": "Display the size of a CSS file.",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava test.js"
+  },
+  "bin": {
+    "css-size": "cli.js"
+  },
+  "files": [
+    "cli.js",
+    "index.js",
+    "LICENSE-MIT",
+    "usage.txt"
+  ],
+  "keywords": [
+    "bytes",
+    "css",
+    "gzip",
+    "size"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "ava": "^0.5.0",
+    "eslint": "^1.10.1"
+  },
+  "homepage": "https://github.com/ben-eb/css-size",
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": "ben-eb/css-size",
+  "dependencies": {
+    "cli-table": "^0.3.1",
+    "cssnano": "^3.3.2",
+    "gzip-size": "^3.0.0",
+    "minimist": "^1.2.0",
+    "pretty-bytes": "^2.0.1",
+    "read-file-stdin": "^0.2.0",
+    "round-precision": "^1.0.0"
+  }
+}
