@@ -1,3 +1,8 @@
+# 2.0.2
+
+* Fixed an issue where keyframes with the same name were being merged together
+  incorrectly.
+
 # 2.0.1
 
 * Fixed a crash when `rule.nodes` was not defined.
