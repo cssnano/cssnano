@@ -50,6 +50,15 @@ postcss([ svgo() ]).process(css).then(function (result) {
 
 #### options
 
+##### encode
+
+Type: `boolean`
+Default: `undefined`
+
+If `true`, it will encode URL-unsafe characters such as `<`, `>` and `#`;
+`false` will decode these characters, and `undefined` will neither encode nor
+decode the original input.
+
 ##### plugins
 
 Optionally, you can customise the output by specifying the `plugins` option. You

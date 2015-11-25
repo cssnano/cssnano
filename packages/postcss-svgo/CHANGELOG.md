@@ -1,3 +1,7 @@
+# 2.1.0
+
+* Adds `encode` option (thanks to @TrySound).
+
 # 2.0.4
 
 * Updates postcss-value-parser to version 3 (thanks to @TrySound).
