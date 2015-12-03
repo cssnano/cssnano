@@ -1,3 +1,8 @@
+# 2.0.3
+
+* Fixed an issue where the module was incorrectly merging across `@font-face`
+  at-rules.
+
 # 2.0.2
 
 * Fixed an issue where keyframes with the same name were being merged together
