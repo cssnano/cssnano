@@ -56,7 +56,7 @@ function partialMerge (first, second) {
         return second;
     }
     let nextRule = second.next();
-    if (nextRule && nextRule.type !== 'comment') {
+    if (nextRule && nextRule.type === 'rule') {
         let nextIntersection = intersect(getDecls(second), getDecls(nextRule));
         if (nextIntersection.length > intersection.length) {
             first = second; second = nextRule; intersection = nextIntersection;
