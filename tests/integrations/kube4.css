@@ -440,7 +440,7 @@ ul.dropdown li.divider{border-bottom:1px solid #e2e2e2}
 .livesearch-icon{position:absolute;top:53%;left:10px;z-index:2}
 .livesearch-icon:after,.livesearch-icon:before{content:"";position:absolute;top:50%;left:0;margin:-8px 0 0;background:rgba(0,0,0,.5)}
 .livesearch-icon:before{width:10px;height:10px;border:2px solid rgba(0,0,0,.5);background:transparent;border-radius:12px}
-.livesearch-icon:after{left:10px;width:2px;height:7px;margin-top:0;-webkit-transform:rotate(-45deg);-ms-transform:rotate(-45deg);transform:rotate(-45deg)}
+.livesearch-icon:after{left:10px;width:2px;height:7px;margin-top:0;-webkit-transform:rotate(-45deg);transform:rotate(-45deg)}
 .tools-droparea{position:relative;overflow:hidden;padding:80px 20px;border:3px dashed rgba(0,0,0,.1)}
 .tools-droparea.drag-hover{background:rgba(200,222,250,.75)}
 .tools-droparea.drag-drop{background:hsla(58,83%,88%,.5)}

@@ -697,7 +697,7 @@ select[multiple],select[size]{height:auto}
 input[type=checkbox]:focus,input[type=file]:focus,input[type=radio]:focus{outline:thin dotted;outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}
 output{padding-top:7px}
 .form-control,output{display:block;font-size:14px;line-height:1.42857143;color:#555}
-.form-control{width:100%;height:34px;padding:6px 12px;background-color:#fff;background-image:none;border:1px solid #ccc;border-radius:4px;box-shadow:inset 0 1px 1px rgba(0,0,0,.075);transition:border-color ease-in-out .15s,box-shadow ease-in-out .15s}
+.form-control{width:100%;height:34px;padding:6px 12px;background-color:#fff;background-image:none;border:1px solid #ccc;border-radius:4px;box-shadow:inset 0 1px 1px rgba(0,0,0,.075);-webkit-transition:border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;transition:border-color ease-in-out .15s,box-shadow ease-in-out .15s}
 .form-control:focus{border-color:#66afe9;outline:0;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)}
 .form-control::-moz-placeholder{color:#999;opacity:1}
 .form-control:-ms-input-placeholder{color:#999}
@@ -1360,8 +1360,8 @@ a.list-group-item-danger.active,a.list-group-item-danger.active:focus,a.list-gro
 button.close{-webkit-appearance:none;padding:0;cursor:pointer;background:transparent;border:0}
 .modal,.modal-open{overflow:hidden}
 .modal{position:fixed;top:0;right:0;bottom:0;left:0;z-index:10;display:none;-webkit-overflow-scrolling:touch;outline:0}
-.modal.fade .modal-dialog{-webkit-transition:-webkit-transform .3s ease-out;transition:transform .3s ease-out;-webkit-transform:translateY(-25%);-ms-transform:translateY(-25%);transform:translateY(-25%)}
-.modal.in .modal-dialog{-webkit-transform:translate(0);-ms-transform:translate(0);transform:translate(0)}
+.modal.fade .modal-dialog{-webkit-transition:-webkit-transform .3s ease-out;transition:transform .3s ease-out;-webkit-transform:translateY(-25%);transform:translateY(-25%)}
+.modal.in .modal-dialog{-webkit-transform:translate(0);transform:translate(0)}
 .modal-open .modal{overflow-x:hidden;overflow-y:auto}
 .modal-dialog{position:relative;width:auto;margin:10px}
 .modal-content{position:relative;background-color:#fff;background-clip:padding-box;border:1px solid #999;border:1px solid rgba(0,0,0,.2);border-radius:6px;outline:0;box-shadow:0 3px 9px rgba(0,0,0,.5)}
