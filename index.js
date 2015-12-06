@@ -11,6 +11,7 @@ var processors = {
         return require('postcss-filter-plugins')({silent: true});
     },
     postcssDiscardComments: require('postcss-discard-comments'),
+    postcssMinifyGradients: require('postcss-minify-gradients'),
     postcssSvgo: require('postcss-svgo'),
     postcssReduceTransforms: require('postcss-reduce-transforms'),
     autoprefixer: require('autoprefixer'),
