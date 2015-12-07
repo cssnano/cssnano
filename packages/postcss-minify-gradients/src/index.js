@@ -63,6 +63,7 @@ function optimise (decl) {
                     arg[1].value = arg[2].value = '';
                 }
             });
+            return false;
         }
         if (
             node.value === 'radial-gradient' ||
@@ -86,6 +87,7 @@ function optimise (decl) {
                 }
                 lastStop = thisStop;
             });
+            return false;
         }
     }).toString();
 }
