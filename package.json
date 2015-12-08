@@ -40,6 +40,7 @@
     "postcss-merge-longhand": "^2.0.1",
     "postcss-merge-rules": "^2.0.1",
     "postcss-minify-font-values": "^1.0.2",
+    "postcss-minify-gradients": "^1.0.0",
     "postcss-minify-params": "^1.0.4",
     "postcss-minify-selectors": "^2.0.1",
     "postcss-normalize-charset": "^1.1.0",
