@@ -1,3 +1,8 @@
+# 3.4.0
+
+* Adds a new optimisation path which can minimise gradient parameters
+  automatically.
+
 # 3.3.2
 
 * Fixes an issue where using `options.safe` threw an error when cssnano was
