@@ -1,3 +1,7 @@
+# 2.1.1
+
+* Bump SVGO to 0.6.1 (thanks to @shinnn).
+
 # 2.1.0
 
 * Adds `encode` option (thanks to @TrySound).
