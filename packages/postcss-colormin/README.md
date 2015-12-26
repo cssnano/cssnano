@@ -10,6 +10,7 @@ With [npm](https://npmjs.org/package/postcss-colormin) do:
 npm install postcss-colormin --save
 ```
 
+
 ## Example
 
 ```js
@@ -24,14 +25,17 @@ console.log(postcss(colormin()).process(css).css);
 
 For more examples see the [tests](test.js).
 
+
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests
 to cover it.
 
+
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
+
 
 [ci]:       https://travis-ci.org/ben-eb/postcss-colormin
 [deps]:     https://gemnasium.com/ben-eb/postcss-colormin

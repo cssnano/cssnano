@@ -8,9 +8,9 @@
     "LICENSE-MIT"
   ],
   "scripts": {
-    "prepublish": "babel src --out-dir dist --ignore /__tests__/",
-    "test-unformatted": "babel-tape-runner \"src/**/__tests__/*.js\"",
-    "test": "npm run test-unformatted | tap-spec"
+    "lint": "eslint src",
+    "prepublish": "de dist && babel src --out-dir dist --ignore /__tests__/",
+    "test": "npm run lint && babel src --out-dir dist && ava dist/__tests__"
   },
   "keywords": [
     "color",
@@ -23,10 +23,14 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel": "^5.8.23",
-    "babel-tape-runner": "^1.2.0",
-    "tap-spec": "^4.1.0",
-    "tape": "^4.2.0"
+    "ava": "sindresorhus/ava#945dbea40a6a500a24d54ebcc7e10dcd75647fc7",
+    "babel-cli": "^6.3.17",
+    "babel-core": "^6.3.26",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-preset-es2015-loose": "^6.1.4",
+    "babel-preset-stage-0": "^6.3.13",
+    "del-cli": "^0.1.2",
+    "eslint": "^1.10.3"
   },
   "homepage": "https://github.com/ben-eb/postcss-colormin",
   "author": {
@@ -36,9 +40,8 @@
   },
   "repository": "ben-eb/postcss-colormin",
   "dependencies": {
-    "colr-convert": "^1.0.5",
-    "css-color-names": "0.0.2",
-    "postcss": "^5.0.4",
-    "postcss-value-parser": "^3.0.2"
+    "colormin": "^1.0.5",
+    "postcss": "^5.0.13",
+    "postcss-value-parser": "^3.2.3"
   }
 }

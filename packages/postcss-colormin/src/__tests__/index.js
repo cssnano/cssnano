@@ -1,6 +1,4 @@
-'use strict';
-
-import test from 'tape';
+import test from 'ava';
 import postcss from 'postcss';
 import plugin from '..';
 import {name} from '../../package.json';
@@ -81,6 +79,18 @@ let tests = [{
     message: 'should minify hex colors without keywords',
     fixture: 'h1{background:linear-gradient(#ffffff,#999999) no-repeat;}',
     expected: 'h1{background:linear-gradient(#fff,#999) no-repeat;}',
+}, {
+    message: 'should not mangle percentage based rgba values',
+    fixture: 'h1{color:rgba(50%,50%,50%,0.5)}',
+    expected: 'h1{color:hsla(0,0%,50%,.5)}'
+}, {
+    message: 'should convert percentage based rgba values',
+    fixture: 'h1{color:rgb(100%,100%,100%)}',
+    expected: 'h1{color:#fff}'
+}, {
+    message: 'should handle errored cases',
+    fixture: 'h1{color:rgb(50%, 23, 54)}',
+    expected: 'h1{color:rgb(50%, 23, 54)}' 
 }];
 
 function process (css, options) {
@@ -88,16 +98,13 @@ function process (css, options) {
 }
 
 test(name, t => {
-    t.plan(tests.length);
-
-    tests.forEach(test => {
-        let options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
+    tests.forEach(spec => {
+        let options = spec.options || {};
+        t.same(process(spec.fixture, options), spec.expected, spec.message);
     });
 });
 
 test('should use the postcss plugin api', t => {
-    t.plan(2);
     t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+    t.same(plugin().postcssPlugin, name, 'should be able to access name');
 });
