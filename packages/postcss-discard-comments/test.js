@@ -129,6 +129,14 @@ var tests = [{
     fixture: '/* This makes a heading black! Wow! */h1{color:#000}',
     expected: 'h1{color:#000}'
 }, {
+    message: 'should handle space appropriately in selectors',
+    fixture: '.h/* ... */1{color:#000}',
+    expected: '.h1{color:#000}'
+}, {
+    message: 'should handle space appropriately in properties',
+    fixture: 'h1{co/* ... */lor:#000}',
+    expected: 'h1{color:#000}'
+}, {
     message: 'should remove block comments',
     fixture: '/*\n\n# Pagination\n\n...\n\n*/.pagination{color:#000}',
     expected: '.pagination{color:#000}'

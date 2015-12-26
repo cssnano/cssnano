@@ -5,8 +5,8 @@ var commentParser = require('./lib/commentParser');
 var postcss = require('postcss');
 var space = postcss.list.space;
 
-module.exports = postcss.plugin('postcss-discard-comments', function (options) {
-    var remover = new CommentRemover(options || {});
+module.exports = postcss.plugin('postcss-discard-comments', function (opts) {
+    var remover = new CommentRemover(opts || {});
 
     function matchesComments (source) {
         return commentParser(source).filter(function (node) {
@@ -14,16 +14,19 @@ module.exports = postcss.plugin('postcss-discard-comments', function (options) {
         });
     }
 
-    function replaceComments (source) {
+    function replaceComments (source, separator) {
         if (!source) {
             return;
+        }
+        if (typeof separator === 'undefined') {
+            separator = ' ';
         }
         var parsed = commentParser(source).reduce(function (value, node) {
             if (node.type !== 'comment') {
                 return value + node.value;
             }
             if (remover.canRemove(node.value)) {
-                return value + ' ';
+                return value + separator;
             }
             return value + '/*' + node.value + '*/';
         }, '');
@@ -60,7 +63,7 @@ module.exports = postcss.plugin('postcss-discard-comments', function (options) {
             }
 
             if (node.type === 'rule' && node.raws.selector && node.raws.selector.raw) {
-                node.raws.selector.raw = replaceComments(node.raws.selector.raw);
+                node.raws.selector.raw = replaceComments(node.raws.selector.raw, '');
                 return;
             }
 
