@@ -23,7 +23,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "ava": "^0.5.0",
+    "ava": "^0.8.0",
     "eslint": "^1.10.1"
   },
   "homepage": "https://github.com/ben-eb/css-size",
@@ -38,7 +38,7 @@
     "cssnano": "^3.3.2",
     "gzip-size": "^3.0.0",
     "minimist": "^1.2.0",
-    "pretty-bytes": "^2.0.1",
+    "pretty-bytes": "^3.0.0",
     "read-file-stdin": "^0.2.0",
     "round-precision": "^1.0.0"
   }
