@@ -1,6 +1,6 @@
 {
   "name": "css-size",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Display the size of a CSS file.",
   "main": "index.js",
   "scripts": {
