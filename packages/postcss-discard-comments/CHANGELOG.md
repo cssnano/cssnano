@@ -1,3 +1,8 @@
+# 2.0.3
+
+* Fixes an issue where comments that were removed from selectors were replaced
+  by a single space.
+
 # 2.0.2
 
 * Fixes an integration issue where comments inside values transformed by other
