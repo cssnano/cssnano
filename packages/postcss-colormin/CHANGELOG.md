@@ -1,3 +1,8 @@
+# 2.1.8
+
+* Fixes incorrect minification of percentages used by `rgb` functions; i.e.
+  `rgb(100%,100%,100%)` was not converted correctly to `#fff`.
+
 # 2.1.7
 
 * Fixes another regression where `hsla(0,0%,100%,.5)` was converted to
