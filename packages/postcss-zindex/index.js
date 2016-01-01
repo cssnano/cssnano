@@ -11,11 +11,15 @@ module.exports = postcss.plugin('postcss-zindex', function () {
             nodes.push(decl);
             cache.addValue(decl.value);
         });
-        // Second pass; optimise
+
+        cache.optimizeValues();
+
+        // Second pass; optimize
         nodes.forEach(function (decl) {
             // Need to coerce to string so that the
             // AST is updated correctly
-            decl.value = '' + cache.convert(decl.value);
+            var value = cache.getValue(decl.value);
+            decl.value = String(value);
         });
     };
 });

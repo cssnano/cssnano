@@ -7,6 +7,11 @@
     "lint": "jshint index.js lib/*.js --reporter node_modules/jshint-stylish/stylish.js",
     "test": "tape test.js | tap-spec"
   },
+  "files": [
+    "LICENSE-MIT",
+    "index.js",
+    "lib"
+  ],
   "keywords": [
     "css",
     "normalize",
@@ -18,6 +23,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "lodash.uniq": "^3.2.2",
     "postcss": "^5.0.4"
   },
   "devDependencies": {

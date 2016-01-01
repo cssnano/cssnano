@@ -1,5 +1,7 @@
 'use strict';
 
+var uniq = require('lodash.uniq');
+
 function LayerCache () {
     if (!(this instanceof LayerCache)) {
         return new LayerCache();
@@ -20,25 +22,38 @@ function mapValues (value, index) {
     };
 }
 
-LayerCache.prototype._filterValues = function (value) {
-    return this._values.filter(function (index) {
-        return index.from === parseInt(value, 10);
-    });
+LayerCache.prototype._findValue = function (value) {
+    var length = this._values.length;
+    for (var i = 0; i < length; ++i) {
+        if (this._values[i].from === value) {
+            return this._values[i];
+        }
+    }
+    return false;
 };
 
-LayerCache.prototype._optimiseValues = function () {
-    this._values = this._values.sort(sortAscending('from')).map(mapValues);
+LayerCache.prototype.optimizeValues = function () {
+    var values = uniq(this._values, function(value) {
+            return value.from;
+        })
+        .sort(sortAscending('from'))
+        .map(mapValues);
+
+    this._values = values;
 };
 
 LayerCache.prototype.addValue = function (value) {
-    if (!this._filterValues(value).length && value > 0) {
-        this._values.push({ from: parseInt(value, 10) });
-        this._optimiseValues();
+    var parsedValue = parseInt(value, 10);
+    // pass only valid values
+    if (!parsedValue || parsedValue < 0) {
+        return;
     }
+    this._values.push({ from: parsedValue });
 };
 
-LayerCache.prototype.convert = function (value) {
-    var match = this._filterValues(value)[0];
+LayerCache.prototype.getValue = function (value) {
+    var parsedValue = parseInt(value, 10);
+    var match = this._findValue(parsedValue);
     return match && match.to || value;
 };
 
