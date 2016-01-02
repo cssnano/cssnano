@@ -23,8 +23,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "lodash.uniq": "^3.2.2",
-    "postcss": "^5.0.4"
+    "postcss": "^5.0.4",
+    "uniqs": "^2.0.0"
   },
   "devDependencies": {
     "jshint": "^2.8.0",

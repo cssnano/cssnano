@@ -1,6 +1,6 @@
 'use strict';
 
-var uniq = require('lodash.uniq');
+var uniq = require('uniqs');
 
 function LayerCache () {
     if (!(this instanceof LayerCache)) {
@@ -9,15 +9,13 @@ function LayerCache () {
     this._values = [];
 }
 
-function sortAscending (key) {
-    return function (a, b) {
-        return a[key] - b[key];
-    };
+function sortAscending (a, b) {
+    return a - b;
 }
 
 function mapValues (value, index) {
     return {
-        from: value.from,
+        from: value,
         to: index + 1
     };
 }
@@ -33,10 +31,8 @@ LayerCache.prototype._findValue = function (value) {
 };
 
 LayerCache.prototype.optimizeValues = function () {
-    var values = uniq(this._values, function(value) {
-            return value.from;
-        })
-        .sort(sortAscending('from'))
+    var values = uniq(this._values)
+        .sort(sortAscending)
         .map(mapValues);
 
     this._values = values;
@@ -48,7 +44,7 @@ LayerCache.prototype.addValue = function (value) {
     if (!parsedValue || parsedValue < 0) {
         return;
     }
-    this._values.push({ from: parsedValue });
+    this._values.push(parsedValue);
 };
 
 LayerCache.prototype.getValue = function (value) {
