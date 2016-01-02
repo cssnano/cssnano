@@ -1,3 +1,8 @@
+# 2.0.1
+
+* Improved performance of the module by sorting/deduplicating values in one pass
+  instead of per-value (thanks to @pgilad).
+
 # 2.0.0
 
 * Upgraded to PostCSS 5.
