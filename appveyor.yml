@@ -1,27 +1,26 @@
-# AppVeyor file
-# http://www.appveyor.com/docs/appveyor-yml
-
 environment:
   matrix:
-    - nodejs_version: 0.12
-    - nodejs_version: 2
+    - nodejs_version: '5'
+    - nodejs_version: '4'
+    - nodejs_version: '0.12'
 
 install:
   - ps: Install-Product node $env:nodejs_version
+  - set CI=true
+  - npm -g install npm@latest
+  - set PATH=%APPDATA%\npm;%PATH%
   - npm install
 
+test_script:
+  - node --version
+  - npm --version
+  - npm test
+
+version: '{build}'
 build: off
 
-test_script:
-  # Output useful info for debugging.
-  - node --version && npm --version
-  - ps: "npm test # PowerShell" # Pass comment to PS for easier debugging
-  - cmd: npm test
+shallow_clone: true
+clone_depth: 1
 
 matrix:
   fast_finish: true
-
-cache:
-  - C:\Users\appveyor\AppData\Roaming\npm\node_modules -> package.json  # global npm modules
-  - C:\Users\appveyor\AppData\Roaming\npm-cache -> package.json         # npm cache
-  - node_modules -> package.json                                        # local npm modules
