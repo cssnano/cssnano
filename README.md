@@ -17,23 +17,32 @@ to do more than simple whitespace transforms - including advanced optimisations
 such as custom identifier reduction, `z-index` rebasing, and adjacent selector
 merging.
 
+Note that cssnano enables aggressive optimisations by default, which might not
+always be what you want. Set `options.safe` to `true` if you want to disable
+this. In future versions, only safe options will be enabled by default, starting
+from [version 4][v4].
+
 For further details check out the [website](http://cssnano.co/):
 
 * [Installation guide for your build process](http://cssnano.co/usage/).
 * [Full list of optimisations](http://cssnano.co/optimisations/).
 * [Customise the output (options documentation)](http://cssnano.co/options/).
 
+
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests
 to cover it.
 
+
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
 
-[PostCSS]:                      https://github.com/postcss/postcss
 
-[ci]:                           https://travis-ci.org/ben-eb/cssnano
-[deps]:                         https://gemnasium.com/ben-eb/cssnano
-[npm]:                          http://badge.fury.io/js/cssnano
+[PostCSS]: https://github.com/postcss/postcss
+
+[ci]:      https://travis-ci.org/ben-eb/cssnano
+[deps]:    https://gemnasium.com/ben-eb/cssnano
+[npm]:     http://badge.fury.io/js/cssnano
+[v4]:      https://github.com/ben-eb/cssnano/issues/88
