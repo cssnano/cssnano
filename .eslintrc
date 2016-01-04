@@ -15,6 +15,7 @@ rules:
     no-empty: [2]
     no-empty-character-class: [2]
     no-eval: [2]
+    no-extra-semi: [2]
     no-irregular-whitespace: [2]
     no-labels: [2]
     no-lonely-if: [2]
@@ -44,6 +45,28 @@ rules:
     spaced-comment: [2, 'always']
     strict: [2, 'global']
     yoda: [2, 'never']
+
+ecmaFeatures:
+    arrowFunctions: true
+    binaryLiterals: true
+    blockBindings: true
+    classes: true
+    defaultParams: true
+    destructuring: true
+    forOf: true
+    generators: true
+    modules: true
+    objectLiteralComputedProperties: true
+    objectLiteralDuplicateProperties: true
+    objectLiteralShorthandMethods: true
+    objectLiteralShorthandProperties: true
+    octalLiterals: true
+    regexUFlag: true
+    regexYFlag: true
+    restParams: true
+    spread: true
+    superInFunctions: true
+    templateStrings: true
 
 env:
     node: true

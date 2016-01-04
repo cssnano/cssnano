@@ -4,8 +4,10 @@
   "description": "A modular minifier, built on top of the PostCSS ecosystem.",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint index.js lib tests",
-    "test": "npm run lint && ava tests/*.js"
+    "copy-fixtures": "ncp src/__tests__ dist/__tests__",
+    "lint": "eslint src",
+    "prepublish": "de dist && babel src --out-dir dist --ignore /__tests__/",
+    "test": "npm run lint && npm run copy-fixtures && babel src --out-dir dist && ava dist/__tests__/*.js"
   },
   "keywords": [
     "css",
@@ -51,10 +53,21 @@
   },
   "devDependencies": {
     "ava": "^0.11.0",
+    "babel-cli": "^6.3.17",
+    "babel-core": "^6.3.26",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-preset-es2015-loose": "^6.1.4",
+    "babel-preset-stage-0": "^6.3.13",
     "css-frameworks": "git+https://git@github.com/ben-eb/css-frameworks.git",
     "css-minifier-tests": "git+https://git@github.com/ben-eb/css-minifier-tests.git",
-    "eslint": "^1.7.3",
+    "del-cli": "^0.1.2",
+    "eslint": "^1.10.3",
     "json-loader": "^0.5.3",
+<<<<<<< HEAD
+=======
+    "ncp": "^2.0.0",
+    "node-libs-browser": "^0.5.3",
+>>>>>>> 7a3db4b... Move existing files into new folder structure.
     "webpack": "^1.12.2"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
@@ -65,8 +78,7 @@
   },
   "repository": "ben-eb/cssnano",
   "files": [
-    "index.js",
-    "lib",
+    "dist",
     "LICENSE-MIT"
   ]
 }

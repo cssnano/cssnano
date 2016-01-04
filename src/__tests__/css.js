@@ -16,8 +16,8 @@ var minifiers = {
     }
 };
 
-var tests = fs.readdirSync(__dirname + '/../node_modules/css-minifier-tests/tests').map(function (dir) {
-    return __dirname + '/../node_modules/css-minifier-tests/tests/' + dir;
+var tests = fs.readdirSync(__dirname + '/../../node_modules/css-minifier-tests/tests').map(function (dir) {
+    return __dirname + '/../../node_modules/css-minifier-tests/tests/' + dir;
 });
 
 function onEnd (results, testNames) {
