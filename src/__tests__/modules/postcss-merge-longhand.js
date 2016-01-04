@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports.name = 'cssnano/postcss-merge-longhand';
 module.exports.tests = [{
     message: 'should merge margin values',

@@ -1,18 +1,16 @@
-'use strict';
+import ava from 'ava';
+import {readdirSync as directory} from 'fs';
+import nano from '..';
+import {join} from 'path';
 
-var ava = require('ava');
-var nano = require('../');
-var path = require('path');
+const base = join(__dirname, '/modules');
 
-var directory = require('fs').readdirSync;
-var base = path.join(__dirname, '/modules');
-
-directory(base).forEach(function (file) {
-    var submodule = require(path.join(base, file));
-    submodule.tests.forEach(function (test) {
-        ava(test.message, function (t) {
-            var options = test.options || {};
-            return nano.process(test.fixture, options).then(function (result) {
+directory(base).forEach(file => {
+    var submodule = require(join(base, file));
+    submodule.tests.forEach(test => {
+        ava(test.message, t => {
+            const options = test.options || {};
+            return nano.process(test.fixture, options).then(result => {
                 t.same(result.css, test.expected);
             });
         });

@@ -2,7 +2,7 @@
   "name": "cssnano",
   "version": "3.4.0",
   "description": "A modular minifier, built on top of the PostCSS ecosystem.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "copy-fixtures": "ncp src/__tests__ dist/__tests__",
     "lint": "eslint src",

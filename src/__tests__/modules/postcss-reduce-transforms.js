@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports.name = 'cssnano/postcss-reduce-transforms';
 module.exports.tests = [{
     message: 'should shorten matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1) to matrix(a, b, c, d, tx, ty)',

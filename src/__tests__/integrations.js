@@ -1,27 +1,25 @@
-'use strict';
+import ava from 'ava';
+import nano from '..';
+import {readFileSync as file} from 'fs';
+import {join} from 'path';
+import postcss from 'postcss';
+import specName from './util/specName';
+import formatter from './util/formatter';
+import frameworks from 'css-frameworks';
 
-var test = require('ava');
-var nano = require('../');
-var file = require('fs').readFileSync;
-var postcss = require('postcss');
-var specName = require('./util/specName');
-var formatter = require('./util/formatter');
-var path = require('path');
-var frameworks = require('css-frameworks');
-
-var base = path.join(__dirname, 'integrations');
+const base = join(__dirname, 'integrations');
 
 function formatted (css) {
     return postcss().use(nano()).use(formatter).process(css);
 }
 
-Object.keys(frameworks).forEach(function (framework) {
-    var testName = 'produceTheExpectedResultFor: ' + framework + '.css';
-    test(framework + '.css', function (t) {
-        formatted(frameworks[framework]).then(function (result) {
-            var expected = file(path.join(base, framework) + '.css', 'utf-8');
+Object.keys(frameworks).forEach(framework => {
+    const testName = 'produceTheExpectedResultFor: ' + framework + '.css';
+    ava(framework + '.css', t => {
+        formatted(frameworks[framework]).then(result => {
+            var expected = file(join(base, framework) + '.css', 'utf-8');
             t.same(result.css, expected, specName(testName));
-        }, function (err) {
+        }, err => {
             t.notOk(err.stack);
         });
     });

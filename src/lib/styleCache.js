@@ -1,9 +1,7 @@
-'use strict';
+import {plugin} from 'postcss';
 
-var postcss = require('postcss');
-
-module.exports = postcss.plugin('cssnano-reset-stylecache', function () {
-    return function (css, result) {
+export default plugin('cssnano-reset-stylecache', () => {
+    return (css, result) => {
         result.root.rawCache = {
             colon:         ':',
             indent:        '',

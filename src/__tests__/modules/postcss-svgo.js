@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports.name = 'cssnano/postcss-svgo';
 module.exports.tests = [{
     message: 'should optimise inline svg',

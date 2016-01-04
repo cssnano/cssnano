@@ -1,6 +1,4 @@
-'use strict';
-
-var nano = require('../../');
+var nano = require('../../../dist');
 var write = require('fs').writeFileSync;
 var postcss = require('postcss');
 var formatter = require('./formatter');

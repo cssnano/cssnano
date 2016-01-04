@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports.name = 'cssnano/postcss-minify-font-values';
 module.exports.tests = [{
     message: 'should unquote font names',

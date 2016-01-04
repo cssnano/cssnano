@@ -1,8 +1,6 @@
-'use strict';
-
 var messages = {};
 
-module.exports = function warnOnce (message) {
+ export default function warnOnce (message) {
     if (messages[message]) {
         return;
     }
@@ -10,4 +8,4 @@ module.exports = function warnOnce (message) {
     if (typeof console !== 'undefined' && console.warn) {
         console.warn(message);
     }
-};
+}

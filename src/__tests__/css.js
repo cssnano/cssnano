@@ -1,29 +1,28 @@
-'use strict';
+import nano from '..';
+import {readdirSync as directory} from 'fs';
+import suite from 'css-minifier-tests';
+import ava from 'ava';
 
-var fs = require('fs');
-var suite = require('css-minifier-tests');
-var ava = require('ava');
-
-var minifiers = {
-    cssnano: function (css) {
-        return new Promise(function (resolve, reject) {
-            return require('..').process(css).then(function (result) {
+const minifiers = {
+    cssnano: css => {
+        return new Promise((resolve, reject) => {
+            return nano.process(css).then(result => {
                 resolve(result.css);
-            }, function (err) {
+            }, err => {
                 reject(err);
             });
         });
     }
 };
 
-var tests = fs.readdirSync(__dirname + '/../../node_modules/css-minifier-tests/tests').map(function (dir) {
+const tests = directory(__dirname + '/../../node_modules/css-minifier-tests/tests').map(dir => {
     return __dirname + '/../../node_modules/css-minifier-tests/tests/' + dir;
 });
 
 function onEnd (results, testNames) {
-    testNames.forEach(function (test, index) {
-        ava(test.replace(/^\d+ /, ''), function (t) {
-            var result = results[index].cssnano.result;
+    testNames.forEach((test, index) => {
+        ava(test.replace(/^\d+ /, ''), t => {
+            const result = results[index].cssnano.result;
             t.ok(result === 'outstanding' || result === 'optimal');
         });
     });

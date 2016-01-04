@@ -1,10 +1,8 @@
-'use strict';
+import ava from 'ava';
+import path from 'path';
+import webpack from 'webpack';
 
-var test = require('ava');
-var webpack = require('webpack');
-var path = require('path');
-
-var conf = {
+const conf = {
     entry: {
         index: path.join(__dirname, '..')
     },
@@ -24,8 +22,8 @@ var conf = {
     }
 };
 
-test('cssnano should be consumed by webpack', function (t) {
-    webpack(conf, function (err, stats) {
+ava('cssnano should be consumed by webpack', t => {
+    webpack(conf, (err, stats) => {
         if (err) {
             t.fail();
             throw err;

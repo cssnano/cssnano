@@ -1,7 +1,5 @@
-'use strict';
-
-var postcss = require('postcss');
-var valueParser = require('postcss-value-parser');
+import {plugin} from 'postcss';
+import valueParser from 'postcss-value-parser';
 
 function reduceCalcWhitespaces (node) {
     if (node.type === 'space') {
@@ -31,7 +29,7 @@ function transformDecls (decl) {
     }
 }
 
-module.exports = postcss.plugin('cssnano-function-optimiser', function () {
+export default plugin('cssnano-function-optimiser', function () {
     return function (css) {
         css.walkDecls(transformDecls);
     };

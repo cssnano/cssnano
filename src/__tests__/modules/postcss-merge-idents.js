@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports.name = 'cssnano/postcss-merge-idents';
 module.exports.tests = [{
     message: 'should merge keyframe identifiers',

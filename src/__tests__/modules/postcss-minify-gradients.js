@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports.name = 'cssnano/postcss-minify-gradients';
 module.exports.tests = [{
     message: 'linear: should convert "to top" to 0deg',

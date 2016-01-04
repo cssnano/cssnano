@@ -1,48 +1,76 @@
-'use strict';
+import decamelize from 'decamelize';
+import defined from 'defined';
+import assign from 'object-assign';
+import postcss from 'postcss';
+import warnOnce from './lib/warnOnce';
 
-var decamelize = require('decamelize');
-var defined = require('defined');
-var assign = require('object-assign');
-var postcss = require('postcss');
-var warnOnce = require('./lib/warnOnce');
+// Processors
+import postcssFilterPlugins from 'postcss-filter-plugins';
+import postcssDiscardComments from 'postcss-discard-comments';
+import postcssMinifyGradients from 'postcss-minify-gradients';
+import postcssSvgo from 'postcss-svgo';
+import postcssReduceTransforms from 'postcss-reduce-transforms';
+import autoprefixer from 'autoprefixer';
+import postcssZindex from 'postcss-zindex';
+import postcssConvertValues from 'postcss-convert-values';
+import postcssCalc from 'postcss-calc';
+import postcssColormin from 'postcss-colormin';
+import postcssOrderedValues from 'postcss-ordered-values';
+import postcssMinifySelectors from 'postcss-minify-selectors';
+import postcssMinifyParams from 'postcss-minify-params';
+import postcssNormalizeCharset from 'postcss-normalize-charset';
+import postcssMinifyFontValues from 'postcss-minify-font-values';
+import postcssDiscardUnused from 'postcss-discard-unused';
+import postcssNormalizeUrl from 'postcss-normalize-url';
+import functionOptimiser from './lib/functionOptimiser';
+import filterOptimiser from './lib/filterOptimiser';
+import core from './lib/core';
+import postcssMergeIdents from 'postcss-merge-idents';
+import postcssReduceIdents from 'postcss-reduce-idents';
+import postcssMergeLonghand from 'postcss-merge-longhand';
+import postcssDiscardDuplicates from 'postcss-discard-duplicates';
+import postcssMergeRules from 'postcss-merge-rules';
+import postcssDiscardEmpty from 'postcss-discard-empty';
+import postcssUniqueSelectors from 'postcss-unique-selectors';
+import styleCache from './lib/styleCache';
 
-var processors = {
+let processors = {
     postcssFilterPlugins: function () {
-        return require('postcss-filter-plugins')({silent: true});
+        return postcssFilterPlugins({silent: true});
     },
-    postcssDiscardComments: require('postcss-discard-comments'),
-    postcssMinifyGradients: require('postcss-minify-gradients'),
-    postcssSvgo: require('postcss-svgo'),
-    postcssReduceTransforms: require('postcss-reduce-transforms'),
-    autoprefixer: require('autoprefixer'),
-    postcssZindex: require('postcss-zindex'),
-    postcssConvertValues: require('postcss-convert-values'),
-    postcssCalc: require('postcss-calc'),
-    postcssColormin: require('postcss-colormin'),
-    postcssOrderedValues: require('postcss-ordered-values'),
-    postcssMinifySelectors: require('postcss-minify-selectors'),
-    postcssMinifyParams: require('postcss-minify-params'),
-    postcssNormalizeCharset: require('postcss-normalize-charset'),
+    postcssDiscardComments: postcssDiscardComments,
+    postcssMinifyGradients: postcssMinifyGradients,
+    postcssSvgo: postcssSvgo,
+    postcssReduceTransforms: postcssReduceTransforms,
+    autoprefixer: autoprefixer,
+    postcssZindex: postcssZindex,
+    postcssConvertValues: postcssConvertValues,
+    postcssCalc: postcssCalc,
+    postcssColormin: postcssColormin,
+    postcssOrderedValues: postcssOrderedValues,
+    postcssMinifySelectors: postcssMinifySelectors,
+    postcssMinifyParams: postcssMinifyParams,
+    postcssNormalizeCharset: postcssNormalizeCharset,
     // minify-font-values should be run before discard-unused
-    postcssMinifyFontValues: require('postcss-minify-font-values'),
-    postcssDiscardUnused: require('postcss-discard-unused'),
-    postcssNormalizeUrl: require('postcss-normalize-url'),
-    functionOptimiser: require('./lib/functionOptimiser'),
-    filterOptimiser: require('./lib/filterOptimiser'),
-    core: require('./lib/core'),
+    postcssMinifyFontValues: postcssMinifyFontValues,
+    postcssDiscardUnused: postcssDiscardUnused,
+    postcssNormalizeUrl: postcssNormalizeUrl,
+    functionOptimiser: functionOptimiser,
+    filterOptimiser: filterOptimiser,
+    core: core,
     // Optimisations after this are sensitive to previous optimisations in
     // the pipe, such as whitespace normalising/selector re-ordering
-    postcssMergeIdents: require('postcss-merge-idents'),
-    postcssReduceIdents: require('postcss-reduce-idents'),
-    postcssMergeLonghand: require('postcss-merge-longhand'),
-    postcssDiscardDuplicates: require('postcss-discard-duplicates'),
-    postcssMergeRules: require('postcss-merge-rules'),
-    postcssDiscardEmpty: require('postcss-discard-empty'),
-    postcssUniqueSelectors: require('postcss-unique-selectors'),
-    styleCache: require('./lib/styleCache')
+    postcssMergeIdents: postcssMergeIdents,
+    postcssReduceIdents: postcssReduceIdents,
+    postcssMergeLonghand: postcssMergeLonghand,
+    postcssDiscardDuplicates: postcssDiscardDuplicates,
+    postcssMergeRules: postcssMergeRules,
+    postcssDiscardEmpty: postcssDiscardEmpty,
+    postcssUniqueSelectors: postcssUniqueSelectors,
+    styleCache: styleCache
 };
 
-var defaultOptions = {
+let defaultOptions = {
     autoprefixer: {
         add: false
     },
@@ -54,7 +82,7 @@ var defaultOptions = {
     }
 };
 
-var safeOptions = {
+let safeOptions = {
     postcssConvertValues: {
         length: false
     },
@@ -70,16 +98,14 @@ var safeOptions = {
     }
 };
 
-var cssnano = postcss.plugin('cssnano', function (options) {
-    if (options && options.safe) {
+let cssnano = postcss.plugin('cssnano', (options = {}) => {
+    if (options.safe) {
         options.isSafe = options.safe;
         options.safe = null;
     }
 
-    options = options || {};
-
-    var safe = options.isSafe === true;
-    var proc = postcss();
+    let safe = options.isSafe === true;
+    let proc = postcss();
 
     if (typeof options.fontFamily !== 'undefined' || typeof options.minifyFontWeight !== 'undefined') {
         warnOnce('The fontFamily & minifyFontWeight options have been ' +
@@ -95,11 +121,11 @@ var cssnano = postcss.plugin('cssnano', function (options) {
         options.normalizeCharset = options.singleCharset;
     }
 
-    Object.keys(processors).forEach(function (plugin) {
-        var shortName = plugin.replace('postcss', '');
+    Object.keys(processors).forEach(plugin => {
+        let shortName = plugin.replace('postcss', '');
         shortName = shortName.slice(0, 1).toLowerCase() + shortName.slice(1);
 
-        var opts = defined(
+        let opts = defined(
             options[shortName],
             options[plugin],
             options[decamelize(plugin, '-')]
@@ -124,10 +150,9 @@ var cssnano = postcss.plugin('cssnano', function (options) {
     return proc;
 });
 
-module.exports = cssnano;
-
-module.exports.process = function (css, options) {
-    options = options || {};
+cssnano.process = (css, options = {}) => {
     options.map = options.map || (options.sourcemap ? true : null);
     return postcss([cssnano(options)]).process(css, options);
 };
+
+export default cssnano;

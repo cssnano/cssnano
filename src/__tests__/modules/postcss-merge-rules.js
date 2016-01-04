@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports.name = 'cssnano/postcss-merge-rules';
 module.exports.tests = [{
     message: 'should merge based on declarations',

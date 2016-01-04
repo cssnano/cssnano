@@ -1,15 +1,13 @@
-'use strict';
-
-var postcss = require('postcss');
+import {plugin} from 'postcss';
 
 function minimiseWhitespace (rule) {
     rule.raws.before = rule.raws.between = rule.raws.after = '';
     rule.raws.semicolon = false;
 }
 
-module.exports = postcss.plugin('cssnano-core', function () {
-    return function (css) {
-        css.walkDecls(function (decl) {
+export default plugin('cssnano-core', () => {
+    return css => {
+        css.walkDecls(decl => {
             // Ensure that !important values do not have any excess whitespace
             if (decl.important) {
                 decl.raws.important = '!important';

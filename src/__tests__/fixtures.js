@@ -1,27 +1,24 @@
-'use strict';
+import ava from 'ava';
+import nano from '..';
+import {readdirSync as directory, readFileSync as file} from 'fs';
+import specName from './util/specName';
+import {join} from 'path';
 
-var test = require('ava');
-var nano = require('../');
-var directory = require('fs').readdirSync;
-var file = require('fs').readFileSync;
-var specName = require('./util/specName');
-var path = require('path');
+var base = join(__dirname, 'fixtures');
 
-var base = path.join(__dirname, 'fixtures');
-
-var specs = directory(base).reduce(function (tests, cssFile) {
+const specs = directory(base).reduce((tests, cssFile) => {
     var parts = cssFile.split('.');
     if (!tests[parts[0]]) {
         tests[parts[0]] = {};
     }
-    tests[parts[0]][parts[1]] = file(path.join(base, cssFile), 'utf-8');
+    tests[parts[0]][parts[1]] = file(join(base, cssFile), 'utf-8');
     return tests;
 }, {});
 
-Object.keys(specs).forEach(function (name) {
-    var spec = specs[name];
-    test(name, function (t) {
-        nano.process(spec.fixture).then(function (result) {
+Object.keys(specs).forEach(name => {
+    const spec = specs[name];
+    ava(name, t => {
+        nano.process(spec.fixture).then(result => {
             t.same(result.css, spec.expected, specName(name));
         });
     });

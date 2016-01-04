@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports.name = 'cssnano/postcss-reduce-idents';
 module.exports.tests = [{
     message: 'should rename keyframes',
