@@ -5,11 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint index.js lib tests",
-    "test-integrations": "tape tests/integrations.js",
-    "test-fixtures": "tape tests/fixtures.js | tap-spec",
-    "test-modules": "tape tests/modules.js | tap-spec",
-    "test-webpack": "tape tests/webpack.js | tap-spec",
-    "test": "npm run lint && tape tests/*.js | tap-spec"
+    "test": "npm run lint && ava tests/*.js"
   },
   "keywords": [
     "css",
@@ -54,13 +50,12 @@
     "postcss-zindex": "^2.0.0"
   },
   "devDependencies": {
+    "ava": "^0.9.1",
     "css-frameworks": "git+https://git@github.com/ben-eb/css-frameworks.git",
     "css-minifier-tests": "git+https://git@github.com/ben-eb/css-minifier-tests.git",
     "eslint": "^1.7.3",
     "json-loader": "^0.5.3",
     "node-libs-browser": "^0.5.3",
-    "tap-spec": "^4.1.0",
-    "tape": "^4.2.2",
     "webpack": "^1.12.2"
   },
   "homepage": "https://github.com/ben-eb/cssnano",

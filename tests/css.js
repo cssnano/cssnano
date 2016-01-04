@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 var suite = require('css-minifier-tests');
-var tape = require('tape');
+var ava = require('ava');
 
 var minifiers = {
     cssnano: function (css) {
@@ -21,13 +21,10 @@ var tests = fs.readdirSync(__dirname + '/../node_modules/css-minifier-tests/test
 });
 
 function onEnd (results, testNames) {
-    tape('css minifier tests', function (t) {
-        t.plan(testNames.length);
-
-        testNames.forEach(function (test, index) {
+    testNames.forEach(function (test, index) {
+        ava(test.replace(/^\d+ /, ''), function (t) {
             var result = results[index].cssnano.result;
-            var name = test.replace(/^\d+ /, '');
-            t.ok(result === 'outstanding' || result === 'optimal', name);
+            t.ok(result === 'outstanding' || result === 'optimal');
         });
     });
 }

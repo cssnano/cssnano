@@ -4,11 +4,9 @@ var postcss = require('postcss');
 var cssnano = require('..');
 var fs = require('fs');
 var path = require('path');
-var test = require('tape');
+var test = require('ava');
 
 test('it should compress whitespace after node.clone()', function (t) {
-    t.plan(1);
-
     var fixture = fs.readFileSync(path.join(__dirname, 'issue26.css'), 'utf-8');
     var expected = fs.readFileSync(path.join(__dirname, 'issue26.expected.css'), 'utf-8');
 
@@ -24,7 +22,7 @@ test('it should compress whitespace after node.clone()', function (t) {
         cssnano()
     ]);
 
-    processor.process(fixture).then(function (result) {
-      t.equal(result.css, expected);
+    return processor.process(fixture).then(function (result) {
+        t.same(result.css, expected);
     });
 });

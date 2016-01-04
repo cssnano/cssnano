@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('ava');
 var webpack = require('webpack');
 var path = require('path');
 
@@ -31,7 +31,6 @@ test('cssnano should be consumed by webpack', function (t) {
             throw err;
         }
 
-        t.plan(2);
         t.notOk(stats.hasErrors(), 'should not report any error');
         t.notOk(stats.hasWarnings(), 'should not report any warning');
     });
