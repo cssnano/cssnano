@@ -2,9 +2,15 @@
   "name": "postcss-discard-duplicates",
   "version": "2.0.0",
   "description": "Discard duplicate rules in your CSS files with PostCSS.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "LICENSE-MIT"
+  ],
   "scripts": {
-    "test": "tape test.js | tap-spec"
+    "pretest": "eslint src",
+    "prepublish": "de dist && babel src --out-dir dist --ignore /__tests__/",
+    "test": "ava src/__tests__"
   },
   "keywords": [
     "css",
@@ -18,8 +24,15 @@
     "postcss": "^5.0.4"
   },
   "devDependencies": {
-    "tap-spec": "^4.1.0",
-    "tape": "^4.2.0"
+    "ava": "^0.11.0",
+    "babel-cli": "^6.3.17",
+    "babel-core": "^6.3.26",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-preset-es2015-loose": "^6.1.4",
+    "babel-preset-stage-0": "^6.3.13",
+    "del-cli": "^0.1.2",
+    "eslint": "^1.10.3",
+    "eslint-config-cssnano": "^1.0.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-discard-duplicates",
   "author": {
@@ -27,5 +40,11 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-discard-duplicates"
+  "repository": "ben-eb/postcss-discard-duplicates",
+  "eslintConfig": {
+    "extends": "cssnano"
+  },
+  "ava": {
+    "require": "babel-core/register"
+  }
 }

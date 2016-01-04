@@ -1,11 +1,9 @@
-'use strict';
+import ava from 'ava';
+import postcss from 'postcss';
+import plugin from '..';
+import {name} from '../../package.json';
 
-var test = require('tape');
-var postcss = require('postcss');
-var plugin = require('./');
-var name = require('./package.json').name;
-
-var tests = [{
+const tests = [{
     message: 'should remove duplicate rules',
     fixture: 'h1{font-weight:bold}h1{font-weight:bold}',
     expected: 'h1{font-weight:bold}'
@@ -83,21 +81,14 @@ var tests = [{
     expected: 'h2{color:#fff}h1{color:#000}',
 }];
 
-function process (css, options) {
-    return postcss(plugin(options)).process(css).css;
-}
-
-test(name, function (t) {
-    t.plan(tests.length);
-
-    tests.forEach(function (test) {
-        var options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
+tests.forEach(test => {
+    ava(test.message, t => {
+        const out = postcss(plugin(test.options || {})).process(test.fixture);
+        t.same(out.css, test.expected);
     });
 });
 
-test('should use the postcss plugin api', function (t) {
-    t.plan(2);
+ava('should use the postcss plugin api', t => {
     t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+    t.same(plugin().postcssPlugin, name, 'should be able to access name');
 });
