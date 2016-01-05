@@ -2,10 +2,15 @@
   "name": "postcss-discard-empty",
   "version": "2.0.0",
   "description": "Discard empty rules and values with PostCSS.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "LICENSE-MIT"
+  ],
   "scripts": {
-    "lint": "jshint index.js --reporter node_modules/jshint-stylish/index.js",
-    "test": "tape test.js | tap-spec"
+    "pretest": "eslint src",
+    "prepublish": "de dist && babel src --out-dir dist --ignore /__tests__/",
+    "test": "ava src/__tests__"
   },
   "keywords": [
     "compress",
@@ -18,13 +23,19 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "postcss": "^5.0.4"
+    "postcss": "^5.0.14"
   },
   "devDependencies": {
-    "jshint": "^2.8.0",
-    "jshint-stylish": "^2.0.1",
-    "tap-spec": "^4.1.0",
-    "tape": "^4.2.0"
+    "ava": "^0.11.0",
+    "babel-cli": "^6.4.5",
+    "babel-core": "^6.4.5",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-es2015-loose": "^7.0.0",
+    "babel-preset-stage-0": "^6.3.13",
+    "del-cli": "^0.1.2",
+    "eslint": "^1.10.3",
+    "eslint-config-cssnano": "^1.0.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-discard-empty",
   "author": {
@@ -32,5 +43,11 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-discard-empty"
+  "repository": "ben-eb/postcss-discard-empty",
+  "eslintConfig": {
+    "extends": "cssnano"
+  },
+  "ava": {
+    "require": "babel-core/register"
+  }
 }

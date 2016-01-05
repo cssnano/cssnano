@@ -1,9 +1,9 @@
-var test = require('tape');
-var postcss = require('postcss');
-var plugin = require('./');
-var name = require('./package.json').name;
+import ava from 'ava';
+import postcss from 'postcss';
+import plugin from '..';
+import {name} from '../../package.json';
 
-var tests = [{
+const tests = [{
     message: 'should remove empty @ rules',
     fixture: '@font-face;',
     expected: ''
@@ -45,21 +45,14 @@ var tests = [{
     expected: 'h1{/*comment*/}'
 }];
 
-function process (css, options) {
-    return postcss(plugin(options)).process(css).css;
-}
-
-test(name, function (t) {
-    t.plan(tests.length);
-
-    tests.forEach(function (test) {
-        var options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
+tests.forEach(test => {
+    ava(test.message, t => {
+        const out = postcss(plugin(test.options || {})).process(test.fixture);
+        t.same(out.css, test.expected);
     });
 });
 
-test('should use the postcss plugin api', function (t) {
-    t.plan(2);
+ava('should use the postcss plugin api', t => {
     t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+    t.same(plugin().postcssPlugin, name, 'should be able to access name');
 });
