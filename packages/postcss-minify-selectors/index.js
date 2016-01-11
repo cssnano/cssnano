@@ -30,6 +30,11 @@ function canUnquote (value) {
 
 function optimise (rule) {
     var selector = rule.raws.selector && rule.raws.selector.raw || rule.selector;
+    // If the selector ends with a ':' it is likely a part of a custom mixin,
+    // so just pass through.
+    if (selector[selector.length - 1] === ':') {
+        return;
+    }
     rule.selector = getParsed(selector, function (selectors) {
         selectors.nodes = sort(selectors.nodes, {insensitive: true});
         var uniqueSelectors = [];

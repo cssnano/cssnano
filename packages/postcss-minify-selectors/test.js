@@ -173,6 +173,14 @@ var tests = [{
     message: 'should not mangle pseudo classes (2)',
     fixture: '.btn-group>.btn-group:first-child:not(:last-child)>.btn:last-child,.btn-group>.btn-group:first-child:not(:last-child)>.dropdown-toggle{color:blue}',
     expected: '.btn-group>.btn-group:first-child:not(:last-child)>.btn:last-child,.btn-group>.btn-group:first-child:not(:last-child)>.dropdown-toggle{color:blue}',
+}, {
+    message: 'should not throw on polymer mixins',
+    fixture: '--my-toolbar-theme:{color:blue};',
+    expected: '--my-toolbar-theme:{color:blue};'
+}, {
+    message: 'should not throw on polymer mixins (2)',
+    fixture: 'paper-button{--paper-button-ink-color:#009688}',
+    expected: 'paper-button{--paper-button-ink-color:#009688}'
 }];
 
 function process (css, options) {
