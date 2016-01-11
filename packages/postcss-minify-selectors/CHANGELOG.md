@@ -1,3 +1,8 @@
+# 2.0.2
+
+* Fixed a crash with Polymer mixins; now the module will pass through any
+  selector string with a trailing colon.
+
 # 2.0.1
 
 * Replaced javascript-natural-sort with alphanum-sort (thanks to @TrySound).
