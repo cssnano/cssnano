@@ -23,7 +23,7 @@ console.log(postcss(colormin()).process(css).css);
 // => 'h1 {color:red}'
 ```
 
-For more examples see the [tests](test.js).
+For more examples see the [tests](src/__tests__/index.js).
 
 
 ## Contributing
