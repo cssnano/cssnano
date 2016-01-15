@@ -50,7 +50,7 @@
     "postcss-zindex": "^2.0.0"
   },
   "devDependencies": {
-    "ava": "^0.9.1",
+    "ava": "^0.10.0",
     "css-frameworks": "git+https://git@github.com/ben-eb/css-frameworks.git",
     "css-minifier-tests": "git+https://git@github.com/ben-eb/css-minifier-tests.git",
     "eslint": "^1.7.3",
