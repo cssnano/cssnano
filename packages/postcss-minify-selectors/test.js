@@ -181,6 +181,10 @@ var tests = [{
     message: 'should not throw on polymer mixins (2)',
     fixture: 'paper-button{--paper-button-ink-color:#009688}',
     expected: 'paper-button{--paper-button-ink-color:#009688}'
+}, {
+    message: 'should not unquote a single hyphen as an attribute value',
+    fixture: '[title="-"]{color:blue}',
+    expected: '[title="-"]{color:blue}'
 }];
 
 function process (css, options) {
