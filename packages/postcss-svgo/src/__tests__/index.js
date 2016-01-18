@@ -1,6 +1,4 @@
-"use strict";
-
-import test from 'tape';
+import ava from 'ava';
 import postcss from 'postcss';
 import plugin from '../';
 import filters from 'pleeease-filters';
@@ -63,23 +61,16 @@ let tests = [{
     }
 }];
 
-function process (css, options, callback) {
-    return postcss([ filters(), plugin(options) ]).process(css).then(callback);
-}
-
-test(name, (t) => {
-    t.plan(tests.length);
-
-    tests.forEach(test => {
-        let options = test.options || {};
-        process(test.fixture, options, result => {
-            t.equal(result.css, test.expected, test.message);
+tests.forEach(({message, fixture, expected, options = {}}) => {
+    ava(message, t => {
+        return postcss([ filters(), plugin(options) ]).process(fixture).then(result => {
+            t.same(result.css, expected);
         });
     });
 });
 
-test('should use the postcss plugin api', t => {
+ava('should use the postcss plugin api', t => {
     t.plan(2);
     t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+    t.same(plugin().postcssPlugin, name, 'should be able to access name');
 });

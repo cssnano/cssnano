@@ -1,5 +1,3 @@
-'use strict';
-
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import SVGO from 'svgo';
@@ -7,12 +5,12 @@ import isSvg from 'is-svg';
 
 const dataURI = /data:image\/svg\+xml(;(charset=)?utf-8)?,/;
 let encode = data => data
-    .replace(/"/g,'\'')
-    .replace(/</g,'%3C')
-    .replace(/>/g,'%3E')
-    .replace(/&/g,'%26')
-    .replace(/#/g,'%23')
-    .replace(/\s+/g,' ');
+    .replace(/"/g, '\'')
+    .replace(/</g, '%3C')
+    .replace(/>/g, '%3E')
+    .replace(/&/g, '%26')
+    .replace(/#/g, '%23')
+    .replace(/\s+/g, ' ');
 let decode = decodeURIComponent;
 
 function minifyPromise (svgo, decl, opts) {
@@ -53,9 +51,7 @@ function minifyPromise (svgo, decl, opts) {
         return false;
     });
 
-    return Promise.all(promises).then(() => {
-        decl.value = decl.value.toString();
-    });
+    return Promise.all(promises).then(() => decl.value = decl.value.toString());
 }
 
 export default postcss.plugin('postcss-svgo', (opts = {}) => {
