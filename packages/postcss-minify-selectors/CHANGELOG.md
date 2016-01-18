@@ -1,3 +1,7 @@
+# 2.0.3
+
+* Fixed an issue where `[a="-"]` was incorrectly minified to `[a=-]`.
+
 # 2.0.2
 
 * Fixed a crash with Polymer mixins; now the module will pass through any
