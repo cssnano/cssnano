@@ -1,3 +1,8 @@
+# 3.0.5
+
+* Fixes an issue where base64 encoded OpenType font urls were being erroneously
+  converted by the module (thanks to @ln-e).
+
 # 3.0.4
 
 * Fixes incorrect minification of empty non-url functions.
