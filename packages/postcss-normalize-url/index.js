@@ -45,7 +45,7 @@ function transformDecl (decl, opts) {
         node.before = node.after = '';
         url.value = url.value.trim().replace(multiline, '');
 
-        if (~url.value.indexOf('data:image/') || ~url.value.indexOf('data:application/')) {
+        if (~url.value.indexOf('data:image/') || ~url.value.indexOf('data:application/') || ~url.value.indexOf('data:font/')) {
             return false;
         }
 
