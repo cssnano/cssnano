@@ -1,3 +1,8 @@
+# 2.1.4
+
+* Fixed a range error which happened when duplicated at rules were found
+  in the stylesheet.
+
 # 2.1.3
 
 * Fixed an infinite loop regression in the last patch.
