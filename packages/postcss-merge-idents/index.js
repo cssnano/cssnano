@@ -27,24 +27,31 @@ function mergeAtRules (css, pairs) {
             relevant = pairs.filter(function (pair) {
                 return pair.atrule.test(node.name);
             })[0];
-            if (!relevant) { return; }
-            var toString = node.nodes.toString();
-            var cached = relevant.cache.filter(function (c) {
-                return c.name === node.name && String(c.nodes) === toString;
-            });
-            var cache = relevant.cache;
-            if (cached.length) {
-                relevant.replacements[cached[0].params] = node.params;
-                cached[0].remove();
-                relevant.cache = cache.splice(cache.indexOf(cached[0]) + 1, 1);
+            if (!relevant) {
+                return;
             }
-            relevant.cache.push(node);
+            if (relevant.cache.length < 1) {
+                relevant.cache.push(node);
+                return;
+            } else {
+                var toString = node.nodes.toString();
+                relevant.cache.forEach(function (cached) {
+                    if (cached.name === node.name && cached.nodes.toString() === toString) {
+                        cached.remove();
+                        relevant.replacements[cached.params] = node.params;
+                    }
+                });
+                relevant.cache.push(node);
+                return;
+            }
         }
         if (node.type === 'decl') {
             relevant = pairs.filter(function (pair) {
                 return pair.decl.test(node.prop);
             })[0];
-            if (!relevant) { return; }
+            if (!relevant) {
+                return;
+            }
             relevant.decls.push(node);
         }
     });

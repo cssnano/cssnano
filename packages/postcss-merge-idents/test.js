@@ -57,6 +57,27 @@ var tests = [{
     message: 'should not output JS functions',
     fixture: '.ui.indeterminate.loader:after{-webkit-animation-direction:reverse;animation-direction:reverse;-webkit-animation-duration:1.2s;animation-duration:1.2s}',
     expected: '.ui.indeterminate.loader:after{-webkit-animation-direction:reverse;animation-direction:reverse;-webkit-animation-duration:1.2s;animation-duration:1.2s}'
+}, {
+    message: 'should handle duplicated definitions',
+    fixture: [
+        '.checkbox input[type=checkbox]:checked + .checkbox-material:before{-webkit-animation:rippleOn 500ms;-o-animation:rippleOn 500ms;animation:rippleOn 500ms}',
+        '.checkbox input[type=checkbox]:checked + .checkbox-material .check:after{-webkit-animation:rippleOn 500ms forwards;-o-animation:rippleOn 500ms forwards;animation:rippleOn 500ms forwards}',
+        '@-webkit-keyframes rippleOn{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
+        '@-o-keyframes rippleOn{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
+        '@keyframes rippleOn{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
+        '@-webkit-keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
+        '@-o-keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
+        '@keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
+        '@keyframes rippleOn{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
+        '@keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}'
+    ].join(''),
+    expected: [
+        '.checkbox input[type=checkbox]:checked + .checkbox-material:before{-webkit-animation:rippleOff 500ms;-o-animation:rippleOff 500ms;animation:rippleOff 500ms}',
+        '.checkbox input[type=checkbox]:checked + .checkbox-material .check:after{-webkit-animation:rippleOff 500ms forwards;-o-animation:rippleOff 500ms forwards;animation:rippleOff 500ms forwards}',
+        '@-webkit-keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
+        '@-o-keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
+        '@keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}'
+    ].join('')
 }];
 
 function process (css, options) {
