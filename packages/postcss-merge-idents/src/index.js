@@ -1,8 +1,6 @@
-'use strict';
-
-var hasOwn = require('has-own');
-var postcss = require('postcss');
-var valueParser = require('postcss-value-parser');
+import hasOwn from 'has-own';
+import {plugin} from 'postcss';
+import valueParser from 'postcss-value-parser';
 
 function canonical (obj) {
     return function recurse (key) {
@@ -14,19 +12,17 @@ function canonical (obj) {
 }
 
 function mergeAtRules (css, pairs) {
-    pairs.forEach(function (pair) {
+    pairs.forEach(pair => {
         pair.cache = [];
         pair.replacements = [];
         pair.decls = [];
     });
 
-    var relevant;
+    let relevant;
 
-    css.walk(function (node) {
+    css.walk(node => {
         if (node.type === 'atrule') {
-            relevant = pairs.filter(function (pair) {
-                return pair.atrule.test(node.name);
-            })[0];
+            relevant = pairs.filter(pair => pair.atrule.test(node.name))[0];
             if (!relevant) {
                 return;
             }
@@ -34,8 +30,8 @@ function mergeAtRules (css, pairs) {
                 relevant.cache.push(node);
                 return;
             } else {
-                var toString = node.nodes.toString();
-                relevant.cache.forEach(function (cached) {
+                let toString = node.nodes.toString();
+                relevant.cache.forEach(cached => {
                     if (cached.name === node.name && cached.nodes.toString() === toString) {
                         cached.remove();
                         relevant.replacements[cached.params] = node.params;
@@ -46,9 +42,7 @@ function mergeAtRules (css, pairs) {
             }
         }
         if (node.type === 'decl') {
-            relevant = pairs.filter(function (pair) {
-                return pair.decl.test(node.prop);
-            })[0];
+            relevant = pairs.filter(pair => pair.decl.test(node.prop))[0];
             if (!relevant) {
                 return;
             }
@@ -56,10 +50,10 @@ function mergeAtRules (css, pairs) {
         }
     });
 
-    pairs.forEach(function (pair) {
-        var canon = canonical(pair.replacements);
-        pair.decls.forEach(function (decl) {
-            decl.value = valueParser(decl.value).walk(function (node) {
+    pairs.forEach(pair => {
+        let canon = canonical(pair.replacements);
+        pair.decls.forEach(decl => {
+            decl.value = valueParser(decl.value).walk(node => {
                 if (node.type === 'word') {
                     node.value = canon(node.value);
                 }
@@ -74,8 +68,8 @@ function mergeAtRules (css, pairs) {
     });
 }
 
-module.exports = postcss.plugin('postcss-merge-idents', function () {
-    return function (css) {
+export default plugin('postcss-merge-idents', () => {
+    return css => {
         mergeAtRules(css, [{
             atrule: /keyframes/,
             decl: /animation/
