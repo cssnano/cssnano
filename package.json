@@ -55,7 +55,7 @@
     "css-minifier-tests": "git+https://git@github.com/ben-eb/css-minifier-tests.git",
     "eslint": "^1.7.3",
     "json-loader": "^0.5.3",
-    "node-libs-browser": "^0.5.3",
+    "node-libs-browser": "^1.0.0",
     "webpack": "^1.12.2"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
