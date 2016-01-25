@@ -2,14 +2,16 @@
   "name": "postcss-unique-selectors",
   "version": "2.0.1",
   "description": "Ensure CSS selectors are unique.",
-  "main": "index.js",
-  "files": [
-    "index.js",
-    "LICENSE-MIT"
-  ],
+  "main": "dist/index.js",
   "scripts": {
-    "test": "tape test.js | tap-spec"
+    "pretest": "eslint src",
+    "prepublish": "de dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
+    "test": "ava src/__tests__"
   },
+  "files": [
+    "LICENSE-MIT",
+    "dist"
+  ],
   "keywords": [
     "css",
     "postcss",
@@ -17,8 +19,16 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "tap-spec": "^4.1.0",
-    "tape": "^4.2.0"
+    "ava": "^0.11.0",
+    "babel-cli": "^6.4.0",
+    "babel-core": "^6.4.0",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-es2015-loose": "^7.0.0",
+    "babel-preset-stage-0": "^6.3.13",
+    "del-cli": "^0.1.2",
+    "eslint": "^1.10.3",
+    "eslint-config-cssnano": "^1.0.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-unique-selectors",
   "author": {
@@ -31,5 +41,11 @@
     "alphanum-sort": "^1.0.1",
     "postcss": "^5.0.4",
     "uniqs": "^2.0.0"
+  },
+  "ava": {
+    "require": "babel-core/register"
+  },
+  "eslintConfig": {
+    "extends": "cssnano"
   }
 }
