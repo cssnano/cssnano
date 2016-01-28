@@ -30,6 +30,33 @@ function hasFont (fontFamily, cache) {
     return comma(fontFamily).some(font => cache.some(c => ~c.indexOf(font)));
 };
 
+function filterNamespace (css) {
+    let atRules = [];
+    let rules = [];
+    css.walk(node => {
+        let {type, selector, name} = node;
+        if (type === 'rule' && /\|/.test(selector)) {
+            return rules.push(selector.split('|')[0]);
+        }
+        if (type === 'atrule' && name === 'namespace') {
+            atRules.push(node);
+        }
+    });
+    rules = uniqs(flatten(rules));
+    atRules.forEach(atRule => {
+        let {0: param, length: len} = atRule.params
+            .split(' ')
+            .filter(e => e !== '');
+        if (len === 1) {
+            return;
+        }
+        let hasRule = rules.some(rule => rule === param || rule === '*');
+        if (!hasRule) {
+            atRule.remove();
+        }
+    });
+}
+
 // fonts have slightly different logic
 function filterFont (css) {
     let atRules = [];
@@ -71,6 +98,9 @@ module.exports = postcss.plugin('postcss-discard-unused', opts => {
         }
         if (opts.keyframes !== false) {
             filterAtRule(css, /animation/, /keyframes/);
+        }
+        if (opts.namespace !== false) {
+            filterNamespace(css);
         }
     };
 });

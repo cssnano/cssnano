@@ -66,7 +66,7 @@ let tests = [{
     fixture: [
         '@font-face {src:url("fonts/does-not-exist.ttf") format("truetype")}',
         '@keyframes {0%{opacity:0}to{opacity:1}}',
-        '@counter-style custom{system:extends decimal;suffix:"> "}'
+        '@counter-style custom{system:extends decimal;suffix:"> "}',
     ].join(''),
     expected: '@font-face {src:url("fonts/does-not-exist.ttf") format("truetype")}',
     options: {
@@ -77,7 +77,7 @@ let tests = [{
     fixture: [
         '@keyframes {0%{opacity:0}to{opacity:1}}',
         '@font-face {src:url("fonts/does-not-exist.ttf") format("truetype")}',
-        '@counter-style custom{system:extends decimal;suffix:"> "}'
+        '@counter-style custom{system:extends decimal;suffix:"> "}',
     ].join(''),
     expected: '@keyframes {0%{opacity:0}to{opacity:1}}',
     options: {
@@ -88,7 +88,7 @@ let tests = [{
     fixture: [
         '@counter-style custom{system:extends decimal;suffix:"> "}',
         '@font-face {src:url("fonts/does-not-exist.ttf") format("truetype")}',
-        '@keyframes {0%{opacity:0}to{opacity:1}}'
+        '@keyframes {0%{opacity:0}to{opacity:1}}',
     ].join(''),
     expected: '@counter-style custom{system:extends decimal;suffix:"> "}',
     options: {
