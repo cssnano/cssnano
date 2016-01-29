@@ -2,6 +2,7 @@
 
 > Discard unused counter styles, keyframes and fonts.
 
+
 ## Install
 
 With [npm](https://npmjs.org/package/postcss-discard-unused) do:
@@ -9,6 +10,7 @@ With [npm](https://npmjs.org/package/postcss-discard-unused) do:
 ```
 npm install postcss-discard-unused --save
 ```
+
 
 ## Example
 
@@ -65,10 +67,12 @@ However, you can mitigate this by including [postcss-minify-font-values][mfv]
 *before* this plugin, which will take care of normalising quotes, and
 deduplicating. For more examples, see the [tests](test.js).
 
+
 ## Usage
 
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
 examples for your environment.
+
 
 ## API
 
@@ -78,29 +82,36 @@ examples for your environment.
 
 ##### fontFace
 
-Type: `boolean`
+Type: `boolean`  
 Default: `true`
 
 Pass `false` to disable discarding unused font face rules.
 
 ##### counterStyle
 
-Type: `boolean`
+Type: `boolean`  
 Default: `true`
 
 Pass `false` to disable discarding unused counter style rules.
 
 ##### keyframes
 
-Type: `boolean`
+Type: `boolean`  
 Default: `true`
 
 Pass `false` to disable discarding unused keyframe rules.
+
+##### namespace
+
+Type: `boolean`  
+Default: `true`
+
 
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests
 to cover it.
+
 
 ## License
 
