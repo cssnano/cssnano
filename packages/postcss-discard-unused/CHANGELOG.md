@@ -1,3 +1,7 @@
+# 2.2.0
+
+* Added a new option to remove `@namespace` rules (thanks to @plesiecki).
+
 # 2.1.0
 
 * Added options to customise what the module discards (thanks to @TrySound).
