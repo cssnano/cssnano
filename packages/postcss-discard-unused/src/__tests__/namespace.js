@@ -1,10 +1,8 @@
-'use strict';
-
-import test from 'tape';
+import ava from 'ava';
 import postcss from 'postcss';
 import plugin from '..';
 
-let tests = [{
+const tests = [{
     message: 'should remove unused prefixed namespace',
     fixture: '@namespace svg url(http://www.w3.org/2000/svg);a{color:blue}',
     expected: 'a{color:blue}'
@@ -33,15 +31,11 @@ let tests = [{
     }
 }];
 
-function process (css, options) {
-    return postcss(plugin(options)).process(css).css;
-}
-
-test('namespace at-rule', t => {
-    t.plan(tests.length);
-
-    tests.forEach(test => {
+tests.forEach(test => {
+    ava(test.message, t => {
         let options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
+        return postcss([ plugin(options) ]).process(test.fixture).then(result => {
+            t.same(result.css, test.expected);
+        });
     });
 });

@@ -1,5 +1,3 @@
-'use strict';
-
 import uniqs from 'uniqs';
 import postcss, {list} from 'postcss';
 import flatten from 'flatten';
@@ -24,11 +22,11 @@ function filterAtRule (css, declRegex, atruleRegex) {
             node.remove();
         }
     });
-};
+}
 
 function hasFont (fontFamily, cache) {
     return comma(fontFamily).some(font => cache.some(c => ~c.indexOf(font)));
-};
+}
 
 function filterNamespace (css) {
     let atRules = [];

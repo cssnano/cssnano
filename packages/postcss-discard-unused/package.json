@@ -9,9 +9,9 @@
     "dist"
   ],
   "scripts": {
-    "prepublish": "babel src --out-dir dist --ignore /__tests__/",
-    "test-unformatted": "babel-tape-runner \"src/**/__tests__/*.js\"",
-    "test": "npm run test-unformatted | tap-spec"
+    "prepublish": "de dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
+    "pretest": "eslint src",
+    "test": "ava src/__tests__"
   },
   "keywords": [
     "css",
@@ -23,10 +23,15 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel": "^5.8.23",
-    "babel-tape-runner": "1.2.0",
-    "tap-spec": "^4.1.0",
-    "tape": "^4.2.0"
+    "ava": "^0.11.0",
+    "babel-cli": "^6.4.5",
+    "babel-core": "^6.4.5",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-es2015-loose": "^7.0.0",
+    "babel-preset-stage-0": "^6.3.13",
+    "del-cli": "^0.1.2",
+    "eslint": "^1.10.3"
   },
   "homepage": "https://github.com/ben-eb/postcss-discard-unused",
   "author": {
@@ -36,8 +41,11 @@
   },
   "repository": "ben-eb/postcss-discard-unused",
   "dependencies": {
-    "flatten": "0.0.1",
-    "postcss": "^5.0.4",
+    "flatten": "1.0.2",
+    "postcss": "^5.0.14",
     "uniqs": "^2.0.0"
+  },
+  "ava": {
+    "require": "babel-core/register"
   }
 }

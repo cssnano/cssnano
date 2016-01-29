@@ -1,11 +1,9 @@
-'use strict';
-
-import test from 'tape';
+import ava from 'ava';
 import postcss from 'postcss';
 import plugin from '..';
 import {name} from '../../package.json';
 
-let tests = [{
+const tests = [{
     message: 'should remove unused counter styles',
     fixture: '@counter-style custom{system:extends decimal;suffix:"> "}',
     expected: ''
@@ -96,21 +94,17 @@ let tests = [{
     }
 }];
 
-function process (css, options) {
-    return postcss(plugin(options)).process(css).css;
-}
-
-test(name, t => {
-    t.plan(tests.length);
-
-    tests.forEach(test => {
+tests.forEach(test => {
+    ava(test.message, t => {
         let options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
+        return postcss([ plugin(options) ]).process(test.fixture).then(result => {
+            t.same(result.css, test.expected);
+        });
     });
 });
 
-test('should use the postcss plugin api', t => {
+ava('should use the postcss plugin api', t => {
     t.plan(2);
     t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+    t.same(plugin().postcssPlugin, name, 'should be able to access name');
 });
