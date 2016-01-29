@@ -106,6 +106,8 @@ Pass `false` to disable discarding unused keyframe rules.
 Type: `boolean`  
 Default: `true`
 
+Pass `false` to disable discarding unused namespace rules.
+
 
 ## Contributing
 
