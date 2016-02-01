@@ -2,6 +2,7 @@
 
 > Reduce [custom identifiers][idents] with PostCSS.
 
+
 ## Install
 
 With [npm](https://npmjs.org/package/postcss-reduce-idents) do:
@@ -9,6 +10,7 @@ With [npm](https://npmjs.org/package/postcss-reduce-idents) do:
 ```
 npm install postcss-reduce-idents --save
 ```
+
 
 ## Example
 
@@ -71,10 +73,12 @@ It works for `@keyframes`, `@counter-style` and custom `counter` values. See the
 [documentation][idents] for more information, or the [tests](test.js) for more
 examples.
 
+
 ## Usage
 
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
 examples for your environment.
+
 
 ## API
 
@@ -84,33 +88,36 @@ examples for your environment.
 
 ##### counter
 
-Type: `boolean`
+Type: `boolean`  
 Default: `true`
 
 Pass `false` to disable reducing `content`, `counter-reset` and `counter-increment` declarations.
 
 ##### keyframes
 
-Type: `boolean`
+Type: `boolean`  
 Default: `true`
 
 Pass `false` to disable reducing `keyframes` rules and `animation` declarations.
 
 ##### counterStyle
 
-Type: `boolean`
+Type: `boolean`  
 Default: `true`
 
 Pass `false` to disable reducing `counter-style` rules and `list-style` and `system` declarations.
+
 
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests
 to cover it.
 
+
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
+
 
 [ci]:      https://travis-ci.org/ben-eb/postcss-reduce-idents
 [deps]:    https://gemnasium.com/ben-eb/postcss-reduce-idents

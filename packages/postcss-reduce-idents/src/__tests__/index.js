@@ -1,12 +1,12 @@
-'use strict';
+import ava from 'ava';
+import postcss from 'postcss';
+import plugin from '../';
+import pkg from '../../package.json';
+import encode from './../lib/encode';
 
-var test = require('tape');
-var postcss = require('postcss');
-var plugin = require('./');
-var name = require('./package.json').name;
-var encode = require('./lib/encode');
+const name = pkg.name;
 
-var tests = [{
+const tests = [{
     message: 'should rename keyframes',
     fixture: '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}',
     expected: '@keyframes a{0%{color:#fff}to{color:#000}}.one{animation-name:a}'
@@ -86,7 +86,7 @@ var tests = [{
         '@counter-style a{system:extends decimal;suffix:"> "}ol{list-style:a}',
         'body{counter-reset:a}h3:before{counter-increment:a;content:"Section" counter(a) ": "}'
     ].join(''),
-    options: { keyframes: false }
+    options: {keyframes: false}
 }, {
     message: 'should not touch counter styles',
     fixture: [
@@ -99,7 +99,7 @@ var tests = [{
         '@counter-style custom{system:extends decimal;suffix:"> "}ol{list-style:custom}',
         'body{counter-reset:a}h3:before{counter-increment:a;content:"Section" counter(a) ": "}'
     ].join(''),
-    options: { counterStyle: false }
+    options: {counterStyle: false}
 }, {
     message: 'should not touch counter functions',
     fixture: [
@@ -112,39 +112,32 @@ var tests = [{
         '@counter-style a{system:extends decimal;suffix:"> "}ol{list-style:a}',
         'body{counter-reset:section}h3:before{counter-increment:section;content:"Section" counter(section) ": "}'
     ].join(''),
-    options: { counter: false }
+    options: {counter: false}
 }];
 
-function process (css, options) {
-    return postcss(plugin(options)).process(css).css;
-}
+tests.forEach(test => {
+    ava(test.message, t => {
+        let options = test.options || {};
+        return postcss([ plugin(options) ]).process(test.fixture).then(result => {
+            t.same(result.css, test.expected);
+        });
+    });
+});
 
-test('encoder', function (t) {
-    var iterations = new Array(1984);
-    var arr = Array.apply([], iterations).map(function (a, b) { return b; });
-    var cache = [];
+ava('encoder', t => {
+    let iterations = new Array(1984);
+    let arr = Array.apply([], iterations).map((a, b) => b);
+    let cache = [];
 
-    t.plan(arr.length);
-
-    arr.map(function (num) {
-        var encoded = encode(num);
+    arr.map(num => {
+        let encoded = encode(num);
         cache.push(encoded);
-        var indexes = cache.filter(function (c) { return c === encoded; });
-        t.equal(indexes.length, 1, encoded + ' should be returned only once');
+        let indexes = cache.filter(c => c === encoded);
+        t.same(indexes.length, 1, encoded + ' should be returned only once');
     });
 });
 
-test(name, function (t) {
-    t.plan(tests.length);
-
-    tests.forEach(function (test) {
-        var options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
-    });
-});
-
-test('should use the postcss plugin api', function (t) {
-    t.plan(2);
+ava('should use the postcss plugin api', t => {
     t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+    t.same(plugin().postcssPlugin, name, 'should be able to access name');
 });

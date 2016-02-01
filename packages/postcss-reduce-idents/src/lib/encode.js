@@ -1,11 +1,9 @@
-'use strict';
-
-module.exports = function encode (num) {
-    var base = 52;
-    var characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    var character = num % base;
-    var result = characters[character];
-    var remainder = Math.floor(num / base);
+export default function encode (num) {
+    let base = 52;
+    let characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let character = num % base;
+    let result = characters[character];
+    let remainder = Math.floor(num / base);
     if (remainder) {
         base = 64;
         characters = characters + '0123456789-_';

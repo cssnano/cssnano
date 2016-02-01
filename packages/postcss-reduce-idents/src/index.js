@@ -1,21 +1,17 @@
-'use strict';
-
-var postcss = require('postcss');
-var valueParser = require('postcss-value-parser');
-var walk = valueParser.walk;
-var unit = valueParser.unit;
-var encode = require('./lib/encode');
+import valueParser, {unit, walk} from 'postcss-value-parser';
+import postcss from 'postcss';
+import encode from './lib/encode';
 
 function isNum (node) {
     return unit(node.value);
 }
 
 function transformAtRule (css, atRuleRegex, propRegex) {
-    var cache = {};
-    var ruleCache = [];
-    var declCache = [];
+    const cache = {};
+    const ruleCache = [];
+    const declCache = [];
     // Encode at rule names and cache the result
-    css.walk(function (node) {
+    css.walk(node => {
         if (node.type === 'atrule' && atRuleRegex.test(node.name)) {
             if (!cache[node.params]) {
                 cache[node.params] = {
@@ -30,8 +26,8 @@ function transformAtRule (css, atRuleRegex, propRegex) {
         }
     });
     // Iterate each property and change their names
-    declCache.forEach(function (decl) {
-        decl.value = valueParser(decl.value).walk(function (node) {
+    declCache.forEach(decl => {
+        decl.value = valueParser(decl.value).walk(node => {
             if (node.type === 'word' && node.value in cache) {
                 cache[node.value].count++;
                 node.value = cache[node.value].ident;
@@ -43,9 +39,9 @@ function transformAtRule (css, atRuleRegex, propRegex) {
         }).toString();
     });
     // Ensure that at rules with no references to them are left unchanged
-    ruleCache.forEach(function (rule) {
-        Object.keys(cache).forEach(function (key) {
-            var k = cache[key];
+    ruleCache.forEach(rule => {
+        Object.keys(cache).forEach(key => {
+            let k = cache[key];
             if (k.ident === rule.params && !k.count) {
                 rule.params = key;
             }
@@ -54,12 +50,12 @@ function transformAtRule (css, atRuleRegex, propRegex) {
 }
 
 function transformDecl (css, propOneRegex, propTwoRegex) {
-    var cache = {};
-    var declOneCache = [];
-    var declTwoCache = [];
-    css.walkDecls(function (decl) {
+    const cache = {};
+    const declOneCache = [];
+    const declTwoCache = [];
+    css.walkDecls(decl => {
         if (propOneRegex.test(decl.prop)) {
-            decl.value = valueParser(decl.value).walk(function (node) {
+            decl.value = valueParser(decl.value).walk(node => {
                 if (node.type === 'word' && !isNum(node)) {
                     if (!cache[node.value]) {
                         cache[node.value] = {
@@ -77,16 +73,16 @@ function transformDecl (css, propOneRegex, propTwoRegex) {
             declTwoCache.push(decl);
         }
     });
-    declTwoCache.forEach(function (decl) {
-        decl.value = valueParser(decl.value).walk(function (node) {
+    declTwoCache.forEach(decl => {
+        decl.value = valueParser(decl.value).walk(node => {
             if (node.type === 'function') {
                 if (node.value === 'counter' || node.value === 'counters') {
-                    walk(node.nodes, function (node) {
-                        if (node.type === 'word' && node.value in cache) {
-                            cache[node.value].count++;
-                            node.value = cache[node.value].ident;
-                        } else if (node.type === 'div') {
-                            node.before = node.after = '';
+                    walk(node.nodes, n => {
+                        if (n.type === 'word' && n.value in cache) {
+                            cache[n.value].count++;
+                            n.value = cache[n.value].ident;
+                        } else if (n.type === 'div') {
+                            n.before = n.after = '';
                         }
                     });
                 }
@@ -97,11 +93,11 @@ function transformDecl (css, propOneRegex, propTwoRegex) {
             }
         }).toString();
     });
-    declOneCache.forEach(function (decl) {
-        decl.value = decl.value.walk(function (node) {
+    declOneCache.forEach(decl => {
+        decl.value = decl.value.walk(node => {
             if (node.type === 'word' && !isNum(node)) {
-                Object.keys(cache).forEach(function (key) {
-                    var k = cache[key];
+                Object.keys(cache).forEach(key => {
+                    let k = cache[key];
                     if (k.ident === node.value && !k.count) {
                         node.value = key;
                     }
@@ -111,9 +107,8 @@ function transformDecl (css, propOneRegex, propTwoRegex) {
     });
 }
 
-module.exports = postcss.plugin('postcss-reduce-idents', function (opts) {
-    opts = opts || {};
-    return function (css) {
+export default postcss.plugin('postcss-reduce-idents', (opts = {}) => {
+    return css => {
         if (opts.counter !== false) {
             transformDecl(css, /counter-(reset|increment)/, /content/);
         }
