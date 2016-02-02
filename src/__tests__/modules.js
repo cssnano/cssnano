@@ -6,7 +6,7 @@ import {join} from 'path';
 const base = join(__dirname, '/modules');
 
 directory(base).forEach(file => {
-    var submodule = require(join(base, file));
+    const submodule = require(join(base, file));
     submodule.tests.forEach(test => {
         ava(test.message, t => {
             const options = test.options || {};

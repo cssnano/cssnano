@@ -4,10 +4,10 @@ import {readdirSync as directory, readFileSync as file} from 'fs';
 import specName from './util/specName';
 import {join} from 'path';
 
-var base = join(__dirname, 'fixtures');
+const base = join(__dirname, 'fixtures');
 
 const specs = directory(base).reduce((tests, cssFile) => {
-    var parts = cssFile.split('.');
+    const parts = cssFile.split('.');
     if (!tests[parts[0]]) {
         tests[parts[0]] = {};
     }

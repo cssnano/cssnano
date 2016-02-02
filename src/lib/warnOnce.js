@@ -1,6 +1,6 @@
-var messages = {};
+const messages = {};
 
- export default function warnOnce (message) {
+export default function warnOnce (message) {
     if (messages[message]) {
         return;
     }

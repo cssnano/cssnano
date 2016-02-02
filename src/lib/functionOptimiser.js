@@ -29,7 +29,7 @@ function transformDecls (decl) {
     }
 }
 
-export default plugin('cssnano-function-optimiser', function () {
+export default plugin('cssnano-function-optimiser', () => {
     return function (css) {
         css.walkDecls(transformDecls);
     };
