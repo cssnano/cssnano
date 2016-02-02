@@ -4,12 +4,13 @@
   "description": "Normalize URLs with PostCSS",
   "main": "index.js",
   "files": [
-    "index.js",
+    "dist",
     "LICENSE-MIT"
   ],
   "scripts": {
-    "lint": "jshint index.js lib/*.js --reporter node_modules/jshint-stylish/stylish.js",
-    "test": "tape test.js | tap-spec"
+      "pretest": "eslint src",
+      "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
+      "test": "ava src/__tests__"
   },
   "keywords": [
     "css",
@@ -23,16 +24,21 @@
   "license": "MIT",
   "dependencies": {
     "is-absolute-url": "^2.0.0",
-    "normalize-url": "^1.3.1",
-    "object-assign": "^4.0.1",
-    "postcss": "^5.0.8",
-    "postcss-value-parser": "^3.0.1"
+    "normalize-url": "^1.4.0",
+    "postcss": "^5.0.14",
+    "postcss-value-parser": "^3.2.3"
   },
   "devDependencies": {
-    "jshint": "^2.8.0",
-    "jshint-stylish": "^2.0.1",
-    "tap-spec": "^4.1.0",
-    "tape": "^4.2.1"
+    "ava": "^0.11.0",
+    "babel-cli": "^6.5.1",
+    "babel-core": "^6.5.1",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-preset-es2015": "^6.5.0",
+    "babel-preset-es2015-loose": "^7.0.0",
+    "babel-preset-stage-0": "^6.5.0",
+    "del-cli": "^0.2.0",
+    "eslint": "^1.10.3",
+    "eslint-config-cssnano": "^1.0.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-normalize-url",
   "author": {
@@ -40,5 +46,11 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-normalize-url"
+  "repository": "ben-eb/postcss-normalize-url",
+  "eslintConfig": {
+    "extends": "cssnano"
+  },
+  "ava": {
+    "require": "babel-core/register"
+  }
 }

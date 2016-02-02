@@ -1,11 +1,9 @@
-'use strict';
+import ava from 'ava';
+import postcss from 'postcss';
+import plugin from '../';
+import {name} from '../../package.json';
 
-var test = require('tape');
-var postcss = require('postcss');
-var plugin = require('./');
-var name = require('./package.json').name;
-
-var tests = [{
+const tests = [{
     message: 'should strip double quotes',
     fixture: 'h1{background:url("cat.jpg")}',
     expected: 'h1{background:url(cat.jpg)}'
@@ -131,16 +129,16 @@ var tests = [{
     expected: 'h1{shape-outside: circle()}'
 }];
 
-test(name, function (t) {
-    t.plan(tests.length);
-
-    tests.forEach(function (test) {
-        t.equal(plugin.process(test.fixture).css, test.expected, test.message);
+tests.forEach(test => {
+    ava(test.message, t => {
+        let options = test.options || {};
+        return postcss([ plugin(options) ]).process(test.fixture).then(result => {
+            t.same(result.css, test.expected);
+        });
     });
 });
 
-test('should use the postcss plugin api', function (t) {
-    t.plan(2);
+ava('should use the postcss plugin api', t => {
     t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+    t.same(plugin().postcssPlugin, name, 'should be able to access name');
 });

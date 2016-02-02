@@ -1,14 +1,11 @@
-'use strict';
+import postcss from 'postcss';
+import valueParser from 'postcss-value-parser';
+import normalize from 'normalize-url';
+import isAbsolute from 'is-absolute-url';
+import path from 'path';
 
-var postcss = require('postcss');
-var valueParser = require('postcss-value-parser');
-var normalize = require('normalize-url');
-var isAbsolute = require('is-absolute-url');
-var path = require('path');
-var assign = require('object-assign');
-
-var multiline = /\\[\r\n]/;
-var escapeChars = /([\s\(\)"'])/g;
+const multiline = /\\[\r\n]/;
+const escapeChars = /([\s\(\)"'])/g;
 
 function convert (url, options) {
     if (isAbsolute(url) || !url.indexOf('//')) {
@@ -18,7 +15,7 @@ function convert (url, options) {
 }
 
 function transformNamespace (rule, opts) {
-    rule.params = valueParser(rule.params).walk(function (node) {
+    rule.params = valueParser(rule.params).walk(node => {
         if (node.type === 'function' && node.value === 'url' && node.nodes.length) {
             node.type = 'string';
             node.quote = node.nodes[0].quote || '"';
@@ -34,13 +31,13 @@ function transformNamespace (rule, opts) {
 }
 
 function transformDecl (decl, opts) {
-    decl.value = valueParser(decl.value).walk(function (node) {
+    decl.value = valueParser(decl.value).walk(node => {
         if (node.type !== 'function' || node.value !== 'url' || !node.nodes.length) {
-            return;
+            return false;
         }
 
-        var url = node.nodes[0];
-        var escaped;
+        let url = node.nodes[0];
+        let escaped;
 
         node.before = node.after = '';
         url.value = url.value.trim().replace(multiline, '');
@@ -67,15 +64,16 @@ function transformDecl (decl, opts) {
     }).toString();
 }
 
-module.exports = postcss.plugin('postcss-normalize-url', function (opts) {
-    opts = assign({
+module.exports = postcss.plugin('postcss-normalize-url', opts => {
+    opts = {
         normalizeProtocol: false,
         stripFragment: false,
-        stripWWW: true
-    }, opts);
+        stripWWW: true,
+        ...opts
+    };
 
-    return function (css) {
-        css.walk(function (node) {
+    return css => {
+        css.walk(node => {
             if (node.type === 'decl') {
                 return transformDecl(node, opts);
             } else if (node.type === 'atrule' && node.name === 'namespace') {
