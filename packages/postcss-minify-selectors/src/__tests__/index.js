@@ -1,11 +1,12 @@
-'use strict';
+import ava from 'ava';
+import postcss from 'postcss';
+import plugin from '../';
+import pkg from '../../package.json';
+import magician from 'postcss-font-magician';
 
-var test = require('tape');
-var postcss = require('postcss');
-var plugin = require('./');
-var name = require('./package.json').name;
+let name = pkg.name;
 
-var tests = [{
+let tests = [{
     message: 'should trim spaces in simple selectors',
     fixture: 'h1,  h2,  h3{color:blue}',
     expected: 'h1,h2,h3{color:blue}'
@@ -187,31 +188,24 @@ var tests = [{
     expected: '[title="-"]{color:blue}'
 }];
 
-function process (css, options) {
-    return postcss(plugin(options)).process(css).css;
-}
-
-test(name, function (t) {
-    t.plan(tests.length);
-
-    tests.forEach(function (test) {
-        var options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
+tests.forEach(({message, fixture, expected, options = {}}) => {
+    ava(message, t => {
+        return postcss([ plugin(options) ]).process(fixture).then(result => {
+            t.same(result.css, expected);
+        });
     });
 });
 
-test('cssnano issue 39', function (t) {
-    t.plan(1);
-
-    var css = 'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
-
-    t.doesNotThrow(function () {
-        return postcss([ require('postcss-font-magician'), plugin() ]).process(css).css;
-    });
-});
-
-test('should use the postcss plugin api', function (t) {
+ava('should use the postcss plugin api', t => {
     t.plan(2);
     t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+    t.same(plugin().postcssPlugin, name, 'should be able to access name');
+});
+
+ava('cssnano issue 39', t => {
+    const css = 'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
+
+    t.doesNotThrow(() => {
+        return postcss([ magician(), plugin() ]).process(css).css;
+    });
 });
