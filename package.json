@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "pretest": "eslint src",
-    "prepublish": "de dist && babel src --out-dir dist --ignore /__tests__/",
-    "test": "ava src/__tests__/*.js"
+    "prepublish": "de dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
+    "report": "nyc report --reporter=html",
+    "test": "nyc ava src/__tests__/*.js"
   },
   "keywords": [
     "css",
@@ -57,6 +58,7 @@
     "babel-plugin-add-module-exports": "^0.1.2",
     "babel-preset-es2015-loose": "^7.0.0",
     "babel-preset-stage-0": "^6.3.13",
+    "coveralls": "^2.11.6",
     "css-frameworks": "git+https://git@github.com/ben-eb/css-frameworks.git",
     "css-minifier-tests": "git+https://git@github.com/ben-eb/css-minifier-tests.git",
     "del-cli": "^0.1.2",
@@ -65,6 +67,7 @@
     "hook-std": "^0.2.0",
     "json-loader": "^0.5.4",
     "ncp": "^2.0.0",
+    "nyc": "^5.5.0",
     "webpack": "^1.12.12"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
@@ -78,6 +81,11 @@
     "dist",
     "LICENSE-MIT"
   ],
+  "nyc": {
+    "exclude": [
+      "**/__tests__"
+    ]
+  },
   "ava": {
     "require": "babel-core/register"
   },
