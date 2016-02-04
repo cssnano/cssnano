@@ -9,18 +9,13 @@ import frameworks from 'css-frameworks';
 
 const base = join(__dirname, 'integrations');
 
-function formatted (css) {
-    return postcss().use(nano()).use(formatter).process(css);
-}
-
 Object.keys(frameworks).forEach(framework => {
     const testName = 'produceTheExpectedResultFor: ' + framework + '.css';
     ava(framework + '.css', t => {
-        formatted(frameworks[framework]).then(result => {
+        const plugins = [nano(), formatter()];
+        return postcss(plugins).process(frameworks[framework]).then(result => {
             const expected = file(join(base, framework) + '.css', 'utf-8');
             t.same(result.css, expected, specName(testName));
-        }, err => {
-            t.notOk(err.stack);
         });
     });
 });
