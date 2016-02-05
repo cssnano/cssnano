@@ -75,6 +75,58 @@ const tests = [{
     message: 'should support calc width in borders',
     fixture: 'h1 {border: solid red calc(20px - 10px);}',
     expected: 'h1 {border: calc(20px - 10px) solid red;}'
+}, {
+    message: 'should order box-shadow consistently (1)',
+    fixture: 'h1{box-shadow:2px 5px red}',
+    expected: 'h1{box-shadow:2px 5px red}'
+}, {
+    message: 'should order box-shadow consistently (2)',
+    fixture: 'h1{box-shadow:red 2px 5px}',
+    expected: 'h1{box-shadow:2px 5px red}'
+}, {
+    message: 'should order box-shadow consistently (3)',
+    fixture: 'h1{box-shadow:2px 5px 10px red}',
+    expected: 'h1{box-shadow:2px 5px 10px red}'
+}, {
+    message: 'should order box-shadow consistently (4)',
+    fixture: 'h1{box-shadow:red 2px 5px 10px}',
+    expected: 'h1{box-shadow:2px 5px 10px red}'
+}, {
+    message: 'should order box-shadow consistently (5)',
+    fixture: 'h1{box-shadow:inset red 2px 5px 10px}',
+    expected: 'h1{box-shadow:inset 2px 5px 10px red}'
+}, {
+    message: 'should order box-shadow consistently (6)',
+    fixture: 'h1{box-shadow:red 2px 5px 10px inset}',
+    expected: 'h1{box-shadow:inset 2px 5px 10px red}'
+}, {
+    message: 'should order box-shadow consistently (7)',
+    fixture: 'h1{box-shadow:2px 5px 10px red inset}',
+    expected: 'h1{box-shadow:inset 2px 5px 10px red}'
+}, {
+    message: 'should order box-shadow consistently (8)',
+    fixture: 'h1{box-shadow:red 2px 5px,blue 2px 5px}',
+    expected: 'h1{box-shadow:2px 5px red,2px 5px blue}'
+}, {
+    message: 'should order box-shadow consistently (9)',
+    fixture: 'h1{box-shadow:red 2px 5px 10px inset,blue inset 2px 5px 10px}',
+    expected: 'h1{box-shadow:inset 2px 5px 10px red,inset 2px 5px 10px blue}'
+}, {
+    message: 'should order box-shadow consistently (10)',
+    fixture: 'h1{box-shadow:red 2px 5px 10px inset,blue 2px 5px 10px inset}',
+    expected: 'h1{box-shadow:inset 2px 5px 10px red,inset 2px 5px 10px blue}'
+}, {
+    message: 'should order box-shadow consistently (11)',
+    fixture: 'h1{box-shadow:rgba(255, 0, 0, 0.5) 2px 5px 10px inset}',
+    expected: 'h1{box-shadow:inset 2px 5px 10px rgba(255, 0, 0, 0.5)}'
+}, {
+    message: 'should order box-shadow consistently (12)',
+    fixture: 'h1{box-shadow:0 0 3px}',
+    expected: 'h1{box-shadow:0 0 3px}'
+}, {
+    message: 'should pass through invalid box-shadow values',
+    fixture: 'h1{box-shadow:1px solid rgba(34,36,38,.15)}',
+    expected: 'h1{box-shadow:1px solid rgba(34,36,38,.15)}'
 }];
 
 tests.forEach(test => {

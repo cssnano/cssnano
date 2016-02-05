@@ -43,9 +43,10 @@ h1 {
 
 For more examples, see the [tests](src/__tests__/index.js).
 
-* border(border-left|right|top|bottom)
-* outline
-* flex-flow
+* `border(border-left|right|top|bottom)`
+* `box-shadow`
+* `outline`
+* `flex-flow`
 
 ## Usage
 

@@ -2,10 +2,12 @@ import postcss from 'postcss';
 
 // rules
 import border from './rules/border';
+import boxShadow from './rules/boxShadow';
 import flexFlow from './rules/flexFlow';
 
 let rules = [
     border,
+    boxShadow,
     flexFlow
 ];
 
