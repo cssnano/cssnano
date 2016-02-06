@@ -1,3 +1,7 @@
+# 2.0.1
+
+* Now compiled with babel 6.
+
 # 2.0.0
 
 * Upgraded to PostCSS 5.
