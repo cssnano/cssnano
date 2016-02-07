@@ -30,7 +30,13 @@ h1 {
 
 This module discards comments from your CSS files; by default, it will remove
 all regular comments (`/* comment */`) and preserve comments marked as important
-(`/*! important */`) or that refer to a source mapping URL (`/*# sourcemap */`).
+(`/*! important */`).
+
+Note that this module does not handle source map comments because they are not
+available to it; PostCSS handles this internally, so if they are removed then
+you will have to [configure source maps in PostCSS][maps].
+
+[maps]: https://github.com/postcss/postcss/blob/master/docs/source-maps.md
 
 ## API
 
