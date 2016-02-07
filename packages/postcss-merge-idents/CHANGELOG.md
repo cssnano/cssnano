@@ -1,3 +1,7 @@
+# 2.1.5
+
+* Now compiled with babel 6.
+
 # 2.1.4
 
 * Fixed a range error which happened when duplicated at rules were found
