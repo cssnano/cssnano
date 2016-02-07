@@ -15,7 +15,8 @@ function transform (decl) {
         if (decl.value === 'inherit' || decl.value === 'transparent') {
             return;
         }
-        return reduceWhitespaces(decl);
+        reduceWhitespaces(decl);
+        return;
     }
     if (/^(font|filter)/.test(decl.prop)) {
         return;
