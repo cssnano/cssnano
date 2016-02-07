@@ -1,9 +1,9 @@
-import tape from 'tape';
+import ava from 'ava';
 import postcss from 'postcss';
 import plugin from '..';
 import {name} from '../../package.json';
 
-let tests = [{
+const tests = [{
     message: 'should order border consistently',
     fixture: 'h1{border:1px solid red;border:1px red solid;border:solid 1px red;border:solid red 1px;border:red solid 1px;border:red 1px solid}',
     expected: 'h1{border:1px solid red;border:1px solid red;border:1px solid red;border:1px solid red;border:1px solid red;border:1px solid red}'
@@ -77,21 +77,14 @@ let tests = [{
     expected: 'h1 {border: calc(20px - 10px) solid red;}'
 }];
 
-function process (css, options) {
-    return postcss(plugin(options)).process(css).css;
-}
-
-tape(name, t => {
-    t.plan(tests.length);
-
-    tests.forEach(test => {
-        var options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
+tests.forEach(test => {
+    ava(test.message, t => {
+        const out = postcss(plugin(test.options || {})).process(test.fixture);
+        t.same(out.css, test.expected);
     });
 });
 
-tape('should use the postcss plugin api', t => {
-    t.plan(2);
+ava('should use the postcss plugin api', t => {
     t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+    t.same(plugin().postcssPlugin, name, 'should be able to access name');
 });

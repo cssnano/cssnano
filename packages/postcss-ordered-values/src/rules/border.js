@@ -42,14 +42,14 @@ export default function normalizeBorder (decl) {
             if (node.type === 'word') {
                 if (~borderStyles.indexOf(node.value)) {
                     order.style = node.value;
-                    return;
+                    return false;
                 }
                 if (~borderWidths.indexOf(node.value) || unit(node.value)) {
                     order.width = node.value;
-                    return;
+                    return false;
                 }
                 order.color = node.value;
-                return;
+                return false;
             }
             if (node.type === 'function') {
                 if (node.value === 'calc') {
