@@ -1,3 +1,7 @@
+# 2.2.2
+
+* Now compiled with babel 6.
+
 # 2.2.1
 
 * Updates postcss-value-parser to version 3 (thanks to @TrySound).
