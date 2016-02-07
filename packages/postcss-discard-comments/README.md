@@ -2,6 +2,7 @@
 
 > Discard comments in your CSS files with PostCSS.
 
+
 ## Install
 
 With [npm](https://npmjs.org/package/postcss-discard-comments) do:
@@ -9,6 +10,7 @@ With [npm](https://npmjs.org/package/postcss-discard-comments) do:
 ```
 npm install postcss-discard-comments --save
 ```
+
 
 ## Example
 
@@ -37,6 +39,7 @@ available to it; PostCSS handles this internally, so if they are removed then
 you will have to [configure source maps in PostCSS][maps].
 
 [maps]: https://github.com/postcss/postcss/blob/master/docs/source-maps.md
+
 
 ## API
 
@@ -91,19 +94,23 @@ console.log(postcss(comments({removeAllButFirst: true})).process(css).css);
 //=> /*! heading */h1{margin:0 auto}h2{color:red}
 ```
 
+
 ## Usage
 
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
 examples for your environment.
+
 
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests
 to cover it.
 
+
 ## License
 
 MIT © Ben Briggs
+
 
 [ci]:      https://travis-ci.org/ben-eb/postcss-discard-comments
 [deps]:    https://gemnasium.com/ben-eb/postcss-discard-comments

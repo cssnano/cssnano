@@ -1,11 +1,10 @@
-'use strict';
+import ava from 'ava';
+import postcss from 'postcss';
+import plugin from '..';
+import {name} from '../../package.json';
+import vars from 'postcss-simple-vars';
 
-var test = require('tape');
-var postcss = require('postcss');
-var plugin = require('./');
-var name = require('./package.json').name;
-
-var tests = [{
+const tests = [{
     message: 'should remove non-special comments',
     fixture: 'h1{font-weight:700!important/*test comment*/}',
     expected: 'h1{font-weight:700!important}'
@@ -113,7 +112,7 @@ var tests = [{
     message: 'should remove comments marked as @ but keep other',
     fixture: '/* keep *//*@ remove */h1{color:#000;/*@ remove */font-weight:700}',
     expected: '/* keep */h1{color:#000;font-weight:700}',
-    options: {remove: function (comment) { return comment[0] === "@"; }}
+    options: {remove: comment => comment[0] === "@"}
 }, {
     message: 'should remove all important comments, with a flag',
     fixture: '/*!license*/h1{font-weight:700}/*!license 2*/h2{color:#000}',
@@ -146,37 +145,28 @@ var tests = [{
     expected: 'h1{color:#000;font-weight:700}'
 }];
 
-function process (css, options) {
-    return postcss(plugin(options)).process(css).css;
-}
-
-test(name, function (t) {
-    t.plan(tests.length);
-
-    tests.forEach(function (test) {
-        var options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
+tests.forEach(test => {
+    ava(test.message, t => {
+        const out = postcss(plugin(test.options || {})).process(test.fixture);
+        t.same(out.css, test.expected);
     });
 });
 
-test('should use the postcss plugin api', function (t) {
-    t.plan(2);
+ava('should use the postcss plugin api', t => {
     t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+    t.same(plugin().postcssPlugin, name, 'should be able to access name');
 });
 
-test('should work with single line comments', function (t) {
-    var css = '//!wow\n//wow\nh1{//color:red\n}';
-    var res = postcss(plugin).process(css, {syntax: require('postcss-scss')}).css;
+ava('should work with single line comments', t => {
+    const css = '//!wow\n//wow\nh1{//color:red\n}';
+    const res = postcss(plugin).process(css, {syntax: require('postcss-scss')}).css;
 
-    t.plan(1);
-    t.equal(res, '//!wow\nh1{\n}');
+    t.same(res, '//!wow\nh1{\n}');
 });
 
-test('should handle comments from other plugins', function (t) {
-    var css = '$color: red; :root { box-shadow: inset 0 -10px 12px 0 $color, /* some comment */ inset 0 0 5px 0 $color; }';
-    var res = postcss([ require('postcss-simple-vars'), plugin]).process(css).css;
+ava('should handle comments from other plugins', t => {
+    const css = '$color: red; :root { box-shadow: inset 0 -10px 12px 0 $color, /* some comment */ inset 0 0 5px 0 $color; }';
+    const res = postcss([ vars(), plugin]).process(css).css;
 
-    t.plan(1);
-    t.equal(res, ':root{ box-shadow:inset 0 -10px 12px 0 red, inset 0 0 5px 0 red; }');
+    t.same(res, ':root{ box-shadow:inset 0 -10px 12px 0 red, inset 0 0 5px 0 red; }');
 });

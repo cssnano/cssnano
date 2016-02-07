@@ -1,10 +1,8 @@
-'use strict';
-
-module.exports = function (input) {
-    var tokens = [];
-    var length = input.length;
-    var pos = 0;
-    var next;
+export default function commentParser (input) {
+    const tokens = [];
+    const length = input.length;
+    let pos = 0;
+    let next;
 
     while (pos < length) {
         next = input.indexOf('/*', pos);

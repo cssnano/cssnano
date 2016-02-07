@@ -1,15 +1,13 @@
-'use strict';
-
 function CommentRemover (options) {
     this.options = options;
 }
 
 CommentRemover.prototype.canRemove = function (comment) {
-    var remove = this.options.remove;
+    const remove = this.options.remove;
     if (remove) {
         return remove(comment);
     } else {
-        var isImportant = comment.indexOf('!') === 0;
+        const isImportant = comment.indexOf('!') === 0;
         if (!isImportant) {
             return true;
         } else if (isImportant) {
@@ -23,4 +21,4 @@ CommentRemover.prototype.canRemove = function (comment) {
     }
 };
 
-module.exports = CommentRemover;
+export default CommentRemover;
