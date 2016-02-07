@@ -2,10 +2,10 @@ import uniqs from 'uniqs';
 import postcss, {list} from 'postcss';
 import flatten from 'flatten';
 
-let {comma, space} = list;
+const {comma, space} = list;
 
 function filterAtRule (css, declRegex, atruleRegex) {
-    let atRules = [];
+    const atRules = [];
     let values = [];
     css.walk(node => {
         if (node.type === 'decl' && declRegex.test(node.prop)) {
@@ -29,10 +29,10 @@ function hasFont (fontFamily, cache) {
 }
 
 function filterNamespace (css) {
-    let atRules = [];
+    const atRules = [];
     let rules = [];
     css.walk(node => {
-        let {type, selector, name} = node;
+        const {type, selector, name} = node;
         if (type === 'rule' && /\|/.test(selector)) {
             return rules.push(selector.split('|')[0]);
         }
@@ -42,13 +42,11 @@ function filterNamespace (css) {
     });
     rules = uniqs(flatten(rules));
     atRules.forEach(atRule => {
-        let {0: param, length: len} = atRule.params
-            .split(' ')
-            .filter(e => e !== '');
+        const {0: param, length: len} = atRule.params.split(' ').filter(Boolean);
         if (len === 1) {
             return;
         }
-        let hasRule = rules.some(rule => rule === param || rule === '*');
+        const hasRule = rules.some(rule => rule === param || rule === '*');
         if (!hasRule) {
             atRule.remove();
         }
@@ -57,10 +55,11 @@ function filterNamespace (css) {
 
 // fonts have slightly different logic
 function filterFont (css) {
-    let atRules = [];
+    const atRules = [];
     let values = [];
     css.walk(node => {
-        if (node.type === 'decl' &&
+        if (
+            node.type === 'decl' &&
             node.parent.type === 'rule' &&
             /font(|-family)/.test(node.prop)
         ) {
@@ -86,18 +85,24 @@ function filterFont (css) {
 }
 
 module.exports = postcss.plugin('postcss-discard-unused', opts => {
-    opts = opts || {};
+    const {fontFace, counterStyle, keyframes, namespace} = {
+        fontFace: true,
+        counterStyle: true,
+        keyframes: true,
+        namespace: true,
+        ...opts
+    };
     return css => {
-        if (opts.fontFace !== false) {
+        if (fontFace) {
             filterFont(css);
         }
-        if (opts.counterStyle !== false) {
+        if (counterStyle) {
             filterAtRule(css, /list-style|system/, /counter-style/);
         }
-        if (opts.keyframes !== false) {
+        if (keyframes) {
             filterAtRule(css, /animation/, /keyframes/);
         }
-        if (opts.namespace !== false) {
+        if (namespace) {
             filterNamespace(css);
         }
     };
