@@ -31,7 +31,8 @@
     "babel-preset-es2015-loose": "^7.0.0",
     "babel-preset-stage-0": "^6.3.13",
     "del-cli": "^0.1.2",
-    "eslint": "^1.10.3"
+    "eslint": "^1.10.3",
+    "eslint-config-cssnano": "^1.0.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-discard-unused",
   "author": {
@@ -47,5 +48,8 @@
   },
   "ava": {
     "require": "babel-core/register"
+  },
+  "eslintConfig": {
+    "extends": "cssnano"
   }
 }
