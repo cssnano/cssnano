@@ -1,3 +1,7 @@
+# 2.0.2
+
+* Now compiled with babel 6.
+
 # 2.0.1
 
 * Replaced javascript-natural-sort with alphanum-sort (thanks to @TrySound).
