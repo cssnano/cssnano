@@ -1,3 +1,7 @@
+# 2.0.4
+
+* Now compiled with Babel 6.
+
 # 2.0.3
 
 * Fixes an issue where comments that were removed from selectors were replaced
