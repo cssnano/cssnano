@@ -1,3 +1,7 @@
+# 3.0.7
+
+* Fix `main` field in `package.json`.
+
 # 3.0.6
 
 * Now compiled with Babel 6.

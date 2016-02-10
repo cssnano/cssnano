@@ -2,7 +2,7 @@
   "name": "postcss-normalize-url",
   "version": "3.0.6",
   "description": "Normalize URLs with PostCSS",
-  "main": "index.js",
+  "main": "dist/index.js",
   "files": [
     "dist",
     "LICENSE-MIT"
