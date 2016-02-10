@@ -101,13 +101,13 @@ input::selection,textarea::selection{background-color:hsla(0,0%,39%,.4);color:rg
 *
 */
 .ui.button{cursor:pointer;display:inline-block;min-height:1em;outline:none;border:none;vertical-align:baseline;background:#e0e1e2 none;color:rgba(0,0,0,.6);font-family:Lato,Helvetica Neue,Arial,Helvetica,sans-serif;margin:0 .25em 0 0;padding:.78571429em 1.5em;text-transform:none;text-shadow:none;font-weight:700;line-height:1em;font-style:normal;text-align:center;text-decoration:none;border-radius:.28571429rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-transition:opacity .1s ease,background-color .1s ease,color .1s ease,box-shadow .1s ease,background .1s ease;transition:opacity .1s ease,background-color .1s ease,color .1s ease,box-shadow .1s ease,background .1s ease;will-change:'';-webkit-tap-highlight-color:transparent}
-.ui.button,.ui.button:hover{box-shadow:0 0 0 1px transparent inset,0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.button,.ui.button:hover{box-shadow:inset 0 0 0 1px transparent,inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.button:hover{background-color:#cacbcd;background-image:none;color:rgba(0,0,0,.8)}
 .ui.button:hover .icon{opacity:.85}
 .ui.button:focus{background-color:#cacbcd;color:rgba(0,0,0,.8);background-image:''!important;box-shadow:''!important}
 .ui.button:focus .icon{opacity:.85}
-.ui.active.button:active,.ui.button:active{background-color:#babbbc;background-image:'';color:rgba(0,0,0,.9);box-shadow:0 0 0 1px transparent inset,none}
-.ui.active.button{box-shadow:0 0 0 1px transparent inset}
+.ui.active.button:active,.ui.button:active{background-color:#babbbc;background-image:'';color:rgba(0,0,0,.9);box-shadow:inset 0 0 0 1px transparent,none}
+.ui.active.button{box-shadow:inset 0 0 0 1px transparent}
 .ui.active.button,.ui.active.button:hover{color:rgba(0,0,0,.95)}
 .ui.active.button,.ui.active.button:active,.ui.active.button:hover{background-color:#c0c1c2;background-image:none}
 .ui.loading.loading.loading.loading.loading.loading.button{position:relative;cursor:default;text-shadow:none!important;color:transparent!important;opacity:1;pointer-events:auto;-webkit-transition:all 0s linear,opacity .1s ease;transition:all 0s linear,opacity .1s ease}
@@ -138,13 +138,13 @@ input::selection,textarea::selection{background-color:hsla(0,0%,39%,.4);color:rg
 .ui.fade.animated.button .hidden.content{opacity:0;left:0;right:auto;-webkit-transform:scale(1.5);transform:scale(1.5)}
 .ui.fade.animated.button:focus .visible.content,.ui.fade.animated.button:hover .visible.content{left:auto;right:auto;opacity:0;-webkit-transform:scale(.75);transform:scale(.75)}
 .ui.fade.animated.button:focus .hidden.content,.ui.fade.animated.button:hover .hidden.content{left:0;right:auto;opacity:1;-webkit-transform:scale(1);transform:scale(1)}
-.ui.inverted.button{box-shadow:0 0 0 2px #fff inset!important;background:transparent none;color:#fff;text-shadow:none!important}
+.ui.inverted.button{box-shadow:inset 0 0 0 2px #fff!important;background:transparent none;color:#fff;text-shadow:none!important}
 .ui.inverted.buttons .button{margin:0 0 0 -2px}
 .ui.inverted.buttons .button:first-child{margin-left:0}
 .ui.inverted.vertical.buttons .button{margin:0 0 -2px}
 .ui.inverted.vertical.buttons .button:first-child{margin-top:0}
-.ui.inverted.button.active,.ui.inverted.button:focus,.ui.inverted.button:hover{background:#fff;box-shadow:0 0 0 2px #fff inset!important;color:rgba(0,0,0,.8)}
-.ui.inverted.button.active:focus{background:#dcddde;box-shadow:0 0 0 2px #dcddde inset!important;color:rgba(0,0,0,.8)}
+.ui.inverted.button.active,.ui.inverted.button:focus,.ui.inverted.button:hover{background:#fff;box-shadow:inset 0 0 0 2px #fff!important;color:rgba(0,0,0,.8)}
+.ui.inverted.button.active:focus{background:#dcddde;box-shadow:inset 0 0 0 2px #dcddde!important;color:rgba(0,0,0,.8)}
 .ui.labeled.button:not(.icon){display:-webkit-inline-box;display:-webkit-inline-flex;display:-ms-inline-flexbox;display:inline-flex;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-webkit-flex-direction:row;-ms-flex-direction:row;flex-direction:row;background:none!important;padding:0!important;border:none!important;box-shadow:none!important}
 .ui.labeled.button>.button{margin:0}
 .ui.labeled.button>.label{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;margin:0 0 0 -1px!important;padding:'';font-size:1em;border-color:rgba(34,36,38,.15)}
@@ -152,28 +152,28 @@ input::selection,textarea::selection{background-color:hsla(0,0%,39%,.4);color:rg
 .ui.labeled.button:not([class*="left labeled"])>.button{border-top-right-radius:0;border-bottom-right-radius:0}
 .ui.labeled.button:not([class*="left labeled"])>.label,.ui[class*="left labeled"].button>.button{border-top-left-radius:0;border-bottom-left-radius:0}
 .ui[class*="left labeled"].button>.label{border-top-right-radius:0;border-bottom-right-radius:0}
-.ui.facebook.button{background-color:#3b5998;color:#fff;text-shadow:none;background-image:none;box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.facebook.button{background-color:#3b5998;color:#fff;text-shadow:none;background-image:none;box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.facebook.button:hover{background-color:#304d8a;color:#fff;text-shadow:none}
 .ui.facebook.button:active{background-color:#2d4373;color:#fff;text-shadow:none}
-.ui.twitter.button{background-color:#0084b4;color:#fff;text-shadow:none;background-image:none;box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.twitter.button{background-color:#0084b4;color:#fff;text-shadow:none;background-image:none;box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.twitter.button:hover{background-color:#00719b;color:#fff;text-shadow:none}
 .ui.twitter.button:active{background-color:#005f81;color:#fff;text-shadow:none}
-.ui.google.plus.button{background-color:#dc4a38;color:#fff;text-shadow:none;background-image:none;box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.google.plus.button{background-color:#dc4a38;color:#fff;text-shadow:none;background-image:none;box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.google.plus.button:hover{background-color:#de321d;color:#fff;text-shadow:none}
 .ui.google.plus.button:active{background-color:#bf3322;color:#fff;text-shadow:none}
 .ui.linkedin.button{background-color:#1f88be;color:#fff;text-shadow:none}
 .ui.linkedin.button:hover{background-color:#147baf;color:#fff;text-shadow:none}
 .ui.linkedin.button:active{background-color:#186992;color:#fff;text-shadow:none}
-.ui.youtube.button{background-color:#cc181e;color:#fff;text-shadow:none;background-image:none;box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.youtube.button{background-color:#cc181e;color:#fff;text-shadow:none;background-image:none;box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.youtube.button:hover{background-color:#bd0d13;color:#fff;text-shadow:none}
 .ui.youtube.button:active{background-color:#9e1317;color:#fff;text-shadow:none}
-.ui.instagram.button{background-color:#49769c;color:#fff;text-shadow:none;background-image:none;box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.instagram.button{background-color:#49769c;color:#fff;text-shadow:none;background-image:none;box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.instagram.button:hover{background-color:#3d698e;color:#fff;text-shadow:none}
 .ui.instagram.button:active{background-color:#395c79;color:#fff;text-shadow:none}
-.ui.pinterest.button{background-color:#00aced;color:#fff;text-shadow:none;background-image:none;box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.pinterest.button{background-color:#00aced;color:#fff;text-shadow:none;background-image:none;box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.pinterest.button:hover{background-color:#0099d4;color:#fff;text-shadow:none}
 .ui.pinterest.button:active{background-color:#0087ba;color:#fff;text-shadow:none}
-.ui.vk.button{background-color:#4d7198;color:#fff;background-image:none;box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.vk.button{background-color:#4d7198;color:#fff;background-image:none;box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.vk.button:hover{background-color:#41648a;color:#fff}
 .ui.vk.button:active{background-color:#3c5876;color:#fff}
 .ui.button>.icon:not(.button){height:.85714286em;opacity:.8;margin:0 .42857143em 0 -.21428571em;-webkit-transition:opacity .1s ease;transition:opacity .1s ease;vertical-align:'';color:''}
@@ -193,28 +193,28 @@ input::selection,textarea::selection{background-color:hsla(0,0%,39%,.4);color:rg
 .ui.massive.button,.ui.massive.buttons .button,.ui.massive.buttons .or{font-size:1.71428571rem}
 .ui.icon.button,.ui.icon.buttons .button{padding:.78571429em}
 .ui.icon.button>.icon,.ui.icon.buttons .button>.icon{opacity:.9;margin:0;vertical-align:top}
-.ui.basic.button,.ui.basic.buttons .button{background:transparent none!important;color:rgba(0,0,0,.6)!important;font-weight:400;border-radius:.28571429rem;text-transform:none;text-shadow:none!important;box-shadow:0 0 0 1px rgba(34,36,38,.15) inset}
+.ui.basic.button,.ui.basic.buttons .button{background:transparent none!important;color:rgba(0,0,0,.6)!important;font-weight:400;border-radius:.28571429rem;text-transform:none;text-shadow:none!important;box-shadow:inset 0 0 0 1px rgba(34,36,38,.15)}
 .ui.basic.buttons{box-shadow:none;border:1px solid rgba(34,36,38,.15);border-radius:.28571429rem}
 .ui.basic.buttons .button{border-radius:0}
-.ui.basic.button:focus,.ui.basic.button:hover,.ui.basic.buttons .button:focus,.ui.basic.buttons .button:hover{background:#fff!important;color:rgba(0,0,0,.8)!important;box-shadow:0 0 0 1px rgba(34,36,38,.35) inset,0 0 0 0 rgba(34,36,38,.15) inset}
-.ui.basic.button:active,.ui.basic.buttons .button:active{background:#f8f8f8!important;color:rgba(0,0,0,.9)!important;box-shadow:0 0 0 1px rgba(0,0,0,.15) inset,0 1px 4px 0 rgba(34,36,38,.15) inset}
+.ui.basic.button:focus,.ui.basic.button:hover,.ui.basic.buttons .button:focus,.ui.basic.buttons .button:hover{background:#fff!important;color:rgba(0,0,0,.8)!important;box-shadow:inset 0 0 0 1px rgba(34,36,38,.35),inset 0 0 0 0 rgba(34,36,38,.15)}
+.ui.basic.button:active,.ui.basic.buttons .button:active{background:#f8f8f8!important;color:rgba(0,0,0,.9)!important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15),inset 0 1px 4px 0 rgba(34,36,38,.15)}
 .ui.basic.active.button,.ui.basic.buttons .active.button{background:rgba(0,0,0,.05)!important;box-shadow:''!important;color:rgba(0,0,0,.95);box-shadow:rgba(34,36,38,.35)}
 .ui.basic.active.button:hover,.ui.basic.buttons .active.button:hover{background-color:rgba(0,0,0,.05)}
-.ui.basic.buttons .button:hover{box-shadow:0 0 0 1px rgba(34,36,38,.35) inset,0 0 0 0 rgba(34,36,38,.15) inset inset}
-.ui.basic.buttons .button:active{box-shadow:0 0 0 1px rgba(0,0,0,.15) inset,0 1px 4px 0 rgba(34,36,38,.15) inset inset}
-.ui.basic.buttons .active.button{box-shadow:rgba(34,36,38,.35) inset}
-.ui.basic.inverted.button,.ui.basic.inverted.buttons .button{background-color:transparent!important;color:#f9fafb!important;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important}
-.ui.basic.inverted.button:focus,.ui.basic.inverted.button:hover,.ui.basic.inverted.buttons .button:focus,.ui.basic.inverted.buttons .button:hover{color:#fff!important;box-shadow:0 0 0 2px #fff inset!important}
-.ui.basic.inverted.button:active,.ui.basic.inverted.buttons .button:active{background-color:hsla(0,0%,100%,.08)!important;color:#fff!important;box-shadow:0 0 0 2px hsla(0,0%,100%,.9) inset!important}
-.ui.basic.inverted.active.button,.ui.basic.inverted.buttons .active.button{background-color:hsla(0,0%,100%,.08);color:#fff;text-shadow:none;box-shadow:0 0 0 2px hsla(0,0%,100%,.7) inset}
-.ui.basic.inverted.active.button:hover,.ui.basic.inverted.buttons .active.button:hover{background-color:hsla(0,0%,100%,.15);box-shadow:0 0 0 2px #fff inset!important}
+.ui.basic.buttons .button:hover{box-shadow:inset 0 0 0 1px rgba(34,36,38,.35),inset inset 0 0 0 0 rgba(34,36,38,.15)}
+.ui.basic.buttons .button:active{box-shadow:inset 0 0 0 1px rgba(0,0,0,.15),inset inset 0 1px 4px 0 rgba(34,36,38,.15)}
+.ui.basic.buttons .active.button{box-shadow:inset rgba(34,36,38,.35)}
+.ui.basic.inverted.button,.ui.basic.inverted.buttons .button{background-color:transparent!important;color:#f9fafb!important;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important}
+.ui.basic.inverted.button:focus,.ui.basic.inverted.button:hover,.ui.basic.inverted.buttons .button:focus,.ui.basic.inverted.buttons .button:hover{color:#fff!important;box-shadow:inset 0 0 0 2px #fff!important}
+.ui.basic.inverted.button:active,.ui.basic.inverted.buttons .button:active{background-color:hsla(0,0%,100%,.08)!important;color:#fff!important;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.9)!important}
+.ui.basic.inverted.active.button,.ui.basic.inverted.buttons .active.button{background-color:hsla(0,0%,100%,.08);color:#fff;text-shadow:none;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.7)}
+.ui.basic.inverted.active.button:hover,.ui.basic.inverted.buttons .active.button:hover{background-color:hsla(0,0%,100%,.15);box-shadow:inset 0 0 0 2px #fff!important}
 .ui.basic.buttons .button{border-left:1px solid rgba(34,36,38,.15);box-shadow:none}
 .ui.basic.vertical.buttons .button{border-left:none;border-left-width:0;border-top:1px solid rgba(34,36,38,.15)}
 .ui.basic.vertical.buttons .button:first-child{border-top-width:0}
 .ui.labeled.icon.button,.ui.labeled.icon.buttons .button{position:relative;padding-left:4.07142857em!important;padding-right:1.5em!important}
-.ui.labeled.icon.button>.icon,.ui.labeled.icon.buttons>.button>.icon{position:absolute;height:100%;line-height:1;border-radius:0;border-top-left-radius:inherit;border-bottom-left-radius:inherit;width:2.57142857em;background-color:rgba(0,0,0,.05);text-align:center;color:'';box-shadow:-1px 0 0 0 transparent inset;top:0;left:0}
+.ui.labeled.icon.button>.icon,.ui.labeled.icon.buttons>.button>.icon{position:absolute;height:100%;line-height:1;border-radius:0;border-top-left-radius:inherit;border-bottom-left-radius:inherit;width:2.57142857em;background-color:rgba(0,0,0,.05);text-align:center;color:'';box-shadow:inset -1px 0 0 0 transparent;top:0;left:0}
 .ui[class*="right labeled"].icon.button{padding-right:4.07142857em!important;padding-left:1.5em!important}
-.ui[class*="right labeled"].icon.button>.icon{left:auto;right:0;border-radius:0;border-top-right-radius:inherit;border-bottom-right-radius:inherit;box-shadow:1px 0 0 0 transparent inset}
+.ui[class*="right labeled"].icon.button>.icon{left:auto;right:0;border-radius:0;border-top-right-radius:inherit;border-bottom-right-radius:inherit;box-shadow:inset 1px 0 0 0 transparent}
 .ui.labeled.icon.button>.icon:after,.ui.labeled.icon.button>.icon:before,.ui.labeled.icon.buttons>.button>.icon:after,.ui.labeled.icon.buttons>.button>.icon:before{display:block;position:absolute;width:100%;top:50%;text-align:center;-webkit-transform:translateY(-50%);transform:translateY(-50%)}
 .ui.labeled.icon.buttons .button>.icon{border-radius:0}
 .ui.labeled.icon.buttons .button:first-child>.icon{border-top-left-radius:.28571429rem;border-bottom-left-radius:.28571429rem}
@@ -227,7 +227,7 @@ input::selection,textarea::selection{background-color:hsla(0,0%,39%,.4);color:rg
 .ui.circular.button{border-radius:10em}
 .ui.circular.button>.icon{width:1em;vertical-align:baseline}
 .ui.buttons .or{position:relative;width:.3em;height:2.57142857em;z-index:3}
-.ui.buttons .or:before{position:absolute;text-align:center;border-radius:500rem;content:'or';top:50%;left:50%;background-color:#fff;text-shadow:none;margin-top:-.89285714em;margin-left:-.89285714em;width:1.78571429em;height:1.78571429em;line-height:1.78571429em;color:rgba(0,0,0,.4);font-style:normal;font-weight:700;box-shadow:0 0 0 1px transparent inset}
+.ui.buttons .or:before{position:absolute;text-align:center;border-radius:500rem;content:'or';top:50%;left:50%;background-color:#fff;text-shadow:none;margin-top:-.89285714em;margin-left:-.89285714em;width:1.78571429em;height:1.78571429em;line-height:1.78571429em;color:rgba(0,0,0,.4);font-style:normal;font-weight:700;box-shadow:inset 0 0 0 1px transparent}
 .ui.buttons .or[data-text]:before{content:attr(data-text)}
 .ui.fluid.buttons .or{width:0!important}
 .ui.fluid.buttons .or:after{display:none}
@@ -288,320 +288,320 @@ input::selection,textarea::selection{background-color:hsla(0,0%,39%,.4);color:rg
 .ui.eleven.vertical.buttons>.button{height:9.09%}
 .ui.twelve.vertical.buttons>.button{height:8.3333%}
 .ui.black.button,.ui.black.buttons .button{background-color:#1b1c1d;color:#fff;text-shadow:none;background-image:none}
-.ui.black.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.black.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.black.button:hover,.ui.black.buttons .button:hover{background-color:#27292a;color:#fff;text-shadow:none}
 .ui.black.button:focus,.ui.black.buttons .button:focus{background-color:#2f3032;color:#fff;text-shadow:none}
 .ui.black.button:active,.ui.black.buttons .button:active{background-color:#343637;color:#fff;text-shadow:none}
 .ui.black.active.button,.ui.black.button .active.button:active,.ui.black.buttons .active.button,.ui.black.buttons .active.button:active{background-color:#0f0f10;color:#fff;text-shadow:none}
-.ui.basic.black.button,.ui.basic.black.buttons .button{box-shadow:0 0 0 1px #1b1c1d inset!important;color:#1b1c1d!important}
-.ui.basic.black.button:hover,.ui.basic.black.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #27292a inset!important;color:#27292a!important}
-.ui.basic.black.button:focus,.ui.basic.black.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #2f3032 inset!important;color:#27292a!important}
-.ui.basic.black.active.button,.ui.basic.black.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #0f0f10 inset!important;color:#343637!important}
-.ui.basic.black.button:active,.ui.basic.black.buttons .button:active{box-shadow:0 0 0 1px #343637 inset!important;color:#343637!important}
+.ui.basic.black.button,.ui.basic.black.buttons .button{box-shadow:inset 0 0 0 1px #1b1c1d!important;color:#1b1c1d!important}
+.ui.basic.black.button:hover,.ui.basic.black.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #27292a!important;color:#27292a!important}
+.ui.basic.black.button:focus,.ui.basic.black.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #2f3032!important;color:#27292a!important}
+.ui.basic.black.active.button,.ui.basic.black.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #0f0f10!important;color:#343637!important}
+.ui.basic.black.button:active,.ui.basic.black.buttons .button:active{box-shadow:inset 0 0 0 1px #343637!important;color:#343637!important}
 .ui.buttons:not(.vertical)>.basic.black.button:not(:first-child){margin-left:-1px}
-.ui.inverted.black.button,.ui.inverted.black.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #d4d4d5 inset!important;color:#fff}
+.ui.inverted.black.button,.ui.inverted.black.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #d4d4d5!important;color:#fff}
 .ui.inverted.black.button.active,.ui.inverted.black.button:active,.ui.inverted.black.button:focus,.ui.inverted.black.button:hover,.ui.inverted.black.buttons .button.active,.ui.inverted.black.buttons .button:active,.ui.inverted.black.buttons .button:focus,.ui.inverted.black.buttons .button:hover{box-shadow:none!important;color:#fff}
 .ui.inverted.black.active.button,.ui.inverted.black.button:active,.ui.inverted.black.button:focus,.ui.inverted.black.button:hover,.ui.inverted.black.buttons .active.button,.ui.inverted.black.buttons .button:active,.ui.inverted.black.buttons .button:focus,.ui.inverted.black.buttons .button:hover{background-color:#000}
-.ui.inverted.black.basic.button,.ui.inverted.black.basic.buttons .button,.ui.inverted.black.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.black.basic.button:hover,.ui.inverted.black.basic.buttons .button:hover,.ui.inverted.black.buttons .basic.button:hover{box-shadow:0 0 0 2px #000 inset!important;color:#fff!important}
-.ui.inverted.black.basic.button:focus,.ui.inverted.black.basic.buttons .button:focus{box-shadow:0 0 0 2px #000 inset!important;color:#545454!important}
-.ui.inverted.black.basic.active.button,.ui.inverted.black.basic.button:active,.ui.inverted.black.basic.buttons .active.button,.ui.inverted.black.basic.buttons .button:active,.ui.inverted.black.buttons .basic.active.button,.ui.inverted.black.buttons .basic.button:active{box-shadow:0 0 0 2px #000 inset!important;color:#fff!important}
+.ui.inverted.black.basic.button,.ui.inverted.black.basic.buttons .button,.ui.inverted.black.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.black.basic.button:hover,.ui.inverted.black.basic.buttons .button:hover,.ui.inverted.black.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #000!important;color:#fff!important}
+.ui.inverted.black.basic.button:focus,.ui.inverted.black.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #000!important;color:#545454!important}
+.ui.inverted.black.basic.active.button,.ui.inverted.black.basic.button:active,.ui.inverted.black.basic.buttons .active.button,.ui.inverted.black.basic.buttons .button:active,.ui.inverted.black.buttons .basic.active.button,.ui.inverted.black.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #000!important;color:#fff!important}
 .ui.grey.button,.ui.grey.buttons .button{background-color:#767676;color:#fff;text-shadow:none;background-image:none}
-.ui.grey.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.grey.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.grey.button:hover,.ui.grey.buttons .button:hover{background-color:#838383;color:#fff;text-shadow:none}
 .ui.grey.button:focus,.ui.grey.buttons .button:focus{background-color:#8a8a8a;color:#fff;text-shadow:none}
 .ui.grey.button:active,.ui.grey.buttons .button:active{background-color:#909090;color:#fff;text-shadow:none}
 .ui.grey.active.button,.ui.grey.button .active.button:active,.ui.grey.buttons .active.button,.ui.grey.buttons .active.button:active{background-color:#696969;color:#fff;text-shadow:none}
-.ui.basic.grey.button,.ui.basic.grey.buttons .button{box-shadow:0 0 0 1px #767676 inset!important;color:#767676!important}
-.ui.basic.grey.button:hover,.ui.basic.grey.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #838383 inset!important;color:#838383!important}
-.ui.basic.grey.button:focus,.ui.basic.grey.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #8a8a8a inset!important;color:#838383!important}
-.ui.basic.grey.active.button,.ui.basic.grey.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #696969 inset!important;color:#909090!important}
-.ui.basic.grey.button:active,.ui.basic.grey.buttons .button:active{box-shadow:0 0 0 1px #909090 inset!important;color:#909090!important}
+.ui.basic.grey.button,.ui.basic.grey.buttons .button{box-shadow:inset 0 0 0 1px #767676!important;color:#767676!important}
+.ui.basic.grey.button:hover,.ui.basic.grey.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #838383!important;color:#838383!important}
+.ui.basic.grey.button:focus,.ui.basic.grey.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #8a8a8a!important;color:#838383!important}
+.ui.basic.grey.active.button,.ui.basic.grey.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #696969!important;color:#909090!important}
+.ui.basic.grey.button:active,.ui.basic.grey.buttons .button:active{box-shadow:inset 0 0 0 1px #909090!important;color:#909090!important}
 .ui.buttons:not(.vertical)>.basic.grey.button:not(:first-child){margin-left:-1px}
-.ui.inverted.grey.button,.ui.inverted.grey.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #d4d4d5 inset!important;color:#fff}
+.ui.inverted.grey.button,.ui.inverted.grey.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #d4d4d5!important;color:#fff}
 .ui.inverted.grey.button.active,.ui.inverted.grey.button:active,.ui.inverted.grey.button:focus,.ui.inverted.grey.button:hover,.ui.inverted.grey.buttons .button.active,.ui.inverted.grey.buttons .button:active,.ui.inverted.grey.buttons .button:focus,.ui.inverted.grey.buttons .button:hover{box-shadow:none!important;color:rgba(0,0,0,.6)}
 .ui.inverted.grey.button:hover,.ui.inverted.grey.buttons .button:hover{background-color:#cfd0d2}
 .ui.inverted.grey.button:focus,.ui.inverted.grey.buttons .button:focus{background-color:#c7c9cb}
 .ui.inverted.grey.active.button,.ui.inverted.grey.buttons .active.button{background-color:#cfd0d2}
 .ui.inverted.grey.button:active,.ui.inverted.grey.buttons .button:active{background-color:#c2c4c5}
-.ui.inverted.grey.basic.button,.ui.inverted.grey.basic.buttons .button,.ui.inverted.grey.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.grey.basic.button:hover,.ui.inverted.grey.basic.buttons .button:hover,.ui.inverted.grey.buttons .basic.button:hover{box-shadow:0 0 0 2px #cfd0d2 inset!important;color:#fff!important}
-.ui.inverted.grey.basic.button:focus,.ui.inverted.grey.basic.buttons .button:focus{box-shadow:0 0 0 2px #c7c9cb inset!important;color:#dcddde!important}
-.ui.inverted.grey.basic.active.button,.ui.inverted.grey.basic.buttons .active.button,.ui.inverted.grey.buttons .basic.active.button{box-shadow:0 0 0 2px #cfd0d2 inset!important;color:#fff!important}
-.ui.inverted.grey.basic.button:active,.ui.inverted.grey.basic.buttons .button:active,.ui.inverted.grey.buttons .basic.button:active{box-shadow:0 0 0 2px #c2c4c5 inset!important;color:#fff!important}
+.ui.inverted.grey.basic.button,.ui.inverted.grey.basic.buttons .button,.ui.inverted.grey.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.grey.basic.button:hover,.ui.inverted.grey.basic.buttons .button:hover,.ui.inverted.grey.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #cfd0d2!important;color:#fff!important}
+.ui.inverted.grey.basic.button:focus,.ui.inverted.grey.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #c7c9cb!important;color:#dcddde!important}
+.ui.inverted.grey.basic.active.button,.ui.inverted.grey.basic.buttons .active.button,.ui.inverted.grey.buttons .basic.active.button{box-shadow:inset 0 0 0 2px #cfd0d2!important;color:#fff!important}
+.ui.inverted.grey.basic.button:active,.ui.inverted.grey.basic.buttons .button:active,.ui.inverted.grey.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #c2c4c5!important;color:#fff!important}
 .ui.brown.button,.ui.brown.buttons .button{background-color:#a5673f;color:#fff;text-shadow:none;background-image:none}
-.ui.brown.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.brown.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.brown.button:hover,.ui.brown.buttons .button:hover{background-color:#975b33;color:#fff;text-shadow:none}
 .ui.brown.button:focus,.ui.brown.buttons .button:focus{background-color:#90532b;color:#fff;text-shadow:none}
 .ui.brown.button:active,.ui.brown.buttons .button:active{background-color:#805031;color:#fff;text-shadow:none}
 .ui.brown.active.button,.ui.brown.button .active.button:active,.ui.brown.buttons .active.button,.ui.brown.buttons .active.button:active{background-color:#995a31;color:#fff;text-shadow:none}
-.ui.basic.brown.button,.ui.basic.brown.buttons .button{box-shadow:0 0 0 1px #a5673f inset!important;color:#a5673f!important}
-.ui.basic.brown.button:hover,.ui.basic.brown.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #975b33 inset!important;color:#975b33!important}
-.ui.basic.brown.button:focus,.ui.basic.brown.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #90532b inset!important;color:#975b33!important}
-.ui.basic.brown.active.button,.ui.basic.brown.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #995a31 inset!important;color:#805031!important}
-.ui.basic.brown.button:active,.ui.basic.brown.buttons .button:active{box-shadow:0 0 0 1px #805031 inset!important;color:#805031!important}
+.ui.basic.brown.button,.ui.basic.brown.buttons .button{box-shadow:inset 0 0 0 1px #a5673f!important;color:#a5673f!important}
+.ui.basic.brown.button:hover,.ui.basic.brown.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #975b33!important;color:#975b33!important}
+.ui.basic.brown.button:focus,.ui.basic.brown.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #90532b!important;color:#975b33!important}
+.ui.basic.brown.active.button,.ui.basic.brown.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #995a31!important;color:#805031!important}
+.ui.basic.brown.button:active,.ui.basic.brown.buttons .button:active{box-shadow:inset 0 0 0 1px #805031!important;color:#805031!important}
 .ui.buttons:not(.vertical)>.basic.brown.button:not(:first-child){margin-left:-1px}
-.ui.inverted.brown.button,.ui.inverted.brown.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #d67c1c inset!important;color:#d67c1c}
+.ui.inverted.brown.button,.ui.inverted.brown.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #d67c1c!important;color:#d67c1c}
 .ui.inverted.brown.button.active,.ui.inverted.brown.button:active,.ui.inverted.brown.button:focus,.ui.inverted.brown.button:hover,.ui.inverted.brown.buttons .button.active,.ui.inverted.brown.buttons .button:active,.ui.inverted.brown.buttons .button:focus,.ui.inverted.brown.buttons .button:hover{box-shadow:none!important;color:#fff}
 .ui.inverted.brown.button:hover,.ui.inverted.brown.buttons .button:hover{background-color:#c86f11}
 .ui.inverted.brown.button:focus,.ui.inverted.brown.buttons .button:focus{background-color:#c16808}
 .ui.inverted.brown.active.button,.ui.inverted.brown.buttons .active.button{background-color:#cc6f0d}
 .ui.inverted.brown.button:active,.ui.inverted.brown.buttons .button:active{background-color:#a96216}
-.ui.inverted.brown.basic.button,.ui.inverted.brown.basic.buttons .button,.ui.inverted.brown.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.brown.basic.button:hover,.ui.inverted.brown.basic.buttons .button:hover,.ui.inverted.brown.buttons .basic.button:hover{box-shadow:0 0 0 2px #c86f11 inset!important;color:#d67c1c!important}
-.ui.inverted.brown.basic.button:focus,.ui.inverted.brown.basic.buttons .button:focus{box-shadow:0 0 0 2px #c16808 inset!important;color:#d67c1c!important}
-.ui.inverted.brown.basic.active.button,.ui.inverted.brown.basic.buttons .active.button,.ui.inverted.brown.buttons .basic.active.button{box-shadow:0 0 0 2px #cc6f0d inset!important;color:#d67c1c!important}
-.ui.inverted.brown.basic.button:active,.ui.inverted.brown.basic.buttons .button:active,.ui.inverted.brown.buttons .basic.button:active{box-shadow:0 0 0 2px #a96216 inset!important;color:#d67c1c!important}
+.ui.inverted.brown.basic.button,.ui.inverted.brown.basic.buttons .button,.ui.inverted.brown.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.brown.basic.button:hover,.ui.inverted.brown.basic.buttons .button:hover,.ui.inverted.brown.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #c86f11!important;color:#d67c1c!important}
+.ui.inverted.brown.basic.button:focus,.ui.inverted.brown.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #c16808!important;color:#d67c1c!important}
+.ui.inverted.brown.basic.active.button,.ui.inverted.brown.basic.buttons .active.button,.ui.inverted.brown.buttons .basic.active.button{box-shadow:inset 0 0 0 2px #cc6f0d!important;color:#d67c1c!important}
+.ui.inverted.brown.basic.button:active,.ui.inverted.brown.basic.buttons .button:active,.ui.inverted.brown.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #a96216!important;color:#d67c1c!important}
 .ui.blue.button,.ui.blue.buttons .button{background-color:#2185d0;color:#fff;text-shadow:none;background-image:none}
-.ui.blue.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.blue.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.blue.button:hover,.ui.blue.buttons .button:hover{background-color:#1678c2;color:#fff;text-shadow:none}
 .ui.blue.button:focus,.ui.blue.buttons .button:focus{background-color:#0d71bb;color:#fff;text-shadow:none}
 .ui.blue.button:active,.ui.blue.buttons .button:active{background-color:#1a69a4;color:#fff;text-shadow:none}
 .ui.blue.active.button,.ui.blue.button .active.button:active,.ui.blue.buttons .active.button,.ui.blue.buttons .active.button:active{background-color:#1279c6;color:#fff;text-shadow:none}
-.ui.basic.blue.button,.ui.basic.blue.buttons .button{box-shadow:0 0 0 1px #2185d0 inset!important;color:#2185d0!important}
-.ui.basic.blue.button:hover,.ui.basic.blue.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #1678c2 inset!important;color:#1678c2!important}
-.ui.basic.blue.button:focus,.ui.basic.blue.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #0d71bb inset!important;color:#1678c2!important}
-.ui.basic.blue.active.button,.ui.basic.blue.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #1279c6 inset!important;color:#1a69a4!important}
-.ui.basic.blue.button:active,.ui.basic.blue.buttons .button:active{box-shadow:0 0 0 1px #1a69a4 inset!important;color:#1a69a4!important}
+.ui.basic.blue.button,.ui.basic.blue.buttons .button{box-shadow:inset 0 0 0 1px #2185d0!important;color:#2185d0!important}
+.ui.basic.blue.button:hover,.ui.basic.blue.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #1678c2!important;color:#1678c2!important}
+.ui.basic.blue.button:focus,.ui.basic.blue.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #0d71bb!important;color:#1678c2!important}
+.ui.basic.blue.active.button,.ui.basic.blue.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #1279c6!important;color:#1a69a4!important}
+.ui.basic.blue.button:active,.ui.basic.blue.buttons .button:active{box-shadow:inset 0 0 0 1px #1a69a4!important;color:#1a69a4!important}
 .ui.buttons:not(.vertical)>.basic.blue.button:not(:first-child){margin-left:-1px}
-.ui.inverted.blue.button,.ui.inverted.blue.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #54c8ff inset!important;color:#54c8ff}
+.ui.inverted.blue.button,.ui.inverted.blue.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #54c8ff!important;color:#54c8ff}
 .ui.inverted.blue.button.active,.ui.inverted.blue.button:active,.ui.inverted.blue.button:focus,.ui.inverted.blue.button:hover,.ui.inverted.blue.buttons .button.active,.ui.inverted.blue.buttons .button:active,.ui.inverted.blue.buttons .button:focus,.ui.inverted.blue.buttons .button:hover{box-shadow:none!important;color:#fff}
 .ui.inverted.blue.button:hover,.ui.inverted.blue.buttons .button:hover{background-color:#3ac0ff}
 .ui.inverted.blue.button:focus,.ui.inverted.blue.buttons .button:focus{background-color:#2bbbff}
 .ui.inverted.blue.active.button,.ui.inverted.blue.buttons .active.button{background-color:#3ac0ff}
 .ui.inverted.blue.button:active,.ui.inverted.blue.buttons .button:active{background-color:#21b8ff}
-.ui.inverted.blue.basic.button,.ui.inverted.blue.basic.buttons .button,.ui.inverted.blue.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.blue.basic.button:hover,.ui.inverted.blue.basic.buttons .button:hover,.ui.inverted.blue.buttons .basic.button:hover{box-shadow:0 0 0 2px #3ac0ff inset!important;color:#54c8ff!important}
-.ui.inverted.blue.basic.button:focus,.ui.inverted.blue.basic.buttons .button:focus{box-shadow:0 0 0 2px #2bbbff inset!important;color:#54c8ff!important}
-.ui.inverted.blue.basic.active.button,.ui.inverted.blue.basic.buttons .active.button,.ui.inverted.blue.buttons .basic.active.button{box-shadow:0 0 0 2px #3ac0ff inset!important;color:#54c8ff!important}
-.ui.inverted.blue.basic.button:active,.ui.inverted.blue.basic.buttons .button:active,.ui.inverted.blue.buttons .basic.button:active{box-shadow:0 0 0 2px #21b8ff inset!important;color:#54c8ff!important}
+.ui.inverted.blue.basic.button,.ui.inverted.blue.basic.buttons .button,.ui.inverted.blue.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.blue.basic.button:hover,.ui.inverted.blue.basic.buttons .button:hover,.ui.inverted.blue.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #3ac0ff!important;color:#54c8ff!important}
+.ui.inverted.blue.basic.button:focus,.ui.inverted.blue.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #2bbbff!important;color:#54c8ff!important}
+.ui.inverted.blue.basic.active.button,.ui.inverted.blue.basic.buttons .active.button,.ui.inverted.blue.buttons .basic.active.button{box-shadow:inset 0 0 0 2px #3ac0ff!important;color:#54c8ff!important}
+.ui.inverted.blue.basic.button:active,.ui.inverted.blue.basic.buttons .button:active,.ui.inverted.blue.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #21b8ff!important;color:#54c8ff!important}
 .ui.green.button,.ui.green.buttons .button{background-color:#21ba45;color:#fff;text-shadow:none;background-image:none}
-.ui.green.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.green.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.green.button:hover,.ui.green.buttons .button:hover{background-color:#16ab39;color:#fff;text-shadow:none}
 .ui.green.button:focus,.ui.green.buttons .button:focus{background-color:#0ea432;color:#fff;text-shadow:none}
 .ui.green.button:active,.ui.green.buttons .button:active{background-color:#198f35;color:#fff;text-shadow:none}
 .ui.green.active.button,.ui.green.button .active.button:active,.ui.green.buttons .active.button,.ui.green.buttons .active.button:active{background-color:#13ae38;color:#fff;text-shadow:none}
-.ui.basic.green.button,.ui.basic.green.buttons .button{box-shadow:0 0 0 1px #21ba45 inset!important;color:#21ba45!important}
-.ui.basic.green.button:hover,.ui.basic.green.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #16ab39 inset!important;color:#16ab39!important}
-.ui.basic.green.button:focus,.ui.basic.green.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #0ea432 inset!important;color:#16ab39!important}
-.ui.basic.green.active.button,.ui.basic.green.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #13ae38 inset!important;color:#198f35!important}
-.ui.basic.green.button:active,.ui.basic.green.buttons .button:active{box-shadow:0 0 0 1px #198f35 inset!important;color:#198f35!important}
+.ui.basic.green.button,.ui.basic.green.buttons .button{box-shadow:inset 0 0 0 1px #21ba45!important;color:#21ba45!important}
+.ui.basic.green.button:hover,.ui.basic.green.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #16ab39!important;color:#16ab39!important}
+.ui.basic.green.button:focus,.ui.basic.green.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #0ea432!important;color:#16ab39!important}
+.ui.basic.green.active.button,.ui.basic.green.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #13ae38!important;color:#198f35!important}
+.ui.basic.green.button:active,.ui.basic.green.buttons .button:active{box-shadow:inset 0 0 0 1px #198f35!important;color:#198f35!important}
 .ui.buttons:not(.vertical)>.basic.green.button:not(:first-child){margin-left:-1px}
-.ui.inverted.green.button,.ui.inverted.green.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #2ecc40 inset!important;color:#2ecc40}
+.ui.inverted.green.button,.ui.inverted.green.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #2ecc40!important;color:#2ecc40}
 .ui.inverted.green.button.active,.ui.inverted.green.button:active,.ui.inverted.green.button:focus,.ui.inverted.green.button:hover,.ui.inverted.green.buttons .button.active,.ui.inverted.green.buttons .button:active,.ui.inverted.green.buttons .button:focus,.ui.inverted.green.buttons .button:hover{box-shadlightOw:none!important;color:#fff}
 .ui.inverted.green.button:hover,.ui.inverted.green.buttons .button:hover{background-color:#22be34}
 .ui.inverted.green.button:focus,.ui.inverted.green.buttons .button:focus{background-color:#19b82b}
 .ui.inverted.green.active.button,.ui.inverted.green.buttons .active.button{background-color:#1fc231}
 .ui.inverted.green.button:active,.ui.inverted.green.buttons .button:active{background-color:#25a233}
-.ui.inverted.green.basic.button,.ui.inverted.green.basic.buttons .button,.ui.inverted.green.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.green.basic.button:hover,.ui.inverted.green.basic.buttons .button:hover,.ui.inverted.green.buttons .basic.button:hover{box-shadow:0 0 0 2px #22be34 inset!important;color:#2ecc40!important}
-.ui.inverted.green.basic.button:focus,.ui.inverted.green.basic.buttons .button:focus{box-shadow:0 0 0 2px #19b82b inset!important;color:#2ecc40!important}
-.ui.inverted.green.basic.active.button,.ui.inverted.green.basic.buttons .active.button,.ui.inverted.green.buttons .basic.active.button{box-shadow:0 0 0 2px #1fc231 inset!important;color:#2ecc40!important}
-.ui.inverted.green.basic.button:active,.ui.inverted.green.basic.buttons .button:active,.ui.inverted.green.buttons .basic.button:active{box-shadow:0 0 0 2px #25a233 inset!important;color:#2ecc40!important}
+.ui.inverted.green.basic.button,.ui.inverted.green.basic.buttons .button,.ui.inverted.green.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.green.basic.button:hover,.ui.inverted.green.basic.buttons .button:hover,.ui.inverted.green.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #22be34!important;color:#2ecc40!important}
+.ui.inverted.green.basic.button:focus,.ui.inverted.green.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #19b82b!important;color:#2ecc40!important}
+.ui.inverted.green.basic.active.button,.ui.inverted.green.basic.buttons .active.button,.ui.inverted.green.buttons .basic.active.button{box-shadow:inset 0 0 0 2px #1fc231!important;color:#2ecc40!important}
+.ui.inverted.green.basic.button:active,.ui.inverted.green.basic.buttons .button:active,.ui.inverted.green.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #25a233!important;color:#2ecc40!important}
 .ui.orange.button,.ui.orange.buttons .button{background-color:#f2711c;color:#fff;text-shadow:none;background-image:none}
-.ui.orange.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.orange.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.orange.button:hover,.ui.orange.buttons .button:hover{background-color:#f26202;color:#fff;text-shadow:none}
 .ui.orange.button:focus,.ui.orange.buttons .button:focus{background-color:#e55b00;color:#fff;text-shadow:none}
 .ui.orange.button:active,.ui.orange.buttons .button:active{background-color:#cf590c;color:#fff;text-shadow:none}
 .ui.orange.active.button,.ui.orange.button .active.button:active,.ui.orange.buttons .active.button,.ui.orange.buttons .active.button:active{background-color:#f56100;color:#fff;text-shadow:none}
-.ui.basic.orange.button,.ui.basic.orange.buttons .button{box-shadow:0 0 0 1px #f2711c inset!important;color:#f2711c!important}
-.ui.basic.orange.button:hover,.ui.basic.orange.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #f26202 inset!important;color:#f26202!important}
-.ui.basic.orange.button:focus,.ui.basic.orange.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #e55b00 inset!important;color:#f26202!important}
-.ui.basic.orange.active.button,.ui.basic.orange.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #f56100 inset!important;color:#cf590c!important}
-.ui.basic.orange.button:active,.ui.basic.orange.buttons .button:active{box-shadow:0 0 0 1px #cf590c inset!important;color:#cf590c!important}
+.ui.basic.orange.button,.ui.basic.orange.buttons .button{box-shadow:inset 0 0 0 1px #f2711c!important;color:#f2711c!important}
+.ui.basic.orange.button:hover,.ui.basic.orange.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #f26202!important;color:#f26202!important}
+.ui.basic.orange.button:focus,.ui.basic.orange.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #e55b00!important;color:#f26202!important}
+.ui.basic.orange.active.button,.ui.basic.orange.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #f56100!important;color:#cf590c!important}
+.ui.basic.orange.button:active,.ui.basic.orange.buttons .button:active{box-shadow:inset 0 0 0 1px #cf590c!important;color:#cf590c!important}
 .ui.buttons:not(.vertical)>.basic.orange.button:not(:first-child){margin-left:-1px}
-.ui.inverted.orange.button,.ui.inverted.orange.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #ff851b inset!important;color:#ff851b}
+.ui.inverted.orange.button,.ui.inverted.orange.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #ff851b!important;color:#ff851b}
 .ui.inverted.orange.button.active,.ui.inverted.orange.button:active,.ui.inverted.orange.button:focus,.ui.inverted.orange.button:hover,.ui.inverted.orange.buttons .button.active,.ui.inverted.orange.buttons .button:active,.ui.inverted.orange.buttons .button:focus,.ui.inverted.orange.buttons .button:hover{box-shadow:none!important;color:#fff}
 .ui.inverted.orange.button:hover,.ui.inverted.orange.buttons .button:hover{background-color:#ff7701}
 .ui.inverted.orange.button:focus,.ui.inverted.orange.buttons .button:focus{background-color:#f17000}
 .ui.inverted.orange.active.button,.ui.inverted.orange.buttons .active.button{background-color:#ff7701}
 .ui.inverted.orange.button:active,.ui.inverted.orange.buttons .button:active{background-color:#e76b00}
-.ui.inverted.orange.basic.button,.ui.inverted.orange.basic.buttons .button,.ui.inverted.orange.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.orange.basic.button:hover,.ui.inverted.orange.basic.buttons .button:hover,.ui.inverted.orange.buttons .basic.button:hover{box-shadow:0 0 0 2px #ff7701 inset!important;color:#ff851b!important}
-.ui.inverted.orange.basic.button:focus,.ui.inverted.orange.basic.buttons .button:focus{box-shadow:0 0 0 2px #f17000 inset!important;color:#ff851b!important}
-.ui.inverted.orange.basic.active.button,.ui.inverted.orange.basic.buttons .active.button,.ui.inverted.orange.buttons .basic.active.button{box-shadow:0 0 0 2px #ff7701 inset!important;color:#ff851b!important}
-.ui.inverted.orange.basic.button:active,.ui.inverted.orange.basic.buttons .button:active,.ui.inverted.orange.buttons .basic.button:active{box-shadow:0 0 0 2px #e76b00 inset!important;color:#ff851b!important}
+.ui.inverted.orange.basic.button,.ui.inverted.orange.basic.buttons .button,.ui.inverted.orange.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.orange.basic.button:hover,.ui.inverted.orange.basic.buttons .button:hover,.ui.inverted.orange.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #ff7701!important;color:#ff851b!important}
+.ui.inverted.orange.basic.button:focus,.ui.inverted.orange.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #f17000!important;color:#ff851b!important}
+.ui.inverted.orange.basic.active.button,.ui.inverted.orange.basic.buttons .active.button,.ui.inverted.orange.buttons .basic.active.button{box-shadow:inset 0 0 0 2px #ff7701!important;color:#ff851b!important}
+.ui.inverted.orange.basic.button:active,.ui.inverted.orange.basic.buttons .button:active,.ui.inverted.orange.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #e76b00!important;color:#ff851b!important}
 .ui.pink.button,.ui.pink.buttons .button{background-color:#e03997;color:#fff;text-shadow:none;background-image:none}
-.ui.pink.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.pink.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.pink.button:hover,.ui.pink.buttons .button:hover{background-color:#e61a8d;color:#fff;text-shadow:none}
 .ui.pink.button:focus,.ui.pink.buttons .button:focus{background-color:#e10f85;color:#fff;text-shadow:none}
 .ui.pink.button:active,.ui.pink.buttons .button:active{background-color:#c71f7e;color:#fff;text-shadow:none}
 .ui.pink.active.button,.ui.pink.button .active.button:active,.ui.pink.buttons .active.button,.ui.pink.buttons .active.button:active{background-color:#ea158d;color:#fff;text-shadow:none}
-.ui.basic.pink.button,.ui.basic.pink.buttons .button{box-shadow:0 0 0 1px #e03997 inset!important;color:#e03997!important}
-.ui.basic.pink.button:hover,.ui.basic.pink.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #e61a8d inset!important;color:#e61a8d!important}
-.ui.basic.pink.button:focus,.ui.basic.pink.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #e10f85 inset!important;color:#e61a8d!important}
-.ui.basic.pink.active.button,.ui.basic.pink.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #ea158d inset!important;color:#c71f7e!important}
-.ui.basic.pink.button:active,.ui.basic.pink.buttons .button:active{box-shadow:0 0 0 1px #c71f7e inset!important;color:#c71f7e!important}
+.ui.basic.pink.button,.ui.basic.pink.buttons .button{box-shadow:inset 0 0 0 1px #e03997!important;color:#e03997!important}
+.ui.basic.pink.button:hover,.ui.basic.pink.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #e61a8d!important;color:#e61a8d!important}
+.ui.basic.pink.button:focus,.ui.basic.pink.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #e10f85!important;color:#e61a8d!important}
+.ui.basic.pink.active.button,.ui.basic.pink.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #ea158d!important;color:#c71f7e!important}
+.ui.basic.pink.button:active,.ui.basic.pink.buttons .button:active{box-shadow:inset 0 0 0 1px #c71f7e!important;color:#c71f7e!important}
 .ui.buttons:not(.vertical)>.basic.pink.button:not(:first-child){margin-left:-1px}
-.ui.inverted.pink.button,.ui.inverted.pink.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #ff8edf inset!important;color:#ff8edf}
+.ui.inverted.pink.button,.ui.inverted.pink.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #ff8edf!important;color:#ff8edf}
 .ui.inverted.pink.button.active,.ui.inverted.pink.button:active,.ui.inverted.pink.button:focus,.ui.inverted.pink.button:hover,.ui.inverted.pink.buttons .button.active,.ui.inverted.pink.buttons .button:active,.ui.inverted.pink.buttons .button:focus,.ui.inverted.pink.buttons .button:hover{box-shadow:none!important;color:#fff}
 .ui.inverted.pink.button:hover,.ui.inverted.pink.buttons .button:hover{background-color:#ff74d8}
 .ui.inverted.pink.button:focus,.ui.inverted.pink.buttons .button:focus{background-color:#ff65d3}
 .ui.inverted.pink.active.button,.ui.inverted.pink.buttons .active.button{background-color:#ff74d8}
 .ui.inverted.pink.button:active,.ui.inverted.pink.buttons .button:active{background-color:#ff5bd1}
-.ui.inverted.pink.basic.button,.ui.inverted.pink.basic.buttons .button,.ui.inverted.pink.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.pink.basic.button:hover,.ui.inverted.pink.basic.buttons .button:hover,.ui.inverted.pink.buttons .basic.button:hover{box-shadow:0 0 0 2px #ff74d8 inset!important;color:#ff8edf!important}
-.ui.inverted.pink.basic.button:focus,.ui.inverted.pink.basic.buttons .button:focus{box-shadow:0 0 0 2px #ff65d3 inset!important;color:#ff8edf!important}
-.ui.inverted.pink.basic.active.button,.ui.inverted.pink.basic.buttons .active.button,.ui.inverted.pink.buttons .basic.active.button{box-shadow:0 0 0 2px #ff74d8 inset!important;color:#ff8edf!important}
-.ui.inverted.pink.basic.button:active,.ui.inverted.pink.basic.buttons .button:active,.ui.inverted.pink.buttons .basic.button:active{box-shadow:0 0 0 2px #ff5bd1 inset!important;color:#ff8edf!important}
+.ui.inverted.pink.basic.button,.ui.inverted.pink.basic.buttons .button,.ui.inverted.pink.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.pink.basic.button:hover,.ui.inverted.pink.basic.buttons .button:hover,.ui.inverted.pink.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #ff74d8!important;color:#ff8edf!important}
+.ui.inverted.pink.basic.button:focus,.ui.inverted.pink.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #ff65d3!important;color:#ff8edf!important}
+.ui.inverted.pink.basic.active.button,.ui.inverted.pink.basic.buttons .active.button,.ui.inverted.pink.buttons .basic.active.button{box-shadow:inset 0 0 0 2px #ff74d8!important;color:#ff8edf!important}
+.ui.inverted.pink.basic.button:active,.ui.inverted.pink.basic.buttons .button:active,.ui.inverted.pink.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #ff5bd1!important;color:#ff8edf!important}
 .ui.violet.button,.ui.violet.buttons .button{background-color:#6435c9;color:#fff;text-shadow:none;background-image:none}
-.ui.violet.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.violet.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.violet.button:hover,.ui.violet.buttons .button:hover{background-color:#5829bb;color:#fff;text-shadow:none}
 .ui.violet.button:focus,.ui.violet.buttons .button:focus{background-color:#4f20b5;color:#fff;text-shadow:none}
 .ui.violet.button:active,.ui.violet.buttons .button:active{background-color:#502aa1;color:#fff;text-shadow:none}
 .ui.violet.active.button,.ui.violet.button .active.button:active,.ui.violet.buttons .active.button,.ui.violet.buttons .active.button:active{background-color:#5626bf;color:#fff;text-shadow:none}
-.ui.basic.violet.button,.ui.basic.violet.buttons .button{box-shadow:0 0 0 1px #6435c9 inset!important;color:#6435c9!important}
-.ui.basic.violet.button:hover,.ui.basic.violet.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #5829bb inset!important;color:#5829bb!important}
-.ui.basic.violet.button:focus,.ui.basic.violet.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #4f20b5 inset!important;color:#5829bb!important}
-.ui.basic.violet.active.button,.ui.basic.violet.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #5626bf inset!important;color:#502aa1!important}
-.ui.basic.violet.button:active,.ui.basic.violet.buttons .button:active{box-shadow:0 0 0 1px #502aa1 inset!important;color:#502aa1!important}
+.ui.basic.violet.button,.ui.basic.violet.buttons .button{box-shadow:inset 0 0 0 1px #6435c9!important;color:#6435c9!important}
+.ui.basic.violet.button:hover,.ui.basic.violet.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #5829bb!important;color:#5829bb!important}
+.ui.basic.violet.button:focus,.ui.basic.violet.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #4f20b5!important;color:#5829bb!important}
+.ui.basic.violet.active.button,.ui.basic.violet.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #5626bf!important;color:#502aa1!important}
+.ui.basic.violet.button:active,.ui.basic.violet.buttons .button:active{box-shadow:inset 0 0 0 1px #502aa1!important;color:#502aa1!important}
 .ui.buttons:not(.vertical)>.basic.violet.button:not(:first-child){margin-left:-1px}
-.ui.inverted.violet.button,.ui.inverted.violet.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #a291fb inset!important;color:#a291fb}
+.ui.inverted.violet.button,.ui.inverted.violet.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #a291fb!important;color:#a291fb}
 .ui.inverted.violet.button.active,.ui.inverted.violet.button:active,.ui.inverted.violet.button:focus,.ui.inverted.violet.button:hover,.ui.inverted.violet.buttons .button.active,.ui.inverted.violet.buttons .button:active,.ui.inverted.violet.buttons .button:focus,.ui.inverted.violet.buttons .button:hover{box-shadow:none!important;color:#fff}
 .ui.inverted.violet.button:hover,.ui.inverted.violet.buttons .button:hover{background-color:#8a73ff}
 .ui.inverted.violet.button:focus,.ui.inverted.violet.buttons .button:focus{background-color:#7d64ff}
 .ui.inverted.violet.active.button,.ui.inverted.violet.buttons .active.button{background-color:#8a73ff}
 .ui.inverted.violet.button:active,.ui.inverted.violet.buttons .button:active{background-color:#7860f9}
-.ui.inverted.violet.basic.button,.ui.inverted.violet.basic.buttons .button,.ui.inverted.violet.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.violet.basic.button:hover,.ui.inverted.violet.basic.buttons .button:hover,.ui.inverted.violet.buttons .basic.button:hover{box-shadow:0 0 0 2px #8a73ff inset!important;color:#a291fb!important}
-.ui.inverted.violet.basic.button:focus,.ui.inverted.violet.basic.buttons .button:focus{box-shadow:0 0 0 2px #7d64ff inset!important;color:#a291fb!important}
-.ui.inverted.violet.basic.active.button,.ui.inverted.violet.basic.buttons .active.button,.ui.inverted.violet.buttons .basic.active.button{box-shadow:0 0 0 2px #8a73ff inset!important;color:#a291fb!important}
-.ui.inverted.violet.basic.button:active,.ui.inverted.violet.basic.buttons .button:active,.ui.inverted.violet.buttons .basic.button:active{box-shadow:0 0 0 2px #7860f9 inset!important;color:#a291fb!important}
+.ui.inverted.violet.basic.button,.ui.inverted.violet.basic.buttons .button,.ui.inverted.violet.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.violet.basic.button:hover,.ui.inverted.violet.basic.buttons .button:hover,.ui.inverted.violet.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #8a73ff!important;color:#a291fb!important}
+.ui.inverted.violet.basic.button:focus,.ui.inverted.violet.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #7d64ff!important;color:#a291fb!important}
+.ui.inverted.violet.basic.active.button,.ui.inverted.violet.basic.buttons .active.button,.ui.inverted.violet.buttons .basic.active.button{box-shadow:inset 0 0 0 2px #8a73ff!important;color:#a291fb!important}
+.ui.inverted.violet.basic.button:active,.ui.inverted.violet.basic.buttons .button:active,.ui.inverted.violet.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #7860f9!important;color:#a291fb!important}
 .ui.purple.button,.ui.purple.buttons .button{background-color:#a333c8;color:#fff;text-shadow:none;background-image:none}
-.ui.purple.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.purple.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.purple.button:hover,.ui.purple.buttons .button:hover{background-color:#9627ba;color:#fff;text-shadow:none}
 .ui.purple.button:focus,.ui.purple.buttons .button:focus{background-color:#8f1eb4;color:#fff;text-shadow:none}
 .ui.purple.button:active,.ui.purple.buttons .button:active{background-color:#82299f;color:#fff;text-shadow:none}
 .ui.purple.active.button,.ui.purple.button .active.button:active,.ui.purple.buttons .active.button,.ui.purple.buttons .active.button:active{background-color:#9724be;color:#fff;text-shadow:none}
-.ui.basic.purple.button,.ui.basic.purple.buttons .button{box-shadow:0 0 0 1px #a333c8 inset!important;color:#a333c8!important}
-.ui.basic.purple.button:hover,.ui.basic.purple.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #9627ba inset!important;color:#9627ba!important}
-.ui.basic.purple.button:focus,.ui.basic.purple.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #8f1eb4 inset!important;color:#9627ba!important}
-.ui.basic.purple.active.button,.ui.basic.purple.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #9724be inset!important;color:#82299f!important}
-.ui.basic.purple.button:active,.ui.basic.purple.buttons .button:active{box-shadow:0 0 0 1px #82299f inset!important;color:#82299f!important}
+.ui.basic.purple.button,.ui.basic.purple.buttons .button{box-shadow:inset 0 0 0 1px #a333c8!important;color:#a333c8!important}
+.ui.basic.purple.button:hover,.ui.basic.purple.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #9627ba!important;color:#9627ba!important}
+.ui.basic.purple.button:focus,.ui.basic.purple.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #8f1eb4!important;color:#9627ba!important}
+.ui.basic.purple.active.button,.ui.basic.purple.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #9724be!important;color:#82299f!important}
+.ui.basic.purple.button:active,.ui.basic.purple.buttons .button:active{box-shadow:inset 0 0 0 1px #82299f!important;color:#82299f!important}
 .ui.buttons:not(.vertical)>.basic.purple.button:not(:first-child){margin-left:-1px}
-.ui.inverted.purple.button,.ui.inverted.purple.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #dc73ff inset!important;color:#dc73ff}
+.ui.inverted.purple.button,.ui.inverted.purple.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #dc73ff!important;color:#dc73ff}
 .ui.inverted.purple.button.active,.ui.inverted.purple.button:active,.ui.inverted.purple.button:focus,.ui.inverted.purple.button:hover,.ui.inverted.purple.buttons .button.active,.ui.inverted.purple.buttons .button:active,.ui.inverted.purple.buttons .button:focus,.ui.inverted.purple.buttons .button:hover{box-shadow:none!important;color:#fff}
 .ui.inverted.purple.button:hover,.ui.inverted.purple.buttons .button:hover{background-color:#d65aff}
 .ui.inverted.purple.button:focus,.ui.inverted.purple.buttons .button:focus{background-color:#d24aff}
 .ui.inverted.purple.active.button,.ui.inverted.purple.buttons .active.button{background-color:#d65aff}
 .ui.inverted.purple.button:active,.ui.inverted.purple.buttons .button:active{background-color:#cf40ff}
-.ui.inverted.purple.basic.button,.ui.inverted.purple.basic.buttons .button,.ui.inverted.purple.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.purple.basic.button:hover,.ui.inverted.purple.basic.buttons .button:hover,.ui.inverted.purple.buttons .basic.button:hover{box-shadow:0 0 0 2px #d65aff inset!important;color:#dc73ff!important}
-.ui.inverted.purple.basic.button:focus,.ui.inverted.purple.basic.buttons .button:focus{box-shadow:0 0 0 2px #d24aff inset!important;color:#dc73ff!important}
-.ui.inverted.purple.basic.active.button,.ui.inverted.purple.basic.buttons .active.button,.ui.inverted.purple.buttons .basic.active.button{box-shadow:0 0 0 2px #d65aff inset!important;color:#dc73ff!important}
-.ui.inverted.purple.basic.button:active,.ui.inverted.purple.basic.buttons .button:active,.ui.inverted.purple.buttons .basic.button:active{box-shadow:0 0 0 2px #cf40ff inset!important;color:#dc73ff!important}
+.ui.inverted.purple.basic.button,.ui.inverted.purple.basic.buttons .button,.ui.inverted.purple.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.purple.basic.button:hover,.ui.inverted.purple.basic.buttons .button:hover,.ui.inverted.purple.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #d65aff!important;color:#dc73ff!important}
+.ui.inverted.purple.basic.button:focus,.ui.inverted.purple.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #d24aff!important;color:#dc73ff!important}
+.ui.inverted.purple.basic.active.button,.ui.inverted.purple.basic.buttons .active.button,.ui.inverted.purple.buttons .basic.active.button{box-shadow:inset 0 0 0 2px #d65aff!important;color:#dc73ff!important}
+.ui.inverted.purple.basic.button:active,.ui.inverted.purple.basic.buttons .button:active,.ui.inverted.purple.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #cf40ff!important;color:#dc73ff!important}
 .ui.red.button,.ui.red.buttons .button{background-color:#db2828;color:#fff;text-shadow:none;background-image:none}
-.ui.red.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.red.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.red.button:hover,.ui.red.buttons .button:hover{background-color:#d01919;color:#fff;text-shadow:none}
 .ui.red.button:focus,.ui.red.buttons .button:focus{background-color:#ca1010;color:#fff;text-shadow:none}
 .ui.red.button:active,.ui.red.buttons .button:active{background-color:#b21e1e;color:#fff;text-shadow:none}
 .ui.red.active.button,.ui.red.button .active.button:active,.ui.red.buttons .active.button,.ui.red.buttons .active.button:active{background-color:#d41515;color:#fff;text-shadow:none}
-.ui.basic.red.button,.ui.basic.red.buttons .button{box-shadow:0 0 0 1px #db2828 inset!important;color:#db2828!important}
-.ui.basic.red.button:hover,.ui.basic.red.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #d01919 inset!important;color:#d01919!important}
-.ui.basic.red.button:focus,.ui.basic.red.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #ca1010 inset!important;color:#d01919!important}
-.ui.basic.red.active.button,.ui.basic.red.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #d41515 inset!important;color:#b21e1e!important}
-.ui.basic.red.button:active,.ui.basic.red.buttons .button:active{box-shadow:0 0 0 1px #b21e1e inset!important;color:#b21e1e!important}
+.ui.basic.red.button,.ui.basic.red.buttons .button{box-shadow:inset 0 0 0 1px #db2828!important;color:#db2828!important}
+.ui.basic.red.button:hover,.ui.basic.red.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #d01919!important;color:#d01919!important}
+.ui.basic.red.button:focus,.ui.basic.red.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #ca1010!important;color:#d01919!important}
+.ui.basic.red.active.button,.ui.basic.red.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #d41515!important;color:#b21e1e!important}
+.ui.basic.red.button:active,.ui.basic.red.buttons .button:active{box-shadow:inset 0 0 0 1px #b21e1e!important;color:#b21e1e!important}
 .ui.buttons:not(.vertical)>.basic.red.button:not(:first-child){margin-left:-1px}
-.ui.inverted.red.button,.ui.inverted.red.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #ff695e inset!important;color:#ff695e}
+.ui.inverted.red.button,.ui.inverted.red.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #ff695e!important;color:#ff695e}
 .ui.inverted.red.button.active,.ui.inverted.red.button:active,.ui.inverted.red.button:focus,.ui.inverted.red.button:hover,.ui.inverted.red.buttons .button.active,.ui.inverted.red.buttons .button:active,.ui.inverted.red.buttons .button:focus,.ui.inverted.red.buttons .button:hover{box-shadow:none!important;color:#fff}
 .ui.inverted.red.button:hover,.ui.inverted.red.buttons .button:hover{background-color:#ff5144}
 .ui.inverted.red.button:focus,.ui.inverted.red.buttons .button:focus{background-color:#ff4335}
 .ui.inverted.red.active.button,.ui.inverted.red.buttons .active.button{background-color:#ff5144}
 .ui.inverted.red.button:active,.ui.inverted.red.buttons .button:active{background-color:#ff392b}
-.ui.inverted.red.basic.button,.ui.inverted.red.basic.buttons .button,.ui.inverted.red.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.red.basic.button:hover,.ui.inverted.red.basic.buttons .button:hover,.ui.inverted.red.buttons .basic.button:hover{box-shadow:0 0 0 2px #ff5144 inset!important;color:#ff695e!important}
-.ui.inverted.red.basic.button:focus,.ui.inverted.red.basic.buttons .button:focus{box-shadow:0 0 0 2px #ff4335 inset!important;color:#ff695e!important}
-.ui.inverted.red.basic.active.button,.ui.inverted.red.basic.buttons .active.button,.ui.inverted.red.buttons .basic.active.button{box-shadow:0 0 0 2px #ff5144 inset!important;color:#ff695e!important}
-.ui.inverted.red.basic.button:active,.ui.inverted.red.basic.buttons .button:active,.ui.inverted.red.buttons .basic.button:active{box-shadow:0 0 0 2px #ff392b inset!important;color:#ff695e!important}
+.ui.inverted.red.basic.button,.ui.inverted.red.basic.buttons .button,.ui.inverted.red.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.red.basic.button:hover,.ui.inverted.red.basic.buttons .button:hover,.ui.inverted.red.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #ff5144!important;color:#ff695e!important}
+.ui.inverted.red.basic.button:focus,.ui.inverted.red.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #ff4335!important;color:#ff695e!important}
+.ui.inverted.red.basic.active.button,.ui.inverted.red.basic.buttons .active.button,.ui.inverted.red.buttons .basic.active.button{box-shadow:inset 0 0 0 2px #ff5144!important;color:#ff695e!important}
+.ui.inverted.red.basic.button:active,.ui.inverted.red.basic.buttons .button:active,.ui.inverted.red.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #ff392b!important;color:#ff695e!important}
 .ui.teal.button,.ui.teal.buttons .button{background-color:#00b5ad;color:#fff;text-shadow:none;background-image:none}
-.ui.teal.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.teal.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.teal.button:hover,.ui.teal.buttons .button:hover{background-color:#009c95;color:#fff;text-shadow:none}
 .ui.teal.button:focus,.ui.teal.buttons .button:focus{background-color:#008c86;color:#fff;text-shadow:none}
 .ui.teal.button:active,.ui.teal.buttons .button:active{background-color:#00827c;color:#fff;text-shadow:none}
 .ui.teal.active.button,.ui.teal.button .active.button:active,.ui.teal.buttons .active.button,.ui.teal.buttons .active.button:active{background-color:#009c95;color:#fff;text-shadow:none}
-.ui.basic.teal.button,.ui.basic.teal.buttons .button{box-shadow:0 0 0 1px #00b5ad inset!important;color:#00b5ad!important}
-.ui.basic.teal.button:hover,.ui.basic.teal.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #009c95 inset!important;color:#009c95!important}
-.ui.basic.teal.button:focus,.ui.basic.teal.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #008c86 inset!important;color:#009c95!important}
-.ui.basic.teal.active.button,.ui.basic.teal.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #009c95 inset!important;color:#00827c!important}
-.ui.basic.teal.button:active,.ui.basic.teal.buttons .button:active{box-shadow:0 0 0 1px #00827c inset!important;color:#00827c!important}
+.ui.basic.teal.button,.ui.basic.teal.buttons .button{box-shadow:inset 0 0 0 1px #00b5ad!important;color:#00b5ad!important}
+.ui.basic.teal.button:hover,.ui.basic.teal.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #009c95!important;color:#009c95!important}
+.ui.basic.teal.button:focus,.ui.basic.teal.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #008c86!important;color:#009c95!important}
+.ui.basic.teal.active.button,.ui.basic.teal.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #009c95!important;color:#00827c!important}
+.ui.basic.teal.button:active,.ui.basic.teal.buttons .button:active{box-shadow:inset 0 0 0 1px #00827c!important;color:#00827c!important}
 .ui.buttons:not(.vertical)>.basic.teal.button:not(:first-child){margin-left:-1px}
-.ui.inverted.teal.button,.ui.inverted.teal.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #6dffff inset!important;color:#6dffff}
+.ui.inverted.teal.button,.ui.inverted.teal.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #6dffff!important;color:#6dffff}
 .ui.inverted.teal.button.active,.ui.inverted.teal.button:active,.ui.inverted.teal.button:focus,.ui.inverted.teal.button:hover,.ui.inverted.teal.buttons .button.active,.ui.inverted.teal.buttons .button:active,.ui.inverted.teal.buttons .button:focus,.ui.inverted.teal.buttons .button:hover{box-shadow:none!important;color:rgba(0,0,0,.6)}
 .ui.inverted.teal.button:hover,.ui.inverted.teal.buttons .button:hover{background-color:#54ffff}
 .ui.inverted.teal.button:focus,.ui.inverted.teal.buttons .button:focus{background-color:#4ff}
 .ui.inverted.teal.active.button,.ui.inverted.teal.buttons .active.button{background-color:#54ffff}
 .ui.inverted.teal.button:active,.ui.inverted.teal.buttons .button:active{background-color:#3affff}
-.ui.inverted.teal.basic.button,.ui.inverted.teal.basic.buttons .button,.ui.inverted.teal.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.teal.basic.button:hover,.ui.inverted.teal.basic.buttons .button:hover,.ui.inverted.teal.buttons .basic.button:hover{box-shadow:0 0 0 2px #54ffff inset!important;color:#6dffff!important}
-.ui.inverted.teal.basic.button:focus,.ui.inverted.teal.basic.buttons .button:focus{box-shadow:0 0 0 2px #4ff inset!important;color:#6dffff!important}
-.ui.inverted.teal.basic.active.button,.ui.inverted.teal.basic.buttons .active.button,.ui.inverted.teal.buttons .basic.active.button{box-shadow:0 0 0 2px #54ffff inset!important;color:#6dffff!important}
-.ui.inverted.teal.basic.button:active,.ui.inverted.teal.basic.buttons .button:active,.ui.inverted.teal.buttons .basic.button:active{box-shadow:0 0 0 2px #3affff inset!important;color:#6dffff!important}
+.ui.inverted.teal.basic.button,.ui.inverted.teal.basic.buttons .button,.ui.inverted.teal.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.teal.basic.button:hover,.ui.inverted.teal.basic.buttons .button:hover,.ui.inverted.teal.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #54ffff!important;color:#6dffff!important}
+.ui.inverted.teal.basic.button:focus,.ui.inverted.teal.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #4ff!important;color:#6dffff!important}
+.ui.inverted.teal.basic.active.button,.ui.inverted.teal.basic.buttons .active.button,.ui.inverted.teal.buttons .basic.active.button{box-shadow:inset 0 0 0 2px #54ffff!important;color:#6dffff!important}
+.ui.inverted.teal.basic.button:active,.ui.inverted.teal.basic.buttons .button:active,.ui.inverted.teal.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #3affff!important;color:#6dffff!important}
 .ui.olive.button,.ui.olive.buttons .button{background-color:#b5cc18;color:#fff;text-shadow:none;background-image:none}
-.ui.olive.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.olive.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.olive.button:hover,.ui.olive.buttons .button:hover{background-color:#a7bd0d;color:#fff;text-shadow:none}
 .ui.olive.button:focus,.ui.olive.buttons .button:focus{background-color:#a0b605;color:#fff;text-shadow:none}
 .ui.olive.button:active,.ui.olive.buttons .button:active{background-color:#8d9e13;color:#fff;text-shadow:none}
 .ui.olive.active.button,.ui.olive.button .active.button:active,.ui.olive.buttons .active.button,.ui.olive.buttons .active.button:active{background-color:#aac109;color:#fff;text-shadow:none}
-.ui.basic.olive.button,.ui.basic.olive.buttons .button{box-shadow:0 0 0 1px #b5cc18 inset!important;color:#b5cc18!important}
-.ui.basic.olive.button:hover,.ui.basic.olive.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #a7bd0d inset!important;color:#a7bd0d!important}
-.ui.basic.olive.button:focus,.ui.basic.olive.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #a0b605 inset!important;color:#a7bd0d!important}
-.ui.basic.olive.active.button,.ui.basic.olive.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #aac109 inset!important;color:#8d9e13!important}
-.ui.basic.olive.button:active,.ui.basic.olive.buttons .button:active{box-shadow:0 0 0 1px #8d9e13 inset!important;color:#8d9e13!important}
+.ui.basic.olive.button,.ui.basic.olive.buttons .button{box-shadow:inset 0 0 0 1px #b5cc18!important;color:#b5cc18!important}
+.ui.basic.olive.button:hover,.ui.basic.olive.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #a7bd0d!important;color:#a7bd0d!important}
+.ui.basic.olive.button:focus,.ui.basic.olive.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #a0b605!important;color:#a7bd0d!important}
+.ui.basic.olive.active.button,.ui.basic.olive.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #aac109!important;color:#8d9e13!important}
+.ui.basic.olive.button:active,.ui.basic.olive.buttons .button:active{box-shadow:inset 0 0 0 1px #8d9e13!important;color:#8d9e13!important}
 .ui.buttons:not(.vertical)>.basic.olive.button:not(:first-child){margin-left:-1px}
-.ui.inverted.olive.button,.ui.inverted.olive.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #d9e778 inset!important;color:#d9e778}
+.ui.inverted.olive.button,.ui.inverted.olive.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #d9e778!important;color:#d9e778}
 .ui.inverted.olive.button.active,.ui.inverted.olive.button:active,.ui.inverted.olive.button:focus,.ui.inverted.olive.button:hover,.ui.inverted.olive.buttons .button.active,.ui.inverted.olive.buttons .button:active,.ui.inverted.olive.buttons .button:focus,.ui.inverted.olive.buttons .button:hover{box-shadow:none!important;color:rgba(0,0,0,.6)}
 .ui.inverted.olive.button:hover,.ui.inverted.olive.buttons .button:hover{background-color:#d8ea5c}
 .ui.inverted.olive.button:focus,.ui.inverted.olive.buttons .button:focus{background-color:#daef47}
 .ui.inverted.olive.active.button,.ui.inverted.olive.buttons .active.button{background-color:#daed59}
 .ui.inverted.olive.button:active,.ui.inverted.olive.buttons .button:active{background-color:#cddf4d}
-.ui.inverted.olive.basic.button,.ui.inverted.olive.basic.buttons .button,.ui.inverted.olive.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.olive.basic.button:hover,.ui.inverted.olive.basic.buttons .button:hover,.ui.inverted.olive.buttons .basic.button:hover{box-shadow:0 0 0 2px #d8ea5c inset!important;color:#d9e778!important}
-.ui.inverted.olive.basic.button:focus,.ui.inverted.olive.basic.buttons .button:focus{box-shadow:0 0 0 2px #daef47 inset!important;color:#d9e778!important}
-.ui.inverted.olive.basic.active.button,.ui.inverted.olive.basic.buttons .active.button,.ui.inverted.olive.buttons .basic.active.button{box-shadow:0 0 0 2px #daed59 inset!important;color:#d9e778!important}
-.ui.inverted.olive.basic.button:active,.ui.inverted.olive.basic.buttons .button:active,.ui.inverted.olive.buttons .basic.button:active{box-shadow:0 0 0 2px #cddf4d inset!important;color:#d9e778!important}
+.ui.inverted.olive.basic.button,.ui.inverted.olive.basic.buttons .button,.ui.inverted.olive.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.olive.basic.button:hover,.ui.inverted.olive.basic.buttons .button:hover,.ui.inverted.olive.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #d8ea5c!important;color:#d9e778!important}
+.ui.inverted.olive.basic.button:focus,.ui.inverted.olive.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #daef47!important;color:#d9e778!important}
+.ui.inverted.olive.basic.active.button,.ui.inverted.olive.basic.buttons .active.button,.ui.inverted.olive.buttons .basic.active.button{box-shadow:inset 0 0 0 2px #daed59!important;color:#d9e778!important}
+.ui.inverted.olive.basic.button:active,.ui.inverted.olive.basic.buttons .button:active,.ui.inverted.olive.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #cddf4d!important;color:#d9e778!important}
 .ui.yellow.button,.ui.yellow.buttons .button{background-color:#fbbd08;color:#fff;text-shadow:none;background-image:none}
-.ui.yellow.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.yellow.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.yellow.button:hover,.ui.yellow.buttons .button:hover{background-color:#eaae00;color:#fff;text-shadow:none}
 .ui.yellow.button:focus,.ui.yellow.buttons .button:focus{background-color:#daa300;color:#fff;text-shadow:none}
 .ui.yellow.button:active,.ui.yellow.buttons .button:active{background-color:#cd9903;color:#fff;text-shadow:none}
 .ui.yellow.active.button,.ui.yellow.button .active.button:active,.ui.yellow.buttons .active.button,.ui.yellow.buttons .active.button:active{background-color:#eaae00;color:#fff;text-shadow:none}
-.ui.basic.yellow.button,.ui.basic.yellow.buttons .button{box-shadow:0 0 0 1px #fbbd08 inset!important;color:#fbbd08!important}
-.ui.basic.yellow.button:hover,.ui.basic.yellow.buttons .button:hover{background:transparent!important;box-shadow:0 0 0 1px #eaae00 inset!important;color:#eaae00!important}
-.ui.basic.yellow.button:focus,.ui.basic.yellow.buttons .button:focus{background:transparent!important;box-shadow:0 0 0 1px #daa300 inset!important;color:#eaae00!important}
-.ui.basic.yellow.active.button,.ui.basic.yellow.buttons .active.button{background:transparent!important;box-shadow:0 0 0 1px #eaae00 inset!important;color:#cd9903!important}
-.ui.basic.yellow.button:active,.ui.basic.yellow.buttons .button:active{box-shadow:0 0 0 1px #cd9903 inset!important;color:#cd9903!important}
+.ui.basic.yellow.button,.ui.basic.yellow.buttons .button{box-shadow:inset 0 0 0 1px #fbbd08!important;color:#fbbd08!important}
+.ui.basic.yellow.button:hover,.ui.basic.yellow.buttons .button:hover{background:transparent!important;box-shadow:inset 0 0 0 1px #eaae00!important;color:#eaae00!important}
+.ui.basic.yellow.button:focus,.ui.basic.yellow.buttons .button:focus{background:transparent!important;box-shadow:inset 0 0 0 1px #daa300!important;color:#eaae00!important}
+.ui.basic.yellow.active.button,.ui.basic.yellow.buttons .active.button{background:transparent!important;box-shadow:inset 0 0 0 1px #eaae00!important;color:#cd9903!important}
+.ui.basic.yellow.button:active,.ui.basic.yellow.buttons .button:active{box-shadow:inset 0 0 0 1px #cd9903!important;color:#cd9903!important}
 .ui.buttons:not(.vertical)>.basic.yellow.button:not(:first-child){margin-left:-1px}
-.ui.inverted.yellow.button,.ui.inverted.yellow.buttons .button{background-color:transparent;box-shadow:0 0 0 2px #ffe21f inset!important;color:#ffe21f}
+.ui.inverted.yellow.button,.ui.inverted.yellow.buttons .button{background-color:transparent;box-shadow:inset 0 0 0 2px #ffe21f!important;color:#ffe21f}
 .ui.inverted.yellow.button.active,.ui.inverted.yellow.button:active,.ui.inverted.yellow.button:focus,.ui.inverted.yellow.button:hover,.ui.inverted.yellow.buttons .button.active,.ui.inverted.yellow.buttons .button:active,.ui.inverted.yellow.buttons .button:focus,.ui.inverted.yellow.buttons .button:hover{box-shadow:none!important;color:rgba(0,0,0,.6)}
 .ui.inverted.yellow.button:hover,.ui.inverted.yellow.buttons .button:hover{background-color:#ffdf05}
 .ui.inverted.yellow.button:focus,.ui.inverted.yellow.buttons .button:focus{background-color:#f5d500}
 .ui.inverted.yellow.active.button,.ui.inverted.yellow.buttons .active.button{background-color:#ffdf05}
 .ui.inverted.yellow.button:active,.ui.inverted.yellow.buttons .button:active{background-color:#ebcd00}
-.ui.inverted.yellow.basic.button,.ui.inverted.yellow.basic.buttons .button,.ui.inverted.yellow.buttons .basic.button{background-color:transparent;box-shadow:0 0 0 2px hsla(0,0%,100%,.5) inset!important;color:#fff!important}
-.ui.inverted.yellow.basic.button:hover,.ui.inverted.yellow.basic.buttons .button:hover,.ui.inverted.yellow.buttons .basic.button:hover{box-shadow:0 0 0 2px #ffdf05 inset!important;color:#ffe21f!important}
-.ui.inverted.yellow.basic.button:focus,.ui.inverted.yellow.basic.buttons .button:focus{box-shadow:0 0 0 2px #f5d500 inset!important;color:#ffe21f!important}
-.ui.inverted.yellow.basic.active.button,.ui.inverted.yellow.basic.buttons .active.button,.ui.inverted.yellow.buttons .basic.active.button{box-shadow:0 0 0 2px #ffdf05 inset!important;color:#ffe21f!important}
-.ui.inverted.yellow.basic.button:active,.ui.inverted.yellow.basic.buttons .button:active,.ui.inverted.yellow.buttons .basic.button:active{box-shadow:0 0 0 2px #ebcd00 inset!important;color:#ffe21f!important}
+.ui.inverted.yellow.basic.button,.ui.inverted.yellow.basic.buttons .button,.ui.inverted.yellow.buttons .basic.button{background-color:transparent;box-shadow:inset 0 0 0 2px hsla(0,0%,100%,.5)!important;color:#fff!important}
+.ui.inverted.yellow.basic.button:hover,.ui.inverted.yellow.basic.buttons .button:hover,.ui.inverted.yellow.buttons .basic.button:hover{box-shadow:inset 0 0 0 2px #ffdf05!important;color:#ffe21f!important}
+.ui.inverted.yellow.basic.button:focus,.ui.inverted.yellow.basic.buttons .button:focus{box-shadow:inset 0 0 0 2px #f5d500!important;color:#ffe21f!important}
+.ui.inverted.yellow.basic.active.button,.ui.inverted.yellow.basic.buttons .active.button,.ui.inverted.yellow.buttons .basic.active.button{box-shadow:inset 0 0 0 2px #ffdf05!important;color:#ffe21f!important}
+.ui.inverted.yellow.basic.button:active,.ui.inverted.yellow.basic.buttons .button:active,.ui.inverted.yellow.buttons .basic.button:active{box-shadow:inset 0 0 0 2px #ebcd00!important;color:#ffe21f!important}
 .ui.primary.button,.ui.primary.buttons .button{background-color:#2185d0;color:#fff;text-shadow:none;background-image:none}
-.ui.primary.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.primary.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.primary.button:hover,.ui.primary.buttons .button:hover{background-color:#1678c2;color:#fff;text-shadow:none}
 .ui.primary.button:focus,.ui.primary.buttons .button:focus{background-color:#0d71bb;color:#fff;text-shadow:none}
 .ui.primary.button:active,.ui.primary.buttons .button:active{background-color:#1a69a4;color:#fff;text-shadow:none}
 .ui.primary.active.button,.ui.primary.buttons .active.button{background-color:#1279c6;color:#fff;text-shadow:none}
 .ui.secondary.button,.ui.secondary.buttons .button{background-color:#1b1c1d;color:#fff;text-shadow:none;background-image:none}
-.ui.secondary.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.secondary.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.secondary.button:hover,.ui.secondary.buttons .button:hover{background-color:#27292a;color:#fff;text-shadow:none}
 .ui.secondary.button:focus,.ui.secondary.buttons .button:focus{background-color:#2e3032;color:#fff;text-shadow:none}
 .ui.secondary.button:active,.ui.secondary.buttons .button:active{background-color:#343637;color:#fff;text-shadow:none}
 .ui.secondary.active.button,.ui.secondary.buttons .active.button{background-color:#27292a;color:#fff;text-shadow:none}
 .ui.positive.button,.ui.positive.buttons .button{background-color:#21ba45!important;color:#fff;text-shadow:none;background-image:none}
-.ui.positive.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.positive.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.positive.button:hover,.ui.positive.buttons .button:hover{background-color:#16ab39!important;color:#fff;text-shadow:none}
 .ui.positive.button:focus,.ui.positive.buttons .button:focus{background-color:#0ea432!important;color:#fff;text-shadow:none}
 .ui.positive.button:active,.ui.positive.buttons .button:active{background-color:#198f35!important;color:#fff;text-shadow:none}
 .ui.positive.active.button,.ui.positive.buttons .active.button,.ui.positive.buttons .active.button:active{background-color:#13ae38;color:#fff;text-shadow:none}
 .ui.negative.button,.ui.negative.buttons .button{background-color:#db2828!important;color:#fff;text-shadow:none;background-image:none}
-.ui.negative.button{box-shadow:0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.negative.button{box-shadow:inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.negative.button:hover,.ui.negative.buttons .button:hover{background-color:#d01919!important;color:#fff;text-shadow:none}
 .ui.negative.button:focus,.ui.negative.buttons .button:focus{background-color:#ca1010!important;color:#fff;text-shadow:none}
 .ui.negative.button:active,.ui.negative.buttons .button:active{background-color:#b21e1e!important;color:#fff;text-shadow:none}
@@ -610,7 +610,7 @@ input::selection,textarea::selection{background-color:hsla(0,0%,39%,.4);color:rg
 .ui.buttons:not(.basic):not(.inverted){box-shadow:none}
 .ui.buttons:after{content:".";display:block;height:0;clear:both;visibility:hidden}
 .ui.buttons .button{-webkit-box-flex:1;-webkit-flex:1 0 auto;-ms-flex:1 0 auto;flex:1 0 auto;border-radius:0;margin:0}
-.ui.buttons:not(.basic):not(.inverted)>.button,.ui.buttons>.ui.button:not(.basic):not(.inverted){box-shadow:0 0 0 1px transparent inset,0 0 0 0 rgba(34,36,38,.15) inset}
+.ui.buttons:not(.basic):not(.inverted)>.button,.ui.buttons>.ui.button:not(.basic):not(.inverted){box-shadow:inset 0 0 0 1px transparent,inset 0 0 0 0 rgba(34,36,38,.15)}
 .ui.buttons .button:first-child{border-left:none;margin-left:0;border-top-left-radius:.28571429rem;border-bottom-left-radius:.28571429rem}
 .ui.buttons .button:last-child{border-top-right-radius:.28571429rem;border-bottom-right-radius:.28571429rem}
 .ui.vertical.buttons{display:-webkit-inline-box;display:-webkit-inline-flex;display:-ms-inline-flexbox;display:inline-flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column}
@@ -1117,13 +1117,13 @@ i.disabled.icon{opacity:.45!important}
 i.fitted.icon{width:auto;margin:0}
 i.link.icon{cursor:pointer;opacity:.8;-webkit-transition:opacity .1s ease;transition:opacity .1s ease}
 i.link.icon:hover{opacity:1!important}
-i.circular.icon{border-radius:500em!important;line-height:1!important;padding:.5em!important;box-shadow:0 0 0 .1em rgba(0,0,0,.1) inset;width:2em!important;height:2em!important}
+i.circular.icon{border-radius:500em!important;line-height:1!important;padding:.5em!important;box-shadow:inset 0 0 0 .1em rgba(0,0,0,.1);width:2em!important;height:2em!important}
 i.circular.inverted.icon{border:none;box-shadow:none}
 i.flipped.icon,i.horizontally.flipped.icon{-webkit-transform:scaleX(-1);transform:scaleX(-1)}
 i.vertically.flipped.icon{-webkit-transform:scaleY(-1);transform:scaleY(-1)}
 i.clockwise.rotated.icon,i.right.rotated.icon,i.rotated.icon{-webkit-transform:rotate(90deg);transform:rotate(90deg)}
 i.counterclockwise.rotated.icon,i.left.rotated.icon{-webkit-transform:rotate(-90deg);transform:rotate(-90deg)}
-i.bordered.icon{line-height:1;vertical-align:baseline;width:2em;height:2em;padding:.5em .41em!important;box-shadow:0 0 0 .1em rgba(0,0,0,.1) inset}
+i.bordered.icon{line-height:1;vertical-align:baseline;width:2em;height:2em;padding:.5em .41em!important;box-shadow:inset 0 0 0 .1em rgba(0,0,0,.1)}
 i.bordered.inverted.icon{border:none;box-shadow:none}
 i.inverted.bordered.icon,i.inverted.circular.icon{background-color:#1b1c1d!important;color:#fff!important}
 i.inverted.icon{color:#fff}
@@ -2670,12 +2670,12 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.form input:not([type]),.ui.form input[type=date],.ui.form input[type=datetime-local],.ui.form input[type=email],.ui.form input[type=number],.ui.form input[type=password],.ui.form input[type=search],.ui.form input[type=tel],.ui.form input[type=text],.ui.form input[type=time],.ui.form input[type=url],.ui.form textarea{width:100%;vertical-align:top}
 .ui.form ::-webkit-datetime-edit,.ui.form ::-webkit-inner-spin-button{height:1.2142em}
 .ui.form input:not([type]),.ui.form input[type=date],.ui.form input[type=datetime-local],.ui.form input[type=email],.ui.form input[type=number],.ui.form input[type=password],.ui.form input[type=search],.ui.form input[type=tel],.ui.form input[type=text],.ui.form input[type=time],.ui.form input[type=url]{font-family:Lato,Helvetica Neue,Arial,Helvetica,sans-serif;line-height:1.2142em;padding:.67861429em 1em}
-.ui.form input:not([type]),.ui.form input[type=date],.ui.form input[type=datetime-local],.ui.form input[type=email],.ui.form input[type=number],.ui.form input[type=password],.ui.form input[type=search],.ui.form input[type=tel],.ui.form input[type=text],.ui.form input[type=time],.ui.form input[type=url],.ui.form textarea{margin:0;outline:none;-webkit-appearance:none;tap-highlight-color:hsla(0,0%,100%,0);font-size:1em;background:#fff;border:1px solid rgba(34,36,38,.15);color:rgba(0,0,0,.87);border-radius:.28571429rem;box-shadow:0 0 0 0 transparent inset;-webkit-transition:color .1s ease,border-color .1s ease;transition:color .1s ease,border-color .1s ease}
+.ui.form input:not([type]),.ui.form input[type=date],.ui.form input[type=datetime-local],.ui.form input[type=email],.ui.form input[type=number],.ui.form input[type=password],.ui.form input[type=search],.ui.form input[type=tel],.ui.form input[type=text],.ui.form input[type=time],.ui.form input[type=url],.ui.form textarea{margin:0;outline:none;-webkit-appearance:none;tap-highlight-color:hsla(0,0%,100%,0);font-size:1em;background:#fff;border:1px solid rgba(34,36,38,.15);color:rgba(0,0,0,.87);border-radius:.28571429rem;box-shadow:inset 0 0 0 0 transparent;-webkit-transition:color .1s ease,border-color .1s ease;transition:color .1s ease,border-color .1s ease}
 .ui.form textarea{padding:.78571429em 1em;line-height:1.2857;resize:vertical}
 .ui.form textarea:not([rows]){height:12em;min-height:8em;max-height:24em}
 .ui.form input[type=checkbox],.ui.form textarea{vertical-align:top}
 .ui.form input.attached{width:auto}
-.ui.form select{display:block;height:auto;width:100%;background:#fff;border:1px solid rgba(34,36,38,.15);border-radius:.28571429rem;box-shadow:0 0 0 0 transparent inset;padding:.62em 1em;color:rgba(0,0,0,.87);-webkit-transition:color .1s ease,border-color .1s ease;transition:color .1s ease,border-color .1s ease}
+.ui.form select{display:block;height:auto;width:100%;background:#fff;border:1px solid rgba(34,36,38,.15);border-radius:.28571429rem;box-shadow:inset 0 0 0 0 transparent;padding:.62em 1em;color:rgba(0,0,0,.87);-webkit-transition:color .1s ease,border-color .1s ease;transition:color .1s ease,border-color .1s ease}
 .ui.form .field>.selection.dropdown{width:100%}
 .ui.form .field>.selection.dropdown>.dropdown.icon{float:right}
 .ui.form .inline.field>.selection.dropdown,.ui.form .inline.fields .field>.selection.dropdown{width:auto}
@@ -2690,9 +2690,9 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.form .field .prompt.label{white-space:normal;background:#fff!important;border:1px solid #e0b4b4!important;color:#9f3a38!important}
 .ui.form .inline.field .prompt,.ui.form .inline.fields .field .prompt{vertical-align:top;margin:-.25em 0 -.5em .5em}
 .ui.form .inline.field .prompt:before,.ui.form .inline.fields .field .prompt:before{border-width:0 0 1px 1px;bottom:auto;right:auto;top:50%;left:0}
-.ui.form .field.field input:-webkit-autofill{box-shadow:0 0 0 100px ivory inset!important;border-color:#e5dfa1!important}
-.ui.form .field.field input:-webkit-autofill:focus{box-shadow:0 0 0 100px ivory inset!important;border-color:#d5c315!important}
-.ui.form .error.error input:-webkit-autofill{box-shadow:0 0 0 100px #fffaf0 inset!important;border-color:#e0b4b4!important}
+.ui.form .field.field input:-webkit-autofill{box-shadow:inset 0 0 0 100px ivory!important;border-color:#e5dfa1!important}
+.ui.form .field.field input:-webkit-autofill:focus{box-shadow:inset 0 0 0 100px ivory!important;border-color:#d5c315!important}
+.ui.form .error.error input:-webkit-autofill{box-shadow:inset 0 0 0 100px #fffaf0!important;border-color:#e0b4b4!important}
 .ui.form ::-webkit-input-placeholder{color:hsla(0,0%,55%,.87)}
 .ui.form ::-ms-input-placeholder{color:hsla(0,0%,55%,.87)}
 .ui.form ::-moz-placeholder{color:hsla(0,0%,55%,.87)}
@@ -2705,7 +2705,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.form .error :focus::-webkit-input-placeholder{color:#da9796}
 .ui.form .error :focus::-ms-input-placeholder{color:#da9796}
 .ui.form .error :focus::-moz-placeholder{color:#da9796}
-.ui.form input:not([type]):focus,.ui.form input[type=date]:focus,.ui.form input[type=datetime-local]:focus,.ui.form input[type=email]:focus,.ui.form input[type=number]:focus,.ui.form input[type=password]:focus,.ui.form input[type=search]:focus,.ui.form input[type=tel]:focus,.ui.form input[type=text]:focus,.ui.form input[type=time]:focus,.ui.form input[type=url]:focus,.ui.form textarea:focus{color:rgba(0,0,0,.95);border-color:#85b7d9;border-radius:.28571429rem;background:#fff;box-shadow:0 0 0 0 rgba(34,36,38,.35) inset}
+.ui.form input:not([type]):focus,.ui.form input[type=date]:focus,.ui.form input[type=datetime-local]:focus,.ui.form input[type=email]:focus,.ui.form input[type=number]:focus,.ui.form input[type=password]:focus,.ui.form input[type=search]:focus,.ui.form input[type=tel]:focus,.ui.form input[type=text]:focus,.ui.form input[type=time]:focus,.ui.form input[type=url]:focus,.ui.form textarea:focus{color:rgba(0,0,0,.95);border-color:#85b7d9;border-radius:.28571429rem;background:#fff;box-shadow:inset 0 0 0 0 rgba(34,36,38,.35)}
 .ui.form textarea:focus{-webkit-appearance:none}
 .ui.form.success .success.message:not(:empty){display:block}
 .ui.form.success .icon.success.message:not(:empty){display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex}
@@ -3425,7 +3425,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 * http://opensource.org/licenses/MIT
 *
 */
-.ui.message{position:relative;min-height:1em;margin:1em 0;background:#f8f8f9;padding:1em 1.5em;line-height:1.4285em;color:rgba(0,0,0,.87);-webkit-transition:opacity .1s ease,color .1s ease,background .1s ease,box-shadow .1s ease;transition:opacity .1s ease,color .1s ease,background .1s ease,box-shadow .1s ease;border-radius:.28571429rem;box-shadow:0 0 0 1px rgba(34,36,38,.22) inset,0 0 0 0 transparent}
+.ui.message{position:relative;min-height:1em;margin:1em 0;background:#f8f8f9;padding:1em 1.5em;line-height:1.4285em;color:rgba(0,0,0,.87);-webkit-transition:opacity .1s ease,color .1s ease,background .1s ease,box-shadow .1s ease;transition:opacity .1s ease,color .1s ease,background .1s ease,box-shadow .1s ease;border-radius:.28571429rem;box-shadow:inset 0 0 0 1px rgba(34,36,38,.22),0 0 0 0 transparent}
 .ui.message:first-child{margin-top:0}
 .ui.message:last-child{margin-bottom:0}
 .ui.message .header{display:block;font-family:Lato,Helvetica Neue,Arial,Helvetica,sans-serif;font-weight:700;margin:-.14285em 0 0}
@@ -3450,9 +3450,9 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.icon.visible.visible.visible.visible.message{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex}
 .ui.hidden.hidden.hidden.hidden.message{display:none}
 .ui.compact.message{display:inline-block}
-.ui.attached.message{margin-bottom:-1px;border-radius:.28571429rem .28571429rem 0 0;box-shadow:0 0 0 1px rgba(34,36,38,.15) inset;margin-left:-1px;margin-right:-1px}
+.ui.attached.message{margin-bottom:-1px;border-radius:.28571429rem .28571429rem 0 0;box-shadow:inset 0 0 0 1px rgba(34,36,38,.15);margin-left:-1px;margin-right:-1px}
 .ui.attached+.ui.attached.message:not(.top):not(.bottom){margin-top:-1px;border-radius:0}
-.ui.bottom.attached.message{margin-top:-1px;border-radius:0 0 .28571429rem .28571429rem;box-shadow:0 0 0 1px rgba(34,36,38,.15) inset,0 1px 2px 0 rgba(34,36,38,.15)}
+.ui.bottom.attached.message{margin-top:-1px;border-radius:0 0 .28571429rem .28571429rem;box-shadow:inset 0 0 0 1px rgba(34,36,38,.15),0 1px 2px 0 rgba(34,36,38,.15)}
 .ui.bottom.attached.message:not(:last-child){margin-bottom:1em}
 .ui.attached.icon.message{width:auto}
 .ui.icon.message{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;width:100%;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center}
@@ -3460,25 +3460,25 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.icon.message>.content{display:block;-webkit-box-flex:1;-webkit-flex:1 1 auto;-ms-flex:1 1 auto;flex:1 1 auto;vertical-align:middle}
 .ui.icon.message .icon:not(.close)+.content{padding-left:0}
 .ui.icon.message .circular.icon{width:1em}
-.ui.floating.message{box-shadow:0 0 0 1px rgba(34,36,38,.22) inset,0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08)}
+.ui.floating.message{box-shadow:inset 0 0 0 1px rgba(34,36,38,.22),0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08)}
 .ui.black.message{background-color:#1b1c1d;color:hsla(0,0%,100%,.9)}
 .ui.positive.message{background-color:#fcfff5;color:#2c662d}
-.ui.attached.positive.message,.ui.positive.message{box-shadow:0 0 0 1px #a3c293 inset,0 0 0 0 transparent}
+.ui.attached.positive.message,.ui.positive.message{box-shadow:inset 0 0 0 1px #a3c293,0 0 0 0 transparent}
 .ui.positive.message .header{color:#1a531b}
 .ui.negative.message{background-color:#fff6f6;color:#9f3a38}
-.ui.attached.negative.message,.ui.negative.message{box-shadow:0 0 0 1px #e0b4b4 inset,0 0 0 0 transparent}
+.ui.attached.negative.message,.ui.negative.message{box-shadow:inset 0 0 0 1px #e0b4b4,0 0 0 0 transparent}
 .ui.negative.message .header{color:#912d2b}
 .ui.info.message{background-color:#f8ffff;color:#276f86}
-.ui.attached.info.message,.ui.info.message{box-shadow:0 0 0 1px #a9d5de inset,0 0 0 0 transparent}
+.ui.attached.info.message,.ui.info.message{box-shadow:inset 0 0 0 1px #a9d5de,0 0 0 0 transparent}
 .ui.info.message .header{color:#0e566c}
 .ui.warning.message{background-color:#fffaf3;color:#573a08}
-.ui.attached.warning.message,.ui.warning.message{box-shadow:0 0 0 1px #c9ba9b inset,0 0 0 0 transparent}
+.ui.attached.warning.message,.ui.warning.message{box-shadow:inset 0 0 0 1px #c9ba9b,0 0 0 0 transparent}
 .ui.warning.message .header{color:#794b02}
 .ui.error.message{background-color:#fff6f6;color:#9f3a38}
-.ui.attached.error.message,.ui.error.message{box-shadow:0 0 0 1px #e0b4b4 inset,0 0 0 0 transparent}
+.ui.attached.error.message,.ui.error.message{box-shadow:inset 0 0 0 1px #e0b4b4,0 0 0 0 transparent}
 .ui.error.message .header{color:#912d2b}
 .ui.success.message{background-color:#fcfff5;color:#2c662d}
-.ui.attached.success.message,.ui.success.message{box-shadow:0 0 0 1px #a3c293 inset,0 0 0 0 transparent}
+.ui.attached.success.message,.ui.success.message{box-shadow:inset 0 0 0 1px #a3c293,0 0 0 0 transparent}
 .ui.success.message .header{color:#1a531b}
 .ui.black.message,.ui.inverted.message{background-color:#1b1c1d;color:hsla(0,0%,100%,.9)}
 .ui.red.message{background-color:#ffe8e6;color:#db2828}
@@ -3547,7 +3547,7 @@ ol.ui.list li[value]:before{content:attr(value)}
   .ui.table:not(.unstackable) tbody,.ui.table:not(.unstackable) tr,.ui.table:not(.unstackable) tr>td,.ui.table:not(.unstackable) tr>th{width:auto!important;display:block!important}
   .ui.table:not(.unstackable){padding:0}
   .ui.table:not(.unstackable) tfoot,.ui.table:not(.unstackable) thead{display:block}
-  .ui.table:not(.unstackable) tr{padding-top:1em;padding-bottom:1em;box-shadow:0 -1px 0 0 rgba(0,0,0,.1) inset!important}
+  .ui.table:not(.unstackable) tr{padding-top:1em;padding-bottom:1em;box-shadow:inset 0 -1px 0 0 rgba(0,0,0,.1)!important}
   .ui.table:not(.unstackable) tr>td,.ui.table:not(.unstackable) tr>th{background:none;border:none!important;padding:.25em .75em!important;box-shadow:none!important}
   .ui.table:not(.unstackable) td:first-child,.ui.table:not(.unstackable) th:first-child{font-weight:700}
   .ui.definition.table:not(.unstackable) thead th:first-child{box-shadow:none!important}
@@ -3564,17 +3564,17 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.celled.definition.table tfoot:not(.full-width) th:first-child{box-shadow:0 1px 0 1px #fff}
 .ui.definition.table tr td:first-child{background:rgba(0,0,0,.03);font-weight:700;color:rgba(0,0,0,.95)}
 .ui.definition.table td:nth-child(2),.ui.definition.table tfoot:not(.full-width) th:nth-child(2),.ui.definition.table thead:not(.full-width) th:nth-child(2){border-left:1px solid rgba(34,36,38,.15)}
-.ui.table td.positive,.ui.table tr.positive{box-shadow:0 0 0 #a3c293 inset;background:#fcfff5!important;color:#2c662d!important}
-.ui.table td.negative,.ui.table tr.negative{box-shadow:0 0 0 #e0b4b4 inset;background:#fff6f6!important;color:#9f3a38!important}
-.ui.table td.error,.ui.table tr.error{box-shadow:0 0 0 #e0b4b4 inset;background:#fff6f6!important;color:#9f3a38!important}
-.ui.table td.warning,.ui.table tr.warning{box-shadow:0 0 0 #c9ba9b inset;background:#fffaf3!important;color:#573a08!important}
-.ui.table td.active,.ui.table tr.active{box-shadow:0 0 0 rgba(0,0,0,.87) inset;background:#e0e0e0!important;color:rgba(0,0,0,.87)!important}
+.ui.table td.positive,.ui.table tr.positive{box-shadow:inset 0 0 0 #a3c293;background:#fcfff5!important;color:#2c662d!important}
+.ui.table td.negative,.ui.table tr.negative{box-shadow:inset 0 0 0 #e0b4b4;background:#fff6f6!important;color:#9f3a38!important}
+.ui.table td.error,.ui.table tr.error{box-shadow:inset 0 0 0 #e0b4b4;background:#fff6f6!important;color:#9f3a38!important}
+.ui.table td.warning,.ui.table tr.warning{box-shadow:inset 0 0 0 #c9ba9b;background:#fffaf3!important;color:#573a08!important}
+.ui.table td.active,.ui.table tr.active{box-shadow:inset 0 0 0 rgba(0,0,0,.87);background:#e0e0e0!important;color:rgba(0,0,0,.87)!important}
 .ui.table tr.disabled:hover,.ui.table tr.disabled td,.ui.table tr:hover td.disabled,.ui.table tr td.disabled{pointer-events:none;color:rgba(40,40,40,.3)}
 @media only screen and (max-width:991px){
   .ui[class*="tablet stackable"].table,.ui[class*="tablet stackable"].table tbody,.ui[class*="tablet stackable"].table tr,.ui[class*="tablet stackable"].table tr>td,.ui[class*="tablet stackable"].table tr>th{width:100%!important;display:block!important}
   .ui[class*="tablet stackable"].table{padding:0}
   .ui[class*="tablet stackable"].table tfoot,.ui[class*="tablet stackable"].table thead{display:block}
-  .ui[class*="tablet stackable"].table tr{padding-top:1em;padding-bottom:1em;box-shadow:0 -1px 0 0 rgba(0,0,0,.1) inset!important}
+  .ui[class*="tablet stackable"].table tr{padding-top:1em;padding-bottom:1em;box-shadow:inset 0 -1px 0 0 rgba(0,0,0,.1)!important}
   .ui[class*="tablet stackable"].table tr>td,.ui[class*="tablet stackable"].table tr>th{background:none;border:none!important;padding:.25em .75em;box-shadow:none!important}
   .ui.definition[class*="tablet stackable"].table thead th:first-child{box-shadow:none!important}
 }
@@ -4260,7 +4260,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.slider.checkbox input{width:3.5rem;height:1.25rem}
 .ui.slider.checkbox .box,.ui.slider.checkbox label{padding-left:4.5rem;line-height:1rem;color:rgba(0,0,0,.4)}
 .ui.slider.checkbox .box:before,.ui.slider.checkbox label:before{display:block;position:absolute;content:'';border:none!important;left:0;z-index:1;top:.4rem;background-color:rgba(0,0,0,.05);width:3.5rem;height:.21428571rem;-webkit-transform:none;transform:none;border-radius:500rem;-webkit-transition:background .3s ease;transition:background .3s ease}
-.ui.slider.checkbox .box:after,.ui.slider.checkbox label:after{background:#fff -webkit-linear-gradient(transparent,rgba(0,0,0,.05));background:#fff linear-gradient(transparent,rgba(0,0,0,.05));position:absolute;content:''!important;opacity:1;z-index:2;border:none;box-shadow:0 1px 2px 0 rgba(34,36,38,.15),0 0 0 1px rgba(34,36,38,.15) inset;width:1.5rem;height:1.5rem;top:-.25rem;left:0;-webkit-transform:none;transform:none;border-radius:500rem;-webkit-transition:left .3s ease;transition:left .3s ease}
+.ui.slider.checkbox .box:after,.ui.slider.checkbox label:after{background:#fff -webkit-linear-gradient(transparent,rgba(0,0,0,.05));background:#fff linear-gradient(transparent,rgba(0,0,0,.05));position:absolute;content:''!important;opacity:1;z-index:2;border:none;box-shadow:0 1px 2px 0 rgba(34,36,38,.15),inset 0 0 0 1px rgba(34,36,38,.15);width:1.5rem;height:1.5rem;top:-.25rem;left:0;-webkit-transform:none;transform:none;border-radius:500rem;-webkit-transition:left .3s ease;transition:left .3s ease}
 .ui.slider.checkbox input:focus~.box:before,.ui.slider.checkbox input:focus~label:before{background-color:rgba(0,0,0,.15);border:none}
 .ui.slider.checkbox .box:hover,.ui.slider.checkbox label:hover{color:rgba(0,0,0,.8)}
 .ui.slider.checkbox .box:hover:before,.ui.slider.checkbox label:hover:before{background:rgba(0,0,0,.15)}
@@ -4274,7 +4274,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.toggle.checkbox .box,.ui.toggle.checkbox label{min-height:1.5rem;padding-left:4.5rem;color:rgba(0,0,0,.87)}
 .ui.toggle.checkbox label{padding-top:.15em}
 .ui.toggle.checkbox .box:before,.ui.toggle.checkbox label:before{display:block;position:absolute;content:'';z-index:1;-webkit-transform:none;transform:none;border:none;top:0;background:rgba(0,0,0,.05);width:3.5rem;height:1.5rem;border-radius:500rem}
-.ui.toggle.checkbox .box:after,.ui.toggle.checkbox label:after{background:#fff -webkit-linear-gradient(transparent,rgba(0,0,0,.05));background:#fff linear-gradient(transparent,rgba(0,0,0,.05));position:absolute;content:''!important;opacity:1;z-index:2;border:none;box-shadow:0 1px 2px 0 rgba(34,36,38,.15),0 0 0 1px rgba(34,36,38,.15) inset;width:1.5rem;height:1.5rem;top:0;left:0;border-radius:500rem;-webkit-transition:background .3s ease,left .3s ease;transition:background .3s ease,left .3s ease}
+.ui.toggle.checkbox .box:after,.ui.toggle.checkbox label:after{background:#fff -webkit-linear-gradient(transparent,rgba(0,0,0,.05));background:#fff linear-gradient(transparent,rgba(0,0,0,.05));position:absolute;content:''!important;opacity:1;z-index:2;border:none;box-shadow:0 1px 2px 0 rgba(34,36,38,.15),inset 0 0 0 1px rgba(34,36,38,.15);width:1.5rem;height:1.5rem;top:0;left:0;border-radius:500rem;-webkit-transition:background .3s ease,left .3s ease;transition:background .3s ease,left .3s ease}
 .ui.toggle.checkbox input~.box:after,.ui.toggle.checkbox input~label:after{left:-.05rem}
 .ui.toggle.checkbox .box:hover:before,.ui.toggle.checkbox input:focus~.box:before,.ui.toggle.checkbox input:focus~label:before,.ui.toggle.checkbox label:hover:before{background-color:rgba(0,0,0,.15);border:none}
 .ui.toggle.checkbox input:checked~.box,.ui.toggle.checkbox input:checked~label{color:rgba(0,0,0,.95)!important}
@@ -4417,7 +4417,7 @@ select.ui.dropdown{height:38px;padding:.5em;border:1px solid rgba(34,36,38,.15);
 .ui.multiple.dropdown{padding:.22620476em 2.6em .22620476em .28571429em}
 .ui.multiple.dropdown .menu{cursor:auto}
 .ui.multiple.search.dropdown,.ui.multiple.search.dropdown>input.search{cursor:text}
-.ui.multiple.dropdown>.label{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;display:inline-block;vertical-align:top;white-space:normal;font-size:1em;padding:.35714286em .71428571em;margin:.21428571em .28571429rem .21428571em 0;box-shadow:0 0 0 1px rgba(34,36,38,.15) inset}
+.ui.multiple.dropdown>.label{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;display:inline-block;vertical-align:top;white-space:normal;font-size:1em;padding:.35714286em .71428571em;margin:.21428571em .28571429rem .21428571em 0;box-shadow:inset 0 0 0 1px rgba(34,36,38,.15)}
 .ui.multiple.dropdown .dropdown.icon{margin:0 -.71428571em 0 0;padding:.5em}
 .ui.multiple.dropdown>.text{position:static;padding:0;max-width:100%;margin:.45240952em 0 .45240952em .71428571em;line-height:1.2142em}
 .ui.multiple.dropdown>.label~.text{display:none}
@@ -4903,7 +4903,7 @@ a.ui.nag{cursor:pointer}
 *
 */
 .ui.search{position:relative}
-.ui.search>.prompt{margin:0;outline:none;-webkit-appearance:none;-webkit-tap-highlight-color:rgba(255,255,255,0);text-shadow:none;font-style:normal;font-weight:400;line-height:1.2142em;padding:.67861429em 1em;font-size:1em;background:#fff;border:1px solid rgba(34,36,38,.15);color:rgba(0,0,0,.87);box-shadow:0 0 0 0 transparent inset;-webkit-transition:background-color .1s ease,color .1s ease,box-shadow .1s ease,border-color .1s ease;transition:background-color .1s ease,color .1s ease,box-shadow .1s ease,border-color .1s ease}
+.ui.search>.prompt{margin:0;outline:none;-webkit-appearance:none;-webkit-tap-highlight-color:rgba(255,255,255,0);text-shadow:none;font-style:normal;font-weight:400;line-height:1.2142em;padding:.67861429em 1em;font-size:1em;background:#fff;border:1px solid rgba(34,36,38,.15);color:rgba(0,0,0,.87);box-shadow:inset 0 0 0 0 transparent;-webkit-transition:background-color .1s ease,color .1s ease,box-shadow .1s ease,border-color .1s ease;transition:background-color .1s ease,color .1s ease,box-shadow .1s ease,border-color .1s ease}
 .ui.search .prompt{border-radius:500rem}
 .ui.search .prompt~.search.icon{cursor:pointer}
 .ui.search>.results{display:none;position:absolute;top:100%;left:0;-webkit-transform-origin:center top;transform-origin:center top;background:#fff;margin-top:.5em;width:18em;border-radius:.28571429rem;box-shadow:0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);border:1px solid #d4d4d5;z-index:15}
