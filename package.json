@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "pretest": "eslint src",
-    "prepublish": "de dist && cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
+    "prepublish": "del-cli dist && cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
     "report": "nyc report --reporter=html",
     "test": "nyc ava src/__tests__/*.js"
   },
@@ -62,7 +62,7 @@
     "cross-env": "^1.0.7",
     "css-frameworks": "git+https://git@github.com/ben-eb/css-frameworks.git",
     "css-minifier-tests": "git+https://git@github.com/ben-eb/css-minifier-tests.git",
-    "del-cli": "^0.1.2",
+    "del-cli": "^0.2.0",
     "eslint": "^1.10.3",
     "eslint-config-cssnano": "^1.0.0",
     "hook-std": "^0.2.0",
