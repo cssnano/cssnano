@@ -1,3 +1,7 @@
+# 3.0.6
+
+* Now compiled with Babel 6.
+
 # 3.0.5
 
 * Fixes an issue where base64 encoded OpenType font urls were being erroneously
