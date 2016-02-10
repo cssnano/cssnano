@@ -1,3 +1,8 @@
+# 3.5.1
+
+* Improves checking for `background-position` values in the `background`
+  shorthand property.
+
 # 3.5.0
 
 * Adds a new optimisation path which can minimise keyword values for
