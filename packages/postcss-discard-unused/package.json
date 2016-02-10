@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "prepublish": "de dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
+    "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
     "pretest": "eslint src",
     "test": "ava src/__tests__"
   },
