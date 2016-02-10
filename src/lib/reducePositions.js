@@ -43,14 +43,23 @@ function transform (decl) {
             start: null,
             end: null
         });
+        let abort = false;
         arg.forEach((part, index) => {
+            if (abort) {
+                return;
+            }
             let isPosition = ~directions.indexOf(part.value) || unit(part.value);
             if (relevant[relevant.length - 1].start === null && isPosition) {
                 relevant[relevant.length - 1].start = index;
+                relevant[relevant.length - 1].end = index;
                 return;
             }
-            if (relevant[relevant.length - 1].start !== null && (part.type === 'space' || isPosition)) {
+            if (relevant[relevant.length - 1].start !== null && part.type === 'space') {
+                return;
+            }
+            if (relevant[relevant.length - 1].start !== null && isPosition) {
                 relevant[relevant.length - 1].end = index;
+                abort = true;
                 return;
             }
         });
@@ -59,7 +68,7 @@ function transform (decl) {
         if (range.start === null) {
             return;
         }
-        const position = args[index].slice(range.start, (range.end || args[index].length) + 1);
+        const position = args[index].slice(range.start, range.end + 1);
         if (position.length > 3) {
             return;
         }

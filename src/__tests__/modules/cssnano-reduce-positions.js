@@ -17,24 +17,30 @@ const hkeys = Object.keys(horizontal);
 const vkeys = Object.keys(vertical);
 
 const decls = [{
+    property: 'background:',
+    additional: 'url(http://example.com/testing/test.png) no-repeat ',
+    tail: ' #fff'
+}, {
     property: 'background-position:',
-    additional: ''
+    additional: '',
+    tail: ''
 }, {
     property: 'background:',
-    additional: '#000 url(cat.jpg) '
+    additional: '#000 url(cat.jpg) ',
+    tail: ''
 }];
 
-decls.forEach(({additional, property}) => {
+decls.forEach(({additional, property, tail}) => {
     const push = ({message, fixture, expected}) => {
         tests.push({
             message: message,
-            fixture: `${property}${additional}` + fixture,
-            expected: `${property}${additional}` + expected
+            fixture: `${property}${additional}` + fixture + tail,
+            expected: `${property}${additional}` + expected + tail
         });
         tests.push({
             message: message + ' (with multiple arguments)',
-            fixture: `${property}${additional}` + fixture + ', ' + fixture,
-            expected: `${property}${additional}` + expected + ',' + expected
+            fixture: `${property}${additional}${fixture}${tail}, ${fixture}${tail}`,
+            expected: `${property}${additional}${expected}${tail},${expected}${tail}`
         });
     };
     if (property === 'background:') {
