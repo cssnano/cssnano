@@ -1,3 +1,7 @@
+# 2.0.4
+
+* Now compiled with babel 6.
+
 # 2.0.3
 
 * Fixed an issue where `[a="-"]` was incorrectly minified to `[a=-]`.
