@@ -1,3 +1,7 @@
+# 2.1.0
+
+* Adds support for re-ordering `box-shadow` declarations.
+
 # 2.0.2
 
 * Bump postcss-value-parser to `3.0.1` (thanks to @TrySound).
