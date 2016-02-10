@@ -33,7 +33,7 @@
     "babel-preset-es2015": "^6.3.13",
     "babel-preset-es2015-loose": "^7.0.0",
     "babel-preset-stage-0": "^6.3.13",
-    "del-cli": "^0.1.2",
+    "del-cli": "^0.2.0",
     "eslint": "^1.10.3",
     "eslint-config-cssnano": "^1.0.0"
   },
