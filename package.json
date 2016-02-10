@@ -29,7 +29,7 @@
     "postcss-calc": "^5.2.0",
     "postcss-colormin": "^2.1.8",
     "postcss-convert-values": "^2.3.4",
-    "postcss-discard-comments": "^2.0.3",
+    "postcss-discard-comments": "^2.0.4",
     "postcss-discard-duplicates": "^2.0.1",
     "postcss-discard-empty": "^2.0.1",
     "postcss-discard-unused": "^2.2.0",
