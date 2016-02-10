@@ -1,4 +1,4 @@
-export default function encode (num) {
+export default function encode (val, num) {
     let base = 52;
     let characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let character = num % base;

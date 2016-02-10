@@ -6,7 +6,7 @@ function isNum (node) {
     return unit(node.value);
 }
 
-function transformAtRule (css, atRuleRegex, propRegex) {
+function transformAtRule (css, atRuleRegex, propRegex, encoder) {
     const cache = {};
     const ruleCache = [];
     const declCache = [];
@@ -15,7 +15,7 @@ function transformAtRule (css, atRuleRegex, propRegex) {
         if (node.type === 'atrule' && atRuleRegex.test(node.name)) {
             if (!cache[node.params]) {
                 cache[node.params] = {
-                    ident: encode(Object.keys(cache).length),
+                    ident: encoder(node.params, Object.keys(cache).length),
                     count: 0
                 };
             }
@@ -49,7 +49,7 @@ function transformAtRule (css, atRuleRegex, propRegex) {
     });
 }
 
-function transformDecl (css, propOneRegex, propTwoRegex) {
+function transformDecl (css, propOneRegex, propTwoRegex, encoder) {
     const cache = {};
     const declOneCache = [];
     const declTwoCache = [];
@@ -59,7 +59,7 @@ function transformDecl (css, propOneRegex, propTwoRegex) {
                 if (node.type === 'word' && !isNum(node)) {
                     if (!cache[node.value]) {
                         cache[node.value] = {
-                            ident: encode(Object.keys(cache).length),
+                            ident: encoder(node.value, Object.keys(cache).length),
                             count: 0
                         };
                     }
@@ -108,15 +108,16 @@ function transformDecl (css, propOneRegex, propTwoRegex) {
 }
 
 export default postcss.plugin('postcss-reduce-idents', (opts = {}) => {
+    const encoder = opts.encoder || encode;
     return css => {
         if (opts.counter !== false) {
-            transformDecl(css, /counter-(reset|increment)/, /content/);
+            transformDecl(css, /counter-(reset|increment)/, /content/, encoder);
         }
         if (opts.keyframes !== false) {
-            transformAtRule(css, /keyframes/, /animation/);
+            transformAtRule(css, /keyframes/, /animation/, encoder);
         }
         if (opts.counterStyle !== false) {
-            transformAtRule(css, /counter-style/, /(list-style|system)/);
+            transformAtRule(css, /counter-style/, /(list-style|system)/, encoder);
         }
     };
 });

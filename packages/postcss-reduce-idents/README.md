@@ -108,6 +108,17 @@ Default: `true`
 Pass `false` to disable reducing `counter-style` rules and `list-style` and `system` declarations.
 
 
+##### encoder
+
+Type: `function`  
+Default: [`lib/encode.js`](https://github.com/ben-eb/postcss-reduce-idents/blob/master/src/lib/encode.js)
+
+Pass a custom function to encode the identifier with (e.g.: as a way of prefixing them automatically).
+
+It receives two parameters:
+  - A `String` with the node value.
+  - A `Number` identifying the index of the occurrence.
+
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests

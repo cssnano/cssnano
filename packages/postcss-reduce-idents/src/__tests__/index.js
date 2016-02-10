@@ -113,6 +113,19 @@ const tests = [{
         'body{counter-reset:section}h3:before{counter-increment:section;content:"Section" counter(section) ": "}'
     ].join(''),
     options: {counter: false}
+}, {
+    message: '',
+    fixture: [
+        '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation: 100ms whiteToBlack}',
+        '@counter-style custom{system:extends decimal;suffix:"> "}ol{list-style:custom}',
+        'body{counter-reset:section}h3:before{counter-increment:section;content:"Section" counter(section) ": "}'
+    ].join(''),
+    expected: [
+        '@keyframes PREFIXwhiteToBlack{0%{color:#fff}to{color:#000}}.one{animation: 100ms PREFIXwhiteToBlack}',
+        '@counter-style PREFIXcustom{system:extends decimal;suffix:"> "}ol{list-style:PREFIXcustom}',
+        'body{counter-reset:PREFIXsection}h3:before{counter-increment:PREFIXsection;content:"Section" counter(PREFIXsection) ": "}'
+    ].join(''),
+    options: {encoder: val => `PREFIX${val}`}
 }];
 
 tests.forEach(test => {
@@ -130,7 +143,7 @@ ava('encoder', t => {
     let cache = [];
 
     arr.map(num => {
-        let encoded = encode(num);
+        let encoded = encode(null, num);
         cache.push(encoded);
         let indexes = cache.filter(c => c === encoded);
         t.same(indexes.length, 1, encoded + ' should be returned only once');
