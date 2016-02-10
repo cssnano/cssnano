@@ -1,3 +1,10 @@
+# 3.5.0
+
+* Adds a new optimisation path which can minimise keyword values for
+  `background-position` and the `background` shorthand.
+* Tweaks to performance in the `core` module, now performs less AST passes.
+* Now compiled with Babel 6.
+
 # 3.4.0
 
 * Adds a new optimisation path which can minimise gradient parameters
