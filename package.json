@@ -42,7 +42,7 @@
     "postcss-minify-params": "^1.0.4",
     "postcss-minify-selectors": "^2.0.3",
     "postcss-normalize-charset": "^1.1.0",
-    "postcss-normalize-url": "^3.0.5",
+    "postcss-normalize-url": "^3.0.6",
     "postcss-ordered-values": "^2.0.2",
     "postcss-reduce-idents": "^2.2.2",
     "postcss-reduce-transforms": "^1.0.3",
