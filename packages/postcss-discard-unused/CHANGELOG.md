@@ -1,3 +1,7 @@
+# 2.2.1
+
+* Now compiled with Babel 6.
+
 # 2.2.0
 
 * Added a new option to remove `@namespace` rules (thanks to @plesiecki).
