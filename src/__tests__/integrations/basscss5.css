@@ -291,11 +291,11 @@ input[type=range]{vertical-align:middle;background-color:transparent}
 .button-transparent.is-disabled,.button-transparent:disabled{opacity:.5}
 .bg-cover{background-size:cover}
 .bg-contain{background-size:contain}
-.bg-center{background-position:center}
+.bg-center{background-position:50%}
 .bg-top{background-position:top}
-.bg-right{background-position:right}
+.bg-right{background-position:100%}
 .bg-bottom{background-position:bottom}
-.bg-left{background-position:left}
+.bg-left{background-position:0}
 .border{border:1px solid rgba(0,0,0,.125)}
 .border-top{border-top-style:solid;border-top-width:1px;border-top-color:rgba(0,0,0,.125)}
 .border-right{border-right-style:solid;border-right-width:1px;border-right-color:rgba(0,0,0,.125)}

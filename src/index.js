@@ -24,6 +24,7 @@ import postcssDiscardUnused from 'postcss-discard-unused';
 import postcssNormalizeUrl from 'postcss-normalize-url';
 import functionOptimiser from './lib/functionOptimiser';
 import filterOptimiser from './lib/filterOptimiser';
+import reducePositions from './lib/reducePositions';
 import core from './lib/core';
 import postcssMergeIdents from 'postcss-merge-idents';
 import postcssReduceIdents from 'postcss-reduce-idents';
@@ -57,6 +58,7 @@ let processors = {
     postcssNormalizeUrl: postcssNormalizeUrl,
     functionOptimiser: functionOptimiser,
     filterOptimiser: filterOptimiser,
+    reducePositions: reducePositions,
     core: core,
     // Optimisations after this are sensitive to previous optimisations in
     // the pipe, such as whitespace normalising/selector re-ordering
