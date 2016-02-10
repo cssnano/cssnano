@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "pretest": "eslint src",
-    "prepublish": "de dist && babel src --out-dir dist --ignore /__tests__/",
+    "prepublish": "del-cli dist && babel src --out-dir dist --ignore /__tests__/",
     "test": "ava src/__tests__"
   },
   "keywords": [
