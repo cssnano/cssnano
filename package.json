@@ -32,7 +32,7 @@
     "postcss-discard-comments": "^2.0.3",
     "postcss-discard-duplicates": "^2.0.1",
     "postcss-discard-empty": "^2.0.1",
-    "postcss-discard-unused": "^2.2.0",
+    "postcss-discard-unused": "^2.2.1",
     "postcss-filter-plugins": "^2.0.0",
     "postcss-merge-idents": "^2.1.5",
     "postcss-merge-longhand": "^2.0.1",
