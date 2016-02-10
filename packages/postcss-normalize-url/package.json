@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-url",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "Normalize URLs with PostCSS",
   "main": "index.js",
   "files": [
@@ -8,9 +8,9 @@
     "LICENSE-MIT"
   ],
   "scripts": {
-      "pretest": "eslint src",
-      "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
-      "test": "ava src/__tests__"
+    "pretest": "eslint src",
+    "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
+    "test": "ava src/__tests__"
   },
   "keywords": [
     "css",
