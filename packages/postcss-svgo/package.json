@@ -4,9 +4,9 @@
   "description": "Optimise inline SVG with PostCSS.",
   "main": "dist/index.js",
   "scripts": {
-    "lint": "eslint src",
-    "prepublish": "de dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
-    "test": "npm run lint && nyc --reporter=text ava src/__tests__"
+    "pretest": "eslint src",
+    "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
+    "test": "nyc --reporter=text ava src/__tests__"
   },
   "files": [
     "LICENSE-MIT",
