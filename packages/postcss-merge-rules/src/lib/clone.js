@@ -3,7 +3,7 @@
 'use strict';
 
 let clone = (obj, parent) => {
-    if (typeof obj !== 'object') {
+    if (typeof obj !== 'object' || obj === null) {
         return obj;
     }
     let cloned = new obj.constructor();
