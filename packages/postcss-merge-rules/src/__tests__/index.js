@@ -273,3 +273,11 @@ test('should not crash when node.raws.value is null', t => {
 
     t.same(res, 'h1{box-shadow:inset 0 -10px 12px 0 red, inset 0 0 5px 0 red}h1,h2{color:blue}');
 });
+
+test('should not crash when node.raws.value is null (2)', t => {
+    t.plan(1);
+    const css = '#foo .bar { margin-left: auto ; margin-right: auto ; } #foo .qux { margin-right: auto ; }';
+    const res = postcss([ comments(), plugin]).process(css).css;
+
+    t.same(res, '#foo .bar{ margin-left:auto; } #foo .bar,#foo .qux{ margin-right:auto; }');
+});

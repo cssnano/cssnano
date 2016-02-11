@@ -62,10 +62,10 @@ function partialMerge (first, second) {
             first = second; second = nextRule; intersection = nextIntersection;
         }
     }
-    let recievingBlock = second.cloneBefore({
-        selector: joinSelectors(first, second),
-        nodes: []
-    });
+    let recievingBlock = clone(second);
+    recievingBlock.selector = joinSelectors(first, second);
+    recievingBlock.nodes = [];
+    second.parent.insertBefore(second, recievingBlock);
     let difference = different(getDecls(first), getDecls(second));
     let firstClone = clone(first);
     let secondClone = clone(second);
