@@ -1,3 +1,7 @@
+# 2.0.4
+
+* Fixes a crash when cloning a `null` object property (thanks to @JMoxey).
+
 # 2.0.3
 
 * Fixed an issue where the module was incorrectly merging across `@font-face`
