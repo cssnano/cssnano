@@ -1,3 +1,8 @@
+# 2.0.5
+
+* Replaced PostCSS' `cloneBefore` with custom clone method to handle `null`
+  values properly.
+
 # 2.0.4
 
 * Fixes a crash when cloning a `null` object property (thanks to @JMoxey).
