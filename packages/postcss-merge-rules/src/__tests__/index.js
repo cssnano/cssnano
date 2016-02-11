@@ -4,6 +4,8 @@ import test from 'tape';
 import postcss from 'postcss';
 import plugin from '..';
 import {name} from '../../package.json';
+import vars from 'postcss-simple-vars';
+import comments from 'postcss-discard-comments';
 
 let tests = [{
     message: 'should merge based on declarations',
@@ -262,4 +264,12 @@ test('should use the postcss plugin api', t => {
     t.plan(2);
     t.ok(plugin().postcssVersion, 'should be able to access version');
     t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+});
+
+test('should not crash when node.raws.value is null', t => {
+    t.plan(1);
+    const css = '$color: red; h1{box-shadow:inset 0 -10px 12px 0 $color, /* some comment */ inset 0 0 5px 0 $color;color:blue}h2{color:blue}';
+    const res = postcss([ vars(), comments(), plugin]).process(css).css;
+
+    t.same(res, 'h1{box-shadow:inset 0 -10px 12px 0 red, inset 0 0 5px 0 red}h1,h2{color:blue}');
 });
