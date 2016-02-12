@@ -1,3 +1,7 @@
+# 2.1.2
+
+* Fixes an issue with processing some malformed URIs (thanks to @TrySound).
+
 # 2.1.1
 
 * Bump SVGO to 0.6.1 (thanks to @shinnn).
