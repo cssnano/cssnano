@@ -3,6 +3,8 @@ import postcss from 'postcss';
 import plugin from '../';
 import filters from 'pleeease-filters';
 import pkg from '../../package.json';
+import {encode, decode} from '../lib/url';
+import {readFileSync as file} from 'fs';
 
 let name = pkg.name;
 
@@ -66,6 +68,13 @@ tests.forEach(({message, fixture, expected, options = {}}) => {
         return postcss([ filters(), plugin(options) ]).process(fixture).then(result => {
             t.same(result.css, expected);
         });
+    });
+});
+
+ava('should not crash on malformed urls when encoded', t => {
+    const svg = encode(file('./border.svg', 'utf-8'));
+    t.doesNotThrow(() => {
+        decode(svg);
     });
 });
 
