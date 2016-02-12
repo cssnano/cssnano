@@ -18,7 +18,7 @@ const specs = directory(base).reduce((tests, cssFile) => {
 Object.keys(specs).forEach(name => {
     const spec = specs[name];
     ava(name, t => {
-        nano.process(spec.fixture).then(result => {
+        return nano.process(spec.fixture).then(result => {
             t.same(result.css, spec.expected, specName(name));
         });
     });
