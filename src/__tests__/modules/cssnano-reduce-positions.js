@@ -106,6 +106,11 @@ decls.forEach(({additional, property, tail}) => {
                 fixture: `${direction} ${other}`,
                 expected: `${result}`
             });
+            push({
+                message: `should not convert the three value syntax "${direction} ${other} 60px"`,
+                fixture: `${direction} ${other} 60px`,
+                expected: `${direction} ${other} 60px`
+            });
             if (property === 'background:') {
                 push({
                     message: `should convert "${direction} ${other}"/50% 50% to "${result}/50% 50%"`,

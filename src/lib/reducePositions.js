@@ -43,23 +43,21 @@ function transform (decl) {
             start: null,
             end: null
         });
-        let abort = false;
         arg.forEach((part, index) => {
-            if (abort) {
+            const isPosition = ~directions.indexOf(part.value) || unit(part.value);
+            const len = relevant.length - 1;
+            if (relevant[len].start === null && isPosition) {
+                relevant[len].start = index;
+                relevant[len].end = index;
                 return;
             }
-            let isPosition = ~directions.indexOf(part.value) || unit(part.value);
-            if (relevant[relevant.length - 1].start === null && isPosition) {
-                relevant[relevant.length - 1].start = index;
-                relevant[relevant.length - 1].end = index;
-                return;
-            }
-            if (relevant[relevant.length - 1].start !== null && part.type === 'space') {
-                return;
-            }
-            if (relevant[relevant.length - 1].start !== null && isPosition) {
-                relevant[relevant.length - 1].end = index;
-                abort = true;
+            if (relevant[len].start !== null) {
+                if (part.type === 'space') {
+                    return;
+                } else if (isPosition) {
+                    relevant[len].end = index;
+                    return;
+                }
                 return;
             }
         });
