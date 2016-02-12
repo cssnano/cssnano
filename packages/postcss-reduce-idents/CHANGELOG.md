@@ -1,3 +1,7 @@
+# 2.3.0
+
+* Adds support for a custom encoder function (thanks to @rauchg).
+
 # 2.2.2
 
 * Now compiled with babel 6.
