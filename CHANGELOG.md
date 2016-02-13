@@ -1,3 +1,8 @@
+# 3.5.2
+
+* Resolves an issue where the 3 or 4 value syntax for `background-position`
+  were being incorrectly converted.
+
 # 3.5.1
 
 * Improves checking for `background-position` values in the `background`
