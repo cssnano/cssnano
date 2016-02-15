@@ -2,17 +2,18 @@
   "name": "css-size",
   "version": "1.0.1",
   "description": "Display the size of a CSS file.",
-  "main": "index.js",
-  "scripts": {
-    "test": "ava test.js"
-  },
+  "main": "dist/index.js",
   "bin": {
-    "css-size": "cli.js"
+    "css-size": "dist/cli.js"
+  },
+  "scripts": {
+    "pretest": "eslint src",
+    "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
+    "test": "npm run prepublish && ava src/__tests__"
   },
   "files": [
-    "cli.js",
-    "index.js",
     "LICENSE-MIT",
+    "dist",
     "usage.txt"
   ],
   "keywords": [
@@ -24,7 +25,15 @@
   "license": "MIT",
   "devDependencies": {
     "ava": "^0.11.0",
-    "eslint": "^1.10.1"
+    "babel-cli": "^6.5.1",
+    "babel-core": "^6.5.2",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-preset-es2015": "^6.5.0",
+    "babel-preset-es2015-loose": "^7.0.0",
+    "babel-preset-stage-0": "^6.5.0",
+    "del-cli": "^0.2.0",
+    "eslint": "^2.0.0",
+    "eslint-config-cssnano": "^2.0.0"
   },
   "homepage": "https://github.com/ben-eb/css-size",
   "author": {
@@ -41,5 +50,11 @@
     "pretty-bytes": "^3.0.0",
     "read-file-stdin": "^0.2.0",
     "round-precision": "^1.0.0"
+  },
+  "eslintConfig": {
+    "extends": "cssnano"
+  },
+  "ava": {
+    "require": "babel-core/register"
   }
 }
