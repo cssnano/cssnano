@@ -32,7 +32,7 @@
     "babel-preset-stage-0": "^6.3.13",
     "del-cli": "^0.2.0",
     "eslint": "^2.0.0",
-    "eslint-config-cssnano": "^1.0.0"
+    "eslint-config-cssnano": "^2.0.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-discard-unused",
   "author": {
