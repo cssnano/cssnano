@@ -4,6 +4,10 @@ var plugin = require('../');
 var name = require('../package.json').name;
 
 var tests = [{
+    message: 'should not unquote font names with a leading number',
+    fixture: 'h1{font-family:"11880-icons"!important;}',
+    expected: 'h1{font-family:"11880-icons"!important;}'
+}, {
     message: 'should unquote font names',
     fixture: 'h1{font-family:"Helvetica Neue"}',
     expected: 'h1{font-family:Helvetica Neue}'

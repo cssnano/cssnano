@@ -43,7 +43,11 @@ module.exports = function (nodes, opts) {
 
     family = family.map(function (node) {
         if (node.type === 'string') {
-            if (!opts.removeQuotes || intersection(node.value, keywords)) {
+            if (
+                !opts.removeQuotes ||
+                intersection(node.value, keywords) ||
+                /[0-9]/.test(node.value.slice(0, 1))
+            ) {
                 return stringify(node);
             }
 
