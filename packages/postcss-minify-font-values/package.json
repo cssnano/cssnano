@@ -8,7 +8,8 @@
     "lib"
   ],
   "scripts": {
-    "test": "eslint index.js lib test && tape test/*.js | tap-spec"
+    "test": "tape test/*.js | tap-spec",
+    "posttest": "eslint index.js lib test"
   },
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "license": "MIT",
