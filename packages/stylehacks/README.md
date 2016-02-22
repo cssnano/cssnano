@@ -2,6 +2,7 @@
 
 > Detect/remove browser hacks from CSS files.
 
+
 ## Install
 
 With [npm](https://npmjs.org/package/stylehacks) do:
@@ -9,6 +10,7 @@ With [npm](https://npmjs.org/package/stylehacks) do:
 ```
 npm install stylehacks --save
 ```
+
 
 ## Example
 
@@ -32,11 +34,12 @@ h1 {
 }
 ```
 
+
 ## API
 
 ### `stylehacks.detect(node)`
 
-Type: `function`
+Type: `function`  
 Returns: `boolean`
 
 This method will take any PostCSS *node*, run applicable plugins depending on
@@ -55,7 +58,7 @@ h1 { _color: red }
 
 ##### browsers
 
-Type: `string|array`
+Type: `string|array`  
 Default: [browserslist defaults](https://github.com/ai/browserslist)
 
 Specify the browsers that you wish to support. The string will be passed
@@ -64,7 +67,7 @@ stylehacks will use it instead of parsing the browsers itself.
 
 ##### lint
 
-Type: `boolean`
+Type: `boolean`  
 Default: `false`
 
 If lint mode is enabled, stylehacks will not remove hacks from the CSS; instead,
@@ -73,7 +76,7 @@ you are expected to handle these messages yourself.
 
 ##### silent
 
-Type: `boolean`
+Type: `boolean`  
 Default: `false`
 
 Used in combination with the lint option; disables all logging. When using the
@@ -81,7 +84,7 @@ CLI, the process will exit with 0 or 1 as usual.
 
 ##### sourcemap
 
-Type: `boolean`
+Type: `boolean`  
 Default: `false`
 
 Generate a sourcemap with the transformed CSS.
@@ -100,6 +103,7 @@ stylehacks also ships with a CLI app. To see the available options, just run:
 $ stylehacks --help
 ```
 
+
 ## Related
 
 stylehacks works well with your existing PostCSS setup:
@@ -107,14 +111,17 @@ stylehacks works well with your existing PostCSS setup:
 * [stylelint] - Comprehensive & modern CSS linter, to ensure that your code
   style rules are respected.
 
+
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests
 to cover it.
 
+
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
+
 
 [ci]:        https://travis-ci.org/ben-eb/stylehacks
 [deps]:      https://gemnasium.com/ben-eb/stylehacks

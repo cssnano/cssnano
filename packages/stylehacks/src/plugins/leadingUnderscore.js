@@ -1,5 +1,3 @@
-'use strict';
-
 import plugin from '../plugin';
 
 let targets = ['ie 6'];

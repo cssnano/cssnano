@@ -1,5 +1,3 @@
-'use strict';
-
 import exists from '../exists';
 import plugin from '../plugin';
 import parser from 'postcss-selector-parser';

@@ -1,5 +1,3 @@
-'use strict';
-
 import plugin from '../plugin';
 
 let targets = ['ie 8', 'ie 7', 'ie 6'];

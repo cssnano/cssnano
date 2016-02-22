@@ -1,6 +1,4 @@
-'use strict';
-
-import tape from 'tape';
+import ava from 'ava';
 import stylehacks from '../';
 
 let tests = [{
@@ -89,16 +87,17 @@ let process = (css, options, callback) => {
 };
 
 tests.forEach(test => {
-    tape(test.message, t => {
-        t.plan(3);
-        process(test.fixture, {browsers: test.target}, css => {
-            t.equal(css, test.fixture, 'should preserve the hack');
-        });
-        process(test.fixture, {browsers: test.unaffected}, css => {
-            t.equal(css, test.resolution, 'should remove the hack');
-        });
-        process(test.fixture, {browsers: test.unaffected, lint: true, silent: true}, (css, warnings) => {
-            t.equal(warnings.length, test.warnings, 'should emit the correct amount of warnings');
-        });
+    ava(test.message, t => {
+        return Promise.all([
+            process(test.fixture, {browsers: test.target}, css => {
+                t.same(css, test.fixture, 'should preserve the hack');
+            }),
+            process(test.fixture, {browsers: test.unaffected}, css => {
+                t.same(css, test.resolution, 'should remove the hack');
+            }),
+            process(test.fixture, {browsers: test.unaffected, lint: true, silent: true}, (css, warnings) => {
+                t.same(warnings.length, test.warnings, 'should emit the correct amount of warnings');
+            })
+        ]);
     });
 });

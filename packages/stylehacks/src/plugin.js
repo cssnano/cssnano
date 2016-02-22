@@ -1,5 +1,3 @@
-'use strict';
-
 export default function plugin (targets, nodeTypes, detect) {
     class Plugin {
         constructor (css, result) {

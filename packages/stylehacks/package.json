@@ -4,17 +4,17 @@
   "description": "Detect/remove browser hacks from CSS files.",
   "main": "dist/index.js",
   "bin": {
-    "stylehacks": "bin/cmd.js"
+    "stylehacks": "dist/cli.js"
   },
   "files": [
-    "bin",
     "LICENSE-MIT",
-    "dist"
+    "dist",
+    "usage.txt"
   ],
   "scripts": {
-    "prepublish": "babel src --out-dir dist --ignore /__tests__/",
-    "test-unformatted": "babel-tape-runner \"src/**/__tests__/*.js\"",
-    "test": "npm run test-unformatted | tap-spec"
+    "pretest": "eslint src",
+    "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
+    "test": "npm run prepublish && ava src/__tests__"
   },
   "keywords": [
     "browsers",
@@ -28,10 +28,16 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel": "^5.8.23",
-    "babel-tape-runner": "^1.2.0",
-    "tap-spec": "^4.1.0",
-    "tape": "^4.2.0"
+    "ava": "^0.12.0",
+    "babel-cli": "^6.5.1",
+    "babel-core": "^6.5.2",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-preset-es2015": "^6.5.0",
+    "babel-preset-es2015-loose": "^7.0.0",
+    "babel-preset-stage-0": "^6.5.0",
+    "del-cli": "^0.2.0",
+    "eslint": "^2.2.0",
+    "eslint-config-cssnano": "^2.0.0"
   },
   "homepage": "https://github.com/ben-eb/stylehacks",
   "author": {
@@ -52,5 +58,11 @@
     "read-file-stdin": "^0.2.0",
     "text-table": "^0.2.0",
     "write-file-stdout": "0.0.2"
+  },
+  "eslintConfig": {
+    "extends": "cssnano"
+  },
+  "ava": {
+    "require": "babel-core/register"
   }
 }

@@ -1,5 +1,3 @@
-'use strict';
-
 import postcss from 'postcss';
 import reporter from 'postcss-reporter';
 import browserslist from 'browserslist';
