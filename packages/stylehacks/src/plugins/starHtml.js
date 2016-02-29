@@ -14,7 +14,10 @@ function analyse (ctx, rule) {
                 exists(selector, 3, ' ') &&
                 selector.at(4)
             ) {
-                ctx.push(rule, `Bad selector: ${selector}`);
+                ctx.push(rule, {
+                    identifier: 'selector',
+                    hack: selector.toString()
+                });
             }
         });
     };

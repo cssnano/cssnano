@@ -4,13 +4,16 @@ let targets = ['ie 7', 'ie 6', 'ie 5.5'];
 
 export default plugin(targets, ['rule'], function (rule) {
     if (rule.selector) {
-        const sel = rule.selector;
-        const trim = sel.trim();
+        const {selector} = rule;
+        const trim = selector.trim();
         if (
-            trim.lastIndexOf(',')  === sel.length - 1 ||
-            trim.lastIndexOf('\\') === sel.length - 1
+            trim.lastIndexOf(',')  === selector.length - 1 ||
+            trim.lastIndexOf('\\') === selector.length - 1
         ) {
-            this.push(rule, `Bad selector: ${sel}`);
+            this.push(rule, {
+                identifier: 'selector',
+                hack: selector
+            });
         }
     }
 });

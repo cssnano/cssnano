@@ -16,7 +16,10 @@ function analyse (ctx, rule) {
                 exists(selector, 5, ' ') &&
                 selector.at(6)
             ) {
-                ctx.push(rule, `Bad selector: ${selector}`);
+                ctx.push(rule, {
+                    identifier: 'selector',
+                    hack: selector.toString()
+                });
             }
         });
     };

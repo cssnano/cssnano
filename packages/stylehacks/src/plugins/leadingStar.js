@@ -11,7 +11,10 @@ export default plugin(targets, ['decl', 'atrule'], function (node) {
         let hacks = '!_$_&_*_)_=_%_+_,_._/_`_]_#_~_?_:_|'.split('_');
         let hasBefore = hacks.some(hack => {
             if (~before.indexOf(hack)) {
-                this.push(node, `Bad property: ${before.trim()}${node.prop}`);
+                this.push(node, {
+                    identifier: 'property',
+                    hack: `${before.trim()}${node.prop}`
+                });
                 return true;
             }
         });
@@ -20,7 +23,10 @@ export default plugin(targets, ['decl', 'atrule'], function (node) {
             // at the beginning of the value
             hacks.some(hack => {
                 if (!node.prop.indexOf(hack)) {
-                    this.push(node, `Bad property: ${node.prop}`);
+                    this.push(node, {
+                        identifier: 'property',
+                        hack: node.prop
+                    });
                     return true;
                 }
             });
@@ -31,7 +37,10 @@ export default plugin(targets, ['decl', 'atrule'], function (node) {
         let name = node.name;
         let len = name.length - 1;
         if (name.lastIndexOf(':') === len) {
-            this.push(node, `Bad property: @${name.substr(0, len)}`);
+            this.push(node, {
+                identifier: 'property',
+                hack: `@${name.substr(0, len)}`
+            });
         }
     }
 });

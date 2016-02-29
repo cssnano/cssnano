@@ -8,8 +8,10 @@ export default function plugin (targets, nodeTypes, detect) {
             this.nodeTypes = nodeTypes;
         }
 
-        push (node, message) {
-            node._stylehacks = message;
+        push (node, metadata) {
+            metadata.message = `Bad ${metadata.identifier}: ${metadata.hack}`;
+            metadata.browsers = this.targets;
+            node._stylehacks = metadata;
             this.nodes.push(node);
         }
 
@@ -48,7 +50,8 @@ export default function plugin (targets, nodeTypes, detect) {
 
         warn () {
             return this.nodes.forEach(node => {
-                return this.result.warn(node._stylehacks, {node: node});
+                const {message, browsers, identifier, hack} = node._stylehacks;
+                return node.warn(this.result, message, {browsers, identifier, hack});
             });
         }
     }

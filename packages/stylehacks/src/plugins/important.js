@@ -6,6 +6,9 @@ export default plugin(targets, ['decl'], function (decl) {
     let match = decl.value.match(/!\w/);
     if (match) {
         let text = decl.value.substr(match.index, decl.value.length - 1);
-        this.push(decl, `Bad !important: ${text}`);
+        this.push(decl, {
+            identifier: '!important',
+            hack: text
+        });
     }
 });
