@@ -1,3 +1,9 @@
+# 2.0.6
+
+* Fixes an issue where forward merging was not checking that the merge candidate
+  was safe to merge (either contains no vendor prefixes,
+  or the same vendor prefixes).
+
 # 2.0.5
 
 * Replaced PostCSS' `cloneBefore` with custom clone method to handle `null`
