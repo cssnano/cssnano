@@ -56,7 +56,7 @@ function partialMerge (first, second) {
         return second;
     }
     let nextRule = second.next();
-    if (nextRule && nextRule.type === 'rule') {
+    if (nextRule && nextRule.type === 'rule' && canMerge(second, nextRule)) {
         let nextIntersection = intersect(getDecls(second), getDecls(nextRule));
         if (nextIntersection.length > intersection.length) {
             first = second; second = nextRule; intersection = nextIntersection;
@@ -147,7 +147,5 @@ function selectorMerger () {
 }
 
 export default postcss.plugin('postcss-merge-rules', () => {
-    return css => {
-        css.walkRules(selectorMerger());
-    };
+    return css => css.walkRules(selectorMerger());
 });

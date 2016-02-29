@@ -166,6 +166,10 @@ let tests = [{
     fixture: 'code ::-webkit-selection{background:red}code::-moz-selection{background:red}',
     expected: 'code ::-webkit-selection{background:red}code::-moz-selection{background:red}'
 }, {
+    message: 'should not merge mixed vendor prefixes (2)',
+    fixture: 'input[type=range] { -webkit-appearance: none !important; } input[type=range]::-webkit-slider-runnable-track { height: 2px; width: 100px; background: red; border: none; } input[type=range]::-webkit-slider-thumb { -webkit-appearance: none !important; border: none; width: 10px; height: 10px; background: red; } input[type=range]::-moz-range-thumb { border: none; width: 10px; height: 10px; background: red; }',
+    expected: 'input[type=range] { -webkit-appearance: none !important; } input[type=range]::-webkit-slider-runnable-track { height: 2px; width: 100px; background: red; border: none; } input[type=range]::-webkit-slider-thumb { -webkit-appearance: none !important; border: none; width: 10px; height: 10px; background: red; } input[type=range]::-moz-range-thumb { border: none; width: 10px; height: 10px; background: red; }',
+}, {
     message: 'should not merge mixed vendor prefixed and non-vendor prefixed',
     fixture: 'code ::selection{background:red}code ::-moz-selection{background:red}',
     expected: 'code ::selection{background:red}code ::-moz-selection{background:red}'
