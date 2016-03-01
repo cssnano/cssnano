@@ -26,6 +26,22 @@ console.log(postcss(colormin()).process(css).css);
 For more examples see the [tests](src/__tests__/index.js).
 
 
+## API
+
+### colormin([options])
+
+#### options
+
+##### legacy
+
+Type: `boolean`  
+Default: `false`
+
+Set this to `true` to enable IE < 10 compatibility; the browser chokes on the
+`transparent` keyword, so in this mode the conversion from `rgba(0,0,0,0)`
+is turned off.
+
+
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests

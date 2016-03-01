@@ -1,3 +1,7 @@
+# 2.2.0
+
+* Adds support for legacy IE versions (< 10).
+
 # 2.1.8
 
 * Fixes incorrect minification of percentages used by `rgb` functions; i.e.

@@ -10,7 +10,7 @@ function reduceWhitespaces (decl) {
     }).toString();
 }
 
-function transform (decl) {
+function transform (decl, opts) {
     if (decl.prop === '-webkit-tap-highlight-color') {
         if (decl.value === 'inherit' || decl.value === 'transparent') {
             return;
@@ -24,17 +24,17 @@ function transform (decl) {
     decl.value = valueParser(decl.value).walk(node => {
         if (node.type === 'function') {
             if (/^(rgb|hsl)a?$/.test(node.value)) {
-                node.value = colormin(stringify(node));
+                node.value = colormin(stringify(node), opts);
                 node.type = 'word';
             } else if (node.value === 'calc') {
                 return false;
             }
         } else {
-            node.value = colormin(node.value);
+            node.value = colormin(node.value, opts);
         }
     }).toString();
 }
 
-export default postcss.plugin('postcss-colormin', () => {
-    return css => css.walkDecls(transform);
+export default postcss.plugin('postcss-colormin', (opts = {}) => {
+    return css => css.walkDecls(node => transform(node, opts));
 });
