@@ -163,6 +163,10 @@ let tests = [{
     fixture: '.control-group-inline>input[type="radio"]{color:blue}',
     expected: '.control-group-inline>input[type=radio]{color:blue}'
 }, {
+    message: 'should not mangle quoted attribute selectors that contain =',
+    fixture: '.parent>.child[data-attr~="key1=1"]{color:blue}',
+    expected: '.parent>.child[data-attr~="key1=1"]{color:blue}'
+}, {
     message: 'should not mangle .from/#from etc',
     fixture: '#from,.from{color:blue}',
     expected: '#from,.from{color:blue}'
