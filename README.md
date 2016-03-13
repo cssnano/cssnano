@@ -35,6 +35,13 @@ Pull requests are welcome. If you add functionality, then please add unit tests
 to cover it.
 
 
+## Links
+
+Please help to support this project by [purchasing a cssnano sticker][sticker].
+
+[sticker]: https://www.stickermule.com/uk/marketplace/11086-cssnano
+
+
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
