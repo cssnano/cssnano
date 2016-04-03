@@ -1,6 +1,6 @@
 {
   "name": "postcss-zindex",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Reduce z-index values with PostCSS.",
   "main": "index.js",
   "scripts": {
