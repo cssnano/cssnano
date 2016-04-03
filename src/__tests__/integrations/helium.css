@@ -360,7 +360,7 @@ button::-moz-focus-inner,input::-moz-focus-inner{padding:0;border:0}
 .top-bar .button:hover{background-image:-webkit-gradient(linear,50% 0,50% 100%,color-stop(1px,#484848),color-stop(1px,#555),color-stop(2px,#555),color-stop(2px,#555),color-stop(100%,#2f2f2f));background-image:-webkit-linear-gradient(top,#484848 1px,#555 0,#555 2px,#555 0,#2f2f2f);background-image:linear-gradient(top,#484848 1px,#555 0,#555 2px,#555 0,#2f2f2f)}
 .top-bar .button.active,.top-bar .button:active{background-image:-webkit-gradient(linear,50% 0,50% 100%,color-stop(0,#222),color-stop(100%,#2f2f2f));background-image:-webkit-linear-gradient(top,#222,#2f2f2f);background-image:linear-gradient(top,#222,#2f2f2f);box-shadow:inset 0 1px 2px rgba(0,0,0,.15)}
 .fixed-top-bar{padding-top:50px}
-.fixed-top-bar .top-bar{position:fixed;top:0;left:0;width:100%;z-index:3}
+.fixed-top-bar .top-bar{position:fixed;top:0;left:0;width:100%;z-index:5000}
 @media screen and (max-width:767px){
   #nav-collapse{display:none;position:absolute;top:60px;right:15px;min-width:10em;background:#fff;border:1px solid rgba(0,0,0,.2);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
   #nav-auth{display:none}
@@ -395,10 +395,10 @@ button::-moz-focus-inner,input::-moz-focus-inner{padding:0;border:0}
 .has-dropdown .dropdown .section-title{padding:5px 14px;color:#999;font-size:11px;font-weight:700;text-transform:uppercase;cursor:default}
 .has-dropdown.open .dropdown{visibility:visible}
 .modal-active{max-height:100%;overflow:hidden}
-.modal-backdrop{position:fixed;top:0;right:0;bottom:0;left:0;z-index:3;background-color:#000}
+.modal-backdrop{position:fixed;top:0;right:0;bottom:0;left:0;z-index:5000;background-color:#000}
 .modal-backdrop.fade{opacity:0}
 .modal-backdrop,.modal-backdrop.fade.in{opacity:.8}
-.modal{position:fixed;z-index:4;outline:none;left:50%;width:400px;margin:0 0 0 -200px}
+.modal{position:fixed;z-index:10000;outline:none;left:50%;width:400px;margin:0 0 0 -200px}
 .modal.fade{-webkit-transition:all .3s;transition:all .3s;top:-25%}
 .modal.fade.in{top:35%}
 .modal .modal-inner{width:400px;background:#fafafa;border-radius:4px;box-shadow:0 10px 10px rgba(0,0,0,.5)}
