@@ -1,3 +1,8 @@
+# 2.1.0
+
+* Now aborts early when encountering negative indices, making the transform
+  safer overall.
+
 # 2.0.1
 
 * Improved performance of the module by sorting/deduplicating values in one pass
