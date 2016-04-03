@@ -49,7 +49,7 @@
     "postcss-svgo": "^2.1.1",
     "postcss-unique-selectors": "^2.0.2",
     "postcss-value-parser": "^3.2.3",
-    "postcss-zindex": "^2.0.1"
+    "postcss-zindex": "^2.1.0"
   },
   "devDependencies": {
     "ava": "^0.13.0",
