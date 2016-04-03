@@ -43,6 +43,10 @@ var tests = [{
     message: 'should pass through when it doesn\'t find a z-index value',
     fixture: 'h1{color:black;font-weight:bold}',
     expected: 'h1{color:black;font-weight:bold}'
+}, {
+    message: 'should abort early if any negative z-indices were found',
+    fixture: '.a{z-index:-2}.b{z-index:10}.c{z-index:8}.d{z-index:6}',
+    expected: '.a{z-index:-2}.b{z-index:10}.c{z-index:8}.d{z-index:6}'
 }];
 
 function process (css, options) {
