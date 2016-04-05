@@ -50,6 +50,16 @@ function ruleLength (...rules) {
     return rules.map(r => r.nodes.length ? String(r) : '').join('').length;
 }
 
+function isConflictingProp(propA, probB) {
+    let a = propA.split('-');
+    let b = probB.split('-');
+    return a.length !== b.length && a[0] === b[0];
+}
+
+function hasConflicts(declProp, notMoved) {
+    return notMoved.some(prop => isConflictingProp(prop, declProp))
+}
+
 function partialMerge (first, second) {
     let intersection = intersect(getDecls(first), getDecls(second));
     if (!intersection.length) {
@@ -67,14 +77,29 @@ function partialMerge (first, second) {
     recievingBlock.nodes = [];
     second.parent.insertBefore(second, recievingBlock);
     let difference = different(getDecls(first), getDecls(second));
+    let filterConflicts = (decls, intersection) => {
+        let willMove = [];
+        let willNotMove = [];
+        decls.map(decl => {
+            let intersects = ~intersection.indexOf(decl);
+            let prop = decl.split(':')[0];
+            let base = prop.split('-')[0];
+            let canMove = difference.every(d => d.split(':')[0] !== base);
+            if (intersects && canMove && !hasConflicts(prop, willNotMove)) {
+                willMove.push(decl);
+            } else {
+                willNotMove.push(prop);
+            }
+        });
+        return willMove;
+    };
+    intersection = filterConflicts(getDecls(first).reverse(), intersection);
+    intersection = filterConflicts((getDecls(second)), intersection);
     let firstClone = clone(first);
     let secondClone = clone(second);
     let moveDecl = callback => {
         return decl => {
-            let intersects = ~intersection.indexOf(String(decl));
-            let base = decl.prop.split('-')[0];
-            let canMove = difference.every(d => d.split(':')[0] !== base);
-            if (intersects && canMove) {
+            if (~intersection.indexOf(String(decl))) {
                 callback.call(this, decl);
             }
         };

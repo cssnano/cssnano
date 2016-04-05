@@ -210,6 +210,14 @@ let tests = [{
     fixture: 'h2{color:red;margin-bottom:20px}h1{color:red;margin:10px;margin-bottom:20px}',
     expected: 'h2{margin-bottom:20px}h2,h1{color:red}h1{margin:10px;margin-bottom:20px}'
 }, {
+    message: 'should not incorrectly extract margin properties (3)' ,
+    fixture: 'h2{margin:0;margin-bottom:20px}h1{margin:0;margin-top:20px}',
+    expected: 'h2{margin:0;margin-bottom:20px}h1{margin:0;margin-top:20px}'
+}, {
+    message: 'should not incorrectly extract margin properties (4)' ,
+    fixture: 'h2{margin:0}h1{margin-top:20px;margin:0}',
+    expected: 'h2{margin:0}h1{margin-top:20px;margin:0}'
+}, {
     message: 'should not incorrectly extract display properties',
     fixture: '.box1{display:inline-block;display:block}.box2{display:inline-block}',
     expected: '.box1{display:inline-block;display:block}.box2{display:inline-block}'
