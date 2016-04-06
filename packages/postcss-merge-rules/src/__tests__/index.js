@@ -257,6 +257,10 @@ let tests = [{
     message: 'should not merge across font face rules (2)',
     fixture: '.foo { font-weight: normal; } .bar { font-family: "my-font"; font-weight: normal; } @font-face { font-family: "my-font"; font-weight: normal; src: url("my-font.ttf"); }',
     expected: '.foo,.bar { font-weight: normal; } .bar { font-family: "my-font"; } @font-face { font-family: "my-font"; font-weight: normal; src: url("my-font.ttf"); }'
+}, {
+    message: 'should not merge conflicting rules',
+    fixture: '.a{font-family:Arial;font-family:Helvetica;}.b{font-family:Arial;}',
+    expected: '.a{font-family:Arial;font-family:Helvetica;}.b{font-family:Arial;}'
 }];
 
 function process (css, options) {

@@ -50,9 +50,12 @@ function ruleLength (...rules) {
     return rules.map(r => r.nodes.length ? String(r) : '').join('').length;
 }
 
-function isConflictingProp(propA, probB) {
+function isConflictingProp(propA, propB) {
+    if (propA === propB) {
+        return true;
+    }
     let a = propA.split('-');
-    let b = probB.split('-');
+    let b = propB.split('-');
     return a.length !== b.length && a[0] === b[0];
 }
 
