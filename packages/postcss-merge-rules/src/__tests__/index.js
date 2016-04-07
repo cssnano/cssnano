@@ -261,6 +261,10 @@ let tests = [{
     message: 'should not merge conflicting rules',
     fixture: '.a{font-family:Arial;font-family:Helvetica;}.b{font-family:Arial;}',
     expected: '.a{font-family:Arial;font-family:Helvetica;}.b{font-family:Arial;}'
+}, {
+    message: 'should merge properties with vendor prefixes',
+    fixture: '.a{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);-webkit-overflow-scrolling: touch}.b{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);}',
+    expected: '.a{-webkit-overflow-scrolling: touch}.a,.b{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);}'
 }];
 
 function process (css, options) {

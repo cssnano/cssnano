@@ -50,16 +50,29 @@ function ruleLength (...rules) {
     return rules.map(r => r.nodes.length ? String(r) : '').join('').length;
 }
 
-function isConflictingProp(propA, propB) {
+function splitProp (prop) {
+    let parts = prop.split('-');
+    let base, rest;
+    if (prop[0] === '-') {
+        base = parts[1] + parts[2];
+        rest = parts.slice(3);
+    } else {
+        base = parts[0];
+        rest = parts.slice(1);
+    }
+    return [base, rest];
+}
+
+function isConflictingProp (propA, propB) {
     if (propA === propB) {
         return true;
     }
-    let a = propA.split('-');
-    let b = propB.split('-');
-    return a.length !== b.length && a[0] === b[0];
+    let a = splitProp(propA);
+    let b = splitProp(propB);
+    return a[0] === b[0] && a[1].length !== b[1].length;
 }
 
-function hasConflicts(declProp, notMoved) {
+function hasConflicts (declProp, notMoved) {
     return notMoved.some(prop => isConflictingProp(prop, declProp))
 }
 
