@@ -265,6 +265,22 @@ let tests = [{
     message: 'should merge properties with vendor prefixes',
     fixture: '.a{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);-webkit-overflow-scrolling: touch}.b{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);}',
     expected: '.a{-webkit-overflow-scrolling: touch}.a,.b{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);}'
+}, {
+    message: 'should respect property order and do nothing',
+    fixture: 'body { overflow: hidden; overflow-y: scroll; overflow-x: hidden;} main { overflow: hidden }',
+    expected: 'body { overflow: hidden; overflow-y: scroll; overflow-x: hidden;} main { overflow: hidden }'
+}, {
+    message: 'should respect property order and do nothing (2)',
+    fixture: '.a{ border-color:transparent; border-bottom-color:#111111; border-bottom-style:solid; }.b{ border-color:transparent; border-bottom-color:#222222; border-bottom-style:solid; }',
+    expected: '.a{ border-color:transparent; border-bottom-color:#111111; border-bottom-style:solid; }.b{ border-color:transparent; border-bottom-color:#222222; border-bottom-style:solid; }'
+}, {
+    message: 'should respect property order and do nothing (3)',
+    fixture: '.fb-col-md-6 { color: red; border-color:blue; flex: 0 0 auto; flex-basis: 50%; } .fb-col-md-7 { color: red; border-color:blue; flex: 0 0 auto; flex-basis: 58.3%; }',
+    expected: '.fb-col-md-6 { flex: 0 0 auto; flex-basis: 50%; } .fb-col-md-6,.fb-col-md-7 { color: red; border-color:blue; } .fb-col-md-7 { flex: 0 0 auto; flex-basis: 58.3%; }'
+}, {
+    message: 'should respect property order and do nothing (4) (cssnano#160)',
+    fixture: 'one { border: 1px solid black; border-top: none; } two { border: 1px solid black; }',
+    expected: 'one { border: 1px solid black; border-top: none; } two { border: 1px solid black; }'
 }];
 
 function process (css, options) {
