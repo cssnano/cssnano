@@ -73,7 +73,7 @@ function isConflictingProp (propA, propB) {
 }
 
 function hasConflicts (declProp, notMoved) {
-    return notMoved.some(prop => isConflictingProp(prop, declProp))
+    return notMoved.some(prop => isConflictingProp(prop, declProp));
 }
 
 function partialMerge (first, second) {
@@ -94,9 +94,8 @@ function partialMerge (first, second) {
     second.parent.insertBefore(second, recievingBlock);
     let difference = different(getDecls(first), getDecls(second));
     let filterConflicts = (decls, intersection) => {
-        let willMove = [];
         let willNotMove = [];
-        decls.map(decl => {
+        return decls.reduce((willMove, decl) => {
             let intersects = ~intersection.indexOf(decl);
             let prop = decl.split(':')[0];
             let base = prop.split('-')[0];
@@ -106,8 +105,8 @@ function partialMerge (first, second) {
             } else {
                 willNotMove.push(prop);
             }
-        });
-        return willMove;
+            return willMove;
+        }, []);
     };
     intersection = filterConflicts(getDecls(first).reverse(), intersection);
     intersection = filterConflicts((getDecls(second)), intersection);
