@@ -148,25 +148,25 @@ const tests = [{
 tests.forEach(test => {
     ava(test.message, t => {
         const out = postcss(plugin(test.options || {})).process(test.fixture);
-        t.same(out.css, test.expected);
+        t.deepEqual(out.css, test.expected);
     });
 });
 
 ava('should use the postcss plugin api', t => {
-    t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.same(plugin().postcssPlugin, name, 'should be able to access name');
+    t.truthy(plugin().postcssVersion, 'should be able to access version');
+    t.deepEqual(plugin().postcssPlugin, name, 'should be able to access name');
 });
 
 ava('should work with single line comments', t => {
     const css = '//!wow\n//wow\nh1{//color:red\n}';
     const res = postcss(plugin).process(css, {syntax: require('postcss-scss')}).css;
 
-    t.same(res, '//!wow\nh1{\n}');
+    t.deepEqual(res, '//!wow\nh1{\n}');
 });
 
 ava('should handle comments from other plugins', t => {
     const css = '$color: red; :root { box-shadow: inset 0 -10px 12px 0 $color, /* some comment */ inset 0 0 5px 0 $color; }';
     const res = postcss([ vars(), plugin]).process(css).css;
 
-    t.same(res, ':root{ box-shadow:inset 0 -10px 12px 0 red, inset 0 0 5px 0 red; }');
+    t.deepEqual(res, ':root{ box-shadow:inset 0 -10px 12px 0 red, inset 0 0 5px 0 red; }');
 });
