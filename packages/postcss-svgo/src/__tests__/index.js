@@ -66,7 +66,7 @@ let tests = [{
 tests.forEach(({message, fixture, expected, options = {}}) => {
     ava(message, t => {
         return postcss([ filters(), plugin(options) ]).process(fixture).then(result => {
-            t.same(result.css, expected);
+            t.deepEqual(result.css, expected);
         });
     });
 });
@@ -80,6 +80,6 @@ ava('should not crash on malformed urls when encoded', t => {
 
 ava('should use the postcss plugin api', t => {
     t.plan(2);
-    t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.same(plugin().postcssPlugin, name, 'should be able to access name');
+    t.truthy(plugin().postcssVersion, 'should be able to access version');
+    t.deepEqual(plugin().postcssPlugin, name, 'should be able to access name');
 });
