@@ -35,7 +35,7 @@ tests.forEach(test => {
     ava(test.message, t => {
         let options = test.options || {};
         return postcss([ plugin(options) ]).process(test.fixture).then(result => {
-            t.same(result.css, test.expected);
+            t.deepEqual(result.css, test.expected);
         });
     });
 });
