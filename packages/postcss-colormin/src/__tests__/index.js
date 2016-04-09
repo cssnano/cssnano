@@ -100,11 +100,11 @@ function process (css, options) {
 test(name, t => {
     tests.forEach(spec => {
         let options = spec.options || {};
-        t.same(process(spec.fixture, options), spec.expected, spec.message);
+        t.deepEqual(process(spec.fixture, options), spec.expected, spec.message);
     });
 });
 
 test('should use the postcss plugin api', t => {
-    t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.same(plugin().postcssPlugin, name, 'should be able to access name');
+    t.truthy(plugin().postcssVersion, 'should be able to access version');
+    t.deepEqual(plugin().postcssPlugin, name, 'should be able to access name');
 });
