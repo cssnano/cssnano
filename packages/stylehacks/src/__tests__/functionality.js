@@ -90,13 +90,13 @@ tests.forEach(test => {
     ava(test.message, t => {
         return Promise.all([
             process(test.fixture, {browsers: test.target}, css => {
-                t.same(css, test.fixture, 'should preserve the hack');
+                t.deepEqual(css, test.fixture, 'should preserve the hack');
             }),
             process(test.fixture, {browsers: test.unaffected}, css => {
-                t.same(css, test.resolution, 'should remove the hack');
+                t.deepEqual(css, test.resolution, 'should remove the hack');
             }),
             process(test.fixture, {browsers: test.unaffected, lint: true, silent: true}, (css, warnings) => {
-                t.same(warnings.length, test.warnings, 'should emit the correct amount of warnings');
+                t.deepEqual(warnings.length, test.warnings, 'should emit the correct amount of warnings');
             })
         ]);
     });
