@@ -30,18 +30,18 @@ function setup (args) {
 test('cli', t => {
     return setup(['test.css']).then(results => {
         let out = results[0];
-        t.ok(~out.indexOf('43 B'));
-        t.ok(~out.indexOf('34 B'));
-        t.ok(~out.indexOf('9 B'));
-        t.ok(~out.indexOf('79.07%'));
+        t.truthy(~out.indexOf('43 B'));
+        t.truthy(~out.indexOf('34 B'));
+        t.truthy(~out.indexOf('9 B'));
+        t.truthy(~out.indexOf('79.07%'));
     });
 });
 
 test('api', t => {
     return size(read('test.css', 'utf-8')).then(result => {
-        t.same(result.original, '43 B');
-        t.same(result.minified, '34 B');
-        t.same(result.difference, '9 B');
-        t.same(result.percent, '79.07%');
+        t.deepEqual(result.original, '43 B');
+        t.deepEqual(result.minified, '34 B');
+        t.deepEqual(result.difference, '9 B');
+        t.deepEqual(result.percent, '79.07%');
     });
 });
