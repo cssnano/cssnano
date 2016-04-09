@@ -29,7 +29,7 @@ ava('cssnano should be consumed by webpack', t => {
             throw err;
         }
 
-        t.notOk(stats.hasErrors(), 'should not report any error');
-        t.notOk(stats.hasWarnings(), 'should not report any warning');
+        t.falsy(stats.hasErrors(), 'should not report any error');
+        t.falsy(stats.hasWarnings(), 'should not report any warning');
     });
 });

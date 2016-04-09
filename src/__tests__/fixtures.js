@@ -19,7 +19,7 @@ Object.keys(specs).forEach(name => {
     const spec = specs[name];
     ava(name, t => {
         return nano.process(spec.fixture).then(result => {
-            t.same(result.css, spec.expected, specName(name));
+            t.deepEqual(result.css, spec.expected, specName(name));
         });
     });
 });

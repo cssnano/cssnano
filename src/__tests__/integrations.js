@@ -15,7 +15,7 @@ Object.keys(frameworks).forEach(framework => {
         const plugins = [nano(), formatter()];
         return postcss(plugins).process(frameworks[framework]).then(result => {
             const expected = file(join(base, framework) + '.css', 'utf-8');
-            t.same(result.css, expected, specName(testName));
+            t.deepEqual(result.css, expected, specName(testName));
         });
     });
 });

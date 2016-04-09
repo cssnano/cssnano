@@ -23,7 +23,7 @@ function onEnd (results, testNames) {
     testNames.forEach((test, index) => {
         ava(test.replace(/^\d+ /, ''), t => {
             const result = results[index].cssnano.result;
-            t.ok(result === 'outstanding' || result === 'optimal');
+            t.truthy(result === 'outstanding' || result === 'optimal');
         });
     });
 }

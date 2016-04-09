@@ -20,5 +20,5 @@ ava('it should compress whitespace after node.clone()', t => {
         nano()
     ]);
 
-    return processor.process(fixture).then(r => t.same(r.css, expected));
+    return processor.process(fixture).then(r => t.deepEqual(r.css, expected));
 });

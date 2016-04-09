@@ -11,7 +11,7 @@ directory(base).forEach(file => {
         ava(test.message, t => {
             const options = test.options || {};
             return nano.process(test.fixture, options).then(result => {
-                t.same(result.css, test.expected);
+                t.deepEqual(result.css, test.expected);
             });
         });
     });

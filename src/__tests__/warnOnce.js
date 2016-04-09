@@ -12,5 +12,5 @@ ava('should output a warning only once', t => {
     
     unhook();
     
-    t.same(out.trim(), 'once');
+    t.deepEqual(out.trim(), 'once');
 });
