@@ -84,11 +84,11 @@ const tests = [{
 tests.forEach(test => {
     ava(test.message, t => {
         const out = postcss(plugin(test.options || {})).process(test.fixture);
-        t.same(out.css, test.expected);
+        t.deepEqual(out.css, test.expected);
     });
 });
 
 ava('should use the postcss plugin api', t => {
-    t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.same(plugin().postcssPlugin, name, 'should be able to access name');
+    t.truthy(plugin().postcssVersion, 'should be able to access version');
+    t.deepEqual(plugin().postcssPlugin, name, 'should be able to access name');
 });
