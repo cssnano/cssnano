@@ -45,8 +45,8 @@ var tests = [{
     expected: 'h1{color:black;font-weight:bold}'
 }, {
     message: 'should abort early if any negative z-indices were found',
-    fixture: '.a{z-index:-2}.b{z-index:10}.c{z-index:8}.d{z-index:6}',
-    expected: '.a{z-index:-2}.b{z-index:10}.c{z-index:8}.d{z-index:6}'
+    fixture: '.a{z-index:8}.b{z-index:-2}.c{z-index:10}.d{z-index:8}.e{z-index:6}',
+    expected: '.a{z-index:8}.b{z-index:-2}.c{z-index:10}.d{z-index:8}.e{z-index:6}'
 }];
 
 function process (css, options) {

@@ -21,6 +21,11 @@ module.exports = postcss.plugin('postcss-zindex', function () {
             nodes.push(decl);
             cache.addValue(decl.value);
         });
+        
+        // Abort rebasing altogether due to z-index being found
+        if (abort) {
+            return;
+        }
 
         cache.optimizeValues();
 
