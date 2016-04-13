@@ -1,3 +1,8 @@
+# 2.1.1
+
+* Fixes an issue where all positive indices before a negative index were
+  transformed (thanks to @niccai).
+
 # 2.1.0
 
 * Now aborts early when encountering negative indices, making the transform
