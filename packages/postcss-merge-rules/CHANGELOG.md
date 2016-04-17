@@ -1,3 +1,9 @@
+# 2.0.7
+
+* Resolves an issue where merging was not respecting property order, in cases
+  where both shorthand definitions and longhand definitions existed. Now,
+  these cases will not be merged (thanks to @11bit).
+
 # 2.0.6
 
 * Fixes an issue where forward merging was not checking that the merge candidate
