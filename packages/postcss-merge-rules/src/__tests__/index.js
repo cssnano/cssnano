@@ -279,6 +279,14 @@ let tests = [{
     message: 'should respect property order and do nothing (4) (cssnano#160)',
     fixture: 'one { border: 1px solid black; border-top: none; } two { border: 1px solid black; }',
     expected: 'one { border: 1px solid black; border-top: none; } two { border: 1px solid black; }'
+}, {
+    message: 'should respect property order and do nothing (5) (cssnano#87)',
+    fixture: '.dispendium-theme.fr-toolbar.fr-top { border-radius: 0; background-clip: padding-box; box-shadow: none; border: 1px solid #E0E0E0; border-bottom: 0; } .dispendium-theme.fr-toolbar.fr-bottom { border-radius: 0; background-clip: padding-box; box-shadow: none; border: 1px solid #E0E0E0; border-top: 0; }',
+    expected: '.dispendium-theme.fr-toolbar.fr-top { border-radius: 0; background-clip: padding-box; box-shadow: none; border: 1px solid #E0E0E0; border-bottom: 0; } .dispendium-theme.fr-toolbar.fr-bottom { border-radius: 0; background-clip: padding-box; box-shadow: none; border: 1px solid #E0E0E0; border-top: 0; }'
+}, {
+    message: 'should respect property order and do nothing (6) (issue #19)',
+    fixture: '.share .comment-count:before { content: \' \'; position: absolute; width: 0; height: 0; right: 7px; top: 26px; border: 5px solid; border-color: #326891 #326891 transparent transparent; } .share .comment-count:after { content: \' \'; position: absolute; width: 0; height: 0; right: 8px; top: 24px; border: 5px solid; border-color: #fff #fff transparent transparent; }',
+    expected: '.share .comment-count:before { content: \' \'; position: absolute; width: 0; height: 0; right: 7px; top: 26px; border: 5px solid; border-color: #326891 #326891 transparent transparent; } .share .comment-count:after { content: \' \'; position: absolute; width: 0; height: 0; right: 8px; top: 24px; border: 5px solid; border-color: #fff #fff transparent transparent; }'
 }];
 
 function process (css, options) {
