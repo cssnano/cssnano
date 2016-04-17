@@ -1,5 +1,3 @@
-'use strict';
-
 import postcss from 'postcss';
 import clone from './lib/clone';
 
@@ -93,10 +91,10 @@ function partialMerge (first, second) {
     recievingBlock.nodes = [];
     second.parent.insertBefore(second, recievingBlock);
     let difference = different(getDecls(first), getDecls(second));
-    let filterConflicts = (decls, intersection) => {
+    let filterConflicts = (decls, intersectn) => {
         let willNotMove = [];
         return decls.reduce((willMove, decl) => {
-            let intersects = ~intersection.indexOf(decl);
+            let intersects = ~intersectn.indexOf(decl);
             let prop = decl.split(':')[0];
             let base = prop.split('-')[0];
             let canMove = difference.every(d => d.split(':')[0] !== base);
@@ -170,7 +168,7 @@ function selectorMerger () {
         // Merge when both selectors are exactly equal
         // e.g. a { color: blue } a { font-weight: bold }
         if (cache.selector === rule.selector) {
-            var toString = String(cache);
+            const toString = String(cache);
             rule.walk(decl => {
                 if (~toString.indexOf(String(decl))) {
                     return decl.remove();

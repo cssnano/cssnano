@@ -1,5 +1,3 @@
-'use strict';
-
 import test from 'tape';
 import postcss from 'postcss';
 import plugin from '..';
@@ -206,15 +204,15 @@ let tests = [{
     fixture: 'h2{margin-bottom:20px}h1{margin:10px;margin-bottom:20px}',
     expected: 'h2{margin-bottom:20px}h1{margin:10px;margin-bottom:20px}'
 }, {
-    message: 'should not incorrectly extract margin properties (2)' ,
+    message: 'should not incorrectly extract margin properties (2)',
     fixture: 'h2{color:red;margin-bottom:20px}h1{color:red;margin:10px;margin-bottom:20px}',
     expected: 'h2{margin-bottom:20px}h2,h1{color:red}h1{margin:10px;margin-bottom:20px}'
 }, {
-    message: 'should not incorrectly extract margin properties (3)' ,
+    message: 'should not incorrectly extract margin properties (3)',
     fixture: 'h2{margin:0;margin-bottom:20px}h1{margin:0;margin-top:20px}',
     expected: 'h2{margin:0;margin-bottom:20px}h1{margin:0;margin-top:20px}'
 }, {
-    message: 'should not incorrectly extract margin properties (4)' ,
+    message: 'should not incorrectly extract margin properties (4)',
     fixture: 'h2{margin:0}h1{margin-top:20px;margin:0}',
     expected: 'h2{margin:0}h1{margin-top:20px;margin:0}'
 }, {
@@ -290,9 +288,9 @@ function process (css, options) {
 test(name, t => {
     t.plan(tests.length);
 
-    tests.forEach(test => {
-        var options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
+    tests.forEach(spec => {
+        const options = spec.options || {};
+        t.equal(process(spec.fixture, options), spec.expected, spec.message);
     });
 });
 

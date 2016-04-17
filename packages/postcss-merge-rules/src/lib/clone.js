@@ -1,8 +1,4 @@
-/* jshint loopfunc:true */
-
-'use strict';
-
-let clone = (obj, parent) => {
+const clone = (obj, parent) => {
     if (typeof obj !== 'object' || obj === null) {
         return obj;
     }
@@ -19,7 +15,7 @@ let clone = (obj, parent) => {
         } else if (i === 'source') {
             cloned[i] = value;
         } else if (value instanceof Array) {
-            cloned[i] = value.map(i => clone(i, cloned));
+            cloned[i] = value.map(j => clone(j, cloned));
         } else {
             cloned[i] = clone(value, cloned);
         }
