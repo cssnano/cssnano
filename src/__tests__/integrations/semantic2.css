@@ -2470,9 +2470,8 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.segments>.segments:first-child{border-top:none}
 .ui.segments>.segment+.segments:not(.horizontal){margin-top:0}
 .ui.horizontal.segments{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-webkit-flex-direction:row;-ms-flex-direction:row;flex-direction:row;background-color:transparent;border-radius:0;padding:0;background-color:#fff;box-shadow:0 1px 2px 0 rgba(34,36,38,.15);margin:1rem 0;border-radius:.28571429rem;border:1px solid rgba(34,36,38,.15)}
-.ui.segments>.horizontal.segments{border-top:1px solid rgba(34,36,38,.15)}
-.ui.horizontal.segments>.segment,.ui.segments>.horizontal.segments{margin:0;background-color:transparent;border-radius:0;border:none;box-shadow:none}
-.ui.horizontal.segments>.segment{-webkit-box-flex:1;-webkit-flex:1 1 auto;flex:1 1 auto;-ms-flex:1 1 0px;min-width:0;border-left:1px solid rgba(34,36,38,.15)}
+.ui.segments>.horizontal.segments{margin:0;background-color:transparent;border-radius:0;border:none;box-shadow:none;border-top:1px solid rgba(34,36,38,.15)}
+.ui.horizontal.segments>.segment{-webkit-box-flex:1;-webkit-flex:1 1 auto;flex:1 1 auto;-ms-flex:1 1 0px;margin:0;min-width:0;background-color:transparent;border-radius:0;border:none;box-shadow:none;border-left:1px solid rgba(34,36,38,.15)}
 .ui.horizontal.segments>.segment:first-child{border-left:none}
 .ui.disabled.segment{opacity:.45;color:rgba(40,40,40,.3)}
 .ui.loading.segment{position:relative;cursor:default;point-events:none;text-shadow:none!important;color:transparent!important;-webkit-transition:all 0s linear;transition:all 0s linear}
