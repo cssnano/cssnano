@@ -9,4 +9,4 @@ export function encode (data) {
         .replace(/\s+/g, ' ');
 };
 
-export let decode = decodeURIComponent;
+export const decode = decodeURIComponent;

@@ -6,6 +6,7 @@
   "scripts": {
     "pretest": "eslint src",
     "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
+    "report": "nyc report --reporter=html",
     "test": "nyc --reporter=text ava src/__tests__"
   },
   "files": [
@@ -45,7 +46,7 @@
   },
   "repository": "ben-eb/postcss-svgo",
   "dependencies": {
-    "is-svg": "^1.1.1",
+    "is-svg": "^2.0.0",
     "postcss": "^5.0.14",
     "postcss-value-parser": "^3.2.3",
     "svgo": "^0.6.1"

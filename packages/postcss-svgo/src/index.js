@@ -4,6 +4,7 @@ import SVGO from 'svgo';
 import isSvg from 'is-svg';
 import {encode, decode} from './lib/url';
 
+const PLUGIN = 'postcss-svgo';
 const dataURI = /data:image\/svg\+xml(;(charset=)?utf-8)?,/;
 
 function minifyPromise (svgo, decl, opts) {
@@ -13,10 +14,10 @@ function minifyPromise (svgo, decl, opts) {
         if (node.type !== 'function' || node.value !== 'url' || !node.nodes.length) {
             return;
         }
-        let value = node.nodes[0].value;
-
+        let {value} = node.nodes[0];
         let decodedUri = decode(value);
         let isUriEncoded = decodedUri !== value;
+
         if (isUriEncoded) {
             value = decodedUri;
         }
@@ -24,20 +25,27 @@ function minifyPromise (svgo, decl, opts) {
             isUriEncoded = opts.encode;
         }
 
-        if (!dataURI.test(value) || !isSvg(value)) {
+        const svg = value.replace(dataURI, '');
+
+        if (!isSvg(svg)) {
             return;
         }
+
         promises.push(new Promise((resolve, reject) => {
-            svgo.optimize(value.replace(dataURI, ''), result => {
+            return svgo.optimize(svg, result => {
                 if (result.error) {
-                    return reject(`Error parsing SVG: ${result.error}`);
+                    return reject(`${PLUGIN}: ${result.error}`);
                 }
-                node.before = node.after = '';
                 let data = isUriEncoded ? encode(result.data) : result.data;
-                node.nodes[0].value = 'data:image/svg+xml;charset=utf-8,' + data;
-                node.nodes[0].quote = isUriEncoded ? '"' : '\'';
-                node.nodes[0].type = 'string';
-                resolve();
+                node.nodes[0] = {
+                    ...node.nodes[0],
+                    value: 'data:image/svg+xml;charset=utf-8,' + data,
+                    quote: isUriEncoded ? '"' : '\'',
+                    type: 'string',
+                    before: '',
+                    after: ''
+                };
+                return resolve();
             });
         }));
 
@@ -47,17 +55,17 @@ function minifyPromise (svgo, decl, opts) {
     return Promise.all(promises).then(() => decl.value = decl.value.toString());
 }
 
-export default postcss.plugin('postcss-svgo', (opts = {}) => {
-    let svgo = new SVGO(opts);
+export default postcss.plugin(PLUGIN, (opts = {}) => {
+    const svgo = new SVGO(opts);
     return css => {
         return new Promise((resolve, reject) => {
-            let promises = [];
+            const promises = [];
             css.walkDecls(decl => {
                 if (dataURI.test(decl.value)) {
                     promises.push(minifyPromise(svgo, decl, opts));
                 }
             });
-            Promise.all(promises).then(resolve, reject);
+            return Promise.all(promises).then(resolve, reject);
         });
     };
 });

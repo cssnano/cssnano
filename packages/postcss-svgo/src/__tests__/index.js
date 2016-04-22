@@ -61,6 +61,10 @@ let tests = [{
     options: {
         encode: false
     }
+}, {
+    message: 'should pass through links to svg files',
+    fixture: 'h1{background:url(unicorn.svg)}',
+    expected: 'h1{background:url(unicorn.svg)}'
 }];
 
 tests.forEach(({message, fixture, expected, options = {}}) => {
@@ -71,11 +75,18 @@ tests.forEach(({message, fixture, expected, options = {}}) => {
     });
 });
 
+ava('should reject on malformed svgs', t => {
+    const css = 'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
+    return postcss(plugin()).process(css).then(result => {
+        t.falsy(result.css, 'this assertion should not be called');
+    }).catch(err => {
+        t.truthy(err);
+    });
+});
+
 ava('should not crash on malformed urls when encoded', t => {
     const svg = encode(file('./border.svg', 'utf-8'));
-    t.doesNotThrow(() => {
-        decode(svg);
-    });
+    t.notThrows(() => decode(svg));
 });
 
 ava('should use the postcss plugin api', t => {
