@@ -1,3 +1,7 @@
+# 2.1.3
+
+* Upgrade is-svg to version 2.
+
 # 2.1.2
 
 * Fixes an issue with processing some malformed URIs (thanks to @TrySound).
