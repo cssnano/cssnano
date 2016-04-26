@@ -2,8 +2,7 @@ import {plugin} from 'postcss';
 
 function discardAndReport (css, result) {
     function discardEmpty (node) {
-        const type = node.type;
-        const sub = node.nodes;
+        const {type, nodes: sub} = node;
 
         if (sub) {
             node.each(discardEmpty);
