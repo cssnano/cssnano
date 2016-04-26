@@ -1,3 +1,8 @@
+# 2.1.0
+
+* postcss-discard-empty will now report the rules that were removed
+  (thanks to @duncanbeevers).
+
 # 2.0.1
 
 * Now compiled with babel 6.
@@ -8,8 +13,8 @@
 
 # 1.1.2
 
-* Increased performance by iterating the AST in a single pass.
-  (thanks @andyjansson)
+* Increased performance by iterating the AST in a single pass
+  (thanks to @andyjansson).
 
 # 1.1.1
 
