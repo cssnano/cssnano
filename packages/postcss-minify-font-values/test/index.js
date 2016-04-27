@@ -114,6 +114,14 @@ var tests = [{
     fixture: 'h1{font-family:"Glyphicons Halflings", "Arial"}',
     expected: 'h1{font-family:"Glyphicons Halflings","Arial"}',
     options: {removeQuotes: false}
+}, {
+    message: 'should not dedupe monospace',
+    fixture: 'font-family:monospace,monospace',
+    expected: 'font-family:monospace,monospace',
+}, {
+    message: 'should not dedupe monospace (2)',
+    fixture: 'font:italic small-caps normal 13px/150% monospace,monospace',
+    expected: 'font:italic small-caps normal 13px/150% monospace,monospace'
 }];
 
 function process (css, options) {

@@ -1,12 +1,15 @@
 var stringify = require('postcss-value-parser').stringify;
-var uniqs = require('uniqs');
+var uniqs = require('./uniqs')('monospace');
+
+// Note that monospace is missing intentionally from this list; we should not
+// remove instances of duplicated monospace keywords, it causes the font to be
+// rendered smaller in Chrome.
 
 var keywords = [
     'sans-serif',
     'serif',
     'fantasy',
-    'cursive',
-    'monospace'
+    'cursive'
 ];
 
 function intersection(haystack, array) {
