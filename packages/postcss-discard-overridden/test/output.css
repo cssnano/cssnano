@@ -1,22 +1,10 @@
-.avatar {
-  -webkit-animation: 1s fade-in linear;
-  animation: 1s fade-in linear;
-}
 @media (max-width: 500px) {
-  .icon {
-    -webkit-animation: 1s fade-in linear;
-    animation: 1s fade-in linear;
-  }
-  .title {
-    -webkit-animation: 1s fade-in linear;
-    animation: 1s fade-in linear;
-  }
   @-webkit-keyframes fade-in {
     0% {
       opacity: 0;
     }
     100% {
-      opacity: 1;
+      opacity: 0.8;
     }
   }
   @keyframes fade-in {
@@ -24,14 +12,10 @@
       opacity: 0;
     }
     100% {
-      opacity: 1;
+      opacity: 0.8;
     }
   }
   @supports (display: flex) {
-    .image {
-      -webkit-animation: 1s fade-in linear;
-      animation: 1s fade-in linear;
-    }
     @-webkit-keyframes fade-in {
       0% {
         opacity: 0;
@@ -49,10 +33,6 @@
       }
     }
   }
-}
-.comment {
-  -webkit-animation: 1s fade-in linear;
-  animation: 1s fade-in linear;
 }
 @-webkit-keyframes fade-in {
   0% {
