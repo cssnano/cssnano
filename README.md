@@ -8,7 +8,7 @@
 
 > A modular minifier, built on top of the [PostCSS] ecosystem.
 
-[![Build Status](https://travis-ci.org/ben-eb/cssnano.svg?branch=master)][ci] [![Build status](https://ci.appveyor.com/api/projects/status/t1chyvhobtju7jy8/branch/master?svg=true)](https://ci.appveyor.com/project/ben-eb/cssnano/branch/master) [![NPM version](https://badge.fury.io/js/cssnano.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/cssnano.svg)][deps] [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/ben-eb/cssnano?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/ben-eb/cssnano.svg?branch=master)][ci] [![Build status](https://ci.appveyor.com/api/projects/status/t1chyvhobtju7jy8/branch/master?svg=true)](https://ci.appveyor.com/project/ben-eb/cssnano/branch/master) [![Coverage Status](https://coveralls.io/repos/github/ben-eb/cssnano/badge.svg?branch=master)](https://coveralls.io/github/ben-eb/cssnano?branch=master) [![NPM version](https://badge.fury.io/js/cssnano.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/cssnano.svg)][deps] [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/ben-eb/cssnano?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 cssnano is a modular minifier that aims to utilise small modules from the
 PostCSS ecosystem, rather than being an all-encompassing module that may be
