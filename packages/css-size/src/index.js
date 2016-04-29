@@ -22,7 +22,6 @@ const cssSize = css => {
 export function table (css) {
     let output = new Table();
     return cssSize(css).then(result => {
-        console.log(result);
         output.push.apply(output, Object.keys(result).map((key, i) => {
             let label = key.slice(0, 1).toUpperCase() + key.slice(1);
             if (i < 2) {
