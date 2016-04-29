@@ -1,3 +1,8 @@
+# 2.0.8
+
+* Resolves an issue where selectors inside `@keyframes` would be merged,
+  causing a break in Safari.
+
 # 2.0.7
 
 * Resolves an issue where merging was not respecting property order, in cases
