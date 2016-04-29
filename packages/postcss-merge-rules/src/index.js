@@ -34,10 +34,14 @@ function sameParent (ruleA, ruleB) {
 }
 
 function canMerge (ruleA, ruleB) {
-    let a = list.comma(ruleA.selector);
-    let b = list.comma(ruleB.selector);
+    const a = list.comma(ruleA.selector);
+    const b = list.comma(ruleB.selector);
 
-    let parent = sameParent(ruleA, ruleB);
+    const parent = sameParent(ruleA, ruleB);
+    const {name} = ruleA.parent;
+    if (parent && name && ~name.indexOf('keyframes')) {
+        return false;
+    }
     return parent && (a.concat(b).every(noVendor) || sameVendor(a, b));
 }
 

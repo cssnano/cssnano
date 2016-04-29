@@ -287,6 +287,10 @@ let tests = [{
     message: 'should respect property order and do nothing (6) (issue #19)',
     fixture: '.share .comment-count:before { content: \' \'; position: absolute; width: 0; height: 0; right: 7px; top: 26px; border: 5px solid; border-color: #326891 #326891 transparent transparent; } .share .comment-count:after { content: \' \'; position: absolute; width: 0; height: 0; right: 8px; top: 24px; border: 5px solid; border-color: #fff #fff transparent transparent; }',
     expected: '.share .comment-count:before { content: \' \'; position: absolute; width: 0; height: 0; right: 7px; top: 26px; border: 5px solid; border-color: #326891 #326891 transparent transparent; } .share .comment-count:after { content: \' \'; position: absolute; width: 0; height: 0; right: 8px; top: 24px; border: 5px solid; border-color: #fff #fff transparent transparent; }'
+}, {
+    message: 'should not merge @keyframes rules',
+    fixture: '@keyframes foo{0%{visibility:visible;transform:scale3d(.85,.85,.85);opacity:0}to{visibility:visible;opacity:1}}',
+    expected: '@keyframes foo{0%{visibility:visible;transform:scale3d(.85,.85,.85);opacity:0}to{visibility:visible;opacity:1}}'
 }];
 
 function process (css, options) {
