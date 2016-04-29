@@ -5124,18 +5124,16 @@ html.ios,html.ios body{height:initial!important}
 .transition.browse.left.out,.transition.browse.out{-webkit-animation-name:d;animation-name:d}
 .transition.browse.right.out{-webkit-animation-name:e;animation-name:e}
 @-webkit-keyframes c{
-  0%,10%{-webkit-transform:scale(.8) translateZ(0);transform:scale(.8) translateZ(0);z-index:-1}
-  10%{opacity:.7}
-  80%{-webkit-transform:scale(1.05) translateZ(0);transform:scale(1.05) translateZ(0);opacity:1}
-  80%,to{z-index:999}
-  to{-webkit-transform:scale(1) translateZ(0);transform:scale(1) translateZ(0)}
+  0%{-webkit-transform:scale(.8) translateZ(0);transform:scale(.8) translateZ(0);z-index:-1}
+  10%{-webkit-transform:scale(.8) translateZ(0);transform:scale(.8) translateZ(0);z-index:-1;opacity:.7}
+  80%{-webkit-transform:scale(1.05) translateZ(0);transform:scale(1.05) translateZ(0);opacity:1;z-index:999}
+  to{-webkit-transform:scale(1) translateZ(0);transform:scale(1) translateZ(0);z-index:999}
 }
 @keyframes c{
-  0%,10%{-webkit-transform:scale(.8) translateZ(0);transform:scale(.8) translateZ(0);z-index:-1}
-  10%{opacity:.7}
-  80%{-webkit-transform:scale(1.05) translateZ(0);transform:scale(1.05) translateZ(0);opacity:1}
-  80%,to{z-index:999}
-  to{-webkit-transform:scale(1) translateZ(0);transform:scale(1) translateZ(0)}
+  0%{-webkit-transform:scale(.8) translateZ(0);transform:scale(.8) translateZ(0);z-index:-1}
+  10%{-webkit-transform:scale(.8) translateZ(0);transform:scale(.8) translateZ(0);z-index:-1;opacity:.7}
+  80%{-webkit-transform:scale(1.05) translateZ(0);transform:scale(1.05) translateZ(0);opacity:1;z-index:999}
+  to{-webkit-transform:scale(1) translateZ(0);transform:scale(1) translateZ(0);z-index:999}
 }
 @-webkit-keyframes d{
   0%{z-index:999;-webkit-transform:translateX(0) rotateY(0deg) rotateX(0deg);transform:translateX(0) rotateY(0deg) rotateX(0deg)}
