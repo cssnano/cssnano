@@ -21,7 +21,7 @@ svg:not(:root){overflow:hidden}
 figure{margin:1em 40px}
 hr{box-sizing:content-box;height:0}
 pre{overflow:auto}
-code,kbd,pre,samp{font-family:monospace;font-size:1em}
+code,kbd,pre,samp{font-family:monospace,monospace;font-size:1em}
 button,input,optgroup,select,textarea{color:inherit;font:inherit;margin:0}
 button{overflow:visible}
 button,select{text-transform:none}
