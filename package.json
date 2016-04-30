@@ -37,7 +37,7 @@
     "postcss-merge-idents": "^2.1.5",
     "postcss-merge-longhand": "^2.0.1",
     "postcss-merge-rules": "^2.0.3",
-    "postcss-minify-font-values": "^1.0.2",
+    "postcss-minify-font-values": "^1.0.4",
     "postcss-minify-gradients": "^1.0.1",
     "postcss-minify-params": "^1.0.4",
     "postcss-minify-selectors": "^2.0.4",
