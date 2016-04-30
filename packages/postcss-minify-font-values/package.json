@@ -1,6 +1,6 @@
 {
   "name": "postcss-minify-font-values",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Minify font declarations with PostCSS",
   "main": "index.js",
   "files": [
