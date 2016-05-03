@@ -195,21 +195,20 @@ let tests = [{
 tests.forEach(({message, fixture, expected, options = {}}) => {
     ava(message, t => {
         return postcss([ plugin(options) ]).process(fixture).then(result => {
-            t.same(result.css, expected);
+            t.deepEqual(result.css, expected);
         });
     });
 });
 
 ava('should use the postcss plugin api', t => {
-    t.plan(2);
-    t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.same(plugin().postcssPlugin, name, 'should be able to access name');
+    t.truthy(plugin().postcssVersion, 'should be able to access version');
+    t.deepEqual(plugin().postcssPlugin, name, 'should be able to access name');
 });
 
 ava('cssnano issue 39', t => {
     const css = 'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
 
-    t.doesNotThrow(() => {
+    t.notThrows(() => {
         return postcss([ magician(), plugin() ]).process(css).css;
     });
 });

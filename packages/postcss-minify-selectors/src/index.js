@@ -20,7 +20,7 @@ function optimise (rule) {
     rule.selector = getParsed(selector, selectors => {
         selectors.nodes = sort(selectors.nodes, {insensitive: true});
         const uniqueSelectors = [];
-        selectors.eachInside(sel => {
+        selectors.walk(sel => {
             const toString = String(sel);
             // Trim whitespace around the value
             sel.spaces.before = sel.spaces.after = '';
@@ -44,13 +44,13 @@ function optimise (rule) {
             }
             if (sel.type === 'pseudo') {
                 const uniques = [];
-                sel.eachInside(child => {
+                sel.walk(child => {
                     if (child.type === 'selector') {
                         const childStr = String(child);
                         if (!~uniques.indexOf(childStr)) {
                             uniques.push(childStr);
                         } else {
-                            child.removeSelf();
+                            child.remove();
                         }
                     }
                 });
@@ -62,7 +62,7 @@ function optimise (rule) {
                 if (!~uniqueSelectors.indexOf(toString)) {
                     uniqueSelectors.push(toString);
                 } else {
-                    sel.removeSelf();
+                    sel.remove();
                 }
             }
             if (sel.type === 'tag') {
@@ -75,13 +75,13 @@ function optimise (rule) {
             if (sel.type === 'universal') {
                 const next = sel.next();
                 if (next && next.type !== 'combinator') {
-                    sel.removeSelf();
+                    sel.remove();
                 }
             }
         });
     });
 }
 
-module.exports = postcss.plugin('postcss-minify-selectors', () => {
+export default postcss.plugin('postcss-minify-selectors', () => {
     return css => css.walkRules(optimise);
 });
