@@ -1,3 +1,7 @@
+# 2.0.5
+
+* Updated postcss-selector-parser to `2.0.0`.
+
 # 2.0.4
 
 * Now compiled with babel 6.
