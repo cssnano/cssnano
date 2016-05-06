@@ -1,0 +1,21 @@
+.example {
+    display: flex;
+}
+
+.example > div {
+    width: 50%;
+}
+
+.example > div:not(:first-child) {
+    width: 50%;
+    padding-left: 20px;
+}
+
+.example pre {
+    font-size: 0.8rem;
+}
+
+.unsafe h2 a:before {
+    content: '(unsafe) ';
+    font-weight: normal;
+}

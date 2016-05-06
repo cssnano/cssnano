@@ -1,0 +1,37 @@
+[{
+  "name": "eBay Social",
+  "image": "ebay.svg",
+  "url": "https://ebaysocial.ru/"
+}, {
+  "name": "Amplifr",
+  "image": "amplifr.png",
+  "url": "https://amplifr.com/"
+}, {
+  "name": "BBC",
+  "image": "bbc.svg",
+  "url": "http://www.bbc.co.uk/"
+}, {
+  "name": "Evil Martians",
+  "image": "evilmartians.svg",
+  "url": "https://evilmartians.com/"
+}, {
+  "name": "JSFiddle",
+  "image": "jsfiddle.svg",
+  "url": "https://jsfiddle.net/"
+}, {
+  "name": "Work & Co",
+  "image": "workandco.png",
+  "url": "http://work.co/"
+}, {
+  "name": "Paylike",
+  "image": "paylike.svg",
+  "url": "https://paylike.io/"
+}, {
+  "name": "Digital Sector",
+  "image": "digitalsector.svg",
+  "url": "http://digital-sector.ru/"
+}, {
+  "name": "Author24",
+  "image": "author24.png",
+  "url": "https://author24.ru/"
+}]

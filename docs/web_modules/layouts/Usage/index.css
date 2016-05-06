@@ -1,0 +1,20 @@
+.install {
+    display: block;
+    border: 1px solid #adebc2;
+    transition: 0.1s ease;
+    transition-property: border;
+    background: #fbfefc;
+    font-size: 1em;
+    text-decoration: none;
+    padding: 10px;
+    color: #303030;
+    font-family: Menlo, Monaco, Consolas, monospace;
+
+    &:before {
+        content: '$ ';
+    }
+
+    &:hover {
+        border-color: #40b97b;
+    }
+}
