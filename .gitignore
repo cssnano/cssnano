@@ -1,6 +1,10 @@
 .nyc_output
 coverage
 dist
-docs/content/changelog.md
 node_modules
 npm-debug.log
+
+# Phenomic things
+
+*.bundle.js
+docs/content/changelog.md

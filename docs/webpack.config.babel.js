@@ -1,14 +1,16 @@
 import path from "path";
 import webpack from "webpack";
 import ExtractTextPlugin from "extract-text-webpack-plugin";
-import renderer from './markdownRenderer';
+import pkg from './package.json';
+import renderer from './scripts/markdownRenderer.babel';
 
-export default ({config, pkg}) => ({
+export const makeConfig = (config = {}) => ({
     ...config.dev && {
         devtool: "#cheap-module-eval-source-map",
     },
+
     phenomic: {
-        loader: {
+        contentLoader: {
             context: path.join(config.cwd, config.source),
             renderer,
             feedsOptions: {
@@ -31,10 +33,26 @@ export default ({config, pkg}) => ({
             },
         }  
     },
+
     module: {
         loaders: [{
             test: /\.md$/,
             loader: "phenomic/lib/content-loader",
+        }, {
+            test: /\.json$/,
+            loader: "json-loader",
+        }, {
+            test: /\.js$/,
+            loaders: [
+                `babel-loader${
+                    config.dev ? "?presets[]=babel-preset-react-hmre" : ""
+                }`,
+                "eslint-loader",
+            ],
+            include: [
+                path.resolve(config.cwd, "scripts"),
+                path.resolve(config.cwd, "web_modules"),
+            ],
         }, {
             test: /\.css$/,
             loader: ExtractTextPlugin.extract(
@@ -98,6 +116,7 @@ export default ({config, pkg}) => ({
         extensions: [ ".js", ".json", "" ],
         root: [ path.join(config.cwd, "node_modules") ],
     },
+
     resolveLoader: {
         root: [path.join(config.cwd, "node_modules")]
     },

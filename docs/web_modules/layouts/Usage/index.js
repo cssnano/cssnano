@@ -1,7 +1,7 @@
 import React, {Component, PropTypes} from "react";
 import Lowlight from 'react-lowlight';
 import js from 'highlight.js/lib/languages/javascript';
-import dangerousMd from '../../../scripts/markdownRenderer';
+import dangerousMd from '../../../scripts/markdownRenderer.babel';
 import BasicPage from "../BasicPage";
 import {content} from '../Page/index.css';
 import styles from './index.css';
