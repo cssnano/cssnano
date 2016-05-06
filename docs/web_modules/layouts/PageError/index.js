@@ -1,4 +1,5 @@
 import React, {Component, PropTypes} from "react";
+import Helmet from 'react-helmet';
 import {about} from '../Homepage/index.css';
 
 export default class PageError extends Component {
@@ -21,6 +22,9 @@ export default class PageError extends Component {
 
         return (
             <div>
+                <Helmet
+                    title={`${errorText} (${error})`}
+                />
                 <div className={about}>
                     <p>{errorText} ({error})</p>
                     <p>That’s all she wrote...</p>
