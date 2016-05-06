@@ -202,5 +202,62 @@
     "shortDescription": "Normalizes whitespace from previous PostCSS plugins",
     "longDescription": "When combining cssnano with other PostCSS plugins, this will normalize the whitespace created by generating rules.",
     "source": "https://github.com/ben-eb/cssnano/blob/master/src/lib/styleCache.js"
+  }],
+  "wrappers": [{
+    "name": "atom",
+    "source": "https://atom.io/packages/cssnano",
+    "install": "apm install cssnano",
+    "example": "Open the Command Palette and enter `cssnano`. Alternately, use either the context menus or `ctrl + alt + o` on your keyboard.\n\nYou can customise the output in the settings menu."
+  }, {
+    "name": "broccoli",
+    "source": "https://npmjs.com/package/broccoli-cssnano",
+    "install": "npm install broccoli-cssnano",
+    "alternate": "[broccoli-postcss](https://github.com/jeffjewiss/broccoli-postcss)",
+    "example": "```js\nvar cssnano = require('broccoli-cssnano');\ntree = cssnano(tree, options);\n```"
+  }, {
+    "name": "brunch",
+    "source": "https://npmjs.com/package/cssnano-brunch",
+    "install": "npm install cssnano-brunch",
+    "alternate": "[postcss-brunch](https://github.com/iamvdo/postcss-brunch)",
+    "example": "Add cssnano to the plugin section of your [brunch config file](https://github.com/brunch/brunch/blob/master/docs/config.md):\n\n```js\nplugins: {\n  cssnano: {\n    zindex: false\n  }\n}\n```"
+  }, {
+    "name": "cli",
+    "source": "https://npmjs.com/package/cssnano-cli",
+    "install": "npm install cssnano-cli",
+    "alternate": "[postcss-cli](https://github.com/postcss/postcss-cli)",
+    "example": "```sh\ncssnano [input] [output] {OPTIONS}\n```\nYou can also use stdin & stdout redirections:\n\n```sh\ncssnano < main.css > main.min.css\n```\n\nTo see all available options, do:\n\n```sh\ncssnano --help\n```\n\nYou can install cssnano-cli as a development dependency of your project, and get the command by this snippet in your .bashrc:\n\n```sh\nexport PATH=$PATH:./node_modules/.bin\n```"
+  }, {
+    "name": "fly",
+    "source": "https://npmjs.com/package/fly-cssnano",
+    "install": "npm install fly-cssnano",
+    "alternate": "[fly-postcss](https://github.com/postcss/fly-postcss)",
+    "example": "```js\nexport build = function* () {\n  yield this\n    .source('./main.css')\n    .cssnano()\n    .target('out/')\n}\n```"
+  }, {
+    "name": "grunt",
+    "source": "https://npmjs.com/package/grunt-cssnano",
+    "install": "npm install grunt-cssnano",
+    "alternate": "[grunt-postcss](https://github.com/nDmitry/grunt-postcss)",
+    "example": "```js\nrequire('load-grunt-tasks')(grunt);\n\ngrunt.initConfig({\n  cssnano: {\n    options: {\n      sourcemap: true\n    },\n    dist: {\n      files: {\n        'dist/app.css': 'src/app.css'\n      }\n    }\n  }\n});\n\ngrunt.registerTask('default', ['cssnano']);\n```"  
+  }, {
+    "name": "gulp",
+    "source": "https://npmjs.com/package/gulp-cssnano",
+    "install": "npm install gulp-cssnano",
+    "alternate": "[gulp-postcss](https://github.com/postcss/gulp-postcss)",
+    "example": "```js\nvar gulp = require('gulp');\nvar cssnano = require('gulp-cssnano');\n\ngulp.task('default', function () {\n  return gulp.src('./main.css')\n    .pipe(cssnano())\n    .pipe(gulp.dest('./out'));\n});\n```"
+  }, {
+    "name": "javascript",
+    "source": "https://npmjs.com/package/cssnano",
+    "install": "npm install cssnano",
+    "example": "cssnano can be used directly via its JavaScript API.\n\n```js\nvar cssnano = require('cssnano');\nvar fs = require('fs');\n\ncssnano.process(css, opts).then(function (result) {\n  fs.writeFileSync('app.css', result.css);\n});\n```"
+  }, {
+    "name": "javascript (postcss)",
+    "source": "https://npmjs.com/package/cssnano",
+    "install": "npm install cssnano",
+    "example": "Alternately, you can use PostCSS directly if you wish to use cssnano in combination with other processors.\n\n```js\nvar postcss = require('postcss');\nvar cssnano = require('cssnano');\nvar fs = require('fs');\n\npostcss([cssnano()])\n  .process(css, { from: 'src/app.css', to: 'app.css' })\n  .then(function (result) {\n    fs.writeFileSync('app.css', result.css);\n    fs.writeFileSync('app.css.map', result.map);\n  });\n```"
+  }, {
+    "name": "webpack",
+    "source": "https://npmjs.com/package/css-loader",
+    "install": "npm install css-loader",
+    "example": "cssnano is bundled with css-loader, so you don't need anything special to get it to work in your webpack environment. See their documentation for more details."
   }]
 }
