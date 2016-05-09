@@ -5,22 +5,21 @@ import styles from "./index.css";
 
 TopBarProgressIndicator.config({
     barColors: {
-        0: "#fff",
-        "1.0": "#fff",
+        0: "#40b97b",
+        "1.0": "#40b97b",
     },
-    shadowBlur: 5,
+    shadowBlur: 0,
 });
 
 export default class PageLoading extends Component {
-
     render () {
         return (
-      <div>
-        <TopBarProgressIndicator />
-        <div className={ styles.loader }>
-          <div className={ styles.spinner }></div>
-        </div>
-      </div>
-    );
+            <div>
+                <TopBarProgressIndicator />
+                <div className={ styles.loader }>
+                    <div className={ styles.spinner }></div>
+                </div>
+            </div>
+        );
     }
 }
