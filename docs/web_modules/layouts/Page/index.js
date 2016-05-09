@@ -36,7 +36,7 @@ class Page extends Component {
         return (
             <div className={className}>
                 <Helmet
-                    title={ metaTitle }
+                    title={`${metaTitle} - cssnano`}
                     meta={ meta }
                 />
                 {
