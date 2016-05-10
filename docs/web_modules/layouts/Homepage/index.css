@@ -17,14 +17,6 @@
     }
 }
 
-.example {
-    display: flex;
-}
-
-.example > div {
-    width: 50%;
-}
-
 .table {
     border-collapse: collapse;
     width: 100%;

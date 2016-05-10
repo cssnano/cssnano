@@ -3,6 +3,7 @@ import Lowlight from 'react-lowlight';
 import js from 'highlight.js/lib/languages/javascript';
 import dangerousMd, {react as md} from '../../../scripts/markdownRenderer.babel';
 import CssExample from '../../CssExample';
+import {example} from '../../CssExample/index.css';
 import BasicPage from "../BasicPage";
 import {content} from '../Page/index.css';
 import styles from './index.css';
@@ -48,9 +49,9 @@ export default class Optimisations extends Component {
                 semicolons and whitespace, to aid readability.</p>
             </div>
             {modules.reduce((list, feature, index) => {
-                let example = null;
+                let demo = null;
                 if (feature.inputExample && feature.outputExample) {
-                    example = <div className={styles.example}>
+                    demo = <div className={example}>
                         <CssExample css={feature.inputExample} />
                         <CssExample css={feature.outputExample} />
                     </div>;
@@ -65,7 +66,7 @@ export default class Optimisations extends Component {
                             __html: dangerousMd(`## ${feature.shortName}`)
                         }} />
                         {md(feature.longDescription)}
-                        {example}
+                        {demo}
                         <p><a href={feature.source}>View on GitHub</a></p>
                     </div>
                 );

@@ -5,6 +5,7 @@ import SVG from 'react-svg-inline';
 import users from '../../../users.json';
 import postcss from '../../icons/postcss.svg';
 import CssExample from '../../CssExample';
+import {example} from '../../CssExample/index.css';
 import CoverPage from "../CoverPage";
 import {content} from '../Page/index.css';
 import {install} from '../Usage/index.css';
@@ -57,13 +58,9 @@ export default class Homepage extends Component {
                 <p>cssnano takes your nicely formatted CSS and runs it through
                 many focused optimisations, to ensure that the final result is
                 as small as possible for a production environment.</p>
-                <div className={styles.example}>
+                <div className={example}>
+                    <CssExample css={inputExample} />
                     <div>
-                        <h3>Before</h3>
-                        <CssExample css={inputExample} />
-                    </div>
-                    <div>
-                        <h3>After</h3>
                         <CssExample css={outputExample} />
                         <p>The semantics of this CSS have been kept the same,
                         but the extraneous whitespace has been removed, the
