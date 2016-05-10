@@ -26,7 +26,7 @@ module.exports = function (nodes, opts) {
     nodes.forEach(function (node, index, nodes) {
         var value = node.value;
 
-        if (node.type === 'string') {
+        if (node.type === 'string' || node.type === 'function') {
             family.push(node);
         } else if (node.type === 'word') {
             if (!last) {

@@ -122,6 +122,10 @@ var tests = [{
     message: 'should not dedupe monospace (2)',
     fixture: 'font:italic small-caps normal 13px/150% monospace,monospace',
     expected: 'font:italic small-caps normal 13px/150% monospace,monospace'
+}, {
+    message: 'should not mangle custom props',
+    fixture: ':root{--sans:Helvetica}header{font-family:var(--sans)}',
+    expected: ':root{--sans:Helvetica}header{font-family:var(--sans)}',
 }];
 
 function process (css, options) {
