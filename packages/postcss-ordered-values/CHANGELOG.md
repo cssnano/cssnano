@@ -1,3 +1,8 @@
+# 2.1.1
+
+* Fixes an issue where special comments were being discarded by this module.
+  Now, property values with any comments in them will be ignored.
+
 # 2.1.0
 
 * Adds support for re-ordering `box-shadow` declarations.
