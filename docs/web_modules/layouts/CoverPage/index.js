@@ -6,7 +6,7 @@ import getMetadata from '../../utils/getMetadata';
 class CoverPage extends Component {
     render () {
         const {props, context} = this;
-        const {pkg} = context.metadata;
+        const {pkg, favicons} = context.metadata;
 
         const {
             __filename,
@@ -35,8 +35,9 @@ class CoverPage extends Component {
         return (
             <div className={className}>
                 <Helmet
-                    title={ metaTitle }
-                    meta={ meta }
+                    title={metaTitle}
+                    meta={meta}
+                    link={favicons}
                 />
                 {header}
                 {

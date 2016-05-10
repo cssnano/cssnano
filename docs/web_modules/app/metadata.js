@@ -25,5 +25,14 @@ const pkg = {
 
 export default {
     ...meta,
-    pkg
+    pkg,
+    favicons: [{
+        rel: "icon",
+        type: "image/png",
+        href: "/assets/favicon.png"
+    }, {
+        rel: "icon",
+        type: "image/svg",
+        href: "/assets/favicon.svg"
+    }]
 };

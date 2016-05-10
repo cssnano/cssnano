@@ -3,6 +3,9 @@ import Helmet from 'react-helmet';
 import {about} from '../Homepage/index.css';
 
 export default class PageError extends Component {
+    static contextTypes = {
+        metadata: PropTypes.object.isRequired
+    };
 
     static propTypes = {
         error: PropTypes.oneOfType([ PropTypes.number, PropTypes.string ]),
@@ -19,11 +22,14 @@ export default class PageError extends Component {
             error,
             errorText,
         } = this.props;
+        
+        const {favicons} = this.context.metadata;
 
         return (
             <div>
                 <Helmet
                     title={`${errorText} (${error})`}
+                    link={favicons}
                 />
                 <div className={about}>
                     <p>{errorText} ({error})</p>

@@ -7,7 +7,7 @@ import styles from './index.css';
 class Page extends Component {
     render () {
         const {props, context} = this;
-        const {pkg} = context.metadata;
+        const {pkg, favicons} = context.metadata;
 
         const {
             __filename,
@@ -37,7 +37,8 @@ class Page extends Component {
             <div className={className}>
                 <Helmet
                     title={`${metaTitle} - cssnano`}
-                    meta={ meta }
+                    meta={meta}
+                    link={favicons}
                 />
                 {
                     head.title &&
