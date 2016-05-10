@@ -76,6 +76,44 @@ const tests = [{
         '@-o-keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
         '@keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}'
     ].join('')
+}, {
+    message: 'should handle duplication within media queries',
+    fixture: [
+        '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
+        '@media (max-width:400px){@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}}',
+        '.spin{animation:1s spin infinite linear}'
+    ].join(''),
+    expected: [
+        '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
+        '@media (max-width:400px){@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}}',
+        '.spin{animation:1s spin infinite linear}'
+    ].join('')
+}, {
+    message: 'should handle duplication within supports rules',
+    fixture: [
+        '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
+        '@supports (transform:rotate(0deg)){@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}}',
+        '.spin{animation:1s spin infinite linear}'
+    ].join(''),
+    expected: [
+        '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
+        '@supports (transform:rotate(0deg)){@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}}',
+        '.spin{animation:1s spin infinite linear}'
+    ].join('')
+}, {
+    message: 'should handle duplication within supports rules & media queries',
+    fixture: [
+        '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
+        '@media (max-width:400px){@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}}',
+        '@supports (transform:rotate(0deg)){@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}}',
+        '.spin{animation:1s spin infinite linear}'
+    ].join(''),
+    expected: [
+        '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
+        '@media (max-width:400px){@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}}',
+        '@supports (transform:rotate(0deg)){@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}}',
+        '.spin{animation:1s spin infinite linear}'
+    ].join('')
 }];
 
 

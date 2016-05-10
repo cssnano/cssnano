@@ -11,6 +11,18 @@ function canonical (obj) {
     };
 }
 
+function sameParent (ruleA, ruleB) {
+    let hasParent = ruleA.parent && ruleB.parent;
+    let sameType = hasParent && ruleA.parent.type === ruleB.parent.type;
+    // If an at rule, ensure that the parameters are the same
+    if (hasParent && ruleA.parent.type !== 'root' && ruleB.parent.type !== 'root') {
+        sameType = sameType &&
+                   ruleA.parent.params === ruleB.parent.params &&
+                   ruleA.parent.name === ruleB.parent.name;
+    }
+    return hasParent ? sameType : true;
+}
+
 function mergeAtRules (css, pairs) {
     pairs.forEach(pair => {
         pair.cache = [];
@@ -32,7 +44,11 @@ function mergeAtRules (css, pairs) {
             } else {
                 let toString = node.nodes.toString();
                 relevant.cache.forEach(cached => {
-                    if (cached.name === node.name && cached.nodes.toString() === toString) {
+                    if (
+                        cached.name === node.name &&
+                        sameParent(cached, node) &&
+                        cached.nodes.toString() === toString
+                    ) {
                         cached.remove();
                         relevant.replacements[cached.params] = node.params;
                     }
