@@ -51,7 +51,13 @@
         align-items: center;
     }
 
-    & a:after {
+    .nav {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .nav a:after {
         content: '';
         display: block;
         width: 100%;
@@ -64,13 +70,7 @@
         transition: transform 0.1s ease;
     }
 
-    & a:hover:after {
+    .nav a:hover:after {
         transform: translateY(0);
-    }
-
-    .nav {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
     }
 }
