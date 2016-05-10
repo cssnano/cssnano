@@ -1,3 +1,10 @@
+# 2.1.6
+
+* Fixes an issue where the module would discard at-rules that were defined in
+  `@media` & `@supports` rules as well as the root. As this is legal to do in
+  CSS, the module now checks to see if the candidate rule has the same parent
+  as the cached rule. If it does, the rules are merged.
+
 # 2.1.5
 
 * Now compiled with babel 6.
