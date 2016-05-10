@@ -1,3 +1,10 @@
+# Head
+
+* Added `postcss-discard-overridden` to safely discard overridden rules with
+  the same identifier (thanks to @Justineo).
+
+* * *
+
 # 3.5.2
 
 * Resolves an issue where the 3 or 4 value syntax for `background-position`

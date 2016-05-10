@@ -33,6 +33,7 @@
     "postcss-discard-comments": "^2.0.4",
     "postcss-discard-duplicates": "^2.0.1",
     "postcss-discard-empty": "^2.0.1",
+    "postcss-discard-overridden": "^0.1.1",
     "postcss-discard-unused": "^2.2.1",
     "postcss-filter-plugins": "^2.0.0",
     "postcss-merge-idents": "^2.1.5",

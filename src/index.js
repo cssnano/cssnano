@@ -30,6 +30,7 @@ import postcssMergeIdents from 'postcss-merge-idents';
 import postcssReduceIdents from 'postcss-reduce-idents';
 import postcssMergeLonghand from 'postcss-merge-longhand';
 import postcssDiscardDuplicates from 'postcss-discard-duplicates';
+import postcssDiscardOverridden from 'postcss-discard-overridden';
 import postcssMergeRules from 'postcss-merge-rules';
 import postcssDiscardEmpty from 'postcss-discard-empty';
 import postcssUniqueSelectors from 'postcss-unique-selectors';
@@ -52,6 +53,7 @@ let processors = {
     postcssMinifySelectors: postcssMinifySelectors,
     postcssMinifyParams: postcssMinifyParams,
     postcssNormalizeCharset: postcssNormalizeCharset,
+    postcssDiscardOverridden: postcssDiscardOverridden,
     // minify-font-values should be run before discard-unused
     postcssMinifyFontValues: postcssMinifyFontValues,
     postcssDiscardUnused: postcssDiscardUnused,

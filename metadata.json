@@ -70,6 +70,13 @@
     "outputExample": "/* (removed) */",
     "source": "https://github.com/ben-eb/postcss-discard-empty"
   }, {
+    "name": "postcss-discard-overridden",
+    "shortDescription": "Removes overridden at-rules",
+    "longDescription": "Removes at-rules which have the same identifier as another; for example two instances of `@keyframes one`. As the browser will only count the *last* of these declarations, all others can safely be removed.",
+    "inputExample": "@keyframes one {\n    0% {\n        opacity: 1;\n    }\n    to {\n        opacity: 0;\n    }\n}\n@keyframes one {\n    0% {\n        transform: rotate(0deg);\n    }\n    to {\n        transform: rotate(359deg);\n    }\n}\n.box {\n    animation-name: one;\n}",
+    "outputExample": "@keyframes one {\n    0% {\n        transform: rotate(0deg);\n    }\n    to {\n        transform: rotate(359deg);\n    }\n}\n.box {\n    animation-name: one;\n}",
+    "source": "https://github.com/Justineo/postcss-discard-overridden"
+  }, {
     "name": "postcss-discard-unused",
     "shortDescription": "Removes unused definitions",
     "longDescription": "Removes at-rules that do not have any bearing on the CSS file. This is unsafe if you have other stylesheets which pair up to these rules.",
