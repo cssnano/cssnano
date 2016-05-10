@@ -1,6 +1,6 @@
 {
   "name": "stylehacks",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Detect/remove browser hacks from CSS files.",
   "main": "dist/index.js",
   "bin": {
