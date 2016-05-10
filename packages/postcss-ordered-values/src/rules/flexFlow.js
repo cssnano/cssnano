@@ -22,10 +22,19 @@ export default function normalizeFlexFlow (decl) {
     if (!~flexFlowProps.indexOf(decl.prop)) {
         return;
     }
+    let {value} = decl;
+    if (decl.raws && decl.raws.value && decl.raws.value.raw) {
+        value = decl.raws.value.raw;
+    }
     let order = {direction: '', wrap: ''};
-    let flexFlow = valueParser(decl.value);
+    let flexFlow = valueParser(value);
+    let abort = false;
     if (flexFlow.nodes.length > 2) {
         flexFlow.walk(node => {
+            if (node.type === 'comment') {
+                abort = true;
+                return;
+            }
             if (~flexDirection.indexOf(node.value)) {
                 order.direction = node.value;
                 return;
@@ -35,6 +44,8 @@ export default function normalizeFlexFlow (decl) {
                 return;
             }
         });
-        decl.value = `${order.direction} ${order.wrap}`.trim();
+        if (!abort) {
+            decl.value = `${order.direction} ${order.wrap}`.trim();
+        }
     }
 };

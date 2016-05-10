@@ -35,10 +35,19 @@ export default function normalizeBorder (decl) {
     if (!~borderProps.indexOf(decl.prop)) {
         return;
     }
+    let {value} = decl;
+    if (decl.raws && decl.raws.value && decl.raws.value.raw) {
+        value = decl.raws.value.raw;
+    }
     let order = {width: '', style: '', color: ''};
-    let border = valueParser(decl.value);
+    let border = valueParser(value);
+    let abort = false;
     if (border.nodes.length > 2) {
         border.walk(node => {
+            if (node.type === 'comment') {
+                abort = true;
+                return false;
+            }
             if (node.type === 'word') {
                 if (~borderStyles.indexOf(node.value)) {
                     order.style = node.value;
@@ -60,6 +69,8 @@ export default function normalizeBorder (decl) {
                 return false;
             }
         });
-        decl.value = `${order.width} ${order.style} ${order.color}`.trim();
+        if (!abort) {
+            decl.value = `${order.width} ${order.style} ${order.color}`.trim();
+        }
     }
 };

@@ -127,6 +127,18 @@ const tests = [{
     message: 'should pass through invalid box-shadow values',
     fixture: 'h1{box-shadow:1px solid rgba(34,36,38,.15)}',
     expected: 'h1{box-shadow:1px solid rgba(34,36,38,.15)}'
+}, {
+    message: 'should pass through important comments (border)',
+    fixture: 'border: 1px /*!wow*/ red solid',
+    expected: 'border: 1px /*!wow*/ red solid'
+}, {
+    message: 'should pass through important comments (box-shadow)',
+    fixture: 'box-shadow: 0 1px 3px /*!wow*/ red',
+    expected: 'box-shadow: 0 1px 3px /*!wow*/ red'
+}, {
+    message: 'should pass through important comments (flex-flow)',
+    fixture: 'flex-flow: row-reverse /*!wow*/ wrap-reverse',
+    expected: 'flex-flow: row-reverse /*!wow*/ wrap-reverse'
 }];
 
 tests.forEach(test => {

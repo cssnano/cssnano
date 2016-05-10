@@ -17,28 +17,37 @@ export default function normalizeBoxShadow (decl) {
     if (decl.prop !== 'box-shadow') {
         return;
     }
-    let parsed = valueParser(decl.value);
+    let {value} = decl;
+    if (decl.raws && decl.raws.value && decl.raws.value.raw) {
+        value = decl.raws.value.raw;
+    }
+    let parsed = valueParser(value);
     if (parsed.nodes.length < 2) {
         return;
     }
     
     let args = getArguments(parsed);
     let values = [];
+    let abort = false;
 
     args.forEach(arg => {
         values.push([]);
-        let value = values[values.length - 1];
+        let val = values[values.length - 1];
         let state = {
             inset: [],
             color: []
         };
         arg.forEach(node => {
+            if (node.type === 'comment') {
+                abort = true;
+                return;
+            }
             if (node.type === 'space') {
                 return;
             }
             if (unit(node.value)) {
-                value.push(node);
-                value.push({type: 'space', value: ' '});
+                val.push(node);
+                val.push({type: 'space', value: ' '});
             } else if (node.value === 'inset') {
                 state.inset.push(node);
                 state.inset.push({type: 'space', value: ' '});
@@ -47,8 +56,12 @@ export default function normalizeBoxShadow (decl) {
                 state.color.push({type: 'space', value: ' '});
             }
         });
-        values[values.length - 1] = state.inset.concat(value).concat(state.color);
+        values[values.length - 1] = state.inset.concat(val).concat(state.color);
     });
+    
+    if (abort) {
+        return;
+    }
 
     decl.value = stringify({
         nodes: values.reduce((nodes, arg, index) => {
