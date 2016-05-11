@@ -2,7 +2,7 @@
   "modules": [{
     "name": "autoprefixer",
     "shortDescription": "Removes outdated vendor prefixes",
-    "longDescription": "Removes unnecessary prefixes based on the `browsers` option. In this mode **it will not add new prefixes** to the CSS file.",
+    "longDescription": "Removes unnecessary prefixes based on the `browsers` option. Note that *by default*, **it will not add new prefixes** to the CSS file.",
     "inputExample": ".box {\n    -moz-border-radius: 10px;\n    border-radius: 10px;\n    display: flex;\n}",
     "outputExample": ".box {\n    border-radius: 10px;\n    display: flex;\n}",
     "source": "https://github.com/postcss/autoprefixer"
@@ -135,7 +135,7 @@
   }, {
     "name": "postcss-normalize-charset",
     "shortDescription": "Ensures that a single @charset is defined",
-    "longDescription": "Ensures that only a single `@charset` is present in the CSS file, and moves it to the top of the document. This prevents multiple, invalid declarations occurring through naïve CSS concatenation.",
+    "longDescription": "Ensures that only a single `@charset` is present in the CSS file, and moves it to the top of the document. This prevents multiple, invalid declarations occurring through naïve CSS concatenation. Note that *by default*, new `@charset` rules will not be added to the CSS.",
     "inputExample": ".box {\n    content: \"©\";\n}\n@charset \"utf-8\";\n@charset \"utf-8\";",
     "outputExample": "@charset \"utf-8\";\n.box {\n    content: \"©\";\n}",
     "source": "https://github.com/TrySound/postcss-normalize-charset"
