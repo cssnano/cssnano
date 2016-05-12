@@ -1,15 +1,8 @@
-import valueParser, {unit, stringify} from 'postcss-value-parser';
-
-function getArguments (node) {
-    return node.nodes.reduce((list, child) => {
-        if (child.type !== 'div' || child.value !== ',') {
-            list[list.length - 1].push(child);
-        } else {
-            list.push([]);
-        }
-        return list;
-    }, [[]]);
-}
+import {unit} from 'postcss-value-parser';
+import addSpace from '../lib/addSpace';
+import getArguments from '../lib/getArguments';
+import getParsed from '../lib/getParsed';
+import getValue from '../lib/getValue';
 
 // box-shadow: inset? && <length>{2,4} && <color>?
 
@@ -17,22 +10,16 @@ export default function normalizeBoxShadow (decl) {
     if (decl.prop !== 'box-shadow') {
         return;
     }
-    let {value} = decl;
-    if (decl.raws && decl.raws.value && decl.raws.value.raw) {
-        value = decl.raws.value.raw;
-    }
-    let parsed = valueParser(value);
+    let parsed = getParsed(decl);
     if (parsed.nodes.length < 2) {
         return;
     }
     
     let args = getArguments(parsed);
-    let values = [];
     let abort = false;
 
-    args.forEach(arg => {
-        values.push([]);
-        let val = values[values.length - 1];
+    let values = args.reduce((list, arg) => {
+        let val = [];
         let state = {
             inset: [],
             color: []
@@ -46,44 +33,19 @@ export default function normalizeBoxShadow (decl) {
                 return;
             }
             if (unit(node.value)) {
-                val.push(node);
-                val.push({type: 'space', value: ' '});
+                val = [...val, node, addSpace()];
             } else if (node.value === 'inset') {
-                state.inset.push(node);
-                state.inset.push({type: 'space', value: ' '});
+                state.inset = [...state.inset, node, addSpace()];
             } else {
-                state.color.push(node);
-                state.color.push({type: 'space', value: ' '});
+                state.color = [...state.color, node, addSpace()];
             }
         });
-        values[values.length - 1] = state.inset.concat(val).concat(state.color);
-    });
+        return [...list, [...state.inset, ...val, ...state.color]];
+    }, []);
     
     if (abort) {
         return;
     }
 
-    decl.value = stringify({
-        nodes: values.reduce((nodes, arg, index) => {
-            arg.forEach((val, idx) => {
-                if (
-                    idx === arg.length - 1 &&
-                    index === values.length - 1 &&
-                    val.type === 'space'
-                ) {
-                    return;
-                }
-                nodes.push(val);
-            });
-            if (index !== values.length - 1) {
-                if (nodes[nodes.length - 1] && nodes[nodes.length - 1].type === 'space') {
-                    nodes[nodes.length - 1].type = 'div';
-                    nodes[nodes.length - 1].value = ',';
-                    return nodes;
-                }
-                nodes.push({type: 'div', value: ','});
-            }
-            return nodes;
-        }, [])
-    });
+    decl.value = getValue(values);
 }

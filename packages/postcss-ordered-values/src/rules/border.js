@@ -1,4 +1,5 @@
-import valueParser, {unit, stringify} from 'postcss-value-parser';
+import {unit, stringify} from 'postcss-value-parser';
+import getParsed from '../lib/getParsed';
 
 // border: <line-width> || <line-style> || <color>
 // outline: <outline-color> || <outline-style> || <outline-width>
@@ -35,14 +36,10 @@ export default function normalizeBorder (decl) {
     if (!~borderProps.indexOf(decl.prop)) {
         return;
     }
-    let {value} = decl;
-    if (decl.raws && decl.raws.value && decl.raws.value.raw) {
-        value = decl.raws.value.raw;
-    }
-    let order = {width: '', style: '', color: ''};
-    let border = valueParser(value);
-    let abort = false;
+    let border = getParsed(decl);
     if (border.nodes.length > 2) {
+        let order = {width: '', style: '', color: ''};
+        let abort = false;
         border.walk(node => {
             if (node.type === 'comment') {
                 abort = true;

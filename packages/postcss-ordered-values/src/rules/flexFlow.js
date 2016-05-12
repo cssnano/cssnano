@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import getParsed from '../lib/getParsed';
 
 // flex-flow: <flex-direction> || <flex-wrap>
 const flexFlowProps = [
@@ -22,14 +22,10 @@ export default function normalizeFlexFlow (decl) {
     if (!~flexFlowProps.indexOf(decl.prop)) {
         return;
     }
-    let {value} = decl;
-    if (decl.raws && decl.raws.value && decl.raws.value.raw) {
-        value = decl.raws.value.raw;
-    }
-    let order = {direction: '', wrap: ''};
-    let flexFlow = valueParser(value);
-    let abort = false;
+    let flexFlow = getParsed(decl);
     if (flexFlow.nodes.length > 2) {
+        let order = {direction: '', wrap: ''};
+        let abort = false;
         flexFlow.walk(node => {
             if (node.type === 'comment') {
                 abort = true;

@@ -4,11 +4,13 @@ import postcss from 'postcss';
 import border from './rules/border';
 import boxShadow from './rules/boxShadow';
 import flexFlow from './rules/flexFlow';
+import transition from './rules/transition';
 
 let rules = [
     border,
     boxShadow,
-    flexFlow
+    flexFlow,
+    transition
 ];
 
 export default postcss.plugin('postcss-ordered-values', () => {

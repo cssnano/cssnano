@@ -139,6 +139,38 @@ const tests = [{
     message: 'should pass through important comments (flex-flow)',
     fixture: 'flex-flow: row-reverse /*!wow*/ wrap-reverse',
     expected: 'flex-flow: row-reverse /*!wow*/ wrap-reverse'
+}, {
+    message: 'should pass through important comments (transition)',
+    fixture: 'transition: ease-out width /*!wow*/ .5s 2s',
+    expected: 'transition: ease-out width /*!wow*/ .5s 2s' 
+}, {
+    message: 'should order transition consistently (1)',
+    fixture: 'transition: width .5s ease-out 2s',
+    expected: 'transition: width .5s ease-out 2s'
+}, {
+    message: 'should order transition consistently (2)',
+    fixture: 'transition: ease-out width .5s 2s',
+    expected: 'transition: width .5s ease-out 2s'
+}, {
+    message: 'should order transition consistently (3)',
+    fixture: 'transition: ease-out .5s width 2s',
+    expected: 'transition: width .5s ease-out 2s'
+}, {
+    message: 'should order transition consistently (4)',
+    fixture: 'transition: .5s 2s width ease-out',
+    expected: 'transition: width .5s ease-out 2s'
+}, {
+    message: 'should order transition consistently (5)',
+    fixture: 'transition: .5s 2s width steps(5, start)',
+    expected: 'transition: width .5s steps(5, start) 2s'
+}, {
+    message: 'should order transition consistently (6)',
+    fixture: 'transition: .5s 2s width cubic-bezier(0, 0.3, 0.6, 1)',
+    expected: 'transition: width .5s cubic-bezier(0, 0.3, 0.6, 1) 2s'
+}, {
+    message: 'should order transition consistently (7)',
+    fixture: 'transition: .5s 2s width ease-out,.8s 1s height ease',
+    expected: 'transition: width .5s ease-out 2s,height .8s ease 1s'
 }];
 
 tests.forEach(test => {
