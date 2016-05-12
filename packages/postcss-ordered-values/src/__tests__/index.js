@@ -171,6 +171,10 @@ const tests = [{
     message: 'should order transition consistently (7)',
     fixture: 'transition: .5s 2s width ease-out,.8s 1s height ease',
     expected: 'transition: width .5s ease-out 2s,height .8s ease 1s'
+}, {
+    message: 'should order transition consistently (8)',
+    fixture: '-webkit-transition: ease-out width .5s 2s',
+    expected: '-webkit-transition: width .5s ease-out 2s'
 }];
 
 tests.forEach(test => {

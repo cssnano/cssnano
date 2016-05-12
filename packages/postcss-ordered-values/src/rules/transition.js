@@ -17,7 +17,7 @@ const timingFunctions = [
 ];
 
 export default function normalizeTransition (decl) {
-    if (decl.prop !== 'transition') {
+    if (decl.prop !== 'transition' && decl.prop !== '-webkit-transition') {
         return;
     }
     let parsed = getParsed(decl);
