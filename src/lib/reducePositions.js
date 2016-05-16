@@ -7,6 +7,8 @@ const properties = [
     'background-position'
 ];
 
+const center = '50%';
+
 const horizontal = {
     right: '100%',
     left: '0'
@@ -74,29 +76,21 @@ function transform (decl) {
             if (position[2]) {
                 position[2].value = position[1].value = '';
             }
-            if (position[0].value === 'right') {
-                position[0].value = '100%';
-                return;
-            }
-            if (position[0].value === 'left') {
-                position[0].value = '0';
-                return;
-            }
-            if (position[0].value === 'center') {
-                position[0].value = '50%';
-                return;
+            const {value} = position[0];
+            const map = {
+                ...horizontal,
+                center
+            };
+            if (~Object.keys(map).indexOf(value)) {
+                position[0].value = map[value];
             }
             return;
         }
         if (position[0].value === 'center' && ~directions.indexOf(position[2].value)) {
             position[0].value = position[1].value = '';
-            if (position[2].value === 'right') {
-                position[2].value = '100%';
-                return;
-            }
-            if (position[2].value === 'left') {
-                position[2].value = '0';
-                return;
+            const {value} = position[2];
+            if (~hkeys.indexOf(value)) {
+                position[2].value = horizontal[value];
             }
             return;
         }
