@@ -1,3 +1,7 @@
+# 2.2.1
+
+* Now will not re-order values that contain any `var()` definitions. 
+
 # 2.2.0
 
 * Adds support for re-ordering `transition` declarations.
