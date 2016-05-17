@@ -20,7 +20,7 @@ function getArguments (node) {
 }
 
 function isLessThan (a, b) {
-    return a.unit === b.unit && parseInt(a.number, 10) >= parseInt(b.number, 10);
+    return a.unit === b.unit && parseFloat(a.number) >= parseFloat(b.number);
 }
 
 function optimise (decl) {

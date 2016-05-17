@@ -65,6 +65,10 @@ let tests = [{
     message: 'repeating-radial: should reduce length values if they are the same',
     fixture: 'background:repeating-radial-gradient(#121,#121 5px,#ffe500 5px,#ffe500 10px)',
     expected: 'background:repeating-radial-gradient(#121,#121 5px,#ffe500 0,#ffe500 10px)'
+}, {
+    message: 'should not mangle floating point numbers',
+    fixture: 'background:linear-gradient(#fff,#fff 2em,#ccc 2em,#ccc 2.1em,#fff 2.1em)',
+    expected: 'background:linear-gradient(#fff,#fff 2em,#ccc 0,#ccc 2.1em,#fff 0)'
 }];
 
 tape(name, (t) => {
