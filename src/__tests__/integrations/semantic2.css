@@ -1973,7 +1973,7 @@ img.ui.image{display:block}
 .ui.label:first-child{margin-left:0}
 .ui.label:last-child{margin-right:0}
 .ui.label>a,a.ui.label{cursor:pointer}
-.ui.label>a{color:inherit;opacity:.5;-webkit-transition:.1s opacity ease;transition:.1s opacity ease}
+.ui.label>a{color:inherit;opacity:.5;-webkit-transition:opacity .1s ease;transition:opacity .1s ease}
 .ui.label>a:hover{opacity:1}
 .ui.label>img{width:auto!important;vertical-align:middle;height:2.1666em!important}
 .ui.label>.icon{width:auto;margin:0 .75em 0 0}
@@ -2205,13 +2205,13 @@ a.ui.basic.label:hover{text-decoration:none;background:none #fff;color:#1e70bf;b
 .ui.list [class*="top aligned"],.ui.list[class*="top aligned"] .content,.ui.list[class*="top aligned"] .image{vertical-align:top!important}
 .ui.list [class*="middle aligned"],.ui.list[class*="middle aligned"] .content,.ui.list[class*="middle aligned"] .image{vertical-align:middle!important}
 .ui.list [class*="bottom aligned"],.ui.list[class*="bottom aligned"] .content,.ui.list[class*="bottom aligned"] .image{vertical-align:bottom!important}
-.ui.link.list .item,.ui.link.list .item a:not(.ui),.ui.link.list a.item{color:rgba(0,0,0,.4);-webkit-transition:.1s color ease;transition:.1s color ease}
+.ui.link.list .item,.ui.link.list .item a:not(.ui),.ui.link.list a.item{color:rgba(0,0,0,.4);-webkit-transition:color .1s ease;transition:color .1s ease}
 .ui.link.list .item a:not(.ui):hover,.ui.link.list a.item:hover{color:rgba(0,0,0,.8)}
 .ui.link.list .item a:not(.ui):active,.ui.link.list a.item:active{color:rgba(0,0,0,.9)}
 .ui.link.list .active.item,.ui.link.list .active.item a:not(.ui){color:rgba(0,0,0,.95)}
 .ui.inverted.link.list .item,.ui.inverted.link.list .item a:not(.ui),.ui.inverted.link.list a.item{color:hsla(0,0%,100%,.5)}
 .ui.inverted.link.list .active.item a:not(.ui),.ui.inverted.link.list .item a:not(.ui):active,.ui.inverted.link.list .item a:not(.ui):hover,.ui.inverted.link.list a.active.item,.ui.inverted.link.list a.item:active,.ui.inverted.link.list a.item:hover{color:#fff}
-.ui.selection.list .list>.item,.ui.selection.list>.item{cursor:pointer;background:transparent;padding:.5em;margin:0;color:rgba(0,0,0,.4);border-radius:.5em;-webkit-transition:.1s color ease,.1s padding-left ease,.1s background-color ease;transition:.1s color ease,.1s padding-left ease,.1s background-color ease}
+.ui.selection.list .list>.item,.ui.selection.list>.item{cursor:pointer;background:transparent;padding:.5em;margin:0;color:rgba(0,0,0,.4);border-radius:.5em;-webkit-transition:color .1s ease,padding-left .1s ease,background-color .1s ease;transition:color .1s ease,padding-left .1s ease,background-color .1s ease}
 .ui.selection.list .list>.item:last-child,.ui.selection.list>.item:last-child{margin-bottom:0}
 .ui.selection.list.list>.item:hover,.ui.selection.list>.item:hover{background:rgba(0,0,0,.03);color:rgba(0,0,0,.8)}
 .ui.selection.list .list>.item:active,.ui.selection.list>.item:active{background:rgba(0,0,0,.05);color:rgba(0,0,0,.9)}
@@ -2220,7 +2220,7 @@ a.ui.basic.label:hover{text-decoration:none;background:none #fff;color:#1e70bf;b
 .ui.inverted.selection.list>.item:hover{background:hsla(0,0%,100%,.02);color:#fff}
 .ui.inverted.selection.list>.item.active,.ui.inverted.selection.list>.item:active{background:hsla(0,0%,100%,.08);color:#fff}
 .ui.celled.selection.list .list>.item,.ui.celled.selection.list>.item,.ui.divided.selection.list .list>.item,.ui.divided.selection.list>.item{border-radius:0}
-.ui.animated.list>.item{-webkit-transition:.25s color ease .1s,.25s padding-left ease .1s,.25s background-color ease .1s;transition:.25s color ease .1s,.25s padding-left ease .1s,.25s background-color ease .1s}
+.ui.animated.list>.item{-webkit-transition:color .25s ease .1s,padding-left .25s ease .1s,background-color .25s ease .1s;transition:color .25s ease .1s,padding-left .25s ease .1s,background-color .25s ease .1s}
 .ui.animated.list:not(.horizontal)>.item:hover{padding-left:1em}
 .ui.fitted.list:not(.selection) .list>.item,.ui.fitted.list:not(.selection)>.item{padding-left:0;padding-right:0}
 .ui.fitted.selection.list .list>.item,.ui.fitted.selection.list>.item{margin-left:-.5em;margin-right:-.5em}
@@ -3987,7 +3987,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.feed>.event>.content .meta{display:inline-block;font-size:.85714286em;margin:.5em 0 0;background:none;border:none;border-radius:0;box-shadow:none;padding:0;color:rgba(0,0,0,.6)}
 .ui.feed>.event>.content .meta>*{position:relative;margin-left:.75em}
 .ui.feed>.event>.content .meta>:after{content:'';color:rgba(0,0,0,.2);top:0;left:-1em;opacity:1;position:absolute;vertical-align:top}
-.ui.feed>.event>.content .meta .like{color:'';-webkit-transition:.2s color ease;transition:.2s color ease}
+.ui.feed>.event>.content .meta .like{color:'';-webkit-transition:color .2s ease;transition:color .2s ease}
 .ui.feed>.event>.content .meta .like:hover .icon{color:#ff2733}
 .ui.feed>.event>.content .meta .active.like .icon{color:#ef404a}
 .ui.feed>.event>.content .meta>:first-child{margin-left:0}
@@ -4308,7 +4308,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.page.dimmer{position:fixed;-webkit-transform-style:'';transform-style:'';-webkit-perspective:2000px;perspective:2000px;-webkit-transform-origin:center center;transform-origin:center center}
 body.animating.in.dimmable,body.dimmed.dimmable{overflow:hidden}
 body.dimmable>.dimmer{position:fixed}
-.blurring.dimmable>:not(.dimmer){-webkit-filter:blur(0) grayscale(0);filter:blur(0) grayscale(0);-webkit-transition:.8s -webkit-filter ease,.8s filter ease;transition:.8s filter ease}
+.blurring.dimmable>:not(.dimmer){-webkit-filter:blur(0) grayscale(0);filter:blur(0) grayscale(0);-webkit-transition:-webkit-filter .8s ease,filter .8s ease;transition:filter .8s ease}
 .blurring.dimmed.dimmable>:not(.dimmer){-webkit-filter:blur(5px) grayscale(.7);filter:blur(5px) grayscale(.7)}
 .blurring.dimmable>.dimmer{background-color:rgba(0,0,0,.6)}
 .blurring.dimmable>.inverted.dimmer{background-color:hsla(0,0%,100%,.6)}
@@ -4684,7 +4684,7 @@ select.ui.dropdown{height:38px;padding:.5em;border:1px solid rgba(34,36,38,.15);
 * http://opensource.org/licenses/MIT
 *
 */
-.ui.nag{display:none;opacity:.95;position:relative;top:0;left:0;z-index:999;min-height:0;width:100%;margin:0;padding:.75em 1em;background:#555;box-shadow:0 1px 2px 0 rgba(0,0,0,.2);font-size:1rem;text-align:center;color:rgba(0,0,0,.87);border-radius:0 0 .28571429rem .28571429rem;-webkit-transition:.2s background ease;transition:.2s background ease}
+.ui.nag{display:none;opacity:.95;position:relative;top:0;left:0;z-index:999;min-height:0;width:100%;margin:0;padding:.75em 1em;background:#555;box-shadow:0 1px 2px 0 rgba(0,0,0,.2);font-size:1rem;text-align:center;color:rgba(0,0,0,.87);border-radius:0 0 .28571429rem .28571429rem;-webkit-transition:background .2s ease;transition:background .2s ease}
 a.ui.nag{cursor:pointer}
 .ui.nag>.title{display:inline-block;margin:0 .5em;color:#fff}
 .ui.nag>.close.icon{cursor:pointer;opacity:.4;position:absolute;top:50%;right:1em;font-size:1em;margin:-.5em 0 0;color:#fff;-webkit-transition:opacity .2s ease;transition:opacity .2s ease}

@@ -186,7 +186,7 @@ table.table-hovered tbody tr:hover td{background-color:#f4f4f4}
 .forms-inline-list li{margin-bottom:3px}
 .forms-list li{margin-bottom:6px}
 .forms-desc{margin-top:4px;color:rgba(0,0,0,.4);font-size:12.75px;line-height:1.4em}
-input[type=color],input[type=date],input[type=datetime-local],input[type=datetime],input[type=email],input[type=month],input[type=number],input[type=password],input[type=phone],input[type=search],input[type=tel],input[type=text],input[type=time],input[type=url],textarea{transition:border ease .5s}
+input[type=color],input[type=date],input[type=datetime-local],input[type=datetime],input[type=email],input[type=month],input[type=number],input[type=password],input[type=phone],input[type=search],input[type=tel],input[type=text],input[type=time],input[type=url],textarea{transition:border .5s ease}
 .error,.success{font-weight:400;font-size:12.75px}
 .input-error,input.input-error,select.input-error,textarea.input-error{border-color:#de2c3b;box-shadow:0 0 0 2px rgba(222,44,59,.3),inset 0 1px 2px rgba(0,0,0,.2)}
 .input-success,input.input-success,select.input-success,textarea.input-success{border-color:#2c9f42;box-shadow:0 0 0 2px rgba(44,159,66,.3),inset 0 1px 2px rgba(0,0,0,.2)}
