@@ -26,6 +26,7 @@ import functionOptimiser from './lib/functionOptimiser';
 import filterOptimiser from './lib/filterOptimiser';
 import reducePositions from './lib/reducePositions';
 import core from './lib/core';
+import reduceTimingFunctions from './lib/reduceTimingFunctions';
 import postcssMergeIdents from 'postcss-merge-idents';
 import postcssReduceIdents from 'postcss-reduce-idents';
 import postcssMergeLonghand from 'postcss-merge-longhand';
@@ -47,6 +48,7 @@ let processors = {
     autoprefixer: autoprefixer,
     postcssZindex: postcssZindex,
     postcssConvertValues: postcssConvertValues,
+    reduceTimingFunctions: reduceTimingFunctions,
     postcssCalc: postcssCalc,
     postcssColormin: postcssColormin,
     postcssOrderedValues: postcssOrderedValues,
