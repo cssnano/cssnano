@@ -55,8 +55,12 @@ function ruleLength (...rules) {
 function splitProp (prop) {
     let parts = prop.split('-');
     let base, rest;
+    // Treat vendor prefixed properties as if they were unprefixed;
+    // moving them when combined with non-prefixed properties can
+    // cause issues. e.g. moving -webkit-background-clip when there
+    // is a background shorthand definition.
     if (prop[0] === '-') {
-        base = parts[1] + parts[2];
+        base = parts[2];
         rest = parts.slice(3);
     } else {
         base = parts[0];

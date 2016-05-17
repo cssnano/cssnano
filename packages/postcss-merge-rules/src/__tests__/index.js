@@ -291,6 +291,10 @@ let tests = [{
     message: 'should not merge @keyframes rules',
     fixture: '@keyframes foo{0%{visibility:visible;transform:scale3d(.85,.85,.85);opacity:0}to{visibility:visible;opacity:1}}',
     expected: '@keyframes foo{0%{visibility:visible;transform:scale3d(.85,.85,.85);opacity:0}to{visibility:visible;opacity:1}}'
+}, {
+    message: 'should not merge overlapping rules with vendor prefixes',
+    fixture: '.foo{background:#fff;-webkit-background-clip:text}.bar{background:#000;-webkit-background-clip:text}',
+    expected: '.foo{background:#fff;-webkit-background-clip:text}.bar{background:#000;-webkit-background-clip:text}'
 }];
 
 function process (css, options) {
