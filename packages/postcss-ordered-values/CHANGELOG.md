@@ -1,3 +1,7 @@
+# 2.2.0
+
+* Adds support for re-ordering `transition` declarations.
+
 # 2.1.1
 
 * Fixes an issue where special comments were being discarded by this module.
