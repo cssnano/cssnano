@@ -28,6 +28,14 @@ const decls = [{
     property: 'background:',
     additional: '#000 url(cat.jpg) ',
     tail: ''
+}, {
+    property: 'perspective-origin:',
+    additional: '',
+    tail: ''
+}, {
+    property: '-webkit-perspective-origin:',
+    additional: '',
+    tail: ''
 }];
 
 decls.forEach(({additional, property, tail}) => {
