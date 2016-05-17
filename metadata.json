@@ -205,6 +205,13 @@
     "outputExample": ".box {\n    background: 30% / 50% 50%;\n}",
     "source": "https://github.com/ben-eb/cssnano/blob/master/src/lib/reducePositions.js"
   }, {
+    "name": "reduce-timing-functions",
+    "shortDescription": "Normalizes transition timing functions.",
+    "longDescription": "Normalizes transition timing in the `animation`, `animation-timing-function`, `transition` and `transition-timing-function` properties.",
+    "inputExample": ".box {\n    transition: color 3s steps(30, end);\n}",
+    "outputExample": ".box {\n    transition: color 3s steps(30);\n}",
+    "source": "https://github.com/ben-eb/cssnano/blob/master/src/lib/reduceTimingFunctions.js"
+  }, {
     "name": "style-cache",
     "shortDescription": "Normalizes whitespace from previous PostCSS plugins",
     "longDescription": "When combining cssnano with other PostCSS plugins, this will normalize the whitespace created by generating rules.",

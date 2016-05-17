@@ -2,6 +2,9 @@
 
 * Added `postcss-discard-overridden` to safely discard overridden rules with
   the same identifier (thanks to @Justineo).
+* Added: Reduce animation/transition timing functions. Detects `cubic-bezier`
+  functions that are equivalent to the timing keywords and compresses, as well
+  as normalizing the `steps` timing function.
 
 * * *
 
