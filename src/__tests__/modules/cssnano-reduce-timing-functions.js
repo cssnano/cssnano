@@ -13,6 +13,13 @@ const mappings = {
 };
 
 Object.keys(mappings).forEach(mapping => {
+    if (!~mapping.indexOf('var')) {
+        tests.push({
+            message: `should handle ${mapping} (transition)`,
+            fixture: `transition:color 3s ${mappings[mapping]}`,
+            expected: `transition:color 3s ${mapping}`
+        });
+    }
     tests.push({
         message: `should handle ${mapping} (animation)`,
         fixture: `animation:fade 3s ${mappings[mapping]}`,
@@ -21,10 +28,6 @@ Object.keys(mappings).forEach(mapping => {
         message: `should handle ${mapping} (animation-timing-function)`,
         fixture: `animation-timing-function:${mappings[mapping]}`,
         expected: `animation-timing-function:${mapping}`
-    }, {
-        message: `should handle ${mapping} (transition)`,
-        fixture: `transition:color 3s ${mappings[mapping]}`,
-        expected: `transition:color 3s ${mapping}`
     }, {
         message: `should handle ${mapping} (transition-timing-function)`,
         fixture: `transition-timing-function:${mappings[mapping]}`,
