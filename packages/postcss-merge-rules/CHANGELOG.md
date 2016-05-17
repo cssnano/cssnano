@@ -1,3 +1,8 @@
+# 2.0.9
+
+* Resolves an issue where the module would merge rules that had colliding
+  vendor prefixed properties and specification properties.
+
 # 2.0.8
 
 * Resolves an issue where selectors inside `@keyframes` would be merged,
