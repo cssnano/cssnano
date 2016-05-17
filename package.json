@@ -55,7 +55,7 @@
   },
   "devDependencies": {
     "ava": "^0.14.0",
-    "babel-cli": "^6.5.1",
+    "babel-cli": "^6.9.0",
     "babel-core": "^6.5.1",
     "babel-plugin-add-module-exports": "^0.2.0",
     "babel-preset-es2015-loose": "^7.0.0",
