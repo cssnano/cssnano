@@ -4,7 +4,9 @@ import valueParser, {unit} from 'postcss-value-parser';
 const directions = ['top', 'right', 'bottom', 'left', 'center'];
 const properties = [
     'background',
-    'background-position'
+    'background-position',
+    '-webkit-perspective-origin',
+    'perspective-origin',
 ];
 
 const center = '50%';

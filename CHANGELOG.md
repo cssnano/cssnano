@@ -5,6 +5,8 @@
 * Added: Reduce animation/transition timing functions. Detects `cubic-bezier`
   functions that are equivalent to the timing keywords and compresses, as well
   as normalizing the `steps` timing function.
+* Added the `perspective-origin` property to the list of supported properties
+  transformed by the `reduce-positions` transform.
 
 * * *
 

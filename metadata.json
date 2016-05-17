@@ -199,8 +199,8 @@
     "source": "https://github.com/ben-eb/postcss-zindex"
   }, {
     "name": "reduce-positions",
-    "shortDescription": "Normalizes background-position definitions",
-    "longDescription": "Normalizes background position in the `background` shorthand and `background-position` properties.",
+    "shortDescription": "Normalizes CSS position definitions",
+    "longDescription": "Normalizes `position` values in the `background`, `background-position`, `-webkit-perspective-origin` and `perspective-origin` properties.",
     "inputExample": ".box {\n    background: 30% center / 50% 50%;\n}",
     "outputExample": ".box {\n    background: 30% / 50% 50%;\n}",
     "source": "https://github.com/ben-eb/cssnano/blob/master/src/lib/reducePositions.js"
