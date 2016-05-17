@@ -47,6 +47,7 @@ For more examples, see the [tests](src/__tests__/index.js).
 * `box-shadow`
 * `outline`
 * `flex-flow`
+* `transition`, `-webkit-transition`
 
 ## Usage
 
