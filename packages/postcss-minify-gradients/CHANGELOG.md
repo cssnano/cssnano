@@ -1,3 +1,8 @@
+# 1.0.2
+
+* Resolves an issue where the module would incorrectly parse floating
+  point numbers.
+
 # 1.0.1
 
 * Reduce function iterations (thanks to @TrySound).
