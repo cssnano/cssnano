@@ -36,7 +36,10 @@ export default function normalizeTransition (decl) {
             time2: []
         };
         arg.forEach(node => {
-            if (node.type === 'comment') {
+            if (
+                node.type === 'comment' ||
+                node.type === 'function' && node.value === 'var'
+            ) {
                 abort = true;
                 return;
             }

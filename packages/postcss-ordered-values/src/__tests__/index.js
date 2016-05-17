@@ -175,6 +175,22 @@ const tests = [{
     message: 'should order transition consistently (8)',
     fixture: '-webkit-transition: ease-out width .5s 2s',
     expected: '-webkit-transition: width .5s ease-out 2s'
+}, {
+    message: 'should abort ordering when a var is detected (transition)',
+    fixture: 'transition: .5s 2s width var(--ease)',
+    expected: 'transition: .5s 2s width var(--ease)'
+}, {
+    message: 'should abort ordering when a var is detected (flex-flow)',
+    fixture: 'flex-flow: wrap var(--column)',
+    expected: 'flex-flow: wrap var(--column)'
+}, {
+    message: 'should abort ordering when a var is detected (box-shadow)',
+    fixture: 'box-shadow: 0 1px 3px var(--red)',
+    expected: 'box-shadow: 0 1px 3px var(--red)'
+}, {
+    message: 'should abort ordering when a var is detected (border)',
+    fixture: 'border: solid 1px var(--red)',
+    expected: 'border: solid 1px var(--red)'
 }];
 
 tests.forEach(test => {

@@ -41,7 +41,10 @@ export default function normalizeBorder (decl) {
         let order = {width: '', style: '', color: ''};
         let abort = false;
         border.walk(node => {
-            if (node.type === 'comment') {
+            if (
+                node.type === 'comment' ||
+                node.type === 'function' && node.value === 'var'
+            ) {
                 abort = true;
                 return false;
             }
