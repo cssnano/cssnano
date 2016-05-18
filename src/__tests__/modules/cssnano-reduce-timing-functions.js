@@ -7,6 +7,7 @@ const mappings = {
     'ease-out':        'cubic-bezier(0, 0, 0.58, 1)',
     'ease-in-out':     'cubic-bezier(0.42, 0, 0.58, 1)',
     'step-start':      'steps(1, start)',
+    'steps(1)':        'steps(1)',
     'steps(5,start)':  'steps(5, start)',
     'steps(10)':       'steps(10, end)',
     'steps(15)':       'steps(15)',

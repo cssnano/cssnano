@@ -1,3 +1,7 @@
+# 3.6.2
+
+* Fixed an issue where cssnano would crash on `steps(1)`.
+
 # 3.6.1
 
 * Fixed an issue where cssnano would crash on `steps` functions with a

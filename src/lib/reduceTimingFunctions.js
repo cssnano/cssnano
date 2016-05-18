@@ -25,7 +25,11 @@ function reduce (node) {
     if (node.value === 'steps') {
         // Don't bother checking the step-end case as it has the same length
         // as steps(1)
-        if (getValue(node.nodes[0]) === 1 && node.nodes[2].value === 'start') {
+        if (
+            getValue(node.nodes[0]) === 1 &&
+            node.nodes[2] &&
+            node.nodes[2].value === 'start'
+        ) {
             node.type = 'word';
             node.value = 'step-start';
             delete node.nodes;
