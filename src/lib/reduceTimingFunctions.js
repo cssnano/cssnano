@@ -32,7 +32,7 @@ function reduce (node) {
             return;
         }
         // The end case is actually the browser default, so it isn't required.
-        if (node.nodes[2].value === 'end') {
+        if (node.nodes[2] && node.nodes[2].value === 'end') {
             node.nodes = [node.nodes[0]];
             return;
         }

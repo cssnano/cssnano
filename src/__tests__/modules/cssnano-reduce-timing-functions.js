@@ -9,6 +9,7 @@ const mappings = {
     'step-start':      'steps(1, start)',
     'steps(5,start)':  'steps(5, start)',
     'steps(10)':       'steps(10, end)',
+    'steps(15)':       'steps(15)',
     'var(--anim1)':    'var(--anim1)'
 };
 
