@@ -1,4 +1,4 @@
-# Head
+# 3.6.0
 
 * Added `postcss-discard-overridden` to safely discard overridden rules with
   the same identifier (thanks to @Justineo).
@@ -7,8 +7,6 @@
   as normalizing the `steps` timing function.
 * Added the `perspective-origin` property to the list of supported properties
   transformed by the `reduce-positions` transform.
-
-* * *
 
 # 3.5.2
 
