@@ -1,3 +1,8 @@
+# 3.6.1
+
+* Fixed an issue where cssnano would crash on `steps` functions with a
+  single argument.
+
 # 3.6.0
 
 * Added `postcss-discard-overridden` to safely discard overridden rules with
