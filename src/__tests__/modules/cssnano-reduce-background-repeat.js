@@ -25,5 +25,5 @@ Object.keys(mappings).forEach(mapping => {
     });
 });
 
-module.exports.name = 'cssnano/reduce-timing-functions';
+module.exports.name = 'cssnano/reduce-background-repeat';
 module.exports.tests = tests;
