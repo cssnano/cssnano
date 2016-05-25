@@ -1,5 +1,6 @@
 import {plugin} from 'postcss';
 import valueParser from 'postcss-value-parser';
+import getMatchFactory from './getMatch';
 
 const keywords = [
     ['ease',        [0.25, 0.1, 0.25, 1]],
@@ -11,12 +12,7 @@ const keywords = [
 
 const getArguments = (list, index) => index % 2 === 0;
 const getValue = (node) => parseFloat(node.value);
-
-function getMatch (args) {
-    return args.reduce((list, arg, i) => {
-        return list.filter(keyword => keyword[1][i] === arg);
-    }, keywords);
-}
+const getMatch = getMatchFactory(keywords);
 
 function reduce (node) {
     if (node.type !== 'function') {
