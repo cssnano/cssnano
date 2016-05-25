@@ -31,8 +31,7 @@ For further details check out the [website](http://cssnano.co/):
 
 ## Contributing
 
-Pull requests are welcome. If you add functionality, then please add unit tests
-to cover it.
+See [CONTRIBUTING.md][CONTRIBUTING.md].
 
 
 ## Links
