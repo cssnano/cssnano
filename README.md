@@ -31,7 +31,7 @@ For further details check out the [website](http://cssnano.co/):
 
 ## Contributing
 
-See [CONTRIBUTING.md][CONTRIBUTING.md].
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 
 ## Links
