@@ -1,3 +1,4 @@
+import {detect} from 'stylehacks';
 import hasAllProps from '../hasAllProps';
 import canMerge from '../canMerge';
 import minifyTrbl from '../minifyTrbl';
@@ -7,9 +8,7 @@ import insertCloned from '../insertCloned';
 import mergeValues from '../mergeValues';
 import valueType from '../type';
 import remove from '../remove';
-import {detect} from 'stylehacks';
-
-const trbl = ['top', 'right', 'bottom', 'left'];
+import trbl from '../trbl';
 
 export default property => {
     const properties = trbl.map(direction => `${property}-${direction}`);
