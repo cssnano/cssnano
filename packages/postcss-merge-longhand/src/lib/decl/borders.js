@@ -177,6 +177,42 @@ function merge (rule) {
         decls = decls.filter(node => !~props.indexOf(node));
     }
 
+    // optimize border-trbl
+    decls = rule.nodes.filter(node => node.prop && ~directions.indexOf(node.prop));
+    while (decls.length) {
+        let lastNode = decls[decls.length - 1];
+        wsc.forEach((d, i) => {
+            let names = directions.filter(name => name !== lastNode.prop).map(name => `${name}-${d}`);
+            let props = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop) && node.important === lastNode.important);
+            if (hasAllProps.apply(this, [props].concat(names))) {
+                let values = directions.map(prop => getLastNode(props, `${prop}-${d}`)).map(node => node ? node.value : null);
+                let filteredValues = values.filter(Boolean);
+                let lastNodeValue = list.space(lastNode.value)[i];
+                values[directions.indexOf(lastNode.prop)] = lastNodeValue;
+                let value = minifyTrbl(values.join(' '));
+                if (
+                    filteredValues[0] === filteredValues[1] &&
+                    filteredValues[1] === filteredValues[2]
+                ) {
+                    value = filteredValues[0];
+                }
+                let refNode = props[props.length-1];
+                if (value === lastNodeValue) {
+                    refNode = lastNode;
+                    let valueArray = list.space(lastNode.value);
+                    valueArray.splice(i, 1);
+                    lastNode.value = valueArray.join(' ');
+                }
+                insertCloned(rule, refNode, {
+                    prop: `border-${d}`,
+                    value: value
+                });
+                props.forEach(remove);
+            }
+        });
+        decls = decls.filter(node => node !== lastNode);
+    }
+
     rule.walkDecls('border', decl => {
         const next = decl.next();
         if (!next || next.type !== 'decl') {

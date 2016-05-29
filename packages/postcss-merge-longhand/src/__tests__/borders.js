@@ -99,6 +99,14 @@ const suites = [{
     message: 'should merge redundant values (3)',
     fixture: 'h1{border:1px solid #ddd;border-bottom-color:transparent}',
     expected: 'h1{border:1px solid;border-color:#ddd #ddd transparent}'
+}, {
+    message: 'should produce the minimum css necessary',
+    fixture: 'h1{border-width:0;border-top:1px solid #e1e1e1}',
+    expected: 'h1{border-width:0;border-top:1px solid #e1e1e1}'
+}, {
+    message: 'should produce the minimum css necessary (2)',
+    fixture: 'h1{border-color:rgba(0,0,0,.2);border-right-style:solid;border-right-width:1px}',
+    expected: 'h1{border-right:1px solid;border-color:rgba(0,0,0,.2)}'
 }];
 
 suites.forEach(suite => {
