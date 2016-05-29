@@ -1,2 +1,2 @@
-import base from './box-base';
+import base from './boxBase';
 export default base('padding');
