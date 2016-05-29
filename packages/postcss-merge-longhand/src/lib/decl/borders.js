@@ -78,12 +78,11 @@ function merge (rule) {
                     prop: `border-${direction}`,
                     value: rules.map(node => node.value).join(' ')
                 });
-                rules.forEach(remove);
+                props.forEach(remove);
             }
             decls = decls.filter(node => !~rules.indexOf(node));
         }
     });
-
     // border-trbl-wsc -> border-wsc
     wsc.forEach(d => {
         let names = trbl.map(direction => `border-${direction}-${d}`);
@@ -97,7 +96,7 @@ function merge (rule) {
                     prop: `border-${d}`,
                     value: minifyTrbl(rules.map(getValue).join(' '))
                 });
-                rules.forEach(remove);
+                props.forEach(remove);
             }
             decls = decls.filter(node => !~rules.indexOf(node));
         }

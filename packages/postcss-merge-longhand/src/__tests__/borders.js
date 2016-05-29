@@ -87,6 +87,18 @@ const suites = [{
     message: 'should use shorter equivalent rules',
     fixture: 'h1{border:5px solid;border-color:#222 transparent transparent}',
     expected: 'h1{border:5px solid transparent;border-top:5px solid #222}'
+}, {
+    message: 'should merge redundant values',
+    fixture: 'h1{border-width:5px 5px 0;border-bottom-width:0}',
+    expected: 'h1{border-width:5px 5px 0}'
+}, {
+    message: 'should merge redundant values (2)',
+    fixture: 'h1{border-width:5px 5px 0;border-bottom-width:10px}',
+    expected: 'h1{border-width:5px 5px 10px}'
+}, {
+    message: 'should merge redundant values (3)',
+    fixture: 'h1{border:1px solid #ddd;border-bottom-color:transparent}',
+    expected: 'h1{border:1px solid;border-color:#ddd #ddd transparent}'
 }];
 
 suites.forEach(suite => {
