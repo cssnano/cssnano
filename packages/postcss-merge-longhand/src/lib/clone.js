@@ -1,5 +1,3 @@
-/* jshint loopfunc:true */
-
 let clone = (obj, parent) => {
     if (typeof obj !== 'object') {
         return obj;

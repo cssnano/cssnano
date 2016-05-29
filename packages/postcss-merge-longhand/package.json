@@ -22,8 +22,9 @@
   "license": "MIT",
   "devDependencies": {
     "babel": "^5.8.23",
-    "babel-tape-runner": "^1.2.0",
-    "eslint": "^1.5.0",
+    "babel-tape-runner": "1.2.0",
+    "eslint": "^2.0.0",
+    "eslint-config-cssnano": "^2.0.0",
     "tap-spec": "^4.1.0",
     "tape": "^4.2.0"
   },
@@ -39,5 +40,8 @@
     "postcss": "^5.0.5",
     "postcss-value-parser": "^2.0.5",
     "stylehacks": "^2.2.0"
+  },
+  "eslintConfig": {
+    "extends": "cssnano"
   }
 }

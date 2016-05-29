@@ -112,25 +112,25 @@ let tests = [{
     fixture: 'h1{\n  border-width:3px;/* 1 */\n  border-style:solid;/* 2 */\n  border-color:red;/* 3 */}',
     expected: 'h1{/* 1 *//* 2 */\n  border:3px solid red;/* 3 */}'
 }, {
-	message: 'should merge margin-left with margin',
-	fixture: 'h1{margin:10px 20px;margin-left:10px}',
-	expected: 'h1{margin:10px 20px 10px 10px}'
+    message: 'should merge margin-left with margin',
+    fixture: 'h1{margin:10px 20px;margin-left:10px}',
+    expected: 'h1{margin:10px 20px 10px 10px}'
 }, {
-	message: 'should merge !important and normal margin values',
-	fixture: 'h1{margin-left:10px;margin-left:20px!important;margin-right:10px;margin-right:20px!important;margin-top:10px;margin-top:20px!important;margin-bottom:10px;margin-bottom:20px!important}',
-	expected: 'h1{margin:10px;margin:20px!important}'
+    message: 'should merge !important and normal margin values',
+    fixture: 'h1{margin-left:10px;margin-left:20px!important;margin-right:10px;margin-right:20px!important;margin-top:10px;margin-top:20px!important;margin-bottom:10px;margin-bottom:20px!important}',
+    expected: 'h1{margin:10px;margin:20px!important}'
 }, {
-	message: 'should merge column values',
-	fixture: 'h1{column-width:12em;column-count:auto}',
-	expected: 'h1{columns:12em auto}'
+    message: 'should merge column values',
+    fixture: 'h1{column-width:12em;column-count:auto}',
+    expected: 'h1{columns:12em auto}'
 }, {
-	message: 'should minify column values',
-	fixture: 'h1{column-width:auto;column-count:auto}',
-	expected: 'h1{columns:auto}'
+    message: 'should minify column values',
+    fixture: 'h1{column-width:auto;column-count:auto}',
+    expected: 'h1{columns:auto}'
 }, {
-	message: 'should merge column-width with columns',
-	fixture: 'h1{columns:12em auto;column-width:11em}',
-	expected: 'h1{columns:11em auto}'
+    message: 'should merge column-width with columns',
+    fixture: 'h1{columns:12em auto;column-width:11em}',
+    expected: 'h1{columns:11em auto}'
 }, {
     message: 'should merge border-top-width',
     fixture: 'h1{border-top-width:5px;border-top-style:solid;border-top-color:red}',
@@ -193,7 +193,7 @@ tape(name, t => {
     t.plan(tests.length);
 
     tests.forEach(test => {
-        var options = test.options || {};
+        const options = test.options || {};
         t.equal(process(test.fixture, options), test.expected, test.message);
     });
 });
