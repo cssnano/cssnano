@@ -76,7 +76,7 @@ function merge (rule) {
             if (hasAllProps.apply(this, [rules].concat(names)) && canMerge.apply(this, rules)) {
                 insertCloned(rule, lastNode, {
                     prop: `border-${direction}`,
-                    value: rules.map(node => node.value).join(' ')
+                    value: rules.map(getValue).join(' ')
                 });
                 props.forEach(remove);
             }
