@@ -8,9 +8,9 @@ import minifyTrbl from '../minifyTrbl';
 import canMerge from '../canMerge';
 import remove from '../remove';
 
-let wsc = ['width', 'style', 'color'];
-let tlbr = ['top', 'left', 'bottom', 'right'];
-let defaults = ['medium', 'none', 'currentColor'];
+const wsc = ['width', 'style', 'color'];
+const tlbr = ['top', 'left', 'bottom', 'right'];
+const defaults = ['medium', 'none', 'currentColor'];
 
 export default {
     explode: rule => {
@@ -26,11 +26,12 @@ export default {
 
         // border-tlbr -> border-tlbr-wsc
         tlbr.forEach(direction => {
-            rule.walkDecls(`border-${direction}`, decl => {
+            const border = `border-${direction}`;
+            rule.walkDecls(border, decl => {
                 let values = list.space(decl.value);
                 wsc.forEach((d, i) => {
                     insertCloned(rule, decl, {
-                        prop: `border-${direction}-${d}`,
+                        prop: `${border}-${d}`,
                         value: values[i] !== undefined ? values[i] : defaults[i]
                     });
                 });
@@ -53,6 +54,9 @@ export default {
         });
     },
     merge: rule => {
+        const directions = tlbr.map(direction => `border-${direction}`);
+        const properties = wsc.map(property => `border-${property}`);
+
         // border-tlbr-wsc -> border-tlbr
         tlbr.forEach(direction => {
             let names = wsc.map(d => `border-${direction}-${d}`);
@@ -92,13 +96,12 @@ export default {
         });
 
         // border-tlbr -> border-wsc
-        let names = tlbr.map(direction => `border-${direction}`);
-        let decls = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop));
+        let decls = rule.nodes.filter(node => node.prop && ~directions.indexOf(node.prop));
         while (decls.length) {
             let lastNode = decls[decls.length - 1];
             let props = decls.filter(node => node.important === lastNode.important);
-            let rules = names.map(prop => getLastNode(props, prop)).filter(Boolean);
-            if (hasAllProps.apply(this, [props].concat(names))) {
+            let rules = directions.map(prop => getLastNode(props, prop)).filter(Boolean);
+            if (hasAllProps.apply(this, [props].concat(directions))) {
                 wsc.forEach((d, i) => {
                     insertCloned(rule, lastNode, {
                         prop: `border-${d}`,
@@ -113,19 +116,18 @@ export default {
         // border-wsc -> border
         // border-wsc -> border + border-color
         // border-wsc -> border + border-dir
-        names = wsc.map(d => `border-${d}`);
-        decls = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop));
+        decls = rule.nodes.filter(node => node.prop && ~properties.indexOf(node.prop));
 
         while (decls.length) {
             let lastNode = decls[decls.length - 1];
             let props = decls.filter(node => node.important === lastNode.important);
-            if (hasAllProps.apply(this, [props].concat(names))) {
-                let width = getLastNode(props, names[0]);
-                let style = getLastNode(props, names[1]);
-                let color = getLastNode(props, names[2]);
+            if (hasAllProps.apply(this, [props].concat(properties))) {
+                let width = getLastNode(props, properties[0]);
+                let style = getLastNode(props, properties[1]);
+                let color = getLastNode(props, properties[2]);
 
-                if (hasAllProps.apply(this, [props].concat(names))) {
-                    let rules = names.map(prop => getLastNode(props, prop));
+                if (hasAllProps.apply(this, [props].concat(properties))) {
+                    let rules = properties.map(prop => getLastNode(props, prop));
                     let values = rules.map(node => parseTrbl(node.value));
                     let mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
                     let closeEnough = (mapped[0] === mapped[1] && mapped[1] === mapped[2]) ||
@@ -165,37 +167,41 @@ export default {
                         decl.prop = `border`;
                         decl.value = values.join(' ');
                         rule.insertBefore(color, decl);
-                        props.filter(node => node.prop !== names[2]).forEach(remove);
+                        props.filter(node => node.prop !== properties[2]).forEach(remove);
                     }
                 }
             }
             decls = decls.filter(node => !~props.indexOf(node));
         }
 
-        names = tlbr.map(direction => `border-${direction}`);
         rule.walkDecls('border', decl => {
-            let next = decl.next();
+            const next = decl.next();
             if (next && next.type === 'decl') {
-                let index = names.indexOf(next.prop);
-                if (index > -1) {
-                    let values = list.space(decl.value);
-                    let dirValues = list.space(next.value);
+                const index = directions.indexOf(next.prop);
+                if (!~index) {
+                    return;
+                }
+                let values = list.space(decl.value);
+                let dirValues = list.space(next.value);
 
-                    if ( values[0] === dirValues[0] && values[1] === dirValues[1] && values[2] && dirValues[2]) {
-                        let colors = parseTrbl(values[2]);
-                        colors[index] = dirValues[2];
-                        values.pop();
-                        let borderValue = values.join(' ');
-                        let colorValue = minifyTrbl(colors);
+                if (
+                    values[0] === dirValues[0] &&
+                    values[1] === dirValues[1] &&
+                    values[2] && dirValues[2]
+                ) {
+                    let colors = parseTrbl(values[2]);
+                    colors[index] = dirValues[2];
+                    values.pop();
+                    let borderValue = values.join(' ');
+                    let colorValue = minifyTrbl(colors);
 
-                        let origLength = decl.value.length + next.prop.length + next.value.length;
-                        let newLength = borderValue.length + 12 + colorValue.length;
+                    let origLength = decl.value.length + next.prop.length + next.value.length;
+                    let newLength = borderValue.length + 12 + colorValue.length;
 
-                        if (newLength < origLength) {
-                            decl.value = borderValue;
-                            next.prop = `border-color`;
-                            next.value = colorValue;
-                        }
+                    if (newLength < origLength) {
+                        decl.value = borderValue;
+                        next.prop = `border-color`;
+                        next.value = colorValue;
                     }
                 }
             }
