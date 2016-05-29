@@ -38,7 +38,7 @@
   "dependencies": {
     "object-assign": "^4.0.1",
     "postcss": "^5.0.5",
-    "postcss-value-parser": "^2.0.5",
+    "postcss-value-parser": "^3.3.0",
     "stylehacks": "^2.2.0"
   },
   "eslintConfig": {

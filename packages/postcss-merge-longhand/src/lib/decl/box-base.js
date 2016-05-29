@@ -6,12 +6,15 @@ import getLastNode from '../getLastNode';
 import insertCloned from '../insertCloned';
 import mergeValues from '../mergeValues';
 import valueType from '../type';
+import remove from '../remove';
 import {detect} from 'stylehacks';
 
 const trbl = ['top', 'right', 'bottom', 'left'];
 
 export default property => {
-    let processor = {
+    const properties = trbl.map(direction => `${property}-${direction}`);
+
+    const processor = {
         explode: rule => {
             if (rule.nodes.some(detect)) {
                 return false;
@@ -28,7 +31,6 @@ export default property => {
             });
         },
         merge: rule => {
-            let properties = trbl.map(direction => `${property}-${direction}`);
             let decls = rule.nodes.filter(node => node.prop && ~properties.indexOf(node.prop));
 
             while (decls.length) {
@@ -41,7 +43,7 @@ export default property => {
                         prop: property,
                         value: minifyTrbl(mergeValues.apply(this, rules))
                     });
-                    props.forEach(prop => prop.remove());
+                    props.forEach(remove);
                 }
                 decls = decls.filter(node => !~props.indexOf(node));
             }
@@ -49,7 +51,7 @@ export default property => {
             if (hasAllProps.apply(this, [rule].concat(properties))) {
                 let rules = properties.map(p => getLastNode(rule.nodes, p));
                 if (canMerge.apply(this, rules)) {
-                    rules.slice(0, 3).forEach(r => r.remove());
+                    rules.slice(0, 3).forEach(remove);
                     rules[3].value = minifyTrbl(mergeValues.apply(this, rules));
                     rules[3].prop = property;
                 }

@@ -6,6 +6,7 @@ import hasAllProps from '../hasAllProps';
 import getLastNode from '../getLastNode';
 import minifyTrbl from '../minifyTrbl';
 import canMerge from '../canMerge';
+import remove from '../remove';
 
 let wsc = ['width', 'style', 'color'];
 let tlbr = ['top', 'left', 'bottom', 'right'];
@@ -65,7 +66,7 @@ export default {
                         prop: `border-${direction}`,
                         value: rules.map(node => node.value).join(' ')
                     });
-                    rules.forEach(prop => prop.remove());
+                    rules.forEach(remove);
                 }
                 decls = decls.filter(node => !~rules.indexOf(node));
             }
@@ -84,7 +85,7 @@ export default {
                         prop: `border-${d}`,
                         value: minifyTrbl(rules.map(node => node.value).join(' '))
                     });
-                    rules.forEach(prop => prop.remove());
+                    rules.forEach(remove);
                 }
                 decls = decls.filter(node => !~rules.indexOf(node));
             }
@@ -104,7 +105,7 @@ export default {
                         value: minifyTrbl(rules.map(node => list.space(node.value)[i]))
                     });
                 });
-                props.forEach(prop => prop.remove());
+                props.forEach(remove);
             }
             decls = decls.filter(node => !~rules.indexOf(node));
         }
@@ -157,14 +158,14 @@ export default {
                             offBorder.value = offValue;
                             rule.insertAfter(border, offBorder);
                         }
-                        props.forEach(prop => prop.remove());
+                        props.forEach(remove);
                     } else if (reduced.length === 1) {
                         values = [width, style].map(node => node.value);
                         let decl = clone(lastNode);
                         decl.prop = `border`;
                         decl.value = values.join(' ');
                         rule.insertBefore(color, decl);
-                        props.filter(node => node.prop !== names[2]).forEach(prop => prop.remove());
+                        props.filter(node => node.prop !== names[2]).forEach(remove);
                     }
                 }
             }
