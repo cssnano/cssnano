@@ -1,10 +1,6 @@
 import {list} from 'postcss';
-
-const space = list.space;
+const {space} = list;
 
 export default (...rules) => {
-    return rules.reduce((memo, rule) => {
-        memo += space(rule.value).length;
-        return memo;
-    }, 0);
+    return rules.reduce((memo, rule) => memo += space(rule.value).length, 0);
 };
