@@ -2,8 +2,52 @@ import test from 'ava';
 import postcss from 'postcss';
 import plugin from '..';
 import {name} from '../../package.json';
+import trbl from '../lib/trbl';
 
-const suites = [{
+let suites = [];
+
+const wsc = [{
+    property: 'width',
+    fixture: '1px'
+}, {
+    property: 'style',
+    fixture: 'solid'
+}, {
+    property: 'color',
+    fixture: 'red'
+}];
+
+wsc.forEach(({property, fixture}) => {
+    suites.push({
+        message: `should merge to form a border-trbl-${property} definition`,
+        fixture: [
+            `h1{`,
+            `border-${trbl[0]}-${property}:${fixture};`,
+            `border-${trbl[1]}-${property}:${fixture};`,
+            `border-${trbl[2]}-${property}:${fixture};`,
+            `border-${trbl[3]}-${property}:${fixture}`,
+            `}`,
+        ].join(''),
+        expected: `h1{border-${property}:${fixture}}`
+    });
+});
+
+trbl.forEach(direction => {
+    const value = wsc.reduce((list, {fixture}) => [...list, fixture], []);
+    suites.push({
+        message: `should merge to form a border-${direction} definition`,
+        fixture: [
+            `h1{`,
+            `border-${direction}-width:${value[0]};`,
+            `border-${direction}-style:${value[1]};`,
+            `border-${direction}-color:${value[2]}`,
+            `}`,
+        ].join(''),
+        expected: `h1{border-${direction}:${value[0]} ${value[1]} ${value[2]}}`
+    });
+});
+
+suites.push({
     message: 'should merge identical border values',
     fixture: 'h1{border-top:1px solid black;border-bottom:1px solid black;border-left:1px solid black;border-right:1px solid black}',
     expected: 'h1{border:1px solid black}'
@@ -48,22 +92,6 @@ const suites = [{
     fixture: 'h1{\n  border-width:3px;/* 1 */\n  border-style:solid;/* 2 */\n  border-color:red;/* 3 */}',
     expected: 'h1{/* 1 *//* 2 */\n  border:3px solid red;/* 3 */}'
 }, {
-    message: 'should merge border-top-width',
-    fixture: 'h1{border-top-width:5px;border-top-style:solid;border-top-color:red}',
-    expected: 'h1{border-top:5px solid red}'
-}, {
-    message: 'should merge border-right-width',
-    fixture: 'h1{border-right-width:5px;border-right-style:solid;border-right-color:red}',
-    expected: 'h1{border-right:5px solid red}'
-}, {
-    message: 'should merge border-bottom-width',
-    fixture: 'h1{border-bottom-width:5px;border-bottom-style:solid;border-bottom-color:red}',
-    expected: 'h1{border-bottom:5px solid red}'
-}, {
-    message: 'should merge border-left-width',
-    fixture: 'h1{border-left-width:5px;border-left-style:solid;border-left-color:red}',
-    expected: 'h1{border-left:5px solid red}'
-}, {
     message: 'should not convert border: 0 to border-width: 0',
     fixture: 'h1{border:0}',
     expected: 'h1{border:0}'
@@ -107,7 +135,7 @@ const suites = [{
     message: 'should produce the minimum css necessary (2)',
     fixture: 'h1{border-color:rgba(0,0,0,.2);border-right-style:solid;border-right-width:1px}',
     expected: 'h1{border-right:1px solid;border-color:rgba(0,0,0,.2)}'
-}];
+});
 
 suites.forEach(suite => {
     test(suite.message, t => {
