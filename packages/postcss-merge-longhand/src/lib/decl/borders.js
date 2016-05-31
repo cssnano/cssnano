@@ -1,4 +1,5 @@
 import {list} from 'postcss';
+import assign from 'object-assign';
 import clone from '../clone';
 import genericMerge from '../genericMerge';
 import insertCloned from '../insertCloned';
@@ -142,21 +143,20 @@ function merge (rule) {
                 });
 
                 if (reduced[1]) {
-                    let offValue = first ? reduced[1] : reduced[0];
-                    let direction = trbl[mapped.indexOf(offValue)];
+                    let value = first ? reduced[1] : reduced[0];
+                    let prop = `border-${trbl[mapped.indexOf(value)]}`;
 
-                    let offBorder = clone(lastNode);
-                    offBorder.prop = `border-${direction}`;
-                    offBorder.value = offValue;
-                    rule.insertAfter(border, offBorder);
+                    rule.insertAfter(border, assign(clone(lastNode), {
+                        prop,
+                        value,
+                    }));
                 }
                 props.forEach(remove);
             } else if (reduced.length === 1) {
-                values = [width, style].map(getValue);
-                let decl = clone(lastNode);
-                decl.prop = `border`;
-                decl.value = values.join(' ');
-                rule.insertBefore(color, decl);
+                rule.insertBefore(color, assign(clone(lastNode), {
+                    prop: 'border',
+                    value: [width, style].map(getValue).join(' '),
+                }));
                 props.filter(node => node.prop !== properties[2]).forEach(remove);
             }
         }
@@ -234,7 +234,7 @@ function merge (rule) {
     });
 
     // clean-up values
-    rule.walkDecls(/^border(-(top|right|bottom|left))?/, decl => {
+    rule.walkDecls(/^border($|-(top|right|bottom|left))/, decl => {
         decl.value = list.space(decl.value).concat(['']).reduceRight((prev, cur, i) => {
             if (prev === '' && cur === defaults[i]) {
                 return prev;
