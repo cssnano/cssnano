@@ -85,7 +85,7 @@ function merge (rule) {
             let lastNode = decls[decls.length - 1];
             let props = decls.filter(node => node.important === lastNode.important);
             let rules = names.map(prop => getLastNode(props, prop)).filter(Boolean);
-            if (hasAllProps.apply(this, [props].concat(names))) {
+            if (hasAllProps(props, ...names)) {
                 insertCloned(rule, lastNode, {
                     prop: `border-${d}`,
                     value: minifyTrbl(rules.map(getValue).join(' '))
@@ -102,7 +102,7 @@ function merge (rule) {
         let lastNode = decls[decls.length - 1];
         let props = decls.filter(node => node.important === lastNode.important);
         let rules = directions.map(prop => getLastNode(props, prop)).filter(Boolean);
-        if (hasAllProps.apply(this, [props].concat(directions))) {
+        if (hasAllProps(props, ...directions)) {
             wsc.forEach((d, i) => {
                 insertCloned(rule, lastNode, {
                     prop: `border-${d}`,
@@ -122,12 +122,12 @@ function merge (rule) {
     while (decls.length) {
         let lastNode = decls[decls.length - 1];
         let props = decls.filter(node => node.important === lastNode.important);
-        if (hasAllProps.apply(this, [props].concat(properties))) {
+        if (hasAllProps(props, ...properties)) {
             let width = getLastNode(props, properties[0]);
             let style = getLastNode(props, properties[1]);
             let color = getLastNode(props, properties[2]);
 
-            if (hasAllProps.apply(this, [props].concat(properties))) {
+            if (hasAllProps(props, ...properties)) {
                 let rules = properties.map(prop => getLastNode(props, prop));
                 let values = rules.map(node => parseTrbl(node.value));
                 let mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
@@ -140,7 +140,7 @@ function merge (rule) {
                     return a;
                 });
 
-                if (isCloseEnough(mapped) && canMerge.apply(this, rules)) {
+                if (isCloseEnough(mapped) && canMerge(...rules)) {
                     let first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
 
                     let border = insertCloned(rule, lastNode, {
@@ -178,7 +178,7 @@ function merge (rule) {
         wsc.forEach((d, i) => {
             let names = directions.filter(name => name !== lastNode.prop).map(name => `${name}-${d}`);
             let props = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop) && node.important === lastNode.important);
-            if (hasAllProps.apply(this, [props].concat(names))) {
+            if (hasAllProps(props, ...names)) {
                 let values = directions.map(prop => getLastNode(props, `${prop}-${d}`)).map(node => node ? node.value : null);
                 let filteredValues = values.filter(Boolean);
                 let lastNodeValue = list.space(lastNode.value)[i];

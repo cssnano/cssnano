@@ -20,10 +20,7 @@ export default function genericMerge ({rule, properties, prop, value}) {
     while (decls.length) {
         let lastNode = decls[decls.length - 1];
         let props = decls.filter(node => node.important === lastNode.important);
-        if (
-            hasAllProps.apply(this, [props].concat(properties)) &&
-            canMerge.apply(this, props)
-        ) {
+        if (hasAllProps(props, ...properties) && canMerge(...props)) {
             insertCloned(rule, lastNode, {
                 prop,
                 value: value(getRules(props, properties))

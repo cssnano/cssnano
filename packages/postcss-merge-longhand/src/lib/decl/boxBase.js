@@ -35,15 +35,14 @@ export default prop => {
                 prop,
                 properties,
                 value: rules => {
-                    return minifyTrbl(mergeValues.apply(this, rules));
+                    return minifyTrbl(mergeValues(...rules));
                 }
             });
-
-            if (hasAllProps.apply(this, [rule].concat(properties))) {
+            if (hasAllProps(rule, ...properties)) {
                 let rules = properties.map(p => getLastNode(rule.nodes, p));
-                if (canMerge.apply(this, rules)) {
+                if (canMerge(...rules)) {
                     rules.slice(0, 3).forEach(remove);
-                    rules[3].value = minifyTrbl(mergeValues.apply(this, rules));
+                    rules[3].value = minifyTrbl(mergeValues(...rules));
                     rules[3].prop = prop;
                 }
             }
