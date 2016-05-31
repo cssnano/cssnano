@@ -26,7 +26,7 @@ export default prop => {
                         value: values[index]
                     });
                 });
-                decl.removeSelf();
+                decl.remove();
             });
         },
         merge: rule => {
@@ -34,9 +34,7 @@ export default prop => {
                 rule,
                 prop,
                 properties,
-                value: rules => {
-                    return minifyTrbl(mergeValues(...rules));
-                }
+                value: rules => minifyTrbl(mergeValues(...rules))
             });
             if (hasAllProps(rule, ...properties)) {
                 let rules = properties.map(p => getLastNode(rule.nodes, p));

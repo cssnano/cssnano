@@ -13,7 +13,7 @@ const processors = [
 
 export default postcss.plugin('postcss-merge-longhand', () => {
     return css => {
-        css.eachRule(rule => {
+        css.walkRules(rule => {
             processors.forEach(p => p.explode(rule));
             processors.slice().reverse().forEach(p => p.merge(rule));
         });

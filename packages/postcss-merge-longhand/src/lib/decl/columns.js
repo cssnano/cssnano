@@ -1,9 +1,10 @@
 import {list} from 'postcss';
 import {unit} from 'postcss-value-parser';
 import genericMerge from '../genericMerge';
+import getValue from '../getValue';
 import insertCloned from '../insertCloned';
 
-const wc = ['column-width', 'column-count'];
+const properties = ['column-width', 'column-count'];
 const auto = 'auto';
 
 /**
@@ -33,12 +34,12 @@ function explode (rule) {
         }
 
         values.forEach((value, i) => {
-            let prop = wc[1];
+            let prop = properties[1];
 
             if (value === auto) {
-                prop = i === 0 ? wc[0] : wc[1];
+                prop = properties[i];
             } else if (unit(value).unit) {
-                prop = wc[0];
+                prop = properties[0];
             }
 
             insertCloned(rule, decl, {
@@ -54,10 +55,8 @@ function merge (rule) {
     return genericMerge({
         rule,
         prop: 'columns',
-        properties: wc,
-        value: rules => {
-            return normalize(rules.map(r => r.value));
-        }
+        properties,
+        value: rules => normalize(rules.map(getValue))
     });
 }
 

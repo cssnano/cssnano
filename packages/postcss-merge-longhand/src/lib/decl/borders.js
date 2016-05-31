@@ -5,6 +5,7 @@ import insertCloned from '../insertCloned';
 import parseTrbl from '../parseTrbl';
 import hasAllProps from '../hasAllProps';
 import getLastNode from '../getLastNode';
+import getValue from '../getValue';
 import minifyTrbl from '../minifyTrbl';
 import canMerge from '../canMerge';
 import remove from '../remove';
@@ -14,10 +15,6 @@ const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentColor'];
 const directions = trbl.map(direction => `border-${direction}`);
 const properties = wsc.map(property => `border-${property}`);
-
-function getValue (node) {
-    return node.value;
-}
 
 function isCloseEnough (mapped) {
     return (mapped[0] === mapped[1] && mapped[1] === mapped[2]) ||
@@ -42,45 +39,42 @@ function explode (rule) {
             wsc.forEach((d, i) => {
                 insertCloned(rule, decl, {
                     prop: `${prop}-${d}`,
-                    value: values[i] !== undefined ? values[i] : defaults[i]
+                    value: values[i] || defaults[i],
                 });
             });
             return decl.remove();
         }
         // border-wsc -> border-trbl-wsc
-        let property;
-        if (wsc.some(style => {
-            property = style;
-            return prop === `border-${style}`;
-        })) {
-            let values = parseTrbl(decl.value);
-            values.forEach((value, i) => {
+        wsc.some(style => {
+            if (prop !== `border-${style}`) {
+                return false;
+            }
+            parseTrbl(decl.value).forEach((value, i) => {
                 insertCloned(rule, decl, {
-                    prop: `border-${trbl[i]}-${property}`,
+                    prop: `border-${trbl[i]}-${style}`,
                     value
                 });
             });
             return decl.remove();
-        }
+        });
     });
 }
 
 function merge (rule) {
     // border-trbl-wsc -> border-trbl
     trbl.forEach(direction => {
+        const prop = `border-${direction}`;
         genericMerge({
             rule,
-            prop: `border-${direction}`,
-            properties: wsc.map(d => `border-${direction}-${d}`),
-            value: rules => {
-                return rules.map(getValue).join(' ');
-            }
+            prop,
+            properties: wsc.map(d => `${prop}-${d}`),
+            value: rules => rules.map(getValue).join(' ')
         });
     });
     // border-trbl-wsc -> border-wsc
     wsc.forEach(d => {
         let names = trbl.map(direction => `border-${direction}-${d}`);
-        let decls = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop));
+        let decls = rule.nodes.filter(({prop}) => prop && ~names.indexOf(prop));
         while (decls.length) {
             let lastNode = decls[decls.length - 1];
             let props = decls.filter(node => node.important === lastNode.important);
@@ -97,7 +91,7 @@ function merge (rule) {
     });
 
     // border-trbl -> border-wsc
-    let decls = rule.nodes.filter(node => node.prop && ~directions.indexOf(node.prop));
+    let decls = rule.nodes.filter(({prop}) => prop && ~directions.indexOf(prop));
     while (decls.length) {
         let lastNode = decls[decls.length - 1];
         let props = decls.filter(node => node.important === lastNode.important);
@@ -117,7 +111,7 @@ function merge (rule) {
     // border-wsc -> border
     // border-wsc -> border + border-color
     // border-wsc -> border + border-dir
-    decls = rule.nodes.filter(node => node.prop && ~properties.indexOf(node.prop));
+    decls = rule.nodes.filter(({prop}) => prop && ~properties.indexOf(prop));
 
     while (decls.length) {
         let lastNode = decls[decls.length - 1];
@@ -140,9 +134,9 @@ function merge (rule) {
             });
 
             if (isCloseEnough(mapped) && canMerge(...rules)) {
-                let first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
+                const first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
 
-                let border = insertCloned(rule, lastNode, {
+                const border = insertCloned(rule, lastNode, {
                     prop: 'border',
                     value: first ? reduced[0] : reduced[1]
                 });
@@ -170,7 +164,7 @@ function merge (rule) {
     }
 
     // optimize border-trbl
-    decls = rule.nodes.filter(node => node.prop && ~directions.indexOf(node.prop));
+    decls = rule.nodes.filter(({prop}) => prop && ~directions.indexOf(prop));
     while (decls.length) {
         let lastNode = decls[decls.length - 1];
         wsc.forEach((d, i) => {
@@ -188,7 +182,7 @@ function merge (rule) {
                 ) {
                     value = filteredValues[0];
                 }
-                let refNode = props[props.length-1];
+                let refNode = props[props.length - 1];
                 if (value === lastNodeValue) {
                     refNode = lastNode;
                     let valueArray = list.space(lastNode.value);
@@ -197,7 +191,7 @@ function merge (rule) {
                 }
                 insertCloned(rule, refNode, {
                     prop: `border-${d}`,
-                    value: value
+                    value,
                 });
                 props.forEach(remove);
             }
@@ -247,9 +241,7 @@ function merge (rule) {
             }
             return cur + ' ' + prev;
         }).trim() || defaults[0];
-        if (wsc.some(style => ~decl.prop.indexOf(style))) {
-            decl.value = minifyTrbl(decl.value);
-        }
+        decl.value = minifyTrbl(decl.value);
     });
 }
 
