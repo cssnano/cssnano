@@ -90,6 +90,10 @@ addTests({
     message: 'should convert 2 values to 1 with an unrelated inherit (box)',
     fixture: '.ui.table td{box:0.71428571em 0.71428571em;text-align:inherit}',
     expected: '.ui.table td{box:0.71428571em;text-align:inherit}'
+}, {
+    message: 'should not explode box: inherit',
+    fixture: 'h1{box:inherit}',
+    expected: 'h1{box:inherit}'
 });
 
 suites.forEach(suite => {

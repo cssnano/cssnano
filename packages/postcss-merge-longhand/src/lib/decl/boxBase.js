@@ -19,6 +19,9 @@ export default prop => {
                 return false;
             }
             rule.walkDecls(prop, decl => {
+                if (~decl.value.indexOf('inherit')) {
+                    return;
+                }
                 let values = parseTrbl(decl.value);
                 trbl.forEach((direction, index) => {
                     insertCloned(rule, decl, {
