@@ -127,45 +127,43 @@ function merge (rule) {
             let style = getLastNode(props, properties[1]);
             let color = getLastNode(props, properties[2]);
 
-            if (hasAllProps(props, ...properties)) {
-                let rules = properties.map(prop => getLastNode(props, prop));
-                let values = rules.map(node => parseTrbl(node.value));
-                let mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
+            let rules = properties.map(prop => getLastNode(props, prop));
+            let values = rules.map(node => parseTrbl(node.value));
+            let mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
 
-                let reduced = mapped.reduce((a, b) => {
-                    a = Array.isArray(a) ? a : [a];
-                    if (!~a.indexOf(b)) {
-                        a.push(b);
-                    }
-                    return a;
+            let reduced = mapped.reduce((a, b) => {
+                a = Array.isArray(a) ? a : [a];
+                if (!~a.indexOf(b)) {
+                    a.push(b);
+                }
+                return a;
+            });
+
+            if (isCloseEnough(mapped) && canMerge(...rules)) {
+                let first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
+
+                let border = insertCloned(rule, lastNode, {
+                    prop: 'border',
+                    value: first ? reduced[0] : reduced[1]
                 });
 
-                if (isCloseEnough(mapped) && canMerge(...rules)) {
-                    let first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
+                if (reduced[1]) {
+                    let offValue = first ? reduced[1] : reduced[0];
+                    let direction = trbl[mapped.indexOf(offValue)];
 
-                    let border = insertCloned(rule, lastNode, {
-                        prop: 'border',
-                        value: first ? reduced[0] : reduced[1]
-                    });
-
-                    if (reduced[1]) {
-                        let offValue = first ? reduced[1] : reduced[0];
-                        let direction = trbl[mapped.indexOf(offValue)];
-
-                        let offBorder = clone(lastNode);
-                        offBorder.prop = `border-${direction}`;
-                        offBorder.value = offValue;
-                        rule.insertAfter(border, offBorder);
-                    }
-                    props.forEach(remove);
-                } else if (reduced.length === 1) {
-                    values = [width, style].map(getValue);
-                    let decl = clone(lastNode);
-                    decl.prop = `border`;
-                    decl.value = values.join(' ');
-                    rule.insertBefore(color, decl);
-                    props.filter(node => node.prop !== properties[2]).forEach(remove);
+                    let offBorder = clone(lastNode);
+                    offBorder.prop = `border-${direction}`;
+                    offBorder.value = offValue;
+                    rule.insertAfter(border, offBorder);
                 }
+                props.forEach(remove);
+            } else if (reduced.length === 1) {
+                values = [width, style].map(getValue);
+                let decl = clone(lastNode);
+                decl.prop = `border`;
+                decl.value = values.join(' ');
+                rule.insertBefore(color, decl);
+                props.filter(node => node.prop !== properties[2]).forEach(remove);
             }
         }
         decls = decls.filter(node => !~props.indexOf(node));
