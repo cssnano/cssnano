@@ -227,19 +227,23 @@ function merge (rule) {
         }
         let values = list.space(decl.value);
         let nextValues = list.space(nextDecl.value);
+        
+        const config = {
+            values,
+            nextValues,
+            decl,
+            nextDecl,
+            index,
+        };
 
         if (
             values[0] === nextValues[0] &&
             values[2] === nextValues[2]
         ) {
             return mergeRedundant({
-                values,
-                nextValues,
-                decl,
-                nextDecl,
-                index,
+                ...config,
                 position: 1,
-                prop: 'border-style'
+                prop: 'border-style',
             });
         }
 
@@ -248,13 +252,9 @@ function merge (rule) {
             values[2] === nextValues[2]
         ) {
             return mergeRedundant({
-                values,
-                nextValues,
-                decl,
-                nextDecl,
-                index,
+                ...config,
                 position: 0,
-                prop: 'border-width'
+                prop: 'border-width',
             });
         }
 
@@ -264,13 +264,9 @@ function merge (rule) {
             values[2] && nextValues[2]
         ) {
             return mergeRedundant({
-                values,
-                nextValues,
-                decl,
-                nextDecl,
-                index,
+                ...config,
                 position: 2,
-                prop: 'border-color'
+                prop: 'border-color',
             });
         }
     });
