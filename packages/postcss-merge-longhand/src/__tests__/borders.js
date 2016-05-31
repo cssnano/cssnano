@@ -128,6 +128,14 @@ suites.push({
     fixture: 'h1{border:1px solid #ddd;border-bottom-color:transparent}',
     expected: 'h1{border:1px solid;border-color:#ddd #ddd transparent}'
 }, {
+    message: 'should merge redundant values (4)',
+    fixture: 'h1{border:1px solid #ddd;border-bottom-style:dotted}',
+    expected: 'h1{border:1px #ddd;border-style:solid solid dotted}'
+}, {
+    message: 'should merge redundant values (5)',
+    fixture: 'h1{border:1px solid #ddd;border-bottom-width:5px}',
+    expected: 'h1{border:solid #ddd;border-width:1px 1px 5px}'
+}, {
     message: 'should produce the minimum css necessary',
     fixture: 'h1{border-width:0;border-top:1px solid #e1e1e1}',
     expected: 'h1{border-width:0;border-top:1px solid #e1e1e1}'

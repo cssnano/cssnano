@@ -17,6 +17,23 @@ const defaults = ['medium', 'none', 'currentColor'];
 const directions = trbl.map(direction => `border-${direction}`);
 const properties = wsc.map(property => `border-${property}`);
 
+function mergeRedundant ({values, nextValues, decl, nextDecl, index, position, prop}) {
+    let props = parseTrbl(values[position]);
+    props[index] = nextValues[position];
+    values.splice(position, 1);
+    let borderValue = values.join(' ');
+    let propertyValue = minifyTrbl(props);
+
+    let origLength = (decl.value + nextDecl.prop + nextDecl.value).length;
+    let newLength = borderValue.length + 12 + propertyValue.length;
+
+    if (newLength < origLength) {
+        decl.value = borderValue;
+        nextDecl.prop = prop;
+        nextDecl.value = propertyValue;
+    }
+}
+
 function isCloseEnough (mapped) {
     return (mapped[0] === mapped[1] && mapped[1] === mapped[2]) ||
            (mapped[1] === mapped[2] && mapped[2] === mapped[3]) ||
@@ -200,36 +217,61 @@ function merge (rule) {
     }
 
     rule.walkDecls('border', decl => {
-        const next = decl.next();
-        if (!next || next.type !== 'decl') {
+        const nextDecl = decl.next();
+        if (!nextDecl || nextDecl.type !== 'decl') {
             return;
         }
-        const index = directions.indexOf(next.prop);
+        const index = directions.indexOf(nextDecl.prop);
         if (!~index) {
             return;
         }
         let values = list.space(decl.value);
-        let dirValues = list.space(next.value);
+        let nextValues = list.space(nextDecl.value);
 
         if (
-            values[0] === dirValues[0] &&
-            values[1] === dirValues[1] &&
-            values[2] && dirValues[2]
+            values[0] === nextValues[0] &&
+            values[2] === nextValues[2]
         ) {
-            let colors = parseTrbl(values[2]);
-            colors[index] = dirValues[2];
-            values.pop();
-            let borderValue = values.join(' ');
-            let colorValue = minifyTrbl(colors);
+            return mergeRedundant({
+                values,
+                nextValues,
+                decl,
+                nextDecl,
+                index,
+                position: 1,
+                prop: 'border-style'
+            });
+        }
 
-            let origLength = (decl.value + next.prop + next.value).length;
-            let newLength = borderValue.length + 12 + colorValue.length;
+        if (
+            values[1] === nextValues[1] &&
+            values[2] === nextValues[2]
+        ) {
+            return mergeRedundant({
+                values,
+                nextValues,
+                decl,
+                nextDecl,
+                index,
+                position: 0,
+                prop: 'border-width'
+            });
+        }
 
-            if (newLength < origLength) {
-                decl.value = borderValue;
-                next.prop = `border-color`;
-                next.value = colorValue;
-            }
+        if (
+            values[0] === nextValues[0] &&
+            values[1] === nextValues[1] &&
+            values[2] && nextValues[2]
+        ) {
+            return mergeRedundant({
+                values,
+                nextValues,
+                decl,
+                nextDecl,
+                index,
+                position: 2,
+                prop: 'border-color'
+            });
         }
     });
 
