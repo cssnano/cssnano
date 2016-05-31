@@ -1,6 +1,7 @@
-import clone from '../clone';
-import insertCloned from '../insertCloned';
 import {list} from 'postcss';
+import clone from '../clone';
+import genericMerge from '../genericMerge';
+import insertCloned from '../insertCloned';
 import parseTrbl from '../parseTrbl';
 import hasAllProps from '../hasAllProps';
 import getLastNode from '../getLastNode';
@@ -67,21 +68,14 @@ function explode (rule) {
 function merge (rule) {
     // border-trbl-wsc -> border-trbl
     trbl.forEach(direction => {
-        let names = wsc.map(d => `border-${direction}-${d}`);
-        let decls = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop));
-        while (decls.length) {
-            let lastNode = decls[decls.length - 1];
-            let props = decls.filter(node => node.important === lastNode.important);
-            let rules = names.map(prop => getLastNode(props, prop)).filter(Boolean);
-            if (hasAllProps.apply(this, [rules].concat(names)) && canMerge.apply(this, rules)) {
-                insertCloned(rule, lastNode, {
-                    prop: `border-${direction}`,
-                    value: rules.map(getValue).join(' ')
-                });
-                props.forEach(remove);
+        genericMerge({
+            rule,
+            prop: `border-${direction}`,
+            properties: wsc.map(d => `border-${direction}-${d}`),
+            value: rules => {
+                return rules.map(getValue).join(' ');
             }
-            decls = decls.filter(node => !~rules.indexOf(node));
-        }
+        });
     });
     // border-trbl-wsc -> border-wsc
     wsc.forEach(d => {

@@ -1,10 +1,7 @@
 import {list} from 'postcss';
 import {unit} from 'postcss-value-parser';
-import canMerge from '../canMerge';
-import hasAllProps from '../hasAllProps';
+import genericMerge from '../genericMerge';
 import insertCloned from '../insertCloned';
-import getLastNode from '../getLastNode';
-import remove from '../remove';
 
 const wc = ['column-width', 'column-count'];
 const auto = 'auto';
@@ -54,23 +51,14 @@ function explode (rule) {
 }
 
 function merge (rule) {
-    let decls = rule.nodes.filter(({prop}) => prop && ~wc.indexOf(prop));
-    while (decls.length) {
-        let lastNode = decls[decls.length - 1];
-        let props = decls.filter(node => node.important === lastNode.important);
-        if (
-            hasAllProps.apply(this, [props].concat(wc)) &&
-            canMerge.apply(this, props)
-        ) {
-            let values = wc.map(prop => getLastNode(props, prop).value);
-            insertCloned(rule, lastNode, {
-                prop: 'columns',
-                value: normalize(values),
-            });
-            props.forEach(remove);
+    return genericMerge({
+        rule,
+        prop: 'columns',
+        properties: wc,
+        value: rules => {
+            return normalize(rules.map(r => r.value));
         }
-        decls = decls.filter(node => !~props.indexOf(node));
-    }
+    });
 }
 
 export default {
