@@ -1,6 +1,6 @@
 import {list} from 'postcss';
 import {unit} from 'postcss-value-parser';
-import genericMerge from '../genericMerge';
+import {genericMergeFactory} from '../genericMerge';
 import getValue from '../getValue';
 import insertCloned from '../insertCloned';
 
@@ -51,14 +51,11 @@ function explode (rule) {
     });
 }
 
-function merge (rule) {
-    return genericMerge({
-        rule,
-        prop: 'columns',
-        properties,
-        value: rules => normalize(rules.map(getValue))
-    });
-}
+const merge = genericMergeFactory({
+    prop: 'columns',
+    properties,
+    value: rules => normalize(rules.map(getValue)),
+});
 
 export default {
     explode,

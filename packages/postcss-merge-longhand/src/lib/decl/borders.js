@@ -41,6 +41,16 @@ function isCloseEnough (mapped) {
            (mapped[3] === mapped[0] && mapped[0] === mapped[1]);
 }
 
+function getDistinctShorthands (mapped) {
+    return mapped.reduce((a, b) => {
+        a = Array.isArray(a) ? a : [a];
+        if (!~a.indexOf(b)) {
+            a.push(b);
+        }
+        return a;
+    });
+}
+
 function explode (rule) {
     rule.walkDecls(/^border/, decl => {
         const {prop} = decl;
@@ -70,7 +80,7 @@ function explode (rule) {
             parseTrbl(decl.value).forEach((value, i) => {
                 insertCloned(rule, decl, {
                     prop: `border-${trbl[i]}-${style}`,
-                    value
+                    value,
                 });
             });
             return decl.remove();
@@ -86,7 +96,7 @@ function merge (rule) {
             rule,
             prop,
             properties: wsc.map(d => `${prop}-${d}`),
-            value: rules => rules.map(getValue).join(' ')
+            value: rules => rules.map(getValue).join(' '),
         });
     });
     // border-trbl-wsc -> border-wsc
@@ -100,7 +110,7 @@ function merge (rule) {
             if (hasAllProps(props, ...names)) {
                 insertCloned(rule, lastNode, {
                     prop: `border-${d}`,
-                    value: minifyTrbl(rules.map(getValue).join(' '))
+                    value: minifyTrbl(rules.map(getValue).join(' ')),
                 });
                 props.forEach(remove);
             }
@@ -118,7 +128,7 @@ function merge (rule) {
             wsc.forEach((d, i) => {
                 insertCloned(rule, lastNode, {
                     prop: `border-${d}`,
-                    value: minifyTrbl(rules.map(node => list.space(node.value)[i]))
+                    value: minifyTrbl(rules.map(node => list.space(node.value)[i])),
                 });
             });
             props.forEach(remove);
@@ -142,26 +152,19 @@ function merge (rule) {
             let rules = properties.map(prop => getLastNode(props, prop));
             let values = rules.map(node => parseTrbl(node.value));
             let mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
-
-            let reduced = mapped.reduce((a, b) => {
-                a = Array.isArray(a) ? a : [a];
-                if (!~a.indexOf(b)) {
-                    a.push(b);
-                }
-                return a;
-            });
+            let reduced = getDistinctShorthands(mapped);
 
             if (isCloseEnough(mapped) && canMerge(...rules)) {
                 const first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
 
                 const border = insertCloned(rule, lastNode, {
                     prop: 'border',
-                    value: first ? reduced[0] : reduced[1]
+                    value: first ? reduced[0] : reduced[1],
                 });
 
                 if (reduced[1]) {
-                    let value = first ? reduced[1] : reduced[0];
-                    let prop = `border-${trbl[mapped.indexOf(value)]}`;
+                    const value = first ? reduced[1] : reduced[0];
+                    const prop = `border-${trbl[mapped.indexOf(value)]}`;
 
                     rule.insertAfter(border, assign(clone(lastNode), {
                         prop,

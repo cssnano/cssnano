@@ -23,10 +23,21 @@ export default function genericMerge ({rule, properties, prop, value}) {
         if (hasAllProps(props, ...properties) && canMerge(...props)) {
             insertCloned(rule, lastNode, {
                 prop,
-                value: value(getRules(props, properties))
+                value: value(getRules(props, properties)),
             });
             props.forEach(remove);
         }
         decls = decls.filter(node => !~props.indexOf(node));
     }
+}
+
+export function genericMergeFactory ({properties, prop, value}) {
+    return function merge (rule) {
+        return genericMerge({
+            rule,
+            properties,
+            prop,
+            value,
+        });
+    };
 }
