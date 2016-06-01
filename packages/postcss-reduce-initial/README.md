@@ -35,7 +35,7 @@ h1 {
 }
 ```
 
-See the [data][data/values.json] for more conversions. This data is courtesy
+See the [data](data/values.json) for more conversions. This data is courtesy
 of Mozilla.
 
 
