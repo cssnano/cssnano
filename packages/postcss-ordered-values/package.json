@@ -9,8 +9,8 @@
   ],
   "scripts": {
     "pretest": "eslint src",
-    "prepublish": "de dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
-    "test": "ava src/__tests__"
+    "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
+    "test": "ava"
   },
   "keywords": [
     "css",
