@@ -7,6 +7,7 @@ import warnOnce from './lib/warnOnce';
 // Processors
 import postcssFilterPlugins from 'postcss-filter-plugins';
 import postcssDiscardComments from 'postcss-discard-comments';
+import postcssReduceInitial from 'postcss-reduce-initial';
 import postcssMinifyGradients from 'postcss-minify-gradients';
 import postcssSvgo from 'postcss-svgo';
 import postcssReduceTransforms from 'postcss-reduce-transforms';
@@ -43,6 +44,7 @@ let processors = {
     },
     postcssDiscardComments,
     postcssMinifyGradients,
+    postcssReduceInitial,
     postcssSvgo,
     postcssReduceTransforms,
     autoprefixer,

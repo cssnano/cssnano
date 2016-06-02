@@ -169,6 +169,13 @@
     "safe": false,
     "source": "https://github.com/ben-eb/postcss-reduce-idents"
   }, {
+    "name": "postcss-reduce-initial",
+    "shortDescription": "Normalizes initial values",
+    "longDescription": "Replaces the CSS `initial` keyword with the *actual* value, when the resulting output is smaller.",
+    "inputExample": ".box {\n    min-width: initial;\n}",
+    "outputExample": ".box {\n    min-width: 0;\n}",
+    "source": "https://github.com/ben-eb/postcss-reduce-initial"
+  }, {
     "name": "postcss-reduce-transforms",
     "shortDescription": "Normalizes CSS transform functions",
     "longDescription": "Converts between transform functions when there is a shorthand equivalent.",

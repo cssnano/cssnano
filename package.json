@@ -47,6 +47,7 @@
     "postcss-normalize-url": "^3.0.7",
     "postcss-ordered-values": "^2.1.0",
     "postcss-reduce-idents": "^2.2.2",
+    "postcss-reduce-initial": "^1.0.0",
     "postcss-reduce-transforms": "^1.0.3",
     "postcss-svgo": "^2.1.1",
     "postcss-unique-selectors": "^2.0.2",
