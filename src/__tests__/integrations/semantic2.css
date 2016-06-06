@@ -655,7 +655,7 @@ input::selection,textarea::selection{background-color:hsla(0,0%,39%,.4);color:rg
 .ui[class*="left aligned"].container{text-align:left}
 .ui[class*="center aligned"].container{text-align:center}
 .ui[class*="right aligned"].container{text-align:right}
-.ui.justified.container{text-align:justify;-webkit-hyphens:auto;-moz-hyphens:auto;-ms-hyphens:auto;hyphens:auto}
+.ui.justified.container{text-align:justify;-webkit-hyphens:auto;-ms-hyphens:auto;hyphens:auto}
 /*!
 * # Semantic UI 2.1.3 - Divider
 * http://github.com/semantic-org/semantic-ui/
@@ -3019,8 +3019,8 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.grid>.row>[class*="center aligned"].column,.ui.grid>[class*="center aligned"].column.column,.ui.grid>[class*="center aligned"].row>.column,.ui[class*="center aligned"].grid .column{text-align:center;-ms-flex-item-align:inherit;align-self:inherit}
 .ui[class*="center aligned"].grid{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center}
 .ui.grid>.row>[class*="right aligned"].column,.ui.grid>[class*="right aligned"].column.column,.ui.grid>[class*="right aligned"].row>.column,.ui[class*="right aligned"].grid .column{text-align:right;-ms-flex-item-align:inherit;align-self:inherit}
-.ui.grid .justified.column,.ui.grid>.justified.row>.column,.ui.justified.grid,.ui.justified.grid>.column,.ui.justified.grid>.row>.column{text-align:justify;-webkit-hyphens:auto;-moz-hyphens:auto;-ms-hyphens:auto;hyphens:auto}
-.ui.grid .justified.column{text-align:justify!important;-webkit-hyphens:auto!important;-moz-hyphens:auto!important;-ms-hyphens:auto!important;hyphens:auto!important}
+.ui.grid .justified.column,.ui.grid>.justified.row>.column,.ui.justified.grid,.ui.justified.grid>.column,.ui.justified.grid>.row>.column{text-align:justify;-webkit-hyphens:auto;-ms-hyphens:auto;hyphens:auto}
+.ui.grid .justified.column{text-align:justify!important;-webkit-hyphens:auto!important;-ms-hyphens:auto!important;hyphens:auto!important}
 .ui.grid>.row>.black.column,.ui.grid>.row>.blue.column,.ui.grid>.row>.brown.column,.ui.grid>.row>.green.column,.ui.grid>.row>.grey.column,.ui.grid>.row>.olive.column,.ui.grid>.row>.orange.column,.ui.grid>.row>.pink.column,.ui.grid>.row>.purple.column,.ui.grid>.row>.red.column,.ui.grid>.row>.teal.column,.ui.grid>.row>.violet.column,.ui.grid>.row>.yellow.column{margin-top:-1rem;margin-bottom:-1rem;padding-top:1rem;padding-bottom:1rem}
 .ui.grid>.red.column,.ui.grid>.red.row,.ui.grid>.row>.red.column{background-color:#db2828!important;color:#fff}
 .ui.grid>.orange.column,.ui.grid>.orange.row,.ui.grid>.row>.orange.column{background-color:#f2711c!important;color:#fff}
@@ -5013,7 +5013,7 @@ body.pushable>.pusher{background:#fff}
 .ui.visible.bottom.sidebar~.fixed,.ui.visible.bottom.sidebar~.pusher{-webkit-transform:translate3d(0,-36px,0);transform:translate3d(0,-36px,0)}
 .ui.visible.left.sidebar~.ui.visible.right.sidebar~.fixed,.ui.visible.left.sidebar~.ui.visible.right.sidebar~.pusher,.ui.visible.right.sidebar~.ui.visible.left.sidebar~.fixed,.ui.visible.right.sidebar~.ui.visible.left.sidebar~.pusher{-webkit-transform:translateZ(0);transform:translateZ(0)}
 html.ios{overflow-x:hidden;-webkit-overflow-scrolling:touch}
-html.ios,html.ios body{height:initial!important}
+html.ios,html.ios body{height:auto!important}
 .ui[class*="very thin"].left.sidebar,.ui[class*="very thin"].right.sidebar{width:60px}
 .ui.thin.left.sidebar,.ui.thin.right.sidebar{width:150px}
 .ui.left.sidebar,.ui.right.sidebar{width:260px}
