@@ -22,6 +22,17 @@ function parseWord (node, opts, stripZeroUnit) {
     }
 }
 
+function shouldStripPercent ({value, prop, parent}) {
+    return ~value.indexOf('%') &&
+        prop === 'max-height' ||
+        prop === 'height' ||
+        parent.parent &&
+        parent.parent.name === 'keyframes' &&
+        prop === 'stroke-dasharray' ||
+        prop === 'stroke-dashoffset' ||
+        prop === 'stroke-width';
+}
+
 function transform (opts) {
     return decl => {
         if (~decl.prop.indexOf('flex')) {
@@ -30,14 +41,7 @@ function transform (opts) {
 
         decl.value = valueParser(decl.value).walk(node => {
             if (node.type === 'word') {
-                if (
-                    (decl.prop === 'max-height' || decl.prop === 'height') &&
-                    ~decl.value.indexOf('%')
-                ) {
-                    parseWord(node, opts, true);
-                } else {
-                    parseWord(node, opts);
-                }
+                parseWord(node, opts, shouldStripPercent(decl));
             } else if (node.type === 'function') {
                 if (node.value === 'calc' ||
                     node.value === 'hsl' ||

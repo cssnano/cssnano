@@ -176,7 +176,19 @@ let suites = [{
     message: 'should not strip the percentage from 0 in max-height & height props',
     fixture: 'h1{height:0%;max-height:0%}',
     expected: 'h1{height:0%;max-height:0%}'
+}, {
+    message: 'should not crash when analysing a declaration with one parent',
+    fixture: 'width:0',
+    expected: 'width:0'
 }];
+
+['stroke-dasharray', 'stroke-dashoffset', 'stroke-width'].forEach(property => {
+    suites.push({
+        message: `should not strip the percentage from 0 in SVG animation, for IE (${property})`,
+        fixture: `@keyframes a{0%{${property}:200%}to{${property}:0%}}`,
+        expected: `@keyframes a{0%{${property}:200%}to{${property}:0%}}`
+    });
+});
 
 suites.forEach(({message, fixture, expected, options = {}}) => {
     test(message, t => {
