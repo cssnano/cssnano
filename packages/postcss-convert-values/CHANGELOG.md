@@ -1,3 +1,9 @@
+# 2.3.5
+
+* Resolves an issue where certain properties inside `@keyframes` rules would
+  break animation in IE due to the percentage being stripped. Now, the
+  percentage is preserved for these properties.
+
 # 2.3.4
 
 * Does not convert `height:0%` to `height:0` (and the same for `max-height`), as
