@@ -25,6 +25,7 @@ import postcssDiscardUnused from 'postcss-discard-unused';
 import postcssNormalizeUrl from 'postcss-normalize-url';
 import functionOptimiser from './lib/functionOptimiser';
 import filterOptimiser from './lib/filterOptimiser';
+import reduceBackgroundRepeat from './lib/reduceBackgroundRepeat';
 import reducePositions from './lib/reducePositions';
 import core from './lib/core';
 import reduceTimingFunctions from './lib/reduceTimingFunctions';
@@ -64,6 +65,7 @@ let processors = {
     postcssNormalizeUrl,
     functionOptimiser,
     filterOptimiser,
+    reduceBackgroundRepeat,
     reducePositions,
     core,
     // Optimisations after this are sensitive to previous optimisations in

@@ -1,5 +1,6 @@
 import {plugin} from 'postcss';
 import valueParser, {unit} from 'postcss-value-parser';
+import getArguments from './getArguments';
 
 const directions = ['top', 'right', 'bottom', 'left', 'center'];
 const properties = [
@@ -23,17 +24,6 @@ const vertical = {
 
 const hkeys = Object.keys(horizontal);
 const vkeys = Object.keys(vertical);
-
-function getArguments (node) {
-    return node.nodes.reduce((list, child) => {
-        if (child.type !== 'div') {
-            list[list.length - 1].push(child);
-        } else {
-            list.push([]);
-        }
-        return list;
-    }, [[]]);
-}
 
 function transform (decl) {
     if (!~properties.indexOf(decl.prop)) {

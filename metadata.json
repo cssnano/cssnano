@@ -205,6 +205,13 @@
     "safe": false,
     "source": "https://github.com/ben-eb/postcss-zindex"
   }, {
+    "name": "reduce-background-repeat",
+    "shortDescription": "Normalizes background repeat definitions",
+    "longDescription": "Reduces the two value syntax for `background-repeat` into the single value syntax where possible, in both the property itself and the `background` shorthand.",
+    "inputExample": ".box {\n    background-repeat: no-repeat repeat;\n}",
+    "outputExample": ".box {\n    background-repeat: repeat-y;\n}",
+    "source": "https://github.com/ben-eb/cssnano/blob/master/src/lib/reduceBackgroundRepeat.js"
+  }, {
     "name": "reduce-positions",
     "shortDescription": "Normalizes CSS position definitions",
     "longDescription": "Normalizes `position` values in the `background`, `background-position`, `-webkit-perspective-origin` and `perspective-origin` properties.",

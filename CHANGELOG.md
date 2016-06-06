@@ -1,3 +1,11 @@
+# Head
+
+* Added: Reduce `background-repeat` definitions; works with both this property
+  & the `background` shorthand, and aims to compress the extended two value
+  syntax into the single value syntax.
+
+* * *
+
 # 3.6.2
 
 * Fixed an issue where cssnano would crash on `steps(1)`.
