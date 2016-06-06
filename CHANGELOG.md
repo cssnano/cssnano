@@ -1,10 +1,10 @@
-# Head
+# 3.7.0
 
 * Added: Reduce `background-repeat` definitions; works with both this property
   & the `background` shorthand, and aims to compress the extended two value
   syntax into the single value syntax.
-
-* * *
+* Added: Reduce `initial` values for properties when the *actual* initial value
+  is shorter; for example, `min-width: initial` becomes `min-width: 0`.
 
 # 3.6.2
 
