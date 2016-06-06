@@ -1,3 +1,8 @@
+# 2.3.6
+
+* Resolves an issue with the last patch where `height: 0em` was not being
+  converted to `height: 0`.
+
 # 2.3.5
 
 * Resolves an issue where certain properties inside `@keyframes` rules would
