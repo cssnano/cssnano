@@ -24,8 +24,7 @@ function parseWord (node, opts, stripZeroUnit) {
 
 function shouldStripPercent ({value, prop, parent}) {
     return ~value.indexOf('%') &&
-        prop === 'max-height' ||
-        prop === 'height' ||
+        (prop === 'max-height' || prop === 'height') ||
         parent.parent &&
         parent.parent.name === 'keyframes' &&
         prop === 'stroke-dasharray' ||

@@ -180,6 +180,10 @@ let suites = [{
     message: 'should not crash when analysing a declaration with one parent',
     fixture: 'width:0',
     expected: 'width:0'
+}, {
+    message: 'should strip the unit from 0 in max-height & height props',
+    fixture: 'h1{height:0em;max-height:0em}',
+    expected: 'h1{height:0;max-height:0}'
 }];
 
 ['stroke-dasharray', 'stroke-dashoffset', 'stroke-width'].forEach(property => {
