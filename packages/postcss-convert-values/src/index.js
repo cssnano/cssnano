@@ -1,5 +1,3 @@
-'use strict';
-
 import postcss from 'postcss';
 import convert from './lib/convert';
 import valueParser, {unit, walk} from 'postcss-value-parser';
@@ -44,9 +42,9 @@ function transform (opts) {
                 if (node.value === 'calc' ||
                     node.value === 'hsl' ||
                     node.value === 'hsla') {
-                    walk(node.nodes, node => {
-                        if (node.type === 'word') {
-                            parseWord(node, opts, true);
+                    walk(node.nodes, n => {
+                        if (n.type === 'word') {
+                            parseWord(n, opts, true);
                         }
                     });
                     return false;
@@ -59,9 +57,7 @@ function transform (opts) {
     };
 }
 
-
-export default postcss.plugin('postcss-convert-values', (opts) => {
-    opts = opts || {};
+export default postcss.plugin('postcss-convert-values', (opts = {}) => {
     if (opts.length === undefined && opts.convertLength !== undefined) {
         console.warn('postcss-convert-values: `convertLength` option is deprecated. Use `length`');
         opts.length = opts.convertLength;
@@ -70,7 +66,5 @@ export default postcss.plugin('postcss-convert-values', (opts) => {
         console.warn('postcss-convert-values: `convertTime` option is deprecated. Use `time`');
         opts.time = opts.convertTime;
     }
-    return css => {
-        css.walkDecls(transform(opts));
-    };
+    return css => css.walkDecls(transform(opts));
 });

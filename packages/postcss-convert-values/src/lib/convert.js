@@ -1,24 +1,22 @@
-'use strict';
-
 const lengthConv = {
-    'in': 96,
-    'px': 1,
-    'pt': 4 / 3,
-    'pc': 16
+    in: 96,
+    px: 1,
+    pt: 4 / 3,
+    pc: 16
 };
 
 const timeConv = {
-    's': 1000,
-    'ms': 1
+    s: 1000,
+    ms: 1
 };
 
 const angleConv = {
-    'turn': 360,
-    'deg': 1
+    turn: 360,
+    deg: 1
 };
 
 function dropLeadingZero (number) {
-    let value = String(number);
+    const value = String(number);
 
     if (number % 1) {
         if (value[0] === '0') {

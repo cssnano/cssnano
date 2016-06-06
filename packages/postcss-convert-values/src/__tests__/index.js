@@ -1,11 +1,9 @@
-'use strict';
-
-import test from 'tape';
+import test from 'ava';
 import postcss from 'postcss';
 import plugin from '..';
 import {name} from '../../package.json';
 
-let tests = [{
+let suites = [{
     message: 'should convert milliseconds to seconds',
     fixture: 'h1{transition-duration:500ms}',
     expected: 'h1{transition-duration:.5s}'
@@ -137,27 +135,27 @@ let tests = [{
     message: 'should not convert length units',
     fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
     expected: 'h1{transition-duration:.5s; width:calc(192px + 2em); width:14px; letter-spacing:-.1vmin}',
-    options: { length: false }
+    options: {length: false}
 }, {
     message: 'should not convert time units',
     fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
     expected: 'h1{transition-duration:500ms; width:calc(2in + 2em); width:14px; letter-spacing:-.1vmin}',
-    options: { time: false }
+    options: {time: false}
 }, {
     message: 'should not convert angle units',
     fixture: 'h1{transform: rotate(0.25turn);transform: rotate(0.25TURN)}',
     expected: 'h1{transform: rotate(.25turn);transform: rotate(.25turn)}',
-    options: { angle: false }
+    options: {angle: false}
 }, {
     message: 'should not convert length units with deprecated option',
     fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
     expected: 'h1{transition-duration:.5s; width:calc(192px + 2em); width:14px; letter-spacing:-.1vmin}',
-    options: { convertLength: false }
+    options: {convertLength: false}
 }, {
     message: 'should not convert time units with deprecated option',
     fixture: 'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
     expected: 'h1{transition-duration:500ms; width:calc(2in + 2em); width:14px; letter-spacing:-.1vmin}',
-    options: { convertTime: false }
+    options: {convertTime: false}
 }, {
     message: 'should not remove units from angle values',
     fixture: 'h1{transform:rotate(0deg)}',
@@ -180,21 +178,16 @@ let tests = [{
     expected: 'h1{height:0%;max-height:0%}'
 }];
 
-function process (css, options) {
-    return postcss(plugin(options)).process(css).css;
-}
-
-test(name, t => {
-    t.plan(tests.length);
-
-    tests.forEach(test => {
-        let options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
+suites.forEach(({message, fixture, expected, options = {}}) => {
+    test(message, t => {
+        return postcss(plugin(options)).process(fixture).then(({css}) => {
+            t.deepEqual(css, expected);
+        });
     });
 });
 
 test('should use the postcss plugin api', t => {
     t.plan(2);
-    t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+    t.truthy(plugin().postcssVersion, 'should be able to access version');
+    t.deepEqual(plugin().postcssPlugin, name, 'should be able to access name');
 });
