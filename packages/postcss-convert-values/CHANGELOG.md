@@ -1,3 +1,8 @@
+# 2.4.0
+
+* Added a `precision` option to enable rounding of decimal places for
+  `px` values.
+
 # 2.3.6
 
 * Resolves an issue with the last patch where `height: 0em` was not being
