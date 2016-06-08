@@ -65,6 +65,18 @@ Default: `true`
 
 Pass `false` to disable conversion from `deg` to `turn` & vice versa.
 
+##### precision
+
+Type: `boolean|number`
+Default: `false`
+
+Specify any numeric value here to round `px` values to that many decimal places;
+for example, using `{precision: 2}` will round `6.66667px` to `6.67px`, and
+`{precision: 0}` will round it to `7px`. Passing `false` (the default) will
+leave these values as is.
+
+It is recommended for most use cases to set this option to `2`.
+
 ## Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests

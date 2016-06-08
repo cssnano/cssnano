@@ -184,6 +184,24 @@ let suites = [{
     message: 'should strip the unit from 0 in max-height & height props',
     fixture: 'h1{height:0em;max-height:0em}',
     expected: 'h1{height:0;max-height:0}'
+}, {
+    message: 'should round pixel values to two decimal places',
+    fixture: 'h1{right:6.66667px}',
+    expected: 'h1{right:6.67px}',
+    options: {
+        precision: 2
+    }
+}, {
+    message: 'should round pixel values with customisable precision',
+    fixture: 'h1{right:6.66667px}',
+    expected: 'h1{right:7px}',
+    options: {
+        precision: 0
+    }
+}, {
+    message: 'should not round pixel values to two decimal places by default',
+    fixture: 'h1{right:6.66667px}',
+    expected: 'h1{right:6.66667px}',
 }];
 
 ['stroke-dasharray', 'stroke-dashoffset', 'stroke-width'].forEach(property => {

@@ -18,6 +18,15 @@ function parseWord (node, opts, stripZeroUnit) {
                 u === 'turn') ? 0 + u : 0;
         } else {
             node.value = convert(num, u, opts);
+            
+            if (
+                typeof opts.precision === 'number' &&
+                u === 'px' &&
+                ~pair.number.indexOf('.')
+            ) {
+                const precision = Math.pow(10, opts.precision);
+                node.value = Math.round(parseFloat(node.value) * precision) / precision + u;
+            }
         }
     }
 }
@@ -60,7 +69,7 @@ function transform (opts) {
     };
 }
 
-export default postcss.plugin('postcss-convert-values', (opts = {}) => {
+export default postcss.plugin('postcss-convert-values', (opts = {precision: false}) => {
     if (opts.length === undefined && opts.convertLength !== undefined) {
         console.warn('postcss-convert-values: `convertLength` option is deprecated. Use `length`');
         opts.length = opts.convertLength;
