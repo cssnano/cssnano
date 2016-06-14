@@ -69,6 +69,10 @@ let tests = [{
     message: 'should not mangle floating point numbers',
     fixture: 'background:linear-gradient(#fff,#fff 2em,#ccc 2em,#ccc 2.1em,#fff 2.1em)',
     expected: 'background:linear-gradient(#fff,#fff 2em,#ccc 0,#ccc 2.1em,#fff 0)'
+}, {
+    message: 'should not remove the trailing zero if it is the last stop',
+    fixture: 'background: linear-gradient(90deg,transparent,#00aeef 0)',
+    expected: 'background: linear-gradient(90deg,transparent,#00aeef 0)'
 }];
 
 tape(name, (t) => {

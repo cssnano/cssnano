@@ -47,10 +47,11 @@ function optimise (decl) {
                 if (!arg[2]) {
                     return;
                 }
+                let isFinalStop = index === args.length - 1;
                 let thisStop = unit(arg[2].value);
                 if (!lastStop) {
                     lastStop = thisStop;
-                    if (lastStop && lastStop.number === '0' && lastStop.unit !== 'deg') {
+                    if (!isFinalStop && lastStop && lastStop.number === '0' && lastStop.unit !== 'deg') {
                         arg[1].value = arg[2].value = '';
                     }
                     return;
@@ -59,7 +60,7 @@ function optimise (decl) {
                     arg[2].value = 0;
                 }
                 lastStop = thisStop;
-                if (index === args.length - 1 && arg[2].value === '100%') {
+                if (isFinalStop && arg[2].value === '100%') {
                     arg[1].value = arg[2].value = '';
                 }
             });
