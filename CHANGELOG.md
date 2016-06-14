@@ -1,3 +1,8 @@
+# 3.7.1
+
+* Enabling safe mode now turns off both postcss-merge-idents &
+  postcss-normalize-url's `stripWWW` option.
+
 # 3.7.0
 
 * Added: Reduce `background-repeat` definitions; works with both this property

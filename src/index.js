@@ -99,9 +99,15 @@ let safeOptions = {
     postcssDiscardUnused: {
         disable: true
     },
+    postcssMergeIdents: {
+        disable: true
+    },
     postcssReduceIdents: {
         counterStyle: false,
         keyframes: false
+    },
+    postcssNormalizeUrl: {
+        stripWWW: false
     },
     postcssZindex: {
         disable: true
