@@ -30,7 +30,5 @@ function transformDecls (decl) {
 }
 
 export default plugin('cssnano-function-optimiser', () => {
-    return function (css) {
-        css.walkDecls(transformDecls);
-    };
+    return css => css.walkDecls(transformDecls);
 });

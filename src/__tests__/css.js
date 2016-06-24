@@ -22,14 +22,14 @@ const tests = directory(__dirname + '/../../node_modules/css-minifier-tests/test
 function onEnd (results, testNames) {
     testNames.forEach((test, index) => {
         ava(test.replace(/^\d+ /, ''), t => {
-            const result = results[index].cssnano.result;
+            const {result} = results[index].cssnano;
             t.truthy(result === 'outstanding' || result === 'optimal');
         });
     });
 }
 
 suite({
-    tests: tests,
-    minifiers: minifiers,
-    onEnd: onEnd
+    tests,
+    minifiers,
+    onEnd,
 });
