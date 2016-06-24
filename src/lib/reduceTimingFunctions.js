@@ -1,5 +1,6 @@
 import {plugin} from 'postcss';
 import valueParser from 'postcss-value-parser';
+import evenValues from './evenValues';
 import getMatchFactory from './getMatch';
 
 const keywords = [
@@ -10,7 +11,6 @@ const keywords = [
     ['ease-in-out', [0.42, 0,   0.58, 1]],
 ];
 
-const getArguments = (list, index) => index % 2 === 0;
 const getValue = (node) => parseFloat(node.value);
 const getMatch = getMatchFactory(keywords);
 
@@ -39,7 +39,7 @@ function reduce (node) {
         return false;
     }
     if (node.value === 'cubic-bezier') {
-        const match = getMatch(node.nodes.filter(getArguments).map(getValue));
+        const match = getMatch(node.nodes.filter(evenValues).map(getValue));
 
         if (match.length) {
             node.type = 'word';

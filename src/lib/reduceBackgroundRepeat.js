@@ -1,5 +1,6 @@
-import {plugin} from 'postcss';
+import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
+import evenValues from './evenValues';
 import getArguments from './getArguments';
 import getMatchFactory from './getMatch';
 
@@ -13,18 +14,21 @@ const mappings = [
 ];
 
 const repeat = [
-    'repeat-x',
-    'repeat-y',
-    'repeat',
-    'space',
-    'round',
-    'no-repeat',
+    mappings[0][0],
+    mappings[1][0],
+    mappings[2][0],
+    mappings[3][0],
+    mappings[4][0],
+    mappings[5][0],
 ];
 
 const getMatch = getMatchFactory(mappings);
 
 function transform (decl) {
     const values = valueParser(decl.value);
+    if (values.nodes.length === 1) {
+        return;
+    }
     const args = getArguments(values);
     const relevant = [];
     args.forEach(arg => {
@@ -59,7 +63,7 @@ function transform (decl) {
         if (val.length !== 3) {
             return;
         }
-        const match = getMatch(val.filter((list, i) => i % 2 === 0).map(n => n.value));
+        const match = getMatch(val.filter(evenValues).map(n => n.value));
         if (match.length) {
             args[index][range.start].value = match[0][0];
             args[index][range.start + 1].value = '';
@@ -69,6 +73,10 @@ function transform (decl) {
     decl.value = values.toString();
 }
 
-export default plugin('cssnano-reduce-background-repeat', () => {
+const plugin = postcss.plugin('cssnano-reduce-background-repeat', () => {
     return css => css.walkDecls(/background(-repeat|$)/, transform);
 });
+
+plugin.mappings = mappings;
+
+export default plugin;
