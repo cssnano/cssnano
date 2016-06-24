@@ -32,6 +32,7 @@ import postcssDiscardEmpty from 'postcss-discard-empty';
 import postcssUniqueSelectors from 'postcss-unique-selectors';
 import functionOptimiser from './lib/functionOptimiser';
 import filterOptimiser from './lib/filterOptimiser';
+import reduceDisplayValues from './lib/reduceDisplayValues';
 import reduceBackgroundRepeat from './lib/reduceBackgroundRepeat';
 import reducePositions from './lib/reducePositions';
 import core from './lib/core';
@@ -50,6 +51,7 @@ const processors = {
     postcssMinifyGradients,
     postcssReduceInitial,
     postcssSvgo,
+    reduceDisplayValues,
     postcssReduceTransforms,
     autoprefixer,
     postcssZindex,

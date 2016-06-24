@@ -569,6 +569,22 @@ outputExample = """
 source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/reduceBackgroundRepeat.js"
 
 [[modules]]
+name = "reduce-display-values"
+shortDescription = "Normalizes display definitions"
+longDescription = "Normalizes the two value syntax for `display` into the single value syntax where possible."
+inputExample = """
+.box {
+    display: block flow;
+}
+"""
+outputExample = """
+.box {
+    display: block;
+}
+"""
+source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/reduceDisplayValues.js"
+
+[[modules]]
 name = "reduce-positions"
 shortDescription = "Normalizes CSS position definitions"
 longDescription = "Normalizes `position` values in the `background`, `background-position`, `-webkit-perspective-origin` and `perspective-origin` properties."
