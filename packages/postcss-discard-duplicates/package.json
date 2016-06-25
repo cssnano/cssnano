@@ -8,6 +8,8 @@
     "LICENSE-MIT"
   ],
   "scripts": {
+    "contributorAdd": "all-contributors add",
+    "contributorGenerate": "all-contributors generate",
     "pretest": "eslint src",
     "prepublish": "del-cli dist && babel src --out-dir dist --ignore /__tests__/",
     "test": "ava src/__tests__"
@@ -24,6 +26,7 @@
     "postcss": "^5.0.4"
   },
   "devDependencies": {
+    "all-contributors-cli": "^3.0.5",
     "ava": "^0.15.0",
     "babel-cli": "^6.3.17",
     "babel-core": "^6.3.26",
