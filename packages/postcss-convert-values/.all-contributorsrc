@@ -1,0 +1,82 @@
+{
+  "projectName": "postcss-convert-values",
+  "projectOwner": "ben-eb",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "ben-eb",
+      "name": "Ben Briggs",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1282980?v=3",
+      "profile": "http://beneb.info",
+      "contributions": [
+        "code",
+        "doc",
+        "review",
+        "test"
+      ]
+    },
+    {
+      "login": "TrySound",
+      "name": "Bogdan Chadkin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5635476?v=3",
+      "profile": "https://github.com/TrySound",
+      "contributions": [
+        "code",
+        "doc",
+        "review",
+        "test"
+      ]
+    },
+    {
+      "login": "kizu",
+      "name": "Roman Komarov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/177485?v=3",
+      "profile": "http://kizu.ru/en/",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "dmitrykiselyov",
+      "name": "Dmitry Kiselyov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5103477?v=3",
+      "profile": "http://codepen.io/dmitrykiselyov",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "tunnckoCore",
+      "name": "Charlike Mike Reagent",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5038030?v=3",
+      "profile": "http://www.tunnckocore.tk",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "Termina1",
+      "name": "Vyacheslav Shebanov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/815848?v=3",
+      "profile": "https://github.com/Termina1",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "marek-saji",
+      "name": "Marek ‘saji’ Augustynowicz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/192323?v=3",
+      "profile": "http://twitter.com/saji_",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    }
+  ]
+}
