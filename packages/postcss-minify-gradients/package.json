@@ -4,6 +4,8 @@
   "description": "Minify gradient parameters with PostCSS.",
   "main": "dist/index.js",
   "scripts": {
+    "contributorAdd": "all-contributors add",
+    "contributorGenerate": "all-contributors generate",
     "lint": "eslint src",
     "prepublish": "babel src --out-dir dist --ignore /__tests__/",
     "test": "npm run lint && babel-tape-runner \"src/**/__tests__/*.js\" | tap-spec"
@@ -19,6 +21,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "all-contributors-cli": "^3.0.5",
     "babel": "^5.8.23",
     "babel-tape-runner": "1.2.0",
     "eslint": "^2.0.0",
