@@ -9,6 +9,8 @@
     "dist"
   ],
   "scripts": {
+    "contributorAdd": "all-contributors add",
+    "contributorGenerate": "all-contributors generate",
     "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
     "pretest": "eslint src",
     "test": "ava src/__tests__"
@@ -23,6 +25,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "all-contributors-cli": "^3.0.5",
     "ava": "^0.15.0",
     "babel-cli": "^6.4.5",
     "babel-core": "^6.4.5",
