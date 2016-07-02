@@ -21,7 +21,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "autoprefixer": "^6.3.1",
+    "autoprefixer": "^6.3.7",
     "decamelize": "^1.1.2",
     "defined": "^1.0.0",
     "indexes-of": "^1.0.1",
