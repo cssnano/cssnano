@@ -3,7 +3,7 @@ coverage
 dist
 node_modules
 npm-debug.log
-src/__tests__/output
+_webpackOutput
 
 # Phenomic things
 

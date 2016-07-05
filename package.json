@@ -4,8 +4,9 @@
   "description": "A modular minifier, built on top of the PostCSS ecosystem.",
   "main": "dist/index.js",
   "scripts": {
+    "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
     "docs": "cd docs && npm run build && cd .. && gh-pages -d docs/dist",
-    "pretest": "eslint src",
+    "pretest": "eslint --ignore-path .gitignore src",
     "prepublish": "del-cli dist && cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
     "report": "nyc report --reporter=html",
     "test": "nyc ava src/__tests__/*.js"
@@ -58,6 +59,7 @@
     "ava": "^0.15.0",
     "babel-cli": "^6.5.1",
     "babel-core": "^6.5.1",
+    "babel-loader": "^6.2.4",
     "babel-plugin-add-module-exports": "^0.2.0",
     "babel-preset-es2015-loose": "^7.0.0",
     "babel-preset-stage-0": "^6.5.0",
@@ -73,7 +75,8 @@
     "json-loader": "^0.5.4",
     "ncp": "^2.0.0",
     "nyc": "^6.0.0",
-    "webpack": "^1.12.13"
+    "webpack": "^1.12.13",
+    "webpack-bundle-size-analyzer": "^2.0.2"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
