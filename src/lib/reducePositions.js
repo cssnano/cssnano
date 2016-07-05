@@ -14,12 +14,12 @@ const center = '50%';
 
 const horizontal = {
     right: '100%',
-    left: '0'
+    left: '0',
 };
 
 const vertical = {
     bottom: '100%',
-    top: '0'
+    top: '0',
 };
 
 const hkeys = Object.keys(horizontal);
@@ -35,7 +35,7 @@ function transform (decl) {
     args.forEach(arg => {
         relevant.push({
             start: null,
-            end: null
+            end: null,
         });
         arg.forEach((part, index) => {
             const isPosition = ~directions.indexOf(part.value) || unit(part.value);
@@ -71,7 +71,7 @@ function transform (decl) {
             const {value} = position[0];
             const map = {
                 ...horizontal,
-                center
+                center,
             };
             if (~Object.keys(map).indexOf(value)) {
                 position[0].value = map[value];

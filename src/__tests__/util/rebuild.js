@@ -1,14 +1,14 @@
-const nano = require('../../../dist');
 const write = require('fs').writeFileSync;
+const join = require('path').join;
 const postcss = require('postcss');
-const formatter = require('./formatter');
-const path = require('path');
-const base = path.join(__dirname, '../integrations');
-
 const frameworks = require('css-frameworks');
+const nano = require('../../../dist');
+const formatter = require('./formatter');
+
+const base = join(__dirname, '../integrations');
 
 Object.keys(frameworks).forEach(f => {
-    postcss([ nano(), formatter ]).process(frameworks[f]).then(res => {
-        write(path.join(base, f + '.css'), res.css);
+    postcss([ nano(), formatter ]).process(frameworks[f]).then((res) => {
+        write(join(base, f + '.css'), res.css);
     });
 });

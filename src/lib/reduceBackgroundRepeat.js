@@ -30,7 +30,7 @@ function transform (decl) {
     args.forEach(arg => {
         relevant.push({
             start: null,
-            end: null
+            end: null,
         });
         arg.forEach((part, index) => {
             const isRepeat = ~repeat.indexOf(part.value);

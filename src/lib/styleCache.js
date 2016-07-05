@@ -13,7 +13,7 @@ export default plugin('cssnano-reset-stylecache', () => {
             after:         '',
             emptyBody:     '',
             commentLeft:   '',
-            commentRight:  ''
+            commentRight:  '',
         };
     };
 });

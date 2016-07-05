@@ -1,10 +1,10 @@
-import ava from 'ava';
-import nano from '..';
 import {readFileSync as file} from 'fs';
 import {join} from 'path';
+import ava from 'ava';
 import postcss from 'postcss';
-import formatter from './util/formatter';
 import frameworks from 'css-frameworks';
+import formatter from './util/formatter';
+import nano from '..';
 
 const base = join(__dirname, 'integrations');
 

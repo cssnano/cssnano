@@ -1,8 +1,8 @@
+import {readdirSync as directory, readFileSync as file} from 'fs';
+import {join} from 'path';
 import ava from 'ava';
 import nano from '..';
-import {readdirSync as directory, readFileSync as file} from 'fs';
 import specName from './util/specName';
-import {join} from 'path';
 
 const base = join(__dirname, 'fixtures');
 

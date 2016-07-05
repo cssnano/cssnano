@@ -12,7 +12,7 @@ const minifiers = {
                 reject(err);
             });
         });
-    }
+    },
 };
 
 const tests = directory(__dirname + '/../../node_modules/css-minifier-tests/tests').map(dir => {

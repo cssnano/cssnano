@@ -1,7 +1,7 @@
-import ava from 'ava';
-import {readdirSync as directory} from 'fs';
-import nano from '..';
 import {join} from 'path';
+import {readdirSync as directory} from 'fs';
+import ava from 'ava';
+import nano from '..';
 
 const base = join(__dirname, '/modules');
 

@@ -11,26 +11,26 @@ const mappings = {
     'steps(5,start)':  'steps(5, start)',
     'steps(10)':       'steps(10, end)',
     'steps(15)':       'steps(15)',
-    'var(--anim1)':    'var(--anim1)'
+    'var(--anim1)':    'var(--anim1)',
 };
 
 Object.keys(mappings).forEach(mapping => {
     tests.push({
         message: `should handle ${mapping} (animation)`,
         fixture: `animation:fade 3s ${mappings[mapping]}`,
-        expected: `animation:fade 3s ${mapping}`
+        expected: `animation:fade 3s ${mapping}`,
     }, {
         message: `should handle ${mapping} (animation-timing-function)`,
         fixture: `animation-timing-function:${mappings[mapping]}`,
-        expected: `animation-timing-function:${mapping}`
+        expected: `animation-timing-function:${mapping}`,
     }, {
         message: `should handle ${mapping} (transition)`,
         fixture: `transition:color 3s ${mappings[mapping]}`,
-        expected: `transition:color 3s ${mapping}`
+        expected: `transition:color 3s ${mapping}`,
     }, {
         message: `should handle ${mapping} (transition-timing-function)`,
         fixture: `transition-timing-function:${mappings[mapping]}`,
-        expected: `transition-timing-function:${mapping}`
+        expected: `transition-timing-function:${mapping}`,
     });
 });
 

@@ -2,7 +2,6 @@ import decamelize from 'decamelize';
 import defined from 'defined';
 import assign from 'object-assign';
 import postcss from 'postcss';
-import warnOnce from './lib/warnOnce';
 
 // Processors
 import postcssFilterPlugins from 'postcss-filter-plugins';
@@ -23,12 +22,6 @@ import postcssNormalizeCharset from 'postcss-normalize-charset';
 import postcssMinifyFontValues from 'postcss-minify-font-values';
 import postcssDiscardUnused from 'postcss-discard-unused';
 import postcssNormalizeUrl from 'postcss-normalize-url';
-import functionOptimiser from './lib/functionOptimiser';
-import filterOptimiser from './lib/filterOptimiser';
-import reduceBackgroundRepeat from './lib/reduceBackgroundRepeat';
-import reducePositions from './lib/reducePositions';
-import core from './lib/core';
-import reduceTimingFunctions from './lib/reduceTimingFunctions';
 import postcssMergeIdents from 'postcss-merge-idents';
 import postcssReduceIdents from 'postcss-reduce-idents';
 import postcssMergeLonghand from 'postcss-merge-longhand';
@@ -37,12 +30,22 @@ import postcssDiscardOverridden from 'postcss-discard-overridden';
 import postcssMergeRules from 'postcss-merge-rules';
 import postcssDiscardEmpty from 'postcss-discard-empty';
 import postcssUniqueSelectors from 'postcss-unique-selectors';
+import functionOptimiser from './lib/functionOptimiser';
+import filterOptimiser from './lib/filterOptimiser';
+import reduceBackgroundRepeat from './lib/reduceBackgroundRepeat';
+import reducePositions from './lib/reducePositions';
+import core from './lib/core';
+import reduceTimingFunctions from './lib/reduceTimingFunctions';
 import styleCache from './lib/styleCache';
 
-let processors = {
-    postcssFilterPlugins: function () {
-        return postcssFilterPlugins({silent: true});
-    },
+/**
+ * Deprecation warnings
+ */
+
+import warnOnce from './lib/warnOnce';
+
+const processors = {
+    postcssFilterPlugins: () => postcssFilterPlugins({silent: true}),
     postcssDiscardComments,
     postcssMinifyGradients,
     postcssReduceInitial,
@@ -82,39 +85,39 @@ let processors = {
 
 let defaultOptions = {
     autoprefixer: {
-        add: false
+        add: false,
     },
     postcssConvertValues: {
-        length: false
+        length: false,
     },
     postcssNormalizeCharset: {
-        add: false
-    }
+        add: false,
+    },
 };
 
 let safeOptions = {
     postcssConvertValues: {
-        length: false
+        length: false,
     },
     postcssDiscardUnused: {
-        disable: true
+        disable: true,
     },
     postcssMergeIdents: {
-        disable: true
+        disable: true,
     },
     postcssReduceIdents: {
         counterStyle: false,
-        keyframes: false
+        keyframes: false,
     },
     postcssNormalizeUrl: {
-        stripWWW: false
+        stripWWW: false,
     },
     postcssZindex: {
-        disable: true
-    }
+        disable: true,
+    },
 };
 
-let cssnano = postcss.plugin('cssnano', (options = {}) => {
+const cssnano = postcss.plugin('cssnano', (options = {}) => {
     if (options.safe) {
         options.isSafe = options.safe;
         options.safe = null;

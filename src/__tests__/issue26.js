@@ -1,7 +1,7 @@
+import {join} from 'path';
+import {readFileSync as file} from 'fs';
 import postcss from 'postcss';
 import nano from '..';
-import {readFileSync as file} from 'fs';
-import {join} from 'path';
 import ava from 'ava';
 
 ava('it should compress whitespace after node.clone()', t => {
@@ -17,7 +17,7 @@ ava('it should compress whitespace after node.clone()', t => {
                 });
             };
         }),
-        nano()
+        nano(),
     ]);
 
     return processor.process(fixture).then(r => t.deepEqual(r.css, expected));

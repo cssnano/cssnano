@@ -9,7 +9,8 @@
     "pretest": "eslint --ignore-path .gitignore src",
     "prepublish": "del-cli dist && cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
     "report": "nyc report --reporter=html",
-    "test": "nyc ava src/__tests__/*.js"
+    "test": "nyc ava src/__tests__/*.js",
+    "test-012": "nyc ava src/__tests__/*.js"
   },
   "keywords": [
     "css",
@@ -68,8 +69,10 @@
     "css-frameworks": "git+https://git@github.com/ben-eb/css-frameworks.git",
     "css-minifier-tests": "git+https://git@github.com/ben-eb/css-minifier-tests.git",
     "del-cli": "^0.2.0",
-    "eslint": "^2.0.0",
-    "eslint-config-cssnano": "^2.0.0",
+    "eslint": "^3.0.0",
+    "eslint-config-cssnano": "^3.0.0",
+    "eslint-plugin-babel": "^3.3.0",
+    "eslint-plugin-import": "^1.10.2",
     "gh-pages": "^0.11.0",
     "hook-std": "^0.2.0",
     "json-loader": "^0.5.4",

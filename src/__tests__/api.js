@@ -1,10 +1,10 @@
+import {readFileSync as read} from 'fs';
 import postcss from 'postcss';
 import ava from 'ava';
 import nano from '..';
-import specName from './util/specName';
-import {readFileSync as read} from 'fs';
 import autoprefixer from 'autoprefixer';
 import {name} from '../../package.json';
+import specName from './util/specName';
 
 function pluginMacro (t, instance) {
     const css = 'h1 { color: #ffffff }';
