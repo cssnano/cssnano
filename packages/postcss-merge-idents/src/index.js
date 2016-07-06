@@ -88,10 +88,10 @@ export default plugin('postcss-merge-idents', () => {
     return css => {
         mergeAtRules(css, [{
             atrule: /keyframes/,
-            decl: /animation/
+            decl: /animation/,
         }, {
             atrule: /counter-style/,
-            decl: /(list-style|system)/
+            decl: /(list-style|system)/,
         }]);
     };
 });
