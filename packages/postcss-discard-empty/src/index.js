@@ -18,7 +18,7 @@ function discardAndReport (css, result) {
             result.messages.push({
                 type: 'removal',
                 plugin: 'postcss-discard-empty',
-                node
+                node,
             });
         }
     }
