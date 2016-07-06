@@ -2,14 +2,14 @@
 
 import fs from 'fs';
 import read from 'read-file-stdin';
-import {table} from './';
 import minimist from 'minimist';
+import {table} from './';
 
 const opts = minimist(process.argv.slice(2), {
     alias: {
         h: 'help',
-        v: 'version'
-    }
+        v: 'version',
+    },
 });
 
 if (opts.version) {
@@ -27,6 +27,6 @@ if (opts.version) {
                 throw err;
             }
             table(buf).then((results) => console.log(results));
-        }); 
-    }   
+        });
+    }
 }

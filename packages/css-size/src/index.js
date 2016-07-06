@@ -14,7 +14,7 @@ const cssSize = css => {
             original: prettyBytes(original),
             minified: prettyBytes(minified),
             difference: prettyBytes(original - minified),
-            percent: round((minified / original) * 100, 2) + '%'
+            percent: round((minified / original) * 100, 2) + '%',
         };
     });
 };

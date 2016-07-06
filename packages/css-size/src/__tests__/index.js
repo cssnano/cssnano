@@ -1,22 +1,22 @@
-import test from 'ava';
+import {readFileSync as read} from 'fs';
 import {spawn} from 'child_process';
 import path from 'path';
+import test from 'ava';
 import size from '../';
-import {readFileSync as read} from 'fs';
 
 function setup (args) {
     return new Promise((resolve, reject) => {
         process.chdir(__dirname);
 
         let ps = spawn(process.execPath, [
-            path.resolve(__dirname, '../../dist/cli.js')
+            path.resolve(__dirname, '../../dist/cli.js'),
         ].concat(args));
-        
+
         let out = '';
         let err = '';
 
-        ps.stdout.on('data', buffer => out += buffer);
-        ps.stderr.on('data', buffer => err += buffer);
+        ps.stdout.on('data', buffer => (out += buffer));
+        ps.stderr.on('data', buffer => (err += buffer));
 
         ps.on('exit', code => {
             if (err) {
