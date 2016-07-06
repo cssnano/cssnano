@@ -35,7 +35,7 @@
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^1.10.2",
     "postcss-discard-comments": "^2.0.4",
-    "postcss-simple-vars": "^1.2.0"
+    "postcss-simple-vars": "^3.0.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-merge-rules",
   "author": {
