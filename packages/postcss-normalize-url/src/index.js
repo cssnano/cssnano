@@ -1,8 +1,8 @@
+import path from 'path';
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import normalize from 'normalize-url';
 import isAbsolute from 'is-absolute-url';
-import path from 'path';
 
 const multiline = /\\[\r\n]/;
 const escapeChars = /([\s\(\)"'])/g;
@@ -69,7 +69,7 @@ module.exports = postcss.plugin('postcss-normalize-url', opts => {
         normalizeProtocol: false,
         stripFragment: false,
         stripWWW: true,
-        ...opts
+        ...opts,
     };
 
     return css => {
