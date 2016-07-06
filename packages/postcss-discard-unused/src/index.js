@@ -1,5 +1,5 @@
 import uniqs from 'uniqs';
-import postcss, {list} from 'postcss';
+import {list, plugin} from 'postcss';
 import flatten from 'flatten';
 
 const {comma, space} = list;
@@ -84,13 +84,13 @@ function filterFont (css) {
     });
 }
 
-module.exports = postcss.plugin('postcss-discard-unused', opts => {
+export default plugin('postcss-discard-unused', opts => {
     const {fontFace, counterStyle, keyframes, namespace} = {
         fontFace: true,
         counterStyle: true,
         keyframes: true,
         namespace: true,
-        ...opts
+        ...opts,
     };
     return css => {
         if (fontFace) {
