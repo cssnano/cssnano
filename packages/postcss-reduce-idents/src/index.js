@@ -112,7 +112,7 @@ export default postcss.plugin('postcss-reduce-idents', ({
     counterStyle = true,
     encoder = encode,
     keyframes = true,
-}) => {
+} = {}) => {
     return css => {
         if (counter) {
             transformDecl(css, /counter-(reset|increment)/, /content/, encoder);
