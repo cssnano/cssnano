@@ -1,15 +1,15 @@
 import postcss from 'postcss';
-import convert from './lib/convert';
 import valueParser, {unit, walk} from 'postcss-value-parser';
+import convert from './lib/convert';
 
-function parseWord (node, opts, stripZeroUnit) {
+function parseWord (node, opts, keepZeroUnit) {
     let pair = unit(node.value);
     if (pair) {
         let num = Number(pair.number);
         let u = pair.unit.toLowerCase();
         if (num === 0) {
             node.value = (
-                stripZeroUnit ||
+                keepZeroUnit ||
                 u === 'ms' ||
                 u === 's' ||
                 u === 'deg'||
@@ -18,7 +18,7 @@ function parseWord (node, opts, stripZeroUnit) {
                 u === 'turn') ? 0 + u : 0;
         } else {
             node.value = convert(num, u, opts);
-            
+
             if (
                 typeof opts.precision === 'number' &&
                 u === 'px' &&
@@ -69,13 +69,15 @@ function transform (opts) {
     };
 }
 
-export default postcss.plugin('postcss-convert-values', (opts = {precision: false}) => {
+const plugin = 'postcss-convert-values';
+
+export default postcss.plugin(plugin, (opts = {precision: false}) => {
     if (opts.length === undefined && opts.convertLength !== undefined) {
-        console.warn('postcss-convert-values: `convertLength` option is deprecated. Use `length`');
+        console.warn(`${plugin}: \`convertLength\` option is deprecated. Use \`length\``);
         opts.length = opts.convertLength;
     }
     if (opts.length === undefined && opts.convertTime !== undefined) {
-        console.warn('postcss-convert-values: `convertTime` option is deprecated. Use `time`');
+        console.warn(`${plugin}: \`convertTime\` option is deprecated. Use \`time\``);
         opts.time = opts.convertTime;
     }
     return css => css.walkDecls(transform(opts));
