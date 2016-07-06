@@ -16,7 +16,7 @@ function transformAtRule (css, atRuleRegex, propRegex, encoder) {
             if (!cache[node.params]) {
                 cache[node.params] = {
                     ident: encoder(node.params, Object.keys(cache).length),
-                    count: 0
+                    count: 0,
                 };
             }
             node.params = cache[node.params].ident;
