@@ -14,7 +14,8 @@
     "contributorGenerate": "all-contributors generate",
     "pretest": "eslint src",
     "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
-    "test": "ava"
+    "test": "ava",
+    "test-012": "ava"
   },
   "keywords": [
     "css",
@@ -34,8 +35,8 @@
     "babel-register": "^6.9.0",
     "cheerio": "^0.20.0",
     "del-cli": "^0.2.0",
-    "eslint": "^2.0.0",
-    "eslint-config-cssnano": "^2.0.0",
+    "eslint": "^3.0.0",
+    "eslint-config-cssnano": "^3.0.0",
     "got": "^6.3.0",
     "html2plaintext": "^1.0.1",
     "is-html": "^1.0.0"
