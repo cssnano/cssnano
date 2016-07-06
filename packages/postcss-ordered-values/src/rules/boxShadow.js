@@ -14,7 +14,7 @@ export default function normalizeBoxShadow (decl) {
     if (parsed.nodes.length < 2) {
         return;
     }
-    
+
     let args = getArguments(parsed);
     let abort = false;
 
@@ -22,7 +22,7 @@ export default function normalizeBoxShadow (decl) {
         let val = [];
         let state = {
             inset: [],
-            color: []
+            color: [],
         };
         arg.forEach(node => {
             if (
@@ -45,7 +45,7 @@ export default function normalizeBoxShadow (decl) {
         });
         return [...list, [...state.inset, ...val, ...state.color]];
     }, []);
-    
+
     if (abort) {
         return;
     }

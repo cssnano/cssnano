@@ -13,7 +13,7 @@ const timingFunctions = [
     'ease-out',
     'ease-in-out',
     'step-start',
-    'step-end'
+    'step-end',
 ];
 
 export default function normalizeTransition (decl) {
@@ -24,7 +24,7 @@ export default function normalizeTransition (decl) {
     if (parsed.nodes.length < 2) {
         return;
     }
-    
+
     let args = getArguments(parsed);
     let abort = false;
 
@@ -33,7 +33,7 @@ export default function normalizeTransition (decl) {
             timingFunction: [],
             property: [],
             time1: [],
-            time2: []
+            time2: [],
         };
         arg.forEach(node => {
             if (
@@ -62,10 +62,10 @@ export default function normalizeTransition (decl) {
         });
         return [...list, [...state.property, ...state.time1, ...state.timingFunction, ...state.time2]];
     }, []);
-    
+
     if (abort) {
         return;
     }
-    
+
     decl.value = getValue(values);
 }

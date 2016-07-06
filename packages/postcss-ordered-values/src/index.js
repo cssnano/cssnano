@@ -10,7 +10,7 @@ let rules = [
     border,
     boxShadow,
     flexFlow,
-    transition
+    transition,
 ];
 
 export default postcss.plugin('postcss-ordered-values', () => {

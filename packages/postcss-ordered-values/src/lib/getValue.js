@@ -25,6 +25,6 @@ export default function getValue (values) {
                 nodes.push({type: 'div', value: ','});
             }
             return nodes;
-        }, [])
+        }, []),
     });
 }

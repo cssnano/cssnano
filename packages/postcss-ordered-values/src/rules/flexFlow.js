@@ -2,20 +2,20 @@ import getParsed from '../lib/getParsed';
 
 // flex-flow: <flex-direction> || <flex-wrap>
 const flexFlowProps = [
-    'flex-flow'
+    'flex-flow',
 ];
 
 const flexDirection = [
     'row',
     'row-reverse',
     'column',
-    'column-reverse'
+    'column-reverse',
 ];
 
 const flexWrap = [
     'nowrap ',
     'wrap',
-    'wrap-reverse'
+    'wrap-reverse',
 ];
 
 export default function normalizeFlexFlow (decl) {
@@ -24,7 +24,10 @@ export default function normalizeFlexFlow (decl) {
     }
     let flexFlow = getParsed(decl);
     if (flexFlow.nodes.length > 2) {
-        let order = {direction: '', wrap: ''};
+        let order = {
+            direction: '',
+            wrap: '',
+        };
         let abort = false;
         flexFlow.walk(node => {
             if (

@@ -9,13 +9,13 @@ const borderProps = [
     'border-right',
     'border-bottom',
     'border-left',
-    'outline'
+    'outline',
 ];
 
 const borderWidths = [
     'thin',
     'medium',
-    'thick'
+    'thick',
 ];
 
 const borderStyles = [
@@ -29,7 +29,7 @@ const borderStyles = [
     'groove',
     'ridge',
     'inset',
-    'outset'
+    'outset',
 ];
 
 export default function normalizeBorder (decl) {
