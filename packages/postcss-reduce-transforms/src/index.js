@@ -31,7 +31,7 @@ function reduce (node) {
                 node.nodes[11],
                 node.nodes[24],
                 node.nodes[25],
-                node.nodes[26]
+                node.nodes[26],
             ];
         }
         return false;
@@ -91,13 +91,13 @@ function reduce (node) {
         if (node.value === 'translate' && node.nodes[2]) {
             // translate(tx, 0) => translate(tx)
             if (parseFloat(node.nodes[2].value) === 0) {
-                node.value = 'translate',
+                node.value = 'translate';
                 node.nodes = [node.nodes[0]];
                 return false;
             }
             // translate(0, ty) => translateY(ty)
             if (parseFloat(node.nodes[0].value) === 0) {
-                node.value = 'translateY',
+                node.value = 'translateY';
                 node.nodes = [node.nodes[2]];
                 return false;
             }
@@ -112,19 +112,19 @@ function reduce (node) {
             let third = parseFloat(node.nodes[4].value);
             // scale3d(sx, 1, 1) => scaleX(sx)
             if (second === 1 && third === 1) {
-                node.value = 'scaleX',
+                node.value = 'scaleX';
                 node.nodes = [node.nodes[0]];
                 return false;
             }
             // scale3d(1, sy, 1) => scaleY(sy)
             if (first === 1 && third === 1) {
-                node.value = 'scaleY',
+                node.value = 'scaleY';
                 node.nodes = [node.nodes[2]];
                 return false;
             }
             // scale3d(1, 1, sz) => scaleZ(sz)
             if (first === 1 && second === 1) {
-                node.value = 'scaleZ',
+                node.value = 'scaleZ';
                 node.nodes = [node.nodes[4]];
                 return false;
             }
@@ -137,7 +137,7 @@ function reduce (node) {
             parseFloat(node.nodes[0].value) === 0 &&
             parseFloat(node.nodes[2].value) === 0
         ) {
-            node.value = 'translateZ',
+            node.value = 'translateZ';
             node.nodes = [node.nodes[4]];
         }
         return false;
