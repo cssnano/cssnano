@@ -60,7 +60,7 @@ function transformDecl (css, propOneRegex, propTwoRegex, encoder) {
                     if (!cache[node.value]) {
                         cache[node.value] = {
                             ident: encoder(node.value, Object.keys(cache).length),
-                            count: 0
+                            count: 0,
                         };
                     }
                     node.value = cache[node.value].ident;
@@ -107,16 +107,20 @@ function transformDecl (css, propOneRegex, propTwoRegex, encoder) {
     });
 }
 
-export default postcss.plugin('postcss-reduce-idents', (opts = {}) => {
-    const encoder = opts.encoder || encode;
+export default postcss.plugin('postcss-reduce-idents', ({
+    counter = true,
+    counterStyle = true,
+    encoder = encode,
+    keyframes = true,
+}) => {
     return css => {
-        if (opts.counter !== false) {
+        if (counter) {
             transformDecl(css, /counter-(reset|increment)/, /content/, encoder);
         }
-        if (opts.keyframes !== false) {
+        if (keyframes) {
             transformAtRule(css, /keyframes/, /animation/, encoder);
         }
-        if (opts.counterStyle !== false) {
+        if (counterStyle) {
             transformAtRule(css, /counter-style/, /(list-style|system)/, encoder);
         }
     };
