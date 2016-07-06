@@ -12,7 +12,8 @@
     "contributorGenerate": "all-contributors generate",
     "pretest": "eslint src",
     "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
-    "test": "ava"
+    "test": "ava",
+    "test-012": "ava"
   },
   "keywords": [
     "css",
