@@ -43,7 +43,7 @@ function minifyPromise (svgo, decl, opts) {
                     quote: isUriEncoded ? '"' : '\'',
                     type: 'string',
                     before: '',
-                    after: ''
+                    after: '',
                 };
                 return resolve();
             });
@@ -52,7 +52,7 @@ function minifyPromise (svgo, decl, opts) {
         return false;
     });
 
-    return Promise.all(promises).then(() => decl.value = decl.value.toString());
+    return Promise.all(promises).then(() => (decl.value = decl.value.toString()));
 }
 
 export default postcss.plugin(PLUGIN, (opts = {}) => {

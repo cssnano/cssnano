@@ -1,12 +1,11 @@
+import {readFileSync as file} from 'fs';
 import ava from 'ava';
 import postcss from 'postcss';
-import plugin from '../';
 import filters from 'pleeease-filters';
-import pkg from '../../package.json';
+import plugin from '../';
+import {name} from '../../package.json';
 import {encode, decode} from '../lib/url';
-import {readFileSync as file} from 'fs';
 
-let name = pkg.name;
 
 let tests = [{
     message: 'should optimise inline svg',
@@ -16,11 +15,11 @@ let tests = [{
     message: 'should optimise inline svg in all urls',
     fixture: 'h1{background:' + [
         'url(\'data:image/svg+xml;utf-8,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><circle cx="50" cy="50" r="40" fill="yellow" /><!--test comment--></svg>\')',
-        'url(\'data:image/svg+xml;utf-8,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><circle cx="50" cy="50" r="40" fill="yellow" /><!--test comment--></svg>\')'
+        'url(\'data:image/svg+xml;utf-8,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><circle cx="50" cy="50" r="40" fill="yellow" /><!--test comment--></svg>\')',
     ].join(' ') + '}',
     expected: 'h1{background:' + [
         'url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#ff0"/></svg>\')',
-        'url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#ff0"/></svg>\')'
+        'url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#ff0"/></svg>\')',
     ].join(' ') + '}',
 }, {
     message: 'should optimise inline svg with standard charset definition',
@@ -38,39 +37,39 @@ let tests = [{
     message: 'should allow users to customise the output',
     fixture: 'h1{background:url(\'data:image/svg+xml;utf-8,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><circle cx="50" cy="50" r="40" fill="yellow" /><!--test comment--></svg>\')}',
     expected: 'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#ff0"/><!--test comment--></svg>\')}',
-    options: {plugins: [{removeComments: false}]}
+    options: {plugins: [{removeComments: false}]},
 }, {
     message: 'should not mangle filter effects',
     fixture: 'h1{filter:blur(5px)}',
-    expected: 'h1{filter:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><filter id="filter"><feGaussianBlur stdDeviation="5" /></filter></svg>#filter\');filter:blur(5px)}'
+    expected: 'h1{filter:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><filter id="filter"><feGaussianBlur stdDeviation="5" /></filter></svg>#filter\');filter:blur(5px)}',
 }, {
     message: 'should not throw when decoding a svg',
     fixture: 'h1{-webkit-mask-box-image: url("data:image/svg+xml;charset=utf-8,<svg height=\'35\' viewBox=\'0 0 96 70\' width=\'48\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'m84 35c1 7-5 37-42 35-37 2-43-28-42-35-1-7 5-37 42-35 37-2 43 28 42 35z\'/></svg>") 50% 56% 46% 42%;}',
-    expected: 'h1{-webkit-mask-box-image: url(\'data:image/svg+xml;charset=utf-8,<svg height="35" viewBox="0 0 96 70" width="48" xmlns="http://www.w3.org/2000/svg"><path d="M84 35c1 7-5 37-42 35C5 72-1 42 0 35-1 28 5-2 42 0c37-2 43 28 42 35z"/></svg>\') 50% 56% 46% 42%;}'
+    expected: 'h1{-webkit-mask-box-image: url(\'data:image/svg+xml;charset=utf-8,<svg height="35" viewBox="0 0 96 70" width="48" xmlns="http://www.w3.org/2000/svg"><path d="M84 35c1 7-5 37-42 35C5 72-1 42 0 35-1 28 5-2 42 0c37-2 43 28 42 35z"/></svg>\') 50% 56% 46% 42%;}',
 }, {
     message: 'should encode unencoded data',
     fixture: 'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#ff0"/></svg>\')}',
     expected: 'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'40\' fill=\'%23ff0\'/%3E%3C/svg%3E")}',
     options: {
-        encode: true
-    }
+        encode: true,
+    },
 }, {
     message: 'should decode encoded data',
     fixture: 'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'40\' fill=\'%23ff0\'/%3E%3C/svg%3E")}',
     expected: 'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#ff0"/></svg>\')}',
     options: {
-        encode: false
-    }
+        encode: false,
+    },
 }, {
     message: 'should pass through links to svg files',
     fixture: 'h1{background:url(unicorn.svg)}',
-    expected: 'h1{background:url(unicorn.svg)}'
+    expected: 'h1{background:url(unicorn.svg)}',
 }];
 
 tests.forEach(({message, fixture, expected, options = {}}) => {
     ava(message, t => {
-        return postcss([ filters(), plugin(options) ]).process(fixture).then(result => {
-            t.deepEqual(result.css, expected);
+        return postcss([ filters(), plugin(options) ]).process(fixture).then(({css}) => {
+            t.deepEqual(css, expected);
         });
     });
 });
