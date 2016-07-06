@@ -1,8 +1,8 @@
-import postcss from 'postcss';
+import {plugin} from 'postcss';
 import sort from 'alphanum-sort';
+import parser from 'postcss-selector-parser';
 import unquote from './lib/unquote';
 import canUnquote from './lib/canUnquote';
-import parser from 'postcss-selector-parser';
 
 const pseudoElements = ['::before', '::after', '::first-letter', '::first-line'];
 
@@ -66,7 +66,7 @@ function optimise (rule) {
                 }
             }
             if (sel.type === 'tag') {
-                if (sel.value === 'from') { 
+                if (sel.value === 'from') {
                     sel.value = '0%';
                 } else if (sel.value === '100%') {
                     sel.value = 'to';
@@ -82,6 +82,6 @@ function optimise (rule) {
     });
 }
 
-export default postcss.plugin('postcss-minify-selectors', () => {
+export default plugin('postcss-minify-selectors', () => {
     return css => css.walkRules(optimise);
 });
