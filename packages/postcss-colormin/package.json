@@ -8,9 +8,10 @@
     "LICENSE-MIT"
   ],
   "scripts": {
-    "lint": "eslint src",
+    "pretest": "eslint src",
     "prepublish": "del-cli dist && babel src --out-dir dist --ignore /__tests__/",
-    "test": "npm run lint && babel src --out-dir dist && ava dist/__tests__"
+    "test": "ava src/__tests__",
+    "test-012": "ava src/__tests__"
   },
   "keywords": [
     "color",
@@ -30,9 +31,12 @@
     "babel-preset-es2015": "^6.3.13",
     "babel-preset-es2015-loose": "^7.0.0",
     "babel-preset-stage-0": "^6.3.13",
+    "babel-register": "^6.9.0",
     "del-cli": "^0.2.0",
-    "eslint": "^2.0.0",
-    "eslint-config-cssnano": "^2.0.0"
+    "eslint": "^3.0.0",
+    "eslint-config-cssnano": "^3.0.0",
+    "eslint-plugin-babel": "^3.3.0",
+    "eslint-plugin-import": "^1.10.2"
   },
   "homepage": "https://github.com/ben-eb/postcss-colormin",
   "author": {
@@ -48,5 +52,8 @@
   },
   "eslintConfig": {
     "extends": "cssnano"
+  },
+  "ava": {
+    "require": "babel-register"
   }
 }
