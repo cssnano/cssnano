@@ -1,6 +1,6 @@
 import plugin from '../plugin';
 
-let targets = ['ie 7', 'ie 6', 'ie 5.5'];
+const targets = ['ie 7', 'ie 6', 'ie 5.5'];
 
 export default plugin(targets, ['rule'], function (rule) {
     if (rule.selector) {
@@ -12,7 +12,7 @@ export default plugin(targets, ['rule'], function (rule) {
         ) {
             this.push(rule, {
                 identifier: 'selector',
-                hack: selector
+                hack: selector,
             });
         }
     }

@@ -1,8 +1,8 @@
+import parser from 'postcss-selector-parser';
 import exists from '../exists';
 import plugin from '../plugin';
-import parser from 'postcss-selector-parser';
 
-let targets = ['opera 9'];
+const targets = ['opera 9'];
 
 function analyse (ctx, rule) {
     return selectors => {
@@ -15,7 +15,7 @@ function analyse (ctx, rule) {
             ) {
                 ctx.push(rule, {
                     identifier: 'selector',
-                    hack: selector.toString()
+                    hack: selector.toString(),
                 });
             }
         });

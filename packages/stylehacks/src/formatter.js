@@ -1,5 +1,5 @@
-import chalk from 'chalk';
 import path from 'path';
+import chalk from 'chalk';
 import table from 'text-table';
 import logSymbols from 'log-symbols';
 import plur from 'plur';
@@ -31,7 +31,7 @@ export default input => {
             chalk.gray('line ' + msg.node.source.start.line),
             chalk.gray('col ' + msg.node.source.start.column),
             parts[0],
-            chalk.red(parts[1])
+            chalk.red(parts[1]),
         ];
     })) + hacksFound(messages);
 };

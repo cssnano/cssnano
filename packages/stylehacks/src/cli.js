@@ -4,8 +4,8 @@ import fs from 'fs';
 import read from 'read-file-stdin';
 import write from 'write-file-stdout';
 import minimist from 'minimist';
-import stylehacks from './';
 import {version} from '../package.json';
+import stylehacks from './';
 
 const opts = minimist(process.argv.slice(2), {
     alias: {
@@ -13,8 +13,8 @@ const opts = minimist(process.argv.slice(2), {
         l: 'lint',
         h: 'help',
         s: 'sourcemap',
-        v: 'version'
-    }
+        v: 'version',
+    },
 });
 
 if (opts.version) {
@@ -46,6 +46,6 @@ if (opts.version) {
                     write(result.css);
                 }
             });
-        }); 
-    }   
+        });
+    }
 }

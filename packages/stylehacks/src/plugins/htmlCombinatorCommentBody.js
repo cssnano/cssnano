@@ -1,8 +1,8 @@
+import parser from 'postcss-selector-parser';
 import exists from '../exists';
 import plugin from '../plugin';
-import parser from 'postcss-selector-parser';
 
-let targets = ['ie 7', 'ie 6', 'ie 5.5'];
+const targets = ['ie 7', 'ie 6', 'ie 5.5'];
 
 function analyse (ctx, rule) {
     return selectors => {
@@ -18,7 +18,7 @@ function analyse (ctx, rule) {
             ) {
                 ctx.push(rule, {
                     identifier: 'selector',
-                    hack: selector.toString()
+                    hack: selector.toString(),
                 });
             }
         });

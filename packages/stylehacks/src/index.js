@@ -27,10 +27,10 @@ let plugins = [
     mediaSlash9,
     slash9,
     starHtml,
-    trailingSlashComma
+    trailingSlashComma,
 ];
 
-let stylehacks = postcss.plugin('stylehacks', (opts = {}) => {
+const stylehacks = postcss.plugin('stylehacks', (opts = {}) => {
     let b = opts.browsers;
     let browsers = (b instanceof Array) ? b : browserslist(b);
 
@@ -52,8 +52,8 @@ let stylehacks = postcss.plugin('stylehacks', (opts = {}) => {
 });
 
 stylehacks.detect = node => {
-    let hacked = plugins.some(Plugin => {
-        let hack = new Plugin();
+    const hacked = plugins.some(Plugin => {
+        const hack = new Plugin();
         return hack.any(node);
     });
 

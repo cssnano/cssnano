@@ -11,7 +11,7 @@ export default plugin(targets, ['decl', 'atrule'], function (node) {
             if (!node.prop.indexOf(hack)) {
                 this.push(node, {
                     identifier: 'property',
-                    hack: node.prop
+                    hack: node.prop,
                 });
                 return true;
             }
@@ -24,7 +24,7 @@ export default plugin(targets, ['decl', 'atrule'], function (node) {
             if (~before.indexOf(hack)) {
                 this.push(node, {
                     identifier: 'property',
-                    hack: `${before.trim()}${node.prop}`
+                    hack: `${before.trim()}${node.prop}`,
                 });
                 return true;
             }
@@ -36,7 +36,7 @@ export default plugin(targets, ['decl', 'atrule'], function (node) {
         if (name.lastIndexOf(':') === len) {
             this.push(node, {
                 identifier: 'property',
-                hack: `@${name.substr(0, len)}`
+                hack: `@${name.substr(0, len)}`,
             });
         }
     }

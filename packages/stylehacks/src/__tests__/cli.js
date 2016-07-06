@@ -1,7 +1,7 @@
-import ava from 'ava';
 import {spawn} from 'child_process';
 import path from 'path';
 import {readFileSync as read} from 'fs';
+import ava from 'ava';
 
 let fixture = 'fixture.css';
 
@@ -10,14 +10,14 @@ function setup (args) {
         process.chdir(__dirname);
 
         let ps = spawn(process.execPath, [
-            path.resolve(__dirname, '../../dist/cli.js')
+            path.resolve(__dirname, '../../dist/cli.js'),
         ].concat(args));
-        
+
         let out = '';
         let err = '';
 
-        ps.stdout.on('data', buffer => out += buffer);
-        ps.stderr.on('data', buffer => err += buffer);
+        ps.stdout.on('data', buffer => (out += buffer));
+        ps.stderr.on('data', buffer => (err += buffer));
 
         ps.on('exit', code => {
             if (err) {
