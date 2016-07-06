@@ -1,8 +1,8 @@
+import {plugin, list} from 'postcss';
 import CommentRemover from './lib/commentRemover';
 import commentParser from './lib/commentParser';
-import {plugin, list} from 'postcss';
 
-const space = list.space;
+const {space} = list;
 
 export default plugin('postcss-discard-comments', (opts = {}) => {
     const remover = new CommentRemover(opts);

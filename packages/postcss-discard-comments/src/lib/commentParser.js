@@ -10,7 +10,7 @@ export default function commentParser (input) {
         if (~next) {
             tokens.push({
                 type: 'other',
-                value: input.slice(pos, next)
+                value: input.slice(pos, next),
             });
             pos = next;
 
@@ -20,13 +20,13 @@ export default function commentParser (input) {
             }
             tokens.push({
                 type: 'comment',
-                value: input.slice(pos + 2, next)
+                value: input.slice(pos + 2, next),
             });
             pos = next + 2;
         } else {
             tokens.push({
                 type: 'other',
-                value: input.slice(pos)
+                value: input.slice(pos),
             });
             pos = length;
         }
