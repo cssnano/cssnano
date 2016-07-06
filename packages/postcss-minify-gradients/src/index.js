@@ -5,7 +5,7 @@ const angles = {
     top:    '0deg',
     right:  '90deg',
     bottom: '180deg',
-    left:   '270deg'
+    left:   '270deg',
 };
 
 function getArguments (node) {
