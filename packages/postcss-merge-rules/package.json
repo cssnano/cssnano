@@ -10,7 +10,8 @@
   "scripts": {
     "pretest": "eslint src",
     "prepublish": "babel src --out-dir dist --ignore /__tests__/",
-    "test": "ava src/__tests__"
+    "test": "ava src/__tests__",
+    "test-012": "ava src/__tests__"
   },
   "keywords": [
     "css",
