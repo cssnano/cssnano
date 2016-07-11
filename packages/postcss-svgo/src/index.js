@@ -15,8 +15,15 @@ function minifyPromise (svgo, decl, opts) {
             return;
         }
         let {value} = node.nodes[0];
-        let decodedUri = decode(value);
-        let isUriEncoded = decodedUri !== value;
+        let decodedUri, isUriEncoded;
+
+        try {
+            decodedUri = decode(value);
+            isUriEncoded = decodedUri !== value;
+        } catch (e) {
+            // Swallow exception if we cannot decode the value
+            isUriEncoded = false;
+        }
 
         if (isUriEncoded) {
             value = decodedUri;

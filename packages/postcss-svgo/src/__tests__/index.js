@@ -61,6 +61,17 @@ let tests = [{
         encode: false,
     },
 }, {
+    message: 'should not fail on "malformed" svgs',
+    fixture: 'h1{background-image:url("data:image/svg+xml;charset=utf-8,<svg xmlns=\'http://www.w3.org/2000/svg\'><line stroke-width=\'2\' stroke=\'rgb(255,0,0)\' x1=\'0\' y1=\'100%\' x2=\'100%\' y2=\'0\'></line></svg>")}',
+    expected: 'h1{background-image:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><line stroke-width="2" stroke="#F00" y1="100%" x2="100%"/></svg>\')}',
+}, {
+    message: 'should encode "malformed" svgs',
+    fixture: 'h1{background-image:url("data:image/svg+xml;charset=utf-8,<svg xmlns=\'http://www.w3.org/2000/svg\'><line stroke-width=\'2\' stroke=\'rgb(255,0,0)\' x1=\'0\' y1=\'100%\' x2=\'100%\' y2=\'0\'></line></svg>")}',
+    expected: 'h1{background-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cline stroke-width=\'2\' stroke=\'%23F00\' y1=\'100%25\' x2=\'100%25\'/%3E%3C/svg%3E\")}',
+    options: {
+        encode: true,
+    },
+}, {
     message: 'should pass through links to svg files',
     fixture: 'h1{background:url(unicorn.svg)}',
     expected: 'h1{background:url(unicorn.svg)}',
