@@ -67,6 +67,15 @@
         "review",
         "test"
       ]
+    },
+    {
+      "login": "pwalczyszyn",
+      "name": "Piotr Walczyszyn",
+      "avatar_url": "https://avatars.githubusercontent.com/u/368561?v=3",
+      "profile": "http://outof.me",
+      "contributions": [
+        "bug"
+      ]
     }
   ]
 }
