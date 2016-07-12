@@ -1,3 +1,8 @@
+# 3.7.2
+
+* Temporarily pins postcss-filter-plugins to version `2.0.0` in order to
+  mitigate an issue with uniqid `3.0.0`.
+
 # 3.7.1
 
 * Enabling safe mode now turns off both postcss-merge-idents &
