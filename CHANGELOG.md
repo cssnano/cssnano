@@ -1,3 +1,8 @@
+# 3.7.3
+
+* Unpins postcss-filter-plugins from `2.0.0` as a fix has landed in the new
+  version of uniqid.
+
 # 3.7.2
 
 * Temporarily pins postcss-filter-plugins to version `2.0.0` in order to
