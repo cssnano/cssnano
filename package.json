@@ -57,6 +57,7 @@
     "postcss-zindex": "^2.0.1"
   },
   "devDependencies": {
+    "array-to-sentence": "^1.1.0",
     "ava": "^0.15.0",
     "babel-cli": "^6.5.1",
     "babel-core": "^6.5.1",

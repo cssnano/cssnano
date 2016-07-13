@@ -62,3 +62,17 @@ ava('should not fail when options.safe is enabled', t => {
         t.deepEqual(result.css, min, specName('beConsumedByPostCSS'));
     });
 });
+
+ava('should work with sourcemaps', t => {
+    return nano.process('h1{z-index:1}', {map: {inline: true}}).then(({css}) => {
+        const hasMap = /sourceMappingURL=data:application\/json;base64/.test(css);
+        t.truthy(hasMap);
+    });
+});
+
+ava('should work with sourcemaps (2)', t => {
+    return nano.process('h1{z-index:1}', {sourcemap: true}).then(({css}) => {
+        const hasMap = /sourceMappingURL=data:application\/json;base64/.test(css);
+        t.truthy(hasMap);
+    });
+});
