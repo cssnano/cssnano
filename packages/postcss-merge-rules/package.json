@@ -45,7 +45,8 @@
   },
   "repository": "ben-eb/postcss-merge-rules",
   "dependencies": {
-    "postcss": "^5.0.4"
+    "postcss": "^5.0.4",
+    "vendors": "^1.0.0"
   },
   "eslintConfig": {
     "extends": "cssnano"

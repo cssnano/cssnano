@@ -1,8 +1,9 @@
 import postcss from 'postcss';
+import vendors from 'vendors';
 import clone from './lib/clone';
 
 const list = postcss.list;
-const prefixes = ['-webkit-', '-moz-', '-ms-', '-o-'];
+const prefixes = vendors.map(v => `-${v}-`);
 
 function intersect (a, b, not) {
     return a.filter(c => {
