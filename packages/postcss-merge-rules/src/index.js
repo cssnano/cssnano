@@ -2,28 +2,28 @@ import postcss from 'postcss';
 import vendors from 'vendors';
 import clone from './lib/clone';
 
-const list = postcss.list;
+const {list} = postcss;
 const prefixes = vendors.map(v => `-${v}-`);
 
 function intersect (a, b, not) {
     return a.filter(c => {
-        let index = ~b.indexOf(c);
+        const index = ~b.indexOf(c);
         return not ? !index : index;
     });
 }
 
-let different = (a, b) => intersect(a, b, true).concat(intersect(b, a, true));
-let filterPrefixes = selector => intersect(prefixes, selector);
+const different = (a, b) => intersect(a, b, true).concat(intersect(b, a, true));
+const filterPrefixes = selector => intersect(prefixes, selector);
 
 function sameVendor (selectorsA, selectorsB) {
     let same = selectors => selectors.map(filterPrefixes).join();
     return same(selectorsA) === same(selectorsB);
 }
 
-let noVendor = selector => !filterPrefixes(selector).length;
+const noVendor = selector => !filterPrefixes(selector).length;
 
 function sameParent (ruleA, ruleB) {
-    let hasParent = ruleA.parent && ruleB.parent;
+    const hasParent = ruleA.parent && ruleB.parent;
     let sameType = hasParent && ruleA.parent.type === ruleB.parent.type;
     // If an at rule, ensure that the parameters are the same
     if (hasParent && ruleA.parent.type !== 'root' && ruleB.parent.type !== 'root') {
@@ -46,15 +46,15 @@ function canMerge (ruleA, ruleB) {
     return parent && (a.concat(b).every(noVendor) || sameVendor(a, b));
 }
 
-let getDecls = rule => rule.nodes ? rule.nodes.map(String) : [];
-let joinSelectors = (...rules) => rules.map(s => s.selector).join();
+const getDecls = rule => rule.nodes ? rule.nodes.map(String) : [];
+const joinSelectors = (...rules) => rules.map(s => s.selector).join();
 
 function ruleLength (...rules) {
     return rules.map(r => r.nodes.length ? String(r) : '').join('').length;
 }
 
 function splitProp (prop) {
-    let parts = prop.split('-');
+    const parts = prop.split('-');
     let base, rest;
     // Treat vendor prefixed properties as if they were unprefixed;
     // moving them when combined with non-prefixed properties can
@@ -74,8 +74,8 @@ function isConflictingProp (propA, propB) {
     if (propA === propB) {
         return true;
     }
-    let a = splitProp(propA);
-    let b = splitProp(propB);
+    const a = splitProp(propA);
+    const b = splitProp(propB);
     return a[0] === b[0] && a[1].length !== b[1].length;
 }
 
@@ -95,12 +95,12 @@ function partialMerge (first, second) {
             first = second; second = nextRule; intersection = nextIntersection;
         }
     }
-    let recievingBlock = clone(second);
+    const recievingBlock = clone(second);
     recievingBlock.selector = joinSelectors(first, second);
     recievingBlock.nodes = [];
     second.parent.insertBefore(second, recievingBlock);
-    let difference = different(getDecls(first), getDecls(second));
-    let filterConflicts = (decls, intersectn) => {
+    const difference = different(getDecls(first), getDecls(second));
+    const filterConflicts = (decls, intersectn) => {
         let willNotMove = [];
         return decls.reduce((willMove, decl) => {
             let intersects = ~intersectn.indexOf(decl);
@@ -117,9 +117,9 @@ function partialMerge (first, second) {
     };
     intersection = filterConflicts(getDecls(first).reverse(), intersection);
     intersection = filterConflicts((getDecls(second)), intersection);
-    let firstClone = clone(first);
-    let secondClone = clone(second);
-    let moveDecl = callback => {
+    const firstClone = clone(first);
+    const secondClone = clone(second);
+    const moveDecl = callback => {
         return decl => {
             if (~intersection.indexOf(String(decl))) {
                 callback.call(this, decl);
@@ -131,8 +131,8 @@ function partialMerge (first, second) {
         recievingBlock.append(decl);
     }));
     secondClone.walkDecls(moveDecl(decl => decl.remove()));
-    let merged = ruleLength(firstClone, recievingBlock, secondClone);
-    let original = ruleLength(first, second);
+    const merged = ruleLength(firstClone, recievingBlock, secondClone);
+    const original = ruleLength(first, second);
     if (merged < original) {
         first.replaceWith(firstClone);
         second.replaceWith(secondClone);

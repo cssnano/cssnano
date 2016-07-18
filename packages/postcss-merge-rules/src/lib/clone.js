@@ -2,7 +2,7 @@ const clone = (obj, parent) => {
     if (typeof obj !== 'object' || obj === null) {
         return obj;
     }
-    let cloned = new obj.constructor();
+    const cloned = new obj.constructor();
     for (let i in obj) {
         if (!({}.hasOwnProperty.call(obj, i))) {
             continue;
