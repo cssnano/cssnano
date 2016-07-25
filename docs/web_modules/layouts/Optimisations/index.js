@@ -52,8 +52,8 @@ export default class Optimisations extends Component {
                 let demo = null;
                 if (feature.inputExample && feature.outputExample) {
                     demo = <div className={example}>
-                        <CssExample css={feature.inputExample} />
-                        <CssExample css={feature.outputExample} />
+                        <CssExample>{feature.inputExample}</CssExample>
+                        <CssExample>{feature.outputExample}</CssExample>
                     </div>;
                 }
                 let className = [];

@@ -59,9 +59,9 @@ export default class Homepage extends Component {
                 many focused optimisations, to ensure that the final result is
                 as small as possible for a production environment.</p>
                 <div className={example}>
-                    <CssExample css={inputExample} />
+                    <CssExample>{inputExample}</CssExample>
                     <div>
-                        <CssExample css={outputExample} />
+                        <CssExample>{outputExample}</CssExample>
                         <p>The semantics of this CSS have been kept the same,
                         but the extraneous whitespace has been removed, the
                         identifiers compressed, and unnecessary definitions

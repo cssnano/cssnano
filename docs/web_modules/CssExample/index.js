@@ -1,16 +1,16 @@
 import React, {PropTypes} from 'react';
-import midas from 'midas';
+import midasFactory from 'react-midas';
 
-const CssExample = ({css}) => (
-    <div
-        dangerouslySetInnerHTML={{
-            __html: midas(css).content
-        }}
-    />
+const Midas = midasFactory();
+
+const CssExample = ({children}) => (
+    <div>
+        <Midas>{children}</Midas>
+    </div>
 );
 
 CssExample.propTypes = {
-    css: PropTypes.string.isRequired,
+    children: PropTypes.string.isRequired,
 };
 
 export default CssExample;
