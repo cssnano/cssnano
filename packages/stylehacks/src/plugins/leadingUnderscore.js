@@ -1,15 +1,16 @@
 import plugin from '../plugin';
+import {IE_6} from '../dictionary/browsers';
+import {PROPERTY} from '../dictionary/identifiers';
+import {DECL} from '../dictionary/postcss';
 
-const targets = ['ie 6'];
-
-export default plugin(targets, ['decl'], function (decl) {
+export default plugin([IE_6], [DECL], function (decl) {
     let before = decl.raws.before;
     if (!before) {
         return;
     }
     if (~before.indexOf('_') || ~before.indexOf('-')) {
         this.push(decl, {
-            identifier: 'property',
+            identifier: PROPERTY,
             hack: `${before.trim()}${decl.prop}`,
         });
     }

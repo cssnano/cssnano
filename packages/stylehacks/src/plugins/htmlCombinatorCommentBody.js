@@ -1,23 +1,25 @@
 import parser from 'postcss-selector-parser';
 import exists from '../exists';
 import plugin from '../plugin';
-
-const targets = ['ie 7', 'ie 6', 'ie 5.5'];
+import {IE_5_5, IE_6, IE_7} from '../dictionary/browsers';
+import {SELECTOR} from '../dictionary/identifiers';
+import {RULE} from '../dictionary/postcss';
+import {BODY, HTML} from '../dictionary/tags';
 
 function analyse (ctx, rule) {
     return selectors => {
         selectors.each(selector => {
             if (
-                exists(selector, 0, 'html') &&
+                exists(selector, 0, HTML) &&
                 (exists(selector, 1, '>') || exists(selector, 1, '~')) &&
                 selector.at(2) && selector.at(2).type === 'comment' &&
                 exists(selector, 3, ' ') &&
-                exists(selector, 4, 'body') &&
+                exists(selector, 4, BODY) &&
                 exists(selector, 5, ' ') &&
                 selector.at(6)
             ) {
                 ctx.push(rule, {
-                    identifier: 'selector',
+                    identifier: SELECTOR,
                     hack: selector.toString(),
                 });
             }
@@ -25,7 +27,7 @@ function analyse (ctx, rule) {
     };
 }
 
-export default plugin(targets, ['rule'], function (rule) {
+export default plugin([IE_5_5, IE_6, IE_7], [RULE], function (rule) {
     if (rule.selector && rule.raws.selector && rule.raws.selector.raw) {
         parser(analyse(this, rule)).process(rule.raws.selector.raw);
     }

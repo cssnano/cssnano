@@ -1,8 +1,10 @@
 import parser from 'postcss-selector-parser';
 import exists from '../exists';
 import plugin from '../plugin';
-
-const targets = ['ie 6', 'ie 5.5'];
+import {IE_5_5, IE_6} from '../dictionary/browsers';
+import {SELECTOR} from '../dictionary/identifiers';
+import {RULE} from '../dictionary/postcss';
+import {HTML} from '../dictionary/tags';
 
 function analyse (ctx, rule) {
     return selectors => {
@@ -10,12 +12,12 @@ function analyse (ctx, rule) {
             if (
                 exists(selector, 0, '*') &&
                 exists(selector, 1, ' ') &&
-                exists(selector, 2, 'html') &&
+                exists(selector, 2, HTML) &&
                 exists(selector, 3, ' ') &&
                 selector.at(4)
             ) {
                 ctx.push(rule, {
-                    identifier: 'selector',
+                    identifier: SELECTOR,
                     hack: selector.toString(),
                 });
             }
@@ -23,7 +25,7 @@ function analyse (ctx, rule) {
     };
 }
 
-export default plugin(targets, ['rule'], function (rule) {
+export default plugin([IE_5_5, IE_6], [RULE], function (rule) {
     if (rule.selector) {
         parser(analyse(this, rule)).process(rule.selector);
     }

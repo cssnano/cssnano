@@ -1,8 +1,9 @@
 import plugin from '../plugin';
+import {IE_5_5, IE_6, IE_7} from '../dictionary/browsers';
+import {SELECTOR} from '../dictionary/identifiers';
+import {RULE} from '../dictionary/postcss';
 
-const targets = ['ie 7', 'ie 6', 'ie 5.5'];
-
-export default plugin(targets, ['rule'], function (rule) {
+export default plugin([IE_5_5, IE_6, IE_7], [RULE], function (rule) {
     if (rule.selector) {
         const {selector} = rule;
         const trim = selector.trim();
@@ -11,7 +12,7 @@ export default plugin(targets, ['rule'], function (rule) {
             trim.lastIndexOf('\\') === selector.length - 1
         ) {
             this.push(rule, {
-                identifier: 'selector',
+                identifier: SELECTOR,
                 hack: selector,
             });
         }

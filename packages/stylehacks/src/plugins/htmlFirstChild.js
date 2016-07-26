@@ -1,20 +1,22 @@
 import parser from 'postcss-selector-parser';
 import exists from '../exists';
 import plugin from '../plugin';
-
-const targets = ['opera 9'];
+import {OP_9} from '../dictionary/browsers';
+import {SELECTOR} from '../dictionary/identifiers';
+import {RULE} from '../dictionary/postcss';
+import {HTML} from '../dictionary/tags';
 
 function analyse (ctx, rule) {
     return selectors => {
         selectors.each(selector => {
             if (
-                exists(selector, 0, 'html') &&
+                exists(selector, 0, HTML) &&
                 exists(selector, 1, ':first-child') &&
                 exists(selector, 2, ' ') &&
                 selector.at(3)
             ) {
                 ctx.push(rule, {
-                    identifier: 'selector',
+                    identifier: SELECTOR,
                     hack: selector.toString(),
                 });
             }
@@ -22,7 +24,7 @@ function analyse (ctx, rule) {
     };
 }
 
-export default plugin(targets, ['rule'], function (rule) {
+export default plugin([OP_9], [RULE], function (rule) {
     if (rule.selector) {
         parser(analyse(this, rule)).process(rule.selector);
     }
