@@ -1,46 +1,38 @@
 export default function plugin (targets, nodeTypes, detect) {
     class Plugin {
-        constructor (css, result) {
+        constructor (result) {
             this.nodes = [];
-            this.css = css;
             this.result = result;
             this.targets = targets;
             this.nodeTypes = nodeTypes;
         }
 
         push (node, metadata) {
-            metadata.message = `Bad ${metadata.identifier}: ${metadata.hack}`;
-            metadata.browsers = this.targets;
-            node._stylehacks = metadata;
+            node._stylehacks = {
+                ...metadata,
+                message: `Bad ${metadata.identifier}: ${metadata.hack}`,
+                browsers: this.targets,
+            };
             this.nodes.push(node);
         }
 
         any (node) {
-            let hasHack = false;
             if (~this.nodeTypes.indexOf(node.type)) {
                 detect.apply(this, arguments);
-                if (node._stylehacks) {
-                    hasHack = true;
-                }
+                return !!node._stylehacks;
             }
-            return hasHack;
+            return false;
         }
 
-        detect () {
-            this.css.walk(function (node) {
-                if (~this.nodeTypes.indexOf(node.type)) {
-                    detect.apply(this, arguments);
-                }
-            }.bind(this));
-        }
-
-        detectAndResolve () {
-            this.detect();
+        detectAndResolve (...args) {
+            this.nodes = [];
+            detect.apply(this, args);
             return this.resolve();
         }
 
-        detectAndWarn () {
-            this.detect();
+        detectAndWarn (...args) {
+            this.nodes = [];
+            detect.apply(this, args);
             return this.warn();
         }
 

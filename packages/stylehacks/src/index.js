@@ -16,7 +16,7 @@ import slash9 from './plugins/slash9';
 import starHtml from './plugins/starHtml';
 import trailingSlashComma from './plugins/trailingSlashComma';
 
-let plugins = [
+const plugins = [
     bodyEmpty,
     htmlCombinatorCommentBody,
     htmlFirstChild,
@@ -31,22 +31,30 @@ let plugins = [
 ];
 
 const stylehacks = postcss.plugin('stylehacks', (opts = {}) => {
-    let b = opts.browsers;
-    let browsers = (b instanceof Array) ? b : browserslist(b);
+    const b = opts.browsers;
+    const browsers = (b instanceof Array) ? b : browserslist(b);
 
     return (css, result) => {
-        plugins.forEach(Plugin => {
-            let hack = new Plugin(css, result);
-            let applied = browsers.some(browser => {
+        const processors = plugins.reduce((list, Plugin) => {
+            const hack = new Plugin(result);
+            const applied = browsers.some(browser => {
                 return hack.targets.some(target => browser === target);
             });
             if (applied) {
-                return;
+                return list;
             }
-            if (opts.lint) {
-                return hack.detectAndWarn();
-            }
-            return hack.detectAndResolve();
+            return [...list, hack];
+        }, []);
+        css.walk(node => {
+            processors.forEach(proc => {
+                if (!~proc.nodeTypes.indexOf(node.type)) {
+                    return;
+                }
+                if (opts.lint) {
+                    return proc.detectAndWarn(node);
+                }
+                return proc.detectAndResolve(node);
+            });
         });
     };
 });
@@ -64,7 +72,7 @@ stylehacks.process = (css, opts = {}) => {
     opts.reporter = {};
     opts.reporter.formatter = formatter;
     opts.map = opts.map || (opts.sourcemap ? true : null);
-    let processor = postcss([ stylehacks(opts) ]);
+    const processor = postcss([ stylehacks(opts) ]);
     if (opts.lint && !opts.silent) {
         processor.use(reporter(opts.reporter));
     }
