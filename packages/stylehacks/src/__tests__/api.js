@@ -67,3 +67,45 @@ ava('should have a separate detect method (2)', t => {
         t.deepEqual(counter, 0);
     });
 });
+
+ava('should use browserslist to parse browsers when it is a string', t => {
+    const css = 'h1 { _color: red }';
+
+    return postcss([ stylehacks({browsers: 'ie 6-8'}) ]).process(css).then(result => {
+        t.deepEqual(result.css, css);
+    });
+});
+
+ava('should not use browserslist to parse browsers when it is an array', t => {
+    const css = 'h1 { _color: red }';
+    const browsers = ['ie 6', 'ie 7', 'ie 8'];
+
+    return postcss([ stylehacks({browsers}) ]).process(css).then(result => {
+        t.deepEqual(result.css, css);
+    });
+});
+
+ava('should handle rules with empty selectors', t => {
+    const css = '{ _color: red }';
+    const browsers = ['ie 5.5', 'ie 6', 'ie 7', 'ie 8'];
+
+    return postcss([ stylehacks({browsers}) ]).process(css).then(result => {
+        t.deepEqual(result.css, css);
+    });
+});
+
+ava('should handle rules with empty selectors (2)', t => {
+    const css = '{ _color: red }';
+
+    return postcss([ stylehacks() ]).process(css).then(result => {
+        t.deepEqual(result.css, '{ }');
+    });
+});
+
+ava('should pass through other comments in selectors', t => {
+    const css = 'h1 /* => */ h2 {}';
+
+    return postcss([ stylehacks() ]).process(css).then(result => {
+        t.deepEqual(result.css, css);
+    });
+});

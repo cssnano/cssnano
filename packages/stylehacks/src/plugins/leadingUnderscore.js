@@ -4,7 +4,7 @@ import {PROPERTY} from '../dictionary/identifiers';
 import {DECL} from '../dictionary/postcss';
 
 export default plugin([IE_6], [DECL], function (decl) {
-    let before = decl.raws.before;
+    const {before} = decl.raws;
     if (!before) {
         return;
     }

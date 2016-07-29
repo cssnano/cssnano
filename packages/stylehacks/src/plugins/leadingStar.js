@@ -31,7 +31,7 @@ export default plugin([IE_5_5, IE_6, IE_7], [ATRULE, DECL], function (node) {
                 return true;
             }
         });
-    } else if (node.type === ATRULE) {
+    } else {
         // test for the @property: value; hack
         let {name} = node;
         let len = name.length - 1;
