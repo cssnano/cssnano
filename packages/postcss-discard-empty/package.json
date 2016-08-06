@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "all-contributors-cli": "^3.0.5",
-    "ava": "^0.15.0",
+    "ava": "^0.16.0",
     "babel-cli": "^6.4.5",
     "babel-core": "^6.4.5",
     "babel-plugin-add-module-exports": "^0.2.0",
