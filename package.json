@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "array-to-sentence": "^1.1.0",
-    "ava": "^0.15.0",
+    "ava": "^0.16.0",
     "babel-cli": "^6.5.1",
     "babel-core": "^6.5.1",
     "babel-loader": "^6.2.4",
