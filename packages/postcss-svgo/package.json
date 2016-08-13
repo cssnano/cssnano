@@ -42,7 +42,7 @@
     "eslint-config-cssnano": "^3.0.0",
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^1.10.2",
-    "nyc": "^7.0.0",
+    "nyc": "^8.0.0",
     "pleeease-filters": "^3.0.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-svgo",
