@@ -1,3 +1,9 @@
+# 3.7.4
+
+* Improves performance of the reducePositions transform by testing
+  against `hasOwnProperty` instead of using an array of object keys.
+* Removes the redundant `indexes-of` dependency.
+
 # 3.7.3
 
 * Unpins postcss-filter-plugins from `2.0.0` as a fix has landed in the new
