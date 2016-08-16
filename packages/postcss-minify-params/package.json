@@ -1,6 +1,6 @@
 {
   "name": "postcss-minify-params",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Minify at-rule params with PostCSS",
   "keywords": [
     "postcss",
