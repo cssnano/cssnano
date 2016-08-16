@@ -1,10 +1,10 @@
-import hasOwn from 'has-own';
+import has from 'has';
 import {plugin} from 'postcss';
 import valueParser from 'postcss-value-parser';
 
 function canonical (obj) {
     return function recurse (key) {
-        if (hasOwn(key, obj) && obj[key] !== key) {
+        if (has(obj, key) && obj[key] !== key) {
             return recurse(obj[key]);
         }
         return key;

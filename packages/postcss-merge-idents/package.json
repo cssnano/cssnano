@@ -43,7 +43,7 @@
   },
   "repository": "ben-eb/postcss-merge-idents",
   "dependencies": {
-    "has-own": "^1.0.0",
+    "has": "^1.0.1",
     "postcss": "^5.0.10",
     "postcss-value-parser": "^3.1.1"
   },
