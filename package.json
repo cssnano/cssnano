@@ -26,6 +26,7 @@
     "autoprefixer": "^6.3.1",
     "decamelize": "^1.1.2",
     "defined": "^1.0.0",
+    "has": "^1.0.1",
     "indexes-of": "^1.0.1",
     "object-assign": "^4.0.1",
     "postcss": "^5.0.14",

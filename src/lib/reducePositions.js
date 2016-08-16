@@ -1,5 +1,6 @@
 import {plugin} from 'postcss';
 import valueParser, {unit} from 'postcss-value-parser';
+import has from 'has';
 import getArguments from './getArguments';
 
 const directions = ['top', 'right', 'bottom', 'left', 'center'];
@@ -21,9 +22,6 @@ const vertical = {
     bottom: '100%',
     top: '0',
 };
-
-const hkeys = Object.keys(horizontal);
-const vkeys = Object.keys(vertical);
 
 function transform (decl) {
     if (!~properties.indexOf(decl.prop)) {
@@ -73,7 +71,7 @@ function transform (decl) {
                 ...horizontal,
                 center,
             };
-            if (~Object.keys(map).indexOf(value)) {
+            if (has(map, value)) {
                 position[0].value = map[value];
             }
             return;
@@ -81,16 +79,16 @@ function transform (decl) {
         if (position[0].value === 'center' && ~directions.indexOf(position[2].value)) {
             position[0].value = position[1].value = '';
             const {value} = position[2];
-            if (~hkeys.indexOf(value)) {
+            if (has(horizontal, value)) {
                 position[2].value = horizontal[value];
             }
             return;
         }
-        if (~hkeys.indexOf(position[0].value) && ~vkeys.indexOf(position[2].value)) {
+        if (has(horizontal, position[0].value) && has(vertical, position[2].value)) {
             position[0].value = horizontal[position[0].value];
             position[2].value = vertical[position[2].value];
             return;
-        } else if (~vkeys.indexOf(position[0].value) && ~hkeys.indexOf(position[2].value)) {
+        } else if (has(vertical, position[0].value) && has(horizontal, position[2].value)) {
             let first = position[0].value;
             position[0].value = horizontal[position[2].value];
             position[2].value = vertical[first];
