@@ -10,8 +10,9 @@
     "optimise",
     "params"
   ],
+  "main": "dist/index.js",
   "files": [
-    "index.js"
+    "dist"
   ],
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "license": "MIT",
@@ -27,11 +28,28 @@
     "uniqs": "^2.0.0"
   },
   "scripts": {
-    "test": "eslint index.js test.js && tape test.js | tap-spec"
+    "prepublish": "del-cli dist && cross-env BABEL_ENV=publish buble src -o dist",
+    "pretest": "eslint src",
+    "report": "nyc report --reporter=html",
+    "test": "cross-env BABEL_ENV=test nyc mocha test --compilers js:buble/register"
   },
   "devDependencies": {
-    "eslint": "^1.3.1",
-    "tap-spec": "^4.1.0",
-    "tape": "^4.2.0"
+    "buble": "^0.12.5",
+    "cross-env": "^2.0.0",
+    "del-cli": "^0.2.0",
+    "eslint": "^2.13.1",
+    "eslint-config-postcss": "^2.0.2",
+    "mocha": "^2.5.3",
+    "nyc": "^7.0.0"
+  },
+  "eslintConfig": {
+    "extends": "postcss",
+    "env": {
+      "mocha": true
+    }
+  },
+  "nyc": {
+    "sourceMap": true,
+    "instrument": true
   }
 }

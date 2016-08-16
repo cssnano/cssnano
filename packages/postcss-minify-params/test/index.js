@@ -1,8 +1,10 @@
-var postcss = require('postcss');
-var plugin = require('./');
-var test  = require('tape');
+const assert = require('assert');
+const postcss = require('postcss');
+const plugin = require('../');
 
-var tests = [{
+/* eslint-disable */
+
+const tests = [{
     message: 'should normalise @media queries',
     fixture: '@media SCREEN ,\tprint {h1{color:red}}@media print,screen{h2{color:blue}}',
     expected: '@media print,SCREEN {h1{color:red}}@media print,screen{h2{color:blue}}'
@@ -14,12 +16,18 @@ var tests = [{
     message: 'should not mangle @keyframe from & 100% in other values',
     fixture: '@keyframes test{x-from-tag{color:red}5100%{color:blue}}',
     expected: '@keyframes test{x-from-tag{color:red}5100%{color:blue}}'
+}, {
+    message: 'should not parse at rules without params',
+    fixture: '@font-face{font-family:test;src:local(test)}',
+    expected: '@font-face{font-family:test;src:local(test)}'
 }];
 
-test('postcss-minify-params', function (t) {
-    t.plan(tests.length);
+/* eslint-enable */
 
-    tests.forEach(function (test) {
-        t.equal(postcss(plugin).process(test.fixture).css, test.expected, test.message);
+describe('postcss-minify-params', () => {
+    tests.forEach(({ message, fixture, expected }) => {
+        it(message, () => {
+            assert.equal(postcss(plugin).process(fixture).css, expected);
+        });
     });
 });

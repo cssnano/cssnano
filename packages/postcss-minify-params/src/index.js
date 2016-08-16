@@ -1,13 +1,13 @@
-var postcss = require('postcss');
-var valueParser = require('postcss-value-parser');
-var stringify = valueParser.stringify;
-var sort = require('alphanum-sort');
-var uniqs = require('uniqs');
+const postcss = require('postcss');
+const valueParser = require('postcss-value-parser');
+const { stringify } = valueParser;
+const sort = require('alphanum-sort');
+const uniqs = require('uniqs');
 
 function split(nodes, div) {
-    var i, max, node;
-    var result = [];
-    var last = '';
+    const result = [];
+    let i, max, node;
+    let last = '';
 
     for (i = 0, max = nodes.length; i < max; i += 1) {
         node = nodes[i];
@@ -24,16 +24,16 @@ function split(nodes, div) {
     return result;
 }
 
-module.exports = postcss.plugin('postcss-minify-params', function () {
-    return function (css) {
-        css.walkAtRules(function (rule) {
+module.exports = postcss.plugin('postcss-minify-params', () => {
+    return css => {
+        css.walkAtRules(rule => {
             if (!rule.params) {
                 return;
             }
 
-            var params = valueParser(rule.params);
+            const params = valueParser(rule.params);
 
-            params.walk(function (node) {
+            params.walk(node => {
                 if (node.type === 'div' || node.type === 'function') {
                     node.before = node.after = '';
                 } else if (node.type === 'space') {
@@ -41,7 +41,9 @@ module.exports = postcss.plugin('postcss-minify-params', function () {
                 }
             }, true);
 
-            rule.params = sort(uniqs(split(params.nodes, ',')), { insensitive: true }).join();
+            rule.params = sort(uniqs(split(params.nodes, ',')), {
+                insensitive: true
+            }).join();
         });
     };
 });
