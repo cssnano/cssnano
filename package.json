@@ -78,7 +78,7 @@
     "hook-std": "^0.2.0",
     "json-loader": "^0.5.4",
     "ncp": "^2.0.0",
-    "nyc": "^7.0.0",
+    "nyc": "^8.0.0",
     "webpack": "^1.12.13",
     "webpack-bundle-size-analyzer": "^2.0.2"
   },
@@ -95,6 +95,7 @@
   ],
   "nyc": {
     "exclude": [
+      "node_modules",
       "**/__tests__"
     ]
   },
