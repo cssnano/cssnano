@@ -56,7 +56,7 @@
     "is-svg": "^2.0.0",
     "postcss": "^5.0.14",
     "postcss-value-parser": "^3.2.3",
-    "svgo": "^0.6.1"
+    "svgo": "^0.7.0"
   },
   "ava": {
     "require": "babel-register"
