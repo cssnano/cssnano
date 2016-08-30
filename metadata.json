@@ -93,7 +93,7 @@
     "name": "postcss-merge-idents",
     "shortDescription": "Merges duplicated at-rules with different names",
     "longDescription": "This will merge rules together that may have slightly different naming but do the same thing. Note that this is only unsafe if you rely on those animation names in JavaScript.",
-    "inputExample": "@keyframes fadeOut {\n    from {\n        opacity: 1;\n    }\n    to {\n        opacity: 0;\n    }\n}\n@keyframes dissolve {\n    from {\n        opacity: 1;\n    }\n    to {\n        opacity: 0;\n    }\n}\n.box {\n    animation-name: fadeOut;\n}",
+    "inputExample": "@keyframes fadeOut {\n    from {\n        opacity: 1;\n    }\n    to {\n        opacity: 0;\n    }\n}\n@keyframes dissolve {\n    from {\n        opacity: 1;\n    }\n    to {\n        opacity: 0;\n    }\n}\n.box {\n    animation-name: dissolve;\n}",
     "outputExample": "@keyframes fadeOut {\n    from {\n        opacity: 1;\n    }\n    to {\n        opacity: 0;\n    }\n}\n.box {\n    animation-name: fadeOut;\n}",
     "safe": false,
     "source": "https://github.com/ben-eb/postcss-merge-idents"
