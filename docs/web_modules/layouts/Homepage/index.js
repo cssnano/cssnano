@@ -94,7 +94,7 @@ export default class Homepage extends Component {
                 </div>
             </div>
             <div className={content}>
-                <p>Get started now! Our <Link to='/usage/' className={install}>usage guide</Link> covers a wide variety of environments.</p>
+                <p>Get started now! Our <Link to='/usage/'>usage guide</Link> covers a wide variety of environments.</p>
                 <Link to='/usage/' className={install}>npm install cssnano</Link>
             </div>
             <div className={content}>
