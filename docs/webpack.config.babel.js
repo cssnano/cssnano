@@ -1,6 +1,7 @@
 import path from "path";
 import webpack from "webpack";
 import ExtractTextPlugin from "extract-text-webpack-plugin";
+import {phenomicLoader} from 'phenomic';
 import pkg from './package.json';
 import renderer from './scripts/markdownRenderer.babel';
 
@@ -10,34 +11,32 @@ export const makeConfig = (config = {}) => ({
     },
 
     phenomic: {
-        contentLoader: {
-            context: path.join(config.cwd, config.source),
-            renderer,
-            feedsOptions: {
-                title: pkg.name,
-                /* eslint-disable */
-                site_url: pkg.homepage,
-                /* eslint-enable */
-            },
-            feeds: {
-                "feed.xml": {
-                    collectionOptions: {
-                        filter: {
-                            layout: "Post"
-                        },
-                        sort: "date",
-                        reverse: true,
-                        limit: 20,
+        context: path.join(config.cwd, config.source),
+        renderer,
+        feedsOptions: {
+            title: pkg.name,
+            /* eslint-disable */
+            site_url: pkg.homepage,
+            /* eslint-enable */
+        },
+        feeds: {
+            "feed.xml": {
+                collectionOptions: {
+                    filter: {
+                        layout: "Post"
                     },
+                    sort: "date",
+                    reverse: true,
+                    limit: 20,
                 },
             },
-        }  
+        },
     },
 
     module: {
         loaders: [{
             test: /\.md$/,
-            loader: "phenomic/lib/content-loader",
+            loader: phenomicLoader,
         }, {
             test: /\.json$/,
             loader: "json-loader",
@@ -120,7 +119,7 @@ export const makeConfig = (config = {}) => ({
     resolveLoader: {
         root: [path.join(config.cwd, "node_modules")]
     },
-  
+
     node: {
         fs: 'empty',
     },

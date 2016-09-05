@@ -39,11 +39,11 @@ export default React.createClass({
             </div>
         );
     },
-    
+
     getInitialState () {
         return {sticky: false};
     },
-    
+
     updateSticky () {
         this.setState({sticky: document.body.clientWidth > 599});
     },
@@ -52,8 +52,8 @@ export default React.createClass({
         window.addEventListener('resize', this.updateSticky);
         this.updateSticky();
     },
-    
+
     componentWillUnmount () {
-        window.removeEventListener('resize', this.updateWidth);
+        window.removeEventListener('resize', this.updateSticky);
     }
 });

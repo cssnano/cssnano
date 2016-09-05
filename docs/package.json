@@ -81,7 +81,7 @@
     "markdown-loader": "^0.1.7",
     "mini-unique-id": "^1.0.1",
     "npm-run-all": "^1.7.0",
-    "phenomic": "^0.12.0",
+    "phenomic": "^0.16.0",
     "postcss-browser-reporter": "^0.4.0",
     "postcss-cssnext": "^2.4.0",
     "postcss-loader": "^0.7.0",
