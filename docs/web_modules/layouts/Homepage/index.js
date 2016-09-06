@@ -103,9 +103,9 @@ export default class Homepage extends Component {
                     {modules.map(({shortDescription, shortName}) => {
                         return (
                             <li key={uniqueId()}>
-                                <a href={`/optimisations/#${shortName.toLowerCase()}`}>
+                                <Link to={`/optimisations/${shortName}`}>
                                     {shortDescription}
-                                </a>
+                                </Link>
                             </li>
                         );
                     })}

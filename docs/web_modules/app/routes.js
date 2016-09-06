@@ -2,6 +2,7 @@ import React, {Component, PropTypes} from "react";
 import {Route} from "react-router";
 import PhenomicPageContainer from "phenomic/lib/PageContainer";
 import LayoutContainer from "../LayoutContainer";
+import OptimisationContainer from "../layouts/Optimisations/show";
 import * as layouts from '../layouts';
 
 class PageContainer extends Component {
@@ -18,7 +19,7 @@ class PageContainer extends Component {
             />
         );
     }
-    
+
     componentWillReceiveProps (props) {
         if (props.params.splat !== this.props.params.splat && !window.location.hash) {
             window.scrollTo(0, 0);
@@ -28,6 +29,10 @@ class PageContainer extends Component {
 
 export default (
   <Route component={LayoutContainer}>
+    <Route
+        path="optimisations/:optimisation"
+        component={OptimisationContainer}
+    />
     <Route
         path="*"
         component={PageContainer}
