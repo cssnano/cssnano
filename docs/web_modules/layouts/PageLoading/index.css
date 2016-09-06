@@ -30,6 +30,7 @@
         opacity: 1;
         transform: rotate(0);
     }
+
     to {
         opacity: 1;
         transform: rotate(359deg);

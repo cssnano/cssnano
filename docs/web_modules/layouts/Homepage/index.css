@@ -4,6 +4,7 @@
     padding: 5rem 0;
     font-weight: bold;
     text-align: center;
+
     & p {
         font-size: 2rem;
         margin-top: 0;
@@ -20,12 +21,15 @@
 .table {
     border-collapse: collapse;
     width: 100%;
+
     & tr {
         border-bottom: 1px solid #f1f1f1;
     }
+
     & td {
         padding: 5px 0;
         width: 50%;
+
         &:first-child {
             font-weight: bold;
         }
@@ -37,11 +41,13 @@
     flex-wrap: wrap;
     padding: 0;
     list-style: inside url('/assets/nanoBullet.svg');
+
     & li {
         flex: 1 0 50%;
         min-width: 400px;
         line-height: 2;
     }
+
     & a {
         text-decoration: none;
         font-weight: bold;
@@ -50,10 +56,12 @@
 
 .postcss {
     display: flex;
+
     & p {
         flex: 1 0;
         margin-right: 20px;
     }
+
     & div {
         flex: 0 0 80px;
     }
@@ -63,6 +71,7 @@
     display: flex;
     flex-wrap: wrap;
     align-content: center;
+
     & a {
         flex: 1 1 30%;
         display: block;
