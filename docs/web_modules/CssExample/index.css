@@ -19,6 +19,7 @@
 
 @media screen and (min-width: 600px) {
     .example {
+        margin-top: 2em;
         display: flex;
     }
 
