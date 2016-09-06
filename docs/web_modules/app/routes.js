@@ -30,7 +30,7 @@ class PageContainer extends Component {
 export default (
   <Route component={LayoutContainer}>
     <Route
-        path="optimisations/:optimisation"
+        path="/optimisations/:optimisation"
         component={OptimisationContainer}
     />
     <Route
