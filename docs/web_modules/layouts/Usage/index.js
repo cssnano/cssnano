@@ -1,7 +1,7 @@
 import React, {Component, PropTypes} from "react";
 import Lowlight from 'react-lowlight';
 import js from 'highlight.js/lib/languages/javascript';
-import dangerousMd from '../../../scripts/markdownRenderer.babel';
+import DangerousMarkdown from '../../DangerousMarkdown';
 import BasicPage from "../BasicPage";
 import {content} from '../Page/index.css';
 import styles from './index.css';
@@ -22,19 +22,19 @@ export default class Optimisations extends Component {
                     let alternate = null;
                     if (wrapper.alternate) {
                         alternate = (
-                            <div dangerouslySetInnerHTML={{
-                                __html: dangerousMd(`Alternatively, you can use ${wrapper.alternate} to run cssnano in combination with other PostCSS processors. See the documentation for more information.`)
-                            }} />
+                            <DangerousMarkdown>
+                                {`Alternatively, you can use ${wrapper.alternate} to run cssnano in combination with other PostCSS processors. See the documentation for more information.`}
+                            </DangerousMarkdown>
                         );
                     }
                     list.push(
                         <div className={content}>
-                            <div dangerouslySetInnerHTML={{
-                                __html: dangerousMd(`## ${wrapper.name}`)
-                            }} />
-                            <div dangerouslySetInnerHTML={{
-                                __html: dangerousMd(wrapper.example)
-                            }} />
+                            <DangerousMarkdown>
+                                {`## ${wrapper.name}`}
+                            </DangerousMarkdown>
+                            <DangerousMarkdown>
+                                {wrapper.example}
+                            </DangerousMarkdown>
                             <a
                                 className={styles.install}
                                 href={wrapper.source}
