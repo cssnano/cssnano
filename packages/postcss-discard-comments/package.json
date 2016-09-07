@@ -37,7 +37,7 @@
     "eslint-config-cssnano": "^3.0.0",
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^1.10.2",
-    "postcss-scss": "^0.2.0",
+    "postcss-scss": "^0.3.0",
     "postcss-simple-vars": "^3.0.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-discard-comments",
