@@ -124,6 +124,14 @@ const tests = [{
     fixture: 'h1{box-shadow:0 0 3px}',
     expected: 'h1{box-shadow:0 0 3px}',
 }, {
+    message: 'should pass through box-shadow values that contain calc()',
+    fixture: 'h1{box-shadow: inset 0 calc(1em + 1px) 0 1px red}',
+    expected: 'h1{box-shadow: inset 0 calc(1em + 1px) 0 1px red}',
+}, {
+    message: 'should pass through box-shadow values that contain prefixed calc()',
+    fixture: 'h1{box-shadow: inset 0 -webkit-calc(1em + 1px) 0 1px red}',
+    expected: 'h1{box-shadow: inset 0 -webkit-calc(1em + 1px) 0 1px red}',
+}, {
     message: 'should pass through invalid box-shadow values',
     fixture: 'h1{box-shadow:1px solid rgba(34,36,38,.15)}',
     expected: 'h1{box-shadow:1px solid rgba(34,36,38,.15)}',

@@ -27,7 +27,10 @@ export default function normalizeBoxShadow (decl) {
         arg.forEach(node => {
             if (
                 node.type === 'comment' ||
-                node.type === 'function' && node.value === 'var'
+                node.type === 'function' && (
+                    node.value === 'var' ||
+                    ~node.value.indexOf('calc')
+                )
             ) {
                 abort = true;
                 return;
