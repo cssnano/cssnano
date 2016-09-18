@@ -1,3 +1,8 @@
+# 3.7.5
+
+* Resolves an issue where the `safe` flag was not being persisted across
+  multiple files (thanks to @techmatt101).
+
 # 3.7.4
 
 * Improves performance of the reducePositions transform by testing
