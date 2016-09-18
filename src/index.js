@@ -119,9 +119,12 @@ let safeOptions = {
 
 const cssnano = postcss.plugin('cssnano', (options = {}) => {
     // Prevent PostCSS from throwing when safe is defined
-    const safe = options.safe === true;
-    options.safe = null;
+    if (options.safe === true) {
+        options.isSafe = true;
+        options.safe = null;
+    }
 
+    const safe = options.isSafe;
     const proc = postcss();
 
     if (typeof options.fontFamily !== 'undefined' || typeof options.minifyFontWeight !== 'undefined') {
