@@ -91,6 +91,14 @@ const tests = [{
     message: 'should handle errored cases',
     fixture: 'h1{color:rgb(50%, 23, 54)}',
     expected: 'h1{color:rgb(50%, 23, 54)}',
+}, {
+    message: 'should add extra spaces when converting rgb',
+    fixture: 'h1{background:linear-gradient(rgb(50, 50, 50)0%,blue 100%)}',
+    expected: 'h1{background:linear-gradient(#323232 0%,blue 100%)}',
+}, {
+    message: 'should add extra spaces when converting rgb (2)',
+    fixture: 'h1{background:linear-gradient(rgba(0,0,0,0)0%, blue 100%)}',
+    expected: 'h1{background:linear-gradient(transparent 0%, blue 100%)}',
 }];
 
 function process (css, options) {
