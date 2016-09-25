@@ -3,7 +3,11 @@
 node_modules/
 npm-debug.log
 
+test/
 test.js
 .travis.yml
 
 .DS_Store
+.babelrc
+.editorconfig
+.npmignore
