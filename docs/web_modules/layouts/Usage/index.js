@@ -18,7 +18,7 @@ export default class Optimisations extends Component {
         return (
             <div>
                 <BasicPage className={content} { ...this.props}></BasicPage>
-                {wrappers.reduce((list, wrapper) => {
+                {wrappers.reduce((list, wrapper, index) => {
                     let alternate = null;
                     if (wrapper.alternate) {
                         alternate = (
@@ -28,7 +28,7 @@ export default class Optimisations extends Component {
                         );
                     }
                     list.push(
-                        <div className={content}>
+                        <div className={content} key={index}>
                             <DangerousMarkdown>
                                 {`## ${wrapper.name}`}
                             </DangerousMarkdown>

@@ -28,7 +28,7 @@ export default class Optimisations extends Component {
         return (
             <div>
             <BasicPage className={content} { ...this.props}></BasicPage>
-            <div className={content}>
+            <div className={content} key={1}>
                 <ul className={styles.features}>
                     {modules.map((feature, index) => {
                         return (
@@ -41,7 +41,7 @@ export default class Optimisations extends Component {
                     })}
                 </ul>
             </div>
-            <div className={content}>
+            <div className={content} key={2}>
                 <p>Note that it is possible to pass options to, or disable, any
                 of the bundled transforms. Simply pass the module name as documented
                 here, with an options object to customise the behaviour, or <code>false</code> to
