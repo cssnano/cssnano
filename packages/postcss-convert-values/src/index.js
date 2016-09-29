@@ -43,7 +43,7 @@ function shouldStripPercent ({value, prop, parent}) {
 
 function transform (opts) {
     return decl => {
-        if (~decl.prop.indexOf('flex')) {
+        if (~decl.prop.indexOf('flex') || decl.prop.indexOf('--') === 0) {
             return;
         }
 

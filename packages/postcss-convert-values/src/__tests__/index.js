@@ -20,6 +20,10 @@ const suites = [{
     fixture: 'h1{transition-duration:0s}',
     expected: 'h1{transition-duration:0s}',
 }, {
+    message: 'should not remove the unit from zero values (custom properties)',
+    fixture: 'h1{--my-variable:0px}',
+    expected: 'h1{--my-variable:0px}',
+}, {
     message: 'should remove unnecessary plus signs',
     fixture: 'h1{width:+14px}',
     expected: 'h1{width:14px}',
