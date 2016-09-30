@@ -13,11 +13,11 @@
     "index.js"
   ],
   "license": "MIT",
-  "repository": "TrySound/postcss-charset",
+  "repository": "ben-eb/postcss-charset",
   "bugs": {
-    "url": "https://github.com/TrySound/postcss-charset/issues"
+    "url": "https://github.com/ben-eb/postcss-charset/issues"
   },
-  "homepage": "https://github.com/TrySound/postcss-charset",
+  "homepage": "https://github.com/ben-eb/postcss-charset",
   "dependencies": {
     "postcss": "^5.0.5"
   },
