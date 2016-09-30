@@ -16,11 +16,11 @@
   ],
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "license": "MIT",
-  "repository": "TrySound/postcss-minify-params",
+  "repository": "ben-eb/postcss-minify-params",
   "bugs": {
-    "url": "https://github.com/TrySound/postcss-minify-params/issues"
+    "url": "https://github.com/ben-eb/postcss-minify-params/issues"
   },
-  "homepage": "https://github.com/TrySound/postcss-minify-params",
+  "homepage": "https://github.com/ben-eb/postcss-minify-params",
   "dependencies": {
     "alphanum-sort": "^1.0.1",
     "postcss": "^5.0.2",
