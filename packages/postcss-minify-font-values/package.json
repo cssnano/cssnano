@@ -33,10 +33,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TrySound/postcss-minify-font-values.git"
+    "url": "git+https://github.com/ben-eb/postcss-minify-font-values.git"
   },
   "bugs": {
-    "url": "https://github.com/TrySound/postcss-minify-font-values/issues"
+    "url": "https://github.com/ben-eb/postcss-minify-font-values/issues"
   },
-  "homepage": "https://github.com/TrySound/postcss-minify-font-values"
+  "homepage": "https://github.com/ben-eb/postcss-minify-font-values"
 }
