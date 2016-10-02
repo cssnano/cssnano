@@ -1,3 +1,8 @@
+# 3.7.6
+
+* Resolves an issue where the semicolon was being incorrectly stripped
+  from CSS mixins.
+
 # 3.7.5
 
 * Resolves an issue where the `safe` flag was not being persisted across
