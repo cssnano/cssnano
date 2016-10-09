@@ -1,3 +1,3 @@
-export default function getValue (node) {
-    return node.value;
+export default function getValue ({value}) {
+    return value;
 }

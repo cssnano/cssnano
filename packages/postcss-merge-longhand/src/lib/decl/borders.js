@@ -14,8 +14,10 @@ import trbl from '../trbl';
 
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentColor'];
-const directions = trbl.map(direction => `border-${direction}`);
-const properties = wsc.map(property => `border-${property}`);
+
+const borderProperty = property => `border-${property}`;
+const directions = trbl.map(borderProperty);
+const properties = wsc.map(borderProperty);
 
 function mergeRedundant ({values, nextValues, decl, nextDecl, index, position, prop}) {
     let props = parseTrbl(values[position]);
@@ -91,7 +93,7 @@ function explode (rule) {
 function merge (rule) {
     // border-trbl-wsc -> border-trbl
     trbl.forEach(direction => {
-        const prop = `border-${direction}`;
+        const prop = borderProperty(direction);
         genericMerge({
             rule,
             prop,
@@ -109,7 +111,7 @@ function merge (rule) {
             let rules = names.map(prop => getLastNode(props, prop)).filter(Boolean);
             if (hasAllProps(props, ...names)) {
                 insertCloned(rule, lastNode, {
-                    prop: `border-${d}`,
+                    prop: borderProperty(d),
                     value: minifyTrbl(rules.map(getValue).join(' ')),
                 });
                 props.forEach(remove);
@@ -127,7 +129,7 @@ function merge (rule) {
         if (hasAllProps(props, ...directions)) {
             wsc.forEach((d, i) => {
                 insertCloned(rule, lastNode, {
-                    prop: `border-${d}`,
+                    prop: borderProperty(d),
                     value: minifyTrbl(rules.map(node => list.space(node.value)[i])),
                 });
             });
@@ -228,9 +230,9 @@ function merge (rule) {
         if (!~index) {
             return;
         }
-        let values = list.space(decl.value);
-        let nextValues = list.space(nextDecl.value);
-        
+        const values = list.space(decl.value);
+        const nextValues = list.space(nextDecl.value);
+
         const config = {
             values,
             nextValues,
@@ -276,7 +278,7 @@ function merge (rule) {
 
     // clean-up values
     rule.walkDecls(/^border($|-(top|right|bottom|left))/, decl => {
-        decl.value = list.space(decl.value).concat(['']).reduceRight((prev, cur, i) => {
+        decl.value = [...list.space(decl.value), ''].reduceRight((prev, cur, i) => {
             if (prev === '' && cur === defaults[i]) {
                 return prev;
             }

@@ -1,1 +1,3 @@
-export default (...rules) => rules.map(r => r.value).join(' ');
+import getValue from './getValue';
+
+export default (...rules) => rules.map(getValue).join(' ');
