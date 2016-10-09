@@ -1,5 +1,14 @@
+sudo: false
+
 language: node_js
-node_js:
-  - '5'
-  - '4'
-  - '0.12'
+matrix:
+  include:
+    - node_js: '5'
+    - node_js: '4'
+    - node_js: '0.12'
+      env: NO_ESLINT=true
+
+script: "[[ $NO_ESLINT == true ]] && npm run test-012 || npm test"
+
+after_success:
+  - './node_modules/.bin/nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls'
