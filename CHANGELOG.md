@@ -1,3 +1,8 @@
+# 3.7.7
+
+* Further improves CSS mixin handling; semicolons will no longer be stripped
+  from *rules* as well as declarations.
+
 # 3.7.6
 
 * Resolves an issue where the semicolon was being incorrectly stripped
