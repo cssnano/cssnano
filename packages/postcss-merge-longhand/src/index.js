@@ -8,7 +8,7 @@ const processors = [
     margin,
     padding,
     borders,
-    columns
+    columns,
 ];
 
 export default postcss.plugin('postcss-merge-longhand', () => {

@@ -6,6 +6,6 @@ export default v => {
         s[0],                // top
         s[1] || s[0],        // right
         s[2] || s[0],        // bottom
-        s[3] || s[1] || s[0] // left
+        s[3] || s[1] || s[0], // left
     ];
 };

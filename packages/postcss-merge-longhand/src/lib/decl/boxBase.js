@@ -26,7 +26,7 @@ export default prop => {
                 trbl.forEach((direction, index) => {
                     insertCloned(rule, decl, {
                         prop: `${prop}-${direction}`,
-                        value: values[index]
+                        value: values[index],
                     });
                 });
                 decl.remove();
@@ -37,7 +37,7 @@ export default prop => {
                 rule,
                 prop,
                 properties,
-                value: rules => minifyTrbl(mergeValues(...rules))
+                value: rules => minifyTrbl(mergeValues(...rules)),
             });
             if (hasAllProps(rule, ...properties)) {
                 let rules = properties.map(p => getLastNode(rule.nodes, p));
@@ -47,7 +47,7 @@ export default prop => {
                     rules[3].prop = prop;
                 }
             }
-        }
+        },
     };
 
     return processor;

@@ -1,4 +1,4 @@
-let clone = (obj, parent) => {
+const clone = (obj, parent) => {
     if (typeof obj !== 'object') {
         return obj;
     }
