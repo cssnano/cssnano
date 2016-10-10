@@ -46,3 +46,9 @@ test(
     processCss,
     'h1{column-width:inherit;column-count:inherit}'
 );
+
+test(
+    'should pass through auto',
+    processCss,
+    'h1{columns:auto}'
+);

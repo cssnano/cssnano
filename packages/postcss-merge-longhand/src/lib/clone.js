@@ -1,4 +1,4 @@
-const clone = (obj, parent) => {
+export default function clone (obj, parent) {
     if (typeof obj !== 'object') {
         return obj;
     }
@@ -22,5 +22,3 @@ const clone = (obj, parent) => {
     }
     return cloned;
 };
-
-export default clone;

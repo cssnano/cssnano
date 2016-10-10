@@ -64,7 +64,7 @@ function explode (rule) {
             return decl.remove();
         }
         // border-trbl -> border-trbl-wsc
-        if (trbl.some(direction => prop === `border-${direction}`)) {
+        if (directions.some(direction => prop === direction)) {
             let values = list.space(decl.value);
             wsc.forEach((d, i) => {
                 insertCloned(rule, decl, {
@@ -103,12 +103,12 @@ function merge (rule) {
     });
     // border-trbl-wsc -> border-wsc
     wsc.forEach(d => {
-        let names = trbl.map(direction => `border-${direction}-${d}`);
+        const names = trbl.map(direction => `border-${direction}-${d}`);
         let decls = rule.nodes.filter(({prop}) => prop && ~names.indexOf(prop));
         while (decls.length) {
-            let lastNode = decls[decls.length - 1];
-            let props = decls.filter(node => node.important === lastNode.important);
-            let rules = names.map(prop => getLastNode(props, prop)).filter(Boolean);
+            const lastNode = decls[decls.length - 1];
+            const props = decls.filter(node => node.important === lastNode.important);
+            const rules = names.map(prop => getLastNode(props, prop)).filter(Boolean);
             if (hasAllProps(props, ...names)) {
                 insertCloned(rule, lastNode, {
                     prop: borderProperty(d),
@@ -123,9 +123,9 @@ function merge (rule) {
     // border-trbl -> border-wsc
     let decls = rule.nodes.filter(({prop}) => prop && ~directions.indexOf(prop));
     while (decls.length) {
-        let lastNode = decls[decls.length - 1];
-        let props = decls.filter(node => node.important === lastNode.important);
-        let rules = directions.map(prop => getLastNode(props, prop)).filter(Boolean);
+        const lastNode = decls[decls.length - 1];
+        const props = decls.filter(node => node.important === lastNode.important);
+        const rules = directions.map(prop => getLastNode(props, prop)).filter(Boolean);
         if (hasAllProps(props, ...directions)) {
             wsc.forEach((d, i) => {
                 insertCloned(rule, lastNode, {
@@ -144,17 +144,17 @@ function merge (rule) {
     decls = rule.nodes.filter(({prop}) => prop && ~properties.indexOf(prop));
 
     while (decls.length) {
-        let lastNode = decls[decls.length - 1];
-        let props = decls.filter(node => node.important === lastNode.important);
+        const lastNode = decls[decls.length - 1];
+        const props = decls.filter(node => node.important === lastNode.important);
         if (hasAllProps(props, ...properties)) {
-            let width = getLastNode(props, properties[0]);
-            let style = getLastNode(props, properties[1]);
-            let color = getLastNode(props, properties[2]);
+            const width = getLastNode(props, properties[0]);
+            const style = getLastNode(props, properties[1]);
+            const color = getLastNode(props, properties[2]);
 
-            let rules = properties.map(prop => getLastNode(props, prop));
-            let values = rules.map(node => parseTrbl(node.value));
-            let mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
-            let reduced = getDistinctShorthands(mapped);
+            const rules = properties.map(prop => getLastNode(props, prop));
+            const values = rules.map(node => parseTrbl(node.value));
+            const mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
+            const reduced = getDistinctShorthands(mapped);
 
             if (isCloseEnough(mapped) && canMerge(...rules)) {
                 const first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
@@ -188,14 +188,14 @@ function merge (rule) {
     // optimize border-trbl
     decls = rule.nodes.filter(({prop}) => prop && ~directions.indexOf(prop));
     while (decls.length) {
-        let lastNode = decls[decls.length - 1];
+        const lastNode = decls[decls.length - 1];
         wsc.forEach((d, i) => {
-            let names = directions.filter(name => name !== lastNode.prop).map(name => `${name}-${d}`);
-            let props = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop) && node.important === lastNode.important);
+            const names = directions.filter(name => name !== lastNode.prop).map(name => `${name}-${d}`);
+            const props = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop) && node.important === lastNode.important);
             if (hasAllProps(props, ...names)) {
-                let values = directions.map(prop => getLastNode(props, `${prop}-${d}`)).map(node => node ? node.value : null);
-                let filteredValues = values.filter(Boolean);
-                let lastNodeValue = list.space(lastNode.value)[i];
+                const values = directions.map(prop => getLastNode(props, `${prop}-${d}`)).map(node => node ? node.value : null);
+                const filteredValues = values.filter(Boolean);
+                const lastNodeValue = list.space(lastNode.value)[i];
                 values[directions.indexOf(lastNode.prop)] = lastNodeValue;
                 let value = minifyTrbl(values.join(' '));
                 if (
@@ -278,13 +278,13 @@ function merge (rule) {
 
     // clean-up values
     rule.walkDecls(/^border($|-(top|right|bottom|left))/, decl => {
-        decl.value = [...list.space(decl.value), ''].reduceRight((prev, cur, i) => {
+        const value = [...list.space(decl.value), ''].reduceRight((prev, cur, i) => {
             if (prev === '' && cur === defaults[i]) {
                 return prev;
             }
             return cur + ' ' + prev;
         }).trim() || defaults[0];
-        decl.value = minifyTrbl(decl.value);
+        decl.value = minifyTrbl(value);
     });
 }
 
