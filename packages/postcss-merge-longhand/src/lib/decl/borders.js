@@ -1,4 +1,5 @@
 import {list} from 'postcss';
+import {detect} from 'stylehacks';
 import assign from 'object-assign';
 import clone from '../clone';
 import genericMerge from '../genericMerge';
@@ -6,6 +7,8 @@ import insertCloned from '../insertCloned';
 import parseTrbl from '../parseTrbl';
 import hasAllProps from '../hasAllProps';
 import getLastNode from '../getLastNode';
+import getDecls from '../getDecls';
+import getRules from '../getRules';
 import getValue from '../getValue';
 import minifyTrbl from '../minifyTrbl';
 import canMerge from '../canMerge';
@@ -54,6 +57,9 @@ function getDistinctShorthands (mapped) {
 }
 
 function explode (rule) {
+    if (rule.nodes.some(detect)) {
+        return false;
+    }
     rule.walkDecls(/^border/, decl => {
         const {prop} = decl;
         // border -> border-trbl
@@ -97,35 +103,29 @@ function merge (rule) {
         genericMerge({
             rule,
             prop,
-            properties: wsc.map(d => `${prop}-${d}`),
+            properties: wsc.map(style => `${prop}-${style}`),
             value: rules => rules.map(getValue).join(' '),
         });
     });
+
     // border-trbl-wsc -> border-wsc
-    wsc.forEach(d => {
-        const names = trbl.map(direction => `border-${direction}-${d}`);
-        let decls = rule.nodes.filter(({prop}) => prop && ~names.indexOf(prop));
-        while (decls.length) {
-            const lastNode = decls[decls.length - 1];
-            const props = decls.filter(node => node.important === lastNode.important);
-            const rules = names.map(prop => getLastNode(props, prop)).filter(Boolean);
-            if (hasAllProps(props, ...names)) {
-                insertCloned(rule, lastNode, {
-                    prop: borderProperty(d),
-                    value: minifyTrbl(rules.map(getValue).join(' ')),
-                });
-                props.forEach(remove);
-            }
-            decls = decls.filter(node => !~rules.indexOf(node));
-        }
+    wsc.forEach(style => {
+        const prop = borderProperty(style);
+        genericMerge({
+            rule,
+            prop,
+            properties: trbl.map(direction => `border-${direction}-${style}`),
+            value: rules => minifyTrbl(rules.map(getValue).join(' ')),
+            sanitize: false,
+        });
     });
 
     // border-trbl -> border-wsc
-    let decls = rule.nodes.filter(({prop}) => prop && ~directions.indexOf(prop));
+    let decls = getDecls(rule, directions);
     while (decls.length) {
         const lastNode = decls[decls.length - 1];
         const props = decls.filter(node => node.important === lastNode.important);
-        const rules = directions.map(prop => getLastNode(props, prop)).filter(Boolean);
+        const rules = getRules(props, directions);
         if (hasAllProps(props, ...directions)) {
             wsc.forEach((d, i) => {
                 insertCloned(rule, lastNode, {
@@ -141,17 +141,14 @@ function merge (rule) {
     // border-wsc -> border
     // border-wsc -> border + border-color
     // border-wsc -> border + border-dir
-    decls = rule.nodes.filter(({prop}) => prop && ~properties.indexOf(prop));
+    decls = getDecls(rule, properties);
 
     while (decls.length) {
         const lastNode = decls[decls.length - 1];
         const props = decls.filter(node => node.important === lastNode.important);
         if (hasAllProps(props, ...properties)) {
-            const width = getLastNode(props, properties[0]);
-            const style = getLastNode(props, properties[1]);
-            const color = getLastNode(props, properties[2]);
-
             const rules = properties.map(prop => getLastNode(props, prop));
+            const [width, style, color] = rules;
             const values = rules.map(node => parseTrbl(node.value));
             const mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
             const reduced = getDistinctShorthands(mapped);
@@ -186,7 +183,7 @@ function merge (rule) {
     }
 
     // optimize border-trbl
-    decls = rule.nodes.filter(({prop}) => prop && ~directions.indexOf(prop));
+    decls = getDecls(rule, directions);
     while (decls.length) {
         const lastNode = decls[decls.length - 1];
         wsc.forEach((d, i) => {

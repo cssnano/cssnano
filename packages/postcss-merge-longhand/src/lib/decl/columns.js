@@ -1,5 +1,6 @@
 import {list} from 'postcss';
 import {unit} from 'postcss-value-parser';
+import {detect} from 'stylehacks';
 import {genericMergeFactory} from '../genericMerge';
 import getValue from '../getValue';
 import insertCloned from '../insertCloned';
@@ -27,6 +28,9 @@ function normalize (values) {
 }
 
 function explode (rule) {
+    if (rule.nodes.some(detect)) {
+        return false;
+    }
     rule.walkDecls('columns', decl => {
         let values = list.space(decl.value);
         if (values.length === 1) {

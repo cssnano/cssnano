@@ -52,3 +52,9 @@ test(
     processCss,
     'h1{columns:auto}'
 );
+
+test(
+    'should not merge declarations with hacks',
+    processCss,
+    'h1{column-width:12em;_column-count:auto}'
+);

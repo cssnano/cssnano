@@ -1,26 +1,18 @@
 import canMerge from './canMerge';
-import getLastNode from './getLastNode';
+import getDecls from './getDecls';
+import getRules from './getRules';
 import hasAllProps from './hasAllProps';
 import insertCloned from './insertCloned';
 import remove from './remove';
 
-function getDecls (rule, properties) {
-    return rule.nodes.filter(({prop}) => prop && ~properties.indexOf(prop));
-}
-
-function getRules (props, properties) {
-    return properties.map(property => {
-        return getLastNode(props, property);
-    }).filter(Boolean);
-}
-
-export default function genericMerge ({rule, properties, prop, value}) {
+export default function genericMerge ({rule, properties, prop, value, sanitize = true}) {
     let decls = getDecls(rule, properties);
 
     while (decls.length) {
-        let lastNode = decls[decls.length - 1];
-        let props = decls.filter(node => node.important === lastNode.important);
-        if (hasAllProps(props, ...properties) && canMerge(...props)) {
+        const lastNode = decls[decls.length - 1];
+        const props = decls.filter(node => node.important === lastNode.important);
+        const mergeable = sanitize ? canMerge(...props) : true;
+        if (hasAllProps(props, ...properties) && mergeable) {
             insertCloned(rule, lastNode, {
                 prop,
                 value: value(getRules(props, properties)),

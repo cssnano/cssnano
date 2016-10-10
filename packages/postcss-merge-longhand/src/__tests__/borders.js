@@ -205,3 +205,9 @@ test(
     'h1{border-color:rgba(0,0,0,.2);border-right-style:solid;border-right-width:1px}',
     'h1{border-right:1px solid;border-color:rgba(0,0,0,.2)}'
 );
+
+test(
+    'should not merge declarations with hacks',
+    processCss,
+    'h1{border-color:red red red red;_border-width:1px 1px 1px 1px;border-style:solid solid solid solid}'
+);

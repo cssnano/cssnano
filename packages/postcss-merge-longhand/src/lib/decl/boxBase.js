@@ -1,5 +1,5 @@
 import {detect} from 'stylehacks';
-import genericMerge from '../genericMerge';
+import {genericMergeFactory} from '../genericMerge';
 import minifyTrbl from '../minifyTrbl';
 import parseTrbl from '../parseTrbl';
 import insertCloned from '../insertCloned';
@@ -28,14 +28,11 @@ export default prop => {
                 decl.remove();
             });
         },
-        merge: rule => {
-            return genericMerge({
-                rule,
-                prop,
-                properties,
-                value: rules => minifyTrbl(mergeValues(...rules)),
-            });
-        },
+        merge: genericMergeFactory({
+            prop,
+            properties,
+            value: rules => minifyTrbl(mergeValues(...rules)),
+        }),
     };
 
     return processor;
