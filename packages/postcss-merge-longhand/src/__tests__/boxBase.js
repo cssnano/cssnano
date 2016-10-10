@@ -1,20 +1,20 @@
 import test from 'ava';
-import postcss from 'postcss';
-import plugin from '..';
-
-const suites = [];
+import processCss from './_processCss';
 
 function addTests (...tests) {
     tests.forEach(({message, fixture, expected}) => {
-        suites.push({
-            message: message.replace(/box/g, 'margin'),
-            fixture: fixture.replace(/box/g, 'margin'),
-            expected: expected.replace(/box/g, 'margin'),
-        }, {
-            message: message.replace(/box/g, 'padding'),
-            fixture: fixture.replace(/box/g, 'padding'),
-            expected: expected.replace(/box/g, 'padding'),
-        });
+        test(
+            message.replace(/box/g, 'margin'),
+            processCss,
+            fixture.replace(/box/g, 'margin'),
+            expected.replace(/box/g, 'margin')
+        );
+        test(
+            message.replace(/box/g, 'padding'),
+            processCss,
+            fixture.replace(/box/g, 'padding'),
+            expected.replace(/box/g, 'padding')
+        );
     });
 }
 
@@ -94,12 +94,4 @@ addTests({
     message: 'should not explode box: inherit',
     fixture: 'h1{box:inherit}',
     expected: 'h1{box:inherit}',
-});
-
-suites.forEach(suite => {
-    test(suite.message, t => {
-        return postcss(plugin).process(suite.fixture).then(({css}) => {
-            t.deepEqual(css, suite.expected);
-        });
-    });
 });
