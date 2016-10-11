@@ -61,6 +61,10 @@ function explode (rule) {
         return false;
     }
     rule.walkDecls(/^border/, decl => {
+        // Don't explode inherit values as they cannot be merged together
+        if (decl.value === 'inherit') {
+            return;
+        }
         const {prop} = decl;
         // border -> border-trbl
         if (prop === 'border') {
@@ -96,7 +100,26 @@ function explode (rule) {
     });
 }
 
+const borderProperties = trbl.reduce((props, direction) => {
+    return [
+        ...props,
+        ...wsc.map(style => `border-${direction}-${style}`),
+    ];
+}, []);
+
 function merge (rule) {
+    // Lift all inherit values from the rule, so that they don't
+    // interfere with the merging logic.
+    const inheritValues = getDecls(rule, borderProperties).reduce((values, decl) => {
+        if (decl.value === 'inherit') {
+            decl.remove();
+            return [
+                ...values,
+                decl,
+            ];
+        }
+        return values;
+    }, []);
     // border-trbl-wsc -> border-trbl
     trbl.forEach(direction => {
         const prop = borderProperty(direction);
@@ -283,6 +306,9 @@ function merge (rule) {
         }).trim() || defaults[0];
         decl.value = minifyTrbl(value);
     });
+
+    // Restore inherited values
+    inheritValues.forEach(decl => rule.append(decl));
 }
 
 export default {

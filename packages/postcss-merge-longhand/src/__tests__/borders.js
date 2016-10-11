@@ -207,6 +207,13 @@ test(
 );
 
 test(
+    'should produce the minimum css necessary (3)',
+    processCss,
+    'h1{border-top:0 solid transparent;border-right:4em solid transparent;border-bottom:4em solid transparent;border-left:0 solid transparent;border-right-color:inherit}',
+    'h1{border-color:transparent;border-style:solid;border-width:0 4em 4em 0;border-right-color:inherit}'
+);
+
+test(
     'should not merge declarations with hacks',
     processCss,
     'h1{border-color:red red red red;_border-width:1px 1px 1px 1px;border-style:solid solid solid solid}'
