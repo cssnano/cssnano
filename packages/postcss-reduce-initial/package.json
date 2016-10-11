@@ -38,7 +38,7 @@
     "eslint": "^3.0.0",
     "eslint-config-cssnano": "^3.0.0",
     "eslint-plugin-babel": "^3.3.0",
-    "eslint-plugin-import": "^1.10.2",
+    "eslint-plugin-import": "^2.0.1",
     "got": "^6.3.0",
     "html2plaintext": "^1.0.1",
     "is-html": "^1.0.0"
