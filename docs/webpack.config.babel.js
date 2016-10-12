@@ -2,6 +2,7 @@ import path from "path";
 import webpack from "webpack";
 import ExtractTextPlugin from "extract-text-webpack-plugin";
 import {phenomicLoader} from 'phenomic';
+import PhenomicLoaderFeedWebpackPlugin from "phenomic/lib/loader-feed-webpack-plugin";
 import pkg from './package.json';
 import renderer from './scripts/markdownRenderer.babel';
 
@@ -12,25 +13,10 @@ export const makeConfig = (config = {}) => ({
 
     phenomic: {
         context: path.join(config.cwd, config.source),
-        renderer,
-        feedsOptions: {
-            title: pkg.name,
-            /* eslint-disable */
-            site_url: pkg.homepage,
-            /* eslint-enable */
-        },
-        feeds: {
-            "feed.xml": {
-                collectionOptions: {
-                    filter: {
-                        layout: "Post"
-                    },
-                    sort: "date",
-                    reverse: true,
-                    limit: 20,
-                },
-            },
-        },
+        plugins: [
+            ...require("phenomic/lib/loader-preset-default").default,
+            renderer,
+        ]
     },
 
     module: {
@@ -70,8 +56,8 @@ export const makeConfig = (config = {}) => ({
         }, {
             test: /\.(html|ico|jpe?g|png|gif)$/,
             loader: "file-loader" +
-                "?name=[path][name].[ext]&context=" +
-                path.join(config.cwd, config.source),
+            "?name=[path][name].[ext]&context=" +
+            path.join(config.cwd, config.source),
         }, {
             test: /\.svg$/,
             loader: "raw-loader",
@@ -103,6 +89,26 @@ export const makeConfig = (config = {}) => ({
                 },
             }),
         ],
+        new PhenomicLoaderFeedWebpackPlugin({
+            feedsOptions: {
+                title: pkg.name,
+                /* eslint-disable */
+                site_url: pkg.homepage,
+                /* eslint-enable */
+            },
+            feeds: {
+                "feed.xml": {
+                    collectionOptions: {
+                        filter: {
+                            layout: "Post"
+                        },
+                        sort: "date",
+                        reverse: true,
+                        limit: 20,
+                    },
+                },
+            }
+        })
     ],
 
     output: {

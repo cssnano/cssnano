@@ -26,13 +26,15 @@ const renderer = () => (
       .use(highlight)
 );
 
-export default text => (
-    renderer()
-    // render
-    .process(text, {
-        commonmark: true,
-    })
-);
+export default ({result}) => {
+    return {
+        ...result,
+        body: renderer()
+            .process(result.body, {
+                commonmark: true,
+            }),
+    };
+};
 
 export const react = text => (
     renderer()
