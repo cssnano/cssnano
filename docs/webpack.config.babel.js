@@ -4,7 +4,6 @@ import ExtractTextPlugin from "extract-text-webpack-plugin";
 import {phenomicLoader} from 'phenomic';
 import PhenomicLoaderFeedWebpackPlugin from "phenomic/lib/loader-feed-webpack-plugin";
 import pkg from './package.json';
-import renderer from './scripts/markdownRenderer.babel';
 
 export const makeConfig = (config = {}) => ({
     ...config.dev && {
@@ -15,7 +14,6 @@ export const makeConfig = (config = {}) => ({
         context: path.join(config.cwd, config.source),
         plugins: [
             ...require("phenomic/lib/loader-preset-default").default,
-            renderer,
         ]
     },
 

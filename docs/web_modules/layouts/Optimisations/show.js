@@ -2,9 +2,9 @@ import React, {PropTypes, Component} from "react";
 import BasicPage from "../BasicPage";
 import PageError from '../PageError';
 import {content} from '../Page/index.css';
+import DangerousMarkdown from '../../DangerousMarkdown';
 import CssExample from '../../CssExample';
 import {example} from '../../CssExample/index.css';
-import {react as md} from '../../../scripts/markdownRenderer.babel';
 
 export default class OptimisationsContainer extends Component {
     static contextTypes = {
@@ -51,22 +51,19 @@ export default class OptimisationsContainer extends Component {
         let demo = null;
         if (inputExample && outputExample) {
             demo = <div className={example}>
-                <CssExample>{inputExample}</CssExample>
-                <CssExample>{outputExample}</CssExample>
+                <CssExample key={`input`}>{inputExample}</CssExample>
+                <CssExample key={`output`}>{outputExample}</CssExample>
             </div>;
         }
-        const contents = (
-            <div className={content}>
-                {md(longDescription)}
-                {demo}
-                <p><a href={source}>View on GitHub</a></p>
-            </div>
-        );
 
         return (
             <div>
-                <BasicPage className={content} { ...params}></BasicPage>
-                {contents}
+                <BasicPage {...params} className={content}></BasicPage>
+                <div className={content}>
+                    <DangerousMarkdown>{longDescription}</DangerousMarkdown>
+                    {demo}
+                    <p><a href={source}>View on GitHub</a></p>
+                </div>
             </div>
         );
     }

@@ -6,7 +6,7 @@ import html from "remark-html";
 import remarkReact from "remark-react";
 
 const renderer = () => (
-    remark
+    remark()
       // https://github.com/wooorm/remark-slug
       .use(slug)
 
@@ -26,21 +26,17 @@ const renderer = () => (
       .use(highlight)
 );
 
-export default ({result}) => {
-    return {
-        ...result,
-        body: renderer()
-            .process(result.body, {
+export default (text) => {
+    return renderer()
+            .process(text, {
                 commonmark: true,
-            }),
-    };
+            });
 };
 
 export const react = text => (
-    renderer()
-    .use(remarkReact)
-    // render
-    .process(text, {
-        commonmark: true,
-    })
+    remark()
+        .use(remarkReact)
+        .process(text, {
+            commonmark: true,
+        }).toString()
 );
