@@ -12,6 +12,7 @@ import getRules from '../getRules';
 import getValue from '../getValue';
 import minifyTrbl from '../minifyTrbl';
 import canMerge from '../canMerge';
+import colorMerge from '../colorMerge';
 import remove from '../remove';
 import trbl from '../trbl';
 
@@ -134,7 +135,15 @@ function merge (rule) {
     // border-trbl-wsc -> border-wsc
     wsc.forEach(style => {
         const prop = borderProperty(style);
-        genericMerge({
+        if (style === 'color') {
+            return colorMerge({
+                rule,
+                prop,
+                properties: trbl.map(direction => `border-${direction}-${style}`),
+                value: rules => minifyTrbl(rules.map(getValue).join(' ')),
+            });
+        }
+        return genericMerge({
             rule,
             prop,
             properties: trbl.map(direction => `border-${direction}-${style}`),

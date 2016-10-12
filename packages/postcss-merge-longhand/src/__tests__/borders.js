@@ -218,3 +218,9 @@ test(
     processCss,
     'h1{border-color:red red red red;_border-width:1px 1px 1px 1px;border-style:solid solid solid solid}'
 );
+
+test(
+    'should not merge fallback colours',
+    processCss,
+    'h1{border-color:#ddd;border-color:rgba(0,0,0,.15)}'
+);
