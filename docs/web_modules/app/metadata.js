@@ -1,7 +1,7 @@
 import camel from 'camelcase';
 import {phenomic} from "../../package.json";
 import cssnano from '../../../package.json';
-import meta from '../../../metadata';
+import meta from '../../../metadata.toml';
 
 meta.modules.forEach(module => {
     module.shortName = camel(module.name.replace('postcss', ''));
