@@ -2,6 +2,8 @@ import path from "path";
 import webpack from "webpack";
 import ExtractTextPlugin from "extract-text-webpack-plugin";
 import {phenomicLoader} from 'phenomic';
+import phenomicLoaderPresetDefault from "phenomic/lib/loader-preset-default";
+import phenomicLoaderPresetMarkDown from "phenomic/lib/loader-preset-markdown";
 import PhenomicLoaderFeedWebpackPlugin from "phenomic/lib/loader-feed-webpack-plugin";
 import pkg from './package.json';
 
@@ -13,7 +15,8 @@ export const makeConfig = (config = {}) => ({
     phenomic: {
         context: path.join(config.cwd, config.source),
         plugins: [
-            ...require("phenomic/lib/loader-preset-default").default,
+            ...phenomicLoaderPresetDefault,
+            ...phenomicLoaderPresetMarkDown,
         ]
     },
 
@@ -21,8 +24,7 @@ export const makeConfig = (config = {}) => ({
         loaders: [{
             test: /\.toml$/,
             loader: "toml-loader",
-        },
-        {
+        }, {
             test: /\.md$/,
             loader: phenomicLoader,
         }, {
