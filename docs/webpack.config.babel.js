@@ -19,6 +19,10 @@ export const makeConfig = (config = {}) => ({
 
     module: {
         loaders: [{
+            test: /\.toml$/,
+            loader: "toml-loader",
+        },
+        {
             test: /\.md$/,
             loader: phenomicLoader,
         }, {
