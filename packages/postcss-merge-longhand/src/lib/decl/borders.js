@@ -19,9 +19,16 @@ import trbl from '../trbl';
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentColor'];
 
-const borderProperty = property => `border-${property}`;
-const directions = trbl.map(borderProperty);
-const properties = wsc.map(borderProperty);
+function borderProperty (...parts) {
+    return `border-${parts.join('-')}`;
+}
+
+function mapBorderProperty (value) {
+    return borderProperty(value);
+}
+
+const directions = trbl.map(mapBorderProperty);
+const properties = wsc.map(mapBorderProperty);
 
 function mergeRedundant ({values, nextValues, decl, nextDecl, index, position, prop}) {
     let props = parseTrbl(values[position]);
@@ -87,12 +94,12 @@ function explode (rule) {
         }
         // border-wsc -> border-trbl-wsc
         wsc.some(style => {
-            if (prop !== `border-${style}`) {
+            if (prop !== borderProperty(style)) {
                 return false;
             }
             parseTrbl(decl.value).forEach((value, i) => {
                 insertCloned(rule, decl, {
-                    prop: `border-${trbl[i]}-${style}`,
+                    prop: borderProperty(trbl[i], style),
                     value,
                 });
             });
@@ -104,7 +111,7 @@ function explode (rule) {
 const borderProperties = trbl.reduce((props, direction) => {
     return [
         ...props,
-        ...wsc.map(style => `border-${direction}-${style}`),
+        ...wsc.map(style => borderProperty(direction, style)),
     ];
 }, []);
 
@@ -127,7 +134,7 @@ function merge (rule) {
         genericMerge({
             rule,
             prop,
-            properties: wsc.map(style => `${prop}-${style}`),
+            properties: wsc.map(style => borderProperty(direction, style)),
             value: rules => rules.map(getValue).join(' '),
         });
     });
@@ -139,14 +146,14 @@ function merge (rule) {
             return colorMerge({
                 rule,
                 prop,
-                properties: trbl.map(direction => `border-${direction}-${style}`),
+                properties: trbl.map(direction => borderProperty(direction, style)),
                 value: rules => minifyTrbl(rules.map(getValue).join(' ')),
             });
         }
         return genericMerge({
             rule,
             prop,
-            properties: trbl.map(direction => `border-${direction}-${style}`),
+            properties: trbl.map(direction => borderProperty(direction, style)),
             value: rules => minifyTrbl(rules.map(getValue).join(' ')),
             sanitize: false,
         });
@@ -195,7 +202,7 @@ function merge (rule) {
 
                 if (reduced[1]) {
                     const value = first ? reduced[1] : reduced[0];
-                    const prop = `border-${trbl[mapped.indexOf(value)]}`;
+                    const prop = borderProperty(trbl[mapped.indexOf(value)]);
 
                     rule.insertAfter(border, assign(clone(lastNode), {
                         prop,
@@ -241,7 +248,7 @@ function merge (rule) {
                     lastNode.value = valueArray.join(' ');
                 }
                 insertCloned(rule, refNode, {
-                    prop: `border-${d}`,
+                    prop: borderProperty(d),
                     value,
                 });
                 props.forEach(remove);
