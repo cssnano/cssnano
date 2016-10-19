@@ -71,6 +71,10 @@ const tests = [{
     message: 'should not remove the trailing zero if it is the last stop',
     fixture: 'background: linear-gradient(90deg,transparent,#00aeef 0)',
     expected: 'background: linear-gradient(90deg,transparent,#00aeef 0)',
+}, {
+    message: 'should not remove point number if it its different type from a previous one',
+    fixture: 'background: linear-gradient(to left bottom,transparent calc(50% - 2px),#a7a7a8 0,#a7a7a8 calc(50% + 2px),transparent 0)',
+    expected: 'background: linear-gradient(to left bottom,transparent calc(50% - 2px),#a7a7a8 0,#a7a7a8 calc(50% + 2px),transparent 0)',
 }];
 
 tests.forEach(({message, fixture, expected, options = {}}) => {

@@ -42,14 +42,14 @@ function optimise (decl) {
                 node.nodes = node.nodes.slice(2);
                 node.nodes[0].value = angles[node.nodes[0].value];
             }
-            let lastStop;
+            let lastStop = null;
             args.forEach((arg, index) => {
                 if (!arg[2]) {
                     return;
                 }
                 let isFinalStop = index === args.length - 1;
                 let thisStop = unit(arg[2].value);
-                if (!lastStop) {
+                if (lastStop === null) {
                     lastStop = thisStop;
                     if (!isFinalStop && lastStop && lastStop.number === '0' && lastStop.unit !== 'deg') {
                         arg[1].value = arg[2].value = '';
