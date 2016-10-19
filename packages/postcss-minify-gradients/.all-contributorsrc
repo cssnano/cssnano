@@ -36,6 +36,17 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "jaybekster",
+      "name": "Mikhail",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2485494?v=3",
+      "profile": "https://github.com/jaybekster",
+      "contributions": [
+        "bug",
+        "code",
+        "test"
+      ]
     }
   ]
 }
