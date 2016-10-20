@@ -1,21 +1,27 @@
 import uniqs from 'uniqs';
 import {list, plugin} from 'postcss';
-import flatten from 'flatten';
 
 const {comma, space} = list;
+
+const atrule = 'atrule';
+const decl = 'decl';
+const rule = 'rule';
 
 function filterAtRule (css, declRegex, atruleRegex) {
     const atRules = [];
     let values = [];
     css.walk(node => {
-        if (node.type === 'decl' && declRegex.test(node.prop)) {
-            return comma(node.value).forEach(val => values.push(space(val)));
+        const {type} = node;
+        if (type === decl && declRegex.test(node.prop)) {
+            values = comma(node.value).reduce((memo, value) => {
+                return [...memo, ...space(value)];
+            }, values);
         }
-        if (node.type === 'atrule' && atruleRegex.test(node.name)) {
+        if (type === atrule && atruleRegex.test(node.name)) {
             atRules.push(node);
         }
     });
-    values = uniqs(flatten(values));
+    values = uniqs(values);
     atRules.forEach(node => {
         let hasAtRule = values.some(value => value === node.params);
         if (!hasAtRule) {
@@ -33,20 +39,20 @@ function filterNamespace (css) {
     let rules = [];
     css.walk(node => {
         const {type, selector, name} = node;
-        if (type === 'rule' && /\|/.test(selector)) {
-            return rules.push(selector.split('|')[0]);
+        if (type === rule && ~selector.indexOf('|')) {
+            rules = rules.concat(selector.split('|')[0]);
         }
-        if (type === 'atrule' && name === 'namespace') {
+        if (type === atrule && name === 'namespace') {
             atRules.push(node);
         }
     });
-    rules = uniqs(flatten(rules));
+    rules = uniqs(rules);
     atRules.forEach(atRule => {
         const {0: param, length: len} = atRule.params.split(' ').filter(Boolean);
         if (len === 1) {
             return;
         }
-        const hasRule = rules.some(rule => rule === param || rule === '*');
+        const hasRule = rules.some(r => r === param || r === '*');
         if (!hasRule) {
             atRule.remove();
         }
@@ -58,27 +64,28 @@ function filterFont (css) {
     const atRules = [];
     let values = [];
     css.walk(node => {
+        const {type} = node;
         if (
-            node.type === 'decl' &&
-            node.parent.type === 'rule' &&
+            type === decl &&
+            node.parent.type === rule &&
             /font(|-family)/.test(node.prop)
         ) {
-            return values.push(comma(node.value));
+            values = values.concat(comma(node.value));
         }
-        if (node.type === 'atrule' && node.name === 'font-face' && node.nodes) {
+        if (type === atrule && node.name === 'font-face' && node.nodes) {
             atRules.push(node);
         }
     });
-    values = uniqs(flatten(values));
-    atRules.forEach(rule => {
-        let families = rule.nodes.filter(node => node.prop === 'font-family');
+    values = uniqs(values);
+    atRules.forEach(r => {
+        let families = r.nodes.filter(({prop}) => prop === 'font-family');
         // Discard the @font-face if it has no font-family
         if (!families.length) {
-            return rule.remove();
+            return r.remove();
         }
         families.forEach(family => {
             if (!hasFont(family.value, values)) {
-                rule.remove();
+                r.remove();
             }
         });
     });
