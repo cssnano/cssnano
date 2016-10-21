@@ -23,8 +23,8 @@ function transformAtRule ({cache, ruleCache, declCache}) {
     // Ensure that at rules with no references to them are left unchanged
     ruleCache.forEach(rule => {
         Object.keys(cache).forEach(key => {
-            let k = cache[key];
-            if (k.ident === rule.params && !k.count) {
+            const cached = cache[key];
+            if (cached.ident === rule.params && !cached.count) {
                 rule.params = key;
             }
         });
@@ -34,30 +34,29 @@ function transformAtRule ({cache, ruleCache, declCache}) {
 function transformDecl ({cache, declOneCache, declTwoCache}) {
     declTwoCache.forEach(decl => {
         decl.value = valueParser(decl.value).walk(node => {
-            if (node.type === 'function') {
-                if (node.value === 'counter' || node.value === 'counters') {
-                    walk(node.nodes, n => {
-                        if (n.type === 'word' && n.value in cache) {
-                            cache[n.value].count++;
-                            n.value = cache[n.value].ident;
-                        } else if (n.type === 'div') {
-                            n.before = n.after = '';
-                        }
-                    });
-                }
-                return false;
+            const {type, value} = node;
+            if (type === 'function' && (value === 'counter' || value === 'counters')) {
+                walk(node.nodes, child => {
+                    if (child.type === 'word' && child.value in cache) {
+                        cache[child.value].count++;
+                        child.value = cache[child.value].ident;
+                    } else if (child.type === 'div') {
+                        child.before = child.after = '';
+                    }
+                });
             }
-            if (node.type === 'space') {
+            if (type === 'space') {
                 node.value = ' ';
             }
+            return false;
         }).toString();
     });
     declOneCache.forEach(decl => {
         decl.value = decl.value.walk(node => {
             if (node.type === 'word' && !isNum(node)) {
                 Object.keys(cache).forEach(key => {
-                    let k = cache[key];
-                    if (k.ident === node.value && !k.count) {
+                    const cached = cache[key];
+                    if (cached.ident === node.value && !cached.count) {
                         node.value = key;
                     }
                 });
