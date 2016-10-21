@@ -6,25 +6,7 @@ function isNum (node) {
     return unit(node.value);
 }
 
-function transformAtRule (css, atRuleRegex, propRegex, encoder) {
-    const cache = {};
-    const ruleCache = [];
-    const declCache = [];
-    // Encode at rule names and cache the result
-    css.walk(node => {
-        if (node.type === 'atrule' && atRuleRegex.test(node.name)) {
-            if (!cache[node.params]) {
-                cache[node.params] = {
-                    ident: encoder(node.params, Object.keys(cache).length),
-                    count: 0,
-                };
-            }
-            node.params = cache[node.params].ident;
-            ruleCache.push(node);
-        } else if (node.type === 'decl' && propRegex.test(node.prop)) {
-            declCache.push(node);
-        }
-    });
+function transformAtRule ({cache, ruleCache, declCache}) {
     // Iterate each property and change their names
     declCache.forEach(decl => {
         decl.value = valueParser(decl.value).walk(node => {
@@ -49,30 +31,7 @@ function transformAtRule (css, atRuleRegex, propRegex, encoder) {
     });
 }
 
-function transformDecl (css, propOneRegex, propTwoRegex, encoder) {
-    const cache = {};
-    const declOneCache = [];
-    const declTwoCache = [];
-    css.walkDecls(decl => {
-        if (propOneRegex.test(decl.prop)) {
-            decl.value = valueParser(decl.value).walk(node => {
-                if (node.type === 'word' && !isNum(node)) {
-                    if (!cache[node.value]) {
-                        cache[node.value] = {
-                            ident: encoder(node.value, Object.keys(cache).length),
-                            count: 0,
-                        };
-                    }
-                    node.value = cache[node.value].ident;
-                } else if (node.type === 'space') {
-                    node.value = ' ';
-                }
-            });
-            declOneCache.push(decl);
-        } else if (propTwoRegex.test(decl.prop)) {
-            declTwoCache.push(decl);
-        }
-    });
+function transformDecl ({cache, declOneCache, declTwoCache}) {
     declTwoCache.forEach(decl => {
         decl.value = valueParser(decl.value).walk(node => {
             if (node.type === 'function') {
@@ -107,6 +66,23 @@ function transformDecl (css, propOneRegex, propTwoRegex, encoder) {
     });
 }
 
+function addToCache (value, encoder, cache) {
+    if (cache[value]) {
+        return;
+    }
+    cache[value] = {
+        ident: encoder(value, Object.keys(cache).length),
+        count: 0,
+    };
+}
+
+function cacheAtRule (node, encoder, {cache, ruleCache}) {
+    const {params} = node;
+    addToCache(params, encoder, cache);
+    node.params = cache[params].ident;
+    ruleCache.push(node);
+}
+
 export default postcss.plugin('postcss-reduce-idents', ({
     counter = true,
     counterStyle = true,
@@ -114,14 +90,59 @@ export default postcss.plugin('postcss-reduce-idents', ({
     keyframes = true,
 } = {}) => {
     return css => {
-        if (counter) {
-            transformDecl(css, /counter-(reset|increment)/, /content/, encoder);
-        }
-        if (keyframes) {
-            transformAtRule(css, /keyframes/, /animation/, encoder);
-        }
-        if (counterStyle) {
-            transformAtRule(css, /counter-style/, /(list-style|system)/, encoder);
-        }
+        // Encode at rule names and cache the result
+
+        const counterCache = {
+            cache: {},
+            declOneCache: [],
+            declTwoCache: [],
+        };
+        const counterStyleCache = {
+            cache: {},
+            ruleCache: [],
+            declCache: [],
+        };
+        const keyframesCache = {
+            cache: {},
+            ruleCache: [],
+            declCache: [],
+        };
+        css.walk(node => {
+            const {name, prop, type} = node;
+            if (type === 'atrule') {
+                if (counterStyle && /counter-style/.test(name)) {
+                    cacheAtRule(node, encoder, counterStyleCache);
+                }
+                if (keyframes && /keyframes/.test(name)) {
+                    cacheAtRule(node, encoder, keyframesCache);
+                }
+            }
+            if (type === 'decl') {
+                if (counter) {
+                    if (/counter-(reset|increment)/.test(prop)) {
+                        node.value = valueParser(node.value).walk(child => {
+                            if (child.type === 'word' && !isNum(child)) {
+                                addToCache(child.value, encoder, counterCache.cache);
+                                child.value = counterCache.cache[child.value].ident;
+                            } else if (child.type === 'space') {
+                                child.value = ' ';
+                            }
+                        });
+                        counterCache.declOneCache.push(node);
+                    } else if (/content/.test(prop)) {
+                        counterCache.declTwoCache.push(node);
+                    }
+                }
+                if (counterStyle && /(list-style|system)/.test(prop)) {
+                    counterStyleCache.declCache.push(node);
+                }
+                if (keyframes && /animation/.test(prop)) {
+                    keyframesCache.declCache.push(node);
+                }
+            }
+        });
+        counter      && transformDecl(counterCache);
+        counterStyle && transformAtRule(counterStyleCache);
+        keyframes    && transformAtRule(keyframesCache);
     };
 });
