@@ -1,4 +1,3 @@
-import {readFileSync as read} from 'fs';
 import postcss from 'postcss';
 import ava from 'ava';
 import nano from '..';
@@ -20,8 +19,11 @@ ava('can be used as a postcss plugin (2)', pluginMacro, postcss([nano()]));
 ava('can be used as a postcss plugin (3)', pluginMacro, postcss(nano));
 
 ava('can be used as a postcss plugin, with options', t => {
-    const css = read(__dirname + '/fixtures/reduceCalc.fixture.css', 'utf-8');
-    const exp = read(__dirname + '/fixtures/reduceCalc.disabled.css', 'utf-8');
+    const css = `
+    h1 {
+        width: calc(3px * 2 - 1px);
+    }`;
+    const exp = `h1{width:calc(3px * 2 - 1px)}`;
 
     return postcss(nano({calc: false})).process(css).then(result => {
         t.deepEqual(result.css, exp, specName('notTransformCalcProperty'));

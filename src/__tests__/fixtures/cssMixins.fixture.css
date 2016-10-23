@@ -1,8 +1,0 @@
-paper-card {
-    --paper-card-content: {
-        padding-top: 0;
-    };
-    margin: 0 auto 16px;
-    width: 768px;
-    max-width: calc(100% - 32px);
-}

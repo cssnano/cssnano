@@ -9,9 +9,6 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[tests/**/**.{disabled,expected}.css]
-insert_final_newline = false
-
 [*.{json,yml}]
 indent_size = 2
 
