@@ -1,3 +1,8 @@
+# 3.8.0
+
+* Adds support for normalizing multiple values for the `display` property. For
+  example `block flow` can be simplified to `block`.
+
 # 3.7.7
 
 * Further improves CSS mixin handling; semicolons will no longer be stripped
