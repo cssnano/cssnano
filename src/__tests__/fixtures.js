@@ -1,7 +1,7 @@
 import {readdirSync as directory, readFileSync as file} from 'fs';
 import {join} from 'path';
 import ava from 'ava';
-import nano from '..';
+import processCss from './_processCss';
 import specName from './util/specName';
 
 const base = join(__dirname, 'fixtures');
@@ -16,10 +16,6 @@ const specs = directory(base).reduce((tests, cssFile) => {
 }, {});
 
 Object.keys(specs).forEach(name => {
-    const spec = specs[name];
-    ava(name, t => {
-        return nano.process(spec.fixture).then(result => {
-            t.deepEqual(result.css, spec.expected, specName(name));
-        });
-    });
+    const {fixture, expected} = specs[name];
+    ava(specName(name), processCss, fixture, expected);
 });

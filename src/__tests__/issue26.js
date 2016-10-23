@@ -1,13 +1,30 @@
-import {join} from 'path';
-import {readFileSync as file} from 'fs';
 import postcss from 'postcss';
 import nano from '..';
 import ava from 'ava';
 
-ava('it should compress whitespace after node.clone()', t => {
-    const fixture = file(join(__dirname, 'issue26.css'), 'utf-8');
-    const expected = file(join(__dirname, 'issue26.expected.css'), 'utf-8');
+const fixture = `
+@media print {
+    .test {
+        -webkit-border-radius: 0;
+        border-radius: 0;
+    }
+}
 
+@media print {
+    .test {
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
+}
+
+.test {
+    width: 500px;
+}
+`;
+
+const expected = `@media print{.test{box-shadow:none;border-radius:0}}.test{width:500px}`;
+
+ava('it should compress whitespace after node.clone()', t => {
     const processor = postcss([
         postcss.plugin('cloner', () => {
             return css => {
