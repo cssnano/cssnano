@@ -1,6 +1,6 @@
 {
   "name": "cssnano",
-  "version": "3.7.7",
+  "version": "3.8.0",
   "description": "A modular minifier, built on top of the PostCSS ecosystem.",
   "main": "dist/index.js",
   "scripts": {
