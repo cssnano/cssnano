@@ -70,7 +70,7 @@
     "css-frameworks": "git+https://git@github.com/ben-eb/css-frameworks.git",
     "css-minifier-tests": "git+https://git@github.com/ben-eb/css-minifier-tests.git",
     "del-cli": "^0.2.0",
-    "eslint": "^3.0.0",
+    "eslint": "^3.9.1",
     "eslint-config-cssnano": "^3.0.0",
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^2.0.1",
