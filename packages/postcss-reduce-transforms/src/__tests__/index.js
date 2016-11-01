@@ -71,6 +71,10 @@ const tests = [{
     message: 'should work with vendor prefixes',
     fixture: 'h1{-webkit-transform:translate3d(0, 0, 0)}',
     expected: 'h1{-webkit-transform:translateZ(0)}',
+}, {
+    message: 'should pass through variables',
+    fixture: 'h1{transform:var(--foo)}',
+    expected: 'h1{transform:var(--foo)}',
 }];
 
 tests.forEach(({message, fixture, expected, options = {}}) => {
