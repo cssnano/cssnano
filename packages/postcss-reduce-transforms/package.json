@@ -37,6 +37,7 @@
   },
   "repository": "ben-eb/postcss-reduce-transforms",
   "dependencies": {
+    "has": "^1.0.1",
     "postcss": "^5.0.8",
     "postcss-value-parser": "^3.0.1"
   },
