@@ -1,3 +1,7 @@
+# 1.0.5
+
+* Resolves a crash on empty `linear-gradient()` functions.
+
 # 1.0.4
 
 * Resolves an issue where `0` was being removed from intermediate colour stops
