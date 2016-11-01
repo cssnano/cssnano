@@ -24,6 +24,10 @@ const tests = [{
     fixture: 'h1{transform:rotate3d(0, 0, 1, 20deg)}',
     expected: 'h1{transform:rotate(20deg)}',
 }, {
+    message: 'should shorten scale(0, 0) to scale(0)',
+    fixture: 'h1{transform:scale(0, 0)}',
+    expected: 'h1{transform:scale(0)}',
+}, {
     message: 'should shorten scale(sx, sy) to scale(sx)',
     fixture: 'h1{transform:scale(1.5, 1.5)}',
     expected: 'h1{transform:scale(1.5)}',
