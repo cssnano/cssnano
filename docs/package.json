@@ -7,7 +7,7 @@
     "lint:css": "stylelint \"web_modules/**/*.css\"",
     "lint": "npm-run-all --parallel lint:*",
     "start": "phenomic start",
-    "build": "node scripts/createChangelog && phenomic build",
+    "build": "node scripts/createChangelog && node scripts/createOptimisations && phenomic build",
     "test": "npm run lint"
   },
   "phenomic": {
