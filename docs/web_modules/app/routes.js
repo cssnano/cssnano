@@ -2,7 +2,6 @@ import React, {Component, PropTypes} from "react";
 import {Route} from "react-router";
 import {PageContainer as PhenomicPageContainer} from 'phenomic';
 import LayoutContainer from "../LayoutContainer";
-import OptimisationContainer from "../layouts/Optimisations/show";
 import * as layouts from '../layouts';
 
 class PageContainer extends Component {
@@ -29,10 +28,6 @@ class PageContainer extends Component {
 
 export default (
   <Route component={LayoutContainer}>
-    <Route
-        path="/optimisations/:optimisation"
-        component={OptimisationContainer}
-    />
     <Route
         path="*"
         component={PageContainer}

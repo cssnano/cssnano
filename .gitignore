@@ -9,3 +9,4 @@ _webpackOutput
 
 *.bundle.js
 docs/content/changelog.md
+docs/content/optimisations

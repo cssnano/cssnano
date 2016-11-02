@@ -2,6 +2,7 @@ export BasicPage from './BasicPage';
 export Blog from './Blog';
 export CoverPage from './CoverPage';
 export Homepage from './Homepage';
+export Optimisation from './Optimisations/show';
 export Optimisations from './Optimisations';
 export Page from './Page';
 export PageError from './PageError';
