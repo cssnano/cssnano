@@ -10,8 +10,9 @@
   "scripts": {
     "pretest": "eslint src",
     "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
-    "test": "ava src/__tests__",
-    "test-012": "ava src/__tests__"
+    "report": "nyc report --reporter=html",
+    "test": "nyc ava",
+    "test-012": "nyc ava"
   },
   "keywords": [
     "css",
@@ -36,6 +37,7 @@
     "eslint-config-cssnano": "^3.0.0",
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^2.0.1",
+    "nyc": "^8.4.0",
     "postcss-font-magician": "^1.4.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-minify-selectors",
