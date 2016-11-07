@@ -1,6 +1,6 @@
 {
   "name": "postcss-minify-selectors",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Minify selectors with PostCSS.",
   "main": "dist/index.js",
   "files": [
