@@ -188,6 +188,10 @@ const tests = [{
     message: 'should not unquote a single hyphen as an attribute value',
     fixture: '[title="-"]{color:blue}',
     expected: '[title="-"]{color:blue}',
+}, {
+    message: 'should handle case insensitive attribute selectors with extra spaces',
+    fixture: '[title="foo"   i    ]{color:blue}',
+    expected: '[title=foo i]{color:blue}',
 }];
 
 tests.forEach(({message, fixture, expected, options = {}}) => {

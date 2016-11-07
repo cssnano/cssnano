@@ -49,6 +49,7 @@
   "repository": "ben-eb/postcss-minify-selectors.git",
   "dependencies": {
     "alphanum-sort": "^1.0.2",
+    "has": "^1.0.1",
     "postcss": "^5.0.14",
     "postcss-selector-parser": "^2.0.0"
   },
