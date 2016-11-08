@@ -22,11 +22,11 @@
     "postcss": "^5.0.5"
   },
   "devDependencies": {
+    "ava": "^0.16.0",
     "eslint": "^1.4.1",
-    "tap-spec": "^4.1.0",
-    "tape": "^4.2.0"
+    "postcss-devtools": "^1.1.1"
   },
   "scripts": {
-    "test": "eslint index.js test && tape test/*.js | tap-spec"
+    "test": "eslint index.js test && ava"
   }
 }
