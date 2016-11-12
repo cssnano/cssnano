@@ -11,25 +11,25 @@ function dedupe (root) {
         return;
     }
 
-    root.each((node, index) => {
-        if (node.type === 'comment') {
+    let toRemove = [];
+    let map = {};
+
+    root.each(node => {
+        if (node.type === "comment") {
             return;
         }
 
-        let nodes = node.parent.nodes;
-        let toString = node.toString();
-        let result = [node];
-
-        for (let i = index + 1, max = nodes.length; i < max; i++) {
-            if (nodes[i].toString() === toString) {
-                result.push(nodes[i]);
-            }
+        const str = node.toString();
+        const existing = map[str];
+        if (existing) {
+            toRemove.push(existing);
         }
-
-        for (let i = result.length - 2; ~i; i -= 1) {
-            result[i].remove();
-        }
+        map[str] = node;
     });
+
+    while (toRemove.length > 0) {
+        toRemove.pop().remove();
+    }
 }
 
 export default plugin('postcss-discard-duplicates', () => dedupe);
