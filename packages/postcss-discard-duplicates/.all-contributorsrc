@@ -29,6 +29,15 @@
         "review",
         "test"
       ]
+    },
+    {
+      "login": "asztal",
+      "name": "Lee Houghton",
+      "avatar_url": "https://avatars.githubusercontent.com/u/68302?v=3",
+      "profile": "https://github.com/asztal",
+      "contributions": [
+        "code"
+      ]
     }
   ]
 }
