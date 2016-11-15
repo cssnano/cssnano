@@ -1,3 +1,8 @@
+# 2.0.7
+
+* Fixes a regression where postcss-minify-selectors would transform `[title=""]`
+  into `[title=]` (thanks to @arperry).
+
 # 2.0.6
 
 * Performance tweaks; now calls `Node#toString()` ~50% less often, removed dead
