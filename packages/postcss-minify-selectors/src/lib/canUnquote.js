@@ -10,7 +10,7 @@ const range = /[\u0000-\u002c\u002e\u002f\u003A-\u0040\u005B-\u005E\u0060\u007B-
 
 export default function canUnquote (value) {
     value = unquote(value);
-    if (value === '-') {
+    if (value === '-' || value === '') {
         return false;
     }
     value = value.replace(escapes, 'a').replace(/\\./g, 'a');

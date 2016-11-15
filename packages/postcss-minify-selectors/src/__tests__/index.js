@@ -192,6 +192,10 @@ const tests = [{
     message: 'should handle case insensitive attribute selectors with extra spaces',
     fixture: '[title="foo"   i    ]{color:blue}',
     expected: '[title=foo i]{color:blue}',
+}, {
+    message: 'should not remove quotes around an empty attribute selector',
+    fixture: '[title=""]{color:blue}',
+    expected: '[title=""]{color:blue}',
 }];
 
 tests.forEach(({message, fixture, expected, options = {}}) => {
