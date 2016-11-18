@@ -60,6 +60,10 @@ const tests = [{
     fixture: '@font-face {src:url("fonts/does-not-exist.ttf") format("truetype")}',
     expected: '',
 }, {
+    message: 'should not remove fonts used with a different casing',
+    fixture: '@font-face {font-family:"DoEs ExIst";src: url("fonts/does-exist.ttf") format("truetype")}body{font: 10px/1.5 "does exisT",Helvetica,Arial,sans-serif}',
+    expected: '@font-face {font-family:"DoEs ExIst";src: url("fonts/does-exist.ttf") format("truetype")}body{font: 10px/1.5 "does exisT",Helvetica,Arial,sans-serif}',
+}, {
     message: 'shouldn\'t remove font fames',
     fixture: [
         '@font-face {src:url("fonts/does-not-exist.ttf") format("truetype")}',

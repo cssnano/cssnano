@@ -49,7 +49,7 @@ function filterFont ({atRules, values}) {
             return r.remove();
         }
         families.forEach(family => {
-            if (!hasFont(family.value, values)) {
+            if (!hasFont(family.value.toLowerCase(), values)) {
                 r.remove();
             }
         });
@@ -80,7 +80,7 @@ export default plugin('postcss-discard-unused', opts => {
                     counterStyleCache.values = addValues(counterStyleCache.values, node);
                 }
                 if (fontFace && node.parent.type === rule && /font(|-family)/.test(prop)) {
-                    fontCache.values = fontCache.values.concat(comma(node.value));
+                    fontCache.values = fontCache.values.concat(comma(node.value.toLowerCase()));
                 }
                 if (keyframes && /animation/.test(prop)) {
                     keyframesCache.values = addValues(keyframesCache.values, node);
