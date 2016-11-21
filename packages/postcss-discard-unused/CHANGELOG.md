@@ -1,3 +1,8 @@
+# 2.2.3
+
+* Font lookup is now case-insensitive, preventing unwanted removal of fonts
+  that are used (thanks to @thomas-mcdonald).
+
 # 2.2.2
 
 * Removed a dependency on `flatten`.

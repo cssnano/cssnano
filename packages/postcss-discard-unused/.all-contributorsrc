@@ -40,6 +40,16 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "thomas-mcdonald",
+      "name": "Thomas McDonald",
+      "avatar_url": "https://avatars.githubusercontent.com/u/197928?v=3",
+      "profile": "https://github.com/thomas-mcdonald",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ]
 }
