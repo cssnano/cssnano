@@ -37,7 +37,7 @@
     "eslint-config-cssnano": "^3.0.0",
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^2.0.1",
-    "nyc": "^8.4.0",
+    "nyc": "^10.0.0",
     "postcss-font-magician": "^1.4.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-minify-selectors",
