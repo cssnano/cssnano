@@ -91,7 +91,8 @@
   "repository": "ben-eb/cssnano",
   "files": [
     "dist",
-    "LICENSE-MIT"
+    "LICENSE-MIT",
+    "quickstart.js"
   ],
   "nyc": {
     "exclude": [
@@ -104,5 +105,6 @@
   },
   "eslintConfig": {
     "extends": "cssnano"
-  }
+  },
+  "tonicExampleFilename": "quickstart.js"
 }

@@ -28,6 +28,8 @@ For further details check out the [website](http://cssnano.co/):
 * [Full list of optimisations](http://cssnano.co/optimisations/).
 * [Customise the output (options documentation)](http://cssnano.co/options/).
 
+You can now [try cssnano online](https://runkit.com/npm/cssnano) via Runkit!
+
 
 ## Contributing
 
