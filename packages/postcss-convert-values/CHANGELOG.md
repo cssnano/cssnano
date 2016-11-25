@@ -1,3 +1,8 @@
+# 2.5.0
+
+* Added clamping of the values for the `opacity` property to the `0-1` range.
+  For example, this will convert `opacity: 1.1` to `opacity: 1`.
+
 # 2.4.1
 
 * Resolves an issue where the units would be stripped from zero values in
