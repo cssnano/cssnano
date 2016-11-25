@@ -1,3 +1,8 @@
+# 3.8.1
+
+* Adds a quick start file for easy integration with Runkit. Try cssnano online
+  at https://runkit.com/npm/cssnano.
+
 # 3.8.0
 
 * Adds support for normalizing multiple values for the `display` property. For
