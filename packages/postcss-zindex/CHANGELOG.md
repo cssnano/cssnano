@@ -1,3 +1,11 @@
+# 2.2.0
+
+* Added an option to set the starting index, useful to mitigate conflicts with
+  third-party CSS files.
+* Performance improvements, including O(1) lookup of cached values rather than
+  O(n), aborting PostCSS walk altogether when a negative index is found, and
+  not running an optimize step if there are no z-index declarations.
+
 # 2.1.1
 
 * Fixes an issue where all positive indices before a negative index were
