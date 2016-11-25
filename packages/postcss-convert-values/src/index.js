@@ -3,10 +3,10 @@ import valueParser, {unit, walk} from 'postcss-value-parser';
 import convert from './lib/convert';
 
 function parseWord (node, opts, keepZeroUnit) {
-    let pair = unit(node.value);
+    const pair = unit(node.value);
     if (pair) {
-        let num = Number(pair.number);
-        let u = pair.unit.toLowerCase();
+        const num = Number(pair.number);
+        const u = pair.unit.toLowerCase();
         if (num === 0) {
             node.value = (
                 keepZeroUnit ||
@@ -31,6 +31,19 @@ function parseWord (node, opts, keepZeroUnit) {
     }
 }
 
+function clampOpacity (node) {
+    const pair = unit(node.value);
+    if (!pair) {
+        return;
+    }
+    let num = Number(pair.number);
+    if (num > 1) {
+        node.value = 1 + pair.unit;
+    } else if (num < 0) {
+        node.value = 0 + pair.unit;
+    }
+}
+
 function shouldStripPercent ({value, prop, parent}) {
     return ~value.indexOf('%') &&
         (prop === 'max-height' || prop === 'height') ||
@@ -43,13 +56,17 @@ function shouldStripPercent ({value, prop, parent}) {
 
 function transform (opts) {
     return decl => {
-        if (~decl.prop.indexOf('flex') || decl.prop.indexOf('--') === 0) {
+        const {prop} = decl;
+        if (~prop.indexOf('flex') || prop.indexOf('--') === 0) {
             return;
         }
 
         decl.value = valueParser(decl.value).walk(node => {
             if (node.type === 'word') {
                 parseWord(node, opts, shouldStripPercent(decl));
+                if (prop === 'opacity') {
+                    clampOpacity(node);
+                }
             } else if (node.type === 'function') {
                 if (node.value === 'calc' ||
                     node.value === 'hsl' ||

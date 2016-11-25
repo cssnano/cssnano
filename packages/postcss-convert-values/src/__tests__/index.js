@@ -206,6 +206,18 @@ const suites = [{
     message: 'should not round pixel values to two decimal places by default',
     fixture: 'h1{right:6.66667px}',
     expected: 'h1{right:6.66667px}',
+}, {
+    message: 'should clamp opacity to 1 maximum',
+    fixture: 'h1{opacity:150;opacity:15;opacity:1.5}',
+    expected: 'h1{opacity:1;opacity:1;opacity:1}',
+}, {
+    message: 'should clamp opacity to 0 minimum',
+    fixture: 'h1{opacity:-0.5;opacity:-5;opacity:-50}',
+    expected: 'h1{opacity:0;opacity:0;opacity:0}',
+}, {
+    message: 'should keep stripping zeroes from opacity',
+    fixture: 'h1{opacity:0.0625}',
+    expected: 'h1{opacity:.0625}',
 }];
 
 ['stroke-dasharray', 'stroke-dashoffset', 'stroke-width'].forEach(property => {
