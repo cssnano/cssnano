@@ -2,9 +2,10 @@
 
 var postcss = require('postcss');
 
-module.exports = postcss.plugin('postcss-zindex', function () {
+module.exports = postcss.plugin('postcss-zindex', function (opts) {
+    opts = opts || {};
     return function (css) {
-        var cache = require('./lib/layerCache')();
+        var cache = require('./lib/layerCache')(opts);
         var nodes = [];
         var abort = false;
         // First pass; cache all z indexes

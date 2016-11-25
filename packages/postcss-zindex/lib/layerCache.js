@@ -3,11 +3,12 @@
 var has = require('has');
 var uniq = require('uniqs');
 
-function LayerCache () {
+function LayerCache (opts) {
     if (!(this instanceof LayerCache)) {
-        return new LayerCache();
+        return new LayerCache(opts);
     }
     this._values = [];
+    this._startIndex = opts.startIndex || 1;
 }
 
 function ascending (a, b) {
@@ -15,7 +16,7 @@ function ascending (a, b) {
 }
 
 function reduceValues (list, value, index) {
-    list[value] = index + 1;
+    list[value] = index + this._startIndex;
     return list;
 }
 
@@ -27,7 +28,7 @@ LayerCache.prototype._findValue = function (value) {
 };
 
 LayerCache.prototype.optimizeValues = function () {
-    this._values = uniq(this._values).sort(ascending).reduce(reduceValues, {});
+    this._values = uniq(this._values).sort(ascending).reduce(reduceValues.bind(this), {});
 };
 
 LayerCache.prototype.addValue = function (value) {
