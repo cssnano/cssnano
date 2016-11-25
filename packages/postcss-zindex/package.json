@@ -23,6 +23,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "has": "^1.0.1",
     "postcss": "^5.0.4",
     "uniqs": "^2.0.0"
   },

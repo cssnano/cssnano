@@ -1,5 +1,6 @@
 'use strict';
 
+var has = require('has');
 var uniq = require('uniqs');
 
 function LayerCache () {
@@ -9,33 +10,24 @@ function LayerCache () {
     this._values = [];
 }
 
-function sortAscending (a, b) {
+function ascending (a, b) {
     return a - b;
 }
 
-function mapValues (value, index) {
-    return {
-        from: value,
-        to: index + 1
-    };
+function reduceValues (list, value, index) {
+    list[value] = index + 1;
+    return list;
 }
 
 LayerCache.prototype._findValue = function (value) {
-    var length = this._values.length;
-    for (var i = 0; i < length; ++i) {
-        if (this._values[i].from === value) {
-            return this._values[i];
-        }
+    if (has(this._values, value)) {
+        return this._values[value];
     }
     return false;
 };
 
 LayerCache.prototype.optimizeValues = function () {
-    var values = uniq(this._values)
-        .sort(sortAscending)
-        .map(mapValues);
-
-    this._values = values;
+    this._values = uniq(this._values).sort(ascending).reduce(reduceValues, {});
 };
 
 LayerCache.prototype.addValue = function (value) {
@@ -49,8 +41,7 @@ LayerCache.prototype.addValue = function (value) {
 
 LayerCache.prototype.getValue = function (value) {
     var parsedValue = parseInt(value, 10);
-    var match = this._findValue(parsedValue);
-    return match && match.to || value;
+    return this._findValue(parsedValue) || value;
 };
 
 module.exports = LayerCache;

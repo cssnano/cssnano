@@ -9,21 +9,20 @@ module.exports = postcss.plugin('postcss-zindex', function () {
         var abort = false;
         // First pass; cache all z indexes
         css.walkDecls('z-index', function (decl) {
-            if (abort) {
-                return;
-            }
             // Check that no negative values exist. Rebasing is only
             // safe if all indices are positive numbers.
             if (decl.value[0] === '-') {
                 abort = true;
-                return;
+                // Stop PostCSS iterating through the rest of the decls
+                return false;
             }
             nodes.push(decl);
             cache.addValue(decl.value);
         });
-        
-        // Abort rebasing altogether due to z-index being found
-        if (abort) {
+
+        // Abort if we found any negative values
+        // or there are no z-index declarations
+        if (abort || !nodes.length) {
             return;
         }
 
@@ -33,8 +32,7 @@ module.exports = postcss.plugin('postcss-zindex', function () {
         nodes.forEach(function (decl) {
             // Need to coerce to string so that the
             // AST is updated correctly
-            var value = cache.getValue(decl.value);
-            decl.value = String(value);
+            decl.value = cache.getValue(decl.value).toString();
         });
     };
 });
