@@ -14,7 +14,7 @@ const mappings = [
     ['inline-block', ['inline', 'flow-root']],
     ['run-in', ['run-in', 'flow']],
     ['list-item', ['list-item', 'block', 'flow']],
-    ['inline list-item', ['list-item', 'inline', 'flow']],
+    ['inline-list-item', ['list-item', 'inline', 'flow']],
     ['flex', ['block', 'flex']],
     ['inline-flex', ['inline', 'flex']],
     ['grid', ['block', 'grid']],
