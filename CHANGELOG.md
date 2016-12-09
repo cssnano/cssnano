@@ -1,3 +1,8 @@
+# 3.8.2
+
+* Resolves an issue where `display: list-item inline flow` would be normalized
+  to `inline list-item` rather than `inline-list-item` (thanks to @mattbasta).
+
 # 3.8.1
 
 * Adds a quick start file for easy integration with Runkit. Try cssnano online
