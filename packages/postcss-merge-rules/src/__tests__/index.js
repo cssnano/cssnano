@@ -457,6 +457,13 @@ test(
     '.foo{background:#fff;-webkit-background-clip:text}.bar{background:#000;-webkit-background-clip:text}'
 );
 
+test(
+    'should not destroy any declarations when merging',
+    testOutput,
+    '.a{background-color:#fff}.a{background-color:#717F83;color:#fff}',
+    '.a{background-color:#fff;background-color:#717F83;color:#fff}',
+);
+
 test('should use the postcss plugin api', t => {
     t.truthy(plugin().postcssVersion, 'should be able to access version');
     t.deepEqual(plugin().postcssPlugin, name, 'should be able to access name');

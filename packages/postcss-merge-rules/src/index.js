@@ -177,9 +177,9 @@ function selectorMerger () {
         // Merge when both selectors are exactly equal
         // e.g. a { color: blue } a { font-weight: bold }
         if (cache.selector === rule.selector) {
-            const toString = String(cache);
+            const cached = getDecls(cache);
             rule.walk(decl => {
-                if (~toString.indexOf(String(decl))) {
+                if (~cached.indexOf(String(decl))) {
                     return decl.remove();
                 }
                 decl.moveTo(cache);
