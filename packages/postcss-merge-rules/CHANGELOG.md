@@ -1,3 +1,9 @@
+# 2.0.11
+
+* Resolves an issue where partially identical properties would be removed from
+  a rule erroneously; for example `color: #fff` would be removed if the other
+  rule contained `background-color: #fff`.
+
 # 2.0.10
 
 * Replaces the internal list of vendor prefixes with the `vendors` module
