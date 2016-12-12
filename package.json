@@ -80,6 +80,7 @@
     "json-loader": "^0.5.4",
     "ncp": "^2.0.0",
     "nyc": "^10.0.0",
+    "postcss-font-magician": "^1.5.0",
     "webpack": "^1.12.13",
     "webpack-bundle-size-analyzer": "^2.0.2"
   },

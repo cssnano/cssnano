@@ -187,6 +187,9 @@ function changeWrappingQuotes (node, ast) {
 }
 
 function normalize (value, preferredQuote) {
+    if (!value || !value.length) {
+        return value;
+    }
     return valueParser(value).walk(child => {
         if (child.type !== C_STRING) {
             return;
