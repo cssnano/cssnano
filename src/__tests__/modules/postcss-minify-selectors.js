@@ -119,8 +119,10 @@ module.exports.tests = [{
     message: 'should not change strings (4)',
     fixture: '[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:blue}',
     expected: '[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:blue}',
+    options: {normalizeString: false},
 }, {
     message: 'should not change strings (5)',
     fixture: "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}",
     expected: "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}",
+    options: {normalizeString: false},
 }];

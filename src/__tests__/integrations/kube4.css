@@ -5,7 +5,7 @@ a:active,a:hover{outline:0}
 article,aside,audio,canvas,details,embed,figcaption,figure,footer,header,hgroup,iframe,main,meter,nav,object,output,progress,section,textarea,video{display:block}
 audio:not([controls]){display:none;height:0}
 blockquote,q{quotes:none}
-blockquote p:after,blockquote p:before,q:after,q:before{content:'';content:none}
+blockquote p:after,blockquote p:before,q:after,q:before{content:"";content:none}
 table{border-collapse:collapse;border-spacing:0}
 caption,td,th{text-align:left;vertical-align:top}
 thead td,thead th{font-weight:700;vertical-align:bottom}
@@ -435,7 +435,7 @@ ul.dropdown li.divider{border-bottom:1px solid #e2e2e2}
 .livesearch-box{position:relative;display:inline-block;width:100%}
 .livesearch-box input{padding-left:30px}
 .livesearch-box .close{position:absolute;top:.2em;right:5px;z-index:2;padding:4px 6px;line-height:1;font-size:20px;cursor:pointer;color:#000;text-decoration:none;filter:alpha(opacity=50);-moz-opacity:.5;opacity:.5}
-.livesearch-box .close:before{content:'\00D7'}
+.livesearch-box .close:before{content:"\00D7"}
 .livesearch-box .close:hover{filter:alpha(opacity=100);-moz-opacity:1;opacity:1}
 .livesearch-icon{position:absolute;top:53%;left:10px;z-index:2}
 .livesearch-icon:after,.livesearch-icon:before{content:"";position:absolute;top:50%;left:0;margin:-8px 0 0;background:rgba(0,0,0,.5)}

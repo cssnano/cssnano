@@ -5,7 +5,7 @@ body{line-height:1.5;background:#fff}
 table{border-collapse:separate;border-spacing:0}
 caption,td,th{text-align:left;font-weight:400;float:none!important}
 table,td,th{vertical-align:middle}
-blockquote:after,blockquote:before,q:after,q:before{content:''}
+blockquote:after,blockquote:before,q:after,q:before{content:""}
 blockquote,q{quotes:"" ""}
 a img{border:none}
 :focus{outline:0}
