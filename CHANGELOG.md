@@ -1,3 +1,8 @@
+# 3.9.1
+
+* Resolves an integration issue with `v3.9.0`, where `undefined` values
+  would attempt to be parsed.
+
 # 3.9.0
 
 * Adds a new option to normalize wrapping quotes for strings & joining
