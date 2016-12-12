@@ -1,3 +1,9 @@
+# 3.9.0
+
+* Adds a new option to normalize wrapping quotes for strings & joining
+  multiple-line strings into a single line. This optimisation can potentially
+  reduce the final gzipped size of your CSS file.
+
 # 3.8.2
 
 * Resolves an issue where `display: list-item inline flow` would be normalized
