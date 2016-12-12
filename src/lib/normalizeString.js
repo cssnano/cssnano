@@ -217,6 +217,9 @@ export default postcss.plugin('cssnano-normalize-string', opts => {
             if (node.type === 'decl') {
                 node.value = normalize(node.value, preferredQuote);
             }
+            if (node.type === 'atrule') {
+                node.params = normalize(node.params, preferredQuote);
+            }
         });
     };
 });

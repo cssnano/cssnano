@@ -263,3 +263,10 @@ test(
     `[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}`,
     `[a="escaped quotes ' h1, h1, h1 ' h1, h1, h1"]{color:blue}`,
 );
+
+test(
+    'should work for @import',
+    processCss,
+    `@import url('foo.css')`,
+    `@import url("foo.css")`
+);
