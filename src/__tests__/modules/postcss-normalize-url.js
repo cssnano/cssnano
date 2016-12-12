@@ -89,7 +89,7 @@ module.exports.tests = [{
     message: 'should optimise @namespace urls (3)',
     fixture: '@namespace test \'http://test.com/foo/../bar\';',
     expected: '@namespace test \'http://test.com/bar\';',
-    options: {discardUnused: {namespace: false}},
+    options: {discardUnused: {namespace: false}, normalizeString: false},
 }, {
     message: 'should optimise @namespace urls (4)',
     fixture: '@namespace test url("         http://bar.com:80/test        ");',

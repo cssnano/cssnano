@@ -52,18 +52,18 @@ test(
 test(
     'should dedupe charset definitions',
     processCss,
-    `@charset 'utf-8';
+    `@charset "utf-8";
 
     a {
         display: block;
     }
 
-    @charset 'utf-8';
+    @charset "utf-8";
 
     div {
         font-family: €42;
     }`,
-    `@charset 'utf-8';a{display:block}div{font-family:€42}`
+    `@charset "utf-8";a{display:block}div{font-family:€42}`
 );
 
 test(
