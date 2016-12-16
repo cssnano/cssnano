@@ -4480,7 +4480,7 @@ select.ui.dropdown{height:38px;padding:.5em;border:1px solid rgba(34,36,38,.15);
 .ui.dropdown .scrolling.menu>.item.item.item,.ui.scrolling.dropdown .menu .item.item.item{border-top:none;padding-right:calc(1.14285714rem + 17px)!important}
 .ui.dropdown .scrolling.menu .item:first-child,.ui.scrolling.dropdown .menu .item:first-child{border-top:none}
 .ui.dropdown>.animating.menu .scrolling.menu,.ui.dropdown>.visible.menu .scrolling.menu{display:block}
-@media all and (-ms-high-contrast:none){
+@media (-ms-high-contrast:none){
   .ui.dropdown .scrolling.menu,.ui.scrolling.dropdown .menu{min-width:calc(100% - 17px)}
 }
 @media only screen and (max-width:767px){

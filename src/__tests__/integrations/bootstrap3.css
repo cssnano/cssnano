@@ -1424,7 +1424,7 @@ button.close{-webkit-appearance:none;padding:0;cursor:pointer;background:transpa
 .carousel-inner{width:100%;overflow:hidden}
 .carousel-inner>.item{position:relative;display:none;-webkit-transition:left .6s ease-in-out;transition:left .6s ease-in-out}
 .carousel-inner>.item>a>img,.carousel-inner>.item>img{line-height:1}
-@media (-webkit-transform-3d),all and (transform-3d){
+@media (-webkit-transform-3d),(transform-3d){
   .carousel-inner>.item{-webkit-transition:-webkit-transform .6s ease-in-out;transition:transform .6s ease-in-out;-webkit-backface-visibility:hidden;backface-visibility:hidden;-webkit-perspective:1000;perspective:1000}
   .carousel-inner>.item.active.right,.carousel-inner>.item.next{left:0;-webkit-transform:translate3d(100%,0,0);transform:translate3d(100%,0,0)}
   .carousel-inner>.item.active.left,.carousel-inner>.item.prev{left:0;-webkit-transform:translate3d(-100%,0,0);transform:translate3d(-100%,0,0)}
