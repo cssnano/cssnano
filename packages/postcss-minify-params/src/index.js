@@ -24,6 +24,11 @@ function split(nodes, div) {
     return result;
 }
 
+function removeNode(node) {
+    node.value = '';
+    node.type = 'word';
+}
+
 module.exports = postcss.plugin('postcss-minify-params', () => {
     return css => {
         css.walkAtRules(rule => {
@@ -33,17 +38,35 @@ module.exports = postcss.plugin('postcss-minify-params', () => {
 
             const params = valueParser(rule.params);
 
-            params.walk(node => {
+            params.walk((node, index) => {
                 if (node.type === 'div' || node.type === 'function') {
                     node.before = node.after = '';
                 } else if (node.type === 'space') {
                     node.value = ' ';
+                } else if (node.type === 'word') {
+                    if (node.value === 'all' && rule.name === 'media') {
+                        const nextSpace = params.nodes[index + 1];
+                        const nextWord = params.nodes[index + 2];
+                        const secondSpace = params.nodes[index + 3];
+                        if (nextWord && nextWord.value === 'and') {
+                            removeNode(nextWord);
+                            removeNode(nextSpace);
+                            if (secondSpace) {
+                                removeNode(secondSpace);
+                            }
+                        }
+                        removeNode(node);
+                    }
                 }
             }, true);
 
             rule.params = sort(uniqs(split(params.nodes, ',')), {
                 insensitive: true
             }).join();
+
+            if (!rule.params.length) {
+                rule.raws.afterName = '';
+            }
         });
     };
 });
