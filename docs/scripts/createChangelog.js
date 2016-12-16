@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const remark = require('remark');
-const behead = require('remark-behead');
+const behead = require('@beneb/remark-behead');
 const github = require('remark-github');
 
 const tmpl = `---
