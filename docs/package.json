@@ -121,5 +121,9 @@
     "toml-loader": "^1.0.0",
     "webpack": "^1.12.1",
     "whatwg-fetch": "^0.11.0"
+  },
+  "dependencies": {
+    "react-clipboard-icon": "^0.2.1",
+    "react-clipboard.js": "^1.0.1"
   }
 }

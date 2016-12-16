@@ -1,5 +1,7 @@
 import React, {Component, PropTypes} from "react";
 import Lowlight from 'react-lowlight';
+import ClipboardButton from 'react-clipboard.js';
+import ClipboardIcon from 'react-clipboard-icon';
 import js from 'highlight.js/lib/languages/javascript';
 import DangerousMarkdown from '../../DangerousMarkdown';
 import BasicPage from "../BasicPage";
@@ -35,12 +37,12 @@ export default class Optimisations extends Component {
                             <DangerousMarkdown>
                                 {wrapper.example}
                             </DangerousMarkdown>
-                            <a
-                                className={styles.install}
-                                href={wrapper.source}
-                            >
-                                {wrapper.install}
-                            </a>
+                            <div className={styles.install}>
+                                <a href={wrapper.source}>{wrapper.install}</a>
+                                <ClipboardButton data-clipboard-text={wrapper.install}>
+                                  <ClipboardIcon /> Copy
+                                </ClipboardButton>
+                            </div>
                             {alternate}
                         </div>
                     );
