@@ -690,7 +690,7 @@ plugins: {
 [[wrappers]]
 name = "cli"
 source = "https://npmjs.com/package/cssnano-cli"
-install = "npm install cssnano-cli"
+install = "npm install cssnano-cli --global"
 alternate = "[postcss-cli](https://github.com/postcss/postcss-cli)"
 example = """
 ```sh
