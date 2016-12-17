@@ -26,7 +26,7 @@ h1 {
 
 ```css
 h1 {
-    background: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#ff0"/></svg>');
+    background: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="%23ff0"/></svg>');
 }
 ```
 
@@ -58,9 +58,10 @@ postcss([ svgo() ]).process(css).then(function (result) {
 Type: `boolean`
 Default: `undefined`
 
-If `true`, it will encode URL-unsafe characters such as `<`, `>` and `#`;
+If `true`, it will encode URL-unsafe characters such as `<`, `>` and `&`;
 `false` will decode these characters, and `undefined` will neither encode nor
-decode the original input.
+decode the original input. Note that regardless of this setting, `#` will
+always be URL-encoded.
 
 ##### plugins
 

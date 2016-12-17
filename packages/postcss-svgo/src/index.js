@@ -44,6 +44,10 @@ function minifyPromise (svgo, decl, opts) {
                     return reject(`${PLUGIN}: ${result.error}`);
                 }
                 let data = isUriEncoded ? encode(result.data) : result.data;
+                // Should always encode # otherwise we yield a broken SVG
+                // in Firefox (works in Chrome however). See this issue:
+                // https://github.com/ben-eb/cssnano/issues/245
+                data = data.replace(/#/g, '%23');
                 node.nodes[0] = {
                     ...node.nodes[0],
                     value: 'data:image/svg+xml;charset=utf-8,' + data,
