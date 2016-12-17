@@ -1,3 +1,8 @@
+# 2.1.6
+
+* Resolves an issue where postcss-svgo would convert colours to hex codes
+  without URL-encoding the `#`.
+
 # 2.1.5
 
 * Bump svgo to v0.7.x.
