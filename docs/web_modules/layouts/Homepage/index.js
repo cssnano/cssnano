@@ -41,6 +41,11 @@ export default class Homepage extends Component {
 
     render () {
         const {pkg, modules} = this.context.metadata;
+        let clipboard = null;
+        if (typeof window !== 'undefined') {
+            const Clipboard = require('../Usage/clipboard').default;
+            clipboard = (<Clipboard text={'npm install cssnano'}/>);
+        }
         return (
             <div>
             <div className={styles.about}>
@@ -95,7 +100,10 @@ export default class Homepage extends Component {
             </div>
             <div className={content}>
                 <p>Get started now! Our <Link to='/usage/'>usage guide</Link> covers a wide variety of environments.</p>
-                <Link to='/usage/' className={install}>npm install cssnano</Link>
+                <div className={install}>
+                    <Link to='/usage/'>npm install cssnano</Link>
+                    {clipboard}
+                </div>
             </div>
             <div className={content}>
                 <h2>Features</h2>
@@ -145,7 +153,10 @@ export default class Homepage extends Component {
                 <p>Why not try it out for your site today? If you have any questions,
                 feel free to visit <a href={`https://gitter.im/${pkg.repository}`}>
                 the support chat</a>.</p>
-                <Link to='/usage/' className={install}>npm install cssnano</Link>
+                <div className={install}>
+                    <Link to='/usage/'>npm install cssnano</Link>
+                    {clipboard}
+                </div>
             </div>
             <CoverPage className={content} { ...this.props}>
             </CoverPage>
