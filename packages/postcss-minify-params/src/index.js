@@ -4,6 +4,21 @@ const { stringify } = valueParser;
 const sort = require('alphanum-sort');
 const uniqs = require('uniqs');
 
+/**
+ * Return the greatest common divisor
+ * of two numbers.
+ */
+
+function gcd(a, b) {
+    return b ? gcd(b, a % b) : a;
+}
+
+function aspectRatio(a, b) {
+    const divisor = gcd(a, b);
+
+    return [a / divisor, b / divisor];
+}
+
 function split(nodes, div) {
     const result = [];
     let i, max, node;
@@ -41,6 +56,18 @@ module.exports = postcss.plugin('postcss-minify-params', () => {
             params.walk((node, index) => {
                 if (node.type === 'div' || node.type === 'function') {
                     node.before = node.after = '';
+                    if (
+                        node.type === 'function' &&
+                        node.nodes[0].value.indexOf('-aspect-ratio') === 3 &&
+                        node.nodes[4]
+                    ) {
+                        const [a, b] = aspectRatio(
+                            node.nodes[2].value,
+                            node.nodes[4].value
+                        );
+                        node.nodes[2].value = a;
+                        node.nodes[4].value = b;
+                    }
                 } else if (node.type === 'space') {
                     node.value = ' ';
                 } else if (node.type === 'word') {

@@ -32,6 +32,22 @@ const tests = [{
     message: 'should not parse at rules without params',
     fixture: '@font-face{font-family:test;src:local(test)}',
     expected: '@font-face{font-family:test;src:local(test)}'
+}, {
+    message: 'should reduce min-aspect-ratio',
+    fixture: '@media (min-aspect-ratio: 32/18){h1{color:blue}}',
+    expected: '@media (min-aspect-ratio:16/9){h1{color:blue}}',
+}, {
+    message: 'should reduce max-aspect-ratio',
+    fixture: '@media (max-aspect-ratio: 48000000/32000000){h1{color:blue}}',
+    expected: '@media (max-aspect-ratio:3/2){h1{color:blue}}',
+}, {
+    message: 'should multiply aspect ratio',
+    fixture: '@media (max-aspect-ratio: 1.5/1){h1{color:blue}}',
+    expected: '@media (max-aspect-ratio:3/2){h1{color:blue}}',
+}, {
+    message: 'should multiply aspect ratio (2)',
+    fixture: '@media (max-aspect-ratio: .5 / 1){h1{color:blue}}',
+    expected: '@media (max-aspect-ratio:1/2){h1{color:blue}}',
 }];
 
 /* eslint-enable */
