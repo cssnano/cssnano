@@ -48,6 +48,10 @@ const tests = [{
     message: 'should multiply aspect ratio (2)',
     fixture: '@media (max-aspect-ratio: .5 / 1){h1{color:blue}}',
     expected: '@media (max-aspect-ratio:1/2){h1{color:blue}}',
+}, {
+    message: 'should not throw on empty parentheses',
+    fixture: '@media (){h1{color:blue}}',
+    expected: '@media (){h1{color:blue}}',
 }];
 
 /* eslint-enable */

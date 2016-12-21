@@ -58,8 +58,8 @@ module.exports = postcss.plugin('postcss-minify-params', () => {
                     node.before = node.after = '';
                     if (
                         node.type === 'function' &&
-                        node.nodes[0].value.indexOf('-aspect-ratio') === 3 &&
-                        node.nodes[4]
+                        node.nodes[4] &&
+                        node.nodes[0].value.indexOf('-aspect-ratio') === 3
                     ) {
                         const [a, b] = aspectRatio(
                             node.nodes[2].value,
