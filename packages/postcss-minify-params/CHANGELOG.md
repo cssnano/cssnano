@@ -1,3 +1,7 @@
+# 1.2.1
+
+* Resolves an issue where `1.2.0` would throw on empty function parentheses.
+
 # 1.2.0
 
 * Adds support for simplifying `min-aspect-ratio` and `max-aspect-ratio`. For
