@@ -240,7 +240,7 @@
   "transition-property": "all",
   "transition-timing-function": "ease",
   "unicode-bidi": "normal",
-  "user-select": "none",
+  "user-select": "auto",
   "white-space": "normal",
   "widows": "2",
   "width": "auto",
