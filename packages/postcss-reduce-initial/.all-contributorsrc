@@ -18,6 +18,16 @@
         "review",
         "test"
       ]
+    },
+    {
+      "login": "thechriswalker",
+      "name": "Chris Walker",
+      "avatar_url": "https://avatars.githubusercontent.com/u/551712?v=3",
+      "profile": "http://thechriswalker.github.com/",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ]
 }
