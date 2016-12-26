@@ -58,12 +58,14 @@ cssSize.table(css).then(function (table) {
 
 ## API
 
-### `cssSize(input)`
+### `cssSize(input, options)`
 
 Pass a string of CSS to receive an object with information about the original &
-minified sizes (both are gzipped), plus difference and percentage results.
+minified sizes (both are gzipped), plus difference and percentage results. The
+options object is passed through to cssnano should you wish to compare sizes
+using different options than the defaults.
 
-### `cssSize.table(input)`
+### `cssSize.table(input, options)`
 
 Use the table method instead to receive the results as a formatted table.
 

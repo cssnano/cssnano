@@ -4,4 +4,8 @@ Options:
 
     --version,    -v    Outputs the version number.
 
+    --options           Pass through options to cssnano. For example,
+                        you can turn off unused rule removal
+                        with `--no-options.discardUnused`.
+
     --help,       -h    Outputs this help screen.

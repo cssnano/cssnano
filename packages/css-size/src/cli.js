@@ -26,7 +26,7 @@ if (opts.version) {
             if (err) {
                 throw err;
             }
-            table(buf).then((results) => console.log(results));
+            table(buf, opts.options).then((results) => console.log(results));
         });
     }
 }

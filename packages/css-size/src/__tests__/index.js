@@ -45,3 +45,13 @@ test('api', t => {
         t.deepEqual(result.percent, '79.07%');
     });
 });
+
+test('api options', t => {
+    return size(
+        '@namespace islands url("http://bar.yandex.ru/ui/islands");', {
+            discardUnused: false,
+        }
+    ).then(result => {
+        t.deepEqual(result.minified, '67 B');
+    });
+});
