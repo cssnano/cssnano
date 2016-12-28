@@ -1,3 +1,9 @@
+# 1.2.2
+
+* Resolves an issue where `all and` would be removed from
+  `@media not all and (conditions) {}`, causing an invalid media query to
+  be output.
+
 # 1.2.1
 
 * Resolves an issue where `1.2.0` would throw on empty function parentheses.
