@@ -21,6 +21,10 @@ const tests = [{
     fixture: '@media all and (min-width:500px){h1{color:blue}}',
     expected: '@media (min-width:500px){h1{color:blue}}',
 }, {
+    message: 'should not normalise "not all and" in @media queries',
+    fixture: '@media not all and (min-width: 768px){h1{color:blue}}',
+    expected: '@media not all and (min-width:768px){h1{color:blue}}',
+}, {
     message: 'should not remove "all" from other at-rules',
     fixture: '@foo all;',
     expected: '@foo all;',

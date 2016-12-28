@@ -71,7 +71,12 @@ module.exports = postcss.plugin('postcss-minify-params', () => {
                 } else if (node.type === 'space') {
                     node.value = ' ';
                 } else if (node.type === 'word') {
-                    if (node.value === 'all' && rule.name === 'media') {
+                    const prevWord = params.nodes[index - 2];
+                    if (
+                        node.value === 'all' &&
+                        rule.name === 'media' &&
+                        !prevWord
+                    ) {
                         const nextSpace = params.nodes[index + 1];
                         const nextWord = params.nodes[index + 2];
                         const secondSpace = params.nodes[index + 3];
