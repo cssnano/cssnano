@@ -1,3 +1,9 @@
+# 2.1.0
+
+* Adds support for converting between similar `:nth-child` selectors. For
+  example, `:nth-child(1)` can be converted to `:first-child`, and
+  `p:nth-last-child(2n + 1)` converts to `p:nth-last-child(odd)`.
+
 # 2.0.7
 
 * Fixes a regression where postcss-minify-selectors would transform `[title=""]`
