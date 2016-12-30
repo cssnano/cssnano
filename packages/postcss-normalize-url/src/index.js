@@ -14,18 +14,16 @@ function convert (url, options) {
     return path.normalize(url).replace(new RegExp('\\' + path.sep, 'g'), '/');
 }
 
-function transformNamespace (rule, opts) {
+function transformNamespace (rule) {
     rule.params = valueParser(rule.params).walk(node => {
         if (node.type === 'function' && node.value === 'url' && node.nodes.length) {
             node.type = 'string';
             node.quote = node.nodes[0].quote || '"';
             node.value = node.nodes[0].value;
         }
-
         if (node.type === 'string') {
-            node.value = convert(node.value.trim(), opts);
+            node.value = node.value.trim();
         }
-
         return false;
     }).toString();
 }
@@ -77,7 +75,7 @@ module.exports = postcss.plugin('postcss-normalize-url', opts => {
             if (node.type === 'decl') {
                 return transformDecl(node, opts);
             } else if (node.type === 'atrule' && node.name === 'namespace') {
-                return transformNamespace(node, opts);
+                return transformNamespace(node);
             }
         });
     };

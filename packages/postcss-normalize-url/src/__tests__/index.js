@@ -96,21 +96,13 @@ const tests = [{
     fixture: '@namespace islands url(" http://bar.yandex.ru/ui/islands");',
     expected: '@namespace islands "http://bar.yandex.ru/ui/islands";',
 }, {
-    message: 'should optimise @namespace urls',
+    message: 'should optimise @namespace urls (2)',
     fixture: '@namespace islands url(http://bar.yandex.ru/ui/islands );',
     expected: '@namespace islands "http://bar.yandex.ru/ui/islands";',
 }, {
-    message: 'should optimise @namespace urls (2)',
-    fixture: '@namespace test url( "http://bar.com:80/test" )',
-    expected: '@namespace test "http://bar.com/test"',
-}, {
     message: 'should optimise @namespace urls (3)',
-    fixture: '@namespace test \'http://test.com/foo/../bar\';',
-    expected: '@namespace test \'http://test.com/bar\';',
-}, {
-    message: 'should optimise @namespace urls (4)',
-    fixture: '@namespace test url("         http://bar.com:80/test        ");',
-    expected: '@namespace test "http://bar.com/test";',
+    fixture: '@namespace islands " http://bar.yandex.ru/ui/islands ";',
+    expected: '@namespace islands "http://bar.yandex.ru/ui/islands";',
 }, {
     message: 'should not normalize @document urls',
     fixture: '@document url(http://www.w3.org/),url-prefix(http://www.w3.org/Style/){body{font-size:2em}}',
