@@ -31,7 +31,43 @@ function combinator (selector) {
     selector.value = value.length ? value : ' ';
 }
 
+const pseudoReplacements = {
+    ':nth-child': ':first-child',
+    ':nth-of-type': ':first-of-type',
+    ':nth-last-child': ':last-child',
+    ':nth-last-of-type': ':last-of-type',
+};
+
 function pseudo (selector) {
+    if (selector.nodes.length === 1 && pseudoReplacements[selector.value]) {
+        const first = selector.at(0);
+        const one = first.at(0);
+        if (first.length === 1) {
+            if (one.value === '1') {
+                selector.replaceWith(parser.pseudo({
+                    value: pseudoReplacements[selector.value],
+                }));
+            }
+            if (one.value === 'even') {
+                one.value = '2n';
+            }
+        }
+        if (first.length === 3) {
+            const two   = first.at(1);
+            const three = first.at(2);
+            if (
+                one.value === '2n' &&
+                two.value === '+' &&
+                three.value === '1'
+            ) {
+                one.value = 'odd';
+                two.remove();
+                three.remove();
+            }
+        }
+
+        return;
+    }
     const uniques = [];
     selector.walk(child => {
         if (child.type === 'selector') {

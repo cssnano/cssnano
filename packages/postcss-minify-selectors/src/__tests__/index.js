@@ -196,6 +196,58 @@ const tests = [{
     message: 'should not remove quotes around an empty attribute selector',
     fixture: '[title=""]{color:blue}',
     expected: '[title=""]{color:blue}',
+}, {
+    message: 'should convert :nth-child(1) to :first-child',
+    fixture: 'p:nth-child(1){color:blue}',
+    expected: 'p:first-child{color:blue}',
+}, {
+    message: 'should convert :nth-child(2n + 1) to :nth-child(odd)',
+    fixture: 'p:nth-child(2n + 1){color:blue}',
+    expected: 'p:nth-child(odd){color:blue}',
+}, {
+    message: 'should convert :nth-child(even) to :nth-child(2n)',
+    fixture: 'p:nth-child(even){color:blue}',
+    expected: 'p:nth-child(2n){color:blue}',
+}, {
+    message: 'should convert :nth-of-type(1) to :first-of-type',
+    fixture: 'p:nth-of-type(1){color:blue}',
+    expected: 'p:first-of-type{color:blue}',
+}, {
+    message: 'should convert :nth-of-type(2n + 1) to :nth-of-type(odd)',
+    fixture: 'p:nth-of-type(2n + 1){color:blue}',
+    expected: 'p:nth-of-type(odd){color:blue}',
+}, {
+    message: 'should convert :nth-of-type(even) to :nth-of-type(2n)',
+    fixture: 'p:nth-of-type(even){color:blue}',
+    expected: 'p:nth-of-type(2n){color:blue}',
+}, {
+    message: 'should convert :nth-last-child(1) to :last-child',
+    fixture: 'p:nth-last-child(1){color:blue}',
+    expected: 'p:last-child{color:blue}',
+}, {
+    message: 'should convert :nth-last-child(2n + 1) to :nth-last-child(odd)',
+    fixture: 'p:nth-last-child(2n + 1){color:blue}',
+    expected: 'p:nth-last-child(odd){color:blue}',
+}, {
+    message: 'should convert :nth-last-child(even) to :nth-last-child(2n)',
+    fixture: 'p:nth-last-child(even){color:blue}',
+    expected: 'p:nth-last-child(2n){color:blue}',
+}, {
+    message: 'should convert :nth-last-of-type(1) to :last-of-type',
+    fixture: 'p:nth-last-of-type(1){color:blue}',
+    expected: 'p:last-of-type{color:blue}',
+}, {
+    message: 'should convert :nth-last-of-type(2n + 1) to :nth-last-of-type(odd)',
+    fixture: 'p:nth-last-of-type(2n + 1){color:blue}',
+    expected: 'p:nth-last-of-type(odd){color:blue}',
+}, {
+    message: 'should convert :nth-last-of-type(even) to :nth-last-of-type(2n)',
+    fixture: 'p:nth-last-of-type(even){color:blue}',
+    expected: 'p:nth-last-of-type(2n){color:blue}',
+}, {
+    message: 'should handle first/last of type without parameters',
+    fixture: 'body>h2:not(:first-of-type):not(:last-of-type){color:blue}',
+    expected: 'body>h2:not(:first-of-type):not(:last-of-type){color:blue}',
 }];
 
 tests.forEach(({message, fixture, expected, options = {}}) => {
