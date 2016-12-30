@@ -1,3 +1,8 @@
+# 3.0.8
+
+* Fixes `@namespace` URL conversion; now the semantics of the URL are preserved
+  and only the `url(foo)` to `"foo"` optimisation is performed.
+
 # 3.0.7
 
 * Fix `main` field in `package.json`.
