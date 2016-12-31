@@ -1,3 +1,8 @@
+# 2.1.1
+
+* Fixes a compatibility issue with `modular-css` - now the module will only
+  use the raw selector value if it equal to the 'cleaned' selector value.
+
 # 2.1.0
 
 * Adds support for converting between similar `:nth-child` selectors. For
