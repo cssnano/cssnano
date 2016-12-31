@@ -1,3 +1,4 @@
+import browserslist from 'browserslist';
 import decamelize from 'decamelize';
 import defined from 'defined';
 import assign from 'object-assign';
@@ -130,6 +131,7 @@ const cssnano = postcss.plugin('cssnano', (options = {}) => {
 
     const safe = options.isSafe;
     const proc = postcss();
+    const browsers = browserslist(options.browsers);
 
     if (typeof options.fontFamily !== 'undefined' || typeof options.minifyFontWeight !== 'undefined') {
         warnOnce('The fontFamily & minifyFontWeight options have been ' +
@@ -162,6 +164,7 @@ const cssnano = postcss.plugin('cssnano', (options = {}) => {
         opts = assign({},
             defaultOptions[plugin],
             safe ? safeOptions[plugin] : null,
+            {browsers},
             opts
         );
 

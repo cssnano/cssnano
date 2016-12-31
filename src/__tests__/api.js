@@ -88,3 +88,19 @@ ava('should work with sourcemaps (2)', t => {
         t.truthy(hasMap);
     });
 });
+
+ava(
+    'should have a global browsers option',
+    processCss,
+    'h1{border-radius:10px}',
+    'h1{-webkit-border-radius:10px;-moz-border-radius:10px;border-radius:10px}',
+    {browsers: ['> 0%'], autoprefixer: {add: true}}
+);
+
+ava(
+    'should work with browsers set in autoprefixer',
+    processCss,
+    'h1{border-radius:10px}',
+    'h1{-webkit-border-radius:10px;-moz-border-radius:10px;border-radius:10px}',
+    {autoprefixer: {add: true, browsers: ['> 0%']}}
+);
