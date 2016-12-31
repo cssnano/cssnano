@@ -267,3 +267,47 @@ ava('cssnano issue 39', t => {
     const css = 'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
     t.notThrows(() => postcss([ magician(), plugin() ]).process(css).css);
 });
+
+/*
+ * Reference: https://github.com/tivac/modular-css/issues/228
+ */
+
+ava('should handle selectors from other plugins', t => {
+    function encode (str) {
+        let result = "";
+        for (let i = 0; i < str.length; i++) {
+            result += str.charCodeAt(i).toString(16);
+        }
+
+        return result;
+    }
+
+    const toModules = postcss.plugin('toModules', () => {
+        return css => {
+            css.walkRules(rule => {
+                rule.selectors = rule.selectors.map(selector => {
+                    const slice = selector.slice(1);
+                    return `.${encode(slice).slice(0, 7)}__${slice}`;
+                });
+            });
+        };
+    });
+
+    const css = `.test, /* comment #1 - this comment breaks stuff */
+.test:hover {  /* comment #2 - ...but this comment is fine */
+  position: absolute;
+}
+
+.ok {
+  padding: 4px;
+}`;
+    const expected = `.7465737__test,.7465737__test:hover {  /* comment #2 - ...but this comment is fine */
+  position: absolute;
+}
+
+.6f6b__ok {
+  padding: 4px;
+}`;
+    const res = postcss([toModules, plugin]).process(css).css;
+    t.deepEqual(res, expected);
+});

@@ -112,7 +112,8 @@ const reducers = {
 };
 
 function optimise (rule) {
-    const selector = rule.raws.selector && rule.raws.selector.raw || rule.selector;
+    const selector = (rule.raws.selector && rule.raws.selector.value === rule.selector) ?
+        rule.raws.selector.raw : rule.selector;
     // If the selector ends with a ':' it is likely a part of a custom mixin,
     // so just pass through.
     if (selector[selector.length - 1] === ':') {
