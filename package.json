@@ -75,7 +75,7 @@
     "eslint-config-cssnano": "^3.0.0",
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^2.0.1",
-    "gh-pages": "^0.11.0",
+    "gh-pages": "^0.12.0",
     "hook-std": "^0.2.0",
     "json-loader": "^0.5.4",
     "ncp": "^2.0.0",
