@@ -3,6 +3,7 @@ import ava from 'ava';
 import nano from '..';
 import autoprefixer from 'autoprefixer';
 import {name} from '../../package.json';
+import processCss from './_processCss';
 import specName from './util/specName';
 
 function pluginMacro (t, instance) {
@@ -18,17 +19,15 @@ ava('can be used as a postcss plugin', pluginMacro, postcss().use(nano()));
 ava('can be used as a postcss plugin (2)', pluginMacro, postcss([nano()]));
 ava('can be used as a postcss plugin (3)', pluginMacro, postcss(nano));
 
-ava('can be used as a postcss plugin, with options', t => {
-    const css = `
-    h1 {
+ava(
+    'can be used as a postcss plugin, with options',
+    processCss,
+    `h1 {
         width: calc(3px * 2 - 1px);
-    }`;
-    const exp = `h1{width:calc(3px * 2 - 1px)}`;
-
-    return postcss(nano({calc: false})).process(css).then(result => {
-        t.deepEqual(result.css, exp, specName('notTransformCalcProperty'));
-    });
-});
+    }`,
+    `h1{width:calc(3px * 2 - 1px)}`,
+    {calc: false}
+);
 
 ava('should use the postcss plugin api', t => {
     t.truthy(nano().postcssVersion, 'should be able to access version');
@@ -47,9 +46,7 @@ function disableMacro (t, opts) {
     const css = 'h1 { color: #ffffff }';
     const min = 'h1{color:#ffffff}';
 
-    return postcss().use(nano(opts)).process(css).then(result => {
-        t.deepEqual(result.css, min, specName('disableColourMinification'));
-    });
+    return processCss(t, css, min, opts);
 }
 
 ava('should disable features', disableMacro, {'postcss-colormin': false});
@@ -60,9 +57,7 @@ ava('should not fail when options.safe is enabled', t => {
     const css = 'h1 { z-index: 100 }';
     const min = 'h1{z-index:100}';
 
-    return nano.process(css, {safe: true}).then(result => {
-        t.deepEqual(result.css, min, specName('beConsumedByPostCSS'));
-    });
+    return processCss(t, css, min, {safe: true});
 });
 
 ava('should not fail second time when the same options are passed in, with options.safe as enabled', t => {
