@@ -1,3 +1,8 @@
+# 2.6.0
+
+* Added clamping of the values for the `shape-image-threshold` property, using
+  the same logic as introduced in version `2.5.0`.
+
 # 2.5.0
 
 * Added clamping of the values for the `opacity` property to the `0-1` range.
