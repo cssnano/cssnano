@@ -64,7 +64,7 @@ function transform (opts) {
         decl.value = valueParser(decl.value).walk(node => {
             if (node.type === 'word') {
                 parseWord(node, opts, shouldStripPercent(decl));
-                if (prop === 'opacity') {
+                if (prop === 'opacity' || prop === 'shape-image-threshold') {
                     clampOpacity(node);
                 }
             } else if (node.type === 'function') {

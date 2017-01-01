@@ -218,6 +218,18 @@ const suites = [{
     message: 'should keep stripping zeroes from opacity',
     fixture: 'h1{opacity:0.0625}',
     expected: 'h1{opacity:.0625}',
+}, {
+    message: 'should clamp shape-image-threshold to 1 maximum',
+    fixture: 'h1{shape-image-threshold:150;shape-image-threshold:15;shape-image-threshold:1.5}',
+    expected: 'h1{shape-image-threshold:1;shape-image-threshold:1;shape-image-threshold:1}',
+}, {
+    message: 'should clamp shape-image-threshold to 0 minimum',
+    fixture: 'h1{shape-image-threshold:-0.5;shape-image-threshold:-5;shape-image-threshold:-50}',
+    expected: 'h1{shape-image-threshold:0;shape-image-threshold:0;shape-image-threshold:0}',
+}, {
+    message: 'should keep stripping zeroes from shape-image-threshold',
+    fixture: 'h1{shape-image-threshold:0.0625}',
+    expected: 'h1{shape-image-threshold:.0625}',
 }];
 
 ['stroke-dasharray', 'stroke-dashoffset', 'stroke-width'].forEach(property => {
