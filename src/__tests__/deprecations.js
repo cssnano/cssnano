@@ -1,5 +1,4 @@
 import test from 'ava';
-import hookStd from 'hook-std';
 import toSentence from 'array-to-sentence';
 import cssnano from '..';
 
@@ -8,17 +7,14 @@ function format (key) {
 }
 
 function deprecation (t, config, css = 'h1{}') {
-    let out = '';
-    const unhook = hookStd.stderr({silent: true}, output => (out += output));
-    return cssnano.process(css, config).then(() => {
-        unhook();
-        t.truthy(out.trim().length);
+    return cssnano.process(css, config).then((result) => {
+        t.truthy(result.messages.length);
     });
 }
 
 deprecation.title = (title, config) => {
     const keys = Object.keys(config);
-    return `${toSentence(keys.map(format))} should print a warning`;
+    return `${toSentence(keys.map(format))} should emit a warning`;
 };
 
 /*
@@ -26,4 +22,5 @@ deprecation.title = (title, config) => {
  */
 
 test(deprecation, {minifyFontWeight: false, fontFamily: false});
+test(deprecation, {fontFamily: false, minifyFontValues: {removeQuotes: true}});
 test(deprecation, {singleCharset: false});

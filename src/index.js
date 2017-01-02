@@ -40,12 +40,6 @@ import core from './lib/core';
 import reduceTimingFunctions from './lib/reduceTimingFunctions';
 import styleCache from './lib/styleCache';
 
-/**
- * Deprecation warnings
- */
-
-import warnOnce from './lib/warnOnce';
-
 const processors = {
     postcssFilterPlugins: () => postcssFilterPlugins({silent: true}),
     postcssDiscardComments,
@@ -130,9 +124,13 @@ const cssnano = postcss.plugin('cssnano', (options = {}) => {
 
     const safe = options.isSafe;
     const proc = postcss();
+    const warnings = [];
 
-    if (typeof options.fontFamily !== 'undefined' || typeof options.minifyFontWeight !== 'undefined') {
-        warnOnce('The fontFamily & minifyFontWeight options have been ' +
+    if (
+        typeof options.fontFamily !== 'undefined' ||
+        typeof options.minifyFontWeight !== 'undefined'
+    ) {
+        warnings.push('The fontFamily & minifyFontWeight options have been ' +
                  'consolidated into minifyFontValues, and are now deprecated.');
         if (!options.minifyFontValues) {
             options.minifyFontValues = options.fontFamily;
@@ -140,9 +138,15 @@ const cssnano = postcss.plugin('cssnano', (options = {}) => {
     }
 
     if (typeof options.singleCharset !== 'undefined') {
-        warnOnce('The singleCharset option has been renamed to ' +
+        warnings.push('The singleCharset option has been renamed to ' +
                  'normalizeCharset, and is now deprecated.');
         options.normalizeCharset = options.singleCharset;
+    }
+
+    if (warnings.length) {
+        proc.use(postcss.plugin('cssnano', () => {
+            return (css, result) => warnings.forEach(w => result.warn(w));
+        }));
     }
 
     Object.keys(processors).forEach(plugin => {
