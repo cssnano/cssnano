@@ -105,6 +105,7 @@ let safeOptions = {
     },
     postcssReduceIdents: {
         counterStyle: false,
+        gridTemplate: false,
         keyframes: false,
     },
     postcssNormalizeUrl: {
