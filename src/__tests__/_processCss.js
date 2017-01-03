@@ -5,3 +5,7 @@ export default function processCss (t, fixture, expected, options = {}) {
         t.deepEqual(css, expected);
     });
 }
+
+export function passthrough (t, fixture, options = {}) {
+    return processCss(t, fixture, fixture, options);
+}

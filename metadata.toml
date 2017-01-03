@@ -89,6 +89,40 @@ outputExample = """
 source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/normalizeString.js"
 
 [[modules]]
+name = "normalize-unicode"
+shortDescription = "Normalizes unicode-range descriptors"
+longDescription = """
+This optimisation can convert `unicode-range` descriptors to use the shorter
+wildcard ranges when a particular value meets the wildcard criteria. Values will
+be converted when the code matches `0` & `f` in the same place on both sides
+of the range. So, `u+2000-2fff` can be converted to `u+2???`, but `u+2100-2fff`
+will be left as it is.
+"""
+inputExample = """
+@font-face {
+    font-family: "Latin Extended Additional";
+    unicode-range: u+1e00-1eff;
+    src: local("Baskerville");
+}
+
+body {
+    font-family: "Latin Extended Additional", sans-serif;
+}
+"""
+outputExample = """
+@font-face {
+    font-family: "Latin Extended Additional";
+    unicode-range: u+1e??;
+    src: local("Baskerville");
+}
+
+body {
+    font-family: "Latin Extended Additional", sans-serif;
+}
+"""
+source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/normalizeUnicode.js"
+
+[[modules]]
 name = "postcss-calc"
 shortDescription = "Reduces CSS calc expressions"
 longDescription = "Reduces CSS `calc` expressions whereever possible, ensuring both browser compatibility and compression."
