@@ -1,3 +1,16 @@
+# 3.10.0
+
+* cssnano will no longer `console.warn` any messages when using deprecated
+  options; these are now sent to PostCSS. You will be able to see them if you
+  use a PostCSS runner with built-in messages support, or alternately by
+  loading `postcss-reporter` or `postcss-browser-reporter` in your plugins list.
+* Prepares support for `grid` identifier reduction by adding it to the list
+  of optimisations turned off when `options.safe` is set to `true`.
+* Adds support for normalizing `unicode-range` descriptors. Values will
+  be converted when the code matches `0` & `f` in the same place on both sides
+  of the range. So, `u+2000-2fff` can be converted to `u+2???`, but
+  `u+2100-2fff` will be left as it is.
+
 # 3.9.1
 
 * Resolves an integration issue with `v3.9.0`, where `undefined` values
