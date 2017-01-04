@@ -1,3 +1,8 @@
+# 2.4.0
+
+* Adds support for reducing `grid` identifiers
+  (thanks to @sylvainpolletvillard).
+
 # 2.3.1
 
 * Performance tweaks: now performs one AST pass instead of three.

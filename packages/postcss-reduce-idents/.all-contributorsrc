@@ -39,6 +39,17 @@
         "doc",
         "test"
       ]
+    },
+    {
+      "login": "sylvainpolletvillard",
+      "name": "Sylvain Pollet-Villard",
+      "avatar_url": "https://avatars.githubusercontent.com/u/566536?v=3",
+      "profile": "https://github.com/sylvainpolletvillard",
+      "contributions": [
+        "code",
+        "doc",
+        "test"
+      ]
     }
   ]
 }
