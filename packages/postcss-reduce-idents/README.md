@@ -69,7 +69,7 @@ The following example will not be transformed in any way:
 }
 ```
 
-It works for `@keyframes`, `@counter-style` and custom `counter` values. See the
+It works for `@keyframes`, `@counter-style`, custom `counter` values and grid area definitions. See the
 [documentation][idents] for more information, or the [tests](test.js) for more
 examples.
 
@@ -107,6 +107,12 @@ Default: `true`
 
 Pass `false` to disable reducing `counter-style` rules and `list-style` and `system` declarations.
 
+##### gridTemplate
+
+Type: `boolean`  
+Default: `true`
+
+Pass `false` to disable reducing `grid-template`, `grid-area` and `grid-template-areas` declarations.
 
 ##### encoder
 

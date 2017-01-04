@@ -10,7 +10,7 @@
   "scripts": {
     "contributorAdd": "all-contributors add",
     "contributorGenerate": "all-contributors generate",
-    "pretest": "eslint src",
+    "pretest": "eslint src --fix",
     "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
     "test": "ava src/__tests__/*.js",
     "test-012": "ava src/__tests__/*.js"
