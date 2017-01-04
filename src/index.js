@@ -1,6 +1,5 @@
 import decamelize from 'decamelize';
 import defined from 'defined';
-import assign from 'object-assign';
 import postcss from 'postcss';
 
 // Processors
@@ -166,7 +165,7 @@ const cssnano = postcss.plugin('cssnano', (options = {}) => {
             opts = {disable: true};
         }
 
-        opts = assign({},
+        opts = Object.assign({},
             defaultOptions[plugin],
             safe ? safeOptions[plugin] : null,
             opts
