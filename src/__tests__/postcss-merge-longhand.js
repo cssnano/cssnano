@@ -1,0 +1,170 @@
+import test from 'ava';
+import processCss from './_processCss';
+
+test(
+    'should merge margin values',
+    processCss,
+    'h1{margin-top:10px;margin-right:20px;margin-bottom:30px;margin-left:40px}',
+    'h1{margin:10px 20px 30px 40px}',
+);
+
+test(
+    'should merge margin values with !important',
+    processCss,
+    'h1{margin-top:10px!important;margin-right:20px!important;margin-bottom:30px!important;margin-left:40px!important}',
+    'h1{margin:10px 20px 30px 40px!important}',
+);
+
+test(
+    'should merge & then condense margin values',
+    processCss,
+    'h1{margin-top:10px;margin-bottom:10px;margin-left:10px;margin-right:10px}',
+    'h1{margin:10px}',
+);
+
+test(
+    'should not merge margin values with mixed !important',
+    processCss,
+    'h1{margin-top:10px!important;margin-right:20px;margin-bottom:30px!important;margin-left:40px}',
+    'h1{margin-top:10px!important;margin-right:20px;margin-bottom:30px!important;margin-left:40px}',
+);
+
+test(
+    'should merge padding values',
+    processCss,
+    'h1{padding-top:10px;padding-right:20px;padding-bottom:30px;padding-left:40px}',
+    'h1{padding:10px 20px 30px 40px}',
+);
+
+test(
+    'should merge padding values with !important',
+    processCss,
+    'h1{padding-top:10px!important;padding-right:20px!important;padding-bottom:30px!important;padding-left:40px!important}',
+    'h1{padding:10px 20px 30px 40px!important}',
+);
+
+test(
+    'should not merge padding values with mixed !important',
+    processCss,
+    'h1{padding-top:10px!important;padding-right:20px;padding-bottom:30px!important;padding-left:40px}',
+    'h1{padding-top:10px!important;padding-right:20px;padding-bottom:30px!important;padding-left:40px}',
+);
+
+test(
+    'should merge identical border values',
+    processCss,
+    'h1{border-top:1px solid #000;border-bottom:1px solid #000;border-left:1px solid #000;border-right:1px solid #000}',
+    'h1{border:1px solid #000}',
+);
+
+test(
+    'should merge identical border values with !important',
+    processCss,
+    'h1{border-top:1px solid #000!important;border-bottom:1px solid #000!important;border-left:1px solid #000!important;border-right:1px solid #000!important}',
+    'h1{border:1px solid #000!important}',
+);
+
+test(
+    'should not merge identical border values with mixed !important',
+    processCss,
+    'h1{border-top:1px solid #000;border-bottom:1px solid #000;border-left:1px solid #000!important;border-right:1px solid #000!important}',
+    'h1{border-top:1px solid #000;border-bottom:1px solid #000;border-left:1px solid #000!important;border-right:1px solid #000!important}',
+);
+
+test(
+    'should merge border values',
+    processCss,
+    'h1{border-color:red;border-width:1px;border-style:dashed}',
+    'h1{border:1px dashed red}',
+);
+
+test(
+    'should merge border values with !important',
+    processCss,
+    'h1{border-color:red!important;border-width:1px!important;border-style:dashed!important}',
+    'h1{border:1px dashed red!important}',
+);
+
+test(
+    'should merge border values with identical values for all sides',
+    processCss,
+    'h1{border-color:red red red red;border-width:1px 1px 1px 1px;border-style:solid solid solid solid}',
+    'h1{border:1px solid red}',
+);
+
+test(
+    'should merge border value shorthands',
+    processCss,
+    'h1{border-color:red blue red blue;border-width:10px 20px 10px 20px;border-style:solid}',
+    'h1{border-color:red blue;border-width:10px 20px;border-style:solid}',
+);
+
+test(
+    'should not merge border values with mixed !important',
+    processCss,
+    'h1{border-color:red;border-width:1px!important;border-style:dashed!important}',
+    'h1{border-color:red;border-width:1px!important;border-style:dashed!important}',
+);
+
+test(
+    'should not merge border values with more than 3 values',
+    processCss,
+    'h1{border-color:red;border-width:1px 5px;border-style:dashed}',
+    'h1{border-color:red;border-width:1px 5px;border-style:dashed}',
+);
+
+test(
+    'should convert 4 values to 1',
+    processCss,
+    'h1{margin:10px 10px 10px 10px}',
+    'h1{margin:10px}',
+);
+
+test(
+    'should convert 3 values to 1',
+    processCss,
+    'h1{margin:10px 10px 10px}',
+    'h1{margin:10px}',
+);
+
+test(
+    'should convert 3 values to 2',
+    processCss,
+    'h1{margin:10px 20px 10px}',
+    'h1{margin:10px 20px}',
+);
+
+test(
+    'should convert 2 values to 1',
+    processCss,
+    'h1{margin:10px 10px}',
+    'h1{margin:10px}',
+);
+
+test(
+    'should convert 1 value to 1',
+    processCss,
+    'h1{margin:10px}',
+    'h1{margin:10px}',
+);
+
+test(
+    'should convert 4 values to 2',
+    processCss,
+    'h1{margin:10px 20px 10px 20px}',
+    'h1{margin:10px 20px}',
+);
+
+test(
+    'should convert 4 values to 3',
+    processCss,
+    'h1{margin:10px 20px 30px 20px}',
+    'h1{margin:10px 20px 30px}',
+);
+
+test(
+    'should convert 4 values to 4',
+    processCss,
+    'h1{margin:10px 20px 30px 40px}',
+    'h1{margin:10px 20px 30px 40px}',
+);
