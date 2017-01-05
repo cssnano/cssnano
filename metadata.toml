@@ -121,6 +121,40 @@ body {
 }
 """
 source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/normalizeUnicode.js"
+tipDescription = """
+The syntax for `unicode-range` can be confusing at times; it's not always clear
+from reading the value what the descriptor is actually doing. However, this can
+be remedied by using [postcss-unicode-characters][1], which allows you to write
+using a more descriptive syntax.
+
+The above example, using the [Latin Extended Additional][2] range, can be expressed
+using this plugin by the following:
+
+[1]: https://github.com/ben-eb/postcss-unicode-characters
+[2]: http://unicode.org/charts/PDF/U1E00.pdf
+"""
+tipInput = """
+@font-face {
+    font-family: "Latin Extended Additional";
+    unicode-characters: script("Latin Extended Additional");
+    src: local("Baskerville");
+}
+
+body {
+    font-family: "Latin Extended Additional", sans-serif;
+}
+"""
+tipOutput = """
+@font-face {
+    font-family: "Latin Extended Additional";
+    unicode-range: u+1e00-1eff;
+    src: local("Baskerville");
+}
+
+body {
+    font-family: "Latin Extended Additional", sans-serif;
+}
+"""
 
 [[modules]]
 name = "postcss-calc"

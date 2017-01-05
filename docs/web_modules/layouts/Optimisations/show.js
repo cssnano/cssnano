@@ -3,6 +3,7 @@ import BasicPage from "../BasicPage";
 import {content} from '../Page/index.css';
 import CssExample from '../../CssExample';
 import {example} from '../../CssExample/index.css';
+import DangerousMarkdown from '../../DangerousMarkdown';
 
 export default class Optimisation extends Component {
     static contextTypes = {
@@ -22,6 +23,9 @@ export default class Optimisation extends Component {
         const {
             inputExample,
             outputExample,
+            tipDescription,
+            tipInput,
+            tipOutput,
             source,
         } = module;
 
@@ -33,6 +37,24 @@ export default class Optimisation extends Component {
             </div>;
         }
 
+        let tip = null;
+        if (tipDescription) {
+            let tipExample = null;
+            if (tipInput && tipOutput) {
+                tipExample = <div className={example}>
+                    <CssExample key={`input`}>{tipInput}</CssExample>
+                    <CssExample key={`output`}>{tipOutput}</CssExample>
+                </div>;
+            }
+            tip = (
+                <div className={content}>
+                    <h2>Did you know...</h2>
+                    <DangerousMarkdown>{tipDescription}</DangerousMarkdown>
+                    {tipExample}
+                </div>
+            );
+        }
+
         return (
             <div>
                 <BasicPage className={content} { ...this.props} />
@@ -40,6 +62,7 @@ export default class Optimisation extends Component {
                     {demo}
                     <p><a href={source}>View on GitHub</a></p>
                 </div>
+                {tip}
             </div>
         );
     }
