@@ -102,6 +102,7 @@
     ]
   },
   "ava": {
+    "concurrency": 5,
     "require": "babel-core/register"
   },
   "eslintConfig": {
