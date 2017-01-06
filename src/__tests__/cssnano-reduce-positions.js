@@ -23,7 +23,7 @@ function suite (t, property, additional = '', tail = '') {
                 processCss(
                     t,
                     `${property}${additional}${fixture}${tail}`,
-                    `${property}${additional}${expected}${tail}}`
+                    `${property}${additional}${expected}${tail}`
                 ),
                 processCss(
                     t,
