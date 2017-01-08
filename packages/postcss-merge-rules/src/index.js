@@ -1,8 +1,9 @@
+import browserslist from 'browserslist';
 import postcss from 'postcss';
 import vendors from 'vendors';
 import clone from './lib/clone';
+import ensureCompatibility from './lib/ensureCompatibility';
 
-const {list} = postcss;
 const prefixes = vendors.map(v => `-${v}-`);
 
 function intersect (a, b, not) {
@@ -34,16 +35,22 @@ function sameParent (ruleA, ruleB) {
     return hasParent ? sameType : true;
 }
 
-function canMerge (ruleA, ruleB) {
-    const a = list.comma(ruleA.selector);
-    const b = list.comma(ruleB.selector);
+function canMerge (ruleA, ruleB, browsers) {
+    const a = ruleA.selectors;
+    const b = ruleB.selectors;
+
+    const selectors = a.concat(b);
+
+    if (!ensureCompatibility(selectors, browsers)) {
+        return false;
+    }
 
     const parent = sameParent(ruleA, ruleB);
     const {name} = ruleA.parent;
     if (parent && name && ~name.indexOf('keyframes')) {
         return false;
     }
-    return parent && (a.concat(b).every(noVendor) || sameVendor(a, b));
+    return parent && (selectors.every(noVendor) || sameVendor(a, b));
 }
 
 const getDecls = rule => rule.nodes ? rule.nodes.map(String) : [];
@@ -151,12 +158,12 @@ function partialMerge (first, second) {
     }
 }
 
-function selectorMerger () {
+function selectorMerger (browsers) {
     let cache = null;
     return function (rule) {
         // Prime the cache with the first rule, or alternately ensure that it is
         // safe to merge both declarations before continuing
-        if (!cache || !canMerge(rule, cache)) {
+        if (!cache || !canMerge(rule, cache, browsers)) {
             cache = rule;
             return;
         }
@@ -194,5 +201,13 @@ function selectorMerger () {
 }
 
 export default postcss.plugin('postcss-merge-rules', () => {
-    return css => css.walkRules(selectorMerger());
+    return (css, result) => {
+        const {opts} = result;
+        const browsers = browserslist(null, {
+            stats: opts && opts.stats,
+            path: opts && opts.from,
+            env: opts && opts.env,
+        });
+        css.walkRules(selectorMerger(browsers));
+    };
 });

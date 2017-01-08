@@ -4,12 +4,13 @@ import vars from 'postcss-simple-vars';
 import comments from 'postcss-discard-comments';
 import {name} from '../../package.json';
 import plugin from '..';
+import {pseudoElements} from '../lib/ensureCompatibility';
 
-function testOutput (t, input, expected) {
+function testOutput (t, input, expected, options) {
     if (!expected) {
         expected = input;
     }
-    return postcss(plugin).process(input).then(result => {
+    return postcss(plugin).process(input, options).then(result => {
         t.deepEqual(result.css, expected);
     });
 }
@@ -462,6 +463,116 @@ test(
     testOutput,
     '.a{background-color:#fff}.a{background-color:#717F83;color:#fff}',
     '.a{background-color:#fff;background-color:#717F83;color:#fff}',
+);
+
+test(
+    'should merge ::placeholder selectors when supported',
+    testOutput,
+    '::placeholder{color:blue}h1{color:blue}',
+    '::placeholder,h1{color:blue}',
+    {env: 'chrome58'}
+);
+
+test(
+    'should not merge general sibling combinators',
+    testOutput,
+    'div{color:#fff}a ~ b{color:#fff}',
+    'div{color:#fff}a ~ b{color:#fff}',
+    {env: 'ie6'}
+);
+
+test(
+    'should not merge child combinators',
+    testOutput,
+    'div{color:#fff}a > b{color:#fff}',
+    'div{color:#fff}a > b{color:#fff}',
+    {env: 'ie6'}
+);
+
+test(
+    'should not merge attribute selectors (css 2.1)',
+    testOutput,
+    'div{color:#fff}[href]{color:#fff}',
+    'div{color:#fff}[href]{color:#fff}',
+    {env: 'ie6'}
+);
+
+test(
+    'should not merge attribute selectors (css 2.1) (2)',
+    testOutput,
+    'div{color:#fff}[href="foo"]{color:#fff}',
+    'div{color:#fff}[href="foo"]{color:#fff}',
+    {env: 'ie6'}
+);
+
+test(
+    'should not merge attribute selectors (css 2.1) (3)',
+    testOutput,
+    'div{color:#fff}[href~="foo"]{color:#fff}',
+    'div{color:#fff}[href~="foo"]{color:#fff}',
+    {env: 'ie6'}
+);
+
+test(
+    'should not merge attribute selectors (css 2.1) (4)',
+    testOutput,
+    'div{color:#fff}[href|="foo"]{color:#fff}',
+    'div{color:#fff}[href|="foo"]{color:#fff}',
+    {env: 'ie6'}
+);
+
+test(
+    'should not merge attribute selectors (css 3)',
+    testOutput,
+    'div{color:#fff}[href^="foo"]{color:#fff}',
+    'div{color:#fff}[href^="foo"]{color:#fff}',
+    {env: 'ie7'}
+);
+
+test(
+    'should not merge attribute selectors (css 3) (2)',
+    testOutput,
+    'div{color:#fff}[href$="foo"]{color:#fff}',
+    'div{color:#fff}[href$="foo"]{color:#fff}',
+    {env: 'ie7'}
+);
+
+test(
+    'should not merge attribute selectors (css 3) (3)',
+    testOutput,
+    'div{color:#fff}[href*="foo"]{color:#fff}',
+    'div{color:#fff}[href*="foo"]{color:#fff}',
+    {env: 'ie7'}
+);
+
+test(
+    'should not merge case insensitive attribute selectors',
+    testOutput,
+    'div{color:#fff}[href="foo" i]{color:#fff}',
+    'div{color:#fff}[href="foo" i]{color:#fff}',
+    {env: 'edge15'}
+);
+
+const pseudoKeys = Object.keys(pseudoElements);
+
+test(`should not merge ${pseudoKeys.length} pseudo elements`, t => {
+    return Promise.all(
+        pseudoKeys.reduce((promises, pseudo) => {
+            return [...promises, testOutput(
+                t,
+                `${pseudo}{color:blue}h1{color:blue}`,
+                `${pseudo}{color:blue}h1{color:blue}`,
+                {env: 'ie6'}
+            )];
+        }, [])
+    );
+});
+
+test(
+    'should handle css mixins',
+    testOutput,
+    `paper-card{--paper-card-content:{padding-top:0};margin:0 auto 16px;width:768px;max-width:calc(100% - 32px)}`,
+    `paper-card{--paper-card-content:{padding-top:0};margin:0 auto 16px;width:768px;max-width:calc(100% - 32px)}`
 );
 
 test('should use the postcss plugin api', t => {

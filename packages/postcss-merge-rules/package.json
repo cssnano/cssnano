@@ -31,6 +31,7 @@
     "babel-preset-es2015-loose": "^7.0.0",
     "babel-preset-stage-0": "^6.3.13",
     "babel-register": "^6.9.0",
+    "browserslist": "^1.5.2",
     "cross-env": "^2.0.1",
     "del-cli": "^0.2.0",
     "eslint": "^3.0.0",
@@ -49,7 +50,9 @@
   },
   "repository": "ben-eb/postcss-merge-rules",
   "dependencies": {
+    "caniuse-api": "^1.5.2",
     "postcss": "^5.0.4",
+    "postcss-selector-parser": "^2.2.2",
     "vendors": "^1.0.0"
   },
   "eslintConfig": {
@@ -61,5 +64,19 @@
   "nyc": {
     "sourceMap": false,
     "instrument": false
+  },
+  "browserslist": {
+    "chrome58": [
+      "Chrome 58"
+    ],
+    "edge15": [
+      "Edge 15"
+    ],
+    "ie6": [
+      "IE 6"
+    ],
+    "ie7": [
+      "IE 7"
+    ]
   }
 }
