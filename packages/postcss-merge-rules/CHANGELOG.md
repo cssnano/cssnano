@@ -1,3 +1,12 @@
+# 2.1.0
+
+* Rules are now merged based on supported browsers, which uses `browserslist`
+  & `caniuse-api`. The browsers should be supplied by the standard means of
+  [configuring `browserslist`][browserslist], either using config files or
+  via environment variables.
+
+[browserslist]: https://github.com/ai/browserslist#config-file
+
 # 2.0.11
 
 * Resolves an issue where partially identical properties would be removed from
