@@ -1,3 +1,8 @@
+# 2.1.1
+
+* Resolves an issue with `2.1.0` where `browserslist` was not being installed
+  correctly on older Node versions.
+
 # 2.1.0
 
 * Rules are now merged based on supported browsers, which uses `browserslist`
