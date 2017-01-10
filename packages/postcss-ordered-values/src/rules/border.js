@@ -1,16 +1,7 @@
 import {unit, stringify} from 'postcss-value-parser';
-import getParsed from '../lib/getParsed';
 
 // border: <line-width> || <line-style> || <color>
 // outline: <outline-color> || <outline-style> || <outline-width>
-const borderProps = [
-    'border',
-    'border-top',
-    'border-right',
-    'border-bottom',
-    'border-left',
-    'outline',
-];
 
 const borderWidths = [
     'thin',
@@ -32,45 +23,29 @@ const borderStyles = [
     'outset',
 ];
 
-export default function normalizeBorder (decl) {
-    if (!~borderProps.indexOf(decl.prop)) {
-        return;
-    }
-    let border = getParsed(decl);
-    if (border.nodes.length > 2) {
-        let order = {width: '', style: '', color: ''};
-        let abort = false;
-        border.walk(node => {
-            if (
-                node.type === 'comment' ||
-                node.type === 'function' && node.value === 'var'
-            ) {
-                abort = true;
+export default function normalizeBorder (decl, border) {
+    let order = {width: '', style: '', color: ''};
+    border.walk(node => {
+        if (node.type === 'word') {
+            if (~borderStyles.indexOf(node.value)) {
+                order.style = node.value;
                 return false;
             }
-            if (node.type === 'word') {
-                if (~borderStyles.indexOf(node.value)) {
-                    order.style = node.value;
-                    return false;
-                }
-                if (~borderWidths.indexOf(node.value) || unit(node.value)) {
-                    order.width = node.value;
-                    return false;
-                }
-                order.color = node.value;
+            if (~borderWidths.indexOf(node.value) || unit(node.value)) {
+                order.width = node.value;
                 return false;
             }
-            if (node.type === 'function') {
-                if (node.value === 'calc') {
-                    order.width = stringify(node);
-                } else {
-                    order.color = stringify(node);
-                }
-                return false;
-            }
-        });
-        if (!abort) {
-            decl.value = `${order.width} ${order.style} ${order.color}`.trim();
+            order.color = node.value;
+            return false;
         }
-    }
+        if (node.type === 'function') {
+            if (node.value === 'calc') {
+                order.width = stringify(node);
+            } else {
+                order.color = stringify(node);
+            }
+            return false;
+        }
+    });
+    decl.value = `${order.width} ${order.style} ${order.color}`.trim();
 };

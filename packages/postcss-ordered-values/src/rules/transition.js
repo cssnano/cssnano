@@ -1,7 +1,6 @@
 import {unit} from 'postcss-value-parser';
 import addSpace from '../lib/addSpace';
 import getArguments from '../lib/getArguments';
-import getParsed from '../lib/getParsed';
 import getValue from '../lib/getValue';
 
 // transition: [ none | <single-transition-property> ] || <time> || <single-transition-timing-function> || <time>
@@ -16,17 +15,8 @@ const timingFunctions = [
     'step-end',
 ];
 
-export default function normalizeTransition (decl) {
-    if (decl.prop !== 'transition' && decl.prop !== '-webkit-transition') {
-        return;
-    }
-    let parsed = getParsed(decl);
-    if (parsed.nodes.length < 2) {
-        return;
-    }
-
+export default function normalizeTransition (decl, parsed) {
     let args = getArguments(parsed);
-    let abort = false;
 
     let values = args.reduce((list, arg) => {
         let state = {
@@ -36,13 +26,6 @@ export default function normalizeTransition (decl) {
             time2: [],
         };
         arg.forEach(node => {
-            if (
-                node.type === 'comment' ||
-                node.type === 'function' && node.value === 'var'
-            ) {
-                abort = true;
-                return;
-            }
             if (node.type === 'space') {
                 return;
             }
@@ -62,10 +45,6 @@ export default function normalizeTransition (decl) {
         });
         return [...list, [...state.property, ...state.time1, ...state.timingFunction, ...state.time2]];
     }, []);
-
-    if (abort) {
-        return;
-    }
 
     decl.value = getValue(values);
 }

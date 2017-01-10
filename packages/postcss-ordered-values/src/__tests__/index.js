@@ -199,6 +199,10 @@ const tests = [{
     message: 'should abort ordering when a var is detected (border)',
     fixture: 'border: solid 1px var(--red)',
     expected: 'border: solid 1px var(--red)',
+}, {
+    message: 'should abort when consumed via css loader',
+    fixture: 'border: ___CSS_LOADER_IMPORT___0___ solid ___CSS_LOADER_IMPORT___1___;',
+    expected: 'border: ___CSS_LOADER_IMPORT___0___ solid ___CSS_LOADER_IMPORT___1___;',
 }];
 
 tests.forEach(test => {

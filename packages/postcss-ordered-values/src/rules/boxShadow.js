@@ -1,20 +1,11 @@
 import {unit} from 'postcss-value-parser';
 import addSpace from '../lib/addSpace';
 import getArguments from '../lib/getArguments';
-import getParsed from '../lib/getParsed';
 import getValue from '../lib/getValue';
 
 // box-shadow: inset? && <length>{2,4} && <color>?
 
-export default function normalizeBoxShadow (decl) {
-    if (decl.prop !== 'box-shadow') {
-        return;
-    }
-    let parsed = getParsed(decl);
-    if (parsed.nodes.length < 2) {
-        return;
-    }
-
+export default function normalizeBoxShadow (decl, parsed) {
     let args = getArguments(parsed);
     let abort = false;
 
@@ -25,13 +16,7 @@ export default function normalizeBoxShadow (decl) {
             color: [],
         };
         arg.forEach(node => {
-            if (
-                node.type === 'comment' ||
-                node.type === 'function' && (
-                    node.value === 'var' ||
-                    ~node.value.indexOf('calc')
-                )
-            ) {
+            if (node.type === 'function' && ~node.value.indexOf('calc')) {
                 abort = true;
                 return;
             }
