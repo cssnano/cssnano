@@ -1,10 +1,18 @@
+# 2.2.3
+
+* Resolves an integration issue with css-loader; now this module will ignore
+  any declarations that have import placeholders.
+* Rewrote the processor structure for improved performance; now there is an
+  object of processors instead of an array, and a single value validation step
+  instead of one per processor.
+
 # 2.2.2
 
 * Now will not re-order box-shadow values containing `calc()` definitions.
 
 # 2.2.1
 
-* Now will not re-order values that contain any `var()` definitions. 
+* Now will not re-order values that contain any `var()` definitions.
 
 # 2.2.0
 
