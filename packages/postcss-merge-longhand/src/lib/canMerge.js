@@ -1,9 +1,10 @@
-const important = node => node.important;
-const unimportant = node => !node.important;
-const hasInherit = node => node.value && ~node.value.indexOf('inherit');
+let important = node => node.important;
+let unimportant = node => !node.important;
+let hasInherit = node => ~node.value.indexOf('inherit');
+let hasInitial = node => ~node.value.indexOf('initial');
 
 export default (...props) => {
-    if (props.some(hasInherit)) {
+    if (props.some(hasInherit) || props.some(hasInitial)) {
         return false;
     }
     return props.every(unimportant) || props.every(important);
