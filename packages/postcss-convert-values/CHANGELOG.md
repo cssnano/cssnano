@@ -1,3 +1,8 @@
+# 2.6.1
+
+* Resolves an issue where IE hacks were being removed from `0` values
+  (thanks to @Justineo).
+
 # 2.6.0
 
 * Added clamping of the values for the `shape-image-threshold` property, using
