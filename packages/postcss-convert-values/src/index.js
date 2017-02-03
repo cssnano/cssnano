@@ -2,6 +2,11 @@ import postcss from 'postcss';
 import valueParser, {unit, walk} from 'postcss-value-parser';
 import convert from './lib/convert';
 
+const LENGTH_UNITS = [
+    'em', 'ex', 'ch', 'rem', 'vw', 'vh', 'vmin', 'vmax',
+    'cm', 'mm', 'q', 'in', 'pt', 'pc', 'px',
+];
+
 function parseWord (node, opts, keepZeroUnit) {
     const pair = unit(node.value);
     if (pair) {
@@ -10,12 +15,8 @@ function parseWord (node, opts, keepZeroUnit) {
         if (num === 0) {
             node.value = (
                 keepZeroUnit ||
-                u === 'ms' ||
-                u === 's' ||
-                u === 'deg'||
-                u === 'rad' ||
-                u === 'grad' ||
-                u === 'turn') ? 0 + u : 0;
+                !~LENGTH_UNITS.indexOf(u) && u !== '%'
+            ) ? 0 + u : 0;
         } else {
             node.value = convert(num, u, opts);
 

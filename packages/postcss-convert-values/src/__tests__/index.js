@@ -230,6 +230,10 @@ const suites = [{
     message: 'should keep stripping zeroes from shape-image-threshold',
     fixture: 'h1{shape-image-threshold:0.0625}',
     expected: 'h1{shape-image-threshold:.0625}',
+}, {
+    message: 'should keep unknown units or hacks',
+    fixture: 'h1{top:0\\9\\0;left:0lightyear}',
+    expected: 'h1{top:0\\9\\0;left:0lightyear}',
 }];
 
 ['stroke-dasharray', 'stroke-dashoffset', 'stroke-width'].forEach(property => {
