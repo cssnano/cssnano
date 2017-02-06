@@ -27,7 +27,7 @@ function transform (decl, opts) {
         reduceWhitespaces(decl);
         return;
     }
-    if (/^(font|filter)/.test(decl.prop)) {
+    if (/^(composes|font|filter)/i.test(decl.prop)) {
         return;
     }
     const ast = valueParser(decl.value);

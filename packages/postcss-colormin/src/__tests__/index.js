@@ -99,6 +99,10 @@ const tests = [{
     message: 'should add extra spaces when converting rgb (2)',
     fixture: 'h1{background:linear-gradient(rgba(0,0,0,0)0%, blue 100%)}',
     expected: 'h1{background:linear-gradient(transparent 0%, blue 100%)}',
+}, {
+    message: 'should bail on the "composes" property',
+    fixture: 'h1{composes:black from "styles"}',
+    expected: 'h1{composes:black from "styles"}',
 }];
 
 function process (css, options) {
