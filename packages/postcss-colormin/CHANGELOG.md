@@ -1,3 +1,8 @@
+# 2.2.2
+
+* Resolves an issue where the module would mangle the non-standard `composes`
+  property when consumed via css-loader.
+
 # 2.2.1
 
 * Resolves an issue where converting an rgb/hsl function next to another token,
