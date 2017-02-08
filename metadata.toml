@@ -812,7 +812,7 @@ grunt.initConfig({
   cssnano: {
     options: {
       sourcemap: true
-    }
+    },
     dist: {
       files: {
         'dist/app.css': 'src/app.css'
