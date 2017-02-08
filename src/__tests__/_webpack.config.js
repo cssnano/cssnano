@@ -15,6 +15,7 @@ module.exports = {
         }, {
             test: /\.js$/,
             loader: 'babel',
+            exclude: /node_modules/,
         }],
     },
     // because client side doesn't have fs :)
