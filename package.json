@@ -2,6 +2,6 @@
   "name": "cssnano",
   "private": true,
   "devDependencies": {
-    "lerna": "^2.0.0-beta.37"
+    "lerna": "2.0.0-beta.37"
   }
 }
