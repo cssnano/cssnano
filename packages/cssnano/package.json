@@ -6,7 +6,7 @@
   "scripts": {
     "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
     "docs": "cd docs && npm run build && cd .. && gh-pages -d docs/dist",
-    "pretest": "eslint --ignore-path .gitignore src",
+    "pretest": "eslint --ignore-path ../../.gitignore src",
     "prepublish": "del-cli dist && cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
     "report": "nyc report --reporter=html",
     "test": "nyc ava src/__tests__/*.js",
