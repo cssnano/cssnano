@@ -1,0 +1,35 @@
+{
+  "projectName": "cssnano",
+  "projectOwner": "ben-eb",
+  "files": [
+    "CONTRIBUTORS.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "ben-eb",
+      "name": "Ben Briggs",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1282980?v=3",
+      "profile": "http://beneb.info",
+      "contributions": [
+        "code",
+        "doc",
+        "review",
+        "test"
+      ]
+    },
+    {
+      "login": "TrySound",
+      "name": "Bogdan Chadkin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5635476?v=3",
+      "profile": "https://github.com/TrySound",
+      "contributions": [
+        "code",
+        "doc",
+        "review",
+        "test"
+      ]
+    }
+  ]
+}

@@ -9,6 +9,7 @@
     "node": ">=4"
   },
   "devDependencies": {
+    "all-contributors-cli": "^4.0.0",
     "ava": "^0.18.1",
     "babel-preset-env": "^1.1.8",
     "babel-preset-stage-0": "^6.22.0",
