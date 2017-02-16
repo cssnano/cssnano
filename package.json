@@ -2,9 +2,41 @@
   "name": "cssnano",
   "private": true,
   "scripts": {
-    "test": "lerna run test"
+    "report": "nyc report --reporter=html",
+    "test": "nyc --check-coverage --lines 100 ava"
+  },
+  "engines": {
+    "node": ">=4"
   },
   "devDependencies": {
-    "lerna": "2.0.0-beta.37"
+    "ava": "^0.18.1",
+    "babel-preset-env": "^1.1.8",
+    "babel-preset-stage-0": "^6.22.0",
+    "babel-register": "^6.23.0",
+    "cross-env": "^3.1.4",
+    "lerna": "2.0.0-beta.37",
+    "nyc": "^10.1.2"
+  },
+  "ava": {
+    "files": [
+      "packages/**/src/__tests__/*.js"
+    ],
+    "concurrency": 5,
+    "require": "babel-register"
+  },
+  "nyc": {
+    "exclude": [
+      "node_modules",
+      "**/__tests__",
+      "**/dist"
+    ],
+    "sourceMap": false,
+    "instrument": false
+  },
+  "babel": {
+    "presets": [
+      "env",
+      "stage-0"
+    ]
   }
 }
