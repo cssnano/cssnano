@@ -7,7 +7,7 @@
     "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
     "docs": "cd docs && npm run build && cd .. && gh-pages -d docs/dist",
     "pretest": "eslint --ignore-path ../../.gitignore src",
-    "prepublish": "del-cli dist && cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
   },
   "keywords": [
     "css",
@@ -58,10 +58,6 @@
     "babel-cli": "^6.5.1",
     "babel-core": "^6.5.1",
     "babel-loader": "^6.2.4",
-    "babel-plugin-add-module-exports": "^0.2.0",
-    "babel-plugin-precompile-charcodes": "^1.0.0",
-    "babel-preset-es2015-loose": "^7.0.0",
-    "babel-preset-stage-0": "^6.5.0",
     "coveralls": "^2.11.6",
     "css-frameworks": "git+https://git@github.com/ben-eb/css-frameworks.git",
     "css-minifier-tests": "git+https://git@github.com/ben-eb/css-minifier-tests.git",

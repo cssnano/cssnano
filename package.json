@@ -28,11 +28,8 @@
   "nyc": {
     "exclude": [
       "node_modules",
-      "**/__tests__",
-      "**/dist"
-    ],
-    "sourceMap": false,
-    "instrument": false
+      "**/__tests__"
+    ]
   },
   "babel": {
     "presets": [

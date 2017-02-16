@@ -1,13 +1,11 @@
-'use strict';
+import {plugin} from 'postcss';
+import LayerCache from './lib/layerCache';
 
-var postcss = require('postcss');
-
-module.exports = postcss.plugin('postcss-zindex', function (opts) {
-    opts = opts || {};
-    return function (css) {
-        var cache = require('./lib/layerCache')(opts);
-        var nodes = [];
-        var abort = false;
+export default plugin('postcss-zindex', (opts = {}) => {
+    return css => {
+        const cache = new LayerCache(opts);
+        const nodes = [];
+        let abort = false;
         // First pass; cache all z indexes
         css.walkDecls('z-index', function (decl) {
             // Check that no negative values exist. Rebasing is only
@@ -30,7 +28,7 @@ module.exports = postcss.plugin('postcss-zindex', function (opts) {
         cache.optimizeValues();
 
         // Second pass; optimize
-        nodes.forEach(function (decl) {
+        nodes.forEach((decl) => {
             // Need to coerce to string so that the
             // AST is updated correctly
             decl.value = cache.getValue(decl.value).toString();

@@ -1,7 +1,5 @@
-'use strict';
-
-var has = require('has');
-var uniq = require('uniqs');
+import has from 'has';
+import uniq from 'uniqs';
 
 function LayerCache (opts) {
     if (!(this instanceof LayerCache)) {
@@ -45,4 +43,4 @@ LayerCache.prototype.getValue = function (value) {
     return this._findValue(parsedValue) || value;
 };
 
-module.exports = LayerCache;
+export default LayerCache;

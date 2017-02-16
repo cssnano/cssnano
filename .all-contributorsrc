@@ -30,6 +30,25 @@
         "review",
         "test"
       ]
+    },
+    {
+      "login": "pgilad",
+      "name": "Gilad Peleg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4533329?v=3",
+      "profile": "http://www.giladpeleg.com/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "niccai",
+      "name": "Nick Cairns",
+      "avatar_url": "https://avatars.githubusercontent.com/u/370420?v=3",
+      "profile": "https://github.com/niccai",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ]
 }

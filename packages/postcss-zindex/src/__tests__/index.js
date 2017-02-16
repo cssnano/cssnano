@@ -1,7 +1,7 @@
-var test = require('tape');
-var postcss = require('postcss');
-var plugin = require('./');
-var name = require('./package.json').name;
+import test from 'ava';
+import postcss from 'postcss';
+import plugin from '../';
+import {name} from '../../package.json';
 
 var tests = [{
     message: 'should optimise large z-index values',
@@ -63,12 +63,11 @@ test(name, function (t) {
 
     tests.forEach(function (test) {
         var options = test.options || {};
-        t.equal(process(test.fixture, options), test.expected, test.message);
+        t.is(process(test.fixture, options), test.expected, test.message);
     });
 });
 
 test('should use the postcss plugin api', function (t) {
-    t.plan(2);
-    t.ok(plugin().postcssVersion, 'should be able to access version');
-    t.equal(plugin().postcssPlugin, name, 'should be able to access name');
+    t.truthy(plugin().postcssVersion, 'should be able to access version');
+    t.deepEqual(plugin().postcssPlugin, name, 'should be able to access name');
 });
