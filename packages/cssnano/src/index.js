@@ -127,30 +127,6 @@ const cssnano = postcss.plugin('cssnano', (options = {}) => {
 
     const safe = options.isSafe;
     const proc = postcss();
-    const warnings = [];
-
-    if (
-        typeof options.fontFamily !== 'undefined' ||
-        typeof options.minifyFontWeight !== 'undefined'
-    ) {
-        warnings.push('The fontFamily & minifyFontWeight options have been ' +
-                 'consolidated into minifyFontValues, and are now deprecated.');
-        if (!options.minifyFontValues) {
-            options.minifyFontValues = options.fontFamily;
-        }
-    }
-
-    if (typeof options.singleCharset !== 'undefined') {
-        warnings.push('The singleCharset option has been renamed to ' +
-                 'normalizeCharset, and is now deprecated.');
-        options.normalizeCharset = options.singleCharset;
-    }
-
-    if (warnings.length) {
-        proc.use(postcss.plugin('cssnano', () => {
-            return (css, result) => warnings.forEach(w => result.warn(w));
-        }));
-    }
 
     Object.keys(processors).forEach(plugin => {
         let shortName = plugin.replace('postcss', '');
