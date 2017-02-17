@@ -5,7 +5,6 @@
   "main": "dist/index.js",
   "scripts": {
     "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
-    "docs": "cd docs && npm run build && cd .. && gh-pages -d docs/dist",
     "prepublish": "babel src --out-dir dist --ignore /__tests__/"
   },
   "keywords": [
@@ -54,13 +53,9 @@
   "devDependencies": {
     "array-to-sentence": "^1.1.0",
     "babel-cli": "^6.5.1",
-    "babel-core": "^6.5.1",
     "babel-loader": "^6.2.4",
-    "coveralls": "^2.11.6",
     "css-frameworks": "git+https://git@github.com/ben-eb/css-frameworks.git",
     "css-minifier-tests": "git+https://git@github.com/ben-eb/css-minifier-tests.git",
-    "del-cli": "^0.2.0",
-    "gh-pages": "^0.11.0",
     "json-loader": "^0.5.4",
     "ncp": "^2.0.0",
     "postcss-font-magician": "^1.5.0",

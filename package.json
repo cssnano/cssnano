@@ -2,6 +2,7 @@
   "name": "cssnano",
   "private": true,
   "scripts": {
+    "docs": "cd docs && npm run build && cd .. && gh-pages -d docs/dist",
     "report": "nyc report --reporter=html",
     "pretest": "eslint --ignore-path .gitignore packages/**/src",
     "test": "nyc --check-coverage --lines 100 ava"
@@ -15,11 +16,13 @@
     "babel-preset-env": "^1.1.8",
     "babel-preset-stage-0": "^6.22.0",
     "babel-register": "^6.23.0",
+    "coveralls": "^2.11.6",
     "cross-env": "^3.1.4",
     "eslint": "^3.0.0",
     "eslint-config-cssnano": "^3.0.0",
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^2.0.1",
+    "gh-pages": "^0.11.0",
     "lerna": "2.0.0-beta.37",
     "nyc": "^10.1.2"
   },
