@@ -235,14 +235,14 @@ test.failing(
 test.failing(
     'should merge together all initial values',
     processCss,
-    'h1{border-color:initial;border-width:initial;border-color:initial}',
+    'h1{border-color:initial;border-width:initial;border-style:initial}',
     'h1{border:initial}'
 );
 
 test.failing(
     'should merge together all inherit values',
     processCss,
-    'h1{border-color:inherit;border-width:inherit;border-color:inherit}',
+    'h1{border-color:inherit;border-width:inherit;border-style:inherit}',
     'h1{border:inherit}'
 );
 
