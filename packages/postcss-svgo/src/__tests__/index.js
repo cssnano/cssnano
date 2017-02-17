@@ -1,11 +1,10 @@
 import {readFileSync as file} from 'fs';
-import ava from 'ava';
+import test from 'ava';
 import postcss from 'postcss';
 import filters from 'pleeease-filters';
 import plugin from '../';
 import {name} from '../../package.json';
 import {encode, decode} from '../lib/url';
-
 
 let tests = [{
     message: 'should optimise inline svg',
@@ -82,14 +81,14 @@ let tests = [{
 }];
 
 tests.forEach(({message, fixture, expected, options = {}}) => {
-    ava(message, t => {
+    test(message, t => {
         return postcss([ filters(), plugin(options) ]).process(fixture).then(({css}) => {
             t.deepEqual(css, expected);
         });
     });
 });
 
-ava('should reject on malformed svgs', t => {
+test('should reject on malformed svgs', t => {
     const css = 'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
     return postcss(plugin()).process(css).then(result => {
         t.falsy(result.css, 'this assertion should not be called');
@@ -98,12 +97,12 @@ ava('should reject on malformed svgs', t => {
     });
 });
 
-ava('should not crash on malformed urls when encoded', t => {
-    const svg = encode(file('./border.svg', 'utf-8'));
+test('should not crash on malformed urls when encoded', t => {
+    const svg = encode(file(`${__dirname}/border.svg`, 'utf-8'));
     t.notThrows(() => decode(svg));
 });
 
-ava('should use the postcss plugin api', t => {
+test('should use the postcss plugin api', t => {
     t.plan(2);
     t.truthy(plugin().postcssVersion, 'should be able to access version');
     t.deepEqual(plugin().postcssPlugin, name, 'should be able to access name');

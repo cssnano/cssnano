@@ -49,6 +49,53 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "sbstnmsch",
+      "name": "Sebastian Misch",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7263665?v=3",
+      "profile": "https://sebastian-misch.de",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "ophyros",
+      "name": "Вячеслав Ляшенко",
+      "avatar_url": "https://avatars.githubusercontent.com/u/11319202?v=3",
+      "profile": "https://github.com/ophyros",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "shinnn",
+      "name": "shinnn",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1131567?v=3",
+      "profile": "https://shinnn.github.io",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "j6lim",
+      "name": "Jung-gun Lim",
+      "avatar_url": "https://avatars.githubusercontent.com/u/45338?v=3",
+      "profile": "https://github.com/j6lim",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "pwalczyszyn",
+      "name": "Piotr Walczyszyn",
+      "avatar_url": "https://avatars.githubusercontent.com/u/368561?v=3",
+      "profile": "http://outof.me",
+      "contributions": [
+        "bug"
+      ]
     }
   ]
 }

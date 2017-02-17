@@ -107,15 +107,8 @@ examples for your environment.
 
 ## Contributors
 
-Thanks goes to these wonderful people ([emoji key](https://github.com/kentcdodds/all-contributors#emoji-key)):
+See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-| [<img src="https://avatars.githubusercontent.com/u/1282980?v=3" width="100px;"/><br /><sub>Ben Briggs</sub>](http://beneb.info)<br />[💻](https://github.com/ben-eb/postcss-svgo/commits?author=ben-eb) [📖](https://github.com/ben-eb/postcss-svgo/commits?author=ben-eb) 👀 [⚠️](https://github.com/ben-eb/postcss-svgo/commits?author=ben-eb) | [<img src="https://avatars.githubusercontent.com/u/7263665?v=3" width="100px;"/><br /><sub>Sebastian Misch</sub>](https://sebastian-misch.de)<br />[💻](https://github.com/ben-eb/postcss-svgo/commits?author=sbstnmsch) [⚠️](https://github.com/ben-eb/postcss-svgo/commits?author=sbstnmsch) | [<img src="https://avatars.githubusercontent.com/u/11319202?v=3" width="100px;"/><br /><sub>Вячеслав Ляшенко</sub>](https://github.com/ophyros)<br />[💻](https://github.com/ben-eb/postcss-svgo/commits?author=ophyros) [⚠️](https://github.com/ben-eb/postcss-svgo/commits?author=ophyros) | [<img src="https://avatars.githubusercontent.com/u/1131567?v=3" width="100px;"/><br /><sub>shinnn</sub>](https://shinnn.github.io)<br />[💻](https://github.com/ben-eb/postcss-svgo/commits?author=shinnn) | [<img src="https://avatars.githubusercontent.com/u/45338?v=3" width="100px;"/><br /><sub>Jung-gun Lim</sub>](https://github.com/j6lim)<br />[🐛](https://github.com/ben-eb/postcss-svgo/issues?q=author%3Aj6lim) | [<img src="https://avatars.githubusercontent.com/u/5635476?v=3" width="100px;"/><br /><sub>Bogdan Chadkin</sub>](https://github.com/TrySound)<br />[💻](https://github.com/ben-eb/postcss-svgo/commits?author=TrySound) 👀 [⚠️](https://github.com/ben-eb/postcss-svgo/commits?author=TrySound) | [<img src="https://avatars.githubusercontent.com/u/368561?v=3" width="100px;"/><br /><sub>Piotr Walczyszyn</sub>](http://outof.me)<br />[🐛](https://github.com/ben-eb/postcss-svgo/issues?q=author%3Apwalczyszyn) |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-This project follows the [all-contributors] specification. Contributions of
-any kind welcome!
 
 ## License
 

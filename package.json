@@ -36,7 +36,8 @@
   "nyc": {
     "exclude": [
       "node_modules",
-      "**/__tests__"
+      "**/__tests__",
+      "**/dist"
     ]
   },
   "babel": {
