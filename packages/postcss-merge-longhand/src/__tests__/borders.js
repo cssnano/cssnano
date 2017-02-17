@@ -224,3 +224,31 @@ test(
     processCss,
     'h1{border-color:#ddd;border-color:rgba(0,0,0,.15)}'
 );
+
+test.failing(
+    'should not merge fallback colours with shorthand property',
+    processCss,
+    'h1{border:1px solid #ccc;border:1px solid rgba(0,0,0,.2)}',
+    'h1{border:1px solid #ccc;border:1px solid rgba(0,0,0,.2)}'
+);
+
+test.failing(
+    'should merge together all initial values',
+    processCss,
+    'h1{border-color:initial;border-width:initial;border-color:initial}',
+    'h1{border:initial}'
+);
+
+test.failing(
+    'should merge together all inherit values',
+    processCss,
+    'h1{border-color:inherit;border-width:inherit;border-color:inherit}',
+    'h1{border:inherit}'
+);
+
+test.failing(
+    'should not expand output css',
+    processCss,
+    'h1{border:none;border-top:1px solid #d4d4d5;border-right:1px solid #d4d4d5}',
+    'h1{border:none;border-top:1px solid #d4d4d5;border-right:1px solid #d4d4d5}'
+);
