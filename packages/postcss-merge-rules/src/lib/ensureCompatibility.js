@@ -1,6 +1,8 @@
 import {isSupported} from 'caniuse-api';
 import selectorParser from 'postcss-selector-parser';
 
+const simpleSelectorRe = /^#?[-._a-z0-9 ]+$/i;
+
 const cssSel2 = 'css-sel2';
 const cssSel3 = 'css-sel3';
 const cssGencontent = 'css-gencontent';
@@ -64,6 +66,9 @@ export default function ensureCompatibility (selectors, browsers) {
         return false;
     }
     return selectors.every(selector => {
+        if (simpleSelectorRe.test(selector)) {
+            return true;
+        }
         let compatible = true;
         selectorParser(ast => {
             ast.walk(node => {
