@@ -314,12 +314,6 @@ safe = false
 source = "https://github.com/ben-eb/postcss-discard-unused"
 
 [[modules]]
-name = "postcss-filter-plugins"
-shortDescription = "Excludes duplicated PostCSS plugins"
-longDescription = "This helps increase performance of the module when used alongside other PostCSS plugins, by excluding duplicates. It does not actually transform the CSS."
-source = "https://github.com/postcss/postcss-filter-plugins"
-
-[[modules]]
 name = "postcss-merge-idents"
 shortDescription = "Merges duplicated at-rules with different names"
 longDescription = "This will merge rules together that may have slightly different naming but do the same thing. Note that this is only unsafe if you rely on those animation names in JavaScript."

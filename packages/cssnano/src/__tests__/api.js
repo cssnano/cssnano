@@ -35,14 +35,6 @@ ava(
     nano()
 );
 
-ava('should silently disable features if they are already consumed by postcss', t => {
-    const css = 'h1{-webkit-border-radius:5px;border-radius:5px}';
-
-    return postcss([ autoprefixer({browsers: 'Safari < 5'}), nano() ]).process(css).then(result => {
-        t.deepEqual(result.css, css, specName('notIncludeAutoprefixerTwice'));
-    });
-});
-
 function disableMacro (t, opts) {
     const css = 'h1 { color: #ffffff }';
     const min = 'h1{color:#ffffff}';

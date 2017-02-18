@@ -3,7 +3,6 @@ import defined from 'defined';
 import postcss from 'postcss';
 
 // Processors
-import postcssFilterPlugins from 'postcss-filter-plugins';
 import postcssDiscardComments from 'postcss-discard-comments';
 import postcssReduceInitial from 'postcss-reduce-initial';
 import postcssMinifyGradients from 'postcss-minify-gradients';
@@ -41,7 +40,6 @@ import reduceTimingFunctions from './lib/reduceTimingFunctions';
 import styleCache from './lib/styleCache';
 
 const processors = {
-    postcssFilterPlugins: () => postcssFilterPlugins({silent: true}),
     postcssDiscardComments,
     postcssMinifyGradients,
     postcssReduceInitial,
