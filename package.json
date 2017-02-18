@@ -4,7 +4,7 @@
   "scripts": {
     "docs": "cd docs && npm run build && cd .. && gh-pages -d docs/dist",
     "report": "nyc report --reporter=html",
-    "pretest": "eslint --ignore-path .gitignore packages/**/src",
+    "pretest": "eslint --ignore-path .gitignore packages/**/src util",
     "test": "nyc --check-coverage --lines 100 ava"
   },
   "engines": {
@@ -37,7 +37,8 @@
     "exclude": [
       "node_modules",
       "**/__tests__",
-      "**/dist"
+      "**/dist",
+      "util"
     ]
   },
   "babel": {
