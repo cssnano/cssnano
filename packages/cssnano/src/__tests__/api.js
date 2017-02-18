@@ -2,7 +2,7 @@ import postcss from 'postcss';
 import ava from 'ava';
 import nano from '..';
 import autoprefixer from 'autoprefixer';
-import {name} from '../../package.json';
+import {usePostCSSPlugin} from '../../../../util/testHelpers';
 import processCss from './_processCss';
 import specName from './util/specName';
 
@@ -29,10 +29,11 @@ ava(
     {calc: false}
 );
 
-ava('should use the postcss plugin api', t => {
-    t.truthy(nano().postcssVersion, 'should be able to access version');
-    t.deepEqual(nano().postcssPlugin, name, 'should be able to access name');
-});
+ava(
+    'should use the postcss plugin api',
+    usePostCSSPlugin,
+    nano()
+);
 
 ava('should silently disable features if they are already consumed by postcss', t => {
     const css = 'h1{-webkit-border-radius:5px;border-radius:5px}';
