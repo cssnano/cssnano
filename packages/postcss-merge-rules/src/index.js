@@ -35,13 +35,13 @@ function sameParent (ruleA, ruleB) {
     return hasParent ? sameType : true;
 }
 
-function canMerge (ruleA, ruleB, browsers) {
+function canMerge (ruleA, ruleB, browsers, compatibilityCache) {
     const a = ruleA.selectors;
     const b = ruleB.selectors;
 
     const selectors = a.concat(b);
 
-    if (!ensureCompatibility(selectors, browsers)) {
+    if (!ensureCompatibility(selectors, browsers, compatibilityCache)) {
         return false;
     }
 
@@ -158,12 +158,12 @@ function partialMerge (first, second) {
     }
 }
 
-function selectorMerger (browsers) {
+function selectorMerger (browsers, compatibilityCache) {
     let cache = null;
     return function (rule) {
         // Prime the cache with the first rule, or alternately ensure that it is
         // safe to merge both declarations before continuing
-        if (!cache || !canMerge(rule, cache, browsers)) {
+        if (!cache || !canMerge(rule, cache, browsers, compatibilityCache)) {
             cache = rule;
             return;
         }
@@ -208,6 +208,7 @@ export default postcss.plugin('postcss-merge-rules', () => {
             path: opts && opts.from,
             env: opts && opts.env,
         });
-        css.walkRules(selectorMerger(browsers));
+        const compatibilityCache = {};
+        css.walkRules(selectorMerger(browsers, compatibilityCache));
     };
 });

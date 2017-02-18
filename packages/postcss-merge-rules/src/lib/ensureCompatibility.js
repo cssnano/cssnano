@@ -60,7 +60,7 @@ function isCssMixin (selector) {
     return selector[selector.length - 1] === ':';
 }
 
-export default function ensureCompatibility (selectors, browsers) {
+export default function ensureCompatibility (selectors, browsers, compatibilityCache) {
     // Should not merge mixins
     if (selectors.some(isCssMixin)) {
         return false;
@@ -68,6 +68,9 @@ export default function ensureCompatibility (selectors, browsers) {
     return selectors.every(selector => {
         if (simpleSelectorRe.test(selector)) {
             return true;
+        }
+        if (compatibilityCache && (selector in compatibilityCache)) {
+            return compatibilityCache[selector];
         }
         let compatible = true;
         selectorParser(ast => {
@@ -111,6 +114,9 @@ export default function ensureCompatibility (selectors, browsers) {
                 }
             });
         }).process(selector);
+        if (compatibilityCache) {
+            compatibilityCache[selector] = compatible;
+        }
         return compatible;
     });
 }
