@@ -112,6 +112,11 @@ export default function ensureCompatibility (selectors, browsers, compatibilityC
                         compatible = isSupported('css-case-insensitive', browsers);
                     }
                 }
+                if (!compatible) {
+                    // If this node was not compatible,
+                    // break out early from walking the rest
+                    return false;
+                }
             });
         }).process(selector);
         if (compatibilityCache) {
