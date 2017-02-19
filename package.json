@@ -60,7 +60,7 @@
     "array-to-sentence": "^1.1.0",
     "ava": "^0.17.0",
     "babel-cli": "^6.5.1",
-    "babel-core": "^6.5.1",
+    "babel-core": "^6.16.0",
     "babel-loader": "^6.2.4",
     "babel-plugin-add-module-exports": "^0.2.0",
     "babel-plugin-precompile-charcodes": "^1.0.0",
