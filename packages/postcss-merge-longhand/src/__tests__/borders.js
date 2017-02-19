@@ -232,14 +232,14 @@ test.failing(
     'h1{border:1px solid #ccc;border:1px solid rgba(0,0,0,.2)}'
 );
 
-test.failing(
+test(
     'should merge together all initial values',
     processCss,
     'h1{border-color:initial;border-width:initial;border-style:initial}',
     'h1{border:initial}'
 );
 
-test.failing(
+test(
     'should merge together all inherit values',
     processCss,
     'h1{border-color:inherit;border-width:inherit;border-style:inherit}',

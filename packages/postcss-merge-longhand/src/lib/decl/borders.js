@@ -108,26 +108,7 @@ function explode (rule) {
     });
 }
 
-const borderProperties = trbl.reduce((props, direction) => {
-    return [
-        ...props,
-        ...wsc.map(style => borderProperty(direction, style)),
-    ];
-}, []);
-
 function merge (rule) {
-    // Lift all inherit values from the rule, so that they don't
-    // interfere with the merging logic.
-    const inheritValues = getDecls(rule, borderProperties).reduce((values, decl) => {
-        if (decl.value === 'inherit') {
-            decl.remove();
-            return [
-                ...values,
-                decl,
-            ];
-        }
-        return values;
-    }, []);
     // border-trbl-wsc -> border-trbl
     trbl.forEach(direction => {
         const prop = borderProperty(direction);
@@ -192,7 +173,7 @@ function merge (rule) {
             const mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
             const reduced = getDistinctShorthands(mapped);
 
-            if (isCloseEnough(mapped) && canMerge(...rules)) {
+            if (isCloseEnough(mapped) && canMerge(true, ...rules)) {
                 const first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
 
                 const border = insertCloned(rule, lastNode, {
@@ -322,9 +303,6 @@ function merge (rule) {
         }).trim() || defaults[0];
         decl.value = minifyTrbl(value);
     });
-
-    // Restore inherited values
-    inheritValues.forEach(decl => rule.append(decl));
 }
 
 export default {

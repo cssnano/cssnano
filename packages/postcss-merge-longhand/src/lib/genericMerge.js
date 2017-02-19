@@ -5,31 +5,34 @@ import hasAllProps from './hasAllProps';
 import insertCloned from './insertCloned';
 import remove from './remove';
 
-export default function genericMerge ({rule, properties, prop, value, sanitize = true}) {
+export default function genericMerge ({rule, properties, prop, value, mergeInheritInitial = true, sanitize = true}) {
     let decls = getDecls(rule, properties);
 
     while (decls.length) {
         const lastNode = decls[decls.length - 1];
-        const props = decls.filter(node => node.important === lastNode.important);
-        const mergeable = sanitize ? canMerge(...props) : true;
+        const filteredProps = decls.filter(node => node.important === lastNode.important);
+        const props = getRules(filteredProps, properties);
+        const mergeable = sanitize ? canMerge(mergeInheritInitial, ...props) : true;
         if (hasAllProps(props, ...properties) && mergeable) {
             insertCloned(rule, lastNode, {
                 prop,
                 value: value(getRules(props, properties)),
             });
-            props.forEach(remove);
+            filteredProps.forEach(remove);
+            decls = decls.filter(node => !~filteredProps.indexOf(node));
         }
-        decls = decls.filter(node => !~props.indexOf(node));
+        decls = decls.filter(node => node !== lastNode);
     }
 }
 
-export function genericMergeFactory ({properties, prop, value}) {
+export function genericMergeFactory ({properties, prop, value, mergeInheritInitial = true}) {
     return function merge (rule) {
         return genericMerge({
             rule,
             properties,
             prop,
             value,
+            mergeInheritInitial,
         });
     };
 }

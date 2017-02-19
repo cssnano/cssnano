@@ -59,6 +59,7 @@ const merge = genericMergeFactory({
     prop: 'columns',
     properties,
     value: rules => normalize(rules.map(getValue)),
+    mergeInheritInitial: false,
 });
 
 export default {
