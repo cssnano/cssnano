@@ -42,9 +42,10 @@ test(
 );
 
 test(
-    'should pass through inherit',
+    'should reduce inherit',
     processCss,
-    'h1{column-width:inherit;column-count:inherit}'
+    'h1{column-width:inherit;column-count:inherit}',
+    'h1{columns:inherit}'
 );
 
 test(

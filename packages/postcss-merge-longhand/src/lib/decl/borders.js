@@ -173,7 +173,7 @@ function merge (rule) {
             const mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
             const reduced = getDistinctShorthands(mapped);
 
-            if (isCloseEnough(mapped) && canMerge(true, ...rules)) {
+            if (isCloseEnough(mapped) && canMerge(...rules)) {
                 const first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
 
                 const border = insertCloned(rule, lastNode, {

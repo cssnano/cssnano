@@ -7,6 +7,7 @@ import insertCloned from '../insertCloned';
 
 const properties = ['column-width', 'column-count'];
 const auto = 'auto';
+const inherit = 'inherit';
 
 /**
  * Normalize a columns shorthand definition. Both of the longhand
@@ -23,6 +24,9 @@ function normalize (values) {
     }
     if (values[1] === auto) {
         return values[0];
+    }
+    if (values[0] === inherit && values[1] === inherit) {
+        return inherit;
     }
     return values.join(' ');
 }
@@ -59,7 +63,6 @@ const merge = genericMergeFactory({
     prop: 'columns',
     properties,
     value: rules => normalize(rules.map(getValue)),
-    mergeInheritInitial: false,
 });
 
 export default {
