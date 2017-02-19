@@ -202,6 +202,45 @@ function merge (rule) {
         decls = decls.filter(node => !~props.indexOf(node));
     }
 
+    // border-wsc -> border + border-trbl
+    decls = getDecls(rule, properties);
+
+    while (decls.length) {
+        const lastNode = decls[decls.length - 1];
+        const props = decls.filter(node => node.important === lastNode.important);
+        if (hasAllProps(props, ...properties)) {
+            const rules = properties.map(prop => getLastNode(props, prop));
+            const values = rules.map(node => parseTrbl(node.value));
+            const mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
+            const reduced = getDistinctShorthands(mapped);
+            const none = 'none none currentColor';
+
+            if (reduced.length === 2 && reduced[0] === none || reduced[1] === none) {
+                const noOfNones = mapped.filter(value => value === none).length;
+                rule.insertBefore(lastNode, assign(clone(lastNode), {
+                    prop: 'border',
+                    value: noOfNones > 2 ? 'none' : mapped.filter(value => value !== none)[0],
+                }));
+                directions.forEach((dir, i) => {
+                    if (noOfNones > 2 && mapped[i] !== none) {
+                        rule.insertBefore(lastNode, assign(clone(lastNode), {
+                            prop: dir,
+                            value: mapped[i],
+                        }));
+                    }
+                    if (noOfNones <= 2 && mapped[i] === none) {
+                        rule.insertBefore(lastNode, assign(clone(lastNode), {
+                            prop: dir,
+                            value: 'none',
+                        }));
+                    }
+                });
+                props.forEach(remove);
+            }
+        }
+        decls = decls.filter(node => !~props.indexOf(node));
+    }
+    
     // optimize border-trbl
     decls = getDecls(rule, directions);
     while (decls.length) {

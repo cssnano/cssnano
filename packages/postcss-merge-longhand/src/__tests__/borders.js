@@ -214,6 +214,13 @@ test(
 );
 
 test(
+    'should produce the minimum css necessary (4)',
+    processCss,
+    'h1{border:none;border-top:1px solid #d4d4d5;border-right:1px solid #d4d4d5}',
+    'h1{border:1px solid #d4d4d5;border-bottom:none;border-left:none}'
+);
+
+test(
     'should not merge declarations with hacks',
     processCss,
     'h1{border-color:red red red red;_border-width:1px 1px 1px 1px;border-style:solid solid solid solid}'
@@ -244,11 +251,4 @@ test(
     processCss,
     'h1{border-color:inherit;border-width:inherit;border-style:inherit}',
     'h1{border:inherit}'
-);
-
-test.failing(
-    'should not expand output css',
-    processCss,
-    'h1{border:none;border-top:1px solid #d4d4d5;border-right:1px solid #d4d4d5}',
-    'h1{border:none;border-top:1px solid #d4d4d5;border-right:1px solid #d4d4d5}'
 );
