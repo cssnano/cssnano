@@ -2,7 +2,6 @@ import got from 'got';
 import isHtml from 'is-html';
 import plainText from 'html2plaintext';
 
-
 const initialLength = 7; // "initial".length;
 const url = 'https://raw.githubusercontent.com/mdn/data/master/css/properties.json';
 
@@ -15,7 +14,7 @@ got(url, {json:true})
                 // Ignore complex syntaxes
                 typeof initial === 'string' &&
                 // Ignore display as it has different semantics
-                // depending on the selected element. 
+                // depending on the selected element.
                 key !== 'display' &&
                 // Ignore anything that doesn't look like <code></code>
                 isHtml(initial) &&
@@ -28,5 +27,5 @@ got(url, {json:true})
         }, {}))
     .then(
         data => process.stdout.write(`${JSON.stringify(data, null, 2)}\n`),
-        error => console.log('errored: ', error.response.body)
+        error => console.warn('errored: ', error.response.body)
     );
