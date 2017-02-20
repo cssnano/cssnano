@@ -1,7 +1,6 @@
 import postcss from 'postcss';
 import ava from 'ava';
 import nano from '..';
-import autoprefixer from 'autoprefixer';
 import {usePostCSSPlugin} from '../../../../util/testHelpers';
 import processCss from './_processCss';
 import specName from './util/specName';
