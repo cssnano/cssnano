@@ -1,3 +1,9 @@
+# 2.1.2
+
+* Performance improvements; no compatibility checking for simple selectors,
+  cached compatibility lookups, and early exit on compatibility mismatches
+  (thanks to @akx).
+
 # 2.1.1
 
 * Resolves an issue with `2.1.0` where `browserslist` was not being installed
