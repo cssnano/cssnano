@@ -128,6 +128,25 @@
         "doc",
         "test"
       ]
+    },
+    {
+      "login": "yisibl",
+      "name": "一丝",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2784308?v=3",
+      "profile": "www.iyunlu.com/view",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "Ambroos",
+      "name": "Ambroos Vaes",
+      "avatar_url": "https://avatars.githubusercontent.com/u/497260?v=3",
+      "profile": "https://github.com/Ambroos",
+      "contributions": [
+        "bug"
+      ]
     }
   ]
 }

@@ -24,22 +24,23 @@ const borderStyles = [
 ];
 
 export default function normalizeBorder (decl, border) {
-    let order = {width: '', style: '', color: ''};
+    const order = {width: '', style: '', color: ''};
     border.walk(node => {
-        if (node.type === 'word') {
-            if (~borderStyles.indexOf(node.value)) {
-                order.style = node.value;
+        const {type, value} = node;
+        if (type === 'word') {
+            if (~borderStyles.indexOf(value)) {
+                order.style = value;
                 return false;
             }
-            if (~borderWidths.indexOf(node.value) || unit(node.value)) {
-                order.width = node.value;
+            if (~borderWidths.indexOf(value) || unit(value)) {
+                order.width = value;
                 return false;
             }
-            order.color = node.value;
+            order.color = value;
             return false;
         }
-        if (node.type === 'function') {
-            if (node.value === 'calc') {
+        if (type === 'function') {
+            if (value === 'calc') {
                 order.width = stringify(node);
             } else {
                 order.color = stringify(node);

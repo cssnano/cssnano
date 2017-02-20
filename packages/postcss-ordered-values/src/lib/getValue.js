@@ -14,15 +14,8 @@ export default function getValue (values) {
                 nodes.push(val);
             });
             if (index !== values.length - 1) {
-                if (
-                    nodes[nodes.length - 1] &&
-                    nodes[nodes.length - 1].type === 'space'
-                ) {
-                    nodes[nodes.length - 1].type = 'div';
-                    nodes[nodes.length - 1].value = ',';
-                    return nodes;
-                }
-                nodes.push({type: 'div', value: ','});
+                nodes[nodes.length - 1].type = 'div';
+                nodes[nodes.length - 1].value = ',';
             }
             return nodes;
         }, []),

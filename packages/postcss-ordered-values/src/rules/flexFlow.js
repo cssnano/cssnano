@@ -18,13 +18,13 @@ export default function normalizeFlexFlow (decl, flexFlow) {
         direction: '',
         wrap: '',
     };
-    flexFlow.walk(node => {
-        if (~flexDirection.indexOf(node.value)) {
-            order.direction = node.value;
+    flexFlow.walk(({value}) => {
+        if (~flexDirection.indexOf(value)) {
+            order.direction = value;
             return;
         }
-        if (~flexWrap.indexOf(node.value)) {
-            order.wrap = node.value;
+        if (~flexWrap.indexOf(value)) {
+            order.wrap = value;
             return;
         }
     });

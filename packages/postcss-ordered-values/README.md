@@ -61,15 +61,7 @@ examples for your environment.
 
 ## Contributors
 
-Thanks goes to these wonderful people ([emoji key](https://github.com/kentcdodds/all-contributors#emoji-key)):
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-| [<img src="https://avatars.githubusercontent.com/u/1282980?v=3" width="100px;"/><br /><sub>Ben Briggs</sub>](http://beneb.info)<br />[💻](https://github.com/ben-eb/postcss-ordered-values/commits?author=ben-eb) [📖](https://github.com/ben-eb/postcss-ordered-values/commits?author=ben-eb) 👀 [⚠️](https://github.com/ben-eb/postcss-ordered-values/commits?author=ben-eb) | [<img src="https://avatars.githubusercontent.com/u/2784308?v=3" width="100px;"/><br /><sub>一丝</sub>](www.iyunlu.com/view)<br />[💻](https://github.com/ben-eb/postcss-ordered-values/commits?author=yisibl) [⚠️](https://github.com/ben-eb/postcss-ordered-values/commits?author=yisibl) | [<img src="https://avatars.githubusercontent.com/u/5635476?v=3" width="100px;"/><br /><sub>Bogdan Chadkin</sub>](https://github.com/TrySound)<br />[💻](https://github.com/ben-eb/postcss-ordered-values/commits?author=TrySound) [⚠️](https://github.com/ben-eb/postcss-ordered-values/commits?author=TrySound) | [<img src="https://avatars.githubusercontent.com/u/497260?v=3" width="100px;"/><br /><sub>Ambroos Vaes</sub>](https://github.com/Ambroos)<br />[🐛](https://github.com/ben-eb/postcss-ordered-values/issues?q=author%3AAmbroos) |
-| :---: | :---: | :---: | :---: |
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-This project follows the [all-contributors] specification. Contributions of
-any kind welcome!
+See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
 
 
 ## License

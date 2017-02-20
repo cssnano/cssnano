@@ -26,18 +26,19 @@ export default function normalizeTransition (decl, parsed) {
             time2: [],
         };
         arg.forEach(node => {
-            if (node.type === 'space') {
+            const {type, value} = node;
+            if (type === 'space') {
                 return;
             }
-            if (node.type === 'function' && ~['steps', 'cubic-bezier'].indexOf(node.value)) {
+            if (type === 'function' && ~['steps', 'cubic-bezier'].indexOf(value)) {
                 state.timingFunction = [...state.timingFunction, node, addSpace()];
-            } else if (unit(node.value)) {
+            } else if (unit(value)) {
                 if (!state.time1.length) {
                     state.time1 = [...state.time1, node, addSpace()];
                 } else {
                     state.time2 = [...state.time2, node, addSpace()];
                 }
-            } else if (~timingFunctions.indexOf(node.value)) {
+            } else if (~timingFunctions.indexOf(value)) {
                 state.timingFunction = [...state.timingFunction, node, addSpace()];
             } else {
                 state.property = [...state.property, node, addSpace()];
