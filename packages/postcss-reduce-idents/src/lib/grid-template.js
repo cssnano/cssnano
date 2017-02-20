@@ -22,7 +22,7 @@ export default {
                     child.value.split(/\s+/).forEach(word => {
                         if (/\.+/.test(word)) { // reduce empty zones to a single `.`
                             node.value = node.value.replace(word, ".");
-                        } else if (word && RESERVED_KEYWORDS.indexOf(word) === -1) {
+                        } else {
                             addToCache(word, encoder, cache);
                         }
                     });

@@ -13,7 +13,6 @@ export default postcss.plugin('postcss-reduce-idents', ({
     gridTemplate = true,
     encoder = encode,
 } = {}) => {
-
     const reducers = [];
     counter && reducers.push(counterReducer);
     counterStyle && reducers.push(counterStyleReducer);
