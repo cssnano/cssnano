@@ -56,9 +56,6 @@ function rotate3dMatch (values) {
 
 function rotate3d (node, values) {
     const {nodes} = node;
-    if (!nodes[6]) {
-        return;
-    }
     const match = rotate3dMatch(values.slice(0, 3));
     if (match.length) {
         node.value = match[0][0];
@@ -98,9 +95,6 @@ function scale (node, values) {
 
 function scale3d (node, values) {
     const {nodes} = node;
-    if (!nodes[4]) {
-        return;
-    }
     const [first, second, third] = values;
     // scale3d(sx, 1, 1) => scaleX(sx)
     if (second === 1 && third === 1) {
@@ -143,7 +137,7 @@ function translate (node, values) {
 function translate3d (node, values) {
     const {nodes} = node;
     // translate3d(0, 0, tz) => translateZ(tz)
-    if (nodes[4] && values[0] === 0 && values[1] === 0) {
+    if (values[0] === 0 && values[1] === 0) {
         node.value = 'translateZ';
         node.nodes = [nodes[4]];
     }
