@@ -1,4 +1,4 @@
-# postcss-normalize-charset [![Build Status][ci-img]][ci]
+# postcss-normalize-charset
 
 Add necessary or remove extra charset with PostCSS
 
@@ -41,6 +41,3 @@ See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS
 ## License
 
 MIT © [Bogdan Chadkin](mailto:trysound@yandex.ru)
-
-[ci-img]:  https://travis-ci.org/ben-eb/postcss-normalize-charset.svg
-[ci]:      https://travis-ci.org/ben-eb/postcss-normalize-charset

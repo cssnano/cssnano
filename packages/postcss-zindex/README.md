@@ -1,4 +1,4 @@
-# [postcss][postcss]-zindex [![Build Status](https://travis-ci.org/ben-eb/postcss-zindex.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/postcss-zindex.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/postcss-zindex.svg)][deps]
+# [postcss][postcss]-zindex
 
 > Reduce z-index values with PostCSS.
 
@@ -82,7 +82,4 @@ See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS
 
 MIT © [Ben Briggs](http://beneb.info)
 
-[ci]:      https://travis-ci.org/ben-eb/postcss-zindex
-[deps]:    https://gemnasium.com/ben-eb/postcss-zindex
-[npm]:     http://badge.fury.io/js/postcss-zindex
 [postcss]: https://github.com/postcss/postcss

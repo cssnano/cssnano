@@ -1,4 +1,4 @@
-# [postcss][postcss]-ordered-values [![Build Status](https://travis-ci.org/ben-eb/postcss-ordered-values.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/postcss-ordered-values.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/postcss-ordered-values.svg)][deps]
+# [postcss][postcss]-ordered-values
 
 > Ensure values are ordered consistently in your CSS.
 
@@ -68,9 +68,4 @@ See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS
 
 MIT © [Ben Briggs](http://beneb.info)
 
-
-[all-contributors]: https://github.com/kentcdodds/all-contributors
-[ci]:      https://travis-ci.org/ben-eb/postcss-ordered-values
-[deps]:    https://gemnasium.com/ben-eb/postcss-ordered-values
-[npm]:     http://badge.fury.io/js/postcss-ordered-values
 [postcss]: https://github.com/postcss/postcss

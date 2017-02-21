@@ -1,4 +1,4 @@
-# [postcss][postcss]-svgo [![Build Status](https://travis-ci.org/ben-eb/postcss-svgo.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/postcss-svgo.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/postcss-svgo.svg)][deps]
+# [postcss][postcss]-svgo
 
 > Optimise inline SVG with PostCSS.
 
@@ -114,10 +114,5 @@ See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS
 
 MIT © [Ben Briggs](http://beneb.info)
 
-
-[all-contributors]: https://github.com/kentcdodds/all-contributors
-[ci]:      https://travis-ci.org/ben-eb/postcss-svgo
-[deps]:    https://gemnasium.com/ben-eb/postcss-svgo
-[npm]:     http://badge.fury.io/js/postcss-svgo
 [postcss]: https://github.com/postcss/postcss
 [plugins]: https://github.com/svg/svgo/tree/master/plugins

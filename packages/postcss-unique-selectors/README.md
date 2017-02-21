@@ -1,4 +1,4 @@
-# [postcss][postcss]-unique-selectors [![Build Status](https://travis-ci.org/ben-eb/postcss-unique-selectors.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/postcss-unique-selectors.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/postcss-unique-selectors.svg)][deps]
+# [postcss][postcss]-unique-selectors
 
 > Ensure CSS selectors are unique.
 
@@ -43,7 +43,4 @@ See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS
 
 MIT © [Ben Briggs](http://beneb.info)
 
-[ci]:      https://travis-ci.org/ben-eb/postcss-unique-selectors
-[deps]:    https://gemnasium.com/ben-eb/postcss-unique-selectors
-[npm]:     http://badge.fury.io/js/postcss-unique-selectors
 [postcss]: https://github.com/postcss/postcss
