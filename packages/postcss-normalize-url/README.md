@@ -43,10 +43,9 @@ examples for your environment.
 Please see the [normalize-url documentation][docs]. By default,
 `normalizeProtocol` & `stripFragment` are set to `false`; `stripWWW` to `true`.
 
-## Contributing
+## Contributors
 
-Pull requests are welcome. If you add functionality, then please add unit tests
-to cover it.
+See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
 
 ## License
 

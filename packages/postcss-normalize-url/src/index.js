@@ -30,7 +30,11 @@ function transformNamespace (rule) {
 
 function transformDecl (decl, opts) {
     decl.value = valueParser(decl.value).walk(node => {
-        if (node.type !== 'function' || node.value !== 'url' || !node.nodes.length) {
+        if (
+            node.type !== 'function' ||
+            node.value !== 'url' ||
+            !node.nodes.length
+        ) {
             return false;
         }
 
@@ -40,7 +44,11 @@ function transformDecl (decl, opts) {
         node.before = node.after = '';
         url.value = url.value.trim().replace(multiline, '');
 
-        if (~url.value.indexOf('data:image/') || ~url.value.indexOf('data:application/') || ~url.value.indexOf('data:font/')) {
+        if (
+            ~url.value.indexOf('data:image/') ||
+            ~url.value.indexOf('data:application/') ||
+            ~url.value.indexOf('data:font/')
+        ) {
             return false;
         }
 
@@ -48,9 +56,9 @@ function transformDecl (decl, opts) {
             url.value = convert(url.value, opts);
         }
 
-        if (escapeChars.test(url.value)) {
+        if (escapeChars.test(url.value) && url.type === 'string') {
             escaped = url.value.replace(escapeChars, '\\$1');
-            if (escaped.length < url.value.length + (url.type === 'string' ? 2 : 0)) {
+            if (escaped.length < url.value.length + 2) {
                 url.value = escaped;
                 url.type = 'word';
             }
@@ -62,7 +70,7 @@ function transformDecl (decl, opts) {
     }).toString();
 }
 
-module.exports = postcss.plugin('postcss-normalize-url', opts => {
+export default postcss.plugin('postcss-normalize-url', opts => {
     opts = {
         normalizeProtocol: false,
         stripFragment: false,
