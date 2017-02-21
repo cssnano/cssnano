@@ -10,7 +10,7 @@
   ],
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "files": [
-    "index.js"
+    "dist"
   ],
   "license": "MIT",
   "repository": "ben-eb/postcss-charset",
@@ -22,11 +22,11 @@
     "postcss": "^5.0.5"
   },
   "devDependencies": {
-    "ava": "^0.16.0",
-    "eslint": "^1.4.1",
+    "babel-cli": "^6.5.1",
     "postcss-devtools": "^1.1.1"
   },
+  "main": "dist/index.js",
   "scripts": {
-    "test": "eslint index.js test && ava"
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
   }
 }

@@ -1,21 +1,16 @@
-var test  = require('ava');
-var devtools = require('postcss-devtools');
-var postcss = require('postcss');
-var plugin = require('../');
+import test from 'ava';
+import devtools from 'postcss-devtools';
+import postcss from 'postcss';
+import plugin from '../';
+import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
 
-function processCssFactory (plugins) {
-    return function (t, fixture, expected) {
-        return postcss(plugins).process(fixture).then(function (result) {
-            t.deepEqual(result.css, expected);
-        });
-    };
-}
+const {processCSS, passthroughCSS} = processCSSFactory(plugin);
 
 function sourceTest (t, origin) {
-    return postcss.plugin('source-test', function () {
+    return postcss.plugin('source-test', () => {
         return function (css) {
-            var node = css.first;
-            var source;
+            let node = css.first;
+            let source;
             if (node.name === 'charset') {
                 source = node.source;
                 source = source.input.css.slice(source.start.column - 1, source.end.column);
@@ -26,18 +21,16 @@ function sourceTest (t, origin) {
 }
 
 function processCssWithSource (t, fixture, expected, source) {
-    return processCssFactory([ plugin(), sourceTest(t, source) ])(t, fixture, expected);
+    const {processCSS: withSource} = processCSSFactory([plugin(), sourceTest(t, source)]);
+    return withSource(t, fixture, expected);
 }
 
 function processCssBenchmark (t, fixture, expected, options) {
-    return processCssFactory([ devtools(), plugin(options) ])(t, fixture, expected);
+    const {processCSS: benchmark} = processCSSFactory([devtools(), plugin(options)]);
+    return benchmark(t, fixture, expected);
 }
 
-function processCss (t, fixture, expected, options) {
-    return processCssFactory(plugin(options))(t, fixture, expected);
-}
-
-var copyright = 'a{content:"©"}';
+let copyright = 'a{content:"©"}';
 
 test(
     'should add a charset if a file contains non-ascii',
@@ -65,15 +58,14 @@ test(
 
 test(
     'should remove all charset rules if a file doesn\'t contain non-ascii',
-    processCss,
+    processCSS,
     'a{content:"c"}@charset "utf-8";@charset "windows-1251";',
     'a{content:"c"}'
 );
 
 test(
     'should not add a charset with add set to false',
-    processCss,
-    copyright,
+    passthroughCSS,
     copyright,
     {add: false}
 );
@@ -91,4 +83,10 @@ test(
     copyright,
     copyright,
     {add: false}
+);
+
+test(
+    'should use the postcss plugin api',
+    usePostCSSPlugin,
+    plugin()
 );
