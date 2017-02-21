@@ -18,20 +18,24 @@ export default function genericMerge ({rule, properties, prop, value, sanitize =
                 prop,
                 value: value(getRules(props, properties)),
             });
-            filteredProps.forEach(remove);
-            decls = decls.filter(node => !~filteredProps.indexOf(node));
+            props.forEach(remove);
+            decls = decls.filter(node => !~props.indexOf(node));
         }
         decls = decls.filter(node => node !== lastNode);
     }
 }
 
-export function genericMergeFactory ({properties, prop, value}) {
+export function genericMergeFactory ({properties, prop, value, after}) {
     return function merge (rule) {
-        return genericMerge({
+        genericMerge({
             rule,
             properties,
             prop,
             value,
         });
+
+        if (typeof after !== 'undefined') {
+            after(rule);
+        }
     };
 }

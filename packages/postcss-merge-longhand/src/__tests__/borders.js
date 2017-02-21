@@ -232,7 +232,7 @@ test(
     'h1{border-color:#ddd;border-color:rgba(0,0,0,.15)}'
 );
 
-test.failing(
+test(
     'should not merge fallback colours with shorthand property',
     processCss,
     'h1{border:1px solid #ccc;border:1px solid rgba(0,0,0,.2)}',

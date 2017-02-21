@@ -2,8 +2,10 @@ import {list} from 'postcss';
 import {unit} from 'postcss-value-parser';
 import {detect} from 'stylehacks';
 import {genericMergeFactory} from '../genericMerge';
+import getDecls from '../getDecls';
 import getValue from '../getValue';
 import insertCloned from '../insertCloned';
+import remove from '../remove';
 
 const properties = ['column-width', 'column-count'];
 const auto = 'auto';
@@ -59,10 +61,36 @@ function explode (rule) {
     });
 }
 
+function cleanup (rule) {
+    let decls = getDecls(rule, ['columns'].concat(properties));
+    while (decls.length) {
+        const lastNode = decls[decls.length - 1];
+
+        // remove properties of lower precedence
+        const lesser = decls.filter(node => 
+            node !== lastNode && 
+            node.important === lastNode.important &&
+            lastNode.prop === 'columns' && node.prop !== lastNode.prop);
+
+        lesser.forEach(remove);
+        decls = decls.filter(node => !~lesser.indexOf(node));
+    
+        // get duplicate properties
+        let duplicates = decls.filter(node => 
+            node !== lastNode && 
+            node.important === lastNode.important &&
+            node.prop === lastNode.prop);
+
+        duplicates.forEach(remove);
+        decls = decls.filter(node => node !== lastNode && !~duplicates.indexOf(node));
+    }
+}
+
 const merge = genericMergeFactory({
     prop: 'columns',
     properties,
     value: rules => normalize(rules.map(getValue)),
+    after: cleanup,
 });
 
 export default {
