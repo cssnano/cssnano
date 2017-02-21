@@ -401,9 +401,9 @@ function merge (rule) {
             node.prop === lastNode.prop);
 
         if (duplicates.length) {
-            if (/hlsa|rgba/.test(getColorValue(lastNode))) {
+            if (/hsla|rgba/.test(getColorValue(lastNode))) {
                 const preserve = duplicates
-                    .filter(node => !/hlsa|rgba/.test(getColorValue(node)))
+                    .filter(node => !/hsla|rgba/.test(getColorValue(node)))
                     .pop();
                 duplicates = duplicates.filter(node => node !== preserve);
             }
