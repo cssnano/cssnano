@@ -147,6 +147,26 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "montmanu",
+      "name": "Chris Montoro",
+      "avatar_url": "https://avatars.githubusercontent.com/u/639255?v=3",
+      "profile": "https://github.com/montmanu",
+      "contributions": [
+        "bug",
+        "test"
+      ]
+    },
+    {
+      "login": "arperry",
+      "name": "arperry",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9615035?v=3",
+      "profile": "https://github.com/arperry",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ]
 }

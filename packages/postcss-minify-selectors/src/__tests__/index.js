@@ -1,269 +1,424 @@
-import ava from 'ava';
+import test from 'ava';
 import postcss from 'postcss';
 import magician from 'postcss-font-magician';
-import {name} from '../../package.json';
 import plugin from '../';
+import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
 
-const tests = [{
-    message: 'should trim spaces in simple selectors',
-    fixture: 'h1,  h2,  h3{color:blue}',
-    expected: 'h1,h2,h3{color:blue}',
-}, {
-    message: 'should trim spaces around combinators',
-    fixture: 'h1 + p, h1 > p, h1 ~ p{color:blue}',
-    expected: 'h1+p,h1>p,h1~p{color:blue}',
-}, {
-    message: 'should not trim meaningful spaces',
-    fixture: 'h1 p,H2 p{color:blue}',
-    expected: 'h1 p,H2 p{color:blue}',
-}, {
-    message: 'should reduce meaningful spaces',
-    fixture: 'h1    p,h2     p{color:blue}',
-    expected: 'h1 p,h2 p{color:blue}',
-}, {
-    message: 'should remove qualified universal selectors',
-    fixture: '*#id,*.test,*:not(.green),*[href]{color:blue}',
-    expected: '#id,.test,:not(.green),[href]{color:blue}',
-}, {
-    message: 'should remove complex qualified universal selectors',
-    fixture: '[class] + *[href] *:not(*.green){color:blue}',
-    expected: '[class]+[href] :not(.green){color:blue}',
-}, {
-    message: 'should remove complex qualified universal selectors (2)',
-    fixture: '*:not(*.green) ~ *{color:blue}',
-    expected: ':not(.green)~*{color:blue}',
-}, {
-    message: 'should not remove meaningful universal selectors',
-    fixture: '* + *, * > *, * h1, * ~ *{color:blue}',
-    expected: '*+*,*>*,* h1,*~*{color:blue}',
-}, {
-    message: 'should preserve the universal selector between comments',
-    fixture: '/*comment*/*/*comment*/{color:blue}',
-    expected: '/*comment*/*/*comment*/{color:blue}',
-}, {
-    message: 'should preserve the universal selector in attribute selectors',
-    fixture: 'h1[class=" *.js "] + *.js{color:blue}',
-    expected: 'h1[class=" *.js "]+.js{color:blue}',
-}, {
-    message: 'should preserve the universal selector in filenames',
-    fixture: '[filename="*.js"]{color:blue}',
-    expected: '[filename="*.js"]{color:blue}',
-}, {
-    message: 'should preserve the universal selector in file globs',
-    fixture: '[glob="/**/*.js"]{color:blue}',
-    expected: '[glob="/**/*.js"]{color:blue}',
-}, {
-    message: 'should preserve escaped zero plus sequences',
-    fixture: '.\\31 0\\+,.\\31 5\\+,.\\32 0\\+{color:blue}',
-    expected: '.\\31 0\\+,.\\31 5\\+,.\\32 0\\+{color:blue}',
-}, {
-    message: 'should handle deep combinators',
-    fixture: 'body /deep/ .theme-element{color:blue}',
-    expected: 'body /deep/ .theme-element{color:blue}',
-}, {
-    message: 'should sort using natural sort',
-    fixture: '.item1, .item10, .item11, .item2{color:blue}',
-    expected: '.item1,.item2,.item10,.item11{color:blue}',
-}, {
-    message: 'should dedupe selectors',
-    fixture: 'h1,h2,h3,h4,h5,h5,h6{color:blue}',
-    expected: 'h1,h2,h3,h4,h5,h6{color:blue}',
-}, {
-    message: 'should trim spaces in :not()',
-    fixture: 'h1:not(.article, .comments){color:blue}',
-    expected: 'h1:not(.article,.comments){color:blue}',
-}, {
-    message: 'should trim spaces in :not() (2)',
-    fixture: 'h1:not(.article, .comments), h2:not(.lead, .recommendation){color:blue}',
-    expected: 'h1:not(.article,.comments),h2:not(.lead,.recommendation){color:blue}',
-}, {
-    message: 'should dedupe simple selectors inside :not()',
-    fixture: 'h1:not(h2, h3, h4, h5, h5, h6){color:blue}',
-    expected: 'h1:not(h2,h3,h4,h5,h6){color:blue}',
-}, {
-    message: 'should normalise attribute selectors',
-    fixture: 'a[   color=   "blue"    ]{color:blue}',
-    expected:'a[color=blue]{color:blue}',
-}, {
-    message: 'should normalise attribute selectors (2)',
-    fixture: 'a[class^="options["]:after{color:blue}',
-    expected: 'a[class^="options["]:after{color:blue}',
-}, {
-    message: 'should normalise attribute selectors (3)',
-    fixture: 'a[class="woop_woop_woop"]{color:blue}',
-    expected: 'a[class=woop_woop_woop]{color:blue}',
-}, {
-    message: 'should normalise attribute selectors (4)',
-    fixture: 'a[class="woop \\\nwoop woop"]{color:blue}',
-    expected: 'a[class="woop woop woop"]{color:blue}',
-}, {
-    message: 'should convert @keyframe from & 100%',
-    fixture: '@keyframes test{from{color:red}100%{color:blue}}',
-    expected: '@keyframes test{0%{color:red}to{color:blue}}',
-}, {
-    message: 'should not mangle @keyframe from & 100% in other values',
-    fixture: '@keyframes test{x-from-tag{color:red}5100%{color:blue}}',
-    expected: '@keyframes test{x-from-tag{color:red}5100%{color:blue}}',
-}, {
-    message: 'should not be responsible for normalising comments',
-    fixture: 'h1 /*!test comment*/, h2{color:blue}',
-    expected: 'h1 /*!test comment*/,h2{color:blue}',
-}, {
-    message: 'should not be responsible for normalising coments (2)',
-    fixture: '/*!test   comment*/h1, h2{color:blue}',
-    expected: '/*!test   comment*/h1,h2{color:blue}',
-}, {
-    message: 'should transform ::before to :before',
-    fixture: 'h1::before{color:blue}',
-    expected: 'h1:before{color:blue}',
-}, {
-    message: 'should transform ::after to :after',
-    fixture: 'h1::after{color:blue}',
-    expected: 'h1:after{color:blue}',
-}, {
-    message: 'should transform ::first-letter to :first-letter',
-    fixture: 'h1::first-letter{color:blue}',
-    expected: 'h1:first-letter{color:blue}',
-}, {
-    message: 'should transform ::first-line to :first-line',
-    fixture: 'h1::first-line{color:blue}',
-    expected: 'h1:first-line{color:blue}',
-}, {
-    message: 'should not change strings',
-    fixture:  ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:blue}',
-    expected: ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:blue}',
-}, {
-    message: 'should not change strings (2)',
-    fixture: ':not([attr="  h1       a + b /* not a comment */ not end of `:not`:  )  from 100% "]){color:blue}',
-    expected: ':not([attr="  h1       a + b /* not a comment */ not end of `:not`:  )  from 100% "]){color:blue}',
-}, {
-    message: 'should not change strings (3)',
-    fixture: '[a=":not( *.b, h1, h1 )"]{color:blue}',
-    expected: '[a=":not( *.b, h1, h1 )"]{color:blue}',
-}, {
-    message: 'should not change strings (4)',
-    fixture: '[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:blue}',
-    expected: '[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:blue}',
-}, {
-    message: 'should not change strings (5)',
-    fixture: "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}",
-    expected: "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}",
-}, {
-    message: 'should transform qualified attribute selector inside not',
-    fixture: ':not( *[href="foo"] ){color:blue}',
-    expected: ':not([href=foo]){color:blue}',
-}, {
-    message: 'should not mangle attribute selectors',
-    fixture: '[class*=" icon-"]+.label, [class^="icon-"]+.label{color:blue}',
-    expected: '[class*=" icon-"]+.label,[class^=icon-]+.label{color:blue}',
-}, {
-    message: 'should not mangle attribute selectors (2)',
-    fixture: '.control-group-inline>input[type="radio"]{color:blue}',
-    expected: '.control-group-inline>input[type=radio]{color:blue}',
-}, {
-    message: 'should not mangle quoted attribute selectors that contain =',
-    fixture: '.parent>.child[data-attr~="key1=1"]{color:blue}',
-    expected: '.parent>.child[data-attr~="key1=1"]{color:blue}',
-}, {
-    message: 'should not mangle .from/#from etc',
-    fixture: '#from,.from{color:blue}',
-    expected: '#from,.from{color:blue}',
-}, {
-    message: 'should not mangle pseudo classes',
-    fixture: '.btn-group>.btn:last-child:not(:first-child),.btn-group>.dropdown-toggle:not(:first-child){color:blue}',
-    expected: '.btn-group>.btn:last-child:not(:first-child),.btn-group>.dropdown-toggle:not(:first-child){color:blue}',
-}, {
-    message: 'should not mangle pseudo classes (2)',
-    fixture: '.btn-group>.btn-group:first-child:not(:last-child)>.btn:last-child,.btn-group>.btn-group:first-child:not(:last-child)>.dropdown-toggle{color:blue}',
-    expected: '.btn-group>.btn-group:first-child:not(:last-child)>.btn:last-child,.btn-group>.btn-group:first-child:not(:last-child)>.dropdown-toggle{color:blue}',
-}, {
-    message: 'should not throw on polymer mixins',
-    fixture: '--my-toolbar-theme:{color:blue};',
-    expected: '--my-toolbar-theme:{color:blue};',
-}, {
-    message: 'should not throw on polymer mixins (2)',
-    fixture: 'paper-button{--paper-button-ink-color:#009688}',
-    expected: 'paper-button{--paper-button-ink-color:#009688}',
-}, {
-    message: 'should not unquote a single hyphen as an attribute value',
-    fixture: '[title="-"]{color:blue}',
-    expected: '[title="-"]{color:blue}',
-}, {
-    message: 'should handle case insensitive attribute selectors with extra spaces',
-    fixture: '[title="foo"   i    ]{color:blue}',
-    expected: '[title=foo i]{color:blue}',
-}, {
-    message: 'should not remove quotes around an empty attribute selector',
-    fixture: '[title=""]{color:blue}',
-    expected: '[title=""]{color:blue}',
-}, {
-    message: 'should convert :nth-child(1) to :first-child',
-    fixture: 'p:nth-child(1){color:blue}',
-    expected: 'p:first-child{color:blue}',
-}, {
-    message: 'should convert :nth-child(2n + 1) to :nth-child(odd)',
-    fixture: 'p:nth-child(2n + 1){color:blue}',
-    expected: 'p:nth-child(odd){color:blue}',
-}, {
-    message: 'should convert :nth-child(even) to :nth-child(2n)',
-    fixture: 'p:nth-child(even){color:blue}',
-    expected: 'p:nth-child(2n){color:blue}',
-}, {
-    message: 'should convert :nth-of-type(1) to :first-of-type',
-    fixture: 'p:nth-of-type(1){color:blue}',
-    expected: 'p:first-of-type{color:blue}',
-}, {
-    message: 'should convert :nth-of-type(2n + 1) to :nth-of-type(odd)',
-    fixture: 'p:nth-of-type(2n + 1){color:blue}',
-    expected: 'p:nth-of-type(odd){color:blue}',
-}, {
-    message: 'should convert :nth-of-type(even) to :nth-of-type(2n)',
-    fixture: 'p:nth-of-type(even){color:blue}',
-    expected: 'p:nth-of-type(2n){color:blue}',
-}, {
-    message: 'should convert :nth-last-child(1) to :last-child',
-    fixture: 'p:nth-last-child(1){color:blue}',
-    expected: 'p:last-child{color:blue}',
-}, {
-    message: 'should convert :nth-last-child(2n + 1) to :nth-last-child(odd)',
-    fixture: 'p:nth-last-child(2n + 1){color:blue}',
-    expected: 'p:nth-last-child(odd){color:blue}',
-}, {
-    message: 'should convert :nth-last-child(even) to :nth-last-child(2n)',
-    fixture: 'p:nth-last-child(even){color:blue}',
-    expected: 'p:nth-last-child(2n){color:blue}',
-}, {
-    message: 'should convert :nth-last-of-type(1) to :last-of-type',
-    fixture: 'p:nth-last-of-type(1){color:blue}',
-    expected: 'p:last-of-type{color:blue}',
-}, {
-    message: 'should convert :nth-last-of-type(2n + 1) to :nth-last-of-type(odd)',
-    fixture: 'p:nth-last-of-type(2n + 1){color:blue}',
-    expected: 'p:nth-last-of-type(odd){color:blue}',
-}, {
-    message: 'should convert :nth-last-of-type(even) to :nth-last-of-type(2n)',
-    fixture: 'p:nth-last-of-type(even){color:blue}',
-    expected: 'p:nth-last-of-type(2n){color:blue}',
-}, {
-    message: 'should handle first/last of type without parameters',
-    fixture: 'body>h2:not(:first-of-type):not(:last-of-type){color:blue}',
-    expected: 'body>h2:not(:first-of-type):not(:last-of-type){color:blue}',
-}];
+const {processCSS, passthroughCSS} = processCSSFactory(plugin);
 
-tests.forEach(({message, fixture, expected, options = {}}) => {
-    ava(message, t => {
-        return postcss([ plugin(options) ]).process(fixture).then(result => {
-            t.deepEqual(result.css, expected);
-        });
-    });
-});
+test(
+    'should trim spaces in simple selectors',
+    processCSS,
+    'h1,  h2,  h3{color:blue}',
+    'h1,h2,h3{color:blue}'
+);
 
-ava('should use the postcss plugin api', t => {
-    t.truthy(plugin().postcssVersion, 'should be able to access version');
-    t.deepEqual(plugin().postcssPlugin, name, 'should be able to access name');
-});
+test(
+    'should trim spaces around combinators',
+    processCSS,
+    'h1 + p, h1 > p, h1 ~ p{color:blue}',
+    'h1+p,h1>p,h1~p{color:blue}'
+);
 
-ava('cssnano issue 39', t => {
+test(
+    'should not trim meaningful spaces',
+    passthroughCSS,
+    'h1 p,H2 p{color:blue}'
+);
+
+test(
+    'should reduce meaningful spaces',
+    processCSS,
+    'h1    p,h2     p{color:blue}',
+    'h1 p,h2 p{color:blue}'
+);
+
+test(
+    'should remove qualified universal selectors',
+    processCSS,
+    '*#id,*.test,*:not(.green),*[href]{color:blue}',
+    '#id,.test,:not(.green),[href]{color:blue}'
+);
+
+test(
+    'should remove complex qualified universal selectors',
+    processCSS,
+    '[class] + *[href] *:not(*.green){color:blue}',
+    '[class]+[href] :not(.green){color:blue}'
+);
+
+test(
+    'should remove complex qualified universal selectors (2)',
+    processCSS,
+    '*:not(*.green) ~ *{color:blue}',
+    ':not(.green)~*{color:blue}'
+);
+
+test(
+    'should not remove meaningful universal selectors',
+    processCSS,
+    '* + *, * > *, * h1, * ~ *{color:blue}',
+    '*+*,*>*,* h1,*~*{color:blue}'
+);
+
+test(
+    'should preserve the universal selector between comments',
+    passthroughCSS,
+    '/*comment*/*/*comment*/{color:blue}'
+);
+
+test(
+    'should preserve the universal selector in attribute selectors',
+    processCSS,
+    'h1[class=" *.js "] + *.js{color:blue}',
+    'h1[class=" *.js "]+.js{color:blue}'
+);
+
+test(
+    'should preserve the universal selector in filenames',
+    passthroughCSS,
+    '[filename="*.js"]{color:blue}'
+);
+
+test(
+    'should preserve the universal selector in file globs',
+    passthroughCSS,
+    '[glob="/**/*.js"]{color:blue}'
+);
+
+test(
+    'should preserve escaped zero plus sequences',
+    passthroughCSS,
+    '.\\31 0\\+,.\\31 5\\+,.\\32 0\\+{color:blue}'
+);
+
+test(
+    'should handle deep combinators',
+    passthroughCSS,
+    'body /deep/ .theme-element{color:blue}'
+);
+
+test(
+    'should sort using natural sort',
+    processCSS,
+    '.item1, .item10, .item11, .item2{color:blue}',
+    '.item1,.item2,.item10,.item11{color:blue}'
+);
+
+test(
+    'should dedupe selectors',
+    processCSS,
+    'h1,h2,h3,h4,h5,h5,h6{color:blue}',
+    'h1,h2,h3,h4,h5,h6{color:blue}'
+);
+
+test(
+    'should trim spaces in :not()',
+    processCSS,
+    'h1:not(.article, .comments){color:blue}',
+    'h1:not(.article,.comments){color:blue}'
+);
+
+test(
+    'should trim spaces in :not() (2)',
+    processCSS,
+    'h1:not(.article, .comments), h2:not(.lead, .recommendation){color:blue}',
+    'h1:not(.article,.comments),h2:not(.lead,.recommendation){color:blue}'
+);
+
+test(
+    'should dedupe simple selectors inside :not()',
+    processCSS,
+    'h1:not(h2, h3, h4, h5, h5, h6){color:blue}',
+    'h1:not(h2,h3,h4,h5,h6){color:blue}'
+);
+
+test(
+    'should normalise attribute selectors',
+    processCSS,
+    'a[   color=   "blue"    ]{color:blue}',
+    'a[color=blue]{color:blue}'
+);
+
+test(
+    'should normalise attribute selectors (2)',
+    passthroughCSS,
+    'a[class^="options["]:after{color:blue}'
+);
+
+test(
+    'should normalise attribute selectors (3)',
+    processCSS,
+    'a[class="woop_woop_woop"]{color:blue}',
+    'a[class=woop_woop_woop]{color:blue}'
+);
+
+test(
+    'should normalise attribute selectors (4)',
+    processCSS,
+    'a[class="woop \\\nwoop woop"]{color:blue}',
+    'a[class="woop woop woop"]{color:blue}'
+);
+
+test(
+    'should convert @keyframe from & 100%',
+    processCSS,
+    '@keyframes test{from{color:red}100%{color:blue}}',
+    '@keyframes test{0%{color:red}to{color:blue}}'
+);
+
+test(
+    'should not mangle @keyframe from & 100% in other values',
+    passthroughCSS,
+    '@keyframes test{x-from-tag{color:red}5100%{color:blue}}'
+);
+
+test(
+    'should not be responsible for normalising comments',
+    processCSS,
+    'h1 /*!test comment*/, h2{color:blue}',
+    'h1 /*!test comment*/,h2{color:blue}'
+);
+
+test(
+    'should not be responsible for normalising coments (2)',
+    processCSS,
+    '/*!test   comment*/h1, h2{color:blue}',
+    '/*!test   comment*/h1,h2{color:blue}'
+);
+
+test(
+    'should transform ::before to :before',
+    processCSS,
+    'h1::before{color:blue}',
+    'h1:before{color:blue}'
+);
+
+test(
+    'should transform ::after to :after',
+    processCSS,
+    'h1::after{color:blue}',
+    'h1:after{color:blue}'
+);
+
+test(
+    'should transform ::first-letter to :first-letter',
+    processCSS,
+    'h1::first-letter{color:blue}',
+    'h1:first-letter{color:blue}'
+);
+
+test(
+    'should transform ::first-line to :first-line',
+    processCSS,
+    'h1::first-line{color:blue}',
+    'h1:first-line{color:blue}'
+);
+
+test(
+    'should not change strings',
+    passthroughCSS,
+    ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:blue}'
+);
+
+test(
+    'should not change strings (2)',
+    passthroughCSS,
+    ':not([attr="  h1       a + b /* not a comment */ not end of `:not`:  )  from 100% "]){color:blue}'
+);
+
+test(
+    'should not change strings (3)',
+    passthroughCSS,
+    '[a=":not( *.b, h1, h1 )"]{color:blue}'
+);
+
+test(
+    'should not change strings (4)',
+    passthroughCSS,
+    '[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:blue}'
+);
+
+test(
+    'should not change strings (5)',
+    passthroughCSS,
+    "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}"
+);
+
+test(
+    'should transform qualified attribute selector inside not',
+    processCSS,
+    ':not( *[href="foo"] ){color:blue}',
+    ':not([href=foo]){color:blue}'
+);
+
+test(
+    'should not mangle attribute selectors',
+    processCSS,
+    '[class*=" icon-"]+.label, [class^="icon-"]+.label{color:blue}',
+    '[class*=" icon-"]+.label,[class^=icon-]+.label{color:blue}'
+);
+
+test(
+    'should not mangle attribute selectors (2)',
+    processCSS,
+    '.control-group-inline>input[type="radio"]{color:blue}',
+    '.control-group-inline>input[type=radio]{color:blue}'
+);
+
+test(
+    'should not mangle quoted attribute selectors that contain =',
+    passthroughCSS,
+    '.parent>.child[data-attr~="key1=1"]{color:blue}'
+);
+
+test(
+    'should not mangle .from/#from etc',
+    passthroughCSS,
+    '#from,.from{color:blue}'
+);
+
+test(
+    'should not mangle pseudo classes',
+    passthroughCSS,
+    '.btn-group>.btn:last-child:not(:first-child),.btn-group>.dropdown-toggle:not(:first-child){color:blue}'
+);
+
+test(
+    'should not mangle pseudo classes (2)',
+    passthroughCSS,
+    '.btn-group>.btn-group:first-child:not(:last-child)>.btn:last-child,.btn-group>.btn-group:first-child:not(:last-child)>.dropdown-toggle{color:blue}'
+);
+
+test(
+    'should not throw on polymer mixins',
+    passthroughCSS,
+    '--my-toolbar-theme:{color:blue};'
+);
+
+test(
+    'should not throw on polymer mixins (2)',
+    passthroughCSS,
+    'paper-button{--paper-button-ink-color:#009688}'
+);
+
+test(
+    'should not unquote a single hyphen as an attribute value',
+    passthroughCSS,
+    '[title="-"]{color:blue}'
+);
+
+test(
+    'should handle case insensitive attribute selectors with extra spaces',
+    processCSS,
+    '[title="foo"   i    ]{color:blue}',
+    '[title=foo i]{color:blue}'
+);
+
+test(
+    'should not remove quotes around an empty attribute selector',
+    passthroughCSS,
+    '[title=""]{color:blue}'
+);
+
+test(
+    'should convert :nth-child(1) to :first-child',
+    processCSS,
+    'p:nth-child(1){color:blue}',
+    'p:first-child{color:blue}'
+);
+
+test(
+    'should convert :nth-child(2n + 1) to :nth-child(odd)',
+    processCSS,
+    'p:nth-child(2n + 1){color:blue}',
+    'p:nth-child(odd){color:blue}'
+);
+
+test(
+    'should convert :nth-child(even) to :nth-child(2n)',
+    processCSS,
+    'p:nth-child(even){color:blue}',
+    'p:nth-child(2n){color:blue}'
+);
+
+test(
+    'should convert :nth-of-type(1) to :first-of-type',
+    processCSS,
+    'p:nth-of-type(1){color:blue}',
+    'p:first-of-type{color:blue}'
+);
+
+test(
+    'should convert :nth-of-type(2n + 1) to :nth-of-type(odd)',
+    processCSS,
+    'p:nth-of-type(2n + 1){color:blue}',
+    'p:nth-of-type(odd){color:blue}'
+);
+
+test(
+    'should convert :nth-of-type(even) to :nth-of-type(2n)',
+    processCSS,
+    'p:nth-of-type(even){color:blue}',
+    'p:nth-of-type(2n){color:blue}'
+);
+
+test(
+    'should convert :nth-last-child(1) to :last-child',
+    processCSS,
+    'p:nth-last-child(1){color:blue}',
+    'p:last-child{color:blue}'
+);
+
+test(
+    'should convert :nth-last-child(2n + 1) to :nth-last-child(odd)',
+    processCSS,
+    'p:nth-last-child(2n + 1){color:blue}',
+    'p:nth-last-child(odd){color:blue}'
+);
+
+test(
+    'should convert :nth-last-child(even) to :nth-last-child(2n)',
+    processCSS,
+    'p:nth-last-child(even){color:blue}',
+    'p:nth-last-child(2n){color:blue}'
+);
+
+test(
+    'should convert :nth-last-of-type(1) to :last-of-type',
+    processCSS,
+    'p:nth-last-of-type(1){color:blue}',
+    'p:last-of-type{color:blue}'
+);
+
+test(
+    'should convert :nth-last-of-type(2n + 1) to :nth-last-of-type(odd)',
+    processCSS,
+    'p:nth-last-of-type(2n + 1){color:blue}',
+    'p:nth-last-of-type(odd){color:blue}'
+);
+
+test(
+    'should handle :nth-last-of-type(2n + 2)',
+    processCSS,
+    'p:nth-last-of-type(2n + 2){color:blue}',
+    'p:nth-last-of-type(2n+2){color:blue}'
+);
+
+test(
+    'should convert :nth-last-of-type(even) to :nth-last-of-type(2n)',
+    processCSS,
+    'p:nth-last-of-type(even){color:blue}',
+    'p:nth-last-of-type(2n){color:blue}'
+);
+
+test(
+    'should handle first/last of type without parameters',
+    passthroughCSS,
+    'body>h2:not(:first-of-type):not(:last-of-type){color:blue}'
+);
+
+test('cssnano issue 39', t => {
     const css = 'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
     t.notThrows(() => postcss([ magician(), plugin() ]).process(css).css);
 });
@@ -272,7 +427,7 @@ ava('cssnano issue 39', t => {
  * Reference: https://github.com/tivac/modular-css/issues/228
  */
 
-ava('should handle selectors from other plugins', t => {
+test('should handle selectors from other plugins', t => {
     function encode (str) {
         let result = "";
         for (let i = 0; i < str.length; i++) {
@@ -311,3 +466,9 @@ ava('should handle selectors from other plugins', t => {
     const res = postcss([toModules, plugin]).process(css).css;
     t.deepEqual(res, expected);
 });
+
+test(
+    'should use the postcss plugin api',
+    usePostCSSPlugin,
+    plugin()
+);
