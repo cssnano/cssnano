@@ -244,7 +244,7 @@ function merge (rule) {
         const lastNode = decls[decls.length - 1];
         const props = decls.filter(node => node.important === lastNode.important);
         const rules = getRules(props, properties);
-        if (hasAllProps(props, ...properties)) {
+        if (hasAllProps(rules, ...properties)) {
             const values = rules.map(node => parseTrbl(node.value));
             const mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
             const reduced = getDistinctShorthands(mapped);
