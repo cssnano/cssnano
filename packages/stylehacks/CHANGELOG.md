@@ -1,3 +1,7 @@
+# 2.3.2
+
+* Resolves an issue where stylehacks would crash on CSS mixins.
+
 # 2.3.1
 
 * Upgraded postcss-selector-parser to `v2.0.0`.
