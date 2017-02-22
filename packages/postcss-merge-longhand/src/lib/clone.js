@@ -1,5 +1,5 @@
 export default function clone (obj, parent) {
-    if (typeof obj !== 'object') {
+    if (obj === null || typeof obj !== 'object') {
         return obj;
     }
     let cloned = new obj.constructor();
