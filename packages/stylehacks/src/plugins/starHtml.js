@@ -1,5 +1,6 @@
 import parser from 'postcss-selector-parser';
 import exists from '../exists';
+import isMixin from '../isMixin';
 import plugin from '../plugin';
 import {IE_5_5, IE_6} from '../dictionary/browsers';
 import {SELECTOR} from '../dictionary/identifiers';
@@ -26,7 +27,8 @@ function analyse (ctx, rule) {
 }
 
 export default plugin([IE_5_5, IE_6], [RULE], function (rule) {
-    if (rule.selector) {
-        parser(analyse(this, rule)).process(rule.selector);
+    if (isMixin(rule)) {
+        return;
     }
+    parser(analyse(this, rule)).process(rule.selector);
 });

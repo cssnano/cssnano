@@ -3,6 +3,16 @@ import ava from 'ava';
 import stylehacks from '../';
 import {name} from '../../package.json';
 
+function processCss (t, fixture, expected, options) {
+    return postcss(stylehacks(options)).process(fixture).then(({css}) => {
+        t.deepEqual(css, expected);
+    });
+}
+
+function passthroughCss (t, fixture, options) {
+    return processCss(t, fixture, fixture, options);
+}
+
 ava('can be used as a postcss plugin', t => {
     let css = 'h1 { _color: #ffffff }';
 
@@ -68,44 +78,73 @@ ava('should have a separate detect method (2)', t => {
     });
 });
 
-ava('should use browserslist to parse browsers when it is a string', t => {
-    const css = 'h1 { _color: red }';
+ava(
+    'should use browserslist to parse browsers when it is a string',
+    passthroughCss,
+    'h1 { _color: red }',
+    {browsers: 'ie 6-8'}
+);
 
-    return postcss([ stylehacks({browsers: 'ie 6-8'}) ]).process(css).then(result => {
-        t.deepEqual(result.css, css);
-    });
-});
+ava(
+    'should not use browserslist to parse browsers when it is an array',
+    passthroughCss,
+    'h1 { _color: red }',
+    {browsers: ['ie 6', 'ie 7', 'ie 8']}
+);
 
-ava('should not use browserslist to parse browsers when it is an array', t => {
-    const css = 'h1 { _color: red }';
-    const browsers = ['ie 6', 'ie 7', 'ie 8'];
+ava(
+    'should handle rules with empty selectors',
+    passthroughCss,
+    '{ _color: red }',
+    {browsers: ['ie 5.5', 'ie 6', 'ie 7', 'ie 8']}
+);
 
-    return postcss([ stylehacks({browsers}) ]).process(css).then(result => {
-        t.deepEqual(result.css, css);
-    });
-});
+ava(
+    'should handle rules with empty selectors (2)',
+    processCss,
+    '{ _color: red }',
+    '{ }'
+);
 
-ava('should handle rules with empty selectors', t => {
-    const css = '{ _color: red }';
-    const browsers = ['ie 5.5', 'ie 6', 'ie 7', 'ie 8'];
+ava(
+    'should pass through other comments in selectors',
+    passthroughCss,
+    'h1 /* => */ h2 {}'
+);
 
-    return postcss([ stylehacks({browsers}) ]).process(css).then(result => {
-        t.deepEqual(result.css, css);
-    });
-});
+ava(
+    'should pass through css mixins',
+    passthroughCss,
+    `paper-card {
+        --paper-card-content: {
+            padding-top: 0;
+        };
+        margin: 0 auto 16px;
+        width: 768px;
+        max-width: calc(100% - 32px);
+    }`
+);
 
-ava('should handle rules with empty selectors (2)', t => {
-    const css = '{ _color: red }';
+ava(
+    'should pass through css mixins (2)',
+    passthroughCss,
+    `paper-card {
+        --paper-card-header: {
+            height: 128px;
+            padding: 0 48px;
+            background: var(--primary-color);
 
-    return postcss([ stylehacks() ]).process(css).then(result => {
-        t.deepEqual(result.css, '{ }');
-    });
-});
-
-ava('should pass through other comments in selectors', t => {
-    const css = 'h1 /* => */ h2 {}';
-
-    return postcss([ stylehacks() ]).process(css).then(result => {
-        t.deepEqual(result.css, css);
-    });
-});
+            @apply(--layout-vertical);
+            @apply(--layout-end-justified);
+        };
+        --paper-card-header-color: #FFF;
+        --paper-card-content: {
+            padding: 64px;
+        };
+        --paper-card-actions: {
+            @apply(--layout-horizontal);
+            @apply(--layout-end-justified);
+        };
+        width: 384px;
+    }`
+);
