@@ -102,4 +102,8 @@ addTests({
     message: 'should preserve nesting level',
     fixture: 'section{h1{box:0 48px}}',
     expected: 'section{h1{box:0 48px}}',
+}, {
+    message: 'should override shorthand property', 
+    fixture: 'h1{box:10px;box-left:5px}',
+    expected: 'h1{box:10px 10px 10px 5px}',
 });
