@@ -14,17 +14,10 @@ const processors = [
 export default postcss.plugin('postcss-merge-longhand', () => {
     return css => {
         css.walkRules(rule => {
-            let abort = false;
             processors.forEach(p => {
-                const res = p.explode(rule);
-                if (typeof res === 'boolean') {
-                    abort = true;
-                }
+                p.explode(rule);
+                p.merge(rule);
             });
-            if (abort) {
-                return;
-            }
-            processors.slice().reverse().forEach(p => p.merge(rule));
         });
     };
 });
