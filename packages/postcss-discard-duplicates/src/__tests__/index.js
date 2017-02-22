@@ -12,6 +12,10 @@ const tests = [{
     fixture: 'h1{color:#000}h2{color:#fff}h1{color:#000}',
     expected: 'h2{color:#fff}h1{color:#000}',
 }, {
+    message: 'should remove duplicate rules (3)',
+    fixture: 'h1 { font-weight: bold }\nh1{font-weight:bold}',
+    expected: 'h1{font-weight:bold}',
+}, {
     message: 'should remove duplicate declarations',
     fixture: 'h1{font-weight:bold;font-weight:bold}',
     expected: 'h1{font-weight:bold}',
@@ -68,10 +72,6 @@ const tests = [{
     fixture: 'h1,h2{font-weight:bold}h2,h1{font-weight:bold}',
     expected: 'h1,h2{font-weight:bold}h2,h1{font-weight:bold}',
 }, {
-    message: 'should not be responsible for normalising whitespace',
-    fixture: 'h1 { font-weight: bold }\nh1{font-weight:bold}',
-    expected: 'h1 { font-weight: bold }\nh1{font-weight:bold}',
-}, {
     message: 'should not be responsible for normalising declarations',
     fixture: 'h1{margin:10px 0 10px 0;margin:10px 0}',
     expected: 'h1{margin:10px 0 10px 0;margin:10px 0}',
@@ -79,6 +79,22 @@ const tests = [{
     message: 'should remove duplicate rules and declarations',
     fixture: 'h1{color:#000}h2{color:#fff}h1{color:#000;color:#000}',
     expected: 'h2{color:#fff}h1{color:#000}',
+}, {
+    message: 'should remove differently ordered duplicates',
+    fixture: 'h1{color:black;font-size:12px}h1{font-size:12px;color:black}',
+    expected: 'h1{font-size:12px;color:black}',
+}, {
+    message: 'should remove partial duplicates',
+    fixture: 'h1{color:red;background:blue}h1{color:red}',
+    expected: 'h1{background:blue}h1{color:red}',
+}, {
+    message: 'should preserve browser hacks (1)',
+    fixture: 'h1{_color:white;color:white}',
+    expected: 'h1{_color:white;color:white}',
+}, {
+    message: 'should preserve browser hacks (2)',
+    fixture: '@media \0 all {}@media all {}',
+    expected: '@media \0 all {}@media all {}',
 }];
 
 tests.forEach(test => {
