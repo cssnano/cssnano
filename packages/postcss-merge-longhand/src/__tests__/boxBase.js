@@ -94,4 +94,8 @@ addTests({
     message: 'should not explode box: inherit',
     fixture: 'h1{box:inherit}',
     expected: 'h1{box:inherit}',
+}, {
+    message: 'should not merge declarations with hacks',
+    fixture: 'h1{margin:4px 0 0 0;margin-top:1px\\9}',
+    expected: 'h1{margin:4px 0 0;margin-top:1px\\9}',
 });

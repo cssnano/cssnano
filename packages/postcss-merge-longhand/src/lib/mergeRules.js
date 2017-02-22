@@ -10,8 +10,10 @@ export default function mergeRules (rule, properties, callback) {
         const rules = getRules(props, properties);
 
         if (hasAllProps(rules, ...properties)) {
-            callback(rules, last, props);
+            if (callback(rules, last, props)) {
+                decls = decls.filter(node => !~rules.indexOf(node));                
+            }
         }
-        decls = decls.filter(node => !~rules.indexOf(node));
+        decls = decls.filter(node => node !== last);
     }
 }

@@ -2,7 +2,6 @@ import {list} from 'postcss';
 import {detect} from 'stylehacks';
 import assign from 'object-assign';
 import clone from '../clone';
-import genericMerge from '../genericMerge';
 import insertCloned from '../insertCloned';
 import parseTrbl from '../parseTrbl';
 import hasAllProps from '../hasAllProps';
@@ -66,6 +65,9 @@ function getColorValue (decl) {
 }
 
 function mergeRedundant ({values, nextValues, decl, nextDecl, index, position, prop}) {
+    if (detect(decl) || detect(nextDecl)) {
+        return;
+    }
     let props = parseTrbl(values[position]);
     props[index] = nextValues[position];
     values.splice(position, 1);
@@ -100,14 +102,16 @@ function getDistinctShorthands (mapped) {
 }
 
 function explode (rule) {
-    if (rule.nodes.some(detect)) {
-        return false;
-    }
     rule.walkDecls(/^border/, decl => {
         // Don't explode inherit values as they cannot be merged together
         if (decl.value === 'inherit') {
             return;
         }
+
+        if (detect(decl)) {
+            return;
+        }
+
         const {prop} = decl;
         // border -> border-trbl
         if (prop === 'border') {
@@ -147,28 +151,46 @@ function merge (rule) {
     // border-trbl-wsc -> border-trbl
     trbl.forEach(direction => {
         const prop = borderProperty(direction);
-        genericMerge({
-            rule,
-            prop,
-            properties: wsc.map(style => borderProperty(direction, style)),
-            value: rules => rules.map(getValue).join(' '),
-        });
+        mergeRules(
+            rule, 
+            wsc.map(style => borderProperty(direction, style)),
+            (rules, lastNode) => {
+                if (canMerge(...rules) && !rules.some(detect)) {
+                    insertCloned(rule, lastNode, {
+                        prop,
+                        value: rules.map(getValue).join(' '),
+                    });
+                    rules.forEach(remove);
+                    return true;
+                }
+            }
+        );
     });
 
     // border-trbl-wsc -> border-wsc
     wsc.forEach(style => {
         const prop = borderProperty(style);
-        genericMerge({
-            rule,
-            prop,
-            properties: trbl.map(direction => borderProperty(direction, style)),
-            value: rules => minifyTrbl(rules.map(getValue).join(' ')),
-            sanitize: false,
-        });
+        mergeRules(
+            rule, 
+            trbl.map(direction => borderProperty(direction, style)),
+            (rules, lastNode) => {
+                if (!rules.some(detect)) {
+                    insertCloned(rule, lastNode, {
+                        prop,
+                        value: minifyTrbl(rules.map(getValue).join(' ')),
+                    });
+                    rules.forEach(remove);
+                    return true;
+                }
+            }
+        );
     });
 
     // border-trbl -> border-wsc
     mergeRules(rule, directions, (rules, lastNode) => {
+        if (rules.some(detect)) {
+            return;
+        }
         wsc.forEach((d, i) => {
             insertCloned(rule, lastNode, {
                 prop: borderProperty(d),
@@ -176,12 +198,16 @@ function merge (rule) {
             });
         });
         rules.forEach(remove);
+        return true;
     });
 
     // border-wsc -> border
     // border-wsc -> border + border-color
     // border-wsc -> border + border-dir
     mergeRules(rule, properties, (rules, lastNode) => {
+        if (rules.some(detect)) {
+            return;
+        }
         const [width, style, color] = rules;
         const values = rules.map(node => parseTrbl(node.value));
         const mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
@@ -205,17 +231,22 @@ function merge (rule) {
                 }));
             }
             rules.forEach(remove);
+            return true;
         } else if (reduced.length === 1) {
             rule.insertBefore(color, assign(clone(lastNode), {
                 prop: 'border',
                 value: [width, style].map(getValue).join(' '),
             }));
             rules.filter(node => node.prop !== properties[2]).forEach(remove);
+            return true;
         }
     });
 
     // border-wsc -> border + border-trbl
     mergeRules(rule, properties, (rules, lastNode) => {
+        if (rules.some(detect)) {
+            return;
+        }
         const values = rules.map(node => parseTrbl(node.value));
         const mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
         const reduced = getDistinctShorthands(mapped);
@@ -242,6 +273,7 @@ function merge (rule) {
                 }
             });
             rules.forEach(remove);
+            return true;
         }
     });
 
@@ -253,7 +285,7 @@ function merge (rule) {
             const names = directions.filter(name => name !== lastNode.prop).map(name => `${name}-${d}`);
             const props = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop) && node.important === lastNode.important);
             const rules = getRules(props, names);
-            if (hasAllProps(rules, ...names)) {
+            if (hasAllProps(rules, ...names) && !rules.some(detect)) {
                 const values = rules.map(node => node ? node.value : null);
                 const filteredValues = values.filter(Boolean);
                 const lastNodeValue = list.space(lastNode.value)[i];
@@ -356,6 +388,8 @@ function merge (rule) {
 
         // remove properties of lower precedence
         const lesser = decls.filter(node => 
+            !detect(lastNode) &&
+            !detect(node) &&
             node !== lastNode && 
             node.important === lastNode.important &&
             getLevel(node.prop) > getLevel(lastNode.prop));
@@ -365,6 +399,8 @@ function merge (rule) {
         
         // get duplicate properties
         let duplicates = decls.filter(node => 
+            !detect(lastNode) &&
+            !detect(node) &&
             node !== lastNode && 
             node.important === lastNode.important &&
             node.prop === lastNode.prop);

@@ -1,9 +1,10 @@
 import {list} from 'postcss';
 import {unit} from 'postcss-value-parser';
 import {detect} from 'stylehacks';
-import {genericMergeFactory} from '../genericMerge';
+import canMerge from '../canMerge';
 import getDecls from '../getDecls';
 import getValue from '../getValue';
+import mergeRules from '../mergeRules';
 import insertCloned from '../insertCloned';
 import remove from '../remove';
 
@@ -34,10 +35,10 @@ function normalize (values) {
 }
 
 function explode (rule) {
-    if (rule.nodes.some(detect)) {
-        return false;
-    }
     rule.walkDecls('columns', decl => {
+        if (detect(decl)) {
+            return;
+        }
         let values = list.space(decl.value);
         if (values.length === 1) {
             values.push(auto);
@@ -68,6 +69,8 @@ function cleanup (rule) {
 
         // remove properties of lower precedence
         const lesser = decls.filter(node => 
+            !detect(lastNode) &&
+            !detect(node) &&
             node !== lastNode && 
             node.important === lastNode.important &&
             lastNode.prop === 'columns' && node.prop !== lastNode.prop);
@@ -77,6 +80,8 @@ function cleanup (rule) {
     
         // get duplicate properties
         let duplicates = decls.filter(node => 
+            !detect(lastNode) &&
+            !detect(node) &&
             node !== lastNode && 
             node.important === lastNode.important &&
             node.prop === lastNode.prop);
@@ -86,12 +91,19 @@ function cleanup (rule) {
     }
 }
 
-const merge = genericMergeFactory({
-    prop: 'columns',
-    properties,
-    value: rules => normalize(rules.map(getValue)),
-    after: cleanup,
-});
+function merge (rule) {
+    mergeRules(rule, properties, (rules, lastNode) => {
+        if (canMerge(...rules) && !rules.some(detect)) {
+            insertCloned(rule, lastNode, {
+                prop: 'columns',
+                value: normalize(rules.map(getValue)),
+            });
+            rules.forEach(remove);
+            return true;
+        }
+    });
+    cleanup(rule);
+}
 
 export default {
     explode,

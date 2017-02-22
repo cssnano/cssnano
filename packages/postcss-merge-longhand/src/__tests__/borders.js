@@ -223,7 +223,8 @@ test(
 test(
     'should not merge declarations with hacks',
     processCss,
-    'h1{border-color:red red red red;_border-width:1px 1px 1px 1px;border-style:solid solid solid solid}'
+    'h1{border-color:red red red red;_border-width:1px 1px 1px 1px;border-style:solid solid solid solid}',
+    'h1{border-color:red;_border-width:1px 1px 1px 1px;border-style:solid}'
 );
 
 test(
