@@ -98,4 +98,8 @@ addTests({
     message: 'should not merge declarations with hacks',
     fixture: 'h1{margin:4px 0 0 0;margin-top:1px\\9}',
     expected: 'h1{margin:4px 0 0;margin-top:1px\\9}',
+}, {
+    message: 'should preserve nesting level',
+    fixture: 'section{h1{box:0 48px}}',
+    expected: 'section{h1{box:0 48px}}',
 });

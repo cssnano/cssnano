@@ -59,3 +59,10 @@ test(
     processCss,
     'h1{column-width:12em;_column-count:auto}'
 );
+
+test(
+    'should preserve nesting level',
+    processCss,
+    'section{h1{column-width:12em;column-count:auto}}',
+    'section{h1{columns:12em}}'
+);

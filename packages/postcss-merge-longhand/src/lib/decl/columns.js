@@ -53,7 +53,7 @@ function explode (rule) {
                 prop = properties[0];
             }
 
-            insertCloned(rule, decl, {
+            insertCloned(decl.parent, decl, {
                 prop,
                 value,
             });
@@ -94,7 +94,7 @@ function cleanup (rule) {
 function merge (rule) {
     mergeRules(rule, properties, (rules, lastNode) => {
         if (canMerge(...rules) && !rules.some(detect)) {
-            insertCloned(rule, lastNode, {
+            insertCloned(lastNode.parent, lastNode, {
                 prop: 'columns',
                 value: normalize(rules.map(getValue)),
             });

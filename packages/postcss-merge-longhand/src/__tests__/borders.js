@@ -253,3 +253,9 @@ test(
     'h1{border-color:inherit;border-width:inherit;border-style:inherit}',
     'h1{border:inherit}'
 );
+test(
+    'should preserve nesting level',
+    processCss,
+    'section{h1{border-color:red;border-width:1px;border-style:solid}}',
+    'section{h1{border:1px solid red}}'
+);

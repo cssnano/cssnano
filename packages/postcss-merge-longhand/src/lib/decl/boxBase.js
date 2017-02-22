@@ -52,7 +52,7 @@ export default prop => {
                 }
                 const values = parseTrbl(decl.value);
                 trbl.forEach((direction, index) => {
-                    insertCloned(rule, decl, {
+                    insertCloned(decl.parent, decl, {
                         prop: properties[index],
                         value: values[index],
                     });
@@ -63,7 +63,7 @@ export default prop => {
         merge: rule => {
             mergeRules(rule, properties, (rules, lastNode) => {
                 if (canMerge(...rules) && !rules.some(detect)) {
-                    insertCloned(rule, lastNode, {
+                    insertCloned(lastNode.parent, lastNode, {
                         prop,
                         value: minifyTrbl(mergeValues(...rules)),
                     });

@@ -116,7 +116,7 @@ function explode (rule) {
         // border -> border-trbl
         if (prop === 'border') {
             directions.forEach((direction) => {
-                insertCloned(rule, decl, {prop: direction});
+                insertCloned(decl.parent, decl, {prop: direction});
             });
             return decl.remove();
         }
@@ -124,7 +124,7 @@ function explode (rule) {
         if (directions.some(direction => prop === direction)) {
             let values = list.space(decl.value);
             wsc.forEach((d, i) => {
-                insertCloned(rule, decl, {
+                insertCloned(decl.parent, decl, {
                     prop: `${prop}-${d}`,
                     value: values[i] || defaults[i],
                 });
@@ -137,7 +137,7 @@ function explode (rule) {
                 return false;
             }
             parseTrbl(decl.value).forEach((value, i) => {
-                insertCloned(rule, decl, {
+                insertCloned(decl.parent, decl, {
                     prop: borderProperty(trbl[i], style),
                     value,
                 });
@@ -156,7 +156,7 @@ function merge (rule) {
             wsc.map(style => borderProperty(direction, style)),
             (rules, lastNode) => {
                 if (canMerge(...rules) && !rules.some(detect)) {
-                    insertCloned(rule, lastNode, {
+                    insertCloned(lastNode.parent, lastNode, {
                         prop,
                         value: rules.map(getValue).join(' '),
                     });
@@ -175,7 +175,7 @@ function merge (rule) {
             trbl.map(direction => borderProperty(direction, style)),
             (rules, lastNode) => {
                 if (!rules.some(detect)) {
-                    insertCloned(rule, lastNode, {
+                    insertCloned(lastNode.parent, lastNode, {
                         prop,
                         value: minifyTrbl(rules.map(getValue).join(' ')),
                     });
@@ -192,7 +192,7 @@ function merge (rule) {
             return;
         }
         wsc.forEach((d, i) => {
-            insertCloned(rule, lastNode, {
+            insertCloned(lastNode.parent, lastNode, {
                 prop: borderProperty(d),
                 value: minifyTrbl(rules.map(node => list.space(node.value)[i])),
             });
@@ -216,7 +216,7 @@ function merge (rule) {
         if (isCloseEnough(mapped) && canMerge(...rules)) {
             const first = mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
 
-            const border = insertCloned(rule, lastNode, {
+            const border = insertCloned(lastNode.parent, lastNode, {
                 prop: 'border',
                 value: first ? reduced[0] : reduced[1],
             });
@@ -304,7 +304,7 @@ function merge (rule) {
                     valueArray.splice(i, 1);
                     lastNode.value = valueArray.join(' ');
                 }
-                insertCloned(rule, refNode, {
+                insertCloned(refNode.parent, refNode, {
                     prop: borderProperty(d),
                     value,
                 });
