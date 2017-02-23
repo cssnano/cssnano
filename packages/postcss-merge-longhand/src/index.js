@@ -1,15 +1,5 @@
 import postcss from 'postcss';
-import margin from './lib/decl/margin';
-import padding from './lib/decl/padding';
-import borders from './lib/decl/borders';
-import columns from './lib/decl/columns';
-
-const processors = [
-    margin,
-    padding,
-    borders,
-    columns,
-];
+import processors from './lib/decl';
 
 export default postcss.plugin('postcss-merge-longhand', () => {
     return css => {
