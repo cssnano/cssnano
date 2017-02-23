@@ -28,7 +28,7 @@ function optimise (decl) {
         return;
     }
     decl.value = valueParser(decl.value).walk(node => {
-        if (node.type !== 'function') {
+        if (node.type !== 'function' || !node.nodes.length) {
             return false;
         }
         if (
@@ -37,9 +37,6 @@ function optimise (decl) {
             node.value === '-webkit-linear-gradient' ||
             node.value === '-webkit-repeating-linear-gradient'
         ) {
-            if (!node.nodes.length) {
-                return false;
-            }
             let args = getArguments(node);
             if (node.nodes[0].value === 'to' && args[0].length === 3) {
                 node.nodes = node.nodes.slice(2);
@@ -75,9 +72,6 @@ function optimise (decl) {
             node.value === '-webkit-radial-gradient' ||
             node.value === '-webkit-repeating-radial-gradient'
         ) {
-            if (!node.nodes.length) {
-                return false;
-            }
             let args = getArguments(node);
             let lastStop;
             args.forEach(arg => {

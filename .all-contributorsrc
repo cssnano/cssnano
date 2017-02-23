@@ -167,6 +167,26 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "huan086",
+      "name": "huan086",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1448788?v=3",
+      "profile": "https://github.com/huan086",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "jaybekster",
+      "name": "Mikhail",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2485494?v=3",
+      "profile": "https://github.com/jaybekster",
+      "contributions": [
+        "bug",
+        "code",
+        "test"
+      ]
     }
   ]
 }

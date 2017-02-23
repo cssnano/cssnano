@@ -26,6 +26,12 @@ postcss([ require('postcss-minify-params') ])
 
 See [PostCSS] docs for examples for your environment.
 
+## Contributors
+
+See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
+
+## License
+
 MIT © [Bogdan Chadkin](mailto:trysound@yandex.ru)
 
 [PostCSS]: https://github.com/postcss/postcss
