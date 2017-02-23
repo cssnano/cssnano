@@ -48,14 +48,13 @@ function minifyPromise (svgo, decl, opts) {
                 // in Firefox (works in Chrome however). See this issue:
                 // https://github.com/ben-eb/cssnano/issues/245
                 data = data.replace(/#/g, '%23');
-                node.nodes[0] = {
-                    ...node.nodes[0],
+                node.nodes[0] = Object.assign({}, node.nodes[0], {
                     value: 'data:image/svg+xml;charset=utf-8,' + data,
                     quote: isUriEncoded ? '"' : '\'',
                     type: 'string',
                     before: '',
                     after: '',
-                };
+                });
                 return resolve();
             });
         }));

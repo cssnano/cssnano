@@ -207,10 +207,9 @@ function normalize (value, preferredQuote) {
 }
 
 export default postcss.plugin('cssnano-normalize-string', opts => {
-    const {preferredQuote} = {
+    const {preferredQuote} = Object.assign({}, {
         preferredQuote: 'double',
-        ...opts,
-    };
+    }, opts);
 
     return css => {
         css.walk(node => {

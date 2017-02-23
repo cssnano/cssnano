@@ -67,10 +67,9 @@ function transform (decl) {
                 position[2].value = position[1].value = '';
             }
             const {value} = position[0];
-            const map = {
-                ...horizontal,
+            const map = Object.assign({}, horizontal, {
                 center,
-            };
+            });
             if (has(map, value)) {
                 position[0].value = map[value];
             }

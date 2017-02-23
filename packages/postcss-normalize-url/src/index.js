@@ -71,12 +71,11 @@ function transformDecl (decl, opts) {
 }
 
 export default postcss.plugin('postcss-normalize-url', opts => {
-    opts = {
+    opts = Object.assign({}, {
         normalizeProtocol: false,
         stripFragment: false,
         stripWWW: true,
-        ...opts,
-    };
+    }, opts);
 
     return css => {
         css.walk(node => {
