@@ -28,28 +28,9 @@
     "uniqs": "^2.0.0"
   },
   "scripts": {
-    "prepublish": "del-cli dist && cross-env BABEL_ENV=publish buble src -o dist",
-    "pretest": "eslint src",
-    "report": "nyc report --reporter=html",
-    "test": "cross-env BABEL_ENV=test nyc mocha test --compilers js:buble/register"
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
   },
   "devDependencies": {
-    "buble": "^0.12.5",
-    "cross-env": "^2.0.0",
-    "del-cli": "^0.2.0",
-    "eslint": "^2.13.1",
-    "eslint-config-postcss": "^2.0.2",
-    "mocha": "^2.5.3",
-    "nyc": "^7.0.0"
-  },
-  "eslintConfig": {
-    "extends": "postcss",
-    "env": {
-      "mocha": true
-    }
-  },
-  "nyc": {
-    "sourceMap": true,
-    "instrument": true
+    "babel-cli": "^6.5.1"
   }
 }

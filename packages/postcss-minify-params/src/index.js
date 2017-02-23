@@ -1,25 +1,24 @@
-const postcss = require('postcss');
-const valueParser = require('postcss-value-parser');
-const { stringify } = valueParser;
-const sort = require('alphanum-sort');
-const uniqs = require('uniqs');
+import postcss from 'postcss';
+import valueParser, {stringify} from 'postcss-value-parser';
+import sort from 'alphanum-sort';
+import uniqs from 'uniqs';
 
 /**
  * Return the greatest common divisor
  * of two numbers.
  */
 
-function gcd(a, b) {
+function gcd (a, b) {
     return b ? gcd(b, a % b) : a;
 }
 
-function aspectRatio(a, b) {
+function aspectRatio (a, b) {
     const divisor = gcd(a, b);
 
     return [a / divisor, b / divisor];
 }
 
-function split(nodes, div) {
+function split (nodes, div) {
     const result = [];
     let i, max, node;
     let last = '';
@@ -39,12 +38,12 @@ function split(nodes, div) {
     return result;
 }
 
-function removeNode(node) {
+function removeNode (node) {
     node.value = '';
     node.type = 'word';
 }
 
-module.exports = postcss.plugin('postcss-minify-params', () => {
+export default postcss.plugin('postcss-minify-params', () => {
     return css => {
         css.walkAtRules(rule => {
             if (!rule.params) {
@@ -70,7 +69,7 @@ module.exports = postcss.plugin('postcss-minify-params', () => {
                     }
                 } else if (node.type === 'space') {
                     node.value = ' ';
-                } else if (node.type === 'word') {
+                } else {
                     const prevWord = params.nodes[index - 2];
                     if (
                         node.value === 'all' &&
@@ -83,9 +82,7 @@ module.exports = postcss.plugin('postcss-minify-params', () => {
                         if (nextWord && nextWord.value === 'and') {
                             removeNode(nextWord);
                             removeNode(nextSpace);
-                            if (secondSpace) {
-                                removeNode(secondSpace);
-                            }
+                            removeNode(secondSpace);
                         }
                         removeNode(node);
                     }
@@ -93,7 +90,7 @@ module.exports = postcss.plugin('postcss-minify-params', () => {
             }, true);
 
             rule.params = sort(uniqs(split(params.nodes, ',')), {
-                insensitive: true
+                insensitive: true,
             }).join();
 
             if (!rule.params.length) {
