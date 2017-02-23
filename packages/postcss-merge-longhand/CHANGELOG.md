@@ -1,3 +1,15 @@
+# 3.0.0
+
+* Rewrote the module, with lots of bug fixes and improvements to longhand
+  merging (thanks to @andyjansson).
+* Now supports merging `column-width` & `column-count` into `columns`.
+* Now supports merging `border-left-width` (plus the other 3) into
+  `border-width`, where the previous behaviour would merge them into `border`.
+* Now supports merging single longhand properties into the shorthand, e.g.
+  `padding: 2px;padding-top: 5px` becomes `padding: 5px 2px 2px`.
+* Better support for browser hacks; the module will not merge properties when
+  they have browser hacks applied.
+
 # 2.0.2
 
 * Fixes an issue where properties with the `initial` keyword were being merged
