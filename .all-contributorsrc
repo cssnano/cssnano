@@ -215,6 +215,26 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "andyjansson",
+      "name": "Andy Jansson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1737375?v=3",
+      "profile": "https://github.com/andyjansson",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "holmari",
+      "name": "Lasse Holmstedt",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3183122?v=3",
+      "profile": "https://www.linkedin.com/in/holmstedt",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ]
 }

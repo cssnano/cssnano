@@ -1,4 +1,4 @@
-# [postcss][postcss]-merge-longhand [![Build Status](https://travis-ci.org/ben-eb/postcss-merge-longhand.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/postcss-merge-longhand.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/postcss-merge-longhand.svg)][deps]
+# [postcss][postcss]-merge-longhand
 
 > Merge longhand properties into shorthand with PostCSS.
 
@@ -39,16 +39,12 @@ h1 {
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
 examples for your environment.
 
-## Contributing
+## Contributors
 
-Pull requests are welcome. If you add functionality, then please add unit tests
-to cover it.
+See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
 
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
 
-[ci]:      https://travis-ci.org/ben-eb/postcss-merge-longhand
-[deps]:    https://gemnasium.com/ben-eb/postcss-merge-longhand
-[npm]:     http://badge.fury.io/js/postcss-merge-longhand
 [postcss]: https://github.com/postcss/postcss

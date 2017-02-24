@@ -1,6 +1,5 @@
 import {list} from 'postcss';
 import {detect} from 'stylehacks';
-import assign from 'object-assign';
 import clone from '../clone';
 import insertCloned from '../insertCloned';
 import parseTrbl from '../parseTrbl';
@@ -49,14 +48,14 @@ function getLevel (prop) {
 function getColorValue (decl) {
     let values = list.space(decl.value);
 
-    if (decl.prop === 'border') { 
-        return values[2]; 
+    if (decl.prop === 'border') {
+        return values[2];
     }
 
-    if (!!~directions.indexOf(decl.prop)) { 
-        return values[2]; 
+    if (!!~directions.indexOf(decl.prop)) {
+        return values[2];
     }
-    
+
     if (decl.prop.substr(-5) === 'color') {
         return decl.value;
     }
@@ -152,7 +151,7 @@ function merge (rule) {
     trbl.forEach(direction => {
         const prop = borderProperty(direction);
         mergeRules(
-            rule, 
+            rule,
             wsc.map(style => borderProperty(direction, style)),
             (rules, lastNode) => {
                 if (canMerge(...rules) && !rules.some(detect)) {
@@ -171,7 +170,7 @@ function merge (rule) {
     wsc.forEach(style => {
         const prop = borderProperty(style);
         mergeRules(
-            rule, 
+            rule,
             trbl.map(direction => borderProperty(direction, style)),
             (rules, lastNode) => {
                 if (!rules.some(detect)) {
@@ -225,7 +224,7 @@ function merge (rule) {
                 const value = first ? reduced[1] : reduced[0];
                 const prop = borderProperty(trbl[mapped.indexOf(value)]);
 
-                rule.insertAfter(border, assign(clone(lastNode), {
+                rule.insertAfter(border, Object.assign(clone(lastNode), {
                     prop,
                     value,
                 }));
@@ -233,7 +232,7 @@ function merge (rule) {
             rules.forEach(remove);
             return true;
         } else if (reduced.length === 1) {
-            rule.insertBefore(color, assign(clone(lastNode), {
+            rule.insertBefore(color, Object.assign(clone(lastNode), {
                 prop: 'border',
                 value: [width, style].map(getValue).join(' '),
             }));
@@ -254,19 +253,19 @@ function merge (rule) {
 
         if (reduced.length === 2 && reduced[0] === none || reduced[1] === none) {
             const noOfNones = mapped.filter(value => value === none).length;
-            rule.insertBefore(lastNode, assign(clone(lastNode), {
+            rule.insertBefore(lastNode, Object.assign(clone(lastNode), {
                 prop: 'border',
                 value: noOfNones > 2 ? 'none' : mapped.filter(value => value !== none)[0],
             }));
             directions.forEach((dir, i) => {
                 if (noOfNones > 2 && mapped[i] !== none) {
-                    rule.insertBefore(lastNode, assign(clone(lastNode), {
+                    rule.insertBefore(lastNode, Object.assign(clone(lastNode), {
                         prop: dir,
                         value: mapped[i],
                     }));
                 }
                 if (noOfNones <= 2 && mapped[i] === none) {
-                    rule.insertBefore(lastNode, assign(clone(lastNode), {
+                    rule.insertBefore(lastNode, Object.assign(clone(lastNode), {
                         prop: dir,
                         value: 'none',
                     }));
@@ -339,22 +338,20 @@ function merge (rule) {
             values[0] === nextValues[0] &&
             values[2] === nextValues[2]
         ) {
-            return mergeRedundant({
-                ...config,
+            return mergeRedundant(Object.assign({}, config, {
                 position: 1,
                 prop: 'border-style',
-            });
+            }));
         }
 
         if (
             values[1] === nextValues[1] &&
             values[2] === nextValues[2]
         ) {
-            return mergeRedundant({
-                ...config,
+            return mergeRedundant(Object.assign({}, config, {
                 position: 0,
                 prop: 'border-width',
-            });
+            }));
         }
 
         if (
@@ -362,11 +359,10 @@ function merge (rule) {
             values[1] === nextValues[1] &&
             values[2] && nextValues[2]
         ) {
-            return mergeRedundant({
-                ...config,
+            return mergeRedundant(Object.assign({}, config, {
                 position: 2,
                 prop: 'border-color',
-            });
+            }));
         }
     });
 
@@ -387,21 +383,21 @@ function merge (rule) {
         const lastNode = decls[decls.length - 1];
 
         // remove properties of lower precedence
-        const lesser = decls.filter(node => 
+        const lesser = decls.filter(node =>
             !detect(lastNode) &&
             !detect(node) &&
-            node !== lastNode && 
+            node !== lastNode &&
             node.important === lastNode.important &&
             getLevel(node.prop) > getLevel(lastNode.prop));
 
         lesser.forEach(remove);
         decls = decls.filter(node => !~lesser.indexOf(node));
-        
+
         // get duplicate properties
-        let duplicates = decls.filter(node => 
+        let duplicates = decls.filter(node =>
             !detect(lastNode) &&
             !detect(node) &&
-            node !== lastNode && 
+            node !== lastNode &&
             node.important === lastNode.important &&
             node.prop === lastNode.prop);
 
