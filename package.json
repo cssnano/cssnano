@@ -5,7 +5,7 @@
     "docs": "cd docs && npm run build && cd .. && gh-pages -d docs/dist",
     "report": "nyc report --reporter=html",
     "pretest": "eslint --ignore-path .gitignore packages/**/src util",
-    "test": "nyc --check-coverage --lines 100 ava"
+    "test": "nyc ava"
   },
   "engines": {
     "node": ">=4"
