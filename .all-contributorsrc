@@ -187,6 +187,34 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "jxom",
+      "name": "Jake Moxey",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7336481?v=3",
+      "profile": "jakemoxey.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "11bit",
+      "name": "Ivan Buryak",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4057095?v=3",
+      "profile": "https://github.com/11bit",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "akx",
+      "name": "Aarni Koskela",
+      "avatar_url": "https://avatars.githubusercontent.com/u/58669?v=3",
+      "profile": "https://github.com/akx",
+      "contributions": [
+        "code"
+      ]
     }
   ]
 }

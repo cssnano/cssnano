@@ -1,4 +1,4 @@
-# [postcss][postcss]-merge-rules [![Build Status](https://travis-ci.org/ben-eb/postcss-merge-rules.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/postcss-merge-rules.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/postcss-merge-rules.svg)][deps]
+# [postcss][postcss]-merge-rules
 
 > Merge CSS rules with PostCSS.
 
@@ -103,7 +103,4 @@ to cover it.
 
 MIT © [Ben Briggs](http://beneb.info)
 
-[ci]:      https://travis-ci.org/ben-eb/postcss-merge-rules
-[deps]:    https://gemnasium.com/ben-eb/postcss-merge-rules
-[npm]:     http://badge.fury.io/js/postcss-merge-rules
 [postcss]: https://github.com/postcss/postcss

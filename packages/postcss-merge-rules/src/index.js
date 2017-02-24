@@ -32,7 +32,7 @@ function sameParent (ruleA, ruleB) {
                    ruleA.parent.params === ruleB.parent.params &&
                    ruleA.parent.name === ruleB.parent.name;
     }
-    return hasParent ? sameType : true;
+    return hasParent && sameType;
 }
 
 function canMerge (ruleA, ruleB, browsers, compatibilityCache) {
@@ -53,7 +53,7 @@ function canMerge (ruleA, ruleB, browsers, compatibilityCache) {
     return parent && (selectors.every(noVendor) || sameVendor(a, b));
 }
 
-const getDecls = rule => rule.nodes ? rule.nodes.map(String) : [];
+const getDecls = rule => rule.nodes && rule.nodes.map(String);
 const joinSelectors = (...rules) => rules.map(s => s.selector).join();
 
 function ruleLength (...rules) {
