@@ -1,3 +1,3 @@
-module.exports = function (value) {
+export default function (value) {
     return value === 'normal' ? '400' : value === 'bold' ? '700' : value;
 };

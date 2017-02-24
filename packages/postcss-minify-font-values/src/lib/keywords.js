@@ -1,10 +1,10 @@
-var keywords = module.exports = {
+export default {
     style: [
         'italic',
-        'oblique'
+        'oblique',
     ],
     variant: [
-        'small-caps'
+        'small-caps',
     ],
     weight: [
         '100',
@@ -18,7 +18,7 @@ var keywords = module.exports = {
         '900',
         'bold',
         'lighter',
-        'bolder'
+        'bolder',
     ],
     stretch: [
         'ultra-condensed',
@@ -28,7 +28,7 @@ var keywords = module.exports = {
         'semi-expanded',
         'expanded',
         'extra-expanded',
-        'ultra-expanded'
+        'ultra-expanded',
     ],
     size: [
         'xx-small',
@@ -39,6 +39,6 @@ var keywords = module.exports = {
         'x-large',
         'xx-large',
         'larger',
-        'smaller'
-    ]
+        'smaller',
+    ],
 };

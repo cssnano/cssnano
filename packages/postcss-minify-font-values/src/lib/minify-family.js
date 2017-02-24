@@ -1,42 +1,40 @@
-var stringify = require('postcss-value-parser').stringify;
-var uniqs = require('./uniqs')('monospace');
+import {stringify} from 'postcss-value-parser';
+import uniqueExcept from './uniqs';
+
+const uniqs = uniqueExcept('monospace');
 
 // Note that monospace is missing intentionally from this list; we should not
 // remove instances of duplicated monospace keywords, it causes the font to be
 // rendered smaller in Chrome.
 
-var keywords = [
+const keywords = [
     'sans-serif',
     'serif',
     'fantasy',
-    'cursive'
+    'cursive',
 ];
 
-function intersection(haystack, array) {
-   return array.some(function (v) {
-        return ~haystack.indexOf(v);
-    });
+function intersection (haystack, array) {
+    return array.some(value => ~haystack.indexOf(value));
 };
 
-module.exports = function (nodes, opts) {
-    var family = [];
-    var last = null;
-    var i, max;
+export default function (nodes, opts) {
+    let family = [];
+    let last = null;
+    let i, max;
 
-    nodes.forEach(function (node, index, nodes) {
-        var value = node.value;
-
+    nodes.forEach((node, index, arr) => {
         if (node.type === 'string' || node.type === 'function') {
             family.push(node);
         } else if (node.type === 'word') {
             if (!last) {
-                last = { type: 'word', value: '' };
+                last = {type: 'word', value: ''};
                 family.push(last);
             }
 
             last.value += node.value;
         } else if (node.type === 'space') {
-            if (last && index !== nodes.length - 1) {
+            if (last && index !== arr.length - 1) {
                 last.value += ' ';
             }
         } else {
@@ -44,7 +42,7 @@ module.exports = function (nodes, opts) {
         }
     });
 
-    family = family.map(function (node) {
+    family = family.map((node) => {
         if (node.type === 'string') {
             if (
                 !opts.removeQuotes ||
@@ -54,8 +52,8 @@ module.exports = function (nodes, opts) {
                 return stringify(node);
             }
 
-            var escaped = node.value.split(/\s/).map(function (word, index, words) {
-                var next = words[index + 1];
+            let escaped = node.value.split(/\s/).map((word, index, words) => {
+                let next = words[index + 1];
                 if (next && /^[^a-z]/i.test(next)) {
                     return word + '\\';
                 }
@@ -92,10 +90,8 @@ module.exports = function (nodes, opts) {
         family = uniqs(family);
     }
 
-    return [
-        {
-            type: 'word',
-            value: family.join()
-        }
-    ];
+    return [{
+        type: 'word',
+        value: family.join(),
+    }];
 };
