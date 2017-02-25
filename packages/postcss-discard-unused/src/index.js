@@ -57,13 +57,12 @@ function filterFont ({atRules, values}) {
 }
 
 export default plugin('postcss-discard-unused', opts => {
-    const {fontFace, counterStyle, keyframes, namespace} = {
+    const {fontFace, counterStyle, keyframes, namespace} = Object.assign({}, {
         fontFace: true,
         counterStyle: true,
         keyframes: true,
         namespace: true,
-        ...opts,
-    };
+    }, opts);
     return css => {
         const counterStyleCache = {atRules: [], values: []};
         const keyframesCache = {atRules: [], values: []};

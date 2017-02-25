@@ -1,41 +1,44 @@
-import ava from 'ava';
-import postcss from 'postcss';
+import test from 'ava';
 import plugin from '..';
+import {processCSSFactory} from '../../../../util/testHelpers';
 
-const tests = [{
-    message: 'should remove unused prefixed namespace',
-    fixture: '@namespace svg url(http://www.w3.org/2000/svg);a{color:blue}',
-    expected: 'a{color:blue}',
-}, {
-    message: 'should remove invalid namespace',
-    fixture: '@namespace',
-    expected: '',
-}, {
-    message: 'shouldn\'t remove default namespace',
-    fixture: '@namespace url(http://www.w3.org/2000/svg)',
-    expected: '@namespace url(http://www.w3.org/2000/svg)',
-}, {
-    message: 'shouldn\'t remove used prefixed namespace',
-    fixture: '@namespace svg url(http://www.w3.org/2000/svg);svg|a{color:blue}',
-    expected: '@namespace svg url(http://www.w3.org/2000/svg);svg|a{color:blue}',
-}, {
-    message: 'shouldn\'t remove prefixed namespace in case of universal selector',
-    fixture: '@namespace svg url(http://www.w3.org/2000/svg);*|a{color:blue}',
-    expected: '@namespace svg url(http://www.w3.org/2000/svg);*|a{color:blue}',
-}, {
-    message: 'shouldn\'t remove unused prefixed namespace',
-    fixture: '@namespace svg url(http://www.w3.org/2000/svg)',
-    expected: '@namespace svg url(http://www.w3.org/2000/svg)',
-    options: {
-        namespace: false,
-    },
-}];
+const {passthroughCSS, processCSS} = processCSSFactory(plugin);
 
-tests.forEach(test => {
-    ava(test.message, t => {
-        let options = test.options || {};
-        return postcss([ plugin(options) ]).process(test.fixture).then(result => {
-            t.deepEqual(result.css, test.expected);
-        });
-    });
-});
+test(
+    'should remove unused prefixed namespace',
+    processCSS,
+    '@namespace svg url(http://www.w3.org/2000/svg);a{color:blue}',
+    'a{color:blue}'
+);
+
+test(
+    'should remove invalid namespace',
+    processCSS,
+    '@namespace',
+    ''
+);
+
+test(
+    'shouldn\'t remove default namespace',
+    passthroughCSS,
+    '@namespace url(http://www.w3.org/2000/svg)'
+);
+
+test(
+    'shouldn\'t remove used prefixed namespace',
+    passthroughCSS,
+    '@namespace svg url(http://www.w3.org/2000/svg);svg|a{color:blue}'
+);
+
+test(
+    'shouldn\'t remove prefixed namespace in case of universal selector',
+    passthroughCSS,
+    '@namespace svg url(http://www.w3.org/2000/svg);*|a{color:blue}'
+);
+
+test(
+    'shouldn\'t remove unused prefixed namespace',
+    passthroughCSS,
+    '@namespace svg url(http://www.w3.org/2000/svg)',
+    {namespace: false}
+);
