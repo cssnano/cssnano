@@ -1,4 +1,4 @@
-# [postcss][postcss]-merge-idents [![Build Status](https://travis-ci.org/ben-eb/postcss-merge-idents.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/postcss-merge-idents.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/postcss-merge-idents.svg)][deps]
+# [postcss][postcss]-merge-idents
 
 > Merge keyframe and counter style identifiers.
 
@@ -64,10 +64,9 @@ See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
 examples for your environment.
 
 
-## Contributing
+## Contributors
 
-Pull requests are welcome. If you add functionality, then please add unit tests
-to cover it.
+See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
 
 
 ## License
@@ -75,7 +74,4 @@ to cover it.
 MIT © [Ben Briggs](http://beneb.info)
 
 
-[ci]:      https://travis-ci.org/ben-eb/postcss-merge-idents
-[deps]:    https://gemnasium.com/ben-eb/postcss-merge-idents
-[npm]:     http://badge.fury.io/js/postcss-merge-idents
 [postcss]: https://github.com/postcss/postcss
