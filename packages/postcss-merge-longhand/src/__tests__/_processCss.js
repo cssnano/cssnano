@@ -1,11 +1,11 @@
-import postcss from 'postcss';
+import {processCSSFactory} from '../../../../util/testHelpers';
 import plugin from '..';
 
+const {processCSS, passthroughCSS} = processCSSFactory(plugin);
+
 export default function processCss (t, fixture, expected) {
-    return postcss(plugin).process(fixture).then(({css}) => {
-        if (!expected) {
-            return t.deepEqual(css, fixture);
-        }
-        t.deepEqual(css, expected);
-    });
+    if (!expected) {
+        return passthroughCSS(t, fixture, fixture);
+    }
+    return processCSS(t, fixture, expected);
 }
