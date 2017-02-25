@@ -32,7 +32,7 @@
     "postcss-discard-overridden": "^0.1.1",
     "postcss-discard-unused": "^2.2.1",
     "postcss-merge-idents": "^2.1.5",
-    "postcss-merge-longhand": "^2.0.1",
+    "postcss-merge-longhand": "^3.0.0",
     "postcss-merge-rules": "^2.0.3",
     "postcss-minify-font-values": "^1.0.2",
     "postcss-minify-gradients": "^1.0.1",

@@ -247,20 +247,6 @@ test(
 );
 
 test(
-    'should not incorrectly extract margin properties',
-    processCss,
-    'h2{margin-bottom:20px}h1{margin:10px;margin-bottom:20px}',
-    'h2{margin-bottom:20px}h1{margin:10px;margin-bottom:20px}',
-);
-
-test(
-    'should not incorrectly extract margin properties (2)',
-    processCss,
-    'h2{color:red;margin-bottom:20px}h1{color:red;margin:10px;margin-bottom:20px}',
-    'h2{margin-bottom:20px}h1,h2{color:red}h1{margin:10px;margin-bottom:20px}',
-);
-
-test(
     'should not incorrectly extract display properties',
     processCss,
     '.box1{display:inline-block;display:block}.box2{display:inline-block}',

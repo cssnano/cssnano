@@ -93,24 +93,10 @@ test(
 );
 
 test(
-    'should merge border value shorthands',
-    processCss,
-    'h1{border-color:red blue red blue;border-width:10px 20px 10px 20px;border-style:solid}',
-    'h1{border-color:red blue;border-width:10px 20px;border-style:solid}',
-);
-
-test(
     'should not merge border values with mixed !important',
     processCss,
     'h1{border-color:red;border-width:1px!important;border-style:dashed!important}',
     'h1{border-color:red;border-width:1px!important;border-style:dashed!important}',
-);
-
-test(
-    'should not merge border values with more than 3 values',
-    processCss,
-    'h1{border-color:red;border-width:1px 5px;border-style:dashed}',
-    'h1{border-color:red;border-width:1px 5px;border-style:dashed}',
 );
 
 test(

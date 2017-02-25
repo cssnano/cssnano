@@ -180,7 +180,7 @@ table.table-hovered tbody tr:hover td{background-color:#f4f4f4}
 .forms label{margin-bottom:1.0999999999999999em}
 .forms input[type=color],.forms input[type=date],.forms input[type=datetime-local],.forms input[type=datetime],.forms input[type=email],.forms input[type=file],.forms input[type=month],.forms input[type=number],.forms input[type=password],.forms input[type=phone],.forms input[type=range],.forms input[type=search],.forms input[type=tel],.forms input[type=text],.forms input[type=time],.forms input[type=url],.forms label,.forms select,.forms textarea{display:block}
 .forms-inline-list input[type=color],.forms-inline-list input[type=date],.forms-inline-list input[type=datetime-local],.forms-inline-list input[type=datetime],.forms-inline-list input[type=email],.forms-inline-list input[type=file],.forms-inline-list input[type=month],.forms-inline-list input[type=number],.forms-inline-list input[type=password],.forms-inline-list input[type=phone],.forms-inline-list input[type=range],.forms-inline-list input[type=search],.forms-inline-list input[type=tel],.forms-inline-list input[type=text],.forms-inline-list input[type=time],.forms-inline-list input[type=url],.forms-inline-list select,.forms-inline-list textarea,.forms-inline input[type=color],.forms-inline input[type=date],.forms-inline input[type=datetime-local],.forms-inline input[type=datetime],.forms-inline input[type=email],.forms-inline input[type=file],.forms-inline input[type=month],.forms-inline input[type=number],.forms-inline input[type=password],.forms-inline input[type=phone],.forms-inline input[type=range],.forms-inline input[type=search],.forms-inline input[type=tel],.forms-inline input[type=text],.forms-inline input[type=time],.forms-inline input[type=url],.forms-inline select,.forms-inline textarea{display:inline-block}
-.forms-inline,.forms-inline-list,.forms-list{margin:0;padding:0;margin-bottom:1.0999999999999999em;list-style:none}
+.forms-inline,.forms-inline-list,.forms-list{padding:0;margin:0 0 1.0999999999999999em;list-style:none}
 .forms-inline-list li,.forms-inline-list li label,.forms-inline label,.forms-list label{display:inline-block;margin-bottom:0}
 .forms-inline-list li label{margin-right:.825em}
 .forms-inline-list li{margin-bottom:3px}
@@ -260,7 +260,7 @@ input.input-smaller{font-size:11.25px}
 .nav-tabs a,.nav-tabs span{display:block;line-height:1;padding:.825em 1.65em;border:1px solid transparent}
 .nav-tabs a{color:rgba(0,0,0,.5);text-decoration:none}
 .nav-tabs a:focus,.nav-tabs a:hover{color:#0f0f0f;text-decoration:underline;background-color:#eee}
-.nav-tabs li.active a,.nav-tabs span{color:#0f0f0f;background:#fff;position:relative;border:1px solid #ddd;border-bottom:1px solid #fff;bottom:-1px;cursor:default;text-decoration:none}
+.nav-tabs li.active a,.nav-tabs span{color:#0f0f0f;background:#fff;position:relative;border:1px solid;border-color:#ddd #ddd #fff;bottom:-1px;cursor:default;text-decoration:none}
 .breadcrumbs{margin-bottom:1.65em}
 .breadcrumbs:after{content:"";display:table;clear:both}
 .breadcrumbs ul{font-size:.9em;color:rgba(0,0,0,.4);list-style:none;margin:0}
@@ -399,7 +399,7 @@ input.input-smaller{font-size:11.25px}
   0%{background-position:40px 0}
   to{background-position:0 0}
 }
-.accordion-title{position:relative;display:block;margin:0;margin-bottom:2px;padding:12px 50px 12px 18px;color:#000;text-decoration:none;font-weight:400;font-size:.9375em;line-height:1,4em;background:#f7f8f8;cursor:pointer;-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+.accordion-title{position:relative;display:block;margin:0 0 2px;padding:12px 50px 12px 18px;color:#000;text-decoration:none;font-weight:400;font-size:.9375em;line-height:1,4em;background:#f7f8f8;cursor:pointer;-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
 .accordion-title.accordion-title-opened{margin-bottom:0;font-weight:700;background:#f0f1f2}
 .accordion-title:hover,.accordion-title a{color:#000;text-decoration:none}
 .accordion-panel{padding:1.65em;margin-bottom:10px}
@@ -453,7 +453,7 @@ ul.dropdown li.divider{border-bottom:1px solid #e2e2e2}
 #modal-overlay{position:fixed;top:0;left:0;margin:auto;overflow:auto;width:100%;height:100%;background-color:#000!important;filter:alpha(opacity=30);-moz-opacity:.3;opacity:.3;z-index:3}
 .modal-blur{-webkit-filter:blur(3px);-moz-filter:blur(3px);-ms-filter:blur(3px);filter:blur(3px)}
 .modal-box{position:fixed;top:0;left:0;bottom:0;right:0;overflow-x:hidden;overflow-y:auto;z-index:4}
-.modal{position:relative;margin:auto;margin-bottom:20px;padding:0;background:#fff;color:#000;box-shadow:0 1px 70px rgba(0,0,0,.5)}
+.modal{position:relative;margin:auto auto 20px;padding:0;background:#fff;color:#000;box-shadow:0 1px 70px rgba(0,0,0,.5)}
 .modal header{padding:30px 40px 5px;font-size:18px;font-weight:700}
 .modal section{padding:30px 40px 50px}
 .modal footer button{width:100%;border-radius:0}

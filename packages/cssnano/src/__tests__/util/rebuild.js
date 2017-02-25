@@ -2,7 +2,7 @@ const write = require('fs').writeFileSync;
 const join = require('path').join;
 const postcss = require('postcss');
 const frameworks = require('css-frameworks');
-const nano = require('../../../dist');
+const nano = require('../../../dist').default;
 const formatter = require('./formatter');
 
 const base = join(__dirname, '../integrations');
