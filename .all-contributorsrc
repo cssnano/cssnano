@@ -276,6 +276,25 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "duncanbeevers",
+      "name": "Duncan Beevers",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7367?v=3",
+      "profile": "http://www.duncanbeevers.com",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "stephenway",
+      "name": "Stephen Way",
+      "avatar_url": "https://avatars.githubusercontent.com/u/38894?v=3",
+      "profile": "http://stephenway.net",
+      "contributions": [
+        "doc"
+      ]
     }
   ]
 }

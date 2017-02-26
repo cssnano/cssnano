@@ -1,89 +1,115 @@
-import ava from 'ava';
-import postcss from 'postcss';
-import {name} from '../../package.json';
+import test from 'ava';
 import plugin from '..';
+import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
 
-const tests = [{
-    message: 'should remove empty @ rules',
-    fixture: '@font-face;',
-    expected: '',
-}, {
-    message: 'should remove empty @ rules (2)',
-    fixture: '@font-face {}',
-    expected: '',
-}, {
-    message: 'should not mangle @ rules with decls',
-    fixture: '@font-face {font-family: Helvetica}',
-    expected: '@font-face {font-family: Helvetica}',
-}, {
-    message: 'should not mangle @ rules with parameters',
-    fixture: '@charset "utf-8";',
-    expected: '@charset "utf-8";',
-}, {
-    message: 'should remove empty rules',
-    fixture: 'h1{}h2{}h4{}h5,h6{}',
-    expected: '',
-}, {
-    message: 'should remove empty declarations',
-    fixture: 'h1{color:}',
-    expected: '',
-}, {
-    message: 'should remove null selectors',
-    fixture: '{color:blue}',
-    expected: '',
-}, {
-    message: 'should remove null selectors in media queries',
-    fixture: '@media screen, print {{}}',
-    expected: '',
-}, {
-    message: 'should remove empty media queries',
-    fixture: '@media screen, print {h1,h2{}}',
-    expected: '',
-}, {
-    message: 'should not be responsible for removing comments',
-    fixture: 'h1{/*comment*/}',
-    expected: 'h1{/*comment*/}',
-}, {
-    message: 'should report removed selectors',
-    fixture: 'h1{}.hot{}.a.b{}{}@media secreen, print{h1,h2{}}',
-    expected: '',
-    removedSelectors: ['h1', '.hot', '.a.b', '', 'h1,h2'],
-}];
+const {passthroughCSS, processCSS, processor} = processCSSFactory(plugin);
 
-function testRemovals (t, test, out, removedSelectors) {
-    removedSelectors.forEach((removedSelector) => {
-        const message = out.messages.some((m) => {
-            return m.plugin === 'postcss-discard-empty' &&
-                m.type === 'removal' &&
-                m.node.selector === removedSelector;
+function testRemovals (t, fixture, expected, removedSelectors) {
+    return processor(fixture).then(result => {
+        removedSelectors.forEach((removedSelector) => {
+            const message = result.messages.some((m) => {
+                return m.plugin === 'postcss-discard-empty' &&
+                    m.type === 'removal' &&
+                    m.node.selector === removedSelector;
+            });
+
+            if (!message) {
+                t.fail('expected selector `' + removedSelector + '` was not removed');
+            }
         });
 
-        if (!message) {
-            t.fail('expected selector `' + removedSelector + '` was not removed');
-        }
-    });
-
-    out.messages.forEach((m) => {
-        if (m.plugin === 'postcss-discard-empty' && m.type === 'removal') {
-            if (m.selector !== undefined && !~removedSelectors.indexOf(m.selector)) {
+        result.messages.forEach((m) => {
+            if (
+                m.plugin !== 'postcss-discard-empty' ||
+                m.type !== 'removal' ||
+                m.selector !== undefined ||
+                ~removedSelectors.indexOf(m.selector)
+            ) {
                 t.fail('unexpected selector `' + m.selector + '` was removed');
             }
-        }
+        });
+
+        t.deepEqual(result.css, expected);
     });
 }
 
-tests.forEach(test => {
-    ava(test.message, t => {
-        const out = postcss(plugin(test.options || {})).process(test.fixture);
-        t.deepEqual(out.css, test.expected);
+test(
+    'should remove empty @ rules',
+    processCSS,
+    '@font-face;',
+    ''
+);
 
-        if (test.removedSelectors) {
-            testRemovals(t, test, out, test.removedSelectors);
-        }
-    });
-});
+test(
+    'should remove empty @ rules (2)',
+    processCSS,
+    '@font-face {}',
+    ''
+);
 
-ava('should use the postcss plugin api', t => {
-    t.truthy(plugin().postcssVersion, 'should be able to access version');
-    t.deepEqual(plugin().postcssPlugin, name, 'should be able to access name');
-});
+test(
+    'should not mangle @ rules with decls',
+    passthroughCSS,
+    '@font-face {font-family: Helvetica}'
+);
+
+test(
+    'should not mangle @ rules with parameters',
+    passthroughCSS,
+    '@charset "utf-8";'
+);
+
+test(
+    'should remove empty rules',
+    processCSS,
+    'h1{}h2{}h4{}h5,h6{}',
+    ''
+);
+
+test(
+    'should remove empty declarations',
+    processCSS,
+    'h1{color:}',
+    ''
+);
+
+test(
+    'should remove null selectors',
+    processCSS,
+    '{color:blue}',
+    ''
+);
+
+test(
+    'should remove null selectors in media queries',
+    processCSS,
+    '@media screen, print {{}}',
+    ''
+);
+
+test(
+    'should remove empty media queries',
+    processCSS,
+    '@media screen, print {h1,h2{}}',
+    ''
+);
+
+test(
+    'should not be responsible for removing comments',
+    passthroughCSS,
+    'h1{/*comment*/}'
+);
+
+test(
+    'should report removed selectors',
+    testRemovals,
+    'h1{}.hot{}.a.b{}{}@media screen, print{h1,h2{}}',
+    '',
+    ['h1', '.hot', '.a.b', '', 'h1,h2']
+);
+
+test(
+    'should use the postcss plugin api',
+    usePostCSSPlugin,
+    plugin()
+);
