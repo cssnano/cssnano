@@ -1,3 +1,8 @@
+# 2.1.0
+
+* Now supports discarding duplicates irrespective of property order, better
+  support for legacy hacks & partial duplicate removal (thanks to @andyjansson).
+
 # 2.0.2
 
 * Major performance boost by lessening algorithmic complexity; each node is
