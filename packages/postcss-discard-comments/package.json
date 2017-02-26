@@ -8,12 +8,7 @@
     "LICENSE-MIT"
   ],
   "scripts": {
-    "contributorAdd": "all-contributors add",
-    "contributorGenerate": "all-contributors generate",
-    "pretest": "eslint src",
-    "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
-    "test": "ava src/__tests__",
-    "test-012": "ava src/__tests__"
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
   },
   "keywords": [
     "css",
@@ -23,20 +18,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "all-contributors-cli": "^3.0.5",
-    "ava": "^0.17.0",
     "babel-cli": "^6.5.1",
-    "babel-core": "^6.5.1",
-    "babel-plugin-add-module-exports": "^0.2.0",
-    "babel-preset-es2015": "^6.5.0",
-    "babel-preset-es2015-loose": "^7.0.0",
-    "babel-preset-stage-0": "^6.5.0",
-    "babel-register": "^6.9.0",
-    "del-cli": "^0.2.0",
-    "eslint": "^3.0.0",
-    "eslint-config-cssnano": "^3.0.0",
-    "eslint-plugin-babel": "^3.3.0",
-    "eslint-plugin-import": "^2.0.1",
     "postcss-scss": "^0.3.0",
     "postcss-simple-vars": "^3.0.0"
   },
@@ -49,11 +31,5 @@
   "repository": "ben-eb/postcss-discard-comments",
   "dependencies": {
     "postcss": "^5.0.14"
-  },
-  "ava": {
-    "require": "babel-register"
-  },
-  "eslintConfig": {
-    "extends": "cssnano"
   }
 }

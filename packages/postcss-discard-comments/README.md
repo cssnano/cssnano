@@ -1,4 +1,4 @@
-# [postcss][postcss]-discard-comments [![Build Status](https://travis-ci.org/ben-eb/postcss-discard-comments.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/postcss-discard-comments.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/postcss-discard-comments.svg)][deps]
+# [postcss][postcss]-discard-comments
 
 > Discard comments in your CSS files with PostCSS.
 
@@ -103,23 +103,12 @@ examples for your environment.
 
 ## Contributors
 
-Thanks goes to these wonderful people ([emoji key](https://github.com/kentcdodds/all-contributors#emoji-key)):
+See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-| [<img src="https://avatars.githubusercontent.com/u/1282980?v=3" width="100px;"/><br /><sub>Ben Briggs</sub>](http://beneb.info)<br />[💻](https://github.com/ben-eb/postcss-discard-comments/commits?author=ben-eb) [📖](https://github.com/ben-eb/postcss-discard-comments/commits?author=ben-eb) 👀 [⚠️](https://github.com/ben-eb/postcss-discard-comments/commits?author=ben-eb) | [<img src="https://avatars.githubusercontent.com/u/5103477?v=3" width="100px;"/><br /><sub>Dmitry Kiselyov</sub>](http://codepen.io/dmitrykiselyov)<br />[🐛](https://github.com/ben-eb/postcss-discard-comments/issues?q=author%3Admitrykiselyov) [💻](https://github.com/ben-eb/postcss-discard-comments/commits?author=dmitrykiselyov) [📖](https://github.com/ben-eb/postcss-discard-comments/commits?author=dmitrykiselyov) [⚠️](https://github.com/ben-eb/postcss-discard-comments/commits?author=dmitrykiselyov) | [<img src="https://avatars.githubusercontent.com/u/19105?v=3" width="100px;"/><br /><sub>Ivan Vlasenko</sub>](https://github.com/avanes)<br />[💻](https://github.com/ben-eb/postcss-discard-comments/commits?author=avanes) | [<img src="https://avatars.githubusercontent.com/u/231202?v=3" width="100px;"/><br /><sub>Joren Van Hee</sub>](http://joren.co)<br />[🐛](https://github.com/ben-eb/postcss-discard-comments/issues?q=author%3Ajorenvanhee) | [<img src="https://avatars.githubusercontent.com/u/224910?v=3" width="100px;"/><br /><sub>André König</sub>](http://andrekoenig.info/)<br />[🐛](https://github.com/ben-eb/postcss-discard-comments/issues?q=author%3Aakoenig) |
-| :---: | :---: | :---: | :---: | :---: |
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-This project follows the [all-contributors] specification. Contributions of
-any kind welcome!
 
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
 
 
-[all-contributors]: https://github.com/kentcdodds/all-contributors
-[ci]:      https://travis-ci.org/ben-eb/postcss-discard-comments
-[deps]:    https://gemnasium.com/ben-eb/postcss-discard-comments
-[npm]:     http://badge.fury.io/js/postcss-discard-comments
 [postcss]: https://github.com/postcss/postcss
