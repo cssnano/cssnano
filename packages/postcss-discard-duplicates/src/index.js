@@ -112,7 +112,7 @@ const handlers = {
 };
 
 function dedupe (root) {
-    let nodes = root.nodes;
+    const {nodes} = root;
 
     if (!nodes) {
         return;

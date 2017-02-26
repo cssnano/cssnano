@@ -1,4 +1,4 @@
-# [postcss][postcss]-discard-duplicates [![Build Status](https://travis-ci.org/ben-eb/postcss-discard-duplicates.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/postcss-discard-duplicates.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/postcss-discard-duplicates.svg)][deps]
+# [postcss][postcss]-discard-duplicates
 
 > Discard duplicate rules in your CSS files with PostCSS.
 
@@ -56,25 +56,15 @@ h1 {
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
 examples for your environment.
 
+
 ## Contributors
 
-Thanks goes to these wonderful people ([emoji key](https://github.com/kentcdodds/all-contributors#emoji-key)):
+See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-| [<img src="https://avatars.githubusercontent.com/u/1282980?v=3" width="100px;"/><br /><sub>Ben Briggs</sub>](http://beneb.info)<br />[💻](https://github.com/ben-eb/postcss-discard-duplicates/commits?author=ben-eb) [📖](https://github.com/ben-eb/postcss-discard-duplicates/commits?author=ben-eb) 👀 [⚠️](https://github.com/ben-eb/postcss-discard-duplicates/commits?author=ben-eb) | [<img src="https://avatars.githubusercontent.com/u/5635476?v=3" width="100px;"/><br /><sub>Bogdan Chadkin</sub>](https://github.com/TrySound)<br />[💻](https://github.com/ben-eb/postcss-discard-duplicates/commits?author=TrySound) 👀 [⚠️](https://github.com/ben-eb/postcss-discard-duplicates/commits?author=TrySound) | [<img src="https://avatars.githubusercontent.com/u/68302?v=3" width="100px;"/><br /><sub>Lee Houghton</sub>](https://github.com/asztal)<br />[💻](https://github.com/ben-eb/postcss-discard-duplicates/commits?author=asztal) | [<img src="https://avatars.githubusercontent.com/u/1737375?v=3" width="100px;"/><br /><sub>Andy Jansson</sub>](https://github.com/andyjansson)<br />[💻](https://github.com/ben-eb/postcss-discard-duplicates/commits?author=andyjansson) [⚠️](https://github.com/ben-eb/postcss-discard-duplicates/commits?author=andyjansson) |
-| :---: | :---: | :---: | :---: |
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-This project follows the [all-contributors] specification. Contributions of
-any kind welcome!
 
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
 
 
-[all-contributors]: https://github.com/kentcdodds/all-contributors
-[ci]:      https://travis-ci.org/ben-eb/postcss-discard-duplicates
-[deps]:    https://gemnasium.com/ben-eb/postcss-discard-duplicates
-[npm]:     http://badge.fury.io/js/postcss-discard-duplicates
 [postcss]: https://github.com/postcss/postcss
