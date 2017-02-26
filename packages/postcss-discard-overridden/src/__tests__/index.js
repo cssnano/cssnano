@@ -1,12 +1,11 @@
 import fs from 'fs';
 import postcss from 'postcss';
 import test from 'ava';
-import { diffLines } from 'diff';
+import {diffLines} from 'diff';
 import chalk from 'chalk';
+import plugin from '../';
 
-import plugin from './';
-
-function getDiff(left, right) {
+function getDiff (left, right) {
     let msg = ['\n'];
     diffLines(left, right).forEach(item => {
         if (item.added || item.removed) {
@@ -36,8 +35,13 @@ function getDiff(left, right) {
     return msg.map(line => '  ' + line).join('');
 }
 
-function exec(t, input, output, opts = { }) {
-    return postcss([ plugin(opts) ]).process(input)
+function read (file) {
+    return fs.readFileSync(__dirname + `/fixtures/${file}.css`, {encoding: 'utf-8'});
+}
+
+function exec (t, input) {
+    let output = read(`${input}.post`);
+    return postcss([ plugin() ]).process(read(input))
         .then( result => {
             if (result.css !== output) {
                 t.fail(getDiff(result.css, output));
@@ -46,17 +50,14 @@ function exec(t, input, output, opts = { }) {
         });
 }
 
-function read(file) {
-    return fs.readFileSync(`./test/${file}.css`, { encoding: 'utf-8' });
-}
+test(
+    'Overridden @keyframes should be discarded correctly.',
+    exec,
+    'keyframes'
+);
 
-function run(task, desc) {
-    test(desc, t => {
-        return exec(t, read(task), read(`${task}.post`));
-    });
-}
-
-/* eslint-disable max-len */
-run('keyframes', 'Overridden @keyframes should be discarded correctly.');
-run('counter-style', 'Overridden @counter-style should be discarded correctly.');
-/* eslint-enable max-len */
+test(
+    'Overridden @counter-style should be discarded correctly.',
+    exec,
+    'counter-style'
+);

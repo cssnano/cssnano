@@ -14,11 +14,11 @@ var OVERRIDABLE_RULES = ['keyframes', 'counter-style'];
 var SCOPE_RULES = ['media', 'supports'];
 
 function isOverridable(name) {
-    return OVERRIDABLE_RULES.indexOf(_postcss2.default.vendor.unprefixed(name)) !== -1;
+    return ~OVERRIDABLE_RULES.indexOf(_postcss2.default.vendor.unprefixed(name));
 }
 
 function isScope(name) {
-    return SCOPE_RULES.indexOf(_postcss2.default.vendor.unprefixed(name)) !== -1;
+    return ~SCOPE_RULES.indexOf(_postcss2.default.vendor.unprefixed(name));
 }
 
 function getScope(node) {
@@ -37,12 +37,12 @@ exports.default = _postcss2.default.plugin('postcss-discard-overridden', functio
     return function (css) {
         var cache = {};
         var rules = [];
-        css.walkAtRules(function (rule) {
-            if (rule.type === 'atrule' && isOverridable(rule.name)) {
-                var scope = getScope(rule);
-                cache[scope] = rule;
+        css.walkAtRules(function (node) {
+            if (isOverridable(node.name)) {
+                var scope = getScope(node);
+                cache[scope] = node;
                 rules.push({
-                    node: rule,
+                    node: node,
                     scope: scope
                 });
             }
@@ -54,4 +54,3 @@ exports.default = _postcss2.default.plugin('postcss-discard-overridden', functio
         });
     };
 });
-module.exports = exports['default'];

@@ -109,6 +109,11 @@ Default: `true`
 Pass `false` to disable discarding unused namespace rules.
 
 
+## Usage
+
+See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
+examples for your environment.
+
 ## Contributors
 
 See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).

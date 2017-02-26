@@ -3,17 +3,17 @@ import postcss from 'postcss';
 const OVERRIDABLE_RULES = ['keyframes', 'counter-style'];
 const SCOPE_RULES = ['media', 'supports'];
 
-function isOverridable(name) {
-    return OVERRIDABLE_RULES.indexOf(postcss.vendor.unprefixed(name)) !== -1;
+function isOverridable (name) {
+    return ~OVERRIDABLE_RULES.indexOf(postcss.vendor.unprefixed(name));
 }
 
-function isScope(name) {
-    return SCOPE_RULES.indexOf(postcss.vendor.unprefixed(name)) !== -1;
+function isScope (name) {
+    return ~SCOPE_RULES.indexOf(postcss.vendor.unprefixed(name));
 }
 
-function getScope(node) {
+function getScope (node) {
     let current = node.parent;
-    let chain = [node.name, node.params];
+    const chain = [node.name, node.params];
     do {
         if (current.type === 'atrule' && isScope(current.name)) {
             chain.unshift(current.name + ' ' + current.params);
@@ -25,15 +25,15 @@ function getScope(node) {
 
 export default postcss.plugin('postcss-discard-overridden', () => {
     return css => {
-        let cache = {};
-        let rules = [];
-        css.walkAtRules(rule => {
-            if (rule.type === 'atrule' && isOverridable(rule.name)) {
-                let scope = getScope(rule);
-                cache[scope] = rule;
+        const cache = {};
+        const rules = [];
+        css.walkAtRules(node => {
+            if (isOverridable(node.name)) {
+                const scope = getScope(node);
+                cache[scope] = node;
                 rules.push({
-                    node: rule,
-                    scope
+                    node,
+                    scope,
                 });
             }
         });
