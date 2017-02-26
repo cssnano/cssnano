@@ -2,6 +2,10 @@ import {plugin} from 'postcss';
 
 function noop () {}
 
+function trimValue (value) {
+    return value ? value.trim() : value;
+}
+
 function empty (node) {
     return !node.nodes
         .filter(child => child.type !== 'comment')
@@ -22,7 +26,7 @@ function equals (a, b) {
     }
 
     switch (a.type) {
-    case 'rule': 
+    case 'rule':
         if (a.selector !== b.selector) {
             return false;
         }
@@ -32,11 +36,11 @@ function equals (a, b) {
             return false;
         }
 
-        if (a.raws && a.raws.before.trim() !== b.raws.before.trim()) {
+        if (a.raws && trimValue(a.raws.before) !== trimValue(b.raws.before)) {
             return false;
         }
 
-        if (a.raws && a.raws.afterName.trim() !== b.raws.afterName.trim()) {
+        if (a.raws && trimValue(a.raws.afterName) !== trimValue(b.raws.afterName)) {
             return false;
         }
         break;
@@ -45,7 +49,7 @@ function equals (a, b) {
             return false;
         }
 
-        if (a.raws && a.raws.before.trim() !== b.raws.before.trim()) {
+        if (a.raws && trimValue(a.raws.before) !== trimValue(b.raws.before)) {
             return false;
         }
         break;
@@ -88,10 +92,10 @@ function dedupeRule (last, nodes) {
 }
 
 function dedupeNode (last, nodes) {
-    let index = !!~nodes.indexOf(last) 
+    let index = !!~nodes.indexOf(last)
         ? nodes.indexOf(last) - 1
         : nodes.length - 1;
-    
+
     while (index >= 0) {
         const node = nodes[index--];
         if (node && equals(node, last)) {
