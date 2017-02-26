@@ -26,7 +26,7 @@ article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section,su
 .text-centered{text-align:center}
 .underlined{text-decoration:underline}
 .uppercase{text-transform:uppercase}
-img{display:block;width:100%;max-width:100%}
+img{width:100%}
 img.native-width{width:auto}
 .show-on-desktop,.show-on-mobile,.show-on-mobile-tablet,.show-on-tablet,.show-on-tablet-desktop{display:none!important}
 @media screen and (max-width:767px){
@@ -343,7 +343,6 @@ button::-moz-focus-inner,input::-moz-focus-inner{padding:0;border:0}
 .top-bar #nav-branding a{display:block;height:50px;padding:16px 14px 16px 0;color:#fff;font-size:18px;font-weight:700;line-height:1}
 .top-bar #nav-branding a:hover{text-decoration:none}
 .top-bar .top-bar-links{zoom:1;margin:0}
-.top-bar .top-bar-links>li{display:block;list-style-type:none}
 .top-bar .top-bar-links:after,.top-bar .top-bar-links:before{content:"";display:table}
 .top-bar .top-bar-links:after{clear:both}
 .top-bar .top-bar-links>li{display:block;float:left;list-style-type:none}

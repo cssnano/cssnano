@@ -3,7 +3,6 @@
 a,abbr,acronym,address,applet,article,aside,audio,b,big,blockquote,body,canvas,caption,center,cite,code,dd,del,details,dfn,div,dl,dt,em,embed,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,html,i,iframe,img,ins,kbd,label,legend,li,mark,menu,nav,object,ol,output,p,pre,q,ruby,s,samp,section,small,span,strike,strong,sub,summary,sup,table,tbody,td,tfoot,th,thead,time,tr,tt,u,ul,var,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}
 html{line-height:1}
 ol,ul{list-style:none}
-table{border-collapse:collapse;border-spacing:0}
 caption,td,th{text-align:left;font-weight:400;vertical-align:middle}
 blockquote,q{quotes:none}
 blockquote:after,blockquote:before,q:after,q:before{content:"";content:none}
@@ -983,7 +982,7 @@ img{-ms-interpolation-mode:bicubic}
 .btn.medium.icon-right a:after,.skiplink.medium.icon-right a:after{right:10.66667px}
 .btn.medium a,.skiplink.medium a{padding:0 18px}
 .btn.small,.skiplink.small{font-size:10px;font-size:.625rem;height:23px;line-height:21px}
-.btn.small a,.skiplink.small a{position:relative;padding:0 10px}
+.btn.small a,.skiplink.small a{position:relative}
 .btn.small.icon-left a,.skiplink.small.icon-left a{padding-left:23px}
 .btn.small.icon-left a:before,.skiplink.small.icon-left a:before{left:6.66667px}
 .btn.small.icon-right a,.skiplink.small.icon-right a{padding-right:23px}
