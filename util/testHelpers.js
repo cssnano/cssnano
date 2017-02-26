@@ -6,12 +6,15 @@ export function usePostCSSPlugin (t, plugin) {
 }
 
 export function processCSSFactory (plugin) {
-    let processCSS, passthroughCSS;
+    let processor, processCSS, passthroughCSS;
 
     if (Array.isArray(plugin)) {
+        processor = (fixture) => postcss(plugin).process(fixture);
+
         processCSS = (t, fixture, expected) => {
-            return postcss(plugin).process(fixture).then(({css}) => {
-                t.deepEqual(css, expected);
+            return processor(fixture).then(result => {
+                t.deepEqual(result.css, expected);
+                return result;
             });
         };
 
@@ -19,9 +22,14 @@ export function processCSSFactory (plugin) {
             return processCSS(t, fixture, fixture);
         };
     } else {
+        processor = (fixture, options) => {
+            return postcss(plugin(options)).process(fixture, options);
+        };
+
         processCSS = (t, fixture, expected, options) => {
-            return postcss(plugin(options)).process(fixture, options).then(({css}) => {
-                t.deepEqual(css, expected);
+            return processor(fixture, options).then(result => {
+                t.deepEqual(result.css, expected);
+                return result;
             });
         };
 
@@ -30,5 +38,5 @@ export function processCSSFactory (plugin) {
         };
     }
 
-    return {processCSS, passthroughCSS};
+    return {processor, processCSS, passthroughCSS};
 }
