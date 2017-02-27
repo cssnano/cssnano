@@ -410,6 +410,91 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "Semigradsky",
+      "name": "Dmitry Semigradsky",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1198848?v=3",
+      "profile": "http://brainstorage.me/semigradsky",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "Siilwyn",
+      "name": "Selwyn",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5701149?v=3",
+      "profile": "https://selwyn.cc/",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "mattbasta",
+      "name": "Matt Basta",
+      "avatar_url": "https://avatars.githubusercontent.com/u/279498?v=3",
+      "profile": "http://mattbasta.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "jameskolce",
+      "name": "James Kolce",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2559808?v=3",
+      "profile": "https://www.jameskolce.com",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "techmatt101",
+      "name": "Matthew",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1391716?v=3",
+      "profile": "http://mattkemp.info/",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "stevenvachon",
+      "name": "Steven Vachon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170197?v=3",
+      "profile": "https://svachon.com",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "MoOx",
+      "name": "Maxime Thirouin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/157534?v=3",
+      "profile": "https://moox.io/",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "sindresorhus",
+      "name": "Sindre Sorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?v=3",
+      "profile": "https://sindresorhus.com",
+      "contributions": [
+        "doc",
+        "tool"
+      ]
+    },
+    {
+      "login": "lydell",
+      "name": "Simon Lydell",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2142817?v=3",
+      "profile": "https://github.com/lydell",
+      "contributions": [
+        "doc"
+      ]
     }
   ]
 }
