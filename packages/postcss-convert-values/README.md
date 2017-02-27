@@ -1,4 +1,4 @@
-# [postcss][postcss]-convert-values [![Build Status](https://travis-ci.org/ben-eb/postcss-convert-values.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/postcss-convert-values.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/postcss-convert-values.svg)][deps]
+# [postcss][postcss]-convert-values
 
 > Convert values with PostCSS (e.g. ms -> s)
 
@@ -78,29 +78,21 @@ leave these values as is.
 It is recommended for most use cases to set this option to `2`.
 
 
+## Usage
+
+See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
+examples for your environment.
+
+
 ## Contributors
 
-Thanks goes to these wonderful people ([emoji key](https://github.com/kentcdodds/all-contributors#emoji-key)):
+See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-| [<img src="https://avatars.githubusercontent.com/u/1282980?v=3" width="100px;"/><br /><sub>Ben Briggs</sub>](http://beneb.info)<br />[💻](https://github.com/ben-eb/postcss-convert-values/commits?author=ben-eb) [📖](https://github.com/ben-eb/postcss-convert-values/commits?author=ben-eb) 👀 [⚠️](https://github.com/ben-eb/postcss-convert-values/commits?author=ben-eb) | [<img src="https://avatars.githubusercontent.com/u/5635476?v=3" width="100px;"/><br /><sub>Bogdan Chadkin</sub>](https://github.com/TrySound)<br />[💻](https://github.com/ben-eb/postcss-convert-values/commits?author=TrySound) [📖](https://github.com/ben-eb/postcss-convert-values/commits?author=TrySound) 👀 [⚠️](https://github.com/ben-eb/postcss-convert-values/commits?author=TrySound) | [<img src="https://avatars.githubusercontent.com/u/177485?v=3" width="100px;"/><br /><sub>Roman Komarov</sub>](http://kizu.ru/en/)<br />[🐛](https://github.com/ben-eb/postcss-convert-values/issues?q=author%3Akizu) | [<img src="https://avatars.githubusercontent.com/u/5103477?v=3" width="100px;"/><br /><sub>Dmitry Kiselyov</sub>](http://codepen.io/dmitrykiselyov)<br />[🐛](https://github.com/ben-eb/postcss-convert-values/issues?q=author%3Admitrykiselyov) | [<img src="https://avatars.githubusercontent.com/u/5038030?v=3" width="100px;"/><br /><sub>Charlike Mike Reagent</sub>](http://www.tunnckocore.tk)<br />[💻](https://github.com/ben-eb/postcss-convert-values/commits?author=tunnckoCore) [⚠️](https://github.com/ben-eb/postcss-convert-values/commits?author=tunnckoCore) | [<img src="https://avatars.githubusercontent.com/u/815848?v=3" width="100px;"/><br /><sub>Vyacheslav Shebanov</sub>](https://github.com/Termina1)<br />[📖](https://github.com/ben-eb/postcss-convert-values/commits?author=Termina1) | [<img src="https://avatars.githubusercontent.com/u/192323?v=3" width="100px;"/><br /><sub>Marek ‘saji’ Augustynowicz</sub>](http://twitter.com/saji_)<br />[💻](https://github.com/ben-eb/postcss-convert-values/commits?author=marek-saji) [⚠️](https://github.com/ben-eb/postcss-convert-values/commits?author=marek-saji) |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [<img src="https://avatars.githubusercontent.com/u/552316?v=3" width="100px;"/><br /><sub>Jonny Gerig Meyer</sub>](www.oddbird.net)<br />[💻](https://github.com/ben-eb/postcss-convert-values/commits?author=jgerigmeyer) [⚠️](https://github.com/ben-eb/postcss-convert-values/commits?author=jgerigmeyer) | [<img src="https://avatars.githubusercontent.com/u/1726061?v=3" width="100px;"/><br /><sub>GU Yiling</sub>](http://lync.in/)<br />[💻](https://github.com/ben-eb/postcss-convert-values/commits?author=Justineo) [⚠️](https://github.com/ben-eb/postcss-convert-values/commits?author=Justineo) |
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-This project follows the [all-contributors] specification. Contributions of
-any kind welcome!
 
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
 
 
-[all-contributors]: https://github.com/kentcdodds/all-contributors
-[ci]:       https://travis-ci.org/ben-eb/postcss-convert-values
-[colormin]: https://github.com/ben-eb/postcss-colormin
-[deps]:     https://gemnasium.com/ben-eb/postcss-convert-values
-[npm]:      http://badge.fury.io/js/postcss-convert-values
-[postcss]:  https://github.com/postcss/postcss
-
+[postcss]: https://github.com/postcss/postcss
 [csstricks]: https://css-tricks.com/the-lengths-of-css/

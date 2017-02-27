@@ -90,13 +90,5 @@ function transform (opts) {
 const plugin = 'postcss-convert-values';
 
 export default postcss.plugin(plugin, (opts = {precision: false}) => {
-    if (opts.length === undefined && opts.convertLength !== undefined) {
-        console.warn(`${plugin}: \`convertLength\` option is deprecated. Use \`length\``);
-        opts.length = opts.convertLength;
-    }
-    if (opts.length === undefined && opts.convertTime !== undefined) {
-        console.warn(`${plugin}: \`convertTime\` option is deprecated. Use \`time\``);
-        opts.time = opts.convertTime;
-    }
     return css => css.walkDecls(transform(opts));
 });

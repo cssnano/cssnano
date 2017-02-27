@@ -343,6 +343,54 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "kizu",
+      "name": "Roman Komarov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/177485?v=3",
+      "profile": "http://kizu.ru/en/",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "tunnckoCore",
+      "name": "Charlike Mike Reagent",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5038030?v=3",
+      "profile": "http://www.tunnckocore.tk",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "Termina1",
+      "name": "Vyacheslav Shebanov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/815848?v=3",
+      "profile": "https://github.com/Termina1",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "marek-saji",
+      "name": "Marek ‘saji’ Augustynowicz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/192323?v=3",
+      "profile": "http://twitter.com/saji_",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "jgerigmeyer",
+      "name": "Jonny Gerig Meyer",
+      "avatar_url": "https://avatars.githubusercontent.com/u/552316?v=3",
+      "profile": "www.oddbird.net",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ]
 }
