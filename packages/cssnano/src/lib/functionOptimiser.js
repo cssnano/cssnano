@@ -24,9 +24,7 @@ function reduceWhitespaces (node) {
 }
 
 function transformDecls (decl) {
-    if (!/filter/.test(decl.prop)) {
-        decl.value = valueParser(decl.value).walk(reduceWhitespaces).toString();
-    }
+    decl.value = valueParser(decl.value).walk(reduceWhitespaces).toString();
 }
 
 export default plugin('cssnano-function-optimiser', () => {

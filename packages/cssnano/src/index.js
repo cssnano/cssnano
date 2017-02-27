@@ -29,7 +29,6 @@ import postcssMergeRules from 'postcss-merge-rules';
 import postcssDiscardEmpty from 'postcss-discard-empty';
 import postcssUniqueSelectors from 'postcss-unique-selectors';
 import functionOptimiser from './lib/functionOptimiser';
-import filterOptimiser from './lib/filterOptimiser';
 import normalizeString from './lib/normalizeString';
 import normalizeUnicode from './lib/normalizeUnicode';
 import reduceDisplayValues from './lib/reduceDisplayValues';
@@ -64,7 +63,6 @@ const processors = {
     postcssDiscardUnused,
     postcssNormalizeUrl,
     functionOptimiser,
-    filterOptimiser,
     reduceBackgroundRepeat,
     reducePositions,
     core,

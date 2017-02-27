@@ -33,25 +33,9 @@ outputExample = """
 source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/core.js"
 
 [[modules]]
-name = "filter-optimiser"
-shortDescription = "Normalizes whitespace in filter functions"
-longDescription = "Trims whitespace in filter functions, such as CSS filters and legacy Microsoft effects."
-inputExample = """
-.box {
-    filter: blur( 5px );
-}
-"""
-outputExample = """
-.box {
-    filter: blur(5px);
-}
-"""
-source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/filterOptimiser.js"
-
-[[modules]]
 name = "function-optimiser"
 shortDescription = "Normalizes CSS function whitespace"
-longDescription = "Trims whitespace in CSS functions, except for `filter`."
+longDescription = "Trims whitespace in CSS functions, such as CSS filters and legacy Microsoft effects."
 inputExample = """
 .box {
     background: linear-gradient( #000, #fff );
