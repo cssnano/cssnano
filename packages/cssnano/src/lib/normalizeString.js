@@ -1,5 +1,6 @@
-const postcss = require('postcss');
-const valueParser = require('postcss-value-parser');
+import postcss from 'postcss';
+import valueParser from 'postcss-value-parser';
+import has from 'has';
 
 /*
  * Constants (parser usage)
@@ -206,6 +207,12 @@ function normalize (value, preferredQuote) {
     }).toString();
 }
 
+const params = {
+    rule: 'selector',
+    decl: 'value',
+    atrule: 'params',
+};
+
 export default postcss.plugin('cssnano-normalize-string', opts => {
     const {preferredQuote} = Object.assign({}, {
         preferredQuote: 'double',
@@ -213,14 +220,10 @@ export default postcss.plugin('cssnano-normalize-string', opts => {
 
     return css => {
         css.walk(node => {
-            if (node.type === 'rule') {
-                node.selector = normalize(node.selector, preferredQuote);
-            }
-            if (node.type === 'decl') {
-                node.value = normalize(node.value, preferredQuote);
-            }
-            if (node.type === 'atrule') {
-                node.params = normalize(node.params, preferredQuote);
+            const {type} = node;
+            if (has(params, type)) {
+                const param = params[type];
+                node[param] = normalize(node[param], preferredQuote);
             }
         });
     };
