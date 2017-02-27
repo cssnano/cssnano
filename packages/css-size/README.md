@@ -1,4 +1,4 @@
-# css-size [![Build Status](https://travis-ci.org/ben-eb/css-size.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/css-size.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/css-size.svg)][deps]
+# css-size
 
 > Display the size of a CSS file.
 
@@ -87,20 +87,14 @@ $ css-size --help
 * [`js-size`]: Display the size of a JS file.
 
 
-## Contributing
+## Contributors
 
-Pull requests are welcome. If you add functionality, then please add unit tests
-to cover it.
+See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
 
 
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
-
-
-[ci]:          https://travis-ci.org/ben-eb/css-size
-[deps]:        https://gemnasium.com/ben-eb/css-size
-[npm]:         http://badge.fury.io/js/css-size
 
 [`cssnano`]:   https://github.com/ben-eb/cssnano
 [`js-size`]:   https://github.com/lukekarrys/js-size

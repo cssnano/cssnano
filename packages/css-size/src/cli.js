@@ -15,7 +15,7 @@ const opts = minimist(process.argv.slice(2), {
 if (opts.version) {
     console.log(require('../package.json').version);
 } else {
-    let file = opts._[0];
+    const file = opts._[0];
 
     if (file === 'help' || opts.help) {
         fs.createReadStream(__dirname + '/../usage.txt')

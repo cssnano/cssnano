@@ -2,7 +2,8 @@ import {readFileSync as read} from 'fs';
 import {spawn} from 'child_process';
 import path from 'path';
 import test from 'ava';
-import size from '../';
+import stripAnsi from 'strip-ansi';
+import size, {table} from '../';
 
 function setup (args) {
     return new Promise((resolve, reject) => {
@@ -29,7 +30,7 @@ function setup (args) {
 
 test('cli', t => {
     return setup(['test.css']).then(results => {
-        let out = results[0];
+        const out = results[0];
         t.truthy(~out.indexOf('43 B'));
         t.truthy(~out.indexOf('34 B'));
         t.truthy(~out.indexOf('9 B'));
@@ -43,6 +44,24 @@ test('api', t => {
         t.deepEqual(result.minified, '34 B');
         t.deepEqual(result.difference, '9 B');
         t.deepEqual(result.percent, '79.07%');
+    });
+});
+
+const tableOutput = `
+┌─────────────────┬────────┐
+│ Original (gzip) │ 43 B   │
+├─────────────────┼────────┤
+│ Minified (gzip) │ 34 B   │
+├─────────────────┼────────┤
+│ Difference      │ 9 B    │
+├─────────────────┼────────┤
+│ Percent         │ 79.07% │
+└─────────────────┴────────┘
+`.replace(/^\s+|\s+$/g, '');
+
+test('table', t => {
+    return table(read('test.css', 'utf-8')).then(result => {
+        t.is(stripAnsi(result), tableOutput);
     });
 });
 

@@ -7,8 +7,8 @@ import round from 'round-precision';
 const cssSize = (css, opts) => {
     css = css.toString();
     return nano.process(css, opts).then(result => {
-        let original = gzip(css);
-        let minified = gzip(result.css);
+        const original = gzip(css);
+        const minified = gzip(result.css);
 
         return {
             original: prettyBytes(original),
@@ -20,14 +20,14 @@ const cssSize = (css, opts) => {
 };
 
 export function table (css, opts) {
-    let output = new Table();
+    const output = new Table();
     return cssSize(css, opts).then(result => {
         output.push.apply(output, Object.keys(result).map((key, i) => {
             let label = key.slice(0, 1).toUpperCase() + key.slice(1);
             if (i < 2) {
                 label += ' (gzip)';
             }
-            let row = {};
+            const row = {};
             row[label] = result[key];
             return row;
         }));
