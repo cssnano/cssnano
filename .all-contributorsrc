@@ -391,6 +391,25 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "faddee",
+      "name": "Fredrik Nicol",
+      "avatar_url": "https://avatars.githubusercontent.com/u/237182?v=3",
+      "profile": "https://github.com/faddee",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "callmevlad",
+      "name": "Vlad Magdalin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/785166?v=3",
+      "profile": "www.webflow.com",
+      "contributions": [
+        "doc"
+      ]
     }
   ]
 }

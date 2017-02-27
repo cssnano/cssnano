@@ -1,4 +1,4 @@
-# [postcss][postcss]-colormin [![Build Status](https://travis-ci.org/ben-eb/postcss-colormin.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/postcss-colormin.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/postcss-colormin.svg)][deps]
+# [postcss][postcss]-colormin
 
 > Minify colors in your CSS files with PostCSS.
 
@@ -42,10 +42,15 @@ Set this to `true` to enable IE < 10 compatibility; the browser chokes on the
 is turned off.
 
 
-## Contributing
+## Usage
 
-Pull requests are welcome. If you add functionality, then please add unit tests
-to cover it.
+See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
+examples for your environment.
+
+
+## Contributors
+
+See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
 
 
 ## License
@@ -53,7 +58,4 @@ to cover it.
 MIT © [Ben Briggs](http://beneb.info)
 
 
-[ci]:       https://travis-ci.org/ben-eb/postcss-colormin
-[deps]:     https://gemnasium.com/ben-eb/postcss-colormin
-[npm]:      http://badge.fury.io/js/postcss-colormin
 [postcss]:  https://github.com/postcss/postcss
