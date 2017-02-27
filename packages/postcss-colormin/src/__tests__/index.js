@@ -155,20 +155,26 @@ test(
     'should add extra spaces when converting rgb',
     processCSS,
     'h1{background:linear-gradient(rgb(50, 50, 50)0%,blue 100%)}',
-    'h1{background:linear-gradient(#323232 0%,blue 100%)}'
+    'h1{background:linear-gradient(#323232 0%,#00f 100%)}'
 );
 
 test(
     'should add extra spaces when converting rgb (2)',
     processCSS,
     'h1{background:linear-gradient(rgba(0,0,0,0)0%, blue 100%)}',
-    'h1{background:linear-gradient(transparent 0%, blue 100%)}'
+    'h1{background:linear-gradient(transparent 0%, #00f 100%)}'
 );
 
 test(
     'should bail on the "composes" property',
     passthroughCSS,
     'h1{composes:black from "styles"}'
+);
+
+test(
+    'should not mangle empty strings',
+    passthroughCSS,
+    'h1{content:""}'
 );
 
 test(

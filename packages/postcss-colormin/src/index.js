@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 import valueParser, {stringify} from 'postcss-value-parser';
-import colormin from 'colormin';
+import colormin from './colours';
 
 function reduceWhitespaces (decl) {
     decl.value = valueParser(decl.value).walk(node => {
@@ -19,7 +19,7 @@ function walk (parent, callback) {
     });
 }
 
-function transform (decl, opts) {
+function transform (opts, decl) {
     if (decl.prop === '-webkit-tap-highlight-color') {
         if (decl.value === 'inherit' || decl.value === 'transparent') {
             return;
@@ -44,7 +44,7 @@ function transform (decl, opts) {
             } else if (node.value === 'calc') {
                 return false;
             }
-        } else {
+        } else if (node.type === 'word') {
             node.value = colormin(node.value, opts);
         }
     });
@@ -52,5 +52,5 @@ function transform (decl, opts) {
 }
 
 export default postcss.plugin('postcss-colormin', (opts = {}) => {
-    return css => css.walkDecls(node => transform(node, opts));
+    return css => css.walkDecls(transform.bind(null, opts));
 });

@@ -246,22 +246,22 @@ test(
 test(
     'should work in attribute selectors',
     processCss,
-    `[rel='external link']{color:blue}`,
-    `[rel="external link"]{color:blue}`,
+    `[rel='external link']{color:#00f}`,
+    `[rel="external link"]{color:#00f}`,
 );
 
 test(
     'should change strings (1)',
     processCss,
-    `[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:blue}`,
-    `[a='escaped quotes " h1, h1, h1 " h1, h1, h1']{color:blue}`,
+    `[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:#00f}`,
+    `[a='escaped quotes " h1, h1, h1 " h1, h1, h1']{color:#00f}`,
 );
 
 test(
     'should change strings (2)',
     processCss,
-    `[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}`,
-    `[a="escaped quotes ' h1, h1, h1 ' h1, h1, h1"]{color:blue}`,
+    `[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:#00f}`,
+    `[a="escaped quotes ' h1, h1, h1 ' h1, h1, h1"]{color:#00f}`,
 );
 
 test(
