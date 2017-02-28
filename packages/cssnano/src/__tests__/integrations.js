@@ -1,18 +1,18 @@
-import {readFileSync as file} from 'fs';
+import fs from 'fs';
 import {join} from 'path';
-import ava from 'ava';
+import test from 'ava';
 import postcss from 'postcss';
-import frameworks from 'css-frameworks';
+import frameworks from '../../../../util/frameworks';
 import formatter from './util/formatter';
 import nano from '..';
 
-const base = join(__dirname, 'integrations');
+const output = join(__dirname, 'integrations');
 
 Object.keys(frameworks).forEach(framework => {
-    ava(framework + '.css', t => {
+    test(`${framework}.css`, t => {
         const plugins = [nano(), formatter()];
         return postcss(plugins).process(frameworks[framework]).then(({css}) => {
-            const expected = file(join(base, framework) + '.css', 'utf-8');
+            const expected = fs.readFileSync(join(output, framework) + '.css', 'utf-8');
             t.deepEqual(css, expected);
         });
     });

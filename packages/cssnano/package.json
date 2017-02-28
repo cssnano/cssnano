@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
+    "integrations": "babel-node src/__tests__/util/rebuild.js",
     "prepublish": "babel src --out-dir dist --ignore /__tests__/"
   },
   "keywords": [
@@ -53,7 +54,6 @@
     "array-to-sentence": "^1.1.0",
     "babel-cli": "^6.5.1",
     "babel-loader": "^6.2.4",
-    "css-frameworks": "git+https://git@github.com/ben-eb/css-frameworks.git",
     "json-loader": "^0.5.4",
     "ncp": "^2.0.0",
     "postcss-font-magician": "^1.5.0",

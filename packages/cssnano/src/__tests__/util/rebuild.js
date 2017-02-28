@@ -1,9 +1,9 @@
-const write = require('fs').writeFileSync;
-const join = require('path').join;
-const postcss = require('postcss');
-const frameworks = require('css-frameworks');
-const nano = require('../../../dist').default;
-const formatter = require('./formatter');
+import {writeFileSync as write} from 'fs';
+import {join} from 'path';
+import postcss from 'postcss';
+import frameworks from '../../../../../util/frameworks';
+import nano from '../../';
+import formatter from './formatter';
 
 const base = join(__dirname, '../integrations');
 
