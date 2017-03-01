@@ -27,6 +27,7 @@
   },
   "repository": "ben-eb/postcss-minify-gradients",
   "dependencies": {
+    "cssnano-util-get-arguments": "0.0.0",
     "postcss": "^5.0.12",
     "postcss-value-parser": "^3.3.0"
   }

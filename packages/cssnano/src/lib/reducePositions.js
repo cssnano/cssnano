@@ -1,7 +1,7 @@
 import {plugin} from 'postcss';
 import valueParser, {unit} from 'postcss-value-parser';
+import getArguments from 'cssnano-util-get-arguments';
 import has from 'has';
-import getArguments from './getArguments';
 
 const directions = ['top', 'right', 'bottom', 'left', 'center'];
 const properties = [

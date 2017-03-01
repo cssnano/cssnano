@@ -1,6 +1,6 @@
 import {unit} from 'postcss-value-parser';
+import getArguments from 'cssnano-util-get-arguments';
 import addSpace from '../lib/addSpace';
-import getArguments from '../lib/getArguments';
 import getValue from '../lib/getValue';
 
 // box-shadow: inset? && <length>{2,4} && <color>?

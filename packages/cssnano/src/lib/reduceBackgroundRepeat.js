@@ -1,7 +1,7 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
+import getArguments from 'cssnano-util-get-arguments';
 import evenValues from './evenValues';
-import getArguments from './getArguments';
 import getMatchFactory from './getMatch';
 
 const mappings = [

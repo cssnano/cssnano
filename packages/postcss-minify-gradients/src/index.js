@@ -1,5 +1,6 @@
 import postcss from 'postcss';
 import valueParser, {unit} from 'postcss-value-parser';
+import getArguments from 'cssnano-util-get-arguments';
 
 const angles = {
     top:    '0deg',
@@ -7,17 +8,6 @@ const angles = {
     bottom: '180deg',
     left:   '270deg',
 };
-
-function getArguments (node) {
-    return node.nodes.reduce((list, child) => {
-        if (child.type !== 'div') {
-            list[list.length - 1].push(child);
-        } else {
-            list.push([]);
-        }
-        return list;
-    }, [[]]);
-}
 
 function isLessThan (a, b) {
     return a.unit === b.unit && parseFloat(a.number) >= parseFloat(b.number);

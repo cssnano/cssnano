@@ -1,6 +1,6 @@
 import {unit} from 'postcss-value-parser';
+import getArguments from 'cssnano-util-get-arguments';
 import addSpace from '../lib/addSpace';
-import getArguments from '../lib/getArguments';
 import getValue from '../lib/getValue';
 
 // transition: [ none | <single-transition-property> ] || <time> || <single-transition-timing-function> || <time>
