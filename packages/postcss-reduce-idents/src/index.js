@@ -14,10 +14,10 @@ export default postcss.plugin('postcss-reduce-idents', ({
     encoder = encode,
 } = {}) => {
     const reducers = [];
-    counter && reducers.push(counterReducer);
-    counterStyle && reducers.push(counterStyleReducer);
-    keyframes && reducers.push(keyframesReducer);
-    gridTemplate && reducers.push(gridTemplateReducer);
+    counter && reducers.push(counterReducer());
+    counterStyle && reducers.push(counterStyleReducer());
+    keyframes && reducers.push(keyframesReducer());
+    gridTemplate && reducers.push(gridTemplateReducer());
 
     return css => {
         css.walk(node => {

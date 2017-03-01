@@ -1,4 +1,5 @@
 import test from 'ava';
+import postcss from 'postcss';
 import plugin from '..';
 import encode from '../lib/encode';
 import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
@@ -248,6 +249,17 @@ test(
     ].join(''),
     {encoder: val => `PREFIX${val}`}
 );
+
+test('should not generate same ident when plugin instance is reused', t => {
+    const instance = postcss(plugin);
+    return Promise.all([
+        instance.process('@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}'),
+        instance.process('@keyframes fadeOut{0%{opacity:1}to{opacity:0}}.two{animation-name:fadeOut}'),
+    ]).then(([result1, result2]) => {
+        t.is(result1.css, '@keyframes a{0%{color:#fff}to{color:#000}}.one{animation-name:a}');
+        t.is(result2.css, '@keyframes b{0%{opacity:1}to{opacity:0}}.two{animation-name:b}');
+    });
+});
 
 test('encoder', t => {
     let iterations = new Array(1984);
