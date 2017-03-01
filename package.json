@@ -51,7 +51,7 @@
     "postcss-reduce-idents": "^2.2.2",
     "postcss-reduce-initial": "^1.0.0",
     "postcss-reduce-transforms": "^1.0.3",
-    "postcss-svgo": "^2.1.1",
+    "postcss-svgo": "^2.1.2",
     "postcss-unique-selectors": "^2.0.2",
     "postcss-value-parser": "^3.2.3",
     "postcss-zindex": "^2.0.1"
