@@ -113,7 +113,7 @@ let safeOptions = {
     },
 };
 
-const cssnano = postcss.plugin('cssnano', (options = {}) => {
+export default postcss.plugin('cssnano', (options = {}) => {
     // Prevent PostCSS from throwing when safe is defined
     if (options.safe === true) {
         options.isSafe = true;
@@ -151,10 +151,3 @@ const cssnano = postcss.plugin('cssnano', (options = {}) => {
 
     return proc;
 });
-
-cssnano.process = (css, options = {}) => {
-    options.map = options.map || (options.sourcemap ? true : null);
-    return postcss([cssnano(options)]).process(css, options);
-};
-
-export default cssnano;

@@ -73,10 +73,3 @@ ava('should work with sourcemaps', t => {
         t.truthy(hasMap);
     });
 });
-
-ava('should work with sourcemaps (2)', t => {
-    return nano.process('h1{z-index:1}', {sourcemap: true}).then(({css}) => {
-        const hasMap = /sourceMappingURL=data:application\/json;base64/.test(css);
-        t.truthy(hasMap);
-    });
-});
