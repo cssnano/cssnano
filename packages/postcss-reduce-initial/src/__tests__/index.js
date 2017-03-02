@@ -1,5 +1,6 @@
 import test from 'ava';
-import values from '../../data/values.json';
+import fromInitial from '../../data/fromInitial.json';
+import toInitial from '../../data/toInitial.json';
 import plugin from '..';
 import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
 
@@ -9,12 +10,28 @@ function convertInitial (t, property, value) {
     return processCSS(t, `${property}:initial`, `${property}:${value}`);
 }
 
-Object.keys(values).forEach(property => {
+function convertToInitial (t, property, value) {
+    return Promise.all([
+        processCSS(t, `${property}:${value}`, `${property}:initial`, {env: 'chrome58'}),
+        passthroughCSS(t, `${property}:${value}`, {env: 'ie6'}),
+    ]);
+}
+
+Object.keys(fromInitial).forEach(property => {
     test(
-        `${property}: initial => ${property}: ${values[property]}`,
+        `${property}: initial => ${property}: ${fromInitial[property]}`,
         convertInitial,
         property,
-        values[property]
+        fromInitial[property]
+    );
+});
+
+Object.keys(toInitial).forEach(property => {
+    test(
+        `${property}: ${toInitial[property]} => ${property}: initial`,
+        convertToInitial,
+        property,
+        toInitial[property]
     );
 });
 

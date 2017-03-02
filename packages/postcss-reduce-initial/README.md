@@ -12,14 +12,17 @@ npm install postcss-reduce-initial --save
 ```
 
 
-## Example
+## Examples
 
-This module will replace the `initial` CSS keyword with the *actual* value,
-when this value is smaller than the `initial` definition itself. For example,
-the initial value for the `min-width` property is `0`; therefore, these two
-definitions are equivalent;
+See the [data](data) for more conversions. This data is courtesy
+of Mozilla.
 
-### Input
+### Convert `initial` values
+
+When the `initial` keyword is longer than the property value, it will
+be converted:
+
+#### Input
 
 ```css
 h1 {
@@ -27,7 +30,7 @@ h1 {
 }
 ```
 
-### Output
+#### Output
 
 ```css
 h1 {
@@ -35,8 +38,30 @@ h1 {
 }
 ```
 
-See the [data](data/values.json) for more conversions. This data is courtesy
-of Mozilla.
+
+### Convert values back to `initial`
+
+When the `initial` value is smaller than the property value, it will
+be converted:
+
+#### Input
+
+```css
+h1 {
+    transform-box: border-box;
+}
+```
+
+#### Output
+
+```css
+h1 {
+    transform-box: initial;
+}
+```
+
+This conversion is only applied when you supply a browsers list that all support
+the `initial` keyword; it's worth noting that Internet Explorer has no support.
 
 
 ## Usage

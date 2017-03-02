@@ -9,8 +9,8 @@
     "LICENSE-MIT"
   ],
   "scripts": {
-    "acquire": "node ./dist/acquire.js > ./data/values.json",
-    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
+    "acquire": "babel-node ./src/acquire.js",
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/,src/acquire.js"
   },
   "keywords": [
     "css",
@@ -22,7 +22,8 @@
     "babel-cli": "^6.5.1",
     "got": "^6.3.0",
     "html2plaintext": "^1.0.1",
-    "is-html": "^1.0.0"
+    "is-html": "^1.0.0",
+    "write-file": "^1.0.0"
   },
   "homepage": "https://github.com/ben-eb/postcss-reduce-initial",
   "author": {
@@ -32,6 +33,9 @@
   },
   "repository": "ben-eb/postcss-reduce-initial",
   "dependencies": {
+    "browserslist": "^1.7.5",
+    "caniuse-api": "^1.5.2",
+    "has": "^1.0.1",
     "postcss": "^5.0.4"
   }
 }

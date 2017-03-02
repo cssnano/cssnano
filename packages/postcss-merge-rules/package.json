@@ -30,7 +30,7 @@
   },
   "repository": "ben-eb/postcss-merge-rules",
   "dependencies": {
-    "browserslist": "^1.5.2",
+    "browserslist": "^1.7.5",
     "caniuse-api": "^1.5.2",
     "postcss": "^5.0.4",
     "postcss-selector-parser": "^2.2.2",
