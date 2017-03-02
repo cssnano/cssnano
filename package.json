@@ -24,8 +24,10 @@
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^2.0.1",
     "gh-pages": "^0.11.0",
+    "glob": "^7.1.1",
     "lerna": "2.0.0-beta.37",
-    "nyc": "^10.1.2"
+    "nyc": "^10.1.2",
+    "write-file": "^1.0.0"
   },
   "ava": {
     "files": [

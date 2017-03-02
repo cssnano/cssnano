@@ -14,16 +14,19 @@
   "devDependencies": {
     "babel-cli": "^6.5.1"
   },
-  "homepage": "https://github.com/ben-eb/postcss-reduce-transforms",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-reduce-transforms",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-reduce-transforms",
   "dependencies": {
     "has": "^1.0.1",
     "postcss": "^5.0.8",
     "postcss-value-parser": "^3.0.1"
+  },
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
   }
 }

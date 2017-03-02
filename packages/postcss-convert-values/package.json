@@ -20,15 +20,18 @@
   "devDependencies": {
     "babel-cli": "^6.5.1"
   },
-  "homepage": "https://github.com/ben-eb/postcss-convert-values",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-convert-values",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-convert-values",
   "dependencies": {
     "postcss": "^5.0.11",
     "postcss-value-parser": "^3.1.2"
+  },
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
   }
 }

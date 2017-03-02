@@ -23,17 +23,20 @@
     "babel-cli": "^6.5.1",
     "postcss-font-magician": "^1.4.0"
   },
-  "homepage": "https://github.com/ben-eb/postcss-minify-selectors",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-minify-selectors.git",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-minify-selectors",
   "dependencies": {
     "alphanum-sort": "^1.0.2",
     "has": "^1.0.1",
     "postcss": "^5.0.14",
     "postcss-selector-parser": "^2.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
   }
 }

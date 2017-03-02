@@ -21,16 +21,19 @@
   "devDependencies": {
     "babel-cli": "^6.5.1"
   },
-  "homepage": "https://github.com/ben-eb/postcss-merge-longhand",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-merge-longhand",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-merge-longhand",
   "dependencies": {
     "postcss": "^5.0.5",
     "postcss-value-parser": "^3.3.0",
     "stylehacks": "^2.2.0"
+  },
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
   }
 }

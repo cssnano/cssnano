@@ -19,15 +19,18 @@
   "devDependencies": {
     "babel-cli": "^6.5.1"
   },
-  "homepage": "https://github.com/ben-eb/postcss-reduce-idents",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-reduce-idents",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-reduce-idents",
   "dependencies": {
     "postcss": "^5.0.4",
     "postcss-value-parser": "^3.0.2"
+  },
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
   }
 }

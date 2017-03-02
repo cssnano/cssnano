@@ -13,11 +13,11 @@
   ],
   "author": "Justineo <justice360@gmail.com>",
   "license": "MIT",
-  "repository": "Justineo/postcss-discard-overridden",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-discard-overridden",
   "bugs": {
-    "url": "https://github.com/Justineo/postcss-discard-overridden/issues"
+    "url": "https://github.com/ben-eb/cssnano/issues"
   },
-  "homepage": "https://github.com/Justineo/postcss-discard-overridden",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "dependencies": {
     "postcss": "^5.0.16"
   },

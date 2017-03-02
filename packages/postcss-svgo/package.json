@@ -24,17 +24,20 @@
     "babel-cli": "^6.5.1",
     "pleeease-filters": "^3.0.0"
   },
-  "homepage": "https://github.com/ben-eb/postcss-svgo",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-svgo",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-svgo",
   "dependencies": {
     "is-svg": "^2.0.0",
     "postcss": "^5.0.14",
     "postcss-value-parser": "^3.2.3",
     "svgo": "^0.7.0"
+  },
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
   }
 }

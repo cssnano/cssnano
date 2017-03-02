@@ -13,11 +13,11 @@
     "dist"
   ],
   "license": "MIT",
-  "repository": "ben-eb/postcss-charset",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-charset",
   "bugs": {
-    "url": "https://github.com/ben-eb/postcss-charset/issues"
+    "url": "https://github.com/ben-eb/cssnano/issues"
   },
-  "homepage": "https://github.com/ben-eb/postcss-charset",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "dependencies": {
     "postcss": "^5.0.5"
   },

@@ -16,13 +16,13 @@
     "postcss-plugin"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/ben-eb/postcss-unique-selectors",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-unique-selectors",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-unique-selectors",
   "devDependencies": {
     "babel-cli": "^6.5.1"
   },
@@ -30,5 +30,8 @@
     "alphanum-sort": "^1.0.1",
     "postcss": "^5.0.4",
     "uniqs": "^2.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
   }
 }

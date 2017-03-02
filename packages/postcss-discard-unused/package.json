@@ -23,15 +23,18 @@
   "devDependencies": {
     "babel-cli": "^6.5.1"
   },
-  "homepage": "https://github.com/ben-eb/postcss-discard-unused",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-discard-unused",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-discard-unused",
   "dependencies": {
     "postcss": "^5.0.14",
     "uniqs": "^2.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
   }
 }

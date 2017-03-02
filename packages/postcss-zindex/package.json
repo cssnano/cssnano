@@ -28,11 +28,14 @@
   "devDependencies": {
     "babel-cli": "^6.5.1"
   },
-  "homepage": "https://github.com/ben-eb/postcss-zindex",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-zindex"
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-zindex",
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
+  }
 }

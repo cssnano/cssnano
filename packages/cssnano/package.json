@@ -67,11 +67,14 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/cssnano",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/cssnano",
   "files": [
     "dist",
     "LICENSE-MIT",
     "quickstart.js"
   ],
-  "tonicExampleFilename": "quickstart.js"
+  "tonicExampleFilename": "quickstart.js",
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
+  }
 }

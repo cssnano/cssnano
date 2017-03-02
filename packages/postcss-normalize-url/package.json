@@ -29,11 +29,14 @@
   "devDependencies": {
     "babel-cli": "^6.5.1"
   },
-  "homepage": "https://github.com/ben-eb/postcss-normalize-url",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-normalize-url"
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-url",
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
+  }
 }

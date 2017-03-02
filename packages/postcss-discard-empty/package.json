@@ -26,11 +26,14 @@
   "devDependencies": {
     "babel-cli": "^6.5.1"
   },
-  "homepage": "https://github.com/ben-eb/postcss-discard-empty",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/postcss-discard-empty"
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-discard-empty",
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
+  }
 }
