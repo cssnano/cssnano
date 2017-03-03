@@ -26,12 +26,10 @@ export default plugin('postcss-reduce-initial', () => {
                 decl.value = initial;
                 return;
             }
-            if (decl.value !== initial) {
+            if (decl.value !== initial || !fromInitial[prop]) {
                 return;
             }
-            if (fromInitial[prop]) {
-                decl.value = fromInitial[decl.prop];
-            }
+            decl.value = fromInitial[prop];
         });
     };
 });
