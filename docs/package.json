@@ -117,7 +117,7 @@
     "remark-slug": "^4.1.0",
     "style-loader": "^0.12.3",
     "stylelint": "^7.2.0",
-    "stylelint-config-standard": "^13.0.0",
+    "stylelint-config-standard": "^16.0.0",
     "toml-loader": "^1.0.0",
     "webpack": "^1.12.1",
     "whatwg-fetch": "^0.11.0"
