@@ -2,25 +2,13 @@ import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import getArguments from 'cssnano-util-get-arguments';
 import getMatchFactory from 'cssnano-util-get-match';
-import evenValues from './evenValues';
+import mappings from './lib/map';
 
-const mappings = [
-    ['repeat-x',  ['repeat', 'no-repeat']],
-    ['repeat-y',  ['no-repeat', 'repeat']],
-    ['repeat',    ['repeat', 'repeat']],
-    ['space',     ['space', 'space']],
-    ['round',     ['round', 'round']],
-    ['no-repeat', ['no-repeat', 'no-repeat']],
-];
+function evenValues (list, index) {
+    return index % 2 === 0;
+}
 
-const repeat = [
-    mappings[0][0],
-    mappings[1][0],
-    mappings[2][0],
-    mappings[3][0],
-    mappings[4][0],
-    mappings[5][0],
-];
+const repeatKeywords = mappings.map((mapping) => mapping[0]);
 
 const getMatch = getMatchFactory(mappings);
 
@@ -37,7 +25,7 @@ function transform (decl) {
             end: null,
         });
         arg.forEach((part, index) => {
-            const isRepeat = ~repeat.indexOf(part.value);
+            const isRepeat = ~repeatKeywords.indexOf(part.value);
             const len = relevant.length - 1;
             if (relevant[len].start === null && isRepeat) {
                 relevant[len].start = index;
@@ -64,7 +52,7 @@ function transform (decl) {
             return;
         }
         const match = getMatch(val.filter(evenValues).map(n => n.value));
-        if (match.length) {
+        if (match) {
             args[index][range.start].value = match;
             args[index][range.start + 1].value = '';
             args[index][range.end].value = '';
@@ -73,10 +61,6 @@ function transform (decl) {
     decl.value = values.toString();
 }
 
-const plugin = postcss.plugin('cssnano-reduce-background-repeat', () => {
-    return css => css.walkDecls(/background(-repeat|$)/, transform);
+export default postcss.plugin('postcss-normalize-repeat-style', () => {
+    return css => css.walkDecls(/background(-repeat)?|(-webkit-)?mask-repeat/, transform);
 });
-
-plugin.mappings = mappings;
-
-export default plugin;

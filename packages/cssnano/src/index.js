@@ -25,6 +25,7 @@ import postcssReduceIdents from 'postcss-reduce-idents';
 import postcssMergeLonghand from 'postcss-merge-longhand';
 import postcssDiscardDuplicates from 'postcss-discard-duplicates';
 import postcssDiscardOverridden from 'postcss-discard-overridden';
+import postcssNormalizeRepeatStyle from 'postcss-normalize-repeat-style';
 import postcssMergeRules from 'postcss-merge-rules';
 import postcssDiscardEmpty from 'postcss-discard-empty';
 import postcssUniqueSelectors from 'postcss-unique-selectors';
@@ -32,7 +33,6 @@ import functionOptimiser from './lib/functionOptimiser';
 import normalizeString from './lib/normalizeString';
 import normalizeUnicode from './lib/normalizeUnicode';
 import reduceDisplayValues from './lib/reduceDisplayValues';
-import reduceBackgroundRepeat from './lib/reduceBackgroundRepeat';
 import reducePositions from './lib/reducePositions';
 import core from './lib/core';
 import reduceTimingFunctions from './lib/reduceTimingFunctions';
@@ -63,7 +63,7 @@ const processors = {
     postcssDiscardUnused,
     postcssNormalizeUrl,
     functionOptimiser,
-    reduceBackgroundRepeat,
+    postcssNormalizeRepeatStyle,
     reducePositions,
     core,
     // Optimisations after this are sensitive to previous optimisations in

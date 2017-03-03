@@ -623,9 +623,9 @@ safe = false
 source = "https://github.com/ben-eb/postcss-zindex"
 
 [[modules]]
-name = "reduce-background-repeat"
-shortDescription = "Normalizes background repeat definitions"
-longDescription = "Reduces the two value syntax for `background-repeat` into the single value syntax where possible, in both the property itself and the `background` shorthand."
+name = "postcss-normalize-repeat-style"
+shortDescription = "Normalizes `<repeat-style>` definitions"
+longDescription = "Reduces the two value syntax for `background-repeat` into the single value syntax where possible, in both the property itself and the `background` shorthand. Also works for `mask-repeat`."
 inputExample = """
 .box {
     background-repeat: no-repeat repeat;
