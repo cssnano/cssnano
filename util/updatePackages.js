@@ -8,6 +8,7 @@ function updatePackage (pkg) {
     const pkgName = basename(pkg);
     const pkgJson = require(`${pkg}/package.json`);
 
+    pkgJson.name = pkgName;
     pkgJson.repository = `${homepage}/tree/master/packages/${pkgName}`;
     pkgJson.homepage = homepage;
 
