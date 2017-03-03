@@ -1,8 +1,8 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import getArguments from 'cssnano-util-get-arguments';
+import getMatchFactory from 'cssnano-util-get-match';
 import evenValues from './evenValues';
-import getMatchFactory from './getMatch';
 
 const mappings = [
     ['repeat-x',  ['repeat', 'no-repeat']],
@@ -65,7 +65,7 @@ function transform (decl) {
         }
         const match = getMatch(val.filter(evenValues).map(n => n.value));
         if (match.length) {
-            args[index][range.start].value = match[0][0];
+            args[index][range.start].value = match;
             args[index][range.start + 1].value = '';
             args[index][range.end].value = '';
         }

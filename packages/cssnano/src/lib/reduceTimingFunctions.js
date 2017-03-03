@@ -1,7 +1,7 @@
 import {plugin} from 'postcss';
 import valueParser from 'postcss-value-parser';
+import getMatchFactory from 'cssnano-util-get-match';
 import evenValues from './evenValues';
-import getMatchFactory from './getMatch';
 
 const keywords = [
     ['ease',        [0.25, 0.1, 0.25, 1]],
@@ -41,9 +41,9 @@ function reduce (node) {
     if (node.value === 'cubic-bezier') {
         const match = getMatch(node.nodes.filter(evenValues).map(getValue));
 
-        if (match.length) {
+        if (match) {
             node.type = 'word';
-            node.value = match[0][0];
+            node.value = match;
             delete node.nodes;
             return;
         }

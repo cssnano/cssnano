@@ -1,6 +1,7 @@
 import has from 'has';
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
+import getMatchFactory from 'cssnano-util-get-match';
 
 function getValues (list, {value}, index) {
     if (index % 2 === 0) {
@@ -48,17 +49,13 @@ const rotate3dMappings = [
     ['rotate',  [0, 0, 1]], // rotate3d(0, 0, 1, a) => rotate(a)
 ];
 
-function rotate3dMatch (values) {
-    return values.reduce((list, arg, i) => {
-        return list.filter(value => value[1][i] === arg);
-    }, rotate3dMappings);
-}
+const rotate3dMatch = getMatchFactory(rotate3dMappings);
 
 function rotate3d (node, values) {
     const {nodes} = node;
     const match = rotate3dMatch(values.slice(0, 3));
     if (match.length) {
-        node.value = match[0][0];
+        node.value = match;
         node.nodes = [nodes[6]];
     }
 }

@@ -1,7 +1,7 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
+import getMatchFactory from 'cssnano-util-get-match';
 import evenValues from './evenValues';
-import getMatchFactory from './getMatch';
 
 const block = 'block';
 const flex = 'flex';
@@ -57,8 +57,8 @@ function transform (node) {
         return;
     }
     const match = getMatch(nodes.filter(evenValues).map(n => n.value));
-    if (match.length) {
-        node.value = match[0][0];
+    if (match) {
+        node.value = match;
     }
 }
 
