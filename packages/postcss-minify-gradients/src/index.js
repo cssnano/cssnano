@@ -64,8 +64,9 @@ function optimise (decl) {
         ) {
             let args = getArguments(node);
             let lastStop;
-            args.forEach(arg => {
-                if (!arg[2]) {
+            const hasAt = args[0].find(n => n.value === 'at');
+            args.forEach((arg, index) => {
+                if (!arg[2] || !index && hasAt) {
                     return;
                 }
                 let thisStop = unit(arg[2].value);

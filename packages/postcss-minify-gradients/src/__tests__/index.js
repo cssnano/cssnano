@@ -114,6 +114,19 @@ test(
 );
 
 test(
+    'radial: should correctly account for "at"',
+    passthroughCSS,
+    'background:radial-gradient(at 50% 0%,rgba(74,74,74,.15),transparent 40%);'
+);
+
+test(
+    'radial: should correctly account for "at" (2)',
+    processCSS,
+    'background:radial-gradient(at 50% 0%,rgba(74,74,74,.15),transparent 40%, red 40%);',
+    'background:radial-gradient(at 50% 0%,rgba(74,74,74,.15),transparent 40%, red 0);'
+);
+
+test(
     'should not mangle floating point numbers',
     processCSS,
     'background:linear-gradient(#fff,#fff 2em,#ccc 2em,#ccc 2.1em,#fff 2.1em)',
