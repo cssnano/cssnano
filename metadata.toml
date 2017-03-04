@@ -49,7 +49,7 @@ outputExample = """
 source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/functionOptimiser.js"
 
 [[modules]]
-name = "normalize-string"
+name = "postcss-normalize-string"
 shortDescription = "Normalizes quotation marks in strings"
 longDescription = """
 Standardises the usage of double (by default) or single quoted strings, for
@@ -70,7 +70,7 @@ outputExample = """
     content: "This is a string which is broken over multiple lines.";
 }
 """
-source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/normalizeString.js"
+source = "https://github.com/ben-eb/cssnano/blob/master/packages/postcss-normalize-string"
 
 [[modules]]
 name = "normalize-unicode"

@@ -213,7 +213,7 @@ const params = {
     atrule: 'params',
 };
 
-export default postcss.plugin('cssnano-normalize-string', opts => {
+export default postcss.plugin('postcss-normalize-string', opts => {
     const {preferredQuote} = Object.assign({}, {
         preferredQuote: 'double',
     }, opts);

@@ -29,8 +29,8 @@ import postcssNormalizeRepeatStyle from 'postcss-normalize-repeat-style';
 import postcssMergeRules from 'postcss-merge-rules';
 import postcssDiscardEmpty from 'postcss-discard-empty';
 import postcssUniqueSelectors from 'postcss-unique-selectors';
+import postcssNormalizeString from 'postcss-normalize-string';
 import functionOptimiser from './lib/functionOptimiser';
-import normalizeString from './lib/normalizeString';
 import normalizeUnicode from './lib/normalizeUnicode';
 import reduceDisplayValues from './lib/reduceDisplayValues';
 import reducePositions from './lib/reducePositions';
@@ -56,7 +56,7 @@ const processors = {
     postcssMinifyParams,
     postcssNormalizeCharset,
     postcssDiscardOverridden,
-    normalizeString,
+    postcssNormalizeString,
     normalizeUnicode,
     // minify-font-values should be run before discard-unused
     postcssMinifyFontValues,
