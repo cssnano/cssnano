@@ -37,6 +37,7 @@ test('should convert percentage based rgba values (3)', isEqual, 'rgb(100%,100%,
 test('should convert percentage based rgba values (4)', isEqual, 'rgba(100%,100%,100%,0.5)', 'hsla(0,0%,100%,.5)');
 test('should convert percentage based rgba values (5)', isEqual, 'rgba(100%,64.7%,0%,.5)', 'rgba(255,165,0,.5)');
 test('should pass through on invalid rgb functions', isEqual, 'rgb(50%,23,54)', 'rgb(50%,23,54)');
+test('should convert darkgray to a hex', isEqual, 'darkgray', '#a9a9a9');
 
 test('should pass through if not recognised', t => {
     t.deepEqual(min('Unrecognised'), 'Unrecognised');

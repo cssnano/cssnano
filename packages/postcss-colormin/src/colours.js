@@ -1,6 +1,4 @@
 import color from 'color';
-import has from 'has';
-import hexes from './hexes.json';
 import keywords from './keywords.json';
 import toShorthand from './lib/toShorthand';
 import trim from './lib/stripWhitespace';
@@ -14,11 +12,7 @@ export default (colour, opts = {}) => {
         const alpha  = parsed.alpha();
         if (alpha === 1) {
             const toHex = toShorthand(parsed.hex().toLowerCase());
-            if (has(hexes, toHex)) {
-                return hexes[toHex];
-            } else {
-                return shorter(keywords[toHex], toHex);
-            }
+            return shorter(keywords[toHex], toHex);
         } else {
             const rgb = parsed.rgb();
             if (
