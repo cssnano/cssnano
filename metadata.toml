@@ -623,7 +623,7 @@ outputExample = """
 source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/reduceBackgroundRepeat.js"
 
 [[modules]]
-name = "reduce-display-values"
+name = "postcss-normalize-display-values"
 shortDescription = "Normalizes display definitions"
 longDescription = "Normalizes the two value syntax for `display` into the single value syntax where possible."
 inputExample = """
@@ -636,7 +636,7 @@ outputExample = """
     display: block;
 }
 """
-source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/reduceDisplayValues.js"
+source = "https://github.com/ben-eb/cssnano/blob/master/packages/postcss-normalize-display-values"
 
 [[modules]]
 name = "postcss-normalize-positions"

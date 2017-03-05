@@ -1,8 +1,3 @@
-import postcss from 'postcss';
-import valueParser from 'postcss-value-parser';
-import getMatchFactory from 'cssnano-util-get-match';
-import evenValues from './evenValues';
-
 const block = 'block';
 const flex = 'flex';
 const flow = 'flow';
@@ -23,12 +18,11 @@ const table = 'table';
 const tableCell = 'table-cell';
 const tableCaption = 'table-caption';
 
-
 /**
  * Specification: https://drafts.csswg.org/css-display/#the-display-properties
  */
 
-const mappings = [
+export default [
     [block, [block, flow]],
     [flowRoot, [block, flowRoot]],
     [inline, [inline, flow]],
@@ -48,24 +42,3 @@ const mappings = [
     [rubyBase, [rubyBase, flow]],
     [rubyText, [rubyText, flow]],
 ];
-
-const getMatch = getMatchFactory(mappings);
-
-function transform (node) {
-    const {nodes} = valueParser(node.value);
-    if (nodes.length === 1) {
-        return;
-    }
-    const match = getMatch(nodes.filter(evenValues).map(n => n.value));
-    if (match) {
-        node.value = match;
-    }
-}
-
-const plugin = postcss.plugin('cssnano-reduce-display-values', () => {
-    return css => css.walkDecls('display', transform);
-});
-
-plugin.mappings = mappings;
-
-export default plugin;

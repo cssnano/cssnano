@@ -33,7 +33,7 @@ import postcssNormalizeString from 'postcss-normalize-string';
 import postcssNormalizePositions from 'postcss-normalize-positions';
 import postcssNormalizeWhitespace from 'postcss-normalize-whitespace';
 import postcssNormalizeUnicode from 'postcss-normalize-unicode';
-import reduceDisplayValues from './lib/reduceDisplayValues';
+import postcssNormalizeDisplayValues from 'postcss-normalize-display-values';
 import reduceTimingFunctions from './lib/reduceTimingFunctions';
 import styleCache from './lib/styleCache';
 
@@ -42,7 +42,7 @@ const processors = {
     postcssMinifyGradients,
     postcssReduceInitial,
     postcssSvgo,
-    reduceDisplayValues,
+    postcssNormalizeDisplayValues,
     postcssReduceTransforms,
     autoprefixer,
     postcssZindex,

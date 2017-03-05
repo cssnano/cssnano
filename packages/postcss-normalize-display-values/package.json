@@ -1,0 +1,31 @@
+{
+  "name": "postcss-normalize-display-values",
+  "version": "0.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
+  },
+  "files": [
+    "LICENSE-MIT",
+    "dist"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "cssnano-util-get-match": "0.0.0",
+    "postcss-value-parser": "^3.3.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.5.1"
+  },
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-display-values",
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
+  },
+  "homepage": "https://github.com/ben-eb/cssnano"
+}
