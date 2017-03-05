@@ -33,7 +33,7 @@ writeFile(
 
 writeFile(
     path.join(__dirname, 'hexes.json'),
-    stringify(keywords),
+    stringify(hexes),
     callback
 );
 
@@ -45,6 +45,6 @@ writeFile(
 
 writeFile(
     path.join(__dirname, '../dist/hexes.json'),
-    stringify(keywords),
+    stringify(hexes),
     callback
 );
