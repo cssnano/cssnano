@@ -1,5 +1,8 @@
 import test from 'ava';
-import processCss, {passthrough} from './_processCss';
+import plugin from '..';
+import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
+
+const {passthroughCSS, processCSS} = processCSSFactory(plugin);
 
 function fixture (range) {
     return `@font-face{font-family:test;unicode-range:${range}}*{font-family:test}`;
@@ -7,78 +10,84 @@ function fixture (range) {
 
 test(
     'should convert a unicode range to a wildcard range',
-    processCss,
+    processCSS,
     fixture('u+2b00-2bff'), // Miscellaneous Symbols and Arrows
     fixture('u+2b??')
 );
 
 test(
     'should convert a unicode range to a wildcard range (2)',
-    processCss,
+    processCSS,
     fixture('u+1e00-1eff'), // Latin Extended Additional
     fixture('u+1e??')
 );
 
 test(
     'should convert a unicode range to a wildcard range (3)',
-    processCss,
+    processCSS,
     fixture('u+2120-212f'),
     fixture('u+212?')
 );
 
 test(
     'should convert a unicode range to a wildcard range (4)',
-    processCss,
+    processCSS,
     fixture('u+2100-21ff'),
     fixture('u+21??')
 );
 
 test(
     'should convert a unicode range to a wildcard range (5)',
-    processCss,
+    processCSS,
     fixture('u+2000-2fff'),
     fixture('u+2???')
 );
 
 test(
     'should pass through a unicode range that cannot be reduced',
-    passthrough,
+    passthroughCSS,
     fixture('u+0-7f') // Basic Latin
 );
 
 test(
     'should pass through a unicode range that cannot be reduced (2)',
-    passthrough,
+    passthroughCSS,
     fixture('u+2125-2128')
 );
 
 test(
     'should pass through a unicode range that cannot be reduced (3)',
-    passthrough,
+    passthroughCSS,
     fixture('u+2012-2f12')
 );
 
 test(
     'should pass through a unicode range that cannot be reduced (4)',
-    passthrough,
+    passthroughCSS,
     fixture('u+2002-2ff2')
 );
 
 test(
     'should pass through css variables',
-    passthrough,
+    passthroughCSS,
     fixture('var(--caseInsensitive)')
 );
 
 test(
     'should pass through initial',
-    passthrough,
+    passthroughCSS,
     fixture('initial')
 );
 
 test(
     'should downcase the unicode-range property/value pair',
-    processCss,
+    processCSS,
     '@font-face{font-family:test;UNICODE-RANGE:U+07-F}*{font-family:test}',
     '@font-face{font-family:test;unicode-range:u+07-f}*{font-family:test}'
+);
+
+test(
+    'should use the postcss plugin api',
+    usePostCSSPlugin,
+    plugin()
 );

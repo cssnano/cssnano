@@ -6,8 +6,8 @@ function unicode (range) {
     if (values.length < 2) {
         return range;
     }
-    const left   = values[0].split('');
-    const right  = values[1].split('');
+    const left  = values[0].split('');
+    const right = values[1].split('');
 
     if (left.length !== right.length) {
         return range;
@@ -40,7 +40,7 @@ function unicode (range) {
     return range;
 }
 
-export default postcss.plugin('cssnano-normalize-unicode', () => {
+export default postcss.plugin('postcss-normalize-unicode', () => {
     return css => {
         css.walkDecls(/^unicode-range$/i, node => {
             node.prop = 'unicode-range';

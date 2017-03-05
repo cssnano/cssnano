@@ -57,7 +57,7 @@ outputExample = """
 source = "https://github.com/ben-eb/cssnano/blob/master/packages/postcss-normalize-string"
 
 [[modules]]
-name = "normalize-unicode"
+name = "postcss-normalize-unicode"
 shortDescription = "Normalizes unicode-range descriptors"
 longDescription = """
 This optimisation can convert `unicode-range` descriptors to use the shorter
@@ -88,7 +88,7 @@ body {
     font-family: "Latin Extended Additional", sans-serif;
 }
 """
-source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/normalizeUnicode.js"
+source = "https://github.com/ben-eb/cssnano/blob/master/packages/postcss-normalize-unicode"
 tipDescription = """
 The syntax for `unicode-range` can be confusing at times; it's not always clear
 from reading the value what the descriptor is actually doing. However, this can

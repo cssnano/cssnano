@@ -32,7 +32,7 @@ import postcssUniqueSelectors from 'postcss-unique-selectors';
 import postcssNormalizeString from 'postcss-normalize-string';
 import postcssNormalizePositions from 'postcss-normalize-positions';
 import postcssNormalizeWhitespace from 'postcss-normalize-whitespace';
-import normalizeUnicode from './lib/normalizeUnicode';
+import postcssNormalizeUnicode from 'postcss-normalize-unicode';
 import reduceDisplayValues from './lib/reduceDisplayValues';
 import reduceTimingFunctions from './lib/reduceTimingFunctions';
 import styleCache from './lib/styleCache';
@@ -56,7 +56,7 @@ const processors = {
     postcssNormalizeCharset,
     postcssDiscardOverridden,
     postcssNormalizeString,
-    normalizeUnicode,
+    postcssNormalizeUnicode,
     // minify-font-values should be run before discard-unused
     postcssMinifyFontValues,
     postcssDiscardUnused,
