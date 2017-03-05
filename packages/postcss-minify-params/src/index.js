@@ -43,59 +43,59 @@ function removeNode (node) {
     node.type = 'word';
 }
 
-export default postcss.plugin('postcss-minify-params', () => {
-    return css => {
-        css.walkAtRules(rule => {
-            if (!rule.params) {
-                return;
+function transform (rule) {
+    if (!rule.params) {
+        return;
+    }
+
+    const params = valueParser(rule.params);
+
+    params.walk((node, index) => {
+        if (node.type === 'div' || node.type === 'function') {
+            node.before = node.after = '';
+            if (
+                node.type === 'function' &&
+                node.nodes[4] &&
+                node.nodes[0].value.indexOf('-aspect-ratio') === 3
+            ) {
+                const [a, b] = aspectRatio(
+                    node.nodes[2].value,
+                    node.nodes[4].value
+                );
+                node.nodes[2].value = a;
+                node.nodes[4].value = b;
             }
-
-            const params = valueParser(rule.params);
-
-            params.walk((node, index) => {
-                if (node.type === 'div' || node.type === 'function') {
-                    node.before = node.after = '';
-                    if (
-                        node.type === 'function' &&
-                        node.nodes[4] &&
-                        node.nodes[0].value.indexOf('-aspect-ratio') === 3
-                    ) {
-                        const [a, b] = aspectRatio(
-                            node.nodes[2].value,
-                            node.nodes[4].value
-                        );
-                        node.nodes[2].value = a;
-                        node.nodes[4].value = b;
-                    }
-                } else if (node.type === 'space') {
-                    node.value = ' ';
-                } else {
-                    const prevWord = params.nodes[index - 2];
-                    if (
-                        node.value === 'all' &&
-                        rule.name === 'media' &&
-                        !prevWord
-                    ) {
-                        const nextSpace = params.nodes[index + 1];
-                        const nextWord = params.nodes[index + 2];
-                        const secondSpace = params.nodes[index + 3];
-                        if (nextWord && nextWord.value === 'and') {
-                            removeNode(nextWord);
-                            removeNode(nextSpace);
-                            removeNode(secondSpace);
-                        }
-                        removeNode(node);
-                    }
+        } else if (node.type === 'space') {
+            node.value = ' ';
+        } else {
+            const prevWord = params.nodes[index - 2];
+            if (
+                node.value === 'all' &&
+                rule.name === 'media' &&
+                !prevWord
+            ) {
+                const nextSpace = params.nodes[index + 1];
+                const nextWord = params.nodes[index + 2];
+                const secondSpace = params.nodes[index + 3];
+                if (nextWord && nextWord.value === 'and') {
+                    removeNode(nextWord);
+                    removeNode(nextSpace);
+                    removeNode(secondSpace);
                 }
-            }, true);
-
-            rule.params = sort(uniqs(split(params.nodes, ',')), {
-                insensitive: true,
-            }).join();
-
-            if (!rule.params.length) {
-                rule.raws.afterName = '';
+                removeNode(node);
             }
-        });
-    };
+        }
+    }, true);
+
+    rule.params = sort(uniqs(split(params.nodes, ',')), {
+        insensitive: true,
+    }).join();
+
+    if (!rule.params.length) {
+        rule.raws.afterName = '';
+    }
+}
+
+export default postcss.plugin('postcss-minify-params', () => {
+    return css => css.walkAtRules(transform);
 });

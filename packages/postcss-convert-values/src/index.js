@@ -55,40 +55,38 @@ function shouldStripPercent ({value, prop, parent}) {
         prop === 'stroke-width';
 }
 
-function transform (opts) {
-    return decl => {
-        const {prop} = decl;
-        if (~prop.indexOf('flex') || prop.indexOf('--') === 0) {
-            return;
-        }
+function transform (opts, decl) {
+    const {prop} = decl;
+    if (~prop.indexOf('flex') || prop.indexOf('--') === 0) {
+        return;
+    }
 
-        decl.value = valueParser(decl.value).walk(node => {
-            if (node.type === 'word') {
-                parseWord(node, opts, shouldStripPercent(decl));
-                if (prop === 'opacity' || prop === 'shape-image-threshold') {
-                    clampOpacity(node);
-                }
-            } else if (node.type === 'function') {
-                if (node.value === 'calc' ||
-                    node.value === 'hsl' ||
-                    node.value === 'hsla') {
-                    walk(node.nodes, n => {
-                        if (n.type === 'word') {
-                            parseWord(n, opts, true);
-                        }
-                    });
-                    return false;
-                }
-                if (node.value === 'url') {
-                    return false;
-                }
+    decl.value = valueParser(decl.value).walk(node => {
+        if (node.type === 'word') {
+            parseWord(node, opts, shouldStripPercent(decl));
+            if (prop === 'opacity' || prop === 'shape-image-threshold') {
+                clampOpacity(node);
             }
-        }).toString();
-    };
+        } else if (node.type === 'function') {
+            if (node.value === 'calc' ||
+                node.value === 'hsl' ||
+                node.value === 'hsla') {
+                walk(node.nodes, n => {
+                    if (n.type === 'word') {
+                        parseWord(n, opts, true);
+                    }
+                });
+                return false;
+            }
+            if (node.value === 'url') {
+                return false;
+            }
+        }
+    }).toString();
 }
 
 const plugin = 'postcss-convert-values';
 
 export default postcss.plugin(plugin, (opts = {precision: false}) => {
-    return css => css.walkDecls(transform(opts));
+    return css => css.walkDecls(transform.bind(null, opts));
 });
