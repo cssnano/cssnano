@@ -3,10 +3,14 @@ import {plugin} from 'postcss';
 import valueParser from 'postcss-value-parser';
 
 function canonical (obj) {
+    // Prevent potential infinite loops
+    let stack = 50;
     return function recurse (key) {
-        if (has(obj, key) && obj[key] !== key) {
+        if (has(obj, key) && obj[key] !== key && stack) {
+            stack --;
             return recurse(obj[key]);
         }
+        stack = 50;
         return key;
     };
 }
