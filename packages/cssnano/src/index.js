@@ -31,10 +31,9 @@ import postcssDiscardEmpty from 'postcss-discard-empty';
 import postcssUniqueSelectors from 'postcss-unique-selectors';
 import postcssNormalizeString from 'postcss-normalize-string';
 import postcssNormalizePositions from 'postcss-normalize-positions';
-import functionOptimiser from './lib/functionOptimiser';
+import postcssNormalizeWhitespace from 'postcss-normalize-whitespace';
 import normalizeUnicode from './lib/normalizeUnicode';
 import reduceDisplayValues from './lib/reduceDisplayValues';
-import core from './lib/core';
 import reduceTimingFunctions from './lib/reduceTimingFunctions';
 import styleCache from './lib/styleCache';
 
@@ -62,10 +61,9 @@ const processors = {
     postcssMinifyFontValues,
     postcssDiscardUnused,
     postcssNormalizeUrl,
-    functionOptimiser,
     postcssNormalizeRepeatStyle,
     postcssNormalizePositions,
-    core,
+    postcssNormalizeWhitespace,
     // Optimisations after this are sensitive to previous optimisations in
     // the pipe, such as whitespace normalising/selector re-ordering
     postcssMergeIdents,

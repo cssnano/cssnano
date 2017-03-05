@@ -18,7 +18,7 @@ outputExample = """
 source = "https://github.com/postcss/autoprefixer"
 
 [[modules]]
-name = "core"
+name = "postcss-normalize-whitespace"
 shortDescription = "Normalizes whitespace & trailing semicolons"
 longDescription = "Trims whitespace inside and around rules, selectors & declarations, plus removes the final semicolon inside every selector."
 inputExample = """
@@ -30,23 +30,7 @@ inputExample = """
 outputExample = """
 .box{text-decoration:underline;color:red!important}
 """
-source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/core.js"
-
-[[modules]]
-name = "function-optimiser"
-shortDescription = "Normalizes CSS function whitespace"
-longDescription = "Trims whitespace in CSS functions, such as CSS filters and legacy Microsoft effects."
-inputExample = """
-.box {
-    background: linear-gradient( #000, #fff );
-}
-"""
-outputExample = """
-.box {
-    background: linear-gradient(#000,#fff);
-}
-"""
-source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/functionOptimiser.js"
+source = "https://github.com/ben-eb/cssnano/blob/master/packages/postcss-normalize-whitespace"
 
 [[modules]]
 name = "postcss-normalize-string"

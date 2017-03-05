@@ -46,6 +46,7 @@
     "postcss-normalize-positions": "0.0.0",
     "postcss-normalize-string": "0.0.0",
     "postcss-normalize-url": "^3.0.7",
+    "postcss-normalize-whitespace": "0.0.0",
     "postcss-ordered-values": "^2.1.0",
     "postcss-reduce-idents": "^2.2.2",
     "postcss-reduce-initial": "^1.0.0",
