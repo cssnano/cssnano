@@ -1,18 +1,14 @@
 import {plugin} from 'postcss';
 import valueParser from 'postcss-value-parser';
 import getMatchFactory from 'cssnano-util-get-match';
-import evenValues from './evenValues';
+import mappings from './lib/map';
 
-const keywords = [
-    ['ease',        [0.25, 0.1, 0.25, 1]],
-    ['linear',      [0,    0,   1,    1]],
-    ['ease-in',     [0.42, 0,   1,    1]],
-    ['ease-out',    [0,    0,   0.58, 1]],
-    ['ease-in-out', [0.42, 0,   0.58, 1]],
-];
-
+const getMatch = getMatchFactory(mappings);
 const getValue = (node) => parseFloat(node.value);
-const getMatch = getMatchFactory(keywords);
+
+function evenValues (list, index) {
+    return index % 2 === 0;
+}
 
 function reduce (node) {
     if (node.type !== 'function') {

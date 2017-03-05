@@ -1,5 +1,5 @@
 {
-  "name": "postcss-normalize-display-values",
+  "name": "postcss-normalize-timing-functions",
   "version": "0.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -24,7 +24,7 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-display-values",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-timing-functions",
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"
   },

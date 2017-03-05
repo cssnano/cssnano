@@ -1,12 +1,15 @@
 import test from 'ava';
-import processCss from './_processCss';
+import plugin from '..';
+import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
+
+const {processCSS} = processCSSFactory(plugin);
 
 function testTimingFunction (t, fixture, expected) {
     return Promise.all([
-        processCss(t, `animation:fade 3s ${fixture}`, `animation:fade 3s ${expected}`),
-        processCss(t, `animation-timing-function:${fixture}`, `animation-timing-function:${expected}`),
-        processCss(t, `transition:color 3s ${fixture}`, `transition:color 3s ${expected}`),
-        processCss(t, `transition-timing-function:${fixture}`, `transition-timing-function:${expected}`),
+        processCSS(t, `animation:fade 3s ${fixture}`, `animation:fade 3s ${expected}`),
+        processCSS(t, `animation-timing-function:${fixture}`, `animation-timing-function:${expected}`),
+        processCSS(t, `transition:color 3s ${fixture}`, `transition:color 3s ${expected}`),
+        processCSS(t, `transition-timing-function:${fixture}`, `transition-timing-function:${expected}`),
     ]);
 }
 
@@ -56,8 +59,7 @@ test(
 );
 
 test(
-    testTimingFunction,
-    'steps(5, start)',
+    testPassthrough,
     'steps(5,start)'
 );
 
@@ -75,4 +77,10 @@ test(
 test(
     testPassthrough,
     'var(--anim1)'
+);
+
+test(
+    'should use the postcss plugin api',
+    usePostCSSPlugin,
+    plugin()
 );

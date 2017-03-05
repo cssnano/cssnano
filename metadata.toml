@@ -655,7 +655,7 @@ outputExample = """
 source = "https://github.com/ben-eb/cssnano/blob/master/packages/postcss-normalize-positions"
 
 [[modules]]
-name = "reduce-timing-functions"
+name = "postcss-normalize-timing-functions"
 shortDescription = "Normalizes transition timing functions."
 longDescription = "Normalizes transition timing in the `animation`, `animation-timing-function`, `transition` and `transition-timing-function` properties."
 inputExample = """
@@ -668,7 +668,7 @@ outputExample = """
     transition: color 3s steps(30);
 }
 """
-source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/reduceTimingFunctions.js"
+source = "https://github.com/ben-eb/cssnano/blob/master/packages/postcss-normalize-timing-functions"
 
 [[modules]]
 name = "style-cache"

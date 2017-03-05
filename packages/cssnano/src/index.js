@@ -34,7 +34,7 @@ import postcssNormalizePositions from 'postcss-normalize-positions';
 import postcssNormalizeWhitespace from 'postcss-normalize-whitespace';
 import postcssNormalizeUnicode from 'postcss-normalize-unicode';
 import postcssNormalizeDisplayValues from 'postcss-normalize-display-values';
-import reduceTimingFunctions from './lib/reduceTimingFunctions';
+import postcssNormalizeTimingFunctions from 'postcss-normalize-timing-functions';
 import styleCache from './lib/styleCache';
 
 const processors = {
@@ -47,7 +47,7 @@ const processors = {
     autoprefixer,
     postcssZindex,
     postcssConvertValues,
-    reduceTimingFunctions,
+    postcssNormalizeTimingFunctions,
     postcssCalc,
     postcssColormin,
     postcssOrderedValues,
