@@ -43,6 +43,7 @@
     "postcss-minify-selectors": "^2.0.4",
     "postcss-normalize-charset": "^1.1.0",
     "postcss-normalize-repeat-style": "0.0.0",
+    "postcss-normalize-positions": "0.0.0",
     "postcss-normalize-string": "0.0.0",
     "postcss-normalize-url": "^3.0.7",
     "postcss-ordered-values": "^2.1.0",

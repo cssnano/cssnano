@@ -97,6 +97,6 @@ function transform (decl) {
     decl.value = values.toString();
 }
 
-export default plugin('cssnano-reduce-positions', () => {
+export default plugin('postcss-normalize-positions', () => {
     return css => css.walkDecls(transform);
 });

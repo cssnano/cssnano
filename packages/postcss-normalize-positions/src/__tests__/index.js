@@ -1,5 +1,8 @@
 import test from 'ava';
-import processCss from './_processCss';
+import plugin from '..';
+import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
+
+const {processCSS} = processCSSFactory(plugin);
 
 const directions = ['top', 'right', 'bottom', 'left', 'center'];
 const horizontal = {
@@ -20,14 +23,14 @@ function suite (t, property, additional = '', tail = '') {
     const push = (...examples) => {
         examples.forEach(({fixture, expected}) => {
             tests.push(
-                processCss(
+                processCSS(
                     t,
                     `${property}${additional}${fixture}${tail}`,
                     `${property}${additional}${expected}${tail}`
                 ),
-                processCss(
+                processCSS(
                     t,
-                    `${property}${additional}${fixture}${tail}, ${fixture}${tail}`,
+                    `${property}${additional}${fixture}${tail},${fixture}${tail}`,
                     `${property}${additional}${expected}${tail},${expected}${tail}`
                 ),
             );
@@ -141,3 +144,8 @@ test(
     '-webkit-perspective-origin:'
 );
 
+test(
+    'should use the postcss plugin api',
+    usePostCSSPlugin,
+    plugin()
+);

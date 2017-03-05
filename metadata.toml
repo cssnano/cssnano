@@ -655,7 +655,7 @@ outputExample = """
 source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/reduceDisplayValues.js"
 
 [[modules]]
-name = "reduce-positions"
+name = "postcss-normalize-positions"
 shortDescription = "Normalizes CSS position definitions"
 longDescription = "Normalizes `position` values in the `background`, `background-position`, `-webkit-perspective-origin` and `perspective-origin` properties."
 inputExample = """
@@ -668,7 +668,7 @@ outputExample = """
     background: 30% / 50% 50%;
 }
 """
-source = "https://github.com/ben-eb/cssnano/blob/master/src/lib/reducePositions.js"
+source = "https://github.com/ben-eb/cssnano/blob/master/packages/postcss-normalize-positions"
 
 [[modules]]
 name = "reduce-timing-functions"

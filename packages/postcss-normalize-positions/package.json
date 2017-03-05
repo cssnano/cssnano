@@ -1,0 +1,38 @@
+{
+  "name": "postcss-normalize-positions",
+  "version": "0.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "LICENSE-MIT"
+  ],
+  "scripts": {
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
+  },
+  "keywords": [
+    "css",
+    "postcss",
+    "postcss-plugin"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.5.1"
+  },
+  "homepage": "https://github.com/ben-eb/cssnano",
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-positions",
+  "dependencies": {
+    "cssnano-util-get-arguments": "0.0.0",
+    "has": "^1.0.1",
+    "postcss": "^5.0.14",
+    "postcss-value-parser": "^3.3.0"
+  },
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
+  }
+}
