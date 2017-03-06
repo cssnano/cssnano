@@ -28,6 +28,7 @@
   },
   "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-merge-idents",
   "dependencies": {
+    "cssnano-util-same-parent": "0.0.0",
     "has": "^1.0.0",
     "postcss": "^5.0.0",
     "postcss-value-parser": "^3.0.0"

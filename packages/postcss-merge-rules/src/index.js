@@ -1,6 +1,7 @@
 import browserslist from 'browserslist';
 import postcss from 'postcss';
 import vendors from 'vendors';
+import sameParent from 'cssnano-util-same-parent';
 import clone from './lib/clone';
 import ensureCompatibility from './lib/ensureCompatibility';
 
@@ -22,18 +23,6 @@ function sameVendor (selectorsA, selectorsB) {
 }
 
 const noVendor = selector => !filterPrefixes(selector).length;
-
-function sameParent (ruleA, ruleB) {
-    const hasParent = ruleA.parent && ruleB.parent;
-    let sameType = hasParent && ruleA.parent.type === ruleB.parent.type;
-    // If an at rule, ensure that the parameters are the same
-    if (hasParent && ruleA.parent.type !== 'root' && ruleB.parent.type !== 'root') {
-        sameType = sameType &&
-                   ruleA.parent.params === ruleB.parent.params &&
-                   ruleA.parent.name === ruleB.parent.name;
-    }
-    return hasParent && sameType;
-}
 
 function canMerge (ruleA, ruleB, browsers, compatibilityCache) {
     const a = ruleA.selectors;

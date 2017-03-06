@@ -1,0 +1,28 @@
+{
+  "name": "cssnano-util-same-parent",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "description": "",
+  "scripts": {
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
+  },
+  "files": [
+    "LICENSE-MIT",
+    "dist"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.5.1",
+    "postcss": "^5.0.10"
+  },
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/cssnano-util-same-parent",
+  "homepage": "https://github.com/ben-eb/cssnano",
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
+  }
+}

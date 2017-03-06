@@ -1,6 +1,7 @@
 import has from 'has';
 import {plugin} from 'postcss';
 import valueParser from 'postcss-value-parser';
+import sameParent from 'cssnano-util-same-parent';
 
 function canonical (obj) {
     // Prevent potential infinite loops
@@ -13,18 +14,6 @@ function canonical (obj) {
         stack = 50;
         return key;
     };
-}
-
-function sameParent (ruleA, ruleB) {
-    let hasParent = ruleA.parent && ruleB.parent;
-    let sameType = hasParent && ruleA.parent.type === ruleB.parent.type;
-    // If an at rule, ensure that the parameters are the same
-    if (hasParent && ruleA.parent.type !== 'root' && ruleB.parent.type !== 'root') {
-        sameType = sameType &&
-                   ruleA.parent.params === ruleB.parent.params &&
-                   ruleA.parent.name === ruleB.parent.name;
-    }
-    return hasParent ? sameType : true;
 }
 
 function mergeAtRules (css, pairs) {
