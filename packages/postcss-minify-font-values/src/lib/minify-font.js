@@ -27,15 +27,9 @@ export default function (nodes, opts) {
                 familyStart = i;
                 hasSize = true;
             }
-        } else if (node.type === 'div') {
-            node.before = '';
-            node.after = '';
-            if (node.value === '/') {
-                familyStart = i + 1;
-            }
+        } else if (node.type === 'div' && node.value === '/') {
+            familyStart = i + 1;
             break;
-        } else if (node.type === 'space') {
-            node.value = ' ';
         }
     }
 

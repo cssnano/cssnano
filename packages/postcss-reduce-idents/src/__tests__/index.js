@@ -31,7 +31,7 @@ test(
     'should support multiple animations',
     processCSS,
     '@keyframes one{0%{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes two{0%{border-width:0;opacity:0}}.loader{animation:one  1250ms  infinite linear, two .3s ease-out both}',
-    '@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes b{0%{border-width:0;opacity:0}}.loader{animation:a 1250ms infinite linear,b .3s ease-out both}'
+    '@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes b{0%{border-width:0;opacity:0}}.loader{animation:a  1250ms  infinite linear, b .3s ease-out both}'
 );
 
 test(
@@ -63,7 +63,7 @@ test(
     'should rename multiple counter styles & be aware of extensions',
     processCSS,
     '@counter-style custom{system:extends decimal;suffix:"> "}@counter-style custom2{system:extends  custom;prefix:"-"}ol{list-style:custom2}',
-    '@counter-style a{system:extends decimal;suffix:"> "}@counter-style b{system:extends a;prefix:"-"}ol{list-style:b}'
+    '@counter-style a{system:extends decimal;suffix:"> "}@counter-style b{system:extends  a;prefix:"-"}ol{list-style:b}'
 );
 
 test(
@@ -89,7 +89,7 @@ test(
     'should rename counters (2)',
     processCSS,
     'h3:before{content:counter(section, section2);counter-increment:section}',
-    'h3:before{content:counter(a,section2);counter-increment:a}'
+    'h3:before{content:counter(a, section2);counter-increment:a}'
 );
 
 test(
@@ -110,7 +110,7 @@ test(
     'should rename multiple counters with random order',
     processCSS,
     'h1:before{content: counter(chapter) "." counter(section) " (pg." counter(page) ") ";counter-reset:chapter 1 section  page 1}',
-    'h1:before{content: counter(a) "." counter(b) " (pg." counter(c) ") ";counter-reset:a 1 b c 1}'
+    'h1:before{content: counter(a) "." counter(b) " (pg." counter(c) ") ";counter-reset:a 1 b  c 1}'
 );
 
 test(

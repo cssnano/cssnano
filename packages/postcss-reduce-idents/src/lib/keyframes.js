@@ -39,10 +39,6 @@ export default function () {
                         }
                         cache[node.value].count++;
                         node.value = cache[node.value].ident;
-                    } else if (node.type === 'space') {
-                        node.value = ' ';
-                    } else if (node.type === 'div') {
-                        node.before = node.after = '';
                     }
                 }).toString();
             });

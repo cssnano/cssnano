@@ -66,12 +66,6 @@ function mergeAtRules (css, pairs) {
                 if (node.type === 'word') {
                     node.value = canon(node.value);
                 }
-                if (node.type === 'space') {
-                    node.value = ' ';
-                }
-                if (node.type === 'div') {
-                    node.before = node.after = '';
-                }
             }).toString();
         });
     });

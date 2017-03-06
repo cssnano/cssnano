@@ -29,10 +29,6 @@ export default function () {
                         addToCache(child.value, encoder, cache);
                         child.value = cache[child.value].ident;
                     }
-
-                    if (child.type === 'space') {
-                        child.value = ' ';
-                    }
                 });
                 declOneCache.push(node);
             } else if (/content/.test(prop)) {
@@ -49,8 +45,6 @@ export default function () {
                             if (child.type === 'word' && child.value in cache) {
                                 cache[child.value].count++;
                                 child.value = cache[child.value].ident;
-                            } else if (child.type === 'div') {
-                                child.before = child.after = '';
                             }
                         });
                     }
