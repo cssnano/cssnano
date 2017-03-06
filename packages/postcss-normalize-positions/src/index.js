@@ -4,12 +4,6 @@ import getArguments from 'cssnano-util-get-arguments';
 import has from 'has';
 
 const directions = ['top', 'right', 'bottom', 'left', 'center'];
-const properties = [
-    'background',
-    'background-position',
-    '-webkit-perspective-origin',
-    'perspective-origin',
-];
 
 const center = '50%';
 
@@ -24,9 +18,6 @@ const vertical = {
 };
 
 function transform (decl) {
-    if (!~properties.indexOf(decl.prop)) {
-        return;
-    }
     const values = valueParser(decl.value);
     const args = getArguments(values);
     const relevant = [];
@@ -98,5 +89,5 @@ function transform (decl) {
 }
 
 export default plugin('postcss-normalize-positions', () => {
-    return css => css.walkDecls(transform);
+    return css => css.walkDecls(/^(background(-position)?|(-webkit-)?perspective-origin)$/i, transform);
 });

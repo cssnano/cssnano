@@ -13,6 +13,12 @@ test(
     'display:block ruby;'
 );
 
+test(
+    'should pass through single values',
+    passthroughCSS,
+    'display:block;'
+);
+
 Object.keys(data).forEach(key => {
     const fixture = data[key];
     test(

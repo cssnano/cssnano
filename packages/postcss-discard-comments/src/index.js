@@ -12,9 +12,6 @@ export default plugin('postcss-discard-comments', (opts = {}) => {
     }
 
     function replaceComments (source, separator = ' ') {
-        if (!source) {
-            return source;
-        }
         const parsed = commentParser(source).reduce((value, node) => {
             if (node.type !== 'comment') {
                 return value + node.value;

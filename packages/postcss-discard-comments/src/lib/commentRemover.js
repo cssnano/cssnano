@@ -10,13 +10,13 @@ CommentRemover.prototype.canRemove = function (comment) {
         const isImportant = comment.indexOf('!') === 0;
         if (!isImportant) {
             return true;
-        } else if (isImportant) {
-            if (this.options.removeAll || this._hasFirst) {
-                return true;
-            } else if (this.options.removeAllButFirst && !this._hasFirst) {
-                this._hasFirst = true;
-                return false;
-            }
+        }
+
+        if (this.options.removeAll || this._hasFirst) {
+            return true;
+        } else if (this.options.removeAllButFirst && !this._hasFirst) {
+            this._hasFirst = true;
+            return false;
         }
     }
 };

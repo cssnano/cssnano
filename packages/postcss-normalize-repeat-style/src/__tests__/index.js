@@ -48,6 +48,24 @@ Object.keys(data).forEach(conversion => {
 });
 
 test(
+    'should pass through when there are no repeat values',
+    passthroughCSS,
+    'background:url(cat.jpg)'
+);
+
+test(
+    'should pass through when there are no repeat values (2)',
+    passthroughCSS,
+    'background:#000 url(cat.jpg)'
+);
+
+test(
+    'should pass through the single value syntax',
+    passthroughCSS,
+    'background:#000 url(cat.jpg) repeat'
+);
+
+test(
     'should use the postcss plugin api',
     usePostCSSPlugin,
     plugin()

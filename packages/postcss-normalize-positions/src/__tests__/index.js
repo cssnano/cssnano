@@ -2,7 +2,7 @@ import test from 'ava';
 import plugin from '..';
 import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
 
-const {processCSS} = processCSSFactory(plugin);
+const {processCSS, passthroughCSS} = processCSSFactory(plugin);
 
 const directions = ['top', 'right', 'bottom', 'left', 'center'];
 const horizontal = {
@@ -142,6 +142,12 @@ test(
 test(
     suite,
     '-webkit-perspective-origin:'
+);
+
+test(
+    'should pass through when there are no position values',
+    passthroughCSS,
+    'background:url(cat.jpg)'
 );
 
 test(

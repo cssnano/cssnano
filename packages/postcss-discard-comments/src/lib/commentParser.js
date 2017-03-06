@@ -15,9 +15,6 @@ export default function commentParser (input) {
             pos = next;
 
             next = input.indexOf('*/', pos + 2);
-            if (!~next) {
-                throw new Error('postcss-discard-comments: Unclosed */');
-            }
             tokens.push({
                 type: 'comment',
                 value: input.slice(pos + 2, next),

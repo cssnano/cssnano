@@ -238,6 +238,12 @@ test(
     plugin()
 );
 
+test(
+    'should pass through at rules without comments',
+    passthroughCSS,
+    '@page{body{font-size:1em}}'
+);
+
 const {processCSS: singleLine} = processCSSFactory(plugin);
 
 test(
