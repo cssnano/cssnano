@@ -3,14 +3,6 @@ import postcss from 'postcss';
 import valueParser, {stringify} from 'postcss-value-parser';
 import colormin from './colours';
 
-function reduceWhitespaces (decl) {
-    decl.value = valueParser(decl.value).walk(node => {
-        if (node.type === 'function' || node.type === 'div') {
-            node.before = node.after = '';
-        }
-    }).toString();
-}
-
 function walk (parent, callback) {
     parent.nodes.forEach((node, index) => {
         const bubble = callback(node, index, parent);
@@ -21,14 +13,7 @@ function walk (parent, callback) {
 }
 
 function transform (legacy, decl) {
-    if (decl.prop === '-webkit-tap-highlight-color') {
-        if (decl.value === 'inherit' || decl.value === 'transparent') {
-            return;
-        }
-        reduceWhitespaces(decl);
-        return;
-    }
-    if (/^(composes|font|filter)/i.test(decl.prop)) {
+    if (/^(composes|font|filter|-webkit-tap-highlight-color)/i.test(decl.prop)) {
         return;
     }
     const ast = valueParser(decl.value);

@@ -12,13 +12,6 @@ test(
 );
 
 test(
-    'should minify color values (2)',
-    processCSS,
-    'h1{box-shadow:0 1px 3px rgba(255, 230, 220, 0.5)}',
-    'h1{box-shadow:0 1px 3px rgba(255,230,220,.5)}'
-);
-
-test(
     'should minify color values (3)',
     processCSS,
     'h1{background:hsla(134, 50%, 50%, 1)}',
@@ -57,7 +50,7 @@ test(
     'should minify color values in background gradients (2)',
     processCSS,
     'h1{background:linear-gradient(yellow, orange), linear-gradient(black, rgba(255, 255, 255, 0))}',
-    'h1{background:linear-gradient(#ff0, orange), linear-gradient(#000, hsla(0,0%,100%,0))}'
+    'h1{background:linear-gradient(#ff0, orange), linear-gradient(#000, hsla(0, 0%, 100%, 0))}'
 );
 
 test(
@@ -74,22 +67,8 @@ test(
 );
 
 test(
-    'should correctly parse multiple box shadow values',
-    processCSS,
-    'h1{box-shadow:inset 0 1px 1px rgba(0, 0, 0, .075),0 0 8px rgba(102, 175, 233, .6)}',
-    'h1{box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)}'
-);
-
-test(
     'should make an exception for webkit tap highlight color (issue 1)',
     passthroughCSS,
-    'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}'
-);
-
-test(
-    'should still minify spaces in webkit tap highlight color',
-    processCSS,
-    'h1{-webkit-tap-highlight-color:rgba( 0, 0, 0, 0)}',
     'h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}'
 );
 
@@ -135,7 +114,7 @@ test(
     'should not mangle percentage based rgba values',
     processCSS,
     'h1{color:rgba(50%,50%,50%,0.5)}',
-    'h1{color:hsla(0,0%,50%,.5)}'
+    'h1{color:hsla(0, 0%, 50%, 0.5)}'
 );
 
 test(
@@ -180,7 +159,7 @@ test(
 test(
     'should not convert this specific rgba value to "transparent" (old IE)',
     passthroughCSS,
-    'h1{color:rgba(0,0,0,0)}',
+    'h1{color:rgba(0, 0, 0, 0)}',
     {env: 'ie8'}
 );
 

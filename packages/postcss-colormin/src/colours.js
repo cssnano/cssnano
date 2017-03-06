@@ -1,8 +1,6 @@
 import color from 'color';
 import keywords from './keywords.json';
 import toShorthand from './lib/toShorthand';
-import trim from './lib/stripWhitespace';
-import zero from './lib/trimLeadingZero';
 
 const shorter = (a, b) => (a && a.length < b.length ? a : b).toLowerCase();
 
@@ -26,7 +24,7 @@ export default (colour, legacy = false) => {
             }
             let hsla = parsed.hsl().round().string();
             let rgba = rgb.string();
-            return zero(trim(hsla.length < rgba.length ? hsla : rgba));
+            return hsla.length < rgba.length ? hsla : rgba;
         }
     } catch (e) {
         // Possibly malformed, so pass through
