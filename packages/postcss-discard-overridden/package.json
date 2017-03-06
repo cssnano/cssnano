@@ -19,12 +19,12 @@
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "dependencies": {
-    "postcss": "^5.0.16"
+    "postcss": "^5.0.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.5.1",
-    "chalk": "^1.1.3",
-    "diff": "^2.2.2"
+    "babel-cli": "^6.0.0",
+    "chalk": "^1.0.0",
+    "diff": "^2.0.0"
   },
   "scripts": {
     "prepublish": "babel src --out-dir dist --ignore /__tests__/"

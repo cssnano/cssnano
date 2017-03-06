@@ -22,15 +22,15 @@
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "dependencies": {
-    "alphanum-sort": "^1.0.1",
-    "postcss": "^5.0.2",
-    "postcss-value-parser": "^3.0.2",
+    "alphanum-sort": "^1.0.0",
+    "postcss": "^5.0.0",
+    "postcss-value-parser": "^3.0.0",
     "uniqs": "^2.0.0"
   },
   "scripts": {
     "prepublish": "babel src --out-dir dist --ignore /__tests__/"
   },
   "devDependencies": {
-    "babel-cli": "^6.5.1"
+    "babel-cli": "^6.0.0"
   }
 }

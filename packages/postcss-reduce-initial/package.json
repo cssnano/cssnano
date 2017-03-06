@@ -19,9 +19,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.5.1",
-    "got": "^6.3.0",
-    "html2plaintext": "^1.0.1",
+    "babel-cli": "^6.0.0",
+    "got": "^6.0.0",
+    "html2plaintext": "^1.0.0",
     "is-html": "^1.0.0",
     "write-file": "^1.0.0"
   },
@@ -33,10 +33,10 @@
   },
   "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-reduce-initial",
   "dependencies": {
-    "browserslist": "^1.7.5",
-    "caniuse-api": "^1.5.2",
-    "has": "^1.0.1",
-    "postcss": "^5.0.4"
+    "browserslist": "^1.0.0",
+    "caniuse-api": "^1.0.0",
+    "has": "^1.0.0",
+    "postcss": "^5.0.0"
   },
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"

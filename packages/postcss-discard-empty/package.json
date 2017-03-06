@@ -21,10 +21,10 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "postcss": "^5.0.14"
+    "postcss": "^5.0.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.5.1"
+    "babel-cli": "^6.0.0"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "author": {

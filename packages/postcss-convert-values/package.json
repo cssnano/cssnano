@@ -18,7 +18,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.5.1"
+    "babel-cli": "^6.0.0"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
@@ -28,8 +28,8 @@
   },
   "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-convert-values",
   "dependencies": {
-    "postcss": "^5.0.11",
-    "postcss-value-parser": "^3.1.2"
+    "postcss": "^5.0.0",
+    "postcss-value-parser": "^3.0.0"
   },
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"

@@ -17,8 +17,8 @@
     "postcss-plugin"
   ],
   "dependencies": {
-    "postcss": "^5.0.4",
-    "postcss-value-parser": "^3.0.2"
+    "postcss": "^5.0.0",
+    "postcss-value-parser": "^3.0.0"
   },
   "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-minify-font-values",
   "bugs": {
@@ -29,6 +29,6 @@
     "prepublish": "babel src --out-dir dist --ignore /__tests__/"
   },
   "devDependencies": {
-    "babel-cli": "^6.5.1"
+    "babel-cli": "^6.0.0"
   }
 }

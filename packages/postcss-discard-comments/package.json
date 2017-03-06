@@ -18,7 +18,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.5.1",
+    "babel-cli": "^6.0.0",
     "postcss-scss": "^0.3.0",
     "postcss-simple-vars": "^3.0.0"
   },
@@ -30,7 +30,7 @@
   },
   "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-discard-comments",
   "dependencies": {
-    "postcss": "^5.0.14"
+    "postcss": "^5.0.0"
   },
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"

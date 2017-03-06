@@ -18,8 +18,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.5.1",
-    "postcss-discard-comments": "^2.0.4",
+    "babel-cli": "^6.0.0",
+    "postcss-discard-comments": "^2.0.0",
     "postcss-simple-vars": "^3.0.0"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
@@ -30,10 +30,10 @@
   },
   "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-merge-rules",
   "dependencies": {
-    "browserslist": "^1.7.5",
-    "caniuse-api": "^1.5.2",
-    "postcss": "^5.0.4",
-    "postcss-selector-parser": "^2.2.2",
+    "browserslist": "^1.0.0",
+    "caniuse-api": "^1.0.0",
+    "postcss": "^5.0.0",
+    "postcss-selector-parser": "^2.0.0",
     "vendors": "^1.0.0"
   },
   "bugs": {

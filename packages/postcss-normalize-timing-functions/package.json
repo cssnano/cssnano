@@ -13,11 +13,11 @@
   "license": "MIT",
   "dependencies": {
     "cssnano-util-get-match": "0.0.0",
-    "postcss": "^5.0.14",
-    "postcss-value-parser": "^3.3.0"
+    "postcss": "^5.0.0",
+    "postcss-value-parser": "^3.0.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.5.1"
+    "babel-cli": "^6.0.0"
   },
   "author": {
     "name": "Ben Briggs",

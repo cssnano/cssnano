@@ -14,10 +14,10 @@
   "dependencies": {
     "cssnano-util-get-arguments": "0.0.0",
     "cssnano-util-get-match": "0.0.0",
-    "postcss-value-parser": "^3.3.0"
+    "postcss-value-parser": "^3.0.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.5.1"
+    "babel-cli": "^6.0.0"
   },
   "author": {
     "name": "Ben Briggs",

@@ -19,11 +19,11 @@
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "dependencies": {
-    "postcss": "^5.0.5"
+    "postcss": "^5.0.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.5.1",
-    "postcss-devtools": "^1.1.1"
+    "babel-cli": "^6.0.0",
+    "postcss-devtools": "^1.0.0"
   },
   "main": "dist/index.js",
   "scripts": {

@@ -20,8 +20,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.5.1",
-    "postcss-font-magician": "^1.4.0"
+    "babel-cli": "^6.0.0",
+    "postcss-font-magician": "^1.0.0"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
@@ -31,9 +31,9 @@
   },
   "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-minify-selectors",
   "dependencies": {
-    "alphanum-sort": "^1.0.2",
-    "has": "^1.0.1",
-    "postcss": "^5.0.14",
+    "alphanum-sort": "^1.0.0",
+    "has": "^1.0.0",
+    "postcss": "^5.0.0",
     "postcss-selector-parser": "^2.0.0"
   },
   "bugs": {
