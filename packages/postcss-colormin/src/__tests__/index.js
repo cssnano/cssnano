@@ -178,6 +178,13 @@ test(
 );
 
 test(
+    'should not convert this specific rgba value to "transparent" (old IE)',
+    passthroughCSS,
+    'h1{color:rgba(0,0,0,0)}',
+    {env: 'ie8'}
+);
+
+test(
     'should use the postcss plugin api',
     usePostCSSPlugin,
     plugin()

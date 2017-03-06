@@ -1,3 +1,4 @@
+import browserslist from 'browserslist';
 import postcss from 'postcss';
 import valueParser, {stringify} from 'postcss-value-parser';
 import colormin from './colours';
@@ -19,7 +20,7 @@ function walk (parent, callback) {
     });
 }
 
-function transform (opts, decl) {
+function transform (legacy, decl) {
     if (decl.prop === '-webkit-tap-highlight-color') {
         if (decl.value === 'inherit' || decl.value === 'transparent') {
             return;
@@ -35,7 +36,7 @@ function transform (opts, decl) {
         if (node.type === 'function') {
             if (/^(rgb|hsl)a?$/.test(node.value)) {
                 const {value} = node;
-                node.value = colormin(stringify(node), opts);
+                node.value = colormin(stringify(node), legacy);
                 node.type = 'word';
                 const next = parent.nodes[index + 1];
                 if (node.value !== value && next && next.type === 'word') {
@@ -45,12 +46,31 @@ function transform (opts, decl) {
                 return false;
             }
         } else if (node.type === 'word') {
-            node.value = colormin(node.value, opts);
+            node.value = colormin(node.value, legacy);
         }
     });
     decl.value = ast.toString();
 }
 
-export default postcss.plugin('postcss-colormin', (opts = {}) => {
-    return css => css.walkDecls(transform.bind(null, opts));
+/*
+ * IE 8 & 9 do not properly handle clicks on elements
+ * with a `transparent` `background-color`.
+ *
+ * https://developer.mozilla.org/en-US/docs/Web/Events/click#Internet_Explorer
+ */
+
+function hasTransparentBug (browser) {
+    return ~['ie 8', 'ie 9'].indexOf(browser);
+}
+
+export default postcss.plugin('postcss-colormin', () => {
+    return (css, result) => {
+        const {opts} = result;
+        const browsers = browserslist(null, {
+            stats: opts && opts.stats,
+            path: opts && opts.from,
+            env: opts && opts.env,
+        });
+        css.walkDecls(transform.bind(null, browsers.some(hasTransparentBug)));
+    };
 });

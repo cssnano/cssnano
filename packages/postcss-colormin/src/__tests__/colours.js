@@ -1,8 +1,8 @@
 import test from 'ava';
 import min from '../colours';
 
-function isEqual (t, input, output, options = {}) {
-    t.deepEqual(min(input, options), output);
+function isEqual (t, input, output) {
+    t.deepEqual(min(input), output);
 }
 
 test('should lowercase keywords', isEqual, 'RED', 'red');
@@ -21,7 +21,6 @@ test('should convert hsl to hex', isEqual, 'hsl(230, 50%, 40%)', '#349');
 test('should convert another longhand hex to keyword', isEqual, '#000080', 'navy');
 test('should convert rgba to hsla when shorter', isEqual, 'rgba(199, 190, 179, 0.8)', 'hsla(33,15%,74%,.8)');
 test('should convert this specific rgba value to "transparent"', isEqual, 'rgba(0,0,0,0)', 'transparent');
-test('should not convert this specific rgba value to "transparent" (legacy mode)', isEqual, 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', {legacy: true});
 test('should convert this specific hsla value to "transparent"', isEqual, 'hsla(0,0%,0%,0)', 'transparent');
 test('should convert hsla values with 0 saturation & 0 lightness to "transparent"', isEqual, 'hsla(200,0%,0%,0)', 'transparent');
 test('should leave transparent as it is', isEqual, 'transparent', 'transparent');

@@ -6,7 +6,7 @@ import zero from './lib/trimLeadingZero';
 
 const shorter = (a, b) => (a && a.length < b.length ? a : b).toLowerCase();
 
-export default (colour, opts = {}) => {
+export default (colour, legacy = false) => {
     try {
         const parsed = color(colour.toLowerCase());
         const alpha  = parsed.alpha();
@@ -16,7 +16,7 @@ export default (colour, opts = {}) => {
         } else {
             const rgb = parsed.rgb();
             if (
-                !opts.legacy &&
+                !legacy &&
                 !rgb.color[0] &&
                 !rgb.color[1] &&
                 !rgb.color[2] &&

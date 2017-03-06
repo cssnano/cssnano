@@ -33,6 +33,7 @@
   },
   "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-colormin",
   "dependencies": {
+    "browserslist": "^1.7.5",
     "color": "^1.0.3",
     "has": "^1.0.1",
     "postcss": "^5.0.13",
