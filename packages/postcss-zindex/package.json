@@ -37,5 +37,8 @@
   "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-zindex",
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"
+  },
+  "engines": {
+    "node": ">=4"
   }
 }

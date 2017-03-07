@@ -28,5 +28,8 @@
   "main": "dist/index.js",
   "scripts": {
     "prepublish": "babel src --out-dir dist --ignore /__tests__/"
+  },
+  "engines": {
+    "node": ">=4"
   }
 }

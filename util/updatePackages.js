@@ -27,6 +27,9 @@ function updatePackage (pkg) {
     pkgJson.bugs = pkgJson.bugs || {};
     pkgJson.bugs.url = `${homepage}/issues`;
 
+    pkgJson.engines = pkgJson.engines || {};
+    pkgJson.engines.node = ">=4";
+
     if (pkgJson.dependencies) {
         pkgJson.dependencies = semverMajor(pkgJson.dependencies);
     }

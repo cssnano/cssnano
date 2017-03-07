@@ -35,5 +35,8 @@
   "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-discard-empty",
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"
+  },
+  "engines": {
+    "node": ">=4"
   }
 }

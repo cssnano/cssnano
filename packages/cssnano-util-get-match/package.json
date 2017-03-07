@@ -23,5 +23,8 @@
   "homepage": "https://github.com/ben-eb/cssnano",
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"
+  },
+  "engines": {
+    "node": ">=4"
   }
 }

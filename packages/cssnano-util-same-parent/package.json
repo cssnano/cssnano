@@ -12,8 +12,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.5.1",
-    "postcss": "^5.0.10"
+    "babel-cli": "^6.0.0",
+    "postcss": "^5.0.0"
   },
   "author": {
     "name": "Ben Briggs",
@@ -24,5 +24,8 @@
   "homepage": "https://github.com/ben-eb/cssnano",
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"
+  },
+  "engines": {
+    "node": ">=4"
   }
 }

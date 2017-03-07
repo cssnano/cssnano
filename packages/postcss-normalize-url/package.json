@@ -38,5 +38,8 @@
   "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-url",
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"
+  },
+  "engines": {
+    "node": ">=4"
   }
 }

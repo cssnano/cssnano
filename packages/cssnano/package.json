@@ -81,5 +81,8 @@
   "tonicExampleFilename": "quickstart.js",
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"
+  },
+  "engines": {
+    "node": ">=4"
   }
 }
