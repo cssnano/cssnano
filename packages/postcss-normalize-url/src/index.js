@@ -74,7 +74,7 @@ export default postcss.plugin('postcss-normalize-url', opts => {
     opts = Object.assign({}, {
         normalizeProtocol: false,
         stripFragment: false,
-        stripWWW: true,
+        stripWWW: false,
     }, opts);
 
     return css => {
