@@ -14,6 +14,7 @@
   "devDependencies": {
     "all-contributors-cli": "^4.0.0",
     "ava": "^0.18.1",
+    "babel-cli": "^6.0.0",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-preset-env": "^1.0.0",
     "babel-register": "^6.0.0",
@@ -28,6 +29,7 @@
     "glob": "^7.0.0",
     "lerna": "2.0.0-beta.37",
     "nyc": "^10.0.0",
+    "postcss": "^5.0.0",
     "write-file": "^1.0.0"
   },
   "ava": {
