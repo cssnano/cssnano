@@ -56,52 +56,20 @@ h1 { _color: red }
 
 #### options
 
-##### browsers
-
-Type: `string|array`  
-Default: [browserslist defaults](https://github.com/ai/browserslist)
-
-Specify the browsers that you wish to support. The string will be passed
-directly to browserslist and parsed, however if an array is passed instead then
-stylehacks will use it instead of parsing the browsers itself.
-
 ##### lint
 
 Type: `boolean`  
 Default: `false`
 
 If lint mode is enabled, stylehacks will not remove hacks from the CSS; instead,
-it will warn that hacks were found. When using stylehacks as a PostCSS plugin,
-you are expected to handle these messages yourself.
+it will add warnings to `Result#messages`.
 
-##### silent
-
-Type: `boolean`  
-Default: `false`
-
-Used in combination with the lint option; disables all logging. When using the
-CLI, the process will exit with 0 or 1 as usual.
-
-##### sourcemap
-
-Type: `boolean`  
-Default: `false`
-
-Generate a sourcemap with the transformed CSS.
 
 ### `postcss([ stylehacks(opts) ])`
 
 stylehacks can also be consumed as a PostCSS plugin. See the
 [documentation](https://github.com/postcss/postcss#usage) for examples for
 your environment.
-
-### CLI
-
-stylehacks also ships with a CLI app. To see the available options, just run:
-
-```sh
-$ stylehacks --help
-```
 
 
 ## Related

@@ -71,6 +71,15 @@
     ],
     "ie8": [
       "IE 8"
+    ],
+    "ie9": [
+      "IE 9"
+    ],
+    "opera9": [
+      "Opera 9"
+    ],
+    "firefox2": [
+      "Firefox 2"
     ]
   }
 }

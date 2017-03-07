@@ -7,7 +7,7 @@ const insertZoom = plugin('insertZoom', () => {
 });
 
 ava('should remove star hack from plugins like lost', t => {
-    return postcss([insertZoom(), stylehacks({browsers: 'ie 8'})]).process('h1{}').then(result => {
+    return postcss([insertZoom(), stylehacks()]).process('h1{}', {env: 'ie8'}).then(result => {
         t.deepEqual(result.css, 'h1{}');
     });
 });

@@ -8,11 +8,10 @@ export default function plugin (targets, nodeTypes, detect) {
         }
 
         push (node, metadata) {
-            node._stylehacks = {
-                ...metadata,
+            node._stylehacks = Object.assign({}, metadata, {
                 message: `Bad ${metadata.identifier}: ${metadata.hack}`,
                 browsers: this.targets,
-            };
+            });
             this.nodes.push(node);
         }
 

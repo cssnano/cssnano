@@ -79,28 +79,7 @@ ava('should have a separate detect method (2)', t => {
 });
 
 ava(
-    'should use browserslist to parse browsers when it is a string',
-    passthroughCss,
-    'h1 { _color: red }',
-    {browsers: 'ie 6-8'}
-);
-
-ava(
-    'should not use browserslist to parse browsers when it is an array',
-    passthroughCss,
-    'h1 { _color: red }',
-    {browsers: ['ie 6', 'ie 7', 'ie 8']}
-);
-
-ava(
     'should handle rules with empty selectors',
-    passthroughCss,
-    '{ _color: red }',
-    {browsers: ['ie 5.5', 'ie 6', 'ie 7', 'ie 8']}
-);
-
-ava(
-    'should handle rules with empty selectors (2)',
     processCss,
     '{ _color: red }',
     '{ }'

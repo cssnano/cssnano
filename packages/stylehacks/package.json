@@ -3,20 +3,12 @@
   "version": "2.3.2",
   "description": "Detect/remove browser hacks from CSS files.",
   "main": "dist/index.js",
-  "bin": {
-    "stylehacks": "dist/cli.js"
-  },
   "files": [
     "LICENSE-MIT",
-    "dist",
-    "usage.txt"
+    "dist"
   ],
   "scripts": {
-    "pretest": "eslint src",
-    "prepublish": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/",
-    "report": "nyc report --reporter=html",
-    "test": "nyc ava src/__tests__",
-    "test-012": "nyc ava src/__tests__"
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
   },
   "keywords": [
     "browsers",
@@ -30,52 +22,21 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "ava": "^0.17.0",
-    "babel-cli": "^6.5.1",
-    "babel-core": "^6.5.2",
-    "babel-plugin-add-module-exports": "^0.2.0",
-    "babel-preset-es2015": "^6.5.0",
-    "babel-preset-es2015-loose": "^7.0.0",
-    "babel-preset-stage-0": "^6.5.0",
-    "babel-register": "^6.9.0",
-    "del-cli": "^0.2.0",
-    "eslint": "^3.0.0",
-    "eslint-config-cssnano": "^3.0.0",
-    "eslint-plugin-babel": "^3.3.0",
-    "eslint-plugin-import": "^2.0.1",
-    "nyc": "^10.0.0"
+    "babel-cli": "^6.0.0"
   },
-  "homepage": "https://github.com/ben-eb/stylehacks",
+  "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/stylehacks",
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/stylehacks",
   "dependencies": {
-    "browserslist": "^1.1.3",
-    "chalk": "^1.1.1",
-    "log-symbols": "^1.0.2",
-    "minimist": "^1.2.0",
-    "plur": "^2.1.2",
-    "postcss": "^5.0.18",
-    "postcss-reporter": "^1.3.3",
-    "postcss-selector-parser": "^2.0.0",
-    "read-file-stdin": "^0.2.1",
-    "text-table": "^0.2.0",
-    "write-file-stdout": "0.0.2"
+    "browserslist": "^1.0.0",
+    "postcss": "^5.0.0",
+    "postcss-selector-parser": "^2.0.0"
   },
-  "eslintConfig": {
-    "extends": "cssnano"
-  },
-  "ava": {
-    "require": "babel-register"
-  },
-  "nyc": {
-    "exclude": [
-      "dist",
-      "node_modules",
-      "src/__tests__"
-    ]
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
   }
 }
