@@ -222,6 +222,20 @@ test(
     '#a9a9a9'
 );
 
+test(
+    'should convert 8 character hex codes',
+    isEqual,
+    '#000000FF',
+    '#000'
+);
+
+test(
+    'should convert 4 character hex codes',
+    isEqual,
+    '#000F',
+    '#000'
+);
+
 test('should pass through if not recognised', t => {
     t.deepEqual(min('Unrecognised'), 'Unrecognised');
     t.deepEqual(min('inherit'), 'inherit');
