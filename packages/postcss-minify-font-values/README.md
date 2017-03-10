@@ -38,10 +38,10 @@ p {
 ##### removeAfterKeyword
 
 Type: `boolean`
-Default: `true`
+Default: `false`
 
-Pass `false` to disable the module from removing font families after it
-encounters a font keyword, for example `sans-serif`.
+Pass `true` to remove font families after the module encounters a font keyword,
+for example `sans-serif`.
 
 ##### removeDuplicates
 
