@@ -61,7 +61,8 @@ test(
     'should discard the rest of the declaration after a keyword',
     processCSS,
     'h1{font-family:Arial,sans-serif,Arial,"Trebuchet MS"}',
-    'h1{font-family:Arial,sans-serif}'
+    'h1{font-family:Arial,sans-serif}',
+    {removeAfterKeyword: true}
 );
 
 test(
@@ -82,7 +83,8 @@ test(
     'should convert the font shorthand property, unquoted',
     processCSS,
     'h1{font:italic Helvetica Neue,sans-serif,Arial}',
-    'h1{font:italic Helvetica Neue,sans-serif}'
+    'h1{font:italic Helvetica Neue,sans-serif}',
+    {removeAfterKeyword: true}
 );
 
 test(
