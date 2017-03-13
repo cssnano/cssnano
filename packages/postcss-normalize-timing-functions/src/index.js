@@ -46,7 +46,7 @@ function reduce (node) {
     }
 }
 
-export default plugin('cssnano-reduce-timing-functions', () => {
+export default plugin('postcss-normalize-timing-functions', () => {
     return css => {
         css.walkDecls(/(animation|transition)(-timing-function|$)/, decl => {
             decl.value = valueParser(decl.value).walk(reduce).toString();
