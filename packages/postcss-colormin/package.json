@@ -8,7 +8,7 @@
     "LICENSE-MIT"
   ],
   "scripts": {
-    "prepublish": "babel-node ./src/generate.js && babel src --out-dir dist --ignore /__tests__/ --ignore src/generate.js"
+    "prepublish": "babel-node ./src/generate.js && babel src --out-dir dist --ignore /__tests__/,src/generate.js"
   },
   "keywords": [
     "color",
