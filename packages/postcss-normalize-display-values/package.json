@@ -1,7 +1,7 @@
 {
   "name": "postcss-normalize-display-values",
   "version": "0.0.0",
-  "description": "",
+  "description": "Normalize multiple value display syntaxes into single values.",
   "main": "dist/index.js",
   "scripts": {
     "prepublish": "babel src --out-dir dist --ignore /__tests__/"

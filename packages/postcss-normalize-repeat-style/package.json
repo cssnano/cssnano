@@ -1,7 +1,7 @@
 {
   "name": "postcss-normalize-repeat-style",
   "version": "0.0.0",
-  "description": "",
+  "description": "Convert two value syntax for repeat-style into one value.",
   "main": "dist/index.js",
   "scripts": {
     "prepublish": "babel src --out-dir dist --ignore /__tests__/"

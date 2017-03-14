@@ -143,27 +143,39 @@ This plugin is loaded with the following configuration:
 }
 ```
 
-### `postcss-normalize-display-values`
+### [`postcss-normalize-display-values`](https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-display-values)
+
+> Normalize multiple value display syntaxes into single values.
 
 This plugin is loaded with its default configuration.
 
-### `postcss-normalize-positions`
+### [`postcss-normalize-positions`](https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-positions)
+
+> Normalize keyword values for position into length values.
 
 This plugin is loaded with its default configuration.
 
-### `postcss-normalize-repeat-style`
+### [`postcss-normalize-repeat-style`](https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-repeat-style)
+
+> Convert two value syntax for repeat-style into one value.
 
 This plugin is loaded with its default configuration.
 
-### `postcss-normalize-string`
+### [`postcss-normalize-string`](https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-string)
+
+> Normalize wrapping quotes for CSS string literals.
 
 This plugin is loaded with its default configuration.
 
-### `postcss-normalize-timing-functions`
+### [`postcss-normalize-timing-functions`](https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-timing-functions)
+
+> Normalize CSS animation/transition timing functions.
 
 This plugin is loaded with its default configuration.
 
-### `postcss-normalize-unicode`
+### [`postcss-normalize-unicode`](https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-unicode)
+
+> Normalize unicode-range descriptors, and can convert to wildcard ranges.
 
 This plugin is loaded with its default configuration.
 
@@ -173,7 +185,9 @@ This plugin is loaded with its default configuration.
 
 This plugin is loaded with its default configuration.
 
-### `postcss-normalize-whitespace`
+### [`postcss-normalize-whitespace`](https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-whitespace)
+
+> Trim whitespace inside and around CSS rules & declarations.
 
 This plugin is loaded with its default configuration.
 

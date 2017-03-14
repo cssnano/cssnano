@@ -1,7 +1,7 @@
 {
   "name": "postcss-normalize-timing-functions",
   "version": "0.0.0",
-  "description": "",
+  "description": "Normalize CSS animation/transition timing functions.",
   "main": "dist/index.js",
   "scripts": {
     "prepublish": "babel src --out-dir dist --ignore /__tests__/"
