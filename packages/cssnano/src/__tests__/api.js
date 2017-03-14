@@ -24,28 +24,6 @@ ava(
     nano()
 );
 
-ava.skip('should not fail when options.safe is enabled', t => {
-    const css = 'h1 { z-index: 100 }';
-    const min = 'h1{z-index:100}';
-
-    return processCss(t, css, min, {safe: true});
-});
-
-ava.skip('should not fail second time when the same options are passed in, with options.safe as enabled', t => {
-    const css = 'h1 { z-index: 100 }';
-    const min = 'h1{z-index:100}';
-    const options = {safe: true};
-
-    return nano.process(css, options)
-        .then(result => {
-            t.deepEqual(result.css, min, specName('beConsumedByPostCSS'));
-        })
-        .then(() => nano.process(css, options))
-        .then(result => {
-            t.deepEqual(result.css, min, specName('beConsumedByPostCSS'));
-        });
-});
-
 ava('should work with sourcemaps', t => {
     return nano.process('h1{z-index:1}', {map: {inline: true}}).then(({css}) => {
         const hasMap = /sourceMappingURL=data:application\/json;base64/.test(css);
