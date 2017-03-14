@@ -45,6 +45,10 @@ export function processCSSFactory (plugin) {
     return {processor, processCSS, passthroughCSS};
 }
 
+export function loadPreset (preset) {
+    return postcss(cssnano({preset}));
+}
+
 export function integrationTests (t, preset, integrations) {
     const promises = [];
     Object.keys(frameworks).forEach(framework => {

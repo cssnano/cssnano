@@ -12,7 +12,10 @@ const explorer = cosmiconfig(cssnano, {
 function initializePlugin (plugin, css, result) {
     if (Array.isArray(plugin)) {
         const [processor, opts] = plugin;
-        if (!opts || !opts.exclude) {
+        if (
+            typeof opts === 'undefined' ||
+            (typeof opts === 'object' && !opts.exclude)
+        ) {
             return Promise.resolve(
                 processor(opts)(css, result)
             );

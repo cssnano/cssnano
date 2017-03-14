@@ -18,32 +18,11 @@ ava('can be used as a postcss plugin', pluginMacro, postcss().use(nano()));
 ava('can be used as a postcss plugin (2)', pluginMacro, postcss([nano()]));
 ava('can be used as a postcss plugin (3)', pluginMacro, postcss(nano));
 
-ava.skip(
-    'can be used as a postcss plugin, with options',
-    processCss,
-    `h1 {
-        width: calc(3px * 2 - 1px);
-    }`,
-    `h1{width:calc(3px * 2 - 1px)}`,
-    {calc: false}
-);
-
 ava(
     'should use the postcss plugin api',
     usePostCSSPlugin,
     nano()
 );
-
-function disableMacro (t, opts) {
-    const css = 'h1 { color: #ffffff }';
-    const min = 'h1{color:#ffffff}';
-
-    return processCss(t, css, min, opts);
-}
-
-ava.skip('should disable features', disableMacro, {'postcss-colormin': false});
-ava.skip('should disable features (2)', disableMacro, {postcssColormin: false});
-ava.skip('should disable features (3)', disableMacro, {colormin: false});
 
 ava.skip('should not fail when options.safe is enabled', t => {
     const css = 'h1 { z-index: 100 }';
