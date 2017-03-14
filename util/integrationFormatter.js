@@ -1,6 +1,6 @@
-const postcss = require('postcss');
+import postcss from 'postcss';
 
-module.exports = postcss.plugin('_formatter', () => {
+export default postcss.plugin('_formatter', () => {
     return css => {
         css.walkRules(rule => {
             if (rule !== css.first) {

@@ -1,4 +1,8 @@
+import fs from 'fs';
 import postcss from 'postcss';
+import cssnano from '../packages/cssnano';
+import frameworks from './frameworks';
+import formatter from './integrationFormatter';
 
 export function usePostCSSPlugin (t, plugin) {
     t.truthy(plugin.postcssVersion, 'should be able to access version');
@@ -39,4 +43,14 @@ export function processCSSFactory (plugin) {
     }
 
     return {processor, processCSS, passthroughCSS};
+}
+
+export function integrationTests (t, preset, integrations) {
+    const promises = [];
+    Object.keys(frameworks).forEach(framework => {
+        promises.push(postcss([cssnano, formatter]).process(frameworks[framework], {preset}).then(result => {
+            t.is(result.css, fs.readFileSync(`${integrations}/${framework}.css`, 'utf8'));
+        }));
+    });
+    return Promise.all(promises);
 }
