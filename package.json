@@ -5,6 +5,7 @@
     "docs": "cd docs && npm run build && cd .. && gh-pages -d docs/dist",
     "fixlint": "eslint --fix --ignore-path .gitignore packages/**/src util",
     "report": "nyc report --reporter=html",
+    "postinstall": "lerna bootstrap",
     "pretest": "eslint --ignore-path .gitignore packages/**/src util",
     "test": "nyc ava"
   },
