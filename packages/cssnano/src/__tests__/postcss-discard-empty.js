@@ -15,7 +15,7 @@ test(
     '',
 );
 
-test(
+test.skip(
     'should not mangle @ rules with parameters',
     processCss,
     '@charset "utf-8";',

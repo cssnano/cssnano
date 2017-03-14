@@ -2,7 +2,9 @@ import test from 'ava';
 import webpack from 'webpack';
 import conf from './_webpack.config';
 
-test.cb('cssnano should be consumed by webpack', t => {
+// test.cb
+
+test.skip('cssnano should be consumed by webpack', t => {
     webpack(conf, (err, stats) => {
         if (err) {
             t.fail();

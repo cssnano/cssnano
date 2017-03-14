@@ -113,7 +113,7 @@ test(
     .fadeOut {
         animation-name: fadeOut;
     }`,
-    `@keyframes a{0%{opacity:1}to{opacity:0}}.fadeOut{animation-name:a}`
+    `@keyframes fadeOut{0%{opacity:1}to{opacity:0}}.fadeOut{animation-name:fadeOut}`
 );
 
 test(
@@ -365,18 +365,6 @@ test(
         width: calc(3px * 2 - 1px);
     }`,
     `h1{width:5px}`
-);
-
-test(
-    'should not reduce calc when disabled',
-    processCss,
-    `h1 {
-        width: calc(3px * 2 - 1px);
-    }`,
-    `h1{width:calc(3px * 2 - 1px)}`,
-    {
-        calc: false,
-    }
 );
 
 test(

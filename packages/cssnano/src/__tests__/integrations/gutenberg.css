@@ -44,7 +44,7 @@ summary{display:list-item}
 menu{display:block}
 canvas{display:inline-block}
 [hidden],template{display:none}
-*{box-sizing:border-box}
+*{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box}
 *,:after,:before,blockquote:first-letter,blockquote:first-line,div:first-letter,div:first-line,li:first-letter,li:first-line,p:first-letter,p:first-line{background:transparent!important;box-shadow:none!important;text-shadow:none!important}
 html{font-size:16px;margin:0;padding:0}
 body{color:#000!important;background:#fff!important;font-size:1rem;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;line-height:1.5;margin:0 auto;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}

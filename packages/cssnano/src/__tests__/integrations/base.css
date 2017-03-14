@@ -383,87 +383,87 @@ input:-ms-input-placeholder{color:#999}
   .pull-3-5-xl{left:-60%}
   .pull-4-5-xl{left:-80%}
 }
-@-webkit-keyframes a{
+@-webkit-keyframes fadeIn{
   0%{opacity:0}
   to{opacity:1}
 }
-@keyframes a{
+@keyframes fadeIn{
   0%{opacity:0}
   to{opacity:1}
 }
-.fade-in{-webkit-animation-name:a;animation-name:a}
-@-webkit-keyframes b{
+.fade-in{-webkit-animation-name:fadeIn;animation-name:fadeIn}
+@-webkit-keyframes fadeInDown{
   0%{opacity:0;-webkit-transform:translate3d(0,-30px,0);transform:translate3d(0,-30px,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-@keyframes b{
+@keyframes fadeInDown{
   0%{opacity:0;-webkit-transform:translate3d(0,-30px,0);transform:translate3d(0,-30px,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-.fade-in-down{-webkit-animation-name:b;animation-name:b}
-@-webkit-keyframes c{
+.fade-in-down{-webkit-animation-name:fadeInDown;animation-name:fadeInDown}
+@-webkit-keyframes fadeInDownBig{
   0%{opacity:0;-webkit-transform:translate3d(0,-100%,0);transform:translate3d(0,-100%,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-@keyframes c{
+@keyframes fadeInDownBig{
   0%{opacity:0;-webkit-transform:translate3d(0,-100%,0);transform:translate3d(0,-100%,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-.fade-in-down-big{-webkit-animation-name:c;animation-name:c}
-@-webkit-keyframes d{
+.fade-in-down-big{-webkit-animation-name:fadeInDownBig;animation-name:fadeInDownBig}
+@-webkit-keyframes fadeInLeft{
   0%{opacity:0;-webkit-transform:translate3d(-30px,0,0);transform:translate3d(-30px,0,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-@keyframes d{
+@keyframes fadeInLeft{
   0%{opacity:0;-webkit-transform:translate3d(-30px,0,0);transform:translate3d(-30px,0,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-.fade-in-left{-webkit-animation-name:d;animation-name:d}
-@-webkit-keyframes e{
+.fade-in-left{-webkit-animation-name:fadeInLeft;animation-name:fadeInLeft}
+@-webkit-keyframes fadeInLeftBig{
   0%{opacity:0;-webkit-transform:translate3d(-100%,0,0);transform:translate3d(-100%,0,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-@keyframes e{
+@keyframes fadeInLeftBig{
   0%{opacity:0;-webkit-transform:translate3d(-100%,0,0);transform:translate3d(-100%,0,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-.fade-in-left-big{-webkit-animation-name:e;animation-name:e}
-@-webkit-keyframes f{
+.fade-in-left-big{-webkit-animation-name:fadeInLeftBig;animation-name:fadeInLeftBig}
+@-webkit-keyframes fadeInRight{
   0%{opacity:0;-webkit-transform:translate3d(30px,0,0);transform:translate3d(30px,0,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-@keyframes f{
+@keyframes fadeInRight{
   0%{opacity:0;-webkit-transform:translate3d(30px,0,0);transform:translate3d(30px,0,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-.fade-in-right{-webkit-animation-name:f;animation-name:f}
-@-webkit-keyframes g{
+.fade-in-right{-webkit-animation-name:fadeInRight;animation-name:fadeInRight}
+@-webkit-keyframes fadeInRightBig{
   0%{opacity:0;-webkit-transform:translate3d(100%,0,0);transform:translate3d(100%,0,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-@keyframes g{
+@keyframes fadeInRightBig{
   0%{opacity:0;-webkit-transform:translate3d(100%,0,0);transform:translate3d(100%,0,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-.fade-in-right-big{-webkit-animation-name:g;animation-name:g}
-@-webkit-keyframes h{
+.fade-in-right-big{-webkit-animation-name:fadeInRightBig;animation-name:fadeInRightBig}
+@-webkit-keyframes fadeInUp{
   0%{opacity:0;-webkit-transform:translate3d(0,30px,0);transform:translate3d(0,30px,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-@keyframes h{
+@keyframes fadeInUp{
   0%{opacity:0;-webkit-transform:translate3d(0,30px,0);transform:translate3d(0,30px,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-.fade-in-up{-webkit-animation-name:h;animation-name:h}
-@-webkit-keyframes i{
+.fade-in-up{-webkit-animation-name:fadeInUp;animation-name:fadeInUp}
+@-webkit-keyframes fadeInUpBig{
   0%{opacity:0;-webkit-transform:translate3d(0,100%,0);transform:translate3d(0,100%,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-@keyframes i{
+@keyframes fadeInUpBig{
   0%{opacity:0;-webkit-transform:translate3d(0,100%,0);transform:translate3d(0,100%,0)}
   to{opacity:1;-webkit-transform:none;transform:none}
 }
-.fade-in-up-big{-webkit-animation-name:i;animation-name:i}
+.fade-in-up-big{-webkit-animation-name:fadeInUpBig;animation-name:fadeInUpBig}
 @media print{
   *,:after,:before{background:transparent;color:#000;box-shadow:none;text-shadow:none}
   a,a:visited{text-decoration:underline}

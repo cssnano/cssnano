@@ -1,0 +1,60 @@
+{
+  "name": "cssnano-preset-default",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "description": "",
+  "scripts": {
+    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
+  },
+  "files": [
+    "LICENSE-MIT",
+    "dist"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "postcss": "^5.0.0",
+    "postcss-calc": "^5.0.0",
+    "postcss-colormin": "^2.0.0",
+    "postcss-convert-values": "^2.0.0",
+    "postcss-discard-comments": "^2.0.0",
+    "postcss-discard-duplicates": "^2.0.0",
+    "postcss-discard-empty": "^2.0.0",
+    "postcss-discard-overridden": "^0.1.1",
+    "postcss-merge-longhand": "^3.0.0",
+    "postcss-merge-rules": "^2.0.0",
+    "postcss-minify-font-values": "^1.0.0",
+    "postcss-minify-gradients": "^1.0.0",
+    "postcss-minify-params": "^1.0.0",
+    "postcss-minify-selectors": "^2.0.0",
+    "postcss-normalize-charset": "^1.0.0",
+    "postcss-normalize-display-values": "0.0.0",
+    "postcss-normalize-repeat-style": "0.0.0",
+    "postcss-normalize-positions": "0.0.0",
+    "postcss-normalize-string": "0.0.0",
+    "postcss-normalize-timing-functions": "0.0.0",
+    "postcss-normalize-unicode": "0.0.0",
+    "postcss-normalize-url": "^3.0.0",
+    "postcss-normalize-whitespace": "0.0.0",
+    "postcss-ordered-values": "^2.0.0",
+    "postcss-reduce-initial": "^1.0.0",
+    "postcss-reduce-transforms": "^1.0.0",
+    "postcss-svgo": "^2.0.0",
+    "postcss-unique-selectors": "^2.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.0.0"
+  },
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "http://beneb.info"
+  },
+  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/cssnano-preset-default",
+  "homepage": "https://github.com/ben-eb/cssnano",
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
+  },
+  "engines": {
+    "node": ">=4"
+  }
+}

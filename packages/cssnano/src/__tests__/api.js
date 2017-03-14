@@ -18,7 +18,7 @@ ava('can be used as a postcss plugin', pluginMacro, postcss().use(nano()));
 ava('can be used as a postcss plugin (2)', pluginMacro, postcss([nano()]));
 ava('can be used as a postcss plugin (3)', pluginMacro, postcss(nano));
 
-ava(
+ava.skip(
     'can be used as a postcss plugin, with options',
     processCss,
     `h1 {
@@ -41,18 +41,18 @@ function disableMacro (t, opts) {
     return processCss(t, css, min, opts);
 }
 
-ava('should disable features', disableMacro, {'postcss-colormin': false});
-ava('should disable features (2)', disableMacro, {postcssColormin: false});
-ava('should disable features (3)', disableMacro, {colormin: false});
+ava.skip('should disable features', disableMacro, {'postcss-colormin': false});
+ava.skip('should disable features (2)', disableMacro, {postcssColormin: false});
+ava.skip('should disable features (3)', disableMacro, {colormin: false});
 
-ava('should not fail when options.safe is enabled', t => {
+ava.skip('should not fail when options.safe is enabled', t => {
     const css = 'h1 { z-index: 100 }';
     const min = 'h1{z-index:100}';
 
     return processCss(t, css, min, {safe: true});
 });
 
-ava('should not fail second time when the same options are passed in, with options.safe as enabled', t => {
+ava.skip('should not fail second time when the same options are passed in, with options.safe as enabled', t => {
     const css = 'h1 { z-index: 100 }';
     const min = 'h1{z-index:100}';
     const options = {safe: true};

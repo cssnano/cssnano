@@ -92,9 +92,9 @@ h1 a:focus,h1 a:hover,h2 a:focus,h2 a:hover,h3 a:focus,h3 a:hover{color:#c65146;
 h4,h5,h6{margin:.375rem 0}
 ol,ul{padding-left:1em}
 ol ol,ol ul,ul ol,ul ul{padding-left:1.5em}
-ol{padding-left:0;counter-reset:a}
+ol{padding-left:0;counter-reset:item}
 ol li{list-style:none}
-ol li:before{content:counters(a,".") ". ";counter-increment:a;margin-right:.2em}
+ol li:before{content:counters(item,".") ". ";counter-increment:item;margin-right:.2em}
 input:not([type=submit]),select,textarea{width:100%;font-size:.83333rem;min-height:2.25rem}
 input:not([type=submit])[disabled],select[disabled],textarea[disabled]{background-color:#eee;cursor:not-allowed;border:0}
 input:not([type=submit]):not([type=range]),select,textarea{border:1px solid #dcdcdc;padding:0 .75em}

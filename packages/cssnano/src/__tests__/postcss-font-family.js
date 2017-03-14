@@ -50,7 +50,7 @@ test(
     'h1{font-family:Helvetica,Arial,sans-serif}',
 );
 
-test(
+test.skip(
     'should discard the rest of the declaration after a keyword',
     processCss,
     'h1{font-family:Arial,sans-serif,Arial,"Trebuchet MS"}',
@@ -71,7 +71,7 @@ test(
     'h1{font:italic small-caps normal 13px/1.5 Helvetica Neue,sans-serif}',
 );
 
-test(
+test.skip(
     'should convert the font shorthand property, unquoted',
     processCss,
     'h1{font:italic Helvetica Neue,sans-serif,Arial}',

@@ -1,9 +1,9 @@
 /*! bulma.io v0.3.2 | MIT License | github.com/jgthms/bulma */
-@-webkit-keyframes a{
+@-webkit-keyframes spinAround{
   0%{-webkit-transform:rotate(0deg);transform:rotate(0deg)}
   to{-webkit-transform:rotate(359deg);transform:rotate(359deg)}
 }
-@keyframes a{
+@keyframes spinAround{
   0%{-webkit-transform:rotate(0deg);transform:rotate(0deg)}
   to{-webkit-transform:rotate(359deg);transform:rotate(359deg)}
 }
@@ -357,7 +357,7 @@ a.box:active{box-shadow:inset 0 1px 2px hsla(0,0%,4%,.2),0 0 0 1px #00d1b2}
 .button.is-disabled,.button[disabled]{opacity:.5}
 .button.is-fullwidth{display:-webkit-box;display:-ms-flexbox;display:flex;width:100%}
 .button.is-loading{color:transparent!important;pointer-events:none}
-.button.is-loading:after{-webkit-animation:a .5s infinite linear;animation:a .5s infinite linear;border-radius:290486px;border-color:transparent transparent #dbdbdb #dbdbdb;border-style:solid;border-width:2px;content:"";display:block;height:1rem;position:relative;width:1rem;left:50%;margin-left:-8px;margin-top:-8px;position:absolute;top:50%;position:absolute!important}
+.button.is-loading:after{-webkit-animation:spinAround .5s infinite linear;animation:spinAround .5s infinite linear;border-radius:290486px;border-color:transparent transparent #dbdbdb #dbdbdb;border-style:solid;border-width:2px;content:"";display:block;height:1rem;position:relative;width:1rem;left:50%;margin-left:-8px;margin-top:-8px;position:absolute;top:50%;position:absolute!important}
 .content{color:#4a4a4a}
 .content:not(:last-child){margin-bottom:1.5rem}
 .content li+li{margin-top:.25em}
@@ -496,7 +496,7 @@ a.box:active{box-shadow:inset 0 1px 2px hsla(0,0%,4%,.2),0 0 0 1px #00d1b2}
   .control.is-horizontal,.control.is-horizontal>.control{display:-webkit-box;display:-ms-flexbox;display:flex}
   .control.is-horizontal>.control{-ms-flex-preferred-size:0;flex-basis:0;-webkit-box-flex:5;-ms-flex-positive:5;flex-grow:5;-ms-flex-negative:1;flex-shrink:1}
 }
-.control.is-loading:after{-webkit-animation:a .5s infinite linear;animation:a .5s infinite linear;border-radius:290486px;border-color:transparent transparent #dbdbdb #dbdbdb;border-style:solid;border-width:2px;content:"";display:block;height:1rem;position:relative;width:1rem;position:absolute!important;right:.75em;top:.75em}
+.control.is-loading:after{-webkit-animation:spinAround .5s infinite linear;animation:spinAround .5s infinite linear;border-radius:290486px;border-color:transparent transparent #dbdbdb #dbdbdb;border-style:solid;border-width:2px;content:"";display:block;height:1rem;position:relative;width:1rem;position:absolute!important;right:.75em;top:.75em}
 .icon{display:inline-block;font-size:21px;height:1.5rem;line-height:1.5rem;text-align:center;vertical-align:top;width:1.5rem}
 .icon .fa{font-size:inherit;line-height:inherit}
 .icon.is-small{font-size:14px;height:1rem;line-height:1rem;width:1rem}
@@ -632,7 +632,7 @@ a.box:active{box-shadow:inset 0 1px 2px hsla(0,0%,4%,.2),0 0 0 1px #00d1b2}
 .highlight{font-weight:400;max-width:100%;overflow:hidden;padding:0}
 .highlight:not(:last-child){margin-bottom:1.5rem}
 .highlight pre{overflow:auto;max-width:100%}
-.loader{-webkit-animation:a .5s infinite linear;animation:a .5s infinite linear;border-color:transparent transparent #dbdbdb #dbdbdb;border-style:solid;border-width:2px;content:"";display:block;height:1rem;position:relative;width:1rem}
+.loader{-webkit-animation:spinAround .5s infinite linear;animation:spinAround .5s infinite linear;border-color:transparent transparent #dbdbdb #dbdbdb;border-style:solid;border-width:2px;content:"";display:block;height:1rem;position:relative;width:1rem}
 .loader,.number{border-radius:290486px}
 .number{-webkit-box-align:center;-ms-flex-align:center;align-items:center;background-color:#f5f5f5;display:-webkit-inline-box;display:-ms-inline-flexbox;display:inline-flex;font-size:1.25rem;height:2em;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;margin-right:1.5rem;min-width:2.5em;padding:.25rem .5rem;text-align:center;vertical-align:top}
 .card-header{-webkit-box-align:stretch;-ms-flex-align:stretch;align-items:stretch;box-shadow:0 1px 2px hsla(0,0%,4%,.1);display:-webkit-box;display:-ms-flexbox;display:flex}
@@ -760,7 +760,7 @@ a.box:active{box-shadow:inset 0 1px 2px hsla(0,0%,4%,.2),0 0 0 1px #00d1b2}
 .modal-card-foot{border-bottom-left-radius:5px;border-bottom-right-radius:5px;border-top:1px solid #dbdbdb}
 .modal-card-foot .button:not(:last-child){margin-right:10px}
 .modal-card-body{-webkit-overflow-scrolling:touch;background-color:#fff;-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-negative:1;flex-shrink:1;overflow:auto;padding:20px}
-.modal{bottom:0;left:0;position:absolute;right:0;top:0;-webkit-box-align:center;-ms-flex-align:center;align-items:center;display:none;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;overflow:hidden;position:fixed;z-index:5}
+.modal{bottom:0;left:0;position:absolute;right:0;top:0;-webkit-box-align:center;-ms-flex-align:center;align-items:center;display:none;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;overflow:hidden;position:fixed;z-index:1986}
 .modal.is-active{display:-webkit-box;display:-ms-flexbox;display:flex}
 .nav-toggle{cursor:pointer;display:block;height:3.5rem;position:relative;width:3.5rem}
 .nav-toggle span{background-color:#4a4a4a;display:block;height:1px;left:50%;margin-left:-7px;position:absolute;top:50%;-webkit-transition:none 86ms ease-out;transition:none 86ms ease-out;-webkit-transition-property:background,left,opacity,-webkit-transform;transition-property:background,left,opacity,-webkit-transform;transition-property:background,left,opacity,transform;transition-property:background,left,opacity,transform,-webkit-transform;width:15px}

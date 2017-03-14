@@ -1,6 +1,10 @@
 import {plugin} from 'postcss';
 
-export default plugin('cssnano-reset-stylecache', () => {
+/*
+ * Temporary hack for PostCSS 5.x.
+ */
+
+export default plugin('cssnano-style-cache', () => {
     return (css, result) => {
         result.root.rawCache = {
             colon:         ':',

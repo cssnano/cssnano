@@ -29,7 +29,7 @@ test(
     'h1{width:14px}',
 );
 
-test(
+test.skip(
     'should convert px to pc',
     processCss,
     'h1{width:16px}',
@@ -37,7 +37,7 @@ test(
    {convertValues:{length: true}},
 );
 
-test(
+test.skip(
     'should convert px to pt',
     processCss,
     'h1{width:120px}',
@@ -45,7 +45,7 @@ test(
    {convertValues:{length: true}},
 );
 
-test(
+test.skip(
     'should convert px to in',
     processCss,
     'h1{width:192px}',
@@ -88,7 +88,7 @@ test(
     'h1{z-index:1}',
 );
 
-test(
+test.skip(
     'should operate in calc values',
     processCss,
     'h1{width:calc(192px + 2em)}',
