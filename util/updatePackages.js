@@ -111,6 +111,9 @@ function updatePreset (pkg) {
         .use(remarkToc)
         .runSync(u('root', [
             u('heading', {depth: 1}, [u('text', pkgName)]),
+            u('blockquote', [
+                u('text', pkgJson.description),
+            ]),
             u('heading', {depth: 2}, [u('text', 'Table of Contents')]),
             u('heading', {depth: 2}, [u('text', 'Plugins')]),
             ...plugins,

@@ -1,5 +1,7 @@
 # cssnano-preset-default
 
+> Safe defaults for cssnano which require minimal configuration.
+
 
 ## Table of Contents
 
