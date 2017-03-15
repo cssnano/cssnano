@@ -4,7 +4,7 @@ import plugins from './plugins';
 
 const stylehacks = postcss.plugin('stylehacks', (opts = {}) => {
     return (css, result) => {
-        const resultOpts = result.opts || {};
+        const resultOpts = result.opts;
         const browsers = browserslist(null, {
             stats: resultOpts && resultOpts.stats,
             path: resultOpts && resultOpts.from,
@@ -35,12 +35,10 @@ const stylehacks = postcss.plugin('stylehacks', (opts = {}) => {
 });
 
 stylehacks.detect = node => {
-    const hacked = plugins.some(Plugin => {
+    return plugins.some(Plugin => {
         const hack = new Plugin();
         return hack.any(node);
     });
-
-    return hacked;
 };
 
 export default stylehacks;
