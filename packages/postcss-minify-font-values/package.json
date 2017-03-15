@@ -20,7 +20,7 @@
     "postcss": "^5.0.0",
     "postcss-value-parser": "^3.0.0"
   },
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-minify-font-values",
+  "repository": "ben-eb/cssnano",
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"
   },

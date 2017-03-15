@@ -30,7 +30,7 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-minify-selectors",
+  "repository": "ben-eb/cssnano",
   "dependencies": {
     "alphanum-sort": "^1.0.0",
     "has": "^1.0.0",

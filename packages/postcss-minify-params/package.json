@@ -16,7 +16,7 @@
   ],
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "license": "MIT",
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-minify-params",
+  "repository": "ben-eb/cssnano",
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"
   },

@@ -36,7 +36,7 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-url",
+  "repository": "ben-eb/cssnano",
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"
   },

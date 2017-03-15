@@ -31,7 +31,7 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-svgo",
+  "repository": "ben-eb/cssnano",
   "dependencies": {
     "is-svg": "^2.0.0",
     "postcss": "^5.0.0",

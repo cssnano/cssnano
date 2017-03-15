@@ -32,7 +32,7 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/css-size",
+  "repository": "ben-eb/cssnano",
   "dependencies": {
     "cli-table": "^0.3.1",
     "cssnano": "^3.0.0",

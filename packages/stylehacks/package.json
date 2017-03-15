@@ -31,7 +31,7 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/stylehacks",
+  "repository": "ben-eb/cssnano",
   "dependencies": {
     "browserslist": "^1.0.0",
     "postcss": "^5.0.0",

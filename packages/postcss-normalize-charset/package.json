@@ -13,7 +13,7 @@
     "dist"
   ],
   "license": "MIT",
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-normalize-charset",
+  "repository": "ben-eb/cssnano",
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"
   },

@@ -32,7 +32,7 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-colormin",
+  "repository": "ben-eb/cssnano",
   "dependencies": {
     "browserslist": "^1.0.0",
     "color": "^1.0.0",

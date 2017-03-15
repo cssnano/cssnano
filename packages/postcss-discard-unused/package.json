@@ -30,7 +30,7 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-discard-unused",
+  "repository": "ben-eb/cssnano",
   "dependencies": {
     "postcss": "^5.0.0",
     "uniqs": "^2.0.0"

@@ -22,7 +22,7 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-unique-selectors",
+  "repository": "ben-eb/cssnano",
   "devDependencies": {
     "babel-cli": "^6.0.0",
     "cross-env": "^3.0.0"

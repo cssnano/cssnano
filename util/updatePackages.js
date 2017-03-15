@@ -1,4 +1,5 @@
 import {basename, join} from 'path';
+import getPkgRepo from 'get-pkg-repo';
 import glob from 'glob';
 import postcss from 'postcss';
 import remark from 'remark';
@@ -11,7 +12,8 @@ import u from 'unist-builder';
 import contributorsSection from './contributorsSection';
 import installSection from './installSection';
 
-const homepage = `https://github.com/ben-eb/cssnano`;
+const repository = `ben-eb/cssnano`;
+const homepage = `https://github.com/${repository}`;
 
 function writeError (err) {
     if (err) {
@@ -47,7 +49,8 @@ function sortPlugins (a, b) {
     return 0;
 }
 
-function updatePreset (pkg) {
+function updatePreset (packageList, pkg) {
+    const managed = packageList.map(p => basename(p));
     const pkgName = basename(pkg);
     const pkgJson = require(`${pkg}/package.json`);
     const plugins = [];
@@ -57,11 +60,17 @@ function updatePreset (pkg) {
 
     instance.plugins.sort(sortPlugins).forEach(([plugin, options]) => {
         const name = pluginName(plugin);
-        let pluginDesc, pluginRepo;
+        let pluginDesc, pluginRepo, externalLink;
         try {
-            const pluginPkg = require(`${join(__dirname, '../packages', name, 'package.json')}`);
+            const pluginPkg = require(`${pkg}/node_modules/${name}/package.json`);
             pluginDesc = pluginPkg.description;
-            pluginRepo = pluginPkg.repository;
+            if (~managed.indexOf(name)) {
+                pluginRepo = `${homepage}/tree/master/packages/${name}`;
+            } else {
+                externalLink = true;
+                const r = getPkgRepo(pluginPkg);
+                pluginRepo = `${r.default}://${r.domain}/${r.user}/${r.project}`;
+            }
         } catch (e) {
             // Make an exception for core processors that don't
             // have their own repository.
@@ -71,7 +80,8 @@ function updatePreset (pkg) {
             documentation.push(
                 u('heading', {depth: 3}, [
                     u('link', {url: pluginRepo}, [u('inlineCode', name)]),
-                ]),
+                    externalLink && u('text', ' (external)'),
+                ].filter(Boolean)),
                 u('blockquote', [
                     u('text', pluginDesc),
                 ])
@@ -134,7 +144,7 @@ function updatePackage (pkg) {
     const pkgJson = require(`${pkg}/package.json`);
 
     pkgJson.name = pkgName;
-    pkgJson.repository = `${homepage}/tree/master/packages/${pkgName}`;
+    pkgJson.repository = repository;
     pkgJson.homepage = homepage;
 
     pkgJson.bugs = pkgJson.bugs || {};
@@ -163,5 +173,5 @@ glob(`${join(__dirname, '../packages')}/*`, (err, packages) => {
         throw err;
     }
     packages.forEach(updatePackage);
-    packages.filter(p => !basename(p).indexOf('cssnano-preset-')).forEach(updatePreset);
+    packages.filter(p => !basename(p).indexOf('cssnano-preset-')).forEach(updatePreset.bind(null, packages));
 });

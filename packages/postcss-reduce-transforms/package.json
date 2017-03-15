@@ -21,7 +21,7 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-reduce-transforms",
+  "repository": "ben-eb/cssnano",
   "dependencies": {
     "cssnano-util-get-match": "0.0.0",
     "has": "^1.0.0",

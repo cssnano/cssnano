@@ -8,7 +8,7 @@
 -   [Plugins](#plugins)
 
     -   [cssnano-style-cache](#cssnano-style-cache)
-    -   [postcss-calc](#postcss-calc)
+    -   [postcss-calc (external)](#postcss-calc-external)
     -   [postcss-colormin](#postcss-colormin)
     -   [postcss-convert-values](#postcss-convert-values)
     -   [postcss-discard-comments](#postcss-discard-comments)
@@ -49,7 +49,9 @@
 
 This plugin is loaded with its default configuration.
 
-### `postcss-calc`
+### [`postcss-calc`](https://github.com/postcss/postcss-calc) (external)
+
+> PostCSS plugin to reduce calc()
 
 This plugin is loaded with its default configuration.
 

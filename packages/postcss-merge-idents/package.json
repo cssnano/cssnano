@@ -27,7 +27,7 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "https://github.com/ben-eb/cssnano/tree/master/packages/postcss-merge-idents",
+  "repository": "ben-eb/cssnano",
   "dependencies": {
     "cssnano-util-same-parent": "0.0.0",
     "has": "^1.0.0",
