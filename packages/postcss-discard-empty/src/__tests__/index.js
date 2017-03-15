@@ -1,8 +1,9 @@
 import test from 'ava';
 import plugin from '..';
-import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
+import {usePostCSSPlugin, processCSSFactory, processCSSWithPresetFactory} from '../../../../util/testHelpers';
 
-const {passthroughCSS, processCSS, processor} = processCSSFactory(plugin);
+const {passthroughCSS, processor} = processCSSFactory(plugin);
+const withDefaultPreset = processCSSWithPresetFactory(plugin, 'default');
 
 function testRemovals (t, fixture, expected, removedSelectors) {
     return processor(fixture).then(result => {
@@ -35,14 +36,14 @@ function testRemovals (t, fixture, expected, removedSelectors) {
 
 test(
     'should remove empty @ rules',
-    processCSS,
+    withDefaultPreset,
     '@font-face;',
     ''
 );
 
 test(
     'should remove empty @ rules (2)',
-    processCSS,
+    withDefaultPreset,
     '@font-face {}',
     ''
 );
@@ -61,35 +62,35 @@ test(
 
 test(
     'should remove empty rules',
-    processCSS,
+    withDefaultPreset,
     'h1{}h2{}h4{}h5,h6{}',
     ''
 );
 
 test(
     'should remove empty declarations',
-    processCSS,
+    withDefaultPreset,
     'h1{color:}',
     ''
 );
 
 test(
     'should remove null selectors',
-    processCSS,
+    withDefaultPreset,
     '{color:blue}',
     ''
 );
 
 test(
     'should remove null selectors in media queries',
-    processCSS,
+    withDefaultPreset,
     '@media screen, print {{}}',
     ''
 );
 
 test(
     'should remove empty media queries',
-    processCSS,
+    withDefaultPreset,
     '@media screen, print {h1,h2{}}',
     ''
 );

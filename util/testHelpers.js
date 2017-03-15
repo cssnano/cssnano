@@ -45,6 +45,20 @@ export function processCSSFactory (plugin) {
     return {processor, processCSS, passthroughCSS};
 }
 
+export function processCSSWithPresetFactory (plugin, preset) {
+    const {processor: solo} = processCSSFactory(plugin);
+    const {processor: multiple} = processCSSFactory([cssnano({preset})]);
+
+    function processCSS (t, fixture, expected) {
+        return Promise.all([
+            solo(fixture).then(({css}) => t.is(css, expected)),
+            multiple(fixture).then(({css}) => t.is(css, expected)),
+        ]);
+    };
+
+    return processCSS;
+}
+
 export function loadPreset (preset) {
     return postcss(cssnano({preset}));
 }
