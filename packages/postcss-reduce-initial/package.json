@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "acquire": "babel-node ./src/acquire.js",
-    "prepublish": "babel src --out-dir dist --ignore /__tests__/,src/acquire.js"
+    "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/,src/acquire.js"
   },
   "keywords": [
     "css",
@@ -23,7 +23,8 @@
     "got": "^6.0.0",
     "html2plaintext": "^1.0.0",
     "is-html": "^1.0.0",
-    "write-file": "^1.0.0"
+    "write-file": "^1.0.0",
+    "cross-env": "^3.0.0"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "author": {

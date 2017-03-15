@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
-import getMatchFactory from 'cssnano-util-get-match';
+import getMatchFactory from 'lerna:cssnano-util-get-match';
 import mappings from './lib/map';
 
 const getMatch = getMatchFactory(mappings);

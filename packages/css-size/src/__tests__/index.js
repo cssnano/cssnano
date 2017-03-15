@@ -3,7 +3,7 @@ import {spawn} from 'child_process';
 import path from 'path';
 import test from 'ava';
 import stripAnsi from 'strip-ansi';
-import size, {table} from '../';
+import size, {table} from '..';
 
 function setup (args) {
     return new Promise((resolve, reject) => {
@@ -39,7 +39,7 @@ test('cli', t => {
 });
 
 test('api', t => {
-    return size(read('test.css', 'utf-8')).then(result => {
+    return size(read(__dirname + '/test.css', 'utf-8')).then(result => {
         t.deepEqual(result.original, '43 B');
         t.deepEqual(result.minified, '34 B');
         t.deepEqual(result.difference, '9 B');
@@ -60,7 +60,7 @@ const tableOutput = `
 `.replace(/^\s+|\s+$/g, '');
 
 test('table', t => {
-    return table(read('test.css', 'utf-8')).then(result => {
+    return table(read(__dirname + '/test.css', 'utf-8')).then(result => {
         t.is(stripAnsi(result), tableOutput);
     });
 });

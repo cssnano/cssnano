@@ -7,7 +7,7 @@
     "css-size": "dist/cli.js"
   },
   "scripts": {
-    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
+    "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
   },
   "files": [
     "LICENSE-MIT",
@@ -23,7 +23,8 @@
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "strip-ansi": "^3.0.0"
+    "strip-ansi": "^3.0.0",
+    "cross-env": "^3.0.0"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "author": {

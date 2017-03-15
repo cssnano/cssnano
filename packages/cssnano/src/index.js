@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 import cosmiconfig from 'cosmiconfig';
-import defaultPreset from 'cssnano-preset-default';
+import defaultPreset from 'lerna:cssnano-preset-default';
 
 const cssnano = 'cssnano';
 

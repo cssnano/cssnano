@@ -1,6 +1,6 @@
 import fs from 'fs';
 import postcss from 'postcss';
-import cssnano from '../packages/cssnano';
+import cssnano from 'lerna:cssnano';
 import frameworks from './frameworks';
 import formatter from './integrationFormatter';
 

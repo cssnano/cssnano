@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "description": "Safe defaults for cssnano which require minimal configuration.",
   "scripts": {
-    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
+    "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
   },
   "files": [
     "LICENSE-MIT",
@@ -42,7 +42,8 @@
     "postcss-unique-selectors": "^2.0.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.0.0"
+    "babel-cli": "^6.0.0",
+    "cross-env": "^3.0.0"
   },
   "author": {
     "name": "Ben Briggs",

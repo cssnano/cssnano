@@ -1,4 +1,4 @@
-import nano from 'cssnano';
+import nano from 'lerna:cssnano';
 import prettyBytes from 'pretty-bytes';
 import {sync as gzip} from 'gzip-size';
 import Table from 'cli-table';

@@ -1,7 +1,7 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
-import getArguments from 'cssnano-util-get-arguments';
-import getMatchFactory from 'cssnano-util-get-match';
+import getArguments from 'lerna:cssnano-util-get-arguments';
+import getMatchFactory from 'lerna:cssnano-util-get-match';
 import mappings from './lib/map';
 
 function evenValues (list, index) {

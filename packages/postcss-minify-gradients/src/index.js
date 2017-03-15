@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 import valueParser, {unit} from 'postcss-value-parser';
-import getArguments from 'cssnano-util-get-arguments';
+import getArguments from 'lerna:cssnano-util-get-arguments';
 
 const angles = {
     top:    '0deg',

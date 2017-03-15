@@ -1,5 +1,5 @@
 import {list} from 'postcss';
-import {detect} from 'stylehacks';
+import {detect} from 'lerna:stylehacks';
 import clone from '../clone';
 import insertCloned from '../insertCloned';
 import parseTrbl from '../parseTrbl';

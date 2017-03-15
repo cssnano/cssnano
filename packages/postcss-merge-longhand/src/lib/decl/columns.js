@@ -1,6 +1,6 @@
 import {list} from 'postcss';
 import {unit} from 'postcss-value-parser';
-import {detect} from 'stylehacks';
+import {detect} from 'lerna:stylehacks';
 import canMerge from '../canMerge';
 import getDecls from '../getDecls';
 import getValue from '../getValue';
@@ -68,21 +68,21 @@ function cleanup (rule) {
         const lastNode = decls[decls.length - 1];
 
         // remove properties of lower precedence
-        const lesser = decls.filter(node => 
+        const lesser = decls.filter(node =>
             !detect(lastNode) &&
             !detect(node) &&
-            node !== lastNode && 
+            node !== lastNode &&
             node.important === lastNode.important &&
             lastNode.prop === 'columns' && node.prop !== lastNode.prop);
 
         lesser.forEach(remove);
         decls = decls.filter(node => !~lesser.indexOf(node));
-    
+
         // get duplicate properties
-        let duplicates = decls.filter(node => 
+        let duplicates = decls.filter(node =>
             !detect(lastNode) &&
             !detect(node) &&
-            node !== lastNode && 
+            node !== lastNode &&
             node.important === lastNode.important &&
             node.prop === lastNode.prop);
 

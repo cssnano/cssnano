@@ -4,7 +4,7 @@
   "description": "Normalize multiple value display syntaxes into single values.",
   "main": "dist/index.js",
   "scripts": {
-    "prepublish": "babel src --out-dir dist --ignore /__tests__/"
+    "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
   },
   "files": [
     "LICENSE-MIT",
@@ -17,7 +17,8 @@
     "postcss-value-parser": "^3.0.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.0.0"
+    "babel-cli": "^6.0.0",
+    "cross-env": "^3.0.0"
   },
   "author": {
     "name": "Ben Briggs",
