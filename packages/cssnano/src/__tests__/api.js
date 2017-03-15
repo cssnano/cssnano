@@ -2,14 +2,13 @@ import postcss from 'postcss';
 import ava from 'ava';
 import nano from '..';
 import {usePostCSSPlugin} from '../../../../util/testHelpers';
-import specName from './util/specName';
 
 function pluginMacro (t, instance) {
     const css = 'h1 { color: #ffffff }';
     const min = 'h1{color:#fff}';
 
     return instance.process(css).then((result) => {
-        t.deepEqual(result.css, min, specName('beConsumedByPostCSS'));
+        t.deepEqual(result.css, min);
     });
 }
 
