@@ -1,7 +1,7 @@
 import test from 'ava';
 import mappings from '../lib/map';
 import plugin from '..';
-import getData from '../../../cssnano/src/__tests__/util/getData';
+import getData from '../../../../util/getData';
 import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
 
 const {processCSS, passthroughCSS} = processCSSFactory(plugin);
