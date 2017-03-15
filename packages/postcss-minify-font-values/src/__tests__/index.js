@@ -1,8 +1,16 @@
 import test from 'ava';
 import plugin from '..';
-import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
+import {
+    usePostCSSPlugin,
+    processCSSFactory,
+    processCSSWithPresetFactory,
+} from '../../../../util/testHelpers';
 
-const {processCSS, passthroughCSS} = processCSSFactory(plugin);
+const {passthroughCSS, processCSS} = processCSSFactory(plugin);
+const {
+    processCSS: withDefaultPreset,
+    passthroughCSS: passthroughDefault,
+} = processCSSWithPresetFactory('default');
 
 test(
     'should not unquote font names with a leading number',
@@ -110,38 +118,38 @@ test(
 
 test(
     'should not escape legal characters',
-    passthroughCSS,
+    passthroughDefault,
     'h1{font-family:€42}'
 );
 
 test(
     'should not join identifiers in the shorthand property',
-    passthroughCSS,
+    passthroughDefault,
     'h1{font:italic "Bond 007 008 009",sans-serif}'
 );
 
 test(
     'should escape special characters if unquoting',
-    processCSS,
+    withDefaultPreset,
     'h1{font-family:"Ahem!"}',
     'h1{font-family:Ahem\\!}'
 );
 
 test(
     'should not escape multiple special characters',
-    passthroughCSS,
+    passthroughDefault,
     'h1{font-family:"Ahem!!"}'
 );
 
 test(
     'should not mangle legal unquoted values',
-    passthroughCSS,
+    passthroughDefault,
     'h1{font-family:\\$42}'
 );
 
 test(
     'should not mangle font names',
-    passthroughCSS,
+    passthroughDefault,
     'h1{font-family:Glyphicons Halflings}'
 );
 
