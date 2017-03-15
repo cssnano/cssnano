@@ -1,40 +1,55 @@
 import test from 'ava';
 import plugin from '..';
-import {usePostCSSPlugin, processCSSFactory} from '../../../../util/testHelpers';
+import {
+    usePostCSSPlugin,
+    processCSSFactory,
+    processCSSWithPresetFactory,
+} from '../../../../util/testHelpers';
 
 const {passthroughCSS, processCSS} = processCSSFactory(plugin);
+const {
+    processCSS: withDefaultPreset,
+    passthroughCSS: passthroughDefault,
+} = processCSSWithPresetFactory('default');
 
 test(
     'should minify color values',
-    processCSS,
+    withDefaultPreset,
     'h1{color:yellow}',
     'h1{color:#ff0}'
 );
 
 test(
+    'should minify color values (2)',
+    withDefaultPreset,
+    'h1{box-shadow:0 1px 3px rgba(255, 230, 220, 0.5)}',
+    'h1{box-shadow:0 1px 3px rgba(255,230,220,.5)}',
+);
+
+test(
     'should minify color values (3)',
-    processCSS,
+    withDefaultPreset,
     'h1{background:hsla(134, 50%, 50%, 1)}',
     'h1{background:#40bf5e}'
 );
 
 test(
     'should minify color values (4)',
-    processCSS,
+    withDefaultPreset,
     'h1{text-shadow:1px 1px 2px #000000}',
     'h1{text-shadow:1px 1px 2px #000}'
 );
 
 test(
     'should minify color values (5)',
-    processCSS,
+    withDefaultPreset,
     'h1{text-shadow:1px 1px 2px rgb(255, 255, 255)}',
     'h1{text-shadow:1px 1px 2px #fff}'
 );
 
 test(
-    'should minify color values (5)',
-    processCSS,
+    'should minify color values (6)',
+    withDefaultPreset,
     'h1{text-shadow:1px 1px 2px hsl(0,0%,100%)}',
     'h1{text-shadow:1px 1px 2px #fff}'
 );
@@ -47,6 +62,13 @@ test(
 );
 
 test(
+    'should minify color values in background gradients (preset)',
+    withDefaultPreset,
+    'h1{background:linear-gradient( #ff0000,yellow )}',
+    'h1{background:linear-gradient(red,#ff0)}'
+);
+
+test(
     'should minify color values in background gradients (2)',
     processCSS,
     'h1{background:linear-gradient(yellow, orange), linear-gradient(black, rgba(255, 255, 255, 0))}',
@@ -54,10 +76,24 @@ test(
 );
 
 test(
+    'should minify color values in background gradients (2) (preset)',
+    withDefaultPreset,
+    'h1{background:linear-gradient(yellow, orange), linear-gradient(black, rgba(255, 255, 255, 0))}',
+    'h1{background:linear-gradient(#ff0,orange),linear-gradient(#000,hsla(0,0%,100%,0))}'
+);
+
+test(
     'should minify color values in background gradients (3)',
     processCSS,
     'h1{background:linear-gradient(0deg, yellow, black 40%, red)}',
     'h1{background:linear-gradient(0deg, #ff0, #000 40%, red)}'
+);
+
+test(
+    'should minify color values in background gradients (3) (preset)',
+    withDefaultPreset,
+    'h1{background:linear-gradient(0deg, yellow, black 40%, red)}',
+    'h1{background:linear-gradient(0deg,#ff0,#000 40%,red)}'
 );
 
 test(
@@ -86,8 +122,8 @@ test(
 
 test(
     'should not minify in filter properties',
-    passthroughCSS,
-    'h1{filter:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff);}'
+    passthroughDefault,
+    'h1{filter:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff)}'
 );
 
 test(
@@ -146,13 +182,13 @@ test(
 
 test(
     'should bail on the "composes" property',
-    passthroughCSS,
+    passthroughDefault,
     'h1{composes:black from "styles"}'
 );
 
 test(
     'should not mangle empty strings',
-    passthroughCSS,
+    passthroughDefault,
     'h1{content:""}'
 );
 

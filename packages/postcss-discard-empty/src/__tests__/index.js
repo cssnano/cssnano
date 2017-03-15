@@ -1,9 +1,13 @@
 import test from 'ava';
 import plugin from '..';
-import {usePostCSSPlugin, processCSSFactory, processCSSWithPresetFactory} from '../../../../util/testHelpers';
+import {
+    usePostCSSPlugin,
+    processCSSFactory,
+    processCSSWithPresetFactory,
+} from '../../../../util/testHelpers';
 
 const {passthroughCSS, processor} = processCSSFactory(plugin);
-const withDefaultPreset = processCSSWithPresetFactory(plugin, 'default');
+const {processCSS: withDefaultPreset} = processCSSWithPresetFactory('default');
 
 function testRemovals (t, fixture, expected, removedSelectors) {
     return processor(fixture).then(result => {
