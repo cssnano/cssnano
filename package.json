@@ -43,7 +43,7 @@
   },
   "ava": {
     "files": [
-      "packages/**/src/__tests__/*.js"
+      "packages/**/src/__tests__/**/*.js"
     ],
     "concurrency": 5,
     "require": "babel-register"
@@ -164,7 +164,13 @@
       }
     },
     "presets": [
-      "env"
+      [
+        "env", {
+          "targets": {
+            "node": 4
+          }
+        }
+      ]
     ]
   },
   "eslintConfig": {
