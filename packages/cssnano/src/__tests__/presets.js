@@ -54,3 +54,7 @@ test('should accept a preset string other than default (sugar syntax)', t => {
         t.is(result.css, `h1{z-index:15}`);
     });
 });
+
+test('should error on a bad preset', t => {
+    t.throws(cssnano.process('h1{}', {preset: 'avanced'}).then(() => {}), Error);
+});
