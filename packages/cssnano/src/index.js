@@ -1,5 +1,6 @@
 import postcss from 'postcss';
 import cosmiconfig from 'cosmiconfig';
+import isResolvable from 'is-resolvable';
 import defaultPreset from 'lerna:cssnano-preset-default';
 
 const cssnano = 'cssnano';
@@ -40,22 +41,29 @@ function fromFile (css, result) {
 }
 
 function resolvePreset (config) {
+    const {preset} = config;
     // For JS setups where we invoked the preset already
-    if (typeof config.preset === 'object' && config.preset.plugins) {
-        return Promise.resolve(config.preset.plugins);
+    if (typeof preset === 'object' && preset.plugins) {
+        return Promise.resolve(preset.plugins);
     }
-    // For non-JS setups; we'll need to invoke the
-    // preset ourselves.
-    if (
-        config.preset === 'default' ||
-        config.preset === defaultPreset
-    ) {
+    // Provide an alias for the default preset, as it is built-in.
+    if (preset === 'default') {
         return Promise.resolve(defaultPreset(config.presetOptions).plugins);
     }
-    // Try loading a preset from node_modules (TODO)
-
-    // Fallback to defaults if we can't find a preset
-    return Promise.resolve(defaultPreset(config.presetOptions).plugins);
+    // For non-JS setups; we'll need to invoke the preset ourselves.
+    if (typeof preset === 'function') {
+        return Promise.resolve(preset(config.presetOptions).plugins);
+    }
+    // Try loading a preset from node_modules
+    if (isResolvable(preset)) {
+        return Promise.resolve(require(preset)(config.presetOptions).plugins);
+    }
+    // Try loading a preset from node_modules (sugar)
+    if (isResolvable(`cssnano-preset-${preset}`)) {
+        return Promise.resolve(require(`cssnano-preset-${preset}`)(config.presetOptions).plugins);
+    }
+    // If all else fails, we probably have a typo in the config somewhere
+    throw new Error(`Cannot load preset "${preset}". Please check your configuration for errors and try again.`);
 }
 
 /*
