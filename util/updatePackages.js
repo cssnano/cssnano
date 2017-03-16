@@ -62,7 +62,13 @@ function updatePreset (packageList, pkg) {
         const name = pluginName(plugin);
         let pluginDesc, pluginRepo, externalLink;
         try {
-            const pluginPkg = require(`${pkg}/node_modules/${name}/package.json`);
+            let pluginPkg;
+            try {
+                pluginPkg = require(`${pkg}/node_modules/${name}/package.json`);
+            } catch (e) {
+                // Most likely it's a nested dependency from the default preset.
+                pluginPkg = require(`${pkg}/node_modules/cssnano-preset-default/node_modules/${name}/package.json`);
+            }
             pluginDesc = pluginPkg.description;
             if (~managed.indexOf(name)) {
                 pluginRepo = `${homepage}/tree/master/packages/${name}`;

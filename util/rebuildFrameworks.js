@@ -8,7 +8,9 @@ import formatter from './integrationFormatter';
 
 function rebuild (pkg) {
     return Object.keys(frameworks).forEach(framework => {
-        return postcss([cssnano, formatter]).process(frameworks[framework], {preset: require(pkg)}).then(result => {
+        const presetModule = require(pkg);
+        const preset = presetModule();
+        return postcss([cssnano({preset}), formatter]).process(frameworks[framework]).then(result => {
             writeFile(
                 `${pkg}/src/__tests__/integrations/${framework}.css`,
                 result.css,

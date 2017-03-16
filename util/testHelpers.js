@@ -54,11 +54,10 @@ export function loadPreset (preset) {
 }
 
 export function integrationTests (t, preset, integrations) {
-    const promises = [];
-    Object.keys(frameworks).forEach(framework => {
-        promises.push(postcss([cssnano, formatter]).process(frameworks[framework], {preset}).then(result => {
+    return Promise.all(Object.keys(frameworks).map(framework => {
+        const css = frameworks[framework];
+        return postcss([cssnano({preset}), formatter]).process(css).then(result => {
             t.is(result.css, fs.readFileSync(`${integrations}/${framework}.css`, 'utf8'));
-        }));
-    });
-    return Promise.all(promises);
+        });
+    }));
 }
