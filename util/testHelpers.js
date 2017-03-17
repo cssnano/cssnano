@@ -13,17 +13,17 @@ export function processCSSFactory (plugin) {
     let processor, processCSS, passthroughCSS;
 
     if (Array.isArray(plugin)) {
-        processor = (fixture) => postcss(plugin).process(fixture);
+        processor = (fixture, options) => postcss(plugin).process(fixture, options);
 
-        processCSS = (t, fixture, expected) => {
-            return processor(fixture).then(result => {
+        processCSS = (t, fixture, expected, options) => {
+            return processor(fixture, options).then(result => {
                 t.deepEqual(result.css, expected);
                 return result;
             });
         };
 
-        passthroughCSS = (t, fixture) => {
-            return processCSS(t, fixture, fixture);
+        passthroughCSS = (t, fixture, options) => {
+            return processCSS(t, fixture, fixture, options);
         };
     } else {
         processor = (fixture, options) => {
