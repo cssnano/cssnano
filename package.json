@@ -71,6 +71,7 @@
               "alias": {
                 "lerna:css-size": "css-size",
                 "lerna:cssnano": "cssnano",
+                "lerna:cssnano-preset-advanced": "cssnano-preset-advanced",
                 "lerna:cssnano-preset-default": "cssnano-preset-default",
                 "lerna:cssnano-util-get-arguments": "cssnano-util-get-arguments",
                 "lerna:cssnano-util-get-match": "cssnano-util-get-match",
@@ -123,6 +124,7 @@
               "alias": {
                 "lerna:css-size": "css-size/src/index.js",
                 "lerna:cssnano": "cssnano/src/index.js",
+                "lerna:cssnano-preset-advanced": "cssnano-preset-advanced/src/index.js",
                 "lerna:cssnano-preset-default": "cssnano-preset-default/src/index.js",
                 "lerna:cssnano-util-get-arguments": "cssnano-util-get-arguments/src/index.js",
                 "lerna:cssnano-util-get-match": "cssnano-util-get-match/src/index.js",
@@ -207,6 +209,9 @@
     ],
     "firefox2": [
       "Firefox 2"
+    ],
+    "safari5": [
+      "Safari < 5"
     ]
   }
 }
