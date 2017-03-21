@@ -40,30 +40,47 @@ function fromFile (css, result) {
     return filePath;
 }
 
+/*
+ * config.preset can be one of four possibilities:
+ * config.preset = 'default'
+ * config.preset = ['default', {}]
+ * config.preset = function <- to be invoked
+ * config.preset = {plugins: []} <- already invoked function
+ */
+
 function resolvePreset (config) {
     const {preset} = config;
+    let fn, options;
+    if (Array.isArray(preset)) {
+        fn = preset[0];
+        options = preset[1];
+    } else {
+        fn = preset;
+        options = {};
+    }
     // For JS setups where we invoked the preset already
-    if (typeof preset === 'object' && preset.plugins) {
+    if (preset.plugins) {
         return Promise.resolve(preset.plugins);
     }
     // Provide an alias for the default preset, as it is built-in.
-    if (preset === 'default') {
-        return Promise.resolve(defaultPreset(config.presetOptions).plugins);
+    if (fn === 'default') {
+        return Promise.resolve(defaultPreset(options).plugins);
     }
     // For non-JS setups; we'll need to invoke the preset ourselves.
-    if (typeof preset === 'function') {
-        return Promise.resolve(preset(config.presetOptions).plugins);
+    if (typeof fn === 'function') {
+        return Promise.resolve(fn(options).plugins);
     }
     // Try loading a preset from node_modules
-    if (isResolvable(preset)) {
-        return Promise.resolve(require(preset)(config.presetOptions).plugins);
+    if (isResolvable(fn)) {
+        return Promise.resolve(require(fn)(options).plugins);
     }
+    const sugar = `cssnano-preset-${fn}`;
     // Try loading a preset from node_modules (sugar)
-    if (isResolvable(`cssnano-preset-${preset}`)) {
-        return Promise.resolve(require(`cssnano-preset-${preset}`)(config.presetOptions).plugins);
+    if (isResolvable(sugar)) {
+        return Promise.resolve(require(sugar)(options).plugins);
     }
     // If all else fails, we probably have a typo in the config somewhere
-    throw new Error(`Cannot load preset "${preset}". Please check your configuration for errors and try again.`);
+    throw new Error(`Cannot load preset "${fn}". Please check your configuration for errors and try again.`);
 }
 
 /*
