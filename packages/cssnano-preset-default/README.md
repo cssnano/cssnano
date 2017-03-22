@@ -5,6 +5,11 @@
 
 ## Table of Contents
 
+-   [Usage](#usage)
+
+    -   [Install](#install)
+    -   [Configuration](#configuration)
+
 -   [Plugins](#plugins)
 
     -   [cssnano-style-cache](#cssnano-style-cache)
@@ -36,11 +41,48 @@
     -   [postcss-svgo](#postcss-svgo)
     -   [postcss-unique-selectors](#postcss-unique-selectors)
 
--   [Install](#install)
-
 -   [Contributors](#contributors)
 
 -   [License](#license)
+
+
+## Usage
+
+### Install
+
+Note that this preset comes bundled with cssnano _by default_, so you don't need to install it separately.
+
+### Configuration
+
+If you would like to use the default configuration, then you don't need to add anything to your `package.json`.
+
+But should you wish to customise this, you can pass an array with the second parameter as the options object to use. For example, to remove all comments:
+
+```diff
+ {
+   "name": "awesome-application",
++  "cssnano": {
++    "preset": [
++      "default",
++      {"discardComments": {"removeAll": true}}
++    ]
++  }
+ }
+```
+
+Depending on your usage, the JSON configuration might not work for you, such as in cases where you would like to use options with customisable function parameters. For this use case, we recommend a `cssnano.config.js` at the same location as your `package.json`. You can then load a preset and export it with your custom parameters:
+
+```js
+const defaultPreset = require('cssnano-preset-default');
+
+module.exports = defaultPreset({
+  discardComments: {
+    remove: comment => comment[0] === "@"
+  }
+});
+```
+
+Note that you may wish to publish your own preset to npm for reusability, should it differ a lot from this one. This is highly encouraged!
 
 
 ## Plugins
@@ -222,15 +264,6 @@ This plugin is loaded with its default configuration.
 > Ensure CSS selectors are unique.
 
 This plugin is loaded with its default configuration.
-
-
-## Install
-
-With [npm](https://npmjs.com/package/cssnano-preset-default) do:
-
-    npm install cssnano-preset-default --save-dev
-
-If you don't have npm then [check out this installation tutorial](https://npmjs.com/package/cssnano-preset-default/tutorial).
 
 
 ## Contributors

@@ -131,9 +131,9 @@ function updatePreset (packageList, pkg) {
                 u('text', pkgJson.description),
             ]),
             u('heading', {depth: 2}, [u('text', 'Table of Contents')]),
+            u('heading', {depth: 2}, [u('text', 'Usage')]),
             u('heading', {depth: 2}, [u('text', 'Plugins')]),
             ...plugins,
-            u('heading', {depth: 2}, [u('text', 'Install')]),
             u('heading', {depth: 2}, [u('text', 'Contributors')]),
             u('heading', {depth: 2}, [u('text', 'License')]),
         ]), {cwd: pkg});

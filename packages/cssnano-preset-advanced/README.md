@@ -5,6 +5,11 @@
 
 ## Table of Contents
 
+-   [Usage](#usage)
+
+    -   [Install](#install)
+    -   [Configuration](#configuration)
+
 -   [Plugins](#plugins)
 
     -   [autoprefixer (external)](#autoprefixer-external)
@@ -41,11 +46,61 @@
     -   [postcss-unique-selectors](#postcss-unique-selectors)
     -   [postcss-zindex](#postcss-zindex)
 
--   [Install](#install)
-
 -   [Contributors](#contributors)
 
 -   [License](#license)
+
+
+## Usage
+
+### Install
+
+With [npm](https://npmjs.com/package/cssnano-preset-advanced) do:
+
+    npm install cssnano-preset-advanced --save-dev
+
+If you don't have npm then [check out this installation tutorial](https://npmjs.com/package/cssnano-preset-advanced/tutorial).
+
+### Configuration
+
+If you would like to use the preset in its default configuration, specify a section in your `package.json`:
+
+```diff
+ {
+   "name": "awesome-application",
++  "cssnano": {
++    "preset": "advanced"
++  }
+ }
+```
+
+But should you wish to customise this, you can pass an array with the second parameter as the options object to use. For example, to remove all comments:
+
+```diff
+ {
+   "name": "awesome-application",
++  "cssnano": {
++    "preset": [
++      "advanced",
++      {"discardComments": {"removeAll": true}}
++    ]
++  }
+ }
+```
+
+Depending on your usage, the JSON configuration might not work for you, such as in cases where you would like to use options with customisable function parameters. For this use case, we recommend a `cssnano.config.js` at the same location as your `package.json`. You can then load a preset and export it with your custom parameters:
+
+```js
+const advancedPreset = require('cssnano-preset-advanced');
+
+module.exports = advancedPreset({
+  discardComments: {
+    remove: comment => comment[0] === "@"
+  }
+});
+```
+
+Note that you may wish to publish your own preset to npm for reusability, should it differ a lot from this one. This is highly encouraged!
 
 
 ## Plugins
@@ -263,15 +318,6 @@ This plugin is loaded with its default configuration.
 > Reduce z-index values with PostCSS.
 
 This plugin is loaded with its default configuration.
-
-
-## Install
-
-With [npm](https://npmjs.com/package/cssnano-preset-advanced) do:
-
-    npm install cssnano-preset-advanced --save-dev
-
-If you don't have npm then [check out this installation tutorial](https://npmjs.com/package/cssnano-preset-advanced/tutorial).
 
 
 ## Contributors
