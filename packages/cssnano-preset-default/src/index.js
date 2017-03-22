@@ -1,3 +1,18 @@
+/**
+ * @author Ben Briggs
+ * @license MIT
+ * @module cssnano:preset:default
+ * @overview
+ *
+ * This default preset for cssnano only includes transforms that make no
+ * assumptions about your CSS other than what is passed in. In previous
+ * iterations of cssnano, assumptions were made about your CSS which caused
+ * output to look different in certain use cases, but not others. These
+ * transforms have been moved from the defaults to other presets, to make
+ * this preset require only minimal configuration.
+ */
+
+
 import postcssDiscardComments from 'lerna:postcss-discard-comments';
 import postcssReduceInitial from 'lerna:postcss-reduce-initial';
 import postcssMinifyGradients from 'lerna:postcss-minify-gradients';

@@ -1,4 +1,6 @@
+import {readFileSync} from 'fs';
 import {basename, join} from 'path';
+import dox from 'dox';
 import getPkgRepo from 'get-pkg-repo';
 import glob from 'glob';
 import postcss from 'postcss';
@@ -57,6 +59,21 @@ function updatePreset (packageList, pkg) {
 
     const preset = require(pkg);
     const instance = preset();
+
+    const code = readFileSync(`${pkg}/src/index.js`, `utf8`);
+    const {tags} = dox.parseComments(code)[0];
+
+    let overview = [];
+
+    if (tags.length) {
+        const overviewDesc = tags.find(tag => tag.type === 'overview');
+        if (overviewDesc) {
+            overview.push(
+                u('heading', {depth: 2}, [u('text', 'Overview')]),
+                ...remark().parse(overviewDesc.string).children,
+            );
+        }
+    }
 
     instance.plugins.sort(sortPlugins).forEach(([plugin, options]) => {
         const name = pluginName(plugin);
@@ -131,6 +148,7 @@ function updatePreset (packageList, pkg) {
                 u('text', pkgJson.description),
             ]),
             u('heading', {depth: 2}, [u('text', 'Table of Contents')]),
+            ...overview,
             u('heading', {depth: 2}, [u('text', 'Usage')]),
             u('heading', {depth: 2}, [u('text', 'Plugins')]),
             ...plugins,

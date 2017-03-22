@@ -5,6 +5,8 @@
 
 ## Table of Contents
 
+-   [Overview](#overview)
+
 -   [Usage](#usage)
 
     -   [Install](#install)
@@ -44,6 +46,16 @@
 -   [Contributors](#contributors)
 
 -   [License](#license)
+
+
+## Overview
+
+This default preset for cssnano only includes transforms that make no
+assumptions about your CSS other than what is passed in. In previous
+iterations of cssnano, assumptions were made about your CSS which caused
+output to look different in certain use cases, but not others. These
+transforms have been moved from the defaults to other presets, to make
+this preset require only minimal configuration.
 
 
 ## Usage
