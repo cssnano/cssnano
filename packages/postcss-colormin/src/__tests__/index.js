@@ -204,3 +204,9 @@ test(
     usePostCSSPlugin,
     plugin()
 );
+
+test(
+    'should not mangle colours in the content property',
+    passthroughCSS,
+    'h2:before{content:"black"}'
+);
