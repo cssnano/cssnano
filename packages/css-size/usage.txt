@@ -4,8 +4,24 @@ Options:
 
     --version,    -v    Outputs the version number.
 
-    --options           Pass through options to cssnano. For example,
-                        you can turn off unused rule removal
+    --processor,  -p    Path to the postcss processor code. If omitted, defaults to cssnano.
+
+    --options           Pass through options to the postcss plugin. For example,
+                        if using cssnano, you can turn off unused rule removal
                         with `--no-options.discardUnused`.
 
     --help,       -h    Outputs this help screen.
+
+
+The processor script should export a function that given a CSS string and the
+command line options as arguments returns a Promise that resolves to an object
+with a css property. Note that postcss's process method conforms to this API.
+
+Example:
+
+    var postcss = require('postcss');
+    var mypostcssplugin = require('mypostcssplugin');
+    module.exports = function(css, opts) {
+      var plugin = mypostcssplugin(opts);
+      return postcss([plugin]).process(css);
+    }

@@ -1,12 +1,15 @@
 # css-size
 
-> Display the size of a CSS file.
+> Compare the size of a CSS file after processing it to the original.
 
-All results are shown using the [`gzip-size`] module, as this most accurately
-represents what will be served to a client in production. It also provides a
-better comparison between the minified and the original CSS.
+Results are shown for uncompressed as well as when compressed using gzip
+and brotli. For most users, one of the compressed sizes will best
+represent what will be served to a client in production. It also
+provides a better comparison between the minified and the original CSS.
 
-CSS is minified with [`cssnano`].
+CSS is expected to processed by [`postcss`] plugins but can be used with
+any processing code that returns a promise that resolves to an object
+with a `css` property.
 
 
 ## Install
@@ -21,35 +24,56 @@ npm install css-size --save
 ## Example
 
 ```js
+var postcss = require('postcss');
+var autoprefixer = require('autoprefixer');
+var nano = require('cssnano');
 var css = 'h1 {\n  color: black;\n}\n';
+var nanoOpts = {};
+var cssSize = require("css-size");
 
-cssSize(css).then(function (results) {
+function process(css, options) {
+  return postcss([ autoprefixer, nano(options) ]).process(css);
+}
+
+
+cssSize(css, nanoOpts, process).then(function (results) {
     console.log(results);
 
 /*
-    {
-        original: '43 B',
-        minified: '34 B',
-        difference: '9 B',
-        percent: '79.07%'
-    }
+  { uncompressed:
+     { original: '23 B',
+       processed: '14 B',
+       difference: '9 B',
+       percent: '60.87%' },
+    gzip:
+     { original: '43 B',
+       processed: '34 B',
+       difference: '9 B',
+       percent: '79.07%' },
+    brotli:
+     { original: '27 B',
+       processed: '16 B',
+       difference: '11 B',
+       percent: '59.26%' } }
 */
 
 });
 
-cssSize.table(css).then(function (table) {
+cssSize.table(css, nanoOpts, process).then(function (table) {
     console.log(table);
 
 /*
-    ┌─────────────────┬────────┐
-    │ Original (gzip) │ 43 B   │
-    ├─────────────────┼────────┤
-    │ Minified (gzip) │ 34 B   │
-    ├─────────────────┼────────┤
-    │ Difference      │ 9 B    │
-    ├─────────────────┼────────┤
-    │ Percent         │ 79.07% │
-    └─────────────────┴────────┘
+    ┌────────────┬──────────────┬────────┬────────┐
+    │            │ Uncompressed │ Gzip   │ Brotli │
+    ├────────────┼──────────────┼────────┼────────┤
+    │ Original   │ 23 B         │ 43 B   │ 27 B   │
+    ├────────────┼──────────────┼────────┼────────┤
+    │ Processed  │ 14 B         │ 34 B   │ 16 B   │
+    ├────────────┼──────────────┼────────┼────────┤
+    │ Difference │ 9 B          │ 9 B    │ 11 B   │
+    ├────────────┼──────────────┼────────┼────────┤
+    │ Percent    │ 60.87%       │ 79.07% │ 59.26% │
+    └────────────┴──────────────┴────────┴────────┘
 */
 
 });
@@ -58,20 +82,34 @@ cssSize.table(css).then(function (table) {
 
 ## API
 
-### `cssSize(input, options)`
+### `cssSize(input, options, processor)`
 
-Pass a string of CSS to receive an object with information about the original &
-minified sizes (both are gzipped), plus difference and percentage results. The
-options object is passed through to cssnano should you wish to compare sizes
-using different options than the defaults.
+Pass `input` of CSS to receive an object with information about the
+original & minified sizes (uncompressed, gzipped, and brotli'd), plus
+difference and percentage results. The `options` object is passed
+through to the `processor` should you wish to compare sizes using
+different options than the defaults.
 
-### `cssSize.table(input, options)`
+### `cssSize.table(input, options, processor)`
 
 Use the table method instead to receive the results as a formatted table.
 
 #### input
 
 Type: `string`, `buffer`
+
+#### options
+
+Type: `object`
+
+#### processor
+
+Type: `function`
+
+The processor accepts as arguments the input and options and returns a
+Promise that resolves to an object with a `css` property containing the
+processed css output.
+
 
 ### CLI
 
@@ -85,6 +123,8 @@ $ css-size --help
 ## Related
 
 * [`js-size`]: Display the size of a JS file.
+* [`gzip-size`]: Calculate the size of a string after compression with gzip.
+* [`brotli-size`]: Calculate the size of a string after compression with brotli.
 
 
 ## Contributors
@@ -96,6 +136,7 @@ See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS
 
 MIT © [Ben Briggs](http://beneb.info)
 
-[`cssnano`]:   https://github.com/ben-eb/cssnano
+[`postcss`]:   https://github.com/postcss/postcss
 [`js-size`]:   https://github.com/lukekarrys/js-size
 [`gzip-size`]: https://github.com/sindresorhus/gzip-size
+[`brotli-size`]: https://github.com/erwinmombay/brotli-size

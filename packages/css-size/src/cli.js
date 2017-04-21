@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import fs from 'fs';
+import process from 'process';
+import path from 'path';
 import read from 'read-file-stdin';
 import minimist from 'minimist';
 import {table} from './';
@@ -9,13 +11,15 @@ const opts = minimist(process.argv.slice(2), {
     alias: {
         h: 'help',
         v: 'version',
+        p: 'processor',
     },
 });
+
 
 if (opts.version) {
     console.log(require('../package.json').version);
 } else {
-    const file = opts._[0];
+    let file = opts._[0];
 
     if (file === 'help' || opts.help) {
         fs.createReadStream(__dirname + '/../usage.txt')
@@ -26,7 +30,11 @@ if (opts.version) {
             if (err) {
                 throw err;
             }
-            table(buf, opts.options).then((results) => console.log(results));
+            let processor = null;
+            if (opts.processor) {
+                processor = require(path.resolve(process.cwd(), opts.processor));
+            }
+            table(buf, opts.options, processor).then((results) => console.log(results));
         });
     }
 }
