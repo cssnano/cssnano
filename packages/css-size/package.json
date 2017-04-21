@@ -39,7 +39,7 @@
     "cli-table": "^0.3.1",
     "cssnano": "^3.0.0",
     "gzip-size": "^3.0.0",
-    "minimist": "^1.2.0",
+    "minimist": "^1.0.0",
     "pretty-bytes": "^4.0.0",
     "read-file-stdin": "^0.2.0",
     "round-precision": "^1.0.0"
