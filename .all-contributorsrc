@@ -495,6 +495,16 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "chriseppstein",
+      "name": "Chris Eppstein",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1839?v=3",
+      "profile": "http://chriseppstein.github.com",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ]
 }
