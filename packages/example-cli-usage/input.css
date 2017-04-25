@@ -1,0 +1,16 @@
+/* normalize selectors */
+h1::before, h1:before {
+    /* reduce shorthand even further */
+    margin: 10px 20px 10px 20px;
+    /* reduce color values */
+    color: #ff0000;
+    /* remove duplicated properties */
+    font-weight: normal;
+    font-weight: normal;
+    /* reduce position values */
+    background-position: bottom right;
+    /* normalize wrapping quotes */
+    content: '© ' attr(href) " ©";
+}
+/* correct invalid placement */
+@charset "utf-8";
