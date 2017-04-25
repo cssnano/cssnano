@@ -136,11 +136,7 @@ function updatePreset (packageList, pkg) {
     let transformedAST = remark()
         .use(contributorsSection)
         .use(installSection)
-        .use(remarkLicense, {
-            name: pkgJson.author.name,
-            license: pkgJson.license,
-            url: pkgJson.author.url,
-        })
+        .use(remarkLicense)
         .use(remarkToc)
         .runSync(u('root', [
             u('heading', {depth: 1}, [u('text', pkgName)]),
