@@ -4,6 +4,7 @@ layout: Guide
 order: 3
 ---
 
+
 ## What are presets?
 
 Presets are a way of loading cssnano with different features, depending on
@@ -13,6 +14,7 @@ to the introduction of presets, code to perform advanced transformations was
 downloaded from npm whether or not it was used. Presets ensure that this is no
 longer the case, and also afford the ability to save configuration for cssnano
 to re-use across multiple contexts.
+
 
 ## How do presets work?
 
@@ -78,8 +80,8 @@ module.exports = defaultPreset({
 });
 ```
 
-*The `cssnano.config.js` is useful if you need to make use of transformations
-that can accept functions as parameters, for more specific use cases.*
+_The `cssnano.config.js` is useful if you need to make use of transformations
+that can accept functions as parameters, for more specific use cases._
 
 If cssnano was not loaded with a preset explicitly, or a config section/file
 were not found in any parent directories, then the defaults will be loaded.
@@ -96,4 +98,6 @@ module.exports = {
 For most use cases, the default preset should be suitable for your needs, but
 we also offer an advanced preset which performs more aggressive transformations.
 You can read more about this in
-[our advanced transformations guide](/guides/advanced-transforms).
+[our advanced transformations guide][guideadvancedtransforms].
+
+[guideadvancedtransforms]: /guides/advanced-transforms

@@ -3,9 +3,11 @@ title: "Options"
 layout: BasicPage
 ---
 
+
 ## Transforms
 
 See the [optimisations](/optimisations/) section.
+
 
 ## options.safe (bool)
 
@@ -16,6 +18,7 @@ unused at-rule removal & conversion between absolute length values.
 ```sh
 cssnano --safe in.css out.css
 ```
+
 
 ## options.sourcemap (bool)
 
