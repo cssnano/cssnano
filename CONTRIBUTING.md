@@ -1,9 +1,61 @@
 # Contributing
 
 Thanks for contributing to cssnano! We appreciate any contributions,
-large or small.
+large or small. If you've contributed to cssnano we would recommend that
+you add yourself to the list of contributors, found in [CONTRIBUTORS.md].
 
-## How you can help
+To do this, after you've set up the development environment, run:
+
+```
+all-contributors add
+```
+
+And follow the on-screen prompts.
+
+[CONTRIBUTORS.md]: https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md
+
+## How can I contribute to cssnano's code?
+
+Since version 4, we now develop in a [Lerna](https://github.com/lerna/lerna)
+monorepo. This is because a lot of transforms overlap with each other; it's
+easier to test them together. Other than this, you'll need Node.js, npm &
+git installed. Then, you can run these commands to get the repository set up:
+
+```
+git clone git@github.com:ben-eb/cssnano.git
+cd cssnano
+npm install
+```
+
+You can run the tests with:
+
+```
+npm test
+```
+
+We recommend that you look in the issue tracker to find anything tagged
+[help wanted][help wanted]; that's the first port of call for getting stuck
+in and writing code. If there's any other open issues that you think you can
+tackle, please comment on the thread expressing your interest.
+
+If you have an idea for some functionality which doesn't have an issue tracking
+it, then please open an issue before writing a pull request. We find it more
+helpful to discuss your requirements before writing any code.
+
+### Documentation
+
+The documentation website is also included with the repository, under `/docs`.
+It runs [phenomic](https://phenomic.io) and requires a separate `npm install`
+to pull down the dependencies. You can then browse the documentation locally
+by running `npm start`.
+
+Note that some of the documentation is automatically generated and should not
+be edited by hand.
+
+
+## Are there other ways of contributing?
+
+Absolutely! Try any of the following areas:
 
 ### Improve our documentation
 
@@ -42,18 +94,6 @@ It's really important to get more eyes on upcoming features and fixes. Please
 help by reviewing pull requests; even leaving a thumbs up reaction is better
 than nothing at all. Helping us to review means less time is wasted by all of
 us if a buggy release is cut.
-
-
-### Write code
-
-We recommend that you look in the issue tracker to find anything tagged
-[help wanted][help wanted]; that's the first port of call for getting stuck
-in and writing code. If there's any other open issues that you think you can
-tackle, please comment on the thread expressing your interest.
-
-If you have an idea for some functionality which doesn't have an issue tracking
-it, then please open an issue before writing a pull request. We find it more
-helpful to discuss your requirements before writing any code.
 
 
 ### Talk with us!
