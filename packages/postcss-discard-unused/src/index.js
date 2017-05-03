@@ -1,5 +1,6 @@
 import uniqs from 'uniqs';
 import {list, plugin} from 'postcss';
+import selectorParser from 'postcss-selector-parser';
 
 const {comma, space} = list;
 
@@ -71,7 +72,21 @@ export default plugin('postcss-discard-unused', opts => {
         css.walk(node => {
             const {type, prop, selector, name} = node;
             if (type === rule && namespace && ~selector.indexOf('|')) {
-                namespaceCache.rules = namespaceCache.rules.concat(selector.split('|')[0]);
+                if (~selector.indexOf('[')) {
+                    // Attribute selector, so we should parse further.
+                    selectorParser(ast => {
+                        ast.walkAttributes(({namespace: ns}) => {
+                            namespaceCache.rules = namespaceCache.rules.concat(
+                                ns
+                            );
+                        });
+                    }).process(selector);
+                } else {
+                    // Use a simple split function for the namespace
+                    namespaceCache.rules = namespaceCache.rules.concat(
+                        selector.split('|')[0]
+                    );
+                }
                 return;
             }
             if (type === decl) {

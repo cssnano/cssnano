@@ -37,6 +37,12 @@ test(
 );
 
 test(
+    `shouldn't remove when namespace is used in attribute selector`,
+    passthroughCSS,
+    `@namespace xlink url('http://www.w3.org/1999/xlink');svg:hover use[xlink|href*=facebook]{fill:blue}`
+);
+
+test(
     'shouldn\'t remove unused prefixed namespace',
     passthroughCSS,
     '@namespace svg url(http://www.w3.org/2000/svg)',

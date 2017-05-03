@@ -1,3 +1,8 @@
+# Head
+
+* Resolves an issue with the module not properly detecting namespaces
+  within attribute selectors.
+
 # 2.2.3
 
 * Font lookup is now case-insensitive, preventing unwanted removal of fonts
