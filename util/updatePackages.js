@@ -2,7 +2,6 @@ import {readFileSync} from 'fs';
 import {basename} from 'path';
 import dox from 'dox';
 import getPkgRepo from 'get-pkg-repo';
-import postcss from 'postcss';
 import remark from 'remark';
 import remarkHeadingGap from 'remark-heading-gap';
 import remarkLicense from 'remark-license';
@@ -10,6 +9,7 @@ import remarkToc from 'remark-toc';
 import stringifyObject from 'stringify-object';
 import writeFile from 'write-file';
 import u from 'unist-builder';
+import pluginName from './pluginName';
 import getPackages from './getPackages';
 import getPresets from './getPresets';
 import contributorsSection from './contributorsSection';
@@ -34,10 +34,6 @@ function semverMajor (dependencies) {
     });
 
     return dependencies;
-}
-
-function pluginName (plugin) {
-    return postcss(plugin).plugins[0].postcssPlugin;
 }
 
 function sortPlugins (a, b) {
