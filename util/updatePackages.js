@@ -1,8 +1,7 @@
 import {readFileSync} from 'fs';
-import {basename, join} from 'path';
+import {basename} from 'path';
 import dox from 'dox';
 import getPkgRepo from 'get-pkg-repo';
-import glob from 'glob';
 import postcss from 'postcss';
 import remark from 'remark';
 import remarkHeadingGap from 'remark-heading-gap';
@@ -11,6 +10,8 @@ import remarkToc from 'remark-toc';
 import stringifyObject from 'stringify-object';
 import writeFile from 'write-file';
 import u from 'unist-builder';
+import getPackages from './getPackages';
+import getPresets from './getPresets';
 import contributorsSection from './contributorsSection';
 import installSection from './installSection';
 
@@ -188,10 +189,7 @@ function updatePackage (pkg) {
     );
 }
 
-glob(`${join(__dirname, '../packages')}/*`, (err, packages) => {
-    if (err) {
-        throw err;
-    }
+getPackages().then(packages => {
     packages.forEach(updatePackage);
-    packages.filter(p => !basename(p).indexOf('cssnano-preset-')).forEach(updatePreset.bind(null, packages));
+    getPresets(packages).forEach(updatePreset.bind(null, packages));
 });
