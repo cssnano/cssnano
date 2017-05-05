@@ -191,11 +191,11 @@ function selectorMerger (browsers, compatibilityCache) {
 
 export default postcss.plugin('postcss-merge-rules', () => {
     return (css, result) => {
-        const {opts} = result;
+        const resultOpts = result.opts || {};
         const browsers = browserslist(null, {
-            stats: opts && opts.stats,
-            path: opts && opts.from,
-            env: opts && opts.env,
+            stats: resultOpts.stats,
+            path: __dirname,
+            env: resultOpts.env,
         });
         const compatibilityCache = {};
         css.walkRules(selectorMerger(browsers, compatibilityCache));

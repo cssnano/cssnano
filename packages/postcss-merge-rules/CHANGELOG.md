@@ -1,3 +1,7 @@
+# Head
+
+* Update Browserslist to 2.0.0.
+
 # 2.1.2
 
 * Performance improvements; no compatibility checking for simple selectors,

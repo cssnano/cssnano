@@ -20,7 +20,7 @@
     "babel-plugin-module-resolver": "^2.5.0",
     "babel-preset-env": "^1.0.0",
     "babel-register": "^6.0.0",
-    "browserslist": "^1.0.0",
+    "browserslist": "^2.0.0",
     "camelcase": "^4.0.0",
     "coveralls": "^2.0.0",
     "cross-env": "^3.2.4",

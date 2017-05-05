@@ -4,11 +4,11 @@ import plugins from './plugins';
 
 const stylehacks = postcss.plugin('stylehacks', (opts = {}) => {
     return (css, result) => {
-        const resultOpts = result.opts;
+        const resultOpts = result.opts || {};
         const browsers = browserslist(null, {
-            stats: resultOpts && resultOpts.stats,
-            path: resultOpts && resultOpts.from,
-            env: resultOpts && resultOpts.env,
+            stats: resultOpts.stats,
+            path: __dirname,
+            env: resultOpts.env,
         });
         const processors = plugins.reduce((list, Plugin) => {
             const hack = new Plugin(result);

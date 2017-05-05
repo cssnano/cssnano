@@ -1,3 +1,7 @@
+# Head
+
+* Update Browserslist to 2.0.0.
+
 # 2.2.2
 
 * Resolves an issue where the module would mangle the non-standard `composes`

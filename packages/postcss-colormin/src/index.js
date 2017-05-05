@@ -50,11 +50,11 @@ function hasTransparentBug (browser) {
 
 export default postcss.plugin('postcss-colormin', () => {
     return (css, result) => {
-        const {opts} = result;
+        const resultOpts = result.opts || {};
         const browsers = browserslist(null, {
-            stats: opts && opts.stats,
-            path: opts && opts.from,
-            env: opts && opts.env,
+            stats: resultOpts.stats,
+            path: __dirname,
+            env: resultOpts.env,
         });
         css.walkDecls(transform.bind(null, browsers.some(hasTransparentBug)));
     };

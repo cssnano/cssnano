@@ -1,3 +1,7 @@
+# Head
+
+* Update Browserslist to 2.0.0.
+
 # 2.3.2
 
 * Resolves an issue where stylehacks would crash on CSS mixins.

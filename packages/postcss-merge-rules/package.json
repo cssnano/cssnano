@@ -31,7 +31,7 @@
   },
   "repository": "ben-eb/cssnano",
   "dependencies": {
-    "browserslist": "^1.0.0",
+    "browserslist": "^2.0.0",
     "caniuse-api": "^1.0.0",
     "cssnano-util-same-parent": "0.0.0",
     "postcss": "^5.0.0",
