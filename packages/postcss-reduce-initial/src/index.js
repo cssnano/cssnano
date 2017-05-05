@@ -9,11 +9,11 @@ const initial = 'initial';
 
 export default plugin('postcss-reduce-initial', () => {
     return (css, result) => {
-        const {opts} = result;
+        const resultOpts = result.opts || {};
         const browsers = browserslist(null, {
-            stats: opts && opts.stats,
-            path: opts && opts.from,
-            env: opts && opts.env,
+            stats: resultOpts.stats,
+            path: __dirname,
+            env: resultOpts.env,
         });
         const initialSupport = isSupported('css-initial-value', browsers);
         css.walkDecls(decl => {
