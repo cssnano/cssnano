@@ -32,7 +32,7 @@
   },
   "repository": "ben-eb/cssnano",
   "dependencies": {
-    "postcss": "^5.0.0",
+    "postcss": "^6.0.0",
     "postcss-selector-parser": "^2.0.0",
     "uniqs": "^2.0.0"
   },

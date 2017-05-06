@@ -34,7 +34,7 @@
   "repository": "ben-eb/cssnano",
   "dependencies": {
     "is-svg": "^2.0.0",
-    "postcss": "^5.0.0",
+    "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0",
     "svgo": "^0.7.0"
   },

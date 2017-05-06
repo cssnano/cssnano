@@ -14,7 +14,7 @@
   "dependencies": {
     "cssnano-util-get-arguments": "0.0.0",
     "cssnano-util-get-match": "0.0.0",
-    "postcss": "^5.0.0",
+    "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0"
   },
   "devDependencies": {

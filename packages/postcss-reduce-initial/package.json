@@ -37,7 +37,7 @@
     "browserslist": "^2.0.0",
     "caniuse-api": "^2.0.0",
     "has": "^1.0.0",
-    "postcss": "^5.0.0"
+    "postcss": "^6.0.0"
   },
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"

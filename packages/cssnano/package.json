@@ -22,7 +22,7 @@
     "cosmiconfig": "^2.0.0",
     "cssnano-preset-default": "0.0.0",
     "is-resolvable": "^1.0.0",
-    "postcss": "^5.0.0"
+    "postcss": "^6.0.0"
   },
   "devDependencies": {
     "array-to-sentence": "^1.0.0",

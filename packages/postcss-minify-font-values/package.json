@@ -17,7 +17,7 @@
     "postcss-plugin"
   ],
   "dependencies": {
-    "postcss": "^5.0.0",
+    "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0"
   },
   "repository": "ben-eb/cssnano",

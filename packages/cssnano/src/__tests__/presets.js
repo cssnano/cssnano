@@ -6,7 +6,7 @@ import cssnano from '..';
 test('should accept an invoked preset', t => {
     const preset = defaultPreset({normalizeCharset: {add: true}});
 
-    return cssnano.process(`h1{content:"©"}`, {preset}).then(result => {
+    return cssnano.process(`h1{content:"©"}`, {}, {preset}).then(result => {
         t.is(result.css, `@charset "utf-8";h1{content:"©"}`);
     });
 });
@@ -17,7 +17,7 @@ test('should accept a non-invoked preset', t => {
         {normalizeCharset: {add: true}},
     ];
 
-    return cssnano.process(`h1{content:"©"}`, {preset}).then(result => {
+    return cssnano.process(`h1{content:"©"}`, {}, {preset}).then(result => {
         t.is(result.css, `@charset "utf-8";h1{content:"©"}`);
     });
 });
@@ -28,7 +28,7 @@ test('should accept a default preset string', t => {
         {normalizeCharset: {add: true}},
     ];
 
-    return cssnano.process(`h1{content:"©"}`, {preset}).then(result => {
+    return cssnano.process(`h1{content:"©"}`, {}, {preset}).then(result => {
         t.is(result.css, `@charset "utf-8";h1{content:"©"}`);
     });
 });
@@ -36,7 +36,7 @@ test('should accept a default preset string', t => {
 test('should accept an invoked preset other than default', t => {
     const preset = advancedPreset({zindex: {startIndex: 15}});
 
-    return cssnano.process(`h1{z-index:10}`, {preset}).then(result => {
+    return cssnano.process(`h1{z-index:10}`, {}, {preset}).then(result => {
         t.is(result.css, `h1{z-index:15}`);
     });
 });
@@ -44,7 +44,7 @@ test('should accept an invoked preset other than default', t => {
 test('should accept a preset string other than default', t => {
     const preset = 'cssnano-preset-advanced';
 
-    return cssnano.process(`h1{z-index:10}`, {preset}).then(result => {
+    return cssnano.process(`h1{z-index:10}`, {}, {preset}).then(result => {
         t.is(result.css, `h1{z-index:1}`);
     });
 });
@@ -55,7 +55,7 @@ test('should accept a preset string other than default, with options', t => {
         {zindex: {startIndex: 15}},
     ];
 
-    return cssnano.process(`h1{z-index:10}`, {preset}).then(result => {
+    return cssnano.process(`h1{z-index:10}`, {}, {preset}).then(result => {
         t.is(result.css, `h1{z-index:15}`);
     });
 });
@@ -66,11 +66,11 @@ test('should accept a preset string other than default (sugar syntax)', t => {
         {zindex: {startIndex: 15}},
     ];
 
-    return cssnano.process(`h1{z-index:10}`, {preset}).then(result => {
+    return cssnano.process(`h1{z-index:10}`, {}, {preset}).then(result => {
         t.is(result.css, `h1{z-index:15}`);
     });
 });
 
 test('should error on a bad preset', t => {
-    t.throws(cssnano.process('h1{}', {preset: 'avanced'}).then(() => {}), Error);
+    t.throws(cssnano.process('h1{}', {}, {preset: 'avanced'}).then(() => {}), Error);
 });

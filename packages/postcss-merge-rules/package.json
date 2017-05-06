@@ -34,7 +34,7 @@
     "browserslist": "^2.0.0",
     "caniuse-api": "^2.0.0",
     "cssnano-util-same-parent": "0.0.0",
-    "postcss": "^5.0.0",
+    "postcss": "^6.0.0",
     "postcss-selector-parser": "^2.0.0",
     "vendors": "^1.0.0"
   },

@@ -21,7 +21,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "postcss": "^5.0.0"
+    "postcss": "^6.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",

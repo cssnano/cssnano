@@ -30,7 +30,7 @@
   },
   "repository": "ben-eb/cssnano",
   "dependencies": {
-    "postcss": "^5.0.0",
+    "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0",
     "stylehacks": "^2.0.0"
   },
