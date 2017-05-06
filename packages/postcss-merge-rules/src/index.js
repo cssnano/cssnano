@@ -2,7 +2,6 @@ import browserslist from 'browserslist';
 import postcss from 'postcss';
 import vendors from 'vendors';
 import sameParent from 'lerna:cssnano-util-same-parent';
-import clone from './lib/clone';
 import ensureCompatibility from './lib/ensureCompatibility';
 
 const prefixes = vendors.map(v => `-${v}-`);
@@ -91,7 +90,7 @@ function partialMerge (first, second) {
             first = second; second = nextRule; intersection = nextIntersection;
         }
     }
-    const recievingBlock = clone(second);
+    const recievingBlock = second.clone();
     recievingBlock.selector = joinSelectors(first, second);
     recievingBlock.nodes = [];
     second.parent.insertBefore(second, recievingBlock);
@@ -113,8 +112,8 @@ function partialMerge (first, second) {
     };
     intersection = filterConflicts(getDecls(first).reverse(), intersection);
     intersection = filterConflicts((getDecls(second)), intersection);
-    const firstClone = clone(first);
-    const secondClone = clone(second);
+    const firstClone = first.clone();
+    const secondClone = second.clone();
     const moveDecl = callback => {
         return decl => {
             if (~intersection.indexOf(String(decl))) {

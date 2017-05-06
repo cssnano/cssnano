@@ -1,6 +1,5 @@
 import {list} from 'postcss';
 import {detect} from 'lerna:stylehacks';
-import clone from '../clone';
 import insertCloned from '../insertCloned';
 import parseTrbl from '../parseTrbl';
 import hasAllProps from '../hasAllProps';
@@ -224,7 +223,7 @@ function merge (rule) {
                 const value = first ? reduced[1] : reduced[0];
                 const prop = borderProperty(trbl[mapped.indexOf(value)]);
 
-                rule.insertAfter(border, Object.assign(clone(lastNode), {
+                rule.insertAfter(border, Object.assign(lastNode.clone(), {
                     prop,
                     value,
                 }));
@@ -232,7 +231,7 @@ function merge (rule) {
             rules.forEach(remove);
             return true;
         } else if (reduced.length === 1) {
-            rule.insertBefore(color, Object.assign(clone(lastNode), {
+            rule.insertBefore(color, Object.assign(lastNode.clone(), {
                 prop: 'border',
                 value: [width, style].map(getValue).join(' '),
             }));
@@ -253,19 +252,19 @@ function merge (rule) {
 
         if (reduced.length === 2 && reduced[0] === none || reduced[1] === none) {
             const noOfNones = mapped.filter(value => value === none).length;
-            rule.insertBefore(lastNode, Object.assign(clone(lastNode), {
+            rule.insertBefore(lastNode, Object.assign(lastNode.clone(), {
                 prop: 'border',
                 value: noOfNones > 2 ? 'none' : mapped.filter(value => value !== none)[0],
             }));
             directions.forEach((dir, i) => {
                 if (noOfNones > 2 && mapped[i] !== none) {
-                    rule.insertBefore(lastNode, Object.assign(clone(lastNode), {
+                    rule.insertBefore(lastNode, Object.assign(lastNode.clone(), {
                         prop: dir,
                         value: mapped[i],
                     }));
                 }
                 if (noOfNones <= 2 && mapped[i] === none) {
-                    rule.insertBefore(lastNode, Object.assign(clone(lastNode), {
+                    rule.insertBefore(lastNode, Object.assign(lastNode.clone(), {
                         prop: dir,
                         value: 'none',
                     }));
