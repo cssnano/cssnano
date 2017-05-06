@@ -177,7 +177,7 @@ function selectorMerger (browsers, compatibilityCache) {
                 if (~cached.indexOf(String(decl))) {
                     return decl.remove();
                 }
-                decl.moveTo(cache);
+                cache.append(decl);
             });
             rule.remove();
             return;
