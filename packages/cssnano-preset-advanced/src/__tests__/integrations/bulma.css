@@ -24,7 +24,7 @@ article,aside,figure,footer,header,hgroup,section{display:block}
 body,button,input,select,textarea{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,Helvetica,Arial,sans-serif}
 code,pre{-moz-osx-font-smoothing:auto;-webkit-font-smoothing:auto;font-family:Inconsolata,Consolas,Monaco,monospace}
 body{color:#4a4a4a;font-size:1rem;font-weight:400;line-height:1.5}
-a{color:#00d1b2;cursor:pointer;text-decoration:none;-webkit-transition:none 86ms ease-out;transition:none 86ms ease-out}
+a{color:#00d1b2;cursor:pointer;text-decoration:none;transition:none 86ms ease-out}
 a:hover{color:#363636}
 code{background-color:#f5f5f5;color:#ff3860;font-size:.8em;font-weight:400;padding:.25em .5em}
 hr{background-color:#dbdbdb;border:none;display:block;height:1px;margin:1.5rem 0}
@@ -763,7 +763,7 @@ a.box:active{box-shadow:inset 0 1px 2px hsla(0,0%,4%,.2),0 0 0 1px #00d1b2}
 .modal{bottom:0;left:0;position:absolute;right:0;top:0;-webkit-box-align:center;-ms-flex-align:center;align-items:center;display:none;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;overflow:hidden;position:fixed;z-index:5}
 .modal.is-active{display:-webkit-box;display:-ms-flexbox;display:flex}
 .nav-toggle{cursor:pointer;display:block;height:3.5rem;position:relative;width:3.5rem}
-.nav-toggle span{background-color:#4a4a4a;display:block;height:1px;left:50%;margin-left:-7px;position:absolute;top:50%;-webkit-transition:none 86ms ease-out;transition:none 86ms ease-out;-webkit-transition-property:background,left,opacity,-webkit-transform;transition-property:background,left,opacity,-webkit-transform;transition-property:background,left,opacity,transform;transition-property:background,left,opacity,transform,-webkit-transform;width:15px}
+.nav-toggle span{background-color:#4a4a4a;display:block;height:1px;left:50%;margin-left:-7px;position:absolute;top:50%;transition:none 86ms ease-out;transition-property:background,left,opacity,-webkit-transform;transition-property:background,left,opacity,transform;transition-property:background,left,opacity,transform,-webkit-transform;width:15px}
 .nav-toggle span:first-child{margin-top:-6px}
 .nav-toggle span:nth-child(2){margin-top:-1px}
 .nav-toggle span:nth-child(3){margin-top:4px}
@@ -1173,7 +1173,7 @@ a.panel-block:hover,label.panel-block:hover{background-color:#f5f5f5}
 .hero.is-white .tabs.is-boxed a,.hero.is-white .tabs.is-toggle a{color:#0a0a0a}
 .hero.is-white .tabs.is-boxed a:hover,.hero.is-white .tabs.is-toggle a:hover{background-color:hsla(0,0%,4%,.1)}
 .hero.is-white .tabs.is-boxed li.is-active a,.hero.is-white .tabs.is-boxed li.is-active a:hover,.hero.is-white .tabs.is-toggle li.is-active a,.hero.is-white .tabs.is-toggle li.is-active a:hover{background-color:#0a0a0a;border-color:#0a0a0a;color:#fff}
-.hero.is-white.is-bold{background-image:-webkit-linear-gradient(309deg,#e6e6e6,#fff 71%,#fff);background-image:linear-gradient(141deg,#e6e6e6,#fff 71%,#fff)}
+.hero.is-white.is-bold{background-image:linear-gradient(141deg,#e6e6e6,#fff 71%,#fff)}
 @media screen and (max-width:768px){
   .hero.is-white .nav-toggle span{background-color:#0a0a0a}
   .hero.is-white .nav-toggle:hover{background-color:hsla(0,0%,4%,.1)}
@@ -1196,7 +1196,7 @@ a.panel-block:hover,label.panel-block:hover{background-color:#f5f5f5}
 .hero.is-black .tabs.is-boxed a,.hero.is-black .tabs.is-toggle a{color:#fff}
 .hero.is-black .tabs.is-boxed a:hover,.hero.is-black .tabs.is-toggle a:hover{background-color:hsla(0,0%,4%,.1)}
 .hero.is-black .tabs.is-boxed li.is-active a,.hero.is-black .tabs.is-boxed li.is-active a:hover,.hero.is-black .tabs.is-toggle li.is-active a,.hero.is-black .tabs.is-toggle li.is-active a:hover{background-color:#fff;border-color:#fff;color:#0a0a0a}
-.hero.is-black.is-bold{background-image:-webkit-linear-gradient(309deg,#000,#0a0a0a 71%,#181616);background-image:linear-gradient(141deg,#000,#0a0a0a 71%,#181616)}
+.hero.is-black.is-bold{background-image:linear-gradient(141deg,#000,#0a0a0a 71%,#181616)}
 @media screen and (max-width:768px){
   .hero.is-black .nav-toggle span{background-color:#fff}
   .hero.is-black .nav-toggle:hover{background-color:hsla(0,0%,4%,.1)}
@@ -1219,7 +1219,7 @@ a.panel-block:hover,label.panel-block:hover{background-color:#f5f5f5}
 .hero.is-light .tabs.is-boxed a,.hero.is-light .tabs.is-toggle a{color:#363636}
 .hero.is-light .tabs.is-boxed a:hover,.hero.is-light .tabs.is-toggle a:hover{background-color:hsla(0,0%,4%,.1)}
 .hero.is-light .tabs.is-boxed li.is-active a,.hero.is-light .tabs.is-boxed li.is-active a:hover,.hero.is-light .tabs.is-toggle li.is-active a,.hero.is-light .tabs.is-toggle li.is-active a:hover{background-color:#363636;border-color:#363636;color:#f5f5f5}
-.hero.is-light.is-bold{background-image:-webkit-linear-gradient(309deg,#dfd8d8,#f5f5f5 71%,#fff);background-image:linear-gradient(141deg,#dfd8d8,#f5f5f5 71%,#fff)}
+.hero.is-light.is-bold{background-image:linear-gradient(141deg,#dfd8d8,#f5f5f5 71%,#fff)}
 @media screen and (max-width:768px){
   .hero.is-light .nav-toggle span{background-color:#363636}
   .hero.is-light .nav-toggle:hover{background-color:hsla(0,0%,4%,.1)}
@@ -1242,7 +1242,7 @@ a.panel-block:hover,label.panel-block:hover{background-color:#f5f5f5}
 .hero.is-dark .tabs.is-boxed a,.hero.is-dark .tabs.is-toggle a{color:#f5f5f5}
 .hero.is-dark .tabs.is-boxed a:hover,.hero.is-dark .tabs.is-toggle a:hover{background-color:hsla(0,0%,4%,.1)}
 .hero.is-dark .tabs.is-boxed li.is-active a,.hero.is-dark .tabs.is-boxed li.is-active a:hover,.hero.is-dark .tabs.is-toggle li.is-active a,.hero.is-dark .tabs.is-toggle li.is-active a:hover{background-color:#f5f5f5;border-color:#f5f5f5;color:#363636}
-.hero.is-dark.is-bold{background-image:-webkit-linear-gradient(309deg,#1f1919,#363636 71%,#463f3f);background-image:linear-gradient(141deg,#1f1919,#363636 71%,#463f3f)}
+.hero.is-dark.is-bold{background-image:linear-gradient(141deg,#1f1919,#363636 71%,#463f3f)}
 @media screen and (max-width:768px){
   .hero.is-dark .nav-toggle span{background-color:#f5f5f5}
   .hero.is-dark .nav-toggle:hover{background-color:hsla(0,0%,4%,.1)}
@@ -1265,7 +1265,7 @@ a.panel-block:hover,label.panel-block:hover{background-color:#f5f5f5}
 .hero.is-primary .tabs.is-boxed a,.hero.is-primary .tabs.is-toggle a{color:#fff}
 .hero.is-primary .tabs.is-boxed a:hover,.hero.is-primary .tabs.is-toggle a:hover{background-color:hsla(0,0%,4%,.1)}
 .hero.is-primary .tabs.is-boxed li.is-active a,.hero.is-primary .tabs.is-boxed li.is-active a:hover,.hero.is-primary .tabs.is-toggle li.is-active a,.hero.is-primary .tabs.is-toggle li.is-active a:hover{background-color:#fff;border-color:#fff;color:#00d1b2}
-.hero.is-primary.is-bold{background-image:-webkit-linear-gradient(309deg,#009e6c,#00d1b2 71%,#00e7eb);background-image:linear-gradient(141deg,#009e6c,#00d1b2 71%,#00e7eb)}
+.hero.is-primary.is-bold{background-image:linear-gradient(141deg,#009e6c,#00d1b2 71%,#00e7eb)}
 @media screen and (max-width:768px){
   .hero.is-primary .nav-toggle span{background-color:#fff}
   .hero.is-primary .nav-toggle:hover{background-color:hsla(0,0%,4%,.1)}
@@ -1288,7 +1288,7 @@ a.panel-block:hover,label.panel-block:hover{background-color:#f5f5f5}
 .hero.is-info .tabs.is-boxed a,.hero.is-info .tabs.is-toggle a{color:#fff}
 .hero.is-info .tabs.is-boxed a:hover,.hero.is-info .tabs.is-toggle a:hover{background-color:hsla(0,0%,4%,.1)}
 .hero.is-info .tabs.is-boxed li.is-active a,.hero.is-info .tabs.is-boxed li.is-active a:hover,.hero.is-info .tabs.is-toggle li.is-active a,.hero.is-info .tabs.is-toggle li.is-active a:hover{background-color:#fff;border-color:#fff;color:#3273dc}
-.hero.is-info.is-bold{background-image:-webkit-linear-gradient(309deg,#1577c6,#3273dc 71%,#4366e5);background-image:linear-gradient(141deg,#1577c6,#3273dc 71%,#4366e5)}
+.hero.is-info.is-bold{background-image:linear-gradient(141deg,#1577c6,#3273dc 71%,#4366e5)}
 @media screen and (max-width:768px){
   .hero.is-info .nav-toggle span{background-color:#fff}
   .hero.is-info .nav-toggle:hover{background-color:hsla(0,0%,4%,.1)}
@@ -1311,7 +1311,7 @@ a.panel-block:hover,label.panel-block:hover{background-color:#f5f5f5}
 .hero.is-success .tabs.is-boxed a,.hero.is-success .tabs.is-toggle a{color:#fff}
 .hero.is-success .tabs.is-boxed a:hover,.hero.is-success .tabs.is-toggle a:hover{background-color:hsla(0,0%,4%,.1)}
 .hero.is-success .tabs.is-boxed li.is-active a,.hero.is-success .tabs.is-boxed li.is-active a:hover,.hero.is-success .tabs.is-toggle li.is-active a,.hero.is-success .tabs.is-toggle li.is-active a:hover{background-color:#fff;border-color:#fff;color:#23d160}
-.hero.is-success.is-bold{background-image:-webkit-linear-gradient(309deg,#12af2f,#23d160 71%,#2ce28a);background-image:linear-gradient(141deg,#12af2f,#23d160 71%,#2ce28a)}
+.hero.is-success.is-bold{background-image:linear-gradient(141deg,#12af2f,#23d160 71%,#2ce28a)}
 @media screen and (max-width:768px){
   .hero.is-success .nav-toggle span{background-color:#fff}
   .hero.is-success .nav-toggle:hover{background-color:hsla(0,0%,4%,.1)}
@@ -1333,7 +1333,7 @@ a.panel-block:hover,label.panel-block:hover{background-color:#f5f5f5}
 .hero.is-warning .tabs.is-boxed a,.hero.is-warning .tabs.is-toggle a{color:rgba(0,0,0,.7)}
 .hero.is-warning .tabs.is-boxed a:hover,.hero.is-warning .tabs.is-toggle a:hover{background-color:hsla(0,0%,4%,.1)}
 .hero.is-warning .tabs.is-boxed li.is-active a,.hero.is-warning .tabs.is-boxed li.is-active a:hover,.hero.is-warning .tabs.is-toggle li.is-active a,.hero.is-warning .tabs.is-toggle li.is-active a:hover{background-color:rgba(0,0,0,.7);border-color:rgba(0,0,0,.7);color:#ffdd57}
-.hero.is-warning.is-bold{background-image:-webkit-linear-gradient(309deg,#ffaf24,#ffdd57 71%,#fffa70);background-image:linear-gradient(141deg,#ffaf24,#ffdd57 71%,#fffa70)}
+.hero.is-warning.is-bold{background-image:linear-gradient(141deg,#ffaf24,#ffdd57 71%,#fffa70)}
 @media screen and (max-width:768px){
   .hero.is-warning .nav-toggle span{background-color:rgba(0,0,0,.7)}
   .hero.is-warning .nav-toggle:hover{background-color:hsla(0,0%,4%,.1)}
@@ -1356,7 +1356,7 @@ a.panel-block:hover,label.panel-block:hover{background-color:#f5f5f5}
 .hero.is-danger .tabs.is-boxed a,.hero.is-danger .tabs.is-toggle a{color:#fff}
 .hero.is-danger .tabs.is-boxed a:hover,.hero.is-danger .tabs.is-toggle a:hover{background-color:hsla(0,0%,4%,.1)}
 .hero.is-danger .tabs.is-boxed li.is-active a,.hero.is-danger .tabs.is-boxed li.is-active a:hover,.hero.is-danger .tabs.is-toggle li.is-active a,.hero.is-danger .tabs.is-toggle li.is-active a:hover{background-color:#fff;border-color:#fff;color:#ff3860}
-.hero.is-danger.is-bold{background-image:-webkit-linear-gradient(309deg,#ff0561,#ff3860 71%,#ff5257);background-image:linear-gradient(141deg,#ff0561,#ff3860 71%,#ff5257)}
+.hero.is-danger.is-bold{background-image:linear-gradient(141deg,#ff0561,#ff3860 71%,#ff5257)}
 @media screen and (max-width:768px){
   .hero.is-danger .nav-toggle span{background-color:#fff}
   .hero.is-danger .nav-toggle:hover{background-color:hsla(0,0%,4%,.1)}

@@ -74,7 +74,7 @@ button[disabled],html input[disabled]{cursor:not-allowed}
 input::-webkit-input-placeholder{color:#999}
 input:-moz-placeholder,input::-moz-placeholder{color:#999}
 input:-ms-input-placeholder{color:#999}
-.button{cursor:pointer;border:1px solid #d7d7d7;background-color:#f3f3f3;line-height:normal;padding:10px 20px;color:#363636;display:inline-block;-webkit-transition:all .3s;transition:all .3s}
+.button{cursor:pointer;border:1px solid #d7d7d7;background-color:#f3f3f3;line-height:normal;padding:10px 20px;color:#363636;display:inline-block;transition:all .3s}
 .button,.button:active,.button:hover{text-decoration:none}
 .button:hover{background:#f9f9f9}
 .button-link{color:#000;text-decoration:underline;border:0;background:transparent;padding:0}
