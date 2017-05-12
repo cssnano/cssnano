@@ -195,7 +195,7 @@ a.box:active{box-shadow:inset 0 1px 2px hsla(0,0%,4%,.2),0 0 0 1px #00d1b2}
 .button .icon:first-child:last-child{margin-left:calc(-1px + -.25rem);margin-right:calc(-1px + -.25rem)}
 .button .icon.is-small:first-child:not(:last-child){margin-left:0}
 .button .icon.is-small:last-child:not(:first-child){margin-right:0}
-.button .icon.is-small:first-child:last-child{margin-left:calc(-1px + 0rem);margin-right:calc(-1px + 0rem)}
+.button .icon.is-small:first-child:last-child{margin-left:-1px;margin-right:-1px}
 .button .icon.is-medium:first-child:not(:last-child){margin-left:-.5rem}
 .button .icon.is-medium:last-child:not(:first-child){margin-right:-.5rem}
 .button .icon.is-medium:first-child:last-child{margin-left:calc(-1px + -.5rem);margin-right:calc(-1px + -.5rem)}
@@ -344,7 +344,7 @@ a.box:active{box-shadow:inset 0 1px 2px hsla(0,0%,4%,.2),0 0 0 1px #00d1b2}
 .button.is-large{font-size:1.5rem}
 .button.is-large .icon:first-child:not(:last-child){margin-left:0;margin-right:.75rem}
 .button.is-large .icon:last-child:not(:first-child){margin-left:.75rem;margin-right:0}
-.button.is-large .icon:first-child:last-child{margin-left:calc(-1px + 0rem);margin-right:calc(-1px + 0rem)}
+.button.is-large .icon:first-child:last-child{margin-left:-1px;margin-right:-1px}
 .button.is-large .icon.is-small:first-child:not(:last-child){margin-left:.25rem}
 .button.is-large .icon.is-small:last-child:not(:first-child){margin-right:.25rem}
 .button.is-large .icon.is-small:first-child:last-child{margin-left:calc(-1px + .25rem);margin-right:calc(-1px + .25rem)}

@@ -879,7 +879,7 @@ input.stack:focus+input,input.stack:focus+select,input.stack:focus+textarea,sele
 .dropimage input{left:0;width:100%;height:100%;border:0;margin:0;padding:0;opacity:0;cursor:pointer;position:absolute}
 .tabs{position:relative;overflow:hidden}
 .tabs>label img{float:left;margin-left:.6em}
-.tabs>.row{width:calc(100% + 2 * .6em);display:table;table-layout:fixed;position:relative;padding-left:0;transition:all .3s;border-spacing:0;margin:0}
+.tabs>.row{width:calc(100% + 1.2em);display:table;table-layout:fixed;position:relative;padding-left:0;transition:all .3s;border-spacing:0;margin:0}
 .tabs>.row:after,.tabs>.row:before{display:none}
 .tabs>.row>*,.tabs>.row img{display:table-cell;vertical-align:top;margin:0;width:100%}
 .tabs>input{display:none}

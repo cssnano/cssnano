@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "postcss": "^6.0.0",
-    "postcss-calc": "^5.0.0",
+    "postcss-calc": "^6.0.0",
     "postcss-colormin": "^2.0.0",
     "postcss-convert-values": "^2.0.0",
     "postcss-discard-comments": "^2.0.0",

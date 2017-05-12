@@ -355,7 +355,7 @@ test(
     `div {
         width: calc(100vw / 2 - 6px + 0);
     }`,
-    `div{width:calc(100vw / 2 - 6px + 0)}`
+    `div{width:calc(50vw - 6px)}`
 );
 
 test(

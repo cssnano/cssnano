@@ -63,10 +63,10 @@ a,area,button,input,label,select,summary,textarea{touch-action:manipulation}
 }
 .uk-heading-divider{padding-bottom:10px;border-bottom:1px solid #e5e5e5}
 .uk-heading-bullet{position:relative}
-.uk-heading-bullet:before{content:"";display:inline-block;position:relative;top:-0.1em;vertical-align:middle;height:.9em;margin-right:10px;border-left:5px solid #e5e5e5}
+.uk-heading-bullet:before{content:"";display:inline-block;position:relative;top:-.1em;vertical-align:middle;height:.9em;margin-right:10px;border-left:5px solid #e5e5e5}
 .uk-heading-line{overflow:hidden}
 .uk-heading-line>*{display:inline-block;position:relative}
-.uk-heading-line>:after,.uk-heading-line>:before{content:"";position:absolute;top:calc(50% + 0.5px);width:2000px;border-bottom:1px solid #e5e5e5}
+.uk-heading-line>:after,.uk-heading-line>:before{content:"";position:absolute;top:calc(50% + .5px);width:2000px;border-bottom:1px solid #e5e5e5}
 .uk-heading-line>:before{right:100%;margin-right:.6em}
 .uk-heading-line>:after{left:100%;margin-left:.6em}
 [class*=uk-divider]{border:none;margin-bottom:20px}

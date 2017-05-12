@@ -2013,7 +2013,7 @@ img.ui.image{display:block}
 .ui.card .image>.ui.ribbon.label,.ui.image>.ui.ribbon.label{left:calc(.05rem - 1.2em)}
 .ui.card .image>.ui[class*="right ribbon"].label,.ui.image>.ui[class*="right ribbon"].label{left:calc(100% + -.05rem + 1.2em);padding-left:.833em}
 .ui.table td>.ui.ribbon.label{left:-1.91429em}
-.ui.table td>.ui[class*="right ribbon"].label{left:calc(100% + .71428571em + 1.2em);padding-left:.833em}
+.ui.table td>.ui[class*="right ribbon"].label{left:calc(100% + 1.91429em);padding-left:.833em}
 .ui.attached.label,.ui[class*="top attached"].label{width:100%;position:absolute;margin:0;top:0;left:0;padding:.75em 1em;border-radius:.21428571rem .21428571rem 0 0}
 .ui[class*="bottom attached"].label{top:auto;bottom:0;border-radius:0 0 .21428571rem .21428571rem}
 .ui[class*="top left attached"].label{width:auto;margin-top:0!important;border-radius:.21428571rem 0 .28571429rem 0}
@@ -3847,19 +3847,19 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.two.cards{margin-left:-1em;margin-right:-1em}
 .ui.two.cards>.card{width:calc(50% - 2em);margin-left:1em;margin-right:1em}
 .ui.three.cards{margin-left:-1em;margin-right:-1em}
-.ui.three.cards>.card{width:calc(33.33333333% - 2em);margin-left:1em;margin-right:1em}
+.ui.three.cards>.card{width:calc(33.33333% - 2em);margin-left:1em;margin-right:1em}
 .ui.four.cards{margin-left:-.75em;margin-right:-.75em}
 .ui.four.cards>.card{width:calc(25% - 1.5em);margin-left:.75em;margin-right:.75em}
 .ui.five.cards{margin-left:-.75em;margin-right:-.75em}
 .ui.five.cards>.card{width:calc(20% - 1.5em);margin-left:.75em;margin-right:.75em}
 .ui.six.cards{margin-left:-.75em;margin-right:-.75em}
-.ui.six.cards>.card{width:calc(16.66666667% - 1.5em);margin-left:.75em;margin-right:.75em}
+.ui.six.cards>.card{width:calc(16.66667% - 1.5em);margin-left:.75em;margin-right:.75em}
 .ui.seven.cards{margin-left:-.5em;margin-right:-.5em}
-.ui.seven.cards>.card{width:calc(14.28571429% - 1em);margin-left:.5em;margin-right:.5em}
+.ui.seven.cards>.card{width:calc(14.28571% - 1em);margin-left:.5em;margin-right:.5em}
 .ui.eight.cards{margin-left:-.5em;margin-right:-.5em}
 .ui.eight.cards>.card{width:calc(12.5% - 1em);margin-left:.5em;margin-right:.5em;font-size:11px}
 .ui.nine.cards{margin-left:-.5em;margin-right:-.5em}
-.ui.nine.cards>.card{width:calc(11.11111111% - 1em);margin-left:.5em;margin-right:.5em;font-size:10px}
+.ui.nine.cards>.card{width:calc(11.11111% - 1em);margin-left:.5em;margin-right:.5em;font-size:10px}
 .ui.ten.cards{margin-left:-.5em;margin-right:-.5em}
 .ui.ten.cards>.card{width:calc(10% - 1em);margin-left:.5em;margin-right:.5em}
 @media only screen and (max-width:767px){
@@ -3874,13 +3874,13 @@ ol.ui.list li[value]:before{content:attr(value)}
   .ui.six.doubling.cards{margin-left:-1em;margin-right:-1em}
   .ui.six.doubling.cards .card{width:calc(50% - 2em);margin-left:1em;margin-right:1em}
   .ui.seven.doubling.cards{margin-left:-1em;margin-right:-1em}
-  .ui.seven.doubling.cards .card{width:calc(33.33333333% - 2em);margin-left:1em;margin-right:1em}
+  .ui.seven.doubling.cards .card{width:calc(33.33333% - 2em);margin-left:1em;margin-right:1em}
   .ui.eight.doubling.cards{margin-left:-1em;margin-right:-1em}
-  .ui.eight.doubling.cards .card{width:calc(33.33333333% - 2em);margin-left:1em;margin-right:1em}
+  .ui.eight.doubling.cards .card{width:calc(33.33333% - 2em);margin-left:1em;margin-right:1em}
   .ui.nine.doubling.cards{margin-left:-1em;margin-right:-1em}
-  .ui.nine.doubling.cards .card{width:calc(33.33333333% - 2em);margin-left:1em;margin-right:1em}
+  .ui.nine.doubling.cards .card{width:calc(33.33333% - 2em);margin-left:1em;margin-right:1em}
   .ui.ten.doubling.cards{margin-left:-1em;margin-right:-1em}
-  .ui.ten.doubling.cards .card{width:calc(33.33333333% - 2em);margin-left:1em;margin-right:1em}
+  .ui.ten.doubling.cards .card{width:calc(33.33333% - 2em);margin-left:1em;margin-right:1em}
 }
 @media only screen and (min-width:768px) and (max-width:991px){
   .ui.two.doubling.cards{margin-left:0;margin-right:0}
@@ -3890,11 +3890,11 @@ ol.ui.list li[value]:before{content:attr(value)}
   .ui.four.doubling.cards{margin-left:-1em;margin-right:-1em}
   .ui.four.doubling.cards .card{width:calc(50% - 2em);margin-left:1em;margin-right:1em}
   .ui.five.doubling.cards{margin-left:-1em;margin-right:-1em}
-  .ui.five.doubling.cards .card{width:calc(33.33333333% - 2em);margin-left:1em;margin-right:1em}
+  .ui.five.doubling.cards .card{width:calc(33.33333% - 2em);margin-left:1em;margin-right:1em}
   .ui.six.doubling.cards{margin-left:-1em;margin-right:-1em}
-  .ui.six.doubling.cards .card{width:calc(33.33333333% - 2em);margin-left:1em;margin-right:1em}
+  .ui.six.doubling.cards .card{width:calc(33.33333% - 2em);margin-left:1em;margin-right:1em}
   .ui.eight.doubling.cards{margin-left:-1em;margin-right:-1em}
-  .ui.eight.doubling.cards .card{width:calc(33.33333333% - 2em);margin-left:1em;margin-right:1em}
+  .ui.eight.doubling.cards .card{width:calc(33.33333% - 2em);margin-left:1em;margin-right:1em}
   .ui.eight.doubling.cards{margin-left:-.75em;margin-right:-.75em}
   .ui.eight.doubling.cards .card{width:calc(25% - 1.5em);margin-left:.75em;margin-right:.75em}
   .ui.nine.doubling.cards{margin-left:-.75em;margin-right:-.75em}
@@ -4477,7 +4477,7 @@ select.ui.dropdown{height:38px;padding:.5em;border:1px solid rgba(34,36,38,.15);
 .ui.scrolling.dropdown .menu{overflow-x:hidden;-webkit-backface-visibility:hidden;backface-visibility:hidden;-webkit-overflow-scrolling:touch}
 .ui.dropdown .scrolling.menu,.ui.scrolling.dropdown .menu{overflow-y:auto;min-width:100%!important;width:auto!important}
 .ui.dropdown .scrolling.menu{position:static;box-shadow:none!important;border-radius:0!important;margin:0!important;border:none;border-top:1px solid rgba(34,36,38,.15)}
-.ui.dropdown .scrolling.menu>.item.item.item,.ui.scrolling.dropdown .menu .item.item.item{border-top:none;padding-right:calc(1.14285714rem + 17px)!important}
+.ui.dropdown .scrolling.menu>.item.item.item,.ui.scrolling.dropdown .menu .item.item.item{border-top:none;padding-right:calc(1.14286rem + 17px)!important}
 .ui.dropdown .scrolling.menu .item:first-child,.ui.scrolling.dropdown .menu .item:first-child{border-top:none}
 .ui.dropdown>.animating.menu .scrolling.menu,.ui.dropdown>.visible.menu .scrolling.menu{display:block}
 @media (-ms-high-contrast:none){
