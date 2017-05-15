@@ -13,7 +13,7 @@
 -   [Plugins](#plugins)
 
     -   [autoprefixer (external)](#autoprefixer-external)
-    -   [cssnano-style-cache](#cssnano-style-cache)
+    -   [cssnano-util-raw-cache](#cssnano-util-raw-cache)
     -   [postcss-calc (external)](#postcss-calc-external)
     -   [postcss-colormin](#postcss-colormin)
     -   [postcss-convert-values](#postcss-convert-values)
@@ -117,7 +117,9 @@ This plugin is loaded with the following configuration:
 }
 ```
 
-### `cssnano-style-cache`
+### [`cssnano-util-raw-cache`](https://github.com/ben-eb/cssnano/tree/master/packages/cssnano-util-raw-cache)
+
+> Manages the raw value formatting for generated AST nodes
 
 This plugin is loaded with its default configuration.
 
