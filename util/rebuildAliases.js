@@ -1,16 +1,17 @@
 import {basename, join} from 'path';
-import glob from 'glob';
 import writeFile from 'write-file';
+import getPackages from './getPackages';
 
-glob(`${join(__dirname, '../packages')}/*`, (err, packages) => {
-    if (err) {
-        throw err;
-    }
+getPackages().then(packages => {
     const pkgPath = join(__dirname, '../package.json');
     const pkgJson = require(pkgPath);
 
     packages.forEach(pkg => {
         const name = basename(pkg);
+        const subPkgJson = require(join(pkg, 'package.json'));
+        if (subPkgJson.private) {
+            return;
+        }
         pkgJson.babel.env.test.plugins[1][1].alias[`lerna:${name}`] = `${name}/src/index.js`;
         pkgJson.babel.env.publish.plugins[1][1].alias[`lerna:${name}`] = name;
     });
