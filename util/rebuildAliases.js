@@ -1,5 +1,5 @@
 import {basename, join} from 'path';
-import writeFile from 'write-file';
+import writeFile from './writeFile';
 import getPackages from './getPackages';
 
 getPackages().then(packages => {
@@ -16,13 +16,8 @@ getPackages().then(packages => {
         pkgJson.babel.env.publish.plugins[1][1].alias[`lerna:${name}`] = name;
     });
 
-    writeFile(
+    return writeFile(
         pkgPath,
-        `${JSON.stringify(pkgJson, null, 2)}\n`,
-        (e) => {
-            if (e) {
-                throw e;
-            }
-        }
+        `${JSON.stringify(pkgJson, null, 2)}\n`
     );
 });

@@ -7,8 +7,8 @@ import remarkHeadingGap from 'remark-heading-gap';
 import remarkLicense from 'remark-license';
 import remarkToc from 'remark-toc';
 import stringifyObject from 'stringify-object';
-import writeFile from 'write-file';
 import u from 'unist-builder';
+import writeFile from './writeFile';
 import pluginName from './pluginName';
 import getPackages from './getPackages';
 import getPresets from './getPresets';
@@ -17,12 +17,6 @@ import installSection from './installSection';
 
 const repository = `ben-eb/cssnano`;
 const homepage = `https://github.com/${repository}`;
-
-function writeError (err) {
-    if (err) {
-        throw err;
-    }
-}
 
 function semverMajor (dependencies) {
     Object.keys(dependencies).forEach(dependency => {
@@ -149,10 +143,9 @@ function updatePreset (packageList, pkg) {
             u('heading', {depth: 2}, [u('text', 'License')]),
         ]), {cwd: pkg});
 
-    writeFile(
+    return writeFile(
         `${pkg}/README.md`,
-        remark().use(remarkHeadingGap).stringify(transformedAST) + '\n',
-        writeError
+        remark().use(remarkHeadingGap).stringify(transformedAST) + '\n'
     );
 }
 
@@ -178,14 +171,14 @@ function updatePackage (pkg) {
         pkgJson.devDependencies = semverMajor(pkgJson.devDependencies);
     }
 
-    writeFile(
+    return writeFile(
         `${pkg}/package.json`,
-        `${JSON.stringify(pkgJson, null, 2)}\n`,
-        writeError
+        `${JSON.stringify(pkgJson, null, 2)}\n`
     );
 }
 
 getPackages().then(packages => {
-    packages.forEach(updatePackage);
-    getPresets(packages).forEach(updatePreset.bind(null, packages));
+    Promise.all(packages.map(updatePackage)).then(() => {
+        getPresets(packages).forEach(updatePreset.bind(null, packages));
+    });
 });

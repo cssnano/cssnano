@@ -1,8 +1,8 @@
 import {join} from 'path';
 import glob from 'glob';
 import postcss from 'postcss';
-import writeFile from 'write-file';
 import cssnano from '../packages/cssnano';
+import writeFile from './writeFile';
 import frameworks from './frameworks';
 import formatter from './integrationFormatter';
 
@@ -11,14 +11,9 @@ function rebuild (pkg) {
         const presetModule = require(pkg);
         const preset = presetModule();
         return postcss([cssnano({preset}), formatter]).process(frameworks[framework]).then(result => {
-            writeFile(
+            return writeFile(
                 `${pkg}/src/__tests__/integrations/${framework}.css`,
-                result.css,
-                (err) => {
-                    if (err) {
-                        throw err;
-                    }
-                }
+                result.css
             );
         });
     });
