@@ -1,5 +1,6 @@
 import {join} from 'path';
 import fs from 'mz/fs';
+import camel from 'camelcase';
 import toml from 'toml';
 import tomlify from 'tomlify-j0.4';
 import getPackages from './getPackages';
@@ -25,6 +26,7 @@ outputExample = """
 """
 source = "https://github.com/postcss/autoprefixer"
 safe = 2.0 # Changes semantics
+shortName = "autoprefixer"
 
 [postcss-calc]
 shortDescription = "Reduces CSS calc expressions"
@@ -40,7 +42,12 @@ outputExample = """
 }
 """
 source = "https://github.com/postcss/postcss-calc"
+shortName = "calc"
 `);
+
+function shortName (pkgName) {
+    return camel(pkgName.replace(/^(postcss|cssnano-util)-/, ''));
+}
 
 getPackages().then(packages => {
     return Promise.all(packages.map((pkg) => {
@@ -51,12 +58,11 @@ getPackages().then(packages => {
             database[pkgName] = Object.assign({}, metadata, {
                 source: `${pkgJson.homepage}/tree/master/packages/${pkgName}`,
                 shortDescription: pkgJson.description,
+                shortName: shortName(pkgName),
             });
         }).catch(() => {});
-    }, {})).then(() => {
-        return fs.writeFile(
-            join(__dirname, '../metadata.toml'),
-            tomlify(database)
-        );
-    });
+    }, {})).then(() => fs.writeFile(
+        join(__dirname, '../metadata.toml'),
+        tomlify(database)
+    ));
 });
