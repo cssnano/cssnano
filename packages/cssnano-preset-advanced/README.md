@@ -119,7 +119,7 @@ This plugin is loaded with the following configuration:
 
 ### [`cssnano-util-raw-cache`](https://github.com/ben-eb/cssnano/tree/master/packages/cssnano-util-raw-cache)
 
-> Manages the raw value formatting for generated AST nodes
+> Manages the raw value formatting for generated AST nodes.
 
 This plugin is loaded with its default configuration.
 
