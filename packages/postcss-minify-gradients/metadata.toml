@@ -1,0 +1,13 @@
+longDescription = "Normalizes linear and radial gradient parameters."
+
+inputExample = """
+.box {
+    background: linear-gradient(to bottom, #ffe500 0%, #ffe500 50%, #121 50%, #121 100%);
+}
+"""
+
+outputExample = """
+.box {
+    background: linear-gradient(180deg, #ffe500, #ffe500 50%, #121 0, #121);
+}
+"""

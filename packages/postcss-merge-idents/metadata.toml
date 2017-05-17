@@ -1,0 +1,43 @@
+longDescription = """
+This will merge rules together that may have slightly different naming but do
+the same thing. Note that this is only unsafe if you rely on those animation
+names in JavaScript.
+"""
+
+inputExample = """
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+@keyframes dissolve {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+.box {
+    animation-name: dissolve;
+}
+"""
+
+outputExample = """
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+.box {
+    animation-name: fadeOut;
+}
+"""
+
+safe = 3 # Assumes concatenation & changes semantics

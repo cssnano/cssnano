@@ -1,0 +1,20 @@
+longDescription = """
+Removes duplicated rules, at-rules and declarations. Note that this only works
+for *exact* duplicates.
+"""
+
+inputExample = """
+.box {
+    border: 1px solid silver;
+}
+
+.box {
+    border: 1px solid silver;
+}
+"""
+
+outputExample = """
+.box {
+    border: 1px solid silver;
+}
+"""

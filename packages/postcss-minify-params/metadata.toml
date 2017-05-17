@@ -1,0 +1,17 @@
+longDescription = "Trims whitespace and normalizes at-rule parameters."
+
+inputExample = """
+@media only screen   and ( min-width: 400px, min-height: 500px ) {
+    .box {
+        color: blue;
+    }
+}
+"""
+
+outputExample = """
+@media only screen and (min-width:400px,min-height:500px) {
+    .box {
+        color: blue;
+    }
+}
+"""

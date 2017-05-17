@@ -1,0 +1,19 @@
+longDescription = """
+Removes comments in and around rules, selectors & declarations. Note that any
+special comments marked with `!` are kept by default.
+"""
+
+inputExample = """
+/*! license */
+.box {
+    /* Red headings */
+    color: red;
+}
+"""
+
+outputExample = """
+/*! license */
+.box {
+    color: red;
+}
+"""

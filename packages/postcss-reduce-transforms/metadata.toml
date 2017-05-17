@@ -1,0 +1,15 @@
+longDescription = """
+Converts between transform functions when there is a shorthand equivalent.
+"""
+
+inputExample = """
+.box {
+    transform: translate3d(0, 0, 0);
+}
+"""
+
+outputExample = """
+.box {
+    transform: translateZ(0);
+}
+"""

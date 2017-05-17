@@ -1,0 +1,21 @@
+longDescription = """
+Ensures that only a single `@charset` is present in the CSS file, and moves it
+to the top of the document. This prevents multiple, invalid declarations
+occurring through naïve CSS concatenation. Note that *by default*, new
+`@charset` rules will not be added to the CSS.
+"""
+
+inputExample = """
+.box {
+    content: \"©\";
+}
+@charset \"utf-8\";
+@charset \"utf-8\";
+"""
+
+outputExample = """
+@charset \"utf-8\";
+.box {
+    content: \"©\";
+}
+"""

@@ -1,0 +1,19 @@
+longDescription = """
+Removes at-rules that do not have any bearing on the CSS file. This is unsafe
+if you have other stylesheets which pair up to these rules.
+"""
+
+inputExample = """
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+"""
+
+outputExample = "/* (removed) */"
+
+safe = 3 # Assumes concatenation & changes semantics

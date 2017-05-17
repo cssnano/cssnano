@@ -1,0 +1,16 @@
+longDescription = """
+Normalizes the two value syntax for `display` into the single value syntax
+where possible.
+"""
+
+inputExample = """
+.box {
+    display: block flow;
+}
+"""
+
+outputExample = """
+.box {
+    display: block;
+}
+"""

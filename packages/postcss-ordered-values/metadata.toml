@@ -1,0 +1,19 @@
+longDescription = """
+Properties affected by this transform can accept their arguments in an
+arbitrary order. This module normalizes that order, facilitating
+easier de-duplication.
+"""
+
+inputExample = """
+.box {
+    border: solid 1px red;
+    border: #fff solid 1px;
+}
+"""
+
+outputExample = """
+.box {
+    border: 1px solid red;
+    border: 1px solid #fff;
+}
+"""

@@ -1,0 +1,19 @@
+longDescription = """
+Rebases z-index values. This is unsafe as it could potentially clash with other
+stylesheets, or JavaScript injected styles. However, it is safe if your stacking
+context has wholly been extracted into CSS.
+"""
+
+inputExample = """
+.box {
+    z-index: 5000;
+}
+"""
+
+outputExample = """
+.box {
+    z-index: 1;
+}
+"""
+
+safe = 3 # Assumes concatenation & changes semantics

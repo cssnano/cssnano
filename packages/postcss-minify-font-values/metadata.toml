@@ -1,0 +1,18 @@
+longDescription = """
+Normalizes font & font-family declarations, and can convert font weight
+keywords to numeric values.
+"""
+
+inputExample = """
+.box {
+    font-family: \"Helvetica Neue\", Arial, Arial, sans-serif;
+    font-weight: normal;
+}
+"""
+
+outputExample = """
+.box {
+    font-family: Helvetica Neue, Arial, sans-serif;
+    font-weight: 400;
+}
+"""

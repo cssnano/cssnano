@@ -1,0 +1,21 @@
+longDescription = """
+Standardises the usage of double (by default) or single quoted strings, for
+better gzip compression. Can also remove linebreaks which are inserted for
+aesthetic purposes. If you prefer single quotes, you can set
+`preferredQuote: 'single'` instead.
+"""
+
+inputExample = """
+.box {
+    quotes: '«' "»";
+    content: 'This is a string which is \\
+broken over multiple lines.';
+}
+"""
+
+outputExample = """
+.box {
+    quotes: "«" "»";
+    content: "This is a string which is broken over multiple lines.";
+}
+"""

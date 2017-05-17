@@ -1,0 +1,17 @@
+longDescription = """
+Reduces the two value syntax for `background-repeat` into the single value
+syntax where possible, in both the property itself and the `background`
+shorthand. Also works for `mask-repeat`.
+"""
+
+inputExample = """
+.box {
+    background-repeat: no-repeat repeat;
+}
+"""
+
+outputExample = """
+.box {
+    background-repeat: repeat-y;
+}
+"""

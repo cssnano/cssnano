@@ -1,0 +1,20 @@
+longDescription = """
+Collapses longhand properties into the shorthand representation, and where
+possible will also collapse top/right/bottom/left values. Supports `margin`,
+`padding` & `border` longhands.
+"""
+
+inputExample = """
+.box {
+    margin-top: 10px;
+    margin-right: 20px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+}
+"""
+
+outputExample = """
+.box {
+    margin: 10px 20px;
+}
+"""

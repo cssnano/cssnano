@@ -46,6 +46,8 @@
     "remark-license": "^4.0.0",
     "remark-toc": "^4.0.0",
     "stringify-object": "^3.1.0",
+    "toml": "^2.3.2",
+    "tomlify-j0.4": "^2.0.0",
     "unist-builder": "^1.0.2",
     "unist-util-remove": "^0.2.1"
   },

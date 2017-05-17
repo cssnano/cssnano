@@ -1,0 +1,15 @@
+longDescription = """
+Naturally sorts selectors for every rule, and removes duplicates.
+"""
+
+inputExample = """
+.box, .boxB, .boxA, .box {
+    color: red;
+}
+"""
+
+outputExample = """
+.box, .boxA, .boxB {
+    color: red;
+}
+"""

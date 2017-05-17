@@ -1,0 +1,12 @@
+longDescription = """
+Removes empty rules, media queries & rules with empty selectors, as they
+do not affect the output.
+"""
+
+inputExample = """
+.box {}
+@media screen {}
+{color: green;}
+"""
+
+outputExample = "/* (removed) */"

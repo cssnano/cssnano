@@ -1,0 +1,16 @@
+longDescription = """
+Normalizes URL strings. It can remove default ports, resolve unnecessary
+directory traversal & unquote the value.
+"""
+
+inputExample = """
+.box {
+    background: url(\"./css/../img/cat.jpg\");
+}
+"""
+
+outputExample = """
+.box {
+    background: url(img/cat.jpg);
+}
+"""

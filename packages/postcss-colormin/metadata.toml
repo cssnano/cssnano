@@ -1,0 +1,16 @@
+longDescription = """
+Converts between hex, hsl, rgb and CSS keywords, in order to produce the
+smallest equivalent color value.
+"""
+
+inputExample = """
+.box {
+    background: hsl(134, 50%, 50%);
+}
+"""
+
+outputExample = """
+.box {
+    background: #40bf5e;
+}
+"""

@@ -1,0 +1,19 @@
+longDescription = """
+Merges adjacent rules by selectors & overlapping property/value pairs.
+"""
+
+inputExample = """
+.box {
+    color: blue;
+}
+.box {
+    font-weight: 700;
+}
+"""
+
+outputExample = """
+.box {
+    color: blue;
+    font-weight: 700;
+}
+"""

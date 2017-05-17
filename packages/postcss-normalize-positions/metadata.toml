@@ -1,0 +1,16 @@
+longDescription = """
+Normalizes `position` values in the `background`, `background-position`,
+`-webkit-perspective-origin` and `perspective-origin` properties.
+"""
+
+inputExample = """
+.box {
+    background: 30% center / 50% 50%;
+}
+"""
+
+outputExample = """
+.box {
+    background: 30% / 50% 50%;
+}
+"""

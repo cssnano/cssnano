@@ -1,0 +1,16 @@
+longDescription = """
+Converts between equivalent length, time & angle values. Note that *by default*,
+length values are not converted.
+"""
+
+inputExample = """
+.box {
+    transition: color 500ms ease;
+}
+"""
+
+outputExample = """
+.box {
+    transition: color .5s ease;
+}
+"""

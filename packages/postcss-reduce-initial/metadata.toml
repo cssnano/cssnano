@@ -1,0 +1,16 @@
+longDescription = """
+Replaces the CSS `initial` keyword with the *actual* value, when the
+resulting output is smaller
+"""
+
+inputExample = """
+.box {
+    min-width: initial;
+}
+"""
+
+outputExample = """
+.box {
+    min-width: 0;
+}
+"""

@@ -1,0 +1,16 @@
+longDescription = """
+Normalizes transition timing in the `animation`, `animation-timing-function`,
+`transition` and `transition-timing-function` properties.
+"""
+
+inputExample = """
+.box {
+    transition: color 3s steps(30, end);
+}
+"""
+
+outputExample = """
+.box {
+    transition: color 3s steps(30);
+}
+"""

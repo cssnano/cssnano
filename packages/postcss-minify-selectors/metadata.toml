@@ -1,0 +1,24 @@
+longDescription = """
+Removes unnecessary qualified universal selectors, unquotes attribute selectors,
+trims & normalizes selector strings.
+"""
+
+inputExample = """
+*.box
+.box::before
+.box       .box
+[class*=\"box\"]
+.box ~ [class] {
+    color: red;
+}
+"""
+
+outputExample = """
+.box
+.box:before
+.box .box
+[class*=box]
+.box~[class] {
+    color: red;
+}
+"""

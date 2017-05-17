@@ -6,6 +6,12 @@ node_modules
 npm-debug.log
 _webpackOutput
 
+
+# Generated metadata (only the root one is generated!)
+
+/metadata.toml
+
+
 # Phenomic things
 
 *.bundle.js

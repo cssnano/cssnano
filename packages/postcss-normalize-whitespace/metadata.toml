@@ -1,0 +1,15 @@
+longDescription = """
+Trims whitespace inside and around rules, selectors & declarations,
+plus removes the final semicolon inside every selector.
+"""
+
+inputExample = """
+.box {
+    text-decoration: underline;
+    color: red !important;
+}
+"""
+
+outputExample = """
+.box{text-decoration:underline;color:red!important}
+"""
