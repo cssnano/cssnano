@@ -34,6 +34,7 @@
     "glob": "^7.0.0",
     "lerna": "2.0.0-beta.37",
     "mdast-util-heading-range": "^2.0.1",
+    "mz": "^2.6.0",
     "nyc": "^10.0.0",
     "postcss": "^6.0.0",
     "remark": "^7.0.0",
@@ -46,8 +47,7 @@
     "remark-toc": "^4.0.0",
     "stringify-object": "^3.1.0",
     "unist-builder": "^1.0.2",
-    "unist-util-remove": "^0.2.1",
-    "write-file": "^1.0.0"
+    "unist-util-remove": "^0.2.1"
   },
   "ava": {
     "files": [

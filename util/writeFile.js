@@ -1,12 +1,3 @@
-import write from 'write-file';
+import fs from 'mz/fs';
 
-export default function writeFile (path, contents) {
-    return new Promise((resolve, reject) => {
-        return write(path, contents, err => {
-            if (err) {
-                return reject(err);
-            }
-            return resolve();
-        });
-    });
-}
+export default fs.writeFile;
