@@ -14,6 +14,7 @@ import getPackages from './getPackages';
 import getPresets from './getPresets';
 import contributorsSection from './contributorsSection';
 import installSection from './installSection';
+import sortAscending from './sortAscending';
 
 const repository = `ben-eb/cssnano`;
 const homepage = `https://github.com/${repository}`;
@@ -31,15 +32,10 @@ function semverMajor (dependencies) {
 }
 
 function sortPlugins (a, b) {
-    const ba = pluginName(a[0]);
-    const bb = pluginName(b[0]);
-    if (ba < bb) {
-        return -1;
-    }
-    if (ba > bb) {
-        return 1;
-    }
-    return 0;
+    return sortAscending(
+        pluginName(a[0]),
+        pluginName(b[0])
+    );
 }
 
 function updatePreset (packageList, pkg) {

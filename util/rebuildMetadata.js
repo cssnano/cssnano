@@ -4,6 +4,7 @@ import camel from 'camelcase';
 import toml from 'toml';
 import tomlify from 'tomlify-j0.4';
 import getPackages from './getPackages';
+import sortAscending from './sortAscending';
 
 /* External repositories, so the data is added manually */
 
@@ -61,8 +62,16 @@ getPackages().then(packages => {
                 shortName: shortName(pkgName),
             });
         }).catch(() => {});
-    }, {})).then(() => fs.writeFile(
-        join(__dirname, '../metadata.toml'),
-        tomlify(database)
-    ));
+    }, {})).then(() => {
+        const sortedKeys = Object.keys(database).sort(sortAscending);
+        const sorted = sortedKeys.reduce((db, key) => {
+            const value = database[key];
+            db[key] = value;
+            return db;
+        }, {});
+        return fs.writeFile(
+            join(__dirname, '../metadata.toml'),
+            tomlify(sorted)
+        );
+    });
 });
