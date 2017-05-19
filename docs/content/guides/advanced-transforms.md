@@ -4,7 +4,6 @@ layout: Guide
 order: 5
 ---
 
-
 ## What are advanced transforms?
 
 Certain optimizations are not suitable for all use cases; unlike those that
@@ -26,7 +25,7 @@ any `@keyframes` rules and selectors that utilise them must be in the same file.
 
 [postcss-merge-idents]: https://github.com/ben-eb/cssnano/tree/master/packages/postcss-merge-idents
 
-### Changing semantics
+### Changes semantics
 
 This transform changes CSS semantically; it may remove styles based on certain
 characteristics of the CSS, or it might update values to make the CSS smaller
@@ -38,14 +37,11 @@ removing out of date vendor prefixes. In order for this transform to be safe,
 your [browserslist] configuration must reflect the browsers that your site
 chooses to support.
 
+[autoprefixer]: https://github.com/postcss/autoprefixer
+
+[browserslist]: https://github.com/ai/browserslist
 
 ## Do you have an idea for an advanced transform?
 
 Did we miss an opportunity to compress your CSS further? You can learn about
-[how to contribute][guidecontributing] in our next guide.
-
-[guidecontributing]: /guides/contributing
-
-[autoprefixer]: https://github.com/postcss/autoprefixer
-
-[browserslist]: https://github.com/ai/browserslist
+[how to contribute](/guides/contributing) in our next guide.

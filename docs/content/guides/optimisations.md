@@ -4,7 +4,6 @@ layout: Guide
 order: 3
 ---
 
-
 ## What are optimisations?
 
 An optimisation is a module that performs a transform on some CSS code in order
@@ -17,43 +16,46 @@ there will be some cases where using a transform standalone will not produce
 the most optimal output. For example, postcss-colormin will not trim whitespace
 inside color functions as this is handled by postcss-normalize-whitespace.
 
-
 ## What optimisations do you support?
+
+<!-- This section is automatically generated. -->
 
 The optimisations are different depending on which preset cssnano is configured with; with the default preset, we offer safe transforms only.
 
-|                                    | default | advanced |
-| ---------------------------------- | ------- | -------- |
-| autoprefixer                       | ❌       | ✅        |
-| cssnano-style-cache                | ✅       | ✅        |
-| postcss-calc                       | ✅       | ✅        |
-| postcss-colormin                   | ✅       | ✅        |
-| postcss-convert-values             | ✅       | ✅        |
-| postcss-discard-comments           | ✅       | ✅        |
-| postcss-discard-duplicates         | ✅       | ✅        |
-| postcss-discard-empty              | ✅       | ✅        |
-| postcss-discard-overridden         | ✅       | ✅        |
-| postcss-discard-unused             | ❌       | ✅        |
-| postcss-merge-idents               | ❌       | ✅        |
-| postcss-merge-longhand             | ✅       | ✅        |
-| postcss-merge-rules                | ✅       | ✅        |
-| postcss-minify-font-values         | ✅       | ✅        |
-| postcss-minify-gradients           | ✅       | ✅        |
-| postcss-minify-params              | ✅       | ✅        |
-| postcss-minify-selectors           | ✅       | ✅        |
-| postcss-normalize-charset          | ✅       | ✅        |
-| postcss-normalize-display-values   | ✅       | ✅        |
-| postcss-normalize-positions        | ✅       | ✅        |
-| postcss-normalize-repeat-style     | ✅       | ✅        |
-| postcss-normalize-string           | ✅       | ✅        |
-| postcss-normalize-timing-functions | ✅       | ✅        |
-| postcss-normalize-unicode          | ✅       | ✅        |
-| postcss-normalize-url              | ✅       | ✅        |
-| postcss-normalize-whitespace       | ✅       | ✅        |
-| postcss-ordered-values             | ✅       | ✅        |
-| postcss-reduce-idents              | ❌       | ✅        |
-| postcss-reduce-initial             | ✅       | ✅        |
-| postcss-reduce-transforms          | ✅       | ✅        |
-| postcss-svgo                       | ✅       | ✅        |
-| postcss-unique-selectors           | ✅       | ✅        |
-| postcss-zindex                     | ❌       | ✅        |
+|                                                                               | default | advanced |
+| ----------------------------------------------------------------------------- | ------- | -------- |
+| [autoprefixer](/optimisations/autoprefixer)                                   | ❌       | ✅        |
+| [cssnano-util-raw-cache](/optimisations/rawcache)                             | ✅       | ✅        |
+| [postcss-calc](/optimisations/calc)                                           | ✅       | ✅        |
+| [postcss-colormin](/optimisations/colormin)                                   | ✅       | ✅        |
+| [postcss-convert-values](/optimisations/convertvalues)                        | ✅       | ✅        |
+| [postcss-discard-comments](/optimisations/discardcomments)                    | ✅       | ✅        |
+| [postcss-discard-duplicates](/optimisations/discardduplicates)                | ✅       | ✅        |
+| [postcss-discard-empty](/optimisations/discardempty)                          | ✅       | ✅        |
+| [postcss-discard-overridden](/optimisations/discardoverridden)                | ✅       | ✅        |
+| [postcss-discard-unused](/optimisations/discardunused)                        | ❌       | ✅        |
+| [postcss-merge-idents](/optimisations/mergeidents)                            | ❌       | ✅        |
+| [postcss-merge-longhand](/optimisations/mergelonghand)                        | ✅       | ✅        |
+| [postcss-merge-rules](/optimisations/mergerules)                              | ✅       | ✅        |
+| [postcss-minify-font-values](/optimisations/minifyfontvalues)                 | ✅       | ✅        |
+| [postcss-minify-gradients](/optimisations/minifygradients)                    | ✅       | ✅        |
+| [postcss-minify-params](/optimisations/minifyparams)                          | ✅       | ✅        |
+| [postcss-minify-selectors](/optimisations/minifyselectors)                    | ✅       | ✅        |
+| [postcss-normalize-charset](/optimisations/normalizecharset)                  | ✅       | ✅        |
+| [postcss-normalize-display-values](/optimisations/normalizedisplayvalues)     | ✅       | ✅        |
+| [postcss-normalize-positions](/optimisations/normalizepositions)              | ✅       | ✅        |
+| [postcss-normalize-repeat-style](/optimisations/normalizerepeatstyle)         | ✅       | ✅        |
+| [postcss-normalize-string](/optimisations/normalizestring)                    | ✅       | ✅        |
+| [postcss-normalize-timing-functions](/optimisations/normalizetimingfunctions) | ✅       | ✅        |
+| [postcss-normalize-unicode](/optimisations/normalizeunicode)                  | ✅       | ✅        |
+| [postcss-normalize-url](/optimisations/normalizeurl)                          | ✅       | ✅        |
+| [postcss-normalize-whitespace](/optimisations/normalizewhitespace)            | ✅       | ✅        |
+| [postcss-ordered-values](/optimisations/orderedvalues)                        | ✅       | ✅        |
+| [postcss-reduce-idents](/optimisations/reduceidents)                          | ❌       | ✅        |
+| [postcss-reduce-initial](/optimisations/reduceinitial)                        | ✅       | ✅        |
+| [postcss-reduce-transforms](/optimisations/reducetransforms)                  | ✅       | ✅        |
+| [postcss-svgo](/optimisations/svgo)                                           | ✅       | ✅        |
+| [postcss-unique-selectors](/optimisations/uniqueselectors)                    | ✅       | ✅        |
+| [postcss-zindex](/optimisations/zindex)                                       | ❌       | ✅        |
+
+You can read more about presets in our [presets guide](/guides/presets/).

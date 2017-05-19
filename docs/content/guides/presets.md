@@ -100,10 +100,9 @@ we also offer an advanced preset which performs more aggressive transformations.
 You can read more about this in
 [our advanced transformations guide][guideadvancedtransforms].
 
-
 ## Options syntax
 
-The options follow a simple pattern; the optional `postcss-` prefix is removed
+The options follow a simple pattern - the optional `postcss-` prefix is removed
 and then the rest should be converted into `camelCase`. So, if you need to set
 an option for `postcss-svgo`, you can do:
 
