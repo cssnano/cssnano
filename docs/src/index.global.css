@@ -1,0 +1,133 @@
+/* Using global sytles is not recommended, prefer local styles via CSS Modules */
+
+/*
+ * box model like it should be
+ *
+ * http://www.paulirish.com/2012/box-sizing-border-box-ftw/
+ */
+html { box-sizing: border-box; }
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+/*
+ * kill document defaults margin & padding. We all do that all the time, right ?
+ */
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/*
+ * page styles
+ */
+html {
+  min-height: 100%;
+  background: color(var(--brandColor) l(99%));
+}
+
+body {
+  color: var(--colorText);
+  font-size: 1rem;
+  line-height: 1.5rem;
+
+  /* system font https://medium.com/designing-medium/system-shock-6b1dc6d6596f */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+}
+
+/*
+ * .phenomic-HeadingAnchor
+ *
+ * anchors for markdown headings, generated via markdown renderer, so require
+ * global styling
+ */
+@custom-selector :--headings h1, h2, h3, h4, h5, h6;
+
+:--headings {
+  position: relative;
+  font-weight: 400;
+  color: var(--brandColor);
+}
+
+:root {
+  --phenomic-HeadingAnchor-width: 1.4rem;
+  --phenomic-HeadingAnchor-margin: 0.4rem;
+}
+
+.phenomic-HeadingAnchor {
+  display: inline-block;
+  text-align: center;
+  margin-left: calc(-1 * (var(--phenomic-HeadingAnchor-width) + var(--phenomic-HeadingAnchor-margin)));
+  margin-right: var(--phenomic-HeadingAnchor-margin);
+  width: var(--phenomic-HeadingAnchor-width);
+  line-height: var(--phenomic-HeadingAnchor-width);
+  text-decoration: none;
+  opacity: 0.1;
+  transition: opacity 0.2s;
+
+  @nest :--headings:hover & {
+    opacity: 1;
+    border-bottom: 1px solid var(--brandColorComplement);
+  }
+}
+
+/* minimal styling, prefer removing this and use local styles */
+a {
+  color: var(--brandColorComplement);
+}
+
+hr {
+  border: 0;
+  height: 1px;
+  background: var(--colorNeutral);
+  opacity: 0.2;
+  margin: 2rem 0;
+}
+
+:root {
+    --headerHeight: 80px;
+}
+
+:target {
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--brandColor);
+    color: var(--brandColor);
+}
+
+:target:before {
+    display: block;
+    content: " ";
+    /* This is to account for the sticky header */
+    margin-top: calc(var(--headerHeight) * -1px);
+    height: var(--headerHeight);
+    visibility: hidden;
+}
+
+:target a {
+    color: var(--brandColor);
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 1px solid var(--brandColorComplement);
+
+    & tr {
+        background: #fff;
+        border-bottom: 1px solid var(--brandColorComplement);
+    }
+
+    & td, & th {
+        padding: 10px;
+        font-weight: 400;
+        text-align: left;
+    }
+
+    & tbody tr:nth-child(odd) {
+        background: color(var(--brandColorComplement) l(98%));
+    }
+}

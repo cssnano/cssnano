@@ -43,6 +43,7 @@
     "remark-cli": "^3.0.1",
     "remark-github": "^7.0.0",
     "remark-heading-gap": "^3.0.0",
+    "remark-html": "^6.0.0",
     "remark-license": "^4.0.0",
     "remark-toc": "^4.0.0",
     "stringify-object": "^3.1.0",

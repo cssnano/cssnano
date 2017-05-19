@@ -1,0 +1,21 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  padding: 1rem 0;
+}
+
+.oops {
+  font-size: 4rem;
+  line-height: 4rem;
+  color: #ddd;
+}
+
+.title {
+  margin: 4rem 0;
+  font-size: 2rem;
+  line-height: 3rem;
+  text-align: center;
+}

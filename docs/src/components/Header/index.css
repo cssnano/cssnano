@@ -1,0 +1,77 @@
+:root {
+    --nav-item-padding: 0.5rem;
+}
+
+.header {
+    border-bottom: 1px solid var(--brandColor);
+    background: #fff;
+}
+
+.nav {
+    max-width: calc(60rem + (var(--nav-item-padding) * 2));
+    margin: 0 auto;
+    line-height: 2rem;
+    overflow: hidden;
+
+    & a {
+        position: relative;
+        display: block;
+        transition: color 0.1s ease;
+    }
+
+    & a:hover {
+        color: var(--brandColor);
+    }
+}
+
+.link {
+    padding: 0.8rem var(--nav-item-padding);
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.link svg {
+    vertical-align: middle;
+    height: 25px;
+}
+
+.logo {
+    margin-right: 20px;
+}
+
+@media screen and (min-width: 600px) {
+    .navPart1,
+    .navPart2 {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .link {
+        display: flex;
+        align-items: center;
+    }
+
+    .nav {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .nav a:after {
+        content: '';
+        display: block;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        height: 5px;
+        position: absolute;
+        background: var(--brandColor);
+        transform: translateY(5px);
+        transition: transform 0.1s ease;
+    }
+
+    .nav a:hover:after {
+        transform: translateY(0);
+    }
+}

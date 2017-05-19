@@ -1,0 +1,13 @@
+.outer {
+    display: flex;
+    flex-direction: column;
+}
+
+.inner {
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+    width: 100%;
+    max-width: var(--maxWidth);
+    padding: 1rem 0;
+}

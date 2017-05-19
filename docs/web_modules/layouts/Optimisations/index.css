@@ -1,4 +1,0 @@
-.unsafe h2 a:before {
-    content: '(unsafe) ';
-    font-weight: normal;
-}

@@ -1,0 +1,7 @@
+.header {
+  display: flex;
+  justify-content: center;
+  opacity: 0.6;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}

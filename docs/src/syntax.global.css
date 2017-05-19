@@ -1,0 +1,156 @@
+pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+    background: #fff;
+    color: #303030;
+    border: 1px solid var(--brandColor);
+    padding: 10px;
+}
+
+code {
+    font-family: Menlo, Monaco, Consolas, monospace;
+}
+
+/* CSS highlighting */
+
+.midas__tag {
+    text-decoration: underline;
+}
+
+.midas__comment {
+    color: #bbb;
+}
+
+.midas__at-rule-keyword,
+.midas__important,
+.midas__tag,
+.midas__attribute-name,
+.midas__class,
+.midas__pseudo {
+    color: #ed3e35;
+}
+
+.midas__id,
+.midas__at-rule-name,
+.midas__function-name {
+    color: #673ab7;
+}
+
+.midas__brace,
+.midas__colon,
+.midas__semicolon,
+.midas__parenthesis,
+.midas__string,
+.midas__hex-color,
+.midas__attribute-value,
+.midas__attribute-brace,
+.midas__attribute-operator {
+    color: var(--brandColor);
+}
+
+.midas__property {
+    color: #0062bd;
+    font-style: italic;
+}
+
+.midas__vendor-prefix {
+    color: #57aeff;
+}
+
+.midas__number,
+.midas__word {
+    color: #fa9600;
+}
+
+/* Other */
+
+/* Pop Comment */
+.hljs-comment,
+.hljs-title {
+    color: #505050;
+}
+
+/* Pop Red */
+.hljs-deletion,
+.hljs-variable,
+.hljs-attribute,
+.hljs-tag,
+.hljs-regexp,
+.ruby .hljs-constant,
+.xml .hljs-tag .hljs-title,
+.xml .hljs-pi,
+.xml .hljs-doctype,
+.html .hljs-doctype,
+.css .hljs-id,
+.css .hljs-class,
+.css .hljs-pseudo {
+    color: #eb008a;
+}
+
+/* Pop Orange */
+.hljs-number,
+.hljs-preprocessor,
+.hljs-built_in,
+.hljs-literal,
+.hljs-params,
+.hljs-constant {
+    color: #f29333;
+}
+
+/* Pop Yellow */
+.ruby .hljs-class .hljs-title,
+.css .hljs-rules .hljs-attribute {
+    color: #f8ca12;
+}
+
+/* Pop Green */
+.hljs-addition,
+.hljs-string,
+.hljs-value,
+.hljs-inheritance,
+.hljs-header,
+.ruby .hljs-symbol,
+.xml .hljs-cdata {
+    color: #37b349;
+}
+
+/* Pop Aqua */
+.css .hljs-hexcolor {
+    color: #0ab;
+}
+
+/* Pop Blue */
+.hljs-function,
+.python .hljs-decorator,
+.python .hljs-title,
+.ruby .hljs-function .hljs-title,
+.ruby .hljs-title .hljs-keyword,
+.perl .hljs-sub,
+.javascript .hljs-title,
+.coffeescript .hljs-title {
+    color: #0e5a94;
+}
+
+/* Pop Purple */
+.hljs-keyword,
+.javascript .hljs-function {
+    color: #b31e8d;
+}
+
+.coffeescript .javascript,
+.javascript .xml,
+.tex .hljs-formula,
+.xml .javascript,
+.xml .vbscript,
+.xml .css,
+.xml .hljs-cdata {
+    opacity: 0.5;
+}
+
+.hljs-emphasis {
+    font-style: italic;
+}
+
+.hljs-strong {
+    font-weight: bold;
+}

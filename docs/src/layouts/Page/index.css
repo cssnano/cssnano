@@ -1,0 +1,36 @@
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  width: 100%;
+  max-width: var(--maxWidth);
+  padding: 1rem 0;
+}
+
+.title {
+    font-weight: 400;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed var(--brandColor);
+}
+
+.body {
+  & a {
+    color: var(--brandColorComplement);
+    transition: all 0.2s;
+
+    &:hover {
+      opacity: 1;
+      color: color(var(--brandColorComplement) l(- 5%));
+    }
+  }
+
+  /* handy for content */
+  & img {
+    max-width: 100%;
+  }
+}

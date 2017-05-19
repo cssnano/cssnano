@@ -1,0 +1,38 @@
+.container {
+    flex-direction: row;
+}
+
+.article {
+    flex: 1 80%;
+    margin-right: 40px;
+}
+
+.sidebar {
+    flex: 1 20%;
+}
+
+.button {
+    text-decoration: none;
+}
+
+.next {
+    min-width: 300px;
+}
+
+.next p {
+    line-height: 1;
+    text-align: left;
+}
+
+.next p:first-child {
+    text-transform: lowercase;
+    font-variant: small-caps;
+    font-size: .8rem;
+    font-weight: bold;
+
+    &:after {
+        content: '➝';
+        text-transform: none;
+        margin-left: 5px;
+    }
+}

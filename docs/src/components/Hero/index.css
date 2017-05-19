@@ -1,0 +1,19 @@
+.hero {
+    background: #40b97b;
+    color: #ecf8f2;
+    padding: 5rem 0;
+    font-weight: bold;
+    text-align: center;
+
+    & p {
+        font-size: 1.5rem;
+        margin-top: 0;
+    }
+
+    & p:first-child {
+        color: #fff;
+        font-size: 3rem;
+        line-height: 1;
+        margin: 2rem 0;
+    }
+}

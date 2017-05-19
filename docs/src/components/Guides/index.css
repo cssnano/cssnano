@@ -1,0 +1,24 @@
+.guides {
+    list-style: none;
+    padding: 0;
+}
+
+.link {
+    display: block;
+    padding: 5px 0;
+    margin-bottom: 1em;
+    border-bottom: 1px dashed transparent;
+    transition: border-bottom .2s ease;
+    color: inherit;
+    text-decoration: none;
+}
+
+.link:hover {
+    border-bottom-color: var(--brandColor);
+    text-decoration: none;
+}
+
+.active {
+    border-bottom-color: var(--brandColor);
+    border-bottom-style: solid;
+}

@@ -1,0 +1,101 @@
+.table {
+    border-collapse: collapse;
+    width: 100%;
+    border: none;
+
+    & tbody tr {
+        border: none;
+        border-bottom: 1px solid color(var(--brandColor) l(80%));
+        background: color(var(--brandColor) l(99%));
+    }
+
+    & tbody tr:nth-child(odd) {
+        background: color(var(--brandColor) l(99%));
+    }
+
+    & td {
+        border: 0;
+        padding: 5px 0;
+        width: 50%;
+
+        &:first-child {
+            font-weight: bold;
+        }
+    }
+}
+
+.cta {
+    margin: 20px 0;
+}
+
+.install {
+    display: flex;
+    border: 1px solid #adebc2;
+    transition: 0.1s ease;
+    transition-property: border;
+    background: #fbfefc;
+
+    &:hover {
+        border-color: var(--brandColor);
+    }
+}
+
+.install a {
+    flex: 1;
+    font-size: 1em;
+    text-decoration: none;
+    padding: 10px;
+    color: #303030;
+    font-family: Menlo, Monaco, Consolas, monospace;
+    transition: 0.1s ease;
+    transition-property: border-right, background;
+    border-right: 1px solid #fbfefc;
+
+    &:hover {
+        background: #d6f5e0;
+        border-right: 1px solid var(--brandColor);
+    }
+}
+
+.install button {
+    border: none;
+    border-left: 1px solid #fbfefc;
+    flex: 0 100px;
+    cursor: pointer;
+    background: #fbfefc;
+    padding: 10px;
+    font-size: 1em;
+    font-variant: small-caps;
+    transition: 0.1s ease;
+    transition-property: border-left, background;
+
+    & svg {
+        vertical-align: middle;
+    }
+
+    &:hover {
+        background: #d6f5e0;
+        border-left: 1px solid var(--brandColor);
+    }
+}
+
+.technology {
+    background: #fff;
+    border: 1px solid var(--brandColor);
+    border-left: none;
+    border-right: none;
+    margin: 40px 0;
+}
+
+.postcss {
+    display: flex;
+
+    & p {
+        flex: 1 0;
+        margin-right: 20px;
+    }
+
+    & div {
+        flex: 0 0 80px;
+    }
+}
