@@ -5,6 +5,7 @@ import {StickyContainer, Sticky} from 'react-sticky';
 import "./index.global.css"
 import "./syntax.global.css"
 
+import Analytics from "./components/Analytics"
 import Container from "./components/Container"
 import DefaultHeadMeta from "./components/DefaultHeadMeta"
 import Header from "./components/Header"
@@ -26,6 +27,7 @@ export default class AppContainer extends React.Component {
     render () {
         const {props} = this;
         return (
+          <Analytics params={props.params}>
             <Container>
               <DefaultHeadMeta />
               <StickyContainer>
@@ -41,6 +43,7 @@ export default class AppContainer extends React.Component {
                 <Footer />
               </StickyContainer>
             </Container>
+          </Analytics>
         )
     }
 

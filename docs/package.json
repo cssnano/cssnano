@@ -119,6 +119,7 @@
     "react-clipboard-icon": "^0.4.0",
     "react-clipboard.js": "^1.1.1",
     "react-dom": "^15.0.0",
+    "react-google-analytics": "^0.2.0",
     "react-helmet": "^3.0.0",
     "react-hot-loader": "^3.0.0-beta",
     "react-midas": "^1.0.0",
@@ -135,5 +136,6 @@
     "warning": "^3.0.0",
     "webpack": "^2.3.0",
     "whatwg-fetch": "^0.11.0"
-  }
+  },
+  "googleAnalyticsUA": "UA-99764445-1"
 }
