@@ -2,6 +2,7 @@ import postcss from 'postcss';
 import valueParser, {stringify} from 'postcss-value-parser';
 import sort from 'alphanum-sort';
 import uniqs from 'uniqs';
+import getArguments from 'lerna:cssnano-util-get-arguments';
 
 /**
  * Return the greatest common divisor
@@ -18,24 +19,8 @@ function aspectRatio (a, b) {
     return [a / divisor, b / divisor];
 }
 
-function split (nodes, div) {
-    const result = [];
-    let i, max, node;
-    let last = '';
-
-    for (i = 0, max = nodes.length; i < max; i += 1) {
-        node = nodes[i];
-        if (node.type === 'div' && node.value === div) {
-            result.push(last);
-            last = '';
-        } else {
-            last += stringify(node);
-        }
-    }
-
-    result.push(last);
-
-    return result;
+function split (args) {
+    return args.map(arg => stringify(arg)).join('');
 }
 
 function removeNode (node) {
@@ -87,7 +72,7 @@ function transform (rule) {
         }
     }, true);
 
-    rule.params = sort(uniqs(split(params.nodes, ',')), {
+    rule.params = sort(uniqs(getArguments(params).map(split)), {
         insensitive: true,
     }).join();
 
