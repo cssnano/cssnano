@@ -1,7 +1,7 @@
 {
   "name": "cssnano-util-get-arguments",
   "version": "0.0.0",
-  "description": "",
+  "description": "Get a list of arguments, separated by a comma.",
   "main": "dist/index.js",
   "scripts": {
     "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
