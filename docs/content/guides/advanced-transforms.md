@@ -41,6 +41,27 @@ chooses to support.
 
 [browserslist]: https://github.com/ai/browserslist
 
+## Using advanced transforms
+
+Advanced transforms are not bundled with cssnano by default, so you'll need
+to install the preset alongside cssnano:
+
+```shell
+npm install cssnano-preset-advanced --save-dev
+```
+
+You can then load it using any of the techniques mentioned in
+[our presets guide](/guides/presets). For example, using `package.json`:
+
+```json
+{
+  "name": "awesome-application",
+  "cssnano": {
+    "preset": "advanced"
+  }
+}
+```
+
 ## Do you have an idea for an advanced transform?
 
 Did we miss an opportunity to compress your CSS further? You can learn about

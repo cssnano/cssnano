@@ -33,6 +33,10 @@ module.exports = {
 };
 ```
 
+_The preset name points to a resolvable node module, optionally with the
+`cssnano-preset-` prefix. So you can specify `cssnano-preset-default` here
+instead if you wish._
+
 If you need to pass any options to a preset, you must specify them using the
 array syntax instead. For example, you can remove all comments with the
 following configuration:
@@ -52,7 +56,7 @@ module.exports = {
 ```
 
 For other cases where the preset was not explicitly set, cssnano will look
-for a `cssnano.config.js` or a section in your `package.json`, from the current
+for a section in your `package.json` or a `cssnano.config.js`, from the current
 working directory upwards until it reaches your home directory. These two
 configuration examples function identically to the above:
 
