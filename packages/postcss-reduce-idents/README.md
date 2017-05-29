@@ -135,3 +135,5 @@ See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS
 MIT © [Ben Briggs](http://beneb.info)
 
 [idents]:  https://developer.mozilla.org/en-US/docs/Web/CSS/custom-ident
+
+[postcss]: https://github.com/postcss/postcss

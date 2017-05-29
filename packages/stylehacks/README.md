@@ -1,4 +1,4 @@
-# stylehacks [![Build Status](https://travis-ci.org/ben-eb/stylehacks.svg?branch=master)][ci] [![NPM version](https://badge.fury.io/js/stylehacks.svg)][npm] [![Dependency Status](https://gemnasium.com/ben-eb/stylehacks.svg)][deps]
+# stylehacks
 
 > Detect/remove browser hacks from CSS files.
 
@@ -91,8 +91,4 @@ to cover it.
 MIT © [Ben Briggs](http://beneb.info)
 
 
-[ci]:        https://travis-ci.org/ben-eb/stylehacks
-[deps]:      https://gemnasium.com/ben-eb/stylehacks
-[npm]:       http://badge.fury.io/js/stylehacks
-[postcss]:   https://github.com/postcss/postcss
 [stylelint]: https://github.com/stylelint/stylelint
