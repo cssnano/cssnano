@@ -71,6 +71,28 @@ test('should accept a preset string other than default (sugar syntax)', t => {
     });
 });
 
+test('should be able to exclude plugins', t => {
+    const preset = [
+        'advanced',
+        {zindex: false},
+    ];
+
+    return cssnano.process(`h1{z-index:10}`, {}, {preset}).then(result => {
+        t.is(result.css, `h1{z-index:10}`);
+    });
+});
+
+test('should be able to exclude plugins (exclude syntax)', t => {
+    const preset = [
+        'advanced',
+        {zindex: {startIndex: 15, exclude: true}},
+    ];
+
+    return cssnano.process(`h1{z-index:10}`, {}, {preset}).then(result => {
+        t.is(result.css, `h1{z-index:10}`);
+    });
+});
+
 test('should error on a bad preset', t => {
     t.throws(cssnano.process('h1{}', {}, {preset: 'avanced'}).then(() => {}), Error);
 });
