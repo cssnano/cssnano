@@ -131,3 +131,12 @@ table {
         background: color(var(--brandColorComplement) l(98%));
     }
 }
+
+/*
+ * Ensure that the underline for the contributors table
+ * is not squashed in Firefox.
+ */
+
+sub {
+    vertical-align: inherit;
+}
