@@ -3,7 +3,7 @@ import postcss from 'postcss';
 import fontMagician from 'postcss-font-magician';
 import cssnano from '..';
 
-test.skip('should work with postcss-font-magician', t => {
+test('should work with postcss-font-magician', t => {
     const css = `
     body {
     	font-family: "Alice";

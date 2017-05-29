@@ -30,7 +30,7 @@
     "babel-loader": "^6.0.0",
     "json-loader": "^0.5.4",
     "ncp": "^2.0.0",
-    "postcss-font-magician": "^1.0.0",
+    "postcss-font-magician": "^2.0.0",
     "webpack": "^1.0.0",
     "webpack-bundle-size-analyzer": "^2.0.0",
     "cross-env": "^3.0.0",

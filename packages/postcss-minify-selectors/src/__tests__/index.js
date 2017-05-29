@@ -418,7 +418,7 @@ test(
     'body>h2:not(:first-of-type):not(:last-of-type){color:blue}'
 );
 
-test.skip('cssnano issue 39', t => {
+test('cssnano issue 39', t => {
     const css = 'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
     t.notThrows(() => postcss([ magician(), plugin() ]).process(css).css);
 });
