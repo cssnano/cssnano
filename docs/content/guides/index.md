@@ -4,6 +4,7 @@ layout: Guide
 order: 1
 ---
 
+
 ## What is minification?
 
 Minification is the process of taking some code and using various methods to
@@ -20,6 +21,7 @@ Combining gzip compression with minification leads to the best reduction in
 file size; but don't just take our word for it. Why not try out [css-size], a
 module especially created to measure CSS size before & after minification.
 
+
 ## What is cssnano?
 
 cssnano is one such minifier, which is written in [Node.js]. It's a [PostCSS]
@@ -28,6 +30,7 @@ stylesheet is as small as possible for a production environment.
 
 If you don't know what a build process is, don't worry as we cover this in
 [our getting started guide](/guides/getting-started).
+
 
 ## How does it benefit me?
 

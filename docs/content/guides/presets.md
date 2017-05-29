@@ -104,6 +104,7 @@ we also offer an advanced preset which performs more aggressive transformations.
 You can read more about this in
 [our advanced transformations guide][guideadvancedtransforms].
 
+
 ## Options syntax
 
 The options follow a simple pattern - the optional `postcss-` prefix is removed
@@ -125,6 +126,7 @@ module.exports = {
     ],
 };
 ```
+
 
 ## Excluding transforms
 

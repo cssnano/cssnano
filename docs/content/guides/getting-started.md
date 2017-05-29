@@ -4,6 +4,7 @@ layout: Guide
 order: 2
 ---
 
+
 ## What is a build process?
 
 A build process is a sequence of tasks, usually automated, that you run each
@@ -16,6 +17,7 @@ There are a number of different ways that you can compose a build process; we
 recommend using the command line, but you might also want to consider an
 abstraction such as [gulp](http://gulpjs.com/), especially for more complex
 systems.
+
 
 ## Installing Node.js & npm
 
@@ -42,6 +44,7 @@ Note that for most typical setups, we recommend that you compress your CSS
 during your deployment step, so that when it is uploaded to your server/CDN
 it is already optimized. In most cases, you should not need to install cssnano
 on your web server.
+
 
 ## Using PostCSS CLI
 
@@ -87,6 +90,7 @@ You should then see an `output.css` with the same styles but compressed!
 Note that you can also find a [basic example][example] in our GitHub repository.
 
 [example]: https://github.com/ben-eb/cssnano/tree/master/packages/example-cli-usage
+
 
 ## Alternatives to using the CLI
 

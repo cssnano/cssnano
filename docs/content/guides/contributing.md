@@ -6,18 +6,20 @@ order: 6
 
 <!-- This file was automatically generated. -->
 
-
 Thanks for contributing to cssnano! We appreciate any contributions,
 large or small. If you've contributed to cssnano we would recommend that
 you add yourself to the list of contributors, found in [CONTRIBUTORS.md].
 
 To do this, after you've set up the development environment, run:
 
-    all-contributors add
+```
+all-contributors add
+```
 
 And follow the on-screen prompts.
 
 [contributors.md]: https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md
+
 
 ## How can I contribute to cssnano's code?
 
@@ -26,13 +28,17 @@ monorepo. This is because a lot of transforms overlap with each other; it's
 easier to test them together. Other than this, you'll need Node.js, npm &
 git installed. Then, you can run these commands to get the repository set up:
 
-    git clone git@github.com:ben-eb/cssnano.git
-    cd cssnano
-    npm install
+```
+git clone git@github.com:ben-eb/cssnano.git
+cd cssnano
+npm install
+```
 
 You can run the tests with:
 
-    npm test
+```
+npm test
+```
 
 We recommend that you look in the issue tracker to find anything tagged
 [help wanted][help wanted]; that's the first port of call for getting stuck
@@ -52,6 +58,7 @@ by running `npm start`.
 
 Note that some of the documentation is automatically generated and should not
 be edited by hand.
+
 
 ## Are there other ways of contributing?
 
@@ -98,16 +105,16 @@ We have an [online chat][chat] where you can ask questions or discuss features;
 help us by joining the chat, and answer any questions that the community may
 have. Feel free to ask any questions of your own!
 
+
 ## How you can support us
 
 If you don't have time to contribute to the project directly, you can also
 help us out by starring the repository, or [follow us on Twitter][twitter].
 Word of mouth really does mean a lot to us!
 
-You can also help support us financially by purchasing stickers from our
-[sticker shop][shop].
+You can also [help support us financially](/support-us/).
 
-[chat]: https://gitter.im/ben-eb/cssnano
+[chat]: https://gitter.im/postcss/postcss
 
 [documentation]: https://github.com/ben-eb/cssnano/labels/documentation
 
