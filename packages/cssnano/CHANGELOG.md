@@ -1,3 +1,74 @@
+# Head
+
+## Breaking changes
+
+* cssnano & its plugins have been upgraded to PostCSS 6.x. Please ensure that
+  for optimal results that you use cssnano with a PostCSS 6 compatible runner
+  & that any other plugins are also using PostCSS 6.
+* cssnano is now essentially a preset loader and does not contain any built-in
+  transforms (instead, it delegates to `cssnano-preset-default` by default).
+  Due to the new architecture, it's not possible to exclude asynchronous
+  transforms and run it synchronously, unlike in 3.x. Any transforms that
+  were "core" modules have now been extracted out into separate packages.
+* Because of the new preset system, cssnano will not accept any transformation
+  options; these must be set in the preset. The option names remain mostly the
+  same, except some cases where "core" modules have been extracted out:
+  
+  * `core` is now `normalizeWhitespace`.
+  * `reduceBackgroundRepeat` is now `normalizeRepeatStyle`.
+  * `reduceDisplayValues` is now `normalizeDisplayValues`.
+  * `reducePositions` is now `normalizePositions`.
+  * `reduceTimingFunctions` is now `normalizeTimingFunctions`.
+  * `styleCache` is now `rawCache`.
+  
+  When excluding transforms, we now have an `exclude` option (in 3.x this was
+  named `disable`). Similarly, the `safe` option was removed; the defaults
+  are now much less aggressive.
+* By default, the following transforms are no longer applied to any input CSS.
+  You may see an increased output file size as a result:
+  
+  * `autoprefixer`
+  * `postcss-discard-unused`
+  * `postcss-merge-idents`
+  * `postcss-reduce-idents`
+  * `postcss-zindex`
+
+  Note that you can load `cssnano-preset-advanced` instead which *does* contain
+  these transforms.
+* We no longer detect previous plugins to silently exclude our own, and now
+  consider this to be an anti-pattern. So `postcss-filter-plugins` was removed.
+* We also changed some options to make the default transforms safer:
+
+  * `postcss-minify-font-values`: `removeAfterKeyword` set to `false` from `true`.
+  * `postcss-normalize-url`: `stripWWW` set to `false` from `true`.
+
+* cssnano now does not accept the `sourcemap` shortcut option; please refer
+  to the PostCSS documentation on sourcemaps. The `quickstart.js` file included
+  with this module will give you a good starting point.
+* `cssnano.process` is no longer a custom method; we use the built-in `process`
+  method exposed on each PostCSS plugin. The new signature is
+  `cssnano.process(css, postcssOpts, cssnanoOpts)`, in 3.x it was
+  `cssnano.process(css, cssnanoOpts)`.
+* We dropped support for Node 0.12, now requiring at least Node 4.
+* Finally, cssnano is now developed as a monorepo, due to the fact that some
+  transforms have a lot of grey area/overlap. Due to this, some modules have
+  been refactored to delegate responsibility to others, such that duplication
+  of functionality is minimized. For instance, `postcss-colormin` will no
+  longer compress whitespace or compress numbers, as those are handled by
+  `postcss-normalize-whitespace` & `postcss-convert-values` respectively.
+
+## Other changes
+
+* Due to the PostCSS 6 upgrade, we have been able to reduce usage of custom
+  methods, such as node `clone` behaviour. In cases where some utility
+  has been used by several plugins it is now a separate package, reducing
+  cssnano's footprint.
+* cssnano now makes much better use of Browserslist. `postcss-colormin` &
+  `postcss-reduce-initial` were enhanced with different behaviour depending
+  on which browsers are passed. And now, the footprint for the `caniuse-db`
+  dependency is much smaller thanks to `caniuse-lite` - 7 times smaller as
+  of this writing. This makes cssnano much faster to download from npm!
+
 # 3.10.0
 
 * cssnano will no longer `console.warn` any messages when using deprecated

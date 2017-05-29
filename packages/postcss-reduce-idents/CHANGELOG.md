@@ -1,3 +1,12 @@
+# Head
+
+* Breaking: Drops support for Node 0.12, we now require at least Node 4.
+* Breaking: Update PostCSS to 6.0.0.
+* Removed support for compressing whitespace, this is now delegated to
+  postcss-normalize-whitespace.
+* Fixed: The module cache is now kept around, to prevent naming collisions
+  when working with multiple files.
+
 # 2.4.0
 
 * Adds support for reducing `grid` identifiers

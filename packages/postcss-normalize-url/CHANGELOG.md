@@ -1,3 +1,9 @@
+# Head
+
+* Breaking: Drops support for Node 0.12, we now require at least Node 4.
+* Breaking: Update PostCSS to 6.0.0.
+* Breaking: `stripWWW` is now set to `false` by default.
+
 # 3.0.8
 
 * Fixes `@namespace` URL conversion; now the semantics of the URL are preserved

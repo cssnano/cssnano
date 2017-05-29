@@ -1,3 +1,12 @@
+# Head
+
+* Breaking: Drops support for Node 0.12, we now require at least Node 4.
+* Breaking: Update PostCSS to 6.0.0.
+* Removed support for compressing whitespace, this is now delegated to
+  postcss-normalize-whitespace.
+* Fixed a RangeError that would occur occasionally with multiple instances of
+  the same set of rules.
+
 # 2.1.7
 
 * Replaced the `has-own` module with `has`.

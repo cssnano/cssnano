@@ -1,6 +1,17 @@
 # Head
 
-* Update Browserslist to 2.0.0.
+* Breaking: Drops support for Node 0.12, we now require at least Node 4.
+* Breaking: Drops the `legacy` option which was used to provide support for
+  legacy IE versions. It has been superseded by using Browserslist to supply
+  a list of browsers; we recommend using the config file as the same values will
+  be propagated to other cssnano plugins which have the same functionality.
+  See https://github.com/ai/browserslist#config-file for more details.
+* Breaking: Update PostCSS to 6.0.0.
+* postcss-colormin will now no longer handle integer or whitespace compression;
+  it's now delegated to postcss-normalize-whitespace & postcss-convert-values.
+  We re-integrated colormin back into this module so that it would be clearer
+  what postcss-colormin's responsibilities are; which are to facilitate
+  conversion between identical colors.
 
 # 2.2.2
 

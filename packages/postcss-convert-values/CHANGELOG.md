@@ -1,3 +1,9 @@
+# Head
+
+* Breaking: Drops support for Node 0.12, we now require at least Node 4.
+* Breaking: Update PostCSS to 6.0.0.
+* Breaking: Removes the deprecated options from version 2.2.0.
+
 # 2.6.1
 
 * Resolves an issue where IE hacks were being removed from `0` values

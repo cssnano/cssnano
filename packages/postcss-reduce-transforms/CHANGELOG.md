@@ -1,3 +1,8 @@
+# Head
+
+* Breaking: Drops support for Node 0.12, we now require at least Node 4.
+* Breaking: Update PostCSS to 6.0.0.
+
 # 1.0.4
 
 * Refactor the main module, slight performance tweak and ±0.9K less file size

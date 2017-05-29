@@ -1,3 +1,12 @@
+# Head
+
+* Breaking: Drops support for Node 0.12, we now require at least Node 4.
+* Breaking: Update PostCSS to 6.0.0.
+* Breaking: `removeAfterKeyword` is now set to `false` by default. This is to
+  avoid incorrectly discarding emoji font families.
+* Removed support for compressing whitespace, this is now delegated to
+  postcss-normalize-whitespace.
+
 # 1.0.5
 
 * Resolves an issue where `var` would be removed from `font-family`

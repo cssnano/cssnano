@@ -1,3 +1,11 @@
+# Head
+
+* Breaking: Drops support for Node 0.12, we now require at least Node 4.
+* Breaking: Update PostCSS to 6.0.0.
+* Better handling of color stop positions in radial gradients, the module now
+  correctly accounts for the first set of parameters potentially being
+  directional and not stop values.
+
 # 1.0.5
 
 * Resolves a crash on empty `linear-gradient()` functions.

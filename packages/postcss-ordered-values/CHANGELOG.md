@@ -1,3 +1,8 @@
+# Head
+
+* Breaking: Drops support for Node 0.12, we now require at least Node 4.
+* Breaking: Update PostCSS to 6.0.0.
+
 # 2.2.3
 
 * Resolves an integration issue with css-loader; now this module will ignore

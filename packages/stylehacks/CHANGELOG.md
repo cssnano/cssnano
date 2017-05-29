@@ -1,6 +1,18 @@
 # Head
 
-* Update Browserslist to 2.0.0.
+* Breaking: Drops support for Node 0.12, we now require at least Node 4.
+* Breaking: Update PostCSS to 6.0.0.
+* Breaking: Removes the browsers option, as it has been superseded by using
+  Browserslist to supply a list of browsers; we recommend using the config file
+  as the same values will be propagated to other cssnano plugins which have the
+  same functionality. See https://github.com/ai/browserslist#config-file
+  for more details.
+* Breaking: Removes the `silent` option & logger; now stylehacks will add the
+  warnings to `Result#messages`. If you would like logging this can be handled
+  in your PostCSS runner.
+* Breaking: Removes the CLI from stylehacks. We recommend using a PostCSS
+  runner instead as it's easier to add stylehacks into an existing setup rather
+  than using a separate command.
 
 # 2.3.2
 
