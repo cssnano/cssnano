@@ -78,9 +78,9 @@ And the `cssnano.config.js`:
 const defaultPreset = require('cssnano-preset-default');
 
 module.exports = defaultPreset({
-  discardComments: {
-    removeAll: true,
-  },
+    discardComments: {
+        removeAll: true,
+    },
 });
 ```
 
@@ -117,10 +117,45 @@ module.exports = {
             preset: ['default', {
                 svgo: {
                     plugins: [{
-                        removeDoctype: false
-                    }]
-                }
-            }]
+                        removeDoctype: false,
+                    }],
+                },
+            }],
+        }),
+    ],
+};
+```
+
+## Excluding transforms
+
+You may wish to exclude a transform from the list if it isn't required for your
+build; there are two possible ways to do this. The first is to set the option
+key to `false`:
+
+```js
+module.exports = {
+    plugins: [
+        require('cssnano')({
+            preset: ['default', {
+                svgo: false,
+            }],
+        }),
+    ],
+};
+```
+
+Alternately, if you have already supplied options and would prefer to exclude
+a transform temporarily, you may set the `exclude` option:
+
+```js
+module.exports = {
+    plugins: [
+        require('cssnano')({
+            preset: ['default', {
+                svgo: {
+                    exclude: true,
+                },
+            }],
         }),
     ],
 };
