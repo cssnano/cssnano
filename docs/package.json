@@ -9,7 +9,7 @@
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint": "npm-run-all --parallel lint:*",
     "start": "phenomic start",
-    "build": "phenomic build",
+    "build": "babel-node scripts/handleMarkdown && phenomic build",
     "pretest": "npm run lint",
     "test": "npm run build"
   },
