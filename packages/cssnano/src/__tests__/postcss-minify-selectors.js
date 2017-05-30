@@ -155,20 +155,6 @@ test(
     'a[class="woop woop woop"]{color:#00f}',
 );
 
-test.skip(
-    'should convert @keyframe from & 100%',
-    processCss,
-    '@keyframes test{from{color:red}100%{color:#00f}}a{animation:test}',
-    '@keyframes a{0%{color:red}to{color:#00f}}a{animation:a}',
-);
-
-test.skip(
-    'should not mangle @keyframe from & 100% in other values',
-    processCss,
-    '@keyframes test{x-from-tag{color:red}5100%{color:#00f}}a{animation:test}',
-    '@keyframes a{x-from-tag{color:red}5100%{color:#00f}}a{animation:a}',
-);
-
 test(
     'should not be responsible for normalising comments',
     processCss,
@@ -202,20 +188,4 @@ test(
     processCss,
     '[a=":not( *.b, h1, h1 )"]{color:#00f}',
     '[a=":not( *.b, h1, h1 )"]{color:#00f}',
-);
-
-test.skip(
-    'should not change strings (4)',
-    processCss,
-    '[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:#00f}',
-    '[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:#00f}',
-    {normalizeString: false},
-);
-
-test.skip(
-    'should not change strings (5)',
-    processCss,
-    "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:#00f}",
-    "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:#00f}",
-    {normalizeString: false},
 );

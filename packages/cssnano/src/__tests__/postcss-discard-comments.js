@@ -113,26 +113,6 @@ test(
     '/*!test comment*/h1{font-weight:700}/*!test comment*/',
 );
 
-test.skip(
-    'should remove all important comments, with a flag',
-    processCss,
-    '/*!license*/h1{font-weight:700}/*!license 2*/h2{color:#000}',
-    'h1{font-weight:700}h2{color:#000}',
-    {
-        discardComments: {removeAll: true},
-    },
-);
-
-test.skip(
-    'should remove all important comments but the first, with a flag',
-    processCss,
-    '/*!license*/h1{font-weight:700}/*!license 2*/h2{color:#000}',
-    '/*!license*/h1{font-weight:700}h2{color:#000}',
-    {
-        discardComments: {removeAllButFirst: true},
-    },
-);
-
 test(
     'should pass through when it doesn\'t find a comment',
     processCss,

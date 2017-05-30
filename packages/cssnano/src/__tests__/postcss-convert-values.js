@@ -29,30 +29,6 @@ test(
     'h1{width:14px}',
 );
 
-test.skip(
-    'should convert px to pc',
-    processCss,
-    'h1{width:16px}',
-    'h1{width:1pc}',
-   {convertValues:{length: true}},
-);
-
-test.skip(
-    'should convert px to pt',
-    processCss,
-    'h1{width:120px}',
-    'h1{width:90pt}',
-   {convertValues:{length: true}},
-);
-
-test.skip(
-    'should convert px to in',
-    processCss,
-    'h1{width:192px}',
-    'h1{width:2in}',
-   {convertValues:{length: true}},
-);
-
 test(
     'should strip the units from length properties',
     processCss,
@@ -86,14 +62,6 @@ test(
     processCss,
     'h1{z-index:1}',
     'h1{z-index:1}',
-);
-
-test.skip(
-    'should operate in calc values',
-    processCss,
-    'h1{width:calc(192px + 2em)}',
-    'h1{width:calc(2in + 2em)}',
-   {convertValues:{length: true}},
 );
 
 test(
