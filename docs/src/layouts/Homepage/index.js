@@ -53,6 +53,9 @@ const Homepage = (props) => {
             </Button>
         </Hero>
         <CoverPage { ...props }>
+            <p><strong>This documentation is for the upcoming version 4 release,
+            which can be installed with <code>npm install cssnano@next</code>.
+            Please test it out and report any bugs that you may find!</strong></p>
             <h2>What it does</h2>
             <p>cssnano takes your nicely formatted CSS and runs it through
             many focused optimisations, to ensure that the final result is

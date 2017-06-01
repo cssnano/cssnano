@@ -1,3 +1,7 @@
+# 4.0.0-rc.0
+
+* Upgrade cssnano to 4.0.0-rc.0.
+
 # 2.0.0
 
 * (Breaking) Now only supports Node versions 4 and above.

@@ -1,4 +1,4 @@
-# Head
+# 4.0.0-rc.0
 
 * Breaking: Drops support for Node 0.12, we now require at least Node 4.
 * Breaking: Drops the `legacy` option which was used to provide support for

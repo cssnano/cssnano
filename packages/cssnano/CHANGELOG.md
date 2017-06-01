@@ -1,4 +1,8 @@
-# Head
+# 4.0.0-rc.0
+
+Since version 4 has been in-development for some time, we thought it would be
+best to release an alpha version so that we could catch any issues before
+the actual release.
 
 ## Breaking changes
 
