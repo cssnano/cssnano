@@ -4,7 +4,6 @@ layout: Guide
 order: 3
 ---
 
-
 ## What are optimisations?
 
 An optimisation is a module that performs a transform on some CSS code in order
@@ -16,7 +15,6 @@ Due to the nature of dividing cssnano's responsibilities across several modules,
 there will be some cases where using a transform standalone will not produce
 the most optimal output. For example, postcss-colormin will not trim whitespace
 inside color functions as this is handled by postcss-normalize-whitespace.
-
 
 ## What optimisations do you support?
 

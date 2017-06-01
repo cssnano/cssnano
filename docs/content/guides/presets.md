@@ -7,13 +7,13 @@ order: 4
 
 ## What are presets?
 
-Presets are a way of loading cssnano with different features, depending on
-your use case, and they were introduced in version 4. Now, instead of having
-to opt-out of advanced transformations, you can choose to opt-in instead. Prior
-to the introduction of presets, code to perform advanced transformations was
-downloaded from npm whether or not it was used. Presets ensure that this is no
-longer the case, and also afford the ability to save configuration for cssnano
-to re-use across multiple contexts.
+Starting with version 4, presets are a way of loading cssnano with different
+features, depending on your use case. Now, instead of having to opt-out of
+advanced transformations, you can choose to opt-in instead. Prior to the
+introduction of presets, code to perform advanced transformations was downloaded
+from npm whether or not it was used. Presets ensure that this is no longer the
+case, and also afford the ability to save configuration for cssnano to re-use
+across multiple contexts.
 
 
 ## How do presets work?
