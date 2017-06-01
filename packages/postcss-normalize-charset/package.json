@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-charset",
-  "version": "1.1.1",
+  "version": "4.0.0-rc.0",
   "description": "Add necessary or remove extra charset with PostCSS",
   "keywords": [
     "postcss",
@@ -23,8 +23,8 @@
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "postcss-devtools": "^1.0.0",
-    "cross-env": "^3.0.0"
+    "cross-env": "^3.0.0",
+    "postcss-devtools": "^1.0.0"
   },
   "main": "dist/index.js",
   "scripts": {

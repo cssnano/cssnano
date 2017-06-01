@@ -1,6 +1,6 @@
 {
   "name": "postcss-reduce-initial",
-  "version": "1.0.1",
+  "version": "4.0.0-rc.0",
   "description": "Reduce initial definitions to the actual initial value, where possible.",
   "main": "dist/index.js",
   "files": [
@@ -20,11 +20,11 @@
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.0.0",
+    "cross-env": "^3.0.0",
     "got": "^6.0.0",
     "html2plaintext": "^1.0.0",
     "is-html": "^1.0.0",
-    "write-file": "^1.0.0",
-    "cross-env": "^3.0.0"
+    "write-file": "^1.0.0"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "author": {

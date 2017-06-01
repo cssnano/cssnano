@@ -1,6 +1,6 @@
 {
   "name": "postcss-discard-duplicates",
-  "version": "2.1.0",
+  "version": "4.0.0-rc.0",
   "description": "Discard duplicate rules in your CSS files with PostCSS.",
   "main": "dist/index.js",
   "files": [

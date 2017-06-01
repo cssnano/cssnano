@@ -1,6 +1,6 @@
 {
   "name": "postcss-discard-comments",
-  "version": "2.0.4",
+  "version": "4.0.0-rc.0",
   "description": "Discard comments in your CSS files with PostCSS.",
   "main": "dist/index.js",
   "files": [
@@ -19,9 +19,9 @@
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.0.0",
+    "cross-env": "^3.0.0",
     "postcss-scss": "^0.3.0",
-    "postcss-simple-vars": "^3.0.0",
-    "cross-env": "^3.0.0"
+    "postcss-simple-vars": "^3.0.0"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "author": {

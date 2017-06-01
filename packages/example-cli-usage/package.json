@@ -2,7 +2,7 @@
   "name": "example-cli-usage",
   "private": true,
   "dependencies": {
-    "cssnano": "^3.0.0",
+    "cssnano": "^4.0.0-rc.0",
     "postcss-cli": "^4.0.0"
   },
   "scripts": {
@@ -21,5 +21,6 @@
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
-  }
+  },
+  "version": "4.0.0-rc.0"
 }

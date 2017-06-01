@@ -1,6 +1,6 @@
 {
   "name": "postcss-ordered-values",
-  "version": "2.2.3",
+  "version": "4.0.0-rc.0",
   "description": "Ensure values are ordered consistently in your CSS.",
   "main": "dist/index.js",
   "files": [
@@ -28,7 +28,7 @@
   },
   "repository": "ben-eb/cssnano",
   "dependencies": {
-    "cssnano-util-get-arguments": "0.0.0",
+    "cssnano-util-get-arguments": "^4.0.0-rc.0",
     "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0"
   },

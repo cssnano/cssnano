@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-unicode",
-  "version": "0.0.0",
+  "version": "4.0.0-rc.0",
   "description": "Normalize unicode-range descriptors, and can convert to wildcard ranges.",
   "main": "dist/index.js",
   "files": [
