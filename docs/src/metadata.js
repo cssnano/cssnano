@@ -1,11 +1,12 @@
-import {phenomic} from '../package.json';
+import {phenomic, googleAnalyticsUA} from '../package.json';
 import cssnano from '../../packages/cssnano/package.json';
 import meta from '../../metadata.toml';
 
 const pkg = {
     ...cssnano,
     twitter: 'cssnano_',
-    phenomic
+    phenomic,
+    googleAnalyticsUA,
 };
 
 export default {
