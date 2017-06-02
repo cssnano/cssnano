@@ -107,7 +107,7 @@ Word of mouth really does mean a lot to us!
 You can also help support us financially by purchasing stickers from our
 [sticker shop][shop].
 
-[chat]: https://gitter.im/ben-eb/cssnano
+[chat]: https://gitter.im/postcss/postcss
 
 [documentation]: https://github.com/ben-eb/cssnano/labels/documentation
 

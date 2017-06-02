@@ -113,7 +113,7 @@ You can also help support us financially by purchasing stickers from our
 [sticker shop][shop].
 
 
-[chat]: https://gitter.im/ben-eb/cssnano
+[chat]: https://gitter.im/postcss/postcss
 [documentation]: https://github.com/ben-eb/cssnano/labels/documentation
 [help wanted]: https://github.com/ben-eb/cssnano/labels/help%20wanted
 [question]: https://github.com/ben-eb/cssnano/labels/question
