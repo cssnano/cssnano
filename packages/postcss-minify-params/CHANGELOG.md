@@ -1,3 +1,7 @@
+# Head
+
+* Resolves an issue with mangling css-modules' `@value` at-rule.
+
 # 4.0.0-rc.0
 
 * Breaking: Drops support for Node 0.12, we now require at least Node 4.
