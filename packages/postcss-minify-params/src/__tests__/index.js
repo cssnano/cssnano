@@ -92,6 +92,12 @@ test(
 );
 
 test(
+    'should not mangle @value',
+    passthroughCSS,
+    `@value vertical, center from './Flex.mod.css';`
+);
+
+test(
     'should use the postcss plugin api',
     usePostCSSPlugin,
     plugin()

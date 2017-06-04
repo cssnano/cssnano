@@ -29,7 +29,11 @@ function removeNode (node) {
 }
 
 function transform (rule) {
-    if (!rule.params) {
+    // We should not re-arrange parameters for css-modules' @value
+    // at-rule. For example:
+    //
+    // @value vertical, center from "./foo.css";
+    if (!rule.params || rule.name === 'value') {
         return;
     }
 
