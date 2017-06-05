@@ -104,8 +104,7 @@ If you don't have time to contribute to the project directly, you can also
 help us out by starring the repository, or [follow us on Twitter][twitter].
 Word of mouth really does mean a lot to us!
 
-You can also help support us financially by purchasing stickers from our
-[sticker shop][shop].
+You can also [help support us financially](/support-us/).
 
 [chat]: https://gitter.im/postcss/postcss
 
@@ -114,7 +113,5 @@ You can also help support us financially by purchasing stickers from our
 [help wanted]: https://github.com/ben-eb/cssnano/labels/help%20wanted
 
 [question]: https://github.com/ben-eb/cssnano/labels/question
-
-[shop]: https://www.stickermule.com/uk/marketplace/11086-cssnano
 
 [twitter]: https://twitter.com/cssnano_
