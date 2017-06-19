@@ -41,15 +41,14 @@ function fromFile (css, result) {
 }
 
 /*
- * config.preset can be one of four possibilities:
- * config.preset = 'default'
- * config.preset = ['default', {}]
- * config.preset = function <- to be invoked
- * config.preset = {plugins: []} <- already invoked function
+ * preset can be one of four possibilities:
+ * preset = 'default'
+ * preset = ['default', {}]
+ * preset = function <- to be invoked
+ * preset = {plugins: []} <- already invoked function
  */
 
-function resolvePreset (config) {
-    const {preset} = config;
+function resolvePreset (preset) {
     let fn, options;
     if (Array.isArray(preset)) {
         fn = preset[0];
@@ -91,13 +90,13 @@ function resolvePreset (config) {
 
 function resolveConfig (css, result, options) {
     if (options.preset) {
-        return resolvePreset(options);
+        return resolvePreset(options.preset);
     }
     return explorer.load(fromFile(css, result)).then(config => {
         if (config === null) {
-            return resolvePreset({preset: 'default'});
+            return resolvePreset('default');
         }
-        return resolvePreset(config);
+        return resolvePreset(config.config);
     });
 }
 
