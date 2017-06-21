@@ -1,3 +1,12 @@
+# 4.0.0-rc.1
+
+## Bug Fixes
+
+* cssnano: Resolved an issue with external configuration which wasn't
+  being loaded correctly (thanks to @andyjansson).
+* postcss-minify-params: Resolved an issue with cssnano's handling of the
+  `@value` syntax from css-modules to better integrate with css-loader.
+
 # 4.0.0-rc.0
 
 Since version 4 has been in-development for some time, we thought it would be
