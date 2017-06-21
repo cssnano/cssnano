@@ -1,5 +1,12 @@
 {
   "lerna": "2.0.0-rc.5",
+  "commands": {
+    "publish": {
+      "ignore": [
+        "package-lock.json"
+      ]
+    }
+  },
   "packages": [
     "packages/*"
   ],
