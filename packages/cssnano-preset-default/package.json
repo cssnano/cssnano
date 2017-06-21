@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-default",
-  "version": "4.0.0-rc.0",
+  "version": "4.0.0-rc.1",
   "main": "dist/index.js",
   "description": "Safe defaults for cssnano which require minimal configuration.",
   "scripts": {
@@ -25,7 +25,7 @@
     "postcss-merge-rules": "^4.0.0-rc.0",
     "postcss-minify-font-values": "^4.0.0-rc.0",
     "postcss-minify-gradients": "^4.0.0-rc.0",
-    "postcss-minify-params": "^4.0.0-rc.0",
+    "postcss-minify-params": "^4.0.0-rc.1",
     "postcss-minify-selectors": "^4.0.0-rc.0",
     "postcss-normalize-charset": "^4.0.0-rc.0",
     "postcss-normalize-display-values": "^4.0.0-rc.0",
