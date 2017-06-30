@@ -96,7 +96,7 @@ function resolveConfig (css, result, options) {
         if (config === null) {
             return resolvePreset('default');
         }
-        return resolvePreset(config.config);
+        return resolvePreset(config.config.preset || config.config);
     });
 }
 
