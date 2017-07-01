@@ -31,7 +31,7 @@ function initializePlugin (plugin, css, result) {
 }
 
 function fromFile (css, result) {
-    const filePath = css.source.input && css.source.input.file || process.cwd();
+    const filePath = css.source && css.source.input && css.source.input.file || process.cwd();
     result.messages.push({
         type: 'debug',
         plugin: cssnano,
