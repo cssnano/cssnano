@@ -6,7 +6,7 @@
     "fixlint": "eslint --fix --ignore-path .gitignore packages/**/src util",
     "report": "nyc report --reporter=html",
     "postinstall": "lerna bootstrap",
-    "pretest": "eslint --ignore-path .gitignore packages/**/src util",
+    "posttest": "eslint --ignore-path .gitignore packages/**/src util",
     "test": "cross-env BABEL_ENV=test nyc ava"
   },
   "engines": {
