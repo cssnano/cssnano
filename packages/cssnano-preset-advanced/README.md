@@ -13,6 +13,7 @@
 -   [Plugins](#plugins)
 
     -   [autoprefixer (external)](#autoprefixer-external)
+    -   [css-declaration-sorter (external)](#css-declaration-sorter-external)
     -   [cssnano-util-raw-cache](#cssnano-util-raw-cache)
     -   [postcss-calc (external)](#postcss-calc-external)
     -   [postcss-colormin](#postcss-colormin)
@@ -116,6 +117,12 @@ This plugin is loaded with the following configuration:
 	add: false
 }
 ```
+
+### [`css-declaration-sorter`](https://github.com/Siilwyn/css-declaration-sorter/) (external)
+
+> PostCSS plugin to sort CSS declarations to decrease gzipped CSS size.
+
+This plugin is loaded with its default configuration.
 
 ### [`cssnano-util-raw-cache`](https://github.com/ben-eb/cssnano/tree/master/packages/cssnano-util-raw-cache)
 
@@ -330,4 +337,3 @@ See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
-
