@@ -7,7 +7,8 @@
     "report": "nyc report --reporter=html",
     "postinstall": "lerna bootstrap",
     "pretest": "eslint --ignore-path .gitignore packages/**/src util",
-    "test": "cross-env BABEL_ENV=test nyc ava"
+    "test": "cross-env BABEL_ENV=test nyc ava",
+    "ci": "nyc report --reporter=text-lcov | coveralls"
   },
   "engines": {
     "node": ">=4"

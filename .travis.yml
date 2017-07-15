@@ -2,10 +2,11 @@ sudo: false
 
 language: node_js
 node_js:
-  - "7"
-  - "6"
-  - "5"
-  - "4"
+  - 7
+  - 6
+  - 5
+  - 4
+
 env:
   - CXX=g++-4.8
 addons:
@@ -15,5 +16,14 @@ addons:
     packages:
       - g++-4.8
 
+install:
+  - npm update
+  - npm run postinstall
+  - npm prune
+
+cache:
+  directories:
+    - node_modules
+
 after_success:
-  - './node_modules/.bin/nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls'
+  - npm run ci
