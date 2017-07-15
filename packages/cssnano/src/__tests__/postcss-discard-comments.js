@@ -103,7 +103,7 @@ test(
     'should keep special comments 2',
     processCss,
     'h1{/*!test comment*/font-weight:700}',
-    'h1{/*!test comment*/font-weight:700}',
+    'h1{font-weight:700/*!test comment*/}',
 );
 
 test(

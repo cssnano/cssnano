@@ -26,7 +26,7 @@ test(
     'should not merge margin values with mixed !important',
     processCss,
     'h1{margin-top:10px!important;margin-right:20px;margin-bottom:30px!important;margin-left:40px}',
-    'h1{margin-top:10px!important;margin-right:20px;margin-bottom:30px!important;margin-left:40px}',
+    'h1{margin-bottom:30px!important;margin-left:40px;margin-right:20px;margin-top:10px!important}',
 );
 
 test(
@@ -47,7 +47,7 @@ test(
     'should not merge padding values with mixed !important',
     processCss,
     'h1{padding-top:10px!important;padding-right:20px;padding-bottom:30px!important;padding-left:40px}',
-    'h1{padding-top:10px!important;padding-right:20px;padding-bottom:30px!important;padding-left:40px}',
+    'h1{padding-bottom:30px!important;padding-left:40px;padding-right:20px;padding-top:10px!important}',
 );
 
 test(
@@ -68,7 +68,7 @@ test(
     'should not merge identical border values with mixed !important',
     processCss,
     'h1{border-top:1px solid #000;border-bottom:1px solid #000;border-left:1px solid #000!important;border-right:1px solid #000!important}',
-    'h1{border-top:1px solid #000;border-bottom:1px solid #000;border-left:1px solid #000!important;border-right:1px solid #000!important}',
+    'h1{border-bottom:1px solid #000;border-left:1px solid #000!important;border-right:1px solid #000!important;border-top:1px solid #000}',
 );
 
 test(
@@ -96,7 +96,7 @@ test(
     'should not merge border values with mixed !important',
     processCss,
     'h1{border-color:red;border-width:1px!important;border-style:dashed!important}',
-    'h1{border-color:red;border-width:1px!important;border-style:dashed!important}',
+    'h1{border-color:red;border-style:dashed!important;border-width:1px!important}',
 );
 
 test(
