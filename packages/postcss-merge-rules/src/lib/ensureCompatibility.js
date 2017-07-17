@@ -118,7 +118,7 @@ export default function ensureCompatibility (selectors, browsers, compatibilityC
                     return false;
                 }
             });
-        }).process(selector);
+        }).processSync(selector);
         if (compatibilityCache) {
             compatibilityCache[selector] = compatible;
         }

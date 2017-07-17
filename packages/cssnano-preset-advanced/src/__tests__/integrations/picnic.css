@@ -886,14 +886,14 @@ input.stack:focus+input,input.stack:focus+select,input.stack:focus+textarea,sele
 .tabs>input+*{width:100%}
 .tabs>input+label{width:auto}
 .two.tabs>.row{width:200%;left:-100%}
-.two.tabs>input:first-of-type:checked ~ .row{margin-left:100%}
+.two.tabs>input:first-of-type:checked~.row{margin-left:100%}
 .two.tabs>label img{width:48%;margin:4% 0 4% 4%}
 .three.tabs>.row{width:300%;left:-200%}
-.three.tabs>input:first-of-type:checked ~ .row{margin-left:200%}
+.three.tabs>input:first-of-type:checked~.row{margin-left:200%}
 .three.tabs>input:nth-of-type(2):checked~.row{margin-left:100%}
 .three.tabs>label img{width:30%;margin:5% 0 5% 5%}
 .four.tabs>.row{width:400%;left:-300%}
-.four.tabs>input:first-of-type:checked ~ .row{margin-left:300%}
+.four.tabs>input:first-of-type:checked~.row{margin-left:300%}
 .four.tabs>input:nth-of-type(2):checked~.row{margin-left:200%}
 .four.tabs>input:nth-of-type(3):checked~.row{margin-left:100%}
 .four.tabs>label img{width:22%;margin:4% 0 4% 4%}

@@ -29,5 +29,5 @@ export default plugin([FF_2], [RULE], function (rule) {
     if (isMixin(rule)) {
         return;
     }
-    parser(analyse(this, rule)).process(rule.selector);
+    parser(analyse(this, rule)).processSync(rule.selector);
 });

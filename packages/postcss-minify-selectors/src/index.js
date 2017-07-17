@@ -8,7 +8,7 @@ import canUnquote from './lib/canUnquote';
 const pseudoElements = ['::before', '::after', '::first-letter', '::first-line'];
 
 function getParsed (selectors, callback) {
-    return parser(callback).process(selectors).result;
+    return parser(callback).processSync(selectors);
 }
 
 function attribute (selector) {

@@ -35,7 +35,7 @@
     "alphanum-sort": "^1.0.0",
     "has": "^1.0.0",
     "postcss": "^6.0.0",
-    "postcss-selector-parser": "^2.0.0"
+    "postcss-selector-parser": "^3.0.0-rc.0"
   },
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"

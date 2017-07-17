@@ -30,5 +30,5 @@ export default plugin([IE_5_5, IE_6], [RULE], function (rule) {
     if (isMixin(rule)) {
         return;
     }
-    parser(analyse(this, rule)).process(rule.selector);
+    parser(analyse(this, rule)).processSync(rule.selector);
 });

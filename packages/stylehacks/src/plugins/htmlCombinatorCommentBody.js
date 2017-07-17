@@ -33,6 +33,6 @@ export default plugin([IE_5_5, IE_6, IE_7], [RULE], function (rule) {
         return;
     }
     if (rule.raws.selector && rule.raws.selector.raw) {
-        parser(analyse(this, rule)).process(rule.raws.selector.raw);
+        parser(analyse(this, rule)).processSync(rule.raws.selector.raw);
     }
 });
