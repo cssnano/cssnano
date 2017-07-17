@@ -127,6 +127,20 @@ test(
 );
 
 test(
+    'radial: should correctly account without "at"',
+    processCSS,
+    'background: radial-gradient(50% 26%, circle, #fff, rgba(255, 255, 255, 0) 24%)',
+    'background: radial-gradient(50% 26%, circle, #fff, rgba(255, 255, 255, 0) 24%)',
+);
+
+test(
+    'radial: should correctly account without "at" (2)',
+    processCSS,
+    'background: radial-gradient(50% 26%, circle, #fff 30%, rgba(255, 255, 255, 0) 24%)',
+    'background: radial-gradient(50% 26%, circle, #fff 30%, rgba(255, 255, 255, 0) 0)',
+);
+
+test(
     'should not mangle floating point numbers',
     processCSS,
     'background:linear-gradient(#fff,#fff 2em,#ccc 2em,#ccc 2.1em,#fff 2.1em)',
