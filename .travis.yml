@@ -17,8 +17,7 @@ addons:
       - g++-4.8
 
 install:
-  - npm update
-  - npm run postinstall
+  - npm install
   - npm prune
 
 cache:
