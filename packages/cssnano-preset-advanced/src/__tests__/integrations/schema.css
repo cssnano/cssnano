@@ -445,7 +445,7 @@ input[type=checkbox],input[type=radio]{line-height:normal;margin-top:1px\9;*marg
 .dropdown.touch select{height:100%;opacity:0;width:100%}
 .dropdown .selected,.dropdown li{color:inherit;display:block;font-size:16px;font-size:1rem;line-height:1;overflow:hidden;padding:9px 12px;white-space:nowrap}
 .dropdown .selected:after{bottom:0;content:"";position:absolute;right:0;top:0;width:60px}
-.dropdown div{background:#fff;border-radius:0 0 6px 6px;border:1px solid;border-color:#eee #ccc #ccc;height:0;left:-1px;margin-top:-1px;opacity:0;overflow:hidden;position:absolute;right:-1px;top:100%}
+.dropdown div{background:#fff;border:1px solid;border-color:#eee #ccc #ccc;border-radius:0 0 6px 6px;height:0;left:-1px;margin-top:-1px;opacity:0;overflow:hidden;position:absolute;right:-1px;top:100%}
 .dropdown.open div{opacity:1;z-index:1}
 .dropdown.scrollable div:after{bottom:0;content:"";height:50px;left:0;position:absolute;right:0}
 .dropdown.scrollable.bottom div:after{opacity:0}
@@ -526,7 +526,7 @@ textarea{overflow:auto}
 optgroup{font-weight:700}
 table{border-collapse:collapse;border-spacing:0}
 td,th{padding:0}
-.no-b{border:none none transparent}
+.no-b{border:none}
 .hide-text{background-color:transparent;border:0;color:transparent;font:0/0;text-shadow:none}
 .disabled,.is-disabled{cursor:not-allowed;opacity:.45;pointer-events:none}
 .left-float{float:left}
@@ -545,6 +545,9 @@ td,th{padding:0}
 }
 @media screen and (max-width:47.9375rem){
   .mobile-hidden{display:none;visibility:hidden}
+}
+@media screen and (max-width:47.9375rem){
+  .show-mobile{display:block;visibility:visible}
 }
 .show-mobile{display:none;visibility:hidden}
 @media screen and (max-width:47.9375rem){
