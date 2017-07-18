@@ -1361,8 +1361,8 @@ a.list-group-item-danger.active,a.list-group-item-danger.active:focus,a.list-gro
 .close{color:#000;filter:alpha(opacity=20);float:right;font-size:21px;font-weight:700;line-height:1;opacity:.2;text-shadow:0 1px 0 #fff}
 .close:focus,.close:hover{color:#000;cursor:pointer;filter:alpha(opacity=50);opacity:.5;text-decoration:none}
 button.close{-webkit-appearance:none;background:transparent;border:0;cursor:pointer;padding:0}
-.modal-open{overflow:hidden}
-.modal{-webkit-overflow-scrolling:touch;bottom:0;display:none;left:0;outline:0;overflow:hidden;position:fixed;right:0;top:0;z-index:1050}
+.modal,.modal-open{overflow:hidden}
+.modal{-webkit-overflow-scrolling:touch;bottom:0;display:none;left:0;outline:0;position:fixed;right:0;top:0;z-index:1050}
 .modal.fade .modal-dialog{-ms-transform:translateY(-25%);-o-transform:translateY(-25%);-o-transition:-o-transform .3s ease-out;-webkit-transform:translateY(-25%);-webkit-transition:-webkit-transform .3s ease-out;transform:translateY(-25%);transition:transform .3s ease-out}
 .modal.in .modal-dialog{-ms-transform:translate(0);-o-transform:translate(0);-webkit-transform:translate(0);transform:translate(0)}
 .modal-open .modal{overflow-x:hidden;overflow-y:auto}
@@ -1396,14 +1396,15 @@ button.close{-webkit-appearance:none;background:transparent;border:0;cursor:poin
 .tooltip.left{margin-left:-3px;padding:0 5px}
 .tooltip-inner{background-color:#000;border-radius:4px;color:#fff;max-width:200px;padding:3px 8px;text-align:center;text-decoration:none}
 .tooltip-arrow{border-color:transparent;border-style:solid;height:0;position:absolute;width:0}
-.tooltip.top .tooltip-arrow{border-width:5px 5px 0;bottom:0;left:50%;margin-left:-5px}
-.tooltip.top-left .tooltip-arrow{border-width:5px 5px 0;bottom:0;margin-bottom:-5px;right:5px}
-.tooltip.top-right .tooltip-arrow{border-width:5px 5px 0;bottom:0;left:5px;margin-bottom:-5px}
-.tooltip.right .tooltip-arrow{border-width:5px 5px 5px 0;left:0;margin-top:-5px;top:50%}
-.tooltip.left .tooltip-arrow{border-width:5px 0 5px 5px;margin-top:-5px;right:0;top:50%}
-.tooltip.bottom .tooltip-arrow{border-width:0 5px 5px;left:50%;margin-left:-5px;top:0}
-.tooltip.bottom-left .tooltip-arrow{border-width:0 5px 5px;margin-top:-5px;right:5px;top:0}
-.tooltip.bottom-right .tooltip-arrow{border-width:0 5px 5px;left:5px;margin-top:-5px;top:0}
+.tooltip.top .tooltip-arrow{border-top-color:#000;border-width:5px 5px 0;bottom:0;left:50%;margin-left:-5px}
+.tooltip.top-left .tooltip-arrow{right:5px}
+.tooltip.top-left .tooltip-arrow,.tooltip.top-right .tooltip-arrow{border-top-color:#000;border-width:5px 5px 0;bottom:0;margin-bottom:-5px}
+.tooltip.top-right .tooltip-arrow{left:5px}
+.tooltip.right .tooltip-arrow{border-right-color:#000;border-width:5px 5px 5px 0;left:0;margin-top:-5px;top:50%}
+.tooltip.left .tooltip-arrow{border-left-color:#000;border-width:5px 0 5px 5px;margin-top:-5px;right:0;top:50%}
+.tooltip.bottom .tooltip-arrow{border-bottom-color:#000;border-width:0 5px 5px;left:50%;margin-left:-5px;top:0}
+.tooltip.bottom-left .tooltip-arrow{border-bottom-color:#000;border-width:0 5px 5px;margin-top:-5px;right:5px;top:0}
+.tooltip.bottom-right .tooltip-arrow{border-bottom-color:#000;border-width:0 5px 5px;left:5px;margin-top:-5px;top:0}
 .popover{-webkit-background-clip:padding-box;-webkit-box-shadow:0 5px 10px rgba(0,0,0,.2);background-clip:padding-box;background-color:#fff;border:1px solid #ccc;border:1px solid rgba(0,0,0,.2);border-radius:6px;box-shadow:0 5px 10px rgba(0,0,0,.2);display:none;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;font-weight:400;left:0;line-height:1.42857143;max-width:276px;padding:1px;position:absolute;text-align:left;top:0;white-space:normal;z-index:1060}
 .popover.top{margin-top:-10px}
 .popover.right{margin-left:10px}

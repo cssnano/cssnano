@@ -88,5 +88,5 @@ blockquote,dl,figure,form,ol,p,pre,table,ul{margin-bottom:2.5rem}
 .u-max-full-width{box-sizing:border-box;max-width:100%}
 .u-pull-right{float:right}
 .u-pull-left{float:left}
-hr{border-width:1px 0 0;border-top:0 solid #e1e1e1;margin-bottom:3.5rem;margin-top:3rem}
+hr{border-top:1px solid #e1e1e1;border-width:0;margin-bottom:3.5rem;margin-top:3rem}
 .container:after,.row:after,.u-cf{clear:both;content:"";display:table}

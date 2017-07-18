@@ -1535,7 +1535,7 @@ select{display:block;width:100%}
 }
 @-moz-document url-prefix(){
   .select select{padding-right:1rem;text-indent:.01px;text-overflow:""}
-  .select:before{background:#fff;background-clip:padding-box;border-radius:0 2px 2px 0;border:solid #ddd;border-width:1px 1px 1px 0;bottom:0;content:"";pointer-events:none;position:absolute;right:0;top:0;width:1em;z-index:2}
+  .select:before{background:#fff;background-clip:padding-box;border:solid #ddd;border-radius:0 2px 2px 0;border-width:1px 1px 1px 0;bottom:0;content:"";pointer-events:none;position:absolute;right:0;top:0;width:1em;z-index:2}
   .select.large:before{width:1.5em}
   .select.select-inverse:before{background:#222;border:none}}
 .select-xlarge select{font-size:2rem;height:6rem;line-height:6rem;padding:0 3rem}

@@ -529,7 +529,7 @@ select[multiple]{background-image:none;height:auto}
 [data-whatinput=mouse] .menu>li{outline:0}
 .menu>li>a{display:block;line-height:1;padding:.7rem 1rem}
 .menu a,.menu button,.menu input,.menu select{margin-bottom:0}
-.menu>li>a{display:-webkit-box;display:-ms-flexbox;display:flex;-ms-flex-flow:row nowrap;flex-flow:row nowrap}
+.menu>li>a{-ms-flex-flow:row nowrap;display:-webkit-box;display:-ms-flexbox;display:flex;flex-flow:row nowrap}
 .menu>li>a i,.menu>li>a img,.menu>li>a svg{margin-right:.25rem}
 .menu,.menu.horizontal{-ms-flex-wrap:nowrap;flex-wrap:nowrap}
 .menu.horizontal>li,.menu>li{-ms-flex:0 0 auto;-webkit-box-flex:0;flex:0 0 auto}
@@ -569,7 +569,7 @@ select[multiple]{background-image:none;height:auto}
 .menu.menu-bordered li{border:1px solid #e6e6e6}
 .menu.menu-bordered li:not(:first-child){border-top:0}
 .menu.menu-hover li:hover{background-color:#e6e6e6}
-.menu-text{color:inherit;font-weight:700;line-height:1;padding:0 1rem}
+.menu-text{color:inherit;font-weight:700;line-height:1;padding:.7rem 1rem}
 .menu-centered{text-align:center}
 .menu-centered>.menu{display:inline-block;vertical-align:top}
 .no-js [data-responsive-menu] ul{display:none}
