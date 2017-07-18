@@ -8,18 +8,19 @@ export default plugin('postcss-discard-comments', (opts = {}) => {
     const remover = new CommentRemover(opts);
 
     function matchesComments (source) {
-        return commentParser(source).filter(node => node.type === 'comment');
+        return commentParser(source).filter(([type]) => type);
     }
 
     function replaceComments (source, separator = ' ') {
-        const parsed = commentParser(source).reduce((value, node) => {
-            if (node.type !== 'comment') {
-                return value + node.value;
+        const parsed = commentParser(source).reduce((value, [type, start, end]) => {
+            const contents = source.slice(start, end);
+            if (!type) {
+                return value + contents;
             }
-            if (remover.canRemove(node.value)) {
+            if (remover.canRemove(contents)) {
                 return value + separator;
             }
-            return value + '/*' + node.value + '*/';
+            return `${value}/*${contents}*/`;
         }, '');
 
         return space(parsed).join(' ');

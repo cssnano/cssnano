@@ -8,23 +8,14 @@ export default function commentParser (input) {
         next = input.indexOf('/*', pos);
 
         if (~next) {
-            tokens.push({
-                type: 'other',
-                value: input.slice(pos, next),
-            });
+            tokens.push([0, pos, next]);
             pos = next;
 
             next = input.indexOf('*/', pos + 2);
-            tokens.push({
-                type: 'comment',
-                value: input.slice(pos + 2, next),
-            });
+            tokens.push([1, pos + 2, next]);
             pos = next + 2;
         } else {
-            tokens.push({
-                type: 'other',
-                value: input.slice(pos),
-            });
+            tokens.push([0, pos, length]);
             pos = length;
         }
     }
