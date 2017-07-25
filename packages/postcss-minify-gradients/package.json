@@ -29,6 +29,7 @@
   "repository": "ben-eb/cssnano",
   "dependencies": {
     "cssnano-util-get-arguments": "^4.0.0-rc.0",
+    "is-color-stop": "^1.1.0",
     "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0"
   },

@@ -126,18 +126,40 @@ test(
     'background:radial-gradient(at 50% 0%,rgba(74,74,74,.15),transparent 40%, red 0);'
 );
 
+
 test(
-    'radial: should correctly account without "at"',
+    'radial: should correctly account with prefix "-webkit" (1)',
     processCSS,
-    'background: radial-gradient(50% 26%, circle, #fff, rgba(255, 255, 255, 0) 24%)',
-    'background: radial-gradient(50% 26%, circle, #fff, rgba(255, 255, 255, 0) 24%)',
+    'background: -webkit-radial-gradient(50% 26%, circle, #fff, rgba(255, 255, 255, 0) 24%)',
+    'background: -webkit-radial-gradient(50% 26%, circle, #fff, rgba(255, 255, 255, 0) 24%)'
 );
 
 test(
-    'radial: should correctly account without "at" (2)',
+    'radial: should correctly account with prefix "-webkit" (2)',
     processCSS,
-    'background: radial-gradient(50% 26%, circle, #fff 30%, rgba(255, 255, 255, 0) 24%)',
-    'background: radial-gradient(50% 26%, circle, #fff 30%, rgba(255, 255, 255, 0) 0)',
+    'background: -webkit-radial-gradient(center, 30% 30%, white 20%, black 10%)',
+    'background: -webkit-radial-gradient(center, 30% 30%, white 20%, black 0)'
+);
+
+test(
+    'radial: should correctly account with prefix "-webkit" (3)',
+    processCSS,
+    'background: -webkit-radial-gradient(50% 26%, #fff, rgba(255, 255, 255, 0) 24%)',
+    'background: -webkit-radial-gradient(50% 26%, #fff, rgba(255, 255, 255, 0) 24%)'
+);
+
+test(
+    'radial: should correctly account with prefix "-webkit" (4)',
+    processCSS,
+    'background: -webkit-radial-gradient(white 50%, black 40%)',
+    'background: -webkit-radial-gradient(white 50%, black 0)'
+);
+
+test(
+    'radial: should correctly account with prefix "-webkit" (5)',
+    processCSS,
+    'background: -webkit-radial-gradient(white calc(30%), black calc(50%))',
+    'background: -webkit-radial-gradient(white calc(30%), black calc(50%))'
 );
 
 test(
