@@ -29,6 +29,26 @@ source = "https://github.com/postcss/autoprefixer"
 safe = 2.0 # Changes semantics
 shortName = "autoprefixer"
 
+[css-declaration-sorter]
+shortDescription = "Sorts CSS declarations"
+longDescription = "Sorts CSS declarations based on their property names, sorted CSS is smaller when gzipped because there will be more similar strings."
+inputExample = """
+body {
+    animation: none;
+    color: #C55;
+    border: 0;
+}
+"""
+outputExample = """
+body {
+    animation: none;
+    border: 0;
+    color: #C55;
+}
+"""
+source = "https://github.com/Siilwyn/css-declaration-sorter/"
+shortName = "cssDeclarationSorter"
+
 [postcss-calc]
 shortDescription = "Reduces CSS calc expressions"
 longDescription = "Reduces CSS \`calc\` expressions whereever possible, ensuring both browser compatibility and compression."
