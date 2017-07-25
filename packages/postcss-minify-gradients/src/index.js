@@ -1,6 +1,7 @@
 import postcss from 'postcss';
-import valueParser, {unit} from 'postcss-value-parser';
+import valueParser, {unit, stringify} from 'postcss-value-parser';
 import getArguments from 'lerna:cssnano-util-get-arguments';
+import isColorStop from 'is-color-stop';
 
 const angles = {
     top:    '0deg',
@@ -58,15 +59,58 @@ function optimise (decl) {
         }
         if (
             node.value === 'radial-gradient' ||
-            node.value === 'repeating-radial-gradient' ||
-            node.value === '-webkit-radial-gradient' ||
-            node.value === '-webkit-repeating-radial-gradient'
+            node.value === 'repeating-radial-gradient'
         ) {
             let args = getArguments(node);
             let lastStop;
             const hasAt = args[0].find(n => n.value === 'at');
             args.forEach((arg, index) => {
-                if (!index || !arg[2] || !index && hasAt) {
+                if (!arg[2] || !index && hasAt) {
+                    return;
+                }
+                let thisStop = unit(arg[2].value);
+                if (!lastStop) {
+                    lastStop = thisStop;
+                    return;
+                }
+                if (isLessThan(lastStop, thisStop)) {
+                    arg[2].value = 0;
+                }
+                lastStop = thisStop;
+            });
+            return false;
+        }
+        if (
+            node.value === '-webkit-radial-gradient' ||
+            node.value === '-webkit-repeating-radial-gradient'
+        ) {
+            let args = getArguments(node);
+            let lastStop;
+            args.forEach((arg) => {
+                let color;
+                let stop;
+                if (arg[2] !== undefined) {
+                    if (arg[0].type === 'function') {
+                        color = `${arg[0].value}(${stringify(arg[0].nodes)})`;
+                    } else {
+                        color = arg[0].value;
+                    }
+                    if (arg[2].type === 'function') {
+                        stop = `${arg[2].value}(${stringify(arg[2].nodes)})`;
+                    } else {
+                        stop = arg[2].value;
+                    }
+                } else {
+                    if (arg[0].type === 'function') {
+                        color = `${arg[0].value}(${stringify(arg[0].nodes)})`;
+                    }
+                    color = arg[0].value;
+                }
+                const colorStop = stop || stop === 0 ?
+                  isColorStop(color, stop) :
+                  isColorStop(color);
+                
+                if (!colorStop || !arg[2]) {
                     return;
                 }
                 let thisStop = unit(arg[2].value);
