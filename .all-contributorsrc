@@ -505,6 +505,25 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "darthmaim",
+      "name": "darthmaim",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/2511547?v=4",
+      "profile": "https://gw2treasures.com/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "pigcan",
+      "name": "pigcan",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/848515?v=4",
+      "profile": "https://github.com/pigcan",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ]
 }
