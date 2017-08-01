@@ -16,3 +16,21 @@ test(
     'h1 { }',
     {target: 'ie6', unaffected: 'ie7'}
 );
+
+test(
+    'prefixed value must be ignored',
+    processCSS,
+    'h1 { -moz-tab-size: 10px }',
+    'h1 { -moz-tab-size: 10px }',
+    {target: 'ie6', unaffected: 'ie7'},
+    0
+);
+
+test(
+    'custom property must be ignored',
+    processCSS,
+    'h1 { --color-foobar: #000; }',
+    'h1 { --color-foobar: #000; }',
+    {target: 'ie6', unaffected: 'ie7'},
+    0
+);
