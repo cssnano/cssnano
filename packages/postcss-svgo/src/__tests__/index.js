@@ -24,6 +24,20 @@ test(
 );
 
 test(
+    'should optimise inline svg in base64',
+    processCSS,
+    'h1{background:url(\'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDAiIGZpbGw9InllbGxvdyIgLz48IS0tdGVzdCBjb21tZW50LS0+PC9zdmc+\')}',
+    'h1{background:url(\'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQwIiBmaWxsPSIjZmYwIi8+PC9zdmc+\')}'
+);
+
+test(
+    'should optimise inline svg in base64 and respect quotes',
+    processCSS,
+    'h1{background:url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDAiIGZpbGw9InllbGxvdyIgLz48IS0tdGVzdCBjb21tZW50LS0+PC9zdmc+")}',
+    'h1{background:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQwIiBmaWxsPSIjZmYwIi8+PC9zdmc+")}'
+);
+
+test(
     'should optimise inline svg in all urls',
     processCSS,
     'h1{background:' + [
@@ -102,6 +116,35 @@ test(
     'h1{background-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cline stroke-width=\'2\' stroke=\'%23F00\' y1=\'100%25\' x2=\'100%25\'/%3E%3C/svg%3E\")}',
     {encode: true}
 );
+
+test(
+    'should skip invalid svg',
+    processCSS,
+    'h1{background-image:url("data:image/svg+xml;charset=utf-8,foo")}',
+    'h1{background-image:url("data:image/svg+xml;charset=utf-8,foo")}',
+);
+
+test(
+    'should skip invalid svg in base64',
+    processCSS,
+    'h1{background-image:url("data:image/svg+xml;base64,foo")}',
+    'h1{background-image:url("data:image/svg+xml;base64,foo")}',
+);
+
+test(
+    'should skip when data URI contain invalid media type',
+    processCSS,
+    'h1{background-image:url("data:image/svg;charset=utf-8,foo")}',
+    'h1{background-image:url("data:image/svg;charset=utf-8,foo")}',
+);
+
+test(
+    'should skip when data URI contain charset is not in `utf-8`',
+    processCSS,
+    'h1{background-image:url("data:image/svg;charset=US-ASCII,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><circle cx="50" cy="50" r="40" fill="yellow" /><!--test comment--></svg>")}',
+    'h1{background-image:url("data:image/svg;charset=US-ASCII,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><circle cx="50" cy="50" r="40" fill="yellow" /><!--test comment--></svg>")}',
+);
+
 
 test(
     'should pass through links to svg files',
