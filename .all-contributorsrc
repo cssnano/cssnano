@@ -524,6 +524,17 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "evilebottnawi",
+      "name": "Evilebot Tnawi",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4567934?v=4",
+      "profile": "https://github.com/evilebottnawi",
+      "contributions": [
+        "code",
+        "doc",
+        "test"
+      ]
     }
   ]
 }
