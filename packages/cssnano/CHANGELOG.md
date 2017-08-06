@@ -1,3 +1,26 @@
+# 4.0.0-rc.2
+
+## Features
+
+* Includes the new release candidate for postcss-selector-parser 3.
+* Refactors comments tokenizing in postcss-discard-comments to be more
+  memory efficient.
+* Adds css-declaration-sorter for improved gzip compression efficiencies
+  (thanks to @Siilwyn).
+* postcss-svgo now optimises base 64 encoded SVG where possible
+  (thanks to @evilebottnawi).
+* stylehacks now supports `@media \0screen\,screen\9 {}` hacks
+  (thanks to @evilebottnawi).
+
+## Bug Fixes
+
+* Fixed handling of package.json configuration (thanks to @andyjansson).
+* Fixed `resolveConfig` for a `Root` node without a `source` property
+  (thanks to @darthmaim).
+* Improved radial gradient handling (thanks to @pigcan).
+* stylehacks now properly accounts for vendor prefixes
+  (thanks to @evilebottnawi).
+
 # 4.0.0-rc.1
 
 ## Bug Fixes
