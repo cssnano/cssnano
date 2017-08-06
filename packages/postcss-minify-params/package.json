@@ -1,6 +1,6 @@
 {
   "name": "postcss-minify-params",
-  "version": "4.0.0-rc.1",
+  "version": "4.0.0-rc.2",
   "description": "Minify at-rule params with PostCSS",
   "keywords": [
     "postcss",
@@ -23,7 +23,7 @@
   "homepage": "https://github.com/ben-eb/cssnano",
   "dependencies": {
     "alphanum-sort": "^1.0.0",
-    "cssnano-util-get-arguments": "^4.0.0-rc.0",
+    "cssnano-util-get-arguments": "^4.0.0-rc.2",
     "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0",
     "uniqs": "^2.0.0"

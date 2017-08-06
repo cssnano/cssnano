@@ -1,6 +1,6 @@
 {
   "name": "cssnano-util-get-arguments",
-  "version": "4.0.0-rc.0",
+  "version": "4.0.0-rc.2",
   "description": "Get a list of arguments, separated by a comma.",
   "main": "dist/index.js",
   "scripts": {

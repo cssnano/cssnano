@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-repeat-style",
-  "version": "4.0.0-rc.0",
+  "version": "4.0.0-rc.2",
   "description": "Convert two value syntax for repeat-style into one value.",
   "main": "dist/index.js",
   "scripts": {
@@ -12,8 +12,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "cssnano-util-get-arguments": "^4.0.0-rc.0",
-    "cssnano-util-get-match": "^4.0.0-rc.0",
+    "cssnano-util-get-arguments": "^4.0.0-rc.2",
+    "cssnano-util-get-match": "^4.0.0-rc.2",
     "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0"
   },

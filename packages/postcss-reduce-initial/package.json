@@ -1,6 +1,6 @@
 {
   "name": "postcss-reduce-initial",
-  "version": "4.0.0-rc.0",
+  "version": "4.0.0-rc.2",
   "description": "Reduce initial definitions to the actual initial value, where possible.",
   "main": "dist/index.js",
   "files": [

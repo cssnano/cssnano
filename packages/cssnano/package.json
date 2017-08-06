@@ -1,6 +1,6 @@
 {
   "name": "cssnano",
-  "version": "4.0.0-rc.1",
+  "version": "4.0.0-rc.2",
   "description": "A modular minifier, built on top of the PostCSS ecosystem.",
   "main": "dist/index.js",
   "scripts": {
@@ -20,7 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "cosmiconfig": "^2.0.0",
-    "cssnano-preset-default": "^4.0.0-rc.1",
+    "cssnano-preset-default": "^4.0.0-rc.2",
     "is-resolvable": "^1.0.0",
     "postcss": "^6.0.0"
   },
@@ -29,7 +29,7 @@
     "babel-cli": "^6.0.0",
     "babel-loader": "^6.0.0",
     "cross-env": "^3.0.0",
-    "cssnano-preset-advanced": "^4.0.0-rc.1",
+    "cssnano-preset-advanced": "^4.0.0-rc.2",
     "json-loader": "^0.5.4",
     "ncp": "^2.0.0",
     "postcss-font-magician": "^2.0.0",
