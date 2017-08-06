@@ -17,8 +17,7 @@ addons:
       - g++-4.8
 
 install:
-  - npm install
-  - npm prune
+  - yarn install
 
 cache:
   directories:

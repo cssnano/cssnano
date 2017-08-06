@@ -5,7 +5,7 @@
     "docs": "remark docs/content/**/*.md -o && cd docs && npm run build && cd .. && gh-pages -d docs/dist",
     "fixlint": "eslint --fix --ignore-path .gitignore packages/**/src util",
     "report": "nyc report --reporter=html",
-    "postinstall": "lerna bootstrap",
+    "postinstall": "lerna bootstrap --npm-client=\"yarn\"",
     "pretest": "eslint --ignore-path .gitignore packages/**/src util",
     "test": "cross-env BABEL_ENV=test nyc ava",
     "ci": "nyc report --reporter=text-lcov | coveralls"
