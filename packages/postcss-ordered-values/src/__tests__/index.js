@@ -19,6 +19,20 @@ test(
 );
 
 test(
+    'should preserve unknown values in border with order',
+    processCSS,
+    'h1{border:"unknown1" 1px "unknown2"}',
+    'h1{border:1px "unknown1" "unknown2"}'
+);
+
+test(
+    'should preserve unknown values in border with order with two properties',
+    processCSS,
+    'h1{border:solid "unknown1"}',
+    'h1{border:"unknown1" solid}'
+);
+
+test(
     'should order border with color functions',
     processCSS,
     'h1{border:rgba(255,255,255,0.5) dashed thick}',

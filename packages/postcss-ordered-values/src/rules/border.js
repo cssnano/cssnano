@@ -48,5 +48,31 @@ export default function normalizeBorder (decl, border) {
             return false;
         }
     });
-    decl.value = `${order.width} ${order.style} ${order.color}`.trim();
+
+    const parts = getBorderParts(border, decl.value);
+    const {width, style, color} = mergeWithInitialBorderParts(parts, order);
+    decl.value = `${width} ${style} ${color}`.trim();
 };
+
+function mergeWithInitialBorderParts (parts, order) {
+    const orderedValues = ['width', 'style', 'color'].map((key) => order[key]);
+    const diff = parts.filter((part) => orderedValues.indexOf(part) === -1);
+    const [width='', style='', color=''] = orderedValues.map((val) => val ? val : diff.shift());
+
+    return {width, style, color};
+}
+
+function getBorderParts (border, originalValue) {
+    const borderParts = [];
+    let lastIndex = 0;
+    border.walk(node => {
+        if (node.type === 'space') {
+            borderParts.push(originalValue.substring(lastIndex, node.sourceIndex));
+            lastIndex = node.sourceIndex + 1;
+        }
+    });
+
+    borderParts.push(originalValue.substring(lastIndex));
+
+    return borderParts;
+}
