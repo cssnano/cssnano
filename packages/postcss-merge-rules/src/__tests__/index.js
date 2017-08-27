@@ -192,12 +192,6 @@ test(
 );
 
 test(
-    'should not merge over-eagerly (cssnano#36 [case 3])',
-    passthroughCSS,
-    '.foobam{font-family:serif;display:block}.barim{display:block;line-height:1}.bazaz{font-size:3em;font-family:serif}'
-);
-
-test(
     'should not merge over-eagerly (cssnano#36 [case 4])',
     processCSS,
     '.foo{font-family:serif;display:block}.barim{display:block;line-height:1}.bazaz{font-size:3em;font-family:serif}',
@@ -215,13 +209,37 @@ test(
     'should perform partial merging of selectors in the opposite direction',
     processCSS,
     'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
-    'h1{color:black}h2,h3{color:black;font-weight:bold}'
+    'h1,h2,h3{color:black}h2,h3{font-weight:bold}'
 );
 
 test(
     'should not perform partial merging of selectors if the output would be longer',
     passthroughCSS,
     '.test0{color:red;border:none;margin:0}.longlonglonglong{color:green;border:none;margin:0}'
+);
+
+test(
+    'should not perform partial merging of selectors if the output would be longer (2)',
+    passthroughCSS,
+    '.foobam{font-family:serif;display:block}.barim{display:block;line-height:1}.bazaz{font-size:3em;font-family:serif}'
+);
+
+test(
+    'should not perform partial merging of selectors if the output would be longer (3)',
+    passthroughCSS,
+    'input[type=range] { -webkit-appearance: none !important; } input[type=range]::-webkit-slider-runnable-track { height: 2px; width: 100px; background: red; border: none; } input[type=range]::-webkit-slider-thumb { -webkit-appearance: none !important; border: none; width: 10px; height: 10px; background: red; } input[type=range]::-moz-range-thumb { border: none; width: 10px; height: 10px; background: red; }'
+);
+
+test(
+    'should not perform partial merging of selectors if the output would be longer (4)',
+    passthroughCSS,
+    '.dispendium-theme.fr-toolbar.fr-top { border-radius: 0; background-clip: padding-box; box-shadow: none; border: 1px solid #E0E0E0; border-bottom: 0; } .dispendium-theme.fr-toolbar.fr-bottom { border-radius: 0; background-clip: padding-box; box-shadow: none; border: 1px solid #E0E0E0; border-top: 0; }'
+);
+
+test(
+    'should not perform partial merging of selectors if the output would be longer (5)',
+    passthroughCSS,
+    '.share .comment-count:before { content: \' \'; position: absolute; width: 0; height: 0; right: 7px; top: 26px; border: 5px solid; border-color: #326891 #326891 transparent transparent; } .share .comment-count:after { content: \' \'; position: absolute; width: 0; height: 0; right: 8px; top: 24px; border: 5px solid; border-color: #fff #fff transparent transparent; }'
 );
 
 test(
@@ -235,12 +253,6 @@ test(
     'should not merge mixed vendor prefixes',
     passthroughCSS,
     'code ::-webkit-selection{background:red}code::-moz-selection{background:red}'
-);
-
-test(
-    'should not merge mixed vendor prefixes (2)',
-    passthroughCSS,
-    'input[type=range] { -webkit-appearance: none !important; } input[type=range]::-webkit-slider-runnable-track { height: 2px; width: 100px; background: red; border: none; } input[type=range]::-webkit-slider-thumb { -webkit-appearance: none !important; border: none; width: 10px; height: 10px; background: red; } input[type=range]::-moz-range-thumb { border: none; width: 10px; height: 10px; background: red; }'
 );
 
 test(
@@ -351,7 +363,8 @@ test(
 test(
     'should not throw on comment nodes',
     passthroughCSS,
-    '.navbar-soft .navbar-nav > .active > a{color:#fff;background-color:#303030}.navbar-soft .navbar-nav > .open > a{color:#fff;background-color:rgba(48,48,48,0.8)}/* caret */.navbar-soft .navbar-nav > .dropdown > a .caret{border-top-color:#777;border-bottom-color:#777}'
+    '.navbar-soft .navbar-nav > .active > a{color:#fff;background-color:#303030}.navbar-soft .navbar-nav > .open > a{color:#fff;background-color:rgba(48,48,48,0.8)}/* caret */.navbar-soft .navbar-nav > .dropdown > a .caret{border-top-color:#777;border-bottom-color:#777}',
+    // '.navbar-soft .navbar-nav > .active > a{background-color:#303030}.navbar-soft .navbar-nav > .active > a,.navbar-soft .navbar-nav > .open > a{color:#fff}.navbar-soft .navbar-nav > .open > a{background-color:rgba(48,48,48,0.8)}/* caret */.navbar-soft .navbar-nav > .dropdown > a .caret{border-top-color:#777;border-bottom-color:#777}'    
 );
 
 test(
@@ -379,7 +392,7 @@ test(
     'should not merge across font face rules',
     processCSS,
     '.one, .two, .three { font-family: "lorem"; font-weight: normal; } .four { font-family: "lorem", serif; font-weight: normal; }.five { font-family: "lorem"; font-weight: normal; } @font-face { font-family: "lorem"; font-weight: normal; src: url(/assets/lorem.eot); src: url(/assets/lorem.eot?#iefix) format("embedded-opentype"), url(/assets/lorem.woff) format("woff"), url(/assets/lorem.ttf) format("truetype"); }',
-    '.one, .two, .three { font-family: "lorem"; font-weight: normal; } .four { font-family: "lorem", serif; }.four,.five { font-weight: normal; }.five { font-family: "lorem"; } @font-face { font-family: "lorem"; font-weight: normal; src: url(/assets/lorem.eot); src: url(/assets/lorem.eot?#iefix) format("embedded-opentype"), url(/assets/lorem.woff) format("woff"), url(/assets/lorem.ttf) format("truetype"); }'
+    '.one, .two, .three { font-family: "lorem"; font-weight: normal; } .four { font-family: "lorem", serif; } .four,.five { font-weight: normal; }.five { font-family: "lorem"; } @font-face { font-family: "lorem"; font-weight: normal; src: url(/assets/lorem.eot); src: url(/assets/lorem.eot?#iefix) format("embedded-opentype"), url(/assets/lorem.woff) format("woff"), url(/assets/lorem.ttf) format("truetype"); }'
 );
 
 test(
@@ -425,18 +438,6 @@ test(
     'should respect property order and do nothing (4) (cssnano#160)',
     passthroughCSS,
     'one { border: 1px solid black; border-top: none; } two { border: 1px solid black; }'
-);
-
-test(
-    'should respect property order and do nothing (5) (cssnano#87)',
-    passthroughCSS,
-    '.dispendium-theme.fr-toolbar.fr-top { border-radius: 0; background-clip: padding-box; box-shadow: none; border: 1px solid #E0E0E0; border-bottom: 0; } .dispendium-theme.fr-toolbar.fr-bottom { border-radius: 0; background-clip: padding-box; box-shadow: none; border: 1px solid #E0E0E0; border-top: 0; }'
-);
-
-test(
-    'should respect property order and do nothing (6) (issue #19)',
-    passthroughCSS,
-    '.share .comment-count:before { content: \' \'; position: absolute; width: 0; height: 0; right: 7px; top: 26px; border: 5px solid; border-color: #326891 #326891 transparent transparent; } .share .comment-count:after { content: \' \'; position: absolute; width: 0; height: 0; right: 8px; top: 24px; border: 5px solid; border-color: #fff #fff transparent transparent; }'
 );
 
 test(
@@ -555,6 +556,13 @@ test(
     'should handle css mixins',
     passthroughCSS,
     `paper-card{--paper-card-content:{padding-top:0};margin:0 auto 16px;width:768px;max-width:calc(100% - 32px)}`
+);
+
+test(
+    'should partially merge adjacent selectors in sequence',
+    processCSS,
+    '.foo{background-image:url(img.png);background-position:0 0;width:45px;height:45px;}.bar{background-image:url(img.png);background-position:0 -50px;width:45px;height:45px;}.baz{background-image:url(img.png);background-position:-50px 0;width:45px;height:45px;}.bat{background-image:url(img.png);background-position:-50px -50px;width:45px;height:45px;}',
+    '.foo{background-position:0 0;}.foo,.bar,.baz,.bat{background-image:url(img.png);width:45px;height:45px;}.bar{background-position:0 -50px;}.baz{background-position:-50px 0;}.bat{background-position:-50px -50px;}'
 );
 
 test(
