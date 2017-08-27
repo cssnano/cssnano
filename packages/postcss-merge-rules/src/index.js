@@ -6,7 +6,7 @@ import ensureCompatibility from './lib/ensureCompatibility';
 
 const prefixes = vendors.map(v => `-${v}-`);
 
-function noop() { }
+function noop () { }
 
 function splitProp (decl) {
     const parts = decl.prop.split('-');
@@ -26,39 +26,44 @@ function splitProp (decl) {
 }
 
 function isConflictingProp (propA, propB) {
-    if (propA.type != propB.type)
+    if (propA.type !== propB.type) {
         return false;
+    }
 
-    if (declsAreEqual(propA, propB))
+    if (declsAreEqual(propA, propB)) {
         return true; 
+    }
 
     const a = splitProp(propA);
     const b = splitProp(propB);
 
-    if (a[0] !== b[0])
+    if (a[0] !== b[0]) {
         return false;
+    }
 
-    if (a[1].length !== b[1].length)
+    if (a[1].length !== b[1].length) {
         return true;
+    }
 
     const length = a[1].length - 1;
     const intersects = a[1].slice(0, length).every((part, i) => part === b[1][i]);
 
-    if (!intersects)
+    if (!intersects) {
         return true;
+    }
 
-    if (a[1][length] !== b[1][length])
+    if (a[1][length] !== b[1][length]) {
         return false;
+    }
 
     return propA.value !== propB.value;
 }
 
 function hasConflicts (decl, decls) {
-    decls = decls.filter(x => x != decl);
     return decls.some(prop => isConflictingProp(prop, decl));
 }
 
-const filterPrefixes = selector => prefixes.filter(prefix => ~selector.indexOf(prefix))
+const filterPrefixes = selector => prefixes.filter(prefix => ~selector.indexOf(prefix));
 
 function sameVendor (selectorsA, selectorsB) {
     let same = selectors => selectors.map(filterPrefixes).join();
@@ -90,21 +95,25 @@ function trimValue (value) {
 }
 
 function declsAreEqual (a, b) {
-    if (a.type !== b.type || a.type !== 'decl')
+    if (a.type !== b.type || a.type !== 'decl') {
         return false;
+    }
 
-    if (a.prop !== b.prop || a.value !== b.value)
+    if (a.prop !== b.prop || a.value !== b.value) {
         return false;
+    }
 
-    if (a.raws && trimValue(a.raws.before) !== trimValue(b.raws.before))
+    if (a.raws && trimValue(a.raws.before) !== trimValue(b.raws.before)) {
         return false;
+    }
     
     return true;
 }
 
 function ruleNodesAreEqual (a, b) {
-    if (a.nodes.length !== b.nodes.length) 
+    if (a.nodes.length !== b.nodes.length) {
         return false;
+    }
 
     return a.nodes.every((decl, i) => declsAreEqual(decl, b.nodes[i]));
 }
@@ -112,17 +121,18 @@ function ruleNodesAreEqual (a, b) {
 const joinSelectors = (...rules) => rules.map(s => s.selector).join();
 
 function difference (a, b) {
-    return a.filter(x => !~b.indexOf(x))
+    return a.filter(x => !~b.indexOf(x));
 }
 
 function intersect (nodesA, nodesB) {
-    if (!nodesA || !nodesB || !nodesA.length || !nodesB.length)
+    if (!nodesA || !nodesB || !nodesA.length || !nodesB.length) {
         return [];
+    }
 
     let nodes = nodesA.filter(a => {
-        let nodes = nodesB.filter(b => declsAreEqual(a, b));
-        let diff = difference(nodesB, nodes);
-        return nodes.length && nodes.every(d => !hasConflicts(d, diff));
+        let filtered = nodesB.filter(b => declsAreEqual(a, b));
+        let diff = difference(nodesB, filtered);
+        return filtered.length && filtered.every(d => !hasConflicts(d, diff));
     });
     let diff = difference(nodesA, nodes);
     return nodes.length && nodes.filter(decl => !hasConflicts(decl, diff));    
@@ -130,8 +140,9 @@ function intersect (nodesA, nodesB) {
 
 function ruleLength (rule, ignore = []) {
     let nodes = rule.nodes.filter(d => !~ignore.indexOf(d) && d.type === 'decl');
-    if (!nodes.length)
+    if (!nodes.length) {
         return 0;
+    }
 
     let length = rule.selector.length + 2;
     for (let node of nodes) {
@@ -145,8 +156,9 @@ function selectorMerger (browsers, compatibilityCache) {
     function partialMerge (rule, prev) {
         let intersection = intersect(rule.nodes, prev.nodes);
 
-        if (!intersection.length)
+        if (!intersection.length) {
             return;
+        }
 
         const origLength = ruleLength(prev) + ruleLength(rule);
 
@@ -157,9 +169,10 @@ function selectorMerger (browsers, compatibilityCache) {
         intersection = intersect(prev.nodes, intersection).concat(intersection);
         
         intersection.forEach(decl => {
-            var alreadyExists = newRule.nodes.some(node => declsAreEqual(node, decl));
-            if (alreadyExists)
+            const alreadyExists = newRule.nodes.some(node => declsAreEqual(node, decl));
+            if (alreadyExists) {
                 return;
+            }
 
             newRule.append(decl.clone());
         });
@@ -171,14 +184,17 @@ function selectorMerger (browsers, compatibilityCache) {
             prev.after(newRule);
             
             const prevNode = prev.prev();
-            if (prevNode && prevNode.type === 'rule')
+            if (prevNode && prevNode.type === 'rule') {
                 partialMerge(newRule, prevNode);
+            }
 
-            if (!rule.nodes.length)
+            if (!rule.nodes.length) {
                 rule.remove();
+            }
 
-            if (!prev.nodes.length)
+            if (!prev.nodes.length) {
                 prev.remove();
+            }
         }
     }
 
@@ -187,11 +203,13 @@ function selectorMerger (browsers, compatibilityCache) {
         const prev = rule.parent.nodes[index - 1];
         walkChildren(rule);
         
-        if (!prev || prev.type !== 'rule')
+        if (!prev || prev.type !== 'rule') {
             return;
+        }
 
-        if (!canMerge(rule, prev, browsers, compatibilityCache))
+        if (!canMerge(rule, prev, browsers, compatibilityCache)) {
             return;
+        }
 
         // Merge when declarations are exactly equal
         // e.g. h1 { color: red } h2 { color: red }
@@ -205,9 +223,10 @@ function selectorMerger (browsers, compatibilityCache) {
         // e.g. a { color: blue } a { font-weight: bold }
         if (rule.selector === prev.selector) {
             rule.walk(decl => {
-                var containsDecl = prev.nodes.some(d => declsAreEqual(decl, d));
-                if (containsDecl)
+                const containsDecl = prev.nodes.some(d => declsAreEqual(decl, d));
+                if (containsDecl) {
                     return;
+                }
 
                 prev.append(decl);
             });
@@ -223,24 +242,27 @@ function selectorMerger (browsers, compatibilityCache) {
         rule: handleRule,
         atrule: walkChildren,
         decl: noop,
-        comment: noop
+        comment: noop,
     };
 
     function walkChildren (root) {
-        if (!root.nodes || !root.nodes.length)
+        if (!root.nodes || !root.nodes.length) {
             return;
+        }
 
         let index = root.nodes.length;
         while (index-- > 0) {
             const lastNode = root.nodes[index];
             const nodeCount = root.nodes.length;
 
-            if (lastNode && lastNode.type)
+            if (lastNode && lastNode.type) {
                 handler[lastNode.type](lastNode);
+            }
 
             const offset = root.nodes.length - nodeCount;
-            if (offset > 0) 
+            if (offset > 0) {
                 index += offset;
+            }
         }
     }
 
