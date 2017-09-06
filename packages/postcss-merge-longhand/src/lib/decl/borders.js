@@ -376,6 +376,16 @@ function merge (rule) {
         decl.value = minifyTrbl(value);
     });
 
+    // border-spacing-hv -> border-spacing
+    rule.walkDecls('border-spacing', decl => {
+        const value = list.space(decl.value);
+
+        // merge vertical and horizontal dups
+        if (value.length > 1 && value[0] === value[1]) {
+            decl.value = value.slice(1).join(' ');
+        }
+    });
+
     // clean-up rules
     decls = getDecls(rule, allProperties);
     while (decls.length) {
