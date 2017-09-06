@@ -194,6 +194,20 @@ test(
 );
 
 test(
+    'should merge redundant border-spacing values',
+    processCss,
+    'h1{border-spacing:10px 10px;}',
+    'h1{border-spacing:10px;}'
+);
+
+test(
+    'should not merge different border-spacing values',
+    processCss,
+    'h1{border-spacing:10px 50px;}',
+    'h1{border-spacing:10px 50px;}'
+);
+
+test(
     'should produce the minimum css necessary',
     processCss,
     'h1{border-width:0;border-top:1px solid #e1e1e1}'
@@ -218,6 +232,13 @@ test(
     processCss,
     'h1{border:none;border-top:1px solid #d4d4d5;border-right:1px solid #d4d4d5}',
     'h1{border:1px solid #d4d4d5;border-bottom:none;border-left:none}'
+);
+
+test(
+    'should produce the minimum css necessary (5)',
+    processCss,
+    'h1{border-spacing:50px 50px;border-top:0 solid transparent;border-right:4em solid transparent;border-bottom:4em solid transparent;border-left:0 solid transparent;border-right-color:inherit}',
+    'h1{border-spacing:50px;border-color:transparent;border-style:solid;border-width:0 4em 4em 0;border-right-color:inherit}'
 );
 
 test(
