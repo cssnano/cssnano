@@ -1,9 +1,9 @@
 import {readFileSync as read} from 'fs';
 import {spawn} from 'child_process';
 import path from 'path';
+import colors from 'colors/safe';
 import test from 'ava';
-import stripAnsi from 'strip-ansi';
-import size, {table} from '..';
+import size, {table, numeric} from '../';
 
 let noopProcessorPath = path.resolve(__dirname, '../../processors/noop.js');
 
@@ -30,7 +30,18 @@ function setup (args) {
     });
 }
 
+test('cli', t => {
+    return setup(['test.css']).then(results => {
+        let out = results[0];
+        t.truthy(~out.indexOf('43 B'));
+        t.truthy(~out.indexOf('34 B'));
+        t.truthy(~out.indexOf('9 B'));
+        t.truthy(~out.indexOf('79.07%'));
+    });
+});
+
 test('cli with processor argument', t => {
+    console.log(noopProcessorPath);
     return setup(['-p', noopProcessorPath, 'test.css']).then(results => {
         let out = results[0];
         t.truthy(~out.indexOf('100%'));
@@ -62,27 +73,9 @@ test('api', t => {
     });
 });
 
-test('api options', t => {
-    return size(
-        '@namespace islands url("http://bar.yandex.ru/ui/islands");', {
-            discardUnused: false,
-        }
-    ).then(result => {
-        t.deepEqual(result.gzip.processed, "67 B");
-    });
-});
-
-test('cli', t => {
-    return setup(['test.css']).then(results => {
-        const out = results[0];
-        t.truthy(~out.indexOf('43 B'));
-        t.truthy(~out.indexOf('34 B'));
-        t.truthy(~out.indexOf('9 B'));
-        t.truthy(~out.indexOf('79.07%'));
-    });
-});
-
-const tableOutput = `
+test('table', t => {
+    return table(read('test.css', 'utf-8')).then(result => {
+        t.deepEqual(colors.stripColors(result), `
 ┌────────────┬──────────────┬────────┬────────┐
 │            │ Uncompressed │ Gzip   │ Brotli │
 ├────────────┼──────────────┼────────┼────────┤
@@ -93,11 +86,41 @@ const tableOutput = `
 │ Difference │ 9 B          │ 9 B    │ 11 B   │
 ├────────────┼──────────────┼────────┼────────┤
 │ Percent    │ 60.87%       │ 79.07% │ 59.26% │
-└────────────┴──────────────┴────────┴────────┘
-`.replace(/^\s+|\s+$/g, '');
+└────────────┴──────────────┴────────┴────────┘`.trim());
+    });
+});
 
-test('table', t => {
-    return table(read(__dirname + '/test.css', 'utf-8')).then(result => {
-        t.is(stripAnsi(result), tableOutput);
+test('numeric', t => {
+    return numeric(read('test.css', 'utf-8')).then(result => {
+        t.deepEqual(result, {
+            uncompressed: {
+                original: 23,
+                processed: 14,
+                difference: 9,
+                percent: 0.6087,
+            },
+            gzip: {
+                original: 43,
+                processed: 34,
+                difference: 9,
+                percent: 0.7907,
+            },
+            brotli: {
+                original: 27,
+                processed: 16,
+                difference: 11,
+                percent: 0.5926,
+            },
+        });
+    });
+});
+
+test('api options', t => {
+    return size(
+        '@namespace islands url("http://bar.yandex.ru/ui/islands");', {
+            discardUnused: false,
+        }
+    ).then(result => {
+        t.deepEqual(result.gzip.processed, "67 B");
     });
 });

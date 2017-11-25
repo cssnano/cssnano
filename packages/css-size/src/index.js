@@ -1,9 +1,9 @@
-import nano from 'lerna:cssnano';
 import prettyBytes from 'pretty-bytes';
 import {sync as gzip} from 'gzip-size';
 import {sync as brotli} from 'brotli-size';
 import Table from 'cli-table';
 import round from 'round-precision';
+import nano from 'cssnano';
 
 const getBinarySize = (string) => {
     return Buffer.byteLength(string, 'utf8');
@@ -17,36 +17,36 @@ const cssSize = (css, opts, processor) => {
     processor = processor || nano.process.bind(nano);
     css = css.toString();
     return processor(css, opts).then(result => {
-        let originalUncompressed = getBinarySize(css);
-        let minifiedUncompressed = getBinarySize(result.css);
-
-        let originalGzip = gzip(css);
-        let minifiedGzip = gzip(result.css);
-
-        let originalBrotli = brotli(css);
-        let minifiedBrotli = brotli(result.css);
-
-        return {
-            uncompressed: {
-                original: prettyBytes(originalUncompressed),
-                processed: prettyBytes(minifiedUncompressed),
-                difference: prettyBytes(originalUncompressed - minifiedUncompressed),
-                percent: percentDifference(originalUncompressed, minifiedUncompressed),
-            },
-            gzip: {
-                original: prettyBytes(originalGzip),
-                processed: prettyBytes(minifiedGzip),
-                difference: prettyBytes(originalGzip - minifiedGzip),
-                percent: percentDifference(originalGzip, minifiedGzip),
-            },
-            brotli: {
-                original: prettyBytes(originalBrotli),
-                processed: prettyBytes(minifiedBrotli),
-                difference: prettyBytes(originalBrotli - minifiedBrotli),
-                percent: percentDifference(originalBrotli, minifiedBrotli),
-            },
-        };
+        let sizes = computeSizes(css, result.css);
+        deltasAsStrings(sizes.uncompressed);
+        deltasAsStrings(sizes.gzip);
+        deltasAsStrings(sizes.brotli);
+        return sizes;
     });
+};
+
+const deltasAsStrings = (sizes) => {
+    sizes.difference = prettyBytes(sizes.original - sizes.processed);
+    sizes.percent = percentDifference(sizes.original, sizes.processed);
+    sizes.original = prettyBytes(sizes.original);
+    sizes.processed = prettyBytes(sizes.processed);
+};
+
+const computeSizes = (original, minified) => {
+    return {
+        uncompressed: {
+            original: getBinarySize(original),
+            processed: getBinarySize(minified),
+        },
+        gzip: {
+            original: gzip(original),
+            processed: gzip(minified),
+        },
+        brotli: {
+            original: brotli(original),
+            processed: brotli(minified),
+        },
+    };
 };
 
 const tableize = (data) => {
@@ -80,6 +80,23 @@ export function table (css, opts, processor) {
         output.push.apply(output, result.rows);
         return output.toString();
     });
+};
+
+export function numeric (css, opts, processor) {
+    processor = processor || nano.process.bind(nano);
+    css = css.toString();
+    return processor(css, opts).then(result => {
+        let sizes = computeSizes(css, result.css);
+        deltasAsNumbers(sizes.uncompressed);
+        deltasAsNumbers(sizes.gzip);
+        deltasAsNumbers(sizes.brotli);
+        return sizes;
+    });
+}
+
+const deltasAsNumbers = (sizes) => {
+    sizes.difference = sizes.original - sizes.processed;
+    sizes.percent = round(sizes.processed / sizes.original, 4);
 };
 
 export default cssSize;

@@ -77,6 +77,32 @@ cssSize.table(css, nanoOpts, process).then(function (table) {
 */
 
 });
+
+cssSize.numeric(css, nanoOpts, process).then(function (results) {
+    console.log(results);
+/*
+{
+  uncompressed: {
+    original: 23,
+    processed: 14,
+    difference: 9,
+    percent: 0.6087
+  },
+  gzip: {
+    original: 43,
+    processed: 34,
+    difference: 9,
+    percent: 0.7907
+  },
+  brotli: {
+    original: 27,
+    processed: 16,
+    difference: 11,
+    percent: 0.5926
+  }
+}
+*/
+});
 ```
 
 
@@ -89,6 +115,12 @@ original & minified sizes (uncompressed, gzipped, and brotli'd), plus
 difference and percentage results. The `options` object is passed
 through to the `processor` should you wish to compare sizes using
 different options than the defaults.
+
+### `cssSize.numeric(input, options, processor)`
+
+Exactly like `cssSize(...)` except the results are returned as numbers
+instead of preformatted strings. In numeric mode, the `percentage` value is a
+fraction (rounded to 4 significant digits), instead of being scaled to `100%`.
 
 ### `cssSize.table(input, options, processor)`
 
