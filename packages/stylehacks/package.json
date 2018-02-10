@@ -33,7 +33,7 @@
   },
   "repository": "ben-eb/cssnano",
   "dependencies": {
-    "browserslist": "^2.0.0",
+    "browserslist": "^3.0.0",
     "postcss": "^6.0.0",
     "postcss-selector-parser": "^3.0.0-rc.0"
   },
