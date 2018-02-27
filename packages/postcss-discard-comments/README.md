@@ -8,7 +8,7 @@
 With [npm](https://npmjs.org/package/postcss-discard-comments) do:
 
 ```
-npm install postcss-discard-comments --save
+npm install postcss-discard-comments --save-dev
 ```
 
 
