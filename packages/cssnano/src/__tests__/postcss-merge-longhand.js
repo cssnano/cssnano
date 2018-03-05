@@ -100,6 +100,13 @@ test(
 );
 
 test(
+    'should keep shorthand styles above longhand when merging',
+    processCss,
+    'h1{border-width:1px;border-top-width:0;border-left-width:0;border-style:solid;border-color:#000;}',
+    'h1{border:1px solid #000;border-top-width:0;border-left-width:0;}',
+);
+
+test(
     'should convert 4 values to 1',
     processCss,
     'h1{margin:10px 10px 10px 10px}',
