@@ -26,10 +26,79 @@ test(
 );
 
 test(
+    'should unquote font names with one character name',
+    processCSS,
+    'h1{font-family:"A"}',
+    'h1{font-family:A}'
+);
+
+test(
+    'should unquote font names with space at the start',
+    processCSS,
+    'h1{font-family:" Helvetica Neue"}',
+    'h1{font-family:\\ Helvetica Neue}'
+);
+
+test(
+    'should unquote font names with space at the end',
+    processCSS,
+    'h1{font-family:"Helvetica Neue "}',
+    'h1{font-family:Helvetica Neue\\ }'
+);
+
+test(
     'should unquote and join identifiers with a slash, if numeric',
     processCSS,
     'h1{font-family:"Bond 007"}',
     'h1{font-family:Bond\\ 007}'
+);
+
+test(
+    'should not unquote font name contains generic font family word at start',
+    passthroughCSS,
+    'h1{font-family:"serif custom font"}'
+);
+
+test(
+    'should not unquote font name contains generic font family word at middle',
+    passthroughCSS,
+    'h1{font-family:"custom serif font"}'
+);
+
+test(
+    'should not unquote font name contains generic font family word at end',
+    passthroughCSS,
+    'h1{font-family:"custom font serif"}'
+);
+
+test(
+    'should not unquote font name contains monospace generic font family word',
+    passthroughCSS,
+    'h1{font-family:"Monospace Custom Font"}'
+);
+
+test(
+    'should not unquote font name contains monospace generic font family word with spaces',
+    passthroughCSS,
+    'h1{font-family:"  Monospace Custom Font  "}'
+);
+
+test(
+    'should unquote and join identifiers with a slash',
+    passthroughCSS,
+    'h1{font-family:Ahem\\!}'
+);
+
+test(
+    'should unquote with escaped `/` character',
+    passthroughCSS,
+    'h1{font-family:Red\\/Black}'
+);
+
+test(
+    'should unquote with multiple escaped ` ` character',
+    passthroughCSS,
+    'h1{font-family:Hawaii \\  \\  \\  \\  \\ \\\\35}'
 );
 
 test(
@@ -66,6 +135,20 @@ test(
 );
 
 test(
+    'should dedupe lowercase generic font family name',
+    processCSS,
+    'h1{font-family:Helvetica,Arial,sans-serif,sans-serif}',
+    'h1{font-family:Helvetica,Arial,sans-serif}'
+);
+
+test(
+    'should dedupe uppercase generic font family name',
+    processCSS,
+    'h1{font-family:Helvetica,Arial,SANS-SERIF,SANS-SERIF}',
+    'h1{font-family:Helvetica,Arial,SANS-SERIF}'
+);
+
+test(
     'should discard the rest of the declaration after a keyword',
     processCSS,
     'h1{font-family:Arial,sans-serif,Arial,"Trebuchet MS"}',
@@ -88,10 +171,18 @@ test(
 );
 
 test(
-    'should convert the font shorthand property, unquoted',
+    'should convert the font shorthand property with upperlower keyword, unquoted',
     processCSS,
     'h1{font:italic Helvetica Neue,sans-serif,Arial}',
     'h1{font:italic Helvetica Neue,sans-serif}',
+    {removeAfterKeyword: true}
+);
+
+test(
+    'should convert the font shorthand property with uppercase keyword, unquoted',
+    processCSS,
+    'h1{font:italic Helvetica Neue,SANS-SERIF,Arial}',
+    'h1{font:italic Helvetica Neue,SANS-SERIF}',
     {removeAfterKeyword: true}
 );
 
@@ -106,7 +197,7 @@ test(
     'should join non-digit identifiers in the shorthand property',
     processCSS,
     'h1{font:italic "Bond !",serif}',
-    'h1{font:italic Bond\\ !,serif}'
+    'h1{font:italic Bond \\!,serif}'
 );
 
 test(
@@ -114,6 +205,48 @@ test(
     processCSS,
     'h1{font-family:"$42"}',
     'h1{font-family:\\$42}'
+);
+
+test(
+    'should correctly escape special characters at the end',
+    passthroughCSS,
+    'h1{font-family:Helvetica Neue\\ }'
+);
+
+test(
+    'should correctly escape multiple special with numbers font name',
+    passthroughCSS,
+    'h1{font-family:\\31 \\ 2\\ 3\\ 4\\ 5}'
+);
+
+test(
+    'should correctly escape multiple ` `',
+    passthroughCSS,
+    'h1{font-family:f \\  \\  \\ \\ o \\  \\  \\ \\ o}'
+);
+
+test(
+    'should correctly escape only spaces font name',
+    passthroughCSS,
+    'h1{font-family:\\ \\ \\ }'
+);
+
+test(
+    'should correctly escape only two spaces font name',
+    passthroughCSS,
+    'h1{font-family:"  "}'
+);
+
+test(
+    'should correctly escape only spaces font name with quotes',
+    passthroughCSS,
+    'h1{font-family:"     "}'
+);
+
+test(
+    'should unquote multiple escape `[` characters',
+    passthroughCSS,
+    'h1{font-family:"STHeiti Light [STXihei]"}'
 );
 
 test(
@@ -194,9 +327,15 @@ test(
 );
 
 test(
-    'should not dedupe monospace',
+    'should not dedupe lower case monospace',
     passthroughCSS,
     'font-family:monospace,monospace'
+);
+
+test(
+    'should not dedupe uppercase monospace',
+    passthroughCSS,
+    'font-family:MONOSPACE,MONOSPACE'
 );
 
 test(
@@ -212,16 +351,29 @@ test(
 );
 
 test(
-    'should minify font-weight',
+    'should minify lowercase font-weight',
     processCSS,
     'h1{font-weight:bold}',
     'h1{font-weight:700}'
 );
 
 test(
-    'should pass through unrelated font properties',
+    'should minify uppercase font-weight',
+    processCSS,
+    'h1{font-weight:BOLD}',
+    'h1{font-weight:700}'
+);
+
+test(
+    'should pass through unrelated font lowercase properties',
     passthroughCSS,
     'h1{font-style:normal}'
+);
+
+test(
+    'should pass through unrelated font uppercase properties',
+    passthroughCSS,
+    'h1{font-style:NORMAL}'
 );
 
 test(
