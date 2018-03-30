@@ -22,7 +22,16 @@ test(
     'should normalise "all" in @media queries',
     processCSS,
     '@media all{h1{color:blue}}',
-    '@media{h1{color:blue}}'
+    '@media{h1{color:blue}}',
+    {env: 'chrome58'}
+);
+
+test(
+    'should not normalise "all" in @media queries',
+    processCSS,
+    '@media all{h1{color:blue}}',
+    '@media all{h1{color:blue}}',
+    {env: 'ie11'}
 );
 
 test(

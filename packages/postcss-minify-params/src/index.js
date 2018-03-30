@@ -1,3 +1,4 @@
+import browserslist from 'browserslist';
 import postcss from 'postcss';
 import valueParser, {stringify} from 'postcss-value-parser';
 import sort from 'alphanum-sort';
@@ -28,7 +29,7 @@ function removeNode (node) {
     node.type = 'word';
 }
 
-function transform (rule) {
+function transform (legacy, rule) {
     // We should not re-arrange parameters for css-modules' @value
     // at-rule. For example:
     //
@@ -63,15 +64,17 @@ function transform (rule) {
                 rule.name === 'media' &&
                 !prevWord
             ) {
-                const nextSpace = params.nodes[index + 1];
                 const nextWord = params.nodes[index + 2];
-                const secondSpace = params.nodes[index + 3];
+                if (!legacy || nextWord) {
+                    removeNode(node);
+                }
                 if (nextWord && nextWord.value === 'and') {
+                    const nextSpace = params.nodes[index + 1];
+                    const secondSpace = params.nodes[index + 3];
                     removeNode(nextWord);
                     removeNode(nextSpace);
                     removeNode(secondSpace);
                 }
-                removeNode(node);
             }
         }
     }, true);
@@ -85,6 +88,19 @@ function transform (rule) {
     }
 }
 
+function hasAllBug (browser) {
+    return ~['ie 10', 'ie 11'].indexOf(browser);
+}
+
 export default postcss.plugin('postcss-minify-params', () => {
-    return css => css.walkAtRules(transform);
+    return (css, result) => {
+        const resultOpts = result.opts || {};
+        const browsers = browserslist(null, {
+            stats: resultOpts.stats,
+            path: __dirname,
+            env: resultOpts.env,
+        });
+
+        return css.walkAtRules(transform.bind(null, browsers.some(hasAllBug)));
+    };
 });
