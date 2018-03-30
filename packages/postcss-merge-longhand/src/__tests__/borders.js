@@ -280,3 +280,17 @@ test(
     'section{h1{border-color:red;border-width:1px;border-style:solid}}',
     'section{h1{border:1px solid red}}'
 );
+
+test(
+    'should not merge custom properties',
+    processCss,
+    ':root{--my-border-width:2px;--my-border-style:solid;--my-border-color:#fff;}',
+    ':root{--my-border-width:2px;--my-border-style:solid;--my-border-color:#fff;}'
+);
+
+test(
+    'should not merge custom properties with variables',
+    processCss,
+    ':root{--my-border-width:var(--my-border-width);--my-border-style:var(--my-border-style);--my-border-color:var(--my-border-color);}',
+    ':root{--my-border-width:var(--my-border-width);--my-border-style:var(--my-border-style);--my-border-color:var(--my-border-color);}'
+);
