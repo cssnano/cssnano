@@ -17,18 +17,21 @@ export default plugin('postcss-reduce-initial', () => {
         });
         const initialSupport = isSupported('css-initial-value', browsers);
         css.walkDecls(decl => {
-            const {prop} = decl;
+            const prop = decl.prop.toLowerCase();
+            const value = decl.value.toLowerCase();
             if (
                 initialSupport &&
                 has(toInitial, prop) &&
-                decl.value === toInitial[prop]
+                value === toInitial[prop]
             ) {
+                decl.prop = prop;
                 decl.value = initial;
                 return;
             }
-            if (decl.value !== initial || !fromInitial[prop]) {
+            if (value !== initial || !fromInitial[prop]) {
                 return;
             }
+            decl.prop = prop;
             decl.value = fromInitial[prop];
         });
     };
