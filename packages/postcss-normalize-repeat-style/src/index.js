@@ -13,6 +13,7 @@ const repeatKeywords = mappings.map((mapping) => mapping[0]);
 const getMatch = getMatchFactory(mappings);
 
 function transform (decl) {
+    decl.prop = decl.prop.toLowerCase();
     const values = valueParser(decl.value);
     if (values.nodes.length === 1) {
         return;
@@ -62,5 +63,5 @@ function transform (decl) {
 }
 
 export default postcss.plugin('postcss-normalize-repeat-style', () => {
-    return css => css.walkDecls(/background(-repeat)?|(-webkit-)?mask-repeat/, transform);
+    return css => css.walkDecls(/background(-repeat)?|(-webkit-)?mask-repeat/i, transform);
 });

@@ -22,6 +22,11 @@ function suite (t, fixture, expected) {
         ),
         processCSS(
             t,
+            `BACKGROUND:#000 url(cat.jpg) ${fixture} 50%`,
+            `background:#000 url(cat.jpg) ${expected} 50%`
+        ),
+        processCSS(
+            t,
             `background-repeat:${fixture}`,
             `background-repeat:${expected}`
         ),
