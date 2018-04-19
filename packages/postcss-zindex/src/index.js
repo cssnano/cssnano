@@ -7,7 +7,7 @@ export default plugin('postcss-zindex', (opts = {}) => {
         const nodes = [];
         let abort = false;
         // First pass; cache all z indexes
-        css.walkDecls('z-index', (decl) => {
+        css.walkDecls(/z-index/i, (decl) => {
             // Check that no negative values exist. Rebasing is only
             // safe if all indices are positive numbers.
             if (decl.value[0] === '-') {

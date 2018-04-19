@@ -12,6 +12,13 @@ test(
 );
 
 test(
+    'should optimise large z-index values (2)',
+    processCSS,
+    'h1{Z-INDEX:9999}',
+    'h1{Z-INDEX:1}'
+);
+
+test(
     'should optimise multiple ascending z-index values',
     processCSS,
     'h1{z-index:150}h2{z-index:350}h3{z-index:600}',
