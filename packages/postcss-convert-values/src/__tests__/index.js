@@ -105,6 +105,12 @@ test(
 );
 
 test(
+    'should not mangle flex basis (2)',
+    passthroughCSS,
+    'h1{FLEX-BASIC:0%}'
+);
+
+test(
     'should not mangle values without units',
     passthroughCSS,
     'h1{z-index:5}'
@@ -118,6 +124,13 @@ test(
 );
 
 test(
+    'should operate in calc values (2)',
+    processCSS,
+    'h1{width:CALC(192px + 2em - (0px * 4))}',
+    'h1{width:CALC(2in + 2em - (0px * 4))}'
+);
+
+test(
     'should not convert zero values in calc',
     passthroughCSS,
     'h1{width:calc(0em)}'
@@ -127,6 +140,12 @@ test(
     'should not mangle values outside of its domain',
     passthroughCSS,
     'h1{background:url(a.png)}'
+);
+
+test(
+    'should not mangle values outside of its domain (2)',
+    passthroughCSS,
+    'h1{background:URL(a.png)}'
 );
 
 test(
@@ -217,6 +236,12 @@ test(
 );
 
 test(
+    'should not mangle data urls (2)',
+    passthroughCSS,
+    '.has-svg:before{content:URL("data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="-0.5 0 20 15"><rect fill="white" stroke="none" transform="rotate(45 4.0033 8.87436)" height="5" width="6.32304" y="6.37436" x="0.84178"></rect><rect fill="white" stroke="none" transform="rotate(45 11.1776 7.7066)" width="5" height="16.79756" y="-0.69218" x="8.67764"></rect></svg>")}'
+);
+
+test(
     'should convert angle units',
     processCSS,
     'h1{transform: rotate(0.25turn);transform: rotate(0.25TURN)}',
@@ -292,6 +317,13 @@ test(
 );
 
 test(
+    'should strip the unit from 0 in max-height & height props (2)',
+    processCSS,
+    'h1{height:0em;MAX-HEIGHT:0em}',
+    'h1{height:0;MAX-HEIGHT:0}'
+);
+
+test(
     'should round pixel values to two decimal places',
     processCSS,
     'h1{right:6.66667px}',
@@ -335,6 +367,13 @@ test(
 );
 
 test(
+    'should keep stripping zeroes from opacity (2)',
+    processCSS,
+    'h1{OPACITY:0.0625}',
+    'h1{OPACITY:.0625}'
+);
+
+test(
     'should handle global values for opacity',
     passthroughCSS,
     'h1{opacity:initial}'
@@ -345,6 +384,13 @@ test(
     processCSS,
     'h1{shape-image-threshold:150;shape-image-threshold:15;shape-image-threshold:1.5}',
     'h1{shape-image-threshold:1;shape-image-threshold:1;shape-image-threshold:1}'
+);
+
+test(
+    'should clamp shape-image-threshold to 1 maximum (2)',
+    processCSS,
+    'h1{SHAPE-IMAGE-THRESHOLD:150;SHAPE-IMAGE-THRESHOLD:15;SHAPE-IMAGE-THRESHOLD:1.5}',
+    'h1{SHAPE-IMAGE-THRESHOLD:1;SHAPE-IMAGE-THRESHOLD:1;SHAPE-IMAGE-THRESHOLD:1}'
 );
 
 test(
@@ -378,6 +424,14 @@ test(
         `should not strip the percentage from 0 in SVG animation, for IE (${property})`,
         passthroughCSS,
         `@keyframes a{0%{${property}:200%}to{${property}:0%}}`
+    );
+});
+
+['STROKE-DASHARRAY', 'STROKE-DASHOFFSET', 'STROKE-WIDTH'].forEach(property => {
+    test(
+        `should not strip the percentage from 0 in SVG animation, for IE (${property}) (2)`,
+        passthroughCSS,
+        `@KEYFRAMES a{0%{${property}:200%}to{${property}:0%}}`
     );
 });
 
