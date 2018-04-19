@@ -60,7 +60,7 @@ function rotate3d (node, values) {
     }
 }
 
-function rotateZ (node) {
+function rotatez (node) {
     // rotateZ(rz) => rotate(rz)
     node.value = 'rotate';
 }
@@ -143,7 +143,7 @@ function translate3d (node, values) {
 const reducers = {
     matrix3d,
     rotate3d,
-    rotateZ,
+    rotatez,  // rotateZ
     scale,
     scale3d,
     translate,
@@ -151,7 +151,8 @@ const reducers = {
 };
 
 function reduce (node) {
-    const {nodes, type, value} = node;
+    const {nodes, type} = node;
+    const value = node.value.toLowerCase();
     if (type === 'function' && has(reducers, value)) {
         reducers[value](node, nodes.reduce(getValues, []));
     }
@@ -160,7 +161,8 @@ function reduce (node) {
 
 export default postcss.plugin('postcss-reduce-transforms', () => {
     return css => {
-        css.walkDecls(/transform$/, decl => {
+        css.walkDecls(/transform$/i, decl => {
+            decl.prop = decl.prop.toLowerCase();
             decl.value = valueParser(decl.value).walk(reduce).toString();
         });
     };
