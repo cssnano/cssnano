@@ -10,6 +10,10 @@ function testTimingFunction (t, fixture, expected) {
         processCSS(t, `animation-timing-function:${fixture}`, `animation-timing-function:${expected}`),
         processCSS(t, `transition:color 3s ${fixture}`, `transition:color 3s ${expected}`),
         processCSS(t, `transition-timing-function:${fixture}`, `transition-timing-function:${expected}`),
+        processCSS(t, `ANIMATION:fade 3s ${fixture}`, `animation:fade 3s ${expected}`),
+        processCSS(t, `ANIMATION-TIMING-FUNCTION:${fixture}`, `animation-timing-function:${expected}`),
+        processCSS(t, `TRANSITION:color 3s ${fixture}`, `transition:color 3s ${expected}`),
+        processCSS(t, `TRANSITION-TIMING-FUNCTION:${fixture}`, `transition-timing-function:${expected}`),
     ]);
 }
 
@@ -20,6 +24,12 @@ function testPassthrough (t, fixture) {
 test(
     testTimingFunction,
     'cubic-bezier(0.25, 0.1, 0.25, 1)',
+    'ease'
+);
+
+test(
+    testTimingFunction,
+    'CUBIC-BEZIER(0.25, 0.1, 0.25, 1)',
     'ease'
 );
 
@@ -54,8 +64,19 @@ test(
 );
 
 test(
+    testTimingFunction,
+    'STEPS(1, start)',
+    'step-start'
+);
+
+test(
     testPassthrough,
     'steps(1)'
+);
+
+test(
+    testPassthrough,
+    'STEPS(1)'
 );
 
 test(
@@ -77,6 +98,11 @@ test(
 test(
     testPassthrough,
     'var(--anim1)'
+);
+
+test(
+    testPassthrough,
+    'VAR(--anim1)'
 );
 
 test(
