@@ -4,6 +4,12 @@
   suffix: " ";
 }
 
+@COUNTER-STYLE my-alpha {
+    system: fixed;
+    symbols: A B C;
+    suffix: " ";
+}
+
 @counter-style my-alpha {
   system: fixed;
   symbols: Ⓐ Ⓑ Ⓒ;
