@@ -45,32 +45,38 @@ function clampOpacity (node) {
     }
 }
 
-function shouldStripPercent ({value, prop, parent}) {
+function shouldStripPercent (decl) {
+    const {parent} = decl;
+    const prop = decl.prop.toLowerCase();
+    const value = decl.value.toLowerCase();
     return ~value.indexOf('%') &&
         (prop === 'max-height' || prop === 'height') ||
         parent.parent &&
-        parent.parent.name === 'keyframes' &&
+        parent.parent.name &&
+        parent.parent.name.toLowerCase() === 'keyframes' &&
         prop === 'stroke-dasharray' ||
         prop === 'stroke-dashoffset' ||
         prop === 'stroke-width';
 }
 
 function transform (opts, decl) {
-    const {prop} = decl;
+    const prop = decl.prop.toLowerCase();
     if (~prop.indexOf('flex') || prop.indexOf('--') === 0) {
         return;
     }
 
     decl.value = valueParser(decl.value).walk(node => {
+        const value = node.value.toLowerCase();
+
         if (node.type === 'word') {
             parseWord(node, opts, shouldStripPercent(decl));
             if (prop === 'opacity' || prop === 'shape-image-threshold') {
                 clampOpacity(node);
             }
         } else if (node.type === 'function') {
-            if (node.value === 'calc' ||
-                node.value === 'hsl' ||
-                node.value === 'hsla') {
+            if (value === 'calc' ||
+                value === 'hsl' ||
+                value === 'hsla') {
                 walk(node.nodes, n => {
                     if (n.type === 'word') {
                         parseWord(n, opts, true);
@@ -78,7 +84,7 @@ function transform (opts, decl) {
                 });
                 return false;
             }
-            if (node.value === 'url') {
+            if (value === 'url') {
                 return false;
             }
         }
