@@ -107,10 +107,24 @@ test(
 );
 
 test(
+    'should minimise whitespace inside the url function (2)',
+    processCSS,
+    'h1{background:url(               )}',
+    'h1{background:url()}'
+);
+
+test(
     'should minimise whitespace inside the url string',
     processCSS,
     'h1{background:url("               test.png      ")}',
     'h1{background:url(test.png)}'
+);
+
+test(
+    'should minimise whitespace inside the url string (2)',
+    processCSS,
+    'h1{background:url("               ")}',
+    'h1{background:url()}'
 );
 
 test(
@@ -248,6 +262,12 @@ test(
     'should pass through non-url empty functions',
     passthroughCSS,
     'h1{shape-outside:circle()}'
+);
+
+test(
+    'should pass through empty url',
+    passthroughCSS,
+    'h1{background:url()}'
 );
 
 test(
