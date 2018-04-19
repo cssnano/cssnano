@@ -13,10 +13,17 @@ const {
 } = processCSSWithPresetFactory('default');
 
 test(
-    'should minify color values',
+    'should minify lowercase color values',
     withDefaultPreset,
     'h1{color:yellow}',
     'h1{color:#ff0}'
+);
+
+test(
+    'should minify uppercase color values',
+    withDefaultPreset,
+    'h1{COLOR:YELLOW}',
+    'h1{COLOR:#ff0}'
 );
 
 test(
@@ -52,6 +59,27 @@ test(
     withDefaultPreset,
     'h1{text-shadow:1px 1px 2px hsl(0,0%,100%)}',
     'h1{text-shadow:1px 1px 2px #fff}'
+);
+
+test(
+    'should minify color values (7)',
+    withDefaultPreset,
+    'h1{background:HSLA(134, 50%, 50%, 1)}',
+    'h1{background:#40bf5e}'
+);
+
+test(
+    'should minify color values (8)',
+    withDefaultPreset,
+    'h1{background:#FFFFFF}',
+    'h1{background:#fff}'
+);
+
+test(
+    'should minify color values (9)',
+    withDefaultPreset,
+    'h1{background:#F0FFFF}',
+    'h1{background:azure}'
 );
 
 test(
@@ -121,9 +149,15 @@ test(
 );
 
 test(
-    'should not minify in filter properties',
+    'should not minify in lowercase filter properties',
     passthroughDefault,
     'h1{filter:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff)}'
+);
+
+test(
+    'should not minify in uppercase filter properties',
+    passthroughDefault,
+    'h1{FILTER:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff)}'
 );
 
 test(
@@ -134,9 +168,15 @@ test(
 );
 
 test(
-    'should not minify in calc values',
+    'should not minify in lowercase calc values',
     passthroughCSS,
     'h1{width:calc(100vw / 2 - 6px + 0)}'
+);
+
+test(
+    'should not minify in uppercase calc values',
+    passthroughCSS,
+    'h1{width:CALC(100vw / 2 - 6px + 0)}'
 );
 
 test(
@@ -178,6 +218,20 @@ test(
     processCSS,
     'h1{background:linear-gradient(rgba(0,0,0,0)0%, blue 100%)}',
     'h1{background:linear-gradient(transparent 0%, #00f 100%)}'
+);
+
+test(
+    'should add extra spaces when converting rgb (3)',
+    processCSS,
+    'h1{background:rgb(1,2,3)url(bar.png)}',
+    'h1{background:#010203 url(bar.png)}'
+);
+
+test(
+    'should save extra spaces when converting hex',
+    withDefaultPreset,
+    'h1{background:#F0FFFF url(bar.png)}',
+    'h1{background:azure url(bar.png)}'
 );
 
 test(

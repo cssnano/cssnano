@@ -19,12 +19,12 @@ function transform (legacy, decl) {
     const ast = valueParser(decl.value);
     walk(ast, (node, index, parent) => {
         if (node.type === 'function') {
-            if (/^(rgb|hsl)a?$/.test(node.value)) {
+            if (/^(rgb|hsl)a?$/i.test(node.value)) {
                 const {value} = node;
                 node.value = colormin(stringify(node), legacy);
                 node.type = 'word';
                 const next = parent.nodes[index + 1];
-                if (node.value !== value && next && next.type === 'word') {
+                if (node.value !== value && next && (next.type === 'word' || next.type === 'function')) {
                     parent.nodes.splice(index + 1, 0, {type: 'space', value: ' '});
                 }
             } else if (node.value === 'calc') {
