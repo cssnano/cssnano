@@ -19,6 +19,13 @@ test(
 );
 
 test(
+    'should strip double quotes uppercase URL',
+    processCSS,
+    'h1{background:URL("cat.jpg")}',
+    'h1{background:URL(cat.jpg)}'
+);
+
+test(
     'should escape special characters',
     processCSS,
     'h1{background:url("http://website.com/assets)_test.png")}',
@@ -135,9 +142,47 @@ test(
 );
 
 test(
+    'should not mangle mozila extension urls',
+    processCSS,
+    'h1{background-image:url(\'moz-extension://__MSG_@@extension_id__/someFile.png\')}',
+    'h1{background-image:url(moz-extension://__MSG_@@extension_id__/someFile.png)}'
+);
+
+test(
+    'should not mangle other extension urls',
+    processCSS,
+    'h1{background-image:url(\'other-other-extension://__MSG_@@extension_id__/someFile.png\')}',
+    'h1{background-image:url(other-other-extension://__MSG_@@extension_id__/someFile.png)}'
+);
+
+test(
     'should not mangle data urls',
     passthroughCSS,
     '.has-svg:before{content:url("data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="-0.5 0 20 15"><rect fill="white" stroke="none" transform="rotate(45 4.0033 8.87436)" height="5" width="6.32304" y="6.37436" x="0.84178"></rect><rect fill="white" stroke="none" transform="rotate(45 11.1776 7.7066)" width="5" height="16.79756" y="-0.69218" x="8.67764"></rect></svg>")}',
+);
+
+test(
+    'should not mangle empty data urls',
+    passthroughCSS,
+    '.has-svg:before{content:url(data:,Hello%2C%20World!)}',
+);
+
+test(
+    'should not mangle plain data urls',
+    passthroughCSS,
+    '.has-svg:before{content:url(data:text/plain;base64,SGVsbG8sIFdvcmxkIQ%3D%3D)}',
+);
+
+test(
+    'should not mangle text/html data urls',
+    passthroughCSS,
+    '.has-svg:before{content:url(data:text/html,%3Ch1%3EHello%2C%20World!%3C%2Fh1%3E)}',
+);
+
+test(
+    'should not mangle text/html data urls (2)',
+    passthroughCSS,
+    '.has-svg:before{content:url("data:text/html,%3Ch1%3EHello%2C%20World!%3C%2Fh1%3E")}',
 );
 
 test(
@@ -171,6 +216,13 @@ test(
     processCSS,
     '@namespace islands " http://bar.yandex.ru/ui/islands ";',
     '@namespace islands "http://bar.yandex.ru/ui/islands";'
+);
+
+test(
+    'should optimise @namespace urls (4)',
+    processCSS,
+    '@NAMESPACE islands " http://bar.yandex.ru/ui/islands ";',
+    '@NAMESPACE islands "http://bar.yandex.ru/ui/islands";'
 );
 
 test(
