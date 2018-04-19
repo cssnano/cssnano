@@ -6,6 +6,15 @@ import isAbsolute from 'is-absolute-url';
 
 const multiline = /\\[\r\n]/;
 const escapeChars = /([\s\(\)"'])/g;
+const ignoredPatterns = [
+    'data:image/',
+    'data:application/',
+    'data:font/',
+];
+const extensionsPatterns = [
+    'chrome-extension',
+    'moz-extension',
+];
 
 function convert (url, options) {
     if (isAbsolute(url) || !url.indexOf('//')) {
@@ -28,6 +37,11 @@ function transformNamespace (rule) {
     }).toString();
 }
 
+function urlContains (array, url) {
+    const regex = new RegExp(array.join('|'));
+    return regex.test(url);
+}
+
 function transformDecl (decl, opts) {
     decl.value = valueParser(decl.value).walk(node => {
         if (
@@ -44,15 +58,11 @@ function transformDecl (decl, opts) {
         node.before = node.after = '';
         url.value = url.value.trim().replace(multiline, '');
 
-        if (
-            ~url.value.indexOf('data:image/') ||
-            ~url.value.indexOf('data:application/') ||
-            ~url.value.indexOf('data:font/')
-        ) {
+        if (urlContains(ignoredPatterns, url.value)) {
             return false;
         }
-
-        if (!~url.value.indexOf('chrome-extension')) {
+ 
+        if (!urlContains(extensionsPatterns, url.value)) {
             url.value = convert(url.value, opts);
         }
 
