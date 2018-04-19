@@ -4,16 +4,16 @@ const OVERRIDABLE_RULES = ['keyframes', 'counter-style'];
 const SCOPE_RULES = ['media', 'supports'];
 
 function isOverridable (name) {
-    return ~OVERRIDABLE_RULES.indexOf(postcss.vendor.unprefixed(name));
+    return ~OVERRIDABLE_RULES.indexOf(postcss.vendor.unprefixed(name.toLowerCase()));
 }
 
 function isScope (name) {
-    return ~SCOPE_RULES.indexOf(postcss.vendor.unprefixed(name));
+    return ~SCOPE_RULES.indexOf(postcss.vendor.unprefixed(name.toLowerCase()));
 }
 
 function getScope (node) {
     let current = node.parent;
-    const chain = [node.name, node.params];
+    const chain = [node.name.toLowerCase(), node.params];
     do {
         if (current.type === 'atrule' && isScope(current.name)) {
             chain.unshift(current.name + ' ' + current.params);
