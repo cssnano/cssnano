@@ -16,7 +16,7 @@ function convert (url, options) {
 
 function transformNamespace (rule) {
     rule.params = valueParser(rule.params).walk(node => {
-        if (node.type === 'function' && node.value === 'url' && node.nodes.length) {
+        if (node.type === 'function' && node.value.toLowerCase() === 'url' && node.nodes.length) {
             node.type = 'string';
             node.quote = node.nodes[0].quote || '"';
             node.value = node.nodes[0].value;
@@ -32,7 +32,7 @@ function transformDecl (decl, opts) {
     decl.value = valueParser(decl.value).walk(node => {
         if (
             node.type !== 'function' ||
-            node.value !== 'url' ||
+            node.value.toLowerCase() !== 'url' ||
             !node.nodes.length
         ) {
             return false;
@@ -44,15 +44,11 @@ function transformDecl (decl, opts) {
         node.before = node.after = '';
         url.value = url.value.trim().replace(multiline, '');
 
-        if (
-            ~url.value.indexOf('data:image/') ||
-            ~url.value.indexOf('data:application/') ||
-            ~url.value.indexOf('data:font/')
-        ) {
+        if (/^data:(.*)?,/.test(url.value)) {
             return false;
         }
 
-        if (!~url.value.indexOf('chrome-extension')) {
+        if (!(/^.+-extension:\//i.test(url.value))) {
             url.value = convert(url.value, opts);
         }
 
@@ -81,7 +77,7 @@ export default postcss.plugin('postcss-normalize-url', opts => {
         css.walk(node => {
             if (node.type === 'decl') {
                 return transformDecl(node, opts);
-            } else if (node.type === 'atrule' && node.name === 'namespace') {
+            } else if (node.type === 'atrule' && node.name.toLowerCase() === 'namespace') {
                 return transformNamespace(node);
             }
         });
