@@ -576,3 +576,10 @@ test('should not crash when node.raws.value is null (2)', t => {
 
     t.deepEqual(res, '#foo .bar{ margin-left:auto; } #foo .bar,#foo .qux{ margin-right:auto; }');
 });
+
+test(
+    'should place rules with "all" at the top',
+    processCSS,
+    '.a{margin: 10px 20px;display: flex;all: initial;font-size: 10px;border-radius: 2px;color: blue;}.b{margin: 10px 30px;display: flex;all: initial;font-size: 20px;border-radius: 2px;color: blue;}',
+    '.a,.b{display: flex;all: initial;border-radius: 2px;color: blue;}.a{margin: 10px 20px;font-size: 10px;}.b{margin: 10px 30px;font-size: 20px;}'
+);
