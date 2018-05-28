@@ -110,17 +110,17 @@ function partialMerge (first, second) {
         }, []);
     };
     const containsAllDeclaration = (intersectionList) => {
-      return intersectionList.some(intersection => {
-        return intersection.split(':')[0] === 'all';
-      });
+        return intersectionList.some(declaration => {
+            return declaration.split(':')[0] === 'all';
+        });
     };
     intersection = filterConflicts(getDecls(first).reverse(), intersection);
     intersection = filterConflicts((getDecls(second)), intersection);
 
-    if(containsAllDeclaration(intersection)) {
-      second.parent.insertBefore(first, recievingBlock);
+    if (containsAllDeclaration(intersection)) {
+        second.parent.insertBefore(first, recievingBlock);
     } else {
-      second.parent.insertBefore(second, recievingBlock);
+        second.parent.insertBefore(second, recievingBlock);
     }
 
     const firstClone = first.clone();
