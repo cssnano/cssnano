@@ -93,7 +93,6 @@ function partialMerge (first, second) {
     const recievingBlock = second.clone();
     recievingBlock.selector = joinSelectors(first, second);
     recievingBlock.nodes = [];
-    second.parent.insertBefore(second, recievingBlock);
     const difference = different(getDecls(first), getDecls(second));
     const filterConflicts = (decls, intersectn) => {
         let willNotMove = [];
@@ -110,8 +109,20 @@ function partialMerge (first, second) {
             return willMove;
         }, []);
     };
+    const containsAllDeclaration = (intersectionList) => {
+      return intersectionList.some(intersection => {
+        return intersection.split(':')[0] === 'all';
+      });
+    };
     intersection = filterConflicts(getDecls(first).reverse(), intersection);
     intersection = filterConflicts((getDecls(second)), intersection);
+
+    if(containsAllDeclaration(intersection)) {
+      second.parent.insertBefore(first, recievingBlock);
+    } else {
+      second.parent.insertBefore(second, recievingBlock);
+    }
+
     const firstClone = first.clone();
     const secondClone = second.clone();
     const moveDecl = callback => {
