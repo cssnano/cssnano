@@ -117,6 +117,7 @@ function partialMerge (first, second) {
     intersection = filterConflicts(getDecls(first).reverse(), intersection);
     intersection = filterConflicts((getDecls(second)), intersection);
 
+    // Rules with "all" declarations must be on top
     if (containsAllDeclaration(intersection)) {
         second.parent.insertBefore(first, recievingBlock);
     } else {
