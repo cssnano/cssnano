@@ -16,7 +16,7 @@ function intersect (a, b, not) {
 
 // Internet Explorer use :-ms-input-placeholder.
 // Microsoft Edge use ::-ms-input-placeholder.
-const findMsInputPlaceholder = selector => ~selector.indexOf('-ms-input-placeholder');
+const findMsInputPlaceholder = selector => ~selector.search(/-ms-input-placeholder/i);
 const different = (a, b) => intersect(a, b, true).concat(intersect(b, a, true));
 const filterPrefixes = selector => intersect(prefixes, selector);
 
