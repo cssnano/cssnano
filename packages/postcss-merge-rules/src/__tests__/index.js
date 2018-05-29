@@ -238,6 +238,12 @@ test(
 );
 
 test(
+    'should not merge ms vendor prefixes',
+    passthroughCSS,
+    'code :-ms-input-placeholder{background:red}code::-ms-input-placeholder{background:red}'
+);
+
+test(
     'should not merge mixed vendor prefixes (2)',
     passthroughCSS,
     'input[type=range] { -webkit-appearance: none !important; } input[type=range]::-webkit-slider-runnable-track { height: 2px; width: 100px; background: red; border: none; } input[type=range]::-webkit-slider-thumb { -webkit-appearance: none !important; border: none; width: 10px; height: 10px; background: red; } input[type=range]::-moz-range-thumb { border: none; width: 10px; height: 10px; background: red; }'

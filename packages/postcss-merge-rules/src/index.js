@@ -13,12 +13,15 @@ function intersect (a, b, not) {
     });
 }
 
+const checkMS = (a, b) => !!(~a.indexOf('ms') && ~b.indexOf('ms'));
 const different = (a, b) => intersect(a, b, true).concat(intersect(b, a, true));
 const filterPrefixes = selector => intersect(prefixes, selector);
 
 function sameVendor (selectorsA, selectorsB) {
     let same = selectors => selectors.map(filterPrefixes).join();
-    return same(selectorsA) === same(selectorsB);
+    const a = same(selectorsA);
+    const b = same(selectorsB);
+    return a === b && !checkMS(a, b);
 }
 
 const noVendor = selector => !filterPrefixes(selector).length;
