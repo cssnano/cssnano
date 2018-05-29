@@ -13,15 +13,17 @@ function intersect (a, b, not) {
     });
 }
 
-const checkMS = (a, b) => !!(~a.indexOf('ms') && ~b.indexOf('ms'));
+
+// Internet Explorer use :-ms-input-placeholder.
+// Microsoft Edge use ::-ms-input-placeholder.
+const findMsInputPlaceholder = selector => ~selector.indexOf('-ms-input-placeholder');
 const different = (a, b) => intersect(a, b, true).concat(intersect(b, a, true));
 const filterPrefixes = selector => intersect(prefixes, selector);
 
 function sameVendor (selectorsA, selectorsB) {
     let same = selectors => selectors.map(filterPrefixes).join();
-    const a = same(selectorsA);
-    const b = same(selectorsB);
-    return a === b && !checkMS(a, b);
+    let findMsVendor = selectors => selectors.find(findMsInputPlaceholder);
+    return same(selectorsA) === same(selectorsB) && !(findMsVendor(selectorsA) && findMsVendor(selectorsB));
 }
 
 const noVendor = selector => !filterPrefixes(selector).length;
