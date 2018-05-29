@@ -48,7 +48,7 @@ function transformDecl (decl, opts) {
             return false;
         }
 
-        if (!(/^.+-extension:\//i.test(url.value))) {
+        if (url.value.length !== 0 && !(/^.+-extension:\//i.test(url.value))) {
             url.value = convert(url.value, opts);
         }
 
