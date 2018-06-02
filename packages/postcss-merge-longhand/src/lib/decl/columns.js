@@ -7,6 +7,7 @@ import getValue from '../getValue';
 import mergeRules from '../mergeRules';
 import insertCloned from '../insertCloned';
 import remove from '../remove';
+import hasVariable from '../hasVariable';
 
 const properties = ['column-width', 'column-count'];
 const auto = 'auto';
@@ -84,7 +85,9 @@ function cleanup (rule) {
             !detect(node) &&
             node !== lastNode &&
             node.important === lastNode.important &&
-            node.prop === lastNode.prop);
+            node.prop === lastNode.prop &&
+            hasVariable(node) === hasVariable(lastNode)
+        );
 
         duplicates.forEach(remove);
         decls = decls.filter(node => node !== lastNode && !~duplicates.indexOf(node));

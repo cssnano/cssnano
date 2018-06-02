@@ -1,7 +1,7 @@
-import getLastNode from './getLastNode';
+import {ruleContainsCustomPropertiesAndFallbacks, getRulesWithAndWithoutCustomProps, getAllRules} from './getLastNode';
 
 export default function getRules (props, properties) {
-    return properties.map(property => {
-        return getLastNode(props, property);
-    }).filter(Boolean);
+    return ruleContainsCustomPropertiesAndFallbacks(props, properties) ?
+        getRulesWithAndWithoutCustomProps(props, properties) :
+        getAllRules(props, properties);   
 }

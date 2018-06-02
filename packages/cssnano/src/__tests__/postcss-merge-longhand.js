@@ -154,3 +154,38 @@ test(
     'h1{margin:10px 20px 30px 40px}',
     'h1{margin:10px 20px 30px 40px}',
 );
+
+test(   
+    'should merge custom props and dont remove fallbacks',
+    processCss,
+    'h1{padding-top:10px;padding-right:15px;padding-bottom:20px;padding-left:25px;padding-top:var(--variable);padding-right:var(--variable);padding-bottom:var(--variable);padding-left:var(--variable)}',
+    'h1{padding:var(--variable);padding:10px 15px 20px 25px}'
+);
+
+test(
+    'should merge rules with custom props',
+    processCss,
+    'h1{padding-top:var(--variable);padding-right:var(--variable);padding-bottom:var(--variable);padding-left:var(--variable)}',
+    'h1{padding:var(--variable)}'
+);
+
+test(
+    'should not break unmergeable fallbacks with custom props (2)',
+    processCss,
+    'h1{padding:10em;padding:var(--variable)}',
+    'h1{padding:var(--variable);padding:10em}'
+);
+
+test(
+    'should not break unmergeable rules with custom props',
+    processCss,
+    'h1{padding:var(--variable)}',
+    'h1{padding:var(--variable)}'
+);
+
+test(
+    'should not break unmergeable fallbacks with custom props',
+    processCss,
+    'h1{padding:var(--some);padding:10em}',
+    'h1{padding:var(--some);padding:10em}'
+);
