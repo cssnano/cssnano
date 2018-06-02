@@ -107,8 +107,8 @@ function optimise (decl) {
                     color = arg[0].value;
                 }
                 const colorStop = stop || stop === 0 ?
-                  isColorStop(color, stop) :
-                  isColorStop(color);
+                    isColorStop(color, stop) :
+                    isColorStop(color);
                 
                 if (!colorStop || !arg[2]) {
                     return;
