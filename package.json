@@ -19,7 +19,7 @@
     "babel-cli": "^6.26.0",
     "babel-eslint": "^8.2.3",
     "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-module-resolver": "^2.5.0",
+    "babel-plugin-module-resolver": "^3.1.1",
     "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
     "browserslist": "^3.2.8",
@@ -82,7 +82,7 @@
               ],
               "alias": {
                 "lerna:css-size": "css-size",
-                "lerna:cssnano": "cssnano",
+                "lerna:cssnano": "./packages/cssnano",
                 "lerna:cssnano-preset-advanced": "cssnano-preset-advanced",
                 "lerna:cssnano-preset-default": "cssnano-preset-default",
                 "lerna:cssnano-util-get-arguments": "cssnano-util-get-arguments",
@@ -136,7 +136,7 @@
               ],
               "alias": {
                 "lerna:css-size": "css-size/src/index.js",
-                "lerna:cssnano": "cssnano/src/index.js",
+                "lerna:cssnano": "./packages/cssnano/src/index.js",
                 "lerna:cssnano-preset-advanced": "cssnano-preset-advanced/src/index.js",
                 "lerna:cssnano-preset-default": "cssnano-preset-default/src/index.js",
                 "lerna:cssnano-util-get-arguments": "cssnano-util-get-arguments/src/index.js",
