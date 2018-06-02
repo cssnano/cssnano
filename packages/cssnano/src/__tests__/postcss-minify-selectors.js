@@ -172,7 +172,7 @@ test(
 test(
     'should not change strings',
     processCss,
-     ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:#00f}',
+    ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:#00f}',
     ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:#00f}',
 );
 
