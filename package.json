@@ -17,6 +17,7 @@
     "all-contributors-cli": "^4.0.0",
     "ava": "^0.18.1",
     "babel-cli": "^6.26.0",
+    "babel-eslint": "^8.2.3",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-module-resolver": "^2.5.0",
     "babel-preset-env": "^1.7.0",
@@ -26,7 +27,6 @@
     "coveralls": "^2.0.0",
     "cross-env": "^3.2.4",
     "dox": "^0.9.0",
-    "escope": "^3.6.0",
     "eslint": "^4.19.1",
     "eslint-config-cssnano": "^3.0.0",
     "eslint-plugin-babel": "^5.1.0",
@@ -192,6 +192,7 @@
     ]
   },
   "eslintConfig": {
+    "parser": "babel-eslint",
     "extends": "cssnano",
     "rules": {
       "import/no-unresolved": [
