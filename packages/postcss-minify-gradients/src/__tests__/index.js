@@ -12,10 +12,24 @@ test(
 );
 
 test(
+    'linear: should convert "to top" to 0deg (uppercase property and value)',
+    processCSS,
+    'BACKGROUND:LINEAR-GRADIENT(TO TOP,#ffe500,#121)',
+    'BACKGROUND:LINEAR-GRADIENT(0deg,#ffe500,#121)'
+);
+
+test(
     'linear: should convert "to right" to 90deg',
     processCSS,
     'background:linear-gradient(to right,#ffe500,#121)',
     'background:linear-gradient(90deg,#ffe500,#121)'
+);
+
+test(
+    'linear: should convert "to right" to 90deg (uppercase property and value)',
+    processCSS,
+    'BACKGROUND:LINEAR-GRADIENT(TO RIGHT,#FFE500,#121)',
+    'BACKGROUND:LINEAR-GRADIENT(90deg,#FFE500,#121)'
 );
 
 test(
@@ -114,10 +128,24 @@ test(
 );
 
 test(
+    'repeating-radial: should reduce length values if they are the same (uppercase property and value)',
+    processCSS,
+    'BACKGROUND:REPEATING-RADIAL-GRADIENT(#121,#121 5PX,#FFE500 5PX,#FFE500 10PX)',
+    'BACKGROUND:REPEATING-RADIAL-GRADIENT(#121,#121 5PX,#FFE500 0,#FFE500 10PX)'
+);
+
+test(
     'radial: should correctly account for "at"',
     passthroughCSS,
     'background:radial-gradient(at 50% 0%,rgba(74,74,74,.15),transparent 40%);'
 );
+
+test(
+    'radial: should correctly account for uppercase "at"',
+    passthroughCSS,
+    'background:radial-gradient(AT 50% 0%,rgba(74,74,74,.15),transparent 40%);'
+);
+
 
 test(
     'radial: should correctly account for "at" (2)',
