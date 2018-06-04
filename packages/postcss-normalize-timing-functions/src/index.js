@@ -23,7 +23,7 @@ function reduce (node) {
         if (
             getValue(node.nodes[0]) === 1 &&
             node.nodes[2] &&
-            node.nodes[2].value === 'start'
+            node.nodes[2].value.toLowerCase() === 'start'
         ) {
             node.type = 'word';
             node.value = 'step-start';
@@ -31,7 +31,7 @@ function reduce (node) {
             return;
         }
         // The end case is actually the browser default, so it isn't required.
-        if (node.nodes[2] && node.nodes[2].value === 'end') {
+        if (node.nodes[2] && node.nodes[2].value.toLowerCase() === 'end') {
             node.nodes = [node.nodes[0]];
             return;
         }

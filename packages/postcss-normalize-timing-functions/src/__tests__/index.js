@@ -10,10 +10,6 @@ function testTimingFunction (t, fixture, expected) {
         processCSS(t, `animation-timing-function:${fixture}`, `animation-timing-function:${expected}`),
         processCSS(t, `transition:color 3s ${fixture}`, `transition:color 3s ${expected}`),
         processCSS(t, `transition-timing-function:${fixture}`, `transition-timing-function:${expected}`),
-        processCSS(t, `ANIMATION:fade 3s ${fixture}`, `animation:fade 3s ${expected}`),
-        processCSS(t, `ANIMATION-TIMING-FUNCTION:${fixture}`, `animation-timing-function:${expected}`),
-        processCSS(t, `TRANSITION:color 3s ${fixture}`, `transition:color 3s ${expected}`),
-        processCSS(t, `TRANSITION-TIMING-FUNCTION:${fixture}`, `transition-timing-function:${expected}`),
     ]);
 }
 
@@ -25,6 +21,13 @@ test(
     testTimingFunction,
     'cubic-bezier(0.25, 0.1, 0.25, 1)',
     'ease'
+);
+
+test(
+    'should support uppercase property ',
+    processCSS,
+    'h1{animation: cubic-bezier(0.25, 0.1, 0.25, 1)}',
+    'h1{animation: ease}'
 );
 
 test(
@@ -65,6 +68,12 @@ test(
 
 test(
     testTimingFunction,
+    'steps(1, START)',
+    'step-start'
+);
+
+test(
+    testTimingFunction,
     'STEPS(1, start)',
     'step-start'
 );
@@ -87,6 +96,12 @@ test(
 test(
     testTimingFunction,
     'steps(10, end)',
+    'steps(10)'
+);
+
+test(
+    testTimingFunction,
+    'steps(10, END)',
     'steps(10)'
 );
 
