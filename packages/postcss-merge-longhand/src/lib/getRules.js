@@ -1,4 +1,4 @@
-import {ruleContainsCustomPropertiesAndFallbacks, getRulesWithAndWithoutCustomProps, getAllRules} from './getLastNode';
+import {ruleContainsCustomPropertiesAndFallbacks, getRulesWithAndWithoutCustomProps, getAllRules} from './utils';
 
 export default function getRules (props, properties) {
     return ruleContainsCustomPropertiesAndFallbacks(props, properties) ?

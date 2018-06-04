@@ -1,2 +1,2 @@
 export default node => 
-    ~node.value.search(/var/i);
+    ~node.value.search(/--var/i);
