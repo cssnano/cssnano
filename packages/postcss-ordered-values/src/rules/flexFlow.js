@@ -19,11 +19,11 @@ export default function normalizeFlexFlow (decl, flexFlow) {
         wrap: '',
     };
     flexFlow.walk(({value}) => {
-        if (~flexDirection.indexOf(value)) {
+        if (~flexDirection.indexOf(value.toLowerCase())) {
             order.direction = value;
             return;
         }
-        if (~flexWrap.indexOf(value)) {
+        if (~flexWrap.indexOf(value.toLowerCase())) {
             order.wrap = value;
             return;
         }

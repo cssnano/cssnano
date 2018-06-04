@@ -29,7 +29,7 @@ function shouldAbort (parsed) {
     parsed.walk(({type, value}) => {
         if (
             type === 'comment' ||
-            type === 'function' && value === 'var' ||
+            type === 'function' && value.toLowerCase() === 'var' ||
             type === 'word' && ~value.indexOf(`___CSS_LOADER_IMPORT___`)
         ) {
             abort = true;
@@ -42,7 +42,7 @@ function shouldAbort (parsed) {
 export default postcss.plugin('postcss-ordered-values', () => {
     return css => {
         css.walkDecls(decl => {
-            const processor = rules[decl.prop];
+            const processor = rules[decl.prop.toLowerCase()];
             if (!processor) {
                 return;
             }
