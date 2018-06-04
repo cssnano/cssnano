@@ -36,15 +36,48 @@ Object.keys(toInitial).forEach(property => {
 });
 
 test(
+    'cursor: initial => cursor: auto (uppercase property and value)',
+    processCSS,
+    'CURSOR: INITIAL',
+    'CURSOR: auto'
+);
+
+test(
+    'z-index: initial => z-index: auto (uppercase property and value)',
+    processCSS,
+    'Z-INDEX: INITIAL',
+    'Z-INDEX: auto'
+);
+
+test(
+    'cursor: initial => cursor: auto (uppercase property and value)',
+    processCSS,
+    'CURSOR: INITIAL',
+    'CURSOR: auto'
+);
+
+test(
     'should pass through when an initial value is longer',
     passthroughCSS,
     'writing-mode:initial' // initial value is horizontal-tb
 );
 
 test(
+    'should pass through when an initial value is longer (uppercase property and value)',
+    passthroughCSS,
+    'WRITING-MODE:INITIAL' // initial value is horizontal-tb
+);
+
+test(
     'should pass through non-initial values',
     passthroughCSS,
     'all:inherit'
+);
+
+test(
+    'should pass through non-initial values (uppercase property and value)',
+    passthroughCSS,
+    'ALL:INHERIT'
 );
 
 test(
