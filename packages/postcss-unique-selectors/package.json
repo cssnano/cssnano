@@ -25,7 +25,7 @@
   "repository": "ben-eb/cssnano",
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "cross-env": "^3.0.0"
+    "cross-env": "^5.1.6"
   },
   "dependencies": {
     "alphanum-sort": "^1.0.0",

@@ -22,8 +22,8 @@ function setup (args) {
         ps.stderr.on('data', buffer => (err += buffer));
 
         ps.on('exit', code => {
-            if (err) {
-                reject(err);
+            if (code !== 0) {
+                return reject(err);
             }
             resolve([out, code]);
         });
@@ -41,7 +41,6 @@ test('cli', t => {
 });
 
 test('cli with processor argument', t => {
-    console.log(noopProcessorPath);
     return setup(['-p', noopProcessorPath, 'test.css']).then(results => {
         let out = results[0];
         t.truthy(~out.indexOf('100%'));

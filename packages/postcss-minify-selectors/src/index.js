@@ -20,9 +20,31 @@ function attribute (selector) {
         }
         selector.operator = selector.operator.trim();
     }
-    if (selector.raws && selector.raws.insensitive) {
-        selector.raws.insensitive = '';
+    if (!selector.raws) {
+        selector.raws = {};
     }
+    if (!selector.raws.spaces) {
+        selector.raws.spaces = {};
+    }
+    selector.raws.spaces.attribute = {
+        before: '',
+        after: '',
+    };
+    selector.raws.spaces.operator = {
+        before: '',
+        after: '',
+    };
+    selector.raws.spaces.value = {
+        before: '',
+        after: selector.insensitive ? ' ' : '',
+    };
+    if (selector.insensitive) {
+        selector.raws.spaces.insensitive = {
+            before: '',
+            after: '',
+        };
+    }
+
     selector.attribute = selector.attribute.trim();
 }
 

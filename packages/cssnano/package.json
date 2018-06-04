@@ -25,15 +25,15 @@
     "postcss": "^6.0.0"
   },
   "devDependencies": {
-    "array-to-sentence": "^1.0.0",
+    "array-to-sentence": "^2.0.0",
     "babel-cli": "^6.0.0",
-    "babel-loader": "^6.0.0",
-    "cross-env": "^3.0.0",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.4",
+    "cross-env": "^5.1.6",
     "cssnano-preset-advanced": "^4.0.0-rc.2",
-    "json-loader": "^0.5.4",
     "ncp": "^2.0.0",
     "postcss-font-magician": "^2.0.0",
-    "webpack": "^1.0.0",
+    "webpack": "^2.7.0",
     "webpack-bundle-size-analyzer": "^2.0.0"
   },
   "homepage": "https://github.com/ben-eb/cssnano",

@@ -1,6 +1,7 @@
 sudo: false
 
 language: node_js
+
 node_js:
   - 7
   - 6
@@ -9,6 +10,7 @@ node_js:
 
 env:
   - CXX=g++-4.8
+
 addons:
   apt:
     sources:
@@ -20,8 +22,9 @@ install:
   - yarn install
 
 cache:
+  yarn: true
   directories:
     - node_modules
 
 after_success:
-  - npm run ci
+  - yarn coveralls

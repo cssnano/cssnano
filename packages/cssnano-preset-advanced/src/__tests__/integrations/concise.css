@@ -72,7 +72,7 @@ button[disabled],input[disabled][type=submit]{background-color:#eee;color:#fff;c
 [aria-busy=true]{cursor:progress}
 [aria-controls]{cursor:pointer}
 [aria-disabled]{cursor:default}
-[tabindex],a,area,button,input,input[type=submit],label,select,textarea{-ms-touch-action:manipulation;touch-action:manipulation}
+[tabindex],a,area,button,input,input[type=submit],label,select,textarea{touch-action:manipulation}
 [hidden][aria-hidden=false]{clip:rect(0,0,0,0);display:inherit;position:absolute}
 [hidden][aria-hidden=false]:focus{clip:auto}
 *{margin:0}
@@ -117,47 +117,47 @@ table tfoot,table thead{background-color:#f5f5f5;text-align:left}
 table td,table th{line-height:2.25rem;overflow:visible;padding:0 1em}
 table caption{font-size:.83333rem;font-style:italic;line-height:3rem;text-align:center}
 [container]{margin-left:auto;margin-right:auto;max-width:1200px;overflow:auto;padding-left:1rem;padding-right:1rem}
-[grid]{-ms-flex-direction:column;-webkit-box-direction:normal;-webkit-box-orient:vertical;display:-webkit-box;display:-ms-flexbox;display:flex;flex-direction:column;margin-left:-1rem;margin-right:-1rem}
+[grid]{display:flex;flex-direction:column;margin-left:-1rem;margin-right:-1rem}
 @media (min-width:480px){
-  [grid]{-ms-flex-direction:row;-webkit-box-direction:normal;-webkit-box-orient:horizontal;flex-direction:row}
+  [grid]{flex-direction:row}
 }
-[column]{-ms-flex:1;-webkit-box-flex:1;flex:1;padding-left:1rem;padding-right:1rem}
+[column]{flex:1;padding-left:1rem;padding-right:1rem}
 [grid~=no-gutters]{margin-left:0;margin-right:0}
 [grid~=no-gutters] [column]{padding-left:0;padding-right:0}
-[grid~=no-collapse]{-ms-flex-flow:row nowrap;-webkit-box-direction:normal;-webkit-box-orient:horizontal;flex-flow:row nowrap}
-[grid~=wrap]{-ms-flex-wrap:wrap;flex-wrap:wrap}
-[grid~=no-wrap]{-ms-flex-wrap:nowrap;flex-wrap:nowrap}
-[grid~=wrap-reverse]{-ms-flex-wrap:wrap-reverse;flex-wrap:wrap-reverse}
-[grid~=row]{-ms-flex-direction:row;-webkit-box-direction:normal;-webkit-box-orient:horizontal;flex-direction:row}
-[grid~=row-reverse]{-ms-flex-direction:row-reverse;-webkit-box-direction:reverse;-webkit-box-orient:horizontal;flex-direction:row-reverse}
-[grid~=column]{-ms-flex-direction:column;-webkit-box-direction:normal;-webkit-box-orient:vertical;flex-direction:column}
-[grid~=column-reverse]{-ms-flex-direction:column-reverse;-webkit-box-direction:reverse;-webkit-box-orient:vertical;flex-direction:column-reverse}
-[grid~=justify-start]{-ms-flex-pack:start;-webkit-box-pack:start;justify-content:flex-start}
-[grid~=justify-end]{-ms-flex-pack:end;-webkit-box-pack:end;justify-content:flex-end}
-[grid~=justify-center]{-ms-flex-pack:center;-webkit-box-pack:center;justify-content:center}
-[grid~=justify-between]{-ms-flex-pack:justify;-webkit-box-pack:justify;justify-content:space-between}
-[grid~=justify-around]{-ms-flex-pack:distribute;justify-content:space-around}
-[grid~=top]{-ms-flex-align:start;-webkit-box-align:start;align-items:flex-start}
-[grid~=center]{-ms-flex-align:center;-webkit-box-align:center;align-items:center}
-[grid~=bottom]{-ms-flex-align:end;-webkit-box-align:end;align-items:flex-end}
-[grid~=baseline]{-ms-flex-align:baseline;-webkit-box-align:baseline;align-items:baseline}
-[grid~=stretch]{-ms-flex-align:stretch;-webkit-box-align:stretch;align-items:stretch}
-[column~=top]{-ms-flex-item-align:start;align-self:flex-start}
-[column~=center]{-ms-flex-item-align:center;-ms-grid-row-align:center;align-self:center}
-[column~=bottom]{-ms-flex-item-align:end;align-self:flex-end}
+[grid~=no-collapse]{flex-flow:row nowrap}
+[grid~=wrap]{flex-wrap:wrap}
+[grid~=no-wrap]{flex-wrap:nowrap}
+[grid~=wrap-reverse]{flex-wrap:wrap-reverse}
+[grid~=row]{flex-direction:row}
+[grid~=row-reverse]{flex-direction:row-reverse}
+[grid~=column]{flex-direction:column}
+[grid~=column-reverse]{flex-direction:column-reverse}
+[grid~=justify-start]{justify-content:flex-start}
+[grid~=justify-end]{justify-content:flex-end}
+[grid~=justify-center]{justify-content:center}
+[grid~=justify-between]{justify-content:space-between}
+[grid~=justify-around]{justify-content:space-around}
+[grid~=top]{align-items:flex-start}
+[grid~=center]{align-items:center}
+[grid~=bottom]{align-items:flex-end}
+[grid~=baseline]{align-items:baseline}
+[grid~=stretch]{align-items:stretch}
+[column~=top]{align-self:flex-start}
+[column~=center]{-ms-grid-row-align:center;align-self:center}
+[column~=bottom]{align-self:flex-end}
 @media (min-width:480px){
-  [column~="1"]{-ms-flex:0 1 8.33333%;-webkit-box-flex:0;flex:0 1 8.33333%;max-width:8.33333%}
-  [column~="2"]{-ms-flex:0 1 16.66667%;-webkit-box-flex:0;flex:0 1 16.66667%;max-width:16.66667%}
-  [column~="3"]{-ms-flex:0 1 25%;-webkit-box-flex:0;flex:0 1 25%;max-width:25%}
-  [column~="4"]{-ms-flex:0 1 33.33333%;-webkit-box-flex:0;flex:0 1 33.33333%;max-width:33.33333%}
-  [column~="5"]{-ms-flex:0 1 41.66667%;-webkit-box-flex:0;flex:0 1 41.66667%;max-width:41.66667%}
-  [column~="6"]{-ms-flex:0 1 50%;-webkit-box-flex:0;flex:0 1 50%;max-width:50%}
-  [column~="7"]{-ms-flex:0 1 58.33333%;-webkit-box-flex:0;flex:0 1 58.33333%;max-width:58.33333%}
-  [column~="8"]{-ms-flex:0 1 66.66667%;-webkit-box-flex:0;flex:0 1 66.66667%;max-width:66.66667%}
-  [column~="9"]{-ms-flex:0 1 75%;-webkit-box-flex:0;flex:0 1 75%;max-width:75%}
-  [column~="10"]{-ms-flex:0 1 83.33333%;-webkit-box-flex:0;flex:0 1 83.33333%;max-width:83.33333%}
-  [column~="11"]{-ms-flex:0 1 91.66667%;-webkit-box-flex:0;flex:0 1 91.66667%;max-width:91.66667%}
-  [column~="12"]{-ms-flex:0 1 100%;-webkit-box-flex:0;flex:0 1 100%;max-width:100%}
+  [column~="1"]{flex:0 1 8.33333%;max-width:8.33333%}
+  [column~="2"]{flex:0 1 16.66667%;max-width:16.66667%}
+  [column~="3"]{flex:0 1 25%;max-width:25%}
+  [column~="4"]{flex:0 1 33.33333%;max-width:33.33333%}
+  [column~="5"]{flex:0 1 41.66667%;max-width:41.66667%}
+  [column~="6"]{flex:0 1 50%;max-width:50%}
+  [column~="7"]{flex:0 1 58.33333%;max-width:58.33333%}
+  [column~="8"]{flex:0 1 66.66667%;max-width:66.66667%}
+  [column~="9"]{flex:0 1 75%;max-width:75%}
+  [column~="10"]{flex:0 1 83.33333%;max-width:83.33333%}
+  [column~="11"]{flex:0 1 91.66667%;max-width:91.66667%}
+  [column~="12"]{flex:0 1 100%;max-width:100%}
   [column~="+1"]{margin-left:8.33333%}
   [column~="+2"]{margin-left:16.66667%}
   [column~="+3"]{margin-left:25%}

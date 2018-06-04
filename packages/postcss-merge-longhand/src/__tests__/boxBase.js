@@ -1,17 +1,20 @@
 import test from 'ava';
-import processCss from './_processCss';
+import plugin from '..';
+import {processCSSFactory} from '../../../../util/testHelpers';
+
+const {processCSS} = processCSSFactory(plugin);
 
 function addTests (...tests) {
     tests.forEach(({message, fixture, expected}) => {
         test(
             message.replace(/box/g, 'margin'),
-            processCss,
+            processCSS,
             fixture.replace(/box/g, 'margin'),
             expected.replace(/box/g, 'margin')
         );
         test(
             message.replace(/box/g, 'padding'),
-            processCss,
+            processCSS,
             fixture.replace(/box/g, 'padding'),
             expected.replace(/box/g, 'padding')
         );
@@ -103,7 +106,7 @@ addTests({
     fixture: 'section{h1{box:0 48px}}',
     expected: 'section{h1{box:0 48px}}',
 }, {
-    message: 'should override shorthand property', 
+    message: 'should override shorthand property',
     fixture: 'h1{box:10px;box-left:5px}',
     expected: 'h1{box:10px 10px 10px 5px}',
 });

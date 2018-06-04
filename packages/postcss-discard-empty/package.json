@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "cross-env": "^3.0.0"
+    "cross-env": "^5.1.6"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "author": {

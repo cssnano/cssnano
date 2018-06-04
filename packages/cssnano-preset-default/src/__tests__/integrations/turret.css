@@ -1512,7 +1512,7 @@ input.info,textarea.info{border-color:#1e90ff;color:#1e90ff}
 .control input:checked~.control-indicator{background:#3455db;border:1px solid #3455db}
 .control input:checked~.control-label{color:#555}
 .control.checkbox .control-indicator{border-radius:none}
-.control.checkbox input:checked~.control-indicator{background:#3455db no-repeat 50% 50% url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMi44IiBoZWlnaHQ9IjkuOCIgdmlld0JveD0iMCAwIDEyLjggOS44Ij48cGF0aCBmaWxsPSIjRkZGIiBkPSJNMTEuNCAwbC03IDctMy0zTDAgNS40bDMgMyAxLjQgMS40IDEuNC0xLjQgNy03eiIvPjwvc3ZnPg==")}
+.control.checkbox input:checked~.control-indicator{background:#3455db no-repeat 50% 50% url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMi44IiBoZWlnaHQ9IjkuOCI+PHBhdGggZmlsbD0iI0ZGRiIgZD0iTTExLjQgMGwtNyA3LTMtM0wwIDUuNGwzIDMgMS40IDEuNCAxLjQtMS40IDctN3oiLz48L3N2Zz4=")}
 .control.radio .control-indicator{border-radius:50%}
 .control.radio input:checked~.control-indicator:before{-ms-transform:translate(-50%,-50%);-webkit-transform:translate(-50%,-50%);background:#fff;border-radius:50%;content:"";height:.5em;left:50%;position:absolute;top:50%;transform:translate(-50%,-50%);width:.5em}
 .control-indicator{-moz-user-select:none;-ms-user-select:none;-webkit-transition:all .2s ease-in-out;-webkit-user-select:none;background-color:#fff;background-position:50%;background-repeat:no-repeat;background-size:50% 50%;border:1px solid #ddd;color:#3455db;display:block;height:1.6rem;left:0;line-height:1rem;position:absolute;text-align:center;top:0;transition:all .2s ease-in-out;user-select:none;width:1.6rem}

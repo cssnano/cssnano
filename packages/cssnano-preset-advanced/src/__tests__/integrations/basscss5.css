@@ -199,30 +199,30 @@ blockquote,blockquote p{font-size:1.25rem;font-style:italic}
   .lg-col-11{width:91.66667%}
   .lg-col-12{width:100%}
 }
-.flex{display:-webkit-box;display:-ms-flexbox;display:flex}
-.flex-column{-ms-flex-direction:column;-webkit-box-direction:normal;-webkit-box-orient:vertical;flex-direction:column}
-.flex-wrap{-ms-flex-wrap:wrap;flex-wrap:wrap}
-.flex-center{-ms-flex-align:center;-webkit-box-align:center;align-items:center}
-.flex-baseline{-ms-flex-align:baseline;-webkit-box-align:baseline;align-items:baseline}
-.flex-stretch{-ms-flex-align:stretch;-webkit-box-align:stretch;align-items:stretch}
-.flex-start{-ms-flex-align:start;-webkit-box-align:start;align-items:flex-start}
-.flex-end{-ms-flex-align:end;-webkit-box-align:end;align-items:flex-end}
-.flex-first{-ms-flex-order:-1;-webkit-box-ordinal-group:0;order:-1}
-.flex-last{-ms-flex-order:1024;-webkit-box-ordinal-group:1025;order:1024}
-.flex-auto{-ms-flex:1 1 auto;-webkit-box-flex:1;flex:1 1 auto}
-.flex-grow{-ms-flex:1 0 auto;-webkit-box-flex:1;flex:1 0 auto}
-.flex-none{-ms-flex:none;-webkit-box-flex:0;flex:none}
+.flex{display:flex}
+.flex-column{flex-direction:column}
+.flex-wrap{flex-wrap:wrap}
+.flex-center{align-items:center}
+.flex-baseline{align-items:baseline}
+.flex-stretch{align-items:stretch}
+.flex-start{align-items:flex-start}
+.flex-end{align-items:flex-end}
+.flex-first{order:-1}
+.flex-last{order:1024}
+.flex-auto{flex:1 1 auto}
+.flex-grow{flex:1 0 auto}
+.flex-none{flex:none}
 .flex>div{box-sizing:border-box}
 @media (min-width:40em){
-  .sm-flex{display:-webkit-box;display:-ms-flexbox;display:flex}
+  .sm-flex{display:flex}
   .sm-flex>div{box-sizing:border-box}
 }
 @media (min-width:52em){
-  .md-flex{display:-webkit-box;display:-ms-flexbox;display:flex}
+  .md-flex{display:flex}
   .md-flex>div{box-sizing:border-box}
 }
 @media (min-width:64em){
-  .lg-flex{display:-webkit-box;display:-ms-flexbox;display:flex}
+  .lg-flex{display:flex}
   .lg-flex>div{box-sizing:border-box}
 }
 body{background-color:#fff;color:#222}

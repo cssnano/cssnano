@@ -12,7 +12,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "css-declaration-sorter": "^2.0.1",
+    "css-declaration-sorter": "^3.0.1",
     "cssnano-util-raw-cache": "^4.0.0-rc.2",
     "postcss": "^6.0.0",
     "postcss-calc": "^6.0.0",
@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "cross-env": "^3.0.0"
+    "cross-env": "^5.1.6"
   },
   "author": {
     "name": "Ben Briggs",

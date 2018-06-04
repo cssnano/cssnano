@@ -93,7 +93,7 @@ th{background-color:#0074d9;color:#fff;font-weight:900;text-align:left}
 .error th{background-color:#ff4136}
 .dull th{background-color:#aaa}
 tr:nth-child(2n){background:rgba(0,0,0,.05)}
-.flex{display:-ms-flexbox;display:flex;flex-wrap:wrap;margin-left:-.6em;transition:all .3s ease;width:calc(100% + .6em)}
+.flex{display:flex;flex-wrap:wrap;margin-left:-.6em;transition:all .3s ease;width:calc(100% + .6em)}
 .flex>*{box-sizing:border-box;flex:1 1 auto;padding-bottom:.6em;padding-left:.6em}
 .flex[class*=eight]>*,.flex[class*=eleven]>*,.flex[class*=five]>*,.flex[class*=four]>*,.flex[class*=nine]>*,.flex[class*=one]>*,.flex[class*=seven]>*,.flex[class*=six]>*,.flex[class*=ten]>*,.flex[class*=three]>*,.flex[class*=twelve]>*,.flex[class*=two]>*{flex-grow:0}
 .flex.grow>*{flex-grow:1}
