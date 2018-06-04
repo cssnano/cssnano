@@ -12,7 +12,7 @@ function minifyPromise (svgo, decl, opts) {
     const promises = [];
 
     decl.value = valueParser(decl.value).walk(node => {
-        if (node.type !== 'function' || node.value !== 'url' || !node.nodes.length) {
+        if (node.type !== 'function' || node.value.toLowerCase() !== 'url' || !node.nodes.length) {
             return;
         }
 
