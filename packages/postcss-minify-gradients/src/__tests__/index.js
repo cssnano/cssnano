@@ -12,6 +12,13 @@ test(
 );
 
 test(
+    'linear: should convert "to top" to 0deg (2)',
+    processCSS,
+    'BACKGROUND:LINEAR-GRADIENT(TO TOP,#ffe500,#121)',
+    'background:LINEAR-GRADIENT(0deg,#ffe500,#121)'
+);
+
+test(
     'linear: should convert "to right" to 90deg',
     processCSS,
     'background:linear-gradient(to right,#ffe500,#121)',
@@ -126,6 +133,11 @@ test(
     'background:radial-gradient(at 50% 0%,rgba(74,74,74,.15),transparent 40%, red 0);'
 );
 
+test(
+    'radial: should correctly account for "at" (3)',
+    passthroughCSS,
+    'background:radial-gradient(AT 50% 0%,rgba(74,74,74,.15),transparent 40%);'
+);
 
 test(
     'radial: should correctly account with prefix "-webkit" (1)',
