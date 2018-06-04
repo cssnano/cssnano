@@ -34,7 +34,7 @@ function transform (legacy, rule) {
     // at-rule. For example:
     //
     // @value vertical, center from "./foo.css";
-    if (!rule.params || rule.name === 'value') {
+    if (!rule.params || rule.name.toLowerCase() === 'value') {
         return;
     }
 
@@ -46,7 +46,7 @@ function transform (legacy, rule) {
             if (
                 node.type === 'function' &&
                 node.nodes[4] &&
-                node.nodes[0].value.indexOf('-aspect-ratio') === 3
+                node.nodes[0].value.toLowerCase().indexOf('-aspect-ratio') === 3
             ) {
                 const [a, b] = aspectRatio(
                     node.nodes[2].value,
@@ -60,15 +60,15 @@ function transform (legacy, rule) {
         } else {
             const prevWord = params.nodes[index - 2];
             if (
-                node.value === 'all' &&
-                rule.name === 'media' &&
+                node.value.toLowerCase() === 'all' &&
+                rule.name.toLowerCase() === 'media' &&
                 !prevWord
             ) {
                 const nextWord = params.nodes[index + 2];
                 if (!legacy || nextWord) {
                     removeNode(node);
                 }
-                if (nextWord && nextWord.value === 'and') {
+                if (nextWord && nextWord.value.toLowerCase() === 'and') {
                     const nextSpace = params.nodes[index + 1];
                     const secondSpace = params.nodes[index + 3];
                     removeNode(nextWord);
