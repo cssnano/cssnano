@@ -150,17 +150,28 @@ const reducers = {
     translate3d,
 };
 
+function normalizeReducerName (name) {
+    const lowerCasedName = name.toLowerCase();
+
+    if (lowerCasedName === 'rotatez') {
+        return 'rotateZ';
+    }
+
+    return lowerCasedName;
+}
+
 function reduce (node) {
     const {nodes, type, value} = node;
-    if (type === 'function' && has(reducers, value)) {
-        reducers[value](node, nodes.reduce(getValues, []));
+    const normalizedReducerName = normalizeReducerName(value);
+    if (type === 'function' && has(reducers, normalizedReducerName)) {
+        reducers[normalizedReducerName](node, nodes.reduce(getValues, []));
     }
     return false;
 }
 
 export default postcss.plugin('postcss-reduce-transforms', () => {
     return css => {
-        css.walkDecls(/transform$/, decl => {
+        css.walkDecls(/transform$/i, decl => {
             decl.value = valueParser(decl.value).walk(reduce).toString();
         });
     };
