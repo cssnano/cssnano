@@ -46,37 +46,36 @@ function minifyPromise (svgo, decl, opts) {
             return;
         }
 
-        promises.push(new Promise((resolve, reject) => {
-            return svgo.optimize(svg, result => {
-                if (result.error) {
-                    return reject(`${PLUGIN}: ${result.error}`);
-                }
+        promises.push(
+            svgo.optimize(svg)
+                .then(result => {
+                    let data, optimizedValue;
 
-                let data, optimizedValue;
+                    if (isBase64) {
+                        data = Buffer.from(result.data).toString('base64');
+                        optimizedValue = 'data:image/svg+xml;base64,' + data;
+                    } else {
+                        data = isUriEncoded ? encode(result.data) : result.data;
+                        // Should always encode # otherwise we yield a broken SVG
+                        // in Firefox (works in Chrome however). See this issue:
+                        // https://github.com/ben-eb/cssnano/issues/245
+                        data = data.replace(/#/g, '%23');
+                        optimizedValue = 'data:image/svg+xml;charset=utf-8,' + data;
+                        quote = isUriEncoded ? '"' : '\'';
+                    }
 
-                if (isBase64) {
-                    data = Buffer.from(result.data).toString('base64');
-                    optimizedValue = 'data:image/svg+xml;base64,' + data;
-                } else {
-                    data = isUriEncoded ? encode(result.data) : result.data;
-                    // Should always encode # otherwise we yield a broken SVG
-                    // in Firefox (works in Chrome however). See this issue:
-                    // https://github.com/ben-eb/cssnano/issues/245
-                    data = data.replace(/#/g, '%23');
-                    optimizedValue = 'data:image/svg+xml;charset=utf-8,' + data;
-                    quote = isUriEncoded ? '"' : '\'';
-                }
-
-                node.nodes[0] = Object.assign({}, node.nodes[0], {
-                    value: optimizedValue,
-                    quote: quote,
-                    type: 'string',
-                    before: '',
-                    after: '',
-                });
-                return resolve();
-            });
-        }));
+                    node.nodes[0] = Object.assign({}, node.nodes[0], {
+                        value: optimizedValue,
+                        quote: quote,
+                        type: 'string',
+                        before: '',
+                        after: '',
+                    });
+                })
+                .catch(error => {
+                    throw new Error(`${PLUGIN}: ${error}`);
+                })
+        );
 
         return false;
     });

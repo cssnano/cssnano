@@ -1,3 +1,3 @@
-module.exports = function(css, opts) {
-  return Promise.resolve({css: css});
-}
+module.exports = function (css) {
+    return Promise.resolve({css: css});
+};

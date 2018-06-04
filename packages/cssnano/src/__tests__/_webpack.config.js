@@ -5,16 +5,13 @@ module.exports = {
         index: path.join(__dirname, '..'),
     },
     output: {
-        path: './_webpackOutput/',
+        path: path.resolve('./_webpackOutput/'),
         filename: 'bundle.js',
     },
     module: {
-        loaders: [{
-            test: /\.json$/,
-            loader: 'json',
-        }, {
+        rules: [{
             test: /\.js$/,
-            loader: 'babel',
+            loader: 'babel-loader',
             exclude: /node_modules/,
         }],
     },

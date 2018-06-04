@@ -94,5 +94,5 @@ test('should be able to exclude plugins (exclude syntax)', t => {
 });
 
 test('should error on a bad preset', t => {
-    t.throws(cssnano.process('h1{}', {}, {preset: 'avanced'}).then(() => {}), Error);
+    return t.throws(cssnano.process('h1{}', {}, {preset: 'avanced'}).then(() => {}), Error);
 });

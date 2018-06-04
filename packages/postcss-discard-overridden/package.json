@@ -23,9 +23,9 @@
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "chalk": "^1.0.0",
-    "cross-env": "^3.0.0",
-    "diff": "^2.0.0"
+    "chalk": "^2.4.1",
+    "cross-env": "^5.1.6",
+    "diff": "^3.5.0"
   },
   "scripts": {
     "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"

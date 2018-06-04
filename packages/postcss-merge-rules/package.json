@@ -19,9 +19,9 @@
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "cross-env": "^3.0.0",
+    "cross-env": "^5.1.6",
     "postcss-discard-comments": "^4.0.0-rc.2",
-    "postcss-simple-vars": "^3.0.0"
+    "postcss-simple-vars": "^4.1.0"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
@@ -31,11 +31,11 @@
   },
   "repository": "ben-eb/cssnano",
   "dependencies": {
-    "browserslist": "^2.0.0",
+    "browserslist": "^3.2.8",
     "caniuse-api": "^2.0.0",
     "cssnano-util-same-parent": "^4.0.0-rc.2",
     "postcss": "^6.0.0",
-    "postcss-selector-parser": "^3.0.0-rc.0",
+    "postcss-selector-parser": "^3.1.1",
     "vendors": "^1.0.0"
   },
   "bugs": {

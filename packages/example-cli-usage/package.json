@@ -3,7 +3,7 @@
   "private": true,
   "dependencies": {
     "cssnano": "^4.0.0-rc.2",
-    "postcss-cli": "^4.0.0"
+    "postcss-cli": "^5.0.0"
   },
   "scripts": {
     "minify": "postcss input.css > output.css"

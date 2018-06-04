@@ -161,6 +161,27 @@ test(
 );
 
 test(
+    'should normalise attribute selectors (5)',
+    processCSS,
+    'a[   color   =   "blue"    ]{color:blue}',
+    'a[color=blue]{color:blue}'
+);
+
+test(
+    'should normalise attribute selectors (6)',
+    processCSS,
+    'a[color="blue"   i   ]{color:blue}',
+    'a[color=blue i]{color:blue}'
+);
+
+test(
+    'should normalise attribute selectors (6)',
+    processCSS,
+    'a[   target   ]{color:blue}',
+    'a[target]{color:blue}'
+);
+
+test(
     'should convert @keyframe from & 100%',
     processCSS,
     '@keyframes test{from{color:red}100%{color:blue}}',

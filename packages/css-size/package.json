@@ -25,8 +25,8 @@
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "cross-env": "^3.0.0",
-    "strip-ansi": "^3.0.0"
+    "cross-env": "^5.1.6",
+    "strip-ansi": "^4.0.0"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
@@ -39,7 +39,7 @@
     "brotli-size": "0.0.1",
     "cli-table": "^0.3.1",
     "cssnano": "^4.0.0-rc.2",
-    "gzip-size": "^3.0.0",
+    "gzip-size": "^4.1.0",
     "minimist": "^1.0.0",
     "pretty-bytes": "^4.0.0",
     "read-file-stdin": "^0.2.0",

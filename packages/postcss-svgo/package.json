@@ -22,8 +22,8 @@
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "cross-env": "^3.0.0",
-    "pleeease-filters": "^3.0.0"
+    "cross-env": "^5.1.6",
+    "pleeease-filters": "^4.0.0"
   },
   "homepage": "https://github.com/ben-eb/cssnano",
   "author": {
@@ -33,10 +33,10 @@
   },
   "repository": "ben-eb/cssnano",
   "dependencies": {
-    "is-svg": "^2.0.0",
+    "is-svg": "^3.0.0",
     "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0",
-    "svgo": "^0.7.0"
+    "svgo": "^1.0.5"
   },
   "bugs": {
     "url": "https://github.com/ben-eb/cssnano/issues"
