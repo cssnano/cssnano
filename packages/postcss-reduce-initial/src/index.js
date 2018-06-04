@@ -17,19 +17,19 @@ export default plugin('postcss-reduce-initial', () => {
         });
         const initialSupport = isSupported('css-initial-value', browsers);
         css.walkDecls(decl => {
-            const {prop} = decl;
+            const lowerCasedProp = decl.prop.toLowerCase();
             if (
                 initialSupport &&
-                has(toInitial, prop) &&
-                decl.value === toInitial[prop]
+                has(toInitial, lowerCasedProp) &&
+                decl.value === toInitial[lowerCasedProp]
             ) {
                 decl.value = initial;
                 return;
             }
-            if (decl.value !== initial || !fromInitial[prop]) {
+            if (decl.value.toLowerCase() !== initial || !fromInitial[lowerCasedProp]) {
                 return;
             }
-            decl.value = fromInitial[prop];
+            decl.value = fromInitial[lowerCasedProp];
         });
     };
 });
