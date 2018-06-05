@@ -2344,7 +2344,7 @@ postcss-discard-unused@^4.0.0-rc.2:
     postcss-selector-parser "^2.0.0"
     uniqs "^2.0.0"
 
-postcss-font-magician@2.2.0:
+postcss-font-magician@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/postcss-font-magician/-/postcss-font-magician-2.2.0.tgz#2ebcfd24b70b4385726debce0860febd5b348c0d"
   dependencies:
