@@ -32,7 +32,7 @@
     "cross-env": "^5.1.6",
     "cssnano-preset-advanced": "^4.0.0-rc.2",
     "ncp": "^2.0.0",
-    "postcss-font-magician": "2.2.0",
+    "postcss-font-magician": "^2.2.0",
     "webpack": "^2.7.0",
     "webpack-bundle-size-analyzer": "^2.0.0"
   },
