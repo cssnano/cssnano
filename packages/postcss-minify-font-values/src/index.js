@@ -25,7 +25,7 @@ export default postcss.plugin('postcss-minify-font-values', (opts) => {
     opts = Object.assign({}, {
         removeAfterKeyword: false,
         removeDuplicates: true,
-        removeQuotes: true,
+        removeQuotes: false,
     }, opts);
 
     return css => css.walkDecls(/font/i, transform.bind(null, opts));
