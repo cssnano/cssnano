@@ -226,7 +226,7 @@ test(
     'should support PX units',
     processCSS,
     'h1{font-size:20PX}',
-    'h1{font-size:20px}'
+    'h1{font-size:20PX}'
 );
 
 test(
@@ -252,7 +252,7 @@ test(
     'should not convert length units',
     processCSS,
     'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
-    'h1{transition-duration:.5s; width:calc(192px + 2em); width:14px; letter-spacing:-.1vmin}',
+    'h1{transition-duration:.5s; width:calc(192px + 2em); width:14px; letter-spacing:-.1VMIN}',
     {length: false}
 );
 
@@ -260,7 +260,7 @@ test(
     'should not convert time units',
     processCSS,
     'h1{transition-duration:500ms; width:calc(192px + 2em); width:+14px; letter-spacing:-0.1VMIN}',
-    'h1{transition-duration:500ms; width:calc(2in + 2em); width:14px; letter-spacing:-.1vmin}',
+    'h1{transition-duration:500ms; width:calc(2in + 2em); width:14px; letter-spacing:-.1VMIN}',
     {time: false}
 );
 
@@ -268,7 +268,7 @@ test(
     'should not convert angle units',
     processCSS,
     'h1{transform: rotate(0.25turn);transform: rotate(0.25TURN)}',
-    'h1{transform: rotate(.25turn);transform: rotate(.25turn)}',
+    'h1{transform: rotate(.25turn);transform: rotate(.25TURN)}',
     {angle: false}
 );
 
