@@ -8,7 +8,7 @@
     "postinstall": "lerna bootstrap --npm-client=\"yarn\"",
     "pretest": "npm run lint",
     "test-only": "cross-env BABEL_ENV=test ava",
-    "test-only:coverage": "nyc npm run test-only",
+    "test-only:coverage": "nyc --reporter=lcov --reporter=text npm run test-only",
     "test": "npm run test-only"
   },
   "engines": {

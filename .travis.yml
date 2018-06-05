@@ -31,7 +31,7 @@ matrix:
       script: yarn pretest
       env: JOB_PART=pretest
     - node_js: '10'
-      script: yarn test-only:coverage -- --coverage
+      script: yarn test-only:coverage
       env: JOB_PART=coverage
     - node_js: '8'
       script: yarn test-only
@@ -54,4 +54,4 @@ install:
   - yarn install
 
 after_success:
-  - if [ "$JOB_PART" = "coverage" ]; then cat ./.coverage/lcov.info | ./node_modules/.bin/coveralls; fi
+  - if [ "$JOB_PART" = "coverage" ]; then cat ./coverage/lcov.info | ./node_modules/.bin/coveralls; fi
