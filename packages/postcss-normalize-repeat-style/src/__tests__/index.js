@@ -47,6 +47,14 @@ Object.keys(data).forEach(conversion => {
     );
 });
 
+
+test(
+    'should normalize uppercase property and value',
+    processCSS,
+    'BACKGROUND:#000 url(cat.jpg) REPEAT NO-REPEAT 50%',
+    'BACKGROUND:#000 url(cat.jpg) repeat-x 50%'
+);
+
 test(
     'should pass through when there are no repeat values',
     passthroughCSS,
