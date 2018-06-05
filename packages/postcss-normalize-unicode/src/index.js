@@ -43,7 +43,6 @@ function unicode (range) {
 export default postcss.plugin('postcss-normalize-unicode', () => {
     return css => {
         css.walkDecls(/^unicode-range$/i, node => {
-            node.prop = 'unicode-range';
             node.value = valueParser(node.value).walk(child => {
                 if (child.type === 'word') {
                     child.value = unicode(child.value.toLowerCase());

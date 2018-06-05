@@ -83,7 +83,7 @@ test(
     'should downcase the unicode-range property/value pair',
     processCSS,
     '@font-face{font-family:test;UNICODE-RANGE:U+07-F}*{font-family:test}',
-    '@font-face{font-family:test;unicode-range:u+07-f}*{font-family:test}'
+    '@font-face{font-family:test;UNICODE-RANGE:u+07-f}*{font-family:test}'
 );
 
 test(
