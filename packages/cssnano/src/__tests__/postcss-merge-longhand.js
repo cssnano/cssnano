@@ -189,3 +189,10 @@ test(
     'h1{padding:var(--variable)}',
     'h1{padding:var(--variable)}'
 );
+
+test(
+    'should merge rules with fallbacks and custom props when rules placed in mixed order',
+    processCss,
+    'h1{padding-top:10px;padding-right:var(--variable);padding-right:15px;padding-bottom:var(--variable);padding-bottom:20px;padding-left:25px;padding-top:var(--variable);padding-left:var(--variable)}',
+    'h1{padding:10px 15px 20px 25px;padding:var(--variable)}'
+);
