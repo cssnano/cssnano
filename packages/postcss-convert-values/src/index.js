@@ -11,18 +11,18 @@ function parseWord (node, opts, keepZeroUnit) {
     const pair = unit(node.value);
     if (pair) {
         const num = Number(pair.number);
-        const u = pair.unit.toLowerCase();
+        const u = pair.unit;
         if (num === 0) {
             node.value = (
                 keepZeroUnit ||
-                !~LENGTH_UNITS.indexOf(u) && u !== '%'
+                !~LENGTH_UNITS.indexOf(u.toLowerCase()) && u !== '%'
             ) ? 0 + u : 0;
         } else {
             node.value = convert(num, u, opts);
 
             if (
                 typeof opts.precision === 'number' &&
-                u === 'px' &&
+                u.toLowerCase() === 'px' &&
                 ~pair.number.indexOf('.')
             ) {
                 const precision = Math.pow(10, opts.precision);
@@ -47,36 +47,35 @@ function clampOpacity (node) {
 
 function shouldStripPercent (decl) {
     const {parent} = decl;
-    const prop = decl.prop.toLowerCase();
-    const value = decl.value.toLowerCase();
-    return ~value.indexOf('%') &&
-        (prop === 'max-height' || prop === 'height') ||
+    const lowerCasedProp = decl.prop.toLowerCase();
+    return ~decl.value.indexOf('%') &&
+        (lowerCasedProp === 'max-height' || lowerCasedProp === 'height') ||
         parent.parent &&
         parent.parent.name &&
         parent.parent.name.toLowerCase() === 'keyframes' &&
-        prop === 'stroke-dasharray' ||
-        prop === 'stroke-dashoffset' ||
-        prop === 'stroke-width';
+        lowerCasedProp === 'stroke-dasharray' ||
+        lowerCasedProp === 'stroke-dashoffset' ||
+        lowerCasedProp === 'stroke-width';
 }
 
 function transform (opts, decl) {
-    const prop = decl.prop.toLowerCase();
-    if (~prop.indexOf('flex') || prop.indexOf('--') === 0) {
+    const lowerCasedProp = decl.prop.toLowerCase();
+    if (~lowerCasedProp.indexOf('flex') || lowerCasedProp.indexOf('--') === 0) {
         return;
     }
 
     decl.value = valueParser(decl.value).walk(node => {
-        const value = node.value.toLowerCase();
+        const lowerCasedValue = node.value.toLowerCase();
 
         if (node.type === 'word') {
             parseWord(node, opts, shouldStripPercent(decl));
-            if (prop === 'opacity' || prop === 'shape-image-threshold') {
+            if (lowerCasedProp === 'opacity' || lowerCasedProp === 'shape-image-threshold') {
                 clampOpacity(node);
             }
         } else if (node.type === 'function') {
-            if (value === 'calc' ||
-                value === 'hsl' ||
-                value === 'hsla') {
+            if (lowerCasedValue === 'calc' ||
+                lowerCasedValue === 'hsl' ||
+                lowerCasedValue === 'hsla') {
                 walk(node.nodes, n => {
                     if (n.type === 'word') {
                         parseWord(n, opts, true);
@@ -84,7 +83,7 @@ function transform (opts, decl) {
                 });
                 return false;
             }
-            if (value === 'url') {
+            if (lowerCasedValue === 'url') {
                 return false;
             }
         }
