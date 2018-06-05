@@ -30,6 +30,13 @@ Object.keys(data).forEach(key => {
 });
 
 test(
+    `display: block flow => display: block (uppercase property and values)`,
+    processCSS,
+    `DISPLAY:BLOCK FLOW`,
+    `DISPLAY:block`
+);
+
+test(
     'should use the postcss plugin api',
     usePostCSSPlugin,
     plugin()
