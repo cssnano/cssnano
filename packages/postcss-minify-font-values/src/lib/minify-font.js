@@ -21,7 +21,7 @@ export default function (nodes, opts) {
             ) {
                 familyStart = i;
             } else if (~keywords.weight.indexOf(node.value)) {
-                node.value = minifyWeight(node.value, opts);
+                node.value = minifyWeight(node.value);
                 familyStart = i;
             } else if (~keywords.size.indexOf(node.value) || unit(node.value)) {
                 familyStart = i;

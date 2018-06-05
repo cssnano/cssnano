@@ -9,7 +9,7 @@ function transform (opts, decl) {
     let prop = decl.prop.toLowerCase();
 
     if (prop === 'font-weight') {
-        decl.value = minifyWeight(decl.value, opts);
+        decl.value = minifyWeight(decl.value);
     } else if (prop === 'font-family') {
         tree = valueParser(decl.value);
         tree.nodes = minifyFamily(tree.nodes, opts);
