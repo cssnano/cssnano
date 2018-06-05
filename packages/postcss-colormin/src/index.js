@@ -27,7 +27,7 @@ function transform (legacy, decl) {
                 if (node.value !== value && next && (next.type === 'word' || next.type === 'function')) {
                     parent.nodes.splice(index + 1, 0, {type: 'space', value: ' '});
                 }
-            } else if (node.value === 'calc') {
+            } else if (node.value.toLowerCase() === 'calc') {
                 return false;
             }
         } else if (node.type === 'word') {
