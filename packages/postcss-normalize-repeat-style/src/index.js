@@ -25,7 +25,7 @@ function transform (decl) {
             end: null,
         });
         arg.forEach((part, index) => {
-            const isRepeat = ~repeatKeywords.indexOf(part.value);
+            const isRepeat = ~repeatKeywords.indexOf(part.value.toLowerCase());
             const len = relevant.length - 1;
             if (relevant[len].start === null && isRepeat) {
                 relevant[len].start = index;
@@ -51,7 +51,7 @@ function transform (decl) {
         if (val.length !== 3) {
             return;
         }
-        const match = getMatch(val.filter(evenValues).map(n => n.value));
+        const match = getMatch(val.filter(evenValues).map(n => n.value.toLowerCase()));
         if (match) {
             args[index][range.start].value = match;
             args[index][range.start + 1].value = '';
@@ -62,5 +62,5 @@ function transform (decl) {
 }
 
 export default postcss.plugin('postcss-normalize-repeat-style', () => {
-    return css => css.walkDecls(/background(-repeat)?|(-webkit-)?mask-repeat/, transform);
+    return css => css.walkDecls(/background(-repeat)?|(-webkit-)?mask-repeat/i, transform);
 });
