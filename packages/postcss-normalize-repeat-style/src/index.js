@@ -62,5 +62,5 @@ function transform (decl) {
 }
 
 export default postcss.plugin('postcss-normalize-repeat-style', () => {
-    return css => css.walkDecls(/background(-repeat)?|(-webkit-)?mask-repeat/, transform);
+    return css => css.walkDecls(/background(-repeat)?|(-webkit-)?mask-repeat/i, transform);
 });
