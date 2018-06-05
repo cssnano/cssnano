@@ -27,6 +27,12 @@ Object.keys(data).forEach(key => {
         `display:${fixture}`,
         `display:${key}`
     );
+    test(
+        `display: ${fixture.toUpperCase()} => display: ${key}`,
+        processCSS,
+        `DISPLAY:${fixture.toUpperCase()}`,
+        `display:${key}`
+    );
 });
 
 test(
