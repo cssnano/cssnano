@@ -1,12 +1,19 @@
 sudo: false
 
+git:
+  depth: 10
+
+branches:
+  only:
+    - master
+    - next
+
 language: node_js
 
-node_js:
-  - 7
-  - 6
-  - 5
-  - 4
+cache:
+  yarn: true
+  directories:
+    - node_modules
 
 env:
   - CXX=g++-4.8
@@ -18,13 +25,33 @@ addons:
     packages:
       - g++-4.8
 
+matrix:
+  include:
+    - node_js: '10'
+      script: yarn pretest
+      env: JOB_PART=pretest
+    - node_js: '10'
+      script: yarn test-only:coverage -- --coverage
+      env: JOB_PART=coverage
+    - node_js: '8'
+      script: yarn test-only
+      env: JOB_PART=test-only 8
+    - node_js: '6'
+      script: yarn test-only
+      env: JOB_PART=test-only 6
+    - node_js: '4'
+      script: yarn test-only
+      env: JOB_PART=test-only 4
+
+before_install:
+  - npm install -g npm@^5.0.0
+  - nvm --version
+  - node --version
+  - npm --version
+  - yarn --version
+
 install:
   - yarn install
 
-cache:
-  yarn: true
-  directories:
-    - node_modules
-
 after_success:
-  - yarn coveralls
+  - if [ "$JOB_PART" = "coverage" ]; then cat ./.coverage/lcov.info | ./node_modules/.bin/coveralls; fi

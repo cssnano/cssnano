@@ -5,11 +5,11 @@
     "docs": "remark docs/content/**/*.md -o && cd docs && npm run build && cd .. && gh-pages -d docs/dist",
     "lint": "eslint --ignore-path .gitignore packages/**/src util",
     "fixlint": "eslint --fix --ignore-path .gitignore packages/**/src util",
-    "report": "nyc report --reporter=html",
     "postinstall": "lerna bootstrap --npm-client=\"yarn\"",
     "pretest": "npm run lint",
-    "test": "cross-env BABEL_ENV=test nyc ava",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls"
+    "test-only": "cross-env BABEL_ENV=test ava",
+    "test-only:coverage": "nyc npm run test-only",
+    "test": "npm run test-only"
   },
   "engines": {
     "node": ">=4"
@@ -58,7 +58,6 @@
     "files": [
       "packages/**/src/__tests__/**/*.js"
     ],
-    "concurrency": 5,
     "require": "babel-register"
   },
   "nyc": {

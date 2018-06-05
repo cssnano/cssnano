@@ -1,7 +1,22 @@
+version: '{build}'
+build: off
+deploy: off
+
 environment:
   matrix:
+    - nodejs_version: '10'
+    - nodejs_version: '8'
     - nodejs_version: '6'
-    - nodejs_version: '4'
+
+matrix:
+  fast_finish: true
+
+clone_depth: 10
+
+branches:
+  only:
+    - master
+    - next
 
 install:
   - ps: Install-Product node $env:nodejs_version
@@ -9,17 +24,9 @@ install:
   - npm -g install npm@^5.0.0
   - set PATH=%APPDATA%\npm;%PATH%
   - yarn install
-
-test_script:
   - node --version
   - npm --version
-  - npm test
+  - yarn --version
 
-version: '{build}'
-build: off
-
-shallow_clone: true
-clone_depth: 1
-
-matrix:
-  fast_finish: true
+test_script:
+  - yarn test-only
