@@ -20,7 +20,7 @@ function reduceWhitespaces (node) {
         node.before = node.after = '';
     } else if (node.type === 'function') {
         node.before = node.after = '';
-        if (node.value === 'calc') {
+        if (node.value.toLowerCase() === 'calc') {
             valueParser.walk(node.nodes, reduceCalcWhitespaces);
             return false;
         }
