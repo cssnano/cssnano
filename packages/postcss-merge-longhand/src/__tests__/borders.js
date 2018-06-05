@@ -294,3 +294,10 @@ test(
     ':root{--my-border-width:var(--my-border-width);--my-border-style:var(--my-border-style);--my-border-color:var(--my-border-color);}',
     ':root{--my-border-width:var(--my-border-width);--my-border-style:var(--my-border-style);--my-border-color:var(--my-border-color);}'
 );
+
+test(
+    'should merge shorthand property with longhand properties',
+    processCss,
+    'h1{border:0 solid black;border-top-width:1px;border-right-width:1px;border-bottom-width:1px;border-left-width:1px;}',
+    'h1{border:1px solid black;}'
+);
