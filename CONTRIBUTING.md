@@ -18,19 +18,19 @@ And follow the on-screen prompts.
 
 Since version 4, we now develop in a [Lerna](https://github.com/lerna/lerna)
 monorepo. This is because a lot of transforms overlap with each other; it's
-easier to test them together. Other than this, you'll need Node.js, npm &
+easier to test them together. Other than this, you'll need Node.js, yarn &
 git installed. Then, you can run these commands to get the repository set up:
 
 ```
 git clone git@github.com:ben-eb/cssnano.git
 cd cssnano
-npm install
+yarn install
 ```
 
 You can run the tests with:
 
 ```
-npm test
+yarn test
 ```
 
 We recommend that you look in the issue tracker to find anything tagged
@@ -45,9 +45,9 @@ helpful to discuss your requirements before writing any code.
 ### Documentation
 
 The documentation website is also included with the repository, under `/docs`.
-It runs [phenomic](https://phenomic.io) and requires a separate `npm install`
+It runs [phenomic](https://phenomic.io) and requires a separate `yarn install`
 to pull down the dependencies. You can then browse the documentation locally
-by running `npm start`.
+by running `yarn start`.
 
 Note that some of the documentation is automatically generated and should not
 be edited by hand.
