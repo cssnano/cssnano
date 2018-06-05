@@ -28,11 +28,11 @@ export default function normalizeBorder (decl, border) {
     border.walk(node => {
         const {type, value} = node;
         if (type === 'word') {
-            if (~borderStyles.indexOf(value)) {
+            if (~borderStyles.indexOf(value.toLowerCase())) {
                 order.style = value;
                 return false;
             }
-            if (~borderWidths.indexOf(value) || unit(value)) {
+            if (~borderWidths.indexOf(value.toLowerCase()) || unit(value.toLowerCase())) {
                 order.width = value;
                 return false;
             }
@@ -40,7 +40,7 @@ export default function normalizeBorder (decl, border) {
             return false;
         }
         if (type === 'function') {
-            if (value === 'calc') {
+            if (value.toLowerCase() === 'calc') {
                 order.width = stringify(node);
             } else {
                 order.color = stringify(node);

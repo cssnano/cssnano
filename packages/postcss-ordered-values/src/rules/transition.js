@@ -30,7 +30,7 @@ export default function normalizeTransition (decl, parsed) {
             if (type === 'space') {
                 return;
             }
-            if (type === 'function' && ~['steps', 'cubic-bezier'].indexOf(value)) {
+            if (type === 'function' && ~['steps', 'cubic-bezier'].indexOf(value.toLowerCase())) {
                 state.timingFunction = [...state.timingFunction, node, addSpace()];
             } else if (unit(value)) {
                 if (!state.time1.length) {
@@ -38,7 +38,7 @@ export default function normalizeTransition (decl, parsed) {
                 } else {
                     state.time2 = [...state.time2, node, addSpace()];
                 }
-            } else if (~timingFunctions.indexOf(value)) {
+            } else if (~timingFunctions.indexOf(value.toLowerCase())) {
                 state.timingFunction = [...state.timingFunction, node, addSpace()];
             } else {
                 state.property = [...state.property, node, addSpace()];

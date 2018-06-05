@@ -12,6 +12,13 @@ test(
 );
 
 test(
+    'should order border consistently (uppercase property and value)',
+    processCSS,
+    'h1{BORDER:1PX SOLID RED;BORDER:1PX RED SOLID;BORDER:SOLID 1PX RED;BORDER:SOLID RED 1PX;BORDER:RED SOLID 1PX;BORDER:RED 1PX SOLID}',
+    'h1{BORDER:1PX SOLID RED;BORDER:1PX SOLID RED;BORDER:1PX SOLID RED;BORDER:1PX SOLID RED;BORDER:1PX SOLID RED;BORDER:1PX SOLID RED}'
+);
+
+test(
     'should order border with two properties',
     processCSS,
     'h1{border:solid 1px}',
@@ -86,6 +93,13 @@ test(
 );
 
 test(
+    'should order flex-flow (uppercase property and value)',
+    processCSS,
+    'h1{FLEX-FLOW: WRAP COLUMN}',
+    'h1{FLEX-FLOW: COLUMN WRAP}'
+);
+
+test(
     'should order flex-flow',
     processCSS,
     'h1{flex-flow: row-reverse wrap-reverse}',
@@ -138,6 +152,13 @@ test(
 );
 
 test(
+    'should order box-shadow consistently (2) (uppercase property and value)',
+    processCSS,
+    'h1{BOX-SHADOW:RED 2PX 5PX}',
+    'h1{BOX-SHADOW:2PX 5PX RED}'
+);
+
+test(
     'should order box-shadow consistently (3)',
     processCSS,
     'h1{box-shadow:2px 5px 10px red}',
@@ -163,6 +184,13 @@ test(
     processCSS,
     'h1{box-shadow:red 2px 5px 10px inset}',
     'h1{box-shadow:inset 2px 5px 10px red}'
+);
+
+test(
+    'should order box-shadow consistently (6) (uppercase "inset")',
+    processCSS,
+    'h1{box-shadow:red 2px 5px 10px INSET}',
+    'h1{box-shadow:INSET 2px 5px 10px red}'
 );
 
 test(
@@ -210,6 +238,12 @@ test(
     'should pass through box-shadow values that contain calc()',
     passthroughCSS,
     'h1{box-shadow: inset 0 calc(1em + 1px) 0 1px red}'
+);
+
+test(
+    'should pass through box-shadow values that contain calc() (uppercase "calc")',
+    passthroughCSS,
+    'h1{box-shadow: inset 0 CALC(1em + 1px) 0 1px red}'
 );
 
 test(
@@ -262,6 +296,13 @@ test(
 );
 
 test(
+    'should order transition consistently (2) (uppercase property and value)',
+    processCSS,
+    'TRANSITION: EASE-OUT WIDTH .5S 2S',
+    'TRANSITION: WIDTH .5S EASE-OUT 2S'
+);
+
+test(
     'should order transition consistently (3)',
     processCSS,
     'transition: ease-out .5s width 2s',
@@ -290,6 +331,13 @@ test(
 );
 
 test(
+    'should order transition consistently (6) (uppercase "cubic-bezier")',
+    processCSS,
+    'transition: .5s 2s width CUBIC-BEZIER(0, 0.3, 0.6, 1)',
+    'transition: width .5s CUBIC-BEZIER(0, 0.3, 0.6, 1) 2s'
+);
+
+test(
     'should order transition consistently (7)',
     processCSS,
     'transition: .5s 2s width ease-out,.8s 1s height ease',
@@ -310,9 +358,21 @@ test(
 );
 
 test(
+    'should abort ordering when a var is detected (transition) (uppercase "var")',
+    passthroughCSS,
+    'transition: .5s 2s width VAR(--ease)'
+);
+
+test(
     'should abort ordering when a var is detected (flex-flow)',
     passthroughCSS,
     'flex-flow: wrap var(--column)'
+);
+
+test(
+    'should abort ordering when a var is detected (flex-flow) (uppercase "var")',
+    passthroughCSS,
+    'flex-flow: wrap VAR(--column)'
 );
 
 test(
@@ -322,9 +382,21 @@ test(
 );
 
 test(
+    'should abort ordering when a var is detected (box-shadow) (uppercase "var")',
+    passthroughCSS,
+    'box-shadow: 0 1px 3px VAR(--red)'
+);
+
+test(
     'should abort ordering when a var is detected (border)',
     passthroughCSS,
     'border: solid 1px var(--red)'
+);
+
+test(
+    'should abort ordering when a var is detected (border) (uppercase "var")',
+    passthroughCSS,
+    'border: solid 1px VAR(--red)'
 );
 
 test(

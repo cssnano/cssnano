@@ -17,7 +17,7 @@ export default function normalizeBoxShadow (decl, parsed) {
         };
         arg.forEach(node => {
             const {type, value} = node;
-            if (type === 'function' && ~value.indexOf('calc')) {
+            if (type === 'function' && ~value.toLowerCase().indexOf('calc')) {
                 abort = true;
                 return;
             }
@@ -26,7 +26,7 @@ export default function normalizeBoxShadow (decl, parsed) {
             }
             if (unit(value)) {
                 val = [...val, node, addSpace()];
-            } else if (value === 'inset') {
+            } else if (value.toLowerCase() === 'inset') {
                 state.inset = [...state.inset, node, addSpace()];
             } else {
                 state.color = [...state.color, node, addSpace()];
