@@ -210,6 +210,20 @@ test(
 );
 
 test(
+    'should merge border and border-width values',
+    processCSS,
+    'h1{border:0 solid rgba(0, 0, 0, 0.2);border-width:1px;}',
+    'h1{border:1px solid rgba(0, 0, 0, 0.2);}'
+);
+
+test(
+    'should merge border and multiple border-*-width values',
+    processCSS,
+    'h1{border:0 solid rgba(0, 0, 0, 0.2);border-top-width:1px;border-right-width:1px;border-bottom-width:1px;border-left-width:1px;}',
+    'h1{border:1px solid rgba(0, 0, 0, 0.2);}'
+);
+
+test(
     'should produce the minimum css necessary',
     passthroughCSS,
     'h1{border-width:0;border-top:1px solid #e1e1e1}'
@@ -276,6 +290,7 @@ test(
     'h1{border-color:inherit;border-width:inherit;border-style:inherit}',
     'h1{border:inherit}'
 );
+
 test(
     'should preserve nesting level',
     processCSS,
