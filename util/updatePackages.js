@@ -157,7 +157,7 @@ function updatePackage (pkg) {
     pkgJson.bugs.url = `${homepage}/issues`;
 
     pkgJson.engines = pkgJson.engines || {};
-    pkgJson.engines.node = ">=4";
+    pkgJson.engines.node = ">=6.9.0";
 
     if (pkgJson.dependencies) {
         pkgJson.dependencies = semverMajor(pkgJson.dependencies);

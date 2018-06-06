@@ -42,6 +42,6 @@
     "url": "https://github.com/ben-eb/cssnano/issues"
   },
   "engines": {
-    "node": ">=4"
+    "node": ">=6.9.0"
   }
 }
