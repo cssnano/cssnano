@@ -17,6 +17,7 @@
 <url> <loc>http://cssnano.co/optimisations/calc/</loc> </url>
 <url> <loc>http://cssnano.co/optimisations/colormin/</loc> </url>
 <url> <loc>http://cssnano.co/optimisations/convertvalues/</loc> </url>
+<url> <loc>http://cssnano.co/optimisations/cssdeclarationsorter/</loc> </url>
 <url> <loc>http://cssnano.co/optimisations/discardcomments/</loc> </url>
 <url> <loc>http://cssnano.co/optimisations/discardduplicates/</loc> </url>
 <url> <loc>http://cssnano.co/optimisations/discardempty/</loc> </url>
