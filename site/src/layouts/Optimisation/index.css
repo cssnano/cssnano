@@ -1,0 +1,11 @@
+.risks {
+    background: #fff;
+    border: 1px solid var(--brandColorComplement);
+    border-left: none;
+    border-right: none;
+    margin: 40px 0;
+}
+
+.risks h2 {
+    color: var(--brandColorComplement);
+}

@@ -13,11 +13,14 @@ you add yourself to the list of contributors, found in [CONTRIBUTORS.md].
 
 To do this, after you've set up the development environment, run:
 
-    all-contributors add
+```
+all-contributors add
+```
 
 And follow the on-screen prompts.
 
 [contributors.md]: https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md
+
 
 ## How can I contribute to cssnano's code?
 
@@ -26,13 +29,17 @@ monorepo. This is because a lot of transforms overlap with each other; it's
 easier to test them together. Other than this, you'll need Node.js, yarn &
 git installed. Then, you can run these commands to get the repository set up:
 
-    git clone git@github.com:ben-eb/cssnano.git
-    cd cssnano
-    yarn install
+```
+git clone git@github.com:ben-eb/cssnano.git
+cd cssnano
+yarn install
+```
 
 You can run the tests with:
 
-    yarn test
+```
+yarn test
+```
 
 We recommend that you look in the issue tracker to find anything tagged
 [help wanted][help wanted]; that's the first port of call for getting stuck
@@ -52,6 +59,7 @@ by running `yarn start`.
 
 Note that some of the documentation is automatically generated and should not
 be edited by hand.
+
 
 ## Are there other ways of contributing?
 
@@ -97,6 +105,7 @@ us if a buggy release is cut.
 We have an [online chat][chat] where you can ask questions or discuss features;
 help us by joining the chat, and answer any questions that the community may
 have. Feel free to ask any questions of your own!
+
 
 ## How you can support us
 

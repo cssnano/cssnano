@@ -14,14 +14,15 @@ const bookmarks = {
     'guideContributing': '/guides/contributing',
 };
 
-exports.plugins = [
-    ['heading-gap', {}],
-    ['bookmarks', {bookmarks}],
-    ['frontmatter', {}]
-];
-
 exports.settings = {
-    bullet: '*',
+    bullet: '-',
     fences: true,
     listItemIndent: '1',
+    paddedTable: false,
 };
+
+exports.plugins = [
+    [require('remark-heading-gap'), {}],
+    [require('remark-bookmarks'), {bookmarks}],
+    [require('remark-frontmatter')]
+];
