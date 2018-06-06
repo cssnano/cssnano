@@ -17,6 +17,7 @@ const bookmarks = {
 exports.plugins = [
     ['heading-gap', {}],
     ['bookmarks', {bookmarks}],
+    ['frontmatter', {}]
 ];
 
 exports.settings = {

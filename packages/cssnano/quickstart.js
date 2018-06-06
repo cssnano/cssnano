@@ -17,7 +17,7 @@ h1 {
 
 /*
  * Add any PostCSS options here. For example to enable sourcemaps, see:
- * https://github.com/postcss/postcss/blob/master/docs/source-maps.md
+ * https://github.com/postcss/postcss/blob/master/site/source-maps.md
  *
  * Or for an inline sourcemap, uncomment the options below.
  */

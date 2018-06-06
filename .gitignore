@@ -15,6 +15,3 @@ _webpackOutput
 # Phenomic things
 
 *.bundle.js
-docs/content/changelog.md
-docs/content/optimisations
-docs/content/optimisations.md

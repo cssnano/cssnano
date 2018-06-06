@@ -2,14 +2,18 @@
   "name": "cssnano",
   "private": true,
   "scripts": {
-    "docs": "remark docs/content/**/*.md -o && cd docs && npm run build && cd .. && gh-pages -d docs/dist",
     "lint": "eslint --ignore-path .gitignore packages/**/src util",
     "fixlint": "eslint --fix --ignore-path .gitignore packages/**/src util",
     "postinstall": "lerna bootstrap --npm-client=\"yarn\"",
+    "build:packages": "babel-node ./util/updatePackages.js",
+    "build:aliases": "babel-node ./util/rebuildAliases.js",
+    "build:metadata": "babel-node ./util/rebuildMetadata.js",
+    "build:site": "remark site/content/**/*.md -o && npm run build:metadata && cd site && npm run build",
     "pretest": "npm run lint",
     "test-only": "cross-env BABEL_ENV=test ava",
     "test-only:coverage": "nyc --reporter=lcov --reporter=text npm run test-only",
-    "test": "npm run test-only"
+    "test": "npm run test-only",
+    "deploy": "gh-pages -d site/dist"
   },
   "engines": {
     "node": ">=6.9.0"
@@ -31,18 +35,19 @@
     "eslint-config-cssnano": "^3.0.0",
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^2.0.0",
+    "fs-extra": "^6.0.1",
     "get-pkg-repo": "^2.0.0",
-    "gh-pages": "^0.11.0",
+    "gh-pages": "^1.2.0",
     "glob": "^7.0.0",
     "lerna": "^2.5.1",
     "mdast-util-heading-range": "^2.0.1",
-    "mz": "^2.6.0",
     "nyc": "^11.9.0",
     "postcss": "^6.0.0",
-    "remark": "^7.0.0",
+    "remark": "^8.0.0",
     "remark-behead": "^2.0.1",
     "remark-bookmarks": "^1.0.0",
-    "remark-cli": "^3.0.1",
+    "remark-cli": "^4.0.0",
+    "remark-frontmatter": "^1.2.0",
     "remark-github": "^7.0.0",
     "remark-heading-gap": "^3.0.0",
     "remark-html": "^6.0.0",
@@ -52,7 +57,7 @@
     "toml": "^2.3.2",
     "tomlify-j0.4": "^2.0.0",
     "unist-builder": "^1.0.2",
-    "unist-util-remove": "^0.2.1"
+    "unist-util-remove": "^1.0.1"
   },
   "ava": {
     "files": [
