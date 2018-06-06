@@ -8,7 +8,7 @@ import remarkLicense from 'remark-license';
 import remarkToc from 'remark-toc';
 import stringifyObject from 'stringify-object';
 import u from 'unist-builder';
-import writeFile from './writeFile';
+import fs from 'fs-extra';
 import pluginName from './pluginName';
 import getPackages from './getPackages';
 import getPresets from './getPresets';
@@ -139,7 +139,7 @@ function updatePreset (packageList, pkg) {
             u('heading', {depth: 2}, [u('text', 'License')]),
         ]), {cwd: pkg});
 
-    return writeFile(
+    return fs.writeFile(
         `${pkg}/README.md`,
         remark().use(remarkHeadingGap).stringify(transformedAST) + '\n'
     );
@@ -167,7 +167,7 @@ function updatePackage (pkg) {
         pkgJson.devDependencies = semverMajor(pkgJson.devDependencies);
     }
 
-    return writeFile(
+    return fs.writeFile(
         `${pkg}/package.json`,
         `${JSON.stringify(pkgJson, null, 2)}\n`
     );

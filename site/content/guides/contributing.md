@@ -1,4 +1,11 @@
-# Contributing
+---
+title: Contributing
+layout: Guide
+order: 6
+---
+
+<!-- This file was automatically generated. -->
+
 
 Thanks for contributing to cssnano! We appreciate any contributions,
 large or small. If you've contributed to cssnano we would recommend that
@@ -6,13 +13,11 @@ you add yourself to the list of contributors, found in [CONTRIBUTORS.md].
 
 To do this, after you've set up the development environment, run:
 
-```
-all-contributors add
-```
+    all-contributors add
 
 And follow the on-screen prompts.
 
-[CONTRIBUTORS.md]: https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md
+[contributors.md]: https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md
 
 ## How can I contribute to cssnano's code?
 
@@ -21,17 +26,13 @@ monorepo. This is because a lot of transforms overlap with each other; it's
 easier to test them together. Other than this, you'll need Node.js, yarn &
 git installed. Then, you can run these commands to get the repository set up:
 
-```
-git clone git@github.com:ben-eb/cssnano.git
-cd cssnano
-yarn install
-```
+    git clone git@github.com:ben-eb/cssnano.git
+    cd cssnano
+    yarn install
 
 You can run the tests with:
 
-```
-yarn test
-```
+    yarn test
 
 We recommend that you look in the issue tracker to find anything tagged
 [help wanted][help wanted]; that's the first port of call for getting stuck
@@ -52,7 +53,6 @@ by running `yarn start`.
 Note that some of the documentation is automatically generated and should not
 be edited by hand.
 
-
 ## Are there other ways of contributing?
 
 Absolutely! Try any of the following areas:
@@ -65,7 +65,6 @@ help us by opening an issue detailing the problem.
 
 Use the [documentation label][documentation] to find relevant issues.
 
-
 ### Improve our issues
 
 Issues are like a secondary means of documenting the project, and in cases where
@@ -75,7 +74,6 @@ the original author to find out more details about their problem.
 Once the source of the error has been found, you can be of further help by
 submitting a failing test case as a pull request. Many of our tests follow a
 simple `fixture` & `expected` string comparison pattern.
-
 
 ### Send feedback on issues
 
@@ -87,7 +85,6 @@ Note that we don't find "+1" comments to be very helpful; instead, use GitHub
 reactions and subscribe to the thread to be notified of any progress. This helps
 to keep our discourse focused on the topic at hand.
 
-
 ### Review pull requests
 
 It's really important to get more eyes on upcoming features and fixes. Please
@@ -95,13 +92,11 @@ help by reviewing pull requests; even leaving a thumbs up reaction is better
 than nothing at all. Helping us to review means less time is wasted by all of
 us if a buggy release is cut.
 
-
 ### Talk with us!
 
 We have an [online chat][chat] where you can ask questions or discuss features;
 help us by joining the chat, and answer any questions that the community may
 have. Feel free to ask any questions of your own!
-
 
 ## How you can support us
 
@@ -111,9 +106,12 @@ Word of mouth really does mean a lot to us!
 
 You can also [help support us financially](/support-us/).
 
-
 [chat]: https://gitter.im/postcss/postcss
+
 [documentation]: https://github.com/ben-eb/cssnano/labels/documentation
+
 [help wanted]: https://github.com/ben-eb/cssnano/labels/help%20wanted
+
 [question]: https://github.com/ben-eb/cssnano/labels/question
+
 [twitter]: https://twitter.com/cssnano_

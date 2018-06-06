@@ -1,5 +1,5 @@
 import {join} from 'path';
-import fs from 'mz/fs';
+import fs from 'fs-extra';
 import camel from 'camelcase';
 import toml from 'toml';
 import tomlify from 'tomlify-j0.4';
@@ -76,22 +76,25 @@ getPackages().then(packages => {
             const metadata = toml.parse(contents);
             const pkgJson = require(join(pkg, 'package.json'));
             const pkgName = pkgJson.name;
+
             database[pkgName] = Object.assign({}, metadata, {
                 source: `${pkgJson.homepage}/tree/master/packages/${pkgName}`,
                 shortDescription: pkgJson.description,
                 shortName: shortName(pkgName),
             });
         }).catch(() => {});
-    }, {})).then(() => {
-        const sortedKeys = Object.keys(database).sort(sortAscending);
-        const sorted = sortedKeys.reduce((db, key) => {
-            const value = database[key];
-            db[key] = value;
-            return db;
-        }, {});
-        return fs.writeFile(
-            join(__dirname, '../metadata.toml'),
-            tomlify(sorted)
-        );
-    });
+    }, {}))
+        .then(() => {
+            const sortedKeys = Object.keys(database).sort(sortAscending);
+            const sorted = sortedKeys.reduce((db, key) => {
+                db[key] = database[key];
+
+                return db;
+            }, {});
+
+            return fs.writeFile(
+                join(__dirname, '../metadata.toml'),
+                tomlify(sorted)
+            );
+        });
 });
