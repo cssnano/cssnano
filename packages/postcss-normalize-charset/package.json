@@ -31,6 +31,6 @@
     "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
   },
   "engines": {
-    "node": ">=4"
+    "node": ">=6.9.0"
   }
 }

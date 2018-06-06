@@ -26,7 +26,7 @@ you will need to use an application such as Terminal or the Windows Command
 Prompt. If you don't already have Node.js installed, then you'll need to
 follow these instructions:
 
-We require a minimum of Node.js version 4.2.0 & npm 3.0.0 to run, and we
+We require a minimum of Node.js version 6.9.0 & npm 3.10.8 to run, and we
 recommend that you install [nvm](https://github.com/creationix/nvm) to manage
 your Node.js versions.
 
