@@ -7,7 +7,7 @@ import getValue from '../getValue';
 import mergeRules from '../mergeRules';
 import insertCloned from '../insertCloned';
 import remove from '../remove';
-import hasVariable from '../hasVariable';
+import isCustomProp from '../isCustomProp';
 
 const properties = ['column-width', 'column-count'];
 const auto = 'auto';
@@ -86,7 +86,7 @@ function cleanup (rule) {
             node !== lastNode &&
             node.important === lastNode.important &&
             node.prop === lastNode.prop &&
-            hasVariable(node) === hasVariable(lastNode)
+            !(!isCustomProp(node) && isCustomProp(lastNode))
         );
 
         duplicates.forEach(remove);

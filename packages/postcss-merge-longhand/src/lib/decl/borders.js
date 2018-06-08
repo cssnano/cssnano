@@ -11,7 +11,7 @@ import minifyTrbl from '../minifyTrbl';
 import canMerge from '../canMerge';
 import remove from '../remove';
 import trbl from '../trbl';
-import hasVariable from '../hasVariable';
+import isCustomProp from '../isCustomProp';
 
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentColor'];
@@ -283,35 +283,33 @@ function merge (rule) {
         wsc.forEach((d, i) => {
             const names = directions.filter(name => name !== lastNode.prop).map(name => `${name}-${d}`);
             const props = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop) && node.important === lastNode.important);
-            const rulesSet = getRules(props, names);
-            rulesSet.forEach(rules => {
-                if (hasAllProps(rules, ...names) && !rules.some(detect)) {
-                    const values = rules.map(node => node ? node.value : null);
-                    const filteredValues = values.filter(Boolean);
-                    const lastNodeValue = list.space(lastNode.value)[i];
-                    values[directions.indexOf(lastNode.prop)] = lastNodeValue;
-                    let value = minifyTrbl(values.join(' '));
-                    if (
-                        filteredValues[0] === filteredValues[1] &&
-                        filteredValues[1] === filteredValues[2]
-                    ) {
-                        value = filteredValues[0];
-                    }
-                    let refNode = props[props.length - 1];
-                    if (value === lastNodeValue) {
-                        refNode = lastNode;
-                        let valueArray = list.space(lastNode.value);
-                        valueArray.splice(i, 1);
-                        lastNode.value = valueArray.join(' ');
-                    }
-                    insertCloned(refNode.parent, refNode, {
-                        prop: borderProperty(d),
-                        value,
-                    });
-                    decls = decls.filter(node => !~rules.indexOf(node));
-                    rules.forEach(remove);
+            const rules = getRules(props, names);
+            if (hasAllProps(rules, ...names) && !rules.some(detect)) {
+                const values = rules.map(node => node ? node.value : null);
+                const filteredValues = values.filter(Boolean);
+                const lastNodeValue = list.space(lastNode.value)[i];
+                values[directions.indexOf(lastNode.prop)] = lastNodeValue;
+                let value = minifyTrbl(values.join(' '));
+                if (
+                    filteredValues[0] === filteredValues[1] &&
+                    filteredValues[1] === filteredValues[2]
+                ) {
+                    value = filteredValues[0];
                 }
-            });
+                let refNode = props[props.length - 1];
+                if (value === lastNodeValue) {
+                    refNode = lastNode;
+                    let valueArray = list.space(lastNode.value);
+                    valueArray.splice(i, 1);
+                    lastNode.value = valueArray.join(' ');
+                }
+                insertCloned(refNode.parent, refNode, {
+                    prop: borderProperty(d),
+                    value,
+                });
+                decls = decls.filter(node => !~rules.indexOf(node));
+                rules.forEach(remove);
+            }
         });
         decls = decls.filter(node => node !== lastNode);
     }
@@ -412,7 +410,7 @@ function merge (rule) {
             node !== lastNode &&
             node.important === lastNode.important &&
             node.prop === lastNode.prop &&
-            hasVariable(node) === hasVariable(lastNode)
+            !(!isCustomProp(node) && isCustomProp(lastNode))
         );
 
         if (duplicates.length) {

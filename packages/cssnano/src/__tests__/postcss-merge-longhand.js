@@ -155,32 +155,25 @@ test(
     'h1{margin:10px 20px 30px 40px}',
 );
 
-test(   
-    'should merge custom props and dont remove fallbacks',
+test(
+    'save fallbacks if after them goes custom css props',
     processCss,
-    'h1{padding-top:10px;padding-right:15px;padding-bottom:20px;padding-left:25px;padding-top:var(--variable);padding-right:var(--variable);padding-bottom:var(--variable);padding-left:var(--variable)}',
-    'h1{padding:10px 15px 20px 25px;padding:var(--variable)}'
+    'h1{padding:1em;padding:var(--variable)}',
+    'h1{padding:1em;padding:var(--variable)}'
 );
 
 test(
-    'should merge rules with custom props',
+    'overwrite custom css props if after them goes same props',
     processCss,
-    'h1{padding-top:var(--variable);padding-right:var(--variable);padding-bottom:var(--variable);padding-left:var(--variable)}',
-    'h1{padding:var(--variable)}'
+    'h1{padding:var(--variable);padding:1em}',
+    'h1{padding:1em}'
 );
 
 test(
-    'fallback rules must go first',
+    'overwrite custom css props if after them goes same props (2)',
     processCss,
-    'h1{padding:10em;padding:var(--variable)}',
-    'h1{padding:10em;padding:var(--variable)}'
-);
-
-test(
-    'fallback rules must go first (2)',
-    processCss,
-    'h1{padding:var(--variable);padding:10em}',
-    'h1{padding:10em;padding:var(--variable)}'
+    'h1{padding:var(--first);padding:var(--second)}',
+    'h1{padding:var(--second)}'
 );
 
 test(
@@ -191,8 +184,38 @@ test(
 );
 
 test(
-    'should merge rules with fallbacks and custom props when rules placed in mixed order',
+    'shoudn\'t merge rule if it includes mixed values',
+    processCss,
+    'h1{padding-top:10px;padding-right:15px;padding-bottom:20px;padding-left:var(--variable)}',
+    'h1{padding-bottom:20px;padding-left:var(--variable);padding-right:15px;padding-top:10px}'
+);
+
+
+test(
+    'should merge rules with custom props',
+    processCss,
+    'h1{padding-top:var(--variable);padding-right:var(--variable);padding-bottom:var(--variable);padding-left:var(--variable)}',
+    'h1{padding:var(--variable)}'
+);
+
+test(   
+    'should merge props and dont remove fallbacks',
+    processCss,
+    'h1{padding-top:10px;padding-right:15px;padding-bottom:20px;padding-left:25px;padding-top:var(--variable);padding-right:var(--variable);padding-bottom:var(--variable);padding-left:var(--variable)}',
+    'h1{padding:10px 15px 20px 25px;padding:var(--variable)}'
+);
+
+
+test(   
+    'should merge props and overwrite',
+    processCss,
+    'h1{padding-top:var(--variable);padding-right:var(--variable);padding-bottom:var(--variable);padding-left:var(--variable);padding-top:10px;padding-right:15px;padding-bottom:20px;padding-left:25px}',
+    'h1{padding:10px 15px 20px 25px}'
+);
+
+test(
+    'should overwrite some props and save fallbacks',
     processCss,
     'h1{padding-top:10px;padding-right:var(--variable);padding-right:15px;padding-bottom:var(--variable);padding-bottom:20px;padding-left:25px;padding-top:var(--variable);padding-left:var(--variable)}',
-    'h1{padding:10px 15px 20px 25px;padding:var(--variable)}'
+    'h1{padding:10px 15px 20px 25px;padding-left:var(--variable);padding-top:var(--variable)}'
 );
