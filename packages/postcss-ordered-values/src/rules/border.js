@@ -33,6 +33,10 @@ export default function normalizeBorder (decl, border) {
                 return false;
             }
             if (~borderWidths.indexOf(value.toLowerCase()) || unit(value.toLowerCase())) {
+                if (order.width !== '') {
+                    order.width = `${order.width} ${value}`;
+                    return false;
+                }
                 order.width = value;
                 return false;
             }

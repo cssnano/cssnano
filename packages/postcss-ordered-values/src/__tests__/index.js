@@ -26,6 +26,13 @@ test(
 );
 
 test(
+    'invalid border property should remain invalid',
+    processCSS,
+    'h1{border: 0 0 7px 7px solid black}',
+    'h1{border: 0 0 7px 7px solid black}'
+);
+
+test(
     'should order border with color functions',
     processCSS,
     'h1{border:rgba(255,255,255,0.5) dashed thick}',
