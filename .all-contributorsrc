@@ -544,6 +544,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "An-Tu",
+      "name": "Anton Tuzhik",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/26381967?v=4",
+      "profile": "https://github.com/An-Tu",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ]
 }
