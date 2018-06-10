@@ -1,0 +1,36 @@
+{
+  "name": "postcss-normalize-charset",
+  "version": "4.0.0-rc.2",
+  "description": "Normalize casing of style declarations",
+  "keywords": [
+    "postcss",
+    "css",
+    "postcss-plugin",
+    "normalize"
+  ],
+  "author": "Stanislav Botev <botev.st@gmail.com>",
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "repository": "ben-eb/cssnano",
+  "bugs": {
+    "url": "https://github.com/ben-eb/cssnano/issues"
+  },
+  "homepage": "https://github.com/ben-eb/cssnano",
+  "dependencies": {
+    "postcss": "^6.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.0.0",
+    "cross-env": "^5.1.6",
+    "postcss-devtools": "^1.0.0"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
+  },
+  "engines": {
+    "node": ">=6.9.0"
+  }
+}
