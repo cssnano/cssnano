@@ -40,6 +40,7 @@ import postcssNormalizeWhitespace from 'lerna:postcss-normalize-whitespace';
 import postcssNormalizeUnicode from 'lerna:postcss-normalize-unicode';
 import postcssNormalizeDisplayValues from 'lerna:postcss-normalize-display-values';
 import postcssNormalizeTimingFunctions from 'lerna:postcss-normalize-timing-functions';
+import postcssNormalizeCasing from 'lerna:postcss-normalize-casing';
 import rawCache from 'lerna:cssnano-util-raw-cache';
 
 const defaultOpts = {
@@ -82,6 +83,7 @@ export default function defaultPreset (opts = {}) {
         [postcssMergeRules, options.mergeRules],
         [postcssDiscardEmpty, options.discardEmpty],
         [postcssUniqueSelectors, options.uniqueSelectors],
+        [postcssNormalizeCasing, options.normalizeCasing],
         [cssDeclarationSorter, options.cssDeclarationSorter],
         [rawCache, options.rawCache],
     ];
