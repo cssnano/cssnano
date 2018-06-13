@@ -294,3 +294,25 @@ test(
     ':root{--my-border-width:var(--my-border-width);--my-border-style:var(--my-border-style);--my-border-color:var(--my-border-color);}',
     ':root{--my-border-width:var(--my-border-width);--my-border-style:var(--my-border-style);--my-border-color:var(--my-border-color);}'
 );
+
+
+test(
+    'should overwrite some border-width props and save fallbacks',
+    processCss,
+    'h1{border-top-width:10px;border-right-width:var(--variable);border-right-width:15px;border-bottom-width:var(--variable);border-bottom-width:20px;border-left-width:25px;border-top-width:var(--variable);border-left-width:var(--variable)}',
+    'h1{border-width:10px 15px 20px 25px;border-top-width:var(--variable);border-left-width:var(--variable)}'
+);
+
+test(
+    'save fallbacks should border-style',
+    processCss,
+    'h1{border-style:dotted;border-style:var(--variable)}',
+    'h1{border-style:dotted;border-style:var(--variable)}'
+);
+
+test(
+    'save fallbacks should border-color',
+    processCss,
+    'h1{border-color:dotted;border-color:var(--variable)}',
+    'h1{border-color:dotted;border-color:var(--variable)}'
+);

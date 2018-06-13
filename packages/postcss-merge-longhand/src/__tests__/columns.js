@@ -66,3 +66,10 @@ test(
     'section{h1{column-width:12em;column-count:auto}}',
     'section{h1{columns:12em}}'
 );
+
+test(
+    'should save fallbacks for column-width if after goes custom css props',
+    processCss,
+    'h1{column-width:12em;column-width:var(--variable)}',
+    'h1{column-width:12em;column-width:var(--variable)}'
+);

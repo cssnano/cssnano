@@ -173,7 +173,7 @@ function merge (rule) {
             rule,
             trbl.map(direction => borderProperty(direction, style)),
             (rules, lastNode) => {
-                if (!rules.some(detect)) {
+                if (canMerge(...rules) && !rules.some(detect)) {
                     insertCloned(lastNode.parent, lastNode, {
                         prop,
                         value: minifyTrbl(rules.map(getValue).join(' ')),
@@ -184,7 +184,7 @@ function merge (rule) {
             }
         );
     });
-
+    
     // border-trbl -> border-wsc
     mergeRules(rule, directions, (rules, lastNode) => {
         if (rules.some(detect)) {
