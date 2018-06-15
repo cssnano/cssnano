@@ -11,6 +11,7 @@ import minifyTrbl from '../minifyTrbl';
 import canMerge from '../canMerge';
 import remove from '../remove';
 import trbl from '../trbl';
+import isCustomProp from '../isCustomProp';
 
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentColor'];
@@ -172,7 +173,7 @@ function merge (rule) {
             rule,
             trbl.map(direction => borderProperty(direction, style)),
             (rules, lastNode) => {
-                if (!rules.some(detect)) {
+                if (canMerge(...rules) && !rules.some(detect)) {
                     insertCloned(lastNode.parent, lastNode, {
                         prop,
                         value: minifyTrbl(rules.map(getValue).join(' ')),
@@ -183,7 +184,7 @@ function merge (rule) {
             }
         );
     });
-
+    
     // border-trbl -> border-wsc
     mergeRules(rule, directions, (rules, lastNode) => {
         if (rules.some(detect)) {
@@ -408,7 +409,9 @@ function merge (rule) {
             !detect(node) &&
             node !== lastNode &&
             node.important === lastNode.important &&
-            node.prop === lastNode.prop);
+            node.prop === lastNode.prop &&
+            !(!isCustomProp(node) && isCustomProp(lastNode))
+        );
 
         if (duplicates.length) {
             if (/hsla|rgba/.test(getColorValue(lastNode))) {

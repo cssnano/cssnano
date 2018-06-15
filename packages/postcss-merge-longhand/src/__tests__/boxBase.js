@@ -109,4 +109,8 @@ addTests({
     message: 'should override shorthand property',
     fixture: 'h1{box:10px;box-left:5px}',
     expected: 'h1{box:10px 10px 10px 5px}',
+}, {
+    message: 'should overwrite some box props and save fallbacks',
+    fixture: 'h1{box-top:10px;box-right:var(--variable);box-right:15px;box-bottom:var(--variable);box-bottom:20px;box-left:25px;box-top:var(--variable);box-left:var(--variable)}',
+    expected: 'h1{box:10px 15px 20px 25px;box-top:var(--variable);box-left:var(--variable)}',    
 });
