@@ -1,2 +1,2 @@
 export default node => 
-    ~node.value.search(/var(\s+\(|\()(\s+--|--)/i);
+    ~node.value.search(/var\s*\(\s*--/i);
