@@ -72,7 +72,7 @@ test(
 
 test(
     'should save fallbacks for column-width if after goes custom css props',
-    processCss,
+    processCSS,
     'h1{column-width:12em;column-width:var(--variable)}',
     'h1{column-width:12em;column-width:var(--variable)}'
 );
