@@ -23,7 +23,6 @@
     "cross-env": "^5.0.0",
     "got": "^8.0.0",
     "html2plaintext": "^2.0.0",
-    "is-html": "^1.0.0",
     "write-file": "^1.0.0"
   },
   "homepage": "https://github.com/cssnano/cssnano",
