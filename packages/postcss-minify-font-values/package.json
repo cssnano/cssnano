@@ -20,11 +20,11 @@
     "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0"
   },
-  "repository": "ben-eb/cssnano",
+  "repository": "cssnano/cssnano",
   "bugs": {
-    "url": "https://github.com/ben-eb/cssnano/issues"
+    "url": "https://github.com/cssnano/cssnano/issues"
   },
-  "homepage": "https://github.com/ben-eb/cssnano",
+  "homepage": "https://github.com/cssnano/cssnano",
   "scripts": {
     "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
   },

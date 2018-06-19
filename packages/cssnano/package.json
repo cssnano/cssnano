@@ -36,13 +36,13 @@
     "webpack": "^2.0.0",
     "webpack-bundle-size-analyzer": "^2.0.0"
   },
-  "homepage": "https://github.com/ben-eb/cssnano",
+  "homepage": "https://github.com/cssnano/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/cssnano",
+  "repository": "cssnano/cssnano",
   "files": [
     "dist",
     "LICENSE-MIT",
@@ -50,7 +50,7 @@
   ],
   "tonicExampleFilename": "quickstart.js",
   "bugs": {
-    "url": "https://github.com/ben-eb/cssnano/issues"
+    "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
     "node": ">=6.9.0"

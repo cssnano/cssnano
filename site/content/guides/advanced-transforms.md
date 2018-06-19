@@ -24,7 +24,7 @@ you are injecting CSS via JavaScript, for example.
 A good example is [postcss-merge-idents]; in order for this transform to be safe
 any `@keyframes` rules and selectors that utilise them must be in the same file.
 
-[postcss-merge-idents]: https://github.com/ben-eb/cssnano/tree/master/packages/postcss-merge-idents
+[postcss-merge-idents]: https://github.com/cssnano/cssnano/tree/master/packages/postcss-merge-idents
 
 ### Changes semantics
 

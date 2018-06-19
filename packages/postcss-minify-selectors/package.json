@@ -24,13 +24,13 @@
     "cross-env": "^5.0.0",
     "postcss-font-magician": "^2.0.0"
   },
-  "homepage": "https://github.com/ben-eb/cssnano",
+  "homepage": "https://github.com/cssnano/cssnano",
   "author": {
     "name": "Ben Briggs",
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/cssnano",
+  "repository": "cssnano/cssnano",
   "dependencies": {
     "alphanum-sort": "^1.0.0",
     "has": "^1.0.0",
@@ -38,7 +38,7 @@
     "postcss-selector-parser": "^3.0.0"
   },
   "bugs": {
-    "url": "https://github.com/ben-eb/cssnano/issues"
+    "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
     "node": ">=6.9.0"

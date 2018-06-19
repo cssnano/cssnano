@@ -26,8 +26,8 @@ repository share are now in the same location. This allows us to do things like
 putting the [changelog](/changelog) on the site!
 
 If your company uses cssnano and would like to be added to the list of users
-displayed on the site, then [please send us a pull request](https://github.com/ben-eb/cssnano/pulls) with your
-(preferably SVG) logo in 500x200 format in the [`assets`](https://github.com/ben-eb/cssnano/tree/master/site/content/assets)
-directory, and add your details to [`users.json`](https://github.com/ben-eb/cssnano/tree/master/site/users.json).
+displayed on the site, then [please send us a pull request](https://github.com/cssnano/cssnano/pulls) with your
+(preferably SVG) logo in 500x200 format in the [`assets`](https://github.com/cssnano/cssnano/tree/master/site/content/assets)
+directory, and add your details to [`users.json`](https://github.com/cssnano/cssnano/tree/master/site/users.json).
 
 Thanks for reading.
