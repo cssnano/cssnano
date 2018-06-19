@@ -69,7 +69,7 @@ See [PostCSS] docs for examples for your environment.
 
 ## Contributors
 
-See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
+See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md).
 
 # License
 
@@ -77,5 +77,5 @@ MIT © [Bogdan Chadkin](mailto:trysound@yandex.ru)
 
 [mathias]: https://mathiasbynens.be/notes/unquoted-font-family
 [PostCSS]: https://github.com/postcss/postcss
-[ci-img]:  https://travis-ci.org/ben-eb/postcss-minify-font-values.svg
-[ci]:      https://travis-ci.org/ben-eb/postcss-minify-font-values
+[ci-img]:  https://travis-ci.org/cssnano/postcss-minify-font-values.svg
+[ci]:      https://travis-ci.org/cssnano/postcss-minify-font-values

@@ -26,11 +26,11 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "repository": "ben-eb/cssnano",
+  "repository": "cssnano/cssnano",
   "bugs": {
-    "url": "https://github.com/ben-eb/cssnano/issues"
+    "url": "https://github.com/cssnano/cssnano/issues"
   },
-  "homepage": "https://github.com/ben-eb/cssnano",
+  "homepage": "https://github.com/cssnano/cssnano",
   "engines": {
     "node": ">=6.9.0"
   }

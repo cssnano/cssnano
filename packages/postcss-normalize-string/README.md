@@ -50,7 +50,7 @@ console.log(postcss(normalize({preferredQuote: 'single'})).process(css).css);
 
 ## Contributors
 
-See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
+See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md).
 
 ## License
 

@@ -117,7 +117,7 @@ Pass `false` to disable reducing `grid-template`, `grid-area` and `grid-template
 ##### encoder
 
 Type: `function`  
-Default: [`lib/encode.js`](https://github.com/ben-eb/postcss-reduce-idents/blob/master/src/lib/encode.js)
+Default: [`lib/encode.js`](https://github.com/cssnano/postcss-reduce-idents/blob/master/src/lib/encode.js)
 
 Pass a custom function to encode the identifier with (e.g.: as a way of prefixing them automatically).
 
@@ -127,7 +127,7 @@ It receives two parameters:
 
 ## Contributors
 
-See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md).
+See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md).
 
 
 ## License

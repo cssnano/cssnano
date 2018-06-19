@@ -23,7 +23,7 @@ test.failing(
  * values are handled; however this is a low priority because
  * CSS is generally not written this way.
  *
- * Ref: https://github.com/ben-eb/cssnano/issues/322
+ * Ref: https://github.com/cssnano/cssnano/issues/322
  */
 
 test.failing(

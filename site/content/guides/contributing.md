@@ -14,12 +14,12 @@ you add yourself to the list of contributors, found in [CONTRIBUTORS.md].
 To do this, after you've set up the development environment, run:
 
 ```
-all-contributors add
+yarn all-contributors
 ```
 
 And follow the on-screen prompts.
 
-[contributors.md]: https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS.md
+[contributors.md]: https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md
 
 
 ## How can I contribute to cssnano's code?
@@ -30,7 +30,7 @@ easier to test them together. Other than this, you'll need Node.js, yarn &
 git installed. Then, you can run these commands to get the repository set up:
 
 ```
-git clone git@github.com:ben-eb/cssnano.git
+git clone git@github.com:cssnano/cssnano.git
 cd cssnano
 yarn install
 ```
@@ -117,10 +117,10 @@ You can also [help support us financially](/support-us/).
 
 [chat]: https://gitter.im/postcss/postcss
 
-[documentation]: https://github.com/ben-eb/cssnano/labels/documentation
+[documentation]: https://github.com/cssnano/cssnano/labels/documentation
 
-[help wanted]: https://github.com/ben-eb/cssnano/labels/help%20wanted
+[help wanted]: https://github.com/cssnano/cssnano/labels/help%20wanted
 
-[question]: https://github.com/ben-eb/cssnano/labels/question
+[question]: https://github.com/cssnano/cssnano/labels/question
 
 [twitter]: https://twitter.com/cssnano_

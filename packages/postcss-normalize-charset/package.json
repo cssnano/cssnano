@@ -13,11 +13,11 @@
     "dist"
   ],
   "license": "MIT",
-  "repository": "ben-eb/cssnano",
+  "repository": "cssnano/cssnano",
   "bugs": {
-    "url": "https://github.com/ben-eb/cssnano/issues"
+    "url": "https://github.com/cssnano/cssnano/issues"
   },
-  "homepage": "https://github.com/ben-eb/cssnano",
+  "homepage": "https://github.com/cssnano/cssnano",
   "dependencies": {
     "postcss": "^6.0.0"
   },

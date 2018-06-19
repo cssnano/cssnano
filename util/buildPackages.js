@@ -16,7 +16,7 @@ import contributorsSection from './contributorsSection';
 import installSection from './installSection';
 import sortAscending from './sortAscending';
 
-const repository = `ben-eb/cssnano`;
+const repository = `cssnano/cssnano`;
 const homepage = `https://github.com/${repository}`;
 
 function semverMajor (dependencies) {

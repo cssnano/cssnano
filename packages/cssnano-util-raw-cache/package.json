@@ -1,15 +1,15 @@
 {
   "name": "cssnano-util-raw-cache",
   "version": "4.0.0-rc.2",
-  "repository": "ben-eb/cssnano",
+  "repository": "cssnano/cssnano",
   "main": "dist/index.js",
   "description": "Manages the raw value formatting for generated AST nodes.",
   "scripts": {
     "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
   },
-  "homepage": "https://github.com/ben-eb/cssnano",
+  "homepage": "https://github.com/cssnano/cssnano",
   "bugs": {
-    "url": "https://github.com/ben-eb/cssnano/issues"
+    "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
     "node": ">=6.9.0"

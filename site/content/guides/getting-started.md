@@ -89,7 +89,7 @@ You should then see an `output.css` with the same styles but compressed!
 
 Note that you can also find a [basic example][example] in our GitHub repository.
 
-[example]: https://github.com/ben-eb/cssnano/tree/master/packages/example-cli-usage
+[example]: https://github.com/cssnano/cssnano/tree/master/packages/example-cli-usage
 
 
 ## Alternatives to using the CLI

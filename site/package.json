@@ -3,7 +3,7 @@
   "name": "cssnano-docs",
   "homepage": "http://cssnano.co",
   "twitter": "cssnano_",
-  "repository": "https://github.com/ben-eb/cssnano",
+  "repository": "https://github.com/cssnano/cssnano",
   "scripts": {
     "lint:js": "eslint --ignore-path .gitignore --fix .",
     "lint:css": "stylelint \"src/**/*.css\"",

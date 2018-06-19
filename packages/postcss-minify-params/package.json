@@ -16,11 +16,11 @@
   ],
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "license": "MIT",
-  "repository": "ben-eb/cssnano",
+  "repository": "cssnano/cssnano",
   "bugs": {
-    "url": "https://github.com/ben-eb/cssnano/issues"
+    "url": "https://github.com/cssnano/cssnano/issues"
   },
-  "homepage": "https://github.com/ben-eb/cssnano",
+  "homepage": "https://github.com/cssnano/cssnano",
   "dependencies": {
     "alphanum-sort": "^1.0.0",
     "cssnano-util-get-arguments": "^4.0.0-rc.2",

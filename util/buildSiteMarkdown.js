@@ -105,7 +105,7 @@ function generateChangelog () {
             return new Promise((resolve) => remark()
                 .use(remarkPreset)
                 .use(remarkBehead, {depth: 1})
-                .use(remarkGithub, {repository: 'ben-eb/cssnano'})
+                .use(remarkGithub, {repository: 'cssnano/cssnano'})
                 .process(String(changlog), (error, file) => {
                     if (error) {
                         throw error;
