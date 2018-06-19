@@ -80,7 +80,7 @@ export function table (css, opts, processor) {
         output.push.apply(output, result.rows);
         return output.toString();
     });
-};
+}
 
 export function numeric (css, opts, processor) {
     processor = processor || nano.process.bind(nano);

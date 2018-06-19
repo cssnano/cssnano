@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "cross-env": "^5.1.6"
+    "cross-env": "^5.0.0"
   },
   "engines": {
     "node": ">=6.9.0"

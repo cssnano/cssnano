@@ -1,14 +1,10 @@
+import path from 'path';
 import postcss from 'postcss';
 import cosmiconfig from 'cosmiconfig';
 import isResolvable from 'is-resolvable';
 import defaultPreset from 'lerna:cssnano-preset-default';
 
 const cssnano = 'cssnano';
-
-const explorer = cosmiconfig(cssnano, {
-    rc: false,
-    argv: false,
-});
 
 function initializePlugin (plugin, css, result) {
     if (Array.isArray(plugin)) {
@@ -28,16 +24,6 @@ function initializePlugin (plugin, css, result) {
     }
     // Handle excluded plugins
     return Promise.resolve();
-}
-
-function fromFile (css, result) {
-    const filePath = css.source && css.source.input && css.source.input.file || process.cwd();
-    result.messages.push({
-        type: 'debug',
-        plugin: cssnano,
-        message: `Using config relative to "${filePath}"`,
-    });
-    return filePath;
 }
 
 /*
@@ -92,7 +78,22 @@ function resolveConfig (css, result, options) {
     if (options.preset) {
         return resolvePreset(options.preset);
     }
-    return explorer.load(fromFile(css, result)).then(config => {
+
+    const inputFile = css.source && css.source.input && css.source.input.file;
+    let searchPath = inputFile ? path.dirname(inputFile) : process.cwd();
+    let configPath = null;
+
+    if (options.configFile) {
+        searchPath = null;
+        configPath = path.resolve(process.cwd(), options.configFile);
+    }
+
+    const configExplorer = cosmiconfig(cssnano);
+    const searchForConfig = configPath
+        ? configExplorer.load(configPath)
+        : configExplorer.search(searchPath);
+
+    return searchForConfig.then(config => {
         if (config === null) {
             return resolvePreset('default');
         }

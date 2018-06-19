@@ -7,7 +7,7 @@ you add yourself to the list of contributors, found in [CONTRIBUTORS.md].
 To do this, after you've set up the development environment, run:
 
 ```
-all-contributors add
+yarn all-contributors
 ```
 
 And follow the on-screen prompts.

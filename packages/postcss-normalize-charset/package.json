@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "cross-env": "^5.1.6",
+    "cross-env": "^5.0.0",
     "postcss-devtools": "^1.0.0"
   },
   "main": "dist/index.js",

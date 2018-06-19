@@ -20,12 +20,14 @@ test(
 );
 
 Object.keys(data).forEach(key => {
-    const fixture = data[key];
+    const actual = data[key];
+    const expected = key;
+
     test(
-        `display: ${fixture} => display: ${key}`,
+        `display: ${actual} => display: ${expected}`,
         processCSS,
-        `display:${fixture}`,
-        `display:${key}`
+        `display:${actual}`,
+        `display:${expected}`
     );
 });
 
