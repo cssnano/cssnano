@@ -21,7 +21,6 @@ branches:
 install:
   - ps: Install-Product node $env:nodejs_version
   - set CI=true
-  - npm -g install npm@latest
   - set PATH=%APPDATA%\npm;%PATH%
   - yarn install
   - node --version

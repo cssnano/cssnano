@@ -41,7 +41,6 @@ matrix:
       env: JOB_PART=test-only 6
 
 before_install:
-  - npm install -g npm@latest
   - nvm --version
   - node --version
   - npm --version
