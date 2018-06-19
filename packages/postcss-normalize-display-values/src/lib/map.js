@@ -7,7 +7,6 @@ const inline = 'inline';
 const inlineBlock = 'inline-block';
 const inlineFlex = 'inline-flex';
 const inlineGrid = 'inline-grid';
-const inlineListItem = 'inline-list-item';
 const inlineTable = 'inline-table';
 const listItem = 'list-item';
 const ruby = 'ruby';
@@ -29,12 +28,13 @@ export default [
     [inlineBlock, [inline, flowRoot]],
     [runIn, [runIn, flow]],
     [listItem, [listItem, block, flow]],
-    [inlineListItem, [listItem, inline, flow]],
+    [inline + ' ' + listItem, [inline, flow, listItem]],
     [flex, [block, flex]],
     [inlineFlex, [inline, flex]],
     [grid, [block, grid]],
     [inlineGrid, [inline, grid]],
     [ruby, [inline, ruby]],
+    // `block ruby` is same
     [table, [block, table]],
     [inlineTable, [inline, table]],
     [tableCell, [tableCell, flow]],

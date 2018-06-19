@@ -271,6 +271,12 @@ test(
 );
 
 test(
+    'should pass through invalid url',
+    passthroughCSS,
+    'h1{background:url(http://)}'
+);
+
+test(
     'should use the postcss plugin api',
     usePostCSSPlugin,
     plugin()

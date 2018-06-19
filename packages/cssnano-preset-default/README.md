@@ -14,7 +14,7 @@
 
 -   [Plugins](#plugins)
 
-    -   [css-declaration-sorter](#css-declaration-sorter)
+    -   [css-declaration-sorter (external)](#css-declaration-sorter-external)
     -   [cssnano-util-raw-cache](#cssnano-util-raw-cache)
     -   [postcss-calc (external)](#postcss-calc-external)
     -   [postcss-colormin](#postcss-colormin)
@@ -100,9 +100,9 @@ Note that you may wish to publish your own preset to npm for reusability, should
 
 ## Plugins
 
-### [`css-declaration-sorter`](https://github.com/Siilwyn/css-declaration-sorter/) (external)
+### [`css-declaration-sorter`](https://github.com/Siilwyn/css-declaration-sorter) (external)
 
-> PostCSS plugin to sort CSS declarations to decrease gzipped CSS size.
+> Sorts CSS declarations fast and automatically in a certain order.
 
 This plugin is loaded with its default configuration.
 
@@ -295,3 +295,4 @@ See [CONTRIBUTORS.md](https://github.com/ben-eb/cssnano/blob/master/CONTRIBUTORS
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
+

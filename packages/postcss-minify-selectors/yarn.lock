@@ -296,14 +296,14 @@ code-point-at@^1.0.0:
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
 
 color-convert@^1.9.0:
-  version "1.9.1"
-  resolved "https://registry.yarnpkg.com/color-convert/-/color-convert-1.9.1.tgz#c1261107aeb2f294ebffec9ed9ecad529a6097ed"
+  version "1.9.2"
+  resolved "https://registry.yarnpkg.com/color-convert/-/color-convert-1.9.2.tgz#49881b8fba67df12a96bdf3f56c0aab9e7913147"
   dependencies:
-    color-name "^1.1.1"
+    color-name "1.1.1"
 
-color-name@^1.1.1:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.3.tgz#a7d0558bd89c42f795dd42328f740831ca53bc25"
+color-name@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.1.tgz#4b1415304cf50028ea81643643bd82ea05803689"
 
 commander@^2.11.0:
   version "2.15.1"
@@ -329,18 +329,20 @@ core-util-is@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
 
-cross-env@^5.1.6:
-  version "5.1.6"
-  resolved "https://registry.yarnpkg.com/cross-env/-/cross-env-5.1.6.tgz#0dc05caf945b24e4b9e3b12871fe0e858d08b38d"
+cross-env@^5.0.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/cross-env/-/cross-env-5.2.0.tgz#6ecd4c015d5773e614039ee529076669b9d126f2"
   dependencies:
-    cross-spawn "^5.1.0"
+    cross-spawn "^6.0.5"
     is-windows "^1.0.0"
 
-cross-spawn@^5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-5.1.0.tgz#e8bd0efee58fcff6f8f94510a0a554bbfa235449"
+cross-spawn@^6.0.5:
+  version "6.0.5"
+  resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-6.0.5.tgz#4a5ec7c64dfae22c3a14124dbacdee846d80cbc4"
   dependencies:
-    lru-cache "^4.0.1"
+    nice-try "^1.0.4"
+    path-key "^2.0.1"
+    semver "^5.5.0"
     shebang-command "^1.2.0"
     which "^1.2.9"
 
@@ -505,9 +507,9 @@ globals@^9.18.0:
   version "9.18.0"
   resolved "https://registry.yarnpkg.com/globals/-/globals-9.18.0.tgz#aa3896b3e69b487f17e31ed2143d69a8e30c2d8a"
 
-google-fonts-complete@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/google-fonts-complete/-/google-fonts-complete-1.2.1.tgz#0be144d963f1af51de96ec0a34a814e6461b8bea"
+google-fonts-complete@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/google-fonts-complete/-/google-fonts-complete-1.2.2.tgz#3ad95d4022a2f278acc41d4539b33a2899e8f76c"
   dependencies:
     postcss "^4.1.16"
 
@@ -530,8 +532,8 @@ has-unicode@^2.0.0:
   resolved "https://registry.yarnpkg.com/has-unicode/-/has-unicode-2.0.1.tgz#e0e6fe6a28cf51138855e086d1691e771de2a8b9"
 
 has@^1.0.0:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/has/-/has-1.0.2.tgz#1a64bfe4b52e67fb87b9822503d97c019fb6ba42"
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/has/-/has-1.0.3.tgz#722d7cbfc1f6aa8241f16dd814e011e1f41e8796"
   dependencies:
     function-bind "^1.1.1"
 
@@ -729,13 +731,6 @@ loose-envify@^1.0.0:
   dependencies:
     js-tokens "^3.0.0"
 
-lru-cache@^4.0.1:
-  version "4.1.3"
-  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-4.1.3.tgz#a1175cf3496dfc8436c156c334b4955992bce69c"
-  dependencies:
-    pseudomap "^1.0.2"
-    yallist "^2.1.2"
-
 math-random@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/math-random/-/math-random-1.0.1.tgz#8b3aac588b8a66e4975e3cdea67f7bb329601fac"
@@ -806,6 +801,10 @@ needle@^2.2.0:
     debug "^2.1.2"
     iconv-lite "^0.4.4"
     sax "^1.2.4"
+
+nice-try@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.4.tgz#d93962f6c52f2c1558c0fbda6d512819f1efe1c4"
 
 node-pre-gyp@^0.10.0:
   version "0.10.0"
@@ -912,16 +911,20 @@ path-is-absolute@^1.0.0, path-is-absolute@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/path-is-absolute/-/path-is-absolute-1.0.1.tgz#174b9268735534ffbc7ace6bf53a5a9e1b5c5f5f"
 
+path-key@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/path-key/-/path-key-2.0.1.tgz#411cadb574c5a140d3a4b1910d40d80cc9f40b40"
+
 postcss-font-magician@^2.0.0:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/postcss-font-magician/-/postcss-font-magician-2.1.1.tgz#331660cc3e1b59683c393394ebcc2d1c10b19f84"
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/postcss-font-magician/-/postcss-font-magician-2.2.1.tgz#ea07124f5fd5548f8a8cd097f5f43e476a91c803"
   dependencies:
     bootstrap-fonts-complete "^1.0.0"
     directory-fonts-complete "^1.2.0"
-    google-fonts-complete "^1.2.1"
-    postcss "^6.0.1"
+    google-fonts-complete "^1.2.2"
+    postcss "^6.0.22"
 
-postcss-selector-parser@^3.1.1:
+postcss-selector-parser@^3.0.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/postcss-selector-parser/-/postcss-selector-parser-3.1.1.tgz#4f875f4afb0c96573d5cf4d74011aee250a7e865"
   dependencies:
@@ -937,7 +940,7 @@ postcss@^4.1.16:
     js-base64 "~2.1.8"
     source-map "~0.4.2"
 
-postcss@^6.0.0, postcss@^6.0.1:
+postcss@^6.0.0, postcss@^6.0.22:
   version "6.0.22"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-6.0.22.tgz#e23b78314905c3b90cbd61702121e7a78848f2a3"
   dependencies:
@@ -956,10 +959,6 @@ private@^0.1.8:
 process-nextick-args@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-2.0.0.tgz#a37d732f4271b4ab1ad070d35508e8290788ffaa"
-
-pseudomap@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
 
 randomatic@^3.0.0:
   version "3.0.0"
@@ -1049,7 +1048,7 @@ sax@^1.2.4:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
 
-semver@^5.3.0:
+semver@^5.3.0, semver@^5.5.0:
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.5.0.tgz#dc4bbc7a6ca9d916dee5d43516f0092b58f7b8ab"
 
@@ -1199,10 +1198,6 @@ wide-align@^1.1.0:
 wrappy@1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
-
-yallist@^2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/yallist/-/yallist-2.1.2.tgz#1c11f9218f076089a47dd512f93c6699a6a81d52"
 
 yallist@^3.0.0, yallist@^3.0.2:
   version "3.0.2"

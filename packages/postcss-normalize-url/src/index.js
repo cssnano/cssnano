@@ -8,9 +8,19 @@ const multiline = /\\[\r\n]/;
 const escapeChars = /([\s\(\)"'])/g;
 
 function convert (url, options) {
-    if (isAbsolute(url) || !url.indexOf('//')) {
-        return normalize(url, options);
+    if (isAbsolute(url) || url.startsWith('//')) {
+        let normalizedURL = null;
+
+        try {
+            normalizedURL = normalize(url, options);
+        } catch (e) {
+            normalizedURL = url;
+        }
+
+        return normalizedURL;
     }
+
+    // `path.normalize` always returns backslashes on Windows, need replace in `/`
     return path.normalize(url).replace(new RegExp('\\' + path.sep, 'g'), '/');
 }
 
@@ -44,11 +54,19 @@ function transformDecl (decl, opts) {
         node.before = node.after = '';
         url.value = url.value.trim().replace(multiline, '');
 
+        // Skip empty URLs
+        // Empty URL function equals request to current stylesheet where it is declared
+        if (url.value.length === 0) {
+            url.quote = '';
+
+            return false;
+        }
+
         if (/^data:(.*)?,/.test(url.value)) {
             return false;
         }
 
-        if (url.value.length !== 0 && !(/^.+-extension:\//i.test(url.value))) {
+        if (!(/^.+-extension:\//i.test(url.value))) {
             url.value = convert(url.value, opts);
         }
 

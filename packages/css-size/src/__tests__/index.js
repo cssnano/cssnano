@@ -48,7 +48,7 @@ test('cli with processor argument', t => {
 });
 
 test('api', t => {
-    return size(read('test.css', 'utf-8')).then(result => {
+    return size(read(path.join(__dirname, 'test.css'), 'utf-8')).then(result => {
         t.deepEqual(result, {
             uncompressed: {
                 original: '23 B',
@@ -73,7 +73,7 @@ test('api', t => {
 });
 
 test('table', t => {
-    return table(read('test.css', 'utf-8')).then(result => {
+    return table(read(path.join(__dirname, 'test.css'), 'utf-8')).then(result => {
         t.deepEqual(colors.stripColors(result), `
 ┌────────────┬──────────────┬────────┬────────┐
 │            │ Uncompressed │ Gzip   │ Brotli │
@@ -90,7 +90,7 @@ test('table', t => {
 });
 
 test('numeric', t => {
-    return numeric(read('test.css', 'utf-8')).then(result => {
+    return numeric(read(path.join(__dirname, 'test.css'), 'utf-8')).then(result => {
         t.deepEqual(result, {
             uncompressed: {
                 original: 23,

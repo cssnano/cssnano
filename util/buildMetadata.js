@@ -94,7 +94,7 @@ getPackages().then(packages => {
 
             return fs.writeFile(
                 join(__dirname, '../metadata.toml'),
-                tomlify(sorted)
+                tomlify.toToml(sorted)
             );
         });
 });
