@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[cssnano-docs]]></title><description><![CDATA[cssnano-docs]]></description><link>http://cssnano.co</link><generator>RSS for Node</generator><lastBuildDate>Wed, 06 Jun 2018 18:26:38 GMT</lastBuildDate><atom:link href="http://cssnano.co/feed.xml" rel="self" type="application/rss+xml"/><item><title><![CDATA[New beginnings]]></title><description><![CDATA[<p>It's been a while since the first commit of the website was pushed to GitHub, on
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[cssnano-docs]]></title><description><![CDATA[cssnano-docs]]></description><link>http://cssnano.co</link><generator>RSS for Node</generator><lastBuildDate>Tue, 19 Jun 2018 17:29:30 GMT</lastBuildDate><atom:link href="http://cssnano.co/feed.xml" rel="self" type="application/rss+xml"/><item><title><![CDATA[New beginnings]]></title><description><![CDATA[<p>It's been a while since the first commit of the website was pushed to GitHub, on
 the 26th of June 2015. Since that website launched, cssnano has grown bigger and
 better, and what was once a small site has ballooned from something easily
 accessible to something that was in need of a rework. So, as you can probably
@@ -17,8 +17,8 @@ This was done so that common elements that both the documentation and the main
 repository share are now in the same location. This allows us to do things like
 putting the <a href="/changelog">changelog</a> on the site!</p>
 <p>If your company uses cssnano and would like to be added to the list of users
-displayed on the site, then <a href="https://github.com/ben-eb/cssnano/pulls">please send us a pull request</a> with your
-(preferably SVG) logo in 500x200 format in the <a href="https://github.com/ben-eb/cssnano/tree/master/site/content/assets"><code>assets</code></a>
-directory, and add your details to <a href="https://github.com/ben-eb/cssnano/tree/master/site/users.json"><code>users.json</code></a>.</p>
+displayed on the site, then <a href="https://github.com/cssnano/cssnano/pulls">please send us a pull request</a> with your
+(preferably SVG) logo in 500x200 format in the <a href="https://github.com/cssnano/cssnano/tree/master/site/content/assets"><code>assets</code></a>
+directory, and add your details to <a href="https://github.com/cssnano/cssnano/tree/master/site/users.json"><code>users.json</code></a>.</p>
 <p>Thanks for reading.</p>
 ]]></description><link>http://cssnano.co/blog/new-beginnings/</link><guid isPermaLink="true">http://cssnano.co/blog/new-beginnings/</guid><pubDate>Tue, 10 May 2016 00:00:00 GMT</pubDate></item></channel></rss>
