@@ -1,7 +1,6 @@
 import {join} from 'path';
 import writeFile from 'write-file';
 import got from 'got';
-import isHtml from 'is-html';
 import plainText from 'html2plaintext';
 
 const initialLength = 7; // "initial".length;
@@ -25,15 +24,24 @@ function writeFiles ({fromInitial, toInitial}) {
 got(url, {json:true})
     .then(({body}) => Object.keys(body)
         .reduce((values, key) => {
-            const {initial} = body[key];
+            const {initial, status} = body[key];
             if (
                 // Ignore complex syntaxes
                 typeof initial === 'string' &&
+                key !== '--*' &&
                 // Ignore display as it has different semantics
                 // depending on the selected element.
                 key !== 'display' &&
-                // Ignore anything that doesn't look like <code></code>
-                isHtml(initial)
+                // Ignore properties depend on user-agent implementation
+                initial !== "dependsOnUserAgent" &&
+                initial !== "noPracticalInitialValue" &&
+                initial !== "noneButOverriddenInUserAgentCSS" &&
+                initial !== "variesFromBrowserToBrowser" &&
+                initial !== "invertOrCurrentColor" &&
+                initial !== "startOrNamelessValueIfLTRRightIfRTL" &&
+                initial !== "autoForSmartphoneBrowsersSupportingInflation" &&
+                // Skip non standard properties, because they can change behaviour at any time
+                status !== "nonstandard"
             ) {
                 const value = plainText(initial).trim();
                 if (value.length < initialLength) {
