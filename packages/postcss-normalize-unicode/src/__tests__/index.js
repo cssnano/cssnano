@@ -11,60 +11,60 @@ function fixture (range) {
 test(
     'should convert a unicode range to a wildcard range',
     processCSS,
-    fixture('u+2b00-2bff'), // Miscellaneous Symbols and Arrows
-    fixture('u+2b??')
+    fixture('U+2B00-2BFF'), // Miscellaneous Symbols and Arrows
+    fixture('U+2B??')
 );
 
 test(
     'should convert a unicode range to a wildcard range (2)',
     processCSS,
-    fixture('u+1e00-1eff'), // Latin Extended Additional
-    fixture('u+1e??')
+    fixture('U+1E00-1EFF'), // Latin Extended Additional
+    fixture('U+1E??')
 );
 
 test(
     'should convert a unicode range to a wildcard range (3)',
     processCSS,
-    fixture('u+2120-212f'),
-    fixture('u+212?')
+    fixture('U+2120-212F'),
+    fixture('U+212?')
 );
 
 test(
     'should convert a unicode range to a wildcard range (4)',
     processCSS,
-    fixture('u+2100-21ff'),
-    fixture('u+21??')
+    fixture('U+2100-21FF'),
+    fixture('U+21??')
 );
 
 test(
     'should convert a unicode range to a wildcard range (5)',
     processCSS,
-    fixture('u+2000-2fff'),
-    fixture('u+2???')
+    fixture('U+2000-2FFF'),
+    fixture('U+2???')
 );
 
 test(
     'should pass through a unicode range that cannot be reduced',
     passthroughCSS,
-    fixture('u+0-7f') // Basic Latin
+    fixture('U+0-7F') // Basic Latin
 );
 
 test(
     'should pass through a unicode range that cannot be reduced (2)',
     passthroughCSS,
-    fixture('u+2125-2128')
+    fixture('U+2125-2128')
 );
 
 test(
     'should pass through a unicode range that cannot be reduced (3)',
     passthroughCSS,
-    fixture('u+2012-2f12')
+    fixture('U+2012-2F12')
 );
 
 test(
     'should pass through a unicode range that cannot be reduced (4)',
     passthroughCSS,
-    fixture('u+2002-2ff2')
+    fixture('U+2002-2FF2')
 );
 
 test(
@@ -80,10 +80,10 @@ test(
 );
 
 test(
-    'should downcase the unicode-range property/value pair',
+    'should upcase the unicode-range property/value pair',
     processCSS,
-    '@font-face{font-family:test;UNICODE-RANGE:U+07-F}*{font-family:test}',
-    '@font-face{font-family:test;UNICODE-RANGE:u+07-f}*{font-family:test}'
+    '@font-face{font-family:test;UNICODE-RANGE:u+07-f}*{font-family:test}',
+    '@font-face{font-family:test;UNICODE-RANGE:U+07-F}*{font-family:test}'
 );
 
 test(

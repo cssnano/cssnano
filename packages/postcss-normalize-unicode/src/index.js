@@ -1,6 +1,10 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 
+const RESERVED_KEYWORDS = [
+    "initial",
+];
+
 function unicode (range) {
     const values = range.slice(2).split('-');
     if (values.length < 2) {
@@ -22,12 +26,12 @@ function unicode (range) {
         if (value === right[index] && !questionCounter) {
             return group + value;
         }
-        if (value === '0' && right[index] === 'f') {
+        if (value === '0' && right[index] === 'F') {
             questionCounter ++;
             return group + '?';
         }
         return false;
-    }, 'u+');
+    }, 'U+');
 
     /*
      * The maximum number of wildcard characters (?) for ranges is 5.
@@ -44,8 +48,8 @@ export default postcss.plugin('postcss-normalize-unicode', () => {
     return css => {
         css.walkDecls(/^unicode-range$/i, node => {
             node.value = valueParser(node.value).walk(child => {
-                if (child.type === 'word') {
-                    child.value = unicode(child.value.toLowerCase());
+                if (child.type === 'word' && RESERVED_KEYWORDS.indexOf(child.value.toLowerCase()) === -1) {
+                    child.value = unicode(child.value.toUpperCase());
                 }
                 return false;
             }).toString();
