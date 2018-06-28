@@ -223,6 +223,10 @@
     "ie9": [
       "IE 9"
     ],
+    "not ie": [
+      "defaults",
+      "not ie <=11"
+    ],
     "opera9": [
       "Opera 9"
     ],

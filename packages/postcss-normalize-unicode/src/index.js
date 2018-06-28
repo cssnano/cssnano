@@ -44,13 +44,13 @@ function unicode (range) {
 }
 
 /*
- * IE ignores the unicode-range if the 'U' is lowercase
+ * IE and Edge before 16 version ignore the unicode-range if the 'U' is lowercase
  *
  * https://caniuse.com/#search=unicode-range
  */
 
 function hasLowerCaseUPrefixBug (browser) {
-    return ~['ie 8', 'ie 9', 'ie 10', 'ie 11'].indexOf(browser);
+    return ~browserslist('ie <=11, edge <= 15').indexOf(browser);
 }
 
 function transform (legacy = false, node) {
