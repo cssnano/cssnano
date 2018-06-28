@@ -1,5 +1,8 @@
+import browserslist from 'browserslist';
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
+
+const regexLowerCaseUPrefix = /^u(?=\+)/;
 
 function unicode (range) {
     const values = range.slice(2).split('-');
@@ -40,15 +43,34 @@ function unicode (range) {
     return range;
 }
 
+/*
+ * IE and Edge before 16 version ignore the unicode-range if the 'U' is lowercase
+ *
+ * https://caniuse.com/#search=unicode-range
+ */
+
+function hasLowerCaseUPrefixBug (browser) {
+    return ~browserslist('ie <=11, edge <= 15').indexOf(browser);
+}
+
+function transform (legacy = false, node) {
+    node.value = valueParser(node.value).walk(child => {
+        if (child.type === 'word') {
+            const transformed = unicode(child.value.toLowerCase());
+            child.value = legacy ? transformed.replace(regexLowerCaseUPrefix, 'U') : transformed;
+        }
+        return false;
+    }).toString();
+}
+
 export default postcss.plugin('postcss-normalize-unicode', () => {
-    return css => {
-        css.walkDecls(/^unicode-range$/i, node => {
-            node.value = valueParser(node.value).walk(child => {
-                if (child.type === 'word') {
-                    child.value = unicode(child.value.toLowerCase());
-                }
-                return false;
-            }).toString();
+    return (css, result) => {
+        const resultOpts = result.opts || {};
+        const browsers = browserslist(null, {
+            stats: resultOpts.stats,
+            path: __dirname,
+            env: resultOpts.env,
         });
+        css.walkDecls(/^unicode-range$/i, transform.bind(null, browsers.some(hasLowerCaseUPrefixBug)));
     };
 });
