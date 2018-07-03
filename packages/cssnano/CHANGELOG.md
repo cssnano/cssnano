@@ -1,3 +1,31 @@
+# 4.0.0
+
+## Breaking changes
+
+* We dropped support for Node 4, now requiring at least Node 6.9.
+
+## Features
+
+* postcss-merge-longhand now optimises `border-spacing` property.
+
+## Bug Fixes
+
+* postcss-normalize-unicode doesn't change `U` to lowercase for `IE` <= 11 and `Edge` <= 15.
+* postcss-merge-longhand works with custom properties (Example `a { border-style:dotted; border-style:var(--variable) }`) correctly.
+* postcss-ordered-values handle `border` property with invalid border width value correctly.
+* postcss-merge-rules handles `:-ms-input-placeholder` and `::-ms-input-placeholder` selectors correctly.
+* postcss-merge-rules works with `all` property correctly.
+* postcss-normalize-url don't handle empty `url` function.
+* postcss-normalize-url handles `data` and `*-extension://` URLs correctly.
+* postcss-colormin adds whitespace after minified value and before function.
+* postcss-minify-font-values better escapes font name.
+* postcss-minify-params doesn't remove `all` for IE.
+
+## Other changes
+
+* update all dependencies to latest.
+* better handles uppercase selectors/properties/values/units.
+
 # 4.0.0-rc.2
 
 ## Features
