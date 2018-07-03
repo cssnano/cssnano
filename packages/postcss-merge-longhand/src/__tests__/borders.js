@@ -197,6 +197,13 @@ test(
 );
 
 test(
+    'should merge redundant values (6)',
+    processCSS,
+    'h1{border-width:1px;border-top-width:0;border-left-width:0;border-style:solid;border-color:#000;}',
+    'h1{border-color:#000;border-style:solid;border-width:0 1px 1px 0;}',
+);
+
+test(
     'should merge redundant border-spacing values',
     processCSS,
     'h1{border-spacing:10px 10px;}',
