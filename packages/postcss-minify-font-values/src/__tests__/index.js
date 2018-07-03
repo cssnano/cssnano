@@ -26,6 +26,20 @@ test(
 );
 
 test(
+    'should unquote font names (2)',
+    processCSS,
+    'h1{font-family:"\\5FAE\\8F6F\\96C5\\9ED1"}',
+    'h1{font-family:\\\\5FAE\\8F6F\\96C5\\9ED1}'
+);
+
+test(
+    'should unquote font names (3)',
+    processCSS,
+    'h1{font-family:"\\5B8B\\4F53"}',
+    'h1{font-family:\\\\5B8B\\4F53}'
+);
+
+test(
     'should unquote font names with one character name',
     processCSS,
     'h1{font-family:"A"}',
