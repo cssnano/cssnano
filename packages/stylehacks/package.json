@@ -33,7 +33,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^3.0.0",
+    "browserslist": "^4.0.0",
     "postcss": "^6.0.0",
     "postcss-selector-parser": "^3.0.0"
   },
