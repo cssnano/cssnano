@@ -33,7 +33,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^3.0.0",
+    "browserslist": "^4.0.0",
     "caniuse-api": "^2.0.0",
     "has": "^1.0.0",
     "postcss": "^6.0.0"
