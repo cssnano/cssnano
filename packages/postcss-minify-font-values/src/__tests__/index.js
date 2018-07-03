@@ -114,6 +114,18 @@ test(
 );
 
 test(
+    'should not unquote font names with multiple \\',
+    passthroughCSS,
+    'h1{font-family:"\\5FAE\\8F6F\\96C5\\9ED1"}'
+);
+
+test.only(
+    'should not unquote font names with multiple \\',
+    passthroughCSS,
+    'h1{font-family:"\\5B8B\\4F53"}'
+);
+
+test(
     'should minimise space inside a legal font name',
     processCSS,
     'h1{font-family:Lucida     Grande}',
