@@ -12,7 +12,6 @@
  * this preset require only minimal configuration.
  */
 
-import cssDeclarationSorter from 'css-declaration-sorter';
 import postcssDiscardComments from 'lerna:postcss-discard-comments';
 import postcssReduceInitial from 'lerna:postcss-reduce-initial';
 import postcssMinifyGradients from 'lerna:postcss-minify-gradients';
@@ -82,7 +81,6 @@ export default function defaultPreset (opts = {}) {
         [postcssMergeRules, options.mergeRules],
         [postcssDiscardEmpty, options.discardEmpty],
         [postcssUniqueSelectors, options.uniqueSelectors],
-        [cssDeclarationSorter, options.cssDeclarationSorter],
         [rawCache, options.rawCache],
     ];
 
