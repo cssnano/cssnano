@@ -1,6 +1,6 @@
 {
   "name": "postcss-merge-rules",
-  "version": "4.0.0-rc.2",
+  "version": "4.0.0",
   "description": "Merge CSS rules with PostCSS.",
   "main": "dist/index.js",
   "files": [
@@ -20,7 +20,7 @@
   "devDependencies": {
     "babel-cli": "^6.0.0",
     "cross-env": "^5.0.0",
-    "postcss-discard-comments": "^4.0.0-rc.2",
+    "postcss-discard-comments": "^4.0.0",
     "postcss-simple-vars": "^4.0.0"
   },
   "homepage": "https://github.com/cssnano/cssnano",
@@ -33,7 +33,7 @@
   "dependencies": {
     "browserslist": "^4.0.0",
     "caniuse-api": "^2.0.0",
-    "cssnano-util-same-parent": "^4.0.0-rc.2",
+    "cssnano-util-same-parent": "^4.0.0",
     "postcss": "^6.0.0",
     "postcss-selector-parser": "^3.0.0",
     "vendors": "^1.0.0"

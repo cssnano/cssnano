@@ -1,6 +1,6 @@
 {
   "name": "postcss-merge-idents",
-  "version": "4.0.0-rc.2",
+  "version": "4.0.0",
   "description": "Merge keyframe and counter style identifiers.",
   "main": "dist/index.js",
   "files": [
@@ -29,7 +29,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "cssnano-util-same-parent": "^4.0.0-rc.2",
+    "cssnano-util-same-parent": "^4.0.0",
     "has": "^1.0.0",
     "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0"

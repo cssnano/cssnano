@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-positions",
-  "version": "4.0.0-rc.2",
+  "version": "4.0.0",
   "description": "Normalize keyword values for position into length values.",
   "main": "dist/index.js",
   "files": [
@@ -28,7 +28,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "cssnano-util-get-arguments": "^4.0.0-rc.2",
+    "cssnano-util-get-arguments": "^4.0.0",
     "has": "^1.0.0",
     "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0"

@@ -1,6 +1,6 @@
 {
   "name": "cssnano-util-get-match",
-  "version": "4.0.0-rc.2",
+  "version": "4.0.0",
   "main": "dist/index.js",
   "description": "Convert a list of keywords into a single keyword match.",
   "scripts": {
