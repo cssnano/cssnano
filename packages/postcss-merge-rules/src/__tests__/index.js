@@ -293,13 +293,13 @@ test(
 test(
     'should not incorrectly extract transform properties',
     passthroughCSS,
-    '@keyframes a{0%{opacity:0;transform:rotate(-90deg);transform-origin:right bottom}to{opacity:1;transform:rotate(0);transform-origin:right bottom}}a{animation:a}'
+    '@keyframes a {0%{transform-origin:right bottom;transform:rotate(-90deg);opacity:0}100%{transform-origin:right bottom;transform:rotate(0);opacity:1}}'
 );
 
 test(
     'should not incorrectly extract background properties',
     passthroughCSS,
-    '.iPhone{background:url(a.png);background-image:url(../../../sprites/c.png);background-position:-102px -74px;background-repeat:no-repeat}.logo{background:url(b.png);background-image:url(../../../sprites/c.png);background-position:-2px -146px;background-repeat:no-repeat}'
+    '.iPhone{background:url(a.png);background-image:url(../../../sprites/c.png);background-repeat:no-repeat;background-position:-102px -74px}.logo{background:url(b.png);background-image:url(../../../sprites/c.png);background-repeat:no-repeat;background-position:-2px -146px}'
 );
 
 test(

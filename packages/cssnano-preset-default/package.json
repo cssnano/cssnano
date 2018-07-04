@@ -12,6 +12,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "css-declaration-sorter": "^3.0.0",
     "cssnano-util-raw-cache": "^4.0.0",
     "postcss": "^6.0.0",
     "postcss-calc": "^6.0.0",
