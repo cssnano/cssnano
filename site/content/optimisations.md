@@ -9,7 +9,7 @@ layout: Page
 |  | default | advanced |
 | --- | ------- | -------- |
 | [autoprefixer](/optimisations/autoprefixer) | ❌ | ✅ |
-| [css-declaration-sorter](/optimisations/cssdeclarationsorter) | ✅ | ✅ |
+| [css-declaration-sorter](/optimisations/cssdeclarationsorter) | ❌ | ✅ |
 | [cssnano-util-raw-cache](/optimisations/rawcache) | ✅ | ✅ |
 | [postcss-calc](/optimisations/calc) | ✅ | ✅ |
 | [postcss-colormin](/optimisations/colormin) | ✅ | ✅ |
