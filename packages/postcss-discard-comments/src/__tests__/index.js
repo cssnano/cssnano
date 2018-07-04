@@ -105,7 +105,7 @@ test(
 test(
     'should keep special comments 2',
     passthroughCSS,
-    'h1{/*!test comment*/font-weight:700}'
+    'h1{font-weight:700/*!test comment*/}'
 );
 
 test(
