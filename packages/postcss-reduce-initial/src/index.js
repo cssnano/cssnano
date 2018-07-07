@@ -7,8 +7,7 @@ import toInitial from '../data/toInitial.json';
 const initial = 'initial';
 
 export default plugin('postcss-reduce-initial', () => {
-    return (css, result) => {
-        const resultOpts = result.opts || {};
+    return (css) => {
         const initialSupport = isSupported('css-initial-value');
         css.walkDecls(decl => {
             const lowerCasedProp = decl.prop.toLowerCase();
