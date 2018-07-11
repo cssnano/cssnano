@@ -32,7 +32,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "browserslist": "^4.0.0",
-    "caniuse-api": "^2.0.0",
+    "caniuse-api": "^3.0.0",
     "cssnano-util-same-parent": "^4.0.0",
     "postcss": "^6.0.0",
     "postcss-selector-parser": "^3.0.0",
