@@ -107,10 +107,7 @@ Use [gulp-postcss](https://github.com/postcss/gulp-postcss).
 
 ### Webpack
 
-Currently, cssnano is bundled with [css-loader], so you don't need to load it
-yourself. However, you can also use cssnano explicitly with [postcss-loader].
-
-[css-loader]: https://github.com/webpack-contrib/css-loader
+You can use cssnano explicitly with [postcss-loader].
 
 [postcss-loader]: https://github.com/postcss/postcss-loader
 
