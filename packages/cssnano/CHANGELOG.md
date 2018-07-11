@@ -1,3 +1,9 @@
+# 4.0.1
+
+## Bug Fixes
+
+* `browserslist` version incompatibility with `caniuse-api`
+
 # 4.0.0
 
 ## Breaking changes
