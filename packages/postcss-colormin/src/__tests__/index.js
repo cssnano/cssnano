@@ -6,7 +6,7 @@ import {
     processCSSWithPresetFactory,
 } from '../../../../util/testHelpers';
 
-const {passthroughCSS, processCSS} = processCSSFactory(plugin);
+const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 const {
     processCSS: withDefaultPreset,
     passthroughCSS: passthroughDefault,
@@ -190,7 +190,7 @@ test(
     'should not mangle percentage based rgba values',
     processCSS,
     'h1{color:rgba(50%,50%,50%,0.5)}',
-    'h1{color:hsla(0, 0%, 50%, 0.5)}'
+    'h1{color:hsla(0, 0%, 49.8%, 0.5)}'
 );
 
 test(
@@ -250,7 +250,7 @@ test(
     'should not convert this specific rgba value to "transparent" (old IE)',
     passthroughCSS,
     'h1{color:rgba(0, 0, 0, 0)}',
-    {env: 'ie8'}
+    { env: 'ie8' }
 );
 
 test(
