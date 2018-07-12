@@ -6,7 +6,7 @@ import {
     processCSSWithPresetFactory,
 } from '../../../../util/testHelpers';
 
-const { passthroughCSS, processCSS } = processCSSFactory(plugin);
+const {passthroughCSS, processCSS} = processCSSFactory(plugin);
 const {
     processCSS: withDefaultPreset,
     passthroughCSS: passthroughDefault,

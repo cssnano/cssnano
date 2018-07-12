@@ -1,7 +1,7 @@
 import test from 'ava';
 import min from '../colours';
 
-function isEqual(t, input, output) {
+function isEqual (t, input, output) {
     t.deepEqual(min(input), output);
 }
 
