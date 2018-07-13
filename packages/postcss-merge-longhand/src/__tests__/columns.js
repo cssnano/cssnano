@@ -76,3 +76,9 @@ test(
     'h1{column-width:12em;column-width:var(--variable)}',
     'h1{column-width:12em;column-width:var(--variable)}'
 );
+
+test(
+    'should not explode columns with custom properties',
+    passthroughCSS,
+    'h1{columns:var(--variable)}',
+);
