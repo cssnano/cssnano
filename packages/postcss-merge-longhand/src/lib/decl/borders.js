@@ -12,6 +12,7 @@ import canMerge from '../canMerge';
 import remove from '../remove';
 import trbl from '../trbl';
 import isCustomProp from '../isCustomProp';
+import canExplode from '../canExplode';
 
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentColor'];
@@ -102,8 +103,7 @@ function getDistinctShorthands (mapped) {
 
 function explode (rule) {
     rule.walkDecls(/^border/, decl => {
-        // Don't explode inherit values as they cannot be merged together
-        if (decl.value === 'inherit') {
+        if (!canExplode(decl)) {
             return;
         }
 
@@ -184,7 +184,7 @@ function merge (rule) {
             }
         );
     });
-    
+
     // border-trbl -> border-wsc
     mergeRules(rule, directions, (rules, lastNode) => {
         if (rules.some(detect)) {

@@ -8,6 +8,7 @@ import mergeRules from '../mergeRules';
 import insertCloned from '../insertCloned';
 import remove from '../remove';
 import isCustomProp from '../isCustomProp';
+import canExplode from '../canExplode';
 
 const properties = ['column-width', 'column-count'];
 const auto = 'auto';
@@ -37,6 +38,9 @@ function normalize (values) {
 
 function explode (rule) {
     rule.walkDecls('columns', decl => {
+        if (!canExplode(decl)) {
+            return;
+        }
         if (detect(decl)) {
             return;
         }

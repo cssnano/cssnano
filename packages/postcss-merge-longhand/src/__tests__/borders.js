@@ -338,3 +338,17 @@ test(
     'h1{border-color:dotted;border-color:var(--variable)}',
     'h1{border-color:dotted;border-color:var(--variable)}'
 );
+
+test(
+    'should not explode border with custom properties',
+    passthroughCSS,
+    'h1{border:var(--variable)}',
+);
+
+trbl.forEach(direction => {
+    test(
+        `should not explode border-${direction} with custom properties`,
+        passthroughCSS,
+        `h1{border-${direction}:var(--variable)}`,
+    );
+});

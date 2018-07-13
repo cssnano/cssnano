@@ -9,6 +9,7 @@ import mergeValues from '../mergeValues';
 import remove from '../remove';
 import trbl from '../trbl';
 import isCustomProp from '../isCustomProp';
+import canExplode from '../canExplode';
 
 export default prop => {
     const properties = trbl.map(direction => `${prop}-${direction}`);
@@ -17,7 +18,7 @@ export default prop => {
         let decls = getDecls(rule, [prop].concat(properties));
         while (decls.length) {
             const lastNode = decls[decls.length - 1];
-            
+
             // remove properties of lower precedence
             const lesser = decls.filter(node =>
                 !detect(lastNode) &&
@@ -35,7 +36,7 @@ export default prop => {
                 !detect(node) &&
                 node !== lastNode &&
                 node.important === lastNode.important &&
-                node.prop === lastNode.prop && 
+                node.prop === lastNode.prop &&
                 !(!isCustomProp(node) && isCustomProp(lastNode))
             );
             duplicates.forEach(remove);
@@ -46,7 +47,7 @@ export default prop => {
     const processor = {
         explode: rule => {
             rule.walkDecls(prop, decl => {
-                if (~decl.value.indexOf('inherit')) {
+                if (!canExplode(decl)) {
                     return;
                 }
                 if (detect(decl)) {
