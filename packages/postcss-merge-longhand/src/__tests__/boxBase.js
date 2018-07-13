@@ -113,4 +113,8 @@ addTests({
     message: 'should overwrite some box props and save fallbacks',
     fixture: 'h1{box-top:10px;box-right:var(--variable);box-right:15px;box-bottom:var(--variable);box-bottom:20px;box-left:25px;box-top:var(--variable);box-left:var(--variable)}',
     expected: 'h1{box:10px 15px 20px 25px;box-top:var(--variable);box-left:var(--variable)}',    
+}, {
+    message: 'should not explode box props with custom properties',
+    fixture: 'h1{box-bottom:var(--variable)}',
+    expected: 'h1{box-bottom:var(--variable)}',
 });

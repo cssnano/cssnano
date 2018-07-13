@@ -9,6 +9,7 @@ import mergeValues from '../mergeValues';
 import remove from '../remove';
 import trbl from '../trbl';
 import isCustomProp from '../isCustomProp';
+import canExplode from '../canExplode';
 
 export default prop => {
     const properties = trbl.map(direction => `${prop}-${direction}`);
@@ -46,7 +47,7 @@ export default prop => {
     const processor = {
         explode: rule => {
             rule.walkDecls(prop, decl => {
-                if (~decl.value.indexOf('inherit')) {
+                if (!canExplode(decl)) {
                     return;
                 }
                 if (detect(decl)) {
