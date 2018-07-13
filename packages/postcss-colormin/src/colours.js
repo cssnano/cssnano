@@ -22,7 +22,7 @@ export default (colour, legacy = false) => {
             ) {
                 return 'transparent';
             }
-            let hsla = parsed.hsl().round().string();
+            let hsla = parsed.hsl().string();
             let rgba = rgb.string();
             return hsla.length < rgba.length ? hsla : rgba;
         }

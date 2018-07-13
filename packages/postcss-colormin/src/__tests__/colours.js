@@ -106,8 +106,8 @@ test(
 test(
     'should convert rgba to hsla when shorter',
     isEqual,
-    'rgba(199, 190, 179, 0.8)',
-    'hsla(33, 15%, 74%, 0.8)'
+    'rgba(221, 221, 221, 0.5)',
+    'hsla(0, 0%, 86.7%, 0.5)'
 );
 
 test(
@@ -184,7 +184,7 @@ test(
     'should convert percentage based rgba values (2)',
     isEqual,
     'rgba(50%,50%,50%,0.5)',
-    'hsla(0, 0%, 50%, 0.5)'
+    'hsla(0, 0%, 49.8%, 0.5)'
 );
 
 test(
