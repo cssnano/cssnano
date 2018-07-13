@@ -1,8 +1,15 @@
+# 4.0.2
+
+## Bug Fixes
+
+* `postcss-merge-longhand` don't explode declarations with custom properties.
+* `postcss-colormin` now better transform to `hsl`.
+
 # 4.0.1
 
 ## Bug Fixes
 
-* `browserslist` version incompatibility with `caniuse-api`
+* `browserslist` version incompatibility with `caniuse-api`.
 
 # 4.0.0
 
