@@ -86,9 +86,9 @@ a:hover{color:#1e70bf}
 ::-webkit-selection{background-color:#cce2ff;color:rgba(0,0,0,.87)}
 ::-moz-selection{background-color:#cce2ff;color:rgba(0,0,0,.87)}
 ::selection{background-color:#cce2ff;color:rgba(0,0,0,.87)}
-input::-webkit-selection,textarea::-webkit-selection{background-color:hsla(0,0%,39%,.4);color:rgba(0,0,0,.87)}
-input::-moz-selection,textarea::-moz-selection{background-color:hsla(0,0%,39%,.4);color:rgba(0,0,0,.87)}
-input::selection,textarea::selection{background-color:hsla(0,0%,39%,.4);color:rgba(0,0,0,.87)}
+input::-webkit-selection,textarea::-webkit-selection{background-color:hsla(0,0%,39.2%,.4);color:rgba(0,0,0,.87)}
+input::-moz-selection,textarea::-moz-selection{background-color:hsla(0,0%,39.2%,.4);color:rgba(0,0,0,.87)}
+input::selection,textarea::selection{background-color:hsla(0,0%,39.2%,.4);color:rgba(0,0,0,.87)}
 /*!
 * # Semantic UI 2.1.3 - Button
 * http://github.com/semantic-org/semantic-ui/
@@ -2209,7 +2209,7 @@ a.ui.basic.label:hover{background:none #fff;box-shadow:1px solid rgba(34,36,38,.
 .ui.horizontal.list>.item>i.icon{margin:0;padding:0 .25em 0 0}
 .ui.horizontal.list>.item>.icon,.ui.horizontal.list>.item>.icon+.content{display:inline-block;float:none}
 .ui.list .list>.disabled.item,.ui.list>.disabled.item{color:rgba(40,40,40,.3)!important;pointer-events:none}
-.ui.inverted.list .list>.disabled.item,.ui.inverted.list>.disabled.item{color:hsla(0,0%,88%,.3)!important}
+.ui.inverted.list .list>.disabled.item,.ui.inverted.list>.disabled.item{color:hsla(0,0%,88.2%,.3)!important}
 .ui.list .list>a.item:hover .icon,.ui.list>a.item:hover .icon{color:rgba(0,0,0,.87)}
 .ui.inverted.list .list>a.item>.icon,.ui.inverted.list>a.item>.icon{color:hsla(0,0%,100%,.7)}
 .ui.inverted.list .list>.item .header,.ui.inverted.list>.item .header{color:hsla(0,0%,100%,.9)}
@@ -2724,9 +2724,9 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.form .field.field input:-webkit-autofill{border-color:#e5dfa1!important;box-shadow:inset 0 0 0 100px ivory!important}
 .ui.form .field.field input:-webkit-autofill:focus{border-color:#d5c315!important;box-shadow:inset 0 0 0 100px ivory!important}
 .ui.form .error.error input:-webkit-autofill{border-color:#e0b4b4!important;box-shadow:inset 0 0 0 100px #fffaf0!important}
-.ui.form ::-webkit-input-placeholder{color:hsla(0,0%,55%,.87)}
-.ui.form ::-ms-input-placeholder{color:hsla(0,0%,55%,.87)}
-.ui.form ::-moz-placeholder{color:hsla(0,0%,55%,.87)}
+.ui.form ::-webkit-input-placeholder{color:hsla(0,0%,54.9%,.87)}
+.ui.form ::-ms-input-placeholder{color:hsla(0,0%,54.9%,.87)}
+.ui.form ::-moz-placeholder{color:hsla(0,0%,54.9%,.87)}
 .ui.form :focus::-webkit-input-placeholder{color:rgba(89,89,89,.87)}
 .ui.form :focus::-ms-input-placeholder{color:rgba(89,89,89,.87)}
 .ui.form :focus::-moz-placeholder{color:rgba(89,89,89,.87)}
@@ -3348,7 +3348,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.inverted.menu .item:before,.ui.vertical.inverted.menu .item:before{background:hsla(0,0%,100%,.08)}
 .ui.vertical.inverted.menu .menu .item,.ui.vertical.inverted.menu .menu .item a:not(.ui){color:hsla(0,0%,100%,.5)}
 .ui.inverted.menu .header.item{background:transparent;box-shadow:none;margin:0}
-.ui.inverted.menu .item.disabled,.ui.inverted.menu .item.disabled:hover{color:hsla(0,0%,88%,.3)}
+.ui.inverted.menu .item.disabled,.ui.inverted.menu .item.disabled:hover{color:hsla(0,0%,88.2%,.3)}
 .ui.inverted.menu .dropdown.item:hover,.ui.inverted.menu .link.item:hover,.ui.inverted.menu a.item:hover,.ui.link.inverted.menu .item:hover{background:hsla(0,0%,100%,.08);color:#fff}
 .ui.vertical.inverted.menu .item .menu .link.item:hover,.ui.vertical.inverted.menu .item .menu a.item:hover{background:transparent;color:#fff}
 .ui.inverted.menu .link.item:active,.ui.inverted.menu a.item:active{background:hsla(0,0%,100%,.08);color:#fff}
@@ -3716,7 +3716,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.inverted.table{background:#333;border:none;color:hsla(0,0%,100%,.9)}
 .ui.inverted.table th{background-color:rgba(0,0,0,.15);color:hsla(0,0%,100%,.9)}
 .ui.inverted.table th,.ui.inverted.table tr td{border-color:hsla(0,0%,100%,.1)!important}
-.ui.inverted.table tr.disabled:hover td,.ui.inverted.table tr.disabled td,.ui.inverted.table tr:hover td.disabled,.ui.inverted.table tr td.disabled{color:hsla(0,0%,88%,.3);pointer-events:none}
+.ui.inverted.table tr.disabled:hover td,.ui.inverted.table tr.disabled td,.ui.inverted.table tr:hover td.disabled,.ui.inverted.table tr td.disabled{color:hsla(0,0%,88.2%,.3);pointer-events:none}
 .ui.inverted.definition.table tfoot:not(.full-width) th:first-child,.ui.inverted.definition.table thead:not(.full-width) th:first-child{background:#fff}
 .ui.inverted.definition.table tr td:first-child{background:hsla(0,0%,100%,.02);color:#fff}
 .ui.collapsing.table{width:auto}
@@ -4484,7 +4484,7 @@ select.ui.dropdown{border:1px solid rgba(34,36,38,.15);height:38px;padding:.5em;
   0%{-webkit-transform:rotate(0deg);transform:rotate(0deg)}
   to{-webkit-transform:rotate(1turn);transform:rotate(1turn)}
 }
-.ui.default.dropdown:hover>.text,.ui.default.dropdown>.text,.ui.dropdown:hover>.default.text,.ui.dropdown>.default.text{color:hsla(0,0%,70%,.7)}
+.ui.default.dropdown:hover>.text,.ui.default.dropdown>.text,.ui.dropdown:hover>.default.text,.ui.dropdown>.default.text{color:hsla(0,0%,70.2%,.7)}
 .ui.loading.dropdown>.text{-webkit-transition:none;transition:none}
 .ui.dropdown .loading.menu{display:block;visibility:hidden;z-index:-1}
 .ui.dropdown .menu .selected.item,.ui.dropdown.selected{background:rgba(0,0,0,.03);color:rgba(0,0,0,.95)}
