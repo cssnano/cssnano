@@ -352,3 +352,16 @@ trbl.forEach(direction => {
         `h1{border-${direction}:var(--variable)}`,
     );
 });
+
+test(
+    'Should correctly merge border declarations (#551) (1)',
+    processCSS,
+    'h1{border:1px solid black;border-top-width:2px;border-right-width:2px;border-bottom-width:2px}',
+    'h1{border:solid black;border-width:2px 2px 2px 1px}',
+);
+
+test(
+    'Should correctly merge border declarations (#551) (2)',
+    passthroughCSS,
+    'h1{border:none;border-top:6px solid #000;border-bottom:1px solid #fff}',
+);

@@ -13,6 +13,7 @@ import remove from '../remove';
 import trbl from '../trbl';
 import isCustomProp from '../isCustomProp';
 import canExplode from '../canExplode';
+import getLastNode from '../getLastNode';
 
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentColor'];
@@ -252,19 +253,18 @@ function merge (rule) {
         const none = 'none none currentColor';
 
         if (reduced.length === 2 && reduced[0] === none || reduced[1] === none) {
-            const noOfNones = mapped.filter(value => value === none).length;
             rule.insertBefore(lastNode, Object.assign(lastNode.clone(), {
                 prop: 'border',
-                value: noOfNones > 2 ? 'none' : mapped.filter(value => value !== none)[0],
+                value: mapped[1] === none ? 'none' : mapped.filter(value => value !== none)[0],
             }));
             directions.forEach((dir, i) => {
-                if (noOfNones > 2 && mapped[i] !== none) {
+                if (mapped[1] === none && mapped[i] !== none) {
                     rule.insertBefore(lastNode, Object.assign(lastNode.clone(), {
                         prop: dir,
                         value: mapped[i],
                     }));
                 }
-                if (noOfNones <= 2 && mapped[i] === none) {
+                if (mapped[1] !== none && mapped[i] === none) {
                     rule.insertBefore(lastNode, Object.assign(lastNode.clone(), {
                         prop: dir,
                         value: 'none',
@@ -282,7 +282,12 @@ function merge (rule) {
         const lastNode = decls[decls.length - 1];
         wsc.forEach((d, i) => {
             const names = directions.filter(name => name !== lastNode.prop).map(name => `${name}-${d}`);
-            const props = rule.nodes.filter(node => node.prop && ~names.indexOf(node.prop) && node.important === lastNode.important);
+            let nodes = rule.nodes.slice(0, rule.nodes.indexOf(lastNode));
+            const border = getLastNode(nodes, 'border');
+            if (border) {
+                nodes = nodes.slice(nodes.indexOf(border));
+            }
+            const props = nodes.filter(node => node.prop && ~names.indexOf(node.prop) && node.important === lastNode.important);
             const rules = getRules(props, names);
             if (hasAllProps(rules, ...names) && !rules.some(detect)) {
                 const values = rules.map(node => node ? node.value : null);
