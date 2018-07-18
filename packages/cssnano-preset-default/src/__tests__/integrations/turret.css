@@ -111,7 +111,7 @@ blockquote{color:#555;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font
 blockquote p{color:inherit;font-family:inherit;font-size:inherit;font-style:inherit;font-weight:inherit;line-height:inherit;margin:0}
 blockquote cite{display:block;font-size:1.6rem;font-style:normal;margin:1rem 0;text-align:left}
 .pullout,blockquote cite{color:#555;font-family:Helvetica Neue,Helvetica,Arial,sans-serif}
-.pullout{border:#3455db currentColor;border-width:0 0 0 .4rem;font-size:1.8rem;font-weight:300;margin:3rem 0;padding:0 2rem}
+.pullout{border:solid #3455db;border-width:0 0 0 .4rem;font-size:1.8rem;font-weight:300;margin:3rem 0;padding:0 2rem}
 ol,ul{margin:2rem 0;padding:0}
 ol li,ul li{color:#555;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:1.6rem;font-weight:400;line-height:1.5;margin:1rem 0 1rem 2rem;padding:0 0 0 .5rem}
 ol li ul,ul li ul{margin:1rem 0;padding:0}
@@ -1535,7 +1535,7 @@ select{display:block;width:100%}
 }
 @-moz-document url-prefix(){
   .select select{padding-right:1rem;text-indent:.01px;text-overflow:""}
-  .select:before{background:#fff;background-clip:padding-box;border:solid #ddd;border-radius:0 2px 2px 0;border-width:1px 1px 1px 0;bottom:0;content:"";pointer-events:none;position:absolute;right:0;top:0;width:1em;z-index:2}
+  .select:before{background:#fff;background-clip:padding-box;border:1px solid #ddd;border-left-width:0;border-radius:0 2px 2px 0;bottom:0;content:"";pointer-events:none;position:absolute;right:0;top:0;width:1em;z-index:2}
   .select.large:before{width:1.5em}
   .select.select-inverse:before{background:#222;border:none}}
 .select-xlarge select{font-size:2rem;height:6rem;line-height:6rem;padding:0 3rem}

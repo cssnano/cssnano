@@ -901,7 +901,7 @@ input.stack:focus+input,input.stack:focus+select,input.stack:focus+textarea,sele
 [data-tooltip]{position:relative}
 [data-tooltip]:after,[data-tooltip]:before{border-width:0;height:0;left:0;margin-top:12px;opacity:0;overflow:hidden;padding:0;position:absolute;top:calc(100% - 6px);transition:opacity .6s ease,height 0s ease .6s;z-index:1}
 [data-tooltip]:after{background:#111;content:attr(data-tooltip);font-size:.8em;margin-left:0;white-space:nowrap}
-[data-tooltip]:before{border:0 solid transparent;border-bottom:0 solid #111;content:"";height:0;left:10px;margin-top:0;width:0}
+[data-tooltip]:before{border:0 solid transparent;border-bottom-color:#111;content:"";height:0;left:10px;margin-top:0;width:0}
 [data-tooltip]:focus:after,[data-tooltip]:focus:before,[data-tooltip]:hover:after,[data-tooltip]:hover:before{border-width:6px;height:auto;opacity:1}
 [data-tooltip]:focus:after,[data-tooltip]:hover:after{padding:.45em .9em}
 .tooltip-top:after,.tooltip-top:before{bottom:calc(100% - 6px);left:0;margin-bottom:12px;top:auto}
