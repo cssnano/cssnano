@@ -47,41 +47,93 @@ function getLevel (prop) {
     }
 }
 
+const widths = ['thin', 'medium', 'thick'];
+const styles = ['none', 'hidden', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset'];
+
+function isStyle (value) {
+    return !!~styles.indexOf(value);
+}
+
+function isWidth (value) {
+    return !!~widths.indexOf(value) || /^(\d+(\.\d+)?|\.\d+)(\w+)?$/.test(value);
+}
+
+function parseWsc (value) {
+    if (value === 'none' || value === 'none none' || value === 'none none currentColor') {
+        return [ 'none', 'none', 'currentColor'];
+    }
+
+    let [width, style, color] = defaults;
+    
+    const values = list.space(value);
+    if (values.length > 1 && isStyle(values[1]) && values[0] === 'none') {
+        values.unshift();
+        width = 'none';
+    }
+
+    values.forEach(v => {
+        if (isStyle(v)) {
+            style = v;
+        } else if (isWidth(v)) {
+            width = v;
+        } else {
+            color = v;
+        }
+    });
+
+    return [ width, style, color ];
+}
+
 function getColorValue (decl) {
-    let values = list.space(decl.value);
-
-    if (decl.prop === 'border') {
-        return values[2];
-    }
-
-    if (!!~directions.indexOf(decl.prop)) {
-        return values[2];
-    }
-
     if (decl.prop.substr(-5) === 'color') {
         return decl.value;
     }
 
-    return null;
+    return parseWsc(decl.value)[2];
 }
 
-function mergeRedundant ({values, nextValues, decl, nextDecl, index, position, prop}) {
+function diffingProps (values, nextValues) {
+    const diff = wsc.reduce((prev, curr, i) => {
+        if (values[i] === nextValues[i]) {
+            return prev;
+        }
+        return [...prev, curr];
+    }, []);
+    return diff;
+}
+
+function mergeRedundant ({values, nextValues, decl, nextDecl, index}) {
     if (detect(decl) || detect(nextDecl)) {
         return;
     }
+    const diff = diffingProps(values, nextValues);
+    if (diff.length > 1) {
+        return;
+    }
+    const prop = diff.pop();
+    const position = wsc.indexOf(prop);
+
+    const prop1 = `${nextDecl.prop}-${prop}`;
+    const prop2 = `border-${prop}`;
+
     let props = parseTrbl(values[position]);
     props[index] = nextValues[position];
-    values.splice(position, 1);
-    let borderValue = values.join(' ');
-    let propertyValue = minifyTrbl(props);
 
-    let origLength = (decl.value + nextDecl.prop + nextDecl.value).length;
-    let newLength = borderValue.length + 12 + propertyValue.length;
+    const borderValue2 = values.filter((e, i) => i !== position).join(' ');
+    const propValue2 = minifyTrbl(props);
 
-    if (newLength < origLength) {
-        decl.value = borderValue;
-        nextDecl.prop = prop;
-        nextDecl.value = propertyValue;
+    const origLength = (decl.value + nextDecl.prop + nextDecl.value).length;
+    const newLength1 = decl.value.length + prop1.length + nextValues[position].length;
+    const newLength2 = borderValue2.length + prop2.length + propValue2.length;
+
+    if (newLength1 < newLength2 && newLength1 < origLength) {
+        nextDecl.prop = prop1;
+        nextDecl.value = nextValues[position];
+    }
+    if (newLength2 < newLength1 && newLength2 < origLength) {
+        decl.value = borderValue2;
+        nextDecl.prop = prop2;
+        nextDecl.value = propValue2;
     }
 }
 
@@ -122,11 +174,11 @@ function explode (rule) {
         }
         // border-trbl -> border-trbl-wsc
         if (directions.some(direction => prop === direction)) {
-            let values = list.space(decl.value);
+            let values = parseWsc(decl.value);
             wsc.forEach((d, i) => {
                 insertCloned(decl.parent, decl, {
                     prop: `${prop}-${d}`,
-                    value: values[i] || defaults[i],
+                    value: values[i],
                 });
             });
             return decl.remove();
@@ -166,7 +218,7 @@ function merge (rule) {
             }
         );
     });
-
+    
     // border-trbl-wsc -> border-wsc
     wsc.forEach(style => {
         const prop = borderProperty(style);
@@ -328,8 +380,8 @@ function merge (rule) {
         if (!~index) {
             return;
         }
-        const values = list.space(decl.value);
-        const nextValues = list.space(nextDecl.value);
+        const values = parseWsc(decl.value);
+        const nextValues = parseWsc(nextDecl.value);
 
         const config = {
             values,
@@ -339,47 +391,18 @@ function merge (rule) {
             index,
         };
 
-        if (
-            values[0] === nextValues[0] &&
-            values[2] === nextValues[2]
-        ) {
-            return mergeRedundant(Object.assign({}, config, {
-                position: 1,
-                prop: 'border-style',
-            }));
-        }
-
-        if (
-            values[1] === nextValues[1] &&
-            values[2] === nextValues[2]
-        ) {
-            return mergeRedundant(Object.assign({}, config, {
-                position: 0,
-                prop: 'border-width',
-            }));
-        }
-
-        if (
-            values[0] === nextValues[0] &&
-            values[1] === nextValues[1] &&
-            values[2] && nextValues[2]
-        ) {
-            return mergeRedundant(Object.assign({}, config, {
-                position: 2,
-                prop: 'border-color',
-            }));
-        }
+        return mergeRedundant(config);
     });
 
     // clean-up values
     rule.walkDecls(/^border($|-(top|right|bottom|left))/, decl => {
-        const value = [...list.space(decl.value), ''].reduceRight((prev, cur, i) => {
-            if (prev === '' && cur === defaults[i]) {
+        const value = [...parseWsc(decl.value), ''].reduceRight((prev, cur, i, arr) => {
+            if (cur === defaults[i] && arr[i-1] !== cur) {
                 return prev;
             }
             return cur + ' ' + prev;
         }).trim() || defaults[0];
-        decl.value = minifyTrbl(value);
+        decl.value = minifyTrbl(value || defaults[0]);
     });
 
     // border-spacing-hv -> border-spacing
@@ -396,6 +419,7 @@ function merge (rule) {
     decls = getDecls(rule, allProperties);
     while (decls.length) {
         const lastNode = decls[decls.length - 1];
+        const lastPart = lastNode.prop.split('-').pop();
 
         // remove properties of lower precedence
         const lesser = decls.filter(node =>
@@ -403,7 +427,8 @@ function merge (rule) {
             !detect(node) &&
             node !== lastNode &&
             node.important === lastNode.important &&
-            getLevel(node.prop) > getLevel(lastNode.prop));
+            getLevel(node.prop) > getLevel(lastNode.prop) &&
+            (!!~node.prop.indexOf(lastNode.prop) || node.prop.endsWith(lastPart)));
 
         lesser.forEach(remove);
         decls = decls.filter(node => !~lesser.indexOf(node));

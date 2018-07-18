@@ -437,7 +437,7 @@ input[type=checkbox],input[type=radio]{line-height:normal;margin-top:1px\9;*marg
 .dropdown.open{z-index:1}
 .dropdown:hover{box-shadow:0 0 5px rgba(0,0,0,.15)}
 .dropdown.focus{box-shadow:0 0 5px rgba(51,102,248,.4)}
-.dropdown .carat{border:6px solid transparent;border-top:6px solid #ccc;margin-top:-3px;position:absolute;right:12px;top:50%}
+.dropdown .carat{border:6px solid transparent;border-top-color:#ccc;margin-top:-3px;position:absolute;right:12px;top:50%}
 .dropdown.open .carat{border-bottom:6px solid #ccc;border-top:6px solid transparent;margin-top:-10px}
 .dropdown .old{height:0;overflow:hidden;width:0}
 .dropdown .old,.dropdown select{left:0;position:absolute;top:0}
@@ -445,7 +445,7 @@ input[type=checkbox],input[type=radio]{line-height:normal;margin-top:1px\9;*marg
 .dropdown.touch select{height:100%;opacity:0;width:100%}
 .dropdown .selected,.dropdown li{color:inherit;display:block;font-size:16px;font-size:1rem;line-height:1;overflow:hidden;padding:9px 12px;white-space:nowrap}
 .dropdown .selected:after{bottom:0;content:"";position:absolute;right:0;top:0;width:60px}
-.dropdown div{background:#fff;border:1px solid;border-color:#eee #ccc #ccc;border-radius:0 0 6px 6px;height:0;left:-1px;margin-top:-1px;opacity:0;overflow:hidden;position:absolute;right:-1px;top:100%}
+.dropdown div{background:#fff;border:1px solid #ccc;border-radius:0 0 6px 6px;border-top-color:#eee;height:0;left:-1px;margin-top:-1px;opacity:0;overflow:hidden;position:absolute;right:-1px;top:100%}
 .dropdown.open div{opacity:1;z-index:1}
 .dropdown.scrollable div:after{bottom:0;content:"";height:50px;left:0;position:absolute;right:0}
 .dropdown.scrollable.bottom div:after{opacity:0}

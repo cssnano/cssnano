@@ -573,7 +573,7 @@ input:-ms-input-placeholder{color:#999}
 .checkbox label,.radio label{display:inline-block;padding-left:20px;padding-top:0}
 .checkbox input[type=checkbox],.checkbox input[type=radio],.radio input[type=checkbox],.radio input[type=radio]{left:0;position:absolute;top:4px}
 .select{display:block;position:relative}
-.select:before{border:6px solid transparent;border-top:6px solid #676767;content:"";margin-top:-3px;pointer-events:none;position:absolute;right:10px;top:50%}
+.select:before{border:6px solid transparent;border-top-color:#676767;content:"";margin-top:-3px;pointer-events:none;position:absolute;right:10px;top:50%}
 .select select{-moz-appearance:none;-webkit-appearance:none;background:#fff;border:1px solid #ccc;display:block;height:36px;line-height:normal;padding:0 10px;width:100%}
 .select select::-ms-expand{display:none}
 .select select:focus{border-color:#f7c723}

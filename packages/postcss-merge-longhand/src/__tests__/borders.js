@@ -158,7 +158,7 @@ test(
     'should use shorter equivalent rules',
     processCSS,
     'h1{border:5px solid;border-color:#222 transparent transparent}',
-    'h1{border:5px solid transparent;border-top:5px solid #222}'
+    'h1{border:5px solid transparent;border-top-color:#222}',
 );
 
 test(
@@ -357,11 +357,24 @@ test(
     'Should correctly merge border declarations (#551) (1)',
     processCSS,
     'h1{border:1px solid black;border-top-width:2px;border-right-width:2px;border-bottom-width:2px}',
-    'h1{border:solid black;border-width:2px 2px 2px 1px}',
+    'h1{border:2px solid black;border-left-width:1px}',
 );
 
 test(
     'Should correctly merge border declarations (#551) (2)',
     passthroughCSS,
     'h1{border:none;border-top:6px solid #000;border-bottom:1px solid #fff}',
+);
+
+test(
+    'should not break border-color (#553)',
+    processCSS,
+    'h1{border:solid transparent;border-width:0 8px 16px;border-bottom-color:#eee}',
+    'h1{border:solid transparent;border-bottom-color:#eee;border-width:0 8px 16px}'
+);
+
+test(
+    'should not remove border-top-color (#554)',
+    passthroughCSS,
+    'h1{border-top-color: rgba(85, 85, 85, 0.95);border-bottom: none}',
 );
