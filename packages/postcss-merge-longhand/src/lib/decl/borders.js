@@ -50,11 +50,11 @@ function getLevel (prop) {
 const widths = ['thin', 'medium', 'thick'];
 const styles = ['none', 'hidden', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset'];
 
-function isStyle(value) {
+function isStyle (value) {
     return !!~styles.indexOf(value);
 }
 
-function isWidth(value) {
+function isWidth (value) {
     return !!~widths.indexOf(value) || /^(\d+(\.\d+)?|\.\d+)(\w+)?$/.test(value);
 }
 
@@ -74,11 +74,9 @@ function parseWsc (value) {
     values.forEach(v => {
         if (isStyle(v)) {
             style = v;
-        }
-        else if (isWidth(v)) {
+        } else if (isWidth(v)) {
             width = v;
-        }
-        else {
+        } else {
             color = v;
         }
     });
