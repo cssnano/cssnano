@@ -1,3 +1,9 @@
+# 4.0.3
+
+## Bug Fixes
+
+* `postcss-merge-longhand` incorrect minification of `border` (`border-*`) declarations.
+
 # 4.0.2
 
 ## Bug Fixes
