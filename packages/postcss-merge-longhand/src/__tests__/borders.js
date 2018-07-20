@@ -378,3 +378,15 @@ test(
     passthroughCSS,
     'h1{border-top-color: rgba(85, 85, 85, 0.95);border-bottom: none}',
 );
+
+test(
+    'Should not merge if there is a shorthand property between them (#557) (1)',
+    passthroughCSS,
+    'h1{border:1px solid #d3d6db;border:1px solid var(--gray-lighter);border-left-width:0;}',
+);
+
+test(
+    'Should not merge if there is a shorthand property between them (#557) (2)',
+    passthroughCSS,
+    'h1{border-left-style:solid;border-left-color:#d3d6db;border:1px solid var(--gray-lighter);border-left-width:0;}',
+);

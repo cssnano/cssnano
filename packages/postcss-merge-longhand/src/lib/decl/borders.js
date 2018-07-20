@@ -425,6 +425,7 @@ function merge (rule) {
         const lesser = decls.filter(node =>
             !detect(lastNode) &&
             !detect(node) &&
+            !isCustomProp(lastNode)  &&
             node !== lastNode &&
             node.important === lastNode.important &&
             getLevel(node.prop) > getLevel(lastNode.prop) &&
