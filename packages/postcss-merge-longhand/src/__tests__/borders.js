@@ -390,3 +390,9 @@ test(
     passthroughCSS,
     'h1{border-left-style:solid;border-left-color:#d3d6db;border:1px solid var(--gray-lighter);border-left-width:0;}',
 );
+
+test(
+    'Should not convert currentColor (#559)',
+    passthroughCSS,
+    'h1{border:2px solid transparent;border-top-color:currentColor;}',
+);

@@ -395,7 +395,7 @@ function merge (rule) {
     });
 
     // clean-up values
-    rule.walkDecls(/^border($|-(top|right|bottom|left))/, decl => {
+    rule.walkDecls(/^border($|-(top|right|bottom|left)$)/, decl => {
         const value = [...parseWsc(decl.value), ''].reduceRight((prev, cur, i, arr) => {
             if (cur === defaults[i] && arr[i-1] !== cur) {
                 return prev;
