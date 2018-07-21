@@ -396,3 +396,9 @@ test(
     passthroughCSS,
     'h1{border:2px solid transparent;border-top-color:currentColor;}',
 );
+
+test(
+    'should not drop border-width with custom property from border shorthand (#561)',
+    passthroughCSS,
+    'h1{border:var(--border-width) solid grey}',
+);
