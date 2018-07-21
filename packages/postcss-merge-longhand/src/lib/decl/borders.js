@@ -396,12 +396,12 @@ function merge (rule) {
 
     // clean-up values
     rule.walkDecls(/^border($|-(top|right|bottom|left)$)/, decl => {
-        const value = [...parseWsc(decl.value), ''].reduceRight((prev, cur, i, arr) => {
+        const value = !isCustomProp(decl) ? [...parseWsc(decl.value), ''].reduceRight((prev, cur, i, arr) => {
             if (cur === defaults[i] && arr[i-1] !== cur) {
                 return prev;
             }
             return cur + ' ' + prev;
-        }).trim() || defaults[0];
+        }).trim() || defaults[0] : decl.value;
         decl.value = minifyTrbl(value || defaults[0]);
     });
 
