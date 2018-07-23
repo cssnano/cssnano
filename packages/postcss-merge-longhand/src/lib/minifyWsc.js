@@ -2,7 +2,7 @@ import parseWsc from './parseWsc';
 import minifyTrbl from './minifyTrbl';
 import {isValidWsc} from './validateWsc';
 
-const defaults = ['medium', 'none', 'currentColor'];
+const defaults = ['medium', 'none', 'currentcolor'];
 
 export default v => {
     const values = parseWsc(v);
@@ -11,7 +11,7 @@ export default v => {
     }
 
     const value = [...values, ''].reduceRight((prev, cur, i, arr) => {
-        if (cur === undefined || cur === defaults[i] && arr[i-1] !== cur) {
+        if (cur === undefined || cur.toLowerCase() === defaults[i] && (!i ||arr[i-1].toLowerCase() !== cur.toLowerCase())) {
             return prev;
         }
         return cur + ' ' + prev;

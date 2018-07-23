@@ -272,11 +272,11 @@ input[type=range]{background-color:transparent;vertical-align:middle}
 .progress::-moz-progress-bar{background-color:currentColor}
 .table-light td,.table-light th{border-bottom:1px solid rgba(0,0,0,.125)}
 .table-light tr:last-child td{border-bottom:0}
-.button-outline{-webkit-transition-duration:.1s;-webkit-transition-property:box-shadow,background-color;-webkit-transition-timing-function:ease-out;background-color:transparent;border:1px solid currentcolor;border-radius:3px;color:inherit;position:relative;transition-duration:.1s;transition-property:box-shadow,background-color;transition-timing-function:ease-out;z-index:2}
+.button-outline{-webkit-transition-duration:.1s;-webkit-transition-property:box-shadow,background-color;-webkit-transition-timing-function:ease-out;background-color:transparent;border:1px solid;border-radius:3px;color:inherit;position:relative;transition-duration:.1s;transition-property:box-shadow,background-color;transition-timing-function:ease-out;z-index:2}
 .button-outline:before{-webkit-transition-duration:.1s;-webkit-transition-property:opacity;-webkit-transition-timing-function:ease-out;background-color:currentcolor;border:1px solid transparent;border-radius:3px;content:"";display:block;height:100%;left:-1px;opacity:0;position:absolute;top:-1px;transition-duration:.1s;transition-property:opacity;transition-timing-function:ease-out;width:100%;z-index:-1}
 .button-outline:hover{box-shadow:none}
 .button-outline:hover:before{opacity:.125}
-.button-outline:focus{border:1px solid currentcolor;box-shadow:0 0 3px 1px;outline:none}
+.button-outline:focus{border:1px solid;box-shadow:0 0 3px 1px;outline:none}
 .button-outline.is-active,.button-outline:active{box-shadow:inset 0 1px 5px 0,0 0 1px}
 .button-outline.is-disabled,.button-outline:disabled{opacity:.5}
 .button-transparent{-webkit-transition-duration:.1s;-webkit-transition-property:box-shadow;-webkit-transition-timing-function:ease-out;background-color:transparent;border:1px solid transparent;border-radius:0;color:inherit;position:relative;transition-duration:.1s;transition-property:box-shadow;transition-timing-function:ease-out;z-index:2}

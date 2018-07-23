@@ -5,17 +5,18 @@ const styles = ['none', 'hidden', 'dotted', 'dashed', 'solid', 'double', 'groove
 const colors = Object.keys(colorNames);
 
 export function isStyle (value) {
-    return value && !!~styles.indexOf(value);
+    return value && !!~styles.indexOf(value.toLowerCase());
 }
 
 export function isWidth (value) {
-    return value && !!~widths.indexOf(value) || /^(\d+(\.\d+)?|\.\d+)(\w+)?$/.test(value);
+    return value && !!~widths.indexOf(value.toLowerCase()) || /^(\d+(\.\d+)?|\.\d+)(\w+)?$/.test(value);
 }
 
 export function isColor (value) {
     if (!value) {
         return false;
     }
+    value = value.toLowerCase();
 
     if (/rgba?\(/.test(value)) {
         return true;
@@ -25,14 +26,14 @@ export function isColor (value) {
         return true;
     }
 
-    if (/#([0-9a-zA-Z]{6}|[0-9a-zA-Z]{3})/.test(value)) {
+    if (/#([0-9a-z]{6}|[0-9a-z]{3})/.test(value)) {
         return true;
     }
     if (value === 'transparent') {
         return true;
     }
 
-    if (value === 'currentColor') {
+    if (value === 'currentcolor') {
         return true;
     }
 

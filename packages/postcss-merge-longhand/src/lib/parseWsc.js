@@ -1,15 +1,17 @@
 import {list} from 'postcss';
 import {isWidth, isStyle, isColor} from './validateWsc';
 
+const none = /^\s*none(\s+none(\s+(none|currentcolor))?)?\s*$/i;
+
 export default function parseWsc (value) {
-    if (value === 'none' || value === 'none none' || value === 'none none currentColor') {
+    if (none.test(value)) {
         return [ 'none', 'none', 'currentColor'];
     }
 
     let width, style, color;
     
     const values = list.space(value);
-    if (values.length > 1 && isStyle(values[1]) && values[0] === 'none') {
+    if (values.length > 1 && isStyle(values[1]) && values[0].toLowerCase() === 'none') {
         values.unshift();
         width = 'none';
     }
