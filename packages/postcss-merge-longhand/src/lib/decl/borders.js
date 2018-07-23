@@ -52,7 +52,7 @@ function getLevel (prop) {
 
 const isValueCustomProp = value => value.search(/var\s*\(\s*--/i);
 
-function canMergeValues(values) {
+function canMergeValues (values) {
     return !values.some(isValueCustomProp) || values.every(isValueCustomProp);
 }
 
@@ -224,7 +224,7 @@ function merge (rule) {
             return;
         }
         wsc.forEach((d, i) => {
-            const value = values.map(value => value[i] || defaults[i]);
+            const value = values.map(v => v[i] || defaults[i]);
             if (canMergeValues(value)) {
                 insertCloned(lastNode.parent, lastNode, {
                     prop: borderProperty(d),
