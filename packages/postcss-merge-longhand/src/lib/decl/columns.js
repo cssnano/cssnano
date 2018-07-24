@@ -100,7 +100,7 @@ function cleanup (rule) {
 
 function merge (rule) {
     mergeRules(rule, properties, (rules, lastNode) => {
-        if (canMerge(...rules) && !rules.some(detect)) {
+        if (canMerge(rules) && !rules.some(detect)) {
             insertCloned(lastNode.parent, lastNode, {
                 prop: 'columns',
                 value: normalize(rules.map(getValue)),

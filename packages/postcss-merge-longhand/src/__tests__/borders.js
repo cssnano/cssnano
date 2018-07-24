@@ -265,6 +265,26 @@ test(
 );
 
 test(
+    'should produce the minimum css necessary (6)',
+    passthroughCSS,
+    'h1{border:1px solid #00d1b2;border-right:0;border-top:0}',
+);
+
+test(
+    'should produce the minimum css necessary (7)',
+    processCSS,
+    'h1{border-top:0;border-right:0;border-bottom:1px solid #cacaca;border-left:0}',
+    'h1{border:0;border-bottom:1px solid #cacaca}',
+);
+
+test(
+    'should produce the minimum css necessary (8)',
+    processCSS,
+    'h1{border-top:0;border-right:0;border-bottom:0;border-left:5px}',
+    'h1{border:0;border-left:5px}',
+);
+
+test(
     'should not merge declarations with hacks',
     processCSS,
     'h1{border-color:red red red red;_border-width:1px 1px 1px 1px;border-style:solid solid solid solid}',
@@ -387,8 +407,9 @@ test(
 
 test(
     'Should not merge if there is a shorthand property between them (#557) (2)',
-    passthroughCSS,
+    processCSS,
     'h1{border-left-style:solid;border-left-color:#d3d6db;border:1px solid var(--gray-lighter);border-left-width:0;}',
+    'h1{border-left:1px solid #d3d6db;border:1px solid var(--gray-lighter);border-left-width:0;}',
 );
 
 test(
