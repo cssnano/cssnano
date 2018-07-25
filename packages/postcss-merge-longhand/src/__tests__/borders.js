@@ -374,6 +374,24 @@ trbl.forEach(direction => {
 });
 
 test(
+    'should not explode custom properties with less than two concrete sides (1)',
+    passthroughCSS,
+    'h1{border:var(--border-width) var(--border-style) transparent}',
+);
+
+test(
+    'should not explode custom properties with less than two concrete sides (2)',
+    passthroughCSS,
+    'h1{border:var(--border-width) solid var(--border-color)}',
+);
+
+test(
+    'should not explode custom properties with less than two concrete sides (3)',
+    passthroughCSS,
+    'h1{border:1px var(--border-style) var(--border-color)}',
+);
+
+test(
     'Should correctly merge border declarations (#551) (1)',
     processCSS,
     'h1{border:1px solid black;border-top-width:2px;border-right-width:2px;border-bottom-width:2px}',
