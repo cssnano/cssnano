@@ -7,6 +7,15 @@ layout: Page
 
 
 
+## 4.0.4
+
+### Bug Fixes
+
+- `postcss-merge-longhand` don't drop border-width with custom property from border shorthand.
+- `postcss-merge-longhand` don't convert `currentColor`.
+- `postcss-merge-longhand` don't merge border properties if there is a shorthand property between them.
+
+
 ## 4.0.3
 
 ### Bug Fixes
