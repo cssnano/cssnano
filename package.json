@@ -14,7 +14,7 @@
     "test-only": "cross-env BABEL_ENV=test ava",
     "test-only:coverage": "nyc --reporter=lcov --reporter=text npm run test-only",
     "test": "npm run test-only",
-    "deploy": "gh-pages -d site/dist",
+    "deploy": "gh-pages -t -d site/dist",
     "publish": "lerna publish"
   },
   "engines": {
