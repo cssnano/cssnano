@@ -2,11 +2,11 @@ export default ({
     title,
     url,
     description,
-    twitter
+    twitter,
 }) => ([
     {property: "og:type", content: "article"},
     {property: "og:title", content: title},
-    {property: "og:url", content: url},
+    {property: "og:url", content: url ? `https://cssnano.co${url}` : null},
     {property: "og:description", content: description},
     {name: "twitter:card", content: "summary"},
     {name: "twitter:title", content: title},

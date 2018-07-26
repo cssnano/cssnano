@@ -1,27 +1,27 @@
-import React from "react"
-import Helmet from "react-helmet"
-import TopBarProgressIndicator from "react-topbar-progress-indicator"
+import * as React from 'react';
+import Head from 'react-helmet';
+import TopBarProgressIndicator from 'react-topbar-progress-indicator';
 
-import styles from "./index.css"
+import styles from './index.css';
 
 TopBarProgressIndicator.config({
-  barColors: {
-    0: "#40b97b",
-    "1.0": "#40b97b",
-  },
-  shadowBlur: 0,
-})
+    barColors: {
+        0: "#40b97b",
+        "1.0": "#40b97b",
+    },
+    shadowBlur: 0,
+});
 
 const Loading = () => (
-  <div>
-    <Helmet
-      title={ "Loading..." }
-    />
-    <TopBarProgressIndicator />
-    <div className={ styles.loader }>
-      <div className={ styles.spinner } />
+    <div>
+        <Head
+            title={ "Loading..." }
+        />
+        <TopBarProgressIndicator />
+        <div className={ styles.loader }>
+            <div className={ styles.spinner } />
+        </div>
     </div>
-  </div>
-)
+);
 
-export default Loading
+export default Loading;

@@ -1,0 +1,25 @@
+:local(.playground) {
+    display: flex;
+}
+
+:local(.input), :local(.output) {
+    flex: 0 1 50%;
+    height: calc(100vh - 11.5rem);
+    overflow: auto;
+}
+
+:local(.input) :global .CodeMirror, :local(.output) :global .CodeMirror {
+    height: 100%;
+}
+
+:local(.required) {
+    background: #fff;
+    border: 1px solid var(--brandColorComplement);
+    margin: 40px 10px;
+    padding: 10px 20px;
+}
+
+:local(.required) h2 {
+    color: var(--brandColorComplement);
+    margin-top: 0;
+}

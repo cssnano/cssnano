@@ -1,43 +1,34 @@
-import React from "react"
-import PropTypes from "prop-types"
-import Helmet from "react-helmet"
+import * as React from 'react';
+import Head from 'react-helmet';
 
-const DefaultHeadMeta = (props, { metadata: { pkg } }) => (
-  <div hidden>
-    <Helmet
-      meta={ [
-        {
-          name: "generator", content: `${
-          process.env.PHENOMIC_NAME } ${ process.env.PHENOMIC_VERSION }`,
-        },
-        { property: "og:site_name", content: pkg.name },
-        { name: "twitter:site", content: `@${ pkg.twitter }` },
-        ...props.meta ? props.meta : [],
-      ] }
-      script={ [
-        { src: "https://cdn.polyfill.io/v2/polyfill.min.js" +
-        "?features=es6&flags=gated" },
-        ...props.scripts ? props.scripts : [],
-      ] }
-    />
+import data from '../../metadata';
 
-    { /* meta viewport safari/chrome/edge */ }
-    <Helmet
-      meta={ [ {
-        name: "viewport", content: "width=device-width, initial-scale=1",
-      } ] }
-    />
-    <style>{ "@-ms-viewport { width: device-width; }" }</style>
-  </div>
-)
+const DefaultHeadMeta = (props) => (
+    <div hidden>
+        <Head
+            meta={[
+                {property: "og:site_name", content: 'cssnano'},
+                {name: "twitter:site", content: `@${ data.pkg.twitter }`},
+                ...props.meta ? props.meta : [],
+            ]}
 
-DefaultHeadMeta.propTypes = {
-  meta: React.PropTypes.arrayOf(React.PropTypes.object),
-  scripts: React.PropTypes.arrayOf(React.PropTypes.object),
-}
+            script={ [
+                {src: "https://cdn.polyfill.io/v2/polyfill.min.js" +
+                "?features=es6&flags=gated"},
+                ...props.scripts ? props.scripts : [],
+            ] }
 
-DefaultHeadMeta.contextTypes = {
-  metadata: PropTypes.object.isRequired,
-}
+            link={ data.favicons }
+        
+        />
+        { /* meta viewport safari/chrome/edge */ }
+        <Head
+            meta={ [ {
+                name: "viewport", content: "width=device-width, initial-scale=1",
+            } ] }
+        />
+        <style>{ "@-ms-viewport { width: device-width; }" }</style>
+    </div>
+);
 
-export default DefaultHeadMeta
+export default DefaultHeadMeta;

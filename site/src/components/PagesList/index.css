@@ -1,7 +1,7 @@
-.list {
-  display: flex;
-  flex-direction: column;
+:local(.list) {
+    display: flex;
+    flex-direction: column;
 
-  list-style: none;
-  padding: 0;
+    list-style: none;
+    padding: 0;
 }

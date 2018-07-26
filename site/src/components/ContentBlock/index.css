@@ -1,9 +1,9 @@
-.outer {
+:local(.outer) {
     display: flex;
     flex-direction: column;
 }
 
-.inner {
+:local(.inner) {
     display: flex;
     flex-direction: column;
     align-self: center;

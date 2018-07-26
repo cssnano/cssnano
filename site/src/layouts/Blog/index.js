@@ -1,26 +1,17 @@
-import React, {Component} from "react";
-import PropTypes from "prop-types";
-import enhanceCollection from "phenomic/lib/enhance-collection";
+import * as React from 'react';
+import {withPhenomicApi, query} from '@phenomic/preset-react-app/lib/client';
 
-import Page from "../Page";
-import PagesList from "../../components/PagesList";
+import PagesList from '../../components/PagesList';
+import Page from '../Page';
 
-export default class Blog extends Component {
-    static contextTypes = {
-        collection: PropTypes.array.isRequired,
-    }
+const Blog = ({isLoading, posts, location}) => (
+    <Page title="Blog" isLoading={isLoading} { ... posts} url={location.pathname}>
+        <PagesList pages={ posts && posts.node && posts.node.list } />
+    </Page>
+);
 
-    render () {
-        const latestPosts = enhanceCollection(this.context.collection, {
-            filter: {layout: "Post"},
-            sort: "date",
-            reverse: true,
-        })
-
-        return (
-            <Page { ...this.props}>
-                <PagesList pages={ latestPosts } />
-            </Page>
-        );
-    }
-}
+export default withPhenomicApi(Blog, props => ({
+    posts: query({
+        path: "content/blog",
+    }),
+}));

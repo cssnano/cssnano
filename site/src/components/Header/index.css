@@ -2,12 +2,12 @@
     --nav-item-padding: 0.5rem;
 }
 
-.header {
+:local(.header) {
     border-bottom: 1px solid var(--brandColor);
     background: #fff;
 }
 
-.nav {
+:local(.nav) {
     max-width: calc(60rem + (var(--nav-item-padding) * 2));
     margin: 0 auto;
     line-height: 2rem;
@@ -24,41 +24,41 @@
     }
 }
 
-.link {
+:local(.link) {
     padding: 0.8rem var(--nav-item-padding);
     color: inherit;
     text-decoration: none;
     font-size: 0.9rem;
 }
 
-.link svg {
+:local(.link) svg {
     vertical-align: middle;
     height: 25px;
 }
 
-.logo {
+:local(.logo) {
     margin-right: 20px;
 }
 
 @media screen and (min-width: 600px) {
-    .navPart1,
-    .navPart2 {
+    :local(.navPart1),
+    :local(.navPart2) {
         display: flex;
         flex-direction: row;
     }
 
-    .link {
+    :local(.link) {
         display: flex;
         align-items: center;
     }
 
-    .nav {
+    :local(.nav) {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
     }
 
-    .nav a:after {
+    :local(.nav) a:after {
         content: '';
         display: block;
         width: 100%;
@@ -71,7 +71,7 @@
         transition: transform 0.1s ease;
     }
 
-    .nav a:hover:after {
+    :local(.nav) a:hover:after {
         transform: translateY(0);
     }
 }

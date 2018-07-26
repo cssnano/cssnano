@@ -1,12 +1,12 @@
-import React, {PropTypes} from "react";
-import {Link} from "react-router";
+import * as React from 'react';
+import {Link} from 'react-router';
 
-const PagePreview = ({__url, title, date}) => {
+const PagePreview = (props) => {
+    const {url, title, date} = props;
     const pageDate = date ? new Date(date) : null;
-
     return (
         <div>
-            <Link to={__url}>{title}</Link>
+            <Link to={url}>{title}</Link>
             {
                 pageDate &&
                 <small>
@@ -18,12 +18,6 @@ const PagePreview = ({__url, title, date}) => {
             }
         </div>
     );
-};
-
-PagePreview.propTypes = {
-    __url: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    date: PropTypes.string,
 };
 
 export default PagePreview;

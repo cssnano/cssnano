@@ -1,3 +1,9 @@
+:root {
+  --phenomic-HeadingAnchor-width: 1.4rem;
+  --phenomic-HeadingAnchor-margin: 0.4rem;
+  --headerHeight: 80px;
+}
+
 /* Using global sytles is not recommended, prefer local styles via CSS Modules */
 
 /*
@@ -5,7 +11,11 @@
  *
  * http://www.paulirish.com/2012/box-sizing-border-box-ftw/
  */
-html { box-sizing: border-box; }
+html { 
+  box-sizing: border-box;
+  min-height: 100%;
+  background: color-mod(var(--brandColor) l(99%));
+}
 
 *,
 *::before,
@@ -25,10 +35,6 @@ body {
 /*
  * page styles
  */
-html {
-  min-height: 100%;
-  background: color(var(--brandColor) l(99%));
-}
 
 body {
   color: var(--colorText);
@@ -40,22 +46,17 @@ body {
 }
 
 /*
- * .phenomic-HeadingAnchor
- *
- * anchors for markdown headings, generated via markdown renderer, so require
- * global styling
- */
+* .phenomic-HeadingAnchor
+*
+* anchors for markdown headings, generated via markdown renderer, so require
+* global styling
+*/
 @custom-selector :--headings h1, h2, h3, h4, h5, h6;
 
 :--headings {
   position: relative;
   font-weight: 400;
   color: var(--brandColor);
-}
-
-:root {
-  --phenomic-HeadingAnchor-width: 1.4rem;
-  --phenomic-HeadingAnchor-margin: 0.4rem;
 }
 
 .phenomic-HeadingAnchor {
@@ -88,48 +89,45 @@ hr {
   margin: 2rem 0;
 }
 
-:root {
-    --headerHeight: 80px;
-}
 
 :target {
-    padding-bottom: 10px;
-    border-bottom: 3px solid var(--brandColor);
-    color: var(--brandColor);
+  padding-bottom: 10px;
+  border-bottom: 3px solid var(--brandColor);
+  color: var(--brandColor);
 }
 
 :target:before {
-    display: block;
-    content: " ";
-    /* This is to account for the sticky header */
-    margin-top: calc(var(--headerHeight) * -1px);
-    height: var(--headerHeight);
-    visibility: hidden;
+  display: block;
+  content: " ";
+  /* This is to account for the sticky header */
+  margin-top: calc(var(--headerHeight) * -1px);
+  height: var(--headerHeight);
+  visibility: hidden;
 }
 
 :target a {
-    color: var(--brandColor);
+  color: var(--brandColor);
 }
 
 table {
-    border-collapse: collapse;
-    width: 100%;
-    border: 1px solid var(--brandColorComplement);
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid var(--brandColorComplement);
 
-    & tr {
-        background: #fff;
-        border-bottom: 1px solid var(--brandColorComplement);
-    }
+  & tr {
+    background: #fff;
+    border-bottom: 1px solid var(--brandColorComplement);
+  }
 
-    & td, & th {
-        padding: 10px;
-        font-weight: 400;
-        text-align: left;
-    }
+  & td, & th {
+    padding: 10px;
+    font-weight: 400;
+    text-align: left;
+  }
 
-    & tbody tr:nth-child(odd) {
-        background: color(var(--brandColorComplement) l(98%));
-    }
+  & tbody tr:nth-child(odd) {
+    background: color-mod(var(--brandColorComplement) l(98%));
+  }
 }
 
 /*
@@ -138,5 +136,9 @@ table {
  */
 
 sub {
-    vertical-align: inherit;
+  vertical-align: inherit;
+}
+
+.sticky {
+  z-index: 80;
 }

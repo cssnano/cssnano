@@ -1,16 +1,16 @@
-.table {
+:local(.table) {
     border-collapse: collapse;
     width: 100%;
     border: none;
 
     & tbody tr {
         border: none;
-        border-bottom: 1px solid color(var(--brandColor) l(80%));
-        background: color(var(--brandColor) l(99%));
+        border-bottom: 1px solid color-mod(var(--brandColor) l(80%));
+        background: color-mod(var(--brandColor) l(99%));
     }
 
     & tbody tr:nth-child(odd) {
-        background: color(var(--brandColor) l(99%));
+        background: color-mod(var(--brandColor) l(99%));
     }
 
     & td {
@@ -24,14 +24,14 @@
     }
 }
 
-.cta {
+:local(.cta) {
     margin: 20px 0;
 }
 
-.install {
+:local(.install) {
     display: flex;
     border: 1px solid #adebc2;
-    transition: 0.1s ease;
+    transition: 0 .1s ease;
     transition-property: border;
     background: #fbfefc;
 
@@ -40,14 +40,14 @@
     }
 }
 
-.install a {
+:local(.install) a {
     flex: 1;
     font-size: 1em;
     text-decoration: none;
     padding: 10px;
     color: #303030;
     font-family: Menlo, Monaco, Consolas, monospace;
-    transition: 0.1s ease;
+    transition: 0 .1s ease;
     transition-property: border-right, background;
     border-right: 1px solid #fbfefc;
 
@@ -57,7 +57,7 @@
     }
 }
 
-.install button {
+:local(.install) button {
     border: none;
     border-left: 1px solid #fbfefc;
     flex: 0 100px;
@@ -66,7 +66,7 @@
     padding: 10px;
     font-size: 1em;
     font-variant: small-caps;
-    transition: 0.1s ease;
+    transition: 0 .1s ease;
     transition-property: border-left, background;
 
     & svg {
@@ -79,7 +79,7 @@
     }
 }
 
-.technology {
+:local(.technology) {
     background: #fff;
     border: 1px solid var(--brandColor);
     border-left: none;
@@ -87,7 +87,7 @@
     margin: 40px 0;
 }
 
-.postcss {
+:local(.postcss) {
     display: flex;
 
     & p {

@@ -1,47 +1,43 @@
-import React from "react"
-import PropTypes from "prop-types"
+import * as React from 'react';
+import {withPhenomicApi, query} from '@phenomic/preset-react-app/lib/client';
 
-import guidesCollection from "../../collections/guides"
-import Button from "../../components/Button"
-import Guides from "../../components/Guides"
-import Page from "../Page"
+import Page from '../Page';
+import {wrapper} from '../Page/index.css';
+import PageError from '../PageError';
+import Guides from './Guides';
 
-import styles from "./index.css"
-import {wrapper} from "../Page/index.css"
+import styles from './index.css';
+import NextButton from './NextButton';
 
-const Guide = (props, { collection }) => {
-  const guides = guidesCollection(collection)
-  const nextGuide = guides.find(g => g.order === (props.head.order + 1));
-  let nextButton = null
-  if (nextGuide) {
-      nextButton = (
-          <Button to={ nextGuide.__url } className={ styles.button }>
-              <div className={styles.next}>
-                  <p>Up next</p>
-                  <p>{nextGuide.title}</p>
-              </div>
-          </Button>
-      );
-  }
-  return (
-      <div className={[wrapper, styles.container].join(' ')}>
-          <div className={styles.article}>
-              <Page { ...props }></Page>
-              {nextButton}
-          </div>
-          <div className={styles.sidebar}>
-              <Guides />
-          </div>
-      </div>
-  )
-}
+const Guide = ({isLoading, page, pages, location}) => {
+    if (page.error) {
+        return <PageError />;
+    }
+    const node = page && page.node;
+    const index = node && node.order;
+    const list = pages && pages.node && pages.node.list;
+    return (
+        <div className={[wrapper, styles.container].join(' ')}>
+            <div className={styles.article}>
+                <Page isLoading={isLoading} { ...node} url={location.pathname} />
+                <NextButton index={index} pages={list} />
+            </div>
+            <div className={styles.sidebar}>
+                <Guides pages={list} />
+            </div>
+        </div>
+    );
+};
 
-Guide.propTypes = {
-  head: PropTypes.object.isRequired,
-}
 
-Guide.contextTypes = {
-  collection: PropTypes.array.isRequired,
-}
-
-export default Guide
+export default withPhenomicApi(Guide, props => ({
+    page: query({
+        path: "content/guides",
+        id: props.params && props.params.splat || "",
+    }),
+    pages: query({
+        path: "content/guides",
+        sort: "order",
+        order: "asc",
+    }),
+}));
