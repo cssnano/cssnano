@@ -11,12 +11,14 @@ support us!
 You can support us through [Patreon](https://www.patreon.com/beneb) as an
 ongoing commitment, or one-time through [PayPal](https://www.paypal.me/benebinfo).
 
+
 ## Patreon Backers
 
 A huge THANK YOU to our recurring backers!
 
-* [Jake Hickenlooper](https://twitter.com/jkenlooper)
-* [Tommy Hodgins](https://twitter.com/innovati)
+- [Jake Hickenlooper](https://twitter.com/jkenlooper)
+- [Tommy Hodgins](https://twitter.com/innovati)
+
 
 ## Stickers
 
