@@ -28,6 +28,7 @@ export default () => (
             <Route path="/changelog" component={Changelog} />
             <Route path="/optimisations" component={Optimisations} />
             <Route path="/optimisations/*" component={Optimisation} />
+            <Route path="/404.html" component={PageError} />
             <Route path="/*" component={PageError} />
         </Route>
     </Router>
