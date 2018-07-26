@@ -1,18 +1,9 @@
-import React, {Component} from "react";
-import Helmet from 'react-helmet';
-import PropTypes from "prop-types";
+import * as React from 'react';
+import Head from 'react-helmet';
+
 import Hero from '../../components/Hero';
 
-export default class PageError extends Component {
-    static contextTypes = {
-        metadata: PropTypes.object.isRequired
-    };
-
-    static propTypes = {
-        error: PropTypes.oneOfType([ PropTypes.number, PropTypes.string ]),
-        errorText: PropTypes.string,
-    };
-
+class PageError extends React.Component {
     static defaultProps = {
         error: 404,
         errorText: "Page not found",
@@ -24,13 +15,10 @@ export default class PageError extends Component {
             errorText,
         } = this.props;
 
-        const {favicons} = this.context.metadata;
-
         return (
             <div>
-                <Helmet
+                <Head
                     title={`${errorText} (${error})`}
-                    link={favicons}
                 />
                 <Hero>
                     <p>{errorText} ({error})</p>
@@ -40,3 +28,5 @@ export default class PageError extends Component {
         );
     }
 }
+
+export default PageError;

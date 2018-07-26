@@ -1,34 +1,36 @@
-import React, {Component, PropTypes} from "react";
+import * as React from 'react';
+import {withPhenomicApi, query} from '@phenomic/preset-react-app/lib/client';
 
-import Page from "../Page";
+import Page from '../Page';
+import PageError from '../PageError';
 
-class Post extends Component {
-    render () {
-        const {props} = this;
-        const {head} = props;
+const Post = ({page}) => {
+    if (page.error) {
+        return <PageError />;
+    }
+    const node = page && page.node;
+    const pageDate = node ? new Date(node.date) : null;
 
-        const pageDate = head.date ? new Date(head.date) : null;
-
-        return (
-            <Page
-                {...props}
-                header={
-                    <header>
+    return (
+        <Page
+            {...node}
+            header={
+                <header>
                     {
                         pageDate &&
-                        <time key={pageDate.toISOString()}>
+                    <time key={pageDate.toISOString()}>
                         {pageDate.toDateString()}
-                        </time>
+                    </time>
                     }
-                    </header>
-                }
-            />
-        );
-    }
-}
-
-Post.propTypes = {
-    head: PropTypes.object.isRequired,
+                </header>
+            }
+        />
+    );
 };
 
-export default Post;
+export default withPhenomicApi(Post, props => ({
+    page: query({
+        path: "content/blog",
+        id: props.params.splat,
+    }),
+}));

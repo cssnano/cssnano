@@ -1,4 +1,4 @@
-.hero {
+:local(.hero) {
     background: #40b97b;
     color: #ecf8f2;
     padding: 5rem 0;

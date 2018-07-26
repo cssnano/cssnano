@@ -1,33 +1,22 @@
-import React from "react"
-import PropTypes from "prop-types"
-import cx from "classnames"
-import { Link } from "phenomic"
 
-import styles from "./index.css"
+import * as React from 'react';
+import {Link} from 'react-router';
+import cx from 'classnames';
 
-const Button = ({ to, className, secondary, dark, big, ...otherProps }) => (
-  <Link
-      to={to}
-      { ...otherProps }
-      className={ cx({
-        [className]: className,
-        [styles.button]: true,
-        [styles.secondary]: secondary,
-        [styles.dark]: dark,
-        [styles.big]: big,
-      }) }
-  />
-)
+import styles from './index.css';
 
-Button.propTypes = {
-  children: PropTypes.node,
-  className: PropTypes.string,
-  secondary: PropTypes.bool,
-  dark: PropTypes.bool,
-  big: PropTypes.bool,
-  to: PropTypes.string,
-}
+const Button = ({to, className, secondary, dark, big, ...otherProps}) => (
+    <Link
+        to={to}
+        { ...otherProps }
+        className={ cx({
+            [className]: className,
+            [styles.button]: true,
+            [styles.secondary]: secondary,
+            [styles.dark]: dark,
+            [styles.big]: big,
+        }) }
+    />
+);
 
-Button.displayName = "Button"
-
-export default Button
+export default Button;
