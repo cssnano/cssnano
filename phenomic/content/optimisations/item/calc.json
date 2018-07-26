@@ -1,0 +1,1 @@
+{"filename":"calc.md","title":"calc","layout":"Optimisation","identifier":"calc","body":{"t":"div","c":["\n",{"t":"p","c":["Reduces CSS ",{"t":"code","c":["calc"]}," expressions whereever possible, ensuring both browser compatibility and compression."]}]}}

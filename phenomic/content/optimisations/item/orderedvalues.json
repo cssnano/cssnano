@@ -1,0 +1,1 @@
+{"filename":"orderedvalues.md","title":"orderedValues","layout":"Optimisation","identifier":"orderedvalues","body":{"t":"div","c":["\n",{"t":"p","c":["Properties affected by this transform can accept their arguments in an\narbitrary order. This module normalizes that order, facilitating\neasier de-duplication."]}]}}

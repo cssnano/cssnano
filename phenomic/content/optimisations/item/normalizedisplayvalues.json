@@ -1,0 +1,1 @@
+{"filename":"normalizedisplayvalues.md","title":"normalizeDisplayValues","layout":"Optimisation","identifier":"normalizedisplayvalues","body":{"t":"div","c":["\n",{"t":"p","c":["Normalizes the two value syntax for ",{"t":"code","c":["display"]}," into the single value syntax\nwhere possible."]}]}}
