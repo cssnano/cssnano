@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Sticky from 'react-sticky-el';
 
+import Analytics from '../../components/Analytics';
 import Container from '../../components/Container';
 import DefaultHeadMeta from '../../components/DefaultHeadMeta';
 import Content from '../../components/Content';
@@ -21,16 +22,18 @@ class App extends React.Component {
     render () {
         const {children} = this.props;
         return (
-            <Container>
-                <DefaultHeadMeta />
-                <Sticky disabled={!this.state.sticky}>
-                    <Header />
-                </Sticky>
-                <Content>
-                    {children}
-                </Content>
-                <Footer />
-            </Container>
+            <Analytics>
+                <Container>
+                    <DefaultHeadMeta />
+                    <Sticky disabled={!this.state.sticky}>
+                        <Header />
+                    </Sticky>
+                    <Content>
+                        {children}
+                    </Content>
+                    <Footer />
+                </Container>
+            </Analytics>
         );
     }
 
