@@ -50,7 +50,7 @@ function getLevel (prop) {
     }
 }
 
-const isValueCustomProp = value => value.search(/var\s*\(\s*--/i);
+const isValueCustomProp = value => !!~value.search(/var\s*\(\s*--/i);
 
 function canMergeValues (values) {
     return !values.some(isValueCustomProp) || values.every(isValueCustomProp);
@@ -219,12 +219,16 @@ function merge (rule) {
         if (rules.some(detect)) {
             return;
         }
-        const values = rules.map(node => parseWsc(node.value));
-        if (!values.every(isValidWsc)) {
+        const values = rules.map(({value}) => value);
+        if (!canMergeValues(values)) {
+            return;
+        }
+        const parsed = values.map(value => parseWsc(value));
+        if (!parsed.every(isValidWsc)) {
             return;
         }
         wsc.forEach((d, i) => {
-            const value = values.map(v => v[i] || defaults[i]);
+            const value = parsed.map(v => v[i] || defaults[i]);
             if (canMergeValues(value)) {
                 insertCloned(lastNode.parent, lastNode, {
                     prop: borderProperty(d),
