@@ -441,3 +441,10 @@ test(
     passthroughCSS,
     'h1{border:var(--border-width) solid grey}',
 );
+
+test(
+    'Should not throw error (#570)',
+    processCSS,
+    'h1{border:1px none;border-bottom-style:solid}',
+    'h1{border:1px;border-style:none none solid}',
+);

@@ -11,7 +11,7 @@ export default v => {
     }
 
     const value = [...values, ''].reduceRight((prev, cur, i, arr) => {
-        if (cur === undefined || cur.toLowerCase() === defaults[i] && (!i ||arr[i-1].toLowerCase() !== cur.toLowerCase())) {
+        if (cur === undefined || cur.toLowerCase() === defaults[i] && (!i ||(arr[i-1] || '').toLowerCase() !== cur.toLowerCase())) {
             return prev;
         }
         return cur + ' ' + prev;
