@@ -448,3 +448,9 @@ test(
     'h1{border:1px none;border-bottom-style:solid}',
     'h1{border:1px;border-style:none none solid}',
 );
+
+test(
+    'Should correctly merge borders with custom properties (#572)',
+    passthroughCSS,
+    'h1{border:6px solid red;border-top:6px solid var(--mycolor);}',
+);
