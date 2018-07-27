@@ -1,0 +1,3 @@
+include:
+  - *.json
+  - phenomic/content/guides/item/.json
