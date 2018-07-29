@@ -18,12 +18,11 @@ const Optimisation = ({isLoading, page, location}) => {
         return <PageError />;
     }
 
-    const {identifier} = node;
     const {modules} = data;
 
     const module = Object.keys(modules).find(m => {
         const {shortName} = modules[m];
-        return shortName.toLowerCase() === identifier.toLowerCase();
+        return node && node.identifier && shortName.toLowerCase() === node.identifier.toLowerCase();
     });
 
     const {
@@ -34,7 +33,7 @@ const Optimisation = ({isLoading, page, location}) => {
         tipOutput,
         source,
         safe,
-    } = modules[module];
+    } = modules[module] || {};
 
     let safeContent = null;
 
