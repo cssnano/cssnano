@@ -7,13 +7,21 @@ layout: Page
 
 
 
+## 4.0.5
+
+### Bug Fixes
+
+- `postcss-merge-longhand` now correctly merges borders with custom properties.
+- `postcss-merge-longhand` doesn't throw error in some `border` merge cases.
+
+
 ## 4.0.4
 
 ### Bug Fixes
 
-- `postcss-merge-longhand` don't drop border-width with custom property from border shorthand.
-- `postcss-merge-longhand` don't convert `currentColor`.
-- `postcss-merge-longhand` don't merge border properties if there is a shorthand property between them.
+- `postcss-merge-longhand` doesn't drop border-width with custom property from border shorthand.
+- `postcss-merge-longhand` doesn't convert `currentColor`.
+- `postcss-merge-longhand` doesn't merge border properties if there is a shorthand property between them.
 
 
 ## 4.0.3
