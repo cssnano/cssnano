@@ -46,6 +46,7 @@ h1 {
 
 For more examples, see the [tests](src/__tests__/index.js).
 
+* `animation`, `-webkit-animation`
 * `border(border-left|right|top|bottom)`
 * `box-shadow`
 * `outline`

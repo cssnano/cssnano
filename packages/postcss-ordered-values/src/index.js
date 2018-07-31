@@ -2,6 +2,7 @@ import postcss from 'postcss';
 import getParsed from './lib/getParsed';
 
 // rules
+import animation from './rules/animation';
 import border from './rules/border';
 import boxShadow from './rules/boxShadow';
 import flexFlow from './rules/flexFlow';
@@ -10,6 +11,8 @@ import transition from './rules/transition';
 /* eslint-disable quote-props */
 
 const rules = {
+    'animation':          animation,
+    '-webkit-animation':  animation,
     'border':             border,
     'border-top':         border,
     'border-right':       border,
