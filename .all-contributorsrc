@@ -554,6 +554,16 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "ben-mckernan",
+      "name": "Ben McKernan",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/4847190?v=4",
+      "profile": "https://github.com/ben-mckernan",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ]
 }
