@@ -82,7 +82,7 @@ function optimisationsTable (presets, plugins) {
         rows.push(
             u('tableRow', [
                 u('tableCell', [u('link', {url: `/optimisations/${metadata[header].shortName.toLowerCase()}`}, [
-                    u('text', header),
+                    u('text', metadata[header].shortName),
                 ])]),
                 ...plugins.presets.map(preset => {
                     if (~data.indexOf(preset)) {
