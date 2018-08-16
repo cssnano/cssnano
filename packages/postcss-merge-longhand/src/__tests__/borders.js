@@ -125,7 +125,7 @@ test(
 test(
     'should not convert border: 0 to border-width: 0',
     passthroughCSS,
-    'h1{border:0}'
+    'h1{border:none}'
 );
 
 test(
@@ -138,7 +138,7 @@ test(
     'should minimize default border values',
     processCSS,
     'h1{border:medium none currentColor}',
-    'h1{border:medium}'
+    'h1{border:none}'
 );
 
 test(
@@ -151,7 +151,21 @@ test(
 test(
     'should not mangle borders',
     passthroughCSS,
-    'hr{display:block;height:1px;border:0;border-top:1px solid #ddd}'
+    'hr{display:block;height:1px;border:none;border-top:1px solid #ddd}'
+);
+
+test(
+    'Should not mangle borders (#579) (1)',
+    processCSS,
+    'h1{border-bottom:none;border-color:red}',
+    'h1{border-bottom:none;border-color:red}',
+);
+
+test(
+    'Should not mangle borders (#579) (2)',
+    processCSS,
+    'h1{border:none;border-color:red}',
+    'h1{border:red}',
 );
 
 test(
@@ -199,7 +213,7 @@ test(
 test(
     'should merge redundant values (6)',
     processCSS,
-    'h1{border-width:1px;border-top-width:0;border-left-width:0;border-style:solid;border-color:#000;}',
+    'h1{border-width:1px;border-top-width:none;border-left-width:none;border-style:solid;border-color:#000;}',
     'h1{border-color:#000;border-style:solid;border-width:0 1px 1px 0;}',
 );
 
@@ -233,7 +247,7 @@ test(
 test(
     'should produce the minimum css necessary',
     passthroughCSS,
-    'h1{border-width:0;border-top:1px solid #e1e1e1}'
+    'h1{border-width:none;border-top:1px solid #e1e1e1}'
 );
 
 test(
@@ -266,22 +280,37 @@ test(
 
 test(
     'should produce the minimum css necessary (6)',
-    passthroughCSS,
-    'h1{border:1px solid #00d1b2;border-right:0;border-top:0}',
+    processCSS,
+    'h1{border:1px solid #00d1b2;border-right:none;border-top:none}',
+    'h1{border:1px solid #00d1b2;border-top:none;border-right:none}',
 );
 
 test(
     'should produce the minimum css necessary (7)',
     processCSS,
-    'h1{border-top:0;border-right:0;border-bottom:1px solid #cacaca;border-left:0}',
-    'h1{border:0;border-bottom:1px solid #cacaca}',
+    'h1{border-top:none;border-right:none;border-bottom:1px solid #cacaca;border-left:none}',
+    'h1{border:none;border-bottom:1px solid #cacaca}',
 );
 
 test(
     'should produce the minimum css necessary (8)',
     processCSS,
-    'h1{border-top:0;border-right:0;border-bottom:0;border-left:5px}',
-    'h1{border:0;border-left:5px}',
+    'h1{border-top:none;border-right:none;border-bottom:none;border-left:5px}',
+    'h1{border:none;border-left:5px}',
+);
+
+test(
+    'should produce the minimum css necessary (9)',
+    processCSS,
+    'h1{border:medium none;border-style:solid;border-color:rgba(34, 36, 38, 0.15);border-width:0px 1px 1px 0px}',
+    'h1{border:solid rgba(34, 36, 38, 0.15);border-width:0px 1px 1px 0px}'
+);
+
+test(
+    'should produce the minimum css necessary (10)',
+    processCSS,
+    'h1{border-bottom:none;border-left:1px solid transparent;border-right:1px solid transparent;border-top:2px solid transparent}',
+    'h1{border:1px solid transparent;border-top:2px solid transparent;border-bottom:none}',
 );
 
 test(
@@ -400,7 +429,8 @@ test(
 
 test(
     'Should correctly merge border declarations (#551) (2)',
-    passthroughCSS,
+    processCSS,
+    'h1{border:none;border-top:6px solid #000;border-bottom:1px solid #fff}',
     'h1{border:none;border-top:6px solid #000;border-bottom:1px solid #fff}',
 );
 
@@ -408,13 +438,13 @@ test(
     'should not break border-color (#553)',
     processCSS,
     'h1{border:solid transparent;border-width:0 8px 16px;border-bottom-color:#eee}',
-    'h1{border:solid transparent;border-bottom-color:#eee;border-width:0 8px 16px}'
+    'h1{border:solid transparent;border-bottom:solid #eee;border-width:0 8px 16px}'
 );
 
 test(
     'should not remove border-top-color (#554)',
     passthroughCSS,
-    'h1{border-top-color: rgba(85, 85, 85, 0.95);border-bottom: none}',
+    'h1{border-top-color: rgba(85, 85, 85, 0.95);border-bottom: 0}',
 );
 
 test(
@@ -431,9 +461,9 @@ test(
 );
 
 test(
-    'Should not convert currentColor (#559)',
+    'Should not convert currentcolor (#559)',
     passthroughCSS,
-    'h1{border:2px solid transparent;border-top-color:currentColor;}',
+    'h1{border:2px solid transparent;border-top-color:currentcolor;}',
 );
 
 test(
@@ -446,7 +476,7 @@ test(
     'Should not throw error (#570)',
     processCSS,
     'h1{border:1px none;border-bottom-style:solid}',
-    'h1{border:1px;border-style:none none solid}',
+    'h1{border:1px;border-bottom:1px solid}',
 );
 
 test(

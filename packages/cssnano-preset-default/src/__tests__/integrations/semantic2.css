@@ -2133,7 +2133,7 @@ a.ui.basic.label:hover{background:none #fff;box-shadow:1px solid rgba(34,36,38,.
 .ui.empty.circular.label,.ui.empty.circular.labels .label{height:.5em;min-height:0;min-width:0;overflow:hidden;vertical-align:baseline;width:.5em}
 .ui.pointing.label{position:relative}
 .ui.attached.pointing.label{position:absolute}
-.ui.pointing.label:before{-ms-transform:rotate(45deg);-webkit-transform:rotate(45deg);-webkit-transition:background .1s ease;background-color:inherit;background-image:inherit;background-image:none;border:none solid;border-color:inherit;content:"";height:.6666em;position:absolute;transform:rotate(45deg);transition:background .1s ease;width:.6666em;z-index:2}
+.ui.pointing.label:before{-ms-transform:rotate(45deg);-webkit-transform:rotate(45deg);-webkit-transition:background .1s ease;background-color:inherit;background-image:inherit;background-image:none;border:0 solid;border-color:inherit;content:"";height:.6666em;position:absolute;transform:rotate(45deg);transition:background .1s ease;width:.6666em;z-index:2}
 .ui.pointing.label,.ui[class*="pointing above"].label{margin-top:1em}
 .ui.pointing.label:before,.ui[class*="pointing above"].label:before{-ms-transform:translateX(-50%) translateY(-50%) rotate(45deg);-webkit-transform:translateX(-50%) translateY(-50%) rotate(45deg);border-width:1px 0 0 1px;left:50%;top:0;transform:translateX(-50%) translateY(-50%) rotate(45deg)}
 .ui[class*="bottom pointing"].label,.ui[class*="pointing below"].label{margin-bottom:1em;margin-top:0}
@@ -3236,7 +3236,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.vertical.menu .item .menu .active.item{background-color:transparent;color:rgba(0,0,0,.95);font-weight:700}
 .ui.tabular.menu{background:none transparent;border:none;border-bottom:1px solid #d4d4d5;border-radius:0;box-shadow:none!important}
 .ui.tabular.fluid.menu{width:calc(100% + 2px)!important}
-.ui.tabular.menu .item{background:transparent;border-color:transparent transparent currentColor;border-style:solid solid none;border-width:2px 1px none;color:rgba(0,0,0,.87);padding:.92857143em 1.42857143em}
+.ui.tabular.menu .item{background:transparent;border:1px solid transparent;border-bottom:none;border-top:2px solid transparent;color:rgba(0,0,0,.87);padding:.92857143em 1.42857143em}
 .ui.tabular.menu .item:before{display:none}
 .ui.tabular.menu .item:hover{background-color:transparent;color:rgba(0,0,0,.8)}
 .ui.tabular.menu .active.item{background:none #fff;border-color:#d4d4d5;border-radius:.28571429rem .28571429rem 0 0!important;border-top-width:1px;box-shadow:none;color:rgba(0,0,0,.95);font-weight:700;margin-bottom:-1px}
@@ -3251,7 +3251,7 @@ ol.ui.list li[value]:before{content:attr(value)}
 .ui.vertical.right.tabular.menu{background:none transparent;border-bottom:none;border-left:1px solid #d4d4d5;border-radius:0;border-right:none;box-shadow:none!important}
 .ui.vertical.right.tabular.menu .item{background:none;border:1px solid transparent;border-left:none}
 .ui.vertical.right.tabular.menu .active.item{background:none #fff;border-color:#d4d4d5;border-radius:0 .28571429rem .28571429rem 0!important;color:rgba(0,0,0,.95);margin:0 0 0 -1px}
-.ui.tabular.menu .active.dropdown.item{border-color:transparent transparent currentColor;border-style:solid solid none;border-width:2px 1px none;margin-bottom:0}
+.ui.tabular.menu .active.dropdown.item{border:1px solid transparent;border-bottom:none;border-top:2px solid transparent;margin-bottom:0}
 .ui.pagination.menu{display:-webkit-inline-box;display:-webkit-inline-flex;display:-ms-inline-flexbox;display:inline-flex;margin:0;vertical-align:middle}
 .ui.pagination.menu .item:last-child{border-radius:0 .28571429rem .28571429rem 0}
 .ui.pagination.menu .item:last-child:before{display:none}
