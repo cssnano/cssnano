@@ -9,6 +9,16 @@ pre {
 
 code {
     font-family: Menlo, Monaco, Consolas, monospace;
+    background: #fff;
+    border: 1px solid #40b97b;
+    border-radius: 3px;
+    padding: 0 .2em;
+}
+
+pre code {
+    background: transparent;
+    border: none;
+    padding: 0;
 }
 
 /* CSS highlighting */
