@@ -20,11 +20,11 @@ export default function parseWsc (value) {
 
     values.forEach(v => {
         if (isStyle(v)) {
-            style = v;
+            style = v.toLowerCase();
         } else if (isWidth(v)) {
-            width = v;
+            width = v.toLowerCase();
         } else if (isColor(v)) {
-            color = v;
+            color = v.toLowerCase();
         } else {
             unknown.push(v);
         }

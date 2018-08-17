@@ -461,8 +461,15 @@ test(
 );
 
 test(
-    'Should not convert currentcolor (#559)',
+    'Should not convert currentcolor (#559) (2)',
     passthroughCSS,
+    'h1{border:2px solid transparent;border-top-color:currentcolor;}',
+);
+
+test(
+    'Should not convert currentcolor (#559) (2)',
+    processCSS,
+    'h1{border:2px solid transparent;border-top-color:currentColor;}',
     'h1{border:2px solid transparent;border-top-color:currentcolor;}',
 );
 
