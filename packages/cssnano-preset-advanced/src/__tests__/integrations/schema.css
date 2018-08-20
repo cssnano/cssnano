@@ -643,4 +643,4 @@ a:hover.list-group-element{background-color:#eee;color:#555;text-decoration:none
 .btn-group-lg>.btn,.pagination-lg>ul>li>a.btn{padding:.875rem 1.5rem}
 .btn-group-lg>.btn,.btn-group-sm>.btn,.pagination-lg>ul>li>a.btn,.pagination-sm>ul>li>a.btn{border-radius:0;display:inline-block;float:left}
 .btn-group-sm>.btn,.pagination-sm>ul>li>a.btn{padding:.4rem .6rem}
-.btn-group-lg.no-b>.btn,.btn-group-sm.no-b>.btn,.btn-group.no-b>.btn,.list-group.no-b>a.list-group-element,.list-group.no-b>li,.list-group.no-b>li>a,.pagination.no-b>ul>li>.btn{border:none none transparent}
+.btn-group-lg.no-b>.btn,.btn-group-sm.no-b>.btn,.btn-group.no-b>.btn,.list-group.no-b>a.list-group-element,.list-group.no-b>li,.list-group.no-b>li>a,.pagination.no-b>ul>li>.btn{border:transparent}

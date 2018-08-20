@@ -19,7 +19,7 @@ import parseWsc from '../parseWsc';
 import {isValidWsc} from '../validateWsc';
 
 const wsc = ['width', 'style', 'color'];
-const defaults = ['medium', 'none', 'currentColor'];
+const defaults = ['medium', 'none', 'currentcolor'];
 
 function borderProperty (...parts) {
     return `border-${parts.join('-')}`;
@@ -94,8 +94,8 @@ function mergeRedundant ({values, nextValues, decl, nextDecl, index}) {
     const borderValue2 = values.filter((e, i) => i !== position).join(' ');
     const propValue2 = minifyTrbl(props);
 
-    const origLength = (decl.value + nextDecl.prop + nextDecl.value).length;
-    const newLength1 = decl.value.length + prop1.length + nextValues[position].length;
+    const origLength = (minifyWsc(decl.value) + nextDecl.prop + nextDecl.value).length;
+    const newLength1 = decl.value.length + prop1.length + minifyWsc(nextValues[position]).length;
     const newLength2 = borderValue2.length + prop2.length + propValue2.length;
 
     if (newLength1 < newLength2 && newLength1 < origLength) {
@@ -194,7 +194,7 @@ function merge (rule) {
             }
         );
     });
-
+    
     // border-trbl-wsc -> border-wsc
     wsc.forEach(style => {
         const prop = borderProperty(style);
@@ -294,27 +294,28 @@ function merge (rule) {
         const values = rules.map(node => parseTrbl(node.value));
         const mapped = [0, 1, 2, 3].map(i => [values[0][i], values[1][i], values[2][i]].join(' '));
         const reduced = getDistinctShorthands(mapped);
-        const none = 'none none currentColor';
+        const none = 'medium none currentcolor';
 
-        if (reduced.length === 2 && reduced[0] === none || reduced[1] === none) {
+        if (reduced.length > 1 && reduced.length < 4 && reduced.includes(none)) {
+            const filtered = mapped.filter(p => p !== none);
+            const mostCommon = reduced.sort((a, b) => 
+                mapped.filter(v => v === b).length - mapped.filter(v => v === a).length)[0];
+            const borderValue = reduced.length === 2 ? filtered[0] : mostCommon;
+
             rule.insertBefore(lastNode, Object.assign(lastNode.clone(), {
                 prop: 'border',
-                value: mapped[1] === none ? 'none' : mapped.filter(value => value !== none)[0],
+                value: borderValue,
             }));
+
             directions.forEach((dir, i) => {
-                if (mapped[1] === none && mapped[i] !== none) {
+                if (mapped[i] !== borderValue) {
                     rule.insertBefore(lastNode, Object.assign(lastNode.clone(), {
                         prop: dir,
                         value: mapped[i],
                     }));
                 }
-                if (mapped[1] !== none && mapped[i] === none) {
-                    rule.insertBefore(lastNode, Object.assign(lastNode.clone(), {
-                        prop: dir,
-                        value: 'none',
-                    }));
-                }
             });
+
             rules.forEach(remove);
             return true;
         }
@@ -350,7 +351,7 @@ function merge (rule) {
             return true;
         }
     });
-
+    
     // optimize border-trbl
     let decls = getDecls(rule, directions);
     while (decls.length) {
@@ -405,11 +406,11 @@ function merge (rule) {
         }
         const values = parseWsc(decl.value);
         const nextValues = parseWsc(nextDecl.value);
-
+        
         if (!isValidWsc(values) || !isValidWsc(nextValues)) {
             return;
         }
-
+        
         const config = {
             values,
             nextValues,
@@ -417,10 +418,47 @@ function merge (rule) {
             nextDecl,
             index,
         };
-
+        
         return mergeRedundant(config);
     });
 
+    rule.walkDecls(/^border($|-(top|right|bottom|left)$)/, decl => {
+        let values = parseWsc(decl.value);
+        if (!isValidWsc(values)) {
+            return;
+        }
+        const position = directions.indexOf(decl.prop);
+        let dirs = [...directions];
+        dirs.splice(position, 1);
+        wsc.forEach((d, i) => {
+            const props = dirs.map(dir => `${dir}-${d}`);
+            mergeRules(rule, [decl.prop, ...props], (rules) => {
+                if (!rules.includes(decl)) {
+                    return;
+                }
+
+                const longhands = rules.filter(p => p !== decl);
+                if (longhands[0].value === longhands[1].value &&
+                    longhands[1].value === longhands[2].value &&
+                    longhands[0].value === values[i]
+                ) {
+                    longhands.forEach(remove);
+                    insertCloned(decl.parent, decl, {
+                        prop: borderProperty(d),
+                        value: values[i],
+                    });
+                    values[i] = null;
+                }
+            });
+            const newValue = values.join(' ');
+            if (newValue) {
+                decl.value = newValue;
+            } else {
+                decl.remove();
+            }
+        });
+    });
+    
     // clean-up values
     rule.walkDecls(/^border($|-(top|right|bottom|left)$)/, decl => {
         decl.value = minifyWsc(decl.value);

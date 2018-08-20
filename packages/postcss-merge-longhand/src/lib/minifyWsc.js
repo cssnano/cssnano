@@ -16,5 +16,5 @@ export default v => {
         }
         return cur + ' ' + prev;
     }).trim();
-    return minifyTrbl(value || defaults[0]);
+    return minifyTrbl(value || 'none');
 };
