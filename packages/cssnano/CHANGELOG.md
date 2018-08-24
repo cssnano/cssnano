@@ -1,3 +1,13 @@
+# 4.1.0
+
+## Bug Fixes
+
+* `postcss-merge-longhand` doesn't mangle borders.
+
+## Features
+
+* `postcss-ordered-values` support ordering animation values.
+
 # 4.0.5
 
 ## Bug Fixes
