@@ -1,0 +1,1 @@
+{"filename":"reduceinitial.md","title":"reduceInitial","layout":"Optimisation","identifier":"reduceinitial","body":{"t":"div","c":["\n",{"t":"p","c":["Replaces the CSS ",{"t":"code","c":["initial"]}," keyword with the ",{"t":"em","c":["actual"]}," value, when the\nresulting output is smaller"]}]}}

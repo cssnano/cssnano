@@ -1,0 +1,1 @@
+{"filename":"discardduplicates.md","title":"discardDuplicates","layout":"Optimisation","identifier":"discardduplicates","body":{"t":"div","c":["\n",{"t":"p","c":["Removes duplicated rules, at-rules and declarations. Note that this only works\nfor ",{"t":"em","c":["exact"]}," duplicates."]}]}}

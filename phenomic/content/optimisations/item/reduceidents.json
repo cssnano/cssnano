@@ -1,0 +1,1 @@
+{"filename":"reduceidents.md","title":"reduceIdents","layout":"Optimisation","identifier":"reduceidents","body":{"t":"div","c":["\n",{"t":"p","c":["Renames at-rules such as ",{"t":"code","c":["@keyframes"]},". This can be potentially unsafe if other\nJS/CSS files need to read this definition."]}]}}
