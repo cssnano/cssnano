@@ -1,1 +1,0 @@
-{"filename":"minifyfontvalues.md","title":"minifyFontValues","layout":"Optimisation","identifier":"minifyfontvalues","body":{"t":"div","c":["\n",{"t":"p","c":["Normalizes font & font-family declarations, and can convert font weight\nkeywords to numeric values."]}]}}

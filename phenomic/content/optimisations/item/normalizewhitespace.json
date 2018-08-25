@@ -1,1 +1,0 @@
-{"filename":"normalizewhitespace.md","title":"normalizeWhitespace","layout":"Optimisation","identifier":"normalizewhitespace","body":{"t":"div","c":["\n",{"t":"p","c":["Trims whitespace inside and around rules, selectors & declarations,\nplus removes the final semicolon inside every selector."]}]}}

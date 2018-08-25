@@ -1,1 +1,0 @@
-{"filename":"mergeidents.md","title":"mergeIdents","layout":"Optimisation","identifier":"mergeidents","body":{"t":"div","c":["\n",{"t":"p","c":["This will merge rules together that may have slightly different naming but do\nthe same thing. Note that this is only unsafe if you rely on those animation\nnames in JavaScript."]}]}}

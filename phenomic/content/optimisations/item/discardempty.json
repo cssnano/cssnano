@@ -1,1 +1,0 @@
-{"filename":"discardempty.md","title":"discardEmpty","layout":"Optimisation","identifier":"discardempty","body":{"t":"div","c":["\n",{"t":"p","c":["Removes empty rules, media queries & rules with empty selectors, as they\ndo not affect the output."]}]}}

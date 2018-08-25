@@ -1,1 +1,0 @@
-{"filename":"mergerules.md","title":"mergeRules","layout":"Optimisation","identifier":"mergerules","body":{"t":"div","c":["\n",{"t":"p","c":["Merges adjacent rules by selectors & overlapping property/value pairs."]}]}}

@@ -1,1 +1,0 @@
-{"filename":"autoprefixer.md","title":"autoprefixer","layout":"Optimisation","identifier":"autoprefixer","body":{"t":"div","c":["\n",{"t":"p","c":["Removes unnecessary prefixes based on the ",{"t":"code","c":["browsers"]}," option. Note that ",{"t":"em","c":["by default"]},", ",{"t":"strong","c":["it will not add new prefixes"]}," to the CSS file."]}]}}

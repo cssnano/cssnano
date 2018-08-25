@@ -1,1 +1,0 @@
-{"filename":"minifyselectors.md","title":"minifySelectors","layout":"Optimisation","identifier":"minifyselectors","body":{"t":"div","c":["\n",{"t":"p","c":["Removes unnecessary qualified universal selectors, unquotes attribute selectors,\ntrims & normalizes selector strings."]}]}}

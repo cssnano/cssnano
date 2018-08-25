@@ -1,1 +1,0 @@
-{"filename":"normalizeurl.md","title":"normalizeUrl","layout":"Optimisation","identifier":"normalizeurl","body":{"t":"div","c":["\n",{"t":"p","c":["Normalizes URL strings. It can remove default ports, resolve unnecessary\ndirectory traversal & unquote the value."]}]}}

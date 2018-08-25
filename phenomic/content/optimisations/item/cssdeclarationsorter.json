@@ -1,1 +1,0 @@
-{"filename":"cssdeclarationsorter.md","title":"cssDeclarationSorter","layout":"Optimisation","identifier":"cssdeclarationsorter","body":{"t":"div","c":["\n",{"t":"p","c":["Sorts CSS declarations based on their property names, sorted CSS is smaller when gzipped because there will be more similar strings."]}]}}
