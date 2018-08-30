@@ -564,6 +564,16 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "ianwalter",
+      "name": "Ian Walter",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/122028?v=4",
+      "profile": "https://iankwalter.com",
+      "contributions": [
+        "code"
+      ]
     }
-  ]
+  ],
+  "repoType": "github"
 }
