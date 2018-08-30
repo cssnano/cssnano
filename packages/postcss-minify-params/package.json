@@ -23,6 +23,7 @@
   "homepage": "https://github.com/cssnano/cssnano",
   "dependencies": {
     "alphanum-sort": "^1.0.0",
+    "browserslist": "^4.0.0",
     "cssnano-util-get-arguments": "^4.0.0",
     "postcss": "^6.0.0",
     "postcss-value-parser": "^3.0.0",
@@ -33,7 +34,6 @@
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "browserslist": "^4.0.0",
     "cross-env": "^5.0.0"
   },
   "engines": {
