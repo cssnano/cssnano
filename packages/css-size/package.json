@@ -12,6 +12,7 @@
   },
   "files": [
     "LICENSE-MIT",
+    "css-size.d.ts",
     "index.js",
     "dist",
     "usage.txt"
