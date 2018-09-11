@@ -51,7 +51,7 @@ const defaultOpts = {
     },
     cssDeclarationSorter: {
         exclude: true,
-    }
+    },
 };
 
 export default function defaultPreset (opts = {}) {

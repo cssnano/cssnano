@@ -1,5 +1,5 @@
 import test from 'ava';
-import processCss, { passthrough } from './_processCss';
+import processCss, {passthrough} from './_processCss';
 
 test(
     'should merge based on declarations',
@@ -13,7 +13,7 @@ test(
     processCss,
     'h1{color:red;line-height:1.5;font-size:2em;}h2{color:red;line-height:1.5;font-size:2em;}',
     'h1,h2{color:red;line-height:1.5;font-size:2em}',
-    // TODO: Switch back once css-declaration-sorter has been fixed
+    // Switch back once css-declaration-sorter has been fixed
     // 'h1,h2{color:red;font-size:2em;line-height:1.5}',
 );
 
@@ -22,7 +22,7 @@ test(
     processCss,
     'h1{color:red;line-height:1.5;font-size:2em;}h2{font-size:2em;color:red;line-height:1.5;}',
     'h1,h2{color:red;line-height:1.5;font-size:2em}',
-    // TODO: Switch back once css-declaration-sorter has been fixed
+    // Switch back once css-declaration-sorter has been fixed
     // 'h1,h2{color:red;font-size:2em;line-height:1.5}',
 );
 
@@ -45,7 +45,7 @@ test(
     processCss,
     'h1{font-size:2em;color:#000}h1{background:#fff;line-height:1.5;}',
     'h1{font-size:2em;color:#000;background:#fff;line-height:1.5}',
-    // TODO: Switch back once css-declaration-sorter has been fixed
+    // Switch back once css-declaration-sorter has been fixed
     // 'h1{background:#fff;color:#000;font-size:2em;line-height:1.5}',
 );
 
@@ -54,7 +54,7 @@ test(
     processCss,
     '@media print{h1{display:block;}h1{color:red;}}',
     '@media print{h1{display:block;color:red}}',
-    // TODO: Switch back once css-declaration-sorter has been fixed
+    // Switch back once css-declaration-sorter has been fixed
     // '@media print{h1{color:red;display:block}}',
 );
 
@@ -231,7 +231,7 @@ test(
     processCss,
     '@keyframes a{0%{transform-origin:right bottom;transform:rotate(-90deg);opacity:0}100%{transform-origin:right bottom;transform:rotate(0);opacity:1}}a{animation:a}',
     '@keyframes a{0%{transform-origin:right bottom;transform:rotate(-90deg);opacity:0}to{transform-origin:right bottom;transform:rotate(0);opacity:1}}a{animation:a}',
-    // TODO: Switch back once css-declaration-sorter has been fixed
+    // Switch back once css-declaration-sorter has been fixed
     // '@keyframes a{0%{opacity:0;transform:rotate(-90deg);transform-origin:right bottom}to{opacity:1;transform:rotate(0);transform-origin:right bottom}}a{animation:a}',
 );
 
@@ -239,7 +239,7 @@ test(
     'should not incorrectly extract background properties',
     passthrough,
     '.iPhone{background:url(a.png);background-image:url(../../../sprites/c.png);background-repeat:no-repeat;background-position:-102px -74px}.logo{background:url(b.png);background-image:url(../../../sprites/c.png);background-repeat:no-repeat;background-position:-2px -146px}',
-    // TODO: Switch back once css-declaration-sorter has been fixed
+    // Switch back once css-declaration-sorter has been fixed
     // '.iPhone{background:url(a.png);background-image:url(../../../sprites/c.png);background-position:-102px -74px;background-repeat:no-repeat}.logo{background:url(b.png);background-image:url(../../../sprites/c.png);background-position:-2px -146px;background-repeat:no-repeat}',
 );
 
