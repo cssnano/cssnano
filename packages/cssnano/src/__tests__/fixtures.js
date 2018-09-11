@@ -22,7 +22,7 @@ test(
         max-width: calc(100% - 32px);
     }`,
     `paper-card{--paper-card-content:{padding-top:0};margin:0 auto 16px;width:768px;max-width:calc(100% - 32px)}`
-    // TODO: Switch back once css-declaration-sorter has been fixed
+    // Switch back once css-declaration-sorter has been fixed
     // `paper-card{margin:0 auto 16px;max-width:calc(100% - 32px);width:768px;--paper-card-content:{padding-top:0};}`
 );
 
@@ -49,7 +49,7 @@ test(
         width: 384px;
     }`,
     `paper-card{--paper-card-header:{height:128px;padding:0 48px;background:var(--primary-color);@apply(--layout-vertical);@apply(--layout-end-justified)};--paper-card-header-color:#fff;--paper-card-content:{padding:64px};--paper-card-actions:{@apply(--layout-horizontal);@apply(--layout-end-justified)};width:384px}`
-    // TODO: Switch back once css-declaration-sorter has been fixed
+    // Switch back once css-declaration-sorter has been fixed
     // `paper-card{--paper-card-header-color:#fff;width:384px;--paper-card-header:{background:var(--primary-color);height:128px;padding:0 48px;@apply(--layout-vertical);@apply(--layout-end-justified)};--paper-card-content:{padding:64px};--paper-card-actions:{@apply(--layout-horizontal);@apply(--layout-end-justified)};}`
 
 );
@@ -92,7 +92,7 @@ test(
         color: red;;
     }`,
     `div{font-weight:900;color:red}`
-    // TODO: Switch back once css-declaration-sorter has been fixed
+    // Switch back once css-declaration-sorter has been fixed
     // `div{color:red;font-weight:900}`
 );
 
@@ -181,7 +181,7 @@ test(
         background-origin: padding-box, padding-box;
     }`,
     `.two-gradients{background:linear-gradient(#fff,#999) no-repeat border-box,linear-gradient(#eee,#777) no-repeat border-box;background-size:98px 50px,18px 50px;background-position:0 0,98px 0;background-origin:padding-box,padding-box}`
-    // TODO: Switch back once css-declaration-sorter has been fixed
+    // Switch back once css-declaration-sorter has been fixed
     // `.two-gradients{background:linear-gradient(#fff,#999) no-repeat border-box,linear-gradient(#eee,#777) no-repeat border-box;background-origin:padding-box,padding-box;background-position:0 0,98px 0;background-size:98px 50px,18px 50px}`
 );
 
@@ -319,7 +319,7 @@ test(
         margin-left: 10px !important;
     }`,
     `h1{margin-top:8px;margin-right:12px!important;margin-bottom:14px;margin-left:10px!important}`
-    // TODO: Switch back once css-declaration-sorter has been fixed
+    // Switch back once css-declaration-sorter has been fixed
     // `h1{margin-bottom:14px;margin-left:10px!important;margin-right:12px!important;margin-top:8px}`
 );
 

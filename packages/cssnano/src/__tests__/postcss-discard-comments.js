@@ -1,5 +1,5 @@
 import test from 'ava';
-import processCss, { passthrough } from './_processCss';
+import processCss, {passthrough} from './_processCss';
 
 test(
     'should remove non-special comments',
@@ -103,7 +103,7 @@ test(
     'should keep special comments 2',
     passthrough,
     'h1{/*!test comment*/font-weight:700}',
-    // TODO: Switch back once css-declaration-sorter has been fixed
+    // Switch back once css-declaration-sorter has been fixed
     // 'h1{font-weight:700/*!test comment*/}',
 );
 
