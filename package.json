@@ -5,7 +5,7 @@
     "all-contributors": "all-contributors add",
     "lint": "eslint --ignore-path .gitignore packages/**/src util",
     "fixlint": "eslint --fix --ignore-path .gitignore packages/**/src util",
-    "postinstall": "lerna bootstrap --npm-client=\"yarn\"",
+    "postinstall": "lerna bootstrap",
     "build:packages": "babel-node ./util/buildPackages.js",
     "build:aliases": "babel-node ./util/buildAliases.js",
     "build:metadata": "babel-node ./util/buildMetadata.js",
