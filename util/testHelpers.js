@@ -15,7 +15,7 @@ export function processCSSFactory (plugin) {
     if (Array.isArray(plugin)) {
         processor = (fixture, options) => postcss(plugin).process(
             fixture,
-            Object.assign({}, { from: undefined }, options)
+            Object.assign({}, {from: undefined}, options)
         );
 
         processCSS = (t, fixture, expected, options) => {
@@ -32,7 +32,7 @@ export function processCSSFactory (plugin) {
         processor = (fixture, options) => {
             return postcss(plugin(options)).process(
                 fixture,
-                Object.assign({}, { from: undefined }, options),
+                Object.assign({}, {from: undefined}, options),
             );
         };
 
@@ -63,7 +63,7 @@ export function integrationTests (t, preset, integrations) {
     return Promise.all(Object.keys(frameworks).map(framework => {
         const css = frameworks[framework];
         return postcss([cssnano({preset}), formatter])
-            .process(css, { from: undefined })
+            .process(css, {from: undefined})
             .then(result => {
                 t.is(
                     result.css,
