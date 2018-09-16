@@ -34,7 +34,7 @@
   "dependencies": {
     "alphanum-sort": "^1.0.0",
     "has": "^1.0.0",
-    "postcss": "^6.0.0",
+    "postcss": "^7.0.0",
     "postcss-selector-parser": "^3.0.0"
   },
   "bugs": {
