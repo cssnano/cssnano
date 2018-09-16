@@ -114,7 +114,10 @@ function updatePreset (packageList, pkg) {
                 u('paragraph', [
                     u('text', 'This plugin is loaded with the following configuration:'),
                 ]),
-                u('code', {lang: 'js'}, stringifyObject(options))
+                u('code', {lang: 'js'}, stringifyObject(Object.assign({},
+                    options,
+                    (options.customOrder && {customOrder: basename(options.customOrder)}),
+                )))
             );
         }
         plugins.push.apply(plugins, documentation);

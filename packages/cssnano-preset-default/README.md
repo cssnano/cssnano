@@ -108,7 +108,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-	customOrder: '/home/siilwyn/codeground/cssnano/packages/cssnano-preset-default/dist/safe-order.json'
+	customOrder: 'safe-order.json'
 }
 ```
 
