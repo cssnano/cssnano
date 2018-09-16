@@ -104,7 +104,13 @@ Note that you may wish to publish your own preset to npm for reusability, should
 
 > Sorts CSS declarations fast and automatically in a certain order.
 
-This plugin is loaded with its default configuration.
+This plugin is loaded with the following configuration:
+
+```js
+{
+	customOrder: '/home/siilwyn/codeground/cssnano/packages/cssnano-preset-default/dist/safe-order.json'
+}
+```
 
 ### [`cssnano-util-raw-cache`](https://github.com/cssnano/cssnano/tree/master/packages/cssnano-util-raw-cache)
 

@@ -12,6 +12,8 @@
  * this preset require only minimal configuration.
  */
 
+import path from 'path';
+
 import cssDeclarationSorter from 'css-declaration-sorter';
 import postcssDiscardComments from 'lerna:postcss-discard-comments';
 import postcssReduceInitial from 'lerna:postcss-reduce-initial';
@@ -48,6 +50,9 @@ const defaultOpts = {
     },
     normalizeCharset: {
         add: false,
+    },
+    cssDeclarationSorter: {
+        customOrder: path.join(__dirname, 'safe-order.json'),
     },
 };
 

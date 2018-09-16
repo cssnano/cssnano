@@ -1,17 +1,17 @@
 html{border:0;margin:0;padding:0}
-a,abbr,acronym,address,article,aside,blockquote,body,caption,code,dd,del,dfn,dialog,div,dl,dt,em,fieldset,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,iframe,img,label,legend,li,nav,object,ol,p,pre,q,section,span,table,tbody,td,tfoot,th,thead,tr,ul{border:0;font:inherit;font-size:100%;margin:0;padding:0;vertical-align:baseline}
+a,abbr,acronym,address,article,aside,blockquote,body,caption,code,dd,del,dfn,dialog,div,dl,dt,em,fieldset,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,iframe,img,label,legend,li,nav,object,ol,p,pre,q,section,span,table,tbody,td,tfoot,th,thead,tr,ul{font-size:100%;font:inherit;border:0;margin:0;padding:0;vertical-align:baseline}
 article,aside,details,dialog,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}
 body{line-height:1.5}
 table{border-collapse:separate;border-spacing:0}
-caption,td,th{float:none!important;font-weight:400;text-align:left}
+caption,td,th{font-weight:400;float:none!important;text-align:left}
 table,td,th{vertical-align:middle}
 blockquote:after,blockquote:before,q:after,q:before{content:""}
 blockquote,q{quotes:"" ""}
 a img{border:none}
 :focus{outline:0}
 html{font-size:100.01%}
-body{background:#fff;color:#222;font-family:Helvetica Neue,Arial,Helvetica,sans-serif;font-size:75%}
-h1,h2,h3,h4,h5,h6{color:#111;font-weight:400}
+body{font-size:75%;background:#fff;font-family:Helvetica Neue,Arial,Helvetica,sans-serif;color:#222}
+h1,h2,h3,h4,h5,h6{font-weight:400;color:#111}
 h1{font-size:3em;line-height:1;margin-bottom:.5em}
 h2{font-size:2em;margin-bottom:.75em}
 h3{font-size:1.5em;line-height:1;margin-bottom:1em}
@@ -25,8 +25,8 @@ p .left{margin:1.5em 1.5em 1.5em 0;padding:0}
 .right{float:right!important}
 p .right{margin:1.5em 0 1.5em 1.5em;padding:0}
 a:focus,a:hover{color:#09f}
-a{color:#06c;text-decoration:underline}
-blockquote{color:#666;font-style:italic;margin:1.5em}
+a{text-decoration:underline;color:#06c}
+blockquote{font-style:italic;color:#666;margin:1.5em}
 dfn,strong{font-weight:700}
 dfn,em{font-style:italic}
 sub,sup{line-height:0}
@@ -63,7 +63,7 @@ caption{background:#eee}
 .bottom{margin-bottom:0;padding-bottom:0}
 label{font-weight:700}
 fieldset{border:1px solid #ccc;margin:0 0 1.5em;padding:0 1.4em 1.4em}
-legend{font-size:1.2em;font-weight:700;margin-bottom:1em;margin-top:-.2em}
+legend{font-weight:700;font-size:1.2em;margin-bottom:1em;margin-top:-.2em}
 #IE8#HACK,fieldset{padding-top:1.4em}
 #IE8#HACK,legend{margin-bottom:0;margin-top:0}
 input.text,input.title,input[type=email],input[type=password],input[type=text],input[type=url],textarea{background-color:#fff;border:1px solid #bbb;color:#000}
@@ -241,6 +241,6 @@ input.span-24,textarea.span-24{width:938px}
 .box{background:#e5ecf9;padding:1.5em}
 hr{background:#ddd;border:none;clear:both;color:#ddd;float:none;height:1px;margin:0 0 17px;width:100%}
 hr.space{background:#fff;color:#fff;visibility:hidden}
-.clearfix:after,.container:after{clear:both;content:"\0020";display:block;height:0;overflow:hidden;visibility:hidden}
+.clearfix:after,.container:after{overflow:hidden;clear:both;content:"\0020";display:block;height:0;visibility:hidden}
 .clearfix,.container{display:block}
 .clear{clear:both}

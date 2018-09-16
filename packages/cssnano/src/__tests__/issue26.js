@@ -22,7 +22,7 @@ const fixture = `
 }
 `;
 
-const expected = `@media print{.test{-webkit-border-radius:0;-webkit-box-shadow:none;border-radius:0;box-shadow:none}}.test{width:500px}`;
+const expected = `@media print{.test{-webkit-box-shadow:none;-webkit-border-radius:0;border-radius:0;box-shadow:none}}.test{width:500px}`;
 
 ava('it should compress whitespace after node.clone()', t => {
     const processor = postcss([

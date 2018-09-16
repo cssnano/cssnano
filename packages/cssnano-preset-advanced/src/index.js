@@ -9,6 +9,9 @@ const defaultOpts = {
     autoprefixer: {
         add: false,
     },
+    cssDeclarationSorter: {
+        customOrder: null,
+    },
 };
 
 export default function advancedPreset (opts = {}) {

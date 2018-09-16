@@ -122,7 +122,13 @@ This plugin is loaded with the following configuration:
 
 > Sorts CSS declarations fast and automatically in a certain order.
 
-This plugin is loaded with its default configuration.
+This plugin is loaded with the following configuration:
+
+```js
+{
+	customOrder: null
+}
+```
 
 ### [`cssnano-util-raw-cache`](https://github.com/cssnano/cssnano/tree/master/packages/cssnano-util-raw-cache)
 

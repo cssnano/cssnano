@@ -12,35 +12,35 @@ test(
     'should merge based on declarations (2)',
     processCss,
     'h1{color:red;line-height:1.5;font-size:2em;}h2{color:red;line-height:1.5;font-size:2em;}',
-    'h1,h2{color:red;font-size:2em;line-height:1.5}',
+    'h1,h2{line-height:1.5;font-size:2em;color:red}',
 );
 
 test(
     'should merge based on declarations, with a different property order',
     processCss,
     'h1{color:red;line-height:1.5;font-size:2em;}h2{font-size:2em;color:red;line-height:1.5;}',
-    'h1,h2{color:red;font-size:2em;line-height:1.5}',
+    'h1,h2{line-height:1.5;font-size:2em;color:red}',
 );
 
 test(
     'should merge based on selectors',
     processCss,
     'h1{display:block}h1{text-decoration:underline}',
-    'h1{display:block;text-decoration:underline}',
+    'h1{text-decoration:underline;display:block}',
 );
 
 test(
     'should merge based on selectors (2)',
     processCss,
     'h1{color:red;display:block}h1{text-decoration:underline}',
-    'h1{color:red;display:block;text-decoration:underline}',
+    'h1{text-decoration:underline;color:red;display:block}',
 );
 
 test(
     'should merge based on selectors (3)',
     processCss,
     'h1{font-size:2em;color:#000}h1{background:#fff;line-height:1.5;}',
-    'h1{background:#fff;color:#000;font-size:2em;line-height:1.5}',
+    'h1{font-size:2em;background:#fff;line-height:1.5;color:#000}',
 );
 
 test(
@@ -152,7 +152,7 @@ test(
     'should perform partial merging of selectors in the opposite direction',
     processCss,
     'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
-    'h1{color:#000}h2,h3{color:#000;font-weight:700}',
+    'h1{color:#000}h2,h3{font-weight:700;color:#000}',
 );
 
 test(
@@ -187,21 +187,21 @@ test(
     'should merge text-* properties',
     processCss,
     'h1{color:red;text-align:right;text-decoration:underline}h2{text-align:right;text-decoration:underline}',
-    'h1{color:red}h1,h2{text-align:right;text-decoration:underline}',
+    'h1{color:red}h1,h2{text-decoration:underline;text-align:right}',
 );
 
 test(
     'should merge text-* properties (2)',
     processCss,
     'h1{color:red;text-align:right;text-decoration:underline}h2{text-align:right;text-decoration:underline;color:green}',
-    'h1{color:red}h1,h2{text-align:right;text-decoration:underline}h2{color:green}',
+    'h1{color:red}h1,h2{text-decoration:underline;text-align:right}h2{color:green}',
 );
 
 test(
     'should merge text-* properties (3)',
     processCss,
     'h1{background:white;color:red;text-align:right;text-decoration:underline}h2{text-align:right;text-decoration:underline;color:red}',
-    'h1{background:#fff}h1,h2{color:red;text-align:right;text-decoration:underline}',
+    'h1{background:#fff}h1,h2{text-decoration:underline;color:red;text-align:right}',
 );
 
 test(
@@ -229,7 +229,7 @@ test(
     'should not incorrectly extract background properties',
     processCss,
     '.iPhone{background:url(a.png);background-image:url(../../../sprites/c.png);background-repeat:no-repeat;background-position:-102px -74px}.logo{background:url(b.png);background-image:url(../../../sprites/c.png);background-repeat:no-repeat;background-position:-2px -146px}',
-    '.iPhone{background:url(a.png);background-image:url(../../../sprites/c.png);background-position:-102px -74px;background-repeat:no-repeat}.logo{background:url(b.png);background-image:url(../../../sprites/c.png);background-position:-2px -146px;background-repeat:no-repeat}',
+    '.iPhone{background:url(a.png);background-image:url(../../../sprites/c.png);background-repeat:no-repeat;background-position:-102px -74px}.logo{background:url(b.png);background-image:url(../../../sprites/c.png);background-repeat:no-repeat;background-position:-2px -146px}',
 );
 
 test(
