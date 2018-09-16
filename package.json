@@ -10,6 +10,7 @@
     "build:aliases": "babel-node ./util/buildAliases.js",
     "build:metadata": "babel-node ./util/buildMetadata.js",
     "build:site": "remark site/content/**/*.md -o && npm run build:metadata && babel-node ./util/buildSiteMarkdown.js && cd site && npm run build",
+    "build:integration": "babel-node ./util/buildFrameworks.js",
     "pretest": "npm run lint",
     "test-only": "cross-env BABEL_ENV=test ava",
     "test-only:coverage": "nyc --reporter=lcov --reporter=text npm run test-only",
