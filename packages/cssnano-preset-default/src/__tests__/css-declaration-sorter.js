@@ -22,4 +22,24 @@ test(
     passthroughCSS,
     'a{background:red;-webkit-background-clip:text}',
 );
+
+test(
+    'works with postcss-merge-longhand, margin',
+    processCSS,
+    'a{z-index:1;margin-top:0;margin:0}',
+    'a{margin:0;z-index:1}',
+);
+
+test(
+    'works with postcss-merge-longhand, padding',
+    processCSS,
+    'a{z-index:1;padding-top:0;padding:0}',
+    'a{padding:0;z-index:1}',
+);
+
+test(
+    'works with postcss-merge-longhand, border',
+    processCSS,
+    'a{z-index:1;border-top:0;border:0}',
+    'a{border:0;z-index:1}',
 );
