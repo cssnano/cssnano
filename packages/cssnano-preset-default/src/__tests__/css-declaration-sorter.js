@@ -5,9 +5,15 @@ import {processCSSWithPresetFactory} from '../../../../util/testHelpers';
 const {processCSS, passthroughCSS} = processCSSWithPresetFactory(preset);
 
 test(
-    'keep order of short- and longhand properties',
+    'keep order of short- and longhand properties, left to right',
     passthroughCSS,
     'a{animation-name:a;animation:b}'
+);
+
+test(
+    'keep order of short- and longhand properties, right to left',
+    passthroughCSS,
+    'a{animation:b;animation-name:a}'
 );
 
 test(
