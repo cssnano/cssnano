@@ -4,12 +4,12 @@ img{max-width:100%}
 svg{max-height:100%}
 fieldset,input,select,textarea{font-size:1rem;margin-bottom:.5rem;margin-top:0}
 input[type=datetime-local],input[type=datetime],input[type=email],input[type=month],input[type=number],input[type=password],input[type=search],input[type=tel],input[type=text],input[type=time],input[type=url],input[type=week]{-webkit-appearance:none;box-sizing:border-box;height:2.25rem;padding:.5rem;vertical-align:middle}
-select{box-sizing:border-box;line-height:1.75;padding:.5rem}
+select{line-height:1.75;box-sizing:border-box;padding:.5rem}
 select:not([multiple]){height:2.25rem;vertical-align:middle}
-textarea{box-sizing:border-box;line-height:1.75;padding:.5rem}
+textarea{line-height:1.75;box-sizing:border-box;padding:.5rem}
 .fieldset-reset{border:0;margin-left:0;margin-right:0;padding:0}
 .fieldset-reset legend{padding:0}
-.button,button{-webkit-appearance:none;border:1px solid transparent;cursor:pointer;display:inline-block;font-size:inherit;font-weight:700;height:auto;line-height:1.125rem;margin:0;padding:.5rem 1rem;text-decoration:none;vertical-align:middle}
+.button,button{font-size:inherit;font-weight:700;text-decoration:none;line-height:1.125rem;-webkit-appearance:none;border:1px solid transparent;cursor:pointer;display:inline-block;height:auto;margin:0;padding:.5rem 1rem;vertical-align:middle}
 .button,.button:after,.button:before,button,button:after,button:before{box-sizing:border-box}
 ::-moz-focus-inner{border:0;padding:0}
 .button:hover{text-decoration:none}
@@ -18,13 +18,13 @@ th{font-weight:700;text-align:left}
 td,th{line-height:inherit;padding:.25rem 1rem}
 th{vertical-align:bottom}
 td{vertical-align:top}
-body{font-size:100%;line-height:1.5}
+body{line-height:1.5;font-size:100%}
 body,h1,h2,h3,h4,h5,h6{font-family:Helvetica Neue,Helvetica,sans-serif}
 h1,h2,h3,h4,h5,h6{font-weight:700;line-height:1.25;margin-bottom:.5em;margin-top:1em}
 dl,ol,p,ul{font-size:1rem;margin-bottom:1rem;margin-top:0}
 ol,ul{padding-left:2rem}
 code,pre,samp{font-family:Source Code Pro,Consolas,monospace;font-size:inherit}
-pre{margin-bottom:1rem;margin-top:0;overflow-x:scroll}
+pre{overflow-x:scroll;margin-bottom:1rem;margin-top:0}
 blockquote,hr{margin-bottom:2rem;margin-top:2rem}
 blockquote{margin-left:0;padding-left:1rem;padding-right:1rem}
 blockquote,blockquote p{font-size:1.25rem;font-style:italic}
@@ -119,7 +119,7 @@ blockquote,blockquote p{font-size:1.25rem;font-style:italic}
   .lg-hide{display:none!important}
 }
 .display-none{display:none!important}
-.hide{clip:rect(1px,1px,1px,1px);height:1px;overflow:hidden;position:absolute!important;width:1px}
+.hide{overflow:hidden;clip:rect(1px,1px,1px,1px);height:1px;position:absolute!important;width:1px}
 .relative{position:relative}
 .absolute{position:absolute}
 .fixed{position:fixed}
@@ -226,17 +226,17 @@ blockquote,blockquote p{font-size:1.25rem;font-style:italic}
   .lg-flex>div{box-sizing:border-box}
 }
 body{background-color:#fff;color:#222}
-a{color:#0074d9;text-decoration:none}
+a{text-decoration:none;color:#0074d9}
 a:hover{text-decoration:underline}
 code,pre{background-color:#ddd;border-radius:3px}
 hr{border:0;border-bottom:1px solid rgba(0,0,0,.125)}
-.button{-webkit-transition-duration:.05s;-webkit-transition-property:box-shadow,background-color;-webkit-transition-timing-function:ease-out;background-color:#0074d9;border-radius:3px;color:#fff;transition-duration:.05s;transition-property:box-shadow,background-color;transition-timing-function:ease-out}
+.button{background-color:#0074d9;transition-duration:.05s;transition-timing-function:ease-out;transition-property:box-shadow,background-color;border-radius:3px;color:#fff}
 .button:hover{box-shadow:inset 0 0 0 20rem rgba(0,0,0,.0625)}
-.button:focus{border-color:rgba(0,0,0,.125);box-shadow:0 0 2px 1px rgba(0,0,0,.25);outline:none}
+.button:focus{outline:none;border-color:rgba(0,0,0,.125);box-shadow:0 0 2px 1px rgba(0,0,0,.25)}
 .button.is-active,.button:active{box-shadow:inset 0 0 0 20rem rgba(0,0,0,.125),inset 0 3px 4px 0 rgba(0,0,0,.25),0 0 1px rgba(0,0,0,.125)}
 .button.is-disabled,.button:disabled{opacity:.5}
-.field-light{-webkit-transition:box-shadow .2s ease;background-color:#fff;border:1px solid rgba(0,0,0,.125);border-radius:3px;transition:box-shadow .2s ease}
-.field-light:focus{border-color:#0074d9;box-shadow:0 0 2px rgba(0,116,217,.5);outline:none}
+.field-light{background-color:#fff;transition:box-shadow .2s ease;border:1px solid rgba(0,0,0,.125);border-radius:3px}
+.field-light:focus{outline:none;border-color:#0074d9;box-shadow:0 0 2px rgba(0,116,217,.5)}
 .field-light:disabled{color:#aaa}
 .field-light:disabled,.field-light:read-only:not(select){background-color:rgba(0,0,0,.125)}
 .field-light:invalid{border-color:#ff4136}
@@ -245,12 +245,12 @@ hr{border:0;border-bottom:1px solid rgba(0,0,0,.125)}
 .field-light.is-error{border-color:#ff4136}
 .checkbox-light,.radio-light{transition:box-shadow .2s ease}
 .radio-light{border-radius:50%}
-.checkbox-light:focus,.radio-light:focus{box-shadow:0 0 2px rgba(0,116,217,.5);outline:none}
+.checkbox-light:focus,.radio-light:focus{outline:none;box-shadow:0 0 2px rgba(0,116,217,.5)}
 .field-dark{background-color:rgba(0,0,0,.25);border:1px solid rgba(0,0,0,.0625);border-radius:3px;color:#fff}
 .field-dark::-webkit-input-placeholder{color:hsla(0,0%,100%,.75)}
 .field-dark:-ms-input-placeholder{color:hsla(0,0%,100%,.75)}
 .field-dark::placeholder{color:hsla(0,0%,100%,.75)}
-.field-dark:focus{border:1px solid hsla(0,0%,100%,.5);outline:0}
+.field-dark:focus{outline:0;border:1px solid hsla(0,0%,100%,.5)}
 .field-dark:read-only:not(select){background-color:hsla(0,0%,100%,.25)}
 .field-dark:invalid{border-color:#ff4136}
 .field-dark.is-success{border-color:#2ecc40}
@@ -264,26 +264,26 @@ input[type=range]{background-color:transparent;vertical-align:middle}
 .range-light::-webkit-slider-runnable-track{background-color:rgba(0,0,0,.25);border-radius:3px;cursor:pointer;height:.25rem}
 .range-light::-moz-range-track{background-color:rgba(0,0,0,.25);border-radius:3px;cursor:pointer;height:.25rem}
 .range-light:focus{outline:none}
-.range-light:focus::-webkit-slider-thumb{border:0;box-shadow:0 0 1px 2px currentcolor;outline:none}
-.range-light:focus::-moz-range-thumb{border:0;box-shadow:0 0 1px 2px currentcolor;outline:none}
-.progress{-webkit-appearance:none;background-color:rgba(0,0,0,.125);border:0;border-radius:10000px;cursor:pointer;display:block;height:.5625rem;margin:.5rem 0;overflow:hidden;width:100%}
+.range-light:focus::-webkit-slider-thumb{outline:none;border:0;box-shadow:0 0 1px 2px currentcolor}
+.range-light:focus::-moz-range-thumb{outline:none;border:0;box-shadow:0 0 1px 2px currentcolor}
+.progress{background-color:rgba(0,0,0,.125);overflow:hidden;-webkit-appearance:none;border:0;border-radius:10000px;cursor:pointer;display:block;height:.5625rem;margin:.5rem 0;width:100%}
 .progress::-webkit-progress-bar{-webkit-appearance:none;background-color:rgba(0,0,0,.125)}
 .progress::-webkit-progress-value{-webkit-appearance:none;background-color:currentColor}
 .progress::-moz-progress-bar{background-color:currentColor}
 .table-light td,.table-light th{border-bottom:1px solid rgba(0,0,0,.125)}
 .table-light tr:last-child td{border-bottom:0}
-.button-outline{-webkit-transition-duration:.1s;-webkit-transition-property:box-shadow,background-color;-webkit-transition-timing-function:ease-out;background-color:transparent;border:1px solid;border-radius:3px;color:inherit;position:relative;transition-duration:.1s;transition-property:box-shadow,background-color;transition-timing-function:ease-out;z-index:2}
-.button-outline:before{-webkit-transition-duration:.1s;-webkit-transition-property:opacity;-webkit-transition-timing-function:ease-out;background-color:currentcolor;border:1px solid transparent;border-radius:3px;content:"";display:block;height:100%;left:-1px;opacity:0;position:absolute;top:-1px;transition-duration:.1s;transition-property:opacity;transition-timing-function:ease-out;width:100%;z-index:-1}
+.button-outline{background-color:transparent;transition-duration:.1s;transition-timing-function:ease-out;transition-property:box-shadow,background-color;border:1px solid;border-radius:3px;color:inherit;position:relative;z-index:2}
+.button-outline:before{background-color:currentcolor;transition-duration:.1s;transition-timing-function:ease-out;transition-property:opacity;border:1px solid transparent;border-radius:3px;content:"";display:block;height:100%;left:-1px;opacity:0;position:absolute;top:-1px;width:100%;z-index:-1}
 .button-outline:hover{box-shadow:none}
 .button-outline:hover:before{opacity:.125}
-.button-outline:focus{border:1px solid;box-shadow:0 0 3px 1px;outline:none}
+.button-outline:focus{outline:none;border:1px solid;box-shadow:0 0 3px 1px}
 .button-outline.is-active,.button-outline:active{box-shadow:inset 0 1px 5px 0,0 0 1px}
 .button-outline.is-disabled,.button-outline:disabled{opacity:.5}
-.button-transparent{-webkit-transition-duration:.1s;-webkit-transition-property:box-shadow;-webkit-transition-timing-function:ease-out;background-color:transparent;border:1px solid transparent;border-radius:0;color:inherit;position:relative;transition-duration:.1s;transition-property:box-shadow;transition-timing-function:ease-out;z-index:2}
-.button-transparent:before{-webkit-transition-duration:.1s;-webkit-transition-property:opacity;-webkit-transition-timing-function:ease-out;background-color:currentcolor;border:1px solid transparent;content:"";display:block;height:100%;left:-1px;opacity:0;position:absolute;top:-1px;transition-duration:.1s;transition-property:opacity;transition-timing-function:ease-out;width:100%;z-index:-1}
+.button-transparent{background-color:transparent;transition-duration:.1s;transition-timing-function:ease-out;transition-property:box-shadow;border:1px solid transparent;border-radius:0;color:inherit;position:relative;z-index:2}
+.button-transparent:before{background-color:currentcolor;transition-duration:.1s;transition-timing-function:ease-out;transition-property:opacity;border:1px solid transparent;content:"";display:block;height:100%;left:-1px;opacity:0;position:absolute;top:-1px;width:100%;z-index:-1}
 .button-transparent:hover{box-shadow:none}
 .button-transparent:hover:before{opacity:.0625;opacity:.09375}
-.button-transparent:focus{border-color:transparent;box-shadow:0 0 3px;outline:none}
+.button-transparent:focus{outline:none;border-color:transparent;box-shadow:0 0 3px}
 .button-transparent.is-active:before,.button-transparent:active:before{opacity:.0625}
 .button-transparent.is-disabled,.button-transparent:disabled{opacity:.5}
 .bg-cover{background-size:cover}
