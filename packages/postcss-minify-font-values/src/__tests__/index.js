@@ -119,7 +119,7 @@ test(
     'h1{font-family:"\\5FAE\\8F6F\\96C5\\9ED1"}'
 );
 
-test.only(
+test(
     'should not unquote font names with multiple \\',
     passthroughCSS,
     'h1{font-family:"\\5B8B\\4F53"}'
@@ -386,6 +386,13 @@ test(
     'should pass through unrelated font uppercase properties',
     passthroughCSS,
     'h1{font-style:NORMAL}'
+);
+
+test(
+    'should minify font property',
+    processCSS,
+    'h1{font: BOLD italic 20px Times New Roman;}',
+    'h1{font: 700 italic 20px Times New Roman;}',
 );
 
 test(
