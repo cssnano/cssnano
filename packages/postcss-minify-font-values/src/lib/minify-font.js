@@ -13,17 +13,18 @@ export default function (nodes, opts) {
             if (hasSize) {
                 continue;
             }
+            const value = node.value.toLowerCase();
             if (
-                node.value === 'normal' ||
-                ~keywords.style.indexOf(node.value) ||
-                ~keywords.variant.indexOf(node.value) ||
-                ~keywords.stretch.indexOf(node.value)
+                value === 'normal' ||
+                ~keywords.style.indexOf(value) ||
+                ~keywords.variant.indexOf(value) ||
+                ~keywords.stretch.indexOf(value)
             ) {
                 familyStart = i;
-            } else if (~keywords.weight.indexOf(node.value)) {
-                node.value = minifyWeight(node.value);
+            } else if (~keywords.weight.indexOf(value)) {
+                node.value = minifyWeight(value);
                 familyStart = i;
-            } else if (~keywords.size.indexOf(node.value) || unit(node.value)) {
+            } else if (~keywords.size.indexOf(value) || unit(value)) {
                 familyStart = i;
                 hasSize = true;
             }

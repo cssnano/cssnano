@@ -62,7 +62,7 @@ function transformDecl (decl, opts) {
             return false;
         }
 
-        if (/^data:(.*)?,/.test(url.value)) {
+        if (/^data:(.*)?,/i.test(url.value)) {
             return false;
         }
 
