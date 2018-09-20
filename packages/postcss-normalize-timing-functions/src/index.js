@@ -52,7 +52,6 @@ function reduce (node) {
 export default plugin('postcss-normalize-timing-functions', () => {
     return css => {
         css.walkDecls(/(animation|transition)(-timing-function|$)/i, decl => {
-            decl.prop = decl.prop.toLowerCase();
             decl.value = valueParser(decl.value).walk(reduce).toString();
         });
     };
