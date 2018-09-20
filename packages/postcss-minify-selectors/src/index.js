@@ -61,16 +61,17 @@ const pseudoReplacements = {
 };
 
 function pseudo (selector) {
-    if (selector.nodes.length === 1 && pseudoReplacements[selector.value]) {
+    const value = selector.value.toLowerCase();
+    if (selector.nodes.length === 1 && pseudoReplacements[value]) {
         const first = selector.at(0);
         const one = first.at(0);
         if (first.length === 1) {
             if (one.value === '1') {
                 selector.replaceWith(parser.pseudo({
-                    value: pseudoReplacements[selector.value],
+                    value: pseudoReplacements[value],
                 }));
             }
-            if (one.value === 'even') {
+            if (one.value.toLowerCase() === 'even') {
                 one.value = '2n';
             }
         }
@@ -78,7 +79,7 @@ function pseudo (selector) {
             const two   = first.at(1);
             const three = first.at(2);
             if (
-                one.value === '2n' &&
+                one.value.toLowerCase() === '2n' &&
                 two.value === '+' &&
                 three.value === '1'
             ) {
@@ -101,7 +102,7 @@ function pseudo (selector) {
             }
         }
     });
-    if (~pseudoElements.indexOf(selector.value)) {
+    if (~pseudoElements.indexOf(value)) {
         selector.value = selector.value.slice(1);
     }
 }
@@ -112,7 +113,7 @@ const tagReplacements = {
 };
 
 function tag (selector) {
-    const {value} = selector;
+    const value = selector.value.toLowerCase();
     if (has(tagReplacements, value)) {
         selector.value = tagReplacements[value];
     }
