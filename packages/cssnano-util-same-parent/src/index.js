@@ -8,7 +8,7 @@ export default function sameParent (ruleA, ruleB) {
     if (ruleA.parent.type === 'atrule' && ruleB.parent.type === 'atrule') {
         return (
             ruleA.parent.params === ruleB.parent.params &&
-            ruleA.parent.name === ruleB.parent.name
+            ruleA.parent.name.toLowerCase() === ruleB.parent.name.toLowerCase()
         );
     }
     return ruleA.parent.type === ruleB.parent.type;
