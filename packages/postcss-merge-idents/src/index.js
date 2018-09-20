@@ -27,7 +27,7 @@ function mergeAtRules (css, pairs) {
 
     css.walk(node => {
         if (node.type === 'atrule') {
-            relevant = pairs.filter(pair => pair.atrule.test(node.name))[0];
+            relevant = pairs.filter(pair => pair.atrule.test(node.name.toLowerCase()))[0];
             if (!relevant) {
                 return;
             }
@@ -38,7 +38,7 @@ function mergeAtRules (css, pairs) {
                 let toString = node.nodes.toString();
                 relevant.cache.forEach(cached => {
                     if (
-                        cached.name === node.name &&
+                        cached.name.toLowerCase() === node.name.toLowerCase() &&
                         sameParent(cached, node) &&
                         cached.nodes.toString() === toString
                     ) {
@@ -51,7 +51,7 @@ function mergeAtRules (css, pairs) {
             }
         }
         if (node.type === 'decl') {
-            relevant = pairs.filter(pair => pair.decl.test(node.prop))[0];
+            relevant = pairs.filter(pair => pair.decl.test(node.prop.toLowerCase()))[0];
             if (!relevant) {
                 return;
             }
@@ -74,11 +74,11 @@ function mergeAtRules (css, pairs) {
 export default plugin('postcss-merge-idents', () => {
     return css => {
         mergeAtRules(css, [{
-            atrule: /keyframes/,
-            decl: /animation/,
+            atrule: /keyframes/i,
+            decl: /animation/i,
         }, {
-            atrule: /counter-style/,
-            decl: /(list-style|system)/,
+            atrule: /counter-style/i,
+            decl: /(list-style|system)/i,
         }]);
     };
 });
