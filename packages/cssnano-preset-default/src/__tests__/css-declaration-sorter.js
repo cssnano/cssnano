@@ -30,6 +30,20 @@ test(
 );
 
 test(
+    'keep properties that are not in `safe-order.json` in the same relative order',
+    processCSS,
+    'a{line-height:1.5;z-index:0;font-size:100%}',
+    'a{line-height:1.5;font-size:100%;z-index:0}',
+);
+
+test(
+    'move properties that are not in `safe-order.json` to the start and sort remaining',
+    processCSS,
+    'a{z-index:0;font:a;color:a}',
+    'a{font:a;color:a;z-index:0}',
+);
+
+test(
     'works with postcss-merge-longhand, margin',
     processCSS,
     'a{z-index:1;margin-top:0;margin:0}',
