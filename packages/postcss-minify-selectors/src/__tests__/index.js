@@ -189,6 +189,13 @@ test(
 );
 
 test(
+    'should convert @keyframe from & 100% (2)',
+    processCSS,
+    '@keyframes test{FROM{color:red}100%{color:blue}}',
+    '@keyframes test{0%{color:red}to{color:blue}}'
+);
+
+test(
     'should not mangle @keyframe from & 100% in other values',
     passthroughCSS,
     '@keyframes test{x-from-tag{color:red}5100%{color:blue}}'
@@ -213,6 +220,13 @@ test(
     processCSS,
     'h1::before{color:blue}',
     'h1:before{color:blue}'
+);
+
+test(
+    'should transform ::before to :before (2)',
+    processCSS,
+    'h1::BEFORE{color:blue}',
+    'h1:BEFORE{color:blue}'
 );
 
 test(
@@ -350,6 +364,13 @@ test(
 );
 
 test(
+    'should convert :nth-child(1) to :first-child (2)',
+    processCSS,
+    'p:NTH-CHILD(1){color:blue}',
+    'p:first-child{color:blue}'
+);
+
+test(
     'should convert :nth-child(2n + 1) to :nth-child(odd)',
     processCSS,
     'p:nth-child(2n + 1){color:blue}',
@@ -364,6 +385,13 @@ test(
 );
 
 test(
+    'should convert :nth-child(even) to :nth-child(2n) (2)',
+    processCSS,
+    'p:nth-child(EVEN){color:blue}',
+    'p:nth-child(2n){color:blue}'
+);
+
+test(
     'should convert :nth-of-type(1) to :first-of-type',
     processCSS,
     'p:nth-of-type(1){color:blue}',
@@ -374,6 +402,13 @@ test(
     'should convert :nth-of-type(2n + 1) to :nth-of-type(odd)',
     processCSS,
     'p:nth-of-type(2n + 1){color:blue}',
+    'p:nth-of-type(odd){color:blue}'
+);
+
+test(
+    'should convert :nth-of-type(2n + 1) to :nth-of-type(odd) (2)',
+    processCSS,
+    'p:nth-of-type(2N + 1){color:blue}',
     'p:nth-of-type(odd){color:blue}'
 );
 
