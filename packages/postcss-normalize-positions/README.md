@@ -16,7 +16,7 @@ npm install postcss-normalize-positions --save
 
 ```css
 div {
-    background-position: bottom right
+    background-position: bottom left;
 }
 ```
 
@@ -24,7 +24,7 @@ div {
 
 ```css
 div {
-    background-position: 100% 100%
+    background-position:0 100%;
 }
 ``` 
 
