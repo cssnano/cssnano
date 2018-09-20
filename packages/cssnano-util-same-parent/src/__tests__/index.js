@@ -31,3 +31,22 @@ test('should calculate same parent (at rules)', t => {
         t.true(sameParent(h1, h2));
     });
 });
+
+
+test('should calculate same parent (multiple at rules)', t => {
+    return postcss().process('@media screen{h1 {}} @media screen{h2 {}}').then(result => {
+        const h1 = result.root.nodes[0].nodes[0];
+        const h2 = result.root.nodes[1].nodes[0];
+
+        t.true(sameParent(h1, h2));
+    });
+});
+
+test('should calculate same parent (multiple at rules (uppercase))', t => {
+    return postcss().process('@media screen{h1 {}} @MEDIA screen{h2 {}}').then(result => {
+        const h1 = result.root.nodes[0].nodes[0];
+        const h2 = result.root.nodes[1].nodes[0];
+
+        t.true(sameParent(h1, h2));
+    });
+});
