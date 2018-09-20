@@ -116,7 +116,7 @@ function partialMerge (first, second) {
     };
     const containsAllDeclaration = (intersectionList) => {
         return intersectionList.some(declaration => {
-            return declaration.split(':')[0] === 'all';
+            return declaration.split(':')[0].toLowerCase() === 'all';
         });
     };
     intersection = filterConflicts(getDecls(first).reverse(), intersection);

@@ -591,6 +591,13 @@ test(
 );
 
 test(
+    'should place rules with "all" at the top (2)',
+    processCSS,
+    '.a{margin: 10px 20px;display: flex;ALL: initial;font-size: 10px;border-radius: 2px;color: blue;}.b{margin: 10px 30px;display: flex;ALL: initial;font-size: 20px;border-radius: 2px;color: blue;}',
+    '.a,.b{display: flex;ALL: initial;border-radius: 2px;color: blue;}.a{margin: 10px 20px;font-size: 10px;}.b{margin: 10px 30px;font-size: 20px;}'
+);
+
+test(
     'should merge multiple media queries',
     processCSS,
     '@media print{h1{display:block}}@media print{h1{color:red}}',
