@@ -598,8 +598,34 @@ test(
 );
 
 test(
+    'should merge multiple media queries (2)',
+    processCSS,
+    '@media print{h1{display:block}}@media print{h1{color:red}h2{padding:10px}}',
+    '@media print{h1{display:block;color:red}}@media print{h2{padding:10px}}'
+);
+
+test(
     'should merge multiple media queries (uppercase)',
     processCSS,
     '@media print{h1{display:block}}@MEDIA print{h1{color:red}}',
     '@media print{h1{display:block;color:red}}@MEDIA print{}'
+);
+
+test(
+    'should merge multiple media queries (nested)',
+    processCSS,
+    '@media (min-width: 48rem){@supports (display: block) {.foo{display:block}}}@media (min-width: 48rem){@supports (display: block) {.foo{display:flex}}}',
+    '@media (min-width: 48rem){@supports (display: block) {.foo{display:block;display:flex}}}@media (min-width: 48rem){@supports (display: block) {}}'
+);
+
+test(
+    'should not merge multiple media (@supports at-rule)',
+    passthroughCSS,
+    '@media (min-width: 48rem){.foo{display:block}}@supports (display: flex){@media (min-width: 48rem){.foo{display:flex}}}'
+);
+
+test(
+    'should not merge multiple media (@supports at-rule)',
+    passthroughCSS,
+    '@supports (display: flex){@media (min-width: 48rem){.foo{display:flex}}}@media (min-width: 48rem){.foo{display:block}}'
 );
