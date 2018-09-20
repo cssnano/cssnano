@@ -151,6 +151,49 @@ test(
 );
 
 test(
+    'should normalize when property in uppercase',
+    processCSS,
+    'BACKGROUND-POSITION: center',
+    'BACKGROUND-POSITION: 50%'
+);
+
+test(
+    'should normalize when value in uppercase',
+    processCSS,
+    'BACKGROUND-POSITION: CENTER',
+    'BACKGROUND-POSITION: 50%'
+);
+
+test(
+    'should normalize when value in uppercase (2)',
+    processCSS,
+    'BACKGROUND-POSITION: CENTER, CENTER',
+    'BACKGROUND-POSITION: 50%, 50%'
+);
+
+test(
+    'should normalize when value in uppercase (3)',
+    processCSS,
+    'BACKGROUND-POSITION: LEFT BOTTOM, LEFT BOTTOM',
+    'BACKGROUND-POSITION: 0 100%, 0 100%'
+);
+
+
+test(
+    'should normalize when value in uppercase (4)',
+    processCSS,
+    'BACKGROUND-POSITION: BOTTOM LEFT, BOTTOM LEFT',
+    'BACKGROUND-POSITION: 0 100%, 0 100%'
+);
+
+test(
+    'should normalize when value in uppercase (5)',
+    processCSS,
+    'BACKGROUND-POSITION: CENTER LEFT, CENTER LEFT',
+    'BACKGROUND-POSITION: 0, 0'
+);
+
+test(
     'should use the postcss plugin api',
     usePostCSSPlugin,
     plugin()

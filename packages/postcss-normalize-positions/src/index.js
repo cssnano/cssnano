@@ -27,7 +27,7 @@ function transform (decl) {
             end: null,
         });
         arg.forEach((part, index) => {
-            const isPosition = ~directions.indexOf(part.value) || unit(part.value);
+            const isPosition = ~directions.indexOf(part.value.toLowerCase()) || unit(part.value);
             const len = relevant.length - 1;
             if (relevant[len].start === null && isPosition) {
                 relevant[len].start = index;
@@ -53,35 +53,36 @@ function transform (decl) {
         if (position.length > 3) {
             return;
         }
-        if (position.length === 1 || position[2].value === 'center') {
-            if (position[2]) {
+        const firstValue = position[0].value.toLowerCase();
+        const secondValue = position[2] && position[2].value
+            ? position[2].value.toLowerCase()
+            : null;
+        if (position.length === 1 || secondValue === 'center') {
+            if (secondValue) {
                 position[2].value = position[1].value = '';
             }
-            const {value} = position[0];
             const map = Object.assign({}, horizontal, {
                 center,
             });
-            if (has(map, value)) {
-                position[0].value = map[value];
+            if (has(map, firstValue)) {
+                position[0].value = map[firstValue];
             }
             return;
         }
-        if (position[0].value === 'center' && ~directions.indexOf(position[2].value)) {
+        if (firstValue === 'center' && ~directions.indexOf(secondValue)) {
             position[0].value = position[1].value = '';
-            const {value} = position[2];
-            if (has(horizontal, value)) {
-                position[2].value = horizontal[value];
+            if (has(horizontal, secondValue)) {
+                position[2].value = horizontal[secondValue];
             }
             return;
         }
-        if (has(horizontal, position[0].value) && has(vertical, position[2].value)) {
-            position[0].value = horizontal[position[0].value];
-            position[2].value = vertical[position[2].value];
+        if (has(horizontal, firstValue) && has(vertical, secondValue)) {
+            position[0].value = horizontal[firstValue];
+            position[2].value = vertical[secondValue];
             return;
-        } else if (has(vertical, position[0].value) && has(horizontal, position[2].value)) {
-            let first = position[0].value;
-            position[0].value = horizontal[position[2].value];
-            position[2].value = vertical[first];
+        } else if (has(vertical, firstValue) && has(horizontal, secondValue)) {
+            position[0].value = horizontal[secondValue];
+            position[2].value = vertical[firstValue];
             return;
         }
     });
