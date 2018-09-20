@@ -12,6 +12,13 @@ test(
 );
 
 test(
+    'should merge keyframe identifiers (2)',
+    processCSS,
+    '@keyframes a{0%{color:#fff}to{color:#000}}@KEYFRAMES b{0%{color:#fff}to{color:#000}}',
+    '@KEYFRAMES b{0%{color:#fff}to{color:#000}}'
+);
+
+test(
     'should merge multiple keyframe identifiers',
     processCSS,
     '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes b{0%{color:#fff}to{color:#000}}@keyframes c{0%{color:#fff}to{color:#000}}',
@@ -23,6 +30,13 @@ test(
     processCSS,
     '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes b{0%{color:#fff}to{color:#000}}div{animation:a .2s ease}',
     '@keyframes b{0%{color:#fff}to{color:#000}}div{animation:b .2s ease}'
+);
+
+test(
+    'should update relevant animation declarations (2)',
+    processCSS,
+    '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes b{0%{color:#fff}to{color:#000}}div{ANIMATION:a .2s ease}',
+    '@keyframes b{0%{color:#fff}to{color:#000}}div{ANIMATION:b .2s ease}'
 );
 
 test(
@@ -53,6 +67,13 @@ test(
 );
 
 test(
+    'should merge duplicated counter styles with the same name (2)',
+    processCSS,
+    '@counter-style a{system:extends decimal;suffix:"> "}@COUNTER-STYLE a{system:extends decimal;suffix:"> "}',
+    '@COUNTER-STYLE a{system:extends decimal;suffix:"> "}'
+);
+
+test(
     'should merge counter style identifiers',
     processCSS,
     '@counter-style a{system:extends decimal;suffix:"> "}@counter-style b{system:extends decimal;suffix:"> "}',
@@ -78,6 +99,13 @@ test(
     processCSS,
     '@counter-style a{system:extends decimal;suffix:"> "}@counter-style b{system:extends decimal;suffix:"> "}@counter-style c{system:extends decimal;suffix:"> "}ol{list-style:a}',
     '@counter-style c{system:extends decimal;suffix:"> "}ol{list-style:c}'
+);
+
+test(
+    'should update relevant list style declarations (3)',
+    processCSS,
+    '@counter-style a{system:extends decimal;suffix:"> "}@counter-style b{system:extends decimal;suffix:"> "}ol{LIST-STYLE:a}',
+    '@counter-style b{system:extends decimal;suffix:"> "}ol{LIST-STYLE:b}'
 );
 
 test(
