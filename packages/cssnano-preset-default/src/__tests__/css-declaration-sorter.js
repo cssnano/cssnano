@@ -63,3 +63,10 @@ test(
     'a{z-index:1;border-top:0;border:0}',
     'a{border:0;z-index:1}',
 );
+
+test.failing(
+    'do not move border properties until postcss-merge-longhand merges radius properties',
+    processCSS,
+    'a{border-radius:10px;border-bottom-left-radius:0}',
+    'a{border-radius:10px;border-bottom-left-radius:0}',
+)
