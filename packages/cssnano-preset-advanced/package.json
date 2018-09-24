@@ -12,7 +12,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "autoprefixer": "^8.0.0",
+    "autoprefixer": "^9.0.0",
     "cssnano-preset-default": "^4.0.0",
     "postcss-discard-unused": "^4.0.0",
     "postcss-merge-idents": "^4.0.0",
