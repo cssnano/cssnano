@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "dependencies": {
-    "postcss": "^6.0.0"
+    "postcss": "^7.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",

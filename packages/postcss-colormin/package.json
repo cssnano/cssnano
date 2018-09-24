@@ -37,7 +37,7 @@
     "browserslist": "^4.0.0",
     "color": "^3.0.0",
     "has": "^1.0.0",
-    "postcss": "^6.0.0",
+    "postcss": "^7.0.0",
     "postcss-value-parser": "^3.0.0"
   },
   "bugs": {

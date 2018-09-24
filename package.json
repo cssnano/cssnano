@@ -45,7 +45,7 @@
     "lerna": "^2.5.1",
     "mdast-util-heading-range": "^2.0.1",
     "nyc": "^12.0.2",
-    "postcss": "^6.0.0",
+    "postcss": "^7.0.0",
     "remark": "^9.0.0",
     "remark-behead": "^2.0.1",
     "remark-bookmarks": "^1.0.0",

@@ -24,7 +24,7 @@
     "cross-env": "^5.0.0"
   },
   "dependencies": {
-    "postcss": "^6.0.0"
+    "postcss": "^7.0.0"
   },
   "author": {
     "name": "Ben Briggs",

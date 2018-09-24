@@ -21,7 +21,7 @@
     "babel-cli": "^6.0.0",
     "cross-env": "^5.0.0",
     "postcss-discard-comments": "^4.0.0",
-    "postcss-simple-vars": "^4.0.0"
+    "postcss-simple-vars": "^5.0.1"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
@@ -34,7 +34,7 @@
     "browserslist": "^4.0.0",
     "caniuse-api": "^3.0.0",
     "cssnano-util-same-parent": "^4.0.0",
-    "postcss": "^6.0.0",
+    "postcss": "^7.0.0",
     "postcss-selector-parser": "^3.0.0",
     "vendors": "^1.0.0"
   },
