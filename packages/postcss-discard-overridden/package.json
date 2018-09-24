@@ -1,6 +1,6 @@
 {
   "name": "postcss-discard-overridden",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "PostCSS plugin to discard overridden @keyframes or @counter-style.",
   "main": "dist/index.js",
   "keywords": [

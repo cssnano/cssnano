@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-url",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Normalize URLs with PostCSS",
   "main": "dist/index.js",
   "files": [

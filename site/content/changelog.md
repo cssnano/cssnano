@@ -7,6 +7,27 @@ layout: Page
 
 
 
+## 4.1.1
+
+### Bug Fixes
+
+- `css-declaration-sorter` was removed from default prevent.
+- `postcss-normalize-timing-functions` doesn't lowercased property anymore.
+- `postcss-normalize-positons` now handles uppercase properties.
+- `postcss-normalize-url` now is case-insensitive.
+- `postcss-merge-idents` now is case-insensitive.
+- `postcss-merge-rules` now is case-insensitive.
+- `postcss-minify-selectors` now is case-insensitive.
+- `postcss-minify-font-values` now is case-insensitive.
+- `postcss-normalize-unicode` now has correct dependencies.
+- `postcss-minify-params` now has correct dependencies.
+
+### Other changes
+
+- `cssnano-preset-advanced` use Autoprefixer 9.
+- use PostCSS 7 in all plugins.
+
+
 ## 4.1.0
 
 ### Bug Fixes

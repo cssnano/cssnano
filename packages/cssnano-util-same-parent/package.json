@@ -1,6 +1,6 @@
 {
   "name": "cssnano-util-same-parent",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "main": "dist/index.js",
   "description": "Check that two PostCSS nodes share the same parent.",
   "scripts": {

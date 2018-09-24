@@ -1,3 +1,23 @@
+# 4.1.1
+
+## Bug Fixes
+
+* `css-declaration-sorter` was removed from default prevent.
+* `postcss-normalize-timing-functions` doesn't lowercased property anymore.
+* `postcss-normalize-positons` now handles uppercase properties.
+* `postcss-normalize-url` now is case-insensitive.
+* `postcss-merge-idents` now is case-insensitive.
+* `postcss-merge-rules` now is case-insensitive.
+* `postcss-minify-selectors` now is case-insensitive.
+* `postcss-minify-font-values` now is case-insensitive.
+* `postcss-normalize-unicode` now has correct dependencies.
+* `postcss-minify-params` now has correct dependencies.
+
+## Other changes
+
+* `cssnano-preset-advanced` use Autoprefixer 9.
+* use PostCSS 7 in all plugins.
+
 # 4.1.0
 
 ## Bug Fixes
@@ -121,20 +141,20 @@ the actual release.
 * Because of the new preset system, cssnano will not accept any transformation
   options; these must be set in the preset. The option names remain mostly the
   same, except some cases where "core" modules have been extracted out:
-  
+
   * `core` is now `normalizeWhitespace`.
   * `reduceBackgroundRepeat` is now `normalizeRepeatStyle`.
   * `reduceDisplayValues` is now `normalizeDisplayValues`.
   * `reducePositions` is now `normalizePositions`.
   * `reduceTimingFunctions` is now `normalizeTimingFunctions`.
   * `styleCache` is now `rawCache`.
-  
+
   When excluding transforms, we now have an `exclude` option (in 3.x this was
   named `disable`). Similarly, the `safe` option was removed; the defaults
   are now much less aggressive.
 * By default, the following transforms are no longer applied to any input CSS.
   You may see an increased output file size as a result:
-  
+
   * `autoprefixer`
   * `postcss-discard-unused`
   * `postcss-merge-idents`
