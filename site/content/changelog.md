@@ -7,6 +7,19 @@ layout: Page
 
 
 
+## 4.1.3
+
+### Other changes
+
+- `postcss-minify-font-values` now use PostCSS 7
+- `postcss-discard-duplicates` now use PostCSS 7
+
+
+## 4.1.2
+
+- `postcss-svgo` now handle DataURI with uppercase `data` value (`DATA:image/*;...`)
+
+
 ## 4.1.1
 
 ### Bug Fixes

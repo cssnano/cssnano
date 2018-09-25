@@ -1,6 +1,6 @@
 {
   "name": "postcss-discard-duplicates",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Discard duplicate rules in your CSS files with PostCSS.",
   "main": "dist/index.js",
   "files": [
@@ -19,7 +19,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "postcss": "^6.0.0"
+    "postcss": "^7.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
