@@ -1,3 +1,7 @@
+# 4.1.2
+
+* `postcss-svgo` now handle DataURI with uppercase `data` value (`DATA:image/*;...`)
+
 # 4.1.1
 
 ## Bug Fixes

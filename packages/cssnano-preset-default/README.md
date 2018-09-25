@@ -14,7 +14,6 @@
 
 -   [Plugins](#plugins)
 
-    -   [css-declaration-sorter (external)](#css-declaration-sorter-external)
     -   [cssnano-util-raw-cache](#cssnano-util-raw-cache)
     -   [postcss-calc (external)](#postcss-calc-external)
     -   [postcss-colormin](#postcss-colormin)
