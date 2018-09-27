@@ -16,7 +16,7 @@
     "cssnano-util-raw-cache": "^4.0.1",
     "postcss": "^7.0.0",
     "postcss-calc": "^6.0.2",
-    "postcss-colormin": "^4.0.0",
+    "postcss-colormin": "^4.0.2",
     "postcss-convert-values": "^4.0.1",
     "postcss-discard-comments": "^4.0.1",
     "postcss-discard-duplicates": "^4.0.2",

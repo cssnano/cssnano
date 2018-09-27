@@ -1,3 +1,10 @@
+# 4.1.4
+
+## Other changes
+
+* `css-declaration-sorter` now use PostCSS 7
+* `postcss-calc` now use PostCSS 7
+
 # 4.1.3
 
 ## Other changes
