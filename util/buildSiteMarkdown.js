@@ -56,6 +56,16 @@ function getPlugins (presets) {
     }, {usage: {}, presets: []});
 }
 
+function isDisabled(preset, name) {
+    const full = `${join(__dirname, '../packages')}/cssnano-preset-${preset}`;
+    const instance = require(full)();
+    const plugin = instance.plugins.find(entry => {
+        const n = pluginName(entry[0]);
+        return n === name;
+    });
+    return plugin && plugin[1] ? plugin[1].exclude : false;
+}
+
 function defaultFirst (presets) {
     const index = presets.indexOf('default');
     if (index > 0) {
@@ -86,6 +96,9 @@ function optimisationsTable (presets, plugins) {
                 ])]),
                 ...plugins.presets.map(preset => {
                     if (~data.indexOf(preset)) {
+                        if (isDisabled(preset, header)) {
+                            return u('tableCell', [u('text', 'disabled')]);
+                        }
                         return u('tableCell', [u('text', '✅')]);
                     } else {
                         return u('tableCell', [u('text', '❌')]);

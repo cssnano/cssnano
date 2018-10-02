@@ -24,8 +24,8 @@
         transition: all 0.2s;
 
         &:hover {
-        opacity: 1;
-        color: color-mod(var(--brandColorComplement) l(- 5%));
+            opacity: 1;
+            color: color-mod(var(--brandColorComplement) l(-5%));
         }
     }
 

@@ -23,6 +23,7 @@ module.exports = {
                 },
             },
         }),
+        require("postcss-color-mod-function")
         // require("postcss-reporter")(),
         // ...!config.production ? [
         //   require("postcss-browser-reporter")(),
