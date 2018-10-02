@@ -497,3 +497,21 @@ test(
     passthroughCSS,
     'h1{border:6px solid red;border-top:6px solid var(--mycolor);}',
 );
+
+test(
+    'Should correctly merge borders with custom properties (#619) (1)',
+    passthroughCSS,
+    'h1{border:1px solid;border-color:var(--color-var)}',
+);
+
+test(
+    'Should correctly merge borders with custom properties (#619) (2)',
+    passthroughCSS,
+    'h1{border-left:1px solid;border-left-color:var(--color-var)}',
+);
+
+test(
+    'Should correctly merge borders with custom properties (#619) (3)',
+    passthroughCSS,
+    'h1{border-color:red green blue magenta;border-top-color:var(--color-var)}',
+);

@@ -198,7 +198,7 @@ function merge (rule) {
             }
         );
     });
-    
+
     // border-trbl-wsc -> border-wsc
     wsc.forEach(style => {
         const prop = borderProperty(style);
@@ -354,6 +354,82 @@ function merge (rule) {
             rules.forEach(remove);
             return true;
         }
+    });
+    
+    // border-trbl-wsc + border-trbl (custom prop) -> border-trbl + border-trbl-wsc (custom prop)
+    directions.forEach(direction => {
+        wsc.forEach((style, i) => {
+            const prop = `${direction}-${style}`;
+            mergeRules(
+                rule,
+                [direction, prop],
+                (rules, lastNode) => {
+                    if (lastNode.prop !== direction) {
+                        return;
+                    }
+    
+                    const values = parseWsc(lastNode.value);
+                    if (!isValidWsc(values)) {
+                        return;
+                    }
+    
+                    const wscProp = rules.filter(r => r !== lastNode)[0];
+                    if (!isValueCustomProp(values[i]) || isCustomProp(wscProp)) {
+                        return;
+                    }
+    
+                    const wscValue = values[i];
+                    values[i] = wscProp.value;
+    
+                    if (canMerge(rules, false) && !rules.some(detect)) {
+                        insertCloned(lastNode.parent, lastNode, {
+                            prop,
+                            value: wscValue,
+                        });
+                        lastNode.value = minifyWsc(values);
+                        wscProp.remove();
+                        return true;
+                    }
+                }
+            );
+        });
+    });
+
+    // border-wsc + border (custom prop) -> border + border-wsc (custom prop)
+    wsc.forEach((style, i) => {
+        const prop = borderProperty(style);
+        mergeRules(
+            rule,
+            ['border', prop],
+            (rules, lastNode) => {
+                if (lastNode.prop !== 'border') {
+                    return;
+                }
+
+                const values = parseWsc(lastNode.value);
+                if (!isValidWsc(values)) {
+                    return;
+                }
+
+                const wscProp = rules.filter(r => r !== lastNode)[0];
+                if (!isValueCustomProp(values[i]) || isCustomProp(wscProp)) {
+                    return;
+                }
+
+                const wscValue = values[i];
+                values[i] = wscProp.value;
+
+                if (canMerge(rules, false) && !rules.some(detect)) {
+                    insertCloned(lastNode.parent, lastNode, {
+                        prop,
+                        value: wscValue,
+                    });
+                    lastNode.value = minifyWsc(values);
+                    wscProp.remove();
+                    return true;
+                }
+            }
+        );
     });
     
     // optimize border-trbl
