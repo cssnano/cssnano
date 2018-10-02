@@ -82,6 +82,17 @@ test('should be able to exclude plugins', t => {
     });
 });
 
+test('should be able to include plugins', t => {
+    const preset = [
+        'advanced',
+        {zindex: true},
+    ];
+
+    return cssnano.process(`h1{z-index:10}`, {}, {preset}).then(result => {
+        t.is(result.css, `h1{z-index:1}`);
+    });
+});
+
 test('should be able to exclude plugins (exclude syntax)', t => {
     const preset = [
         'advanced',
