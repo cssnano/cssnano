@@ -56,7 +56,7 @@ function getPlugins (presets) {
     }, {usage: {}, presets: []});
 }
 
-function isDisabled(preset, name) {
+function isDisabled (preset, name) {
     const full = `${join(__dirname, '../packages')}/cssnano-preset-${preset}`;
     const instance = require(full)();
     const plugin = instance.plugins.find(entry => {
