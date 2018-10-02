@@ -218,6 +218,12 @@ test(
 );
 
 test(
+    'Should not merge redundant values if declarations are of different importance (#618)',
+    passthroughCSS,
+    'h1{border:1px solid #3060b1;border-bottom:1px solid #3060b1 !important}',
+);
+
+test(
     'should merge redundant border-spacing values',
     processCSS,
     'h1{border-spacing:10px 10px;}',

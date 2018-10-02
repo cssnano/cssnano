@@ -75,6 +75,10 @@ function diffingProps (values, nextValues) {
 }
 
 function mergeRedundant ({values, nextValues, decl, nextDecl, index}) {
+    if (!canMerge([decl, nextDecl])) {
+        return;
+    }
+
     if (detect(decl) || detect(nextDecl)) {
         return;
     }
