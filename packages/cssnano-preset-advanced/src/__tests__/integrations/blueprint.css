@@ -1,7 +1,7 @@
-html{margin:0;padding:0;border:0}
+html{padding:0;border:0;font-size:100.01%}
 a,abbr,acronym,address,article,aside,blockquote,body,caption,code,dd,del,dfn,dialog,div,dl,dt,em,fieldset,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,iframe,img,label,legend,li,nav,object,ol,p,pre,q,section,span,table,tbody,td,tfoot,th,thead,tr,ul{margin:0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline}
 article,aside,details,dialog,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}
-body{line-height:1.5}
+body{line-height:1.5;font-size:75%;color:#222;background:#fff;font-family:Helvetica Neue,Arial,Helvetica,sans-serif}
 table{border-collapse:separate;border-spacing:0}
 caption,td,th{text-align:left;font-weight:400;float:none!important}
 table,td,th{vertical-align:middle}
@@ -9,16 +9,15 @@ blockquote:after,blockquote:before,q:after,q:before{content:""}
 blockquote,q{quotes:"" ""}
 a img{border:none}
 :focus{outline:0}
-html{font-size:100.01%}
-body{font-size:75%;color:#222;background:#fff;font-family:Helvetica Neue,Arial,Helvetica,sans-serif}
 h1,h2,h3,h4,h5,h6{font-weight:400;color:#111}
-h1{font-size:3em;line-height:1;margin-bottom:.5em}
+h1{font-size:3em;margin-bottom:.5em}
 h2{font-size:2em;margin-bottom:.75em}
-h3{font-size:1.5em;line-height:1;margin-bottom:1em}
+h1,h3{line-height:1}
+h3{font-size:1.5em;margin-bottom:1em}
 h4{font-size:1.2em;line-height:1.25;margin-bottom:1.25em}
 h5{margin-bottom:1.5em}
 h5,h6{font-size:1em;font-weight:700}
-h1 img,h2 img,h3 img,h4 img,h5 img,h6 img{margin:0}
+h1 img,h2 img,h3 img,h4 img,h5 img,h6 img,html{margin:0}
 p{margin:0 0 1.5em}
 .left{float:left!important}
 p .left{margin:1.5em 1.5em 1.5em 0;padding:0}
@@ -26,12 +25,11 @@ p .left{margin:1.5em 1.5em 1.5em 0;padding:0}
 p .right{margin:1.5em 0 1.5em 1.5em;padding:0}
 a:focus,a:hover{color:#09f}
 a{color:#06c;text-decoration:underline}
-blockquote{margin:1.5em;color:#666;font-style:italic}
-dfn,strong{font-weight:700}
-dfn,em{font-style:italic}
+blockquote{margin:1.5em;color:#666}
+dfn,dl dt,strong,th{font-weight:700}
+address,blockquote,dfn,em,tfoot{font-style:italic}
 sub,sup{line-height:0}
 abbr,acronym{border-bottom:1px dotted #666}
-address{margin:0 0 1.5em;font-style:italic}
 del{color:#666}
 pre{margin:1.5em 0;white-space:pre}
 code,pre,tt{font:1em andale mono,lucida console,monospace;line-height:1.5}
@@ -39,15 +37,12 @@ li ol,li ul{margin:0}
 ol,ul{margin:0 1.5em 1.5em 0;padding-left:1.5em}
 ul{list-style-type:disc}
 ol{list-style-type:decimal}
-dl{margin:0 0 1.5em}
-dl dt{font-weight:700}
+address,dl{margin:0 0 1.5em}
 dd{margin-left:1.5em}
 table{margin-bottom:1.4em;width:100%}
-th{font-weight:700}
 thead th{background:#c3d9ff}
 caption,td,th{padding:4px 10px 4px 5px}
 tbody tr.even td,tbody tr:nth-child(2n) td{background:#e5ecf9}
-tfoot{font-style:italic}
 caption{background:#eee}
 .small{font-size:.8em;margin-bottom:1.875em;line-height:1.875em}
 .large{font-size:1.2em;line-height:2.5em;margin-bottom:1.25em}
@@ -61,9 +56,9 @@ caption{background:#eee}
 .last{padding-right:0}
 .top{margin-top:0;padding-top:0}
 .bottom{margin-bottom:0;padding-bottom:0}
-label{font-weight:700}
 fieldset{padding:0 1.4em 1.4em;margin:0 0 1.5em;border:1px solid #ccc}
-legend{font-weight:700;font-size:1.2em;margin-top:-.2em;margin-bottom:1em}
+label,legend{font-weight:700}
+legend{font-size:1.2em;margin-top:-.2em;margin-bottom:1em}
 #IE8#HACK,fieldset{padding-top:1.4em}
 #IE8#HACK,legend{margin-top:0;margin-bottom:0}
 input.text,input.title,input[type=email],input[type=password],input[type=text],input[type=url],textarea{background-color:#fff;border:1px solid #bbb;color:#000}

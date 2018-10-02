@@ -26,9 +26,9 @@ abbr[title]{border-bottom:1px solid #dcdcdc;cursor:help;text-decoration:none}
 b,strong{font-weight:inherit;font-weight:bolder}
 dfn{font-style:italic}
 mark{background-color:#ff0;color:#000}
-progress{vertical-align:baseline}
 small,sub,sup{font-size:83.33333%}
-sub,sup{line-height:0;position:relative;vertical-align:baseline}
+progress,sub,sup{vertical-align:baseline}
+sub,sup{line-height:0;position:relative}
 sub{bottom:-.25em;-webkit-font-feature-settings:"subs" 1;font-feature-settings:"subs" 1}
 sup{top:-.25em;-webkit-font-feature-settings:"sups" 1;font-feature-settings:"sups" 1}
 ::-moz-selection{background-color:#ebe1d3;text-shadow:none}
@@ -37,11 +37,12 @@ audio,canvas,iframe,img,svg,video{vertical-align:middle}
 img{border-style:none}
 svg{fill:currentColor}
 svg:not(:root){overflow:hidden}
-a{background-color:transparent;-webkit-text-decoration-skip:objects;color:#c65146;text-decoration:none;-webkit-transition-duration:.15s;transition-duration:.15s}
+a{-webkit-text-decoration-skip:objects;color:#c65146;text-decoration:none;-webkit-transition-duration:.15s;transition-duration:.15s}
 a:focus,a:hover{color:#7f2f27}
 a:hover{outline-width:0}
 table{border-collapse:collapse;border-spacing:0}
-input,select,textarea{background-color:transparent;border-style:none;color:inherit;font:inherit}
+a,input,select,textarea{background-color:transparent}
+input,select,textarea{border-style:none;color:inherit;font:inherit}
 input:focus,select:focus,textarea:focus{outline:2px solid #2b90d9}
 button,input,input[type=submit]{overflow:visible}
 button,input[type=submit],select{text-transform:none}
@@ -190,10 +191,9 @@ table caption{font-size:.83333rem;font-style:italic;line-height:3rem;text-align:
   abbr[title]:after{content:" (" attr(title) ")"}
   a:after,a[href^="#"]:after,a[href^="javascript:"]:after{content:""}
   code,pre{background-color:transparent;border:1px solid #dcdcdc}
-  blockquote,code,pre{page-break-inside:avoid}
   blockquote{border:none}
   thead{display:table-header-group}
-  img,tr{page-break-inside:avoid}
+  blockquote,code,img,pre,tr{page-break-inside:avoid}
   ol{padding-left:1.25em}
   ul{padding-left:0;list-style:none}
   ul ul,ul ul ul{padding-left:1.5em}

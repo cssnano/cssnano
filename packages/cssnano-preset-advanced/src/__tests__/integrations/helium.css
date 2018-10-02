@@ -195,7 +195,7 @@ img{display:block;max-width:100%}
 .span12{width:100%}
 html{font-size:100%;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
 body{color:#444;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;font-size-adjust:none;line-height:21px}
-dl,figure,hgroup,ol,p,table,ul{margin:0 0 14px}
+dd,dl,figure,hgroup,ol,p,table,ul{margin:0 0 14px}
 h1,h2,h3,h4,h5,h6{margin:0;color:#222;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-weight:600;line-height:1;text-rendering:optimizelegibility}
 h1 a,h2 a,h3 a,h4 a,h5 a,h6 a{color:#222}
 h1,h2{margin:0 0 21px}
@@ -211,11 +211,8 @@ ol ol,ol ul,ul ol,ul ul{margin-bottom:0}
 ol ul,ul ul{list-style:circle}
 ul{list-style:disc}
 ol{list-style:decimal}
-dl{margin:0 0 14px}
-dt{font-weight:700}
-dd{margin:0 0 14px}
+dt,table th{font-weight:700}
 table{width:100%;border-top:1px solid rgba(0,0,0,.13)}
-table th{font-weight:700}
 table td,table th{padding:7px;border-bottom:1px solid rgba(0,0,0,.13);text-align:left}
 table td:first-child,table th:first-child{padding-left:0}
 table td:last-child,table th:last-child{padding-right:0}

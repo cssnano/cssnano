@@ -6,19 +6,67 @@ import ensureCompatibility from './lib/ensureCompatibility';
 
 const prefixes = vendors.map(v => `-${v}-`);
 
-function intersect (a, b, not) {
-    return a.filter(c => {
-        const index = ~b.indexOf(c);
-        return not ? !index : index;
-    });
+function noop () { }
+
+function splitProp (decl) {
+    const parts = decl.prop.split('-');
+    let base, rest;
+    // Treat vendor prefixed properties as if they were unprefixed;
+    // moving them when combined with non-prefixed properties can
+    // cause issues. e.g. moving -webkit-background-clip when there
+    // is a background shorthand definition.
+    if (decl.prop[0] === '-') {
+        base = parts[2];
+        rest = parts.slice(3);
+    } else {
+        base = parts[0];
+        rest = parts.slice(1);
+    }
+    return [base, rest];
 }
 
+function isConflictingProp (propA, propB) {
+    if (propA.type !== propB.type) {
+        return false;
+    }
 
+    if (declsAreEqual(propA, propB)) {
+        return true; 
+    }
+
+    const a = splitProp(propA);
+    const b = splitProp(propB);
+
+    if (a[0] !== b[0]) {
+        return false;
+    }
+
+    if (a[1].length !== b[1].length) {
+        return true;
+    }
+
+    const length = a[1].length - 1;
+    const intersects = a[1].slice(0, length).every((part, i) => part === b[1][i]);
+
+    if (!intersects) {
+        return true;
+    }
+
+    if (a[1][length] !== b[1][length]) {
+        return false;
+    }
+
+    return propA.value !== propB.value;
+}
+
+function hasConflicts (decl, decls) {
+    return decls.some(prop => isConflictingProp(prop, decl));
+}
+
+const filterPrefixes = selector => prefixes.filter(prefix => ~selector.indexOf(prefix));
 // Internet Explorer use :-ms-input-placeholder.
 // Microsoft Edge use ::-ms-input-placeholder.
 const findMsInputPlaceholder = selector => ~selector.search(/-ms-input-placeholder/i);
-const different = (a, b) => intersect(a, b, true).concat(intersect(b, a, true));
-const filterPrefixes = selector => intersect(prefixes, selector);
 
 function sameVendor (selectorsA, selectorsB) {
     let same = selectors => selectors.map(filterPrefixes).join();
@@ -46,163 +94,237 @@ function canMerge (ruleA, ruleB, browsers, compatibilityCache) {
     return parent && (selectors.every(noVendor) || sameVendor(a, b));
 }
 
-const getDecls = rule => rule.nodes && rule.nodes.map(String);
+function trimValue (value) {
+    return value ? value.trim() : value;
+}
+
+function declsAreEqual (a, b) {
+    if (a.type !== b.type || a.type !== 'decl') {
+        return false;
+    }
+
+    if (a.prop !== b.prop || a.value !== b.value) {
+        return false;
+    }
+
+    if (a.raws && trimValue(a.raws.before) !== trimValue(b.raws.before)) {
+        return false;
+    }
+    
+    return true;
+}
+
+function ruleNodesAreEqual (a, b) {
+    if (a.nodes.length !== b.nodes.length) {
+        return false;
+    }
+
+    return a.nodes.every((decl, i) => declsAreEqual(decl, b.nodes[i]));
+}
+
 const joinSelectors = (...rules) => rules.map(s => s.selector).join();
 
-function ruleLength (...rules) {
-    return rules.map(r => r.nodes.length ? String(r) : '').join('').length;
+function difference (a, b) {
+    return a.filter(x => !~b.indexOf(x));
 }
 
-function splitProp (prop) {
-    const parts = prop.split('-');
-    let base, rest;
-    // Treat vendor prefixed properties as if they were unprefixed;
-    // moving them when combined with non-prefixed properties can
-    // cause issues. e.g. moving -webkit-background-clip when there
-    // is a background shorthand definition.
-    if (prop[0] === '-') {
-        base = parts[2];
-        rest = parts.slice(3);
-    } else {
-        base = parts[0];
-        rest = parts.slice(1);
+function intersect (nodesA, nodesB) {
+    if (!nodesA || !nodesB || !nodesA.length || !nodesB.length) {
+        return [];
     }
-    return [base, rest];
+
+    let nodes = nodesA.filter(a => {
+        let filtered = nodesB.filter(b => declsAreEqual(a, b));
+        let diff = difference(nodesB, filtered);
+        return filtered.length && filtered.every(d => !hasConflicts(d, diff));
+    });
+    let diff = difference(nodesA, nodes);
+    return nodes.length && nodes.filter(decl => !hasConflicts(decl, diff));    
 }
 
-function isConflictingProp (propA, propB) {
-    if (propA === propB) {
-        return true;
+function ruleLength (rule, ignore = []) {
+    let nodes = rule.nodes.filter(d => !~ignore.indexOf(d) && d.type === 'decl');
+    if (!nodes.length) {
+        return 0;
     }
-    const a = splitProp(propA);
-    const b = splitProp(propB);
-    return a[0] === b[0] && a[1].length !== b[1].length;
+
+    let length = rule.selector.length + 2;
+    for (let node of nodes) {
+        length += node.prop.length + node.value.length + 2;
+    }
+
+    return length;
 }
 
-function hasConflicts (declProp, notMoved) {
-    return notMoved.some(prop => isConflictingProp(prop, declProp));
-}
-
-function partialMerge (first, second) {
-    let intersection = intersect(getDecls(first), getDecls(second));
-    if (!intersection.length) {
-        return second;
-    }
-    let nextRule = second.next();
-    if (nextRule && nextRule.type === 'rule' && canMerge(second, nextRule)) {
-        let nextIntersection = intersect(getDecls(second), getDecls(nextRule));
-        if (nextIntersection.length > intersection.length) {
-            first = second; second = nextRule; intersection = nextIntersection;
-        }
-    }
-    const recievingBlock = second.clone();
-    recievingBlock.selector = joinSelectors(first, second);
-    recievingBlock.nodes = [];
-    const difference = different(getDecls(first), getDecls(second));
-    const filterConflicts = (decls, intersectn) => {
-        let willNotMove = [];
-        return decls.reduce((willMove, decl) => {
-            let intersects = ~intersectn.indexOf(decl);
-            let prop = decl.split(':')[0];
-            let base = prop.split('-')[0];
-            let canMove = difference.every(d => d.split(':')[0] !== base);
-            if (intersects && canMove && !hasConflicts(prop, willNotMove)) {
-                willMove.push(decl);
-            } else {
-                willNotMove.push(prop);
-            }
-            return willMove;
-        }, []);
-    };
-    const containsAllDeclaration = (intersectionList) => {
-        return intersectionList.some(declaration => {
-            return declaration.split(':')[0].toLowerCase() === 'all';
-        });
-    };
-    intersection = filterConflicts(getDecls(first).reverse(), intersection);
-    intersection = filterConflicts((getDecls(second)), intersection);
-
-    // Rules with "all" declarations must be on top
-    if (containsAllDeclaration(intersection)) {
-        second.parent.insertBefore(first, recievingBlock);
-    } else {
-        second.parent.insertBefore(second, recievingBlock);
-    }
-
-    const firstClone = first.clone();
-    const secondClone = second.clone();
-    const moveDecl = callback => {
-        return decl => {
-            if (~intersection.indexOf(String(decl))) {
-                callback.call(this, decl);
-            }
-        };
-    };
-    firstClone.walkDecls(moveDecl(decl => {
-        decl.remove();
-        recievingBlock.append(decl);
-    }));
-    secondClone.walkDecls(moveDecl(decl => decl.remove()));
-    const merged = ruleLength(firstClone, recievingBlock, secondClone);
-    const original = ruleLength(first, second);
-    if (merged < original) {
-        first.replaceWith(firstClone);
-        second.replaceWith(secondClone);
-        [firstClone, recievingBlock, secondClone].forEach(r => {
-            if (!r.nodes.length) {
-                r.remove();
-            }
-        });
-        if (!secondClone.parent) {
-            return recievingBlock;
-        }
-        return secondClone;
-    } else {
-        recievingBlock.remove();
-        return second;
-    }
-}
+const allSelector = decl => decl.type === 'decl' && decl.prop && decl.prop.toLowerCase() === 'all';
+const containsAllDeclaration = rule => rule.nodes.some(allSelector);
 
 function selectorMerger (browsers, compatibilityCache) {
-    let cache = null;
-    return function (rule) {
-        // Prime the cache with the first rule, or alternately ensure that it is
-        // safe to merge both declarations before continuing
-        if (!cache || !canMerge(rule, cache, browsers, compatibilityCache)) {
-            cache = rule;
+    function partialMerge (rule, prev) {
+        let ruleNodes = rule.nodes;
+
+        if (containsAllDeclaration(rule)) {
+            ruleNodes = ruleNodes.slice(ruleNodes.findIndex(allSelector) + 1);
+        }
+        let prevNodes = prev.nodes;
+        if (containsAllDeclaration(prev)) {
+            prevNodes = prevNodes.slice(prevNodes.findIndex(allSelector) + 1);
+        }
+
+        let intersection = intersect(ruleNodes, prevNodes);
+
+        if (!intersection.length) {
             return;
         }
-        // Ensure that we don't deduplicate the same rule; this is sometimes
-        // caused by a partial merge
-        if (cache === rule) {
-            cache = rule;
+
+        const origLength = ruleLength(prev) + ruleLength(rule);
+
+        const newRule = rule.clone();
+        newRule.selector = joinSelectors(prev, rule);
+        newRule.nodes = [];
+
+        intersection = intersect(prevNodes, intersection).concat(intersection);
+        
+        intersection.forEach(decl => {
+            const alreadyExists = newRule.nodes.some(node => declsAreEqual(node, decl));
+            if (alreadyExists) {
+                return;
+            }
+
+            newRule.append(decl.clone());
+        });
+
+        const newLength = ruleLength(prev, intersection) + ruleLength(newRule) + ruleLength(rule, intersection);
+        
+        if (newLength < origLength) {
+            intersection.forEach(decl => decl.remove());
+
+            if (containsAllDeclaration(prev) || containsAllDeclaration(rule)) {
+                rule.after(newRule);
+            }
+            else {
+                rule.before(newRule);
+            }
+
+            if (!rule.nodes.length) {
+                rule.remove();
+            }
+
+            if (!prev.nodes.length) {
+                prev.remove();
+            }
+        }
+    }
+
+    function handleAtRule(atRule) {
+        const index = atRule.parent.nodes.indexOf(atRule);
+        const prev = atRule.parent.nodes[index - 1];
+        walkChildren(atRule);
+
+        if (!prev || prev.type !== 'atrule') {
             return;
         }
+
+        if (atRule.name.toLowerCase() !== 'media' || prev.name.toLowerCase() !== 'media') {
+            return;
+        }
+
+        if (atRule.params !== prev.params) {
+            return;
+        }
+        atRule.nodes.forEach(node => prev.append(node.clone()));
+        atRule.remove();
+    }
+
+    // classes, identifiers, attributes, functions
+    function isComplexSelector(rule) {
+        return /[\.#\[\(]/.test(rule.selector);
+    }
+
+    function handleRule (rule) {
+        if (!rule.parent) {
+            return;
+        }
+
+        walkChildren(rule);
+        
+        let index = rule.parent.nodes.indexOf(rule);
+
+
+        while (rule.parent && ++index < rule.parent.nodes.length) {
+            const next = rule.parent.nodes[index];
+
+            if (!next || next.type !== 'rule' || !canMerge(next, rule, browsers, compatibilityCache)) {
+                break;
+            }
+
+            const intermediates = rule.parent.nodes.slice(rule.parent.nodes.indexOf(rule), index - 1);
+            if (intermediates.some(node => isComplexSelector(node) && node.nodes.some(d => hasConflicts(d, next.nodes)))) {
+                break;
+            }
+
+            mergeRule(next, rule);
+        }
+    }
+
+    function mergeRule(rule, prev) {
         // Merge when declarations are exactly equal
         // e.g. h1 { color: red } h2 { color: red }
-        if (getDecls(rule).join(';') === getDecls(cache).join(';')) {
-            rule.selector = joinSelectors(cache, rule);
-            cache.remove();
-            cache = rule;
-            return;
-        }
-        // Merge when both selectors are exactly equal
-        // e.g. a { color: blue } a { font-weight: bold }
-        if (cache.selector === rule.selector) {
-            const cached = getDecls(cache);
-            rule.walk(decl => {
-                if (~cached.indexOf(String(decl))) {
-                    return decl.remove();
-                }
-                cache.append(decl);
-            });
+        if (ruleNodesAreEqual(rule, prev)) {
+            prev.selector = joinSelectors(prev, rule);
             rule.remove();
             return;
         }
-        // Partial merge: check if the rule contains a subset of the last; if
-        // so create a joined selector with the subset, if smaller.
-        cache = partialMerge(cache, rule);
+
+        
+        // Merge when both selectors are exactly equal
+        // e.g. a { color: blue } a { font-weight: bold }
+        if (rule.selector === prev.selector) {
+            rule.walk(decl => {
+                const containsDecl = prev.nodes.some(d => declsAreEqual(decl, d));
+                if (containsDecl) {
+                    return;
+                }
+
+                prev.append(decl);
+            });
+
+            rule.remove();
+            return;
+        }
+
+        partialMerge(rule, prev);
+    }
+
+    const handler = {
+        rule: handleRule,
+        atrule: handleAtRule,
+        decl: noop,
+        comment: noop,
     };
+
+    function walkChildren (root) {
+        if (!root.nodes || !root.nodes.length) {
+            return;
+        }
+
+        let index = root.nodes.length;
+        while (index-- > 0) {
+            const lastNode = root.nodes[index];
+            const nodeCount = root.nodes.length;
+
+            if (lastNode && lastNode.type) {
+                handler[lastNode.type](lastNode);
+            }
+
+            const offset = root.nodes.length - nodeCount;
+            if (offset > 0) {
+                index += offset;
+            }
+        }
+    }
+
+    return walkChildren;
 }
 
 export default postcss.plugin('postcss-merge-rules', () => {
@@ -214,6 +336,7 @@ export default postcss.plugin('postcss-merge-rules', () => {
             env: resultOpts.env,
         });
         const compatibilityCache = {};
-        css.walkRules(selectorMerger(browsers, compatibilityCache));
+        const mergeRules = selectorMerger(browsers, compatibilityCache);
+        mergeRules(css);
     };
 });

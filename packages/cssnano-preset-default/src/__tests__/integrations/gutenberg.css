@@ -1,18 +1,15 @@
 /*! normalize-scss | MIT/GPLv2 License | bit.ly/normalize-scss */
-html{font-family:Helvetica Neue,Helvetica,Arial,sans-serif;line-height:1.15;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}
+html{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}
 body{margin:0}
-article,aside,footer,header,nav,section{display:block}
+article,aside,figcaption,figure,footer,header,main,nav,section{display:block}
 h1{font-size:2em;margin:.67em 0}
-figcaption,figure{display:block}
 figure{margin:1em 40px}
 hr{box-sizing:content-box;overflow:visible}
-main{display:block}
-pre{font-family:monospace,monospace;font-size:1em}
+code,kbd,pre,samp{font-family:monospace,monospace;font-size:1em}
 a{background-color:transparent;-webkit-text-decoration-skip:objects}
 a:active,a:hover{outline-width:0}
 abbr[title]{border-bottom:none;text-decoration:underline;text-decoration:underline dotted}
 b,strong{font-weight:inherit;font-weight:bolder}
-code,kbd,samp{font-family:monospace,monospace;font-size:1em}
 dfn{font-style:italic}
 mark{background-color:#ff0;color:#000}
 small{font-size:80%}
@@ -23,7 +20,8 @@ audio,video{display:inline-block}
 audio:not([controls]){display:none;height:0}
 img{border-style:none}
 svg:not(:root){overflow:hidden}
-button,input,optgroup,select,textarea{font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:100%;line-height:1.15;margin:0}
+button,html,input,optgroup,select,textarea{font-family:Helvetica Neue,Helvetica,Arial,sans-serif;line-height:1.15}
+button,input,optgroup,select,textarea{font-size:100%;margin:0}
 button{overflow:visible}
 button,select{text-transform:none}
 [type=reset],[type=submit],button,html [type=button]{-webkit-appearance:button}
@@ -36,53 +34,50 @@ input{overflow:visible}
 [type=search]::-webkit-search-cancel-button,[type=search]::-webkit-search-decoration{-webkit-appearance:none}
 ::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}
 fieldset{border:1px solid silver;margin:0 2px;padding:.35em .625em .75em}
-legend{box-sizing:border-box;display:table;max-width:100%;padding:0;color:inherit;white-space:normal}
-progress{display:inline-block;vertical-align:baseline}
+legend{display:table;max-width:100%;padding:0;color:inherit;white-space:normal}
+progress{vertical-align:baseline}
 textarea{overflow:auto}
-details{display:block}
+details,menu{display:block}
 summary{display:list-item}
-menu{display:block}
-canvas{display:inline-block}
+canvas,progress{display:inline-block}
 [hidden],template{display:none}
-*{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box}
+*,legend{box-sizing:border-box}
+*{-webkit-box-sizing:border-box;-moz-box-sizing:border-box}
 *,:after,:before,blockquote:first-letter,blockquote:first-line,div:first-letter,div:first-line,li:first-letter,li:first-line,p:first-letter,p:first-line{background:transparent!important;box-shadow:none!important;text-shadow:none!important}
-html{font-size:16px;margin:0;padding:0}
-body{color:#000!important;background:#fff!important;font-size:1rem;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;line-height:1.5;margin:0 auto;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+html{font-size:16px;margin:0}
+body{background:#fff!important;line-height:1.5;margin:0 auto;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;padding:2.54cm 1.8cm}
 blockquote,dl,ol,p,table,ul{margin-top:0;margin-bottom:1.5rem}
-ol:last-child,p:last-child,ul:last-child{margin-bottom:0}
-h1,h2,h3,h4,h5,h6{line-height:1.2;margin-top:0;margin-bottom:.75rem;color:#000;font-family:Helvetica Neue,Helvetica,Arial,sans-serif}
+blockquote ol:last-child,blockquote p:last-child,blockquote ul:last-child,ol:last-child,p:last-child,ul:last-child{margin-bottom:0}
+body,h1,h2,h3,h4,h5,h6{color:#000!important;font-family:Helvetica Neue,Helvetica,Arial,sans-serif}
+h1,h2,h3,h4,h5,h6{line-height:1.2;margin-top:0;margin-bottom:.75rem;page-break-after:avoid}
 h1{font-size:2.5rem}
 h2{font-size:2rem}
 h3{font-size:1.75rem}
 h4{font-size:1.5rem}
 h5{font-size:1.25rem}
-h6{font-size:1rem}
-a,a:visited{color:#000;text-decoration:underline;word-wrap:break-word}
+body,h6{font-size:1rem}
+a,a:visited{color:#000;text-decoration:underline}
 table{border-collapse:collapse}
 thead{display:table-header-group}
 table,td,th{border-bottom:1px solid #000}
 td,th{padding:8px 16px}
 code,kbd,pre{font-family:Menlo,Monaco,Consolas,Courier New,monospace;font-size:85%;border:1px solid #bbb}
 code,kbd{padding:3px}
-pre{padding:10px 12px;margin-bottom:1.5rem}
-pre code,pre kbd{border:0}
+a,a:visited,pre{word-wrap:break-word}
+pre{padding:10px 12px;margin-bottom:1.5rem;white-space:pre-wrap!important}
 blockquote{border:0;border-left:5px solid #bbb;margin-left:1px;padding:12px 1.5rem}
 blockquote:first-child{margin-top:0}
-blockquote ol:last-child,blockquote p:last-child,blockquote ul:last-child{margin-bottom:0}
 blockquote footer{display:block;font-size:80%}
-img{display:block;max-width:100%!important;vertical-align:middle}
-hr,img{border:0}
-hr{border-bottom:2px solid #bbb;height:0;padding:0;margin:2.25rem 0}
+img,pre code,pre kbd{border:0}
+img{display:block;max-width:100%!important;vertical-align:middle;page-break-before:auto;page-break-after:auto}
+hr,html{padding:0}
+hr{border:0;border-bottom:2px solid #bbb;height:0;margin:2.25rem 0}
 dt{font-weight:700}
 dd{margin:0 0 .75rem}
 abbr[title],acronym[title]{border:0;text-decoration:0}
-a,blockquote,code,figure,hr,li,ol,pre,table,tr,ul{page-break-inside:avoid}
+a,blockquote,code,figure,h1,h2,h3,h4,h5,h6,hr,img,li,ol,pre,table,tr,ul{page-break-inside:avoid}
 a,h2,h3,h4,p{orphans:3;widows:3}
-h1,h2,h3,h4,h5,h6{page-break-after:avoid;page-break-inside:avoid}
 h1+p,h2+p,h3+p{page-break-before:avoid}
-img{page-break-before:auto;page-break-after:auto;page-break-inside:avoid}
-pre{white-space:pre-wrap!important;word-wrap:break-word}
-body{padding:2.54cm 1.8cm}
 a[href^="ftp://"]:after,a[href^="http://"]:after,a[href^="https://"]:after{content:" (" attr(href) ")";font-size:80%}
 abbr[title]:after,acronym[title]:after{content:" (" attr(title) ")"}
 .page-break{page-break-before:always}

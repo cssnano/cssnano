@@ -91,6 +91,13 @@ test(
 );
 
 test(
+    'should merge across media queries',
+    processCSS,
+    '@media screen and (min-width:480px){h1{display:block}}@media screen and (min-width:480px){h2{display:block}}',
+    '@media screen and (min-width:480px){h1,h2{display:block}}'
+);
+
+test(
     'should not merge across keyframes',
     passthroughCSS,
     '@-webkit-keyframes test{0%{color:#000}to{color:#fff}}@keyframes test{0%{color:#000}to{color:#fff}}'
@@ -215,7 +222,7 @@ test(
     'should perform partial merging of selectors in the opposite direction',
     processCSS,
     'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
-    'h1{color:black}h2,h3{color:black;font-weight:bold}'
+    'h1,h2,h3{color:black}h2,h3{font-weight:bold}'
 );
 
 test(
@@ -587,26 +594,26 @@ test(
     'should place rules with "all" at the top',
     processCSS,
     '.a{margin: 10px 20px;display: flex;all: initial;font-size: 10px;border-radius: 2px;color: blue;}.b{margin: 10px 30px;display: flex;all: initial;font-size: 20px;border-radius: 2px;color: blue;}',
-    '.a,.b{display: flex;all: initial;border-radius: 2px;color: blue;}.a{margin: 10px 20px;font-size: 10px;}.b{margin: 10px 30px;font-size: 20px;}'
+    '.a{margin: 10px 20px;display: flex;all: initial;font-size: 10px;}.b{margin: 10px 30px;display: flex;all: initial;font-size: 20px;}.a,.b{border-radius: 2px;color: blue;}'
 );
 
 test(
     'should place rules with "all" at the top (2)',
     processCSS,
     '.a{margin: 10px 20px;display: flex;ALL: initial;font-size: 10px;border-radius: 2px;color: blue;}.b{margin: 10px 30px;display: flex;ALL: initial;font-size: 20px;border-radius: 2px;color: blue;}',
-    '.a,.b{display: flex;ALL: initial;border-radius: 2px;color: blue;}.a{margin: 10px 20px;font-size: 10px;}.b{margin: 10px 30px;font-size: 20px;}'
+    '.a{margin: 10px 20px;display: flex;ALL: initial;font-size: 10px;}.b{margin: 10px 30px;display: flex;ALL: initial;font-size: 20px;}.a,.b{border-radius: 2px;color: blue;}'
 );
 
 test(
     'should merge multiple media queries',
     processCSS,
     '@media print{h1{display:block}}@media print{h1{color:red}}',
-    '@media print{h1{display:block;color:red}}@media print{}'
+    '@media print{h1{display:block;color:red}}'
 );
 
 test(
     'should merge multiple media queries (uppercase)',
     processCSS,
     '@media print{h1{display:block}}@MEDIA print{h1{color:red}}',
-    '@media print{h1{display:block;color:red}}@MEDIA print{}'
+    '@media print{h1{display:block;color:red}}'
 );
