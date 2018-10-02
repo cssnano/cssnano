@@ -11,7 +11,8 @@ function initializePlugin (plugin, css, result) {
         const [processor, opts] = plugin;
         if (
             typeof opts === 'undefined' ||
-            (typeof opts === 'object' && !opts.exclude)
+            (typeof opts === 'object' && !opts.exclude) ||
+            (typeof opts === 'boolean' && opts === true)
         ) {
             return Promise.resolve(
                 processor(opts)(css, result)
