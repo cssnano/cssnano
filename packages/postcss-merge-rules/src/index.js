@@ -83,13 +83,13 @@ function hasConflicts (declProp, notMoved) {
     return notMoved.some(prop => isConflictingProp(prop, declProp));
 }
 
-function partialMerge (first, second) {
+function partialMerge (first, second, browsers, compatibilityCache) {
     let intersection = intersect(getDecls(first), getDecls(second));
     if (!intersection.length) {
         return second;
     }
     let nextRule = second.next();
-    if (nextRule && nextRule.type === 'rule' && canMerge(second, nextRule)) {
+    if (nextRule && nextRule.type === 'rule' && canMerge(second, nextRule, browsers, compatibilityCache)) {
         let nextIntersection = intersect(getDecls(second), getDecls(nextRule));
         if (nextIntersection.length > intersection.length) {
             first = second; second = nextRule; intersection = nextIntersection;
@@ -201,7 +201,7 @@ function selectorMerger (browsers, compatibilityCache) {
         }
         // Partial merge: check if the rule contains a subset of the last; if
         // so create a joined selector with the subset, if smaller.
-        cache = partialMerge(cache, rule);
+        cache = partialMerge(cache, rule, browsers, compatibilityCache);
     };
 }
 
@@ -213,7 +213,10 @@ export default postcss.plugin('postcss-merge-rules', () => {
             path: __dirname,
             env: resultOpts.env,
         });
-        const compatibilityCache = {};
+        const compatibilityCache = {
+            selectors: {},
+            features: {},
+        };
         css.walkRules(selectorMerger(browsers, compatibilityCache));
     };
 });

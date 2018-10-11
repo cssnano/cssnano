@@ -60,6 +60,17 @@ function isCssMixin (selector) {
     return selector[selector.length - 1] === ':';
 }
 
+function isSupportedCached (feature, browsers, compatibilityCache) {
+    let result = compatibilityCache ? compatibilityCache.features[feature] : undefined;
+    if (result === undefined) {
+        result = isSupported(feature, browsers);
+        if (compatibilityCache) {
+            compatibilityCache.features[feature] = result;
+        }
+    }
+    return result;
+}
+
 export default function ensureCompatibility (selectors, browsers, compatibilityCache) {
     // Should not merge mixins
     if (selectors.some(isCssMixin)) {
@@ -69,8 +80,8 @@ export default function ensureCompatibility (selectors, browsers, compatibilityC
         if (simpleSelectorRe.test(selector)) {
             return true;
         }
-        if (compatibilityCache && (selector in compatibilityCache)) {
-            return compatibilityCache[selector];
+        if (compatibilityCache && (selector in compatibilityCache.selectors)) {
+            return compatibilityCache.selectors[selector];
         }
         let compatible = true;
         selectorParser(ast => {
@@ -79,37 +90,37 @@ export default function ensureCompatibility (selectors, browsers, compatibilityC
                 if (type === 'pseudo') {
                     const entry = pseudoElements[value];
                     if (entry && compatible) {
-                        compatible = isSupported(entry, browsers);
+                        compatible = isSupportedCached(entry, browsers, compatibilityCache);
                     }
                 }
                 if (type === 'combinator') {
                     if (~value.indexOf('~')) {
-                        compatible = isSupported(cssSel3, browsers);
+                        compatible = isSupportedCached(cssSel3, browsers, compatibilityCache);
                     }
                     if (~value.indexOf('>') || ~value.indexOf('+')) {
-                        compatible = isSupported(cssSel2, browsers);
+                        compatible = isSupportedCached(cssSel2, browsers, compatibilityCache);
                     }
                 }
                 if (type === 'attribute' && node.attribute) {
                     // [foo]
                     if (!node.operator) {
-                        compatible = isSupported(cssSel2, browsers);
+                        compatible = isSupportedCached(cssSel2, browsers, compatibilityCache);
                     }
 
                     if (value) {
                         // [foo="bar"], [foo~="bar"], [foo|="bar"]
                         if (~['=', '~=', '|='].indexOf(node.operator)) {
-                            compatible = isSupported(cssSel2, browsers);
+                            compatible = isSupportedCached(cssSel2, browsers, compatibilityCache);
                         }
                         // [foo^="bar"], [foo$="bar"], [foo*="bar"]
                         if (~['^=', '$=', '*='].indexOf(node.operator)) {
-                            compatible = isSupported(cssSel3, browsers);
+                            compatible = isSupportedCached(cssSel3, browsers, compatibilityCache);
                         }
                     }
 
                     // [foo="bar" i]
                     if (node.insensitive) {
-                        compatible = isSupported('css-case-insensitive', browsers);
+                        compatible = isSupportedCached('css-case-insensitive', browsers, compatibilityCache);
                     }
                 }
                 if (!compatible) {
@@ -120,7 +131,7 @@ export default function ensureCompatibility (selectors, browsers, compatibilityC
             });
         }).processSync(selector);
         if (compatibilityCache) {
-            compatibilityCache[selector] = compatible;
+            compatibilityCache.selectors[selector] = compatible;
         }
         return compatible;
     });
