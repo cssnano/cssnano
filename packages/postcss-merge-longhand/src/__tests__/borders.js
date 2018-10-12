@@ -400,6 +400,24 @@ test(
     'h1{border:var(--variable)}',
 );
 
+test(
+    'should not explode border with initial properties',
+    passthroughCSS,
+    'h1{border:initial}',
+);
+
+test(
+    'should not explode border with inherit properties',
+    passthroughCSS,
+    'h1{border:inherit}',
+);
+
+test(
+    'should not explode border with unset properties',
+    passthroughCSS,
+    'h1{border:unset}',
+);
+
 trbl.forEach(direction => {
     test(
         `should not explode border-${direction} with custom properties`,

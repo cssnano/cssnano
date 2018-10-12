@@ -118,17 +118,33 @@ addTests({
     fixture: 'h1{box-bottom:var(--variable)}',
     expected: 'h1{box-bottom:var(--variable)}',
 }, {
-    message: 'should not merge box props where one has an unset property',
+    message: 'should not merge incomplete box props where one has an unset property',
     fixture: 'h1{box-bottom:10px;box-top:unset;box-left:20px}',
     expected: 'h1{box-bottom:10px;box-top:unset;box-left:20px}',
 }, {
-    message: 'should not merge box props where one has an initial property',
+    message: 'should not merge incomplete box props where one has an initial property',
     fixture: 'h1{box-bottom:10px;box-top:initial;box-left:20px}',
     expected: 'h1{box-bottom:10px;box-top:initial;box-left:20px}',
 }, {
-    message: 'should not merge box props where one has an inherit property',
+    message: 'should not merge incomplete box props where one has an inherit property',
     fixture: 'h1{box-bottom:10px;box-top:initial;box-left:20px}',
     expected: 'h1{box-bottom:10px;box-top:initial;box-left:20px}',
+}, {
+    message: 'should not merge complete box props where one has an unset property',
+    fixture: 'h1{box-bottom:10px;box-top:unset;box-left:20px;box-right:20px}',
+    expected: 'h1{box-bottom:10px;box-top:unset;box-left:20px;box-right:20px}',
+}, {
+    message: 'should not merge complete box props where one has an initial property',
+    fixture: 'h1{box-bottom:10px;box-top:initial;box-left:20px;box-right:20px}',
+    expected: 'h1{box-bottom:10px;box-top:initial;box-left:20px;box-right:20px}',
+}, {
+    message: 'should not merge complete box props where one has an inherit property',
+    fixture: 'h1{box-bottom:10px;box-top:initial;box-left:20px;box-right:20px}',
+    expected: 'h1{box-bottom:10px;box-top:initial;box-left:20px;box-right:20px}',
+}, {
+    message: 'should not merge box props where there is a mix of reserved properties',
+    fixture: 'h1{box-bottom:unset;box-top:initial;box-left:inherit;box-right:initial}',
+    expected: 'h1{box-bottom:unset;box-top:initial;box-left:inherit;box-right:initial}',
 }, {
     message: 'should merge box props when they are all unset',
     fixture: 'h1{box-bottom:unset;box-top:unset;box-left:unset;box-right:unset}',
