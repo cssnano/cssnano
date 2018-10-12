@@ -117,4 +117,28 @@ addTests({
     message: 'should not explode box props with custom properties',
     fixture: 'h1{box-bottom:var(--variable)}',
     expected: 'h1{box-bottom:var(--variable)}',
+}, {
+    message: 'should not merge box props where one has an unset property',
+    fixture: 'h1{box-bottom:10px;box-top:unset;box-left:20px}',
+    expected: 'h1{box-bottom:10px;box-top:unset;box-left:20px}',
+}, {
+    message: 'should not merge box props where one has an initial property',
+    fixture: 'h1{box-bottom:10px;box-top:initial;box-left:20px}',
+    expected: 'h1{box-bottom:10px;box-top:initial;box-left:20px}',
+}, {
+    message: 'should not merge box props where one has an inherit property',
+    fixture: 'h1{box-bottom:10px;box-top:initial;box-left:20px}',
+    expected: 'h1{box-bottom:10px;box-top:initial;box-left:20px}',
+}, {
+    message: 'should merge box props when they are all unset',
+    fixture: 'h1{box-bottom:unset;box-top:unset;box-left:unset;box-right:unset}',
+    expected: 'h1{box:unset}',
+}, {
+    message: 'should merge box props when they are all initial',
+    fixture: 'h1{box-bottom:initial;box-top:initial;box-left:initial;box-right:initial}',
+    expected: 'h1{box:initial}',
+}, {
+    message: 'should merge box props when they are all inherit',
+    fixture: 'h1{box-bottom:inherit;box-top:inherit;box-left:inherit;box-right:inherit}',
+    expected: 'h1{box:inherit}',
 });

@@ -4,6 +4,7 @@ const important = node => node.important;
 const unimportant = node => !node.important;
 const hasInherit = node => ~node.value.indexOf('inherit');
 const hasInitial = node => ~node.value.indexOf('initial');
+const hasUnset = node => ~node.value.indexOf('unset');
 
 export default (props, includeCustomProps = true) => {
     if (props.some(hasInherit) && !props.every(hasInherit)) {
@@ -11,6 +12,10 @@ export default (props, includeCustomProps = true) => {
     }
 
     if (props.some(hasInitial) && !props.every(hasInitial)) {
+        return false;
+    }
+
+    if (props.some(hasUnset) && !props.every(hasUnset)) {
         return false;
     }
 
