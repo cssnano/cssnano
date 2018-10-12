@@ -60,18 +60,18 @@ function isCssMixin (selector) {
     return selector[selector.length - 1] === ':';
 }
 
-function isSupportedCached (feature, browsers, compatibilityCache) {
-    let result = compatibilityCache ? compatibilityCache.features[feature] : undefined;
+function isSupportedCached (feature, browsers, caniuseCache) {
+    let result = caniuseCache ? caniuseCache[feature] : undefined;
     if (result === undefined) {
         result = isSupported(feature, browsers);
-        if (compatibilityCache) {
-            compatibilityCache.features[feature] = result;
+        if (caniuseCache) {
+            caniuseCache[feature] = result;
         }
     }
     return result;
 }
 
-export default function ensureCompatibility (selectors, browsers, compatibilityCache) {
+export default function ensureCompatibility (selectors, browsers, compatibilityCache, caniuseCache) {
     // Should not merge mixins
     if (selectors.some(isCssMixin)) {
         return false;
@@ -80,8 +80,8 @@ export default function ensureCompatibility (selectors, browsers, compatibilityC
         if (simpleSelectorRe.test(selector)) {
             return true;
         }
-        if (compatibilityCache && (selector in compatibilityCache.selectors)) {
-            return compatibilityCache.selectors[selector];
+        if (compatibilityCache && (selector in compatibilityCache)) {
+            return compatibilityCache[selector];
         }
         let compatible = true;
         selectorParser(ast => {
@@ -90,37 +90,37 @@ export default function ensureCompatibility (selectors, browsers, compatibilityC
                 if (type === 'pseudo') {
                     const entry = pseudoElements[value];
                     if (entry && compatible) {
-                        compatible = isSupportedCached(entry, browsers, compatibilityCache);
+                        compatible = isSupportedCached(entry, browsers, caniuseCache);
                     }
                 }
                 if (type === 'combinator') {
                     if (~value.indexOf('~')) {
-                        compatible = isSupportedCached(cssSel3, browsers, compatibilityCache);
+                        compatible = isSupportedCached(cssSel3, browsers, caniuseCache);
                     }
                     if (~value.indexOf('>') || ~value.indexOf('+')) {
-                        compatible = isSupportedCached(cssSel2, browsers, compatibilityCache);
+                        compatible = isSupportedCached(cssSel2, browsers, caniuseCache);
                     }
                 }
                 if (type === 'attribute' && node.attribute) {
                     // [foo]
                     if (!node.operator) {
-                        compatible = isSupportedCached(cssSel2, browsers, compatibilityCache);
+                        compatible = isSupportedCached(cssSel2, browsers, caniuseCache);
                     }
 
                     if (value) {
                         // [foo="bar"], [foo~="bar"], [foo|="bar"]
                         if (~['=', '~=', '|='].indexOf(node.operator)) {
-                            compatible = isSupportedCached(cssSel2, browsers, compatibilityCache);
+                            compatible = isSupportedCached(cssSel2, browsers, caniuseCache);
                         }
                         // [foo^="bar"], [foo$="bar"], [foo*="bar"]
                         if (~['^=', '$=', '*='].indexOf(node.operator)) {
-                            compatible = isSupportedCached(cssSel3, browsers, compatibilityCache);
+                            compatible = isSupportedCached(cssSel3, browsers, caniuseCache);
                         }
                     }
 
                     // [foo="bar" i]
                     if (node.insensitive) {
-                        compatible = isSupportedCached('css-case-insensitive', browsers, compatibilityCache);
+                        compatible = isSupportedCached('css-case-insensitive', browsers, caniuseCache);
                     }
                 }
                 if (!compatible) {
@@ -131,7 +131,7 @@ export default function ensureCompatibility (selectors, browsers, compatibilityC
             });
         }).processSync(selector);
         if (compatibilityCache) {
-            compatibilityCache.selectors[selector] = compatible;
+            compatibilityCache[selector] = compatible;
         }
         return compatible;
     });

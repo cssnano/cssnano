@@ -28,13 +28,13 @@ function sameVendor (selectorsA, selectorsB) {
 
 const noVendor = selector => !filterPrefixes(selector).length;
 
-function canMerge (ruleA, ruleB, browsers, compatibilityCache) {
+function canMerge (ruleA, ruleB, browsers, compatibilityCache, caniuseCache) {
     const a = ruleA.selectors;
     const b = ruleB.selectors;
 
     const selectors = a.concat(b);
 
-    if (!ensureCompatibility(selectors, browsers, compatibilityCache)) {
+    if (!ensureCompatibility(selectors, browsers, compatibilityCache, caniuseCache)) {
         return false;
     }
 
@@ -83,13 +83,13 @@ function hasConflicts (declProp, notMoved) {
     return notMoved.some(prop => isConflictingProp(prop, declProp));
 }
 
-function partialMerge (first, second, browsers, compatibilityCache) {
+function partialMerge (first, second, browsers, compatibilityCache, caniuseCache) {
     let intersection = intersect(getDecls(first), getDecls(second));
     if (!intersection.length) {
         return second;
     }
     let nextRule = second.next();
-    if (nextRule && nextRule.type === 'rule' && canMerge(second, nextRule, browsers, compatibilityCache)) {
+    if (nextRule && nextRule.type === 'rule' && canMerge(second, nextRule, browsers, compatibilityCache, caniuseCache)) {
         let nextIntersection = intersect(getDecls(second), getDecls(nextRule));
         if (nextIntersection.length > intersection.length) {
             first = second; second = nextRule; intersection = nextIntersection;
@@ -163,12 +163,12 @@ function partialMerge (first, second, browsers, compatibilityCache) {
     }
 }
 
-function selectorMerger (browsers, compatibilityCache) {
+function selectorMerger (browsers, compatibilityCache, caniuseCache) {
     let cache = null;
     return function (rule) {
         // Prime the cache with the first rule, or alternately ensure that it is
         // safe to merge both declarations before continuing
-        if (!cache || !canMerge(rule, cache, browsers, compatibilityCache)) {
+        if (!cache || !canMerge(rule, cache, browsers, compatibilityCache, caniuseCache)) {
             cache = rule;
             return;
         }
@@ -201,7 +201,7 @@ function selectorMerger (browsers, compatibilityCache) {
         }
         // Partial merge: check if the rule contains a subset of the last; if
         // so create a joined selector with the subset, if smaller.
-        cache = partialMerge(cache, rule, browsers, compatibilityCache);
+        cache = partialMerge(cache, rule, browsers, compatibilityCache, caniuseCache);
     };
 }
 
@@ -213,10 +213,8 @@ export default postcss.plugin('postcss-merge-rules', () => {
             path: __dirname,
             env: resultOpts.env,
         });
-        const compatibilityCache = {
-            selectors: {},
-            features: {},
-        };
-        css.walkRules(selectorMerger(browsers, compatibilityCache));
+        const compatibilityCache = {};
+        const caniuseCache = {};
+        css.walkRules(selectorMerger(browsers, compatibilityCache, caniuseCache));
     };
 });
