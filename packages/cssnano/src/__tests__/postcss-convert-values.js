@@ -88,7 +88,7 @@ test(
 test(
     'should optimise fractions inside calc',
     processCss,
-    'h1{width:calc(10.px + .0px)}',
+    'h1{width:calc(10px + .0px)}',
     'h1{width:10px}',
 );
 

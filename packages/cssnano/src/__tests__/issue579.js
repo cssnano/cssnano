@@ -11,6 +11,6 @@ test('should support `env()` and `constant()` is an iPhone X-only feature', t =>
     }
     `;
     return postcss([cssnano]).process(css).then(result => {
-        t.deepEqual(result.css, '@supports (height:env(safe-area-inset-bottom)){.footer{padding-bottom:calc(env(safe-area-inset-bottom) * 3)!important}}');
+        t.deepEqual(result.css, '@supports (height:env(safe-area-inset-bottom)){.footer{padding-bottom:calc(env(safe-area-inset-bottom)*3)!important}}');
     });
 });

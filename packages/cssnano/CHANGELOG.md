@@ -1,20 +1,35 @@
+# 4.1.5
+
+## Bug Fixes
+
+* `cssnano` now allow to toggling of plugins in presets using boolean configuration option.
+* `postcss-merge-longhand` doesn't merge properties with `unset`.
+* `postcss-merge-longhand` correctly merge borders with custom properties.
+* `postcss-merge-longhand` doesn't merge redundant values if declarations are of different importance.
+
+## Other changes
+
+* `postcss-calc` updated to `7.0.0` version.
+
 # 4.1.4
 
 ## Other changes
 
-* `css-declaration-sorter` now use PostCSS 7
-* `postcss-calc` now use PostCSS 7
+* `css-declaration-sorter` now use PostCSS 7.
+* `postcss-calc` now use PostCSS 7.
 
 # 4.1.3
 
 ## Other changes
 
-* `postcss-minify-font-values` now use PostCSS 7
-* `postcss-discard-duplicates` now use PostCSS 7
+* `postcss-minify-font-values` now use PostCSS 7.
+* `postcss-discard-duplicates` now use PostCSS 7.
 
 # 4.1.2
 
-* `postcss-svgo` now handle DataURI with uppercase `data` value (`DATA:image/*;...`)
+## Bug Fixes
+
+* `postcss-svgo` now handle DataURI with uppercase `data` value (`DATA:image/*;...`).
 
 # 4.1.1
 

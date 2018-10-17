@@ -26,5 +26,5 @@ test(
     'should trim whitespace from nested functions (preset)',
     withDefaultPreset,
     'h1{width:calc(10px - ( 100px / var(--test) ))}',
-    'h1{width:calc(10px - 100px / var(--test))}',
+    'h1{width:calc(10px - 100px/var(--test))}',
 );
