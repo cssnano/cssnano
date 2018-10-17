@@ -1,12 +1,13 @@
 import isCustomProp from './isCustomProp';
 
-const isInherit = node => ~node.value.indexOf('inherit');
-const isInitial = node => ~node.value.indexOf('initial');
+const hasInherit = node => node.value.includes('inherit');
+const hasInitial = node => node.value.includes('initial');
+const hasUnset = node => node.value.includes('unset');
 
 export default (prop, includeCustomProps = true) => {
     if (includeCustomProps && isCustomProp(prop)) {
         return false;
     }
 
-    return !isInherit(prop) && !isInitial(prop);
+    return !hasInherit(prop) && !hasInitial(prop) && !hasUnset(prop);
 };
