@@ -38,6 +38,7 @@ function transform (legacy, rule) {
         return;
     }
 
+    const ruleName = rule.name.toLowerCase();
     const params = valueParser(rule.params);
 
     params.walk((node, index) => {
@@ -61,7 +62,7 @@ function transform (legacy, rule) {
             const prevWord = params.nodes[index - 2];
             if (
                 node.value.toLowerCase() === 'all' &&
-                rule.name.toLowerCase() === 'media' &&
+                ruleName === 'media' &&
                 !prevWord
             ) {
                 const nextWord = params.nodes[index + 2];
@@ -84,6 +85,10 @@ function transform (legacy, rule) {
     }).join();
 
     if (!rule.params.length) {
+        rule.raws.afterName = '';
+    }
+
+    if ((ruleName === "media" || ruleName === "supports") && rule.params.startsWith('(')) {
         rule.raws.afterName = '';
     }
 }

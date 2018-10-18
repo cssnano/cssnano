@@ -29,14 +29,91 @@ test(
     'should normalise @media queries (3)',
     processCSS,
     '@media (min-height: 680px),(min-height: 680px){h1{color:red}}',
-    '@media (min-height:680px){h1{color:red}}'
+    '@media(min-height:680px){h1{color:red}}'
 );
 
 test.skip(
     'should normalise @media queries (3) (lowercase and uppercase)',
     processCSS,
     '@media (min-height: 680px),(MIN-HEIGHT: 680PX){h1{color:red}}',
-    '@media (min-height:680px){h1{color:red}}'
+    '@media(min-height:680px){h1{color:red}}'
+);
+
+test(
+    'should normalise @media queries (4)',
+    processCSS,
+    '@media (min-width:1px){:root{background:lime}}',
+    '@media(min-width:1px){:root{background:lime}}'
+);
+
+test(
+    'should normalise @media queries (5)',
+    processCSS,
+    '@media ( color ){}',
+    '@media(color){}'
+);
+
+test(
+    'should normalise @media queries (6)',
+    processCSS,
+    '@media (min-width: 30em) and (orientation: landscape){}',
+    '@media(min-width:30em) and (orientation:landscape){}'
+);
+
+test(
+    'should normalise @media queries (7)',
+    processCSS,
+    '@media (min-height: 680px), screen and (orientation: portrait){}',
+    '@media(min-height:680px),screen and (orientation:portrait){}'
+);
+
+test(
+    'should normalise @media queries (8)',
+    processCSS,
+    '@media ( not( hover ) ){}',
+    '@media(not(hover)){}'
+);
+
+test(
+    'should normalise @supports',
+    processCSS,
+    '@supports (display: grid){div{display:block}}',
+    '@supports(display:grid){div{display:block}}'
+);
+
+test(
+    'should normalise @supports (2)',
+    processCSS,
+    '@SUPPORTS (display: grid){div{display:block}}',
+    '@SUPPORTS(display:grid){div{display:block}}'
+);
+
+test(
+    'should normalise nested at rules',
+    processCSS,
+    '@media (min-width: 900px){@media (min-width: 900px){div{display:block}}}',
+    '@media(min-width:900px){@media(min-width:900px){div{display:block}}}'
+);
+
+test(
+    'should normalise nested at rules (1)',
+    processCSS,
+    '@supports (display: flex){@media (min-width: 900px){div{display:block}}}',
+    '@supports(display:flex){@media(min-width:900px){div{display:block}}}'
+);
+
+test(
+    'should normalise spaces after comma',
+    processCSS,
+    '@media print, screen{}',
+    '@media print,screen{}'
+);
+
+test(
+    'should sort params',
+    processCSS,
+    '@media screen, print{}',
+    '@media print,screen{}'
 );
 
 test(
@@ -67,14 +144,14 @@ test(
     'should normalise "all and" in @media queries',
     processCSS,
     '@media all and (min-width:500px){h1{color:blue}}',
-    '@media (min-width:500px){h1{color:blue}}'
+    '@media(min-width:500px){h1{color:blue}}'
 );
 
 test(
     'should normalise "all and" in @media queries (uppercase)',
     processCSS,
     '@media ALL AND (min-width:500px){h1{color:blue}}',
-    '@media (min-width:500px){h1{color:blue}}'
+    '@media(min-width:500px){h1{color:blue}}'
 );
 
 test(
@@ -103,44 +180,92 @@ test(
 );
 
 test(
+    'should not change charset params',
+    passthroughCSS,
+    '@charset "utf-8";'
+);
+
+test(
+    'should not change import params',
+    passthroughCSS,
+    '@import url("fineprint.css") print;'
+);
+
+test(
+    'should not change namespace params',
+    passthroughCSS,
+    '@namespace url(http://www.w3.org/1999/xhtml);'
+);
+
+test(
+    'should not change document params',
+    passthroughCSS,
+    '@document url("https://www.example.com/");'
+);
+
+test(
+    'should not change keyframes params',
+    passthroughCSS,
+    '@keyframes sLiDeIn{}'
+);
+
+test(
+    'should not change counter-style params',
+    passthroughCSS,
+    '@counter-style tHuMbS'
+);
+
+test(
+    'should not change unknown params',
+    passthroughCSS,
+    '@unknown iDeNt keyword (foo:bar) {}'
+);
+
+test(
+    'should not change unknown params (1)',
+    passthroughCSS,
+    '@unknown iDeNt keyword (foo:bar);'
+);
+
+test(
     'should reduce min-aspect-ratio',
     processCSS,
     '@media (min-aspect-ratio: 32/18){h1{color:blue}}',
-    '@media (min-aspect-ratio:16/9){h1{color:blue}}'
+    '@media(min-aspect-ratio:16/9){h1{color:blue}}'
 );
 
 test(
     'should reduce min-aspect-ratio (uppercase)',
     processCSS,
     '@media (MIN-ASPECT-RATIO: 32/18){h1{color:blue}}',
-    '@media (MIN-ASPECT-RATIO:16/9){h1{color:blue}}'
+    '@media(MIN-ASPECT-RATIO:16/9){h1{color:blue}}'
 );
 
 test(
     'should reduce max-aspect-ratio',
     processCSS,
     '@media (max-aspect-ratio: 48000000/32000000){h1{color:blue}}',
-    '@media (max-aspect-ratio:3/2){h1{color:blue}}'
+    '@media(max-aspect-ratio:3/2){h1{color:blue}}'
 );
 
 test(
     'should multiply aspect ratio',
     processCSS,
     '@media (max-aspect-ratio: 1.5/1){h1{color:blue}}',
-    '@media (max-aspect-ratio:3/2){h1{color:blue}}'
+    '@media(max-aspect-ratio:3/2){h1{color:blue}}'
 );
 
 test(
     'should multiply aspect ratio (2)',
     processCSS,
     '@media (max-aspect-ratio: .5 / 1){h1{color:blue}}',
-    '@media (max-aspect-ratio:1/2){h1{color:blue}}'
+    '@media(max-aspect-ratio:1/2){h1{color:blue}}'
 );
 
 test(
     'should not throw on empty parentheses',
     passthroughCSS,
-    '@media (){h1{color:blue}}'
+    '@media(){h1{color:blue}}'
 );
 
 test(
