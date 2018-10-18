@@ -50,7 +50,7 @@ function getLevel (prop) {
     }
 }
 
-const isValueCustomProp = value => !!~value.search(/var\s*\(\s*--/i);
+const isValueCustomProp = value => value && !!~value.search(/var\s*\(\s*--/i);
 
 function canMergeValues (values) {
     return !values.some(isValueCustomProp) || values.every(isValueCustomProp);

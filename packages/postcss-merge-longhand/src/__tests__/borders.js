@@ -533,3 +533,10 @@ test(
     passthroughCSS,
     'h1{border-color:red green blue magenta;border-top-color:var(--color-var)}',
 );
+
+test(
+    'Should not throw error when a border property value is undefined (#639)',
+    processCSS,
+    'h1{border:2px solid #fff;border-color:inherit}',
+    'h1{border:2px solid;border-color:inherit}',
+);
