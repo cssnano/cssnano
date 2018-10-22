@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-default",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "main": "dist/index.js",
   "description": "Safe defaults for cssnano which require minimal configuration.",
   "scripts": {
@@ -22,7 +22,7 @@
     "postcss-discard-duplicates": "^4.0.2",
     "postcss-discard-empty": "^4.0.1",
     "postcss-discard-overridden": "^4.0.1",
-    "postcss-merge-longhand": "^4.0.6",
+    "postcss-merge-longhand": "^4.0.8",
     "postcss-merge-rules": "^4.0.2",
     "postcss-minify-font-values": "^4.0.2",
     "postcss-minify-gradients": "^4.0.1",

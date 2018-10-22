@@ -1686,9 +1686,9 @@ postcss-discard-overridden@^4.0.1:
   dependencies:
     postcss "^7.0.0"
 
-postcss-merge-longhand@^4.0.6:
-  version "4.0.7"
-  resolved "https://registry.yarnpkg.com/postcss-merge-longhand/-/postcss-merge-longhand-4.0.7.tgz#77430fa60e36745887c1c725ab3782c40f48363d"
+postcss-merge-longhand@^4.0.8:
+  version "4.0.8"
+  resolved "https://registry.yarnpkg.com/postcss-merge-longhand/-/postcss-merge-longhand-4.0.8.tgz#fb238f1608765e74a0dd00d5722e277bd54220b6"
   dependencies:
     css-color-names "0.0.4"
     postcss "^7.0.0"

@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-advanced",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "main": "dist/index.js",
   "description": "Advanced optimisations for cssnano; may or may not break your CSS!",
   "scripts": {

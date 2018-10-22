@@ -1,3 +1,9 @@
+# 4.1.6
+
+## Bug Fixes
+
+* `postcss-merge-longhand` doesn't throw error when merge a border property.
+
 # 4.1.5
 
 ## Bug Fixes
