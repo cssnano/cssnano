@@ -933,8 +933,8 @@ cssesc@^1.0.1:
   resolved "https://registry.yarnpkg.com/cssesc/-/cssesc-1.0.1.tgz#ef7bd8d0229ed6a3a7051ff7771265fe7330e0a8"
 
 cssnano-preset-advanced@^4.0.2:
-  version "4.0.4"
-  resolved "https://registry.yarnpkg.com/cssnano-preset-advanced/-/cssnano-preset-advanced-4.0.4.tgz#e22e763df92f21a7838364e2f626a84f15d088ae"
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/cssnano-preset-advanced/-/cssnano-preset-advanced-4.0.5.tgz#6c661baef2ec06ed3debb34b2abd5e86e7f8f751"
   dependencies:
     autoprefixer "^9.0.0"
     cssnano-preset-default "^4.0.1"
@@ -943,9 +943,9 @@ cssnano-preset-advanced@^4.0.2:
     postcss-reduce-idents "^4.0.1"
     postcss-zindex "^4.0.1"
 
-cssnano-preset-default@^4.0.1, cssnano-preset-default@^4.0.2:
-  version "4.0.4"
-  resolved "https://registry.yarnpkg.com/cssnano-preset-default/-/cssnano-preset-default-4.0.4.tgz#2dd25a147e090ebbebc1e0d3d2d494a0e61e669a"
+cssnano-preset-default@^4.0.1, cssnano-preset-default@^4.0.5:
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/cssnano-preset-default/-/cssnano-preset-default-4.0.5.tgz#d1756c0259d98ad311e601ba76e95c60f6771ac1"
   dependencies:
     css-declaration-sorter "^4.0.1"
     cssnano-util-raw-cache "^4.0.1"
@@ -957,7 +957,7 @@ cssnano-preset-default@^4.0.1, cssnano-preset-default@^4.0.2:
     postcss-discard-duplicates "^4.0.2"
     postcss-discard-empty "^4.0.1"
     postcss-discard-overridden "^4.0.1"
-    postcss-merge-longhand "^4.0.8"
+    postcss-merge-longhand "^4.0.9"
     postcss-merge-rules "^4.0.2"
     postcss-minify-font-values "^4.0.2"
     postcss-minify-gradients "^4.0.1"
@@ -2605,9 +2605,9 @@ postcss-merge-idents@^4.0.1:
     postcss "^7.0.0"
     postcss-value-parser "^3.0.0"
 
-postcss-merge-longhand@^4.0.8:
-  version "4.0.8"
-  resolved "https://registry.yarnpkg.com/postcss-merge-longhand/-/postcss-merge-longhand-4.0.8.tgz#fb238f1608765e74a0dd00d5722e277bd54220b6"
+postcss-merge-longhand@^4.0.9:
+  version "4.0.9"
+  resolved "https://registry.yarnpkg.com/postcss-merge-longhand/-/postcss-merge-longhand-4.0.9.tgz#c2428b994833ffb2a072f290ca642e75ceabcd6f"
   dependencies:
     css-color-names "0.0.4"
     postcss "^7.0.0"

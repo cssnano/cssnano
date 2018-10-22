@@ -7,6 +7,13 @@ layout: Page
 
 
 
+## 4.1.7
+
+### Bug Fixes
+
+- republish `cssnano` due broken release.
+
+
 ## 4.1.6
 
 ### Bug Fixes
