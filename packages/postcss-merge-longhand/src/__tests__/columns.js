@@ -82,3 +82,10 @@ test(
     passthroughCSS,
     'h1{columns:var(--variable)}',
 );
+
+test(
+    'should preserve case of custom properties',
+    passthroughCSS,
+    'h1{columns:var(--fooBar)}',
+);
+
