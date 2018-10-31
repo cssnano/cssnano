@@ -534,6 +534,14 @@ test(
     'h1{border-color:red green blue magenta;border-top-color:var(--color-var)}',
 );
 
+
+test(
+    'Should correctly merge borders with custom properties (#652)',
+    processCSS,
+    'h1{border-width:var(--a);border-style:var(--b);border-color:var(--c)}',
+    'h1{border:var(--a) var(--b) var(--c)}'
+);
+
 test(
     'Should not throw error when a border property value is undefined (#639)',
     processCSS,
