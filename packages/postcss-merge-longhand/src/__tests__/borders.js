@@ -548,3 +548,16 @@ test(
     'h1{border:2px solid #fff;border-color:inherit}',
     'h1{border:2px solid;border-color:inherit}',
 );
+
+test(
+    'Should preserve case of css custom properties #648',
+    passthroughCSS,
+    'h1{border:1px solid rgba(var(--fooBar));}',
+);
+
+test(
+    'should overwrite some border-width props and save fallbacks and preserve case #648 2',
+    processCSS,
+    'h1{border-top-width:10px;border-right-width:var(--fooBar);border-right-width:15px;border-bottom-width:var(--fooBar);border-bottom-width:20px;border-left-width:25px;border-top-width:var(--fooBar);border-left-width:var(--fooBar)}',
+    'h1{border-width:10px 15px 20px 25px;border-top-width:var(--fooBar);border-left-width:var(--fooBar)}'
+);

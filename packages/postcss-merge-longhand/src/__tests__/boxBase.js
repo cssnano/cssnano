@@ -118,6 +118,10 @@ addTests({
     fixture: 'h1{box-bottom:var(--variable)}',
     expected: 'h1{box-bottom:var(--variable)}',
 }, {
+    message: 'should preserve case of custom properties',
+    fixture: 'h1{box-top:10px;box-right:var(--fooBar);box-right:15px;box-bottom:var(--fooBar);box-bottom:20px;box-left:25px;box-top:var(--fooBar);box-left:var(--fooBar)}',
+    expected: 'h1{box:10px 15px 20px 25px;box-top:var(--fooBar);box-left:var(--fooBar)}',
+}, {
     message: 'should not merge incomplete box props where one has an unset property',
     fixture: 'h1{box-bottom:10px;box-top:unset;box-left:20px}',
     expected: 'h1{box-bottom:10px;box-top:unset;box-left:20px}',

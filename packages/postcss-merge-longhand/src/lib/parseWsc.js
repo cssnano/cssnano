@@ -3,13 +3,20 @@ import {isWidth, isStyle, isColor} from './validateWsc';
 
 const none = /^\s*(none|medium)(\s+none(\s+(none|currentcolor))?)?\s*$/i;
 
+const varRE = /(^.*var)(.*\(.*--.*\))(.*)/i;
+const varPreserveCase = p => `${p[1].toLowerCase()}${p[2]}${p[3].toLowerCase()}`;
+const toLower = v => {
+    const match = varRE.exec(v);
+    return match ? varPreserveCase(match) : v.toLowerCase();
+};
+
 export default function parseWsc (value) {
     if (none.test(value)) {
         return [ 'medium', 'none', 'currentcolor'];
     }
 
     let width, style, color;
-    
+
     const values = list.space(value);
     if (values.length > 1 && isStyle(values[1]) && values[0].toLowerCase() === 'none') {
         values.unshift();
@@ -20,11 +27,11 @@ export default function parseWsc (value) {
 
     values.forEach(v => {
         if (isStyle(v)) {
-            style = v.toLowerCase();
+            style = toLower(v);
         } else if (isWidth(v)) {
-            width = v.toLowerCase();
+            width = toLower(v);
         } else if (isColor(v)) {
-            color = v.toLowerCase();
+            color = toLower(v);
         } else {
             unknown.push(v);
         }
