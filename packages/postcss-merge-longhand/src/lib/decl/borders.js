@@ -331,8 +331,15 @@ function merge (rule) {
         if (rules.some(detect)) {
             return;
         }
-        
-        const values = rules.map(node => parseWsc(node.value).map((value, i) => value || defaults[i]).join(' '));
+
+        const values = rules.map(node => {
+            const wscValue = parseWsc(node.value);
+            if (!isValidWsc(wscValue)) {
+                return node.value;
+            }
+            return wscValue.map((value, i) =>  value || defaults[i]).join(' ');
+        });
+
         const reduced = getDistinctShorthands(values);
 
         if (isCloseEnough(values)) {
