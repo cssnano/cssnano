@@ -2,7 +2,6 @@ import path from 'path';
 import postcss from 'postcss';
 import cosmiconfig from 'cosmiconfig';
 import isResolvable from 'is-resolvable';
-import defaultPreset from 'lerna:cssnano-preset-default';
 
 const cssnano = 'cssnano';
 
@@ -50,7 +49,7 @@ function resolvePreset (preset) {
     }
     // Provide an alias for the default preset, as it is built-in.
     if (fn === 'default') {
-        return Promise.resolve(defaultPreset(options).plugins);
+        return Promise.resolve(require('cssnano-preset-default')(options).plugins);
     }
     // For non-JS setups; we'll need to invoke the preset ourselves.
     if (typeof fn === 'function') {
