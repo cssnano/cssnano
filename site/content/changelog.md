@@ -7,6 +7,17 @@ layout: Page
 
 
 
+## 4.1.8
+
+### Performance Improvements
+
+- initial loading time (`require('cssnano')`).
+
+### Bug Fixes
+
+- `postcss-merge-longhand` correctly merging border properties with custom properties.
+
+
 ## 4.1.7
 
 ### Bug Fixes
