@@ -64,7 +64,7 @@ Once you have done this, you will need to configure cssnano by creating a
 cssnano as well as any other [plugins] that you might want for your project;
 as an example:
 
-[plugins]: https://github.com/postcss/postcss/blob/master/site/plugins.md
+[plugins]: https://github.com/postcss/postcss/blob/master/docs/plugins.md
 
 ```js
 module.exports = {
