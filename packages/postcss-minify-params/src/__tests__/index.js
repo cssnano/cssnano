@@ -156,6 +156,18 @@ test(
 );
 
 test(
+    'should not mangle @page',
+    passthroughCSS,
+    '@page :first { margin: 0; }'
+);
+
+test(
+    'should not mangle @page (uppercase)',
+    passthroughCSS,
+    '@PAGE :first { margin: 0; }'
+);
+
+test(
     'should use the postcss plugin api',
     usePostCSSPlugin,
     plugin()
