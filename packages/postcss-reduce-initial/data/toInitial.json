@@ -18,7 +18,7 @@
   "mask-clip": "border-box",
   "mask-mode": "match-source",
   "mask-origin": "border-box",
-  "mask-repeat": "no-repeat",
+  "mask-repeat": "repeat",
   "mask-type": "luminance",
   "ruby-align": "space-around",
   "ruby-merge": "separate",
