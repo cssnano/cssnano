@@ -34,7 +34,13 @@ function transform (legacy, rule) {
     // at-rule. For example:
     //
     // @value vertical, center from "./foo.css";
-    if (!rule.params || rule.name.toLowerCase() === 'value') {
+    //
+    // We should also not re-arrange pseudo-classes for @page at-rule.
+    // For example:
+    //
+    // @page :first { margin: 0; }
+    const ruleName = rule.name.toLocaleLowerCase();
+    if (!rule.params || ruleName === 'value' || ruleName === 'page') {
         return;
     }
 
