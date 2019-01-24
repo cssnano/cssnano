@@ -27,12 +27,15 @@ addons:
 
 matrix:
   include:
-    - node_js: '10'
+    - node_js: '11'
       script: yarn pretest
       env: JOB_PART=pretest
-    - node_js: '10'
+    - node_js: '11'
       script: yarn test-only:coverage
       env: JOB_PART=coverage
+    - node_js: '10'
+      script: yarn test-only
+      env: JOB_PART=test-only 8
     - node_js: '8'
       script: yarn test-only
       env: JOB_PART=test-only 8
