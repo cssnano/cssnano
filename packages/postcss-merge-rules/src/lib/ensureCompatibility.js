@@ -60,6 +60,21 @@ function isCssMixin (selector) {
     return selector[selector.length - 1] === ':';
 }
 
+const isSupportedCache = {};
+
+// Move to util in future
+function isSupportedCached (feature, browsers) {
+    const key = JSON.stringify({feature, browsers});
+    let result = isSupportedCache[key];
+
+    if (!result) {
+        result = isSupported(feature, browsers);
+        isSupportedCache[key] = result;
+    }
+
+    return result;
+}
+
 export default function ensureCompatibility (selectors, browsers, compatibilityCache) {
     // Should not merge mixins
     if (selectors.some(isCssMixin)) {
@@ -79,37 +94,37 @@ export default function ensureCompatibility (selectors, browsers, compatibilityC
                 if (type === 'pseudo') {
                     const entry = pseudoElements[value];
                     if (entry && compatible) {
-                        compatible = isSupported(entry, browsers);
+                        compatible = isSupportedCached(entry, browsers);
                     }
                 }
                 if (type === 'combinator') {
                     if (~value.indexOf('~')) {
-                        compatible = isSupported(cssSel3, browsers);
+                        compatible = isSupportedCached(cssSel3, browsers);
                     }
                     if (~value.indexOf('>') || ~value.indexOf('+')) {
-                        compatible = isSupported(cssSel2, browsers);
+                        compatible = isSupportedCached(cssSel2, browsers);
                     }
                 }
                 if (type === 'attribute' && node.attribute) {
                     // [foo]
                     if (!node.operator) {
-                        compatible = isSupported(cssSel2, browsers);
+                        compatible = isSupportedCached(cssSel2, browsers);
                     }
 
                     if (value) {
                         // [foo="bar"], [foo~="bar"], [foo|="bar"]
                         if (~['=', '~=', '|='].indexOf(node.operator)) {
-                            compatible = isSupported(cssSel2, browsers);
+                            compatible = isSupportedCached(cssSel2, browsers);
                         }
                         // [foo^="bar"], [foo$="bar"], [foo*="bar"]
                         if (~['^=', '$=', '*='].indexOf(node.operator)) {
-                            compatible = isSupported(cssSel3, browsers);
+                            compatible = isSupportedCached(cssSel3, browsers);
                         }
                     }
 
                     // [foo="bar" i]
                     if (node.insensitive) {
-                        compatible = isSupported('css-case-insensitive', browsers);
+                        compatible = isSupportedCached('css-case-insensitive', browsers);
                     }
                 }
                 if (!compatible) {
