@@ -30,17 +30,10 @@ function removeNode (node) {
 }
 
 function transform (legacy, rule) {
-    // We should not re-arrange parameters for css-modules' @value
-    // at-rule. For example:
-    //
-    // @value vertical, center from "./foo.css";
-    //
-    // We should also not re-arrange pseudo-classes for @page at-rule.
-    // For example:
-    //
-    // @page :first { margin: 0; }
-    const ruleName = rule.name.toLocaleLowerCase();
-    if (!rule.params || ruleName === 'value' || ruleName === 'page') {
+    const ruleName = rule.name.toLowerCase();
+
+    // We should re-arrange parameters only for `@media` and `@supports` at-rules
+    if (!rule.params || !["media", "supports"].includes(ruleName)) {
         return;
     }
 

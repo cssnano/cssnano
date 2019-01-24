@@ -138,6 +138,13 @@ test(
 );
 
 test(
+    'should normalise @supports queries',
+    processCSS,
+    '@supports (display: grid) {}',
+    '@supports (display:grid) {}'
+);
+
+test(
     'should not throw on empty parentheses',
     passthroughCSS,
     '@media (){h1{color:blue}}'
@@ -165,6 +172,90 @@ test(
     'should not mangle @page (uppercase)',
     passthroughCSS,
     '@PAGE :first { margin: 0; }'
+);
+
+test(
+    'should not mangle @charset',
+    passthroughCSS,
+    '@charset "utf-8";'
+);
+
+test(
+    'should not mangle @charset (uppercase)',
+    passthroughCSS,
+    '@CHARSET "utf-8";'
+);
+
+test(
+    'should not mangle @import',
+    passthroughCSS,
+    '@import url("fineprint.css") print;'
+);
+
+test(
+    'should not mangle @import (uppercase)',
+    passthroughCSS,
+    '@IMPORT url("fineprint.css") print;'
+);
+
+test(
+    'should not mangle @namespace',
+    passthroughCSS,
+    '@namespace svg url(http://www.w3.org/2000/svg);'
+);
+
+test(
+    'should not mangle @namespace (uppercase)',
+    passthroughCSS,
+    '@NAMESPACE svg url(http://www.w3.org/2000/svg);'
+);
+
+test(
+    'should not mangle @font-face',
+    passthroughCSS,
+    '@font-face {}'
+);
+
+test(
+    'should not mangle @font-face (uppercase)',
+    passthroughCSS,
+    '@FONT-FACE {}'
+);
+
+test(
+    'should not mangle @viewport',
+    passthroughCSS,
+    '@viewport {}'
+);
+
+test(
+    'should not mangle @viewport (uppercase)',
+    passthroughCSS,
+    '@VIEWPORT {}'
+);
+
+test(
+    'should not mangle @counter-style',
+    passthroughCSS,
+    '@counter-style thumbs {}'
+);
+
+test(
+    'should not mangle @counter-style (uppercase)',
+    passthroughCSS,
+    '@COUNTER-STYLE thumbs {}'
+);
+
+test(
+    'should not mangle @font-feature-values',
+    passthroughCSS,
+    '@font-feature-values Font One {}'
+);
+
+test(
+    'should not mangle @font-feature-values (uppercase)',
+    passthroughCSS,
+    '@FONT-FEATURE-VALUES Font One {}'
 );
 
 test(
