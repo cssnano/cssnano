@@ -6,5 +6,6 @@ export default hex => {
     ) {
         return '#' + hex[2] + hex[4] + hex[6];
     }
+
     return hex;
 };
