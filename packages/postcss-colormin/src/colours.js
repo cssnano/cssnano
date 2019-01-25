@@ -4,15 +4,31 @@ import toShorthand from './lib/toShorthand';
 
 const shorter = (a, b) => (a && a.length < b.length ? a : b).toLowerCase();
 
+const coloursCache = {};
+
 export default (colour, legacy = false) => {
+    const key = colour + "|" + legacy;
+
+    let cachedResult = coloursCache[key];
+
+    if (cachedResult) {
+        return cachedResult;
+    }
+
     try {
         const parsed = color(colour.toLowerCase());
         const alpha  = parsed.alpha();
+
         if (alpha === 1) {
             const toHex = toShorthand(parsed.hex().toLowerCase());
-            return shorter(keywords[toHex], toHex);
+            const result = shorter(keywords[toHex], toHex);
+
+            coloursCache[key] = result;
+
+            return result;
         } else {
             const rgb = parsed.rgb();
+
             if (
                 !legacy &&
                 !rgb.color[0] &&
@@ -20,14 +36,27 @@ export default (colour, legacy = false) => {
                 !rgb.color[2] &&
                 !alpha
             ) {
-                return 'transparent';
+                const result = 'transparent';
+
+                coloursCache[key] = result;
+
+                return result;
             }
+
             let hsla = parsed.hsl().string();
             let rgba = rgb.string();
-            return hsla.length < rgba.length ? hsla : rgba;
+            let result = hsla.length < rgba.length ? hsla : rgba;
+
+            coloursCache[key] = result;
+
+            return result;
         }
     } catch (e) {
         // Possibly malformed, so pass through
-        return colour;
+        const result = colour;
+
+        coloursCache[key] = result;
+
+        return result;
     }
 };
