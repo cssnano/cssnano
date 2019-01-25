@@ -35,7 +35,7 @@ For further details check out the [website](http://cssnano.co/):
 * [Installation guide for your build process](http://cssnano.co/guides/getting-started).
 * [Full list of optimisations](http://cssnano.co/optimisations/).
 
-You can now [try cssnano online](https://runkit.com/npm/cssnano) via Runkit!
+You can now [try cssnano online](https://cssnano.co/playground/)!
 
 
 ## Contributing
