@@ -21,7 +21,7 @@ export default function () {
                     if (child.type === 'string') {
                         child.value.split(/\s+/).forEach(word => {
                             if (/\.+/.test(word)) { // reduce empty zones to a single `.`
-                                node.value = node.value.replace(word, ".");
+                                node.value = node.value.replace(word, ".").trim();
                             } else if (word && RESERVED_KEYWORDS.indexOf(word) === -1) {
                                 addToCache(word, encoder, cache);
                             }
@@ -45,7 +45,7 @@ export default function () {
                     if (/(grid-template|grid-template-areas)/.test(decl.prop)) {
                         node.value.split(/\s+/).forEach(word => {
                             if (word in cache) {
-                                node.value = node.value.replace(word, cache[word].ident);
+                                node.value = node.value.replace(word, cache[word].ident).trim();
                             }
                         });
                         node.value = node.value.replace(/\s+/g, " "); // merge white-spaces

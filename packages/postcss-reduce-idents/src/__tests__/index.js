@@ -177,7 +177,7 @@ test(
     'should rename grid-template-areas and grid-area',
     processCSS,
     [
-        'body{grid-template-areas:"head head" \n"nav  main"\n"nav  foot";}',
+        'body{grid-template-areas:" head head " \n"nav  main "\n" nav  foot ";}',
         'header { grid-area: head }',
         'nav{grid-area:nav}',
         'main{grid-area:main}',
