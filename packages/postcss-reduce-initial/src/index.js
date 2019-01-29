@@ -15,20 +15,25 @@ export default plugin('postcss-reduce-initial', () => {
             path: __dirname,
             env: resultOpts.env,
         });
+
         const initialSupport = isSupported('css-initial-value', browsers);
+
         css.walkDecls(decl => {
             const lowerCasedProp = decl.prop.toLowerCase();
+
             if (
                 initialSupport &&
                 has(toInitial, lowerCasedProp) &&
-                decl.value === toInitial[lowerCasedProp]
+                decl.value.toLowerCase() === toInitial[lowerCasedProp]
             ) {
                 decl.value = initial;
                 return;
             }
+
             if (decl.value.toLowerCase() !== initial || !fromInitial[lowerCasedProp]) {
                 return;
             }
+
             decl.value = fromInitial[lowerCasedProp];
         });
     };

@@ -57,6 +57,22 @@ test(
 );
 
 test(
+    'border-block-color: currentColor => border-block-color: initial',
+    processCSS,
+    'border-block-color: currentColor',
+    'border-block-color: initial',
+    {env: 'chrome58'}
+);
+
+test(
+    'BORDER-BLOCK-COLOR: CURRENTCOLOR => border-block-color: initial (uppercase property and value)',
+    processCSS,
+    'BORDER-BLOCK-COLOR: CURRENTCOLOR',
+    'BORDER-BLOCK-COLOR: initial',
+    {env: 'chrome58'}
+);
+
+test(
     'should pass through when an initial value is longer',
     passthroughCSS,
     'writing-mode:initial' // initial value is horizontal-tb
