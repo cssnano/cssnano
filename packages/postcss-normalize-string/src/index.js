@@ -53,6 +53,7 @@ function stringify (ast) {
         if (value === L_NEWLINE) {
             return str;
         }
+
         return str + value;
     }, '');
 }
@@ -75,12 +76,14 @@ function parse (str) {
 
     while (pos < len) {
         code = str.charCodeAt(pos);
+
         switch (code) {
         case SPACE:
         case TAB:
         case CR:
         case FEED:
             next = pos;
+
             do {
                 next += 1;
                 code = str.charCodeAt(next);
@@ -108,6 +111,7 @@ function parse (str) {
             break;
         case BACKSLASH:
             next = pos + 1;
+
             if (str.charCodeAt(next) === SINGLE_QUOTE) {
                 ast.nodes.push(T_ESCAPED_SINGLE_QUOTE);
                 ast.types[C_ESCAPED_SINGLE_QUOTE]++;
@@ -156,6 +160,7 @@ function parse (str) {
 
 function changeWrappingQuotes (node, ast) {
     const {types} = ast;
+
     if (types[C_SINGLE_QUOTE] || types[C_DOUBLE_QUOTE]) {
         return;
     }
@@ -180,9 +185,11 @@ function changeWrappingQuotes (node, ast) {
         if (child.type === C_ESCAPED_DOUBLE_QUOTE && node.quote === L_SINGLE_QUOTE) {
             return [...newAst, T_DOUBLE_QUOTE];
         }
+
         if (child.type === C_ESCAPED_SINGLE_QUOTE && node.quote === L_DOUBLE_QUOTE) {
             return [...newAst, T_SINGLE_QUOTE];
         }
+
         return [...newAst, child];
     }, []);
 }
@@ -191,11 +198,14 @@ function normalize (value, preferredQuote) {
     if (!value || !value.length) {
         return value;
     }
+
     return valueParser(value).walk(child => {
         if (child.type !== C_STRING) {
             return;
         }
+
         const ast = parse(child.value);
+
         if (ast.quotes) {
             changeWrappingQuotes(child, ast);
         } else if (preferredQuote === C_SINGLE) {
@@ -203,6 +213,7 @@ function normalize (value, preferredQuote) {
         } else {
             child.quote = L_DOUBLE_QUOTE;
         }
+
         child.value = stringify(ast);
     }).toString();
 }
@@ -219,11 +230,25 @@ export default postcss.plugin('postcss-normalize-string', opts => {
     }, opts);
 
     return css => {
+        const cache = {};
+
         css.walk(node => {
             const {type} = node;
+
             if (has(params, type)) {
                 const param = params[type];
-                node[param] = normalize(node[param], preferredQuote);
+                const key = node[param] + '|' + preferredQuote;
+
+                if (cache[key]) {
+                    node[param] = cache[key];
+
+                    return;
+                }
+
+                const result = normalize(node[param], preferredQuote);
+
+                node[param] = result;
+                cache[key] = result;
             }
         });
     };
