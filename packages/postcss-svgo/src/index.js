@@ -8,10 +8,11 @@ const PLUGIN = 'postcss-svgo';
 const dataURI = /data:image\/svg\+xml(;((charset=)?utf-8|base64))?,/i;
 const dataURIBase64 = /data:image\/svg\+xml;base64,/i;
 
-function minifyPromise (svgo, decl, opts) {
+function minifyPromise (decl, getSvgo, opts) {
     const promises = [];
+    const parsed = valueParser(decl.value);
 
-    decl.value = valueParser(decl.value).walk(node => {
+    decl.value = parsed.walk(node => {
         if (node.type !== 'function' || node.value.toLowerCase() !== 'url' || !node.nodes.length) {
             return;
         }
@@ -37,6 +38,7 @@ function minifyPromise (svgo, decl, opts) {
             if (isUriEncoded) {
                 svg = decodedUri;
             }
+
             if (opts.encode !== undefined) {
                 isUriEncoded = opts.encode;
             }
@@ -47,7 +49,7 @@ function minifyPromise (svgo, decl, opts) {
         }
 
         promises.push(
-            svgo.optimize(svg)
+            getSvgo().optimize(svg)
                 .then(result => {
                     let data, optimizedValue;
 
@@ -84,16 +86,29 @@ function minifyPromise (svgo, decl, opts) {
 }
 
 export default postcss.plugin(PLUGIN, (opts = {}) => {
-    const svgo = new SVGO(opts);
+    let svgo = null;
+
+    const getSvgo = () => {
+        if (!svgo) {
+            svgo = new SVGO(opts);
+        }
+
+        return svgo;
+    };
+
     return css => {
         return new Promise((resolve, reject) => {
-            const promises = [];
+            const svgoQueue = [];
+
             css.walkDecls(decl => {
-                if (dataURI.test(decl.value)) {
-                    promises.push(minifyPromise(svgo, decl, opts));
+                if (!dataURI.test(decl.value)) {
+                    return;
                 }
+
+                svgoQueue.push(minifyPromise(decl, getSvgo, opts));
             });
-            return Promise.all(promises).then(resolve, reject);
+
+            return Promise.all(svgoQueue).then(resolve, reject);
         });
     };
 });
