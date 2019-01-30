@@ -7,6 +7,7 @@ function getValues (list, {value}, index) {
     if (index % 2 === 0) {
         return [...list, parseFloat(value)];
     }
+
     return list;
 }
 
@@ -26,6 +27,7 @@ function matrix3d (node, values) {
         values[15] === 1
     ) {
         const {nodes} = node;
+
         node.value = 'matrix';
         node.nodes = [
             nodes[0],  // a
@@ -54,6 +56,7 @@ const rotate3dMatch = getMatchFactory(rotate3dMappings);
 function rotate3d (node, values) {
     const {nodes} = node;
     const match = rotate3dMatch(values.slice(0, 3));
+
     if (match.length) {
         node.value = match;
         node.nodes = [nodes[6]];
@@ -67,25 +70,33 @@ function rotateZ (node) {
 
 function scale (node, values) {
     const {nodes} = node;
+
     if (!nodes[2]) {
         return;
     }
+
     const [first, second] = values;
+
     // scale(sx, sy) => scale(sx)
     if (first === second) {
         node.nodes = [nodes[0]];
+
         return;
     }
+
     // scale(sx, 1) => scaleX(sx)
     if (second === 1) {
         node.value = 'scaleX';
         node.nodes = [nodes[0]];
+
         return;
     }
+
     // scale(1, sy) => scaleY(sy)
     if (first === 1) {
         node.value = 'scaleY';
         node.nodes = [nodes[2]];
+
         return;
     }
 }
@@ -93,46 +104,58 @@ function scale (node, values) {
 function scale3d (node, values) {
     const {nodes} = node;
     const [first, second, third] = values;
+
     // scale3d(sx, 1, 1) => scaleX(sx)
     if (second === 1 && third === 1) {
         node.value = 'scaleX';
         node.nodes = [nodes[0]];
+
         return;
     }
+
     // scale3d(1, sy, 1) => scaleY(sy)
     if (first === 1 && third === 1) {
         node.value = 'scaleY';
         node.nodes = [nodes[2]];
+
         return;
     }
+
     // scale3d(1, 1, sz) => scaleZ(sz)
     if (first === 1 && second === 1) {
         node.value = 'scaleZ';
         node.nodes = [nodes[4]];
+
         return;
     }
 }
 
 function translate (node, values) {
     const {nodes} = node;
+
     if (!nodes[2]) {
         return;
     }
+
     // translate(tx, 0) => translate(tx)
     if (values[1] === 0) {
         node.nodes = [nodes[0]];
+
         return;
     }
+
     // translate(0, ty) => translateY(ty)
     if (values[0] === 0) {
         node.value = 'translateY';
         node.nodes = [nodes[2]];
+
         return;
     }
 }
 
 function translate3d (node, values) {
     const {nodes} = node;
+
     // translate3d(0, 0, tz) => translateZ(tz)
     if (values[0] === 0 && values[1] === 0) {
         node.value = 'translateZ';
@@ -163,16 +186,27 @@ function normalizeReducerName (name) {
 function reduce (node) {
     const {nodes, type, value} = node;
     const normalizedReducerName = normalizeReducerName(value);
+
     if (type === 'function' && has(reducers, normalizedReducerName)) {
         reducers[normalizedReducerName](node, nodes.reduce(getValues, []));
     }
+
     return false;
 }
 
 export default postcss.plugin('postcss-reduce-transforms', () => {
     return css => {
+        const cache = {};
+
         css.walkDecls(/transform$/i, decl => {
-            decl.value = valueParser(decl.value).walk(reduce).toString();
+            if (cache[decl.value]) {
+                return cache[decl.value];
+            }
+
+            const result = valueParser(decl.value).walk(reduce).toString();
+
+            decl.value = result;
+            cache[decl.value] = result;
         });
     };
 });
