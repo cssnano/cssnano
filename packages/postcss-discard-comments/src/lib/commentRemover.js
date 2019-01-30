@@ -4,10 +4,12 @@ function CommentRemover (options) {
 
 CommentRemover.prototype.canRemove = function (comment) {
     const remove = this.options.remove;
+
     if (remove) {
         return remove(comment);
     } else {
         const isImportant = comment.indexOf('!') === 0;
+
         if (!isImportant) {
             return true;
         }
