@@ -15,9 +15,9 @@ function reduce (node) {
         return false;
     }
 
-    const value = node.value.toLowerCase();
+    const lowerCasedValue = node.value.toLowerCase();
 
-    if (value === 'steps') {
+    if (lowerCasedValue === 'steps') {
         // Don't bother checking the step-end case as it has the same length
         // as steps(1)
         if (
@@ -43,7 +43,7 @@ function reduce (node) {
         return false;
     }
 
-    if (value === 'cubic-bezier') {
+    if (lowerCasedValue === 'cubic-bezier') {
         const match = getMatch(node.nodes.filter(evenValues).map(getValue));
 
         if (match) {
@@ -62,14 +62,18 @@ export default plugin('postcss-normalize-timing-functions', () => {
         const cache = {};
 
         css.walkDecls(/(animation|transition)(-timing-function|$)/i, decl => {
-            if (cache[decl.value]) {
-                return cache[decl.value];
+            const value = decl.value;
+
+            if (cache[value]) {
+                decl.value = cache[value];
+
+                return;
             }
 
-            const result = valueParser(decl.value).walk(reduce).toString();
+            const result = valueParser(value).walk(reduce).toString();
 
             decl.value = result;
-            cache[decl.value] = result;
+            cache[value] = result;
         });
     };
 });
