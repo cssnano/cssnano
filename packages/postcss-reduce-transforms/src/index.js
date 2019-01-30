@@ -199,14 +199,18 @@ export default postcss.plugin('postcss-reduce-transforms', () => {
         const cache = {};
 
         css.walkDecls(/transform$/i, decl => {
-            if (cache[decl.value]) {
-                return cache[decl.value];
+            const value = decl.value;
+
+            if (cache[value]) {
+                decl.value = cache[value];
+
+                return;
             }
 
-            const result = valueParser(decl.value).walk(reduce).toString();
+            const result = valueParser(value).walk(reduce).toString();
 
             decl.value = result;
-            cache[decl.value] = result;
+            cache[value] = result;
         });
     };
 });
