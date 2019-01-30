@@ -15,7 +15,7 @@ const timingFunctions = [
     'step-end',
 ];
 
-export default function normalizeTransition (decl, parsed) {
+export default function normalizeTransition (parsed) {
     let args = getArguments(parsed);
 
     let values = args.reduce((list, arg) => {
@@ -25,11 +25,14 @@ export default function normalizeTransition (decl, parsed) {
             time1: [],
             time2: [],
         };
+
         arg.forEach(node => {
             const {type, value} = node;
+
             if (type === 'space') {
                 return;
             }
+
             if (type === 'function' && ~['steps', 'cubic-bezier'].indexOf(value.toLowerCase())) {
                 state.timingFunction = [...state.timingFunction, node, addSpace()];
             } else if (unit(value)) {
@@ -44,8 +47,9 @@ export default function normalizeTransition (decl, parsed) {
                 state.property = [...state.property, node, addSpace()];
             }
         });
+
         return [...list, [...state.property, ...state.time1, ...state.timingFunction, ...state.time2]];
     }, []);
 
-    decl.value = getValue(values);
+    return getValue(values);
 }

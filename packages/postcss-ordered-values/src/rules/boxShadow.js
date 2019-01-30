@@ -5,7 +5,7 @@ import getValue from '../lib/getValue';
 
 // box-shadow: inset? && <length>{2,4} && <color>?
 
-export default function normalizeBoxShadow (decl, parsed) {
+export default function normalizeBoxShadow (parsed) {
     let args = getArguments(parsed);
     let abort = false;
 
@@ -15,15 +15,19 @@ export default function normalizeBoxShadow (decl, parsed) {
             inset: [],
             color: [],
         };
+
         arg.forEach(node => {
             const {type, value} = node;
+
             if (type === 'function' && ~value.toLowerCase().indexOf('calc')) {
                 abort = true;
                 return;
             }
+
             if (type === 'space') {
                 return;
             }
+
             if (unit(value)) {
                 val = [...val, node, addSpace()];
             } else if (value.toLowerCase() === 'inset') {
@@ -32,12 +36,13 @@ export default function normalizeBoxShadow (decl, parsed) {
                 state.color = [...state.color, node, addSpace()];
             }
         });
+
         return [...list, [...state.inset, ...val, ...state.color]];
     }, []);
 
     if (abort) {
-        return;
+        return parsed.toString();
     }
 
-    decl.value = getValue(values);
+    return getValue(values);
 }

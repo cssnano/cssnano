@@ -13,20 +13,24 @@ const flexWrap = [
     'wrap-reverse',
 ];
 
-export default function normalizeFlexFlow (decl, flexFlow) {
+export default function normalizeFlexFlow (flexFlow) {
     let order = {
         direction: '',
         wrap: '',
     };
+
     flexFlow.walk(({value}) => {
         if (~flexDirection.indexOf(value.toLowerCase())) {
             order.direction = value;
             return;
         }
+
         if (~flexWrap.indexOf(value.toLowerCase())) {
             order.wrap = value;
+
             return;
         }
     });
-    decl.value = `${order.direction} ${order.wrap}`.trim();
+
+    return `${order.direction} ${order.wrap}`.trim();
 };
