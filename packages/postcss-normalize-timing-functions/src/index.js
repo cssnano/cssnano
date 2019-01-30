@@ -27,23 +27,31 @@ function reduce (node) {
         ) {
             node.type = 'word';
             node.value = 'step-start';
+
             delete node.nodes;
+
             return;
         }
+
         // The end case is actually the browser default, so it isn't required.
         if (node.nodes[2] && node.nodes[2].value.toLowerCase() === 'end') {
             node.nodes = [node.nodes[0]];
+
             return;
         }
+
         return false;
     }
+
     if (value === 'cubic-bezier') {
         const match = getMatch(node.nodes.filter(evenValues).map(getValue));
 
         if (match) {
             node.type = 'word';
             node.value = match;
+
             delete node.nodes;
+
             return;
         }
     }
@@ -51,8 +59,17 @@ function reduce (node) {
 
 export default plugin('postcss-normalize-timing-functions', () => {
     return css => {
+        const cache = {};
+
         css.walkDecls(/(animation|transition)(-timing-function|$)/i, decl => {
-            decl.value = valueParser(decl.value).walk(reduce).toString();
+            if (cache[decl.value]) {
+                return cache[decl.value];
+            }
+
+            const result = valueParser(decl.value).walk(reduce).toString();
+
+            decl.value = result;
+            cache[decl.value] = result;
         });
     };
 });
