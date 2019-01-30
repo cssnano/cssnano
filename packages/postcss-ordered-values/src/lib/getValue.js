@@ -13,10 +13,12 @@ export default function getValue (values) {
                 }
                 nodes.push(val);
             });
+
             if (index !== values.length - 1) {
                 nodes[nodes.length - 1].type = 'div';
                 nodes[nodes.length - 1].value = ',';
             }
+
             return nodes;
         }, []),
     });

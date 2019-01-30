@@ -23,8 +23,9 @@ const borderStyles = [
     'outset',
 ];
 
-export default function normalizeBorder (decl, border) {
+export default function normalizeBorder (border) {
     const order = {width: '', style: '', color: ''};
+
     border.walk(node => {
         const {type, value} = node;
         if (type === 'word') {
@@ -52,5 +53,6 @@ export default function normalizeBorder (decl, border) {
             return false;
         }
     });
-    decl.value = `${order.width} ${order.style} ${order.color}`.trim();
+
+    return `${order.width} ${order.style} ${order.color}`.trim();
 };

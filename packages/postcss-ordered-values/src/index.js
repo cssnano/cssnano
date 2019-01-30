@@ -1,5 +1,5 @@
 import postcss from 'postcss';
-import getParsed from './lib/getParsed';
+import valueParser from "postcss-value-parser";
 
 // rules
 import animation from './rules/animation';
@@ -29,6 +29,7 @@ const rules = {
 
 function shouldAbort (parsed) {
     let abort = false;
+
     parsed.walk(({type, value}) => {
         if (
             type === 'comment' ||
@@ -36,24 +37,56 @@ function shouldAbort (parsed) {
             type === 'word' && ~value.indexOf(`___CSS_LOADER_IMPORT___`)
         ) {
             abort = true;
+
             return false;
         }
     });
+
     return abort;
+}
+
+function getValue (decl) {
+    let {value, raws} = decl;
+
+    if (raws && raws.value && raws.value.raw) {
+        value = raws.value.raw;
+    }
+
+    return value;
 }
 
 export default postcss.plugin('postcss-ordered-values', () => {
     return css => {
+        const cache = {};
+
         css.walkDecls(decl => {
-            const processor = rules[decl.prop.toLowerCase()];
+            const lowerCasedProp = decl.prop.toLowerCase();
+            const processor = rules[lowerCasedProp];
+
             if (!processor) {
                 return;
             }
-            const parsed = getParsed(decl);
-            if (parsed.nodes.length < 2 || shouldAbort(parsed)) {
+
+            const value = getValue(decl);
+
+            if (cache[value]) {
+                decl.value = cache[value];
+
                 return;
             }
-            processor(decl, parsed);
+
+            const parsed = valueParser(value);
+
+            if (parsed.nodes.length < 2 || shouldAbort(parsed)) {
+                cache[value] = value;
+
+                return;
+            }
+
+            const result = processor(parsed);
+
+            decl.value = result;
+            cache[value] = result;
         });
     };
 });
