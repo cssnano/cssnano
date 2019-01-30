@@ -4,15 +4,11 @@ import toShorthand from './lib/toShorthand';
 
 const shorter = (a, b) => (a && a.length < b.length ? a : b).toLowerCase();
 
-const coloursCache = {};
+export default (colour, isLegacy = false, cache = false) => {
+    const key = colour + "|" + isLegacy;
 
-export default (colour, legacy = false) => {
-    const key = colour + "|" + legacy;
-
-    let cachedResult = coloursCache[key];
-
-    if (cachedResult) {
-        return cachedResult;
+    if (cache && cache[key]) {
+        return cache[key];
     }
 
     try {
@@ -23,14 +19,16 @@ export default (colour, legacy = false) => {
             const toHex = toShorthand(parsed.hex().toLowerCase());
             const result = shorter(keywords[toHex], toHex);
 
-            coloursCache[key] = result;
+            if (cache) {
+                cache[key] = result;
+            }
 
             return result;
         } else {
             const rgb = parsed.rgb();
 
             if (
-                !legacy &&
+                !isLegacy &&
                 !rgb.color[0] &&
                 !rgb.color[1] &&
                 !rgb.color[2] &&
@@ -38,7 +36,9 @@ export default (colour, legacy = false) => {
             ) {
                 const result = 'transparent';
 
-                coloursCache[key] = result;
+                if (cache) {
+                    cache[key] = result;
+                }
 
                 return result;
             }
@@ -47,7 +47,9 @@ export default (colour, legacy = false) => {
             let rgba = rgb.string();
             let result = hsla.length < rgba.length ? hsla : rgba;
 
-            coloursCache[key] = result;
+            if (cache) {
+                cache[key] = result;
+            }
 
             return result;
         }
@@ -55,7 +57,9 @@ export default (colour, legacy = false) => {
         // Possibly malformed, so pass through
         const result = colour;
 
-        coloursCache[key] = result;
+        if (cache) {
+            cache[key] = result;
+        }
 
         return result;
     }
