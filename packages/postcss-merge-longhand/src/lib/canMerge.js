@@ -3,9 +3,9 @@ import isCustomProp from './isCustomProp';
 const important = node => node.important;
 const unimportant = node => !node.important;
 
-const hasInherit = node => node.value.includes('inherit');
-const hasInitial = node => node.value.includes('initial');
-const hasUnset = node => node.value.includes('unset');
+const hasInherit = node => node.value.toLowerCase() === 'inherit';
+const hasInitial = node => node.value.toLowerCase() === 'initial';
+const hasUnset = node => node.value.toLowerCase() === 'unset';
 
 export default (props, includeCustomProps = true) => {
     if (props.some(hasInherit) && !props.every(hasInherit)) {

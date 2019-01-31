@@ -6,6 +6,7 @@ const defaults = ['medium', 'none', 'currentcolor'];
 
 export default v => {
     const values = parseWsc(v);
+
     if (!isValidWsc(values)) {
         return minifyTrbl(v);
     }
@@ -14,7 +15,9 @@ export default v => {
         if (cur === undefined || cur.toLowerCase() === defaults[i] && (!i ||(arr[i-1] || '').toLowerCase() !== cur.toLowerCase())) {
             return prev;
         }
+
         return cur + ' ' + prev;
     }).trim();
+
     return minifyTrbl(value || 'none');
 };

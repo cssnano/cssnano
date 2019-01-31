@@ -16,6 +16,7 @@ export default prop => {
 
     const cleanup = rule => {
         let decls = getDecls(rule, [prop].concat(properties));
+
         while (decls.length) {
             const lastNode = decls[decls.length - 1];
 
@@ -39,6 +40,7 @@ export default prop => {
                 node.prop === lastNode.prop &&
                 !(!isCustomProp(node) && isCustomProp(lastNode))
             );
+
             duplicates.forEach(remove);
             decls = decls.filter(node => node !== lastNode && !~duplicates.indexOf(node));
         }
@@ -46,20 +48,24 @@ export default prop => {
 
     const processor = {
         explode: rule => {
-            rule.walkDecls(prop, decl => {
+            rule.walkDecls(new RegExp("^" + prop + "$", "i"), decl => {
                 if (!canExplode(decl)) {
                     return;
                 }
+
                 if (detect(decl)) {
                     return;
                 }
+
                 const values = parseTrbl(decl.value);
+
                 trbl.forEach((direction, index) => {
                     insertCloned(decl.parent, decl, {
                         prop: properties[index],
                         value: values[index],
                     });
                 });
+
                 decl.remove();
             });
         },
@@ -71,9 +77,11 @@ export default prop => {
                         value: minifyTrbl(mergeValues(...rules)),
                     });
                     rules.forEach(remove);
+
                     return true;
                 }
             });
+
             cleanup(rule);
         },
     };

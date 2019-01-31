@@ -24,27 +24,33 @@ const inherit = 'inherit';
  */
 
 function normalize (values) {
-    if (values[0] === auto) {
+    if (values[0].toLowerCase() === auto) {
         return values[1];
     }
-    if (values[1] === auto) {
+
+    if (values[1].toLowerCase() === auto) {
         return values[0];
     }
-    if (values[0] === inherit && values[1] === inherit) {
+
+    if (values[0].toLowerCase() === inherit && values[1].toLowerCase() === inherit) {
         return inherit;
     }
+
     return values.join(' ');
 }
 
 function explode (rule) {
-    rule.walkDecls('columns', decl => {
+    rule.walkDecls(/^columns$/i, decl => {
         if (!canExplode(decl)) {
             return;
         }
+
         if (detect(decl)) {
             return;
         }
+
         let values = list.space(decl.value);
+
         if (values.length === 1) {
             values.push(auto);
         }
@@ -52,7 +58,7 @@ function explode (rule) {
         values.forEach((value, i) => {
             let prop = properties[1];
 
-            if (value === auto) {
+            if (value.toLowerCase() === auto) {
                 prop = properties[i];
             } else if (unit(value).unit) {
                 prop = properties[0];
@@ -63,12 +69,14 @@ function explode (rule) {
                 value,
             });
         });
+
         decl.remove();
     });
 }
 
 function cleanup (rule) {
     let decls = getDecls(rule, ['columns'].concat(properties));
+
     while (decls.length) {
         const lastNode = decls[decls.length - 1];
 
@@ -105,10 +113,13 @@ function merge (rule) {
                 prop: 'columns',
                 value: normalize(rules.map(getValue)),
             });
+
             rules.forEach(remove);
+
             return true;
         }
     });
+
     cleanup(rule);
 }
 
