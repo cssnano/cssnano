@@ -25,14 +25,15 @@ export default function () {
 
             if (
                 type === 'atrule' &&
-                /counter-style/.test(name) &&
-                RESERVED_KEYWORDS.indexOf(node.params) === -1
+                /counter-style/i.test(name) &&
+                RESERVED_KEYWORDS.indexOf(node.params.toLowerCase()) === -1
             ) {
                 addToCache(node.params, encoder, cache);
+
                 atRules.push(node);
             }
 
-            if (type === 'decl' && /(list-style|system)/.test(prop)) {
+            if (type === 'decl' && /(list-style|system)/i.test(prop)) {
                 decls.push(node);
             }
         },
@@ -43,13 +44,16 @@ export default function () {
                 decl.value = valueParser(decl.value).walk(node => {
                     if (node.type === 'word' && node.value in cache) {
                         cache[node.value].count++;
+
                         node.value = cache[node.value].ident;
                     }
                 }).toString();
             });
+
             // Iterate each at rule and change their name if references to them have been found
             atRules.forEach(rule => {
                 const cached = cache[rule.params];
+
                 if (cached && cached.count > 0) {
                     rule.params = cached.ident;
                 }
