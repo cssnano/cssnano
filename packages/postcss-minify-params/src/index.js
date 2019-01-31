@@ -42,6 +42,7 @@ function transform (legacy, rule) {
     params.walk((node, index) => {
         if (node.type === 'div' || node.type === 'function') {
             node.before = node.after = '';
+
             if (
                 node.type === 'function' &&
                 node.nodes[4] &&
@@ -51,6 +52,7 @@ function transform (legacy, rule) {
                     node.nodes[2].value,
                     node.nodes[4].value
                 );
+
                 node.nodes[2].value = a;
                 node.nodes[4].value = b;
             }
@@ -58,18 +60,22 @@ function transform (legacy, rule) {
             node.value = ' ';
         } else {
             const prevWord = params.nodes[index - 2];
+
             if (
                 node.value.toLowerCase() === 'all' &&
                 rule.name.toLowerCase() === 'media' &&
                 !prevWord
             ) {
                 const nextWord = params.nodes[index + 2];
+
                 if (!legacy || nextWord) {
                     removeNode(node);
                 }
+
                 if (nextWord && nextWord.value.toLowerCase() === 'and') {
                     const nextSpace = params.nodes[index + 1];
                     const secondSpace = params.nodes[index + 3];
+
                     removeNode(nextWord);
                     removeNode(nextSpace);
                     removeNode(secondSpace);
