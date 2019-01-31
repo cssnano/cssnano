@@ -145,6 +145,34 @@ test(
 );
 
 test(
+    'should normalise @supports with not',
+    processCSS,
+    '@supports not (display: grid) {}',
+    '@supports not (display:grid) {}'
+);
+
+test(
+    'should normalise @supports with multiple conditions',
+    processCSS,
+    '@supports ((text-align-last: justify) or (-moz-text-align-last: justify)) {}',
+    '@supports ((text-align-last:justify) or (-moz-text-align-last:justify)) {}'
+);
+
+test(
+    'should normalise @supports with var',
+    processCSS,
+    '@supports (--foo: green) {}',
+    '@supports (--foo:green) {}'
+);
+
+test(
+    'should normalise @supports with :is',
+    processCSS,
+    '@supports not selector(:is(a, b)) {}',
+    '@supports not selector(:is(a,b)) {}'
+);
+
+test(
     'should not throw on empty parentheses',
     passthroughCSS,
     '@media (){h1{color:blue}}'
