@@ -8,8 +8,10 @@ export default plugin([IE_5_5, IE_6, IE_7], [RULE], function (rule) {
     if (isMixin(rule)) {
         return;
     }
+
     const {selector} = rule;
     const trim = selector.trim();
+
     if (
         trim.lastIndexOf(',')  === selector.length - 1 ||
         trim.lastIndexOf('\\') === selector.length - 1

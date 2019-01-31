@@ -12,26 +12,33 @@ export default function plugin (targets, nodeTypes, detect) {
                 message: `Bad ${metadata.identifier}: ${metadata.hack}`,
                 browsers: this.targets,
             });
+
             this.nodes.push(node);
         }
 
         any (node) {
             if (~this.nodeTypes.indexOf(node.type)) {
                 detect.apply(this, arguments);
+
                 return !!node._stylehacks;
             }
+
             return false;
         }
 
         detectAndResolve (...args) {
             this.nodes = [];
+
             detect.apply(this, args);
+
             return this.resolve();
         }
 
         detectAndWarn (...args) {
             this.nodes = [];
+
             detect.apply(this, args);
+
             return this.warn();
         }
 
@@ -42,6 +49,7 @@ export default function plugin (targets, nodeTypes, detect) {
         warn () {
             return this.nodes.forEach(node => {
                 const {message, browsers, identifier, hack} = node._stylehacks;
+
                 return node.warn(this.result, message, {browsers, identifier, hack});
             });
         }

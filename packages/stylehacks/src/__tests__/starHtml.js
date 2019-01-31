@@ -8,3 +8,11 @@ test(
     '',
     {target: 'ie6', unaffected: 'ie7'}
 );
+
+test(
+    'ie 5.5-6 * html hack (uppercase)',
+    processCSS,
+    '* HTML H1 { color: red }',
+    '',
+    {target: 'ie6', unaffected: 'ie7'}
+);

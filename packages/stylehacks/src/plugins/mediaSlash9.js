@@ -5,7 +5,8 @@ import {ATRULE} from '../dictionary/postcss';
 
 export default plugin([IE_5_5, IE_6, IE_7], [ATRULE], function (rule) {
     const params = rule.params.trim();
-    if (params === 'screen\\9') {
+
+    if (params.toLowerCase() === 'screen\\9') {
         this.push(rule, {
             identifier: MEDIA_QUERY,
             hack: params,
