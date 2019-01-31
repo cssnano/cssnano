@@ -38,3 +38,11 @@ test(
     'h1 {}',
     opts
 );
+
+test(
+    'should also handle @hacks (uppercase)',
+    processCSS,
+    'h1 { @COLOR: red }',
+    'h1 {}',
+    opts
+);
