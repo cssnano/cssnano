@@ -18,6 +18,7 @@ export default function parseWsc (value) {
     let width, style, color;
 
     const values = list.space(value);
+
     if (values.length > 1 && isStyle(values[1]) && values[0].toLowerCase() === 'none') {
         values.unshift();
         width = '0';
@@ -41,9 +42,11 @@ export default function parseWsc (value) {
         if (!width && style && color) {
             width = unknown.pop();
         }
+
         if (width && !style && color) {
             style = unknown.pop();
         }
+
         if (width && style && !color) {
             color = unknown.pop();
         }

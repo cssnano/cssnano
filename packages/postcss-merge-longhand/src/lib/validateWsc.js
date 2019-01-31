@@ -1,7 +1,18 @@
-import colorNames from 'css-color-names';
+import colorNames from "css-color-names";
 
-const widths = ['thin', 'medium', 'thick'];
-const styles = ['none', 'hidden', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset'];
+const widths = ["thin", "medium", "thick"];
+const styles = [
+    "none",
+    "hidden",
+    "dotted",
+    "dashed",
+    "solid",
+    "double",
+    "groove",
+    "ridge",
+    "inset",
+    "outset",
+];
 const colors = Object.keys(colorNames);
 
 export function isStyle (value) {
@@ -9,13 +20,17 @@ export function isStyle (value) {
 }
 
 export function isWidth (value) {
-    return value && !!~widths.indexOf(value.toLowerCase()) || /^(\d+(\.\d+)?|\.\d+)(\w+)?$/.test(value);
+    return (
+        (value && !!~widths.indexOf(value.toLowerCase())) ||
+        /^(\d+(\.\d+)?|\.\d+)(\w+)?$/.test(value)
+    );
 }
 
 export function isColor (value) {
     if (!value) {
         return false;
     }
+
     value = value.toLowerCase();
 
     if (/rgba?\(/.test(value)) {
@@ -29,11 +44,12 @@ export function isColor (value) {
     if (/#([0-9a-z]{6}|[0-9a-z]{3})/.test(value)) {
         return true;
     }
-    if (value === 'transparent') {
+
+    if (value === "transparent") {
         return true;
     }
 
-    if (value === 'currentcolor') {
+    if (value === "currentcolor") {
         return true;
     }
 
@@ -46,7 +62,8 @@ export function isValidWsc (wscs) {
     const validColor = isColor(wscs[2]);
 
     return (
-        validWidth && validStyle ||
-        validWidth && validColor ||
-        validStyle && validColor);
+        (validWidth && validStyle) ||
+        (validWidth && validColor) ||
+        (validStyle && validColor)
+    );
 }
