@@ -4,6 +4,7 @@ export default function encode (val, num) {
     let character = num % base;
     let result = characters[character];
     let remainder = Math.floor(num / base);
+
     if (remainder) {
         base = 64;
         characters = characters + '0123456789-_';
@@ -13,5 +14,6 @@ export default function encode (val, num) {
             result = result + characters[character];
         }
     }
+
     return result;
 };

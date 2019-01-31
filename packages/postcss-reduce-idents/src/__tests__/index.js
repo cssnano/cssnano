@@ -14,10 +14,24 @@ test(
 );
 
 test(
+    'should rename keyframes (uppercase)',
+    processCSS,
+    '@KEYFRAMES whiteToBlack{0%{color:#fff}to{color:#000}}.one{ANIMATION-NAME:whiteToBlack}',
+    '@KEYFRAMES a{0%{color:#fff}to{color:#000}}.one{ANIMATION-NAME:a}'
+);
+
+test(
     'should rename multiple keyframes',
     processCSS,
     '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}@keyframes fadeOut{0%{opacity:1}to{opacity:0}}.one{animation-name:whiteToBlack}.two{animation-name:fadeOut}',
     '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes b{0%{opacity:1}to{opacity:0}}.one{animation-name:a}.two{animation-name:b}',
+);
+
+test(
+    'should rename multiple keyframes (uppercase)',
+    processCSS,
+    '@KEYFRAMES whiteToBlack{0%{color:#fff}to{color:#000}}@KEYFRAMES fadeOut{0%{opacity:1}to{opacity:0}}.one{animation-name:whiteToBlack}.two{animation-name:fadeOut}',
+    '@KEYFRAMES a{0%{color:#fff}to{color:#000}}@KEYFRAMES b{0%{opacity:1}to{opacity:0}}.one{animation-name:a}.two{animation-name:b}',
 );
 
 test(
@@ -28,6 +42,13 @@ test(
 );
 
 test(
+    'should reuse the same animation name for vendor prefixed keyframes',
+    processCSS,
+    '@-WEBKIT-KEYFRAMES whiteToBlack{0%{color:#fff}to{color:#000}}@KEYFRAMES whiteToBlack{0%{color:#fff}to{color:#000}}div{-webkit-animation-name:whiteToBlack;animation-name:whiteToBlack}',
+    '@-WEBKIT-KEYFRAMES a{0%{color:#fff}to{color:#000}}@KEYFRAMES a{0%{color:#fff}to{color:#000}}div{-webkit-animation-name:a;animation-name:a}'
+);
+
+test(
     'should support multiple animations',
     processCSS,
     '@keyframes one{0%{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes two{0%{border-width:0;opacity:0}}.loader{animation:one  1250ms  infinite linear, two .3s ease-out both}',
@@ -35,9 +56,22 @@ test(
 );
 
 test(
+    'should support multiple animations (uppercase)',
+    processCSS,
+    '@KEYFRAMES one{0%{transform:rotate(0deg)}to{transform:rotate(360deg)}}@KEYFRAMES two{0%{border-width:0;opacity:0}}.loader{animation:one  1250ms  infinite linear, two .3s ease-out both}',
+    '@KEYFRAMES a{0%{transform:rotate(0deg)}to{transform:rotate(360deg)}}@KEYFRAMES b{0%{border-width:0;opacity:0}}.loader{animation:a  1250ms  infinite linear, b .3s ease-out both}'
+);
+
+test(
     'should not touch animation names that are not defined in the file',
     passthroughCSS,
     '.one{animation-name:fadeInUp}'
+);
+
+test(
+    'should not touch animation names that are not defined in the file (uppercase)',
+    passthroughCSS,
+    '.one{ANIMATION-NAME:fadeInUp}'
 );
 
 test(
@@ -57,6 +91,13 @@ test(
     processCSS,
     '@counter-style custom{system:extends decimal;suffix:"> "}ol{list-style:custom}',
     '@counter-style a{system:extends decimal;suffix:"> "}ol{list-style:a}'
+);
+
+test(
+    'should rename counter styles (uppercase)',
+    processCSS,
+    '@COUNTER-STYLE custom{system:extends decimal;suffix:"> "}ol{LIST-STYLE:custom}',
+    '@COUNTER-STYLE a{system:extends decimal;suffix:"> "}ol{LIST-STYLE:a}'
 );
 
 test(
@@ -86,6 +127,13 @@ test(
 );
 
 test(
+    'should rename counters (uppercase)',
+    processCSS,
+    'body{COUNTER-RESET:section}h3:before{COUNTER-INCREMENT:section;CONTENT:"Section" counter(section) ": "}',
+    'body{COUNTER-RESET:a}h3:before{COUNTER-INCREMENT:a;CONTENT:"Section" counter(a) ": "}'
+);
+
+test(
     'should rename counters (2)',
     processCSS,
     'h3:before{content:counter(section, section2);counter-increment:section}',
@@ -97,6 +145,13 @@ test(
     processCSS,
     'li{counter-increment:list-item}li::marker{content:"(" counters(list-item,".") ")"}',
     'li{counter-increment:a}li::marker{content:"(" counters(a,".") ")"}'
+);
+
+test(
+    'should rename counters (3) (uppercase)',
+    processCSS,
+    'li{counter-increment:list-item}li::marker{content:"(" COUNTERS(list-item,".") ")"}',
+    'li{counter-increment:a}li::marker{content:"(" COUNTERS(a,".") ")"}'
 );
 
 test(
@@ -193,6 +248,25 @@ test(
 );
 
 test(
+    'should rename grid-template-areas and grid-area (uppercase)',
+    processCSS,
+    [
+        'body{GRID-TEMPLATE-AREAS:"head head" \n"nav  main"\n"nav  foot";}',
+        'header { GRID-AREA: head }',
+        'nav{GRID-AREA:nav}',
+        'main{GRID-AREA:main}',
+        'footer{GRID-AREA:foot}',
+    ].join(''),
+    [
+        'body{GRID-TEMPLATE-AREAS:"a a" "b c" "b d";}',
+        'header { GRID-AREA: a }',
+        'nav{GRID-AREA:b}',
+        'main{GRID-AREA:c}',
+        'footer{GRID-AREA:d}',
+    ].join('')
+);
+
+test(
     'should rename grid-template short syntax',
     processCSS,
     [
@@ -254,10 +328,14 @@ test('should not generate same ident when plugin instance is reused', t => {
     const instance = postcss(plugin);
     return Promise.all([
         instance.process('@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}'),
+        instance.process('@KEYFRAMES whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}'),
         instance.process('@keyframes fadeOut{0%{opacity:1}to{opacity:0}}.two{animation-name:fadeOut}'),
-    ]).then(([result1, result2]) => {
+        instance.process('@KEYFRAMES fadeOut{0%{opacity:1}to{opacity:0}}.two{animation-name:fadeOut}'),
+    ]).then(([result1, result2, result3, result4]) => {
         t.is(result1.css, '@keyframes a{0%{color:#fff}to{color:#000}}.one{animation-name:a}');
-        t.is(result2.css, '@keyframes b{0%{opacity:1}to{opacity:0}}.two{animation-name:b}');
+        t.is(result2.css, '@KEYFRAMES a{0%{color:#fff}to{color:#000}}.one{animation-name:a}');
+        t.is(result3.css, '@keyframes b{0%{opacity:1}to{opacity:0}}.two{animation-name:b}');
+        t.is(result4.css, '@KEYFRAMES b{0%{opacity:1}to{opacity:0}}.two{animation-name:b}');
     });
 });
 

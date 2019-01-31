@@ -16,25 +16,27 @@ export default function () {
                 return;
             }
 
-            if (/(grid-template|grid-template-areas)/.test(node.prop)) {
+            if (/(grid-template|grid-template-areas)/i.test(node.prop)) {
                 valueParser(node.value).walk(child => {
                     if (child.type === 'string') {
                         child.value.split(/\s+/).forEach(word => {
                             if (/\.+/.test(word)) { // reduce empty zones to a single `.`
                                 node.value = node.value.replace(word, ".");
-                            } else if (word && RESERVED_KEYWORDS.indexOf(word) === -1) {
+                            } else if (word && RESERVED_KEYWORDS.indexOf(word.toLowerCase()) === -1) {
                                 addToCache(word, encoder, cache);
                             }
                         });
                     }
                 });
+
                 declCache.push(node);
-            } else if (node.prop === 'grid-area') {
+            } else if (node.prop.toLowerCase() === 'grid-area') {
                 valueParser(node.value).walk(child => {
                     if (child.type === 'word' && RESERVED_KEYWORDS.indexOf(child.value) === -1) {
                         addToCache(child.value, encoder, cache);
                     }
                 });
+
                 declCache.push(node);
             }
         },
@@ -42,7 +44,7 @@ export default function () {
         transform () {
             declCache.forEach(decl => {
                 decl.value = valueParser(decl.value).walk(node => {
-                    if (/(grid-template|grid-template-areas)/.test(decl.prop)) {
+                    if (/(grid-template|grid-template-areas)/i.test(decl.prop)) {
                         node.value.split(/\s+/).forEach(word => {
                             if (word in cache) {
                                 node.value = node.value.replace(word, cache[word].ident);
@@ -50,11 +52,13 @@ export default function () {
                         });
                         node.value = node.value.replace(/\s+/g, " "); // merge white-spaces
                     }
-                    if (decl.prop === 'grid-area' && !isNum(node)) {
+
+                    if (decl.prop.toLowerCase() === 'grid-area' && !isNum(node)) {
                         if (node.value in cache) {
                             node.value = cache[node.value].ident;
                         }
                     }
+
                     return false;
                 }).toString();
             });

@@ -16,20 +16,21 @@ export default function () {
 
             if (
                 type === 'atrule' &&
-                /keyframes/.test(name) &&
-                RESERVED_KEYWORDS.indexOf(node.params) === -1
+                /keyframes/i.test(name) &&
+                RESERVED_KEYWORDS.indexOf(node.params.toLowerCase()) === -1
             ) {
                 addToCache(node.params, encoder, cache);
                 atRules.push(node);
             }
 
-            if (type === 'decl' && /animation/.test(prop)) {
+            if (type === 'decl' && /animation/i.test(prop)) {
                 decls.push(node);
             }
         },
 
         transform () {
             let referenced = [];
+
             // Iterate each property and change their names
             decls.forEach(decl => {
                 decl.value = valueParser(decl.value).walk(node => {
@@ -37,6 +38,7 @@ export default function () {
                         if (!~referenced.indexOf(node.value)) {
                             referenced.push(node.value);
                         }
+
                         cache[node.value].count++;
                         node.value = cache[node.value].ident;
                     }
@@ -46,6 +48,7 @@ export default function () {
             // Iterate each at rule and change their name if references to them have been found
             atRules.forEach(rule => {
                 const cached = cache[rule.params];
+
                 if (cached && cached.count > 0 && !!~referenced.indexOf(rule.params)) {
                     rule.params = cached.ident;
                 }

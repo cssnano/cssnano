@@ -19,19 +19,21 @@ export default function () {
                 return;
             }
 
-            if (/counter-(reset|increment)/.test(prop)) {
+            if (/counter-(reset|increment)/i.test(prop)) {
                 node.value = valueParser(node.value).walk(child => {
                     if (
                         child.type === 'word' &&
                         !isNum(child) &&
-                        RESERVED_KEYWORDS.indexOf(child.value) === -1
+                        RESERVED_KEYWORDS.indexOf(child.value.toLowerCase()) === -1
                     ) {
                         addToCache(child.value, encoder, cache);
+
                         child.value = cache[child.value].ident;
                     }
                 });
+
                 declOneCache.push(node);
-            } else if (/content/.test(prop)) {
+            } else if (/content/i.test(prop)) {
                 declTwoCache.push(node);
             }
         },
@@ -39,26 +41,34 @@ export default function () {
         transform () {
             declTwoCache.forEach(decl => {
                 decl.value = valueParser(decl.value).walk(node => {
-                    const {type, value} = node;
+                    const {type} = node;
+
+                    const value = node.value.toLowerCase();
+
                     if (type === 'function' && (value === 'counter' || value === 'counters')) {
                         walk(node.nodes, child => {
                             if (child.type === 'word' && child.value in cache) {
                                 cache[child.value].count++;
+
                                 child.value = cache[child.value].ident;
                             }
                         });
                     }
+
                     if (type === 'space') {
                         node.value = ' ';
                     }
+
                     return false;
                 }).toString();
             });
+
             declOneCache.forEach(decl => {
                 decl.value = decl.value.walk(node => {
                     if (node.type === 'word' && !isNum(node)) {
                         Object.keys(cache).forEach(key => {
                             const cached = cache[key];
+
                             if (cached.ident === node.value && !cached.count) {
                                 node.value = key;
                             }
