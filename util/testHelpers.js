@@ -2,7 +2,6 @@ import fs from 'fs';
 import postcss from 'postcss';
 import cssnano from 'lerna:cssnano';
 import frameworks from './frameworks';
-import formatter from './integrationFormatter';
 
 export function usePostCSSPlugin (t, plugin) {
     t.truthy(plugin.postcssVersion, 'should be able to access version');
@@ -62,7 +61,8 @@ export function loadPreset (preset) {
 export function integrationTests (t, preset, integrations) {
     return Promise.all(Object.keys(frameworks).map(framework => {
         const css = frameworks[framework];
-        return postcss([cssnano({preset}), formatter])
+
+        return postcss([cssnano({preset})])
             .process(css, {from: undefined})
             .then(result => {
                 t.is(
