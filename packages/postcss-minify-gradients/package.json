@@ -1,6 +1,6 @@
 {
   "name": "postcss-minify-gradients",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Minify gradient parameters with PostCSS.",
   "main": "dist/index.js",
   "scripts": {

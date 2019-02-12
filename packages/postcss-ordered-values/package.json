@@ -1,6 +1,6 @@
 {
   "name": "postcss-ordered-values",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "Ensure values are ordered consistently in your CSS.",
   "main": "dist/index.js",
   "files": [

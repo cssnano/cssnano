@@ -1,6 +1,6 @@
 {
   "name": "postcss-merge-rules",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Merge CSS rules with PostCSS.",
   "main": "dist/index.js",
   "files": [

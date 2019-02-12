@@ -1,6 +1,6 @@
 {
   "name": "postcss-merge-longhand",
-  "version": "4.0.10",
+  "version": "4.0.11",
   "description": "Merge longhand properties into shorthand with PostCSS.",
   "main": "dist/index.js",
   "files": [

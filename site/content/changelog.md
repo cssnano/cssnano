@@ -7,6 +7,36 @@ layout: Page
 
 
 
+## 4.1.9
+
+### Performance Improvements
+
+- `postcss-colormin`: increase performance
+- `postcss-discard-comments`: increase performance
+- `postcss-merge-rules` increase performance
+- `postcss-minify-params` increase performance
+- `postcss-minify-selectors`: increase performance
+- `postcss-normalize-display-values`: increase performance 
+- `postcss-normalize-positions`: increase performance
+- `postcss-normalize-repeat-style`: increase performance
+- `postcss-normalize-string`: increase performance
+- `postcss-normalize-timing-functions`: increase performance
+- `postcss-normalize-whitespace`: increase performance
+- `postcss-ordered-values`: increase performance
+- `postcss-reduce-transforms`: increase performance
+- `postcss-svgo`: increase performance
+
+### Bug Fixes
+
+- `postcss-merge-longhand` handle uppercase properties and values
+- `postcss-minify-gradients` handle uppercase properties and values
+- `postcss-minify-params` do break `@page` rules
+- `postcss-reduce-idents` handle uppercase at-rules
+- `postcss-reduce-initial` now uses `repeat` as initial value for `mask-repeat`
+- `postcss-reduce-initial` handle uppercase value when you convert to initial
+- `stylehacks` handle uppercase properties and values
+
+
 ## 4.1.8
 
 ### Performance Improvements
