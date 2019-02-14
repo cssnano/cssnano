@@ -1,3 +1,9 @@
+# 4.1.10
+
+## Bug Fixes
+
+* `stylehacks` does not throw error on `[attr]` selector
+
 # 4.1.9
 
 ## Performance Improvements
