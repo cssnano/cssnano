@@ -16,3 +16,30 @@ test(
     '',
     {target: 'ie6', unaffected: 'ie7'}
 );
+
+test(
+    'should not throw error',
+    processCSS,
+    '.class { color: red }',
+    '.class { color: red }',
+    {target: 'ie6', unaffected: 'ie7'},
+    0
+);
+
+test(
+    'should not throw error #2',
+    processCSS,
+    '* { color: red }',
+    '* { color: red }',
+    {target: 'ie6', unaffected: 'ie7'},
+    0
+);
+
+test(
+    'should not throw error #3',
+    processCSS,
+    '[hidden] { color: red }',
+    '[hidden] { color: red }',
+    {target: 'ie6', unaffected: 'ie7'},
+    0
+);
