@@ -111,24 +111,24 @@ test(
 );
 
 test(
-    'should convert this specific rgba value to "transparent"',
+    'should leave this specific rgba value as it is',
     isEqual,
     'rgba(0,0,0,0)',
-    'transparent'
+    'rgba(0, 0, 0, 0)'
 );
 
 test(
-    'should convert this specific hsla value to "transparent"',
+    'should convert this specific hsla value to "rgba(0, 0, 0, 0)"',
     isEqual,
     'hsla(0,0%,0%,0)',
-    'transparent'
+    'rgba(0, 0, 0, 0)'
 );
 
 test(
-    'should convert hsla values with 0 saturation & 0 lightness to "transparent"',
+    'should convert hsla values with 0 saturation & 0 lightness to "rgba(0, 0, 0, 0)"',
     isEqual,
     'hsla(200,0%,0%,0)',
-    'transparent'
+    'rgba(0, 0, 0, 0)'
 );
 
 test(

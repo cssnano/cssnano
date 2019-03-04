@@ -217,7 +217,7 @@ test(
     'should add extra spaces when converting rgb (2)',
     processCSS,
     'h1{background:linear-gradient(rgba(0,0,0,0)0%, blue 100%)}',
-    'h1{background:linear-gradient(transparent 0%, #00f 100%)}'
+    'h1{background:linear-gradient(rgba(0, 0, 0, 0) 0%, #00f 100%)}'
 );
 
 test(
