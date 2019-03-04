@@ -28,7 +28,7 @@ export default (colour, isLegacy = true, cache = false) => {
             const rgb = parsed.rgb();
 
             if (
-                !isLegacy &&
+                colour.toLowerCase() === "transparent" &&
                 !rgb.color[0] &&
                 !rgb.color[1] &&
                 !rgb.color[2] &&
