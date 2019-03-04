@@ -13,16 +13,6 @@ function walk (parent, callback) {
     });
 }
 
-/*
- * IE 8 & 9 do not properly handle clicks on elements
- * with a `transparent` `background-color`.
- *
- * https://developer.mozilla.org/en-US/docs/Web/Events/click#Internet_Explorer
- */
-
-function hasTransparentBug (browser) {
-    return ~["ie 8", "ie 9"].indexOf(browser);
-}
 
 export default postcss.plugin("postcss-colormin", () => {
     return (css, result) => {
@@ -32,7 +22,7 @@ export default postcss.plugin("postcss-colormin", () => {
             path: __dirname,
             env: resultOpts.env,
         });
-        const isLegacy = browsers.some(hasTransparentBug);
+        const isLegacy = true;
         const colorminCache = {};
         const cache = {};
 

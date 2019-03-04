@@ -4,7 +4,7 @@ import toShorthand from './lib/toShorthand';
 
 const shorter = (a, b) => (a && a.length < b.length ? a : b).toLowerCase();
 
-export default (colour, isLegacy = false, cache = false) => {
+export default (colour, isLegacy = true, cache = false) => {
     const key = colour + "|" + isLegacy;
 
     if (cache && cache[key]) {
