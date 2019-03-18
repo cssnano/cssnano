@@ -1,15 +1,39 @@
-export default function sameParent (ruleA, ruleB) {
-    let hasParent = ruleA.parent && ruleB.parent;
-    // Check for detached rules
-    if (!hasParent) {
-        return true;
-    }
-    // If an at rule, ensure that the parameters are the same
-    if (ruleA.parent.type === 'atrule' && ruleB.parent.type === 'atrule') {
+/**
+ * @param {postcss.ChildNode} nodeA
+ * @param {postcss.ChildNode} nodeB
+ * @return {boolean}
+ */
+function checkMatch (nodeA, nodeB) {
+    if (nodeA.type === 'atrule' && nodeB.type === 'atrule') {
         return (
-            ruleA.parent.params === ruleB.parent.params &&
-            ruleA.parent.name.toLowerCase() === ruleB.parent.name.toLowerCase()
+            nodeA.params === nodeB.params &&
+            nodeA.name.toLowerCase() === nodeB.name.toLowerCase()
         );
     }
-    return ruleA.parent.type === ruleB.parent.type;
+    return nodeA.type === nodeB.type;
+}
+
+/**
+ * @param {postcss.ChildNode} nodeA
+ * @param {postcss.ChildNode} nodeB
+ * @return {boolean}
+ */
+export default function sameParent (nodeA, nodeB) {
+    if (!nodeA.parent) {
+        // A is orphaned, return if B is orphaned as well
+        return !nodeB.parent;
+    }
+
+    if (!nodeB.parent) {
+        // B is orphaned and A is not
+        return false;
+    }
+
+    // Check if parents match
+    if (!checkMatch(nodeA.parent, nodeB.parent)) {
+        return false;
+    }
+
+    // Check parents' parents
+    return sameParent(nodeA.parent, nodeB.parent);
 }

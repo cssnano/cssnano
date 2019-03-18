@@ -21,6 +21,7 @@ function mergeAtRules (css, pairs) {
         pair.cache = [];
         pair.replacements = [];
         pair.decls = [];
+        pair.removals = [];
     });
 
     let relevant;
@@ -42,7 +43,7 @@ function mergeAtRules (css, pairs) {
                         sameParent(cached, node) &&
                         cached.nodes.toString() === toString
                     ) {
-                        cached.remove();
+                        relevant.removals.push(cached);
                         relevant.replacements[cached.params] = node.params;
                     }
                 });
@@ -68,6 +69,7 @@ function mergeAtRules (css, pairs) {
                 }
             }).toString();
         });
+        pair.removals.forEach(cached => cached.remove());
     });
 }
 

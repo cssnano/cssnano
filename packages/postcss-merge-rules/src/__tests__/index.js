@@ -610,3 +610,12 @@ test(
     '@media print{h1{display:block}}@MEDIA print{h1{color:red}}',
     '@media print{h1{display:block;color:red}}@MEDIA print{}'
 );
+
+test(
+    'should not merge nested at-rules',
+    passthroughCSS,
+    [
+        '@media (min-width: 48rem){.wrapper{display: block}}',
+        '@supports (display: flex){@media (min-width: 48rem){.wrapper{display:flex}}}',
+    ].join(''),
+);

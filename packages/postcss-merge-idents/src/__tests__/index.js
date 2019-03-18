@@ -177,6 +177,18 @@ test(
 );
 
 test(
+    'should handle duplication within nested at-rules',
+    passthroughCSS,
+    [
+        '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
+        '@media (max-width:400px){@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}}',
+        '@supports (transform:rotate(0deg)){@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}}',
+        '@media (max-width: 400px){@supports (transform:rotate(0deg)){@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}}}',
+        '.spin{animation:1s spin infinite linear}',
+    ].join('')
+);
+
+test(
     'should use the postcss plugin api',
     usePostCSSPlugin,
     plugin()
