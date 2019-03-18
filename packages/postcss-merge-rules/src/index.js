@@ -182,7 +182,30 @@ function isConflictingProp (propA, propB) {
 /**
  * @param {postcss.Rule} first
  * @param {postcss.Rule} second
- * @return {postcss.Rule}
+ * @return {boolean} merged
+ */
+function mergeParents (first, second) {
+    // Null check for detached rules
+    if (!first.parent || !second.parent) {
+        return false;
+    }
+
+    // Check if parents share node
+    if (first.parent === second.parent) {
+        return false;
+    }
+
+    // sameParent() already called by canMerge()
+
+    second.remove();
+    first.parent.append(second);
+    return true;
+}
+
+/**
+ * @param {postcss.Rule} first
+ * @param {postcss.Rule} second
+ * @return {postcss.Rule} mergedRule
  */
 function partialMerge (first, second) {
     let intersection = intersect(getDecls(first), getDecls(second));
@@ -190,9 +213,15 @@ function partialMerge (first, second) {
         return second;
     }
     let nextRule = second.next();
+    if (!nextRule) {
+        // Grab next cousin
+        const parentSibling = second.parent.next();
+        nextRule = parentSibling && parentSibling.nodes && parentSibling.nodes[0];
+    }
     if (nextRule && nextRule.type === 'rule' && canMerge(second, nextRule)) {
         let nextIntersection = intersect(getDecls(second), getDecls(nextRule));
         if (nextIntersection.length > intersection.length) {
+            mergeParents(second, nextRule);
             first = second; second = nextRule; intersection = nextIntersection;
         }
     }
@@ -287,7 +316,13 @@ function partialMerge (first, second) {
     }
 }
 
+/**
+ * @param {string[]} browsers
+ * @param {Object.<string, boolean>} compatibilityCache
+ * @return {function(postcss.Rule)}
+ */
 function selectorMerger (browsers, compatibilityCache) {
+    /** @type {postcss.Rule} */
     let cache = null;
     return function (rule) {
         // Prime the cache with the first rule, or alternately ensure that it is
@@ -302,6 +337,10 @@ function selectorMerger (browsers, compatibilityCache) {
             cache = rule;
             return;
         }
+
+        // Parents merge: check if the rules have same parents, but not same parent nodes
+        mergeParents(cache, rule);
+
         // Merge when declarations are exactly equal
         // e.g. h1 { color: red } h2 { color: red }
         if (sameDeclarationsAndOrder(getDecls(rule), getDecls(cache))) {
