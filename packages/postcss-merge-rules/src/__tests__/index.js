@@ -619,3 +619,189 @@ test(
         '@supports (display: flex){@media (min-width: 48rem){.wrapper{display:flex}}}',
     ].join(''),
 );
+
+test(
+    'should not merge !important',
+    passthroughCSS,
+    [
+        '.a{left:0}',
+        '.b{left:0 !important}',
+    ].join(''),
+);
+
+test(
+    'should not merge if would change prefixes overrides',
+    passthroughCSS,
+    [
+        '.a{-webkit-transform:scaleX(-1);transform:scale(1)}',
+        '.b{-webkit-transform:scaleX(-1)}',
+    ].join(''),
+);
+
+test(
+    'should merge if it would not change prefix overrides',
+    processCSS,
+    [
+        '.a{-webkit-transform:scaleX(-1);transform:scaleY(1)}',
+        '.b{transform:scaleY(1);-webkit-transform:scaleX(-1)}',
+    ].join(''),
+    '.a{-webkit-transform:scaleX(-1)}.a,.b{transform:scaleY(1)}.b{-webkit-transform:scaleX(-1)}',
+);
+
+test(
+    'should merge if it would not change prefix overrides (2)',
+    processCSS,
+    [
+        '.a{transform:scaleY(1);-webkit-transform:scaleX(-1)}',
+        '.b{-webkit-transform:scaleX(-1);transform:scaleY(1)}',
+    ].join(''),
+    '.a{transform:scaleY(1)}.a,.b{-webkit-transform:scaleX(-1)}.b{transform:scaleY(1)}',
+);
+
+test(
+    'should merge if it would not change prefix overrides (3)',
+    processCSS,
+    [
+        '.a{-webkit-transform:scaleX(-1);transform:scaleY(1)}',
+        '.b{display:block;transform:scaleY(1)}',
+        '.c{display:block;-webkit-transform:scaleX(-1)}',
+    ].join(''),
+    '.a{-webkit-transform:scaleX(-1)}.a,.b{transform:scaleY(1)}.b,.c{display:block}.c{-webkit-transform:scaleX(-1)}',
+);
+
+test(
+    'should merge if it would not change prefix overrides (4)',
+    processCSS,
+    [
+        '.a{-webkit-transform:scaleX(-1);transform:scaleY(1)}',
+        '.b{transform:scaleY(1)}',
+        '.c{transform:scaleY(1);-webkit-transform:scaleX(-1)}',
+    ].join(''),
+    '.a{-webkit-transform:scaleX(-1)}.a,.b,.c{transform:scaleY(1)}.c{-webkit-transform:scaleX(-1)}',
+    
+);
+
+test(
+    'should merge with reorder by grouping similar prop bases',
+    processCSS,
+    `
+        .form-inline label {
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-align: center;
+            align-items: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+            margin-bottom: 0;
+        }
+        .form-inline .form-group {
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex: 0 0 auto;
+            flex: 0 0 auto;
+            -ms-flex-flow: row wrap;
+            flex-flow: row wrap;
+            -ms-flex-align: center;
+            align-items: center;
+            margin-bottom: 0;
+        }
+    `,
+    `
+        .form-inline label {
+            -ms-flex-align: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+        }
+        .form-inline label,.form-inline .form-group {
+            display: -ms-flexbox;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+        }
+        .form-inline .form-group {
+            -ms-flex: 0 0 auto;
+            flex: 0 0 auto;
+            -ms-flex-flow: row wrap;
+            flex-flow: row wrap;
+            -ms-flex-align: center;
+        }
+    `
+);
+
+test(
+    'should merge with reorder by grouping similar prop bases (2)',
+    processCSS,
+    `
+        .a {
+            position: relative;
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-wrap: wrap;
+            flex-wrap: wrap;
+            -ms-flex-align: center;
+            align-items: center;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
+            padding: 0.5rem 1rem;
+        }
+        .b {
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-wrap: wrap;
+            flex-wrap: wrap;
+            -ms-flex-align: center;
+            align-items: center;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
+        }
+    `,
+    `
+        .a {
+            position: relative;
+            padding: 0.5rem 1rem;
+        }
+        .a,.b {
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-wrap: wrap;
+            flex-wrap: wrap;
+            -ms-flex-align: center;
+            align-items: center;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
+        }
+    `
+);
+
+test(
+    'should allow merging of same property without changing specificity',
+    processCSS,
+    [
+        '.a{display:block}',
+        '.b{display:block}',
+        '.c{display:block;display:inline-block}',
+    ].join(''),
+    '.a,.b,.c{display:block}.c{display:inline-block}',
+);
+
+test(
+    'should not merge if would change css variable order',
+    passthroughCSS,
+    [
+        '.a{--color:orange;--color-alt:pink}',
+        '.b{--color:orange}',
+    ].join(''),
+);
+
+test(
+    'should merge if it would not change css variable order',
+    processCSS,
+    [
+        '.a{--color:orange;--color-alt:pink}',
+        '.b{--color-alt:pink}',
+    ].join(''),
+    [
+        '.a{--color:orange}',
+        '.a,.b{--color-alt:pink}',
+    ].join('')
+);
