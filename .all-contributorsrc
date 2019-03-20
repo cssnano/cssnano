@@ -573,6 +573,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "06b",
+      "name": "Adrian D. Alvarez",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1302542?v=4",
+      "profile": "http://adriandalvarez.com",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ],
   "repoType": "github"
