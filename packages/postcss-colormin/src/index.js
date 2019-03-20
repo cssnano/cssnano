@@ -18,10 +18,27 @@ function walk (parent, callback) {
  * with a `transparent` `background-color`.
  *
  * https://developer.mozilla.org/en-US/docs/Web/Events/click#Internet_Explorer
+ *
+ * Firefox Quantum (57) and above has a bug where it will render a black box on inputs
+ * when background is set to `transparent !important` in Windows High Contrast Mode.
+ *
+ * https://github.com/cssnano/cssnano/issues/715
  */
 
 function hasTransparentBug (browser) {
-    return ~["ie 8", "ie 9"].indexOf(browser);
+
+    const browsersWithTransparentBug = ["ie 8", "ie 9"]
+    const browserVersionNumber = Number(browser.split(' ').pop());
+    const firefoxQuantum = 57;
+    //const firefoxTransparentBugFixedVersion; //TODO: Waiting on this bug to be fixed https://bugzilla.mozilla.org/show_bug.cgi?id=1536616
+
+    if (browser.includes('firefox')){
+        if (browserVersionNumber >= firefoxQuantum) { // && browserVersionNumber < firefoxTransparentBugFixedVersion) {
+            browsersWithTransparentBug.push(browser);
+        }
+    }
+
+    return ~browsersWithTransparentBug.indexOf(browser);
 }
 
 export default postcss.plugin("postcss-colormin", () => {
