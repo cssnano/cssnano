@@ -86,10 +86,34 @@ test(
 );
 
 test(
-    'should not be responsible for normalising fonts',
-    processCSS,
+    'should normalize fonts',
+    passthroughCSS,
     '@font-face {font-family:"Does Exist";src:url("fonts/does-exist.ttf") format("truetype")}body{font-family:Does Exist}',
-    'body{font-family:Does Exist}'
+);
+
+test(
+    'should work with mixed quote styles',
+    passthroughCSS,
+    '@font-face {font-family:"Does Exist";src:url("fonts/does-exist.ttf") format("truetype")}@font-face {font-family:\'Does Exist 2\';src:url("fonts/does-exist.ttf") format("truetype")}body{font-family: \'Does Exist\'; font: 10px Does\\ Exist\\ 2}'
+);
+
+test(
+    'should work spaces in font lists',
+    passthroughCSS,
+    '@font-face {font-family:"Does Exist";src: url("fonts/does-exist.ttf") format("truetype")} @font-face {font-family:\'DoesExist\';src:url("fonts/does-exist.ttf") format("truetype")} body { font-family: "Does Exist", Helvetica, Arial, sans-serif; font: 10px/1.5 DoesExist, Helvetica, Arial, sans-serif }'
+);
+
+test(
+    'should work with weird font names',
+    passthroughCSS,
+    '@font-face {font-family:"ൠ😳ฬ𝔢ＩяĎ 🐉💩👍Iñtërnâtiônàlizætiøn☃💩";src: url("fonts/weird.woff") format("truetype")}body {font-family: "ൠ😳ฬ𝔢ＩяĎ 🐉💩👍Iñtërnâtiônàlizætiøn☃💩"}'
+);
+
+test(
+    "should handle font shorthands that don't include a font-family",
+    processCSS,
+    '@font-face {font-family:"Does Exist";src: url("fonts/does-exist.ttf") format("truetype")}body{font: italic bold 10px/1.5}',
+    'body{font: italic bold 10px/1.5}'
 );
 
 test(

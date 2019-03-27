@@ -34,6 +34,7 @@
   "dependencies": {
     "postcss": "^7.0.0",
     "postcss-selector-parser": "^3.0.0",
+    "postcss-value-parser": "^3.0.0",
     "uniqs": "^2.0.0"
   },
   "bugs": {

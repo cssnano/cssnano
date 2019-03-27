@@ -1,6 +1,7 @@
 import uniqs from 'uniqs';
 import {list, plugin} from 'postcss';
 import selectorParser from 'postcss-selector-parser';
+import parseFontNames from './parseFontNames';
 
 const {comma, space} = list;
 
@@ -36,24 +37,16 @@ function filterNamespace ({atRules, rules}) {
     });
 }
 
-function hasFont (fontFamily, cache) {
-    return comma(fontFamily).some(font => cache.some(c => ~c.indexOf(font)));
-}
-
 // fonts have slightly different logic
 function filterFont ({atRules, values}) {
     values = uniqs(values);
     atRules.forEach(r => {
-        const families = r.nodes.filter(({prop}) => prop === 'font-family');
-        // Discard the @font-face if it has no font-family
-        if (!families.length) {
-            return r.remove();
+        const fontFamilyRule = r.nodes.find(({prop}) => prop === 'font-family');
+        const fontNames = fontFamilyRule && parseFontNames(fontFamilyRule);
+        // Discard the @font-face if it has no font-family rule or if it is unused
+        if (!fontFamilyRule || !fontNames.some(fontName => values.includes(fontName))) {
+            r.remove();
         }
-        families.forEach(family => {
-            if (!hasFont(family.value.toLowerCase(), values)) {
-                r.remove();
-            }
-        });
     });
 }
 
@@ -94,7 +87,7 @@ export default plugin('postcss-discard-unused', opts => {
                     counterStyleCache.values = addValues(counterStyleCache.values, node);
                 }
                 if (fontFace && node.parent.type === rule && /font(|-family)/.test(prop)) {
-                    fontCache.values = fontCache.values.concat(comma(node.value.toLowerCase()));
+                    fontCache.values.push(...parseFontNames(node));
                 }
                 if (keyframes && /animation/.test(prop)) {
                     keyframesCache.values = addValues(keyframesCache.values, node);
