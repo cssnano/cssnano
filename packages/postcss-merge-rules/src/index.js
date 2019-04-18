@@ -94,6 +94,11 @@ function canMerge(ruleA, ruleB, browsers, compatibilityCache) {
   const b = ruleB.selectors;
 
   const selectors = a.concat(b);
+  const hasHost = selectors.some((selector) => selector.includes(':host'));
+
+  if (hasHost) {
+    return false;
+  }
 
   if (!ensureCompatibility(selectors, browsers, compatibilityCache)) {
     return false;
