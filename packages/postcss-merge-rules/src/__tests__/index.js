@@ -598,6 +598,13 @@ test(
 );
 
 test(
+    'should not merge :host(tagname) with tagname',
+    processCSS,
+    ':host(tag){display:block}tag{display:block}',
+    ':host(tag){display:block}tag{display:block}',
+);
+
+test(
     'should merge multiple media queries',
     processCSS,
     '@media print{h1{display:block}}@media print{h1{color:red}}',
