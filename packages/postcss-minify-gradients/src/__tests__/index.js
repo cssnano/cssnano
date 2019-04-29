@@ -318,6 +318,66 @@ test(
 );
 
 test(
+    'should pass through custom property references #2',
+    passthroughCSS,
+    'background:linear-gradient(to var(--var), transparent, black) 0% 50% no-repeat'
+);
+
+test(
+    'should pass through custom property references #3',
+    passthroughCSS,
+    'background:linear-gradient(var(--var), transparent, black) 0% 50% no-repeat'
+);
+
+test(
+    'should pass through custom property references #4',
+    passthroughCSS,
+    'background:linear-gradient(var(--var), black) 0% 50% no-repeat'
+);
+
+test(
+    'should pass through custom property references #5',
+    passthroughCSS,
+    'background:linear-gradient(var(--var)) 0% 50% no-repeat'
+);
+
+test(
+    'should pass through custom property references #6',
+    passthroughCSS,
+    'background:linear-gradient(var(--var), rgba(255,0,0,0) 70.71%)'
+);
+
+test(
+    'should pass through custom property references #7',
+    passthroughCSS,
+    'background:linear-gradient(to env(--var), transparent, black) 0% 50% no-repeat'
+);
+
+test(
+    'should pass through custom property references #8',
+    passthroughCSS,
+    'background:linear-gradient(var(--var))'
+);
+
+test(
+    'should pass through custom property references #9',
+    passthroughCSS,
+    'background:linear-gradient(var(--foo), var(--bar), var(--baz))'
+);
+
+test(
+    'should pass through env property references',
+    passthroughCSS,
+    'background:linear-gradient(env(--var))'
+);
+
+test(
+    'should not throw error on broken syntax',
+    passthroughCSS,
+    'background:'
+);
+
+test(
     'should not operate on declarations without gradients',
     passthroughCSS,
     'background:red'
