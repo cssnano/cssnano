@@ -391,8 +391,114 @@ test(
 test(
   'should minify font property',
   processCSS,
-  'h1{font: BOLD italic 20px Times New Roman;}',
-  'h1{font: 700 italic 20px Times New Roman;}'
+  'h1{font:BOLD italic 20px Times New Roman}',
+  'h1{font:700 italic 20px Times New Roman}'
+);
+
+test(
+  'should minify font property #2',
+  passthroughCSS,
+  'h1{font:var(--foo) 1.2em Fira Sans,serif}'
+);
+
+test(
+  'should minify font property #3',
+  processCSS,
+  'h1{font:var(--foo) bold 16px/2 cursive}',
+  'h1{font:var(--foo) 700 16px/2 cursive}'
+);
+
+test(
+  'should minify font property #4',
+  processCSS,
+  'h1{font:italic var(--foo) bold 16px/2 cursive}',
+  'h1{font:italic var(--foo) 700 16px/2 cursive}'
+);
+
+test(
+  'should minify font property #5',
+  processCSS,
+  'h1{font:italic 1.2em "Helvetica Neue", var(--foo)}',
+  'h1{font:italic 1.2em Helvetica Neue,var(--foo)}'
+);
+
+test(
+  'should minify font property #6',
+  processCSS,
+  'h1{font:oblique 10deg 10px "Helvetica Neue"}',
+  'h1{font:oblique 10deg 10px Helvetica Neue}'
+);
+
+test(
+  'should pass through css variables in font',
+  passthroughCSS,
+  'h1{font:var(--font-size)}'
+);
+
+test(
+  'should pass through css variables in font #2',
+  passthroughCSS,
+  'h1{font:var(--font-size) sans-serif}'
+);
+
+test(
+  'should pass through css variables in font #3',
+  passthroughCSS,
+  'h1{font:var(--font-family),sans-serif}'
+);
+
+test(
+  'should pass through css variables in font #4',
+  passthroughCSS,
+  'h1{font:italic 1.2em var(--foo)}'
+);
+
+test(
+  'should pass through css variables in font #5',
+  passthroughCSS,
+  'h1{font:italic 1.2em sans-serif,var(--foo)}'
+);
+
+test(
+  'should pass through css variables in font #6',
+  passthroughCSS,
+  'h1{font:italic var(--foo),monospace}'
+);
+
+test(
+  'should pass through css variables in font #7',
+  passthroughCSS,
+  'h1{font:italic var(--foo) monospace}'
+);
+
+test(
+  'should pass through css variables in font #8',
+  passthroughCSS,
+  'h1{font:italic monospace,var(--foo)}'
+);
+
+test(
+  'should pass through css variables in font #9',
+  passthroughCSS,
+  'h1{font:italic monospace,var(--foo)}'
+);
+
+test(
+  'should pass through css variables in font-weight',
+  passthroughCSS,
+  'h1{font-weight:var(--font-size)}'
+);
+
+test(
+  'should pass through css variables in font-family',
+  passthroughCSS,
+  'h1{font-family:var(--font-size)}'
+);
+
+test(
+  'should pass through css variables in font-family #2',
+  passthroughCSS,
+  'h1{font-family:var(--font-size), Helvetica}'
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin, plugin());
