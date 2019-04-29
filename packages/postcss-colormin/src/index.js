@@ -43,6 +43,10 @@ export default postcss.plugin('postcss-colormin', () => {
         return;
       }
 
+      if (!decl.value) {
+        return;
+      }
+
       if (cache[decl.value]) {
         decl.value = cache[decl.value];
 

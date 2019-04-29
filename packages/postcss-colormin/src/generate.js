@@ -8,10 +8,12 @@ const hexes = {};
 
 Object.keys(colorNames).forEach((keyword) => {
   const hex = toShorthand(colorNames[keyword]);
+
   if (keyword.length < hex.length) {
     keywords[hex] = keyword;
     return;
   }
+
   hexes[keyword] = hex;
 });
 

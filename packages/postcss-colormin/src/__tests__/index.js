@@ -278,6 +278,8 @@ test(
   'h1{color:rgb(var(--foo))}'
 );
 
+test('should passthrough broken syntax', passthroughCSS, 'h1{color:}');
+
 test(
   'should not convert this specific rgba value to "transparent" (old IE)',
   passthroughCSS,
