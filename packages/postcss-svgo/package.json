@@ -33,10 +33,10 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "is-svg": "^3.0.0",
-    "postcss": "^7.0.0",
-    "postcss-value-parser": "^3.0.0",
-    "svgo": "^1.0.0"
+    "is-svg": "^4.1.0",
+    "postcss": "^7.0.14",
+    "postcss-value-parser": "^3.3.1",
+    "svgo": "^1.2.2"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
