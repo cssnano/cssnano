@@ -247,6 +247,42 @@ test(
 );
 
 test(
+    'should passthrough css variables',
+    passthroughDefault,
+    'h1{color:var(--foo)}'
+);
+
+test(
+    'should passthrough css variables #2',
+    passthroughDefault,
+    'h1{color:var(--foo) var(--bar)}'
+);
+
+test(
+    'should passthrough css variables #3',
+    passthroughDefault,
+    'h1{color:rgb(var(--foo),255,255)}'
+);
+
+test(
+    'should passthrough css variables #4',
+    passthroughDefault,
+    'h1{color:rgb(255,var(--bar),255)}'
+);
+
+test(
+    'should passthrough css variables #5',
+    passthroughDefault,
+    'h1{color:rgb(255,255,var(--baz))}'
+);
+
+test(
+    'should passthrough css variables #6',
+    passthroughDefault,
+    'h1{color:rgb(var(--foo))}'
+);
+
+test(
     'should not convert this specific rgba value to "transparent" (old IE)',
     passthroughCSS,
     'h1{color:rgba(0, 0, 0, 0)}',
