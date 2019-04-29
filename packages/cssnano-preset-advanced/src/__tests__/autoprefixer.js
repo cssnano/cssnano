@@ -1,32 +1,36 @@
 import test from 'ava';
 import preset from '..';
-import {processCSSWithPresetFactory} from '../../../../util/testHelpers';
+import { processCSSWithPresetFactory } from '../../../../util/testHelpers';
 
-const {processCSS} = processCSSWithPresetFactory(preset);
+const { processCSS } = processCSSWithPresetFactory(preset);
 
 test(
-    'should remove outdated vendor prefixes',
-    processCSS,
-    'h1{-webkit-box-sizing:content-box;box-sizing:content-box}',
-    'h1{box-sizing:content-box}'
+  'should remove outdated vendor prefixes',
+  processCSS,
+  'h1{-webkit-box-sizing:content-box;box-sizing:content-box}',
+  'h1{box-sizing:content-box}'
 );
 
-const {passthroughCSS} = processCSSWithPresetFactory(preset({
-    autoprefixer: {env: 'safari5'},
-}));
-
-test(
-    'should not remove outdated vendor prefixes when minifying for older browsers',
-    passthroughCSS,
-    'h1{-webkit-border-radius:5px;border-radius:5px}'
+const { passthroughCSS } = processCSSWithPresetFactory(
+  preset({
+    autoprefixer: { env: 'safari5' },
+  })
 );
 
-const {passthroughCSS: exclude} = processCSSWithPresetFactory(preset({
-    autoprefixer: {exclude: true},
-}));
+test(
+  'should not remove outdated vendor prefixes when minifying for older browsers',
+  passthroughCSS,
+  'h1{-webkit-border-radius:5px;border-radius:5px}'
+);
+
+const { passthroughCSS: exclude } = processCSSWithPresetFactory(
+  preset({
+    autoprefixer: { exclude: true },
+  })
+);
 
 test(
-    'should not remove outdated vendor prefixes if excluded',
-    exclude,
-    'h1{-webkit-box-sizing:content-box;box-sizing:content-box}'
+  'should not remove outdated vendor prefixes if excluded',
+  exclude,
+  'h1{-webkit-box-sizing:content-box;box-sizing:content-box}'
 );

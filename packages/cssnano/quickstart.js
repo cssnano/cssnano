@@ -23,9 +23,9 @@ h1 {
  */
 
 const postcssOpts = {
-    // from: 'app.css',
-    // to:   'app.min.css',
-    // map:  {inline: true},
+  // from: 'app.css',
+  // to:   'app.min.css',
+  // map:  {inline: true},
 };
 
 /*
@@ -35,13 +35,14 @@ const postcssOpts = {
  */
 
 const cssnanoOpts = {
-    preset: 'default',
+  preset: 'default',
 };
 
 /*
  * Compress the CSS asynchronously and log it to the console.
  */
 
-cssnano.process(css, postcssOpts, cssnanoOpts).then(result => {
-    console.log(result.css);
+cssnano.process(css, postcssOpts, cssnanoOpts).then((result) => {
+  // eslint-disable-next-line no-console
+  console.log(result.css);
 });

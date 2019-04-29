@@ -1,6 +1,5 @@
 export = cssSize;
 
-
 declare function cssSize(
   css: string,
   options: cssSize.ProcessOptions,

@@ -43,51 +43,51 @@ import postcssNormalizeTimingFunctions from 'lerna:postcss-normalize-timing-func
 import rawCache from 'lerna:cssnano-util-raw-cache';
 
 const defaultOpts = {
-    convertValues: {
-        length: false,
-    },
-    normalizeCharset: {
-        add: false,
-    },
-    cssDeclarationSorter: {
-        exclude: true,
-    },
+  convertValues: {
+    length: false,
+  },
+  normalizeCharset: {
+    add: false,
+  },
+  cssDeclarationSorter: {
+    exclude: true,
+  },
 };
 
-export default function defaultPreset (opts = {}) {
-    const options = Object.assign({}, defaultOpts, opts);
+export default function defaultPreset(opts = {}) {
+  const options = Object.assign({}, defaultOpts, opts);
 
-    const plugins = [
-        [postcssDiscardComments, options.discardComments],
-        [postcssMinifyGradients, options.minifyGradients],
-        [postcssReduceInitial, options.reduceInitial],
-        [postcssSvgo, options.svgo],
-        [postcssNormalizeDisplayValues, options.normalizeDisplayValues],
-        [postcssReduceTransforms, options.reduceTransforms],
-        [postcssColormin, options.colormin],
-        [postcssNormalizeTimingFunctions, options.normalizeTimingFunctions],
-        [postcssCalc, options.calc],
-        [postcssConvertValues, options.convertValues],
-        [postcssOrderedValues, options.orderedValues],
-        [postcssMinifySelectors, options.minifySelectors],
-        [postcssMinifyParams, options.minifyParams],
-        [postcssNormalizeCharset, options.normalizeCharset],
-        [postcssDiscardOverridden, options.discardOverridden],
-        [postcssNormalizeString, options.normalizeString],
-        [postcssNormalizeUnicode, options.normalizeUnicode],
-        [postcssMinifyFontValues, options.minifyFontValues],
-        [postcssNormalizeUrl, options.normalizeUrl],
-        [postcssNormalizeRepeatStyle, options.normalizeRepeatStyle],
-        [postcssNormalizePositions, options.normalizePositions],
-        [postcssNormalizeWhitespace, options.normalizeWhitespace],
-        [postcssMergeLonghand, options.mergeLonghand],
-        [postcssDiscardDuplicates, options.discardDuplicates],
-        [postcssMergeRules, options.mergeRules],
-        [postcssDiscardEmpty, options.discardEmpty],
-        [postcssUniqueSelectors, options.uniqueSelectors],
-        [cssDeclarationSorter, options.cssDeclarationSorter],
-        [rawCache, options.rawCache],
-    ];
+  const plugins = [
+    [postcssDiscardComments, options.discardComments],
+    [postcssMinifyGradients, options.minifyGradients],
+    [postcssReduceInitial, options.reduceInitial],
+    [postcssSvgo, options.svgo],
+    [postcssNormalizeDisplayValues, options.normalizeDisplayValues],
+    [postcssReduceTransforms, options.reduceTransforms],
+    [postcssColormin, options.colormin],
+    [postcssNormalizeTimingFunctions, options.normalizeTimingFunctions],
+    [postcssCalc, options.calc],
+    [postcssConvertValues, options.convertValues],
+    [postcssOrderedValues, options.orderedValues],
+    [postcssMinifySelectors, options.minifySelectors],
+    [postcssMinifyParams, options.minifyParams],
+    [postcssNormalizeCharset, options.normalizeCharset],
+    [postcssDiscardOverridden, options.discardOverridden],
+    [postcssNormalizeString, options.normalizeString],
+    [postcssNormalizeUnicode, options.normalizeUnicode],
+    [postcssMinifyFontValues, options.minifyFontValues],
+    [postcssNormalizeUrl, options.normalizeUrl],
+    [postcssNormalizeRepeatStyle, options.normalizeRepeatStyle],
+    [postcssNormalizePositions, options.normalizePositions],
+    [postcssNormalizeWhitespace, options.normalizeWhitespace],
+    [postcssMergeLonghand, options.mergeLonghand],
+    [postcssDiscardDuplicates, options.discardDuplicates],
+    [postcssMergeRules, options.mergeRules],
+    [postcssDiscardEmpty, options.discardEmpty],
+    [postcssUniqueSelectors, options.uniqueSelectors],
+    [cssDeclarationSorter, options.cssDeclarationSorter],
+    [rawCache, options.rawCache],
+  ];
 
-    return {plugins};
+  return { plugins };
 }

@@ -1,5 +1,5 @@
-let nano = require("cssnano");
+let nano = require('cssnano');
 
-module.exports = function (css, opts) {
-    return nano.process(css, opts);
+module.exports = function(css, opts) {
+  return nano.process(css, opts);
 };

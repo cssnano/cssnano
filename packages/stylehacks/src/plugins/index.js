@@ -12,16 +12,16 @@ import starHtml from './starHtml';
 import trailingSlashComma from './trailingSlashComma';
 
 export default [
-    bodyEmpty,
-    htmlCombinatorCommentBody,
-    htmlFirstChild,
-    important,
-    leadingStar,
-    leadingUnderscore,
-    mediaSlash0,
-    mediaSlash0Slash9,
-    mediaSlash9,
-    slash9,
-    starHtml,
-    trailingSlashComma,
+  bodyEmpty,
+  htmlCombinatorCommentBody,
+  htmlFirstChild,
+  important,
+  leadingStar,
+  leadingUnderscore,
+  mediaSlash0,
+  mediaSlash0Slash9,
+  mediaSlash9,
+  slash9,
+  starHtml,
+  trailingSlashComma,
 ];

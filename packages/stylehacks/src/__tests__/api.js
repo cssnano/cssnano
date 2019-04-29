@@ -1,100 +1,117 @@
 import postcss from 'postcss';
 import ava from 'ava';
 import stylehacks from '../';
-import {name} from '../../package.json';
+import { name } from '../../package.json';
 
-function processCss (t, fixture, expected, options) {
-    return postcss(stylehacks(options)).process(fixture).then(({css}) => {
-        t.deepEqual(css, expected);
+function processCss(t, fixture, expected, options) {
+  return postcss(stylehacks(options))
+    .process(fixture)
+    .then(({ css }) => {
+      t.deepEqual(css, expected);
     });
 }
 
-function passthroughCss (t, fixture, options) {
-    return processCss(t, fixture, fixture, options);
+function passthroughCss(t, fixture, options) {
+  return processCss(t, fixture, fixture, options);
 }
 
-ava('can be used as a postcss plugin', t => {
-    let css = 'h1 { _color: #ffffff }';
+ava('can be used as a postcss plugin', (t) => {
+  let css = 'h1 { _color: #ffffff }';
 
-    return postcss().use(stylehacks()).process(css).then(result => {
-        t.deepEqual(result.css, 'h1 { }', 'should be consumed');
+  return postcss()
+    .use(stylehacks())
+    .process(css)
+    .then((result) => {
+      t.deepEqual(result.css, 'h1 { }', 'should be consumed');
     });
 });
 
-ava('can be used as a postcss plugin (2)', t => {
-    let css = 'h1 { _color: #ffffff }';
+ava('can be used as a postcss plugin (2)', (t) => {
+  let css = 'h1 { _color: #ffffff }';
 
-    return postcss([ stylehacks() ]).process(css).then(result => {
-        t.deepEqual(result.css, 'h1 { }', 'should be consumed');
+  return postcss([stylehacks()])
+    .process(css)
+    .then((result) => {
+      t.deepEqual(result.css, 'h1 { }', 'should be consumed');
     });
 });
 
-ava('can be used as a postcss plugin (3)', t => {
-    let css = 'h1 { _color: #ffffff }';
+ava('can be used as a postcss plugin (3)', (t) => {
+  let css = 'h1 { _color: #ffffff }';
 
-    return postcss([ stylehacks ]).process(css).then(result => {
-        t.deepEqual(result.css, 'h1 { }', 'should be consumed');
+  return postcss([stylehacks])
+    .process(css)
+    .then((result) => {
+      t.deepEqual(result.css, 'h1 { }', 'should be consumed');
     });
 });
 
-ava('should use the postcss plugin api', t => {
-    t.truthy(stylehacks().postcssVersion, 'should be able to access version');
-    t.deepEqual(stylehacks().postcssPlugin, name, 'should be able to access name');
+ava('should use the postcss plugin api', (t) => {
+  t.truthy(stylehacks().postcssVersion, 'should be able to access version');
+  t.deepEqual(
+    stylehacks().postcssPlugin,
+    name,
+    'should be able to access name'
+  );
 });
 
-ava('should have a separate detect method', t => {
-    let counter = 0;
+ava('should have a separate detect method', (t) => {
+  let counter = 0;
 
-    let plugin = postcss.plugin('test', () => {
-        return css => {
-            css.walkDecls(decl => {
-                if (stylehacks.detect(decl)) {
-                    counter++;
-                }
-            });
-        };
-    });
+  let plugin = postcss.plugin('test', () => {
+    return (css) => {
+      css.walkDecls((decl) => {
+        if (stylehacks.detect(decl)) {
+          counter++;
+        }
+      });
+    };
+  });
 
-    return postcss(plugin).process('h1 { _color: red; =color: black }').then(() => {
-        t.deepEqual(counter, 2);
+  return postcss(plugin)
+    .process('h1 { _color: red; =color: black }')
+    .then(() => {
+      t.deepEqual(counter, 2);
     });
 });
 
-ava('should have a separate detect method (2)', t => {
-    let counter = 0;
+ava('should have a separate detect method (2)', (t) => {
+  let counter = 0;
 
-    let plugin = postcss.plugin('test', () => {
-        return css => {
-            css.walkRules(rule => {
-                if (stylehacks.detect(rule)) {
-                    counter++;
-                }
-            });
-        };
-    });
+  let plugin = postcss.plugin('test', () => {
+    return (css) => {
+      css.walkRules((rule) => {
+        if (stylehacks.detect(rule)) {
+          counter++;
+        }
+      });
+    };
+  });
 
-    return postcss(plugin).process('h1 { _color: red; =color: black }').then(() => {
-        t.deepEqual(counter, 0);
+  return postcss(plugin)
+    .process('h1 { _color: red; =color: black }')
+    .then(() => {
+      t.deepEqual(counter, 0);
     });
 });
 
 ava(
-    'should handle rules with empty selectors',
-    processCss,
-    '{ _color: red }',
-    '{ }'
+  'should handle rules with empty selectors',
+  processCss,
+  '{ _color: red }',
+  '{ }'
 );
 
 ava(
-    'should pass through other comments in selectors',
-    passthroughCss,
-    'h1 /* => */ h2 {}'
+  'should pass through other comments in selectors',
+  passthroughCss,
+  'h1 /* => */ h2 {}'
 );
 
 ava(
-    'should pass through css mixins',
-    passthroughCss,
-    `paper-card {
+  'should pass through css mixins',
+  passthroughCss,
+  `paper-card {
         --paper-card-content: {
             padding-top: 0;
         };
@@ -105,9 +122,9 @@ ava(
 );
 
 ava(
-    'should pass through css mixins (2)',
-    passthroughCss,
-    `paper-card {
+  'should pass through css mixins (2)',
+  passthroughCss,
+  `paper-card {
         --paper-card-header: {
             height: 128px;
             padding: 0 48px;

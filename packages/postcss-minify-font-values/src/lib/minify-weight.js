@@ -1,5 +1,9 @@
-export default function (value) {
-    const valueInLowerCase = value.toLowerCase();
+export default function(value) {
+  const valueInLowerCase = value.toLowerCase();
 
-    return valueInLowerCase === 'normal' ? '400' : valueInLowerCase === 'bold' ? '700' : value;
-};
+  return valueInLowerCase === 'normal'
+    ? '400'
+    : valueInLowerCase === 'bold'
+    ? '700'
+    : value;
+}
