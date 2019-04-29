@@ -1,3 +1,3 @@
-export default function addSpace () {
-    return {type: 'space', value: ' '};
+export default function addSpace() {
+  return { type: 'space', value: ' ' };
 }

@@ -5,15 +5,17 @@ import sameParent from 'lerna:cssnano-util-same-parent';
 import ensureCompatibility from './lib/ensureCompatibility';
 
 /** @type {string[]} */
-const prefixes = vendors.map(v => `-${v}-`);
+const prefixes = vendors.map((v) => `-${v}-`);
 
 /**
  * @param {postcss.Declaration} a
  * @param {postcss.Declaration} b
  * @return {boolean}
  */
-function declarationIsEqual (a, b) {
-    return (a.important === b.important && a.prop === b.prop && a.value === b.value);
+function declarationIsEqual(a, b) {
+  return (
+    a.important === b.important && a.prop === b.prop && a.value === b.value
+  );
 }
 
 /**
@@ -21,8 +23,8 @@ function declarationIsEqual (a, b) {
  * @param {postcss.Declaration} decl
  * @return {number}
  */
-function indexOfDeclaration (array, decl) {
-    return array.findIndex(d => declarationIsEqual(d, decl));
+function indexOfDeclaration(array, decl) {
+  return array.findIndex((d) => declarationIsEqual(d, decl));
 }
 
 /**
@@ -32,11 +34,11 @@ function indexOfDeclaration (array, decl) {
  * @param {boolean} [not=false]
  * @return {postcss.Declaration[]}
  */
-function intersect (a, b, not) {
-    return a.filter((c) => {
-        const index = ~indexOfDeclaration(b, c);
-        return not ? !index : index;
-    });
+function intersect(a, b, not) {
+  return a.filter((c) => {
+    const index = ~indexOfDeclaration(b, c);
+    return not ? !index : index;
+  });
 }
 
 /**
@@ -44,37 +46,41 @@ function intersect (a, b, not) {
  * @param {postcss.Declaration[]} b
  * @return {boolean}
  */
-function sameDeclarationsAndOrder (a, b) {
-    if (a.length !== b.length) {
-        return false;
-    }
-    return a.every((d, index) => declarationIsEqual(d, b[index]));
+function sameDeclarationsAndOrder(a, b) {
+  if (a.length !== b.length) {
+    return false;
+  }
+  return a.every((d, index) => declarationIsEqual(d, b[index]));
 }
 
 // Internet Explorer use :-ms-input-placeholder.
 // Microsoft Edge use ::-ms-input-placeholder.
-const findMsInputPlaceholder = selector => ~selector.search(/-ms-input-placeholder/i);
+const findMsInputPlaceholder = (selector) =>
+  ~selector.search(/-ms-input-placeholder/i);
 
 /**
  * @param {string} selector
  * @return {string[]}
  */
-function filterPrefixes (selector) {
-    return prefixes.filter(prefix => selector.indexOf(prefix) !== -1);
+function filterPrefixes(selector) {
+  return prefixes.filter((prefix) => selector.indexOf(prefix) !== -1);
 }
 
-function sameVendor (selectorsA, selectorsB) {
-    let same = selectors => selectors.map(filterPrefixes).join();
-    let findMsVendor = selectors => selectors.find(findMsInputPlaceholder);
-    return same(selectorsA) === same(selectorsB) && !(findMsVendor(selectorsA) && findMsVendor(selectorsB));
+function sameVendor(selectorsA, selectorsB) {
+  let same = (selectors) => selectors.map(filterPrefixes).join();
+  let findMsVendor = (selectors) => selectors.find(findMsInputPlaceholder);
+  return (
+    same(selectorsA) === same(selectorsB) &&
+    !(findMsVendor(selectorsA) && findMsVendor(selectorsB))
+  );
 }
 
 /**
  * @param {string} selector
  * @return {boolean}
  */
-function noVendor (selector) {
-    return !filterPrefixes(selector).length;
+function noVendor(selector) {
+  return !filterPrefixes(selector).length;
 }
 
 /**
@@ -84,99 +90,98 @@ function noVendor (selector) {
  * @param {Object.<string, boolean>=} compatibilityCache
  * @return {boolean}
  */
-function canMerge (ruleA, ruleB, browsers, compatibilityCache) {
-    const a = ruleA.selectors;
-    const b = ruleB.selectors;
+function canMerge(ruleA, ruleB, browsers, compatibilityCache) {
+  const a = ruleA.selectors;
+  const b = ruleB.selectors;
 
-    const selectors = a.concat(b);
+  const selectors = a.concat(b);
 
-    if (!ensureCompatibility(selectors, browsers, compatibilityCache)) {
-        return false;
-    }
+  if (!ensureCompatibility(selectors, browsers, compatibilityCache)) {
+    return false;
+  }
 
-    const parent = sameParent(ruleA, ruleB);
-    const {name} = ruleA.parent;
-    if (parent && name && ~name.indexOf('keyframes')) {
-        return false;
-    }
-    return parent && (selectors.every(noVendor) || sameVendor(a, b));
+  const parent = sameParent(ruleA, ruleB);
+  const { name } = ruleA.parent;
+  if (parent && name && ~name.indexOf('keyframes')) {
+    return false;
+  }
+  return parent && (selectors.every(noVendor) || sameVendor(a, b));
 }
 
 /**
  * @param {postcss.Rule} rule
  * @return {postcss.Declaration[]}
  */
-function getDecls (rule) {
-    return rule.nodes.filter(node => node.type === 'decl');
+function getDecls(rule) {
+  return rule.nodes.filter((node) => node.type === 'decl');
 }
 
-const joinSelectors = (...rules) => rules.map(s => s.selector).join();
+const joinSelectors = (...rules) => rules.map((s) => s.selector).join();
 
-function ruleLength (...rules) {
-    return rules.map(r => r.nodes.length ? String(r) : '').join('').length;
+function ruleLength(...rules) {
+  return rules.map((r) => (r.nodes.length ? String(r) : '')).join('').length;
 }
 
 /**
  * @param {string} prop
  * @return {{prefix: string, base:string, rest:string[]}}
  */
-function splitProp (prop) {
-    // Treat vendor prefixed properties as if they were unprefixed;
-    // moving them when combined with non-prefixed properties can
-    // cause issues. e.g. moving -webkit-background-clip when there
-    // is a background shorthand definition.
+function splitProp(prop) {
+  // Treat vendor prefixed properties as if they were unprefixed;
+  // moving them when combined with non-prefixed properties can
+  // cause issues. e.g. moving -webkit-background-clip when there
+  // is a background shorthand definition.
 
-    const parts = prop.split('-');
-    if (prop[0] !== '-') {
-        return {
-            prefix: '',
-            base: parts[0],
-            rest: parts.slice(1),
-        };
-    }
-    // Don't split css variables
-    if (prop[1] === '-') {
-        return {
-            prefix: null,
-            base: null,
-            rest: [prop],
-        };
-    }
-    // Found prefix
+  const parts = prop.split('-');
+  if (prop[0] !== '-') {
     return {
-        prefix: parts[1],
-        base: parts[2],
-        rest: parts.slice(3),
+      prefix: '',
+      base: parts[0],
+      rest: parts.slice(1),
     };
-    
+  }
+  // Don't split css variables
+  if (prop[1] === '-') {
+    return {
+      prefix: null,
+      base: null,
+      rest: [prop],
+    };
+  }
+  // Found prefix
+  return {
+    prefix: parts[1],
+    base: parts[2],
+    rest: parts.slice(3),
+  };
 }
 
 /**
  * @param {string} propA
  * @param {string} propB
  */
-function isConflictingProp (propA, propB) {
-    if (propA === propB) {
-        // Same specificity
-        return true;
-    }
-    const a = splitProp(propA);
-    const b = splitProp(propB);
-    // Don't resort css variables
-    if (!a.base && !b.base) {
-        return true;
-    }
-    // Different base;
-    if (a.base !== b.base) {
-        return false;
-    }
-    // Conflict if rest-count mismatches
-    if (a.rest.length !== b.rest.length) {
-        return true;
-    }
+function isConflictingProp(propA, propB) {
+  if (propA === propB) {
+    // Same specificity
+    return true;
+  }
+  const a = splitProp(propA);
+  const b = splitProp(propB);
+  // Don't resort css variables
+  if (!a.base && !b.base) {
+    return true;
+  }
+  // Different base;
+  if (a.base !== b.base) {
+    return false;
+  }
+  // Conflict if rest-count mismatches
+  if (a.rest.length !== b.rest.length) {
+    return true;
+  }
 
-    // Conflict if rest parameters are equal (same but unprefixed)
-    return (a.rest.every((s, index) => b.rest[index] === s));
+  // Conflict if rest parameters are equal (same but unprefixed)
+  return a.rest.every((s, index) => b.rest[index] === s);
 }
 
 /**
@@ -184,22 +189,22 @@ function isConflictingProp (propA, propB) {
  * @param {postcss.Rule} second
  * @return {boolean} merged
  */
-function mergeParents (first, second) {
-    // Null check for detached rules
-    if (!first.parent || !second.parent) {
-        return false;
-    }
+function mergeParents(first, second) {
+  // Null check for detached rules
+  if (!first.parent || !second.parent) {
+    return false;
+  }
 
-    // Check if parents share node
-    if (first.parent === second.parent) {
-        return false;
-    }
+  // Check if parents share node
+  if (first.parent === second.parent) {
+    return false;
+  }
 
-    // sameParent() already called by canMerge()
+  // sameParent() already called by canMerge()
 
-    second.remove();
-    first.parent.append(second);
-    return true;
+  second.remove();
+  first.parent.append(second);
+  return true;
 }
 
 /**
@@ -207,113 +212,123 @@ function mergeParents (first, second) {
  * @param {postcss.Rule} second
  * @return {postcss.Rule} mergedRule
  */
-function partialMerge (first, second) {
-    let intersection = intersect(getDecls(first), getDecls(second));
-    if (!intersection.length) {
-        return second;
+function partialMerge(first, second) {
+  let intersection = intersect(getDecls(first), getDecls(second));
+  if (!intersection.length) {
+    return second;
+  }
+  let nextRule = second.next();
+  if (!nextRule) {
+    // Grab next cousin
+    const parentSibling = second.parent.next();
+    nextRule = parentSibling && parentSibling.nodes && parentSibling.nodes[0];
+  }
+  if (nextRule && nextRule.type === 'rule' && canMerge(second, nextRule)) {
+    let nextIntersection = intersect(getDecls(second), getDecls(nextRule));
+    if (nextIntersection.length > intersection.length) {
+      mergeParents(second, nextRule);
+      first = second;
+      second = nextRule;
+      intersection = nextIntersection;
     }
-    let nextRule = second.next();
-    if (!nextRule) {
-        // Grab next cousin
-        const parentSibling = second.parent.next();
-        nextRule = parentSibling && parentSibling.nodes && parentSibling.nodes[0];
+  }
+
+  const firstDecls = getDecls(first);
+
+  // Filter out intersections with later conflicts in First
+  intersection = intersection.filter((decl, intersectIndex) => {
+    const index = indexOfDeclaration(firstDecls, decl);
+    const nextConflictInFirst = firstDecls
+      .slice(index + 1)
+      .find((d) => isConflictingProp(d.prop, decl.prop));
+    if (!nextConflictInFirst) {
+      return true;
     }
-    if (nextRule && nextRule.type === 'rule' && canMerge(second, nextRule)) {
-        let nextIntersection = intersect(getDecls(second), getDecls(nextRule));
-        if (nextIntersection.length > intersection.length) {
-            mergeParents(second, nextRule);
-            first = second; second = nextRule; intersection = nextIntersection;
-        }
+    const nextConflictInIntersection = intersection
+      .slice(intersectIndex + 1)
+      .find((d) => isConflictingProp(d.prop, decl.prop));
+    if (!nextConflictInIntersection) {
+      return false;
     }
-
-    const firstDecls = getDecls(first);
-
-    // Filter out intersections with later conflicts in First
-    intersection = intersection.filter((decl, intersectIndex) => {
-        const index = indexOfDeclaration(firstDecls, decl);
-        const nextConflictInFirst = firstDecls.slice(index + 1)
-            .find(d => isConflictingProp(d.prop, decl.prop));
-        if (!nextConflictInFirst) {
-            return true;
-        }
-        const nextConflictInIntersection = intersection.slice(intersectIndex + 1)
-            .find(d => isConflictingProp(d.prop, decl.prop));
-        if (!nextConflictInIntersection) {
-            return false;
-        }
-        if (declarationIsEqual(nextConflictInFirst, nextConflictInIntersection)) {
-            return true;
-        } 
-        return false;
-    });
-
-    // Filter out intersections with previous conflicts in Second
-    const secondDecls = getDecls(second);
-    intersection = intersection.filter((decl) => {
-        const nextConflictIndex = secondDecls.findIndex(d => isConflictingProp(d.prop, decl.prop));
-        if (nextConflictIndex === -1) {
-            return false;
-        }
-        if (!declarationIsEqual(secondDecls[nextConflictIndex], decl)) {
-            return false;
-        }
-        secondDecls.splice(nextConflictIndex, 1);
-        return true;
-    });
-
-    if (!intersection.length) {
-        // Nothing to merge
-        return second;
+    if (declarationIsEqual(nextConflictInFirst, nextConflictInIntersection)) {
+      return true;
     }
+    return false;
+  });
 
-    const receivingBlock = second.clone();
-    receivingBlock.selector = joinSelectors(first, second);
-    receivingBlock.nodes = [];
-    
-    // Rules with "all" declarations must be on top
-    if (intersection.some(declaration => declaration.prop.toLowerCase() === 'all')) {
-        second.parent.insertBefore(first, receivingBlock);
-    } else {
-        second.parent.insertBefore(second, receivingBlock);
+  // Filter out intersections with previous conflicts in Second
+  const secondDecls = getDecls(second);
+  intersection = intersection.filter((decl) => {
+    const nextConflictIndex = secondDecls.findIndex((d) =>
+      isConflictingProp(d.prop, decl.prop)
+    );
+    if (nextConflictIndex === -1) {
+      return false;
     }
+    if (!declarationIsEqual(secondDecls[nextConflictIndex], decl)) {
+      return false;
+    }
+    secondDecls.splice(nextConflictIndex, 1);
+    return true;
+  });
 
-    const firstClone = first.clone();
-    const secondClone = second.clone();
+  if (!intersection.length) {
+    // Nothing to merge
+    return second;
+  }
 
-    /**
-     * @param {function(postcss.Declaration):void} callback 
-     * @return {function(postcss.Declaration)}
-     */
-    function moveDecl (callback) {
-        return (decl) => {
-            if (~indexOfDeclaration(intersection, decl)) {
-                callback.call(this, decl);
-            }
-        };
+  const receivingBlock = second.clone();
+  receivingBlock.selector = joinSelectors(first, second);
+  receivingBlock.nodes = [];
+
+  // Rules with "all" declarations must be on top
+  if (
+    intersection.some((declaration) => declaration.prop.toLowerCase() === 'all')
+  ) {
+    second.parent.insertBefore(first, receivingBlock);
+  } else {
+    second.parent.insertBefore(second, receivingBlock);
+  }
+
+  const firstClone = first.clone();
+  const secondClone = second.clone();
+
+  /**
+   * @param {function(postcss.Declaration):void} callback
+   * @return {function(postcss.Declaration)}
+   */
+  function moveDecl(callback) {
+    return (decl) => {
+      if (~indexOfDeclaration(intersection, decl)) {
+        callback.call(this, decl);
+      }
     };
-    firstClone.walkDecls(moveDecl(decl => {
-        decl.remove();
-        receivingBlock.append(decl);
-    }));
-    secondClone.walkDecls(moveDecl(decl => decl.remove()));
-    const merged = ruleLength(firstClone, receivingBlock, secondClone);
-    const original = ruleLength(first, second);
-    if (merged < original) {
-        first.replaceWith(firstClone);
-        second.replaceWith(secondClone);
-        [firstClone, receivingBlock, secondClone].forEach(r => {
-            if (!r.nodes.length) {
-                r.remove();
-            }
-        });
-        if (!secondClone.parent) {
-            return receivingBlock;
-        }
-        return secondClone;
-    } else {
-        receivingBlock.remove();
-        return second;
+  }
+  firstClone.walkDecls(
+    moveDecl((decl) => {
+      decl.remove();
+      receivingBlock.append(decl);
+    })
+  );
+  secondClone.walkDecls(moveDecl((decl) => decl.remove()));
+  const merged = ruleLength(firstClone, receivingBlock, secondClone);
+  const original = ruleLength(first, second);
+  if (merged < original) {
+    first.replaceWith(firstClone);
+    second.replaceWith(secondClone);
+    [firstClone, receivingBlock, secondClone].forEach((r) => {
+      if (!r.nodes.length) {
+        r.remove();
+      }
+    });
+    if (!secondClone.parent) {
+      return receivingBlock;
     }
+    return secondClone;
+  } else {
+    receivingBlock.remove();
+    return second;
+  }
 }
 
 /**
@@ -321,62 +336,62 @@ function partialMerge (first, second) {
  * @param {Object.<string, boolean>} compatibilityCache
  * @return {function(postcss.Rule)}
  */
-function selectorMerger (browsers, compatibilityCache) {
-    /** @type {postcss.Rule} */
-    let cache = null;
-    return function (rule) {
-        // Prime the cache with the first rule, or alternately ensure that it is
-        // safe to merge both declarations before continuing
-        if (!cache || !canMerge(rule, cache, browsers, compatibilityCache)) {
-            cache = rule;
-            return;
-        }
-        // Ensure that we don't deduplicate the same rule; this is sometimes
-        // caused by a partial merge
-        if (cache === rule) {
-            cache = rule;
-            return;
-        }
+function selectorMerger(browsers, compatibilityCache) {
+  /** @type {postcss.Rule} */
+  let cache = null;
+  return function(rule) {
+    // Prime the cache with the first rule, or alternately ensure that it is
+    // safe to merge both declarations before continuing
+    if (!cache || !canMerge(rule, cache, browsers, compatibilityCache)) {
+      cache = rule;
+      return;
+    }
+    // Ensure that we don't deduplicate the same rule; this is sometimes
+    // caused by a partial merge
+    if (cache === rule) {
+      cache = rule;
+      return;
+    }
 
-        // Parents merge: check if the rules have same parents, but not same parent nodes
-        mergeParents(cache, rule);
+    // Parents merge: check if the rules have same parents, but not same parent nodes
+    mergeParents(cache, rule);
 
-        // Merge when declarations are exactly equal
-        // e.g. h1 { color: red } h2 { color: red }
-        if (sameDeclarationsAndOrder(getDecls(rule), getDecls(cache))) {
-            rule.selector = joinSelectors(cache, rule);
-            cache.remove();
-            cache = rule;
-            return;
+    // Merge when declarations are exactly equal
+    // e.g. h1 { color: red } h2 { color: red }
+    if (sameDeclarationsAndOrder(getDecls(rule), getDecls(cache))) {
+      rule.selector = joinSelectors(cache, rule);
+      cache.remove();
+      cache = rule;
+      return;
+    }
+    // Merge when both selectors are exactly equal
+    // e.g. a { color: blue } a { font-weight: bold }
+    if (cache.selector === rule.selector) {
+      const cached = getDecls(cache);
+      rule.walk((decl) => {
+        if (~indexOfDeclaration(cached, decl)) {
+          return decl.remove();
         }
-        // Merge when both selectors are exactly equal
-        // e.g. a { color: blue } a { font-weight: bold }
-        if (cache.selector === rule.selector) {
-            const cached = getDecls(cache);
-            rule.walk(decl => {
-                if (~indexOfDeclaration(cached, decl)) {
-                    return decl.remove();
-                }
-                cache.append(decl);
-            });
-            rule.remove();
-            return;
-        }
-        // Partial merge: check if the rule contains a subset of the last; if
-        // so create a joined selector with the subset, if smaller.
-        cache = partialMerge(cache, rule);
-    };
+        cache.append(decl);
+      });
+      rule.remove();
+      return;
+    }
+    // Partial merge: check if the rule contains a subset of the last; if
+    // so create a joined selector with the subset, if smaller.
+    cache = partialMerge(cache, rule);
+  };
 }
 
 export default postcss.plugin('postcss-merge-rules', () => {
-    return (css, result) => {
-        const resultOpts = result.opts || {};
-        const browsers = browserslist(null, {
-            stats: resultOpts.stats,
-            path: __dirname,
-            env: resultOpts.env,
-        });
-        const compatibilityCache = {};
-        css.walkRules(selectorMerger(browsers, compatibilityCache));
-    };
+  return (css, result) => {
+    const resultOpts = result.opts || {};
+    const browsers = browserslist(null, {
+      stats: resultOpts.stats,
+      path: __dirname,
+      env: resultOpts.env,
+    });
+    const compatibilityCache = {};
+    css.walkRules(selectorMerger(browsers, compatibilityCache));
+  };
 });

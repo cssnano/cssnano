@@ -3,13 +3,9 @@
   "npmClient": "yarn",
   "command": {
     "publish": {
-      "ignoreChanges": [
-        "package-lock.json"
-      ]
+      "ignoreChanges": ["package-lock.json"]
     }
   },
-  "packages": [
-    "packages/*"
-  ],
+  "packages": ["packages/*"],
   "version": "independent"
 }

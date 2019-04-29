@@ -1,3 +1,3 @@
-export default function remove (node) {
-    return node.remove();
+export default function remove(node) {
+  return node.remove();
 }

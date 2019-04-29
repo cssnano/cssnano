@@ -1,4 +1,4 @@
-import {detect} from 'lerna:stylehacks';
+import { detect } from 'lerna:stylehacks';
 import canMerge from '../canMerge';
 import getDecls from '../getDecls';
 import minifyTrbl from '../minifyTrbl';
@@ -11,80 +11,86 @@ import trbl from '../trbl';
 import isCustomProp from '../isCustomProp';
 import canExplode from '../canExplode';
 
-export default prop => {
-    const properties = trbl.map(direction => `${prop}-${direction}`);
+export default (prop) => {
+  const properties = trbl.map((direction) => `${prop}-${direction}`);
 
-    const cleanup = rule => {
-        let decls = getDecls(rule, [prop].concat(properties));
+  const cleanup = (rule) => {
+    let decls = getDecls(rule, [prop].concat(properties));
 
-        while (decls.length) {
-            const lastNode = decls[decls.length - 1];
+    while (decls.length) {
+      const lastNode = decls[decls.length - 1];
 
-            // remove properties of lower precedence
-            const lesser = decls.filter(node =>
-                !detect(lastNode) &&
-                !detect(node) &&
-                node !== lastNode &&
-                node.important === lastNode.important &&
-                lastNode.prop === prop && node.prop !== lastNode.prop);
+      // remove properties of lower precedence
+      const lesser = decls.filter(
+        (node) =>
+          !detect(lastNode) &&
+          !detect(node) &&
+          node !== lastNode &&
+          node.important === lastNode.important &&
+          lastNode.prop === prop &&
+          node.prop !== lastNode.prop
+      );
 
-            lesser.forEach(remove);
-            decls = decls.filter(node => !~lesser.indexOf(node));
+      lesser.forEach(remove);
+      decls = decls.filter((node) => !~lesser.indexOf(node));
 
-            // get duplicate properties
-            let duplicates = decls.filter(node =>
-                !detect(lastNode) &&
-                !detect(node) &&
-                node !== lastNode &&
-                node.important === lastNode.important &&
-                node.prop === lastNode.prop &&
-                !(!isCustomProp(node) && isCustomProp(lastNode))
-            );
+      // get duplicate properties
+      let duplicates = decls.filter(
+        (node) =>
+          !detect(lastNode) &&
+          !detect(node) &&
+          node !== lastNode &&
+          node.important === lastNode.important &&
+          node.prop === lastNode.prop &&
+          !(!isCustomProp(node) && isCustomProp(lastNode))
+      );
 
-            duplicates.forEach(remove);
-            decls = decls.filter(node => node !== lastNode && !~duplicates.indexOf(node));
+      duplicates.forEach(remove);
+      decls = decls.filter(
+        (node) => node !== lastNode && !~duplicates.indexOf(node)
+      );
+    }
+  };
+
+  const processor = {
+    explode: (rule) => {
+      rule.walkDecls(new RegExp('^' + prop + '$', 'i'), (decl) => {
+        if (!canExplode(decl)) {
+          return;
         }
-    };
 
-    const processor = {
-        explode: rule => {
-            rule.walkDecls(new RegExp("^" + prop + "$", "i"), decl => {
-                if (!canExplode(decl)) {
-                    return;
-                }
+        if (detect(decl)) {
+          return;
+        }
 
-                if (detect(decl)) {
-                    return;
-                }
+        const values = parseTrbl(decl.value);
 
-                const values = parseTrbl(decl.value);
+        trbl.forEach((direction, index) => {
+          insertCloned(decl.parent, decl, {
+            prop: properties[index],
+            value: values[index],
+          });
+        });
 
-                trbl.forEach((direction, index) => {
-                    insertCloned(decl.parent, decl, {
-                        prop: properties[index],
-                        value: values[index],
-                    });
-                });
+        decl.remove();
+      });
+    },
+    merge: (rule) => {
+      mergeRules(rule, properties, (rules, lastNode) => {
+        if (canMerge(rules) && !rules.some(detect)) {
+          insertCloned(lastNode.parent, lastNode, {
+            prop,
+            value: minifyTrbl(mergeValues(...rules)),
+          });
+          rules.forEach(remove);
 
-                decl.remove();
-            });
-        },
-        merge: rule => {
-            mergeRules(rule, properties, (rules, lastNode) => {
-                if (canMerge(rules) && !rules.some(detect)) {
-                    insertCloned(lastNode.parent, lastNode, {
-                        prop,
-                        value: minifyTrbl(mergeValues(...rules)),
-                    });
-                    rules.forEach(remove);
+          return true;
+        }
+      });
 
-                    return true;
-                }
-            });
+      cleanup(rule);
+    },
+  };
 
-            cleanup(rule);
-        },
-    };
-
-    return processor;
+  return processor;
 };
