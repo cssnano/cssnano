@@ -15,6 +15,34 @@ test(
 );
 
 test(
+  'linear: should convert "to top" to 0deg (uppercase)',
+  processCSS,
+  'background:LINEAR-GRADIENT(TO TOP,#FFE500,#121)',
+  'background:LINEAR-GRADIENT(0deg,#FFE500,#121)'
+);
+
+test(
+  'linear: should convert "to top" to 0deg (webkit)',
+  processCSS,
+  'background:-webkit-linear-gradient(to top,#ffe500,#121)',
+  'background:-webkit-linear-gradient(0deg,#ffe500,#121)'
+);
+
+test(
+  'linear: should convert "to top" to 0deg (mozilla)',
+  processCSS,
+  'background:-moz-linear-gradient(to top,#ffe500,#121)',
+  'background:-moz-linear-gradient(0deg,#ffe500,#121)'
+);
+
+test(
+  'linear: should convert "to top" to 0deg (opera)',
+  processCSS,
+  'background:-o-linear-gradient(to top,#ffe500,#121)',
+  'background:-o-linear-gradient(0deg,#ffe500,#121)'
+);
+
+test(
   'linear: should convert "to top" to 0deg (uppercase property and value)',
   processCSS,
   'BACKGROUND:LINEAR-GRADIENT(TO TOP,#ffe500,#121)',
@@ -66,8 +94,29 @@ test(
 test(
   'repeating-linear: should convert "to top" to 0deg (uppercase)',
   processCSS,
-  'background:REPEATING-LINEAR-GRADIENT(TO TOP,#ffe500,#121)',
-  'background:REPEATING-LINEAR-GRADIENT(0deg,#ffe500,#121)'
+  'background:REPEATING-LINEAR-GRADIENT(TO TOP,#FFE500,#121)',
+  'background:REPEATING-LINEAR-GRADIENT(0deg,#FFE500,#121)'
+);
+
+test(
+  'repeating-linear: should convert "to top" to 0deg (webkit)',
+  processCSS,
+  'background:-webkit-repeating-linear-gradient(to top,#ffe500,#121)',
+  'background:-webkit-repeating-linear-gradient(0deg,#ffe500,#121)'
+);
+
+test(
+  'repeating-linear: should convert "to top" to 0deg (mozilla)',
+  processCSS,
+  'background:-moz-repeating-linear-gradient(to top,#ffe500,#121)',
+  'background:-moz-repeating-linear-gradient(0deg,#ffe500,#121)'
+);
+
+test(
+  'repeating-linear: should convert "to top" to 0deg (opera)',
+  processCSS,
+  'background:-o-repeating-linear-gradient(to top,#ffe500,#121)',
+  'background:-o-repeating-linear-gradient(0deg,#ffe500,#121)'
 );
 
 test(
@@ -205,6 +254,13 @@ test(
 );
 
 test(
+  'radial: should correctly account with prefix "-webkit" (1) with px',
+  processCSS,
+  'background: -webkit-radial-gradient(50% 26px, circle, #fff, rgba(255, 255, 255, 0) 24%)',
+  'background: -webkit-radial-gradient(50% 26px, circle, #fff, rgba(255, 255, 255, 0) 24%)'
+);
+
+test(
   'radial: should correctly account with prefix "-webkit" (1) with px (uppercase)',
   processCSS,
   'background: -webkit-radial-gradient(50% 26PX, circle, #fff, rgba(255, 255, 255, 0) 24%)',
@@ -265,6 +321,13 @@ test(
   processCSS,
   'background: -webkit-radial-gradient(white CALC(30%), black calc(50%))',
   'background: -webkit-radial-gradient(white CALC(30%), black calc(50%))'
+);
+
+test(
+  'radial: should correctly account with prefix "-moz" (1)',
+  processCSS,
+  'background: -moz-radial-gradient(50% 26%, circle, #fff, rgba(255, 255, 255, 0) 24%)',
+  'background: -moz-radial-gradient(50% 26%, circle, #fff, rgba(255, 255, 255, 0) 24%)'
 );
 
 test(
@@ -370,6 +433,13 @@ test(
   'should pass through env property references',
   passthroughCSS,
   'background:linear-gradient(env(--var))'
+);
+
+test(
+  'linear: should convert "to top" to 0deg with multiple gradients notations',
+  processCSS,
+  'background:linear-gradient(env(--var)),linear-gradient(to top,#ffe500,#121),linear-gradient(336deg, rgba(0,0,255,.8), rgba(0,0,255,0) 70.71%)',
+  'background:linear-gradient(env(--var)),linear-gradient(0deg,#ffe500,#121),linear-gradient(336deg, rgba(0,0,255,.8), rgba(0,0,255,0) 70.71%)'
 );
 
 test('should not throw error on broken syntax', passthroughCSS, 'background:');

@@ -24,13 +24,7 @@ function optimise(decl) {
     return;
   }
 
-  const normalizedValue = value.toLowerCase();
-
-  if (normalizedValue.includes('var(') || normalizedValue.includes('env(')) {
-    return;
-  }
-
-  if (!normalizedValue.includes('gradient')) {
+  if (!value.toLowerCase().includes('gradient')) {
     return;
   }
 
@@ -40,13 +34,21 @@ function optimise(decl) {
         return false;
       }
 
-      const lowerCasedValue = node.value.toLowerCase();
+      const stringifiedFunctionNodes = stringify(node.nodes);
 
       if (
-        lowerCasedValue === 'linear-gradient' ||
-        lowerCasedValue === 'repeating-linear-gradient' ||
-        lowerCasedValue === '-webkit-linear-gradient' ||
-        lowerCasedValue === '-webkit-repeating-linear-gradient'
+        stringifiedFunctionNodes.includes('var(') ||
+        stringifiedFunctionNodes.includes('env(')
+      ) {
+        return false;
+      }
+
+      const lowerCasedFunctionName = node.value.toLowerCase();
+      const functionName = postcss.vendor.unprefixed(lowerCasedFunctionName);
+
+      if (
+        functionName === 'linear-gradient' ||
+        functionName === 'repeating-linear-gradient'
       ) {
         let args = getArguments(node);
 
@@ -97,9 +99,13 @@ function optimise(decl) {
         return false;
       }
 
+      const prefix = postcss.vendor.prefix(lowerCasedFunctionName);
+
+      // New W3C syntax
       if (
-        lowerCasedValue === 'radial-gradient' ||
-        lowerCasedValue === 'repeating-radial-gradient'
+        !prefix &&
+        (functionName === 'radial-gradient' ||
+          functionName === 'repeating-radial-gradient')
       ) {
         let args = getArguments(node);
         let lastStop;
@@ -129,9 +135,12 @@ function optimise(decl) {
         return false;
       }
 
+      // Old syntax FF 3.6-15, Chrome 10-25, Safari 5.1-6
+      // Opera doesn't support `-o` prefix
       if (
-        lowerCasedValue === '-webkit-radial-gradient' ||
-        lowerCasedValue === '-webkit-repeating-radial-gradient'
+        prefix &&
+        (functionName === 'radial-gradient' ||
+          functionName === 'repeating-radial-gradient')
       ) {
         let args = getArguments(node);
         let lastStop;
@@ -153,11 +162,12 @@ function optimise(decl) {
               stop = arg[2].value;
             }
           } else {
+            // eslint-disable-next-line no-lonely-if
             if (arg[0].type === 'function') {
               color = `${arg[0].value}(${stringify(arg[0].nodes)})`;
+            } else {
+              color = arg[0].value;
             }
-
-            color = arg[0].value;
           }
 
           color = color.toLowerCase();
