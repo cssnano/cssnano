@@ -58,17 +58,17 @@ test(
 );
 
 test(
-  'should shorten scale3d(sx, 1, 1) to scaleX(sx)',
+  'should pass through invalid scale',
   processCss,
   'h1{transform:scale(1.5, 1, 1)}',
-  'h1{transform:scaleX(1.5)}'
+  'h1{transform:scale(1.5,1,1)}'
 );
 
 test(
-  'should shorten scale3d(1, sy, 1) to scaleY(sy)',
+  'should pass through invalid scale',
   processCss,
-  'h1{transform:scale(1, 1.5, 1)}',
-  'h1{transform:scaleY(1.5)}'
+  'h1{transform:scale(1,1.5,1)}',
+  'h1{transform:scale(1,1.5,1)}'
 );
 
 test(

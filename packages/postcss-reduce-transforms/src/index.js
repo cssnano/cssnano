@@ -1,17 +1,33 @@
 import has from 'has';
 import postcss from 'postcss';
-import valueParser from 'postcss-value-parser';
+import valueParser, { stringify } from 'postcss-value-parser';
 import getMatchFactory from 'lerna:cssnano-util-get-match';
 
-function getValues(list, { value }, index) {
+function getValues(list, node, index) {
   if (index % 2 === 0) {
-    return [...list, parseFloat(value)];
+    let value = NaN;
+
+    if (
+      node.type === 'function' &&
+      (node.value === 'var' || node.value === 'env') &&
+      node.nodes.length === 1
+    ) {
+      value = stringify(node.nodes);
+    } else if (node.type === 'word') {
+      value = parseFloat(node.value);
+    }
+
+    return [...list, value];
   }
 
   return list;
 }
 
 function matrix3d(node, values) {
+  if (values.length !== 16) {
+    return;
+  }
+
   // matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1) => matrix(a, b, c, d, tx, ty)
   if (
     values[15] &&
@@ -54,6 +70,10 @@ const rotate3dMappings = [
 const rotate3dMatch = getMatchFactory(rotate3dMappings);
 
 function rotate3d(node, values) {
+  if (values.length !== 4) {
+    return;
+  }
+
   const { nodes } = node;
   const match = rotate3dMatch(values.slice(0, 3));
 
@@ -63,18 +83,21 @@ function rotate3d(node, values) {
   }
 }
 
-function rotateZ(node) {
+function rotateZ(node, values) {
+  if (values.length !== 1) {
+    return;
+  }
+
   // rotateZ(rz) => rotate(rz)
   node.value = 'rotate';
 }
 
 function scale(node, values) {
-  const { nodes } = node;
-
-  if (!nodes[2]) {
+  if (values.length !== 2) {
     return;
   }
 
+  const { nodes } = node;
   const [first, second] = values;
 
   // scale(sx, sy) => scale(sx)
@@ -102,6 +125,10 @@ function scale(node, values) {
 }
 
 function scale3d(node, values) {
+  if (values.length !== 3) {
+    return;
+  }
+
   const { nodes } = node;
   const [first, second, third] = values;
 
@@ -131,11 +158,11 @@ function scale3d(node, values) {
 }
 
 function translate(node, values) {
-  const { nodes } = node;
-
-  if (!nodes[2]) {
+  if (values.length !== 2) {
     return;
   }
+
+  const { nodes } = node;
 
   // translate(tx, 0) => translate(tx)
   if (values[1] === 0) {
@@ -154,6 +181,10 @@ function translate(node, values) {
 }
 
 function translate3d(node, values) {
+  if (values.length !== 3) {
+    return;
+  }
+
   const { nodes } = node;
 
   // translate3d(0, 0, tz) => translateZ(tz)
@@ -200,6 +231,10 @@ export default postcss.plugin('postcss-reduce-transforms', () => {
 
     css.walkDecls(/transform$/i, (decl) => {
       const value = decl.value;
+
+      if (!value) {
+        return;
+      }
 
       if (cache[value]) {
         decl.value = cache[value];
