@@ -514,6 +514,13 @@ test(
 );
 
 test(
+  'should order animation consistently (11) (process prefixed -moz-animation)',
+  processCSS,
+  '-moz-animation: linear bounce 1s 2s',
+  '-moz-animation: bounce 1s linear 2s'
+);
+
+test(
   'should abort ordering when a var is detected (animation)',
   passthroughCSS,
   'animation: bounce /*!wow*/ 1s var(--linear) 2s 5 normal none running'

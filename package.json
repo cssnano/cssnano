@@ -10,7 +10,7 @@
     "build:aliases": "babel-node ./util/buildAliases.js",
     "build:metadata": "babel-node ./util/buildMetadata.js",
     "build:site": "remark site/content/**/*.md -o && yarn build:metadata && babel-node ./util/buildSiteMarkdown.js && cd site && yarn build",
-    "build:integration": "babel-node ./util/buildFrameworks.js",
+    "build:integration": "cross-env BABEL_ENV=test babel-node ./util/buildFrameworks.js",
     "pretest": "yarn lint",
     "test-only": "cross-env BABEL_ENV=test ava",
     "test-only:coverage": "nyc --reporter=lcov --reporter=text yarn test-only",
