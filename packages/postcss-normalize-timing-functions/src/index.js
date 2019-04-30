@@ -1,18 +1,16 @@
 import { plugin } from 'postcss';
 import valueParser from 'postcss-value-parser';
 import getMatchFactory from 'lerna:cssnano-util-get-match';
-import mappings from './lib/map';
 
-const getMatch = getMatchFactory(mappings);
 const getValue = (node) => parseFloat(node.value);
-
-function evenValues(list, index) {
-  return index % 2 === 0;
-}
 
 function reduce(node) {
   if (node.type !== 'function') {
     return false;
+  }
+
+  if (!node.value) {
+    return;
   }
 
   const lowerCasedValue = node.value.toLowerCase();
@@ -21,8 +19,10 @@ function reduce(node) {
     // Don't bother checking the step-end case as it has the same length
     // as steps(1)
     if (
+      node.nodes[0].type === 'word' &&
       getValue(node.nodes[0]) === 1 &&
       node.nodes[2] &&
+      node.nodes[2].type === 'word' &&
       node.nodes[2].value.toLowerCase() === 'start'
     ) {
       node.type = 'word';
@@ -34,7 +34,11 @@ function reduce(node) {
     }
 
     // The end case is actually the browser default, so it isn't required.
-    if (node.nodes[2] && node.nodes[2].value.toLowerCase() === 'end') {
+    if (
+      node.nodes[2] &&
+      node.nodes[2].type === 'word' &&
+      node.nodes[2].value.toLowerCase() === 'end'
+    ) {
       node.nodes = [node.nodes[0]];
 
       return;
@@ -44,7 +48,23 @@ function reduce(node) {
   }
 
   if (lowerCasedValue === 'cubic-bezier') {
-    const match = getMatch(node.nodes.filter(evenValues).map(getValue));
+    const values = node.nodes
+      .filter((list, index) => {
+        return index % 2 === 0;
+      })
+      .map(getValue);
+
+    if (values.length !== 4) {
+      return;
+    }
+
+    const match = getMatchFactory([
+      ['ease', [0.25, 0.1, 0.25, 1]],
+      ['linear', [0, 0, 1, 1]],
+      ['ease-in', [0.42, 0, 1, 1]],
+      ['ease-out', [0, 0, 0.58, 1]],
+      ['ease-in-out', [0.42, 0, 0.58, 1]],
+    ])(values);
 
     if (match) {
       node.type = 'word';
