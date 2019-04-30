@@ -12,7 +12,6 @@ import transition from './rules/transition';
 
 const rules = {
   animation: animation,
-  '-webkit-animation': animation,
   border: border,
   'border-top': border,
   'border-right': border,
@@ -22,7 +21,6 @@ const rules = {
   'box-shadow': boxShadow,
   'flex-flow': flexFlow,
   transition: transition,
-  '-webkit-transition': transition,
 };
 
 /* eslint-enable */
@@ -61,7 +59,8 @@ export default postcss.plugin('postcss-ordered-values', () => {
 
     css.walkDecls((decl) => {
       const lowerCasedProp = decl.prop.toLowerCase();
-      const processor = rules[lowerCasedProp];
+      const normalizedProp = postcss.vendor.unprefixed(lowerCasedProp);
+      const processor = rules[normalizedProp];
 
       if (!processor) {
         return;
