@@ -3,12 +3,6 @@ import valueParser from 'postcss-value-parser';
 import getMatchFactory from 'lerna:cssnano-util-get-match';
 import mappings from './lib/map';
 
-const getMatch = getMatchFactory(mappings);
-
-function evenValues(list, index) {
-  return index % 2 === 0;
-}
-
 export default postcss.plugin('postcss-normalize-display-values', () => {
   return (css) => {
     const cache = {};
@@ -30,9 +24,20 @@ export default postcss.plugin('postcss-normalize-display-values', () => {
         return;
       }
 
-      const match = getMatch(
-        nodes.filter(evenValues).map((n) => n.value.toLowerCase())
-      );
+      const values = nodes
+        .filter((list, index) => {
+          return index % 2 === 0;
+        })
+        .filter((node) => {
+          return node.type === 'word';
+        })
+        .map((n) => n.value.toLowerCase());
+
+      if (values.length === 0) {
+        return;
+      }
+
+      const match = getMatchFactory(mappings)(values);
 
       if (!match) {
         cache[value] = value;

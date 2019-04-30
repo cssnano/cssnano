@@ -33,4 +33,12 @@ test(
   `DISPLAY:block`
 );
 
+test(`should pass through variables`, passthroughCSS, `display:var(--foo)`);
+
+test(
+  `should pass through variables`,
+  passthroughCSS,
+  `display:var(--foo) var(--bar)`
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin, plugin());
