@@ -1121,3 +1121,17 @@ test(
   'h1{BORDER-TOP-WIDTH:10PX;BORDER-RIGHT-WIDTH:VAR(--fooBar);BORDER-RIGHT-WIDTH:15PX;BORDER-BOTTOM-WIDTH:VAR(--fooBar);BORDER-BOTTOM-WIDTH:20PX;BORDER-LEFT-WIDTH:25PX;BORDER-TOP-WIDTH:VAR(--fooBar);BORDER-LEFT-WIDTH:VAR(--fooBar)}',
   'h1{border-width:10PX 15PX 20PX 25PX;BORDER-TOP-WIDTH:VAR(--fooBar);BORDER-LEFT-WIDTH:VAR(--fooBar)}'
 );
+
+test(
+  'should handle !important statements for border-width props',
+  processCSS,
+  'h1{border:1px solid red!important;border-top-width:0!important;border-right-width:0!important;border-bottom-width:0!important;}',
+  'h1{border:solid red!important;border-width:0 0 0 1px!important;}'
+);
+
+test(
+  'should handle mixed border declarations',
+  processCSS,
+  'h1{border: 2px solid red;border-bottom-width:0;border-right-width:0;border-top-width:0;}',
+  'h1{border:solid red;border-width:0 0 0 2px;}'
+);

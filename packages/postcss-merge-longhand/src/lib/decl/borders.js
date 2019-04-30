@@ -638,7 +638,8 @@ function merge(rule) {
             longhands[1].value.toLowerCase() &&
           longhands[1].value.toLowerCase() ===
             longhands[2].value.toLowerCase() &&
-          longhands[0].value.toLowerCase() === values[i].toLowerCase()
+          (values[i] !== undefined &&
+            longhands[0].value.toLowerCase() === values[i].toLowerCase())
         ) {
           longhands.forEach(remove);
 
