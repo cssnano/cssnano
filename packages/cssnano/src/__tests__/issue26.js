@@ -26,18 +26,18 @@ const expected = `@media print{.test{-webkit-box-shadow:none;box-shadow:none;-we
 // Switch back once css-declaration-sorter has been fixed
 // const expected = `@media print{.test{-webkit-border-radius:0;-webkit-box-shadow:none;border-radius:0;box-shadow:none}}.test{width:500px}`;
 
-ava('it should compress whitespace after node.clone()', t => {
-    const processor = postcss([
-        postcss.plugin('cloner', () => {
-            return css => {
-                css.walkAtRules(rule => {
-                    css.prepend(rule.clone());
-                    rule.remove();
-                });
-            };
-        }),
-        nano(),
-    ]);
+ava('it should compress whitespace after node.clone()', (t) => {
+  const processor = postcss([
+    postcss.plugin('cloner', () => {
+      return (css) => {
+        css.walkAtRules((rule) => {
+          css.prepend(rule.clone());
+          rule.remove();
+        });
+      };
+    }),
+    nano(),
+  ]);
 
-    return processor.process(fixture).then(r => t.deepEqual(r.css, expected));
+  return processor.process(fixture).then((r) => t.deepEqual(r.css, expected));
 });

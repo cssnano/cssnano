@@ -1,125 +1,113 @@
-import {plugin, list} from "postcss";
-import CommentRemover from "./lib/commentRemover";
-import commentParser from "./lib/commentParser";
+import { plugin, list } from 'postcss';
+import CommentRemover from './lib/commentRemover';
+import commentParser from './lib/commentParser';
 
-const {space} = list;
+const { space } = list;
 
-export default plugin("postcss-discard-comments", (opts = {}) => {
-    const remover = new CommentRemover(opts);
-    const matcherCache = {};
-    const replacerCache = {};
+export default plugin('postcss-discard-comments', (opts = {}) => {
+  const remover = new CommentRemover(opts);
+  const matcherCache = {};
+  const replacerCache = {};
 
-    function matchesComments (source) {
-        if (matcherCache[source]) {
-            return matcherCache[source];
-        }
-
-        const result = commentParser(source).filter(([type]) => type);
-
-        matcherCache[source] = result;
-
-        return result;
+  function matchesComments(source) {
+    if (matcherCache[source]) {
+      return matcherCache[source];
     }
 
-    function replaceComments (source, separator = " ") {
-        const key = source + "@|@" + separator;
+    const result = commentParser(source).filter(([type]) => type);
 
-        if (replacerCache[key]) {
-            return replacerCache[key];
-        }
+    matcherCache[source] = result;
 
-        const parsed = commentParser(source).reduce(
-            (value, [type, start, end]) => {
-                const contents = source.slice(start, end);
+    return result;
+  }
 
-                if (!type) {
-                    return value + contents;
-                }
+  function replaceComments(source, separator = ' ') {
+    const key = source + '@|@' + separator;
 
-                if (remover.canRemove(contents)) {
-                    return value + separator;
-                }
-
-                return `${value}/*${contents}*/`;
-            },
-            ""
-        );
-
-        const result = space(parsed).join(" ");
-
-        replacerCache[key] = result;
-
-        return result;
+    if (replacerCache[key]) {
+      return replacerCache[key];
     }
 
-    return css => {
-        css.walk(node => {
-            if (node.type === "comment" && remover.canRemove(node.text)) {
-                node.remove();
+    const parsed = commentParser(source).reduce((value, [type, start, end]) => {
+      const contents = source.slice(start, end);
 
-                return;
-            }
+      if (!type) {
+        return value + contents;
+      }
 
-            if (node.raws.between) {
-                node.raws.between = replaceComments(node.raws.between);
-            }
+      if (remover.canRemove(contents)) {
+        return value + separator;
+      }
 
-            if (node.type === "decl") {
-                if (node.raws.value && node.raws.value.raw) {
-                    if (node.raws.value.value === node.value) {
-                        node.value = replaceComments(node.raws.value.raw);
-                    } else {
-                        node.value = replaceComments(node.value);
-                    }
+      return `${value}/*${contents}*/`;
+    }, '');
 
-                    node.raws.value = null;
-                }
+    const result = space(parsed).join(' ');
 
-                if (node.raws.important) {
-                    node.raws.important = replaceComments(node.raws.important);
+    replacerCache[key] = result;
 
-                    const b = matchesComments(node.raws.important);
+    return result;
+  }
 
-                    node.raws.important = b.length
-                        ? node.raws.important
-                        : "!important";
-                }
+  return (css) => {
+    css.walk((node) => {
+      if (node.type === 'comment' && remover.canRemove(node.text)) {
+        node.remove();
 
-                return;
-            }
+        return;
+      }
 
-            if (
-                node.type === "rule" &&
-                node.raws.selector &&
-                node.raws.selector.raw
-            ) {
-                node.raws.selector.raw = replaceComments(
-                    node.raws.selector.raw,
-                    ""
-                );
+      if (node.raws.between) {
+        node.raws.between = replaceComments(node.raws.between);
+      }
 
-                return;
-            }
+      if (node.type === 'decl') {
+        if (node.raws.value && node.raws.value.raw) {
+          if (node.raws.value.value === node.value) {
+            node.value = replaceComments(node.raws.value.raw);
+          } else {
+            node.value = replaceComments(node.value);
+          }
 
-            if (node.type === "atrule") {
-                if (node.raws.afterName) {
-                    const commentsReplaced = replaceComments(
-                        node.raws.afterName
-                    );
+          node.raws.value = null;
+        }
 
-                    if (!commentsReplaced.length) {
-                        node.raws.afterName = commentsReplaced + " ";
-                    } else {
-                        node.raws.afterName = " " + commentsReplaced + " ";
-                    }
-                }
+        if (node.raws.important) {
+          node.raws.important = replaceComments(node.raws.important);
 
-                if (node.raws.params && node.raws.params.raw) {
-                    node.raws.params.raw = replaceComments(
-                        node.raws.params.raw
-                    );
-                }
-            }
-        });
-    };
+          const b = matchesComments(node.raws.important);
+
+          node.raws.important = b.length ? node.raws.important : '!important';
+        }
+
+        return;
+      }
+
+      if (
+        node.type === 'rule' &&
+        node.raws.selector &&
+        node.raws.selector.raw
+      ) {
+        node.raws.selector.raw = replaceComments(node.raws.selector.raw, '');
+
+        return;
+      }
+
+      if (node.type === 'atrule') {
+        if (node.raws.afterName) {
+          const commentsReplaced = replaceComments(node.raws.afterName);
+
+          if (!commentsReplaced.length) {
+            node.raws.afterName = commentsReplaced + ' ';
+          } else {
+            node.raws.afterName = ' ' + commentsReplaced + ' ';
+          }
+        }
+
+        if (node.raws.params && node.raws.params.raw) {
+          node.raws.params.raw = replaceComments(node.raws.params.raw);
+        }
+      }
+    });
+  };
 });

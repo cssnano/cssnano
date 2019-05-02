@@ -6,22 +6,22 @@ import postcssZindex from 'lerna:postcss-zindex';
 import autoprefixer from 'autoprefixer';
 
 const defaultOpts = {
-    autoprefixer: {
-        add: false,
-    },
+  autoprefixer: {
+    add: false,
+  },
 };
 
-export default function advancedPreset (opts = {}) {
-    const options = Object.assign({}, defaultOpts, opts);
+export default function advancedPreset(opts = {}) {
+  const options = Object.assign({}, defaultOpts, opts);
 
-    const plugins = [
-        ...defaultPreset(options).plugins,
-        [autoprefixer, options.autoprefixer],
-        [postcssDiscardUnused, options.discardUnused],
-        [postcssMergeIdents, options.mergeIdents],
-        [postcssReduceIdents, options.reduceIdents],
-        [postcssZindex, options.zindex],
-    ];
+  const plugins = [
+    ...defaultPreset(options).plugins,
+    [autoprefixer, options.autoprefixer],
+    [postcssDiscardUnused, options.discardUnused],
+    [postcssMergeIdents, options.mergeIdents],
+    [postcssReduceIdents, options.reduceIdents],
+    [postcssZindex, options.zindex],
+  ];
 
-    return {plugins};
+  return { plugins };
 }

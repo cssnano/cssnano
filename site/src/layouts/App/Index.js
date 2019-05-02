@@ -12,43 +12,41 @@ import './index.css';
 import './syntax.css';
 
 class App extends React.Component {
-    constructor (props) {
-        super(props);
-        this.state = {
-            sticky: false,
-        };
-    }
+  constructor(props) {
+    super(props);
+    this.state = {
+      sticky: false,
+    };
+  }
 
-    render () {
-        const {children} = this.props;
-        return (
-            <Analytics>
-                <Container>
-                    <DefaultHeadMeta />
-                    <Sticky disabled={!this.state.sticky}>
-                        <Header />
-                    </Sticky>
-                    <Content>
-                        {children}
-                    </Content>
-                    <Footer />
-                </Container>
-            </Analytics>
-        );
-    }
+  render() {
+    const { children } = this.props;
+    return (
+      <Analytics>
+        <Container>
+          <DefaultHeadMeta />
+          <Sticky disabled={!this.state.sticky}>
+            <Header />
+          </Sticky>
+          <Content>{children}</Content>
+          <Footer />
+        </Container>
+      </Analytics>
+    );
+  }
 
-    updateSticky () {
-        this.setState({sticky: document.body.clientWidth > 599});
-    }
+  updateSticky() {
+    this.setState({ sticky: document.body.clientWidth > 599 });
+  }
 
-    componentDidMount () {
-        window.addEventListener('resize', this.updateSticky.bind(this));
-        this.updateSticky();
-    }
+  componentDidMount() {
+    window.addEventListener('resize', this.updateSticky.bind(this));
+    this.updateSticky();
+  }
 
-    componentWillUnmount () {
-        window.removeEventListener('resize', this.updateSticky.bind(this));
-    }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.updateSticky.bind(this));
+  }
 }
 
 export default App;

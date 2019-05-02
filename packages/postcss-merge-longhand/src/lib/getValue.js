@@ -1,3 +1,3 @@
-export default function getValue ({value}) {
-    return value;
+export default function getValue({ value }) {
+  return value;
 }

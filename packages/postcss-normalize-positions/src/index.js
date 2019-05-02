@@ -1,6 +1,5 @@
-import {plugin} from 'postcss';
-import valueParser, {unit} from 'postcss-value-parser';
-import getArguments from 'lerna:cssnano-util-get-arguments';
+import { plugin } from 'postcss';
+import valueParser, { unit } from 'postcss-value-parser';
 import has from 'has';
 
 const directions = ['top', 'right', 'bottom', 'left', 'center'];
@@ -8,126 +7,209 @@ const directions = ['top', 'right', 'bottom', 'left', 'center'];
 const center = '50%';
 
 const horizontal = {
-    right: '100%',
-    left: '0',
+  right: '100%',
+  left: '0',
 };
 
 const vertical = {
-    bottom: '100%',
-    top: '0',
+  bottom: '100%',
+  top: '0',
 };
 
-function transform (value) {
-    const parsed = valueParser(value);
-    const args = getArguments(parsed);
-    const relevant = [];
+function isCommaNode(node) {
+  return node.type === 'div' && node.value === ',';
+}
 
-    args.forEach(arg => {
-        relevant.push({
-            start: null,
-            end: null,
-        });
+function isVariableFunctionNode(node) {
+  if (node.type !== 'function') {
+    return false;
+  }
 
-        arg.forEach((part, index) => {
-            const isPosition = ~directions.indexOf(part.value.toLowerCase()) || unit(part.value);
-            const len = relevant.length - 1;
+  return ['var', 'env'].includes(node.value.toLowerCase());
+}
 
-            if (relevant[len].start === null && isPosition) {
-                relevant[len].start = index;
-                relevant[len].end = index;
+function isMathFunctionNode(node) {
+  if (node.type !== 'function') {
+    return false;
+  }
 
-                return;
-            }
+  return ['calc', 'min', 'max', 'clamp'].includes(node.value.toLowerCase());
+}
 
-            if (relevant[len].start !== null) {
-                if (part.type === 'space') {
-                    return;
-                } else if (isPosition) {
-                    relevant[len].end = index;
+function isNumberNode(node) {
+  if (node.type !== 'word') {
+    return false;
+  }
 
-                    return;
-                }
+  const value = parseFloat(node.value);
 
-                return;
-            }
-        });
-    });
+  return !isNaN(value);
+}
 
-    relevant.forEach((range, index) => {
-        if (range.start === null) {
-            return;
-        }
+function isDimensionNode(node) {
+  if (node.type !== 'word') {
+    return false;
+  }
 
-        const position = args[index].slice(range.start, range.end + 1);
+  const parsed = unit(node.value);
 
-        if (position.length > 3) {
-            return;
-        }
+  if (!parsed) {
+    return false;
+  }
 
-        const firstValue = position[0].value.toLowerCase();
-        const secondValue = position[2] && position[2].value
-            ? position[2].value.toLowerCase()
-            : null;
+  return parsed.unit !== '';
+}
 
-        if (position.length === 1 || secondValue === 'center') {
-            if (secondValue) {
-                position[2].value = position[1].value = '';
-            }
+function transform(value) {
+  const parsed = valueParser(value);
+  const ranges = [];
+  let backgroundIndex = 0;
+  let shouldContinue = true;
 
-            const map = Object.assign({}, horizontal, {
-                center,
-            });
+  parsed.nodes.forEach((node, index) => {
+    // After comma (`,`) follows next background
+    if (isCommaNode(node)) {
+      backgroundIndex += 1;
+      shouldContinue = true;
 
-            if (has(map, firstValue)) {
-                position[0].value = map[firstValue];
-            }
+      return;
+    }
 
-            return;
-        }
+    if (!shouldContinue) {
+      return;
+    }
 
-        if (firstValue === 'center' && ~directions.indexOf(secondValue)) {
-            position[0].value = position[1].value = '';
+    // After separator (`/`) follows `background-size` values
+    // Avoid their
+    if (node.type === 'div' && node.value === '/') {
+      shouldContinue = false;
 
-            if (has(horizontal, secondValue)) {
-                position[2].value = horizontal[secondValue];
-            }
+      return;
+    }
 
-            return;
-        }
+    if (!ranges[backgroundIndex]) {
+      ranges[backgroundIndex] = {
+        start: null,
+        end: null,
+      };
+    }
 
-        if (has(horizontal, firstValue) && has(vertical, secondValue)) {
-            position[0].value = horizontal[firstValue];
-            position[2].value = vertical[secondValue];
+    // Do not try to be processed `var and `env` function inside background
+    if (isVariableFunctionNode(node)) {
+      shouldContinue = false;
+      ranges[backgroundIndex].start = null;
+      ranges[backgroundIndex].end = null;
 
-            return;
-        } else if (has(vertical, firstValue) && has(horizontal, secondValue)) {
-            position[0].value = horizontal[secondValue];
-            position[2].value = vertical[firstValue];
+      return;
+    }
 
-            return;
-        }
-    });
+    const isPosition =
+      (node.type === 'word' && directions.includes(node.value.toLowerCase())) ||
+      isDimensionNode(node) ||
+      isNumberNode(node) ||
+      isMathFunctionNode(node);
 
-    return parsed.toString();
+    if (ranges[backgroundIndex].start === null && isPosition) {
+      ranges[backgroundIndex].start = index;
+      ranges[backgroundIndex].end = index;
+
+      return;
+    }
+
+    if (ranges[backgroundIndex].start !== null) {
+      if (node.type === 'space') {
+        return;
+      } else if (isPosition) {
+        ranges[backgroundIndex].end = index;
+
+        return;
+      }
+
+      return;
+    }
+  });
+
+  ranges.forEach((range) => {
+    if (range.start === null) {
+      return;
+    }
+
+    const nodes = parsed.nodes.slice(range.start, range.end + 1);
+
+    if (nodes.length > 3) {
+      return;
+    }
+
+    const firstNode = nodes[0].value.toLowerCase();
+    const secondNode =
+      nodes[2] && nodes[2].value ? nodes[2].value.toLowerCase() : null;
+
+    if (nodes.length === 1 || secondNode === 'center') {
+      if (secondNode) {
+        nodes[2].value = nodes[1].value = '';
+      }
+
+      const map = Object.assign({}, horizontal, {
+        center,
+      });
+
+      if (has(map, firstNode)) {
+        nodes[0].value = map[firstNode];
+      }
+
+      return;
+    }
+
+    if (firstNode === 'center' && directions.includes(secondNode)) {
+      nodes[0].value = nodes[1].value = '';
+
+      if (has(horizontal, secondNode)) {
+        nodes[2].value = horizontal[secondNode];
+      }
+
+      return;
+    }
+
+    if (has(horizontal, firstNode) && has(vertical, secondNode)) {
+      nodes[0].value = horizontal[firstNode];
+      nodes[2].value = vertical[secondNode];
+
+      return;
+    } else if (has(vertical, firstNode) && has(horizontal, secondNode)) {
+      nodes[0].value = horizontal[secondNode];
+      nodes[2].value = vertical[firstNode];
+
+      return;
+    }
+  });
+
+  return parsed.toString();
 }
 
 export default plugin('postcss-normalize-positions', () => {
-    return css => {
-        const cache = {};
+  return (css) => {
+    const cache = {};
 
-        css.walkDecls(/^(background(-position)?|(-webkit-)?perspective-origin)$/i, (decl) => {
-            const value = decl.value;
+    css.walkDecls(
+      /^(background(-position)?|(-\w+-)?perspective-origin)$/i,
+      (decl) => {
+        const value = decl.value;
 
-            if (cache[value]) {
-                decl.value = cache[value];
+        if (!value) {
+          return;
+        }
 
-                return;
-            }
+        if (cache[value]) {
+          decl.value = cache[value];
 
-            const result = transform(value);
+          return;
+        }
 
-            decl.value = result;
-            cache[value] = result;
-        });
-    };
+        const result = transform(value);
+
+        decl.value = result;
+        cache[value] = result;
+      }
+    );
+  };
 });

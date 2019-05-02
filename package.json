@@ -3,18 +3,18 @@
   "private": true,
   "scripts": {
     "all-contributors": "all-contributors add",
-    "lint": "eslint --ignore-path .gitignore packages/**/src util",
-    "fixlint": "eslint --fix --ignore-path .gitignore packages/**/src util",
+    "lint": "eslint . --cache --ignore-path .gitignore",
+    "fixlint": "yarn lint -- --fix",
     "postinstall": "lerna bootstrap",
     "build:packages": "babel-node ./util/buildPackages.js",
     "build:aliases": "babel-node ./util/buildAliases.js",
     "build:metadata": "babel-node ./util/buildMetadata.js",
-    "build:site": "remark site/content/**/*.md -o && npm run build:metadata && babel-node ./util/buildSiteMarkdown.js && cd site && npm run build",
-    "build:integration": "babel-node ./util/buildFrameworks.js",
-    "pretest": "npm run lint",
+    "build:site": "remark site/content/**/*.md -o && yarn build:metadata && babel-node ./util/buildSiteMarkdown.js && cd site && yarn build",
+    "build:integration": "cross-env BABEL_ENV=test babel-node ./util/buildFrameworks.js",
+    "pretest": "yarn lint",
     "test-only": "cross-env BABEL_ENV=test ava",
-    "test-only:coverage": "nyc --reporter=lcov --reporter=text npm run test-only",
-    "test": "npm run test-only",
+    "test-only:coverage": "nyc --reporter=lcov --reporter=text yarn test-only",
+    "test": "yarn test-only",
     "deploy": "gh-pages -t -d site/dist",
     "publish": "lerna publish"
   },
@@ -24,6 +24,7 @@
   "devDependencies": {
     "all-contributors-cli": "^5.0.0",
     "ava": "^0.25.0",
+    "babel-eslint": "^10.0.1",
     "babel-cli": "^6.0.0",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-module-resolver": "^2.5.0",
@@ -34,10 +35,10 @@
     "coveralls": "^3.0.1",
     "cross-env": "^5.1.6",
     "dox": "^0.9.0",
-    "eslint": "^3.0.0",
-    "eslint-config-cssnano": "^3.0.0",
-    "eslint-plugin-babel": "^3.3.0",
-    "eslint-plugin-import": "^2.0.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-import": "^2.17.2",
+    "eslint-plugin-react": "^7.12.4",
+    "eslint-plugin-prettier": "^3.0.1",
     "fs-extra": "^6.0.1",
     "get-pkg-repo": "^2.0.0",
     "gh-pages": "^1.2.0",
@@ -46,6 +47,7 @@
     "mdast-util-heading-range": "^2.0.1",
     "nyc": "^12.0.2",
     "postcss": "^7.0.0",
+    "prettier": "^1.17.0",
     "remark": "^9.0.0",
     "remark-behead": "^2.0.1",
     "remark-bookmarks": "^1.0.0",
@@ -197,14 +199,6 @@
         }
       ]
     ]
-  },
-  "eslintConfig": {
-    "extends": "cssnano",
-    "rules": {
-      "import/no-unresolved": [
-        0
-      ]
-    }
   },
   "browserslist": {
     "chrome58": [

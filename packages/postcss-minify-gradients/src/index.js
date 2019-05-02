@@ -1,173 +1,197 @@
 import postcss from 'postcss';
-import valueParser, {unit, stringify} from 'postcss-value-parser';
+import valueParser, { unit, stringify } from 'postcss-value-parser';
 import getArguments from 'lerna:cssnano-util-get-arguments';
 import isColorStop from 'is-color-stop';
 
 const angles = {
-    top:    '0deg',
-    right:  '90deg',
-    bottom: '180deg',
-    left:   '270deg',
+  top: '0deg',
+  right: '90deg',
+  bottom: '180deg',
+  left: '270deg',
 };
 
-function isLessThan (a, b) {
-    return a.unit.toLowerCase() === b.unit.toLowerCase() && parseFloat(a.number) >= parseFloat(b.number);
+function isLessThan(a, b) {
+  return (
+    a.unit.toLowerCase() === b.unit.toLowerCase() &&
+    parseFloat(a.number) >= parseFloat(b.number)
+  );
 }
 
-function optimise (decl) {
-    const value = decl.value;
+function optimise(decl) {
+  const value = decl.value;
 
-    if (!~value.toLowerCase().indexOf('gradient')) {
-        return;
-    }
+  if (!value) {
+    return;
+  }
 
-    decl.value = valueParser(value).walk(node => {
-        if (node.type !== 'function' || !node.nodes.length) {
-            return false;
-        }
+  const normalizedValue = value.toLowerCase();
 
-        const lowerCasedValue = node.value.toLowerCase();
+  if (normalizedValue.includes('var(') || normalizedValue.includes('env(')) {
+    return;
+  }
+
+  if (!normalizedValue.includes('gradient')) {
+    return;
+  }
+
+  decl.value = valueParser(value)
+    .walk((node) => {
+      if (node.type !== 'function' || !node.nodes.length) {
+        return false;
+      }
+
+      const lowerCasedValue = node.value.toLowerCase();
+
+      if (
+        lowerCasedValue === 'linear-gradient' ||
+        lowerCasedValue === 'repeating-linear-gradient' ||
+        lowerCasedValue === '-webkit-linear-gradient' ||
+        lowerCasedValue === '-webkit-repeating-linear-gradient'
+      ) {
+        let args = getArguments(node);
 
         if (
-            lowerCasedValue === 'linear-gradient' ||
-            lowerCasedValue === 'repeating-linear-gradient' ||
-            lowerCasedValue === '-webkit-linear-gradient' ||
-            lowerCasedValue === '-webkit-repeating-linear-gradient'
+          node.nodes[0].value.toLowerCase() === 'to' &&
+          args[0].length === 3
         ) {
-            let args = getArguments(node);
+          node.nodes = node.nodes.slice(2);
+          node.nodes[0].value = angles[node.nodes[0].value.toLowerCase()];
+        }
 
-            if (node.nodes[0].value.toLowerCase() === 'to' && args[0].length === 3) {
-                node.nodes = node.nodes.slice(2);
-                node.nodes[0].value = angles[node.nodes[0].value.toLowerCase()];
+        let lastStop = null;
+
+        args.forEach((arg, index) => {
+          if (!arg[2]) {
+            return;
+          }
+
+          let isFinalStop = index === args.length - 1;
+          let thisStop = unit(arg[2].value);
+
+          if (lastStop === null) {
+            lastStop = thisStop;
+
+            if (
+              !isFinalStop &&
+              lastStop &&
+              lastStop.number === '0' &&
+              lastStop.unit.toLowerCase() !== 'deg'
+            ) {
+              arg[1].value = arg[2].value = '';
             }
 
-            let lastStop = null;
+            return;
+          }
 
-            args.forEach((arg, index) => {
-                if (!arg[2]) {
-                    return;
-                }
+          if (lastStop && thisStop && isLessThan(lastStop, thisStop)) {
+            arg[2].value = 0;
+          }
 
-                let isFinalStop = index === args.length - 1;
-                let thisStop = unit(arg[2].value);
+          lastStop = thisStop;
 
-                if (lastStop === null) {
-                    lastStop = thisStop;
+          if (isFinalStop && arg[2].value === '100%') {
+            arg[1].value = arg[2].value = '';
+          }
+        });
 
-                    if (!isFinalStop && lastStop && lastStop.number === '0' && lastStop.unit.toLowerCase() !== 'deg') {
-                        arg[1].value = arg[2].value = '';
-                    }
+        return false;
+      }
 
-                    return;
-                }
+      if (
+        lowerCasedValue === 'radial-gradient' ||
+        lowerCasedValue === 'repeating-radial-gradient'
+      ) {
+        let args = getArguments(node);
+        let lastStop;
 
-                if (lastStop && thisStop && isLessThan(lastStop, thisStop)) {
-                    arg[2].value = 0;
-                }
+        const hasAt = args[0].find((n) => n.value.toLowerCase() === 'at');
 
-                lastStop = thisStop;
+        args.forEach((arg, index) => {
+          if (!arg[2] || (!index && hasAt)) {
+            return;
+          }
 
-                if (isFinalStop && arg[2].value === '100%') {
-                    arg[1].value = arg[2].value = '';
-                }
-            });
+          let thisStop = unit(arg[2].value);
 
-            return false;
-        }
+          if (!lastStop) {
+            lastStop = thisStop;
 
-        if (
-            lowerCasedValue === 'radial-gradient' ||
-            lowerCasedValue === 'repeating-radial-gradient'
-        ) {
-            let args = getArguments(node);
-            let lastStop;
+            return;
+          }
 
-            const hasAt = args[0].find(n => n.value.toLowerCase() === 'at');
+          if (lastStop && thisStop && isLessThan(lastStop, thisStop)) {
+            arg[2].value = 0;
+          }
 
-            args.forEach((arg, index) => {
-                if (!arg[2] || !index && hasAt) {
-                    return;
-                }
+          lastStop = thisStop;
+        });
 
-                let thisStop = unit(arg[2].value);
+        return false;
+      }
 
-                if (!lastStop) {
-                    lastStop = thisStop;
+      if (
+        lowerCasedValue === '-webkit-radial-gradient' ||
+        lowerCasedValue === '-webkit-repeating-radial-gradient'
+      ) {
+        let args = getArguments(node);
+        let lastStop;
 
-                    return;
-                }
+        args.forEach((arg) => {
+          let color;
+          let stop;
 
-                if (lastStop && thisStop && isLessThan(lastStop, thisStop)) {
-                    arg[2].value = 0;
-                }
+          if (arg[2] !== undefined) {
+            if (arg[0].type === 'function') {
+              color = `${arg[0].value}(${stringify(arg[0].nodes)})`;
+            } else {
+              color = arg[0].value;
+            }
 
-                lastStop = thisStop;
-            });
+            if (arg[2].type === 'function') {
+              stop = `${arg[2].value}(${stringify(arg[2].nodes)})`;
+            } else {
+              stop = arg[2].value;
+            }
+          } else {
+            if (arg[0].type === 'function') {
+              color = `${arg[0].value}(${stringify(arg[0].nodes)})`;
+            }
 
-            return false;
-        }
+            color = arg[0].value;
+          }
 
-        if (
-            lowerCasedValue === '-webkit-radial-gradient' ||
-            lowerCasedValue === '-webkit-repeating-radial-gradient'
-        ) {
-            let args = getArguments(node);
-            let lastStop;
+          color = color.toLowerCase();
 
-            args.forEach((arg) => {
-                let color;
-                let stop;
+          const colorStop =
+            stop || stop === 0
+              ? isColorStop(color, stop.toLowerCase())
+              : isColorStop(color);
 
-                if (arg[2] !== undefined) {
-                    if (arg[0].type === 'function') {
-                        color = `${arg[0].value}(${stringify(arg[0].nodes)})`;
-                    } else {
-                        color = arg[0].value;
-                    }
+          if (!colorStop || !arg[2]) {
+            return;
+          }
 
-                    if (arg[2].type === 'function') {
-                        stop = `${arg[2].value}(${stringify(arg[2].nodes)})`;
-                    } else {
-                        stop = arg[2].value;
-                    }
-                } else {
-                    if (arg[0].type === 'function') {
-                        color = `${arg[0].value}(${stringify(arg[0].nodes)})`;
-                    }
+          let thisStop = unit(arg[2].value);
 
-                    color = arg[0].value;
-                }
+          if (!lastStop) {
+            lastStop = thisStop;
 
-                color = color.toLowerCase();
+            return;
+          }
 
-                const colorStop = stop || stop === 0 ?
-                  isColorStop(color, stop.toLowerCase()) :
-                  isColorStop(color);
+          if (lastStop && thisStop && isLessThan(lastStop, thisStop)) {
+            arg[2].value = 0;
+          }
 
-                if (!colorStop || !arg[2]) {
-                    return;
-                }
+          lastStop = thisStop;
+        });
 
-                let thisStop = unit(arg[2].value);
-
-                if (!lastStop) {
-                    lastStop = thisStop;
-
-                    return;
-                }
-
-                if (lastStop && thisStop && isLessThan(lastStop, thisStop)) {
-                    arg[2].value = 0;
-                }
-
-                lastStop = thisStop;
-            });
-
-            return false;
-        }
-    }).toString();
+        return false;
+      }
+    })
+    .toString();
 }
 
 export default postcss.plugin('postcss-minify-gradients', () => {
-    return css => css.walkDecls(optimise);
+  return (css) => css.walkDecls(optimise);
 });

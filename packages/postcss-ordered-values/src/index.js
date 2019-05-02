@@ -1,5 +1,5 @@
 import postcss from 'postcss';
-import valueParser from "postcss-value-parser";
+import valueParser from 'postcss-value-parser';
 
 // rules
 import animation from './rules/animation';
@@ -11,82 +11,81 @@ import transition from './rules/transition';
 /* eslint-disable quote-props */
 
 const rules = {
-    'animation':          animation,
-    '-webkit-animation':  animation,
-    'border':             border,
-    'border-top':         border,
-    'border-right':       border,
-    'border-bottom':      border,
-    'border-left':        border,
-    'outline':            border,
-    'box-shadow':         boxShadow,
-    'flex-flow':          flexFlow,
-    'transition':         transition,
-    '-webkit-transition': transition,
+  animation: animation,
+  border: border,
+  'border-top': border,
+  'border-right': border,
+  'border-bottom': border,
+  'border-left': border,
+  outline: border,
+  'box-shadow': boxShadow,
+  'flex-flow': flexFlow,
+  transition: transition,
 };
 
 /* eslint-enable */
 
-function shouldAbort (parsed) {
-    let abort = false;
+function shouldAbort(parsed) {
+  let abort = false;
 
-    parsed.walk(({type, value}) => {
-        if (
-            type === 'comment' ||
-            type === 'function' && value.toLowerCase() === 'var' ||
-            type === 'word' && ~value.indexOf(`___CSS_LOADER_IMPORT___`)
-        ) {
-            abort = true;
+  parsed.walk(({ type, value }) => {
+    if (
+      type === 'comment' ||
+      (type === 'function' && value.toLowerCase() === 'var') ||
+      (type === 'word' && ~value.indexOf(`___CSS_LOADER_IMPORT___`))
+    ) {
+      abort = true;
 
-            return false;
-        }
-    });
+      return false;
+    }
+  });
 
-    return abort;
+  return abort;
 }
 
-function getValue (decl) {
-    let {value, raws} = decl;
+function getValue(decl) {
+  let { value, raws } = decl;
 
-    if (raws && raws.value && raws.value.raw) {
-        value = raws.value.raw;
-    }
+  if (raws && raws.value && raws.value.raw) {
+    value = raws.value.raw;
+  }
 
-    return value;
+  return value;
 }
 
 export default postcss.plugin('postcss-ordered-values', () => {
-    return css => {
-        const cache = {};
+  return (css) => {
+    const cache = {};
 
-        css.walkDecls(decl => {
-            const lowerCasedProp = decl.prop.toLowerCase();
-            const processor = rules[lowerCasedProp];
+    css.walkDecls((decl) => {
+      const lowerCasedProp = decl.prop.toLowerCase();
+      const normalizedProp = postcss.vendor.unprefixed(lowerCasedProp);
+      const processor = rules[normalizedProp];
 
-            if (!processor) {
-                return;
-            }
+      if (!processor) {
+        return;
+      }
 
-            const value = getValue(decl);
+      const value = getValue(decl);
 
-            if (cache[value]) {
-                decl.value = cache[value];
+      if (cache[value]) {
+        decl.value = cache[value];
 
-                return;
-            }
+        return;
+      }
 
-            const parsed = valueParser(value);
+      const parsed = valueParser(value);
 
-            if (parsed.nodes.length < 2 || shouldAbort(parsed)) {
-                cache[value] = value;
+      if (parsed.nodes.length < 2 || shouldAbort(parsed)) {
+        cache[value] = value;
 
-                return;
-            }
+        return;
+      }
 
-            const result = processor(parsed);
+      const result = processor(parsed);
 
-            decl.value = result;
-            cache[value] = result;
-        });
-    };
+      decl.value = result;
+      cache[value] = result;
+    });
+  };
 });

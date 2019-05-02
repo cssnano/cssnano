@@ -1,4 +1,4 @@
-import {join} from 'path';
+import { join } from 'path';
 import fs from 'fs-extra';
 import camel from 'camelcase';
 import toml from 'toml';
@@ -66,35 +66,39 @@ source = "https://github.com/postcss/postcss-calc"
 shortName = "calc"
 `);
 
-function shortName (pkgName) {
-    return camel(pkgName.replace(/^(postcss|cssnano-util)-/, ''));
+function shortName(pkgName) {
+  return camel(pkgName.replace(/^(postcss|cssnano-util)-/, ''));
 }
 
-getPackages().then(packages => {
-    return Promise.all(packages.map((pkg) => {
-        return fs.readFile(join(pkg, 'metadata.toml'), 'utf8').then(contents => {
-            const metadata = toml.parse(contents);
-            const pkgJson = require(join(pkg, 'package.json'));
-            const pkgName = pkgJson.name;
+getPackages().then((packages) => {
+  return Promise.all(
+    packages.map((pkg) => {
+      return fs
+        .readFile(join(pkg, 'metadata.toml'), 'utf8')
+        .then((contents) => {
+          const metadata = toml.parse(contents);
+          const pkgJson = require(join(pkg, 'package.json'));
+          const pkgName = pkgJson.name;
 
-            database[pkgName] = Object.assign({}, metadata, {
-                source: `${pkgJson.homepage}/tree/master/packages/${pkgName}`,
-                shortDescription: pkgJson.description,
-                shortName: shortName(pkgName),
-            });
-        }).catch(() => {});
-    }, {}))
-        .then(() => {
-            const sortedKeys = Object.keys(database).sort(sortAscending);
-            const sorted = sortedKeys.reduce((db, key) => {
-                db[key] = database[key];
+          database[pkgName] = Object.assign({}, metadata, {
+            source: `${pkgJson.homepage}/tree/master/packages/${pkgName}`,
+            shortDescription: pkgJson.description,
+            shortName: shortName(pkgName),
+          });
+        })
+        .catch(() => {});
+    }, {})
+  ).then(() => {
+    const sortedKeys = Object.keys(database).sort(sortAscending);
+    const sorted = sortedKeys.reduce((db, key) => {
+      db[key] = database[key];
 
-                return db;
-            }, {});
+      return db;
+    }, {});
 
-            return fs.writeFile(
-                join(__dirname, '../metadata.toml'),
-                tomlify.toToml(sorted)
-            );
-        });
+    return fs.writeFile(
+      join(__dirname, '../metadata.toml'),
+      tomlify.toToml(sorted)
+    );
+  });
 });

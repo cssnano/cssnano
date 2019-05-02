@@ -1,49 +1,54 @@
-import postcss from "postcss";
-import valueParser from "postcss-value-parser";
-import getMatchFactory from "lerna:cssnano-util-get-match";
-import mappings from "./lib/map";
+import postcss from 'postcss';
+import valueParser from 'postcss-value-parser';
+import getMatchFactory from 'lerna:cssnano-util-get-match';
+import mappings from './lib/map';
 
-const getMatch = getMatchFactory(mappings);
+export default postcss.plugin('postcss-normalize-display-values', () => {
+  return (css) => {
+    const cache = {};
 
-function evenValues (list, index) {
-    return index % 2 === 0;
-}
+    css.walkDecls(/display/i, (decl) => {
+      const value = decl.value;
 
-export default postcss.plugin("postcss-normalize-display-values", () => {
-    return css => {
-        const cache = {};
+      if (cache[value]) {
+        decl.value = cache[value];
 
-        css.walkDecls(/display/i, decl => {
-            const value = decl.value;
+        return;
+      }
 
-            if (cache[value]) {
-                decl.value = cache[value];
+      const { nodes } = valueParser(value);
 
-                return;
-            }
+      if (nodes.length === 1) {
+        cache[value] = value;
 
-            const {nodes} = valueParser(value);
+        return;
+      }
 
-            if (nodes.length === 1) {
-                cache[value] = value;
+      const values = nodes
+        .filter((list, index) => {
+          return index % 2 === 0;
+        })
+        .filter((node) => {
+          return node.type === 'word';
+        })
+        .map((n) => n.value.toLowerCase());
 
-                return;
-            }
+      if (values.length === 0) {
+        return;
+      }
 
-            const match = getMatch(
-                nodes.filter(evenValues).map(n => n.value.toLowerCase())
-            );
+      const match = getMatchFactory(mappings)(values);
 
-            if (!match) {
-                cache[value] = value;
+      if (!match) {
+        cache[value] = value;
 
-                return;
-            }
+        return;
+      }
 
-            const result = match;
+      const result = match;
 
-            decl.value = result;
-            cache[value] = result;
-        });
-    };
+      decl.value = result;
+      cache[value] = result;
+    });
+  };
 });

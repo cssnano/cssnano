@@ -3,42 +3,38 @@ import ReactGA from 'react-ga';
 
 import data from '../../metadata';
 
-const isProduction = process.env.NODE_ENV === "production";
-const isClient = typeof window !== "undefined";
+const isProduction = process.env.NODE_ENV === 'production';
+const isClient = typeof window !== 'undefined';
 
 class Analytics extends React.Component {
-    componentWillMount () {
-        if (!isClient || !isProduction) {
-            return;
-        }
-        ReactGA.initialize(data.pkg.googleAnalyticsUA);
-        this.logPageview();
+  componentWillMount() {
+    if (!isClient || !isProduction) {
+      return;
+    }
+    ReactGA.initialize(data.pkg.googleAnalyticsUA);
+    this.logPageview();
+  }
+
+  componentWillReceiveProps(props) {
+    if (!props.params) {
+      return;
     }
 
-    componentWillReceiveProps (props) {
-        if (!props.params) {
-            return;
-        }
-        
-        if (props.params.splat !== this.props.params.splat) {
-            this.logPageview();
-        }
+    if (props.params.splat !== this.props.params.splat) {
+      this.logPageview();
     }
+  }
 
-    logPageview () {
-        if (!isClient || !isProduction) {
-            return;
-        }
-        ReactGA.pageview(window.location.pathname);
+  logPageview() {
+    if (!isClient || !isProduction) {
+      return;
     }
+    ReactGA.pageview(window.location.pathname);
+  }
 
-    render() {
-        return (
-            <div>
-                {this.props.children}
-            </div>
-        );
-    }
+  render() {
+    return <div>{this.props.children}</div>;
+  }
 }
 
 export default Analytics;
