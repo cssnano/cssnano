@@ -3,6 +3,31 @@ import valueParser from 'postcss-value-parser';
 import getMatchFactory from 'lerna:cssnano-util-get-match';
 import mappings from './lib/map';
 
+function transform(value) {
+  const { nodes } = valueParser(value);
+
+  if (nodes.length === 1) {
+    return value;
+  }
+
+  const values = nodes
+    .filter((list, index) => index % 2 === 0)
+    .filter((node) => node.type === 'word')
+    .map((n) => n.value.toLowerCase());
+
+  if (values.length === 0) {
+    return value;
+  }
+
+  const match = getMatchFactory(mappings)(values);
+
+  if (!match) {
+    return value;
+  }
+
+  return match;
+}
+
 export default postcss.plugin('postcss-normalize-display-values', () => {
   return (css) => {
     const cache = {};
@@ -10,42 +35,17 @@ export default postcss.plugin('postcss-normalize-display-values', () => {
     css.walkDecls(/display/i, (decl) => {
       const value = decl.value;
 
+      if (!value) {
+        return;
+      }
+
       if (cache[value]) {
         decl.value = cache[value];
 
         return;
       }
 
-      const { nodes } = valueParser(value);
-
-      if (nodes.length === 1) {
-        cache[value] = value;
-
-        return;
-      }
-
-      const values = nodes
-        .filter((list, index) => {
-          return index % 2 === 0;
-        })
-        .filter((node) => {
-          return node.type === 'word';
-        })
-        .map((n) => n.value.toLowerCase());
-
-      if (values.length === 0) {
-        return;
-      }
-
-      const match = getMatchFactory(mappings)(values);
-
-      if (!match) {
-        cache[value] = value;
-
-        return;
-      }
-
-      const result = match;
+      const result = transform(value);
 
       decl.value = result;
       cache[value] = result;
