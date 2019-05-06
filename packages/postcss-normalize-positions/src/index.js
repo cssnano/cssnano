@@ -2,19 +2,11 @@ import { plugin } from 'postcss';
 import valueParser, { unit } from 'postcss-value-parser';
 import has from 'has';
 
-const directions = ['top', 'right', 'bottom', 'left', 'center'];
+const directionKeywords = ['top', 'right', 'bottom', 'left', 'center'];
 
 const center = '50%';
-
-const horizontal = {
-  right: '100%',
-  left: '0',
-};
-
-const vertical = {
-  bottom: '100%',
-  top: '0',
-};
+const horizontal = { right: '100%', left: '0' };
+const verticalValue = { bottom: '100%', top: '0' };
 
 function isCommaNode(node) {
   return node.type === 'div' && node.value === ',';
@@ -63,13 +55,13 @@ function isDimensionNode(node) {
 function transform(value) {
   const parsed = valueParser(value);
   const ranges = [];
-  let backgroundIndex = 0;
+  let rangeIndex = 0;
   let shouldContinue = true;
 
   parsed.nodes.forEach((node, index) => {
     // After comma (`,`) follows next background
     if (isCommaNode(node)) {
-      backgroundIndex += 1;
+      rangeIndex += 1;
       shouldContinue = true;
 
       return;
@@ -80,15 +72,15 @@ function transform(value) {
     }
 
     // After separator (`/`) follows `background-size` values
-    // Avoid their
+    // Avoid them
     if (node.type === 'div' && node.value === '/') {
       shouldContinue = false;
 
       return;
     }
 
-    if (!ranges[backgroundIndex]) {
-      ranges[backgroundIndex] = {
+    if (!ranges[rangeIndex]) {
+      ranges[rangeIndex] = {
         start: null,
         end: null,
       };
@@ -97,30 +89,31 @@ function transform(value) {
     // Do not try to be processed `var and `env` function inside background
     if (isVariableFunctionNode(node)) {
       shouldContinue = false;
-      ranges[backgroundIndex].start = null;
-      ranges[backgroundIndex].end = null;
+      ranges[rangeIndex].start = null;
+      ranges[rangeIndex].end = null;
 
       return;
     }
 
-    const isPosition =
-      (node.type === 'word' && directions.includes(node.value.toLowerCase())) ||
+    const isPositionKeyword =
+      (node.type === 'word' &&
+        directionKeywords.includes(node.value.toLowerCase())) ||
       isDimensionNode(node) ||
       isNumberNode(node) ||
       isMathFunctionNode(node);
 
-    if (ranges[backgroundIndex].start === null && isPosition) {
-      ranges[backgroundIndex].start = index;
-      ranges[backgroundIndex].end = index;
+    if (ranges[rangeIndex].start === null && isPositionKeyword) {
+      ranges[rangeIndex].start = index;
+      ranges[rangeIndex].end = index;
 
       return;
     }
 
-    if (ranges[backgroundIndex].start !== null) {
+    if (ranges[rangeIndex].start !== null) {
       if (node.type === 'space') {
         return;
-      } else if (isPosition) {
-        ranges[backgroundIndex].end = index;
+      } else if (isPositionKeyword) {
+        ranges[rangeIndex].end = index;
 
         return;
       }
@@ -160,7 +153,7 @@ function transform(value) {
       return;
     }
 
-    if (firstNode === 'center' && directions.includes(secondNode)) {
+    if (firstNode === 'center' && directionKeywords.includes(secondNode)) {
       nodes[0].value = nodes[1].value = '';
 
       if (has(horizontal, secondNode)) {
@@ -170,14 +163,14 @@ function transform(value) {
       return;
     }
 
-    if (has(horizontal, firstNode) && has(vertical, secondNode)) {
+    if (has(horizontal, firstNode) && has(verticalValue, secondNode)) {
       nodes[0].value = horizontal[firstNode];
-      nodes[2].value = vertical[secondNode];
+      nodes[2].value = verticalValue[secondNode];
 
       return;
-    } else if (has(vertical, firstNode) && has(horizontal, secondNode)) {
+    } else if (has(verticalValue, firstNode) && has(horizontal, secondNode)) {
       nodes[0].value = horizontal[secondNode];
-      nodes[2].value = vertical[firstNode];
+      nodes[2].value = verticalValue[firstNode];
 
       return;
     }

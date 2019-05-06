@@ -1,6 +1,5 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
-import getArguments from 'lerna:cssnano-util-get-arguments';
 import getMatchFactory from 'lerna:cssnano-util-get-match';
 import mappings from './lib/map';
 
@@ -12,11 +11,113 @@ const repeatKeywords = mappings.map((mapping) => mapping[0]);
 
 const getMatch = getMatchFactory(mappings);
 
+function isCommaNode(node) {
+  return node.type === 'div' && node.value === ',';
+}
+
+function isVariableFunctionNode(node) {
+  if (node.type !== 'function') {
+    return false;
+  }
+
+  return ['var', 'env'].includes(node.value.toLowerCase());
+}
+
+function transform(value) {
+  const parsed = valueParser(value);
+  const ranges = [];
+  let rangeIndex = 0;
+  let shouldContinue = true;
+
+  parsed.nodes.forEach((node, index) => {
+    // After comma (`,`) follows next background
+    if (isCommaNode(node)) {
+      rangeIndex += 1;
+      shouldContinue = true;
+
+      return;
+    }
+
+    if (!shouldContinue) {
+      return;
+    }
+
+    // After separator (`/`) follows `background-size` values
+    // Avoid them
+    if (node.type === 'div' && node.value === '/') {
+      shouldContinue = false;
+
+      return;
+    }
+
+    if (!ranges[rangeIndex]) {
+      ranges[rangeIndex] = {
+        start: null,
+        end: null,
+      };
+    }
+
+    // Do not try to be processed `var and `env` function inside background
+    if (isVariableFunctionNode(node)) {
+      shouldContinue = false;
+      ranges[rangeIndex].start = null;
+      ranges[rangeIndex].end = null;
+
+      return;
+    }
+
+    const isRepeatKeyword =
+      node.type === 'word' && repeatKeywords.includes(node.value.toLowerCase());
+
+    if (ranges[rangeIndex].start === null && isRepeatKeyword) {
+      ranges[rangeIndex].start = index;
+      ranges[rangeIndex].end = index;
+
+      return;
+    }
+
+    if (ranges[rangeIndex].start !== null) {
+      if (node.type === 'space') {
+        return;
+      } else if (isRepeatKeyword) {
+        ranges[rangeIndex].end = index;
+
+        return;
+      }
+
+      return;
+    }
+  });
+
+  ranges.forEach((range) => {
+    if (range.start === null) {
+      return;
+    }
+
+    const nodes = parsed.nodes.slice(range.start, range.end + 1);
+
+    if (nodes.length !== 3) {
+      return;
+    }
+
+    const match = getMatch(
+      nodes.filter(evenValues).map((n) => n.value.toLowerCase())
+    );
+
+    if (match) {
+      nodes[0].value = match;
+      nodes[1].value = nodes[2].value = '';
+    }
+  });
+
+  return parsed.toString();
+}
+
 export default postcss.plugin('postcss-normalize-repeat-style', () => {
   return (css) => {
     const cache = {};
 
-    css.walkDecls(/background(-repeat)?|(-webkit-)?mask-repeat/i, (decl) => {
+    css.walkDecls(/^(background(-repeat)?|(-\w+-)?mask-repeat)$/i, (decl) => {
       const value = decl.value;
 
       if (cache[value]) {
@@ -33,63 +134,7 @@ export default postcss.plugin('postcss-normalize-repeat-style', () => {
         return;
       }
 
-      const args = getArguments(parsed);
-      const relevant = [];
-
-      args.forEach((arg) => {
-        relevant.push({
-          start: null,
-          end: null,
-        });
-
-        arg.forEach((part, index) => {
-          const isRepeat = ~repeatKeywords.indexOf(part.value.toLowerCase());
-          const len = relevant.length - 1;
-
-          if (relevant[len].start === null && isRepeat) {
-            relevant[len].start = index;
-            relevant[len].end = index;
-
-            return;
-          }
-
-          if (relevant[len].start !== null) {
-            if (part.type === 'space') {
-              return;
-            } else if (isRepeat) {
-              relevant[len].end = index;
-
-              return;
-            }
-
-            return;
-          }
-        });
-      });
-
-      relevant.forEach((range, index) => {
-        if (range.start === null) {
-          return;
-        }
-
-        const val = args[index].slice(range.start, range.end + 1);
-
-        if (val.length !== 3) {
-          return;
-        }
-
-        const match = getMatch(
-          val.filter(evenValues).map((n) => n.value.toLowerCase())
-        );
-
-        if (match) {
-          args[index][range.start].value = match;
-          args[index][range.start + 1].value = '';
-          args[index][range.end].value = '';
-        }
-      });
-
-      const result = parsed.toString();
+      const result = transform(value);
 
       decl.value = result;
       cache[value] = result;
