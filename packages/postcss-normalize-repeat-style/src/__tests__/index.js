@@ -38,11 +38,13 @@ function suite(t, fixture, expected) {
       `background-repeat:${fixture},${fixture}`,
       `background-repeat:${expected},${expected}`
     ),
+    processCSS(t, `mask-repeat:${fixture}`, `mask-repeat:${expected}`),
   ]);
 }
 
 Object.keys(data).forEach((conversion) => {
   const fixture = data[conversion];
+
   test(suite, fixture, conversion);
 });
 
@@ -69,6 +71,70 @@ test(
   'should pass through the single value syntax',
   passthroughCSS,
   'background:#000 url(cat.jpg) repeat'
+);
+
+test(
+  'should pass through with var',
+  passthroughCSS,
+  'background-repeat: var(--foo)'
+);
+
+test(
+  'should pass through with var #1',
+  passthroughCSS,
+  'background-repeat: center var(--foo)'
+);
+
+test(
+  'should pass through with var #2',
+  passthroughCSS,
+  'background-repeat: right 100px var(--test)'
+);
+
+test(
+  'should pass through with var #3',
+  passthroughCSS,
+  'background: var(--foo)'
+);
+
+test(
+  'should pass through with var #4',
+  passthroughCSS,
+  'background: url("../../media/examples/star.png") center var(--foo);'
+);
+
+test(
+  'should pass through with env',
+  passthroughCSS,
+  'background-position: env(--foo)'
+);
+
+test(
+  'should normalize background position with var and multiple background',
+  processCSS,
+  'background: url("/media/examples/lizard.png") repeat no-repeat, url("/media/examples/lizard.png") var(--foo)',
+  'background: url("/media/examples/lizard.png") repeat-x, url("/media/examples/lizard.png") var(--foo)'
+);
+
+test(
+  'should normalize background position with var and multiple background #1',
+  processCSS,
+  'background: url("/media/examples/lizard.png") var(--foo), url("/media/examples/lizard.png") repeat no-repeat',
+  'background: url("/media/examples/lizard.png") var(--foo), url("/media/examples/lizard.png") repeat-x'
+);
+
+test(
+  'should normalize background position with var and multiple background #2',
+  processCSS,
+  'background: url("/media/examples/lizard.png") repeat no-repeat, url("/media/examples/lizard.png") repeat var(--foo)',
+  'background: url("/media/examples/lizard.png") repeat-x, url("/media/examples/lizard.png") repeat var(--foo)'
+);
+
+test(
+  'should normalize background position with var and multiple background #3',
+  processCSS,
+  'background: url("/media/examples/lizard.png") repeat var(--foo), url("/media/examples/lizard.png") repeat no-repeat',
+  'background: url("/media/examples/lizard.png") repeat var(--foo), url("/media/examples/lizard.png") repeat-x'
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin, plugin());
