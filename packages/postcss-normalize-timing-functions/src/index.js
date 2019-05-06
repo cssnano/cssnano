@@ -23,10 +23,27 @@ function reduce(node) {
       getValue(node.nodes[0]) === 1 &&
       node.nodes[2] &&
       node.nodes[2].type === 'word' &&
-      node.nodes[2].value.toLowerCase() === 'start'
+      (node.nodes[2].value.toLowerCase() === 'start' ||
+        node.nodes[2].value.toLowerCase() === 'jump-start')
     ) {
       node.type = 'word';
       node.value = 'step-start';
+
+      delete node.nodes;
+
+      return;
+    }
+
+    if (
+      node.nodes[0].type === 'word' &&
+      getValue(node.nodes[0]) === 1 &&
+      node.nodes[2] &&
+      node.nodes[2].type === 'word' &&
+      (node.nodes[2].value.toLowerCase() === 'end' ||
+        node.nodes[2].value.toLowerCase() === 'jump-end')
+    ) {
+      node.type = 'word';
+      node.value = 'step-end';
 
       delete node.nodes;
 
@@ -37,7 +54,8 @@ function reduce(node) {
     if (
       node.nodes[2] &&
       node.nodes[2].type === 'word' &&
-      node.nodes[2].value.toLowerCase() === 'end'
+      (node.nodes[2].value.toLowerCase() === 'end' ||
+        node.nodes[2].value.toLowerCase() === 'jump-end')
     ) {
       node.nodes = [node.nodes[0]];
 
@@ -77,25 +95,32 @@ function reduce(node) {
   }
 }
 
+function transform(value) {
+  return valueParser(value)
+    .walk(reduce)
+    .toString();
+}
+
 export default plugin('postcss-normalize-timing-functions', () => {
   return (css) => {
     const cache = {};
 
-    css.walkDecls(/(animation|transition)(-timing-function|$)/i, (decl) => {
-      const value = decl.value;
+    css.walkDecls(
+      /^(-\w+-)?(animation|transition)(-timing-function)?$/i,
+      (decl) => {
+        const value = decl.value;
 
-      if (cache[value]) {
-        decl.value = cache[value];
+        if (cache[value]) {
+          decl.value = cache[value];
 
-        return;
+          return;
+        }
+
+        const result = transform(value);
+
+        decl.value = result;
+        cache[value] = result;
       }
-
-      const result = valueParser(value)
-        .walk(reduce)
-        .toString();
-
-      decl.value = result;
-      cache[value] = result;
-    });
+    );
   };
 });
