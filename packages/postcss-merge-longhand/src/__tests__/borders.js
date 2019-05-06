@@ -291,28 +291,28 @@ test(
 );
 
 test(
-  'Should not mangle borders (#579) (1)',
+  'should not mangle borders (#579) (1)',
   processCSS,
   'h1{border-bottom:none;border-color:red}',
   'h1{border-bottom:none;border-color:red}'
 );
 
 test(
-  'Should not mangle borders (#579) (1) (uppercase)',
+  'should not mangle borders (#579) (1) (uppercase)',
   processCSS,
   'h1{BORDER-BOTTOM:NONE;BORDER-COLOR:RED}',
   'h1{border-bottom:none;border-color:red}'
 );
 
 test(
-  'Should not mangle borders (#579) (2)',
+  'should not mangle borders (#579) (2)',
   processCSS,
   'h1{border:none;border-color:red}',
   'h1{border:red}'
 );
 
 test(
-  'Should not mangle borders (#579) (2) (uppercase)',
+  'should not mangle borders (#579) (2) (uppercase)',
   processCSS,
   'h1{BORDER:NONE;BORDER-COLOR:RED}',
   'h1{border:red}'
@@ -417,13 +417,13 @@ test(
 );
 
 test(
-  'Should not merge redundant values if declarations are of different importance (#618)',
+  'should not merge redundant values if declarations are of different importance (#618)',
   passthroughCSS,
   'h1{border:1px solid #3060b1;border-bottom:1px solid #3060b1 !important}'
 );
 
 test(
-  'Should not merge redundant values if declarations are of different importance (#618) (uppercase)',
+  'should not merge redundant values if declarations are of different importance (#618) (uppercase)',
   processCSS,
   'h1{BORDER:1PX SOLID #3060B1;BORDER-BOTTOM:1PX SOLID #3060B1 !IMPORTANT}',
   'h1{border:1px solid #3060b1;border-bottom:1px solid #3060b1 !IMPORTANT}'
@@ -761,7 +761,7 @@ test(
   'save fallbacks should border-color (uppercase)',
   processCSS,
   'h1{BORDER-COLOR:DOTTED;BORDER-COLOR:VAR(--VARIABLE)}',
-  'h1{border-color:DOTTED;border-color:VAR(--VARIABLE)}'
+  'h1{border-color:DOTTED;BORDER-COLOR:VAR(--VARIABLE)}'
 );
 
 test(
@@ -881,28 +881,28 @@ test(
 );
 
 test(
-  'Should correctly merge border declarations (#551) (1)',
+  'should correctly merge border declarations (#551) (1)',
   processCSS,
   'h1{border:1px solid black;border-top-width:2px;border-right-width:2px;border-bottom-width:2px}',
   'h1{border:2px solid black;border-left-width:1px}'
 );
 
 test(
-  'Should correctly merge border declarations (#551) (1) (uppercase)',
+  'should correctly merge border declarations (#551) (1) (uppercase)',
   processCSS,
   'h1{BORDER:1PX SOLID BLACK;BORDER-TOP-WIDTH:2PX;BORDER-RIGHT-WIDTH:2PX;BORDER-BOTTOM-WIDTH:2PX}',
   'h1{border:2px solid black;border-left-width:1px}'
 );
 
 test(
-  'Should correctly merge border declarations (#551) (2)',
+  'should correctly merge border declarations (#551) (2)',
   processCSS,
   'h1{border:none;border-top:6px solid #000;border-bottom:1px solid #fff}',
   'h1{border:none;border-top:6px solid #000;border-bottom:1px solid #fff}'
 );
 
 test(
-  'Should correctly merge border declarations (#551) (2) (uppercase)',
+  'should correctly merge border declarations (#551) (2) (uppercase)',
   processCSS,
   'h1{BORDER:NONE;BORDER-TOP:6PX SOLID #000;BORDER-BOTTOM:1PX SOLID #FFF}',
   'h1{border:none;border-top:6px solid #000;border-bottom:1px solid #fff}'
@@ -935,54 +935,52 @@ test(
 );
 
 test(
-  'Should not merge if there is a shorthand property between them (#557) (1)',
+  'should not merge if there is a shorthand property between them (#557) (1)',
   passthroughCSS,
   'h1{border:1px solid #d3d6db;border:1px solid var(--gray-lighter);border-left-width:0;}'
 );
 
 test(
-  'Should not merge if there is a shorthand property between them (#557) (1) (uppercase)',
+  'should pass through if there is a shorthand property between them (#557) (1) (uppercase)',
   processCSS,
   'h1{BORDER:1PX SOLID #D3D6DB;BORDER:1PX SOLID VAR(--GRAY-LIGHTER);BORDER-LEFT-WIDTH:0;}',
-  'h1{border:1px solid #d3d6db;border:1px solid VAR(--GRAY-LIGHTER);border-left-width:0;}'
+  'h1{border:1px solid #d3d6db;BORDER:1px solid VAR(--GRAY-LIGHTER);BORDER-LEFT-WIDTH:0;}'
 );
 
 test(
-  'Should not merge if there is a shorthand property between them (#557) (2)',
-  processCSS,
-  'h1{border-left-style:solid;border-left-color:#d3d6db;border:1px solid var(--gray-lighter);border-left-width:0;}',
-  'h1{border-left:1px solid #d3d6db;border:1px solid var(--gray-lighter);border-left-width:0;}'
+  'should pass through if there is a shorthand property between them (#557) (2)',
+  passthroughCSS,
+  'h1{border-left-style:solid;border-left-color:#d3d6db;border:1px solid var(--gray-lighter);border-left-width:0;}'
 );
 
 test(
-  'Should not merge if there is a shorthand property between them (#557) (2) (uppercase)',
-  processCSS,
-  'h1{BORDER-LEFT-STYLE:SOLID;BORDER-LEFT-COLOR:#D3D6DB;BORDER:1PX SOLID VAR(--GRAY-LIGHTER);BORDER-LEFT-WIDTH:0;}',
-  'h1{border-left:1px solid #d3d6db;border:1px solid VAR(--GRAY-LIGHTER);border-left-width:0;}'
+  'should pass through if there is a shorthand property between them (#557) (2) (uppercase)',
+  passthroughCSS,
+  'h1{BORDER-LEFT-STYLE:SOLID;BORDER-LEFT-COLOR:#D3D6DB;BORDER:1px solid VAR(--GRAY-LIGHTER);BORDER-LEFT-WIDTH:0;}'
 );
 
 test(
-  'Should not convert currentcolor (#559)',
+  'should not convert currentcolor (#559)',
   passthroughCSS,
   'h1{border:2px solid transparent;border-top-color:currentcolor;}'
 );
 
 test(
-  'Should not convert currentcolor (#559) (uppercase)',
+  'should not convert currentcolor (#559) (uppercase)',
   processCSS,
   'h1{BORDER:2PX SOLID TRANSPARENT;BORDER-TOP-COLOR:CURRENTCOLOR;}',
   'h1{border:2px solid transparent;border-top-color:currentcolor;}'
 );
 
 test(
-  'Should not convert currentcolor (#559) (2)',
+  'should not convert currentcolor (#559) (2)',
   processCSS,
   'h1{border:2px solid transparent;border-top-color:currentColor;}',
   'h1{border:2px solid transparent;border-top-color:currentcolor;}'
 );
 
 test(
-  'Should not convert currentcolor (#559) (2) (uppercase)',
+  'should not convert currentcolor (#559) (2) (uppercase)',
   processCSS,
   'h1{BORDER:2PX SOLID TRANSPARENT;BORDER-TOP-COLOR:CURRENTCOLOR;}',
   'h1{border:2px solid transparent;border-top-color:currentcolor;}'
@@ -995,117 +993,110 @@ test(
 );
 
 test(
-  'should not drop border-width with custom property from border shorthand (#561) (uppercase)',
-  processCSS,
-  'h1{BORDER:VAR(--border-width) SOLID GREY}',
-  'h1{border:VAR(--border-width) solid grey}'
-);
-
-test(
-  'Should not throw error (#570)',
+  'should not throw error (#570)',
   processCSS,
   'h1{border:1px none;border-bottom-style:solid}',
   'h1{border:1px;border-bottom:1px solid}'
 );
 
 test(
-  'Should not throw error (#570) (uppercase)',
+  'should not throw error (#570) (uppercase)',
   processCSS,
   'h1{BORDER:1PX NONE;BORDER-BOTTOM-STYLE:SOLID}',
   'h1{border:1px;border-bottom:1px solid}'
 );
 
 test(
-  'Should correctly merge borders with custom properties (#572)',
+  'should pass through borders with custom properties (#572)',
   passthroughCSS,
   'h1{border:6px solid red;border-top:6px solid var(--mycolor);}'
 );
 
 test(
-  'Should correctly merge borders with custom properties (#572) (uppercase)',
+  'should pass through borders with custom properties (#572) (uppercase)',
   processCSS,
-  'h1{BORDER:6PX SOLID RED;BORDER-TOP:6PX SOLID VAR(--mycolor);}',
-  'h1{border:6px solid red;border-top:6px solid VAR(--mycolor);}'
+  'h1{BORDER:6PX SOLID RED;BORDER-TOP:6PX SOLID VAR(--mycolor)}',
+  'h1{border:6px solid red;BORDER-TOP:6px solid VAR(--mycolor)}'
 );
 
 test(
-  'Should correctly merge borders with custom properties (#619) (1)',
+  'should correctly merge borders with custom properties (#619) (1)',
   passthroughCSS,
   'h1{border:1px solid;border-color:var(--color-var)}'
 );
 
 test(
-  'Should correctly merge borders with custom properties (#619) (1) (uppercase)',
+  'should correctly merge borders with custom properties (#619) (1) (uppercase)',
   processCSS,
   'h1{BORDER:1PX SOLID;BORDER-COLOR:VAR(--COLOR-VAR)}',
   'h1{border:1px solid;border-color:VAR(--COLOR-VAR)}'
 );
 
 test(
-  'Should correctly merge borders with custom properties (#619) (2)',
+  'should correctly merge borders with custom properties (#619) (2)',
   passthroughCSS,
   'h1{border-left:1px solid;border-left-color:var(--color-var)}'
 );
 
 test(
-  'Should correctly merge borders with custom properties (#619) (2) (uppercase)',
+  'should correctly merge borders with custom properties (#619) (2) (uppercase)',
   processCSS,
   'h1{BORDER-LEFT:1PX SOLID;BORDER-LEFT-COLOR:VAR(--COLOR-VAR)}',
   'h1{border-left:1px solid;border-left-color:VAR(--COLOR-VAR)}'
 );
 
 test(
-  'Should correctly merge borders with custom properties (#619) (3)',
+  'should correctly merge borders with custom properties (#619) (3)',
   passthroughCSS,
   'h1{border-color:red green blue magenta;border-top-color:var(--color-var)}'
 );
 
 test(
-  'Should correctly merge borders with custom properties (#619) (3) (uppercase)',
+  'should correctly merge borders with custom properties (#619) (3) (uppercase)',
   processCSS,
   'h1{BORDER-COLOR:RED GREEN BLUE MAGENTA;BORDER-TOP-COLOR:VAR(--COLOR-VAR)}',
   'h1{border-color:RED GREEN BLUE MAGENTA;BORDER-TOP-COLOR:VAR(--COLOR-VAR)}'
 );
 
 test(
-  'Should correctly merge borders with custom properties (#652)',
+  'should correctly merge borders with custom properties (#652)',
   processCSS,
   'h1{border-width:var(--a);border-style:var(--b);border-color:var(--c)}',
   'h1{border:var(--a) var(--b) var(--c)}'
 );
 
 test(
-  'Should correctly merge borders with custom properties (#652) (uppercase)',
+  'should correctly merge borders with custom properties (#652) (uppercase)',
   processCSS,
   'h1{BORDER-WIDTH:VAR(--A);BORDER-STYLE:VAR(--B);BORDER-COLOR:VAR(--C)}',
   'h1{border:VAR(--A) VAR(--B) VAR(--C)}'
 );
 
 test(
-  'Should not throw error when a border property value is undefined (#639)',
+  'should not throw error when a border property value is undefined (#639)',
   processCSS,
   'h1{border:2px solid #fff;border-color:inherit}',
   'h1{border:2px solid;border-color:inherit}'
 );
 
 test(
-  'Should not throw error when a border property value is undefined (#639) (uppercase)',
+  'should not throw error when a border property value is undefined (#639) (uppercase)',
   processCSS,
   'h1{BORDER:2PX SOLID #FFF;BORDER-COLOR:INHERIT}',
   'h1{border:2px solid;BORDER-COLOR:INHERIT}'
 );
 
 test(
-  'Should preserve case of css custom properties #648',
+  'should preserve case of css custom properties #648',
   passthroughCSS,
   'h1{border:1px solid rgba(var(--fooBar));}'
 );
 
 test(
-  'Should preserve case of css custom properties #648 (uppercase)',
+  'should preserve case of css custom properties #648 (uppercase)',
   processCSS,
   'h1{BORDER:1PX SOLID RGBA(VAR(--fooBar));}',
-  'h1{border:1px solid rgba(var(--fooBar));}'
+  'h1{BORDER:1px solid rgba(var(--fooBar));}'
 );
 
 test(
@@ -1134,4 +1125,16 @@ test(
   processCSS,
   'h1{border: 2px solid red;border-bottom-width:0;border-right-width:0;border-top-width:0;}',
   'h1{border:solid red;border-width:0 0 0 2px;}'
+);
+
+test(
+  'should not explode border with env',
+  passthroughCSS,
+  'h1{border:env(--variable)}'
+);
+
+test(
+  'should pass through env function',
+  passthroughCSS,
+  'h1{border-bottom:env(safe-area-inset-bottom) solid transparent;}'
 );

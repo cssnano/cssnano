@@ -145,7 +145,7 @@ function getDistinctShorthands(mapped) {
 
 function explode(rule) {
   rule.walkDecls(/^border/i, (decl) => {
-    if (!canExplode(decl, false)) {
+    if (!canExplode(decl)) {
       return;
     }
 

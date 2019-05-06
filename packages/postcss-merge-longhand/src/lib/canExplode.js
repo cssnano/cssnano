@@ -4,8 +4,8 @@ const hasInherit = (node) => node.value.toLowerCase().includes('inherit');
 const hasInitial = (node) => node.value.toLowerCase().includes('initial');
 const hasUnset = (node) => node.value.toLowerCase().includes('unset');
 
-export default (prop, includeCustomProps = true) => {
-  if (includeCustomProps && isCustomProp(prop)) {
+export default (prop) => {
+  if (isCustomProp(prop)) {
     return false;
   }
 
