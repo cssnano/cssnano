@@ -586,4 +586,16 @@ test(
   'border: ___CSS_LOADER_IMPORT___0___ solid ___CSS_LOADER_IMPORT___1___;'
 );
 
+test(
+  'should abort ordering when a env is detected (border)',
+  passthroughCSS,
+  'border-bottom:env(safe-area-inset-bottom) solid transparent'
+);
+
+test(
+  'should abort ordering when a env is detected (border) (uppercase)',
+  passthroughCSS,
+  'border-bottom:ENV(safe-area-inset-bottom) solid transparent'
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin, plugin());

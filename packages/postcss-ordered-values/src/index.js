@@ -8,8 +8,6 @@ import boxShadow from './rules/boxShadow';
 import flexFlow from './rules/flexFlow';
 import transition from './rules/transition';
 
-/* eslint-disable quote-props */
-
 const rules = {
   animation: animation,
   border: border,
@@ -23,16 +21,22 @@ const rules = {
   transition: transition,
 };
 
-/* eslint-enable */
+function isVariableFunctionNode(node) {
+  if (node.type !== 'function') {
+    return false;
+  }
+
+  return ['var', 'env'].includes(node.value.toLowerCase());
+}
 
 function shouldAbort(parsed) {
   let abort = false;
 
-  parsed.walk(({ type, value }) => {
+  parsed.walk((node) => {
     if (
-      type === 'comment' ||
-      (type === 'function' && value.toLowerCase() === 'var') ||
-      (type === 'word' && ~value.indexOf(`___CSS_LOADER_IMPORT___`))
+      node.type === 'comment' ||
+      isVariableFunctionNode(node) ||
+      (node.type === 'word' && ~node.value.indexOf(`___CSS_LOADER_IMPORT___`))
     ) {
       abort = true;
 
