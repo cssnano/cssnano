@@ -33,6 +33,13 @@ test(
 );
 
 test(
+  'should unquote font names with one character name #1',
+  processCSS,
+  'h1{font-family:"A";font-family:"A"}',
+  'h1{font-family:A;font-family:A}'
+);
+
+test(
   'should unquote font names with space at the start',
   processCSS,
   'h1{font-family:" Helvetica Neue"}',
@@ -363,10 +370,17 @@ test(
 );
 
 test(
-  'should minify lowercase font-weight',
+  'should minify font-weight',
   processCSS,
   'h1{font-weight:bold}',
   'h1{font-weight:700}'
+);
+
+test(
+  'should minify font-weight #1',
+  processCSS,
+  'h1{font-weight:normal}',
+  'h1{font-weight:400}'
 );
 
 test(
@@ -374,6 +388,34 @@ test(
   processCSS,
   'h1{font-weight:BOLD}',
   'h1{font-weight:700}'
+);
+
+test(
+  'should minify uppercase font-weight #1',
+  processCSS,
+  'h1{font-style:normal;font-weight:normal}',
+  'h1{font-style:normal;font-weight:400}'
+);
+
+test(
+  'should minify uppercase font-weight #2',
+  processCSS,
+  'h1{font-weight:normal;font-style:normal}',
+  'h1{font-weight:400;font-style:normal}'
+);
+
+test(
+  'should pass through not minimized font-weight',
+  passthroughCSS,
+  'h1{font-weight:500}',
+  'h1{font-weight:500}'
+);
+
+test(
+  'should pass through not minimized font-weight #1',
+  passthroughCSS,
+  'h1{font-weight:lighter}',
+  'h1{font-weight:lighter}'
 );
 
 test(
@@ -499,6 +541,12 @@ test(
   'should pass through css variables in font-family #2',
   passthroughCSS,
   'h1{font-family:var(--font-size), Helvetica}'
+);
+
+test(
+  'should pass through env variables in font-weight',
+  passthroughCSS,
+  'h1{font-weight:env(--font-size)}'
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin, plugin());
