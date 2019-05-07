@@ -24,6 +24,48 @@ function hasTransparentBug(browser) {
   return ~['ie 8', 'ie 9'].indexOf(browser);
 }
 
+function isMathFunctionNode(node) {
+  if (node.type !== 'function') {
+    return false;
+  }
+
+  return ['calc', 'min', 'max', 'clamp'].includes(node.value.toLowerCase());
+}
+
+function transform(value, isLegacy, colorminCache) {
+  const parsed = valueParser(value);
+
+  walk(parsed, (node, index, parent) => {
+    if (node.type === 'function') {
+      if (/^(rgb|hsl)a?$/i.test(node.value)) {
+        const { value: originalValue } = node;
+
+        node.value = colormin(stringify(node), isLegacy, colorminCache);
+        node.type = 'word';
+
+        const next = parent.nodes[index + 1];
+
+        if (
+          node.value !== originalValue &&
+          next &&
+          (next.type === 'word' || next.type === 'function')
+        ) {
+          parent.nodes.splice(index + 1, 0, {
+            type: 'space',
+            value: ' ',
+          });
+        }
+      } else if (isMathFunctionNode(node)) {
+        return false;
+      }
+    } else if (node.type === 'word') {
+      node.value = colormin(node.value, isLegacy, colorminCache);
+    }
+  });
+
+  return parsed.toString();
+}
+
 export default postcss.plugin('postcss-colormin', () => {
   return (css, result) => {
     const resultOpts = result.opts || {};
@@ -43,50 +85,22 @@ export default postcss.plugin('postcss-colormin', () => {
         return;
       }
 
-      if (!decl.value) {
+      const value = decl.value;
+
+      if (!value) {
         return;
       }
 
-      if (cache[decl.value]) {
-        decl.value = cache[decl.value];
+      if (cache[value]) {
+        decl.value = cache[value];
 
         return;
       }
 
-      const parsed = valueParser(decl.value);
+      const newValue = transform(value, isLegacy, colorminCache);
 
-      walk(parsed, (node, index, parent) => {
-        if (node.type === 'function') {
-          if (/^(rgb|hsl)a?$/i.test(node.value)) {
-            const { value } = node;
-
-            node.value = colormin(stringify(node), isLegacy, colorminCache);
-            node.type = 'word';
-
-            const next = parent.nodes[index + 1];
-
-            if (
-              node.value !== value &&
-              next &&
-              (next.type === 'word' || next.type === 'function')
-            ) {
-              parent.nodes.splice(index + 1, 0, {
-                type: 'space',
-                value: ' ',
-              });
-            }
-          } else if (node.value.toLowerCase() === 'calc') {
-            return false;
-          }
-        } else if (node.type === 'word') {
-          node.value = colormin(node.value, isLegacy, colorminCache);
-        }
-      });
-
-      const optimizedValue = parsed.toString();
-
-      decl.value = optimizedValue;
-      cache[decl.value] = optimizedValue;
+      decl.value = newValue;
+      cache[value] = newValue;
     });
   };
 });
