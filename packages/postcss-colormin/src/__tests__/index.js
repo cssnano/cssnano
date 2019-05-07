@@ -83,6 +83,20 @@ test(
 );
 
 test(
+  'should minify color values (10)',
+  withDefaultPreset,
+  'h1{text-shadow: 1px 1px 1px #F0FFFF, 1px 1px 1px #F0FFFF}',
+  'h1{text-shadow:1px 1px 1px azure,1px 1px 1px azure}'
+);
+
+test(
+  'should minify color values (11)',
+  processCSS,
+  'h1{background:#F0FFFF;background:#F0FFFF}',
+  'h1{background:azure;background:azure}'
+);
+
+test(
   'should minify color values in background gradients',
   processCSS,
   'h1{background:linear-gradient( #ff0000,yellow )}',
@@ -276,6 +290,12 @@ test(
   'should passthrough css variables #6',
   passthroughDefault,
   'h1{color:rgb(var(--foo))}'
+);
+
+test(
+  'should passthrough env function',
+  passthroughDefault,
+  'h1{color:rgb(env(foo))}'
 );
 
 test('should passthrough broken syntax', passthroughCSS, 'h1{color:}');
