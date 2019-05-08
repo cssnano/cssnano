@@ -55,15 +55,17 @@ function hasLowerCaseUPrefixBug(browser) {
   return ~browserslist('ie <=11, edge <= 15').indexOf(browser);
 }
 
-function transform(legacy = false, node) {
-  node.value = valueParser(node.value)
+function transform(value, isLegacy = false) {
+  return valueParser(value)
     .walk((child) => {
       if (child.type === 'word') {
         const transformed = unicode(child.value.toLowerCase());
-        child.value = legacy
+
+        child.value = isLegacy
           ? transformed.replace(regexLowerCaseUPrefix, 'U')
           : transformed;
       }
+
       return false;
     })
     .toString();
@@ -77,10 +79,22 @@ export default postcss.plugin('postcss-normalize-unicode', () => {
       path: __dirname,
       env: resultOpts.env,
     });
+    const isLegacy = browsers.some(hasLowerCaseUPrefixBug);
+    const cache = {};
 
-    css.walkDecls(
-      /^unicode-range$/i,
-      transform.bind(null, browsers.some(hasLowerCaseUPrefixBug))
-    );
+    css.walkDecls(/^unicode-range$/i, (decl) => {
+      const value = decl.value;
+
+      if (cache[value]) {
+        decl.value = cache[value];
+
+        return;
+      }
+
+      const newValue = transform(value, isLegacy);
+
+      decl.value = newValue;
+      cache[value] = newValue;
+    });
   };
 });

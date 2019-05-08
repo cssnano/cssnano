@@ -85,6 +85,12 @@ test(
   fixture('var(--caseInsensitive)')
 );
 
+test(
+  'should pass through env variables',
+  passthroughCSS,
+  fixture('env(foo-bar)')
+);
+
 test('should pass through initial', passthroughCSS, fixture('initial'));
 
 test(
