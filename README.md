@@ -9,8 +9,7 @@
 > A modular minifier, built on top of the [PostCSS](https://github.com/postcss/postcss) ecosystem.
 
 [![NPM version](https://img.shields.io/npm/v/cssnano.svg)](https://www.npmjs.org/package/cssnano)
-[![Build Status](https://travis-ci.org/cssnano/cssnano.svg?branch=master)](https://travis-ci.org/cssnano/cssnano)
-[![Build status](https://ci.appveyor.com/api/projects/status/t1chyvhobtju7jy8/branch/master?svg=true)](https://ci.appveyor.com/project/cssnano/cssnano/branch/master)
+[![Build Status](https://dev.azure.com/cssnano/cssnano/_apis/build/status/cssnano-CI?branchName=ci-migrate-on-azure-pipelines)](https://dev.azure.com/cssnano/cssnano/_build/latest?definitionId=1&branchName=ci-migrate-on-azure-pipelines)
 [![Coverage Status](https://coveralls.io/repos/github/cssnano/cssnano/badge.svg?branch=master)](https://coveralls.io/github/cssnano/cssnano?branch=master)
 [![Gitter](https://img.shields.io/badge/Gitter-Join_the_PostCSS_chat-brightgreen.svg)](https://gitter.im/postcss/postcss)
 
