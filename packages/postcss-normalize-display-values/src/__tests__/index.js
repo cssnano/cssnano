@@ -41,4 +41,12 @@ test(
   `display:var(--foo) var(--bar)`
 );
 
+test(`should pass through invalid syntax`, passthroughCSS, `display:`);
+
+test(
+  `should pass through not display property`,
+  passthroughCSS,
+  `something-display: block flow`
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin, plugin());

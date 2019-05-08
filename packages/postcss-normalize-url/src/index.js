@@ -80,6 +80,7 @@ function transformDecl(decl, opts) {
 
       if (escapeChars.test(url.value) && url.type === 'string') {
         escaped = url.value.replace(escapeChars, '\\$1');
+
         if (escaped.length < url.value.length + 2) {
           url.value = escaped;
           url.type = 'word';
