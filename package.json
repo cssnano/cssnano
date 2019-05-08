@@ -12,9 +12,9 @@
     "build:site": "remark site/content/**/*.md -o && yarn build:metadata && babel-node ./util/buildSiteMarkdown.js && cd site && yarn build",
     "build:integration": "cross-env BABEL_ENV=test babel-node ./util/buildFrameworks.js",
     "pretest": "yarn lint",
-    "test-only": "cross-env BABEL_ENV=test ava",
-    "test-only:coverage": "nyc --reporter=lcov --reporter=text yarn test-only",
-    "test": "yarn test-only",
+    "test:only": "cross-env BABEL_ENV=test ava",
+    "test:coverage": "cross-env BABEL_ENV=test nyc --reporter=lcov --reporter=text ava",
+    "test": "yarn test:coverage",
     "deploy": "gh-pages -t -d site/dist",
     "publish": "lerna publish"
   },
