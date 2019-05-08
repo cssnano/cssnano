@@ -259,10 +259,10 @@ export default postcss.plugin('postcss-normalize-string', (opts) => {
           return;
         }
 
-        const result = normalize(node[param], preferredQuote);
+        const newValue = normalize(node[param], preferredQuote);
 
-        node[param] = result;
-        cache[key] = result;
+        node[param] = newValue;
+        cache[key] = newValue;
       }
     });
   };

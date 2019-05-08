@@ -25,6 +25,11 @@ function isVariableFunctionNode(node) {
 
 function transform(value) {
   const parsed = valueParser(value);
+
+  if (parsed.nodes.length === 1) {
+    return value;
+  }
+
   const ranges = [];
   let rangeIndex = 0;
   let shouldContinue = true;
@@ -120,16 +125,12 @@ export default postcss.plugin('postcss-normalize-repeat-style', () => {
     css.walkDecls(/^(background(-repeat)?|(-\w+-)?mask-repeat)$/i, (decl) => {
       const value = decl.value;
 
-      if (cache[value]) {
-        decl.value = cache[value];
-
+      if (!value) {
         return;
       }
 
-      const parsed = valueParser(value);
-
-      if (parsed.nodes.length === 1) {
-        cache[value] = value;
+      if (cache[value]) {
+        decl.value = cache[value];
 
         return;
       }

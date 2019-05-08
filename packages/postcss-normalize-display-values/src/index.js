@@ -32,7 +32,7 @@ export default postcss.plugin('postcss-normalize-display-values', () => {
   return (css) => {
     const cache = {};
 
-    css.walkDecls(/display/i, (decl) => {
+    css.walkDecls(/^display$/i, (decl) => {
       const value = decl.value;
 
       if (!value) {

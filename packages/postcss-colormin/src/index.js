@@ -91,8 +91,10 @@ export default postcss.plugin('postcss-colormin', () => {
         return;
       }
 
-      if (cache[value]) {
-        decl.value = cache[value];
+      const cacheKey = `${decl.prop}|${decl.value}`;
+
+      if (cache[cacheKey]) {
+        decl.value = cache[cacheKey];
 
         return;
       }
@@ -100,7 +102,7 @@ export default postcss.plugin('postcss-colormin', () => {
       const newValue = transform(value, isLegacy, colorminCache);
 
       decl.value = newValue;
-      cache[value] = newValue;
+      cache[cacheKey] = newValue;
     });
   };
 });
