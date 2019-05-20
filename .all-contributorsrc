@@ -573,6 +573,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "davemcnally",
+      "name": "Dave McNally",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/342029?v=4",
+      "profile": "http://dave.mn",
+      "contributions": [
+        "design"
+      ]
     }
   ],
   "repoType": "github"
