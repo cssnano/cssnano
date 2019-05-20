@@ -313,5 +313,10 @@ addTests(
     fixture:
       'h1{box-bottom:INHERIT;box-top:INHERIT;box-left:INHERIT;box-right:INHERIT}',
     expected: 'h1{box:INHERIT}',
+  },
+  {
+    message: 'should handle empty box properties',
+    fixture: 'h1{box:;}',
+    expected: (prop) => `h1{${prop}:;}`,
   }
 );

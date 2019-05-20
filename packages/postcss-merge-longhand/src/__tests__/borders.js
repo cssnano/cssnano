@@ -830,6 +830,12 @@ test(
   'h1{border:UNSET}'
 );
 
+test(
+  'should not explode border with revert properties (uppercase)',
+  passthroughCSS,
+  'h1{BORDER:revert}'
+);
+
 trbl.forEach((direction) => {
   test(
     `should not explode border-${direction} with custom properties`,
@@ -1135,3 +1141,5 @@ test(
   'h1{border: 2px solid red;border-bottom-width:0;border-right-width:0;border-top-width:0;}',
   'h1{border:solid red;border-width:0 0 0 2px;}'
 );
+
+test('should handle empty border', processCSS, 'h1{border:;}', 'h1{border:;}');

@@ -215,3 +215,10 @@ test(
   'h1{COLUMN-WIDTH:12em;COLUMN-COUNT:auto;COLUMNS:12em}',
   'h1{columns:12em}'
 );
+
+test(
+  'should handle empty columns',
+  processCSS,
+  'h1{columns:;}',
+  'h1{columns:;}'
+);
