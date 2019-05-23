@@ -1,5 +1,5 @@
 {
-  "lerna": "3.3.0",
+  "lerna": "3.14.1",
   "npmClient": "yarn",
   "command": {
     "publish": {
