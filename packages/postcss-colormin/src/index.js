@@ -1,6 +1,11 @@
 import browserslist from 'browserslist';
 import postcss from 'postcss';
 import valueParser, { stringify } from 'postcss-value-parser';
+import cacheFn from './lib/cacheFn';
+import includedIn from './lib/includedIn';
+import isFunctionNode from './lib/isFunctionNode';
+import isMathFunctionNode from './lib/isMathFunctionNode';
+import isWordNode from './lib/isWordNode';
 import colormin from './colours';
 
 function walk(parent, callback) {
@@ -20,27 +25,17 @@ function walk(parent, callback) {
  * https://developer.mozilla.org/en-US/docs/Web/Events/click#Internet_Explorer
  */
 
-function hasTransparentBug(browser) {
-  return ~['ie 8', 'ie 9'].indexOf(browser);
-}
+const hasTransparentBug = includedIn(['ie 8', 'ie 9']);
 
-function isMathFunctionNode(node) {
-  if (node.type !== 'function') {
-    return false;
-  }
-
-  return ['calc', 'min', 'max', 'clamp'].includes(node.value.toLowerCase());
-}
-
-function transform(value, isLegacy, colorminCache) {
+const transform = cacheFn((value, isLegacy) => {
   const parsed = valueParser(value);
 
   walk(parsed, (node, index, parent) => {
-    if (node.type === 'function') {
+    if (isFunctionNode(node)) {
       if (/^(rgb|hsl)a?$/i.test(node.value)) {
         const { value: originalValue } = node;
 
-        node.value = colormin(stringify(node), isLegacy, colorminCache);
+        node.value = colormin(stringify(node), isLegacy);
         node.type = 'word';
 
         const next = parent.nodes[index + 1];
@@ -48,7 +43,7 @@ function transform(value, isLegacy, colorminCache) {
         if (
           node.value !== originalValue &&
           next &&
-          (next.type === 'word' || next.type === 'function')
+          (isWordNode(next) || isFunctionNode(next))
         ) {
           parent.nodes.splice(index + 1, 0, {
             type: 'space',
@@ -58,13 +53,13 @@ function transform(value, isLegacy, colorminCache) {
       } else if (isMathFunctionNode(node)) {
         return false;
       }
-    } else if (node.type === 'word') {
-      node.value = colormin(node.value, isLegacy, colorminCache);
+    } else if (isWordNode(node)) {
+      node.value = colormin(node.value, isLegacy);
     }
   });
 
   return parsed.toString();
-}
+});
 
 export default postcss.plugin('postcss-colormin', () => {
   return (css, result) => {
@@ -75,34 +70,18 @@ export default postcss.plugin('postcss-colormin', () => {
       env: resultOpts.env,
     });
     const isLegacy = browsers.some(hasTransparentBug);
-    const colorminCache = {};
-    const cache = {};
 
-    css.walkDecls((decl) => {
-      if (
-        /^(composes|font|filter|-webkit-tap-highlight-color)/i.test(decl.prop)
-      ) {
-        return;
+    css.walkDecls(
+      /^(?!composes|font|filter|-webkit-tap-highlight-color)/i,
+      (decl) => {
+        const { value } = decl;
+
+        if (!value) {
+          return;
+        }
+
+        decl.value = transform(value, isLegacy);
       }
-
-      const value = decl.value;
-
-      if (!value) {
-        return;
-      }
-
-      const cacheKey = `${decl.prop}|${decl.value}`;
-
-      if (cache[cacheKey]) {
-        decl.value = cache[cacheKey];
-
-        return;
-      }
-
-      const newValue = transform(value, isLegacy, colorminCache);
-
-      decl.value = newValue;
-      cache[cacheKey] = newValue;
-    });
+    );
   };
 });

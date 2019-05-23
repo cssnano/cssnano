@@ -1,29 +1,18 @@
 import color from 'color';
+import * as R from 'ramda';
 import keywords from './keywords.json';
+import cacheFn from './lib/cacheFn';
 import toShorthand from './lib/toShorthand';
+import shorter from './lib/shorter';
 
-const shorter = (a, b) => (a && a.length < b.length ? a : b).toLowerCase();
-
-export default (colour, isLegacy = false, cache = false) => {
-  const key = colour + '|' + isLegacy;
-
-  if (cache && cache[key]) {
-    return cache[key];
-  }
-
+export default cacheFn((colour, isLegacy) => {
   try {
     const parsed = color(colour.toLowerCase());
     const alpha = parsed.alpha();
 
     if (alpha === 1) {
       const toHex = toShorthand(parsed.hex().toLowerCase());
-      const result = shorter(keywords[toHex], toHex);
-
-      if (cache) {
-        cache[key] = result;
-      }
-
-      return result;
+      return shorter(keywords[toHex], toHex);
     } else {
       const rgb = parsed.rgb();
 
@@ -34,33 +23,19 @@ export default (colour, isLegacy = false, cache = false) => {
         !rgb.color[2] &&
         !alpha
       ) {
-        const result = 'transparent';
-
-        if (cache) {
-          cache[key] = result;
-        }
-
-        return result;
+        return 'transparent';
       }
 
-      let hsla = parsed.hsl().string();
-      let rgba = rgb.string();
-      let result = hsla.length < rgba.length ? hsla : rgba;
+      const hsla = parsed.hsl().string();
+      const rgba = rgb.string();
 
-      if (cache) {
-        cache[key] = result;
-      }
-
-      return result;
+      return R.compose(
+        R.toLower,
+        shorter
+      )(hsla, rgba);
     }
   } catch (e) {
     // Possibly malformed, so pass through
-    const result = colour;
-
-    if (cache) {
-      cache[key] = result;
-    }
-
-    return result;
+    return colour;
   }
-};
+});
