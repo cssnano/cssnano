@@ -103,12 +103,12 @@ function updatePreset(packageList, pkg) {
     plugins.push.apply(plugins, documentation);
   });
 
-  let transformedAST = remark()
+  remark()
     .use(contributorsSection)
     .use(installSection)
     .use(remarkLicense)
     .use(remarkToc)
-    .runSync(
+    .run(
       u('root', [
         u('heading', { depth: 1 }, [u('text', pkgName)]),
         u('blockquote', [u('text', pkgJson.description)]),
@@ -121,14 +121,15 @@ function updatePreset(packageList, pkg) {
         u('heading', { depth: 2 }, [u('text', 'License')]),
       ]),
       { cwd: pkg }
-    );
-
-  return fs.writeFile(
-    `${pkg}/README.md`,
-    remark()
-      .use(remarkHeadingGap)
-      .stringify(transformedAST) + '\n'
-  );
+    )
+    .then((transformedAST) => {
+      return fs.writeFile(
+        `${pkg}/README.md`,
+        remark()
+          .use(remarkHeadingGap)
+          .stringify(transformedAST) + '\n'
+      );
+    });
 }
 
 function updatePackage(pkg) {

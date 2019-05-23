@@ -19,7 +19,7 @@ yarn all-contributors
 
 And follow the on-screen prompts.
 
-[contributors.md]: https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md
+[CONTRIBUTORS.md]: https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md
 
 
 ## How can I contribute to cssnano's code?
