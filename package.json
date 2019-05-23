@@ -26,7 +26,7 @@
     "@babel/node": "^7.4.5",
     "@babel/preset-env": "^7.4.5",
     "@babel/register": "^7.4.4",
-    "all-contributors-cli": "^6.6.0",
+    "all-contributors-cli": "^5.11.0",
     "ava": "^1.4.1",
     "babel-eslint": "^10.0.1",
     "babel-plugin-add-module-exports": "^1.0.2",

@@ -3,7 +3,7 @@ import { sync as gzip } from 'gzip-size';
 import { sync as brotli } from 'brotli-size';
 import Table from 'cli-table';
 import round from 'round-precision';
-import nano from 'cssnano';
+import nano from 'lerna:cssnano';
 
 const getBinarySize = (string) => {
   return Buffer.byteLength(string, 'utf8');

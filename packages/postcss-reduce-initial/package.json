@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "acquire": "babel-node ./src/acquire.js",
-    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file --out-dir dist --ignore '**/__tests__/,src/acquire.js'"
+    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/,src/acquire.js'"
   },
   "keywords": [
     "css",
