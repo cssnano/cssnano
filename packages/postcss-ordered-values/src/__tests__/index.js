@@ -98,7 +98,7 @@ test(
 );
 
 test(
-  'should order flex-flow',
+  'should order flex-flow #1',
   processCSS,
   'h1{flex-flow: row-reverse wrap-reverse}',
   'h1{flex-flow: row-reverse wrap-reverse}'
@@ -409,7 +409,7 @@ test(
 );
 
 test(
-  'should order animation consistently (5) (do not reorder times)',
+  'should order animation consistently (5.1) (do not reorder times)',
   processCSS,
   'animation: 1s bounce 2s',
   'animation: bounce 1s 2s'
@@ -493,7 +493,7 @@ test(
 );
 
 test(
-  'should order animation consistently (9) (assigns keyframe name last when it matches a keyword)',
+  'should order animation consistently (9.1) (assigns keyframe name last when it matches a keyword)',
   processCSS,
   'animation: ease 1s linear',
   'animation: linear 1s ease'

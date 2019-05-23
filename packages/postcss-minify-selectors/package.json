@@ -8,7 +8,7 @@
     "LICENSE-MIT"
   ],
   "scripts": {
-    "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
+    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/'"
   },
   "keywords": [
     "css",
@@ -20,9 +20,10 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.0.0",
-    "cross-env": "^5.0.0",
-    "postcss-font-magician": "^2.0.0"
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "cross-env": "^5.2.0",
+    "postcss-font-magician": "^2.2.1"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
@@ -32,10 +33,10 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "alphanum-sort": "^1.0.0",
-    "has": "^1.0.0",
-    "postcss": "^7.0.0",
-    "postcss-selector-parser": "^3.0.0"
+    "alphanum-sort": "^1.0.2",
+    "has": "^1.0.3",
+    "postcss": "^7.0.16",
+    "postcss-selector-parser": "^3.1.1"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

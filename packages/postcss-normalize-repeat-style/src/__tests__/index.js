@@ -45,7 +45,7 @@ function suite(t, fixture, expected) {
 Object.keys(data).forEach((conversion) => {
   const fixture = data[conversion];
 
-  test(suite, fixture, conversion);
+  test(fixture, suite, fixture, conversion);
 });
 
 test(

@@ -19,13 +19,14 @@ function setup(args) {
     let out = '';
     let err = '';
 
-    ps.stdout.on('data', (buffer) => (out += buffer));
-    ps.stderr.on('data', (buffer) => (err += buffer));
+    ps.stdout.on('data', (buffer) => (out += buffer.toString()));
+    ps.stderr.on('data', (buffer) => (err += buffer.toString()));
 
     ps.on('exit', (code) => {
       if (code !== 0) {
         return reject(err);
       }
+
       resolve([out, code]);
     });
   });

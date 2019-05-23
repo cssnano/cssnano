@@ -145,17 +145,17 @@ addTests(
     expected: (prop) => `h1{${prop}:INHERIT}`,
   },
   {
-    message: 'should not merge declarations with hacks',
+    message: 'should not merge declarations with hacks (box) #3',
     fixture: 'h1{box:4px 0 0 0;box-top:1px\\9}',
     expected: (prop) => `h1{${prop.toLowerCase()}:4px 0 0;${prop}-top:1px\\9}`,
   },
   {
-    message: 'should preserve nesting level',
+    message: 'should preserve nesting level (box)',
     fixture: 'section{h1{box:0 48px}}',
     expected: 'section{h1{box:0 48px}}',
   },
   {
-    message: 'should override shorthand property',
+    message: 'should override shorthand property (box)',
     fixture: 'h1{box:10px;box-left:5px}',
     expected: 'h1{box:10px 10px 10px 5px}',
   },
@@ -172,7 +172,7 @@ addTests(
     expected: (prop) => `h1{${prop}-bottom:var(--variable)}`,
   },
   {
-    message: 'should preserve case of custom properties',
+    message: 'should preserve case of custom properties (box)',
     fixture:
       'h1{box-top:10px;box-right:var(--fooBar);box-right:15px;box-bottom:var(--fooBar);box-bottom:20px;box-left:25px;box-top:var(--fooBar);box-left:var(--fooBar)}',
     expected: (prop) =>

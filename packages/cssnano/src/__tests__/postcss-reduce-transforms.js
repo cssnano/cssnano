@@ -58,20 +58,6 @@ test(
 );
 
 test(
-  'should pass through invalid scale',
-  processCss,
-  'h1{transform:scale(1.5, 1, 1)}',
-  'h1{transform:scale(1.5,1,1)}'
-);
-
-test(
-  'should pass through invalid scale',
-  processCss,
-  'h1{transform:scale(1,1.5,1)}',
-  'h1{transform:scale(1,1.5,1)}'
-);
-
-test(
   'should shorten scale3d(1, 1, sz) to scaleZ(sz)',
   processCss,
   'h1{transform:scale3d(1, 1, 1.5)}',

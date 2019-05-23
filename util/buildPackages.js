@@ -19,18 +19,6 @@ import sortAscending from './sortAscending';
 const repository = `cssnano/cssnano`;
 const homepage = `https://github.com/${repository}`;
 
-function semverMajor(dependencies) {
-  Object.keys(dependencies).forEach((dependency) => {
-    let version = dependencies[dependency];
-    if (version[0] === '^' && version[1] !== '0') {
-      version = version.split('.')[0] + '.0.0';
-    }
-    dependencies[dependency] = version;
-  });
-
-  return dependencies;
-}
-
 function sortPlugins(a, b) {
   return sortAscending(pluginName(a[0]), pluginName(b[0]));
 }
@@ -156,14 +144,6 @@ function updatePackage(pkg) {
 
   pkgJson.engines = pkgJson.engines || {};
   pkgJson.engines.node = '>=6.9.0';
-
-  if (pkgJson.dependencies) {
-    pkgJson.dependencies = semverMajor(pkgJson.dependencies);
-  }
-
-  if (pkgJson.devDependencies) {
-    pkgJson.devDependencies = semverMajor(pkgJson.devDependencies);
-  }
 
   return fs.writeFile(
     `${pkg}/package.json`,

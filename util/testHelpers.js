@@ -1,6 +1,6 @@
 import fs from 'fs';
 import postcss from 'postcss';
-import cssnano from 'lerna:cssnano';
+import cssnano from '../packages/cssnano/src/index';
 import frameworks from './frameworks';
 
 export function usePostCSSPlugin(t, plugin) {

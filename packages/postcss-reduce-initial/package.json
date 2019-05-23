@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "acquire": "babel-node ./src/acquire.js",
-    "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/,src/acquire.js"
+    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file --out-dir dist --ignore '**/__tests__/,src/acquire.js'"
   },
   "keywords": [
     "css",
@@ -19,10 +19,11 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.0.0",
-    "cross-env": "^5.0.0",
-    "got": "^8.0.0",
-    "html2plaintext": "^2.0.0",
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "cross-env": "^5.2.0",
+    "got": "^8.3.2",
+    "html2plaintext": "^2.1.2",
     "write-file": "^1.0.0"
   },
   "homepage": "https://github.com/cssnano/cssnano",
@@ -33,10 +34,10 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^4.0.0",
+    "browserslist": "^4.5.6",
     "caniuse-api": "^3.0.0",
-    "has": "^1.0.0",
-    "postcss": "^7.0.0"
+    "has": "^1.0.3",
+    "postcss": "^7.0.16"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

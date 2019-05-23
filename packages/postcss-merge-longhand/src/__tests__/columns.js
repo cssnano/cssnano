@@ -54,7 +54,7 @@ test(
 );
 
 test(
-  'should merge column-width with columns',
+  'should merge column-width with columns (uppercase) #1',
   processCSS,
   'h1{columns:12em AUTO;column-width:11em}',
   'h1{columns:11em}'

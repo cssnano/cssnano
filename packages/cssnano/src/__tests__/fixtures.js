@@ -222,15 +222,6 @@ test(
 );
 
 test(
-  'should trim whitespace in border radius',
-  processCss,
-  `div {
-        border-radius: 100% / 10%;
-    }`,
-  `div{border-radius:100%/10%}`
-);
-
-test(
   'should optimise duration',
   processCss,
   `.short {

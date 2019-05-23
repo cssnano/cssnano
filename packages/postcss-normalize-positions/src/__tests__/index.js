@@ -145,19 +145,20 @@ function suite(t, property, additional = '', tail = '') {
 }
 
 test(
+  'background:',
   suite,
   'background:',
   'url(http://example.com/testing/test.png) no-repeat ',
-  ' #fff'
+  ' #f1ff'
 );
 
-test(suite, 'background-position:');
+test('background-position:', suite, 'background-position:');
 
-test(suite, 'background:', '#000 url(cat.jpg) ');
+test('background: #1', suite, 'background:', '#000 url(cat.jpg) ');
 
-test(suite, 'perspective-origin:');
+test('perspective-origin:', suite, 'perspective-origin:');
 
-test(suite, '-webkit-perspective-origin:');
+test('-webkit-perspective-origin:', suite, '-webkit-perspective-origin:');
 
 test(
   'should pass through when there are no position values',

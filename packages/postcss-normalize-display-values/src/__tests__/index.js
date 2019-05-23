@@ -36,7 +36,7 @@ test(
 test(`should pass through variables`, passthroughCSS, `display:var(--foo)`);
 
 test(
-  `should pass through variables`,
+  `should pass through variables #1`,
   passthroughCSS,
   `display:var(--foo) var(--bar)`
 );

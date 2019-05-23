@@ -45,7 +45,7 @@ test(
 );
 
 test(
-  'should reuse the same animation name for vendor prefixed keyframes',
+  'should reuse the same animation name for vendor prefixed keyframes #1',
   processCSS,
   '@-WEBKIT-KEYFRAMES whiteToBlack{0%{color:#fff}to{color:#000}}@KEYFRAMES whiteToBlack{0%{color:#fff}to{color:#000}}div{-webkit-animation-name:whiteToBlack;animation-name:whiteToBlack}',
   '@-WEBKIT-KEYFRAMES a{0%{color:#fff}to{color:#000}}@KEYFRAMES a{0%{color:#fff}to{color:#000}}div{-webkit-animation-name:a;animation-name:a}'
