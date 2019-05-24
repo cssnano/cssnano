@@ -71,8 +71,8 @@ jobs:
           node_version: ^10.13.0
         node-8:
           node_version: ^8.9.0
-        # node-6:
-        #  node_version: ^6.9.0
+        node-6:
+          node_version: ^6.9.0
     steps:
       - task: NodeTool@0
         inputs:
@@ -83,7 +83,7 @@ jobs:
           npm -v
           yarn -v
         displayName: 'Print versions'
-      - bash: yarn install
+      - bash: yarn install --ignore-engines
         displayName: 'Install dependencies'
       - script: npm run test:coverage
         displayName: 'Run tests with coverage'
@@ -109,8 +109,8 @@ jobs:
           node_version: ^10.13.0
         node-8:
           node_version: ^8.9.0
-        # node-6:
-        #  node_version: ^6.14.0
+        node-6:
+          node_version: ^6.14.0
     steps:
       - script: 'git config --global core.autocrlf input'
         displayName: 'Config git core.autocrlf'
@@ -124,7 +124,7 @@ jobs:
           npm -v
           yarn -v
         displayName: 'Print versions'
-      - bash: yarn install
+      - bash: yarn install --ignore-engines
         displayName: 'Install dependencies'
       - script: npm run test:coverage
         displayName: 'Run tests with coverage'
