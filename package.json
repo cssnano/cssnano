@@ -43,7 +43,7 @@
     "get-pkg-repo": "^4.1.0",
     "gh-pages": "^1.2.0",
     "glob": "^7.1.4",
-    "lerna": "^3.14.1",
+    "lerna": "3.3.2",
     "mdast-util-heading-range": "^2.1.2",
     "nyc": "^14.1.1",
     "postcss": "^7.0.16",
