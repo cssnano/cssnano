@@ -19,18 +19,6 @@ import sortAscending from './sortAscending';
 const repository = `cssnano/cssnano`;
 const homepage = `https://github.com/${repository}`;
 
-function semverMajor(dependencies) {
-  Object.keys(dependencies).forEach((dependency) => {
-    let version = dependencies[dependency];
-    if (version[0] === '^' && version[1] !== '0') {
-      version = version.split('.')[0] + '.0.0';
-    }
-    dependencies[dependency] = version;
-  });
-
-  return dependencies;
-}
-
 function sortPlugins(a, b) {
   return sortAscending(pluginName(a[0]), pluginName(b[0]));
 }
@@ -115,12 +103,12 @@ function updatePreset(packageList, pkg) {
     plugins.push.apply(plugins, documentation);
   });
 
-  let transformedAST = remark()
+  remark()
     .use(contributorsSection)
     .use(installSection)
     .use(remarkLicense)
     .use(remarkToc)
-    .runSync(
+    .run(
       u('root', [
         u('heading', { depth: 1 }, [u('text', pkgName)]),
         u('blockquote', [u('text', pkgJson.description)]),
@@ -133,14 +121,15 @@ function updatePreset(packageList, pkg) {
         u('heading', { depth: 2 }, [u('text', 'License')]),
       ]),
       { cwd: pkg }
-    );
-
-  return fs.writeFile(
-    `${pkg}/README.md`,
-    remark()
-      .use(remarkHeadingGap)
-      .stringify(transformedAST) + '\n'
-  );
+    )
+    .then((transformedAST) => {
+      return fs.writeFile(
+        `${pkg}/README.md`,
+        remark()
+          .use(remarkHeadingGap)
+          .stringify(transformedAST) + '\n'
+      );
+    });
 }
 
 function updatePackage(pkg) {
@@ -156,14 +145,6 @@ function updatePackage(pkg) {
 
   pkgJson.engines = pkgJson.engines || {};
   pkgJson.engines.node = '>=6.9.0';
-
-  if (pkgJson.dependencies) {
-    pkgJson.dependencies = semverMajor(pkgJson.dependencies);
-  }
-
-  if (pkgJson.devDependencies) {
-    pkgJson.devDependencies = semverMajor(pkgJson.devDependencies);
-  }
 
   return fs.writeFile(
     `${pkg}/package.json`,

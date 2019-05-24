@@ -7,24 +7,24 @@ function testStarHack(t, character) {
   return processCSS(t, `h1 { ${character}color: red }`, `h1 { }`, opts);
 }
 
-test(testStarHack, '*');
-test(testStarHack, '!');
-test(testStarHack, '$');
-test(testStarHack, '&');
-test(testStarHack, ')');
-test(testStarHack, '=');
-test(testStarHack, '%');
-test(testStarHack, '+');
-test(testStarHack, ',');
-test(testStarHack, '.');
-test(testStarHack, '/');
-test(testStarHack, '`');
-test(testStarHack, ']');
-test(testStarHack, '#');
-test(testStarHack, '~');
-test(testStarHack, '?');
-test(testStarHack, ':');
-test(testStarHack, '|');
+test('*', testStarHack, '*');
+test('!', testStarHack, '!');
+test('$', testStarHack, '$');
+test('&', testStarHack, '&');
+test(')', testStarHack, ')');
+test('=', testStarHack, '=');
+test('%', testStarHack, '%');
+test('+', testStarHack, '+');
+test(',', testStarHack, ',');
+test('.', testStarHack, '.');
+test('/', testStarHack, '/');
+test('`', testStarHack, '`');
+test(']', testStarHack, ']');
+test('#', testStarHack, '#');
+test('~', testStarHack, '~');
+test('?', testStarHack, '?');
+test(':', testStarHack, ':');
+test('|', testStarHack, '|');
 
 test(
   'should also handle @hacks',

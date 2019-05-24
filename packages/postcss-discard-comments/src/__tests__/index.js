@@ -208,22 +208,6 @@ test(
   'h1{color:#000}'
 );
 
-// Looks we should remove this tests, because it is invalid syntax
-test.skip(
-  'should handle space appropriately in selectors',
-  processCSS,
-  '.h/* ... */1{color:#000}',
-  '.h1{color:#000}'
-);
-
-// Looks we should remove this tests, because it is invalid syntax
-test.skip(
-  'should handle space appropriately in properties',
-  processCSS,
-  'h1{co/* ... */lor:#000}',
-  'h1{color:#000}'
-);
-
 test(
   'should remove block comments',
   processCSS,

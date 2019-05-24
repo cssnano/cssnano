@@ -197,10 +197,10 @@ test(
 );
 
 test(
-  'should work with vendor prefixes',
+  'should work with vendor prefixes #1',
   processCSS,
-  'h1{-webkit-transform:translate3d(0, 0, 0)}',
-  'h1{-webkit-transform:translateZ(0)}'
+  'h1{-moz-transform:translate3d(0, 0, 0)}',
+  'h1{-moz-transform:translateZ(0)}'
 );
 
 test(
@@ -344,63 +344,63 @@ test(
 );
 
 test(
-  'should work with variables #5',
+  'should work with variables #6',
   processCSS,
   'h1{transform:scale(var(--foo), var(   --foo   ))}',
   'h1{transform:scale(var(--foo))}'
 );
 
 test(
-  'should work with variables #6',
+  'should work with variables #7',
   processCSS,
   'h1{transform:scale(var(--foo), 1)}',
   'h1{transform:scaleX(var(--foo))}'
 );
 
 test(
-  'should work with variables #7',
+  'should work with variables #8',
   processCSS,
   'h1{transform:scale(1, var(--foo))}',
   'h1{transform:scaleY(var(--foo))}'
 );
 
 test(
-  'should work with variables #8',
+  'should work with variables #9',
   processCSS,
   'h1{transform:scale3d(var(--foo), 1, 1)}',
   'h1{transform:scaleX(var(--foo))}'
 );
 
 test(
-  'should work with variables #9',
+  'should work with variables #10',
   processCSS,
   'h1{transform:scale3d(1, var(--foo), 1)}',
   'h1{transform:scaleY(var(--foo))}'
 );
 
 test(
-  'should work with variables #10',
+  'should work with variables #11',
   processCSS,
   'h1{transform:scale3d(1, 1, var(--foo))}',
   'h1{transform:scaleZ(var(--foo))}'
 );
 
 test(
-  'should work with variables #11',
+  'should work with variables #12',
   processCSS,
   'h1{transform:translate(var(--foo), 0)}',
   'h1{transform:translate(var(--foo))}'
 );
 
 test(
-  'should work with variables #12',
+  'should work with variables #13',
   processCSS,
   'h1{transform:translate(0, var(--foo))}',
   'h1{transform:translateY(var(--foo))}'
 );
 
 test(
-  'should work with variables #13',
+  'should work with variables #14',
   processCSS,
   'h1{transform:translate3d(0, 0, var(--foo))}',
   'h1{transform:translateZ(var(--foo))}'

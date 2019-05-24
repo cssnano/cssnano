@@ -188,7 +188,7 @@ test(
 );
 
 test(
-  'should remove unnecessary backslashes in urls',
+  'should remove unnecessary backslashes in urls #1',
   processCSS,
   `p{background:url("http://example.com/foo\\"bar.jpg")}`,
   `p{background:url('http://example.com/foo"bar.jpg')}`

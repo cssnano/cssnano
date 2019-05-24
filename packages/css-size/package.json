@@ -8,7 +8,7 @@
     "css-size": "dist/cli.js"
   },
   "scripts": {
-    "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
+    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/'"
   },
   "files": [
     "LICENSE-MIT",
@@ -25,9 +25,10 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.0.0",
-    "cross-env": "^5.0.0",
-    "strip-ansi": "^4.0.0"
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "cross-env": "^5.2.0",
+    "strip-ansi": "^5.2.0"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
@@ -37,13 +38,13 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "brotli-size": "0.1.0",
+    "brotli-size": "^0.1.0",
     "cli-table": "^0.3.1",
-    "cssnano": "^4.0.0",
-    "gzip-size": "^4.0.0",
-    "minimist": "^1.0.0",
-    "pretty-bytes": "^5.0.0",
-    "read-file-stdin": "^0.2.0",
+    "cssnano": "^4.1.10",
+    "gzip-size": "^5.1.1",
+    "minimist": "^1.2.0",
+    "pretty-bytes": "^5.2.0",
+    "read-file-stdin": "^0.2.1",
     "round-precision": "^1.0.0"
   },
   "bugs": {

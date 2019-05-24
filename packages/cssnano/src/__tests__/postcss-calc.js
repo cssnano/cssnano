@@ -65,7 +65,7 @@ test(
 );
 
 test(
-  'should optimise inside calc (8)',
+  'should optimise inside calc (9)',
   processCss,
   'h1{margin:1px 1px calc(0.5em + 1px)}',
   'h1{margin:1px 1px calc(.5em + 1px)}'

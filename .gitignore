@@ -4,8 +4,8 @@ dist
 lerna-debug.log
 node_modules
 npm-debug.log
+yarn-error.log
 _webpackOutput
-
 
 # Generated metadata (only the root one is generated!)
 
@@ -15,3 +15,7 @@ _webpackOutput
 # Phenomic things
 
 *.bundle.js
+
+# Cache
+
+.eslintcache

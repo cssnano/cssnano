@@ -8,7 +8,7 @@
     "LICENSE-MIT"
   ],
   "scripts": {
-    "prepublish": "cross-env BABEL_ENV=publish babel-node ./src/generate.js && babel src --out-dir dist --ignore /__tests__/,src/generate.js"
+    "prepublish": "cross-env BABEL_ENV=publish babel-node --config-file ../../babel.config.js ./src/generate.js && babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/,src/generate.js'"
   },
   "keywords": [
     "color",
@@ -21,9 +21,11 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.0.0",
-    "cross-env": "^5.0.0",
-    "css-color-names": "0.0.4",
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "@babel/node": "^7.4.5",
+    "cross-env": "^5.2.0",
+    "css-color-names": "^1.0.1",
     "write-file": "^1.0.0"
   },
   "homepage": "https://github.com/cssnano/cssnano",
@@ -34,11 +36,11 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^4.0.0",
-    "color": "^3.0.0",
-    "has": "^1.0.0",
-    "postcss": "^7.0.0",
-    "postcss-value-parser": "^3.0.0"
+    "browserslist": "^4.6.0",
+    "color": "^3.1.1",
+    "has": "^1.0.3",
+    "postcss": "^7.0.16",
+    "postcss-value-parser": "^3.3.1"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

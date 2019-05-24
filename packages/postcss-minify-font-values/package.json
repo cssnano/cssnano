@@ -17,8 +17,8 @@
     "postcss-plugin"
   ],
   "dependencies": {
-    "postcss": "^7.0.0",
-    "postcss-value-parser": "^3.0.0"
+    "postcss": "^7.0.16",
+    "postcss-value-parser": "^3.3.1"
   },
   "repository": "cssnano/cssnano",
   "bugs": {
@@ -26,11 +26,12 @@
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "scripts": {
-    "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
+    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/'"
   },
   "devDependencies": {
-    "babel-cli": "^6.0.0",
-    "cross-env": "^5.0.0"
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "cross-env": "^5.2.0"
   },
   "engines": {
     "node": ">=6.9.0"

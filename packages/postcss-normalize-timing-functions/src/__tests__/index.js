@@ -56,88 +56,194 @@ function testPassthrough(t, fixture) {
   return testTimingFunction(t, fixture, fixture);
 }
 
-test(testTimingFunction, 'cubic-bezier(0.25, 0.1, 0.25, 1)', 'ease');
-
-test(testTimingFunction, 'CUBIC-BEZIER(0.25, 0.1, 0.25, 1)', 'ease');
-
-test(testTimingFunction, 'cubic-bezier(0, 0, 1, 1)', 'linear');
-
-test(testTimingFunction, 'cubic-bezier(0.42, 0, 1, 1)', 'ease-in');
-
-test(testTimingFunction, 'cubic-bezier(0, 0, 0.58, 1)', 'ease-out');
-
-test(testTimingFunction, 'cubic-bezier(0.42, 0, 0.58, 1)', 'ease-in-out');
-
-test(testTimingFunction, 'steps(1, start)', 'step-start');
-
-test(testTimingFunction, 'steps(1, START)', 'step-start');
-
-test(testTimingFunction, 'STEPS(1, start)', 'step-start');
-
-test(testTimingFunction, 'steps(1, jump-start)', 'step-start');
-
-test(testTimingFunction, 'steps(1, JUMP-START)', 'step-start');
-
-test(testTimingFunction, 'STEPS(1, jump-start)', 'step-start');
-
-test(testTimingFunction, 'steps(1, end)', 'step-end');
-
-test(testTimingFunction, 'steps(1, END)', 'step-end');
-
-test(testTimingFunction, 'STEPS(1, end)', 'step-end');
-
-test(testTimingFunction, 'steps(1, jump-end)', 'step-end');
-
-test(testTimingFunction, 'steps(1, JUMP-END)', 'step-end');
-
-test(testTimingFunction, 'STEPS(1, jump-end)', 'step-end');
-
-test(testPassthrough, 'steps(1)');
-
-test(testPassthrough, 'STEPS(1)');
-
-test(testPassthrough, 'steps(5,start)');
-
-test(testTimingFunction, 'steps(10, end)', 'steps(10)');
-
-test(testTimingFunction, 'steps(10, jump-end)', 'steps(10)');
-
-test(testTimingFunction, 'steps(10, END)', 'steps(10)');
-
-test(testTimingFunction, 'steps(10, JUMP-END)', 'steps(10)');
-
-test(testPassthrough, 'steps(15)');
-
-test(testPassthrough, 'var(--anim1)');
-
-test(testPassthrough, 'VAR(--anim1)');
-
-test(testPassthrough, 'cubic-bezier(0.25, var(--foo), 0.25, 1)');
+test(
+  'cubic-bezier(0.25, 0.1, 0.25, 1)',
+  testTimingFunction,
+  'cubic-bezier(0.25, 0.1, 0.25, 1)',
+  'ease'
+);
 
 test(
+  'CUBIC-BEZIER(0.25, 0.1, 0.25, 1)',
+  testTimingFunction,
+  'CUBIC-BEZIER(0.25, 0.1, 0.25, 1)',
+  'ease'
+);
+
+test(
+  'cubic-bezier(0, 0, 1, 1)',
+  testTimingFunction,
+  'cubic-bezier(0, 0, 1, 1)',
+  'linear'
+);
+
+test(
+  'cubic-bezier(0.42, 0, 1, 1)',
+  testTimingFunction,
+  'cubic-bezier(0.42, 0, 1, 1)',
+  'ease-in'
+);
+
+test(
+  'cubic-bezier(0, 0, 0.58, 1)',
+  testTimingFunction,
+  'cubic-bezier(0, 0, 0.58, 1)',
+  'ease-out'
+);
+
+test(
+  'cubic-bezier(0.42, 0, 0.58, 1)',
+  testTimingFunction,
+  'cubic-bezier(0.42, 0, 0.58, 1)',
+  'ease-in-out'
+);
+
+test('steps(1, start)', testTimingFunction, 'steps(1, start)', 'step-start');
+
+test('steps(1, START)', testTimingFunction, 'steps(1, START)', 'step-start');
+
+test('STEPS(1, start)', testTimingFunction, 'STEPS(1, start)', 'step-start');
+
+test(
+  'steps(1, jump-start)',
+  testTimingFunction,
+  'steps(1, jump-start)',
+  'step-start'
+);
+
+test(
+  'steps(1, JUMP-START)',
+  testTimingFunction,
+  'steps(1, JUMP-START)',
+  'step-start'
+);
+
+test(
+  'STEPS(1, jump-start)',
+  testTimingFunction,
+  'STEPS(1, jump-start)',
+  'step-start'
+);
+
+test('steps(1, end)', testTimingFunction, 'steps(1, end)', 'step-end');
+
+test('steps(1, END)', testTimingFunction, 'steps(1, END)', 'step-end');
+
+test('STEPS(1, end)', testTimingFunction, 'STEPS(1, end)', 'step-end');
+
+test(
+  'steps(1, jump-end)',
+  testTimingFunction,
+  'steps(1, jump-end)',
+  'step-end'
+);
+
+test(
+  'steps(1, JUMP-END)',
+  testTimingFunction,
+  'steps(1, JUMP-END)',
+  'step-end'
+);
+
+test(
+  'STEPS(1, jump-end)',
+  testTimingFunction,
+  'STEPS(1, jump-end)',
+  'step-end'
+);
+
+test('steps(1)', testPassthrough, 'steps(1)');
+
+test('STEPS(1)', testPassthrough, 'STEPS(1)');
+
+test('steps(5,start)', testPassthrough, 'steps(5,start)');
+
+test('steps(10, end)', testTimingFunction, 'steps(10, end)', 'steps(10)');
+
+test(
+  'steps(10, jump-end)',
+  testTimingFunction,
+  'steps(10, jump-end)',
+  'steps(10)'
+);
+
+test('steps(10, END)', testTimingFunction, 'steps(10, END)', 'steps(10)');
+
+test(
+  'steps(10, JUMP-END)',
+  testTimingFunction,
+  'steps(10, JUMP-END)',
+  'steps(10)'
+);
+
+test('steps(15)', testPassthrough, 'steps(15)');
+
+test('var(--anim1)', testPassthrough, 'var(--anim1)');
+
+test('VAR(--anim1)', testPassthrough, 'VAR(--anim1)');
+
+test(
+  'cubic-bezier(0.25, var(--foo), 0.25, 1)',
+  testPassthrough,
+  'cubic-bezier(0.25, var(--foo), 0.25, 1)'
+);
+
+test(
+  'cubic-bezier(var(--foo), var(--bar), var(--baz), var(--foz))',
   testPassthrough,
   'cubic-bezier(var(--foo), var(--bar), var(--baz), var(--foz))'
 );
 
 test('should pass through broken syntax', passthroughCSS, 'h1{animation:}');
 
-test(testPassthrough, 'cubic-bezier()');
+test('cubic-bezier()', testPassthrough, 'cubic-bezier()');
 
-test(testPassthrough, 'cubic-bezier(0, 0, 1, 1, 1, 1)');
+test(
+  'cubic-bezier(0, 0, 1, 1, 1, 1)',
+  testPassthrough,
+  'cubic-bezier(0, 0, 1, 1, 1, 1)'
+);
 
-test(testPassthrough, 'fade 3s steps(10, start())');
+test(
+  'fade 3s steps(10, start())',
+  testPassthrough,
+  'fade 3s steps(10, start())'
+);
 
-test(testPassthrough, 'fade 3s steps(10, jump-start())');
+test(
+  'fade 3s steps(10, jump-start())',
+  testPassthrough,
+  'fade 3s steps(10, jump-start())'
+);
 
-test(testPassthrough, 'fade 3s steps(10, end())');
+test('fade 3s steps(10, end())', testPassthrough, 'fade 3s steps(10, end())');
 
-test(testPassthrough, 'fade 3s steps(10, jump-end())');
+test(
+  'fade 3s steps(10, jump-end())',
+  testPassthrough,
+  'fade 3s steps(10, jump-end())'
+);
 
-test(testTimingFunction, 'cubic-bezier(0.25, 0.1, 0.25, 1)', 'ease');
+test(
+  'cubic-bezier(0.25, 0.1, 0.25, 1) #1',
+  testTimingFunction,
+  'cubic-bezier(0.25, 0.1, 0.25, 1)',
+  'ease'
+);
 
-test(testTimingFunction, 'cubic-bezier(0.250, 0.10, 0.250, 1)', 'ease');
+test(
+  'cubic-bezier(0.250, 0.10, 0.250, 1)',
+  testTimingFunction,
+  'cubic-bezier(0.250, 0.10, 0.250, 1)',
+  'ease'
+);
 
-test(testTimingFunction, 'cubic-bezier(0.250, 1e-1px, 0.250, 1)', 'ease');
+test(
+  'cubic-bezier(0.250, 1e-1px, 0.250, 1)',
+  testTimingFunction,
+  'cubic-bezier(0.250, 1e-1px, 0.250, 1)',
+  'ease'
+);
 
 test(
   'should supports multiple timing functions (animation-timing-function)',

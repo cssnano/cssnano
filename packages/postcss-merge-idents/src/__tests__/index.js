@@ -43,7 +43,7 @@ test(
 );
 
 test(
-  'should update relevant animation declarations (2)',
+  'should update relevant animation declarations (3)',
   processCSS,
   '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes b{0%{color:#fff}to{color:#000}}@keyframes c{0%{color:#fff}to{color:#000}}div{animation:a .2s ease}',
   '@keyframes c{0%{color:#fff}to{color:#000}}div{animation:c .2s ease}'

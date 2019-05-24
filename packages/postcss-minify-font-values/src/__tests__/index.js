@@ -127,7 +127,7 @@ test(
 );
 
 test(
-  'should not unquote font names with multiple \\',
+  'should not unquote font names with multiple \\ #1',
   passthroughCSS,
   'h1{font-family:"\\5B8B\\4F53"}'
 );

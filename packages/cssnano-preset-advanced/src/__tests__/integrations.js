@@ -18,6 +18,6 @@ function excludeProcessor(t, options) {
     });
 }
 
-test(excludeProcessor, { zindex: false });
+test('exclude zindex', excludeProcessor, { zindex: false });
 
-test(excludeProcessor, { zindex: { exclude: true } });
+test('exclude zindex #1', excludeProcessor, { zindex: { exclude: true } });

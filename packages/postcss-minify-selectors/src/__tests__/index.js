@@ -178,7 +178,7 @@ test(
 );
 
 test(
-  'should normalise attribute selectors (6)',
+  'should normalise attribute selectors (7)',
   processCSS,
   'a[   target   ]{color:blue}',
   'a[target]{color:blue}'

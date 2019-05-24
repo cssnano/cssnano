@@ -175,7 +175,7 @@ test(
 test('should reject on malformed svgs', async (t) => {
   const css =
     'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
-  const error = await t.throws(postcss(plugin()).process(css));
+  const error = await t.throwsAsync(postcss(plugin()).process(css));
   t.truthy(error);
 });
 

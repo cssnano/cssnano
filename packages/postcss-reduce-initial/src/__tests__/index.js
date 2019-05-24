@@ -55,13 +55,6 @@ test(
 );
 
 test(
-  'cursor: initial => cursor: auto (uppercase property and value)',
-  processCSS,
-  'CURSOR: INITIAL',
-  'CURSOR: auto'
-);
-
-test(
   'border-block-color: currentColor => border-block-color: initial',
   processCSS,
   'border-block-color: currentColor',

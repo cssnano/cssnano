@@ -22,19 +22,20 @@
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "dependencies": {
-    "alphanum-sort": "^1.0.0",
-    "browserslist": "^4.0.0",
+    "alphanum-sort": "^1.0.2",
+    "browserslist": "^4.6.0",
     "cssnano-util-get-arguments": "^4.0.0",
-    "postcss": "^7.0.0",
-    "postcss-value-parser": "^3.0.0",
+    "postcss": "^7.0.16",
+    "postcss-value-parser": "^3.3.1",
     "uniqs": "^2.0.0"
   },
   "scripts": {
-    "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
+    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/'"
   },
   "devDependencies": {
-    "babel-cli": "^6.0.0",
-    "cross-env": "^5.0.0"
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "cross-env": "^5.2.0"
   },
   "engines": {
     "node": ">=6.9.0"

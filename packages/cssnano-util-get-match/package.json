@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "description": "Convert a list of keywords into a single keyword match.",
   "scripts": {
-    "prepublish": "cross-env BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
+    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/'"
   },
   "files": [
     "LICENSE-MIT",
@@ -12,8 +12,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.0.0",
-    "cross-env": "^5.0.0"
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "cross-env": "^5.2.0"
   },
   "author": {
     "name": "Ben Briggs",

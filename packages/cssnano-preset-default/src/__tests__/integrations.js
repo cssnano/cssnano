@@ -11,6 +11,7 @@ test(
 
 function excludeProcessor(t, options) {
   const input = `h1{color:black}`;
+
   return loadPreset(preset(options))
     .process(input)
     .then(({ css }) => {
@@ -18,6 +19,6 @@ function excludeProcessor(t, options) {
     });
 }
 
-test(excludeProcessor, { colormin: false });
+test('exclude colormin', excludeProcessor, { colormin: false });
 
-test(excludeProcessor, { colormin: { exclude: true } });
+test('exclude colormin #1', excludeProcessor, { colormin: { exclude: true } });
