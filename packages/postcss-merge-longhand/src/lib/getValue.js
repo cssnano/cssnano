@@ -1,3 +1,5 @@
-export default function getValue({ value }) {
-  return value;
-}
+import { prop } from 'ramda';
+
+const getValue = prop('value');
+
+export default getValue;

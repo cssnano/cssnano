@@ -1,5 +1,8 @@
-export default (rule, ...props) => {
-  return props.every((p) =>
-    rule.some(({ prop }) => prop && ~prop.toLowerCase().indexOf(p))
-  );
-};
+import * as R from 'ramda';
+import isNodePropEqual from './isNodePropEqual';
+
+const hasAllProps = R.curry((rule, props) =>
+  R.all((prop) => R.any(isNodePropEqual(prop), rule), props)
+);
+
+export default hasAllProps;

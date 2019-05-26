@@ -1,3 +1,4 @@
+import lowercaseEq from './lowercaseEq';
 import parseWsc from './parseWsc';
 import minifyTrbl from './minifyTrbl';
 import { isValidWsc } from './validateWsc';
@@ -15,7 +16,7 @@ export default (v) => {
     .reduceRight((prev, cur, i, arr) => {
       if (
         cur === undefined ||
-        (cur.toLowerCase() === defaults[i] &&
+        (lowercaseEq(defaults[i], cur) &&
           (!i || (arr[i - 1] || '').toLowerCase() !== cur.toLowerCase()))
       ) {
         return prev;

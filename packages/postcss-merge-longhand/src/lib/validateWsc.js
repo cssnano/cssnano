@@ -1,4 +1,6 @@
 import colorNames from 'css-color-names';
+import * as R from 'ramda';
+import oneOf from './oneOf';
 
 const widths = ['thin', 'medium', 'thick'];
 const styles = [
@@ -13,48 +15,29 @@ const styles = [
   'inset',
   'outset',
 ];
-const colors = Object.keys(colorNames);
 
-export function isStyle(value) {
-  return value && !!~styles.indexOf(value.toLowerCase());
-}
+const colourKeywords = Object.keys(colorNames).concat([
+  'transparent',
+  'currentcolor',
+]);
 
-export function isWidth(value) {
-  return (
-    (value && !!~widths.indexOf(value.toLowerCase())) ||
-    /^(\d+(\.\d+)?|\.\d+)(\w+)?$/.test(value)
-  );
-}
+export const isStyle = oneOf(styles);
 
-export function isColor(value) {
-  if (!value) {
-    return false;
-  }
+export const isWidth = R.either(
+  oneOf(widths),
+  R.test(/^(\d+(\.\d+)?|\.\d+)(\w+)?$/)
+);
 
-  value = value.toLowerCase();
-
-  if (/rgba?\(/.test(value)) {
-    return true;
-  }
-
-  if (/hsla?\(/.test(value)) {
-    return true;
-  }
-
-  if (/#([0-9a-z]{6}|[0-9a-z]{3})/.test(value)) {
-    return true;
-  }
-
-  if (value === 'transparent') {
-    return true;
-  }
-
-  if (value === 'currentcolor') {
-    return true;
-  }
-
-  return !!~colors.indexOf(value);
-}
+export const isColor = R.ifElse(
+  R.isNil,
+  R.F,
+  R.anyPass([
+    R.test(/rgba?\(/i),
+    R.test(/hsla?\(/i),
+    R.test(/#([0-9a-z]{6}|[0-9a-z]{3})/i),
+    oneOf(colourKeywords),
+  ])
+);
 
 export function isValidWsc(wscs) {
   const validWidth = isWidth(wscs[0]);

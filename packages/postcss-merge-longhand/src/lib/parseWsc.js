@@ -1,4 +1,5 @@
 import { list } from 'postcss';
+import lowercaseEq from './lowercaseEq';
 import { isWidth, isStyle, isColor } from './validateWsc';
 
 const none = /^\s*(none|medium)(\s+none(\s+(none|currentcolor))?)?\s*$/i;
@@ -23,7 +24,7 @@ export default function parseWsc(value) {
   if (
     values.length > 1 &&
     isStyle(values[1]) &&
-    values[0].toLowerCase() === 'none'
+    lowercaseEq('none', values[0])
   ) {
     values.unshift();
     width = '0';

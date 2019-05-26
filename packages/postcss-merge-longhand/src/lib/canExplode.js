@@ -1,9 +1,12 @@
 import isCustomProp from './isCustomProp';
+import isNodeValueOneOf from './isNodeValueOneOf';
 
-const hasGlobalKeyword = (prop) =>
-  prop &&
-  prop.value &&
-  ['inherit', 'initial', 'unset', 'revert'].includes(prop.value.toLowerCase());
+const hasGlobalKeyword = isNodeValueOneOf([
+  'inherit',
+  'initial',
+  'unset',
+  'revert',
+]);
 
 export default (prop, includeCustomProps = true) => {
   if (

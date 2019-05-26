@@ -1,5 +1,7 @@
 import { list } from 'postcss';
 import { detect } from 'lerna:stylehacks';
+import * as R from 'ramda';
+import allExcept from '../allExcept';
 import insertCloned from '../insertCloned';
 import parseTrbl from '../parseTrbl';
 import hasAllProps from '../hasAllProps';
@@ -7,16 +9,29 @@ import getDecls from '../getDecls';
 import getRules from '../getRules';
 import getValue from '../getValue';
 import mergeRules from '../mergeRules';
+import mergeValues from '../mergeValues';
 import minifyTrbl from '../minifyTrbl';
 import minifyWsc from '../minifyWsc';
 import canMerge from '../canMerge';
 import remove from '../remove';
 import trbl from '../trbl';
 import isCustomProp from '../isCustomProp';
+import isValueCustomProp from '../isValueCustomProp';
 import canExplode from '../canExplode';
 import getLastNode from '../getLastNode';
 import parseWsc from '../parseWsc';
 import { isValidWsc } from '../validateWsc';
+import includedIn from '../includedIn';
+import isDuplicateProperty from '../isDuplicateProperty';
+import isNodePropEqual from '../isNodePropEqual';
+import isNodePropOneOf from '../isNodePropOneOf';
+import oneOf from '../oneOf';
+import equalImportance from '../equalImportance';
+import {
+  formatPropLeft,
+  formatPropsLeft,
+  formatPropsRight,
+} from '../formatProp';
 
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentcolor'];
@@ -25,14 +40,13 @@ function borderProperty(...parts) {
   return `border-${parts.join('-')}`;
 }
 
-function mapBorderProperty(value) {
-  return borderProperty(value);
-}
+const mapBorderProperty = R.map(borderProperty);
 
-const directions = trbl.map(mapBorderProperty);
-const properties = wsc.map(mapBorderProperty);
+const directions = mapBorderProperty(trbl);
+const properties = mapBorderProperty(wsc);
+
 const directionalProperties = directions.reduce(
-  (prev, curr) => prev.concat(wsc.map((prop) => `${curr}-${prop}`)),
+  (prev, curr) => prev.concat(formatPropsLeft(curr, wsc)),
   []
 );
 
@@ -42,24 +56,28 @@ const precedence = [
   directionalProperties,
 ];
 
-const allProperties = precedence.reduce((a, b) => a.concat(b));
+const allProperties = R.unnest(precedence);
 
 function getLevel(prop) {
   for (let i = 0; i < precedence.length; i++) {
-    if (~precedence[i].indexOf(prop.toLowerCase())) {
+    if (oneOf(precedence[i], prop)) {
       return i;
     }
   }
 }
 
-const isValueCustomProp = (value) => value && !!~value.search(/var\s*\(\s*--/i);
+const canMergeValues = R.either(
+  R.complement(R.any(isValueCustomProp)),
+  R.all(isValueCustomProp)
+);
 
-function canMergeValues(values) {
-  return !values.some(isValueCustomProp) || values.every(isValueCustomProp);
-}
+const isAlphaTransparentColour = R.compose(
+  R.test(/hsla\(|rgba\(/i),
+  getColorValue
+);
 
 function getColorValue(decl) {
-  if (decl.prop.substr(-5) === 'color') {
+  if (R.endsWith('color', decl.prop)) {
     return decl.value;
   }
 
@@ -94,8 +112,8 @@ function mergeRedundant({ values, nextValues, decl, nextDecl, index }) {
   const prop = diff.pop();
   const position = wsc.indexOf(prop);
 
-  const prop1 = `${nextDecl.prop}-${prop}`;
-  const prop2 = `border-${prop}`;
+  const prop1 = formatPropLeft(nextDecl.prop, prop);
+  const prop2 = formatPropLeft('border', prop);
 
   let props = parseTrbl(values[position]);
 
@@ -131,17 +149,14 @@ function isCloseEnough(mapped) {
   );
 }
 
-function getDistinctShorthands(mapped) {
-  return mapped.reduce((a, b) => {
-    a = Array.isArray(a) ? a : [a];
+const getDistinctShorthands = R.uniq;
 
-    if (!~a.indexOf(b)) {
-      a.push(b);
-    }
+const joinDirectionalValues = R.compose(
+  R.map(R.join(' ')),
+  R.transpose
+);
 
-    return a;
-  });
-}
+const valueOrDefault = R.addIndex(R.map)((v, i) => v || defaults[i]);
 
 function explode(rule) {
   rule.walkDecls(/^border/i, (decl) => {
@@ -156,14 +171,12 @@ function explode(rule) {
     const prop = decl.prop.toLowerCase();
 
     // border -> border-trbl
-    if (prop === 'border') {
-      if (isValidWsc(parseWsc(decl.value))) {
-        directions.forEach((direction) => {
-          insertCloned(decl.parent, decl, { prop: direction });
-        });
+    if (prop === 'border' && isValidWsc(parseWsc(decl.value))) {
+      directions.forEach((direction) => {
+        insertCloned(decl.parent, decl, { prop: direction });
+      });
 
-        return decl.remove();
-      }
+      return decl.remove();
     }
 
     // border-trbl -> border-trbl-wsc
@@ -173,7 +186,7 @@ function explode(rule) {
       if (isValidWsc(values)) {
         wsc.forEach((d, i) => {
           insertCloned(decl.parent, decl, {
-            prop: `${prop}-${d}`,
+            prop: formatPropLeft(prop, d),
             value: values[i] || defaults[i],
           });
         });
@@ -212,7 +225,7 @@ function merge(rule) {
         if (canMerge(rules, false) && !rules.some(detect)) {
           insertCloned(lastNode.parent, lastNode, {
             prop,
-            value: rules.map(getValue).join(' '),
+            value: mergeValues(rules),
           });
 
           rules.forEach(remove);
@@ -234,7 +247,7 @@ function merge(rule) {
         if (canMerge(rules) && !rules.some(detect)) {
           insertCloned(lastNode.parent, lastNode, {
             prop,
-            value: minifyTrbl(rules.map(getValue).join(' ')),
+            value: minifyTrbl(mergeValues(rules)),
           });
 
           rules.forEach(remove);
@@ -251,13 +264,13 @@ function merge(rule) {
       return;
     }
 
-    const values = rules.map(({ value }) => value);
+    const values = R.map(getValue, rules);
 
     if (!canMergeValues(values)) {
       return;
     }
 
-    const parsed = values.map((value) => parseWsc(value));
+    const parsed = R.map(parseWsc, values);
 
     if (!parsed.every(isValidWsc)) {
       return;
@@ -290,9 +303,8 @@ function merge(rule) {
     }
 
     const values = rules.map((node) => parseTrbl(node.value));
-    const mapped = [0, 1, 2, 3].map((i) =>
-      [values[0][i], values[1][i], values[2][i]].join(' ')
-    );
+
+    const mapped = joinDirectionalValues(values);
 
     if (!canMergeValues(mapped)) {
       return;
@@ -330,12 +342,11 @@ function merge(rule) {
         color,
         Object.assign(lastNode.clone(), {
           prop: 'border',
-          value: [width, style].map(getValue).join(' '),
+          value: mergeValues([width, style]),
         })
       );
-      rules
-        .filter((node) => node.prop.toLowerCase() !== properties[2])
-        .forEach(remove);
+
+      R.reject(isNodePropEqual(properties[2]), rules).forEach(remove);
 
       return true;
     }
@@ -348,19 +359,19 @@ function merge(rule) {
     }
 
     const values = rules.map((node) => parseTrbl(node.value));
-    const mapped = [0, 1, 2, 3].map((i) =>
-      [values[0][i], values[1][i], values[2][i]].join(' ')
-    );
+    const mapped = joinDirectionalValues(values);
+
     const reduced = getDistinctShorthands(mapped);
     const none = 'medium none currentcolor';
 
     if (reduced.length > 1 && reduced.length < 4 && reduced.includes(none)) {
-      const filtered = mapped.filter((p) => p !== none);
+      const filtered = allExcept(none, mapped);
       const mostCommon = reduced.sort(
         (a, b) =>
           mapped.filter((v) => v === b).length -
           mapped.filter((v) => v === a).length
       )[0];
+
       const borderValue = reduced.length === 2 ? filtered[0] : mostCommon;
 
       rule.insertBefore(
@@ -403,7 +414,10 @@ function merge(rule) {
         return node.value;
       }
 
-      return wscValue.map((value, i) => value || defaults[i]).join(' ');
+      return R.compose(
+        R.join(' '),
+        valueOrDefault
+      )(wscValue);
     });
 
     const reduced = getDistinctShorthands(values);
@@ -441,7 +455,7 @@ function merge(rule) {
   // border-trbl-wsc + border-trbl (custom prop) -> border-trbl + border-trbl-wsc (custom prop)
   directions.forEach((direction) => {
     wsc.forEach((style, i) => {
-      const prop = `${direction}-${style}`;
+      const prop = formatPropLeft(direction, style);
 
       mergeRules(rule, [direction, prop], (rules, lastNode) => {
         if (lastNode.prop !== direction) {
@@ -454,7 +468,7 @@ function merge(rule) {
           return;
         }
 
-        const wscProp = rules.filter((r) => r !== lastNode)[0];
+        const wscProp = allExcept(lastNode, rules)[0];
 
         if (!isValueCustomProp(values[i]) || isCustomProp(wscProp)) {
           return;
@@ -493,7 +507,7 @@ function merge(rule) {
         return;
       }
 
-      const wscProp = rules.filter((r) => r !== lastNode)[0];
+      const wscProp = allExcept(lastNode, rules)[0];
 
       if (!isValueCustomProp(values[i]) || isCustomProp(wscProp)) {
         return;
@@ -520,12 +534,13 @@ function merge(rule) {
   let decls = getDecls(rule, directions);
 
   while (decls.length) {
-    const lastNode = decls[decls.length - 1];
+    const lastNode = R.last(decls);
 
     wsc.forEach((d, i) => {
-      const names = directions
-        .filter((name) => name !== lastNode.prop)
-        .map((name) => `${name}-${d}`);
+      const names = R.compose(
+        formatPropsRight(d),
+        allExcept(lastNode.prop)
+      )(directions);
 
       let nodes = rule.nodes.slice(0, rule.nodes.indexOf(lastNode));
 
@@ -535,16 +550,15 @@ function merge(rule) {
         nodes = nodes.slice(nodes.indexOf(border));
       }
 
-      const props = nodes.filter(
-        (node) =>
-          node.prop &&
-          ~names.indexOf(node.prop) &&
-          node.important === lastNode.important
+      const props = R.filter(
+        R.either(isNodePropOneOf(names), equalImportance(lastNode)),
+        nodes
       );
+
       const rules = getRules(props, names);
 
-      if (hasAllProps(rules, ...names) && !rules.some(detect)) {
-        const values = rules.map((node) => (node ? node.value : null));
+      if (hasAllProps(rules, names) && !rules.some(detect)) {
+        const values = rules.map(getValue);
         const filteredValues = values.filter(Boolean);
         const lastNodeValue = list.space(lastNode.value)[i];
 
@@ -559,7 +573,7 @@ function merge(rule) {
           value = filteredValues[0];
         }
 
-        let refNode = props[props.length - 1];
+        let refNode = R.last(props);
 
         if (value === lastNodeValue) {
           refNode = lastNode;
@@ -573,12 +587,12 @@ function merge(rule) {
           value,
         });
 
-        decls = decls.filter((node) => !~rules.indexOf(node));
+        decls = R.reject(includedIn(rules), decls);
         rules.forEach(remove);
       }
     });
 
-    decls = decls.filter((node) => node !== lastNode);
+    decls = allExcept(lastNode, decls);
   }
 
   rule.walkDecls('border', (decl) => {
@@ -624,14 +638,14 @@ function merge(rule) {
 
     dirs.splice(position, 1);
     wsc.forEach((d, i) => {
-      const props = dirs.map((dir) => `${dir}-${d}`);
+      const props = formatPropsRight(d, dirs);
 
       mergeRules(rule, [decl.prop, ...props], (rules) => {
         if (!rules.includes(decl)) {
           return;
         }
 
-        const longhands = rules.filter((p) => p !== decl);
+        const longhands = allExcept(decl, rules);
 
         if (
           longhands[0].value.toLowerCase() ===
@@ -673,7 +687,7 @@ function merge(rule) {
 
     // merge vertical and horizontal dups
     if (value.length > 1 && value[0] === value[1]) {
-      decl.value = value.slice(1).join(' ');
+      decl.value = value[0];
     }
   });
 
@@ -681,7 +695,7 @@ function merge(rule) {
   decls = getDecls(rule, allProperties);
 
   while (decls.length) {
-    const lastNode = decls[decls.length - 1];
+    const lastNode = R.last(decls);
     const lastPart = lastNode.prop.split('-').pop();
 
     // remove properties of lower precedence
@@ -691,40 +705,34 @@ function merge(rule) {
         !detect(node) &&
         !isCustomProp(lastNode) &&
         node !== lastNode &&
-        node.important === lastNode.important &&
+        equalImportance(lastNode, node) &&
         getLevel(node.prop) > getLevel(lastNode.prop) &&
         (!!~node.prop.toLowerCase().indexOf(lastNode.prop) ||
           node.prop.toLowerCase().endsWith(lastPart))
     );
 
     lesser.forEach(remove);
-    decls = decls.filter((node) => !~lesser.indexOf(node));
+    decls = R.reject(includedIn(lesser), decls);
 
     // get duplicate properties
-    let duplicates = decls.filter(
-      (node) =>
-        !detect(lastNode) &&
-        !detect(node) &&
-        node !== lastNode &&
-        node.important === lastNode.important &&
-        node.prop === lastNode.prop &&
-        !(!isCustomProp(node) && isCustomProp(lastNode))
-    );
+    let duplicates = R.filter(isDuplicateProperty(lastNode), decls);
 
     if (duplicates.length) {
-      if (/hsla\(|rgba\(/i.test(getColorValue(lastNode))) {
-        const preserve = duplicates
-          .filter((node) => !/hsla\(|rgba\(/i.test(getColorValue(node)))
-          .pop();
+      if (isAlphaTransparentColour(lastNode)) {
+        const preserve = R.compose(
+          R.last,
+          R.reject(isAlphaTransparentColour)
+        )(duplicates);
 
-        duplicates = duplicates.filter((node) => node !== preserve);
+        duplicates = allExcept(preserve, duplicates);
       }
 
       duplicates.forEach(remove);
     }
 
-    decls = decls.filter(
-      (node) => node !== lastNode && !~duplicates.indexOf(node)
+    decls = R.reject(
+      R.either(R.equals(lastNode), includedIn(duplicates)),
+      decls
     );
   }
 }

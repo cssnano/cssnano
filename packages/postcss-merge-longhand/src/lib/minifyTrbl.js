@@ -1,19 +1,23 @@
+import * as R from 'ramda';
 import parseTrbl from './parseTrbl';
 
-export default (v) => {
-  const value = parseTrbl(v);
-
-  if (value[3] === value[1]) {
-    value.pop();
-
-    if (value[2] === value[0]) {
+const minifyTrbl = R.compose(
+  (value) => {
+    if (value[3] === value[1]) {
       value.pop();
 
-      if (value[0] === value[1]) {
+      if (value[2] === value[0]) {
         value.pop();
+
+        if (value[0] === value[1]) {
+          value.pop();
+        }
       }
     }
-  }
 
-  return value.join(' ');
-};
+    return value.join(' ');
+  },
+  parseTrbl
+);
+
+export default minifyTrbl;

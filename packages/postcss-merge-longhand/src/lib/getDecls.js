@@ -1,5 +1,6 @@
+import * as R from 'ramda';
+import isNodePropOneOf from './isNodePropOneOf';
+
 export default function getDecls(rule, properties) {
-  return rule.nodes.filter(
-    ({ prop }) => prop && ~properties.indexOf(prop.toLowerCase())
-  );
+  return R.filter(isNodePropOneOf(properties), rule.nodes);
 }

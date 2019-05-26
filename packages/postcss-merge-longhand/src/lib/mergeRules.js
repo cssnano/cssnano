@@ -1,9 +1,13 @@
+import * as R from 'ramda';
+import allExcept from './allExcept';
+import equalImportance from './equalImportance';
 import hasAllProps from './hasAllProps';
 import getDecls from './getDecls';
 import getRules from './getRules';
+import includedIn from './includedIn';
 
-function isConflictingProp(propA, propB) {
-  if (!propB.prop || propB.important !== propA.important) {
+const isConflictingProp = R.curry((propA, propB) => {
+  if (!propB.prop || !equalImportance(propB, propA)) {
     return;
   }
 
@@ -14,30 +18,33 @@ function isConflictingProp(propA, propB) {
 
     return parts.join('-') === propB.prop;
   });
-}
+});
 
 function hasConflicts(match, nodes) {
-  const firstNode = Math.min.apply(null, match.map((n) => nodes.indexOf(n)));
-  const lastNode = Math.max.apply(null, match.map((n) => nodes.indexOf(n)));
+  const indexes = match.map((n) => nodes.indexOf(n));
+  const firstNode = Math.min(...indexes);
+  const lastNode = Math.max(...indexes);
   const between = nodes.slice(firstNode + 1, lastNode);
 
-  return match.some((a) => between.some((b) => isConflictingProp(a, b)));
+  return match.some((a) => between.some(isConflictingProp(a)));
 }
 
 export default function mergeRules(rule, properties, callback) {
   let decls = getDecls(rule, properties);
 
   while (decls.length) {
-    const last = decls[decls.length - 1];
-    const props = decls.filter((node) => node.important === last.important);
+    const last = R.last(decls);
+    const props = decls.filter(equalImportance(last));
     const rules = getRules(props, properties);
 
-    if (hasAllProps(rules, ...properties) && !hasConflicts(rules, rule.nodes)) {
-      if (callback(rules, last, props)) {
-        decls = decls.filter((node) => !~rules.indexOf(node));
-      }
+    if (
+      hasAllProps(rules, properties) &&
+      !hasConflicts(rules, rule.nodes) &&
+      callback(rules, last, props)
+    ) {
+      decls = R.reject(includedIn(rules), decls);
     }
 
-    decls = decls.filter((node) => node !== last);
+    decls = allExcept(last, decls);
   }
 }

@@ -1,14 +1,15 @@
 import { list } from 'postcss';
 import { unit } from 'postcss-value-parser';
 import { detect } from 'lerna:stylehacks';
+import * as R from 'ramda';
 import canMerge from '../canMerge';
-import getDecls from '../getDecls';
 import getValue from '../getValue';
 import mergeRules from '../mergeRules';
 import insertCloned from '../insertCloned';
 import remove from '../remove';
-import isCustomProp from '../isCustomProp';
 import canExplode from '../canExplode';
+import cleanupRule from '../cleanupRule';
+import lowercaseEq from '../lowercaseEq';
 
 const properties = ['column-width', 'column-count'];
 const auto = 'auto';
@@ -23,24 +24,22 @@ const inherit = 'inherit';
  * Specification link: https://www.w3.org/TR/css3-multicol/
  */
 
-function normalize(values) {
-  if (values[0].toLowerCase() === auto) {
-    return values[1];
-  }
+const isAuto = lowercaseEq(auto);
+const isInherit = lowercaseEq(inherit);
+const otherwise = R.T;
 
-  if (values[1].toLowerCase() === auto) {
-    return values[0];
-  }
-
-  if (
-    values[0].toLowerCase() === inherit &&
-    values[1].toLowerCase() === inherit
-  ) {
-    return inherit;
-  }
-
-  return values.join(' ');
-}
+const normalize = R.cond([
+  [R.all(isAuto), R.last],
+  [
+    R.any(isAuto),
+    R.compose(
+      R.last,
+      R.reject(isAuto)
+    ),
+  ],
+  [R.any(isInherit), () => inherit],
+  [otherwise, R.join(' ')],
+]);
 
 function explode(rule) {
   rule.walkDecls(/^columns$/i, (decl) => {
@@ -61,7 +60,7 @@ function explode(rule) {
     values.forEach((value, i) => {
       let prop = properties[1];
 
-      if (value.toLowerCase() === auto) {
+      if (isAuto(value)) {
         prop = properties[i];
       } else if (unit(value).unit) {
         prop = properties[0];
@@ -77,43 +76,7 @@ function explode(rule) {
   });
 }
 
-function cleanup(rule) {
-  let decls = getDecls(rule, ['columns'].concat(properties));
-
-  while (decls.length) {
-    const lastNode = decls[decls.length - 1];
-
-    // remove properties of lower precedence
-    const lesser = decls.filter(
-      (node) =>
-        !detect(lastNode) &&
-        !detect(node) &&
-        node !== lastNode &&
-        node.important === lastNode.important &&
-        lastNode.prop === 'columns' &&
-        node.prop !== lastNode.prop
-    );
-
-    lesser.forEach(remove);
-    decls = decls.filter((node) => !~lesser.indexOf(node));
-
-    // get duplicate properties
-    let duplicates = decls.filter(
-      (node) =>
-        !detect(lastNode) &&
-        !detect(node) &&
-        node !== lastNode &&
-        node.important === lastNode.important &&
-        node.prop === lastNode.prop &&
-        !(!isCustomProp(node) && isCustomProp(lastNode))
-    );
-
-    duplicates.forEach(remove);
-    decls = decls.filter(
-      (node) => node !== lastNode && !~duplicates.indexOf(node)
-    );
-  }
-}
+const cleanup = cleanupRule(properties, 'columns');
 
 function merge(rule) {
   mergeRules(rule, properties, (rules, lastNode) => {

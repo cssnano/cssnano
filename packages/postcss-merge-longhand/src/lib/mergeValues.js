@@ -1,3 +1,7 @@
+import * as R from 'ramda';
 import getValue from './getValue';
 
-export default (...rules) => rules.map(getValue).join(' ');
+export default R.compose(
+  R.join(' '),
+  R.map(getValue)
+);

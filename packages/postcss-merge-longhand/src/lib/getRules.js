@@ -1,9 +1,11 @@
+import * as R from 'ramda';
 import getLastNode from './getLastNode';
 
-export default function getRules(props, properties) {
-  return properties
-    .map((property) => {
-      return getLastNode(props, property);
-    })
-    .filter(Boolean);
-}
+const getRules = R.curry((props, properties) =>
+  R.compose(
+    R.filter(Boolean),
+    R.map(getLastNode(props))
+  )(properties)
+);
+
+export default getRules;
