@@ -407,6 +407,13 @@ test(
 );
 
 test(
+  'should work with variables #15',
+  processCSS,
+  'h1{transform:scale(var(--foo), var(   --foo   ))}',
+  'h1{transform:scale(var(--foo))}'
+);
+
+test(
   'should work with same env',
   processCSS,
   'h1{transform:scale(env(--foo), env(--foo))}',
