@@ -751,6 +751,13 @@ test(
 );
 
 test(
+  'should overwrite some border-width props and save fallbacks - constant() and env()',
+  processCSS,
+  'h1{border-top-width:10px;border-right-width:env(variable);border-right-width:constant(variable);border-right-width:15px;border-bottom-width:env(variable);border-bottom-width:20px;border-left-width:25px;border-top-width:constant(variable);border-top-width:env(variable);border-left-width:env(variable)}',
+  'h1{border-width:10px 15px 20px 25px;border-top-width:constant(variable);border-top-width:env(variable);border-left-width:env(variable)}'
+);
+
+test(
   'save fallbacks should border-style',
   processCSS,
   'h1{border-style:dotted;border-style:var(--variable)}',

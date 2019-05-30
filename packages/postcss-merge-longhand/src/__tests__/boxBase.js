@@ -167,6 +167,14 @@ addTests(
       `h1{${prop.toLowerCase()}:10px 15px 20px 25px;${prop}-top:var(--variable);${prop}-left:var(--variable)}`,
   },
   {
+    message:
+      'should overwrite some box props and save fallbacks - constant() and env()',
+    fixture:
+      'h1{box-top:10px;box-right:env(variable);box-right:constant(variable);box-right:15px;box-bottom:env(variable);box-bottom:constant(variable);box-bottom:20px;box-left:25px;box-top:env(variable);box-left:env(variable);box-top:constant(variable);box-left:constant(variable)}',
+    expected: (prop) =>
+      `h1{${prop.toLowerCase()}:10px 15px 20px 25px;${prop}-top:env(variable);${prop}-left:env(variable);${prop}-top:constant(variable);${prop}-left:constant(variable)}`,
+  },
+  {
     message: 'should not explode box props with custom properties',
     fixture: 'h1{box-bottom:var(--variable)}',
     expected: (prop) => `h1{${prop}-bottom:var(--variable)}`,
