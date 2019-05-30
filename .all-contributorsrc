@@ -582,6 +582,15 @@
       "contributions": [
         "design"
       ]
+    },
+    {
+      "login": "isker",
+      "name": "Ian Kerins",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/5225653?v=4",
+      "profile": "https://github.com/isker",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "repoType": "github"
