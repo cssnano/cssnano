@@ -708,7 +708,8 @@ function merge(rule) {
         node !== lastNode &&
         node.important === lastNode.important &&
         node.prop === lastNode.prop &&
-        !(!isCustomProp(node) && isCustomProp(lastNode))
+        !isCustomProp(node) &&
+        !isCustomProp(lastNode)
     );
 
     if (duplicates.length) {

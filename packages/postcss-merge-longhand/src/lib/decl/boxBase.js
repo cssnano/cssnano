@@ -42,7 +42,8 @@ export default (prop) => {
           node !== lastNode &&
           node.important === lastNode.important &&
           node.prop === lastNode.prop &&
-          !(!isCustomProp(node) && isCustomProp(lastNode))
+          !isCustomProp(node) &&
+          !isCustomProp(lastNode)
       );
 
       duplicates.forEach(remove);
