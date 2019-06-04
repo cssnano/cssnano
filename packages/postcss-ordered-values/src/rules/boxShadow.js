@@ -1,7 +1,10 @@
 import { unit } from 'postcss-value-parser';
 import getArguments from 'lerna:cssnano-util-get-arguments';
+import isNodeValueEqual from '../lib/isNodeValueEqual';
+import isMathFunctionNode from '../lib/isMathFunctionNode';
 import addSpace from '../lib/addSpace';
 import getValue from '../lib/getValue';
+import isSpaceNode from '../lib/isSpaceNode';
 
 // box-shadow: inset? && <length>{2,4} && <color>?
 
@@ -17,20 +20,20 @@ export default function normalizeBoxShadow(parsed) {
     };
 
     arg.forEach((node) => {
-      const { type, value } = node;
+      const { value } = node;
 
-      if (type === 'function' && ~value.toLowerCase().indexOf('calc')) {
+      if (isMathFunctionNode(node)) {
         abort = true;
         return;
       }
 
-      if (type === 'space') {
+      if (isSpaceNode(node)) {
         return;
       }
 
       if (unit(value)) {
         val = [...val, node, addSpace()];
-      } else if (value.toLowerCase() === 'inset') {
+      } else if (isNodeValueEqual('inset', node)) {
         state.inset = [...state.inset, node, addSpace()];
       } else {
         state.color = [...state.color, node, addSpace()];

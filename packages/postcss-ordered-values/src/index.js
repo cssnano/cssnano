@@ -1,5 +1,8 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
+import * as R from 'ramda';
+import isVariableFunctionNode from './lib/isVariableFunctionNode';
+import nodeValueIncludes from './lib/nodeValueIncludes';
 
 // rules
 import animation from './rules/animation';
@@ -21,50 +24,39 @@ const rules = {
   transition: transition,
 };
 
-function isVariableFunctionNode(node) {
-  if (node.type !== 'function') {
-    return false;
-  }
+const hasOneNode = R.pathSatisfies(R.gt(2), ['nodes', 'length']);
 
-  return ['var', 'env'].includes(node.value.toLowerCase());
-}
+const shouldAbort = R.either(
+  hasOneNode,
+  R.compose(
+    R.any(
+      R.anyPass([
+        R.propEq('type', 'comment'),
+        nodeValueIncludes(`___CSS_LOADER_IMPORT___`),
+        isVariableFunctionNode,
+      ])
+    ),
+    R.prop('nodes')
+  )
+);
 
-function shouldAbort(parsed) {
-  let abort = false;
+const getValue = R.either(R.path(['raws', 'value', 'raw']), R.prop('value'));
 
-  parsed.walk((node) => {
-    if (
-      node.type === 'comment' ||
-      isVariableFunctionNode(node) ||
-      (node.type === 'word' && ~node.value.indexOf(`___CSS_LOADER_IMPORT___`))
-    ) {
-      abort = true;
+const propOf = R.flip(R.prop);
 
-      return false;
-    }
-  });
-
-  return abort;
-}
-
-function getValue(decl) {
-  let { value, raws } = decl;
-
-  if (raws && raws.value && raws.value.raw) {
-    value = raws.value.raw;
-  }
-
-  return value;
-}
+const getProcessor = R.compose(
+  propOf(rules),
+  postcss.vendor.unprefixed,
+  R.toLower,
+  R.prop('prop')
+);
 
 export default postcss.plugin('postcss-ordered-values', () => {
   return (css) => {
     const cache = {};
 
     css.walkDecls((decl) => {
-      const lowerCasedProp = decl.prop.toLowerCase();
-      const normalizedProp = postcss.vendor.unprefixed(lowerCasedProp);
-      const processor = rules[normalizedProp];
+      const processor = getProcessor(decl);
 
       if (!processor) {
         return;
@@ -80,7 +72,7 @@ export default postcss.plugin('postcss-ordered-values', () => {
 
       const parsed = valueParser(value);
 
-      if (parsed.nodes.length < 2 || shouldAbort(parsed)) {
+      if (shouldAbort(parsed)) {
         cache[value] = value;
 
         return;

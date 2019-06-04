@@ -1,7 +1,11 @@
 import { unit } from 'postcss-value-parser';
 import getArguments from 'lerna:cssnano-util-get-arguments';
+import * as R from 'ramda';
 import addSpace from '../lib/addSpace';
 import getValue from '../lib/getValue';
+import isFunctionNode from '../lib/isFunctionNode';
+import isNodeValueOneOf from '../lib/isNodeValueOneOf';
+import isSpaceNode from '../lib/isSpaceNode';
 
 // transition: [ none | <single-transition-property> ] || <time> || <single-transition-timing-function> || <time>
 
@@ -15,10 +19,16 @@ const timingFunctions = [
   'step-end',
 ];
 
-export default function normalizeTransition(parsed) {
-  let args = getArguments(parsed);
+const isTimingKeyword = isNodeValueOneOf(timingFunctions);
 
-  let values = args.reduce((list, arg) => {
+const isTimingFunctionNode = R.both(
+  isFunctionNode,
+  isNodeValueOneOf(['cubic-bezier', 'steps'])
+);
+
+const normalizeTransition = R.compose(
+  getValue,
+  R.reduce((list, arg) => {
     let state = {
       timingFunction: [],
       property: [],
@@ -27,24 +37,21 @@ export default function normalizeTransition(parsed) {
     };
 
     arg.forEach((node) => {
-      const { type, value } = node;
+      const { value } = node;
 
-      if (type === 'space') {
+      if (isSpaceNode(node)) {
         return;
       }
 
-      if (
-        type === 'function' &&
-        ~['steps', 'cubic-bezier'].indexOf(value.toLowerCase())
-      ) {
+      if (isTimingFunctionNode(node)) {
         state.timingFunction = [...state.timingFunction, node, addSpace()];
       } else if (unit(value)) {
         if (!state.time1.length) {
-          state.time1 = [...state.time1, node, addSpace()];
+          state.time1 = [node, addSpace()];
         } else {
           state.time2 = [...state.time2, node, addSpace()];
         }
-      } else if (~timingFunctions.indexOf(value.toLowerCase())) {
+      } else if (isTimingKeyword(node)) {
         state.timingFunction = [...state.timingFunction, node, addSpace()];
       } else {
         state.property = [...state.property, node, addSpace()];
@@ -60,7 +67,8 @@ export default function normalizeTransition(parsed) {
         ...state.time2,
       ],
     ];
-  }, []);
+  }, []),
+  getArguments
+);
 
-  return getValue(values);
-}
+export default normalizeTransition;

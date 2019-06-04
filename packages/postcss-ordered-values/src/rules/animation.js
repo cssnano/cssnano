@@ -1,13 +1,21 @@
 import { unit } from 'postcss-value-parser';
 import getArguments from 'lerna:cssnano-util-get-arguments';
+import * as R from 'ramda';
 import addSpace from '../lib/addSpace';
 import getValue from '../lib/getValue';
+import includedIn from '../lib/includedIn';
+import isNodeValue from '../lib/isNodeValue';
+import isNodeValueOneOf from '../lib/isNodeValueOneOf';
+import isFunctionNode from '../lib/isFunctionNode';
+import isSpaceNode from '../lib/isSpaceNode';
+
+const getUnit = R.prop('unit');
 
 // animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
 
-const isTimingFunction = (value, type) => {
-  const functions = ['steps', 'cubic-bezier', 'frames'];
-  const keywords = [
+const isTimingFunction = R.either(
+  R.both(isFunctionNode, isNodeValueOneOf(['steps', 'cubic-bezier', 'frames'])),
+  isNodeValueOneOf([
     'ease',
     'ease-in',
     'ease-in-out',
@@ -15,44 +23,43 @@ const isTimingFunction = (value, type) => {
     'linear',
     'step-end',
     'step-start',
-  ];
+  ])
+);
 
-  return (
-    (type === 'function' && functions.includes(value)) ||
-    keywords.includes(value)
-  );
-};
+const isDirection = isNodeValueOneOf([
+  'normal',
+  'reverse',
+  'alternate',
+  'alternate-reverse',
+]);
 
-const isDirection = (value) => {
-  return ['normal', 'reverse', 'alternate', 'alternate-reverse'].includes(
-    value
-  );
-};
+const isFillMode = isNodeValueOneOf(['none', 'forwards', 'backwards', 'both']);
 
-const isFillMode = (value) => {
-  return ['none', 'forwards', 'backwards', 'both'].includes(value);
-};
+const isPlayState = isNodeValueOneOf(['running', 'paused']);
 
-const isPlayState = (value) => {
-  return ['running', 'paused'].includes(value);
-};
+const isTime = isNodeValue(
+  R.compose(
+    includedIn(['ms', 's']),
+    getUnit,
+    unit
+  )
+);
 
-const isTime = (value) => {
-  const quantity = unit(value);
+const isIterationCount = isNodeValue(
+  R.compose(
+    R.either(
+      R.equals('infinite'),
+      R.compose(
+        R.propSatisfies(R.isEmpty, 'unit'),
+        unit
+      )
+    )
+  )
+);
 
-  return quantity && ['ms', 's'].includes(quantity.unit);
-};
-
-const isIterationCount = (value) => {
-  const quantity = unit(value);
-
-  return value === 'infinite' || (quantity && !quantity.unit);
-};
-
-export default function normalizeAnimation(parsed) {
-  const args = getArguments(parsed);
-
-  const values = args.reduce((list, arg) => {
+const normalizeAnimation = R.compose(
+  getValue,
+  R.reduce((list, arg) => {
     const state = {
       name: [],
       duration: [],
@@ -74,16 +81,12 @@ export default function normalizeAnimation(parsed) {
     ];
 
     arg.forEach((node) => {
-      let { type, value } = node;
-
-      if (type === 'space') {
+      if (isSpaceNode(node)) {
         return;
       }
 
-      value = value.toLowerCase();
-
       const hasMatch = stateConditions.some(({ property, delegate }) => {
-        if (delegate(value, type) && !state[property].length) {
+        if (delegate(node) && !state[property].length) {
           state[property] = [node, addSpace()];
           return true;
         }
@@ -106,7 +109,8 @@ export default function normalizeAnimation(parsed) {
         ...state.playState,
       ],
     ];
-  }, []);
+  }, []),
+  getArguments
+);
 
-  return getValue(values);
-}
+export default normalizeAnimation;

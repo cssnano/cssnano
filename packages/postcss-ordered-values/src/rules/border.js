@@ -1,4 +1,8 @@
 import { unit, stringify } from 'postcss-value-parser';
+import * as R from 'ramda';
+import isFunctionNode from '../lib/isFunctionNode';
+import isMathFunctionNode from '../lib/isMathFunctionNode';
+import isNodeValueOneOf from '../lib/isNodeValueOneOf';
 
 // border: <line-width> || <line-style> || <color>
 // outline: <outline-color> || <outline-style> || <outline-width>
@@ -19,20 +23,19 @@ const borderStyles = [
   'outset',
 ];
 
+const isWordNode = R.propEq('type', 'word');
+
 export default function normalizeBorder(border) {
   const order = { width: '', style: '', color: '' };
 
   border.walk((node) => {
-    const { type, value } = node;
-    if (type === 'word') {
-      if (~borderStyles.indexOf(value.toLowerCase())) {
+    const { value } = node;
+    if (isWordNode(node)) {
+      if (isNodeValueOneOf(borderStyles, node)) {
         order.style = value;
         return false;
       }
-      if (
-        ~borderWidths.indexOf(value.toLowerCase()) ||
-        unit(value.toLowerCase())
-      ) {
+      if (isNodeValueOneOf(borderWidths, node) || unit(value.toLowerCase())) {
         if (order.width !== '') {
           order.width = `${order.width} ${value}`;
           return false;
@@ -43,8 +46,8 @@ export default function normalizeBorder(border) {
       order.color = value;
       return false;
     }
-    if (type === 'function') {
-      if (value.toLowerCase() === 'calc') {
+    if (isFunctionNode(node)) {
+      if (isMathFunctionNode(node)) {
         order.width = stringify(node);
       } else {
         order.color = stringify(node);

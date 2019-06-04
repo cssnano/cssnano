@@ -1,8 +1,15 @@
 // flex-flow: <flex-direction> || <flex-wrap>
 
-const flexDirection = ['row', 'row-reverse', 'column', 'column-reverse'];
+import isNodeValueOneOf from '../lib/isNodeValueOneOf';
 
-const flexWrap = ['nowrap', 'wrap', 'wrap-reverse'];
+const isFlexDirection = isNodeValueOneOf([
+  'row',
+  'row-reverse',
+  'column',
+  'column-reverse',
+]);
+
+const isFlexWrap = isNodeValueOneOf(['nowrap', 'wrap', 'wrap-reverse']);
 
 export default function normalizeFlexFlow(flexFlow) {
   let order = {
@@ -10,14 +17,14 @@ export default function normalizeFlexFlow(flexFlow) {
     wrap: '',
   };
 
-  flexFlow.walk(({ value }) => {
-    if (~flexDirection.indexOf(value.toLowerCase())) {
-      order.direction = value;
+  flexFlow.walk((node) => {
+    if (isFlexDirection(node)) {
+      order.direction = node.value;
       return;
     }
 
-    if (~flexWrap.indexOf(value.toLowerCase())) {
-      order.wrap = value;
+    if (isFlexWrap(node)) {
+      order.wrap = node.value;
 
       return;
     }
