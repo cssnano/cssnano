@@ -235,6 +235,12 @@ test(
 );
 
 test(
+  'should pass through box-shadow values that contain prefixed clamp()',
+  passthroughCSS,
+  'h1{box-shadow: inset 0 -webkit-clamp(10px, 4em, 80px) 0 1px red}'
+);
+
+test(
   'should pass through invalid box-shadow values',
   passthroughCSS,
   'h1{box-shadow:1px solid rgba(34,36,38,.15)}'

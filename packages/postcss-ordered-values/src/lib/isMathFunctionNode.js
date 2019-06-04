@@ -1,9 +1,13 @@
-import { both, compose, either, includes, prop, toLower } from 'ramda';
+import { anyPass, both, compose, includes, prop, toLower } from 'ramda';
 import isFunctionNode from './isFunctionNode';
-import includedIn from './includedIn';
 
 const _isMathFunctionNode = compose(
-  either(includedIn(['min', 'max', 'clamp']), includes('calc')),
+  anyPass([
+    includes('calc'),
+    includes('clamp'),
+    includes('max'),
+    includes('min'),
+  ]),
   toLower,
   prop('value')
 );

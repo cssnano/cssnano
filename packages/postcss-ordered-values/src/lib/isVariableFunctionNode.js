@@ -4,7 +4,7 @@ import isNodeValueOneOf from './isNodeValueOneOf';
 
 const isVariableFunctionNode = both(
   isFunctionNode,
-  isNodeValueOneOf(['var', 'env'])
+  isNodeValueOneOf(['constant', 'var', 'env'])
 );
 
 export default isVariableFunctionNode;
