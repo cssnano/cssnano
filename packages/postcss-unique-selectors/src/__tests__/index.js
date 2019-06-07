@@ -21,4 +21,11 @@ test(
   'h1,H2,h7,h10{color:red}'
 );
 
+test.skip(
+  'should not mangle comments (see cssnano/cssnano#777)',
+  processCSS,
+  '.newbackbtn,/*.searchall,*/.calNav{color:red}',
+  '.newbackbtn,/*.searchall,*/.calNav{color:red}'
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin, plugin());
