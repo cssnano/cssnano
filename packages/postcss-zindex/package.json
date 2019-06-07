@@ -21,9 +21,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "has": "^1.0.3",
     "postcss": "^7.0.16",
-    "uniqs": "^2.0.0"
+    "ramda": "^0.26.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.4",

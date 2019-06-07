@@ -1,13 +1,10 @@
-import has from 'has';
-import uniq from 'uniqs';
+import * as R from 'ramda';
+
+const ascending = R.subtract;
 
 function LayerCache(opts) {
   this._values = [];
   this._startIndex = opts.startIndex || 1;
-}
-
-function ascending(a, b) {
-  return a - b;
 }
 
 function reduceValues(list, value, index) {
@@ -17,7 +14,7 @@ function reduceValues(list, value, index) {
 }
 
 LayerCache.prototype._findValue = function(value) {
-  if (has(this._values, value)) {
+  if (R.has(value, this._values)) {
     return this._values[value];
   }
 
@@ -25,7 +22,7 @@ LayerCache.prototype._findValue = function(value) {
 };
 
 LayerCache.prototype.optimizeValues = function() {
-  this._values = uniq(this._values)
+  this._values = R.uniq(this._values)
     .sort(ascending)
     .reduce(reduceValues.bind(this), {});
 };
