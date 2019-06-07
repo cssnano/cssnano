@@ -25,6 +25,7 @@ export const pseudoElements = {
   ':first-line': cssFirstLine,
   ':first-of-type': cssSel3,
   ':focus': cssSel2,
+  ':focus-visible': 'css-focus-visible',
   ':focus-within': 'css-focus-within',
   ':has': 'css-has',
   ':hover': cssSel2,
