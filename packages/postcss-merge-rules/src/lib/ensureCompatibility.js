@@ -1,7 +1,8 @@
 import { isSupported } from 'caniuse-api';
 import selectorParser from 'postcss-selector-parser';
+import * as R from 'ramda';
 
-const simpleSelectorRe = /^#?[-._a-z0-9 ]+$/i;
+const isSimpleSelector = R.test(/^#?[-._a-z0-9 ]+$/i);
 
 const cssSel2 = 'css-sel2';
 const cssSel3 = 'css-sel3';
@@ -56,9 +57,7 @@ export const pseudoElements = {
   '::selection': 'css-selection',
 };
 
-function isCssMixin(selector) {
-  return selector[selector.length - 1] === ':';
-}
+const isCssMixin = R.endsWith(':');
 
 const isSupportedCache = {};
 
@@ -85,7 +84,7 @@ export default function ensureCompatibility(
     return false;
   }
   return selectors.every((selector) => {
-    if (simpleSelectorRe.test(selector)) {
+    if (isSimpleSelector(selector)) {
       return true;
     }
     if (compatibilityCache && selector in compatibilityCache) {
