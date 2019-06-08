@@ -1,9 +1,9 @@
 import { plugin } from 'postcss';
 import sort from 'alphanum-sort';
-import uniqs from 'uniqs';
+import { uniq } from 'ramda';
 
 function unique(rule) {
-  rule.selector = sort(uniqs(rule.selectors), { insensitive: true }).join();
+  rule.selector = sort(uniq(rule.selectors), { insensitive: true }).join();
 }
 
 export default plugin('postcss-unique-selectors', () => {

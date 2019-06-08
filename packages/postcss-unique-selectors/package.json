@@ -31,7 +31,7 @@
   "dependencies": {
     "alphanum-sort": "^1.0.2",
     "postcss": "^7.0.16",
-    "uniqs": "^2.0.0"
+    "ramda": "^0.26.1"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
