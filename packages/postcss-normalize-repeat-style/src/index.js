@@ -1,29 +1,24 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import getMatchFactory from 'lerna:cssnano-util-get-match';
+import * as R from 'ramda';
+import cacheFn from './lib/cacheFn';
+import isNodeValueOneOf from './lib/isNodeValueOneOf';
+import isVariableFunctionNode from './lib/isVariableFunctionNode';
+import takeEvenValues from './lib/takeEvenValues';
 import mappings from './lib/map';
 
-function evenValues(list, index) {
-  return index % 2 === 0;
-}
+const repeatKeywords = R.map(R.head, mappings);
 
-const repeatKeywords = mappings.map((mapping) => mapping[0]);
+const getMatch = R.compose(
+  getMatchFactory(mappings),
+  takeEvenValues,
+  R.map((n) => n.value.toLowerCase())
+);
 
-const getMatch = getMatchFactory(mappings);
+const isCommaNode = R.both(R.propEq('type', 'div'), R.propEq('value', ','));
 
-function isCommaNode(node) {
-  return node.type === 'div' && node.value === ',';
-}
-
-function isVariableFunctionNode(node) {
-  if (node.type !== 'function') {
-    return false;
-  }
-
-  return ['var', 'env'].includes(node.value.toLowerCase());
-}
-
-function transform(value) {
+const transform = cacheFn((value) => {
   const parsed = valueParser(value);
 
   if (parsed.nodes.length === 1) {
@@ -72,7 +67,7 @@ function transform(value) {
     }
 
     const isRepeatKeyword =
-      node.type === 'word' && repeatKeywords.includes(node.value.toLowerCase());
+      node.type === 'word' && isNodeValueOneOf(repeatKeywords, node);
 
     if (ranges[rangeIndex].start === null && isRepeatKeyword) {
       ranges[rangeIndex].start = index;
@@ -105,9 +100,7 @@ function transform(value) {
       return;
     }
 
-    const match = getMatch(
-      nodes.filter(evenValues).map((n) => n.value.toLowerCase())
-    );
+    const match = getMatch(nodes);
 
     if (match) {
       nodes[0].value = match;
@@ -116,29 +109,18 @@ function transform(value) {
   });
 
   return parsed.toString();
-}
+});
 
 export default postcss.plugin('postcss-normalize-repeat-style', () => {
   return (css) => {
-    const cache = {};
-
     css.walkDecls(/^(background(-repeat)?|(-\w+-)?mask-repeat)$/i, (decl) => {
-      const value = decl.value;
+      const { value } = decl;
 
       if (!value) {
         return;
       }
 
-      if (cache[value]) {
-        decl.value = cache[value];
-
-        return;
-      }
-
-      const result = transform(value);
-
-      decl.value = result;
-      cache[value] = result;
+      decl.value = transform(value);
     });
   };
 });
