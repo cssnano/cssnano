@@ -1,31 +1,68 @@
 import { plugin } from 'postcss';
 import valueParser from 'postcss-value-parser';
 import getMatchFactory from 'lerna:cssnano-util-get-match';
+import * as R from 'ramda';
+import cacheFn from './lib/cacheFn';
+import getValue from './lib/getValue';
+import isFunctionNode from './lib/isFunctionNode';
+import isNodeValueOneOf from './lib/isNodeValueOneOf';
+import isWordNode from './lib/isWordNode';
+import takeEvenValues from './lib/takeEvenValues';
 
-const getValue = (node) => parseFloat(node.value);
+const getMatch = getMatchFactory([
+  ['ease', [0.25, 0.1, 0.25, 1]],
+  ['linear', [0, 0, 1, 1]],
+  ['ease-in', [0.42, 0, 1, 1]],
+  ['ease-out', [0, 0, 0.58, 1]],
+  ['ease-in-out', [0.42, 0, 0.58, 1]],
+]);
+
+const getValueAsNumber = R.compose(
+  parseFloat,
+  getValue
+);
+
+const testWordAtPosition = R.curry((position, predicate, node) =>
+  R.compose(
+    R.ifElse(R.isNil, R.F, R.both(isWordNode, predicate)),
+    R.path(['nodes', position])
+  )(node)
+);
+
+const isFirstValueOne = testWordAtPosition(
+  0,
+  R.compose(
+    R.equals(1),
+    getValueAsNumber
+  )
+);
+
+const hasKeywordInSecondPosition = (keywords) =>
+  testWordAtPosition(2, isNodeValueOneOf(keywords));
+
+const isStartOrJumpStart = hasKeywordInSecondPosition(['start', 'jump-start']);
+const isEndOrJumpEnd = hasKeywordInSecondPosition(['end', 'jump-end']);
+
+const getCubicBezierArguments = R.compose(
+  takeEvenValues,
+  R.map(getValueAsNumber)
+);
+
+const shouldReduce = R.both(R.has('value'), isFunctionNode);
 
 function reduce(node) {
-  if (node.type !== 'function') {
+  if (!shouldReduce(node)) {
     return false;
-  }
-
-  if (!node.value) {
-    return;
   }
 
   const lowerCasedValue = node.value.toLowerCase();
 
   if (lowerCasedValue === 'steps') {
+    const isFirstValue1 = isFirstValueOne(node);
+
     // Don't bother checking the step-end case as it has the same length
     // as steps(1)
-    if (
-      node.nodes[0].type === 'word' &&
-      getValue(node.nodes[0]) === 1 &&
-      node.nodes[2] &&
-      node.nodes[2].type === 'word' &&
-      (node.nodes[2].value.toLowerCase() === 'start' ||
-        node.nodes[2].value.toLowerCase() === 'jump-start')
-    ) {
+    if (isFirstValue1 && isStartOrJumpStart(node)) {
       node.type = 'word';
       node.value = 'step-start';
 
@@ -34,14 +71,7 @@ function reduce(node) {
       return;
     }
 
-    if (
-      node.nodes[0].type === 'word' &&
-      getValue(node.nodes[0]) === 1 &&
-      node.nodes[2] &&
-      node.nodes[2].type === 'word' &&
-      (node.nodes[2].value.toLowerCase() === 'end' ||
-        node.nodes[2].value.toLowerCase() === 'jump-end')
-    ) {
+    if (isFirstValue1 && isEndOrJumpEnd(node)) {
       node.type = 'word';
       node.value = 'step-end';
 
@@ -50,13 +80,8 @@ function reduce(node) {
       return;
     }
 
-    // The end case is actually the browser default, so it isn't required.
-    if (
-      node.nodes[2] &&
-      node.nodes[2].type === 'word' &&
-      (node.nodes[2].value.toLowerCase() === 'end' ||
-        node.nodes[2].value.toLowerCase() === 'jump-end')
-    ) {
+    // "end", or "jump-end" is the default, so it isn't required.
+    if (isEndOrJumpEnd(node)) {
       node.nodes = [node.nodes[0]];
 
       return;
@@ -66,23 +91,13 @@ function reduce(node) {
   }
 
   if (lowerCasedValue === 'cubic-bezier') {
-    const values = node.nodes
-      .filter((list, index) => {
-        return index % 2 === 0;
-      })
-      .map(getValue);
+    const values = R.into([], getCubicBezierArguments, node.nodes);
 
     if (values.length !== 4) {
       return;
     }
 
-    const match = getMatchFactory([
-      ['ease', [0.25, 0.1, 0.25, 1]],
-      ['linear', [0, 0, 1, 1]],
-      ['ease-in', [0.42, 0, 1, 1]],
-      ['ease-out', [0, 0, 0.58, 1]],
-      ['ease-in-out', [0.42, 0, 0.58, 1]],
-    ])(values);
+    const match = getMatch(values);
 
     if (match) {
       node.type = 'word';
@@ -95,31 +110,24 @@ function reduce(node) {
   }
 }
 
-function transform(value) {
-  return valueParser(value)
+const transform = cacheFn((value) =>
+  valueParser(value)
     .walk(reduce)
-    .toString();
-}
+    .toString()
+);
 
 export default plugin('postcss-normalize-timing-functions', () => {
   return (css) => {
-    const cache = {};
-
     css.walkDecls(
       /^(-\w+-)?(animation|transition)(-timing-function)?$/i,
       (decl) => {
-        const value = decl.value;
+        const { value } = decl;
 
-        if (cache[value]) {
-          decl.value = cache[value];
-
+        if (!value) {
           return;
         }
 
-        const result = transform(value);
-
-        decl.value = result;
-        cache[value] = result;
+        decl.value = transform(value);
       }
     );
   };

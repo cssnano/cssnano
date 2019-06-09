@@ -14,7 +14,8 @@
   "dependencies": {
     "cssnano-util-get-match": "^4.0.0",
     "postcss": "^7.0.16",
-    "postcss-value-parser": "^3.3.1"
+    "postcss-value-parser": "^3.3.1",
+    "ramda": "^0.26.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.4",
