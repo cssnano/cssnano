@@ -1,11 +1,7 @@
 import { plugin } from 'postcss';
-import has from 'has';
 import browserslist from 'browserslist';
 import { isSupported } from 'caniuse-api';
-import fromInitial from '../data/fromInitial.json';
-import toInitial from '../data/toInitial.json';
-
-const initial = 'initial';
+import transform from './lib/transform';
 
 export default plugin('postcss-reduce-initial', () => {
   return (css, result) => {
@@ -19,25 +15,15 @@ export default plugin('postcss-reduce-initial', () => {
     const initialSupport = isSupported('css-initial-value', browsers);
 
     css.walkDecls((decl) => {
-      const lowerCasedProp = decl.prop.toLowerCase();
-
-      if (
-        initialSupport &&
-        has(toInitial, lowerCasedProp) &&
-        decl.value.toLowerCase() === toInitial[lowerCasedProp]
-      ) {
-        decl.value = initial;
+      if (!decl.value) {
         return;
       }
 
-      if (
-        decl.value.toLowerCase() !== initial ||
-        !fromInitial[lowerCasedProp]
-      ) {
-        return;
-      }
-
-      decl.value = fromInitial[lowerCasedProp];
+      decl.value = transform(
+        initialSupport,
+        decl.prop.toLowerCase(),
+        decl.value
+      );
     });
   };
 });
