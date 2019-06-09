@@ -2,17 +2,19 @@ import browserslist from 'browserslist';
 import postcss from 'postcss';
 import valueParser, { stringify } from 'postcss-value-parser';
 import sort from 'alphanum-sort';
-import uniqs from 'uniqs';
+import * as R from 'ramda';
 import getArguments from 'lerna:cssnano-util-get-arguments';
+import includedIn from './lib/includedIn';
+import isFunctionNode from './lib/isFunctionNode';
+import isNodeValueEqual from './lib/isNodeValueEqual';
+import isSpaceNode from './lib/isSpaceNode';
 
 /**
  * Return the greatest common divisor
  * of two numbers.
  */
 
-function gcd(a, b) {
-  return b ? gcd(b, a % b) : a;
-}
+const gcd = (a, b) => (b ? gcd(b, a % b) : a);
 
 function aspectRatio(a, b) {
   const divisor = gcd(a, b);
@@ -20,46 +22,50 @@ function aspectRatio(a, b) {
   return [a / divisor, b / divisor];
 }
 
-function split(args) {
-  return args.map((arg) => stringify(arg)).join('');
-}
+const split = R.compose(
+  R.join(''),
+  R.map(stringify)
+);
 
 function removeNode(node) {
   node.value = '';
   node.type = 'word';
 }
 
-function transform(legacy, rule) {
-  const ruleName = rule.name.toLowerCase();
+const isAspectRatio = R.allPass([
+  isFunctionNode,
+  R.pathSatisfies(R.equals(5), ['nodes', 'length']),
+  R.compose(
+    R.endsWith('aspect-ratio'),
+    R.toLower,
+    R.path(['nodes', 0, 'value'])
+  ),
+]);
 
-  // We should re-arrange parameters only for `@media` and `@supports` at-rules
-  if (!rule.params || !['media', 'supports'].includes(ruleName)) {
-    return;
-  }
+const isDividerNode = R.propEq('type', 'div');
 
+const isNodeDividerOrFunction = R.either(isDividerNode, isFunctionNode);
+
+const transform = R.curry((legacy, rule) => {
   const params = valueParser(rule.params);
 
   params.walk((node, index) => {
-    if (node.type === 'div' || node.type === 'function') {
+    if (isNodeDividerOrFunction(node)) {
       node.before = node.after = '';
 
-      if (
-        node.type === 'function' &&
-        node.nodes[4] &&
-        node.nodes[0].value.toLowerCase().indexOf('-aspect-ratio') === 3
-      ) {
+      if (isAspectRatio(node)) {
         const [a, b] = aspectRatio(node.nodes[2].value, node.nodes[4].value);
 
         node.nodes[2].value = a;
         node.nodes[4].value = b;
       }
-    } else if (node.type === 'space') {
+    } else if (isSpaceNode(node)) {
       node.value = ' ';
     } else {
       const prevWord = params.nodes[index - 2];
 
       if (
-        node.value.toLowerCase() === 'all' &&
+        isNodeValueEqual('all', node) &&
         rule.name.toLowerCase() === 'media' &&
         !prevWord
       ) {
@@ -69,7 +75,7 @@ function transform(legacy, rule) {
           removeNode(node);
         }
 
-        if (nextWord && nextWord.value.toLowerCase() === 'and') {
+        if (isNodeValueEqual('and', nextWord)) {
           const nextSpace = params.nodes[index + 1];
           const secondSpace = params.nodes[index + 3];
 
@@ -81,18 +87,16 @@ function transform(legacy, rule) {
     }
   }, true);
 
-  rule.params = sort(uniqs(getArguments(params).map(split)), {
+  rule.params = sort(R.uniq(getArguments(params).map(split)), {
     insensitive: true,
   }).join();
 
   if (!rule.params.length) {
     rule.raws.afterName = '';
   }
-}
+});
 
-function hasAllBug(browser) {
-  return ~['ie 10', 'ie 11'].indexOf(browser);
-}
+const hasAllBug = includedIn(['ie 10', 'ie 11']);
 
 export default postcss.plugin('postcss-minify-params', () => {
   return (css, result) => {
@@ -103,6 +107,10 @@ export default postcss.plugin('postcss-minify-params', () => {
       env: resultOpts.env,
     });
 
-    return css.walkAtRules(transform.bind(null, browsers.some(hasAllBug)));
+    // We should re-arrange parameters only for `@media` and `@supports` at-rules
+    return css.walkAtRules(
+      /^(media|supports)$/i,
+      transform(browsers.some(hasAllBug))
+    );
   };
 });

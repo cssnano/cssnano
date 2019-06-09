@@ -106,6 +106,13 @@ test(
 );
 
 test(
+  'should reduce exact aspect-ratio',
+  processCSS,
+  '@media (aspect-ratio: 32/18){h1{color:blue}}',
+  '@media (aspect-ratio:16/9){h1{color:blue}}'
+);
+
+test(
   'should reduce min-aspect-ratio',
   processCSS,
   '@media (min-aspect-ratio: 32/18){h1{color:blue}}',
