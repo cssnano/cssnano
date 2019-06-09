@@ -1,14 +1,20 @@
-import has from 'has';
+import * as R from 'ramda';
 import { plugin } from 'postcss';
 import valueParser from 'postcss-value-parser';
 import sameParent from 'lerna:cssnano-util-same-parent';
+
+const isAtRuleNode = R.propEq('type', 'atrule');
+
+const isDeclNode = R.propEq('type', 'decl');
+
+const isWordNode = R.propEq('type', 'word');
 
 function canonical(obj) {
   // Prevent potential infinite loops
   let stack = 50;
 
   return function recurse(key) {
-    if (has(obj, key) && obj[key] !== key && stack) {
+    if (R.has(key, obj) && obj[key] !== key && stack) {
       stack--;
 
       return recurse(obj[key]);
@@ -31,10 +37,10 @@ function mergeAtRules(css, pairs) {
   let relevant;
 
   css.walk((node) => {
-    if (node.type === 'atrule') {
-      relevant = pairs.filter((pair) =>
+    if (isAtRuleNode(node)) {
+      relevant = pairs.find((pair) =>
         pair.atrule.test(node.name.toLowerCase())
-      )[0];
+      );
 
       if (!relevant) {
         return;
@@ -63,10 +69,8 @@ function mergeAtRules(css, pairs) {
       }
     }
 
-    if (node.type === 'decl') {
-      relevant = pairs.filter((pair) =>
-        pair.decl.test(node.prop.toLowerCase())
-      )[0];
+    if (isDeclNode(node)) {
+      relevant = pairs.find((pair) => pair.decl.test(node.prop.toLowerCase()));
 
       if (!relevant) {
         return;
@@ -82,7 +86,7 @@ function mergeAtRules(css, pairs) {
     pair.decls.forEach((decl) => {
       decl.value = valueParser(decl.value)
         .walk((node) => {
-          if (node.type === 'word') {
+          if (isWordNode(node)) {
             node.value = canon(node.value);
           }
         })
