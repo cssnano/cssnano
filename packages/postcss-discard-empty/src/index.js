@@ -1,20 +1,43 @@
 import postcss from 'postcss';
+import * as R from 'ramda';
 
 const plugin = 'postcss-discard-empty';
 
+const hasNodes = R.has('nodes');
+
+const falsey = R.complement(Boolean);
+
+const falseyProp = R.propSatisfies(falsey);
+
+const hasNoChildren = R.pathSatisfies(falsey, ['nodes', 'length']);
+
+const isEmptyDecl = R.both(R.propEq('type', 'decl'), falseyProp('value'));
+
+const isEmptyRule = R.both(
+  R.propEq('type', 'rule'),
+  R.either(falseyProp('selector'), hasNoChildren)
+);
+
+const isEmptyAtRule = R.both(
+  R.propEq('type', 'atrule'),
+  R.either(
+    R.compose(
+      R.all(falsey),
+      R.props(['nodes', 'params'])
+    ),
+    R.both(hasNodes, hasNoChildren)
+  )
+);
+
+const isEmpty = R.anyPass([isEmptyAtRule, isEmptyDecl, isEmptyRule]);
+
 function discardAndReport(css, result) {
   function discardEmpty(node) {
-    const { type, nodes: sub, params } = node;
-
-    if (sub) {
+    if (hasNodes(node)) {
       node.each(discardEmpty);
     }
 
-    if (
-      (type === 'decl' && !node.value) ||
-      ((type === 'rule' && !node.selector) || (sub && !sub.length)) ||
-      (type === 'atrule' && ((!sub && !params) || (!params && !sub.length)))
-    ) {
+    if (isEmpty(node)) {
       node.remove();
 
       result.messages.push({
