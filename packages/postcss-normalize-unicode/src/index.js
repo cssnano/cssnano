@@ -1,48 +1,36 @@
 import browserslist from 'browserslist';
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
+import * as R from 'ramda';
+import cacheFn from './lib/cacheFn';
+import canConvertToWildcardRange from './lib/canConvertToWildcardRange';
+import includedIn from './lib/includedIn';
+import isIntervalRange from './lib/isIntervalRange';
+import parseIntervalRange from './lib/parseIntervalRange';
 
-const regexLowerCaseUPrefix = /^u(?=\+)/;
+const isSymmetric = R.apply(R.equals);
 
-function unicode(range) {
-  const values = range.slice(2).split('-');
+function reduceIntervalRange(value) {
+  const [left, right] = parseIntervalRange(value);
 
-  if (values.length < 2) {
-    return range;
+  if (!R.eqProps('length', left, right)) {
+    return value;
   }
 
-  const left = values[0].split('');
-  const right = values[1].split('');
+  const wildcardRange = R.compose(
+    R.reduceRight((pair, acc) => {
+      if (acc === null) {
+        return acc;
+      }
+      if (canConvertToWildcardRange(pair, acc)) {
+        return `?${acc}`;
+      }
+      return isSymmetric(pair) ? `${pair[0]}${acc}` : null;
+    }, ''),
+    R.zip
+  )(left, right);
 
-  if (left.length !== right.length) {
-    return range;
-  }
-
-  let questionCounter = 0;
-
-  const merged = left.reduce((group, value, index) => {
-    if (group === false) {
-      return false;
-    }
-
-    if (value === right[index] && !questionCounter) {
-      return group + value;
-    }
-
-    if (value === '0' && right[index] === 'f') {
-      questionCounter++;
-      return group + '?';
-    }
-
-    return false;
-  }, 'u+');
-
-  // The maximum number of wildcard characters (?) for ranges is 5.
-  if (merged && questionCounter < 6) {
-    return merged;
-  }
-
-  return range;
+  return wildcardRange === null ? value : `u+${wildcardRange}`;
 }
 
 /*
@@ -51,25 +39,25 @@ function unicode(range) {
  * https://caniuse.com/#search=unicode-range
  */
 
-function hasLowerCaseUPrefixBug(browser) {
-  return ~browserslist('ie <=11, edge <= 15').indexOf(browser);
-}
+const hasLowerCaseUPrefixBug = includedIn(browserslist('ie <=11, edge <= 15'));
 
-function transform(value, isLegacy = false) {
-  return valueParser(value)
+const replaceLowerCaseUPrefix = R.replace(/^u(?=\+)/, 'U');
+
+const transform = cacheFn((value, isLegacy = false) =>
+  valueParser(value)
     .walk((child) => {
-      if (child.type === 'word') {
-        const transformed = unicode(child.value.toLowerCase());
-
-        child.value = isLegacy
-          ? transformed.replace(regexLowerCaseUPrefix, 'U')
-          : transformed;
+      if (isIntervalRange(child)) {
+        child.value = R.compose(
+          R.when(() => isLegacy, replaceLowerCaseUPrefix),
+          reduceIntervalRange,
+          R.toLower
+        )(child.value);
       }
 
       return false;
     })
-    .toString();
-}
+    .toString()
+);
 
 export default postcss.plugin('postcss-normalize-unicode', () => {
   return (css, result) => {
@@ -80,21 +68,15 @@ export default postcss.plugin('postcss-normalize-unicode', () => {
       env: resultOpts.env,
     });
     const isLegacy = browsers.some(hasLowerCaseUPrefixBug);
-    const cache = {};
 
     css.walkDecls(/^unicode-range$/i, (decl) => {
-      const value = decl.value;
+      const { value } = decl;
 
-      if (cache[value]) {
-        decl.value = cache[value];
-
+      if (!value) {
         return;
       }
 
-      const newValue = transform(value, isLegacy);
-
-      decl.value = newValue;
-      cache[value] = newValue;
+      decl.value = transform(value, isLegacy);
     });
   };
 });
