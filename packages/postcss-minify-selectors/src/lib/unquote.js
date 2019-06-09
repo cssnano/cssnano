@@ -1,1 +1,3 @@
-export default (string) => string.replace(/["']/g, '');
+import { replace } from 'ramda';
+
+export default replace(/["']/g, '');
