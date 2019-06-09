@@ -1,7 +1,28 @@
 import { unit } from 'postcss-value-parser';
+import * as R from 'ramda';
+import isFunctionNode from './isFunctionNode';
+import isNodeValueOneOf from './isNodeValueOneOf';
+import isSpaceNode from './isSpaceNode';
 import keywords from './keywords';
 import minifyFamily from './minify-family';
 import minifyWeight from './minify-weight';
+
+const isOtherKeyword = isNodeValueOneOf([
+  'normal',
+  'inherit',
+  'initial',
+  'unset',
+]);
+
+const isSizeKeyword = isNodeValueOneOf(keywords.size);
+
+const isStretchKeyword = isNodeValueOneOf(keywords.stretch);
+
+const isStyleKeyword = isNodeValueOneOf(keywords.style);
+
+const isVariantKeyword = isNodeValueOneOf(keywords.variant);
+
+const isWeightKeyword = isNodeValueOneOf(keywords.weight);
 
 export default function(nodes, opts) {
   let i, max, node, familyStart, family;
@@ -15,32 +36,27 @@ export default function(nodes, opts) {
         continue;
       }
 
-      const value = node.value.toLowerCase();
-
       if (
-        value === 'normal' ||
-        value === 'inherit' ||
-        value === 'initial' ||
-        value === 'unset'
+        R.anyPass([
+          isOtherKeyword,
+          isVariantKeyword,
+          isStretchKeyword,
+          isStyleKeyword,
+        ])(node) ||
+        unit(node.value)
       ) {
         familyStart = i;
-      } else if (~keywords.style.indexOf(value) || unit(value)) {
+      } else if (isWeightKeyword(node)) {
+        node.value = minifyWeight(node.value);
         familyStart = i;
-      } else if (~keywords.variant.indexOf(value)) {
-        familyStart = i;
-      } else if (~keywords.weight.indexOf(value)) {
-        node.value = minifyWeight(value);
-        familyStart = i;
-      } else if (~keywords.stretch.indexOf(value)) {
-        familyStart = i;
-      } else if (~keywords.size.indexOf(value) || unit(value)) {
+      } else if (isSizeKeyword(node)) {
         familyStart = i;
         hasSize = true;
       }
     } else if (
-      node.type === 'function' &&
+      isFunctionNode(node) &&
       nodes[i + 1] &&
-      nodes[i + 1].type === 'space'
+      isSpaceNode(nodes[i + 1])
     ) {
       familyStart = i;
     } else if (node.type === 'div' && node.value === '/') {

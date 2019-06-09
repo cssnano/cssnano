@@ -1,6 +1,5 @@
 export default function uniqueExcept(exclude) {
-  return function unique() {
-    const list = Array.prototype.concat.apply([], arguments);
+  return function unique(list) {
     return list.filter((item, i) => {
       if (item.toLowerCase() === exclude) {
         return true;

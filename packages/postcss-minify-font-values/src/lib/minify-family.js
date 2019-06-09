@@ -1,4 +1,9 @@
 import { stringify } from 'postcss-value-parser';
+import * as R from 'ramda';
+import isFunctionNode from './isFunctionNode';
+import isSpaceNode from './isSpaceNode';
+import isStringNode from './isStringNode';
+import oneOf from './oneOf';
 import uniqueExcept from './uniqs';
 
 const uniqs = uniqueExcept('monospace');
@@ -12,16 +17,8 @@ const genericFontFamilykeywords = [
   'system-ui',
 ];
 
-function makeArray(value, length) {
-  let array = [];
-  while (length--) {
-    array[length] = value;
-  }
-  return array;
-}
-
 // eslint-disable-next-line no-useless-escape
-const regexSimpleEscapeCharacters = /[ !"#$%&'()*+,.\/;<=>?@\[\\\]^`{|}~]/;
+const hasSimpleEscapes = R.test(/[ !"#$%&'()*+,.\/;<=>?@\[\\\]^`{|}~]/);
 
 function escape(string, escapeForString) {
   let counter = 0;
@@ -38,10 +35,7 @@ function escape(string, escapeForString) {
     // `:` can be escaped as `\:`, but that fails in IE < 8
     if (!escapeForString && /[\t\n\v\f:]/.test(character)) {
       value = '\\' + charCode.toString(16) + ' ';
-    } else if (
-      !escapeForString &&
-      regexSimpleEscapeCharacters.test(character)
-    ) {
+    } else if (!escapeForString && hasSimpleEscapes(character)) {
       value = '\\' + character;
     } else {
       value = character;
@@ -123,7 +117,7 @@ function escapeIdentifierSequence(string) {
   result = result.join(' ').replace(regexConsecutiveSpaces, ($0, $1, $2) => {
     const spaceCount = $2.length;
     const escapesNeeded = Math.floor(spaceCount / 2);
-    const array = makeArray('\\ ', escapesNeeded);
+    const array = R.repeat('\\ ', escapesNeeded);
 
     if (spaceCount % 2) {
       array[escapesNeeded - 1] += '\\ ';
@@ -144,13 +138,15 @@ function escapeIdentifierSequence(string) {
   return result;
 }
 
+const isStringOrFunctionNode = R.either(isStringNode, isFunctionNode);
+
 export default function(nodes, opts) {
   let family = [];
   let last = null;
   let i, max;
 
   nodes.forEach((node, index, arr) => {
-    if (node.type === 'string' || node.type === 'function') {
+    if (isStringOrFunctionNode(node)) {
       family.push(node);
     } else if (node.type === 'word') {
       if (!last) {
@@ -159,7 +155,7 @@ export default function(nodes, opts) {
       }
 
       last.value += node.value;
-    } else if (node.type === 'space') {
+    } else if (isSpaceNode(node)) {
       if (last && index !== arr.length - 1) {
         last.value += ' ';
       }
@@ -169,7 +165,7 @@ export default function(nodes, opts) {
   });
 
   family = family.map((node) => {
-    if (node.type === 'string') {
+    if (isStringNode(node)) {
       const isKeyword = regexKeyword.test(node.value);
 
       if (
@@ -192,7 +188,7 @@ export default function(nodes, opts) {
 
   if (opts.removeAfterKeyword) {
     for (i = 0, max = family.length; i < max; i += 1) {
-      if (~genericFontFamilykeywords.indexOf(family[i].toLowerCase())) {
+      if (oneOf(genericFontFamilykeywords, family[i])) {
         family = family.slice(0, i + 1);
         break;
       }
