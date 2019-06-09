@@ -1,6 +1,7 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
-import has from 'has';
+import * as R from 'ramda';
+import cacheFn from './lib/cacheFn';
 
 /*
  * Constants (parser usage)
@@ -183,26 +184,26 @@ function changeWrappingQuotes(node, ast) {
     node.quote = L_SINGLE_QUOTE;
   }
 
-  ast.nodes = ast.nodes.reduce((newAst, child) => {
+  ast.nodes = ast.nodes.map((child) => {
     if (
       child.type === C_ESCAPED_DOUBLE_QUOTE &&
       node.quote === L_SINGLE_QUOTE
     ) {
-      return [...newAst, T_DOUBLE_QUOTE];
+      return T_DOUBLE_QUOTE;
     }
 
     if (
       child.type === C_ESCAPED_SINGLE_QUOTE &&
       node.quote === L_DOUBLE_QUOTE
     ) {
-      return [...newAst, T_SINGLE_QUOTE];
+      return T_SINGLE_QUOTE;
     }
 
-    return [...newAst, child];
-  }, []);
+    return child;
+  });
 }
 
-function normalize(value, preferredQuote) {
+const normalize = cacheFn((value, preferredQuote) => {
   if (!value || !value.length) {
     return value;
   }
@@ -226,7 +227,7 @@ function normalize(value, preferredQuote) {
       child.value = stringify(ast);
     })
     .toString();
-}
+});
 
 const params = {
   rule: 'selector',
@@ -235,34 +236,15 @@ const params = {
 };
 
 export default postcss.plugin('postcss-normalize-string', (opts) => {
-  const { preferredQuote } = Object.assign(
-    {},
-    {
-      preferredQuote: 'double',
-    },
-    opts
-  );
+  const preferredQuote = R.propOr('double', 'preferredQuote', opts);
 
   return (css) => {
-    const cache = {};
-
     css.walk((node) => {
       const { type } = node;
 
-      if (has(params, type)) {
+      if (R.has(type, params)) {
         const param = params[type];
-        const key = node[param] + '|' + preferredQuote;
-
-        if (cache[key]) {
-          node[param] = cache[key];
-
-          return;
-        }
-
-        const newValue = normalize(node[param], preferredQuote);
-
-        node[param] = newValue;
-        cache[key] = newValue;
+        node[param] = normalize(node[param], preferredQuote);
       }
     });
   };
