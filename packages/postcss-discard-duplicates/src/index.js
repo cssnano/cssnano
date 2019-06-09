@@ -1,82 +1,26 @@
 import { plugin } from 'postcss';
+import * as R from 'ramda';
+import equals from './equals';
+import equalSelectors from './equalSelectors';
+import isCommentNode from './isCommentNode';
+import isDeclNode from './isDeclNode';
+import isRuleNode from './isRuleNode';
 
 function noop() {}
 
-function trimValue(value) {
-  return value ? value.trim() : value;
-}
-
-function empty(node) {
-  return !node.nodes.filter((child) => child.type !== 'comment').length;
-}
-
-function equals(a, b) {
-  if (a.type !== b.type) {
-    return false;
-  }
-
-  if (a.important !== b.important) {
-    return false;
-  }
-
-  if ((a.raws && !b.raws) || (!a.raws && b.raws)) {
-    return false;
-  }
-
-  switch (a.type) {
-    case 'rule':
-      if (a.selector !== b.selector) {
-        return false;
-      }
-      break;
-    case 'atrule':
-      if (a.name !== b.name || a.params !== b.params) {
-        return false;
-      }
-
-      if (a.raws && trimValue(a.raws.before) !== trimValue(b.raws.before)) {
-        return false;
-      }
-
-      if (
-        a.raws &&
-        trimValue(a.raws.afterName) !== trimValue(b.raws.afterName)
-      ) {
-        return false;
-      }
-      break;
-    case 'decl':
-      if (a.prop !== b.prop || a.value !== b.value) {
-        return false;
-      }
-
-      if (a.raws && trimValue(a.raws.before) !== trimValue(b.raws.before)) {
-        return false;
-      }
-      break;
-  }
-
-  if (a.nodes) {
-    if (a.nodes.length !== b.nodes.length) {
-      return false;
-    }
-
-    for (let i = 0; i < a.nodes.length; i++) {
-      if (!equals(a.nodes[i], b.nodes[i])) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
+const empty = R.compose(
+  R.complement(R.length),
+  R.reject(isCommentNode),
+  R.prop('nodes')
+);
 
 function dedupeRule(last, nodes) {
   let index = nodes.indexOf(last) - 1;
   while (index >= 0) {
     const node = nodes[index--];
-    if (node && node.type === 'rule' && node.selector === last.selector) {
+    if (R.both(isRuleNode, equalSelectors(last))(node)) {
       last.each((child) => {
-        if (child.type === 'decl') {
+        if (isDeclNode(child)) {
           dedupeNode(child, node.nodes);
         }
       });
