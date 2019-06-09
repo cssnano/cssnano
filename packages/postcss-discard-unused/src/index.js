@@ -1,4 +1,4 @@
-import uniqs from 'uniqs';
+import * as R from 'ramda';
 import { list, plugin } from 'postcss';
 import selectorParser from 'postcss-selector-parser';
 
@@ -8,14 +8,24 @@ const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
 
-function addValues(cache, { value }) {
-  return comma(value).reduce((memo, val) => [...memo, ...space(val)], cache);
-}
+const isAtRuleNode = R.propEq('type', atrule);
+
+const isDeclNode = R.propEq('type', decl);
+
+const isRuleNode = R.propEq('type', rule);
+
+const addValues = (cache, node) =>
+  R.compose(
+    R.concat(cache),
+    R.chain(space),
+    comma,
+    R.prop('value')
+  )(node);
 
 function filterAtRule({ atRules, values }) {
-  values = uniqs(values);
+  values = R.uniq(values);
   atRules.forEach((node) => {
-    const hasAtRule = values.some((value) => value === node.params);
+    const hasAtRule = values.some(R.equals(node.params));
 
     if (!hasAtRule) {
       node.remove();
@@ -24,7 +34,7 @@ function filterAtRule({ atRules, values }) {
 }
 
 function filterNamespace({ atRules, rules }) {
-  rules = uniqs(rules);
+  rules = R.uniq(rules);
   atRules.forEach((atRule) => {
     const { 0: param, length: len } = atRule.params.split(' ').filter(Boolean);
 
@@ -41,14 +51,14 @@ function filterNamespace({ atRules, rules }) {
 }
 
 function hasFont(fontFamily, cache) {
-  return comma(fontFamily).some((font) => cache.some((c) => ~c.indexOf(font)));
+  return comma(fontFamily).some((font) => cache.some(R.includes(font)));
 }
 
 // fonts have slightly different logic
 function filterFont({ atRules, values }) {
-  values = uniqs(values);
+  values = R.uniq(values);
   atRules.forEach((r) => {
-    const families = r.nodes.filter(({ prop }) => prop === 'font-family');
+    const families = r.nodes.filter(R.propEq('prop', 'font-family'));
 
     // Discard the @font-face if it has no font-family
     if (!families.length) {
@@ -81,10 +91,10 @@ export default plugin('postcss-discard-unused', (opts) => {
     const fontCache = { atRules: [], values: [] };
 
     css.walk((node) => {
-      const { type, prop, selector, name } = node;
+      const { prop, selector, name } = node;
 
-      if (type === rule && namespace && ~selector.indexOf('|')) {
-        if (~selector.indexOf('[')) {
+      if (isRuleNode(node) && namespace && ~selector.indexOf('|')) {
+        if (R.includes('[', selector)) {
           // Attribute selector, so we should parse further.
           selectorParser((ast) => {
             ast.walkAttributes(({ namespace: ns }) => {
@@ -100,7 +110,7 @@ export default plugin('postcss-discard-unused', (opts) => {
         return;
       }
 
-      if (type === decl) {
+      if (isDeclNode(node)) {
         if (counterStyle && /list-style|system/.test(prop)) {
           counterStyleCache.values = addValues(counterStyleCache.values, node);
         }
@@ -122,7 +132,7 @@ export default plugin('postcss-discard-unused', (opts) => {
         return;
       }
 
-      if (type === atrule) {
+      if (isAtRuleNode(node)) {
         if (counterStyle && /counter-style/.test(name)) {
           counterStyleCache.atRules.push(node);
         }
