@@ -2,6 +2,10 @@ import postcss from 'postcss';
 import valueParser, { unit, stringify } from 'postcss-value-parser';
 import getArguments from 'lerna:cssnano-util-get-arguments';
 import isColorStop from 'is-color-stop';
+import * as R from 'ramda';
+import cacheFn from './cacheFn';
+import isFunctionNode from './isFunctionNode';
+import isNodeValueEqual from './isNodeValueEqual';
 
 const angles = {
   top: '0deg',
@@ -17,26 +21,31 @@ function isLessThan(a, b) {
   );
 }
 
-function optimise(decl) {
-  const value = decl.value;
+const stringifyFunction = (node) => `${node.value}(${stringify(node.nodes)})`;
 
-  if (!value) {
-    return;
-  }
+const stringifyNode = R.ifElse(
+  isFunctionNode,
+  stringifyFunction,
+  R.prop('value')
+);
 
+const shouldAbort = R.anyPass([
+  R.complement(R.includes)('gradient'),
+  R.includes('constant('),
+  R.includes('var('),
+  R.includes('env('),
+]);
+
+const optimise = cacheFn((value) => {
   const normalizedValue = value.toLowerCase();
 
-  if (normalizedValue.includes('var(') || normalizedValue.includes('env(')) {
-    return;
+  if (shouldAbort(normalizedValue)) {
+    return value;
   }
 
-  if (!normalizedValue.includes('gradient')) {
-    return;
-  }
-
-  decl.value = valueParser(value)
+  return valueParser(value)
     .walk((node) => {
-      if (node.type !== 'function' || !node.nodes.length) {
+      if (!isFunctionNode(node) || !node.nodes.length) {
         return false;
       }
 
@@ -50,10 +59,7 @@ function optimise(decl) {
       ) {
         let args = getArguments(node);
 
-        if (
-          node.nodes[0].value.toLowerCase() === 'to' &&
-          args[0].length === 3
-        ) {
+        if (isNodeValueEqual('to', node.nodes[0]) && args[0].length === 3) {
           node.nodes = node.nodes.slice(2);
           node.nodes[0].value = angles[node.nodes[0].value.toLowerCase()];
         }
@@ -104,7 +110,7 @@ function optimise(decl) {
         let args = getArguments(node);
         let lastStop;
 
-        const hasAt = args[0].find((n) => n.value.toLowerCase() === 'at');
+        const hasAt = args[0].find(isNodeValueEqual('at'));
 
         args.forEach((arg, index) => {
           if (!arg[2] || (!index && hasAt)) {
@@ -140,24 +146,11 @@ function optimise(decl) {
           let color;
           let stop;
 
-          if (arg[2] !== undefined) {
-            if (arg[0].type === 'function') {
-              color = `${arg[0].value}(${stringify(arg[0].nodes)})`;
-            } else {
-              color = arg[0].value;
-            }
-
-            if (arg[2].type === 'function') {
-              stop = `${arg[2].value}(${stringify(arg[2].nodes)})`;
-            } else {
-              stop = arg[2].value;
-            }
+          if (arg[2]) {
+            color = stringifyNode(arg[0]);
+            stop = stringifyNode(arg[2]);
           } else {
-            if (arg[0].type === 'function') {
-              color = `${arg[0].value}(${stringify(arg[0].nodes)})`;
-            }
-
-            color = arg[0].value;
+            color = stringifyNode(arg[0]);
           }
 
           color = color.toLowerCase();
@@ -190,8 +183,17 @@ function optimise(decl) {
       }
     })
     .toString();
-}
+});
 
 export default postcss.plugin('postcss-minify-gradients', () => {
-  return (css) => css.walkDecls(optimise);
+  return (css) =>
+    css.walkDecls((decl) => {
+      const { value } = decl;
+
+      if (!value) {
+        return;
+      }
+
+      decl.value = optimise(value);
+    });
 });
