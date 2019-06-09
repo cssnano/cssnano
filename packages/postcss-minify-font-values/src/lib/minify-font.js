@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import isFunctionNode from './isFunctionNode';
 import isNodeValueOneOf from './isNodeValueOneOf';
 import isSpaceNode from './isSpaceNode';
+import isWordNode from './isWordNode';
 import keywords from './keywords';
 import minifyFamily from './minify-family';
 import minifyWeight from './minify-weight';
@@ -31,7 +32,7 @@ export default function(nodes, opts) {
   for (i = 0, max = nodes.length; i < max; i += 1) {
     node = nodes[i];
 
-    if (node.type === 'word') {
+    if (isWordNode(node)) {
       if (hasSize) {
         continue;
       }

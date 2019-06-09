@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import isFunctionNode from './isFunctionNode';
 import isSpaceNode from './isSpaceNode';
 import isStringNode from './isStringNode';
+import isWordNode from './isWordNode';
 import oneOf from './oneOf';
 import uniqueExcept from './uniqs';
 
@@ -148,7 +149,7 @@ export default function(nodes, opts) {
   nodes.forEach((node, index, arr) => {
     if (isStringOrFunctionNode(node)) {
       family.push(node);
-    } else if (node.type === 'word') {
+    } else if (isWordNode(node)) {
       if (!last) {
         last = { type: 'word', value: '' };
         family.push(last);
