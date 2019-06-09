@@ -1,6 +1,13 @@
 import { plugin } from 'postcss';
 import valueParser, { unit } from 'postcss-value-parser';
-import has from 'has';
+import * as R from 'ramda';
+import cacheFn from './cacheFn';
+import getValue from './getValue';
+import isCommaNode from './isCommaNode';
+import isMathFunctionNode from './isMathFunctionNode';
+import isNodeValueOneOf from './isNodeValueOneOf';
+import isVariableFunctionNode from './isVariableFunctionNode';
+import isWordNode from './isWordNode';
 
 const directionKeywords = ['top', 'right', 'bottom', 'left', 'center'];
 
@@ -8,41 +15,13 @@ const center = '50%';
 const horizontal = { right: '100%', left: '0' };
 const verticalValue = { bottom: '100%', top: '0' };
 
-function isCommaNode(node) {
-  return node.type === 'div' && node.value === ',';
-}
-
-function isVariableFunctionNode(node) {
-  if (node.type !== 'function') {
-    return false;
-  }
-
-  return ['var', 'env'].includes(node.value.toLowerCase());
-}
-
-function isMathFunctionNode(node) {
-  if (node.type !== 'function') {
-    return false;
-  }
-
-  return ['calc', 'min', 'max', 'clamp'].includes(node.value.toLowerCase());
-}
-
-function isNumberNode(node) {
-  if (node.type !== 'word') {
-    return false;
-  }
-
-  const value = parseFloat(node.value);
-
-  return !isNaN(value);
-}
+const isNumberNode = R.compose(
+  R.complement(isNaN),
+  parseFloat,
+  getValue
+);
 
 function isDimensionNode(node) {
-  if (node.type !== 'word') {
-    return false;
-  }
-
   const parsed = unit(node.value);
 
   if (!parsed) {
@@ -52,7 +31,19 @@ function isDimensionNode(node) {
   return parsed.unit !== '';
 }
 
-function transform(value) {
+const isPositionNode = R.either(
+  R.both(
+    isWordNode,
+    R.anyPass([
+      isNodeValueOneOf(directionKeywords),
+      isDimensionNode,
+      isNumberNode,
+    ])
+  ),
+  isMathFunctionNode
+);
+
+const transform = cacheFn((value) => {
   const parsed = valueParser(value);
   const ranges = [];
   let rangeIndex = 0;
@@ -95,12 +86,7 @@ function transform(value) {
       return;
     }
 
-    const isPositionKeyword =
-      (node.type === 'word' &&
-        directionKeywords.includes(node.value.toLowerCase())) ||
-      isDimensionNode(node) ||
-      isNumberNode(node) ||
-      isMathFunctionNode(node);
+    const isPositionKeyword = isPositionNode(node);
 
     if (ranges[rangeIndex].start === null && isPositionKeyword) {
       ranges[rangeIndex].start = index;
@@ -137,6 +123,9 @@ function transform(value) {
     const secondNode =
       nodes[2] && nodes[2].value ? nodes[2].value.toLowerCase() : null;
 
+    const hasFirstNode = R.has(firstNode);
+    const hasSecondNode = R.has(secondNode);
+
     if (nodes.length === 1 || secondNode === 'center') {
       if (secondNode) {
         nodes[2].value = nodes[1].value = '';
@@ -146,29 +135,29 @@ function transform(value) {
         center,
       });
 
-      if (has(map, firstNode)) {
+      if (hasFirstNode(map)) {
         nodes[0].value = map[firstNode];
       }
 
       return;
     }
 
-    if (firstNode === 'center' && directionKeywords.includes(secondNode)) {
+    if (firstNode === 'center' && R.includes(secondNode, directionKeywords)) {
       nodes[0].value = nodes[1].value = '';
 
-      if (has(horizontal, secondNode)) {
+      if (hasSecondNode(horizontal)) {
         nodes[2].value = horizontal[secondNode];
       }
 
       return;
     }
 
-    if (has(horizontal, firstNode) && has(verticalValue, secondNode)) {
+    if (hasFirstNode(horizontal) && hasSecondNode(verticalValue)) {
       nodes[0].value = horizontal[firstNode];
       nodes[2].value = verticalValue[secondNode];
 
       return;
-    } else if (has(verticalValue, firstNode) && has(horizontal, secondNode)) {
+    } else if (hasFirstNode(verticalValue) && hasSecondNode(horizontal)) {
       nodes[0].value = horizontal[secondNode];
       nodes[2].value = verticalValue[firstNode];
 
@@ -177,31 +166,20 @@ function transform(value) {
   });
 
   return parsed.toString();
-}
+});
 
 export default plugin('postcss-normalize-positions', () => {
   return (css) => {
-    const cache = {};
-
     css.walkDecls(
       /^(background(-position)?|(-\w+-)?perspective-origin)$/i,
       (decl) => {
-        const value = decl.value;
+        const { value } = decl;
 
         if (!value) {
           return;
         }
 
-        if (cache[value]) {
-          decl.value = cache[value];
-
-          return;
-        }
-
-        const result = transform(value);
-
-        decl.value = result;
-        cache[value] = result;
+        decl.value = transform(value);
       }
     );
   };
