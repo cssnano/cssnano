@@ -1,33 +1,25 @@
 import { plugin, list } from 'postcss';
+import * as R from 'ramda';
+import cacheFn from './lib/cacheFn';
 import CommentRemover from './lib/commentRemover';
 import commentParser from './lib/commentParser';
 
 const { space } = list;
 
+const commentCount = cacheFn(
+  R.compose(
+    R.length,
+    R.filter(R.head),
+    commentParser
+  )
+);
+
+const normalizeRawImportant = R.unless(commentCount, () => '!important');
+
 export default plugin('postcss-discard-comments', (opts = {}) => {
   const remover = new CommentRemover(opts);
-  const matcherCache = {};
-  const replacerCache = {};
 
-  function matchesComments(source) {
-    if (matcherCache[source]) {
-      return matcherCache[source];
-    }
-
-    const result = commentParser(source).filter(([type]) => type);
-
-    matcherCache[source] = result;
-
-    return result;
-  }
-
-  function replaceComments(source, separator = ' ') {
-    const key = source + '@|@' + separator;
-
-    if (replacerCache[key]) {
-      return replacerCache[key];
-    }
-
+  const replaceComments = cacheFn((separator, source) => {
     const parsed = commentParser(source).reduce((value, [type, start, end]) => {
       const contents = source.slice(start, end);
 
@@ -42,12 +34,8 @@ export default plugin('postcss-discard-comments', (opts = {}) => {
       return `${value}/*${contents}*/`;
     }, '');
 
-    const result = space(parsed).join(' ');
-
-    replacerCache[key] = result;
-
-    return result;
-  }
+    return space(parsed).join(' ');
+  });
 
   return (css) => {
     css.walk((node) => {
@@ -57,55 +45,56 @@ export default plugin('postcss-discard-comments', (opts = {}) => {
         return;
       }
 
-      if (node.raws.between) {
-        node.raws.between = replaceComments(node.raws.between);
+      const rawBetween = R.path(['raws', 'between'], node);
+
+      if (rawBetween) {
+        node.raws.between = replaceComments(' ', rawBetween);
       }
 
       if (node.type === 'decl') {
-        if (node.raws.value && node.raws.value.raw) {
-          if (node.raws.value.value === node.value) {
-            node.value = replaceComments(node.raws.value.raw);
-          } else {
-            node.value = replaceComments(node.value);
-          }
+        const rawValue = R.path(['raws', 'value', 'raw'], node);
+
+        if (rawValue) {
+          node.value =
+            node.raws.value.value === node.value
+              ? replaceComments(' ', rawValue)
+              : replaceComments(' ', node.value);
 
           node.raws.value = null;
         }
 
-        if (node.raws.important) {
-          node.raws.important = replaceComments(node.raws.important);
+        const rawImportant = R.path(['raws', 'important'], node);
 
-          const b = matchesComments(node.raws.important);
-
-          node.raws.important = b.length ? node.raws.important : '!important';
+        if (rawImportant) {
+          node.raws.important = normalizeRawImportant(
+            replaceComments(' ', rawImportant)
+          );
         }
 
         return;
       }
 
-      if (
-        node.type === 'rule' &&
-        node.raws.selector &&
-        node.raws.selector.raw
-      ) {
-        node.raws.selector.raw = replaceComments(node.raws.selector.raw, '');
+      const rawSelector = R.path(['raws', 'selector', 'raw'], node);
+
+      if (node.type === 'rule' && rawSelector) {
+        node.raws.selector.raw = replaceComments('', rawSelector);
 
         return;
       }
 
       if (node.type === 'atrule') {
         if (node.raws.afterName) {
-          const commentsReplaced = replaceComments(node.raws.afterName);
+          const commentsReplaced = replaceComments(' ', node.raws.afterName);
 
-          if (!commentsReplaced.length) {
-            node.raws.afterName = commentsReplaced + ' ';
-          } else {
-            node.raws.afterName = ' ' + commentsReplaced + ' ';
-          }
+          node.raws.afterName = commentsReplaced.length
+            ? ` ${commentsReplaced} `
+            : `${commentsReplaced} `;
         }
 
-        if (node.raws.params && node.raws.params.raw) {
-          node.raws.params.raw = replaceComments(node.raws.params.raw);
+        const rawParams = R.path(['raws', 'params', 'raw'], node);
+
+        if (rawParams) {
+          node.raws.params.raw = replaceComments(' ', rawParams);
         }
       }
     });
