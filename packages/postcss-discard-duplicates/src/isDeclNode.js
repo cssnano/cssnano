@@ -1,4 +1,4 @@
-import { propEq } from 'ramda';
+import propEq from './propEq';
 
 const isDeclNode = propEq('type', 'decl');
 

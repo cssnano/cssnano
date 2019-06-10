@@ -1,4 +1,4 @@
-import { eqProps } from 'ramda';
+import eqProps from './eqProps';
 
 const equalSelectors = eqProps('selector');
 

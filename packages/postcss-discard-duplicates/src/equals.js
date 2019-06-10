@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import eqProps from './eqProps';
 import equalSelectors from './equalSelectors';
 import isAtRuleNode from './isAtRuleNode';
 import isDeclNode from './isDeclNode';
@@ -41,8 +42,8 @@ const handleAtRule = [
     firstArg
   ),
   R.allPass([
-    R.eqProps('name'),
-    R.eqProps('params'),
+    eqProps('name'),
+    eqProps('params'),
     equalRawBefore,
     equalRawAfterName,
   ]),
@@ -54,14 +55,14 @@ const handleDecl = [
     firstArg
   ),
   R.allPass([
-    R.eqProps('prop'),
-    R.eqProps('value'),
-    R.eqProps('important'),
+    eqProps('prop'),
+    eqProps('value'),
+    eqProps('important'),
     equalRawBefore,
   ]),
 ];
 
-const equalType = R.eqProps('type');
+const equalType = eqProps('type');
 
 const equalNodes = R.unapply(
   R.either(R.all(hasNodes), R.all(R.complement(hasNodes)))
