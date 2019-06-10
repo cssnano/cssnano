@@ -76,7 +76,9 @@ const equalByChildren = R.ifElse(
     firstArg
   ),
   R.compose(
-    ([a, b]) => a.every((x, i) => equals(x, b[i])),
+    R.both(R.apply(eqProps('length')), ([a, b]) =>
+      a.every((x, i) => equals(x, b[i]))
+    ),
     R.unapply(R.pluck('nodes'))
   ),
   R.T
