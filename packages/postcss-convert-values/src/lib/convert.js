@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 const lengthConv = {
   in: 96,
   px: 1,
@@ -19,12 +21,12 @@ function dropLeadingZero(number) {
   const value = String(number);
 
   if (number % 1) {
-    if (value[0] === '0') {
-      return value.slice(1);
+    if (R.startsWith('0', value)) {
+      return R.drop(1, value);
     }
 
-    if (value[0] === '-' && value[1] === '0') {
-      return '-' + value.slice(2);
+    if (R.startsWith('-0', value)) {
+      return '-' + R.drop(2, value);
     }
   }
 
@@ -69,7 +71,7 @@ export default function(number, unit, { time, length, angle }) {
   }
 
   if (converted && converted.length < value.length) {
-    value = converted;
+    return converted;
   }
 
   return value;

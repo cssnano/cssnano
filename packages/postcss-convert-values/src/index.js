@@ -1,8 +1,12 @@
 import postcss from 'postcss';
 import valueParser, { unit, walk } from 'postcss-value-parser';
+import * as R from 'ramda';
 import convert from './lib/convert';
+import oneOf from './lib/oneOf';
+import isFunctionNode from './lib/isFunctionNode';
+import isWordNode from './lib/isWordNode';
 
-const LENGTH_UNITS = [
+const isLengthUnit = oneOf([
   'em',
   'ex',
   'ch',
@@ -18,7 +22,7 @@ const LENGTH_UNITS = [
   'pt',
   'pc',
   'px',
-];
+]);
 
 function parseWord(node, opts, keepZeroUnit) {
   const pair = unit(node.value);
@@ -26,17 +30,14 @@ function parseWord(node, opts, keepZeroUnit) {
     const num = Number(pair.number);
     const u = pair.unit;
     if (num === 0) {
-      node.value =
-        keepZeroUnit || (!~LENGTH_UNITS.indexOf(u.toLowerCase()) && u !== '%')
-          ? 0 + u
-          : 0;
+      node.value = keepZeroUnit || (!isLengthUnit(u) && u !== '%') ? 0 + u : 0;
     } else {
       node.value = convert(num, u, opts);
 
       if (
-        typeof opts.precision === 'number' &&
-        u.toLowerCase() === 'px' &&
-        ~pair.number.indexOf('.')
+        R.is(Number, opts.precision) &&
+        R.toLower(u) === 'px' &&
+        R.includes('.', pair.number)
       ) {
         const precision = Math.pow(10, opts.precision);
         node.value =
@@ -46,7 +47,7 @@ function parseWord(node, opts, keepZeroUnit) {
   }
 }
 
-function clampOpacity(node) {
+function clampValue(node) {
   const pair = unit(node.value);
   if (!pair) {
     return;
@@ -59,24 +60,31 @@ function clampOpacity(node) {
   }
 }
 
-function shouldStripPercent(decl) {
-  const { parent } = decl;
+const grandParentName = R.compose(
+  R.unless(R.isNil, R.toLower),
+  R.path(['parent', 'parent', 'name'])
+);
+
+function shouldKeepPercent(decl) {
   const lowerCasedProp = decl.prop.toLowerCase();
+
   return (
-    (~decl.value.indexOf('%') &&
-      (lowerCasedProp === 'max-height' || lowerCasedProp === 'height')) ||
-    (parent.parent &&
-      parent.parent.name &&
-      parent.parent.name.toLowerCase() === 'keyframes' &&
-      lowerCasedProp === 'stroke-dasharray') ||
-    lowerCasedProp === 'stroke-dashoffset' ||
-    lowerCasedProp === 'stroke-width'
+    (R.includes('%', decl.value) &&
+      R.includes(lowerCasedProp, ['max-height', 'height'])) ||
+    (grandParentName(decl) === 'keyframes' &&
+      R.includes(lowerCasedProp, [
+        'stroke-dasharray',
+        'stroke-dashoffset',
+        'stroke-width',
+      ]))
   );
 }
 
+const shouldAbort = R.either(R.includes('flex'), R.startsWith('--'));
+
 function transform(opts, decl) {
   const lowerCasedProp = decl.prop.toLowerCase();
-  if (~lowerCasedProp.indexOf('flex') || lowerCasedProp.indexOf('--') === 0) {
+  if (shouldAbort(lowerCasedProp)) {
     return;
   }
 
@@ -84,22 +92,15 @@ function transform(opts, decl) {
     .walk((node) => {
       const lowerCasedValue = node.value.toLowerCase();
 
-      if (node.type === 'word') {
-        parseWord(node, opts, shouldStripPercent(decl));
-        if (
-          lowerCasedProp === 'opacity' ||
-          lowerCasedProp === 'shape-image-threshold'
-        ) {
-          clampOpacity(node);
+      if (isWordNode(node)) {
+        parseWord(node, opts, shouldKeepPercent(decl));
+        if (R.includes(lowerCasedProp, ['opacity', 'shape-image-threshold'])) {
+          clampValue(node);
         }
-      } else if (node.type === 'function') {
-        if (
-          lowerCasedValue === 'calc' ||
-          lowerCasedValue === 'hsl' ||
-          lowerCasedValue === 'hsla'
-        ) {
+      } else if (isFunctionNode(node)) {
+        if (R.includes(lowerCasedValue, ['calc', 'hsl', 'hsla'])) {
           walk(node.nodes, (n) => {
-            if (n.type === 'word') {
+            if (isWordNode(n)) {
               parseWord(n, opts, true);
             }
           });

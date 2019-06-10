@@ -31,7 +31,8 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "postcss": "^7.0.16",
-    "postcss-value-parser": "^3.3.1"
+    "postcss-value-parser": "^3.3.1",
+    "ramda": "^0.26.1"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
