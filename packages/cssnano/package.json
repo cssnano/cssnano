@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
-    "integrations": "babel-node src/__tests__/util/rebuild.js",
-    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/'"
+    "prebuild": "del-cli dist",
+    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
+    "prepublish": "yarn build"
   },
   "keywords": [
     "css",
@@ -23,17 +24,6 @@
     "cssnano-preset-default": "^4.0.7",
     "is-resolvable": "^1.1.0",
     "postcss": "^7.0.16"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.4.4",
-    "@babel/core": "^7.4.5",
-    "array-to-sentence": "^2.0.0",
-    "babel-loader": "^8.0.6",
-    "cross-env": "^5.2.0",
-    "cssnano-preset-advanced": "^4.0.7",
-    "postcss-font-magician": "^2.2.1",
-    "webpack": "^4.32.2",
-    "webpack-bundle-size-analyzer": "^3.0.0"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
