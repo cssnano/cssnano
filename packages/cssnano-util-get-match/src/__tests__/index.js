@@ -1,7 +1,6 @@
-import test from 'ava';
 import getMatchFactory from '../';
 
-test('should get match', (t) => {
+test('should get match', () => {
   const matches = [
     ['foo', ['bar', 'baz']],
     ['quux', ['bar', 'foo']],
@@ -10,6 +9,6 @@ test('should get match', (t) => {
 
   const getMatch = getMatchFactory(matches);
 
-  t.deepEqual(getMatch(['bar', 'foo']), 'quux');
-  t.false(getMatch(['quux']));
+  expect(getMatch(['bar', 'foo'])).toBe('quux');
+  expect(getMatch(['quux'])).toBe(false);
 });

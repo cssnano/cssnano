@@ -1,4 +1,3 @@
-import test from 'ava';
 import plugin from '..';
 import { processCSSFactory } from '../../../../util/testHelpers';
 
@@ -10,31 +9,39 @@ function addTests(...tests) {
 
     test(
       message.replace(/box/gi, 'margin'),
-      processCSS,
-      fixture.replace(/box/gi, 'margin'),
-      isExpectedFunc ? expected('margin') : expected.replace(/box/gi, 'margin')
+      processCSS(
+        fixture.replace(/box/gi, 'margin'),
+        isExpectedFunc
+          ? expected('margin')
+          : expected.replace(/box/gi, 'margin')
+      )
     );
     test(
       message.replace(/box/gi, 'MARGIN'),
-      processCSS,
-      fixture.replace(/box/gi, 'MARGIN'),
-      isExpectedFunc ? expected('MARGIN') : expected.replace(/box/gi, 'margin')
+      processCSS(
+        fixture.replace(/box/gi, 'MARGIN'),
+        isExpectedFunc
+          ? expected('MARGIN')
+          : expected.replace(/box/gi, 'margin')
+      )
     );
     test(
       message.replace(/box/gi, 'padding'),
-      processCSS,
-      fixture.replace(/box/gi, 'padding'),
-      isExpectedFunc
-        ? expected('padding')
-        : expected.replace(/box/gi, 'padding')
+      processCSS(
+        fixture.replace(/box/gi, 'padding'),
+        isExpectedFunc
+          ? expected('padding')
+          : expected.replace(/box/gi, 'padding')
+      )
     );
     test(
       message.replace(/box/gi, 'PADDING'),
-      processCSS,
-      fixture.replace(/box/gi, 'PADDING'),
-      isExpectedFunc
-        ? expected('PADDING')
-        : expected.replace(/box/gi, 'padding')
+      processCSS(
+        fixture.replace(/box/gi, 'PADDING'),
+        isExpectedFunc
+          ? expected('PADDING')
+          : expected.replace(/box/gi, 'padding')
+      )
     );
   });
 }

@@ -1,8 +1,5 @@
-import test from 'ava';
 import webpack from 'webpack';
 import conf from './_webpack.config';
-
-// test.cb
 
 test.skip('cssnano should be consumed by webpack', (t) => {
   webpack(conf, (err, stats) => {

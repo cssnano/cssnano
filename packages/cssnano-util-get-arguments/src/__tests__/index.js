@@ -1,10 +1,10 @@
-import test from 'ava';
 import valueParser from 'postcss-value-parser';
 import getArguments from '../';
 
-test('should get arguments', (t) => {
+test('should get arguments', () => {
   const parsed = valueParser('linear-gradient(to bottom left, red, blue)');
-  t.deepEqual(getArguments(parsed.nodes[0]), [
+
+  expect(getArguments(parsed.nodes[0])).toEqual([
     [
       {
         type: 'word',

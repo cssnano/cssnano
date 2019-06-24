@@ -1,4 +1,3 @@
-import test from 'ava';
 import minifyFont from '../lib/minify-font';
 
 const tests = [
@@ -31,8 +30,8 @@ const tests = [
   },
 ];
 
-test('minify-font', (t) => {
+test('minify-font', () => {
   tests.forEach(({ fixture, options, expected }) => {
-    t.deepEqual(minifyFont(fixture, options), expected);
+    expect(minifyFont(fixture, options)).toEqual(expected);
   });
 });

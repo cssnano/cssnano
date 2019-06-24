@@ -47,14 +47,14 @@ jobs:
         displayName: 'Print versions'
       - bash: yarn install --ignore-engines
         displayName: 'Install dependencies'
-      - script: npm run test:coverage
+      - script: yarn test:coverage --ci --reporters="default" --reporters="jest-junit"
         displayName: 'Run tests with coverage'
-      #- task: PublishTestResults@2
-      #  inputs:
-      #    testRunTitle: 'Linux with Node.js $(node_version)'
-      #    testResultsFiles: '**/junit.xml'
-      #  condition: succeededOrFailed()
-      #  displayName: 'Publish test results'
+      - task: PublishTestResults@2
+        inputs:
+          testRunTitle: 'Linux with Node.js $(node_version)'
+          testResultsFiles: '**/junit.xml'
+        condition: succeededOrFailed()
+        displayName: 'Publish test results'
       - script: curl -s https://codecov.io/bash | bash -s -- -t $(CODECOV_TOKEN)
         condition: succeededOrFailed()
         displayName: 'Submit coverage data to codecov'
@@ -85,14 +85,14 @@ jobs:
         displayName: 'Print versions'
       - bash: yarn install --ignore-engines
         displayName: 'Install dependencies'
-      - script: npm run test:coverage
+      - script: yarn test:coverage -- --ci --reporters="default" --reporters="jest-junit"
         displayName: 'Run tests with coverage'
-      #- task: PublishTestResults@2
-      #  inputs:
-      #    testRunTitle: 'Linux with Node.js $(node_version)'
-      #    testResultsFiles: '**/junit.xml'
-      #  condition: succeededOrFailed()
-      #  displayName: 'Publish test results'
+      - task: PublishTestResults@2
+        inputs:
+          testRunTitle: 'Linux with Node.js $(node_version)'
+          testResultsFiles: '**/junit.xml'
+        condition: succeededOrFailed()
+        displayName: 'Publish test results'
       - script: curl -s https://codecov.io/bash | bash -s -- -t $(CODECOV_TOKEN)
         condition: succeededOrFailed()
         displayName: 'Submit coverage data to codecov'
@@ -126,14 +126,14 @@ jobs:
         displayName: 'Print versions'
       - bash: yarn install --ignore-engines
         displayName: 'Install dependencies'
-      - script: npm run test:coverage
+      - script: yarn test:coverage -- --ci --reporters="default" --reporters="jest-junit"
         displayName: 'Run tests with coverage'
-      #- task: PublishTestResults@2
-      #  inputs:
-      #    testRunTitle: 'Linux with Node.js $(node_version)'
-      #    testResultsFiles: '**/junit.xml'
-      #  condition: succeededOrFailed()
-      #  displayName: 'Publish test results'
+      - task: PublishTestResults@2
+        inputs:
+          testRunTitle: 'Linux with Node.js $(node_version)'
+          testResultsFiles: '**/junit.xml'
+        condition: succeededOrFailed()
+        displayName: 'Publish test results'
       - script: curl -s https://codecov.io/bash | bash -s -- -t $(CODECOV_TOKEN)
         condition: succeededOrFailed()
         displayName: 'Submit coverage data to codecov'

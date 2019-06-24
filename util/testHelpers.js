@@ -3,9 +3,11 @@ import postcss from 'postcss';
 import cssnano from '../packages/cssnano/src/index';
 import frameworks from './frameworks';
 
-export function usePostCSSPlugin(t, plugin) {
-  t.truthy(plugin.postcssVersion, 'should be able to access version');
-  t.truthy(plugin.postcssPlugin, 'should be able to access name');
+export function usePostCSSPlugin(plugin) {
+  return () => {
+    expect(plugin.postcssVersion).toBeDefined();
+    expect(plugin.postcssPlugin).toBeDefined();
+  };
 }
 
 export function processCSSFactory(plugin) {
@@ -18,15 +20,16 @@ export function processCSSFactory(plugin) {
         Object.assign({}, { from: undefined }, options)
       );
 
-    processCSS = (t, fixture, expected, options) => {
-      return processor(fixture, options).then((result) => {
-        t.deepEqual(result.css, expected);
-        return result;
-      });
+    processCSS = (fixture, expected, options) => {
+      return () =>
+        processor(fixture, options).then((result) => {
+          expect(result.css).toBe(expected);
+          return result;
+        });
     };
 
-    passthroughCSS = (t, fixture, options) => {
-      return processCSS(t, fixture, fixture, options);
+    passthroughCSS = (fixture, options) => {
+      return processCSS(fixture, fixture, options);
     };
   } else {
     processor = (fixture, options) => {
@@ -36,15 +39,16 @@ export function processCSSFactory(plugin) {
       );
     };
 
-    processCSS = (t, fixture, expected, options) => {
-      return processor(fixture, options).then((result) => {
-        t.deepEqual(result.css, expected);
-        return result;
-      });
+    processCSS = (fixture, expected, options) => {
+      return () =>
+        processor(fixture, options).then((result) => {
+          expect(result.css).toBe(expected);
+          return result;
+        });
     };
 
-    passthroughCSS = (t, fixture, options) => {
-      return processCSS(t, fixture, fixture, options);
+    passthroughCSS = (fixture, options) => {
+      return processCSS(fixture, fixture, options);
     };
   }
 
@@ -59,19 +63,19 @@ export function loadPreset(preset) {
   return postcss(cssnano({ preset }));
 }
 
-export function integrationTests(t, preset, integrations) {
-  return Promise.all(
-    Object.keys(frameworks).map((framework) => {
-      const css = frameworks[framework];
+export function integrationTests(preset, integrations) {
+  return () =>
+    Promise.all(
+      Object.keys(frameworks).map((framework) => {
+        const css = frameworks[framework];
 
-      return postcss([cssnano({ preset })])
-        .process(css, { from: undefined })
-        .then((result) => {
-          t.is(
-            result.css,
-            fs.readFileSync(`${integrations}/${framework}.css`, 'utf8')
-          );
-        });
-    })
-  );
+        return postcss([cssnano({ preset })])
+          .process(css, { from: undefined })
+          .then((result) => {
+            expect(result.css).toBe(
+              fs.readFileSync(`${integrations}/${framework}.css`, 'utf8')
+            );
+          });
+      })
+    );
 }

@@ -1,9 +1,8 @@
-import test from 'ava';
 import minifyFamily from '../lib/minify-family';
 
 const tests = [
   {
-    message: 'Should strip quotes for names without keywords',
+    // Should strip quotes for names without keywords
     options: {
       removeQuotes: true,
     },
@@ -32,7 +31,7 @@ const tests = [
     ],
   },
   {
-    message: 'Should remove fonts after keywords',
+    // Should remove fonts after keywords
     options: {
       removeAfterKeyword: true,
     },
@@ -61,7 +60,7 @@ const tests = [
     ],
   },
   {
-    message: 'Should dublicates',
+    // Should dublicates
     options: {
       removeQuotes: true,
       removeDuplicates: true,
@@ -89,9 +88,10 @@ const tests = [
   },
 ];
 
-test('minify-family', (t) => {
-  t.plan(tests.length);
-  tests.forEach(({ fixture, options, expected, message }) => {
-    t.deepEqual(minifyFamily(fixture, options), expected, message);
+test('minify-family', () => {
+  expect.assertions(tests.length);
+
+  tests.forEach(({ fixture, options, expected }) => {
+    expect(minifyFamily(fixture, options)).toEqual(expected);
   });
 });
