@@ -59,7 +59,7 @@ function clampOpacity(node) {
   }
 }
 
-function shouldStripPercent(decl) {
+function shouldKeepUnit(decl) {
   const { parent } = decl;
   const lowerCasedProp = decl.prop.toLowerCase();
   return (
@@ -70,7 +70,8 @@ function shouldStripPercent(decl) {
       parent.parent.name.toLowerCase() === 'keyframes' &&
       lowerCasedProp === 'stroke-dasharray') ||
     lowerCasedProp === 'stroke-dashoffset' ||
-    lowerCasedProp === 'stroke-width'
+    lowerCasedProp === 'stroke-width' ||
+    lowerCasedProp === 'line-height'
   );
 }
 
@@ -85,7 +86,7 @@ function transform(opts, decl) {
       const lowerCasedValue = node.value.toLowerCase();
 
       if (node.type === 'word') {
-        parseWord(node, opts, shouldStripPercent(decl));
+        parseWord(node, opts, shouldKeepUnit(decl));
         if (
           lowerCasedProp === 'opacity' ||
           lowerCasedProp === 'shape-image-threshold'

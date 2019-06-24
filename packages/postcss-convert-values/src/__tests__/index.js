@@ -342,6 +342,11 @@ test(
 );
 
 test(
+  'should keep unit in line-height (issue 768)',
+  passthroughCSS('h1{line-height:0rem}')
+);
+
+test(
   'should keep unknown units or hacks',
   passthroughCSS('h1{top:0\\9\\0;left:0lightyear}')
 );
