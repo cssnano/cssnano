@@ -2,7 +2,6 @@ import { readFileSync as read } from 'fs';
 import { spawn } from 'child_process';
 import path from 'path';
 import colors from 'colors/safe';
-import test from 'ava';
 import size, { table, numeric } from '../';
 
 let noopProcessorPath = path.resolve(__dirname, '../../processors/noop.js');
@@ -32,27 +31,27 @@ function setup(args) {
   });
 }
 
-test('cli', (t) => {
+test('cli', () => {
   return setup(['test.css']).then((results) => {
     let out = results[0];
-    t.truthy(~out.indexOf('43 B'));
-    t.truthy(~out.indexOf('34 B'));
-    t.truthy(~out.indexOf('9 B'));
-    t.truthy(~out.indexOf('79.07%'));
+    expect(!!~out.indexOf('43 B')).toBe(true);
+    expect(!!~out.indexOf('34 B')).toBe(true);
+    expect(!!~out.indexOf('9 B')).toBe(true);
+    expect(!!~out.indexOf('79.07%')).toBe(true);
   });
 });
 
-test('cli with processor argument', (t) => {
+test('cli with processor argument', () => {
   return setup(['-p', noopProcessorPath, 'test.css']).then((results) => {
     let out = results[0];
-    t.truthy(~out.indexOf('100%'));
+    expect(!!~out.indexOf('100%')).toBe(true);
   });
 });
 
-test('api', (t) => {
+test('api', () => {
   return size(read(path.join(__dirname, 'test.css'), 'utf-8')).then(
     (result) => {
-      t.deepEqual(result, {
+      expect(result).toEqual({
         uncompressed: {
           original: '23 B',
           processed: '14 B',
@@ -76,11 +75,10 @@ test('api', (t) => {
   );
 });
 
-test('table', (t) => {
+test('table', () => {
   return table(read(path.join(__dirname, 'test.css'), 'utf-8')).then(
     (result) => {
-      t.deepEqual(
-        colors.stripColors(result),
+      expect(colors.stripColors(result)).toBe(
         `
 ┌────────────┬──────────────┬────────┬────────┐
 │            │ Uncompressed │ Gzip   │ Brotli │
@@ -98,10 +96,10 @@ test('table', (t) => {
   );
 });
 
-test('numeric', (t) => {
+test('numeric', () => {
   return numeric(read(path.join(__dirname, 'test.css'), 'utf-8')).then(
     (result) => {
-      t.deepEqual(result, {
+      expect(result).toEqual({
         uncompressed: {
           original: 23,
           processed: 14,
@@ -125,10 +123,10 @@ test('numeric', (t) => {
   );
 });
 
-test('api options', (t) => {
+test('api options', () => {
   return size('@namespace islands url("http://bar.yandex.ru/ui/islands");', {
     discardUnused: false,
   }).then((result) => {
-    t.deepEqual(result.gzip.processed, '67 B');
+    expect(result.gzip.processed).toBe('67 B');
   });
 });

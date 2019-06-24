@@ -1,61 +1,53 @@
 import postcss from 'postcss';
-import ava from 'ava';
 import stylehacks from '../';
-import { name } from '../../package.json';
+import packageJson from '../../package.json';
 
-function processCss(t, fixture, expected, options) {
-  return postcss(stylehacks(options))
-    .process(fixture)
-    .then(({ css }) => {
-      t.deepEqual(css, expected);
-    });
+function processCss(fixture, expected, options) {
+  return () =>
+    postcss(stylehacks(options))
+      .process(fixture, { from: undefined })
+      .then(({ css }) => expect(css).toBe(expected));
 }
 
-function passthroughCss(t, fixture, options) {
-  return processCss(t, fixture, fixture, options);
+function passthroughCss(fixture, options) {
+  return processCss(fixture, fixture, options);
 }
 
-ava('can be used as a postcss plugin', (t) => {
+test('can be used as a postcss plugin', () => {
   let css = 'h1 { _color: #ffffff }';
 
   return postcss()
     .use(stylehacks())
-    .process(css)
+    .process(css, { from: undefined })
     .then((result) => {
-      t.deepEqual(result.css, 'h1 { }', 'should be consumed');
+      expect(result.css).toBe('h1 { }');
     });
 });
 
-ava('can be used as a postcss plugin (2)', (t) => {
+test('can be used as a postcss plugin (2)', () => {
   let css = 'h1 { _color: #ffffff }';
 
   return postcss([stylehacks()])
-    .process(css)
-    .then((result) => {
-      t.deepEqual(result.css, 'h1 { }', 'should be consumed');
-    });
+    .process(css, { from: undefined })
+    .then((result) => expect(result.css).toBe('h1 { }'));
 });
 
-ava('can be used as a postcss plugin (3)', (t) => {
+test('can be used as a postcss plugin (3)', () => {
   let css = 'h1 { _color: #ffffff }';
 
   return postcss([stylehacks])
-    .process(css)
+    .process(css, { from: undefined })
     .then((result) => {
-      t.deepEqual(result.css, 'h1 { }', 'should be consumed');
+      expect(result.css).toBe('h1 { }');
     });
 });
 
-ava('should use the postcss plugin api', (t) => {
-  t.truthy(stylehacks().postcssVersion, 'should be able to access version');
-  t.deepEqual(
-    stylehacks().postcssPlugin,
-    name,
-    'should be able to access name'
-  );
+test('should use the postcss plugin api', () => {
+  expect(stylehacks().postcssVersion).toBeDefined();
+  expect(stylehacks().postcssPlugin).toBe(packageJson.name);
 });
 
-ava('should have a separate detect method', (t) => {
+test('should have a separate detect method', () => {
   let counter = 0;
 
   let plugin = postcss.plugin('test', () => {
@@ -69,13 +61,11 @@ ava('should have a separate detect method', (t) => {
   });
 
   return postcss(plugin)
-    .process('h1 { _color: red; =color: black }')
-    .then(() => {
-      t.deepEqual(counter, 2);
-    });
+    .process('h1 { _color: red; =color: black }', { from: undefined })
+    .then(() => expect(counter).toBe(2));
 });
 
-ava('should have a separate detect method (2)', (t) => {
+test('should have a separate detect method (2)', () => {
   let counter = 0;
 
   let plugin = postcss.plugin('test', () => {
@@ -89,29 +79,24 @@ ava('should have a separate detect method (2)', (t) => {
   });
 
   return postcss(plugin)
-    .process('h1 { _color: red; =color: black }')
-    .then(() => {
-      t.deepEqual(counter, 0);
-    });
+    .process('h1 { _color: red; =color: black }', { from: undefined })
+    .then(() => expect(counter).toBe(0));
 });
 
-ava(
+test(
   'should handle rules with empty selectors',
-  processCss,
-  '{ _color: red }',
-  '{ }'
+  processCss('{ _color: red }', '{ }')
 );
 
-ava(
+test(
   'should pass through other comments in selectors',
-  passthroughCss,
-  'h1 /* => */ h2 {}'
+  passthroughCss('h1 /* => */ h2 {}')
 );
 
-ava(
+test(
   'should pass through css mixins',
-  passthroughCss,
-  `paper-card {
+  passthroughCss(
+    `paper-card {
         --paper-card-content: {
             padding-top: 0;
         };
@@ -119,12 +104,13 @@ ava(
         width: 768px;
         max-width: calc(100% - 32px);
     }`
+  )
 );
 
-ava(
+test(
   'should pass through css mixins (2)',
-  passthroughCss,
-  `paper-card {
+  passthroughCss(
+    `paper-card {
         --paper-card-header: {
             height: 128px;
             padding: 0 48px;
@@ -143,4 +129,5 @@ ava(
         };
         width: 384px;
     }`
+  )
 );

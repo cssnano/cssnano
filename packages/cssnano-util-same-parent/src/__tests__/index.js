@@ -1,21 +1,20 @@
-import test from 'ava';
 import postcss from 'postcss';
 import sameParent from '..';
 
-test('should calculate same parent', (t) => {
+test('should calculate same parent', () => {
   return postcss()
-    .process('h1 {} h2 {}')
+    .process('h1 {} h2 {}', { from: undefined })
     .then((result) => {
       const h1 = result.root.nodes[0];
       const h2 = result.root.nodes[1];
 
-      t.true(sameParent(h1, h2));
+      expect(sameParent(h1, h2)).toBe(true);
     });
 });
 
-test('should calculate same parent (detached nodes)', (t) => {
+test('should calculate same parent (detached nodes)', () => {
   return postcss()
-    .process('h1 {} h2 {}')
+    .process('h1 {} h2 {}', { from: undefined })
     .then((result) => {
       const h1 = result.root.nodes[0];
       const h2 = result.root.nodes[1];
@@ -23,44 +22,44 @@ test('should calculate same parent (detached nodes)', (t) => {
       h1.remove();
       h2.remove();
 
-      t.true(sameParent(h1, h2));
+      expect(sameParent(h1, h2)).toBe(true);
     });
 });
 
-test('should calculate same parent (at rules)', (t) => {
+test('should calculate same parent (at rules)', () => {
   return postcss()
-    .process('@media screen{h1 {} h2 {}}')
+    .process('@media screen{h1 {} h2 {}}', { from: undefined })
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[0].nodes[1];
 
-      t.true(sameParent(h1, h2));
+      expect(sameParent(h1, h2)).toBe(true);
     });
 });
 
-test('should calculate same parent (multiple at rules)', (t) => {
+test('should calculate same parent (multiple at rules)', () => {
   return postcss()
-    .process('@media screen{h1 {}} @media screen{h2 {}}')
+    .process('@media screen{h1 {}} @media screen{h2 {}}', { from: undefined })
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0];
 
-      t.true(sameParent(h1, h2));
+      expect(sameParent(h1, h2)).toBe(true);
     });
 });
 
-test('should calculate same parent (multiple at rules (uppercase))', (t) => {
+test('should calculate same parent (multiple at rules (uppercase))', () => {
   return postcss()
-    .process('@media screen{h1 {}} @MEDIA screen{h2 {}}')
+    .process('@media screen{h1 {}} @MEDIA screen{h2 {}}', { from: undefined })
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0];
 
-      t.true(sameParent(h1, h2));
+      expect(sameParent(h1, h2)).toBe(true);
     });
 });
 
-test('should calculate same parent (nested at rules)', (t) => {
+test('should calculate same parent (nested at rules)', () => {
   return postcss()
     .process(
       `
@@ -74,16 +73,18 @@ test('should calculate same parent (nested at rules)', (t) => {
                 h2 {}
             }
         }
-    `
+    `,
+      { from: undefined }
     )
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0].nodes[0];
-      t.true(sameParent(h1, h2));
+
+      expect(sameParent(h1, h2)).toBe(true);
     });
 });
 
-test('should calculate not same parent (nested at rules)', (t) => {
+test('should calculate not same parent (nested at rules)', () => {
   return postcss()
     .process(
       `
@@ -97,16 +98,18 @@ test('should calculate not same parent (nested at rules)', (t) => {
                 h2 {}
             }
         }
-    `
+    `,
+      { from: undefined }
     )
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0].nodes[0];
-      t.false(sameParent(h1, h2));
+
+      expect(sameParent(h1, h2)).not.toBe(true);
     });
 });
 
-test('should calculate not same parent (nested at rules) (2)', (t) => {
+test('should calculate not same parent (nested at rules) (2)', () => {
   return postcss()
     .process(
       `
@@ -120,16 +123,18 @@ test('should calculate not same parent (nested at rules) (2)', (t) => {
                 h2 {}
             }
         }
-    `
+    `,
+      { from: undefined }
     )
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0].nodes[0];
-      t.false(sameParent(h1, h2));
+
+      expect(sameParent(h1, h2)).not.toBe(true);
     });
 });
 
-test('should calculate not same parent (nested at rules) (3)', (t) => {
+test('should calculate not same parent (nested at rules) (3)', () => {
   return postcss()
     .process(
       `
@@ -141,16 +146,18 @@ test('should calculate not same parent (nested at rules) (3)', (t) => {
                 h2 {}
             }
         }
-    `
+    `,
+      { from: undefined }
     )
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0].nodes[0];
-      t.false(sameParent(h1, h2));
+
+      expect(sameParent(h1, h2)).not.toBe(true);
     });
 });
 
-test('should calculate not same parent (nested at rules) (4)', (t) => {
+test('should calculate not same parent (nested at rules) (4)', () => {
   return postcss()
     .process(
       `
@@ -162,11 +169,13 @@ test('should calculate not same parent (nested at rules) (4)', (t) => {
                 h2 {}
             }
         }
-    `
+    `,
+      { from: undefined }
     )
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0].nodes[0];
-      t.false(sameParent(h1, h2));
+
+      expect(sameParent(h1, h2)).not.toBe(true);
     });
 });

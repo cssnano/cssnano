@@ -1,28 +1,31 @@
 import postcss from 'postcss';
-import ava from 'ava';
 import nano from '..';
 import { usePostCSSPlugin } from '../../../../util/testHelpers';
 
-function pluginMacro(t, instance) {
+function pluginMacro(instance) {
   const css = 'h1 { color: #ffffff }';
   const min = 'h1{color:#fff}';
 
-  return instance.process(css).then((result) => {
-    t.deepEqual(result.css, min);
-  });
+  return () =>
+    instance.process(css).then((result) => {
+      expect(result.css).toBe(min);
+    });
 }
 
-ava('can be used as a postcss plugin', pluginMacro, postcss().use(nano()));
-ava('can be used as a postcss plugin (2)', pluginMacro, postcss([nano()]));
-ava('can be used as a postcss plugin (3)', pluginMacro, postcss(nano));
+test('can be used as a postcss plugin', pluginMacro(postcss().use(nano())));
 
-ava('should use the postcss plugin api', usePostCSSPlugin, nano());
+test('can be used as a postcss plugin (2)', pluginMacro(postcss([nano()])));
 
-ava('should work with sourcemaps', (t) => {
+test('can be used as a postcss plugin (3)', pluginMacro(postcss(nano)));
+
+test('should use the postcss plugin api', usePostCSSPlugin(nano()));
+
+test('should work with sourcemaps', () => {
   return nano
-    .process('h1{z-index:1}', { map: { inline: true } })
+    .process('h1{z-index:1}', { from: undefined, map: { inline: true } })
     .then(({ css }) => {
-      const hasMap = /sourceMappingURL=data:application\/json;base64/.test(css);
-      t.truthy(hasMap);
+      expect(/sourceMappingURL=data:application\/json;base64/.test(css)).toBe(
+        true
+      );
     });
 });

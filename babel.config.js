@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = function(api) {
   const env = api.env();
 
@@ -59,7 +61,7 @@ module.exports = function(api) {
     plugins.push([
       'module-resolver',
       {
-        cwd: './packages',
+        cwd: path.resolve('./packages'),
         alias: {
           'lerna:css-size': './css-size/src/index.js',
           'lerna:cssnano': './cssnano/src/index.js',
