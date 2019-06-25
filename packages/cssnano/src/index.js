@@ -50,7 +50,9 @@ function resolvePreset(preset) {
 
   // Provide an alias for the default preset, as it is built-in.
   if (fn === 'default') {
-    return Promise.resolve(require('cssnano-preset-default')(options).plugins);
+    return Promise.resolve(
+      require('lerna:cssnano-preset-default')(options).plugins
+    );
   }
 
   // For non-JS setups; we'll need to invoke the preset ourselves.

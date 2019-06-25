@@ -4,7 +4,9 @@
   "description": "Convert two value syntax for repeat-style into one value.",
   "main": "dist/index.js",
   "scripts": {
-    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/'"
+    "prebuild": "del-cli dist",
+    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
+    "prepublish": "yarn build"
   },
   "files": [
     "LICENSE-MIT",
@@ -16,11 +18,6 @@
     "cssnano-util-get-match": "^4.0.0",
     "postcss": "^7.0.16",
     "postcss-value-parser": "^3.3.1"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.4.4",
-    "@babel/core": "^7.4.5",
-    "cross-env": "^5.2.0"
   },
   "author": {
     "name": "Ben Briggs",

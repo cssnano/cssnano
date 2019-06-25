@@ -10,7 +10,9 @@
   ],
   "scripts": {
     "acquire": "babel-node ./src/acquire.js",
-    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/,src/acquire.js'"
+    "prebuild": "del-cli dist",
+    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/,src/acquire.js'",
+    "prepublish": "yarn build"
   },
   "keywords": [
     "css",
@@ -18,14 +20,6 @@
     "postcss-plugin"
   ],
   "license": "MIT",
-  "devDependencies": {
-    "@babel/cli": "^7.4.4",
-    "@babel/core": "^7.4.5",
-    "cross-env": "^5.2.0",
-    "got": "^8.3.2",
-    "html2plaintext": "^2.1.2",
-    "write-file": "^1.0.0"
-  },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
     "name": "Ben Briggs",
