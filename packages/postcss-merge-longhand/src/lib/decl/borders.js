@@ -17,6 +17,7 @@ import canExplode from '../canExplode';
 import getLastNode from '../getLastNode';
 import parseWsc from '../parseWsc';
 import { isValidWsc } from '../validateWsc';
+import equalCustomProps from '../equalCustomProps';
 
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentcolor'];
@@ -708,8 +709,8 @@ function merge(rule) {
         node !== lastNode &&
         node.important === lastNode.important &&
         node.prop === lastNode.prop &&
-        !isCustomProp(node) &&
-        !isCustomProp(lastNode)
+        !(!isCustomProp(node) && isCustomProp(lastNode)) &&
+        !equalCustomProps(node, lastNode)
     );
 
     if (duplicates.length) {

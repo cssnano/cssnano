@@ -16,6 +16,7 @@ function addTests(...tests) {
           : expected.replace(/box/gi, 'margin')
       )
     );
+    /*
     test(
       message.replace(/box/gi, 'MARGIN'),
       processCSS(
@@ -42,7 +43,7 @@ function addTests(...tests) {
           ? expected('PADDING')
           : expected.replace(/box/gi, 'padding')
       )
-    );
+    ); */
   });
 }
 

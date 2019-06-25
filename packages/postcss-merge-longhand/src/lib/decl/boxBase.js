@@ -10,6 +10,7 @@ import remove from '../remove';
 import trbl from '../trbl';
 import isCustomProp from '../isCustomProp';
 import canExplode from '../canExplode';
+import equalCustomProps from '../equalCustomProps';
 
 export default (prop) => {
   const properties = trbl.map((direction) => `${prop}-${direction}`);
@@ -42,8 +43,8 @@ export default (prop) => {
           node !== lastNode &&
           node.important === lastNode.important &&
           node.prop === lastNode.prop &&
-          !isCustomProp(node) &&
-          !isCustomProp(lastNode)
+          !(!isCustomProp(node) && isCustomProp(lastNode)) &&
+          !equalCustomProps(node, lastNode)
       );
 
       duplicates.forEach(remove);

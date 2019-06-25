@@ -9,6 +9,7 @@ import insertCloned from '../insertCloned';
 import remove from '../remove';
 import isCustomProp from '../isCustomProp';
 import canExplode from '../canExplode';
+import equalCustomProps from '../equalCustomProps';
 
 const properties = ['column-width', 'column-count'];
 const auto = 'auto';
@@ -105,8 +106,8 @@ function cleanup(rule) {
         node !== lastNode &&
         node.important === lastNode.important &&
         node.prop === lastNode.prop &&
-        !isCustomProp(node) &&
-        !isCustomProp(lastNode)
+        !(!isCustomProp(node) && isCustomProp(lastNode)) &&
+        !equalCustomProps(node, lastNode)
     );
 
     duplicates.forEach(remove);
