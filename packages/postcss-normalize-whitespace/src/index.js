@@ -28,7 +28,14 @@ function reduceWhitespaces(node) {
   }
 }
 
-export default plugin('postcss-normalize-whitespace', () => {
+export default plugin('postcss-normalize-whitespace', (opts) => {
+  const { removeLastSemicolon } = Object.assign(
+    {},
+    {
+      removeLastSemicolon: true,
+    },
+    opts
+  );
   return (css) => {
     const cache = {};
 
@@ -74,7 +81,9 @@ export default plugin('postcss-normalize-whitespace', () => {
         node.raws.semicolon = false;
       } else if (type === rule || type === atrule) {
         node.raws.between = node.raws.after = '';
-        node.raws.semicolon = false;
+        if (removeLastSemicolon) {
+          node.raws.semicolon = false;
+        }
       }
     });
 

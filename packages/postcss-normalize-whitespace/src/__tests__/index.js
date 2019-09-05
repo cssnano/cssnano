@@ -50,6 +50,18 @@ test(
 );
 
 test(
+  'should remove last semicolon',
+  processCSS('h1{width:10px;height:10px;}', 'h1{width:10px;height:10px}')
+);
+
+test(
+  'should keep last semicolon, with a flag',
+  processCSS('h1{width:10px;height:10px;}', 'h1{width:10px;height:10px;}', {
+    removeLastSemicolon: false,
+  })
+);
+
+test(
   'should trim whitespace from nested functions (preset)',
   withDefaultPreset(
     'h1{width:calc(10px - ( 100px / var(--test) ))}',

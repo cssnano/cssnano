@@ -15,18 +15,28 @@ npm install postcss-normalize-whitespace --save
 ### Input
 
 ```css
-h1{
-    width: calc(10px - ( 100px / var(--test) )) 
+h1 {
+    width: calc(10px - ( 100px / var(--test) ));
+    height: 20px;
 }
 ```
 
 ### Output
 
 ```css
-h1{
-    width: calc(10px - 100px / var(--test))
-}
-``` 
+h1{width:calc(10px - 100px / var(--test));height:20px}
+```
+
+## API
+
+### Options
+
+#### removeLastSemicolon
+
+type: `boolean`<br/>
+default: `true`
+
+Removes semicolon from the last declaration in the rule.
 
 ## Usage
 
