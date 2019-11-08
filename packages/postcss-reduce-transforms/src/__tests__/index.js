@@ -474,3 +474,8 @@ test(
 test('should pass through broken syntax', passthroughCSS('h1{transform:}'));
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+
+test(
+  'should work with transform:rotate3d(0)',
+  processCSS('h1{transform:rotate3d(0)}', 'h1{transform:rotate3d(0)}')
+);
