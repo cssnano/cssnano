@@ -1,5 +1,5 @@
-import preset from '..';
 import { processCSSWithPresetFactory } from '../../../../util/testHelpers';
+import preset from '..';
 
 const { processCSS } = processCSSWithPresetFactory(preset);
 

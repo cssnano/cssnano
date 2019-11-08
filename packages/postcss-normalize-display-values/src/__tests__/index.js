@@ -1,10 +1,10 @@
 import mappings from '../lib/map';
-import plugin from '..';
 import getData from '../../../../util/getData';
 import {
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers';
+import plugin from '..';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 const data = getData(mappings);

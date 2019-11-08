@@ -1,10 +1,10 @@
 import postcss from 'postcss';
-import plugin from '..';
 import encode from '../lib/encode';
 import {
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers';
+import plugin from '..';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

@@ -1,12 +1,12 @@
 import postcss from 'postcss';
 import vars from 'postcss-simple-vars';
 import comments from 'postcss-discard-comments'; // alias not loading correctly
-import plugin from '..';
 import { pseudoElements } from '../lib/ensureCompatibility';
 import {
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers';
+import plugin from '..';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
