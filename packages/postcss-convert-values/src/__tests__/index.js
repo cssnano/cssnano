@@ -280,6 +280,10 @@ test(
     'h1{opacity:1;opacity:1;opacity:1}'
   )
 );
+test(
+  'should make no change with the % in opacity value ',
+  processCSS('h1{opacity:150%;opacity:15;}', 'h1{opacity:150%;opacity:1;}')
+);
 
 test(
   'should clamp opacity to 0 minimum',
