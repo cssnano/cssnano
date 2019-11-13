@@ -10,130 +10,124 @@ jobs:
       - task: NodeTool@0
         inputs:
           versionSpec: ^10.13.0
-        displayName: 'Install Node.js'
+        displayName: "Install Node.js"
       - script: |
           node -v
           npm -v
           yarn -v
-        displayName: 'Print versions'
+        displayName: "Print versions"
       - bash: yarn install
-        displayName: 'Install dependencies'
+        displayName: "Install dependencies"
       - script: yarn lint
-        displayName: 'Run lint'
+        displayName: "Run lint"
 
   - job: Linux
     pool:
       vmImage: ubuntu-16.04
     strategy:
-      maxParallel: 4
+      maxParallel: 3
       matrix:
+        node-13:
+          node_version: ^13.0.0
         node-12:
           node_version: ^12.0.0
         node-10:
           node_version: ^10.13.0
-        node-8:
-          node_version: ^8.9.0
-        node-6:
-          node_version: ^6.9.0
     steps:
       - task: NodeTool@0
         inputs:
           versionSpec: $(node_version)
-        displayName: 'Install Node.js $(node_version)'
+        displayName: "Install Node.js $(node_version)"
       - script: |
           node -v
           npm -v
           yarn -v
-        displayName: 'Print versions'
+        displayName: "Print versions"
       - bash: yarn install --ignore-engines
-        displayName: 'Install dependencies'
+        displayName: "Install dependencies"
       - script: yarn test:coverage --ci --reporters="default" --reporters="jest-junit"
-        displayName: 'Run tests with coverage'
+        displayName: "Run tests with coverage"
       - task: PublishTestResults@2
         inputs:
-          testRunTitle: 'Linux with Node.js $(node_version)'
-          testResultsFiles: '**/junit.xml'
+          testRunTitle: "Linux with Node.js $(node_version)"
+          testResultsFiles: "**/junit.xml"
         condition: succeededOrFailed()
-        displayName: 'Publish test results'
+        displayName: "Publish test results"
       - script: curl -s https://codecov.io/bash | bash -s -- -t $(CODECOV_TOKEN)
         condition: succeededOrFailed()
-        displayName: 'Submit coverage data to codecov'
+        displayName: "Submit coverage data to codecov"
 
   - job: macOS
     pool:
       vmImage: macOS-10.14
     strategy:
-      maxParallel: 4
+      maxParallel: 3
       matrix:
+        node-13:
+          node_version: ^13.0.0
         node-12:
           node_version: ^12.0.0
         node-10:
           node_version: ^10.13.0
-        node-8:
-          node_version: ^8.9.0
-        node-6:
-          node_version: ^6.9.0
     steps:
       - task: NodeTool@0
         inputs:
           versionSpec: $(node_version)
-        displayName: 'Install Node.js $(node_version)'
+        displayName: "Install Node.js $(node_version)"
       - script: |
           node -v
           npm -v
           yarn -v
-        displayName: 'Print versions'
+        displayName: "Print versions"
       - bash: yarn install --ignore-engines
-        displayName: 'Install dependencies'
+        displayName: "Install dependencies"
       - script: yarn test:coverage -- --ci --reporters="default" --reporters="jest-junit"
-        displayName: 'Run tests with coverage'
+        displayName: "Run tests with coverage"
       - task: PublishTestResults@2
         inputs:
-          testRunTitle: 'Linux with Node.js $(node_version)'
-          testResultsFiles: '**/junit.xml'
+          testRunTitle: "Linux with Node.js $(node_version)"
+          testResultsFiles: "**/junit.xml"
         condition: succeededOrFailed()
-        displayName: 'Publish test results'
+        displayName: "Publish test results"
       - script: curl -s https://codecov.io/bash | bash -s -- -t $(CODECOV_TOKEN)
         condition: succeededOrFailed()
-        displayName: 'Submit coverage data to codecov'
+        displayName: "Submit coverage data to codecov"
 
   - job: Windows
     pool:
       vmImage: windows-2019
     strategy:
-      maxParallel: 4
+      maxParallel: 3
       matrix:
+        node-13:
+          node_version: ^13.0.0
         node-12:
           node_version: ^12.0.0
         node-10:
           node_version: ^10.13.0
-        node-8:
-          node_version: ^8.9.0
-        node-6:
-          node_version: ^6.14.0
     steps:
-      - script: 'git config --global core.autocrlf input'
-        displayName: 'Config git core.autocrlf'
+      - script: "git config --global core.autocrlf input"
+        displayName: "Config git core.autocrlf"
       - checkout: self
       - task: NodeTool@0
         inputs:
           versionSpec: $(node_version)
-        displayName: 'Install Node.js $(node_version)'
+        displayName: "Install Node.js $(node_version)"
       - script: |
           node -v
           npm -v
           yarn -v
-        displayName: 'Print versions'
+        displayName: "Print versions"
       - bash: yarn install --ignore-engines
-        displayName: 'Install dependencies'
+        displayName: "Install dependencies"
       - script: yarn test:coverage -- --ci --reporters="default" --reporters="jest-junit"
-        displayName: 'Run tests with coverage'
+        displayName: "Run tests with coverage"
       - task: PublishTestResults@2
         inputs:
-          testRunTitle: 'Linux with Node.js $(node_version)'
-          testResultsFiles: '**/junit.xml'
+          testRunTitle: "Linux with Node.js $(node_version)"
+          testResultsFiles: "**/junit.xml"
         condition: succeededOrFailed()
-        displayName: 'Publish test results'
+        displayName: "Publish test results"
       - script: curl -s https://codecov.io/bash | bash -s -- -t $(CODECOV_TOKEN)
         condition: succeededOrFailed()
-        displayName: 'Submit coverage data to codecov'
+        displayName: "Submit coverage data to codecov"

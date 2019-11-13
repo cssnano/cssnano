@@ -1,10 +1,10 @@
 import fromInitial from '../../data/fromInitial.json';
 import toInitial from '../../data/toInitial.json';
-import plugin from '..';
 import {
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers';
+import plugin from '..';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
