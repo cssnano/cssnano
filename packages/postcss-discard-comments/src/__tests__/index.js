@@ -1,9 +1,9 @@
 import vars from 'postcss-simple-vars';
-import plugin from '..';
 import {
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers';
+import plugin from '..';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 

@@ -1,6 +1,6 @@
 import postcss from 'postcss';
-import nano from '..';
 import { usePostCSSPlugin } from '../../../../util/testHelpers';
+import nano from '..';
 
 function pluginMacro(instance) {
   const css = 'h1 { color: #ffffff }';

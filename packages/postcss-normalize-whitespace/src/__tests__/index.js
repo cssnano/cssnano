@@ -1,8 +1,8 @@
-import plugin from '..';
 import {
   processCSSFactory,
   processCSSWithPresetFactory,
 } from '../../../../util/testHelpers';
+import plugin from '..';
 
 const { processCSS } = processCSSFactory(plugin);
 const { processCSS: withDefaultPreset } = processCSSWithPresetFactory(
