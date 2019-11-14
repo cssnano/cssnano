@@ -23,10 +23,12 @@ function minifyPromise(decl, getSvgo, opts) {
 
     let { value, quote } = node.nodes[0];
     let isBase64, isUriEncoded;
+    const url = new URL(value);
     let svg = value.replace(dataURI, '');
 
     if (dataURIBase64.test(value)) {
-      svg = Buffer.from(svg, 'base64').toString('utf8');
+      let base64String = `${url.protocol}${url.pathname}`.replace(dataURI, '');
+      svg = Buffer.from(base64String, 'base64').toString('utf8');
       isBase64 = true;
     } else {
       let decodedUri;
@@ -60,7 +62,7 @@ function minifyPromise(decl, getSvgo, opts) {
 
           if (isBase64) {
             data = Buffer.from(result.data).toString('base64');
-            optimizedValue = 'data:image/svg+xml;base64,' + data;
+            optimizedValue = 'data:image/svg+xml;base64,' + data + url.hash;
           } else {
             data = isUriEncoded ? encode(result.data) : result.data;
             // Should always encode # otherwise we yield a broken SVG
