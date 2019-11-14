@@ -1,5 +1,5 @@
-import plugin from '..';
 import { processCSSFactory } from '../../../../util/testHelpers';
+import plugin from '..';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 

@@ -1,5 +1,5 @@
-import stylehacks from '..';
 import { processCSSFactory } from '../../../../util/testHelpers';
+import stylehacks from '..';
 
 const { processor, processCSS, passthroughCSS } = processCSSFactory(stylehacks);
 

@@ -1,8 +1,8 @@
-import plugin from '..';
 import {
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers';
+import plugin from '..';
 
 const { processCSS } = processCSSFactory(plugin);
 
