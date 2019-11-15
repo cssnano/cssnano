@@ -1,29 +1,10 @@
 import path from 'path';
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
-import normalize from 'normalize-url';
-import isAbsolute from 'is-absolute-url';
 
 const multiline = /\\[\r\n]/;
 // eslint-disable-next-line no-useless-escape
 const escapeChars = /([\s\(\)"'])/g;
-
-function convert(url, options) {
-  if (isAbsolute(url) || url.startsWith('//')) {
-    let normalizedURL = null;
-
-    try {
-      normalizedURL = normalize(url, options);
-    } catch (e) {
-      normalizedURL = url;
-    }
-
-    return normalizedURL;
-  }
-
-  // `path.normalize` always returns backslashes on Windows, need replace in `/`
-  return path.normalize(url).replace(new RegExp('\\' + path.sep, 'g'), '/');
-}
 
 function transformNamespace(rule) {
   rule.params = valueParser(rule.params)
@@ -75,7 +56,9 @@ function transformDecl(decl, opts) {
       }
 
       if (!/^.+-extension:\//i.test(url.value)) {
-        url.value = convert(url.value, opts);
+        url.value = path
+          .normalize(url.value)
+          .replace(new RegExp('\\' + path.sep, 'g'), '/');
       }
 
       if (escapeChars.test(url.value) && url.type === 'string') {
