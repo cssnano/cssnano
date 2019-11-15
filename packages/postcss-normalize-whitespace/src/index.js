@@ -19,8 +19,9 @@ function reduceWhitespaces(node) {
   } else if (node.type === 'div') {
     node.before = node.after = '';
   } else if (node.type === 'function') {
-    node.before = node.after = '';
-
+    if (node.value.toLowerCase() !== 'var') {
+      node.before = node.after = '';
+    }
     if (node.value.toLowerCase() === 'calc') {
       valueParser.walk(node.nodes, reduceCalcWhitespaces);
       return false;

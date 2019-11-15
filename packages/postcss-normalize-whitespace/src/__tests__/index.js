@@ -56,3 +56,11 @@ test(
     'h1{width:calc(10px - 100px/var(--test))}'
   )
 );
+
+test(
+  'should not trim spaces inside of var function',
+  withDefaultPreset(
+    'div{border-radius:10px var(--foobar, )}',
+    'div{border-radius:10px var(--foobar, )}'
+  )
+);
