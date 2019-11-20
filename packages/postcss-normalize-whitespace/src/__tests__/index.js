@@ -58,8 +58,23 @@ test(
 );
 
 test(
+  'should not trim spaces inside of nested var function',
+  processCSS(
+    'div{background:var(--my-var, var(--my-background, pink, ))}',
+    'div{background:var(--my-var,var(--my-background,pink, ))}'
+  )
+);
+test(
+  'should not trim spaces inside of var inside calc function',
+  processCSS(
+    'div {height: calc(var(--text-xxxl, ) * var(--text-scale-ratio-up, ))}',
+    'div{height:calc(var(--text-xxxl, ) * var(--text-scale-ratio-up, ))}'
+  )
+);
+
+test(
   'should not trim spaces inside of var function',
-  withDefaultPreset(
+  processCSS(
     'div{border-radius:10px var(--foobar, )}',
     'div{border-radius:10px var(--foobar, )}'
   )

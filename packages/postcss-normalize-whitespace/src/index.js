@@ -9,7 +9,9 @@ function reduceCalcWhitespaces(node) {
   if (node.type === 'space') {
     node.value = ' ';
   } else if (node.type === 'function') {
-    node.before = node.after = '';
+    if (!['var', 'env'].includes(node.value.toLowerCase())) {
+      node.before = node.after = '';
+    }
   }
 }
 
@@ -19,7 +21,7 @@ function reduceWhitespaces(node) {
   } else if (node.type === 'div') {
     node.before = node.after = '';
   } else if (node.type === 'function') {
-    if (node.value.toLowerCase() !== 'var') {
+    if (!['var', 'env'].includes(node.value.toLowerCase())) {
       node.before = node.after = '';
     }
     if (node.value.toLowerCase() === 'calc') {
