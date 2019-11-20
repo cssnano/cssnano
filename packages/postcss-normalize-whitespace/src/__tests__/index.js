@@ -79,3 +79,11 @@ test(
     'div{border-radius:10px var(--foobar, )}'
   )
 );
+
+test(
+  'should not trim spaces inside of env function',
+  processCSS(
+    'div{ border-radius:env(border-rad, ) }',
+    'div{border-radius:env(border-rad, )}'
+  )
+);
