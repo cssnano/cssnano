@@ -35,7 +35,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "brotli-size": "^0.1.0",
-    "cli-table": "^0.3.1",
+    "cli-table3": "^0.5.1",
     "cssnano": "^4.1.10",
     "gzip-size": "^5.1.1",
     "minimist": "^1.2.0",

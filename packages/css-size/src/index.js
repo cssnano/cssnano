@@ -1,7 +1,7 @@
 import prettyBytes from 'pretty-bytes';
 import { sync as gzip } from 'gzip-size';
 import { sync as brotli } from 'brotli-size';
-import Table from 'cli-table';
+import Table from 'cli-table3';
 import round from 'round-precision';
 import nano from 'lerna:cssnano';
 
