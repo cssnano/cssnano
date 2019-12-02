@@ -94,3 +94,11 @@ test(
     'div{border-radius:constant(border-rad, )}'
   )
 );
+
+test(
+  'should not trim spaces inside of env function',
+  processCSS(
+    'div{ border-radius:var(border-rad, ) }',
+    'div{border-radius:var(border-rad, )}'
+  )
+);
