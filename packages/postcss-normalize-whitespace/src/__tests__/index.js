@@ -56,3 +56,49 @@ test(
     'h1{width:calc(10px - 100px/var(--test))}'
   )
 );
+
+test(
+  'should not trim spaces inside of nested var function',
+  processCSS(
+    'div{background:var(--my-var, var(--my-background, pink, ))}',
+    'div{background:var(--my-var,var(--my-background,pink, ))}'
+  )
+);
+test(
+  'should not trim spaces inside of var inside calc function',
+  processCSS(
+    'div {height: calc(var(--text-xxxl, ) * var(--text-scale-ratio-up, ))}',
+    'div{height:calc(var(--text-xxxl, ) * var(--text-scale-ratio-up, ))}'
+  )
+);
+
+test(
+  'should not trim spaces inside of var function',
+  processCSS(
+    'div{border-radius:10px var(--foobar, )}',
+    'div{border-radius:10px var(--foobar, )}'
+  )
+);
+
+test(
+  'should not trim spaces inside of env function',
+  processCSS(
+    'div{ border-radius:env(border-rad, ) }',
+    'div{border-radius:env(border-rad, )}'
+  )
+);
+test(
+  'should not trim spaces inside of constant function',
+  processCSS(
+    'div{ border-radius:constant(border-rad, ) }',
+    'div{border-radius:constant(border-rad, )}'
+  )
+);
+
+test(
+  'should not trim spaces inside of env function',
+  processCSS(
+    'div{ border-radius:var(border-rad, ) }',
+    'div{border-radius:var(border-rad, )}'
+  )
+);
