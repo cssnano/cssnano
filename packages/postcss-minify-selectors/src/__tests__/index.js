@@ -510,3 +510,27 @@ test('should handle selectors from other plugins', () => {
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+
+test(
+  'should not convert inner quotes of selectors',
+  processCSS(
+    `[data-expression^="'Error"]{color: yellow;}`,
+    `[data-expression^="'Error"]{color: yellow;}`
+  )
+);
+
+test(
+  'should not convert inner quotes of selectors: test-2',
+  processCSS(
+    `[x="to'prove'a'point"]{color: yellow;}`,
+    `[x="to'prove'a'point"]{color: yellow;}`
+  )
+);
+
+test(
+  'should not convert inner quotes of selectors: test-2',
+  processCSS(
+    `[x='should:be like!these']{color: yellow;}`,
+    `[x='should:be like!these']{color: yellow;}`
+  )
+);

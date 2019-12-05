@@ -22,7 +22,14 @@ function attribute(selector) {
     selector.value = selector.value.replace(/\\\n/g, '').trim();
 
     if (canUnquote(selector.value)) {
-      selector.value = unquote(selector.value);
+      /**
+       * passing the quote in order to notify while quoting that to quote the outer one only
+       *  "selector" -> selector
+       *  'selector' ->  selecltor
+       *  "se'lector" -> se'lector
+       *  'se"lector' -> se"lector
+       */
+      selector.value = unquote(selector.value, selector._quoteMark);
     }
 
     selector.operator = selector.operator.trim();
