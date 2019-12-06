@@ -55,9 +55,11 @@ function transformDecl(decl, opts) {
         return false;
       }
 
-      if (!/^.+-extension:\//i.test(url.value)) {
+      if (!/^.+-extension:\//i.test(url.value) && !url.value.startsWith('//')) {
+        // eslint-disable-next-line no-useless-escape
         url.value = path
           .normalize(url.value)
+          .replace(/:[\\\/]+/g, '://')
           .replace(new RegExp('\\' + path.sep, 'g'), '/');
       }
 
