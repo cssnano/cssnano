@@ -1,9 +1,9 @@
+/* eslint-disable no-useless-escape */
 import path from 'path';
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 
 const multiline = /\\[\r\n]/;
-// eslint-disable-next-line no-useless-escape
 const escapeChars = /([\s\(\)"'])/g;
 
 function transformNamespace(rule) {
@@ -26,7 +26,7 @@ function transformNamespace(rule) {
     .toString();
 }
 
-function transformDecl(decl, opts) {
+function transformDecl(decl) {
   decl.value = valueParser(decl.value)
     .walk((node) => {
       if (
@@ -56,7 +56,6 @@ function transformDecl(decl, opts) {
       }
 
       if (!/^.+-extension:\//i.test(url.value) && !url.value.startsWith('//')) {
-        // eslint-disable-next-line no-useless-escape
         url.value = path
           .normalize(url.value)
           .replace(/:[\\\/]+/g, '://')
@@ -79,21 +78,11 @@ function transformDecl(decl, opts) {
     .toString();
 }
 
-export default postcss.plugin('postcss-normalize-url', (opts) => {
-  opts = Object.assign(
-    {},
-    {
-      normalizeProtocol: false,
-      stripFragment: false,
-      stripWWW: false,
-    },
-    opts
-  );
-
+export default postcss.plugin('postcss-normalize-url', () => {
   return (css) => {
     css.walk((node) => {
       if (node.type === 'decl') {
-        return transformDecl(node, opts);
+        return transformDecl(node);
       } else if (
         node.type === 'atrule' &&
         node.name.toLowerCase() === 'namespace'
