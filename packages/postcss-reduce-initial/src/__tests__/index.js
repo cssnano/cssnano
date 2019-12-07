@@ -86,3 +86,10 @@ test(
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+
+test(
+  'min-width auto tests',
+  processCSS('h1{min-width:initial}', 'h1{min-width:auto}', {
+    env: 'chrome58',
+  })
+);
