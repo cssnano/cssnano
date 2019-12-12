@@ -256,6 +256,7 @@ test(
 test(
   'should not incorrectly extract background properties',
   processCss(
+    '.iPhone{background:url(a.png);background-image:url(../../../sprites/c.png);background-position:-102px -74px;background-repeat:no-repeat}.logo{background:url(b.png);background-image:url(../../../sprites/c.png);background-position:-2px -146px;background-repeat:no-repeat}',
     '.iPhone{background:url(a.png);background-image:url(../../../sprites/c.png);background-position:-102px -74px;background-repeat:no-repeat}.logo{background:url(b.png);background-image:url(../../../sprites/c.png);background-position:-2px -146px;background-repeat:no-repeat}'
   )
 );
