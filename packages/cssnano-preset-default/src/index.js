@@ -49,9 +49,6 @@ const defaultOpts = {
   normalizeCharset: {
     add: false,
   },
-  cssDeclarationSorter: {
-    exclude: true,
-  },
 };
 
 export default function defaultPreset(opts = {}) {
