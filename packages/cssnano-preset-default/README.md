@@ -14,6 +14,7 @@
 
 -   [Plugins](#plugins)
 
+    -   [css-declaration-sorter (external)](#css-declaration-sorter-external)
     -   [cssnano-util-raw-cache](#cssnano-util-raw-cache)
     -   [postcss-calc (external)](#postcss-calc-external)
     -   [postcss-colormin](#postcss-colormin)
@@ -103,7 +104,13 @@ Note that you may wish to publish your own preset to npm for reusability, should
 
 > Sorts CSS declarations fast and automatically in a certain order.
 
-This plugin is loaded with its default configuration.
+This plugin is loaded with the following configuration:
+
+```js
+{
+	exclude: true
+}
+```
 
 ### [`cssnano-util-raw-cache`](https://github.com/cssnano/cssnano/tree/master/packages/cssnano-util-raw-cache)
 
@@ -293,5 +300,5 @@ See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTOR
 
 ## License
 
-MIT © [Ben Briggs](http://beneb.info)
+[MIT](https://opensource.org/licenses/MIT) © [Ben Briggs](http://beneb.info)
 
