@@ -35,5 +35,8 @@
   },
   "engines": {
     "node": ">=6.9.0"
+  },
+  "devDependencies": {
+    "postcss-selector-parser": "^6.0.2"
   }
 }
