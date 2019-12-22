@@ -14,9 +14,12 @@ function unique(rule) {
 export default plugin('postcss-unique-selectors', () => {
   return (css) =>
     css.walkRules((nodes) => {
+      let comments = [];
       nodes.selector = parseSelectors(nodes.selector, (selNode) => {
+        selNode.walkComments((sel) => comments.push(sel.value));
         selNode.walk((sel) => (sel.type === 'comment' ? sel.remove() : sel));
       });
       unique(nodes);
+      nodes.selectors = nodes.selectors.concat(comments);
     });
 });

@@ -20,7 +20,7 @@ test(
   'should leave out comments in the selector',
   processCSS(
     '.newbackbtn,/*.searchall,*/.calNav{padding:5px;}',
-    '.calNav,.newbackbtn{padding:5px;}'
+    '.calNav,.newbackbtn,/*.searchall,*/{padding:5px;}'
   )
 );
 
