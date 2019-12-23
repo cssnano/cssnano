@@ -1,7 +1,7 @@
-import path from 'path';
-import writeFile from 'write-file';
-import colorNames from 'css-color-names';
-import toShorthand from './lib/toShorthand';
+const path = require('path');
+const writeFile = require('write-file');
+const colorNames = require('css-color-names');
+const toShorthand = require('../dist/lib/toShorthand');
 
 const keywords = {};
 const hexes = {};
@@ -27,7 +27,11 @@ function callback(err) {
   }
 }
 
-writeFile(path.join(__dirname, 'keywords.json'), stringify(keywords), callback);
+writeFile(
+  path.join(__dirname, '../src/keywords.json'),
+  stringify(keywords),
+  callback
+);
 
 writeFile(
   path.join(__dirname, '../dist/keywords.json'),
