@@ -49,7 +49,7 @@ test(
         };
         width: 384px;
     }`,
-    `paper-card{--paper-card-header:{height:128px;padding:0 48px;background:var(--primary-color);@apply(--layout-vertical);@apply(--layout-end-justified)};--paper-card-header-color:#fff;--paper-card-content:{padding:64px};--paper-card-actions:{@apply(--layout-horizontal);@apply(--layout-end-justified)};width:384px}`
+    `paper-card{--paper-card-header:{height:128px;padding:0 48px;background:var(--primary-color);@apply(--layout-vertical);@apply(--layout-end-justified)};--paper-card-content:{padding:64px};--paper-card-actions:{@apply(--layout-horizontal);@apply(--layout-end-justified)};width:384px}`
   )
   // Switch back once css-declaration-sorter has been fixed
   // `paper-card{--paper-card-header-color:#fff;width:384px;--paper-card-header:{background:var(--primary-color);height:128px;padding:0 48px;@apply(--layout-vertical);@apply(--layout-end-justified)};--paper-card-content:{padding:64px};--paper-card-actions:{@apply(--layout-horizontal);@apply(--layout-end-justified)};}`

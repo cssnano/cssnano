@@ -15,10 +15,7 @@ test(
 
 test(
   'should optimise inside calc (2)',
-  processCss(
-    'h1{--a:calc(var(--x, 1) * 10vw)}',
-    'h1{--a:calc(var(--x, 1)*10vw)}'
-  )
+  processCss('h1{--a:calc(var(--x, 1) * 10vw)}', 'h1{}')
 );
 
 test(

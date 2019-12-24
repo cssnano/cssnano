@@ -53,6 +53,7 @@ module.exports = function(api) {
           'lerna:postcss-zindex': 'postcss-zindex',
           'lerna:stylehacks': 'stylehacks',
           'lerna:cssnano-util-raw-cache': 'cssnano-util-raw-cache',
+          'lerna:postcss-unused-var': 'postcss-unused-var',
         },
       },
     ]);
@@ -129,6 +130,7 @@ module.exports = function(api) {
           'lerna:stylehacks': './stylehacks/src/index.js',
           'lerna:cssnano-util-raw-cache':
             './cssnano-util-raw-cache/src/index.js',
+          'lerna:postcss-unused-var': './postcss-unused-var/src/index.js',
         },
       },
     ]);
