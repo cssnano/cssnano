@@ -573,3 +573,11 @@ test(
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+
+test(
+  'should order border-block',
+  processCSS(
+    'border-inline: dashed blue 5px; border-inline-end: red solid .5em; border-block-end: dashed blue 5px; border-block: 5px solid red;border-block-start: rgba(0, 30, 105, 0.8) solid 1px;',
+    'border-inline: 5px dashed blue; border-inline-end: .5em solid red; border-block-end: 5px dashed blue; border-block: 5px solid red;border-block-start: 1px solid rgba(0, 30, 105, 0.8);'
+  )
+);
