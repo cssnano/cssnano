@@ -34,13 +34,12 @@ function setup(args) {
 test('cli', () => {
   return setup(['test.css']).then((results) => {
     let out = results[0];
-    console.log('out', out);
     expect(!!~out.indexOf('43 B')).toBe(true);
     expect(!!~out.indexOf('34 B')).toBe(true);
     expect(!!~out.indexOf('9 B')).toBe(true);
     expect(!!~out.indexOf('79.07%')).toBe(true);
   });
-}, 6000);
+}, 10000);
 
 test('cli with processor argument', () => {
   return setup(['-p', noopProcessorPath, 'test.css']).then((results) => {

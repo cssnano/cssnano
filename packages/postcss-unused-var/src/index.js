@@ -2,7 +2,7 @@ import * as postcss from 'postcss';
 import parser from 'postcss-value-parser';
 
 export default postcss.plugin('postcss-unused-var', () => {
-  var varCount = {};
+  let varCount = {};
   return (root) => {
     root.walkDecls((rule) => {
       if (rule.parent.selector === ':root') {
