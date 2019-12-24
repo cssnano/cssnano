@@ -1,6 +1,8 @@
 import postcss from 'postcss';
 import valueParser, { unit, walk } from 'postcss-value-parser';
+import validateOptions from 'schema-utils';
 import convert from './lib/convert';
+import schema from './options.json';
 
 const LENGTH_UNITS = [
   'em',
@@ -117,5 +119,6 @@ function transform(opts, decl) {
 const plugin = 'postcss-convert-values';
 
 export default postcss.plugin(plugin, (opts = { precision: false }) => {
+  validateOptions(schema, opts, { name: plugin });
   return (css) => css.walkDecls(transform.bind(null, opts));
 });
