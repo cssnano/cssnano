@@ -8,17 +8,27 @@ import boxShadow from './rules/boxShadow';
 import flexFlow from './rules/flexFlow';
 import transition from './rules/transition';
 
-const rules = {
-  animation: animation,
+const borderRules = {
   border: border,
+  'border-block': border,
+  'border-inline': border,
+  'border-block-end': border,
+  'border-block-start': border,
+  'border-inline-end': border,
+  'border-inline-start': border,
   'border-top': border,
   'border-right': border,
   'border-bottom': border,
   'border-left': border,
+};
+
+const rules = {
+  animation: animation,
   outline: border,
   'box-shadow': boxShadow,
   'flex-flow': flexFlow,
   transition: transition,
+  ...borderRules,
 };
 
 function isVariableFunctionNode(node) {
