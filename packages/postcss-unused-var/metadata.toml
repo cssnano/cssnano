@@ -1,0 +1,25 @@
+longDescription = """
+Postcss plugin to safely remove the unused CSS var from your styles
+"""
+
+inputExample = """
+:root {
+  --root-var-color: red;
+}
+#div1 {
+  --main-txt-color: blue;
+  --main-padding: 15px;
+  --main-bg-color: coral;
+  background-color: var(--main-bg-color);
+}
+"""
+
+outputExample = """
+:root {
+  --root-var-color: red;
+}
+#div1 {
+  --main-bg-color: coral;
+  background-color: var(--main-bg-color);
+}
+"""
