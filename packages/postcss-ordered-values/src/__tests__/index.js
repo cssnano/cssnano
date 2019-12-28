@@ -581,3 +581,19 @@ test(
     'border-inline: 5px dashed blue; border-inline-end: .5em solid red; border-block-end: 5px dashed blue; border-block: 5px solid red;border-block-start: 1px solid rgba(0, 30, 105, 0.8);'
   )
 );
+
+test(
+  'should order columns only if unit is mentioned',
+  processCSS(
+    'h1 {columns: 2 auto;columns: auto 12em;columns: auto auto;columns: auto 12em auto 13em;}',
+    'h1 {columns: 2 auto;columns: 12em auto;columns: auto auto;columns: 12em 13em auto auto;}'
+  )
+);
+
+test(
+  'should order column-rule like border',
+  processCSS(
+    'h1 {column-rule: solid 8px;column-rule: inset 2px #33f;}',
+    'h1 {column-rule: 8px solid;column-rule: 2px inset #33f;}'
+  )
+);

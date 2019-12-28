@@ -7,6 +7,7 @@ import border from './rules/border';
 import boxShadow from './rules/boxShadow';
 import flexFlow from './rules/flexFlow';
 import transition from './rules/transition';
+import columns from './rules/columns';
 
 const borderRules = {
   border: border,
@@ -22,6 +23,11 @@ const borderRules = {
   'border-left': border,
 };
 
+const columnRules = {
+  'column-rule': border,
+  columns,
+};
+
 const rules = {
   animation: animation,
   outline: border,
@@ -29,6 +35,7 @@ const rules = {
   'flex-flow': flexFlow,
   transition: transition,
   ...borderRules,
+  ...columnRules,
 };
 
 function isVariableFunctionNode(node) {
