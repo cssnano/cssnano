@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "prebuild": "del-cli dist",
-    "build": "cross-env BABEL_ENV=publish babel-node --config-file ../../babel.config.js ./src/generate.js && babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/,src/generate.js\"",
+    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\" && babel-node script/generate",
     "prepublish": "yarn build"
   },
   "keywords": [
