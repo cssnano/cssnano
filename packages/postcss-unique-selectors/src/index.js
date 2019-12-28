@@ -16,8 +16,15 @@ export default plugin('postcss-unique-selectors', () => {
     css.walkRules((nodes) => {
       let comments = [];
       nodes.selector = parseSelectors(nodes.selector, (selNode) => {
-        selNode.walkComments((sel) => comments.push(sel.value));
-        selNode.walk((sel) => (sel.type === 'comment' ? sel.remove() : sel));
+        selNode.walk((sel) => {
+          if (sel.type === 'comment') {
+            comments.push(sel.value);
+            sel.remove();
+            return;
+          } else {
+            return sel;
+          }
+        });
       });
       unique(nodes);
       nodes.selectors = nodes.selectors.concat(comments);
