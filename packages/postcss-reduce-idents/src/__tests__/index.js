@@ -388,15 +388,19 @@ test('encoder', () => {
   let arr = Array.apply([], iterations).map((a, b) => b);
   let cache = [];
 
+  const hitOnce = (encoded) => {
+    const indexes = cache.filter((c) => c === encoded);
+    expect(indexes.length).toBe(1);
+  };
+
   arr.map((num) => {
     let encoded = encode(null, num);
 
     cache.push(encoded);
-
-    let indexes = cache.filter((c) => c === encoded);
-
-    expect(indexes.length).toBe(1);
+    hitOnce(encoded);
   });
+  const edgeCasesList = ['aa', 'ba', 'ca'];
+  edgeCasesList.forEach((i) => hitOnce(i));
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
