@@ -1,8 +1,9 @@
 import { unit } from 'postcss-value-parser';
+import border from './border.js';
 
 const strValues = ['auto', 'inherit', 'unset', 'initial'];
 
-export default (columns) => {
+export const column = (columns) => {
   let newValue = { front: '', back: '' };
   let shouldNormalize = false;
   columns.walk((node) => {
@@ -18,10 +19,11 @@ export default (columns) => {
     } else if (type === 'word') {
       newValue.back = `${newValue.back} ${value}`;
     }
-    // console.log({ type, value });
   });
   if (shouldNormalize) {
     return `${newValue.front.trimStart()} ${newValue.back.trimStart()}`;
   }
   return columns;
 };
+
+export const columnsRule = border;

@@ -7,7 +7,7 @@ import border from './rules/border';
 import boxShadow from './rules/boxShadow';
 import flexFlow from './rules/flexFlow';
 import transition from './rules/transition';
-import columns from './rules/columns';
+import { columnsRule, column } from './rules/columns';
 
 const borderRules = {
   border: border,
@@ -24,8 +24,8 @@ const borderRules = {
 };
 
 const columnRules = {
-  'column-rule': border,
-  columns,
+  'column-rule': columnsRule,
+  columns: column,
 };
 
 const rules = {
