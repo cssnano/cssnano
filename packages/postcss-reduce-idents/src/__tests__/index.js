@@ -399,4 +399,29 @@ test('encoder', () => {
   });
 });
 
+test('encoder gen spec', () => {
+  const edgeCaseList = {
+    0: 'a',
+    1: 'b',
+    51: 'Z',
+    52: 'aa',
+    53: 'ba',
+    103: 'Za',
+    104: 'ab',
+    2704: 'aZ',
+    2755: 'ZZ',
+    2756: 'a0',
+    2807: 'Z0',
+    3380: 'aaa',
+    3431: 'Zaa',
+    216372: 'aaaa',
+    216373: 'baaa',
+    216423: 'Zaaa',
+    13847860: 'aaaaa',
+  };
+  Object.keys(edgeCaseList).forEach((num) => {
+    expect(encode(null, num)).toBe(edgeCaseList[num]);
+  });
+});
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
