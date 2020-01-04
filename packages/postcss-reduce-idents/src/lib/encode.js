@@ -10,6 +10,7 @@ export default function encode(val, num) {
     characters = characters + '0123456789-_';
 
     while (remainder) {
+      remainder--;
       character = remainder % base;
       remainder = Math.floor(remainder / base);
       result = result + characters[character];

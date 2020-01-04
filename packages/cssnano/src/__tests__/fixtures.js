@@ -11,51 +11,6 @@ test(
 );
 
 test(
-  'should handle css mixins',
-  processCss(
-    `paper-card {
-        --paper-card-content: {
-            padding-top: 0;
-        };
-        margin: 0 auto 16px;
-        width: 768px;
-        max-width: calc(100% - 32px);
-    }`,
-    `paper-card{--paper-card-content:{padding-top:0};margin:0 auto 16px;width:768px;max-width:calc(100% - 32px)}`
-  )
-  // Switch back once css-declaration-sorter has been fixed
-  // `paper-card{margin:0 auto 16px;max-width:calc(100% - 32px);width:768px;--paper-card-content:{padding-top:0};}`
-);
-
-test(
-  'should handle css mixins (2)',
-  processCss(
-    `paper-card {
-        --paper-card-header: {
-            height: 128px;
-            padding: 0 48px;
-            background: var(--primary-color);
-
-            @apply(--layout-vertical);
-            @apply(--layout-end-justified);
-        };
-        --paper-card-header-color: #FFF;
-        --paper-card-content: {
-            padding: 64px;
-        };
-        --paper-card-actions: {
-            @apply(--layout-horizontal);
-            @apply(--layout-end-justified);
-        };
-        width: 384px;
-    }`,
-    `paper-card{--paper-card-header:{height:128px;padding:0 48px;background:var(--primary-color);@apply(--layout-vertical);@apply(--layout-end-justified)};--paper-card-content:{padding:64px};--paper-card-actions:{@apply(--layout-horizontal);@apply(--layout-end-justified)};width:384px}`
-  )
-  // Switch back once css-declaration-sorter has been fixed
-  // `paper-card{--paper-card-header-color:#fff;width:384px;--paper-card-header:{background:var(--primary-color);height:128px;padding:0 48px;@apply(--layout-vertical);@apply(--layout-end-justified)};--paper-card-content:{padding:64px};--paper-card-actions:{@apply(--layout-horizontal);@apply(--layout-end-justified)};}`
-);
-
-test(
   'should dedupe charset definitions',
   processCss(
     `@charset "utf-8";
