@@ -39,7 +39,7 @@ test('cli', () => {
     expect(!!~out.indexOf('9 B')).toBe(true);
     expect(!!~out.indexOf('79.07%')).toBe(true);
   });
-}, 10000);
+}, 30000);
 
 test('cli with processor argument', () => {
   return setup(['-p', noopProcessorPath, 'test.css']).then((results) => {
