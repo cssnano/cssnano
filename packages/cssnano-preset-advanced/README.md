@@ -45,6 +45,7 @@
     -   [postcss-reduce-transforms](#postcss-reduce-transforms)
     -   [postcss-svgo](#postcss-svgo)
     -   [postcss-unique-selectors](#postcss-unique-selectors)
+    -   [postcss-unused-var](#postcss-unused-var)
     -   [postcss-zindex](#postcss-zindex)
 
 -   [Contributors](#contributors)
@@ -106,7 +107,7 @@ Note that you may wish to publish your own preset to npm for reusability, should
 
 ## Plugins
 
-### [`autoprefixer`](https://github.com/postcss/autoprefixer) (external)
+### [`autoprefixer`](shortcut://github.com/postcss/autoprefixer) (external)
 
 > Parse CSS and add vendor prefixes to CSS rules using values from the Can I Use website
 
@@ -114,7 +115,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-  add: false
+	add: false
 }
 ```
 
@@ -126,7 +127,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-  exclude: true
+	exclude: true
 }
 ```
 
@@ -156,7 +157,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-  length: false
+	length: false
 }
 ```
 
@@ -240,7 +241,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-  add: false
+	add: false
 }
 ```
 
@@ -328,6 +329,12 @@ This plugin is loaded with its default configuration.
 
 This plugin is loaded with its default configuration.
 
+### [`postcss-unused-var`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-unused-var)
+
+> Postcss plugin remove unused CSS var
+
+This plugin is loaded with its default configuration.
+
 ### [`postcss-zindex`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-zindex)
 
 > Reduce z-index values with PostCSS.
@@ -342,5 +349,5 @@ See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTOR
 
 ## License
 
-MIT © [Ben Briggs](http://beneb.info)
+[MIT](https://opensource.org/licenses/MIT) © [Ben Briggs](http://beneb.info)
 

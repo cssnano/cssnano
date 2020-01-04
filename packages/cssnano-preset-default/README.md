@@ -307,5 +307,5 @@ See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTOR
 
 ## License
 
-[MIT](http://www.opensource.org/licenses/MIT) © [Ben Briggs](http://beneb.info)
+[MIT](https://opensource.org/licenses/MIT) © [Ben Briggs](http://beneb.info)
 
