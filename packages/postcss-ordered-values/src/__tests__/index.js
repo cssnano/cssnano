@@ -585,8 +585,8 @@ test(
 test(
   'should order columns only if unit is mentioned',
   processCSS(
-    'h1 {columns: 2 auto;columns: auto 12em;columns: auto auto;columns: auto 12em auto 13em;}',
-    'h1 {columns: 2 auto;columns: 12em auto;columns: auto auto;columns: 12em 13em auto auto;}'
+    'h1 {columns: 2 auto;columns: auto 12em;columns: auto auto;}',
+    'h1 {columns: 2 auto;columns: 12em auto;columns: auto auto;}'
   )
 );
 
