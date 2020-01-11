@@ -27,7 +27,7 @@ test(
     'a{animation-name:a;flex-wrap:0;animation:b;flex-flow:1}',
     'a{animation-name:a;animation:b;flex-wrap:0;flex-flow:1}'
   )
-)
+);
 
 test(
   'sort mixed properties in combination with short- and longhand properties',
@@ -35,7 +35,7 @@ test(
     'a{z-index:0;animation-name:a;flex-wrap:0;animation:b;flex-flow:1}',
     'a{animation-name:a;animation:b;flex-wrap:0;flex-flow:1;z-index:0}'
   )
-)
+);
 
 test(
   'works with postcss-merge-longhand, margin',
