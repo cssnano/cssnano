@@ -583,6 +583,22 @@ test(
 );
 
 test(
+  'should order columns only if unit is mentioned',
+  processCSS(
+    'h1 {columns: 2 auto;columns: auto 12em;columns: auto auto;}',
+    'h1 {columns: 2 auto;columns: 12em auto;columns: auto auto;}'
+  )
+);
+
+test(
+  'should order column-rule like border',
+  processCSS(
+    'h1 {column-rule: solid 8px;column-rule: inset 2px #33f;}',
+    'h1 {column-rule: 8px solid;column-rule: 2px inset #33f;}'
+  )
+);
+
+test(
   'should order grid-auto-flow',
   processCSS(
     'grid-auto-flow: column;grid-auto-flow: dense column; grid-auto-flow: unset;grid-auto-flow: row dense;',

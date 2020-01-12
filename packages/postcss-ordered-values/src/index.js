@@ -12,6 +12,7 @@ import {
   normalizeGridColumnRowGap,
   normalizeGridColumnRow,
 } from './rules/grid';
+import { columnsRule, column } from './rules/columns';
 
 const borderRules = {
   border: border,
@@ -39,6 +40,11 @@ const grid = {
   'grid-column-end': normalizeGridColumnRow, // <grid-line>
 };
 
+const columnRules = {
+  'column-rule': columnsRule,
+  columns: column,
+};
+
 const rules = {
   animation: animation,
   outline: border,
@@ -47,6 +53,7 @@ const rules = {
   transition: transition,
   ...borderRules,
   ...grid,
+  ...columnRules,
 };
 
 function isVariableFunctionNode(node) {
