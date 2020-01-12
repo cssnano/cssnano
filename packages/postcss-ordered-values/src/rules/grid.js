@@ -1,3 +1,5 @@
+import joinGridValue from '../lib/joinGridValue';
+
 export const normalizeGridAutoFlow = (gridAutoFlow) => {
   let newValue = { front: '', back: '' };
   let shouldNormalize = false;
@@ -38,33 +40,30 @@ export const normalizeGridColumnRowGap = (gridGap) => {
 
 export const normalizeGridColumnRow = (grid) => {
   // cant do normalization here using node, so copy it as a string
-  let gridValue = grid.toString(); // node -> string value
-  gridValue = gridValue.split('/'); // " 2 / 3 span " ->  [' 2','3 span ']
+  let gridValue = grid.toString().split('/'); // node -> string value, split ->  " 2 / 3 span " ->  [' 2','3 span ']
   if (gridValue.length > 1) {
-    gridValue = gridValue.map((gridLine) => {
-      let normalizeValue = {
-        front: '',
-        back: '',
-      };
-      gridLine = gridLine.trimStart().trimEnd(); // '3 span ' -> '3 span'
-      gridLine.split(' ').forEach((node) => {
-        // ['3','span']
-        if (node === 'span') {
-          normalizeValue.front = node; // span _
-        } else {
-          normalizeValue.back = `${normalizeValue.back} ${node}`; // _ 3
-        }
-      });
-      return `${normalizeValue.front.trim()} ${normalizeValue.back.trim()}`; // span 3
-    });
-    // returns "2 / span 3"
-    return gridValue
-      .join(' / ')
-      .trimStart()
-      .trimEnd();
+    return joinGridValue(
+      gridValue.map((gridLine) => {
+        let normalizeValue = {
+          front: '',
+          back: '',
+        };
+        gridLine = gridLine.trimStart().trimEnd(); // '3 span ' -> '3 span'
+        gridLine.split(' ').forEach((node) => {
+          // ['3','span']
+          if (node === 'span') {
+            normalizeValue.front = node; // span _
+          } else {
+            normalizeValue.back = `${normalizeValue.back} ${node}`; // _ 3
+          }
+        });
+        return `${normalizeValue.front.trim()} ${normalizeValue.back.trim()}`; // span 3
+      })
+      // returns "2 / span 3"
+    );
   }
   // doing this separating if `/` is not present as while joining('/') , it will add `/` at the end
-  gridValue = gridValue.map((gridLine) => {
+  return gridValue.map((gridLine) => {
     let normalizeValue = {
       front: '',
       back: '',
@@ -79,5 +78,4 @@ export const normalizeGridColumnRow = (grid) => {
     });
     return `${normalizeValue.front.trim()} ${normalizeValue.back.trim()}`;
   });
-  return gridValue;
 };
