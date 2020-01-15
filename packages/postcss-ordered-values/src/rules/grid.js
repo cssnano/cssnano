@@ -48,7 +48,7 @@ export const normalizeGridColumnRow = (grid) => {
           front: '',
           back: '',
         };
-        gridLine = gridLine.trimStart().trimEnd(); // '3 span ' -> '3 span'
+        gridLine = gridLine.trim(); // '3 span ' -> '3 span'
         gridLine.split(' ').forEach((node) => {
           // ['3','span']
           if (node === 'span') {
@@ -68,7 +68,7 @@ export const normalizeGridColumnRow = (grid) => {
       front: '',
       back: '',
     };
-    gridLine = gridLine.trimStart().trimEnd();
+    gridLine = gridLine.trim();
     gridLine.split(' ').forEach((node) => {
       if (node === 'span') {
         normalizeValue.front = node;
