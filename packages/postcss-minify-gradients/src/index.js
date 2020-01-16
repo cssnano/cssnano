@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 import valueParser, { unit, stringify } from 'postcss-value-parser';
-import getArguments from 'lerna:cssnano-util-get-arguments';
+import { getArguments } from 'lerna:cssnano-utils';
 import isColorStop from 'is-color-stop';
 
 const angles = {

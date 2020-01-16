@@ -14,7 +14,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "cssnano-util-get-match": "^4.0.0",
+    "cssnano-utils": "^0.1.0",
     "postcss": "^7.0.16",
     "postcss-value-parser": "^3.3.1"
   },
