@@ -7,6 +7,11 @@ import border from './rules/border';
 import boxShadow from './rules/boxShadow';
 import flexFlow from './rules/flexFlow';
 import transition from './rules/transition';
+import {
+  normalizeGridAutoFlow,
+  normalizeGridColumnRowGap,
+  normalizeGridColumnRow,
+} from './rules/grid';
 import { columnsRule, column } from './rules/columns';
 
 const borderRules = {
@@ -23,6 +28,18 @@ const borderRules = {
   'border-left': border,
 };
 
+const grid = {
+  'grid-auto-flow': normalizeGridAutoFlow,
+  'grid-column-gap': normalizeGridColumnRowGap, // normal | <length-percentage>
+  'grid-row-gap': normalizeGridColumnRowGap, // normal | <length-percentage>
+  'grid-column': normalizeGridColumnRow, // <grid-line>+
+  'grid-row': normalizeGridColumnRow, // <grid-line>+
+  'grid-row-start': normalizeGridColumnRow, // <grid-line>
+  'grid-row-end': normalizeGridColumnRow, // <grid-line>
+  'grid-column-start': normalizeGridColumnRow, // <grid-line>
+  'grid-column-end': normalizeGridColumnRow, // <grid-line>
+};
+
 const columnRules = {
   'column-rule': columnsRule,
   columns: column,
@@ -35,6 +52,7 @@ const rules = {
   'flex-flow': flexFlow,
   transition: transition,
   ...borderRules,
+  ...grid,
   ...columnRules,
 };
 
