@@ -108,7 +108,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-	exclude: true
+	keepOverrides: true
 }
 ```
 
@@ -300,5 +300,4 @@ See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTOR
 
 ## License
 
-[MIT](https://opensource.org/licenses/MIT) © [Ben Briggs](http://beneb.info)
-
+MIT © [Ben Briggs](http://beneb.info)
