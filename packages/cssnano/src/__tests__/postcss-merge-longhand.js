@@ -1,4 +1,4 @@
-import processCss from './_processCss';
+import processCss, { passthrough } from './_processCss';
 
 test(
   'should merge margin values',

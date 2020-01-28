@@ -6,3 +6,7 @@ export default function processCss(fixture, expected, options = {}) {
       expect(css).toBe(expected);
     });
 }
+
+export function passthrough(fixture, options = {}) {
+  return processCss(fixture, fixture, options);
+}
