@@ -134,25 +134,23 @@ test(
 
 test(
   'should save fallbacks for column-width if after goes custom css props',
-  processCSS(
-    'h1{column-width:12em;column-width:var(--variable)}',
-    'h1{column-width:12em;column-width:var(--variable)}'
-  )
+  passthroughCSS('h1{column-width:12em;column-width:var(--variable)}')
 );
 
 test(
   'should save fallbacks for column-width if after goes custom css props (uppercase)',
-  processCSS(
-    'h1{COLUMN-WIDTH:12em;COLUMN-WIDTH:var(--variable)}',
-    'h1{COLUMN-WIDTH:12em;COLUMN-WIDTH:var(--variable)}'
-  )
+  passthroughCSS('h1{COLUMN-WIDTH:12em;COLUMN-WIDTH:var(--variable)}')
 );
 
 test(
   'should save fallbacks for column-width if after goes custom css props 1 (uppercase)',
-  processCSS(
-    'h1{column-width:12em;column-width:VAR(--variable)}',
-    'h1{column-width:12em;column-width:VAR(--variable)}'
+  passthroughCSS('h1{column-width:12em;column-width:VAR(--variable)}')
+);
+
+test(
+  'should save fallbacks for column-width if after goes custom css props - constant and env',
+  passthroughCSS(
+    'h1{column-width:12em;column-width:env(variable);column-width:constant(variable)}'
   )
 );
 
