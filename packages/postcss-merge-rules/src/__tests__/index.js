@@ -620,22 +620,6 @@ test('should not crash when node.raws.value is null (2)', () => {
 });
 
 test(
-  'should place rules with "all" at the top',
-  processCSS(
-    '.a{margin: 10px 20px;display: flex;all: initial;font-size: 10px;border-radius: 2px;color: blue;}.b{margin: 10px 30px;display: flex;all: initial;font-size: 20px;border-radius: 2px;color: blue;}',
-    '.a,.b{display: flex;all: initial;border-radius: 2px;color: blue;}.a{margin: 10px 20px;font-size: 10px;}.b{margin: 10px 30px;font-size: 20px;}'
-  )
-);
-
-test(
-  'should place rules with "all" at the top (2)',
-  processCSS(
-    '.a{margin: 10px 20px;display: flex;ALL: initial;font-size: 10px;border-radius: 2px;color: blue;}.b{margin: 10px 30px;display: flex;ALL: initial;font-size: 20px;border-radius: 2px;color: blue;}',
-    '.a,.b{display: flex;ALL: initial;border-radius: 2px;color: blue;}.a{margin: 10px 20px;font-size: 10px;}.b{margin: 10px 30px;font-size: 20px;}'
-  )
-);
-
-test(
   'should merge multiple media queries',
   processCSS(
     '@media print{h1{display:block}}@media print{h1{color:red}}',
@@ -772,5 +756,28 @@ test(
       '@media (width:40px){h1{color:black}h2,h3{color:black;font-weight:bold}}',
       '@media (width:40px){}',
     ].join('')
+  )
+);
+
+test(
+  'should not merge properties with "all"',
+  passthroughCSS(
+    '.a{color:red;display:flex;font-size:10px;}.c{all:unset;color:red;display:flex;font-size:10px;}'
+  )
+);
+
+test(
+  'should merge "direction" property with "all"',
+  processCSS(
+    '.a{color:red;display:flex;font-size:10px;direction:tlr;}.c{all:unset;color:red;display:flex;font-size:10px;direction:tlr;}',
+    '.a{color:red;display:flex;font-size:10px;}.a,.c{direction:tlr;}.c{all:unset;color:red;display:flex;font-size:10px;}'
+  )
+);
+
+test(
+  'should merge "unicode-bidi" property with "all"',
+  processCSS(
+    '.a{color:red;display:flex;font-size:10px;unicode-bidi:normal;}.c{all:unset;color:red;display:flex;font-size:10px;unicode-bidi:normal;}',
+    '.a{color:red;display:flex;font-size:10px;}.a,.c{unicode-bidi:normal;}.c{all:unset;color:red;display:flex;font-size:10px;}'
   )
 );
