@@ -767,6 +767,11 @@ test(
 );
 
 test(
+  'should not merge properties with "all" (2)',
+  passthroughCSS('.foo{color:red}.bar{all:unset;color:red}')
+);
+
+test(
   'should merge "direction" property with "all"',
   processCSS(
     '.a{color:red;display:flex;font-size:10px;direction:tlr;}.c{all:unset;color:red;display:flex;font-size:10px;direction:tlr;}',
