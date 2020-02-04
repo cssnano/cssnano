@@ -1,12 +1,11 @@
 {
   "name": "postcss-unused-var",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "Postcss plugin remove unused CSS var",
   "main": "dist/index.js",
   "scripts": {
-    "test:only": "jest --testMatch \"**/__tests__/**/*.test.js\"",
-    "test:coverage": "npm run test:only -- --coverage",
     "prebuild": "del-cli dist",
+    "prepublish": "yarn build",
     "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\""
   },
   "homepage": "https://github.com/cssnano/cssnano",
@@ -31,6 +30,6 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": ">=6.9.0"
+    "node": ">=10.13.0"
   }
 }
