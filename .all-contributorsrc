@@ -582,6 +582,15 @@
       "contributions": [
         "design"
       ]
+    },
+    {
+      "login": "smithua",
+      "name": "Aleksandr Fesenko",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/1473254?v=4",
+      "profile": "https://badcss.smithua.com/",
+      "contributions": [
+        "platform"
+      ]
     }
   ],
   "repoType": "github"
