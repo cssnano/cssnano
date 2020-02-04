@@ -581,3 +581,91 @@ test(
     'border-inline: 5px dashed blue; border-inline-end: .5em solid red; border-block-end: 5px dashed blue; border-block: 5px solid red;border-block-start: 1px solid rgba(0, 30, 105, 0.8);'
   )
 );
+
+test(
+  'should order columns only if unit is mentioned',
+  processCSS(
+    'h1 {columns: 2 auto;columns: auto 12em;columns: auto auto;}',
+    'h1 {columns: 2 auto;columns: 12em auto;columns: auto auto;}'
+  )
+);
+
+test(
+  'should order column-rule like border',
+  processCSS(
+    'h1 {column-rule: solid 8px;column-rule: inset 2px #33f;}',
+    'h1 {column-rule: 8px solid;column-rule: 2px inset #33f;}'
+  )
+);
+
+test(
+  'should order grid-auto-flow',
+  processCSS(
+    'grid-auto-flow: column;grid-auto-flow: dense column; grid-auto-flow: unset;grid-auto-flow: row dense;',
+    'grid-auto-flow: column;grid-auto-flow: column dense; grid-auto-flow: unset;grid-auto-flow: row dense;'
+  )
+);
+
+test(
+  'should order grid-column-gap',
+  processCSS(
+    'grid-column-gap: normal; grid-column-gap: normal 3%; grid-column-gap: 3em normal;',
+    'grid-column-gap: normal; grid-column-gap: normal 3%; grid-column-gap: normal 3em;'
+  )
+);
+
+test(
+  'should order grid-row-gap',
+  processCSS(
+    'grid-row-gap: normal; grid-row-gap: normal 3%; grid-row-gap: 3em normal;',
+    'grid-row-gap: normal; grid-row-gap: normal 3%; grid-row-gap: normal 3em;'
+  )
+);
+
+test(
+  'should order grid-column',
+  processCSS(
+    'grid-column: 2 / 4; grid-column: 2 span / 7; grid-column: auto;grid-column: 3;grid-column: custom-indent-name / 3;',
+    'grid-column: 2 /  4; grid-column: span 2 /  7; grid-column: auto;grid-column: 3;grid-column: custom-indent-name /  3;'
+  )
+);
+
+test(
+  'should order grid-row',
+  processCSS(
+    'grid-row: 2 / 4; grid-row: 2 span / 7; grid-row: auto;grid-row: 3;grid-row: custom-indent-name / 3;',
+    'grid-row: 2 /  4; grid-row: span 2 /  7; grid-row: auto;grid-row: 3;grid-row: custom-indent-name /  3;'
+  )
+);
+
+test(
+  'should order grid-row-start',
+  processCSS(
+    'grid-row-start: 2 / 4; grid-row-start: 2 span / 7; grid-row-start: auto;grid-row-start: 3;grid-row-start: custom-indent-name / 3;',
+    'grid-row-start: 2 /  4; grid-row-start: span 2 /  7; grid-row-start: auto;grid-row-start: 3;grid-row-start: custom-indent-name /  3;'
+  )
+);
+
+test(
+  'should order grid-row-end',
+  processCSS(
+    'grid-row-end: 2 / 4; grid-row-end: 2 span / 7; grid-row-end: auto;grid-row-end: 3;grid-row-end: custom-indent-name / 3;',
+    'grid-row-end: 2 /  4; grid-row-end: span 2 /  7; grid-row-end: auto;grid-row-end: 3;grid-row-end: custom-indent-name /  3;'
+  )
+);
+
+test(
+  'should order grid-column-start',
+  processCSS(
+    'grid-column-start: 2 / 4; grid-column-start: 2 span / 7; grid-column-start: auto;grid-column-start: 3;grid-column-start: custom-indent-name / 3;',
+    'grid-column-start: 2 /  4; grid-column-start: span 2 /  7; grid-column-start: auto;grid-column-start: 3;grid-column-start: custom-indent-name /  3;'
+  )
+);
+
+test(
+  'should order grid-column-end',
+  processCSS(
+    'grid-column-end: 2 / 4; grid-column-end: 2 span / 7; grid-column-end: auto;grid-column-end: 3;grid-column-end: custom-indent-name / 3;',
+    'grid-column-end: 2 /  4; grid-column-end: span 2 /  7; grid-column-end: auto;grid-column-end: 3;grid-column-end: custom-indent-name /  3;'
+  )
+);
