@@ -129,9 +129,7 @@ This plugin is loaded with the following configuration:
 
 ### [`cssnano-utils`](https://github.com/cssnano/cssnano/tree/master/packages/cssnano-utils)
 
-> default preset contains the `cssnano-util-raw-cache` plugin
-
-This plugin is loaded with its default configuration.
+> Utility methods used by cssnano
 
 ### [`postcss-calc`](https://github.com/postcss/postcss-calc) (external)
 
