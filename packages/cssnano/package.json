@@ -11,7 +11,7 @@
     "postinstall": "opencollective-postinstall"
   },
   "collective": {
-  	"type": "opencollective",
+    "type": "opencollective",
     "url": "https://opencollective.com/cssnano"
   },
   "keywords": [
@@ -48,6 +48,6 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": ">=6.9.0"
+    "node": ">=10.13.0"
   }
 }
