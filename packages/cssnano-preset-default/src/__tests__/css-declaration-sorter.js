@@ -14,10 +14,28 @@ test(
 );
 
 test(
+  'keep order of unknown properties, left to right',
+  passthroughCSS('a{z-unknown:0;a-unknown:0}')
+);
+
+test(
+  'keep order of unknown properties, right to left',
+  passthroughCSS('a{a-unknown:0;z-unknown:0}')
+);
+
+test(
   'sort values between short- and longhand properties',
   processCSS(
     'a{animation-name:a;z-index:0;animation:b;color:0}',
     'a{animation-name:a;animation:b;color:0;z-index:0}'
+  )
+);
+
+test(
+  'sort values between unknown properties',
+  processCSS(
+    'a{z-unknown:0;z-index:0;a-unknown:0;color:0}',
+    'a{z-unknown:0;a-unknown:0;color:0;z-index:0}'
   )
 );
 
