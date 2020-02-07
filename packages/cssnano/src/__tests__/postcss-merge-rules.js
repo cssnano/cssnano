@@ -1,4 +1,4 @@
-import processCss, { passthrough } from './_processCss';
+import processCss from './_processCss';
 
 test(
   'should merge based on declarations',
