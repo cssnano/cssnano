@@ -24,6 +24,18 @@ test(
 );
 
 test(
+  'keep order of vendor prefixed properties',
+  passthroughCSS('a{animation-name:a;-webkit-animation:b}')
+);
+
+test(
+  'keep order of vendor prefixed properties, mixed with short- and longhand',
+  passthroughCSS(
+    'a{animation-name:a;animation:b;-webkit-animation:c;-webkit-animation-name:d}'
+  )
+);
+
+test(
   'sort values between short- and longhand properties',
   processCSS(
     'a{animation-name:a;z-index:0;animation:b;color:0}',
