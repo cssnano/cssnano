@@ -26,7 +26,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "cssnano-utils": "^0.1.0",
+    "cssnano-utils": "^1.0.0",
     "is-color-stop": "^1.1.0",
     "postcss": "^7.0.16",
     "postcss-value-parser": "^3.3.1"
