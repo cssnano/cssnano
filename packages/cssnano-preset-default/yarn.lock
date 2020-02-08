@@ -111,10 +111,10 @@ css-color-names@0.0.4, css-color-names@^0.0.4:
   resolved "https://registry.yarnpkg.com/css-color-names/-/css-color-names-0.0.4.tgz#808adc2e79cf84738069b646cb20ec27beb629e0"
   integrity sha1-gIrcLnnPhHOAabZGyyDsJ762KeA=
 
-css-declaration-sorter@^5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/css-declaration-sorter/-/css-declaration-sorter-5.1.0.tgz#b950910eec46948bd31f6ba62eb91515011f6ca4"
-  integrity sha512-bWBqIZoYPsyhWA/vidwfhNQdh9G9QAr69zOahLh0DnPbFQlxm6ut0of588eh5ZmtPd0LmPD9lmtYeqvQe7rZ3w==
+css-declaration-sorter@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/css-declaration-sorter/-/css-declaration-sorter-5.1.1.tgz#b3003e41ec693d90ff64df1fd66f85d642c5ef8d"
+  integrity sha512-lVfgNjx1IOpzsXEOp/UvziGPCuxCTlV0Wko8fxqw2VypAEQAyC3G9wX1zDuavUjcXXM7xn0kV++miJ16CItfXQ==
   dependencies:
     postcss "^7.0.26"
     timsort "^0.3.0"
