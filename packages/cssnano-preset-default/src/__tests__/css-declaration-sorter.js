@@ -14,6 +14,11 @@ test(
 );
 
 test(
+  'keep order of short- and longhand properties, in at-rule',
+  passthroughCSS('@supports(display:grid){a{animation:a;animation-name:b}}')
+);
+
+test(
   'keep order of unknown properties, left to right',
   passthroughCSS('a{z-unknown:0;a-unknown:0}')
 );
@@ -64,6 +69,30 @@ test(
   processCSS(
     'a{z-index:0;animation-name:a;flex-wrap:0;animation:b;flex-flow:1}',
     'a{animation-name:a;animation:b;flex-wrap:0;flex-flow:1;z-index:0}'
+  )
+);
+
+test(
+  'sort properties inside at-rules, @media',
+  processCSS(
+    '@media(min-width:0){flex:1;animation:a}',
+    '@media(min-width:0){animation:a;flex:1}'
+  )
+);
+
+test(
+  'sort properties inside at-rules, @supports',
+  processCSS(
+    '@supports(display:grid){flex:1;animation:a}',
+    '@supports(display:grid){animation:a;flex:1}'
+  )
+);
+
+test(
+  'sort properties inside at-rules, @font-face',
+  processCSS(
+    '@font-face{font-family:a;src:url()}',
+    '@font-face{src:url();font-family:a}'
   )
 );
 
