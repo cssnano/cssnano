@@ -1,8 +1,7 @@
-import test from 'ava';
 import postcss from 'postcss';
 import cssnano from '..';
 
-test('should support `env()` and `constant()` is an iPhone X-only feature', (t) => {
+test('should support `env()` and `constant()` is an iPhone X-only feature', () => {
   const css = `
     @supports (height: env(safe-area-inset-bottom)) {
       .footer {
@@ -12,10 +11,9 @@ test('should support `env()` and `constant()` is an iPhone X-only feature', (t) 
     `;
 
   return postcss([cssnano])
-    .process(css)
+    .process(css, { from: undefined })
     .then((result) => {
-      t.deepEqual(
-        result.css,
+      expect(result.css).toBe(
         '@supports (height:env(safe-area-inset-bottom)){.footer{padding-bottom:calc(env(safe-area-inset-bottom)*3)!important}}'
       );
     });

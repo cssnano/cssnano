@@ -1,9 +1,8 @@
-import test from 'ava';
-import plugin from '..';
 import {
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers';
+import plugin from '..';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -21,18 +20,16 @@ const vertical = {
 const hkeys = Object.keys(horizontal);
 const vkeys = Object.keys(vertical);
 
-function suite(t, property, additional = '', tail = '') {
+function suite(property, additional = '', tail = '') {
   const tests = [];
   const push = (...examples) => {
     examples.forEach(({ fixture, expected }) => {
       tests.push(
         processCSS(
-          t,
           `${property}${additional}${fixture}${tail}`,
           `${property}${additional}${expected}${tail}`
         ),
         processCSS(
-          t,
           `${property}${additional}${fixture}${tail},${fixture}${tail}`,
           `${property}${additional}${expected}${tail},${expected}${tail}`
         )
@@ -48,6 +45,7 @@ function suite(t, property, additional = '', tail = '') {
       expected: '30%/50% 50%',
     });
   }
+
   push(
     {
       message: 'should convert <percentage> center to <percentage>',
@@ -141,185 +139,189 @@ function suite(t, property, additional = '', tail = '') {
       });
   });
 
-  return Promise.all(tests);
+  return () => Promise.all(tests);
 }
 
 test(
   'background:',
-  suite,
-  'background:',
-  'url(http://example.com/testing/test.png) no-repeat ',
-  ' #f1ff'
+  suite(
+    'background:',
+    'url(http://example.com/testing/test.png) no-repeat ',
+    ' #f1ff'
+  )
 );
 
-test('background-position:', suite, 'background-position:');
+test('background-position:', suite('background-position:'));
 
-test('background: #1', suite, 'background:', '#000 url(cat.jpg) ');
+test('background: #1', suite('background:', '#000 url(cat.jpg) '));
 
-test('perspective-origin:', suite, 'perspective-origin:');
+test('perspective-origin:', suite('perspective-origin:'));
 
-test('-webkit-perspective-origin:', suite, '-webkit-perspective-origin:');
+test('-webkit-perspective-origin:', suite('-webkit-perspective-origin:'));
 
 test(
   'should pass through when there are no position values',
-  passthroughCSS,
-  'background:url(cat.jpg)'
+  passthroughCSS('background:url(cat.jpg)')
 );
 
 test(
   'should pass through with calc function',
-  passthroughCSS,
-  'background-position: center right calc(0.375em + 0.1875rem)'
+  passthroughCSS('background-position: center right calc(0.375em + 0.1875rem)')
 );
 
 test(
   'should pass through with calc function (uppercase)',
-  passthroughCSS,
-  'background-position: center right CALC(0.375em + 0.1875rem)'
+  passthroughCSS('background-position: center right CALC(0.375em + 0.1875rem)')
 );
 
 test(
   'should pass through with min function',
-  passthroughCSS,
-  'background-position: center right min(10 * (1vw + 1vh) / 2, 12px)'
+  passthroughCSS(
+    'background-position: center right min(10 * (1vw + 1vh) / 2, 12px)'
+  )
 );
 
 test(
   'should pass through with max function',
-  passthroughCSS,
-  'background-position: center right max(10 * (1vw + 1vh) / 2, 12px)'
+  passthroughCSS(
+    'background-position: center right max(10 * (1vw + 1vh) / 2, 12px)'
+  )
 );
 
 test(
   'should pass through with clamp function',
-  passthroughCSS,
-  'background-position: center right clamp(12px, 10 * (1vw + 1vh) / 2, 100px)'
+  passthroughCSS(
+    'background-position: center right clamp(12px, 10 * (1vw + 1vh) / 2, 100px)'
+  )
 );
 
 test(
   'should pass through with var',
-  passthroughCSS,
-  'background-position: var(--foo)'
+  passthroughCSS('background-position: var(--foo)')
 );
 
 test(
   'should pass through with var #1',
-  passthroughCSS,
-  'background-position: center var(--foo)'
+  passthroughCSS('background-position: center var(--foo)')
 );
 
 test(
   'should pass through with var #2',
-  passthroughCSS,
-  'background-position: right 100px var(--test)'
+  passthroughCSS('background-position: right 100px var(--test)')
 );
 
 test(
   'should pass through with var #3',
-  passthroughCSS,
-  'background: var(--foo)'
+  passthroughCSS('background: var(--foo)')
 );
 
 test(
   'should pass through with var #4',
-  passthroughCSS,
-  'background: url("../../media/examples/star.png") center var(--foo);'
+  passthroughCSS(
+    'background: url("../../media/examples/star.png") center var(--foo);'
+  )
 );
 
 test(
   'should pass through with env',
-  passthroughCSS,
-  'background-position: env(--foo)'
+  passthroughCSS('background-position: env(--foo)')
 );
 
 test(
   'should normalize when property in uppercase',
-  processCSS,
-  'BACKGROUND-POSITION: center',
-  'BACKGROUND-POSITION: 50%'
+  processCSS('BACKGROUND-POSITION: center', 'BACKGROUND-POSITION: 50%')
 );
 
 test(
   'should normalize when value in uppercase',
-  processCSS,
-  'BACKGROUND-POSITION: CENTER',
-  'BACKGROUND-POSITION: 50%'
+  processCSS('BACKGROUND-POSITION: CENTER', 'BACKGROUND-POSITION: 50%')
 );
 
 test(
   'should normalize when value in uppercase (2)',
-  processCSS,
-  'BACKGROUND-POSITION: CENTER, CENTER',
-  'BACKGROUND-POSITION: 50%, 50%'
+  processCSS(
+    'BACKGROUND-POSITION: CENTER, CENTER',
+    'BACKGROUND-POSITION: 50%, 50%'
+  )
 );
 
 test(
   'should normalize when value in uppercase (3)',
-  processCSS,
-  'BACKGROUND-POSITION: LEFT BOTTOM, LEFT BOTTOM',
-  'BACKGROUND-POSITION: 0 100%, 0 100%'
+  processCSS(
+    'BACKGROUND-POSITION: LEFT BOTTOM, LEFT BOTTOM',
+    'BACKGROUND-POSITION: 0 100%, 0 100%'
+  )
 );
 
 test(
   'should normalize when value in uppercase (4)',
-  processCSS,
-  'BACKGROUND-POSITION: BOTTOM LEFT, BOTTOM LEFT',
-  'BACKGROUND-POSITION: 0 100%, 0 100%'
+  processCSS(
+    'BACKGROUND-POSITION: BOTTOM LEFT, BOTTOM LEFT',
+    'BACKGROUND-POSITION: 0 100%, 0 100%'
+  )
 );
 
 test(
   'should normalize when value in uppercase (5)',
-  processCSS,
-  'BACKGROUND-POSITION: CENTER LEFT, CENTER LEFT',
-  'BACKGROUND-POSITION: 0, 0'
+  processCSS(
+    'BACKGROUND-POSITION: CENTER LEFT, CENTER LEFT',
+    'BACKGROUND-POSITION: 0, 0'
+  )
 );
 
 test(
   'should normalize with background size',
-  processCSS,
-  'background: url(/media/examples/hand.jpg) center center / 200px 100px',
-  'background: url(/media/examples/hand.jpg) 50% / 200px 100px'
+  processCSS(
+    'background: url(/media/examples/hand.jpg) center center / 200px 100px',
+    'background: url(/media/examples/hand.jpg) 50% / 200px 100px'
+  )
 );
 
 test(
   'should normalize with multiple background positions',
-  processCSS,
-  'background: url("/media/examples/lizard.png") center center no-repeat, url("/media/examples/lizard.png") center center no-repeat',
-  'background: url("/media/examples/lizard.png") 50% no-repeat, url("/media/examples/lizard.png") 50% no-repeat'
+  processCSS(
+    'background: url("/media/examples/lizard.png") center center no-repeat, url("/media/examples/lizard.png") center center no-repeat',
+    'background: url("/media/examples/lizard.png") 50% no-repeat, url("/media/examples/lizard.png") 50% no-repeat'
+  )
 );
 
 test(
   'should normalize background position with var and multiple background',
-  processCSS,
-  'background: url("/media/examples/lizard.png") center center no-repeat, url("/media/examples/lizard.png") var(--foo)',
-  'background: url("/media/examples/lizard.png") 50% no-repeat, url("/media/examples/lizard.png") var(--foo)'
+  processCSS(
+    'background: url("/media/examples/lizard.png") center center no-repeat, url("/media/examples/lizard.png") var(--foo)',
+    'background: url("/media/examples/lizard.png") 50% no-repeat, url("/media/examples/lizard.png") var(--foo)'
+  )
 );
 
 test(
   'should normalize background position with var and multiple background #1',
-  processCSS,
-  'background: url("/media/examples/lizard.png") var(--foo), url("/media/examples/lizard.png") center center no-repeat',
-  'background: url("/media/examples/lizard.png") var(--foo), url("/media/examples/lizard.png") 50% no-repeat'
+  processCSS(
+    'background: url("/media/examples/lizard.png") var(--foo), url("/media/examples/lizard.png") center center no-repeat',
+    'background: url("/media/examples/lizard.png") var(--foo), url("/media/examples/lizard.png") 50% no-repeat'
+  )
 );
 
 test(
   'should normalize background position with var and multiple background #2',
-  processCSS,
-  'background: url("/media/examples/lizard.png") center center no-repeat, url("/media/examples/lizard.png") center var(--foo)',
-  'background: url("/media/examples/lizard.png") 50% no-repeat, url("/media/examples/lizard.png") center var(--foo)'
+  processCSS(
+    'background: url("/media/examples/lizard.png") center center no-repeat, url("/media/examples/lizard.png") center var(--foo)',
+    'background: url("/media/examples/lizard.png") 50% no-repeat, url("/media/examples/lizard.png") center var(--foo)'
+  )
 );
 
 test(
   'should normalize background position with var and multiple background #3',
-  processCSS,
-  'background: url("/media/examples/lizard.png") center var(--foo), url("/media/examples/lizard.png") center center no-repeat',
-  'background: url("/media/examples/lizard.png") center var(--foo), url("/media/examples/lizard.png") 50% no-repeat'
+  processCSS(
+    'background: url("/media/examples/lizard.png") center var(--foo), url("/media/examples/lizard.png") center center no-repeat',
+    'background: url("/media/examples/lizard.png") center var(--foo), url("/media/examples/lizard.png") 50% no-repeat'
+  )
 );
 
 test(
   'should handle 0 in background positions',
-  passthroughCSS,
-  'background-position: url("../../media/examples/star.png") 0 0 repeat-x'
+  passthroughCSS(
+    'background-position: url("../../media/examples/star.png") 0 0 repeat-x'
+  )
 );
 
-test('should use the postcss plugin api', usePostCSSPlugin, plugin());
+test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

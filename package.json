@@ -1,5 +1,5 @@
 {
-  "name": "cssnano",
+  "name": "cssnano-core",
   "private": true,
   "scripts": {
     "all-contributors": "all-contributors add",
@@ -11,8 +11,8 @@
     "build:site": "remark site/content/**/*.md -o && yarn build:metadata && babel-node ./util/buildSiteMarkdown.js && cd site && yarn build",
     "build:integration": "cross-env BABEL_ENV=test babel-node ./util/buildFrameworks.js",
     "pretest": "yarn lint",
-    "test:only": "cross-env BABEL_ENV=test ava",
-    "test:coverage": "cross-env BABEL_ENV=test nyc --reporter=lcov --reporter=text ava",
+    "test:only": "cross-env BABEL_ENV=test jest",
+    "test:coverage": "cross-env BABEL_ENV=test jest --coverage",
     "test": "yarn test:coverage",
     "deploy": "gh-pages -t -d site/dist",
     "publish": "lerna publish"
@@ -21,19 +21,22 @@
     "node": ">=6.9.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.4.4",
-    "@babel/core": "^7.4.5",
-    "@babel/node": "^7.4.5",
-    "@babel/preset-env": "^7.4.5",
-    "@babel/register": "^7.4.4",
+    "@babel/cli": "^7.8.3",
+    "@babel/core": "^7.8.3",
+    "@babel/node": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
     "all-contributors-cli": "^5.11.0",
-    "ava": "^1.4.1",
     "babel-eslint": "^10.0.1",
+    "babel-jest": "^24.8.0",
     "babel-plugin-add-module-exports": "^1.0.2",
     "babel-plugin-module-resolver": "^3.2.0",
-    "browserslist": "^4.6.0",
+    "browserslist": "^4.8.5",
     "camelcase": "^5.3.1",
+    "chalk": "^2.4.2",
     "cross-env": "^5.1.6",
+    "css-color-names": "^1.0.1",
+    "del-cli": "^1.1.0",
+    "diff": "^4.0.1",
     "dox": "^0.9.0",
     "eslint": "^5.16.0",
     "eslint-plugin-import": "^2.17.2",
@@ -43,10 +46,19 @@
     "get-pkg-repo": "^4.1.0",
     "gh-pages": "^1.2.0",
     "glob": "^7.1.4",
+    "got": "^8.3.2",
+    "html2plaintext": "^2.1.2",
+    "jest": "^24.8.0",
+    "jest-junit": "^6.4.0",
     "lerna": "3.3.2",
     "mdast-util-heading-range": "^2.1.2",
-    "nyc": "^14.1.1",
+    "pleeease-filters": "^4.0.0",
     "postcss": "^7.0.16",
+    "postcss-devtools": "^1.1.1",
+    "postcss-font-magician": "^2.2.2",
+    "postcss-scss": "^2.0.0",
+    "postcss-simple-vars": "^5.0.2",
+    "postcss-value-parser": "^3.3.1",
     "prettier": "^1.17.1",
     "remark": "^10.0.1",
     "remark-behead": "^2.2.1",
@@ -62,23 +74,8 @@
     "toml": "^3.0.0",
     "tomlify-j0.4": "^3.0.0",
     "unist-builder": "^1.0.4",
-    "unist-util-remove": "^1.0.2"
-  },
-  "ava": {
-    "files": [
-      "packages/**/src/__tests__/**/*.js"
-    ],
-    "require": [
-      "@babel/register"
-    ]
-  },
-  "nyc": {
-    "exclude": [
-      "node_modules",
-      "**/__tests__",
-      "**/dist",
-      "util"
-    ]
+    "unist-util-remove": "^1.0.2",
+    "write-file": "^1.0.0"
   },
   "browserslist": {
     "chrome58": [

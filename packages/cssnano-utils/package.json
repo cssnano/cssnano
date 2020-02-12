@@ -1,0 +1,26 @@
+{
+  "name": "cssnano-utils",
+  "version": "1.0.0",
+  "repository": "cssnano/cssnano",
+  "main": "dist/index.js",
+  "description": "Utility methods and plugin for cssnano projects",
+  "scripts": {
+    "prebuild": "del-cli dist",
+    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
+    "prepublish": "yarn build"
+  },
+  "homepage": "https://github.com/cssnano/cssnano",
+  "bugs": {
+    "url": "https://github.com/cssnano/cssnano/issues"
+  },
+  "engines": {
+    "node": ">=10.13.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "postcss": "^7.0.16"
+  }
+}

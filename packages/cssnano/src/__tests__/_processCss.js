@@ -1,11 +1,12 @@
 import cssnano from '..';
 
-export default function processCss(t, fixture, expected, options = {}) {
-  return cssnano.process(fixture, options).then(({ css }) => {
-    t.deepEqual(css, expected);
-  });
+export default function processCss(fixture, expected, options = {}) {
+  return () =>
+    cssnano.process(fixture, options).then(({ css }) => {
+      expect(css).toBe(expected);
+    });
 }
 
-export function passthrough(t, fixture, options = {}) {
-  return processCss(t, fixture, fixture, options);
+export function passthrough(fixture, options = {}) {
+  return processCss(fixture, fixture, options);
 }

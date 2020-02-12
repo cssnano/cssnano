@@ -1,8 +1,7 @@
-import test from 'ava';
-import plugin from '..';
 import { name } from '../../package.json';
+import plugin from '..';
 
-test('should use the postcss plugin api', (t) => {
-  t.truthy(plugin().postcssVersion, 'should be able to access version');
-  t.deepEqual(plugin().postcssPlugin, name, 'should be able to access name');
+test('should use the postcss plugin api', () => {
+  expect(plugin().postcssVersion).toBeDefined();
+  expect(plugin().postcssPlugin).toBe(name);
 });

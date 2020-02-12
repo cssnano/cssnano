@@ -8,7 +8,9 @@
     "css-size": "dist/cli.js"
   },
   "scripts": {
-    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/'"
+    "prebuild": "del-cli dist",
+    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
+    "prepublish": "yarn build"
   },
   "files": [
     "LICENSE-MIT",
@@ -24,12 +26,6 @@
     "size"
   ],
   "license": "MIT",
-  "devDependencies": {
-    "@babel/cli": "^7.4.4",
-    "@babel/core": "^7.4.5",
-    "cross-env": "^5.2.0",
-    "strip-ansi": "^5.2.0"
-  },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
     "name": "Ben Briggs",
@@ -39,7 +35,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "brotli-size": "^0.1.0",
-    "cli-table": "^0.3.1",
+    "cli-table3": "^0.5.1",
     "cssnano": "^4.1.10",
     "gzip-size": "^5.1.1",
     "minimist": "^1.2.0",
@@ -51,6 +47,6 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": ">=6.9.0"
+    "node": ">=10.13.0"
   }
 }

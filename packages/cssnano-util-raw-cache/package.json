@@ -5,25 +5,22 @@
   "main": "dist/index.js",
   "description": "Manages the raw value formatting for generated AST nodes.",
   "scripts": {
-    "prepublish": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/'"
+    "prebuild": "del-cli dist",
+    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
+    "prepublish": "yarn build"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": ">=6.9.0"
+    "node": ">=10.13.0"
   },
   "files": [
     "LICENSE-MIT",
     "dist"
   ],
   "license": "MIT",
-  "devDependencies": {
-    "@babel/cli": "^7.4.4",
-    "@babel/core": "^7.4.5",
-    "cross-env": "^5.2.0"
-  },
   "dependencies": {
     "postcss": "^7.0.16"
   },

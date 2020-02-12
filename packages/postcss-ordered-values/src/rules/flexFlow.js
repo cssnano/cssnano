@@ -18,7 +18,6 @@ export default function normalizeFlexFlow(flexFlow) {
 
     if (~flexWrap.indexOf(value.toLowerCase())) {
       order.wrap = value;
-
       return;
     }
   });

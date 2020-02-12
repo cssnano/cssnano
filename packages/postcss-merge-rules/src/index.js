@@ -1,7 +1,7 @@
 import browserslist from 'browserslist';
 import postcss from 'postcss';
 import vendors from 'vendors';
-import sameParent from 'lerna:cssnano-util-same-parent';
+import { sameParent } from 'lerna:cssnano-utils';
 import ensureCompatibility from './lib/ensureCompatibility';
 
 /** @type {string[]} */
@@ -268,6 +268,15 @@ function partialMerge(first, second) {
     if (!declarationIsEqual(secondDecls[nextConflictIndex], decl)) {
       return false;
     }
+    if (
+      decl.prop.toLowerCase() !== 'direction' &&
+      decl.prop.toLowerCase() !== 'unicode-bidi' &&
+      secondDecls.some(
+        (declaration) => declaration.prop.toLowerCase() === 'all'
+      )
+    ) {
+      return false;
+    }
     secondDecls.splice(nextConflictIndex, 1);
     return true;
   });
@@ -281,14 +290,7 @@ function partialMerge(first, second) {
   receivingBlock.selector = joinSelectors(first, second);
   receivingBlock.nodes = [];
 
-  // Rules with "all" declarations must be on top
-  if (
-    intersection.some((declaration) => declaration.prop.toLowerCase() === 'all')
-  ) {
-    second.parent.insertBefore(first, receivingBlock);
-  } else {
-    second.parent.insertBefore(second, receivingBlock);
-  }
+  second.parent.insertBefore(second, receivingBlock);
 
   const firstClone = first.clone();
   const secondClone = second.clone();

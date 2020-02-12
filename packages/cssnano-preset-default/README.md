@@ -2,51 +2,49 @@
 
 > Safe defaults for cssnano which require minimal configuration.
 
-
 ## Table of Contents
 
--   [Overview](#overview)
+- [Overview](#overview)
 
--   [Usage](#usage)
+- [Usage](#usage)
 
-    -   [Install](#install)
-    -   [Configuration](#configuration)
+  - [Install](#install)
+  - [Configuration](#configuration)
 
--   [Plugins](#plugins)
+- [Plugins](#plugins)
 
-    -   [cssnano-util-raw-cache](#cssnano-util-raw-cache)
-    -   [postcss-calc (external)](#postcss-calc-external)
-    -   [postcss-colormin](#postcss-colormin)
-    -   [postcss-convert-values](#postcss-convert-values)
-    -   [postcss-discard-comments](#postcss-discard-comments)
-    -   [postcss-discard-duplicates](#postcss-discard-duplicates)
-    -   [postcss-discard-empty](#postcss-discard-empty)
-    -   [postcss-discard-overridden](#postcss-discard-overridden)
-    -   [postcss-merge-longhand](#postcss-merge-longhand)
-    -   [postcss-merge-rules](#postcss-merge-rules)
-    -   [postcss-minify-font-values](#postcss-minify-font-values)
-    -   [postcss-minify-gradients](#postcss-minify-gradients)
-    -   [postcss-minify-params](#postcss-minify-params)
-    -   [postcss-minify-selectors](#postcss-minify-selectors)
-    -   [postcss-normalize-charset](#postcss-normalize-charset)
-    -   [postcss-normalize-display-values](#postcss-normalize-display-values)
-    -   [postcss-normalize-positions](#postcss-normalize-positions)
-    -   [postcss-normalize-repeat-style](#postcss-normalize-repeat-style)
-    -   [postcss-normalize-string](#postcss-normalize-string)
-    -   [postcss-normalize-timing-functions](#postcss-normalize-timing-functions)
-    -   [postcss-normalize-unicode](#postcss-normalize-unicode)
-    -   [postcss-normalize-url](#postcss-normalize-url)
-    -   [postcss-normalize-whitespace](#postcss-normalize-whitespace)
-    -   [postcss-ordered-values](#postcss-ordered-values)
-    -   [postcss-reduce-initial](#postcss-reduce-initial)
-    -   [postcss-reduce-transforms](#postcss-reduce-transforms)
-    -   [postcss-svgo](#postcss-svgo)
-    -   [postcss-unique-selectors](#postcss-unique-selectors)
+  - [cssnano-utils](#cssnano-utils)
+  - [postcss-calc (external)](#postcss-calc-external)
+  - [postcss-colormin](#postcss-colormin)
+  - [postcss-convert-values](#postcss-convert-values)
+  - [postcss-discard-comments](#postcss-discard-comments)
+  - [postcss-discard-duplicates](#postcss-discard-duplicates)
+  - [postcss-discard-empty](#postcss-discard-empty)
+  - [postcss-discard-overridden](#postcss-discard-overridden)
+  - [postcss-merge-longhand](#postcss-merge-longhand)
+  - [postcss-merge-rules](#postcss-merge-rules)
+  - [postcss-minify-font-values](#postcss-minify-font-values)
+  - [postcss-minify-gradients](#postcss-minify-gradients)
+  - [postcss-minify-params](#postcss-minify-params)
+  - [postcss-minify-selectors](#postcss-minify-selectors)
+  - [postcss-normalize-charset](#postcss-normalize-charset)
+  - [postcss-normalize-display-values](#postcss-normalize-display-values)
+  - [postcss-normalize-positions](#postcss-normalize-positions)
+  - [postcss-normalize-repeat-style](#postcss-normalize-repeat-style)
+  - [postcss-normalize-string](#postcss-normalize-string)
+  - [postcss-normalize-timing-functions](#postcss-normalize-timing-functions)
+  - [postcss-normalize-unicode](#postcss-normalize-unicode)
+  - [postcss-normalize-url](#postcss-normalize-url)
+  - [postcss-normalize-whitespace](#postcss-normalize-whitespace)
+  - [postcss-ordered-values](#postcss-ordered-values)
+  - [postcss-reduce-initial](#postcss-reduce-initial)
+  - [postcss-reduce-transforms](#postcss-reduce-transforms)
+  - [postcss-svgo](#postcss-svgo)
+  - [postcss-unique-selectors](#postcss-unique-selectors)
 
--   [Contributors](#contributors)
+- [Contributors](#contributors)
 
--   [License](#license)
-
+- [License](#license)
 
 ## Overview
 
@@ -56,7 +54,6 @@ iterations of cssnano, assumptions were made about your CSS which caused
 output to look different in certain use cases, but not others. These
 transforms have been moved from the defaults to other presets, to make
 this preset require only minimal configuration.
-
 
 ## Usage
 
@@ -89,13 +86,12 @@ const defaultPreset = require('cssnano-preset-default');
 
 module.exports = defaultPreset({
   discardComments: {
-    remove: comment => comment[0] === "@"
-  }
+    remove: (comment) => comment[0] === '@',
+  },
 });
 ```
 
 Note that you may wish to publish your own preset to npm for reusability, should it differ a lot from this one. This is highly encouraged!
-
 
 ## Plugins
 
@@ -105,11 +101,9 @@ Note that you may wish to publish your own preset to npm for reusability, should
 
 This plugin is loaded with its default configuration.
 
-### [`cssnano-util-raw-cache`](https://github.com/cssnano/cssnano/tree/master/packages/cssnano-util-raw-cache)
+### [`cssnano-utils`](https://github.com/cssnano/cssnano/tree/master/packages/cssnano-utils)
 
-> Manages the raw value formatting for generated AST nodes.
-
-This plugin is loaded with its default configuration.
+> Utility methods used by cssnano
 
 ### [`postcss-calc`](https://github.com/postcss/postcss-calc) (external)
 
@@ -131,7 +125,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-	length: false
+  length: false;
 }
 ```
 
@@ -203,7 +197,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-	add: false
+  add: false;
 }
 ```
 
@@ -285,13 +279,10 @@ This plugin is loaded with its default configuration.
 
 This plugin is loaded with its default configuration.
 
-
 ## Contributors
 
 See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md).
 
-
 ## License
 
 MIT © [Ben Briggs](http://beneb.info)
-

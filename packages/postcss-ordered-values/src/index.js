@@ -7,18 +7,53 @@ import border from './rules/border';
 import boxShadow from './rules/boxShadow';
 import flexFlow from './rules/flexFlow';
 import transition from './rules/transition';
+import {
+  normalizeGridAutoFlow,
+  normalizeGridColumnRowGap,
+  normalizeGridColumnRow,
+} from './rules/grid';
+import { columnsRule, column } from './rules/columns';
 
-const rules = {
-  animation: animation,
+const borderRules = {
   border: border,
+  'border-block': border,
+  'border-inline': border,
+  'border-block-end': border,
+  'border-block-start': border,
+  'border-inline-end': border,
+  'border-inline-start': border,
   'border-top': border,
   'border-right': border,
   'border-bottom': border,
   'border-left': border,
+};
+
+const grid = {
+  'grid-auto-flow': normalizeGridAutoFlow,
+  'grid-column-gap': normalizeGridColumnRowGap, // normal | <length-percentage>
+  'grid-row-gap': normalizeGridColumnRowGap, // normal | <length-percentage>
+  'grid-column': normalizeGridColumnRow, // <grid-line>+
+  'grid-row': normalizeGridColumnRow, // <grid-line>+
+  'grid-row-start': normalizeGridColumnRow, // <grid-line>
+  'grid-row-end': normalizeGridColumnRow, // <grid-line>
+  'grid-column-start': normalizeGridColumnRow, // <grid-line>
+  'grid-column-end': normalizeGridColumnRow, // <grid-line>
+};
+
+const columnRules = {
+  'column-rule': columnsRule,
+  columns: column,
+};
+
+const rules = {
+  animation: animation,
   outline: border,
   'box-shadow': boxShadow,
   'flex-flow': flexFlow,
   transition: transition,
+  ...borderRules,
+  ...grid,
+  ...columnRules,
 };
 
 function isVariableFunctionNode(node) {

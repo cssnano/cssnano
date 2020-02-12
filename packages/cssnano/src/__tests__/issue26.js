@@ -1,6 +1,5 @@
 import postcss from 'postcss';
 import nano from '..';
-import ava from 'ava';
 
 const fixture = `
 @media print {
@@ -22,11 +21,12 @@ const fixture = `
 }
 `;
 
-const expected = `@media print{.test{-webkit-box-shadow:none;box-shadow:none;-webkit-border-radius:0;border-radius:0}}.test{width:500px}`;
+const expected =
+  '@media print{.test{-webkit-box-shadow:none;box-shadow:none;-webkit-border-radius:0;border-radius:0}}.test{width:500px}';
 // Switch back once css-declaration-sorter has been fixed
 // const expected = `@media print{.test{-webkit-border-radius:0;-webkit-box-shadow:none;border-radius:0;box-shadow:none}}.test{width:500px}`;
 
-ava('it should compress whitespace after node.clone()', (t) => {
+test('it should compress whitespace after node.clone()', () => {
   const processor = postcss([
     postcss.plugin('cloner', () => {
       return (css) => {
@@ -39,5 +39,7 @@ ava('it should compress whitespace after node.clone()', (t) => {
     nano(),
   ]);
 
-  return processor.process(fixture).then((r) => t.deepEqual(r.css, expected));
+  return processor
+    .process(fixture, { from: undefined })
+    .then((r) => expect(r.css).toBe(expected));
 });

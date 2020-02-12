@@ -1,6 +1,6 @@
 import { plugin } from 'postcss';
 import valueParser from 'postcss-value-parser';
-import getMatchFactory from 'lerna:cssnano-util-get-match';
+import { getMatch as getMatchFactory } from 'lerna:cssnano-utils';
 
 const getValue = (node) => parseFloat(node.value);
 
