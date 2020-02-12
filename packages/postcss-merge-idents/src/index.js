@@ -1,7 +1,7 @@
 import has from 'has';
 import { plugin } from 'postcss';
 import valueParser from 'postcss-value-parser';
-import sameParent from 'lerna:cssnano-util-same-parent';
+import { sameParent } from 'lerna:cssnano-utils';
 
 function canonical(obj) {
   // Prevent potential infinite loops

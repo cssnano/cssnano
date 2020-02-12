@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
-import getMatchFactory from 'lerna:cssnano-util-get-match';
+import { getMatch } from 'lerna:cssnano-utils';
 import mappings from './lib/map';
 
 function transform(value) {
@@ -19,7 +19,7 @@ function transform(value) {
     return value;
   }
 
-  const match = getMatchFactory(mappings)(values);
+  const match = getMatch(mappings)(values);
 
   if (!match) {
     return value;

@@ -29,7 +29,7 @@
   "dependencies": {
     "browserslist": "^4.6.0",
     "caniuse-api": "^3.0.0",
-    "cssnano-util-same-parent": "^4.0.1",
+    "cssnano-utils": "^1.0.0",
     "postcss": "^7.0.16",
     "postcss-selector-parser": "^3.1.1",
     "vendors": "^1.0.3"

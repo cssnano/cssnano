@@ -1,5 +1,5 @@
 import { unit } from 'postcss-value-parser';
-import getArguments from 'lerna:cssnano-util-get-arguments';
+import { getArguments } from 'lerna:cssnano-utils';
 import addSpace from '../lib/addSpace';
 import getValue from '../lib/getValue';
 

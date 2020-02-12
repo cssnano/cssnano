@@ -1,7 +1,7 @@
 import has from 'has';
 import postcss from 'postcss';
 import valueParser, { stringify } from 'postcss-value-parser';
-import getMatchFactory from 'lerna:cssnano-util-get-match';
+import { getMatch as getMatchFactory } from 'lerna:cssnano-utils';
 
 function getValues(list, node, index) {
   if (index % 2 === 0) {
