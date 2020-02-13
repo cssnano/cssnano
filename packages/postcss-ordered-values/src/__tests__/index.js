@@ -669,3 +669,86 @@ test(
     'grid-column-end: 2 /  4; grid-column-end: span 2 /  7; grid-column-end: auto;grid-column-end: 3;grid-column-end: custom-indent-name /  3;'
   )
 );
+
+test(
+  'should order list-style 1',
+  processCSS('ul{list-style: unset}', 'ul{list-style: unset}')
+);
+
+test(
+  'should order list-style 2',
+  processCSS('ul{list-style: none}', 'ul{list-style: none}')
+);
+
+test(
+  'should order list-style 3',
+  processCSS('ul{list-style: square inside}', 'ul{list-style: square inside}')
+);
+
+test(
+  'should order list-style 4',
+  processCSS('ul{list-style: inside square}', 'ul{list-style: square inside}')
+);
+
+test(
+  'should order list-style 5',
+  processCSS('ul{list-style: square unset}', 'ul{list-style: square unset}')
+);
+
+test(
+  'should order list-style 6',
+  processCSS('ul{list-style: inside none}', 'ul{list-style: none inside}')
+  /**
+   *  This change is CORRECT as
+   *  list-style: inside none;
+          list-style-position: inside;
+          list-style-image: initial;
+          list-style-type: none;
+      list-style: none inside;
+          list-style-position: inside;
+          list-style-image: initial;
+          list-style-type: none;
+   *
+   */
+);
+test(
+  'should order list-style 7',
+  processCSS('ul{list-style: unset inside}', 'ul{list-style: unset inside}')
+);
+test(
+  'should order list-style 8',
+  processCSS(
+    'ul{list-style: circle unset none}',
+    'ul{list-style: circle unset none}'
+  )
+);
+
+test(
+  'should order list-style 9',
+  processCSS(
+    'ul{list-style: circle url("https://mdn.mozillademos.org/files/11981/starsolid.gif")}',
+    'ul{list-style: circle  url("https://mdn.mozillademos.org/files/11981/starsolid.gif")}'
+  )
+);
+
+test(
+  'should order list-style 10', // it is invalid CSS
+  processCSS('ul{list-style: circle none}', 'ul{list-style: circle none}')
+);
+
+test(
+  'should order list-style 11',
+  processCSS(
+    'ul{list-style: unset none circle}', // it is invalid CSS
+    'ul{list-style: unset none circle}' // its safe/better to leave as it is when global values and none comes
+    // cause both position and image accepts  none
+  )
+);
+
+test(
+  'should order list-style 12',
+  processCSS(
+    'ul{list-style: circle url("https://mdn.mozillademos.org/files/11981/starsolid.gif") none}',
+    'ul{list-style: circle none  url("https://mdn.mozillademos.org/files/11981/starsolid.gif")}'
+  )
+);
