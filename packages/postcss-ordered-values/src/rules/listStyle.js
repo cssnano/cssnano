@@ -25,7 +25,7 @@ export default function listStyleNormalizer(listStyle) {
         if (
           order.type
             .split(' ')
-            .filter((e) => e !== '' || e !== '')
+            .filter((e) => e !== '' && e !== ' ')
             .includes('none')
         ) {
           order.image = `${order.image} ${decl.value}`;
