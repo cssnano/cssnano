@@ -786,3 +786,11 @@ test(
     '.a{color:red;display:flex;font-size:10px;}.a,.c{unicode-bidi:normal;}.c{all:unset;color:red;display:flex;font-size:10px;}'
   )
 );
+
+test(
+  'should not merge :host(tagname) with tagname',
+  processCSS(
+    ':host(tag){display:block}tag{display:block}',
+    ':host(tag){display:block}tag{display:block}'
+  )
+);
