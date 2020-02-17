@@ -3,6 +3,10 @@
   "version": "4.0.1",
   "description": "PostCSS plugin to discard overridden @keyframes or @counter-style.",
   "main": "dist/index.js",
+  "files": [
+    "LICENSE",
+    "dist"
+  ],
   "keywords": [
     "postcss",
     "css",
