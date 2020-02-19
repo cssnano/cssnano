@@ -44,7 +44,7 @@ test(
   'keep order of CSS variables',
   processCSS(
     `:root{--a-var:'value';--c-var:calc(10px + 20px);--b-var: 12px;}`,
-    ':root{--a-var:\"value\";--c-var:30px;--b-var:12px}'
+    ':root{--a-var:"value";--c-var:30px;--b-var:12px}'
   )
 );
 
