@@ -3,7 +3,7 @@ import postcss from 'postcss';
 import valueParser, { stringify } from 'postcss-value-parser';
 import sort from 'alphanum-sort';
 import uniqs from 'uniqs';
-import getArguments from 'lerna:cssnano-util-get-arguments';
+import { getArguments } from 'lerna:cssnano-utils';
 
 /**
  * Return the greatest common divisor

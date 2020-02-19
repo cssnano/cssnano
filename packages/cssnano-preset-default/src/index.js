@@ -40,7 +40,7 @@ import postcssNormalizeWhitespace from 'lerna:postcss-normalize-whitespace';
 import postcssNormalizeUnicode from 'lerna:postcss-normalize-unicode';
 import postcssNormalizeDisplayValues from 'lerna:postcss-normalize-display-values';
 import postcssNormalizeTimingFunctions from 'lerna:postcss-normalize-timing-functions';
-import rawCache from 'lerna:cssnano-util-raw-cache';
+import { rawCache } from 'lerna:cssnano-utils';
 
 const defaultOpts = {
   convertValues: {
