@@ -41,6 +41,14 @@ test(
 );
 
 test(
+  'keep order of CSS variables',
+  processCSS(
+    `:root{--a-var:'value';--c-var:calc(10px + 20px);--b-var: 12px;}`,
+    ':root{--a-var:\"value\";--c-var:30px;--b-var:12px}'
+  )
+);
+
+test(
   'sort values between short- and longhand properties',
   processCSS(
     'a{animation-name:a;z-index:0;animation:b;color:0}',
