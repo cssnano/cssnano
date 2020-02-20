@@ -1,4 +1,4 @@
-import processCss, { passthrough } from './_processCss';
+import processCss from './_processCss';
 
 test(
   'should remove non-special comments',
@@ -99,9 +99,10 @@ test(
 
 test(
   'should keep special comments 2',
-  passthrough('h1{/*!test comment*/font-weight:700}')
-  // Switch back once css-declaration-sorter has been fixed
-  // 'h1{font-weight:700/*!test comment*/}',
+  processCss(
+    'h1{/*!test comment*/font-weight:700}',
+    'h1{font-weight:700/*!test comment*/}'
+  )
 );
 
 test(
