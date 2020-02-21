@@ -67,6 +67,11 @@ test(
   processCSS('h1{width:100.00%}', 'h1{width:100%}')
 );
 
+test(
+  'should preserve opacities defined as percentages',
+  passthroughCSS('h1{opacity:100%}')
+);
+
 test('should not mangle flex basis', passthroughCSS('h1{flex-basis:0%}'));
 
 test('should not mangle flex basis (2)', passthroughCSS('h1{FLEX-BASIC:0%}'));
