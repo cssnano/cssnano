@@ -786,3 +786,11 @@ test(
     '.a{color:red;display:flex;font-size:10px;}.a,.c{unicode-bidi:normal;}.c{all:unset;color:red;display:flex;font-size:10px;}'
   )
 );
+
+test(
+  'should not merge :focus-visible',
+  processCSS(
+    'a{color : green;} a:focus-visible{ color : green;} a:focus-visible{ background : red}',
+    'a{color : green;} a:focus-visible{ color : green;} a:focus-visible{ background : red}'
+  )
+);
