@@ -66,18 +66,21 @@ test(
   'should preserve the universal selector in attribute selectors',
   processCSS(
     'h1[class=" *.js "] + *.js{color:blue}',
-    'h1[class=" *.js "]+.js{color:blue}'
+    'h1[class=\\*\\.js]+.js{color:blue}'
   )
 );
 
 test(
   'should preserve the universal selector in filenames',
-  passthroughCSS('[filename="*.js"]{color:blue}')
+  processCSS('[filename="*.js"]{color:blue}', '[filename=\\*\\.js]{color:blue}')
 );
 
 test(
   'should preserve the universal selector in file globs',
-  passthroughCSS('[glob="/**/*.js"]{color:blue}')
+  processCSS(
+    '[glob="/**/*.js"]{color:blue}',
+    '[glob=\\/\\*\\*\\/\\*\\.js]{color:blue}'
+  )
 );
 
 test(
@@ -87,7 +90,10 @@ test(
 
 test(
   'should handle deep combinators',
-  passthroughCSS('body /deep/ .theme-element{color:blue}')
+  processCSS(
+    'body /deep/ .theme-element{color:blue}',
+    'body/deep/.theme-element{color:blue}'
+  )
 );
 
 test(
@@ -140,7 +146,10 @@ test(
 
 test(
   'should normalise attribute selectors (2)',
-  passthroughCSS('a[class^="options["]:after{color:blue}')
+  processCSS(
+    'a[class^="options["]:after{color:blue}',
+    'a[class^=options\\[]:after{color:blue}'
+  )
 );
 
 test(
@@ -155,7 +164,7 @@ test(
   'should normalise attribute selectors (4)',
   processCSS(
     'a[class="woop \\\nwoop woop"]{color:blue}',
-    'a[class="woop woop woop"]{color:blue}'
+    `a[class="woop \\\nwoop woop"]{color:blue}`
   )
 );
 
@@ -205,7 +214,7 @@ test(
   'should not be responsible for normalising comments',
   processCSS(
     'h1 /*!test comment*/, h2{color:blue}',
-    'h1 /*!test comment*/,h2{color:blue}'
+    'h1/*!test comment*/,h2{color:blue}'
   )
 );
 
@@ -244,34 +253,41 @@ test(
 
 test(
   'should not change strings',
-  passthroughCSS(
-    ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:blue}'
+  processCSS(
+    ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:blue}',
+    ':not([attr=h1\\ \\ \\ \\ \\ \\ \\ a\\ \\+\\ b\\ \\/\\*\\ not\\ a\\ comment\\ \\*\\/\\ end\\ of\\ \\:not\\ \\ from\\ 100\\%]){color:blue}'
   )
 );
 
 test(
   'should not change strings (2)',
-  passthroughCSS(
-    ':not([attr="  h1       a + b /* not a comment */ not end of `:not`:  )  from 100% "]){color:blue}'
+  processCSS(
+    ':not([attr="  h1       a + b /* not a comment */ not end of `:not`:  )  from 100% "]){color:blue}',
+    ':not([attr=h1\\ \\ \\ \\ \\ \\ \\ a\\ \\+\\ b\\ \\/\\*\\ not\\ a\\ comment\\ \\*\\/\\ not\\ end\\ of\\ \\`\\:not\\`\\:\\ \\ \\)\\ \\ from\\ 100\\%]){color:blue}'
   )
 );
 
 test(
   'should not change strings (3)',
-  passthroughCSS('[a=":not( *.b, h1, h1 )"]{color:blue}')
+  processCSS(
+    '[a=":not( *.b, h1, h1 )"]{color:blue}',
+    '[a=\\:not\\(\\ \\*\\.b\\,\\ h1\\,\\ h1\\ \\)]{color:blue}'
+  )
 );
 
 test(
   'should not change strings (4)',
-  passthroughCSS(
-    '[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:blue}'
+  processCSS(
+    '[a="escaped quotes \\" h1, h1, h1 \\" h1, h1, h1"]{color:blue}',
+    '[a=escaped\\ quotes\\ \\"\\ h1\\,\\ h1\\,\\ h1\\ \\"\\ h1\\,\\ h1\\,\\ h1]{color:blue}'
   )
 );
 
 test(
   'should not change strings (5)',
-  passthroughCSS(
-    "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}"
+  processCSS(
+    "[a='escaped quotes \\' h1, h1, h1 \\' h1, h1, h1']{color:blue}",
+    `[a=escaped\\ quotes\\ \\'\\ h1\\,\\ h1\\,\\ h1\\ \\'\\ h1\\,\\ h1\\,\\ h1]{color:blue}`
   )
 );
 
@@ -287,7 +303,7 @@ test(
   'should not mangle attribute selectors',
   processCSS(
     '[class*=" icon-"]+.label, [class^="icon-"]+.label{color:blue}',
-    '[class*=" icon-"]+.label,[class^=icon-]+.label{color:blue}'
+    '[class*=icon-]+.label,[class^=icon-]+.label{color:blue}'
   )
 );
 
@@ -301,7 +317,10 @@ test(
 
 test(
   'should not mangle quoted attribute selectors that contain =',
-  passthroughCSS('.parent>.child[data-attr~="key1=1"]{color:blue}')
+  processCSS(
+    '.parent>.child[data-attr~="key1=1"]{color:blue}',
+    '.parent>.child[data-attr~=key1\\=1]{color:blue}'
+  )
 );
 
 test(
@@ -335,7 +354,7 @@ test(
 
 test(
   'should not unquote a single hyphen as an attribute value',
-  passthroughCSS('[title="-"]{color:blue}')
+  processCSS('[title="-"]{color:blue}', '[title=-]{color:blue}')
 );
 
 test(

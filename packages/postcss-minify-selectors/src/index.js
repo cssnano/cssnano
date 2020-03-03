@@ -195,6 +195,17 @@ export default plugin('postcss-minify-selectors', () => {
           // Trim whitespace around the value
           sel.spaces.before = sel.spaces.after = '';
 
+          // postcss-selector-parser@6 needs this action in order to reduce the spaces
+          if (sel.raws && sel.raws.spaces) {
+            if (sel.raws.spaces.before) {
+              sel.raws.spaces.before = sel.raws.spaces.before.trim();
+            }
+
+            if (sel.raws.spaces.after) {
+              sel.raws.spaces.after = sel.raws.spaces.after.trim();
+            }
+          }
+
           if (has(reducers, type)) {
             reducers[type](sel);
 
