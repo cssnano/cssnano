@@ -53,18 +53,21 @@ test(
   'should preserve the universal selector in attribute selectors',
   processCss(
     'h1[class=" *.js "] + *.js{color:#00f}',
-    'h1[class=" *.js "]+.js{color:#00f}'
+    'h1[class=\\*\\.js]+.js{color:#00f}'
   )
 );
 
 test(
   'should preserve the universal selector in filenames',
-  processCss('[filename="*.js"]{color:#00f}', '[filename="*.js"]{color:#00f}')
+  processCss('[filename="*.js"]{color:#00f}', '[filename=\\*\\.js]{color:#00f}')
 );
 
 test(
   'should preserve the universal selector in file globs',
-  processCss('[glob="/**/*.js"]{color:#00f}', '[glob="/**/*.js"]{color:#00f}')
+  processCss(
+    '[glob="/**/*.js"]{color:#00f}',
+    '[glob=\\/\\*\\*\\/\\*\\.js]{color:#00f}'
+  )
 );
 
 test(
@@ -79,7 +82,7 @@ test(
   'should handle deep combinators',
   processCss(
     'body /deep/ .theme-element{color:#00f}',
-    'body /deep/ .theme-element{color:#00f}'
+    'body/deep/.theme-element{color:#00f}'
   )
 );
 
@@ -135,7 +138,7 @@ test(
   'should normalise attribute selectors (2)',
   processCss(
     'a[class^="options["]:after{color:#00f}',
-    'a[class^="options["]:after{color:#00f}'
+    'a[class^=options\\[]:after{color:#00f}'
   )
 );
 
@@ -159,7 +162,7 @@ test(
   'should not be responsible for normalising comments',
   processCss(
     'h1 /*!test comment*/, h2{color:#00f}',
-    'h1 /*!test comment*/,h2{color:#00f}'
+    'h1,h2,/*!test comment*/{color:#00f}'
   )
 );
 
@@ -175,7 +178,7 @@ test(
   'should not change strings',
   processCss(
     ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:#00f}',
-    ':not([attr="  h1       a + b /* not a comment */ end of :not  from 100% "]){color:#00f}'
+    ':not([attr=h1\\ \\ \\ \\ \\ \\ \\ a\\ \\+\\ b\\ \\/\\*\\ not\\ a\\ comment\\ \\*\\/\\ end\\ of\\ \\:not\\ \\ from\\ 100\\%]){color:#00f}'
   )
 );
 
@@ -183,7 +186,7 @@ test(
   'should not change strings (2)',
   processCss(
     ':not([attr="  h1       a + b /* not a comment */ not end of `:not`:  )  from 100% "]){color:#00f}',
-    ':not([attr="  h1       a + b /* not a comment */ not end of `:not`:  )  from 100% "]){color:#00f}'
+    ':not([attr=h1\\ \\ \\ \\ \\ \\ \\ a\\ \\+\\ b\\ \\/\\*\\ not\\ a\\ comment\\ \\*\\/\\ not\\ end\\ of\\ \\`\\:not\\`\\:\\ \\ \\)\\ \\ from\\ 100\\%]){color:#00f}'
   )
 );
 
@@ -191,6 +194,6 @@ test(
   'should not change strings (3)',
   processCss(
     '[a=":not( *.b, h1, h1 )"]{color:#00f}',
-    '[a=":not( *.b, h1, h1 )"]{color:#00f}'
+    '[a=\\:not\\(\\ \\*\\.b\\,\\ h1\\,\\ h1\\ \\)]{color:#00f}'
   )
 );
