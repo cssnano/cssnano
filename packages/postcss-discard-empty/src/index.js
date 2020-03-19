@@ -12,7 +12,8 @@ function discardAndReport(css, result) {
 
     if (
       (type === 'decl' && !node.value) ||
-      ((type === 'rule' && !node.selector) || (sub && !sub.length)) ||
+      (type === 'rule' && !node.selector) ||
+      (sub && !sub.length) ||
       (type === 'atrule' && ((!sub && !params) || (!params && !sub.length)))
     ) {
       node.remove();

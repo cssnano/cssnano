@@ -1,7 +1,7 @@
 import browserslist from 'browserslist';
 import postcss from 'postcss';
 import vendors from 'vendors';
-import sameParent from 'lerna:cssnano-util-same-parent';
+import { sameParent } from 'lerna:cssnano-utils';
 import ensureCompatibility from './lib/ensureCompatibility';
 
 /** @type {string[]} */

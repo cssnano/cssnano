@@ -2,56 +2,54 @@
 
 > Advanced optimisations for cssnano; may or may not break your CSS!
 
-
 ## Table of Contents
 
--   [Usage](#usage)
+- [Usage](#usage)
 
-    -   [Install](#install)
-    -   [Configuration](#configuration)
+  - [Install](#install)
+  - [Configuration](#configuration)
 
--   [Plugins](#plugins)
+- [Plugins](#plugins)
 
-    -   [autoprefixer (external)](#autoprefixer-external)
-    -   [css-declaration-sorter (external)](#css-declaration-sorter-external)
-    -   [cssnano-util-raw-cache](#cssnano-util-raw-cache)
-    -   [postcss-calc (external)](#postcss-calc-external)
-    -   [postcss-colormin](#postcss-colormin)
-    -   [postcss-convert-values](#postcss-convert-values)
-    -   [postcss-discard-comments](#postcss-discard-comments)
-    -   [postcss-discard-duplicates](#postcss-discard-duplicates)
-    -   [postcss-discard-empty](#postcss-discard-empty)
-    -   [postcss-discard-overridden](#postcss-discard-overridden)
-    -   [postcss-discard-unused](#postcss-discard-unused)
-    -   [postcss-merge-idents](#postcss-merge-idents)
-    -   [postcss-merge-longhand](#postcss-merge-longhand)
-    -   [postcss-merge-rules](#postcss-merge-rules)
-    -   [postcss-minify-font-values](#postcss-minify-font-values)
-    -   [postcss-minify-gradients](#postcss-minify-gradients)
-    -   [postcss-minify-params](#postcss-minify-params)
-    -   [postcss-minify-selectors](#postcss-minify-selectors)
-    -   [postcss-normalize-charset](#postcss-normalize-charset)
-    -   [postcss-normalize-display-values](#postcss-normalize-display-values)
-    -   [postcss-normalize-positions](#postcss-normalize-positions)
-    -   [postcss-normalize-repeat-style](#postcss-normalize-repeat-style)
-    -   [postcss-normalize-string](#postcss-normalize-string)
-    -   [postcss-normalize-timing-functions](#postcss-normalize-timing-functions)
-    -   [postcss-normalize-unicode](#postcss-normalize-unicode)
-    -   [postcss-normalize-url](#postcss-normalize-url)
-    -   [postcss-normalize-whitespace](#postcss-normalize-whitespace)
-    -   [postcss-ordered-values](#postcss-ordered-values)
-    -   [postcss-reduce-idents](#postcss-reduce-idents)
-    -   [postcss-reduce-initial](#postcss-reduce-initial)
-    -   [postcss-reduce-transforms](#postcss-reduce-transforms)
-    -   [postcss-svgo](#postcss-svgo)
-    -   [postcss-unique-selectors](#postcss-unique-selectors)
-    -   [postcss-unused-var](#postcss-unused-var)
-    -   [postcss-zindex](#postcss-zindex)
+  - [autoprefixer (external)](#autoprefixer-external)
+  - [css-declaration-sorter (external)](#css-declaration-sorter-external)
+  - [cssnano-utils](#cssnano-utils)
+  - [postcss-calc (external)](#postcss-calc-external)
+  - [postcss-colormin](#postcss-colormin)
+  - [postcss-convert-values](#postcss-convert-values)
+  - [postcss-discard-comments](#postcss-discard-comments)
+  - [postcss-discard-duplicates](#postcss-discard-duplicates)
+  - [postcss-discard-empty](#postcss-discard-empty)
+  - [postcss-discard-overridden](#postcss-discard-overridden)
+  - [postcss-discard-unused](#postcss-discard-unused)
+  - [postcss-merge-idents](#postcss-merge-idents)
+  - [postcss-merge-longhand](#postcss-merge-longhand)
+  - [postcss-merge-rules](#postcss-merge-rules)
+  - [postcss-minify-font-values](#postcss-minify-font-values)
+  - [postcss-minify-gradients](#postcss-minify-gradients)
+  - [postcss-minify-params](#postcss-minify-params)
+  - [postcss-minify-selectors](#postcss-minify-selectors)
+  - [postcss-normalize-charset](#postcss-normalize-charset)
+  - [postcss-normalize-display-values](#postcss-normalize-display-values)
+  - [postcss-normalize-positions](#postcss-normalize-positions)
+  - [postcss-normalize-repeat-style](#postcss-normalize-repeat-style)
+  - [postcss-normalize-string](#postcss-normalize-string)
+  - [postcss-normalize-timing-functions](#postcss-normalize-timing-functions)
+  - [postcss-normalize-unicode](#postcss-normalize-unicode)
+  - [postcss-normalize-url](#postcss-normalize-url)
+  - [postcss-normalize-whitespace](#postcss-normalize-whitespace)
+  - [postcss-ordered-values](#postcss-ordered-values)
+  - [postcss-reduce-idents](#postcss-reduce-idents)
+  - [postcss-reduce-initial](#postcss-reduce-initial)
+  - [postcss-reduce-transforms](#postcss-reduce-transforms)
+  - [postcss-svgo](#postcss-svgo)
+  - [postcss-unique-selectors](#postcss-unique-selectors)
+  - [postcss-unused-var](#postcss-unused-var)
+  - [postcss-zindex](#postcss-zindex)
 
--   [Contributors](#contributors)
+- [Contributors](#contributors)
 
--   [License](#license)
-
+- [License](#license)
 
 ## Usage
 
@@ -97,13 +95,12 @@ const advancedPreset = require('cssnano-preset-advanced');
 
 module.exports = advancedPreset({
   discardComments: {
-    remove: comment => comment[0] === "@"
-  }
+    remove: (comment) => comment[0] === '@',
+  },
 });
 ```
 
 Note that you may wish to publish your own preset to npm for reusability, should it differ a lot from this one. This is highly encouraged!
-
 
 ## Plugins
 
@@ -115,7 +112,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-	add: false
+  add: false;
 }
 ```
 
@@ -127,15 +124,13 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-	exclude: true
+  exclude: true;
 }
 ```
 
-### [`cssnano-util-raw-cache`](https://github.com/cssnano/cssnano/tree/master/packages/cssnano-util-raw-cache)
+### [`cssnano-utils`](https://github.com/cssnano/cssnano/tree/master/packages/cssnano-utils)
 
-> Manages the raw value formatting for generated AST nodes.
-
-This plugin is loaded with its default configuration.
+> Utility methods used by cssnano
 
 ### [`postcss-calc`](https://github.com/postcss/postcss-calc) (external)
 
@@ -157,7 +152,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-	length: false
+  length: false;
 }
 ```
 
@@ -241,7 +236,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-	add: false
+  add: false;
 }
 ```
 
@@ -341,13 +336,10 @@ This plugin is loaded with its default configuration.
 
 This plugin is loaded with its default configuration.
 
-
 ## Contributors
 
 See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md).
 
-
 ## License
 
-[MIT](https://opensource.org/licenses/MIT) © [Ben Briggs](http://beneb.info)
-
+MIT © [Ben Briggs](http://beneb.info)

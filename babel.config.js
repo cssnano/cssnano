@@ -18,6 +18,7 @@ module.exports = function(api) {
           'lerna:cssnano-util-get-arguments': 'cssnano-util-get-arguments',
           'lerna:cssnano-util-get-match': 'cssnano-util-get-match',
           'lerna:cssnano-util-same-parent': 'cssnano-util-same-parent',
+          'lerna:cssnano-utils': 'cssnano-utils',
           'lerna:postcss-colormin': 'postcss-colormin',
           'lerna:postcss-convert-values': 'postcss-convert-values',
           'lerna:postcss-discard-comments': 'postcss-discard-comments',
@@ -76,6 +77,7 @@ module.exports = function(api) {
             './cssnano-util-get-match/src/index.js',
           'lerna:cssnano-util-same-parent':
             './cssnano-util-same-parent/src/index.js',
+          'lerna:cssnano-utils': './cssnano-utils/src/index.js',
           'lerna:postcss-colormin': './postcss-colormin/src/index.js',
           'lerna:postcss-convert-values':
             './postcss-convert-values/src/index.js',

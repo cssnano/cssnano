@@ -41,7 +41,7 @@ import postcssNormalizeUnicode from 'lerna:postcss-normalize-unicode';
 import postcssUnusedVariables from 'lerna:postcss-unused-var';
 import postcssNormalizeDisplayValues from 'lerna:postcss-normalize-display-values';
 import postcssNormalizeTimingFunctions from 'lerna:postcss-normalize-timing-functions';
-import rawCache from 'lerna:cssnano-util-raw-cache';
+import { rawCache } from 'lerna:cssnano-utils';
 
 const defaultOpts = {
   convertValues: {
@@ -51,7 +51,7 @@ const defaultOpts = {
     add: false,
   },
   cssDeclarationSorter: {
-    exclude: true,
+    keepOverrides: true,
   },
 };
 
