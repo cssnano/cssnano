@@ -2,8 +2,8 @@ module.exports = {
   title: 'CSSNANO',
   tagline: `Deliver your website's styles, faster.`,
 
-  url: 'https://your-cssnano-test-site.com',
-  baseUrl: '/',
+  url: 'https://cssnano.netlify.com', // url to your site with no trailing slash
+  baseUrl: '/site',
   favicon: 'img/favicon.ico',
   organizationName: 'cssnano', // Usually your GitHub org/user name.
   projectName: 'cssnano', // Usually your repo name.
