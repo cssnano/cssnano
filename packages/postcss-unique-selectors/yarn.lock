@@ -65,9 +65,9 @@ postcss-selector-parser@^6.0.2:
     uniq "^1.0.1"
 
 postcss@^7.0.16:
-  version "7.0.21"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.21.tgz#06bb07824c19c2021c5d056d5b10c35b989f7e17"
-  integrity sha512-uIFtJElxJo29QC753JzhidoAhvp/e/Exezkdhfmt8AymWT6/5B7W1WmponYWkHk2eg6sONyTch0A3nkMPun3SQ==
+  version "7.0.27"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.27.tgz#cc67cdc6b0daa375105b7c424a85567345fc54d9"
+  integrity sha512-WuQETPMcW9Uf1/22HWUWP9lgsIC+KEHg2kozMflKjbeUtw9ujvFX6QmIfozaErDkmLWS9WEnEdEe6Uo9/BNTdQ==
   dependencies:
     chalk "^2.4.2"
     source-map "^0.6.1"
