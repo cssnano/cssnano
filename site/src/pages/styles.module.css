@@ -11,6 +11,16 @@
   overflow: hidden;
 }
 
+.getStartedBtn {
+  --ifm-font-base-color: white;
+  --ifm-font-base-color: white;
+}
+
+.getStartedBtn:hover {
+  --ifm-font-base-color: #191c3c;
+  --ifm-font-base-color: #191c3c;
+}
+
 @media screen and (max-width: 966px) {
   .heroBanner {
     padding: 2rem;

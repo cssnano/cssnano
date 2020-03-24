@@ -56,6 +56,25 @@ const features = [
   },
 ];
 
+const minifyTableData = [
+  {
+    property: 'Original (gzip)',
+    value: '325 B',
+  },
+  {
+    property: 'Minified (gzip)',
+    value: '177 B',
+  },
+  {
+    property: 'Difference',
+    value: '148 B',
+  },
+  {
+    property: 'Percent',
+    value: '54.46%',
+  },
+];
+
 function Feature({ imageUrl, title, description }) {
   const imgUrl = useBaseUrl(imageUrl);
   return (
@@ -91,7 +110,7 @@ function Home() {
             <Link
               className={classnames(
                 'button button--outline button--secondary button--lg',
-                styles.getStarted
+                styles.getStartedBtn
               )}
               to={useBaseUrl('docs/doc1')}
             >
@@ -141,7 +160,7 @@ function Home() {
               </div>
             </div>
             <div className="row" style={{ marginTop: '2em' }}>
-              <div className="col-xs-6 col-md-6 col-sm-12">
+              <div className="col-xs-9 col-md-9 col-sm-12">
                 <div className="box">
                   <p>
                     The semantics of this CSS have been kept the same, but the
@@ -158,8 +177,25 @@ function Home() {
                   </p>
                 </div>
               </div>
-              <div className="col-xs-6 col-md-6 col-sm-12">
-                <div className="box">auto</div>
+              <div className="col-xs-3 col-md-3 col-sm-12">
+                <div className="box">
+                  <table
+                    className="col-xs-12 col-md-12 col-sm-12"
+                    style={{ margin: 'auto' }}
+                  >
+                    <tbody>
+                      {minifyTableData.map(({ property, value }, i) => (
+                        <tr
+                          key={i}
+                          style={{ width: '100%', 'max-width': '100%' }}
+                        >
+                          <td>{property}</td>
+                          <td>{value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
