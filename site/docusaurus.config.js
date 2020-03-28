@@ -2,7 +2,7 @@ module.exports = {
   title: 'CSSNANO',
   tagline: `Deliver your website's styles, faster.`,
   url: 'https://cssnano.netlify.com', // url to your site with no trailing slash
-  baseUrl: '',
+  baseUrl: '/',
   favicon: 'img/favicon.ico',
   organizationName: 'cssnano', // Usually your GitHub org/user name.
   projectName: 'cssnano', // Usually your repo name.
@@ -17,12 +17,18 @@ module.exports = {
       },
       links: [
         {
-          to: 'docs/doc1',
-          activeBasePath: 'docs',
-          label: 'Docs',
+          to: 'docs/introduction',
+          label: 'Guide',
           position: 'left',
         },
+        {
+          to: 'docs/optimisations',
+          label: 'Optimizations',
+          position: 'left',
+          activeBasePath: 'optimisations',
+        },
         { to: 'blog', label: 'Blog', position: 'left' },
+        { to: 'docs/support_us', label: 'Support Us', position: 'left' },
         {
           href: 'https://github.com/cssnano/cssnano',
           label: 'GitHub',
@@ -86,6 +92,8 @@ module.exports = {
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
+          showLastUpdateAuthor: true,
+          showLastUpdateTime: true,
           editUrl: 'https://github.com/cssnano/cssnano/edit/master/website/',
         },
         theme: {
