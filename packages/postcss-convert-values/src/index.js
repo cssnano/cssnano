@@ -96,6 +96,9 @@ function transform(opts, decl) {
       } else if (node.type === 'function') {
         if (
           lowerCasedValue === 'calc' ||
+          lowerCasedValue === 'min' ||
+          lowerCasedValue === 'max' ||
+          lowerCasedValue === 'clamp' ||
           lowerCasedValue === 'hsl' ||
           lowerCasedValue === 'hsla'
         ) {
@@ -106,12 +109,7 @@ function transform(opts, decl) {
           });
           return false;
         }
-        if (
-          lowerCasedValue === 'url' ||
-          lowerCasedValue === 'min' ||
-          lowerCasedValue === 'max' ||
-          lowerCasedValue === 'clamp'
-        ) {
+        if (lowerCasedValue === 'url') {
           return false;
         }
       }
