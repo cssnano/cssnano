@@ -106,7 +106,12 @@ function transform(opts, decl) {
           });
           return false;
         }
-        if (lowerCasedValue === 'url') {
+        if (
+          lowerCasedValue === 'url' ||
+          lowerCasedValue === 'min' ||
+          lowerCasedValue === 'max' ||
+          lowerCasedValue === 'clamp'
+        ) {
           return false;
         }
       }
