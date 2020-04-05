@@ -351,6 +351,27 @@ test(
   passthroughCSS('h1{line-height:0rem}')
 );
 
+test('should keep unit in max()', passthroughCSS('h1{margin:max(0px)}'));
+
+test(
+  'should keep unit in max() (2)',
+  passthroughCSS('h1{margin:max(1px + 2em,0px)}')
+);
+
+test('should keep unit in min()', passthroughCSS('h1{margin:min(0px)}'));
+
+test(
+  'should keep unit in min() (2)',
+  passthroughCSS('h1{margin:min(1px + 2em,0px)}')
+);
+
+test('should keep unit in clamp()', passthroughCSS('h1{margin:clamp(0px)}'));
+
+test(
+  'should keep unit in clamp() (2)',
+  passthroughCSS('h1{margin:clamp(1px + 2em,0px)}')
+);
+
 test(
   'should keep unknown units or hacks',
   passthroughCSS('h1{top:0\\9\\0;left:0lightyear}')
