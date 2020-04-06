@@ -600,6 +600,17 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "genemecija",
+      "name": "Gene Mecija",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/39816902?v=4",
+      "profile": "https://genemecija.com",
+      "contributions": [
+        "bug",
+        "code",
+        "test"
+      ]
     }
   ],
   "repoType": "github"
