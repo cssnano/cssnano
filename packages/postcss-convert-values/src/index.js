@@ -53,7 +53,7 @@ function clampOpacity(node) {
   }
   let num = Number(pair.number);
   if (num > 1) {
-    node.value = 1 + pair.unit;
+    node.value = pair.unit === '%' ? num + pair.unit : 1 + pair.unit;
   } else if (num < 0) {
     node.value = 0 + pair.unit;
   }
@@ -96,6 +96,9 @@ function transform(opts, decl) {
       } else if (node.type === 'function') {
         if (
           lowerCasedValue === 'calc' ||
+          lowerCasedValue === 'min' ||
+          lowerCasedValue === 'max' ||
+          lowerCasedValue === 'clamp' ||
           lowerCasedValue === 'hsl' ||
           lowerCasedValue === 'hsla'
         ) {
