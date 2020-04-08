@@ -591,6 +591,26 @@
       "contributions": [
         "platform"
       ]
+    },
+    {
+      "login": "wongjn",
+      "name": "wongjn",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/11310624?v=4",
+      "profile": "https://github.com/wongjn",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "genemecija",
+      "name": "Gene Mecija",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/39816902?v=4",
+      "profile": "https://genemecija.com",
+      "contributions": [
+        "bug",
+        "code",
+        "test"
+      ]
     }
   ],
   "repoType": "github"
