@@ -27,7 +27,7 @@ If applicable, add screenshots to help explain your problem. (from [cssnano-play
 **Desktop (please complete the following information):**
 - CSSNANO Version [e.g. 22] 
 - Plugins/presets versions
-- Add the output of `npx envinfo`(recommended) or `npm ls cssnano` here
+- Add the output of `npx envinfo && npm ls cssnano` here
 <!-- also mention the version in which it was version (if any) -->
 
 **Additional context**
