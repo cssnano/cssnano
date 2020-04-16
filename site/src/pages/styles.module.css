@@ -21,6 +21,24 @@
   --ifm-font-base-color: #191c3c;
 }
 
+.playgroundInnerNav {
+  height: 3em;
+  padding: 0 5px;
+}
+
+.headbtn {
+  border-radius: 4px;
+  margin: 4px;
+  padding: 0px 8px;
+  min-height: 30px;
+  line-height: 30px;
+  font-size: 13px;
+}
+
+.editorCol {
+  padding: 0 !important;
+}
+
 @media screen and (max-width: 966px) {
   .heroBanner {
     padding: 2rem;
