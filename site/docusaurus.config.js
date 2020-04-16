@@ -10,7 +10,7 @@ module.exports = {
     navbar: {
       title: 'CSSNANO',
 
-      hideOnScroll: true,
+      hideOnScroll: false,
       logo: {
         alt: 'CSSNANO Logo',
         src: 'img/logo.svg',
@@ -27,8 +27,9 @@ module.exports = {
           position: 'left',
           activeBasePath: 'optimisations',
         },
-        { to: 'blog', label: 'Blog', position: 'left' },
+        { to: 'playground', label: 'Playground', position: 'left' },
         { to: 'docs/support_us', label: 'Support Us', position: 'left' },
+        { to: 'blog', label: 'Blog', position: 'right' },
         {
           href: 'https://github.com/cssnano/cssnano',
           label: 'GitHub',

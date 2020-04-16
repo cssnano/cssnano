@@ -1,0 +1,53 @@
+.wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 6;
+  background-color: rgb(33, 37, 43);
+  color: rgb(157, 165, 180);
+  overflow: visible;
+  transition: transform 0.25s ease-in-out 0s;
+  flex: 0 0 auto;
+}
+
+.panelHeading {
+  height: 26px;
+  font-size: 11px;
+  line-height: 36px;
+  padding: 0 10px;
+  font-weight: normal;
+  position: relative;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.panelSubHeading {
+  line-height: 36px;
+  font-size: 11px;
+  padding: 0 10px;
+  font-weight: 600;
+  position: relative;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+  background-color: #383838;
+  margin: auto;
+}
+
+.controllerPanel {
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.24) 0px 1px 4px;
+  overflow: auto;
+}
+
+.controllerPanel input[type='checkbox'] {
+  vertical-align: middle;
+  margin: auto 10px;
+}
+
+.controllerPanel p {
+  font-size: 12px;
+  padding: 5px;
+  margin: 5px auto;
+}
