@@ -1,42 +1,53 @@
-// // import postcss from ;
-// import cssDeclarationSorter from 'css-declaration-sorter';
-// import postcssCalc from 'postcss-calc';
-// import postcssColormin from 'postcss-colormin';
-// import postcssConvertValues from 'postcss-convert-values';
-// import postcssDiscardComments from 'postcss-discard-comments';
-// import postcssDiscardDuplicates from 'postcss-discard-duplicates';
-// import postcssDiscardEmpty from 'postcss-discard-empty';
-// import postcssDiscardOverridden from 'postcss-discard-overridden';
-// import postcssMergeLonghand from 'postcss-merge-longhand';
-// import postcssMergeRules from 'postcss-merge-rules';
-// import postcssMinifyFontValues from 'postcss-minify-font-values';
-// import postcssMinifyGradients from 'postcss-minify-gradients';
-// import postcssMinifyParams from 'postcss-minify-params';
-// import postcssMinifySelectors from 'postcss-minify-selectors';
-// import postcssNormalizeCharset from 'postcss-normalize-charset';
-// import postcssNormalizeDisplayValues from 'postcss-normalize-display-values';
-// import postcssNormalizePositions from 'postcss-normalize-positions';
-// import postcssNormalizeRepeatStyle from 'postcss-normalize-repeat-style';
-// import postcssNormalizeString from 'postcss-normalize-string';
-// import postcssNormalizeTimingFunctions from 'postcss-normalize-timing-functions';
-// import postcssNormalizeUnicode from 'postcss-normalize-unicode';
-// import postcssNormalizeUrl from 'postcss-normalize-url';
-// import postcssNormalizeWhitespace from 'postcss-normalize-whitespace';
-// import postcssOrderedValues from 'postcss-ordered-values';
-// import postcssReduceInitial from 'postcss-reduce-initial';
-// import postcssReduceTransforms from 'postcss-reduce-transforms';
-// import postcssSvgo from 'postcss-svgo';
-// import postcssUniqueSelectors from 'postcss-unique-selectors';
+/* eslint-disable no-unused-vars */
+// import postcss from ;
+const moduleMap = {
+  cssDeclarationSorter: require('css-declaration-sorter').default,
+  postcssCalc: require('postcss-calc').default,
+  postcssColormin: require('postcss-colormin').default,
+  postcssConvertValues: require('postcss-convert-values').default,
+  postcssDiscardComments: require('postcss-discard-comments').default,
+  postcssDiscardDuplicates: require('postcss-discard-duplicates').default,
+  postcssDiscardEmpty: require('postcss-discard-empty').default,
+  postcssDiscardOverridden: require('postcss-discard-overridden').default,
+  postcssMergeLonghand: require('postcss-merge-longhand').default,
+  postcssMergeRules: require('postcss-merge-rules').default,
+  postcssMinifyFontValues: require('postcss-minify-font-values').default,
+  postcssMinifyGradients: require('postcss-minify-gradients').default,
+  postcssMinifyParams: require('postcss-minify-params').default,
+  postcssMinifySelectors: require('postcss-minify-selectors').default,
+  postcssNormalizeCharset: require('postcss-normalize-charset').default,
+  postcssNormalizeDisplayValues: require('postcss-normalize-display-values')
+    .default,
+  postcssNormalizePositions: require('postcss-normalize-positions').default,
+  postcssNormalizeRepeatStyle: require('postcss-normalize-repeat-style')
+    .default,
+  postcssNormalizeString: require('postcss-normalize-string').default,
+  postcssNormalizeTimingFunctions: require('postcss-normalize-timing-functions')
+    .default,
+  postcssNormalizeUnicode: require('postcss-normalize-unicode').default,
+  postcssNormalizeUrl: require('postcss-normalize-url').default,
+  postcssNormalizeWhitespace: require('postcss-normalize-whitespace').default,
+  postcssOrderedValues: require('postcss-ordered-values').default,
+  postcssReduceInitial: require('postcss-reduce-initial').default,
+  postcssReduceTransforms: require('postcss-reduce-transforms').default,
+  postcssSvgo: require('postcss-svgo').default,
+  postcssUniqueSelectors: require('postcss-unique-selectors').default,
+};
 
 export default (css, plugins = []) => {
-  import('postcss').then((postcss) => {
-    // let resolvePlugins = [];
-    // plugins.forEach((p) => resolvePlugins.push(pkgnameToVarName(p)));
-    // console.log('resolvePlugins', resolvePlugins);
+  import('postcss').then(async (postcss) => {
+    let resolvePlugins = [];
+    plugins.forEach((p) => resolvePlugins.push(moduleMap[pkgnameToVarName(p)]));
+    // import('cssnano-preset-default').then((res) => console.log(res));
+    // await postcss
+    //   .default([resolvePlugins])
+    //   .process(css)
+    //   .then((res) => console.log('css', res));
+    // console.log('resolvePlugins', ...resolvePlugins);
   });
 
   let output;
-  // FIXME : retur `output` in future
+  // FIIXME : return `output` in future
   return '/* This is still under construction. Come back later*/';
 };
 

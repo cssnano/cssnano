@@ -104,4 +104,5 @@ module.exports = {
     ],
   ],
   stylesheets: ['https://at-ui.github.io/feather-font/css/iconfont.css', ''],
+  plugins: [require.resolve('./docusaurus-webpack-plugin')],
 };
