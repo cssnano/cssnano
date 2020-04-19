@@ -44,6 +44,7 @@ const postcss = require('postcss');
  */
 const moduleMap = {
   cssnanoPresetDefault: require('cssnano-preset-default'),
+  cssnanoPresetAdvanced: require('cssnano-preset-advanced'),
 };
 
 function initializePlugin(plugin, css, result) {
@@ -80,11 +81,6 @@ const pkgnameToVarName = (str) =>
   str
     .split('-')
     .map((u, i) =>
-      i === 0
-        ? u
-        : u
-            .slice(0, 1)
-            .toUpperCase()
-            .concat(u.slice(1))
+      i === 0 ? u : u.slice(0, 1).toUpperCase().concat(u.slice(1))
     )
     .join('');

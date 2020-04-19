@@ -6,7 +6,6 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import className from 'classnames';
 import { RingSpinner as Loader } from 'react-spinners-kit';
 import { AppContext } from '../context/appContext';
-import pluginsData from '../components/data/plugins.json';
 import MainEditor from '../components/editor/main';
 import OutputEditor from '../components/editor/output';
 import defaultCssnanoConfig from '../components/editor/snippets/config';
@@ -38,7 +37,7 @@ export default () => {
     setInput(value);
   }
 
-  function format(e) {
+  function format() {
     const formattedInput = prettier.format(input, {
       parser: 'css',
       plugins: [cssParser],
@@ -50,12 +49,7 @@ export default () => {
     // show the loading. editor panel loader not each editor's loader
     setEditorLoading(true);
     const configToSend = JSON.parse(
-      JSON.stringify(
-        config
-          .split('\n')
-          .slice(1)
-          .join('\n')
-      )
+      JSON.stringify(config.split('\n').slice(1).join('\n'))
     );
 
     const resolvedConfig = resolveConfigs(configToSend);
