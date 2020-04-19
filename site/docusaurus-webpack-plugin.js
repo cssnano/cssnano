@@ -7,7 +7,6 @@ module.exports = function (context, options) {
         net: 'empty',
         tls: 'empty',
       };
-      config.output = { globalObject: 'this' };
     },
   };
 };
