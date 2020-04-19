@@ -1,4 +1,4 @@
-module.exports = function(context, options) {
+module.exports = function (context, options) {
   return {
     name: 'webpack-cssnano-docusaurus-plugin',
     async configureWebpack(config, isServer, utils) {
@@ -7,6 +7,7 @@ module.exports = function(context, options) {
         net: 'empty',
         tls: 'empty',
       };
+      config.output = { globalObject: 'this' };
     },
   };
 };
