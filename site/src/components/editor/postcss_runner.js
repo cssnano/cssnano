@@ -1,6 +1,7 @@
 /* eslint-disable no-warning-comments */
 /* eslint-disable no-unused-vars */
-const postcss = require('postcss');
+import postcss from 'postcss';
+import { pkgnameToVarName } from '../../helper/naming';
 // TODO
 // const moduleMap = {
 //   cssDeclarationSorter: require('css-declaration-sorter').default,
@@ -76,11 +77,3 @@ export default (input, config) => {
       .catch((err) => reject(err));
   });
 };
-
-const pkgnameToVarName = (str) =>
-  str
-    .split('-')
-    .map((u, i) =>
-      i === 0 ? u : u.slice(0, 1).toUpperCase().concat(u.slice(1))
-    )
-    .join('');

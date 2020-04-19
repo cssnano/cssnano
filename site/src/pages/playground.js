@@ -9,7 +9,8 @@ import { AppContext } from '../context/appContext';
 import MainEditor from '../components/editor/main';
 import OutputEditor from '../components/editor/output';
 import defaultCssnanoConfig from '../components/editor/snippets/config';
-
+import unicode from '../helper/unicode';
+import { getUrlState } from '../helper/url';
 import ConfigEditor from '../components/editor/config';
 import InnerNav from '../components/editor/innerNav.';
 import runner from '../components/editor/postcss_runner';
@@ -17,13 +18,27 @@ import editorStyles from '../components/editor/editor.module.css';
 import styles from './styles.module.css';
 
 export default () => {
+  const storedState = JSON.parse(
+    window.localStorage.getItem('cssnano_editor_state') || null
+  );
+  const urlState = getUrlState();
+  const intializedState = urlState ||
+    storedState || {
+      input: '/* write your css below */',
+      config: `// cssnano config
+{
+  "preset" : "default",
+}
+`,
+    };
+
   const context = useDocusaurusContext();
   const { siteConfig = {} } = context;
   const [theme, setTheme] = useState('dark');
   const [editorLoading, setEditorLoading] = useState(false);
   const [output, setOutput] = useState('/* your optimized output here */');
-  const [input, setInput] = useState('/* write your css below */');
-  const [config, setConfig] = useState(defaultCssnanoConfig);
+  const [input, setInput] = useState(intializedState.input);
+  const [config, setConfig] = useState(intializedState.config);
 
   function toggleTheme() {
     setTheme(theme === 'light' ? 'dark' : 'light');
@@ -43,6 +58,18 @@ export default () => {
       plugins: [cssParser],
     });
     setInput(formattedInput);
+  }
+
+  function saveState() {
+    const serializedState = JSON.stringify({
+      input: input,
+      config: config,
+    });
+
+    if (window && window.localStorage) {
+      window.localStorage.setItem('cssnano_editor_state', serializedState);
+    }
+    window.location.hash = unicode.encodeToBase64(serializedState);
   }
 
   async function runOptimizer() {
@@ -110,6 +137,7 @@ export default () => {
           toggleTheme={toggleTheme}
           runHandler={runOptimizer}
           format={format}
+          save={saveState}
         />
         <div
           className={editorStyles.panelLoaderPlaceholder}
@@ -142,13 +170,3 @@ export default () => {
     </AppContext.Provider>
   );
 };
-
-// <div className="col col--3">
-//           <Panel />
-//         </div>
-//         <div className="col col--5">
-//           <Input />
-//         </div>
-//         <div className="col col--4">
-//           <Output />
-//         </div>

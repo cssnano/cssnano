@@ -13,6 +13,11 @@
   background-color: #1045a3;
 }
 
+.headbtn svg {
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
 .editorCol {
   padding: 0 !important;
 }
