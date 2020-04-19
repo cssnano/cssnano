@@ -21,6 +21,12 @@ export default function InnerNav({ ...props }) {
           >
             Run
           </button>
+          <button
+            onClick={props.format}
+            className={className('button button--primary', styles.headbtn)}
+          >
+            Format
+          </button>
         </div>
       </div>
     </nav>

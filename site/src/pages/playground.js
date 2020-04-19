@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import Layout from '@theme/Layout';
-
+import prettier from 'prettier/standalone';
+import cssParser from 'prettier/parser-postcss';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import className from 'classnames';
-import useBaseUrl from '@docusaurus/useBaseUrl';
 import { RingSpinner as Loader } from 'react-spinners-kit';
 import { AppContext } from '../context/appContext';
 import pluginsData from '../components/data/plugins.json';
@@ -36,6 +36,14 @@ export default () => {
 
   function handleOnInput(e, value) {
     setInput(value);
+  }
+
+  function format(e) {
+    const formattedInput = prettier.format(input, {
+      parser: 'css',
+      plugins: [cssParser],
+    });
+    setInput(formattedInput);
   }
 
   async function runOptimizer() {
@@ -104,7 +112,11 @@ export default () => {
   return (
     <AppContext.Provider value={{ config, setConfig }}>
       <Layout title={`${siteConfig.title}`} description="CSSNANO - Playground">
-        <InnerNav toggleTheme={toggleTheme} runHandler={runOptimizer} />
+        <InnerNav
+          toggleTheme={toggleTheme}
+          runHandler={runOptimizer}
+          format={format}
+        />
         <div
           className={editorStyles.panelLoaderPlaceholder}
           style={{ display: editorLoading ? 'block' : 'none' }}
