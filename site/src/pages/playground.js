@@ -50,9 +50,15 @@ export default () => {
       )
     );
 
-    const plugins = resolveConfigs(configToSend);
-    const outputFromRunner = await runner(input, plugins);
-    setOutput(outputFromRunner);
+    const resolvedConfig = resolveConfigs(configToSend);
+    runner(input, resolvedConfig)
+      .then((res) => {
+        setOutput(res.css);
+      })
+      .catch((err) => {
+        setOutput(err);
+      });
+
     setEditorLoading(false);
   }
 
@@ -73,14 +79,26 @@ export default () => {
     }
 
     if (typeof playgroundConfig.plugins === 'undefined') {
-      return pluginsData[
+      if (Array.isArray(playgroundConfig.preset)) {
+        return [
+          playgroundConfig.preset[0] === 'advance'
+            ? 'cssnano-preset-advance'
+            : 'cssnano-preset-default',
+          playgroundConfig.preset.length > 1 ? playgroundConfig.preset[1] : {},
+        ];
+      }
+      [
         playgroundConfig.preset === 'advance'
           ? 'cssnano-preset-advance'
-          : 'cssnano-preset-default'
+          : 'cssnano-preset-default',
+        {},
       ];
+    } else {
+      // eslint-disable-next-line no-warning-comments
+      // TODO
     }
 
-    return pluginsData['cssnano-preset-default'];
+    return ['cssnano-preset-default', {}];
   }
 
   return (
