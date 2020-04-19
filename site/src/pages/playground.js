@@ -19,7 +19,9 @@ import styles from './styles.module.css';
 
 export default () => {
   const storedState = JSON.parse(
-    (window && window.localStorage.getItem('cssnano_editor_state')) || null
+    (typeof window !== 'undefined' &&
+      window.localStorage.getItem('cssnano_editor_state')) ||
+      null
   );
   const urlState = getUrlState();
   const intializedState = urlState ||
@@ -66,10 +68,13 @@ export default () => {
       config: config,
     });
 
-    if (window && window.localStorage) {
-      window.localStorage.setItem('cssnano_editor_state', serializedState);
+    if (typeof window !== 'undefined') {
+      if (window.localStorage) {
+        window.localStorage.setItem('cssnano_editor_state', serializedState);
+      }
+
+      window.location.hash = unicode.encodeToBase64(serializedState);
     }
-    window.location.hash = unicode.encodeToBase64(serializedState);
   }
 
   async function runOptimizer() {
