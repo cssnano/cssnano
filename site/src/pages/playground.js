@@ -66,7 +66,7 @@ export default () => {
       config: config,
     });
 
-    if (window && window.localStorage) {
+    if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem('cssnano_editor_state', serializedState);
     }
     window.location.hash = unicode.encodeToBase64(serializedState);
