@@ -19,7 +19,7 @@ import styles from './styles.module.css';
 
 export default () => {
   const storedState = JSON.parse(
-    window.localStorage.getItem('cssnano_editor_state') || null
+    (window && window.localStorage.getItem('cssnano_editor_state')) || null
   );
   const urlState = getUrlState();
   const intializedState = urlState ||
@@ -66,7 +66,7 @@ export default () => {
       config: config,
     });
 
-    if (typeof window !== 'undefined' && window.localStorage) {
+    if (window && window.localStorage) {
       window.localStorage.setItem('cssnano_editor_state', serializedState);
     }
     window.location.hash = unicode.encodeToBase64(serializedState);
