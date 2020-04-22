@@ -5,10 +5,8 @@ import cssParser from 'prettier/parser-postcss';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import className from 'classnames';
 import { RingSpinner as Loader } from 'react-spinners-kit';
-import { AppContext } from '../context/appContext';
 import MainEditor from '../components/editor/main';
 import OutputEditor from '../components/editor/output';
-import defaultCssnanoConfig from '../components/editor/snippets/config';
 import unicode from '../helper/unicode';
 import { getUrlState } from '../helper/url';
 import ConfigEditor from '../components/editor/config';
@@ -136,42 +134,40 @@ export default () => {
   }
 
   return (
-    <AppContext.Provider value={{ config, setConfig }}>
-      <Layout title={`${siteConfig.title}`} description="CSSNANO - Playground">
-        <InnerNav
-          toggleTheme={toggleTheme}
-          runHandler={runOptimizer}
-          format={format}
-          save={saveState}
-        />
-        <div
-          className={editorStyles.panelLoaderPlaceholder}
-          style={{ display: editorLoading ? 'block' : 'none' }}
-        >
-          <div className={editorStyles.panelLoaderHolder}>
-            <Loader />
-          </div>
+    <Layout title={`${siteConfig.title}`} description="CSSNANO - Playground">
+      <InnerNav
+        toggleTheme={toggleTheme}
+        runHandler={runOptimizer}
+        format={format}
+        save={saveState}
+      />
+      <div
+        className={editorStyles.panelLoaderPlaceholder}
+        style={{ display: editorLoading ? 'block' : 'none' }}
+      >
+        <div className={editorStyles.panelLoaderHolder}>
+          <Loader />
         </div>
-        <div className="row" style={{ margin: '0' }}>
-          <div className={className('col col--4', styles.editorCol)}>
-            <MainEditor
-              theme={theme}
-              input={input}
-              handleOnChange={handleOnInput}
-            />
-          </div>
-          <div className={className('col col--4', styles.editorCol)}>
-            <ConfigEditor
-              theme={theme}
-              config={config}
-              handleOnChange={handleConfigChange}
-            />
-          </div>
-          <div className={className('col col--4', styles.editorCol)}>
-            <OutputEditor theme={theme} output={output} />
-          </div>
+      </div>
+      <div className="row" style={{ margin: '0' }}>
+        <div className={className('col col--4', styles.editorCol)}>
+          <MainEditor
+            theme={theme}
+            input={input}
+            handleOnChange={handleOnInput}
+          />
         </div>
-      </Layout>
-    </AppContext.Provider>
+        <div className={className('col col--4', styles.editorCol)}>
+          <ConfigEditor
+            theme={theme}
+            config={config}
+            handleOnChange={handleConfigChange}
+          />
+        </div>
+        <div className={className('col col--4', styles.editorCol)}>
+          <OutputEditor theme={theme} output={output} />
+        </div>
+      </div>
+    </Layout>
   );
 };

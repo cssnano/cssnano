@@ -8,12 +8,10 @@ module.exports = {
   projectName: 'cssnano', // Usually your repo name.
   themeConfig: {
     navbar: {
-      title: 'CSSNANO',
-
       hideOnScroll: false,
       logo: {
         alt: 'CSSNANO Logo',
-        src: 'img/logo.svg',
+        src: 'img/logo-alt.svg',
       },
       links: [
         {
@@ -28,7 +26,7 @@ module.exports = {
           activeBasePath: 'optimisations',
         },
         { to: 'playground', label: 'Playground', position: 'left' },
-        { to: 'docs/support_us', label: 'Support Us', position: 'left' },
+        { to: 'docs/support_us', label: 'Support', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'right' },
         {
           href: 'https://github.com/cssnano/cssnano',
@@ -44,13 +42,15 @@ module.exports = {
           title: 'Docs',
           items: [
             {
-              label: 'Style Guide',
-              to: 'docs/doc1',
+              to: 'docs/introduction',
+              label: 'Guide',
             },
             {
-              label: 'Second Doc',
-              to: 'docs/doc2',
+              to: 'docs/optimisations',
+              label: 'Optimizations',
             },
+            { to: 'playground', label: 'Playground' },
+            { to: 'docs/support_us', label: 'Support' },
           ],
         },
         {
@@ -61,8 +61,8 @@ module.exports = {
               href: 'https://stackoverflow.com/questions/tagged/cssnano',
             },
             {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/cssnano',
+              label: 'Gitter',
+              href: 'https://gitter.im/postcss/postcss',
             },
           ],
         },
@@ -79,12 +79,12 @@ module.exports = {
             },
             {
               label: 'Twitter',
-              href: 'https://twitter.com/cssnano',
+              href: 'https://twitter.com/cssnano_',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with cssnano.`,
+      copyright: `Latest release v4.1.10 · Distributed under the MIT License.`,
     },
   },
   presets: [

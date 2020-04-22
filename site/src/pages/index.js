@@ -175,6 +175,16 @@ function Home() {
                     module especially created to measure CSS size before & after
                     minification.
                   </p>
+                  <p>
+                    By default, cssnano performs safe optimisations on your CSS
+                    file, but we also offer an advanced preset with techniques
+                    that you can use to maximise compression. For more details,
+                    see our{' '}
+                    <Link to={useBaseUrl('docs/optimisations')}>
+                      optimisations
+                    </Link>{' '}
+                    guide.
+                  </p>
                 </div>
               </div>
               <div className="col-xs-3 col-md-3 col-sm-12">
