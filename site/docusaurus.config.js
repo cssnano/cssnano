@@ -33,6 +33,11 @@ module.exports = {
           label: 'GitHub',
           position: 'right',
         },
+        {
+          href: 'https://opencollective.com/cssnano',
+          label: 'Donate',
+          position: 'right',
+        },
       ],
     },
     footer: {
@@ -63,6 +68,10 @@ module.exports = {
             {
               label: 'Gitter',
               href: 'https://gitter.im/postcss/postcss',
+            },
+            {
+              href: 'https://opencollective.com/cssnano',
+              label: 'Donate',
             },
           ],
         },
