@@ -1,5 +1,7 @@
 import processCss from './_processCss';
 
+jest.setTimeout(30000);
+
 test(
   'should optimise inside calc',
   processCss('h1{width:calc(var(--h) * 1em)}', 'h1{width:calc(var(--h)*1em)}')

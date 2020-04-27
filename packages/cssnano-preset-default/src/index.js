@@ -41,6 +41,7 @@ import postcssNormalizeUnicode from 'lerna:postcss-normalize-unicode';
 import postcssNormalizeDisplayValues from 'lerna:postcss-normalize-display-values';
 import postcssNormalizeTimingFunctions from 'lerna:postcss-normalize-timing-functions';
 import { rawCache } from 'lerna:cssnano-utils';
+import postcssLowercaseText from 'lerna:postcss-lowercase-text';
 
 const defaultOpts = {
   convertValues: {
@@ -87,6 +88,7 @@ export default function defaultPreset(opts = {}) {
     [postcssUniqueSelectors, options.uniqueSelectors],
     [cssDeclarationSorter, options.cssDeclarationSorter],
     [rawCache, options.rawCache],
+    [postcssLowercaseText, options.lowercaseText],
   ];
 
   return { plugins };

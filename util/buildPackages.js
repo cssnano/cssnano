@@ -144,7 +144,7 @@ function updatePackage(pkg) {
   pkgJson.bugs.url = `${homepage}/issues`;
 
   pkgJson.engines = pkgJson.engines || {};
-  pkgJson.engines.node = '>=6.9.0';
+  pkgJson.engines.node = '>=10.13.0';
 
   return fs.writeFile(
     `${pkg}/package.json`,

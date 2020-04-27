@@ -1,5 +1,7 @@
 import processCss from './_processCss';
 
+jest.setTimeout(30000);
+
 test(
   'should keep spaces in background repeat',
   processCss(

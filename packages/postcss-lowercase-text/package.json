@@ -1,0 +1,38 @@
+{
+  "name": "postcss-lowercase-text",
+  "version": "1.0.0",
+  "description": "Postcss plugin to lowercase your CSS selectors and props safely",
+  "main": "dist/index.js",
+  "scripts": {
+    "prebuild": "del-cli dist",
+    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
+    "prepublish": "yarn build"
+  },
+  "files": [
+    "dist"
+  ],
+  "homepage": "https://github.com/cssnano/cssnano",
+  "repository": "cssnano/cssnano",
+  "keywords": [
+    "css",
+    "postcss",
+    "postcss-plugin",
+    "cssnano"
+  ],
+  "dependencies": {
+    "postcss": "^7.0.16",
+    "postcss-selector-parser": "^6.0.2",
+    "postcss-value-parser": "^4.0.2"
+  },
+  "devDependencies": {
+    "html-tags": "^3.1.0"
+  },
+  "author": "anikethsaha <anik220798@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cssnano/cssnano/issues"
+  },
+  "engines": {
+    "node": ">=10.13.0"
+  }
+}

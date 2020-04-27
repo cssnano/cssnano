@@ -1,5 +1,7 @@
 import processCss from './_processCss';
 
+jest.setTimeout(30000);
+
 test(
   'linear: should convert "to top" to 0deg',
   processCss(

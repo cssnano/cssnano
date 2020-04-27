@@ -1,5 +1,7 @@
 import processCss from './_processCss';
 
+jest.setTimeout(30000);
+
 test(
   'should convert normal to 400',
   processCss('h1{font-weight: normal}', 'h1{font-weight:400}')

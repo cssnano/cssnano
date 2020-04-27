@@ -2,6 +2,8 @@ import postcss from 'postcss';
 import fontMagician from 'postcss-font-magician';
 import cssnano from '..';
 
+jest.setTimeout(30000);
+
 test('should work with postcss-font-magician with `display` parameter', () => {
   const css = `
     body {

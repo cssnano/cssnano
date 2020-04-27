@@ -18,7 +18,7 @@ test(
 
 test(
   'should minify uppercase color values',
-  withDefaultPreset('h1{COLOR:YELLOW}', 'h1{COLOR:#ff0}')
+  withDefaultPreset('h1{COLOR:YELLOW}', 'h1{color:#ff0}')
 );
 
 test(
@@ -172,8 +172,9 @@ test(
 
 test(
   'should not minify in uppercase filter properties',
-  passthroughDefault(
-    'h1{FILTER:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff)}'
+  withDefaultPreset(
+    'h1{FILTER:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff)}',
+    'h1{filter:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff)}'
   )
 );
 

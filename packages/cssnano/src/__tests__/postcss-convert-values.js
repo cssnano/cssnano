@@ -1,5 +1,7 @@
 import processCss from './_processCss';
 
+jest.setTimeout(30000);
+
 test(
   'should convert milliseconds to seconds',
   processCss('h1{transition-duration:500ms}', 'h1{transition-duration:.5s}')

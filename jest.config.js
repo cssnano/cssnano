@@ -9,5 +9,6 @@ module.exports = {
     '_processCSS.js',
     '_processCss.js',
     '_webpack.config.js',
+    'packages/postcss-lowercase-text/src/__tests__/data/',
   ],
 };

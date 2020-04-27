@@ -1,5 +1,7 @@
 import processCss from './_processCss';
 
+jest.setTimeout(30000);
+
 test(
   'should trim spaces in simple selectors',
   processCss('h1,  h2,  h3{color:#00f}', 'h1,h2,h3{color:#00f}')
