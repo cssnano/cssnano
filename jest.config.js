@@ -11,4 +11,5 @@ module.exports = {
     '_webpack.config.js',
     'packages/postcss-lowercase-text/src/__tests__/data/',
   ],
+  testTimeout: 30000,
 };
