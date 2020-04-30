@@ -64,8 +64,20 @@ describe('transforming CSS selectors', () => {
 
   run(
     'should safely transform the  CSS attribute Selectors to lowercase',
-    '[NAME="newname"]{border: 1px solid black;}',
-    '[name="newname"]{border: 1px solid black;}'
+    '[NAME="newname"]{border: 1px solid black;};A[HREF*="insensitive" I]{};A[HREF*="insensitive" S]{}',
+    '[name="newname"]{border: 1px solid black;};a[href*="insensitive" i]{};a[href*="insensitive" s]{}'
+  );
+
+  run(
+    'should safely transform the  CSS attribute Selectors to lowercase with :not',
+    'DIV:NOT(p) {background: #ff0000;};',
+    'div:not(p) {background: #ff0000;};'
+  );
+
+  run(
+    'should safely transform the  CSS custom data attribute ',
+    'LI[DATA-VALUE|="1900"] {background: #ff0000;};',
+    'li[DATA-VALUE|="1900"] {background: #ff0000;};'
   );
 
   run(
@@ -83,7 +95,7 @@ describe('transforming CSS selectors', () => {
   run(
     'should not transform the  CSS :active pseudo class Selectors to lowercase',
     'a:ACTIVE{border: 1px solid black;}',
-    'a:ACTIVE{border: 1px solid black;}'
+    'a:active{border: 1px solid black;}'
   );
 
   run(
@@ -96,18 +108,13 @@ describe('transforming CSS selectors', () => {
     'LI.classname{border: 1px solid black;}',
     'li.classname{border: 1px solid black;}'
   );
-
-  run(
-    'should safely transform the  CSS nested classname  Selectors to lowercase',
-    'classname{border: 1px solid black;}',
-    'classname{border: 1px solid black;}'
-  );
 });
+
 describe('transforming CSS units', () => {
   run(
     'should safely transform the absolute units to lowercase : px',
-    'classname{border: 1PX solid black;}',
-    'classname{border: 1px solid black;}'
+    '.classname{border: 1PX solid black;}',
+    '.classname{border: 1px solid black;}'
   );
 
   run(
@@ -140,8 +147,14 @@ describe('transforming CSS units', () => {
   );
   run(
     'should not transform css variable declarations',
-    ':root {  --BG-COLOR: coral; --TEXT-COLOR: RED;}',
-    ':root {  --BG-COLOR: coral; --TEXT-COLOR: red;}'
+    ':root {  --BG-COLOR: coral; --TEXT-COLOR: RED;};',
+    ':root {  --BG-COLOR: coral; --TEXT-COLOR: red;};'
+  );
+
+  run(
+    'should not transform anything inside var',
+    'a{background-color: VAR(--MY-VAR, VAR(--MY-BACKGROUND, PING));}',
+    'a{background-color: var(--MY-VAR, var(--MY-BACKGROUND, ping));}'
   );
   run(
     'should not transform font-family',

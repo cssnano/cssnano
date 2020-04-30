@@ -34,10 +34,9 @@ export default {
   import: nameTransformOnly,
   'font-face': nameAndPropsTransform,
   'font-feature-values': nameTransformOnly,
-  page: nameAndPropsTransform,
+  page: nameParamsPropsTransform,
   supports: nameAndPropsTransform,
   media: nameParamsPropsTransform,
-  charset: nameTransformOnly,
   document: nameTransformOnly,
   viewport: nameAndPropsTransform,
 };

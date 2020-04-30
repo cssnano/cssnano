@@ -1,7 +1,5 @@
 import processCss from './_processCss';
 
-jest.setTimeout(30000);
-
 test(
   'should normalise @media queries (2)',
   processCss(

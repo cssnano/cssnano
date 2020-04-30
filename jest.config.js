@@ -12,4 +12,5 @@ module.exports = {
     'packages/postcss-lowercase-text/src/__tests__/data/',
   ],
   testTimeout: 30000,
+  setupFilesAfterEnv: ['./jest.setup.js'],
 };

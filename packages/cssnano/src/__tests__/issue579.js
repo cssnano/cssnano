@@ -1,8 +1,6 @@
 import postcss from 'postcss';
 import cssnano from '..';
 
-jest.setTimeout(30000);
-
 test('should support `env()` and `constant()` is an iPhone X-only feature', () => {
   const css = `
     @supports (height: env(safe-area-inset-bottom)) {

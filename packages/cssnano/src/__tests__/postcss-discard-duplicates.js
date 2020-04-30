@@ -1,7 +1,5 @@
 import processCss from './_processCss';
 
-jest.setTimeout(30000);
-
 test(
   'should remove duplicate rules',
   processCss('h1{font-weight:700}h1{font-weight:700}', 'h1{font-weight:700}')

@@ -1,8 +1,6 @@
 import postcss from 'postcss';
 import nano from '..';
 
-jest.setTimeout(30000);
-
 const fixture = `
 @media print {
     .test {

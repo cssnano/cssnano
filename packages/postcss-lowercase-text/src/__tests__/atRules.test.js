@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 
-import plugin from '..';
+import plugin from '../../src';
 
 function run(testMsg = 'should work', input, output) {
   it(testMsg, (done) => {
@@ -24,18 +24,24 @@ describe('transforming @media', () => {
     '@MEDIA SCREEN and (min-width: 480px){}',
     '@media screen and (min-width: 480px){}'
   );
+
+  run(
+    'should safely transform the @media but not the params',
+    '@MEDIA SCREEN AND (MIN-WIDTH: 480PX) {}',
+    '@media screen and (min-width: 480px) {}'
+  );
 });
 
 describe('transforming @charset', () => {
   run(
-    'should not transform the @charset',
+    'should not transform @charset',
     '@charset "UTF-8";',
     '@charset "UTF-8";'
   );
   run(
-    'should safely transform the @charset',
+    'should not transform @CHARSET',
     '@CHARSET "iso-8859-15";',
-    '@charset "iso-8859-15";'
+    '@CHARSET "iso-8859-15";'
   );
 });
 
@@ -45,6 +51,12 @@ describe('transforming @import ', () => {
     `@IMPORT url("fineprint.css") print;@import url("bluish.css") speech;@ImPoRt 'custom.css';@import url("CHROME://communicator/SKIN/");@import "common.css" screen;`,
     `@import url("fineprint.css") print;@import url("bluish.css") speech;@import 'custom.css';@import url("CHROME://communicator/SKIN/");@import "common.css" screen;`
   );
+
+  run(
+    'should  transform the @import ',
+    '@IMPORT URL("fineprint.css") PRINT;',
+    '@import URL("fineprint.css") PRINT;'
+  );
 });
 
 describe('transforming @namespace', () => {
@@ -53,13 +65,18 @@ describe('transforming @namespace', () => {
     '@NAMESPACE prefix url(http://www.w3.org/1999/xhtml);',
     '@namespace prefix url(http://www.w3.org/1999/xhtml);'
   );
+  run(
+    'should safely transform the @namespace',
+    '@NAMESPACE SVG URL(http://www.w3.org/2000/svg);',
+    '@namespace SVG URL(http://www.w3.org/2000/svg);'
+  );
 });
 
 describe('transforming @supports ', () => {
   run(
     'should safely transform the @supports ',
-    '@SUPPORTS (display: grid) {div {display: grid;}};@supports not (display: GRID) {div {float: right;}}',
-    '@supports (display: grid) {div {display: grid;}};@supports not (display: GRID) {div {float: right;}}'
+    '@SUPPORTS (display: grid) {div {display: grid;}};@supports not (display: GRID) {div {float: right;}};@SUPPORTS (DISPLAY: GRID) {}',
+    '@supports (display: grid) {div {display: grid;}};@supports not (display: GRID) {div {float: right;}};@supports (DISPLAY: GRID) {}'
   );
 });
 
@@ -74,8 +91,8 @@ describe('transforming @document  ', () => {
 describe('transforming @page   ', () => {
   run(
     'should safely transform the @page   ',
-    '@PAGE {margin: 1cm;};@page :FIRST {margin: 2cm;}',
-    '@page {margin: 1cm;};@page :FIRST {margin: 2cm;}'
+    '@PAGE {margin: 1cm;};@page :FIRST {margin: 2cm;};@page :FIRST',
+    '@page {margin: 1cm;};@page :first {margin: 2cm;};@page :first'
   );
 });
 
@@ -90,8 +107,8 @@ describe('transforming @font-face', () => {
 describe('transforming @keyframes', () => {
   run(
     'should safely transform the @keyframes',
-    '@KEYFRAMES slidein {from {transform: translateX(0%);}};@KEYFRAMES important2  {FROM {TRANSFORM: translateX(0%);}}',
-    '@keyframes slidein {from {transform: translateX(0%);}};@keyframes important2  {from {transform: translateX(0%);}}'
+    '@KEYFRAMES slidein {from {transform: translateX(0%);}};@KEYFRAMES important2  {FROM {TRANSFORM: translateX(0%);}};@KEYFRAMES SLIDEIN {}',
+    '@keyframes slidein {from {transform: translatex(0%);}};@keyframes important2  {from {transform: translatex(0%);}};@keyframes SLIDEIN {}'
   );
 });
 

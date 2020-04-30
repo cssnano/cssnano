@@ -1,7 +1,5 @@
 import processCss from './_processCss';
 
-jest.setTimeout(30000);
-
 test(
   'should strip double quotes',
   processCss('h1{background:url("cat.jpg")}', 'h1{background:url(cat.jpg)}')
