@@ -14,7 +14,7 @@
 - [Plugins](#plugins)
 
   - [css-declaration-sorter (external)](#css-declaration-sorter-external)
-  - [cssnano-utils](#cssnano-utils)
+  - [cssnano-util-raw-cache](#cssnano-util-raw-cache)
   - [postcss-calc (external)](#postcss-calc-external)
   - [postcss-colormin](#postcss-colormin)
   - [postcss-convert-values](#postcss-convert-values)
@@ -22,6 +22,7 @@
   - [postcss-discard-duplicates](#postcss-discard-duplicates)
   - [postcss-discard-empty](#postcss-discard-empty)
   - [postcss-discard-overridden](#postcss-discard-overridden)
+  - [postcss-lowercase-text](#postcss-lowercase-text)
   - [postcss-merge-longhand](#postcss-merge-longhand)
   - [postcss-merge-rules](#postcss-merge-rules)
   - [postcss-minify-font-values](#postcss-minify-font-values)
@@ -104,7 +105,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-	keepOverrides: true
+  keepOverrides: true;
 }
 ```
 
@@ -157,6 +158,10 @@ This plugin is loaded with its default configuration.
 ### [`postcss-discard-overridden`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-discard-overridden)
 
 > PostCSS plugin to discard overridden @keyframes or @counter-style.
+
+This plugin is loaded with its default configuration.
+
+### `postcss-lowercase-props-selectors`
 
 This plugin is loaded with its default configuration.
 

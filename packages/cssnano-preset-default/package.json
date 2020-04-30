@@ -24,6 +24,7 @@
     "postcss-discard-duplicates": "^4.0.2",
     "postcss-discard-empty": "^4.0.1",
     "postcss-discard-overridden": "^4.0.1",
+    "postcss-lowercase-text": "*",
     "postcss-merge-longhand": "^4.0.11",
     "postcss-merge-rules": "^4.0.3",
     "postcss-minify-font-values": "^4.0.2",

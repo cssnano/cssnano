@@ -2,6 +2,8 @@ import postcss from 'postcss';
 import { usePostCSSPlugin } from '../../../../util/testHelpers';
 import nano from '..';
 
+jest.setTimeout(30000);
+
 function pluginMacro(instance) {
   const css = 'h1 { color: #ffffff }';
   const min = 'h1{color:#fff}';

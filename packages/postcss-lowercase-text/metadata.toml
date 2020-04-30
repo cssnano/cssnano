@@ -1,0 +1,43 @@
+longDescription = """
+Postcss plugin to lowercase your CSS selectors and props safely
+"""
+
+inputExample = """
+@MEDIA screen and (min-width: 480px){
+    body{
+      COLOR: lightgreen;
+    }
+}
+@CHARSET "iso-8859-15";
+
+@IMPORT url("fineprint.css") print;
+
+@NAMESPACE prefix url(http://www.w3.org/1999/xhtml);
+
+@SUPPORTS (display: grid) {
+	div {
+		display: grid;
+	}
+}
+"""
+
+outputExample = """
+@media screen and (min-width: 480px){
+    body{
+      COLOR: lightgreen;
+    }
+}
+@charset "iso-8859-15";
+
+@import url("fineprint.css") print;
+
+@namespace prefix url(http://www.w3.org/1999/xhtml);
+
+@supports (display: grid) {
+	div {
+		display: grid;
+	}
+}
+"""
+
+safe = 3 # Assumes concatenation & changes semantics

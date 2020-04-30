@@ -29,6 +29,6 @@
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "engines": {
-    "node": ">=10.13.0"
+    "node": ">=10.13"
   }
 }

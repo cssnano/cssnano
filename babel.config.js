@@ -54,6 +54,7 @@ module.exports = function(api) {
           'lerna:postcss-zindex': 'postcss-zindex',
           'lerna:stylehacks': 'stylehacks',
           'lerna:cssnano-util-raw-cache': 'cssnano-util-raw-cache',
+          'lerna:postcss-lowercase-text': 'postcss-lowercase-text',
         },
       },
     ]);
@@ -131,6 +132,8 @@ module.exports = function(api) {
           'lerna:stylehacks': './stylehacks/src/index.js',
           'lerna:cssnano-util-raw-cache':
             './cssnano-util-raw-cache/src/index.js',
+          'lerna:postcss-lowercase-text':
+            './postcss-lowercase-text/src/index.js',
         },
       },
     ]);

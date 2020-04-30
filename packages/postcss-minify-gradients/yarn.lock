@@ -35,13 +35,6 @@ css-color-names@^0.0.4:
   resolved "https://registry.yarnpkg.com/css-color-names/-/css-color-names-0.0.4.tgz#808adc2e79cf84738069b646cb20ec27beb629e0"
   integrity sha1-gIrcLnnPhHOAabZGyyDsJ762KeA=
 
-cssnano-utils@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/cssnano-utils/-/cssnano-utils-1.0.0.tgz#d3c2dc0aaae941c50d0e3b97be0c5e4c96cdc6a4"
-  integrity sha512-NPGCCEvAPD4fphgHPPWVGYT22C+1rnw0S0W+SLhVnmiTaPhLtyY6e0uz0Fh7NtpQLrX/LpIjFV5lGHqSMTA3bQ==
-  dependencies:
-    postcss "^7.0.16"
-
 escape-string-regexp@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"

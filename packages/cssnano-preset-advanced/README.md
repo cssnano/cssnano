@@ -13,7 +13,7 @@
 
   - [autoprefixer (external)](#autoprefixer-external)
   - [css-declaration-sorter (external)](#css-declaration-sorter-external)
-  - [cssnano-utils](#cssnano-utils)
+  - [cssnano-util-raw-cache](#cssnano-util-raw-cache)
   - [postcss-calc (external)](#postcss-calc-external)
   - [postcss-colormin](#postcss-colormin)
   - [postcss-convert-values](#postcss-convert-values)
@@ -22,6 +22,7 @@
   - [postcss-discard-empty](#postcss-discard-empty)
   - [postcss-discard-overridden](#postcss-discard-overridden)
   - [postcss-discard-unused](#postcss-discard-unused)
+  - [postcss-lowercase-text](#postcss-lowercase-text)
   - [postcss-merge-idents](#postcss-merge-idents)
   - [postcss-merge-longhand](#postcss-merge-longhand)
   - [postcss-merge-rules](#postcss-merge-rules)
@@ -123,7 +124,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-  exclude: true;
+  keepOverrides: true;
 }
 ```
 
@@ -182,6 +183,12 @@ This plugin is loaded with its default configuration.
 ### [`postcss-discard-unused`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-discard-unused)
 
 > Discard unused counter styles, keyframes and fonts.
+
+This plugin is loaded with its default configuration.
+
+### `postcss-lowercase-text`
+
+> Safely lowercase your CSS selectors and properties in order to minimize your gzip size
 
 This plugin is loaded with its default configuration.
 

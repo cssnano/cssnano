@@ -4,8 +4,6 @@ import path from 'path';
 import colors from 'colors/safe';
 import size, { table, numeric } from '../';
 
-jest.setTimeout(15000);
-
 let noopProcessorPath = path.resolve(__dirname, '../../processors/noop.js');
 
 function setup(args) {
