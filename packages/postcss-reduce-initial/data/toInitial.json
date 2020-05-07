@@ -29,6 +29,5 @@
   "text-emphasis-position": "over right",
   "transform-box": "border-box",
   "transform-origin": "50% 50% 0",
-  "vertical-align": "baseline",
-  "writing-mode": "horizontal-tb"
+  "vertical-align": "baseline"
 }
