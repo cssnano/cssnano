@@ -33,26 +33,3 @@ class MainEditor extends Component {
 }
 
 export default MainEditor;
-
-// <button
-//   className={classnames('button button--secondary', styles.headbtn)}
-//   onClick={() =>
-//     this.setState({
-//       theme: this.state.theme === 'dark' ? 'light' : 'dark',
-//     })
-//   }
-//   disabled={!this.state.isEditorReady}
-// >
-//   Toggle theme
-// </button>
-// <button
-//   className={classnames('button button--secondary', styles.headbtn)}
-//   onClick={() =>
-//     this.setState({
-//       theme: this.state.theme === 'dark' ? 'light' : 'dark',
-//     })
-//   }
-//   disabled={!this.state.isEditorReady}
-// >
-//   Run
-// </button>
