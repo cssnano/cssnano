@@ -377,6 +377,12 @@ test(
   passthroughCSS('h1{top:0\\9\\0;left:0lightyear}')
 );
 
+// right now it is converted to NaNw2
+test.skip(
+  'should not try to convert keyframe names in animation',
+  passthroughCSS('h1{ -webkit-animation: e836684w2 } h2{ animation: e836684w2 }')
+);
+
 ['stroke-dasharray', 'stroke-dashoffset', 'stroke-width'].forEach(
   (property) => {
     test(
