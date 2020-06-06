@@ -1,7 +1,7 @@
 import { integrationTests, loadPreset } from '../../../../util/testHelpers.js';
 import preset from '..';
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 test(
   'should correctly handle the framework tests',
