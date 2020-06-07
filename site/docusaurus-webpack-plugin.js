@@ -1,4 +1,6 @@
-module.exports = function (context, options) {
+/* eslint-disable no-unused-vars */
+
+module.exports = function(context, options) {
   return {
     name: 'webpack-cssnano-docusaurus-plugin',
     async configureWebpack(config, isServer, utils) {
