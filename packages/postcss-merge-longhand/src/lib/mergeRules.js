@@ -17,14 +17,8 @@ function isConflictingProp(propA, propB) {
 }
 
 function hasConflicts(match, nodes) {
-  const firstNode = Math.min.apply(
-    null,
-    match.map((n) => nodes.indexOf(n))
-  );
-  const lastNode = Math.max.apply(
-    null,
-    match.map((n) => nodes.indexOf(n))
-  );
+  const firstNode = Math.min.apply(null, match.map((n) => nodes.indexOf(n)));
+  const lastNode = Math.max.apply(null, match.map((n) => nodes.indexOf(n)));
   const between = nodes.slice(firstNode + 1, lastNode);
 
   return match.some((a) => between.some((b) => isConflictingProp(a, b)));

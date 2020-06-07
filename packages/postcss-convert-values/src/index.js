@@ -96,6 +96,9 @@ function transform(opts, decl) {
       } else if (node.type === 'function') {
         if (
           lowerCasedValue === 'calc' ||
+          lowerCasedValue === 'min' ||
+          lowerCasedValue === 'max' ||
+          lowerCasedValue === 'clamp' ||
           lowerCasedValue === 'hsl' ||
           lowerCasedValue === 'hsla'
         ) {
