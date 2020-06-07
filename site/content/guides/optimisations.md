@@ -27,7 +27,7 @@ The optimisations are different depending on which preset cssnano is configured 
 |  | default | advanced |
 | --- | ------- | -------- |
 | [autoprefixer](/optimisations/autoprefixer) | ❌ | ✅ |
-| [cssDeclarationSorter](/optimisations/cssdeclarationsorter) | disabled | disabled |
+| [cssDeclarationSorter](/optimisations/cssdeclarationsorter) | ✅ | ✅ |
 | [rawCache](/optimisations/rawcache) | ✅ | ✅ |
 | [calc](/optimisations/calc) | ✅ | ✅ |
 | [colormin](/optimisations/colormin) | ✅ | ✅ |

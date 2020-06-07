@@ -792,5 +792,13 @@ test(
   processCSS(
     ':host(tag){display:block}tag{display:block}',
     ':host(tag){display:block}tag{display:block}'
+    )
+  );
+
+test(
+  'should not merge :focus-visible',
+  processCSS(
+    'a{color : green;} a:focus-visible{ color : green;} a:focus-visible{ background : red}',
+    'a{color : green;} a:focus-visible{ color : green;} a:focus-visible{ background : red}'
   )
 );

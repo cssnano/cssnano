@@ -67,6 +67,11 @@ test(
   processCSS('h1{width:100.00%}', 'h1{width:100%}')
 );
 
+test(
+  'should preserve opacities defined as percentages',
+  passthroughCSS('h1{opacity:100%}')
+);
+
 test('should not mangle flex basis', passthroughCSS('h1{flex-basis:0%}'));
 
 test('should not mangle flex basis (2)', passthroughCSS('h1{FLEX-BASIC:0%}'));
@@ -344,6 +349,27 @@ test(
 test(
   'should keep unit in line-height (issue 768)',
   passthroughCSS('h1{line-height:0rem}')
+);
+
+test('should keep unit in max()', passthroughCSS('h1{margin:max(0px)}'));
+
+test(
+  'should keep unit in max() (2)',
+  passthroughCSS('h1{margin:max(1px + 2em,0px)}')
+);
+
+test('should keep unit in min()', passthroughCSS('h1{margin:min(0px)}'));
+
+test(
+  'should keep unit in min() (2)',
+  passthroughCSS('h1{margin:min(1px + 2em,0px)}')
+);
+
+test('should keep unit in clamp()', passthroughCSS('h1{margin:clamp(0px)}'));
+
+test(
+  'should keep unit in clamp() (2)',
+  passthroughCSS('h1{margin:clamp(1px + 2em,0px)}')
 );
 
 test(
