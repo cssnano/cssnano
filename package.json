@@ -24,7 +24,7 @@
     "@babel/cli": "^7.8.3",
     "@babel/core": "^7.8.3",
     "@babel/node": "^7.8.3",
-    "@babel/preset-env": "^7.8.3",
+    "@babel/preset-env": "^7.9.6",
     "all-contributors-cli": "^5.11.0",
     "babel-eslint": "^10.0.1",
     "babel-jest": "^24.8.0",

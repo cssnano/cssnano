@@ -10,4 +10,5 @@ module.exports = {
     '_processCss.js',
     '_webpack.config.js',
   ],
+  testTimeout: 30000,
 };
