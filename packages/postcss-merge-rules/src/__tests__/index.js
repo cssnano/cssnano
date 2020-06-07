@@ -792,8 +792,8 @@ test(
   processCSS(
     ':host(tag){display:block}tag{display:block}',
     ':host(tag){display:block}tag{display:block}'
-    )
-  );
+  )
+);
 
 test(
   'should not merge :focus-visible',
