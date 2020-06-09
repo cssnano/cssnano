@@ -25,4 +25,15 @@ const listTypeURL =
       }
     }
   );
+
+  writeFile(
+    resolve(__dirname, '../dist/rules/listStyleTypes.json'),
+    JSON.stringify(content, null, 2),
+    (err) => {
+      if (err) {
+        console.log('Error while fetch list style type from Github', err);
+        process.exit(1);
+      }
+    }
+  );
 })();
