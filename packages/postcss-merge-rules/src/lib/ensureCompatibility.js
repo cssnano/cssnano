@@ -1,3 +1,4 @@
+import postcss from 'postcss';
 import { isSupported } from 'caniuse-api';
 import selectorParser from 'postcss-selector-parser';
 
@@ -55,6 +56,7 @@ export const pseudoElements = {
   '::marker': 'css-marker-pseudo',
   '::placeholder': 'css-placeholder',
   '::selection': 'css-selection',
+  ':visited': cssSel3,
 };
 
 function isCssMixin(selector) {
@@ -97,8 +99,10 @@ export default function ensureCompatibility(
       ast.walk((node) => {
         const { type, value } = node;
         if (type === 'pseudo') {
-          const entry = pseudoElements[value];
-          if (entry && compatible) {
+          const entry = pseudoElements[postcss.vendor.unprefixed(value)];
+          if (!entry) {
+            compatible = false;
+          } else if (compatible) {
             compatible = isSupportedCached(entry, browsers);
           }
         }

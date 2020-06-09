@@ -251,9 +251,20 @@ test(
 
 test(
   'should merge vendor prefixed selectors when vendors are the same',
-  processCSS(
-    'code ::-moz-selection{background:red}code::-moz-selection{background:red}',
-    'code ::-moz-selection,code::-moz-selection{background:red}'
+  passthroughCSS(
+    'code ::-moz-selection{background:red}code::-moz-selection{background:red}'
+  )
+);
+
+test(
+  'should not merge pseudo which are not supported by the browsers ::selection',
+  passthroughCSS('::selection{background:red} ::selection{background:red}')
+);
+
+test(
+  'should not merge pseudo which are not supported by the browsers - code ::selection',
+  passthroughCSS(
+    'code ::selection{background:red} code ::selection{background:red}'
   )
 );
 
