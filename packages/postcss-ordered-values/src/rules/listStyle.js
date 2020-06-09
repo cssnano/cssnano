@@ -1,5 +1,5 @@
 import valueParser from 'postcss-value-parser';
-import listStyleTypes from '../data/listStyleTypes.json';
+import listStyleTypes from './listStyleTypes.json';
 
 const definedTypes = listStyleTypes['list-style-type'];
 

@@ -16,8 +16,8 @@ const listTypeURL =
     'list-style-type': data,
   };
   writeFile(
-    resolve(__dirname, '../src/data/listStyleTypes.json'),
-    JSON.stringify(content),
+    resolve(__dirname, '../src/rules/listStyleTypes.json'),
+    JSON.stringify(content, null, 2),
     (err) => {
       if (err) {
         console.log('Error while fetch list style type from Github', err);
