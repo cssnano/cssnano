@@ -1,14 +1,7 @@
 import valueParser from 'postcss-value-parser';
+import listStyleTypes from '../data/listStyleTypes.json';
 
-const definedTypes = [
-  'disc',
-  'circle',
-  'square',
-  'decimal',
-  'georgian',
-  'trad-chinese-informal',
-  'kannada',
-];
+const definedTypes = listStyleTypes['list-style-type'];
 
 const definedPosition = ['inside', 'outside'];
 export default function listStyleNormalizer(listStyle) {
