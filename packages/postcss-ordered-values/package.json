@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "prebuild": "del-cli dist",
-    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
+    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\" && node script/buildListStyleType.js",
     "prepublish": "yarn build"
   },
   "keywords": [
@@ -35,5 +35,8 @@
   },
   "engines": {
     "node": ">=10.13.0"
+  },
+  "devDependencies": {
+    "node-fetch": "^2.6.0"
   }
 }
