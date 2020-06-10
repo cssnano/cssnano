@@ -752,3 +752,8 @@ test(
     'ul{list-style: circle none  url("https://mdn.mozillademos.org/files/11981/starsolid.gif")}'
   )
 );
+
+test(
+  'should order list-style 13',
+  passthroughCSS('ul{list-style: unknown unset none}')
+);
