@@ -269,6 +269,36 @@ test(
 );
 
 test(
+  'should not merge pseudo which are not supported by the browsers - any link',
+  passthroughCSS(
+    'a:any-link { color: orange; } a:any-link {  border: 1px solid blue;}',
+    {
+      env: 'not ie > 11',
+    }
+  )
+);
+
+test(
+  'should not merge pseudo which are not supported by the browsers - read-only',
+  passthroughCSS(
+    'p:read-only  { color: orange; } p:read-only  {  border: 1px solid blue;}',
+    {
+      env: 'not ie > 11',
+    }
+  )
+);
+
+test(
+  'should not merge pseudo which are not supported by the browsers - read-write',
+  passthroughCSS(
+    'p:read-write  { color: orange; } p:read-write  {  border: 1px solid blue;}',
+    {
+      env: 'not ie > 11',
+    }
+  )
+);
+
+test(
   'should not merge mixed vendor prefixes',
   passthroughCSS(
     'code ::-webkit-selection{background:red}code::-moz-selection{background:red}'

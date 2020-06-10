@@ -57,6 +57,9 @@ export const pseudoElements = {
   '::placeholder': 'css-placeholder',
   '::selection': 'css-selection',
   ':visited': cssSel3,
+  ':any-link': 'css-any-link',
+  ':read-only': 'css-read-only-write',
+  ':read-write': 'css-read-only-write',
 };
 
 function isCssMixin(selector) {
