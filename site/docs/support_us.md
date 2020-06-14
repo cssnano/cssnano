@@ -12,14 +12,26 @@ support us!
 You can support us through [Patreon](https://www.patreon.com/beneb) as an
 ongoing commitment, or one-time through [PayPal](https://www.paypal.me/benebinfo).
 
+## Support the team
 
-## Patreon Backers
+<a href="https://opencollective.com/cssnano">
+<img src="https://opencollective.com/cssnano/donate/button@2x.png?color=blue" alt="drawing" width="200"/>
+</a>
+
+## Backers
+
+### Patreon Backers
 
 A huge THANK YOU to our recurring backers!
 
 - [Jake Hickenlooper](https://twitter.com/jkenlooper)
 - [Tommy Hodgins](https://twitter.com/innovati)
 
+### Opencollective Backers
+
+A huge THANK YOU to our backers!
+
+<object type="image/svg+xml" data="https://opencollective.com/cssnano/backers.svg?avatarHeight=36&width=600"></object>
 
 ## Stickers
 

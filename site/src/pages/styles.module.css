@@ -12,13 +12,13 @@
 }
 
 .getStartedBtn {
-  --ifm-font-base-color: white;
-  --ifm-font-base-color: white;
+  background-color: white;
+  color: #191c3c;
 }
 
 .getStartedBtn:hover {
-  --ifm-font-base-color: #191c3c;
-  --ifm-font-base-color: #191c3c;
+  color: white;
+  background-color: #191c3c;
 }
 
 .playgroundInnerNav {

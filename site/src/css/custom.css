@@ -9,7 +9,7 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #191c3c;
+  --ifm-color-primary: #253858;
   --ifm-color-primary-dark: #161936;
   --ifm-color-primary-darker: #151833;
   --ifm-color-primary-darkest: #11142a;
@@ -17,6 +17,7 @@
   --ifm-color-primary-lighter: #1d2045;
   --ifm-color-primary-lightest: #21254f;
   --ifm-code-font-size: 95%;
+  --ifm-footer-link-hover-color: #c0cee7;
 }
 
 .docusaurus-highlight-code-line {
@@ -30,6 +31,13 @@
   font-family: 'Work Sans', sans-serif !important;
 }
 
+body {
+  color: var(--ifm-color-primary);
+}
+
+table {
+  display: inline-table;
+}
 /* Flexboxgrid */
 
 /* Uncomment and set these variables to customize the grid. */
