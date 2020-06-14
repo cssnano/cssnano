@@ -12,6 +12,7 @@ import {
   normalizeGridColumnRowGap,
   normalizeGridColumnRow,
 } from './rules/grid';
+import listStyle from './rules/listStyle';
 import { columnsRule, column } from './rules/columns';
 
 const borderRules = {
@@ -50,6 +51,7 @@ const rules = {
   outline: border,
   'box-shadow': boxShadow,
   'flex-flow': flexFlow,
+  'list-style': listStyle,
   transition: transition,
   ...borderRules,
   ...grid,
