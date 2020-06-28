@@ -42,9 +42,8 @@ export default plugin('postcss-normalize-whitespace', () => {
         node.raws.before = node.raws.before.replace(/\s/g, '');
       }
 
-      if (type === atrule) {
+      if (type === atrule && node.params) {
         let paramClone = node.params;
-
         /**
          * @atRule () , @atRule ()
          *
@@ -57,9 +56,6 @@ export default plugin('postcss-normalize-whitespace', () => {
           .map((_) => _.trim())
           .join(',');
 
-        // Converts the newlines with the whitespace
-        paramClone = paramClone.split('\n').join(' ');
-
         /**
          * @atRule and ( ) => @atRule and( )
          * @atRule and ( )  , => @atRule and( ),
@@ -71,13 +67,6 @@ export default plugin('postcss-normalize-whitespace', () => {
            * @atRule ( ){} => @atRule( ) {}
            */
           node.raws.afterName = '';
-        }
-
-        for (let i in node.raws) {
-          // convert all raws from multiple spaces to one
-          if (typeof node.raws[i] === 'string') {
-            node.raws[i] = node.raws[i].replace(/ +/g, ' ');
-          }
         }
 
         /**
@@ -94,6 +83,14 @@ export default plugin('postcss-normalize-whitespace', () => {
         paramClone = paramClone.trim();
         node.params = paramClone;
       }
+
+      for (let i in node.raws) {
+        // convert all raws from multiple spaces to one
+        if (typeof node.raws[i] === 'string') {
+          node.raws[i] = node.raws[i].replace(/ +/g, ' ');
+        }
+      }
+
       if (type === decl) {
         // Ensure that !important values do not have any excess whitespace
         if (node.important) {

@@ -195,6 +195,6 @@ test(
   /* ... */
 }`,
     `@supports((transition-property:color)or(animation-name:foo))and(transform:rotate(10deg)){
-  /* ... */}`
+ /* ... */}`
   )
 );

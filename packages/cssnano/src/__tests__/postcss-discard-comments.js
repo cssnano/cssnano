@@ -64,7 +64,7 @@ test(
   'should remove non-special comments 10',
   processCss(
     '@media only screen /*desktop*/ and (min-width:900px){body{margin:0 auto}}',
-    '@media only screen and (min-width:900px){body{margin:0 auto}}'
+    '@media only screen and(min-width:900px){body{margin:0 auto}}'
   )
 );
 
@@ -72,7 +72,7 @@ test(
   'should remove non-special comments 11',
   processCss(
     '@media only screen and (min-width:900px)/*test*/{body{margin:0 auto}}',
-    '@media only screen and (min-width:900px){body{margin:0 auto}}'
+    '@media only screen and(min-width:900px){body{margin:0 auto}}'
   )
 );
 

@@ -81,7 +81,7 @@ test(
   'should not merge across media queries',
   processCss(
     '@media screen and (max-width:480px){h1{display:block}}@media screen and (min-width:480px){h2{display:block}}',
-    '@media screen and (max-width:480px){h1{display:block}}@media screen and (min-width:480px){h2{display:block}}'
+    '@media screen and(max-width:480px){h1{display:block}}@media screen and(min-width:480px){h2{display:block}}'
   )
 );
 
@@ -89,7 +89,7 @@ test(
   'should not merge across media queries (2)',
   processCss(
     '@media screen and (max-width:200px){h1{color:red}}@media screen and (min-width:480px){h1{display:block}}',
-    '@media screen and (max-width:200px){h1{color:red}}@media screen and (min-width:480px){h1{display:block}}'
+    '@media screen and(max-width:200px){h1{color:red}}@media screen and(min-width:480px){h1{display:block}}'
   )
 );
 
