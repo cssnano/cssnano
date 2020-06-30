@@ -38,6 +38,25 @@ body {
 table {
   display: inline-table;
 }
+
+html[data-theme='dark'] {
+  --ifm-font-color-base-inverse: #e1e1e1;
+  --ifm-heading-color: #ffffff;
+  --ifm-hero-text-color: #ffffff;
+  --ifm-font-color-base: #253858;
+  --ifm-tabs-color-active: #ffffff;
+  --ifm-navbar-link-color: #ffffff;
+  --ifm-navbar-link-hover-color: #eef5ff;
+  --ifm-link-color: #ffffff;
+  --ifm-menu-color-active: #ffffff;
+  --ifm-link-decoration: var(--ifm-link-decoration);
+}
+
+html[data-theme='dark'] body,
+html[data-theme='dark'] a {
+  color: #ffffff;
+}
+
 /* Flexboxgrid */
 
 /* Uncomment and set these variables to customize the grid. */
