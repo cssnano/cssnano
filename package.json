@@ -8,7 +8,7 @@
     "postinstall": "lerna bootstrap",
     "build:packages": "babel-node ./util/buildPackages.js",
     "build:metadata": "babel-node ./util/buildMetadata.js",
-    "build:site": "remark site/content/**/*.md -o && yarn build:metadata && babel-node ./util/buildSiteMarkdown.js && cd site && yarn build",
+    "build:site": "remark site/docs/**/*.md -o && yarn build:metadata && babel-node ./util/buildSiteMarkdown.js && cd site && yarn build",
     "build:integration": "cross-env BABEL_ENV=test babel-node ./util/buildFrameworks.js",
     "pretest": "yarn lint",
     "test:only": "cross-env BABEL_ENV=test jest",

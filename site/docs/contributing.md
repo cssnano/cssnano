@@ -1,5 +1,4 @@
 ---
-id: contributing
 title: Contributing
 layout: Guide
 order: 6

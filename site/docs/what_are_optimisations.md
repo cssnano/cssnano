@@ -62,4 +62,4 @@ The optimisations are different depending on which preset cssnano is configured 
 | [uniqueSelectors](/optimisations/uniqueselectors) | ✅ | ✅ |
 | [zindex](/optimisations/zindex) | ❌ | ✅ |
 
-You can read more about presets in our [presets guide](/guides/presets/).
+You can read more about presets in our [presets guide](/presets).

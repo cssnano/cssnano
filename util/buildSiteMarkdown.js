@@ -185,7 +185,9 @@ function generateContributing() {
 
 function updateOptimisationGuide() {
   return Promise.resolve()
-    .then(() => fs.readFile(join(__dirname, '../site/docs/optimisations.md')))
+    .then(() =>
+      fs.readFile(join(__dirname, '../site/docs/what_are_optimisations.md'))
+    )
     .then((optimisations) => {
       return getPackages().then((packages) => {
         const presets = getPresets(packages);
@@ -214,7 +216,7 @@ function updateOptimisationGuide() {
                     optimisationsTable(presets, plugins),
                     u('paragraph', [
                       u('text', 'You can read more about presets in our '),
-                      u('link', { url: '/presets/' }, [
+                      u('link', { url: '/presets' }, [
                         u('text', 'presets guide'),
                       ]),
                       u('text', '.'),
@@ -236,7 +238,7 @@ function updateOptimisationGuide() {
     })
     .then((transformedOptimisations) =>
       fs.writeFile(
-        join(__dirname, '../site/docs/optimisations.md'),
+        join(__dirname, '../site/docs/what_are_optimisations.md'),
         transformedOptimisations
       )
     );

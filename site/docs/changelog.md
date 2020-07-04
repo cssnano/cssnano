@@ -1,5 +1,4 @@
 ---
-id: changelog
 title: Changelog
 layout: Page
 ---
@@ -252,11 +251,13 @@ the actual release.
 - cssnano & its plugins have been upgraded to PostCSS 6.x. Please ensure that
   for optimal results that you use cssnano with a PostCSS 6 compatible runner
   & that any other plugins are also using PostCSS 6.
+
 - cssnano is now essentially a preset loader and does not contain any built-in
   transforms (instead, it delegates to `cssnano-preset-default` by default).
   Due to the new architecture, it's not possible to exclude asynchronous
   transforms and run it synchronously, unlike in 3.x. Any transforms that
   were "core" modules have now been extracted out into separate packages.
+
 - Because of the new preset system, cssnano will not accept any transformation
   options; these must be set in the preset. The option names remain mostly the
   same, except some cases where "core" modules have been extracted out:
@@ -286,6 +287,7 @@ the actual release.
 
 - We no longer detect previous plugins to silently exclude our own, and now
   consider this to be an anti-pattern. So `postcss-filter-plugins` was removed.
+
 - We also changed some options to make the default transforms safer:
 
   - `postcss-minify-font-values`: `removeAfterKeyword` set to `false` from `true`.
@@ -294,11 +296,14 @@ the actual release.
 - cssnano now does not accept the `sourcemap` shortcut option; please refer
   to the PostCSS documentation on sourcemaps. The `quickstart.js` file included
   with this module will give you a good starting point.
+
 - `cssnano.process` is no longer a custom method; we use the built-in `process`
   method exposed on each PostCSS plugin. The new signature is
   `cssnano.process(css, postcssOpts, cssnanoOpts)`, in 3.x it was
   `cssnano.process(css, cssnanoOpts)`.
+
 - We dropped support for Node 0.12, now requiring at least Node 4.
+
 - Finally, cssnano is now developed as a monorepo, due to the fact that some
   transforms have a lot of grey area/overlap. Due to this, some modules have
   been refactored to delegate responsibility to others, such that duplication
