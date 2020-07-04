@@ -198,3 +198,27 @@ test(
  /* ... */}`
   )
 );
+
+test(
+  'should remove whitespace between the atrule and param #14',
+  processCSS(
+    `@supports ( display: var( --grid ) ) {
+  div {
+    display: grid;
+  }
+}`,
+    `@supports(display:var(--grid)){div{display:grid}}`
+  )
+);
+
+test(
+  'should remove whitespace between the atrule and param #15',
+  processCSS(
+    `@supports  not ( display: var( --  grid ) ) {
+  div {
+    display: grid;
+  }
+}`,
+    `@supports not(display:var(--grid)){div{display:grid}}`
+  )
+);
