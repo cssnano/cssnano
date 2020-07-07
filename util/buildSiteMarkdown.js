@@ -145,7 +145,7 @@ function generateChangelog() {
     })
     .then((transformedChangelog) =>
       fs.writeFile(
-        join(__dirname, '../site/content/changelog.md'),
+        join(__dirname, '../site/docs/changelog.md'),
         `${frontMatter({
           title: 'Changelog',
           layout: 'Page',
@@ -173,7 +173,7 @@ function generateContributing() {
     })
     .then((transformedContributing) =>
       fs.writeFile(
-        join(__dirname, '../site/content/guides/contributing.md'),
+        join(__dirname, '../site/docs/contributing.md'),
         `${frontMatter({
           title: 'Contributing',
           layout: 'Guide',
@@ -186,7 +186,7 @@ function generateContributing() {
 function updateOptimisationGuide() {
   return Promise.resolve()
     .then(() =>
-      fs.readFile(join(__dirname, '../site/content/guides/optimisations.md'))
+      fs.readFile(join(__dirname, '../site/docs/what_are_optimisations.md'))
     )
     .then((optimisations) => {
       return getPackages().then((packages) => {
@@ -216,7 +216,7 @@ function updateOptimisationGuide() {
                     optimisationsTable(presets, plugins),
                     u('paragraph', [
                       u('text', 'You can read more about presets in our '),
-                      u('link', { url: '/guides/presets/' }, [
+                      u('link', { url: '/presets' }, [
                         u('text', 'presets guide'),
                       ]),
                       u('text', '.'),
@@ -238,7 +238,7 @@ function updateOptimisationGuide() {
     })
     .then((transformedOptimisations) =>
       fs.writeFile(
-        join(__dirname, '../site/content/guides/optimisations.md'),
+        join(__dirname, '../site/docs/what_are_optimisations.md'),
         transformedOptimisations
       )
     );
@@ -259,7 +259,7 @@ function updateOptimisations() {
       const content = `${fm}${longDescription}`;
 
       return fs.outputFile(
-        join(__dirname, `../site/content/optimisations/${identifier}.md`),
+        join(__dirname, `../site/docs/optimisations/${identifier}.md`),
         content
       );
     })
@@ -279,7 +279,7 @@ function updateOptimisationsIndex() {
     })
     .then((optimisationsTransformed) =>
       fs.writeFile(
-        join(__dirname, '../site/content/optimisations.md'),
+        join(__dirname, '../site/docs/optimisations.md'),
         `${frontMatter({
           title: 'Optimisations',
           layout: 'Page',
@@ -308,9 +308,7 @@ function updateCommunity() {
     )
     .then((transformedContributors) => {
       return Promise.resolve()
-        .then(() =>
-          fs.readFile(join(__dirname, '../site/content/community.md'))
-        )
+        .then(() => fs.readFile(join(__dirname, '../site/docs/community.md')))
         .then(
           (community) =>
             new Promise((resolve) => {
@@ -345,7 +343,7 @@ function updateCommunity() {
     })
     .then((transformedCommunity) =>
       fs.writeFile(
-        join(__dirname, '../site/content/community.md'),
+        join(__dirname, '../site/docs/community.md'),
         transformedCommunity
       )
     );
