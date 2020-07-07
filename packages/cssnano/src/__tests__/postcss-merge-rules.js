@@ -1,5 +1,7 @@
 import processCss from './_processCss';
 
+jest.setTimeout(60000);
+
 test(
   'should merge based on declarations',
   processCss('h1{display:block}h2{display:block}', 'h1,h2{display:block}')
