@@ -1,6 +1,6 @@
 import path from 'path';
 import postcss from 'postcss';
-import cosmiconfig from 'cosmiconfig';
+import { cosmiconfig } from 'cosmiconfig';
 import isResolvable from 'is-resolvable';
 
 const cssnano = 'cssnano';
