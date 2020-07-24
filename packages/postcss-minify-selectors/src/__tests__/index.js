@@ -454,6 +454,14 @@ test(
   passthroughCSS('body>h2:not(:first-of-type):not(:last-of-type){color:blue}')
 );
 
+test(
+  'should not break with a ::slotted selector containing a complex attribute selector',
+  processCSS(
+    '::slotted([ foo | bar ]){color:blue}',
+    '::slotted([foo|bar]){color:blue}'
+  )
+);
+
 test('cssnano issue 39', () => {
   const css =
     'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
