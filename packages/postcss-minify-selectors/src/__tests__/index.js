@@ -510,3 +510,22 @@ test('should handle selectors from other plugins', () => {
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+
+test(
+  'should handle attribute selector and namespace',
+  passthroughCSS('::slotted([foo|bar])')
+);
+
+test(
+  'should handle attribute selector and namespace #2',
+  passthroughCSS('div[*|att] {  }')
+);
+
+test(
+  'should handle attribute selector and namespace #3',
+  passthroughCSS('div[|att] {  }')
+);
+test(
+  'should handle attribute selector and namespace #3',
+  passthroughCSS('div[att] {  }')
+);

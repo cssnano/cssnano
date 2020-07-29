@@ -25,7 +25,9 @@ function attribute(selector) {
       selector.value = unquote(selector.value);
     }
 
-    selector.operator = selector.operator.trim();
+    if (selector.operator) {
+      selector.operator = selector.operator.trim();
+    }
   }
 
   if (!selector.raws) {
