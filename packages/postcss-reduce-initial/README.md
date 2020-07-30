@@ -1,7 +1,6 @@
 # [postcss][postcss]-reduce-initial
 
-> Reduce `initial` definitions to the *actual* initial value, where possible.
-
+> Reduce `initial` definitions to the _actual_ initial value, where possible.
 
 ## Install
 
@@ -10,7 +9,6 @@ With [npm](https://npmjs.org/package/postcss-reduce-initial) do:
 ```
 npm install postcss-reduce-initial --save
 ```
-
 
 ## Examples
 
@@ -26,7 +24,7 @@ be converted:
 
 ```css
 h1 {
-    min-width: initial;
+  min-width: initial;
 }
 ```
 
@@ -34,10 +32,9 @@ h1 {
 
 ```css
 h1 {
-    min-width: 0;
+  min-width: 0;
 }
 ```
-
 
 ### Convert values back to `initial`
 
@@ -48,7 +45,7 @@ be converted:
 
 ```css
 h1 {
-    transform-box: border-box;
+  transform-box: border-box;
 }
 ```
 
@@ -56,31 +53,42 @@ h1 {
 
 ```css
 h1 {
-    transform-box: initial;
+  transform-box: initial;
 }
 ```
 
 This conversion is only applied when you supply a browsers list that all support
 the `initial` keyword; it's worth noting that Internet Explorer has no support.
 
+## API
+
+### reduceInitial([options])
+
+#### options
+
+##### ignore
+
+Type: `Array<String>`
+Default: `undefined`
+
+It contains the Array of properties that will be ignored while reducing its value to initial.
+Example : `{ ignore : ["min-height"] }`
 
 ## Usage
 
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
 examples for your environment.
 
-
 ## Contributors
 
 See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md).
-
 
 ## License
 
 [Template:CSSData] by Mozilla Contributors is licensed under [CC-BY-SA 2.5].
 
-[Template:CSSData]: https://developer.mozilla.org/en-US/docs/Template:CSSData
-[CC-BY-SA 2.5]: http://creativecommons.org/licenses/by-sa/2.5/
+[template:cssdata]: https://developer.mozilla.org/en-US/docs/Template:CSSData
+[cc-by-sa 2.5]: http://creativecommons.org/licenses/by-sa/2.5/
 
 MIT © [Ben Briggs](http://beneb.info)
 

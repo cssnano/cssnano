@@ -20,6 +20,9 @@ export default plugin('postcss-reduce-initial', () => {
 
     css.walkDecls((decl) => {
       const lowerCasedProp = decl.prop.toLowerCase();
+      if (resultOpts.ignore && !!~resultOpts.ignore.indexOf(lowerCasedProp)) {
+        return;
+      }
 
       if (
         initialSupport &&
