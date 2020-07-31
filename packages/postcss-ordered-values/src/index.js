@@ -125,8 +125,8 @@ export default postcss.plugin('postcss-ordered-values', () => {
 
       const result = processor(parsed);
 
-      decl.value = result;
-      cache[value] = result;
+      decl.value = result.toString();
+      cache[value] = result.toString();
     });
   };
 });

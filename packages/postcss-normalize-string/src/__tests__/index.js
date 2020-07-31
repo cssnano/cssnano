@@ -220,3 +220,20 @@ test(
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+
+test(
+  'should work for grid-columsn',
+  passthroughCSS(`div{grid-column: span 2;}`)
+);
+
+test(
+  'should work for grid-columsn #2',
+  passthroughCSS(`div{grid-column: span 2 / 1;}`)
+);
+
+test(
+  'should work for grid-columsn #3',
+  passthroughCSS(`div{grid-column: "span 2";}`)
+);
+
+test('should work for columns', passthroughCSS(`div{columns: 2 auto;}`));
