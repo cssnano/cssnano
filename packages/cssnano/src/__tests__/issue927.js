@@ -1,4 +1,4 @@
-	import postcss from 'postcss';
+import postcss from 'postcss';
 import nano from '..';
 
 const fixture = `
