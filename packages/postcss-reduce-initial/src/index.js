@@ -6,6 +6,7 @@ import fromInitial from '../data/fromInitial.json';
 import toInitial from '../data/toInitial.json';
 
 const initial = 'initial';
+const defaultIgnoreProps = ['writing-mode'];
 
 export default plugin('postcss-reduce-initial', () => {
   return (css, result) => {
@@ -20,7 +21,9 @@ export default plugin('postcss-reduce-initial', () => {
 
     css.walkDecls((decl) => {
       const lowerCasedProp = decl.prop.toLowerCase();
-      if (resultOpts.ignore && !!~resultOpts.ignore.indexOf(lowerCasedProp)) {
+      const ignoreProp = defaultIgnoreProps.concat(resultOpts.ignore || []);
+
+      if (ignoreProp.includes(lowerCasedProp)) {
         return;
       }
 
