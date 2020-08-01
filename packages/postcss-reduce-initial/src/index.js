@@ -7,6 +7,9 @@ import toInitial from '../data/toInitial.json';
 
 const initial = 'initial';
 
+// In most of the browser including chrome the initial for `writing-mode` is not `horizontal-tb`. Ref https://github.com/cssnano/cssnano/pull/905
+const defaultIgnoreProps = ['writing-mode'];
+
 export default plugin('postcss-reduce-initial', () => {
   return (css, result) => {
     const resultOpts = result.opts || {};
@@ -20,6 +23,11 @@ export default plugin('postcss-reduce-initial', () => {
 
     css.walkDecls((decl) => {
       const lowerCasedProp = decl.prop.toLowerCase();
+      const ignoreProp = defaultIgnoreProps.concat(resultOpts.ignore || []);
+
+      if (ignoreProp.includes(lowerCasedProp)) {
+        return;
+      }
 
       if (
         initialSupport &&

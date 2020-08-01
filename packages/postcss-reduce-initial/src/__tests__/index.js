@@ -96,3 +96,30 @@ test(
   'min-height auto tests',
   processCSS('h1{min-height:initial}', 'h1{min-height:auto}')
 );
+
+test(
+  'should ignore the data present in the ignore options',
+  passthroughCSS('h1{min-height:initial}', { ignore: ['min-height'] })
+);
+
+test(
+  'should ignore the data present in the ignore options #2',
+  processCSS(
+    'h1{  writing-mode: sideways-rl;}',
+    'h1{  writing-mode: sideways-rl;}',
+    { ignore: ['writing-mode'] }
+  )
+);
+
+test(
+  'should ignore the data present in the ignore options #3',
+  processCSS(
+    'h1{  writing-mode: vertical-lr;}',
+    'h1{  writing-mode: vertical-lr;}',
+    { ignore: [] }
+  )
+);
+test(
+  'should ignore the data present in the ignore options , toInitial #3',
+  passthroughCSS('WRITING-MODE:horizontal-tb', { ignore: ['writing-mode'] })
+);
