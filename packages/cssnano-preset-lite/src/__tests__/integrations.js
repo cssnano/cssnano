@@ -1,4 +1,4 @@
-import { integrationTests, loadPreset } from '../../../../util/testHelpers.js';
+import { integrationTests } from '../../../../util/testHelpers.js';
 import preset from '..';
 
 jest.setTimeout(60000);
