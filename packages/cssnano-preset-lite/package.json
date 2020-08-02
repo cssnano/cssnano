@@ -1,0 +1,30 @@
+{
+    "name": "cssnano-preset-lite",
+    "version": "4.0.7",
+    "main": "dist/index.js",
+    "description": "Safe and minimum transformation",
+    "scripts": {
+        "prebuild": "del-cli dist",
+        "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
+        "prepublish": "yarn build"
+    },
+    "files": [
+        "LICENSE-MIT",
+        "dist"
+    ],
+    "license": "MIT",
+    "dependencies": {
+        "cssnano-utils": "^1.0.0",
+        "postcss": "^7.0.16",
+        "postcss-discard-comments": "^4.0.2",
+        "postcss-normalize-whitespace": "^4.0.2"
+    },
+    "repository": "cssnano/cssnano",
+    "homepage": "https://github.com/cssnano/cssnano",
+    "bugs": {
+        "url": "https://github.com/cssnano/cssnano/issues"
+    },
+    "engines": {
+        "node": ">=10.13.0"
+    }
+}
