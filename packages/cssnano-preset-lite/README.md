@@ -15,6 +15,7 @@
 
   - [cssnano-utils](#cssnano-utils)
   - [postcss-discard-comments](#postcss-discard-comments)
+  - [postcss-normalize-whitespace](#postcss-normalize-whitespace)
 
 - [Contributors](#contributors)
 
@@ -22,18 +23,18 @@
 
 ## Overview
 
-This default preset for cssnano only includes transforms that make no
-assumptions about your CSS other than what is passed in. In previous
-iterations of cssnano, assumptions were made about your CSS which caused
-output to look different in certain use cases, but not others. These
-transforms have been moved from the defaults to other presets, to make
-this preset require only minimal configuration.
+This lite preset for cssnano only includes transforms that only removes extra whitespace,
+linebreaks, and comments.
 
 ## Usage
 
 ### Install
 
-Note that this preset comes bundled with cssnano _by default_, so you don't need to install it separately.
+With [npm](https://npmjs.com/package/cssnano-preset-lite) do:
+
+    npm install cssnano-preset-lite --save-dev
+
+If you don't have npm then [check out this installation tutorial](https://npmjs.com/package/cssnano-preset-lite/tutorial).
 
 ### Configuration
 
