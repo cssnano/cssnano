@@ -3,7 +3,7 @@ import preset from '..';
 
 const { processCSS } = processCSSWithPresetFactory(preset);
 
-test('Simple test', processCSS('h1 { } ', 'h1{}'));
+test('Simple test', processCSS('h1 { } ', ''));
 
 test('Simple test #2', processCSS('h1 { color: red} ', 'h1{color:red}'));
 
@@ -17,7 +17,7 @@ test(
   processCSS(
     `h1 { color: /**
  some comment
- here 
+ here
  */ red} `,
     'h1{color:red}'
   )
@@ -47,5 +47,16 @@ ul li {
 }
 `,
     '@media screen and (min-width: 480px){body{background-color:lightgreen}}#main{border:1px solid black}ul li{padding:5px}'
+  )
+);
+
+test(
+  'Simple test with empty and comment',
+  processCSS(
+    `h1 { color: /**
+ some comment
+ here
+ */ } `,
+    ''
   )
 );

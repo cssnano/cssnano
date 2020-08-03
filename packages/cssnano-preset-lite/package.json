@@ -17,7 +17,8 @@
         "cssnano-utils": "^1.0.0",
         "postcss": "^7.0.16",
         "postcss-discard-comments": "^4.0.2",
-        "postcss-normalize-whitespace": "^4.0.2"
+        "postcss-normalize-whitespace": "^4.0.2",
+        "postcss-discard-empty": "^4.0.1"
     },
     "repository": "cssnano/cssnano",
     "homepage": "https://github.com/cssnano/cssnano",

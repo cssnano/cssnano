@@ -15,6 +15,7 @@
 
   - [cssnano-utils](#cssnano-utils)
   - [postcss-discard-comments](#postcss-discard-comments)
+  - [postcss-discard-empty](#postcss-discard-empty)
   - [postcss-normalize-whitespace](#postcss-normalize-whitespace)
 
 - [Contributors](#contributors)
@@ -78,6 +79,12 @@ Note that you may wish to publish your own preset to npm for reusability, should
 ### [`postcss-discard-comments`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-discard-comments)
 
 > Discard comments in your CSS files with PostCSS.
+
+This plugin is loaded with its default configuration.
+
+### [`postcss-discard-empty`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-discard-empty)
+
+> Discard empty rules and values with PostCSS.
 
 This plugin is loaded with its default configuration.
 
