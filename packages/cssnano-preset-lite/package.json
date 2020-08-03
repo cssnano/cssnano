@@ -1,6 +1,6 @@
 {
     "name": "cssnano-preset-lite",
-    "version": "4.0.7",
+    "version": "1.0.0",
     "main": "dist/index.js",
     "description": "Safe and minimum transformation",
     "scripts": {
