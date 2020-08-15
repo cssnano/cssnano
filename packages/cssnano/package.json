@@ -1,53 +1,56 @@
 {
-  "name": "cssnano",
-  "version": "4.1.10",
-  "description": "A modular minifier, built on top of the PostCSS ecosystem.",
-  "main": "dist/index.js",
-  "scripts": {
-    "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
-    "prebuild": "del-cli dist",
-    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
-    "prepublish": "yarn build",
-    "postinstall": "opencollective-postinstall"
-  },
-  "collective": {
-    "type": "opencollective",
-    "url": "https://opencollective.com/cssnano"
-  },
-  "keywords": [
-    "css",
-    "compress",
-    "minify",
-    "optimise",
-    "optimisation",
-    "postcss",
-    "postcss-plugin"
-  ],
-  "license": "MIT",
-  "dependencies": {
-    "cosmiconfig": "^6.0.0",
-    "cssnano-preset-default": "^4.0.7",
-    "is-resolvable": "^1.1.0",
-    "opencollective-postinstall": "^2.0.2",
-    "postcss": "^7.0.16"
-  },
-  "homepage": "https://github.com/cssnano/cssnano",
-  "author": {
-    "name": "Ben Briggs",
-    "email": "beneb.info@gmail.com",
-    "url": "http://beneb.info"
-  },
-  "repository": "cssnano/cssnano",
-  "files": [
-    "dist",
-    "LICENSE-MIT",
-    "quickstart.js"
-  ],
-  "tonicExampleFilename": "quickstart.js",
-  "bugs": {
-    "url": "https://github.com/cssnano/cssnano/issues"
-  },
-  "engines": {
-    "node": ">=10.13.0"
-  }
+    "name": "cssnano",
+    "version": "4.1.10",
+    "description": "A modular minifier, built on top of the PostCSS ecosystem.",
+    "main": "dist/index.js",
+    "scripts": {
+        "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
+        "prebuild": "del-cli dist",
+        "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
+        "prepublish": "yarn build",
+        "postinstall": "opencollective-postinstall"
+    },
+    "collective": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/cssnano"
+    },
+    "keywords": [
+        "css",
+        "compress",
+        "minify",
+        "optimise",
+        "optimisation",
+        "postcss",
+        "postcss-plugin"
+    ],
+    "license": "MIT",
+    "dependencies": {
+        "cosmiconfig": "^6.0.0",
+        "cssnano-preset-default": "^4.0.7",
+        "is-resolvable": "^1.1.0",
+        "opencollective-postinstall": "^2.0.2",
+        "postcss": "^7.0.16"
+    },
+    "homepage": "https://github.com/cssnano/cssnano",
+    "author": {
+        "name": "Ben Briggs",
+        "email": "beneb.info@gmail.com",
+        "url": "http://beneb.info"
+    },
+    "repository": "cssnano/cssnano",
+    "files": [
+        "dist",
+        "LICENSE-MIT",
+        "quickstart.js"
+    ],
+    "tonicExampleFilename": "quickstart.js",
+    "bugs": {
+        "url": "https://github.com/cssnano/cssnano/issues"
+    },
+    "engines": {
+        "node": ">=10.13.0"
+    },
+    "devDependencies": {
+        "autoprefixer": "^9.8.6"
+    }
 }

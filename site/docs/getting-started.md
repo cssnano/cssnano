@@ -112,6 +112,8 @@ You can use cssnano explicitly with [postcss-loader].
 
 [postcss-loader]: https://github.com/postcss/postcss-loader
 
+You can also use the cssnano with [webpack plugin](https://github.com/webpack-contrib/css-minimizer-webpack-plugin)
+
 ### Others
 
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
