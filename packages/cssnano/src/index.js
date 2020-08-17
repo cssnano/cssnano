@@ -113,6 +113,27 @@ function resolveConfig(css, result, options) {
 }
 
 export default postcss.plugin(cssnano, (options = {}) => {
+  if (Array.isArray(options.plugins)) {
+    if (!options.preset || !options.preset.plugins) {
+      options.preset = { plugins: [] };
+    }
+
+    options.plugins.forEach((plugin) => {
+      if (Array.isArray(plugin)) {
+        const [pluginDef, opts = {}] = plugin;
+        if (typeof pluginDef === 'string' && isResolvable(pluginDef)) {
+          options.preset.plugins.push([require(pluginDef), opts]);
+        } else {
+          options.preset.plugins.push([pluginDef, opts]);
+        }
+      } else if (typeof plugin === 'string' && isResolvable(plugin)) {
+        options.preset.plugins.push([require(plugin), {}]);
+      } else {
+        options.preset.plugins.push([plugin, {}]);
+      }
+    });
+  }
+
   return (css, result) => {
     return resolveConfig(css, result, options).then((plugins) => {
       return plugins.reduce((promise, plugin) => {

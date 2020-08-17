@@ -1,0 +1,75 @@
+---
+id: config-file
+title: Config Files
+layout: Guide
+order: 3
+---
+
+## `cssnano` config files
+
+We use configuration for `cssnano` using file name as `cssnano.config.js` , `cssnano` property in your `package.json`, using `cssnano.config.json` and `.cssnanorc` as well.
+We are using `cosmiconfig` in order to load cssnano config. Please read [here](https://github.com/davidtheclark/cosmiconfig) for more details
+
+## Options
+
+### `preset`
+
+- **Type:** `string` | `function` | `[string, Objects<preset options here>]` | `[function(preset options here)]`
+
+> For `string`, the name should be of type `cssnano-preset-<name>` and you need to use `name` alone eg : `preset : ['default', {}]`
+
+Contains lists of `postcss` plugins where each plugin does their own minification.
+
+- **Example:**
+   
+  ```js
+  // cssnano.config.js
+  module.exports = {
+    preset: [require('cssnano-preset-default')]
+    
+    // or
+    preset: require('cssnano-preset-default')
+    
+    // or
+    preset: ['advanced', { discardComments: false }]
+
+    // or
+    preset: [require('cssnano-preset-default'), {discardComments: false}]
+  }
+  ```
+
+### `plugins`
+
+- **Type:** `Array<'string' | 'function' | ['string' | 'function', Object<Options for the plugin here>]>`
+
+> If you want to pass config to the plugin, you need to use Array's of array for the plugins i.e `plugins: [ ['autoprefixer', {}] ]`
+
+These plugins will run after once all presets operations are complete.
+
+- **Example:**
+   
+  ```js
+  // cssnano.config.js
+  module.exports = {
+    plugins: [require('autoprefixer')]
+    
+    // or
+    plugins: ['autoprefixer', 'postcss-preset-env']
+    
+    // or
+    plugins: [ 
+      ['autoprefixer', { remove: false },
+    ]
+
+    // or
+    plugins: [
+      [ require('autoprefixer'), {remove: false} ],
+      [ 'postcss-preset-env']
+    ]
+  }
+  ```
+
+## Alternatives
+
+You can use the `postcss` config file and both `preset` and `plugins` will be passed as the options for `cssnano`. 
+Refer [here](https://github.com/postcss/postcss#usage) for more details.
