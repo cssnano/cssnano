@@ -14,7 +14,7 @@
     "test:only": "cross-env BABEL_ENV=test jest",
     "test:coverage": "cross-env BABEL_ENV=test jest --coverage",
     "test": "yarn test:coverage",
-    "deploy": "gh-pages -t -d site/dist",
+    "deploy": "gh-pages -t -d site/build",
     "publish": "lerna publish"
   },
   "engines": {

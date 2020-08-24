@@ -25,41 +25,41 @@ inside color functions as this is handled by postcss-normalize-whitespace.
 
 The optimisations are different depending on which preset cssnano is configured with; with the default preset, we offer safe transforms only.
 
-|  | default | advanced |
-| --- | ------- | -------- |
-| [autoprefixer](/optimisations/autoprefixer) | ❌ | ✅ |
-| [cssDeclarationSorter](/optimisations/cssdeclarationsorter) | ✅ | ✅ |
-| [rawCache](/optimisations/rawcache) | ✅ | ✅ |
-| [calc](/optimisations/calc) | ✅ | ✅ |
-| [colormin](/optimisations/colormin) | ✅ | ✅ |
-| [convertValues](/optimisations/convertvalues) | ✅ | ✅ |
-| [discardComments](/optimisations/discardcomments) | ✅ | ✅ |
-| [discardDuplicates](/optimisations/discardduplicates) | ✅ | ✅ |
-| [discardEmpty](/optimisations/discardempty) | ✅ | ✅ |
-| [discardOverridden](/optimisations/discardoverridden) | ✅ | ✅ |
-| [discardUnused](/optimisations/discardunused) | ❌ | ✅ |
-| [mergeIdents](/optimisations/mergeidents) | ❌ | ✅ |
-| [mergeLonghand](/optimisations/mergelonghand) | ✅ | ✅ |
-| [mergeRules](/optimisations/mergerules) | ✅ | ✅ |
-| [minifyFontValues](/optimisations/minifyfontvalues) | ✅ | ✅ |
-| [minifyGradients](/optimisations/minifygradients) | ✅ | ✅ |
-| [minifyParams](/optimisations/minifyparams) | ✅ | ✅ |
-| [minifySelectors](/optimisations/minifyselectors) | ✅ | ✅ |
-| [normalizeCharset](/optimisations/normalizecharset) | ✅ | ✅ |
-| [normalizeDisplayValues](/optimisations/normalizedisplayvalues) | ✅ | ✅ |
-| [normalizePositions](/optimisations/normalizepositions) | ✅ | ✅ |
-| [normalizeRepeatStyle](/optimisations/normalizerepeatstyle) | ✅ | ✅ |
-| [normalizeString](/optimisations/normalizestring) | ✅ | ✅ |
-| [normalizeTimingFunctions](/optimisations/normalizetimingfunctions) | ✅ | ✅ |
-| [normalizeUnicode](/optimisations/normalizeunicode) | ✅ | ✅ |
-| [normalizeUrl](/optimisations/normalizeurl) | ✅ | ✅ |
-| [normalizeWhitespace](/optimisations/normalizewhitespace) | ✅ | ✅ |
-| [orderedValues](/optimisations/orderedvalues) | ✅ | ✅ |
-| [reduceIdents](/optimisations/reduceidents) | ❌ | ✅ |
-| [reduceInitial](/optimisations/reduceinitial) | ✅ | ✅ |
-| [reduceTransforms](/optimisations/reducetransforms) | ✅ | ✅ |
-| [svgo](/optimisations/svgo) | ✅ | ✅ |
-| [uniqueSelectors](/optimisations/uniqueselectors) | ✅ | ✅ |
-| [zindex](/optimisations/zindex) | ❌ | ✅ |
+|  | default | advanced | lite |
+| --- | ------- | -------- | ---- |
+| [autoprefixer](/optimisations/autoprefixer) | ❌ | ✅ | ❌ |
+| [cssDeclarationSorter](/optimisations/cssdeclarationsorter) | ✅ | ✅ | ❌ |
+| [rawCache](/optimisations/rawcache) | ✅ | ✅ | ✅ |
+| [calc](/optimisations/calc) | ✅ | ✅ | ❌ |
+| [colormin](/optimisations/colormin) | ✅ | ✅ | ❌ |
+| [convertValues](/optimisations/convertvalues) | ✅ | ✅ | ❌ |
+| [discardComments](/optimisations/discardcomments) | ✅ | ✅ | ✅ |
+| [discardDuplicates](/optimisations/discardduplicates) | ✅ | ✅ | ❌ |
+| [discardEmpty](/optimisations/discardempty) | ✅ | ✅ | ✅ |
+| [discardOverridden](/optimisations/discardoverridden) | ✅ | ✅ | ❌ |
+| [discardUnused](/optimisations/discardunused) | ❌ | ✅ | ❌ |
+| [mergeIdents](/optimisations/mergeidents) | ❌ | ✅ | ❌ |
+| [mergeLonghand](/optimisations/mergelonghand) | ✅ | ✅ | ❌ |
+| [mergeRules](/optimisations/mergerules) | ✅ | ✅ | ❌ |
+| [minifyFontValues](/optimisations/minifyfontvalues) | ✅ | ✅ | ❌ |
+| [minifyGradients](/optimisations/minifygradients) | ✅ | ✅ | ❌ |
+| [minifyParams](/optimisations/minifyparams) | ✅ | ✅ | ❌ |
+| [minifySelectors](/optimisations/minifyselectors) | ✅ | ✅ | ❌ |
+| [normalizeCharset](/optimisations/normalizecharset) | ✅ | ✅ | ❌ |
+| [normalizeDisplayValues](/optimisations/normalizedisplayvalues) | ✅ | ✅ | ❌ |
+| [normalizePositions](/optimisations/normalizepositions) | ✅ | ✅ | ❌ |
+| [normalizeRepeatStyle](/optimisations/normalizerepeatstyle) | ✅ | ✅ | ❌ |
+| [normalizeString](/optimisations/normalizestring) | ✅ | ✅ | ❌ |
+| [normalizeTimingFunctions](/optimisations/normalizetimingfunctions) | ✅ | ✅ | ❌ |
+| [normalizeUnicode](/optimisations/normalizeunicode) | ✅ | ✅ | ❌ |
+| [normalizeUrl](/optimisations/normalizeurl) | ✅ | ✅ | ❌ |
+| [normalizeWhitespace](/optimisations/normalizewhitespace) | ✅ | ✅ | ✅ |
+| [orderedValues](/optimisations/orderedvalues) | ✅ | ✅ | ❌ |
+| [reduceIdents](/optimisations/reduceidents) | ❌ | ✅ | ❌ |
+| [reduceInitial](/optimisations/reduceinitial) | ✅ | ✅ | ❌ |
+| [reduceTransforms](/optimisations/reducetransforms) | ✅ | ✅ | ❌ |
+| [svgo](/optimisations/svgo) | ✅ | ✅ | ❌ |
+| [uniqueSelectors](/optimisations/uniqueselectors) | ✅ | ✅ | ❌ |
+| [zindex](/optimisations/zindex) | ❌ | ✅ | ❌ |
 
 You can read more about presets in our [presets guide](/presets).
