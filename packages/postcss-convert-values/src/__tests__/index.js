@@ -384,6 +384,19 @@ test(
   )
 );
 
+test(
+  'should not try to convert keyframe names in animation (case 2)',
+  passthroughCSS(
+    `
+.e4yw0Q {
+    animation: e4yw0Q;
+}
+
+@keyframes e4yw0Q {}
+    `
+  )
+);
+
 ['stroke-dasharray', 'stroke-dashoffset', 'stroke-width'].forEach(
   (property) => {
     test(
