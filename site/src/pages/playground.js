@@ -79,12 +79,7 @@ export default () => {
     // show the loading. editor panel loader not each editor's loader
     setEditorLoading(true);
     const configToSend = JSON.parse(
-      JSON.stringify(
-        config
-          .split('\n')
-          .slice(1)
-          .join('\n')
-      )
+      JSON.stringify(config.split('\n').slice(1).join('\n'))
     );
 
     const resolvedConfig = resolveConfigs(configToSend);
@@ -120,14 +115,18 @@ export default () => {
         return [
           playgroundConfig.preset[0] === 'advance'
             ? 'cssnano-preset-advance'
-            : 'cssnano-preset-default',
+            : playgroundConfig.preset[0] === 'default'
+            ? 'cssnano-preset-default'
+            : 'cssnano-preset-lite',
           playgroundConfig.preset.length > 1 ? playgroundConfig.preset[1] : {},
         ];
       }
       [
         playgroundConfig.preset === 'advance'
           ? 'cssnano-preset-advance'
-          : 'cssnano-preset-default',
+          : playgroundConfig.preset === 'default'
+          ? 'cssnano-preset-default'
+          : 'cssnano-preset-lite',
         {},
       ];
     } else {

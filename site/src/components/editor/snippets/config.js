@@ -1,5 +1,5 @@
 export default `// cssnano config
 {
-  "preset" : "default",
+  "preset" : "default"
 }
 `;

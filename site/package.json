@@ -15,6 +15,7 @@
     "classnames": "^2.2.6",
     "cssnano-preset-advanced": "^4.0.7",
     "cssnano-preset-default": "^4.0.7",
+    "cssnano-preset-lite": "^1.0.0",
     "postcss": "^7.0.16",
     "prettier": "^2.0.4",
     "react": "^16.8.4",

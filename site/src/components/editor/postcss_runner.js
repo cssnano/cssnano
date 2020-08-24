@@ -12,6 +12,7 @@ import { pkgnameToVarName } from '../../helper/naming';
 const moduleMap = {
   cssnanoPresetDefault: require('cssnano-preset-default'),
   cssnanoPresetAdvanced: require('cssnano-preset-advanced'),
+  cssnanoPresetLite: require('cssnano-preset-lite'),
 };
 
 function initializePlugin(plugin, css, result) {

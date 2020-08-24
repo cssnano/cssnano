@@ -3194,6 +3194,17 @@ cssnano-preset-default@^4.0.7:
     postcss-svgo "^4.0.2"
     postcss-unique-selectors "^4.0.1"
 
+cssnano-preset-lite@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/cssnano-preset-lite/-/cssnano-preset-lite-1.0.0.tgz#c6be680fdd2c39c71c54aecfdf84a99c13fd186e"
+  integrity sha512-Gjh9zi39+PAUS6XHPiQF6ff+XtPilnmrHa2HlvXcS4ryxVT2uh/2zHyZTLpyYrvwIG4BD8pEDqGRbIWMRqKcew==
+  dependencies:
+    cssnano-utils "^1.0.0"
+    postcss "^7.0.16"
+    postcss-discard-comments "^4.0.2"
+    postcss-discard-empty "^4.0.1"
+    postcss-normalize-whitespace "^4.0.2"
+
 cssnano-util-get-arguments@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/cssnano-util-get-arguments/-/cssnano-util-get-arguments-4.0.0.tgz#ed3a08299f21d75741b20f3b81f194ed49cc150f"
@@ -3215,6 +3226,13 @@ cssnano-util-same-parent@^4.0.0:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/cssnano-util-same-parent/-/cssnano-util-same-parent-4.0.1.tgz#574082fb2859d2db433855835d9a8456ea18bbf3"
   integrity sha512-WcKx5OY+KoSIAxBW6UBBRay1U6vkYheCdjyVNDm85zt5K9mHoGOfsOsqIszfAqrQQFIIKgjh2+FDgIj/zsl21Q==
+
+cssnano-utils@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/cssnano-utils/-/cssnano-utils-1.0.0.tgz#d3c2dc0aaae941c50d0e3b97be0c5e4c96cdc6a4"
+  integrity sha512-NPGCCEvAPD4fphgHPPWVGYT22C+1rnw0S0W+SLhVnmiTaPhLtyY6e0uz0Fh7NtpQLrX/LpIjFV5lGHqSMTA3bQ==
+  dependencies:
+    postcss "^7.0.16"
 
 cssnano@^4.1.10:
   version "4.1.10"
