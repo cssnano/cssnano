@@ -3,6 +3,7 @@ module.exports = {
     'Getting Started': [
       'Introduction',
       'getting-started',
+      'config-file',
       'what-are-optimisations',
       'presets',
       'advanced-transforms',
