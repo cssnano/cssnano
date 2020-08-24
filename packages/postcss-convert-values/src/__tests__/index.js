@@ -382,6 +382,26 @@ test(
   passthroughCSS('h1{top:0\\9\\0;left:0lightyear}')
 );
 
+test(
+  'should not try to convert keyframe names in animation',
+  passthroughCSS(
+    'h1{ -webkit-animation: e836684w2 } h2{ animation: e836684w2 }'
+  )
+);
+
+test(
+  'should not try to convert keyframe names in animation (case 2)',
+  passthroughCSS(
+    `
+.e4yw0Q {
+    animation: e4yw0Q;
+}
+
+@keyframes e4yw0Q {}
+    `
+  )
+);
+
 ['stroke-dasharray', 'stroke-dashoffset', 'stroke-width'].forEach(
   (property) => {
     test(
