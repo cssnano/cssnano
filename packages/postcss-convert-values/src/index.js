@@ -24,7 +24,12 @@ function parseWord(node, opts, keepZeroUnit) {
   const pair = unit(node.value);
   if (pair) {
     const num = Number(pair.number);
-    const u = pair.unit;
+    let u = pair.unit;
+
+    if (u[0] === '.') {
+      u = u.slice(1);
+    }
+
     if (num === 0) {
       node.value =
         keepZeroUnit || (!~LENGTH_UNITS.indexOf(u.toLowerCase()) && u !== '%')
