@@ -31,8 +31,8 @@ to provide different output depending on the browsers that you support.
 
 For further details check out the [website](http://cssnano.co/):
 
-- [Installation guide for your build process](http://cssnano.co/guides/getting-started).
-- [Full list of optimisations](http://cssnano.co/optimisations/).
+- [Installation guide for your build process](http://cssnano.co/docs/getting-started).
+- [Full list of optimisations](http://cssnano.co/docs/optimisations/).
 
 You can now [try cssnano online](https://cssnano.co/playground/)!
 
