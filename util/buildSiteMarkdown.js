@@ -103,7 +103,9 @@ function optimisationsTable(presets, plugins) {
           u(
             'link',
             {
-              url: `/optimisations/${metadata[header].shortName.toLowerCase()}`,
+              url: `/docs/optimisations/${metadata[
+                header
+              ].shortName.toLowerCase()}`,
             },
             [u('text', metadata[header].shortName)]
           ),
