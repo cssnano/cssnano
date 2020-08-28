@@ -98,3 +98,11 @@
   width: 70%;
   overflow: auto;
 }
+
+/* CARBON ADS CUSTOM STYLE */
+
+.carbon_ads_custom {
+  position: absolute;
+  right: 10px;
+  top: 0;
+}
