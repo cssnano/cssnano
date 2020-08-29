@@ -5,6 +5,22 @@ layout: Guide
 order: 3
 ---
 
+import { useEffect } from 'react';
+
+export const ExampleChart = () => {
+  useEffect(() => {
+    const carbonWrapper = document.querySelector('.carbon_ads_mdx_wrapper');
+    const script = document.createElement('script');
+    script.src = '//cdn.carbonads.com/carbon.js?serve=CEBI62JN&placement=cssnanoco';
+    script.async = true;
+    script.id = '_carbonads_js';
+    carbonWrapper.appendChild(script);
+  });
+  return  <div className="carbon_ads_mdx_wrapper"></div>;
+}
+
+<ExampleChart/>
+
 ## `cssnano` config files
 
 We use configuration for `cssnano` using file name as `cssnano.config.js` , `cssnano` property in your `package.json`, using `cssnano.config.json` and `.cssnanorc` as well.

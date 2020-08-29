@@ -188,7 +188,7 @@ function generateContributing() {
 function updateOptimisationGuide() {
   return Promise.resolve()
     .then(() =>
-      fs.readFile(join(__dirname, '../site/docs/what_are_optimisations.md'))
+      fs.readFile(join(__dirname, '../site/docs/what_are_optimisations.mdx'))
     )
     .then((optimisations) => {
       return getPackages().then((packages) => {
@@ -240,7 +240,7 @@ function updateOptimisationGuide() {
     })
     .then((transformedOptimisations) =>
       fs.writeFile(
-        join(__dirname, '../site/docs/what_are_optimisations.md'),
+        join(__dirname, '../site/docs/what_are_optimisations.mdx'),
         transformedOptimisations
       )
     );

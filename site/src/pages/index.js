@@ -7,6 +7,7 @@ import Tabs from '@theme/Tabs';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import useBaseUrl from '@docusaurus/useBaseUrl';
+import CarbonAds from '../components/carbonAds';
 import Main from '../components/main';
 import styles from './styles.module.css';
 
@@ -118,6 +119,7 @@ function Home() {
             </Link>
           </div>
         </div>
+        <CarbonAds />
       </header>
       <Main>
         <section className={styles.features}>
