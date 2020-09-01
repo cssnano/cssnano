@@ -968,9 +968,27 @@ html[data-theme='dark'] a {
   position: inherit;
 }
 
-.docs_carbon_ads_text a{
- padding: 0;
+.playground_position #carbonads {
+  max-width: 100%;
+  margin: auto;
+  box-shadow: none;
 }
+
+.playground_position #carbonads > span {
+  display: flex;
+  flex: none;
+  max-width: 100%;
+  margin: auto;
+}
+
+.playground_position #carbonads > span > span > a.carbon-img > img {
+  max-width: 80px !important;
+}
+
+.docs_carbon_ads_text a {
+  padding: 0;
+}
+
 #carbonads {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', Helvetica, Arial,
@@ -986,6 +1004,7 @@ html[data-theme='dark'] a {
 
 #carbonads a {
   text-decoration: none;
+  color: var(--ifm-color-primary);
 }
 
 #carbonads a:hover {
