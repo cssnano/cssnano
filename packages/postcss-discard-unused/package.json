@@ -30,9 +30,11 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "postcss": "^7.0.16",
     "postcss-selector-parser": "^3.1.1",
     "uniqs": "^2.0.0"
+  },
+  "peerDependencies": {
+    "postcss": "^8.0.5"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

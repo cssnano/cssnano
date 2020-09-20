@@ -16,7 +16,7 @@ function testRemovals(fixture, expected, removedSelectors) {
       removedSelectors.forEach((removedSelector) => {
         const message = result.messages.some((m) => {
           return (
-            m.plugin === 'postcss-discard-empty' &&
+            m.postcssPlugin === 'postcss-discard-empty' &&
             m.type === 'removal' &&
             m.node.selector === removedSelector
           );
@@ -31,7 +31,7 @@ function testRemovals(fixture, expected, removedSelectors) {
 
       result.messages.forEach((m) => {
         if (
-          m.plugin !== 'postcss-discard-empty' ||
+          m.postcssPlugin !== 'postcss-discard-empty' ||
           m.type !== 'removal' ||
           m.selector !== undefined ||
           ~removedSelectors.indexOf(m.selector)
@@ -90,6 +90,11 @@ test(
     '',
     'h1,h2',
   ])
+);
+
+test(
+  'should report removed selectors 2',
+  withDefaultPreset('h1{}.hot{}.a.b{}{}@media screen, print{h1,h2{}}', '')
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

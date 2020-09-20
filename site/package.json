@@ -16,7 +16,7 @@
     "cssnano-preset-advanced": "^4.0.7",
     "cssnano-preset-default": "^4.0.7",
     "cssnano-preset-lite": "^1.0.0",
-    "postcss": "^7.0.16",
+    "postcss": "^8.0.5",
     "prettier": "^2.0.4",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",

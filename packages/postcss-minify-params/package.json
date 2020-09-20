@@ -25,9 +25,11 @@
     "alphanum-sort": "^1.0.2",
     "browserslist": "^4.6.0",
     "cssnano-utils": "^1.0.0",
-    "postcss": "^7.0.16",
     "postcss-value-parser": "^3.3.1",
     "uniqs": "^2.0.0"
+  },
+  "peerDependencies": {
+    "postcss": "^8.0.5"
   },
   "scripts": {
     "prebuild": "del-cli dist",

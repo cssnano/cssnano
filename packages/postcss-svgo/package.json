@@ -31,9 +31,11 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "is-svg": "^4.1.0",
-    "postcss": "^7.0.16",
     "postcss-value-parser": "^3.3.1",
     "svgo": "^1.2.2"
+  },
+  "peerDependencies": {
+    "postcss": "^8.0.5"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

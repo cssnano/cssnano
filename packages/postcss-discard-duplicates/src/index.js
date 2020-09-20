@@ -1,5 +1,3 @@
-import { plugin } from 'postcss';
-
 function noop() {}
 
 function trimValue(value) {
@@ -124,4 +122,12 @@ function dedupe(root) {
   }
 }
 
-export default plugin('postcss-discard-duplicates', () => dedupe);
+const postcssPlugin = 'postcss-discard-duplicates';
+export default () => {
+  return {
+    postcssPlugin,
+    Root: dedupe,
+  };
+};
+
+export const postcss = true;

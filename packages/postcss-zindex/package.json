@@ -24,8 +24,10 @@
   "license": "MIT",
   "dependencies": {
     "has": "^1.0.3",
-    "postcss": "^7.0.16",
     "uniqs": "^2.0.0"
+  },
+  "peerDependencies": {
+    "postcss": "^8.0.5"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {

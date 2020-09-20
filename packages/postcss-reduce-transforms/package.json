@@ -23,8 +23,10 @@
   "dependencies": {
     "cssnano-utils": "^1.0.0",
     "has": "^1.0.3",
-    "postcss": "^7.0.16",
     "postcss-value-parser": "^3.3.1"
+  },
+  "peerDependencies": {
+    "postcss": "^8.0.5"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

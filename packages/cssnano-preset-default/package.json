@@ -16,7 +16,6 @@
   "dependencies": {
     "css-declaration-sorter": "^5.1.2",
     "cssnano-utils": "^1.0.0",
-    "postcss": "^7.0.16",
     "postcss-calc": "^7.0.1",
     "postcss-colormin": "^4.0.3",
     "postcss-convert-values": "^4.0.1",
@@ -44,6 +43,9 @@
     "postcss-reduce-transforms": "^4.0.2",
     "postcss-svgo": "^4.0.2",
     "postcss-unique-selectors": "^4.0.1"
+  },
+  "peerDependencies": {
+    "postcss": "^8.0.5"
   },
   "author": {
     "name": "Ben Briggs",

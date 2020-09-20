@@ -1,4 +1,3 @@
-import postcss from 'postcss';
 import valueParser, { unit, walk } from 'postcss-value-parser';
 import convert from './lib/convert';
 
@@ -117,8 +116,13 @@ function transform(opts, decl) {
     .toString();
 }
 
-const plugin = 'postcss-convert-values';
+const postcssPlugin = 'postcss-convert-values';
 
-export default postcss.plugin(plugin, (opts = { precision: false }) => {
-  return (css) => css.walkDecls(transform.bind(null, opts));
-});
+export default (opts = { precision: false }) => {
+  return {
+    postcssPlugin,
+    Declaration: transform.bind(null, opts),
+  };
+};
+
+export const postcss = true;

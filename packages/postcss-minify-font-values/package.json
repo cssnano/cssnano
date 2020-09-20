@@ -17,8 +17,10 @@
     "postcss-plugin"
   ],
   "dependencies": {
-    "postcss": "^7.0.16",
     "postcss-value-parser": "^3.3.1"
+  },
+  "peerDependencies": {
+    "postcss": "^8.0.5"
   },
   "repository": "cssnano/cssnano",
   "bugs": {

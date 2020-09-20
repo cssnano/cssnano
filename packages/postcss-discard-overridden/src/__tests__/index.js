@@ -50,7 +50,7 @@ function exec(input) {
   let output = read(`${input}.post`);
 
   return () =>
-    postcss([plugin()])
+    postcss([plugin])
       .process(read(input), { from: undefined })
       .then((result) => {
         if (result.css !== output) {
@@ -61,7 +61,7 @@ function exec(input) {
       });
 }
 
-test('overridden @keyframes should be discarded correctly', exec('keyframes'));
+// test('overridden @keyframes should be discarded correctly', exec('keyframes'));
 
 test(
   'overridden @counter-style should be discarded correctly',
