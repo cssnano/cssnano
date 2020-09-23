@@ -1,8 +1,8 @@
-import postcss from 'postcss';
 import valueParser, { unit, stringify } from 'postcss-value-parser';
 import { getArguments } from 'lerna:cssnano-utils';
 import isColorStop from 'is-color-stop';
 
+const postcssPlugin = 'postcss-minify-gradients';
 const angles = {
   top: '0deg',
   right: '90deg',
@@ -192,6 +192,13 @@ function optimise(decl) {
     .toString();
 }
 
-export default postcss.plugin('postcss-minify-gradients', () => {
-  return (css) => css.walkDecls(optimise);
-});
+export default () => {
+  return {
+    postcssPlugin,
+    Declaration(decl) {
+      optimise(decl);
+    },
+  };
+};
+
+export const postcss = true;
