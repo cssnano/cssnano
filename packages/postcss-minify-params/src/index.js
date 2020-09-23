@@ -1,9 +1,10 @@
 import browserslist from 'browserslist';
-import postcss from 'postcss';
 import valueParser, { stringify } from 'postcss-value-parser';
 import sort from 'alphanum-sort';
 import uniqs from 'uniqs';
 import { getArguments } from 'lerna:cssnano-utils';
+
+const postcssPlugin = 'postcss-minify-params';
 
 /**
  * Return the greatest common divisor
@@ -94,15 +95,18 @@ function hasAllBug(browser) {
   return ~['ie 10', 'ie 11'].indexOf(browser);
 }
 
-export default postcss.plugin('postcss-minify-params', () => {
-  return (css, result) => {
-    const resultOpts = result.opts || {};
-    const browsers = browserslist(null, {
-      stats: resultOpts.stats,
-      path: __dirname,
-      env: resultOpts.env,
-    });
+export default (opts) => {
+  const resultOpts = opts || {};
+  const browsers = browserslist(null, {
+    stats: resultOpts.stats,
+    path: __dirname,
+    env: resultOpts.env,
+  });
 
-    return css.walkAtRules(transform.bind(null, browsers.some(hasAllBug)));
+  return {
+    postcssPlugin,
+    AtRule: transform.bind(null, browsers.some(hasAllBug)),
   };
-});
+};
+
+export const postcss = true;

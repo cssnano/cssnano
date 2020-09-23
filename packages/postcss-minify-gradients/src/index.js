@@ -195,9 +195,7 @@ function optimise(decl) {
 export default () => {
   return {
     postcssPlugin,
-    Declaration(decl) {
-      optimise(decl);
-    },
+    Declaration: optimise,
   };
 };
 
