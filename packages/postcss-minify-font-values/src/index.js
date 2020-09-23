@@ -1,8 +1,9 @@
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import minifyWeight from './lib/minify-weight';
 import minifyFamily from './lib/minify-family';
 import minifyFont from './lib/minify-font';
+
+const postcssPlugin = 'postcss-minify-font-values';
 
 function hasVariableFunction(value) {
   const lowerCasedValue = value.toLowerCase();
@@ -32,7 +33,7 @@ function transform(prop, value, opts) {
   return value;
 }
 
-export default postcss.plugin('postcss-minify-font-values', (opts) => {
+export default (opts) => {
   opts = Object.assign(
     {},
     {
@@ -42,31 +43,30 @@ export default postcss.plugin('postcss-minify-font-values', (opts) => {
     },
     opts
   );
+  const cache = {};
+  return {
+    postcssPlugin,
+    Declaration(decl) {
+      if (/font/i.test(decl.prop)) {
+        const value = decl.value;
 
-  return (css) => {
-    const cache = {};
+        if (value) {
+          const prop = decl.prop;
 
-    css.walkDecls(/font/i, (decl) => {
-      const value = decl.value;
+          const cacheKey = `${prop}|${value}`;
 
-      if (!value) {
-        return;
+          if (cache[cacheKey]) {
+            decl.value = cache[cacheKey];
+          } else {
+            const newValue = transform(prop, value, opts);
+
+            decl.value = newValue;
+            cache[cacheKey] = newValue;
+          }
+        }
       }
-
-      const prop = decl.prop;
-
-      const cacheKey = `${prop}|${value}`;
-
-      if (cache[cacheKey]) {
-        decl.value = cache[cacheKey];
-
-        return;
-      }
-
-      const newValue = transform(prop, value, opts);
-
-      decl.value = newValue;
-      cache[cacheKey] = newValue;
-    });
+    },
   };
-});
+};
+
+export const postcss = true;

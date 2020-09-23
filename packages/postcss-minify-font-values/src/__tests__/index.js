@@ -266,7 +266,8 @@ test(
 
 test(
   'should escape special characters if unquoting',
-  withDefaultPreset('h1{font-family:"Ahem!"}', 'h1{font-family:Ahem\\!}')
+  // eslint-disable-next-line no-useless-escape
+  withDefaultPreset('h1{font-family:"Ahem!"}', `h1{font-family:\"Ahem!\"}`)
 );
 
 test(
