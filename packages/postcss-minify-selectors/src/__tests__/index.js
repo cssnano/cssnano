@@ -1,5 +1,6 @@
 import postcss from 'postcss';
 import magician from 'postcss-font-magician';
+import toModules from '../../testPlugin/toModules';
 import plugin from '../';
 import {
   usePostCSSPlugin,
@@ -458,7 +459,7 @@ test('cssnano issue 39', () => {
   const css =
     'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
   expect(
-    () => postcss([magician(), plugin()]).process(css, { from: undefined }).css
+    () => postcss([magician(), plugin]).process(css, { from: undefined }).css
   ).not.toThrow();
 });
 
@@ -467,28 +468,6 @@ test('cssnano issue 39', () => {
  */
 
 test('should handle selectors from other plugins', () => {
-  function encode(str) {
-    let result = '';
-
-    for (let i = 0; i < str.length; i++) {
-      result += str.charCodeAt(i).toString(16);
-    }
-
-    return result;
-  }
-
-  const toModules = postcss.plugin('toModules', () => {
-    return (css) => {
-      css.walkRules((rule) => {
-        rule.selectors = rule.selectors.map((selector) => {
-          const slice = selector.slice(1);
-
-          return `.${encode(slice).slice(0, 7)}__${slice}`;
-        });
-      });
-    };
-  });
-
   const css = `.test, /* comment #1 - this comment breaks stuff */
 .test:hover {  /* comment #2 - ...but this comment is fine */
   position: absolute;
@@ -505,6 +484,8 @@ test('should handle selectors from other plugins', () => {
   padding: 4px;
 }`;
   expect(
+    // eslint-disable-next-line no-warning-comments
+    // FIXME: not working as `toModules` plugin is not running properly
     postcss([toModules, plugin]).process(css, { from: undefined }).css
   ).toBe(expected);
 });

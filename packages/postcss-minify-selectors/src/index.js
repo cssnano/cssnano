@@ -5,6 +5,7 @@ import parser from 'postcss-selector-parser';
 import unquote from './lib/unquote';
 import canUnquote from './lib/canUnquote';
 
+const postcssPlugin = 'postcss-minify-selectors';
 const pseudoElements = [
   '::before',
   '::after',
@@ -164,11 +165,11 @@ const reducers = {
   universal,
 };
 
-export default plugin('postcss-minify-selectors', () => {
-  return (css) => {
-    const cache = {};
-
-    css.walkRules((rule) => {
+export default () => {
+  const cache = {};
+  return {
+    postcssPlugin,
+    Rule(rule) {
       const selector =
         rule.raws.selector && rule.raws.selector.value === rule.selector
           ? rule.raws.selector.raw
@@ -176,47 +177,43 @@ export default plugin('postcss-minify-selectors', () => {
 
       // If the selector ends with a ':' it is likely a part of a custom mixin,
       // so just pass through.
-      if (selector[selector.length - 1] === ':') {
-        return;
+      if (selector[selector.length - 1] !== ':') {
+        if (cache[selector]) {
+          rule.selector = cache[selector];
+        } else {
+          const optimizedSelector = getParsed(selector, (selectors) => {
+            selectors.nodes = sort(selectors.nodes, { insensitive: true });
+
+            const uniqueSelectors = [];
+
+            selectors.walk((sel) => {
+              const { type } = sel;
+
+              // Trim whitespace around the value
+              sel.spaces.before = sel.spaces.after = '';
+
+              if (has(reducers, type)) {
+                reducers[type](sel);
+              } else {
+                const toString = String(sel);
+
+                if (type === 'selector' && sel.parent.type !== 'pseudo') {
+                  if (!~uniqueSelectors.indexOf(toString)) {
+                    uniqueSelectors.push(toString);
+                  } else {
+                    sel.remove();
+                  }
+                }
+              }
+            });
+          });
+
+          rule.selector = optimizedSelector;
+          cache[selector] = optimizedSelector;
+        }
       }
-
-      if (cache[selector]) {
-        rule.selector = cache[selector];
-
-        return;
-      }
-
-      const optimizedSelector = getParsed(selector, (selectors) => {
-        selectors.nodes = sort(selectors.nodes, { insensitive: true });
-
-        const uniqueSelectors = [];
-
-        selectors.walk((sel) => {
-          const { type } = sel;
-
-          // Trim whitespace around the value
-          sel.spaces.before = sel.spaces.after = '';
-
-          if (has(reducers, type)) {
-            reducers[type](sel);
-
-            return;
-          }
-
-          const toString = String(sel);
-
-          if (type === 'selector' && sel.parent.type !== 'pseudo') {
-            if (!~uniqueSelectors.indexOf(toString)) {
-              uniqueSelectors.push(toString);
-            } else {
-              sel.remove();
-            }
-          }
-        });
-      });
-
-      rule.selector = optimizedSelector;
-      cache[selector] = optimizedSelector;
-    });
+    },
   };
-});
+};
+
+export const postcss = true;
