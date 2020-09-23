@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 import vars from 'postcss-simple-vars';
-import comments from 'postcss-discard-comments'; // alias not loading correctly
+import comments from '../../../postcss-discard-comments/src'; // alias not loading correctly
 import { pseudoElements } from '../lib/ensureCompatibility';
 import {
   usePostCSSPlugin,
@@ -602,7 +602,7 @@ test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
 test('should not crash when node.raws.value is null', () => {
   const css =
     '$color: red; h1{box-shadow:inset 0 -10px 12px 0 $color, /* some comment */ inset 0 0 5px 0 $color;color:blue}h2{color:blue}';
-  const res = postcss([vars(), comments(), plugin]).process(css).css;
+  const res = postcss([vars, comments, plugin]).process(css).css;
 
   expect(res).toBe(
     'h1{box-shadow:inset 0 -10px 12px 0 red, inset 0 0 5px 0 red}h1,h2{color:blue}'
@@ -612,7 +612,7 @@ test('should not crash when node.raws.value is null', () => {
 test('should not crash when node.raws.value is null (2)', () => {
   const css =
     '#foo .bar { margin-left: auto ; margin-right: auto ; } #foo .qux { margin-right: auto ; }';
-  const res = postcss([comments(), plugin]).process(css).css;
+  const res = postcss([comments, plugin]).process(css).css;
 
   expect(res).toBe(
     '#foo .bar{ margin-left:auto; } #foo .bar,#foo .qux{ margin-right:auto; }'

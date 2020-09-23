@@ -1,8 +1,9 @@
 import browserslist from 'browserslist';
-import postcss from 'postcss';
 import vendors from 'vendors';
 import { sameParent } from 'lerna:cssnano-utils';
 import ensureCompatibility from './lib/ensureCompatibility';
+
+const postcssPlugin = 'postcss-merge-rules';
 
 /** @type {string[]} */
 const prefixes = vendors.map((v) => `-${v}-`);
@@ -385,15 +386,20 @@ function selectorMerger(browsers, compatibilityCache) {
   };
 }
 
-export default postcss.plugin('postcss-merge-rules', () => {
-  return (css, result) => {
-    const resultOpts = result.opts || {};
-    const browsers = browserslist(null, {
-      stats: resultOpts.stats,
-      path: __dirname,
-      env: resultOpts.env,
-    });
-    const compatibilityCache = {};
-    css.walkRules(selectorMerger(browsers, compatibilityCache));
+export default (opts) => {
+  const resultOpts = opts || {};
+  const browsers = browserslist(null, {
+    stats: resultOpts.stats,
+    path: __dirname,
+    env: resultOpts.env,
+  });
+  const compatibilityCache = {};
+  return {
+    postcssPlugin,
+    Root(css) {
+      css.walkRules(selectorMerger(browsers, compatibilityCache));
+    },
   };
-});
+};
+
+export const postcss = true;

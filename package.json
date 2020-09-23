@@ -57,7 +57,7 @@
     "postcss-devtools": "^1.1.1",
     "postcss-font-magician": "^2.2.2",
     "postcss-scss": "^2.0.0",
-    "postcss-simple-vars": "^5.0.2",
+    "postcss-simple-vars": "^6.0.0",
     "postcss-value-parser": "^3.3.1",
     "prettier": "^1.17.1",
     "remark": "^10.0.1",
