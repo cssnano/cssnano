@@ -54,10 +54,6 @@ function getLevel(prop) {
 
 const isValueCustomProp = (value) => value && !!~value.search(/var\s*\(\s*--/i);
 
-function canMergeValues(values) {
-  return !values.some(isValueCustomProp) || values.every(isValueCustomProp);
-}
-
 function getColorValue(decl) {
   if (decl.prop.substr(-5) === 'color') {
     return decl.value;
@@ -253,10 +249,6 @@ function merge(rule) {
 
     const values = rules.map(({ value }) => value);
 
-    if (!canMergeValues(values)) {
-      return;
-    }
-
     const parsed = values.map((value) => parseWsc(value));
 
     if (!parsed.every(isValidWsc)) {
@@ -266,14 +258,10 @@ function merge(rule) {
     wsc.forEach((d, i) => {
       const value = parsed.map((v) => v[i] || defaults[i]);
 
-      if (canMergeValues(value)) {
-        insertCloned(lastNode.parent, lastNode, {
-          prop: borderProperty(d),
-          value: minifyTrbl(value),
-        });
-      } else {
-        insertCloned(lastNode.parent, lastNode);
-      }
+      insertCloned(lastNode.parent, lastNode, {
+        prop: borderProperty(d),
+        value: minifyTrbl(value),
+      });
     });
 
     rules.forEach(remove);
@@ -293,10 +281,6 @@ function merge(rule) {
     const mapped = [0, 1, 2, 3].map((i) =>
       [values[0][i], values[1][i], values[2][i]].join(' ')
     );
-
-    if (!canMergeValues(mapped)) {
-      return;
-    }
 
     const [width, style, color] = rules;
     const reduced = getDistinctShorthands(mapped);

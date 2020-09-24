@@ -1229,3 +1229,11 @@ test(
 );
 
 test('should handle empty border', processCSS('h1{border:;}', 'h1{border:;}'));
+
+test(
+  'should handle mixed custom property and regular declarations',
+  processCSS(
+    'h1{border:var(--v1) solid var(--v2, #abc123);border-right-color:blue}',
+    'h1{border:var(--v1) solid var(--v2, #abc123);border-right-color:blue}'
+  )
+);
