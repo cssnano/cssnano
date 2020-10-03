@@ -386,7 +386,7 @@ function selectorMerger(browsers, compatibilityCache) {
   };
 }
 
-export default (opts) => {
+const pluginCreator = (opts) => {
   const resultOpts = opts || {};
   const browsers = browserslist(null, {
     stats: resultOpts.stats,
@@ -396,10 +396,12 @@ export default (opts) => {
   const compatibilityCache = {};
   return {
     postcssPlugin,
-    Root(css) {
+    Once(css) {
       css.walkRules(selectorMerger(browsers, compatibilityCache));
     },
   };
 };
 
-export const postcss = true;
+pluginCreator.postcss = true;
+
+export default pluginCreator;

@@ -1,17 +1,17 @@
-// import postcss from 'postcss';
-
 const OVERRIDABLE_RULES = ['keyframes', 'counter-style'];
 const SCOPE_RULES = ['media', 'supports'];
 const postcssPlugin = 'postcss-discard-overridden';
 
+function vendorUnprefixed(prop) {
+  return prop.replace(/^-\w+-/, '');
+}
+
 function isOverridable(name) {
-  return ~OVERRIDABLE_RULES.indexOf(
-    postcss.vendor.unprefixed(name.toLowerCase())
-  );
+  return ~OVERRIDABLE_RULES.indexOf(vendorUnprefixed(name.toLowerCase()));
 }
 
 function isScope(name) {
-  return ~SCOPE_RULES.indexOf(postcss.vendor.unprefixed(name.toLowerCase()));
+  return ~SCOPE_RULES.indexOf(vendorUnprefixed(name.toLowerCase()));
 }
 
 function getScope(node) {
@@ -29,35 +29,12 @@ function getScope(node) {
   return chain.join('|');
 }
 
-export default () => {
+const pluginCreator = () => {
   const cache = {};
   const rules = [];
 
   return {
     postcssPlugin,
-    // Root(css) {
-    //   console.log(css);
-
-    //   css.walkAtRules((node) => {
-    //     if (isOverridable(node.name)) {
-    //       const scope = getScope(node);
-
-    //       cache[scope] = node;
-    //       rules.push({
-    //         node,
-    //         scope,
-    //       });
-    //     }
-    //   });
-    //   rules.forEach((rule) => {
-    //     if (cache[rule.scope] !== rule.node) {
-    //       rule.node.remove();
-    //     }
-    //   });
-    // },
-
-    // OR
-
     AtRule(node) {
       if (isOverridable(node.name)) {
         const scope = getScope(node);
@@ -69,7 +46,7 @@ export default () => {
         });
       }
     },
-    RootExit() {
+    OnceExit() {
       rules.forEach((rule) => {
         if (cache[rule.scope] !== rule.node) {
           rule.node.remove();
@@ -79,29 +56,6 @@ export default () => {
   };
 };
 
-export const postcss = true;
+pluginCreator.postcss = true;
 
-// export default postcss.plugin('postcss-discard-overridden', () => {
-//   return (css) => {
-//     const cache = {};
-//     const rules = [];
-
-//     css.walkAtRules((node) => {
-//       if (isOverridable(node.name)) {
-//         const scope = getScope(node);
-
-//         cache[scope] = node;
-//         rules.push({
-//           node,
-//           scope,
-//         });
-//       }
-//     });
-
-//     rules.forEach((rule) => {
-//       if (cache[rule.scope] !== rule.node) {
-//         rule.node.remove();
-//       }
-//     });
-//   };
-// });
+export default pluginCreator;

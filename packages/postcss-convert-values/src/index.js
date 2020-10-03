@@ -118,11 +118,13 @@ function transform(opts, decl) {
 
 const postcssPlugin = 'postcss-convert-values';
 
-export default (opts = { precision: false }) => {
+const pluginCreator = (opts = { precision: false }) => {
   return {
     postcssPlugin,
     Declaration: transform.bind(null, opts),
   };
 };
 
-export const postcss = true;
+pluginCreator.postcss = true;
+
+export default pluginCreator;

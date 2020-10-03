@@ -65,7 +65,7 @@ function transform(value, isLegacy, colorminCache) {
   return parsed.toString();
 }
 
-export default (opts = {}) => {
+const pluginCreator = (opts = {}) => {
   const resultOpts = opts;
   const browsers = browserslist(null, {
     stats: resultOpts.stats,
@@ -105,4 +105,7 @@ export default (opts = {}) => {
     },
   };
 };
-export const postcss = true;
+
+pluginCreator.postcss = true;
+
+export default pluginCreator;

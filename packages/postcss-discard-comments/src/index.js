@@ -1,11 +1,9 @@
-import { list } from 'postcss';
 import CommentRemover from './lib/commentRemover';
 import commentParser from './lib/commentParser';
 
-const { space } = list;
 const postcssPlugin = 'postcss-discard-comments';
 
-export default (opts = {}) => {
+const pluginCreator = (opts = {}) => {
   const remover = new CommentRemover(opts);
   const matcherCache = {};
   const replacerCache = {};
@@ -22,7 +20,7 @@ export default (opts = {}) => {
     return result;
   }
 
-  function replaceComments(source, separator = ' ') {
+  function replaceComments(source, space, separator = ' ') {
     const key = source + '@|@' + separator;
 
     if (replacerCache[key]) {
@@ -50,7 +48,8 @@ export default (opts = {}) => {
     return result;
   }
 
-  function transform(node) {
+  function transform(node, { list }) {
+    const { space } = list;
     if (node.type === 'comment' && remover.canRemove(node.text)) {
       node.remove();
 
@@ -58,22 +57,22 @@ export default (opts = {}) => {
     }
 
     if (node.raws.between) {
-      node.raws.between = replaceComments(node.raws.between);
+      node.raws.between = replaceComments(node.raws.between, space);
     }
 
     if (node.type === 'decl') {
       if (node.raws.value && node.raws.value.raw) {
         if (node.raws.value.value === node.value) {
-          node.value = replaceComments(node.raws.value.raw);
+          node.value = replaceComments(node.raws.value.raw, space);
         } else {
-          node.value = replaceComments(node.value);
+          node.value = replaceComments(node.value, space);
         }
 
         node.raws.value = null;
       }
 
       if (node.raws.important) {
-        node.raws.important = replaceComments(node.raws.important);
+        node.raws.important = replaceComments(node.raws.important, space);
 
         const b = matchesComments(node.raws.important);
 
@@ -84,14 +83,18 @@ export default (opts = {}) => {
     }
 
     if (node.type === 'rule' && node.raws.selector && node.raws.selector.raw) {
-      node.raws.selector.raw = replaceComments(node.raws.selector.raw, '');
+      node.raws.selector.raw = replaceComments(
+        node.raws.selector.raw,
+        space,
+        ''
+      );
 
       return;
     }
 
     if (node.type === 'atrule') {
       if (node.raws.afterName) {
-        const commentsReplaced = replaceComments(node.raws.afterName);
+        const commentsReplaced = replaceComments(node.raws.afterName, space);
 
         if (!commentsReplaced.length) {
           node.raws.afterName = commentsReplaced + ' ';
@@ -101,7 +104,7 @@ export default (opts = {}) => {
       }
 
       if (node.raws.params && node.raws.params.raw) {
-        node.raws.params.raw = replaceComments(node.raws.params.raw);
+        node.raws.params.raw = replaceComments(node.raws.params.raw, space);
       }
     }
   }
@@ -116,4 +119,6 @@ export default (opts = {}) => {
   };
 };
 
-export const postcss = true;
+pluginCreator.postcss = true;
+
+export default pluginCreator;

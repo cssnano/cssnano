@@ -21,7 +21,7 @@ function canonical(obj) {
   };
 }
 
-export default () => {
+const pluginCreator = () => {
   let pairs = [
     {
       atrule: /keyframes/i,
@@ -77,7 +77,7 @@ export default () => {
         relevant.decls.push(node);
       }
     },
-    RootExit() {
+    OnceExit() {
       pairs.forEach((pair) => {
         let canon = canonical(pair.replacements);
 
@@ -96,4 +96,6 @@ export default () => {
   };
 };
 
-export const postcss = true;
+pluginCreator.postcss = true;
+
+export default pluginCreator;

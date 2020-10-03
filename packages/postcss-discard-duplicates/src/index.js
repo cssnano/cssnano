@@ -123,11 +123,13 @@ function dedupe(root) {
 }
 
 const postcssPlugin = 'postcss-discard-duplicates';
-export default () => {
+const pluginCreator = () => {
   return {
     postcssPlugin,
     Root: dedupe,
   };
 };
 
-export const postcss = true;
+pluginCreator.postcss = true;
+
+export default pluginCreator;

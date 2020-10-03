@@ -33,7 +33,7 @@ function transform(prop, value, opts) {
   return value;
 }
 
-export default (opts) => {
+const pluginCreator = (opts) => {
   opts = Object.assign(
     {},
     {
@@ -69,4 +69,6 @@ export default (opts) => {
   };
 };
 
-export const postcss = true;
+pluginCreator.postcss = true;
+
+export default pluginCreator;

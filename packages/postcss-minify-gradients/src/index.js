@@ -192,11 +192,13 @@ function optimise(decl) {
     .toString();
 }
 
-export default () => {
+const pluginCreator = () => {
   return {
     postcssPlugin,
     Declaration: optimise,
   };
 };
 
-export const postcss = true;
+pluginCreator.postcss = true;
+
+export default pluginCreator;

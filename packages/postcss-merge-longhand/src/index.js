@@ -2,10 +2,10 @@ import processors from './lib/decl';
 
 const postcssPlugin = 'postcss-merge-longhand';
 
-export default () => {
+const pluginCreator = () => {
   return {
     postcssPlugin,
-    Root(css) {
+    Once(css) {
       css.walkRules((rule) => {
         processors.forEach((p) => {
           p.explode(rule);
@@ -15,5 +15,6 @@ export default () => {
     },
   };
 };
+pluginCreator.postcss = true;
 
-export const postcss = true;
+export default pluginCreator;

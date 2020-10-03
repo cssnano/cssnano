@@ -27,11 +27,13 @@ function discardAndReport(css, { result }) {
   css.each(discardEmpty);
 }
 
-export default () => {
+const pluginCreator = () => {
   return {
     postcssPlugin,
-    Root: discardAndReport,
+    Once: discardAndReport,
   };
 };
 
-export const postcss = true;
+pluginCreator.postcss = true;
+
+export default pluginCreator;

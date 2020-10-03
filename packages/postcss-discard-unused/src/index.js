@@ -58,7 +58,7 @@ function filterFont({ atRules, values }, { comma }) {
   });
 }
 
-export default (opts) => {
+const pluginCreator = (opts) => {
   const { fontFace, counterStyle, keyframes, namespace } = Object.assign(
     {},
     {
@@ -135,7 +135,7 @@ export default (opts) => {
         namespaceCache.atRules.push(node);
       }
     },
-    RootExit(css, { list }) {
+    OnceExit(css, { list }) {
       counterStyle && filterAtRule(counterStyleCache);
       fontFace && filterFont(fontCache, list);
       keyframes && filterAtRule(keyframesCache);
@@ -144,4 +144,6 @@ export default (opts) => {
   };
 };
 
-export const postcss = true;
+pluginCreator.postcss = true;
+
+export default pluginCreator;
