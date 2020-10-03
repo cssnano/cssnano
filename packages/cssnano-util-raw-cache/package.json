@@ -22,7 +22,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "postcss": "^8.0.5"
+    "postcss": "^8.1.1"
   },
   "author": {
     "name": "Ben Briggs",

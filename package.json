@@ -53,7 +53,7 @@
     "lerna": "3.3.2",
     "mdast-util-heading-range": "^2.1.2",
     "pleeease-filters": "^4.0.0",
-    "postcss": "^8.0.5",
+    "postcss": "^8.1.1",
     "postcss-devtools": "^1.1.1",
     "postcss-font-magician": "^2.2.2",
     "postcss-scss": "^2.0.0",

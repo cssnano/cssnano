@@ -1,4 +1,3 @@
-import { plugin } from 'postcss';
 import sort from 'alphanum-sort';
 import has from 'has';
 import parser from 'postcss-selector-parser';
@@ -165,7 +164,7 @@ const reducers = {
   universal,
 };
 
-export default () => {
+const pluginCreator = () => {
   const cache = {};
   return {
     postcssPlugin,
@@ -216,4 +215,6 @@ export default () => {
   };
 };
 
-export const postcss = true;
+pluginCreator.postcss = true;
+
+export default pluginCreator;

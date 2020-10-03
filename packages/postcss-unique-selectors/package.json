@@ -31,7 +31,7 @@
     "uniqs": "^2.0.0"
   },
   "peerDependencies": {
-    "postcss": "^8.0.5"
+    "postcss": "^8.1.1"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

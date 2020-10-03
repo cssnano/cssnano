@@ -1,11 +1,11 @@
 import postcss from 'postcss';
 import magician from 'postcss-font-magician';
-import toModules from '../../testPlugin/toModules';
 import plugin from '../';
 import {
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers';
+import toModules from '../../testPlugin/toModules';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -484,8 +484,6 @@ test('should handle selectors from other plugins', () => {
   padding: 4px;
 }`;
   expect(
-    // eslint-disable-next-line no-warning-comments
-    // FIXME: not working as `toModules` plugin is not running properly
     postcss([toModules, plugin]).process(css, { from: undefined }).css
   ).toBe(expected);
 });

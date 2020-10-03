@@ -1,4 +1,3 @@
-/* eslint-disable no-warning-comments */
 function encode(str) {
   let result = '';
 
@@ -9,18 +8,21 @@ function encode(str) {
   return result;
 }
 
-export default () => {
+const pluginCreator = () => {
   return {
     postcssPlugin: 'toModules',
-    Rule(rule) {
-      // FIXME: This visitor is not being visited neither any of the other visitors event the Root
-      rule.selectors = rule.selectors.map((selector) => {
-        const slice = selector.slice(1);
+    Once(css) {
+      css.walkRules((rule) => {
+        rule.selectors = rule.selectors.map((selector) => {
+          const slice = selector.slice(1);
 
-        return `.${encode(slice).slice(0, 7)}__${slice}`;
+          return `.${encode(slice).slice(0, 7)}__${slice}`;
+        });
       });
     },
   };
 };
 
-export const postcss = true;
+pluginCreator.postcss = true;
+
+export default pluginCreator;
