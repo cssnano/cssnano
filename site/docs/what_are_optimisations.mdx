@@ -5,6 +5,23 @@ layout: Guide
 order: 3
 ---
 
+import { useEffect } from 'react';
+
+export const CarbonAds = () => {
+  useEffect(() => {
+    if(!document.getElementById('carbonads')){
+      const carbonWrapper = document.querySelector('.carbon_ads_mdx_wrapper');
+      const script = document.createElement('script');
+      script.src = '//cdn.carbonads.com/carbon.js?serve=CEBI62JN&placement=cssnanoco';
+      script.async = true;
+      script.id = '_carbonads_js';
+      carbonWrapper.appendChild(script);
+    }
+  });
+  return  <div className="carbon_ads_mdx_wrapper"></div>;
+}
+
+<CarbonAds/>
 
 ## What are optimisations?
 
@@ -62,4 +79,4 @@ The optimisations are different depending on which preset cssnano is configured 
 | [uniqueSelectors](/docs/optimisations/uniqueselectors) | ✅ | ✅ | ❌ |
 | [zindex](/docs/optimisations/zindex) | ❌ | ✅ | ❌ |
 
-You can read more about presets in our [presets guide](/presets).
+You can read more about presets in our [presets guide](/docs/presets).

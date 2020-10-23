@@ -611,6 +611,15 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "ludofischer",
+      "name": "Ludovico Fischer",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/43557?v=4",
+      "profile": "http://www.ludofischer.com",
+      "contributions": [
+        "maintenance"
+      ]
     }
   ],
   "repoType": "github"

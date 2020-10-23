@@ -13,6 +13,7 @@ import ConfigEditor from '../components/editor/config';
 import InnerNav from '../components/editor/innerNav.';
 import runner from '../components/editor/postcss_runner';
 import editorStyles from '../components/editor/editor.module.css';
+import CarbonAds from '../components/carbonAds';
 import styles from './styles.module.css';
 
 export default () => {
@@ -144,6 +145,7 @@ export default () => {
 
   return (
     <Layout title={`${siteConfig.title}`} description="CSSNANO - Playground">
+      <CarbonAds customClass="playground_position" />
       <InnerNav
         toggleTheme={toggleTheme}
         runHandler={runOptimizer}
