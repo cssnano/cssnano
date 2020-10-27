@@ -1,4 +1,3 @@
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import { getMatch } from 'lerna:cssnano-utils';
 import mappings from './lib/map';
@@ -28,27 +27,36 @@ function transform(value) {
   return match;
 }
 
-export default postcss.plugin('postcss-normalize-display-values', () => {
-  return (css) => {
-    const cache = {};
+const pluginCreator = () => {
+  return {
+    postcssPlugin: 'postcss-normalize-display-values',
+    prepare() {
+      const cache = {};
+      return {
+        Declaration: {
+          display: (decl) => {
+            const value = decl.value;
 
-    css.walkDecls(/^display$/i, (decl) => {
-      const value = decl.value;
+            if (!value) {
+              return;
+            }
 
-      if (!value) {
-        return;
-      }
+            if (cache[value]) {
+              decl.value = cache[value];
 
-      if (cache[value]) {
-        decl.value = cache[value];
+              return;
+            }
 
-        return;
-      }
+            const result = transform(value);
 
-      const result = transform(value);
-
-      decl.value = result;
-      cache[value] = result;
-    });
+            decl.value = result;
+            cache[value] = result;
+          },
+        },
+      };
+    },
   };
-});
+};
+
+pluginCreator.postcss = true;
+export default pluginCreator;
