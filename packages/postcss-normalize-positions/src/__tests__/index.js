@@ -228,6 +228,11 @@ test(
 );
 
 test(
+  'should pass through with non-position property',
+  passthroughCSS('offset-path: 30% center')
+);
+
+test(
   'should normalize when property in uppercase',
   processCSS('BACKGROUND-POSITION: center', 'BACKGROUND-POSITION: 50%')
 );
