@@ -99,6 +99,13 @@ test(
 );
 
 test(
+  'should pass through unknown property',
+  passthroughCSS(
+    'newproperty: url("/media/examples/lizard.png") repeat no-repeat'
+  )
+);
+
+test(
   'should normalize background position with var and multiple background',
   processCSS(
     'background: url("/media/examples/lizard.png") repeat no-repeat, url("/media/examples/lizard.png") var(--foo)',

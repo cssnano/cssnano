@@ -161,12 +161,18 @@ function transform(value) {
       return;
     }
 
-    if (Object.prototype.hasOwnProperty.call(horizontal, firstNode) && Object.prototype.hasOwnProperty.call(verticalValue, secondNode)) {
+    if (
+      Object.prototype.hasOwnProperty.call(horizontal, firstNode) &&
+      Object.prototype.hasOwnProperty.call(verticalValue, secondNode)
+    ) {
       nodes[0].value = horizontal[firstNode];
       nodes[2].value = verticalValue[secondNode];
 
       return;
-    } else if (Object.prototype.hasOwnProperty.call(verticalValue, firstNode) && Object.prototype.hasOwnProperty.call(horizontal, secondNode)) {
+    } else if (
+      Object.prototype.hasOwnProperty.call(verticalValue, firstNode) &&
+      Object.prototype.hasOwnProperty.call(horizontal, secondNode)
+    ) {
       nodes[0].value = horizontal[secondNode];
       nodes[2].value = verticalValue[firstNode];
 
@@ -177,7 +183,7 @@ function transform(value) {
   return parsed.toString();
 }
 
-const pluginCreator =  () => {
+const pluginCreator = () => {
   return {
     postcssPlugin: 'postcss-normalize-positions',
     prepare() {
@@ -185,7 +191,6 @@ const pluginCreator =  () => {
       const positionMatch = /^(background(-position)?|(-\w+-)?perspective-origin)$/i;
       return {
         Declaration(decl) {
-
           if (positionMatch.test(decl.prop)) {
             const value = decl.value;
 
