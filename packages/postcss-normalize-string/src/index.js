@@ -1,6 +1,4 @@
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
-import has from 'has';
 
 /*
  * Constants (parser usage)
@@ -228,13 +226,22 @@ function normalize(value, preferredQuote) {
     .toString();
 }
 
-const params = {
-  rule: 'selector',
-  decl: 'value',
-  atrule: 'params',
-};
+function transform(node, param, cache, preferredQuote) {
+  const key = node[param] + '|' + preferredQuote;
 
-export default postcss.plugin('postcss-normalize-string', (opts) => {
+  if (cache[key]) {
+    node[param] = cache[key];
+
+    return;
+  }
+
+  const newValue = normalize(node[param], preferredQuote);
+
+  node[param] = newValue;
+  cache[key] = newValue;
+}
+
+const pluginCreator = (opts) => {
   const { preferredQuote } = Object.assign(
     {},
     {
@@ -242,28 +249,25 @@ export default postcss.plugin('postcss-normalize-string', (opts) => {
     },
     opts
   );
-
-  return (css) => {
-    const cache = {};
-
-    css.walk((node) => {
-      const { type } = node;
-
-      if (has(params, type)) {
-        const param = params[type];
-        const key = node[param] + '|' + preferredQuote;
-
-        if (cache[key]) {
-          node[param] = cache[key];
-
-          return;
-        }
-
-        const newValue = normalize(node[param], preferredQuote);
-
-        node[param] = newValue;
-        cache[key] = newValue;
-      }
-    });
+  return {
+    postcssPlugin: 'postcss-normalize-string',
+    prepare() {
+      const cache = {};
+      return {
+        Rule(node) {
+          transform(node, 'selector', cache, preferredQuote);
+        },
+        Declaration(node) {
+          transform(node, 'value', cache, preferredQuote);
+        },
+        AtRule(node) {
+          transform(node, 'params', cache, preferredQuote);
+        },
+      };
+    },
   };
-});
+};
+
+pluginCreator.postcss = true;
+
+export default pluginCreator;
