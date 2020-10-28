@@ -1,5 +1,4 @@
 import path from 'path';
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import normalize from 'normalize-url';
 import isAbsolute from 'is-absolute-url';
@@ -94,7 +93,10 @@ function transformDecl(decl, opts) {
     .toString();
 }
 
-export default postcss.plugin('postcss-normalize-url', (opts) => {
+/* We need this otherwise the `convert()` step will remove the \ escape
+  character from already processed urls. */
+const processed = Symbol('postcss-normalize-url-processed');
+const pluginCreator = (opts) => {
   opts = Object.assign(
     {},
     {
@@ -104,17 +106,25 @@ export default postcss.plugin('postcss-normalize-url', (opts) => {
     },
     opts
   );
-
-  return (css) => {
-    css.walk((node) => {
-      if (node.type === 'decl') {
-        return transformDecl(node, opts);
-      } else if (
-        node.type === 'atrule' &&
-        node.name.toLowerCase() === 'namespace'
-      ) {
-        return transformNamespace(node);
+  return {
+    postcssPlugin: 'postcss-normalize-url',
+    Declaration(node) {
+      if (!node[processed]) {
+        transformDecl(node, opts);
+        node[processed] = true;
       }
-    });
+    },
+    AtRule: {
+      namespace: (node) => {
+        if (!node[processed]) {
+          transformNamespace(node);
+          node[processed] = true;
+        }
+      },
+    },
   };
-});
+};
+
+pluginCreator.postcss = true;
+
+export default pluginCreator;
