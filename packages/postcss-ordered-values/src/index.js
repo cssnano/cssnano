@@ -1,4 +1,3 @@
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 // rules
 import animation from './rules/animation';
@@ -106,39 +105,53 @@ function getValue(decl) {
   return value;
 }
 
-export default postcss.plugin('postcss-ordered-values', () => {
-  return (css) => {
-    const cache = {};
+/* We need to check for this otherwise we land in an infinite loop. */
+const processed = Symbol('postcss-ordered-values-processed');
 
-    css.walkDecls((decl) => {
-      const lowerCasedProp = decl.prop.toLowerCase();
-      const normalizedProp = unprefixed(lowerCasedProp);
-      const processor = rules[normalizedProp];
+const pluginCreator = () => {
+  return {
+    postcssPlugin: 'postcss-ordered-values',
+    prepare() {
+      const cache = {};
+      return {
+        Declaration(decl) {
+          if (!decl[processed]) {
+            const lowerCasedProp = decl.prop.toLowerCase();
+            const normalizedProp = unprefixed(lowerCasedProp);
+            const processor = rules[normalizedProp];
 
-      if (!processor) {
-        return;
-      }
+            if (!processor) {
+              return;
+            }
 
-      const value = getValue(decl);
+            const value = getValue(decl);
 
-      if (cache[value]) {
-        decl.value = cache[value];
+            if (cache[value]) {
+              decl.value = cache[value];
 
-        return;
-      }
+              return;
+            }
 
-      const parsed = valueParser(value);
+            const parsed = valueParser(value);
 
-      if (parsed.nodes.length < 2 || shouldAbort(parsed)) {
-        cache[value] = value;
+            if (parsed.nodes.length < 2 || shouldAbort(parsed)) {
+              cache[value] = value;
 
-        return;
-      }
+              return;
+            }
 
-      const result = processor(parsed);
+            const result = processor(parsed);
 
-      decl.value = result.toString();
-      cache[value] = result.toString();
-    });
+            decl.value = result.toString();
+            cache[value] = result.toString();
+            decl[processed] = true;
+          }
+        },
+      };
+    },
   };
-});
+};
+
+pluginCreator.postcss = true;
+
+export default pluginCreator;
