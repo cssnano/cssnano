@@ -1,4 +1,3 @@
-import { plugin } from 'postcss';
 import valueParser from 'postcss-value-parser';
 import { getMatch as getMatchFactory } from 'lerna:cssnano-utils';
 
@@ -101,26 +100,33 @@ function transform(value) {
     .toString();
 }
 
-export default plugin('postcss-normalize-timing-functions', () => {
-  return (css) => {
-    const cache = {};
+const pluginCreator = () => {
+  return {
+    postcssPlugin: 'postcss-normalize-timing-functions',
+    prepare() {
+      const propertyMatch = /^(-\w+-)?(animation|transition)(-timing-function)?$/i;
+      const cache = {};
+      return {
+        Declaration(decl) {
+          if (propertyMatch.test(decl.prop)) {
+            const value = decl.value;
 
-    css.walkDecls(
-      /^(-\w+-)?(animation|transition)(-timing-function)?$/i,
-      (decl) => {
-        const value = decl.value;
+            if (cache[value]) {
+              decl.value = cache[value];
 
-        if (cache[value]) {
-          decl.value = cache[value];
+              return;
+            }
 
-          return;
-        }
+            const result = transform(value);
 
-        const result = transform(value);
-
-        decl.value = result;
-        cache[value] = result;
-      }
-    );
+            decl.value = result;
+            cache[value] = result;
+          }
+        },
+      };
+    },
   };
-});
+};
+
+pluginCreator.postcss = true;
+export default pluginCreator;
