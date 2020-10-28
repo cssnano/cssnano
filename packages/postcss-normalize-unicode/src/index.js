@@ -1,5 +1,4 @@
 import browserslist from 'browserslist';
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 
 const regexLowerCaseUPrefix = /^u(?=\+)/;
@@ -71,30 +70,41 @@ function transform(value, isLegacy = false) {
     .toString();
 }
 
-export default postcss.plugin('postcss-normalize-unicode', () => {
-  return (css, result) => {
-    const resultOpts = result.opts || {};
-    const browsers = browserslist(null, {
-      stats: resultOpts.stats,
-      path: __dirname,
-      env: resultOpts.env,
-    });
-    const isLegacy = browsers.some(hasLowerCaseUPrefixBug);
-    const cache = {};
+const pluginCreator = () => {
+  return {
+    postcssPlugin: 'postcss-normalize-unicode',
+    prepare(result) {
+      const resultOpts = result.opts || {};
+      const browsers = browserslist(null, {
+        stats: resultOpts.stats,
+        path: __dirname,
+        env: resultOpts.env,
+      });
+      const isLegacy = browsers.some(hasLowerCaseUPrefixBug);
+      const cache = {};
+      const propertyMatch = /^unicode-range$/i;
+      return {
+        Declaration(decl) {
+          if (propertyMatch.test(decl.prop)) {
+            const value = decl.value;
 
-    css.walkDecls(/^unicode-range$/i, (decl) => {
-      const value = decl.value;
+            if (cache[value]) {
+              decl.value = cache[value];
 
-      if (cache[value]) {
-        decl.value = cache[value];
+              return;
+            }
 
-        return;
-      }
+            const newValue = transform(value, isLegacy);
 
-      const newValue = transform(value, isLegacy);
-
-      decl.value = newValue;
-      cache[value] = newValue;
-    });
+            decl.value = newValue;
+            cache[value] = newValue;
+          }
+        },
+      };
+    },
   };
-});
+};
+
+pluginCreator.postcss = true;
+
+export default pluginCreator;
