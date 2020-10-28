@@ -1,6 +1,5 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
-
 // rules
 import animation from './rules/animation';
 import border from './rules/border';
@@ -57,6 +56,19 @@ const rules = {
   ...grid,
   ...columnRules,
 };
+/**
+ * Returns the input string stripped of its vendor prefix.
+ *
+ * @param {string} prop String with or without vendor prefix.
+ *
+ * @return {string} String name without vendor prefixes.
+ *
+ * @example
+ * vendor.unprefixed('-moz-tab-size') //=> 'tab-size'
+ */
+function unprefixed(prop) {
+  return prop.replace(/^-\w+-/, '');
+}
 
 function isVariableFunctionNode(node) {
   if (node.type !== 'function') {
@@ -100,7 +112,7 @@ export default postcss.plugin('postcss-ordered-values', () => {
 
     css.walkDecls((decl) => {
       const lowerCasedProp = decl.prop.toLowerCase();
-      const normalizedProp = postcss.vendor.unprefixed(lowerCasedProp);
+      const normalizedProp = unprefixed(lowerCasedProp);
       const processor = rules[normalizedProp];
 
       if (!processor) {
