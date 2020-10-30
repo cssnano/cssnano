@@ -348,9 +348,9 @@ test(
 );
 
 test('should not generate same ident when plugin instance is reused', () => {
-  const instance = postcss(plugin);
+  const instance = postcss([plugin]);
 
-  return Promise.all([
+  Promise.all([
     instance.process(
       '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}',
       { from: undefined }
