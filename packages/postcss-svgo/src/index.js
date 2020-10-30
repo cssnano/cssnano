@@ -1,4 +1,3 @@
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import SVGO from 'svgo';
 import isSvg from 'is-svg';
@@ -7,6 +6,7 @@ import { encode, decode } from './lib/url';
 const PLUGIN = 'postcss-svgo';
 const dataURI = /data:image\/svg\+xml(;((charset=)?utf-8|base64))?,/i;
 const dataURIBase64 = /data:image\/svg\+xml;base64,/i;
+const processed = Symbol('postcss-svgo-processed');
 
 function minifyPromise(decl, getSvgo, opts) {
   const promises = [];
@@ -89,10 +89,13 @@ function minifyPromise(decl, getSvgo, opts) {
     return false;
   });
 
-  return Promise.all(promises).then(() => (decl.value = decl.value.toString()));
+  return Promise.all(promises).then(() => {
+    decl.value = decl.value.toString();
+    decl[processed] = true;
+  });
 }
 
-export default postcss.plugin(PLUGIN, (opts = {}) => {
+const pluginCreator = (opts = {}) => {
   let svgo = null;
 
   const getSvgo = () => {
@@ -103,19 +106,16 @@ export default postcss.plugin(PLUGIN, (opts = {}) => {
     return svgo;
   };
 
-  return (css) => {
-    return new Promise((resolve, reject) => {
-      const svgoQueue = [];
-
-      css.walkDecls((decl) => {
-        if (!dataURI.test(decl.value)) {
-          return;
-        }
-
-        svgoQueue.push(minifyPromise(decl, getSvgo, opts));
-      });
-
-      return Promise.all(svgoQueue).then(resolve, reject);
-    });
+  return {
+    postcssPlugin: PLUGIN,
+    Declaration(decl) {
+      if (!decl[processed] && dataURI.test(decl.value)) {
+        return minifyPromise(decl, getSvgo, opts);
+      }
+    },
   };
-});
+};
+
+pluginCreator.postcss = true;
+
+export default pluginCreator;
