@@ -1,5 +1,4 @@
 import sort from 'alphanum-sort';
-import has from 'has';
 import parser from 'postcss-selector-parser';
 import unquote from './lib/unquote';
 import canUnquote from './lib/canUnquote';
@@ -143,7 +142,7 @@ const tagReplacements = {
 function tag(selector) {
   const value = selector.value.toLowerCase();
 
-  if (has(tagReplacements, value)) {
+  if (Object.prototype.hasOwnProperty.call(tagReplacements, value)) {
     selector.value = tagReplacements[value];
   }
 }
@@ -191,7 +190,7 @@ const pluginCreator = () => {
               // Trim whitespace around the value
               sel.spaces.before = sel.spaces.after = '';
 
-              if (has(reducers, type)) {
+              if (Object.prototype.hasOwnProperty.call(reducers, type)) {
                 reducers[type](sel);
               } else {
                 const toString = String(sel);

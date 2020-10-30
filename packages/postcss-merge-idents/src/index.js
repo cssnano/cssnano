@@ -1,4 +1,3 @@
-import has from 'has';
 import valueParser from 'postcss-value-parser';
 import { sameParent } from 'lerna:cssnano-utils';
 
@@ -9,7 +8,11 @@ function canonical(obj) {
   let stack = 50;
 
   return function recurse(key) {
-    if (has(obj, key) && obj[key] !== key && stack) {
+    if (
+      Object.prototype.hasOwnProperty.call(obj, key) &&
+      obj[key] !== key &&
+      stack
+    ) {
       stack--;
 
       return recurse(obj[key]);
