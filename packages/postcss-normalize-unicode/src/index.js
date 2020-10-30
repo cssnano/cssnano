@@ -58,7 +58,7 @@ function hasLowerCaseUPrefixBug(browser) {
 function transform(value, isLegacy = false) {
   return valueParser(value)
     .walk((child) => {
-      if (child.type === 'word') {
+      if (child.type === 'unicode-range') {
         const transformed = unicode(child.value.toLowerCase());
 
         child.value = isLegacy

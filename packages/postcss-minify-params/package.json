@@ -25,7 +25,7 @@
     "alphanum-sort": "^1.0.2",
     "browserslist": "^4.6.0",
     "cssnano-utils": "^1.0.0",
-    "postcss-value-parser": "^3.3.1",
+    "postcss-value-parser": "^4.1.0",
     "uniqs": "^2.0.0"
   },
   "peerDependencies": {

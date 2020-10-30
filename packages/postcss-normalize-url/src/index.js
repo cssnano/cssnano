@@ -48,18 +48,18 @@ function transformNamespace(rule) {
 function transformDecl(decl, opts) {
   decl.value = valueParser(decl.value)
     .walk((node) => {
-      if (
-        node.type !== 'function' ||
-        node.value.toLowerCase() !== 'url' ||
-        !node.nodes.length
-      ) {
+      if (node.type !== 'function' || node.value.toLowerCase() !== 'url') {
         return false;
       }
 
+      node.before = node.after = '';
+
+      if (!node.nodes.length) {
+        return false;
+      }
       let url = node.nodes[0];
       let escaped;
 
-      node.before = node.after = '';
       url.value = url.value.trim().replace(multiline, '');
 
       // Skip empty URLs

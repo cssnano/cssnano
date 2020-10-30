@@ -31,7 +31,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "is-svg": "^4.1.0",
-    "postcss-value-parser": "^3.3.1",
+    "postcss-value-parser": "^4.1.0",
     "svgo": "^1.2.2"
   },
   "peerDependencies": {
