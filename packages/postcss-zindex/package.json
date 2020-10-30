@@ -22,10 +22,6 @@
     "z-index"
   ],
   "license": "MIT",
-  "dependencies": {
-    "has": "^1.0.3",
-    "uniqs": "^2.0.0"
-  },
   "peerDependencies": {
     "postcss": "^8.1.1"
   },

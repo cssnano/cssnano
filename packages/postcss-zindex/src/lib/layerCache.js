@@ -1,9 +1,16 @@
-import has from 'has';
-import uniq from 'uniqs';
-
 function LayerCache(opts) {
   this._values = [];
   this._startIndex = opts.startIndex || 1;
+}
+
+/**
+ * Returns an array containing the unique elements of the original array.
+ */
+
+function dedupe(array) {
+  return array.filter((item, i) => {
+    return i === array.indexOf(item);
+  });
 }
 
 function ascending(a, b) {
@@ -17,7 +24,7 @@ function reduceValues(list, value, index) {
 }
 
 LayerCache.prototype._findValue = function(value) {
-  if (has(this._values, value)) {
+  if (Object.prototype.hasOwnProperty.call(this._values, value)) {
     return this._values[value];
   }
 
@@ -25,7 +32,7 @@ LayerCache.prototype._findValue = function(value) {
 };
 
 LayerCache.prototype.optimizeValues = function() {
-  this._values = uniq(this._values)
+  this._values = dedupe(this._values)
     .sort(ascending)
     .reduce(reduceValues.bind(this), {});
 };
