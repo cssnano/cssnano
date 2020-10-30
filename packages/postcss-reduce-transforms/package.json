@@ -22,7 +22,6 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "cssnano-utils": "^1.0.0",
-    "has": "^1.0.3",
     "postcss-value-parser": "^4.1.0"
   },
   "peerDependencies": {
