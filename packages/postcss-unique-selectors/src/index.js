@@ -1,6 +1,4 @@
-import { plugin } from 'postcss';
 import sort from 'alphanum-sort';
-import uniqs from 'uniqs';
 import selectorParser from 'postcss-selector-parser';
 
 function parseSelectors(selectors, callback) {
@@ -8,12 +6,16 @@ function parseSelectors(selectors, callback) {
 }
 
 function unique(rule) {
-  rule.selector = sort(uniqs(rule.selectors), { insensitive: true }).join();
+  const uniqueSelectors = rule.selectors.filter((item, i) => {
+    return i === rule.selectors.indexOf(item);
+  });
+  rule.selector = sort(uniqueSelectors, { insensitive: true }).join();
 }
 
-export default plugin('postcss-unique-selectors', () => {
-  return (css) =>
-    css.walkRules((nodes) => {
+const pluginCreator = () => {
+  return {
+    postcssPlugin: 'postcss-unique-selectors',
+    Rule(nodes) {
       let comments = [];
       nodes.selector = parseSelectors(nodes.selector, (selNode) => {
         selNode.walk((sel) => {
@@ -28,5 +30,10 @@ export default plugin('postcss-unique-selectors', () => {
       });
       unique(nodes);
       nodes.selectors = nodes.selectors.concat(comments);
-    });
-});
+    },
+  };
+};
+
+pluginCreator.postcss = true;
+
+export default pluginCreator;
