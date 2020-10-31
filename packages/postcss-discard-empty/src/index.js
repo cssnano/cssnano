@@ -1,36 +1,47 @@
 const postcssPlugin = 'postcss-discard-empty';
 
-function discardAndReport(css, { result }) {
-  function discardEmpty(node) {
-    const { type, nodes: sub, params } = node;
+function discardAndReport(node, result) {
+  node.remove();
 
-    if (sub) {
-      node.each(discardEmpty);
-    }
-
-    if (
-      (type === 'decl' && !node.value) ||
-      (type === 'rule' && !node.selector) ||
-      (sub && !sub.length) ||
-      (type === 'atrule' && ((!sub && !params) || (!params && !sub.length)))
-    ) {
-      node.remove();
-
-      result.messages.push({
-        type: 'removal',
-        postcssPlugin,
-        node,
-      });
-    }
-  }
-
-  css.each(discardEmpty);
+  result.messages.push({
+    type: 'removal',
+    postcssPlugin,
+    node,
+  });
 }
 
 const pluginCreator = () => {
   return {
     postcssPlugin,
-    Once: discardAndReport,
+    prepare(result) {
+      return {
+        /* A declaration is empty if and only if its value is empty.
+         since it has no nodes */
+        Declaration(decl) {
+          if (!decl.value) {
+            discardAndReport(decl, result);
+          }
+        },
+        Rule(rule) {
+          if (!rule.selector || (rule.nodes && !rule.nodes.length)) {
+            discardAndReport(rule, result);
+          }
+        },
+        AtRule(atRule) {
+          /* The order of the boolean conditions matter,
+            as we want to remove media at rules even if they have params but no other children,
+            but we want to keep charset at rules which only have params.
+           */
+          if (
+            (atRule.nodes && !atRule.nodes.length) ||
+            (!atRule.nodes && !atRule.params) ||
+            (!atRule.params && !atRule.nodes.length)
+          ) {
+            discardAndReport(atRule, result);
+          }
+        },
+      };
+    },
   };
 };
 

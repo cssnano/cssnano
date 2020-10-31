@@ -1,15 +1,10 @@
 import {
   usePostCSSPlugin,
   processCSSFactory,
-  processCSSWithPresetFactory,
 } from '../../../../util/testHelpers';
 import plugin from '..';
 
-const { passthroughCSS, processor } = processCSSFactory(plugin);
-const { processCSS: withDefaultPreset } = processCSSWithPresetFactory(
-  'default'
-);
-
+const { passthroughCSS, processCSS, processor } = processCSSFactory(plugin);
 function testRemovals(fixture, expected, removedSelectors) {
   return () =>
     processor(fixture).then((result) => {
@@ -46,9 +41,9 @@ function testRemovals(fixture, expected, removedSelectors) {
     });
 }
 
-test('should remove empty @ rules', withDefaultPreset('@font-face;', ''));
+test('should remove empty @ rules', processCSS('@font-face;', ''));
 
-test('should remove empty @ rules (2)', withDefaultPreset('@font-face {}', ''));
+test('should remove empty @ rules (2)', processCSS('@font-face {}', ''));
 
 test(
   'should not mangle @ rules with decls',
@@ -60,20 +55,20 @@ test(
   passthroughCSS('@charset "utf-8";')
 );
 
-test('should remove empty rules', withDefaultPreset('h1{}h2{}h4{}h5,h6{}', ''));
+test('should remove empty rules', processCSS('h1{}h2{}h4{}h5,h6{}', ''));
 
-test('should remove empty declarations', withDefaultPreset('h1{color:}', ''));
+test('should remove empty declarations', processCSS('h1{color:}', ''));
 
-test('should remove null selectors', withDefaultPreset('{color:blue}', ''));
+test('should remove null selectors', processCSS('{color:blue}', ''));
 
 test(
   'should remove null selectors in media queries',
-  withDefaultPreset('@media screen, print {{}}', '')
+  processCSS('@media screen, print {{}}', '')
 );
 
 test(
   'should remove empty media queries',
-  withDefaultPreset('@media screen, print {h1,h2{}}', '')
+  processCSS('@media screen, print {h1,h2{}}', '')
 );
 
 test(
@@ -94,7 +89,7 @@ test(
 
 test(
   'should report removed selectors 2',
-  withDefaultPreset('h1{}.hot{}.a.b{}{}@media screen, print{h1,h2{}}', '')
+  processCSS('h1{}.hot{}.a.b{}{}@media screen, print{h1,h2{}}', '')
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
