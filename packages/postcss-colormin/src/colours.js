@@ -27,6 +27,7 @@ export default (colour, isLegacy = false, cache = false) => {
     } else {
       const rgb = parsed.rgb();
 
+      // If all rgb values are 0, then the color is transparent
       if (
         !isLegacy &&
         !rgb.color[0] &&
