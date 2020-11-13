@@ -11,4 +11,5 @@ module.exports = {
     '_webpack.config.js',
   ],
   testTimeout: 30000,
+  testEnvironment: 'node',
 };
