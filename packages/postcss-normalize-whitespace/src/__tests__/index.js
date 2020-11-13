@@ -102,3 +102,17 @@ test(
     'div{border-radius:var(border-rad, )}'
   )
 );
+
+test(
+  'should remove initial empty space',
+  processCSS(
+    `
+
+@media screen and (min-width: 480px) {
+    body {
+        background-color: lightgreen;
+    }
+}`,
+    '@media screen and (min-width: 480px){body{background-color:lightgreen}}'
+  )
+);

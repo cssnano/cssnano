@@ -78,6 +78,9 @@ const pluginCreator = () => {
           node.raws.semicolon = false;
         },
         AtRule(node) {
+          if (node.raws.before) {
+            node.raws.before = node.raws.before.replace(/\s/g, '');
+          }
           node.raws.between = node.raws.after = '';
           node.raws.semicolon = false;
         },
