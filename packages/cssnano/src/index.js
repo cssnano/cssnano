@@ -118,23 +118,23 @@ export default (options = {}) => {
     postcssPlugin: cssnano,
     async RootExit(root, { result, postcss }) {
       const plugins = await resolveConfig(root, result, options);
-      plugins.forEach(async (plugin) => {
+      const postcssPlugins = plugins.map((plugin) => {
         if (Array.isArray(plugin)) {
           const [processor, opts] = plugin;
-
           if (
             typeof opts === 'undefined' ||
             (typeof opts === 'object' && !opts.exclude) ||
             (typeof opts === 'boolean' && opts === true)
           ) {
-            await postcss([processor(opts)]).process(root, {
-              ...result,
-              from: undefined,
-            });
+            return processor(opts);
           }
         } else {
-          await postcss([plugin]).process(root, { ...result, from: undefined });
+          return plugin;
         }
+      });
+      await postcss(postcssPlugins).process(root, {
+        ...result,
+        from: undefined,
       });
     },
   };
