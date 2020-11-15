@@ -4764,10 +4764,10 @@ globby@^9.2.0:
     pify "^4.0.1"
     slash "^2.0.0"
 
-google-fonts-complete@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/google-fonts-complete/-/google-fonts-complete-2.1.0.tgz#bb22d446290e2cda54b6fe56add406b0b17914ef"
-  integrity sha512-VRTGBvWdYE7NJuv/KbKp4hakK8QgsV9Z7LRAPdXmQ+cDqjZYZAMEKpBUYeO+uWsnTvMNaAtxTrFVCZrTGyb8VQ==
+google-fonts-complete@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/google-fonts-complete/-/google-fonts-complete-2.1.1.tgz#07ff198f821e16ea68f99a7c058f5ed3ad94f86c"
+  integrity sha512-6e7jXyadmW4iHrrmYitcsoyVpcymjndBsgXLeo0XXXbAqU9xhM06OxxJAiPqSrp9Xn2bvBueOTe091lwkKVc1g==
   dependencies:
     postcss "^7.0.18"
 
@@ -7817,15 +7817,14 @@ postcss-devtools@^1.1.1:
     pretty-hrtime "^1.0.1"
     text-table "^0.2.0"
 
-postcss-font-magician@^2.2.2:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/postcss-font-magician/-/postcss-font-magician-2.3.1.tgz#8dba68bcfc09f6801a3dbb616273cb62a91c5e31"
-  integrity sha512-2zTGmrNKyFkRtHW5Pg6lMpsCdUTBLqvNUVr+aJozQ7ZC0TljO4JvreQMYyjad/nErUfUiDHK8zMKqN4EtOEOFQ==
+postcss-font-magician@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/postcss-font-magician/-/postcss-font-magician-3.0.0.tgz#9cbe1bda17f4927de1e82bb90e2581e7826b485a"
+  integrity sha512-PqGk9TeIoWzytZeLW6AtgzuL1sJb0bO0xPr4daI6MEhidqyCMECJmwXIlAS6ypf18y6tR04cDFbLqlQruXQiIA==
   dependencies:
     bootstrap-fonts-complete "^1.0.0"
     directory-fonts-complete "^1.2.0"
-    google-fonts-complete "^2.1.0"
-    postcss "^7.0.21"
+    google-fonts-complete "^2.1.1"
 
 postcss-reporter@^1.3.0:
   version "1.4.1"
@@ -7882,7 +7881,7 @@ postcss@^6.0.1:
     source-map "^0.6.1"
     supports-color "^5.4.0"
 
-postcss@^7.0.18, postcss@^7.0.21:
+postcss@^7.0.18:
   version "7.0.27"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.27.tgz#cc67cdc6b0daa375105b7c424a85567345fc54d9"
   integrity sha512-WuQETPMcW9Uf1/22HWUWP9lgsIC+KEHg2kozMflKjbeUtw9ujvFX6QmIfozaErDkmLWS9WEnEdEe6Uo9/BNTdQ==

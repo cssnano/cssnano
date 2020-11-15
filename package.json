@@ -55,7 +55,7 @@
     "pleeease-filters": "^4.0.0",
     "postcss": "^8.1.1",
     "postcss-devtools": "^1.1.1",
-    "postcss-font-magician": "^2.2.2",
+    "postcss-font-magician": "^3.0.0",
     "postcss-scss": "^3.0.2",
     "postcss-simple-vars": "^6.0.0",
     "postcss-value-parser": "^3.3.1",
