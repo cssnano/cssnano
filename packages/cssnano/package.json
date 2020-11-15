@@ -53,6 +53,6 @@
     "node": ">=10.13.0"
   },
   "devDependencies": {
-    "autoprefixer": "^9.8.6"
+    "autoprefixer": "^10.0.2"
   }
 }
