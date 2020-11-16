@@ -65,6 +65,8 @@ function transform(value, isLegacy, colorminCache) {
   return parsed.toString();
 }
 
+const processed = Symbol('postcss-colormin-visited');
+
 const pluginCreator = (opts = {}) => {
   const resultOpts = opts;
   const browsers = browserslist(null, {
@@ -84,6 +86,9 @@ const pluginCreator = (opts = {}) => {
         return;
       }
 
+      if (decl[processed]) {
+        return;
+      }
       const value = decl.value;
 
       if (!value) {
@@ -94,13 +99,14 @@ const pluginCreator = (opts = {}) => {
 
       if (cache[cacheKey]) {
         decl.value = cache[cacheKey];
-
+        decl[processed] = true;
         return;
       }
 
       const newValue = transform(value, isLegacy, colorminCache);
 
       decl.value = newValue;
+      decl[processed] = true;
       cache[cacheKey] = newValue;
     },
   };
