@@ -1,3 +1,4 @@
+import postcss from 'postcss';
 import litePreset from 'cssnano-preset-lite';
 import autoprefixer from 'autoprefixer';
 import cssnano from '..';
@@ -5,7 +6,7 @@ import cssnano from '..';
 test('should run the plugins in the preset', () => {
   const preset = litePreset();
 
-  return cssnano
+  return postcss([cssnano({ preset })])
     .process(
       `.example {
     display: grid;
@@ -14,8 +15,7 @@ test('should run the plugins in the preset', () => {
     background: linear-gradient(to bottom, white, black);
 }
 `,
-      { from: undefined },
-      { preset }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -27,7 +27,7 @@ test('should run the plugins in the preset', () => {
 test('should run the plugin passed through the cssnano config.plugins', () => {
   const preset = litePreset({ discardComments: false });
 
-  return cssnano
+  return postcss([cssnano({ preset, plugins: [autoprefixer] })])
     .process(
       `.example {
     display: grid;
@@ -36,8 +36,7 @@ test('should run the plugin passed through the cssnano config.plugins', () => {
     background: linear-gradient(to bottom, white, black);
 }
 `,
-      { from: undefined },
-      { preset, plugins: [autoprefixer] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -48,12 +47,11 @@ test('should run the plugin passed through the cssnano config.plugins', () => {
 
 test('should run the plugin when plugin module is being used with no array inside plugins', () => {
   const preset = litePreset();
-  return cssnano
+  return postcss([cssnano({ preset, plugins: [require('autoprefixer')] })])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { preset, plugins: [require('autoprefixer')] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -63,12 +61,11 @@ test('should run the plugin when plugin module is being used with no array insid
 });
 
 test('should run the plugin when no preset is mentioned', () => {
-  return cssnano
+  return postcss([cssnano({ plugins: [require('autoprefixer')] })])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { plugins: [require('autoprefixer')] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -79,12 +76,11 @@ test('should run the plugin when no preset is mentioned', () => {
 });
 
 test('should run the plugin when no preset is mentioned with string plugin name', () => {
-  return cssnano
+  return postcss([cssnano({ plugins: ['autoprefixer'] })])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { plugins: ['autoprefixer'] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -95,12 +91,11 @@ test('should run the plugin when no preset is mentioned with string plugin name'
 });
 
 test('should run the plugin when no preset is mentioned with string plugin name as in array', () => {
-  return cssnano
+  return postcss([cssnano({ plugins: [['autoprefixer']] })])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { plugins: [['autoprefixer']] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -112,12 +107,11 @@ test('should run the plugin when no preset is mentioned with string plugin name 
 
 test('should run the plugin with string plugin name as in array', () => {
   const preset = litePreset();
-  return cssnano
+  return postcss([cssnano({ preset, plugins: [['autoprefixer']] })])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { preset, plugins: [['autoprefixer']] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -127,12 +121,11 @@ test('should run the plugin with string plugin name as in array', () => {
 });
 
 test('should run the plugin when no preset is mentioned with string plugin name as in array and options', () => {
-  return cssnano
+  return postcss([cssnano({ plugins: [['autoprefixer', { remove: false }]] })])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { plugins: [['autoprefixer', { remove: false }]] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -144,12 +137,13 @@ test('should run the plugin when no preset is mentioned with string plugin name 
 
 test('should run the plugin with string plugin name as in array and options', () => {
   const preset = litePreset();
-  return cssnano
+  return postcss([
+    cssnano({ preset, plugins: [['autoprefixer', { remove: false }]] }),
+  ])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { preset, plugins: [['autoprefixer', { remove: false }]] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -159,12 +153,13 @@ test('should run the plugin with string plugin name as in array and options', ()
 });
 
 test('should run the plugin when preset is empty array and plugin module as in array in plugins array', () => {
-  return cssnano
+  return postcss([
+    cssnano({ preset: [], plugins: [[require('autoprefixer')]] }),
+  ])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { preset: [], plugins: [[require('autoprefixer')]] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -176,12 +171,11 @@ test('should run the plugin when preset is empty array and plugin module as in a
 
 test('should run the plugin plugin module as in array in plugins array', () => {
   const preset = litePreset();
-  return cssnano
+  return postcss(cssnano({ preset, plugins: [[require('autoprefixer')]] }))
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { preset, plugins: [[require('autoprefixer')]] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -192,12 +186,13 @@ test('should run the plugin plugin module as in array in plugins array', () => {
 
 test('should run the plugin plugin module as in array in plugins array with empty plugin option', () => {
   const preset = litePreset();
-  return cssnano
+  return postcss([
+    cssnano({ preset, plugins: [[require('autoprefixer'), {}]] }),
+  ])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { preset, plugins: [[require('autoprefixer'), {}]] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -207,12 +202,11 @@ test('should run the plugin plugin module as in array in plugins array with empt
 });
 
 test('should run the plugin when preset is empty array and plugin module as in non array in plugins array', () => {
-  return cssnano
+  return postcss([cssnano({ preset: [], plugins: [require('autoprefixer')] })])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { preset: [], plugins: [require('autoprefixer')] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -223,12 +217,11 @@ test('should run the plugin when preset is empty array and plugin module as in n
 });
 
 test('should run the plugin when preset is empty array and plugin as string as in non array in plugins array', () => {
-  return cssnano
+  return postcss([cssnano({ preset: [], plugins: ['autoprefixer'] })])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { preset: [], plugins: ['autoprefixer'] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -239,7 +232,7 @@ test('should run the plugin when preset is empty array and plugin as string as i
 });
 
 test('should run the plugin when preset is empty array', () => {
-  return cssnano
+  return postcss([cssnano])
     .process(
       `.example { user-select: none; }
 `,
@@ -255,12 +248,13 @@ test('should run the plugin when preset is empty array', () => {
 });
 
 test('should run the plugin when preset is empty array with string as a plugin', () => {
-  return cssnano
+  return postcss([
+    cssnano({ preset: [], plugins: [['autoprefixer', { grid: 'autoplace' }]] }),
+  ])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { preset: [], plugins: [['autoprefixer', { grid: 'autoplace' }]] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -271,12 +265,13 @@ test('should run the plugin when preset is empty array with string as a plugin',
 });
 
 test('should run the plugin when preset is empty array with options', () => {
-  return cssnano
+  return postcss([
+    cssnano({ preset: [], plugins: [[autoprefixer, { add: false }]] }),
+  ])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { preset: [], plugins: [[autoprefixer, { add: false }]] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
@@ -287,7 +282,9 @@ test('should run the plugin when preset is empty array with options', () => {
 });
 
 test('should run the plugin when preset is empty array with options and string as plugin', () => {
-  return cssnano
+  return postcss([
+    cssnano({ preset: [], plugins: [['autoprefixer', { add: false }]] }),
+  ])
     .process(
       `.example { user-select: none; }
 `,
@@ -303,12 +300,11 @@ test('should run the plugin when preset is empty array with options and string a
 });
 
 test('should run the plugin when preset is empty array with options and string as plugin and no options for the plugin', () => {
-  return cssnano
+  return postcss([cssnano({ preset: [], plugins: [['autoprefixer']] })])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { preset: [], plugins: [['autoprefixer']] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(
