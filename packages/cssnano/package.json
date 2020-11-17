@@ -50,7 +50,7 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": ">=10.13.0"
+    "node": "^10 || ^12 || >=14"
   },
   "devDependencies": {
     "autoprefixer": "^10.0.2",
