@@ -92,7 +92,7 @@ function resolveConfig(css, result, options) {
   });
 }
 
-export default (options = {}) => {
+function pluginCreator(options = {}) {
   if (Array.isArray(options.plugins)) {
     if (!options.preset || !options.preset.plugins) {
       options.preset = { plugins: [] };
@@ -138,4 +138,8 @@ export default (options = {}) => {
       });
     },
   };
-};
+}
+
+pluginCreator.postcss = true;
+
+export default pluginCreator;
