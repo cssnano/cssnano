@@ -1,3 +1,4 @@
+import postcss from 'postcss';
 import prettyBytes from 'pretty-bytes';
 import { sync as gzip } from 'gzip-size';
 import { sync as brotli } from 'brotli-size';
@@ -14,15 +15,17 @@ const percentDifference = (original, minified) => {
 };
 
 const cssSize = (css, opts, processor) => {
-  processor = processor || nano.process.bind(nano);
+  processor = processor || postcss([nano]);
   css = css.toString();
-  return processor(css, opts).then((result) => {
-    let sizes = computeSizes(css, result.css);
-    deltasAsStrings(sizes.uncompressed);
-    deltasAsStrings(sizes.gzip);
-    deltasAsStrings(sizes.brotli);
-    return sizes;
-  });
+  return postcss([processor])
+    .process(css, opts)
+    .then((result) => {
+      let sizes = computeSizes(css, result.css);
+      deltasAsStrings(sizes.uncompressed);
+      deltasAsStrings(sizes.gzip);
+      deltasAsStrings(sizes.brotli);
+      return sizes;
+    });
 };
 
 const deltasAsStrings = (sizes) => {
@@ -95,15 +98,17 @@ export function table(css, opts, processor) {
 }
 
 export function numeric(css, opts, processor) {
-  processor = processor || nano.process.bind(nano);
+  processor = processor || postcss([nano]);
   css = css.toString();
-  return processor(css, opts).then((result) => {
-    let sizes = computeSizes(css, result.css);
-    deltasAsNumbers(sizes.uncompressed);
-    deltasAsNumbers(sizes.gzip);
-    deltasAsNumbers(sizes.brotli);
-    return sizes;
-  });
+  return postcss([processor])
+    .process(css, opts)
+    .then((result) => {
+      let sizes = computeSizes(css, result.css);
+      deltasAsNumbers(sizes.uncompressed);
+      deltasAsNumbers(sizes.gzip);
+      deltasAsNumbers(sizes.brotli);
+      return sizes;
+    });
 }
 
 const deltasAsNumbers = (sizes) => {
