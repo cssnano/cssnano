@@ -28,8 +28,7 @@
         "cosmiconfig": "^6.0.0",
         "cssnano-preset-default": "^4.0.7",
         "is-resolvable": "^1.1.0",
-        "opencollective-postinstall": "^2.0.2",
-        "postcss": "^7.0.16"
+        "opencollective-postinstall": "^2.0.2"
     },
     "homepage": "https://github.com/cssnano/cssnano",
     "author": {
@@ -48,9 +47,13 @@
         "url": "https://github.com/cssnano/cssnano/issues"
     },
     "engines": {
-        "node": ">=10.13.0"
+        "node": "^10 || ^12 || >=14.0"
     },
     "devDependencies": {
-        "autoprefixer": "^9.8.6"
+        "autoprefixer": "^10.0.2",
+        "postcss": "^8.2.1"
+    },
+    "peerDependencies": {
+        "postcss": "^8.2.1"
     }
 }

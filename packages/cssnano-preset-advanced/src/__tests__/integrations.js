@@ -13,7 +13,7 @@ function excludeProcessor(options) {
 
   return () =>
     loadPreset(preset(options))
-      .process(input)
+      .process(input, { from: undefined })
       .then(({ css }) => {
         expect(css).toBe(input);
       });

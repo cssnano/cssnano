@@ -5,7 +5,6 @@ import frameworks from './frameworks';
 
 export function usePostCSSPlugin(plugin) {
   return () => {
-    expect(plugin.postcssVersion).toBeDefined();
     expect(plugin.postcssPlugin).toBeDefined();
   };
 }

@@ -58,6 +58,10 @@ const rules = {
   ...columnRules,
 };
 
+function vendorUnprefixed(prop) {
+  return prop.replace(/^-\w+-/, '');
+}
+
 function isVariableFunctionNode(node) {
   if (node.type !== 'function') {
     return false;
@@ -100,7 +104,7 @@ export default postcss.plugin('postcss-ordered-values', () => {
 
     css.walkDecls((decl) => {
       const lowerCasedProp = decl.prop.toLowerCase();
-      const normalizedProp = postcss.vendor.unprefixed(lowerCasedProp);
+      const normalizedProp = vendorUnprefixed(lowerCasedProp);
       const processor = rules[normalizedProp];
 
       if (!processor) {

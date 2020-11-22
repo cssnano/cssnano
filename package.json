@@ -18,7 +18,7 @@
     "publish": "lerna publish"
   },
   "engines": {
-    "node": ">=6.9.0"
+    "node": "^10 || ^12 || >=14"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.3",
@@ -53,11 +53,11 @@
     "lerna": "3.22.1",
     "mdast-util-heading-range": "^2.1.2",
     "pleeease-filters": "^4.0.0",
-    "postcss": "^7.0.16",
+    "postcss": "^8.2.1",
     "postcss-devtools": "^1.1.1",
-    "postcss-font-magician": "^2.2.2",
-    "postcss-scss": "^2.0.0",
-    "postcss-simple-vars": "^5.0.2",
+    "postcss-font-magician": "^3.0.0",
+    "postcss-scss": "^3.0.4",
+    "postcss-simple-vars": "^6.0.1",
     "postcss-value-parser": "^3.3.1",
     "prettier": "^1.17.1",
     "remark": "^10.0.1",

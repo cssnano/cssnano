@@ -21,7 +21,7 @@ test('can be used as a postcss plugin (3)', pluginMacro(postcss(nano)));
 test('should use the postcss plugin api', usePostCSSPlugin(nano()));
 
 test('should work with sourcemaps', () => {
-  return nano
+  return postcss([nano])
     .process('h1{z-index:1}', { from: undefined, map: { inline: true } })
     .then(({ css }) => {
       expect(/sourceMappingURL=data:application\/json;base64/.test(css)).toBe(

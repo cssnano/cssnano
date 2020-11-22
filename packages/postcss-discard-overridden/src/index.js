@@ -3,14 +3,16 @@ import postcss from 'postcss';
 const OVERRIDABLE_RULES = ['keyframes', 'counter-style'];
 const SCOPE_RULES = ['media', 'supports'];
 
+function vendorUnprefixed(prop) {
+  return prop.replace(/^-\w+-/, '');
+}
+
 function isOverridable(name) {
-  return ~OVERRIDABLE_RULES.indexOf(
-    postcss.vendor.unprefixed(name.toLowerCase())
-  );
+  return ~OVERRIDABLE_RULES.indexOf(vendorUnprefixed(name.toLowerCase()));
 }
 
 function isScope(name) {
-  return ~SCOPE_RULES.indexOf(postcss.vendor.unprefixed(name.toLowerCase()));
+  return ~SCOPE_RULES.indexOf(vendorUnprefixed(name.toLowerCase()));
 }
 
 function getScope(node) {
