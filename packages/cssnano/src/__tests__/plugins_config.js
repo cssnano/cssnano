@@ -232,12 +232,13 @@ test('should run the plugin when preset is empty array and plugin as string as i
 });
 
 test('should run the plugin when preset is empty array', () => {
-  return postcss([cssnano])
+  return postcss([
+    cssnano({ preset: [], plugins: [[autoprefixer, { grid: 'autoplace' }]] }),
+  ])
     .process(
       `.example { user-select: none; }
 `,
-      { from: undefined },
-      { preset: [], plugins: [[autoprefixer, { grid: 'autoplace' }]] }
+      { from: undefined }
     )
     .then((result) => {
       expect(result.css).toBe(

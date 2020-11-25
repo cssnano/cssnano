@@ -1,28 +1,9 @@
 import path from 'path';
 import postcss from 'postcss';
-import { cosmiconfig } from 'cosmiconfig';
+import { cosmiconfigSync } from 'cosmiconfig';
 import isResolvable from 'is-resolvable';
 
 const cssnano = 'cssnano';
-
-function initializePlugin(plugin, css, result) {
-  if (Array.isArray(plugin)) {
-    const [processor, opts] = plugin;
-
-    if (
-      typeof opts === 'undefined' ||
-      (typeof opts === 'object' && !opts.exclude) ||
-      (typeof opts === 'boolean' && opts === true)
-    ) {
-      return Promise.resolve(processor(opts)(css, result));
-    }
-  } else {
-    return Promise.resolve(plugin()(css, result));
-  }
-
-  // Handle excluded plugins
-  return Promise.resolve();
-}
 
 /*
  * preset can be one of four possibilities:
@@ -45,31 +26,29 @@ function resolvePreset(preset) {
 
   // For JS setups where we invoked the preset already
   if (preset.plugins) {
-    return Promise.resolve(preset.plugins);
+    return preset.plugins;
   }
 
   // Provide an alias for the default preset, as it is built-in.
   if (fn === 'default') {
-    return Promise.resolve(
-      require('lerna:cssnano-preset-default')(options).plugins
-    );
+    return require('lerna:cssnano-preset-default')(options).plugins;
   }
 
   // For non-JS setups; we'll need to invoke the preset ourselves.
   if (typeof fn === 'function') {
-    return Promise.resolve(fn(options).plugins);
+    return fn(options).plugins;
   }
 
   // Try loading a preset from node_modules
   if (isResolvable(fn)) {
-    return Promise.resolve(require(fn)(options).plugins);
+    return require(fn)(options).plugins;
   }
 
   const sugar = `cssnano-preset-${fn}`;
 
   // Try loading a preset from node_modules (sugar)
   if (isResolvable(sugar)) {
-    return Promise.resolve(require(sugar)(options).plugins);
+    return require(sugar)(options).plugins;
   }
 
   // If all else fails, we probably have a typo in the config somewhere
@@ -84,13 +63,12 @@ function resolvePreset(preset) {
  * load an external file.
  */
 
-function resolveConfig(css, result, options) {
+function resolveConfig(options) {
   if (options.preset) {
     return resolvePreset(options.preset);
   }
 
-  const inputFile = css.source && css.source.input && css.source.input.file;
-  let searchPath = inputFile ? path.dirname(inputFile) : process.cwd();
+  let searchPath = process.cwd();
   let configPath = null;
 
   if (options.configFile) {
@@ -98,21 +76,19 @@ function resolveConfig(css, result, options) {
     configPath = path.resolve(process.cwd(), options.configFile);
   }
 
-  const configExplorer = cosmiconfig(cssnano);
-  const searchForConfig = configPath
+  const configExplorer = cosmiconfigSync(cssnano);
+  const config = configPath
     ? configExplorer.load(configPath)
     : configExplorer.search(searchPath);
 
-  return searchForConfig.then((config) => {
-    if (config === null) {
-      return resolvePreset('default');
-    }
+  if (config === null) {
+    return resolvePreset('default');
+  }
 
-    return resolvePreset(config.config.preset || config.config);
-  });
+  return resolvePreset(config.config.preset || config.config);
 }
 
-export default postcss.plugin(cssnano, (options = {}) => {
+const cssnanoPlugin = (options = {}) => {
   if (Array.isArray(options.plugins)) {
     if (!options.preset || !options.preset.plugins) {
       options.preset = { plugins: [] };
@@ -133,12 +109,24 @@ export default postcss.plugin(cssnano, (options = {}) => {
       }
     });
   }
+  const plugins = [];
+  const nanoPlugins = resolveConfig(options);
+  for (const nanoPlugin of nanoPlugins) {
+    if (Array.isArray(nanoPlugin)) {
+      const [processor, opts] = nanoPlugin;
+      if (
+        typeof opts === 'undefined' ||
+        (typeof opts === 'object' && !opts.exclude) ||
+        (typeof opts === 'boolean' && opts === true)
+      ) {
+        plugins.push(processor(opts));
+      }
+    } else {
+      plugins.push(nanoPlugin);
+    }
+  }
+  return postcss(plugins);
+};
 
-  return (css, result) => {
-    return resolveConfig(css, result, options).then((plugins) => {
-      return plugins.reduce((promise, plugin) => {
-        return promise.then(initializePlugin.bind(null, plugin, css, result));
-      }, Promise.resolve());
-    });
-  };
-});
+cssnanoPlugin.postcss = true;
+export default cssnanoPlugin;

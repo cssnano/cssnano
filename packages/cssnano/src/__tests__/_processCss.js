@@ -7,7 +7,7 @@ export default function processCss(
   options = { from: undefined }
 ) {
   return () =>
-    postcss([cssnano])
+    postcss([cssnano()])
       .process(fixture, options)
       .then(({ css }) => {
         expect(css).toBe(expected);
