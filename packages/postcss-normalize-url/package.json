@@ -23,9 +23,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "is-absolute-url": "^2.1.0",
-    "normalize-url": "^3.3.0",
-    "postcss-value-parser": "^3.3.1"
+    "is-absolute-url": "^3.0.3",
+    "normalize-url": "^4.5.0",
+    "postcss-value-parser": "^4.1.0"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
