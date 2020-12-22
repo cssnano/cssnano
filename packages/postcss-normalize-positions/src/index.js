@@ -1,6 +1,4 @@
-import { plugin } from 'postcss';
 import valueParser, { unit } from 'postcss-value-parser';
-import has from 'has';
 
 const directionKeywords = ['top', 'right', 'bottom', 'left', 'center'];
 
@@ -146,7 +144,7 @@ function transform(value) {
         center,
       });
 
-      if (has(map, firstNode)) {
+      if (Object.prototype.hasOwnProperty.call(map, firstNode)) {
         nodes[0].value = map[firstNode];
       }
 
@@ -156,19 +154,25 @@ function transform(value) {
     if (firstNode === 'center' && directionKeywords.includes(secondNode)) {
       nodes[0].value = nodes[1].value = '';
 
-      if (has(horizontal, secondNode)) {
+      if (Object.prototype.hasOwnProperty.call(horizontal, secondNode)) {
         nodes[2].value = horizontal[secondNode];
       }
 
       return;
     }
 
-    if (has(horizontal, firstNode) && has(verticalValue, secondNode)) {
+    if (
+      Object.prototype.hasOwnProperty.call(horizontal, firstNode) &&
+      Object.prototype.hasOwnProperty.call(verticalValue, secondNode)
+    ) {
       nodes[0].value = horizontal[firstNode];
       nodes[2].value = verticalValue[secondNode];
 
       return;
-    } else if (has(verticalValue, firstNode) && has(horizontal, secondNode)) {
+    } else if (
+      Object.prototype.hasOwnProperty.call(verticalValue, firstNode) &&
+      Object.prototype.hasOwnProperty.call(horizontal, secondNode)
+    ) {
       nodes[0].value = horizontal[secondNode];
       nodes[2].value = verticalValue[firstNode];
 
@@ -179,30 +183,37 @@ function transform(value) {
   return parsed.toString();
 }
 
-export default plugin('postcss-normalize-positions', () => {
-  return (css) => {
-    const cache = {};
+function pluginCreator() {
+  return {
+    postcssPlugin: 'postcss-normalize-positions',
 
-    css.walkDecls(
-      /^(background(-position)?|(-\w+-)?perspective-origin)$/i,
-      (decl) => {
-        const value = decl.value;
+    OnceExit(css) {
+      const cache = {};
 
-        if (!value) {
-          return;
+      css.walkDecls(
+        /^(background(-position)?|(-\w+-)?perspective-origin)$/i,
+        (decl) => {
+          const value = decl.value;
+
+          if (!value) {
+            return;
+          }
+
+          if (cache[value]) {
+            decl.value = cache[value];
+
+            return;
+          }
+
+          const result = transform(value);
+
+          decl.value = result;
+          cache[value] = result;
         }
-
-        if (cache[value]) {
-          decl.value = cache[value];
-
-          return;
-        }
-
-        const result = transform(value);
-
-        decl.value = result;
-        cache[value] = result;
-      }
-    );
+      );
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;
