@@ -1,4 +1,3 @@
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import SVGO from 'svgo';
 import isSvg from 'is-svg';
@@ -92,7 +91,7 @@ function minifyPromise(decl, getSvgo, opts) {
   return Promise.all(promises).then(() => (decl.value = decl.value.toString()));
 }
 
-export default postcss.plugin(PLUGIN, (opts = {}) => {
+function pluginCreator(opts = {}) {
   let svgo = null;
 
   const getSvgo = () => {
@@ -103,19 +102,26 @@ export default postcss.plugin(PLUGIN, (opts = {}) => {
     return svgo;
   };
 
-  return (css) => {
-    return new Promise((resolve, reject) => {
-      const svgoQueue = [];
+  return {
+    postcssPlugin: PLUGIN,
 
-      css.walkDecls((decl) => {
-        if (!dataURI.test(decl.value)) {
-          return;
-        }
+    OnceExit(css) {
+      return new Promise((resolve, reject) => {
+        const svgoQueue = [];
 
-        svgoQueue.push(minifyPromise(decl, getSvgo, opts));
+        css.walkDecls((decl) => {
+          if (!dataURI.test(decl.value)) {
+            return;
+          }
+
+          svgoQueue.push(minifyPromise(decl, getSvgo, opts));
+        });
+
+        return Promise.all(svgoQueue).then(resolve, reject);
       });
-
-      return Promise.all(svgoQueue).then(resolve, reject);
-    });
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;
