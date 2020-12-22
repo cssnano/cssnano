@@ -1,9 +1,7 @@
-import { plugin } from 'postcss';
 import sort from 'alphanum-sort';
-import has from 'has';
 import parser from 'postcss-selector-parser';
-import unquote from './lib/unquote';
-import canUnquote from './lib/canUnquote';
+import unquote from './lib/unquote.js';
+import canUnquote from './lib/canUnquote.js';
 
 const pseudoElements = [
   '::before',
@@ -11,10 +9,6 @@ const pseudoElements = [
   '::first-letter',
   '::first-line',
 ];
-
-function getParsed(selectors, callback) {
-  return parser(callback).processSync(selectors);
-}
 
 function attribute(selector) {
   if (selector.value) {
@@ -143,7 +137,7 @@ const tagReplacements = {
 function tag(selector) {
   const value = selector.value.toLowerCase();
 
-  if (has(tagReplacements, value)) {
+  if (Object.prototype.hasOwnProperty.call(tagReplacements, value)) {
     selector.value = tagReplacements[value];
   }
 }
@@ -164,29 +158,13 @@ const reducers = {
   universal,
 };
 
-export default plugin('postcss-minify-selectors', () => {
-  return (css) => {
-    const cache = {};
+function pluginCreator() {
+  return {
+    postcssPlugin: 'postcss-minify-selectors',
 
-    css.walkRules((rule) => {
-      const selector =
-        rule.raws.selector && rule.raws.selector.value === rule.selector
-          ? rule.raws.selector.raw
-          : rule.selector;
-
-      // If the selector ends with a ':' it is likely a part of a custom mixin,
-      // so just pass through.
-      if (selector[selector.length - 1] === ':') {
-        return;
-      }
-
-      if (cache[selector]) {
-        rule.selector = cache[selector];
-
-        return;
-      }
-
-      const optimizedSelector = getParsed(selector, (selectors) => {
+    OnceExit(css) {
+      const cache = {};
+      const processor = parser((selectors) => {
         selectors.nodes = sort(selectors.nodes, { insensitive: true });
 
         const uniqueSelectors = [];
@@ -197,7 +175,7 @@ export default plugin('postcss-minify-selectors', () => {
           // Trim whitespace around the value
           sel.spaces.before = sel.spaces.after = '';
 
-          if (has(reducers, type)) {
+          if (Object.prototype.hasOwnProperty.call(reducers, type)) {
             reducers[type](sel);
 
             return;
@@ -215,8 +193,32 @@ export default plugin('postcss-minify-selectors', () => {
         });
       });
 
-      rule.selector = optimizedSelector;
-      cache[selector] = optimizedSelector;
-    });
+      css.walkRules((rule) => {
+        const selector =
+          rule.raws.selector && rule.raws.selector.value === rule.selector
+            ? rule.raws.selector.raw
+            : rule.selector;
+
+        // If the selector ends with a ':' it is likely a part of a custom mixin,
+        // so just pass through.
+        if (selector[selector.length - 1] === ':') {
+          return;
+        }
+
+        if (cache[selector]) {
+          rule.selector = cache[selector];
+
+          return;
+        }
+
+        const optimizedSelector = processor.processSync(selector);
+
+        rule.selector = optimizedSelector;
+        cache[selector] = optimizedSelector;
+      });
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;
