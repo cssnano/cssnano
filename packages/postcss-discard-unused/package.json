@@ -30,8 +30,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "postcss-selector-parser": "^3.1.1",
-    "uniqs": "^2.0.0"
+    "postcss-selector-parser": "^6.0.4"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
