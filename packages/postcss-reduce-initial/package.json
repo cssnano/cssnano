@@ -28,9 +28,8 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^4.5.6",
-    "caniuse-api": "^3.0.0",
-    "has": "^1.0.3"
+    "browserslist": "^4.16.0",
+    "caniuse-api": "^3.0.0"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
