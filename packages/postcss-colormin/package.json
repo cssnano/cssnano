@@ -30,10 +30,9 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^4.6.0",
+    "browserslist": "^4.16.0",
     "color": "^3.1.1",
-    "has": "^1.0.3",
-    "postcss-value-parser": "^3.3.1"
+    "postcss-value-parser": "^4.1.0"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
