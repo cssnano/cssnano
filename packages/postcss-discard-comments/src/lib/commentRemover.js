@@ -2,7 +2,7 @@ function CommentRemover(options) {
   this.options = options;
 }
 
-CommentRemover.prototype.canRemove = function(comment) {
+CommentRemover.prototype.canRemove = function (comment) {
   const remove = this.options.remove;
 
   if (remove) {

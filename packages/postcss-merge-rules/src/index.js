@@ -341,7 +341,7 @@ function partialMerge(first, second) {
 function selectorMerger(browsers, compatibilityCache) {
   /** @type {postcss.Rule} */
   let cache = null;
-  return function(rule) {
+  return function (rule) {
     // Prime the cache with the first rule, or alternately ensure that it is
     // safe to merge both declarations before continuing
     if (!cache || !canMerge(rule, cache, browsers, compatibilityCache)) {

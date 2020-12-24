@@ -242,9 +242,7 @@ export default postcss.plugin('postcss-reduce-transforms', () => {
         return;
       }
 
-      const result = valueParser(value)
-        .walk(reduce)
-        .toString();
+      const result = valueParser(value).walk(reduce).toString();
 
       decl.value = result;
       cache[value] = result;

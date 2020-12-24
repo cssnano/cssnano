@@ -52,7 +52,7 @@ function transform(number, unit, conversion) {
     .reduce((a, b) => (a.length < b.length ? a : b));
 }
 
-export default function(number, unit, { time, length, angle }) {
+export default function (number, unit, { time, length, angle }) {
   let value = dropLeadingZero(number) + (unit ? unit : '');
   let converted;
 

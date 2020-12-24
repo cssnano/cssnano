@@ -96,9 +96,7 @@ function reduce(node) {
 }
 
 function transform(value) {
-  return valueParser(value)
-    .walk(reduce)
-    .toString();
+  return valueParser(value).walk(reduce).toString();
 }
 
 export default plugin('postcss-normalize-timing-functions', () => {

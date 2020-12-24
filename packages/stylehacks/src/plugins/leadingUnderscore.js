@@ -11,7 +11,7 @@ function vendorPrefix(prop) {
 
   return '';
 }
-export default plugin([IE_6], [DECL], function(decl) {
+export default plugin([IE_6], [DECL], function (decl) {
   const { before } = decl.raws;
 
   if (before && ~before.indexOf('_')) {

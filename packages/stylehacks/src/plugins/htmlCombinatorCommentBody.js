@@ -29,7 +29,7 @@ function analyse(ctx, rule) {
   };
 }
 
-export default plugin([IE_5_5, IE_6, IE_7], [RULE], function(rule) {
+export default plugin([IE_5_5, IE_6, IE_7], [RULE], function (rule) {
   if (isMixin(rule)) {
     return;
   }

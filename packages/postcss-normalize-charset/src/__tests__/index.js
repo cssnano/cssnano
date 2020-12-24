@@ -10,7 +10,7 @@ const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 function sourceTest(origin) {
   return postcss.plugin('source-test', () => {
-    return function(css) {
+    return function (css) {
       let node = css.first;
       let source;
 
