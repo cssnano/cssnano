@@ -220,7 +220,7 @@ test(
 		.icon {
 				font-family: Glyphicons Halflings;
 		}`,
-    `@font-face{src:url(../fonts/bootstrap/glyphicons-halflings-regular.eot);src:url(../fonts/bootstrap/glyphicons-halflings-regular.eot?#iefix) format("embedded-opentype"),url(../fonts/bootstrap/glyphicons-halflings-regular.woff2) format("woff2"),url(../fonts/bootstrap/glyphicons-halflings-regular.woff) format("woff"),url(../fonts/bootstrap/glyphicons-halflings-regular.ttf) format("truetype"),url(../fonts/bootstrap/glyphicons-halflings-regular.svg#glyphicons_halflingsregular) format("svg");font-family:Glyphicons Halflings}.icon{font-family:Glyphicons Halflings}`
+    `@font-face{font-family:Glyphicons Halflings;src:url(../fonts/bootstrap/glyphicons-halflings-regular.eot);src:url(../fonts/bootstrap/glyphicons-halflings-regular.eot?#iefix) format("embedded-opentype"),url(../fonts/bootstrap/glyphicons-halflings-regular.woff2) format("woff2"),url(../fonts/bootstrap/glyphicons-halflings-regular.woff) format("woff"),url(../fonts/bootstrap/glyphicons-halflings-regular.ttf) format("truetype"),url(../fonts/bootstrap/glyphicons-halflings-regular.svg#glyphicons_halflingsregular) format("svg")}.icon{font-family:Glyphicons Halflings}`
   )
 );
 
