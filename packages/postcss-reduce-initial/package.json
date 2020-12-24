@@ -9,9 +9,9 @@
     "LICENSE-MIT"
   ],
   "scripts": {
-    "acquire": "babel-node ./src/acquire.js",
+    "acquire": "node ./src/acquire.mjs",
     "prebuild": "del-cli dist",
-    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/,src/acquire.js'",
+    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore '**/__tests__/,src/acquire.mjs'",
     "prepublish": "yarn build"
   },
   "keywords": [
