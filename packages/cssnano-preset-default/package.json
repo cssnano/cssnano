@@ -16,7 +16,7 @@
   "dependencies": {
     "css-declaration-sorter": "6.0.0",
     "cssnano-utils": "^1.0.0",
-    "postcss-calc": "^7.0.1",
+    "postcss-calc": "^8.0.0",
     "postcss-colormin": "^4.0.3",
     "postcss-convert-values": "^4.0.1",
     "postcss-discard-comments": "^4.0.2",
