@@ -42,6 +42,55 @@ export default plugin('postcss-normalize-whitespace', () => {
         node.raws.before = node.raws.before.replace(/\s/g, '');
       }
 
+      if (type === atrule && node.params) {
+        let paramClone = node.params;
+        /**
+         * @atRule () , @atRule ()
+         *
+         * => Output
+         *
+         * @atRule (),@atRule ()
+         */
+        paramClone = paramClone
+          .split(',')
+          .map((_) => _.trim())
+          .join(',');
+
+        /**
+         * @atRule and ( ) => @atRule and( )
+         * @atRule and ( )  , => @atRule and( ),
+         */
+        paramClone = paramClone.replace(/\s+\(/g, '(').replace(/\)\s+/g, ')');
+
+        if (/^\(/gi.test(paramClone)) {
+          /**
+           * @atRule ( ){} => @atRule( ) {}
+           */
+          node.raws.afterName = '';
+        }
+
+        /**
+         * removes the whitespace inside of expression i.e ( )
+         * @media (max-width : 49px) {} => @media (max-width:49px) {}
+         * @media (    max-width : 49px) {} => @media (max-width:49px) {}
+         */
+        paramClone = paramClone.replace(/\(.*?\)/gi, (i) =>
+          i.replace(/ +/g, '')
+        );
+
+        // convert all multiple spaces to one in params
+        paramClone = paramClone.replace(/ +/g, ' ');
+        paramClone = paramClone.trim();
+        node.params = paramClone;
+      }
+
+      for (let i in node.raws) {
+        // convert all raws from multiple spaces to one
+        if (typeof node.raws[i] === 'string') {
+          node.raws[i] = node.raws[i].replace(/ +/g, ' ');
+        }
+      }
+
       if (type === decl) {
         // Ensure that !important values do not have any excess whitespace
         if (node.important) {

@@ -102,3 +102,123 @@ test(
     'div{border-radius:var(border-rad, )}'
   )
 );
+
+test(
+  'should remove whitespace between the atrule and param',
+  processCSS('@media (max-width:500px){}', '@media(max-width:500px){}')
+);
+
+test(
+  'should remove whitespace between the atrule and param #2',
+  processCSS(
+    '@media  screen and (max-width:500px){}',
+    '@media screen and(max-width:500px){}'
+  )
+);
+
+test(
+  'should remove whitespace between the atrule and param #3',
+  processCSS(
+    '@media screen and (color), projection   and (max-width:500px){}',
+    '@media screen and(color),projection and(max-width:500px){}'
+  )
+);
+
+test(
+  'should remove whitespace between the atrule and param #4',
+  processCSS(
+    '@media screen    and (color), projection and (max-width:500px){}',
+    '@media screen and(color),projection and(max-width:500px){}'
+  )
+);
+
+test(
+  'should remove whitespace between the atrule and param #5',
+  processCSS('@supports (display: flex) {}', '@supports(display:flex){}')
+);
+
+test(
+  'should remove whitespace between the atrule and param #6',
+  processCSS(
+    '@media  screen and (max-width:500px){ h1 { color:  red } }',
+    '@media screen and(max-width:500px){h1{color:red}}'
+  )
+);
+
+test(
+  'should remove whitespace between the atrule and param #7',
+  processCSS('@media (max-width:   500px){}', '@media(max-width:500px){}')
+);
+
+test(
+  'should remove whitespace between the atrule and param #8',
+  processCSS('@media (max-width: 500px){}', '@media(max-width:500px){}')
+);
+
+test(
+  'should remove whitespace between the atrule and param #9',
+  processCSS(
+    '@media screen and (min-width: 400px) and (max-width: 700px) {}',
+    '@media screen and(min-width:400px)and(max-width:700px){}'
+  )
+);
+
+test(
+  'should remove whitespace between the atrule and param #10',
+  processCSS(
+    `@media handheld and (min-width: 20em),
+screen and (min-width: 20em) {}
+`,
+    `@media handheld and(min-width:20em),screen and(min-width:20em){}`
+  )
+);
+
+test(
+  'should remove whitespace between the atrule and param #11',
+  processCSS('@media all and (monochrome) {}', '@media all and(monochrome){}')
+);
+
+test(
+  'should remove whitespace between the atrule and param #12',
+  processCSS(
+    '@media print { #navigation { display: none }}',
+    '@media print{#navigation{display:none}}'
+  )
+);
+
+test(
+  'should remove whitespace between the atrule and param #13',
+  processCSS(
+    `@supports (   (transition-property: color) or
+         (animation-name: foo  )) and
+         (transform: rotate(10deg)) {
+  /* ... */
+}`,
+    `@supports((transition-property:color)or(animation-name:foo))and(transform:rotate(10deg)){
+ /* ... */}`
+  )
+);
+
+test(
+  'should remove whitespace between the atrule and param #14',
+  processCSS(
+    `@supports ( display: var( --grid ) ) {
+  div {
+    display: grid;
+  }
+}`,
+    `@supports(display:var(--grid)){div{display:grid}}`
+  )
+);
+
+test(
+  'should remove whitespace between the atrule and param #15',
+  processCSS(
+    `@supports  not ( display: var( --  grid ) ) {
+  div {
+    display: grid;
+  }
+}`,
+    `@supports not(display:var(--grid)){div{display:grid}}`
+  )
+);
