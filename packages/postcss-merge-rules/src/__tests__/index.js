@@ -251,9 +251,50 @@ test(
 
 test(
   'should merge vendor prefixed selectors when vendors are the same',
-  processCSS(
-    'code ::-moz-selection{background:red}code::-moz-selection{background:red}',
-    'code ::-moz-selection,code::-moz-selection{background:red}'
+  passthroughCSS(
+    'code ::-moz-selection{background:red}code::-moz-selection{background:red}'
+  )
+);
+
+test(
+  'should not merge pseudo which are not supported by the browsers ::selection',
+  passthroughCSS('::selection{background:red} ::selection{background:red}')
+);
+
+test(
+  'should not merge pseudo which are not supported by the browsers - code ::selection',
+  passthroughCSS(
+    'code ::selection{background:red} code ::selection{background:red}'
+  )
+);
+
+test(
+  'should not merge pseudo which are not supported by the browsers - any link',
+  passthroughCSS(
+    'a:any-link { color: orange; } a:any-link {  border: 1px solid blue;}',
+    {
+      env: 'not ie > 11',
+    }
+  )
+);
+
+test(
+  'should not merge pseudo which are not supported by the browsers - read-only',
+  passthroughCSS(
+    'p:read-only  { color: orange; } p:read-only  {  border: 1px solid blue;}',
+    {
+      env: 'not ie > 11',
+    }
+  )
+);
+
+test(
+  'should not merge pseudo which are not supported by the browsers - read-write',
+  passthroughCSS(
+    'p:read-write  { color: orange; } p:read-write  {  border: 1px solid blue;}',
+    {
+      env: 'not ie > 11',
+    }
   )
 );
 

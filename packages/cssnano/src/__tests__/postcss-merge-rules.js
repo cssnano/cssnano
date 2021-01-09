@@ -1,4 +1,6 @@
-import processCss from './_processCss';
+import processCss, { passthrough } from './_processCss';
+
+jest.setTimeout(60000);
 
 jest.setTimeout(60000);
 
@@ -185,9 +187,8 @@ test(
 
 test(
   'should merge vendor prefixed selectors when vendors are the same',
-  processCss(
-    'code ::-moz-selection{background:red}code::-moz-selection{background:red}',
-    'code::-moz-selection,code ::-moz-selection{background:red}'
+  passthrough(
+    'code ::-moz-selection{background:red}code::-moz-selection{background:red}'
   )
 );
 

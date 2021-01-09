@@ -1,3 +1,4 @@
+import postcss from 'postcss';
 import { isSupported } from 'caniuse-api';
 import selectorParser from 'postcss-selector-parser';
 
@@ -20,10 +21,12 @@ export const pseudoElements = {
   ':disabled': cssSel3,
   ':empty': cssSel3,
   ':enabled': cssSel3,
+  ':first': cssSel2,
   ':first-child': cssSel2,
   ':first-letter': cssFirstLetter,
   ':first-line': cssFirstLine,
   ':first-of-type': cssSel3,
+  ':left': cssSel2,
   ':focus': cssSel2,
   ':focus-within': 'css-focus-within',
   ':focus-visible': 'css-focus-visible',
@@ -34,6 +37,8 @@ export const pseudoElements = {
   ':lang': cssSel2,
   ':last-child': cssSel3,
   ':last-of-type': cssSel3,
+  ':link': cssSel3,
+  ':right': cssSel2,
   ':matches': 'css-matches-pseudo',
   ':not': cssSel3,
   ':nth-child': cssSel3,
@@ -55,6 +60,10 @@ export const pseudoElements = {
   '::marker': 'css-marker-pseudo',
   '::placeholder': 'css-placeholder',
   '::selection': 'css-selection',
+  ':visited': cssSel3,
+  ':any-link': 'css-any-link',
+  ':read-only': 'css-read-only-write',
+  ':read-write': 'css-read-only-write',
 };
 
 function isCssMixin(selector) {
@@ -97,8 +106,10 @@ export default function ensureCompatibility(
       ast.walk((node) => {
         const { type, value } = node;
         if (type === 'pseudo') {
-          const entry = pseudoElements[value];
-          if (entry && compatible) {
+          const entry = pseudoElements[postcss.vendor.unprefixed(value)];
+          if (!entry) {
+            compatible = false;
+          } else if (compatible) {
             compatible = isSupportedCached(entry, browsers);
           }
         }
