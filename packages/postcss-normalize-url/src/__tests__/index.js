@@ -38,7 +38,7 @@ test(
   'should remove the default port',
   processCSS(
     'h1{background:url(http://website.com:80/image.png)}',
-    'h1{background:url(http://website.com/image.png)}'
+    'h1{background:url(http://website.com:80/image.png)}'
   )
 );
 
@@ -271,7 +271,7 @@ test(
   'should handle protocol relative urls',
   processCSS(
     'h1{background:url(//website.com:80/image.png)}',
-    'h1{background:url(//website.com/image.png)}'
+    'h1{background:url(//website.com:80/image.png)}'
   )
 );
 

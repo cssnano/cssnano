@@ -1,29 +1,10 @@
+/* eslint-disable no-useless-escape */
 import path from 'path';
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
-import normalize from 'normalize-url';
-import isAbsolute from 'is-absolute-url';
 
 const multiline = /\\[\r\n]/;
-// eslint-disable-next-line no-useless-escape
 const escapeChars = /([\s\(\)"'])/g;
-
-function convert(url, options) {
-  if (isAbsolute(url) || url.startsWith('//')) {
-    let normalizedURL = null;
-
-    try {
-      normalizedURL = normalize(url, options);
-    } catch (e) {
-      normalizedURL = url;
-    }
-
-    return normalizedURL;
-  }
-
-  // `path.normalize` always returns backslashes on Windows, need replace in `/`
-  return path.normalize(url).replace(new RegExp('\\' + path.sep, 'g'), '/');
-}
 
 function transformNamespace(rule) {
   rule.params = valueParser(rule.params)
@@ -45,7 +26,7 @@ function transformNamespace(rule) {
     .toString();
 }
 
-function transformDecl(decl, opts) {
+function transformDecl(decl) {
   decl.value = valueParser(decl.value)
     .walk((node) => {
       if (
@@ -74,8 +55,11 @@ function transformDecl(decl, opts) {
         return false;
       }
 
-      if (!/^.+-extension:\//i.test(url.value)) {
-        url.value = convert(url.value, opts);
+      if (!/^.+-extension:\//i.test(url.value) && !url.value.startsWith('//')) {
+        url.value = path
+          .normalize(url.value)
+          .replace(/:[\\\/]+/g, '://')
+          .replace(new RegExp('\\' + path.sep, 'g'), '/');
       }
 
       if (escapeChars.test(url.value) && url.type === 'string') {
@@ -94,21 +78,11 @@ function transformDecl(decl, opts) {
     .toString();
 }
 
-export default postcss.plugin('postcss-normalize-url', (opts) => {
-  opts = Object.assign(
-    {},
-    {
-      normalizeProtocol: false,
-      stripFragment: false,
-      stripWWW: false,
-    },
-    opts
-  );
-
+export default postcss.plugin('postcss-normalize-url', () => {
   return (css) => {
     css.walk((node) => {
       if (node.type === 'decl') {
-        return transformDecl(node, opts);
+        return transformDecl(node);
       } else if (
         node.type === 'atrule' &&
         node.name.toLowerCase() === 'namespace'

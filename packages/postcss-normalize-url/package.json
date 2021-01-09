@@ -23,8 +23,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "is-absolute-url": "^2.1.0",
-    "normalize-url": "^3.3.0",
     "postcss": "^7.0.16",
     "postcss-value-parser": "^3.3.1"
   },
