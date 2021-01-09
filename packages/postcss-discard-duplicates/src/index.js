@@ -88,13 +88,17 @@ function dedupeRule(last, nodes) {
   }
 }
 
-function dedupeNode(last, nodes) {
+function dedupeNode(last, nodes, keepFirst) {
   let index = ~nodes.indexOf(last) ? nodes.indexOf(last) - 1 : nodes.length - 1;
 
   while (index >= 0) {
     const node = nodes[index--];
     if (node && equals(node, last)) {
-      node.remove();
+      if (keepFirst) {
+        last.remove();
+      } else {
+        node.remove();
+      }
     }
   }
 }
@@ -106,8 +110,9 @@ const handlers = {
   comment: noop,
 };
 
-function dedupe(root) {
+function dedupe(root, opts) {
   const { nodes } = root;
+  const { keepFirst } = opts;
 
   if (!nodes) {
     return;
@@ -119,9 +124,9 @@ function dedupe(root) {
     if (!last || !last.parent) {
       continue;
     }
-    dedupe(last);
-    handlers[last.type](last, nodes);
+    dedupe(last, opts);
+    handlers[last.type](last, nodes, keepFirst);
   }
 }
 
-export default plugin('postcss-discard-duplicates', () => dedupe);
+export default plugin('postcss-discard-duplicates', (opts = {}) => (root) => dedupe(root, opts));
