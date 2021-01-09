@@ -1,6 +1,6 @@
 {
     "name": "cssnano-preset-lite",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "main": "dist/index.js",
     "description": "Safe and minimum transformation",
     "scripts": {
@@ -14,7 +14,7 @@
     ],
     "license": "MIT",
     "dependencies": {
-        "cssnano-utils": "^1.0.0",
+        "cssnano-utils": "^1.0.1",
         "postcss": "^7.0.16",
         "postcss-discard-comments": "^4.0.2",
         "postcss-normalize-whitespace": "^4.0.2",
