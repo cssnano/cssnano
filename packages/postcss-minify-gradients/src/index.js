@@ -1,4 +1,3 @@
-import postcss from 'postcss';
 import valueParser, { unit, stringify } from 'postcss-value-parser';
 import { getArguments } from 'lerna:cssnano-utils';
 import isColorStop from 'is-color-stop';
@@ -192,6 +191,14 @@ function optimise(decl) {
     .toString();
 }
 
-export default postcss.plugin('postcss-minify-gradients', () => {
-  return (css) => css.walkDecls(optimise);
-});
+function pluginCreator() {
+  return {
+    postcssPlugin: 'postcss-minify-gradients',
+    OnceExit(css) {
+      css.walkDecls(optimise);
+    },
+  };
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

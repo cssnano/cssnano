@@ -1,5 +1,4 @@
 import browserslist from 'browserslist';
-import postcss from 'postcss';
 import valueParser, { stringify } from 'postcss-value-parser';
 import sort from 'alphanum-sort';
 import uniqs from 'uniqs';
@@ -94,15 +93,21 @@ function hasAllBug(browser) {
   return ~['ie 10', 'ie 11'].indexOf(browser);
 }
 
-export default postcss.plugin('postcss-minify-params', () => {
-  return (css, result) => {
-    const resultOpts = result.opts || {};
-    const browsers = browserslist(null, {
-      stats: resultOpts.stats,
-      path: __dirname,
-      env: resultOpts.env,
-    });
+function pluginCreator(options = {}) {
+  const browsers = browserslist(null, {
+    stats: options.stats,
+    path: __dirname,
+    env: options.env,
+  });
 
-    return css.walkAtRules(transform.bind(null, browsers.some(hasAllBug)));
+  return {
+    postcssPlugin: 'postcss-minify-params',
+
+    OnceExit(css) {
+      css.walkAtRules(transform.bind(null, browsers.some(hasAllBug)));
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

@@ -65,7 +65,7 @@ const RESERVED_KEYWORDS = [
   'disclosure-close',
 ];
 
-export default function() {
+export default function () {
   let cache = {};
   let atRules = [];
   let decls = [];

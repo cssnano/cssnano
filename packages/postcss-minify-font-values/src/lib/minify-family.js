@@ -144,7 +144,7 @@ function escapeIdentifierSequence(string) {
   return result;
 }
 
-export default function(nodes, opts) {
+export default function (nodes, opts) {
   let family = [];
   let last = null;
   let i, max;

@@ -1,5 +1,4 @@
 import path from 'path';
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import normalize from 'normalize-url';
 import isAbsolute from 'is-absolute-url';
@@ -48,18 +47,18 @@ function transformNamespace(rule) {
 function transformDecl(decl, opts) {
   decl.value = valueParser(decl.value)
     .walk((node) => {
-      if (
-        node.type !== 'function' ||
-        node.value.toLowerCase() !== 'url' ||
-        !node.nodes.length
-      ) {
+      if (node.type !== 'function' || node.value.toLowerCase() !== 'url') {
         return false;
       }
 
+      node.before = node.after = '';
+
+      if (!node.nodes.length) {
+        return false;
+      }
       let url = node.nodes[0];
       let escaped;
 
-      node.before = node.after = '';
       url.value = url.value.trim().replace(multiline, '');
 
       // Skip empty URLs
@@ -94,27 +93,34 @@ function transformDecl(decl, opts) {
     .toString();
 }
 
-export default postcss.plugin('postcss-normalize-url', (opts) => {
+function pluginCreator(opts) {
   opts = Object.assign(
     {},
     {
       normalizeProtocol: false,
-      stripFragment: false,
+      stripHash: false,
       stripWWW: false,
     },
     opts
   );
 
-  return (css) => {
-    css.walk((node) => {
-      if (node.type === 'decl') {
-        return transformDecl(node, opts);
-      } else if (
-        node.type === 'atrule' &&
-        node.name.toLowerCase() === 'namespace'
-      ) {
-        return transformNamespace(node);
-      }
-    });
+  return {
+    postcssPlugin: 'postcss-normalize-url',
+
+    OnceExit(css) {
+      css.walk((node) => {
+        if (node.type === 'decl') {
+          return transformDecl(node, opts);
+        } else if (
+          node.type === 'atrule' &&
+          node.name.toLowerCase() === 'namespace'
+        ) {
+          return transformNamespace(node);
+        }
+      });
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

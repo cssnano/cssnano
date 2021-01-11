@@ -125,9 +125,7 @@ function updatePreset(packageList, pkg) {
     .then((transformedAST) => {
       return fs.writeFile(
         `${pkg}/README.md`,
-        remark()
-          .use(remarkHeadingGap)
-          .stringify(transformedAST) + '\n'
+        remark().use(remarkHeadingGap).stringify(transformedAST) + '\n'
       );
     });
 }

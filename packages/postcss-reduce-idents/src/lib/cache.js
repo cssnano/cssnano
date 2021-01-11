@@ -1,4 +1,4 @@
-export default function(value, encoder, cache) {
+export default function (value, encoder, cache) {
   if (cache[value]) {
     return;
   }

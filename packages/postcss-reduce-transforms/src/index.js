@@ -1,5 +1,3 @@
-import has from 'has';
-import postcss from 'postcss';
 import valueParser, { stringify } from 'postcss-value-parser';
 import { getMatch as getMatchFactory } from 'lerna:cssnano-utils';
 
@@ -218,36 +216,46 @@ function reduce(node) {
   const { nodes, type, value } = node;
   const normalizedReducerName = normalizeReducerName(value);
 
-  if (type === 'function' && has(reducers, normalizedReducerName)) {
+  if (
+    type === 'function' &&
+    Object.prototype.hasOwnProperty.call(reducers, normalizedReducerName)
+  ) {
     reducers[normalizedReducerName](node, nodes.reduce(getValues, []));
   }
 
   return false;
 }
 
-export default postcss.plugin('postcss-reduce-transforms', () => {
-  return (css) => {
-    const cache = {};
+function pluginCreator() {
+  return {
+    postcssPlugin: 'postcss-reduce-transforms',
+    prepare() {
+      const cache = {};
+      return {
+        OnceExit(css) {
+          css.walkDecls(/transform$/i, (decl) => {
+            const value = decl.value;
 
-    css.walkDecls(/transform$/i, (decl) => {
-      const value = decl.value;
+            if (!value) {
+              return;
+            }
 
-      if (!value) {
-        return;
-      }
+            if (cache[value]) {
+              decl.value = cache[value];
 
-      if (cache[value]) {
-        decl.value = cache[value];
+              return;
+            }
 
-        return;
-      }
+            const result = valueParser(value).walk(reduce).toString();
 
-      const result = valueParser(value)
-        .walk(reduce)
-        .toString();
-
-      decl.value = result;
-      cache[value] = result;
-    });
+            decl.value = result;
+            cache[value] = result;
+          });
+        },
+      };
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

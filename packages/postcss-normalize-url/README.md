@@ -41,7 +41,7 @@ examples for your environment.
 ### normalize([options])
 
 Please see the [normalize-url documentation][docs]. By default,
-`normalizeProtocol`, `stripFragment` & `stripWWW` are set to `false`.
+`normalizeProtocol`, `stripHash` & `stripWWW` are set to `false`.
 
 ## Contributors
 

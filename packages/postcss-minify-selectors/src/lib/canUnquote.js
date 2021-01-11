@@ -1,4 +1,4 @@
-import unquote from './unquote';
+import unquote from './unquote.js';
 
 /**
  * Can unquote attribute detection from mothereff.in

@@ -1,5 +1,4 @@
 import browserslist from 'browserslist';
-import postcss from 'postcss';
 import valueParser, { stringify } from 'postcss-value-parser';
 import colormin from './colours';
 
@@ -66,43 +65,56 @@ function transform(value, isLegacy, colorminCache) {
   return parsed.toString();
 }
 
-export default postcss.plugin('postcss-colormin', () => {
-  return (css, result) => {
-    const resultOpts = result.opts || {};
-    const browsers = browserslist(null, {
-      stats: resultOpts.stats,
-      path: __dirname,
-      env: resultOpts.env,
-    });
-    const isLegacy = browsers.some(hasTransparentBug);
-    const colorminCache = {};
-    const cache = {};
+function pluginCreator() {
+  return {
+    postcssPlugin: 'postcss-colormin',
 
-    css.walkDecls((decl) => {
-      if (
-        /^(composes|font|filter|-webkit-tap-highlight-color)/i.test(decl.prop)
-      ) {
-        return;
-      }
+    prepare(result) {
+      const resultOpts = result.opts || {};
+      const browsers = browserslist(null, {
+        stats: resultOpts.stats,
+        path: __dirname,
+        env: resultOpts.env,
+      });
+      const isLegacy = browsers.some(hasTransparentBug);
+      const colorminCache = {};
+      const cache = {};
 
-      const value = decl.value;
+      return {
+        OnceExit(css) {
+          css.walkDecls((decl) => {
+            if (
+              /^(composes|font|filter|-webkit-tap-highlight-color)/i.test(
+                decl.prop
+              )
+            ) {
+              return;
+            }
 
-      if (!value) {
-        return;
-      }
+            const value = decl.value;
 
-      const cacheKey = `${decl.prop}|${decl.value}`;
+            if (!value) {
+              return;
+            }
 
-      if (cache[cacheKey]) {
-        decl.value = cache[cacheKey];
+            const cacheKey = `${decl.prop}|${decl.value}`;
 
-        return;
-      }
+            if (cache[cacheKey]) {
+              decl.value = cache[cacheKey];
 
-      const newValue = transform(value, isLegacy, colorminCache);
+              return;
+            }
 
-      decl.value = newValue;
-      cache[cacheKey] = newValue;
-    });
+            const newValue = transform(value, isLegacy, colorminCache);
+
+            decl.value = newValue;
+            cache[cacheKey] = newValue;
+          });
+        },
+      };
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

@@ -1,6 +1,6 @@
 const path = require('path');
 
-module.exports = function(api) {
+module.exports = function (api) {
   const env = api.env();
 
   const plugins = [];

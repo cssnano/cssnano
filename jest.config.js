@@ -1,4 +1,5 @@
 module.exports = {
+  testEnvironment: 'node',
   collectCoverageFrom: [
     'packages/*/src/**/*.js',
     '!packages/postcss-colormin/src/generate.js',

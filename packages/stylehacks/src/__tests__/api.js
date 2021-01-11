@@ -43,7 +43,6 @@ test('can be used as a postcss plugin (3)', () => {
 });
 
 test('should use the postcss plugin api', () => {
-  expect(stylehacks().postcssVersion).toBeDefined();
   expect(stylehacks().postcssPlugin).toBe(packageJson.name);
 });
 
