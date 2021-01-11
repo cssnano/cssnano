@@ -1,5 +1,4 @@
 import browserslist from 'browserslist';
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 
 const regexLowerCaseUPrefix = /^u(?=\+)/;
@@ -58,7 +57,7 @@ function hasLowerCaseUPrefixBug(browser) {
 function transform(value, isLegacy = false) {
   return valueParser(value)
     .walk((child) => {
-      if (child.type === 'word') {
+      if (child.type === 'unicode-range') {
         const transformed = unicode(child.value.toLowerCase());
 
         child.value = isLegacy
@@ -71,30 +70,40 @@ function transform(value, isLegacy = false) {
     .toString();
 }
 
-export default postcss.plugin('postcss-normalize-unicode', () => {
-  return (css, result) => {
-    const resultOpts = result.opts || {};
-    const browsers = browserslist(null, {
-      stats: resultOpts.stats,
-      path: __dirname,
-      env: resultOpts.env,
-    });
-    const isLegacy = browsers.some(hasLowerCaseUPrefixBug);
-    const cache = {};
+function pluginCreator() {
+  return {
+    postcssPlugin: 'postcss-normalize-unicode',
+    prepare(result) {
+      const cache = {};
+      const resultOpts = result.opts || {};
+      const browsers = browserslist(null, {
+        stats: resultOpts.stats,
+        path: __dirname,
+        env: resultOpts.env,
+      });
+      const isLegacy = browsers.some(hasLowerCaseUPrefixBug);
 
-    css.walkDecls(/^unicode-range$/i, (decl) => {
-      const value = decl.value;
+      return {
+        OnceExit(css) {
+          css.walkDecls(/^unicode-range$/i, (decl) => {
+            const value = decl.value;
 
-      if (cache[value]) {
-        decl.value = cache[value];
+            if (cache[value]) {
+              decl.value = cache[value];
 
-        return;
-      }
+              return;
+            }
 
-      const newValue = transform(value, isLegacy);
+            const newValue = transform(value, isLegacy);
 
-      decl.value = newValue;
-      cache[value] = newValue;
-    });
+            decl.value = newValue;
+            cache[value] = newValue;
+          });
+        },
+      };
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

@@ -79,6 +79,11 @@ test(
 test('should pass through initial', passthroughCSS(fixture('initial')));
 
 test(
+  'should pass through unknown property',
+  passthroughCSS('new-property: u+2b00-2bff')
+);
+
+test(
   'should downcase the unicode-range property/value pair',
   processCSS(
     '@font-face{font-family:test;UNICODE-RANGE:U+07-F}*{font-family:test}',

@@ -3,7 +3,7 @@
   "private": true,
   "dependencies": {
     "cssnano": "^4.0.0",
-    "postcss-cli": "^5.0.0"
+    "postcss-cli": "^8.3.0"
   },
   "scripts": {
     "minify": "postcss input.css > output.css"
@@ -14,7 +14,7 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": ">=10.13.0"
+    "node": "^10 || ^12 || >=14.0"
   },
   "license": "MIT",
   "author": {
@@ -22,5 +22,8 @@
     "email": "beneb.info@gmail.com",
     "url": "http://beneb.info"
   },
-  "version": "4.0.0"
+  "version": "4.0.0",
+  "peerDependencies": {
+    "postcss": "^8.2.1"
+  }
 }

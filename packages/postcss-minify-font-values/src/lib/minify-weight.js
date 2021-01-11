@@ -1,4 +1,4 @@
-export default function(value) {
+export default function (value) {
   const lowerCasedValue = value.toLowerCase();
 
   return lowerCasedValue === 'normal'

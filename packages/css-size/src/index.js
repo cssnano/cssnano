@@ -1,4 +1,5 @@
 import prettyBytes from 'pretty-bytes';
+import postcss from 'postcss';
 import { sync as gzip } from 'gzip-size';
 import { sync as brotli } from 'brotli-size';
 import Table from 'cli-table3';
@@ -14,7 +15,8 @@ const percentDifference = (original, minified) => {
 };
 
 const cssSize = (css, opts, processor) => {
-  processor = processor || nano.process.bind(nano);
+  const cssnano = postcss([nano]);
+  processor = processor || cssnano.process.bind(cssnano);
   css = css.toString();
   return processor(css, opts).then((result) => {
     let sizes = computeSizes(css, result.css);
@@ -95,7 +97,8 @@ export function table(css, opts, processor) {
 }
 
 export function numeric(css, opts, processor) {
-  processor = processor || nano.process.bind(nano);
+  const cssnano = nano();
+  processor = processor || cssnano.process.bind(cssnano);
   css = css.toString();
   return processor(css, opts).then((result) => {
     let sizes = computeSizes(css, result.css);

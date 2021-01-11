@@ -100,7 +100,7 @@ test(
   'sort properties inside at-rules, @font-face',
   processCSS(
     '@font-face{font-family:a;src:url()}',
-    '@font-face{src:url();font-family:a}'
+    '@font-face{font-family:a;src:url()}'
   )
 );
 

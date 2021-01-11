@@ -3,7 +3,7 @@ import addToCache from './cache';
 
 const RESERVED_KEYWORDS = ['none', 'inherit', 'initial', 'unset'];
 
-export default function() {
+export default function () {
   let cache = {};
   let atRules = [];
   let decls = [];

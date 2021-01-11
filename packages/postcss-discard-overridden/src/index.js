@@ -1,16 +1,16 @@
-import postcss from 'postcss';
-
 const OVERRIDABLE_RULES = ['keyframes', 'counter-style'];
 const SCOPE_RULES = ['media', 'supports'];
 
+function vendorUnprefixed(prop) {
+  return prop.replace(/^-\w+-/, '');
+}
+
 function isOverridable(name) {
-  return ~OVERRIDABLE_RULES.indexOf(
-    postcss.vendor.unprefixed(name.toLowerCase())
-  );
+  return ~OVERRIDABLE_RULES.indexOf(vendorUnprefixed(name.toLowerCase()));
 }
 
 function isScope(name) {
-  return ~SCOPE_RULES.indexOf(postcss.vendor.unprefixed(name.toLowerCase()));
+  return ~SCOPE_RULES.indexOf(vendorUnprefixed(name.toLowerCase()));
 }
 
 function getScope(node) {
@@ -28,27 +28,37 @@ function getScope(node) {
   return chain.join('|');
 }
 
-export default postcss.plugin('postcss-discard-overridden', () => {
-  return (css) => {
-    const cache = {};
-    const rules = [];
+function pluginCreator() {
+  return {
+    postcssPlugin: 'postcss-discard-overridden',
+    prepare() {
+      const cache = {};
+      const rules = [];
 
-    css.walkAtRules((node) => {
-      if (isOverridable(node.name)) {
-        const scope = getScope(node);
+      return {
+        OnceExit(css) {
+          css.walkAtRules((node) => {
+            if (isOverridable(node.name)) {
+              const scope = getScope(node);
 
-        cache[scope] = node;
-        rules.push({
-          node,
-          scope,
-        });
-      }
-    });
+              cache[scope] = node;
+              rules.push({
+                node,
+                scope,
+              });
+            }
+          });
 
-    rules.forEach((rule) => {
-      if (cache[rule.scope] !== rule.node) {
-        rule.node.remove();
-      }
-    });
+          rules.forEach((rule) => {
+            if (cache[rule.scope] !== rule.node) {
+              rule.node.remove();
+            }
+          });
+        },
+      };
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

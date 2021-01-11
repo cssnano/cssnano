@@ -1,5 +1,3 @@
-import postcss from 'postcss';
-
 const plugin = 'postcss-discard-empty';
 
 function discardAndReport(css, result) {
@@ -29,4 +27,14 @@ function discardAndReport(css, result) {
   css.each(discardEmpty);
 }
 
-export default postcss.plugin(plugin, () => discardAndReport);
+function pluginCreator() {
+  return {
+    postcssPlugin: plugin,
+    OnceExit(css, { result }) {
+      discardAndReport(css, result);
+    },
+  };
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

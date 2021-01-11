@@ -1,4 +1,3 @@
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 
 // rules
@@ -58,6 +57,10 @@ const rules = {
   ...columnRules,
 };
 
+function vendorUnprefixed(prop) {
+  return prop.replace(/^-\w+-/, '');
+}
+
 function isVariableFunctionNode(node) {
   if (node.type !== 'function') {
     return false;
@@ -94,39 +97,48 @@ function getValue(decl) {
   return value;
 }
 
-export default postcss.plugin('postcss-ordered-values', () => {
-  return (css) => {
-    const cache = {};
+function pluginCreator() {
+  return {
+    postcssPlugin: 'postcss-ordered-values',
+    prepare() {
+      const cache = {};
+      return {
+        OnceExit(css) {
+          css.walkDecls((decl) => {
+            const lowerCasedProp = decl.prop.toLowerCase();
+            const normalizedProp = vendorUnprefixed(lowerCasedProp);
+            const processor = rules[normalizedProp];
 
-    css.walkDecls((decl) => {
-      const lowerCasedProp = decl.prop.toLowerCase();
-      const normalizedProp = postcss.vendor.unprefixed(lowerCasedProp);
-      const processor = rules[normalizedProp];
+            if (!processor) {
+              return;
+            }
 
-      if (!processor) {
-        return;
-      }
+            const value = getValue(decl);
 
-      const value = getValue(decl);
+            if (cache[value]) {
+              decl.value = cache[value];
 
-      if (cache[value]) {
-        decl.value = cache[value];
+              return;
+            }
 
-        return;
-      }
+            const parsed = valueParser(value);
 
-      const parsed = valueParser(value);
+            if (parsed.nodes.length < 2 || shouldAbort(parsed)) {
+              cache[value] = value;
 
-      if (parsed.nodes.length < 2 || shouldAbort(parsed)) {
-        cache[value] = value;
+              return;
+            }
 
-        return;
-      }
+            const result = processor(parsed);
 
-      const result = processor(parsed);
-
-      decl.value = result.toString();
-      cache[value] = result.toString();
-    });
+            decl.value = result.toString();
+            cache[value] = result.toString();
+          });
+        },
+      };
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

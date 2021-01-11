@@ -5,7 +5,7 @@ import { ATRULE, DECL } from '../dictionary/postcss';
 
 const hacks = '!_$_&_*_)_=_%_+_,_._/_`_]_#_~_?_:_|'.split('_');
 
-export default plugin([IE_5_5, IE_6, IE_7], [ATRULE, DECL], function(node) {
+export default plugin([IE_5_5, IE_6, IE_7], [ATRULE, DECL], function (node) {
   if (node.type === DECL) {
     // some values are not picked up by before, so ensure they are
     // at the beginning of the value

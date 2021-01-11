@@ -1,4 +1,3 @@
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import { getMatch as getMatchFactory } from 'lerna:cssnano-utils';
 import mappings from './lib/map';
@@ -118,27 +117,39 @@ function transform(value) {
   return parsed.toString();
 }
 
-export default postcss.plugin('postcss-normalize-repeat-style', () => {
-  return (css) => {
-    const cache = {};
+function pluginCreator() {
+  return {
+    postcssPlugin: 'postcss-normalize-repeat-style',
+    prepare() {
+      const cache = {};
+      return {
+        OnceExit(css) {
+          css.walkDecls(
+            /^(background(-repeat)?|(-\w+-)?mask-repeat)$/i,
+            (decl) => {
+              const value = decl.value;
 
-    css.walkDecls(/^(background(-repeat)?|(-\w+-)?mask-repeat)$/i, (decl) => {
-      const value = decl.value;
+              if (!value) {
+                return;
+              }
 
-      if (!value) {
-        return;
-      }
+              if (cache[value]) {
+                decl.value = cache[value];
 
-      if (cache[value]) {
-        decl.value = cache[value];
+                return;
+              }
 
-        return;
-      }
+              const result = transform(value);
 
-      const result = transform(value);
-
-      decl.value = result;
-      cache[value] = result;
-    });
+              decl.value = result;
+              cache[value] = result;
+            }
+          );
+        },
+      };
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

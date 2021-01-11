@@ -26,7 +26,7 @@ function writeFiles({ fromInitial, toInitial }) {
   writeFile(join(__dirname, '../data/toInitial.json'), toJSON(toInitial), err);
 }
 
-got(url, { json: true })
+got(url, { responseType: 'json' })
   .then(({ body }) =>
     Object.keys(body).reduce(
       (values, key) => {
