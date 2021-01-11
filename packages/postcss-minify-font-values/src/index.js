@@ -1,4 +1,3 @@
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import minifyWeight from './lib/minify-weight';
 import minifyFamily from './lib/minify-family';
@@ -32,7 +31,7 @@ function transform(prop, value, opts) {
   return value;
 }
 
-export default postcss.plugin('postcss-minify-font-values', (opts) => {
+function pluginCreator(opts) {
   opts = Object.assign(
     {},
     {
@@ -43,30 +42,39 @@ export default postcss.plugin('postcss-minify-font-values', (opts) => {
     opts
   );
 
-  return (css) => {
-    const cache = {};
+  return {
+    postcssPlugin: 'postcss-minify-font-values',
+    prepare() {
+      const cache = {};
+      return {
+        OnceExit(css) {
+          css.walkDecls(/font/i, (decl) => {
+            const value = decl.value;
 
-    css.walkDecls(/font/i, (decl) => {
-      const value = decl.value;
+            if (!value) {
+              return;
+            }
 
-      if (!value) {
-        return;
-      }
+            const prop = decl.prop;
 
-      const prop = decl.prop;
+            const cacheKey = `${prop}|${value}`;
 
-      const cacheKey = `${prop}|${value}`;
+            if (cache[cacheKey]) {
+              decl.value = cache[cacheKey];
 
-      if (cache[cacheKey]) {
-        decl.value = cache[cacheKey];
+              return;
+            }
 
-        return;
-      }
+            const newValue = transform(prop, value, opts);
 
-      const newValue = transform(prop, value, opts);
-
-      decl.value = newValue;
-      cache[cacheKey] = newValue;
-    });
+            decl.value = newValue;
+            cache[cacheKey] = newValue;
+          });
+        },
+      };
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

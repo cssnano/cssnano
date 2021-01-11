@@ -3,7 +3,7 @@ import keywords from './keywords';
 import minifyFamily from './minify-family';
 import minifyWeight from './minify-weight';
 
-export default function(nodes, opts) {
+export default function (nodes, opts) {
   let i, max, node, familyStart, family;
   let hasSize = false;
 

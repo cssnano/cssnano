@@ -25,7 +25,7 @@ function analyse(ctx, rule) {
   };
 }
 
-export default plugin([OP_9], [RULE], function(rule) {
+export default plugin([OP_9], [RULE], function (rule) {
   if (isMixin(rule)) {
     return;
   }

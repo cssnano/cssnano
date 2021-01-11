@@ -41,7 +41,7 @@ test(
   'should optimise inside calc (5)',
   processCss(
     'h1{width:calc(14px + 6 * ((100vw - 320px) / 448))}',
-    'h1{width:calc(14px + 6*(100vw - 320px)/448)}'
+    'h1{width:calc(9.71429px + 1.33929vw)}'
   )
 );
 

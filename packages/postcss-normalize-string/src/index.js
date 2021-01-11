@@ -1,6 +1,4 @@
-import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
-import has from 'has';
 
 /*
  * Constants (parser usage)
@@ -234,7 +232,7 @@ const params = {
   atrule: 'params',
 };
 
-export default postcss.plugin('postcss-normalize-string', (opts) => {
+function pluginCreator(opts) {
   const { preferredQuote } = Object.assign(
     {},
     {
@@ -243,27 +241,34 @@ export default postcss.plugin('postcss-normalize-string', (opts) => {
     opts
   );
 
-  return (css) => {
-    const cache = {};
+  return {
+    postcssPlugin: 'postcss-normalize-string',
 
-    css.walk((node) => {
-      const { type } = node;
+    OnceExit(css) {
+      const cache = {};
 
-      if (has(params, type)) {
-        const param = params[type];
-        const key = node[param] + '|' + preferredQuote;
+      css.walk((node) => {
+        const { type } = node;
 
-        if (cache[key]) {
-          node[param] = cache[key];
+        if (Object.prototype.hasOwnProperty.call(params, type)) {
+          const param = params[type];
+          const key = node[param] + '|' + preferredQuote;
 
-          return;
+          if (cache[key]) {
+            node[param] = cache[key];
+
+            return;
+          }
+
+          const newValue = normalize(node[param], preferredQuote);
+
+          node[param] = newValue;
+          cache[key] = newValue;
         }
-
-        const newValue = normalize(node[param], preferredQuote);
-
-        node[param] = newValue;
-        cache[key] = newValue;
-      }
-    });
+      });
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

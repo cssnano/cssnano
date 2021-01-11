@@ -80,12 +80,7 @@ export default () => {
     // show the loading. editor panel loader not each editor's loader
     setEditorLoading(true);
     const configToSend = JSON.parse(
-      JSON.stringify(
-        config
-          .split('\n')
-          .slice(1)
-          .join('\n')
-      )
+      JSON.stringify(config.split('\n').slice(1).join('\n'))
     );
 
     const resolvedConfig = resolveConfigs(configToSend);

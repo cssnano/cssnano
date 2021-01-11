@@ -4,7 +4,7 @@ import isNum from './isNum';
 
 const RESERVED_KEYWORDS = ['auto', 'span', 'inherit', 'initial', 'unset'];
 
-export default function() {
+export default function () {
   let cache = {};
   let declCache = [];
 

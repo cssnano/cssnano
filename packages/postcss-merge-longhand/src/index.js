@@ -1,13 +1,19 @@
-import postcss from 'postcss';
 import processors from './lib/decl';
 
-export default postcss.plugin('postcss-merge-longhand', () => {
-  return (css) => {
-    css.walkRules((rule) => {
-      processors.forEach((p) => {
-        p.explode(rule);
-        p.merge(rule);
+function pluginCreator() {
+  return {
+    postcssPlugin: 'postcss-merge-longhand',
+
+    OnceExit(css) {
+      css.walkRules((rule) => {
+        processors.forEach((p) => {
+          p.explode(rule);
+          p.merge(rule);
+        });
       });
-    });
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

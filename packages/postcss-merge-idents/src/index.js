@@ -1,5 +1,3 @@
-import has from 'has';
-import { plugin } from 'postcss';
 import valueParser from 'postcss-value-parser';
 import { sameParent } from 'lerna:cssnano-utils';
 
@@ -8,7 +6,11 @@ function canonical(obj) {
   let stack = 50;
 
   return function recurse(key) {
-    if (has(obj, key) && obj[key] !== key && stack) {
+    if (
+      Object.prototype.hasOwnProperty.call(obj, key) &&
+      obj[key] !== key &&
+      stack
+    ) {
       stack--;
 
       return recurse(obj[key]);
@@ -92,17 +94,24 @@ function mergeAtRules(css, pairs) {
   });
 }
 
-export default plugin('postcss-merge-idents', () => {
-  return (css) => {
-    mergeAtRules(css, [
-      {
-        atrule: /keyframes/i,
-        decl: /animation/i,
-      },
-      {
-        atrule: /counter-style/i,
-        decl: /(list-style|system)/i,
-      },
-    ]);
+function pluginCreator() {
+  return {
+    postcssPlugin: 'postcss-merge-idents',
+
+    OnceExit(css) {
+      mergeAtRules(css, [
+        {
+          atrule: /keyframes/i,
+          decl: /animation/i,
+        },
+        {
+          atrule: /counter-style/i,
+          decl: /(list-style|system)/i,
+        },
+      ]);
+    },
   };
-});
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;

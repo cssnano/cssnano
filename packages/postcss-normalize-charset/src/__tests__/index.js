@@ -1,5 +1,4 @@
 import devtools from 'postcss-devtools';
-import postcss from 'postcss';
 import plugin from '../';
 import {
   usePostCSSPlugin,
@@ -9,8 +8,9 @@ import {
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 function sourceTest(origin) {
-  return postcss.plugin('source-test', () => {
-    return function(css) {
+  return {
+    postcssPlugin: 'source-test',
+    OnceExit(css) {
       let node = css.first;
       let source;
 
@@ -23,8 +23,8 @@ function sourceTest(origin) {
       }
 
       return expect(source).toBe(origin);
-    };
-  });
+    },
+  };
 }
 
 function processCssWithSource(fixture, expected, source) {

@@ -1,4 +1,3 @@
-import postcss from 'postcss';
 import valueParser, { unit, walk } from 'postcss-value-parser';
 import convert from './lib/convert';
 
@@ -19,12 +18,24 @@ const LENGTH_UNITS = [
   'pc',
   'px',
 ];
+/*
+ * Numbers without digits after the dot are technically invalid,
+ * but in that case css-value-parser returns the dot as part of the unit,
+ * so we use this to remove the dot.
+ */
+function stripLeadingDot(item) {
+  if (item.charCodeAt(0) === '.'.charCodeAt(0)) {
+    return item.slice(1);
+  } else {
+    return item;
+  }
+}
 
 function parseWord(node, opts, keepZeroUnit) {
   const pair = unit(node.value);
   if (pair) {
     const num = Number(pair.number);
-    const u = pair.unit;
+    const u = stripLeadingDot(pair.unit);
     if (num === 0) {
       node.value =
         keepZeroUnit || (!~LENGTH_UNITS.indexOf(u.toLowerCase()) && u !== '%')
@@ -119,6 +130,14 @@ function transform(opts, decl) {
 
 const plugin = 'postcss-convert-values';
 
-export default postcss.plugin(plugin, (opts = { precision: false }) => {
-  return (css) => css.walkDecls(transform.bind(null, opts));
-});
+function pluginCreator(opts = { precision: false }) {
+  return {
+    postcssPlugin: plugin,
+    OnceExit(css) {
+      css.walkDecls(transform.bind(null, opts));
+    },
+  };
+}
+
+pluginCreator.postcss = true;
+export default pluginCreator;
