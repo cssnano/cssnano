@@ -52,6 +52,7 @@
     "jest-junit": "^12.0.0",
     "lerna": "3.22.1",
     "mdast-util-heading-range": "^2.1.2",
+    "parcel": "^2.0.0-nightly.535",
     "pleeease-filters": "^4.0.0",
     "postcss": "^8.2.1",
     "postcss-devtools": "^1.1.1",

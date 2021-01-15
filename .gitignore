@@ -19,3 +19,4 @@ _webpackOutput
 # Cache
 
 .eslintcache
+.parcel-cache

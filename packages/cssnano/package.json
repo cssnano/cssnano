@@ -6,9 +6,18 @@
     "scripts": {
         "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
         "prebuild": "del-cli dist",
-        "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
-        "prepublish": "yarn build",
+        "build.babel": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
+        "build.parcel": "cross-env NODE_ENV=production BABEL_ENV=publish parcel build --target main src/index.js",
+        "build": "yarn build.parcel",
+        "prepublish": "yarn build.parcel",
         "postinstall": "opencollective-postinstall"
+    },
+    "targets": {
+      "main": {
+        "context": "node",
+        "includeNodeModules": true,
+        "isLibrary": true
+      }
     },
     "collective": {
         "type": "opencollective",
