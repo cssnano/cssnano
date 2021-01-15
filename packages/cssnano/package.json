@@ -15,7 +15,9 @@
     "targets": {
       "main": {
         "context": "node",
-        "includeNodeModules": true,
+        "includeNodeModules": {
+          "css-declaration-sorter": false
+        },
         "isLibrary": true
       }
     },
