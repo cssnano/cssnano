@@ -17,7 +17,8 @@
         "context": "node",
         "includeNodeModules": {
           "css-declaration-sorter": false,
-          "browserslist": false
+          "browserslist": false,
+          "util-deprecate": false
         },
         "isLibrary": true
       }
