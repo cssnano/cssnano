@@ -16,7 +16,8 @@
       "main": {
         "context": "node",
         "includeNodeModules": {
-          "css-declaration-sorter": false
+          "css-declaration-sorter": false,
+          "browserslist": false
         },
         "isLibrary": true
       }
