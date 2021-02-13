@@ -72,6 +72,11 @@ test(
   passthroughCSS('h1{opacity:100%}')
 );
 
+test(
+  'should remove unit from opacity: 0%',
+  processCSS('h1{opacity:0%}', 'h1{opacity:0}')
+);
+
 test('should not mangle flex basis', passthroughCSS('h1{flex-basis:0%}'));
 
 test('should not mangle flex basis (2)', passthroughCSS('h1{FLEX-BASIC:0%}'));

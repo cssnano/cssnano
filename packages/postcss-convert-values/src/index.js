@@ -38,9 +38,10 @@ function parseWord(node, opts, keepZeroUnit) {
     const u = stripLeadingDot(pair.unit);
     if (num === 0) {
       node.value =
-        keepZeroUnit || (!~LENGTH_UNITS.indexOf(u.toLowerCase()) && u !== '%')
-          ? 0 + u
-          : 0;
+        0 +
+        (keepZeroUnit || (!~LENGTH_UNITS.indexOf(u.toLowerCase()) && u !== '%')
+          ? u
+          : '');
     } else {
       node.value = convert(num, u, opts);
 
