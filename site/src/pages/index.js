@@ -197,10 +197,7 @@ function Home() {
                   >
                     <tbody>
                       {minifyTableData.map(({ property, value }, i) => (
-                        <tr
-                          key={i}
-                          style={{ width: '100%', 'max-width': '100%' }}
-                        >
+                        <tr key={i} style={{ width: '100%', maxWidth: '100%' }}>
                           <td>{property}</td>
                           <td>{value}</td>
                         </tr>

@@ -1,44 +1,25 @@
 /* eslint-disable no-warning-comments */
 /* eslint-disable no-unused-vars */
 import postcss from 'postcss';
+import cssnanoPresetLite from 'cssnano-preset-lite';
 import { pkgnameToVarName } from '../../helper/naming';
 
-/**
- * using moduleMaps and not with imports to lazy load them because of this error
- * editor lazy namespace object?f49d:5 Uncaught (in promise) Error: Cannot find module 'cssnano-preset-default'
-    at eval (eval at ./src/components/editor lazy recursive
- * need to fix this
- */
-const moduleMap = {
-  cssnanoPresetDefault: require('cssnano-preset-default'),
-  cssnanoPresetAdvanced: require('cssnano-preset-advanced'),
-  cssnanoPresetLite: require('cssnano-preset-lite'),
-};
-
-function initializePlugin(plugin, css, result) {
-  if (Array.isArray(plugin)) {
+export default (input, config) => {
+  const { plugins: nanoPlugins } = cssnanoPresetLite();
+  console.log(cssnanoPresetLite);
+  const postcssPlugins = [];
+  for (const plugin of nanoPlugins) {
     const [processor, opts] = plugin;
     if (
       typeof opts === 'undefined' ||
-      (typeof opts === 'object' && !opts.exclude)
+      (typeof opts === 'object' && !opts.exclude) ||
+      (typeof opts === 'boolean' && opts === true)
     ) {
-      return Promise.resolve(processor(opts)(css, result));
+      postcssPlugins.push(processor(opts));
     }
-  } else {
-    return Promise.resolve(plugin()(css, result));
   }
-  // Handle excluded plugins
-  return Promise.resolve();
-}
-
-export default (input, config) => {
-  const { plugins } = moduleMap[pkgnameToVarName(config[0])](config[1]);
-  const pluginRunner = (css, result) =>
-    plugins.reduce((promise, plugin) => {
-      return promise.then(initializePlugin.bind(null, plugin, css, result));
-    }, Promise.resolve());
   return new Promise((resolve, reject) => {
-    postcss(pluginRunner)
+    postcss(postcssPlugins)
       .process(input)
       .then((res) => resolve(res))
       .catch((err) => reject(err));

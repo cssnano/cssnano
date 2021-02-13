@@ -13,7 +13,7 @@ module.exports = {
         alt: 'CSSNANO Logo',
         src: 'img/logo-alt.svg',
       },
-      links: [
+      items: [
         {
           to: 'docs/introduction',
           label: 'Guide',
@@ -112,6 +112,4 @@ module.exports = {
       },
     ],
   ],
-  stylesheets: ['https://at-ui.github.io/feather-font/css/iconfont.css', ''],
-  plugins: [require.resolve('./docusaurus-webpack-plugin')],
 };
