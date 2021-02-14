@@ -104,7 +104,7 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           showLastUpdateAuthor: true,
           showLastUpdateTime: true,
-          editUrl: 'https://github.com/cssnano/cssnano/edit/master/website/',
+          editUrl: 'https://github.com/cssnano/cssnano/edit/master/site/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
