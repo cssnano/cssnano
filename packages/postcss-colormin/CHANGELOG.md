@@ -1,0 +1,46 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# 5.0.0-rc.0 (2021-02-19)
+
+
+### Bug Fixes
+
+* **postcss-colormin:** fixed plugin running error ([#856](https://github.com/cssnano/cssnano/issues/856)) ([eb37dd5](https://github.com/cssnano/cssnano/commit/eb37dd570a916ce7d6080a782a24d951082c5497))
+
+
+### chore
+
+* minimum require version of node is 10.13 ([#871](https://github.com/cssnano/cssnano/issues/871)) ([28bda24](https://github.com/cssnano/cssnano/commit/28bda243e32ce3ba89b3c358a5f78727b3732f11))
+
+
+### Features
+
+* migarete to PostCSS 8 ([#975](https://github.com/cssnano/cssnano/issues/975)) ([40b82dc](https://github.com/cssnano/cssnano/commit/40b82dca7f53ac02cd4fe62846dec79b898ccb49))
+
+
+### BREAKING CHANGES
+
+* minimum supported `postcss` version is `8.2.1`
+* minimum require version of node is 10.13
+
+
+
+## 4.1.9 (2019-02-12)
+
+
+### Performance Improvements
+
+* **postcss-colormin:** increase ([#682](https://github.com/cssnano/cssnano/issues/682)) ([73e021e](https://github.com/cssnano/cssnano/commit/73e021e0fd02ab44c8726ae0719c5669a29bc8dc))
+* **postcss-colormin:** increase perf ([#696](https://github.com/cssnano/cssnano/issues/696)) ([88c2f2e](https://github.com/cssnano/cssnano/commit/88c2f2e0c20fcd3f3be20b10501e0cec9e453aeb))
+
+
+
+## 4.1.1 (2018-09-24)
+
+
+### Bug Fixes
+
+* **postcss-merge-longhand:** not mangle border output ([#555](https://github.com/cssnano/cssnano/issues/555)) ([9a70605](https://github.com/cssnano/cssnano/commit/9a706050b621e7795a9bf74eb7110b5c81804ffe)), closes [#553](https://github.com/cssnano/cssnano/issues/553) [#554](https://github.com/cssnano/cssnano/issues/554)

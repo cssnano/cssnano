@@ -1,3 +1,110 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# 5.0.0-rc.0 (2021-02-19)
+
+
+### Bug Fixes
+
+* **postcss-ordered-values:** columns transform returning string instead of the AST ([#928](https://github.com/cssnano/cssnano/issues/928)) ([a5d6d36](https://github.com/cssnano/cssnano/commit/a5d6d364e0815ecb198a95de301f3554ccce4f78))
+* **unique-selector:** removed sorting and involving selector comments ([#857](https://github.com/cssnano/cssnano/issues/857)) ([3fa875d](https://github.com/cssnano/cssnano/commit/3fa875dade2138e1a531dce1f8b79814cb39dbc9))
+
+
+### chore
+
+* minimum require version of node is 10.13 ([#871](https://github.com/cssnano/cssnano/issues/871)) ([28bda24](https://github.com/cssnano/cssnano/commit/28bda243e32ce3ba89b3c358a5f78727b3732f11))
+
+
+### Features
+
+* css declaration sorter ([#855](https://github.com/cssnano/cssnano/issues/855)) ([613d562](https://github.com/cssnano/cssnano/commit/613d562ae79e7e169c80b523b7c2c9b0093bc1d8))
+* migarete to PostCSS 8 ([#975](https://github.com/cssnano/cssnano/issues/975)) ([40b82dc](https://github.com/cssnano/cssnano/commit/40b82dca7f53ac02cd4fe62846dec79b898ccb49))
+* **postcss-reduce-transforms:** improve optimizations ([#745](https://github.com/cssnano/cssnano/issues/745)) ([b0f0d89](https://github.com/cssnano/cssnano/commit/b0f0d892316d7b77e8033a6dc8d67745043a5072))
+
+
+### BREAKING CHANGES
+
+* minimum supported `postcss` version is `8.2.1`
+* minimum require version of node is 10.13
+
+
+
+## 4.1.10 (2019-02-14)
+
+
+
+## 4.1.9 (2019-02-12)
+
+
+### Bug Fixes
+
+* initial loading time ([#654](https://github.com/cssnano/cssnano/issues/654)) ([de2ef07](https://github.com/cssnano/cssnano/commit/de2ef074a0c7da94c22a5b0336e6c4ca2a94f1b5))
+
+
+
+## 4.1.7 (2018-10-22)
+
+
+
+## 4.1.6 (2018-10-22)
+
+
+
+## 4.1.5 (2018-10-17)
+
+
+### Bug Fixes
+
+* toggling of plugins in presets using boolean configuration option ([#622](https://github.com/cssnano/cssnano/issues/622)) ([15076f1](https://github.com/cssnano/cssnano/commit/15076f145118507e010722cc9ed548ffe1b91f8c))
+
+
+
+## 4.1.4 (2018-09-27)
+
+
+
+## 4.1.3 (2018-09-25)
+
+
+
+## 4.1.2 (2018-09-25)
+
+
+
+## 4.1.1 (2018-09-24)
+
+
+### Bug Fixes
+
+* parse error with iPhone X feature ([#614](https://github.com/cssnano/cssnano/issues/614)) ([a3704a7](https://github.com/cssnano/cssnano/commit/a3704a76a631b1cd907ab0c0a8637a622769676d))
+
+
+
+# 4.1.0 (2018-08-24)
+
+
+
+## 4.0.5 (2018-07-30)
+
+
+
+## 4.0.4 (2018-07-25)
+
+
+
+## 4.0.3 (2018-07-18)
+
+
+### Bug Fixes
+
+* **postcss-merge-longhand:** not mangle border output ([#555](https://github.com/cssnano/cssnano/issues/555)) ([9a70605](https://github.com/cssnano/cssnano/commit/9a706050b621e7795a9bf74eb7110b5c81804ffe)), closes [#553](https://github.com/cssnano/cssnano/issues/553) [#554](https://github.com/cssnano/cssnano/issues/554)
+
+
+
+
+
 # 4.1.10
 
 ## Bug Fixes
