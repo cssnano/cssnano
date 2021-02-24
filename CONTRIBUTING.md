@@ -42,6 +42,8 @@ If you have an idea for some functionality which doesn't have an issue tracking
 it, then please open an issue before writing a pull request. We find it more
 helpful to discuss your requirements before writing any code.
 
+To help us generate the changelog, follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) format in your commit messages.
+
 ### Documentation
 
 The documentation website is also included with the repository, under `/site`.
@@ -52,6 +54,21 @@ by running `yarn start`.
 Note that some of the documentation is automatically generated and should not
 be edited by hand.
 
+### Releasing
+
+We use lerna and conventional commits to update the changelog and tag releases.
+To tag a pre-release and generate the changelog, run:
+
+```
+yarn lerna version --conventional-commits --conventional-prerelease  --preid rc
+```
+Use `--conventional-graduate` to generate the tags for a stable release.
+
+To publish the pre-release to npm, run:
+```
+yarn lerna publish from-package --dist-tag next
+```
+To publish a stable release, use `latest` instead of `next`.
 
 ## Are there other ways of contributing?
 
