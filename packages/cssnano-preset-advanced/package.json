@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-advanced",
-  "version": "5.0.0-rc.0",
+  "version": "5.0.0-rc.1",
   "main": "dist/index.js",
   "description": "Advanced optimisations for cssnano; may or may not break your CSS!",
   "scripts": {
@@ -15,11 +15,11 @@
   "license": "MIT",
   "dependencies": {
     "autoprefixer": "^10.0.2",
-    "cssnano-preset-default": "^5.0.0-rc.0",
-    "postcss-discard-unused": "^5.0.0-rc.0",
-    "postcss-merge-idents": "^5.0.0-rc.0",
-    "postcss-reduce-idents": "^5.0.0-rc.0",
-    "postcss-zindex": "^5.0.0-rc.0"
+    "cssnano-preset-default": "^5.0.0-rc.1",
+    "postcss-discard-unused": "^5.0.0-rc.1",
+    "postcss-merge-idents": "^5.0.0-rc.1",
+    "postcss-reduce-idents": "^5.0.0-rc.1",
+    "postcss-zindex": "^5.0.0-rc.1"
   },
   "author": {
     "name": "Ben Briggs",

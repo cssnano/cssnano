@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.1](https://github.com/cssnano/cssnano/compare/cssnano-utils@2.0.0-rc.0...cssnano-utils@2.0.0-rc.1) (2021-03-04)
+
+
+### Bug Fixes
+
+* **cssnano-utils:** get rid of deprecation warning ([752a270](https://github.com/cssnano/cssnano/commit/752a2701085f45367a1e4a558fb9ec768ac760af))
+
+
+
+
+
 # 2.0.0-rc.0 (2021-02-19)
 
 
