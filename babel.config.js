@@ -137,17 +137,8 @@ module.exports = function (api) {
   }
 
   return {
-    presets: [
-      [
-        // ES features necessary for user's Node version
-        '@babel/preset-env',
-        {
-          targets: {
-            node: '6.9.0',
-          },
-        },
-      ],
-    ],
+    targets: { node: '10.13.0' },
+    presets: ['@babel/preset-env'],
     plugins,
   };
 };
