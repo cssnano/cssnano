@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - next
+      - test/gh-actions
 
   pull_request:
     branches:
