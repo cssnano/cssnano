@@ -58,8 +58,12 @@ jobs:
         with:
           node-version: ${{ matrix.node_version }}
 
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
       - uses: actions/cache@v1
-        if: ${{ runner.os == 'ubuntu-16.04' || runner.os == 'macos-11.0' }} # we want to skip this on windows
+        if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }} # we want to skip this on windows
         id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
