@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-charset",
-  "version": "5.0.0-rc.1",
+  "version": "5.0.0-rc.2",
   "description": "Add necessary or remove extra charset with PostCSS",
   "keywords": [
     "postcss",

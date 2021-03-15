@@ -1,6 +1,6 @@
 {
     "name": "cssnano-preset-lite",
-    "version": "2.0.0-rc.1",
+    "version": "2.0.0-rc.2",
     "main": "dist/index.js",
     "description": "Safe and minimum transformation",
     "scripts": {
@@ -14,10 +14,10 @@
     ],
     "license": "MIT",
     "dependencies": {
-        "cssnano-utils": "^2.0.0-rc.1",
-        "postcss-discard-comments": "^5.0.0-rc.1",
-        "postcss-discard-empty": "^5.0.0-rc.1",
-        "postcss-normalize-whitespace": "^5.0.0-rc.1"
+        "cssnano-utils": "^2.0.0-rc.2",
+        "postcss-discard-comments": "^5.0.0-rc.2",
+        "postcss-discard-empty": "^5.0.0-rc.2",
+        "postcss-normalize-whitespace": "^5.0.0-rc.2"
     },
     "repository": "cssnano/cssnano",
     "homepage": "https://github.com/cssnano/cssnano",

@@ -1,6 +1,6 @@
 {
   "name": "cssnano-utils",
-  "version": "2.0.0-rc.1",
+  "version": "2.0.0-rc.2",
   "repository": "cssnano/cssnano",
   "main": "dist/index.js",
   "description": "Utility methods and plugin for cssnano projects",
