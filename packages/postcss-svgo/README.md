@@ -43,22 +43,6 @@ h2 {
 
 ### `svgo([options])`
 
-Note that postcss-svgo is an *asynchronous* processor. It cannot be used
-like this:
-
-```js
-var result = postcss([ svgo() ]).process(css).css;
-console.log(result);
-```
-
-Instead make sure your PostCSS runner uses the asynchronous API:
-
-```js
-postcss([ svgo() ]).process(css).then(function (result) {
-    console.log(result.css);
-});
-```
-
 #### options
 
 ##### encode
