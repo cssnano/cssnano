@@ -1,6 +1,6 @@
 {
   "name": "postcss-reduce-transforms",
-  "version": "5.0.0-rc.1",
+  "version": "5.0.0-rc.2",
   "description": "Reduce transform functions with PostCSS.",
   "main": "dist/index.js",
   "scripts": {
@@ -21,7 +21,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "cssnano-utils": "^2.0.0-rc.1",
+    "cssnano-utils": "^2.0.0-rc.2",
     "postcss-value-parser": "^4.1.0"
   },
   "bugs": {
