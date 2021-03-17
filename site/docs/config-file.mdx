@@ -67,20 +67,20 @@ These plugins will run after once all presets operations are complete.
   ```js
   // cssnano.config.js
   module.exports = {
-    plugins: [require('autoprefixer')]
+    plugins: [ require('autoprefixer') ]
     
     // or
-    plugins: ['autoprefixer', 'postcss-preset-env']
+    plugins: [ 'autoprefixer', 'postcss-preset-env' ]
     
     // or
     plugins: [ 
-      ['autoprefixer', { remove: false },
+      [ 'autoprefixer', { remove: false } ],
     ]
 
     // or
     plugins: [
       [ require('autoprefixer'), {remove: false} ],
-      [ 'postcss-preset-env']
+      [ 'postcss-preset-env' ]
     ]
   }
   ```
