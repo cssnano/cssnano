@@ -1,6 +1,5 @@
 import valueParser from 'postcss-value-parser';
 import { optimize } from 'svgo';
-import isSvg from 'is-svg';
 import { encode, decode } from './lib/url';
 
 const PLUGIN = 'postcss-svgo';
@@ -48,14 +47,13 @@ function minify(decl, opts) {
       }
     }
 
-    if (!isSvg(svg)) {
-      return;
-    }
-
     let result;
     try {
       result = optimize(svg, opts);
       if (result.error) {
+        if (result.error.startsWith('Error in parsing SVG')) {
+          return;
+        }
         throw new Error(`${PLUGIN}: ${result.error}`);
       }
     } catch (error) {
