@@ -1,4 +1,5 @@
 import { readFileSync as file } from 'fs';
+import postcss from 'postcss';
 import filters from 'pleeease-filters';
 import { extendDefaultPlugins } from 'svgo';
 import plugin from '../';
@@ -189,12 +190,13 @@ test(
   )
 );
 
-test(
-  'should skip svgs containing unclosed tags',
-  passthroughCSS(
-    'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}'
-  )
-);
+test('should warn on SVG containing unclosed tags', async () => {
+  const css =
+    'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  expect(result.messages.length).toBe(1);
+  expect(result.messages[0].type).toBe('warning');
+});
 
 test(
   'should pass through links to svg files',

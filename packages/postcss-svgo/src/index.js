@@ -6,7 +6,7 @@ const PLUGIN = 'postcss-svgo';
 const dataURI = /data:image\/svg\+xml(;((charset=)?utf-8|base64))?,/i;
 const dataURIBase64 = /data:image\/svg\+xml;base64,/i;
 
-function minify(decl, opts) {
+function minify(decl, opts, postcssResult) {
   const parsed = valueParser(decl.value);
 
   decl.value = parsed.walk((node) => {
@@ -51,13 +51,12 @@ function minify(decl, opts) {
     try {
       result = optimize(svg, opts);
       if (result.error) {
-        if (result.error.startsWith('Error in parsing SVG')) {
-          return;
-        }
-        throw new Error(`${PLUGIN}: ${result.error}`);
+        decl.warn(postcssResult, `${result.error}`);
+        return;
       }
     } catch (error) {
-      throw new Error(`${PLUGIN}: ${error}`);
+      decl.warn(postcssResult, `${error}`);
+      return;
     }
     let data, optimizedValue;
 
@@ -92,13 +91,13 @@ function pluginCreator(opts = {}) {
   return {
     postcssPlugin: PLUGIN,
 
-    OnceExit(css) {
+    OnceExit(css, { result }) {
       css.walkDecls((decl) => {
         if (!dataURI.test(decl.value)) {
           return;
         }
 
-        minify(decl, opts);
+        minify(decl, opts, result);
       });
     },
   };
