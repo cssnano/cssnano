@@ -1,14 +1,13 @@
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import SVGO from 'svgo';
-import isSvg from 'is-svg';
 import {encode, decode} from './lib/url';
 
 const PLUGIN = 'postcss-svgo';
 const dataURI = /data:image\/svg\+xml(;((charset=)?utf-8|base64))?,/i;
 const dataURIBase64 = /data:image\/svg\+xml;base64,/i;
 
-function minifyPromise (decl, getSvgo, opts) {
+function minifyPromise (decl, getSvgo, opts, postcssResult) {
     const promises = [];
     const parsed = valueParser(decl.value);
 
@@ -44,13 +43,13 @@ function minifyPromise (decl, getSvgo, opts) {
             }
         }
 
-        if (!isSvg(svg)) {
-            return;
-        }
-
         promises.push(
             getSvgo().optimize(svg)
                 .then(result => {
+                    if (result.error) {
+                        decl.warn(postcssResult, `${result.error}`);
+                        return;
+                    }
                     let data, optimizedValue;
 
                     if (isBase64) {
@@ -75,7 +74,7 @@ function minifyPromise (decl, getSvgo, opts) {
                     });
                 })
                 .catch(error => {
-                    throw new Error(`${PLUGIN}: ${error}`);
+                    decl.warn(postcssResult, `${error}`);
                 })
         );
 
@@ -96,7 +95,7 @@ export default postcss.plugin(PLUGIN, (opts = {}) => {
         return svgo;
     };
 
-    return css => {
+    return (css, result) => {
         return new Promise((resolve, reject) => {
             const svgoQueue = [];
 
@@ -105,7 +104,7 @@ export default postcss.plugin(PLUGIN, (opts = {}) => {
                     return;
                 }
 
-                svgoQueue.push(minifyPromise(decl, getSvgo, opts));
+                svgoQueue.push(minifyPromise(decl, getSvgo, opts, result));
             });
 
             return Promise.all(svgoQueue).then(resolve, reject);

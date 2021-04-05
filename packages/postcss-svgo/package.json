@@ -33,7 +33,6 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "is-svg": "^3.0.0",
     "postcss": "^7.0.0",
     "postcss-value-parser": "^3.0.0",
     "svgo": "^1.0.0"
