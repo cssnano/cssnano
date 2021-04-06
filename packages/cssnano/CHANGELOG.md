@@ -1,3 +1,9 @@
+# 4.1.11
+
+## Bug Fixes
+
+* fix [CVE-2021-28092](https://nvd.nist.gov/vuln/detail/CVE-2021-28092)
+
 # 4.1.10
 
 ## Bug Fixes
