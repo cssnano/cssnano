@@ -152,6 +152,13 @@ test(
     'h1{background-image:url("data:image/svg;charset=US-ASCII,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><circle cx="50" cy="50" r="40" fill="yellow" /><!--test comment--></svg>")}',
 );
 
+test('should warn on SVG containing unclosed tags', async (t) => {
+    const css =
+      'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
+    const result = await postcss(plugin()).process(css, {from: undefined});
+    t.is(result.messages.length, 1);
+    t.is(result.messages[0].type, 'warning');
+});
 
 test(
     'should pass through links to svg files',
@@ -165,12 +172,6 @@ test(
     `h1{background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="32" viewBox="0 0 1200 320"> <path d="M137.189 140V17.17h-36.676L73.871 31.832z" fill="rgb(102,51,153)"/></svg>');}`,
     `h1{background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="32" viewBox="0 0 1200 320"><path d="M137.189 140V17.17h-36.676L73.871 31.832z" fill="%23639"/></svg>');}`
 );
-
-test('should reject on malformed svgs', async t => {
-    const css = 'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
-    const error = await t.throws(postcss(plugin()).process(css));
-    t.truthy(error);
-});
 
 test('should not crash on malformed urls when encoded', t => {
     const svg = encode(file(`${__dirname}/border.svg`, 'utf-8'));
