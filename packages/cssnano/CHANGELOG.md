@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0-rc.2...cssnano@5.0.0) (2021-04-06)
+
+**Note:** Version bump only for package cssnano
+
+
+
+
+
 # [5.0.0-rc.2](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0-rc.1...cssnano@5.0.0-rc.2) (2021-03-15)
 
 

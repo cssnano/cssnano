@@ -1,6 +1,6 @@
 {
   "name": "css-size",
-  "version": "5.0.0-rc.2",
+  "version": "5.0.0",
   "description": "Compare the compressed and uncompressed sizes of a CSS file before and after processing.",
   "main": "dist/index.js",
   "types": "css-size.d.ts",
@@ -36,7 +36,7 @@
   "dependencies": {
     "brotli-size": "^0.1.0",
     "cli-table3": "^0.5.1",
-    "cssnano": "^5.0.0-rc.2",
+    "cssnano": "^5.0.0",
     "gzip-size": "^5.1.1",
     "minimist": "^1.2.0",
     "pretty-bytes": "^5.2.0",
