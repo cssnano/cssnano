@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/cssnano/cssnano/compare/postcss-discard-empty@5.0.0-rc.2...postcss-discard-empty@5.0.0) (2021-04-06)
+
+**Note:** Version bump only for package postcss-discard-empty
+
+
+
+
+
 # [5.0.0-rc.2](https://github.com/cssnano/cssnano/compare/postcss-discard-empty@5.0.0-rc.1...postcss-discard-empty@5.0.0-rc.2) (2021-03-15)
 
 **Note:** Version bump only for package postcss-discard-empty
