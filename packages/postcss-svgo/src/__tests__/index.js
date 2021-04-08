@@ -198,6 +198,15 @@ test('should warn on SVG containing unclosed tags', async () => {
   expect(result.messages[0].type).toBe('warning');
 });
 
+test('should only warn with svg data uri', async () => {
+  const css = `@font-face {
+  src: url("https://example/dfds.woff2") format("woff2"),
+       url('data:image/svg+xml;charset=utf-8,<svg></svg>') format("svg");
+  }`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  expect(result.messages.length).toBe(0);
+});
+
 test(
   'should pass through links to svg files',
   passthroughCSS('h1{background:url(unicorn.svg)}')
