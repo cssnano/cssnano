@@ -28,6 +28,9 @@ function minify(decl, opts, postcssResult) {
       svg = Buffer.from(base64String, 'base64').toString('utf8');
       isBase64 = true;
     } else {
+      if (!dataURI.test(value)) {
+        return;
+      }
       let decodedUri;
 
       try {
