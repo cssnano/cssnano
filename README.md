@@ -29,10 +29,10 @@ gradient parameters for a smaller output value! In addition, where it's made
 sense for a transform, we've added [Browserslist](https://github.com/ai/browserslist)
 to provide different output depending on the browsers that you support.
 
-For further details check out the [website](http://cssnano.co/):
+For further details check out the [website](https://cssnano.co/):
 
-- [Installation guide for your build process](http://cssnano.co/docs/getting-started).
-- [Full list of optimisations](http://cssnano.co/docs/optimisations/).
+- [Installation guide for your build process](https://cssnano.co/docs/getting-started).
+- [Full list of optimisations](https://cssnano.co/docs/optimisations/).
 
 You can now [try cssnano online](https://cssnano.co/playground/)!
 
@@ -68,4 +68,4 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 
 ## License
 
-MIT © [Ben Briggs](http://beneb.info)
+MIT © [Ben Briggs](https://beneb.info)

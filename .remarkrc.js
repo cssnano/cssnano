@@ -25,4 +25,5 @@ exports.plugins = [
   [require('remark-heading-gap'), {}],
   [require('remark-bookmarks'), { bookmarks }],
   [require('remark-frontmatter')],
+  [require('remark-gfm')],
 ];

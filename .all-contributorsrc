@@ -35,7 +35,7 @@
       "login": "pgilad",
       "name": "Gilad Peleg",
       "avatar_url": "https://avatars.githubusercontent.com/u/4533329?v=3",
-      "profile": "http://www.giladpeleg.com/",
+      "profile": "https://www.giladpeleg.com/",
       "contributions": [
         "code"
       ]
@@ -133,7 +133,7 @@
       "login": "yisibl",
       "name": "一丝",
       "avatar_url": "https://avatars.githubusercontent.com/u/2784308?v=3",
-      "profile": "www.iyunlu.com/view",
+      "profile": "https://www.iyunlu.com/view",
       "contributions": [
         "code",
         "test"
@@ -192,7 +192,7 @@
       "login": "jxom",
       "name": "Jake Moxey",
       "avatar_url": "https://avatars.githubusercontent.com/u/7336481?v=3",
-      "profile": "jakemoxey.com",
+      "profile": "https://jakemoxey.com",
       "contributions": [
         "code"
       ]
@@ -281,7 +281,7 @@
       "login": "duncanbeevers",
       "name": "Duncan Beevers",
       "avatar_url": "https://avatars.githubusercontent.com/u/7367?v=3",
-      "profile": "http://www.duncanbeevers.com",
+      "profile": "https://www.duncanbeevers.com",
       "contributions": [
         "code",
         "test"
@@ -376,7 +376,7 @@
       "login": "marek-saji",
       "name": "Marek ‘saji’ Augustynowicz",
       "avatar_url": "https://avatars.githubusercontent.com/u/192323?v=3",
-      "profile": "http://twitter.com/saji_",
+      "profile": "https://twitter.com/saji_",
       "contributions": [
         "code",
         "test"
@@ -386,7 +386,7 @@
       "login": "jgerigmeyer",
       "name": "Jonny Gerig Meyer",
       "avatar_url": "https://avatars.githubusercontent.com/u/552316?v=3",
-      "profile": "www.oddbird.net",
+      "profile": "https://www.oddbird.net",
       "contributions": [
         "code",
         "test"
@@ -406,7 +406,7 @@
       "login": "callmevlad",
       "name": "Vlad Magdalin",
       "avatar_url": "https://avatars.githubusercontent.com/u/785166?v=3",
-      "profile": "www.webflow.com",
+      "profile": "https://www.webflow.com",
       "contributions": [
         "doc"
       ]
@@ -616,7 +616,7 @@
       "login": "ludofischer",
       "name": "Ludovico Fischer",
       "avatar_url": "https://avatars1.githubusercontent.com/u/43557?v=4",
-      "profile": "http://www.ludofischer.com",
+      "profile": "https://www.ludofischer.com",
       "contributions": [
         "maintenance"
       ]

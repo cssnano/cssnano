@@ -50,15 +50,36 @@ If you have an idea for some functionality which doesn't have an issue tracking
 it, then please open an issue before writing a pull request. We find it more
 helpful to discuss your requirements before writing any code.
 
+To help us generate the changelog, follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) format in your commit messages.
+
 ### Documentation
 
 The documentation website is also included with the repository, under `/site`.
-It runs [phenomic](https://phenomic.io) and requires a separate `yarn install`
+It runs [docusaurus](https://docusaurus.io) and requires a separate `yarn install`
 to pull down the dependencies. You can then browse the documentation locally
 by running `yarn start`.
 
 Note that some of the documentation is automatically generated and should not
 be edited by hand.
+
+### Releasing
+
+We use lerna and conventional commits to update the changelog and tag releases.
+To tag a pre-release and generate the changelog, run:
+
+```
+yarn lerna version --conventional-commits --conventional-prerelease  --preid rc
+```
+
+Use `--conventional-graduate` to generate the tags for a stable release.
+
+To publish the pre-release to npm, run:
+
+```
+yarn lerna publish from-package --dist-tag next
+```
+
+To publish a stable release, use `latest` instead of `next`.
 
 
 ## Are there other ways of contributing?
@@ -113,7 +134,7 @@ If you don't have time to contribute to the project directly, you can also
 help us out by starring the repository, or [follow us on Twitter][twitter].
 Word of mouth really does mean a lot to us!
 
-You can also [help support us financially](/support-us/).
+You can also [help support us financially](/docs/support-us/).
 
 [chat]: https://gitter.im/postcss/postcss
 

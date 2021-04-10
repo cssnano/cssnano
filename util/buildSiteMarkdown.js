@@ -96,34 +96,35 @@ function optimisationsTable(presets, plugins) {
   );
   const headers = Object.keys(plugins.usage).sort();
   headers.forEach((header) => {
-    const data = plugins.usage[header];
-    rows.push(
-      u('tableRow', [
-        u('tableCell', [
-          u(
-            'link',
-            {
-              url: `/docs/optimisations/${metadata[
-                header
-              ].shortName.toLowerCase()}`,
-            },
-            [u('text', metadata[header].shortName)]
-          ),
-        ]),
-        ...plugins.presets.map((preset) => {
-          if (~data.indexOf(preset)) {
-            if (isDisabled(preset, header)) {
-              return u('tableCell', [u('text', 'disabled')]);
+    if (metadata[header]) {
+      const data = plugins.usage[header];
+      rows.push(
+        u('tableRow', [
+          u('tableCell', [
+            u(
+              'link',
+              {
+                url: `/docs/optimisations/${metadata[
+                  header
+                ].shortName.toLowerCase()}`,
+              },
+              [u('text', metadata[header].shortName)]
+            ),
+          ]),
+          ...plugins.presets.map((preset) => {
+            if (~data.indexOf(preset)) {
+              if (isDisabled(preset, header)) {
+                return u('tableCell', [u('text', 'disabled')]);
+              }
+              return u('tableCell', [u('text', '✅')]);
+            } else {
+              return u('tableCell', [u('text', '❌')]);
             }
-            return u('tableCell', [u('text', '✅')]);
-          } else {
-            return u('tableCell', [u('text', '❌')]);
-          }
-        }),
-      ])
-    );
+          }),
+        ])
+      );
+    }
   });
-
   return u('table', { align: [] }, rows);
 }
 
@@ -218,7 +219,7 @@ function updateOptimisationGuide() {
                     optimisationsTable(presets, plugins),
                     u('paragraph', [
                       u('text', 'You can read more about presets in our '),
-                      u('link', { url: '/presets' }, [
+                      u('link', { url: '/docs/presets' }, [
                         u('text', 'presets guide'),
                       ]),
                       u('text', '.'),
