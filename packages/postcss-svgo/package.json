@@ -1,6 +1,6 @@
 {
   "name": "postcss-svgo",
-  "version": "5.0.0-rc.2",
+  "version": "5.0.0",
   "description": "Optimise inline SVG with PostCSS.",
   "main": "dist/index.js",
   "scripts": {
@@ -30,9 +30,8 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "is-svg": "^4.2.0",
     "postcss-value-parser": "^4.1.0",
-    "svgo": "^2.2.2"
+    "svgo": "^2.3.0"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

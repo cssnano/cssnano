@@ -1,6 +1,6 @@
 {
   "name": "postcss-merge-rules",
-  "version": "5.0.0-rc.2",
+  "version": "5.0.0",
   "description": "Merge CSS rules with PostCSS.",
   "main": "dist/index.js",
   "files": [
@@ -29,7 +29,7 @@
   "dependencies": {
     "browserslist": "^4.16.0",
     "caniuse-api": "^3.0.0",
-    "cssnano-utils": "^2.0.0-rc.2",
+    "cssnano-utils": "^2.0.0",
     "postcss-selector-parser": "^6.0.4",
     "vendors": "^1.0.3"
   },

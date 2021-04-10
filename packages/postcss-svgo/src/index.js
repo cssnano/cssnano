@@ -1,13 +1,12 @@
 import valueParser from 'postcss-value-parser';
 import { optimize } from 'svgo';
-import isSvg from 'is-svg';
 import { encode, decode } from './lib/url';
 
 const PLUGIN = 'postcss-svgo';
 const dataURI = /data:image\/svg\+xml(;((charset=)?utf-8|base64))?,/i;
 const dataURIBase64 = /data:image\/svg\+xml;base64,/i;
 
-function minify(decl, opts) {
+function minify(decl, opts, postcssResult) {
   const parsed = valueParser(decl.value);
 
   decl.value = parsed.walk((node) => {
@@ -29,6 +28,9 @@ function minify(decl, opts) {
       svg = Buffer.from(base64String, 'base64').toString('utf8');
       isBase64 = true;
     } else {
+      if (!dataURI.test(value)) {
+        return;
+      }
       let decodedUri;
 
       try {
@@ -48,18 +50,16 @@ function minify(decl, opts) {
       }
     }
 
-    if (!isSvg(svg)) {
-      return;
-    }
-
     let result;
     try {
       result = optimize(svg, opts);
       if (result.error) {
-        throw new Error(`${PLUGIN}: ${result.error}`);
+        decl.warn(postcssResult, `${result.error}`);
+        return;
       }
     } catch (error) {
-      throw new Error(`${PLUGIN}: ${error}`);
+      decl.warn(postcssResult, `${error}`);
+      return;
     }
     let data, optimizedValue;
 
@@ -94,13 +94,13 @@ function pluginCreator(opts = {}) {
   return {
     postcssPlugin: PLUGIN,
 
-    OnceExit(css) {
+    OnceExit(css, { result }) {
       css.walkDecls((decl) => {
         if (!dataURI.test(decl.value)) {
           return;
         }
 
-        minify(decl, opts);
+        minify(decl, opts, result);
       });
     },
   };

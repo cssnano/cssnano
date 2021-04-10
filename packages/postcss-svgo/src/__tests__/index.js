@@ -190,6 +190,23 @@ test(
   )
 );
 
+test('should warn on SVG containing unclosed tags', async () => {
+  const css =
+    'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  expect(result.messages.length).toBe(1);
+  expect(result.messages[0].type).toBe('warning');
+});
+
+test('should only warn with svg data uri', async () => {
+  const css = `@font-face {
+  src: url("https://example/dfds.woff2") format("woff2"),
+       url('data:image/svg+xml;charset=utf-8,<svg></svg>') format("svg");
+  }`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  expect(result.messages.length).toBe(0);
+});
+
 test(
   'should pass through links to svg files',
   passthroughCSS('h1{background:url(unicorn.svg)}')
@@ -202,19 +219,6 @@ test(
     `h1{background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="32" viewBox="0 0 1200 320"><path d="M137.189 140V17.17h-36.676L73.871 31.832z" fill="%23639"/></svg>');}`
   )
 );
-
-test('should reject on malformed svgs', async () => {
-  expect.assertions(1);
-
-  const css =
-    'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
-
-  try {
-    await postcss(plugin()).process(css, { from: undefined });
-  } catch (error) {
-    expect(error.message).toMatch(/Unexpected close tag/);
-  }
-});
 
 test('should not crash on malformed urls when encoded', () => {
   const svg = encode(file(`${__dirname}/border.svg`, 'utf-8'));
