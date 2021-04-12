@@ -7,10 +7,9 @@
         "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
         "prebuild": "del-cli dist",
         "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.js --out-dir dist --ignore \"**/__tests__/\"",
-        "prepublish": "yarn build",
-        "postinstall": "opencollective-postinstall"
+        "prepublish": "yarn build"
     },
-    "collective": {
+    "funding": {
         "type": "opencollective",
         "url": "https://opencollective.com/cssnano"
     },
@@ -27,8 +26,7 @@
     "dependencies": {
         "cosmiconfig": "^7.0.0",
         "cssnano-preset-default": "^5.0.0",
-        "is-resolvable": "^1.1.0",
-        "opencollective-postinstall": "^2.0.2"
+        "is-resolvable": "^1.1.0"
     },
     "homepage": "https://github.com/cssnano/cssnano",
     "author": {
