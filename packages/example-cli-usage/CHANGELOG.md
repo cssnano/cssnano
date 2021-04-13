@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.1](https://github.com/cssnano/cssnano/compare/example-cli-usage@5.0.0...example-cli-usage@5.0.1) (2021-04-13)
+
+**Note:** Version bump only for package example-cli-usage
+
+
+
+
+
 # [5.0.0](https://github.com/cssnano/cssnano/compare/example-cli-usage@5.0.0-rc.2...example-cli-usage@5.0.0) (2021-04-06)
 
 **Note:** Version bump only for package example-cli-usage
