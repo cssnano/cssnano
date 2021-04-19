@@ -19,11 +19,11 @@ function minify(decl, opts, postcssResult) {
     }
 
     let { value, quote } = node.nodes[0];
-    let isBase64, isUriEncoded;
-    const url = new URL(value);
+    let isBase64, isUriEncoded, url;
     let svg = value.replace(dataURI, '');
 
     if (dataURIBase64.test(value)) {
+      url = new URL(value);
       let base64String = `${url.protocol}${url.pathname}`.replace(dataURI, '');
       svg = Buffer.from(base64String, 'base64').toString('utf8');
       isBase64 = true;
