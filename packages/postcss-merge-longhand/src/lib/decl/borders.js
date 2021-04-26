@@ -55,7 +55,7 @@ function getLevel(prop) {
 const isValueCustomProp = (value) => value && !!~value.search(/var\s*\(\s*--/i);
 
 function canMergeValues(values) {
-  return !values.some(isValueCustomProp) || values.every(isValueCustomProp);
+  return !values.some(isValueCustomProp);
 }
 
 function getColorValue(decl) {
