@@ -1204,6 +1204,13 @@ test(
 );
 
 test(
+  'should not break border rules mixing custorm and regular properties',
+  passthroughCSS(
+    'h1{border:var(--v1) solid var(--v2, #abc123);border-right-color:blue}'
+  )
+);
+
+test(
   'should overwrite some border-width props and save fallbacks and preserve case #648 2',
   processCSS(
     'h1{border-top-width:10px;border-right-width:var(--fooBar);border-right-width:15px;border-bottom-width:var(--fooBar);border-bottom-width:20px;border-left-width:25px;border-top-width:var(--fooBar);border-left-width:var(--fooBar)}',
