@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.2](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0...cssnano@5.0.2) (2021-04-26)
+
+
+### Bug Fixes
+
+* **cssnano:** replace opencollective with funding field. ([#1047](https://github.com/cssnano/cssnano/issues/1047)) ([3dee7c5](https://github.com/cssnano/cssnano/commit/3dee7c553350e43ad0750a9478a63cf897e5510f)), closes [#1046](https://github.com/cssnano/cssnano/issues/1046)
+
+
+
+
+
 ## [5.0.1](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0...cssnano@5.0.1) (2021-04-13)
 
 
