@@ -3,7 +3,6 @@ import postcss from 'postcss';
 import { sync as gzip } from 'gzip-size';
 import { sync as brotli } from 'brotli-size';
 import Table from 'cli-table3';
-import round from 'round-precision';
 import nano from 'lerna:cssnano';
 
 const getBinarySize = (string) => {
@@ -11,7 +10,7 @@ const getBinarySize = (string) => {
 };
 
 const percentDifference = (original, minified) => {
-  return round((minified / original) * 100, 2) + '%';
+  return parseFloat(((minified / original) * 100).toFixed(2)) + '%';
 };
 
 const cssSize = (css, opts, processor) => {
@@ -111,7 +110,7 @@ export function numeric(css, opts, processor) {
 
 const deltasAsNumbers = (sizes) => {
   sizes.difference = sizes.original - sizes.processed;
-  sizes.percent = round(sizes.processed / sizes.original, 4);
+  sizes.percent = parseFloat((sizes.processed / sizes.original).toFixed(4));
 };
 
 export default cssSize;

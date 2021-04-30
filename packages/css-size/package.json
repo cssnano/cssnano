@@ -34,14 +34,13 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "brotli-size": "^0.1.0",
+    "brotli-size": "^4.0.0",
     "cli-table3": "^0.5.1",
     "cssnano": "^5.0.2",
-    "gzip-size": "^5.1.1",
+    "gzip-size": "^6.0.0",
     "minimist": "^1.2.0",
-    "pretty-bytes": "^5.2.0",
-    "read-file-stdin": "^0.2.1",
-    "round-precision": "^1.0.0"
+    "pretty-bytes": "^5.6.0",
+    "read-file-stdin": "^0.2.1"
   },
   "peerDependencies": {
     "postcss": "^8.2.1"
