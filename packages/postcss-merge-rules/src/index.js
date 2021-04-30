@@ -1,6 +1,6 @@
 import browserslist from 'browserslist';
 import vendors from 'vendors';
-import { sameParent } from 'lerna:cssnano-utils';
+import { sameParent } from 'cssnano-utils';
 import ensureCompatibility from './lib/ensureCompatibility';
 
 /** @type {string[]} */

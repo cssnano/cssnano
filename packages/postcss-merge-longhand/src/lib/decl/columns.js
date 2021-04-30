@@ -1,6 +1,6 @@
 import { list } from 'postcss';
 import { unit } from 'postcss-value-parser';
-import { detect } from 'lerna:stylehacks';
+import { detect } from 'stylehacks';
 import canMerge from '../canMerge';
 import getDecls from '../getDecls';
 import getValue from '../getValue';

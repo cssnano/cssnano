@@ -2,7 +2,7 @@ import browserslist from 'browserslist';
 import valueParser, { stringify } from 'postcss-value-parser';
 import sort from 'alphanum-sort';
 import uniqs from 'uniqs';
-import { getArguments } from 'lerna:cssnano-utils';
+import { getArguments } from 'cssnano-utils';
 
 /**
  * Return the greatest common divisor

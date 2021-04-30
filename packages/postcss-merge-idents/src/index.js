@@ -1,5 +1,5 @@
 import valueParser from 'postcss-value-parser';
-import { sameParent } from 'lerna:cssnano-utils';
+import { sameParent } from 'cssnano-utils';
 
 function canonical(obj) {
   // Prevent potential infinite loops

@@ -1,5 +1,5 @@
 import valueParser from 'postcss-value-parser';
-import { getMatch } from 'lerna:cssnano-utils';
+import { getMatch } from 'cssnano-utils';
 import mappings from './lib/map';
 
 function transform(value) {
