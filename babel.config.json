@@ -1,0 +1,5 @@
+{
+    "targets": { "node": "10.13.0" },
+    "presets": ["@babel/preset-env"],
+    "plugins": ["add-module-exports"]
+}

@@ -1,8 +1,8 @@
-import defaultPreset from 'lerna:cssnano-preset-default';
-import postcssDiscardUnused from 'lerna:postcss-discard-unused';
-import postcssMergeIdents from 'lerna:postcss-merge-idents';
-import postcssReduceIdents from 'lerna:postcss-reduce-idents';
-import postcssZindex from 'lerna:postcss-zindex';
+import defaultPreset from 'cssnano-preset-default';
+import postcssDiscardUnused from 'postcss-discard-unused';
+import postcssMergeIdents from 'postcss-merge-idents';
+import postcssReduceIdents from 'postcss-reduce-idents';
+import postcssZindex from 'postcss-zindex';
 import autoprefixer from 'autoprefixer';
 
 const defaultOpts = {

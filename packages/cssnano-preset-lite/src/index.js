@@ -1,7 +1,7 @@
-import postcssDiscardComments from 'lerna:postcss-discard-comments';
-import postcssNormalizeWhitespace from 'lerna:postcss-normalize-whitespace';
-import postcssDiscardEmpty from 'lerna:postcss-discard-empty';
-import { rawCache } from 'lerna:cssnano-utils';
+import postcssDiscardComments from 'postcss-discard-comments';
+import postcssNormalizeWhitespace from 'postcss-normalize-whitespace';
+import postcssDiscardEmpty from 'postcss-discard-empty';
+import { rawCache } from 'cssnano-utils';
 
 const defaultOpts = {};
 

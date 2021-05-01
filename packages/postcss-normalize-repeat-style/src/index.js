@@ -1,5 +1,5 @@
 import valueParser from 'postcss-value-parser';
-import { getMatch as getMatchFactory } from 'lerna:cssnano-utils';
+import { getMatch as getMatchFactory } from 'cssnano-utils';
 import mappings from './lib/map';
 
 function evenValues(list, index) {

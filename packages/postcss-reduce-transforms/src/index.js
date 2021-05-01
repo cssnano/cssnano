@@ -1,5 +1,5 @@
 import valueParser, { stringify } from 'postcss-value-parser';
-import { getMatch as getMatchFactory } from 'lerna:cssnano-utils';
+import { getMatch as getMatchFactory } from 'cssnano-utils';
 
 function getValues(list, node, index) {
   if (index % 2 === 0) {
