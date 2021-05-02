@@ -8,6 +8,8 @@
 
 > A modular minifier, built on top of the [PostCSS](https://github.com/postcss/postcss) ecosystem.
 
+Testing the CI.
+
 [![Backers on Open Collective](https://opencollective.com/cssnano/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/cssnano/sponsors/badge.svg)](#sponsors) [![NPM version](https://img.shields.io/npm/v/cssnano.svg)](https://www.npmjs.org/package/cssnano)
 [![Build Status](https://dev.azure.com/cssnano/cssnano/_apis/build/status/cssnano.cssnano?branchName=master)](https://dev.azure.com/cssnano/cssnano/_build/latest?definitionId=3&branchName=master)
 [![codecov](https://codecov.io/gh/cssnano/cssnano/branch/master/graph/badge.svg)](https://codecov.io/gh/cssnano/cssnano)
