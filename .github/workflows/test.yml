@@ -1,31 +1,27 @@
-name: CI
+name: test
 
 on:
   push:
     branches:
       - master
-      - next
-      - test/gh-actions
 
   pull_request:
-    branches:
-      - '**'
 
 jobs:
-  Lint:
-    runs-on: ubuntu-16.04
+  lint:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 10.x
-        uses: actions/setup-node@v1
+      - name: Install Node.js 14.x
+        uses: actions/setup-node@v2
         with:
-          node-version: 10.x
+          node-version: '14'
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -34,28 +30,28 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install dependencies
-        run: yarn install
-        shell: bash
+        run: yarn --frozen-lockfile
 
       - name: Run lint
         run: yarn lint
 
-  UnitTest:
-    needs: Lint
-    runs-on: ubuntu-16.04
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-16.04, macos-11.0, windows-2019]
-        node-version: [10.x, 12.x, 14.x]
-      max-parallel: 3
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: ['10', '12', '14']
 
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
+      - name: Setup Git
+        if: matrix.os == 'windows-latest'
+        run: git config --global core.autocrlf input
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v2
+
+      - name: Install Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -63,8 +59,7 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
 
-      - uses: actions/cache@v1
-        if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }} # we want to skip this on windows
+      - uses: actions/cache@v2
         id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -73,7 +68,7 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install dependencies
-        run: yarn install --ignore-engines
+        run: yarn --frozen-lockfile
 
       - name: Run tests with coverage
         run: yarn test:coverage --ci --reporters="default" --reporters="jest-junit"
