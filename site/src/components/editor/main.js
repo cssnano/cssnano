@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { ControlledEditor as Editor } from '@monaco-editor/react';
-import { RingSpinner as Loader } from 'react-spinners-kit';
+import Editor from '@monaco-editor/react';
+import { RingSpinner as Loader } from './RingSpinner.js';
 
 class MainEditor extends Component {
   constructor(props) {
@@ -24,7 +24,7 @@ class MainEditor extends Component {
           loading={<Loader />}
           value={this.props.input}
           onChange={this.props.handleOnChange}
-          editorDidMount={this.handleEditorDidMount}
+          onMount={this.handleEditorDidMount}
           options={{ lineNumbers: 'on' }}
         />
       </div>

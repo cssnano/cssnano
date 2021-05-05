@@ -42,20 +42,21 @@ systems.
 cssnano is installed using the command line, using [npm](https://npmjs.com); so
 you will need to use an application such as Terminal or the Windows Command
 Prompt. If you don't already have Node.js installed, then you'll need to
-follow these instructions:
+install it.
 
-We require a minimum of Node.js version 6.9.0 & npm 3.10.8 to run, and we
+We require a minimum of Node.js version 10.13.0  to run, and we
 recommend that you install [nvm](https://github.com/creationix/nvm) to manage
 your Node.js versions.
 
 Alternately, you can [visit the Node.js website](https://nodejs.org/en/) and
 follow the instructions there to install it for your machine.
 
+cssnano is a [PostCSS](https://postcss.org/) plugin, so running cssnano also requires installing PostCSS. 
 Once you have installed Node.js & npm, you can run this command to install
-cssnano into your project:
+cssnano and PostCSS into your project:
 
 ```shell
-npm install cssnano --save-dev
+npm install cssnano postcss --save-dev
 ```
 
 Note that for most typical setups, we recommend that you compress your CSS
@@ -74,7 +75,7 @@ You can install [PostCSS CLI](https://github.com/postcss/postcss-cli)
 with this command:
 
 ```shell
-npm install postcss-cli --global
+npm install --save-dev postcss-cli
 ```
 
 Once you have done this, you will need to configure cssnano by creating a
@@ -82,7 +83,7 @@ Once you have done this, you will need to configure cssnano by creating a
 cssnano as well as any other [plugins] that you might want for your project;
 as an example:
 
-[plugins]: https://github.com/postcss/postcss/blob/master/site/plugins.md
+[plugins]: https://github.com/postcss/postcss/blob/main/docs/plugins.md
 
 ```js
 module.exports = {
@@ -94,13 +95,13 @@ module.exports = {
 };
 ```
 
-_Read more about presets in [our presets guide](/guides/presets)._
+_Read more about presets in [our presets guide](/docs/presets)._
 
 You can now minify your CSS files! Try it out by creating a CSS file in your
 project named `input.css`, with some styles in there. Then, run:
 
 ```shell
-postcss input.css > output.css
+npx postcss input.css > output.css
 ```
 
 You should then see an `output.css` with the same styles but compressed!

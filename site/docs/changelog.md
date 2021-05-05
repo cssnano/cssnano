@@ -6,6 +6,106 @@ layout: Page
 <!-- This file was automatically generated. -->
 
 
+## Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+### [5.0.2](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0...cssnano@5.0.2) (2021-04-26)
+
+#### Bug Fixes
+
+- **cssnano:** replace opencollective with funding field. ([#1047](https://github.com/cssnano/cssnano/issues/1047)) ([3dee7c5](https://github.com/cssnano/cssnano/commit/3dee7c553350e43ad0750a9478a63cf897e5510f)), closes [#1046](https://github.com/cssnano/cssnano/issues/1046)
+
+### [5.0.1](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0...cssnano@5.0.1) (2021-04-13)
+
+#### Bug Fixes
+
+- **cssnano:** replace opencollective with funding field. ([#1047](https://github.com/cssnano/cssnano/issues/1047)) ([3dee7c5](https://github.com/cssnano/cssnano/commit/3dee7c553350e43ad0750a9478a63cf897e5510f)), closes [#1046](https://github.com/cssnano/cssnano/issues/1046)
+
+
+## [5.0.0](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0-rc.2...cssnano@5.0.0) (2021-04-06)
+
+**Note:** Version bump only for package cssnano
+
+
+## [5.0.0-rc.2](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0-rc.1...cssnano@5.0.0-rc.2) (2021-03-15)
+
+#### Bug Fixes
+
+- update SVGO ([aa07cfd](https://github.com/cssnano/cssnano/commit/aa07cfd62c82ed4b1e87219eea8d0ed99635e4ca))
+
+
+## [5.0.0-rc.1](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0-rc.0...cssnano@5.0.0-rc.1) (2021-03-04)
+
+**Note:** Version bump only for package cssnano
+
+
+## 5.0.0-rc.0 (2021-02-19)
+
+#### Bug Fixes
+
+- **postcss-ordered-values:** columns transform returning string instead of the AST ([#928](https://github.com/cssnano/cssnano/issues/928)) ([a5d6d36](https://github.com/cssnano/cssnano/commit/a5d6d364e0815ecb198a95de301f3554ccce4f78))
+- **unique-selector:** removed sorting and involving selector comments ([#857](https://github.com/cssnano/cssnano/issues/857)) ([3fa875d](https://github.com/cssnano/cssnano/commit/3fa875dade2138e1a531dce1f8b79814cb39dbc9))
+
+#### chore
+
+- minimum require version of node is 10.13 ([#871](https://github.com/cssnano/cssnano/issues/871)) ([28bda24](https://github.com/cssnano/cssnano/commit/28bda243e32ce3ba89b3c358a5f78727b3732f11))
+
+#### Features
+
+- css declaration sorter ([#855](https://github.com/cssnano/cssnano/issues/855)) ([613d562](https://github.com/cssnano/cssnano/commit/613d562ae79e7e169c80b523b7c2c9b0093bc1d8))
+- migarete to PostCSS 8 ([#975](https://github.com/cssnano/cssnano/issues/975)) ([40b82dc](https://github.com/cssnano/cssnano/commit/40b82dca7f53ac02cd4fe62846dec79b898ccb49))
+- **postcss-reduce-transforms:** improve optimizations ([#745](https://github.com/cssnano/cssnano/issues/745)) ([b0f0d89](https://github.com/cssnano/cssnano/commit/b0f0d892316d7b77e8033a6dc8d67745043a5072))
+
+#### BREAKING CHANGES
+
+- minimum supported `postcss` version is `8.2.1`
+- minimum require version of node is 10.13
+
+### 4.1.10 (2019-02-14)
+
+### 4.1.9 (2019-02-12)
+
+#### Bug Fixes
+
+- initial loading time ([#654](https://github.com/cssnano/cssnano/issues/654)) ([de2ef07](https://github.com/cssnano/cssnano/commit/de2ef074a0c7da94c22a5b0336e6c4ca2a94f1b5))
+
+### 4.1.7 (2018-10-22)
+
+### 4.1.6 (2018-10-22)
+
+### 4.1.5 (2018-10-17)
+
+#### Bug Fixes
+
+- toggling of plugins in presets using boolean configuration option ([#622](https://github.com/cssnano/cssnano/issues/622)) ([15076f1](https://github.com/cssnano/cssnano/commit/15076f145118507e010722cc9ed548ffe1b91f8c))
+
+### 4.1.4 (2018-09-27)
+
+### 4.1.3 (2018-09-25)
+
+### 4.1.2 (2018-09-25)
+
+### 4.1.1 (2018-09-24)
+
+#### Bug Fixes
+
+- parse error with iPhone X feature ([#614](https://github.com/cssnano/cssnano/issues/614)) ([a3704a7](https://github.com/cssnano/cssnano/commit/a3704a76a631b1cd907ab0c0a8637a622769676d))
+
+
+## 4.1.0 (2018-08-24)
+
+### 4.0.5 (2018-07-30)
+
+### 4.0.4 (2018-07-25)
+
+### 4.0.3 (2018-07-18)
+
+#### Bug Fixes
+
+- **postcss-merge-longhand:** not mangle border output ([#555](https://github.com/cssnano/cssnano/issues/555)) ([9a70605](https://github.com/cssnano/cssnano/commit/9a706050b621e7795a9bf74eb7110b5c81804ffe)), closes [#553](https://github.com/cssnano/cssnano/issues/553) [#554](https://github.com/cssnano/cssnano/issues/554)
+
 
 ## 4.1.10
 
@@ -23,7 +123,7 @@ layout: Page
 - `postcss-merge-rules` increase performance
 - `postcss-minify-params` increase performance
 - `postcss-minify-selectors`: increase performance
-- `postcss-normalize-display-values`: increase performance 
+- `postcss-normalize-display-values`: increase performance
 - `postcss-normalize-positions`: increase performance
 - `postcss-normalize-repeat-style`: increase performance
 - `postcss-normalize-string`: increase performance
@@ -189,7 +289,7 @@ layout: Page
 
 ### Bug Fixes
 
-- postcss-normalize-unicode doesn't change `U` to lowercase for `IE` &lt;= 11 and `Edge` &lt;= 15.
+- postcss-normalize-unicode doesn't change `U` to lowercase for `IE` <= 11 and `Edge` <= 15.
 - postcss-merge-longhand works with custom properties (Example `a { border-style:dotted; border-style:var(--variable) }`) correctly.
 - postcss-ordered-values handle `border` property with invalid border width value correctly.
 - postcss-merge-rules handles `:-ms-input-placeholder` and `::-ms-input-placeholder` selectors correctly.
@@ -282,7 +382,7 @@ the actual release.
   - `postcss-reduce-idents`
   - `postcss-zindex`
 
-  Note that you can load `cssnano-preset-advanced` instead which _does_ contain
+  Note that you can load `cssnano-preset-advanced` instead which *does* contain
   these transforms.
 
 - We no longer detect previous plugins to silently exclude our own, and now
@@ -372,7 +472,7 @@ the actual release.
 ## 3.7.7
 
 - Further improves CSS mixin handling; semicolons will no longer be stripped
-  from _rules_ as well as declarations.
+  from *rules* as well as declarations.
 
 
 ## 3.7.6
@@ -417,7 +517,7 @@ the actual release.
 - Added: Reduce `background-repeat` definitions; works with both this property
   & the `background` shorthand, and aims to compress the extended two value
   syntax into the single value syntax.
-- Added: Reduce `initial` values for properties when the _actual_ initial value
+- Added: Reduce `initial` values for properties when the *actual* initial value
   is shorter; for example, `min-width: initial` becomes `min-width: 0`.
 
 
@@ -493,7 +593,7 @@ the actual release.
 
 - cssnano no longer converts `outline: none` to `outline: 0`, as there are
   some cases where the values are not equivalent (thanks to [**@TrySound**](https://github.com/TrySound)).
-- cssnano no longer converts for example `16px` to `1pc` _by default_. Length
+- cssnano no longer converts for example `16px` to `1pc` *by default*. Length
   optimisations can be turned on via `{convertValues: {length: true}}`.
 - Improved minimization of css functions (thanks to [**@TrySound**](https://github.com/TrySound)).
 
