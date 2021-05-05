@@ -50,7 +50,7 @@ const defaultOpts = {
     add: false,
   },
   cssDeclarationSorter: {
-    keepOverrides: true,
+    exclude: true,
   },
 };
 

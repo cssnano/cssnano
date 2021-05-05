@@ -98,10 +98,7 @@ test(
 
 test(
   'sort properties inside at-rules, @font-face',
-  processCSS(
-    '@font-face{font-family:a;src:url()}',
-    '@font-face{font-family:a;src:url()}'
-  )
+  passthroughCSS('@font-face{font-family:a;src:url()}p{font-family:a}')
 );
 
 test(
