@@ -79,7 +79,7 @@ test(
   'should handle deep combinators',
   processCss(
     'body /deep/ .theme-element{color:#00f}',
-    'body /deep/ .theme-element{color:#00f}'
+    'body/deep/.theme-element{color:#00f}'
   )
 );
 
