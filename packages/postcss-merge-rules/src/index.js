@@ -100,7 +100,7 @@ function canMerge(ruleA, ruleB, browsers, compatibilityCache) {
   }
 
   const parent = sameParent(ruleA, ruleB);
-  const { name } = ruleA.parent;
+  const name = ruleA.parent && ruleA.parent.name ? ruleA.parent.name : null;
   if (parent && name && ~name.indexOf('keyframes')) {
     return false;
   }
