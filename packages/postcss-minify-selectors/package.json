@@ -30,7 +30,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "alphanum-sort": "^1.0.2",
-    "postcss-selector-parser": "^3.1.2"
+    "postcss-selector-parser": "^6.0.5"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
