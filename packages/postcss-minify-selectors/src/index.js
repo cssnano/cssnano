@@ -1,6 +1,5 @@
 import sort from 'alphanum-sort';
 import parser from 'postcss-selector-parser';
-import unquote from './lib/unquote.js';
 import canUnquote from './lib/canUnquote.js';
 
 const pseudoElements = [
@@ -12,11 +11,12 @@ const pseudoElements = [
 
 function attribute(selector) {
   if (selector.value) {
-    // Join selectors that are split over new lines
-    selector.value = selector.value.replace(/\\\n/g, '').trim();
-
+    if (selector.raws.value) {
+      // Join selectors that are split over new lines
+      selector.raws.value = selector.raws.value.replace(/\\\n/g, '').trim();
+    }
     if (canUnquote(selector.value)) {
-      selector.value = unquote(selector.value);
+      selector.quoteMark = null;
     }
 
     if (selector.operator) {
@@ -24,13 +24,14 @@ function attribute(selector) {
     }
   }
 
-  if (!selector.raws) {
-    selector.raws = {};
-  }
-
-  if (!selector.raws.spaces) {
-    selector.raws.spaces = {};
-  }
+  selector.rawSpaceBefore = '';
+  selector.rawSpaceAfter = '';
+  selector.spaces.attribute = { before: '', after: '' };
+  selector.spaces.operator = { before: '', after: '' };
+  selector.spaces.value = {
+    before: '',
+    after: selector.insensitive ? ' ' : '',
+  };
 
   selector.raws.spaces.attribute = {
     before: '',
@@ -59,7 +60,10 @@ function attribute(selector) {
 
 function combinator(selector) {
   const value = selector.value.trim();
-
+  selector.spaces.before = '';
+  selector.spaces.after = '';
+  selector.rawSpaceBefore = '';
+  selector.rawsSpaceAfter = '';
   selector.value = value.length ? value : ' ';
 }
 

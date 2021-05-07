@@ -1,5 +1,3 @@
-import unquote from './unquote.js';
-
 /**
  * Can unquote attribute detection from mothereff.in
  * Copyright Mathias Bynens <https://mathiasbynens.be/>
@@ -10,8 +8,6 @@ const escapes = /\\([0-9A-Fa-f]{1,6})[ \t\n\f\r]?/g;
 const range = /[\u0000-\u002c\u002e\u002f\u003A-\u0040\u005B-\u005E\u0060\u007B-\u009f]/;
 
 export default function canUnquote(value) {
-  value = unquote(value);
-
   if (value === '-' || value === '') {
     return false;
   }

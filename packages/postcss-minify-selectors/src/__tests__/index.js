@@ -87,7 +87,10 @@ test(
 
 test(
   'should handle deep combinators',
-  passthroughCSS('body /deep/ .theme-element{color:blue}')
+  processCSS(
+    'body /deep/ .theme-element{color:blue}',
+    'body/deep/.theme-element{color:blue}'
+  )
 );
 
 test(
