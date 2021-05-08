@@ -29,7 +29,7 @@ function pluginCreator(opts = {}) {
             return;
           }
 
-          cache.optimizeValues();
+          cache.optimizeValues(opts.startIndex || 1);
 
           // Second pass; optimize
           nodes.forEach((decl) => {
