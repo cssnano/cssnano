@@ -1242,4 +1242,9 @@ test(
   )
 );
 
+test(
+  'preserve order of border declarations',
+  passthroughCSS('a{border-top:1px solid;border-color:purple}')
+);
+
 test('should handle empty border', processCSS('h1{border:;}', 'h1{border:;}'));
