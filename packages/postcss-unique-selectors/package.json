@@ -27,7 +27,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "alphanum-sort": "^1.0.2",
-    "postcss-selector-parser": "^6.0.2",
+    "postcss-selector-parser": "^6.0.5",
     "uniqs": "^2.0.0"
   },
   "bugs": {
