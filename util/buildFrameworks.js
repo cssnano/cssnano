@@ -2,7 +2,7 @@ import { join } from 'path';
 import glob from 'glob';
 import fs from 'fs-extra';
 import postcss from 'postcss';
-import cssnano from 'lerna:cssnano';
+import cssnano from '../packages/cssnano';
 import frameworks from './frameworks';
 
 function rebuild(pkg) {
