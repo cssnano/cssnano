@@ -628,6 +628,11 @@ test(
 );
 
 test(
+  'should not merge unknown and known selector',
+  passthroughCSS('p {color: blue}:nonsense {color: blue}')
+);
+
+test(
   'should merge multiple media queries',
   processCSS(
     '@media print{h1{display:block}}@media print{h1{color:red}}',
