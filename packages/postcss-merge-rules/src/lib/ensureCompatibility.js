@@ -61,6 +61,10 @@ function isCssMixin(selector) {
   return selector[selector.length - 1] === ':';
 }
 
+function isHostPseudoClass(selector) {
+  return selector.includes(':host');
+}
+
 const isSupportedCache = {};
 
 // Move to util in future
@@ -83,6 +87,11 @@ export default function ensureCompatibility(
 ) {
   // Should not merge mixins
   if (selectors.some(isCssMixin)) {
+    return false;
+  }
+
+  // Should not merge :host selector https://github.com/angular/angular-cli/issues/18672
+  if (selectors.some(isHostPseudoClass)) {
     return false;
   }
   return selectors.every((selector) => {
