@@ -43,10 +43,10 @@
     "read-file-stdin": "^0.2.1"
   },
   "peerDependencies": {
-    "postcss": "^8.2.1"
+    "postcss": "^8.2.15"
   },
   "devDependencies": {
-    "postcss": "^8.2.1"
+    "postcss": "^8.2.15"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
