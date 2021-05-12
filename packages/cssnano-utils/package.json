@@ -21,9 +21,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "postcss": "^8.2.1"
+    "postcss": "^8.2.15"
   },
   "peerDependencies": {
-    "postcss": "^8.2.1"
+    "postcss": "^8.2.15"
   }
 }
