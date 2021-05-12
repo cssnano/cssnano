@@ -1,5 +1,6 @@
 import { isSupported } from 'caniuse-api';
 import selectorParser from 'postcss-selector-parser';
+import vendors from 'vendors';
 
 const simpleSelectorRe = /^#?[-._a-z0-9 ]+$/i;
 
@@ -9,6 +10,39 @@ const cssGencontent = 'css-gencontent';
 const cssFirstLetter = 'css-first-letter';
 const cssFirstLine = 'css-first-line';
 const cssInOutOfRange = 'css-in-out-of-range';
+
+/** @type {string[]} */
+const prefixes = vendors.map((v) => `-${v}-`);
+
+/**
+ * @param {string} selector
+ * @return {string[]}
+ */
+export function filterPrefixes(selector) {
+  return prefixes.filter((prefix) => selector.indexOf(prefix) !== -1);
+}
+
+// Internet Explorer use :-ms-input-placeholder.
+// Microsoft Edge use ::-ms-input-placeholder.
+const findMsInputPlaceholder = (selector) =>
+  ~selector.search(/-ms-input-placeholder/i);
+
+export function sameVendor(selectorsA, selectorsB) {
+  let same = (selectors) => selectors.map(filterPrefixes).join();
+  let findMsVendor = (selectors) => selectors.find(findMsInputPlaceholder);
+  return (
+    same(selectorsA) === same(selectorsB) &&
+    !(findMsVendor(selectorsA) && findMsVendor(selectorsB))
+  );
+}
+
+/**
+ * @param {string} selector
+ * @return {boolean}
+ */
+export function noVendor(selector) {
+  return !filterPrefixes(selector).length;
+}
 
 export const pseudoElements = {
   ':active': cssSel2,
@@ -61,6 +95,10 @@ function isCssMixin(selector) {
   return selector[selector.length - 1] === ':';
 }
 
+function isHostPseudoClass(selector) {
+  return selector.includes(':host');
+}
+
 const isSupportedCache = {};
 
 // Move to util in future
@@ -76,13 +114,14 @@ function isSupportedCached(feature, browsers) {
   return result;
 }
 
-export default function ensureCompatibility(
-  selectors,
-  browsers,
-  compatibilityCache
-) {
+export function ensureCompatibility(selectors, browsers, compatibilityCache) {
   // Should not merge mixins
   if (selectors.some(isCssMixin)) {
+    return false;
+  }
+
+  // Should not merge :host selector https://github.com/angular/angular-cli/issues/18672
+  if (selectors.some(isHostPseudoClass)) {
     return false;
   }
   return selectors.every((selector) => {
@@ -98,6 +137,9 @@ export default function ensureCompatibility(
         const { type, value } = node;
         if (type === 'pseudo') {
           const entry = pseudoElements[value];
+          if (!entry && noVendor(value)) {
+            compatible = false;
+          }
           if (entry && compatible) {
             compatible = isSupportedCached(entry, browsers);
           }

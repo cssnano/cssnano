@@ -87,6 +87,9 @@ Thanks goes to these wonderful people ([emoji key](https://github.com/kentcdodds
     <td align="center"><a href="https://genemecija.com"><img src="https://avatars2.githubusercontent.com/u/39816902?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Gene Mecija</b></sub></a><br /><a href="https://github.com/cssnano/cssnano/issues?q=author%3Agenemecija" title="Bug reports">🐛</a> <a href="https://github.com/cssnano/cssnano/commits?author=genemecija" title="Code">💻</a> <a href="https://github.com/cssnano/cssnano/commits?author=genemecija" title="Tests">⚠️</a></td>
     <td align="center"><a href="https://www.ludofischer.com"><img src="https://avatars1.githubusercontent.com/u/43557?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ludovico Fischer</b></sub></a><br /><a href="#maintenance-ludofischer" title="Maintenance">🚧</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/MapTo0"><img src="https://avatars.githubusercontent.com/u/5821279?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Martin</b></sub></a><br /><a href="https://github.com/cssnano/cssnano/commits?author=MapTo0" title="Code">💻</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-restore -->
