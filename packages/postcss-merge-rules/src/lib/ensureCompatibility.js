@@ -10,6 +10,7 @@ const cssGencontent = 'css-gencontent';
 const cssFirstLetter = 'css-first-letter';
 const cssFirstLine = 'css-first-line';
 const cssInOutOfRange = 'css-in-out-of-range';
+const formValidation = 'form-validation';
 
 /** @type {string[]} */
 const prefixes = vendors.map((v) => `-${v}-`);
@@ -47,6 +48,7 @@ export function noVendor(selector) {
 export const pseudoElements = {
   ':active': cssSel2,
   ':after': cssGencontent,
+  ':any-link': 'css-any-link',
   ':before': cssGencontent,
   ':checked': cssSel3,
   ':default': 'css-default-pseudo',
@@ -65,9 +67,12 @@ export const pseudoElements = {
   ':hover': cssSel2,
   ':in-range': cssInOutOfRange,
   ':indeterminate': 'css-indeterminate-pseudo',
+  ':invalid': formValidation,
+  ':is': 'css-matches-pseudo',
   ':lang': cssSel2,
   ':last-child': cssSel3,
   ':last-of-type': cssSel3,
+  ':link': cssSel2,
   ':matches': 'css-matches-pseudo',
   ':not': cssSel3,
   ':nth-child': cssSel3,
@@ -79,6 +84,7 @@ export const pseudoElements = {
   ':optional': 'css-optional-pseudo',
   ':out-of-range': cssInOutOfRange,
   ':placeholder-shown': 'css-placeholder-shown',
+  ':required': formValidation,
   ':root': cssSel3,
   ':target': cssSel3,
   '::after': cssGencontent,
@@ -89,6 +95,8 @@ export const pseudoElements = {
   '::marker': 'css-marker-pseudo',
   '::placeholder': 'css-placeholder',
   '::selection': 'css-selection',
+  ':valid': formValidation,
+  ':visited': cssSel2,
 };
 
 function isCssMixin(selector) {

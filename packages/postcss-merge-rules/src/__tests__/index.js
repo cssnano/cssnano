@@ -807,3 +807,11 @@ test(
     'a{color : green;} a:focus-visible{ color : green;} a:focus-visible{ background : red}'
   )
 );
+
+test(
+  'should merge :visited and :link pseudo-classes',
+  processCSS(
+    'a,a:link{color:#555}a:visited{color:#555}',
+    'a,a:link,a:visited{color:#555}'
+  )
+);
