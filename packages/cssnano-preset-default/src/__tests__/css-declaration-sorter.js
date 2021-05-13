@@ -44,6 +44,22 @@ test(
 );
 
 test(
+  'keep all property at the top',
+  processCSS(
+    'a{all:unset;display:flex;align-items:center}',
+    'a{all:unset;align-items:center;display:flex}'
+  )
+);
+
+test(
+  'move all property to the top',
+  processCSS(
+    'a{display:flex;all:unset;align-items:center}',
+    'a{all:unset;align-items:center;display:flex}'
+  )
+);
+
+test(
   'keep order of CSS variables',
   processCSS(
     `:root{--a-var:'value';--c-var:calc(10px + 20px);--b-var: 12px;}`,
