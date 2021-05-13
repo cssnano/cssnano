@@ -39,11 +39,6 @@ test(
 );
 
 test(
-  'keep order of border properties, short- and longhand, right to left',
-  passthroughCSS('a{border-top:1px solid;border-color:purple}')
-);
-
-test(
   'keep all property at the top',
   processCSS(
     'a{all:unset;display:flex;align-items:center}',
