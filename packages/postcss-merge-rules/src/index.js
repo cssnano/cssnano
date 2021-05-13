@@ -1,10 +1,10 @@
 import browserslist from 'browserslist';
-import vendors from 'vendors';
 import { sameParent } from 'cssnano-utils';
-import ensureCompatibility from './lib/ensureCompatibility';
-
-/** @type {string[]} */
-const prefixes = vendors.map((v) => `-${v}-`);
+import {
+  ensureCompatibility,
+  sameVendor,
+  noVendor,
+} from './lib/ensureCompatibility';
 
 /**
  * @param {postcss.Declaration} a
@@ -50,36 +50,6 @@ function sameDeclarationsAndOrder(a, b) {
     return false;
   }
   return a.every((d, index) => declarationIsEqual(d, b[index]));
-}
-
-// Internet Explorer use :-ms-input-placeholder.
-// Microsoft Edge use ::-ms-input-placeholder.
-const findMsInputPlaceholder = (selector) =>
-  ~selector.search(/-ms-input-placeholder/i);
-
-/**
- * @param {string} selector
- * @return {string[]}
- */
-function filterPrefixes(selector) {
-  return prefixes.filter((prefix) => selector.indexOf(prefix) !== -1);
-}
-
-function sameVendor(selectorsA, selectorsB) {
-  let same = (selectors) => selectors.map(filterPrefixes).join();
-  let findMsVendor = (selectors) => selectors.find(findMsInputPlaceholder);
-  return (
-    same(selectorsA) === same(selectorsB) &&
-    !(findMsVendor(selectorsA) && findMsVendor(selectorsB))
-  );
-}
-
-/**
- * @param {string} selector
- * @return {boolean}
- */
-function noVendor(selector) {
-  return !filterPrefixes(selector).length;
 }
 
 /**

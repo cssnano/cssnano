@@ -620,7 +620,17 @@
       "contributions": [
         "maintenance"
       ]
+    },
+    {
+      "login": "MapTo0",
+      "name": "Martin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5821279?v=4",
+      "profile": "https://github.com/MapTo0",
+      "contributions": [
+        "code"
+      ]
     }
   ],
-  "repoType": "github"
+  "repoType": "github",
+  "commitConvention": "none"
 }

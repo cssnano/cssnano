@@ -620,6 +620,19 @@ test('should not crash when node.raws.value is null (2)', () => {
 });
 
 test(
+  'should not merge :host(tagname) with tagname',
+  processCSS(
+    ':host(tag){display:block}tag{display:block}',
+    ':host(tag){display:block}tag{display:block}'
+  )
+);
+
+test(
+  'should not merge unknown and known selector',
+  passthroughCSS('p {color: blue}:nonsense {color: blue}')
+);
+
+test(
   'should merge multiple media queries',
   processCSS(
     '@media print{h1{display:block}}@media print{h1{color:red}}',
@@ -792,5 +805,13 @@ test(
   processCSS(
     'a{color : green;} a:focus-visible{ color : green;} a:focus-visible{ background : red}',
     'a{color : green;} a:focus-visible{ color : green;} a:focus-visible{ background : red}'
+  )
+);
+
+test(
+  'should merge :visited and :link pseudo-classes',
+  processCSS(
+    'a,a:link{color:#555}a:visited{color:#555}',
+    'a,a:link,a:visited{color:#555}'
   )
 );
