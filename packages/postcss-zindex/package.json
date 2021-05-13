@@ -22,10 +22,7 @@
     "z-index"
   ],
   "license": "MIT",
-  "dependencies": {
-    "has": "^1.0.3",
-    "uniqs": "^2.0.0"
-  },
+  "dependencies": {},
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
     "name": "Ben Briggs",

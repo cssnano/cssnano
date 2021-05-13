@@ -1,33 +1,16 @@
-import has from 'has';
-import uniq from 'uniqs';
-
-function LayerCache(opts) {
-  this._values = [];
-  this._startIndex = opts.startIndex || 1;
+function LayerCache() {
+  this._values = new Map();
 }
 
 function ascending(a, b) {
   return a - b;
 }
 
-function reduceValues(list, value, index) {
-  list[value] = index + this._startIndex;
-
-  return list;
-}
-
-LayerCache.prototype._findValue = function (value) {
-  if (has(this._values, value)) {
-    return this._values[value];
+LayerCache.prototype.optimizeValues = function (startIndex) {
+  const sortedValues = Array.from(this._values.keys()).sort(ascending);
+  for (let i = 0; i < sortedValues.length; i++) {
+    this._values.set(sortedValues[i], i + startIndex);
   }
-
-  return false;
-};
-
-LayerCache.prototype.optimizeValues = function () {
-  this._values = uniq(this._values)
-    .sort(ascending)
-    .reduce(reduceValues.bind(this), {});
 };
 
 LayerCache.prototype.addValue = function (value) {
@@ -38,13 +21,13 @@ LayerCache.prototype.addValue = function (value) {
     return;
   }
 
-  this._values.push(parsedValue);
+  this._values.set(parsedValue, parsedValue);
 };
 
 LayerCache.prototype.getValue = function (value) {
   let parsedValue = parseInt(value, 10);
 
-  return this._findValue(parsedValue) || value;
+  return this._values.get(parsedValue) || value;
 };
 
 export default LayerCache;
