@@ -207,7 +207,7 @@ test(
   'should not mangle percentage based rgba values',
   processCSS(
     'h1{color:rgba(50%,50%,50%,0.5)}',
-    'h1{color:hsla(0, 0%, 49.8%, 0.5)}'
+    'h1{color:hsla(0, 0%, 50%, 0.5)}'
   )
 );
 

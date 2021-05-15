@@ -1,66 +1,58 @@
-import color from 'color';
-import keywords from './keywords.json';
+import { colord, extend, getFormat } from 'colord';
+import namesPlugin from 'colord/plugins/names';
 import toShorthand from './lib/toShorthand';
 
-const shorter = (a, b) => (a && a.length < b.length ? a : b).toLowerCase();
+extend([namesPlugin]);
 
-export default (colour, isLegacy = false, cache = false) => {
-  const key = colour + '|' + isLegacy;
-
-  if (cache && cache[key]) {
-    return cache[key];
+export default (colour, isLegacy = false) => {
+  if (getFormat(colour) === 'rgb') {
+    /* check that it is a valid CSS value
+     https://www.w3.org/TR/css-color-4/#rgb-functions */
+    let percentCount = 0;
+    for (const c of colour) {
+      if (c === '%') {
+        percentCount++;
+      }
+    }
+    // rgb values should either be all percentages or all numbers
+    if (percentCount !== 3 && percentCount !== 0) {
+      return colour;
+    }
   }
 
-  try {
-    const parsed = color(colour.toLowerCase());
+  const parsed = colord(colour.toLowerCase());
+  if (parsed.isValid()) {
     const alpha = parsed.alpha();
-
     if (alpha === 1) {
-      const toHex = toShorthand(parsed.hex().toLowerCase());
-      const result = shorter(keywords[toHex], toHex);
-
-      if (cache) {
-        cache[key] = result;
+      const toHex = toShorthand(parsed.toHex());
+      const toName = parsed.toName();
+      if (toName && toName.length < toHex.length) {
+        return toName;
+      } else {
+        return toHex;
       }
-
-      return result;
     } else {
-      const rgb = parsed.rgb();
+      const rgb = parsed.toRgb();
 
-      if (
-        !isLegacy &&
-        !rgb.color[0] &&
-        !rgb.color[1] &&
-        !rgb.color[2] &&
-        !alpha
-      ) {
-        const result = 'transparent';
-
-        if (cache) {
-          cache[key] = result;
-        }
-
-        return result;
+      if (!isLegacy && !rgb.r && !rgb.g && !rgb.b && !alpha) {
+        return 'transparent';
       }
 
-      let hsla = parsed.hsl().string();
-      let rgba = rgb.string();
-      let result = hsla.length < rgba.length ? hsla : rgba;
+      let hsla = parsed.toHslString();
+      let rgba = parsed.toRgbString();
 
-      if (cache) {
-        cache[key] = result;
+      const shortestConversion = hsla.length < rgba.length ? hsla : rgba;
+
+      let result;
+      if (colour.length < shortestConversion.length) {
+        result = colour;
+      } else {
+        result = shortestConversion;
       }
-
       return result;
     }
-  } catch (e) {
+  } else {
     // Possibly malformed, so pass through
-    const result = colour;
-
-    if (cache) {
-      cache[key] = result;
-    }
-
-    return result;
+    return colour;
   }
 };
