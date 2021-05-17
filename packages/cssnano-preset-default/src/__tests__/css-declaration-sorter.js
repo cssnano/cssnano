@@ -34,9 +34,23 @@ test(
 );
 
 test(
-  'keep order of vendor prefixed properties, mixed with short- and longhand',
-  passthroughCSS(
-    'a{animation-name:a;animation:b;-webkit-animation:c;-webkit-animation-name:d}'
+  'keep order of border properties, short- and longhand, left to right',
+  passthroughCSS('a{border-color:purple;border-top:1px solid}')
+);
+
+test(
+  'keep all property at the top',
+  processCSS(
+    'a{all:unset;display:flex;align-items:center}',
+    'a{all:unset;align-items:center;display:flex}'
+  )
+);
+
+test(
+  'move all property to the top',
+  processCSS(
+    'a{display:flex;all:unset;align-items:center}',
+    'a{all:unset;align-items:center;display:flex}'
   )
 );
 
@@ -117,4 +131,20 @@ test(
 test(
   'works with postcss-merge-longhand, border',
   processCSS('a{z-index:1;border-top:0;border:0}', 'a{border:0;z-index:1}')
+);
+
+test(
+  'works with postcss-merge-longhand, border keep short- and longhand order',
+  processCSS(
+    'a{border-color:purple;border-top-width:2px;border-top-style:solid}',
+    'a{border-top:2px solid;border-color:purple}'
+  )
+);
+
+test(
+  'works with postcss-merge-longhand, border keep mixed short- and longhand order',
+  processCSS(
+    'a{border-color:purple;border:0;border-top:3px solid}',
+    'a{border:0;border-top:3px solid}'
+  )
 );
