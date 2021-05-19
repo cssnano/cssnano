@@ -11,6 +11,12 @@ layout: Page
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [5.0.3](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0...cssnano@5.0.3) (2021-05-19)
+
+#### Bug Fixes
+
+- **cssnano:** many bug fixes in dependent packages. Most notably fixed buggy reordering of border declarations and improved color value minification. See the changelogs for the single presets and plugins for details.
+
 ### [5.0.2](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0...cssnano@5.0.2) (2021-04-26)
 
 #### Bug Fixes
