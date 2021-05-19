@@ -31,7 +31,7 @@ function isMathFunctionNode(node) {
   return ['calc', 'min', 'max', 'clamp'].includes(node.value.toLowerCase());
 }
 
-function transform(value, isLegacy, colorminCache) {
+function transform(value, isLegacy) {
   const parsed = valueParser(value);
 
   walk(parsed, (node, index, parent) => {
@@ -39,7 +39,7 @@ function transform(value, isLegacy, colorminCache) {
       if (/^(rgb|hsl)a?$/i.test(node.value)) {
         const { value: originalValue } = node;
 
-        node.value = colormin(stringify(node), isLegacy, colorminCache);
+        node.value = colormin(stringify(node), isLegacy);
         node.type = 'word';
 
         const next = parent.nodes[index + 1];
@@ -58,7 +58,7 @@ function transform(value, isLegacy, colorminCache) {
         return false;
       }
     } else if (node.type === 'word') {
-      node.value = colormin(node.value, isLegacy, colorminCache);
+      node.value = colormin(node.value, isLegacy);
     }
   });
 
@@ -77,7 +77,6 @@ function pluginCreator() {
         env: resultOpts.env,
       });
       const isLegacy = browsers.some(hasTransparentBug);
-      const colorminCache = {};
       const cache = {};
 
       return {
@@ -97,7 +96,7 @@ function pluginCreator() {
               return;
             }
 
-            const cacheKey = `${decl.prop}|${decl.value}`;
+            const cacheKey = value + '|' + isLegacy;
 
             if (cache[cacheKey]) {
               decl.value = cache[cacheKey];
@@ -105,7 +104,7 @@ function pluginCreator() {
               return;
             }
 
-            const newValue = transform(value, isLegacy, colorminCache);
+            const newValue = transform(value, isLegacy);
 
             decl.value = newValue;
             cache[cacheKey] = newValue;

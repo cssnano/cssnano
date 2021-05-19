@@ -52,7 +52,7 @@ test(
 
 test(
   'should convert rgba to hsla when shorter',
-  isEqual('rgba(221, 221, 221, 0.5)', 'hsla(0, 0%, 86.7%, 0.5)')
+  isEqual('rgba(221, 221, 221, 0.5)', 'hsla(0, 0%, 87%, 0.5)')
 );
 
 test(
@@ -104,7 +104,7 @@ test(
 
 test(
   'should convert percentage based rgba values (2)',
-  isEqual('rgba(50%,50%,50%,0.5)', 'hsla(0, 0%, 49.8%, 0.5)')
+  isEqual('rgba(50%,50%,50%,0.5)', 'hsla(0, 0%, 50%, 0.5)')
 );
 
 test(
@@ -132,6 +132,11 @@ test('should convert darkgray to a hex', isEqual('darkgray', '#a9a9a9'));
 test('should convert 8 character hex codes', isEqual('#000000FF', '#000'));
 
 test('should convert 4 character hex codes', isEqual('#000F', '#000'));
+
+test(
+  'should pass through 8 character hex codes',
+  isEqual('#00000004', '#00000004')
+);
 
 test('should pass through if not recognised', () => {
   expect(min('Unrecognised')).toBe('Unrecognised');
