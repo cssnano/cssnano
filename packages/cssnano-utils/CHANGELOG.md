@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.1](https://github.com/cssnano/cssnano/compare/cssnano-utils@2.0.0...cssnano-utils@2.0.1) (2021-05-19)
+
+**Note:** Version bump only for package cssnano-utils
+
+
+
+
+
 # [2.0.0](https://github.com/cssnano/cssnano/compare/cssnano-utils@2.0.0-rc.2...cssnano-utils@2.0.0) (2021-04-06)
 
 **Note:** Version bump only for package cssnano-utils

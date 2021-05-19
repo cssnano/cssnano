@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.2](https://github.com/cssnano/cssnano/compare/postcss-merge-longhand@5.0.0...postcss-merge-longhand@5.0.2) (2021-05-19)
+
+
+### Bug Fixes
+
+* **postcss-merge-longhand:** mergeLonghand should not apply to CSS variables ([#1057](https://github.com/cssnano/cssnano/issues/1057)) ([8aa64c7](https://github.com/cssnano/cssnano/commit/8aa64c714f615db747605f6d79fcc043e9ee8e57)), closes [#1051](https://github.com/cssnano/cssnano/issues/1051)
+
+
+
+
+
 ## [5.0.1](https://github.com/cssnano/cssnano/compare/postcss-merge-longhand@5.0.0...postcss-merge-longhand@5.0.1) (2021-04-26)
 
 

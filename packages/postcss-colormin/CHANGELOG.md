@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.1.0](https://github.com/cssnano/cssnano/compare/postcss-colormin@5.0.0...postcss-colormin@5.1.0) (2021-05-19)
+
+
+### Features
+
+* **postcss-colormin:** switch to colord and solve multiple issues ([#1107](https://github.com/cssnano/cssnano/issues/1107)) ([a7f0be4](https://github.com/cssnano/cssnano/commit/a7f0be4acc640aab89cace53a720b3d59b6f7b4f)), closes [#819](https://github.com/cssnano/cssnano/issues/819) [#1042](https://github.com/cssnano/cssnano/issues/1042) [#819](https://github.com/cssnano/cssnano/issues/819) [#771](https://github.com/cssnano/cssnano/issues/771)
+
+
+
+
+
 # [5.0.0](https://github.com/cssnano/cssnano/compare/postcss-colormin@5.0.0-rc.2...postcss-colormin@5.0.0) (2021-04-06)
 
 **Note:** Version bump only for package postcss-colormin
