@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.1.0](https://github.com/cssnano/cssnano/compare/postcss-minify-selectors@5.0.0...postcss-minify-selectors@5.1.0) (2021-05-19)
+
+
+### Features
+
+* **postcss-minify-selectors:** upgrade postcss-selector-parser ([9bce2b6](https://github.com/cssnano/cssnano/commit/9bce2b6ccfa49c50be05efb0c80c1e3938b650b3))
+
+
+
+
+
 # [5.0.0](https://github.com/cssnano/cssnano/compare/postcss-minify-selectors@5.0.0-rc.2...postcss-minify-selectors@5.0.0) (2021-04-06)
 
 **Note:** Version bump only for package postcss-minify-selectors

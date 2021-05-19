@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-display-values",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Normalize multiple value display syntaxes into single values.",
   "main": "dist/index.js",
   "scripts": {
@@ -14,7 +14,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "cssnano-utils": "^2.0.0",
+    "cssnano-utils": "^2.0.1",
     "postcss-value-parser": "^4.1.0"
   },
   "author": {

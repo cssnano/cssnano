@@ -1,6 +1,6 @@
 {
   "name": "postcss-zindex",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Reduce z-index values with PostCSS.",
   "main": "dist/index.js",
   "scripts": {
@@ -22,7 +22,6 @@
     "z-index"
   ],
   "license": "MIT",
-  "dependencies": {},
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
     "name": "Ben Briggs",
