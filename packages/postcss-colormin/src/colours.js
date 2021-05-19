@@ -1,45 +1,15 @@
-import { colord, extend } from 'colord';
-import namesPlugin from 'colord/plugins/names';
-import toShorthand from './lib/toShorthand';
+import { process } from './lib/color';
+import getShortestString from './lib/getShortestString';
 
-extend([namesPlugin]);
+export default (input, isLegacy = false) => {
+  const instance = process(input);
 
-export default (colour, isLegacy = false) => {
-  const parsed = colord(colour);
-
-  if (parsed.isValid()) {
-    const alpha = parsed.alpha();
-
-    if (alpha === 1) {
-      const toHex = toShorthand(parsed.toHex());
-      const toName = parsed.toName();
-      if (toName && toName.length < toHex.length) {
-        return toName;
-      } else {
-        return toHex;
-      }
-    } else {
-      const rgb = parsed.toRgb();
-
-      if (!isLegacy && !rgb.r && !rgb.g && !rgb.b && !alpha) {
-        return 'transparent';
-      }
-
-      let hsla = parsed.toHslString();
-      let rgba = parsed.toRgbString();
-
-      const shortestConversion = hsla.length < rgba.length ? hsla : rgba;
-
-      let result;
-      if (colour.length < shortestConversion.length) {
-        result = colour;
-      } else {
-        result = shortestConversion;
-      }
-      return result;
-    }
+  if (instance.isValid()) {
+    // Try to shorten the string if it is a valid CSS color value.
+    // Fall back to the original input if it's smaller or has equal length/
+    return getShortestString([input, instance.toShortString({ isLegacy })]);
   } else {
     // Possibly malformed, so pass through
-    return colour;
+    return input;
   }
 };

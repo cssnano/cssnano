@@ -20,7 +20,7 @@ test(
 test('should convert hsl to keyword', isEqual('hsl(0, 100%, 50%)', 'red'));
 
 test(
-  'should convert fully oqaque hsl to keyword',
+  'should convert fully opaque hsl to keyword',
   isEqual('hsla(0, 100%, 50%, 1)', 'red')
 );
 
