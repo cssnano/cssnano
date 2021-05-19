@@ -2,7 +2,7 @@
   "npmClient": "yarn",
   "command": {
     "publish": {
-      "ignoreChanges": ["package-lock.json"]
+      "ignoreChanges": ["yarn.lock"]
     }
   },
   "packages": ["packages/*"],
