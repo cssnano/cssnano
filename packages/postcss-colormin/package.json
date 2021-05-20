@@ -31,7 +31,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "browserslist": "^4.16.0",
-    "colord": "^1.7.0",
+    "colord": "^1.7.2",
     "postcss-value-parser": "^4.1.0"
   },
   "bugs": {
