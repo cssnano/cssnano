@@ -6,6 +6,38 @@ const PLUGIN = 'postcss-svgo';
 const dataURI = /data:image\/svg\+xml(;((charset=)?utf-8|base64))?,/i;
 const dataURIBase64 = /data:image\/svg\+xml;base64,/i;
 
+/**
+ * @param {string} input the SVG string
+ * @param {boolean} encode whether to encode the result
+ * @return {object} the minification result
+ */
+function minifySVG(input, opts) {
+  let svg = input;
+  let decodedUri, isUriEncoded;
+  try {
+    decodedUri = decode(input);
+    isUriEncoded = decodedUri !== input;
+  } catch (e) {
+    // Swallow exception if we cannot decode the value
+    isUriEncoded = false;
+  }
+
+  if (isUriEncoded) {
+    svg = decodedUri;
+  }
+
+  if (opts.encode !== undefined) {
+    isUriEncoded = opts.encode;
+  }
+
+  const result = optimize(svg, opts);
+  if (result.error) {
+    throw new Error(result.error);
+  }
+
+  return { result: result.data, isUriEncoded };
+}
+
 function minify(decl, opts, postcssResult) {
   const parsed = valueParser(decl.value);
 
@@ -19,63 +51,36 @@ function minify(decl, opts, postcssResult) {
     }
 
     let { value, quote } = node.nodes[0];
-    let isBase64, isUriEncoded;
-    const url = new URL(value);
-    let svg = value.replace(dataURI, '');
+    let optimizedValue;
 
-    if (dataURIBase64.test(value)) {
-      let base64String = `${url.protocol}${url.pathname}`.replace(dataURI, '');
-      svg = Buffer.from(base64String, 'base64').toString('utf8');
-      isBase64 = true;
-    } else {
-      if (!dataURI.test(value)) {
-        return;
-      }
-      let decodedUri;
-
-      try {
-        decodedUri = decode(svg);
-        isUriEncoded = decodedUri !== svg;
-      } catch (e) {
-        // Swallow exception if we cannot decode the value
-        isUriEncoded = false;
-      }
-
-      if (isUriEncoded) {
-        svg = decodedUri;
-      }
-
-      if (opts.encode !== undefined) {
-        isUriEncoded = opts.encode;
-      }
-    }
-
-    let result;
     try {
-      result = optimize(svg, opts);
-      if (result.error) {
-        decl.warn(postcssResult, `${result.error}`);
+      if (dataURIBase64.test(value)) {
+        const url = new URL(value);
+        const base64String = `${url.protocol}${url.pathname}`.replace(
+          dataURI,
+          ''
+        );
+        const svg = Buffer.from(base64String, 'base64').toString('utf8');
+        const { result } = minifySVG(svg, opts);
+        const data = Buffer.from(result).toString('base64');
+        optimizedValue = 'data:image/svg+xml;base64,' + data + url.hash;
+      } else if (dataURI.test(value)) {
+        const svg = value.replace(dataURI, '');
+        const { result, isUriEncoded } = minifySVG(svg, opts);
+        let data = isUriEncoded ? encode(result) : result;
+        // Should always encode # otherwise we yield a broken SVG
+        // in Firefox (works in Chrome however). See this issue:
+        // https://github.com/cssnano/cssnano/issues/245
+        data = data.replace(/#/g, '%23');
+        optimizedValue = 'data:image/svg+xml;charset=utf-8,' + data;
+        quote = isUriEncoded ? '"' : "'";
+      } else {
         return;
       }
     } catch (error) {
       decl.warn(postcssResult, `${error}`);
       return;
     }
-    let data, optimizedValue;
-
-    if (isBase64) {
-      data = Buffer.from(result.data).toString('base64');
-      optimizedValue = 'data:image/svg+xml;base64,' + data + url.hash;
-    } else {
-      data = isUriEncoded ? encode(result.data) : result.data;
-      // Should always encode # otherwise we yield a broken SVG
-      // in Firefox (works in Chrome however). See this issue:
-      // https://github.com/cssnano/cssnano/issues/245
-      data = data.replace(/#/g, '%23');
-      optimizedValue = 'data:image/svg+xml;charset=utf-8,' + data;
-      quote = isUriEncoded ? '"' : "'";
-    }
-
     node.nodes[0] = Object.assign({}, node.nodes[0], {
       value: optimizedValue,
       quote: quote,
