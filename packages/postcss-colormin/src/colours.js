@@ -5,9 +5,9 @@ import toShorthand from './lib/toShorthand';
 extend([namesPlugin]);
 
 export default (colour, isLegacy = false) => {
-  if (getFormat(colour) === 'rgb') {
-    /* check that it is a valid CSS value
+  /* check that it is a valid CSS value
      https://www.w3.org/TR/css-color-4/#rgb-functions */
+  if (getFormat(colour) === 'rgb') {
     let percentCount = 0;
     for (const c of colour) {
       if (c === '%') {
@@ -20,6 +20,11 @@ export default (colour, isLegacy = false) => {
     }
   }
 
+  if (getFormat(colour) === 'hex') {
+    if (colour.charAt(0) !== '#') {
+      return colour;
+    }
+  }
   const parsed = colord(colour.toLowerCase());
   if (parsed.isValid()) {
     const alpha = parsed.alpha();
