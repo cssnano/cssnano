@@ -815,3 +815,11 @@ test(
     'a,a:link,a:visited{color:#555}'
   )
 );
+
+test(
+  'should not merge colors',
+  processCSS(
+    'h1{color:#001;color:#002;color:#003}h2{color:#001;color:#002}',
+    'h1{color:#001;color:#002;color:#003}h2{color:#001;color:#002}'
+  )
+);
