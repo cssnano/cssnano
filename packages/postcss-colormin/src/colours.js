@@ -5,6 +5,9 @@ import toShorthand from './lib/toShorthand';
 extend([namesPlugin]);
 
 export default (colour, isLegacy = false) => {
+  if (colour.includes('var(')) {
+    return colour;
+  }
   /* check that it is a valid CSS value
      https://www.w3.org/TR/css-color-4/#rgb-functions */
   if (getFormat(colour) === 'rgb') {

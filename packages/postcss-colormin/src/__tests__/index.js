@@ -318,3 +318,8 @@ test(
   'should not attempt to convert variables',
   passthroughCSS(':root{--some-color: 200 255 0}')
 );
+
+test(
+  'should respect CSS variables',
+  passthroughCSS('div{background-color:rgba(51,153,255,var(--tw-bg-opacity))}')
+);
