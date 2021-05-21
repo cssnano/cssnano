@@ -127,6 +127,8 @@ test(
   isEqual('rgb(50%,23,54)', 'rgb(50%,23,54)')
 );
 
+test('should pass on non prefixed hexadecimal value', isEqual('999', '999'));
+
 test('should convert darkgray to a hex', isEqual('darkgray', '#a9a9a9'));
 
 test('should convert 8 character hex codes', isEqual('#000000FF', '#000'));
