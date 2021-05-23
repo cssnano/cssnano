@@ -308,3 +308,18 @@ test(
   'should not mangle colours in the content property',
   passthroughCSS('h2:before{content:"black"}')
 );
+
+test(
+  'should not attempt to convert z-index',
+  passthroughCSS('h1{z-index:999}')
+);
+
+test(
+  'should not attempt to convert variables',
+  passthroughCSS(':root{--some-color: 200 255 0}')
+);
+
+test(
+  'should respect CSS variables',
+  passthroughCSS('div{background-color:rgba(51,153,255,var(--tw-bg-opacity))}')
+);
