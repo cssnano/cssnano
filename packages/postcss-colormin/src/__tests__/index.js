@@ -204,7 +204,7 @@ test(
 test(
   'should not mangle percentage based rgba values',
   processCSS(
-    'h1{color:rgba(50%,50%,50%,0.5)}',
+    'h1{color:rgba(50%, 50%, 50%, 0.5)}',
     'h1{color:hsla(0, 0%, 50%, 0.5)}'
   )
 );
@@ -223,7 +223,7 @@ test(
   'should add extra spaces when converting rgb',
   processCSS(
     'h1{background:linear-gradient(rgb(50, 50, 50)0%,blue 100%)}',
-    'h1{background:linear-gradient(#323232 0%,#00f 100%)}'
+    'h1{background:linear-gradient(#323232 0%,blue 100%)}'
   )
 );
 
@@ -231,7 +231,7 @@ test(
   'should add extra spaces when converting rgb (2)',
   processCSS(
     'h1{background:linear-gradient(rgba(0,0,0,0)0%, blue 100%)}',
-    'h1{background:linear-gradient(transparent 0%, #00f 100%)}'
+    'h1{background:linear-gradient(transparent 0%, blue 100%)}'
   )
 );
 

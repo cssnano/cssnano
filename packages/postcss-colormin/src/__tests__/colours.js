@@ -94,7 +94,7 @@ test(
 
 test(
   'should convert signed numbers (2)',
-  isEqual('hsla(-400,50%,10%,.5)', 'rgba(38, 13, 30, 0.5)')
+  isEqual('hsla(-400, 50%, 10%, 0.5)', 'rgba(38, 13, 30, 0.5)')
 );
 
 test(
@@ -104,7 +104,7 @@ test(
 
 test(
   'should convert percentage based rgba values (2)',
-  isEqual('rgba(50%,50%,50%,0.5)', 'hsla(0, 0%, 50%, 0.5)')
+  isEqual('rgba(50%, 50%, 50%, 0.5)', 'hsla(0, 0%, 50%, 0.5)')
 );
 
 test(
@@ -119,7 +119,7 @@ test(
 
 test(
   'should convert percentage based rgba values (5)',
-  isEqual('rgba(100%,64.7%,0%,.5)', 'rgba(255, 165, 0, 0.5)')
+  isEqual('rgba(100%, 64.7%, 0%, .5)', 'rgba(255, 165, 0, 0.5)')
 );
 
 test(
