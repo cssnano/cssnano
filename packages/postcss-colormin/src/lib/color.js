@@ -7,7 +7,7 @@ let minifierPlugin = (Colord) => {
    * Shortens a color to 3 or 4 digit hexadecimal string if it's possible.
    * Returns the original (6 or 8 digit) hex if the it can't be shortened.
    */
-  Colord.prototype.toShortHex = function () {
+  Colord.prototype.toShortHex = function ({ formatAlpha }) {
     let hex = this.toHex();
     let [, r1, r2, g1, g2, b1, b2, a1, a2] = hex.split('');
 
@@ -16,7 +16,7 @@ let minifierPlugin = (Colord) => {
       if (this.alpha() === 1) {
         // Express as 3 digit hexadecimal string if the color doesn't have an alpha channel
         return '#' + r1 + g1 + b1;
-      } else if (a1 === a2) {
+      } else if (formatAlpha && a1 === a2) {
         // Format 4 digit hex
         return '#' + r1 + g1 + b1 + a1;
       }
@@ -28,23 +28,36 @@ let minifierPlugin = (Colord) => {
   /**
    * Returns the shortest representation of a color.
    */
-  Colord.prototype.toShortString = function ({ isLegacy }) {
+  Colord.prototype.toShortString = function ({
+    supportsTransparent,
+    supportsAlphaHex,
+  }) {
     let { r, g, b, a } = this.toRgb();
 
-    // Hexadecimal, RGB[A] and HSL[A] notations
-    let options = [this.toShortHex(), this.toRgbString(), this.toHslString()];
+    // RGB[A] and HSL[A] functional notations
+    let options = [
+      this.toRgbString(), // e.g. "rgba(128, 128, 128, 0.5)"
+      this.toHslString(), // e.g. "hsla(180, 50%, 50%, 0.5)"
+    ];
 
-    // CSS keywords
-    if (!isLegacy && r === 0 && g === 0 && b === 0 && a === 0) {
+    // Hexadecimal notations
+    if (supportsAlphaHex && a < 1) {
+      options.push(this.toShortHex({ formatAlpha: true })); // e.g. "#80808080"
+    } else if (a === 1) {
+      options.push(this.toShortHex({ formatAlpha: false })); // e.g. "#808080"
+    }
+
+    // CSS keyword
+    if (supportsTransparent && r === 0 && g === 0 && b === 0 && a === 0) {
       options.push('transparent');
     } else if (a === 1) {
-      let name = this.toName();
+      let name = this.toName(); // e.g. "gray"
       if (name) {
         options.push(name);
       }
     }
 
-    // Look for the shortest option
+    // Find the shortest option available
     return getShortestString(options);
   };
 };

@@ -1,6 +1,7 @@
 import browserslist from 'browserslist';
+import { isSupported } from 'caniuse-api';
 import valueParser, { stringify } from 'postcss-value-parser';
-import colormin from './colours';
+import minifyColour from './colours';
 
 function walk(parent, callback) {
   parent.nodes.forEach((node, index) => {
@@ -31,7 +32,7 @@ function isMathFunctionNode(node) {
   return ['calc', 'min', 'max', 'clamp'].includes(node.value.toLowerCase());
 }
 
-function transform(value, isLegacy) {
+function transform(value, options) {
   const parsed = valueParser(value);
 
   walk(parsed, (node, index, parent) => {
@@ -39,7 +40,7 @@ function transform(value, isLegacy) {
       if (/^(rgb|hsl)a?$/i.test(node.value)) {
         const { value: originalValue } = node;
 
-        node.value = colormin(stringify(node), isLegacy);
+        node.value = minifyColour(stringify(node), options);
         node.type = 'word';
 
         const next = parent.nodes[index + 1];
@@ -58,7 +59,7 @@ function transform(value, isLegacy) {
         return false;
       }
     } else if (node.type === 'word') {
-      node.value = colormin(node.value, isLegacy);
+      node.value = minifyColour(node.value, options);
     }
   });
 
@@ -76,7 +77,12 @@ function pluginCreator() {
         path: __dirname,
         env: resultOpts.env,
       });
-      const isLegacy = browsers.some(hasTransparentBug);
+
+      const options = {
+        supportsTransparent: browsers.some(hasTransparentBug) === false,
+        supportsAlphaHex: isSupported('css-rrggbbaa', browsers),
+      };
+
       const cache = {};
 
       return {
@@ -96,7 +102,7 @@ function pluginCreator() {
               return;
             }
 
-            const cacheKey = value + '|' + isLegacy;
+            const cacheKey = `${value}|${options.supportsTransparent}|${options.supportsAlphaHex}`;
 
             if (cache[cacheKey]) {
               decl.value = cache[cacheKey];
@@ -104,7 +110,7 @@ function pluginCreator() {
               return;
             }
 
-            const newValue = transform(value, isLegacy);
+            const newValue = transform(value, options);
 
             decl.value = newValue;
             cache[cacheKey] = newValue;
