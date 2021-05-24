@@ -206,23 +206,25 @@ function partialMerge(first, second) {
 
   // Filter out intersections with later conflicts in First
   intersection = intersection.filter((decl, intersectIndex) => {
-    const index = indexOfDeclaration(firstDecls, decl);
+    const indexOfDecl = indexOfDeclaration(firstDecls, decl);
     const nextConflictInFirst = firstDecls
-      .slice(index + 1)
-      .find((d) => isConflictingProp(d.prop, decl.prop));
-    if (!nextConflictInFirst) {
+      .slice(indexOfDecl + 1)
+      .filter((d) => isConflictingProp(d.prop, decl.prop));
+    if (!nextConflictInFirst.length) {
       return true;
     }
     const nextConflictInIntersection = intersection
       .slice(intersectIndex + 1)
-      .find((d) => isConflictingProp(d.prop, decl.prop));
-    if (!nextConflictInIntersection) {
+      .filter((d) => isConflictingProp(d.prop, decl.prop));
+    if (!nextConflictInIntersection.length) {
       return false;
     }
-    if (declarationIsEqual(nextConflictInFirst, nextConflictInIntersection)) {
-      return true;
+    if (nextConflictInFirst.length !== nextConflictInIntersection.length) {
+      return false;
     }
-    return false;
+    return nextConflictInFirst.every((d, index) =>
+      declarationIsEqual(d, nextConflictInIntersection[index])
+    );
   });
 
   // Filter out intersections with previous conflicts in Second
