@@ -46,6 +46,9 @@ jobs:
       - name: Install dependencies
         run: yarn 
 
+      - name: Bootstrap workspaces
+        run: ./node_modules/.bin/lerna bootstrap
+
       - name: Run tests with coverage
         run: yarn test:coverage --ci --reporters="default" --reporters="jest-junit"
 
