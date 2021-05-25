@@ -44,7 +44,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: yarn 
 
       - name: Run tests with coverage
         run: yarn test:coverage --ci --reporters="default" --reporters="jest-junit"
