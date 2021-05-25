@@ -17,6 +17,7 @@
     "deploy": "cd site && GIT_USER=anikethsaha yarn deploy",
     "publish": "lerna publish"
   },
+  "workspaces": ["./packages/*"],
   "engines": {
     "node": "^10 || ^12 || >=14"
   },
