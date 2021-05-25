@@ -47,7 +47,7 @@ jobs:
         run: yarn 
 
       - name: Bootstrap workspaces
-        run: ./node_modules/.bin/lerna bootstrap
+        run: ./node_modules/.bin/lerna bootstrap --use-workspaces
 
       - name: Run tests with coverage
         run: yarn test:coverage --ci --reporters="default" --reporters="jest-junit"

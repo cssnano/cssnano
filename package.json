@@ -5,7 +5,7 @@
     "all-contributors": "all-contributors add",
     "lint": "eslint . --cache --ignore-path .gitignore",
     "fixlint": "yarn lint -- --fix",
-    "postinstall": "lerna bootstrap",
+    "postinstall": "lerna bootstrap --use-workspaces",
     "build:packages": "babel-node ./util/buildPackages.js",
     "build:metadata": "babel-node ./util/buildMetadata.js",
     "build:docs": "remark site/docs/**/*.md -o && yarn build:metadata && babel-node ./util/buildSiteMarkdown.js",
