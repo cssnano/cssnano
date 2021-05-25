@@ -213,6 +213,24 @@ test(
 );
 
 test(
+  'should skip non-SVG urls',
+  passthroughCSS(`@font-face {
+  src: url("../example/dfds.woff2") format("woff2"),
+       url('data:image/svg+xml;charset=utf-8,<svg/>') format("svg");
+  }`)
+);
+
+test(
+  'should pass through relative links to svg files',
+  passthroughCSS('h1{background:url(../unicorn.svg#part)}')
+);
+
+test(
+  'should pass through URLs with SVG in parameters',
+  passthroughCSS('h1{background:url(something.php?image=decor.svg)}')
+);
+
+test(
   'should encode hashes',
   processCSS(
     `h1{background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="32" viewBox="0 0 1200 320"> <path d="M137.189 140V17.17h-36.676L73.871 31.832z" fill="rgb(102,51,153)"/></svg>');}`,
