@@ -6,9 +6,8 @@ import {
 import plugin from '..';
 
 const { passthroughCSS, processor } = processCSSFactory(plugin);
-const { processCSS: withDefaultPreset } = processCSSWithPresetFactory(
-  'default'
-);
+const { processCSS: withDefaultPreset } =
+  processCSSWithPresetFactory('default');
 
 function testRemovals(fixture, expected, removedSelectors) {
   return () =>

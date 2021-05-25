@@ -5,9 +5,8 @@ import {
 import plugin from '..';
 
 const { processCSS } = processCSSFactory(plugin);
-const { processCSS: withDefaultPreset } = processCSSWithPresetFactory(
-  'default'
-);
+const { processCSS: withDefaultPreset } =
+  processCSSWithPresetFactory('default');
 
 test(
   'should trim whitespace from nested functions',
