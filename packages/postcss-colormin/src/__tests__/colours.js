@@ -144,3 +144,19 @@ test('should pass through if not recognised', () => {
   expect(min('Unrecognised')).toBe('Unrecognised');
   expect(min('inherit')).toBe('inherit');
 });
+
+test('should convert to hex4', () => {
+  expect(min('#aabbcc33', { supportsAlphaHex: true })).toBe('#abc3');
+  expect(min('transparent', { supportsAlphaHex: true })).toBe('#0000');
+  expect(min('rgb(119,119,119,0.2)', { supportsAlphaHex: true })).toBe('#7773');
+  expect(min('hsla(0,0%,100%,.4)', { supportsAlphaHex: true })).toBe('#fff6');
+});
+
+test('should convert to hex8', () => {
+  expect(min('rgba(128, 128, 128, 0.5)', { supportsAlphaHex: true })).toBe(
+    '#80808080'
+  );
+  expect(min('hsla(180, 100%, 50%, 0.5)', { supportsAlphaHex: true })).toBe(
+    '#00ffff80'
+  );
+});

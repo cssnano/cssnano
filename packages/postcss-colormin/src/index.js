@@ -102,7 +102,7 @@ function pluginCreator() {
               return;
             }
 
-            const cacheKey = `${value}|${options.supportsTransparent}|${options.supportsAlphaHex}`;
+            const cacheKey = JSON.stringify({ value, options, browsers });
 
             if (cache[cacheKey]) {
               decl.value = cache[cacheKey];

@@ -36,15 +36,15 @@ let minifierPlugin = (Colord) => {
 
     // RGB[A] and HSL[A] functional notations
     let options = [
-      this.toRgbString(), // e.g. "rgba(128, 128, 128, 0.5)"
-      this.toHslString(), // e.g. "hsla(180, 50%, 50%, 0.5)"
+      this.toRgbString(), // e.g. "rgb(128, 128, 128)" or "rgba(128, 128, 128, 0.5)"
+      this.toHslString(), // e.g. "hsl(180, 50%, 50%)" or "hsla(180, 50%, 50%, 0.5)"
     ];
 
     // Hexadecimal notations
     if (supportsAlphaHex && a < 1) {
-      options.push(this.toShortHex({ formatAlpha: true })); // e.g. "#80808080"
+      options.push(this.toShortHex({ formatAlpha: true })); // e.g. "#7777" or "#80808080"
     } else if (a === 1) {
-      options.push(this.toShortHex({ formatAlpha: false })); // e.g. "#808080"
+      options.push(this.toShortHex({ formatAlpha: false })); // e.g. "#777" or "#808080"
     }
 
     // CSS keyword

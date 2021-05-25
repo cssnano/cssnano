@@ -321,3 +321,17 @@ test(
   'should respect CSS variables',
   passthroughCSS('div{background-color:rgba(51,153,255,var(--tw-bg-opacity))}')
 );
+
+test(
+  'should convert long color to 8-digit hex when supported',
+  processCSS('h1{color:rgba(100% 50% 0% / 50%)}', 'h1{color:#ff800080}', {
+    env: 'chrome62',
+  })
+);
+
+test(
+  'should convert long color to 4-digit hex when supported',
+  processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
+    env: 'chrome62',
+  })
+);
