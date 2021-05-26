@@ -48,7 +48,7 @@
         "node": "^10 || ^12 || >=14.0"
     },
     "devDependencies": {
-        "autoprefixer": "^10.0.2",
+        "autoprefixer": "^10.2.0",
         "postcss": "^8.2.15"
     },
     "peerDependencies": {
