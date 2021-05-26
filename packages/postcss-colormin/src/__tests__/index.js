@@ -6,10 +6,8 @@ import {
 import plugin from '..';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
-const {
-  processCSS: withDefaultPreset,
-  passthroughCSS: passthroughDefault,
-} = processCSSWithPresetFactory('default');
+const { processCSS: withDefaultPreset, passthroughCSS: passthroughDefault } =
+  processCSSWithPresetFactory('default');
 
 test(
   'should minify lowercase color values',
