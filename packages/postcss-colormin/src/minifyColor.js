@@ -8,7 +8,7 @@ import getShortestString from './lib/getShortestString';
  * @param {boolean} options.supportsAlphaHex - Does the browser support 4 & 8 character hex notation
  * @param {boolean} options.supportsTransparent – Does the browser support "transparent" value properly
  */
-export default (input, options = {}) => {
+export default function minifyColor(input, options = {}) {
   const settings = {
     supportsAlphaHex: false,
     supportsTransparent: true,
@@ -28,4 +28,4 @@ export default (input, options = {}) => {
     // Possibly malformed, so pass through
     return input;
   }
-};
+}

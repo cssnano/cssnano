@@ -1,7 +1,7 @@
 import browserslist from 'browserslist';
 import { isSupported } from 'caniuse-api';
 import valueParser, { stringify } from 'postcss-value-parser';
-import minifyColour from './colours';
+import minifyColor from './minifyColor';
 
 function walk(parent, callback) {
   parent.nodes.forEach((node, index) => {
@@ -40,7 +40,7 @@ function transform(value, options) {
       if (/^(rgb|hsl)a?$/i.test(node.value)) {
         const { value: originalValue } = node;
 
-        node.value = minifyColour(stringify(node), options);
+        node.value = minifyColor(stringify(node), options);
         node.type = 'word';
 
         const next = parent.nodes[index + 1];
@@ -59,7 +59,7 @@ function transform(value, options) {
         return false;
       }
     } else if (node.type === 'word') {
-      node.value = minifyColour(node.value, options);
+      node.value = minifyColor(node.value, options);
     }
   });
 
