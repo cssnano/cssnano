@@ -1,4 +1,4 @@
-import min from '../colours';
+import min from '../minifyColor';
 
 function isEqual(input, output) {
   return () => expect(min(input)).toBe(output);
