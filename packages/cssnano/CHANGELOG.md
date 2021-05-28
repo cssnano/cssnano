@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.5] (2021-05-28)
+
+### Bug fixes
+
+* Preserve alpha channel in color minification
+* Check overlaps more exhaustively when merging rules
+* Do not crash when the input CSS contains relative URLs
+
 # [5.0.4] (2021-05-21)
 
 

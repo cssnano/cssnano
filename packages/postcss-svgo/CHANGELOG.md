@@ -3,8 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [5.0.1](https://github.com/cssnano/cssnano/compare/postcss-svgo@5.0.0...postcss-svgo@5.0.1) (2021-05-19)
+## [5.0.2] (2021-05-28)
 
+### Bug fixes
+
+* Prevent crash when input contains relative URL (https://github.com/cssnano/cssnano/commit/0ff1716e4cd69152ad1f98d512fdeb6f311e8ad5) 
+
+## [5.0.1](https://github.com/cssnano/cssnano/compare/postcss-svgo@5.0.0...postcss-svgo@5.0.1) (2021-05-19)
 **Note:** Version bump only for package postcss-svgo
 
 

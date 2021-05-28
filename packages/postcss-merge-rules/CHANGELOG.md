@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.2](2021-05-28)
+
+### Bug fixes
+
+* Check all intersections when merging rules (https://github.com/cssnano/cssnano/commit/069c4249dc10a71e0fef455bf4ebea17776dbcf2)
+
 ## [5.0.1](https://github.com/cssnano/cssnano/compare/postcss-merge-rules@5.0.0...postcss-merge-rules@5.0.1) (2021-05-19)
 
 
