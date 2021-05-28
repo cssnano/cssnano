@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.2.0] (2021-05-28)
+
+### Features
+
+* Output 4 and 8 hex colors if it reduces the output size and the target browsers support it.
+
+### Bug Fixes
+
+* Preserve color alpha precision.
+
 # [5.1.1] (2021-05-21)
 
 
