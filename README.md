@@ -9,7 +9,7 @@
 > A modular minifier, built on top of the [PostCSS](https://github.com/postcss/postcss) ecosystem.
 
 [![Backers on Open Collective](https://opencollective.com/cssnano/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/cssnano/sponsors/badge.svg)](#sponsors) [![NPM version](https://img.shields.io/npm/v/cssnano.svg)](https://www.npmjs.org/package/cssnano)
-[![Build Status](https://dev.azure.com/cssnano/cssnano/_apis/build/status/cssnano.cssnano?branchName=master)](https://dev.azure.com/cssnano/cssnano/_build/latest?definitionId=3&branchName=master)
+[![Build Status](https://github.com/cssnano/cssnano/actions/workflows/test.yml/badge.svg)](https://github.com/cssnano/cssnano/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/cssnano/cssnano/branch/master/graph/badge.svg)](https://codecov.io/gh/cssnano/cssnano)
 [![Gitter](https://img.shields.io/badge/Gitter-Join_the_PostCSS_chat-brightgreen.svg)](https://gitter.im/postcss/postcss)
 
