@@ -32,7 +32,8 @@ let minifierPlugin = (Colord) => {
     supportsTransparent,
     supportsAlphaHex,
   }) {
-    let { r, g, b, a } = this.toRgb();
+    let { r, g, b } = this.toRgb();
+    let a = this.alpha();
 
     // RGB[A] and HSL[A] functional notations
     let options = [
@@ -42,7 +43,12 @@ let minifierPlugin = (Colord) => {
 
     // Hexadecimal notations
     if (supportsAlphaHex && a < 1) {
-      options.push(this.toShortHex({ formatAlpha: true })); // e.g. "#7777" or "#80808080"
+      let alphaHex = this.toShortHex({ formatAlpha: true }); // e.g. "#7777" or "#80808080"
+
+      // Output 4 or 8 digit hex only if the color conversion is lossless
+      if (colord(alphaHex).alpha() === a) {
+        options.push(alphaHex);
+      }
     } else if (a === 1) {
       options.push(this.toShortHex({ formatAlpha: false })); // e.g. "#777" or "#808080"
     }
