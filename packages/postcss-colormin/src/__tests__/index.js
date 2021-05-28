@@ -204,7 +204,7 @@ test(
 test(
   'should not mangle percentage based rgba values',
   processCSS(
-    'h1{color:rgba(50%,50%,50%,0.5)}',
+    'h1{color:rgba(50%, 50%, 50%, 0.5)}',
     'h1{color:hsla(0, 0%, 50%, 0.5)}'
   )
 );
@@ -223,7 +223,7 @@ test(
   'should add extra spaces when converting rgb',
   processCSS(
     'h1{background:linear-gradient(rgb(50, 50, 50)0%,blue 100%)}',
-    'h1{background:linear-gradient(#323232 0%,#00f 100%)}'
+    'h1{background:linear-gradient(#323232 0%,blue 100%)}'
   )
 );
 
@@ -231,7 +231,7 @@ test(
   'should add extra spaces when converting rgb (2)',
   processCSS(
     'h1{background:linear-gradient(rgba(0,0,0,0)0%, blue 100%)}',
-    'h1{background:linear-gradient(transparent 0%, #00f 100%)}'
+    'h1{background:linear-gradient(transparent 0%, blue 100%)}'
   )
 );
 
@@ -320,4 +320,18 @@ test(
 test(
   'should respect CSS variables',
   passthroughCSS('div{background-color:rgba(51,153,255,var(--tw-bg-opacity))}')
+);
+
+test(
+  'should convert long color to 8-digit hex when supported',
+  processCSS('h1{color:rgba(100% 50% 0% / 50%)}', 'h1{color:#ff800080}', {
+    env: 'chrome62',
+  })
+);
+
+test(
+  'should convert long color to 4-digit hex when supported',
+  processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
+    env: 'chrome62',
+  })
 );

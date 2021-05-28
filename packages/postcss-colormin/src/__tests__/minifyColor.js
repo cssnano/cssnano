@@ -1,4 +1,4 @@
-import min from '../colours';
+import min from '../minifyColor';
 
 function isEqual(input, output) {
   return () => expect(min(input)).toBe(output);
@@ -20,7 +20,7 @@ test(
 test('should convert hsl to keyword', isEqual('hsl(0, 100%, 50%)', 'red'));
 
 test(
-  'should convert fully oqaque hsl to keyword',
+  'should convert fully opaque hsl to keyword',
   isEqual('hsla(0, 100%, 50%, 1)', 'red')
 );
 
@@ -94,7 +94,7 @@ test(
 
 test(
   'should convert signed numbers (2)',
-  isEqual('hsla(-400,50%,10%,.5)', 'rgba(38, 13, 30, 0.5)')
+  isEqual('hsla(-400, 50%, 10%, 0.5)', 'rgba(38, 13, 30, 0.5)')
 );
 
 test(
@@ -104,7 +104,7 @@ test(
 
 test(
   'should convert percentage based rgba values (2)',
-  isEqual('rgba(50%,50%,50%,0.5)', 'hsla(0, 0%, 50%, 0.5)')
+  isEqual('rgba(50%, 50%, 50%, 0.5)', 'hsla(0, 0%, 50%, 0.5)')
 );
 
 test(
@@ -119,7 +119,7 @@ test(
 
 test(
   'should convert percentage based rgba values (5)',
-  isEqual('rgba(100%,64.7%,0%,.5)', 'rgba(255, 165, 0, 0.5)')
+  isEqual('rgba(100%, 64.7%, 0%, .5)', 'rgba(255, 165, 0, 0.5)')
 );
 
 test(
@@ -143,4 +143,29 @@ test(
 test('should pass through if not recognised', () => {
   expect(min('Unrecognised')).toBe('Unrecognised');
   expect(min('inherit')).toBe('inherit');
+});
+
+test('should convert to hex4', () => {
+  expect(min('#aabbcc33', { supportsAlphaHex: true })).toBe('#abc3');
+  expect(min('transparent', { supportsAlphaHex: true })).toBe('#0000');
+  expect(min('rgb(119,119,119,0.2)', { supportsAlphaHex: true })).toBe('#7773');
+  expect(min('hsla(0,0%,100%,.4)', { supportsAlphaHex: true })).toBe('#fff6');
+});
+
+test('should convert to hex8', () => {
+  expect(min('rgba(128, 128, 128, 0.5)', { supportsAlphaHex: true })).toBe(
+    '#80808080'
+  );
+  expect(min('hsla(180, 100%, 50%, 0.5)', { supportsAlphaHex: true })).toBe(
+    '#00ffff80'
+  );
+});
+
+test('should not convert to alpha hex since the conversion is not lossless', () => {
+  expect(min('rgba(0, 0, 0, 0.075)', { supportsAlphaHex: true })).toBe(
+    'rgba(0, 0, 0, 0.075)'
+  );
+  expect(min('hsla(0, 0%, 50%, 0.515)', { supportsAlphaHex: true })).toBe(
+    'hsla(0, 0%, 50%, 0.515)'
+  );
 });
