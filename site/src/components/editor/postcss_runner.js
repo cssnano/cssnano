@@ -6,7 +6,6 @@ import { pkgnameToVarName } from '../../helper/naming';
 
 export default (input, config) => {
   const { plugins: nanoPlugins } = cssnanoPresetLite();
-  console.log(cssnanoPresetLite);
   const postcssPlugins = [];
   for (const plugin of nanoPlugins) {
     const [processor, opts] = plugin;
@@ -20,7 +19,7 @@ export default (input, config) => {
   }
   return new Promise((resolve, reject) => {
     postcss(postcssPlugins)
-      .process(input)
+      .process(input, { from: undefined })
       .then((res) => resolve(res))
       .catch((err) => reject(err));
   });
