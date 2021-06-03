@@ -7,7 +7,7 @@
   "scripts": {
     "prebuild": "del-cli dist",
     "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepublish": "yarn build"
+    "prepare": "yarn build"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "bugs": {

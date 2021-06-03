@@ -10,7 +10,7 @@
   "scripts": {
     "prebuild": "del-cli dist",
     "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\" && node script/buildListStyleType.js",
-    "prepublish": "yarn build"
+    "prepare": "yarn build"
   },
   "keywords": [
     "css",

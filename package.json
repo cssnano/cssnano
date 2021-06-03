@@ -5,7 +5,7 @@
     "all-contributors": "all-contributors add",
     "lint": "eslint . --cache --ignore-path .gitignore",
     "fixlint": "yarn lint -- --fix",
-    "postinstall": "lerna bootstrap",
+    "prepare": "lerna run --stream prepare",
     "build:packages": "babel-node ./util/buildPackages.js",
     "build:metadata": "babel-node ./util/buildMetadata.js",
     "build:docs": "remark site/docs/**/*.md -o && yarn build:metadata && babel-node ./util/buildSiteMarkdown.js",
@@ -17,6 +17,9 @@
     "deploy": "cd site && GIT_USER=anikethsaha yarn deploy",
     "publish": "lerna publish"
   },
+  "workspaces": [
+    "./packages/*"
+  ],
   "engines": {
     "node": "^10 || ^12 || >=14"
   },

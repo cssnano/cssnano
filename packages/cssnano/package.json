@@ -7,7 +7,7 @@
         "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
         "prebuild": "del-cli dist",
         "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-        "prepublish": "yarn build"
+        "prepare": "yarn build"
     },
     "funding": {
         "type": "opencollective",
