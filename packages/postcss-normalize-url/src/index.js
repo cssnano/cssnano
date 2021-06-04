@@ -100,6 +100,7 @@ function pluginCreator(opts) {
       normalizeProtocol: false,
       stripHash: false,
       stripWWW: false,
+      stripTextFragment: false,
     },
     opts
   );
