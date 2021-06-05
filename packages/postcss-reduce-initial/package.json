@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "acquire": "node ./src/acquire.mjs",
-    "prebuild": "del-cli dist",
+    "prebuild": "rimraf dist",
     "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.json --out-dir dist --ignore '**/__tests__/,src/acquire.mjs'",
     "prepare": "yarn build"
   },

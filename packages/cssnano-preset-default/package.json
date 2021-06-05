@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "description": "Safe defaults for cssnano which require minimal configuration.",
   "scripts": {
-    "prebuild": "del-cli dist",
+    "prebuild": "rimraf dist",
     "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
     "prepare": "yarn build"
   },
