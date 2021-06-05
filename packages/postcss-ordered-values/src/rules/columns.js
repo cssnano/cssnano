@@ -1,28 +1,30 @@
 import { unit } from 'postcss-value-parser';
 import border from './border.js';
 
-const strValues = ['auto', 'inherit', 'unset', 'initial'];
+function hasUnit(value) {
+  const parsedVal = unit(value);
+  return parsedVal && parsedVal.unit !== '';
+}
 
 export const column = (columns) => {
-  let newValue = { front: '', back: '' };
-  let shouldNormalize = false;
+  const widths = [];
+  const other = [];
   columns.walk((node) => {
     const { type, value } = node;
-    if (type === 'word' && strValues.indexOf(value.toLowerCase())) {
-      const parsedVal = unit(value);
-      if (parsedVal.unit !== '') {
-        // surely its the column's width
-        // it needs to be at the front
-        newValue.front = `${newValue.front} ${value}`;
-        shouldNormalize = true;
+    if (type === 'word') {
+      if (hasUnit(value)) {
+        widths.push(value);
+      } else {
+        other.push(value);
       }
-    } else if (type === 'word') {
-      newValue.back = `${newValue.back} ${value}`;
     }
   });
-  if (shouldNormalize) {
-    return `${newValue.front.trimStart()} ${newValue.back.trimStart()}`;
+
+  // only transform if declaration is not invalid or a single value
+  if (other.length === 1 && widths.length === 1) {
+    return `${widths[0].trimStart()} ${other[0].trimStart()}`;
   }
+
   return columns;
 };
 
