@@ -4,7 +4,7 @@
   "description": "Normalize multiple value display syntaxes into single values.",
   "main": "dist/index.js",
   "scripts": {
-    "prebuild": "del-cli dist",
+    "prebuild": "rimraf dist",
     "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
     "prepare": "yarn build"
   },

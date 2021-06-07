@@ -29,7 +29,7 @@
     "uniqs": "^2.0.0"
   },
   "scripts": {
-    "prebuild": "del-cli dist",
+    "prebuild": "rimraf dist",
     "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
     "prepare": "yarn build"
   },
