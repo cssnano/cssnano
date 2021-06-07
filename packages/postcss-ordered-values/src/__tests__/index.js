@@ -591,6 +591,24 @@ test(
 );
 
 test(
+  'should order columns declarations width first',
+  processCSS('h1 {columns: 2 20px;}', 'h1 {columns: 20px 2;}')
+);
+
+test(
+  'should preserve already ordered columns declaration',
+  passthroughCSS('h1 {columns: 20px 2;}')
+);
+
+test(
+  'should not crash on invalid columns declarations',
+  processCSS(
+    'h1 {columns: 2px 2px; columns: inherit 3rem; columns: 3rem 2 12em;}',
+    'h1 {columns: 2px 2px; columns: 3rem inherit; columns: 3rem 2 12em;}'
+  )
+);
+
+test(
   'should order column-rule like border',
   processCSS(
     'h1 {column-rule: solid 8px;column-rule: inset 2px #33f;}',
