@@ -3,7 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [5.0.1](https://github.com/cssnano/cssnano/compare/postcss-normalize-url@5.0.0...postcss-normalize-url@5.0.1) (2021-05-19)
+# [5.0.2] (2021-06-09)
+
+### Bug fixes
+
+**postcss-normalize-url**: bump normalize-url dependency to 6.0.1 (#1142)
+([b60f54bed](https://github.com/cssnano/cssnano/commit/b60f54bedafe3781ff58f0888ab45ff5c56aee09))
+
+
+
+# [5.0.1](https://github.com/cssnano/cssnano/compare/postcss-normalize-url@5.0.0...postcss-normalize-url@5.0.1) (2021-05-19)
 
 **Note:** Version bump only for package postcss-normalize-url
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.6] (2021-06-09)
+
+### Bug Fixes
+
+**postcss-normalize-url**: bump normalize-url dependency to 6.0.1 (#1142)
+([b60f54bed](https://github.com/cssnano/cssnano/commit/b60f54bedafe3781ff58f0888ab45ff5c56aee09))
+
+**postcss-ordered-values**: preserve columns count (#1144)
+([9acd6a2fe3e](https://github.com/cssnano/cssnano/commit/9acd6a2fe3e188a5f29fef91cf406495fa74a877))
+
+
 # [5.0.5] (2021-05-28)
 
 ### Bug fixes
