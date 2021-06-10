@@ -8527,6 +8527,11 @@ remark-github@^10.1.0:
     mdast-util-to-string "^1.0.0"
     unist-util-visit "^2.0.0"
 
+remark-heading-gap@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/remark-heading-gap/-/remark-heading-gap-4.0.0.tgz#cb1a24c20f3f2752b409bbfc5dc8776a59d79c42"
+  integrity sha512-7kHv4qauAo/bJa73D/S9pU6sdJpLZS/6M75bJ5HYRLs6VRwpFz7XEReBP7tlPQ2CapD//qLd9LVRJ4ShieDbIg==
+
 remark-html@^13.0.1:
   version "13.0.1"
   resolved "https://registry.yarnpkg.com/remark-html/-/remark-html-13.0.1.tgz#d5b2d8be01203e61fc37403167ca7584879ad675"
