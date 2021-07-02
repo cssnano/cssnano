@@ -4,6 +4,7 @@ import prettier from 'prettier/standalone';
 import cssParser from 'prettier/parser-postcss';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import className from 'classnames';
+import { CssSyntaxError } from 'postcss';
 import { RingSpinner as Loader } from '../components/editor/RingSpinner.js';
 import MainEditor from '../components/editor/main';
 import OutputEditor from '../components/editor/output';
@@ -14,6 +15,7 @@ import InnerNav from '../components/editor/innerNav.';
 import runner from '../components/editor/postcss_runner';
 import editorStyles from '../components/editor/editor.module.css';
 import CarbonAds from '../components/carbonAds';
+import InputError from '../components/editor/inputError.js';
 import styles from './styles.module.css';
 
 export default () => {
@@ -40,6 +42,7 @@ export default () => {
   const [output, setOutput] = useState('/* your optimized output here */');
   const [input, setInput] = useState(intializedState.input);
   const [config, setConfig] = useState(intializedState.config);
+  const [error, setError] = useState('');
 
   function toggleTheme() {
     setTheme(theme === 'light' ? 'vs-dark' : 'light');
@@ -53,12 +56,35 @@ export default () => {
     setInput(value);
   }
 
+  function handleError(err) {
+    switch (err.constructor) {
+      case CssSyntaxError:
+        setError(`CssSyntaxError: ${err.reason} (${err.line}:${err.column})`);
+        break;
+      case SyntaxError:
+        setError(err.message.split('\n').shift());
+        break;
+      default:
+        setError('Unknown error. See browser console for details.');
+        console.error(err);
+    }
+  }
+
+  function resetError() {
+    setError('');
+  }
+
   function format() {
-    const formattedInput = prettier.format(input, {
-      parser: 'css',
-      plugins: [cssParser],
-    });
-    setInput(formattedInput);
+    try {
+      resetError();
+      const formattedInput = prettier.format(input, {
+        parser: 'css',
+        plugins: [cssParser],
+      });
+      setInput(formattedInput);
+    } catch (err) {
+      handleError(err);
+    }
   }
 
   function saveState() {
@@ -86,10 +112,11 @@ export default () => {
     const resolvedConfig = resolveConfigs(configToSend);
     runner(input, resolvedConfig)
       .then((res) => {
+        resetError();
         setOutput(res.css);
       })
       .catch((err) => {
-        setOutput(err);
+        handleError(err);
       });
 
     setEditorLoading(false);
@@ -147,6 +174,7 @@ export default () => {
         format={format}
         save={saveState}
       />
+      {error && <InputError error={error} theme={theme} />}
       <div
         className={editorStyles.panelLoaderPlaceholder}
         style={{ display: editorLoading ? 'block' : 'none' }}
