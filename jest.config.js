@@ -2,8 +2,8 @@ module.exports = {
   testEnvironment: 'node',
   collectCoverageFrom: [
     'packages/*/src/**/*.js',
-    '!packages/postcss-colormin/src/generate.js',
-    '!packages/postcss-reduce-initial/src/acquire.js',
+    'packages/postcss-reduce-initial/src/script/lib/io.mjs',
+    'packages/postcss-reduce-initial/src/script/lib/mdnCssProps.mjs',
   ],
   testPathIgnorePatterns: [
     '/node_modules/',
@@ -12,4 +12,8 @@ module.exports = {
     '_webpack.config.js',
   ],
   testTimeout: 30000,
+  transform: {
+    '\\.[jt]sx?$': 'babel-jest',
+    '\\.mjs$': 'babel-jest',
+  },
 };
