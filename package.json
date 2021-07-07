@@ -42,12 +42,12 @@
     "eslint-plugin-react": "^7.23.2",
     "fs-extra": "^9.1.0",
     "glob": "^7.1.4",
-    "got": "^11.8.1",
-    "html2plaintext": "^2.1.2",
+    "html-to-text": "^8.0.0",
     "jest": "^27.0.1",
     "jest-junit": "^12.1.0",
     "lerna": "4.0.0",
     "mdast-util-heading-range": "^2.1.2",
+    "node-fetch": "^2.6.1",
     "pleeease-filters": "^4.0.0",
     "postcss": "^8.3.0",
     "postcss-devtools": "^1.1.1",
@@ -69,8 +69,7 @@
     "toml": "^3.0.0",
     "tomlify-j0.4": "^3.0.0",
     "unist-builder": "^2.0.3",
-    "unist-util-remove": "^2.1.0",
-    "write-file": "^1.0.0"
+    "unist-util-remove": "^2.1.0"
   },
   "browserslist": {
     "chrome58": [
