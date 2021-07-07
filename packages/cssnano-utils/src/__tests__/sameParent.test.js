@@ -1,8 +1,15 @@
 import postcss from 'postcss';
 import sameParent from '../sameParent';
 
+const plugin = () => {
+  return {
+    postcssPlugin: 'dummy',
+  };
+};
+plugin.postcss = true;
+
 test('should calculate same parent', () => {
-  return postcss()
+  return postcss(plugin)
     .process('h1 {} h2 {}', { from: undefined })
     .then((result) => {
       const h1 = result.root.nodes[0];
@@ -13,7 +20,7 @@ test('should calculate same parent', () => {
 });
 
 test('should calculate same parent (detached nodes)', () => {
-  return postcss()
+  return postcss(plugin)
     .process('h1 {} h2 {}', { from: undefined })
     .then((result) => {
       const h1 = result.root.nodes[0];
@@ -27,7 +34,7 @@ test('should calculate same parent (detached nodes)', () => {
 });
 
 test('should calculate same parent (at rules)', () => {
-  return postcss()
+  return postcss(plugin)
     .process('@media screen{h1 {} h2 {}}', { from: undefined })
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];
@@ -38,7 +45,7 @@ test('should calculate same parent (at rules)', () => {
 });
 
 test('should calculate same parent (multiple at rules)', () => {
-  return postcss()
+  return postcss(plugin)
     .process('@media screen{h1 {}} @media screen{h2 {}}', { from: undefined })
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];
@@ -49,7 +56,7 @@ test('should calculate same parent (multiple at rules)', () => {
 });
 
 test('should calculate same parent (multiple at rules (uppercase))', () => {
-  return postcss()
+  return postcss(plugin)
     .process('@media screen{h1 {}} @MEDIA screen{h2 {}}', { from: undefined })
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];
@@ -60,7 +67,7 @@ test('should calculate same parent (multiple at rules (uppercase))', () => {
 });
 
 test('should calculate same parent (nested at rules)', () => {
-  return postcss()
+  return postcss(plugin)
     .process(
       `
         @media screen {
@@ -85,7 +92,7 @@ test('should calculate same parent (nested at rules)', () => {
 });
 
 test('should calculate not same parent (nested at rules)', () => {
-  return postcss()
+  return postcss(plugin)
     .process(
       `
         @media screen {
@@ -110,7 +117,7 @@ test('should calculate not same parent (nested at rules)', () => {
 });
 
 test('should calculate not same parent (nested at rules) (2)', () => {
-  return postcss()
+  return postcss(plugin)
     .process(
       `
         @media print {
@@ -135,7 +142,7 @@ test('should calculate not same parent (nested at rules) (2)', () => {
 });
 
 test('should calculate not same parent (nested at rules) (3)', () => {
-  return postcss()
+  return postcss(plugin)
     .process(
       `
         @supports(pointer: course) {
@@ -158,7 +165,7 @@ test('should calculate not same parent (nested at rules) (3)', () => {
 });
 
 test('should calculate not same parent (nested at rules) (4)', () => {
-  return postcss()
+  return postcss(plugin)
     .process(
       `
         @media screen {

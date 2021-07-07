@@ -13,17 +13,20 @@ p{
 const expected = `div{grid-column:span 2}p{column-count:2}`;
 
 test('it should compress the columns', () => {
-  const processor = postcss([
-    postcss.plugin('cloner', () => {
-      return (css) => {
-        css.walkAtRules((rule) => {
-          css.prepend(rule.clone());
+  const plugin = () => {
+    return {
+      postcssPlugin: 'cloner',
+      Once(root) {
+        root.walkAtRules((rule) => {
+          root.prepend(rule.clone());
           rule.remove();
         });
-      };
-    }),
-    nano(),
-  ]);
+      },
+    };
+  };
+  plugin.postcss = true;
+
+  const processor = postcss([plugin, nano()]);
 
   return processor
     .process(fixture, { from: undefined })
