@@ -43,7 +43,7 @@ describe('should recognise properties with unpredictable behavior', () => {
     ['standard', 'display', true],
     ['standard', 'align-items', false],
     ['experimental', 'aspect-ratio', false],
-  ])('isComplexSyntax(%p, %p) expected: %s', (status, key, expected) => {
+  ])('isUnpredictable(%p, %p) expected: %s', (status, key, expected) => {
     expect(isUnpredictable(status, key)).toBe(expected);
   });
 });
