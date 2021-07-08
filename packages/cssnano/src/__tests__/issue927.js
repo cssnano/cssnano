@@ -12,7 +12,25 @@ p{
 
 const expected = `div{grid-column:span 2}p{column-count:2}`;
 
-test('it should compress the columns', () => {
+test('it should compress the columns (old plugin syntax)', () => {
+  const processor = postcss([
+    postcss.plugin('cloner', () => {
+      return (css) => {
+        css.walkAtRules((rule) => {
+          css.prepend(rule.clone());
+          rule.remove();
+        });
+      };
+    }),
+    nano(),
+  ]);
+
+  return processor
+    .process(fixture, { from: undefined })
+    .then((r) => expect(r.css).toBe(expected));
+});
+
+test('it should compress the columns (new plugin syntax)', () => {
   const plugin = () => {
     return {
       postcssPlugin: 'cloner',
