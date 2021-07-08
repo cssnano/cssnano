@@ -6,7 +6,7 @@ function pluginMacro(instance) {
   const min = 'h1{color:#fff}';
 
   return () =>
-    instance.process(css).then((result) => {
+    instance.process(css, { from: undefined }).then((result) => {
       expect(result.css).toBe(min);
     });
 }

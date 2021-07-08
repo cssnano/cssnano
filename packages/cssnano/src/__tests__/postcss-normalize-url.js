@@ -151,7 +151,7 @@ test(
   processCss(
     '@namespace islands url("http://bar.yandex.ru/ui/islands");',
     '@namespace islands "http://bar.yandex.ru/ui/islands";',
-    { discardUnused: { namespace: false } }
+    { discardUnused: { namespace: false }, from: undefined }
   )
 );
 
