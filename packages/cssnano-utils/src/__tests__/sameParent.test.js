@@ -3,7 +3,7 @@ import sameParent from '../sameParent';
 
 test('should calculate same parent', () => {
   return postcss()
-    .process('h1 {} h2 {}', { from: undefined })
+    .process('h1 {} h2 {}', { from: undefined, hideNothingWarning: true })
     .then((result) => {
       const h1 = result.root.nodes[0];
       const h2 = result.root.nodes[1];
@@ -14,7 +14,7 @@ test('should calculate same parent', () => {
 
 test('should calculate same parent (detached nodes)', () => {
   return postcss()
-    .process('h1 {} h2 {}', { from: undefined })
+    .process('h1 {} h2 {}', { from: undefined, hideNothingWarning: true })
     .then((result) => {
       const h1 = result.root.nodes[0];
       const h2 = result.root.nodes[1];
@@ -28,7 +28,10 @@ test('should calculate same parent (detached nodes)', () => {
 
 test('should calculate same parent (at rules)', () => {
   return postcss()
-    .process('@media screen{h1 {} h2 {}}', { from: undefined })
+    .process('@media screen{h1 {} h2 {}}', {
+      from: undefined,
+      hideNothingWarning: true,
+    })
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[0].nodes[1];
@@ -39,7 +42,10 @@ test('should calculate same parent (at rules)', () => {
 
 test('should calculate same parent (multiple at rules)', () => {
   return postcss()
-    .process('@media screen{h1 {}} @media screen{h2 {}}', { from: undefined })
+    .process('@media screen{h1 {}} @media screen{h2 {}}', {
+      from: undefined,
+      hideNothingWarning: true,
+    })
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0];
@@ -50,7 +56,10 @@ test('should calculate same parent (multiple at rules)', () => {
 
 test('should calculate same parent (multiple at rules (uppercase))', () => {
   return postcss()
-    .process('@media screen{h1 {}} @MEDIA screen{h2 {}}', { from: undefined })
+    .process('@media screen{h1 {}} @MEDIA screen{h2 {}}', {
+      from: undefined,
+      hideNothingWarning: true,
+    })
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0];
@@ -74,7 +83,7 @@ test('should calculate same parent (nested at rules)', () => {
             }
         }
     `,
-      { from: undefined }
+      { from: undefined, hideNothingWarning: true }
     )
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0].nodes[0];
@@ -99,7 +108,7 @@ test('should calculate not same parent (nested at rules)', () => {
             }
         }
     `,
-      { from: undefined }
+      { from: undefined, hideNothingWarning: true }
     )
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0].nodes[0];
@@ -124,7 +133,7 @@ test('should calculate not same parent (nested at rules) (2)', () => {
             }
         }
     `,
-      { from: undefined }
+      { from: undefined, hideNothingWarning: true }
     )
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0].nodes[0];
@@ -147,7 +156,7 @@ test('should calculate not same parent (nested at rules) (3)', () => {
             }
         }
     `,
-      { from: undefined }
+      { from: undefined, hideNothingWarning: true }
     )
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];
@@ -170,7 +179,7 @@ test('should calculate not same parent (nested at rules) (4)', () => {
             }
         }
     `,
-      { from: undefined }
+      { from: undefined, hideNothingWarning: true }
     )
     .then((result) => {
       const h1 = result.root.nodes[0].nodes[0];

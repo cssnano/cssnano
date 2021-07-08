@@ -1,9 +1,15 @@
-import postcss, { plugin, decl } from 'postcss';
+import postcss, { decl } from 'postcss';
 import stylehacks from '..';
 
-const insertZoom = plugin('insertZoom', () => {
-  return (css) => css.first.append(decl({ prop: '*zoom', value: '1' }));
-});
+const insertZoom = () => {
+  return {
+    postcssPlugin: 'insertZoom',
+    Once(root) {
+      root.first.append(decl({ prop: '*zoom', value: '1' }));
+    },
+  };
+};
+insertZoom.postcss = true;
 
 test('should remove star hack from plugins like lost', () => {
   return postcss([insertZoom(), stylehacks()])
