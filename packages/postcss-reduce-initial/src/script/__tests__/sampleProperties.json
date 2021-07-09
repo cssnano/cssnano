@@ -1,0 +1,121 @@
+{
+  "--*": {
+    "comment": "should be ignored due to having complex syntax",
+    "initial": "seeProse",
+    "status": "experimental"
+  },
+  "-ms-scrollbar-3dlight-color": {
+    "comment": "should be ignored due to being user agent dependent",
+    "initial": "dependsOnUserAgent",
+    "status": "nonstandard"
+  },
+  "font-family": {
+    "comment": "should be ignored due to being user agent dependent",
+    "initial": "dependsOnUserAgent",
+    "status": "standard"
+  },
+  "display": {
+    "comment": "should be ignored due to varying semantics based on element",
+    "initial": "inline",
+    "status": "standard"
+  },
+  "all": {
+    "comment": "should be ignored for having no practical initial value",
+    "initial": "noPracticalInitialValue",
+    "status": "standard"
+  },
+  "-webkit-appearance": {
+    "comment": "should be ignored due to being user agent dependent",
+    "initial": "noneButOverriddenInUserAgentCSS",
+    "status": "nonstandard"
+  },
+  "-webkit-appearance-std-dummy": {
+    "comment": "should be ignored due to being user agent dependent",
+    "initial": "noneButOverriddenInUserAgentCSS",
+    "status": "standard"
+  },
+  "color": {
+    "comment": "should be ignored due to being user agent dependent",
+    "initial": "variesFromBrowserToBrowser",
+    "status": "standard"
+  },
+  "outline-color": {
+    "comment": "should be ignored due to being user agent dependent",
+    "initial": "invertOrCurrentColor",
+    "status": "standard"
+  },
+  "text-align": {
+    "comment": "should be ignored due to being user agent dependent",
+    "initial": "startOrNamelessValueIfLTRRightIfRTL",
+    "status": "standard"
+  },
+  "text-size-adjust": {
+    "comment": "should be ignored due to being user agent dependent",
+    "initial": "autoForSmartphoneBrowsersSupportingInflation",
+    "status": "experimental"
+  },
+  "border-block-end": {
+    "comment": "should be ignored due to having complex syntax (multiple initial)",
+    "initial": [
+      "border-top-width",
+      "border-top-style",
+      "border-top-color"
+    ],
+    "status": "standard"
+  },
+  "box-align": {
+    "comment": "should be ignored due to being unpredictable / nonstandard",
+    "initial": "stretch",
+    "status": "nonstandard"
+  },
+  "animation-delay": {
+    "comment": "should be included in fromInitial: '0s' is shorter",
+    "initial": "0s",
+    "status": "standard"
+  },
+  "mask-border-mode": {
+    "comment": "should be included in fromInitial: 'alpha' is shorter",
+    "initial": "alpha",
+    "status": "standard"
+  },
+  "mix-blend-mode": {
+    "comment": "should be included in fromInitial: 'normal' is shorter",
+    "initial": "normal",
+    "status": "standard"
+  },
+  "offset-position": {
+    "comment": "should be included in fromInitial: 'auto' is shorter",
+    "initial": "auto",
+    "status": "experimental"
+  },
+  "block-overflow": {
+    "comment": "should be included in fromInitial: 'clip' is shorter",
+    "initial": "clip",
+    "status": "experimental"
+  },
+  "background-clip": {
+    "comment": "should be included in toInitial: 'border-box' is longer",
+    "initial": "border-box",
+    "status": "standard"
+  },
+  "background-size": {
+    "comment": "should be included in toInitial: 'auto auto' is longer",
+    "initial": "auto auto",
+    "status": "standard"
+  },
+  "transform-origin": {
+    "comment": "should be included in toInitial: '50% 50% 0' is longer",
+    "initial": "50% 50% 0",
+    "status": "standard"
+  },
+  "border-image-repeat": {
+    "comment": "should be ignored since 'stretch' is same length as 'initial' (nothing to gain)",
+    "initial": "stretch",
+    "status": "standard"
+  },
+  "color-adjust": {
+    "comment": "should be ignored since 'economy' is same length as 'initial' (nothing to gain)",
+    "initial": "economy",
+    "status": "standard"
+  }
+}
