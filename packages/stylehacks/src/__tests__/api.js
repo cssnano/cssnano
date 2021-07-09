@@ -49,15 +49,17 @@ test('should use the postcss plugin api', () => {
 test('should have a separate detect method', () => {
   let counter = 0;
 
-  let plugin = postcss.plugin('test', () => {
-    return (css) => {
-      css.walkDecls((decl) => {
+  const plugin = () => {
+    return {
+      postcssPlugin: 'test',
+      Declaration(decl) {
         if (stylehacks.detect(decl)) {
           counter++;
         }
-      });
+      },
     };
-  });
+  };
+  plugin.postcss = true;
 
   return postcss(plugin)
     .process('h1 { _color: red; =color: black }', { from: undefined })
@@ -67,15 +69,17 @@ test('should have a separate detect method', () => {
 test('should have a separate detect method (2)', () => {
   let counter = 0;
 
-  let plugin = postcss.plugin('test', () => {
-    return (css) => {
-      css.walkRules((rule) => {
+  const plugin = () => {
+    return {
+      postcssPlugin: 'test',
+      Rule(rule) {
         if (stylehacks.detect(rule)) {
           counter++;
         }
-      });
+      },
     };
-  });
+  };
+  plugin.postcss = true;
 
   return postcss(plugin)
     .process('h1 { _color: red; =color: black }', { from: undefined })

@@ -1,21 +1,42 @@
-.nyc_output
-coverage
-dist
-lerna-debug.log
+# Package manager
 node_modules
-npm-debug.log
-yarn-error.log
+
+# Build
+dist
 _webpackOutput
 
 # Generated metadata (only the root one is generated!)
-
 /metadata.toml
 
-
-# Phenomic things
-
-*.bundle.js
-
 # Cache
-
+.cache
 .eslintcache
+
+# Testing
+.nyc_output
+coverage
+
+# Env
+.env.local
+.env.*.local
+
+# Logging
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Editor
+.idea
+.vscode
+.history
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated
+.DS_Store

@@ -480,17 +480,21 @@ test('should handle selectors from other plugins', () => {
     return result;
   }
 
-  const toModules = postcss.plugin('toModules', () => {
-    return (css) => {
-      css.walkRules((rule) => {
-        rule.selectors = rule.selectors.map((selector) => {
-          const slice = selector.slice(1);
+  const toModules = () => {
+    return {
+      postcssPlugin: 'toModules',
+      Once(root) {
+        root.walkRules((rule) => {
+          rule.selectors = rule.selectors.map((selector) => {
+            const slice = selector.slice(1);
 
-          return `.${encode(slice).slice(0, 7)}__${slice}`;
+            return `.${encode(slice).slice(0, 7)}__${slice}`;
+          });
         });
-      });
+      },
     };
-  });
+  };
+  toModules.postcss = true;
 
   const css = `.test, /* comment #1 - this comment breaks stuff */
 .test:hover {  /* comment #2 - ...but this comment is fine */
