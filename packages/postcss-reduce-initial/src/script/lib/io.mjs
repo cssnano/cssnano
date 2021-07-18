@@ -1,16 +1,5 @@
 import fetch from 'node-fetch';
-import { reduceInitial } from './mdnCssProps.mjs';
-
-export function validate(data) {
-  if (
-    data === undefined ||
-    !Object.keys(data.fromInitial).length ||
-    !Object.keys(data.toInitial).length
-  ) {
-    return Promise.reject(new Error('Fetching & processing JSON data failed!'));
-  }
-  return data;
-}
+import { reduceInitial, validate } from './mdnCssProps.mjs';
 
 export function handleError(error) {
   if (error) {
@@ -27,7 +16,7 @@ export function write(fileFunc, filePaths, data, key) {
   return data;
 }
 
-export async function generate(jsonURL, fileFunc, filePaths) {
+export async function generate(fileFunc, filePaths, jsonURL) {
   return fetch(jsonURL)
     .then((result) => result.json())
     .then(reduceInitial)

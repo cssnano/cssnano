@@ -30,10 +30,10 @@ export function toPlainText(value) {
     .trim();
 }
 
-export function reduceInitial(peropertyData) {
-  return Object.keys(peropertyData).reduce(
+export function reduceInitial(propertyData) {
+  return Object.keys(propertyData).reduce(
     (values, key) => {
-      const { initial, status } = peropertyData[key];
+      const { initial, status } = propertyData[key];
       if (
         !isUserAgentDependent(initial) &&
         !isComplexSyntax(initial, key) &&
@@ -50,4 +50,15 @@ export function reduceInitial(peropertyData) {
     },
     { fromInitial: {}, toInitial: {} }
   );
+}
+
+export function validate(data) {
+  if (
+    data === undefined ||
+    !Object.keys(data.fromInitial || {}).length ||
+    !Object.keys(data.toInitial || {}).length
+  ) {
+    return Promise.reject(new Error('"Initial" data is missing or malformed'));
+  }
+  return Promise.resolve(data);
 }

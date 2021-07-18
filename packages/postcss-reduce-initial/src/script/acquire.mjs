@@ -9,7 +9,7 @@ const paths = {
   toInitial: new URL('../../data/toInitial.json', import.meta.url),
 };
 
-generate(url, writeFile, paths).catch((error) => {
+generate(writeFile, paths, url).catch((error) => {
   console.error(error);
   process.exit(1);
 });
