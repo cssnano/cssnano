@@ -1,6 +1,11 @@
-import nock from 'nock';
+import fetch from 'node-fetch';
 import { handleError, toJSONString, write, generate } from '../lib/io.mjs';
 import testData from './sampleProperties.json';
+
+jest.mock('node-fetch');
+
+// Selectively bypass mocking to use a real Response obj
+const { Response } = jest.requireActual('node-fetch');
 
 describe('toJSONString', () => {
   const rawData = {
@@ -11,20 +16,12 @@ describe('toJSONString', () => {
     'fred-plugh': 'xyzzy-thud',
   };
 
-  test('should have correct data type (string)', () => {
-    expect(typeof toJSONString(rawData)).toBe('string');
-  });
-
   test('should produce parsable JSON', () => {
     expect(JSON.parse(toJSONString(rawData))).toEqual(rawData);
   });
-
-  test('should have a trailing newline', () => {
-    expect(toJSONString(rawData)).toMatch(/\n$/);
-  });
 });
 
-describe('File operations', () => {
+describe('Smoke tests', () => {
   const data = {
     fromInitial: { foo: 'bar', baz: 'qux' },
     toInitial: { qux: 'baz', bar: 'foo' },
@@ -47,40 +44,15 @@ describe('File operations', () => {
     expect(handleError).not.toThrowError();
     expect(() => handleError(new Error('something went wrong'))).toThrowError();
   });
-});
 
-describe('Data fetching', () => {
-  const url = 'https://example.com/properties.json';
-  const paths = { fromInitial: '/', toInitial: '/' };
-
-  test('should make it through promise chain and write 2 files', async () => {
+  test('should make it through promise chain with sample data and write 2 files', async () => {
     const fileFunc = jest.fn();
-    nock('https://example.com').get('/properties.json').reply(200, testData);
+    fetch.mockReturnValue(
+      Promise.resolve(new Response(JSON.stringify(testData)))
+    );
 
-    await generate(url, fileFunc, paths);
+    await generate(fileFunc, paths, 'https://example.com/properties.json');
 
     expect(fileFunc).toHaveBeenCalledTimes(2);
-  });
-
-  test('should throw on failed API call', async () => {
-    const fileFunc = jest.fn();
-    nock('https://example.com')
-      .get('/properties.json')
-      .replyWithError('oh noes');
-
-    expect.assertions(1);
-    await generate(url, fileFunc, paths).catch((error) => {
-      expect(error.message).toMatch('oh noes');
-    });
-  });
-
-  test('should throw on empty data', async () => {
-    const fileFunc = jest.fn();
-    nock('https://example.com').get('/properties.json').reply(200, {});
-
-    expect.assertions(1);
-    await generate(url, fileFunc, paths).catch((error) => {
-      expect(error.message).toBeDefined();
-    });
   });
 });

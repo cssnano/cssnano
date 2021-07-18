@@ -4,6 +4,7 @@ import {
   isUnpredictable,
   toPlainText,
   reduceInitial,
+  validate,
 } from '../lib/mdnCssProps.mjs';
 
 import testData from './sampleProperties.json';
@@ -31,7 +32,7 @@ describe('should recognise properties with complex syntax', () => {
     ['normal', '--*', true],
     ['normal', 'word-wrap', false],
     ['100%', 'text-align', false],
-  ])('isComplexSyntax(%p, %p) expected: %s', (initial, key, expected) => {
+  ])('isComplexSyntax(%p, %p) expected: %p', (initial, key, expected) => {
     expect(isComplexSyntax(initial, key)).toBe(expected);
   });
 });
@@ -43,7 +44,7 @@ describe('should recognise properties with unpredictable behavior', () => {
     ['standard', 'display', true],
     ['standard', 'align-items', false],
     ['experimental', 'aspect-ratio', false],
-  ])('isComplexSyntax(%p, %p) expected: %s', (status, key, expected) => {
+  ])('isUnpredictable(%p, %p) expected: %p', (status, key, expected) => {
     expect(isUnpredictable(status, key)).toBe(expected);
   });
 });
@@ -67,14 +68,14 @@ describe('should strip HTML, but leave relevant chars and separating spaces', ()
   });
 });
 
-describe('Reduce sample data', () => {
+describe('Reduce and validate sample data', () => {
   let processedData = '';
 
   beforeAll(() => {
     processedData = reduceInitial(testData);
   });
 
-  test('should have expected object structure', () => {
+  test('should reduce to expected object structure', () => {
     expect(processedData).toEqual(
       expect.objectContaining({
         fromInitial: expect.any(Object),
@@ -83,11 +84,39 @@ describe('Reduce sample data', () => {
     );
   });
 
-  test('should have expected number of fromInitial items', () => {
+  test('should reduce to expected number of fromInitial items', () => {
     expect(Object.keys(processedData.fromInitial)).toHaveLength(5);
   });
 
-  test('should have expected number of toInitial items', () => {
+  test('should reduce to expected number of toInitial items', () => {
     expect(Object.keys(processedData.toInitial)).toHaveLength(3);
+  });
+
+  test('should validate and return sample data as resolved promise', async () => {
+    expect.assertions(1);
+    await expect(validate(processedData)).resolves.toEqual(processedData);
+  });
+
+  test('should fail validation on missing data', async () => {
+    expect.assertions(1);
+    await expect(validate(undefined)).rejects.toThrow(Error);
+  });
+
+  test('should fail validation on missing fromInitial', async () => {
+    const partialData = JSON.parse(JSON.stringify(processedData));
+
+    delete partialData.fromInitial;
+
+    expect.assertions(1);
+    await expect(validate(partialData)).rejects.toThrow(Error);
+  });
+
+  test('should fail validation on missing toInitial', async () => {
+    const partialData = JSON.parse(JSON.stringify(processedData));
+
+    delete partialData.toInitial;
+
+    expect.assertions(1);
+    await expect(validate(partialData)).rejects.toThrow(Error);
   });
 });
