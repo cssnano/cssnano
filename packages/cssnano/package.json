@@ -24,7 +24,8 @@
     ],
     "license": "MIT",
     "dependencies": {
-        "cosmiconfig": "^7.0.0",
+        "lilconfig": "^2.0.3",
+        "yaml": "^1.10.2",
         "cssnano-preset-default": "^5.1.3",
         "is-resolvable": "^1.1.0"
     },
