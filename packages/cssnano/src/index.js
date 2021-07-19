@@ -1,6 +1,7 @@
 import path from 'path';
 import postcss from 'postcss';
-import { cosmiconfigSync } from 'cosmiconfig';
+import yaml from 'yaml';
+import { lilconfigSync } from 'lilconfig';
 import isResolvable from 'is-resolvable';
 
 const cssnano = 'cssnano';
@@ -59,7 +60,7 @@ function resolvePreset(preset) {
 
 /*
  * cssnano will look for configuration firstly as options passed
- * directly to it, and failing this it will use cosmiconfig to
+ * directly to it, and failing this it will use lilconfig to
  * load an external file.
  */
 
@@ -76,7 +77,21 @@ function resolveConfig(options) {
     configPath = path.resolve(process.cwd(), options.configFile);
   }
 
-  const configExplorer = cosmiconfigSync(cssnano);
+  const configExplorer = lilconfigSync(cssnano, {
+    searchPlaces: [
+      'package.json',
+      '.cssnanorc',
+      '.cssnanorc.json',
+      '.cssnanorc.yaml',
+      '.cssnanorc.yml',
+      '.cssnanorc.js',
+      'cssnano.config.js',
+    ],
+    loaders: {
+      '.yaml': (filepath, content) => yaml.parse(content),
+      '.yml': (filepath, content) => yaml.parse(content),
+    },
+  });
   const config = configPath
     ? configExplorer.load(configPath)
     : configExplorer.search(searchPath);
