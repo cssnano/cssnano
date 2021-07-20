@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+
+# [5.0.7] (2021-07-21)
+
+### Bug fixes
+
+* **cssnano**: reduce dependencies by moving from cosmiconfig to lilconfig (#1168)
+([506a8232](https://github.com/cssnano/cssnano/commit/506a823284191a41752939276f50dbdf75cc8e79))
+
 # [5.0.6] (2021-06-09)
 
 ### Bug Fixes
