@@ -11,7 +11,7 @@
   "scripts": {
     "acquire": "node ./src/script/acquire.mjs",
     "prebuild": "rimraf dist",
-    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.json --out-dir dist --ignore '**/__tests__/,src/acquire.mjs'",
+    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.json --out-dir dist --ignore '**/__tests__/,src/script'",
     "prepare": "yarn build"
   },
   "keywords": [
