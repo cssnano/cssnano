@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea for something we could add or improve
+description: Suggest a feature or an improvement
 title: "[Feature Request]: "
 labels: [enhancement, triage]
 body:
@@ -8,7 +8,7 @@ body:
       value: Thank you for taking the time to suggest a new feature!
   - type: markdown
     attributes:
-      value: Please describe the feature request in detail. Help us understand why it would be a good addition to cssnano.
+      value: Please describe the feature in detail. Why would it would be a good addition to cssnano?
   - type: textarea
     id: description
     attributes:
@@ -28,16 +28,16 @@ body:
   - type: textarea
     id: alternatives
     attributes:
-      label: Possible alternative solutions
-      description: Describe any alternative solutions/approaches you have considered.
-      placeholder: Ex. it could also be replaced by `baz`, but that is potentially unsafe in chrome.
+      label: Possible alternatives
+      description: Describe any alternatives you have considered.
+      placeholder: Ex. it could be replaced by `baz`, but that is potentially unsafe in Chrome.
     validations:
       required: false
   - type: textarea
     id: extra
     attributes:
       label: Additional context
-      description: Add any other information/context that might be relevant here.
+      description: Add any other relevant information.
       placeholder: Ex. It could be a good idea to double check that `foo` works in Edge and IE.
     validations:
       required: true
@@ -45,6 +45,6 @@ body:
     id: can-work
     attributes:
       label: Are you willing to work on this?
-      description: Are you willing to help us add this feature? If you are not sure how, then please feel free to ask for guidance.
+      description: Are you willing to help us add this feature? If you are not sure how, feel free to ask for guidance.
       options:
         - label: Yes, I would like to help

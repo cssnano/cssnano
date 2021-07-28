@@ -1,12 +1,12 @@
 ### Summary
 
-This pull request aims to... (add your summary here)
+Please describe the changes in this pull request.
 
-### Motivation / Context
+### Motivation
 
-Please fill in any additional context. E.g. why should what you describe above be changed?
+Please explain why you think the changes are an improvement.
 
-### Are you introducing a breaking change?
+### Does this pull request introduce a breaking change?
 
 - [ ] Yes
 - [ ] No
