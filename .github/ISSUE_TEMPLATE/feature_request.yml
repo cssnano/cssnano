@@ -1,0 +1,50 @@
+name: Feature request
+description: Suggest a feature or an improvement
+title: "[Feature Request]: "
+labels: [enhancement, triage]
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for taking the time to suggest a new feature!
+  - type: markdown
+    attributes:
+      value: Please describe the feature in detail. Why would it would be a good addition to cssnano?
+  - type: textarea
+    id: description
+    attributes:
+      label: What should be improved?
+      description: Is your feature request related to a problem? Please describe it.
+      placeholder: Ex. `foo-bar` is not minimised
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution you would like
+      description: A clear and concise description of what you want to happen.
+      placeholder: Ex. reduce `foo-bar` to the `foo` shorthand. This works in all browsers.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Possible alternatives
+      description: Describe any alternatives you have considered.
+      placeholder: Ex. it could be replaced by `baz`, but that is potentially unsafe in Chrome.
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Add any other relevant information.
+      placeholder: Ex. It could be a good idea to double check that `foo` works in Edge and IE.
+    validations:
+      required: true
+  - type: checkboxes
+    id: can-work
+    attributes:
+      label: Are you willing to work on this?
+      description: Are you willing to help us add this feature? If you are not sure how, feel free to ask for guidance.
+      options:
+        - label: Yes, I would like to help
