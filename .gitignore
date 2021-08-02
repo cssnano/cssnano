@@ -40,3 +40,7 @@ lerna-debug.log*
 
 # OS generated
 .DS_Store
+
+# Generated website files
+site/build
+site/.docusaurus
