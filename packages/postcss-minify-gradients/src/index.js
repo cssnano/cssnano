@@ -1,6 +1,6 @@
 import valueParser, { unit, stringify } from 'postcss-value-parser';
 import { getArguments } from 'cssnano-utils';
-import isColorStop from 'is-color-stop';
+import isColorStop from './isColorStop.js';
 
 const angles = {
   top: '0deg',
