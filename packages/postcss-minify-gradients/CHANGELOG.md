@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.2] (2021-08-18)
+
+## Chore
+
+* **postcss-minify-gradients:** remove extra dependencies ([#1181](https://github.com/cssnano/cssnano/pull/1181)) ([50eb53](https://github.com/cssnano/cssnano/commit/50eb53e63b6eaae598ae4e51d02255ec8dcc9c8f))
+
+
 ## [5.0.1](https://github.com/cssnano/cssnano/compare/postcss-minify-gradients@5.0.0...postcss-minify-gradients@5.0.1) (2021-05-19)
 
 **Note:** Version bump only for package postcss-minify-gradients
