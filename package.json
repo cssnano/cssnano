@@ -30,7 +30,7 @@
     "all-contributors-cli": "^6.20.0",
     "babel-jest": "^27.1.0",
     "babel-plugin-add-module-exports": "^1.0.2",
-    "browserslist": "^4.16.0",
+    "browserslist": "^4.16.5",
     "camelcase": "^6.2.0",
     "chalk": "^4.1.0",
     "cross-env": "^7.0.3",
