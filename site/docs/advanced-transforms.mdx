@@ -32,12 +32,12 @@ about your CSS in order for the transform to be safe. Most of these transforms
 fall into either or both of categories.
 
 ### Assumes concatenation
-
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
 This transform assumes that the CSS passed through cssnano is all that is needed
-for a website to run; it doesn't resources from any other source. This _may_ be
-problematic if the styles you are writing in some way interact with third party
-styles, or you are using multiple stylesheets instead of concatenating them, or
-you are injecting CSS via JavaScript, for example.
+for a website to run; it doesn't import resources from any other source. This
+_may_ be problematic if the styles you are writing in some way interact with
+third party styles, or you are using multiple stylesheets instead of
+concatenating them, or you are injecting CSS via JavaScript, for example.
 
 A good example is [postcss-merge-idents]; in order for this transform to be safe
 any `@keyframes` rules and selectors that utilise them must be in the same file.
