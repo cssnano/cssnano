@@ -5,6 +5,7 @@ import { encode, decode } from './lib/url';
 const PLUGIN = 'postcss-svgo';
 const dataURI = /data:image\/svg\+xml(;((charset=)?utf-8|base64))?,/i;
 const dataURIBase64 = /data:image\/svg\+xml;base64,/i;
+const escapedQuotes = /\b([\w-]+)\s*=\s*\\"([\S\s]+?)\\"/g;
 
 /**
  * @param {string} input the SVG string
@@ -29,6 +30,11 @@ function minifySVG(input, opts) {
   if (opts.encode !== undefined) {
     isUriEncoded = opts.encode;
   }
+
+  // normalize all escaped quote characters from svg attributes
+  // from <svg attr=\"value\"... /> to <svg attr="value"... />
+  // see: https://github.com/cssnano/cssnano/issues/1194
+  svg = svg.replace(escapedQuotes, '$1="$2"');
 
   const result = optimize(svg, opts);
   if (result.error) {
