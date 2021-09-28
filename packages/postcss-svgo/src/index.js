@@ -5,6 +5,11 @@ import { encode, decode } from './lib/url';
 const PLUGIN = 'postcss-svgo';
 const dataURI = /data:image\/svg\+xml(;((charset=)?utf-8|base64))?,/i;
 const dataURIBase64 = /data:image\/svg\+xml;base64,/i;
+
+// the following regex will globally match:
+// \b([\w-]+)       --> a word (a sequence of one or more [alphanumeric|underscore|dash] characters; followed by
+// \s*=\s*          --> an equal sign character (=) between optional whitespaces; followed by
+// \\"([\S\s]+?)\\" --> any characters (including whitespaces and newlines) between literal escaped quotes (\")
 const escapedQuotes = /\b([\w-]+)\s*=\s*\\"([\S\s]+?)\\"/g;
 
 /**
