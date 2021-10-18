@@ -4,8 +4,6 @@ function isEqual(input, output) {
   return () => expect(min(input)).toBe(output);
 }
 
-test('should lowercase keywords', isEqual('RED', 'red'));
-
 test('should convert shorthand hex to keyword', isEqual('#f00', 'red'));
 
 test('should convert longhand hex to keyword', isEqual('#ff0000', 'red'));
@@ -26,7 +24,7 @@ test(
 
 test(
   'should convert translucent hsla to rgba',
-  isEqual('hsla(0, 100%, 50%, .5)', 'rgba(255, 0, 0, 0.5)')
+  isEqual('hsla(0, 100%, 50%, .5)', 'rgba(255,0,0,.5)')
 );
 
 test(
@@ -52,7 +50,7 @@ test(
 
 test(
   'should convert rgba to hsla when shorter',
-  isEqual('rgba(221, 221, 221, 0.5)', 'hsla(0, 0%, 87%, 0.5)')
+  isEqual('rgba(221, 221, 221, 0.5)', 'hsla(0,0%,87%,.5)')
 );
 
 test(
@@ -89,12 +87,12 @@ test(
 
 test(
   'should convert signed numbers',
-  isEqual('rgba(-100,0,-100,.5)', 'rgba(0, 0, 0, 0.5)')
+  isEqual('rgba(-100,0,-100,.5)', 'rgba(0,0,0,.5)')
 );
 
 test(
   'should convert signed numbers (2)',
-  isEqual('hsla(-400, 50%, 10%, 0.5)', 'rgba(38, 13, 30, 0.5)')
+  isEqual('hsla(-400, 50%, 10%, 0.5)', 'rgba(38,13,30,.5)')
 );
 
 test(
@@ -104,7 +102,7 @@ test(
 
 test(
   'should convert percentage based rgba values (2)',
-  isEqual('rgba(50%, 50%, 50%, 0.5)', 'hsla(0, 0%, 50%, 0.5)')
+  isEqual('rgba(50%, 50%, 50%, 0.5)', 'hsla(0,0%,50%,.5)')
 );
 
 test(
@@ -114,12 +112,12 @@ test(
 
 test(
   'should convert percentage based rgba values (4)',
-  isEqual('rgba(100%,100%,100%,0.5)', 'hsla(0, 0%, 100%, 0.5)')
+  isEqual('rgba(100%,100%,100%,0.5)', 'hsla(0,0%,100%,.5)')
 );
 
 test(
   'should convert percentage based rgba values (5)',
-  isEqual('rgba(100%, 64.7%, 0%, .5)', 'rgba(255, 165, 0, 0.5)')
+  isEqual('rgba(100%, 64.7%, 0%, .5)', 'rgba(255,165,0,.5)')
 );
 
 test(
