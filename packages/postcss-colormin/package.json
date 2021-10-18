@@ -32,7 +32,7 @@
   "dependencies": {
     "browserslist": "^4.16.6",
     "caniuse-api": "^3.0.0",
-    "colord": "^2.0.1",
+    "colord": "^2.9.0",
     "postcss-value-parser": "^4.1.0"
   },
   "bugs": {
