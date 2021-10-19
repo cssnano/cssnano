@@ -5,6 +5,9 @@ import { unit, stringify } from 'postcss-value-parser';
 
 const borderWidths = ['thin', 'medium', 'thick'];
 
+// All of the curently implemented math functions
+const mathFunctions = ['calc', 'clamp', 'max', 'min'];
+
 const borderStyles = [
   'none',
   'auto', // only in outline-style
@@ -25,12 +28,12 @@ export default function normalizeBorder(border) {
   border.walk((node) => {
     const { type, value } = node;
     if (type === 'word') {
-      if (~borderStyles.indexOf(value.toLowerCase())) {
+      if (borderStyles.includes(value.toLowerCase())) {
         order.style = value;
         return false;
       }
       if (
-        ~borderWidths.indexOf(value.toLowerCase()) ||
+        borderWidths.includes(value.toLowerCase()) ||
         unit(value.toLowerCase())
       ) {
         if (order.width !== '') {
@@ -44,7 +47,7 @@ export default function normalizeBorder(border) {
       return false;
     }
     if (type === 'function') {
-      if (value.toLowerCase() === 'calc') {
+      if (mathFunctions.includes(value.toLowerCase())) {
         order.width = stringify(node);
       } else {
         order.color = stringify(node);
