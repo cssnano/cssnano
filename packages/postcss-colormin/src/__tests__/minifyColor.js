@@ -4,6 +4,8 @@ function isEqual(input, output) {
   return () => expect(min(input)).toBe(output);
 }
 
+test('should lowercase keywords', isEqual('RED', 'red'));
+
 test('should convert shorthand hex to keyword', isEqual('#f00', 'red'));
 
 test('should convert longhand hex to keyword', isEqual('#ff0000', 'red'));

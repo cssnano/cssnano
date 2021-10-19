@@ -21,15 +21,15 @@ export default function minifyColor(input, options = {}) {
   const instance = colord(input);
 
   if (instance.isValid()) {
-    // Try to shorten the string if it is a valid CSS color value.
+    // Try to shorten the string if it is a valid CSS color value
     const minified = instance.minify({
       alphaHex: settings.supportsAlphaHex,
       transparent: settings.supportsTransparent,
       name: true,
     });
 
-    // Fall back to the original input if it's smaller or has equal length/
-    return minified.length < input.length ? minified : input;
+    // Fall back to the original input if it's smaller or has equal length
+    return minified.length < input.length ? minified : input.toLowerCase();
   } else {
     // Possibly malformed, so pass through
     return input;
