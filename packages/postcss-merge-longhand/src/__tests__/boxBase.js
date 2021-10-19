@@ -322,6 +322,11 @@ addTests(
     expected: 'h1{box:INHERIT}',
   },
   {
+    message: 'should not merge box props when one has a revert property',
+    fixture: 'h1{box:10px;box-left:revert}',
+    expected: (prop) => `h1{${prop.toLowerCase()}:10px;${prop}-left:revert}`,
+  },
+  {
     message: 'should handle empty box properties',
     fixture: 'h1{box:;}',
     expected: (prop) => `h1{${prop}:;}`,

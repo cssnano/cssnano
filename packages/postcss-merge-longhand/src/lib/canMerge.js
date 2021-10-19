@@ -3,21 +3,19 @@ import isCustomProp from './isCustomProp';
 const important = (node) => node.important;
 const unimportant = (node) => !node.important;
 
-const hasInherit = (node) => node.value.toLowerCase() === 'inherit';
-const hasInitial = (node) => node.value.toLowerCase() === 'initial';
-const hasUnset = (node) => node.value.toLowerCase() === 'unset';
+/* Cannot be combined with other values in shorthand 
+  https://www.w3.org/TR/css-cascade-5/#shorthand */
+const cssWideKeywords = ['inherit', 'initial', 'unset', 'revert'];
 
 export default (props, includeCustomProps = true) => {
-  if (props.some(hasInherit) && !props.every(hasInherit)) {
-    return false;
-  }
+  const uniqueProps = new Set(props.map((node) => node.value.toLowerCase()));
 
-  if (props.some(hasInitial) && !props.every(hasInitial)) {
-    return false;
-  }
-
-  if (props.some(hasUnset) && !props.every(hasUnset)) {
-    return false;
+  if (uniqueProps.size > 1) {
+    for (const unmergeable of cssWideKeywords) {
+      if (uniqueProps.has(unmergeable)) {
+        return false;
+      }
+    }
   }
 
   if (
