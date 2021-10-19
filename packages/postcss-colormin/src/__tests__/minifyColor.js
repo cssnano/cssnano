@@ -161,9 +161,9 @@ test('should convert to hex8', () => {
 
 test('should not convert to alpha hex since the conversion is not lossless', () => {
   expect(min('rgba(0, 0, 0, 0.075)', { supportsAlphaHex: true })).toBe(
-    'rgba(0, 0, 0, 0.075)'
+    'rgba(0,0,0,.075)'
   );
   expect(min('hsla(0, 0%, 50%, 0.515)', { supportsAlphaHex: true })).toBe(
-    'hsla(0, 0%, 50%, 0.515)'
+    'hsla(0,0%,50%,.515)'
   );
 });
