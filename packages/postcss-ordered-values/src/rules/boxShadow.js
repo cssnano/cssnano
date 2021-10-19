@@ -2,6 +2,8 @@ import { unit } from 'postcss-value-parser';
 import { getArguments } from 'cssnano-utils';
 import addSpace from '../lib/addSpace';
 import getValue from '../lib/getValue';
+import mathFunctions from '../lib/mathfunctions.js';
+import vendorUnprefixed from '../lib/vendorUnprefixed.js';
 
 // box-shadow: inset? && <length>{2,4} && <color>?
 
@@ -19,7 +21,10 @@ export default function normalizeBoxShadow(parsed) {
     arg.forEach((node) => {
       const { type, value } = node;
 
-      if (type === 'function' && ~value.toLowerCase().indexOf('calc')) {
+      if (
+        type === 'function' &&
+        mathFunctions.includes(vendorUnprefixed(value.toLowerCase()))
+      ) {
         abort = true;
         return;
       }

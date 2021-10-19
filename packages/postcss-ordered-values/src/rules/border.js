@@ -1,12 +1,10 @@
 import { unit, stringify } from 'postcss-value-parser';
+import mathFunctions from '../lib/mathfunctions.js';
 
 // border: <line-width> || <line-style> || <color>
 // outline: <outline-color> || <outline-style> || <outline-width>
 
 const borderWidths = ['thin', 'medium', 'thick'];
-
-// All of the curently implemented math functions
-const mathFunctions = ['calc', 'clamp', 'max', 'min'];
 
 const borderStyles = [
   'none',

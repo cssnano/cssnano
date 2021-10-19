@@ -13,6 +13,7 @@ import {
 } from './rules/grid';
 import listStyle from './rules/listStyle';
 import column from './rules/columns';
+import vendorUnprefixed from './lib/vendorUnprefixed.js';
 
 const borderRules = {
   border: border,
@@ -56,10 +57,6 @@ const rules = {
   ...grid,
   ...columnRules,
 };
-
-function vendorUnprefixed(prop) {
-  return prop.replace(/^-\w+-/, '');
-}
 
 function isVariableFunctionNode(node) {
   if (node.type !== 'function') {
