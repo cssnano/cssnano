@@ -44,6 +44,11 @@ test(
 );
 
 test(
+  'should order border with width function',
+  passthroughCSS('p{border-left: min(10px, 1vw) solid red;}')
+);
+
+test(
   'should order border longhand',
   processCSS(
     'h1{border-left:solid 2px red;border-right:#fff 3px dashed;border-top:dotted #000 1px;border-bottom:4px navy groove}',
