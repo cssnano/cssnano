@@ -629,6 +629,17 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "IronGeek",
+      "name": "Jakka Prihatna",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1383932?v=4",
+      "profile": "https://github.com/IronGeek",
+      "contributions": [
+        "bug",
+        "code",
+        "test"
+      ]
     }
   ],
   "repoType": "github",

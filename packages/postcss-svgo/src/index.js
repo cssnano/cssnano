@@ -6,6 +6,12 @@ const PLUGIN = 'postcss-svgo';
 const dataURI = /data:image\/svg\+xml(;((charset=)?utf-8|base64))?,/i;
 const dataURIBase64 = /data:image\/svg\+xml;base64,/i;
 
+// the following regex will globally match:
+// \b([\w-]+)       --> a word (a sequence of one or more [alphanumeric|underscore|dash] characters; followed by
+// \s*=\s*          --> an equal sign character (=) between optional whitespaces; followed by
+// \\"([\S\s]+?)\\" --> any characters (including whitespaces and newlines) between literal escaped quotes (\")
+const escapedQuotes = /\b([\w-]+)\s*=\s*\\"([\S\s]+?)\\"/g;
+
 /**
  * @param {string} input the SVG string
  * @param {boolean} encode whether to encode the result
@@ -29,6 +35,11 @@ function minifySVG(input, opts) {
   if (opts.encode !== undefined) {
     isUriEncoded = opts.encode;
   }
+
+  // normalize all escaped quote characters from svg attributes
+  // from <svg attr=\"value\"... /> to <svg attr="value"... />
+  // see: https://github.com/cssnano/cssnano/issues/1194
+  svg = svg.replace(escapedQuotes, '$1="$2"');
 
   const result = optimize(svg, opts);
   if (result.error) {
