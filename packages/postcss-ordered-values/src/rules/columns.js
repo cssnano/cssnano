@@ -1,12 +1,11 @@
 import { unit } from 'postcss-value-parser';
-import border from './border.js';
 
 function hasUnit(value) {
   const parsedVal = unit(value);
   return parsedVal && parsedVal.unit !== '';
 }
 
-export const column = (columns) => {
+export default (columns) => {
   const widths = [];
   const other = [];
   columns.walk((node) => {
@@ -27,5 +26,3 @@ export const column = (columns) => {
 
   return columns;
 };
-
-export const columnsRule = border;

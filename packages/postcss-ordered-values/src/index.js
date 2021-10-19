@@ -12,7 +12,7 @@ import {
   normalizeGridColumnRow,
 } from './rules/grid';
 import listStyle from './rules/listStyle';
-import { columnsRule, column } from './rules/columns';
+import column from './rules/columns';
 
 const borderRules = {
   border: border,
@@ -41,7 +41,7 @@ const grid = {
 };
 
 const columnRules = {
-  'column-rule': columnsRule,
+  'column-rule': border,
   columns: column,
 };
 
