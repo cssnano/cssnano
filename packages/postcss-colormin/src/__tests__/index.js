@@ -113,7 +113,7 @@ test(
   'should minify color values in background gradients (2)',
   processCSS(
     'h1{background:linear-gradient(yellow, orange), linear-gradient(black, rgba(255, 255, 255, 0))}',
-    'h1{background:linear-gradient(#ff0, orange), linear-gradient(#000, hsla(0, 0%, 100%, 0))}'
+    'h1{background:linear-gradient(#ff0, orange), linear-gradient(#000, hsla(0,0%,100%,0))}'
   )
 );
 
@@ -205,7 +205,7 @@ test(
   'should not mangle percentage based rgba values',
   processCSS(
     'h1{color:rgba(50%, 50%, 50%, 0.5)}',
-    'h1{color:hsla(0, 0%, 50%, 0.5)}'
+    'h1{color:hsla(0,0%,50%,.5)}'
   )
 );
 
@@ -297,7 +297,7 @@ test('should passthrough broken syntax', passthroughCSS('h1{color:}'));
 
 test(
   'should not convert this specific rgba value to "transparent" (old IE)',
-  passthroughCSS('h1{color:rgba(0, 0, 0, 0)}', { env: 'ie8' })
+  passthroughCSS('h1{color:rgba(0,0,0,0)}', { env: 'ie8' })
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

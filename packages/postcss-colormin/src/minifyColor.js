@@ -1,5 +1,8 @@
-import { process } from './lib/color';
-import getShortestString from './lib/getShortestString';
+import { colord, extend } from 'colord';
+import namesPlugin from 'colord/plugins/names';
+import minifierPlugin from 'colord/plugins/minify';
+
+extend([namesPlugin, minifierPlugin]);
 
 /**
  * Performs color value minification
@@ -15,15 +18,18 @@ export default function minifyColor(input, options = {}) {
     ...options,
   };
 
-  const instance = process(input);
+  const instance = colord(input);
 
   if (instance.isValid()) {
-    // Try to shorten the string if it is a valid CSS color value.
-    // Fall back to the original input if it's smaller or has equal length/
-    return getShortestString([
-      input.toLowerCase(),
-      instance.toShortString(settings),
-    ]);
+    // Try to shorten the string if it is a valid CSS color value
+    const minified = instance.minify({
+      alphaHex: settings.supportsAlphaHex,
+      transparent: settings.supportsTransparent,
+      name: true,
+    });
+
+    // Fall back to the original input if it's smaller or has equal length
+    return minified.length < input.length ? minified : input.toLowerCase();
   } else {
     // Possibly malformed, so pass through
     return input;
