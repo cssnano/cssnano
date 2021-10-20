@@ -18,6 +18,23 @@ const LENGTH_UNITS = [
   'pc',
   'px',
 ];
+
+// These properties only accept percentages, so no point in trying to transform
+const notALength = new Set([
+  'descent-override',
+  'ascent-override',
+  'font-stretch',
+  'size-adjust',
+  'line-gap-override',
+]);
+
+// Can't change the unit on these properties when they're 0
+const keepWhenZero = new Set([
+  'stroke-dashoffset',
+  'stroke-width',
+  'line-height',
+]);
+
 /*
  * Numbers without digits after the dot are technically invalid,
  * but in that case css-value-parser returns the dot as part of the unit,
@@ -71,7 +88,7 @@ function clampOpacity(node) {
   }
 }
 
-function shouldKeepUnit(decl) {
+function shouldKeepZeroUnit(decl) {
   const { parent } = decl;
   const lowerCasedProp = decl.prop.toLowerCase();
   return (
@@ -81,15 +98,17 @@ function shouldKeepUnit(decl) {
       parent.parent.name &&
       parent.parent.name.toLowerCase() === 'keyframes' &&
       lowerCasedProp === 'stroke-dasharray') ||
-    lowerCasedProp === 'stroke-dashoffset' ||
-    lowerCasedProp === 'stroke-width' ||
-    lowerCasedProp === 'line-height'
+    keepWhenZero.has(lowerCasedProp)
   );
 }
 
 function transform(opts, decl) {
   const lowerCasedProp = decl.prop.toLowerCase();
-  if (~lowerCasedProp.indexOf('flex') || lowerCasedProp.indexOf('--') === 0) {
+  if (
+    ~lowerCasedProp.indexOf('flex') ||
+    lowerCasedProp.indexOf('--') === 0 ||
+    notALength.has(lowerCasedProp)
+  ) {
     return;
   }
 
@@ -98,7 +117,7 @@ function transform(opts, decl) {
       const lowerCasedValue = node.value.toLowerCase();
 
       if (node.type === 'word') {
-        parseWord(node, opts, shouldKeepUnit(decl));
+        parseWord(node, opts, shouldKeepZeroUnit(decl));
         if (
           lowerCasedProp === 'opacity' ||
           lowerCasedProp === 'shape-image-threshold'
