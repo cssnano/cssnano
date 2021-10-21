@@ -41,8 +41,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 #### Bug fixes
 
 - **cssnano**: reduce dependencies by moving from cosmiconfig to lilconfig ([#1168](https://github.com/cssnano/cssnano/issues/1168))
-
-([506a8232](https://github.com/cssnano/cssnano/commit/506a823284191a41752939276f50dbdf75cc8e79))
+  ([506a8232](https://github.com/cssnano/cssnano/commit/506a823284191a41752939276f50dbdf75cc8e79))
 
 
 ## \[5.0.6] (2021-06-09)
@@ -70,7 +69,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 #### Bug Fixes
 
 - **postcss-colormin:** Strict color parsing ([#1122](https://github.com/cssnano/cssnano/issues/1122)) ([32771da](https://github.com/cssnano/cssnano/commit/32771da46ee94f07a6907ec47701189f90ad2ec0))
-- **postcss-colormin:** fix ERR_PACKAGE_PATH_NOT_EXPORTED ([#1110](https://github.com/cssnano/cssnano/issues/1110)) ([8a31ca38796](https://github.com/cssnano/cssnano/commit/8a31ca38796e12e6fe52620cf8a545cb058fe295))
+- **postcss-colormin:** fix ERR\_PACKAGE\_PATH\_NOT\_EXPORTED ([#1110](https://github.com/cssnano/cssnano/issues/1110)) ([8a31ca38796](https://github.com/cssnano/cssnano/commit/8a31ca38796e12e6fe52620cf8a545cb058fe295))
 
 ### [5.0.3](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0...cssnano@5.0.3) (2021-05-19)
 

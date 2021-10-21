@@ -17,7 +17,7 @@ which we recommend for general queries and plugin discussion.
 
 ## Twitter
 
-Our [cssnano twitter account](https://twitter.com/cssnano\_) will keep you up to
+Our [cssnano twitter account](https://twitter.com/cssnano_) will keep you up to
 date with any new developments. We will also share tweets on interesting web
 performance topics, usually relating to CSS compression. So why not follow us!
 

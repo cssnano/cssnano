@@ -1,10 +1,10 @@
 import { join } from 'path';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import camel from 'camelcase';
 import toml from 'toml';
 import tomlify from 'tomlify-j0.4';
-import getPackages from './getPackages';
-import sortAscending from './sortAscending';
+import getPackages from './getPackages.mjs';
+import sortAscending from './sortAscending.mjs';
 
 /* External repositories, so the data is added manually */
 
@@ -75,11 +75,12 @@ getPackages().then((packages) => {
     packages.map((pkg) => {
       return fs
         .readFile(join(pkg, 'metadata.toml'), 'utf8')
-        .then((contents) => {
+        .then(async (contents) => {
           const metadata = toml.parse(contents);
-          const pkgJson = require(join(pkg, 'package.json'));
+          const pkgJson = JSON.parse(
+            await fs.readFile(join(pkg, 'package.json'))
+          );
           const pkgName = pkgJson.name;
-
           database[pkgName] = Object.assign({}, metadata, {
             source: `${pkgJson.homepage}/tree/master/packages/${pkgName}`,
             shortDescription: pkgJson.description,
@@ -97,7 +98,7 @@ getPackages().then((packages) => {
     }, {});
 
     return fs.writeFile(
-      join(__dirname, '../metadata.toml'),
+      new URL('../../metadata.toml', import.meta.url),
       tomlify.toToml(sorted)
     );
   });

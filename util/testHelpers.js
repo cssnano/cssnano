@@ -1,7 +1,7 @@
 import fs from 'fs';
+import path from 'path';
 import postcss from 'postcss';
 import cssnano from '../packages/cssnano/src/index';
-import frameworks from './frameworks';
 
 export function usePostCSSPlugin(plugin) {
   return () => {
@@ -63,18 +63,27 @@ export function loadPreset(preset) {
 }
 
 export function integrationTests(preset, integrations) {
-  return () =>
-    Promise.all(
-      Object.keys(frameworks).map((framework) => {
-        const css = frameworks[framework];
-
-        return postcss([cssnano({ preset })])
-          .process(css, { from: undefined })
-          .then((result) => {
-            expect(result.css).toBe(
-              fs.readFileSync(`${integrations}/${framework}.css`, 'utf8')
-            );
-          });
-      })
+  const frameworks = new Map();
+  for (const framework of fs.readdirSync(
+    path.join(__dirname, '../frameworks')
+  )) {
+    frameworks.set(
+      path.basename(framework, '.css'),
+      fs.readFileSync(path.join(__dirname, '../frameworks', framework), 'utf8')
     );
+  }
+
+  const expectations = [];
+  for (const [framework, css] of frameworks) {
+    expectations.push(
+      postcss([cssnano({ preset })])
+        .process(css, { from: undefined })
+        .then((result) => {
+          expect(result.css).toBe(
+            fs.readFileSync(`${integrations}/${framework}.css`, 'utf8')
+          );
+        })
+    );
+  }
+  return () => Promise.all(expectations);
 }
