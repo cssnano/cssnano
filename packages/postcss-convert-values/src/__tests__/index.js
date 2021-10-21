@@ -420,4 +420,11 @@ test(
   }
 );
 
+test(
+  'should not convert ascent and descent-override',
+  passthroughCSS(
+    '@font-face {descent-override:0%;ascent-override:0%;line-gap-override:0%;size-adjust:0%;font-stretch:0%}'
+  )
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
