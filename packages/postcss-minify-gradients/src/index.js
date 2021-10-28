@@ -60,7 +60,7 @@ function optimise(decl) {
         let lastStop = null;
 
         args.forEach((arg, index) => {
-          if (!arg[2]) {
+          if (arg.length !== 3) {
             return;
           }
 

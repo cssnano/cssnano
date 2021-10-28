@@ -103,6 +103,13 @@ test(
 );
 
 test(
+  'repeating-linear: should not remove necessary zero start length',
+  passthroughCSS(
+    'background:repeating-linear-gradient(-45deg,transparent 0 25%,#d1d3d5 25% 50%)'
+  )
+);
+
+test(
   'linear: should not convert "to top right" to an angle',
   passthroughCSS('background:linear-gradient(to top right,#ffe500,#121)')
 );
