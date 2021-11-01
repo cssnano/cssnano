@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.2] (2021-11-01)
+
+### Bug fixes
+
+* **postcss-convert-values:** preserve percentage-only properties ([#1212](https://github.com/cssnano/cssnano/pull/1212)) ([8f3453](https://github.com/cssnano/cssnano/commit/8f345385b210cf85e9d591382d387f76ca4b0f64))
+
+
 ## [5.0.1](https://github.com/cssnano/cssnano/compare/postcss-convert-values@5.0.0...postcss-convert-values@5.0.1) (2021-05-19)
 
 **Note:** Version bump only for package postcss-convert-values
