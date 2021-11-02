@@ -124,6 +124,7 @@ Thanks goes to these wonderful people ([emoji key](https://github.com/kentcdodds
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/MapTo0"><img src="https://avatars.githubusercontent.com/u/5821279?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Martin</b></sub></a><br /><a href="https://github.com/cssnano/cssnano/commits?author=MapTo0" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/IronGeek"><img src="https://avatars.githubusercontent.com/u/1383932?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jakka Prihatna</b></sub></a><br /><a href="https://github.com/cssnano/cssnano/issues?q=author%3AIronGeek" title="Bug reports">🐛</a> <a href="https://github.com/cssnano/cssnano/commits?author=IronGeek" title="Code">💻</a> <a href="https://github.com/cssnano/cssnano/commits?author=IronGeek" title="Tests">⚠️</a></td>
   </tr>
 </table>
 

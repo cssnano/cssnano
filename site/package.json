@@ -9,14 +9,14 @@
     "deploy": "docusaurus deploy"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-beta.7",
-    "@docusaurus/preset-classic": "^2.0.0-beta.7",
+    "@docusaurus/core": "^2.0.0-beta.8",
+    "@docusaurus/preset-classic": "^2.0.0-beta.8",
     "@monaco-editor/react": "^4.3.1",
     "classnames": "^2.3.1",
-    "cssnano-preset-advanced": "^5.1.4",
-    "cssnano-preset-default": "^5.1.4",
+    "cssnano-preset-advanced": "^5.1.5",
+    "cssnano-preset-default": "^5.1.5",
     "cssnano-preset-lite": "^2.0.1",
-    "postcss": "^8.3.9",
+    "postcss": "^8.3.11",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-icons": "^4.3.1"
