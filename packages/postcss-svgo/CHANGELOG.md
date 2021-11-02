@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.3] (2021-11-01)
+
+### Bug fixes
+
+* **postcss-svgo:** normalize SVG with escaped quote characters ([#1200](https://github.com/cssnano/cssnano/pull/1200)) ([4ef5e41](https://github.com/cssnano/cssnano/commit/4ef5e41a6c61a23094001da82a76321ca746b22f))
+
+### Chore
+
+* **postcss-svgo:** update svgo to 2.7 ([#1209](https://github.com/cssnano/cssnano/pull/1209))
+([2b5841](https://github.com/cssnano/cssnano/commit/2b5841e06808f9c04e03c07b5da0f5a36de88cd3))
+
+
 ## [5.0.2] (2021-05-28)
 
 ### Bug fixes
