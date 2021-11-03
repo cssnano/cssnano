@@ -1,23 +1,28 @@
-import { basename, join } from 'path';
-import fs from 'fs-extra';
-import remove from 'unist-util-remove';
-import u from 'unist-builder';
-import heading from 'mdast-util-heading-range';
-import remark from 'remark';
+import { basename, join, dirname } from 'path';
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import fs from 'fs/promises';
+import { readFileSync } from 'fs';
+import { remove } from 'unist-util-remove';
+import { u } from 'unist-builder';
+import { headingRange } from 'mdast-util-heading-range';
+import { remark } from 'remark';
 import remarkBehead from 'remark-behead';
 import remarkGithub from 'remark-github';
 import toml from 'toml';
-import remarkPreset from '../.remarkrc';
-import getPackages from './getPackages';
-import getPresets from './getPresets';
-import pluginName from './pluginName';
+import remarkPreset from '../.remarkrc.mjs';
+import getPackages from './getPackages.mjs';
+import getPresets from './getPresets.mjs';
+import pluginName from './pluginName.mjs';
 
-const cssnanoChangelogPath = join(
-  __dirname,
-  '../packages/cssnano/CHANGELOG.md'
+const cssnanoChangelogPath = new URL(
+  '../../packages/cssnano/CHANGELOG.md',
+  import.meta.url
 );
-const contributingPath = join(__dirname, '../CONTRIBUTING.md');
-const contributorsPath = join(__dirname, '../CONTRIBUTORS.md');
+const contributingPath = new URL('../../CONTRIBUTING.md', import.meta.url);
+const contributorsPath = new URL('../../CONTRIBUTORS.md', import.meta.url);
+
+const require = createRequire(import.meta.url);
 
 function frontMatter(opts) {
   return (
@@ -38,36 +43,38 @@ function removeFirstHeading() {
 }
 
 function getMetadata() {
-  return toml.parse(fs.readFileSync(join(__dirname, '../metadata.toml')));
-}
-
-function getPlugins(presets) {
-  return presets.reduce(
-    (data, path) => {
-      // eslint-disable-next-line no-shadow
-      const { usage, presets } = data;
-      const preset = basename(path);
-      const short = preset.replace('cssnano-preset-', '');
-      presets.push(short);
-      const instance = require(path)();
-      instance.plugins.forEach((entry) => {
-        const name = pluginName(entry[0]);
-        if (!usage[name]) {
-          usage[name] = [];
-        }
-        usage[name].push(short);
-        usage[name] = defaultFirst(usage[name]);
-      });
-      return { usage, presets };
-    },
-    { usage: {}, presets: [] }
+  return toml.parse(
+    readFileSync(new URL('../../metadata.toml', import.meta.url))
   );
 }
 
+function getPlugins(presets) {
+  const data = { usage: {}, presets: [] };
+  for (const path of presets) {
+    const preset = basename(path);
+    const short = preset.replace('cssnano-preset-', '');
+    data.presets.push(short);
+    const instance = require(path + '/dist/index.js');
+
+    instance().plugins.forEach((entry) => {
+      const name = pluginName(entry[0]);
+      if (!data.usage[name]) {
+        data.usage[name] = [];
+      }
+      data.usage[name].push(short);
+      data.usage[name] = defaultFirst(data.usage[name]);
+    });
+  }
+  return data;
+}
+
 function isDisabled(preset, name) {
-  const full = `${join(__dirname, '../packages')}/cssnano-preset-${preset}`;
-  const instance = require(full)();
-  const plugin = instance.plugins.find((entry) => {
+  const full = `${join(
+    dirname(fileURLToPath(import.meta.url)),
+    '../../packages'
+  )}/cssnano-preset-${preset}/dist/index.js`;
+  const instance = require(full);
+  const plugin = instance().plugins.find((entry) => {
     const n = pluginName(entry[0]);
     return n === name;
   });
@@ -148,7 +155,7 @@ function generateChangelog() {
     })
     .then((transformedChangelog) =>
       fs.writeFile(
-        join(__dirname, '../site/docs/changelog.md'),
+        new URL('../docs/changelog.md', import.meta.url),
         `${frontMatter({
           title: 'Changelog',
           layout: 'Page',
@@ -176,7 +183,7 @@ function generateContributing() {
     })
     .then((transformedContributing) =>
       fs.writeFile(
-        join(__dirname, '../site/docs/contributing.md'),
+        new URL('../docs/contributing.md', import.meta.url),
         `${frontMatter({
           title: 'Contributing',
           layout: 'Guide',
@@ -189,7 +196,9 @@ function generateContributing() {
 function updateOptimisationGuide() {
   return Promise.resolve()
     .then(() =>
-      fs.readFile(join(__dirname, '../site/docs/what_are_optimisations.mdx'))
+      fs.readFile(
+        new URL('../docs/what_are_optimisations.mdx', import.meta.url)
+      )
     )
     .then((optimisations) => {
       return getPackages().then((packages) => {
@@ -200,7 +209,7 @@ function updateOptimisationGuide() {
           remark()
             .use(remarkPreset)
             .use(() => (tree) => {
-              heading(
+              headingRange(
                 tree,
                 /^What optimisations do you support\?/i,
                 (start, nodes, end) => {
@@ -241,7 +250,7 @@ function updateOptimisationGuide() {
     })
     .then((transformedOptimisations) =>
       fs.writeFile(
-        join(__dirname, '../site/docs/what_are_optimisations.mdx'),
+        new URL('../docs/what_are_optimisations.mdx', import.meta.url),
         transformedOptimisations
       )
     );
@@ -261,8 +270,8 @@ function updateOptimisations() {
       });
       const content = `${fm}${longDescription}`;
 
-      return fs.outputFile(
-        join(__dirname, `../site/docs/optimisations/${identifier}.md`),
+      return fs.writeFile(
+        new URL(`../docs/optimisations/${identifier}.md`, import.meta.url),
         content
       );
     })
@@ -282,7 +291,7 @@ function updateOptimisationsIndex() {
     })
     .then((optimisationsTransformed) =>
       fs.writeFile(
-        join(__dirname, '../site/docs/optimisations.md'),
+        new URL('../docs/optimisations.md', import.meta.url),
         `${frontMatter({
           title: 'Optimisations',
           layout: 'Page',
@@ -311,14 +320,16 @@ function updateCommunity() {
     )
     .then((transformedContributors) => {
       return Promise.resolve()
-        .then(() => fs.readFile(join(__dirname, '../site/docs/community.md')))
+        .then(() =>
+          fs.readFile(new URL('../docs/community.md', import.meta.url))
+        )
         .then(
           (community) =>
             new Promise((resolve) => {
               return remark()
                 .use(remarkPreset)
                 .use(() => (tree) => {
-                  heading(tree, /Contributors/, (start, nodes, end) => {
+                  headingRange(tree, /Contributors/, (start, nodes, end) => {
                     const { children } = remark()
                       .use(remarkPreset)
                       .parse(transformedContributors);
@@ -346,7 +357,7 @@ function updateCommunity() {
     })
     .then((transformedCommunity) =>
       fs.writeFile(
-        join(__dirname, '../site/docs/community.md'),
+        new URL('../docs/community.md', import.meta.url),
         transformedCommunity
       )
     );

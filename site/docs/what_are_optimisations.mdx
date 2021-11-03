@@ -10,11 +10,11 @@ import { useEffect } from 'react';
 export const CarbonAds = () => {
 useEffect(() => {
 if(!document.getElementById('carbonads')){
-const carbonWrapper = document.querySelector('.carbon_ads_mdx_wrapper');
+const carbonWrapper = document.querySelector('.carbon\_ads\_mdx\_wrapper');
 const script = document.createElement('script');
 script.src = '//cdn.carbonads.com/carbon.js?serve=CEBI62JN\&placement=cssnanoco';
 script.async = true;
-script.id = '\_carbonads_js';
+script.id = '\_carbonads\_js';
 carbonWrapper.appendChild(script);
 }
 });

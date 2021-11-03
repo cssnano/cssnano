@@ -1,3 +1,8 @@
+import remarkHeadingGap from 'remark-heading-gap';
+import remarkBookmarks from 'remark-bookmarks';
+import remarkFrontmatter from 'remark-frontmatter';
+import remarkGfm from 'remark-gfm';
+
 const bookmarks = {
   /* Packages */
   autoprefixer: 'https://github.com/postcss/autoprefixer',
@@ -14,16 +19,18 @@ const bookmarks = {
   guideContributing: '/guides/contributing',
 };
 
-exports.settings = {
-  bullet: '-',
-  fences: true,
-  listItemIndent: '1',
-  paddedTable: false,
-};
+export default {
+  settings: {
+    bullet: '-',
+    fences: true,
+    listItemIndent: '1',
+    paddedTable: false,
+  },
 
-exports.plugins = [
-  [require('remark-heading-gap'), {}],
-  [require('remark-bookmarks'), { bookmarks }],
-  [require('remark-frontmatter')],
-  [require('remark-gfm')],
-];
+  plugins: [
+    [remarkHeadingGap, {}],
+    [remarkBookmarks, { bookmarks }],
+    [remarkFrontmatter],
+    [remarkGfm],
+  ],
+};
