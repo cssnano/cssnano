@@ -1,4 +1,5 @@
 import valueParser from 'postcss-value-parser';
+/* eslint-disable import/named */
 import { optimize } from 'svgo';
 import { encode, decode } from './lib/url';
 
