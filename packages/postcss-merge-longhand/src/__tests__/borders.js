@@ -1211,6 +1211,23 @@ test(
 );
 
 test(
+  'do not crash',
+  processCSS(
+    `.next-step-arrow[dir='rtl'] .next-step-item:before {
+  border: 16px solid transparent;
+  border-right: 16px solid transparent;
+  border: var(--step-arrow-item-border-width, 16px) solid transparent;
+  border-right-color: transparent;
+}`,
+    `.next-step-arrow[dir='rtl'] .next-step-item:before {
+  border: 16px solid transparent;
+  border-right: 16px solid transparent;
+  border: var(--step-arrow-item-border-width, 16px) solid transparent;
+}`
+  )
+);
+
+test(
   'should overwrite some border-width props and save fallbacks and preserve case #648 2',
   processCSS(
     'h1{border-top-width:10px;border-right-width:var(--fooBar);border-right-width:15px;border-bottom-width:var(--fooBar);border-bottom-width:20px;border-left-width:25px;border-top-width:var(--fooBar);border-left-width:var(--fooBar)}',

@@ -87,7 +87,7 @@ function mergeRedundant({ values, nextValues, decl, nextDecl, index }) {
 
   const diff = diffingProps(values, nextValues);
 
-  if (diff.length > 1) {
+  if (diff.length !== 1) {
     return;
   }
 
