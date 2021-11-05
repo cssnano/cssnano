@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.3]
+
+### Bug fixes
+
+* **postcss-merge-longhand:** prevent crash in some situations ([#1222](https://github.com/cssnano/cssnano/pull/1222)) ([83009a](https://github.com/cssnano/cssnano/commit/83009a04e7200c80d4dfc478881eb1b231d2548f))
+
 ## [5.0.2](https://github.com/cssnano/cssnano/compare/postcss-merge-longhand@5.0.0...postcss-merge-longhand@5.0.2) (2021-05-19)
 
 
