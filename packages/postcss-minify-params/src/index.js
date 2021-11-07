@@ -1,7 +1,6 @@
 import browserslist from 'browserslist';
 import valueParser, { stringify } from 'postcss-value-parser';
 import sort from 'alphanum-sort';
-import uniqs from 'uniqs';
 import { getArguments } from 'cssnano-utils';
 
 /**
@@ -26,6 +25,12 @@ function split(args) {
 function removeNode(node) {
   node.value = '';
   node.type = 'word';
+}
+
+function sortAndDedupe(items) {
+  return sort([...new Set(items)], {
+    insensitive: true,
+  }).join();
 }
 
 function transform(legacy, rule) {
@@ -80,9 +85,7 @@ function transform(legacy, rule) {
     }
   }, true);
 
-  rule.params = sort(uniqs(getArguments(params).map(split)), {
-    insensitive: true,
-  }).join();
+  rule.params = sortAndDedupe(getArguments(params).map(split));
 
   if (!rule.params.length) {
     rule.raws.afterName = '';
