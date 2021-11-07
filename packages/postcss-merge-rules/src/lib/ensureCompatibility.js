@@ -1,6 +1,5 @@
 import { isSupported } from 'caniuse-api';
 import selectorParser from 'postcss-selector-parser';
-import vendors from 'vendors';
 
 const simpleSelectorRe = /^#?[-._a-z0-9 ]+$/i;
 
@@ -13,7 +12,23 @@ const cssInOutOfRange = 'css-in-out-of-range';
 const formValidation = 'form-validation';
 
 /** @type {string[]} */
-const prefixes = vendors.map((v) => `-${v}-`);
+const prefixes = [
+  '-ah-',
+  '-apple-',
+  '-atsc-',
+  '-epub-',
+  '-hp-',
+  '-khtml-',
+  '-moz-',
+  '-ms-',
+  '-o-',
+  '-rim-',
+  '-ro-',
+  '-tc-',
+  '-wap-',
+  '-webkit-',
+  '-xv-',
+];
 
 /**
  * @param {string} selector
