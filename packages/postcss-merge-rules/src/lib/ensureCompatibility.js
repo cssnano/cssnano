@@ -11,31 +11,15 @@ const cssFirstLine = 'css-first-line';
 const cssInOutOfRange = 'css-in-out-of-range';
 const formValidation = 'form-validation';
 
-/** @type {string[]} */
-const prefixes = [
-  '-ah-',
-  '-apple-',
-  '-atsc-',
-  '-epub-',
-  '-hp-',
-  '-khtml-',
-  '-moz-',
-  '-ms-',
-  '-o-',
-  '-rim-',
-  '-ro-',
-  '-tc-',
-  '-wap-',
-  '-webkit-',
-  '-xv-',
-];
+const vendorPrefix =
+  /-(ah|apple|atsc|epub|hp|khtml|moz|ms|o|rim|ro|tc|wap|webkit|xv)-/;
 
 /**
  * @param {string} selector
  * @return {string[]}
  */
-export function filterPrefixes(selector) {
-  return prefixes.filter((prefix) => selector.indexOf(prefix) !== -1);
+function filterPrefixes(selector) {
+  return selector.match(vendorPrefix);
 }
 
 // Internet Explorer use :-ms-input-placeholder.
@@ -57,7 +41,7 @@ export function sameVendor(selectorsA, selectorsB) {
  * @return {boolean}
  */
 export function noVendor(selector) {
-  return !filterPrefixes(selector).length;
+  return !vendorPrefix.test(selector);
 }
 
 export const pseudoElements = {
