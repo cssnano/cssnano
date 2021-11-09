@@ -98,6 +98,7 @@ function pluginCreator(opts) {
     {},
     {
       normalizeProtocol: false,
+      sortQueryParameters: false,
       stripHash: false,
       stripWWW: false,
       stripTextFragment: false,
