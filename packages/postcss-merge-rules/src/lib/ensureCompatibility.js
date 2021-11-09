@@ -11,8 +11,7 @@ const cssFirstLine = 'css-first-line';
 const cssInOutOfRange = 'css-in-out-of-range';
 const formValidation = 'form-validation';
 
-const vendorPrefix =
-  /-(ah|apple|atsc|epub|hp|khtml|moz|ms|o|rim|ro|tc|wap|webkit|xv)-/;
+const vendorPrefix = /-([a-z]+)-/i;
 
 /**
  * @param {string} selector
