@@ -276,6 +276,13 @@ test(
 );
 
 test(
+  'should preserve paths in parameters',
+  passthroughCSS(
+    'background: url(https://ss0.example.com/70cFuh_Q1Yn/it/u=5088,2842&fm=26&gp=0.jpg?imageView2/1/w/750/h/1334)'
+  )
+);
+
+test(
   "should pass through when it doesn't find a url function",
   passthroughCSS('h1{color:black;font-weight:bold}')
 );
