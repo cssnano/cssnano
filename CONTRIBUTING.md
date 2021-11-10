@@ -56,19 +56,28 @@ be edited by hand.
 
 ### Releasing
 
-We use lerna and conventional commits to update the changelog and tag releases.
-To tag a pre-release and generate the changelog, run:
+We use @changesets/cli to update the changelog and tag releases.
+First make sure a changeset exists for every change you want to publish. A changeset is a text file
+with the description of the change and the affected packages.
+To create a changeset run
 
 ```
-yarn lerna version --conventional-commits --conventional-prerelease  --preid rc
-```
-Use `--conventional-graduate` to generate the tags for a stable release.
+yarn changeset
+``` 
 
-To publish the pre-release to npm, run:
+It's best to select the affected packages by hand rather than rely on the tools automatically
+discovering dependencies. For example, if a change affects a plugin `cssnano-preset-default`,
+select the plugin and `cssnano-preset-default` by hand (as well as any other dependent presets).
+To tag a release and generate the changelog, run:
+
 ```
-yarn lerna publish from-package --dist-tag next
+yarn changeset version
 ```
-To publish a stable release, use `latest` instead of `next`.
+
+To publish release to npm, run:
+```
+yarn changeset publish from-package
+```
 
 ## Are there other ways of contributing?
 
