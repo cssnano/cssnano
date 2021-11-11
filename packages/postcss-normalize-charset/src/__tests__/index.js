@@ -1,4 +1,3 @@
-import devtools from 'postcss-devtools';
 import plugin from '../';
 import {
   usePostCSSPlugin,
@@ -34,15 +33,6 @@ function processCssWithSource(fixture, expected, source) {
   ]);
 
   return withSource(fixture, expected);
-}
-
-function processCssBenchmark(fixture, expected, options) {
-  const { processCSS: benchmark } = processCSSFactory([
-    devtools(),
-    plugin(options),
-  ]);
-
-  return benchmark(fixture, expected);
 }
 
 let copyright = 'a{content:"©"}';
@@ -83,14 +73,11 @@ test(
   passthroughCSS(copyright, { add: false })
 );
 
-test(
-  'benchmark (add on)',
-  processCssBenchmark(copyright, '@charset "utf-8";\n' + copyright)
-);
+test('add on', processCSS(copyright, '@charset "utf-8";\n' + copyright));
 
 test(
-  'benchmark (add off)',
-  processCssBenchmark(copyright, copyright, {
+  'add off',
+  processCSS(copyright, copyright, {
     add: false,
   })
 );
