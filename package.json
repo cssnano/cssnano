@@ -45,7 +45,6 @@
     "node-fetch": "^2.6.1",
     "pleeease-filters": "^4.0.0",
     "postcss": "^8.3.0",
-    "postcss-devtools": "^1.1.1",
     "postcss-font-magician": "^3.0.0",
     "postcss-scss": "^3.0.4",
     "postcss-simple-vars": "^6.0.1",
