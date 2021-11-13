@@ -31,7 +31,6 @@
     "camelcase": "^6.2.0",
     "chalk": "^4.1.0",
     "cross-env": "^7.0.3",
-    "css-color-names": "^1.0.1",
     "diff": "^5.0.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",

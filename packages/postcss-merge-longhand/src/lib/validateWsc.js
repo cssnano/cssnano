@@ -1,4 +1,4 @@
-import colorNames from 'css-color-names';
+import colors from './colornames.js';
 
 const widths = ['thin', 'medium', 'thick'];
 const styles = [
@@ -13,7 +13,6 @@ const styles = [
   'inset',
   'outset',
 ];
-const colors = Object.keys(colorNames);
 
 export function isStyle(value) {
   return value && !!~styles.indexOf(value.toLowerCase());
