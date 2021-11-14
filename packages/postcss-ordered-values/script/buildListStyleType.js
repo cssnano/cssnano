@@ -20,7 +20,7 @@ const listTypeURL =
     JSON.stringify(content, null, 2),
     (err) => {
       if (err) {
-        console.log('Error while fetch list style type from Github', err);
+        console.log('Error while fetch list style type from GitHub', err);
         process.exit(1);
       }
     }
@@ -31,7 +31,7 @@ const listTypeURL =
     JSON.stringify(content, null, 2),
     (err) => {
       if (err) {
-        console.log('Error while fetch list style type from Github', err);
+        console.log('Error while fetch list style type from GitHub', err);
         process.exit(1);
       }
     }
