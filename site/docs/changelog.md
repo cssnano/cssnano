@@ -8,18 +8,27 @@ layout: Page
 
 ## Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## 5.0.11 (2021-11-16)
+
+#### Bug fixes
+
+- [`c38f14c`](https://github.com/cssnano/cssnano/commit/c38f14c3ce3d0): **postcss-normalize-url**: avoid changing parameter encoding
+
+#### Chore
+
+- [`31d5c07`](https://github.com/cssnano/cssnano/commit/31d5c07dc07a4): refactor: drop one-liner dependencies
+- [`0717282`](https://github.com/cssnano/cssnano/commit/07172825ffbb4f4): **postcss-merge-longhand**: drop css-color-names dependency
 
 
-## \[5.1.10] (2021-11-05)
+## 5.0.10 (2021-11-05)
 
 #### Bug fixes
 
 - **postcss-merge-longhand:** prevent crash in some situations ([#1222](https://github.com/cssnano/cssnano/pull/1222)) ([83009a](https://github.com/cssnano/cssnano/commit/83009a04e7200c80d4dfc478881eb1b231d2548f))
 
 
-## \[5.0.9] (2021-11-01)
+## 5.0.9 (2021-11-01)
 
 #### Bug fixes
 
@@ -36,14 +45,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - **postcss-colormin:** use colord plugin for color minification ([#1207](https://github.com/cssnano/cssnano/pull/1207)) ([3dbaa04](https://github.com/cssnano/cssnano/commit/3dbaa04addfa2f18375262377e172b03819dc2c0))
 
 
-## \[5.0.8] (2021-08-18)
+## 5.0.8 (2021-08-18)
 
 ### Chore
 
 - **postcss-minify-gradients:** remove extra dependencies ([#1181](https://github.com/cssnano/cssnano/pull/1181)) ([50eb53](https://github.com/cssnano/cssnano/commit/50eb53e63b6eaae598ae4e51d02255ec8dcc9c8f))
 
 
-## \[5.0.7] (2021-07-21)
+## 5.0.7 (2021-07-21)
 
 #### Bug fixes
 
@@ -51,7 +60,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
   ([506a8232](https://github.com/cssnano/cssnano/commit/506a823284191a41752939276f50dbdf75cc8e79))
 
 
-## \[5.0.6] (2021-06-09)
+## 5.0.6 (2021-06-09)
 
 #### Bug Fixes
 
@@ -62,7 +71,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ([9acd6a2fe3e](https://github.com/cssnano/cssnano/commit/9acd6a2fe3e188a5f29fef91cf406495fa74a877))
 
 
-## \[5.0.5] (2021-05-28)
+## 5.0.5 (2021-05-28)
 
 #### Bug fixes
 
@@ -71,7 +80,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - Do not crash when the input CSS contains relative URLs
 
 
-## \[5.0.4] (2021-05-21)
+## 5.0.4 (2021-05-21)
 
 #### Bug Fixes
 
