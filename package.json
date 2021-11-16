@@ -11,7 +11,7 @@
     "test:only": "cross-env BABEL_ENV=test jest",
     "test:coverage": "cross-env BABEL_ENV=test jest --coverage",
     "test": "yarn test:coverage",
-    "deploy": "cd site && GIT_USER=anikethsaha yarn deploy"
+    "all-publish": "yarn prepare && yarn changeset publish"
   },
   "workspaces": [
     "./packages/*"

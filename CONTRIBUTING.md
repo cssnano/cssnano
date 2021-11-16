@@ -63,7 +63,7 @@ To create a changeset run
 
 ```
 yarn changeset
-``` 
+```
 
 It's best to select the affected packages by hand rather than rely on the tools automatically
 discovering dependencies. For example, if a change affects a plugin `cssnano-preset-default`,
@@ -75,9 +75,15 @@ yarn changeset version
 ```
 
 To publish release to npm, run:
+
 ```
-yarn changeset publish from-package
+yarn all-publish
 ```
+
+If you don't use the `package.json` script, do not forget to rebuild the packages first!
+
+1. `yarn prepare`
+2. `yarn changeset publish`
 
 ## Are there other ways of contributing?
 
@@ -91,7 +97,6 @@ help us by opening an issue detailing the problem.
 
 Use the [documentation label][documentation] to find relevant issues.
 
-
 ### Improve our issues
 
 Issues are like a secondary means of documenting the project, and in cases where
@@ -101,7 +106,6 @@ the original author to find out more details about their problem.
 Once the source of the error has been found, you can be of further help by
 submitting a failing test case as a pull request. Many of our tests follow a
 simple `fixture` & `expected` string comparison pattern.
-
 
 ### Send feedback on issues
 
@@ -113,7 +117,6 @@ Note that we don't find "+1" comments to be very helpful; instead, use GitHub
 reactions and subscribe to the thread to be notified of any progress. This helps
 to keep our discourse focused on the topic at hand.
 
-
 ### Review pull requests
 
 It's really important to get more eyes on upcoming features and fixes. Please
@@ -121,13 +124,11 @@ help by reviewing pull requests; even leaving a thumbs up reaction is better
 than nothing at all. Helping us to review means less time is wasted by all of
 us if a buggy release is cut.
 
-
 ### Talk with us!
 
 We have an [online chat][chat] where you can ask questions or discuss features;
 help us by joining the chat, and answer any questions that the community may
 have. Feel free to ask any questions of your own!
-
 
 ## How you can support us
 
@@ -136,7 +137,6 @@ help us out by starring the repository, or [follow us on Twitter][twitter].
 Word of mouth really does mean a lot to us!
 
 You can also [help support us financially](/docs/support-us/).
-
 
 [chat]: https://gitter.im/postcss/postcss
 [documentation]: https://github.com/cssnano/cssnano/labels/documentation

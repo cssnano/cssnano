@@ -12,6 +12,13 @@ All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
 
+## \[5.1.10] (2021-11-05)
+
+#### Bug fixes
+
+- **postcss-merge-longhand:** prevent crash in some situations ([#1222](https://github.com/cssnano/cssnano/pull/1222)) ([83009a](https://github.com/cssnano/cssnano/commit/83009a04e7200c80d4dfc478881eb1b231d2548f))
+
+
 ## \[5.0.9] (2021-11-01)
 
 #### Bug fixes
@@ -121,7 +128,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 #### Features
 
 - css declaration sorter ([#855](https://github.com/cssnano/cssnano/issues/855)) ([613d562](https://github.com/cssnano/cssnano/commit/613d562ae79e7e169c80b523b7c2c9b0093bc1d8))
-- migarete to PostCSS 8 ([#975](https://github.com/cssnano/cssnano/issues/975)) ([40b82dc](https://github.com/cssnano/cssnano/commit/40b82dca7f53ac02cd4fe62846dec79b898ccb49))
+- migrate to PostCSS 8 ([#975](https://github.com/cssnano/cssnano/issues/975)) ([40b82dc](https://github.com/cssnano/cssnano/commit/40b82dca7f53ac02cd4fe62846dec79b898ccb49))
 - **postcss-reduce-transforms:** improve optimizations ([#745](https://github.com/cssnano/cssnano/issues/745)) ([b0f0d89](https://github.com/cssnano/cssnano/commit/b0f0d892316d7b77e8033a6dc8d67745043a5072))
 
 #### BREAKING CHANGES
