@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+    <channel>
+        <title>CSSNANO Blog</title>
+        <link>https://cssnano.github.io/blog</link>
+        <description>CSSNANO Blog</description>
+        <lastBuildDate>Sat, 10 Apr 2021 00:00:00 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[cssnano 5 is available]]></title>
+            <link>https://cssnano.github.io/blog/cssnano-5-release-notes</link>
+            <guid>cssnano-5-release-notes</guid>
+            <pubDate>Sat, 10 Apr 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[We have released a new major version of cssnano.]]></description>
+            <content:encoded><![CDATA[<p>We have released a new major version of cssnano.</p><h2>Major changes in cssnano 5</h2><ul><li>cssnano 5 requires Node.js &gt;= 10.13</li><li>PostCSS 8 API, so cssnano 5 does not emit warnings when running under PostCSS 8 </li><li>updates to SVGO 2, fixing many SVG minification bugs</li><li>updates css-value-parser and css-selector-parser, fixing many bugs</li></ul><h2>How to Upgrade</h2><h3>Update the PostCSS dependency</h3><p>Add <code>postcss</code> to your <code>package.json</code> <code>dependencies</code> field, if your package manager does not install peer dependencies automatically.</p><h3>JavaScript API changes</h3><p>If you use the cssnano JavaScript API, change your code:</p><ul><li><p>replace <code>cssnano.process()</code> with <code>cssnano().process()</code> (notice the <code>()</code> after <code>cssnano</code>)</p></li><li><p>pass cssnano options to <code>cssnano()</code> instead of <code>process()</code></p></li></ul><pre><code>cssnano(cssnanoOptions).process(postcssOptions)
+</code></pre><h2>Bug fixes</h2><ul><li>fix improperly discarding <code>@font-face</code> declarations <a href="https://github.com/cssnano/cssnano/issues/726">#726</a></li><li>partially fix some isues where cssnano did not combine rules when used together with <code>postcss-nested</code> <a href="https://github.com/cssnano/cssnano/issues/1004">#1004</a></li><li>fix <code>translate3d()</code> minification <a href="https://github.com/cssnano/cssnano/issues/920">#920</a></li><li>fix minification of values starting with <code>e</code> <a href="https://github.com/cssnano/cssnano/issues/958">#589</a>, <a href="https://github.com/cssnano/cssnano/issues/984">#984</a></li><li>fix minification of percentage vaalues <a href="https://github.com/cssnano/cssnano/issues/962">#962</a>, <a href="https://github.com/cssnano/cssnano/issues/957">#957</a></li><li>fix minification of <code>aspect-ratio</code> <a href="https://github.com/cssnano/cssnano/issues/963">#963</a></li><li>fix merging of <code>@supports</code> rules <a href="https://github.com/cssnano/cssnano/issues/974">#974</a></li><li>fix sorting of longhand and shorthand properties <a href="https://github.com/cssnano/cssnano/issues/535">#535</a></li><li>remove vulnerable dependency and always warn with bad SVG input <a href="https://github.com/cssnano/cssnano/pull/1034">#1034</a></li></ul>]]></content:encoded>
+        </item>
+    </channel>
+</rss>
