@@ -1,7 +1,10 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+# 5.0.4
+
+### Chore
+
+- 07172825ffbb4f4: **postcss-merge-longhand**: drop css-color-names dependency
 
 # [5.0.3]
 

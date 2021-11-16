@@ -1,7 +1,10 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+# 5.0.2 (2021-11-16)
+
+### Chore
+
+- 31d5c07dc07a4: refactor: drop one-liner dependencies
 
 ## [5.0.1](https://github.com/cssnano/cssnano/compare/postcss-minify-params@5.0.0...postcss-minify-params@5.0.1) (2021-05-19)
 

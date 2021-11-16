@@ -1,7 +1,14 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+# 5.1.7 (2021-11-16)
+
+### Bug fixes
+
+- c38f14c3ce3d0b: **postcss-normalize-url**: avoid changing parameter encoding
+
+### Chore
+- 31d5c07dc07a4: refactor: drop one-liner dependencies
+- 07172825ffbb4f4: **postcss-merge-longhand**: drop css-color-names dependency
 
 # 5.1.6 (2021-11-05)
 
