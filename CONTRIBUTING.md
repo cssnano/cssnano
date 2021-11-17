@@ -4,14 +4,6 @@ Thanks for contributing to cssnano! We appreciate any contributions,
 large or small. If you've contributed to cssnano we would recommend that
 you add yourself to the list of contributors, found in [CONTRIBUTORS.md].
 
-To do this, after you've set up the development environment, run:
-
-```
-yarn all-contributors
-```
-
-And follow the on-screen prompts.
-
 [CONTRIBUTORS.md]: https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md
 
 ## How can I contribute to cssnano's code?
