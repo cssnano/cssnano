@@ -2,7 +2,6 @@
   "name": "cssnano-core",
   "private": true,
   "scripts": {
-    "all-contributors": "all-contributors add",
     "lint": "eslint . --cache --ignore-path .gitignore --ext .js,.mjs",
     "fixlint": "yarn lint -- --fix",
     "prepare": "yarn workspaces run prepare",
@@ -24,7 +23,6 @@
     "@babel/core": "^7.15.5",
     "@babel/preset-env": "^7.15.6",
     "@changesets/cli": "^2.18.0",
-    "all-contributors-cli": "^6.20.0",
     "babel-jest": "^27.2.1",
     "babel-plugin-add-module-exports": "^1.0.2",
     "browserslist": "^4.17.4",
