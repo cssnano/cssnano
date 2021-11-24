@@ -1,9 +1,23 @@
+import zlib from 'zlib';
 import prettyBytes from 'pretty-bytes';
 import postcss from 'postcss';
-import { sync as gzip } from 'gzip-size';
-import { sync as brotli } from 'brotli-size';
 import Table from 'cli-table3';
 import nano from 'cssnano';
+
+/* Returns the size of the gzipped input */
+function gzip(input) {
+  return zlib.gzipSync(input, { level: 9 }).byteLength;
+}
+
+/* Returns the size of the brotli-compressed input */
+function brotli(input) {
+  return zlib.brotliCompressSync(input, {
+    params: {
+      [zlib.constants.BROTLI_PARAM_QUALITY]: zlib.constants.BROTLI_MAX_QUALITY,
+      [zlib.constants.BROTLI_PARAM_SIZE_HINT]: getBinarySize(input),
+    },
+  }).byteLength;
+}
 
 const getBinarySize = (string) => {
   return Buffer.byteLength(string, 'utf8');
