@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "cross-env BABEL_ENV=publish babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\" && node script/buildListStyleType.js",
+    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\" && node script/buildListStyleType.js",
     "prepare": "yarn build"
   },
   "keywords": [
