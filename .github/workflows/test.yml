@@ -49,7 +49,7 @@ jobs:
         run: yarn --frozen-lockfile
 
       - name: Run tests with coverage
-        run: yarn test:coverage --ci --reporters="default" --reporters="jest-junit"
+        run: yarn test:coverage --ci --reporters="default"
 
       - name: Publish code coverage report
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '16'
