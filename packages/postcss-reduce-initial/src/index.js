@@ -6,7 +6,7 @@ import toInitial from '../data/toInitial.json';
 const initial = 'initial';
 
 // In most of the browser including chrome the initial for `writing-mode` is not `horizontal-tb`. Ref https://github.com/cssnano/cssnano/pull/905
-const defaultIgnoreProps = ['writing-mode'];
+const defaultIgnoreProps = ['writing-mode', 'transform-box'];
 
 function pluginCreator() {
   return {
@@ -25,11 +25,11 @@ function pluginCreator() {
         OnceExit(css) {
           css.walkDecls((decl) => {
             const lowerCasedProp = decl.prop.toLowerCase();
-            const ignoreProp = defaultIgnoreProps.concat(
-              resultOpts.ignore || []
+            const ignoreProp = new Set(
+              defaultIgnoreProps.concat(resultOpts.ignore || [])
             );
 
-            if (ignoreProp.includes(lowerCasedProp)) {
+            if (ignoreProp.has(lowerCasedProp)) {
               return;
             }
 

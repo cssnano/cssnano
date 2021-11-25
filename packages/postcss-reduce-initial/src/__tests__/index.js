@@ -97,6 +97,21 @@ test(
   processCSS('h1{min-height:initial}', 'h1{min-height:auto}')
 );
 
+/* The correct initial value is `repeat`,
+   but MDN has the wrong data so  */
+test(
+  'preserve no-repeat mask-repeat',
+  passthroughCSS('div{mask-repeat:no-repeat}')
+);
+
+test(
+  'transform initial mask-repeat to repeat',
+  processCSS('div{mask-repeat:initial}', 'div{mask-repeat:repeat}')
+);
+
+/* Skip transform-box for browser compatibility  */
+test('preserve transform-box', passthroughCSS('div{transform-box:view-box}'));
+
 test(
   'should ignore the data present in the ignore options',
   passthroughCSS('h1{min-height:initial}', { ignore: ['min-height'] })
