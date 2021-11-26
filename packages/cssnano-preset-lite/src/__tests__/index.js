@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import { processCSSWithPresetFactory } from '../../../../util/testHelpers';
 import preset from '..';
 
@@ -60,3 +61,4 @@ test(
     ''
   )
 );
+test.run();

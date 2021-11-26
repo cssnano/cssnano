@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import postcss from 'postcss';
 import nano from '..';
 
@@ -41,5 +43,6 @@ test('it should compress whitespace after node.clone()', () => {
 
   return processor
     .process(fixture, { from: undefined })
-    .then((r) => expect(r.css).toBe(expected));
+    .then((r) => assert.is(r.css, expected));
 });
+test.run();

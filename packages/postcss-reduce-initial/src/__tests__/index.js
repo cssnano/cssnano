@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import fromInitial from '../../data/fromInitial.json';
 import toInitial from '../../data/toInitial.json';
 import {
@@ -138,3 +139,4 @@ test(
   'should ignore the data present in the ignore options , toInitial #3',
   passthroughCSS('WRITING-MODE:horizontal-tb', { ignore: ['writing-mode'] })
 );
+test.run();

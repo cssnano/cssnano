@@ -1,10 +1,12 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import valueParser from 'postcss-value-parser';
 import getArguments from '../getArguments';
 
 test('should get arguments', () => {
   const parsed = valueParser('linear-gradient(to bottom left, red, blue)');
 
-  expect(getArguments(parsed.nodes[0])).toEqual([
+  assert.equal(getArguments(parsed.nodes[0]), [
     [
       {
         type: 'word',
@@ -48,3 +50,4 @@ test('should get arguments', () => {
     ],
   ]);
 });
+test.run();

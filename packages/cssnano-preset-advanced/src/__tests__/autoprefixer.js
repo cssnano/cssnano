@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import { processCSSWithPresetFactory } from '../../../../util/testHelpers';
 import preset from '..';
 
@@ -32,3 +33,4 @@ test(
   'should not remove outdated vendor prefixes if excluded',
   exclude('h1{-webkit-box-sizing:content-box;box-sizing:content-box}')
 );
+test.run();

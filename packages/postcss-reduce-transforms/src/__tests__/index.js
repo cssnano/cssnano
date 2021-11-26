@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -479,3 +480,4 @@ test(
   'should work with transform:rotate3d(0)',
   processCSS('h1{transform:rotate3d(0)}', 'h1{transform:rotate3d(0)}')
 );
+test.run();

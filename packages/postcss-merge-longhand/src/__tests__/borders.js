@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import trbl from '../lib/trbl';
 import { processCSSFactory } from '../../../../util/testHelpers';
 import plugin from '..';
@@ -1260,3 +1261,4 @@ test(
 );
 
 test('should handle empty border', processCSS('h1{border:;}', 'h1{border:;}'));
+test.run();

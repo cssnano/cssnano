@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import postcss from 'postcss';
 import magician from 'postcss-font-magician';
 import plugin from '../';
@@ -460,9 +462,9 @@ test(
 test('cssnano issue 39', () => {
   const css =
     'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
-  expect(
+  assert.not.throws(
     () => postcss([magician(), plugin()]).process(css, { from: undefined }).css
-  ).not.toThrow();
+  );
 });
 
 /*
@@ -511,9 +513,10 @@ test('should handle selectors from other plugins', () => {
 .6f6b__ok {
   padding: 4px;
 }`;
-  expect(
-    postcss([toModules, plugin]).process(css, { from: undefined }).css
-  ).toBe(expected);
+  assert.is(
+    postcss([toModules, plugin]).process(css, { from: undefined }).css,
+    expected
+  );
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
@@ -536,3 +539,4 @@ test(
   'should handle attribute selector and namespace #3',
   passthroughCSS('div[att] {  }')
 );
+test.run();

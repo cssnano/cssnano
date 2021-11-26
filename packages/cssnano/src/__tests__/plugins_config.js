@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import postcss from 'postcss';
 import litePreset from 'cssnano-preset-lite';
 import autoprefixer from 'autoprefixer';
@@ -18,7 +20,8 @@ test('should run the plugins in the preset', () => {
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example{display:grid;transition:all .5s;user-select:none;background:linear-gradient(to bottom,white,black)}`
       );
     });
@@ -39,7 +42,8 @@ test('should run the plugin passed through the cssnano config.plugins', () => {
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example{display:grid;transition:all .5s;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;background:linear-gradient(to bottom,white,black)}`
       );
     });
@@ -54,7 +58,8 @@ test('should run the plugin when plugin module is being used with no array insid
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}`
       );
     });
@@ -68,7 +73,8 @@ test('should run the plugin when no preset is mentioned', () => {
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 `
       );
@@ -83,7 +89,8 @@ test('should run the plugin when no preset is mentioned with string plugin name'
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 `
       );
@@ -98,7 +105,8 @@ test('should run the plugin when no preset is mentioned with string plugin name 
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 `
       );
@@ -114,7 +122,8 @@ test('should run the plugin with string plugin name as in array', () => {
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}`
       );
     });
@@ -128,7 +137,8 @@ test('should run the plugin when no preset is mentioned with string plugin name 
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 `
       );
@@ -146,7 +156,8 @@ test('should run the plugin with string plugin name as in array and options', ()
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}`
       );
     });
@@ -162,7 +173,8 @@ test('should run the plugin when preset is empty array and plugin module as in a
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 `
       );
@@ -178,7 +190,8 @@ test('should run the plugin plugin module as in array in plugins array', () => {
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}`
       );
     });
@@ -195,7 +208,8 @@ test('should run the plugin plugin module as in array in plugins array with empt
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}`
       );
     });
@@ -209,7 +223,8 @@ test('should run the plugin when preset is empty array and plugin module as in n
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 `
       );
@@ -224,7 +239,8 @@ test('should run the plugin when preset is empty array and plugin as string as i
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 `
       );
@@ -241,7 +257,8 @@ test('should run the plugin when preset is empty array', () => {
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 `
       );
@@ -258,7 +275,8 @@ test('should run the plugin when preset is empty array with string as a plugin',
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 `
       );
@@ -275,7 +293,8 @@ test('should run the plugin when preset is empty array with options', () => {
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example { user-select: none; }
 `
       );
@@ -293,7 +312,8 @@ test('should run the plugin when preset is empty array with options and string a
       { preset: [], plugins: [['autoprefixer', { add: false }]] }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example { user-select: none; }
 `
       );
@@ -308,9 +328,11 @@ test('should run the plugin when preset is empty array with options and string a
       { from: undefined }
     )
     .then((result) => {
-      expect(result.css).toBe(
+      assert.is(
+        result.css,
         `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 `
       );
     });
 });
+test.run();

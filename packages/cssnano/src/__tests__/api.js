@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import postcss from 'postcss';
 import nano from '..';
 
@@ -7,7 +9,7 @@ function pluginMacro(instance) {
 
   return () =>
     instance.process(css, { from: undefined }).then((result) => {
-      expect(result.css).toBe(min);
+      assert.is(result.css, min);
     });
 }
 
@@ -25,8 +27,10 @@ test('should work with sourcemaps', () => {
   return postcss([nano])
     .process('h1{z-index:1}', { from: undefined, map: { inline: true } })
     .then(({ css }) => {
-      expect(/sourceMappingURL=data:application\/json;base64/.test(css)).toBe(
+      assert.is(
+        /sourceMappingURL=data:application\/json;base64/.test(css),
         true
       );
     });
 });
+test.run();

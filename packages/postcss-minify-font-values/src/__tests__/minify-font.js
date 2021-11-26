@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import minifyFont from '../lib/minify-font';
 
 const tests = [
@@ -32,6 +34,7 @@ const tests = [
 
 test('minify-font', () => {
   tests.forEach(({ fixture, options, expected }) => {
-    expect(minifyFont(fixture, options)).toEqual(expected);
+    assert.equal(minifyFont(fixture, options), expected);
   });
 });
+test.run();

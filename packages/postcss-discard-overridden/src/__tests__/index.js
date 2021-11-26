@@ -1,4 +1,6 @@
 import fs from 'fs';
+import * as assert from 'uvu/assert';
+import { test } from 'uvu';
 import postcss from 'postcss';
 import { diffLines } from 'diff';
 import pc from 'picocolors';
@@ -57,7 +59,7 @@ function exec(input) {
           throw getDiff(result.css, output);
         }
 
-        expect(result.warnings().length).toBe(0);
+        assert.is(result.warnings().length, 0);
       });
 }
 
@@ -67,3 +69,4 @@ test(
   'overridden @counter-style should be discarded correctly',
   exec('counter-style')
 );
+test.run();

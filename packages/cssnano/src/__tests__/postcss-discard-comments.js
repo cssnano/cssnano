@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCss from './_processCss';
 
 test(
@@ -117,3 +118,4 @@ test(
   "should pass through when it doesn't find a comment",
   processCss('h1{color:#000;font-weight:700}', 'h1{color:#000;font-weight:700}')
 );
+test.run();

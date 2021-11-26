@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -158,3 +159,4 @@ test(
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+test.run();

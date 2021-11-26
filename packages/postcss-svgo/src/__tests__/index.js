@@ -1,4 +1,6 @@
 import { readFileSync as file } from 'fs';
+import * as assert from 'uvu/assert';
+import { test } from 'uvu';
 import postcss from 'postcss';
 import filters from 'pleeease-filters';
 import plugin from '../';
@@ -168,7 +170,7 @@ test('should not warn on "escaped-quotes" svgs', async () => {
   const css =
     'h1{background-image:url("data:image/svg+xml,<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"400\\" height=\\"400\\" fill-opacity=\\".25\\" ><rect x=\\"200\\" width=\\"200\\" height=\\"200\\" /><rect y=\\"200\\" width=\\"200\\" height=\\"200\\" /></svg>")}';
   const result = await postcss(plugin()).process(css, { from: undefined });
-  expect(result.messages.length).toBe(0);
+  assert.is(result.messages.length, 0);
 });
 
 test(
@@ -233,8 +235,8 @@ test('should warn on SVG containing unclosed tags', async () => {
   const css =
     'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
   const result = await postcss(plugin()).process(css, { from: undefined });
-  expect(result.messages.length).toBe(1);
-  expect(result.messages[0].type).toBe('warning');
+  assert.is(result.messages.length, 1);
+  assert.is(result.messages[0].type, 'warning');
 });
 
 test('should only warn with svg data uri', async () => {
@@ -243,7 +245,7 @@ test('should only warn with svg data uri', async () => {
        url('data:image/svg+xml;charset=utf-8,<svg></svg>') format("svg");
   }`;
   const result = await postcss(plugin()).process(css, { from: undefined });
-  expect(result.messages.length).toBe(0);
+  assert.is(result.messages.length, 0);
 });
 
 test(
@@ -280,7 +282,8 @@ test(
 test('should not crash on malformed urls when encoded', () => {
   const svg = encode(file(`${__dirname}/border.svg`, 'utf-8'));
 
-  expect(() => decode(svg)).not.toThrow();
+  assert.not.throws(() => decode(svg));
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+test.run();

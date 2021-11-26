@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import plugin from '../';
 import {
   usePostCSSPlugin,
@@ -21,7 +23,7 @@ function sourceTest(origin) {
         );
       }
 
-      return expect(source).toBe(origin);
+      return assert.is(source, origin);
     },
   };
 }
@@ -83,3 +85,4 @@ test(
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+test.run();

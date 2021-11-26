@@ -7,8 +7,8 @@
     "prepare": "yarn workspaces run prepare",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "yarn lint",
-    "test:only": "jest",
-    "test:coverage": "jest --coverage",
+    "test:only": "uvu -r @babel/register packages \"__tests__.*\\.js$\"",
+    "test:coverage": "c8 yarn test:only",
     "test": "yarn test:coverage",
     "all-publish": "yarn prepare && yarn changeset publish"
   },
@@ -22,10 +22,11 @@
     "@babel/cli": "^7.16.0",
     "@babel/core": "^7.16.0",
     "@babel/plugin-transform-modules-commonjs": "^7.16.0",
+    "@babel/register": "^7.16.0",
     "@changesets/cli": "^2.18.0",
-    "babel-jest": "^27.3.1",
     "babel-plugin-add-module-exports": "^1.0.2",
     "browserslist": "^4.17.4",
+    "c8": "^7.10.0",
     "diff": "^5.0.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
@@ -34,7 +35,7 @@
     "eslint-plugin-react": "^7.25.1",
     "glob": "^7.1.4",
     "html-to-text": "^8.0.0",
-    "jest": "^27.3.1",
+    "nanospy": "^0.4.0",
     "node-fetch": "^2.6.1",
     "picocolors": "^1.0.0",
     "pleeease-filters": "^4.0.0",
@@ -44,7 +45,8 @@
     "postcss-simple-vars": "^6.0.1",
     "postcss-value-parser": "^4.1.0",
     "prettier": "^2.3.2",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "uvu": "^0.5.2"
   },
   "browserslist": {
     "chrome58": [

@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCss from './_processCss';
 
 test(
@@ -87,3 +88,4 @@ test(
     'h1{-webkit-transform:translateZ(0)}'
   )
 );
+test.run();

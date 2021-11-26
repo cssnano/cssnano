@@ -1,8 +1,11 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import minifyWeight from '../lib/minify-weight';
 
 test('minify-weight', () => {
-  expect(minifyWeight('normal')).toBe('400');
-  expect(minifyWeight('bold')).toBe('700');
-  expect(minifyWeight('lighter')).toBe('lighter');
-  expect(minifyWeight('bolder')).toBe('bolder');
+  assert.is(minifyWeight('normal'), '400');
+  assert.is(minifyWeight('bold'), '700');
+  assert.is(minifyWeight('lighter'), 'lighter');
+  assert.is(minifyWeight('bolder'), 'bolder');
 });
+test.run();

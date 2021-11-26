@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import {
   processCSSFactory,
   processCSSWithPresetFactory,
@@ -101,3 +102,4 @@ test(
     'div{border-radius:var(border-rad, )}'
   )
 );
+test.run();

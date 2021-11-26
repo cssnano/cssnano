@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCss from './_processCss';
 
 test(
@@ -46,3 +47,4 @@ test(
     'h1{display:block}@media print{h1{display:block}}'
   )
 );
+test.run();

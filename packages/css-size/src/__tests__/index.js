@@ -1,10 +1,10 @@
 import { readFileSync as read } from 'fs';
 import { spawn } from 'child_process';
 import path from 'path';
+import * as assert from 'uvu/assert';
+import { test } from 'uvu';
 import colors from 'colors/safe';
 import size, { table, numeric } from '../';
-
-jest.setTimeout(60000);
 
 let noopProcessorPath = path.resolve(__dirname, '../../processors/noop.js');
 
@@ -36,24 +36,24 @@ function setup(args) {
 test('cli', () => {
   return setup(['test.css']).then((results) => {
     let out = results[0];
-    expect(!!~out.indexOf('43 B')).toBe(true);
-    expect(!!~out.indexOf('34 B')).toBe(true);
-    expect(!!~out.indexOf('9 B')).toBe(true);
-    expect(!!~out.indexOf('79.07%')).toBe(true);
+    assert.is(!!~out.indexOf('43 B'), true);
+    assert.is(!!~out.indexOf('34 B'), true);
+    assert.is(!!~out.indexOf('9 B'), true);
+    assert.is(!!~out.indexOf('79.07%'), true);
   });
 });
 
 test('cli with processor argument', () => {
   return setup(['-p', noopProcessorPath, 'test.css']).then((results) => {
     let out = results[0];
-    expect(!!~out.indexOf('100%')).toBe(true);
+    assert.is(!!~out.indexOf('100%'), true);
   });
 });
 
 test('api', () => {
   const input = path.join(__dirname, 'test.css');
   return size(read(input, 'utf-8'), { from: input }).then((result) => {
-    expect(result).toEqual({
+    assert.equal(result, {
       uncompressed: {
         original: '23 B',
         processed: '14 B',
@@ -79,7 +79,8 @@ test('api', () => {
 test('table', () => {
   const input = path.join(__dirname, 'test.css');
   return table(read(input, 'utf-8'), { from: input }).then((result) => {
-    expect(colors.stripColors(result)).toBe(
+    assert.is(
+      colors.stripColors(result),
       `
 ┌────────────┬──────────────┬────────┬────────┐
 │            │ Uncompressed │ Gzip   │ Brotli │
@@ -99,7 +100,7 @@ test('table', () => {
 test('numeric', () => {
   const input = path.join(__dirname, 'test.css');
   return numeric(read(input, 'utf-8'), { from: input }).then((result) => {
-    expect(result).toEqual({
+    assert.equal(result, {
       uncompressed: {
         original: 23,
         processed: 14,
@@ -127,6 +128,7 @@ test('api options', () => {
     discardUnused: false,
     from: undefined,
   }).then((result) => {
-    expect(result.gzip.processed).toBe('67 B');
+    assert.is(result.gzip.processed, '67 B');
   });
 });
+test.run();

@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import postcss from 'postcss';
 import encode from '../lib/encode';
 import {
@@ -368,16 +370,20 @@ test('should not generate same ident when plugin instance is reused', () => {
       { from: undefined }
     ),
   ]).then(([result1, result2, result3, result4]) => {
-    expect(result1.css).toBe(
+    assert.is(
+      result1.css,
       '@keyframes a{0%{color:#fff}to{color:#000}}.one{animation-name:a}'
     );
-    expect(result2.css).toBe(
+    assert.is(
+      result2.css,
       '@KEYFRAMES a{0%{color:#fff}to{color:#000}}.one{animation-name:a}'
     );
-    expect(result3.css).toBe(
+    assert.is(
+      result3.css,
       '@keyframes b{0%{opacity:1}to{opacity:0}}.two{animation-name:b}'
     );
-    expect(result4.css).toBe(
+    assert.is(
+      result4.css,
       '@KEYFRAMES b{0%{opacity:1}to{opacity:0}}.two{animation-name:b}'
     );
   });
@@ -395,7 +401,7 @@ test('encoder', () => {
 
     let indexes = cache.filter((c) => c === encoded);
 
-    expect(indexes.length).toBe(1);
+    assert.is(indexes.length, 1);
   });
 });
 
@@ -420,8 +426,9 @@ test('encoder gen spec', () => {
     13847860: 'aaaaa',
   };
   Object.keys(edgeCaseList).forEach((num) => {
-    expect(encode(null, num)).toBe(edgeCaseList[num]);
+    assert.is(encode(null, num), edgeCaseList[num]);
   });
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+test.run();

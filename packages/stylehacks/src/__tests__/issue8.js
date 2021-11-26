@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import postcss, { decl } from 'postcss';
 import stylehacks from '..';
 
@@ -14,5 +16,6 @@ insertZoom.postcss = true;
 test('should remove star hack from plugins like lost', () => {
   return postcss([insertZoom(), stylehacks()])
     .process('h1{}', { env: 'ie8', from: undefined })
-    .then((result) => expect(result.css).toBe('h1{}'));
+    .then((result) => assert.is(result.css, 'h1{}'));
 });
+test.run();

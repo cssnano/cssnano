@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import vars from 'postcss-simple-vars';
 import {
   usePostCSSPlugin,
@@ -238,3 +239,4 @@ test(
     ':root{ box-shadow:inset 0 -10px 12px 0 red, inset 0 0 5px 0 red; }'
   )
 );
+test.run();
