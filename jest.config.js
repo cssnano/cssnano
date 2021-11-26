@@ -2,8 +2,8 @@ module.exports = {
   testEnvironment: 'node',
   collectCoverageFrom: [
     'packages/*/src/**/*.js',
-    'packages/postcss-reduce-initial/src/script/lib/io.mjs',
-    'packages/postcss-reduce-initial/src/script/lib/mdnCssProps.mjs',
+    'packages/postcss-reduce-initial/script/lib/io.mjs',
+    'packages/postcss-reduce-initial/script/lib/mdnCssProps.mjs',
     '!packages/cssnano/src/__tests__/_processCss.js',
     '!packages/cssnano/src/__tests__/_webpack.config.js',
   ],
