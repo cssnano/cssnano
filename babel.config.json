@@ -1,5 +1,4 @@
 {
-    "targets": { "node": "10.13.0" },
-    "presets": ["@babel/preset-env"],
-    "plugins": ["add-module-exports"]
+  "targets": { "node": "10.13.0" },
+  "plugins": ["@babel/plugin-transform-modules-commonjs", "add-module-exports"]
 }
