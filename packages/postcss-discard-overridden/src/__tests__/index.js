@@ -1,7 +1,7 @@
 import fs from 'fs';
 import postcss from 'postcss';
 import { diffLines } from 'diff';
-import chalk from 'chalk';
+import pc from 'picocolors';
 import plugin from '../';
 
 function getDiff(left, right) {
@@ -13,7 +13,7 @@ function getDiff(left, right) {
         .replace('\n', '\u00b6\n')
         .replace('\ufeff', '[[BOM]]');
 
-      msg.push(chalk[item.added ? 'green' : 'red'](text));
+      msg.push(pc[item.added ? 'green' : 'red'](text));
     } else {
       let value = item.value.replace('\ufeff', '[[BOM]]');
       let lines = value.split('\n');
@@ -27,7 +27,7 @@ function getDiff(left, right) {
         lines.splice(
           Math.floor(keepLines / 2),
           omitLines,
-          chalk.gray('(...' + omitLines + ' lines omitted...)')
+          pc.gray('(...' + omitLines + ' lines omitted...)')
         );
       }
 
