@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.1.8 (2021-11-27)
+
+### Bug fixes
+
+- fix(postcss-reduce-initial): update initial values data ([#1242](https://github.com/cssnano/cssnano/pull/1242)) ([c6e9f00b785](https://github.com/cssnano/cssnano/commit/c6e9f00b785d85df0d92a110ec95a14fd98adcc9))
+- Updated dependencies
+  - cssnano-preset-default@5.1.8
+
 # 5.1.7 (2021-11-16)
 
 ### Bug fixes
@@ -7,6 +15,7 @@
 - c38f14c3ce3d0b: **postcss-normalize-url**: avoid changing parameter encoding
 
 ### Chore
+
 - 31d5c07dc07a4: refactor: drop one-liner dependencies
 - 07172825ffbb4f4: **postcss-merge-longhand**: drop css-color-names dependency
 

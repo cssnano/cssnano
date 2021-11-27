@@ -1,7 +1,10 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+## 5.0.4 (2021-11-27)
+
+### Chore
+
+- chore(css-size): remove some dependencies ([#1239](https://github.com/cssnano/cssnano/pull/1239)) ([04b1c71b7c3](https://github.com/cssnano/cssnano/commit/04b1c71b7c33ce5a45f3b3792530bfb6bf28d3df))
 
 ## [5.0.3](https://github.com/cssnano/cssnano/compare/css-size@5.0.0...css-size@5.0.3) (2021-05-19)
 

@@ -8,6 +8,14 @@ layout: Page
 
 ## Change Log
 
+### 5.0.12 (2021-11-27)
+
+#### Bug fixes
+
+- fix(postcss-reduce-initial): update initial values data ([#1242](https://github.com/cssnano/cssnano/pull/1242)) ([c6e9f00b785](https://github.com/cssnano/cssnano/commit/c6e9f00b785d85df0d92a110ec95a14fd98adcc9))
+- Updated dependencies
+  - cssnano-preset-default\@5.1.8
+
 
 ## 5.0.11 (2021-11-16)
 
