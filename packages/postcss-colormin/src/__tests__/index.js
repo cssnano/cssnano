@@ -289,6 +289,11 @@ test(
 );
 
 test(
+  'should passthrough css variables named as a color',
+  passthroughCSS('h1{color:var(--white)}')
+);
+
+test(
   'should passthrough env function',
   passthroughDefault('h1{color:rgb(env(foo))}')
 );
