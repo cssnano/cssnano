@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCss from './_processCss';
 
 test(
@@ -162,3 +163,4 @@ test(
     '@document url(http://www.w3.org/),url-prefix(http://www.w3.org/Style/){body{font-size:2em}}'
   )
 );
+test.run();

@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import { reduceInitial, validate } from './mdnCssProps.mjs';
 
 export function handleError(error) {
@@ -16,8 +15,8 @@ export function write(fileFunc, filePaths, data, key) {
   return data;
 }
 
-export async function generate(fileFunc, filePaths, jsonURL) {
-  return fetch(jsonURL)
+export async function generate(fetchFunc, fileFunc, filePaths, jsonURL) {
+  return fetchFunc(jsonURL)
     .then((result) => result.json())
     .then(reduceInitial)
     .then(validate)

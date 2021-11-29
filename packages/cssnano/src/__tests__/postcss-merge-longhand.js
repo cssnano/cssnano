@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCss from './_processCss';
 
 test(
@@ -217,3 +218,4 @@ test(
     'h1{padding:10px 15px 20px 25px;padding-left:var(--variable);padding-top:var(--variable)}'
   )
 );
+test.run();

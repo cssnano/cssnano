@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import { processCSSFactory } from '../../../../util/testHelpers';
 import plugin from '..';
 
@@ -196,3 +197,4 @@ test(
   'should handle empty columns',
   processCSS('h1{columns:;}', 'h1{columns:;}')
 );
+test.run();

@@ -1,7 +1,7 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import { integrationTests, loadPreset } from '../../../../util/testHelpers.js';
 import preset from '..';
-
-jest.setTimeout(60000);
 
 test(
   'should correctly handle the framework tests',
@@ -15,10 +15,11 @@ function excludeProcessor(options) {
     loadPreset(preset(options))
       .process(input, { from: undefined })
       .then(({ css }) => {
-        expect(css).toBe(input);
+        assert.is(css, input);
       });
 }
 
 test('exclude zindex', excludeProcessor({ zindex: false }));
 
 test('exclude zindex #1', excludeProcessor({ zindex: { exclude: true } }));
+test.run();

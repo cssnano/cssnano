@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -340,3 +341,4 @@ test(
     env: 'chrome62',
   })
 );
+test.run();

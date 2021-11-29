@@ -1,4 +1,5 @@
 import { writeFile } from 'fs';
+import fetch from 'node-fetch';
 import { generate } from './lib/io.mjs';
 
 const url =
@@ -9,7 +10,7 @@ const paths = {
   toInitial: new URL('../data/toInitial.json', import.meta.url),
 };
 
-generate(writeFile, paths, url).catch((error) => {
+generate(fetch, writeFile, paths, url).catch((error) => {
   console.error(error);
   process.exit(1);
 });

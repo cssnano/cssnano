@@ -1,7 +1,9 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import min from '../minifyColor';
 
 function isEqual(input, output) {
-  return () => expect(min(input)).toBe(output);
+  return () => assert.is(min(input), output);
 }
 
 test('should lowercase keywords', isEqual('RED', 'red'));
@@ -141,31 +143,36 @@ test(
 );
 
 test('should pass through if not recognised', () => {
-  expect(min('Unrecognised')).toBe('Unrecognised');
-  expect(min('inherit')).toBe('inherit');
+  assert.is(min('Unrecognised'), 'Unrecognised');
+  assert.is(min('inherit'), 'inherit');
 });
 
 test('should convert to hex4', () => {
-  expect(min('#aabbcc33', { supportsAlphaHex: true })).toBe('#abc3');
-  expect(min('transparent', { supportsAlphaHex: true })).toBe('#0000');
-  expect(min('rgb(119,119,119,0.2)', { supportsAlphaHex: true })).toBe('#7773');
-  expect(min('hsla(0,0%,100%,.4)', { supportsAlphaHex: true })).toBe('#fff6');
+  assert.is(min('#aabbcc33', { supportsAlphaHex: true }), '#abc3');
+  assert.is(min('transparent', { supportsAlphaHex: true }), '#0000');
+  assert.is(min('rgb(119,119,119,0.2)', { supportsAlphaHex: true }), '#7773');
+  assert.is(min('hsla(0,0%,100%,.4)', { supportsAlphaHex: true }), '#fff6');
 });
 
 test('should convert to hex8', () => {
-  expect(min('rgba(128, 128, 128, 0.5)', { supportsAlphaHex: true })).toBe(
+  assert.is(
+    min('rgba(128, 128, 128, 0.5)', { supportsAlphaHex: true }),
     '#80808080'
   );
-  expect(min('hsla(180, 100%, 50%, 0.5)', { supportsAlphaHex: true })).toBe(
+  assert.is(
+    min('hsla(180, 100%, 50%, 0.5)', { supportsAlphaHex: true }),
     '#00ffff80'
   );
 });
 
 test('should not convert to alpha hex since the conversion is not lossless', () => {
-  expect(min('rgba(0, 0, 0, 0.075)', { supportsAlphaHex: true })).toBe(
+  assert.is(
+    min('rgba(0, 0, 0, 0.075)', { supportsAlphaHex: true }),
     'rgba(0,0,0,.075)'
   );
-  expect(min('hsla(0, 0%, 50%, 0.515)', { supportsAlphaHex: true })).toBe(
+  assert.is(
+    min('hsla(0, 0%, 50%, 0.515)', { supportsAlphaHex: true }),
     'hsla(0,0%,50%,.515)'
   );
 });
+test.run();

@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -41,7 +43,7 @@ function testRemovals(fixture, expected, removedSelectors) {
         }
       });
 
-      expect(result.css).toBe(expected);
+      assert.is(result.css, expected);
     });
 }
 
@@ -92,3 +94,4 @@ test(
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+test.run();

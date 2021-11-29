@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import { processCSSFactory } from '../../../../util/testHelpers';
 import plugin from '..';
 
@@ -332,3 +333,4 @@ addTests(
     expected: (prop) => `h1{${prop}:;}`,
   }
 );
+test.run();

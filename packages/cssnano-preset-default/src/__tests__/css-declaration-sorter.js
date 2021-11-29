@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import { processCSSWithPresetFactory } from '../../../../util/testHelpers';
 import preset from '..';
 
@@ -148,3 +149,4 @@ test(
     'a{border:0;border-top:3px solid}'
   )
 );
+test.run();

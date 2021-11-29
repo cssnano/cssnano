@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCss from './_processCss';
 
 test(
@@ -7,3 +8,4 @@ test(
     '@media only screen and (min-width:400px,min-height:500px){h1{color:#00f}}'
   )
 );
+test.run();

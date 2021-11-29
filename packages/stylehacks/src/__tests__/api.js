@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import postcss from 'postcss';
 import stylehacks from '../';
 import packageJson from '../../package.json';
@@ -6,7 +8,7 @@ function processCss(fixture, expected, options) {
   return () =>
     postcss(stylehacks(options))
       .process(fixture, { from: undefined })
-      .then(({ css }) => expect(css).toBe(expected));
+      .then(({ css }) => assert.is(css, expected));
 }
 
 function passthroughCss(fixture, options) {
@@ -20,7 +22,7 @@ test('can be used as a postcss plugin', () => {
     .use(stylehacks())
     .process(css, { from: undefined })
     .then((result) => {
-      expect(result.css).toBe('h1 { }');
+      assert.is(result.css, 'h1 { }');
     });
 });
 
@@ -29,7 +31,7 @@ test('can be used as a postcss plugin (2)', () => {
 
   return postcss([stylehacks()])
     .process(css, { from: undefined })
-    .then((result) => expect(result.css).toBe('h1 { }'));
+    .then((result) => assert.is(result.css, 'h1 { }'));
 });
 
 test('can be used as a postcss plugin (3)', () => {
@@ -38,12 +40,12 @@ test('can be used as a postcss plugin (3)', () => {
   return postcss([stylehacks])
     .process(css, { from: undefined })
     .then((result) => {
-      expect(result.css).toBe('h1 { }');
+      assert.is(result.css, 'h1 { }');
     });
 });
 
 test('should use the postcss plugin api', () => {
-  expect(stylehacks().postcssPlugin).toBe(packageJson.name);
+  assert.is(stylehacks().postcssPlugin, packageJson.name);
 });
 
 test('should have a separate detect method', () => {
@@ -63,7 +65,7 @@ test('should have a separate detect method', () => {
 
   return postcss(plugin)
     .process('h1 { _color: red; =color: black }', { from: undefined })
-    .then(() => expect(counter).toBe(2));
+    .then(() => assert.is(counter, 2));
 });
 
 test('should have a separate detect method (2)', () => {
@@ -83,7 +85,7 @@ test('should have a separate detect method (2)', () => {
 
   return postcss(plugin)
     .process('h1 { _color: red; =color: black }', { from: undefined })
-    .then(() => expect(counter).toBe(0));
+    .then(() => assert.is(counter, 0));
 });
 
 test(
@@ -134,3 +136,4 @@ test(
     }`
   )
 );
+test.run();

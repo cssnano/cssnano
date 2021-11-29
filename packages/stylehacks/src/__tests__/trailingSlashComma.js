@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCSS from './_processCSS';
 
 test(
@@ -22,3 +23,4 @@ test(
   'ie 5.5-7 trailing slash hack (uppercase)',
   processCSS('H1\\ { COLOR: RED }', '', { target: 'ie6', unaffected: 'ie8' })
 );
+test.run();

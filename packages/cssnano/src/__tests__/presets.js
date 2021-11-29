@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import postcss from 'postcss';
 import advancedPreset from 'cssnano-preset-advanced';
 import defaultPreset from 'cssnano-preset-default';
@@ -9,7 +11,7 @@ test('should accept an invoked preset', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{content:"©"}`, { from: undefined })
     .then((result) => {
-      expect(result.css).toBe(`@charset "utf-8";h1{content:"©"}`);
+      assert.is(result.css, `@charset "utf-8";h1{content:"©"}`);
     });
 });
 
@@ -19,7 +21,7 @@ test('should accept a non-invoked preset', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{content:"©"}`, { from: undefined })
     .then((result) => {
-      expect(result.css).toBe(`@charset "utf-8";h1{content:"©"}`);
+      assert.is(result.css, `@charset "utf-8";h1{content:"©"}`);
     });
 });
 
@@ -29,7 +31,7 @@ test('should accept a default preset string', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{content:"©"}`, { from: undefined })
     .then((result) => {
-      expect(result.css).toBe(`@charset "utf-8";h1{content:"©"}`);
+      assert.is(result.css, `@charset "utf-8";h1{content:"©"}`);
     });
 });
 
@@ -39,7 +41,7 @@ test('should accept an invoked preset other than default', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      expect(result.css).toBe(`h1{z-index:15}`);
+      assert.is(result.css, `h1{z-index:15}`);
     });
 });
 
@@ -49,7 +51,7 @@ test('should accept a preset string other than default', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      expect(result.css).toBe(`h1{z-index:1}`);
+      assert.is(result.css, `h1{z-index:1}`);
     });
 });
 
@@ -59,7 +61,7 @@ test('should accept a preset string other than default, with options', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      expect(result.css).toBe(`h1{z-index:15}`);
+      assert.is(result.css, `h1{z-index:15}`);
     });
 });
 
@@ -69,7 +71,7 @@ test('should accept a preset string other than default (sugar syntax)', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      expect(result.css).toBe(`h1{z-index:15}`);
+      assert.is(result.css, `h1{z-index:15}`);
     });
 });
 
@@ -79,7 +81,7 @@ test('should be able to exclude plugins', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      expect(result.css).toBe(`h1{z-index:10}`);
+      assert.is(result.css, `h1{z-index:10}`);
     });
 });
 
@@ -89,7 +91,7 @@ test('should be able to include plugins', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      expect(result.css).toBe(`h1{z-index:1}`);
+      assert.is(result.css, `h1{z-index:1}`);
     });
 });
 
@@ -99,18 +101,18 @@ test('should be able to exclude plugins (exclude syntax)', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      expect(result.css).toBe(`h1{z-index:10}`);
+      assert.is(result.css, `h1{z-index:10}`);
     });
 });
 
 test('should error on a bad preset', async () => {
-  expect.assertions(1);
-
   try {
     await postcss([cssnano({ preset: 'avanced' })])
       .process('h1{}', { from: undefined })
       .then(() => {});
+    assert.unreachable();
   } catch (error) {
-    expect(error).toBeDefined();
+    assert.ok(error);
   }
 });
+test.run();

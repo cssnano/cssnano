@@ -1,13 +1,11 @@
-import fetch from 'node-fetch';
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
+import { spy } from 'nanospy';
+import { Response } from 'node-fetch';
 import { handleError, toJSONString, write, generate } from '../lib/io.mjs';
 import testData from './sampleProperties.json';
 
-jest.mock('node-fetch');
-
-// Selectively bypass mocking to use a real Response obj
-const { Response } = jest.requireActual('node-fetch');
-
-describe('toJSONString', () => {
+test('should produce parsable JSON', () => {
   const rawData = {
     foo: 'bar',
     'baz-qux': 'quux',
@@ -16,43 +14,45 @@ describe('toJSONString', () => {
     'fred-plugh': 'xyzzy-thud',
   };
 
-  test('should produce parsable JSON', () => {
-    expect(JSON.parse(toJSONString(rawData))).toEqual(rawData);
-  });
+  assert.equal(JSON.parse(toJSONString(rawData)), rawData);
 });
 
-describe('Smoke tests', () => {
-  const data = {
-    fromInitial: { foo: 'bar', baz: 'qux' },
-    toInitial: { qux: 'baz', bar: 'foo' },
-  };
-  const paths = { fromInitial: '/foo.json', toInitial: '/bar.json' };
+const data = {
+  fromInitial: { foo: 'bar', baz: 'qux' },
+  toInitial: { qux: 'baz', bar: 'foo' },
+};
+const paths = { fromInitial: '/foo.json', toInitial: '/bar.json' };
 
-  test.each([
-    ['fromInitial', paths.fromInitial, data.fromInitial],
-    ['toInitial', paths.toInitial, data.toInitial],
-  ])('should write JSON file based on key (%p)', (key, path, expected) => {
-    const err = expect.any(Function);
-    const fileFunc = jest.fn();
-
+for (const [key, path, expected] of [
+  ['fromInitial', paths.fromInitial, data.fromInitial],
+  ['toInitial', paths.toInitial, data.toInitial],
+]) {
+  test(`should write JSON file based on key ${key}`, () => {
+    const fileFunc = spy();
     write(fileFunc, paths, data, key);
-
-    expect(fileFunc).toHaveBeenCalledWith(path, toJSONString(expected), err);
+    assert.is(fileFunc.calls[0][0], path);
+    assert.is(fileFunc.calls[0][1], toJSONString(expected));
   });
+}
 
-  test('should handle file operation errors', () => {
-    expect(handleError).not.toThrowError();
-    expect(() => handleError(new Error('something went wrong'))).toThrowError();
-  });
-
-  test('should make it through promise chain with sample data and write 2 files', async () => {
-    const fileFunc = jest.fn();
-    fetch.mockReturnValue(
-      Promise.resolve(new Response(JSON.stringify(testData)))
-    );
-
-    await generate(fileFunc, paths, 'https://example.com/properties.json');
-
-    expect(fileFunc).toHaveBeenCalledTimes(2);
-  });
+test('should handle file operation errors', () => {
+  assert.not.throws(handleError);
+  assert.throws(() => handleError(new Error('something went wrong')));
 });
+
+test('should make it through promise chain with sample data and write 2 files', async () => {
+  const fileFunc = spy();
+  const fetchFunc = spy(async () => {
+    return new Response(JSON.stringify(testData));
+  });
+  await generate(
+    fetchFunc,
+    fileFunc,
+    paths,
+    'https://example.com/properties.json'
+  );
+
+  assert.is(fileFunc.callCount, 2);
+});
+
+test.run();

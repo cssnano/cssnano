@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import { processCSSFactory } from '../../../../util/testHelpers';
 import plugin from '..';
 
@@ -45,3 +46,4 @@ test(
     namespace: false,
   })
 );
+test.run();

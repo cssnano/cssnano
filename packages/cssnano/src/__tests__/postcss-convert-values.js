@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCss from './_processCss';
 
 test(
@@ -108,3 +109,4 @@ test(
   'should support viewports units',
   processCss('h1,h2{letter-spacing:-0.1vmin}', 'h1,h2{letter-spacing:-.1vmin}')
 );
+test.run();

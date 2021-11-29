@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -780,3 +781,4 @@ test(
   'should order list-style 13',
   passthroughCSS('ul{list-style: unknown unset none}')
 );
+test.run();

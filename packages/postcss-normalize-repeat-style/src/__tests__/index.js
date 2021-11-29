@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import mappings from '../lib/map';
 import getData from '../../../../util/getData';
 import {
@@ -131,3 +132,4 @@ test(
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+test.run();

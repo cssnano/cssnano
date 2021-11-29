@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCss from './_processCss';
 
 test(
@@ -15,3 +16,4 @@ test(
     '@media screen and (max-width:500px){@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(358deg)}}}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}.box{animation-name:a}'
   )
 );
+test.run();

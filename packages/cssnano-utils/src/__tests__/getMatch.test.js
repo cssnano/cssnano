@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import getMatchFactory from '../getMatch';
 
 test('should get match', () => {
@@ -9,6 +11,7 @@ test('should get match', () => {
 
   const getMatch = getMatchFactory(matches);
 
-  expect(getMatch(['bar', 'foo'])).toBe('quux');
-  expect(getMatch(['quux'])).toBe(false);
+  assert.is(getMatch(['bar', 'foo']), 'quux');
+  assert.is(getMatch(['quux']), false);
 });
+test.run();

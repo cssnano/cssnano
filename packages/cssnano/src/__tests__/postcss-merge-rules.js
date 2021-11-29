@@ -1,6 +1,5 @@
+import { test } from 'uvu';
 import processCss from './_processCss';
-
-jest.setTimeout(60000);
 
 test(
   'should merge based on declarations',
@@ -270,3 +269,4 @@ test(
     '.box1{display:inline-block;display:block}.box2{display:inline-block}'
   )
 );
+test.run();

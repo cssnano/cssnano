@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCSS from './_processCSS';
 
 test(
@@ -45,3 +46,4 @@ test(
     0
   )
 );
+test.run();

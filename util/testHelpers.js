@@ -1,11 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import postcss from 'postcss';
+import * as assert from 'uvu/assert';
 import cssnano from '../packages/cssnano/src/index';
 
 export function usePostCSSPlugin(plugin) {
   return () => {
-    expect(plugin.postcssPlugin).toBeDefined();
+    assert.ok(plugin.postcssPlugin);
   };
 }
 
@@ -22,7 +23,7 @@ export function processCSSFactory(plugin) {
     processCSS = (fixture, expected, options) => {
       return () =>
         processor(fixture, options).then((result) => {
-          expect(result.css).toBe(expected);
+          assert.is(result.css, expected);
           return result;
         });
     };
@@ -41,7 +42,7 @@ export function processCSSFactory(plugin) {
     processCSS = (fixture, expected, options) => {
       return () =>
         processor(fixture, options).then((result) => {
-          expect(result.css).toBe(expected);
+          assert.is(result.css, expected);
           return result;
         });
     };
@@ -79,7 +80,8 @@ export function integrationTests(preset, integrations) {
       postcss([cssnano({ preset })])
         .process(css, { from: undefined })
         .then((result) => {
-          expect(result.css).toBe(
+          assert.is(
+            result.css,
             fs.readFileSync(`${integrations}/${framework}.css`, 'utf8')
           );
         })

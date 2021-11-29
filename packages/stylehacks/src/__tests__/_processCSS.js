@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import { processCSSFactory } from '../../../../util/testHelpers';
 import stylehacks from '..';
 
@@ -9,7 +11,8 @@ export default (fixture, expected, { target, unaffected }, warnings = 1) => {
       passthroughCSS(fixture, { env: target }),
       processCSS(fixture, expected, { env: unaffected }),
       processor(fixture, { lint: true, env: unaffected }).then((result) => {
-        expect(result.warnings().length).toBe(warnings);
+        assert.is(result.warnings().length, warnings);
       }),
     ]);
 };
+test.run();

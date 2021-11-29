@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import postcss from 'postcss';
 import vars from 'postcss-simple-vars';
 import comments from 'postcss-discard-comments'; // alias not loading correctly
@@ -604,7 +606,8 @@ test('should not crash when node.raws.value is null', () => {
     '$color: red; h1{box-shadow:inset 0 -10px 12px 0 $color, /* some comment */ inset 0 0 5px 0 $color;color:blue}h2{color:blue}';
   const res = postcss([vars(), comments(), plugin]).process(css).css;
 
-  expect(res).toBe(
+  assert.is(
+    res,
     'h1{box-shadow:inset 0 -10px 12px 0 red, inset 0 0 5px 0 red}h1,h2{color:blue}'
   );
 });
@@ -614,7 +617,8 @@ test('should not crash when node.raws.value is null (2)', () => {
     '#foo .bar { margin-left: auto ; margin-right: auto ; } #foo .qux { margin-right: auto ; }';
   const res = postcss([comments(), plugin]).process(css).css;
 
-  expect(res).toBe(
+  assert.is(
+    res,
     '#foo .bar{ margin-left:auto; } #foo .bar,#foo .qux{ margin-right:auto; }'
   );
 });
@@ -823,3 +827,4 @@ test(
     'h1{color:#001;color:#002;color:#003}h2{color:#001;color:#002}'
   )
 );
+test.run();

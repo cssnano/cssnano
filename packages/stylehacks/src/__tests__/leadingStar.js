@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCSS from './_processCSS';
 
 const opts = { target: 'ie7', unaffected: 'ie8' };
@@ -34,3 +35,4 @@ test(
   'should also handle @hacks (uppercase)',
   processCSS('h1 { @COLOR: red }', 'h1 {}', opts)
 );
+test.run();

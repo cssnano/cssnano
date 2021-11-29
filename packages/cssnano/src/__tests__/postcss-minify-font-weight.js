@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCss from './_processCss';
 
 test(
@@ -14,3 +15,4 @@ test(
   'should not update the font-style property',
   processCss('h1{font-style: normal}', 'h1{font-style:normal}')
 );
+test.run();

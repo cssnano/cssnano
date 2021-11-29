@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import minifyFamily from '../lib/minify-family';
 
 const tests = [
@@ -89,9 +91,8 @@ const tests = [
 ];
 
 test('minify-family', () => {
-  expect.assertions(tests.length);
-
   tests.forEach(({ fixture, options, expected }) => {
-    expect(minifyFamily(fixture, options)).toEqual(expected);
+    assert.equal(minifyFamily(fixture, options), expected);
   });
 });
+test.run();

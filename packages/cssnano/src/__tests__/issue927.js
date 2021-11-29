@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import postcss from 'postcss';
 import nano from '..';
 
@@ -27,7 +29,7 @@ test('it should compress the columns (old plugin syntax)', () => {
 
   return processor
     .process(fixture, { from: undefined })
-    .then((r) => expect(r.css).toBe(expected));
+    .then((r) => assert.is(r.css, expected));
 });
 
 test('it should compress the columns (new plugin syntax)', () => {
@@ -48,5 +50,6 @@ test('it should compress the columns (new plugin syntax)', () => {
 
   return processor
     .process(fixture, { from: undefined })
-    .then((r) => expect(r.css).toBe(expected));
+    .then((r) => assert.is(r.css, expected));
 });
+test.run();

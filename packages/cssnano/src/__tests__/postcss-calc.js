@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCss from './_processCss';
 
 test(
@@ -101,3 +102,4 @@ test(
     'h1{width:calc(100% - var(--my-var))}'
   )
 );
+test.run();

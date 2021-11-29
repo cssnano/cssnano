@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -221,3 +222,4 @@ test(
     `.hi{animation:hi 2s infinite linear}.ho{animation:ho 2s infinite linear}@-webkit-keyframes ho{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}@keyframes hi{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}`
   )
 );
+test.run();

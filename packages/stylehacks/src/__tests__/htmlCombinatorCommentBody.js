@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCSS from './_processCSS';
 
 test(
@@ -23,3 +24,4 @@ test(
     unaffected: 'ie8',
   })
 );
+test.run();

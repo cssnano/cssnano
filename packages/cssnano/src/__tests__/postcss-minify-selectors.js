@@ -1,3 +1,4 @@
+import { test } from 'uvu';
 import processCss from './_processCss';
 
 test(
@@ -194,3 +195,4 @@ test(
     '[a=":not( *.b, h1, h1 )"]{color:#00f}'
   )
 );
+test.run();
