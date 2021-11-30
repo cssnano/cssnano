@@ -30,7 +30,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "postcss-value-parser": "^4.1.0",
+    "postcss-value-parser": "^4.2.0",
     "svgo": "^2.7.0"
   },
   "bugs": {
