@@ -1,11 +1,28 @@
 import path from 'path';
 import valueParser from 'postcss-value-parser';
 import normalize from 'normalize-url';
-import isAbsolute from 'is-absolute-url';
 
 const multiline = /\\[\r\n]/;
 // eslint-disable-next-line no-useless-escape
 const escapeChars = /([\s\(\)"'])/g;
+
+// Scheme: https://tools.ietf.org/html/rfc3986#section-3.1
+// Absolute URL: https://tools.ietf.org/html/rfc3986#section-4.3
+const ABSOLUTE_URL_REGEX = /^[a-zA-Z][a-zA-Z\d+\-.]*?:/;
+// Windows paths like `c:\`
+const WINDOWS_PATH_REGEX = /^[a-zA-Z]:\\/;
+
+/**
+ * Originally in sindresorhus/is-absolute-url
+ *
+ * @param {string} url
+ */
+function isAbsolute(url) {
+  if (WINDOWS_PATH_REGEX.test(url)) {
+    return false;
+  }
+  return ABSOLUTE_URL_REGEX.test(url);
+}
 
 function convert(url, options) {
   if (isAbsolute(url) || url.startsWith('//')) {
