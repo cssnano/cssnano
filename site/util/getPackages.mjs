@@ -1,17 +1,18 @@
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import glob from 'glob';
+import { readdir } from 'fs';
 
 export default function getPackages() {
+  const pkgDir = join(
+    dirname(fileURLToPath(import.meta.url)),
+    '../../packages'
+  );
   return new Promise((resolve, reject) => {
-    glob(
-      `${join(dirname(fileURLToPath(import.meta.url)), '../../packages')}/*`,
-      (err, packages) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(packages);
+    readdir(pkgDir, (err, packages) => {
+      if (err) {
+        return reject(err);
       }
-    );
+      return resolve(packages.map((pkg) => join(pkgDir, pkg)));
+    });
   });
 }

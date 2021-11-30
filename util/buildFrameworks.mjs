@@ -1,8 +1,7 @@
 import { join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
-import { readdirSync, readFileSync } from 'fs';
-import glob from 'glob';
+import { readdirSync, readFileSync, readdir } from 'fs';
 import postcss from 'postcss';
 import cssnano from '../packages/cssnano/dist/index.js';
 
@@ -32,15 +31,11 @@ function rebuild(pkg) {
   });
 }
 
-glob(
-  `${join(
-    dirname(fileURLToPath(import.meta.url)),
-    '../packages'
-  )}/cssnano-preset-*`,
-  (err, packages) => {
-    if (err) {
-      throw err;
+const pkgDir = join(dirname(fileURLToPath(import.meta.url)), '../packages');
+readdir(pkgDir, (err, packages) => {
+  for (const pkg of packages) {
+    if (pkg.startsWith('cssnano-preset-')) {
+      rebuild(join(pkgDir, pkg));
     }
-    packages.forEach(rebuild);
   }
-);
+});

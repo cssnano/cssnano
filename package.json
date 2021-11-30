@@ -33,7 +33,6 @@
     "eslint-plugin-import": "^2.23.3",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.25.1",
-    "glob": "^7.1.4",
     "html-to-text": "^8.0.0",
     "nanospy": "^0.4.0",
     "node-fetch": "^2.6.1",
