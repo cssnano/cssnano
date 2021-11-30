@@ -19,7 +19,6 @@
     "cssnano-preset-advanced": "^5.1.7",
     "cssnano-preset-default": "^5.1.7",
     "cssnano-preset-lite": "^2.0.1",
-    "glob": "^7.2.0",
     "mdast-util-heading-range": "^3.1.0",
     "postcss": "^8.3.11",
     "react": "^17.0.2",
