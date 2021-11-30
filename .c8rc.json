@@ -4,5 +4,6 @@
     "packages/postcss-reduce-initial/script/lib/io.mjs",
     "packages/postcss-reduce-initial/script/lib/mdnCssProps.mjs"
   ],
-  "all": true
+  "all": true,
+  "reporter": ["text", "lcovonly"]
 }
