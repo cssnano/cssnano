@@ -1,21 +1,18 @@
 import React, { useState } from 'react';
 import Layout from '@theme/Layout';
+import Editor from '@monaco-editor/react';
+import { FiSave, FiPlay } from 'react-icons/fi';
+import { MdFormatAlignLeft } from 'react-icons/md';
+import { AiOutlineBgColors } from 'react-icons/ai';
 import prettier from 'prettier/standalone';
 import cssParser from 'prettier/parser-postcss';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import className from 'classnames';
 import { CssSyntaxError } from 'postcss';
 import { RingSpinner as Loader } from '../components/editor/RingSpinner.js';
-import MainEditor from '../components/editor/main';
-import OutputEditor from '../components/editor/output';
-import unicode from '../helper/unicode';
-import { getUrlState } from '../helper/url';
-import ConfigEditor from '../components/editor/config';
-import InnerNav from '../components/editor/innerNav.';
-import runner from '../components/editor/postcss_runner';
-import editorStyles from '../components/editor/editor.module.css';
-import CarbonAds from '../components/carbonAds';
-import InputError from '../components/editor/inputError.js';
+import unicode from '../helper/unicode.js';
+import { getUrlState } from '../helper/url.js';
+import runner from '../components/editor/postcss_runner.js';
+import CarbonAds from '../components/carbonAds.js';
 import styles from './styles.module.css';
 
 export default () => {
@@ -34,9 +31,6 @@ export default () => {
 }
 `,
     };
-
-  const context = useDocusaurusContext();
-  const { siteConfig = {} } = context;
   const [theme, setTheme] = useState('vs-dark');
   const [editorLoading, setEditorLoading] = useState(false);
   const [output, setOutput] = useState('/* your optimized output here */');
@@ -166,40 +160,85 @@ export default () => {
   }
 
   return (
-    <Layout title={`${siteConfig.title}`} description="CSSNANO - Playground">
+    <Layout title="CSSNANO" description="CSSNANO - Playground">
       <CarbonAds customClass="playground_position" />
-      <InnerNav
-        toggleTheme={toggleTheme}
-        runHandler={runOptimizer}
-        format={format}
-        save={saveState}
-      />
-      {error && <InputError error={error} theme={theme} />}
+      <nav
+        className={className('navbar navbar--dark', styles.playgroundInnerNav)}
+      >
+        <div className="navbar__inner">
+          <div className="navbar__items">
+            <button
+              onClick={toggleTheme}
+              className={className('button button--primary', styles.headbtn)}
+            >
+              <AiOutlineBgColors /> Toggle theme
+            </button>
+            <button
+              onClick={runOptimizer}
+              className={className('button button--primary', styles.headbtn)}
+            >
+              <FiPlay /> Run
+            </button>
+            <button
+              onClick={format}
+              className={className('button button--primary', styles.headbtn)}
+            >
+              <MdFormatAlignLeft /> Format
+            </button>
+            <button
+              onClick={saveState}
+              className={className('button button--primary', styles.headbtn)}
+            >
+              <FiSave /> Save
+            </button>
+          </div>
+        </div>
+      </nav>
+      {error && (
+        <div className={styles.inputError} data-theme={theme}>
+          {error}
+        </div>
+      )}
       <div
-        className={editorStyles.panelLoaderPlaceholder}
+        className={styles.panelLoaderPlaceholder}
         style={{ display: editorLoading ? 'block' : 'none' }}
       >
-        <div className={editorStyles.panelLoaderHolder}>
+        <div className={styles.panelLoaderHolder}>
           <Loader />
         </div>
       </div>
       <div className="row" style={{ margin: '0' }}>
         <div className={className('col col--4', styles.editorCol)}>
-          <MainEditor
+          <Editor
+            height="50rem"
             theme={theme}
-            input={input}
-            handleOnChange={handleOnInput}
+            language={'css'}
+            loading={<Loader />}
+            value={input}
+            onChange={handleOnInput}
+            options={{ lineNumbers: 'on' }}
           />
         </div>
         <div className={className('col col--4', styles.editorCol)}>
-          <ConfigEditor
+          <Editor
+            height="50rem"
             theme={theme}
-            config={config}
-            handleOnChange={handleConfigChange}
+            language={'json'}
+            loading={<Loader />}
+            value={config}
+            onChange={handleConfigChange}
+            options={{ lineNumbers: 'on' }}
           />
         </div>
         <div className={className('col col--4', styles.editorCol)}>
-          <OutputEditor theme={theme} output={output} />
+          <Editor
+            height="50rem"
+            theme={theme}
+            language={'css'}
+            loading={<Loader />}
+            value={output}
+            options={{ lineNumbers: 'on' }}
+          />
         </div>
       </div>
     </Layout>

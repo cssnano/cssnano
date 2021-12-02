@@ -5,10 +5,8 @@ import CodeBlock from '@theme/CodeBlock';
 import TabItem from '@theme/TabItem';
 import Tabs from '@theme/Tabs';
 import Link from '@docusaurus/Link';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import CarbonAds from '../components/carbonAds';
-import Main from '../components/main';
 import styles from './styles.module.css';
 
 const cssExampleInput = `/* normalize selectors */
@@ -92,18 +90,15 @@ function Feature({ imageUrl, title, description }) {
 }
 
 function Home() {
-  const context = useDocusaurusContext();
-  const { siteConfig = {} } = context;
   return (
-    <Layout
-      title={`${siteConfig.title}`}
-      description="CSSNANO - postcss based css optimizer"
-    >
+    <Layout title="CSSNANO" description="CSSNANO - postcss based css optimizer">
       <header className={classnames('hero hero--primary', styles.heroBanner)}>
         <div className="container">
           <img className={styles.logoImg} src={useBaseUrl('img/logo.svg')} />
 
-          <p className="hero__subtitle">{siteConfig.tagline}</p>
+          <p className="hero__subtitle">
+            Deliver your website&apos;s styles, faster.
+          </p>
           <p className={styles.small_p}>
             Plug in cssnano into your build step for modern CSS compression.
           </p>
@@ -121,7 +116,7 @@ function Home() {
         </div>
         <CarbonAds />
       </header>
-      <Main>
+      <main className={styles.main}>
         <section className={styles.features}>
           <div className="container">
             <div className="row">
@@ -209,9 +204,9 @@ function Home() {
             </div>
           </div>
         </section>
-      </Main>
+      </main>
 
-      <Main>
+      <main className={styles.main}>
         {features && features.length && (
           <section className={styles.features}>
             <div className="container">
@@ -224,8 +219,8 @@ function Home() {
             </div>
           </section>
         )}
-      </Main>
-      <Main>
+      </main>
+      <main className={styles.main}>
         <section className={styles.features}>
           <div className="container">
             <div className="row">
@@ -247,7 +242,7 @@ function Home() {
             </div>
           </div>
         </section>
-      </Main>
+      </main>
     </Layout>
   );
 }
