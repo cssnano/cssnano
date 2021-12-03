@@ -112,4 +112,5 @@ module.exports = {
       },
     ],
   ],
+  plugins: [require.resolve('./docusaurus-webpack-plugin')],
 };
