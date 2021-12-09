@@ -8,8 +8,7 @@ you add yourself to the list of contributors, found in [CONTRIBUTORS.md].
 
 ## How can I contribute to cssnano's code?
 
-Since version 4, we now develop in a [Lerna](https://github.com/lerna/lerna)
-monorepo. This is because a lot of transforms overlap with each other; it's
+Since version 4, we develop in a monorepo. This is because a lot of transforms overlap with each other; it's
 easier to test them together. Other than this, you'll need Node.js, yarn &
 git installed. Then, you can run these commands to get the repository set up:
 
