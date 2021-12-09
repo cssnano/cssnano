@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Layout from '@theme/Layout';
-import Editor from '@monaco-editor/react';
+import { EditorState, EditorView, basicSetup } from '@codemirror/basic-setup';
+import { css } from '@codemirror/lang-css';
 import prettier from 'prettier/standalone';
 import cssParser from 'prettier/parser-postcss';
 import className from 'classnames';
@@ -19,33 +20,21 @@ export default () => {
       null
   );
   const urlState = getUrlState();
-  const intializedState = urlState ||
+  const initializedState = urlState ||
     storedState || {
       input: '/* write your css below */',
-      config: `// cssnano config
-{
-  "preset" : "default",
-}
-`,
+      config: 'cssnano-preset-default',
     };
-  const [theme, setTheme] = useState('vs-dark');
+
   const [editorLoading, setEditorLoading] = useState(false);
-  const [output, setOutput] = useState('/* your optimized output here */');
-  const [input, setInput] = useState(intializedState.input);
-  const [config, setConfig] = useState(intializedState.config);
+  const [config, setConfig] = useState(initializedState.config);
   const [error, setError] = useState('');
 
-  function toggleTheme() {
-    setTheme(theme === 'light' ? 'vs-dark' : 'light');
-  }
+  const inputArea = useRef(null);
+  const outputArea = useRef(null);
 
-  function handleConfigChange(value) {
-    setConfig(value);
-  }
-
-  function handleOnInput(value) {
-    setInput(value);
-  }
+  const outputView = useRef(null);
+  const inputView = useRef(null);
 
   function handleError(err) {
     switch (err.constructor) {
@@ -68,11 +57,25 @@ export default () => {
   function format() {
     try {
       resetError();
-      const formattedInput = prettier.format(input, {
-        parser: 'css',
-        plugins: [cssParser],
+      const formattedInput = prettier.format(
+        inputView.current.state.doc.sliceString(
+          0,
+          inputView.current.state.doc.length
+        ),
+        {
+          parser: 'css',
+          plugins: [cssParser],
+        }
+      );
+
+      const transaction = inputView.current.state.update({
+        changes: {
+          from: 0,
+          to: inputView.current.state.doc.length,
+          insert: formattedInput,
+        },
       });
-      setInput(formattedInput);
+      inputView.current.dispatch(transaction);
     } catch (err) {
       handleError(err);
     }
@@ -80,7 +83,10 @@ export default () => {
 
   function saveState() {
     const serializedState = JSON.stringify({
-      input: input,
+      input: inputView.current.state.doc.sliceString(
+        0,
+        inputView.current.state.doc.length
+      ),
       config: config,
     });
 
@@ -96,15 +102,23 @@ export default () => {
   async function runOptimizer() {
     // show the loading. editor panel loader not each editor's loader
     setEditorLoading(true);
-    const configToSend = JSON.parse(
-      JSON.stringify(config.split('\n').slice(1).join('\n'))
+    const input = inputView.current.state.doc.sliceString(
+      0,
+      inputView.current.state.doc.length
     );
-
-    const resolvedConfig = resolveConfigs(configToSend);
-    runner(input, resolvedConfig)
+    runner(input, [config])
       .then((res) => {
         resetError();
-        setOutput(res.css);
+        if (outputView.current) {
+          const transaction = outputView.current.state.update({
+            changes: {
+              from: 0,
+              to: outputView.current.state.doc.length,
+              insert: res.css,
+            },
+          });
+          outputView.current.dispatch(transaction);
+        }
       })
       .catch((err) => {
         handleError(err);
@@ -113,48 +127,23 @@ export default () => {
     setEditorLoading(false);
   }
 
-  /**
-   * it converts the playground specific config to postcss plugins
-   * @param {object} playgroundConfig - config from config editor panel
-   * @returns {object} postcssConfig
-   */
-  function resolveConfigs(playgroundConfig) {
-    if (typeof playgroundConfig !== 'object') {
-      // throw error
-    }
-    if (
-      typeof playgroundConfig.preset !== 'undefined' &&
-      typeof playgroundConfig.preset !== 'string'
-    ) {
-      // throw toaster error
-    }
+  useEffect(() => {
+    inputView.current = new EditorView({
+      state: EditorState.create({
+        doc: initializedState.input,
+        extensions: [basicSetup, css()],
+      }),
+      parent: inputArea.current,
+    });
 
-    if (typeof playgroundConfig.plugins === 'undefined') {
-      if (Array.isArray(playgroundConfig.preset)) {
-        return [
-          playgroundConfig.preset[0] === 'advanced'
-            ? 'cssnano-preset-advance'
-            : playgroundConfig.preset[0] === 'default'
-            ? 'cssnano-preset-default'
-            : 'cssnano-preset-lite',
-          playgroundConfig.preset.length > 1 ? playgroundConfig.preset[1] : {},
-        ];
-      }
-      [
-        playgroundConfig.preset === 'advanced'
-          ? 'cssnano-preset-advanced'
-          : playgroundConfig.preset === 'default'
-          ? 'cssnano-preset-default'
-          : 'cssnano-preset-lite',
-        {},
-      ];
-    } else {
-      // eslint-disable-next-line no-warning-comments
-      // TODO
-    }
-
-    return ['cssnano-preset-default', {}];
-  }
+    outputView.current = new EditorView({
+      state: EditorState.create({
+        doc: '/* your optimized output here */',
+        extensions: [basicSetup, css(), EditorView.editable.of(false)],
+      }),
+      parent: outputArea.current,
+    });
+  }, []);
 
   return (
     /* Icons from https://ant.design/components/icon/ under the MIT license */
@@ -165,23 +154,18 @@ export default () => {
       >
         <div className="navbar__inner">
           <div className="navbar__items">
-            <button
-              onClick={toggleTheme}
-              className={className('button button--primary', styles.headbtn)}
+            <label className="navbar__item" htmlFor="presetSelector">
+              Choose a preset
+            </label>
+            <select
+              className="dropdown navbar__item"
+              id="presetSelector"
+              onChange={(ev) => setConfig(ev.target.value)}
             >
-              <svg
-                viewBox="64 64 896 896"
-                focusable="false"
-                data-icon="bg-colors"
-                width="1em"
-                height="1em"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M766.4 744.3c43.7 0 79.4-36.2 79.4-80.5 0-53.5-79.4-140.8-79.4-140.8S687 610.3 687 663.8c0 44.3 35.7 80.5 79.4 80.5zm-377.1-44.1c7.1 7.1 18.6 7.1 25.6 0l256.1-256c7.1-7.1 7.1-18.6 0-25.6l-256-256c-.6-.6-1.3-1.2-2-1.7l-78.2-78.2a9.11 9.11 0 00-12.8 0l-48 48a9.11 9.11 0 000 12.8l67.2 67.2-207.8 207.9c-7.1 7.1-7.1 18.6 0 25.6l255.9 256zm12.9-448.6l178.9 178.9H223.4l178.8-178.9zM904 816H120c-4.4 0-8 3.6-8 8v80c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-80c0-4.4-3.6-8-8-8z"></path>
-              </svg>{' '}
-              Toggle theme
-            </button>
+              <option value="cssnano-preset-default">Preset Default</option>
+              <option value="cssnano-preset-lite">Preset Lite</option>
+              <option value="cssnano-preset-advanced">Preset Advanced</option>
+            </select>
             <button
               onClick={runOptimizer}
               className={className('button button--primary', styles.headbtn)}
@@ -237,11 +221,7 @@ export default () => {
           </div>
         </div>
       </nav>
-      {error && (
-        <div className={styles.inputError} data-theme={theme}>
-          {error}
-        </div>
-      )}
+      {error && <div className={styles.inputError}>{error}</div>}
       <div
         className={styles.panelLoaderPlaceholder}
         style={{ display: editorLoading ? 'block' : 'none' }}
@@ -251,38 +231,14 @@ export default () => {
         </div>
       </div>
       <div className="row" style={{ margin: '0' }}>
-        <div className={className('col col--4', styles.editorCol)}>
-          <Editor
-            height="50rem"
-            theme={theme}
-            language={'css'}
-            loading={<Loader />}
-            value={input}
-            onChange={handleOnInput}
-            options={{ lineNumbers: 'on' }}
-          />
-        </div>
-        <div className={className('col col--4', styles.editorCol)}>
-          <Editor
-            height="50rem"
-            theme={theme}
-            language={'json'}
-            loading={<Loader />}
-            value={config}
-            onChange={handleConfigChange}
-            options={{ lineNumbers: 'on' }}
-          />
-        </div>
-        <div className={className('col col--4', styles.editorCol)}>
-          <Editor
-            height="50rem"
-            theme={theme}
-            language={'css'}
-            loading={<Loader />}
-            value={output}
-            options={{ lineNumbers: 'on' }}
-          />
-        </div>
+        <div
+          className={className('col col--6', styles.editorCol)}
+          ref={inputArea}
+        ></div>
+        <div
+          className={className('col col--6', styles.editorCol)}
+          ref={outputArea}
+        ></div>
       </div>
     </Layout>
   );
