@@ -14,17 +14,11 @@ import CarbonAds from '../components/carbonAds.js';
 import styles from './styles.module.css';
 
 export default () => {
-  const storedState = JSON.parse(
-    (typeof window !== 'undefined' &&
-      window.localStorage.getItem('cssnano_editor_state')) ||
-      null
-  );
   const urlState = getUrlState();
-  const initializedState = urlState ||
-    storedState || {
-      input: '/* write your css below */',
-      config: 'cssnano-preset-default',
-    };
+  const initializedState = urlState || {
+    input: '/* write your css below */',
+    config: 'cssnano-preset-default',
+  };
 
   const [editorLoading, setEditorLoading] = useState(false);
   const [config, setConfig] = useState(initializedState.config);
@@ -91,10 +85,6 @@ export default () => {
     });
 
     if (typeof window !== 'undefined') {
-      if (window.localStorage) {
-        window.localStorage.setItem('cssnano_editor_state', serializedState);
-      }
-
       window.location.hash = unicode.encodeToBase64(serializedState);
     }
   }
