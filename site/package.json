@@ -15,7 +15,6 @@
     "@codemirror/lang-css": "^0.19.3",
     "@docusaurus/core": "^2.0.0-beta.13",
     "@docusaurus/preset-classic": "^2.0.0-beta.13",
-    "classnames": "^2.3.1",
     "cssnano-preset-advanced": "^5.1.8",
     "cssnano-preset-default": "^5.1.8",
     "cssnano-preset-lite": "^2.0.1",
@@ -23,7 +22,7 @@
     "path-browserify": "^1.0.1",
     "postcss": "^8.4.4",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"   
+    "react-dom": "^17.0.2"
   },
   "devDependencies": {
     "camelcase": "^6.2.1",

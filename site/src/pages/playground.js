@@ -4,7 +4,6 @@ import { EditorState, EditorView, basicSetup } from '@codemirror/basic-setup';
 import { css } from '@codemirror/lang-css';
 import prettier from 'prettier/standalone';
 import cssParser from 'prettier/parser-postcss';
-import className from 'classnames';
 import { CssSyntaxError } from 'postcss';
 import { RingSpinner as Loader } from '../components/editor/RingSpinner.js';
 import unicode from '../helper/unicode.js';
@@ -139,9 +138,7 @@ export default () => {
     /* Icons from https://ant.design/components/icon/ under the MIT license */
     <Layout title="CSSNANO" description="CSSNANO - Playground">
       <CarbonAds customClass="playground_position" />
-      <nav
-        className={className('navbar navbar--dark', styles.playgroundInnerNav)}
-      >
+      <nav className={`navbar navbar--dark ${styles.playgroundInnerNav}`}>
         <div className="navbar__inner">
           <div className="navbar__items">
             <label className="navbar__item" htmlFor="presetSelector">
@@ -159,7 +156,7 @@ export default () => {
             </select>
             <button
               onClick={runOptimizer}
-              className={className('button button--primary', styles.headbtn)}
+              className={`button button--primary ${styles.headbtn}`}
             >
               <svg
                 viewBox="64 64 896 896"
@@ -177,7 +174,7 @@ export default () => {
             </button>
             <button
               onClick={format}
-              className={className('button button--primary', styles.headbtn)}
+              className={`button button--primary ${styles.headbtn}`}
             >
               <svg
                 viewBox="64 64 896 896"
@@ -194,7 +191,7 @@ export default () => {
             </button>
             <button
               onClick={saveState}
-              className={className('button button--primary', styles.headbtn)}
+              className={`button button--primary ${styles.headbtn}`}
             >
               <svg
                 viewBox="64 64 896 896"
@@ -222,12 +219,9 @@ export default () => {
         </div>
       </div>
       <div className="row" style={{ margin: '0' }}>
+        <div className={`col col--6 ${styles.editorCol}`} ref={inputArea}></div>
         <div
-          className={className('col col--6', styles.editorCol)}
-          ref={inputArea}
-        ></div>
-        <div
-          className={className('col col--6', styles.editorCol)}
+          className={`col col--6 ${styles.editorCol}`}
           ref={outputArea}
         ></div>
       </div>
