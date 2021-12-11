@@ -93,7 +93,7 @@ module.exports = {
           ],
         },
       ],
-      copyright: `Latest release v5.0.8 · Distributed under the MIT License.`,
+      copyright: `Latest release v5.0.12 · Distributed under the MIT License.`,
     },
   },
   presets: [

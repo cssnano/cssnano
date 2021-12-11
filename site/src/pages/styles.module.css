@@ -37,6 +37,7 @@
 
 .editorCol {
   padding: 0 !important;
+  background-color: white;
 }
 
 @media screen and (max-width: 966px) {
@@ -129,6 +130,15 @@
 
 .editorCol {
   padding: 0 !important;
+}
+
+/* CodeMirror styles */
+:global(.cm-scroller) {
+  overflow: auto;
+}
+
+:global(.cm-editor) {
+  height: 50rem;
 }
 
 .panelLoaderPlaceholder {
