@@ -150,6 +150,7 @@ export default () => {
             <select
               className="dropdown navbar__item"
               id="presetSelector"
+              value={config}
               onChange={(ev) => setConfig(ev.target.value)}
             >
               <option value="cssnano-preset-default">Preset Default</option>
