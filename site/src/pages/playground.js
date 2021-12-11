@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Layout from '@theme/Layout';
 import { EditorState, EditorView, basicSetup } from '@codemirror/basic-setup';
 import { css } from '@codemirror/lang-css';
-import prettier from 'prettier/standalone';
-import cssParser from 'prettier/parser-postcss';
 import { CssSyntaxError } from 'postcss';
 import { RingSpinner as Loader } from '../components/editor/RingSpinner.js';
 import unicode from '../helper/unicode.js';
@@ -45,33 +43,6 @@ export default () => {
 
   function resetError() {
     setError('');
-  }
-
-  function format() {
-    try {
-      resetError();
-      const formattedInput = prettier.format(
-        inputView.current.state.doc.sliceString(
-          0,
-          inputView.current.state.doc.length
-        ),
-        {
-          parser: 'css',
-          plugins: [cssParser],
-        }
-      );
-
-      const transaction = inputView.current.state.update({
-        changes: {
-          from: 0,
-          to: inputView.current.state.doc.length,
-          insert: formattedInput,
-        },
-      });
-      inputView.current.dispatch(transaction);
-    } catch (err) {
-      handleError(err);
-    }
   }
 
   function saveState() {
@@ -171,23 +142,6 @@ export default () => {
                 <path d="M719.4 499.1l-296.1-215A15.9 15.9 0 00398 297v430c0 13.1 14.8 20.5 25.3 12.9l296.1-215a15.9 15.9 0 000-25.8zm-257.6 134V390.9L628.5 512 461.8 633.1z"></path>
               </svg>{' '}
               Run
-            </button>
-            <button
-              onClick={format}
-              className={`button button--primary ${styles.headbtn}`}
-            >
-              <svg
-                viewBox="64 64 896 896"
-                focusable="false"
-                data-icon="align-left"
-                width="1em"
-                height="1em"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M120 230h496c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm0 424h496c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm784 140H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0-424H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z"></path>
-              </svg>{' '}
-              Format
             </button>
             <button
               onClick={saveState}
