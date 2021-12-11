@@ -5,8 +5,6 @@
  * work well for content-centric websites.
  */
 
-@import url('https://fonts.googleapis.com/css?family=Work+Sans&display=swap');
-
 /* You can override the default Infima variables here. */
 :root {
   --ifm-color-primary: #253858;
@@ -25,10 +23,6 @@
   display: block;
   margin: 0 calc(-1 * var(--ifm-pre-padding));
   padding: 0 var(--ifm-pre-padding);
-}
-
-* {
-  font-family: 'Work Sans', sans-serif !important;
 }
 
 body {
