@@ -1,5 +1,4 @@
 import React from 'react';
-import classnames from 'classnames';
 import Layout from '@theme/Layout';
 import CodeBlock from '@theme/CodeBlock';
 import TabItem from '@theme/TabItem';
@@ -77,7 +76,7 @@ const minifyTableData = [
 function Feature({ imageUrl, title, description }) {
   const imgUrl = useBaseUrl(imageUrl);
   return (
-    <div className={classnames('col col--4', styles.feature)}>
+    <div className={`col col--4 ${styles.feature}`}>
       {imgUrl && (
         <div className="text--center">
           <img className={styles.featureImage} src={imgUrl} alt={title} />
@@ -92,7 +91,7 @@ function Feature({ imageUrl, title, description }) {
 function Home() {
   return (
     <Layout title="CSSNANO" description="CSSNANO - postcss based css optimizer">
-      <header className={classnames('hero hero--primary', styles.heroBanner)}>
+      <header className={`hero hero--primary ${styles.heroBanner}`}>
         <div className="container">
           <img className={styles.logoImg} src={useBaseUrl('img/logo.svg')} />
 
@@ -104,10 +103,7 @@ function Home() {
           </p>
           <div className={styles.buttons}>
             <Link
-              className={classnames(
-                'button button--outline button--secondary button--lg',
-                styles.getStartedBtn
-              )}
+              className={`button button--outline button--secondary button--lg ${styles.getStartedBtn}`}
               to={useBaseUrl('docs/introduction')}
             >
               Get Started

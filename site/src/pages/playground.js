@@ -2,9 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Layout from '@theme/Layout';
 import { EditorState, EditorView, basicSetup } from '@codemirror/basic-setup';
 import { css } from '@codemirror/lang-css';
-import prettier from 'prettier/standalone';
-import cssParser from 'prettier/parser-postcss';
-import className from 'classnames';
 import { CssSyntaxError } from 'postcss';
 import { RingSpinner as Loader } from '../components/editor/RingSpinner.js';
 import unicode from '../helper/unicode.js';
@@ -46,33 +43,6 @@ export default () => {
 
   function resetError() {
     setError('');
-  }
-
-  function format() {
-    try {
-      resetError();
-      const formattedInput = prettier.format(
-        inputView.current.state.doc.sliceString(
-          0,
-          inputView.current.state.doc.length
-        ),
-        {
-          parser: 'css',
-          plugins: [cssParser],
-        }
-      );
-
-      const transaction = inputView.current.state.update({
-        changes: {
-          from: 0,
-          to: inputView.current.state.doc.length,
-          insert: formattedInput,
-        },
-      });
-      inputView.current.dispatch(transaction);
-    } catch (err) {
-      handleError(err);
-    }
   }
 
   function saveState() {
@@ -139,9 +109,7 @@ export default () => {
     /* Icons from https://ant.design/components/icon/ under the MIT license */
     <Layout title="CSSNANO" description="CSSNANO - Playground">
       <CarbonAds customClass="playground_position" />
-      <nav
-        className={className('navbar navbar--dark', styles.playgroundInnerNav)}
-      >
+      <nav className={`navbar navbar--dark ${styles.playgroundInnerNav}`}>
         <div className="navbar__inner">
           <div className="navbar__items">
             <label className="navbar__item" htmlFor="presetSelector">
@@ -150,6 +118,7 @@ export default () => {
             <select
               className="dropdown navbar__item"
               id="presetSelector"
+              value={config}
               onChange={(ev) => setConfig(ev.target.value)}
             >
               <option value="cssnano-preset-default">Preset Default</option>
@@ -158,7 +127,7 @@ export default () => {
             </select>
             <button
               onClick={runOptimizer}
-              className={className('button button--primary', styles.headbtn)}
+              className={`button button--primary ${styles.headbtn}`}
             >
               <svg
                 viewBox="64 64 896 896"
@@ -175,25 +144,8 @@ export default () => {
               Run
             </button>
             <button
-              onClick={format}
-              className={className('button button--primary', styles.headbtn)}
-            >
-              <svg
-                viewBox="64 64 896 896"
-                focusable="false"
-                data-icon="align-left"
-                width="1em"
-                height="1em"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M120 230h496c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm0 424h496c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm784 140H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0-424H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z"></path>
-              </svg>{' '}
-              Format
-            </button>
-            <button
               onClick={saveState}
-              className={className('button button--primary', styles.headbtn)}
+              className={`button button--primary ${styles.headbtn}`}
             >
               <svg
                 viewBox="64 64 896 896"
@@ -221,12 +173,9 @@ export default () => {
         </div>
       </div>
       <div className="row" style={{ margin: '0' }}>
+        <div className={`col col--6 ${styles.editorCol}`} ref={inputArea}></div>
         <div
-          className={className('col col--6', styles.editorCol)}
-          ref={inputArea}
-        ></div>
-        <div
-          className={className('col col--6', styles.editorCol)}
+          className={`col col--6 ${styles.editorCol}`}
           ref={outputArea}
         ></div>
       </div>
