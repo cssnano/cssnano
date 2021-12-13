@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunksite=self.webpackChunksite||[]).push([[2535],{5641:function(e){e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"cssnano 5 is available","permalink":"/blog/cssnano-5-release-notes"}]}')}}]);
