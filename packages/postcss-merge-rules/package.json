@@ -39,7 +39,8 @@
     "node": "^10 || ^12 || >=14.0"
   },
   "devDependencies": {
-    "postcss": "^8.2.15"
+    "postcss": "^8.2.15",
+    "postcss-discard-comments": "^5.0.1"
   },
   "peerDependencies": {
     "postcss": "^8.2.15"
