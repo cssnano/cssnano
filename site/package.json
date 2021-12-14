@@ -8,7 +8,7 @@
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "build:metadata": "node ./util/buildMetadata.mjs",
-    "build:docs": "remark site/docs/**/*.md -o && yarn build:metadata && node ./util/buildSiteMarkdown.mjs"
+    "build:docs": "remark site/docs/**/*.md -o && pnpm build:metadata && node ./util/buildSiteMarkdown.mjs"
   },
   "dependencies": {
     "@codemirror/basic-setup": "^0.19.0",

@@ -9,19 +9,19 @@ you add yourself to the list of contributors, found in [CONTRIBUTORS.md].
 ## How can I contribute to cssnano's code?
 
 Since version 4, we develop in a monorepo. This is because a lot of transforms overlap with each other; it's
-easier to test them together. Other than this, you'll need Node.js, yarn &
+easier to test them together. Other than this, you'll need Node.js, pnpm &
 git installed. Then, you can run these commands to get the repository set up:
 
 ```
 git clone git@github.com:cssnano/cssnano.git
 cd cssnano
-yarn install
+pnpm install
 ```
 
 You can run the tests with:
 
 ```
-yarn test
+pnpm test
 ```
 
 We recommend that you look in the issue tracker to find anything tagged
@@ -38,9 +38,9 @@ To help us generate the changelog, follow the [conventional commits](https://www
 ### Documentation
 
 The documentation website is also included with the repository, under `/site`.
-It runs [docusaurus](https://docusaurus.io) and requires a separate `yarn install`
+It runs [docusaurus](https://docusaurus.io) and requires a separate `pnpm install`
 to pull down the dependencies. You can then browse the documentation locally
-by running `yarn start`.
+by running `pnpm start`.
 
 Note that some of the documentation is automatically generated and should not
 be edited by hand.
@@ -53,7 +53,7 @@ with the description of the change and the affected packages.
 To create a changeset run
 
 ```
-yarn changeset
+pnpm changeset
 ```
 
 It's best to select the affected packages by hand rather than rely on the tools automatically
@@ -62,19 +62,19 @@ select the plugin and `cssnano-preset-default` by hand (as well as any other dep
 To tag a release and generate the changelog, run:
 
 ```
-yarn changeset version
+pnpm changeset version
 ```
 
 To publish release to npm, run:
 
 ```
-yarn all-publish
+pnpm all-publish
 ```
 
 If you don't use the `package.json` script, do not forget to rebuild the packages first!
 
-1. `yarn prepare`
-2. `yarn changeset publish`
+1. `pnpm prepare`
+2. `pnpm changeset publish`
 
 ## Are there other ways of contributing?
 
