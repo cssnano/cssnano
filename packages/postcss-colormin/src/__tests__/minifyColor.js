@@ -1,6 +1,15 @@
 import { test } from 'uvu';
 import * as assert from 'uvu/assert';
-import min from '../minifyColor';
+import minifyColor from '../minifyColor';
+
+function min(input, options = {}) {
+  const defaultOptions = {
+    alphaHex: false,
+    transparent: true,
+    name: true,
+  };
+  return minifyColor(input, { ...defaultOptions, ...options });
+}
 
 function isEqual(input, output) {
   return () => assert.is(min(input), output);
@@ -148,30 +157,24 @@ test('should pass through if not recognised', () => {
 });
 
 test('should convert to hex4', () => {
-  assert.is(min('#aabbcc33', { supportsAlphaHex: true }), '#abc3');
-  assert.is(min('transparent', { supportsAlphaHex: true }), '#0000');
-  assert.is(min('rgb(119,119,119,0.2)', { supportsAlphaHex: true }), '#7773');
-  assert.is(min('hsla(0,0%,100%,.4)', { supportsAlphaHex: true }), '#fff6');
+  assert.is(min('#aabbcc33', { alphaHex: true }), '#abc3');
+  assert.is(min('transparent', { alphaHex: true }), '#0000');
+  assert.is(min('rgb(119,119,119,0.2)', { alphaHex: true }), '#7773');
+  assert.is(min('hsla(0,0%,100%,.4)', { alphaHex: true }), '#fff6');
 });
 
 test('should convert to hex8', () => {
-  assert.is(
-    min('rgba(128, 128, 128, 0.5)', { supportsAlphaHex: true }),
-    '#80808080'
-  );
-  assert.is(
-    min('hsla(180, 100%, 50%, 0.5)', { supportsAlphaHex: true }),
-    '#00ffff80'
-  );
+  assert.is(min('rgba(128, 128, 128, 0.5)', { alphaHex: true }), '#80808080');
+  assert.is(min('hsla(180, 100%, 50%, 0.5)', { alphaHex: true }), '#00ffff80');
 });
 
 test('should not convert to alpha hex since the conversion is not lossless', () => {
   assert.is(
-    min('rgba(0, 0, 0, 0.075)', { supportsAlphaHex: true }),
+    min('rgba(0, 0, 0, 0.075)', { alphaHex: true }),
     'rgba(0,0,0,.075)'
   );
   assert.is(
-    min('hsla(0, 0%, 50%, 0.515)', { supportsAlphaHex: true }),
+    min('hsla(0, 0%, 50%, 0.515)', { alphaHex: true }),
     'hsla(0,0%,50%,.515)'
   );
 });

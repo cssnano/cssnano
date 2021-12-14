@@ -66,24 +66,29 @@ function transform(value, options) {
   return parsed.toString();
 }
 
-function pluginCreator() {
+function addPluginDefaults(options, browsers) {
+  const defaults = {
+    transparent: browsers.some(hasTransparentBug) === false, // Does the browser support 4 & 8 character hex notation
+    alphaHex: isSupported('css-rrggbbaa', browsers), // Does the browser support "transparent" value properly
+    name: true,
+  };
+  return { ...defaults, ...options };
+}
+
+function pluginCreator(config = {}) {
   return {
     postcssPlugin: 'postcss-colormin',
 
     prepare(result) {
-      const resultOpts = result.opts || {};
+      const resultOptions = result.opts || {};
       const browsers = browserslist(null, {
-        stats: resultOpts.stats,
+        stats: resultOptions.stats,
         path: __dirname,
-        env: resultOpts.env,
+        env: resultOptions.env,
       });
 
-      const options = {
-        supportsTransparent: browsers.some(hasTransparentBug) === false,
-        supportsAlphaHex: isSupported('css-rrggbbaa', browsers),
-      };
-
       const cache = {};
+      const options = addPluginDefaults(config, browsers);
 
       return {
         OnceExit(css) {
