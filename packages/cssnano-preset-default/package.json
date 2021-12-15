@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-default",
-  "version": "5.1.8",
+  "version": "5.1.9",
   "main": "dist/index.js",
   "description": "Safe defaults for cssnano which require minimal configuration.",
   "scripts": {
@@ -17,7 +17,7 @@
     "css-declaration-sorter": "^6.0.3",
     "cssnano-utils": "^2.0.1",
     "postcss-calc": "^8.0.0",
-    "postcss-colormin": "^5.2.1",
+    "postcss-colormin": "^5.2.2",
     "postcss-convert-values": "^5.0.2",
     "postcss-discard-comments": "^5.0.1",
     "postcss-discard-duplicates": "^5.0.1",
@@ -36,7 +36,7 @@
     "postcss-normalize-string": "^5.0.1",
     "postcss-normalize-timing-functions": "^5.0.1",
     "postcss-normalize-unicode": "^5.0.1",
-    "postcss-normalize-url": "^5.0.3",
+    "postcss-normalize-url": "^5.0.4",
     "postcss-normalize-whitespace": "^5.0.1",
     "postcss-ordered-values": "^5.0.2",
     "postcss-reduce-initial": "^5.0.2",
