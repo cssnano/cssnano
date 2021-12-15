@@ -33,17 +33,17 @@ const cssExampleOutput = `@charset "utf-8";h1:before{margin:10px 20px;color:red;
 
 const features = [
   {
-    title: <>PostCSS Based</>,
+    title: 'PostCSS Based',
     imageUrl: 'img/postcss.svg',
     description: <>CSSNANO is built upon postcss plugins and environments</>,
   },
   {
-    title: <>30+ Plugins</>,
+    title: '30+ Plugins',
     imageUrl: 'img/undraw_settings.svg',
     description: <>CSSNANO has more than 30 plugins for optimizing your css</>,
   },
   {
-    title: <>Configurable</>,
+    title: 'Configurable',
     imageUrl: 'img/undraw_config.svg',
     description: (
       <>
@@ -79,10 +79,10 @@ function Feature({ imageUrl, title, description }) {
     <div className={`col col--4 ${styles.feature}`}>
       {imgUrl && (
         <div className="text--center">
-          <img className={styles.featureImage} src={imgUrl} alt={title} />
+          <img src={imgUrl} alt={title} width="200" height="200" />
         </div>
       )}
-      <h3>{title}</h3>
+      <h2>{title}</h2>
       <p>{description}</p>
     </div>
   );
@@ -91,9 +91,16 @@ function Feature({ imageUrl, title, description }) {
 function Home() {
   return (
     <Layout title="CSSNANO" description="CSSNANO - postcss based css optimizer">
-      <header className={`hero hero--primary ${styles.heroBanner}`}>
+      <header className={`hero ${styles.heroBanner}`}>
+        <CarbonAds />
         <div className="container">
-          <img className={styles.logoImg} src={useBaseUrl('img/logo.svg')} />
+          <img
+            className={styles.logoImg}
+            src={useBaseUrl('img/logo.svg')}
+            width="400"
+            height="280"
+            alt="CSSNano"
+          />
 
           <p className="hero__subtitle">
             Deliver your website&apos;s styles, faster.
@@ -103,14 +110,13 @@ function Home() {
           </p>
           <div className={styles.buttons}>
             <Link
-              className={`button button--outline button--secondary button--lg ${styles.getStartedBtn}`}
+              className={`button button--lg ${styles.getStartedBtn}`}
               to={useBaseUrl('docs/introduction')}
             >
               Get Started
             </Link>
           </div>
         </div>
-        <CarbonAds />
       </header>
       <main className={styles.main}>
         <section className={styles.features}>
@@ -232,7 +238,7 @@ function Home() {
                 </p>
                 <span>
                   {' '}
-                  <img style={{}} src={useBaseUrl('img/postcss.svg')} />
+                  <img src={useBaseUrl('img/postcss.svg')} alt="" />
                 </span>
               </div>
             </div>

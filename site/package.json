@@ -11,16 +11,16 @@
     "build:docs": "remark site/docs/**/*.md -o && yarn build:metadata && node ./util/buildSiteMarkdown.mjs"
   },
   "dependencies": {
-    "@codemirror/basic-setup": "^0.19.0",
+    "@codemirror/basic-setup": "^0.19.1",
     "@codemirror/lang-css": "^0.19.3",
     "@docusaurus/core": "^2.0.0-beta.13",
     "@docusaurus/preset-classic": "^2.0.0-beta.13",
-    "cssnano-preset-advanced": "^5.1.8",
-    "cssnano-preset-default": "^5.1.8",
+    "cssnano-preset-advanced": "^5.1.9",
+    "cssnano-preset-default": "^5.1.9",
     "cssnano-preset-lite": "^2.0.1",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
-    "postcss": "^8.4.4",
+    "postcss": "^8.4.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },

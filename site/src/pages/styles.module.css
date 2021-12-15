@@ -5,10 +5,7 @@
  */
 
 .heroBanner {
-  padding: 4rem 0;
   text-align: center;
-  position: relative;
-  overflow: hidden;
 }
 
 .getStartedBtn {
@@ -40,12 +37,6 @@
   background-color: white;
 }
 
-@media screen and (max-width: 966px) {
-  .heroBanner {
-    padding: 2rem;
-  }
-}
-
 .buttons {
   display: flex;
   align-items: center;
@@ -57,18 +48,6 @@
   align-items: center;
   padding: 2rem 0;
   width: 100%;
-}
-
-.featureImage {
-  height: 200px;
-  width: 200px;
-}
-
-.small_p {
-}
-
-.logoImg {
-  max-width: 25em;
 }
 
 .h2 {
@@ -130,6 +109,7 @@
 
 .editorCol {
   padding: 0 !important;
+  min-height: 50rem;
 }
 
 /* CodeMirror styles */
