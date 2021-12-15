@@ -3,7 +3,6 @@ import { spawn } from 'child_process';
 import path from 'path';
 import * as assert from 'uvu/assert';
 import { test } from 'uvu';
-import colors from 'colors/safe';
 import size, { table, numeric } from '../';
 
 let noopProcessorPath = path.resolve(__dirname, '../../processors/noop.js');
@@ -31,6 +30,11 @@ function setup(args) {
       resolve([out, code]);
     });
   });
+}
+
+function stripColors(str) {
+  // eslint-disable-next-line no-control-regex
+  return ('' + str).replace(/\x1B\[\d+m/g, '');
 }
 
 test('cli', () => {
@@ -80,7 +84,7 @@ test('table', () => {
   const input = path.join(__dirname, 'test.css');
   return table(read(input, 'utf-8'), { from: input }).then((result) => {
     assert.is(
-      colors.stripColors(result),
+      stripColors(result),
       `
 ┌────────────┬──────────────┬────────┬────────┐
 │            │ Uncompressed │ Gzip   │ Brotli │

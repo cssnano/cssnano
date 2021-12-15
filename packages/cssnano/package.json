@@ -24,10 +24,10 @@
     ],
     "license": "MIT",
     "dependencies": {
-        "lilconfig": "^2.0.3",
-        "yaml": "^1.10.2",
         "cssnano-preset-default": "^5.1.8",
-        "is-resolvable": "^1.1.0"
+        "is-resolvable": "^1.1.0",
+        "lilconfig": "^2.0.3",
+        "yaml": "^1.10.2"
     },
     "homepage": "https://github.com/cssnano/cssnano",
     "author": {
@@ -50,6 +50,8 @@
     },
     "devDependencies": {
         "autoprefixer": "^10.3.7",
+        "cssnano-preset-advanced": "^5.1.8",
+        "cssnano-preset-lite": "^2.0.1",
         "postcss": "^8.2.15"
     },
     "peerDependencies": {
