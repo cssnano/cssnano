@@ -43,30 +43,9 @@
   justify-content: center;
 }
 
-.features {
-  display: flex;
-  align-items: center;
-  padding: 2rem 0;
-  width: 100%;
-}
-
-.h2 {
+.h1, .h2 {
   width: 100%;
   text-align: center;
-  margin: 10px auto;
-  padding: 10px;
-}
-
-.h1 {
-  width: 100%;
-  text-align: center;
-  margin: 10px auto;
-  padding: 20px;
-}
-
-.flex {
-  display: flex;
-  flex-wrap: nowrap;
 }
 
 .flex1 {
@@ -148,9 +127,4 @@
 
 .inputError[data-theme='light'] {
   background-color: #ff5959;
-}
-
-.main {
-  padding: 2em 1em;
-  margin: 2em auto;
 }

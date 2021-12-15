@@ -105,7 +105,7 @@ function Home() {
           <p className="hero__subtitle">
             Deliver your website&apos;s styles, faster.
           </p>
-          <p className={styles.small_p}>
+          <p>
             Plug in cssnano into your build step for modern CSS compression.
           </p>
           <div className={styles.buttons}>
@@ -118,130 +118,102 @@ function Home() {
           </div>
         </div>
       </header>
-      <main className={styles.main}>
-        <section className={styles.features}>
-          <div className="container">
-            <div className="row">
-              <h1 className={styles.h1}>What it does ?</h1>
-              <p>
-                cssnano takes your nicely formatted CSS and runs it through many
-                focused optimisations, to ensure that the final result is as
-                small as possible for a production environment.
-              </p>
-            </div>
-            <div className="row">
-              <div className={styles.centerSnippet}>
-                <Tabs
-                  className={'mini'}
-                  defaultValue="Input"
-                  values={[
-                    {
-                      label: <>Input</>,
-                      value: 'Input',
-                    },
-                    {
-                      label: <>Output</>,
-                      value: 'Output',
-                    },
-                  ]}
-                >
-                  <TabItem value="Input">
-                    <CodeBlock className="language-css">
-                      {cssExampleInput}
-                    </CodeBlock>
-                  </TabItem>
-                  <TabItem value="Output">
-                    <CodeBlock className="language-css">
-                      {cssExampleOutput}
-                    </CodeBlock>
-                  </TabItem>
-                </Tabs>
-              </div>
-            </div>
-            <div className="row" style={{ marginTop: '2em' }}>
-              <div className="col-xs-9 col-md-9 col-sm-12">
-                <div className="box">
-                  <p>
-                    The semantics of this CSS have been kept the same, but the
-                    extraneous whitespace has been removed, the identifiers
-                    compressed, and unnecessary definitions purged from the
-                    stylesheet.
-                    <br />
-                  </p>
-                  <p>
-                    This gives you a much smaller CSS for production use. But
-                    don’t just take our word for it; why not try out css-size, a
-                    module especially created to measure CSS size before & after
-                    minification.
-                  </p>
-                  <p>
-                    By default, cssnano performs safe optimisations on your CSS
-                    file, but we also offer an advanced preset with techniques
-                    that you can use to maximise compression. For more details,
-                    see our{' '}
-                    <Link to={useBaseUrl('docs/optimisations')}>
-                      optimisations
-                    </Link>{' '}
-                    guide.
-                  </p>
-                </div>
-              </div>
-              <div className="col-xs-3 col-md-3 col-sm-12">
-                <div className="box">
-                  <table
-                    className="col-xs-12 col-md-12 col-sm-12"
-                    style={{ margin: 'auto' }}
-                  >
-                    <tbody>
-                      {minifyTableData.map(({ property, value }, i) => (
-                        <tr key={i} style={{ width: '100%', maxWidth: '100%' }}>
-                          <td>{property}</td>
-                          <td>{value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+      <main className="container">
+        <section>
+          <div className="row">
+            <h1 className={styles.h1}>What it does ?</h1>
+            <p>
+              cssnano takes your nicely formatted CSS and runs it through many
+              focused optimisations, to ensure that the final result is as small
+              as possible for a production environment.
+            </p>
+          </div>
+          <div className="row">
+            <div className={styles.centerSnippet}>
+              <Tabs
+                className={'mini'}
+                defaultValue="Input"
+                values={[
+                  {
+                    label: <>Input</>,
+                    value: 'Input',
+                  },
+                  {
+                    label: <>Output</>,
+                    value: 'Output',
+                  },
+                ]}
+              >
+                <TabItem value="Input">
+                  <CodeBlock className="language-css">
+                    {cssExampleInput}
+                  </CodeBlock>
+                </TabItem>
+                <TabItem value="Output">
+                  <CodeBlock className="language-css">
+                    {cssExampleOutput}
+                  </CodeBlock>
+                </TabItem>
+              </Tabs>
             </div>
           </div>
-        </section>
-      </main>
-
-      <main className={styles.main}>
-        {features && features.length && (
-          <section className={styles.features}>
-            <div className="container">
-              <div className="row">
-                <h1 className={styles.h1}>Features</h1>
-                {features.map((props, idx) => (
-                  <Feature key={idx} {...props} />
+          <div className="row">
+            <p>
+              The semantics of this CSS have been kept the same, but the
+              extraneous whitespace has been removed, the identifiers
+              compressed, and unnecessary definitions purged from the
+              stylesheet.
+              <br />
+            </p>
+            <p>
+              This gives you a much smaller CSS for production use. But don’t
+              just take our word for it; why not try out css-size, a module
+              especially created to measure CSS size before & after
+              minification.
+            </p>
+            <p>
+              By default, cssnano performs safe optimisations on your CSS file,
+              but we also offer an advanced preset with techniques that you can
+              use to maximise compression. For more details, see our{' '}
+              <Link to={useBaseUrl('docs/optimisations')}>optimisations</Link>{' '}
+              guide.
+            </p>
+            <table style={{ margin: 'auto' }}>
+              <tbody>
+                {minifyTableData.map(({ property, value }, i) => (
+                  <tr key={i} style={{ width: '100%', maxWidth: '100%' }}>
+                    <td>{property}</td>
+                    <td>{value}</td>
+                  </tr>
                 ))}
-              </div>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {features && features.length && (
+          <section>
+            <div className="row">
+              <h1 className={styles.h1}>Features</h1>
+              {features.map((props, idx) => (
+                <Feature key={idx} {...props} />
+              ))}
             </div>
           </section>
         )}
-      </main>
-      <main className={styles.main}>
-        <section className={styles.features}>
-          <div className="container">
-            <div className="row">
-              <h1 className={styles.h1}>Technology</h1>
-              <div className={styles.flex}>
-                <p className={styles.flex1}>
-                  cssnano is powered by PostCSS, a tool for transforming styles
-                  with JavaScript. Specifically, its plugin architecture allows
-                  us to compose cssnano out of small modules with limited
-                  responsibilities. It also allows you to easily insert cssnano
-                  into your build step, along with other processors that can
-                  lint your CSS for errors, or transpile future syntax.
-                </p>
-                <span>
-                  {' '}
-                  <img src={useBaseUrl('img/postcss.svg')} alt="" />
-                </span>
-              </div>
-            </div>
+
+        <section>
+          <div className="row">
+            <h1 className={styles.h1}>Technology</h1>
+            <p className={styles.flex1}>
+              cssnano is powered by PostCSS, a tool for transforming styles with
+              JavaScript. Specifically, its plugin architecture allows us to
+              compose cssnano out of small modules with limited
+              responsibilities. It also allows you to easily insert cssnano into
+              your build step, along with other processors that can lint your
+              CSS for errors, or transpile future syntax.
+            </p>
+            <img src={useBaseUrl('img/postcss.svg')} alt="" />
           </div>
         </section>
       </main>

@@ -5,6 +5,7 @@
  * work well for content-centric websites.
  */
 :root {
+  --ifm-container-width-xl: 120ch;
   --ifm-color-primary: #168050;
   --ifm-color-primary-dark: #147348;
   --ifm-color-primary-darker: #136d44;
@@ -16,6 +17,10 @@
   --ifm-footer-link-hover-color: #c0cee7;
   --ifm-hero-background-color: #253858;
   --ifm-hero-text-color: #fff;
+}
+
+section {
+  padding: calc(2*var(--ifm-spacing-vertical, 1em)) var(--ifm-spacing-horizontal, 1em);
 }
 
 /* Carbon Ads */
