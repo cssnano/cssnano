@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.0.4 (2021-12-16)
+
+### Patch Changes
+
+- chore(postcss-normalize-url): reduce dependencies ([#1255](https://github.com/cssnano/cssnano/pull/1255))([a4267dedcd6](https://github.com/cssnano/cssnano/commit/a4267dedcd6d41ece45a0dfc5a73ea4b9e4ae028))
+
 # 5.0.3 (2021-11-16)
 
 ### Bug fixes
