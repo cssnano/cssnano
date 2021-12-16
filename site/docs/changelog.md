@@ -8,6 +8,15 @@ layout: Page
 
 ## Change Log
 
+### 5.0.13 (2021-12-16)
+
+#### Patch Changes
+
+- chore(postcss-normalize-url): reduce dependencies ([#1255](https://github.com/cssnano/cssnano/pull/1255))([a4267dedcd6](https://github.com/cssnano/cssnano/commit/a4267dedcd6d41ece45a0dfc5a73ea4b9e4ae028))
+- fix(postcss-colormin): accept configuration options ([#1263](https://github.com/cssnano/cssnano/pull/1263))([3b38038007](https://github.com/cssnano/cssnano/commit/3b38038007bfd8761d84a9e35f0191b56e5b50d7))
+- Updated dependencies
+  - cssnano-preset-default\@5.1.9
+
 ### 5.0.12 (2021-11-27)
 
 #### Bug fixes

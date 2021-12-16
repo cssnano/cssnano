@@ -1,8 +1,9 @@
 module.exports = {
   title: 'CSSNANO',
   tagline: `Deliver your website's styles, faster.`,
-  url: 'https://cssnano.github.io', // url to your site with no trailing slash
+  url: 'https://cssnano.co', // url to your site with no trailing slash
   baseUrl: '/',
+  trailingSlash: true,
   favicon: 'img/favicon.ico',
   organizationName: 'cssnano', // Usually your GitHub org/user name.
   projectName: 'cssnano', // Usually your repo name.
@@ -12,6 +13,8 @@ module.exports = {
       logo: {
         alt: 'CSSNANO Logo',
         src: 'img/logo-alt.svg',
+        height: 32,
+        width: 160,
       },
       items: [
         {
@@ -93,7 +96,11 @@ module.exports = {
           ],
         },
       ],
-      copyright: `Latest release v5.0.12 · Distributed under the MIT License.`,
+      copyright: `Latest release v5.0.13 · Distributed under the MIT License.`,
+    },
+    colorMode: {
+      defaultMode: 'light',
+      disableSwitch: true,
     },
   },
   presets: [
