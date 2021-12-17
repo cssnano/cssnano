@@ -25,7 +25,6 @@
     "license": "MIT",
     "dependencies": {
         "cssnano-preset-default": "^5.1.9",
-        "is-resolvable": "^1.1.0",
         "lilconfig": "^2.0.3",
         "yaml": "^1.10.2"
     },
