@@ -2,9 +2,21 @@ import path from 'path';
 import postcss from 'postcss';
 import yaml from 'yaml';
 import { lilconfigSync } from 'lilconfig';
-import isResolvable from 'is-resolvable';
 
 const cssnano = 'cssnano';
+
+/*
+ * @param {string} moduleId
+ * @returns {boolean}
+ */
+function isResolvable(moduleId) {
+  try {
+    require.resolve(moduleId);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
 /*
  * preset can be one of four possibilities:
