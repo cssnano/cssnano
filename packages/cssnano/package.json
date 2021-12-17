@@ -7,7 +7,7 @@
         "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
         "prebuild": "rimraf dist",
         "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-        "prepare": "yarn build"
+        "prepare": "pnpm build"
     },
     "funding": {
         "type": "opencollective",

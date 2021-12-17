@@ -3,14 +3,14 @@
   "private": true,
   "scripts": {
     "lint": "eslint . --cache --ignore-path .gitignore --ext .js,.mjs",
-    "fixlint": "yarn lint -- --fix",
-    "prepare": "yarn workspaces run prepare",
+    "fixlint": "pnpm lint -- --fix",
+    "prepare": "pnpm run -r prepare",
     "build:integration": "node ./util/buildFrameworks.mjs",
-    "pretest": "yarn lint",
+    "pretest": "pnpm lint",
     "test:only": "uvu -r @babel/register packages \"__tests__.*\\.js$\"",
-    "test:coverage": "c8 yarn test:only",
-    "test": "yarn test:coverage",
-    "all-publish": "yarn prepare && yarn changeset publish"
+    "test:coverage": "c8 pnpm test:only",
+    "test": "pnpm test:coverage",
+    "all-publish": "pnpm prepare && pnpm changeset publish"
   },
   "workspaces": [
     "./packages/*"
