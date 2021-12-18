@@ -30,7 +30,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepare": "yarn build"
+    "prepare": "pnpm build"
   },
   "engines": {
     "node": "^10 || ^12 || >=14.0"
