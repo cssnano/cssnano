@@ -8,6 +8,12 @@ layout: Page
 
 ## Change Log
 
+### 5.0.14 (2021-12-20)
+
+#### Bug fixes
+
+- fix(cssnano): correctly resolve presets in pnpm monorepo ([#1269](https://github.com/cssnano/cssnano/pull/1269)) ([6f9c7477eb](https://github.com/cssnano/cssnano/commit/6f9c7477eb3eb191d3a7454071908a17dac90fa3))
+
 ### 5.0.13 (2021-12-16)
 
 #### Patch Changes
