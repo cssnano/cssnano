@@ -13,8 +13,9 @@
   "dependencies": {
     "@codemirror/basic-setup": "^0.19.1",
     "@codemirror/lang-css": "^0.19.3",
-    "@docusaurus/core": "^2.0.0-beta.13",
-    "@docusaurus/preset-classic": "^2.0.0-beta.13",
+    "@docusaurus/core": "^2.0.0-beta.14",
+    "@docusaurus/preset-classic": "^2.0.0-beta.14",
+    "@mdx-js/react": "^1.6.22",
     "cssnano-preset-advanced": "^5.1.9",
     "cssnano-preset-default": "^5.1.9",
     "cssnano-preset-lite": "^2.0.1",
