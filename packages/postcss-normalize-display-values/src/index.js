@@ -32,7 +32,7 @@ function pluginCreator() {
     postcssPlugin: 'postcss-normalize-display-values',
 
     prepare() {
-      const cache = {};
+      const cache = new Map();
       return {
         OnceExit(css) {
           css.walkDecls(/^display$/i, (decl) => {
@@ -42,8 +42,8 @@ function pluginCreator() {
               return;
             }
 
-            if (cache[value]) {
-              decl.value = cache[value];
+            if (cache.has(value)) {
+              decl.value = cache.get(value);
 
               return;
             }
@@ -51,7 +51,7 @@ function pluginCreator() {
             const result = transform(value);
 
             decl.value = result;
-            cache[value] = result;
+            cache.set(value, result);
           });
         },
       };

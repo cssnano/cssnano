@@ -98,7 +98,7 @@ function pluginCreator() {
   return {
     postcssPlugin: 'postcss-ordered-values',
     prepare() {
-      const cache = {};
+      const cache = new Map();
       return {
         OnceExit(css) {
           css.walkDecls((decl) => {
@@ -112,8 +112,8 @@ function pluginCreator() {
 
             const value = getValue(decl);
 
-            if (cache[value]) {
-              decl.value = cache[value];
+            if (cache.has(value)) {
+              decl.value = cache.get(value);
 
               return;
             }
@@ -121,7 +121,7 @@ function pluginCreator() {
             const parsed = valueParser(value);
 
             if (parsed.nodes.length < 2 || shouldAbort(parsed)) {
-              cache[value] = value;
+              cache.set(value, value);
 
               return;
             }
@@ -129,7 +129,7 @@ function pluginCreator() {
             const result = processor(parsed);
 
             decl.value = result.toString();
-            cache[value] = result.toString();
+            cache.set(value, result.toString());
           });
         },
       };

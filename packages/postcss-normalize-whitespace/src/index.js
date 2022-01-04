@@ -35,7 +35,7 @@ function pluginCreator() {
     postcssPlugin: 'postcss-normalize-whitespace',
 
     OnceExit(css) {
-      const cache = {};
+      const cache = new Map();
 
       css.walk((node) => {
         const { type } = node;
@@ -55,15 +55,15 @@ function pluginCreator() {
 
           const value = node.value;
 
-          if (cache[value]) {
-            node.value = cache[value];
+          if (cache.has(value)) {
+            node.value = cache.get(value);
           } else {
             const parsed = valueParser(node.value);
             const result = parsed.walk(reduceWhitespaces).toString();
 
             // Trim whitespace inside functions & dividers
             node.value = result;
-            cache[value] = result;
+            cache.set(value, result);
           }
 
           // Remove extra semicolons and whitespace before the declaration

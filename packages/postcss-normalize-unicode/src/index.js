@@ -74,7 +74,7 @@ function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-unicode',
     prepare(result) {
-      const cache = {};
+      const cache = new Map();
       const resultOpts = result.opts || {};
       const browsers = browserslist(null, {
         stats: resultOpts.stats,
@@ -88,8 +88,8 @@ function pluginCreator() {
           css.walkDecls(/^unicode-range$/i, (decl) => {
             const value = decl.value;
 
-            if (cache[value]) {
-              decl.value = cache[value];
+            if (cache.has(value)) {
+              decl.value = cache.get(value);
 
               return;
             }
@@ -97,7 +97,7 @@ function pluginCreator() {
             const newValue = transform(value, isLegacy);
 
             decl.value = newValue;
-            cache[value] = newValue;
+            cache.set(value, newValue);
           });
         },
       };

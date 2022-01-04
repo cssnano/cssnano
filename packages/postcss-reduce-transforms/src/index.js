@@ -230,7 +230,7 @@ function pluginCreator() {
   return {
     postcssPlugin: 'postcss-reduce-transforms',
     prepare() {
-      const cache = {};
+      const cache = new Map();
       return {
         OnceExit(css) {
           css.walkDecls(/transform$/i, (decl) => {
@@ -240,8 +240,8 @@ function pluginCreator() {
               return;
             }
 
-            if (cache[value]) {
-              decl.value = cache[value];
+            if (cache.has(value)) {
+              decl.value = cache.get(value);
 
               return;
             }
@@ -249,7 +249,7 @@ function pluginCreator() {
             const result = valueParser(value).walk(reduce).toString();
 
             decl.value = result;
-            cache[value] = result;
+            cache.set(value, result);
           });
         },
       };

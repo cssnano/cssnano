@@ -167,7 +167,7 @@ function pluginCreator() {
     postcssPlugin: 'postcss-minify-selectors',
 
     OnceExit(css) {
-      const cache = {};
+      const cache = new Map();
       const processor = parser((selectors) => {
         selectors.nodes = sort(selectors.nodes, { insensitive: true });
 
@@ -209,8 +209,8 @@ function pluginCreator() {
           return;
         }
 
-        if (cache[selector]) {
-          rule.selector = cache[selector];
+        if (cache.has(selector)) {
+          rule.selector = cache.get(selector);
 
           return;
         }
@@ -218,7 +218,7 @@ function pluginCreator() {
         const optimizedSelector = processor.processSync(selector);
 
         rule.selector = optimizedSelector;
-        cache[selector] = optimizedSelector;
+        cache.set(selector, optimizedSelector);
       });
     },
   };

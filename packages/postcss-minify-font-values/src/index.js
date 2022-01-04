@@ -45,7 +45,7 @@ function pluginCreator(opts) {
   return {
     postcssPlugin: 'postcss-minify-font-values',
     prepare() {
-      const cache = {};
+      const cache = new Map();
       return {
         OnceExit(css) {
           css.walkDecls(/font/i, (decl) => {
@@ -59,8 +59,8 @@ function pluginCreator(opts) {
 
             const cacheKey = `${prop}|${value}`;
 
-            if (cache[cacheKey]) {
-              decl.value = cache[cacheKey];
+            if (cache.has(cacheKey)) {
+              decl.value = cache.get(cacheKey);
 
               return;
             }
@@ -68,7 +68,7 @@ function pluginCreator(opts) {
             const newValue = transform(prop, value, opts);
 
             decl.value = newValue;
-            cache[cacheKey] = newValue;
+            cache.set(cacheKey, newValue);
           });
         },
       };

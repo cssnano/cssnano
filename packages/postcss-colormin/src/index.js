@@ -87,7 +87,7 @@ function pluginCreator(config = {}) {
         env: resultOptions.env,
       });
 
-      const cache = {};
+      const cache = new Map();
       const options = addPluginDefaults(config, browsers);
 
       return {
@@ -109,8 +109,8 @@ function pluginCreator(config = {}) {
 
             const cacheKey = JSON.stringify({ value, options, browsers });
 
-            if (cache[cacheKey]) {
-              decl.value = cache[cacheKey];
+            if (cache.has(cacheKey)) {
+              decl.value = cache.get(cacheKey);
 
               return;
             }
@@ -118,7 +118,7 @@ function pluginCreator(config = {}) {
             const newValue = transform(value, options);
 
             decl.value = newValue;
-            cache[cacheKey] = newValue;
+            cache.set(cacheKey, newValue);
           });
         },
       };

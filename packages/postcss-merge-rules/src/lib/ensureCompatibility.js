@@ -106,16 +106,16 @@ function isHostPseudoClass(selector) {
   return selector.includes(':host');
 }
 
-const isSupportedCache = {};
+const isSupportedCache = new Map();
 
 // Move to util in future
 function isSupportedCached(feature, browsers) {
   const key = JSON.stringify({ feature, browsers });
-  let result = isSupportedCache[key];
+  let result = isSupportedCache.get(key);
 
   if (!result) {
     result = isSupported(feature, browsers);
-    isSupportedCache[key] = result;
+    isSupportedCache.set(key, result);
   }
 
   return result;
@@ -135,8 +135,8 @@ export function ensureCompatibility(selectors, browsers, compatibilityCache) {
     if (simpleSelectorRe.test(selector)) {
       return true;
     }
-    if (compatibilityCache && selector in compatibilityCache) {
-      return compatibilityCache[selector];
+    if (compatibilityCache && compatibilityCache.has(selector)) {
+      return compatibilityCache.get(selector);
     }
     let compatible = true;
     selectorParser((ast) => {
@@ -189,7 +189,7 @@ export function ensureCompatibility(selectors, browsers, compatibilityCache) {
       });
     }).processSync(selector);
     if (compatibilityCache) {
-      compatibilityCache[selector] = compatible;
+      compatibilityCache.set(selector, compatible);
     }
     return compatible;
   });
