@@ -1,6 +1,4 @@
 import { test } from 'uvu';
-import mappings from '../lib/map';
-import getData from '../../../../util/getData';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -8,7 +6,6 @@ import {
 import plugin from '..';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
-const data = getData(mappings);
 
 test(
   'should pass through two value syntax',
@@ -38,10 +35,17 @@ function suite(fixture, expected) {
     ]);
 }
 
-Object.keys(data).forEach((conversion) => {
-  const fixture = data[conversion];
+[
+  { input: 'repeat no-repeat', minified: 'repeat-x' },
+  { input: 'no-repeat repeat', minified: 'repeat-y' },
+  { input: 'repeat repeat', minified: 'repeat' },
+  { input: 'space space', minified: 'space' },
+  { input: 'round round', minified: 'round' },
+  { input: 'no-repeat no-repeat', minified: 'no-repeat' },
+].forEach((conversion) => {
+  const { input, minified } = conversion;
 
-  test(fixture, suite(fixture, conversion));
+  test(`should convert ${input} to ${minified}`, suite(input, minified));
 });
 
 test(

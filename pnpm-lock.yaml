@@ -371,11 +371,9 @@ importers:
 
   packages/postcss-normalize-repeat-style:
     specifiers:
-      cssnano-utils: ^2.0.1
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
     dependencies:
-      cssnano-utils: link:../cssnano-utils
       postcss-value-parser: 4.2.0
     devDependencies:
       postcss: 8.4.5
