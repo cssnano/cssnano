@@ -1,8 +1,16 @@
 import valueParser from 'postcss-value-parser';
-import { getMatch as getMatchFactory } from 'cssnano-utils';
 
 const getValue = (node) => parseFloat(node.value);
 
+/* Works because toString() normalizes the formatting,
+   so comparing the string forms behaves the same as number equality*/
+const conversions = new Map([
+  [[0.25, 0.1, 0.25, 1].toString(), 'ease'],
+  [[0, 0, 1, 1].toString(), 'linear'],
+  [[0.42, 0, 1, 1].toString(), 'ease-in'],
+  [[0, 0, 0.58, 1].toString(), 'ease-out'],
+  [[0.42, 0, 0.58, 1].toString(), 'ease-in-out'],
+]);
 function reduce(node) {
   if (node.type !== 'function') {
     return false;
@@ -75,13 +83,7 @@ function reduce(node) {
       return;
     }
 
-    const match = getMatchFactory([
-      ['ease', [0.25, 0.1, 0.25, 1]],
-      ['linear', [0, 0, 1, 1]],
-      ['ease-in', [0.42, 0, 1, 1]],
-      ['ease-out', [0, 0, 0.58, 1]],
-      ['ease-in-out', [0.42, 0, 0.58, 1]],
-    ])(values);
+    const match = conversions.get(values.toString());
 
     if (match) {
       node.type = 'word';
