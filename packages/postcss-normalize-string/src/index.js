@@ -245,7 +245,7 @@ function pluginCreator(opts) {
     postcssPlugin: 'postcss-normalize-string',
 
     OnceExit(css) {
-      const cache = {};
+      const cache = new Map();
 
       css.walk((node) => {
         const { type } = node;
@@ -254,8 +254,8 @@ function pluginCreator(opts) {
           const param = params[type];
           const key = node[param] + '|' + preferredQuote;
 
-          if (cache[key]) {
-            node[param] = cache[key];
+          if (cache.has(key)) {
+            node[param] = cache.get(key);
 
             return;
           }
@@ -263,7 +263,7 @@ function pluginCreator(opts) {
           const newValue = normalize(node[param], preferredQuote);
 
           node[param] = newValue;
-          cache[key] = newValue;
+          cache.set(key, newValue);
         }
       });
     },

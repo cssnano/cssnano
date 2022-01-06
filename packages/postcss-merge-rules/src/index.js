@@ -56,7 +56,7 @@ function sameDeclarationsAndOrder(a, b) {
  * @param {postcss.Rule} ruleA
  * @param {postcss.Rule} ruleB
  * @param {string[]=} browsers
- * @param {Object.<string, boolean>=} compatibilityCache
+ * @param {Map<string, boolean>=} compatibilityCache
  * @return {boolean}
  */
 function canMerge(ruleA, ruleB, browsers, compatibilityCache) {
@@ -306,7 +306,7 @@ function partialMerge(first, second) {
 
 /**
  * @param {string[]} browsers
- * @param {Object.<string, boolean>} compatibilityCache
+ * @param {Map<string, boolean>} compatibilityCache
  * @return {function(postcss.Rule)}
  */
 function selectorMerger(browsers, compatibilityCache) {
@@ -368,7 +368,7 @@ function pluginCreator() {
         env: resultOpts.env,
       });
 
-      const compatibilityCache = {};
+      const compatibilityCache = new Map();
       return {
         OnceExit(css) {
           css.walkRules(selectorMerger(browsers, compatibilityCache));

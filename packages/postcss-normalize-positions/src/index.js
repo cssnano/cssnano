@@ -188,7 +188,7 @@ function pluginCreator() {
     postcssPlugin: 'postcss-normalize-positions',
 
     OnceExit(css) {
-      const cache = {};
+      const cache = new Map();
 
       css.walkDecls(
         /^(background(-position)?|(-\w+-)?perspective-origin)$/i,
@@ -199,8 +199,8 @@ function pluginCreator() {
             return;
           }
 
-          if (cache[value]) {
-            decl.value = cache[value];
+          if (cache.has(value)) {
+            decl.value = cache.get(value);
 
             return;
           }
@@ -208,7 +208,7 @@ function pluginCreator() {
           const result = transform(value);
 
           decl.value = result;
-          cache[value] = result;
+          cache.set(value, result);
         }
       );
     },
