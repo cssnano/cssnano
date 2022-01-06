@@ -1,5 +1,4 @@
 import valueParser, { stringify } from 'postcss-value-parser';
-import { getMatch as getMatchFactory } from 'cssnano-utils';
 
 function getValues(list, node, index) {
   if (index % 2 === 0) {
@@ -59,13 +58,11 @@ function matrix3d(node, values) {
   }
 }
 
-const rotate3dMappings = [
-  ['rotateX', [1, 0, 0]], // rotate3d(1, 0, 0, a) => rotateX(a)
-  ['rotateY', [0, 1, 0]], // rotate3d(0, 1, 0, a) => rotateY(a)
-  ['rotate', [0, 0, 1]], // rotate3d(0, 0, 1, a) => rotate(a)
-];
-
-const rotate3dMatch = getMatchFactory(rotate3dMappings);
+const rotate3dMappings = new Map([
+  [[1, 0, 0].toString(), 'rotateX'], // rotate3d(1, 0, 0, a) => rotateX(a)
+  [[0, 1, 0].toString(), 'rotateY'], // rotate3d(0, 1, 0, a) => rotateY(a)
+  [[0, 0, 1].toString(), 'rotate'], // rotate3d(0, 0, 1, a) => rotate(a)
+]);
 
 function rotate3d(node, values) {
   if (values.length !== 4) {
@@ -73,9 +70,9 @@ function rotate3d(node, values) {
   }
 
   const { nodes } = node;
-  const match = rotate3dMatch(values.slice(0, 3));
+  const match = rotate3dMappings.get(values.slice(0, 3).toString());
 
-  if (match.length) {
+  if (match) {
     node.value = match;
     node.nodes = [nodes[6]];
   }
