@@ -121,7 +121,7 @@ function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-repeat-style',
     prepare() {
-      const cache = {};
+      const cache = new Map();
       return {
         OnceExit(css) {
           css.walkDecls(
@@ -133,8 +133,8 @@ function pluginCreator() {
                 return;
               }
 
-              if (cache[value]) {
-                decl.value = cache[value];
+              if (cache.has(value)) {
+                decl.value = cache.get(value);
 
                 return;
               }
@@ -142,7 +142,7 @@ function pluginCreator() {
               const result = transform(value);
 
               decl.value = result;
-              cache[value] = result;
+              cache.set(value, result);
             }
           );
         },
