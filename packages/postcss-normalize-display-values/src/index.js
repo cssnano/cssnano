@@ -1,5 +1,4 @@
 import valueParser from 'postcss-value-parser';
-import { getMatch } from 'cssnano-utils';
 import mappings from './lib/map';
 
 function transform(value) {
@@ -18,7 +17,7 @@ function transform(value) {
     return value;
   }
 
-  const match = getMatch(mappings)(values);
+  const match = mappings.get(values.toString());
 
   if (!match) {
     return value;
