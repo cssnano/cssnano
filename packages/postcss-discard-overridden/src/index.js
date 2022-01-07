@@ -32,7 +32,7 @@ function pluginCreator() {
   return {
     postcssPlugin: 'postcss-discard-overridden',
     prepare() {
-      const cache = {};
+      const cache = new Map();
       const rules = [];
 
       return {
@@ -41,7 +41,7 @@ function pluginCreator() {
             if (isOverridable(node.name)) {
               const scope = getScope(node);
 
-              cache[scope] = node;
+              cache.set(scope, node);
               rules.push({
                 node,
                 scope,
@@ -50,7 +50,7 @@ function pluginCreator() {
           });
 
           rules.forEach((rule) => {
-            if (cache[rule.scope] !== rule.node) {
+            if (cache.get(rule.scope) !== rule.node) {
               rule.node.remove();
             }
           });
