@@ -1,5 +1,19 @@
 # Change Log
 
+## 5.0.4 (2022-01-07)
+
+### Patch Changes
+
+- refactor: remove getMatch function from cssnano-utils
+
+  The getMatch function allows nested arrays to emulate a map.
+  It is better to replace this function with a regular Map().
+  It's unlikely this function is used outside of cssnano as it requires
+  a very specific nested array struture.
+
+- Updated dependencies
+  - cssnano-utils@3.0.0
+
 # 5.0.3 (2021-11-16)
 
 ### Chore

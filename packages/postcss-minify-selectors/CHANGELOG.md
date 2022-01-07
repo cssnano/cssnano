@@ -1,7 +1,10 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+## 5.1.1 (2022-01-07)
+
+### Patch Changes
+
+- refactor: use Map as a cache
 
 # [5.1.0](https://github.com/cssnano/cssnano/compare/postcss-minify-selectors@5.0.0...postcss-minify-selectors@5.1.0) (2021-05-19)
 
