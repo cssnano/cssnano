@@ -1,10 +1,13 @@
 import { join } from 'path';
 import fs from 'fs/promises';
-import camel from 'camelcase';
 import toml from 'toml';
 import tomlify from 'tomlify-j0.4';
 import getPackages from './getPackages.mjs';
 import sortAscending from './sortAscending.mjs';
+
+function camel(input) {
+  return input.replace(/-[a-z]/g, (match) => match[1].toUpperCase());
+}
 
 /* External repositories, so the data is added manually */
 
