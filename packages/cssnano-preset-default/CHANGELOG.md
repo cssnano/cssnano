@@ -1,5 +1,39 @@
 # Change Log
 
+## 5.1.10 (2022-01-07)
+
+### Patch Changes
+
+- refactor: remove getMatch function from cssnano-utils
+
+  The getMatch function allows nested arrays to emulate a map.
+  It is better to replace this function with a regular Map().
+  It's unlikely this function is used outside of cssnano as it requires
+  a very specific nested array struture.
+
+- fix: update postcss-calc to 8.2
+
+  Remove a crash when postcss-calc cannot parse the value
+
+- Updated dependencies
+  - cssnano-utils@3.0.0
+  - postcss-colormin@5.2.3
+  - postcss-discard-overridden@5.0.2
+  - postcss-merge-rules@5.0.4
+  - postcss-minify-font-values@5.0.2
+  - postcss-minify-gradients@5.0.4
+  - postcss-minify-params@5.0.3
+  - postcss-minify-selectors@5.1.1
+  - postcss-normalize-display-values@5.0.2
+  - postcss-normalize-positions@5.0.2
+  - postcss-normalize-repeat-style@5.0.2
+  - postcss-normalize-string@5.0.2
+  - postcss-normalize-timing-functions@5.0.2
+  - postcss-normalize-unicode@5.0.2
+  - postcss-normalize-whitespace@5.0.2
+  - postcss-ordered-values@5.0.3
+  - postcss-reduce-transforms@5.0.2
+
 ## 5.1.9 (2021-12-16)
 
 ### Patch Changes

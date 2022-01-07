@@ -1,7 +1,15 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+## 3.0.0 (2022-01-07)
+
+### Major Changes
+
+- refactor: remove getMatch function from cssnano-utils
+
+  The getMatch function allows nested arrays to emulate a map.
+  It is better to replace this function with a regular Map().
+  It's unlikely this function is used outside of cssnano as it requires
+  a very specific nested array struture.
 
 ## [2.0.1](https://github.com/cssnano/cssnano/compare/cssnano-utils@2.0.0...cssnano-utils@2.0.1) (2021-05-19)
 

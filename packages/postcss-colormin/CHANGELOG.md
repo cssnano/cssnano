@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.2.3 (2022-01-07)
+
+### Patch Changes
+
+- refactor: use Map as a cache
+
 ## 5.2.2 (2021-12-16)
 
 ### Patch Changes

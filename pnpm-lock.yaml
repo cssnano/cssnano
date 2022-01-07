@@ -80,9 +80,9 @@ importers:
   packages/cssnano:
     specifiers:
       autoprefixer: ^10.3.7
-      cssnano-preset-advanced: ^5.1.9
-      cssnano-preset-default: ^5.1.9
-      cssnano-preset-lite: ^2.0.1
+      cssnano-preset-advanced: ^5.1.10
+      cssnano-preset-default: ^5.1.10
+      cssnano-preset-lite: ^2.0.2
       lilconfig: ^2.0.3
       postcss: ^8.2.15
       yaml: ^1.10.2
@@ -99,10 +99,10 @@ importers:
   packages/cssnano-preset-advanced:
     specifiers:
       autoprefixer: ^10.3.7
-      cssnano-preset-default: ^5.1.9
+      cssnano-preset-default: ^5.1.10
       postcss: ^8.2.15
       postcss-discard-unused: ^5.0.1
-      postcss-merge-idents: ^5.0.1
+      postcss-merge-idents: ^5.0.2
       postcss-reduce-idents: ^5.0.1
       postcss-zindex: ^5.0.1
     dependencies:
@@ -118,39 +118,39 @@ importers:
   packages/cssnano-preset-default:
     specifiers:
       css-declaration-sorter: ^6.0.3
-      cssnano-utils: ^2.0.1
+      cssnano-utils: ^3.0.0
       postcss: ^8.2.15
-      postcss-calc: ^8.0.0
-      postcss-colormin: ^5.2.2
+      postcss-calc: ^8.2.0
+      postcss-colormin: ^5.2.3
       postcss-convert-values: ^5.0.2
       postcss-discard-comments: ^5.0.1
       postcss-discard-duplicates: ^5.0.1
       postcss-discard-empty: ^5.0.1
-      postcss-discard-overridden: ^5.0.1
+      postcss-discard-overridden: ^5.0.2
       postcss-merge-longhand: ^5.0.4
-      postcss-merge-rules: ^5.0.3
-      postcss-minify-font-values: ^5.0.1
-      postcss-minify-gradients: ^5.0.3
-      postcss-minify-params: ^5.0.2
-      postcss-minify-selectors: ^5.1.0
+      postcss-merge-rules: ^5.0.4
+      postcss-minify-font-values: ^5.0.2
+      postcss-minify-gradients: ^5.0.4
+      postcss-minify-params: ^5.0.3
+      postcss-minify-selectors: ^5.1.1
       postcss-normalize-charset: ^5.0.1
-      postcss-normalize-display-values: ^5.0.1
-      postcss-normalize-positions: ^5.0.1
-      postcss-normalize-repeat-style: ^5.0.1
-      postcss-normalize-string: ^5.0.1
-      postcss-normalize-timing-functions: ^5.0.1
-      postcss-normalize-unicode: ^5.0.1
+      postcss-normalize-display-values: ^5.0.2
+      postcss-normalize-positions: ^5.0.2
+      postcss-normalize-repeat-style: ^5.0.2
+      postcss-normalize-string: ^5.0.2
+      postcss-normalize-timing-functions: ^5.0.2
+      postcss-normalize-unicode: ^5.0.2
       postcss-normalize-url: ^5.0.4
-      postcss-normalize-whitespace: ^5.0.1
-      postcss-ordered-values: ^5.0.2
+      postcss-normalize-whitespace: ^5.0.2
+      postcss-ordered-values: ^5.0.3
       postcss-reduce-initial: ^5.0.2
-      postcss-reduce-transforms: ^5.0.1
+      postcss-reduce-transforms: ^5.0.2
       postcss-svgo: ^5.0.3
       postcss-unique-selectors: ^5.0.2
     dependencies:
       css-declaration-sorter: 6.1.3_postcss@8.4.5
       cssnano-utils: link:../cssnano-utils
-      postcss-calc: 8.0.0_postcss@8.4.5
+      postcss-calc: 8.2.0_postcss@8.4.5
       postcss-colormin: link:../postcss-colormin
       postcss-convert-values: link:../postcss-convert-values
       postcss-discard-comments: link:../postcss-discard-comments
@@ -182,11 +182,11 @@ importers:
 
   packages/cssnano-preset-lite:
     specifiers:
-      cssnano-utils: ^2.0.1
+      cssnano-utils: ^3.0.0
       postcss: ^8.2.15
       postcss-discard-comments: ^5.0.1
       postcss-discard-empty: ^5.0.1
-      postcss-normalize-whitespace: ^5.0.1
+      postcss-normalize-whitespace: ^5.0.2
     dependencies:
       cssnano-utils: link:../cssnano-utils
       postcss-discard-comments: link:../postcss-discard-comments
@@ -260,7 +260,7 @@ importers:
 
   packages/postcss-merge-idents:
     specifiers:
-      cssnano-utils: ^2.0.1
+      cssnano-utils: ^3.0.0
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
     dependencies:
@@ -284,7 +284,7 @@ importers:
     specifiers:
       browserslist: ^4.16.6
       caniuse-api: ^3.0.0
-      cssnano-utils: ^2.0.1
+      cssnano-utils: ^3.0.0
       postcss: ^8.2.15
       postcss-discard-comments: ^5.0.1
       postcss-selector-parser: ^6.0.5
@@ -309,7 +309,7 @@ importers:
   packages/postcss-minify-gradients:
     specifiers:
       colord: ^2.9.1
-      cssnano-utils: ^2.0.1
+      cssnano-utils: ^3.0.0
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
     dependencies:
@@ -323,7 +323,7 @@ importers:
     specifiers:
       alphanum-sort: ^1.0.2
       browserslist: ^4.16.6
-      cssnano-utils: ^2.0.1
+      cssnano-utils: ^3.0.0
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
     dependencies:
@@ -429,7 +429,7 @@ importers:
 
   packages/postcss-ordered-values:
     specifiers:
-      cssnano-utils: ^2.0.1
+      cssnano-utils: ^3.0.0
       node-fetch: ^2.6.0
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
@@ -3259,8 +3259,8 @@ packages:
       postcss: 6.0.23
     dev: true
 
-  /postcss-calc/8.0.0_postcss@8.4.5:
-    resolution: {integrity: sha512-5NglwDrcbiy8XXfPM11F3HeC6hoT9W7GUH/Zi5U/p7u3Irv4rHhdDcIZwG0llHXV4ftsBjpfWMXAnXNl4lnt8g==}
+  /postcss-calc/8.2.0_postcss@8.4.5:
+    resolution: {integrity: sha512-PueXCv288diX7OXyJicGNA6Q3+L4xYb2cALTAeFj9X6PXnj+s4pUf1vkZnwn+rldfu2taCA9ondjF93lhRTPFA==}
     peerDependencies:
       postcss: ^8.2.2
     dependencies:
