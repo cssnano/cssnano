@@ -1,8 +1,8 @@
-export default [
-  ['repeat-x', ['repeat', 'no-repeat']],
-  ['repeat-y', ['no-repeat', 'repeat']],
-  ['repeat', ['repeat', 'repeat']],
-  ['space', ['space', 'space']],
-  ['round', ['round', 'round']],
-  ['no-repeat', ['no-repeat', 'no-repeat']],
-];
+export default new Map([
+  [['repeat', 'no-repeat'].toString(), 'repeat-x'],
+  [['no-repeat', 'repeat'].toString(), 'repeat-y'],
+  [['repeat', 'repeat'].toString(), 'repeat'],
+  [['space', 'space'].toString(), 'space'],
+  [['round', 'round'].toString(), 'round'],
+  [['no-repeat', 'no-repeat'].toString(), 'no-repeat'],
+]);
