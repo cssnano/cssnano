@@ -21,24 +21,24 @@ const tableCaption = 'table-caption';
  * Specification: https://drafts.csswg.org/css-display/#the-display-properties
  */
 
-export default [
-  [block, [block, flow]],
-  [flowRoot, [block, flowRoot]],
-  [inline, [inline, flow]],
-  [inlineBlock, [inline, flowRoot]],
-  [runIn, [runIn, flow]],
-  [listItem, [listItem, block, flow]],
-  [inline + ' ' + listItem, [inline, flow, listItem]],
-  [flex, [block, flex]],
-  [inlineFlex, [inline, flex]],
-  [grid, [block, grid]],
-  [inlineGrid, [inline, grid]],
-  [ruby, [inline, ruby]],
+export default new Map([
+  [[block, flow].toString(), block],
+  [[block, flowRoot].toString(), flowRoot],
+  [[inline, flow].toString(), inline],
+  [[inline, flowRoot].toString(), inlineBlock],
+  [[runIn, flow].toString(), runIn],
+  [[listItem, block, flow].toString(), listItem],
+  [[inline, flow, listItem].toString(), inline + ' ' + listItem],
+  [[block, flex].toString(), flex],
+  [[inline, flex].toString(), inlineFlex],
+  [[block, grid].toString(), grid],
+  [[inline, grid].toString(), inlineGrid],
+  [[inline, ruby].toString(), ruby],
   // `block ruby` is same
-  [table, [block, table]],
-  [inlineTable, [inline, table]],
-  [tableCell, [tableCell, flow]],
-  [tableCaption, [tableCaption, flow]],
-  [rubyBase, [rubyBase, flow]],
-  [rubyText, [rubyText, flow]],
-];
+  [[block, table].toString(), table],
+  [[inline, table].toString(), inlineTable],
+  [[tableCell, flow].toString(), tableCell],
+  [[tableCaption, flow].toString(), tableCaption],
+  [[rubyBase, flow].toString(), rubyBase],
+  [[rubyText, flow].toString(), rubyText],
+]);

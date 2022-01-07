@@ -1,14 +1,11 @@
 import valueParser from 'postcss-value-parser';
-import { getMatch as getMatchFactory } from 'cssnano-utils';
 import mappings from './lib/map';
 
 function evenValues(list, index) {
   return index % 2 === 0;
 }
 
-const repeatKeywords = mappings.map((mapping) => mapping[0]);
-
-const getMatch = getMatchFactory(mappings);
+const repeatKeywords = [...mappings.values()];
 
 function isCommaNode(node) {
   return node.type === 'div' && node.value === ',';
@@ -103,10 +100,12 @@ function transform(value) {
     if (nodes.length !== 3) {
       return;
     }
+    const key = nodes
+      .filter(evenValues)
+      .map((n) => n.value.toLowerCase())
+      .toString();
 
-    const match = getMatch(
-      nodes.filter(evenValues).map((n) => n.value.toLowerCase())
-    );
+    const match = mappings.get(key);
 
     if (match) {
       nodes[0].value = match;

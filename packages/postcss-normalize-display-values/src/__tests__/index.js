@@ -1,6 +1,4 @@
 import { test } from 'uvu';
-import mappings from '../lib/map';
-import getData from '../../../../util/getData';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -8,19 +6,35 @@ import {
 import plugin from '..';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
-const data = getData(mappings);
 
 test('should pass through "block ruby"', passthroughCSS('display:block ruby;'));
 
 test('should pass through single values', passthroughCSS('display:block;'));
-
-Object.keys(data).forEach((key) => {
-  const actual = data[key];
-  const expected = key;
-
+/* source: https://www.w3.org/TR/css-display-3/#the-display-properties */
+[
+  { input: 'block flow', minified: 'block' },
+  { input: 'block flow-root', minified: 'flow-root' },
+  { input: 'inline flow', minified: 'inline' },
+  { input: 'inline flow-root', minified: 'inline-block' },
+  { input: 'run-in flow', minified: 'run-in' },
+  { input: 'list-item block flow', minified: 'list-item' },
+  { input: 'inline flow list-item', minified: 'inline list-item' },
+  { input: 'block flex', minified: 'flex' },
+  { input: 'inline flex', minified: 'inline-flex' },
+  { input: 'block grid', minified: 'grid' },
+  { input: 'inline grid', minified: 'inline-grid' },
+  { input: 'inline ruby', minified: 'ruby' },
+  { input: 'block table', minified: 'table' },
+  { input: 'inline table', minified: 'inline-table' },
+  { input: 'table-cell flow', minified: 'table-cell' },
+  { input: 'table-caption flow', minified: 'table-caption' },
+  { input: 'ruby-base flow', minified: 'ruby-base' },
+  { input: 'ruby-text flow', minified: 'ruby-text' },
+].forEach((fixture) => {
+  const { input, minified } = fixture;
   test(
-    `display: ${actual} => display: ${expected}`,
-    processCSS(`display:${actual}`, `display:${expected}`)
+    `display: ${input} => display: ${minified}`,
+    processCSS(`display:${input}`, `display:${minified}`)
   );
 });
 
