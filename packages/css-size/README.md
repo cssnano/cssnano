@@ -155,9 +155,6 @@ $ css-size --help
 ## Related
 
 * [`js-size`]: Display the size of a JS file.
-* [`gzip-size`]: Calculate the size of a string after compression with gzip.
-* [`brotli-size`]: Calculate the size of a string after compression with brotli.
-
 
 ## Contributors
 
@@ -170,5 +167,3 @@ MIT © [Ben Briggs](http://beneb.info)
 
 [`postcss`]:   https://github.com/postcss/postcss
 [`js-size`]:   https://github.com/lukekarrys/js-size
-[`gzip-size`]: https://github.com/sindresorhus/gzip-size
-[`brotli-size`]: https://github.com/erwinmombay/brotli-size

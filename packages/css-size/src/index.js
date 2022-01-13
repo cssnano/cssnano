@@ -1,8 +1,24 @@
 import zlib from 'zlib';
-import prettyBytes from 'pretty-bytes';
 import postcss from 'postcss';
-import Table from 'cli-table3';
 import nano from 'cssnano';
+
+/* From https://github.com/sindresorhus/pretty-bytes/ */
+function prettyBytes(number) {
+  const UNITS = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+  if (number < 1) {
+    return number + ' ' + UNITS[0];
+  }
+
+  const exponent = Math.min(
+    Math.floor(Math.log10(number) / 3),
+    UNITS.length - 1
+  );
+  number /= Math.pow(1000, exponent);
+  number = number.toPrecision(3);
+  const unit = UNITS[exponent];
+  return Number(number) + ' ' + unit;
+}
 
 /* Returns the size of the gzipped input */
 function gzip(input) {
@@ -27,11 +43,15 @@ const percentDifference = (original, minified) => {
   return parseFloat(((minified / original) * 100).toFixed(2)) + '%';
 };
 
-const cssSize = (css, opts, processor) => {
+const minifyCss = (css, opts, processor) => {
   const cssnano = postcss([nano]);
   processor = processor || cssnano.process.bind(cssnano);
   css = css.toString();
-  return processor(css, opts).then((result) => {
+  return processor(css, opts);
+};
+
+const cssSize = (css, opts, processor) => {
+  return minifyCss(css, opts, processor).then((result) => {
     let sizes = computeSizes(css, result.css);
     deltasAsStrings(sizes.uncompressed);
     deltasAsStrings(sizes.gzip);
@@ -64,56 +84,89 @@ const computeSizes = (original, minified) => {
   };
 };
 
-const tableize = (data) => {
-  return {
-    head: ['', 'Uncompressed', 'Gzip', 'Brotli'],
-    rows: [
-      {
-        Original: [
-          data.uncompressed.original,
-          data.gzip.original,
-          data.brotli.original,
-        ],
-      },
-      {
-        Processed: [
-          data.uncompressed.processed,
-          data.gzip.processed,
-          data.brotli.processed,
-        ],
-      },
-      {
-        Difference: [
-          data.uncompressed.difference,
-          data.gzip.difference,
-          data.brotli.difference,
-        ],
-      },
-      {
-        Percent: [
-          data.uncompressed.percent,
-          data.gzip.percent,
-          data.brotli.percent,
-        ],
-      },
-    ],
-  };
-};
-
 export function table(css, opts, processor) {
   return cssSize(css, opts, processor).then((data) => {
-    let result = tableize(data);
-    let output = new Table({ head: result.head });
-    output.push.apply(output, result.rows);
-    return output.toString();
+    let output = '';
+    output += '┌────────────┬──────────────┬────────┬────────┐';
+    output += '\n';
+    output += '│            │ Uncompressed │ Gzip   │ Brotli │';
+    output += '\n';
+    output += '├────────────┼──────────────┼────────┼────────┤';
+    output += '\n';
+    output += '│ Original   │ ';
+    output +=
+      data.uncompressed.original +
+      ' '.repeat(13 - data.uncompressed.original.length) +
+      '│';
+    output +=
+      ' ' +
+      data.gzip.original +
+      ' '.repeat(7 - data.gzip.original.length) +
+      '│';
+    output +=
+      ' ' +
+      data.brotli.original +
+      ' '.repeat(7 - data.brotli.original.length) +
+      '│';
+    output += '\n';
+    output += '├────────────┼──────────────┼────────┼────────┤';
+    output += '\n';
+    output += '│ Processed  │ ';
+    output +=
+      data.uncompressed.processed +
+      ' '.repeat(13 - data.uncompressed.processed.length) +
+      '│';
+    output +=
+      ' ' +
+      data.gzip.processed +
+      ' '.repeat(7 - data.gzip.processed.length) +
+      '│';
+    output +=
+      ' ' +
+      data.brotli.processed +
+      ' '.repeat(7 - data.brotli.processed.length) +
+      '│';
+    output += '\n';
+    output += '├────────────┼──────────────┼────────┼────────┤';
+    output += '\n';
+    output += '│ Difference │ ';
+    output +=
+      data.uncompressed.difference +
+      ' '.repeat(13 - data.uncompressed.difference.length) +
+      '│';
+    output +=
+      ' ' +
+      data.gzip.difference +
+      ' '.repeat(7 - data.gzip.difference.length) +
+      '│';
+    output +=
+      ' ' +
+      data.brotli.difference +
+      ' '.repeat(7 - data.brotli.difference.length) +
+      '│';
+    output += '\n';
+    output += '├────────────┼──────────────┼────────┼────────┤';
+    output += '\n';
+    output += '│ Percent    │ ';
+    output +=
+      data.uncompressed.percent +
+      ' '.repeat(13 - data.uncompressed.percent.length) +
+      '│';
+    output +=
+      ' ' + data.gzip.percent + ' '.repeat(7 - data.gzip.percent.length) + '│';
+    output +=
+      ' ' +
+      data.brotli.percent +
+      ' '.repeat(7 - data.brotli.percent.length) +
+      '│';
+    output += '\n';
+    output += '└────────────┴──────────────┴────────┴────────┘';
+    return output;
   });
 }
 
 export function numeric(css, opts, processor) {
-  const cssnano = nano();
-  processor = processor || cssnano.process.bind(cssnano);
-  css = css.toString();
-  return processor(css, opts).then((result) => {
+  return minifyCss(css, opts, processor).then((result) => {
     let sizes = computeSizes(css, result.css);
     deltasAsNumbers(sizes.uncompressed);
     deltasAsNumbers(sizes.gzip);

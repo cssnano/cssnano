@@ -34,11 +34,8 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "cli-table3": "^0.6.0",
     "cssnano": "^5.0.3",
-    "minimist": "^1.2.0",
-    "pretty-bytes": "^5.6.0",
-    "read-file-stdin": "^0.2.1"
+    "minimist": "^1.2.0"
   },
   "peerDependencies": {
     "postcss": "^8.2.15"
