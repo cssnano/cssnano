@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.0.5 (2022-01-13)
+
+### Fixes
+
+- fix: remove colors dependency ([#1283](https://github.com/cssnano/cssnano/pull/1283)) ([8f3d1ee054](https://github.com/cssnano/cssnano/commit/8f3d1ee0548b3f46d4c24b26b5d226efb21ae8ca))
+
 ## 5.0.4 (2021-11-27)
 
 ### Chore
