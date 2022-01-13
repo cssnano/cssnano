@@ -1,9 +1,7 @@
 #!/usr/bin/env node
-
 import fs from 'fs';
 import process from 'process';
 import path from 'path';
-import read from 'read-file-stdin';
 import minimist from 'minimist';
 import { table } from './';
 
@@ -15,6 +13,23 @@ const opts = minimist(process.argv.slice(2), {
   },
 });
 
+const processFile = (err, buf) => {
+  if (err) {
+    throw err;
+  }
+  if (buf.length === 0) {
+    return;
+  }
+  let processor = null;
+  if (opts.processor) {
+    processor = require(path.resolve(process.cwd(), opts.processor));
+  }
+  table(buf, opts.options, processor).then((results) =>
+    // eslint-disable-next-line no-console
+    console.log(results)
+  );
+};
+
 if (opts.version) {
   // eslint-disable-next-line no-console
   console.log(require('../package.json').version);
@@ -25,19 +40,9 @@ if (opts.version) {
     fs.createReadStream(__dirname + '/../usage.txt')
       .pipe(process.stdout)
       .on('close', () => process.exit(1));
+  } else if (file) {
+    fs.readFile(file, processFile);
   } else {
-    read(file, (err, buf) => {
-      if (err) {
-        throw err;
-      }
-      let processor = null;
-      if (opts.processor) {
-        processor = require(path.resolve(process.cwd(), opts.processor));
-      }
-      table(buf, opts.options, processor).then((results) =>
-        // eslint-disable-next-line no-console
-        console.log(results)
-      );
-    });
+    fs.readFile(process.stdin.fd, processFile);
   }
 }
