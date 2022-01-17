@@ -4,7 +4,7 @@
   "scripts": {
     "lint": "eslint . --cache --ignore-path .gitignore --ext .js,.mjs",
     "fixlint": "pnpm lint -- --fix",
-    "prepare": "pnpm run -r prepare",
+    "prepare": "pnpm run -r --parallel prepare",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
     "test:only": "uvu -r @babel/register packages \"__tests__.*\\.js$\"",
@@ -19,10 +19,10 @@
     "node": "^10 || ^12 || >=14"
   },
   "devDependencies": {
-    "@babel/cli": "^7.16.7",
+    "@babel/cli": "^7.16.8",
     "@babel/core": "^7.16.7",
-    "@babel/plugin-transform-modules-commonjs": "^7.16.7",
-    "@babel/register": "^7.16.7",
+    "@babel/plugin-transform-modules-commonjs": "^7.16.8",
+    "@babel/register": "^7.16.9",
     "@changesets/cli": "^2.19.0",
     "babel-plugin-add-module-exports": "^1.0.2",
     "browserslist": "^4.19.1",
@@ -45,7 +45,7 @@
     "postcss-value-parser": "^4.2.0",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
-    "uvu": "^0.5.2"
+    "uvu": "^0.5.3"
   },
   "browserslist": {
     "chrome58": [
