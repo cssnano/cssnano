@@ -1,5 +1,5 @@
 import { test } from 'uvu';
-import { processCSSWithPresetFactory } from '../../../../util/testHelpers';
+import { processCSSWithPresetFactory } from '../../../../util/integrationTestHelpers';
 import preset from '..';
 
 const { processCSS } = processCSSWithPresetFactory(preset);

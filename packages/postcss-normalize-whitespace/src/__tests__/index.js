@@ -1,8 +1,6 @@
 import { test } from 'uvu';
-import {
-  processCSSFactory,
-  processCSSWithPresetFactory,
-} from '../../../../util/testHelpers';
+import { processCSSFactory } from '../../../../util/testHelpers';
+import { processCSSWithPresetFactory } from '../../../../util/integrationTestHelpers';
 import plugin from '..';
 
 const { processCSS } = processCSSFactory(plugin);

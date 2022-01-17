@@ -2,8 +2,8 @@ import { test } from 'uvu';
 import {
   usePostCSSPlugin,
   processCSSFactory,
-  processCSSWithPresetFactory,
 } from '../../../../util/testHelpers';
+import { processCSSWithPresetFactory } from '../../../../util/integrationTestHelpers';
 import plugin from '..';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
