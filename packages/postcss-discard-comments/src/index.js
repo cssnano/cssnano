@@ -3,17 +3,17 @@ import commentParser from './lib/commentParser';
 
 function pluginCreator(opts = {}) {
   const remover = new CommentRemover(opts);
-  const matcherCache = {};
-  const replacerCache = {};
+  const matcherCache = new Map();
+  const replacerCache = new Map();
 
   function matchesComments(source) {
-    if (matcherCache[source]) {
-      return matcherCache[source];
+    if (matcherCache.has(source)) {
+      return matcherCache.get(source);
     }
 
     const result = commentParser(source).filter(([type]) => type);
 
-    matcherCache[source] = result;
+    matcherCache.set(source, result);
 
     return result;
   }
@@ -21,8 +21,8 @@ function pluginCreator(opts = {}) {
   function replaceComments(source, space, separator = ' ') {
     const key = source + '@|@' + separator;
 
-    if (replacerCache[key]) {
-      return replacerCache[key];
+    if (replacerCache.has(key)) {
+      return replacerCache.get(key);
     }
 
     const parsed = commentParser(source).reduce((value, [type, start, end]) => {
@@ -41,7 +41,7 @@ function pluginCreator(opts = {}) {
 
     const result = space(parsed).join(' ');
 
-    replacerCache[key] = result;
+    replacerCache.set(key, result);
 
     return result;
   }
