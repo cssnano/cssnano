@@ -4,7 +4,7 @@
   "scripts": {
     "lint": "eslint . --cache --ignore-path .gitignore --ext .js,.mjs",
     "fixlint": "pnpm lint -- --fix",
-    "prepare": "pnpm run -r prepare",
+    "prepare": "pnpm run -r --parallel prepare",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
     "test:only": "uvu -r @babel/register packages \"__tests__.*\\.js$\"",
