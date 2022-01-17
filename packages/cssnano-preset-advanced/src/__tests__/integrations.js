@@ -1,6 +1,9 @@
 import { test } from 'uvu';
 import * as assert from 'uvu/assert';
-import { integrationTests, loadPreset } from '../../../../util/testHelpers.js';
+import {
+  integrationTests,
+  loadPreset,
+} from '../../../../util/integrationTestHelpers.js';
 import preset from '..';
 
 test(

@@ -1,5 +1,5 @@
 import { test } from 'uvu';
-import { integrationTests } from '../../../../util/testHelpers.js';
+import { integrationTests } from '../../../../util/integrationTestHelpers.js';
 import preset from '..';
 
 test(

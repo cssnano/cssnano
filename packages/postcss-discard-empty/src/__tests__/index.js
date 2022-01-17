@@ -3,8 +3,8 @@ import * as assert from 'uvu/assert';
 import {
   usePostCSSPlugin,
   processCSSFactory,
-  processCSSWithPresetFactory,
 } from '../../../../util/testHelpers';
+import { processCSSWithPresetFactory } from '../../../../util/integrationTestHelpers';
 import plugin from '..';
 
 const { passthroughCSS, processor } = processCSSFactory(plugin);
