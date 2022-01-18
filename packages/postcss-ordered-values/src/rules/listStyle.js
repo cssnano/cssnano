@@ -1,18 +1,18 @@
 import valueParser from 'postcss-value-parser';
 import listStyleTypes from './listStyleTypes.json';
 
-const definedTypes = listStyleTypes['list-style-type'];
+const definedTypes = new Set(listStyleTypes['list-style-type']);
 
-const definedPosition = ['inside', 'outside'];
+const definedPosition = new Set(['inside', 'outside']);
 export default function listStyleNormalizer(listStyle) {
   const order = { type: '', position: '', image: '' };
 
   listStyle.walk((decl) => {
     if (decl.type === 'word') {
-      if (definedTypes.includes(decl.value)) {
+      if (definedTypes.has(decl.value)) {
         // its a type field
         order.type = `${order.type} ${decl.value}`;
-      } else if (definedPosition.includes(decl.value)) {
+      } else if (definedPosition.has(decl.value)) {
         order.position = `${order.position} ${decl.value}`;
       } else if (decl.value === 'none') {
         if (

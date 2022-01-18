@@ -1,15 +1,12 @@
 import isCustomProp from './isCustomProp';
 
-const hasGlobalKeyword = (prop) =>
-  prop &&
-  prop.value &&
-  ['inherit', 'initial', 'unset', 'revert'].includes(prop.value.toLowerCase());
+const globalKeywords = new Set(['inherit', 'initial', 'unset', 'revert']);
 
 export default (prop, includeCustomProps = true) => {
   if (
     !prop.value ||
     (includeCustomProps && isCustomProp(prop)) ||
-    hasGlobalKeyword(prop)
+    (prop.value && globalKeywords.has(prop.value.toLowerCase()))
   ) {
     return false;
   }

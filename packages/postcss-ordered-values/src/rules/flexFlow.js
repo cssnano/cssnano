@@ -1,8 +1,13 @@
 // flex-flow: <flex-direction> || <flex-wrap>
 
-const flexDirection = ['row', 'row-reverse', 'column', 'column-reverse'];
+const flexDirection = new Set([
+  'row',
+  'row-reverse',
+  'column',
+  'column-reverse',
+]);
 
-const flexWrap = ['nowrap', 'wrap', 'wrap-reverse'];
+const flexWrap = new Set(['nowrap', 'wrap', 'wrap-reverse']);
 
 export default function normalizeFlexFlow(flexFlow) {
   let order = {
@@ -11,12 +16,12 @@ export default function normalizeFlexFlow(flexFlow) {
   };
 
   flexFlow.walk(({ value }) => {
-    if (flexDirection.includes(value.toLowerCase())) {
+    if (flexDirection.has(value.toLowerCase())) {
       order.direction = value;
       return;
     }
 
-    if (flexWrap.includes(value.toLowerCase())) {
+    if (flexWrap.has(value.toLowerCase())) {
       order.wrap = value;
       return;
     }

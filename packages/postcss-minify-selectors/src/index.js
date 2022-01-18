@@ -2,12 +2,12 @@ import sort from 'alphanum-sort';
 import parser from 'postcss-selector-parser';
 import canUnquote from './lib/canUnquote.js';
 
-const pseudoElements = [
+const pseudoElements = new Set([
   '::before',
   '::after',
   '::first-letter',
   '::first-line',
-];
+]);
 
 function attribute(selector) {
   if (selector.value) {
@@ -114,21 +114,21 @@ function pseudo(selector) {
     return;
   }
 
-  const uniques = [];
+  const uniques = new Set();
 
   selector.walk((child) => {
     if (child.type === 'selector') {
       const childStr = String(child);
 
-      if (!uniques.includes(childStr)) {
-        uniques.push(childStr);
+      if (!uniques.has(childStr)) {
+        uniques.add(childStr);
       } else {
         child.remove();
       }
     }
   });
 
-  if (pseudoElements.includes(value)) {
+  if (pseudoElements.has(value)) {
     selector.value = selector.value.slice(1);
   }
 }
@@ -171,7 +171,7 @@ function pluginCreator() {
       const processor = parser((selectors) => {
         selectors.nodes = sort(selectors.nodes, { insensitive: true });
 
-        const uniqueSelectors = [];
+        const uniqueSelectors = new Set();
 
         selectors.walk((sel) => {
           // Trim whitespace around the value
@@ -185,8 +185,8 @@ function pluginCreator() {
           const toString = String(sel);
 
           if (sel.type === 'selector' && sel.parent.type !== 'pseudo') {
-            if (!uniqueSelectors.includes(toString)) {
-              uniqueSelectors.push(toString);
+            if (!uniqueSelectors.has(toString)) {
+              uniqueSelectors.add(toString);
             } else {
               sel.remove();
             }

@@ -5,7 +5,7 @@ function evenValues(list, index) {
   return index % 2 === 0;
 }
 
-const repeatKeywords = [...mappings.values()];
+const repeatKeywords = new Set(mappings.values());
 
 function isCommaNode(node) {
   return node.type === 'div' && node.value === ',';
@@ -68,7 +68,7 @@ function transform(value) {
     }
 
     const isRepeatKeyword =
-      node.type === 'word' && repeatKeywords.includes(node.value.toLowerCase());
+      node.type === 'word' && repeatKeywords.has(node.value.toLowerCase());
 
     if (ranges[rangeIndex].start === null && isRepeatKeyword) {
       ranges[rangeIndex].start = index;

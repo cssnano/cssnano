@@ -4,9 +4,9 @@ import mathFunctions from '../lib/mathfunctions.js';
 // border: <line-width> || <line-style> || <color>
 // outline: <outline-color> || <outline-style> || <outline-width>
 
-const borderWidths = ['thin', 'medium', 'thick'];
+const borderWidths = new Set(['thin', 'medium', 'thick']);
 
-const borderStyles = [
+const borderStyles = new Set([
   'none',
   'auto', // only in outline-style
   'hidden',
@@ -18,7 +18,7 @@ const borderStyles = [
   'ridge',
   'inset',
   'outset',
-];
+]);
 
 export default function normalizeBorder(border) {
   const order = { width: '', style: '', color: '' };
@@ -26,14 +26,11 @@ export default function normalizeBorder(border) {
   border.walk((node) => {
     const { type, value } = node;
     if (type === 'word') {
-      if (borderStyles.includes(value.toLowerCase())) {
+      if (borderStyles.has(value.toLowerCase())) {
         order.style = value;
         return false;
       }
-      if (
-        borderWidths.includes(value.toLowerCase()) ||
-        unit(value.toLowerCase())
-      ) {
+      if (borderWidths.has(value.toLowerCase()) || unit(value.toLowerCase())) {
         if (order.width !== '') {
           order.width = `${order.width} ${value}`;
           return false;
@@ -45,7 +42,7 @@ export default function normalizeBorder(border) {
       return false;
     }
     if (type === 'function') {
-      if (mathFunctions.includes(value.toLowerCase())) {
+      if (mathFunctions.has(value.toLowerCase())) {
         order.width = stringify(node);
       } else {
         order.color = stringify(node);
