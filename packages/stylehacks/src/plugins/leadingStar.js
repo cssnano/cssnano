@@ -23,7 +23,7 @@ export default plugin([IE_5_5, IE_6, IE_7], [ATRULE, DECL], function (node) {
       return;
     }
     hacks.some((hack) => {
-      if (~before.indexOf(hack)) {
+      if (before.includes(hack)) {
         this.push(node, {
           identifier: PROPERTY,
           hack: `${before.trim()}${node.prop}`,

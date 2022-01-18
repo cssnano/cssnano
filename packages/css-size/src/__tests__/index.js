@@ -40,17 +40,17 @@ function stripColors(str) {
 test('cli', () => {
   return setup(['test.css']).then((results) => {
     let out = results[0];
-    assert.is(!!~out.indexOf('43 B'), true);
-    assert.is(!!~out.indexOf('34 B'), true);
-    assert.is(!!~out.indexOf('9 B'), true);
-    assert.is(!!~out.indexOf('79.07%'), true);
+    assert.is(out.includes('43 B'), true);
+    assert.is(out.includes('34 B'), true);
+    assert.is(out.includes('9 B'), true);
+    assert.is(out.includes('79.07%'), true);
   });
 });
 
 test('cli with processor argument', () => {
   return setup(['-p', noopProcessorPath, 'test.css']).then((results) => {
     let out = results[0];
-    assert.is(!!~out.indexOf('100%'), true);
+    assert.is(out.includes('100%'), true);
   });
 });
 

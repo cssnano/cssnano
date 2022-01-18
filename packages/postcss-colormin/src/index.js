@@ -21,7 +21,7 @@ function walk(parent, callback) {
  */
 
 function hasTransparentBug(browser) {
-  return ~['ie 8', 'ie 9'].indexOf(browser);
+  return ['ie 8', 'ie 9'].includes(browser);
 }
 
 function isMathFunctionNode(node) {

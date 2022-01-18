@@ -15,12 +15,12 @@ const styles = [
 ];
 
 export function isStyle(value) {
-  return value && !!~styles.indexOf(value.toLowerCase());
+  return value && styles.includes(value.toLowerCase());
 }
 
 export function isWidth(value) {
   return (
-    (value && !!~widths.indexOf(value.toLowerCase())) ||
+    (value && widths.includes(value.toLowerCase())) ||
     /^(\d+(\.\d+)?|\.\d+)(\w+)?$/.test(value)
   );
 }
@@ -52,7 +52,7 @@ export function isColor(value) {
     return true;
   }
 
-  return !!~colors.indexOf(value);
+  return colors.includes(value);
 }
 
 export function isValidWsc(wscs) {

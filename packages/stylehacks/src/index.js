@@ -27,7 +27,7 @@ function pluginCreator(opts = {}) {
 
       css.walk((node) => {
         processors.forEach((proc) => {
-          if (!~proc.nodeTypes.indexOf(node.type)) {
+          if (!proc.nodeTypes.includes(node.type)) {
             return;
           }
 

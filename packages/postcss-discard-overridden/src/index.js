@@ -6,11 +6,11 @@ function vendorUnprefixed(prop) {
 }
 
 function isOverridable(name) {
-  return ~OVERRIDABLE_RULES.indexOf(vendorUnprefixed(name.toLowerCase()));
+  return OVERRIDABLE_RULES.includes(vendorUnprefixed(name.toLowerCase()));
 }
 
 function isScope(name) {
-  return ~SCOPE_RULES.indexOf(vendorUnprefixed(name.toLowerCase()));
+  return SCOPE_RULES.includes(vendorUnprefixed(name.toLowerCase()));
 }
 
 function getScope(node) {

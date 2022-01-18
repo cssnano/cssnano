@@ -73,7 +73,7 @@ function shouldAbort(parsed) {
     if (
       node.type === 'comment' ||
       isVariableFunctionNode(node) ||
-      (node.type === 'word' && ~node.value.indexOf(`___CSS_LOADER_IMPORT___`))
+      (node.type === 'word' && node.value.includes(`___CSS_LOADER_IMPORT___`))
     ) {
       abort = true;
 

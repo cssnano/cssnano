@@ -192,7 +192,7 @@ export default function (nodes, opts) {
 
   if (opts.removeAfterKeyword) {
     for (i = 0, max = family.length; i < max; i += 1) {
-      if (~genericFontFamilykeywords.indexOf(family[i].toLowerCase())) {
+      if (genericFontFamilykeywords.includes(family[i].toLowerCase())) {
         family = family.slice(0, i + 1);
         break;
       }

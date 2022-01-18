@@ -35,7 +35,7 @@ function testRemovals(fixture, expected, removedSelectors) {
           m.plugin !== 'postcss-discard-empty' ||
           m.type !== 'removal' ||
           m.selector !== undefined ||
-          ~removedSelectors.indexOf(m.selector)
+          removedSelectors.includes(m.selector)
         ) {
           throw new Error(
             'unexpected selector `' + m.selector + '` was removed'

@@ -32,7 +32,7 @@ export default (prop) => {
       );
 
       lesser.forEach(remove);
-      decls = decls.filter((node) => !~lesser.indexOf(node));
+      decls = decls.filter((node) => !lesser.includes(node));
 
       // get duplicate properties
       let duplicates = decls.filter(
@@ -47,7 +47,7 @@ export default (prop) => {
 
       duplicates.forEach(remove);
       decls = decls.filter(
-        (node) => node !== lastNode && !~duplicates.indexOf(node)
+        (node) => node !== lastNode && !duplicates.includes(node)
       );
     }
   };

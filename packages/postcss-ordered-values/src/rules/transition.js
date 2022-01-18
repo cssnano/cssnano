@@ -35,7 +35,7 @@ export default function normalizeTransition(parsed) {
 
       if (
         type === 'function' &&
-        ~['steps', 'cubic-bezier'].indexOf(value.toLowerCase())
+        ['steps', 'cubic-bezier'].includes(value.toLowerCase())
       ) {
         state.timingFunction = [...state.timingFunction, node, addSpace()];
       } else if (unit(value)) {
@@ -44,7 +44,7 @@ export default function normalizeTransition(parsed) {
         } else {
           state.time2 = [...state.time2, node, addSpace()];
         }
-      } else if (~timingFunctions.indexOf(value.toLowerCase())) {
+      } else if (timingFunctions.includes(value.toLowerCase())) {
         state.timingFunction = [...state.timingFunction, node, addSpace()];
       } else {
         state.property = [...state.property, node, addSpace()];

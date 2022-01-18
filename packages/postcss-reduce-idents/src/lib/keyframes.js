@@ -34,7 +34,7 @@ export default function () {
         decl.value = valueParser(decl.value)
           .walk((node) => {
             if (node.type === 'word' && node.value in cache) {
-              if (!~referenced.indexOf(node.value)) {
+              if (!referenced.includes(node.value)) {
                 referenced.push(node.value);
               }
 
@@ -49,7 +49,7 @@ export default function () {
       atRules.forEach((rule) => {
         const cached = cache[rule.params];
 
-        if (cached && cached.count > 0 && !!~referenced.indexOf(rule.params)) {
+        if (cached && cached.count > 0 && referenced.includes(rule.params)) {
           rule.params = cached.ident;
         }
       });

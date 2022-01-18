@@ -43,7 +43,7 @@ function filterNamespace({ atRules, rules }) {
 }
 
 function hasFont(fontFamily, cache, comma) {
-  return comma(fontFamily).some((font) => cache.some((c) => ~c.indexOf(font)));
+  return comma(fontFamily).some((font) => cache.some((c) => c.includes(font)));
 }
 
 // fonts have slightly different logic
@@ -92,8 +92,8 @@ function pluginCreator(opts) {
           css.walk((node) => {
             const { type, prop, selector, name } = node;
 
-            if (type === rule && namespace && ~selector.indexOf('|')) {
-              if (~selector.indexOf('[')) {
+            if (type === rule && namespace && selector.includes('|')) {
+              if (selector.includes('[')) {
                 // Attribute selector, so we should parse further.
                 selectorParser((ast) => {
                   ast.walkAttributes(({ namespace: ns }) => {

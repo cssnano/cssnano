@@ -14,7 +14,7 @@ function vendorPrefix(prop) {
 export default plugin([IE_6], [DECL], function (decl) {
   const { before } = decl.raws;
 
-  if (before && ~before.indexOf('_')) {
+  if (before && before.includes('_')) {
     this.push(decl, {
       identifier: PROPERTY,
       hack: `${before.trim()}${decl.prop}`,

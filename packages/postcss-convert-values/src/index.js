@@ -56,7 +56,7 @@ function parseWord(node, opts, keepZeroUnit) {
     if (num === 0) {
       node.value =
         0 +
-        (keepZeroUnit || (!~LENGTH_UNITS.indexOf(u.toLowerCase()) && u !== '%')
+        (keepZeroUnit || (!LENGTH_UNITS.includes(u.toLowerCase()) && u !== '%')
           ? u
           : '');
     } else {
@@ -65,7 +65,7 @@ function parseWord(node, opts, keepZeroUnit) {
       if (
         typeof opts.precision === 'number' &&
         u.toLowerCase() === 'px' &&
-        ~pair.number.indexOf('.')
+        pair.number.includes('.')
       ) {
         const precision = Math.pow(10, opts.precision);
         node.value =
@@ -92,7 +92,7 @@ function shouldKeepZeroUnit(decl) {
   const { parent } = decl;
   const lowerCasedProp = decl.prop.toLowerCase();
   return (
-    (~decl.value.indexOf('%') &&
+    (decl.value.includes('%') &&
       (lowerCasedProp === 'max-height' || lowerCasedProp === 'height')) ||
     (parent.parent &&
       parent.parent.name &&
@@ -105,7 +105,7 @@ function shouldKeepZeroUnit(decl) {
 function transform(opts, decl) {
   const lowerCasedProp = decl.prop.toLowerCase();
   if (
-    ~lowerCasedProp.indexOf('flex') ||
+    lowerCasedProp.includes('flex') ||
     lowerCasedProp.indexOf('--') === 0 ||
     notALength.has(lowerCasedProp)
   ) {
