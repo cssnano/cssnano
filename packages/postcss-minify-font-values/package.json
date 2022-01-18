@@ -4,7 +4,8 @@
   "description": "Minify font declarations with PostCSS",
   "main": "dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "license": "MIT",

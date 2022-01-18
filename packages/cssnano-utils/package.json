@@ -17,7 +17,8 @@
     "node": "^10 || ^12 || >=14.0"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "license": "MIT",
   "devDependencies": {
