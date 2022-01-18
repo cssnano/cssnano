@@ -10,7 +10,8 @@
   ],
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "license": "MIT",
   "repository": "cssnano/cssnano",
