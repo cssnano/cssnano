@@ -17,7 +17,7 @@ export default function plugin(targets, nodeTypes, detect) {
     }
 
     any(node) {
-      if (~this.nodeTypes.indexOf(node.type)) {
+      if (this.nodeTypes.includes(node.type)) {
         detect.apply(this, arguments);
 
         return !!node._stylehacks;

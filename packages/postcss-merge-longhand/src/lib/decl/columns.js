@@ -95,7 +95,7 @@ function cleanup(rule) {
     );
 
     lesser.forEach(remove);
-    decls = decls.filter((node) => !~lesser.indexOf(node));
+    decls = decls.filter((node) => !lesser.includes(node));
 
     // get duplicate properties
     let duplicates = decls.filter(
@@ -110,7 +110,7 @@ function cleanup(rule) {
 
     duplicates.forEach(remove);
     decls = decls.filter(
-      (node) => node !== lastNode && !~duplicates.indexOf(node)
+      (node) => node !== lastNode && !duplicates.includes(node)
     );
   }
 }

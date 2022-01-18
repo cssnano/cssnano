@@ -93,7 +93,7 @@ function transform(legacy, rule) {
 }
 
 function hasAllBug(browser) {
-  return ~['ie 10', 'ie 11'].indexOf(browser);
+  return ['ie 10', 'ie 11'].includes(browser);
 }
 
 function pluginCreator(options = {}) {

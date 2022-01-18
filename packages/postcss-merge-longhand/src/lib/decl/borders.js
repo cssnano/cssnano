@@ -46,7 +46,7 @@ const allProperties = precedence.reduce((a, b) => a.concat(b));
 
 function getLevel(prop) {
   for (let i = 0; i < precedence.length; i++) {
-    if (~precedence[i].indexOf(prop.toLowerCase())) {
+    if (precedence[i].includes(prop.toLowerCase())) {
       return i;
     }
   }
@@ -135,7 +135,7 @@ function getDistinctShorthands(mapped) {
   return mapped.reduce((a, b) => {
     a = Array.isArray(a) ? a : [a];
 
-    if (!~a.indexOf(b)) {
+    if (!a.includes(b)) {
       a.push(b);
     }
 
@@ -538,7 +538,7 @@ function merge(rule) {
       const props = nodes.filter(
         (node) =>
           node.prop &&
-          ~names.indexOf(node.prop) &&
+          names.includes(node.prop) &&
           node.important === lastNode.important
       );
       const rules = getRules(props, names);
@@ -573,7 +573,7 @@ function merge(rule) {
           value,
         });
 
-        decls = decls.filter((node) => !~rules.indexOf(node));
+        decls = decls.filter((node) => !rules.includes(node));
         rules.forEach(remove);
       }
     });
@@ -693,12 +693,12 @@ function merge(rule) {
         node !== lastNode &&
         node.important === lastNode.important &&
         getLevel(node.prop) > getLevel(lastNode.prop) &&
-        (!!~node.prop.toLowerCase().indexOf(lastNode.prop) ||
+        (node.prop.toLowerCase().includes(lastNode.prop) ||
           node.prop.toLowerCase().endsWith(lastPart))
     );
 
     lesser.forEach(remove);
-    decls = decls.filter((node) => !~lesser.indexOf(node));
+    decls = decls.filter((node) => !lesser.includes(node));
 
     // get duplicate properties
     let duplicates = decls.filter(
@@ -724,7 +724,7 @@ function merge(rule) {
     }
 
     decls = decls.filter(
-      (node) => node !== lastNode && !~duplicates.indexOf(node)
+      (node) => node !== lastNode && !duplicates.includes(node)
     );
   }
 }

@@ -40,7 +40,7 @@ function pluginCreator() {
       css.walk((node) => {
         const { type } = node;
 
-        if (~[decl, rule, atrule].indexOf(type) && node.raws.before) {
+        if ([decl, rule, atrule].includes(type) && node.raws.before) {
           node.raws.before = node.raws.before.replace(/\s/g, '');
         }
 

@@ -1,7 +1,7 @@
 import colors from './colornames.js';
 
-const widths = ['thin', 'medium', 'thick'];
-const styles = [
+const widths = new Set(['thin', 'medium', 'thick']);
+const styles = new Set([
   'none',
   'hidden',
   'dotted',
@@ -12,15 +12,15 @@ const styles = [
   'ridge',
   'inset',
   'outset',
-];
+]);
 
 export function isStyle(value) {
-  return value && !!~styles.indexOf(value.toLowerCase());
+  return value && styles.has(value.toLowerCase());
 }
 
 export function isWidth(value) {
   return (
-    (value && !!~widths.indexOf(value.toLowerCase())) ||
+    (value && widths.has(value.toLowerCase())) ||
     /^(\d+(\.\d+)?|\.\d+)(\w+)?$/.test(value)
   );
 }
@@ -52,7 +52,7 @@ export function isColor(value) {
     return true;
   }
 
-  return !!~colors.indexOf(value);
+  return colors.has(value);
 }
 
 export function isValidWsc(wscs) {

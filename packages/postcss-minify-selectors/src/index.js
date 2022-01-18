@@ -120,7 +120,7 @@ function pseudo(selector) {
     if (child.type === 'selector') {
       const childStr = String(child);
 
-      if (!~uniques.indexOf(childStr)) {
+      if (!uniques.includes(childStr)) {
         uniques.push(childStr);
       } else {
         child.remove();
@@ -128,7 +128,7 @@ function pseudo(selector) {
     }
   });
 
-  if (~pseudoElements.indexOf(value)) {
+  if (pseudoElements.includes(value)) {
     selector.value = selector.value.slice(1);
   }
 }
@@ -188,7 +188,7 @@ function pluginCreator() {
           const toString = String(sel);
 
           if (type === 'selector' && sel.parent.type !== 'pseudo') {
-            if (!~uniqueSelectors.indexOf(toString)) {
+            if (!uniqueSelectors.includes(toString)) {
               uniqueSelectors.push(toString);
             } else {
               sel.remove();

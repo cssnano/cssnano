@@ -152,10 +152,10 @@ export function ensureCompatibility(selectors, browsers, compatibilityCache) {
           }
         }
         if (type === 'combinator') {
-          if (~value.indexOf('~')) {
+          if (value.includes('~')) {
             compatible = isSupportedCached(cssSel3, browsers);
           }
-          if (~value.indexOf('>') || ~value.indexOf('+')) {
+          if (value.includes('>') || value.includes('+')) {
             compatible = isSupportedCached(cssSel2, browsers);
           }
         }
@@ -167,11 +167,11 @@ export function ensureCompatibility(selectors, browsers, compatibilityCache) {
 
           if (value) {
             // [foo="bar"], [foo~="bar"], [foo|="bar"]
-            if (~['=', '~=', '|='].indexOf(node.operator)) {
+            if (['=', '~=', '|='].includes(node.operator)) {
               compatible = isSupportedCached(cssSel2, browsers);
             }
             // [foo^="bar"], [foo$="bar"], [foo*="bar"]
-            if (~['^=', '$=', '*='].indexOf(node.operator)) {
+            if (['^=', '$=', '*='].includes(node.operator)) {
               compatible = isSupportedCached(cssSel3, browsers);
             }
           }

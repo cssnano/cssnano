@@ -71,7 +71,7 @@ function canMerge(ruleA, ruleB, browsers, compatibilityCache) {
 
   const parent = sameParent(ruleA, ruleB);
   const { name } = ruleA.parent;
-  if (parent && name && ~name.indexOf('keyframes')) {
+  if (parent && name && name.includes('keyframes')) {
     return false;
   }
   return parent && (selectors.every(noVendor) || sameVendor(a, b));

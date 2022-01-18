@@ -27,15 +27,15 @@ export default function () {
     },
 
     transform() {
-      let referenced = [];
+      const referenced = new Set();
 
       // Iterate each property and change their names
       decls.forEach((decl) => {
         decl.value = valueParser(decl.value)
           .walk((node) => {
             if (node.type === 'word' && node.value in cache) {
-              if (!~referenced.indexOf(node.value)) {
-                referenced.push(node.value);
+              if (!referenced.has(node.value)) {
+                referenced.add(node.value);
               }
 
               cache[node.value].count++;
@@ -49,7 +49,7 @@ export default function () {
       atRules.forEach((rule) => {
         const cached = cache[rule.params];
 
-        if (cached && cached.count > 0 && !!~referenced.indexOf(rule.params)) {
+        if (cached && cached.count > 0 && referenced.has(rule.params)) {
           rule.params = cached.ident;
         }
       });

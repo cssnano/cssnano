@@ -51,7 +51,7 @@ function unicode(range) {
  */
 
 function hasLowerCaseUPrefixBug(browser) {
-  return ~browserslist('ie <=11, edge <= 15').indexOf(browser);
+  return browserslist('ie <=11, edge <= 15').includes(browser);
 }
 
 function transform(value, isLegacy = false) {

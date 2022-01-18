@@ -40,7 +40,7 @@ export default function mergeRules(rule, properties, callback) {
 
     if (hasAllProps(rules, ...properties) && !hasConflicts(rules, rule.nodes)) {
       if (callback(rules, last, props)) {
-        decls = decls.filter((node) => !~rules.indexOf(node));
+        decls = decls.filter((node) => !rules.includes(node));
       }
     }
 

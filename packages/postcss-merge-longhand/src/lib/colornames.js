@@ -1,5 +1,5 @@
 /* https://www.w3.org/TR/css-color-4/#named-colors */
-export default [
+export default new Set([
   'aliceblue',
   'antiquewhite',
   'aqua',
@@ -148,4 +148,4 @@ export default [
   'whitesmoke',
   'yellow',
   'yellowgreen',
-];
+]);

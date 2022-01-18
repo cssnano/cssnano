@@ -24,16 +24,16 @@ export default function (nodes, opts) {
         value === 'unset'
       ) {
         familyStart = i;
-      } else if (~keywords.style.indexOf(value) || unit(value)) {
+      } else if (keywords.style.has(value) || unit(value)) {
         familyStart = i;
-      } else if (~keywords.variant.indexOf(value)) {
+      } else if (keywords.variant.has(value)) {
         familyStart = i;
-      } else if (~keywords.weight.indexOf(value)) {
+      } else if (keywords.weight.has(value)) {
         node.value = minifyWeight(value);
         familyStart = i;
-      } else if (~keywords.stretch.indexOf(value)) {
+      } else if (keywords.stretch.has(value)) {
         familyStart = i;
-      } else if (~keywords.size.indexOf(value) || unit(value)) {
+      } else if (keywords.size.has(value) || unit(value)) {
         familyStart = i;
         hasSize = true;
       }

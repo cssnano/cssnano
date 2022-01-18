@@ -11,12 +11,12 @@ export default function normalizeFlexFlow(flexFlow) {
   };
 
   flexFlow.walk(({ value }) => {
-    if (~flexDirection.indexOf(value.toLowerCase())) {
+    if (flexDirection.includes(value.toLowerCase())) {
       order.direction = value;
       return;
     }
 
-    if (~flexWrap.indexOf(value.toLowerCase())) {
+    if (flexWrap.includes(value.toLowerCase())) {
       order.wrap = value;
       return;
     }

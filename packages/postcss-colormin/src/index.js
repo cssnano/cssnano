@@ -19,10 +19,7 @@ function walk(parent, callback) {
  *
  * https://developer.mozilla.org/en-US/docs/Web/Events/click#Internet_Explorer
  */
-
-function hasTransparentBug(browser) {
-  return ~['ie 8', 'ie 9'].indexOf(browser);
-}
+const browsersWithTransparentBug = new Set(['ie 8', 'ie 9']);
 
 function isMathFunctionNode(node) {
   if (node.type !== 'function') {
@@ -68,8 +65,11 @@ function transform(value, options) {
 
 function addPluginDefaults(options, browsers) {
   const defaults = {
-    transparent: browsers.some(hasTransparentBug) === false, // Does the browser support 4 & 8 character hex notation
-    alphaHex: isSupported('css-rrggbbaa', browsers), // Does the browser support "transparent" value properly
+    // Does the browser support 4 & 8 character hex notation
+    transparent:
+      browsers.some((b) => browsersWithTransparentBug.has(b)) === false,
+    // Does the browser support "transparent" value properly
+    alphaHex: isSupported('css-rrggbbaa', browsers),
     name: true,
   };
   return { ...defaults, ...options };

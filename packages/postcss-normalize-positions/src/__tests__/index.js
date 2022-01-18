@@ -100,8 +100,8 @@ function suite(property, additional = '', tail = '') {
       .filter((d) => {
         if (
           d === direction ||
-          (~hkeys.indexOf(d) && ~hkeys.indexOf(direction)) ||
-          (~vkeys.indexOf(d) && ~vkeys.indexOf(direction))
+          (hkeys.includes(d) && hkeys.includes(direction)) ||
+          (vkeys.includes(d) && vkeys.includes(direction))
         ) {
           return false;
         }
@@ -111,7 +111,7 @@ function suite(property, additional = '', tail = '') {
       .forEach((other) => {
         let result;
 
-        if (~Object.keys(horizontal).indexOf(direction)) {
+        if (Object.keys(horizontal).includes(direction)) {
           result = horizontal[direction] + ' ' + vertical[other];
         } else {
           result = horizontal[other] + ' ' + vertical[direction];
