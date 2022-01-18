@@ -52,7 +52,11 @@ it will return `false` instead.
 h1 { _color: red }
 ```
 
-### `stylehacks.process(css, [options]).then(function(result) {})`
+### `postcss([ stylehacks(opts) ])`
+
+stylehacks can also be consumed as a PostCSS plugin. See the
+[documentation](https://github.com/postcss/postcss#usage) for examples for
+your environment.
 
 #### options
 
@@ -63,13 +67,6 @@ Default: `false`
 
 If lint mode is enabled, stylehacks will not remove hacks from the CSS; instead,
 it will add warnings to `Result#messages`.
-
-
-### `postcss([ stylehacks(opts) ])`
-
-stylehacks can also be consumed as a PostCSS plugin. See the
-[documentation](https://github.com/postcss/postcss#usage) for examples for
-your environment.
 
 
 ## Related
