@@ -1,7 +1,7 @@
 export default {
-  style: ['italic', 'oblique'],
-  variant: ['small-caps'],
-  weight: [
+  style: new Set(['italic', 'oblique']),
+  variant: new Set(['small-caps']),
+  weight: new Set([
     '100',
     '200',
     '300',
@@ -14,8 +14,8 @@ export default {
     'bold',
     'lighter',
     'bolder',
-  ],
-  stretch: [
+  ]),
+  stretch: new Set([
     'ultra-condensed',
     'extra-condensed',
     'condensed',
@@ -24,8 +24,8 @@ export default {
     'expanded',
     'extra-expanded',
     'ultra-expanded',
-  ],
-  size: [
+  ]),
+  size: new Set([
     'xx-small',
     'x-small',
     'small',
@@ -35,5 +35,5 @@ export default {
     'xx-large',
     'larger',
     'smaller',
-  ],
+  ]),
 };

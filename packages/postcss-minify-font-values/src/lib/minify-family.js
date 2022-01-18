@@ -3,14 +3,14 @@ import uniqueExcept from './uniqs';
 
 const uniqs = uniqueExcept('monospace');
 const globalKeywords = ['inherit', 'initial', 'unset'];
-const genericFontFamilykeywords = [
+const genericFontFamilykeywords = new Set([
   'sans-serif',
   'serif',
   'fantasy',
   'cursive',
   'monospace',
   'system-ui',
-];
+]);
 
 function makeArray(value, length) {
   let array = [];
@@ -66,7 +66,7 @@ function escape(string, escapeForString) {
 }
 
 const regexKeyword = new RegExp(
-  genericFontFamilykeywords.concat(globalKeywords).join('|'),
+  [...genericFontFamilykeywords].concat(globalKeywords).join('|'),
   'i'
 );
 const regexInvalidIdentifier = /^(-?\d|--)/;
@@ -192,7 +192,7 @@ export default function (nodes, opts) {
 
   if (opts.removeAfterKeyword) {
     for (i = 0, max = family.length; i < max; i += 1) {
-      if (genericFontFamilykeywords.includes(family[i].toLowerCase())) {
+      if (genericFontFamilykeywords.has(family[i].toLowerCase())) {
         family = family.slice(0, i + 1);
         break;
       }

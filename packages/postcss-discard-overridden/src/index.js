@@ -1,16 +1,16 @@
-const OVERRIDABLE_RULES = ['keyframes', 'counter-style'];
-const SCOPE_RULES = ['media', 'supports'];
+const OVERRIDABLE_RULES = new Set(['keyframes', 'counter-style']);
+const SCOPE_RULES = new Set(['media', 'supports']);
 
 function vendorUnprefixed(prop) {
   return prop.replace(/^-\w+-/, '');
 }
 
 function isOverridable(name) {
-  return OVERRIDABLE_RULES.includes(vendorUnprefixed(name.toLowerCase()));
+  return OVERRIDABLE_RULES.has(vendorUnprefixed(name.toLowerCase()));
 }
 
 function isScope(name) {
-  return SCOPE_RULES.includes(vendorUnprefixed(name.toLowerCase()));
+  return SCOPE_RULES.has(vendorUnprefixed(name.toLowerCase()));
 }
 
 function getScope(node) {

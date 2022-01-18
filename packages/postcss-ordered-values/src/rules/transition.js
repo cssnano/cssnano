@@ -5,7 +5,7 @@ import getValue from '../lib/getValue';
 
 // transition: [ none | <single-transition-property> ] || <time> || <single-transition-timing-function> || <time>
 
-const timingFunctions = [
+const timingFunctions = new Set([
   'ease',
   'linear',
   'ease-in',
@@ -13,7 +13,7 @@ const timingFunctions = [
   'ease-in-out',
   'step-start',
   'step-end',
-];
+]);
 
 export default function normalizeTransition(parsed) {
   let args = getArguments(parsed);
@@ -35,7 +35,7 @@ export default function normalizeTransition(parsed) {
 
       if (
         type === 'function' &&
-        ['steps', 'cubic-bezier'].includes(value.toLowerCase())
+        new Set(['steps', 'cubic-bezier']).has(value.toLowerCase())
       ) {
         state.timingFunction = [...state.timingFunction, node, addSpace()];
       } else if (unit(value)) {
@@ -44,7 +44,7 @@ export default function normalizeTransition(parsed) {
         } else {
           state.time2 = [...state.time2, node, addSpace()];
         }
-      } else if (timingFunctions.includes(value.toLowerCase())) {
+      } else if (timingFunctions.has(value.toLowerCase())) {
         state.timingFunction = [...state.timingFunction, node, addSpace()];
       } else {
         state.property = [...state.property, node, addSpace()];

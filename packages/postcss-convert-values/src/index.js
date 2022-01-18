@@ -1,7 +1,7 @@
 import valueParser, { unit, walk } from 'postcss-value-parser';
 import convert from './lib/convert';
 
-const LENGTH_UNITS = [
+const LENGTH_UNITS = new Set([
   'em',
   'ex',
   'ch',
@@ -17,7 +17,7 @@ const LENGTH_UNITS = [
   'pt',
   'pc',
   'px',
-];
+]);
 
 // These properties only accept percentages, so no point in trying to transform
 const notALength = new Set([
@@ -56,7 +56,7 @@ function parseWord(node, opts, keepZeroUnit) {
     if (num === 0) {
       node.value =
         0 +
-        (keepZeroUnit || (!LENGTH_UNITS.includes(u.toLowerCase()) && u !== '%')
+        (keepZeroUnit || (!LENGTH_UNITS.has(u.toLowerCase()) && u !== '%')
           ? u
           : '');
     } else {
