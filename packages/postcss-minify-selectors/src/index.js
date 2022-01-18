@@ -67,17 +67,17 @@ function combinator(selector) {
   selector.value = value.length ? value : ' ';
 }
 
-const pseudoReplacements = {
-  ':nth-child': ':first-child',
-  ':nth-of-type': ':first-of-type',
-  ':nth-last-child': ':last-child',
-  ':nth-last-of-type': ':last-of-type',
-};
+const pseudoReplacements = new Map([
+  [':nth-child', ':first-child'],
+  [':nth-of-type', ':first-of-type'],
+  [':nth-last-child', ':last-child'],
+  [':nth-last-of-type', ':last-of-type'],
+]);
 
 function pseudo(selector) {
   const value = selector.value.toLowerCase();
 
-  if (selector.nodes.length === 1 && pseudoReplacements[value]) {
+  if (selector.nodes.length === 1 && pseudoReplacements.has(value)) {
     const first = selector.at(0);
     const one = first.at(0);
 
@@ -85,7 +85,7 @@ function pseudo(selector) {
       if (one.value === '1') {
         selector.replaceWith(
           parser.pseudo({
-            value: pseudoReplacements[value],
+            value: pseudoReplacements.get(value),
           })
         );
       }
@@ -133,16 +133,16 @@ function pseudo(selector) {
   }
 }
 
-const tagReplacements = {
-  from: '0%',
-  '100%': 'to',
-};
+const tagReplacements = new Map([
+  ['from', '0%'],
+  ['100%', 'to'],
+]);
 
 function tag(selector) {
   const value = selector.value.toLowerCase();
 
-  if (Object.prototype.hasOwnProperty.call(tagReplacements, value)) {
-    selector.value = tagReplacements[value];
+  if (tagReplacements.has(value)) {
+    selector.value = tagReplacements.get(value);
   }
 }
 
@@ -154,13 +154,13 @@ function universal(selector) {
   }
 }
 
-const reducers = {
-  attribute,
-  combinator,
-  pseudo,
-  tag,
-  universal,
-};
+const reducers = new Map([
+  ['attribute', attribute],
+  ['combinator', combinator],
+  ['pseudo', pseudo],
+  ['tag', tag],
+  ['universal', universal],
+]);
 
 function pluginCreator() {
   return {
@@ -174,20 +174,17 @@ function pluginCreator() {
         const uniqueSelectors = [];
 
         selectors.walk((sel) => {
-          const { type } = sel;
-
           // Trim whitespace around the value
           sel.spaces.before = sel.spaces.after = '';
-
-          if (Object.prototype.hasOwnProperty.call(reducers, type)) {
-            reducers[type](sel);
-
+          const reducer = reducers.get(sel.type);
+          if (reducer !== undefined) {
+            reducer(sel);
             return;
           }
 
           const toString = String(sel);
 
-          if (type === 'selector' && sel.parent.type !== 'pseudo') {
+          if (sel.type === 'selector' && sel.parent.type !== 'pseudo') {
             if (!uniqueSelectors.includes(toString)) {
               uniqueSelectors.push(toString);
             } else {

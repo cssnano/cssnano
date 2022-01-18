@@ -226,11 +226,15 @@ function normalize(value, preferredQuote) {
     .toString();
 }
 
-const params = {
-  rule: 'selector',
-  decl: 'value',
-  atrule: 'params',
-};
+function minify(original, cache, preferredQuote) {
+  const key = original + '|' + preferredQuote;
+  if (cache.has(key)) {
+    return cache.get(key);
+  }
+  const newValue = normalize(original, preferredQuote);
+  cache.set(key, newValue);
+  return newValue;
+}
 
 function pluginCreator(opts) {
   const { preferredQuote } = Object.assign(
@@ -248,22 +252,16 @@ function pluginCreator(opts) {
       const cache = new Map();
 
       css.walk((node) => {
-        const { type } = node;
-
-        if (Object.prototype.hasOwnProperty.call(params, type)) {
-          const param = params[type];
-          const key = node[param] + '|' + preferredQuote;
-
-          if (cache.has(key)) {
-            node[param] = cache.get(key);
-
-            return;
-          }
-
-          const newValue = normalize(node[param], preferredQuote);
-
-          node[param] = newValue;
-          cache.set(key, newValue);
+        switch (node.type) {
+          case 'rule':
+            node.selector = minify(node.selector, cache, preferredQuote);
+            break;
+          case 'decl':
+            node.value = minify(node.value, cache, preferredQuote);
+            break;
+          case 'atrule':
+            node.params = minify(node.params, cache, preferredQuote);
+            break;
         }
       });
     },
