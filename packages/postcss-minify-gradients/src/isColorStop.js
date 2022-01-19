@@ -6,7 +6,7 @@ extend([namesPlugin]);
 
 /* Code derived from https://github.com/pigcan/is-color-stop */
 
-const lengthArray = [
+const lengthUnits = new Set([
   'PX',
   'IN',
   'CM',
@@ -22,10 +22,10 @@ const lengthArray = [
   'VMIN',
   'VMAX',
   '%',
-];
+]);
 
 function isCSSLengthUnit(input) {
-  return lengthArray.includes(input.toUpperCase());
+  return lengthUnits.has(input.toUpperCase());
 }
 
 function isStop(str) {

@@ -20,13 +20,13 @@ function walk(parent, callback) {
  * https://developer.mozilla.org/en-US/docs/Web/Events/click#Internet_Explorer
  */
 const browsersWithTransparentBug = new Set(['ie 8', 'ie 9']);
+const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 
 function isMathFunctionNode(node) {
   if (node.type !== 'function') {
     return false;
   }
-
-  return ['calc', 'min', 'max', 'clamp'].includes(node.value.toLowerCase());
+  return mathFunctions.has(node.value.toLowerCase());
 }
 
 function transform(value, options) {

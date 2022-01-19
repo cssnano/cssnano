@@ -1,2 +1,2 @@
 // All of the curently implemented math functions
-export default ['calc', 'clamp', 'max', 'min'];
+export default new Set(['calc', 'clamp', 'max', 'min']);

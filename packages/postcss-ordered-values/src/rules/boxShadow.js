@@ -23,7 +23,7 @@ export default function normalizeBoxShadow(parsed) {
 
       if (
         type === 'function' &&
-        mathFunctions.includes(vendorUnprefixed(value.toLowerCase()))
+        mathFunctions.has(vendorUnprefixed(value.toLowerCase()))
       ) {
         abort = true;
         return;

@@ -3,12 +3,13 @@ import valueParser from 'postcss-value-parser';
 const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
+const variableFunctions = new Set(['var', 'env', 'constant']);
 
 function reduceCalcWhitespaces(node) {
   if (node.type === 'space') {
     node.value = ' ';
   } else if (node.type === 'function') {
-    if (!['var', 'env', 'constant'].includes(node.value.toLowerCase())) {
+    if (!variableFunctions.has(node.value.toLowerCase())) {
       node.before = node.after = '';
     }
   }
@@ -20,7 +21,7 @@ function reduceWhitespaces(node) {
   } else if (node.type === 'div') {
     node.before = node.after = '';
   } else if (node.type === 'function') {
-    if (!['var', 'env', 'constant'].includes(node.value.toLowerCase())) {
+    if (!variableFunctions.has(node.value.toLowerCase())) {
       node.before = node.after = '';
     }
     if (node.value.toLowerCase() === 'calc') {

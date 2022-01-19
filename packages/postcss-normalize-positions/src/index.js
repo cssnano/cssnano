@@ -1,6 +1,6 @@
 import valueParser, { unit } from 'postcss-value-parser';
 
-const directionKeywords = ['top', 'right', 'bottom', 'left', 'center'];
+const directionKeywords = new Set(['top', 'right', 'bottom', 'left', 'center']);
 
 const center = '50%';
 const horizontal = new Map([
@@ -11,6 +11,7 @@ const verticalValue = new Map([
   ['bottom', '100%'],
   ['top', '0'],
 ]);
+const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 
 function isCommaNode(node) {
   return node.type === 'div' && node.value === ',';
@@ -28,8 +29,7 @@ function isMathFunctionNode(node) {
   if (node.type !== 'function') {
     return false;
   }
-
-  return ['calc', 'min', 'max', 'clamp'].includes(node.value.toLowerCase());
+  return mathFunctions.has(node.value.toLowerCase());
 }
 
 function isNumberNode(node) {
@@ -101,7 +101,7 @@ function transform(value) {
 
     const isPositionKeyword =
       (node.type === 'word' &&
-        directionKeywords.includes(node.value.toLowerCase())) ||
+        directionKeywords.has(node.value.toLowerCase())) ||
       isDimensionNode(node) ||
       isNumberNode(node) ||
       isMathFunctionNode(node);
@@ -155,7 +155,7 @@ function transform(value) {
       return;
     }
 
-    if (firstNode === 'center' && directionKeywords.includes(secondNode)) {
+    if (firstNode === 'center' && directionKeywords.has(secondNode)) {
       nodes[0].value = nodes[1].value = '';
 
       if (horizontal.has(secondNode)) {
