@@ -1,5 +1,3 @@
-function noop() {}
-
 function trimValue(value) {
   return value ? value.trim() : value;
 }
@@ -97,13 +95,6 @@ function dedupeNode(last, nodes) {
   }
 }
 
-const handlers = {
-  rule: dedupeRule,
-  atrule: dedupeNode,
-  decl: dedupeNode,
-  comment: noop,
-};
-
 function dedupe(root) {
   const { nodes } = root;
 
@@ -118,7 +109,11 @@ function dedupe(root) {
       continue;
     }
     dedupe(last);
-    handlers[last.type](last, nodes);
+    if (last.type === 'rule') {
+      dedupeRule(last, nodes);
+    } else if (last.type === 'atrule' || last.type === 'decl') {
+      dedupeNode(last, nodes);
+    }
   }
 }
 
