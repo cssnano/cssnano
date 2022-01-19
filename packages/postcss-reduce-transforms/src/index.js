@@ -189,15 +189,15 @@ function translate3d(node, values) {
   }
 }
 
-const reducers = {
-  matrix3d,
-  rotate3d,
-  rotateZ,
-  scale,
-  scale3d,
-  translate,
-  translate3d,
-};
+const reducers = new Map([
+  ['matrix3d', matrix3d],
+  ['rotate3d', rotate3d],
+  ['rotateZ', rotateZ],
+  ['scale', scale],
+  ['scale3d', scale3d],
+  ['translate', translate],
+  ['translate3d', translate3d],
+]);
 
 function normalizeReducerName(name) {
   const lowerCasedName = name.toLowerCase();
@@ -210,16 +210,13 @@ function normalizeReducerName(name) {
 }
 
 function reduce(node) {
-  const { nodes, type, value } = node;
-  const normalizedReducerName = normalizeReducerName(value);
-
-  if (
-    type === 'function' &&
-    Object.prototype.hasOwnProperty.call(reducers, normalizedReducerName)
-  ) {
-    reducers[normalizedReducerName](node, nodes.reduce(getValues, []));
+  if (node.type === 'function') {
+    const normalizedReducerName = normalizeReducerName(node.value);
+    const reducer = reducers.get(normalizedReducerName);
+    if (reducer !== undefined) {
+      reducer(node, node.nodes.reduce(getValues, []));
+    }
   }
-
   return false;
 }
 

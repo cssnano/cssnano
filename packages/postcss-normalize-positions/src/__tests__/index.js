@@ -279,6 +279,14 @@ test(
 );
 
 test(
+  'should normalize with background size and right alignment',
+  processCSS(
+    'background: url(/media/examples/hand.jpg) right center / 200px 100px',
+    'background: url(/media/examples/hand.jpg) 100% / 200px 100px'
+  )
+);
+
+test(
   'should normalize with multiple background positions',
   processCSS(
     'background: url("/media/examples/lizard.png") center center no-repeat, url("/media/examples/lizard.png") center center no-repeat',

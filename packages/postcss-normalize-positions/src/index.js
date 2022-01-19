@@ -3,8 +3,14 @@ import valueParser, { unit } from 'postcss-value-parser';
 const directionKeywords = ['top', 'right', 'bottom', 'left', 'center'];
 
 const center = '50%';
-const horizontal = { right: '100%', left: '0' };
-const verticalValue = { bottom: '100%', top: '0' };
+const horizontal = new Map([
+  ['right', '100%'],
+  ['left', '0'],
+]);
+const verticalValue = new Map([
+  ['bottom', '100%'],
+  ['top', '0'],
+]);
 
 function isCommaNode(node) {
   return node.type === 'div' && node.value === ',';
@@ -140,12 +146,10 @@ function transform(value) {
         nodes[2].value = nodes[1].value = '';
       }
 
-      const map = Object.assign({}, horizontal, {
-        center,
-      });
+      const map = new Map([...horizontal, ['center', center]]);
 
-      if (Object.prototype.hasOwnProperty.call(map, firstNode)) {
-        nodes[0].value = map[firstNode];
+      if (map.has(firstNode)) {
+        nodes[0].value = map.get(firstNode);
       }
 
       return;
@@ -154,27 +158,20 @@ function transform(value) {
     if (firstNode === 'center' && directionKeywords.includes(secondNode)) {
       nodes[0].value = nodes[1].value = '';
 
-      if (Object.prototype.hasOwnProperty.call(horizontal, secondNode)) {
-        nodes[2].value = horizontal[secondNode];
+      if (horizontal.has(secondNode)) {
+        nodes[2].value = horizontal.get(secondNode);
       }
-
       return;
     }
 
-    if (
-      Object.prototype.hasOwnProperty.call(horizontal, firstNode) &&
-      Object.prototype.hasOwnProperty.call(verticalValue, secondNode)
-    ) {
-      nodes[0].value = horizontal[firstNode];
-      nodes[2].value = verticalValue[secondNode];
+    if (horizontal.has(firstNode) && verticalValue.has(secondNode)) {
+      nodes[0].value = horizontal.get(firstNode);
+      nodes[2].value = verticalValue.get(secondNode);
 
       return;
-    } else if (
-      Object.prototype.hasOwnProperty.call(verticalValue, firstNode) &&
-      Object.prototype.hasOwnProperty.call(horizontal, secondNode)
-    ) {
-      nodes[0].value = horizontal[secondNode];
-      nodes[2].value = verticalValue[firstNode];
+    } else if (verticalValue.has(firstNode) && horizontal.has(secondNode)) {
+      nodes[0].value = horizontal.get(secondNode);
+      nodes[2].value = verticalValue.get(firstNode);
 
       return;
     }
