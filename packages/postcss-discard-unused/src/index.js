@@ -4,20 +4,14 @@ const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
 
-function uniqs(items) {
-  return items.filter(function (item, i) {
-    return i === items.indexOf(item);
-  });
-}
-
 function addValues(cache, { value }, comma, space) {
   return comma(value).reduce((memo, val) => [...memo, ...space(val)], cache);
 }
 
 function filterAtRule({ atRules, values }) {
-  values = uniqs(values);
+  values = new Set(values);
   atRules.forEach((node) => {
-    const hasAtRule = values.some((value) => value === node.params);
+    const hasAtRule = values.has(node.params);
 
     if (!hasAtRule) {
       node.remove();
@@ -26,7 +20,7 @@ function filterAtRule({ atRules, values }) {
 }
 
 function filterNamespace({ atRules, rules }) {
-  rules = uniqs(rules);
+  rules = new Set(rules);
   atRules.forEach((atRule) => {
     const { 0: param, length: len } = atRule.params.split(' ').filter(Boolean);
 
@@ -34,7 +28,7 @@ function filterNamespace({ atRules, rules }) {
       return;
     }
 
-    const hasRule = rules.some((r) => r === param || r === '*');
+    const hasRule = rules.has(param) || rules.has('*');
 
     if (!hasRule) {
       atRule.remove();
@@ -48,7 +42,7 @@ function hasFont(fontFamily, cache, comma) {
 
 // fonts have slightly different logic
 function filterFont({ atRules, values }, comma) {
-  values = uniqs(values);
+  values = [...new Set(values)];
   atRules.forEach((r) => {
     const families = r.nodes.filter(({ prop }) => prop === 'font-family');
 
