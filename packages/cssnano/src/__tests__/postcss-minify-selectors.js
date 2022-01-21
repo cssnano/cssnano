@@ -46,7 +46,7 @@ test(
   'should not remove meaningful universal selectors',
   processCss(
     '* + *, * > *, * h1, * ~ *{color:#00f}',
-    '*+*,*>*,* h1,*~*{color:#00f}'
+    '* h1,*+*,*>*,*~*{color:#00f}'
   )
 );
 
@@ -85,10 +85,10 @@ test(
 );
 
 test(
-  'should sort using natural sort',
+  'should sort',
   processCss(
     '.item1, .item10, .item11, .item2{color:#00f}',
-    '.item1,.item2,.item10,.item11{color:#00f}'
+    '.item1,.item10,.item11,.item2{color:#00f}'
   )
 );
 

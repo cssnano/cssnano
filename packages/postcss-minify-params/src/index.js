@@ -1,6 +1,5 @@
 import browserslist from 'browserslist';
 import valueParser, { stringify } from 'postcss-value-parser';
-import sort from 'alphanum-sort';
 import { getArguments } from 'cssnano-utils';
 
 /**
@@ -28,9 +27,9 @@ function removeNode(node) {
 }
 
 function sortAndDedupe(items) {
-  return sort([...new Set(items)], {
-    insensitive: true,
-  }).join();
+  const a = [...new Set(items)];
+  a.sort();
+  return a.join();
 }
 
 function transform(legacy, rule) {

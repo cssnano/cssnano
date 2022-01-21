@@ -13,8 +13,8 @@ test(
 );
 
 test(
-  'should natural sort selectors',
-  processCSS('h1,h10,H2,h7{color:red}', 'h1,H2,h7,h10{color:red}')
+  'should sort selectors',
+  processCSS('h1,h10,H2,h7{color:red}', 'H2,h1,h10,h7{color:red}')
 );
 
 test(

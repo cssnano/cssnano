@@ -1,4 +1,3 @@
-import sort from 'alphanum-sort';
 import parser from 'postcss-selector-parser';
 import canUnquote from './lib/canUnquote.js';
 
@@ -169,8 +168,6 @@ function pluginCreator() {
     OnceExit(css) {
       const cache = new Map();
       const processor = parser((selectors) => {
-        selectors.nodes = sort(selectors.nodes, { insensitive: true });
-
         const uniqueSelectors = new Set();
 
         selectors.walk((sel) => {
@@ -192,6 +189,7 @@ function pluginCreator() {
             }
           }
         });
+        selectors.nodes.sort();
       });
 
       css.walkRules((rule) => {
