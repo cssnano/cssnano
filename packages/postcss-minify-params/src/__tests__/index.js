@@ -11,7 +11,7 @@ test(
   'should normalise @media queries',
   processCSS(
     '@media SCREEN ,\tprint {h1{color:red}}@media print,screen{h2{color:blue}}',
-    '@media print,SCREEN {h1{color:red}}@media print,screen{h2{color:blue}}'
+    '@media SCREEN,print {h1{color:red}}@media print,screen{h2{color:blue}}'
   )
 );
 

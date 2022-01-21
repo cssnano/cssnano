@@ -315,13 +315,11 @@ importers:
 
   packages/postcss-minify-params:
     specifiers:
-      alphanum-sort: ^1.0.2
       browserslist: ^4.16.6
       cssnano-utils: ^3.0.0
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
     dependencies:
-      alphanum-sort: 1.0.2
       browserslist: 4.19.1
       cssnano-utils: link:../cssnano-utils
       postcss-value-parser: 4.2.0
@@ -330,11 +328,9 @@ importers:
 
   packages/postcss-minify-selectors:
     specifiers:
-      alphanum-sort: ^1.0.2
       postcss: ^8.2.15
       postcss-selector-parser: ^6.0.5
     dependencies:
-      alphanum-sort: 1.0.2
       postcss-selector-parser: 6.0.8
     devDependencies:
       postcss: 8.4.5
@@ -476,11 +472,9 @@ importers:
 
   packages/postcss-unique-selectors:
     specifiers:
-      alphanum-sort: ^1.0.2
       postcss: ^8.2.15
       postcss-selector-parser: ^6.0.5
     dependencies:
-      alphanum-sort: 1.0.2
       postcss-selector-parser: 6.0.8
     devDependencies:
       postcss: 8.4.5
@@ -1083,10 +1077,6 @@ packages:
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
     dev: true
-
-  /alphanum-sort/1.0.2:
-    resolution: {integrity: sha1-l6ERlkmyEa0zaR2fn0hqjsn74KM=}
-    dev: false
 
   /amdefine/1.0.1:
     resolution: {integrity: sha1-SlKCrBZHKek2Gbz9OtFR+BfOkfU=}

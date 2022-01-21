@@ -22,7 +22,7 @@ test(
 
 test(
   'should not trim meaningful spaces',
-  passthroughCSS('h1 p,H2 p{color:blue}')
+  passthroughCSS('H2 p,h1 p{color:blue}')
 );
 
 test(
@@ -55,7 +55,7 @@ test(
   'should not remove meaningful universal selectors',
   processCSS(
     '* + *, * > *, * h1, * ~ *{color:blue}',
-    '*+*,*>*,* h1,*~*{color:blue}'
+    '* h1,*+*,*>*,*~*{color:blue}'
   )
 );
 
@@ -96,10 +96,10 @@ test(
 );
 
 test(
-  'should sort using natural sort',
+  'should sort',
   processCSS(
-    '.item1, .item10, .item11, .item2{color:blue}',
-    '.item1,.item2,.item10,.item11{color:blue}'
+    '.item1, .item2, .item10, .item11{color:blue}',
+    '.item1,.item10,.item11,.item2{color:blue}'
   )
 );
 

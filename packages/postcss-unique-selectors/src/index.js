@@ -1,4 +1,3 @@
-import sort from 'alphanum-sort';
 import selectorParser from 'postcss-selector-parser';
 
 function parseSelectors(selectors, callback) {
@@ -6,9 +5,9 @@ function parseSelectors(selectors, callback) {
 }
 
 function unique(rule) {
-  rule.selector = sort([...new Set(rule.selectors)], {
-    insensitive: true,
-  }).join();
+  const selector = [...new Set(rule.selectors)];
+  selector.sort();
+  rule.selector = selector.join();
 }
 
 function pluginCreator() {

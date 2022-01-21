@@ -186,7 +186,7 @@ test(
   'should merge vendor prefixed selectors when vendors are the same',
   processCss(
     'code ::-moz-selection{background:red}code::-moz-selection{background:red}',
-    'code::-moz-selection,code ::-moz-selection{background:red}'
+    'code ::-moz-selection,code::-moz-selection{background:red}'
   )
 );
 
