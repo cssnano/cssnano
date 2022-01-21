@@ -1,5 +1,14 @@
 # Change Log
 
+## 5.1.2
+
+### Patch Changes
+
+- refactor: remove implicit boolean conversion
+- refactor: more explicit function dispatch
+- refactor: replace array with set
+- refactor: replace natural sort with built-in array sort
+
 ## 5.1.1 (2022-01-07)
 
 ### Patch Changes

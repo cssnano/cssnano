@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.0.6
+
+### Patch Changes
+
+- refactor: remove implicit boolean conversion
+- Updated dependencies
+  - cssnano@5.0.16
+
 ## 5.0.5 (2022-01-13)
 
 ### Fixes

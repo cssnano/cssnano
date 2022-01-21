@@ -1,5 +1,34 @@
 # Change Log
 
+## 5.1.11
+
+### Patch Changes
+
+- refactor: replace natural sort with built-in array sort
+- Updated dependencies
+  - cssnano-utils@3.0.1
+  - postcss-minify-font-values@5.0.3
+  - postcss-minify-params@5.0.4
+  - postcss-normalize-charset@5.0.2
+  - postcss-discard-duplicates@5.0.2
+  - postcss-colormin@5.2.4
+  - postcss-convert-values@5.0.3
+  - postcss-discard-empty@5.0.2
+  - postcss-discard-overridden@5.0.3
+  - postcss-merge-longhand@5.0.5
+  - postcss-merge-rules@5.0.5
+  - postcss-minify-selectors@5.1.2
+  - postcss-normalize-positions@5.0.3
+  - postcss-normalize-unicode@5.0.3
+  - postcss-normalize-whitespace@5.0.3
+  - postcss-ordered-values@5.0.4
+  - postcss-normalize-string@5.0.3
+  - postcss-reduce-transforms@5.0.3
+  - postcss-minify-gradients@5.0.5
+  - postcss-normalize-repeat-style@5.0.3
+  - postcss-unique-selectors@5.0.3
+  - postcss-discard-comments@5.0.2
+
 ## 5.1.10 (2022-01-07)
 
 ### Patch Changes

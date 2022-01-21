@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.0.16
+
+### Patch Changes
+
+- refactor: replace natural sort with built-in array sort
+- Updated dependencies
+  - cssnano-preset-default@5.1.11
+
 ## 5.0.15
 
 ### Patch Changes

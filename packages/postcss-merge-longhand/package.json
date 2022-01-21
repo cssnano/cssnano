@@ -1,6 +1,6 @@
 {
   "name": "postcss-merge-longhand",
-  "version": "5.0.4",
+  "version": "5.0.5",
   "description": "Merge longhand properties into shorthand with PostCSS.",
   "main": "dist/index.js",
   "files": [
@@ -29,7 +29,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "postcss-value-parser": "^4.2.0",
-    "stylehacks": "^5.0.1"
+    "stylehacks": "^5.0.2"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

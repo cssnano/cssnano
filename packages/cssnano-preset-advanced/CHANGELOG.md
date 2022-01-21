@@ -1,5 +1,15 @@
 # Change Log
 
+## 5.1.11
+
+### Patch Changes
+
+- refactor: replace natural sort with built-in array sort
+- Updated dependencies
+  - postcss-discard-unused@5.0.2
+  - postcss-reduce-idents@5.0.2
+  - cssnano-preset-default@5.1.11
+
 ## 5.1.10 (2022-01-07)
 
 ### Patch Changes
