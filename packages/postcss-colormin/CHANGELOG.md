@@ -1,5 +1,12 @@
 # Change Log
 
+## 5.2.4
+
+### Patch Changes
+
+- refactor: remove implicit boolean conversion
+- refactor: replace array with set
+
 ## 5.2.3 (2022-01-07)
 
 ### Patch Changes

@@ -1,7 +1,10 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+## 5.0.2
+
+### Patch Changes
+
+- refactor: replace object with map
 
 ## [5.0.1](https://github.com/cssnano/cssnano/compare/postcss-discard-comments@5.0.0...postcss-discard-comments@5.0.1) (2021-05-19)
 

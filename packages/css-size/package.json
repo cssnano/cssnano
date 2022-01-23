@@ -1,6 +1,6 @@
 {
   "name": "css-size",
-  "version": "5.0.5",
+  "version": "5.0.6",
   "description": "Compare the compressed and uncompressed sizes of a CSS file before and after processing.",
   "main": "dist/index.js",
   "types": "css-size.d.ts",
@@ -34,7 +34,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "cssnano": "^5.0.3",
+    "cssnano": "^5.0.16",
     "minimist": "^1.2.0"
   },
   "peerDependencies": {

@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.1
+
+### Patch Changes
+
+- docs: add missing license files
+
 ## 3.0.0 (2022-01-07)
 
 ### Major Changes

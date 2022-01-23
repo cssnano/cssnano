@@ -1,5 +1,14 @@
 # Change Log
 
+## 5.0.5
+
+### Patch Changes
+
+- refactor: remove implicit boolean conversion
+- refactor: replace array with set
+- Updated dependencies
+  - stylehacks@5.0.2
+
 # 5.0.4
 
 ### Chore

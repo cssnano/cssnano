@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.0.3
+
+### Patch Changes
+
+- refactor: more explicit function dispatch
+
 ## 5.0.2 (2022-01-07)
 
 ### Patch Changes

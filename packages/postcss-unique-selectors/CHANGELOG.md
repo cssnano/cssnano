@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.0.3
+
+### Patch Changes
+
+- refactor: replace natural sort with built-in array sort
+
 # 5.0.2 (2021-11-16)
 
 ### Chore

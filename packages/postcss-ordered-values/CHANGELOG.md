@@ -1,5 +1,14 @@
 # Change Log
 
+## 5.0.4
+
+### Patch Changes
+
+- refactor: remove implicit boolean conversion
+- refactor: replace array with set
+- Updated dependencies
+  - cssnano-utils@3.0.1
+
 ## 5.0.3 (2022-01-07)
 
 ### Patch Changes

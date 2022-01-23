@@ -1,11 +1,16 @@
 # Change Log
 
+## 5.0.3
+
+### Patch Changes
+
+- refactor: more explicit function dispatch
+
 ## 5.0.2 (2022-01-07)
 
 ### Patch Changes
 
 - refactor: use Map as a cache
-
 
 ## [5.0.1](https://github.com/cssnano/cssnano/compare/postcss-reduce-transforms@5.0.0...postcss-reduce-transforms@5.0.1) (2021-05-19)
 

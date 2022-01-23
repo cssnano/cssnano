@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.0.5
+
+### Patch Changes
+
+- refactor: replace array with set
+- Updated dependencies
+  - cssnano-utils@3.0.1
+
 ## 5.0.4 (2022-01-07)
 
 ### Patch Changes
