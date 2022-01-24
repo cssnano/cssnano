@@ -15,48 +15,48 @@ import listStyle from './rules/listStyle';
 import column from './rules/columns';
 import vendorUnprefixed from './lib/vendorUnprefixed.js';
 
-const borderRules = {
-  border: border,
-  'border-block': border,
-  'border-inline': border,
-  'border-block-end': border,
-  'border-block-start': border,
-  'border-inline-end': border,
-  'border-inline-start': border,
-  'border-top': border,
-  'border-right': border,
-  'border-bottom': border,
-  'border-left': border,
-};
+const borderRules = [
+  ['border', border],
+  ['border-block', border],
+  ['border-inline', border],
+  ['border-block-end', border],
+  ['border-block-start', border],
+  ['border-inline-end', border],
+  ['border-inline-start', border],
+  ['border-top', border],
+  ['border-right', border],
+  ['border-bottom', border],
+  ['border-left', border],
+];
 
-const grid = {
-  'grid-auto-flow': normalizeGridAutoFlow,
-  'grid-column-gap': normalizeGridColumnRowGap, // normal | <length-percentage>
-  'grid-row-gap': normalizeGridColumnRowGap, // normal | <length-percentage>
-  'grid-column': normalizeGridColumnRow, // <grid-line>+
-  'grid-row': normalizeGridColumnRow, // <grid-line>+
-  'grid-row-start': normalizeGridColumnRow, // <grid-line>
-  'grid-row-end': normalizeGridColumnRow, // <grid-line>
-  'grid-column-start': normalizeGridColumnRow, // <grid-line>
-  'grid-column-end': normalizeGridColumnRow, // <grid-line>
-};
+const grid = [
+  ['grid-auto-flow', normalizeGridAutoFlow],
+  ['grid-column-gap', normalizeGridColumnRowGap], // normal | <length-percentage>
+  ['grid-row-gap', normalizeGridColumnRowGap], // normal | <length-percentage>
+  ['grid-column', normalizeGridColumnRow], // <grid-line>+
+  ['grid-row', normalizeGridColumnRow], // <grid-line>+
+  ['grid-row-start', normalizeGridColumnRow], // <grid-line>
+  ['grid-row-end', normalizeGridColumnRow], // <grid-line>
+  ['grid-column-start', normalizeGridColumnRow], // <grid-line>
+  ['grid-column-end', normalizeGridColumnRow], // <grid-line>
+];
 
-const columnRules = {
-  'column-rule': border,
-  columns: column,
-};
+const columnRules = [
+  ['column-rule', border],
+  ['columns', column],
+];
 
-const rules = {
-  animation: animation,
-  outline: border,
-  'box-shadow': boxShadow,
-  'flex-flow': flexFlow,
-  'list-style': listStyle,
-  transition: transition,
+const rules = new Map([
+  ['animation', animation],
+  ['outline', border],
+  ['box-shadow', boxShadow],
+  ['flex-flow', flexFlow],
+  ['list-style', listStyle],
+  ['transition', transition],
   ...borderRules,
   ...grid,
   ...columnRules,
-};
+]);
 
 function isVariableFunctionNode(node) {
   if (node.type !== 'function') {
@@ -104,7 +104,7 @@ function pluginCreator() {
           css.walkDecls((decl) => {
             const lowerCasedProp = decl.prop.toLowerCase();
             const normalizedProp = vendorUnprefixed(lowerCasedProp);
-            const processor = rules[normalizedProp];
+            const processor = rules.get(normalizedProp);
 
             if (!processor) {
               return;

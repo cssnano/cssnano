@@ -36,7 +36,7 @@
     "node": "^10 || ^12 || >=14.0"
   },
   "devDependencies": {
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.7",
     "postcss": "^8.2.15"
   },
   "peerDependencies": {
