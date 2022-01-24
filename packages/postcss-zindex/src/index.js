@@ -4,7 +4,7 @@ function pluginCreator(opts = {}) {
   return {
     postcssPlugin: 'postcss-zindex',
     prepare() {
-      const cache = new LayerCache(opts);
+      const cache = new LayerCache();
       return {
         OnceExit(css) {
           const nodes = [];
