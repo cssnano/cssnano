@@ -62,7 +62,7 @@ function combinator(selector) {
   selector.spaces.before = '';
   selector.spaces.after = '';
   selector.rawSpaceBefore = '';
-  selector.rawsSpaceAfter = '';
+  selector.rawSpaceAfter = '';
   selector.value = value.length ? value : ' ';
 }
 
