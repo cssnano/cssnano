@@ -4,43 +4,47 @@ import addSpace from '../lib/addSpace';
 import getValue from '../lib/getValue';
 
 // animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
+const functions = new Set(['steps', 'cubic-bezier', 'frames']);
+const keywords = new Set([
+  'ease',
+  'ease-in',
+  'ease-in-out',
+  'ease-out',
+  'linear',
+  'step-end',
+  'step-start',
+]);
+
+const directions = new Set([
+  'normal',
+  'reverse',
+  'alternate',
+  'alternate-reverse',
+]);
+const fillModes = new Set(['none', 'forwards', 'backwards', 'both']);
+const playStates = new Set(['running', 'paused']);
+const timeUnits = new Set(['ms', 's']);
 
 const isTimingFunction = (value, type) => {
-  const functions = ['steps', 'cubic-bezier', 'frames'];
-  const keywords = [
-    'ease',
-    'ease-in',
-    'ease-in-out',
-    'ease-out',
-    'linear',
-    'step-end',
-    'step-start',
-  ];
-
-  return (
-    (type === 'function' && functions.includes(value)) ||
-    keywords.includes(value)
-  );
+  return (type === 'function' && functions.has(value)) || keywords.has(value);
 };
 
 const isDirection = (value) => {
-  return ['normal', 'reverse', 'alternate', 'alternate-reverse'].includes(
-    value
-  );
+  return directions.has(value);
 };
 
 const isFillMode = (value) => {
-  return ['none', 'forwards', 'backwards', 'both'].includes(value);
+  return fillModes.has(value);
 };
 
 const isPlayState = (value) => {
-  return ['running', 'paused'].includes(value);
+  return playStates.has(value);
 };
 
 const isTime = (value) => {
   const quantity = unit(value);
 
-  return quantity && ['ms', 's'].includes(quantity.unit);
+  return quantity && timeUnits.has(quantity.unit);
 };
 
 const isIterationCount = (value) => {
