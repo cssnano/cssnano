@@ -34,10 +34,8 @@ function isStop(str) {
   if (!stop) {
     const node = unit(str);
     if (node) {
-      if (
-        node.number === 0 ||
-        (!isNaN(node.number) && isCSSLengthUnit(node.unit))
-      ) {
+      const number = Number(node.number);
+      if (number === 0 || (!isNaN(number) && isCSSLengthUnit(node.unit))) {
         stop = true;
       }
     } else {

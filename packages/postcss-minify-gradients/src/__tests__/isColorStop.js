@@ -8,5 +8,6 @@ test('should recognise color stops', () => {
   assert.is(isColorStop('yellow', 'px'), false);
   assert.is(isColorStop('yellow', 'calc(100%)'), true);
   assert.is(isColorStop(undefined), false);
+  assert.is(isColorStop('yellow', '0'), true);
 });
 test.run();
