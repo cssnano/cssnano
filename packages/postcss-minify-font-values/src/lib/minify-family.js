@@ -39,7 +39,7 @@ function escape(string, escapeForString) {
 
   while (counter < string.length) {
     character = string.charAt(counter++);
-    charCode = character.charCodeAt();
+    charCode = character.charCodeAt(0);
 
     // \r is already tokenized away at this point
     // `:` can be escaped as `\:`, but that fails in IE < 8
@@ -152,7 +152,7 @@ function escapeIdentifierSequence(string) {
 }
 
 export default function (nodes, opts) {
-  let family = [];
+  const family = [];
   let last = null;
   let i, max;
 
@@ -175,7 +175,7 @@ export default function (nodes, opts) {
     }
   });
 
-  family = family.map((node) => {
+  let normalizedFamilies = family.map((node) => {
     if (node.type === 'string') {
       const isKeyword = regexKeyword.test(node.value);
 
@@ -198,22 +198,22 @@ export default function (nodes, opts) {
   });
 
   if (opts.removeAfterKeyword) {
-    for (i = 0, max = family.length; i < max; i += 1) {
-      if (genericFontFamilykeywords.has(family[i].toLowerCase())) {
-        family = family.slice(0, i + 1);
+    for (i = 0, max = normalizedFamilies.length; i < max; i += 1) {
+      if (genericFontFamilykeywords.has(normalizedFamilies[i].toLowerCase())) {
+        normalizedFamilies = normalizedFamilies.slice(0, i + 1);
         break;
       }
     }
   }
 
   if (opts.removeDuplicates) {
-    family = uniqueFontFamilies(family);
+    normalizedFamilies = uniqueFontFamilies(normalizedFamilies);
   }
 
   return [
     {
       type: 'word',
-      value: family.join(),
+      value: normalizedFamilies.join(),
     },
   ];
 }
