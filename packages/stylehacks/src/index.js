@@ -15,7 +15,7 @@ function pluginCreator(opts = {}) {
       const processors = plugins.reduce((list, Plugin) => {
         const hack = new Plugin(result);
         const applied = browsers.some((browser) => {
-          return hack.targets.some((target) => browser === target);
+          return hack.targets.has(browser);
         });
 
         if (applied) {
@@ -27,7 +27,7 @@ function pluginCreator(opts = {}) {
 
       css.walk((node) => {
         processors.forEach((proc) => {
-          if (!proc.nodeTypes.includes(node.type)) {
+          if (!proc.nodeTypes.has(node.type)) {
             return;
           }
 
