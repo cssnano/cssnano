@@ -83,7 +83,7 @@ function optimise(decl) {
           }
 
           if (lastStop && thisStop && isLessThan(lastStop, thisStop)) {
-            arg[2].value = 0;
+            arg[2].value = '0';
           }
 
           lastStop = thisStop;
@@ -119,7 +119,7 @@ function optimise(decl) {
           }
 
           if (lastStop && thisStop && isLessThan(lastStop, thisStop)) {
-            arg[2].value = 0;
+            arg[2].value = '0';
           }
 
           lastStop = thisStop;
@@ -162,7 +162,7 @@ function optimise(decl) {
           color = color.toLowerCase();
 
           const colorStop =
-            stop || stop === 0
+            stop !== undefined
               ? isColorStop(color, stop.toLowerCase())
               : isColorStop(color);
 
@@ -179,7 +179,7 @@ function optimise(decl) {
           }
 
           if (lastStop && thisStop && isLessThan(lastStop, thisStop)) {
-            arg[2].value = 0;
+            arg[2].value = '0';
           }
 
           lastStop = thisStop;
