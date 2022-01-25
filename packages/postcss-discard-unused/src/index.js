@@ -9,9 +9,9 @@ function addValues(cache, { value }, comma, space) {
 }
 
 function filterAtRule({ atRules, values }) {
-  values = new Set(values);
+  const uniqueValues = new Set(values);
   atRules.forEach((node) => {
-    const hasAtRule = values.has(node.params);
+    const hasAtRule = uniqueValues.has(node.params);
 
     if (!hasAtRule) {
       node.remove();
@@ -20,7 +20,7 @@ function filterAtRule({ atRules, values }) {
 }
 
 function filterNamespace({ atRules, rules }) {
-  rules = new Set(rules);
+  const uniqueRules = new Set(rules);
   atRules.forEach((atRule) => {
     const { 0: param, length: len } = atRule.params.split(' ').filter(Boolean);
 
@@ -28,7 +28,7 @@ function filterNamespace({ atRules, rules }) {
       return;
     }
 
-    const hasRule = rules.has(param) || rules.has('*');
+    const hasRule = uniqueRules.has(param) || uniqueRules.has('*');
 
     if (!hasRule) {
       atRule.remove();

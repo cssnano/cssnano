@@ -51,10 +51,13 @@ function transform(legacy, rule) {
         node.nodes[4] &&
         node.nodes[0].value.toLowerCase().indexOf('-aspect-ratio') === 3
       ) {
-        const [a, b] = aspectRatio(node.nodes[2].value, node.nodes[4].value);
+        const [a, b] = aspectRatio(
+          Number(node.nodes[2].value),
+          Number(node.nodes[4].value)
+        );
 
-        node.nodes[2].value = a;
-        node.nodes[4].value = b;
+        node.nodes[2].value = a.toString();
+        node.nodes[4].value = b.toString();
       }
     } else if (node.type === 'space') {
       node.value = ' ';
