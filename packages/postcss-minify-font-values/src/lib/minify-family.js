@@ -1,7 +1,14 @@
 import { stringify } from 'postcss-value-parser';
-import uniqueExcept from './uniqs';
 
-const uniqs = uniqueExcept('monospace');
+function uniqueFontFamilies(list) {
+  return list.filter((item, i) => {
+    if (item.toLowerCase() === 'monospace') {
+      return true;
+    }
+    return i === list.indexOf(item);
+  });
+}
+
 const globalKeywords = ['inherit', 'initial', 'unset'];
 const genericFontFamilykeywords = new Set([
   'sans-serif',
@@ -200,7 +207,7 @@ export default function (nodes, opts) {
   }
 
   if (opts.removeDuplicates) {
-    family = uniqs(family);
+    family = uniqueFontFamilies(family);
   }
 
   return [
