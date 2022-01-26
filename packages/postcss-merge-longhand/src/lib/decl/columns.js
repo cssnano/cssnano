@@ -60,10 +60,10 @@ function explode(rule) {
 
     values.forEach((value, i) => {
       let prop = properties[1];
-
+      const dimension = unit(value);
       if (value.toLowerCase() === auto) {
         prop = properties[i];
-      } else if (unit(value).unit) {
+      } else if (dimension && dimension.unit !== '') {
         prop = properties[0];
       }
 
