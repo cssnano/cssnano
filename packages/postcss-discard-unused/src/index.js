@@ -3,9 +3,18 @@ import selectorParser from 'postcss-selector-parser';
 const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
-
-function addValues(cache, { value }, comma, space) {
-  return comma(value).reduce((memo, val) => [...memo, ...space(val)], cache);
+/**
+ * @param {{value: string}} arg
+ * @param {(input: string) => string[]} comma
+ * @param {(input: string) => string[]} space
+ * @return {string[]}
+ */
+function splitValues({ value }, comma, space) {
+  let result = [];
+  for (const val of comma(value)) {
+    result = result.concat(space(val));
+  }
+  return result;
 }
 
 function filterAtRule({ atRules, values }) {
@@ -105,11 +114,8 @@ function pluginCreator(opts) {
 
             if (type === decl) {
               if (counterStyle && /list-style|system/.test(prop)) {
-                counterStyleCache.values = addValues(
-                  counterStyleCache.values,
-                  node,
-                  comma,
-                  space
+                counterStyleCache.values = counterStyleCache.values.concat(
+                  splitValues(node, comma, space)
                 );
               }
 
@@ -124,11 +130,8 @@ function pluginCreator(opts) {
               }
 
               if (keyframes && /animation/.test(prop)) {
-                keyframesCache.values = addValues(
-                  keyframesCache.values,
-                  node,
-                  comma,
-                  space
+                keyframesCache.values = keyframesCache.values.concat(
+                  splitValues(node, comma, space)
                 );
               }
 

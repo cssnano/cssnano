@@ -17,31 +17,38 @@ function unicode(range) {
     return range;
   }
 
-  let questionCounter = 0;
+  const merged = mergeRangeBounds(left, right);
 
-  const merged = left.reduce((group, value, index) => {
-    if (group === false) {
-      return false;
-    }
-
-    if (value === right[index] && !questionCounter) {
-      return group + value;
-    }
-
-    if (value === '0' && right[index] === 'f') {
-      questionCounter++;
-      return group + '?';
-    }
-
-    return false;
-  }, 'u+');
-
-  // The maximum number of wildcard characters (?) for ranges is 5.
-  if (merged && questionCounter < 6) {
+  if (merged) {
     return merged;
   }
 
   return range;
+}
+/**
+ * @param {string[]} left
+ * @param {string[]} right
+ * @return {false|string}
+ */
+function mergeRangeBounds(left, right) {
+  let questionCounter = 0;
+  let group = 'u+';
+  for (const [index, value] of left.entries()) {
+    if (value === right[index] && questionCounter === 0) {
+      group = group + value;
+    } else if (value === '0' && right[index] === 'f') {
+      questionCounter++;
+      group = group + '?';
+    } else {
+      return false;
+    }
+  }
+  // The maximum number of wildcard characters (?) for ranges is 5.
+  if (questionCounter < 6) {
+    return group;
+  } else {
+    return false;
+  }
 }
 
 /*

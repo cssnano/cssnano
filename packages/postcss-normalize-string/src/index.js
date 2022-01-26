@@ -181,23 +181,29 @@ function changeWrappingQuotes(node, ast) {
     node.quote = L_SINGLE_QUOTE;
   }
 
-  ast.nodes = ast.nodes.reduce((newAst, child) => {
+  ast.nodes = changeChildQuotes(ast.nodes, node.quote);
+}
+/**
+ * @param {string} parentQuote
+ */
+function changeChildQuotes(childNodes, parentQuote) {
+  const updatedChildren = [];
+  for (const child of childNodes) {
     if (
       child.type === C_ESCAPED_DOUBLE_QUOTE &&
-      node.quote === L_SINGLE_QUOTE
+      parentQuote === L_SINGLE_QUOTE
     ) {
-      return [...newAst, T_DOUBLE_QUOTE];
-    }
-
-    if (
+      updatedChildren.push(T_DOUBLE_QUOTE);
+    } else if (
       child.type === C_ESCAPED_SINGLE_QUOTE &&
-      node.quote === L_DOUBLE_QUOTE
+      parentQuote === L_DOUBLE_QUOTE
     ) {
-      return [...newAst, T_SINGLE_QUOTE];
+      updatedChildren.push(T_SINGLE_QUOTE);
+    } else {
+      updatedChildren.push(child);
     }
-
-    return [...newAst, child];
-  }, []);
+  }
+  return updatedChildren;
 }
 
 function normalize(value, preferredQuote) {

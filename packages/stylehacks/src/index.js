@@ -12,19 +12,14 @@ function pluginCreator(opts = {}) {
         path: __dirname,
         env: resultOpts.env,
       });
-      const processors = plugins.reduce((list, Plugin) => {
+
+      const processors = [];
+      for (const Plugin of plugins) {
         const hack = new Plugin(result);
-        const applied = browsers.some((browser) => {
-          return hack.targets.has(browser);
-        });
-
-        if (applied) {
-          return list;
+        if (!browsers.some((browser) => hack.targets.has(browser))) {
+          processors.push(hack);
         }
-
-        return [...list, hack];
-      }, []);
-
+      }
       css.walk((node) => {
         processors.forEach((proc) => {
           if (!proc.nodeTypes.has(node.type)) {
