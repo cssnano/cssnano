@@ -1,24 +1,30 @@
-import plugin from '../plugin';
+import BasePlugin from '../plugin';
 import isMixin from '../isMixin';
 import { IE_5_5, IE_6, IE_7 } from '../dictionary/browsers';
 import { SELECTOR } from '../dictionary/identifiers';
 import { RULE } from '../dictionary/postcss';
 
-export default plugin([IE_5_5, IE_6, IE_7], [RULE], function (rule) {
-  if (isMixin(rule)) {
-    return;
+export default class TrailingSlashComma extends BasePlugin {
+  constructor(result) {
+    super([IE_5_5, IE_6, IE_7], [RULE], result);
   }
 
-  const { selector } = rule;
-  const trim = selector.trim();
+  detect(rule) {
+    if (isMixin(rule)) {
+      return;
+    }
 
-  if (
-    trim.lastIndexOf(',') === selector.length - 1 ||
-    trim.lastIndexOf('\\') === selector.length - 1
-  ) {
-    this.push(rule, {
-      identifier: SELECTOR,
-      hack: selector,
-    });
+    const { selector } = rule;
+    const trim = selector.trim();
+
+    if (
+      trim.lastIndexOf(',') === selector.length - 1 ||
+      trim.lastIndexOf('\\') === selector.length - 1
+    ) {
+      this.push(rule, {
+        identifier: SELECTOR,
+        hack: selector,
+      });
+    }
   }
-});
+}
