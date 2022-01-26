@@ -52,7 +52,7 @@ function minifySVG(input, opts) {
 function minify(decl, opts, postcssResult) {
   const parsed = valueParser(decl.value);
 
-  decl.value = parsed.walk((node) => {
+  const minified = parsed.walk((node) => {
     if (
       node.type !== 'function' ||
       node.value.toLowerCase() !== 'url' ||
@@ -103,7 +103,7 @@ function minify(decl, opts, postcssResult) {
     return false;
   });
 
-  decl.value = decl.value.toString();
+  decl.value = minified.toString();
 }
 
 function pluginCreator(opts = {}) {

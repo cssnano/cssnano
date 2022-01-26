@@ -29,9 +29,8 @@ function isCSSLengthUnit(input) {
 }
 
 function isStop(str) {
-  let stop = !str;
-
-  if (!stop) {
+  if (str) {
+    let stop = false;
     const node = unit(str);
     if (node) {
       const number = Number(node.number);
@@ -41,8 +40,9 @@ function isStop(str) {
     } else {
       stop = /^calc\(\S+\)$/g.test(str);
     }
+    return stop;
   }
-  return stop;
+  return true;
 }
 
 export default function isColorStop(color, stop) {

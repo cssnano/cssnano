@@ -23,7 +23,7 @@ function pluginCreator() {
               sel.remove();
               return;
             } else {
-              return sel;
+              return;
             }
           });
         });
