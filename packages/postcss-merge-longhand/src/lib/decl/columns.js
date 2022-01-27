@@ -1,6 +1,6 @@
 import { list } from 'postcss';
 import { unit } from 'postcss-value-parser';
-import { detect } from 'stylehacks';
+import stylehacks from 'stylehacks';
 import canMerge from '../canMerge';
 import getDecls from '../getDecls';
 import getValue from '../getValue';
@@ -48,7 +48,7 @@ function explode(rule) {
       return;
     }
 
-    if (detect(decl)) {
+    if (stylehacks.detect(decl)) {
       return;
     }
 
@@ -86,8 +86,8 @@ function cleanup(rule) {
     // remove properties of lower precedence
     const lesser = decls.filter(
       (node) =>
-        !detect(lastNode) &&
-        !detect(node) &&
+        !stylehacks.detect(lastNode) &&
+        !stylehacks.detect(node) &&
         node !== lastNode &&
         node.important === lastNode.important &&
         lastNode.prop === 'columns' &&
@@ -100,8 +100,8 @@ function cleanup(rule) {
     // get duplicate properties
     let duplicates = decls.filter(
       (node) =>
-        !detect(lastNode) &&
-        !detect(node) &&
+        !stylehacks.detect(lastNode) &&
+        !stylehacks.detect(node) &&
         node !== lastNode &&
         node.important === lastNode.important &&
         node.prop === lastNode.prop &&
@@ -117,7 +117,7 @@ function cleanup(rule) {
 
 function merge(rule) {
   mergeRules(rule, properties, (rules, lastNode) => {
-    if (canMerge(rules) && !rules.some(detect)) {
+    if (canMerge(rules) && !rules.some(stylehacks.detect)) {
       insertCloned(lastNode.parent, lastNode, {
         prop: 'columns',
         value: normalize(rules.map(getValue)),

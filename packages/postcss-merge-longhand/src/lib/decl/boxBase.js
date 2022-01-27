@@ -1,4 +1,4 @@
-import { detect } from 'stylehacks';
+import stylehacks from 'stylehacks';
 import canMerge from '../canMerge';
 import getDecls from '../getDecls';
 import minifyTrbl from '../minifyTrbl';
@@ -23,8 +23,8 @@ export default (prop) => {
       // remove properties of lower precedence
       const lesser = decls.filter(
         (node) =>
-          !detect(lastNode) &&
-          !detect(node) &&
+          !stylehacks.detect(lastNode) &&
+          !stylehacks.detect(node) &&
           node !== lastNode &&
           node.important === lastNode.important &&
           lastNode.prop === prop &&
@@ -37,8 +37,8 @@ export default (prop) => {
       // get duplicate properties
       let duplicates = decls.filter(
         (node) =>
-          !detect(lastNode) &&
-          !detect(node) &&
+          !stylehacks.detect(lastNode) &&
+          !stylehacks.detect(node) &&
           node !== lastNode &&
           node.important === lastNode.important &&
           node.prop === lastNode.prop &&
@@ -59,7 +59,7 @@ export default (prop) => {
           return;
         }
 
-        if (detect(decl)) {
+        if (stylehacks.detect(decl)) {
           return;
         }
 
@@ -77,7 +77,7 @@ export default (prop) => {
     },
     merge: (rule) => {
       mergeRules(rule, properties, (rules, lastNode) => {
-        if (canMerge(rules) && !rules.some(detect)) {
+        if (canMerge(rules) && !rules.some(stylehacks.detect)) {
           insertCloned(lastNode.parent, lastNode, {
             prop,
             value: minifyTrbl(mergeValues(...rules)),
