@@ -53,10 +53,23 @@ const isIterationCount = (value) => {
   return value === 'infinite' || (quantity && !quantity.unit);
 };
 
-export default function normalizeAnimation(parsed) {
-  const args = getArguments(parsed);
+const stateConditions = [
+  { property: 'duration', delegate: isTime },
+  { property: 'timingFunction', delegate: isTimingFunction },
+  { property: 'delay', delegate: isTime },
+  { property: 'iterationCount', delegate: isIterationCount },
+  { property: 'direction', delegate: isDirection },
+  { property: 'fillMode', delegate: isFillMode },
+  { property: 'playState', delegate: isPlayState },
+];
+/**
+ * @param {import('postcss-value-parser').Node[][]} args
+ * @return {import('postcss-value-parser').Node[][]}
+ */
+function normalize(args) {
+  const list = [];
 
-  const values = args.reduce((list, arg) => {
+  for (const arg of args) {
     const state = {
       name: [],
       duration: [],
@@ -67,15 +80,6 @@ export default function normalizeAnimation(parsed) {
       fillMode: [],
       playState: [],
     };
-    const stateConditions = [
-      { property: 'duration', delegate: isTime },
-      { property: 'timingFunction', delegate: isTimingFunction },
-      { property: 'delay', delegate: isTime },
-      { property: 'iterationCount', delegate: isIterationCount },
-      { property: 'direction', delegate: isDirection },
-      { property: 'fillMode', delegate: isFillMode },
-      { property: 'playState', delegate: isPlayState },
-    ];
 
     arg.forEach((node) => {
       let { type, value } = node;
@@ -97,20 +101,26 @@ export default function normalizeAnimation(parsed) {
         state.name = [...state.name, node, addSpace()];
       }
     });
-    return [
-      ...list,
-      [
-        ...state.name,
-        ...state.duration,
-        ...state.timingFunction,
-        ...state.delay,
-        ...state.iterationCount,
-        ...state.direction,
-        ...state.fillMode,
-        ...state.playState,
-      ],
-    ];
-  }, []);
+
+    list.push([
+      ...state.name,
+      ...state.duration,
+      ...state.timingFunction,
+      ...state.delay,
+      ...state.iterationCount,
+      ...state.direction,
+      ...state.fillMode,
+      ...state.playState,
+    ]);
+  }
+  return list;
+}
+/**
+ * @param {import('postcss-value-parser').ParsedValue} parsed
+ * @return {string}
+ */
+export default function normalizeAnimation(parsed) {
+  const values = normalize(getArguments(parsed));
 
   return getValue(values);
 }

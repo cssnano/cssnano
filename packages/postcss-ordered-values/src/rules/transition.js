@@ -15,10 +15,13 @@ const timingFunctions = new Set([
   'step-end',
 ]);
 
-export default function normalizeTransition(parsed) {
-  let args = getArguments(parsed);
-
-  let values = args.reduce((list, arg) => {
+/**
+ * @param {import('postcss-value-parser').Node[][]} args
+ * @return {import('postcss-value-parser').Node[][]}
+ */
+function normalize(args) {
+  const list = [];
+  for (const arg of args) {
     let state = {
       timingFunction: [],
       property: [],
@@ -51,16 +54,21 @@ export default function normalizeTransition(parsed) {
       }
     });
 
-    return [
-      ...list,
-      [
-        ...state.property,
-        ...state.time1,
-        ...state.timingFunction,
-        ...state.time2,
-      ],
-    ];
-  }, []);
+    list.push([
+      ...state.property,
+      ...state.time1,
+      ...state.timingFunction,
+      ...state.time2,
+    ]);
+  }
+  return list;
+}
+/**
+ * @param {import('postcss-value-parser').ParsedValue} parsed
+ * @return {string}
+ */
+export default function normalizeTransition(parsed) {
+  const values = normalize(getArguments(parsed));
 
   return getValue(values);
 }

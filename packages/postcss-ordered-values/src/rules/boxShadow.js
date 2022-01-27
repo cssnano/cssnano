@@ -7,11 +7,29 @@ import vendorUnprefixed from '../lib/vendorUnprefixed.js';
 
 // box-shadow: inset? && <length>{2,4} && <color>?
 
+/**
+ * @param {import('postcss-value-parser').ParsedValue} parsed
+ * @return {string}
+ */
 export default function normalizeBoxShadow(parsed) {
   let args = getArguments(parsed);
-  let abort = false;
 
-  let values = args.reduce((list, arg) => {
+  const normalized = normalize(args);
+
+  if (normalized === false) {
+    return parsed.toString();
+  }
+
+  return getValue(normalized);
+}
+/**
+ * @param {import('postcss-value-parser').Node[][]} args
+ * @return {false | import('postcss-value-parser').Node[][]}
+ */
+function normalize(args) {
+  const list = [];
+  let abort = false;
+  for (const arg of args) {
     let val = [];
     let state = {
       inset: [],
@@ -42,12 +60,11 @@ export default function normalizeBoxShadow(parsed) {
       }
     });
 
-    return [...list, [...state.inset, ...val, ...state.color]];
-  }, []);
+    if (abort) {
+      return false;
+    }
 
-  if (abort) {
-    return parsed.toString();
+    list.push([...state.inset, ...val, ...state.color]);
   }
-
-  return getValue(values);
+  return list;
 }
