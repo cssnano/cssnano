@@ -5,9 +5,7 @@ import { stringify } from 'postcss-value-parser';
  * @return {string}
  */
 export default function getValue(values) {
-  return stringify({
-    nodes: flatten(values),
-  });
+  return stringify(flatten(values));
 }
 /**
  * @param {import('postcss-value-parser').Node[][]} values
