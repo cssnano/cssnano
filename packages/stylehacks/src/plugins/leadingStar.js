@@ -14,26 +14,24 @@ export default class LeadingStar extends BasePlugin {
     if (node.type === DECL) {
       // some values are not picked up by before, so ensure they are
       // at the beginning of the value
-      hacks.some((hack) => {
+      hacks.forEach((hack) => {
         if (!node.prop.indexOf(hack)) {
           this.push(node, {
             identifier: PROPERTY,
             hack: node.prop,
           });
-          return true;
         }
       });
       let { before } = node.raws;
       if (!before) {
         return;
       }
-      hacks.some((hack) => {
+      hacks.forEach((hack) => {
         if (before.includes(hack)) {
           this.push(node, {
             identifier: PROPERTY,
             hack: `${before.trim()}${node.prop}`,
           });
-          return true;
         }
       });
     } else {
