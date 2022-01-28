@@ -1,5 +1,5 @@
 import { list } from 'postcss';
-import { detect } from 'stylehacks';
+import stylehacks from 'stylehacks';
 import insertCloned from '../insertCloned';
 import parseTrbl from '../parseTrbl';
 import hasAllProps from '../hasAllProps';
@@ -81,7 +81,7 @@ function mergeRedundant({ values, nextValues, decl, nextDecl, index }) {
     return;
   }
 
-  if (detect(decl) || detect(nextDecl)) {
+  if (stylehacks.detect(decl) || stylehacks.detect(nextDecl)) {
     return;
   }
 
@@ -149,7 +149,7 @@ function explode(rule) {
       return;
     }
 
-    if (detect(decl)) {
+    if (stylehacks.detect(decl)) {
       return;
     }
 
@@ -209,7 +209,7 @@ function merge(rule) {
       rule,
       wsc.map((style) => borderProperty(direction, style)),
       (rules, lastNode) => {
-        if (canMerge(rules, false) && !rules.some(detect)) {
+        if (canMerge(rules, false) && !rules.some(stylehacks.detect)) {
           insertCloned(lastNode.parent, lastNode, {
             prop,
             value: rules.map(getValue).join(' '),
@@ -231,7 +231,7 @@ function merge(rule) {
       rule,
       trbl.map((direction) => borderProperty(direction, style)),
       (rules, lastNode) => {
-        if (canMerge(rules) && !rules.some(detect)) {
+        if (canMerge(rules) && !rules.some(stylehacks.detect)) {
           insertCloned(lastNode.parent, lastNode, {
             prop,
             value: minifyTrbl(rules.map(getValue).join(' ')),
@@ -247,7 +247,7 @@ function merge(rule) {
 
   // border-trbl -> border-wsc
   mergeRules(rule, directions, (rules, lastNode) => {
-    if (rules.some(detect)) {
+    if (rules.some(stylehacks.detect)) {
       return;
     }
 
@@ -285,7 +285,7 @@ function merge(rule) {
   // border-wsc -> border + border-color
   // border-wsc -> border + border-dir
   mergeRules(rule, properties, (rules, lastNode) => {
-    if (rules.some(detect)) {
+    if (rules.some(stylehacks.detect)) {
       return;
     }
 
@@ -343,7 +343,7 @@ function merge(rule) {
 
   // border-wsc -> border + border-trbl
   mergeRules(rule, properties, (rules, lastNode) => {
-    if (rules.some(detect)) {
+    if (rules.some(stylehacks.detect)) {
       return;
     }
 
@@ -392,7 +392,7 @@ function merge(rule) {
   // border-trbl -> border
   // border-trbl -> border + border-trbl
   mergeRules(rule, directions, (rules, lastNode) => {
-    if (rules.some(detect)) {
+    if (rules.some(stylehacks.detect)) {
       return;
     }
 
@@ -464,7 +464,7 @@ function merge(rule) {
 
         values[i] = wscProp.value;
 
-        if (canMerge(rules, false) && !rules.some(detect)) {
+        if (canMerge(rules, false) && !rules.some(stylehacks.detect)) {
           insertCloned(lastNode.parent, lastNode, {
             prop,
             value: wscValue,
@@ -503,7 +503,7 @@ function merge(rule) {
 
       values[i] = wscProp.value;
 
-      if (canMerge(rules, false) && !rules.some(detect)) {
+      if (canMerge(rules, false) && !rules.some(stylehacks.detect)) {
         insertCloned(lastNode.parent, lastNode, {
           prop,
           value: wscValue,
@@ -543,7 +543,7 @@ function merge(rule) {
       );
       const rules = getRules(props, names);
 
-      if (hasAllProps(rules, ...names) && !rules.some(detect)) {
+      if (hasAllProps(rules, ...names) && !rules.some(stylehacks.detect)) {
         const values = rules.map((node) => (node ? node.value : null));
         const filteredValues = values.filter(Boolean);
         const lastNodeValue = list.space(lastNode.value)[i];
@@ -687,8 +687,8 @@ function merge(rule) {
     // remove properties of lower precedence
     const lesser = decls.filter(
       (node) =>
-        !detect(lastNode) &&
-        !detect(node) &&
+        !stylehacks.detect(lastNode) &&
+        !stylehacks.detect(node) &&
         !isCustomProp(lastNode) &&
         node !== lastNode &&
         node.important === lastNode.important &&
@@ -703,8 +703,8 @@ function merge(rule) {
     // get duplicate properties
     let duplicates = decls.filter(
       (node) =>
-        !detect(lastNode) &&
-        !detect(node) &&
+        !stylehacks.detect(lastNode) &&
+        !stylehacks.detect(node) &&
         node !== lastNode &&
         node.important === lastNode.important &&
         node.prop === lastNode.prop &&
