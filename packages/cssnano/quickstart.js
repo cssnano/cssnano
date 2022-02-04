@@ -1,3 +1,4 @@
+'use strict';
 /*
  * This example targets Node 4 and up.
  */

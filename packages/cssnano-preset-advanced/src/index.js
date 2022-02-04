@@ -1,9 +1,10 @@
-import defaultPreset from 'cssnano-preset-default';
-import postcssDiscardUnused from 'postcss-discard-unused';
-import postcssMergeIdents from 'postcss-merge-idents';
-import postcssReduceIdents from 'postcss-reduce-idents';
-import postcssZindex from 'postcss-zindex';
-import autoprefixer from 'autoprefixer';
+'use strict';
+const defaultPreset = require('cssnano-preset-default');
+const postcssDiscardUnused = require('postcss-discard-unused');
+const postcssMergeIdents = require('postcss-merge-idents');
+const postcssReduceIdents = require('postcss-reduce-idents');
+const postcssZindex = require('postcss-zindex');
+const autoprefixer = require('autoprefixer');
 
 const defaultOpts = {
   autoprefixer: {
@@ -11,7 +12,7 @@ const defaultOpts = {
   },
 };
 
-export default function advancedPreset(opts = {}) {
+module.exports = function advancedPreset(opts = {}) {
   const options = Object.assign({}, defaultOpts, opts);
 
   const plugins = [
@@ -24,4 +25,4 @@ export default function advancedPreset(opts = {}) {
   ];
 
   return { plugins };
-}
+};

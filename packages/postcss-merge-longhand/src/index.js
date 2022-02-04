@@ -1,4 +1,5 @@
-import processors from './lib/decl';
+'use strict';
+const processors = require('./lib/decl');
 
 function pluginCreator() {
   return {
@@ -16,4 +17,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

@@ -1,3 +1,4 @@
+'use strict';
 // flex-flow: <flex-direction> || <flex-wrap>
 
 const flexDirection = new Set([
@@ -9,7 +10,7 @@ const flexDirection = new Set([
 
 const flexWrap = new Set(['nowrap', 'wrap', 'wrap-reverse']);
 
-export default function normalizeFlexFlow(flexFlow) {
+module.exports = function normalizeFlexFlow(flexFlow) {
   let order = {
     direction: '',
     wrap: '',
@@ -28,4 +29,4 @@ export default function normalizeFlexFlow(flexFlow) {
   });
 
   return `${order.direction} ${order.wrap}`.trim();
-}
+};

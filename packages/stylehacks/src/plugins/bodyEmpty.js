@@ -1,13 +1,14 @@
-import parser from 'postcss-selector-parser';
-import exists from '../exists';
-import isMixin from '../isMixin';
-import BasePlugin from '../plugin';
-import { FF_2 } from '../dictionary/browsers';
-import { SELECTOR } from '../dictionary/identifiers';
-import { RULE } from '../dictionary/postcss';
-import { BODY } from '../dictionary/tags';
+'use strict';
+const parser = require('postcss-selector-parser');
+const exists = require('../exists');
+const isMixin = require('../isMixin');
+const BasePlugin = require('../plugin');
+const { FF_2 } = require('../dictionary/browsers');
+const { SELECTOR } = require('../dictionary/identifiers');
+const { RULE } = require('../dictionary/postcss');
+const { BODY } = require('../dictionary/tags');
 
-export default class BodyEmpty extends BasePlugin {
+module.exports = class BodyEmpty extends BasePlugin {
   constructor(result) {
     super([FF_2], [RULE], result);
   }
@@ -36,4 +37,4 @@ export default class BodyEmpty extends BasePlugin {
       });
     };
   }
-}
+};

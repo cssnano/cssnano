@@ -1,3 +1,4 @@
+'use strict';
 /**
  * @author Ben Briggs
  * @license MIT
@@ -12,35 +13,35 @@
  * this preset require only minimal configuration.
  */
 
-import cssDeclarationSorter from 'css-declaration-sorter';
-import postcssDiscardComments from 'postcss-discard-comments';
-import postcssReduceInitial from 'postcss-reduce-initial';
-import postcssMinifyGradients from 'postcss-minify-gradients';
-import postcssSvgo from 'postcss-svgo';
-import postcssReduceTransforms from 'postcss-reduce-transforms';
-import postcssConvertValues from 'postcss-convert-values';
-import postcssCalc from 'postcss-calc';
-import postcssColormin from 'postcss-colormin';
-import postcssOrderedValues from 'postcss-ordered-values';
-import postcssMinifySelectors from 'postcss-minify-selectors';
-import postcssMinifyParams from 'postcss-minify-params';
-import postcssNormalizeCharset from 'postcss-normalize-charset';
-import postcssMinifyFontValues from 'postcss-minify-font-values';
-import postcssNormalizeUrl from 'postcss-normalize-url';
-import postcssMergeLonghand from 'postcss-merge-longhand';
-import postcssDiscardDuplicates from 'postcss-discard-duplicates';
-import postcssDiscardOverridden from 'postcss-discard-overridden';
-import postcssNormalizeRepeatStyle from 'postcss-normalize-repeat-style';
-import postcssMergeRules from 'postcss-merge-rules';
-import postcssDiscardEmpty from 'postcss-discard-empty';
-import postcssUniqueSelectors from 'postcss-unique-selectors';
-import postcssNormalizeString from 'postcss-normalize-string';
-import postcssNormalizePositions from 'postcss-normalize-positions';
-import postcssNormalizeWhitespace from 'postcss-normalize-whitespace';
-import postcssNormalizeUnicode from 'postcss-normalize-unicode';
-import postcssNormalizeDisplayValues from 'postcss-normalize-display-values';
-import postcssNormalizeTimingFunctions from 'postcss-normalize-timing-functions';
-import { rawCache } from 'cssnano-utils';
+const cssDeclarationSorter = require('css-declaration-sorter');
+const postcssDiscardComments = require('postcss-discard-comments');
+const postcssReduceInitial = require('postcss-reduce-initial');
+const postcssMinifyGradients = require('postcss-minify-gradients');
+const postcssSvgo = require('postcss-svgo');
+const postcssReduceTransforms = require('postcss-reduce-transforms');
+const postcssConvertValues = require('postcss-convert-values');
+const postcssCalc = require('postcss-calc');
+const postcssColormin = require('postcss-colormin');
+const postcssOrderedValues = require('postcss-ordered-values');
+const postcssMinifySelectors = require('postcss-minify-selectors');
+const postcssMinifyParams = require('postcss-minify-params');
+const postcssNormalizeCharset = require('postcss-normalize-charset');
+const postcssMinifyFontValues = require('postcss-minify-font-values');
+const postcssNormalizeUrl = require('postcss-normalize-url');
+const postcssMergeLonghand = require('postcss-merge-longhand');
+const postcssDiscardDuplicates = require('postcss-discard-duplicates');
+const postcssDiscardOverridden = require('postcss-discard-overridden');
+const postcssNormalizeRepeatStyle = require('postcss-normalize-repeat-style');
+const postcssMergeRules = require('postcss-merge-rules');
+const postcssDiscardEmpty = require('postcss-discard-empty');
+const postcssUniqueSelectors = require('postcss-unique-selectors');
+const postcssNormalizeString = require('postcss-normalize-string');
+const postcssNormalizePositions = require('postcss-normalize-positions');
+const postcssNormalizeWhitespace = require('postcss-normalize-whitespace');
+const postcssNormalizeUnicode = require('postcss-normalize-unicode');
+const postcssNormalizeDisplayValues = require('postcss-normalize-display-values');
+const postcssNormalizeTimingFunctions = require('postcss-normalize-timing-functions');
+const { rawCache } = require('cssnano-utils');
 
 const defaultOpts = {
   convertValues: {
@@ -54,7 +55,7 @@ const defaultOpts = {
   },
 };
 
-export default function defaultPreset(opts = {}) {
+module.exports = function defaultPreset(opts = {}) {
   const options = Object.assign({}, defaultOpts, opts);
 
   const plugins = [
@@ -90,4 +91,4 @@ export default function defaultPreset(opts = {}) {
   ];
 
   return { plugins };
-}
+};

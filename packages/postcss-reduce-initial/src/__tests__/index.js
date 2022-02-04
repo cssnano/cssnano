@@ -1,11 +1,13 @@
-import { test } from 'uvu';
-import fromInitial from '../../data/fromInitial.json';
-import toInitial from '../../data/toInitial.json';
-import {
+'use strict';
+const { test } = require('uvu');
+const {
   usePostCSSPlugin,
   processCSSFactory,
-} from '../../../../util/testHelpers';
-import plugin from '..';
+} = require('../../../../util/testHelpers');
+
+const fromInitial = require('../../data/fromInitial.json');
+const toInitial = require('../../data/toInitial.json');
+const plugin = require('..');
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

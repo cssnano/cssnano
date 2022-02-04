@@ -1,3 +1,4 @@
+'use strict';
 const OVERRIDABLE_RULES = new Set(['keyframes', 'counter-style']);
 const SCOPE_RULES = new Set(['media', 'supports']);
 
@@ -61,4 +62,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

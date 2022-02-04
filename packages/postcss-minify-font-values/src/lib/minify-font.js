@@ -1,9 +1,10 @@
-import { unit } from 'postcss-value-parser';
-import keywords from './keywords';
-import minifyFamily from './minify-family';
-import minifyWeight from './minify-weight';
+'use strict';
+const { unit } = require('postcss-value-parser');
+const keywords = require('./keywords');
+const minifyFamily = require('./minify-family');
+const minifyWeight = require('./minify-weight');
 
-export default function (nodes, opts) {
+module.exports = function (nodes, opts) {
   let i, max, node, familyStart, family;
   let hasSize = false;
 
@@ -54,4 +55,4 @@ export default function (nodes, opts) {
   family = minifyFamily(nodes.slice(familyStart), opts);
 
   return nodes.slice(0, familyStart).concat(family);
-}
+};

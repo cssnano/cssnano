@@ -1,8 +1,9 @@
-import isCustomProp from './isCustomProp';
+'use strict';
+const isCustomProp = require('./isCustomProp');
 
 const globalKeywords = new Set(['inherit', 'initial', 'unset', 'revert']);
 
-export default (prop, includeCustomProps = true) => {
+module.exports = (prop, includeCustomProps = true) => {
   if (
     !prop.value ||
     (includeCustomProps && isCustomProp(prop)) ||

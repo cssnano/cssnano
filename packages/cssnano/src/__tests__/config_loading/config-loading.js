@@ -1,10 +1,11 @@
-import process from 'process';
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import postcss from 'postcss';
-import litePreset from 'cssnano-preset-lite';
-import defaultPreset from 'cssnano-preset-default';
-import cssnano from '../..';
+'use strict';
+const process = require('process');
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const postcss = require('postcss');
+const litePreset = require('cssnano-preset-lite');
+const defaultPreset = require('cssnano-preset-default');
+const cssnano = require('../..');
 
 /* The configuration is loaded relative to the current working directory,
   when running the repository tests, the working directory is 

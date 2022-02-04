@@ -1,4 +1,5 @@
-export function encode(data) {
+'use strict';
+function encode(data) {
   return data
     .replace(/"/g, "'")
     .replace(/%/g, '%25')
@@ -9,4 +10,5 @@ export function encode(data) {
     .replace(/\s+/g, ' ');
 }
 
-export const decode = decodeURIComponent;
+const decode = decodeURIComponent;
+module.exports = { encode, decode };

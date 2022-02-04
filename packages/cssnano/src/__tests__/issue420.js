@@ -1,8 +1,9 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import postcss from 'postcss';
-import fontMagician from 'postcss-font-magician';
-import cssnano from '..';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const postcss = require('postcss');
+const fontMagician = require('postcss-font-magician');
+const cssnano = require('..');
 
 test('should work with postcss-font-magician with `display` parameter', () => {
   const css = `

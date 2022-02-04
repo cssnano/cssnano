@@ -1,12 +1,13 @@
-import { stringify } from 'postcss-value-parser';
+'use strict';
+const { stringify } = require('postcss-value-parser');
 
 /**
  * @param {import('postcss-value-parser').Node[][]} values
  * @return {string}
  */
-export default function getValue(values) {
+module.exports = function getValue(values) {
   return stringify(flatten(values));
-}
+};
 /**
  * @param {import('postcss-value-parser').Node[][]} values
  * @return {import('postcss-value-parser').Node[]}

@@ -1,13 +1,14 @@
-import postcss from 'postcss';
-import * as assert from 'uvu/assert';
+'use strict';
+const postcss = require('postcss');
+const assert = require('uvu/assert');
 
-export function usePostCSSPlugin(plugin) {
+function usePostCSSPlugin(plugin) {
   return () => {
     assert.ok(plugin.postcssPlugin);
   };
 }
 
-export function processCSSFactory(plugin) {
+function processCSSFactory(plugin) {
   let processor, processCSS, passthroughCSS;
 
   if (Array.isArray(plugin)) {
@@ -51,3 +52,5 @@ export function processCSSFactory(plugin) {
 
   return { processor, processCSS, passthroughCSS };
 }
+
+module.exports = { usePostCSSPlugin, processCSSFactory };

@@ -1,3 +1,4 @@
+'use strict';
 const lengthConv = new Map([
   ['in', 96],
   ['px', 1],
@@ -43,7 +44,7 @@ function transform(number, originalUnit, conversions) {
     .reduce((a, b) => (a.length < b.length ? a : b));
 }
 
-export default function (number, unit, { time, length, angle }) {
+module.exports = function (number, unit, { time, length, angle }) {
   let value = dropLeadingZero(number) + (unit ? unit : '');
   let converted;
   const lowerCaseUnit = unit.toLowerCase();
@@ -64,4 +65,4 @@ export default function (number, unit, { time, length, angle }) {
   }
 
   return value;
-}
+};

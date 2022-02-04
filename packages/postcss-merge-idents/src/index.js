@@ -1,5 +1,6 @@
-import valueParser from 'postcss-value-parser';
-import { sameParent } from 'cssnano-utils';
+'use strict';
+const valueParser = require('postcss-value-parser');
+const { sameParent } = require('cssnano-utils');
 
 function canonical(obj) {
   // Prevent potential infinite loops
@@ -114,4 +115,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

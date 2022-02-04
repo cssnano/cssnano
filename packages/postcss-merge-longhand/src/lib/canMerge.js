@@ -1,4 +1,5 @@
-import isCustomProp from './isCustomProp';
+'use strict';
+const isCustomProp = require('./isCustomProp');
 
 const important = (node) => node.important;
 const unimportant = (node) => !node.important;
@@ -7,7 +8,7 @@ const unimportant = (node) => !node.important;
   https://www.w3.org/TR/css-cascade-5/#shorthand */
 const cssWideKeywords = ['inherit', 'initial', 'unset', 'revert'];
 
-export default (props, includeCustomProps = true) => {
+module.exports = (props, includeCustomProps = true) => {
   const uniqueProps = new Set(props.map((node) => node.value.toLowerCase()));
 
   if (uniqueProps.size > 1) {

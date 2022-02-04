@@ -1,3 +1,4 @@
+'use strict';
 /**
  * @param {postcss.ChildNode} nodeA
  * @param {postcss.ChildNode} nodeB
@@ -18,7 +19,7 @@ function checkMatch(nodeA, nodeB) {
  * @param {postcss.ChildNode} nodeB
  * @return {boolean}
  */
-export default function sameParent(nodeA, nodeB) {
+module.exports = function sameParent(nodeA, nodeB) {
   if (!nodeA.parent) {
     // A is orphaned, return if B is orphaned as well
     return !nodeB.parent;
@@ -36,4 +37,4 @@ export default function sameParent(nodeA, nodeB) {
 
   // Check parents' parents
   return sameParent(nodeA.parent, nodeB.parent);
-}
+};

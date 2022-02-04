@@ -1,3 +1,4 @@
+'use strict';
 function CommentRemover(options) {
   this.options = options;
 }
@@ -23,4 +24,4 @@ CommentRemover.prototype.canRemove = function (comment) {
   }
 };
 
-export default CommentRemover;
+module.exports = CommentRemover;

@@ -1,5 +1,6 @@
-import { test } from 'uvu';
-import processCss from './_processCss';
+'use strict';
+const { test } = require('uvu');
+const processCss = require('./_processCss');
 
 test(
   'linear: should convert "to top" to 0deg',

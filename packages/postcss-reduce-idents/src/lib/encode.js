@@ -1,4 +1,5 @@
-export default function encode(val, num) {
+'use strict';
+module.exports = function encode(val, num) {
   let base = 52;
   let characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let character = num % base;
@@ -18,4 +19,4 @@ export default function encode(val, num) {
   }
 
   return result;
-}
+};

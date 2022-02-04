@@ -1,6 +1,7 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import minifyFamily from '../lib/minify-family';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const minifyFamily = require('../lib/minify-family');
 
 const tests = [
   {

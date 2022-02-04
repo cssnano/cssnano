@@ -1,5 +1,6 @@
-import { test } from 'uvu';
-import processCSS from './_processCSS';
+'use strict';
+const { test } = require('uvu');
+const processCSS = require('./_processCSS');
 
 test(
   'ie 7 media screen\\9 hack',

@@ -1,3 +1,4 @@
+'use strict';
 function trimValue(value) {
   return value ? value.trim() : value;
 }
@@ -127,4 +128,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

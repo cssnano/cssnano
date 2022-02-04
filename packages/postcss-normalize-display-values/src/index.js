@@ -1,5 +1,6 @@
-import valueParser from 'postcss-value-parser';
-import mappings from './lib/map';
+'use strict';
+const valueParser = require('postcss-value-parser');
+const mappings = require('./lib/map');
 
 function transform(value) {
   const { nodes } = valueParser(value);
@@ -59,4 +60,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

@@ -1,11 +1,12 @@
-import postcssDiscardComments from 'postcss-discard-comments';
-import postcssNormalizeWhitespace from 'postcss-normalize-whitespace';
-import postcssDiscardEmpty from 'postcss-discard-empty';
-import { rawCache } from 'cssnano-utils';
+'use strict';
+const postcssDiscardComments = require('postcss-discard-comments');
+const postcssNormalizeWhitespace = require('postcss-normalize-whitespace');
+const postcssDiscardEmpty = require('postcss-discard-empty');
+const { rawCache } = require('cssnano-utils');
 
 const defaultOpts = {};
 
-export default function defaultPreset(opts = {}) {
+module.exports = function defaultPreset(opts = {}) {
   const options = Object.assign({}, defaultOpts, opts);
 
   const plugins = [
@@ -16,4 +17,4 @@ export default function defaultPreset(opts = {}) {
   ];
 
   return { plugins };
-}
+};

@@ -1,5 +1,6 @@
-import { unit, stringify } from 'postcss-value-parser';
-import mathFunctions from '../lib/mathfunctions.js';
+'use strict';
+const { unit, stringify } = require('postcss-value-parser');
+const mathFunctions = require('../lib/mathfunctions.js');
 
 // border: <line-width> || <line-style> || <color>
 // outline: <outline-color> || <outline-style> || <outline-width>
@@ -20,7 +21,7 @@ const borderStyles = new Set([
   'outset',
 ]);
 
-export default function normalizeBorder(border) {
+module.exports = function normalizeBorder(border) {
   const order = { width: '', style: '', color: '' };
 
   border.walk((node) => {
@@ -52,4 +53,4 @@ export default function normalizeBorder(border) {
   });
 
   return `${order.width} ${order.style} ${order.color}`.trim();
-}
+};

@@ -1,7 +1,8 @@
-import { unit } from 'postcss-value-parser';
-import { getArguments } from 'cssnano-utils';
-import addSpace from '../lib/addSpace';
-import getValue from '../lib/getValue';
+'use strict';
+const { unit } = require('postcss-value-parser');
+const { getArguments } = require('cssnano-utils');
+const addSpace = require('../lib/addSpace');
+const getValue = require('../lib/getValue');
 
 // animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
 const functions = new Set(['steps', 'cubic-bezier', 'frames']);
@@ -119,8 +120,8 @@ function normalize(args) {
  * @param {import('postcss-value-parser').ParsedValue} parsed
  * @return {string}
  */
-export default function normalizeAnimation(parsed) {
+module.exports = function normalizeAnimation(parsed) {
   const values = normalize(getArguments(parsed));
 
   return getValue(values);
-}
+};

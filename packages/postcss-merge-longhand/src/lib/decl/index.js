@@ -1,6 +1,7 @@
-import borders from './borders';
-import columns from './columns';
-import margin from './margin';
-import padding from './padding';
+'use strict';
+const borders = require('./borders');
+const columns = require('./columns');
+const margin = require('./margin');
+const padding = require('./padding');
 
-export default [borders, columns, margin, padding];
+module.exports = [borders, columns, margin, padding];

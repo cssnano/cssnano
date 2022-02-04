@@ -1,19 +1,20 @@
-import valueParser from 'postcss-value-parser';
-
-// rules
-import animation from './rules/animation';
-import border from './rules/border';
-import boxShadow from './rules/boxShadow';
-import flexFlow from './rules/flexFlow';
-import transition from './rules/transition';
-import {
+'use strict';
+const valueParser = require('postcss-value-parser');
+const {
   normalizeGridAutoFlow,
   normalizeGridColumnRowGap,
   normalizeGridColumnRow,
-} from './rules/grid';
-import listStyle from './rules/listStyle';
-import column from './rules/columns';
-import vendorUnprefixed from './lib/vendorUnprefixed.js';
+} = require('./rules/grid');
+
+// rules
+const animation = require('./rules/animation');
+const border = require('./rules/border');
+const boxShadow = require('./rules/boxShadow');
+const flexFlow = require('./rules/flexFlow');
+const transition = require('./rules/transition');
+const listStyle = require('./rules/listStyle');
+const column = require('./rules/columns');
+const vendorUnprefixed = require('./lib/vendorUnprefixed.js');
 
 const borderRules = [
   ['border', border],
@@ -138,4 +139,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

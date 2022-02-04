@@ -1,11 +1,12 @@
-import BasePlugin from '../plugin';
-import { IE_5_5, IE_6, IE_7 } from '../dictionary/browsers';
-import { PROPERTY } from '../dictionary/identifiers';
-import { ATRULE, DECL } from '../dictionary/postcss';
+'use strict';
+const BasePlugin = require('../plugin');
+const { IE_5_5, IE_6, IE_7 } = require('../dictionary/browsers');
+const { PROPERTY } = require('../dictionary/identifiers');
+const { ATRULE, DECL } = require('../dictionary/postcss');
 
 const hacks = '!_$_&_*_)_=_%_+_,_._/_`_]_#_~_?_:_|'.split('_');
 
-export default class LeadingStar extends BasePlugin {
+module.exports = class LeadingStar extends BasePlugin {
   constructor(result) {
     super([IE_5_5, IE_6, IE_7], [ATRULE, DECL], result);
   }
@@ -46,4 +47,4 @@ export default class LeadingStar extends BasePlugin {
       }
     }
   }
-}
+};

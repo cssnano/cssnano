@@ -1,6 +1,7 @@
-import browserslist from 'browserslist';
-import valueParser, { stringify } from 'postcss-value-parser';
-import { getArguments } from 'cssnano-utils';
+'use strict';
+const browserslist = require('browserslist');
+const valueParser = require('postcss-value-parser');
+const { getArguments } = require('cssnano-utils');
 
 /**
  * Return the greatest common divisor
@@ -18,7 +19,7 @@ function aspectRatio(a, b) {
 }
 
 function split(args) {
-  return args.map((arg) => stringify(arg)).join('');
+  return args.map((arg) => valueParser.stringify(arg)).join('');
 }
 
 function removeNode(node) {
@@ -115,4 +116,4 @@ function pluginCreator(options = {}) {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

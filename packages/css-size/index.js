@@ -1,3 +1,4 @@
+'use strict';
 const cssSize = require('./dist/index.js');
 
 module.exports = cssSize.default;

@@ -1,6 +1,7 @@
-import hasAllProps from './hasAllProps';
-import getDecls from './getDecls';
-import getRules from './getRules';
+'use strict';
+const hasAllProps = require('./hasAllProps');
+const getDecls = require('./getDecls');
+const getRules = require('./getRules');
 
 function isConflictingProp(propA, propB) {
   if (!propB.prop || propB.important !== propA.important) {
@@ -30,7 +31,7 @@ function hasConflicts(match, nodes) {
   return match.some((a) => between.some((b) => isConflictingProp(a, b)));
 }
 
-export default function mergeRules(rule, properties, callback) {
+module.exports = function mergeRules(rule, properties, callback) {
   let decls = getDecls(rule, properties);
 
   while (decls.length) {
@@ -46,4 +47,4 @@ export default function mergeRules(rule, properties, callback) {
 
     decls = decls.filter((node) => node !== last);
   }
-}
+};

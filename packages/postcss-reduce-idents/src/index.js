@@ -1,8 +1,9 @@
-import encode from './lib/encode';
-import counterReducer from './lib/counter';
-import counterStyleReducer from './lib/counter-style';
-import keyframesReducer from './lib/keyframes';
-import gridTemplateReducer from './lib/grid-template';
+'use strict';
+const encode = require('./lib/encode');
+const counterReducer = require('./lib/counter');
+const counterStyleReducer = require('./lib/counter-style');
+const keyframesReducer = require('./lib/keyframes');
+const gridTemplateReducer = require('./lib/grid-template');
 
 function pluginCreator({
   counter = true,
@@ -32,4 +33,4 @@ function pluginCreator({
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

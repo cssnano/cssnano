@@ -1,12 +1,13 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import postcss from 'postcss';
-import encode from '../lib/encode';
-import {
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const postcss = require('postcss');
+const {
   usePostCSSPlugin,
   processCSSFactory,
-} from '../../../../util/testHelpers';
-import plugin from '..';
+} = require('../../../../util/testHelpers');
+const encode = require('../lib/encode');
+const plugin = require('..');
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

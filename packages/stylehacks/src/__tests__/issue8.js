@@ -1,13 +1,14 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import postcss, { decl } from 'postcss';
-import stylehacks from '..';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const postcss = require('postcss');
+const stylehacks = require('..');
 
 const insertZoom = () => {
   return {
     postcssPlugin: 'insertZoom',
     Once(root) {
-      root.first.append(decl({ prop: '*zoom', value: '1' }));
+      root.first.append(postcss.decl({ prop: '*zoom', value: '1' }));
     },
   };
 };

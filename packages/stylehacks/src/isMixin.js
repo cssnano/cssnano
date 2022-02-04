@@ -1,4 +1,5 @@
-export default function isMixin(node) {
+'use strict';
+module.exports = function isMixin(node) {
   const { selector } = node;
 
   // If the selector ends with a ':' it is likely a part of a custom mixin.
@@ -7,4 +8,4 @@ export default function isMixin(node) {
   }
 
   return false;
-}
+};

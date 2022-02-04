@@ -1,13 +1,14 @@
-import parser from 'postcss-selector-parser';
-import exists from '../exists';
-import isMixin from '../isMixin';
-import BasePlugin from '../plugin';
-import { OP_9 } from '../dictionary/browsers';
-import { SELECTOR } from '../dictionary/identifiers';
-import { RULE } from '../dictionary/postcss';
-import { HTML } from '../dictionary/tags';
+'use strict';
+const parser = require('postcss-selector-parser');
+const exists = require('../exists');
+const isMixin = require('../isMixin');
+const BasePlugin = require('../plugin');
+const { OP_9 } = require('../dictionary/browsers');
+const { SELECTOR } = require('../dictionary/identifiers');
+const { RULE } = require('../dictionary/postcss');
+const { HTML } = require('../dictionary/tags');
 
-export default class HtmlFirstChild extends BasePlugin {
+module.exports = class HtmlFirstChild extends BasePlugin {
   constructor(result) {
     super([OP_9], [RULE], result);
   }
@@ -37,4 +38,4 @@ export default class HtmlFirstChild extends BasePlugin {
       });
     };
   }
-}
+};

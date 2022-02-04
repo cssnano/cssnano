@@ -1,4 +1,5 @@
-import selectorParser from 'postcss-selector-parser';
+'use strict';
+const selectorParser = require('postcss-selector-parser');
 
 function parseSelectors(selectors, callback) {
   return selectorParser(callback).processSync(selectors);
@@ -35,4 +36,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

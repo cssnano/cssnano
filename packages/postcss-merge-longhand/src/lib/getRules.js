@@ -1,9 +1,10 @@
-import getLastNode from './getLastNode';
+'use strict';
+const getLastNode = require('./getLastNode');
 
-export default function getRules(props, properties) {
+module.exports = function getRules(props, properties) {
   return properties
     .map((property) => {
       return getLastNode(props, property);
     })
     .filter(Boolean);
-}
+};

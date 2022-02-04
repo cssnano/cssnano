@@ -1,9 +1,10 @@
-import BasePlugin from '../plugin';
-import { IE_5_5, IE_6, IE_7, IE_8 } from '../dictionary/browsers';
-import { MEDIA_QUERY } from '../dictionary/identifiers';
-import { ATRULE } from '../dictionary/postcss';
+'use strict';
+const BasePlugin = require('../plugin');
+const { IE_5_5, IE_6, IE_7, IE_8 } = require('../dictionary/browsers');
+const { MEDIA_QUERY } = require('../dictionary/identifiers');
+const { ATRULE } = require('../dictionary/postcss');
 
-export default class MediaSlash0Slash9 extends BasePlugin {
+module.exports = class MediaSlash0Slash9 extends BasePlugin {
   constructor(result) {
     super([IE_5_5, IE_6, IE_7, IE_8], [ATRULE], result);
   }
@@ -18,4 +19,4 @@ export default class MediaSlash0Slash9 extends BasePlugin {
       });
     }
   }
-}
+};

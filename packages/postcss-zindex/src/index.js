@@ -1,4 +1,5 @@
-import LayerCache from './lib/layerCache';
+'use strict';
+const LayerCache = require('./lib/layerCache');
 
 function pluginCreator(opts = {}) {
   return {
@@ -44,4 +45,4 @@ function pluginCreator(opts = {}) {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

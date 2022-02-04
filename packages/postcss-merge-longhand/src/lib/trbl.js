@@ -1,1 +1,2 @@
-export default ['top', 'right', 'bottom', 'left'];
+'use strict';
+module.exports = ['top', 'right', 'bottom', 'left'];

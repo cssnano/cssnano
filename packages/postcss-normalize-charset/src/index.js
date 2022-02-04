@@ -1,3 +1,4 @@
+'use strict';
 const charset = 'charset';
 // eslint-disable-next-line no-control-regex
 const nonAscii = /[^\x00-\x7F]/;
@@ -42,4 +43,4 @@ function pluginCreator(opts = {}) {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

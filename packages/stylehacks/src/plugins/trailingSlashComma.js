@@ -1,10 +1,11 @@
-import BasePlugin from '../plugin';
-import isMixin from '../isMixin';
-import { IE_5_5, IE_6, IE_7 } from '../dictionary/browsers';
-import { SELECTOR } from '../dictionary/identifiers';
-import { RULE } from '../dictionary/postcss';
+'use strict';
+const BasePlugin = require('../plugin');
+const isMixin = require('../isMixin');
+const { IE_5_5, IE_6, IE_7 } = require('../dictionary/browsers');
+const { SELECTOR } = require('../dictionary/identifiers');
+const { RULE } = require('../dictionary/postcss');
 
-export default class TrailingSlashComma extends BasePlugin {
+module.exports = class TrailingSlashComma extends BasePlugin {
   constructor(result) {
     super([IE_5_5, IE_6, IE_7], [RULE], result);
   }
@@ -27,4 +28,4 @@ export default class TrailingSlashComma extends BasePlugin {
       });
     }
   }
-}
+};

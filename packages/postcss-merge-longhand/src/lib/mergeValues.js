@@ -1,3 +1,4 @@
-import getValue from './getValue';
+'use strict';
+const getValue = require('./getValue');
 
-export default (...rules) => rules.map(getValue).join(' ');
+module.exports = (...rules) => rules.map(getValue).join(' ');

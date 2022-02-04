@@ -1,9 +1,11 @@
 #!/usr/bin/env node
-import fs from 'fs';
-import process from 'process';
-import path from 'path';
-import minimist from 'minimist';
-import { table } from './';
+'use strict';
+
+const fs = require('fs');
+const process = require('process');
+const path = require('path');
+const minimist = require('minimist');
+const { table } = require('./');
 
 const opts = minimist(process.argv.slice(2), {
   alias: {

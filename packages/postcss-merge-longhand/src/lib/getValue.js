@@ -1,3 +1,4 @@
-export default function getValue({ value }) {
+'use strict';
+module.exports = function getValue({ value }) {
   return value;
-}
+};

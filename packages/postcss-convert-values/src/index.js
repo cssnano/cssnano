@@ -1,5 +1,6 @@
-import valueParser, { unit, walk } from 'postcss-value-parser';
-import convert from './lib/convert';
+'use strict';
+const valueParser = require('postcss-value-parser');
+const convert = require('./lib/convert');
 
 const LENGTH_UNITS = new Set([
   'em',
@@ -49,7 +50,7 @@ function stripLeadingDot(item) {
 }
 
 function parseWord(node, opts, keepZeroUnit) {
-  const pair = unit(node.value);
+  const pair = valueParser.unit(node.value);
   if (pair) {
     const num = Number(pair.number);
     const u = stripLeadingDot(pair.unit);
@@ -76,7 +77,7 @@ function parseWord(node, opts, keepZeroUnit) {
 }
 
 function clampOpacity(node) {
-  const pair = unit(node.value);
+  const pair = valueParser.unit(node.value);
   if (!pair) {
     return;
   }
@@ -133,7 +134,7 @@ function transform(opts, decl) {
           lowerCasedValue === 'hsl' ||
           lowerCasedValue === 'hsla'
         ) {
-          walk(node.nodes, (n) => {
+          valueParser.walk(node.nodes, (n) => {
             if (n.type === 'word') {
               parseWord(n, opts, true);
             }
@@ -160,4 +161,4 @@ function pluginCreator(opts = { precision: false }) {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

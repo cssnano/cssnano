@@ -1,7 +1,8 @@
-import browserslist from 'browserslist';
-import { isSupported } from 'caniuse-api';
-import valueParser, { stringify } from 'postcss-value-parser';
-import minifyColor from './minifyColor';
+'use strict';
+const browserslist = require('browserslist');
+const { isSupported } = require('caniuse-api');
+const valueParser = require('postcss-value-parser');
+const minifyColor = require('./minifyColor');
 
 function walk(parent, callback) {
   parent.nodes.forEach((node, index) => {
@@ -37,7 +38,7 @@ function transform(value, options) {
       if (/^(rgb|hsl)a?$/i.test(node.value)) {
         const { value: originalValue } = node;
 
-        node.value = minifyColor(stringify(node), options);
+        node.value = minifyColor(valueParser.stringify(node), options);
         node.type = 'word';
 
         const next = parent.nodes[index + 1];
@@ -127,4 +128,4 @@ function pluginCreator(config = {}) {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

@@ -1,5 +1,6 @@
-import { test } from 'uvu';
-import processCss from './_processCss';
+'use strict';
+const { test } = require('uvu');
+const processCss = require('./_processCss');
 
 /*
  * This is due to linear plugin order; postcss-merge-longhand runs

@@ -1,5 +1,6 @@
-import valueParser from 'postcss-value-parser';
-import mappings from './lib/map';
+'use strict';
+const valueParser = require('postcss-value-parser');
+const mappings = require('./lib/map');
 
 function evenValues(list, index) {
   return index % 2 === 0;
@@ -151,4 +152,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

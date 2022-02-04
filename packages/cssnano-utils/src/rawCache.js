@@ -1,3 +1,4 @@
+'use strict';
 const pluginCreator = () => {
   return {
     postcssPlugin: 'cssnano-util-raw-cache',
@@ -21,4 +22,4 @@ const pluginCreator = () => {
 
 pluginCreator.postcss = true;
 
-export default pluginCreator;
+module.exports = pluginCreator;

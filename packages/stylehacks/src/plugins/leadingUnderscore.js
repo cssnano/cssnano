@@ -1,7 +1,8 @@
-import BasePlugin from '../plugin';
-import { IE_6 } from '../dictionary/browsers';
-import { PROPERTY } from '../dictionary/identifiers';
-import { DECL } from '../dictionary/postcss';
+'use strict';
+const BasePlugin = require('../plugin');
+const { IE_6 } = require('../dictionary/browsers');
+const { PROPERTY } = require('../dictionary/identifiers');
+const { DECL } = require('../dictionary/postcss');
 
 function vendorPrefix(prop) {
   let match = prop.match(/^(-\w+-)/);
@@ -12,7 +13,7 @@ function vendorPrefix(prop) {
   return '';
 }
 
-export default class LeadingUnderscore extends BasePlugin {
+module.exports = class LeadingUnderscore extends BasePlugin {
   constructor(result) {
     super([IE_6], [DECL], result);
   }
@@ -38,4 +39,4 @@ export default class LeadingUnderscore extends BasePlugin {
       });
     }
   }
-}
+};

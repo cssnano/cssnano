@@ -1,6 +1,7 @@
-import parseTrbl from './parseTrbl';
+'use strict';
+const parseTrbl = require('./parseTrbl');
 
-export default (v) => {
+module.exports = (v) => {
   const value = parseTrbl(v);
 
   if (value[3] === value[1]) {

@@ -1,4 +1,5 @@
-export default function (value) {
+'use strict';
+module.exports = function (value) {
   const lowerCasedValue = value.toLowerCase();
 
   return lowerCasedValue === 'normal'
@@ -6,4 +7,4 @@ export default function (value) {
     : lowerCasedValue === 'bold'
     ? '700'
     : value;
-}
+};

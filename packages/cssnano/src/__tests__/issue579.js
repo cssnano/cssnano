@@ -1,7 +1,8 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import postcss from 'postcss';
-import cssnano from '..';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const postcss = require('postcss');
+const cssnano = require('..');
 
 test('should support `env()` and `constant()` is an iPhone X-only feature', () => {
   const css = `

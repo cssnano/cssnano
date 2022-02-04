@@ -1,5 +1,6 @@
-import { list } from 'postcss';
-import { isWidth, isStyle, isColor } from './validateWsc';
+'use strict';
+const { list } = require('postcss');
+const { isWidth, isStyle, isColor } = require('./validateWsc');
 
 const none = /^\s*(none|medium)(\s+none(\s+(none|currentcolor))?)?\s*$/i;
 
@@ -11,7 +12,7 @@ const toLower = (v) => {
   return match ? varPreserveCase(match) : v.toLowerCase();
 };
 
-export default function parseWsc(value) {
+module.exports = function parseWsc(value) {
   if (none.test(value)) {
     return ['medium', 'none', 'currentcolor'];
   }
@@ -58,4 +59,4 @@ export default function parseWsc(value) {
   }
 
   return [width, style, color];
-}
+};

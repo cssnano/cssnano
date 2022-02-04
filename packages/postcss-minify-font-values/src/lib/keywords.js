@@ -1,4 +1,5 @@
-export default {
+'use strict';
+module.exports = {
   style: new Set(['italic', 'oblique']),
   variant: new Set(['small-caps']),
   weight: new Set([

@@ -1,4 +1,5 @@
-import valueParser from 'postcss-value-parser';
+'use strict';
+const valueParser = require('postcss-value-parser');
 
 const atrule = 'atrule';
 const decl = 'decl';
@@ -91,4 +92,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

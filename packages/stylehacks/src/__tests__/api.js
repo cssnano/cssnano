@@ -1,8 +1,9 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import postcss from 'postcss';
-import stylehacks from '../';
-import packageJson from '../../package.json';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const postcss = require('postcss');
+const stylehacks = require('../');
+const packageJson = require('../../package.json');
 
 function processCss(fixture, expected, options) {
   return () =>

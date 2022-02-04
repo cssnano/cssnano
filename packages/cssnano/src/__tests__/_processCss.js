@@ -1,13 +1,10 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import postcss from 'postcss';
-import cssnano from '..';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const postcss = require('postcss');
+const cssnano = require('..');
 
-export default function processCss(
-  fixture,
-  expected,
-  options = { from: undefined }
-) {
+function processCss(fixture, expected, options = { from: undefined }) {
   return () =>
     postcss([cssnano()])
       .process(fixture, options)
@@ -15,8 +12,8 @@ export default function processCss(
         assert.is(css, expected);
       });
 }
-
-export function passthrough(fixture, options = { from: undefined }) {
+module.exports = processCss;
+module.exports.passthrough = function (fixture, options = { from: undefined }) {
   return processCss(fixture, fixture, options);
-}
+};
 test.run();

@@ -1,3 +1,4 @@
+'use strict';
 /* eslint-disable no-console */
 
 const { writeFile } = require('fs');

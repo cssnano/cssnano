@@ -1,4 +1,5 @@
-export default class BasePlugin {
+'use strict';
+module.exports = class BasePlugin {
   constructor(targets, nodeTypes, result) {
     this.nodes = [];
     this.targets = new Set(targets);
@@ -56,4 +57,4 @@ export default class BasePlugin {
       return node.warn(this.result, message, { browsers, identifier, hack });
     });
   }
-}
+};

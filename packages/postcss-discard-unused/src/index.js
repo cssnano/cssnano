@@ -1,4 +1,5 @@
-import selectorParser from 'postcss-selector-parser';
+'use strict';
+const selectorParser = require('postcss-selector-parser');
 
 const atrule = 'atrule';
 const decl = 'decl';
@@ -170,4 +171,4 @@ function pluginCreator(opts) {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

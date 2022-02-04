@@ -1,7 +1,8 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import postcss from 'postcss';
-import sameParent from '../sameParent';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const postcss = require('postcss');
+const sameParent = require('../sameParent');
 
 test('should calculate same parent', () => {
   return postcss()

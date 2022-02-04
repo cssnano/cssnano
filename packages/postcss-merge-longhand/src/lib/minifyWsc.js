@@ -1,10 +1,11 @@
-import parseWsc from './parseWsc';
-import minifyTrbl from './minifyTrbl';
-import { isValidWsc } from './validateWsc';
+'use strict';
+const parseWsc = require('./parseWsc');
+const minifyTrbl = require('./minifyTrbl');
+const { isValidWsc } = require('./validateWsc');
 
 const defaults = ['medium', 'none', 'currentcolor'];
 
-export default (v) => {
+module.exports = (v) => {
   const values = parseWsc(v);
 
   if (!isValidWsc(values)) {

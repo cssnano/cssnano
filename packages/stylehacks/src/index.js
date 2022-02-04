@@ -1,5 +1,6 @@
-import browserslist from 'browserslist';
-import plugins from './plugins';
+'use strict';
+const browserslist = require('browserslist');
+const plugins = require('./plugins');
 
 function pluginCreator(opts = {}) {
   return {
@@ -46,4 +47,4 @@ pluginCreator.detect = (node) => {
 };
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

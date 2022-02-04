@@ -1,5 +1,6 @@
-import rawCache from './rawCache.js';
-import getArguments from './getArguments.js';
-import sameParent from './sameParent.js';
+'use strict';
+const rawCache = require('./rawCache.js');
+const getArguments = require('./getArguments.js');
+const sameParent = require('./sameParent.js');
 
-export { rawCache, getArguments, sameParent };
+module.exports = { rawCache, getArguments, sameParent };

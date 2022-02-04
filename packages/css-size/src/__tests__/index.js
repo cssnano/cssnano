@@ -1,9 +1,10 @@
-import { readFileSync as read } from 'fs';
-import { spawn } from 'child_process';
-import path from 'path';
-import * as assert from 'uvu/assert';
-import { test } from 'uvu';
-import size, { table, numeric } from '../';
+'use strict';
+const { readFileSync: read } = require('fs');
+const { spawn } = require('child_process');
+const path = require('path');
+const assert = require('uvu/assert');
+const { test } = require('uvu');
+const size = require('../');
 
 let noopProcessorPath = path.resolve(__dirname, '../../processors/noop.js');
 
@@ -82,7 +83,7 @@ test('api', () => {
 
 test('table', () => {
   const input = path.join(__dirname, 'test.css');
-  return table(read(input, 'utf-8'), { from: input }).then((result) => {
+  return size.table(read(input, 'utf-8'), { from: input }).then((result) => {
     assert.is(
       stripColors(result),
       `
@@ -103,7 +104,7 @@ test('table', () => {
 
 test('numeric', () => {
   const input = path.join(__dirname, 'test.css');
-  return numeric(read(input, 'utf-8'), { from: input }).then((result) => {
+  return size.numeric(read(input, 'utf-8'), { from: input }).then((result) => {
     assert.equal(result, {
       uncompressed: {
         original: 23,

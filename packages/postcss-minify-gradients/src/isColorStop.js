@@ -1,6 +1,7 @@
-import { unit } from 'postcss-value-parser';
-import { colord, extend } from 'colord';
-import namesPlugin from 'colord/plugins/names';
+'use strict';
+const { unit } = require('postcss-value-parser');
+const { colord, extend } = require('colord');
+const namesPlugin = require('colord/plugins/names');
 
 extend([namesPlugin]);
 
@@ -45,6 +46,6 @@ function isStop(str) {
   return true;
 }
 
-export default function isColorStop(color, stop) {
+module.exports = function isColorStop(color, stop) {
   return colord(color).isValid() && isStop(stop);
-}
+};

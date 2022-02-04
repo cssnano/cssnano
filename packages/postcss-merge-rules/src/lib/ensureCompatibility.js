@@ -1,5 +1,6 @@
-import { isSupported } from 'caniuse-api';
-import selectorParser from 'postcss-selector-parser';
+'use strict';
+const { isSupported } = require('caniuse-api');
+const selectorParser = require('postcss-selector-parser');
 
 const simpleSelectorRe = /^#?[-._a-z0-9 ]+$/i;
 
@@ -27,7 +28,7 @@ function filterPrefixes(selector) {
 const findMsInputPlaceholder = (selector) =>
   ~selector.search(/-ms-input-placeholder/i);
 
-export function sameVendor(selectorsA, selectorsB) {
+function sameVendor(selectorsA, selectorsB) {
   let same = (selectors) => selectors.map(filterPrefixes).join();
   let findMsVendor = (selectors) => selectors.find(findMsInputPlaceholder);
   return (
@@ -40,11 +41,11 @@ export function sameVendor(selectorsA, selectorsB) {
  * @param {string} selector
  * @return {boolean}
  */
-export function noVendor(selector) {
+function noVendor(selector) {
   return !vendorPrefix.test(selector);
 }
 
-export const pseudoElements = {
+const pseudoElements = {
   ':active': cssSel2,
   ':after': cssGencontent,
   ':any-link': 'css-any-link',
@@ -121,7 +122,7 @@ function isSupportedCached(feature, browsers) {
   return result;
 }
 
-export function ensureCompatibility(selectors, browsers, compatibilityCache) {
+function ensureCompatibility(selectors, browsers, compatibilityCache) {
   // Should not merge mixins
   if (selectors.some(isCssMixin)) {
     return false;
@@ -194,3 +195,5 @@ export function ensureCompatibility(selectors, browsers, compatibilityCache) {
     return compatible;
   });
 }
+
+module.exports = { sameVendor, noVendor, pseudoElements, ensureCompatibility };
