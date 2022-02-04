@@ -28,6 +28,26 @@ jobs:
       - name: Run lint
         run: pnpm lint
 
+  test_helpers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 6.24.0
+      - name: Install Node.js 16.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test helpers
+        run: pnpm test:helpers
+
   test:
     needs: lint
     runs-on: ${{ matrix.os }}
@@ -62,7 +82,7 @@ jobs:
         with:
           version: 5.18.4
 
-      # No cache support on GH actions for old pnpm 
+      # No cache support on GH actions for old pnpm
       - name: Install Node.js without cache ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         if: matrix.node-version == '10'
@@ -80,4 +100,3 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           name: codecov
-

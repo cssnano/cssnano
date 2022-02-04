@@ -7,9 +7,10 @@
     "prepare": "pnpm run -r --parallel prepare",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
-    "test:only": "uvu -r @babel/register packages \"__tests__.*\\.js$\"",
+    "test:only": "uvu packages \"__tests__.*\\.js$\"",
     "test:coverage": "c8 pnpm test:only",
     "test": "pnpm test:coverage",
+    "test:helpers": "uvu packages \"__tests__.*\\.mjs$\"",
     "all-publish": "pnpm prepare && pnpm changeset publish"
   },
   "workspaces": [
