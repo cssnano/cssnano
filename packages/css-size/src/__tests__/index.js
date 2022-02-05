@@ -14,7 +14,7 @@ function setup(args) {
 
     let ps = spawn(
       process.execPath,
-      [path.resolve(__dirname, '../src/cli.js')].concat(args)
+      [path.resolve(__dirname, '../cli.js')].concat(args)
     );
 
     let out = '';
