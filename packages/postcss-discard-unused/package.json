@@ -2,16 +2,13 @@
   "name": "postcss-discard-unused",
   "version": "5.0.2",
   "description": "Discard unused counter styles, keyframes and fonts.",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "files": [
     "bin",
     "LICENSE-MIT",
-    "dist"
+    "src"
   ],
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepare": "pnpm build"
   },
   "keywords": [
     "css",

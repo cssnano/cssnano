@@ -2,10 +2,10 @@
   "name": "postcss-discard-overridden",
   "version": "5.0.3",
   "description": "PostCSS plugin to discard overridden @keyframes or @counter-style.",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "files": [
     "LICENSE",
-    "dist"
+    "src"
   ],
   "keywords": [
     "postcss",
@@ -23,9 +23,6 @@
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepare": "pnpm build"
   },
   "engines": {
     "node": "^10 || ^12 || >=14.0"

@@ -2,9 +2,9 @@
   "name": "postcss-minify-font-values",
   "version": "5.0.3",
   "description": "Minify font declarations with PostCSS",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "files": [
-    "dist",
+    "src",
     "LICENSE"
   ],
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
@@ -26,9 +26,6 @@
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepare": "pnpm build"
   },
   "engines": {
     "node": "^10 || ^12 || >=14.0"

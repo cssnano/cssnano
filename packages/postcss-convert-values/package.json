@@ -2,15 +2,12 @@
   "name": "postcss-convert-values",
   "version": "5.0.3",
   "description": "Convert values with PostCSS (e.g. ms -> s)",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "files": [
     "LICENSE-MIT",
-    "dist"
+    "src"
   ],
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepare": "pnpm build"
   },
   "keywords": [
     "css",

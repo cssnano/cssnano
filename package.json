@@ -4,7 +4,6 @@
   "scripts": {
     "lint": "eslint . --cache --ignore-path .gitignore --ext .js,.mjs",
     "fixlint": "pnpm lint -- --fix",
-    "prepare": "pnpm run -r --parallel prepare",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
     "test:only": "uvu packages \"__tests__.*\\.js$\"",
@@ -45,7 +44,6 @@
     "postcss-simple-vars": "^6.0.1",
     "postcss-value-parser": "^4.2.0",
     "prettier": "^2.5.1",
-    "rimraf": "^3.0.2",
     "uvu": "^0.5.3"
   },
   "browserslist": {

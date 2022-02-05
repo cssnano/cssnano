@@ -2,21 +2,18 @@
   "name": "css-size",
   "version": "5.0.6",
   "description": "Compare the compressed and uncompressed sizes of a CSS file before and after processing.",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "types": "css-size.d.ts",
   "bin": {
-    "css-size": "dist/cli.js"
+    "css-size": "src/cli.js"
   },
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepare": "pnpm build"
   },
   "files": [
     "LICENSE-MIT",
     "css-size.d.ts",
     "index.js",
-    "dist",
+    "src",
     "usage.txt"
   ],
   "keywords": [

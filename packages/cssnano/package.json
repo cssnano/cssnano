@@ -2,12 +2,9 @@
     "name": "cssnano",
     "version": "5.0.16",
     "description": "A modular minifier, built on top of the PostCSS ecosystem.",
-    "main": "dist/index.js",
+    "main": "src/index.js",
     "scripts": {
-        "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer",
-        "prebuild": "rimraf dist",
-        "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-        "prepare": "pnpm build"
+        "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer"
     },
     "funding": {
         "type": "opencollective",
@@ -36,7 +33,7 @@
     },
     "repository": "cssnano/cssnano",
     "files": [
-        "dist",
+        "src",
         "LICENSE-MIT",
         "quickstart.js"
     ],

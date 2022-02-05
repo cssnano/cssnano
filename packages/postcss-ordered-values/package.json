@@ -2,15 +2,12 @@
   "name": "postcss-ordered-values",
   "version": "5.0.4",
   "description": "Ensure values are ordered consistently in your CSS.",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "files": [
-    "dist",
+    "src",
     "LICENSE-MIT"
   ],
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\" && node script/buildListStyleType.js",
-    "prepare": "pnpm build"
   },
   "keywords": [
     "css",
