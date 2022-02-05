@@ -12,7 +12,6 @@
   "files": [
     "LICENSE-MIT",
     "css-size.d.ts",
-    "index.js",
     "src",
     "usage.txt"
   ],
