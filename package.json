@@ -19,18 +19,12 @@
     "node": "^10 || ^12 || >=14"
   },
   "devDependencies": {
-    "@babel/cli": "^7.16.8",
-    "@babel/core": "^7.16.12",
-    "@babel/plugin-transform-modules-commonjs": "^7.16.8",
-    "@babel/register": "^7.16.9",
     "@changesets/cli": "^2.19.0",
-    "babel-plugin-add-module-exports": "^1.0.2",
     "browserslist": "^4.19.1",
     "c8": "^7.11.0",
     "diff": "^5.0.0",
     "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "2.25.4",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.28.0",
     "html-to-text": "^8.1.0",

@@ -1,7 +1,6 @@
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 import Unicode from './unicode';
 
-/* eslint-disable import/prefer-default-export */
 export function getUrlState() {
   const maxHashLength = 300000;
   const validConfigs = new Set([
