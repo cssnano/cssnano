@@ -3,9 +3,6 @@
     "version": "5.0.16",
     "description": "A modular minifier, built on top of the PostCSS ecosystem.",
     "main": "src/index.js",
-    "scripts": {
-        "bundle-size": "webpack --json --config src/__tests__/_webpack.config.js | webpack-bundle-size-analyzer"
-    },
     "funding": {
         "type": "opencollective",
         "url": "https://opencollective.com/cssnano"
