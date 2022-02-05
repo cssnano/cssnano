@@ -2,17 +2,14 @@
   "name": "postcss-reduce-initial",
   "version": "5.0.2",
   "description": "Reduce initial definitions to the actual initial value, where possible.",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "files": [
     "data",
-    "dist/index.js",
+    "src/index.js",
     "LICENSE-MIT"
   ],
   "scripts": {
-    "acquire": "node ./src/script/acquire.mjs",
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__\"",
-    "prepare": "pnpm build"
+    "acquire": "node ./src/script/acquire.mjs"
   },
   "keywords": [
     "css",

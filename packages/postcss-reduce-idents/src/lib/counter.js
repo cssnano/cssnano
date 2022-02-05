@@ -1,10 +1,11 @@
-import valueParser, { walk } from 'postcss-value-parser';
-import addToCache from './cache';
-import isNum from './isNum';
+'use strict';
+const valueParser = require('postcss-value-parser');
+const addToCache = require('./cache');
+const isNum = require('./isNum');
 
 const RESERVED_KEYWORDS = ['unset', 'initial', 'inherit', 'none'];
 
-export default function () {
+module.exports = function () {
   let cache = {};
   let declOneCache = [];
   let declTwoCache = [];
@@ -48,7 +49,7 @@ export default function () {
               type === 'function' &&
               (value === 'counter' || value === 'counters')
             ) {
-              walk(node.nodes, (child) => {
+              valueParser.walk(node.nodes, (child) => {
                 if (child.type === 'word' && child.value in cache) {
                   cache[child.value].count++;
 
@@ -87,4 +88,4 @@ export default function () {
       declTwoCache = [];
     },
   };
-}
+};

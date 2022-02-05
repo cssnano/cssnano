@@ -1,8 +1,9 @@
-import { suite } from 'uvu';
-import * as assert from 'uvu/assert';
-import valueParser from 'postcss-value-parser';
-import normalizeBorder from '../rules/border.js';
-import normalizeBoxShadow from '../rules/boxShadow.js';
+'use strict';
+const { suite } = require('uvu');
+const assert = require('uvu/assert');
+const valueParser = require('postcss-value-parser');
+const normalizeBorder = require('../rules/border.js');
+const normalizeBoxShadow = require('../rules/boxShadow.js');
 
 const borderOrder = suite('orders borders');
 borderOrder('handles max', () => {

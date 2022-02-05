@@ -1,7 +1,8 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import postcss from 'postcss';
-import nano from '..';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const postcss = require('postcss');
+const nano = require('..');
 
 function pluginMacro(instance) {
   const css = 'h1 { color: #ffffff }';

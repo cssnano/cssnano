@@ -1,4 +1,5 @@
-import valueParser, { unit } from 'postcss-value-parser';
+'use strict';
+const valueParser = require('postcss-value-parser');
 
 const directionKeywords = new Set(['top', 'right', 'bottom', 'left', 'center']);
 
@@ -47,7 +48,7 @@ function isDimensionNode(node) {
     return false;
   }
 
-  const parsed = unit(node.value);
+  const parsed = valueParser.unit(node.value);
 
   if (!parsed) {
     return false;
@@ -213,4 +214,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

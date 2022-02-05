@@ -1,7 +1,8 @@
-import browserslist from 'browserslist';
-import { isSupported } from 'caniuse-api';
-import fromInitial from '../data/fromInitial.json';
-import toInitial from '../data/toInitial.json';
+'use strict';
+const browserslist = require('browserslist');
+const { isSupported } = require('caniuse-api');
+const fromInitial = require('../data/fromInitial.json');
+const toInitial = require('../data/toInitial.json');
 
 const initial = 'initial';
 
@@ -58,4 +59,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

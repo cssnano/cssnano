@@ -4,12 +4,12 @@
   "scripts": {
     "lint": "eslint . --cache --ignore-path .gitignore --ext .js,.mjs",
     "fixlint": "pnpm lint -- --fix",
-    "prepare": "pnpm run -r --parallel prepare",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
-    "test:only": "uvu -r @babel/register packages \"__tests__.*\\.js$\"",
+    "test:only": "uvu packages \"__tests__.*\\.js$\"",
     "test:coverage": "c8 pnpm test:only",
     "test": "pnpm test:coverage",
+    "test:helpers": "uvu packages \"__tests__.*\\.mjs$\"",
     "all-publish": "pnpm prepare && pnpm changeset publish"
   },
   "workspaces": [
@@ -19,18 +19,12 @@
     "node": "^10 || ^12 || >=14"
   },
   "devDependencies": {
-    "@babel/cli": "^7.16.8",
-    "@babel/core": "^7.16.12",
-    "@babel/plugin-transform-modules-commonjs": "^7.16.8",
-    "@babel/register": "^7.16.9",
     "@changesets/cli": "^2.19.0",
-    "babel-plugin-add-module-exports": "^1.0.2",
     "browserslist": "^4.19.1",
     "c8": "^7.11.0",
     "diff": "^5.0.0",
     "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "2.25.4",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.28.0",
     "html-to-text": "^8.1.0",
@@ -44,7 +38,6 @@
     "postcss-simple-vars": "^6.0.1",
     "postcss-value-parser": "^4.2.0",
     "prettier": "^2.5.1",
-    "rimraf": "^3.0.2",
     "uvu": "^0.5.3"
   },
   "browserslist": {

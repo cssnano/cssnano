@@ -1,22 +1,23 @@
-import { list } from 'postcss';
-import stylehacks from 'stylehacks';
-import insertCloned from '../insertCloned';
-import parseTrbl from '../parseTrbl';
-import hasAllProps from '../hasAllProps';
-import getDecls from '../getDecls';
-import getRules from '../getRules';
-import getValue from '../getValue';
-import mergeRules from '../mergeRules';
-import minifyTrbl from '../minifyTrbl';
-import minifyWsc from '../minifyWsc';
-import canMerge from '../canMerge';
-import remove from '../remove';
-import trbl from '../trbl';
-import isCustomProp from '../isCustomProp';
-import canExplode from '../canExplode';
-import getLastNode from '../getLastNode';
-import parseWsc from '../parseWsc';
-import { isValidWsc } from '../validateWsc';
+'use strict';
+const { list } = require('postcss');
+const stylehacks = require('stylehacks');
+const insertCloned = require('../insertCloned');
+const parseTrbl = require('../parseTrbl');
+const hasAllProps = require('../hasAllProps');
+const getDecls = require('../getDecls');
+const getRules = require('../getRules');
+const getValue = require('../getValue');
+const mergeRules = require('../mergeRules');
+const minifyTrbl = require('../minifyTrbl');
+const minifyWsc = require('../minifyWsc');
+const canMerge = require('../canMerge');
+const remove = require('../remove');
+const trbl = require('../trbl');
+const isCustomProp = require('../isCustomProp');
+const canExplode = require('../canExplode');
+const getLastNode = require('../getLastNode');
+const parseWsc = require('../parseWsc');
+const { isValidWsc } = require('../validateWsc');
 
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentcolor'];
@@ -729,7 +730,7 @@ function merge(rule) {
   }
 }
 
-export default {
+module.exports = {
   explode,
   merge,
 };

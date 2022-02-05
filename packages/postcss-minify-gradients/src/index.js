@@ -1,6 +1,7 @@
-import valueParser, { unit, stringify } from 'postcss-value-parser';
-import { getArguments } from 'cssnano-utils';
-import isColorStop from './isColorStop.js';
+'use strict';
+const valueParser = require('postcss-value-parser');
+const { getArguments } = require('cssnano-utils');
+const isColorStop = require('./isColorStop.js');
 
 const angles = {
   top: '0deg',
@@ -65,7 +66,7 @@ function optimise(decl) {
           }
 
           let isFinalStop = index === args.length - 1;
-          let thisStop = unit(arg[2].value);
+          let thisStop = valueParser.unit(arg[2].value);
 
           if (lastStop === null) {
             lastStop = thisStop;
@@ -110,7 +111,7 @@ function optimise(decl) {
             return;
           }
 
-          let thisStop = unit(arg[2].value);
+          let thisStop = valueParser.unit(arg[2].value);
 
           if (!lastStop) {
             lastStop = thisStop;
@@ -141,19 +142,19 @@ function optimise(decl) {
 
           if (arg[2] !== undefined) {
             if (arg[0].type === 'function') {
-              color = `${arg[0].value}(${stringify(arg[0].nodes)})`;
+              color = `${arg[0].value}(${valueParser.stringify(arg[0].nodes)})`;
             } else {
               color = arg[0].value;
             }
 
             if (arg[2].type === 'function') {
-              stop = `${arg[2].value}(${stringify(arg[2].nodes)})`;
+              stop = `${arg[2].value}(${valueParser.stringify(arg[2].nodes)})`;
             } else {
               stop = arg[2].value;
             }
           } else {
             if (arg[0].type === 'function') {
-              color = `${arg[0].value}(${stringify(arg[0].nodes)})`;
+              color = `${arg[0].value}(${valueParser.stringify(arg[0].nodes)})`;
             }
 
             color = arg[0].value;
@@ -170,7 +171,7 @@ function optimise(decl) {
             return;
           }
 
-          let thisStop = unit(arg[2].value);
+          let thisStop = valueParser.unit(arg[2].value);
 
           if (!lastStop) {
             lastStop = thisStop;
@@ -201,4 +202,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

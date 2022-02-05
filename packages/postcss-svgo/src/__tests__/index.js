@@ -1,14 +1,15 @@
-import { readFileSync as file } from 'fs';
-import * as assert from 'uvu/assert';
-import { test } from 'uvu';
-import postcss from 'postcss';
-import filters from 'pleeease-filters';
-import plugin from '../';
-import { encode, decode } from '../lib/url';
-import {
+'use strict';
+const { readFileSync: file } = require('fs');
+const assert = require('uvu/assert');
+const { test } = require('uvu');
+const postcss = require('postcss');
+const filters = require('pleeease-filters');
+const {
   usePostCSSPlugin,
   processCSSFactory,
-} from '../../../../util/testHelpers';
+} = require('../../../../util/testHelpers');
+const plugin = require('../');
+const { encode, decode } = require('../lib/url');
 
 const { processCSS: filterEffects } = processCSSFactory([filters(), plugin()]);
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);

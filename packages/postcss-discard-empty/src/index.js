@@ -1,3 +1,4 @@
+'use strict';
 const plugin = 'postcss-discard-empty';
 
 function discardAndReport(css, result) {
@@ -37,4 +38,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

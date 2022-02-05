@@ -1,7 +1,8 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import valueParser from 'postcss-value-parser';
-import getArguments from '../getArguments';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const valueParser = require('postcss-value-parser');
+const getArguments = require('../getArguments');
 
 test('should get arguments', () => {
   const parsed = valueParser('linear-gradient(to bottom left, red, blue)');

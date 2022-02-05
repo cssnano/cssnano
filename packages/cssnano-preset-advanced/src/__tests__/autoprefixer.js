@@ -1,6 +1,9 @@
-import { test } from 'uvu';
-import { processCSSWithPresetFactory } from '../../../../util/integrationTestHelpers';
-import preset from '..';
+'use strict';
+const { test } = require('uvu');
+const {
+  processCSSWithPresetFactory,
+} = require('../../../../util/integrationTestHelpers');
+const preset = require('..');
 
 const { processCSS } = processCSSWithPresetFactory(preset);
 

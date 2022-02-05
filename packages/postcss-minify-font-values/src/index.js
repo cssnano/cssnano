@@ -1,7 +1,8 @@
-import valueParser from 'postcss-value-parser';
-import minifyWeight from './lib/minify-weight';
-import minifyFamily from './lib/minify-family';
-import minifyFont from './lib/minify-font';
+'use strict';
+const valueParser = require('postcss-value-parser');
+const minifyWeight = require('./lib/minify-weight');
+const minifyFamily = require('./lib/minify-family');
+const minifyFont = require('./lib/minify-font');
 
 function hasVariableFunction(value) {
   const lowerCasedValue = value.toLowerCase();
@@ -77,4 +78,4 @@ function pluginCreator(opts) {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

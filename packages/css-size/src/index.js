@@ -1,6 +1,7 @@
-import zlib from 'zlib';
-import postcss from 'postcss';
-import nano from 'cssnano';
+'use strict';
+const zlib = require('zlib');
+const postcss = require('postcss');
+const nano = require('cssnano');
 
 /* From https://github.com/sindresorhus/pretty-bytes/ */
 function prettyBytes(number) {
@@ -84,7 +85,7 @@ const computeSizes = (original, minified) => {
   };
 };
 
-export function table(css, opts, processor) {
+function table(css, opts, processor) {
   return cssSize(css, opts, processor).then((data) => {
     let output = '';
     output += '┌────────────┬──────────────┬────────┬────────┐';
@@ -165,7 +166,7 @@ export function table(css, opts, processor) {
   });
 }
 
-export function numeric(css, opts, processor) {
+function numeric(css, opts, processor) {
   return minifyCss(css, opts, processor).then((result) => {
     let sizes = computeSizes(css, result.css);
     deltasAsNumbers(sizes.uncompressed);
@@ -180,4 +181,6 @@ const deltasAsNumbers = (sizes) => {
   sizes.percent = parseFloat((sizes.processed / sizes.original).toFixed(4));
 };
 
-export default cssSize;
+module.exports = cssSize;
+module.exports.numeric = numeric;
+module.exports.table = table;

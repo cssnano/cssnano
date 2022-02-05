@@ -1,4 +1,5 @@
-export default function getArguments(node) {
+'use strict';
+module.exports = function getArguments(node) {
   const list = [[]];
   for (const child of node.nodes) {
     if (child.type !== 'div') {
@@ -8,4 +9,4 @@ export default function getArguments(node) {
     }
   }
   return list;
-}
+};

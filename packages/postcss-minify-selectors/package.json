@@ -2,15 +2,12 @@
   "name": "postcss-minify-selectors",
   "version": "5.1.2",
   "description": "Minify selectors with PostCSS.",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "files": [
-    "dist",
+    "src",
     "LICENSE-MIT"
   ],
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepare": "pnpm build"
   },
   "keywords": [
     "css",

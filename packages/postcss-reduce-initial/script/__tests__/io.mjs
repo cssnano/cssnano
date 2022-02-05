@@ -1,9 +1,13 @@
+import fs from 'fs';
 import { test } from 'uvu';
 import * as assert from 'uvu/assert';
 import { spy } from 'nanospy';
 import { Response } from 'node-fetch';
 import { handleError, toJSONString, write, generate } from '../lib/io.mjs';
-import testData from './sampleProperties.json';
+
+const testData = JSON.parse(
+  fs.readFileSync(new URL('./sampleProperties.json', import.meta.url), 'utf-8')
+);
 
 test('should produce parsable JSON', () => {
   const rawData = {

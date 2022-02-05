@@ -1,5 +1,6 @@
-import browserslist from 'browserslist';
-import valueParser from 'postcss-value-parser';
+'use strict';
+const browserslist = require('browserslist');
+const valueParser = require('postcss-value-parser');
 
 const regexLowerCaseUPrefix = /^u(?=\+)/;
 
@@ -113,4 +114,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

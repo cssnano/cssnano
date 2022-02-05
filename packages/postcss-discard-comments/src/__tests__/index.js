@@ -1,10 +1,11 @@
-import { test } from 'uvu';
-import vars from 'postcss-simple-vars';
-import {
+'use strict';
+const { test } = require('uvu');
+const vars = require('postcss-simple-vars');
+const {
   usePostCSSPlugin,
   processCSSFactory,
-} from '../../../../util/testHelpers';
-import plugin from '..';
+} = require('../../../../util/testHelpers');
+const plugin = require('..');
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 

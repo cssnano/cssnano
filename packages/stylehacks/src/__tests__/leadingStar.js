@@ -1,5 +1,6 @@
-import { test } from 'uvu';
-import processCSS from './_processCSS';
+'use strict';
+const { test } = require('uvu');
+const processCSS = require('./_processCSS');
 
 const opts = { target: 'ie7', unaffected: 'ie8' };
 

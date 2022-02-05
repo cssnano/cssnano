@@ -1,16 +1,13 @@
 {
   "name": "cssnano-preset-advanced",
   "version": "5.1.11",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "description": "Advanced optimisations for cssnano; may or may not break your CSS!",
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepare": "pnpm build"
   },
   "files": [
     "LICENSE-MIT",
-    "dist"
+    "src"
   ],
   "license": "MIT",
   "dependencies": {

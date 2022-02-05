@@ -1,11 +1,12 @@
-import { unit } from 'postcss-value-parser';
+'use strict';
+const { unit } = require('postcss-value-parser');
 
 function hasUnit(value) {
   const parsedVal = unit(value);
   return parsedVal && parsedVal.unit !== '';
 }
 
-export default (columns) => {
+module.exports = (columns) => {
   const widths = [];
   const other = [];
   columns.walk((node) => {

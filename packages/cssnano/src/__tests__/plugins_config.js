@@ -1,9 +1,10 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import postcss from 'postcss';
-import litePreset from 'cssnano-preset-lite';
-import autoprefixer from 'autoprefixer';
-import cssnano from '..';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const postcss = require('postcss');
+const litePreset = require('cssnano-preset-lite');
+const autoprefixer = require('autoprefixer');
+const cssnano = require('..');
 
 test('should run the plugins in the preset', () => {
   const preset = litePreset();

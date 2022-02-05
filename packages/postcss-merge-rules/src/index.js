@@ -1,10 +1,11 @@
-import browserslist from 'browserslist';
-import { sameParent } from 'cssnano-utils';
-import {
+'use strict';
+const browserslist = require('browserslist');
+const { sameParent } = require('cssnano-utils');
+const {
   ensureCompatibility,
   sameVendor,
   noVendor,
-} from './lib/ensureCompatibility';
+} = require('./lib/ensureCompatibility');
 
 /**
  * @param {postcss.Declaration} a
@@ -379,4 +380,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

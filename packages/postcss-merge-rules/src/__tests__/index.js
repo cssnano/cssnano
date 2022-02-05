@@ -1,14 +1,15 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import postcss from 'postcss';
-import vars from 'postcss-simple-vars';
-import comments from 'postcss-discard-comments'; // alias not loading correctly
-import { pseudoElements } from '../lib/ensureCompatibility';
-import {
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const postcss = require('postcss');
+const vars = require('postcss-simple-vars');
+const comments = require('postcss-discard-comments'); // alias not loading correctly
+const {
   usePostCSSPlugin,
   processCSSFactory,
-} from '../../../../util/testHelpers';
-import plugin from '..';
+} = require('../../../../util/testHelpers');
+const { pseudoElements } = require('../lib/ensureCompatibility');
+const plugin = require('..');
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

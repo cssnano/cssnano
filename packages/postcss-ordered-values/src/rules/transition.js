@@ -1,7 +1,8 @@
-import { unit } from 'postcss-value-parser';
-import { getArguments } from 'cssnano-utils';
-import addSpace from '../lib/addSpace';
-import getValue from '../lib/getValue';
+'use strict';
+const { unit } = require('postcss-value-parser');
+const { getArguments } = require('cssnano-utils');
+const addSpace = require('../lib/addSpace');
+const getValue = require('../lib/getValue');
 
 // transition: [ none | <single-transition-property> ] || <time> || <single-transition-timing-function> || <time>
 
@@ -67,8 +68,8 @@ function normalize(args) {
  * @param {import('postcss-value-parser').ParsedValue} parsed
  * @return {string}
  */
-export default function normalizeTransition(parsed) {
+module.exports = function normalizeTransition(parsed) {
   const values = normalize(getArguments(parsed));
 
   return getValue(values);
-}
+};

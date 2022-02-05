@@ -1,6 +1,7 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import minifyFont from '../lib/minify-font';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const minifyFont = require('../lib/minify-font');
 
 const tests = [
   {

@@ -1,4 +1,5 @@
-export default function commentParser(input) {
+'use strict';
+module.exports = function commentParser(input) {
   const tokens = [];
   const length = input.length;
   let pos = 0;
@@ -21,4 +22,4 @@ export default function commentParser(input) {
   }
 
   return tokens;
-}
+};

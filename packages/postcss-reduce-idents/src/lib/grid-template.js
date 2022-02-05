@@ -1,10 +1,11 @@
-import valueParser from 'postcss-value-parser';
-import addToCache from './cache';
-import isNum from './isNum';
+'use strict';
+const valueParser = require('postcss-value-parser');
+const addToCache = require('./cache');
+const isNum = require('./isNum');
 
 const RESERVED_KEYWORDS = ['auto', 'span', 'inherit', 'initial', 'unset'];
 
-export default function () {
+module.exports = function () {
   let cache = {};
   let declCache = [];
 
@@ -74,4 +75,4 @@ export default function () {
       declCache = [];
     },
   };
-}
+};

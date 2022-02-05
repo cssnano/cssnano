@@ -1,4 +1,5 @@
-import valueParser, { stringify } from 'postcss-value-parser';
+'use strict';
+const valueParser = require('postcss-value-parser');
 
 function getValues(list, node, index) {
   if (index % 2 === 0) {
@@ -9,7 +10,7 @@ function getValues(list, node, index) {
       (node.value === 'var' || node.value === 'env') &&
       node.nodes.length === 1
     ) {
-      value = stringify(node.nodes);
+      value = valueParser.stringify(node.nodes);
     } else if (node.type === 'word') {
       value = parseFloat(node.value);
     }
@@ -252,4 +253,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

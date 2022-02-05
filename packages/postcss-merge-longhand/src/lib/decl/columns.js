@@ -1,14 +1,15 @@
-import { list } from 'postcss';
-import { unit } from 'postcss-value-parser';
-import stylehacks from 'stylehacks';
-import canMerge from '../canMerge';
-import getDecls from '../getDecls';
-import getValue from '../getValue';
-import mergeRules from '../mergeRules';
-import insertCloned from '../insertCloned';
-import remove from '../remove';
-import isCustomProp from '../isCustomProp';
-import canExplode from '../canExplode';
+'use strict';
+const { list } = require('postcss');
+const { unit } = require('postcss-value-parser');
+const stylehacks = require('stylehacks');
+const canMerge = require('../canMerge');
+const getDecls = require('../getDecls');
+const getValue = require('../getValue');
+const mergeRules = require('../mergeRules');
+const insertCloned = require('../insertCloned');
+const remove = require('../remove');
+const isCustomProp = require('../isCustomProp');
+const canExplode = require('../canExplode');
 
 const properties = ['column-width', 'column-count'];
 const auto = 'auto';
@@ -132,7 +133,7 @@ function merge(rule) {
   cleanup(rule);
 }
 
-export default {
+module.exports = {
   explode,
   merge,
 };

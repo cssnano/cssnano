@@ -1,4 +1,5 @@
-import { stringify } from 'postcss-value-parser';
+'use strict';
+const { stringify } = require('postcss-value-parser');
 
 function uniqueFontFamilies(list) {
   return list.filter((item, i) => {
@@ -151,7 +152,7 @@ function escapeIdentifierSequence(string) {
   return result;
 }
 
-export default function (nodes, opts) {
+module.exports = function (nodes, opts) {
   const family = [];
   let last = null;
   let i, max;
@@ -216,4 +217,4 @@ export default function (nodes, opts) {
       value: normalizedFamilies.join(),
     },
   ];
-}
+};

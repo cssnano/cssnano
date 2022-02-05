@@ -1,3 +1,4 @@
-export default function joinGridVal(grid) {
+'use strict';
+module.exports = function joinGridVal(grid) {
   return grid.join(' / ').trim();
-}
+};

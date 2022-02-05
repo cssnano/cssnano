@@ -1,3 +1,4 @@
-export default function remove(node) {
+'use strict';
+module.exports = function remove(node) {
   return node.remove();
-}
+};

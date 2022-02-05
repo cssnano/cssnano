@@ -1,17 +1,18 @@
-import bodyEmpty from './bodyEmpty';
-import htmlCombinatorCommentBody from './htmlCombinatorCommentBody';
-import htmlFirstChild from './htmlFirstChild';
-import important from './important';
-import leadingStar from './leadingStar';
-import leadingUnderscore from './leadingUnderscore';
-import mediaSlash0 from './mediaSlash0';
-import mediaSlash0Slash9 from './mediaSlash0Slash9';
-import mediaSlash9 from './mediaSlash9';
-import slash9 from './slash9';
-import starHtml from './starHtml';
-import trailingSlashComma from './trailingSlashComma';
+'use strict';
+const bodyEmpty = require('./bodyEmpty');
+const htmlCombinatorCommentBody = require('./htmlCombinatorCommentBody');
+const htmlFirstChild = require('./htmlFirstChild');
+const important = require('./important');
+const leadingStar = require('./leadingStar');
+const leadingUnderscore = require('./leadingUnderscore');
+const mediaSlash0 = require('./mediaSlash0');
+const mediaSlash0Slash9 = require('./mediaSlash0Slash9');
+const mediaSlash9 = require('./mediaSlash9');
+const slash9 = require('./slash9');
+const starHtml = require('./starHtml');
+const trailingSlashComma = require('./trailingSlashComma');
 
-export default [
+module.exports = [
   bodyEmpty,
   htmlCombinatorCommentBody,
   htmlFirstChild,

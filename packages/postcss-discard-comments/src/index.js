@@ -1,5 +1,6 @@
-import CommentRemover from './lib/commentRemover';
-import commentParser from './lib/commentParser';
+'use strict';
+const CommentRemover = require('./lib/commentRemover');
+const commentParser = require('./lib/commentParser');
 
 function pluginCreator(opts = {}) {
   const remover = new CommentRemover(opts);
@@ -127,4 +128,4 @@ function pluginCreator(opts = {}) {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

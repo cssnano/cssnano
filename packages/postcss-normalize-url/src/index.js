@@ -1,6 +1,7 @@
-import path from 'path';
-import valueParser from 'postcss-value-parser';
-import normalize from 'normalize-url';
+'use strict';
+const path = require('path');
+const valueParser = require('postcss-value-parser');
+const normalize = require('normalize-url');
 
 const multiline = /\\[\r\n]/;
 // eslint-disable-next-line no-useless-escape
@@ -142,4 +143,4 @@ function pluginCreator(opts) {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

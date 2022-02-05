@@ -1,9 +1,10 @@
-import valueParser from 'postcss-value-parser';
-import addToCache from './cache';
+'use strict';
+const valueParser = require('postcss-value-parser');
+const addToCache = require('./cache');
 
 const RESERVED_KEYWORDS = ['none', 'inherit', 'initial', 'unset'];
 
-export default function () {
+module.exports = function () {
   let cache = {};
   let atRules = [];
   let decls = [];
@@ -59,4 +60,4 @@ export default function () {
       decls = [];
     },
   };
-}
+};

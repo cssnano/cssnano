@@ -1,13 +1,14 @@
-import parser from 'postcss-selector-parser';
-import exists from '../exists';
-import isMixin from '../isMixin';
-import BasePlugin from '../plugin';
-import { IE_5_5, IE_6, IE_7 } from '../dictionary/browsers';
-import { SELECTOR } from '../dictionary/identifiers';
-import { RULE } from '../dictionary/postcss';
-import { BODY, HTML } from '../dictionary/tags';
+'use strict';
+const parser = require('postcss-selector-parser');
+const exists = require('../exists');
+const isMixin = require('../isMixin');
+const BasePlugin = require('../plugin');
+const { IE_5_5, IE_6, IE_7 } = require('../dictionary/browsers');
+const { SELECTOR } = require('../dictionary/identifiers');
+const { RULE } = require('../dictionary/postcss');
+const { BODY, HTML } = require('../dictionary/tags');
 
-export default class HtmlCombinatorCommentBody extends BasePlugin {
+module.exports = class HtmlCombinatorCommentBody extends BasePlugin {
   constructor(result) {
     super([IE_5_5, IE_6, IE_7], [RULE], result);
   }
@@ -42,4 +43,4 @@ export default class HtmlCombinatorCommentBody extends BasePlugin {
       });
     };
   }
-}
+};

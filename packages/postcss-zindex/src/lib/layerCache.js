@@ -1,3 +1,4 @@
+'use strict';
 function LayerCache() {
   this._values = new Map();
 }
@@ -30,4 +31,4 @@ LayerCache.prototype.getValue = function (value) {
   return this._values.get(parsedValue) || value;
 };
 
-export default LayerCache;
+module.exports = LayerCache;

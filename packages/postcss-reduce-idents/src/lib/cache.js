@@ -1,4 +1,5 @@
-export default function (value, encoder, cache) {
+'use strict';
+module.exports = function (value, encoder, cache) {
   if (cache[value]) {
     return;
   }
@@ -7,4 +8,4 @@ export default function (value, encoder, cache) {
     ident: encoder(value, Object.keys(cache).length),
     count: 0,
   };
-}
+};

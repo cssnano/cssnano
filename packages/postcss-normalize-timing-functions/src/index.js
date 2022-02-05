@@ -1,4 +1,5 @@
-import valueParser from 'postcss-value-parser';
+'use strict';
+const valueParser = require('postcss-value-parser');
 
 const getValue = (node) => parseFloat(node.value);
 
@@ -129,4 +130,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

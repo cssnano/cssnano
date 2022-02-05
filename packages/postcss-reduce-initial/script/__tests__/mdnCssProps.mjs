@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { suite } from 'uvu';
 import * as assert from 'uvu/assert';
 import {
@@ -9,7 +10,9 @@ import {
   validate,
 } from '../lib/mdnCssProps.mjs';
 
-import testData from './sampleProperties.json';
+const testData = JSON.parse(
+  fs.readFileSync(new URL('./sampleProperties.json', import.meta.url), 'utf-8')
+);
 
 const propertiesTests = suite('Recognize properties and flags');
 

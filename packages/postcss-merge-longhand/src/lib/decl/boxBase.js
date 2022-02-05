@@ -1,17 +1,18 @@
-import stylehacks from 'stylehacks';
-import canMerge from '../canMerge';
-import getDecls from '../getDecls';
-import minifyTrbl from '../minifyTrbl';
-import parseTrbl from '../parseTrbl';
-import insertCloned from '../insertCloned';
-import mergeRules from '../mergeRules';
-import mergeValues from '../mergeValues';
-import remove from '../remove';
-import trbl from '../trbl';
-import isCustomProp from '../isCustomProp';
-import canExplode from '../canExplode';
+'use strict';
+const stylehacks = require('stylehacks');
+const canMerge = require('../canMerge');
+const getDecls = require('../getDecls');
+const minifyTrbl = require('../minifyTrbl');
+const parseTrbl = require('../parseTrbl');
+const insertCloned = require('../insertCloned');
+const mergeRules = require('../mergeRules');
+const mergeValues = require('../mergeValues');
+const remove = require('../remove');
+const trbl = require('../trbl');
+const isCustomProp = require('../isCustomProp');
+const canExplode = require('../canExplode');
 
-export default (prop) => {
+module.exports = (prop) => {
   const properties = trbl.map((direction) => `${prop}-${direction}`);
 
   const cleanup = (rule) => {

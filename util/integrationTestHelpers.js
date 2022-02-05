@@ -1,19 +1,20 @@
-import path from 'path';
-import fs from 'fs';
-import postcss from 'postcss';
-import * as assert from 'uvu/assert';
-import cssnano from '../packages/cssnano/src/index.js';
-import { processCSSFactory } from './testHelpers.js';
+'use strict';
+const path = require('path');
+const fs = require('fs');
+const postcss = require('postcss');
+const assert = require('uvu/assert');
+const cssnano = require('../packages/cssnano/src/index.js');
+const { processCSSFactory } = require('./testHelpers.js');
 
-export function processCSSWithPresetFactory(preset) {
+function processCSSWithPresetFactory(preset) {
   return processCSSFactory([cssnano({ preset })]);
 }
 
-export function loadPreset(preset) {
+function loadPreset(preset) {
   return postcss(cssnano({ preset }));
 }
 
-export function integrationTests(preset, integrations) {
+function integrationTests(preset, integrations) {
   const frameworks = new Map();
   for (const framework of fs.readdirSync(
     path.join(__dirname, '../frameworks')
@@ -39,3 +40,5 @@ export function integrationTests(preset, integrations) {
   }
   return () => Promise.all(expectations);
 }
+
+module.exports = { processCSSWithPresetFactory, loadPreset, integrationTests };

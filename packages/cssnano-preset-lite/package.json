@@ -1,16 +1,13 @@
 {
     "name": "cssnano-preset-lite",
     "version": "2.0.2",
-    "main": "dist/index.js",
+    "main": "src/index.js",
     "description": "Safe and minimum transformation",
     "scripts": {
-        "prebuild": "rimraf dist",
-        "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-        "prepare": "pnpm build"
     },
     "files": [
         "LICENSE-MIT",
-        "dist"
+        "src"
     ],
     "license": "MIT",
     "dependencies": {

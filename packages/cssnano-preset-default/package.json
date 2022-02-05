@@ -1,16 +1,13 @@
 {
   "name": "cssnano-preset-default",
   "version": "5.1.11",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "description": "Safe defaults for cssnano which require minimal configuration.",
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepare": "pnpm build"
   },
   "files": [
     "LICENSE-MIT",
-    "dist"
+    "src"
   ],
   "license": "MIT",
   "dependencies": {

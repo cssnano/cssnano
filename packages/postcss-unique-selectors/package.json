@@ -2,15 +2,12 @@
   "name": "postcss-unique-selectors",
   "version": "5.0.3",
   "description": "Ensure CSS selectors are unique.",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepare": "pnpm build"
   },
   "files": [
     "LICENSE-MIT",
-    "dist"
+    "src"
   ],
   "keywords": [
     "css",

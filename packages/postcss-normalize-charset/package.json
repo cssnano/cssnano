@@ -10,7 +10,7 @@
   ],
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "files": [
-    "dist",
+    "src",
     "LICENSE"
   ],
   "license": "MIT",
@@ -19,11 +19,8 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "homepage": "https://github.com/cssnano/cssnano",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepare": "pnpm build"
   },
   "engines": {
     "node": "^10 || ^12 || >=14.0"

@@ -1,5 +1,6 @@
-import parser from 'postcss-selector-parser';
-import canUnquote from './lib/canUnquote.js';
+'use strict';
+const parser = require('postcss-selector-parser');
+const canUnquote = require('./lib/canUnquote.js');
 
 const pseudoElements = new Set([
   '::before',
@@ -220,4 +221,4 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

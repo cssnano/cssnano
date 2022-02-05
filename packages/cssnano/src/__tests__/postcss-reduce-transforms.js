@@ -1,5 +1,6 @@
-import { test } from 'uvu';
-import processCss from './_processCss';
+'use strict';
+const { test } = require('uvu');
+const processCss = require('./_processCss');
 
 test(
   'should shorten matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1) to matrix(a, b, c, d, tx, ty)',

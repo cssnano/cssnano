@@ -1,10 +1,11 @@
-import fs from 'fs';
-import * as assert from 'uvu/assert';
-import { test } from 'uvu';
-import postcss from 'postcss';
-import { diffLines } from 'diff';
-import pc from 'picocolors';
-import plugin from '../';
+'use strict';
+const fs = require('fs');
+const assert = require('uvu/assert');
+const { test } = require('uvu');
+const postcss = require('postcss');
+const { diffLines } = require('diff');
+const pc = require('picocolors');
+const plugin = require('../');
 
 function getDiff(left, right) {
   let msg = ['\n'];

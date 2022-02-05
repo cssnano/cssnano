@@ -1,7 +1,8 @@
-import { test } from 'uvu';
-import trbl from '../lib/trbl';
-import { processCSSFactory } from '../../../../util/testHelpers';
-import plugin from '..';
+'use strict';
+const { test } = require('uvu');
+const trbl = require('../lib/trbl');
+const { processCSSFactory } = require('../../../../util/testHelpers');
+const plugin = require('..');
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 

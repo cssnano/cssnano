@@ -1,9 +1,11 @@
-import { test } from 'uvu';
-import {
+'use strict';
+const { test } = require('uvu');
+const {
   usePostCSSPlugin,
   processCSSFactory,
-} from '../../../../util/testHelpers';
-import plugin from '..';
+} = require('../../../../util/testHelpers');
+
+const plugin = require('..');
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

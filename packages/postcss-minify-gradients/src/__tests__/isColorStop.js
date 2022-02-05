@@ -1,6 +1,7 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import isColorStop from '../isColorStop.js';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const isColorStop = require('../isColorStop.js');
 
 test('should recognise color stops', () => {
   assert.is(isColorStop('yellow'), true);

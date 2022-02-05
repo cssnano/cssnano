@@ -1,4 +1,5 @@
-import valueParser from 'postcss-value-parser';
+'use strict';
+const valueParser = require('postcss-value-parser');
 
 /*
  * Constants (parser usage)
@@ -275,4 +276,4 @@ function pluginCreator(opts) {
 }
 
 pluginCreator.postcss = true;
-export default pluginCreator;
+module.exports = pluginCreator;

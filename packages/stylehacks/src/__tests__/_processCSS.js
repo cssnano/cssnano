@@ -1,11 +1,12 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import { processCSSFactory } from '../../../../util/testHelpers';
-import stylehacks from '..';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const { processCSSFactory } = require('../../../../util/testHelpers');
+const stylehacks = require('..');
 
 const { processor, processCSS, passthroughCSS } = processCSSFactory(stylehacks);
 
-export default (fixture, expected, { target, unaffected }, warnings = 1) => {
+module.exports = (fixture, expected, { target, unaffected }, warnings = 1) => {
   return () =>
     Promise.all([
       passthroughCSS(fixture, { env: target }),

@@ -1,10 +1,11 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import {
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const {
   integrationTests,
   loadPreset,
-} from '../../../../util/integrationTestHelpers.js';
-import preset from '..';
+} = require('../../../../util/integrationTestHelpers.js');
+const preset = require('..');
 
 test(
   'should correctly handle the framework tests',

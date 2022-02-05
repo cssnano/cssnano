@@ -1,6 +1,7 @@
-import { colord, extend } from 'colord';
-import namesPlugin from 'colord/plugins/names';
-import minifierPlugin from 'colord/plugins/minify';
+'use strict';
+const { colord, extend } = require('colord');
+const namesPlugin = require('colord/plugins/names');
+const minifierPlugin = require('colord/plugins/minify');
 
 extend([namesPlugin, minifierPlugin]);
 
@@ -10,7 +11,7 @@ extend([namesPlugin, minifierPlugin]);
  * @param {string} input - CSS value
  * @param {boolean} options - object with colord.minify() options
  */
-export default function minifyColor(input, options = {}) {
+module.exports = function minifyColor(input, options = {}) {
   const instance = colord(input);
 
   if (instance.isValid()) {
@@ -23,4 +24,4 @@ export default function minifyColor(input, options = {}) {
     // Possibly malformed, so pass through
     return input;
   }
-}
+};

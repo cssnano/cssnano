@@ -1,3 +1,4 @@
+'use strict';
 const block = 'block';
 const flex = 'flex';
 const flow = 'flow';
@@ -21,7 +22,7 @@ const tableCaption = 'table-caption';
  * Specification: https://drafts.csswg.org/css-display/#the-display-properties
  */
 
-export default new Map([
+module.exports = new Map([
   [[block, flow].toString(), block],
   [[block, flowRoot].toString(), flowRoot],
   [[inline, flow].toString(), inline],

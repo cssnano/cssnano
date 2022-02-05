@@ -1,6 +1,7 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import minifyWeight from '../lib/minify-weight';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const minifyWeight = require('../lib/minify-weight');
 
 test('minify-weight', () => {
   assert.is(minifyWeight('normal'), '400');

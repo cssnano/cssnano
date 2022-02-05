@@ -1,11 +1,9 @@
 {
   "parserOptions": {
-    "sourceType": "module",
     "ecmaVersion": 2021
   },
   "extends": [
     "eslint:recommended",
-    "plugin:import/recommended",
     "plugin:prettier/recommended"
   ],
   "env": {
@@ -33,15 +31,14 @@
     "no-void": "error",
     "no-warning-comments": "error",
     "radix": "error",
-    "strict": "error",
-    "yoda": "error",
-    "import/imports-first": "error",
-    "import/newline-after-import": "error",
-    "import/no-duplicates": "error",
-    "import/no-mutable-exports": "error",
-    "import/no-named-as-default": "error",
-    "import/no-named-as-default-member": "error",
-    "import/order": "error",
-    "import/prefer-default-export": "error"
-  }
+    "yoda": "error"
+  },
+  "overrides": [
+    {
+      "files": ["*.mjs"],
+      "parserOptions": {
+        "sourceType": "module"
+      }
+    }
+  ]
 }

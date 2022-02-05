@@ -1,5 +1,6 @@
+'use strict';
 /* https://www.w3.org/TR/css-color-4/#named-colors */
-export default new Set([
+module.exports = new Set([
   'aliceblue',
   'antiquewhite',
   'aqua',

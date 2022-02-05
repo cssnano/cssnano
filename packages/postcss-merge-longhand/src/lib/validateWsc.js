@@ -1,4 +1,5 @@
-import colors from './colornames.js';
+'use strict';
+const colors = require('./colornames.js');
 
 const widths = new Set(['thin', 'medium', 'thick']);
 const styles = new Set([
@@ -14,18 +15,18 @@ const styles = new Set([
   'outset',
 ]);
 
-export function isStyle(value) {
+function isStyle(value) {
   return value && styles.has(value.toLowerCase());
 }
 
-export function isWidth(value) {
+function isWidth(value) {
   return (
     (value && widths.has(value.toLowerCase())) ||
     /^(\d+(\.\d+)?|\.\d+)(\w+)?$/.test(value)
   );
 }
 
-export function isColor(value) {
+function isColor(value) {
   if (!value) {
     return false;
   }
@@ -55,7 +56,7 @@ export function isColor(value) {
   return colors.has(value);
 }
 
-export function isValidWsc(wscs) {
+function isValidWsc(wscs) {
   const validWidth = isWidth(wscs[0]);
   const validStyle = isStyle(wscs[1]);
   const validColor = isColor(wscs[2]);
@@ -66,3 +67,5 @@ export function isValidWsc(wscs) {
     (validStyle && validColor)
   );
 }
+
+module.exports = { isStyle, isWidth, isColor, isValidWsc };

@@ -2,15 +2,12 @@
   "name": "postcss-zindex",
   "version": "5.0.1",
   "description": "Reduce z-index values with PostCSS.",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "babel src --config-file ../../babel.config.json --out-dir dist --ignore \"**/__tests__/\"",
-    "prepare": "pnpm build"
   },
   "files": [
     "LICENSE-MIT",
-    "dist"
+    "src"
   ],
   "keywords": [
     "css",

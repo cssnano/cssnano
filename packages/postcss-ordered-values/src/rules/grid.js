@@ -1,6 +1,7 @@
-import joinGridValue from '../lib/joinGridValue';
+'use strict';
+const joinGridValue = require('../lib/joinGridValue');
 
-export const normalizeGridAutoFlow = (gridAutoFlow) => {
+const normalizeGridAutoFlow = (gridAutoFlow) => {
   let newValue = { front: '', back: '' };
   let shouldNormalize = false;
   gridAutoFlow.walk((node) => {
@@ -20,7 +21,7 @@ export const normalizeGridAutoFlow = (gridAutoFlow) => {
   return gridAutoFlow;
 };
 
-export const normalizeGridColumnRowGap = (gridGap) => {
+const normalizeGridColumnRowGap = (gridGap) => {
   let newValue = { front: '', back: '' };
   let shouldNormalize = false;
   gridGap.walk((node) => {
@@ -38,7 +39,7 @@ export const normalizeGridColumnRowGap = (gridGap) => {
   return gridGap;
 };
 
-export const normalizeGridColumnRow = (grid) => {
+const normalizeGridColumnRow = (grid) => {
   // cant do normalization here using node, so copy it as a string
   let gridValue = grid.toString().split('/'); // node -> string value, split ->  " 2 / 3 span " ->  [' 2','3 span ']
   if (gridValue.length > 1) {
@@ -78,4 +79,10 @@ export const normalizeGridColumnRow = (grid) => {
     });
     return `${normalizeValue.front.trim()} ${normalizeValue.back.trim()}`;
   });
+};
+
+module.exports = {
+  normalizeGridAutoFlow,
+  normalizeGridColumnRowGap,
+  normalizeGridColumnRow,
 };

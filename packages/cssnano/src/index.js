@@ -1,7 +1,8 @@
-import path from 'path';
-import postcss from 'postcss';
-import yaml from 'yaml';
-import { lilconfigSync } from 'lilconfig';
+'use strict';
+const path = require('path');
+const postcss = require('postcss');
+const yaml = require('yaml');
+const { lilconfigSync } = require('lilconfig');
 
 const cssnano = 'cssnano';
 
@@ -156,4 +157,4 @@ const cssnanoPlugin = (options = {}) => {
 };
 
 cssnanoPlugin.postcss = true;
-export default cssnanoPlugin;
+module.exports = cssnanoPlugin;

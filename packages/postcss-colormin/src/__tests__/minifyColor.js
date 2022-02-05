@@ -1,6 +1,7 @@
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
-import minifyColor from '../minifyColor';
+'use strict';
+const { test } = require('uvu');
+const assert = require('uvu/assert');
+const minifyColor = require('../minifyColor');
 
 function min(input, options = {}) {
   const defaultOptions = {
