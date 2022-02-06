@@ -4,8 +4,6 @@
   "repository": "cssnano/cssnano",
   "main": "src/index.js",
   "description": "Utility methods and plugin for cssnano projects",
-  "scripts": {
-  },
   "homepage": "https://github.com/cssnano/cssnano",
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

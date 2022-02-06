@@ -3,8 +3,6 @@
   "version": "5.1.11",
   "main": "src/index.js",
   "description": "Safe defaults for cssnano which require minimal configuration.",
-  "scripts": {
-  },
   "files": [
     "LICENSE-MIT",
     "src"

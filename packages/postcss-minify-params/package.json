@@ -27,8 +27,6 @@
     "cssnano-utils": "^3.0.1",
     "postcss-value-parser": "^4.2.0"
   },
-  "scripts": {
-  },
   "engines": {
     "node": "^10 || ^12 || >=14.0"
   },

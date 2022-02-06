@@ -3,8 +3,6 @@
   "version": "5.0.3",
   "description": "Ensure CSS selectors are unique.",
   "main": "src/index.js",
-  "scripts": {
-  },
   "files": [
     "LICENSE-MIT",
     "src"

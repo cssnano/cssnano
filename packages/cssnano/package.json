@@ -31,10 +31,8 @@
     "repository": "cssnano/cssnano",
     "files": [
         "src",
-        "LICENSE-MIT",
-        "quickstart.js"
+        "LICENSE-MIT"
     ],
-    "tonicExampleFilename": "quickstart.js",
     "bugs": {
         "url": "https://github.com/cssnano/cssnano/issues"
     },

@@ -3,8 +3,6 @@
   "version": "5.1.11",
   "main": "src/index.js",
   "description": "Advanced optimisations for cssnano; may or may not break your CSS!",
-  "scripts": {
-  },
   "files": [
     "LICENSE-MIT",
     "src"
