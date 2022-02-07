@@ -10,7 +10,7 @@
     "test:coverage": "c8 pnpm test:only",
     "test": "pnpm test:coverage",
     "test:helpers": "uvu packages \"test.*\\.mjs$\"",
-    "all-publish": "pnpm prepare && pnpm changeset publish"
+    "all-publish": "pnpm changeset publish"
   },
   "workspaces": [
     "./packages/*"
