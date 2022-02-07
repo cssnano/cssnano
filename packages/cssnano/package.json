@@ -1,6 +1,6 @@
 {
     "name": "cssnano",
-    "version": "5.0.16",
+    "version": "5.0.17",
     "description": "A modular minifier, built on top of the PostCSS ecosystem.",
     "main": "src/index.js",
     "funding": {
@@ -18,7 +18,7 @@
     ],
     "license": "MIT",
     "dependencies": {
-        "cssnano-preset-default": "^5.1.11",
+        "cssnano-preset-default": "^5.1.12",
         "lilconfig": "^2.0.3",
         "yaml": "^1.10.2"
     },
@@ -41,8 +41,8 @@
     },
     "devDependencies": {
         "autoprefixer": "^10.3.7",
-        "cssnano-preset-advanced": "^5.1.11",
-        "cssnano-preset-lite": "^2.0.2",
+        "cssnano-preset-advanced": "^5.1.12",
+        "cssnano-preset-lite": "^2.0.3",
         "postcss": "^8.2.15"
     },
     "peerDependencies": {

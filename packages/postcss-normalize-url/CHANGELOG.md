@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.0.5
+
+### Patch Changes
+
+- Publish untranspiled CommonJS source
+
 ## 5.0.4 (2021-12-16)
 
 ### Patch Changes

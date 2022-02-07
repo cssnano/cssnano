@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.0.7
+
+### Patch Changes
+
+- Publish untranspiled CommonJS source
+- Updated dependencies
+  - cssnano@5.0.17
+
 ## 5.0.6
 
 ### Patch Changes

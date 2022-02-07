@@ -1,10 +1,16 @@
 # Change Log
 
+## 5.0.3
+
+### Patch Changes
+
+- Publish untranspiled CommonJS source
+
 ## 5.0.2 (2021-11-27)
 
 ### Bug fixes
 
-- fix(postcss-reduce-initial): update initial values data ([#1242](https://github.com/cssnano/cssnano/pull/1242)) ([c6e9f00b785](https://github.com/cssnano/cssnano/commit/c6e9f00b785d85df0d92a110ec95a14fd98adcc9)) 
+- fix(postcss-reduce-initial): update initial values data ([#1242](https://github.com/cssnano/cssnano/pull/1242)) ([c6e9f00b785](https://github.com/cssnano/cssnano/commit/c6e9f00b785d85df0d92a110ec95a14fd98adcc9))
 
 ## [5.0.1](https://github.com/cssnano/cssnano/compare/postcss-reduce-initial@5.0.0...postcss-reduce-initial@5.0.1) (2021-05-19)
 

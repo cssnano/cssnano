@@ -1,5 +1,17 @@
 # Change Log
 
+## 5.1.12
+
+### Patch Changes
+
+- Publish untranspiled CommonJS source
+- Updated dependencies
+  - cssnano-preset-default@5.1.12
+  - postcss-discard-unused@5.0.3
+  - postcss-merge-idents@5.0.3
+  - postcss-reduce-idents@5.0.3
+  - postcss-zindex@5.0.2
+
 ## 5.1.11
 
 ### Patch Changes

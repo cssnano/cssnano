@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.2
+
+### Patch Changes
+
+- Publish untranspiled CommonJS source
+
 ## 3.0.1
 
 ### Patch Changes
