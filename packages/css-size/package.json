@@ -7,8 +7,6 @@
   "bin": {
     "css-size": "src/cli.js"
   },
-  "scripts": {
-  },
   "files": [
     "LICENSE-MIT",
     "css-size.d.ts",
