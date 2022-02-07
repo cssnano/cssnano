@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-timing-functions",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "Normalize CSS animation/transition timing functions.",
   "main": "src/index.js",
   "files": [

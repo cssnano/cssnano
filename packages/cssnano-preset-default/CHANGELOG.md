@@ -1,5 +1,39 @@
 # Change Log
 
+## 5.1.12
+
+### Patch Changes
+
+- Publish untranspiled CommonJS source
+- Updated dependencies
+  - cssnano-utils@3.0.2
+  - postcss-colormin@5.2.5
+  - postcss-convert-values@5.0.4
+  - postcss-discard-comments@5.0.3
+  - postcss-discard-duplicates@5.0.3
+  - postcss-discard-empty@5.0.3
+  - postcss-discard-overridden@5.0.4
+  - postcss-merge-longhand@5.0.6
+  - postcss-merge-rules@5.0.6
+  - postcss-minify-font-values@5.0.4
+  - postcss-minify-gradients@5.0.6
+  - postcss-minify-params@5.0.5
+  - postcss-minify-selectors@5.1.3
+  - postcss-normalize-charset@5.0.3
+  - postcss-normalize-display-values@5.0.3
+  - postcss-normalize-positions@5.0.4
+  - postcss-normalize-repeat-style@5.0.4
+  - postcss-normalize-string@5.0.4
+  - postcss-normalize-timing-functions@5.0.3
+  - postcss-normalize-unicode@5.0.4
+  - postcss-normalize-url@5.0.5
+  - postcss-normalize-whitespace@5.0.4
+  - postcss-ordered-values@5.0.5
+  - postcss-reduce-initial@5.0.3
+  - postcss-reduce-transforms@5.0.4
+  - postcss-svgo@5.0.4
+  - postcss-unique-selectors@5.0.4
+
 ## 5.1.11
 
 ### Patch Changes

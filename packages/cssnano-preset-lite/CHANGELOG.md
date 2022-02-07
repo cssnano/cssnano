@@ -1,5 +1,16 @@
 # Change Log
 
+## 2.0.3
+
+### Patch Changes
+
+- Publish untranspiled CommonJS source
+- Updated dependencies
+  - cssnano-utils@3.0.2
+  - postcss-discard-comments@5.0.3
+  - postcss-discard-empty@5.0.3
+  - postcss-normalize-whitespace@5.0.4
+
 ## 2.0.2 (2022-01-07)
 
 ### Patch Changes

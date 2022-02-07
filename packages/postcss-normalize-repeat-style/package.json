@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-repeat-style",
-  "version": "5.0.3",
+  "version": "5.0.4",
   "description": "Convert two value syntax for repeat-style into one value.",
   "main": "src/index.js",
   "files": [

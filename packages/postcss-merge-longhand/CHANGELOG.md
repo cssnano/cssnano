@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.0.6
+
+### Patch Changes
+
+- Publish untranspiled CommonJS source
+- Updated dependencies
+  - stylehacks@5.0.3
+
 ## 5.0.5
 
 ### Patch Changes

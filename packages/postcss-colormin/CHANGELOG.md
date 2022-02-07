@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.2.5
+
+### Patch Changes
+
+- Publish untranspiled CommonJS source
+
 ## 5.2.4
 
 ### Patch Changes
