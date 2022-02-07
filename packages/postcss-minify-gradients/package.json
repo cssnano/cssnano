@@ -3,8 +3,6 @@
   "version": "5.0.5",
   "description": "Minify gradient parameters with PostCSS.",
   "main": "src/index.js",
-  "scripts": {
-  },
   "files": [
     "LICENSE-MIT",
     "src"
