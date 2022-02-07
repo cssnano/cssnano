@@ -6,10 +6,10 @@
     "fixlint": "pnpm lint -- --fix",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
-    "test:only": "uvu packages \"__tests__.*\\.js$\"",
+    "test:only": "uvu packages \"test.*\\.js$\"",
     "test:coverage": "c8 pnpm test:only",
     "test": "pnpm test:coverage",
-    "test:helpers": "uvu packages \"__tests__.*\\.mjs$\"",
+    "test:helpers": "uvu packages \"test.*\\.mjs$\"",
     "all-publish": "pnpm prepare && pnpm changeset publish"
   },
   "workspaces": [
