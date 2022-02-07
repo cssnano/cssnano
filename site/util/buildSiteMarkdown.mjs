@@ -54,7 +54,7 @@ function getPlugins(presets) {
     const preset = basename(path);
     const short = preset.replace('cssnano-preset-', '');
     data.presets.push(short);
-    const instance = require(path + '/dist/index.js');
+    const instance = require(path + '/src/index.js');
 
     instance().plugins.forEach((entry) => {
       const name = pluginName(entry[0]);
@@ -72,7 +72,7 @@ function isDisabled(preset, name) {
   const full = `${join(
     dirname(fileURLToPath(import.meta.url)),
     '../../packages'
-  )}/cssnano-preset-${preset}/dist/index.js`;
+  )}/cssnano-preset-${preset}/src/index.js`;
   const instance = require(full);
   const plugin = instance().plugins.find((entry) => {
     const n = pluginName(entry[0]);
