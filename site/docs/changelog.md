@@ -8,6 +8,14 @@ layout: Page
 
 ## Change Log
 
+### 5.0.17
+
+#### Patch Changes
+
+- Publish untranspiled CommonJS source
+- Updated dependencies
+  - cssnano-preset-default\@5.1.12
+
 ### 5.0.16
 
 #### Patch Changes
