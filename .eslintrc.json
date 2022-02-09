@@ -1,6 +1,6 @@
 {
   "parserOptions": {
-    "ecmaVersion": 2021
+    "ecmaVersion": 2018
   },
   "extends": [
     "eslint:recommended",
@@ -8,8 +8,7 @@
   ],
   "env": {
     "node": true,
-    "es2021": true,
-    "jest": true
+    "es2017": true
   },
   "rules": {
     "curly": "error",
@@ -37,7 +36,8 @@
     {
       "files": ["*.mjs"],
       "parserOptions": {
-        "sourceType": "module"
+        "sourceType": "module",
+        "ecmaVersion": 2021
       }
     }
   ]
