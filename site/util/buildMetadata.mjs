@@ -1,7 +1,6 @@
 import { join } from 'path';
 import fs from 'fs/promises';
-import toml from 'toml';
-import tomlify from 'tomlify-j0.4';
+import toml from '@iarna/toml';
 import getPackages from './getPackages.mjs';
 
 function camel(input) {
@@ -101,7 +100,7 @@ getPackages().then((packages) => {
 
     return fs.writeFile(
       new URL('../../metadata.toml', import.meta.url),
-      tomlify.toToml(sorted)
+      toml.stringify(sorted)
     );
   });
 });
