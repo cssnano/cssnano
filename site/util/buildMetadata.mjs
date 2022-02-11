@@ -3,7 +3,6 @@ import fs from 'fs/promises';
 import toml from 'toml';
 import tomlify from 'tomlify-j0.4';
 import getPackages from './getPackages.mjs';
-import sortAscending from './sortAscending.mjs';
 
 function camel(input) {
   return input.replace(/-[a-z]/g, (match) => match[1].toUpperCase());
@@ -93,7 +92,7 @@ getPackages().then((packages) => {
         .catch(() => {});
     }, {})
   ).then(() => {
-    const sortedKeys = Object.keys(database).sort(sortAscending);
+    const sortedKeys = Object.keys(database).sort();
     const sorted = sortedKeys.reduce((db, key) => {
       db[key] = database[key];
 
