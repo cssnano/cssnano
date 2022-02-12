@@ -11,6 +11,7 @@ importers:
       '@codemirror/lang-css': ^0.19.3
       '@docusaurus/core': ^2.0.0-beta.15
       '@docusaurus/preset-classic': ^2.0.0-beta.15
+      '@iarna/toml': ^2.2.5
       '@mdx-js/react': ^1.6.22
       cssnano-preset-advanced: ^5.1.12
       cssnano-preset-default: ^5.1.12
@@ -30,8 +31,6 @@ importers:
       remark-github: ^11.2.1
       remark-heading-gap: ^5.0.1
       remark-html: ^15.0.1
-      toml: ^3.0.0
-      tomlify-j0.4: ^3.0.0
       unist-builder: ^3.0.0
       unist-util-remove: ^3.1.0
     dependencies:
@@ -49,6 +48,7 @@ importers:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
     devDependencies:
+      '@iarna/toml': 2.2.5
       mdast-util-heading-range: 3.1.0
       remark: 14.0.2
       remark-behead: 3.0.0
@@ -59,8 +59,6 @@ importers:
       remark-github: 11.2.2
       remark-heading-gap: 5.0.1
       remark-html: 15.0.1
-      toml: 3.0.0
-      tomlify-j0.4: 3.0.0
       unist-builder: 3.0.0
       unist-util-remove: 3.1.0
 
@@ -2564,6 +2562,10 @@ packages:
     dependencies:
       '@hapi/hoek': 9.2.1
     dev: false
+
+  /@iarna/toml/2.2.5:
+    resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
+    dev: true
 
   /@jridgewell/resolve-uri/3.0.4:
     resolution: {integrity: sha512-cz8HFjOFfUBtvN+NXYSFMHYRdxZMaEl0XypVrhzxBgadKIXhIkRd8aMeHhmF56Sl7SuS8OnUpQ73/k9LE4VnLg==}
@@ -8930,14 +8932,6 @@ packages:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
     dev: false
-
-  /toml/3.0.0:
-    resolution: {integrity: sha512-y/mWCZinnvxjTKYhJ+pYxwD0mRLVvOtdS2Awbgxln6iEnt4rk0yBxeSBHkGJcPucRiG0e55mwWp+g/05rsrd6w==}
-    dev: true
-
-  /tomlify-j0.4/3.0.0:
-    resolution: {integrity: sha512-2Ulkc8T7mXJ2l0W476YC/A209PR38Nw8PuaCNtk9uI3t1zzFdGQeWYGQvmj2PZkVvRC/Yoi4xQKMRnWc/N29tQ==}
-    dev: true
 
   /totalist/1.1.0:
     resolution: {integrity: sha512-gduQwd1rOdDMGxFG1gEvhV88Oirdo2p+KjoYFU7k2g+i7n6AFFbDQ5kMPUsW0pNbfQsB/cwXvT1i4Bue0s9g5g==}

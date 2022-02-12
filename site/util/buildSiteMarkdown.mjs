@@ -9,7 +9,7 @@ import { headingRange } from 'mdast-util-heading-range';
 import { remark } from 'remark';
 import remarkBehead from 'remark-behead';
 import remarkGithub from 'remark-github';
-import toml from 'toml';
+import toml from '@iarna/toml';
 import remarkPreset from '../.remarkrc.mjs';
 import getPackages from './getPackages.mjs';
 import getPresets from './getPresets.mjs';
