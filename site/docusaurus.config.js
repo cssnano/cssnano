@@ -23,7 +23,7 @@ module.exports = {
           position: 'left',
         },
         {
-          to: 'docs/optimisations',
+          to: 'docs/what-are-optimisations',
           label: 'Optimizations',
           position: 'left',
           activeBasePath: 'optimisations',
