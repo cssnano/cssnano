@@ -10,6 +10,7 @@ module.exports = function () {
             path: require.resolve('path-browserify'),
             os: require.resolve('os-browserify/browser'),
             fs: false,
+            url: false,
           },
         },
         plugins: [

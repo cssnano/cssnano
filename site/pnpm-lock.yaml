@@ -13,9 +13,9 @@ importers:
       '@docusaurus/preset-classic': ^2.0.0-beta.15
       '@iarna/toml': ^2.2.5
       '@mdx-js/react': ^1.6.22
-      cssnano-preset-advanced: ^5.1.12
-      cssnano-preset-default: ^5.1.12
-      cssnano-preset-lite: ^2.0.3
+      cssnano-preset-advanced: ../packages/cssnano-preset-advanced
+      cssnano-preset-default: ../packages/cssnano-preset-default
+      cssnano-preset-lite: ../packages/cssnano-preset-lite
       mdast-util-heading-range: ^3.1.0
       os-browserify: ^0.3.0
       path-browserify: ^1.0.1
@@ -39,9 +39,9 @@ importers:
       '@docusaurus/core': 2.0.0-beta.15_react-dom@17.0.2+react@17.0.2
       '@docusaurus/preset-classic': 2.0.0-beta.15_react-dom@17.0.2+react@17.0.2
       '@mdx-js/react': 1.6.22_react@17.0.2
-      cssnano-preset-advanced: 5.1.12_postcss@8.4.6
-      cssnano-preset-default: 5.1.12_postcss@8.4.6
-      cssnano-preset-lite: 2.0.3_postcss@8.4.6
+      cssnano-preset-advanced: link:../packages/cssnano-preset-advanced
+      cssnano-preset-default: link:../packages/cssnano-preset-default
+      cssnano-preset-lite: link:../packages/cssnano-preset-lite
       os-browserify: 0.3.0
       path-browserify: 1.0.1
       postcss: 8.4.6
@@ -4233,19 +4233,6 @@ packages:
       postcss-reduce-transforms: 5.0.4_postcss@8.4.6
       postcss-svgo: 5.0.4_postcss@8.4.6
       postcss-unique-selectors: 5.0.4_postcss@8.4.6
-    dev: false
-
-  /cssnano-preset-lite/2.0.3_postcss@8.4.6:
-    resolution: {integrity: sha512-B+xof7fl4sDUDBwqDzuoqqhb2KsmoxMbtsOpmoxrHFcUHbSTO74H+08rfL4hRFyRS6RHEtkqECWsBMkuFWfB1A==}
-    engines: {node: ^10 || ^12 || >=14.0}
-    peerDependencies:
-      postcss: ^8.2.15
-    dependencies:
-      cssnano-utils: 3.0.2_postcss@8.4.6
-      postcss: 8.4.6
-      postcss-discard-comments: 5.0.3_postcss@8.4.6
-      postcss-discard-empty: 5.0.3_postcss@8.4.6
-      postcss-normalize-whitespace: 5.0.4_postcss@8.4.6
     dev: false
 
   /cssnano-utils/3.0.2_postcss@8.4.6:
