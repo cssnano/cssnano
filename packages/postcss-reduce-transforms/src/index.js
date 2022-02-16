@@ -1,8 +1,15 @@
 'use strict';
 const valueParser = require('postcss-value-parser');
 
+/**
+ * @param {(number|string)[]} list
+ * @param {valueParser.Node} node
+ * @param {number} index
+ * @return {(number|string)[]}
+ */
 function getValues(list, node, index) {
   if (index % 2 === 0) {
+    /** @type {number|string} */
     let value = NaN;
 
     if (
@@ -21,6 +28,11 @@ function getValues(list, node, index) {
   return list;
 }
 
+/**
+ * @param {valueParser.FunctionNode} node
+ * @param {(number|string)[]} values
+ * @return {void}
+ */
 function matrix3d(node, values) {
   if (values.length !== 16) {
     return;
@@ -65,6 +77,11 @@ const rotate3dMappings = new Map([
   [[0, 0, 1].toString(), 'rotate'], // rotate3d(0, 0, 1, a) => rotate(a)
 ]);
 
+/**
+ * @param {valueParser.FunctionNode} node
+ * @param {(number|string)[]} values
+ * @return {void}
+ */
 function rotate3d(node, values) {
   if (values.length !== 4) {
     return;
@@ -79,6 +96,11 @@ function rotate3d(node, values) {
   }
 }
 
+/**
+ * @param {valueParser.FunctionNode} node
+ * @param {(number|string)[]} values
+ * @return {void}
+ */
 function rotateZ(node, values) {
   if (values.length !== 1) {
     return;
@@ -88,6 +110,11 @@ function rotateZ(node, values) {
   node.value = 'rotate';
 }
 
+/**
+ * @param {valueParser.FunctionNode} node
+ * @param {(number|string)[]} values
+ * @return {void}
+ */
 function scale(node, values) {
   if (values.length !== 2) {
     return;
@@ -120,6 +147,11 @@ function scale(node, values) {
   }
 }
 
+/**
+ * @param {valueParser.FunctionNode} node
+ * @param {(number|string)[]} values
+ * @return {void}
+ */
 function scale3d(node, values) {
   if (values.length !== 3) {
     return;
@@ -153,6 +185,11 @@ function scale3d(node, values) {
   }
 }
 
+/**
+ * @param {valueParser.FunctionNode} node
+ * @param {(number|string)[]} values
+ * @return {void}
+ */
 function translate(node, values) {
   if (values.length !== 2) {
     return;
@@ -176,6 +213,11 @@ function translate(node, values) {
   }
 }
 
+/**
+ * @param {valueParser.FunctionNode} node
+ * @param {(number|string)[]} values
+ * @return {void}
+ */
 function translate3d(node, values) {
   if (values.length !== 3) {
     return;
@@ -199,7 +241,10 @@ const reducers = new Map([
   ['translate', translate],
   ['translate3d', translate3d],
 ]);
-
+/**
+ * @param {string} name
+ * @return {string}
+ */
 function normalizeReducerName(name) {
   const lowerCasedName = name.toLowerCase();
 
@@ -210,6 +255,10 @@ function normalizeReducerName(name) {
   return lowerCasedName;
 }
 
+/**
+ * @param {valueParser.Node} node
+ * @return {false}
+ */
 function reduce(node) {
   if (node.type === 'function') {
     const normalizedReducerName = normalizeReducerName(node.value);
@@ -221,6 +270,10 @@ function reduce(node) {
   return false;
 }
 
+/**
+ * @type {import('postcss').PluginCreator<void>}
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-reduce-transforms',
