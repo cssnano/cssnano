@@ -451,6 +451,7 @@ importers:
 
   packages/postcss-svgo:
     specifiers:
+      '@types/svgo': ^2.6.2
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
       svgo: ^2.7.0
@@ -458,6 +459,7 @@ importers:
       postcss-value-parser: 4.2.0
       svgo: 2.8.0
     devDependencies:
+      '@types/svgo': 2.6.2
       postcss: 8.4.5
 
   packages/postcss-unique-selectors:
@@ -815,6 +817,12 @@ packages:
 
   /@types/semver/6.2.3:
     resolution: {integrity: sha512-KQf+QAMWKMrtBMsB8/24w53tEsxllMj6TuA80TT/5igJalLI/zm0L3oXRbIAl4Ohfc85gyHX/jhMwsVkmhLU4A==}
+    dev: true
+
+  /@types/svgo/2.6.2:
+    resolution: {integrity: sha512-m1SqMc/EDAZ8v0BBX+NmlYytUXtvrMD2/J9LICwnMvAuJwb0GSmACU3XPvcORqE7ghEJA4Mk6NYzpwhQI/biPw==}
+    dependencies:
+      '@types/node': 12.20.40
     dev: true
 
   /acorn-jsx/5.3.2_acorn@8.7.0:

@@ -3,9 +3,11 @@
   "version": "5.0.4",
   "description": "Optimise inline SVG with PostCSS.",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "LICENSE-MIT",
-    "src"
+    "src",
+    "types"
   ],
   "keywords": [
     "css",
@@ -35,6 +37,7 @@
     "node": "^10 || ^12 || >=14.0"
   },
   "devDependencies": {
+    "@types/svgo": "^2.6.2",
     "postcss": "^8.2.15"
   },
   "peerDependencies": {
