@@ -10,13 +10,21 @@ const angles = {
   left: '270deg',
 };
 
+/**
+ * @param {valueParser.Dimension} a
+ * @param {valueParser.Dimension} b
+ * @return {boolean}
+ */
 function isLessThan(a, b) {
   return (
     a.unit.toLowerCase() === b.unit.toLowerCase() &&
     parseFloat(a.number) >= parseFloat(b.number)
   );
 }
-
+/**
+ * @param {import('postcss').Declaration} decl
+ * @return {void}
+ */
 function optimise(decl) {
   const value = decl.value;
 
@@ -55,9 +63,15 @@ function optimise(decl) {
           args[0].length === 3
         ) {
           node.nodes = node.nodes.slice(2);
-          node.nodes[0].value = angles[node.nodes[0].value.toLowerCase()];
+          node.nodes[0].value =
+            angles[
+              /** @type {'top'|'right'|'bottom'|'left'}*/ (
+                node.nodes[0].value.toLowerCase()
+              )
+            ];
         }
 
+        /** @type {valueParser.Dimension | false} */
         let lastStop;
 
         args.forEach((arg, index) => {
@@ -102,6 +116,7 @@ function optimise(decl) {
         lowerCasedValue === 'repeating-radial-gradient'
       ) {
         let args = getArguments(node);
+        /** @type {valueParser.Dimension | false} */
         let lastStop;
 
         const hasAt = args[0].find((n) => n.value.toLowerCase() === 'at');
@@ -134,6 +149,7 @@ function optimise(decl) {
         lowerCasedValue === '-webkit-repeating-radial-gradient'
       ) {
         let args = getArguments(node);
+        /** @type {valueParser.Dimension | false} */
         let lastStop;
 
         args.forEach((arg) => {
@@ -191,7 +207,10 @@ function optimise(decl) {
     })
     .toString();
 }
-
+/**
+ * @type {import('postcss').PluginCreator<void>}
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-minify-gradients',
