@@ -2,11 +2,13 @@
     "name": "cssnano-preset-lite",
     "version": "2.0.3",
     "main": "src/index.js",
+    "types": "types/index.d.ts",
     "description": "Safe and minimum transformation",
     "scripts": {},
     "files": [
         "LICENSE-MIT",
-        "src"
+        "src",
+        "types"
     ],
     "license": "MIT",
     "dependencies": {
