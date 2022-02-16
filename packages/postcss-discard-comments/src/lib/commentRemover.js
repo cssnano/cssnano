@@ -1,8 +1,13 @@
 'use strict';
+
+/** @param {import('../index.js').Options} options */
 function CommentRemover(options) {
   this.options = options;
 }
-
+/**
+ * @param {string} comment
+ * @return {boolean | undefined}
+ */
 CommentRemover.prototype.canRemove = function (comment) {
   const remove = this.options.remove;
 
