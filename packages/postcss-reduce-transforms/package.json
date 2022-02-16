@@ -3,9 +3,11 @@
   "version": "5.0.4",
   "description": "Reduce transform functions with PostCSS.",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "LICENSE-MIT",
-    "src"
+    "src",
+    "types"
   ],
   "license": "MIT",
   "homepage": "https://github.com/cssnano/cssnano",
