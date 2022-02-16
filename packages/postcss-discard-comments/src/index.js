@@ -2,11 +2,25 @@
 const CommentRemover = require('./lib/commentRemover');
 const commentParser = require('./lib/commentParser');
 
+/** @typedef {object} Options
+ *  @property {boolean=} removeAll
+ *  @property {boolean=} removeAllButFirst
+ *  @property {(s: string) => boolean=} remove
+ */
+/**
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} opts
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator(opts = {}) {
   const remover = new CommentRemover(opts);
   const matcherCache = new Map();
   const replacerCache = new Map();
 
+  /**
+   * @param {string} source
+   * @return {[number, number, number][]}
+   */
   function matchesComments(source) {
     if (matcherCache.has(source)) {
       return matcherCache.get(source);
@@ -19,6 +33,11 @@ function pluginCreator(opts = {}) {
     return result;
   }
 
+  /**
+   * @param {string} source
+   * @param {(s: string) => string[]} space
+   * @return {string}
+   */
   function replaceComments(source, space, separator = ' ') {
     const key = source + '@|@' + separator;
 
@@ -59,7 +78,10 @@ function pluginCreator(opts = {}) {
         }
 
         if (node.raws.between) {
-          node.raws.between = replaceComments(node.raws.between, list.space);
+          node.raws.between = replaceComments(
+            /** @type {string} */ (node.raws.between),
+            list.space
+          );
         }
 
         if (node.type === 'decl') {
@@ -70,7 +92,9 @@ function pluginCreator(opts = {}) {
               node.value = replaceComments(node.value, list.space);
             }
 
-            node.raws.value = null;
+            /** @type {null | {value: string, raw: string}} */ (
+              node.raws.value
+            ) = null;
           }
 
           if (node.raws.important) {

@@ -3,9 +3,11 @@
   "version": "5.0.3",
   "description": "Discard comments in your CSS files with PostCSS.",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "src",
-    "LICENSE-MIT"
+    "LICENSE-MIT",
+    "types"
   ],
   "keywords": [
     "css",

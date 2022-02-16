@@ -1,7 +1,8 @@
 'use strict';
+
 /**
- * @param {postcss.ChildNode} nodeA
- * @param {postcss.ChildNode} nodeB
+ * @param {import('postcss').AnyNode} nodeA
+ * @param {import('postcss').AnyNode} nodeB
  * @return {boolean}
  */
 function checkMatch(nodeA, nodeB) {
@@ -14,12 +15,13 @@ function checkMatch(nodeA, nodeB) {
   return nodeA.type === nodeB.type;
 }
 
+/** @typedef {import('postcss').AnyNode & {parent?: Child}} Child */
 /**
- * @param {postcss.ChildNode} nodeA
- * @param {postcss.ChildNode} nodeB
+ * @param {Child} nodeA
+ * @param {Child} nodeB
  * @return {boolean}
  */
-module.exports = function sameParent(nodeA, nodeB) {
+function sameParent(nodeA, nodeB) {
   if (!nodeA.parent) {
     // A is orphaned, return if B is orphaned as well
     return !nodeB.parent;
@@ -37,4 +39,6 @@ module.exports = function sameParent(nodeA, nodeB) {
 
   // Check parents' parents
   return sameParent(nodeA.parent, nodeB.parent);
-};
+}
+
+module.exports = sameParent;

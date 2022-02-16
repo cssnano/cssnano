@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "lib": ["es2018"],
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmitOnError": true,
+    "newLine": "lf",
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true
+  },
+  "references": [
+    {"path": "packages/postcss-discard-comments"},
+    {"path": "packages/postcss-discard-empty"},
+    {"path": "packages/cssnano-utils"},
+    {"path": "packages/postcss-normalize-whitespace"},
+    {"path": "packages/cssnano-preset-lite"}
+  ],
+  "files": []
+}

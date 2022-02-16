@@ -1,7 +1,16 @@
 'use strict';
-const pluginCreator = () => {
+
+/**
+ * @type {import('postcss').PluginCreator<void>}
+ * @return {import('postcss').Plugin}
+ */
+function pluginCreator() {
   return {
     postcssPlugin: 'cssnano-util-raw-cache',
+    /**
+     * @param {import('postcss').Root} css
+     * @param {{result: import('postcss').Result & {root: {rawCache?: any}}}} arg
+     */
     OnceExit(css, { result }) {
       result.root.rawCache = {
         colon: ':',
@@ -18,7 +27,7 @@ const pluginCreator = () => {
       };
     },
   };
-};
+}
 
 pluginCreator.postcss = true;
 

@@ -2,7 +2,7 @@
   "name": "cssnano-core",
   "private": true,
   "scripts": {
-    "lint": "eslint . --cache --ignore-path .gitignore --ext .js,.mjs",
+    "lint": "eslint . --cache --ignore-path .gitignore --ext .js,.mjs && pnpm types",
     "fixlint": "pnpm lint -- --fix",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
@@ -10,6 +10,7 @@
     "test:coverage": "c8 pnpm test:only",
     "test": "pnpm test:coverage",
     "test:helpers": "uvu packages \"test.*\\.mjs$\"",
+    "types": "tsc -b",
     "all-publish": "pnpm changeset publish"
   },
   "workspaces": [
@@ -38,6 +39,7 @@
     "postcss-simple-vars": "^6.0.1",
     "postcss-value-parser": "^4.2.0",
     "prettier": "^2.5.1",
+    "typescript": "^4.6.1-rc",
     "uvu": "^0.5.3"
   },
   "browserslist": {

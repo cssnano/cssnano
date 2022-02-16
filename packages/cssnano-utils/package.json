@@ -3,6 +3,7 @@
   "version": "3.0.2",
   "repository": "cssnano/cssnano",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "description": "Utility methods and plugin for cssnano projects",
   "homepage": "https://github.com/cssnano/cssnano",
   "bugs": {
@@ -13,7 +14,8 @@
   },
   "files": [
     "src",
-    "LICENSE"
+    "LICENSE",
+    "types"
   ],
   "license": "MIT",
   "devDependencies": {

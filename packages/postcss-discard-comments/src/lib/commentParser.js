@@ -1,5 +1,11 @@
 'use strict';
+
+/**
+ * @param {string} input
+ * @return {[number, number, number][]}
+ */
 module.exports = function commentParser(input) {
+  /** @type [number, number, number][] */
   const tokens = [];
   const length = input.length;
   let pos = 0;
