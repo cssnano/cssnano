@@ -4,6 +4,7 @@ node_modules
 # Build
 dist
 _webpackOutput
+tsconfig.tsbuildinfo
 
 # Generated metadata (only the root one is generated!)
 /metadata.toml

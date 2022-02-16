@@ -23,6 +23,7 @@ importers:
       postcss-simple-vars: ^6.0.1
       postcss-value-parser: ^4.2.0
       prettier: ^2.5.1
+      typescript: ^4.6.1-rc
       uvu: ^0.5.3
     devDependencies:
       '@changesets/cli': 2.20.0
@@ -44,6 +45,7 @@ importers:
       postcss-simple-vars: 6.0.3_postcss@8.4.5
       postcss-value-parser: 4.2.0
       prettier: 2.5.1
+      typescript: 4.6.1-rc
       uvu: 0.5.3
 
   packages/css-size:
@@ -3192,6 +3194,12 @@ packages:
   /type-fest/0.8.1:
     resolution: {integrity: sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==}
     engines: {node: '>=8'}
+    dev: true
+
+  /typescript/4.6.1-rc:
+    resolution: {integrity: sha512-tLPT3GelVfTN9wXPOuPKfY83PkMvgdF3V3gHK/ElNrpQPdLKQ/HMU5cS6+7epYSIF2gne190jzydAW0FLLwU7A==}
+    engines: {node: '>=4.2.0'}
+    hasBin: true
     dev: true
 
   /unbox-primitive/1.0.1:
