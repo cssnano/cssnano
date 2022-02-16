@@ -5,8 +5,8 @@ const {
   processCSSFactory,
 } = require('../../../util/testHelpers.js');
 
-const fromInitial = require('../data/fromInitial.json');
-const toInitial = require('../data/toInitial.json');
+const fromInitial = require('../src/data/fromInitial.json');
+const toInitial = require('../src/data/toInitial.json');
 const plugin = require('../src/index.js');
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);

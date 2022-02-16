@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["src/*", "src/data/fromInitial.json", "src/data/toInitial.json"],
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src/",
+    "declarationDir": "types"
+  }
+}

@@ -429,6 +429,7 @@ importers:
 
   packages/postcss-reduce-initial:
     specifiers:
+      '@types/caniuse-api': ^3.0.2
       browserslist: ^4.16.6
       caniuse-api: ^3.0.0
       postcss: ^8.2.15
@@ -436,6 +437,7 @@ importers:
       browserslist: 4.19.3
       caniuse-api: 3.0.0
     devDependencies:
+      '@types/caniuse-api': 3.0.2
       postcss: 8.4.5
 
   packages/postcss-reduce-transforms:
@@ -784,6 +786,10 @@ packages:
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
     engines: {node: '>=10.13.0'}
     dev: false
+
+  /@types/caniuse-api/3.0.2:
+    resolution: {integrity: sha512-YfCDMn7R59n7GFFfwjPAM0zLJQy4UvveC32rOJBmTqJJY8uSRqM4Dc7IJj8V9unA48Qy4nj5Bj3jD6Q8VZ1Seg==}
+    dev: true
 
   /@types/is-ci/3.0.0:
     resolution: {integrity: sha512-Q0Op0hdWbYd1iahB+IFNQcWXFq4O0Q5MwQP7uN0souuQ4rPg1vEYcnIOfr1gY+M+6rc8FGoRaBO1mOOvL29sEQ==}
