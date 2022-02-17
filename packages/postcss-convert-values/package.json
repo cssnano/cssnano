@@ -3,9 +3,11 @@
   "version": "5.0.4",
   "description": "Convert values with PostCSS (e.g. ms -> s)",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "LICENSE-MIT",
-    "src"
+    "src",
+    "types"
   ],
   "keywords": [
     "css",
