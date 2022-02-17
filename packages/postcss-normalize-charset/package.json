@@ -11,7 +11,8 @@
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "files": [
     "src",
-    "LICENSE"
+    "LICENSE",
+    "types"
   ],
   "license": "MIT",
   "repository": "cssnano/cssnano",
@@ -20,6 +21,7 @@
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "engines": {
     "node": "^10 || ^12 || >=14.0"
   },
