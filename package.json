@@ -2,7 +2,7 @@
   "name": "cssnano-core",
   "private": true,
   "scripts": {
-    "lint": "eslint . --cache --ignore-path .gitignore --ext .js,.mjs && pnpm types",
+    "lint": "pnpm types && eslint . --cache --ignore-path .gitignore --ext .js,.mjs",
     "fixlint": "pnpm lint -- --fix",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
@@ -24,7 +24,7 @@
     "browserslist": "^4.19.1",
     "c8": "^7.11.0",
     "diff": "^5.0.0",
-    "eslint": "^8.8.0",
+    "eslint": "^8.9.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.28.0",
