@@ -16,6 +16,7 @@ const listStyle = require('./rules/listStyle');
 const column = require('./rules/columns');
 const vendorUnprefixed = require('./lib/vendorUnprefixed.js');
 
+/** @type {[string, (parsed: valueParser.ParsedValue) => string][]} */
 const borderRules = [
   ['border', border],
   ['border-block', border],
@@ -30,6 +31,7 @@ const borderRules = [
   ['border-left', border],
 ];
 
+/** @type {[string, (parsed: valueParser.ParsedValue) => string | string[] | valueParser.ParsedValue][]} */
 const grid = [
   ['grid-auto-flow', normalizeGridAutoFlow],
   ['grid-column-gap', normalizeGridColumnRowGap], // normal | <length-percentage>
@@ -42,11 +44,13 @@ const grid = [
   ['grid-column-end', normalizeGridColumnRow], // <grid-line>
 ];
 
+/** @type {[string, (parsed: valueParser.ParsedValue) => string | valueParser.ParsedValue][]} */
 const columnRules = [
   ['column-rule', border],
   ['columns', column],
 ];
 
+/** @type {Map<string, ((parsed: valueParser.ParsedValue) => string | string[] | valueParser.ParsedValue)>} */
 const rules = new Map([
   ['animation', animation],
   ['outline', border],
@@ -59,6 +63,10 @@ const rules = new Map([
   ...columnRules,
 ]);
 
+/**
+ * @param {valueParser.Node} node
+ * @return {boolean}
+ */
 function isVariableFunctionNode(node) {
   if (node.type !== 'function') {
     return false;
@@ -67,6 +75,10 @@ function isVariableFunctionNode(node) {
   return ['var', 'env'].includes(node.value.toLowerCase());
 }
 
+/**
+ * @param {valueParser.ParsedValue} parsed
+ * @return {boolean}
+ */
 function shouldAbort(parsed) {
   let abort = false;
 
@@ -85,6 +97,10 @@ function shouldAbort(parsed) {
   return abort;
 }
 
+/**
+ * @param {import('postcss').Declaration} decl
+ * @return {string}
+ */
 function getValue(decl) {
   let { value, raws } = decl;
 
@@ -94,7 +110,10 @@ function getValue(decl) {
 
   return value;
 }
-
+/**
+ * @type {import('postcss').PluginCreator<void>}
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-ordered-values',

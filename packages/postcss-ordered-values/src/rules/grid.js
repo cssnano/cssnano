@@ -1,6 +1,10 @@
 'use strict';
 const joinGridValue = require('../lib/joinGridValue');
 
+/**
+ * @param {import('postcss-value-parser').ParsedValue} gridAutoFlow
+ * @return {import('postcss-value-parser').ParsedValue | string}
+ */
 const normalizeGridAutoFlow = (gridAutoFlow) => {
   let newValue = { front: '', back: '' };
   let shouldNormalize = false;
@@ -21,6 +25,10 @@ const normalizeGridAutoFlow = (gridAutoFlow) => {
   return gridAutoFlow;
 };
 
+/**
+ * @param {import('postcss-value-parser').ParsedValue} gridGap
+ * @return {import('postcss-value-parser').ParsedValue | string}
+ */
 const normalizeGridColumnRowGap = (gridGap) => {
   let newValue = { front: '', back: '' };
   let shouldNormalize = false;
@@ -39,6 +47,10 @@ const normalizeGridColumnRowGap = (gridGap) => {
   return gridGap;
 };
 
+/**
+ * @param {import('postcss-value-parser').ParsedValue} grid
+ * @return {string | string[]}
+ */
 const normalizeGridColumnRow = (grid) => {
   // cant do normalization here using node, so copy it as a string
   let gridValue = grid.toString().split('/'); // node -> string value, split ->  " 2 / 3 span " ->  [' 2','3 span ']
