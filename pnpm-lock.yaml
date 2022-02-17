@@ -185,6 +185,7 @@ importers:
 
   packages/postcss-colormin:
     specifiers:
+      '@types/caniuse-api': ^3.0.2
       browserslist: ^4.16.6
       caniuse-api: ^3.0.0
       colord: ^2.9.1
@@ -196,6 +197,7 @@ importers:
       colord: 2.9.2
       postcss-value-parser: 4.2.0
     devDependencies:
+      '@types/caniuse-api': 3.0.2
       postcss: 8.4.5
 
   packages/postcss-convert-values:

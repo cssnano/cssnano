@@ -3,13 +3,14 @@ const { colord, extend } = require('colord');
 const namesPlugin = require('colord/plugins/names');
 const minifierPlugin = require('colord/plugins/minify');
 
-extend([namesPlugin, minifierPlugin]);
+extend(/** @type {any[]} */ ([namesPlugin, minifierPlugin]));
 
 /**
  * Performs color value minification
  *
  * @param {string} input - CSS value
- * @param {boolean} options - object with colord.minify() options
+ * @param {Record<string, boolean>} options  object with colord.minify() options
+ * @return {string}
  */
 module.exports = function minifyColor(input, options = {}) {
   const instance = colord(input);

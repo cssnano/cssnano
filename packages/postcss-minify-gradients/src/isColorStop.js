@@ -1,7 +1,7 @@
 'use strict';
 const { unit } = require('postcss-value-parser');
 const { colord, extend } = require('colord');
-const namesPlugin = require('colord/plugins/names.js');
+const namesPlugin = require('colord/plugins/names');
 
 extend([/** @type {any} */ (namesPlugin)]);
 

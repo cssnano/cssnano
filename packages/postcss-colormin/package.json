@@ -3,9 +3,11 @@
   "version": "5.2.5",
   "description": "Minify colors in your CSS files with PostCSS.",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "src",
-    "LICENSE-MIT"
+    "LICENSE-MIT",
+    "types"
   ],
   "keywords": [
     "color",
@@ -37,6 +39,7 @@
     "node": "^10 || ^12 || >=14.0"
   },
   "devDependencies": {
+    "@types/caniuse-api": "^3.0.2",
     "postcss": "^8.2.15"
   },
   "peerDependencies": {
