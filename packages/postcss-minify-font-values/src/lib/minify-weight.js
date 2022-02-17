@@ -1,4 +1,8 @@
 'use strict';
+/**
+ * @param {string} value
+ * @return {string}
+ */
 module.exports = function (value) {
   const lowerCasedValue = value.toLowerCase();
 

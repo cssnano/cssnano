@@ -4,12 +4,22 @@ const minifyWeight = require('./lib/minify-weight');
 const minifyFamily = require('./lib/minify-family');
 const minifyFont = require('./lib/minify-font');
 
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
 function hasVariableFunction(value) {
   const lowerCasedValue = value.toLowerCase();
 
   return lowerCasedValue.includes('var(') || lowerCasedValue.includes('env(');
 }
 
+/**
+ * @param {string} prop
+ * @param {string} value
+ * @param {Options} opts
+ * @return {string}
+ */
 function transform(prop, value, opts) {
   let lowerCasedProp = prop.toLowerCase();
 
@@ -32,6 +42,13 @@ function transform(prop, value, opts) {
   return value;
 }
 
+/** @typedef {{removeAfterKeyword?: boolean, removeDuplicates?: boolean, removeQuotes?: boolean}} Options */
+
+/**
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} opts
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator(opts) {
   opts = Object.assign(
     {},
