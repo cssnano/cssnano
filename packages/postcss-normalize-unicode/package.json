@@ -3,9 +3,11 @@
   "version": "5.0.4",
   "description": "Normalize unicode-range descriptors, and can convert to wildcard ranges.",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "src",
-    "LICENSE-MIT"
+    "LICENSE-MIT",
+    "types"
   ],
   "keywords": [
     "css",
