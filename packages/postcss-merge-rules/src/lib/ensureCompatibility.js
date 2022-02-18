@@ -20,19 +20,30 @@ const level3Sel = new Set(['^=', '$=', '*=']);
 
 /**
  * @param {string} selector
- * @return {string[]}
+ * @return {RegExpMatchArray | null}
  */
 function filterPrefixes(selector) {
   return selector.match(vendorPrefix);
 }
 
-// Internet Explorer use :-ms-input-placeholder.
-// Microsoft Edge use ::-ms-input-placeholder.
+/**
+ * Internet Explorer use :-ms-input-placeholder.
+ * Microsoft Edge use ::-ms-input-placeholder.
+ *
+ * @type {(selector: string) => number}
+ */
 const findMsInputPlaceholder = (selector) =>
   ~selector.search(/-ms-input-placeholder/i);
 
+/**
+ * @param {string[]} selectorsA
+ * @param {string[]} selectorsB
+ * @return {boolean}
+ */
 function sameVendor(selectorsA, selectorsB) {
+  /** @type {(selectors: string[]) => string} */
   let same = (selectors) => selectors.map(filterPrefixes).join();
+  /** @type {(selectors: string[]) => string | undefined} */
   let findMsVendor = (selectors) => selectors.find(findMsInputPlaceholder);
   return (
     same(selectorsA) === same(selectorsB) &&
@@ -102,10 +113,18 @@ const pseudoElements = {
   ':visited': cssSel2,
 };
 
+/**
+ * @param {string} selector
+ * @return {boolean}
+ */
 function isCssMixin(selector) {
   return selector[selector.length - 1] === ':';
 }
 
+/**
+ * @param {string} selector
+ * @return {boolean}
+ */
 function isHostPseudoClass(selector) {
   return selector.includes(':host');
 }
@@ -113,18 +132,28 @@ function isHostPseudoClass(selector) {
 const isSupportedCache = new Map();
 
 // Move to util in future
+/**
+ * @param {string} feature
+ * @param {string[] | undefined} browsers
+ */
 function isSupportedCached(feature, browsers) {
   const key = JSON.stringify({ feature, browsers });
   let result = isSupportedCache.get(key);
 
   if (!result) {
-    result = isSupported(feature, browsers);
+    result = isSupported(feature, /** @type {string[]} */ (browsers));
     isSupportedCache.set(key, result);
   }
 
   return result;
 }
 
+/**
+ * @param {string[]} selectors
+ * @param{string[]=} browsers
+ * @param{Map<string,boolean>=} compatibilityCache
+ * @return {boolean}
+ */
 function ensureCompatibility(selectors, browsers, compatibilityCache) {
   // Should not merge mixins
   if (selectors.some(isCssMixin)) {
@@ -147,7 +176,8 @@ function ensureCompatibility(selectors, browsers, compatibilityCache) {
       ast.walk((node) => {
         const { type, value } = node;
         if (type === 'pseudo') {
-          const entry = pseudoElements[value];
+          const entry =
+            pseudoElements[/** @type {keyof pseudoElements} */ (value)];
           if (!entry && noVendor(value)) {
             compatible = false;
           }
@@ -168,14 +198,13 @@ function ensureCompatibility(selectors, browsers, compatibilityCache) {
           if (!node.operator) {
             compatible = isSupportedCached(cssSel2, browsers);
           }
-
           if (value) {
             // [foo="bar"], [foo~="bar"], [foo|="bar"]
-            if (level2Sel.has(node.operator)) {
+            if (level2Sel.has(/** @type {string} */ (node.operator))) {
               compatible = isSupportedCached(cssSel2, browsers);
             }
             // [foo^="bar"], [foo$="bar"], [foo*="bar"]
-            if (level3Sel.has(node.operator)) {
+            if (level3Sel.has(/** @type {string} */ (node.operator))) {
               compatible = isSupportedCached(cssSel3, browsers);
             }
           }
