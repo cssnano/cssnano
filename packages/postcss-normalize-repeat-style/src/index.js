@@ -2,16 +2,29 @@
 const valueParser = require('postcss-value-parser');
 const mappings = require('./lib/map');
 
-function evenValues(list, index) {
+/**
+ * @param {unknown} item
+ * @param {number} index
+ * @return {boolean}
+ */
+function evenValues(item, index) {
   return index % 2 === 0;
 }
 
 const repeatKeywords = new Set(mappings.values());
 
+/**
+ * @param {valueParser.Node} node
+ * @return {boolean}
+ */
 function isCommaNode(node) {
   return node.type === 'div' && node.value === ',';
 }
 
+/**
+ * @param {valueParser.Node} node
+ * @return {boolean}
+ */
 function isVariableFunctionNode(node) {
   if (node.type !== 'function') {
     return false;
@@ -20,13 +33,17 @@ function isVariableFunctionNode(node) {
   return ['var', 'env'].includes(node.value.toLowerCase());
 }
 
+/**
+ * @param {string} value
+ * @return {string}
+ */
 function transform(value) {
   const parsed = valueParser(value);
 
   if (parsed.nodes.length === 1) {
     return value;
   }
-
+  /** @type {{start: number?, end: number?}[]} */
   const ranges = [];
   let rangeIndex = 0;
   let shouldContinue = true;
@@ -96,7 +113,10 @@ function transform(value) {
       return;
     }
 
-    const nodes = parsed.nodes.slice(range.start, range.end + 1);
+    const nodes = parsed.nodes.slice(
+      range.start,
+      /** @type {number} */ (range.end) + 1
+    );
 
     if (nodes.length !== 3) {
       return;
@@ -117,6 +137,10 @@ function transform(value) {
   return parsed.toString();
 }
 
+/**
+ * @type {import('postcss').PluginCreator<void>}
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-repeat-style',
