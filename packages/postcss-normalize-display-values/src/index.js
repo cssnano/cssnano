@@ -1,7 +1,11 @@
 'use strict';
 const valueParser = require('postcss-value-parser');
-const mappings = require('./lib/map');
+const mappings = require('./lib/map.js');
 
+/**
+ * @param {string} value
+ * @return {string}
+ */
 function transform(value) {
   const { nodes } = valueParser(value);
 
@@ -27,6 +31,10 @@ function transform(value) {
   return match;
 }
 
+/**
+ * @type {import('postcss').PluginCreator<void>}
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-display-values',
