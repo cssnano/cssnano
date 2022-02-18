@@ -15,10 +15,18 @@ const styles = new Set([
   'outset',
 ]);
 
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
 function isStyle(value) {
   return value !== undefined && styles.has(value.toLowerCase());
 }
 
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
 function isWidth(value) {
   return (
     (value && widths.has(value.toLowerCase())) ||
@@ -26,6 +34,10 @@ function isWidth(value) {
   );
 }
 
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
 function isColor(value) {
   if (!value) {
     return false;
@@ -56,6 +68,10 @@ function isColor(value) {
   return colors.has(value);
 }
 
+/**
+ * @param {[string, string, string]} wscs
+ * @return {boolean}
+ */
 function isValidWsc(wscs) {
   const validWidth = isWidth(wscs[0]);
   const validStyle = isStyle(wscs[1]);

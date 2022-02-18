@@ -3,9 +3,11 @@
   "version": "5.0.6",
   "description": "Merge longhand properties into shorthand with PostCSS.",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "LICENSE-MIT",
-    "src"
+    "src",
+    "types"
   ],
   "keywords": [
     "css",

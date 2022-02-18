@@ -1,8 +1,13 @@
 'use strict';
-const hasAllProps = require('./hasAllProps');
-const getDecls = require('./getDecls');
-const getRules = require('./getRules');
+const hasAllProps = require('./hasAllProps.js');
+const getDecls = require('./getDecls.js');
+const getRules = require('./getRules.js');
 
+/**
+ * @param {import('postcss').Declaration} propA
+ * @param {import('postcss').Declaration} propB
+ * @return {boolean}
+ */
 function isConflictingProp(propA, propB) {
   if (!propB.prop || propB.important !== propA.important) {
     return false;
@@ -30,6 +35,12 @@ function hasConflicts(match, nodes) {
   return match.some((a) => between.some((b) => isConflictingProp(a, b)));
 }
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @param {string[]} properties
+ * @param {(rules: import('postcss').Declaration[], last: import('postcss').Declaration, props: import('postcss').Declaration[]) => boolean} callback
+ * @return {void}
+ */
 module.exports = function mergeRules(rule, properties, callback) {
   let decls = getDecls(rule, properties);
 
@@ -38,7 +49,13 @@ module.exports = function mergeRules(rule, properties, callback) {
     const props = decls.filter((node) => node.important === last.important);
     const rules = getRules(props, properties);
 
-    if (hasAllProps(rules, ...properties) && !hasConflicts(rules, rule.nodes)) {
+    if (
+      hasAllProps(rules, ...properties) &&
+      !hasConflicts(
+        rules,
+        /** @type import('postcss').Declaration[]*/ (rule.nodes)
+      )
+    ) {
       if (callback(rules, last, props)) {
         decls = decls.filter((node) => !rules.includes(node));
       }

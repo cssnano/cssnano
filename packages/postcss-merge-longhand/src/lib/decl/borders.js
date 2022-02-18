@@ -1,40 +1,48 @@
 'use strict';
 const { list } = require('postcss');
 const stylehacks = require('stylehacks');
-const insertCloned = require('../insertCloned');
-const parseTrbl = require('../parseTrbl');
-const hasAllProps = require('../hasAllProps');
-const getDecls = require('../getDecls');
-const getRules = require('../getRules');
-const getValue = require('../getValue');
-const mergeRules = require('../mergeRules');
-const minifyTrbl = require('../minifyTrbl');
-const minifyWsc = require('../minifyWsc');
-const canMerge = require('../canMerge');
-const remove = require('../remove');
-const trbl = require('../trbl');
-const isCustomProp = require('../isCustomProp');
-const canExplode = require('../canExplode');
-const getLastNode = require('../getLastNode');
-const parseWsc = require('../parseWsc');
-const { isValidWsc } = require('../validateWsc');
+const insertCloned = require('../insertCloned.js');
+const parseTrbl = require('../parseTrbl.js');
+const hasAllProps = require('../hasAllProps.js');
+const getDecls = require('../getDecls.js');
+const getRules = require('../getRules.js');
+const getValue = require('../getValue.js');
+const mergeRules = require('../mergeRules.js');
+const minifyTrbl = require('../minifyTrbl.js');
+const minifyWsc = require('../minifyWsc.js');
+const canMerge = require('../canMerge.js');
+const remove = require('../remove.js');
+const trbl = require('../trbl.js');
+const isCustomProp = require('../isCustomProp.js');
+const canExplode = require('../canExplode.js');
+const getLastNode = require('../getLastNode.js');
+const parseWsc = require('../parseWsc.js');
+const { isValidWsc } = require('../validateWsc.js');
 
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentcolor'];
 
+/**
+ * @param {...string} parts
+ * @return {string}
+ */
 function borderProperty(...parts) {
   return `border-${parts.join('-')}`;
 }
-
+/**
+ * @param {string} value
+ * @return {string}
+ */
 function mapBorderProperty(value) {
   return borderProperty(value);
 }
 
 const directions = trbl.map(mapBorderProperty);
 const properties = wsc.map(mapBorderProperty);
+/** @type {string[]} */
 const directionalProperties = directions.reduce(
   (prev, curr) => prev.concat(wsc.map((prop) => `${curr}-${prop}`)),
-  []
+  /** @type {string[]} */ ([])
 );
 
 const precedence = [
@@ -45,6 +53,10 @@ const precedence = [
 
 const allProperties = precedence.reduce((a, b) => a.concat(b));
 
+/**
+ * @param {string} prop
+ * @return {number | undefined}
+ */
 function getLevel(prop) {
   for (let i = 0; i < precedence.length; i++) {
     if (precedence[i].includes(prop.toLowerCase())) {
@@ -53,13 +65,22 @@ function getLevel(prop) {
   }
 }
 
+/** @type {(value: string) => boolean} */
 const isValueCustomProp = (value) =>
   value !== undefined && value.search(/var\s*\(\s*--/i) !== -1;
 
+/**
+ * @param {string[]} values
+ * @return {boolean}
+ */
 function canMergeValues(values) {
   return !values.some(isValueCustomProp);
 }
 
+/**
+ * @param {import('postcss').Declaration} decl
+ * @return {string}
+ */
 function getColorValue(decl) {
   if (decl.prop.substr(-5) === 'color') {
     return decl.value;
@@ -68,6 +89,11 @@ function getColorValue(decl) {
   return parseWsc(decl.value)[2] || defaults[2];
 }
 
+/**
+ * @param {[string, string, string]} values
+ * @param {[string, string, string]} nextValues
+ * @return {string[]}
+ */
 function diffingProps(values, nextValues) {
   return wsc.reduce((prev, curr, i) => {
     if (values[i] === nextValues[i]) {
@@ -75,9 +101,13 @@ function diffingProps(values, nextValues) {
     }
 
     return [...prev, curr];
-  }, []);
+  }, /** @type {string[]} */ ([]));
 }
 
+/**
+ * @param {{values: [string, string, string], nextValues: [string, string, string], decl: import('postcss').Declaration, nextDecl: import('postcss').Declaration, index: number}} arg
+ * @return {void}
+ */
 function mergeRedundant({ values, nextValues, decl, nextDecl, index }) {
   if (!canMerge([decl, nextDecl])) {
     return;
@@ -93,7 +123,7 @@ function mergeRedundant({ values, nextValues, decl, nextDecl, index }) {
     return;
   }
 
-  const prop = diff.pop();
+  const prop = /** @type {string} */ (diff.pop());
   const position = wsc.indexOf(prop);
 
   const prop1 = `${nextDecl.prop}-${prop}`;
@@ -124,6 +154,10 @@ function mergeRedundant({ values, nextValues, decl, nextDecl, index }) {
   }
 }
 
+/**
+ * @param {string | string[]} mapped
+ * @return {boolean}
+ */
 function isCloseEnough(mapped) {
   return (
     (mapped[0] === mapped[1] && mapped[1] === mapped[2]) ||
@@ -140,7 +174,10 @@ function isCloseEnough(mapped) {
 function getDistinctShorthands(mapped) {
   return [...new Set(mapped)];
 }
-
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
 function explode(rule) {
   rule.walkDecls(/^border/i, (decl) => {
     if (!canExplode(decl, false)) {
@@ -157,7 +194,11 @@ function explode(rule) {
     if (prop === 'border') {
       if (isValidWsc(parseWsc(decl.value))) {
         directions.forEach((direction) => {
-          insertCloned(decl.parent, decl, { prop: direction });
+          insertCloned(
+            /** @type {import('postcss').Rule} */ (decl.parent),
+            decl,
+            { prop: direction }
+          );
         });
 
         decl.remove();
@@ -170,10 +211,14 @@ function explode(rule) {
 
       if (isValidWsc(values)) {
         wsc.forEach((d, i) => {
-          insertCloned(decl.parent, decl, {
-            prop: `${prop}-${d}`,
-            value: values[i] || defaults[i],
-          });
+          insertCloned(
+            /** @type {import('postcss').Rule} */ (decl.parent),
+            decl,
+            {
+              prop: `${prop}-${d}`,
+              value: values[i] || defaults[i],
+            }
+          );
         });
 
         decl.remove();
@@ -187,10 +232,14 @@ function explode(rule) {
       }
 
       parseTrbl(decl.value).forEach((value, i) => {
-        insertCloned(decl.parent, decl, {
-          prop: borderProperty(trbl[i], style),
-          value,
-        });
+        insertCloned(
+          /** @type {import('postcss').Rule} */ (decl.parent),
+          decl,
+          {
+            prop: borderProperty(trbl[i], style),
+            value,
+          }
+        );
       });
 
       return decl.remove();
@@ -198,6 +247,10 @@ function explode(rule) {
   });
 }
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
 function merge(rule) {
   // border-trbl-wsc -> border-trbl
   trbl.forEach((direction) => {
@@ -208,10 +261,14 @@ function merge(rule) {
       wsc.map((style) => borderProperty(direction, style)),
       (rules, lastNode) => {
         if (canMerge(rules, false) && !rules.some(stylehacks.detect)) {
-          insertCloned(lastNode.parent, lastNode, {
-            prop,
-            value: rules.map(getValue).join(' '),
-          });
+          insertCloned(
+            /** @type {import('postcss').Rule} */ (lastNode.parent),
+            lastNode,
+            {
+              prop,
+              value: rules.map(getValue).join(' '),
+            }
+          );
 
           rules.forEach(remove);
 
@@ -231,10 +288,14 @@ function merge(rule) {
       trbl.map((direction) => borderProperty(direction, style)),
       (rules, lastNode) => {
         if (canMerge(rules) && !rules.some(stylehacks.detect)) {
-          insertCloned(lastNode.parent, lastNode, {
-            prop,
-            value: minifyTrbl(rules.map(getValue).join(' ')),
-          });
+          insertCloned(
+            /** @type {import('postcss').Rule} */ (lastNode.parent),
+            lastNode,
+            {
+              prop,
+              value: minifyTrbl(rules.map(getValue).join(' ')),
+            }
+          );
 
           rules.forEach(remove);
 
@@ -267,12 +328,21 @@ function merge(rule) {
       const value = parsed.map((v) => v[i] || defaults[i]);
 
       if (canMergeValues(value)) {
-        insertCloned(lastNode.parent, lastNode, {
-          prop: borderProperty(d),
-          value: minifyTrbl(value),
-        });
+        insertCloned(
+          /** @type {import('postcss').Rule} */ (lastNode.parent),
+          lastNode,
+          {
+            prop: borderProperty(d),
+            value: minifyTrbl(
+              /** @type {[string, string, string, string]} */ (value)
+            ),
+          }
+        );
       } else {
-        insertCloned(lastNode.parent, lastNode);
+        insertCloned(
+          /** @type {import('postcss').Rule} */ (lastNode.parent),
+          lastNode
+        );
       }
     });
 
@@ -305,10 +375,14 @@ function merge(rule) {
       const first =
         mapped.indexOf(reduced[0]) !== mapped.lastIndexOf(reduced[0]);
 
-      const border = insertCloned(lastNode.parent, lastNode, {
-        prop: 'border',
-        value: first ? reduced[0] : reduced[1],
-      });
+      const border = insertCloned(
+        /** @type {import('postcss').Rule} */ (lastNode.parent),
+        lastNode,
+        {
+          prop: 'border',
+          value: first ? reduced[0] : reduced[1],
+        }
+      );
 
       if (reduced[1]) {
         const value = first ? reduced[1] : reduced[0];
@@ -468,11 +542,15 @@ function merge(rule) {
         values[i] = wscProp.value;
 
         if (canMerge(rules, false) && !rules.some(stylehacks.detect)) {
-          insertCloned(lastNode.parent, lastNode, {
-            prop,
-            value: wscValue,
-          });
-          lastNode.value = minifyWsc(values);
+          insertCloned(
+            /** @type {import('postcss').Rule} */ (lastNode.parent),
+            lastNode,
+            {
+              prop,
+              value: wscValue,
+            }
+          );
+          lastNode.value = minifyWsc(/** @type {any} */ (values));
 
           wscProp.remove();
 
@@ -508,11 +586,15 @@ function merge(rule) {
       values[i] = wscProp.value;
 
       if (canMerge(rules, false) && !rules.some(stylehacks.detect)) {
-        insertCloned(lastNode.parent, lastNode, {
-          prop,
-          value: wscValue,
-        });
-        lastNode.value = minifyWsc(values);
+        insertCloned(
+          /** @type {import('postcss').Rule} */ (lastNode.parent),
+          lastNode,
+          {
+            prop,
+            value: wscValue,
+          }
+        );
+        lastNode.value = minifyWsc(/** @type {any} */ (values));
         wscProp.remove();
 
         return true;
@@ -546,7 +628,10 @@ function merge(rule) {
           names.includes(node.prop) &&
           node.important === lastNode.important
       );
-      const rules = getRules(props, names);
+      const rules = getRules(
+        /** @type {import('postcss').Declaration[]} */ (props),
+        names
+      );
 
       if (hasAllProps(rules, ...names) && !rules.some(stylehacks.detect)) {
         const values = rules.map((node) => (node ? node.value : null));
@@ -561,7 +646,7 @@ function merge(rule) {
           filteredValues[0] === filteredValues[1] &&
           filteredValues[1] === filteredValues[2]
         ) {
-          value = filteredValues[0];
+          value = /** @type {string} */ (filteredValues[0]);
         }
 
         let refNode = props[props.length - 1];
@@ -573,10 +658,14 @@ function merge(rule) {
           lastNode.value = valueArray.join(' ');
         }
 
-        insertCloned(refNode.parent, refNode, {
-          prop: borderProperty(d),
-          value,
-        });
+        insertCloned(
+          /** @type {import('postcss').Rule} */ (refNode.parent),
+          /** @type {import('postcss').Declaration} */ (refNode),
+          {
+            prop: borderProperty(d),
+            value,
+          }
+        );
 
         decls = decls.filter((node) => !rules.includes(node));
         rules.forEach(remove);
@@ -648,12 +737,16 @@ function merge(rule) {
         ) {
           longhands.forEach(remove);
 
-          insertCloned(decl.parent, decl, {
-            prop: borderProperty(d),
-            value: values[i],
-          });
+          insertCloned(
+            /** @type {import('postcss').Rule} */ (decl.parent),
+            decl,
+            {
+              prop: borderProperty(d),
+              value: values[i],
+            }
+          );
 
-          values[i] = null;
+          /** @type {string|null} */ (values[i]) = null;
         }
         return false;
       });
@@ -698,9 +791,10 @@ function merge(rule) {
         !isCustomProp(lastNode) &&
         node !== lastNode &&
         node.important === lastNode.important &&
-        getLevel(node.prop) > getLevel(lastNode.prop) &&
+        /** @type {number} */ (getLevel(node.prop)) >
+          /** @type {number} */ (getLevel(lastNode.prop)) &&
         (node.prop.toLowerCase().includes(lastNode.prop) ||
-          node.prop.toLowerCase().endsWith(lastPart))
+          node.prop.toLowerCase().endsWith(/** @type {string} */ (lastPart)))
     );
 
     lesser.forEach(remove);

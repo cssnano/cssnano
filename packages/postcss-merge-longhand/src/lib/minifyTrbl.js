@@ -1,6 +1,7 @@
 'use strict';
-const parseTrbl = require('./parseTrbl');
+const parseTrbl = require('./parseTrbl.js');
 
+/** @type {(v: string | [string, string, string, string]) => string} */
 module.exports = (v) => {
   const value = parseTrbl(v);
 

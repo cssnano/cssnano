@@ -1,20 +1,24 @@
 'use strict';
 const stylehacks = require('stylehacks');
-const canMerge = require('../canMerge');
-const getDecls = require('../getDecls');
-const minifyTrbl = require('../minifyTrbl');
-const parseTrbl = require('../parseTrbl');
-const insertCloned = require('../insertCloned');
-const mergeRules = require('../mergeRules');
-const mergeValues = require('../mergeValues');
-const remove = require('../remove');
-const trbl = require('../trbl');
-const isCustomProp = require('../isCustomProp');
-const canExplode = require('../canExplode');
+const canMerge = require('../canMerge.js');
+const getDecls = require('../getDecls.js');
+const minifyTrbl = require('../minifyTrbl.js');
+const parseTrbl = require('../parseTrbl.js');
+const insertCloned = require('../insertCloned.js');
+const mergeRules = require('../mergeRules.js');
+const mergeValues = require('../mergeValues.js');
+const remove = require('../remove.js');
+const trbl = require('../trbl.js');
+const isCustomProp = require('../isCustomProp.js');
+const canExplode = require('../canExplode.js');
 
+/**
+ * @param {string} prop
+ * @return {{explode: (rule: import('postcss').Rule) => void, merge: (rule: import('postcss').Rule) => void}}
+ */
 module.exports = (prop) => {
   const properties = trbl.map((direction) => `${prop}-${direction}`);
-
+  /** @type {(rule: import('postcss').Rule) => void} */
   const cleanup = (rule) => {
     let decls = getDecls(rule, [prop].concat(properties));
 
@@ -54,6 +58,7 @@ module.exports = (prop) => {
   };
 
   const processor = {
+    /** @type {(rule: import('postcss').Rule) => void} */
     explode: (rule) => {
       rule.walkDecls(new RegExp('^' + prop + '$', 'i'), (decl) => {
         if (!canExplode(decl)) {
@@ -67,26 +72,36 @@ module.exports = (prop) => {
         const values = parseTrbl(decl.value);
 
         trbl.forEach((direction, index) => {
-          insertCloned(decl.parent, decl, {
-            prop: properties[index],
-            value: values[index],
-          });
+          insertCloned(
+            /** @type {import('postcss').Rule} */ (decl.parent),
+            decl,
+            {
+              prop: properties[index],
+              value: values[index],
+            }
+          );
         });
 
         decl.remove();
       });
     },
+    /** @type {(rule: import('postcss').Rule) => void} */
     merge: (rule) => {
       mergeRules(rule, properties, (rules, lastNode) => {
         if (canMerge(rules) && !rules.some(stylehacks.detect)) {
-          insertCloned(lastNode.parent, lastNode, {
-            prop,
-            value: minifyTrbl(mergeValues(...rules)),
-          });
+          insertCloned(
+            /** @type {import('postcss').Rule} */ (lastNode.parent),
+            lastNode,
+            {
+              prop,
+              value: minifyTrbl(mergeValues(...rules)),
+            }
+          );
           rules.forEach(remove);
 
           return true;
         }
+        return false;
       });
 
       cleanup(rule);
