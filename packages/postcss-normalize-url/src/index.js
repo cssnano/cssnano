@@ -25,6 +25,11 @@ function isAbsolute(url) {
   return ABSOLUTE_URL_REGEX.test(url);
 }
 
+/**
+ * @param {string} url
+ * @param {normalize.Options} options
+ * @return {string}
+ */
 function convert(url, options) {
   if (isAbsolute(url) || url.startsWith('//')) {
     let normalizedURL;
@@ -42,6 +47,10 @@ function convert(url, options) {
   return path.normalize(url).replace(new RegExp('\\' + path.sep, 'g'), '/');
 }
 
+/**
+ * @param {import('postcss').AtRule} rule
+ * @return {void}
+ */
 function transformNamespace(rule) {
   rule.params = valueParser(rule.params)
     .walk((node) => {
@@ -50,8 +59,9 @@ function transformNamespace(rule) {
         node.value.toLowerCase() === 'url' &&
         node.nodes.length
       ) {
-        node.type = 'string';
-        node.quote = node.nodes[0].quote || '"';
+        /** @type {valueParser.Node} */ (node).type = 'string';
+        /** @type {any} */ (node).quote =
+          node.nodes[0].type === 'string' ? node.nodes[0].quote : '"';
         node.value = node.nodes[0].value;
       }
       if (node.type === 'string') {
@@ -62,6 +72,11 @@ function transformNamespace(rule) {
     .toString();
 }
 
+/**
+ * @param {import('postcss').Declaration} decl
+ * @param {normalize.Options} opts
+ * @return {void}
+ */
 function transformDecl(decl, opts) {
   decl.value = valueParser(decl.value)
     .walk((node) => {
@@ -82,7 +97,7 @@ function transformDecl(decl, opts) {
       // Skip empty URLs
       // Empty URL function equals request to current stylesheet where it is declared
       if (url.value.length === 0) {
-        url.quote = '';
+        /** @type {any} */ (url).quote = '';
 
         return false;
       }
@@ -100,7 +115,7 @@ function transformDecl(decl, opts) {
 
         if (escaped.length < url.value.length + 2) {
           url.value = escaped;
-          url.type = 'word';
+          /** @type {valueParser.Node} */ (url).type = 'word';
         }
       } else {
         url.type = 'word';
@@ -111,6 +126,12 @@ function transformDecl(decl, opts) {
     .toString();
 }
 
+/** @typedef {normalize.Options} Options */
+/**
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} opts
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator(opts) {
   opts = Object.assign(
     {},
