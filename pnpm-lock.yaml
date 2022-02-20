@@ -99,10 +99,11 @@ importers:
 
   packages/cssnano-preset-default:
     specifiers:
+      '@types/css-declaration-sorter': ^6.0.1
       css-declaration-sorter: ^6.0.3
       cssnano-utils: ^3.0.2
       postcss: ^8.2.15
-      postcss-calc: ^8.2.0
+      postcss-calc: ^8.2.3
       postcss-colormin: ^5.2.5
       postcss-convert-values: ^5.0.4
       postcss-discard-comments: ^5.0.3
@@ -132,7 +133,7 @@ importers:
     dependencies:
       css-declaration-sorter: 6.1.3_postcss@8.4.5
       cssnano-utils: link:../cssnano-utils
-      postcss-calc: 8.2.0_postcss@8.4.5
+      postcss-calc: 8.2.4_postcss@8.4.5
       postcss-colormin: link:../postcss-colormin
       postcss-convert-values: link:../postcss-convert-values
       postcss-discard-comments: link:../postcss-discard-comments
@@ -160,6 +161,7 @@ importers:
       postcss-svgo: link:../postcss-svgo
       postcss-unique-selectors: link:../postcss-unique-selectors
     devDependencies:
+      '@types/css-declaration-sorter': 6.0.1
       postcss: 8.4.5
 
   packages/cssnano-preset-lite:
@@ -795,6 +797,12 @@ packages:
 
   /@types/caniuse-api/3.0.2:
     resolution: {integrity: sha512-YfCDMn7R59n7GFFfwjPAM0zLJQy4UvveC32rOJBmTqJJY8uSRqM4Dc7IJj8V9unA48Qy4nj5Bj3jD6Q8VZ1Seg==}
+    dev: true
+
+  /@types/css-declaration-sorter/6.0.1:
+    resolution: {integrity: sha512-reXoxl/M4PGnuwlGbA8DZZSPEvDVHJwheprLZOjrBvwAZE5PMyB3JmzzrbNux04lHpd59btegrxXDdi5clDADg==}
+    dependencies:
+      postcss: 8.4.5
     dev: true
 
   /@types/is-ci/3.0.0:
@@ -2627,13 +2635,13 @@ packages:
       postcss: 6.0.23
     dev: true
 
-  /postcss-calc/8.2.0_postcss@8.4.5:
-    resolution: {integrity: sha512-PueXCv288diX7OXyJicGNA6Q3+L4xYb2cALTAeFj9X6PXnj+s4pUf1vkZnwn+rldfu2taCA9ondjF93lhRTPFA==}
+  /postcss-calc/8.2.4_postcss@8.4.5:
+    resolution: {integrity: sha512-SmWMSJmB8MRnnULldx0lQIyhSNvuDl9HfrZkaqqE/WHAhToYsAvDq+yAsA/kIyINDszOp3Rh0GFoNuH5Ypsm3Q==}
     peerDependencies:
       postcss: ^8.2.2
     dependencies:
       postcss: 8.4.5
-      postcss-selector-parser: 6.0.8
+      postcss-selector-parser: 6.0.9
       postcss-value-parser: 4.2.0
     dev: false
 
@@ -2658,6 +2666,14 @@ packages:
 
   /postcss-selector-parser/6.0.8:
     resolution: {integrity: sha512-D5PG53d209Z1Uhcc0qAZ5U3t5HagH3cxu+WLZ22jt3gLUpXM4eXXfiO14jiDWST3NNooX/E8wISfOhZ9eIjGTQ==}
+    engines: {node: '>=4'}
+    dependencies:
+      cssesc: 3.0.0
+      util-deprecate: 1.0.2
+    dev: false
+
+  /postcss-selector-parser/6.0.9:
+    resolution: {integrity: sha512-UO3SgnZOVTwu4kyLR22UQ1xZh086RyNZppb7lLAKBFK8a32ttG5i87Y/P3+2bRSjZNyJ1B7hfFNo273tKe9YxQ==}
     engines: {node: '>=4'}
     dependencies:
       cssesc: 3.0.0
