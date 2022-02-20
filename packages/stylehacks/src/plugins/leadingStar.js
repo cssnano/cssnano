@@ -7,10 +7,15 @@ const { ATRULE, DECL } = require('../dictionary/postcss');
 const hacks = '!_$_&_*_)_=_%_+_,_._/_`_]_#_~_?_:_|'.split('_');
 
 module.exports = class LeadingStar extends BasePlugin {
+  /** @param {import('postcss').Result=} result */
   constructor(result) {
     super([IE_5_5, IE_6, IE_7], [ATRULE, DECL], result);
   }
 
+  /**
+   * @param {import('postcss').Declaration | import('postcss').AtRule} node
+   * @return {void}
+   */
   detect(node) {
     if (node.type === DECL) {
       // some values are not picked up by before, so ensure they are

@@ -9,10 +9,15 @@ const { RULE } = require('../dictionary/postcss');
 const { HTML } = require('../dictionary/tags');
 
 module.exports = class HtmlFirstChild extends BasePlugin {
+  /** @param {import('postcss').Result} result */
   constructor(result) {
     super([OP_9], [RULE], result);
   }
 
+  /**
+   * @param {import('postcss').Rule} rule
+   * @return {void}
+   */
   detect(rule) {
     if (isMixin(rule)) {
       return;
@@ -21,6 +26,10 @@ module.exports = class HtmlFirstChild extends BasePlugin {
     parser(this.analyse(rule)).processSync(rule.selector);
   }
 
+  /**
+   * @param {import('postcss').Rule} rule
+   * @return {parser.SyncProcessor<void>}
+   */
   analyse(rule) {
     return (selectors) => {
       selectors.each((selector) => {

@@ -6,10 +6,15 @@ const { SELECTOR } = require('../dictionary/identifiers');
 const { RULE } = require('../dictionary/postcss');
 
 module.exports = class TrailingSlashComma extends BasePlugin {
+  /** @param {import('postcss').Result=} result */
   constructor(result) {
     super([IE_5_5, IE_6, IE_7], [RULE], result);
   }
 
+  /**
+   * @param {import('postcss').Rule} rule
+   * @return {void}
+   */
   detect(rule) {
     if (isMixin(rule)) {
       return;
