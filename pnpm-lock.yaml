@@ -834,7 +834,7 @@ packages:
   /@types/svgo/2.6.2:
     resolution: {integrity: sha512-m1SqMc/EDAZ8v0BBX+NmlYytUXtvrMD2/J9LICwnMvAuJwb0GSmACU3XPvcORqE7ghEJA4Mk6NYzpwhQI/biPw==}
     dependencies:
-      '@types/node': 12.20.40
+      '@types/node': 12.20.46
     dev: true
 
   /acorn-jsx/5.3.2_acorn@8.7.0:
