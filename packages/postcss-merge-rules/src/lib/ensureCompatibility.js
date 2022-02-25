@@ -15,6 +15,9 @@ const formValidation = 'form-validation';
 const vendorPrefix =
   /-(ah|apple|atsc|epub|hp|khtml|moz|ms|o|rim|ro|tc|wap|webkit|xv)-/;
 
+const level2Sel = new Set(['=', '~=', '|=']);
+const level3Sel = new Set(['^=', '$=', '*=']);
+
 /**
  * @param {string} selector
  * @return {string[]}
@@ -168,11 +171,11 @@ function ensureCompatibility(selectors, browsers, compatibilityCache) {
 
           if (value) {
             // [foo="bar"], [foo~="bar"], [foo|="bar"]
-            if (['=', '~=', '|='].includes(node.operator)) {
+            if (level2Sel.has(node.operator)) {
               compatible = isSupportedCached(cssSel2, browsers);
             }
             // [foo^="bar"], [foo$="bar"], [foo*="bar"]
-            if (['^=', '$=', '*='].includes(node.operator)) {
+            if (level3Sel.has(node.operator)) {
               compatible = isSupportedCached(cssSel3, browsers);
             }
           }

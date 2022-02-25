@@ -33,26 +33,28 @@ function attribute(selector) {
     after: selector.insensitive ? ' ' : '',
   };
 
-  selector.raws.spaces.attribute = {
-    before: '',
-    after: '',
-  };
-
-  selector.raws.spaces.operator = {
-    before: '',
-    after: '',
-  };
-
-  selector.raws.spaces.value = {
-    before: '',
-    after: selector.insensitive ? ' ' : '',
-  };
-
-  if (selector.insensitive) {
-    selector.raws.spaces.insensitive = {
+  if (selector.raws.spaces) {
+    selector.raws.spaces.attribute = {
       before: '',
       after: '',
     };
+
+    selector.raws.spaces.operator = {
+      before: '',
+      after: '',
+    };
+
+    selector.raws.spaces.value = {
+      before: '',
+      after: selector.insensitive ? ' ' : '',
+    };
+
+    if (selector.insensitive) {
+      selector.raws.spaces.insensitive = {
+        before: '',
+        after: '',
+      };
+    }
   }
 
   selector.attribute = selector.attribute.trim();
@@ -90,7 +92,7 @@ function pseudo(selector) {
         );
       }
 
-      if (one.value.toLowerCase() === 'even') {
+      if (one.value && one.value.toLowerCase() === 'even') {
         one.value = '2n';
       }
     }
@@ -100,6 +102,7 @@ function pseudo(selector) {
       const three = first.at(2);
 
       if (
+        one.value &&
         one.value.toLowerCase() === '2n' &&
         two.value === '+' &&
         three.value === '1'
@@ -182,7 +185,11 @@ function pluginCreator() {
 
           const toString = String(sel);
 
-          if (sel.type === 'selector' && sel.parent.type !== 'pseudo') {
+          if (
+            sel.type === 'selector' &&
+            sel.parent &&
+            sel.parent.type !== 'pseudo'
+          ) {
             if (!uniqueSelectors.has(toString)) {
               uniqueSelectors.add(toString);
             } else {

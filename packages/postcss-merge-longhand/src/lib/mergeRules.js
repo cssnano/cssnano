@@ -5,7 +5,7 @@ const getRules = require('./getRules');
 
 function isConflictingProp(propA, propB) {
   if (!propB.prop || propB.important !== propA.important) {
-    return;
+    return false;
   }
 
   const parts = propA.prop.split('-');
@@ -17,15 +17,14 @@ function isConflictingProp(propA, propB) {
   });
 }
 
+/**
+ * @param {import('postcss').Declaration[]} match
+ * @param {import('postcss').Declaration[]} nodes
+ * @return {boolean}
+ */
 function hasConflicts(match, nodes) {
-  const firstNode = Math.min.apply(
-    null,
-    match.map((n) => nodes.indexOf(n))
-  );
-  const lastNode = Math.max.apply(
-    null,
-    match.map((n) => nodes.indexOf(n))
-  );
+  const firstNode = Math.min(...match.map((n) => nodes.indexOf(n)));
+  const lastNode = Math.max(...match.map((n) => nodes.indexOf(n)));
   const between = nodes.slice(firstNode + 1, lastNode);
 
   return match.some((a) => between.some((b) => isConflictingProp(a, b)));

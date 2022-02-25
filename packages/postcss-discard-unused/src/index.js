@@ -54,7 +54,9 @@ function hasFont(fontFamily, cache, comma) {
 function filterFont({ atRules, values }, comma) {
   values = [...new Set(values)];
   atRules.forEach((r) => {
-    const families = r.nodes.filter(({ prop }) => prop === 'font-family');
+    const families = r.nodes.filter(
+      (node) => node.type === 'decl' && node.prop === 'font-family'
+    );
 
     // Discard the @font-face if it has no font-family
     if (!families.length) {
@@ -94,26 +96,27 @@ function pluginCreator(opts) {
         OnceExit(css, { list }) {
           const { comma, space } = list;
           css.walk((node) => {
-            const { type, prop, selector, name } = node;
+            const { type } = node;
 
-            if (type === rule && namespace && selector.includes('|')) {
-              if (selector.includes('[')) {
+            if (type === rule && namespace && node.selector.includes('|')) {
+              if (node.selector.includes('[')) {
                 // Attribute selector, so we should parse further.
                 selectorParser((ast) => {
                   ast.walkAttributes(({ namespace: ns }) => {
                     namespaceCache.rules = namespaceCache.rules.concat(ns);
                   });
-                }).process(selector);
+                }).process(node.selector);
               } else {
                 // Use a simple split function for the namespace
                 namespaceCache.rules = namespaceCache.rules.concat(
-                  selector.split('|')[0]
+                  node.selector.split('|')[0]
                 );
               }
               return;
             }
 
             if (type === decl) {
+              const { prop } = node;
               if (counterStyle && /list-style|system/.test(prop)) {
                 counterStyleCache.values = counterStyleCache.values.concat(
                   splitValues(node, comma, space)
@@ -122,6 +125,7 @@ function pluginCreator(opts) {
 
               if (
                 fontFace &&
+                node.parent !== undefined &&
                 node.parent.type === rule &&
                 /font(|-family)/.test(prop)
               ) {
@@ -140,6 +144,7 @@ function pluginCreator(opts) {
             }
 
             if (type === atrule) {
+              const { name } = node;
               if (counterStyle && /counter-style/.test(name)) {
                 counterStyleCache.atRules.push(node);
               }
