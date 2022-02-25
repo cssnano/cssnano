@@ -95,7 +95,8 @@ function shouldKeepZeroUnit(decl) {
   return (
     (decl.value.includes('%') &&
       (lowerCasedProp === 'max-height' || lowerCasedProp === 'height')) ||
-    (parent.parent &&
+    (parent &&
+      parent.parent &&
       parent.parent.name &&
       parent.parent.name.toLowerCase() === 'keyframes' &&
       lowerCasedProp === 'stroke-dasharray') ||

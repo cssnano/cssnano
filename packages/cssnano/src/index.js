@@ -83,10 +83,10 @@ function resolveConfig(options) {
   }
 
   let searchPath = process.cwd();
-  let configPath = null;
+  let configPath = undefined;
 
   if (options.configFile) {
-    searchPath = null;
+    searchPath = undefined;
     configPath = path.resolve(process.cwd(), options.configFile);
   }
 
@@ -116,7 +116,7 @@ function resolveConfig(options) {
   return resolvePreset(config.config.preset || config.config);
 }
 
-const cssnanoPlugin = (options = {}) => {
+function cssnanoPlugin(options = {}) {
   if (Array.isArray(options.plugins)) {
     if (!options.preset || !options.preset.plugins) {
       options.preset = { plugins: [] };
@@ -154,7 +154,7 @@ const cssnanoPlugin = (options = {}) => {
     }
   }
   return postcss(plugins);
-};
+}
 
 cssnanoPlugin.postcss = true;
 module.exports = cssnanoPlugin;

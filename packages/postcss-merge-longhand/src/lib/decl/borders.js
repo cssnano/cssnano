@@ -53,7 +53,8 @@ function getLevel(prop) {
   }
 }
 
-const isValueCustomProp = (value) => value && !!~value.search(/var\s*\(\s*--/i);
+const isValueCustomProp = (value) =>
+  value && value.search(/var\s*\(\s*--/i) !== -1;
 
 function canMergeValues(values) {
   return !values.some(isValueCustomProp);
@@ -132,16 +133,12 @@ function isCloseEnough(mapped) {
   );
 }
 
+/**
+ * @param {string[]} mapped
+ * @return {string[]}
+ */
 function getDistinctShorthands(mapped) {
-  return mapped.reduce((a, b) => {
-    a = Array.isArray(a) ? a : [a];
-
-    if (!a.includes(b)) {
-      a.push(b);
-    }
-
-    return a;
-  });
+  return [...new Set(mapped)];
 }
 
 function explode(rule) {
@@ -220,6 +217,7 @@ function merge(rule) {
 
           return true;
         }
+        return false;
       }
     );
   });
@@ -242,6 +240,7 @@ function merge(rule) {
 
           return true;
         }
+        return false;
       }
     );
   });
@@ -249,19 +248,19 @@ function merge(rule) {
   // border-trbl -> border-wsc
   mergeRules(rule, directions, (rules, lastNode) => {
     if (rules.some(stylehacks.detect)) {
-      return;
+      return false;
     }
 
     const values = rules.map(({ value }) => value);
 
     if (!canMergeValues(values)) {
-      return;
+      return false;
     }
 
     const parsed = values.map((value) => parseWsc(value));
 
     if (!parsed.every(isValidWsc)) {
-      return;
+      return false;
     }
 
     wsc.forEach((d, i) => {
@@ -287,7 +286,7 @@ function merge(rule) {
   // border-wsc -> border + border-dir
   mergeRules(rule, properties, (rules, lastNode) => {
     if (rules.some(stylehacks.detect)) {
-      return;
+      return false;
     }
 
     const values = rules.map((node) => parseTrbl(node.value));
@@ -296,7 +295,7 @@ function merge(rule) {
     );
 
     if (!canMergeValues(mapped)) {
-      return;
+      return false;
     }
 
     const [width, style, color] = rules;
@@ -345,7 +344,7 @@ function merge(rule) {
   // border-wsc -> border + border-trbl
   mergeRules(rule, properties, (rules, lastNode) => {
     if (rules.some(stylehacks.detect)) {
-      return;
+      return false;
     }
 
     const values = rules.map((node) => parseTrbl(node.value));
@@ -388,13 +387,14 @@ function merge(rule) {
 
       return true;
     }
+    return false;
   });
 
   // border-trbl -> border
   // border-trbl -> border + border-trbl
   mergeRules(rule, directions, (rules, lastNode) => {
     if (rules.some(stylehacks.detect)) {
-      return;
+      return false;
     }
 
     const values = rules.map((node) => {
@@ -446,19 +446,19 @@ function merge(rule) {
 
       mergeRules(rule, [direction, prop], (rules, lastNode) => {
         if (lastNode.prop !== direction) {
-          return;
+          return false;
         }
 
         const values = parseWsc(lastNode.value);
 
         if (!isValidWsc(values)) {
-          return;
+          return false;
         }
 
         const wscProp = rules.filter((r) => r !== lastNode)[0];
 
         if (!isValueCustomProp(values[i]) || isCustomProp(wscProp)) {
-          return;
+          return false;
         }
 
         const wscValue = values[i];
@@ -485,19 +485,19 @@ function merge(rule) {
     const prop = borderProperty(style);
     mergeRules(rule, ['border', prop], (rules, lastNode) => {
       if (lastNode.prop !== 'border') {
-        return;
+        return false;
       }
 
       const values = parseWsc(lastNode.value);
 
       if (!isValidWsc(values)) {
-        return;
+        return false;
       }
 
       const wscProp = rules.filter((r) => r !== lastNode)[0];
 
       if (!isValueCustomProp(values[i]) || isCustomProp(wscProp)) {
-        return;
+        return false;
       }
 
       const wscValue = values[i];
@@ -514,6 +514,7 @@ function merge(rule) {
 
         return true;
       }
+      return false;
     });
   });
 
@@ -538,7 +539,7 @@ function merge(rule) {
 
       const props = nodes.filter(
         (node) =>
-          node.prop &&
+          node.type === 'decl' &&
           names.includes(node.prop) &&
           node.important === lastNode.important
       );
@@ -586,12 +587,12 @@ function merge(rule) {
     const nextDecl = decl.next();
 
     if (!nextDecl || nextDecl.type !== 'decl') {
-      return;
+      return false;
     }
 
     const index = directions.indexOf(nextDecl.prop);
 
-    if (!~index) {
+    if (index === -1) {
       return;
     }
 
@@ -629,7 +630,7 @@ function merge(rule) {
 
       mergeRules(rule, [decl.prop, ...props], (rules) => {
         if (!rules.includes(decl)) {
-          return;
+          return false;
         }
 
         const longhands = rules.filter((p) => p !== decl);
@@ -651,6 +652,7 @@ function merge(rule) {
 
           values[i] = null;
         }
+        return false;
       });
 
       const newValue = values.join(' ');

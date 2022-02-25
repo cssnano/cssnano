@@ -156,25 +156,27 @@ function transform(value) {
       return;
     }
 
-    if (firstNode === 'center' && directionKeywords.has(secondNode)) {
-      nodes[0].value = nodes[1].value = '';
+    if (secondNode !== null) {
+      if (firstNode === 'center' && directionKeywords.has(secondNode)) {
+        nodes[0].value = nodes[1].value = '';
 
-      if (horizontal.has(secondNode)) {
-        nodes[2].value = horizontal.get(secondNode);
+        if (horizontal.has(secondNode)) {
+          nodes[2].value = horizontal.get(secondNode);
+        }
+        return;
       }
-      return;
-    }
 
-    if (horizontal.has(firstNode) && verticalValue.has(secondNode)) {
-      nodes[0].value = horizontal.get(firstNode);
-      nodes[2].value = verticalValue.get(secondNode);
+      if (horizontal.has(firstNode) && verticalValue.has(secondNode)) {
+        nodes[0].value = horizontal.get(firstNode);
+        nodes[2].value = verticalValue.get(secondNode);
 
-      return;
-    } else if (verticalValue.has(firstNode) && horizontal.has(secondNode)) {
-      nodes[0].value = horizontal.get(secondNode);
-      nodes[2].value = verticalValue.get(firstNode);
+        return;
+      } else if (verticalValue.has(firstNode) && horizontal.has(secondNode)) {
+        nodes[0].value = horizontal.get(secondNode);
+        nodes[2].value = verticalValue.get(firstNode);
 
-      return;
+        return;
+      }
     }
   });
 

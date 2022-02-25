@@ -1,6 +1,7 @@
 'use strict';
 module.exports = function getDecls(rule, properties) {
   return rule.nodes.filter(
-    ({ prop }) => prop && properties.includes(prop.toLowerCase())
+    (node) =>
+      node.type === 'decl' && properties.includes(node.prop.toLowerCase())
   );
 };

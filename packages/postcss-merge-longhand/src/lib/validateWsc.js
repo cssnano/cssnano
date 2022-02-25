@@ -16,7 +16,7 @@ const styles = new Set([
 ]);
 
 function isStyle(value) {
-  return value && styles.has(value.toLowerCase());
+  return value !== undefined && styles.has(value.toLowerCase());
 }
 
 function isWidth(value) {
