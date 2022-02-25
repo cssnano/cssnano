@@ -85,10 +85,7 @@ See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTOR
 
 ## License
 
-[Template:CSSData] by Mozilla Contributors is licensed under [CC-BY-SA 2.5].
-
-[template:cssdata]: https://developer.mozilla.org/en-US/docs/Template:CSSData
-[cc-by-sa 2.5]: http://creativecommons.org/licenses/by-sa/2.5/
+This program uses a list of CSS properties derived from data maintained my the MDN team at Mozilla and licensed under the [CC0 1.0 Universal Public Domain Dedication](https://creativecommons.org/publicdomain/zero/1.0/).
 
 MIT © [Ben Briggs](http://beneb.info)
 
