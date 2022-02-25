@@ -27,7 +27,7 @@ function isAbsolute(url) {
 
 function convert(url, options) {
   if (isAbsolute(url) || url.startsWith('//')) {
-    let normalizedURL = null;
+    let normalizedURL;
 
     try {
       normalizedURL = normalize(url, options);

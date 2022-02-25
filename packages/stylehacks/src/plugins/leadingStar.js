@@ -23,7 +23,7 @@ module.exports = class LeadingStar extends BasePlugin {
           });
         }
       });
-      let { before } = node.raws;
+      const { before } = node.raws;
       if (!before) {
         return;
       }
@@ -37,8 +37,8 @@ module.exports = class LeadingStar extends BasePlugin {
       });
     } else {
       // test for the @property: value; hack
-      let { name } = node;
-      let len = name.length - 1;
+      const { name } = node;
+      const len = name.length - 1;
       if (name.lastIndexOf(':') === len) {
         this.push(node, {
           identifier: PROPERTY,

@@ -128,6 +128,7 @@ function merge(rule) {
 
       return true;
     }
+    return false;
   });
 
   cleanup(rule);
