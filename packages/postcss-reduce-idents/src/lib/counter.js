@@ -3,7 +3,7 @@ const valueParser = require('postcss-value-parser');
 const addToCache = require('./cache');
 const isNum = require('./isNum');
 
-const RESERVED_KEYWORDS = ['unset', 'initial', 'inherit', 'none'];
+const RESERVED_KEYWORDS = new Set(['unset', 'initial', 'inherit', 'none']);
 
 module.exports = function () {
   let cache = {};
@@ -24,7 +24,7 @@ module.exports = function () {
           if (
             child.type === 'word' &&
             !isNum(child) &&
-            RESERVED_KEYWORDS.indexOf(child.value.toLowerCase()) === -1
+            !RESERVED_KEYWORDS.has(child.value.toLowerCase())
           ) {
             addToCache(child.value, encoder, cache);
 

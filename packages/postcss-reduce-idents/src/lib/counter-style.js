@@ -2,7 +2,7 @@
 const valueParser = require('postcss-value-parser');
 const addToCache = require('./cache');
 
-const RESERVED_KEYWORDS = [
+const RESERVED_KEYWORDS = new Set([
   'unset',
   'initial',
   'inherit',
@@ -64,7 +64,7 @@ const RESERVED_KEYWORDS = [
   'upper-armenian',
   'disclosure-open',
   'disclosure-close',
-];
+]);
 
 module.exports = function () {
   let cache = {};
@@ -78,7 +78,7 @@ module.exports = function () {
       if (
         type === 'atrule' &&
         /counter-style/i.test(node.name) &&
-        RESERVED_KEYWORDS.indexOf(node.params.toLowerCase()) === -1
+        !RESERVED_KEYWORDS.has(node.params.toLowerCase())
       ) {
         addToCache(node.params, encoder, cache);
 

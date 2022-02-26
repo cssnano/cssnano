@@ -2,7 +2,7 @@
 const valueParser = require('postcss-value-parser');
 const addToCache = require('./cache');
 
-const RESERVED_KEYWORDS = ['none', 'inherit', 'initial', 'unset'];
+const RESERVED_KEYWORDS = new Set(['none', 'inherit', 'initial', 'unset']);
 
 module.exports = function () {
   let cache = {};
@@ -16,7 +16,7 @@ module.exports = function () {
       if (
         type === 'atrule' &&
         /keyframes/i.test(node.name) &&
-        RESERVED_KEYWORDS.indexOf(node.params.toLowerCase()) === -1
+        !RESERVED_KEYWORDS.has(node.params.toLowerCase())
       ) {
         addToCache(node.params, encoder, cache);
         atRules.push(node);
