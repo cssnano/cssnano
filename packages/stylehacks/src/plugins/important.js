@@ -10,7 +10,7 @@ module.exports = class Important extends BasePlugin {
 
   detect(decl) {
     const match = decl.value.match(/!\w/);
-    if (match) {
+    if (match && match.index) {
       const hack = decl.value.substr(match.index, decl.value.length - 1);
       this.push(decl, {
         identifier: '!important',
