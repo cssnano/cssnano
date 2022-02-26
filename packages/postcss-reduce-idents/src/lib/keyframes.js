@@ -11,18 +11,18 @@ module.exports = function () {
 
   return {
     collect(node, encoder) {
-      const { name, prop, type } = node;
+      const { type } = node;
 
       if (
         type === 'atrule' &&
-        /keyframes/i.test(name) &&
+        /keyframes/i.test(node.name) &&
         RESERVED_KEYWORDS.indexOf(node.params.toLowerCase()) === -1
       ) {
         addToCache(node.params, encoder, cache);
         atRules.push(node);
       }
 
-      if (type === 'decl' && /animation/i.test(prop)) {
+      if (type === 'decl' && /animation/i.test(node.prop)) {
         decls.push(node);
       }
     },

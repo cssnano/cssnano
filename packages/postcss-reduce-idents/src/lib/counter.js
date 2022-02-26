@@ -12,11 +12,12 @@ module.exports = function () {
 
   return {
     collect(node, encoder) {
-      const { prop, type } = node;
+      const { type } = node;
 
       if (type !== 'decl') {
         return;
       }
+      const { prop } = node;
 
       if (/counter-(reset|increment)/i.test(prop)) {
         node.value = valueParser(node.value).walk((child) => {

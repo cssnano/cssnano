@@ -73,11 +73,11 @@ module.exports = function () {
 
   return {
     collect(node, encoder) {
-      const { name, prop, type } = node;
+      const { type } = node;
 
       if (
         type === 'atrule' &&
-        /counter-style/i.test(name) &&
+        /counter-style/i.test(node.name) &&
         RESERVED_KEYWORDS.indexOf(node.params.toLowerCase()) === -1
       ) {
         addToCache(node.params, encoder, cache);
@@ -85,7 +85,7 @@ module.exports = function () {
         atRules.push(node);
       }
 
-      if (type === 'decl' && /(list-style|system)/i.test(prop)) {
+      if (type === 'decl' && /(list-style|system)/i.test(node.prop)) {
         decls.push(node);
       }
     },
