@@ -22,14 +22,32 @@ function canonical(obj) {
     return key;
   };
 }
-
-function mergeAtRules(css, pairs) {
-  pairs.forEach((pair) => {
-    pair.cache = [];
-    pair.replacements = [];
-    pair.decls = [];
-    pair.removals = [];
-  });
+/**
+ * @param {import('postcss').Root} css
+ * @return {void}
+ */
+function mergeAtRules(css) {
+  const pairs = [
+    {
+      atrule: /keyframes/i,
+      decl: /animation/i,
+      /** @type {import('postcss').AtRule[]} */
+      cache: [],
+      replacements: {},
+      /** @type {import('postcss').Declaration[]} */
+      decls: [],
+      /** @type {import('postcss').AtRule[]} */
+      removals: [],
+    },
+    {
+      atrule: /counter-style/i,
+      decl: /(list-style|system)/i,
+      cache: [],
+      replacements: {},
+      decls: [],
+      removals: [],
+    },
+  ];
 
   let relevant;
 
@@ -100,16 +118,7 @@ function pluginCreator() {
     postcssPlugin: 'postcss-merge-idents',
 
     OnceExit(css) {
-      mergeAtRules(css, [
-        {
-          atrule: /keyframes/i,
-          decl: /animation/i,
-        },
-        {
-          atrule: /counter-style/i,
-          decl: /(list-style|system)/i,
-        },
-      ]);
+      mergeAtRules(css);
     },
   };
 }
