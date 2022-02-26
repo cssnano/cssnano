@@ -58,7 +58,7 @@ function optimise(decl) {
           node.nodes[0].value = angles[node.nodes[0].value.toLowerCase()];
         }
 
-        let lastStop = null;
+        let lastStop;
 
         args.forEach((arg, index) => {
           if (arg.length !== 3) {
@@ -68,7 +68,7 @@ function optimise(decl) {
           let isFinalStop = index === args.length - 1;
           let thisStop = valueParser.unit(arg[2].value);
 
-          if (lastStop === null) {
+          if (lastStop === undefined) {
             lastStop = thisStop;
 
             if (

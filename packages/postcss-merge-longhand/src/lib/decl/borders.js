@@ -54,7 +54,7 @@ function getLevel(prop) {
 }
 
 const isValueCustomProp = (value) =>
-  value && value.search(/var\s*\(\s*--/i) !== -1;
+  value !== undefined && value.search(/var\s*\(\s*--/i) !== -1;
 
 function canMergeValues(values) {
   return !values.some(isValueCustomProp);
@@ -160,7 +160,7 @@ function explode(rule) {
           insertCloned(decl.parent, decl, { prop: direction });
         });
 
-        return decl.remove();
+        decl.remove();
       }
     }
 
@@ -176,7 +176,7 @@ function explode(rule) {
           });
         });
 
-        return decl.remove();
+        decl.remove();
       }
     }
 
@@ -339,6 +339,7 @@ function merge(rule) {
 
       return true;
     }
+    return false;
   });
 
   // border-wsc -> border + border-trbl
@@ -437,6 +438,7 @@ function merge(rule) {
 
       return true;
     }
+    return false;
   });
 
   // border-trbl-wsc + border-trbl (custom prop) -> border-trbl + border-trbl-wsc (custom prop)
@@ -476,6 +478,7 @@ function merge(rule) {
 
           return true;
         }
+        return false;
       });
     });
   });

@@ -33,9 +33,9 @@ const regexSimpleEscapeCharacters = /[ !"#$%&'()*+,.\/;<=>?@\[\\\]^`{|}~]/;
 
 function escape(string, escapeForString) {
   let counter = 0;
-  let character = null;
-  let charCode = null;
-  let value = null;
+  let character;
+  let charCode;
+  let value;
   let output = '';
 
   while (counter < string.length) {

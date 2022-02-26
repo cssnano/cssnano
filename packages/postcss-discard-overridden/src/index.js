@@ -19,12 +19,12 @@ function getScope(node) {
 
   const chain = [node.name.toLowerCase(), node.params];
 
-  do {
+  while (current) {
     if (current.type === 'atrule' && isScope(current.name)) {
       chain.unshift(current.name + ' ' + current.params);
     }
     current = current.parent;
-  } while (current);
+  }
 
   return chain.join('|');
 }
