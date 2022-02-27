@@ -3,7 +3,13 @@ const valueParser = require('postcss-value-parser');
 const addToCache = require('./cache');
 const isNum = require('./isNum');
 
-const RESERVED_KEYWORDS = ['auto', 'span', 'inherit', 'initial', 'unset'];
+const RESERVED_KEYWORDS = new Set([
+  'auto',
+  'span',
+  'inherit',
+  'initial',
+  'unset',
+]);
 
 module.exports = function () {
   let cache = {};
@@ -22,10 +28,7 @@ module.exports = function () {
               if (/\.+/.test(word)) {
                 // reduce empty zones to a single `.`
                 node.value = node.value.replace(word, '.');
-              } else if (
-                word &&
-                RESERVED_KEYWORDS.indexOf(word.toLowerCase()) === -1
-              ) {
+              } else if (word && !RESERVED_KEYWORDS.has(word.toLowerCase())) {
                 addToCache(word, encoder, cache);
               }
             });
@@ -35,10 +38,7 @@ module.exports = function () {
         declCache.push(node);
       } else if (node.prop.toLowerCase() === 'grid-area') {
         valueParser(node.value).walk((child) => {
-          if (
-            child.type === 'word' &&
-            RESERVED_KEYWORDS.indexOf(child.value) === -1
-          ) {
+          if (child.type === 'word' && !RESERVED_KEYWORDS.has(child.value)) {
             addToCache(child.value, encoder, cache);
           }
         });
