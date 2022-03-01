@@ -1,5 +1,19 @@
 # Change Log
 
+## 2.1.0
+
+### Minor Changes
+
+- feature: add TypeScript type declarations
+
+### Patch Changes
+
+- Updated dependencies
+  - cssnano-utils@3.1.0
+  - postcss-discard-comments@5.1.0
+  - postcss-discard-empty@5.1.0
+  - postcss-normalize-whitespace@5.1.0
+
 ## 2.0.3
 
 ### Patch Changes

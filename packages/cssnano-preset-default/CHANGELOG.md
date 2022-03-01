@@ -1,5 +1,42 @@
 # Change Log
 
+## 5.2.0
+
+### Minor Changes
+
+- feature: add TypeScript type declarations
+
+### Patch Changes
+
+- Updated dependencies
+  - cssnano-utils@3.1.0
+  - postcss-colormin@5.3.0
+  - postcss-convert-values@5.1.0
+  - postcss-discard-comments@5.1.0
+  - postcss-discard-duplicates@5.1.0
+  - postcss-discard-empty@5.1.0
+  - postcss-discard-overridden@5.1.0
+  - postcss-merge-longhand@5.1.0
+  - postcss-merge-rules@5.1.0
+  - postcss-minify-font-values@5.1.0
+  - postcss-minify-gradients@5.1.0
+  - postcss-minify-params@5.1.0
+  - postcss-minify-selectors@5.2.0
+  - postcss-normalize-charset@5.1.0
+  - postcss-normalize-display-values@5.1.0
+  - postcss-normalize-positions@5.1.0
+  - postcss-normalize-repeat-style@5.1.0
+  - postcss-normalize-string@5.1.0
+  - postcss-normalize-timing-functions@5.1.0
+  - postcss-normalize-unicode@5.1.0
+  - postcss-normalize-url@5.1.0
+  - postcss-normalize-whitespace@5.1.0
+  - postcss-ordered-values@5.1.0
+  - postcss-reduce-initial@5.1.0
+  - postcss-reduce-transforms@5.1.0
+  - postcss-svgo@5.1.0
+  - postcss-unique-selectors@5.1.0
+
 ## 5.1.12
 
 ### Patch Changes

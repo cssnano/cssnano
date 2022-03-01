@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.3.0
+
+### Minor Changes
+
+- feature: add TypeScript type declarations
+
 ## 5.2.5
 
 ### Patch Changes
