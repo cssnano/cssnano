@@ -1,5 +1,20 @@
 # Change Log
 
+## 5.2.0
+
+### Minor Changes
+
+- feature: add TypeScript type declarations
+
+### Patch Changes
+
+- Updated dependencies
+  - cssnano-preset-default@5.2.0
+  - postcss-discard-unused@5.1.0
+  - postcss-merge-idents@5.1.0
+  - postcss-reduce-idents@5.1.0
+  - postcss-zindex@5.1.0
+
 ## 5.1.12
 
 ### Patch Changes

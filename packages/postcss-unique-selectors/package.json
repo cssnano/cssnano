@@ -1,6 +1,6 @@
 {
   "name": "postcss-unique-selectors",
-  "version": "5.0.4",
+  "version": "5.1.0",
   "description": "Ensure CSS selectors are unique.",
   "main": "src/index.js",
   "types": "types/index.d.ts",

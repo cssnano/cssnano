@@ -1,6 +1,6 @@
 {
   "name": "postcss-reduce-transforms",
-  "version": "5.0.4",
+  "version": "5.1.0",
   "description": "Reduce transform functions with PostCSS.",
   "main": "src/index.js",
   "types": "types/index.d.ts",

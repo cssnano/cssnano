@@ -1,6 +1,6 @@
 {
   "name": "postcss-minify-gradients",
-  "version": "5.0.6",
+  "version": "5.1.0",
   "description": "Minify gradient parameters with PostCSS.",
   "main": "src/index.js",
   "types": "types/index.d.ts",
@@ -24,7 +24,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "colord": "^2.9.1",
-    "cssnano-utils": "^3.0.2",
+    "cssnano-utils": "^3.1.0",
     "postcss-value-parser": "^4.2.0"
   },
   "bugs": {
