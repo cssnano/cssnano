@@ -3,9 +3,11 @@
   "version": "5.0.5",
   "description": "Ensure values are ordered consistently in your CSS.",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "src",
-    "LICENSE-MIT"
+    "LICENSE-MIT",
+    "types"
   ],
   "keywords": [
     "css",

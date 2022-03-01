@@ -3,9 +3,11 @@
   "version": "5.0.4",
   "description": "Convert two value syntax for repeat-style into one value.",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "LICENSE-MIT",
-    "src"
+    "src",
+    "types"
   ],
   "license": "MIT",
   "dependencies": {

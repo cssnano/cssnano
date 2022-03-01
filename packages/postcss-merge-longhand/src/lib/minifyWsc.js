@@ -1,10 +1,11 @@
 'use strict';
-const parseWsc = require('./parseWsc');
-const minifyTrbl = require('./minifyTrbl');
-const { isValidWsc } = require('./validateWsc');
+const parseWsc = require('./parseWsc.js');
+const minifyTrbl = require('./minifyTrbl.js');
+const { isValidWsc } = require('./validateWsc.js');
 
 const defaults = ['medium', 'none', 'currentcolor'];
 
+/** @type {(v: string) => string} */
 module.exports = (v) => {
   const values = parseWsc(v);
 

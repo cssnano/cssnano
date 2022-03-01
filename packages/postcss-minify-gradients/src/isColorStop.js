@@ -3,7 +3,7 @@ const { unit } = require('postcss-value-parser');
 const { colord, extend } = require('colord');
 const namesPlugin = require('colord/plugins/names');
 
-extend([namesPlugin]);
+extend([/** @type {any} */ (namesPlugin)]);
 
 /* Code derived from https://github.com/pigcan/is-color-stop */
 
@@ -25,10 +25,17 @@ const lengthUnits = new Set([
   '%',
 ]);
 
+/**
+ * @param {string} input
+ * @return {boolean}
+ */
 function isCSSLengthUnit(input) {
   return lengthUnits.has(input.toUpperCase());
 }
-
+/**
+ * @param {string|undefined} str
+ * @return {boolean}
+ */
 function isStop(str) {
   if (str) {
     let stop = false;
@@ -45,7 +52,11 @@ function isStop(str) {
   }
   return true;
 }
-
+/**
+ * @param {string} color
+ * @param {string} [stop]
+ * @return {boolean}
+ */
 module.exports = function isColorStop(color, stop) {
   return colord(color).isValid() && isStop(stop);
 };

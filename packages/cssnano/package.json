@@ -3,6 +3,7 @@
     "version": "5.0.17",
     "description": "A modular minifier, built on top of the PostCSS ecosystem.",
     "main": "src/index.js",
+    "types": "types/index.d.ts",
     "funding": {
         "type": "opencollective",
         "url": "https://opencollective.com/cssnano"
@@ -31,7 +32,8 @@
     "repository": "cssnano/cssnano",
     "files": [
         "src",
-        "LICENSE-MIT"
+        "LICENSE-MIT",
+        "types"
     ],
     "bugs": {
         "url": "https://github.com/cssnano/cssnano/issues"

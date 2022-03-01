@@ -10,6 +10,10 @@ const flexDirection = new Set([
 
 const flexWrap = new Set(['nowrap', 'wrap', 'wrap-reverse']);
 
+/**
+ * @param {import('postcss-value-parser').ParsedValue} flexFlow
+ * @return {string}
+ */
 module.exports = function normalizeFlexFlow(flexFlow) {
   let order = {
     direction: '',

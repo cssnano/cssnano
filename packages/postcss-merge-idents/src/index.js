@@ -2,10 +2,18 @@
 const valueParser = require('postcss-value-parser');
 const { sameParent } = require('cssnano-utils');
 
+/**
+ * @param {Record<string, string>} obj
+ * @return {(key: string) => string}
+ */
 function canonical(obj) {
   // Prevent potential infinite loops
   let stack = 50;
 
+  /**
+   * @param {string} key
+   * @return {string}
+   */
   return function recurse(key) {
     if (
       Object.prototype.hasOwnProperty.call(obj, key) &&
@@ -22,6 +30,7 @@ function canonical(obj) {
     return key;
   };
 }
+
 /**
  * @param {import('postcss').Root} css
  * @return {void}
@@ -49,6 +58,9 @@ function mergeAtRules(css) {
     },
   ];
 
+  /**
+   * @type {{atrule: RegExp, decl: RegExp, replacements: Record<string, string>, removals: import('postcss').AtRule[], cache: import('postcss').AtRule[], decls: import('postcss').Declaration[]}}
+   */
   let relevant;
 
   css.walk((node) => {
@@ -70,7 +82,10 @@ function mergeAtRules(css) {
         relevant.cache.forEach((cached) => {
           if (
             cached.name.toLowerCase() === node.name.toLowerCase() &&
-            sameParent(cached, node) &&
+            sameParent(
+              /** @type {any} */ (cached),
+              /** @type {any} */ (node)
+            ) &&
             cached.nodes.toString() === toString
           ) {
             relevant.removals.push(cached);
@@ -113,6 +128,10 @@ function mergeAtRules(css) {
   });
 }
 
+/**
+ * @type {import('postcss').PluginCreator<void>}
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-merge-idents',

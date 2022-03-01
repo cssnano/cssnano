@@ -11,9 +11,11 @@
     "params"
   ],
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "src",
-    "LICENSE"
+    "LICENSE",
+    "types"
   ],
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "license": "MIT",

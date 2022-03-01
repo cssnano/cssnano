@@ -9,6 +9,10 @@ const pseudoElements = new Set([
   '::first-line',
 ]);
 
+/**
+ * @param {parser.Attribute} selector
+ * @return {void}
+ */
 function attribute(selector) {
   if (selector.value) {
     if (selector.raws.value) {
@@ -20,7 +24,9 @@ function attribute(selector) {
     }
 
     if (selector.operator) {
-      selector.operator = selector.operator.trim();
+      selector.operator = /** @type {parser.AttributeOperator} */ (
+        selector.operator.trim()
+      );
     }
   }
 
@@ -60,6 +66,10 @@ function attribute(selector) {
   selector.attribute = selector.attribute.trim();
 }
 
+/**
+ * @param {parser.Combinator} selector
+ * @return {void}
+ */
 function combinator(selector) {
   const value = selector.value.trim();
   selector.spaces.before = '';
@@ -76,6 +86,10 @@ const pseudoReplacements = new Map([
   [':nth-last-of-type', ':last-of-type'],
 ]);
 
+/**
+ * @param {parser.Pseudo} selector
+ * @return {void}
+ */
 function pseudo(selector) {
   const value = selector.value.toLowerCase();
 
@@ -87,7 +101,7 @@ function pseudo(selector) {
       if (one.value === '1') {
         selector.replaceWith(
           parser.pseudo({
-            value: pseudoReplacements.get(value),
+            value: /** @type {string} */ (pseudoReplacements.get(value)),
           })
         );
       }
@@ -141,14 +155,22 @@ const tagReplacements = new Map([
   ['100%', 'to'],
 ]);
 
+/**
+ * @param {parser.Tag} selector
+ * @return {void}
+ */
 function tag(selector) {
   const value = selector.value.toLowerCase();
 
   if (tagReplacements.has(value)) {
-    selector.value = tagReplacements.get(value);
+    selector.value = /** @type {string} */ (tagReplacements.get(value));
   }
 }
 
+/**
+ * @param {parser.Universal} selector
+ * @return {void}
+ */
 function universal(selector) {
   const next = selector.next();
 
@@ -157,14 +179,20 @@ function universal(selector) {
   }
 }
 
-const reducers = new Map([
-  ['attribute', attribute],
-  ['combinator', combinator],
-  ['pseudo', pseudo],
-  ['tag', tag],
-  ['universal', universal],
-]);
+const reducers = new Map(
+  /** @type {[string, ((selector: parser.Node) => void)][]}*/ ([
+    ['attribute', attribute],
+    ['combinator', combinator],
+    ['pseudo', pseudo],
+    ['tag', tag],
+    ['universal', universal],
+  ])
+);
 
+/**
+ * @type {import('postcss').PluginCreator<void>}
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-minify-selectors',

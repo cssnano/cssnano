@@ -19,7 +19,7 @@ see the [tests](src/__tests__/index.js).
 
 ```css
 h1 {
-    transform: rotate3d(0, 0, 1, 20deg);
+  transform: rotate3d(0, 0, 1, 20deg);
 }
 ```
 
@@ -27,7 +27,7 @@ h1 {
 
 ```css
 h1 {
-    transform: rotate(20deg);
+  transform: rotate(20deg);
 }
 ```
 

@@ -3,9 +3,11 @@
   "version": "5.0.4",
   "description": "Minify font declarations with PostCSS",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "src",
-    "LICENSE"
+    "LICENSE",
+    "types"
   ],
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "license": "MIT",

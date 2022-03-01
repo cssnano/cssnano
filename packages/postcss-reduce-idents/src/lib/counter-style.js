@@ -66,9 +66,15 @@ const RESERVED_KEYWORDS = new Set([
   'disclosure-close',
 ]);
 
+/**
+ * @return {import('../index.js').Reducer}
+ */
 module.exports = function () {
+  /** @type {Record<string, {ident: string, count: number}>} */
   let cache = {};
+  /** @type {import('postcss').AtRule[]} */
   let atRules = [];
+  /** @type {import('postcss').Declaration[]} */
   let decls = [];
 
   return {

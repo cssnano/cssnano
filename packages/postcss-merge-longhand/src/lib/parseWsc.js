@@ -1,17 +1,23 @@
 'use strict';
 const { list } = require('postcss');
-const { isWidth, isStyle, isColor } = require('./validateWsc');
+const { isWidth, isStyle, isColor } = require('./validateWsc.js');
 
 const none = /^\s*(none|medium)(\s+none(\s+(none|currentcolor))?)?\s*$/i;
 
 const varRE = /(^.*var)(.*\(.*--.*\))(.*)/i;
+/** @type {(p: RegExpExecArray) => string} */
 const varPreserveCase = (p) =>
   `${p[1].toLowerCase()}${p[2]}${p[3].toLowerCase()}`;
+/** @type {(v: string) => string} */
 const toLower = (v) => {
   const match = varRE.exec(v);
   return match ? varPreserveCase(match) : v.toLowerCase();
 };
 
+/**
+ * @param {string} value
+ * @return {[string, string, string]}
+ */
 module.exports = function parseWsc(value) {
   if (none.test(value)) {
     return ['medium', 'none', 'currentcolor'];
@@ -30,6 +36,7 @@ module.exports = function parseWsc(value) {
     width = '0';
   }
 
+  /** @type {string[]} */
   const unknown = [];
 
   values.forEach((v) => {
@@ -58,5 +65,5 @@ module.exports = function parseWsc(value) {
     }
   }
 
-  return [width, style, color];
+  return /** @type {[string, string, string]} */ ([width, style, color]);
 };

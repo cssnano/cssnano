@@ -3,6 +3,7 @@
   "version": "5.0.4",
   "description": "PostCSS plugin to discard overridden @keyframes or @counter-style.",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "LICENSE",
     "src"

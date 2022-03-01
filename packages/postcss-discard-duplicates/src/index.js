@@ -1,13 +1,28 @@
 'use strict';
+/**
+ * @param {string | undefined} value
+ * @return {string | undefined}
+ */
 function trimValue(value) {
   return value ? value.trim() : value;
 }
 
+/**
+ * @param {{nodes: import('postcss').Node[]}} node
+ * @return {boolean}
+ */
 function empty(node) {
   return !node.nodes.filter((child) => child.type !== 'comment').length;
 }
 
-function equals(a, b) {
+/**
+ * @param {import('postcss').AnyNode} nodeA
+ * @param {import('postcss').AnyNode} nodeB
+ * @return {boolean}
+ */
+function equals(nodeA, nodeB) {
+  const a = /** @type {any} */ (nodeA);
+  const b = /** @type {any} */ (nodeB);
   if (a.type !== b.type) {
     return false;
   }
@@ -67,6 +82,11 @@ function equals(a, b) {
   return true;
 }
 
+/**
+ * @param {import('postcss').Rule} last
+ * @param {import('postcss').AnyNode[]} nodes
+ * @return {void}
+ */
 function dedupeRule(last, nodes) {
   let index = nodes.indexOf(last) - 1;
   while (index >= 0) {
@@ -85,6 +105,11 @@ function dedupeRule(last, nodes) {
   }
 }
 
+/**
+ * @param {import('postcss').AtRule | import('postcss').Declaration} last
+ * @param {import('postcss').AnyNode[]} nodes
+ * @return {void}
+ */
 function dedupeNode(last, nodes) {
   let index = nodes.includes(last) ? nodes.indexOf(last) - 1 : nodes.length - 1;
 
@@ -96,8 +121,15 @@ function dedupeNode(last, nodes) {
   }
 }
 
+/**
+ * @param {import('postcss').AnyNode} root
+ * @return {void}
+ */
 function dedupe(root) {
-  const { nodes } = root;
+  const { nodes } =
+    /** @type {import('postcss').Container<import('postcss').ChildNode>} */ (
+      root
+    );
 
   if (!nodes) {
     return;
@@ -118,6 +150,10 @@ function dedupe(root) {
   }
 }
 
+/**
+ * @type {import('postcss').PluginCreator<void>}
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-discard-duplicates',

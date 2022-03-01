@@ -2,14 +2,14 @@
 const { list } = require('postcss');
 const { unit } = require('postcss-value-parser');
 const stylehacks = require('stylehacks');
-const canMerge = require('../canMerge');
-const getDecls = require('../getDecls');
-const getValue = require('../getValue');
-const mergeRules = require('../mergeRules');
-const insertCloned = require('../insertCloned');
-const remove = require('../remove');
-const isCustomProp = require('../isCustomProp');
-const canExplode = require('../canExplode');
+const canMerge = require('../canMerge.js');
+const getDecls = require('../getDecls.js');
+const getValue = require('../getValue.js');
+const mergeRules = require('../mergeRules.js');
+const insertCloned = require('../insertCloned.js');
+const remove = require('../remove.js');
+const isCustomProp = require('../isCustomProp.js');
+const canExplode = require('../canExplode.js');
 
 const properties = ['column-width', 'column-count'];
 const auto = 'auto';
@@ -22,8 +22,10 @@ const inherit = 'inherit';
  * remove any 'auto' definition when there are two values.
  *
  * Specification link: https://www.w3.org/TR/css3-multicol/
+ *
+ * @param {[string, string]} values
+ * @return {string}
  */
-
 function normalize(values) {
   if (values[0].toLowerCase() === auto) {
     return values[1];
@@ -42,7 +44,10 @@ function normalize(values) {
 
   return values.join(' ');
 }
-
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
 function explode(rule) {
   rule.walkDecls(/^columns$/i, (decl) => {
     if (!canExplode(decl)) {
@@ -68,7 +73,7 @@ function explode(rule) {
         prop = properties[0];
       }
 
-      insertCloned(decl.parent, decl, {
+      insertCloned(/** @type {import('postcss').Rule} */ (decl.parent), decl, {
         prop,
         value,
       });
@@ -78,6 +83,10 @@ function explode(rule) {
   });
 }
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
 function cleanup(rule) {
   let decls = getDecls(rule, ['columns'].concat(properties));
 
@@ -116,13 +125,21 @@ function cleanup(rule) {
   }
 }
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
 function merge(rule) {
   mergeRules(rule, properties, (rules, lastNode) => {
     if (canMerge(rules) && !rules.some(stylehacks.detect)) {
-      insertCloned(lastNode.parent, lastNode, {
-        prop: 'columns',
-        value: normalize(rules.map(getValue)),
-      });
+      insertCloned(
+        /** @type {import('postcss').Rule} */ (lastNode.parent),
+        lastNode,
+        {
+          prop: 'columns',
+          value: normalize(/** @type [string, string] */ (rules.map(getValue))),
+        }
+      );
 
       rules.forEach(remove);
 

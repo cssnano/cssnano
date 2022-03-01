@@ -14,10 +14,18 @@ const verticalValue = new Map([
 ]);
 const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 
+/**
+ * @param {valueParser.Node} node
+ * @return {boolean}
+ */
 function isCommaNode(node) {
   return node.type === 'div' && node.value === ',';
 }
 
+/**
+ * @param {valueParser.Node} node
+ * @return {boolean}
+ */
 function isVariableFunctionNode(node) {
   if (node.type !== 'function') {
     return false;
@@ -26,6 +34,10 @@ function isVariableFunctionNode(node) {
   return ['var', 'env'].includes(node.value.toLowerCase());
 }
 
+/**
+ * @param {valueParser.Node} node
+ * @return {boolean}
+ */
 function isMathFunctionNode(node) {
   if (node.type !== 'function') {
     return false;
@@ -33,6 +45,10 @@ function isMathFunctionNode(node) {
   return mathFunctions.has(node.value.toLowerCase());
 }
 
+/**
+ * @param {valueParser.Node} node
+ * @return {boolean}
+ */
 function isNumberNode(node) {
   if (node.type !== 'word') {
     return false;
@@ -43,6 +59,10 @@ function isNumberNode(node) {
   return !isNaN(value);
 }
 
+/**
+ * @param {valueParser.Node} node
+ * @return {boolean}
+ */
 function isDimensionNode(node) {
   if (node.type !== 'word') {
     return false;
@@ -57,8 +77,13 @@ function isDimensionNode(node) {
   return parsed.unit !== '';
 }
 
+/**
+ * @param {string} value
+ * @return {string}
+ */
 function transform(value) {
   const parsed = valueParser(value);
+  /** @type {({start: number, end: number} | {start: null, end: null})[]} */
   const ranges = [];
   let rangeIndex = 0;
   let shouldContinue = true;
@@ -150,7 +175,7 @@ function transform(value) {
       const map = new Map([...horizontal, ['center', center]]);
 
       if (map.has(firstNode)) {
-        nodes[0].value = map.get(firstNode);
+        nodes[0].value = /** @type {string}*/ (map.get(firstNode));
       }
 
       return;
@@ -161,19 +186,19 @@ function transform(value) {
         nodes[0].value = nodes[1].value = '';
 
         if (horizontal.has(secondNode)) {
-          nodes[2].value = horizontal.get(secondNode);
+          nodes[2].value = /** @type {string} */ (horizontal.get(secondNode));
         }
         return;
       }
 
       if (horizontal.has(firstNode) && verticalValue.has(secondNode)) {
-        nodes[0].value = horizontal.get(firstNode);
-        nodes[2].value = verticalValue.get(secondNode);
+        nodes[0].value = /** @type {string} */ (horizontal.get(firstNode));
+        nodes[2].value = /** @type {string} */ (verticalValue.get(secondNode));
 
         return;
       } else if (verticalValue.has(firstNode) && horizontal.has(secondNode)) {
-        nodes[0].value = horizontal.get(secondNode);
-        nodes[2].value = verticalValue.get(firstNode);
+        nodes[0].value = /** @type {string} */ (horizontal.get(secondNode));
+        nodes[2].value = /** @type {string} */ (verticalValue.get(firstNode));
 
         return;
       }
@@ -183,6 +208,10 @@ function transform(value) {
   return parsed.toString();
 }
 
+/**
+ * @type {import('postcss').PluginCreator<void>}
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-positions',

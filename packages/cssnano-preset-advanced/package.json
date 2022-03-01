@@ -2,10 +2,12 @@
   "name": "cssnano-preset-advanced",
   "version": "5.1.12",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "description": "Advanced optimisations for cssnano; may or may not break your CSS!",
   "files": [
     "LICENSE-MIT",
-    "src"
+    "src",
+    "types"
   ],
   "license": "MIT",
   "dependencies": {

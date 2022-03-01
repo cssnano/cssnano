@@ -4,6 +4,11 @@ const { isSupported } = require('caniuse-api');
 const valueParser = require('postcss-value-parser');
 const minifyColor = require('./minifyColor');
 
+/**
+ * @param {{nodes: valueParser.Node[]}} parent
+ * @param {(node: valueParser.Node, index: number, parent: {nodes: valueParser.Node[]}) => false | undefined} callback
+ * @return {void}
+ */
 function walk(parent, callback) {
   parent.nodes.forEach((node, index) => {
     const bubble = callback(node, index, parent);
@@ -23,6 +28,10 @@ function walk(parent, callback) {
 const browsersWithTransparentBug = new Set(['ie 8', 'ie 9']);
 const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 
+/**
+ * @param {valueParser.Node} node
+ * @return {boolean}
+ */
 function isMathFunctionNode(node) {
   if (node.type !== 'function') {
     return false;
@@ -30,6 +39,11 @@ function isMathFunctionNode(node) {
   return mathFunctions.has(node.value.toLowerCase());
 }
 
+/**
+ * @param {string} value
+ * @param {Record<string, boolean>} options
+ * @return {string}
+ */
 function transform(value, options) {
   const parsed = valueParser(value);
 
@@ -39,7 +53,7 @@ function transform(value, options) {
         const { value: originalValue } = node;
 
         node.value = minifyColor(valueParser.stringify(node), options);
-        node.type = 'word';
+        /** @type {string} */ (node.type) = 'word';
 
         const next = parent.nodes[index + 1];
 
@@ -48,10 +62,14 @@ function transform(value, options) {
           next &&
           (next.type === 'word' || next.type === 'function')
         ) {
-          parent.nodes.splice(index + 1, 0, {
-            type: 'space',
-            value: ' ',
-          });
+          parent.nodes.splice(
+            index + 1,
+            0,
+            /** @type {valueParser.SpaceNode} */ ({
+              type: 'space',
+              value: ' ',
+            })
+          );
         }
       } else if (isMathFunctionNode(node)) {
         return false;
@@ -64,6 +82,11 @@ function transform(value, options) {
   return parsed.toString();
 }
 
+/**
+ * @param {Record<string, boolean>} options
+ * @param {string[]} browsers
+ * @return {Record<string, boolean>}
+ */
 function addPluginDefaults(options, browsers) {
   const defaults = {
     // Does the browser support 4 & 8 character hex notation
@@ -75,12 +98,17 @@ function addPluginDefaults(options, browsers) {
   };
   return { ...defaults, ...options };
 }
-
+/**
+ * @type {import('postcss').PluginCreator<Record<string, boolean>>}
+ * @param {Record<string, boolean>} config
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator(config = {}) {
   return {
     postcssPlugin: 'postcss-colormin',
 
     prepare(result) {
+      /** @type {typeof result.opts & browserslist.Options} */
       const resultOptions = result.opts || {};
       const browsers = browserslist(null, {
         stats: resultOptions.stats,

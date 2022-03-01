@@ -15,7 +15,10 @@ const angleConv = new Map([
   ['turn', 360],
   ['deg', 1],
 ]);
-
+/**
+ * @param {number} number
+ * @return {string}
+ */
 function dropLeadingZero(number) {
   const value = String(number);
 
@@ -31,19 +34,33 @@ function dropLeadingZero(number) {
 
   return value;
 }
-
+/**
+ * @param {number} number
+ * @param {string} originalUnit
+ * @param {Map<string, number>} conversions
+ * @return {string}
+ */
 function transform(number, originalUnit, conversions) {
   let conversionUnits = [...conversions.keys()].filter((u) => {
     return originalUnit !== u;
   });
 
-  const base = number * conversions.get(originalUnit);
+  const base = number * /** @type {number} */ (conversions.get(originalUnit));
 
   return conversionUnits
-    .map((u) => dropLeadingZero(base / conversions.get(u)) + u)
+    .map(
+      (u) =>
+        dropLeadingZero(base / /** @type {number} */ (conversions.get(u))) + u
+    )
     .reduce((a, b) => (a.length < b.length ? a : b));
 }
 
+/**
+ * @param {number} number
+ * @param {string} unit
+ * @param {{time?: boolean, length?: boolean, angle?: boolean}} options
+ * @return {string}
+ */
 module.exports = function (number, unit, { time, length, angle }) {
   let value = dropLeadingZero(number) + (unit ? unit : '');
   let converted;

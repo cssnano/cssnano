@@ -1,12 +1,14 @@
 'use strict';
 const path = require('path');
+/** @type {any} */
 const postcss = require('postcss');
 const yaml = require('yaml');
 const { lilconfigSync } = require('lilconfig');
 
 const cssnano = 'cssnano';
 
-/*
+/** @typedef {{preset?: any, plugins?: any[], configFile?: string}} Options */
+/**
  * @param {string} moduleId
  * @returns {boolean}
  */
@@ -19,14 +21,16 @@ function isResolvable(moduleId) {
   }
 }
 
-/*
+/**
  * preset can be one of four possibilities:
  * preset = 'default'
  * preset = ['default', {}]
  * preset = function <- to be invoked
  * preset = {plugins: []} <- already invoked function
+ *
+ * @param {any} preset
+ * @return {[import('postcss').PluginCreator<any>, boolean | Record<string, any> | undefined][]}}
  */
-
 function resolvePreset(preset) {
   let fn, options;
 
@@ -71,17 +75,19 @@ function resolvePreset(preset) {
   );
 }
 
-/*
+/**
  * cssnano will look for configuration firstly as options passed
  * directly to it, and failing this it will use lilconfig to
  * load an external file.
- */
 
+ * @param {Options} options
+ */
 function resolveConfig(options) {
   if (options.preset) {
     return resolvePreset(options.preset);
   }
 
+  /** @type {string | undefined} */
   let searchPath = process.cwd();
   let configPath = undefined;
 
@@ -116,6 +122,11 @@ function resolveConfig(options) {
   return resolvePreset(config.config.preset || config.config);
 }
 
+/**
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options=} options
+ * @return {import('postcss').Plugin}
+ */
 function cssnanoPlugin(options = {}) {
   if (Array.isArray(options.plugins)) {
     if (!options.preset || !options.preset.plugins) {

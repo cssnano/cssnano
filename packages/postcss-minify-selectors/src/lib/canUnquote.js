@@ -9,6 +9,10 @@ const range =
   // eslint-disable-next-line no-control-regex
   /[\u0000-\u002c\u002e\u002f\u003A-\u0040\u005B-\u005E\u0060\u007B-\u009f]/;
 
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
 module.exports = function canUnquote(value) {
   if (value === '-' || value === '') {
     return false;

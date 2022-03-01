@@ -1,4 +1,8 @@
 'use strict';
+/**
+ * @param {import('postcss').Rule} node
+ * @return {boolean}
+ */
 module.exports = function isMixin(node) {
   const { selector } = node;
 

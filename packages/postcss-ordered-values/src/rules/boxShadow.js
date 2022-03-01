@@ -31,7 +31,9 @@ function normalize(args) {
   const list = [];
   let abort = false;
   for (const arg of args) {
+    /** @type {import('postcss-value-parser').Node[]} */
     let val = [];
+    /** @type {Record<'inset'|'color', import('postcss-value-parser').Node[]>} */
     let state = {
       inset: [],
       color: [],

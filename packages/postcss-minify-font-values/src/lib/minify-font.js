@@ -4,8 +4,14 @@ const keywords = require('./keywords');
 const minifyFamily = require('./minify-family');
 const minifyWeight = require('./minify-weight');
 
+/**
+ * @param {import('postcss-value-parser').Node[]} nodes
+ * @param {import('../index').Options} opts
+ * @return {import('postcss-value-parser').Node[]}
+ */
 module.exports = function (nodes, opts) {
-  let i, max, node, familyStart, family;
+  let i, max, node, family;
+  let familyStart = NaN;
   let hasSize = false;
 
   for (i = 0, max = nodes.length; i < max; i += 1) {

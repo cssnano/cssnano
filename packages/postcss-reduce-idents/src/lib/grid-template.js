@@ -11,8 +11,13 @@ const RESERVED_KEYWORDS = new Set([
   'unset',
 ]);
 
+/**
+ * @return {import('../index.js').Reducer}
+ */
 module.exports = function () {
+  /** @type {Record<string, {ident: string, count: number}>} */
   let cache = {};
+  /** @type {import('postcss').Declaration[]} */
   let declCache = [];
 
   return {

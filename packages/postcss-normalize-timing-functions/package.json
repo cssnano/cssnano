@@ -3,9 +3,11 @@
   "version": "5.0.3",
   "description": "Normalize CSS animation/transition timing functions.",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "LICENSE-MIT",
-    "src"
+    "src",
+    "types"
   ],
   "license": "MIT",
   "dependencies": {

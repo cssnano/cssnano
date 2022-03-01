@@ -5,6 +5,11 @@ const listStyleTypes = require('./listStyleTypes.json');
 const definedTypes = new Set(listStyleTypes['list-style-type']);
 
 const definedPosition = new Set(['inside', 'outside']);
+
+/**
+ * @param {import('postcss-value-parser').ParsedValue} listStyle
+ * @return {string}
+ */
 module.exports = function listStyleNormalizer(listStyle) {
   const order = { type: '', position: '', image: '' };
 

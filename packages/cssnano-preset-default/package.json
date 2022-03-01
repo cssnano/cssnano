@@ -2,16 +2,18 @@
   "name": "cssnano-preset-default",
   "version": "5.1.12",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "description": "Safe defaults for cssnano which require minimal configuration.",
   "files": [
     "LICENSE-MIT",
-    "src"
+    "src",
+    "types"
   ],
   "license": "MIT",
   "dependencies": {
     "css-declaration-sorter": "^6.0.3",
     "cssnano-utils": "^3.0.2",
-    "postcss-calc": "^8.2.0",
+    "postcss-calc": "^8.2.3",
     "postcss-colormin": "^5.2.5",
     "postcss-convert-values": "^5.0.4",
     "postcss-discard-comments": "^5.0.3",
@@ -53,6 +55,7 @@
     "node": "^10 || ^12 || >=14.0"
   },
   "devDependencies": {
+    "@types/css-declaration-sorter": "^6.0.1",
     "postcss": "^8.2.15"
   },
   "peerDependencies": {

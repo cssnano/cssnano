@@ -5,6 +5,21 @@ const counterStyleReducer = require('./lib/counter-style');
 const keyframesReducer = require('./lib/keyframes');
 const gridTemplateReducer = require('./lib/grid-template');
 
+/** @typedef {{
+    counter?: boolean, counterStyle?: boolean, 
+    keyframes?: boolean, gridTemplate?: boolean, 
+    encoder?: (value: string, index: number) => string}} Options
+*/
+/** @typedef {{
+ *    collect: (node: import('postcss').AnyNode, encoder: (value: string, num: number) => string) => void,
+ *    transform: () => void
+ *  }} Reducer
+ */
+/**
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} arg
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator({
   counter = true,
   counterStyle = true,
@@ -12,6 +27,7 @@ function pluginCreator({
   gridTemplate = true,
   encoder = encode,
 } = {}) {
+  /** @type {Reducer[]} */
   const reducers = [];
 
   counter && reducers.push(counterReducer());

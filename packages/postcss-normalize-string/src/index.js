@@ -46,6 +46,17 @@ const T_SINGLE_QUOTE = { type: C_SINGLE_QUOTE, value: L_SINGLE_QUOTE };
 const T_DOUBLE_QUOTE = { type: C_DOUBLE_QUOTE, value: L_DOUBLE_QUOTE };
 const T_NEWLINE = { type: C_NEWLINE, value: L_NEWLINE };
 
+/** @typedef {T_ESCAPED_SINGLE_QUOTE | T_ESCAPED_DOUBLE_QUOTE | T_SINGLE_QUOTE | T_NEWLINE} StringAstNode */
+/**
+ * @typedef {{nodes: StringAstNode[],
+ *            types: {escapedSingleQuote: number, escapedDoubleQuote: number, singleQuote: number, doubleQuote: number},
+ *            quotes: boolean}} StringAst
+ */
+
+/**
+ * @param {StringAst} ast
+ * @return {string}
+ */
 function stringify(ast) {
   return ast.nodes.reduce((str, { value }) => {
     // Collapse multiple line strings automatically
@@ -57,11 +68,16 @@ function stringify(ast) {
   }, '');
 }
 
+/**
+ * @param {string} str
+ * @return {StringAst}
+ */
 function parse(str) {
   let code, next, value;
   let pos = 0;
   let len = str.length;
 
+  /** @type StringAst */
   const ast = {
     nodes: [],
     types: {
@@ -159,6 +175,11 @@ function parse(str) {
   return ast;
 }
 
+/**
+ * @param {valueParser.StringNode} node
+ * @param {StringAst} ast
+ * @return {void}
+ */
 function changeWrappingQuotes(node, ast) {
   const { types } = ast;
 
@@ -185,7 +206,9 @@ function changeWrappingQuotes(node, ast) {
   ast.nodes = changeChildQuotes(ast.nodes, node.quote);
 }
 /**
+ * @param {StringAstNode[]} childNodes
  * @param {string} parentQuote
+ * @return {StringAstNode[]}
  */
 function changeChildQuotes(childNodes, parentQuote) {
   const updatedChildren = [];
@@ -207,6 +230,11 @@ function changeChildQuotes(childNodes, parentQuote) {
   return updatedChildren;
 }
 
+/**
+ * @param {string} value
+ * @param {'single' | 'double'} preferredQuote
+ * @return {string}
+ */
 function normalize(value, preferredQuote) {
   if (!value || !value.length) {
     return value;
@@ -233,16 +261,28 @@ function normalize(value, preferredQuote) {
     .toString();
 }
 
+/**
+ * @param {string} original
+ * @param {Map<string, string>} cache
+ * @param {'single' | 'double'} preferredQuote
+ * @return {string}
+ */
 function minify(original, cache, preferredQuote) {
   const key = original + '|' + preferredQuote;
   if (cache.has(key)) {
-    return cache.get(key);
+    return /** @type {string} */ (cache.get(key));
   }
   const newValue = normalize(original, preferredQuote);
   cache.set(key, newValue);
   return newValue;
 }
 
+/** @typedef {{preferredQuote?: 'double' | 'single'}} Options */
+/**
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} opts
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator(opts) {
   const { preferredQuote } = Object.assign(
     {},

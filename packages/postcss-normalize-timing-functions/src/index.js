@@ -1,6 +1,7 @@
 'use strict';
 const valueParser = require('postcss-value-parser');
 
+/** @type {(node: valueParser.Node) => number} */
 const getValue = (node) => parseFloat(node.value);
 
 /* Works because toString() normalizes the formatting,
@@ -12,6 +13,10 @@ const conversions = new Map([
   [[0, 0, 0.58, 1].toString(), 'ease-out'],
   [[0.42, 0, 0.58, 1].toString(), 'ease-in-out'],
 ]);
+/**
+ * @param {valueParser.Node} node
+ * @return {void | false}
+ */
 function reduce(node) {
   if (node.type !== 'function') {
     return false;
@@ -34,10 +39,10 @@ function reduce(node) {
       (node.nodes[2].value.toLowerCase() === 'start' ||
         node.nodes[2].value.toLowerCase() === 'jump-start')
     ) {
-      node.type = 'word';
+      /** @type string */ (node.type) = 'word';
       node.value = 'step-start';
 
-      delete node.nodes;
+      delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
 
       return;
     }
@@ -50,10 +55,10 @@ function reduce(node) {
       (node.nodes[2].value.toLowerCase() === 'end' ||
         node.nodes[2].value.toLowerCase() === 'jump-end')
     ) {
-      node.type = 'word';
+      /** @type string */ (node.type) = 'word';
       node.value = 'step-end';
 
-      delete node.nodes;
+      delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
 
       return;
     }
@@ -87,20 +92,28 @@ function reduce(node) {
     const match = conversions.get(values.toString());
 
     if (match) {
-      node.type = 'word';
+      /** @type string */ (node.type) = 'word';
       node.value = match;
 
-      delete node.nodes;
+      delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
 
       return;
     }
   }
 }
 
+/**
+ * @param {string} value
+ * @return {string}
+ */
 function transform(value) {
   return valueParser(value).walk(reduce).toString();
 }
 
+/**
+ * @type {import('postcss').PluginCreator<void>}
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-timing-functions',

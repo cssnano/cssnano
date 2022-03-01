@@ -1,4 +1,8 @@
 'use strict';
+/**
+ * @param {string} data
+ * @return {string}
+ */
 function encode(data) {
   return data
     .replace(/"/g, "'")

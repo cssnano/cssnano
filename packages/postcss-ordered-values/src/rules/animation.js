@@ -26,28 +26,48 @@ const fillModes = new Set(['none', 'forwards', 'backwards', 'both']);
 const playStates = new Set(['running', 'paused']);
 const timeUnits = new Set(['ms', 's']);
 
+/**
+ * @param {string} value
+ * @param {string} type
+ * @return {boolean}
+ */
 const isTimingFunction = (value, type) => {
   return (type === 'function' && functions.has(value)) || keywords.has(value);
 };
-
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
 const isDirection = (value) => {
   return directions.has(value);
 };
-
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
 const isFillMode = (value) => {
   return fillModes.has(value);
 };
-
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
 const isPlayState = (value) => {
   return playStates.has(value);
 };
-
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
 const isTime = (value) => {
   const quantity = unit(value);
 
   return quantity && timeUnits.has(quantity.unit);
 };
-
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
 const isIterationCount = (value) => {
   const quantity = unit(value);
 
@@ -71,6 +91,7 @@ function normalize(args) {
   const list = [];
 
   for (const arg of args) {
+    /** @type {Record<string, import('postcss-value-parser').Node[]>} */
     const state = {
       name: [],
       duration: [],

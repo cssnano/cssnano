@@ -5,9 +5,15 @@ const isNum = require('./isNum');
 
 const RESERVED_KEYWORDS = new Set(['unset', 'initial', 'inherit', 'none']);
 
+/**
+ * @return {import('../index.js').Reducer}
+ */
 module.exports = function () {
+  /** @type {Record<string, {ident: string, count: number}>} */
   let cache = {};
+  /** @type {{value: import('postcss-value-parser').ParsedValue}[]} */
   let declOneCache = [];
+  /** @type {import('postcss').Declaration[]} */
   let declTwoCache = [];
 
   return {
@@ -20,19 +26,21 @@ module.exports = function () {
       const { prop } = node;
 
       if (/counter-(reset|increment)/i.test(prop)) {
-        node.value = valueParser(node.value).walk((child) => {
-          if (
-            child.type === 'word' &&
-            !isNum(child) &&
-            !RESERVED_KEYWORDS.has(child.value.toLowerCase())
-          ) {
-            addToCache(child.value, encoder, cache);
+        /** @type {unknown} */ (node.value) = valueParser(node.value).walk(
+          (child) => {
+            if (
+              child.type === 'word' &&
+              !isNum(child) &&
+              !RESERVED_KEYWORDS.has(child.value.toLowerCase())
+            ) {
+              addToCache(child.value, encoder, cache);
 
-            child.value = cache[child.value].ident;
+              child.value = cache[child.value].ident;
+            }
           }
-        });
+        );
 
-        declOneCache.push(node);
+        declOneCache.push(/** @type {any} */ (node));
       } else if (/content/i.test(prop)) {
         declTwoCache.push(node);
       }
@@ -69,7 +77,7 @@ module.exports = function () {
       });
 
       declOneCache.forEach((decl) => {
-        decl.value = decl.value
+        /** @type {unknown} */ (decl.value) = decl.value
           .walk((node) => {
             if (node.type === 'word' && !isNum(node)) {
               Object.keys(cache).forEach((key) => {

@@ -11,6 +11,7 @@ const rule = 'rule';
  * @return {string[]}
  */
 function splitValues({ value }, comma, space) {
+  /** @type {string[]} */
   let result = [];
   for (const val of comma(value)) {
     result = result.concat(space(val));
@@ -18,6 +19,10 @@ function splitValues({ value }, comma, space) {
   return result;
 }
 
+/**
+ * @param {{atRules: import('postcss').AtRule[], values: string[]}} arg
+ * @return {void}
+ */
 function filterAtRule({ atRules, values }) {
   const uniqueValues = new Set(values);
   atRules.forEach((node) => {
@@ -29,6 +34,10 @@ function filterAtRule({ atRules, values }) {
   });
 }
 
+/**
+ * @param {{atRules: import('postcss').AtRule[], rules: (string | true)[]}} arg
+ * @return {void}
+ */
 function filterNamespace({ atRules, rules }) {
   const uniqueRules = new Set(rules);
   atRules.forEach((atRule) => {
@@ -46,16 +55,31 @@ function filterNamespace({ atRules, rules }) {
   });
 }
 
+/**
+ * @param {string} fontFamily
+ * @param {string[]} cache
+ * @param {(input: string) => string[]} comma
+ * @return {boolean}
+ */
 function hasFont(fontFamily, cache, comma) {
   return comma(fontFamily).some((font) => cache.some((c) => c.includes(font)));
 }
 
-// fonts have slightly different logic
+/** 
+ * fonts have slightly different logic
+
+ * @param {{atRules: import('postcss').AtRule[], values: string[]}} cache
+ * @param {(input: string) => string[]} comma
+ * @return {void}
+ */
 function filterFont({ atRules, values }, comma) {
   values = [...new Set(values)];
   atRules.forEach((r) => {
-    const families = r.nodes.filter(
-      (node) => node.type === 'decl' && node.prop === 'font-family'
+    /** @type {import('postcss').Declaration[]} */
+    const families = /** @type {import('postcss').Declaration[]} */ (
+      r.nodes.filter(
+        (node) => node.type === 'decl' && node.prop === 'font-family'
+      )
     );
 
     // Discard the @font-face if it has no font-family
@@ -71,6 +95,12 @@ function filterFont({ atRules, values }, comma) {
   });
 }
 
+/**@typedef {{fontFace?: boolean, counterStyle?: boolean, keyframes?: boolean, namespace?: boolean}} Options */
+/**
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} opts
+ * @return {import('postcss').Plugin}
+ */
 function pluginCreator(opts) {
   const { fontFace, counterStyle, keyframes, namespace } = Object.assign(
     {},
@@ -87,9 +117,13 @@ function pluginCreator(opts) {
     postcssPlugin: 'postcss-discard-unused',
 
     prepare() {
+      /** @type {{atRules: import('postcss').AtRule[], values: string[]}} */
       const counterStyleCache = { atRules: [], values: [] };
+      /** @type {{atRules: import('postcss').AtRule[], values: string[]}} */
       const keyframesCache = { atRules: [], values: [] };
+      /** @type {{atRules: import('postcss').AtRule[], rules: (string | true)[]}} */
       const namespaceCache = { atRules: [], rules: [] };
+      /** @type {{atRules: import('postcss').AtRule[], values: string[]}} */
       const fontCache = { atRules: [], values: [] };
 
       return {

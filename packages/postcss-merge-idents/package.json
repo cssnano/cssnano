@@ -3,9 +3,11 @@
   "version": "5.0.3",
   "description": "Merge keyframe and counter style identifiers.",
   "main": "src/index.js",
+  "types": "types/index.d.ts",  
   "files": [
     "src",
-    "LICENSE-MIT"
+    "LICENSE-MIT",
+    "types"
   ],
   "keywords": [
     "css",
