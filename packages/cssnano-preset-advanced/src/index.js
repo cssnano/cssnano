@@ -22,7 +22,7 @@ const defaultOpts = {
   },
 };
 
-module.exports = function advancedPreset(opts = {}) {
+function advancedPreset(opts = {}) {
   const options = Object.assign({}, defaultOpts, opts);
 
   /** @type {[import('postcss').PluginCreator<any>, boolean | Record<string, any> | undefined][]} */
@@ -36,4 +36,6 @@ module.exports = function advancedPreset(opts = {}) {
   ];
 
   return { plugins };
-};
+}
+
+module.exports = advancedPreset;

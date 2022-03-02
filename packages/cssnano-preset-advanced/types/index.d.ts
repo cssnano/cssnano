@@ -1,8 +1,11 @@
-declare function _exports(opts?: {}): {
+export = advancedPreset;
+declare function advancedPreset(opts?: {}): {
     plugins: [import("postcss").PluginCreator<any>, boolean | Record<string, any> | undefined][];
 };
-export = _exports;
-export type AdvancedOptions = {
+declare namespace advancedPreset {
+    export { AdvancedOptions, Options };
+}
+type AdvancedOptions = {
     autoprefixer?: autoprefixer.Options;
     discardUnused?: false | import('postcss-discard-unused').Options & {
         exclude?: true;
@@ -17,5 +20,5 @@ export type AdvancedOptions = {
         exclude?: true;
     };
 };
-export type Options = import('cssnano-preset-default').Options & AdvancedOptions;
+type Options = import('cssnano-preset-default').Options & AdvancedOptions;
 import autoprefixer = require("autoprefixer");
