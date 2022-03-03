@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.2.1
+
+### Patch Changes
+
+- fix: improve type declarations
+
 ## 5.2.0
 
 ### Minor Changes

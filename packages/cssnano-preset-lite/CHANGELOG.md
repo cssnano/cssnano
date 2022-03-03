@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.1.1
+
+### Patch Changes
+
+- fix: improve type declarations
+
 ## 2.1.0
 
 ### Minor Changes
