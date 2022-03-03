@@ -15,7 +15,7 @@ const defaultOpts = {};
  * @param {Options} opts
  * @return {{plugins: [import('postcss').PluginCreator<any>, false | Record<string, any> | undefined][]}}
  */
-module.exports = function defaultPreset(opts = {}) {
+function defaultPreset(opts = {}) {
   const options = Object.assign({}, defaultOpts, opts);
   /** @type {[import('postcss').PluginCreator<any>, false | Record<string, any> | undefined][]} **/
   const plugins = [
@@ -26,4 +26,6 @@ module.exports = function defaultPreset(opts = {}) {
   ];
 
   return { plugins };
-};
+}
+
+module.exports = defaultPreset;
