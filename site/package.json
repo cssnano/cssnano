@@ -1,29 +1,26 @@
 {
   "name": "site",
-  "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "docusaurus start",
-    "build": "docusaurus build",
-    "swizzle": "docusaurus swizzle",
-    "deploy": "docusaurus deploy",
     "build:metadata": "node ./util/buildMetadata.mjs",
-    "build:docs": "remark site/docs/**/*.md -o && pnpm build:metadata && node ./util/buildSiteMarkdown.mjs"
+    "start": "eleventy --serve --input src/",
+    "build": "eleventy --input src/"
   },
   "dependencies": {
-    "@codemirror/basic-setup": "^0.19.1",
+    "@codemirror/closebrackets": "^0.19.1",
+    "@codemirror/commands": "^0.19.8",
+    "@codemirror/highlight": "^0.19.7",
     "@codemirror/lang-css": "^0.19.3",
-    "@docusaurus/core": "^2.0.0-beta.15",
-    "@docusaurus/preset-classic": "^2.0.0-beta.15",
-    "@mdx-js/react": "^1.6.22",
+    "@codemirror/language": "^0.19.8",
+    "@codemirror/matchbrackets": "^0.19.4",
+    "@codemirror/state": "^0.19.9",
+    "@codemirror/view": "^0.19.46",
     "cssnano-preset-advanced": "../packages/cssnano-preset-advanced",
     "cssnano-preset-default": "../packages/cssnano-preset-default",
     "cssnano-preset-lite": "../packages/cssnano-preset-lite",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
-    "postcss": "^8.4.6",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "postcss": "^8.4.7"
   },
   "pnpm": {
     "overrides": {
@@ -31,30 +28,13 @@
     }
   },
   "devDependencies": {
+    "@11ty/eleventy": "^1.0.0",
+    "@11ty/eleventy-plugin-syntaxhighlight": "^4.0.0",
     "@iarna/toml": "^2.2.5",
-    "mdast-util-heading-range": "^3.1.0",
-    "remark": "^14.0.2",
-    "remark-behead": "^3.0.0",
-    "remark-bookmarks": "^3.0.0",
-    "remark-cli": "^10.0.1",
-    "remark-frontmatter": "^4.0.1",
-    "remark-gfm": "^3.0.1",
-    "remark-github": "^11.2.1",
-    "remark-heading-gap": "^5.0.1",
-    "remark-html": "^15.0.1",
-    "unist-builder": "^3.0.0",
-    "unist-util-remove": "^3.1.0"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "cssnano": "../packages/cssnano/",
+    "markdown-it": "^12.3.2",
+    "markdown-it-anchor": "^8.4.1",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2"
   }
 }

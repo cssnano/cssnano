@@ -1,0 +1,9 @@
+---
+title: Changelog
+---
+
+	{% extends 'layouts/MainLayout.njk' %}
+	{% block title %}{% endblock %}
+{% block inner %}
+          {% renderFile "../packages/cssnano/CHANGELOG.md" %}
+{% endblock %}

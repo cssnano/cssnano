@@ -6,8 +6,8 @@ dist
 _webpackOutput
 tsconfig.tsbuildinfo
 
-# Generated metadata (only the root one is generated!)
-/metadata.toml
+# Generated metadata
+site/src/docs/docs.11tydata.json
 
 # Cache
 .cache
@@ -43,5 +43,4 @@ lerna-debug.log*
 .DS_Store
 
 # Generated website files
-site/build
-site/.docusaurus
+site/_site/js

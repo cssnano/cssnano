@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include 'head.njk' %}
+    <title>CSSNANO</title>
+  </head>
+
+  <body>
+    {% include 'header.njk' %}
+    <header class="hero" id="article">
+      <div class="center stack">
+        <img width="400" height="280" alt="CSSNANO" src="/img/logo.svg" />
+
+        <p class="text-center f3">Deliver your website's styles, faster.</p>
+        <p class="text-center">
+          Plug in cssnano into your build step for modern CSS compression.
+        </p>
+        <a class="f4 hero-link box text-center"             
+           href="docs/introduction"
+           >
+          Get Started
+        </a>
+      </div>
+    </header>
+    <!--  <CarbonAds /> -->
+    <main class="center">
+      <section class="box stack">
+        <h2>What it does</h2>
+        <p>
+          cssnano takes your nicely formatted CSS and runs it through many
+          focused optimisations, to ensure that the final result is as
+          small as possible for a production environment.
+        </p>
+        <h3>Input</h3>
+            {% highlight "css" %}/* normalize selectors */
+h1::before, h1:before {
+    /* reduce shorthand even further */
+    margin: 10px 20px 10px 20px;
+    /* reduce color values */
+    color: #ff0000;
+    /* remove duplicated properties */
+    font-weight: 400;
+    font-weight: 400;
+    /* reduce position values */
+    background-position: bottom right;
+    /* normalize wrapping quotes */
+    quotes: '«' "»";
+    /* reduce gradient parameters */
+    background: linear-gradient(to bottom, #ffe500 0%, #ffe500 50%, #121 50%, #121 100%);
+    /* replace initial values */
+    min-width: initial;
+}
+/* correct invalid placement */
+@charset "utf-8";{% endhighlight %}
+            <h3>Output</h3>
+            {% highlight "css" %}@charset "utf-8";h1:before{margin:10px 20px;color:red;font-weight:400;background-position:100% 100%;quotes:"«" "»";background:linear-gradient(180deg,#ffe500,#ffe500 50%,#121 0,#121);min-width:0}{% endhighlight %}
+        <p>
+          The semantics of this CSS have been kept the same, but the
+          extraneous whitespace has been removed, the identifiers
+          compressed, and unnecessary definitions purged from the
+          stylesheet.
+        </p>
+        <p>
+          This gives you a much smaller CSS for production use. But
+          don’t just take our word for it; why not try out css-size, a
+          module especially created to measure CSS size before & after
+          minification.
+        </p>
+        <p>
+          By default, cssnano performs safe optimisations on your CSS
+          file, but we also offer an advanced preset with techniques
+          that you can use to maximise compression. For more details,
+          see our 
+          <a href="/docs/optimisations">
+            optimisations
+          </a>
+          guide.
+        </p>
+        <table>
+          <tbody>
+            <tr>
+              <td>Original (gzip)</td>
+              <td>325 B</td>
+            </tr>
+            <tr>
+              <td>Minified (gzip)</td>
+              <td>177 B</td>
+            </tr> 
+            <tr>
+              <td>Difference</td>
+              <td>148 B</td>
+            </tr> 
+            <tr>
+              <td>Percent</td>
+              <td>54.46%</td>
+            </tr> 
+          </tbody>
+        </table>
+      </section>
+
+      <section class="box stack">
+
+        <h2 class="text-center">Features</h2>
+        <div class="cluster">
+          <div class="stack">
+            <img src="/img/postcss.svg" alt="" width="200" height="200">
+            <h3>PostCSS Based</h3>
+            <p>CSSNANO is built upon postcss plugins and environments</p>
+          </div>
+          <div class="stack">
+            <img src="/img/undraw_settings.svg" alt="" width="248" height="200">
+            <h3>30+ Plugins</h3>
+            <p>CSSNANO has more than 30 plugins for optimizing your css</p>
+          </div>
+          <div class="stack">
+            <img src="/img/undraw_config.svg" alt="" width="244" height="200">
+            <h3>Configurable</h3>
+            <p>CSSNANO supports custom configs using presets which controls the level of optimization</p>
+          </div>
+        </div>
+      </section>
+      <section class="box stack">
+        <h2>Technology</h2>
+        <p>
+          cssnano is powered by PostCSS, a tool for transforming styles
+          with JavaScript. Specifically, its plugin architecture allows
+          us to compose cssnano out of small modules with limited
+          responsibilities. It also allows you to easily insert cssnano
+          into your build step, along with other processors that can
+          lint your CSS for errors, or transpile future syntax.
+          <img class="fr" alt="" src="/img/postcss.svg" width="80" height="100"/>
+        </p>
+      </section>
+    </main>
+    {% include 'footer.njk' %}
+  </body>
+</html>

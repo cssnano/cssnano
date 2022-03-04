@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include 'head.njk' %}
+    <title>CSSNANO Playground</title>
+  </head>
+  <body>
+    {% include 'header.njk' %}
+    <div class="box cluster">
+      <div>
+        <label htmlFor="presetSelector">
+          Choose a preset
+        </label>
+        <select id="presetSelector" class="select">
+          <option value="cssnano-preset-default">Preset Default</option>
+          <option value="cssnano-preset-lite">Preset Lite</option>
+          <option value="cssnano-preset-advanced">Preset Advanced</option>
+        </select>
+      </div>
+      <div class="cluster" style="--justify-content: space-between">
+        <button id="runButton" class="button" disabled>
+          Loading…
+        </button>
+        <button id="saveButton" class="button">
+          Save
+        </button>
+        <span id="errorBox" class="error box"></div>
+      </div>
+    </div>
+    <div id="editors" class="editors box">
+      <span class="center">Loading CSS editor…</span>
+    </div>
+    <script type="module" src="/js/runtime.bundle.js"></script>
+    <script type="module" src="/js/628.bundle.js"></script>      
+    <script type="module" src="/js/playground.bundle.js"></script>
+    {% include 'footer.njk' %}
+  </body>
+</html> 

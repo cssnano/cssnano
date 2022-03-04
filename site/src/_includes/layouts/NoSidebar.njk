@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include 'head.njk' %}
+    <title>{{ title }}</title>
+  </head>
+
+  <body>
+    {% include 'header.njk' %}
+    <main tabindex="-1" class="center">
+      <article id="article" class="stack box">
+        <h1>{{ title }}</h1>
+        <div class="carbon_ads_mdx_wrapper"></div>
+        <script>
+          const carbonWrapper = document.querySelector('.carbon_ads_mdx_wrapper');
+          const script = document.createElement('script');
+          script.src = '//cdn.carbonads.com/carbon.js?serve=CEBI62JN&placement=cssnanoco';
+          script.async = true;
+          script.id = '_carbonads_js';
+          carbonWrapper.appendChild(script);
+        </script>
+        {% block inner %}
+		    {{ content | safe }}
+        {% endblock %}
+      </article>
+    </main>
+    {% include 'footer.njk' %}
+  </body>
+</html>
