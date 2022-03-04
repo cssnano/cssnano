@@ -1,11 +1,10 @@
-import { join } from 'path';
+import { createRequire } from 'module';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import toml from '@iarna/toml';
 import getPackages from './getPackages.mjs';
-
-function camel(input) {
-  return input.replace(/-[a-z]/g, (match) => match[1].toUpperCase());
-}
+import pluginName from './pluginName.mjs';
 
 /* External repositories, so the data is added manually */
 
@@ -67,6 +66,12 @@ source = "https://github.com/postcss/postcss-calc"
 shortName = "calc"
 `);
 
+const require = createRequire(import.meta.url);
+
+function camel(input) {
+  return input.replace(/-[a-z]/g, (match) => match[1].toUpperCase());
+}
+
 function shortName(pkgName) {
   return camel(pkgName.replace(/^(postcss|cssnano-util)-/, ''));
 }
@@ -89,18 +94,37 @@ getPackages().then((packages) => {
           });
         })
         .catch(() => {});
-    }, {})
+    })
   ).then(() => {
-    const sortedKeys = Object.keys(database).sort();
-    const sorted = sortedKeys.reduce((db, key) => {
-      db[key] = database[key];
+    const presets = ['default', 'advanced', 'lite'];
+    for (const preset of presets) {
+      const presetPath = `${join(
+        dirname(fileURLToPath(import.meta.url)),
+        '../../packages'
+      )}/cssnano-preset-${preset}/src/index.js`;
 
-      return db;
-    }, {});
+      const instance = require(presetPath);
+
+      for (const plugin of instance().plugins) {
+        const name = pluginName(plugin[0]);
+        if (database[name]) {
+          if (plugin[1] && plugin[1].exclude) {
+            database[name][preset] = 'disabled';
+          } else {
+            database[name][preset] = 'enabled';
+          }
+        }
+      }
+    }
+    const sortedKeys = Object.keys(database).sort();
+    const sorted = {};
+    for (const key of sortedKeys) {
+      sorted[key] = database[key];
+    }
 
     return fs.writeFile(
-      new URL('../../metadata.toml', import.meta.url),
-      toml.stringify(sorted)
+      new URL('../src/docs/docs.11tydata.json', import.meta.url),
+      JSON.stringify({ optimisations: Object.values(sorted), presets })
     );
   });
 });
