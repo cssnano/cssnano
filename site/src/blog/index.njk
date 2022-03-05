@@ -1,0 +1,16 @@
+---
+title: Blog
+---
+{% extends 'layouts/NoSidebar.njk' %}
+
+{% block inner %}
+
+<ul class="list">
+{%- for post in collections.blog -%}
+  <li>
+  <h2><a href="/{{post.data.permalink}}">{{ post.data.title }}</a></h2> {{ post.data.readableDate }}
+  
+  </li>
+{%- endfor -%}
+</ul>
+{% endblock %}

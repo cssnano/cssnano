@@ -1,6 +1,7 @@
+
 # Website
 
-This website is built using [Docusaurus 2](https://v2.docusaurus.io/), a modern static website generator.
+This website is built using the [Eleventy](https://www.11ty.dev/) static website generator.
 
 ### Installation
 
@@ -14,7 +15,7 @@ $ pnpm install
 $ pnpm start
 ```
 
-This command starts a local development server and open up a browser window. Most changes are reflected live without having to restart the server.
+This command starts a local development server and opens a browser window. Most changes are reflected live without having to restart the server.
 
 ### Build
 
@@ -24,10 +25,9 @@ $ pnpm build
 
 This command generates static content into the `build` directory and can be served using any static contents hosting service.
 
-### Deployment
 
-```
-$ GIT_USER=<Your GitHub username> USE_SSH=true pnpm deploy
-```
+Most pages are built with the templates in `src/_includes`, which use the [Nunjucks](https://mozilla.github.io/nunjucks/) template language. The Changelog and Contributing pages are included directly from the cssnano package in the repository.
 
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+The `webpack.config.js` file contains the webpack configuration to bundle the Playground page.
+
+`util/buildMetadata.mjs` retrieves the cssnano plugin metadata and outputs in an Eleventy data file, which Eleventy uses to generate the individual optimisation pages.
