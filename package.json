@@ -27,7 +27,6 @@
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.4.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-react": "^7.28.0",
     "html-to-text": "^8.1.0",
     "nanospy": "^0.5.0",
     "node-fetch": "2.6.7",
