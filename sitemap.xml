@@ -1,1 +1,148 @@
-<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"><url><loc>https://cssnano.co/blog/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/blog/archive/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/blog/cssnano-5-release-notes/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/playground/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/advanced-transforms/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/changelog/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/community/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/config-file/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/contributing/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/getting-started/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/Introduction/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/autoprefixer/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/calc/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/colormin/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/convertvalues/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/cssdeclarationsorter/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/discardcomments/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/discardduplicates/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/discardempty/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/discardoverridden/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/discardunused/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/mergeidents/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/mergelonghand/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/mergerules/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/minifyfontvalues/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/minifygradients/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/minifyparams/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/minifyselectors/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/normalizecharset/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/normalizedisplayvalues/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/normalizepositions/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/normalizerepeatstyle/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/normalizestring/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/normalizetimingfunctions/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/normalizeunicode/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/normalizeurl/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/normalizewhitespace/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/orderedvalues/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/rawcache/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/reduceidents/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/reduceinitial/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/reducetransforms/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/svgo/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/uniqueselectors/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/optimisations/zindex/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/presets/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/Support-Us/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/docs/what-are-optimisations/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url><url><loc>https://cssnano.co/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url></urlset>
+<?xml version="1.0" encoding="utf-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    
+       
+        <url>
+            <loc>https://cssnano.co/blog/cssnano-5-release-notes/</loc>
+            <priority>0.5</priority>
+            <lastmod>2021-04-10T00:00:00.000Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/blog/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.586Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/docs/advanced-transforms/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.586Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/docs/changelog/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.586Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/docs/community/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.586Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/docs/config-file/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.586Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/docs/contributing/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.586Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/docs/getting-started/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.586Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/docs/introduction/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.586Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/docs/optimisations/autoprefixer/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.586Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/docs/presets/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.586Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/docs/support-us/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.587Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/docs/what-are-optimisations/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.587Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.587Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/playground/</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.587Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/styles/index.css</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-03-07T10:19:32.587Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+</urlset>

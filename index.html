@@ -1,18 +1,187 @@
-<!doctype html>
-<html lang="en" dir="ltr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="generator" content="Docusaurus v2.0.0-beta.15">
-<link rel="alternate" type="application/rss+xml" href="/blog/rss.xml" title="CSSNANO RSS Feed">
-<link rel="alternate" type="application/atom+xml" href="/blog/atom.xml" title="CSSNANO Atom Feed"><title data-react-helmet="true">CSSNANO | CSSNANO</title><meta data-react-helmet="true" property="og:title" content="CSSNANO | CSSNANO"><meta data-react-helmet="true" name="twitter:card" content="summary_large_image"><meta data-react-helmet="true" name="description" content="CSSNANO - postcss based css optimizer"><meta data-react-helmet="true" property="og:description" content="CSSNANO - postcss based css optimizer"><meta data-react-helmet="true" property="og:url" content="https://cssnano.co/"><meta data-react-helmet="true" name="docusaurus_locale" content="en"><meta data-react-helmet="true" name="docusaurus_tag" content="default"><link data-react-helmet="true" rel="icon" href="/img/favicon.ico"><link data-react-helmet="true" rel="canonical" href="https://cssnano.co/"><link data-react-helmet="true" rel="alternate" href="https://cssnano.co/" hreflang="en"><link data-react-helmet="true" rel="alternate" href="https://cssnano.co/" hreflang="x-default"><script data-react-helmet="true">function maybeInsertBanner(){window.__DOCUSAURUS_INSERT_BASEURL_BANNER&&insertBanner()}function insertBanner(){var n=document.getElementById("docusaurus-base-url-issue-banner-container");if(n){n.innerHTML='\n<div id="docusaurus-base-url-issue-banner" style="border: thick solid red; background-color: rgb(255, 230, 179); margin: 20px; padding: 20px; font-size: 20px;">\n   <p style="font-weight: bold; font-size: 30px;">Your Docusaurus site did not load properly.</p>\n   <p>A very common reason is a wrong site <a href="https://docusaurus.io/docs/docusaurus.config.js/#baseurl" style="font-weight: bold;">baseUrl configuration</a>.</p>\n   <p>Current configured baseUrl = <span style="font-weight: bold; color: red;">/</span>  (default value)</p>\n   <p>We suggest trying baseUrl = <span id="docusaurus-base-url-issue-banner-suggestion-container" style="font-weight: bold; color: green;"></span></p>\n</div>\n';var e=document.getElementById("docusaurus-base-url-issue-banner-suggestion-container"),s=window.location.pathname,r="/"===s.substr(-1)?s:s+"/";e.innerHTML=r}}window.__DOCUSAURUS_INSERT_BASEURL_BANNER=!0,document.addEventListener("DOMContentLoaded",maybeInsertBanner)</script><link rel="stylesheet" href="/assets/css/styles.62a0a848.css">
-<link rel="preload" href="/assets/js/runtime~main.48a2f208.js" as="script">
-<link rel="preload" href="/assets/js/main.3c5c07c6.js" as="script">
-</head>
-<body>
-<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){var t=null;try{t=localStorage.getItem("theme")}catch(t){}return t}();t(null!==e?e:"light")}()</script><div id="__docusaurus">
-<div id="docusaurus-base-url-issue-banner-container"></div><div role="region"><a href="#" class="skipToContent_ETHw">Skip to main content</a></div><nav class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Navigation bar toggle" class="navbar__toggle clean-btn" type="button" tabindex="0"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><div class="navbar__logo"><img src="/img/logo-alt.svg" alt="CSSNANO Logo" class="themedImage_P01U themedImage--light_MhUT" height="32" width="160"><img src="/img/logo-alt.svg" alt="CSSNANO Logo" class="themedImage_P01U themedImage--dark_DGdQ" height="32" width="160"></div></a><a class="navbar__item navbar__link" href="/docs/introduction/">Guide</a><a class="navbar__item navbar__link" href="/docs/optimisations/">Optimizations</a><a class="navbar__item navbar__link" href="/playground/">Playground</a><a class="navbar__item navbar__link" href="/docs/support-us/">Support</a></div><div class="navbar__items navbar__items--right"><a class="navbar__item navbar__link" href="/blog/">Blog</a><a href="https://github.com/cssnano/cssnano" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link"><span>GitHub<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_QIpu"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></span></a><a href="https://opencollective.com/cssnano" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link"><span>Donate<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_QIpu"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></span></a></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div class="main-wrapper"><header class="hero heroBanner_UJJx"><div class="carbon_ads_wrapper"></div><div class="container"><img src="/img/logo.svg" width="400" height="280" alt="CSSNano"><p class="hero__subtitle">Deliver your website&#x27;s styles, faster.</p><p>Plug in cssnano into your build step for modern CSS compression.</p><div class="buttons_pzbO"><a class="button button--lg getStartedBtn_e2uS" href="/docs/introduction/">Get Started</a></div></div></header><main class="container"><section><div class="row"><h1 class="h1_Sl_Q">What it does ?</h1><p>cssnano takes your nicely formatted CSS and runs it through many focused optimisations, to ensure that the final result is as small as possible for a production environment.</p></div><div class="row"><div class="centerSnippet_MqMo"><div class="tabs-container"><ul role="tablist" aria-orientation="horizontal" class="tabs mini"><li role="tab" tabindex="0" aria-selected="true" class="tabs__item tabItem_Y0x5 tabs__item--active">Input</li><li role="tab" tabindex="-1" aria-selected="false" class="tabs__item tabItem_Y0x5">Output</li></ul><div class="margin-vert--md"><div role="tabpanel"><div class="codeBlockContainer_g4TC language-css theme-code-block"><div class="codeBlockContent_bedI css"><pre tabindex="0" class="prism-code language-css codeBlock_NdwV thin-scrollbar" style="color:#bfc7d5;background-color:#292d3e"><code class="codeBlockLines_NSQt"><span class="token-line" style="color:#bfc7d5"><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic">/* normalize selectors */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain"></span><span class="token selector" style="color:rgb(199, 146, 234)">h1</span><span class="token selector pseudo-element" style="color:rgb(199, 146, 234)">::before</span><span class="token selector punctuation" style="color:rgb(199, 146, 234)">,</span><span class="token selector" style="color:rgb(199, 146, 234)"> h1</span><span class="token selector pseudo-element" style="color:rgb(199, 146, 234)">:before</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(199, 146, 234)">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic">/* reduce shorthand even further */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token property">margin</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">10</span><span class="token unit">px</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">20</span><span class="token unit">px</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">10</span><span class="token unit">px</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">20</span><span class="token unit">px</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic">/* reduce color values */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token property">color</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token plain"> </span><span class="token hexcode color">#ff0000</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic">/* remove duplicated properties */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token property">font-weight</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">400</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token property">font-weight</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">400</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic">/* reduce position values */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token property">background-position</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token plain"> bottom right</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic">/* normalize wrapping quotes */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token property">quotes</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token plain"> </span><span class="token string" style="color:rgb(195, 232, 141)">&#x27;«&#x27;</span><span class="token plain"> </span><span class="token string" style="color:rgb(195, 232, 141)">&quot;»&quot;</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic">/* reduce gradient parameters */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token property">background</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token plain"> </span><span class="token function" style="color:rgb(130, 170, 255)">linear-gradient</span><span class="token punctuation" style="color:rgb(199, 146, 234)">(</span><span class="token plain">to bottom</span><span class="token punctuation" style="color:rgb(199, 146, 234)">,</span><span class="token plain"> </span><span class="token hexcode color">#ffe500</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">0</span><span class="token unit">%</span><span class="token punctuation" style="color:rgb(199, 146, 234)">,</span><span class="token plain"> </span><span class="token hexcode color">#ffe500</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">50</span><span class="token unit">%</span><span class="token punctuation" style="color:rgb(199, 146, 234)">,</span><span class="token plain"> </span><span class="token hexcode color">#121</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">50</span><span class="token unit">%</span><span class="token punctuation" style="color:rgb(199, 146, 234)">,</span><span class="token plain"> </span><span class="token hexcode color">#121</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">100</span><span class="token unit">%</span><span class="token punctuation" style="color:rgb(199, 146, 234)">)</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic">/* replace initial values */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain">    </span><span class="token property">min-width</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token plain"> initial</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain"></span><span class="token punctuation" style="color:rgb(199, 146, 234)">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain"></span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic">/* correct invalid placement */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#bfc7d5"><span class="token plain"></span><span class="token atrule rule">@charset</span><span class="token atrule"> </span><span class="token atrule string" style="color:rgb(195, 232, 141)">&quot;utf-8&quot;</span><span class="token atrule punctuation" style="color:rgb(199, 146, 234)">;</span><br></span></code></pre><button type="button" aria-label="Copy code to clipboard" class="copyButton_crNb clean-btn">Copy</button></div></div></div><div role="tabpanel" hidden=""><div class="codeBlockContainer_g4TC language-css theme-code-block"><div class="codeBlockContent_bedI css"><pre tabindex="0" class="prism-code language-css codeBlock_NdwV thin-scrollbar" style="color:#bfc7d5;background-color:#292d3e"><code class="codeBlockLines_NSQt"><span class="token-line" style="color:#bfc7d5"><span class="token atrule rule">@charset</span><span class="token atrule"> </span><span class="token atrule string" style="color:rgb(195, 232, 141)">&quot;utf-8&quot;</span><span class="token atrule punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token selector" style="color:rgb(199, 146, 234)">h1</span><span class="token selector pseudo-element" style="color:rgb(199, 146, 234)">:before</span><span class="token punctuation" style="color:rgb(199, 146, 234)">{</span><span class="token property">margin</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token number" style="color:rgb(247, 140, 108)">10</span><span class="token unit">px</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">20</span><span class="token unit">px</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token property">color</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token color">red</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token property">font-weight</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token number" style="color:rgb(247, 140, 108)">400</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token property">background-position</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token number" style="color:rgb(247, 140, 108)">100</span><span class="token unit">%</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">100</span><span class="token unit">%</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token property">quotes</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token string" style="color:rgb(195, 232, 141)">&quot;«&quot;</span><span class="token plain"> </span><span class="token string" style="color:rgb(195, 232, 141)">&quot;»&quot;</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token property">background</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token function" style="color:rgb(130, 170, 255)">linear-gradient</span><span class="token punctuation" style="color:rgb(199, 146, 234)">(</span><span class="token number" style="color:rgb(247, 140, 108)">180</span><span class="token unit">deg</span><span class="token punctuation" style="color:rgb(199, 146, 234)">,</span><span class="token hexcode color">#ffe500</span><span class="token punctuation" style="color:rgb(199, 146, 234)">,</span><span class="token hexcode color">#ffe500</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">50</span><span class="token unit">%</span><span class="token punctuation" style="color:rgb(199, 146, 234)">,</span><span class="token hexcode color">#121</span><span class="token plain"> </span><span class="token number" style="color:rgb(247, 140, 108)">0</span><span class="token punctuation" style="color:rgb(199, 146, 234)">,</span><span class="token hexcode color">#121</span><span class="token punctuation" style="color:rgb(199, 146, 234)">)</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span><span class="token property">min-width</span><span class="token punctuation" style="color:rgb(199, 146, 234)">:</span><span class="token number" style="color:rgb(247, 140, 108)">0</span><span class="token punctuation" style="color:rgb(199, 146, 234)">}</span><br></span></code></pre><button type="button" aria-label="Copy code to clipboard" class="copyButton_crNb clean-btn">Copy</button></div></div></div></div></div></div></div><div class="row"><p>The semantics of this CSS have been kept the same, but the extraneous whitespace has been removed, the identifiers compressed, and unnecessary definitions purged from the stylesheet.<br></p><p>This gives you a much smaller CSS for production use. But don’t just take our word for it; why not try out css-size, a module especially created to measure CSS size before &amp; after minification.</p><p>By default, cssnano performs safe optimisations on your CSS file, but we also offer an advanced preset with techniques that you can use to maximise compression. For more details, see our<!-- --> <a href="/docs/optimisations/">optimisations</a> <!-- -->guide.</p><table style="margin:auto"><tbody><tr style="width:100%;max-width:100%"><td>Original (gzip)</td><td>325 B</td></tr><tr style="width:100%;max-width:100%"><td>Minified (gzip)</td><td>177 B</td></tr><tr style="width:100%;max-width:100%"><td>Difference</td><td>148 B</td></tr><tr style="width:100%;max-width:100%"><td>Percent</td><td>54.46%</td></tr></tbody></table></div></section><section><div class="row"><h1 class="h1_Sl_Q">Features</h1><div class="col col--4 undefined"><div class="text--center"><img src="/img/postcss.svg" alt="PostCSS Based" width="200" height="200"></div><h2>PostCSS Based</h2><p>CSSNANO is built upon postcss plugins and environments</p></div><div class="col col--4 undefined"><div class="text--center"><img src="/img/undraw_settings.svg" alt="30+ Plugins" width="200" height="200"></div><h2>30+ Plugins</h2><p>CSSNANO has more than 30 plugins for optimizing your css</p></div><div class="col col--4 undefined"><div class="text--center"><img src="/img/undraw_config.svg" alt="Configurable" width="200" height="200"></div><h2>Configurable</h2><p>CSSNANO supports custom configs using presets which controls the level of optimization</p></div></div></section><section><div class="row"><h1 class="h1_Sl_Q">Technology</h1><p class="flex1_S2CK">cssnano is powered by PostCSS, a tool for transforming styles with JavaScript. Specifically, its plugin architecture allows us to compose cssnano out of small modules with limited responsibilities. It also allows you to easily insert cssnano into your build step, along with other processors that can lint your CSS for errors, or transpile future syntax.</p><img src="/img/postcss.svg" alt=""></div></section></main></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="col footer__col"><div class="footer__title">Docs</div><ul class="footer__items"><li class="footer__item"><a class="footer__link-item" href="/docs/introduction/">Guide</a></li><li class="footer__item"><a class="footer__link-item" href="/docs/optimisations/">Optimizations</a></li><li class="footer__item"><a class="footer__link-item" href="/playground/">Playground</a></li><li class="footer__item"><a class="footer__link-item" href="/docs/support-us/">Support</a></li></ul></div><div class="col footer__col"><div class="footer__title">Community</div><ul class="footer__items"><li class="footer__item"><a href="https://stackoverflow.com/questions/tagged/cssnano" target="_blank" rel="noopener noreferrer" class="footer__link-item"><span>Stack Overflow<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_QIpu"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></span></a></li><li class="footer__item"><a href="https://gitter.im/postcss/postcss" target="_blank" rel="noopener noreferrer" class="footer__link-item"><span>Gitter<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_QIpu"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></span></a></li><li class="footer__item"><a href="https://opencollective.com/cssnano" target="_blank" rel="noopener noreferrer" class="footer__link-item"><span>Donate<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_QIpu"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></span></a></li></ul></div><div class="col footer__col"><div class="footer__title">Social</div><ul class="footer__items"><li class="footer__item"><a class="footer__link-item" href="/blog/">Blog</a></li><li class="footer__item"><a href="https://github.com/cssnano/cssnano" target="_blank" rel="noopener noreferrer" class="footer__link-item"><span>GitHub<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_QIpu"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></span></a></li><li class="footer__item"><a href="https://twitter.com/cssnano_" target="_blank" rel="noopener noreferrer" class="footer__link-item"><span>Twitter<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_QIpu"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></span></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Latest release v5.0.17 · Distributed under the MIT License.</div></div></div></footer></div>
-<script src="/assets/js/runtime~main.48a2f208.js"></script>
-<script src="/assets/js/main.3c5c07c6.js"></script>
-</body>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+        <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg" />
+    <link rel="alternate icon" type="image/x-icon" href="/img/favicon.ico" />
+
+    <link rel="sitemap" href="/sitemap.xml"/>
+    
+    <link rel="stylesheet" href="/styles/index.css" />
+
+    <link rel="canonical" href="https://cssnano.co/" />
+
+<!-- OpenGraph Tags -->
+    <meta property="og:title" content=/>
+    <meta property="og:type" content="article"/>
+    <meta property="og:url" content="/"/>
+    <meta property="og:locale" content="en"/>
+    <meta name="description" property="og:description" content="CSSNANO - postcss based css optimizer"/>
+    <meta property="og:site_name" content="CSSNANO documentation"/>
+
+
+    <title>CSSNANO</title>
+  </head>
+
+  <body>
+    <div class="navbar box">
+  <a href="#article" class="sr-only skiplink"><span>Skip to Content</span></a>
+  <nav class="cluster" title="Top Navigation">
+    <a href="/"> 
+      <h1 class="sr-only">CSSNANO</h1>
+      <img src="/img/logo-alt.svg" alt="" width="160" height="32"/>
+    </a>
+    <span class="cluster">
+    <a href="/docs/introduction/">Guide</a>
+    <a href="/docs/what-are-optimisations/">Optimizations</a>
+    <a href="/playground/">Playground</a>
+    <a href="/docs/support-us/">Support</a>
+    <a href="/blog/">Blog</a>
+    <a href="https://github.com/cssnano/cssnano" rel="noopener noreferrer" target="_blank">GitHub <svg class="icon" width="0.75em" height="0.75em" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a>
+    <a href="https://opencollective.com/cssnano" rel="noopener noreferrer" target="_blank">Donate <svg class="icon" width="0.75em" height="0.75em" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a>
+    </span>
+  </nav>
+</div>
+
+    <header class="hero" id="article">
+      <div class="center stack">
+        <img width="400" height="280" alt="CSSNANO" src="/img/logo.svg" />
+
+        <p class="text-center f3">Deliver your website's styles, faster.</p>
+        <p class="text-center">
+          Plug in cssnano into your build step for modern CSS compression.
+        </p>
+        <a class="f4 hero-link box text-center"             
+           href="docs/introduction"
+           >
+          Get Started
+        </a>
+      </div>
+    </header>
+    <!--  <CarbonAds /> -->
+    <main class="center">
+      <section class="box stack">
+        <h2>What it does</h2>
+        <p>
+          cssnano takes your nicely formatted CSS and runs it through many
+          focused optimisations, to ensure that the final result is as
+          small as possible for a production environment.
+        </p>
+        <h3>Input</h3>
+            <pre class="language-css"><code class="language-css"><span class="token comment">/* normalize selectors */</span><br><span class="token selector">h1::before, h1:before</span> <span class="token punctuation">{</span><br>    <span class="token comment">/* reduce shorthand even further */</span><br>    <span class="token property">margin</span><span class="token punctuation">:</span> 10px 20px 10px 20px<span class="token punctuation">;</span><br>    <span class="token comment">/* reduce color values */</span><br>    <span class="token property">color</span><span class="token punctuation">:</span> #ff0000<span class="token punctuation">;</span><br>    <span class="token comment">/* remove duplicated properties */</span><br>    <span class="token property">font-weight</span><span class="token punctuation">:</span> 400<span class="token punctuation">;</span><br>    <span class="token property">font-weight</span><span class="token punctuation">:</span> 400<span class="token punctuation">;</span><br>    <span class="token comment">/* reduce position values */</span><br>    <span class="token property">background-position</span><span class="token punctuation">:</span> bottom right<span class="token punctuation">;</span><br>    <span class="token comment">/* normalize wrapping quotes */</span><br>    <span class="token property">quotes</span><span class="token punctuation">:</span> <span class="token string">'«'</span> <span class="token string">"»"</span><span class="token punctuation">;</span><br>    <span class="token comment">/* reduce gradient parameters */</span><br>    <span class="token property">background</span><span class="token punctuation">:</span> <span class="token function">linear-gradient</span><span class="token punctuation">(</span>to bottom<span class="token punctuation">,</span> #ffe500 0%<span class="token punctuation">,</span> #ffe500 50%<span class="token punctuation">,</span> #121 50%<span class="token punctuation">,</span> #121 100%<span class="token punctuation">)</span><span class="token punctuation">;</span><br>    <span class="token comment">/* replace initial values */</span><br>    <span class="token property">min-width</span><span class="token punctuation">:</span> initial<span class="token punctuation">;</span><br><span class="token punctuation">}</span><br><span class="token comment">/* correct invalid placement */</span><br><span class="token atrule"><span class="token rule">@charset</span> <span class="token string">"utf-8"</span><span class="token punctuation">;</span></span></code></pre>
+            <h3>Output</h3>
+            <pre class="language-css"><code class="language-css"><span class="token atrule"><span class="token rule">@charset</span> <span class="token string">"utf-8"</span><span class="token punctuation">;</span></span><span class="token selector">h1:before</span><span class="token punctuation">{</span><span class="token property">margin</span><span class="token punctuation">:</span>10px 20px<span class="token punctuation">;</span><span class="token property">color</span><span class="token punctuation">:</span>red<span class="token punctuation">;</span><span class="token property">font-weight</span><span class="token punctuation">:</span>400<span class="token punctuation">;</span><span class="token property">background-position</span><span class="token punctuation">:</span>100% 100%<span class="token punctuation">;</span><span class="token property">quotes</span><span class="token punctuation">:</span><span class="token string">"«"</span> <span class="token string">"»"</span><span class="token punctuation">;</span><span class="token property">background</span><span class="token punctuation">:</span><span class="token function">linear-gradient</span><span class="token punctuation">(</span>180deg<span class="token punctuation">,</span>#ffe500<span class="token punctuation">,</span>#ffe500 50%<span class="token punctuation">,</span>#121 0<span class="token punctuation">,</span>#121<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token property">min-width</span><span class="token punctuation">:</span>0<span class="token punctuation">}</span></code></pre>
+        <p>
+          The semantics of this CSS have been kept the same, but the
+          extraneous whitespace has been removed, the identifiers
+          compressed, and unnecessary definitions purged from the
+          stylesheet.
+        </p>
+        <p>
+          This gives you a much smaller CSS for production use. But
+          don’t just take our word for it; why not try out css-size, a
+          module especially created to measure CSS size before & after
+          minification.
+        </p>
+        <p>
+          By default, cssnano performs safe optimisations on your CSS
+          file, but we also offer an advanced preset with techniques
+          that you can use to maximise compression. For more details,
+          see our 
+          <a href="/docs/optimisations">
+            optimisations
+          </a>
+          guide.
+        </p>
+        <table>
+          <tbody>
+            <tr>
+              <td>Original (gzip)</td>
+              <td>325 B</td>
+            </tr>
+            <tr>
+              <td>Minified (gzip)</td>
+              <td>177 B</td>
+            </tr> 
+            <tr>
+              <td>Difference</td>
+              <td>148 B</td>
+            </tr> 
+            <tr>
+              <td>Percent</td>
+              <td>54.46%</td>
+            </tr> 
+          </tbody>
+        </table>
+      </section>
+
+      <section class="box stack">
+
+        <h2 class="text-center">Features</h2>
+        <div class="cluster">
+          <div class="stack">
+            <img src="/img/postcss.svg" alt="" width="200" height="200">
+            <h3>PostCSS Based</h3>
+            <p>CSSNANO is built upon postcss plugins and environments</p>
+          </div>
+          <div class="stack">
+            <img src="/img/undraw_settings.svg" alt="" width="248" height="200">
+            <h3>30+ Plugins</h3>
+            <p>CSSNANO has more than 30 plugins for optimizing your css</p>
+          </div>
+          <div class="stack">
+            <img src="/img/undraw_config.svg" alt="" width="244" height="200">
+            <h3>Configurable</h3>
+            <p>CSSNANO supports custom configs using presets which controls the level of optimization</p>
+          </div>
+        </div>
+      </section>
+      <section class="box stack">
+        <h2>Technology</h2>
+        <p>
+          cssnano is powered by PostCSS, a tool for transforming styles
+          with JavaScript. Specifically, its plugin architecture allows
+          us to compose cssnano out of small modules with limited
+          responsibilities. It also allows you to easily insert cssnano
+          into your build step, along with other processors that can
+          lint your CSS for errors, or transpile future syntax.
+          <img class="fr" alt="" src="/img/postcss.svg" width="80" height="100"/>
+        </p>
+      </section>
+    </main>
+    <footer class="box stack bg-dark">
+  <div class="cluster justify-center">
+    <div class="stack">
+      <h2 class="f4">Docs</h2>
+      <ul class="stack">
+        <li>
+          <a href="/docs/introduction/">Guide</a></li>
+        <li><a href="/docs/what-are-optimisations/">Optimizations</a></li>
+        <li><a href="/playground/">Playground</a></li>
+        <li><a href="/docs/support-us/">Support</a></li>
+      </ul>
+    </div>
+    <div class="stack">
+      <h2 class="f4">Community</h2>
+      <ul class="stack">
+        <li><a href="https://stackoverflow.com/questions/tagged/cssnano" target="_blank" rel="noopener noreferrer">Stack Overflow <svg class="icon" width="0.75em" height="0.75em" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li>
+        <li><a href="https://gitter.im/postcss/postcss" target="_blank" rel="noopener noreferrer">Gitter <svg class="icon" width="0.75em" height="0.75em" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li>
+        <li><a href="https://opencollective.com/cssnano" target="_blank" rel="noopener noreferrer">Donate <svg class="icon" width="0.75em" height="0.75em" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li>
+      </ul>
+    </div>
+    <div class="stack">
+      <h2 class="f4">Social</h2>
+      <ul class="stack">
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://github.com/cssnano/cssnano" target="_blank" rel="noopener noreferrer">GitHub <svg width="0.75em" height="0.75em" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li>
+        <li><a href="https://twitter.com/cssnano_" target="_blank" rel="noopener noreferrer">Twitter <svg width="0.75em" height="0.75em" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="text-center">Latest release v5.1.0 · Distributed under the MIT License.</p>
+</footer>
+
+  </body>
 </html>

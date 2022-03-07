@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CSSNANO</title>
+    <meta name="viewport" content="width=device-width">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="sitemap" href="/sitemap.xml"/>
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="/styles/index.css" />
+    <script type="module" src="/make-scrollable-code-focusable.js" />
+    <!-- Scrollable a11y code helper -->
+  </head>
+
+  <body>
+    <main class="content">
+      <section class="center hero">
+        <img width="400" height="280" src="/logo.svg" />
+
+        <h2>Deliver your website's styles, faster.</h2>
+        <p>
+          Plug in cssnano into your build step for modern CSS compression.
+        </p>
+        <a             
+          href="docs/introduction"
+          >
+          Get Started
+        </a>
+      </section>
+      <!--  <CarbonAds /> -->
+
+      <section class="center">
+          <h1>What it does ?</h1>
+          <p>
+            cssnano takes your nicely formatted CSS and runs it through many
+            focused optimisations, to ensure that the final result is as
+            small as possible for a production environment.
+          </p>
+        <div>
+          <div>
+            <!--                <Tabs
+                                class={'mini'}
+                                defaultValue="Input"
+                   
+             values={[
+                                {
+                                label: "Input",
+                                value: 'Input',
+                                },
+                                {
+                                label: "Output",
+                                value: 'Output',
+                                },
+                                ]}
+                                >
+                                <TabItem value="Input">
+                                  <Code lang="css">
+                                    {cssExampleInput}
+                                  </Code>
+                                </TabItem>
+                                <TabItem value="Output">
+                                  <Code lang="css">
+                                    {cssExampleOutput}
+                                  </Code>
+                                </TabItem>
+            </Tabs> -->
+          </div>
+        </div>
+        <div>
+              <p>
+                The semantics of this CSS have been kept the same, but the
+                extraneous whitespace has been removed, the identifiers
+                compressed, and unnecessary definitions purged from the
+                stylesheet.
+                <br />
+              </p>
+              <p>
+                This gives you a much smaller CSS for production use. But
+                don’t just take our word for it; why not try out css-size, a
+                module especially created to measure CSS size before & after
+                minification.
+              </p>
+              <p>
+                By default, cssnano performs safe optimisations on your CSS
+                file, but we also offer an advanced preset with techniques
+                that you can use to maximise compression. For more details,
+                see our 
+                <a href="/docs/optimisations">
+                  optimisations
+                </a>
+                guide.
+              </p>
+              <table
+                
+                style="margin: 'auto'"
+                >
+                <tbody>
+                  <tr>
+                    <td>Original (gzip)</td>
+                    <td>325 B</td>
+                  </tr>
+                  <tr>
+                    <td>Minified (gzip)</td>
+                    <td>177 B</td>
+                  </tr> 
+                  <tr>
+                    <td>Difference</td>
+                    <td>148 B</td>
+                  </tr> 
+                  <tr>
+                    <td>Percent</td>
+                    <td>54.46%</td>
+                  </tr> 
+                </tbody>
+              </table>
+        </div>
+      </section>
+
+      <section>
+        <div>
+          <h1>Features</h1>
+
+          <h2>PostCSS Based</h2>
+
+          <p>CSSNANO is built upon postcss plugins and environments</p>
+          <h2>30+ Plugins</h2>
+
+          <p>CSSNANO has more than 30 plugins for optimizing your css</p>
+          <h2>Configurable</h2>
+
+          <p>CSSNANO supports custom configs using presets which controls the level of optimization</p>
+          
+        </div>
+      </section>
+      <section class="center">
+          <h1>Technology</h1>
+            <p>
+              cssnano is powered by PostCSS, a tool for transforming styles
+              with JavaScript. Specifically, its plugin architecture allows
+              us to compose cssnano out of small modules with limited
+              responsibilities. It also allows you to easily insert cssnano
+              into your build step, along with other processors that can
+              lint your CSS for errors, or transpile future syntax.
+            </p>
+              <img src="/postcss.svg" />
+          </div>
+      </section>
+    </main>
+
+  </body>
+</html>
