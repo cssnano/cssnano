@@ -44,7 +44,6 @@ function pluginCreator(opts = {}) {
     if (replacerCache.has(key)) {
       return replacerCache.get(key);
     }
-
     const parsed = commentParser(source).reduce((value, [type, start, end]) => {
       const contents = source.slice(start, end);
 
@@ -106,6 +105,8 @@ function pluginCreator(opts = {}) {
             const b = matchesComments(node.raws.important);
 
             node.raws.important = b.length ? node.raws.important : '!important';
+          } else {
+            node.value = replaceComments(node.value, list.space);
           }
 
           return;
