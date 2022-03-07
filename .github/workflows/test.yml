@@ -1,4 +1,5 @@
 name: test
+permissions: {}
 
 on:
   push:
