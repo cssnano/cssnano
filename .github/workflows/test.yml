@@ -62,7 +62,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: git config --global core.autocrlf input
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.0.0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2.2.1
@@ -71,7 +71,7 @@ jobs:
           version: 6.32.2
 
       - name: Install Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3.0.0
         if: matrix.node-version != '10'
         with:
           node-version: ${{ matrix.node-version }}
