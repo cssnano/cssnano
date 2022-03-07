@@ -12,12 +12,12 @@ function parseSelectors(selectors, callback) {
 
 /**
  * @param {import('postcss').Rule} rule
- * @return {void}
+ * @return {string}
  */
 function unique(rule) {
   const selector = [...new Set(rule.selectors)];
   selector.sort();
-  rule.selector = selector.join();
+  return selector.join();
 }
 
 /**
@@ -31,7 +31,8 @@ function pluginCreator() {
       css.walkRules((nodes) => {
         /** @type {string[]} */
         let comments = [];
-        nodes.selector = parseSelectors(nodes.selector, (selNode) => {
+        /** @type {selectorParser.SyncProcessor<void>} */
+        const removeAndSaveComments = (selNode) => {
           selNode.walk((sel) => {
             if (sel.type === 'comment') {
               comments.push(sel.value);
@@ -41,8 +42,13 @@ function pluginCreator() {
               return;
             }
           });
-        });
-        unique(nodes);
+        };
+        if (nodes.raws.selector && nodes.raws.selector.raw) {
+          parseSelectors(nodes.raws.selector.raw, removeAndSaveComments);
+          nodes.raws.selector.raw = unique(nodes);
+        }
+        nodes.selector = parseSelectors(nodes.selector, removeAndSaveComments);
+        nodes.selector = unique(nodes);
         nodes.selectors = nodes.selectors.concat(comments);
       });
     },
