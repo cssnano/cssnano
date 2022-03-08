@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.1.1
+
+### Patch Changes
+
+- fix: remove comments with PostCSS 8.4.6 and greater
+- Updated dependencies
+  - cssnano-preset-default@5.2.1
+
 ## 5.1.0
 
 ### Minor Changes

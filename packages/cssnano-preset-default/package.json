@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-default",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "main": "src/index.js",
   "types": "types/index.d.ts",
   "description": "Safe defaults for cssnano which require minimal configuration.",
@@ -16,7 +16,7 @@
     "postcss-calc": "^8.2.3",
     "postcss-colormin": "^5.3.0",
     "postcss-convert-values": "^5.1.0",
-    "postcss-discard-comments": "^5.1.0",
+    "postcss-discard-comments": "^5.1.1",
     "postcss-discard-duplicates": "^5.1.0",
     "postcss-discard-empty": "^5.1.0",
     "postcss-discard-overridden": "^5.1.0",
@@ -39,7 +39,7 @@
     "postcss-reduce-initial": "^5.1.0",
     "postcss-reduce-transforms": "^5.1.0",
     "postcss-svgo": "^5.1.0",
-    "postcss-unique-selectors": "^5.1.0"
+    "postcss-unique-selectors": "^5.1.1"
   },
   "author": {
     "name": "Ben Briggs",

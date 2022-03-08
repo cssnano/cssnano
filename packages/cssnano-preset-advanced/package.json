@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-advanced",
-  "version": "5.2.1",
+  "version": "5.2.2",
   "main": "src/index.js",
   "types": "types/index.d.ts",
   "description": "Advanced optimisations for cssnano; may or may not break your CSS!",
@@ -12,7 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "autoprefixer": "^10.3.7",
-    "cssnano-preset-default": "^5.2.0",
+    "cssnano-preset-default": "^5.2.1",
     "postcss-discard-unused": "^5.1.0",
     "postcss-merge-idents": "^5.1.0",
     "postcss-reduce-idents": "^5.1.0",
