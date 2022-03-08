@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.1
+
+### Patch Changes
+
+- fix: remove comments with PostCSS 8.4.6 and greater
+
 ## 5.1.0
 
 ### Minor Changes

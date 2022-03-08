@@ -1,5 +1,14 @@
 # Change Log
 
+## 5.2.1
+
+### Patch Changes
+
+- fix: remove comments with PostCSS 8.4.6 and greater
+- Updated dependencies
+  - postcss-discard-comments@5.1.1
+  - postcss-unique-selectors@5.1.1
+
 ## 5.2.0
 
 ### Minor Changes
