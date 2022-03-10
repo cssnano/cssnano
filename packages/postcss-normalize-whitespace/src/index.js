@@ -65,7 +65,6 @@ function pluginCreator() {
 
           // Remove whitespaces around ie 9 hack
           node.value = node.value.replace(/\s*(\\9)\s*/, '$1');
-
           const value = node.value;
 
           if (cache.has(value)) {
@@ -79,6 +78,9 @@ function pluginCreator() {
             cache.set(value, result);
           }
 
+          if (node.prop.startsWith('--') && node.value === '') {
+            node.value = ' ';
+          }
           // Remove extra semicolons and whitespace before the declaration
           if (node.raws.before) {
             const prev = node.prev();

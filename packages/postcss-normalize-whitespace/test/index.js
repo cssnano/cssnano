@@ -59,6 +59,15 @@ test(
 );
 
 test(
+  'should trim space around custom property',
+  processCSS('h1{--prop:  }', 'h1{--prop: }')
+);
+
+test(
+  'should add space around empty custom property',
+  processCSS('h1{--prop:}', 'h1{--prop: }')
+);
+test(
   'should not trim spaces inside of nested var function',
   processCSS(
     'div{background:var(--my-var, var(--my-background, pink, ))}',
