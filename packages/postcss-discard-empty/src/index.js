@@ -19,7 +19,7 @@ function discardAndReport(css, result) {
     }
 
     if (
-      (type === 'decl' && !node.value) ||
+      (type === 'decl' && !node.value && !node.prop.startsWith('--')) ||
       (type === 'rule' && !node.selector) ||
       (sub && !sub.length) ||
       (type === 'atrule' &&
