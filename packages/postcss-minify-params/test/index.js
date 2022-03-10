@@ -184,6 +184,22 @@ test(
 );
 
 test(
+  'should normalize space in custom property values',
+  processCSS(
+    '@supports (--foo:  ){html{background:green}}',
+    '@supports (--foo: ){html{background:green}}'
+  )
+);
+
+test(
+  'should minimize custom properties with multiple conditions',
+  processCSS(
+    '@supports ((--foo:  ) or (--bar: green )){html{background:green}}',
+    '@supports ((--foo: ) or (--bar:green)){html{background:green}}'
+  )
+);
+
+test(
   'should not throw on empty parentheses',
   passthroughCSS('@media (){h1{color:blue}}')
 );

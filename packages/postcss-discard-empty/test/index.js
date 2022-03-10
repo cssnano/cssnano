@@ -86,6 +86,11 @@ test(
 );
 
 test(
+  'should preserve empty custom properties',
+  passthroughCSS('*{--tw-shadow:; --something-else: ;}')
+);
+
+test(
   'should report removed selectors',
   testRemovals('h1{}.hot{}.a.b{}{}@media screen, print{h1,h2{}}', '', [
     'h1',
