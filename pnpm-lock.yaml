@@ -60,8 +60,8 @@ importers:
   packages/cssnano:
     specifiers:
       autoprefixer: ^10.3.7
-      cssnano-preset-advanced: ^5.2.2
-      cssnano-preset-default: ^5.2.1
+      cssnano-preset-advanced: ^5.2.3
+      cssnano-preset-default: ^5.2.2
       cssnano-preset-lite: ^2.1.0
       lilconfig: ^2.0.3
       postcss: ^8.2.15
@@ -79,7 +79,7 @@ importers:
   packages/cssnano-preset-advanced:
     specifiers:
       autoprefixer: ^10.3.7
-      cssnano-preset-default: ^5.2.1
+      cssnano-preset-default: ^5.2.2
       postcss: ^8.2.15
       postcss-discard-unused: ^5.1.0
       postcss-merge-idents: ^5.1.0
@@ -106,13 +106,13 @@ importers:
       postcss-convert-values: ^5.1.0
       postcss-discard-comments: ^5.1.1
       postcss-discard-duplicates: ^5.1.0
-      postcss-discard-empty: ^5.1.0
+      postcss-discard-empty: ^5.1.1
       postcss-discard-overridden: ^5.1.0
       postcss-merge-longhand: ^5.1.0
       postcss-merge-rules: ^5.1.0
       postcss-minify-font-values: ^5.1.0
       postcss-minify-gradients: ^5.1.0
-      postcss-minify-params: ^5.1.0
+      postcss-minify-params: ^5.1.1
       postcss-minify-selectors: ^5.2.0
       postcss-normalize-charset: ^5.1.0
       postcss-normalize-display-values: ^5.1.0
@@ -122,7 +122,7 @@ importers:
       postcss-normalize-timing-functions: ^5.1.0
       postcss-normalize-unicode: ^5.1.0
       postcss-normalize-url: ^5.1.0
-      postcss-normalize-whitespace: ^5.1.0
+      postcss-normalize-whitespace: ^5.1.1
       postcss-ordered-values: ^5.1.0
       postcss-reduce-initial: ^5.1.0
       postcss-reduce-transforms: ^5.1.0

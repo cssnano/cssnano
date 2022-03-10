@@ -1,5 +1,15 @@
 # Change Log
 
+## 5.2.2
+
+### Patch Changes
+
+- fix: preserve empty custom properties and ensure they work in Chrome
+- Updated dependencies
+  - postcss-discard-empty@5.1.1
+  - postcss-minify-params@5.1.1
+  - postcss-normalize-whitespace@5.1.1
+
 ## 5.2.1
 
 ### Patch Changes
