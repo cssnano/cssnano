@@ -69,11 +69,21 @@ function transform(legacy, rule) {
   const params = valueParser(rule.params);
 
   params.walk((node, index) => {
-    if (node.type === 'div' || node.type === 'function') {
+    if (node.type === 'div') {
       node.before = node.after = '';
-
+    } else if (node.type === 'function') {
+      node.before = '';
       if (
-        node.type === 'function' &&
+        node.nodes[0] &&
+        node.nodes[0].type === 'word' &&
+        node.nodes[0].value.startsWith('--') &&
+        node.nodes[2] === undefined
+      ) {
+        node.after = ' ';
+      } else {
+        node.after = '';
+      }
+      if (
         node.nodes[4] &&
         node.nodes[0].value.toLowerCase().indexOf('-aspect-ratio') === 3
       ) {
