@@ -87,7 +87,7 @@ test(
 
 test(
   'should preserve empty custom properties',
-  passthroughCSS('*{--tw-shadow:;}')
+  passthroughCSS('*{--tw-shadow:; --something-else: ;}')
 );
 
 test(
