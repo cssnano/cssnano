@@ -14,13 +14,13 @@
     "@codemirror/language": "^0.19.8",
     "@codemirror/matchbrackets": "^0.19.4",
     "@codemirror/state": "^0.19.9",
-    "@codemirror/view": "^0.19.46",
+    "@codemirror/view": "^0.19.47",
     "cssnano-preset-advanced": "../packages/cssnano-preset-advanced",
     "cssnano-preset-default": "../packages/cssnano-preset-default",
     "cssnano-preset-lite": "../packages/cssnano-preset-lite",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
-    "postcss": "^8.4.7"
+    "postcss": "^8.4.8"
   },
   "pnpm": {
     "overrides": {
