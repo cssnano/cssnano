@@ -1,6 +1,6 @@
 {
   "name": "postcss-discard-empty",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "Discard empty rules and values with PostCSS.",
   "main": "src/index.js",
   "types": "types/index.d.ts",

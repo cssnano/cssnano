@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.1
+
+### Patch Changes
+
+- fix: preserve empty custom properties and ensure they work in Chrome
+
 ## 5.1.0
 
 ### Minor Changes

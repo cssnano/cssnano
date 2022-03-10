@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.1.2
+
+### Patch Changes
+
+- fix: preserve empty custom properties and ensure they work in Chrome
+- Updated dependencies
+  - cssnano-preset-default@5.2.2
+
 ## 5.1.1
 
 ### Patch Changes
