@@ -4,6 +4,7 @@ const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 const { EleventyRenderPlugin } = require('@11ty/eleventy');
 const markdownItAnchor = require('markdown-it-anchor');
 const markdownIt = require('markdown-it');
+const cssnanoVersion = require('../packages/cssnano/package.json').version;
 
 const processor = postcss([cssnano]);
 module.exports = (config) => {
@@ -13,6 +14,7 @@ module.exports = (config) => {
   config.addPlugin(syntaxHighlight);
   config.addPlugin(EleventyRenderPlugin);
   config.addGlobalData('site_url', 'https://cssnano.co');
+  config.addGlobalData('cssnano_version', cssnanoVersion);
   config.addTemplateFormats('css');
   config.addExtension('css', {
     outputFileExtension: 'css',
