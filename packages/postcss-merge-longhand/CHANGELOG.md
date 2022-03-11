@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.1
+
+### Patch Changes
+
+- fix: do not merge declarations containing custom properties when it might create invalid declarations
+
 ## 5.1.0
 
 ### Minor Changes
