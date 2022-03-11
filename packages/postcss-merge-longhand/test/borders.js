@@ -1154,22 +1154,6 @@ test(
 );
 
 test(
-  'Should correctly merge borders with custom properties (#652)',
-  processCSS(
-    'h1{border-width:var(--a);border-style:var(--b);border-color:var(--c)}',
-    'h1{border:var(--a) var(--b) var(--c)}'
-  )
-);
-
-test(
-  'Should correctly merge borders with custom properties (#652) (uppercase)',
-  processCSS(
-    'h1{BORDER-WIDTH:VAR(--A);BORDER-STYLE:VAR(--B);BORDER-COLOR:VAR(--C)}',
-    'h1{border:VAR(--A) VAR(--B) VAR(--C)}'
-  )
-);
-
-test(
   'Should not throw error when a border property value is undefined (#639)',
   processCSS(
     'h1{border:2px solid #fff;border-color:inherit}',
@@ -1206,10 +1190,29 @@ test(
 );
 
 test(
-  'should not break border rules mixing custorm and regular properties',
+  'should not break border rules mixing custom and regular properties',
   passthroughCSS(
     'h1{border:var(--v1) solid var(--v2, #abc123);border-right-color:blue}'
   )
+);
+
+test(
+  'should not merge declarations with custom properties #1354',
+  passthroughCSS(
+    'h1{border-width:var(--width); border-style:solid; border-color: hotpink;}'
+  )
+);
+
+test(
+  'should not merge declarations with custom properties #675',
+  passthroughCSS(
+    '.class{border-width:var(--border-width);border-style:var(--border-style);border-color:var(--border-color);}'
+  )
+);
+
+test(
+  'should not merge declarations with custom properties #1044',
+  passthroughCSS('div{border:1px solid;border-color:red var(--grey);}')
 );
 
 test(
