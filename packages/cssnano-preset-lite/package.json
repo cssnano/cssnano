@@ -12,10 +12,10 @@
     ],
     "license": "MIT",
     "dependencies": {
-        "cssnano-utils": "^3.1.0",
-        "postcss-discard-comments": "^5.1.0",
-        "postcss-discard-empty": "^5.1.0",
-        "postcss-normalize-whitespace": "^5.1.0"
+        "cssnano-utils": "workspace:^*",
+        "postcss-discard-comments": "workspace:^*",
+        "postcss-discard-empty": "workspace:^*",
+        "postcss-normalize-whitespace": "workspace:^*"
     },
     "repository": "cssnano/cssnano",
     "homepage": "https://github.com/cssnano/cssnano",

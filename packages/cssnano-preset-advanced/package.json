@@ -12,11 +12,11 @@
   "license": "MIT",
   "dependencies": {
     "autoprefixer": "^10.3.7",
-    "cssnano-preset-default": "^5.2.3",
-    "postcss-discard-unused": "^5.1.0",
-    "postcss-merge-idents": "^5.1.0",
-    "postcss-reduce-idents": "^5.1.0",
-    "postcss-zindex": "^5.1.0"
+    "cssnano-preset-default": "workspace:^*",
+    "postcss-discard-unused": "workspace:^*",
+    "postcss-merge-idents": "workspace:^*",
+    "postcss-reduce-idents": "workspace:^*",
+    "postcss-zindex": "workspace:^*"
   },
   "author": {
     "name": "Ben Briggs",

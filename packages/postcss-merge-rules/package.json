@@ -26,7 +26,7 @@
   "dependencies": {
     "browserslist": "^4.16.6",
     "caniuse-api": "^3.0.0",
-    "cssnano-utils": "^3.1.0",
+    "cssnano-utils": "workspace:^*",
     "postcss-selector-parser": "^6.0.5"
   },
   "bugs": {
