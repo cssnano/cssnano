@@ -1183,6 +1183,21 @@ test(
 );
 
 test(
+  'Should preserve case of css custom properties #847',
+  passthroughCSS(
+    'h1 {border: 1px solid hsla(var(--HUE), var(--SATURATION), var(--LUMINANCE), 0.5)}'
+  )
+);
+
+test(
+  'Should preserve case of css custom properties example 2',
+  processCSS(
+    'h1 {border:solid 2px var(--buttonBorderColor, var(--buttonBaseColor, #000));}',
+    'h1 {border:2px solid var(--buttonBorderColor, var(--buttonBaseColor, #000));}'
+  )
+);
+
+test(
   'Should preserve border rule with only custom properties #1051',
   passthroughCSS(
     'h1{border-color: var(--a) var(--b) var(--c) var(--d);border-style:solid;border:var(--fooBar));}'

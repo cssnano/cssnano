@@ -4,14 +4,29 @@ const { isWidth, isStyle, isColor } = require('./validateWsc.js');
 
 const none = /^\s*(none|medium)(\s+none(\s+(none|currentcolor))?)?\s*$/i;
 
-const varRE = /(^.*var)(.*\(.*--.*\))(.*)/i;
-/** @type {(p: RegExpExecArray) => string} */
-const varPreserveCase = (p) =>
-  `${p[1].toLowerCase()}${p[2]}${p[3].toLowerCase()}`;
+/* Approximate https://drafts.csswg.org/css-values-4/#typedef-dashed-ident */
+// eslint-disable-next-line no-control-regex
+const varRE = /--(\w|[^\x00-\x7F])+/g;
 /** @type {(v: string) => string} */
 const toLower = (v) => {
-  const match = varRE.exec(v);
-  return match ? varPreserveCase(match) : v.toLowerCase();
+  let match;
+  let lastIndex = 0;
+  let result = '';
+  varRE.lastIndex = 0;
+  while ((match = varRE.exec(v)) !== null) {
+    if (match.index > lastIndex) {
+      result += v.substring(lastIndex, match.index).toLowerCase();
+    }
+    result += match[0];
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < v.length) {
+    result += v.substring(lastIndex).toLowerCase();
+  }
+  if (result === '') {
+    return v;
+  }
+  return result;
 };
 
 /**
@@ -26,7 +41,6 @@ module.exports = function parseWsc(value) {
   let width, style, color;
 
   const values = list.space(value);
-
   if (
     values.length > 1 &&
     isStyle(values[1]) &&
