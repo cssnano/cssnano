@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.2.4
+
+### Patch Changes
+
+- fix: do not merge declarations containing custom properties when it might create invalid declarations
+- Updated dependencies
+  - cssnano-preset-default@5.2.3
+
 ## 5.2.3
 
 ### Patch Changes

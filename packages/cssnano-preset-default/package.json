@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-default",
-  "version": "5.2.2",
+  "version": "5.2.3",
   "main": "src/index.js",
   "types": "types/index.d.ts",
   "description": "Safe defaults for cssnano which require minimal configuration.",
@@ -20,7 +20,7 @@
     "postcss-discard-duplicates": "^5.1.0",
     "postcss-discard-empty": "^5.1.1",
     "postcss-discard-overridden": "^5.1.0",
-    "postcss-merge-longhand": "^5.1.0",
+    "postcss-merge-longhand": "^5.1.1",
     "postcss-merge-rules": "^5.1.0",
     "postcss-minify-font-values": "^5.1.0",
     "postcss-minify-gradients": "^5.1.0",
