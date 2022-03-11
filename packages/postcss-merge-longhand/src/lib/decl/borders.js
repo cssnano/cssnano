@@ -231,6 +231,10 @@ function explode(rule) {
         return false;
       }
 
+      if (isCustomProp(decl)) {
+        decl.prop = decl.prop.toLowerCase();
+        return false;
+      }
       parseTrbl(decl.value).forEach((value, i) => {
         insertCloned(
           /** @type {import('postcss').Rule} */ (decl.parent),
