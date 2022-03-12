@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.1.4
+
+### Patch Changes
+
+- fix: preserve custom property case
+- Updated dependencies
+  - cssnano-preset-default@5.2.4
+
 ## 5.1.3
 
 ### Patch Changes
