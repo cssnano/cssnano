@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.2
+
+### Patch Changes
+
+- fix: preserve custom property case
+
 ## 5.1.1
 
 ### Patch Changes

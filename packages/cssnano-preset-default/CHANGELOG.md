@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.2.4
+
+### Patch Changes
+
+- fix: preserve custom property case
+- Updated dependencies
+  - postcss-merge-longhand@5.1.2
+
 ## 5.2.3
 
 ### Patch Changes
