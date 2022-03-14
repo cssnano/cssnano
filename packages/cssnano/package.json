@@ -43,8 +43,8 @@
     },
     "devDependencies": {
         "autoprefixer": "^10.3.7",
-        "cssnano-preset-advanced": "^5.2.5",
-        "cssnano-preset-lite": "^2.1.0",
+        "cssnano-preset-advanced": "workspace:^*",
+        "cssnano-preset-lite": "workspace:^*",
         "postcss": "^8.2.15"
     },
     "peerDependencies": {

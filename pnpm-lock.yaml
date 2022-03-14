@@ -60,9 +60,9 @@ importers:
   packages/cssnano:
     specifiers:
       autoprefixer: ^10.3.7
-      cssnano-preset-advanced: ^5.2.5
+      cssnano-preset-advanced: workspace:^*
       cssnano-preset-default: workspace:^*
-      cssnano-preset-lite: ^2.1.0
+      cssnano-preset-lite: workspace:^*
       lilconfig: ^2.0.3
       postcss: ^8.2.15
       yaml: ^1.10.2
