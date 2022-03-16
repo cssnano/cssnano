@@ -112,7 +112,7 @@ Pass `false` to disable reducing `counter-style` rules and `list-style` and `sys
 Type: `boolean`  
 Default: `true`
 
-Pass `false` to disable reducing `grid-template`, `grid-area` and `grid-template-areas` declarations.
+Pass `false` to disable reducing `grid-template`, `grid-area`, `grid-column`, `grid-row` and `grid-template-areas` declarations.
 
 ##### encoder
 

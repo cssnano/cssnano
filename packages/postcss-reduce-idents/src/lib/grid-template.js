@@ -41,7 +41,7 @@ module.exports = function () {
         });
 
         declCache.push(node);
-      } else if (node.prop.toLowerCase() === 'grid-area') {
+      } else if (/^(grid-area|grid-column|grid-row)/i.test(node.prop)) {
         valueParser(node.value).walk((child) => {
           if (child.type === 'word' && !RESERVED_KEYWORDS.has(child.value)) {
             addToCache(child.value, encoder, cache);
@@ -65,7 +65,7 @@ module.exports = function () {
               node.value = node.value.replace(/\s+/g, ' '); // merge white-spaces
             }
 
-            if (decl.prop.toLowerCase() === 'grid-area' && !isNum(node)) {
+            if (/^(grid-area|grid-column|grid-row)/i.test(decl.prop) && !isNum(node)) {
               if (node.value in cache) {
                 node.value = cache[node.value].ident;
               }

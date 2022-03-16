@@ -249,13 +249,15 @@ test(
 );
 
 test(
-  'should rename grid-template-areas and grid-area',
+  'should rename grid-template-areas, grid-area, grid-column and grid-row',
   processCSS(
     [
       'body{grid-template-areas:"head head" \n"nav  main"\n"nav  foot";}',
       'header { grid-area: head }',
       'nav{grid-area:nav}',
       'main{grid-area:main}',
+      'aside{grid-column:nav}',
+      'section{grid-row:main}',
       'footer{grid-area:foot}',
     ].join(''),
     [
@@ -263,19 +265,23 @@ test(
       'header { grid-area: a }',
       'nav{grid-area:b}',
       'main{grid-area:c}',
+      'aside{grid-column:b}',
+      'section{grid-row:c}',
       'footer{grid-area:d}',
     ].join('')
   )
 );
 
 test(
-  'should rename grid-template-areas and grid-area (uppercase)',
+  'should rename grid-template-areas, grid-area, grid-column and grid-row (uppercase)',
   processCSS(
     [
       'body{GRID-TEMPLATE-AREAS:"head head" \n"nav  main"\n"nav  foot";}',
       'header { GRID-AREA: head }',
       'nav{GRID-AREA:nav}',
       'main{GRID-AREA:main}',
+      'aside{GRID-COLUMN:nav}',
+      'section{GRID-ROW:main}',
       'footer{GRID-AREA:foot}',
     ].join(''),
     [
@@ -283,6 +289,8 @@ test(
       'header { GRID-AREA: a }',
       'nav{GRID-AREA:b}',
       'main{GRID-AREA:c}',
+      'aside{GRID-COLUMN:b}',
+      'section{GRID-ROW:c}',
       'footer{GRID-AREA:d}',
     ].join('')
   )
@@ -296,6 +304,8 @@ test(
       'header { grid-area: head }',
       'nav{grid-area:nav}',
       'main{grid-area:main}',
+      'aside{grid-column:nav}',
+      'section{grid-row:main}',
       'footer{grid-area:foot}',
     ].join(''),
     [
@@ -303,6 +313,8 @@ test(
       'header { grid-area: a }',
       'nav{grid-area:b}',
       'main{grid-area:c}',
+      'aside{grid-column:b}',
+      'section{grid-row:c}',
       'footer{grid-area:d}',
     ].join('')
   )
@@ -316,6 +328,8 @@ test(
       'header { grid-area: head }',
       'nav{grid-area:nav}',
       'main{grid-area:main}',
+      'aside{grid-column:nav}',
+      'section{grid-row:main}',
       'footer{grid-area:foot}',
     ].join(''),
     { gridTemplate: false }
