@@ -1,0 +1,8 @@
+*.html
+*.md
+*.json
+*.css
+*.yml
+*.yaml
+*.d.ts
+site/_site
