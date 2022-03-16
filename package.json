@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "lint": "pnpm types && eslint . --cache --ignore-path .gitignore --ext .js,.mjs",
-    "fixlint": "pnpm lint -- --fix",
+    "fixlint": "prettier --write . && pnpm lint -- --fix",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
     "test:only": "uvu packages \"test.*\\.js$\"",
@@ -26,7 +26,6 @@
     "diff": "^5.0.0",
     "eslint": "^8.11.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.0.0",
     "html-to-text": "^8.1.0",
     "nanospy": "^0.5.0",
     "node-fetch": "2.6.7",
