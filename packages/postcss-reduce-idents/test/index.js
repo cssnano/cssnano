@@ -249,15 +249,13 @@ test(
 );
 
 test(
-  'should rename grid-template-areas, grid-area, grid-column and grid-row',
+  'should rename grid-template-areas and grid-area',
   processCSS(
     [
       'body{grid-template-areas:"head head" \n"nav  main"\n"nav  foot";}',
       'header { grid-area: head }',
       'nav{grid-area:nav}',
       'main{grid-area:main}',
-      'aside{grid-column:nav}',
-      'section{grid-row:main}',
       'footer{grid-area:foot}',
     ].join(''),
     [
@@ -265,23 +263,19 @@ test(
       'header { grid-area: a }',
       'nav{grid-area:b}',
       'main{grid-area:c}',
-      'aside{grid-column:b}',
-      'section{grid-row:c}',
       'footer{grid-area:d}',
     ].join('')
   )
 );
 
 test(
-  'should rename grid-template-areas, grid-area, grid-column and grid-row (uppercase)',
+  'should rename grid-template-areas and grid-area (uppercase)',
   processCSS(
     [
       'body{GRID-TEMPLATE-AREAS:"head head" \n"nav  main"\n"nav  foot";}',
       'header { GRID-AREA: head }',
       'nav{GRID-AREA:nav}',
       'main{GRID-AREA:main}',
-      'aside{GRID-COLUMN:nav}',
-      'section{GRID-ROW:main}',
       'footer{GRID-AREA:foot}',
     ].join(''),
     [
@@ -289,8 +283,6 @@ test(
       'header { GRID-AREA: a }',
       'nav{GRID-AREA:b}',
       'main{GRID-AREA:c}',
-      'aside{GRID-COLUMN:b}',
-      'section{GRID-ROW:c}',
       'footer{GRID-AREA:d}',
     ].join('')
   )
@@ -304,8 +296,6 @@ test(
       'header { grid-area: head }',
       'nav{grid-area:nav}',
       'main{grid-area:main}',
-      'aside{grid-column:nav}',
-      'section{grid-row:main}',
       'footer{grid-area:foot}',
     ].join(''),
     [
@@ -313,9 +303,87 @@ test(
       'header { grid-area: a }',
       'nav{grid-area:b}',
       'main{grid-area:c}',
-      'aside{grid-column:b}',
-      'section{grid-row:c}',
       'footer{grid-area:d}',
+    ].join('')
+  )
+);
+
+test(
+  'should rename grid-column, grid-column-start and grid-column-end',
+  processCSS(
+    [
+      'body{grid-template-areas:". narrow ." \n"wide wide wide";}',
+      '.narrow { grid-column: narrow }',
+      '.wide{grid-column:wide}',
+      '.left{grid-column:wide/narrow}',
+      '.right{grid-column-start:narrow; grid-column-end: wide}',
+    ].join(''),
+    [
+      'body{grid-template-areas:". a ." "b b b";}',
+      '.narrow { grid-column: a }',
+      '.wide{grid-column:b}',
+      '.left{grid-column:b/a}',
+      '.right{grid-column-start:a; grid-column-end: b}',
+    ].join('')
+  )
+);
+
+test(
+  'should rename grid-column, grid-column-start and grid-column-end (uppercase)',
+  processCSS(
+    [
+      'body{GRID-TEMPLATE-AREAS:". narrow ." \n"wide wide wide";}',
+      '.narrow { GRID-COLUMN: narrow }',
+      '.wide{GRID-COLUMN:wide}',
+      '.left{GRID-COLUMN:wide/narrow}',
+      '.right{GRID-COLUMN-START:narrow; GRID-COLUMN-END: wide}',
+    ].join(''),
+    [
+      'body{GRID-TEMPLATE-AREAS:". a ." "b b b";}',
+      '.narrow { GRID-COLUMN: a }',
+      '.wide{GRID-COLUMN:b}',
+      '.left{GRID-COLUMN:b/a}',
+      '.right{GRID-COLUMN-START:a; GRID-COLUMN-END: b}',
+    ].join('')
+  )
+);
+
+test(
+  'should rename grid-row, grid-row-start and grid-row-end',
+  processCSS(
+    [
+      'body{grid-template-areas:"full ." \n"full middle" \n"full .";}',
+      '.full { grid-row: full }',
+      '.middle{grid-row:middle}',
+      '.top{grid-row:full/middle}',
+      '.bottom{grid-row-start:middle; grid-row-end: full}',
+    ].join(''),
+    [
+      'body{grid-template-areas:"a ." "a b" "a .";}',
+      '.full { grid-row: a }',
+      '.middle{grid-row:b}',
+      '.top{grid-row:a/b}',
+      '.bottom{grid-row-start:b; grid-row-end: a}',
+    ].join('')
+  )
+);
+
+test(
+  'should rename grid-row, grid-row-start and grid-row-end (uppercase)',
+  processCSS(
+    [
+      'body{GRID-TEMPLATE-AREAS:"full ." \n"full middle" \n"full .";}',
+      '.full { GRID-ROW: full }',
+      '.middle{GRID-ROW:middle}',
+      '.top{GRID-ROW:full/middle}',
+      '.bottom{GRID-ROW-START:middle; GRID-ROW-END: full}',
+    ].join(''),
+    [
+      'body{GRID-TEMPLATE-AREAS:"a ." "a b" "a .";}',
+      '.full { GRID-ROW: a }',
+      '.middle{GRID-ROW:b}',
+      '.top{GRID-ROW:a/b}',
+      '.bottom{GRID-ROW-START:b; GRID-ROW-END: a}',
     ].join('')
   )
 );
@@ -328,8 +396,6 @@ test(
       'header { grid-area: head }',
       'nav{grid-area:nav}',
       'main{grid-area:main}',
-      'aside{grid-column:nav}',
-      'section{grid-row:main}',
       'footer{grid-area:foot}',
     ].join(''),
     { gridTemplate: false }

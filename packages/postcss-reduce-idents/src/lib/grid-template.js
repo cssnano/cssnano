@@ -20,6 +20,16 @@ module.exports = function () {
   /** @type {import('postcss').Declaration[]} */
   let declCache = [];
 
+  const gridChildProperties = [
+    'grid-area',
+    'grid-column',
+    'grid-row',
+    'grid-column-start',
+    'grid-column-end',
+    'grid-row-start',
+    'grid-row-end',
+  ];
+
   return {
     collect(node, encoder) {
       if (node.type !== 'decl') {
@@ -41,7 +51,7 @@ module.exports = function () {
         });
 
         declCache.push(node);
-      } else if (/^(grid-area|grid-column|grid-row)/i.test(node.prop)) {
+      } else if (gridChildProperties.includes(node.prop.toLowerCase())) {
         valueParser(node.value).walk((child) => {
           if (child.type === 'word' && !RESERVED_KEYWORDS.has(child.value)) {
             addToCache(child.value, encoder, cache);
@@ -65,7 +75,7 @@ module.exports = function () {
               node.value = node.value.replace(/\s+/g, ' '); // merge white-spaces
             }
 
-            if (/^(grid-area|grid-column|grid-row)/i.test(decl.prop) && !isNum(node)) {
+            if (gridChildProperties.includes(decl.prop.toLowerCase()) && !isNum(node)) {
               if (node.value in cache) {
                 node.value = cache[node.value].ident;
               }
