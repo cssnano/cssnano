@@ -11,6 +11,21 @@ const RESERVED_KEYWORDS = new Set([
   'unset',
 ]);
 
+const gridTemplateProperties = new Set([
+  'grid-template',
+  'grid-template-areas',
+]);
+
+const gridChildProperties = new Set([
+  'grid-area',
+  'grid-column',
+  'grid-row',
+  'grid-column-start',
+  'grid-column-end',
+  'grid-row-start',
+  'grid-row-end',
+]);
+
 /**
  * @return {import('../index.js').Reducer}
  */
@@ -20,23 +35,13 @@ module.exports = function () {
   /** @type {import('postcss').Declaration[]} */
   let declCache = [];
 
-  const gridChildProperties = new Set([
-    'grid-area',
-    'grid-column',
-    'grid-row',
-    'grid-column-start',
-    'grid-column-end',
-    'grid-row-start',
-    'grid-row-end',
-  ]);
-
   return {
     collect(node, encoder) {
       if (node.type !== 'decl') {
         return;
       }
 
-      if (/(grid-template|grid-template-areas)/i.test(node.prop)) {
+      if (gridTemplateProperties.has(node.prop.toLowerCase())) {
         valueParser(node.value).walk((child) => {
           if (child.type === 'string') {
             child.value.split(/\s+/).forEach((word) => {
@@ -53,7 +58,10 @@ module.exports = function () {
         declCache.push(node);
       } else if (gridChildProperties.has(node.prop.toLowerCase())) {
         valueParser(node.value).walk((child) => {
-          if (child.type === 'word' && !RESERVED_KEYWORDS.has(child.value)) {
+          if (
+            child.type === 'word' &&
+            !RESERVED_KEYWORDS.has(child.value.toLowerCase())
+          ) {
             addToCache(child.value, encoder, cache);
           }
         });
@@ -66,7 +74,7 @@ module.exports = function () {
       declCache.forEach((decl) => {
         decl.value = valueParser(decl.value)
           .walk((node) => {
-            if (/(grid-template|grid-template-areas)/i.test(decl.prop)) {
+            if (gridTemplateProperties.has(decl.prop.toLowerCase())) {
               node.value.split(/\s+/).forEach((word) => {
                 if (word in cache) {
                   node.value = node.value.replace(word, cache[word].ident);
@@ -75,7 +83,10 @@ module.exports = function () {
               node.value = node.value.replace(/\s+/g, ' '); // merge white-spaces
             }
 
-            if (gridChildProperties.has(decl.prop.toLowerCase()) && !isNum(node)) {
+            if (
+              gridChildProperties.has(decl.prop.toLowerCase()) &&
+              !isNum(node)
+            ) {
               if (node.value in cache) {
                 node.value = cache[node.value].ident;
               }
