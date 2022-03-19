@@ -269,6 +269,26 @@ test(
 );
 
 test(
+  'should leave grid-template-rows',
+  processCSS(
+    [
+      'body{grid-template-areas:"head head" \n"nav  main"\n"nav  foot"; grid-template-rows: 1fr 1fr 1fr;}',
+      'header { grid-area: head }',
+      'nav{grid-area:nav}',
+      'main{grid-area:main}',
+      'footer{grid-area:foot}',
+    ].join(''),
+    [
+      'body{grid-template-areas:"a a" "b c" "b d"; grid-template-rows: 1fr 1fr 1fr;}',
+      'header { grid-area: a }',
+      'nav{grid-area:b}',
+      'main{grid-area:c}',
+      'footer{grid-area:d}',
+    ].join('')
+  )
+);
+
+test(
   'should rename grid-template-areas and grid-area (uppercase)',
   processCSS(
     [
@@ -384,6 +404,26 @@ test(
       '.middle{GRID-ROW:b}',
       '.top{GRID-ROW:a/b}',
       '.bottom{GRID-ROW-START:b; GRID-ROW-END: a}',
+    ].join('')
+  )
+);
+
+test(
+  'should not rename uppercase reserved keywords in grid-row, grid-row-start and grid-row-end',
+  processCSS(
+    [
+      'body{grid-template-areas:"full ." \n"full middle" \n"full .";}',
+      '.full { grid-row: AUTO }',
+      '.middle{grid-row:INHERIT}',
+      '.top{grid-row:full/middle}',
+      '.bottom{grid-row-start:middle; grid-row-end: full}',
+    ].join(''),
+    [
+      'body{grid-template-areas:"a ." "a b" "a .";}',
+      '.full { grid-row: AUTO }',
+      '.middle{grid-row:INHERIT}',
+      '.top{grid-row:a/b}',
+      '.bottom{grid-row-start:b; grid-row-end: a}',
     ].join('')
   )
 );
