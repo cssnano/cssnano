@@ -58,7 +58,10 @@ module.exports = function () {
         declCache.push(node);
       } else if (gridChildProperties.has(node.prop.toLowerCase())) {
         valueParser(node.value).walk((child) => {
-          if (child.type === 'word' && !RESERVED_KEYWORDS.has(child.value)) {
+          if (
+            child.type === 'word' &&
+            !RESERVED_KEYWORDS.has(child.value.toLowerCase())
+          ) {
             addToCache(child.value, encoder, cache);
           }
         });
