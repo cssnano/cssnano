@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.2.0
+
+### Minor Changes
+
+- feature: reduce grid-row and grid-column properties
+
 ## 5.1.0
 
 ### Minor Changes
