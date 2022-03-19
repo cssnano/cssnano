@@ -1,5 +1,16 @@
 # Change Log
 
+## 5.3.0
+
+### Minor Changes
+
+- feature: reduce grid-row and grid-column properties
+
+### Patch Changes
+
+- Updated dependencies
+  - postcss-reduce-idents@5.2.0
+
 ## 5.2.5
 
 ### Patch Changes
