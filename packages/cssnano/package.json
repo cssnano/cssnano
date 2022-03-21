@@ -19,7 +19,7 @@
     ],
     "license": "MIT",
     "dependencies": {
-        "cssnano-preset-default": "workspace:^*",
+        "cssnano-preset-default": "workspace:^",
         "lilconfig": "^2.0.3",
         "yaml": "^1.10.2"
     },
@@ -43,8 +43,8 @@
     },
     "devDependencies": {
         "autoprefixer": "^10.3.7",
-        "cssnano-preset-advanced": "workspace:^*",
-        "cssnano-preset-lite": "workspace:^*",
+        "cssnano-preset-advanced": "workspace:^",
+        "cssnano-preset-lite": "workspace:^",
         "postcss": "^8.2.15"
     },
     "peerDependencies": {
