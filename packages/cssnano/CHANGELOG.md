@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.1.5
+
+### Patch Changes
+
+- fix: correct package.json dependency version specifier
+- Updated dependencies
+  - cssnano-preset-default@5.2.5
+
 ## 5.1.4
 
 ### Patch Changes

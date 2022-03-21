@@ -1,5 +1,17 @@
 # Change Log
 
+## 5.2.5
+
+### Patch Changes
+
+- fix: correct package.json dependency version specifier
+- Updated dependencies
+  - postcss-merge-longhand@5.1.3
+  - postcss-merge-rules@5.1.1
+  - postcss-minify-gradients@5.1.1
+  - postcss-minify-params@5.1.2
+  - postcss-ordered-values@5.1.1
+
 ## 5.2.4
 
 ### Patch Changes

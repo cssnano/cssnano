@@ -1,6 +1,6 @@
 {
     "name": "cssnano-preset-lite",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "main": "src/index.js",
     "types": "types/index.d.ts",
     "description": "Safe and minimum transformation",

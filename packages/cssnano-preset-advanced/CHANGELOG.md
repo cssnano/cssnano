@@ -1,5 +1,14 @@
 # Change Log
 
+## 5.3.1
+
+### Patch Changes
+
+- fix: correct package.json dependency version specifier
+- Updated dependencies
+  - cssnano-preset-default@5.2.5
+  - postcss-merge-idents@5.1.1
+
 ## 5.3.0
 
 ### Minor Changes
