@@ -58,9 +58,9 @@ importers:
   packages/cssnano:
     specifiers:
       autoprefixer: ^10.3.7
-      cssnano-preset-advanced: workspace:^*
-      cssnano-preset-default: workspace:^*
-      cssnano-preset-lite: workspace:^*
+      cssnano-preset-advanced: workspace:^
+      cssnano-preset-default: workspace:^
+      cssnano-preset-lite: workspace:^
       lilconfig: ^2.0.3
       postcss: ^8.2.15
       yaml: ^1.10.2
@@ -77,12 +77,12 @@ importers:
   packages/cssnano-preset-advanced:
     specifiers:
       autoprefixer: ^10.3.7
-      cssnano-preset-default: workspace:^*
+      cssnano-preset-default: workspace:^
       postcss: ^8.2.15
-      postcss-discard-unused: workspace:^*
-      postcss-merge-idents: workspace:^*
-      postcss-reduce-idents: workspace:^*
-      postcss-zindex: workspace:^*
+      postcss-discard-unused: workspace:^
+      postcss-merge-idents: workspace:^
+      postcss-reduce-idents: workspace:^
+      postcss-zindex: workspace:^
     dependencies:
       autoprefixer: 10.4.2_postcss@8.4.10
       cssnano-preset-default: link:../cssnano-preset-default
@@ -97,35 +97,35 @@ importers:
     specifiers:
       '@types/css-declaration-sorter': ^6.0.1
       css-declaration-sorter: ^6.0.3
-      cssnano-utils: workspace:^*
+      cssnano-utils: workspace:^
       postcss: ^8.2.15
       postcss-calc: ^8.2.3
-      postcss-colormin: workspace:^*
-      postcss-convert-values: workspace:^*
-      postcss-discard-comments: workspace:^*
-      postcss-discard-duplicates: workspace:^*
-      postcss-discard-empty: workspace:^*
-      postcss-discard-overridden: workspace:^*
-      postcss-merge-longhand: workspace:^*
-      postcss-merge-rules: workspace:^*
-      postcss-minify-font-values: workspace:^*
-      postcss-minify-gradients: workspace:^*
-      postcss-minify-params: workspace:^*
-      postcss-minify-selectors: workspace:^*
-      postcss-normalize-charset: workspace:^*
-      postcss-normalize-display-values: workspace:^*
-      postcss-normalize-positions: workspace:^*
-      postcss-normalize-repeat-style: workspace:^*
-      postcss-normalize-string: workspace:^*
-      postcss-normalize-timing-functions: workspace:^*
-      postcss-normalize-unicode: workspace:^*
-      postcss-normalize-url: workspace:^*
-      postcss-normalize-whitespace: workspace:^*
-      postcss-ordered-values: workspace:^*
-      postcss-reduce-initial: workspace:^*
-      postcss-reduce-transforms: workspace:^*
-      postcss-svgo: workspace:^*
-      postcss-unique-selectors: workspace:^*
+      postcss-colormin: workspace:^
+      postcss-convert-values: workspace:^
+      postcss-discard-comments: workspace:^
+      postcss-discard-duplicates: workspace:^
+      postcss-discard-empty: workspace:^
+      postcss-discard-overridden: workspace:^
+      postcss-merge-longhand: workspace:^
+      postcss-merge-rules: workspace:^
+      postcss-minify-font-values: workspace:^
+      postcss-minify-gradients: workspace:^
+      postcss-minify-params: workspace:^
+      postcss-minify-selectors: workspace:^
+      postcss-normalize-charset: workspace:^
+      postcss-normalize-display-values: workspace:^
+      postcss-normalize-positions: workspace:^
+      postcss-normalize-repeat-style: workspace:^
+      postcss-normalize-string: workspace:^
+      postcss-normalize-timing-functions: workspace:^
+      postcss-normalize-unicode: workspace:^
+      postcss-normalize-url: workspace:^
+      postcss-normalize-whitespace: workspace:^
+      postcss-ordered-values: workspace:^
+      postcss-reduce-initial: workspace:^
+      postcss-reduce-transforms: workspace:^
+      postcss-svgo: workspace:^
+      postcss-unique-selectors: workspace:^
     dependencies:
       css-declaration-sorter: 6.1.4_postcss@8.4.10
       cssnano-utils: link:../cssnano-utils
@@ -162,11 +162,11 @@ importers:
 
   packages/cssnano-preset-lite:
     specifiers:
-      cssnano-utils: workspace:^*
+      cssnano-utils: workspace:^
       postcss: ^8.2.15
-      postcss-discard-comments: workspace:^*
-      postcss-discard-empty: workspace:^*
-      postcss-normalize-whitespace: workspace:^*
+      postcss-discard-comments: workspace:^
+      postcss-discard-empty: workspace:^
+      postcss-normalize-whitespace: workspace:^
     dependencies:
       cssnano-utils: link:../cssnano-utils
       postcss-discard-comments: link:../postcss-discard-comments
@@ -242,7 +242,7 @@ importers:
 
   packages/postcss-merge-idents:
     specifiers:
-      cssnano-utils: workspace:^*
+      cssnano-utils: workspace:^
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
     dependencies:
@@ -255,7 +255,7 @@ importers:
     specifiers:
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
-      stylehacks: workspace:^*
+      stylehacks: workspace:^
     dependencies:
       postcss-value-parser: 4.2.0
       stylehacks: link:../stylehacks
@@ -267,7 +267,7 @@ importers:
       '@types/caniuse-api': ^3.0.2
       browserslist: ^4.16.6
       caniuse-api: ^3.0.0
-      cssnano-utils: workspace:^*
+      cssnano-utils: workspace:^
       postcss: ^8.2.15
       postcss-discard-comments: ^5.1.0
       postcss-selector-parser: ^6.0.5
@@ -293,7 +293,7 @@ importers:
   packages/postcss-minify-gradients:
     specifiers:
       colord: ^2.9.1
-      cssnano-utils: workspace:^*
+      cssnano-utils: workspace:^
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
     dependencies:
@@ -306,7 +306,7 @@ importers:
   packages/postcss-minify-params:
     specifiers:
       browserslist: ^4.16.6
-      cssnano-utils: workspace:^*
+      cssnano-utils: workspace:^
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
     dependencies:
@@ -409,7 +409,7 @@ importers:
 
   packages/postcss-ordered-values:
     specifiers:
-      cssnano-utils: workspace:^*
+      cssnano-utils: workspace:^
       node-fetch: ^2.6.7
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
