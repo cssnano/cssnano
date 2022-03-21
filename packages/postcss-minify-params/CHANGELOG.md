@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.2
+
+### Patch Changes
+
+- fix: correct package.json dependency version specifier
+
 ## 5.1.1
 
 ### Patch Changes
