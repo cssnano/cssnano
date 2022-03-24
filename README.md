@@ -32,7 +32,7 @@ to provide different output depending on the browsers that you support.
 For further details check out the [website](https://cssnano.co/):
 
 - [Installation guide for your build process](https://cssnano.co/docs/getting-started).
-- [Full list of optimisations](https://cssnano.co/docs/optimisations/).
+- [Full list of optimisations](https://cssnano.co/docs/what-are-optimisations/).
 
 You can now [try cssnano online](https://cssnano.co/playground/)!
 
