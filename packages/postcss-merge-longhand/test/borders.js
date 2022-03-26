@@ -1279,5 +1279,12 @@ test(
   )
 );
 
+test(
+  'avoid dropping custom property when merging expansions',
+  passthroughCSS(
+    'h1{border:1px solid;border-color:var(--BORDER);border-left-style:none;}'
+  )
+);
+
 test('should handle empty border', processCSS('h1{border:;}', 'h1{border:;}'));
 test.run();
