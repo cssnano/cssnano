@@ -39,6 +39,8 @@ declare const _exports: {
     keys(): IterableIterator<number>;
     values(): IterableIterator<typeof borders>;
     includes(searchElement: typeof borders, fromIndex?: number | undefined): boolean;
+    flatMap<U_3, This = undefined>(callback: (this: This, value: typeof borders, index: number, array: (typeof borders)[]) => U_3 | readonly U_3[], thisArg?: This | undefined): U_3[];
+    flat<A, D extends number = 1>(this: A, depth?: D | undefined): FlatArray<A, D>[];
     [Symbol.iterator](): IterableIterator<typeof borders>;
     [Symbol.unscopables](): {
         copyWithin: boolean;
@@ -49,5 +51,6 @@ declare const _exports: {
         keys: boolean;
         values: boolean;
     };
+    at(index: number): typeof borders | undefined;
 };
 export = _exports;

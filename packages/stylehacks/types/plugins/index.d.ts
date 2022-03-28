@@ -347,6 +347,16 @@ declare const _exports: {
     } | {
         new (result?: import("postcss").Result | undefined): trailingSlashComma;
     }, fromIndex?: number | undefined): boolean;
+    flatMap<U_3, This = undefined>(callback: (this: This, value: {
+        new (result?: import("postcss").Result | undefined): important;
+    } | {
+        new (result?: import("postcss").Result | undefined): trailingSlashComma;
+    }, index: number, array: ({
+        new (result?: import("postcss").Result | undefined): important;
+    } | {
+        new (result?: import("postcss").Result | undefined): trailingSlashComma;
+    })[]) => U_3 | readonly U_3[], thisArg?: This | undefined): U_3[];
+    flat<A, D extends number = 1>(this: A, depth?: D | undefined): FlatArray<A, D>[];
     [Symbol.iterator](): IterableIterator<{
         new (result?: import("postcss").Result | undefined): important;
     } | {
@@ -361,5 +371,10 @@ declare const _exports: {
         keys: boolean;
         values: boolean;
     };
+    at(index: number): {
+        new (result?: import("postcss").Result | undefined): important;
+    } | {
+        new (result?: import("postcss").Result | undefined): trailingSlashComma;
+    } | undefined;
 };
 export = _exports;
