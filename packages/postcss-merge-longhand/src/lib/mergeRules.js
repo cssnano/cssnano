@@ -9,17 +9,23 @@ const getRules = require('./getRules.js');
  * @return {boolean}
  */
 function isConflictingProp(propA, propB) {
-  if (!propB.prop || propB.important !== propA.important) {
+  if (!propB.prop || propB.important !== propA.important ||
+      propA.prop === propB.prop) {
     return false;
   }
 
-  const parts = propA.prop.split('-');
+  const partsA = propA.prop.split('-');
+  const partsB = propB.prop.split('-');
 
-  return parts.some(() => {
-    parts.pop();
+  /* Be safe: check that the first part matches. So we don't try to
+   * combine e.g. border-color and color.
+   */
+  if (partsA[0] !== partsB[0]) {
+    return false;
+  }
 
-    return parts.join('-') === propB.prop;
-  });
+  const partsASet = new Set(partsA);
+  return partsB.every((partB) => partsASet.has(partB));
 }
 
 /**
