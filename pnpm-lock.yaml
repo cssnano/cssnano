@@ -95,8 +95,7 @@ importers:
 
   packages/cssnano-preset-default:
     specifiers:
-      '@types/css-declaration-sorter': ^6.0.1
-      css-declaration-sorter: ^6.0.3
+      css-declaration-sorter: ^6.2.2
       cssnano-utils: workspace:^
       postcss: ^8.2.15
       postcss-calc: ^8.2.3
@@ -127,7 +126,7 @@ importers:
       postcss-svgo: workspace:^
       postcss-unique-selectors: workspace:^
     dependencies:
-      css-declaration-sorter: 6.1.4_postcss@8.4.10
+      css-declaration-sorter: 6.2.2_postcss@8.4.10
       cssnano-utils: link:../cssnano-utils
       postcss-calc: 8.2.4_postcss@8.4.10
       postcss-colormin: link:../postcss-colormin
@@ -157,7 +156,6 @@ importers:
       postcss-svgo: link:../postcss-svgo
       postcss-unique-selectors: link:../postcss-unique-selectors
     devDependencies:
-      '@types/css-declaration-sorter': 6.0.1
       postcss: 8.4.10
 
   packages/cssnano-preset-lite:
@@ -795,12 +793,6 @@ packages:
     resolution: {integrity: sha512-YfCDMn7R59n7GFFfwjPAM0zLJQy4UvveC32rOJBmTqJJY8uSRqM4Dc7IJj8V9unA48Qy4nj5Bj3jD6Q8VZ1Seg==}
     dev: true
 
-  /@types/css-declaration-sorter/6.0.1:
-    resolution: {integrity: sha512-reXoxl/M4PGnuwlGbA8DZZSPEvDVHJwheprLZOjrBvwAZE5PMyB3JmzzrbNux04lHpd59btegrxXDdi5clDADg==}
-    dependencies:
-      postcss: 8.4.10
-    dev: true
-
   /@types/is-ci/3.0.0:
     resolution: {integrity: sha512-Q0Op0hdWbYd1iahB+IFNQcWXFq4O0Q5MwQP7uN0souuQ4rPg1vEYcnIOfr1gY+M+6rc8FGoRaBO1mOOvL29sEQ==}
     dependencies:
@@ -1155,14 +1147,13 @@ packages:
       which: 2.0.2
     dev: true
 
-  /css-declaration-sorter/6.1.4_postcss@8.4.10:
-    resolution: {integrity: sha512-lpfkqS0fctcmZotJGhnxkIyJWvBXgpyi2wsFd4J8VB7wzyrT6Ch/3Q+FMNJpjK4gu1+GN5khOnpU2ZVKrLbhCw==}
-    engines: {node: '>= 10'}
+  /css-declaration-sorter/6.2.2_postcss@8.4.10:
+    resolution: {integrity: sha512-Ufadglr88ZLsrvS11gjeu/40Lw74D9Am/Jpr3LlYm5Q4ZP5KdlUhG+6u2EjyXeZcxmZ2h1ebCKngDjolpeLHpg==}
+    engines: {node: ^10 || ^12 || >=14}
     peerDependencies:
       postcss: ^8.0.9
     dependencies:
       postcss: 8.4.10
-      timsort: 0.3.0
     dev: false
 
   /css-select/4.2.1:
@@ -2790,10 +2781,6 @@ packages:
   /text-table/0.2.0:
     resolution: {integrity: sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=}
     dev: true
-
-  /timsort/0.3.0:
-    resolution: {integrity: sha1-QFQRqOfmM5/mTbmiNN4R3DHgK9Q=}
-    dev: false
 
   /tmp/0.0.33:
     resolution: {integrity: sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==}
