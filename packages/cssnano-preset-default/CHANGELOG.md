@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- fix: preserve border color when mergin border properties
+- fix: preserve border color when merging border properties
 
 ## 5.2.5
 
