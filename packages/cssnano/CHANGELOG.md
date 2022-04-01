@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.1.7
+
+### Patch Changes
+
+- fix: update postcss-merge-longhand. It was skipped by mistake in the previous release.
+- Updated dependencies
+  - cssnano-preset-default@5.2.7
+
 ## 5.1.6
 
 ### Patch Changes
