@@ -7,7 +7,6 @@ const parseTrbl = require('../parseTrbl.js');
 const insertCloned = require('../insertCloned.js');
 const mergeRules = require('../mergeRules.js');
 const mergeValues = require('../mergeValues.js');
-const remove = require('../remove.js');
 const trbl = require('../trbl.js');
 const isCustomProp = require('../isCustomProp.js');
 const canExplode = require('../canExplode.js');
@@ -36,7 +35,9 @@ module.exports = (prop) => {
           node.prop !== lastNode.prop
       );
 
-      lesser.forEach(remove);
+      for (const node of lesser) {
+        node.remove();
+      }
       decls = decls.filter((node) => !lesser.includes(node));
 
       // get duplicate properties
@@ -50,7 +51,9 @@ module.exports = (prop) => {
           !(!isCustomProp(node) && isCustomProp(lastNode))
       );
 
-      duplicates.forEach(remove);
+      for (const node of duplicates) {
+        node.remove();
+      }
       decls = decls.filter(
         (node) => node !== lastNode && !duplicates.includes(node)
       );
@@ -97,7 +100,9 @@ module.exports = (prop) => {
               value: minifyTrbl(mergeValues(...rules)),
             }
           );
-          rules.forEach(remove);
+          for (const node of rules) {
+            node.remove();
+          }
 
           return true;
         }
