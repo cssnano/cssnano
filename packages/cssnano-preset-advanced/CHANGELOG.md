@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.3.2
+
+### Patch Changes
+
+- fix: preserve border color when mergin border properties
+- Updated dependencies
+  - cssnano-preset-default@5.2.6
+
 ## 5.3.1
 
 ### Patch Changes

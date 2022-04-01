@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.2.6
+
+### Patch Changes
+
+- fix: preserve border color when mergin border properties
+
 ## 5.2.5
 
 ### Patch Changes
