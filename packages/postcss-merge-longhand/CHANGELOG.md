@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.4
+
+### Patch Changes
+
+- fix: update postcss-merge-longhand. It was skipped by mistake in the previous release.
+
 ## 5.1.3
 
 ### Patch Changes

@@ -1,10 +1,18 @@
 # Change Log
 
+## 5.2.7
+
+### Patch Changes
+
+- fix: update postcss-merge-longhand. It was skipped by mistake in the previous release.
+- Updated dependencies
+  - postcss-merge-longhand@5.1.4
+
 ## 5.2.6
 
 ### Patch Changes
 
-- fix: preserve border color when mergin border properties
+- fix: preserve border color when merging border properties
 
 ## 5.2.5
 
