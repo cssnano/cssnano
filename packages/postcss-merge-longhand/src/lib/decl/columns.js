@@ -7,7 +7,6 @@ const getDecls = require('../getDecls.js');
 const getValue = require('../getValue.js');
 const mergeRules = require('../mergeRules.js');
 const insertCloned = require('../insertCloned.js');
-const remove = require('../remove.js');
 const isCustomProp = require('../isCustomProp.js');
 const canExplode = require('../canExplode.js');
 
@@ -104,7 +103,9 @@ function cleanup(rule) {
         node.prop !== lastNode.prop
     );
 
-    lesser.forEach(remove);
+    for (const node of lesser) {
+      node.remove();
+    }
     decls = decls.filter((node) => !lesser.includes(node));
 
     // get duplicate properties
@@ -118,7 +119,9 @@ function cleanup(rule) {
         !(!isCustomProp(node) && isCustomProp(lastNode))
     );
 
-    duplicates.forEach(remove);
+    for (const node of duplicates) {
+      node.remove();
+    }
     decls = decls.filter(
       (node) => node !== lastNode && !duplicates.includes(node)
     );
@@ -141,7 +144,9 @@ function merge(rule) {
         }
       );
 
-      rules.forEach(remove);
+      for (const node of rules) {
+        node.remove();
+      }
 
       return true;
     }

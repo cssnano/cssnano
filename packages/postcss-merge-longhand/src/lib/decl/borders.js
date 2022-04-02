@@ -11,7 +11,6 @@ const mergeRules = require('../mergeRules.js');
 const minifyTrbl = require('../minifyTrbl.js');
 const minifyWsc = require('../minifyWsc.js');
 const canMerge = require('../canMerge.js');
-const remove = require('../remove.js');
 const trbl = require('../trbl.js');
 const isCustomProp = require('../isCustomProp.js');
 const canExplode = require('../canExplode.js');
@@ -273,8 +272,9 @@ function merge(rule) {
               value: rules.map(getValue).join(' '),
             }
           );
-
-          rules.forEach(remove);
+          for (const node of rules) {
+            node.remove();
+          }
 
           return true;
         }
@@ -301,7 +301,9 @@ function merge(rule) {
             }
           );
 
-          rules.forEach(remove);
+          for (const node of rules) {
+            node.remove();
+          }
 
           return true;
         }
@@ -350,7 +352,9 @@ function merge(rule) {
       }
     });
 
-    rules.forEach(remove);
+    for (const node of rules) {
+      node.remove();
+    }
 
     return true;
   });
@@ -400,7 +404,9 @@ function merge(rule) {
           })
         );
       }
-      rules.forEach(remove);
+      for (const node of rules) {
+        node.remove();
+      }
 
       return true;
     } else if (reduced.length === 1) {
@@ -413,7 +419,7 @@ function merge(rule) {
       );
       rules
         .filter((node) => node.prop.toLowerCase() !== properties[2])
-        .forEach(remove);
+        .forEach((node) => node.remove());
 
       return true;
     }
@@ -462,7 +468,9 @@ function merge(rule) {
         }
       });
 
-      rules.forEach(remove);
+      for (const node of rules) {
+        node.remove();
+      }
 
       return true;
     }
@@ -512,7 +520,9 @@ function merge(rule) {
         );
       }
 
-      rules.forEach(remove);
+      for (const node of rules) {
+        node.remove();
+      }
 
       return true;
     }
@@ -672,7 +682,9 @@ function merge(rule) {
         );
 
         decls = decls.filter((node) => !rules.includes(node));
-        rules.forEach(remove);
+        for (const node of rules) {
+          node.remove();
+        }
       }
     });
 
@@ -739,7 +751,9 @@ function merge(rule) {
           values[i] !== undefined &&
           longhands[0].value.toLowerCase() === values[i].toLowerCase()
         ) {
-          longhands.forEach(remove);
+          for (const node of longhands) {
+            node.remove();
+          }
 
           insertCloned(
             /** @type {import('postcss').Rule} */ (decl.parent),
@@ -801,7 +815,9 @@ function merge(rule) {
           node.prop.toLowerCase().endsWith(/** @type {string} */ (lastPart)))
     );
 
-    lesser.forEach(remove);
+    for (const node of lesser) {
+      node.remove();
+    }
     decls = decls.filter((node) => !lesser.includes(node));
 
     // get duplicate properties
@@ -823,8 +839,9 @@ function merge(rule) {
 
         duplicates = duplicates.filter((node) => node !== preserve);
       }
-
-      duplicates.forEach(remove);
+      for (const node of duplicates) {
+        node.remove();
+      }
     }
 
     decls = decls.filter(
