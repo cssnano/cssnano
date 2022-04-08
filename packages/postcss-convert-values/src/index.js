@@ -36,6 +36,13 @@ const keepWhenZero = new Set([
   'line-height',
 ]);
 
+// Can't remove the % on these properties when they're 0
+const keepZeroPercent = new Set([
+  'max-height',
+  'height',
+  'min-width',
+]);
+
 /**
  * Numbers without digits after the dot are technically invalid,
  * but in that case css-value-parser returns the dot as part of the unit,
@@ -110,8 +117,7 @@ function shouldKeepZeroUnit(decl) {
   const { parent } = decl;
   const lowerCasedProp = decl.prop.toLowerCase();
   return (
-    (decl.value.includes('%') &&
-      (lowerCasedProp === 'max-height' || lowerCasedProp === 'height')) ||
+    (decl.value.includes('%') && keepZeroPercent.has(lowerCasedProp)) ||
     (parent &&
       parent.parent &&
       parent.parent.type === 'atrule' &&
