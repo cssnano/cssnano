@@ -18,7 +18,7 @@ jobs:
         with:
           version: 6.32.2
       - name: Install Node.js 16.x
-        uses: actions/setup-node@v3.0.0
+        uses: actions/setup-node@v3.1.1
         with:
           node-version: '16'
           cache: 'pnpm'
@@ -38,7 +38,7 @@ jobs:
         with:
           version: 6.32.2
       - name: Install Node.js 16.x
-        uses: actions/setup-node@v3.0.0
+        uses: actions/setup-node@v3.1.1
         with:
           node-version: '16'
           cache: 'pnpm'
@@ -71,7 +71,7 @@ jobs:
           version: 6.32.2
 
       - name: Install Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.0.0
+        uses: actions/setup-node@v3.1.1
         if: matrix.node-version != '10'
         with:
           node-version: ${{ matrix.node-version }}
@@ -98,6 +98,6 @@ jobs:
 
       - name: Publish code coverage report
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '16'
-        uses: codecov/codecov-action@v2.1.0
+        uses: codecov/codecov-action@v3.0.0
         with:
           name: codecov
