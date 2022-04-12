@@ -36,7 +36,7 @@ const keepWhenZero = new Set([
   'line-height',
 ]);
 
-// Can't remove the % on these properties when they're 0
+// Can't remove the % on these properties when they're 0 on IE 11
 const keepZeroPercent = new Set([
   'max-height',
   'height',
