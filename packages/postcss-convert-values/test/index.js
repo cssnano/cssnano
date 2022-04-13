@@ -252,8 +252,8 @@ test(
 );
 
 test(
-  'should not strip the percentage from 0 in max-height & height props',
-  passthroughCSS('h1{height:0%;max-height:0%}')
+  'should not strip the percentage from 0 in max-height, height, and min-width props',
+  passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}')
 );
 
 test(
