@@ -12,7 +12,6 @@ importers:
       eslint-config-prettier: ^8.5.0
       html-to-text: ^8.1.0
       nanospy: ^0.5.0
-      node-fetch: 2.6.7
       picocolors: ^1.0.0
       pleeease-filters: ^4.0.0
       postcss: ^8.4.12
@@ -32,7 +31,6 @@ importers:
       eslint-config-prettier: 8.5.0_eslint@8.12.0
       html-to-text: 8.1.0
       nanospy: 0.5.0
-      node-fetch: 2.6.7
       picocolors: 1.0.0
       pleeease-filters: 4.0.0
       postcss: 8.4.12
@@ -408,15 +406,15 @@ importers:
   packages/postcss-ordered-values:
     specifiers:
       cssnano-utils: workspace:^
-      node-fetch: ^2.6.7
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
+      undici: ^5.0.0
     dependencies:
       cssnano-utils: link:../cssnano-utils
       postcss-value-parser: 4.2.0
     devDependencies:
-      node-fetch: 2.6.7
       postcss: 8.4.12
+      undici: 5.0.0
 
   packages/postcss-reduce-idents:
     specifiers:
@@ -433,12 +431,14 @@ importers:
       browserslist: ^4.16.6
       caniuse-api: ^3.0.0
       postcss: ^8.2.15
+      undici: ^5.0.0
     dependencies:
       browserslist: 4.20.2
       caniuse-api: 3.0.0
     devDependencies:
       '@types/caniuse-api': 3.0.2
       postcss: 8.4.12
+      undici: 5.0.0
 
   packages/postcss-reduce-transforms:
     specifiers:
@@ -2127,18 +2127,6 @@ packages:
       randexp: 0.4.6
     dev: true
 
-  /node-fetch/2.6.7:
-    resolution: {integrity: sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==}
-    engines: {node: 4.x || >=6.0.0}
-    peerDependencies:
-      encoding: ^0.1.0
-    peerDependenciesMeta:
-      encoding:
-        optional: true
-    dependencies:
-      whatwg-url: 5.0.0
-    dev: true
-
   /node-releases/2.0.2:
     resolution: {integrity: sha512-XxYDdcQ6eKqp/YjI+tb2C5WM2LgjnZrfYg4vgQt49EK268b6gYCHsBLrK2qvJo4FmCtqmKezb0WZFK4fkrZNsg==}
 
@@ -2801,10 +2789,6 @@ packages:
       is-number: 7.0.0
     dev: true
 
-  /tr46/0.0.3:
-    resolution: {integrity: sha1-gYT9NH2snNwYWZLzpmIuFLnZq2o=}
-    dev: true
-
   /trim-newlines/3.0.1:
     resolution: {integrity: sha512-c1PTsA3tYrIsLGkJkzHF+w9F2EyxfXGo4UyJc4pFL++FMjnq0HJS69T3M7d//gKrFKwy429bouPescbjecU+Zw==}
     engines: {node: '>=8'}
@@ -2854,6 +2838,11 @@ packages:
     resolution: {integrity: sha512-yNIatDa5iaofVozS/uQJEl3JRWLKKGJKh6Yaiv0GLGSuhpFJe7P3SbHZ8/yjAHRQwKRoA6YZqlfjXWmVzoVSMw==}
     engines: {node: '>=4.2.0'}
     hasBin: true
+    dev: true
+
+  /undici/5.0.0:
+    resolution: {integrity: sha512-VhUpiZ3No1DOPPQVQnsDZyfcbTTcHdcgWej1PdFnSvOeJmOVDgiOHkunJmBLfmjt4CqgPQddPVjSWW0dsTs5Yg==}
+    engines: {node: '>=12.18'}
     dev: true
 
   /universalify/0.1.2:
@@ -2906,17 +2895,6 @@ packages:
     resolution: {integrity: sha1-8LDc+RW8X/FSivrbLA4XtTLaL+g=}
     dependencies:
       defaults: 1.0.3
-    dev: true
-
-  /webidl-conversions/3.0.1:
-    resolution: {integrity: sha1-JFNCdeKnvGvnvIZhHMFq4KVlSHE=}
-    dev: true
-
-  /whatwg-url/5.0.0:
-    resolution: {integrity: sha1-lmRU6HZUYuN2RNNib2dCzotwll0=}
-    dependencies:
-      tr46: 0.0.3
-      webidl-conversions: 3.0.1
     dev: true
 
   /which-module/2.0.0:
