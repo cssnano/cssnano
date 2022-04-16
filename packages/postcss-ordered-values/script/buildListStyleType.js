@@ -3,7 +3,7 @@
 
 const { writeFile } = require('fs');
 const { resolve } = require('path');
-const fetch = require('node-fetch');
+const { fetch } = require('undici');
 
 const listTypeURL =
   'https://raw.githubusercontent.com/mdn/browser-compat-data/master/css/properties/list-style-type.json';
@@ -18,17 +18,6 @@ const listTypeURL =
   };
   writeFile(
     resolve(__dirname, '../src/rules/listStyleTypes.json'),
-    JSON.stringify(content, null, 2),
-    (err) => {
-      if (err) {
-        console.log('Error while fetch list style type from GitHub', err);
-        process.exit(1);
-      }
-    }
-  );
-
-  writeFile(
-    resolve(__dirname, '../dist/rules/listStyleTypes.json'),
     JSON.stringify(content, null, 2),
     (err) => {
       if (err) {

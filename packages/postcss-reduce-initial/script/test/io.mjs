@@ -2,7 +2,6 @@ import fs from 'fs';
 import { test } from 'uvu';
 import * as assert from 'uvu/assert';
 import { spy } from 'nanospy';
-import { Response } from 'node-fetch';
 import { handleError, toJSONString, write, generate } from '../lib/io.mjs';
 
 const testData = JSON.parse(
@@ -47,7 +46,7 @@ test('should handle file operation errors', () => {
 test('should make it through promise chain with sample data and write 2 files', async () => {
   const fileFunc = spy();
   const fetchFunc = spy(async () => {
-    return new Response(JSON.stringify(testData));
+    return { json: () => Promise.resolve(testData) };
   });
   await generate(
     fetchFunc,

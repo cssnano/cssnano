@@ -28,7 +28,6 @@
     "eslint-config-prettier": "^8.5.0",
     "html-to-text": "^8.1.0",
     "nanospy": "^0.5.0",
-    "node-fetch": "2.6.7",
     "picocolors": "^1.0.0",
     "pleeease-filters": "^4.0.0",
     "postcss": "^8.4.12",
