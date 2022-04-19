@@ -8,9 +8,8 @@ importers:
       browserslist: ^4.20.2
       c8: ^7.11.0
       diff: ^5.0.0
-      eslint: ^8.12.0
+      eslint: ^8.13.0
       eslint-config-prettier: ^8.5.0
-      html-to-text: ^8.1.0
       nanospy: ^0.5.0
       picocolors: ^1.0.0
       pleeease-filters: ^4.0.0
@@ -19,7 +18,7 @@ importers:
       postcss-scss: ^3.0.4
       postcss-simple-vars: ^6.0.1
       postcss-value-parser: ^4.2.0
-      prettier: ^2.6.1
+      prettier: ^2.6.2
       typescript: ^4.6.3
       uvu: ^0.5.3
     devDependencies:
@@ -27,9 +26,8 @@ importers:
       browserslist: 4.20.2
       c8: 7.11.0
       diff: 5.0.0
-      eslint: 8.12.0
-      eslint-config-prettier: 8.5.0_eslint@8.12.0
-      html-to-text: 8.1.0
+      eslint: 8.13.0
+      eslint-config-prettier: 8.5.0_eslint@8.13.0
       nanospy: 0.5.0
       picocolors: 1.0.0
       pleeease-filters: 4.0.0
@@ -38,7 +36,7 @@ importers:
       postcss-scss: 3.0.5
       postcss-simple-vars: 6.0.3_postcss@8.4.12
       postcss-value-parser: 4.2.0
-      prettier: 2.6.1
+      prettier: 2.6.2
       typescript: 4.6.3
       uvu: 0.5.3
 
@@ -430,6 +428,7 @@ importers:
       '@types/caniuse-api': ^3.0.2
       browserslist: ^4.16.6
       caniuse-api: ^3.0.0
+      html-to-text: ^8.2.0
       postcss: ^8.2.15
       undici: ^5.0.0
     dependencies:
@@ -437,6 +436,7 @@ importers:
       caniuse-api: 3.0.0
     devDependencies:
       '@types/caniuse-api': 3.0.2
+      html-to-text: 8.2.0
       postcss: 8.4.12
       undici: 5.0.0
 
@@ -1367,13 +1367,13 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /eslint-config-prettier/8.5.0_eslint@8.12.0:
+  /eslint-config-prettier/8.5.0_eslint@8.13.0:
     resolution: {integrity: sha512-obmWKLUNCnhtQRKc+tmnYuQl0pFU1ibYJQ5BGhTVB08bHe9wC8qUeG7c08dj9XX+AuPj1YSGSQIHl1pnDHZR0Q==}
     hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
     dependencies:
-      eslint: 8.12.0
+      eslint: 8.13.0
     dev: true
 
   /eslint-scope/7.1.1:
@@ -1384,13 +1384,13 @@ packages:
       estraverse: 5.3.0
     dev: true
 
-  /eslint-utils/3.0.0_eslint@8.12.0:
+  /eslint-utils/3.0.0_eslint@8.13.0:
     resolution: {integrity: sha512-uuQC43IGctw68pJA1RgbQS8/NP7rch6Cwd4j3ZBtgo4/8Flj4eGE7ZYSZRN3iq5pVUv6GPdW5Z1RFleo84uLDA==}
     engines: {node: ^10.0.0 || ^12.0.0 || >= 14.0.0}
     peerDependencies:
       eslint: '>=5'
     dependencies:
-      eslint: 8.12.0
+      eslint: 8.13.0
       eslint-visitor-keys: 2.1.0
     dev: true
 
@@ -1404,8 +1404,8 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /eslint/8.12.0:
-    resolution: {integrity: sha512-it1oBL9alZg1S8UycLm5YDMAkIhtH6FtAzuZs6YvoGVldWjbS08BkAdb/ymP9LlAyq8koANu32U7Ib/w+UNh8Q==}
+  /eslint/8.13.0:
+    resolution: {integrity: sha512-D+Xei61eInqauAyTJ6C0q6x9mx7kTUC1KZ0m0LSEexR0V+e94K12LmWX076ZIsldwfQ2RONdaJe0re0TRGQbRQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     hasBin: true
     dependencies:
@@ -1418,7 +1418,7 @@ packages:
       doctrine: 3.0.0
       escape-string-regexp: 4.0.0
       eslint-scope: 7.1.1
-      eslint-utils: 3.0.0_eslint@8.12.0
+      eslint-utils: 3.0.0_eslint@8.13.0
       eslint-visitor-keys: 3.3.0
       espree: 9.3.1
       esquery: 1.4.0
@@ -1717,8 +1717,8 @@ packages:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
     dev: true
 
-  /html-to-text/8.1.0:
-    resolution: {integrity: sha512-Z9iYAqYK2c18GswSbnxJSeMs7lyJgwR2oIkDOyOHGBbYsPsG4HvT379jj3Lcbfko8A5ceyyMHAfkmp/BiXA9/Q==}
+  /html-to-text/8.2.0:
+    resolution: {integrity: sha512-CLXExYn1b++Lgri+ZyVvbUEFwzkLZppjjZOwB7X1qv2jIi8MrMEvxWX5KQ7zATAzTvcqgmtO00M2kCRMtEdOKQ==}
     engines: {node: '>=10.23.2'}
     hasBin: true
     dependencies:
@@ -2414,8 +2414,8 @@ packages:
     hasBin: true
     dev: true
 
-  /prettier/2.6.1:
-    resolution: {integrity: sha512-8UVbTBYGwN37Bs9LERmxCPjdvPxlEowx2urIL6urHzdb3SDq4B/Z6xLFCblrSnE4iKWcS6ziJ3aOYrc1kz/E2A==}
+  /prettier/2.6.2:
+    resolution: {integrity: sha512-PkUpF+qoXTqhOeWL9fu7As8LXsIUZ1WYaJiY/a7McAQzxjk82OF0tibkFXVCDImZtWxbvojFjerkiLb0/q8mew==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     dev: true
