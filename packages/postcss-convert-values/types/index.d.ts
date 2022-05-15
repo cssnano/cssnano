@@ -1,6 +1,6 @@
 export = pluginCreator;
 /**
- * @typedef {{precision: boolean | number, angle?: boolean, time?: boolean, length?: boolean}} Options */
+ * @typedef {{precision: boolean | number, angle?: boolean, time?: boolean, length?: boolean} & browserslist.Options} Options */
 /**
  * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
@@ -15,5 +15,6 @@ type Options = {
     angle?: boolean;
     time?: boolean;
     length?: boolean;
-};
+} & browserslist.Options;
 declare var postcss: true;
+import browserslist = require("browserslist");

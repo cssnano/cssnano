@@ -194,9 +194,11 @@ importers:
 
   packages/postcss-convert-values:
     specifiers:
+      browserslist: ^4.20.3
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
     dependencies:
+      browserslist: 4.20.3
       postcss-value-parser: 4.2.0
     devDependencies:
       postcss: 8.4.13

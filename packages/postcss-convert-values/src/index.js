@@ -1,5 +1,6 @@
 'use strict';
 const valueParser = require('postcss-value-parser');
+const browserslist = require('browserslist');
 const convert = require('./lib/convert.js');
 
 const LENGTH_UNITS = new Set([
@@ -37,11 +38,7 @@ const keepWhenZero = new Set([
 ]);
 
 // Can't remove the % on these properties when they're 0 on IE 11
-const keepZeroPercent = new Set([
-  'max-height',
-  'height',
-  'min-width',
-]);
+const keepZeroPercent = new Set(['max-height', 'height', 'min-width']);
 
 /**
  * Numbers without digits after the dot are technically invalid,
@@ -111,13 +108,16 @@ function clampOpacity(node) {
 
 /**
  * @param {import('postcss').Declaration} decl
+ * @param {string[]} browsers
  * @return {boolean}
  */
-function shouldKeepZeroUnit(decl) {
+function shouldKeepZeroUnit(decl, browsers) {
   const { parent } = decl;
   const lowerCasedProp = decl.prop.toLowerCase();
   return (
-    (decl.value.includes('%') && keepZeroPercent.has(lowerCasedProp)) ||
+    (decl.value.includes('%') &&
+      keepZeroPercent.has(lowerCasedProp) &&
+      browsers.includes('ie 11')) ||
     (parent &&
       parent.parent &&
       parent.parent.type === 'atrule' &&
@@ -130,10 +130,11 @@ function shouldKeepZeroUnit(decl) {
 }
 /**
  * @param {Options} opts
+ * @param {string[]} browsers
  * @param {import('postcss').Declaration} decl
  * @return {void}
  */
-function transform(opts, decl) {
+function transform(opts, browsers, decl) {
   const lowerCasedProp = decl.prop.toLowerCase();
   if (
     lowerCasedProp.includes('flex') ||
@@ -148,7 +149,7 @@ function transform(opts, decl) {
       const lowerCasedValue = node.value.toLowerCase();
 
       if (node.type === 'word') {
-        parseWord(node, opts, shouldKeepZeroUnit(decl));
+        parseWord(node, opts, shouldKeepZeroUnit(decl, browsers));
         if (
           lowerCasedProp === 'opacity' ||
           lowerCasedProp === 'shape-image-threshold'
@@ -181,17 +182,23 @@ function transform(opts, decl) {
 
 const plugin = 'postcss-convert-values';
 /**
- * @typedef {{precision: boolean | number, angle?: boolean, time?: boolean, length?: boolean}} Options */
+ * @typedef {{precision: boolean | number, angle?: boolean, time?: boolean, length?: boolean} & browserslist.Options} Options */
 /**
  * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(opts = { precision: false }) {
+  const browsers = browserslist(null, {
+    stats: opts.stats,
+    path: __dirname,
+    env: opts.env,
+  });
+
   return {
     postcssPlugin: plugin,
     OnceExit(css) {
-      css.walkDecls(transform.bind(null, opts));
+      css.walkDecls((decl) => transform(opts, browsers, decl));
     },
   };
 }
