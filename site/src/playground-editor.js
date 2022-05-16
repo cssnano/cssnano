@@ -5,11 +5,14 @@ import {
   dropCursor,
 } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
-import { indentOnInput } from '@codemirror/language';
+import {
+  indentOnInput,
+  syntaxHighlighting,
+  defaultHighlightStyle,
+  bracketMatching,
+} from '@codemirror/language';
 import { defaultKeymap } from '@codemirror/commands';
-import { bracketMatching } from '@codemirror/matchbrackets';
-import { closeBrackets, closeBracketsKeymap } from '@codemirror/closebrackets';
-import { defaultHighlightStyle } from '@codemirror/highlight';
+import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { css } from '@codemirror/lang-css';
 
 export const playgroundSetup = [
@@ -18,7 +21,7 @@ export const playgroundSetup = [
   dropCursor(),
   EditorState.allowMultipleSelections.of(true),
   indentOnInput(),
-  defaultHighlightStyle.fallback,
+  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
   bracketMatching(),
   closeBrackets(),
   css(),
