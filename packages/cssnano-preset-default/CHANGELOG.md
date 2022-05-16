@@ -1,5 +1,15 @@
 # Change Log
 
+## 5.2.8
+
+### Patch Changes
+
+- postcss-convert-values: preserve percentage sign on IE 11
+- postcss-minify-params: refactor
+- Updated dependencies
+  - postcss-convert-values@5.1.1
+  - postcss-minify-params@5.1.3
+
 ## 5.2.7
 
 ### Patch Changes
