@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.3
+
+### Patch Changes
+
+- refactor: change function bind to arrow function
+
 ## 5.1.2
 
 ### Patch Changes

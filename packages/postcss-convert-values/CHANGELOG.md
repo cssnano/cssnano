@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.1
+
+### Patch Changes
+
+- postcss-convert-values: preserve percentage sign on IE 11
+
 ## 5.1.0
 
 ### Minor Changes

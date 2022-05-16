@@ -1,5 +1,14 @@
 # Change Log
 
+## 5.1.8
+
+### Patch Changes
+
+- postcss-convert-values: preserve percentage sign on IE 11
+- postcss-minify-params: refactor
+- Updated dependencies
+  - cssnano-preset-default@5.2.8
+
 ## 5.1.7
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-advanced",
-  "version": "5.3.3",
+  "version": "5.3.4",
   "main": "src/index.js",
   "types": "types/index.d.ts",
   "description": "Advanced optimisations for cssnano; may or may not break your CSS!",
