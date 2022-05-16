@@ -130,13 +130,7 @@ function transform(legacy, rule) {
   }
 }
 
-/**
- * @param {string} browser
- * @return {boolean}
- */
-function hasAllBug(browser) {
-  return ['ie 10', 'ie 11'].includes(browser);
-}
+const allBugBrowers = new Set(['ie 10', 'ie 11']);
 
 /**
  * @type {import('postcss').PluginCreator<browserslist.Options>}
@@ -150,11 +144,12 @@ function pluginCreator(options = {}) {
     env: options.env,
   });
 
+  const hasAllBug = browsers.some((browser) => allBugBrowers.has(browser));
   return {
     postcssPlugin: 'postcss-minify-params',
 
     OnceExit(css) {
-      css.walkAtRules(transform.bind(null, browsers.some(hasAllBug)));
+      css.walkAtRules((rule) => transform(hasAllBug, rule));
     },
   };
 }
