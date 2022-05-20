@@ -20,6 +20,8 @@ const { isValidWsc } = require('../validateWsc.js');
 
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentcolor'];
+const colorMightRequireFallback =
+  /(hsla|rgba|color|hwb|lab|lch|oklab|oklch)\(/i;
 
 /**
  * @param {...string} parts
@@ -832,9 +834,11 @@ function merge(rule) {
     );
 
     if (duplicates.length) {
-      if (/hsla\(|rgba\(/i.test(getColorValue(lastNode))) {
+      if (colorMightRequireFallback.test(getColorValue(lastNode))) {
         const preserve = duplicates
-          .filter((node) => !/hsla\(|rgba\(/i.test(getColorValue(node)))
+          .filter(
+            (node) => !colorMightRequireFallback.test(getColorValue(node))
+          )
           .pop();
 
         duplicates = duplicates.filter((node) => node !== preserve);

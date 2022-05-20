@@ -707,6 +707,12 @@ test(
 );
 
 test(
+  'should not merge fallback colours with color function',
+  passthroughCSS(
+    'h1{ border-color:rgb(37,45,49);border-color:color(display-p3 0.1451 0.1765 0.1922 / 1)}'
+  )
+);
+test(
   'should not merge fallback colours with shorthand property',
   processCSS(
     'h1{border:1px solid #ccc;border:1px solid rgba(0,0,0,.2)}',
