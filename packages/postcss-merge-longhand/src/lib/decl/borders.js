@@ -20,7 +20,8 @@ const { isValidWsc } = require('../validateWsc.js');
 
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentcolor'];
-const colorMightRequireFallback = /hsla\(|rgba\(|color\(/i;
+const colorMightRequireFallback =
+  /(hsla|rgba|color|hwb|lab|lch|oklab|oklch)\(/i;
 
 /**
  * @param {...string} parts
