@@ -10,15 +10,15 @@
     "@codemirror/autocomplete": "^0.20.1",
     "@codemirror/commands": "^0.20.0",
     "@codemirror/lang-css": "^0.20.0",
-    "@codemirror/language": "^0.20.0",
+    "@codemirror/language": "^0.20.2",
     "@codemirror/state": "^0.20.0",
-    "@codemirror/view": "^0.20.4",
+    "@codemirror/view": "^0.20.6",
     "cssnano-preset-advanced": "../packages/cssnano-preset-advanced",
     "cssnano-preset-default": "../packages/cssnano-preset-default",
     "cssnano-preset-lite": "../packages/cssnano-preset-lite",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
-    "postcss": "^8.4.13"
+    "postcss": "^8.4.14"
   },
   "devDependencies": {
     "@11ty/eleventy": "^1.0.1",
