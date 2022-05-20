@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.2.9
+
+### Patch Changes
+
+- fix: preserve more color function fallbacks
+- Updated dependencies
+  - postcss-merge-longhand@5.1.5
+
 ## 5.2.8
 
 ### Patch Changes

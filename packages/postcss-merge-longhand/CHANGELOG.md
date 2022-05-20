@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.5
+
+### Patch Changes
+
+- fix: preserve more color function fallbacks
+
 ## 5.1.4
 
 ### Patch Changes

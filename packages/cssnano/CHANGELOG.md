@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.1.9
+
+### Patch Changes
+
+- fix: preserve more color function fallbacks
+- Updated dependencies
+  - cssnano-preset-default@5.2.9
+
 ## 5.1.8
 
 ### Patch Changes
