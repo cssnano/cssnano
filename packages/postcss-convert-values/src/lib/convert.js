@@ -37,7 +37,7 @@ function dropLeadingZero(number) {
 /**
  * @param {number} number
  * @param {string} originalUnit
- * @param {Map<string, number>} conversions
+ * @param {lengthConv | timeConv | angleConv} conversions
  * @return {string}
  */
 function transform(number, originalUnit, conversions) {
