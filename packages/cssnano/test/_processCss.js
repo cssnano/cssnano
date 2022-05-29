@@ -1,5 +1,4 @@
 'use strict';
-const { test } = require('uvu');
 const assert = require('uvu/assert');
 const postcss = require('postcss');
 const cssnano = require('..');
@@ -16,4 +15,3 @@ module.exports = processCss;
 module.exports.passthrough = function (fixture, options = { from: undefined }) {
   return processCss(fixture, fixture, options);
 };
-test.run();

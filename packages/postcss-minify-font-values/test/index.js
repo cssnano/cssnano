@@ -5,14 +5,8 @@ const {
   processCSSFactory,
 } = require('../../../util/testHelpers.js');
 
-const {
-  processCSSWithPresetFactory,
-} = require('../../../util/integrationTestHelpers.js');
 const plugin = require('../src/index.js');
-
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
-const { processCSS: withDefaultPreset, passthroughCSS: passthroughDefault } =
-  processCSSWithPresetFactory('default');
 
 test(
   'should not unquote font names with a leading number',
@@ -255,36 +249,6 @@ test(
 test(
   'should unquote multiple escape `[` characters',
   passthroughCSS('h1{font-family:"STHeiti Light [STXihei]"}')
-);
-
-test(
-  'should not escape legal characters',
-  passthroughDefault('h1{font-family:€42}')
-);
-
-test(
-  'should not join identifiers in the shorthand property',
-  passthroughDefault('h1{font:italic "Bond 007 008 009",sans-serif}')
-);
-
-test(
-  'should escape special characters if unquoting',
-  withDefaultPreset('h1{font-family:"Ahem!"}', 'h1{font-family:Ahem\\!}')
-);
-
-test(
-  'should not escape multiple special characters',
-  passthroughDefault('h1{font-family:"Ahem!!"}')
-);
-
-test(
-  'should not mangle legal unquoted values',
-  passthroughDefault('h1{font-family:\\$42}')
-);
-
-test(
-  'should not mangle font names',
-  passthroughDefault('h1{font-family:Glyphicons Halflings}')
 );
 
 test(

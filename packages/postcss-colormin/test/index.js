@@ -5,28 +5,22 @@ const {
   processCSSFactory,
 } = require('../../../util/testHelpers.js');
 
-const {
-  processCSSWithPresetFactory,
-} = require('../../../util/integrationTestHelpers.js');
 const plugin = require('../src/index.js');
-
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
-const { processCSS: withDefaultPreset, passthroughCSS: passthroughDefault } =
-  processCSSWithPresetFactory('default');
 
 test(
   'should minify lowercase color values',
-  withDefaultPreset('h1{color:yellow}', 'h1{color:#ff0}')
+  processCSS('h1{color:yellow}', 'h1{color:#ff0}')
 );
 
 test(
   'should minify uppercase color values',
-  withDefaultPreset('h1{COLOR:YELLOW}', 'h1{COLOR:#ff0}')
+  processCSS('h1{COLOR:YELLOW}', 'h1{COLOR:#ff0}')
 );
 
 test(
   'should minify color values (2)',
-  withDefaultPreset(
+  processCSS(
     'h1{box-shadow:0 1px 3px rgba(255, 230, 220, 0.5)}',
     'h1{box-shadow:0 1px 3px rgba(255,230,220,.5)}'
   )
@@ -34,15 +28,12 @@ test(
 
 test(
   'should minify color values (3)',
-  withDefaultPreset(
-    'h1{background:hsla(134, 50%, 50%, 1)}',
-    'h1{background:#40bf5e}'
-  )
+  processCSS('h1{background:hsla(134, 50%, 50%, 1)}', 'h1{background:#40bf5e}')
 );
 
 test(
   'should minify color values (4)',
-  withDefaultPreset(
+  processCSS(
     'h1{text-shadow:1px 1px 2px #000000}',
     'h1{text-shadow:1px 1px 2px #000}'
   )
@@ -50,7 +41,7 @@ test(
 
 test(
   'should minify color values (5)',
-  withDefaultPreset(
+  processCSS(
     'h1{text-shadow:1px 1px 2px rgb(255, 255, 255)}',
     'h1{text-shadow:1px 1px 2px #fff}'
   )
@@ -58,7 +49,7 @@ test(
 
 test(
   'should minify color values (6)',
-  withDefaultPreset(
+  processCSS(
     'h1{text-shadow:1px 1px 2px hsl(0,0%,100%)}',
     'h1{text-shadow:1px 1px 2px #fff}'
   )
@@ -66,28 +57,17 @@ test(
 
 test(
   'should minify color values (7)',
-  withDefaultPreset(
-    'h1{background:HSLA(134, 50%, 50%, 1)}',
-    'h1{background:#40bf5e}'
-  )
+  processCSS('h1{background:HSLA(134, 50%, 50%, 1)}', 'h1{background:#40bf5e}')
 );
 
 test(
   'should minify color values (8)',
-  withDefaultPreset('h1{background:#FFFFFF}', 'h1{background:#fff}')
+  processCSS('h1{background:#FFFFFF}', 'h1{background:#fff}')
 );
 
 test(
   'should minify color values (9)',
-  withDefaultPreset('h1{background:#F0FFFF}', 'h1{background:azure}')
-);
-
-test(
-  'should minify color values (10)',
-  withDefaultPreset(
-    'h1{text-shadow: 1px 1px 1px #F0FFFF, 1px 1px 1px #F0FFFF}',
-    'h1{text-shadow:1px 1px 1px azure,1px 1px 1px azure}'
-  )
+  processCSS('h1{background:#F0FFFF}', 'h1{background:azure}')
 );
 
 test(
@@ -107,14 +87,6 @@ test(
 );
 
 test(
-  'should minify color values in background gradients (preset)',
-  withDefaultPreset(
-    'h1{background:linear-gradient( #ff0000,yellow )}',
-    'h1{background:linear-gradient(red,#ff0)}'
-  )
-);
-
-test(
   'should minify color values in background gradients (2)',
   processCSS(
     'h1{background:linear-gradient(yellow, orange), linear-gradient(black, rgba(255, 255, 255, 0))}',
@@ -123,26 +95,10 @@ test(
 );
 
 test(
-  'should minify color values in background gradients (2) (preset)',
-  withDefaultPreset(
-    'h1{background:linear-gradient(yellow, orange), linear-gradient(black, rgba(255, 255, 255, 0))}',
-    'h1{background:linear-gradient(#ff0,orange),linear-gradient(#000,hsla(0,0%,100%,0))}'
-  )
-);
-
-test(
   'should minify color values in background gradients (3)',
   processCSS(
     'h1{background:linear-gradient(0deg, yellow, black 40%, red)}',
     'h1{background:linear-gradient(0deg, #ff0, #000 40%, red)}'
-  )
-);
-
-test(
-  'should minify color values in background gradients (3) (preset)',
-  withDefaultPreset(
-    'h1{background:linear-gradient(0deg, yellow, black 40%, red)}',
-    'h1{background:linear-gradient(0deg,#ff0,#000 40%,red)}'
   )
 );
 
@@ -164,20 +120,6 @@ test(
 test(
   'should not crash on inherit in webkit tap highlight color',
   passthroughCSS('h1{-webkit-tap-highlight-color:inherit}')
-);
-
-test(
-  'should not minify in lowercase filter properties',
-  passthroughDefault(
-    'h1{filter:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff)}'
-  )
-);
-
-test(
-  'should not minify in uppercase filter properties',
-  passthroughDefault(
-    'h1{FILTER:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff)}'
-  )
 );
 
 test(
@@ -250,57 +192,15 @@ test(
 
 test(
   'should save extra spaces when converting hex',
-  withDefaultPreset(
+  processCSS(
     'h1{background:#F0FFFF url(bar.png)}',
     'h1{background:azure url(bar.png)}'
   )
 );
 
 test(
-  'should bail on the "composes" property',
-  passthroughDefault('h1{composes:black from "styles"}')
-);
-
-test('should not mangle empty strings', passthroughDefault('h1{content:""}'));
-
-test(
-  'should passthrough css variables',
-  passthroughDefault('h1{color:var(--foo)}')
-);
-
-test(
-  'should passthrough css variables #2',
-  passthroughDefault('h1{color:var(--foo) var(--bar)}')
-);
-
-test(
-  'should passthrough css variables #3',
-  passthroughDefault('h1{color:rgb(var(--foo),255,255)}')
-);
-
-test(
-  'should passthrough css variables #4',
-  passthroughDefault('h1{color:rgb(255,var(--bar),255)}')
-);
-
-test(
-  'should passthrough css variables #5',
-  passthroughDefault('h1{color:rgb(255,255,var(--baz))}')
-);
-
-test(
-  'should passthrough css variables #6',
-  passthroughDefault('h1{color:rgb(var(--foo))}')
-);
-
-test(
   'should passthrough css variables named as a color',
   passthroughCSS('h1{color:var(--white)}')
-);
-
-test(
-  'should passthrough env function',
-  passthroughDefault('h1{color:rgb(env(foo))}')
 );
 
 test('should passthrough broken syntax', passthroughCSS('h1{color:}'));

@@ -1,14 +1,9 @@
 'use strict';
 const { test } = require('uvu');
 const { processCSSFactory } = require('../../../util/testHelpers.js');
-const {
-  processCSSWithPresetFactory,
-} = require('../../../util/integrationTestHelpers.js');
 const plugin = require('../src/index.js');
 
 const { processCSS } = processCSSFactory(plugin);
-const { processCSS: withDefaultPreset } =
-  processCSSWithPresetFactory('default');
 
 test(
   'should trim whitespace from nested functions',
@@ -47,14 +42,6 @@ test(
   processCSS(
     'h1{width:var(--foo, calc(10px * 10px))}',
     'h1{width:var(--foo,calc(10px * 10px))}'
-  )
-);
-
-test(
-  'should trim whitespace from nested functions (preset)',
-  withDefaultPreset(
-    'h1{width:calc(10px - ( 100px / var(--test) ))}',
-    'h1{width:calc(10px - 100px/var(--test))}'
   )
 );
 
