@@ -131,17 +131,18 @@ function pseudo(selector) {
     return;
   }
 
-  const uniques = new Set();
-
   selector.walk((child) => {
-    if (child.type === 'selector') {
-      const childStr = String(child);
+    if (child.type === 'selector' && child.parent) {
+      const uniques = new Set();
+      child.parent.each((sibling) => {
+        const siblingStr = String(sibling);
 
-      if (!uniques.has(childStr)) {
-        uniques.add(childStr);
-      } else {
-        child.remove();
-      }
+        if (!uniques.has(siblingStr)) {
+          uniques.add(siblingStr);
+        } else {
+          sibling.remove();
+        }
+      });
     }
   });
 
