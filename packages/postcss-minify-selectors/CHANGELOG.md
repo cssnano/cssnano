@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.2.1
+
+### Patch Changes
+
+- fix: preserve similar nested selectors
+
 ## 5.2.0
 
 ### Minor Changes

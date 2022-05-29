@@ -1,6 +1,6 @@
 {
   "name": "postcss-merge-rules",
-  "version": "5.1.1",
+  "version": "5.1.2",
   "description": "Merge CSS rules with PostCSS.",
   "types": "types/index.d.ts",
   "main": "src/index.js",
@@ -38,7 +38,7 @@
   "devDependencies": {
     "@types/caniuse-api": "^3.0.2",
     "postcss": "^8.2.15",
-    "postcss-discard-comments": "^5.1.0"
+    "postcss-discard-comments": "workspace:^"
   },
   "peerDependencies": {
     "postcss": "^8.2.15"

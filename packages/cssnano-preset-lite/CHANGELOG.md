@@ -1,5 +1,13 @@
 # Change Log
 
+## 2.1.3
+
+### Patch Changes
+
+- chore: update TypeScript and improve types
+- Updated dependencies
+  - postcss-discard-comments@5.1.2
+
 ## 2.1.2
 
 ### Patch Changes

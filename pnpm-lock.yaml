@@ -265,7 +265,7 @@ importers:
       caniuse-api: ^3.0.0
       cssnano-utils: workspace:^
       postcss: ^8.2.15
-      postcss-discard-comments: ^5.1.0
+      postcss-discard-comments: workspace:^
       postcss-selector-parser: ^6.0.5
     dependencies:
       browserslist: 4.20.3
