@@ -7,7 +7,7 @@
     "build": "eleventy --input src/"
   },
   "dependencies": {
-    "@codemirror/autocomplete": "^0.20.1",
+    "@codemirror/autocomplete": "^0.20.2",
     "@codemirror/commands": "^0.20.0",
     "@codemirror/lang-css": "^0.20.0",
     "@codemirror/language": "^0.20.2",
