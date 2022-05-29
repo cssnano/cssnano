@@ -36,7 +36,7 @@ function indexOfDeclaration(array, decl) {
  */
 function intersect(a, b, not) {
   return a.filter((c) => {
-    const index = ~indexOfDeclaration(b, c);
+    const index = indexOfDeclaration(b, c) !== -1;
     return not ? !index : index;
   });
 }
@@ -74,21 +74,32 @@ function canMerge(ruleA, ruleB, browsers, compatibilityCache) {
     /** @type {any} */ (ruleA),
     /** @type {any} */ (ruleB)
   );
-  const { name } = /** @type {any} */ (ruleA).parent;
-  if (parent && name && name.includes('keyframes')) {
+  if (
+    parent &&
+    ruleA.parent &&
+    ruleA.parent.type === 'atrule' &&
+    /** @type {import('postcss').AtRule} */ (ruleA.parent).name.includes(
+      'keyframes'
+    )
+  ) {
     return false;
   }
   return parent && (selectors.every(noVendor) || sameVendor(a, b));
 }
 
 /**
+ * @param {import('postcss').ChildNode} node
+ * @return {node is import('postcss').Declaration}
+ */
+function isDeclaration(node) {
+  return node.type === 'decl';
+}
+/**
  * @param {import('postcss').Rule} rule
  * @return {import('postcss').Declaration[]}
  */
 function getDecls(rule) {
-  return /** @type {import('postcss').Declaration[]} */ (
-    rule.nodes.filter((node) => node.type === 'decl')
-  );
+  return rule.nodes.filter(isDeclaration);
 }
 
 /** @type {(...rules: import('postcss').Rule[]) => string} */
@@ -290,7 +301,7 @@ function partialMerge(first, second) {
    */
   function moveDecl(callback) {
     return (decl) => {
-      if (~indexOfDeclaration(intersection, decl)) {
+      if (indexOfDeclaration(intersection, decl) !== -1) {
         callback.call(this, decl);
       }
     };
@@ -359,17 +370,12 @@ function selectorMerger(browsers, compatibilityCache) {
     // e.g. a { color: blue } a { font-weight: bold }
     if (cache.selector === rule.selector) {
       const cached = getDecls(cache);
-      rule.walk((decl) => {
-        if (
-          ~indexOfDeclaration(
-            cached,
-            /** @type {import('postcss').Declaration} */ (decl)
-          )
-        ) {
-          decl.remove();
+      rule.walk((node) => {
+        if (node.type === 'decl' && indexOfDeclaration(cached, node) !== -1) {
+          node.remove();
           return;
         }
-        /** @type {import('postcss').Rule} */ (cache).append(decl);
+        /** @type {import('postcss').Rule} */ (cache).append(node);
       });
       rule.remove();
       return;
