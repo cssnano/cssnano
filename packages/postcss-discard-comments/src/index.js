@@ -76,11 +76,8 @@ function pluginCreator(opts = {}) {
           return;
         }
 
-        if (node.raws.between) {
-          node.raws.between = replaceComments(
-            /** @type {string} */ (node.raws.between),
-            list.space
-          );
+        if (typeof node.raws.between === 'string') {
+          node.raws.between = replaceComments(node.raws.between, list.space);
         }
 
         if (node.type === 'decl') {
