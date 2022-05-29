@@ -1,5 +1,17 @@
 # Change Log
 
+## 5.2.10
+
+### Patch Changes
+
+- chore: update TypeScript and improve types
+- fix: preserve similar nested selectors
+- Updated dependencies
+  - postcss-convert-values@5.1.2
+  - postcss-discard-comments@5.1.2
+  - postcss-merge-rules@5.1.2
+  - postcss-minify-selectors@5.2.1
+
 ## 5.2.9
 
 ### Patch Changes

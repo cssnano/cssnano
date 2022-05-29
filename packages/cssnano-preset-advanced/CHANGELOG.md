@@ -1,5 +1,14 @@
 # Change Log
 
+## 5.3.6
+
+### Patch Changes
+
+- chore: update TypeScript and improve types
+- fix: preserve similar nested selectors
+- Updated dependencies
+  - cssnano-preset-default@5.2.10
+
 ## 5.3.5
 
 ### Patch Changes
