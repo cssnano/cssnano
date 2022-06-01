@@ -72,7 +72,7 @@ function isVariableFunctionNode(node) {
     return false;
   }
 
-  return ['var', 'env'].includes(node.value.toLowerCase());
+  return ['var', 'env', 'constant'].includes(node.value.toLowerCase());
 }
 
 /**
