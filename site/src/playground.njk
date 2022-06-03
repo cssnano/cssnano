@@ -6,9 +6,10 @@
   </head>
   <body>
     {% include 'header.njk' %}
+    <main>
     <div class="box cluster">
       <div>
-        <label htmlFor="presetSelector">
+        <label for="presetSelector">
           Choose a preset
         </label>
         <select id="presetSelector" class="select">
@@ -33,6 +34,7 @@
     <script type="module" src="/js/runtime.bundle.js"></script>
     <script type="module" src="/js/858.bundle.js"></script>
     <script type="module" src="/js/playground.bundle.js"></script>
+    </main>
     {% include 'footer.njk' %}
   </body>
 </html> 

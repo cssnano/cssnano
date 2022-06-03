@@ -25,7 +25,7 @@ The optimisations are different depending on which preset cssnano is configured 
 <table>
 <thead>
  <tr>
- <th></th>
+ <th>Optimisation</th>
  {% for preset in presets %}
  <th>{{ preset }}</th>
  {% endfor %}

@@ -81,14 +81,21 @@ const { input, config } = urlState || {
 const inputView = new EditorView({
   state: EditorState.create({
     doc: input,
-    extensions: [playgroundSetup],
+    extensions: [
+      playgroundSetup,
+      EditorView.contentAttributes.of({ 'aria-label': 'Input' }),
+    ],
   }),
 });
 
 const outputView = new EditorView({
   state: EditorState.create({
     doc: '/* your optimized output here */',
-    extensions: [playgroundSetup, EditorView.editable.of(false)],
+    extensions: [
+      playgroundSetup,
+      EditorView.editable.of(false),
+      EditorView.contentAttributes.of({ 'aria-label': 'Output' }),
+    ],
   }),
 });
 

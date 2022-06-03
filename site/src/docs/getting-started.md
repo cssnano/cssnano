@@ -15,7 +15,7 @@ to your production server or CDN.
 
 There are a number of different ways that you can compose a build process; we
 recommend using the command line, but you might also want to consider an
-abstraction such as [gulp](http://gulpjs.com/), especially for more complex
+abstraction such as [gulp](https://gulpjs.com/), especially for more complex
 systems.
 
 

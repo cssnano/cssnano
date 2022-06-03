@@ -11,10 +11,12 @@ module.exports = (config) => {
   config.setBrowserSyncConfig({
     snippet: false,
   });
-  config.addPlugin(syntaxHighlight);
+  // tabindex makes scrollable code samples accesible
+  config.addPlugin(syntaxHighlight, { preAttributes: { tabindex: 0 } });
   config.addPlugin(EleventyRenderPlugin);
   config.addGlobalData('site_url', 'https://cssnano.co');
   config.addGlobalData('cssnano_version', cssnanoVersion);
+  // Automatically minify CSS on build
   config.addTemplateFormats('css');
   config.addExtension('css', {
     outputFileExtension: 'css',
