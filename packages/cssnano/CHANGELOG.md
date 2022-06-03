@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.1.11
+
+### Patch Changes
+
+- fix: preserve constant values
+- Updated dependencies
+  - cssnano-preset-default@5.2.11
+
 ## 5.1.10
 
 ### Patch Changes

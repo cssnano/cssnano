@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.2.11
+
+### Patch Changes
+
+- fix: preserve constant values
+- Updated dependencies
+  - postcss-ordered-values@5.1.2
+
 ## 5.2.10
 
 ### Patch Changes
