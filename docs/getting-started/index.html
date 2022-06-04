@@ -93,7 +93,7 @@ and in turn will create compressed production assets. These are then uploaded
 to your production server or CDN.</p>
 <p>There are a number of different ways that you can compose a build process; we
 recommend using the command line, but you might also want to consider an
-abstraction such as <a href="http://gulpjs.com/">gulp</a>, especially for more complex
+abstraction such as <a href="https://gulpjs.com/">gulp</a>, especially for more complex
 systems.</p>
 <h2 id="installing-node.js-%26-npm" tabindex="-1"><a class="header-anchor" href="#installing-node.js-%26-npm">Installing Node.js &amp; npm</a></h2>
 <p>cssnano is installed using the command line, using <a href="https://npmjs.com">npm</a>; so
@@ -108,7 +108,7 @@ follow the instructions there to install it for your machine.</p>
 <p>cssnano is a <a href="https://postcss.org/">PostCSS</a> plugin, so running cssnano also requires installing PostCSS.
 Once you have installed Node.js &amp; npm, you can run this command to install
 cssnano and PostCSS into your project:</p>
-<pre class="language-shell"><code class="language-shell"><span class="token function">npm</span> <span class="token function">install</span> cssnano postcss --save-dev</code></pre>
+<pre class="language-shell" tabindex="0"><code class="language-shell"><span class="token function">npm</span> <span class="token function">install</span> cssnano postcss --save-dev</code></pre>
 <p>Note that for most typical setups, we recommend that you compress your CSS
 during your deployment step, so that when it is uploaded to your server/CDN
 it is already optimized. In most cases, you should not need to install cssnano
@@ -119,16 +119,16 @@ use it to compress your CSS files. We recommend the PostCSS command line module,
 but you can use any of the alternatives listed in the next section.</p>
 <p>You can install <a href="https://github.com/postcss/postcss-cli">PostCSS CLI</a>
 with this command:</p>
-<pre class="language-shell"><code class="language-shell"><span class="token function">npm</span> <span class="token function">install</span> --save-dev postcss-cli</code></pre>
+<pre class="language-shell" tabindex="0"><code class="language-shell"><span class="token function">npm</span> <span class="token function">install</span> --save-dev postcss-cli</code></pre>
 <p>Once you have done this, you will need to configure cssnano by creating a
 <code>postcss.config.js</code> file in the root of your project. This should contain
 cssnano as well as any other <a href="https://github.com/postcss/postcss/blob/main/docs/plugins.md">plugins</a> that you might want for your project;
 as an example:</p>
-<pre class="language-js"><code class="language-js">module<span class="token punctuation">.</span>exports <span class="token operator">=</span> <span class="token punctuation">{</span><br>    <span class="token literal-property property">plugins</span><span class="token operator">:</span> <span class="token punctuation">[</span><br>        <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'cssnano'</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">{</span><br>            <span class="token literal-property property">preset</span><span class="token operator">:</span> <span class="token string">'default'</span><span class="token punctuation">,</span><br>        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span><br>    <span class="token punctuation">]</span><span class="token punctuation">,</span><br><span class="token punctuation">}</span><span class="token punctuation">;</span></code></pre>
+<pre class="language-js" tabindex="0"><code class="language-js">module<span class="token punctuation">.</span>exports <span class="token operator">=</span> <span class="token punctuation">{</span><br>    <span class="token literal-property property">plugins</span><span class="token operator">:</span> <span class="token punctuation">[</span><br>        <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'cssnano'</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">{</span><br>            <span class="token literal-property property">preset</span><span class="token operator">:</span> <span class="token string">'default'</span><span class="token punctuation">,</span><br>        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span><br>    <span class="token punctuation">]</span><span class="token punctuation">,</span><br><span class="token punctuation">}</span><span class="token punctuation">;</span></code></pre>
 <p><em>Read more about presets in <a href="/docs/presets">our presets guide</a>.</em></p>
 <p>You can now minify your CSS files! Try it out by creating a CSS file in your
 project named <code>input.css</code>, with some styles in there. Then, run:</p>
-<pre class="language-shell"><code class="language-shell">npx postcss input.css <span class="token operator">></span> output.css</code></pre>
+<pre class="language-shell" tabindex="0"><code class="language-shell">npx postcss input.css <span class="token operator">></span> output.css</code></pre>
 <p>You should then see an <code>output.css</code> with the same styles but compressed!</p>
 <p>Note that you can also find a <a href="https://github.com/cssnano/cssnano/tree/master/example-cli-usage">basic example</a> in our GitHub repository.</p>
 <h2 id="alternatives-to-using-the-cli" tabindex="-1"><a class="header-anchor" href="#alternatives-to-using-the-cli">Alternatives to using the CLI</a></h2>
@@ -146,7 +146,7 @@ CSS compression; these are the most common.</p>
 other available runners.</p>
 
           
-          <p class="annotation">Last updated on Wed, 11 May 2022 16:04:38 GMT</p>
+          <p class="annotation">Last updated on Sat, 04 Jun 2022 14:14:26 GMT</p>
         </article>
     </main>
     <footer class="box stack bg-dark">
@@ -178,7 +178,7 @@ other available runners.</p>
       </ul>
     </div>
   </div>
-  <p class="text-center">Latest release 5.1.10 · Distributed under the MIT License.</p>
+  <p class="text-center">Latest release 5.1.11 · Distributed under the MIT License.</p>
 </footer>
 
   </body>
