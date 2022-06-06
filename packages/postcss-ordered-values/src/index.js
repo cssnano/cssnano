@@ -63,6 +63,8 @@ const rules = new Map([
   ...columnRules,
 ]);
 
+const variableFunctions = new Set(['var', 'env', 'constant']);
+
 /**
  * @param {valueParser.Node} node
  * @return {boolean}
@@ -72,7 +74,7 @@ function isVariableFunctionNode(node) {
     return false;
   }
 
-  return ['var', 'env', 'constant'].includes(node.value.toLowerCase());
+  return variableFunctions.has(node.value.toLowerCase());
 }
 
 /**
