@@ -13,7 +13,7 @@ const verticalValue = new Map([
   ['top', '0'],
 ]);
 const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
-
+const variableFunctions = new Set(['var', 'env', 'constant']);
 /**
  * @param {valueParser.Node} node
  * @return {boolean}
@@ -31,7 +31,7 @@ function isVariableFunctionNode(node) {
     return false;
   }
 
-  return ['var', 'env'].includes(node.value.toLowerCase());
+  return variableFunctions.has(node.value.toLowerCase());
 }
 
 /**

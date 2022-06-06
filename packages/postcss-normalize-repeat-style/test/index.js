@@ -106,6 +106,11 @@ test(
 );
 
 test(
+  'should pass through with constant',
+  passthroughCSS('background-position: constant(--foo)')
+);
+
+test(
   'should normalize background position with var and multiple background',
   processCSS(
     'background: url("/media/examples/lizard.png") repeat no-repeat, url("/media/examples/lizard.png") var(--foo)',

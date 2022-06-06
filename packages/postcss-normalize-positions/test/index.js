@@ -231,6 +231,11 @@ test(
 );
 
 test(
+  'should pass through with constant',
+  passthroughCSS('background-position: constant(--foo)')
+);
+
+test(
   'should normalize when property in uppercase',
   processCSS('BACKGROUND-POSITION: center', 'BACKGROUND-POSITION: 50%')
 );

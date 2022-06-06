@@ -21,6 +21,7 @@ function isCommaNode(node) {
   return node.type === 'div' && node.value === ',';
 }
 
+const variableFunctions = new Set(['var', 'env', 'constant']);
 /**
  * @param {valueParser.Node} node
  * @return {boolean}
@@ -30,7 +31,7 @@ function isVariableFunctionNode(node) {
     return false;
   }
 
-  return ['var', 'env'].includes(node.value.toLowerCase());
+  return variableFunctions.has(node.value.toLowerCase());
 }
 
 /**
