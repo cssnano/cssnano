@@ -1196,6 +1196,11 @@ test(
 );
 
 test(
+  'Should preserve case of css custom property names with hyphens',
+  passthroughCSS('h1 { border: 1px solid rgba(var(--colors-secondaryColor)); }')
+);
+
+test(
   'Should preserve case of css custom properties example 2',
   processCSS(
     'h1 {border:solid 2px var(--buttonBorderColor, var(--buttonBaseColor, #000));}',
