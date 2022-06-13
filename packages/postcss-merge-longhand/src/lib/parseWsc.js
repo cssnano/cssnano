@@ -6,7 +6,7 @@ const none = /^\s*(none|medium)(\s+none(\s+(none|currentcolor))?)?\s*$/i;
 
 /* Approximate https://drafts.csswg.org/css-values-4/#typedef-dashed-ident */
 // eslint-disable-next-line no-control-regex
-const varRE = /--(\w|[^\x00-\x7F])+/g;
+const varRE = /--(\w|-|[^\x00-\x7F])+/g;
 /** @type {(v: string) => string} */
 const toLower = (v) => {
   let match;
