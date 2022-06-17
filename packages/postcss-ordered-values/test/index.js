@@ -582,12 +582,16 @@ test(
 
 test(
   'should abort ordering when a constant is detected (border)',
-  passthroughCSS('border-bottom:constant(safe-area-inset-bottom) solid transparent')
+  passthroughCSS(
+    'border-bottom:constant(safe-area-inset-bottom) solid transparent'
+  )
 );
 
 test(
   'should abort ordering when a constant is detected (border) (uppercase)',
-  passthroughCSS('border-bottom:CONSTANT(safe-area-inset-bottom) solid transparent')
+  passthroughCSS(
+    'border-bottom:CONSTANT(safe-area-inset-bottom) solid transparent'
+  )
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

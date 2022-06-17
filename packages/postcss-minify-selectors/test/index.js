@@ -541,11 +541,14 @@ test(
   passthroughCSS('div[att] {  }')
 );
 test(
-  'should not remove equal selectors parts which aren\'t duplicates #1402',
+  "should not remove equal selectors parts which aren't duplicates #1402",
   processCSS(':where(a,:not(a)) {  }', ':where(a,:not(a)) {  }')
 );
 test(
-  'should not remove equal selectors parts which aren\'t duplicates #1216',
-  processCSS(':where(:nth-child(7),:nth-child(7)~*) {  }', ':where(:nth-child(7),:nth-child(7)~*) {  }')
+  "should not remove equal selectors parts which aren't duplicates #1216",
+  processCSS(
+    ':where(:nth-child(7),:nth-child(7)~*) {  }',
+    ':where(:nth-child(7),:nth-child(7)~*) {  }'
+  )
 );
 test.run();
