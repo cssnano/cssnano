@@ -9,8 +9,11 @@ const getRules = require('./getRules.js');
  * @return {boolean}
  */
 function isConflictingProp(propA, propB) {
-  if (!propB.prop || propB.important !== propA.important ||
-      propA.prop === propB.prop) {
+  if (
+    !propB.prop ||
+    propB.important !== propA.important ||
+    propA.prop === propB.prop
+  ) {
     return false;
   }
 
