@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.3
+
+### Patch Changes
+
+- fix: recognize 'constant' as a function
+
 ## 5.1.2
 
 ### Patch Changes

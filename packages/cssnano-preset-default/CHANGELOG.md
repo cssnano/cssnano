@@ -1,5 +1,18 @@
 # Change Log
 
+## 5.2.12
+
+### Patch Changes
+
+- fix: preserve hyphenated property case
+- fix: ensure sorting properties does not break the output
+- fix: recognize 'constant' as a function
+- Updated dependencies
+  - postcss-merge-longhand@5.1.6
+  - postcss-normalize-positions@5.1.1
+  - postcss-normalize-repeat-style@5.1.1
+  - postcss-ordered-values@5.1.3
+
 ## 5.2.11
 
 ### Patch Changes
