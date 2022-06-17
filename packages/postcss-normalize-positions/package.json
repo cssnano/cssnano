@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-positions",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "Normalize keyword values for position into length values.",
   "main": "src/index.js",
   "types": "types/index.d.ts",

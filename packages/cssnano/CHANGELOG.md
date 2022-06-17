@@ -1,5 +1,15 @@
 # Change Log
 
+## 5.1.12
+
+### Patch Changes
+
+- fix: preserve hyphenated property case
+- fix: ensure sorting properties does not break the output
+- fix: recognize 'constant' as a function
+- Updated dependencies
+  - cssnano-preset-default@5.2.12
+
 ## 5.1.11
 
 ### Patch Changes

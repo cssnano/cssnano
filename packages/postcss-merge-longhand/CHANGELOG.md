@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.6
+
+### Patch Changes
+
+- fix: preserve hyphenated property case
+
 ## 5.1.5
 
 ### Patch Changes
