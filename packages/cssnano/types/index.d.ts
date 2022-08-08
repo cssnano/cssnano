@@ -2,9 +2,9 @@ export = cssnanoPlugin;
 /**
  * @type {import('postcss').PluginCreator<Options>}
  * @param {Options=} options
- * @return {import('postcss').Plugin}
+ * @return {import('postcss').Processor}
  */
-declare function cssnanoPlugin(options?: Options | undefined): import('postcss').Plugin;
+declare function cssnanoPlugin(options?: Options | undefined): import('postcss').Processor;
 declare namespace cssnanoPlugin {
     export { postcss, Options };
 }
