@@ -125,7 +125,7 @@ function resolveConfig(options) {
 /**
  * @type {import('postcss').PluginCreator<Options>}
  * @param {Options=} options
- * @return {import('postcss').Plugin}
+ * @return {import('postcss').Processor}
  */
 function cssnanoPlugin(options = {}) {
   if (Array.isArray(options.plugins)) {
