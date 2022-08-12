@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.13
+
+### Patch Changes
+
+- fix(cssnano): correct return type of cssnano() call
+
 ## 5.1.12
 
 ### Patch Changes
