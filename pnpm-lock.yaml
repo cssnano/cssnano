@@ -5,7 +5,7 @@ importers:
   .:
     specifiers:
       '@changesets/cli': ^2.22.0
-      '@types/node': ^18.7.13
+      '@types/node': ^18.7.17
       c8: ^7.12.0
       diff: ^5.1.0
       eslint: ^8.22.0
@@ -19,11 +19,11 @@ importers:
       postcss-simple-vars: ^6.0.1
       postcss-value-parser: ^4.2.0
       prettier: ^2.7.1
-      typescript: ^4.8.2
+      typescript: ^4.8.3
       uvu: 0.5.5
     devDependencies:
       '@changesets/cli': 2.22.0
-      '@types/node': 18.7.13
+      '@types/node': 18.7.17
       c8: 7.12.0
       diff: 5.1.0
       eslint: 8.22.0
@@ -37,7 +37,7 @@ importers:
       postcss-simple-vars: 6.0.3_postcss@8.4.14
       postcss-value-parser: 4.2.0
       prettier: 2.7.1
-      typescript: 4.8.2
+      typescript: 4.8.3
       uvu: 0.5.5
 
   packages/css-size:
@@ -842,8 +842,8 @@ packages:
     resolution: {integrity: sha512-vu1SrqBjbbZ3J6vwY17jBs8Sr/BKA+/a/WtjRG+whKg1iuLFOosq872EXS0eXWILdO36DHQQeku/ZcL6hz2fpg==}
     dev: true
 
-  /@types/node/18.7.13:
-    resolution: {integrity: sha512-46yIhxSe5xEaJZXWdIBP7GU4HDTG8/eo0qd9atdiL+lFpA03y8KS+lkTN834TWJj5767GbWv4n/P6efyTFt1Dw==}
+  /@types/node/18.7.17:
+    resolution: {integrity: sha512-0UyfUnt02zIuqp7yC8RYtDkp/vo8bFaQ13KkSEvUAohPOAlnVNbj5Fi3fgPSuwzakS+EvvnnZ4x9y7i6ASaSPQ==}
     dev: true
 
   /@types/normalize-package-data/2.4.1:
@@ -2856,8 +2856,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /typescript/4.8.2:
-    resolution: {integrity: sha512-C0I1UsrrDHo2fYI5oaCGbSejwX4ch+9Y5jTQELvovfmFkK3HHSZJB8MSJcWLmCUBzQBchCrZ9rMRV6GuNrvGtw==}
+  /typescript/4.8.3:
+    resolution: {integrity: sha512-goMHfm00nWPa8UvR/CPSvykqf6dVV8x/dp0c5mFTMTIu0u0FlGWRioyy7Nn0PGAdHxpJZnuO/ut+PpQ8UiHAig==}
     engines: {node: '>=4.2.0'}
     hasBin: true
     dev: true
