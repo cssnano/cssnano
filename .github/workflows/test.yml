@@ -12,13 +12,13 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@v3.1.0
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.2
+        uses: pnpm/action-setup@v2.2.3
         with:
           version: 6.32.18
       - name: Install Node.js 16.x
-        uses: actions/setup-node@v3.1.1
+        uses: actions/setup-node@v3.5.0
         with:
           node-version: '16'
           cache: 'pnpm'
@@ -32,13 +32,13 @@ jobs:
   test_helpers:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@v3.1.0
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.2
+        uses: pnpm/action-setup@v2.2.3
         with:
           version: 6.32.18
       - name: Install Node.js 16.x
-        uses: actions/setup-node@v3.1.1
+        uses: actions/setup-node@v3.5.0
         with:
           node-version: '16'
           cache: 'pnpm'
@@ -62,30 +62,30 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: git config --global core.autocrlf input
 
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@v3.1.0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.2
+        uses: pnpm/action-setup@v2.2.3
         if: matrix.node-version != '10'
         with:
           version: 6.32.18
 
       - name: Install Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.1.1
+        uses: actions/setup-node@v3.5.0
         if: matrix.node-version != '10'
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
       - name: Install old pnpm
-        uses: pnpm/action-setup@v2.2.2
+        uses: pnpm/action-setup@v2.2.3
         if: matrix.node-version == '10'
         with:
           version: 5.18.4
 
       # No cache support on GH actions for old pnpm
       - name: Install Node.js without cache ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.1.1
+        uses: actions/setup-node@v3.5.0
         if: matrix.node-version == '10'
         with:
           node-version: ${{ matrix.node-version }}
@@ -98,6 +98,6 @@ jobs:
 
       - name: Publish code coverage report
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '16'
-        uses: codecov/codecov-action@v3.0.0
+        uses: codecov/codecov-action@v3.1.1
         with:
           name: codecov
