@@ -28,16 +28,15 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "postcss-value-parser": "^4.2.0",
-    "svgo": "^2.7.0"
+    "svgo": "^3.0.0"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": "^10 || ^12 || >=14.0"
+    "node": ">=14.0"
   },
   "devDependencies": {
-    "@types/svgo": "^2.6.2",
     "postcss": "^8.2.15"
   },
   "peerDependencies": {
