@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import { readdirSync, readFileSync, readdir } from 'fs';
 import postcss from 'postcss';
-import cssnano from '../packages/cssnano/dist/index.js';
+import cssnano from '../packages/cssnano/src/index.js';
 
 function base(filepath = '') {
   return new URL(join('../frameworks', filepath), import.meta.url);
@@ -17,14 +17,14 @@ const frameworks = readdirSync(base()).reduce((list, framework) => {
 
 function rebuild(pkg) {
   return Object.keys(frameworks).forEach(async (framework) => {
-    const presetModule = await import(pkg + '/dist/index.js');
+    const presetModule = await import(pkg + '/src/index.js');
     const preset = presetModule.default();
 
     return postcss([cssnano({ preset })])
       .process(frameworks[framework], { from: undefined })
       .then((result) => {
         return fs.writeFile(
-          `${pkg}/src/__tests__/integrations/${framework}.css`,
+          `${pkg}/test/integrations/${framework}.css`,
           result.css
         );
       });
