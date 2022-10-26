@@ -11,7 +11,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "autoprefixer": "^10.3.7",
+    "autoprefixer": "^10.4.12",
     "cssnano-preset-default": "workspace:^",
     "postcss-discard-unused": "workspace:^",
     "postcss-merge-idents": "workspace:^",

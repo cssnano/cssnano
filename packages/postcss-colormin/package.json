@@ -27,7 +27,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^4.16.6",
+    "browserslist": "^4.21.4",
     "caniuse-api": "^3.0.0",
     "colord": "^2.9.1",
     "postcss-value-parser": "^4.2.0"
