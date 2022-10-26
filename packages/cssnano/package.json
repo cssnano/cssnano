@@ -42,7 +42,7 @@
         "node": "^10 || ^12 || >=14.0"
     },
     "devDependencies": {
-        "autoprefixer": "^10.3.7",
+        "autoprefixer": "^10.4.12",
         "cssnano-preset-advanced": "workspace:^",
         "cssnano-preset-lite": "workspace:^",
         "postcss": "^8.2.15"
