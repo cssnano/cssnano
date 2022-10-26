@@ -45,7 +45,7 @@ test('should run the plugin passed through the cssnano config.plugins', () => {
     .then((result) => {
       assert.is(
         result.css,
-        `.example{display:grid;transition:all .5s;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;background:linear-gradient(to bottom,white,black)}`
+        `.example{display:grid;transition:all .5s;-ms-user-select:none;user-select:none;background:linear-gradient(to bottom,white,black)}`
       );
     });
 });
@@ -59,10 +59,7 @@ test('should run the plugin when plugin module is being used with no array insid
       { from: undefined }
     )
     .then((result) => {
-      assert.is(
-        result.css,
-        `.example{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}`
-      );
+      assert.is(result.css, `.example{-ms-user-select:none;user-select:none}`);
     });
 });
 
@@ -76,7 +73,7 @@ test('should run the plugin when no preset is mentioned', () => {
     .then((result) => {
       assert.is(
         result.css,
-        `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        `.example { -ms-user-select: none; user-select: none; }
 `
       );
     });
@@ -92,7 +89,7 @@ test('should run the plugin when no preset is mentioned with string plugin name'
     .then((result) => {
       assert.is(
         result.css,
-        `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        `.example { -ms-user-select: none; user-select: none; }
 `
       );
     });
@@ -108,7 +105,7 @@ test('should run the plugin when no preset is mentioned with string plugin name 
     .then((result) => {
       assert.is(
         result.css,
-        `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        `.example { -ms-user-select: none; user-select: none; }
 `
       );
     });
@@ -123,10 +120,7 @@ test('should run the plugin with string plugin name as in array', () => {
       { from: undefined }
     )
     .then((result) => {
-      assert.is(
-        result.css,
-        `.example{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}`
-      );
+      assert.is(result.css, `.example{-ms-user-select:none;user-select:none}`);
     });
 });
 
@@ -140,7 +134,7 @@ test('should run the plugin when no preset is mentioned with string plugin name 
     .then((result) => {
       assert.is(
         result.css,
-        `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        `.example { -ms-user-select: none; user-select: none; }
 `
       );
     });
@@ -157,10 +151,7 @@ test('should run the plugin with string plugin name as in array and options', ()
       { from: undefined }
     )
     .then((result) => {
-      assert.is(
-        result.css,
-        `.example{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}`
-      );
+      assert.is(result.css, `.example{-ms-user-select:none;user-select:none}`);
     });
 });
 
@@ -176,7 +167,7 @@ test('should run the plugin when preset is empty array and plugin module as in a
     .then((result) => {
       assert.is(
         result.css,
-        `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        `.example { -ms-user-select: none; user-select: none; }
 `
       );
     });
@@ -191,10 +182,7 @@ test('should run the plugin plugin module as in array in plugins array', () => {
       { from: undefined }
     )
     .then((result) => {
-      assert.is(
-        result.css,
-        `.example{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}`
-      );
+      assert.is(result.css, `.example{-ms-user-select:none;user-select:none}`);
     });
 });
 
@@ -209,10 +197,7 @@ test('should run the plugin plugin module as in array in plugins array with empt
       { from: undefined }
     )
     .then((result) => {
-      assert.is(
-        result.css,
-        `.example{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}`
-      );
+      assert.is(result.css, `.example{-ms-user-select:none;user-select:none}`);
     });
 });
 
@@ -226,7 +211,7 @@ test('should run the plugin when preset is empty array and plugin module as in n
     .then((result) => {
       assert.is(
         result.css,
-        `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        `.example { -ms-user-select: none; user-select: none; }
 `
       );
     });
@@ -242,7 +227,7 @@ test('should run the plugin when preset is empty array and plugin as string as i
     .then((result) => {
       assert.is(
         result.css,
-        `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        `.example { -ms-user-select: none; user-select: none; }
 `
       );
     });
@@ -260,7 +245,7 @@ test('should run the plugin when preset is empty array', () => {
     .then((result) => {
       assert.is(
         result.css,
-        `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        `.example { -ms-user-select: none; user-select: none; }
 `
       );
     });
@@ -278,7 +263,7 @@ test('should run the plugin when preset is empty array with string as a plugin',
     .then((result) => {
       assert.is(
         result.css,
-        `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        `.example { -ms-user-select: none; user-select: none; }
 `
       );
     });
@@ -331,7 +316,7 @@ test('should run the plugin when preset is empty array with options and string a
     .then((result) => {
       assert.is(
         result.css,
-        `.example { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        `.example { -ms-user-select: none; user-select: none; }
 `
       );
     });

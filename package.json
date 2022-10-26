@@ -39,6 +39,7 @@
     "uvu": "0.5.5"
   },
   "browserslist": {
+    "production": ["IE 11 and last 2 versions"],
     "chrome58": [
       "Chrome 58"
     ],
@@ -59,6 +60,9 @@
     ],
     "ie9": [
       "IE 9"
+    ],
+    "ie11": [
+      "IE 11"
     ],
     "not ie": [
       "defaults",
