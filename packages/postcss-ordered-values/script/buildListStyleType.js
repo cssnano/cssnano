@@ -3,7 +3,6 @@
 
 const { writeFile } = require('fs');
 const { resolve } = require('path');
-const { fetch } = require('undici');
 
 const listTypeURL =
   'https://raw.githubusercontent.com/mdn/browser-compat-data/master/css/properties/list-style-type.json';
