@@ -1,5 +1,4 @@
 import { writeFile } from 'fs';
-import { fetch } from 'undici';
 import { generate } from './lib/io.mjs';
 
 const url =

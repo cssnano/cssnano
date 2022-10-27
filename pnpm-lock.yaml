@@ -408,13 +408,11 @@ importers:
       cssnano-utils: workspace:^
       postcss: ^8.2.15
       postcss-value-parser: ^4.2.0
-      undici: ^5.0.0
     dependencies:
       cssnano-utils: link:../cssnano-utils
       postcss-value-parser: 4.2.0
     devDependencies:
       postcss: 8.4.18
-      undici: 5.11.0
 
   packages/postcss-reduce-idents:
     specifiers:
@@ -432,7 +430,6 @@ importers:
       caniuse-api: ^3.0.0
       html-to-text: ^8.2.0
       postcss: ^8.2.15
-      undici: ^5.0.0
     dependencies:
       browserslist: 4.21.4
       caniuse-api: 3.0.0
@@ -440,7 +437,6 @@ importers:
       '@types/caniuse-api': 3.0.2
       html-to-text: 8.2.1
       postcss: 8.4.18
-      undici: 5.11.0
 
   packages/postcss-reduce-transforms:
     specifiers:
@@ -1019,13 +1015,6 @@ packages:
       electron-to-chromium: 1.4.284
       node-releases: 2.0.6
       update-browserslist-db: 1.0.10_browserslist@4.21.4
-
-  /busboy/1.6.0:
-    resolution: {integrity: sha512-8SFQbg/0hQ9xy3UNTB0YEnsNBbWfhf7RtnzpL7TkBiTBRfrQ9Fxcnz7VJsleJpyp6rVLvXiuORqjlHi5q+PYuA==}
-    engines: {node: '>=10.16.0'}
-    dependencies:
-      streamsearch: 1.1.0
-    dev: true
 
   /c8/7.12.0:
     resolution: {integrity: sha512-CtgQrHOkyxr5koX1wEUmN/5cfDa2ckbHRA4Gy5LAL0zaCFtVWJS5++n+w4/sr2GWGerBxgTjpKeDclk/Qk6W/A==}
@@ -2960,11 +2949,6 @@ packages:
       mixme: 0.5.4
     dev: true
 
-  /streamsearch/1.1.0:
-    resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
-    engines: {node: '>=10.0.0'}
-    dev: true
-
   /string-width/4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
     engines: {node: '>=8'}
@@ -3138,13 +3122,6 @@ packages:
       has-bigints: 1.0.2
       has-symbols: 1.0.3
       which-boxed-primitive: 1.0.2
-    dev: true
-
-  /undici/5.11.0:
-    resolution: {integrity: sha512-oWjWJHzFet0Ow4YZBkyiJwiK5vWqEYoH7BINzJAJOLedZ++JpAlCbUktW2GQ2DS2FpKmxD/JMtWUUWl1BtghGw==}
-    engines: {node: '>=12.18'}
-    dependencies:
-      busboy: 1.6.0
     dev: true
 
   /universalify/0.1.2:
