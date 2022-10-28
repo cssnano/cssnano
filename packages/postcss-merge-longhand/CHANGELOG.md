@@ -1,5 +1,12 @@
 # Change Log
 
+## 5.1.7
+
+### Patch Changes
+
+- Updated dependencies
+  - stylehacks@5.1.1
+
 ## 5.1.6
 
 ### Patch Changes

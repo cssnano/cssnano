@@ -1,5 +1,12 @@
 # Change Log
 
+## 5.1.1
+
+### Patch Changes
+
+- fix: update autoprefixer and browserslist
+- fix(postcss-reduce-initial): improve initial properties data
+
 ## 5.1.0
 
 ### Minor Changes

@@ -1,5 +1,14 @@
 # Change Log
 
+## 5.1.14
+
+### Patch Changes
+
+- fix: update autoprefixer and browserslist
+- fix(postcss-reduce-initial): improve initial properties data
+- Updated dependencies
+  - cssnano-preset-default@5.2.13
+
 ## 5.1.13
 
 ### Patch Changes
