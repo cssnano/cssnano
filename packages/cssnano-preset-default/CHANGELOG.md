@@ -1,5 +1,19 @@
 # Change Log
 
+## 5.2.13
+
+### Patch Changes
+
+- fix: update autoprefixer and browserslist
+- fix(postcss-reduce-initial): improve initial properties data
+- Updated dependencies
+  - postcss-convert-values@5.1.3
+  - postcss-merge-rules@5.1.3
+  - postcss-minify-params@5.1.4
+  - postcss-normalize-unicode@5.1.1
+  - postcss-reduce-initial@5.1.1
+  - postcss-merge-longhand@5.1.7
+
 ## 5.2.12
 
 ### Patch Changes

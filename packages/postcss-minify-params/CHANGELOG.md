@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.4
+
+### Patch Changes
+
+- fix: update autoprefixer and browserslist
+
 ## 5.1.3
 
 ### Patch Changes
