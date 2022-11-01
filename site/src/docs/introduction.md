@@ -16,10 +16,8 @@ equivalents, or selectors merged together, for example.
 The end result of a minification step is that the resulting code will behave
 the same as the original file, but some parts will be altered to reduce the
 size as much as possible.
-
 Combining gzip compression with minification leads to the best reduction in
-file size; but don't just take our word for it. Why not try out [css-size], a
-module especially created to measure CSS size before & after minification.
+file size.
 
 
 ## What is cssnano?
@@ -59,4 +57,3 @@ CSS globally using regular expressions.
 
 [postcss]: http://postcss.org
 
-[css-size]: https://npmjs.org/package/css-size
