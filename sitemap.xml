@@ -75,15 +75,6 @@
     
        
         <url>
-            <loc>https://cssnano.co/docs/introduction/</loc>
-            <priority>0.5</priority>
-            <lastmod>2022-06-16T21:19:14.983Z</lastmod>
-            <changefreq>monthly</changefreq>
-        </url>
-        
-    
-       
-        <url>
             <loc>https://cssnano.co/docs/optimisations/autoprefixer/</loc>
             <priority>0.5</priority>
             <lastmod>2022-06-16T21:19:14.983Z</lastmod>
@@ -129,9 +120,9 @@
     
        
         <url>
-            <loc>https://cssnano.co/styles/index.css</loc>
+            <loc>https://cssnano.co/docs/introduction/</loc>
             <priority>0.5</priority>
-            <lastmod>2022-06-16T21:19:14.984Z</lastmod>
+            <lastmod>2022-11-01T14:17:32.721Z</lastmod>
             <changefreq>monthly</changefreq>
         </url>
         
@@ -140,7 +131,16 @@
         <url>
             <loc>https://cssnano.co/playground/</loc>
             <priority>0.5</priority>
-            <lastmod>2022-08-14T09:18:12.048Z</lastmod>
+            <lastmod>2022-11-01T14:17:32.721Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.co/styles/index.css</loc>
+            <priority>0.5</priority>
+            <lastmod>2022-11-01T14:17:32.721Z</lastmod>
             <changefreq>monthly</changefreq>
         </url>
         
