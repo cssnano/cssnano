@@ -373,6 +373,14 @@ test(
 );
 
 test(
+  'should not incorrectly extract flex properties',
+  processCSS(
+    '.a { place-content: center; justify-content: start; } .b { justify-content: start; place-content: center; }',
+    '.a { place-content: center; } .a,.b { justify-content: start; } .b { place-content: center; }'
+  )
+);
+
+test(
   'should not incorrectly extract display properties',
   passthroughCSS(
     '.box1{display:inline-block;display:block}.box2{display:inline-block}'

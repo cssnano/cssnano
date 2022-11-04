@@ -163,8 +163,9 @@ function isConflictingProp(propA, propB) {
   if (!a.base && !b.base) {
     return true;
   }
-  // Different base;
-  if (a.base !== b.base) {
+
+  // Different base and none is `place`;
+  if (a.base !== b.base && a.base !== 'place' && b.base !== 'place') {
     return false;
   }
 
