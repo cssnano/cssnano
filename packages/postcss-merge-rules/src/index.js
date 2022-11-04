@@ -173,6 +173,18 @@ function isConflictingProp(propA, propB) {
     return true;
   }
 
+  /* Do not merge conflicting border properties */
+  if (a.base === 'border') {
+    const allRestProps = new Set([...a.rest, ...b.rest]);
+    if (
+      allRestProps.has('image') ||
+      allRestProps.has('width') ||
+      allRestProps.has('color') ||
+      allRestProps.has('style')
+    ) {
+      return true;
+    }
+  }
   // Conflict if rest parameters are equal (same but unprefixed)
   return a.rest.every((s, index) => b.rest[index] === s);
 }
