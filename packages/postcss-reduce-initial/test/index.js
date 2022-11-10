@@ -104,7 +104,7 @@ test(
    but MDN has the wrong data so  */
 test(
   'preserve no-repeat mask-repeat',
-  passthroughCSS('div{mask-repeat:no-repeat}')
+  passthroughCSS('div{mask-repeat:no-repeat}', { env: 'chrome58' })
 );
 
 test(
