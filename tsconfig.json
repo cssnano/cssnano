@@ -12,8 +12,7 @@
     "newLine": "lf",
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true
+    "strict": true
   },
   "references": [
     {"path": "packages/postcss-normalize-display-values"},
