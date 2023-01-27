@@ -245,4 +245,10 @@ test(
     env: 'chrome62',
   })
 );
+
+test(
+  'should not attempt to convert font names',
+  passthroughCSS('@font-face{src:local(Noto Sans Black)}')
+);
+
 test.run();
