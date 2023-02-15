@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.4
+
+### Patch Changes
+
+- fix(postcss-merge-rules): do not merge conflicting flex and border properties
+
 ## 5.1.3
 
 ### Patch Changes

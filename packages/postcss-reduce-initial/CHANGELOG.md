@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.1.2
+
+### Patch Changes
+
+- fix(postcsss-reduce-initial): fix mask-repeat conversion
+
 ## 5.1.1
 
 ### Patch Changes
