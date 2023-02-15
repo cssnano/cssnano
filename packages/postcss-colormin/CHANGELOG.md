@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.3.1
+
+### Patch Changes
+
+- fix(postcss-colormin): don't minify colors in src declarations
+
 ## 5.3.0
 
 ### Minor Changes
