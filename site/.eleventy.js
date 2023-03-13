@@ -8,9 +8,6 @@ const cssnanoVersion = require('../packages/cssnano/package.json').version;
 
 const processor = postcss([cssnano]);
 module.exports = (config) => {
-  config.setBrowserSyncConfig({
-    snippet: false,
-  });
   // tabindex makes scrollable code samples accesible
   config.addPlugin(syntaxHighlight, { preAttributes: { tabindex: 0 } });
   config.addPlugin(EleventyRenderPlugin);

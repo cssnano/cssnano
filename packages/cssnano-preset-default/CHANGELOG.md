@@ -1,5 +1,17 @@
 # Change Log
 
+## 5.2.14
+
+### Patch Changes
+
+- fix(postcsss-reduce-initial): fix mask-repeat conversion
+  fix(postcss-colormin): don't minify colors in src declarations
+  fix(postcss-merge-rules): do not merge conflicting flex and border properties
+- Updated dependencies
+  - postcss-colormin@5.3.1
+  - postcss-merge-rules@5.1.4
+  - postcss-reduce-initial@5.1.2
+
 ## 5.2.13
 
 ### Patch Changes

@@ -123,7 +123,7 @@ function pluginCreator(config = {}) {
         OnceExit(css) {
           css.walkDecls((decl) => {
             if (
-              /^(composes|font|filter|-webkit-tap-highlight-color)/i.test(
+              /^(composes|font|src$|filter|-webkit-tap-highlight-color)/i.test(
                 decl.prop
               )
             ) {

@@ -150,6 +150,7 @@ function splitProp(prop) {
 /**
  * @param {string} propA
  * @param {string} propB
+ * @return {boolean}
  */
 function isConflictingProp(propA, propB) {
   if (propA === propB) {
@@ -162,15 +163,29 @@ function isConflictingProp(propA, propB) {
   if (!a.base && !b.base) {
     return true;
   }
-  // Different base;
-  if (a.base !== b.base) {
+
+  // Different base and none is `place`;
+  if (a.base !== b.base && a.base !== 'place' && b.base !== 'place') {
     return false;
   }
+
   // Conflict if rest-count mismatches
   if (a.rest.length !== b.rest.length) {
     return true;
   }
 
+  /* Do not merge conflicting border properties */
+  if (a.base === 'border') {
+    const allRestProps = new Set([...a.rest, ...b.rest]);
+    if (
+      allRestProps.has('image') ||
+      allRestProps.has('width') ||
+      allRestProps.has('color') ||
+      allRestProps.has('style')
+    ) {
+      return true;
+    }
+  }
   // Conflict if rest parameters are equal (same but unprefixed)
   return a.rest.every((s, index) => b.rest[index] === s);
 }
@@ -205,7 +220,7 @@ function mergeParents(first, second) {
  */
 function partialMerge(first, second) {
   let intersection = intersect(getDecls(first), getDecls(second));
-  if (!intersection.length) {
+  if (intersection.length === 0) {
     return second;
   }
   let nextRule = second.next();
@@ -229,22 +244,18 @@ function partialMerge(first, second) {
   }
 
   const firstDecls = getDecls(first);
-
   // Filter out intersections with later conflicts in First
   intersection = intersection.filter((decl, intersectIndex) => {
     const indexOfDecl = indexOfDeclaration(firstDecls, decl);
     const nextConflictInFirst = firstDecls
       .slice(indexOfDecl + 1)
       .filter((d) => isConflictingProp(d.prop, decl.prop));
-    if (!nextConflictInFirst.length) {
+    if (nextConflictInFirst.length === 0) {
       return true;
     }
     const nextConflictInIntersection = intersection
       .slice(intersectIndex + 1)
       .filter((d) => isConflictingProp(d.prop, decl.prop));
-    if (!nextConflictInIntersection.length) {
-      return false;
-    }
     if (nextConflictInFirst.length !== nextConflictInIntersection.length) {
       return false;
     }
@@ -278,7 +289,7 @@ function partialMerge(first, second) {
     return true;
   });
 
-  if (!intersection.length) {
+  if (intersection.length === 0) {
     // Nothing to merge
     return second;
   }
@@ -319,7 +330,7 @@ function partialMerge(first, second) {
     first.replaceWith(firstClone);
     second.replaceWith(secondClone);
     [firstClone, receivingBlock, secondClone].forEach((r) => {
-      if (!r.nodes.length) {
+      if (r.nodes.length === 0) {
         r.remove();
       }
     });

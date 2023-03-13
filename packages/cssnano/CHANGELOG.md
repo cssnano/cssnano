@@ -1,5 +1,15 @@
 # Change Log
 
+## 5.1.15
+
+### Patch Changes
+
+- fix(postcsss-reduce-initial): fix mask-repeat conversion
+  fix(postcss-colormin): don't minify colors in src declarations
+  fix(postcss-merge-rules): do not merge conflicting flex and border properties
+- Updated dependencies
+  - cssnano-preset-default@5.2.14
+
 ## 5.1.14
 
 ### Patch Changes

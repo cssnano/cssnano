@@ -32,7 +32,7 @@ h1 {
 
 ```css
 h1 {
-  min-width: 0;
+  min-width: auto;
 }
 ```
 
