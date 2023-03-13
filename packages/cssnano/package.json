@@ -20,8 +20,7 @@
     "license": "MIT",
     "dependencies": {
         "cssnano-preset-default": "workspace:^",
-        "lilconfig": "^2.0.3",
-        "yaml": "^1.10.2"
+        "lilconfig": "^2.1.0"
     },
     "homepage": "https://github.com/cssnano/cssnano",
     "author": {
