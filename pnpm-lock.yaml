@@ -57,13 +57,11 @@ importers:
       cssnano-preset-advanced: workspace:^
       cssnano-preset-default: workspace:^
       cssnano-preset-lite: workspace:^
-      lilconfig: ^2.0.3
+      lilconfig: ^2.1.0
       postcss: ^8.2.15
-      yaml: ^1.10.2
     dependencies:
       cssnano-preset-default: link:../cssnano-preset-default
       lilconfig: 2.1.0
-      yaml: 1.10.2
     devDependencies:
       autoprefixer: 10.4.14_postcss@8.4.21
       cssnano-preset-advanced: link:../cssnano-preset-advanced
@@ -3347,11 +3345,6 @@ packages:
   /yallist/2.1.2:
     resolution: {integrity: sha512-ncTzHV7NvsQZkYe1DW7cbDLm0YpzHmZF5r/iyP3ZnQtMiJ+pjzisCiMNI+Sj+xQF5pXhSHxSB3uDbsBTzY/c2A==}
     dev: true
-
-  /yaml/1.10.2:
-    resolution: {integrity: sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==}
-    engines: {node: '>= 6'}
-    dev: false
 
   /yargs-parser/18.1.3:
     resolution: {integrity: sha512-o50j0JeToy/4K6OZcaQmW6lyXXKhq7csREXcDwk2omFPJEwUNOVtJKvmDr9EI1fAJZUyZcRF7kxGBWmRXudrCQ==}
