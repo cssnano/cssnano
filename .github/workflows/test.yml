@@ -12,13 +12,13 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.3.0
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.3
+        uses: pnpm/action-setup@v2.2.4
         with:
-          version: 6.32.18
+          version: 7.29.1
       - name: Install Node.js 16.x
-        uses: actions/setup-node@v3.5.0
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: '16'
           cache: 'pnpm'
@@ -32,13 +32,13 @@ jobs:
   test_helpers:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.3.0
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.3
+        uses: pnpm/action-setup@v2.2.4
         with:
-          version: 6.32.18
+          version: 7.29.1
       - name: Install Node.js 16.x
-        uses: actions/setup-node@v3.5.0
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: '16'
           cache: 'pnpm'
@@ -55,40 +55,25 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        node-version: ['10', '12', '14', '16', '18']
+        node-version: ['14', '16', '18', '19']
 
     steps:
       - name: Setup Git
         if: matrix.os == 'windows-latest'
         run: git config --global core.autocrlf input
 
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.3.0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.3
-        if: matrix.node-version != '10'
+        uses: pnpm/action-setup@v2.2.4
         with:
-          version: 6.32.18
+          version: 7.29.1
 
       - name: Install Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.5.0
-        if: matrix.node-version != '10'
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-
-      - name: Install old pnpm
-        uses: pnpm/action-setup@v2.2.3
-        if: matrix.node-version == '10'
-        with:
-          version: 5.18.4
-
-      # No cache support on GH actions for old pnpm
-      - name: Install Node.js without cache ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.5.0
-        if: matrix.node-version == '10'
-        with:
-          node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
