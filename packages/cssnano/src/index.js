@@ -2,7 +2,6 @@
 const path = require('path');
 /** @type {any} */
 const postcss = require('postcss');
-const yaml = require('yaml');
 const { lilconfigSync } = require('lilconfig');
 
 const cssnano = 'cssnano';
@@ -101,15 +100,9 @@ function resolveConfig(options) {
       'package.json',
       '.cssnanorc',
       '.cssnanorc.json',
-      '.cssnanorc.yaml',
-      '.cssnanorc.yml',
       '.cssnanorc.js',
       'cssnano.config.js',
     ],
-    loaders: {
-      '.yaml': (filepath, content) => yaml.parse(content),
-      '.yml': (filepath, content) => yaml.parse(content),
-    },
   });
   const config = configPath
     ? configExplorer.load(configPath)
