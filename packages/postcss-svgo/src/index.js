@@ -43,12 +43,9 @@ function minifySVG(input, opts) {
   svg = svg.replace(escapedQuotes, '$1="$2"');
 
   const result = optimize(svg, opts);
-  if (result.error) {
-    throw new Error(result.error);
-  }
 
   return {
-    result: /** @type {import('svgo').OptimizedSvg}*/ (result).data,
+    result: /** @type {import('svgo').Output}*/ (result).data,
     isUriEncoded,
   };
 }
@@ -117,7 +114,7 @@ function minify(decl, opts, postcssResult) {
 
   decl.value = minified.toString();
 }
-/** @typedef {{encode?: boolean, plugins?: object[]} & import('svgo').OptimizeOptions} Options */
+/** @typedef {{encode?: boolean, plugins?: object[]} & import('svgo').Config} Options */
 /**
  * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts

@@ -128,7 +128,7 @@ test(
   'should not throw when decoding a svg',
   processCSS(
     "h1{-webkit-mask-box-image: url(\"data:image/svg+xml;charset=utf-8,<svg height='35' viewBox='0 0 96 70' width='48' xmlns='http://www.w3.org/2000/svg'><path d='m84 35c1 7-5 37-42 35-37 2-43-28-42-35-1-7 5-37 42-35 37-2 43 28 42 35z'/></svg>\") 50% 56% 46% 42%;}",
-    'h1{-webkit-mask-box-image: url(\'data:image/svg+xml;charset=utf-8,<svg height="35" viewBox="0 0 96 70" width="48" xmlns="http://www.w3.org/2000/svg"><path d="M84 35c1 7-5 37-42 35C5 72-1 42 0 35-1 28 5-2 42 0c37-2 43 28 42 35z"/></svg>\') 50% 56% 46% 42%;}'
+    'h1{-webkit-mask-box-image: url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="35" viewBox="0 0 96 70"><path d="M84 35c1 7-5 37-42 35C5 72-1 42 0 35-1 28 5-2 42 0c37-2 43 28 42 35z"/></svg>\') 50% 56% 46% 42%;}'
   )
 );
 
@@ -154,7 +154,7 @@ test(
   'should not fail on "malformed" svgs',
   processCSS(
     "h1{background-image:url(\"data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg'><line stroke-width='2' stroke='rgb(255,0,0)' x1='0' y1='100%' x2='100%' y2='0'></line></svg>\")}",
-    'h1{background-image:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><line stroke-width="2" stroke="red" y1="100%" x2="100%"/></svg>\')}'
+    'h1{background-image:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><line x2="100%" y1="100%" stroke="red" stroke-width="2"/></svg>\')}'
   )
 );
 
@@ -162,7 +162,7 @@ test(
   'should encode "malformed" svgs',
   processCSS(
     "h1{background-image:url(\"data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg'><line stroke-width='2' stroke='rgb(255,0,0)' x1='0' y1='100%' x2='100%' y2='0'></line></svg>\")}",
-    "h1{background-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cline stroke-width='2' stroke='red' y1='100%25' x2='100%25'/%3E%3C/svg%3E\")}",
+    "h1{background-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cline x2='100%25' y1='100%25' stroke='red' stroke-width='2'/%3E%3C/svg%3E\")}",
     { encode: true }
   )
 );
@@ -276,7 +276,7 @@ test(
   'should encode hashes',
   processCSS(
     `h1{background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="32" viewBox="0 0 1200 320"> <path d="M137.189 140V17.17h-36.676L73.871 31.832z" fill="rgb(102,51,153)"/></svg>');}`,
-    `h1{background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="32" viewBox="0 0 1200 320"><path d="M137.189 140V17.17h-36.676L73.871 31.832z" fill="%23639"/></svg>');}`
+    `h1{background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="32" viewBox="0 0 1200 320"><path fill="%23639" d="M137.189 140V17.17h-36.676L73.871 31.832z"/></svg>');}`
   )
 );
 

@@ -1,5 +1,5 @@
 export = pluginCreator;
-/** @typedef {{encode?: boolean, plugins?: object[]} & import('svgo').OptimizeOptions} Options */
+/** @typedef {{encode?: boolean, plugins?: object[]} & import('svgo').Config} Options */
 /**
  * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
@@ -12,6 +12,6 @@ declare namespace pluginCreator {
 type Options = {
     encode?: boolean;
     plugins?: object[];
-} & import('svgo').OptimizeOptions;
+} & import('svgo').Config;
 declare var postcss: true;
 import { encode } from "./lib/url";
