@@ -18,7 +18,7 @@ importers:
       postcss-value-parser: ^4.2.0
       prettier: ^2.8.4
       typescript: ^4.8.4
-      uvu: 0.5.5
+      uvu: ^0.5.6
     devDependencies:
       '@changesets/cli': 2.26.0
       '@types/node': 18.15.0
@@ -34,7 +34,7 @@ importers:
       postcss-value-parser: 4.2.0
       prettier: 2.8.4
       typescript: 4.8.4
-      uvu: 0.5.5
+      uvu: 0.5.6
 
   packages/css-size:
     specifiers:
@@ -3247,8 +3247,8 @@ packages:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
     dev: false
 
-  /uvu/0.5.5:
-    resolution: {integrity: sha512-J3SlxDp1MnHkqYvxnz4geS4jYWd2dXcNMltFWYmuiMpe+q1XOyXXaZb0qiO90o1xEhMWNuvnzqoXrDxbYYQjDQ==}
+  /uvu/0.5.6:
+    resolution: {integrity: sha512-+g8ENReyr8YsOc6fv/NVJs2vFdHBnBNdfE49rshrTzDWOlUx4Gq7KOS2GD8eqhy2j+Ejq29+SbKH8yjkAqXqoA==}
     engines: {node: '>=8'}
     hasBin: true
     dependencies:
