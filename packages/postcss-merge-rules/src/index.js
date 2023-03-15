@@ -307,7 +307,7 @@ function partialMerge(first, second) {
 
   /**
    * @param {function(import('postcss').Declaration):void} callback
-   * @this {import('postcss').Rule}
+   * @this void
    * @return {function(import('postcss').Declaration)}
    */
   function moveDecl(callback) {

@@ -5,7 +5,7 @@ importers:
   .:
     specifiers:
       '@changesets/cli': ^2.26.0
-      '@types/node': ^18.11.9
+      '@types/node': ^18.15.3
       c8: ^7.13.0
       diff: ^5.1.0
       eslint: ^8.36.0
@@ -17,11 +17,11 @@ importers:
       postcss-font-magician: ^3.0.0
       postcss-value-parser: ^4.2.0
       prettier: ^2.8.4
-      typescript: ^4.8.4
+      typescript: ~5.0.2
       uvu: ^0.5.6
     devDependencies:
       '@changesets/cli': 2.26.0
-      '@types/node': 18.15.0
+      '@types/node': 18.15.3
       c8: 7.13.0
       diff: 5.1.0
       eslint: 8.36.0
@@ -33,7 +33,7 @@ importers:
       postcss-font-magician: 3.0.0_postcss@8.4.21
       postcss-value-parser: 4.2.0
       prettier: 2.8.4
-      typescript: 4.8.4
+      typescript: 5.0.2
       uvu: 0.5.6
 
   packages/css-size:
@@ -855,8 +855,8 @@ packages:
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
     dev: true
 
-  /@types/node/18.15.0:
-    resolution: {integrity: sha512-z6nr0TTEOBGkzLGmbypWOGnpSpSIBorEhC4L+4HeQ2iezKCi4f77kyslRwvHeNitymGQ+oFyIWGP96l/DPSV9w==}
+  /@types/node/18.15.3:
+    resolution: {integrity: sha512-p6ua9zBxz5otCmbpb5D3U4B5Nanw6Pk3PPyX05xnxbB/fRv71N7CPmORg7uAD5P70T0xmx1pzAx/FUfa5X+3cw==}
     dev: true
 
   /@types/normalize-package-data/2.4.1:
@@ -3207,9 +3207,9 @@ packages:
       is-typed-array: 1.1.10
     dev: true
 
-  /typescript/4.8.4:
-    resolution: {integrity: sha512-QCh+85mCy+h0IGff8r5XWzOVSbBO+KfeYrMQh7NJ58QujwcE22u+NUSmUxqF+un70P9GXKxa2HCNiTTMJknyjQ==}
-    engines: {node: '>=4.2.0'}
+  /typescript/5.0.2:
+    resolution: {integrity: sha512-wVORMBGO/FAs/++blGNeAVdbNKtIh1rbBL2EyQ1+J9lClJ93KiiKe8PmFIVdXhHcyv44SL9oglmfeSsndo0jRw==}
+    engines: {node: '>=12.20'}
     hasBin: true
     dev: true
 
