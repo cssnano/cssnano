@@ -41,6 +41,6 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": "^10 || ^12 || >=14.0"
+    "node": "^14 || ^16 || >=18.0"
   }
 }

@@ -30,7 +30,7 @@
     "postcss-value-parser": "^4.2.0"
   },
   "engines": {
-    "node": "^10 || ^12 || >=14.0"
+    "node": "^14 || ^16 || >=18.0"
   },
   "devDependencies": {
     "postcss": "^8.2.15"
