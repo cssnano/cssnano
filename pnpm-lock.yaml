@@ -15,8 +15,6 @@ importers:
       pleeease-filters: ^4.0.0
       postcss: ^8.4.21
       postcss-font-magician: ^3.0.0
-      postcss-scss: ^3.0.4
-      postcss-simple-vars: ^6.0.1
       postcss-value-parser: ^4.2.0
       prettier: ^2.8.4
       typescript: ^4.8.4
@@ -33,8 +31,6 @@ importers:
       pleeease-filters: 4.0.0
       postcss: 8.4.21
       postcss-font-magician: 3.0.0_postcss@8.4.21
-      postcss-scss: 3.0.5
-      postcss-simple-vars: 6.0.3_postcss@8.4.21
       postcss-value-parser: 4.2.0
       prettier: 2.8.4
       typescript: 4.8.4
@@ -204,8 +200,12 @@ importers:
   packages/postcss-discard-comments:
     specifiers:
       postcss: ^8.2.15
+      postcss-scss: ^4.0.6
+      postcss-simple-vars: ^7.0.1
     devDependencies:
       postcss: 8.4.21
+      postcss-scss: 4.0.6_postcss@8.4.21
+      postcss-simple-vars: 7.0.1_postcss@8.4.21
 
   packages/postcss-discard-duplicates:
     specifiers:
@@ -265,6 +265,7 @@ importers:
       postcss: ^8.2.15
       postcss-discard-comments: workspace:^
       postcss-selector-parser: ^6.0.5
+      postcss-simple-vars: ^7.0.1
     dependencies:
       browserslist: 4.21.5
       caniuse-api: 3.0.0
@@ -274,6 +275,7 @@ importers:
       '@types/caniuse-api': 3.0.2
       postcss: 8.4.21
       postcss-discard-comments: link:../postcss-discard-comments
+      postcss-simple-vars: 7.0.1_postcss@8.4.21
 
   packages/postcss-minify-font-values:
     specifiers:
@@ -2676,9 +2678,11 @@ packages:
       postcss: 8.4.21
     dev: true
 
-  /postcss-scss/3.0.5:
-    resolution: {integrity: sha512-3e0qYk87eczfzg5P73ZVuuxEGCBfatRhPze6KrSaIbEKVtmnFI1RYp1Fv+AyZi+w8kcNRSPeNX6ap4b65zEkiA==}
-    engines: {node: '>=10.0'}
+  /postcss-scss/4.0.6_postcss@8.4.21:
+    resolution: {integrity: sha512-rLDPhJY4z/i4nVFZ27j9GqLxj1pwxE80eAzUNRMXtcpipFYIeowerzBgG3yJhMtObGEXidtIgbUpQ3eLDsf5OQ==}
+    engines: {node: '>=12.0'}
+    peerDependencies:
+      postcss: ^8.4.19
     dependencies:
       postcss: 8.4.21
     dev: true
@@ -2691,9 +2695,9 @@ packages:
       util-deprecate: 1.0.2
     dev: false
 
-  /postcss-simple-vars/6.0.3_postcss@8.4.21:
-    resolution: {integrity: sha512-fkNn4Zio8vN4vIig9IFdb8lVlxWnYR769RgvxCM6YWlFKie/nQaOcaMMMFz/s4gsfHW4/5bJW+i57zD67mQU7g==}
-    engines: {node: '>=10.0'}
+  /postcss-simple-vars/7.0.1_postcss@8.4.21:
+    resolution: {integrity: sha512-5GLLXaS8qmzHMOjVxqkk1TZPf1jMqesiI7qLhnlyERalG0sMbHIbJqrcnrpmZdKCLglHnRHoEBB61RtGTsj++A==}
+    engines: {node: '>=14.0'}
     peerDependencies:
       postcss: ^8.2.1
     dependencies:
