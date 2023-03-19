@@ -1,7 +1,7 @@
 'use strict';
 const path = require('path');
 const valueParser = require('postcss-value-parser');
-const normalize = require('normalize-url');
+const normalize = require('./normalize.js');
 
 const multiline = /\\[\r\n]/;
 // eslint-disable-next-line no-useless-escape
@@ -27,15 +27,14 @@ function isAbsolute(url) {
 
 /**
  * @param {string} url
- * @param {normalize.Options} options
  * @return {string}
  */
-function convert(url, options) {
+function convert(url) {
   if (isAbsolute(url) || url.startsWith('//')) {
     let normalizedURL;
 
     try {
-      normalizedURL = normalize(url, options);
+      normalizedURL = normalize(url);
     } catch (e) {
       normalizedURL = url;
     }
@@ -74,10 +73,9 @@ function transformNamespace(rule) {
 
 /**
  * @param {import('postcss').Declaration} decl
- * @param {normalize.Options} opts
  * @return {void}
  */
-function transformDecl(decl, opts) {
+function transformDecl(decl) {
   decl.value = valueParser(decl.value)
     .walk((node) => {
       if (node.type !== 'function' || node.value.toLowerCase() !== 'url') {
@@ -107,7 +105,7 @@ function transformDecl(decl, opts) {
       }
 
       if (!/^.+-extension:\//i.test(url.value)) {
-        url.value = convert(url.value, opts);
+        url.value = convert(url.value);
       }
 
       if (escapeChars.test(url.value) && url.type === 'string') {
@@ -126,32 +124,18 @@ function transformDecl(decl, opts) {
     .toString();
 }
 
-/** @typedef {normalize.Options} Options */
 /**
- * @type {import('postcss').PluginCreator<Options>}
- * @param {Options} opts
+ * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
-function pluginCreator(opts) {
-  opts = Object.assign(
-    {},
-    {
-      normalizeProtocol: false,
-      sortQueryParameters: false,
-      stripHash: false,
-      stripWWW: false,
-      stripTextFragment: false,
-    },
-    opts
-  );
-
+function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-url',
 
     OnceExit(css) {
       css.walk((node) => {
         if (node.type === 'decl') {
-          return transformDecl(node, opts);
+          return transformDecl(node);
         } else if (
           node.type === 'atrule' &&
           node.name.toLowerCase() === 'namespace'

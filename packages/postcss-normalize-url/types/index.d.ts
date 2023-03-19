@@ -1,14 +1,9 @@
 export = pluginCreator;
-/** @typedef {normalize.Options} Options */
 /**
- * @type {import('postcss').PluginCreator<Options>}
- * @param {Options} opts
+ * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
-declare function pluginCreator(opts: Options): import('postcss').Plugin;
+declare function pluginCreator(): import('postcss').Plugin;
 declare namespace pluginCreator {
-    export { postcss, Options };
+    const postcss: true;
 }
-type Options = normalize.Options;
-declare var postcss: true;
-import normalize = require("normalize-url");

@@ -20,7 +20,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "normalize-url": "^6.0.1",
     "postcss-value-parser": "^4.2.0"
   },
   "homepage": "https://github.com/cssnano/cssnano",
