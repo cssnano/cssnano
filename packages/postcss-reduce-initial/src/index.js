@@ -8,12 +8,14 @@ const initial = 'initial';
 
 // In most of the browser including chrome the initial for `writing-mode` is not `horizontal-tb`. Ref https://github.com/cssnano/cssnano/pull/905
 const defaultIgnoreProps = ['writing-mode', 'transform-box'];
+/** @typedef {{ignore?: string[]}} Options */
 
 /**
- * @type {import('postcss').PluginCreator<void>}
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} options
  * @return {import('postcss').Plugin}
  */
-function pluginCreator() {
+function pluginCreator(options = {}) {
   return {
     postcssPlugin: 'postcss-reduce-initial',
     /** @param {import('postcss').Result & {opts: browserslist.Options & {ignore?: string[]}}} result */
@@ -31,7 +33,7 @@ function pluginCreator() {
           css.walkDecls((decl) => {
             const lowerCasedProp = decl.prop.toLowerCase();
             const ignoreProp = new Set(
-              defaultIgnoreProps.concat(resultOpts.ignore || [])
+              defaultIgnoreProps.concat(options.ignore || [])
             );
 
             if (ignoreProp.has(lowerCasedProp)) {

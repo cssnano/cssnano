@@ -106,6 +106,20 @@ test('should be able to exclude plugins (exclude syntax)', () => {
     });
 });
 
+test('should be able to exclude pointer-events plugin', () => {
+  return cssnano({
+    preset: [
+      'default',
+      {
+        reduceInitial: { ignore: ['pointer-events'] },
+      },
+    ],
+  })
+    .process('.selector { pointer-events: initial; }', { from: undefined })
+    .then((result) => {
+      assert.is(result.css, '.selector{pointer-events:initial}');
+    });
+});
 test('should error on a bad preset', async () => {
   try {
     await postcss([cssnano({ preset: 'avanced' })])
