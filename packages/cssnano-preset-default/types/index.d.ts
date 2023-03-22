@@ -49,7 +49,7 @@ type Options = {
     minifyFontValues?: false | import('postcss-minify-font-values').Options & {
         exclude?: true;
     };
-    normalizeUrl?: false | import('postcss-normalize-url').Options & {
+    normalizeUrl?: false | {
         exclude?: true;
     };
     mergeLonghand?: false | {

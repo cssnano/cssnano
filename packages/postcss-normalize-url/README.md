@@ -36,13 +36,6 @@ of stripping unnecessary quotes. For more examples, see the [tests](test.js).
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
 examples for your environment.
 
-## API
-
-### normalize([options])
-
-Please see the [normalize-url documentation][docs]. By default,
-`normalizeProtocol`, `stripHash` & `stripWWW` are set to `false`.
-
 ## Contributors
 
 See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md).
