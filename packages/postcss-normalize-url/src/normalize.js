@@ -1,3 +1,4 @@
+'use strict';
 /* Derived from normalize-url https://github.com/sindresorhus/normalize-url/main/index.js by Sindre Sorhus */
 
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
