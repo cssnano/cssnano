@@ -1,5 +1,18 @@
 # Change Log
 
+## 6.0.0
+
+### Major Changes
+
+- 39a20405: feat!(cssnano): remove yaml config support
+- ca9d3f55: Switch minimum supported Node version to 14 for all packages
+
+### Patch Changes
+
+- Updated dependencies [ca9d3f55]
+- Updated dependencies [ca9d3f55]
+  - cssnano-preset-default@6.0.0
+
 ## 5.1.15
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # Change Log
 
+## 3.0.0
+
+### Major Changes
+
+- ca9d3f55: Switch minimum supported Node version to 14 for all packages
+
+### Patch Changes
+
+- Updated dependencies [ca9d3f55]
+  - postcss-normalize-whitespace@6.0.0
+  - postcss-discard-comments@6.0.0
+  - postcss-discard-empty@6.0.0
+  - cssnano-utils@4.0.0
+
 ## 2.1.3
 
 ### Patch Changes
