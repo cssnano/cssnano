@@ -7,12 +7,12 @@
     "build": "eleventy --input src/"
   },
   "dependencies": {
-    "@codemirror/autocomplete": "^6.4.1",
-    "@codemirror/commands": "^6.2.1",
-    "@codemirror/lang-css": "^6.0.2",
+    "@codemirror/autocomplete": "^6.4.2",
+    "@codemirror/commands": "^6.2.2",
+    "@codemirror/lang-css": "^6.1.1",
     "@codemirror/language": "^6.3.0",
     "@codemirror/state": "^6.2.0",
-    "@codemirror/view": "^6.9.0",
+    "@codemirror/view": "^6.9.3",
     "cssnano-preset-advanced": "../packages/cssnano-preset-advanced",
     "cssnano-preset-default": "../packages/cssnano-preset-default",
     "cssnano-preset-lite": "../packages/cssnano-preset-lite",
@@ -26,8 +26,8 @@
     "@iarna/toml": "^2.2.5",
     "cssnano": "../packages/cssnano/",
     "markdown-it": "^13.0.1",
-    "markdown-it-anchor": "^8.6.6",
-    "webpack": "^5.75.0",
+    "markdown-it-anchor": "^8.6.7",
+    "webpack": "^5.76.3",
     "webpack-cli": "^5.0.1"
   }
 }
