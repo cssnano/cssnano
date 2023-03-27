@@ -145,7 +145,3 @@
  * Copyright (c) 2021, Robert Eisele (robert@xarg.org)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  **/
-
-//! stable.js 0.1.8, https://github.com/Two-Screen/stable
-
-//! © 2018 Angry Bytes and contributors. MIT licensed.
