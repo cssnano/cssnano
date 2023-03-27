@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.0
+
+### Major Changes
+
+- 4e272f88: Upgrade dependency svgo to v3 and increase the minimum supported node version to v14.
+
 ## 5.1.0
 
 ### Minor Changes

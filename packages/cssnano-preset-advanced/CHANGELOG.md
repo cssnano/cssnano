@@ -1,5 +1,22 @@
 # Change Log
 
+## 6.0.0
+
+### Major Changes
+
+- ca9d3f55: chore: bump node versions for packages depending on svgo
+- ca9d3f55: Switch minimum supported Node version to 14 for all packages
+
+### Patch Changes
+
+- Updated dependencies [ca9d3f55]
+- Updated dependencies [ca9d3f55]
+  - cssnano-preset-default@6.0.0
+  - postcss-discard-unused@6.0.0
+  - postcss-reduce-idents@6.0.0
+  - postcss-merge-idents@6.0.0
+  - postcss-zindex@6.0.0
+
 ## 5.3.10
 
 ### Patch Changes

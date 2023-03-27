@@ -1,6 +1,6 @@
 {
   "name": "postcss-reduce-idents",
-  "version": "5.2.0",
+  "version": "6.0.0",
   "description": "Reduce custom identifiers with PostCSS.",
   "main": "src/index.js",
   "types": "types/index.d.ts",

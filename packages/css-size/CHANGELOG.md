@@ -1,5 +1,17 @@
 # Change Log
 
+## 6.0.0
+
+### Major Changes
+
+- ca9d3f55: Switch minimum supported Node version to 14 for all packages
+
+### Patch Changes
+
+- Updated dependencies [39a20405]
+- Updated dependencies [ca9d3f55]
+  - cssnano@6.0.0
+
 ## 5.0.7
 
 ### Patch Changes

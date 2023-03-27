@@ -38,7 +38,7 @@ importers:
 
   packages/css-size:
     specifiers:
-      cssnano: ^5.0.17
+      cssnano: workspace:^
       minimist: ^1.2.0
       postcss: ^8.2.15
     dependencies:

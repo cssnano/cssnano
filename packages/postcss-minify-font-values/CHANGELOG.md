@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.0
+
+### Major Changes
+
+- ca9d3f55: Switch minimum supported Node version to 14 for all packages
+
 ## 5.1.0
 
 ### Minor Changes

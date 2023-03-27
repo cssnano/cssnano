@@ -1,5 +1,15 @@
 # Change Log
 
+## 6.0.0
+
+### Major Changes
+
+- ca9d3f55: Switch minimum supported Node version to 14 for all packages
+
+### Patch Changes
+
+- fix(postcss-reduce-initial): ensure options have an effect
+
 ## 5.1.2
 
 ### Patch Changes

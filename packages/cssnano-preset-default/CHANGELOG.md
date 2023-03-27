@@ -1,5 +1,46 @@
 # Change Log
 
+## 6.0.0
+
+### Major Changes
+
+- ca9d3f55: chore: bump node versions for packages depending on svgo
+- ca9d3f55: Switch minimum supported Node version to 14 for all packages
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [4e272f88]
+- Updated dependencies [ca9d3f55]
+- Updated dependencies [99d1e6ab]
+  - postcss-reduce-initial@6.0.0
+  - postcss-svgo@6.0.0
+  - postcss-normalize-timing-functions@6.0.0
+  - postcss-normalize-display-values@6.0.0
+  - postcss-normalize-repeat-style@6.0.0
+  - postcss-normalize-whitespace@6.0.0
+  - postcss-normalize-positions@6.0.0
+  - postcss-discard-duplicates@6.0.0
+  - postcss-discard-overridden@6.0.0
+  - postcss-minify-font-values@6.0.0
+  - postcss-normalize-charset@6.0.0
+  - postcss-normalize-unicode@6.0.0
+  - postcss-reduce-transforms@6.0.0
+  - postcss-discard-comments@6.0.0
+  - postcss-minify-gradients@6.0.0
+  - postcss-minify-selectors@6.0.0
+  - postcss-normalize-string@6.0.0
+  - postcss-unique-selectors@6.0.0
+  - postcss-convert-values@6.0.0
+  - postcss-merge-longhand@6.0.0
+  - postcss-ordered-values@6.0.0
+  - postcss-discard-empty@6.0.0
+  - postcss-minify-params@6.0.0
+  - postcss-normalize-url@6.0.0
+  - postcss-merge-rules@6.0.0
+  - postcss-colormin@6.0.0
+  - cssnano-utils@4.0.0
+
 ## 5.2.14
 
 ### Patch Changes
