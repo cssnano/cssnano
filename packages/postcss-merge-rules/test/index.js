@@ -151,6 +151,22 @@ test(
 );
 
 test(
+  'should not merge across container queries',
+  passthroughCSS(
+    `@container (min-width: 200px) {
+  .mobile {
+     display: none;
+  }
+}
+@container (max-width: 100px) {
+  .notMobile {
+     display: none;
+  }
+}`
+  )
+);
+
+test(
   'should perform partial merging of selectors',
   processCSS(
     'h1{color:red}h2{color:red;text-decoration:underline}',
@@ -843,4 +859,5 @@ test(
     'h1{color:#001;color:#002;color:#003}h2{color:#001;color:#002}'
   )
 );
+
 test.run();
