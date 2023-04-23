@@ -860,4 +860,25 @@ test(
   )
 );
 
+test(
+  'should not merge nested rules',
+  passthroughCSS('h1 { .a { color: red; } } h1 { .b { color: red; } }')
+);
+
+test(
+  'should not merge nested container rules',
+  passthroughCSS(
+    `.mobile {
+  @container (min-width: 200px) {
+     display: none;
+  }
+}
+
+.notMobile {
+  @container (max-width: 100px) {
+     display: none;
+  }
+}`
+  )
+);
 test.run();

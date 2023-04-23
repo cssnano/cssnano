@@ -84,9 +84,19 @@ function canMerge(ruleA, ruleB, browsers, compatibilityCache) {
   ) {
     return false;
   }
+  if (ruleA.some(isRuleOrAtRule) || ruleB.some(isRuleOrAtRule)) {
+    return false;
+  }
   return parent && (selectors.every(noVendor) || sameVendor(a, b));
 }
 
+/**
+ * @param {import('postcss').ChildNode} node
+ * @return {boolean}
+ */
+function isRuleOrAtRule(node) {
+  return node.type === 'rule' || node.type === 'atrule';
+}
 /**
  * @param {import('postcss').ChildNode} node
  * @return {node is import('postcss').Declaration}
