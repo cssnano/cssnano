@@ -409,6 +409,49 @@ test(
 );
 
 test(
+  'should rename grid-template-columns',
+  processCSS(
+    `.grid {
+  display: grid;
+  grid-template-columns:
+    [kw] 2.5em
+    [day] 3em
+    [description] 10em;
+}
+.grid > .kw {
+  grid-column: kw;
+}
+.grid > .day {
+  grid-column: day;
+}
+.grid > .description {
+  grid-column: description;
+}`,
+    `.grid {
+  display: grid;
+  grid-template-columns:
+    [a] 2.5em [b] 3em [c] 10em;
+}
+.grid > .kw {
+  grid-column: a;
+}
+.grid > .day {
+  grid-column: b;
+}
+.grid > .description {
+  grid-column: c;
+}`
+  )
+);
+
+test(
+  'should rename a list of grid-template-rows',
+  processCSS(
+    '.grid {grid-template-rows: [linename1 linename2] 100px;} .a { grid-row: linename1;}',
+    '.grid {grid-template-rows: [a b] 100px;} .a { grid-row: a;}'
+  )
+);
+test(
   'should not rename uppercase reserved keywords in grid-row, grid-row-start and grid-row-end',
   processCSS(
     [
