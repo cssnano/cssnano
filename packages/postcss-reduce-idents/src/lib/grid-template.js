@@ -14,6 +14,8 @@ const RESERVED_KEYWORDS = new Set([
 const gridTemplateProperties = new Set([
   'grid-template',
   'grid-template-areas',
+  'grid-template-columns',
+  'grid-template-rows',
 ]);
 
 const gridChildProperties = new Set([
@@ -53,6 +55,20 @@ module.exports = function () {
               }
             });
           }
+          /* handle gridline name lists like [name1 name2] */
+          if (child.type === 'word') {
+            const word = child.value;
+            if (word.startsWith('[') && word.endsWith(']')) {
+              const gridLine = word.slice(1, -1);
+              addToCache(gridLine, encoder, cache);
+            } else if (word.startsWith('[')) {
+              const gridLine = word.slice(1);
+              addToCache(gridLine, encoder, cache);
+            } else if (word.endsWith(']')) {
+              const gridLine = word.slice(0, -1);
+              addToCache(gridLine, encoder, cache);
+            }
+          }
         });
 
         declCache.push(node);
@@ -78,6 +94,30 @@ module.exports = function () {
               node.value.split(/\s+/).forEach((word) => {
                 if (word in cache) {
                   node.value = node.value.replace(word, cache[word].ident);
+                }
+                /* replace gridline names inside lists like [name] */
+                if (
+                  word.startsWith('[') &&
+                  word.endsWith(']') &&
+                  word.slice(1, -1) in cache
+                ) {
+                  const gridLine = word.slice(1, -1);
+                  node.value = node.value.replace(
+                    gridLine,
+                    cache[gridLine].ident
+                  );
+                } else if (word.startsWith('[') && word.slice(1) in cache) {
+                  const gridLine = word.slice(1);
+                  node.value = node.value.replace(
+                    gridLine,
+                    cache[gridLine].ident
+                  );
+                } else if (word.endsWith(']') && word.slice(0, -1) in cache) {
+                  const gridLine = word.slice(0, -1);
+                  node.value = node.value.replace(
+                    gridLine,
+                    cache[gridLine].ident
+                  );
                 }
               });
               node.value = node.value.replace(/\s+/g, ' '); // merge white-spaces
