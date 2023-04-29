@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.1
+
+### Patch Changes
+
+- fix(postcss-merge-rules): do not merge nested rules
+
 ## 6.0.0
 
 ### Major Changes

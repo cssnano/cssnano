@@ -1,5 +1,14 @@
 # Change Log
 
+## 6.0.1
+
+### Patch Changes
+
+- chore: updage postcss-calc to version 9
+- fix(postcss-merge-rules): do not merge nested rules
+- Updated dependencies
+  - postcss-merge-rules@6.0.1
+
 ## 6.0.0
 
 ### Major Changes

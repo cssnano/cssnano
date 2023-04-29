@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.1
+
+### Patch Changes
+
+- fix(postcss-reduce-idents): minify grid line names correctly
+
 ## 6.0.0
 
 ### Major Changes

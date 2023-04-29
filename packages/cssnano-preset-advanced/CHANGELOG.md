@@ -1,5 +1,14 @@
 # Change Log
 
+## 6.0.1
+
+### Patch Changes
+
+- fix(postcss-reduce-idents): minify grid line names correctly
+- Updated dependencies
+  - cssnano-preset-default@6.0.1
+  - postcss-reduce-idents@6.0.1
+
 ## 6.0.0
 
 ### Major Changes
