@@ -119,8 +119,8 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-calc:
-        specifier: ^8.2.3
-        version: 8.2.4(postcss@8.4.21)
+        specifier: ^9.0.0
+        version: 9.0.0(postcss@8.4.21)
       postcss-colormin:
         specifier: workspace:^
         version: link:../postcss-colormin
@@ -2760,8 +2760,9 @@ packages:
       postcss: 6.0.23
     dev: true
 
-  /postcss-calc@8.2.4(postcss@8.4.21):
-    resolution: {integrity: sha512-SmWMSJmB8MRnnULldx0lQIyhSNvuDl9HfrZkaqqE/WHAhToYsAvDq+yAsA/kIyINDszOp3Rh0GFoNuH5Ypsm3Q==}
+  /postcss-calc@9.0.0(postcss@8.4.21):
+    resolution: {integrity: sha512-B9BNW/SVh4SMJfoCQ6D9h1Wo7Yjqks7UdbiARJ16J5TIsQn5NEqwMF5joSgOYb26oJPUR5Uv3fCQ/4PvmZWeJQ==}
+    engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.2
     dependencies:
