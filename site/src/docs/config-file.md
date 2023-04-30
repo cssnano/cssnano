@@ -20,7 +20,8 @@ import litePreset from 'cssnano-preset-lite';
 import autoprefixer from 'autoprefixer';
 const preset = litePreset({ discardComments: false });
 
-postcss([cssnano({ preset, plugins: [autoprefixer] })]).process("/* Your CSS here */")
+postcss([cssnano({ preset, plugins: [autoprefixer] })])
+  .process("/* Your CSS here */");
 ```
 
 ### Configure through a dedicated cssnano configuration
@@ -68,7 +69,10 @@ Pass an array where the first element is the preset and the second is an object 
 ```js
 // cssnano.config.js
 module.exports = {
-  preset: [ require('cssnano-preset-default'), { discardComments: false } ]
+  preset: [ 
+    require('cssnano-preset-default'),
+    { discardComments: false } 
+  ]
 };
 ```
 
@@ -77,7 +81,11 @@ You can also pass preset options when you use the preset name as a string:
 For example, here's how to deactivate the `discardComments` plugin when using the `advanced` preset:
 
 ```js
-cssnano({ preset: ['cssnano-preset-advanced', { discardComments: false }] })
+cssnano({ 
+  preset: [
+    'cssnano-preset-advanced', { discardComments: false }
+  ]
+});
 ```
 
 
@@ -90,7 +98,7 @@ You can also pass a list of plugins to cssnano.
 To configure the individual plugins, use an array of arrays:
 
 ```js
-cssnano({ plugins: [['autoprefixer', {}]] })
+cssnano({ plugins: [['autoprefixer', {}]] });
 ```
 
 - **Example:**
@@ -113,6 +121,6 @@ cssnano({ plugins: [['autoprefixer', {}]] })
       [ require('autoprefixer'), {remove: false} ],
       [ 'postcss-preset-env']
     ]
-  }
+  };
   ```
 
