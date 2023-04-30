@@ -62,9 +62,23 @@
 trims &amp; normalizes selector strings.</p>
 <h2 id="example" tabindex="-1"><a class="header-anchor" href="#example">Example</a></h2>
 <h3 id="input" tabindex="-1"><a class="header-anchor" href="#input">Input</a></h3>
-<pre class="language-css" tabindex="0"><code class="language-css">*.box<br>.<span class="token property">box</span><span class="token punctuation">:</span><span class="token punctuation">:</span>before<br>.box       .box<br>[class*=&amp;quot<span class="token punctuation">;</span>box&amp;quot<span class="token punctuation">;</span>]<br><span class="token selector">.box ~ [class]</span> <span class="token punctuation">{</span><br>    <span class="token property">color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span><br><span class="token punctuation">}</span><br></code></pre>
+<pre class="language-css" tabindex="0"><code class="language-css">*.box
+.<span class="token property">box</span><span class="token punctuation">:</span><span class="token punctuation">:</span>before
+.box       .box
+[class*=&amp;quot<span class="token punctuation">;</span>box&amp;quot<span class="token punctuation">;</span>]
+<span class="token selector">.box ~ [class]</span> <span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
 <h3 id="output" tabindex="-1"><a class="header-anchor" href="#output">Output</a></h3>
-<pre class="language-css" tabindex="0"><code class="language-css"><span class="token selector">.box<br>.box:before<br>.box .box<br>[class*=box]<br>.box~[class]</span> <span class="token punctuation">{</span><br>    <span class="token property">color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span><br><span class="token punctuation">}</span><br></code></pre>
+<pre class="language-css" tabindex="0"><code class="language-css"><span class="token selector">.box
+.box:before
+.box .box
+[class*=box]
+.box~[class]</span> <span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
 
         
       </article>
@@ -98,7 +112,7 @@ trims &amp; normalizes selector strings.</p>
       </ul>
     </div>
   </div>
-  <p class="text-center">Latest release 6.0.0 · Distributed under the MIT License.</p>
+  <p class="text-center">Latest release 6.0.1 · Distributed under the MIT License.</p>
 </footer>
 
   </body>

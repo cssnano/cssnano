@@ -124,7 +124,13 @@ with this command:</p>
 <code>postcss.config.js</code> file in the root of your project. This should contain
 cssnano as well as any other <a href="https://github.com/postcss/postcss/blob/main/docs/plugins.md">plugins</a> that you might want for your project;
 as an example:</p>
-<pre class="language-js" tabindex="0"><code class="language-js">module<span class="token punctuation">.</span>exports <span class="token operator">=</span> <span class="token punctuation">{</span><br>    <span class="token literal-property property">plugins</span><span class="token operator">:</span> <span class="token punctuation">[</span><br>        <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'cssnano'</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">{</span><br>            <span class="token literal-property property">preset</span><span class="token operator">:</span> <span class="token string">'default'</span><span class="token punctuation">,</span><br>        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span><br>    <span class="token punctuation">]</span><span class="token punctuation">,</span><br><span class="token punctuation">}</span><span class="token punctuation">;</span></code></pre>
+<pre class="language-js" tabindex="0"><code class="language-js">module<span class="token punctuation">.</span>exports <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token literal-property property">plugins</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+        <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'cssnano'</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+            <span class="token literal-property property">preset</span><span class="token operator">:</span> <span class="token string">'default'</span><span class="token punctuation">,</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">]</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span></code></pre>
 <p><em>Read more about presets in <a href="/docs/presets">our presets guide</a>.</em></p>
 <p>You can now minify your CSS files! Try it out by creating a CSS file in your
 project named <code>input.css</code>, with some styles in there. Then, run:</p>
@@ -146,7 +152,7 @@ CSS compression; these are the most common.</p>
 other available runners.</p>
 
           
-          <p class="annotation">Last updated on Wed, 16 Nov 2022 18:40:32 GMT</p>
+          <p class="annotation">Last updated on Mon, 17 Apr 2023 09:46:46 GMT</p>
         </article>
     </main>
     <footer class="box stack bg-dark">
@@ -178,7 +184,7 @@ other available runners.</p>
       </ul>
     </div>
   </div>
-  <p class="text-center">Latest release 6.0.0 · Distributed under the MIT License.</p>
+  <p class="text-center">Latest release 6.0.1 · Distributed under the MIT License.</p>
 </footer>
 
   </body>
