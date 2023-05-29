@@ -16,7 +16,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v2.2.4
         with:
-          version: 7.32.2
+          version: 7.33.0
       - name: Install Node.js 18.x
         uses: actions/setup-node@v3.6.0
         with:
@@ -36,7 +36,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v2.2.4
         with:
-          version: 7.32.2
+          version: 7.33.0
       - name: Install Node.js 18.x
         uses: actions/setup-node@v3.6.0
         with:
@@ -67,7 +67,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v2.2.4
         with:
-          version: 7.32.2
+          version: 7.33.0
 
       - name: Install Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3.6.0
@@ -83,6 +83,6 @@ jobs:
 
       - name: Publish code coverage report
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '16'
-        uses: codecov/codecov-action@v3.1.1
+        uses: codecov/codecov-action@v3.1.4
         with:
           name: codecov
