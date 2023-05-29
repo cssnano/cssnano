@@ -21,23 +21,25 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.1",
-    "@types/node": "^18.15.13",
-    "c8": "^7.13.0",
+    "@types/node": "^20.2.5",
+    "c8": "^7.14.0",
     "diff": "^5.1.0",
-    "eslint": "^8.39.0",
+    "eslint": "^8.41.0",
     "eslint-config-prettier": "^8.8.0",
     "nanospy": "^0.5.0",
     "picocolors": "^1.0.0",
     "pleeease-filters": "^4.0.0",
-    "postcss": "^8.4.21",
+    "postcss": "^8.4.24",
     "postcss-font-magician": "^3.0.0",
     "postcss-value-parser": "^4.2.0",
-    "prettier": "^2.8.7",
+    "prettier": "^2.8.8",
     "typescript": "~5.0.4",
     "uvu": "^0.5.6"
   },
   "browserslist": {
-    "production": ["IE 11 and last 2 versions"],
+    "production": [
+      "IE 11 and last 2 versions"
+    ],
     "chrome58": [
       "Chrome 58"
     ],
