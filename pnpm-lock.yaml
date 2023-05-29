@@ -113,8 +113,8 @@ importers:
   packages/cssnano-preset-default:
     dependencies:
       css-declaration-sorter:
-        specifier: ^6.3.1
-        version: 6.3.1(postcss@8.4.21)
+        specifier: ^7.0.0
+        version: 7.0.0(postcss@8.4.21)
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -1315,9 +1315,9 @@ packages:
       which: 2.0.2
     dev: true
 
-  /css-declaration-sorter@6.3.1(postcss@8.4.21):
-    resolution: {integrity: sha512-fBffmak0bPAnyqc/HO8C3n2sHrp9wcqQz6ES9koRF2/mLOVAx9zIQ3Y7R29sYCteTPqMCwns4WYQoCX91Xl3+w==}
-    engines: {node: ^10 || ^12 || >=14}
+  /css-declaration-sorter@7.0.0(postcss@8.4.21):
+    resolution: {integrity: sha512-jV48Uxg3jWGLthtZhYAH3JFWMjdurJrSQAgWCc/t2ZE0UUFAIWlgcXcLJNutZT8GXrLAr36Kp+O1w3yBdxCr/A==}
+    engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
       postcss: ^8.0.9
     dependencies:
