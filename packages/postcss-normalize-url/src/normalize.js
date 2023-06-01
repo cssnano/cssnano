@@ -113,8 +113,10 @@ function normalizeUrl(urlString) {
   // Remove duplicate slashes if not preceded by a protocol
   if (urlObject.pathname) {
     urlObject.pathname = urlObject.pathname.replace(
-      /(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g,
-      '/'
+      /(\b[a-z][a-z\d+\-.]{1,50}:)?\/{2,}/g,
+      function (match, protocol) {
+        return protocol ? match : '/';
+      }
     );
   }
 
