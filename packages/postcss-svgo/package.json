@@ -37,6 +37,7 @@
     "node": "^14 || ^16 || >= 18"
   },
   "devDependencies": {
+    "pleeease-filters": "^4.0.0",
     "postcss": "^8.2.15"
   },
   "peerDependencies": {
