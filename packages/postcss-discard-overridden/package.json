@@ -27,6 +27,8 @@
     "node": "^14 || ^16 || >=18.0"
   },
   "devDependencies": {
+    "diff": "^5.1.0",
+    "picocolors": "^1.0.0",
     "postcss": "^8.2.15"
   },
   "peerDependencies": {
