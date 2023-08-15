@@ -208,6 +208,11 @@ test(
 );
 
 test(
+  'should not mangle @keyframe 100% in named timeline range names and percentages',
+  passthroughCSS('@keyframes test{entry 100%{color:red}}')
+);
+
+test(
   'should not be responsible for normalising comments',
   processCSS(
     'h1 /*!test comment*/, h2{color:blue}',

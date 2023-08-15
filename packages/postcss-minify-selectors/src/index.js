@@ -163,7 +163,7 @@ const tagReplacements = new Map([
 function tag(selector) {
   const value = selector.value.toLowerCase();
 
-  if (tagReplacements.has(value)) {
+  if (tagReplacements.has(value) && selector.parent && selector.parent.nodes.length === 1) {
     selector.value = /** @type {string} */ (tagReplacements.get(value));
   }
 }
