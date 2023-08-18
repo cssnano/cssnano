@@ -5,6 +5,45 @@ const minifyFont = require('../src/lib/minify-font.js');
 
 const tests = [
   {
+    // .8em "Times New Roman", Arial, Helvetica, sans-serif
+    options: { removeQuotes: true },
+    fixture: [
+      { type: 'word', value: '.8em' },
+      { type: "space", value: " " },
+      { type: 'string', quote: '"', value: 'Times New Roman' },
+      { type: 'div', value: ',', before: '', after: ' ' },
+      { type: 'word', value: 'Arial' },
+      { type: 'div', value: ',', before: '', after: ' ' },
+      { type: 'word', value: 'Helvetica' },
+      { type: 'div', value: ',', before: '', after: ' ' },
+      { type: 'word', value: 'sans-serif' }
+    ],
+    expected: [
+      { type: 'word', value: '.8em' },
+      { type: "space", value: " " },
+      { type: 'word', value: 'Times New Roman,Arial,Helvetica,sans-serif' }
+    ],
+  },
+  {
+    // .8em"Times New Roman", Arial, Helvetica, sans-serif
+    options: { removeQuotes: true },
+    fixture: [
+      { type: 'word', value: '.8em' },
+      { type: 'string', quote: '"', value: 'Times New Roman' },
+      { type: 'div', value: ',', before: '', after: ' ' },
+      { type: 'word', value: 'Arial' },
+      { type: 'div', value: ',', before: '', after: ' ' },
+      { type: 'word', value: 'Helvetica' },
+      { type: 'div', value: ',', before: '', after: ' ' },
+      { type: 'word', value: 'sans-serif' }
+    ],
+    expected: [
+      { type: 'word', value: '.8em' },
+      { type: "space", value: " " },
+      { type: 'word', value: 'Times New Roman,Arial,Helvetica,sans-serif' }
+    ],
+  },
+  {
     options: {},
     fixture: [
       { type: 'word', value: 'bold' },
