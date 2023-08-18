@@ -56,9 +56,31 @@ module.exports = function (nodes, opts) {
     }
   }
 
-  familyStart += 2;
+  let needAdditionalSpace = false;
 
-  family = minifyFamily(nodes.slice(familyStart), opts);
+  // handle case .8em"Times New Roman"
+  if (nodes[familyStart + 1].type === 'space') {
+    familyStart += 2;
+  } else {
+    // @ts-ignore
+    if (nodes[familyStart + 1].quote) {
+      needAdditionalSpace = true
+    }
+    familyStart += 1;
+  }
+
+  const familyNodes = nodes.slice(familyStart);
+
+  family = minifyFamily(familyNodes, opts);
+
+  if (needAdditionalSpace) {
+    return nodes.slice(0, familyStart).concat([
+      /** @type {import('postcss-value-parser').SpaceNode} */ ({
+        type: 'space',
+        value: ' ',
+      }),
+    ], family);
+  }
 
   return nodes.slice(0, familyStart).concat(family);
 };
