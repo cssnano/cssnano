@@ -75,11 +75,8 @@ test(
 );
 
 test(
-  'sort values between unknown properties',
-  processCSS(
-    'a{z-unknown:0;z-index:0;a-unknown:0;color:0}',
-    'a{z-unknown:0;a-unknown:0;color:0;z-index:0}'
-  )
+  'do not sort values between unknown properties',
+  passthroughCSS('a{z-unknown:0;z-index:0;a-unknown:0;color:0}')
 );
 
 test(

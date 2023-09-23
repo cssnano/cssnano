@@ -1,4 +1,4 @@
-lockfileVersion: '6.1'
+lockfileVersion: '6.0'
 
 settings:
   autoInstallPeers: true
@@ -102,8 +102,8 @@ importers:
   packages/cssnano-preset-default:
     dependencies:
       css-declaration-sorter:
-        specifier: ^7.0.0
-        version: 7.0.0(postcss@8.4.24)
+        specifier: ^7.1.1
+        version: 7.1.1(postcss@8.4.24)
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -1319,8 +1319,8 @@ packages:
       which: 2.0.2
     dev: true
 
-  /css-declaration-sorter@7.0.0(postcss@8.4.24):
-    resolution: {integrity: sha512-jV48Uxg3jWGLthtZhYAH3JFWMjdurJrSQAgWCc/t2ZE0UUFAIWlgcXcLJNutZT8GXrLAr36Kp+O1w3yBdxCr/A==}
+  /css-declaration-sorter@7.1.1(postcss@8.4.24):
+    resolution: {integrity: sha512-dZ3bVTEEc1vxr3Bek9vGwfB5Z6ESPULhcRvO472mfjVnj8jRcTnKO8/JTczlvxM10Myb+wBM++1MtdO76eWcaQ==}
     engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
       postcss: ^8.0.9
