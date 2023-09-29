@@ -163,7 +163,14 @@ const tagReplacements = new Map([
 function tag(selector) {
   const value = selector.value.toLowerCase();
 
-  if (tagReplacements.has(value) && selector.parent && selector.parent.nodes.length === 1) {
+  const isSimple = selector.parent && selector.parent.nodes.length === 1;
+  // Avoid simplifying complex selectors (`entry 100% {...}`)
+  if (!isSimple) {
+    return;
+  }
+
+  // Simplify simple selectors that have replacements (`100% {...}`)
+  if (tagReplacements.has(value)) {
     selector.value = /** @type {string} */ (tagReplacements.get(value));
   }
 }
