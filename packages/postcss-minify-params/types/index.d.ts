@@ -6,6 +6,6 @@ export = pluginCreator;
  */
 declare function pluginCreator(options?: browserslist.Options): import('postcss').Plugin;
 declare namespace pluginCreator {
-    const postcss: true;
+    let postcss: true;
 }
 import browserslist = require("browserslist");

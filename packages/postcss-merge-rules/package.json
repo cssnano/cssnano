@@ -38,8 +38,8 @@
   "devDependencies": {
     "@types/caniuse-api": "^3.0.2",
     "postcss": "^8.4.31",
-    "postcss-simple-vars": "^7.0.1",
-    "postcss-discard-comments": "workspace:^"
+    "postcss-discard-comments": "workspace:^",
+    "postcss-simple-vars": "^7.0.1"
   },
   "peerDependencies": {
     "postcss": "^8.4.31"

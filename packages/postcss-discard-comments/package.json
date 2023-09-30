@@ -31,8 +31,8 @@
   },
   "devDependencies": {
     "postcss": "^8.4.31",
-    "postcss-simple-vars": "^7.0.1",
-    "postcss-scss": "^4.0.6"
+    "postcss-scss": "^4.0.6",
+    "postcss-simple-vars": "^7.0.1"
   },
   "peerDependencies": {
     "postcss": "^8.4.31"
