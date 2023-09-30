@@ -6,5 +6,5 @@ export = pluginCreator;
  */
 declare function pluginCreator(config?: Record<string, boolean>): import('postcss').Plugin;
 declare namespace pluginCreator {
-    const postcss: true;
+    let postcss: true;
 }
