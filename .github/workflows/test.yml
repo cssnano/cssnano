@@ -12,15 +12,15 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v4.1.1
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.4
+        uses: pnpm/action-setup@v2.4.0
         with:
-          version: 7.33.0
-      - name: Install Node.js 18.x
-        uses: actions/setup-node@v3.6.0
+          version: 7.33.6
+      - name: Install Node.js 20.x
+        uses: actions/setup-node@v4.0.0
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -32,15 +32,15 @@ jobs:
   test_helpers:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v4.1.1
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.4
+        uses: pnpm/action-setup@v2.4.0
         with:
-          version: 7.33.0
-      - name: Install Node.js 18.x
-        uses: actions/setup-node@v3.6.0
+          version: 7.33.6
+      - name: Install Node.js 20.x
+        uses: actions/setup-node@v4.0.0
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -62,15 +62,15 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: git config --global core.autocrlf input
 
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v4.1.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.4
+        uses: pnpm/action-setup@v2.4.0
         with:
-          version: 7.33.0
+          version: 7.33.6
 
       - name: Install Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.6.0
+        uses: actions/setup-node@v4.0.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
