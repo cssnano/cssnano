@@ -35,9 +35,9 @@
     "node": "^14 || ^16 || >=18.0"
   },
   "devDependencies": {
-    "postcss": "^8.2.15"
+    "postcss": "^8.4.31"
   },
   "peerDependencies": {
-    "postcss": "^8.2.15"
+    "postcss": "^8.4.31"
   }
 }
