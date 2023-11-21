@@ -118,13 +118,24 @@ function shouldKeepZeroUnit(decl, browsers) {
     (decl.value.includes('%') &&
       keepZeroPercent.has(lowerCasedProp) &&
       browsers.includes('ie 11')) ||
-    (parent &&
+    (lowerCasedProp === 'stroke-dasharray' &&
+      parent &&
       parent.parent &&
       parent.parent.type === 'atrule' &&
-      /** @type {import('postcss').AtRule} */ (
-        parent.parent
-      ).name.toLowerCase() === 'keyframes' &&
-      lowerCasedProp === 'stroke-dasharray') ||
+      /** @type {import('postcss').AtRule} */
+      (parent.parent).name.toLowerCase() === 'keyframes') ||
+    (lowerCasedProp === 'initial-value' &&
+      parent &&
+      parent.type === 'atrule' &&
+      /** @type {import('postcss').AtRule} */
+      (parent).name === 'property' &&
+      /** @type {import('postcss').AtRule} */
+      (parent).nodes.some(
+        (node) =>
+          node.type === 'decl' &&
+          node.prop.toLowerCase() === 'syntax' &&
+          node.value === "'<percentage>'"
+      )) ||
     keepWhenZero.has(lowerCasedProp)
   );
 }
