@@ -117,7 +117,12 @@ module.exports = {
             preset: ['default', {
                 svgo: {
                     plugins: [{
-                        removeDoctype: false,
+                        name: 'preset-default',
+                        params: {
+                            overrides: {
+                                removeDoctype: false,
+                            },
+                        },
                     }],
                 },
             }],
