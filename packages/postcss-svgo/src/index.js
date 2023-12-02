@@ -114,7 +114,7 @@ function minify(decl, opts, postcssResult) {
 
   decl.value = minified.toString();
 }
-/** @typedef {{encode?: boolean, plugins?: object[]} & import('svgo').Config} Options */
+/** @typedef {{encode?: boolean} & import('svgo').Config} Options */
 /**
  * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
