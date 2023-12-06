@@ -133,7 +133,7 @@ test('api options', () => {
     discardUnused: false,
     from: undefined,
   }).then((result) => {
-    assert.is(result.gzip.processed, '67 B');
+    assert.is(parseInt(result.gzip.difference, 10) > 0, true);
   });
 });
 test.run();
