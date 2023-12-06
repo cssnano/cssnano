@@ -63,27 +63,26 @@ below. Note that you can either disable the plugin by setting it to `false`,
 or pass different options to change the default behaviour.
 
 ```js
-var postcss = require('postcss');
-var svgo = require('postcss-svgo');
+const postcss = require('postcss');
+const svgo = require('postcss-svgo');
 
-var opts = {
+const opts = {
     plugins: [{
-        removeDoctype: false
-    }, {
-        removeComments: false
-    }, {
-        cleanupNumericValues: {
-            floatPrecision: 2
-        }
-    }, {
-        convertColors: {
-            names2hex: false,
-            rgb2hex: false
+        name: 'preset-default',
+        params: {
+            overrides: {
+                removeViewBox: false,
+                removeComments: false,
+                cleanupNumericValues: {
+                    floatPrecision: 2
+                }
+            }
         }
     }]
 };
 
-postcss([ svgo(opts) ]).process(css).then(function (result) {
+
+postcss([ svgo(opts) ]).process(css).then((result) => {
     console.log(result.css)
 });
 ```
@@ -107,4 +106,4 @@ See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTOR
 MIT © [Ben Briggs](http://beneb.info)
 
 [postcss]: https://github.com/postcss/postcss
-[plugins]: https://github.com/svg/svgo/tree/master/plugins
+[plugins]: https://svgo.dev/docs/plugins/

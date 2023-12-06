@@ -32,7 +32,3 @@ A huge THANK YOU to our recurring backers!
 A huge THANK YOU to our backers!
 
 <object type="image/svg+xml" data="https://opencollective.com/cssnano/backers.svg?avatarHeight=36&width=600"></object>
-
-## Stickers
-
-We sell logo stickers through [StickerMule](https://www.stickermule.com/uk/marketplace/11086-cssnano).
