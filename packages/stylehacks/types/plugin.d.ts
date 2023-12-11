@@ -10,7 +10,7 @@ declare class BasePlugin {
     nodes: NodeWithInfo[];
     targets: Set<string>;
     nodeTypes: Set<string>;
-    result: import("postcss/lib/result").default | undefined;
+    result: import("postcss/lib/result").default<import("postcss/lib/document").default | import("postcss/lib/root").default> | undefined;
     /**
      * @param {import('postcss').Node} node
      * @param {{identifier: string, hack: string}} metadata
