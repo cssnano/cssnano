@@ -9,6 +9,6 @@ module.exports = function (value) {
   return lowerCasedValue === 'normal'
     ? '400'
     : lowerCasedValue === 'bold'
-    ? '700'
-    : value;
+      ? '700'
+      : value;
 };
