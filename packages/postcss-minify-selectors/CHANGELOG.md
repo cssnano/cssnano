@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.0.1
+
+### Patch Changes
+
+- 18331a6: fix: update cssnano peer dependency to 8.4.31 to avoid security issue
+- 18331a6: fix(postcss-minify-selectors): prevent mangling of timeline range names
+
 ## 6.0.0
 
 ### Major Changes

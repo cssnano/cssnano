@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.0.1
+
+### Patch Changes
+
+- 18331a6: fix: update cssnano peer dependency to 8.4.31 to avoid security issue
+- 18331a6: deps(postcss-svgo): update SVGO to 3.0.5 and update doc
+
 ## 6.0.0
 
 ### Major Changes

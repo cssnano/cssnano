@@ -1,5 +1,44 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- 18331a6: fix: update cssnano peer dependency to 8.4.31 to avoid security issue
+- 18331a6: fix: update postcss-calc to 9.0.1 to solve disappearing expressions inside two brackets
+- 18331a6: deps(postcss-svgo): update SVGO to 3.0.5 and update doc
+- 18331a6: chore: update css-declaration-sorter
+- 18331a6: fix(postcss-minify-selectors): prevent mangling of timeline range names
+- 18331a6: fix(postcss-convert-values): keep percent unit in @Property
+- Updated dependencies [18331a6]
+  - cssnano-utils@4.0.1
+  - postcss-colormin@6.0.1
+  - postcss-convert-values@6.0.1
+  - postcss-discard-comments@6.0.1
+  - postcss-discard-duplicates@6.0.1
+  - postcss-discard-empty@6.0.1
+  - postcss-discard-overridden@6.0.1
+  - postcss-merge-longhand@6.0.1
+  - postcss-merge-rules@6.0.2
+  - postcss-minify-font-values@6.0.1
+  - postcss-minify-gradients@6.0.1
+  - postcss-minify-params@6.0.1
+  - postcss-minify-selectors@6.0.1
+  - postcss-normalize-charset@6.0.1
+  - postcss-normalize-display-values@6.0.1
+  - postcss-normalize-positions@6.0.1
+  - postcss-normalize-repeat-style@6.0.1
+  - postcss-normalize-string@6.0.1
+  - postcss-normalize-timing-functions@6.0.1
+  - postcss-normalize-unicode@6.0.1
+  - postcss-normalize-url@6.0.1
+  - postcss-normalize-whitespace@6.0.1
+  - postcss-ordered-values@6.0.1
+  - postcss-reduce-initial@6.0.1
+  - postcss-reduce-transforms@6.0.1
+  - postcss-svgo@6.0.1
+  - postcss-unique-selectors@6.0.1
+
 ## 6.0.1
 
 ### Patch Changes
