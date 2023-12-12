@@ -1,5 +1,22 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- 18331a6: fix: update cssnano peer dependency to 8.4.31 to avoid security issue
+- 18331a6: fix: update postcss-calc to 9.0.1 to solve disappearing expressions inside two brackets
+- 18331a6: deps(postcss-svgo): update SVGO to 3.0.5 and update doc
+- 18331a6: chore: update css-declaration-sorter
+- 18331a6: fix(postcss-minify-selectors): prevent mangling of timeline range names
+- 18331a6: fix(postcss-convert-values): keep percent unit in @Property
+- Updated dependencies [18331a6]
+  - cssnano-preset-default@6.0.2
+  - postcss-discard-unused@6.0.1
+  - postcss-merge-idents@6.0.1
+  - postcss-reduce-idents@6.0.2
+  - postcss-zindex@6.0.1
+
 ## 6.0.1
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # Change Log
 
+## 3.0.1
+
+### Patch Changes
+
+- 18331a6: fix: update cssnano peer dependency to 8.4.31 to avoid security issue
+- Updated dependencies [18331a6]
+  - cssnano-utils@4.0.1
+  - postcss-discard-comments@6.0.1
+  - postcss-discard-empty@6.0.1
+  - postcss-normalize-whitespace@6.0.1
+
 ## 3.0.0
 
 ### Major Changes
