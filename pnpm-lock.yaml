@@ -558,8 +558,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       svgo:
-        specifier: ^3.0.5
-        version: 3.0.5
+        specifier: ^3.1.0
+        version: 3.1.0
     devDependencies:
       pleeease-filters:
         specifier: ^4.0.0
@@ -3248,8 +3248,8 @@ packages:
     engines: {node: '>= 0.4'}
     dev: true
 
-  /svgo@3.0.5:
-    resolution: {integrity: sha512-HQKHEo73pMNOlDlBcLgZRcHW2+1wo7bFYayAXkGN0l/2+h68KjlfZyMRhdhaGvoHV2eApOovl12zoFz42sT6rQ==}
+  /svgo@3.1.0:
+    resolution: {integrity: sha512-R5SnNA89w1dYgNv570591F66v34b3eQShpIBcQtZtM5trJwm1VvxbIoMpRYY3ybTAutcKTLEmTsdnaknOHbiQA==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:
