@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@types/caniuse-api": "^3.0.6",
-    "html-to-text": "^8.2.0",
+    "html-to-text": "^9.0.5",
     "nanospy": "^1.0.0",
     "postcss": "^8.4.32"
   },
