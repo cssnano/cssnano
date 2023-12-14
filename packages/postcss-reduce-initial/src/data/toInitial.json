@@ -17,7 +17,7 @@
   "box-sizing": "content-box",
   "color": "canvastext",
   "column-rule-color": "currentcolor",
-  "font-synthesis": "weight style",
+  "font-synthesis": "weight style small-caps position",
   "image-orientation": "from-image",
   "mask-clip": "border-box",
   "mask-mode": "match-source",
@@ -32,5 +32,6 @@
   "transform-box": "view-box",
   "transform-origin": "50% 50% 0",
   "vertical-align": "baseline",
+  "white-space-collapse": "collapse",
   "writing-mode": "horizontal-tb"
 }
