@@ -2,7 +2,7 @@
   "name": "cssnano-core",
   "private": true,
   "scripts": {
-    "lint": "pnpm types && eslint . --cache --ignore-path .gitignore --ext .js,.mjs",
+    "lint": "pnpm types && eslint . --cache",
     "fixlint": "prettier --write . && pnpm lint -- --fix",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
@@ -25,6 +25,7 @@
     "c8": "^8.0.1",
     "eslint": "^8.55.0",
     "eslint-config-prettier": "^9.1.0",
+    "globals": "^13.24.0",
     "postcss": "^8.4.32",
     "postcss-font-magician": "^3.0.0",
     "prettier": "^3.1.1",
