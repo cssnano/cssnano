@@ -265,8 +265,8 @@ importers:
         specifier: ^8.4.32
         version: 8.4.32
       postcss-scss:
-        specifier: ^4.0.6
-        version: 4.0.6(postcss@8.4.32)
+        specifier: ^4.0.9
+        version: 4.0.9(postcss@8.4.32)
       postcss-simple-vars:
         specifier: ^7.0.1
         version: 7.0.1(postcss@8.4.32)
@@ -2801,11 +2801,11 @@ packages:
       postcss: 8.4.32
     dev: true
 
-  /postcss-scss@4.0.6(postcss@8.4.32):
-    resolution: {integrity: sha512-rLDPhJY4z/i4nVFZ27j9GqLxj1pwxE80eAzUNRMXtcpipFYIeowerzBgG3yJhMtObGEXidtIgbUpQ3eLDsf5OQ==}
+  /postcss-scss@4.0.9(postcss@8.4.32):
+    resolution: {integrity: sha512-AjKOeiwAitL/MXxQW2DliT28EKukvvbEWx3LBmJIRN8KfBGZbRTxNYW0kSqi1COiTZ57nZ9NW06S6ux//N1c9A==}
     engines: {node: '>=12.0'}
     peerDependencies:
-      postcss: ^8.4.19
+      postcss: ^8.4.29
     dependencies:
       postcss: 8.4.32
     dev: true
