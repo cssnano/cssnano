@@ -1983,10 +1983,12 @@ packages:
       slash: 3.0.0
     dev: true
 
-  /google-fonts-complete@2.1.1:
-    resolution: {integrity: sha512-6e7jXyadmW4iHrrmYitcsoyVpcymjndBsgXLeo0XXXbAqU9xhM06OxxJAiPqSrp9Xn2bvBueOTe091lwkKVc1g==}
+  /google-fonts-complete@2.2.3(postcss@8.4.32):
+    resolution: {integrity: sha512-/0EkrmRkh4qdNmlcM55LU6fRp2pdF2tvWA908wqx0cWxzAP3FSNKAZg8SxjynGhkhiPQeM7UxH659cGYbFz3EQ==}
+    peerDependencies:
+      postcss: ^8.0.0
     dependencies:
-      postcss: 7.0.39
+      postcss: 8.4.32
     dev: true
 
   /gopd@1.0.1:
@@ -2747,10 +2749,6 @@ packages:
     resolution: {integrity: sha512-XIxfHpEuSJbITd1H3EeQwpcZbTLHc+VVr8ANI9t5sit565tsI4/xK3KWTUFE2e6QiangUkh3B0jihzmGnNrRsQ==}
     dev: true
 
-  /picocolors@0.2.1:
-    resolution: {integrity: sha512-cMlDqaLEqfSaW8Z7N5Jw+lyIW869EzT73/F5lhtY9cLGoVxSXznfgfXMO0Z5K0o0Q2TkTXq+0KFsdnSe3jDViA==}
-    dev: true
-
   /picocolors@1.0.0:
     resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
 
@@ -2797,7 +2795,7 @@ packages:
     dependencies:
       bootstrap-fonts-complete: 1.0.0
       directory-fonts-complete: 1.2.0
-      google-fonts-complete: 2.1.1
+      google-fonts-complete: 2.2.3(postcss@8.4.32)
       postcss: 8.4.32
     dev: true
 
@@ -2845,14 +2843,6 @@ packages:
       chalk: 2.4.2
       source-map: 0.6.1
       supports-color: 5.5.0
-    dev: true
-
-  /postcss@7.0.39:
-    resolution: {integrity: sha512-yioayjNbHn6z1/Bywyb2Y4s3yvDAeXGOyxqD+LnVOinq6Mdmd++SW2wUNVzavyyHxd6+DxzWGIuosg6P1Rj8uA==}
-    engines: {node: '>=6.0.0'}
-    dependencies:
-      picocolors: 0.2.1
-      source-map: 0.6.1
     dev: true
 
   /postcss@8.4.32:
