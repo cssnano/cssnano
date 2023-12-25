@@ -298,8 +298,8 @@ importers:
   packages/postcss-discard-unused:
     dependencies:
       postcss-selector-parser:
-        specifier: ^6.0.13
-        version: 6.0.13
+        specifier: ^6.0.14
+        version: 6.0.14
     devDependencies:
       postcss:
         specifier: ^8.4.32
@@ -343,8 +343,8 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-selector-parser:
-        specifier: ^6.0.13
-        version: 6.0.13
+        specifier: ^6.0.14
+        version: 6.0.14
     devDependencies:
       '@types/caniuse-api':
         specifier: ^3.0.6
@@ -404,8 +404,8 @@ importers:
   packages/postcss-minify-selectors:
     dependencies:
       postcss-selector-parser:
-        specifier: ^6.0.13
-        version: 6.0.13
+        specifier: ^6.0.14
+        version: 6.0.14
     devDependencies:
       postcss:
         specifier: ^8.4.32
@@ -574,8 +574,8 @@ importers:
   packages/postcss-unique-selectors:
     dependencies:
       postcss-selector-parser:
-        specifier: ^6.0.13
-        version: 6.0.13
+        specifier: ^6.0.14
+        version: 6.0.14
     devDependencies:
       postcss:
         specifier: ^8.4.32
@@ -593,8 +593,8 @@ importers:
         specifier: ^4.22.2
         version: 4.22.2
       postcss-selector-parser:
-        specifier: ^6.0.13
-        version: 6.0.13
+        specifier: ^6.0.14
+        version: 6.0.14
     devDependencies:
       postcss:
         specifier: ^8.4.32
@@ -2778,7 +2778,7 @@ packages:
       postcss: ^8.2.2
     dependencies:
       postcss: 8.4.32
-      postcss-selector-parser: 6.0.13
+      postcss-selector-parser: 6.0.14
       postcss-value-parser: 4.2.0
     dev: false
 
@@ -2803,8 +2803,8 @@ packages:
       postcss: 8.4.32
     dev: true
 
-  /postcss-selector-parser@6.0.13:
-    resolution: {integrity: sha512-EaV1Gl4mUEV4ddhDnv/xtj7sxwrwxdetHdWUGnT4VJQf+4d05v6lHYZr8N573k5Z0BViss7BDhfWtKS3+sfAqQ==}
+  /postcss-selector-parser@6.0.14:
+    resolution: {integrity: sha512-65xXYsT40i9GyWzlHQ5ShZoK7JZdySeOozi/tz2EezDo6c04q6+ckYMeoY7idaie1qp2dT5KoYQ2yky6JuoHnA==}
     engines: {node: '>=4'}
     dependencies:
       cssesc: 3.0.0
