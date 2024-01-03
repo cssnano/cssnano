@@ -1,5 +1,28 @@
 # Change Log
 
+## 6.0.3
+
+### Patch Changes
+
+- 9c6b0bc: fix(cssnano-preset-default): do not sort unknown properties
+- Updated dependencies [f233b22]
+- Updated dependencies [26bbbd3]
+- Updated dependencies [26bbbd3]
+- Updated dependencies [b1aea33]
+- Updated dependencies [43d6898]
+- Updated dependencies [1ead72d]
+- Updated dependencies [42249e7]
+  - postcss-minify-selectors@6.0.2
+  - postcss-unique-selectors@6.0.2
+  - postcss-merge-rules@6.0.3
+  - postcss-normalize-unicode@6.0.2
+  - postcss-convert-values@6.0.2
+  - postcss-reduce-initial@6.0.2
+  - postcss-minify-params@6.0.2
+  - postcss-colormin@6.0.2
+  - postcss-svgo@6.0.2
+  - postcss-merge-longhand@6.0.2
+
 ## 6.0.2
 
 ### Patch Changes

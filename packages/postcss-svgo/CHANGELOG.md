@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- b1aea33: chore: update svgo to 3.2.0
+- 42249e7: chore(postcss-svgo): update SVGO to 3.1.0
+
 ## 6.0.1
 
 ### Patch Changes

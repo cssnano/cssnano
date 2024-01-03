@@ -1,5 +1,13 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- Updated dependencies [26bbbd3]
+- Updated dependencies [26bbbd3]
+  - cssnano@6.0.3
+
 ## 6.0.1
 
 ### Patch Changes

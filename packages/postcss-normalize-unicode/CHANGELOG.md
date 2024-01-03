@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- 26bbbd3: chore: update minimum browserslist version to 4.22.2
+- 26bbbd3: chore: update postcss-selector-parser to 6.0.13
+
 ## 6.0.1
 
 ### Patch Changes
