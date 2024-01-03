@@ -15,13 +15,24 @@ jobs:
         uses: pnpm/action-setup@v2.4.0
         with:
           version: 7.33.6
-      # Setup .npmrc file to publish to npm
-      - uses: actions/setup-node@v4.0.1
+          
+      - name: Setup .npmrc file to publish to npm
+        uses: actions/setup-node@v4.0.1
         with:
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
-      - run: pnpm test:only
-      - run: pnpm all-publish
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run lint
+        run: pnpm lint
+        
+      - name: Test
+        run: pnpm test:only
+        
+      - name: Publish
+        run: pnpm all-publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
