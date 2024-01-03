@@ -139,9 +139,9 @@
 /*! https://mths.be/cssesc v3.0.0 by @mathias */
 
 /**
- * @license Fraction.js v4.2.0 05/03/2022
+ * @license Fraction.js v4.3.7 31/08/2023
  * https://www.xarg.org/2014/03/rational-numbers-in-javascript/
  *
- * Copyright (c) 2021, Robert Eisele (robert@xarg.org)
+ * Copyright (c) 2023, Robert Eisele (robert@raw.org)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  **/
