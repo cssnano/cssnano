@@ -1,5 +1,19 @@
 # Change Log
 
+## 6.0.3
+
+### Patch Changes
+
+- 9c6b0bc: fix(cssnano-preset-default): do not sort unknown properties
+- 26bbbd3: chore: update minimum browserslist version to 4.22.2
+- 26bbbd3: chore: update postcss-selector-parser to 6.0.13
+- Updated dependencies [9c6b0bc]
+- Updated dependencies [f233b22]
+- Updated dependencies [26bbbd3]
+- Updated dependencies [1ead72d]
+  - cssnano-preset-default@6.0.3
+  - postcss-discard-unused@6.0.2
+
 ## 6.0.2
 
 ### Patch Changes
