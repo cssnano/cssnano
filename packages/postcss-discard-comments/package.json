@@ -30,7 +30,7 @@
     "node": "^14 || ^16 || >=18.0"
   },
   "devDependencies": {
-    "postcss": "^8.4.32",
+    "postcss": "^8.4.33",
     "postcss-scss": "^4.0.9",
     "postcss-simple-vars": "^7.0.1"
   },
