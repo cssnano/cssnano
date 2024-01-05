@@ -19,7 +19,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "postcss": "^8.4.32",
+    "postcss": "^8.4.33",
     "postcss-value-parser": "^4.2.0"
   },
   "peerDependencies": {

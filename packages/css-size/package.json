@@ -35,7 +35,7 @@
     "postcss": "^8.4.31"
   },
   "devDependencies": {
-    "postcss": "^8.4.32"
+    "postcss": "^8.4.33"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
