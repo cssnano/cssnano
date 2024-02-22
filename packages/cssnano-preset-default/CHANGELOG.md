@@ -1,5 +1,16 @@
 # Change Log
 
+## 6.0.4
+
+### Patch Changes
+
+- Updated dependencies [4bf74ef]
+- Updated dependencies [52d14d8]
+- Updated dependencies [3757056]
+  - postcss-discard-empty@6.0.2
+  - postcss-discard-duplicates@6.0.2
+  - postcss-convert-values@6.0.3
+
 ## 6.0.3
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.0.4
+
+### Patch Changes
+
+- 311eaee: fix(cssnano): set minimum lilconfig version to one without vulnerabilities
+  - cssnano-preset-default@6.0.4
+
 ## 6.0.3
 
 ### Patch Changes

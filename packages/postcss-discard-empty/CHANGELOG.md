@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- 4bf74ef: fix(postcss-discard-empty): preserve empty layer declarations
+
 ## 6.0.1
 
 ### Patch Changes

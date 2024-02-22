@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- 52d14d8: fix(postcss-discard-duplicates): avoid crash with empty layers
+
 ## 6.0.1
 
 ### Patch Changes
