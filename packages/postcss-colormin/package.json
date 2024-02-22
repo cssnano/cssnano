@@ -29,7 +29,7 @@
   "dependencies": {
     "browserslist": "^4.23.0",
     "caniuse-api": "^3.0.0",
-    "colord": "^2.9.1",
+    "colord": "^2.9.3",
     "postcss-value-parser": "^4.2.0"
   },
   "bugs": {
