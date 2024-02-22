@@ -77,16 +77,19 @@ function mergeAtRules(css) {
         relevant.cache.push(node);
         return;
       } else {
-        let toString = node.nodes.toString();
+        const toString = node.nodes ? node.nodes.toString() : '';
 
         relevant.cache.forEach((cached) => {
+          const cachedStringContent = cached.nodes
+            ? cached.nodes.toString()
+            : '';
           if (
             cached.name.toLowerCase() === node.name.toLowerCase() &&
             sameParent(
               /** @type {any} */ (cached),
               /** @type {any} */ (node)
             ) &&
-            cached.nodes.toString() === toString
+            cachedStringContent === toString
           ) {
             relevant.removals.push(cached);
             relevant.replacements[cached.params] = node.params;

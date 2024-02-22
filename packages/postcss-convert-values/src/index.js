@@ -130,6 +130,8 @@ function shouldKeepZeroUnit(decl, browsers) {
       /** @type {import('postcss').AtRule} */
       (parent).name === 'property' &&
       /** @type {import('postcss').AtRule} */
+      (parent).nodes !== undefined &&
+      /** @type {import('postcss').AtRule} */
       (parent).nodes.some(
         (node) =>
           node.type === 'decl' &&

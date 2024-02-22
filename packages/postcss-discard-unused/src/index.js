@@ -40,7 +40,7 @@ function filterAtRule({ atRules, values }) {
  */
 function filterNamespace({ atRules, rules }) {
   const uniqueRules = new Set(rules);
-  atRules.forEach((atRule) => {
+  for (const atRule of atRules) {
     const { 0: param, length: len } = atRule.params.split(' ').filter(Boolean);
 
     if (len === 1) {
@@ -52,7 +52,7 @@ function filterNamespace({ atRules, rules }) {
     if (!hasRule) {
       atRule.remove();
     }
-  });
+  }
 }
 
 /**
@@ -74,25 +74,27 @@ function hasFont(fontFamily, cache, comma) {
  */
 function filterFont({ atRules, values }, comma) {
   values = [...new Set(values)];
-  atRules.forEach((r) => {
-    /** @type {import('postcss').Declaration[]} */
-    const families = /** @type {import('postcss').Declaration[]} */ (
-      r.nodes.filter(
-        (node) => node.type === 'decl' && node.prop === 'font-family'
-      )
-    );
+  for (const r of atRules) {
+    if (r.nodes !== undefined) {
+      /** @type {import('postcss').Declaration[]} */
+      const families = /** @type {import('postcss').Declaration[]} */ (
+        r.nodes.filter(
+          (node) => node.type === 'decl' && node.prop === 'font-family'
+        )
+      );
 
-    // Discard the @font-face if it has no font-family
-    if (!families.length) {
-      return r.remove();
-    }
-
-    families.forEach((family) => {
-      if (!hasFont(family.value.toLowerCase(), values, comma)) {
+      // Discard the @font-face if it has no font-family
+      if (families.length === 0) {
         r.remove();
       }
-    });
-  });
+
+      for (const family of families) {
+        if (!hasFont(family.value.toLowerCase(), values, comma)) {
+          r.remove();
+        }
+      }
+    }
+  }
 }
 
 /**@typedef {{fontFace?: boolean, counterStyle?: boolean, keyframes?: boolean, namespace?: boolean}} Options */
