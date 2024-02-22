@@ -27,7 +27,7 @@
     "node": "^14 || ^16 || >=18.0"
   },
   "devDependencies": {
-    "diff": "^5.1.0",
+    "diff": "^5.2.0",
     "picocolors": "^1.0.0",
     "postcss": "^8.4.35"
   },
