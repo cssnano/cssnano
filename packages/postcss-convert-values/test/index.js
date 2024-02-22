@@ -434,8 +434,8 @@ test(
   `should not strip the percentage from 0 in @property, for initial-value`,
   processCSS(
     `@property --percent{syntax:'<percentage>';inherits:false;initial-value:0%;}`,
-    `@property --percent{syntax:'<percentage>';inherits:false;initial-value:0%;}`,
-    )
+    `@property --percent{syntax:'<percentage>';inherits:false;initial-value:0%;}`
+  )
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
