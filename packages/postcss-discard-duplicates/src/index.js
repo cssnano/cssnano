@@ -68,7 +68,7 @@ function equals(nodeA, nodeB) {
       break;
   }
 
-  if (a.nodes) {
+  if (a.nodes && b.nodes) {
     if (a.nodes.length !== b.nodes.length) {
       return false;
     }

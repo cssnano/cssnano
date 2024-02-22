@@ -107,6 +107,14 @@ test(
 );
 
 test(
+  'should not crash on @layer syntax',
+  processCSS(
+    '@layer ui-components { } @layer ui-components',
+    '@layer ui-components'
+  )
+);
+
+test(
   'should not remove declarations when selectors are different',
   passthroughCSS('h1{font-weight:bold}h2{font-weight:bold}')
 );
