@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- 3757056: fix: handle cases where AtRules might not have any children nodes
+
 ## 6.0.1
 
 ### Patch Changes

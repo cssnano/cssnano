@@ -1,5 +1,14 @@
 # Change Log
 
+## 6.0.4
+
+### Patch Changes
+
+- Updated dependencies [3757056]
+  - postcss-discard-unused@6.0.3
+  - postcss-merge-idents@6.0.2
+  - cssnano-preset-default@6.0.4
+
 ## 6.0.3
 
 ### Patch Changes
