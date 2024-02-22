@@ -21,7 +21,7 @@ function discardAndReport(css, result) {
     if (
       (type === 'decl' && !node.value && !node.prop.startsWith('--')) ||
       (type === 'rule' && !node.selector) ||
-      (sub && !sub.length) ||
+      (sub && !sub.length && !(type === 'atrule' && node.name === 'layer')) ||
       (type === 'atrule' &&
         ((!sub && !node.params) ||
           (!node.params &&

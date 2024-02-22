@@ -86,6 +86,24 @@ test(
 );
 
 test(
+  'should preserve empty layers',
+  passthroughCSS(`@layer a {}
+@layer b {}
+
+@layer b {
+  foo {
+    color: red;
+  }
+}
+
+@layer a {
+  bar {
+    color: green;
+  }
+}`)
+);
+
+test(
   'should report removed selectors',
   testRemovals('h1{}.hot{}.a.b{}{}@media screen, print{h1,h2{}}', '', [
     'h1',
