@@ -29,7 +29,7 @@ h1 {
 ```
 
 Note that this module will also try to normalize relative URLs, and is capable
-of stripping unnecessary quotes. For more examples, see the [tests](test.js).
+of stripping unnecessary quotes. For more examples, see the [tests](test/index.js).
 
 ## Usage
 

@@ -24,7 +24,7 @@ h1 + p, h2, h3, h2{color:blue}
 h1+p,h2,h3{color:blue}
 ```
 
-For more examples see the [tests](test.js).
+For more examples see the [tests](test/index.js).
 
 ## Usage
 

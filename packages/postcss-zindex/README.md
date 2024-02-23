@@ -20,7 +20,7 @@ for it at `5500` - so that modal classes occupy the `5xxx` space.
 But in production, it is unnecessary to use such large values for z-index where
 smaller values would suffice. This module will reduce all z-index declarations
 whilst respecting your original intent; such that the overlay becomes `1` and
-the dialog becomes `2`. For more examples, see the [tests](test.js).
+the dialog becomes `2`. For more examples, see the [tests](test/index.js).
 
 ### Input
 
