@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { test } from 'uvu';
 import * as assert from 'uvu/assert';
-import { spy } from 'nanospy';
+import { mock } from 'node:test';
 import { handleError, toJSONString, write, generate } from '../lib/io.mjs';
 
 const testData = JSON.parse(
@@ -31,10 +31,10 @@ for (const [key, path, expected] of [
   ['toInitial', paths.toInitial, data.toInitial],
 ]) {
   test(`should write JSON file based on key ${key}`, () => {
-    const fileFunc = spy();
+    const fileFunc = mock.fn();
     write(fileFunc, paths, data, key);
-    assert.is(fileFunc.calls[0][0], path);
-    assert.is(fileFunc.calls[0][1], toJSONString(expected));
+    assert.is(fileFunc.mock.calls[0].arguments[0], path);
+    assert.is(fileFunc.mock.calls[0].arguments[1], toJSONString(expected));
   });
 }
 
@@ -44,8 +44,8 @@ test('should handle file operation errors', () => {
 });
 
 test('should make it through promise chain with sample data and write 2 files', async () => {
-  const fileFunc = spy();
-  const fetchFunc = spy(async () => {
+  const fileFunc = mock.fn();
+  const fetchFunc = mock.fn(async () => {
     return { json: () => Promise.resolve(testData) };
   });
   await generate(
@@ -55,7 +55,7 @@ test('should make it through promise chain with sample data and write 2 files', 
     'https://example.com/properties.json'
   );
 
-  assert.is(fileFunc.callCount, 2);
+  assert.is(fileFunc.mock.calls.length, 2);
 });
 
 test.run();
