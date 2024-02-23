@@ -23,7 +23,7 @@
     "@changesets/cli": "^2.27.1",
     "@types/node": "^20.11.20",
     "c8": "^9.1.0",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^14.0.0",
     "postcss": "^8.4.35",
