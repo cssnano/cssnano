@@ -115,6 +115,12 @@ test(
 /* Skip transform-box for browser compatibility  */
 test('preserve transform-box', passthroughCSS('div{transform-box:view-box}'));
 
+/* Most browsers do not support 'none' at present */
+test(
+  'should preserve initial -webkit-line-clamp',
+  passthroughCSS('a{-webkit-line-clamp: initial;}')
+);
+
 test(
   'should ignore the data present in the ignore options',
   passthroughCSS('h1{min-height:initial}', { ignore: ['min-height'] })
@@ -141,4 +147,5 @@ test(
   'should ignore the data present in the ignore options , toInitial #3',
   passthroughCSS('WRITING-MODE:horizontal-tb', { ignore: ['writing-mode'] })
 );
+
 test.run();
