@@ -32,11 +32,7 @@ function transform(prop, value, opts) {
 
     return tree.toString();
   } else if (lowerCasedProp === 'font') {
-    const tree = valueParser(value);
-
-    tree.nodes = minifyFont(tree.nodes, opts);
-
-    return tree.toString();
+    return minifyFont(value, opts);
   }
 
   return value;

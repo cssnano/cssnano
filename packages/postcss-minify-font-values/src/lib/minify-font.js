@@ -1,21 +1,46 @@
 'use strict';
-const { unit } = require('postcss-value-parser');
+const valueParser = require('postcss-value-parser');
 const keywords = require('./keywords');
 const minifyFamily = require('./minify-family');
 const minifyWeight = require('./minify-weight');
 
 /**
+ * Adds missing spaces before strings.
+ *
+ * @param toBeSpliced {Set<number>}
  * @param {import('postcss-value-parser').Node[]} nodes
- * @param {import('../index').Options} opts
- * @return {import('postcss-value-parser').Node[]}
+ * @return {void}
  */
-module.exports = function (nodes, opts) {
-  let i, max, node, family;
+function normalizeNodes(nodes, toBeSpliced) {
+  for (const index of toBeSpliced) {
+    nodes.splice(
+      index,
+      0,
+      /** @type {import('postcss-value-parser').SpaceNode} */ ({
+        type: 'space',
+        value: ' ',
+      })
+    );
+  }
+}
+
+/**
+ * @param {string} unminified
+ * @param {import('../index').Options} opts
+ * @return {string}
+ */
+module.exports = function (unminified, opts) {
+  const tree = valueParser(unminified);
+  const nodes = tree.nodes;
+
   let familyStart = NaN;
   let hasSize = false;
+  const toBeSpliced = new Set();
 
-  for (i = 0, max = nodes.length; i < max; i += 1) {
-    node = nodes[i];
+  for (const [i, node] of nodes.entries()) {
+    if (node.type === 'string' && i > 0 && nodes[i - 1].type !== 'space') {
+      toBeSpliced.add(i);
+    }
 
     if (node.type === 'word') {
       if (hasSize) {
@@ -23,7 +48,6 @@ module.exports = function (nodes, opts) {
       }
 
       const value = node.value.toLowerCase();
-
       if (
         value === 'normal' ||
         value === 'inherit' ||
@@ -31,7 +55,7 @@ module.exports = function (nodes, opts) {
         value === 'unset'
       ) {
         familyStart = i;
-      } else if (keywords.style.has(value) || unit(value)) {
+      } else if (keywords.style.has(value) || valueParser.unit(value)) {
         familyStart = i;
       } else if (keywords.variant.has(value)) {
         familyStart = i;
@@ -40,7 +64,7 @@ module.exports = function (nodes, opts) {
         familyStart = i;
       } else if (keywords.stretch.has(value)) {
         familyStart = i;
-      } else if (keywords.size.has(value) || unit(value)) {
+      } else if (keywords.size.has(value) || valueParser.unit(value)) {
         familyStart = i;
         hasSize = true;
       }
@@ -56,9 +80,11 @@ module.exports = function (nodes, opts) {
     }
   }
 
+  normalizeNodes(nodes, toBeSpliced);
   familyStart += 2;
 
-  family = minifyFamily(nodes.slice(familyStart), opts);
+  const family = minifyFamily(nodes.slice(familyStart), opts);
 
-  return nodes.slice(0, familyStart).concat(family);
+  tree.nodes = nodes.slice(0, familyStart).concat(family);
+  return tree.toString();
 };
