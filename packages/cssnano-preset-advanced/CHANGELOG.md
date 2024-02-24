@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.0.5
+
+### Patch Changes
+
+- 83d3268: chore: update autoprefixer and browerslist
+  - cssnano-preset-default@6.0.5
+
 ## 6.0.4
 
 ### Patch Changes

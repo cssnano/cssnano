@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.0.3
+
+### Patch Changes
+
+- 83d3268: chore: update autoprefixer and browerslist
+- c4be0f5: fix(postcss-reduce-initial): update initial property list
+
 ## 6.0.2
 
 ### Patch Changes

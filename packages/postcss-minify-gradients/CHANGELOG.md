@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- f461389: chore: update colord version
+
 ## 6.0.1
 
 ### Patch Changes
