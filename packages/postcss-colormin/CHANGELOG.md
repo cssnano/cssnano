@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.0.3
+
+### Patch Changes
+
+- 83d3268: chore: update autoprefixer and browerslist
+- f461389: chore: update colord version
+
 ## 6.0.2
 
 ### Patch Changes

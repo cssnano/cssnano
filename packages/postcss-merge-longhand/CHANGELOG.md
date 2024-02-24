@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.0.3
+
+### Patch Changes
+
+- Updated dependencies [83d3268]
+  - stylehacks@6.0.3
+
 ## 6.0.2
 
 ### Patch Changes

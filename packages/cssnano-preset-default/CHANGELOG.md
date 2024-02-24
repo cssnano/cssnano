@@ -1,5 +1,23 @@
 # Change Log
 
+## 6.0.5
+
+### Patch Changes
+
+- Updated dependencies [c2160e3]
+- Updated dependencies [83d3268]
+- Updated dependencies [f461389]
+- Updated dependencies [c4be0f5]
+  - postcss-minify-font-values@6.0.2
+  - postcss-normalize-unicode@6.0.3
+  - postcss-convert-values@6.0.4
+  - postcss-reduce-initial@6.0.3
+  - postcss-minify-params@6.0.3
+  - postcss-merge-rules@6.0.4
+  - postcss-colormin@6.0.3
+  - postcss-minify-gradients@6.0.2
+  - postcss-merge-longhand@6.0.3
+
 ## 6.0.4
 
 ### Patch Changes

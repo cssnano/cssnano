@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- c2160e3: fix(postcss-minify-font-values): emit correct output when spaces are missing between the font family and other values
+
 ## 6.0.1
 
 ### Patch Changes

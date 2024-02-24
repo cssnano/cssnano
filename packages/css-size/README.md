@@ -2,6 +2,12 @@
 
 > Compare the size of a CSS file after processing it to the original.
 
+## Deprecation notice: this package will soon cease to be maintained
+
+The functionality can be easily replaced by minifying the file and dividing
+the minified file size by the unminified file size.
+
+
 Results are shown for uncompressed as well as when compressed using gzip
 and brotli. For most users, one of the compressed sizes will best
 represent what will be served to a client in production. It also
