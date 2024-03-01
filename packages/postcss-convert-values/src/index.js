@@ -207,16 +207,20 @@ const plugin = 'postcss-convert-values';
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(opts = { precision: false }) {
-  const browsers = browserslist(null, {
-    stats: opts.stats,
-    path: __dirname,
-    env: opts.env,
-  });
-
   return {
     postcssPlugin: plugin,
-    OnceExit(css) {
-      css.walkDecls((decl) => transform(opts, browsers, decl));
+    prepare() {
+      const browsers = browserslist(null, {
+        stats: opts.stats,
+        path: __dirname,
+        env: opts.env,
+      });
+
+      return {
+        OnceExit(css) {
+          css.walkDecls((decl) => transform(opts, browsers, decl));
+        },
+      };
     },
   };
 }
