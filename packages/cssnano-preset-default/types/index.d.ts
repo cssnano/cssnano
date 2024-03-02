@@ -17,7 +17,7 @@ type Options = {
         keepOverrides?: boolean | undefined;
     } | undefined> | undefined;
     discardComments?: SimpleOptions<postcssDiscardComments.Options> | undefined;
-    reduceInitial?: SimpleOptions<void> | undefined;
+    reduceInitial?: SimpleOptions<postcssReduceInitial.Options> | undefined;
     minifyGradients?: SimpleOptions<void> | undefined;
     svgo?: SimpleOptions<postcssSvgo.Options> | undefined;
     reduceTransforms?: SimpleOptions<void> | undefined;
@@ -49,6 +49,7 @@ type SimpleOptions<OptionsExtends extends void | object = void> = false | (Optio
     exclude?: true;
 });
 import postcssDiscardComments = require("postcss-discard-comments");
+import postcssReduceInitial = require("postcss-reduce-initial");
 import postcssSvgo = require("postcss-svgo");
 import postcssConvertValues = require("postcss-convert-values");
 import postcssCalc = require("postcss-calc");

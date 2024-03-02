@@ -52,7 +52,7 @@ const { rawCache } = require('cssnano-utils');
  * @typedef {object} Options
  * @property {SimpleOptions<Parameters<typeof cssDeclarationSorter>[0]>} [cssDeclarationSorter]
  * @property {SimpleOptions<import('postcss-discard-comments').Options>} [discardComments]
- * @property {SimpleOptions} [reduceInitial]
+ * @property {SimpleOptions<import('postcss-reduce-initial').Options>} [reduceInitial]
  * @property {SimpleOptions} [minifyGradients]
  * @property {SimpleOptions<import('postcss-svgo').Options>} [svgo]
  * @property {SimpleOptions} [reduceTransforms]
