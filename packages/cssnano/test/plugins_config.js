@@ -28,6 +28,28 @@ test('should run the plugins in the preset', () => {
     });
 });
 
+test('should run the plugins in the first preset in an array', () => {
+  const preset = litePreset();
+
+  return postcss([cssnano({ preset: [preset] })])
+    .process(
+      `.example {
+    display: grid;
+    transition: all .5s;
+    user-select: none;
+    background: linear-gradient(to bottom, white, black);
+}
+`,
+      { from: undefined }
+    )
+    .then((result) => {
+      assert.is(
+        result.css,
+        `.example{display:grid;transition:all .5s;user-select:none;background:linear-gradient(to bottom,white,black)}`
+      );
+    });
+});
+
 test('should run the plugin passed through the cssnano config.plugins', () => {
   const preset = litePreset({ discardComments: false });
 
