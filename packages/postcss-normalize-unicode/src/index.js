@@ -89,13 +89,20 @@ function transform(value, isLegacy = false) {
 }
 
 /**
+ * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ */
+
+/**
  * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-unicode',
-    /** @param {import('postcss').Result & {opts: browserslist.Options}} result*/
+
+    /**
+     * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
+     */
     prepare(result) {
       const cache = new Map();
       const resultOpts = result.opts || {};

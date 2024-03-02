@@ -1,6 +1,6 @@
 export = pluginCreator;
 /**
- * @typedef {object} Options
+ * @typedef {object} MinifyColorOptions
  * @property {boolean} [hex]
  * @property {boolean} [alphaHex]
  * @property {boolean} [rgb]
@@ -9,15 +9,21 @@ export = pluginCreator;
  * @property {boolean} [transparent]
  */
 /**
+ * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {MinifyColorOptions & BrowserslistOptions} Options
+ */
+/**
  * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} config
  * @return {import('postcss').Plugin}
  */
 declare function pluginCreator(config?: Options): import('postcss').Plugin;
 declare namespace pluginCreator {
-    export { postcss, Options };
+    export { postcss, MinifyColorOptions, BrowserslistOptions, Options };
 }
-type Options = {
+type Options = MinifyColorOptions & BrowserslistOptions;
+declare var postcss: true;
+type MinifyColorOptions = {
     hex?: boolean | undefined;
     alphaHex?: boolean | undefined;
     rgb?: boolean | undefined;
@@ -25,4 +31,5 @@ type Options = {
     name?: boolean | undefined;
     transparent?: boolean | undefined;
 };
-declare var postcss: true;
+type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'env'>;
+import browserslist = require("browserslist");

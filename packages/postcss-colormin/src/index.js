@@ -100,13 +100,18 @@ function addPluginDefaults(options, browsers) {
 }
 
 /**
- * @typedef {object} Options
+ * @typedef {object} MinifyColorOptions
  * @property {boolean} [hex]
  * @property {boolean} [alphaHex]
  * @property {boolean} [rgb]
  * @property {boolean} [hsl]
  * @property {boolean} [name]
  * @property {boolean} [transparent]
+ */
+
+/**
+ * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {MinifyColorOptions & BrowserslistOptions} Options
  */
 
 /**
@@ -118,8 +123,10 @@ function pluginCreator(config = {}) {
   return {
     postcssPlugin: 'postcss-colormin',
 
+    /**
+     * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
+     */
     prepare(result) {
-      /** @type {typeof result.opts & browserslist.Options} */
       const resultOptions = result.opts || {};
       const browsers = browserslist(null, {
         stats: resultOptions.stats,

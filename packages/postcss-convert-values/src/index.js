@@ -196,7 +196,9 @@ function transform(opts, browsers, decl) {
 const plugin = 'postcss-convert-values';
 
 /**
- * @typedef {{precision?: false | number, angle?: boolean, time?: boolean, length?: boolean} & browserslist.Options} Options
+ * @typedef {Parameters<typeof convert>[2]} ConvertOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {{precision?: false | number} & ConvertOptions & BrowserslistOptions} Options
  */
 
 /**

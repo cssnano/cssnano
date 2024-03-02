@@ -1,11 +1,18 @@
 export = pluginCreator;
 /**
- * @type {import('postcss').PluginCreator<browserslist.Options>}
- * @param {browserslist.Options} options
+ * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {BrowserslistOptions} Options
+ */
+/**
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} options
  * @return {import('postcss').Plugin}
  */
-declare function pluginCreator(options?: browserslist.Options): import('postcss').Plugin;
+declare function pluginCreator(options?: Options): import('postcss').Plugin;
 declare namespace pluginCreator {
-    let postcss: true;
+    export { postcss, BrowserslistOptions, Options };
 }
+type Options = BrowserslistOptions;
+declare var postcss: true;
+type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'env'>;
 import browserslist = require("browserslist");
