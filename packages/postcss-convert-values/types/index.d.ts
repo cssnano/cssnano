@@ -1,6 +1,7 @@
 export = pluginCreator;
 /**
- * @typedef {{precision: boolean | number, angle?: boolean, time?: boolean, length?: boolean} & browserslist.Options} Options */
+ * @typedef {{precision?: false | number, angle?: boolean, time?: boolean, length?: boolean} & browserslist.Options} Options
+ */
 /**
  * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
@@ -11,7 +12,7 @@ declare namespace pluginCreator {
     export { postcss, Options };
 }
 type Options = {
-    precision: boolean | number;
+    precision?: false | number;
     angle?: boolean;
     time?: boolean;
     length?: boolean;
