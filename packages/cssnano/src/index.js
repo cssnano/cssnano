@@ -42,8 +42,8 @@ function resolvePreset(preset) {
   }
 
   // For JS setups where we invoked the preset already
-  if (preset.plugins) {
-    return preset.plugins;
+  if (fn.plugins) {
+    return fn.plugins;
   }
 
   // Provide an alias for the default preset, as it is built-in.
