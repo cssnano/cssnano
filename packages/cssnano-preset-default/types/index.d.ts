@@ -12,6 +12,10 @@ declare namespace defaultPreset {
     export { SimpleOptions, Options };
 }
 type Options = {
+    cssDeclarationSorter?: SimpleOptions<{
+        order?: ("alphabetical" | "concentric-css" | "smacss") | ((propertyNameA: string, propertyNameB: string) => 0 | 1 | -1) | undefined;
+        keepOverrides?: boolean | undefined;
+    } | undefined> | undefined;
     discardComments?: SimpleOptions<postcssDiscardComments.Options> | undefined;
     reduceInitial?: SimpleOptions<void> | undefined;
     minifyGradients?: SimpleOptions<void> | undefined;
