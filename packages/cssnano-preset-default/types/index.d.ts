@@ -23,7 +23,7 @@ type Options = {
     reduceTransforms?: SimpleOptions<void> | undefined;
     convertValues?: SimpleOptions<postcssConvertValues.Options> | undefined;
     calc?: SimpleOptions<postcssCalc.PostCssCalcOptions> | undefined;
-    colormin?: SimpleOptions<Record<string, any>> | undefined;
+    colormin?: SimpleOptions<postcssColormin.Options> | undefined;
     orderedValues?: SimpleOptions<void> | undefined;
     minifySelectors?: SimpleOptions<void> | undefined;
     minifyParams?: SimpleOptions<void> | undefined;
@@ -52,6 +52,7 @@ import postcssDiscardComments = require("postcss-discard-comments");
 import postcssSvgo = require("postcss-svgo");
 import postcssConvertValues = require("postcss-convert-values");
 import postcssCalc = require("postcss-calc");
+import postcssColormin = require("postcss-colormin");
 import postcssNormalizeCharset = require("postcss-normalize-charset");
 import postcssMinifyFontValues = require("postcss-minify-font-values");
 import postcssNormalizeString = require("postcss-normalize-string");

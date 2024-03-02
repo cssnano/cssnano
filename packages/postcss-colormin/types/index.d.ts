@@ -1,10 +1,28 @@
 export = pluginCreator;
 /**
- * @type {import('postcss').PluginCreator<Record<string, boolean>>}
- * @param {Record<string, boolean>} config
+ * @typedef {object} Options
+ * @property {boolean} [hex]
+ * @property {boolean} [alphaHex]
+ * @property {boolean} [rgb]
+ * @property {boolean} [hsl]
+ * @property {boolean} [name]
+ * @property {boolean} [transparent]
+ */
+/**
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} config
  * @return {import('postcss').Plugin}
  */
-declare function pluginCreator(config?: Record<string, boolean>): import('postcss').Plugin;
+declare function pluginCreator(config?: Options): import('postcss').Plugin;
 declare namespace pluginCreator {
-    let postcss: true;
+    export { postcss, Options };
 }
+type Options = {
+    hex?: boolean | undefined;
+    alphaHex?: boolean | undefined;
+    rgb?: boolean | undefined;
+    hsl?: boolean | undefined;
+    name?: boolean | undefined;
+    transparent?: boolean | undefined;
+};
+declare var postcss: true;

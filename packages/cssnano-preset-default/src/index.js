@@ -58,7 +58,7 @@ const { rawCache } = require('cssnano-utils');
  * @property {SimpleOptions} [reduceTransforms]
  * @property {SimpleOptions<import('postcss-convert-values').Options>} [convertValues]
  * @property {SimpleOptions<import('postcss-calc').PostCssCalcOptions>} [calc]
- * @property {SimpleOptions<Record<string, any>>} [colormin]
+ * @property {SimpleOptions<import('postcss-colormin').Options>} [colormin]
  * @property {SimpleOptions} [orderedValues]
  * @property {SimpleOptions} [minifySelectors]
  * @property {SimpleOptions} [minifyParams]

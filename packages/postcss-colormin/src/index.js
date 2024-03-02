@@ -41,7 +41,7 @@ function isMathFunctionNode(node) {
 
 /**
  * @param {string} value
- * @param {Record<string, boolean>} options
+ * @param {Options} options
  * @return {string}
  */
 function transform(value, options) {
@@ -83,9 +83,9 @@ function transform(value, options) {
 }
 
 /**
- * @param {Record<string, boolean>} options
+ * @param {Options} options
  * @param {string[]} browsers
- * @return {Record<string, boolean>}
+ * @return {Options}
  */
 function addPluginDefaults(options, browsers) {
   const defaults = {
@@ -98,9 +98,20 @@ function addPluginDefaults(options, browsers) {
   };
   return { ...defaults, ...options };
 }
+
 /**
- * @type {import('postcss').PluginCreator<Record<string, boolean>>}
- * @param {Record<string, boolean>} config
+ * @typedef {object} Options
+ * @property {boolean} [hex]
+ * @property {boolean} [alphaHex]
+ * @property {boolean} [rgb]
+ * @property {boolean} [hsl]
+ * @property {boolean} [name]
+ * @property {boolean} [transparent]
+ */
+
+/**
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} config
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(config = {}) {
