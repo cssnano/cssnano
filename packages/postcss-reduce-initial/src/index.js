@@ -3,11 +3,12 @@ const browserslist = require('browserslist');
 const { isSupported } = require('caniuse-api');
 const fromInitial = require('./data/fromInitial.json');
 const toInitial = require('./data/toInitial.json');
+const ignoreProps = require('./lib/ignoreProps.js');
 
 const initial = 'initial';
 
 // In most of the browser including chrome the initial for `writing-mode` is not `horizontal-tb`. Ref https://github.com/cssnano/cssnano/pull/905
-const defaultIgnoreProps = ['writing-mode', 'transform-box'];
+const defaultIgnoreProps = ignoreProps;
 
 /**
  * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
