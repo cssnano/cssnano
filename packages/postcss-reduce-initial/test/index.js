@@ -15,13 +15,13 @@ function convertInitial(property, value) {
   return processCSS(`${property}:initial`, `${property}:${value}`);
 }
 
-function convertToInitial(t, property, value) {
+function convertToInitial(property, value) {
   return () =>
     Promise.all([
-      processCSS(t, `${property}:${value}`, `${property}:initial`, {
+      processCSS(`${property}:${value}`, `${property}:initial`, {
         env: 'chrome58',
       }),
-      passthroughCSS(t, `${property}:${value}`, { env: 'ie6' }),
+      passthroughCSS(`${property}:${value}`, { env: 'ie6' }),
     ]);
 }
 
