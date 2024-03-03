@@ -20,8 +20,8 @@ function convertToInitial(property, value) {
     Promise.all([
       processCSS(`${property}:${value}`, `${property}:initial`, {
         env: 'chrome58',
-      }),
-      passthroughCSS(`${property}:${value}`, { env: 'ie6' }),
+      })(),
+      passthroughCSS(`${property}:${value}`, { env: 'ie6' })(),
     ]);
 }
 
