@@ -1,4 +1,5 @@
 'use strict';
+const { join } = require('path');
 const { test } = require('uvu');
 const {
   usePostCSSPlugin,
@@ -103,6 +104,22 @@ test(
 test(
   'should upcase the "u" prefix (Edge 15)',
   processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), { env: 'edge15' })
+);
+
+test(
+  'should upcase the "u" prefix based on Browserslist config [legacy] env',
+  processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
+    from: join(__dirname, 'browserslist/example.css'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should downcase the "u" prefix based on Browserslist config [modern] env',
+  processCSS(fixture('U+2002-2ff2'), fixture('u+2002-2ff2'), {
+    from: join(__dirname, 'browserslist/example.css'),
+    env: 'modern',
+  })
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

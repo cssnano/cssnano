@@ -1,4 +1,5 @@
 'use strict';
+const { join } = require('path');
 const { test } = require('uvu');
 const {
   usePostCSSPlugin,
@@ -67,6 +68,22 @@ test(
   'should not normalise "all" in @media queries',
   processCSS('@media all{h1{color:blue}}', '@media all{h1{color:blue}}', {
     env: 'ie11',
+  })
+);
+
+test(
+  'should not normalise "all" in @media queries based on Browserslist config [legacy] env',
+  passthroughCSS('@media all{h1{color:blue}}', {
+    from: join(__dirname, 'browserslist/example.css'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should normalise "all" in @media queries based on Browserslist config [modern] env',
+  processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
+    from: join(__dirname, 'browserslist/example.css'),
+    env: 'modern',
   })
 );
 

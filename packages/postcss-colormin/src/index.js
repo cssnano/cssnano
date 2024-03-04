@@ -127,11 +127,11 @@ function pluginCreator(config = {}) {
      * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
      */
     prepare(result) {
-      const resultOptions = result.opts || {};
+      const { stats, env } = result.opts || {};
       const browsers = browserslist(null, {
-        stats: resultOptions.stats,
+        stats: config.stats || stats,
         path: __dirname,
-        env: resultOptions.env,
+        env: config.env || env,
       });
 
       const cache = new Map();

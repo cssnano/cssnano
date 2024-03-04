@@ -145,11 +145,16 @@ const allBugBrowers = new Set(['ie 10', 'ie 11']);
 function pluginCreator(options = {}) {
   return {
     postcssPlugin: 'postcss-minify-params',
-    prepare() {
+
+    /**
+     * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
+     */
+    prepare(result) {
+      const { stats, env } = result.opts || {};
       const browsers = browserslist(null, {
-        stats: options.stats,
+        stats: options.stats || stats,
         path: __dirname,
-        env: options.env,
+        env: options.env || env,
       });
 
       const hasAllBug = browsers.some((browser) => allBugBrowers.has(browser));

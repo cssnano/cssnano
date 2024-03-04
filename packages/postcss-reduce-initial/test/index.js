@@ -1,4 +1,5 @@
 'use strict';
+const { join } = require('path');
 const { test } = require('uvu');
 const {
   usePostCSSPlugin,
@@ -24,7 +25,20 @@ function convertToInitial(property, value) {
       processCSS(`${property}:${value}`, `${property}:${output}`, {
         env: 'chrome58',
       })(),
-      passthroughCSS(`${property}:${value}`, { env: 'ie6' })(),
+
+      passthroughCSS(`${property}:${value}`, {
+        env: 'ie6',
+      })(),
+
+      processCSS(`${property}:${value}`, `${property}:${output}`, {
+        from: join(__dirname, 'browserslist/example.css'),
+        env: 'modern',
+      })(),
+
+      passthroughCSS(`${property}:${value}`, {
+        from: join(__dirname, 'browserslist/example.css'),
+        env: 'legacy',
+      })(),
     ]);
 }
 

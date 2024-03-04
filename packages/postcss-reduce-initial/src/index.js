@@ -28,11 +28,11 @@ function pluginCreator(options = {}) {
      * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
      */
     prepare(result) {
-      const resultOpts = result.opts || {};
+      const { stats, env } = result.opts || {};
       const browsers = browserslist(null, {
-        stats: resultOpts.stats,
+        stats: options.stats || stats,
         path: __dirname,
-        env: resultOpts.env,
+        env: options.env || env,
       });
 
       const initialSupport = isSupported('css-initial-value', browsers);

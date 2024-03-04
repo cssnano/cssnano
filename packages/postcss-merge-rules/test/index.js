@@ -1,4 +1,5 @@
 'use strict';
+const { join } = require('path');
 const { test } = require('uvu');
 const assert = require('uvu/assert');
 const postcss = require('postcss');
@@ -554,6 +555,26 @@ test(
     '::placeholder{color:blue}h1{color:blue}',
     '::placeholder,h1{color:blue}',
     { env: 'chrome58' }
+  )
+);
+
+test(
+  'should not merge ::placeholder selectors based on Browserslist config [legacy] env',
+  passthroughCSS('::placeholder{color:blue}h1{color:blue}', {
+    from: join(__dirname, 'browserslist/example.css'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should merge ::placeholder selectors based on Browserslist config [modern] env',
+  processCSS(
+    '::placeholder{color:blue}h1{color:blue}',
+    '::placeholder,h1{color:blue}',
+    {
+      from: join(__dirname, 'browserslist/example.css'),
+      env: 'modern',
+    }
   )
 );
 

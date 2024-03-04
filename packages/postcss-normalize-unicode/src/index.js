@@ -90,13 +90,15 @@ function transform(value, isLegacy = false) {
 
 /**
  * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {BrowserslistOptions} Options
  */
 
 /**
- * @type {import('postcss').PluginCreator<void>}
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
-function pluginCreator() {
+function pluginCreator(opts = {}) {
   return {
     postcssPlugin: 'postcss-normalize-unicode',
 
@@ -104,13 +106,14 @@ function pluginCreator() {
      * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
      */
     prepare(result) {
-      const cache = new Map();
-      const resultOpts = result.opts || {};
+      const { stats, env } = result.opts || {};
       const browsers = browserslist(null, {
-        stats: resultOpts.stats,
+        stats: opts.stats || stats,
         path: __dirname,
-        env: resultOpts.env,
+        env: opts.env || env,
       });
+
+      const cache = new Map();
       const isLegacy = browsers.some(hasLowerCaseUPrefixBug);
 
       return {

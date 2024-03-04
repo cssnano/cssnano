@@ -20,11 +20,11 @@ function pluginCreator(opts = {}) {
      * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
      */
     prepare(result) {
-      const resultOpts = result.opts || {};
+      const { stats, env } = result.opts || {};
       const browsers = browserslist(null, {
-        stats: resultOpts.stats,
+        stats: opts.stats || stats,
         path: __dirname,
-        env: resultOpts.env,
+        env: opts.env || env,
       });
 
       return {

@@ -1,4 +1,5 @@
 'use strict';
+const { join } = require('path');
 const { test } = require('uvu');
 const {
   usePostCSSPlugin,
@@ -243,6 +244,22 @@ test(
   'should convert long color to 4-digit hex when supported',
   processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
     env: 'chrome62',
+  })
+);
+
+test(
+  'should convert long color based on Browserslist config [legacy] env',
+  processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:rgba(255,0,0,.4)}', {
+    from: join(__dirname, 'browserslist/example.css'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should convert long color based on Browserslist config [modern] env',
+  processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
+    from: join(__dirname, 'browserslist/example.css'),
+    env: 'modern',
   })
 );
 

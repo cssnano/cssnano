@@ -1,0 +1,7 @@
+defaults
+
+[legacy]
+IE <=11
+
+[modern]
+Edge >=12
