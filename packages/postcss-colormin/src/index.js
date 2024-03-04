@@ -125,13 +125,13 @@ function pluginCreator(config = {}) {
     postcssPlugin: 'postcss-colormin',
 
     /**
-     * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
+     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
      */
     prepare(result) {
-      const { stats, env, from } = result.opts || {};
+      const { stats, env, from, file } = result.opts || {};
       const browsers = browserslist(null, {
         stats: config.stats || stats,
-        path: config.path || dirname(from || __filename),
+        path: config.path || dirname(from || file || __filename),
         env: config.env || env,
       });
 

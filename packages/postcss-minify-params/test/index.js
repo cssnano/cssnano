@@ -80,6 +80,14 @@ test(
 );
 
 test(
+  'should not normalise "all" in @media queries based on Browserslist config [legacy] env using webpack file path',
+  passthroughCSS('@media all{h1{color:blue}}', {
+    file: join(__dirname, 'browserslist/example.css'),
+    env: 'legacy',
+  })
+);
+
+test(
   'should not normalise "all" in @media queries based on Browserslist config [legacy] env using custom path',
   passthroughCSS('@media all{h1{color:blue}}', {
     path: join(__dirname, 'browserslist'),
@@ -91,6 +99,14 @@ test(
   'should normalise "all" in @media queries based on Browserslist config [modern] env',
   processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
     from: join(__dirname, 'browserslist/example.css'),
+    env: 'modern',
+  })
+);
+
+test(
+  'should normalise "all" in @media queries based on Browserslist config [modern] env using webpack file path',
+  processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
+    file: join(__dirname, 'browserslist/example.css'),
     env: 'modern',
   })
 );

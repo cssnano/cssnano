@@ -213,13 +213,13 @@ function pluginCreator(opts = { precision: false }) {
     postcssPlugin: plugin,
 
     /**
-     * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
+     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
      */
     prepare(result) {
-      const { stats, env, from } = result.opts || {};
+      const { stats, env, from, file } = result.opts || {};
       const browsers = browserslist(null, {
         stats: opts.stats || stats,
-        path: opts.path || dirname(from || __filename),
+        path: opts.path || dirname(from || file || __filename),
         env: opts.env || env,
       });
 

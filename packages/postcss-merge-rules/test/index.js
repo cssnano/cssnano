@@ -567,6 +567,14 @@ test(
 );
 
 test(
+  'should not merge ::placeholder selectors based on Browserslist config [legacy] env using webpack file path',
+  passthroughCSS('::placeholder{color:blue}h1{color:blue}', {
+    file: join(__dirname, 'browserslist/example.css'),
+    env: 'legacy',
+  })
+);
+
+test(
   'should not merge ::placeholder selectors based on Browserslist config [legacy] env using custom path',
   passthroughCSS('::placeholder{color:blue}h1{color:blue}', {
     path: join(__dirname, 'browserslist'),
@@ -581,6 +589,18 @@ test(
     '::placeholder,h1{color:blue}',
     {
       from: join(__dirname, 'browserslist/example.css'),
+      env: 'modern',
+    }
+  )
+);
+
+test(
+  'should merge ::placeholder selectors based on Browserslist config [modern] env using webpack file path',
+  processCSS(
+    '::placeholder{color:blue}h1{color:blue}',
+    '::placeholder,h1{color:blue}',
+    {
+      file: join(__dirname, 'browserslist/example.css'),
       env: 'modern',
     }
   )
