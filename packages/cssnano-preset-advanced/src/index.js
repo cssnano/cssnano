@@ -49,8 +49,8 @@ function configurePlugins(plugins, opts = {}) {
       ...sharedProps,
       add: false,
 
-      // Skip Browserslist "my stats" string for Autoprefixer
-      // https://github.com/browserslist/browserslist/blob/main/CHANGELOG.md#32
+      // Skip unsupported Browserslist "my stats" strings etc
+      // https://github.com/browserslist/browserslist/pull/237
       stats:
         typeof sharedProps.stats !== 'string'
           ? sharedProps.stats // Autoprefixer supports stats object only
