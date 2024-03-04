@@ -30,3 +30,4 @@ type Reducer = {
     collect: (node: import('postcss').AnyNode, encoder: (value: string, num: number) => string) => void;
     transform: () => void;
 };
+//# sourceMappingURL=index.d.ts.map

@@ -4,3 +4,4 @@ export = vendorUnprefixed;
  * @return {string}
  */
 declare function vendorUnprefixed(prop: string): string;
+//# sourceMappingURL=vendorUnprefixed.d.ts.map

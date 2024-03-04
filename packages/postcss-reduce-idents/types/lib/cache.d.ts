@@ -3,3 +3,4 @@ declare function _exports(value: string, encoder: (value: string, num: number) =
     count: number;
 }>): void;
 export = _exports;
+//# sourceMappingURL=cache.d.ts.map

@@ -9,3 +9,4 @@ declare class TrailingSlashComma extends BasePlugin {
     detect(rule: import('postcss').Rule): void;
 }
 import BasePlugin = require("../plugin");
+//# sourceMappingURL=trailingSlashComma.d.ts.map

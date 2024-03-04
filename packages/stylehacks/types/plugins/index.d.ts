@@ -6,3 +6,4 @@ declare const _exports: ({
 export = _exports;
 import important = require("./important");
 import trailingSlashComma = require("./trailingSlashComma");
+//# sourceMappingURL=index.d.ts.map

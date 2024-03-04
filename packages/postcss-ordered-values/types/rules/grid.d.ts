@@ -13,3 +13,4 @@ export function normalizeGridColumnRowGap(gridGap: import('postcss-value-parser'
  * @return {string | string[]}
  */
 export function normalizeGridColumnRow(grid: import('postcss-value-parser').ParsedValue): string | string[];
+//# sourceMappingURL=grid.d.ts.map

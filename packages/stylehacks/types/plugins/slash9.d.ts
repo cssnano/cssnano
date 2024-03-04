@@ -9,3 +9,4 @@ declare class Slash9 extends BasePlugin {
     detect(decl: import('postcss').Declaration): void;
 }
 import BasePlugin = require("../plugin.js");
+//# sourceMappingURL=slash9.d.ts.map

@@ -18,3 +18,4 @@ export function isColor(value: string): boolean;
  * @return {boolean}
  */
 export function isValidWsc(wscs: [string, string, string]): boolean;
+//# sourceMappingURL=validateWsc.d.ts.map

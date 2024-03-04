@@ -14,3 +14,4 @@ type Options = {
     configFile?: string;
 };
 declare var postcss: true;
+//# sourceMappingURL=index.d.ts.map

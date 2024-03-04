@@ -12,3 +12,4 @@ declare class CommentRemover {
     canRemove(comment: string): boolean | undefined;
     _hasFirst: boolean | undefined;
 }
+//# sourceMappingURL=commentRemover.d.ts.map

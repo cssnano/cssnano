@@ -9,3 +9,4 @@ declare class MediaSlash9 extends BasePlugin {
     detect(rule: import('postcss').AtRule): void;
 }
 import BasePlugin = require("../plugin");
+//# sourceMappingURL=mediaSlash9.d.ts.map

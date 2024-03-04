@@ -3,3 +3,4 @@ declare const _exports: {
     merge: (rule: import("postcss/lib/rule.js").default) => void;
 };
 export = _exports;
+//# sourceMappingURL=margin.d.ts.map

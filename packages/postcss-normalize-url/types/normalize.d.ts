@@ -4,3 +4,4 @@ export = normalizeUrl;
  * @return {string}
  */
 declare function normalizeUrl(urlString: string): string;
+//# sourceMappingURL=normalize.d.ts.map
