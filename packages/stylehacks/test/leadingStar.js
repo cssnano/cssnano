@@ -2,7 +2,7 @@
 const { test } = require('uvu');
 const processCSS = require('./_processCSS');
 
-const opts = { target: 'ie7', unaffected: 'ie8' };
+const opts = { target: 'IE 7', unaffected: 'IE 8' };
 
 function testStarHack(character) {
   return processCSS(`h1 { ${character}color: red }`, `h1 { }`, opts);

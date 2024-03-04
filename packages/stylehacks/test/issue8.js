@@ -16,7 +16,7 @@ insertZoom.postcss = true;
 
 test('should remove star hack from plugins like lost', () => {
   return postcss([insertZoom(), stylehacks()])
-    .process('h1{}', { env: 'ie8', from: undefined })
+    .process('h1{}', { overrideBrowserslist: 'IE 8', from: undefined })
     .then((result) => assert.is(result.css, 'h1{}'));
 });
 test.run();

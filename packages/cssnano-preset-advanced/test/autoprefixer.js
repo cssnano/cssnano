@@ -17,7 +17,9 @@ test(
 
 const { passthroughCSS } = processCSSWithPresetFactory(
   preset({
-    autoprefixer: { env: 'safari5' },
+    autoprefixer: {
+      overrideBrowserslist: 'Safari < 5',
+    },
   })
 );
 
