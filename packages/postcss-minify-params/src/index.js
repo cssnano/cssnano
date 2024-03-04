@@ -1,4 +1,5 @@
 'use strict';
+const { dirname } = require('path');
 const browserslist = require('browserslist');
 const valueParser = require('postcss-value-parser');
 const { getArguments } = require('cssnano-utils');
@@ -133,7 +134,7 @@ function transform(legacy, rule) {
 const allBugBrowers = new Set(['ie 10', 'ie 11']);
 
 /**
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {BrowserslistOptions} Options
  */
 
@@ -150,10 +151,10 @@ function pluginCreator(options = {}) {
      * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
      */
     prepare(result) {
-      const { stats, env } = result.opts || {};
+      const { stats, env, from } = result.opts || {};
       const browsers = browserslist(null, {
         stats: options.stats || stats,
-        path: __dirname,
+        path: options.path || dirname(from || __filename),
         env: options.env || env,
       });
 

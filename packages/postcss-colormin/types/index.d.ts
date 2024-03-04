@@ -9,7 +9,7 @@ export = pluginCreator;
  * @property {boolean} [transparent]
  */
 /**
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {MinifyColorOptions & BrowserslistOptions} Options
  */
 /**
@@ -31,5 +31,5 @@ type MinifyColorOptions = {
     name?: boolean | undefined;
     transparent?: boolean | undefined;
 };
-type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'env'>;
+type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
 import browserslist = require("browserslist");

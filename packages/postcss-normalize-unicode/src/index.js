@@ -1,4 +1,5 @@
 'use strict';
+const { dirname } = require('path');
 const browserslist = require('browserslist');
 const valueParser = require('postcss-value-parser');
 
@@ -89,7 +90,7 @@ function transform(value, isLegacy = false) {
 }
 
 /**
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {BrowserslistOptions} Options
  */
 
@@ -106,10 +107,10 @@ function pluginCreator(opts = {}) {
      * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
      */
     prepare(result) {
-      const { stats, env } = result.opts || {};
+      const { stats, env, from } = result.opts || {};
       const browsers = browserslist(null, {
         stats: opts.stats || stats,
-        path: __dirname,
+        path: opts.path || dirname(from || __filename),
         env: opts.env || env,
       });
 

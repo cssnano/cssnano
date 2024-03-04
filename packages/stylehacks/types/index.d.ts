@@ -1,6 +1,6 @@
 export = pluginCreator;
 /**
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {{lint?: boolean} & BrowserslistOptions} Options
  */
 /**
@@ -17,5 +17,5 @@ type Options = {
 } & BrowserslistOptions;
 declare function detect(node: import('postcss').Node): boolean;
 declare var postcss: true;
-type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'env'>;
+type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
 import browserslist = require("browserslist");

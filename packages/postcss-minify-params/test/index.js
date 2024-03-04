@@ -80,9 +80,25 @@ test(
 );
 
 test(
+  'should not normalise "all" in @media queries based on Browserslist config [legacy] env using custom path',
+  passthroughCSS('@media all{h1{color:blue}}', {
+    path: join(__dirname, 'browserslist'),
+    env: 'legacy',
+  })
+);
+
+test(
   'should normalise "all" in @media queries based on Browserslist config [modern] env',
   processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
     from: join(__dirname, 'browserslist/example.css'),
+    env: 'modern',
+  })
+);
+
+test(
+  'should normalise "all" in @media queries based on Browserslist config [modern] env using custom path',
+  processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
+    path: join(__dirname, 'browserslist'),
     env: 'modern',
   })
 );

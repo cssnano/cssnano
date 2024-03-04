@@ -1,4 +1,5 @@
 'use strict';
+const { dirname } = require('path');
 const browserslist = require('browserslist');
 const { isSupported } = require('caniuse-api');
 const fromInitial = require('./data/fromInitial.json');
@@ -11,7 +12,7 @@ const initial = 'initial';
 const defaultIgnoreProps = ignoreProps;
 
 /**
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {{ignore?: string[]} & BrowserslistOptions} Options
  */
 
@@ -28,10 +29,10 @@ function pluginCreator(options = {}) {
      * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
      */
     prepare(result) {
-      const { stats, env } = result.opts || {};
+      const { stats, env, from } = result.opts || {};
       const browsers = browserslist(null, {
         stats: options.stats || stats,
-        path: __dirname,
+        path: options.path || dirname(from || __filename),
         env: options.env || env,
       });
 

@@ -1,7 +1,7 @@
 export = pluginCreator;
 /**
  * @typedef {Parameters<typeof convert>[2]} ConvertOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {{precision?: false | number} & ConvertOptions & BrowserslistOptions} Options
  */
 /**
@@ -19,14 +19,8 @@ type Options = {
 declare var postcss: true;
 type ConvertOptions = [number: number, unit: string, {
     time?: boolean | undefined;
-    /**
-     * @param {valueParser.Node} node
-     * @param {Options} opts
-     * @param {boolean} keepZeroUnit
-     * @return {void}
-     */
     length?: boolean | undefined;
     angle?: boolean | undefined;
 }][2];
-type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'env'>;
+type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
 import browserslist = require("browserslist");

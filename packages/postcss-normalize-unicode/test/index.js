@@ -115,9 +115,25 @@ test(
 );
 
 test(
+  'should upcase the "u" prefix based on Browserslist config [legacy] env using custom path',
+  processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
+    path: join(__dirname, 'browserslist'),
+    env: 'legacy',
+  })
+);
+
+test(
   'should downcase the "u" prefix based on Browserslist config [modern] env',
   processCSS(fixture('U+2002-2ff2'), fixture('u+2002-2ff2'), {
     from: join(__dirname, 'browserslist/example.css'),
+    env: 'modern',
+  })
+);
+
+test(
+  'should downcase the "u" prefix based on Browserslist config [modern] env using custom path',
+  processCSS(fixture('U+2002-2ff2'), fixture('u+2002-2ff2'), {
+    path: join(__dirname, 'browserslist'),
     env: 'modern',
   })
 );

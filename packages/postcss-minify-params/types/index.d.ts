@@ -1,6 +1,6 @@
 export = pluginCreator;
 /**
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {BrowserslistOptions} Options
  */
 /**
@@ -14,5 +14,5 @@ declare namespace pluginCreator {
 }
 type Options = BrowserslistOptions;
 declare var postcss: true;
-type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'env'>;
+type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
 import browserslist = require("browserslist");

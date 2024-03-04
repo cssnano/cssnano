@@ -35,8 +35,18 @@ function convertToInitial(property, value) {
         env: 'modern',
       })(),
 
+      processCSS(`${property}:${value}`, `${property}:${output}`, {
+        path: join(__dirname, 'browserslist'),
+        env: 'modern',
+      })(),
+
       passthroughCSS(`${property}:${value}`, {
         from: join(__dirname, 'browserslist/example.css'),
+        env: 'legacy',
+      })(),
+
+      passthroughCSS(`${property}:${value}`, {
+        path: join(__dirname, 'browserslist'),
         env: 'legacy',
       })(),
     ]);

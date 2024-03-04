@@ -1,4 +1,5 @@
 'use strict';
+const { dirname } = require('path');
 const valueParser = require('postcss-value-parser');
 const browserslist = require('browserslist');
 const convert = require('./lib/convert.js');
@@ -114,6 +115,7 @@ function clampOpacity(node) {
 function shouldKeepZeroUnit(decl, browsers) {
   const { parent } = decl;
   const lowerCasedProp = decl.prop.toLowerCase();
+
   return (
     (decl.value.includes('%') &&
       keepZeroPercent.has(lowerCasedProp) &&
@@ -197,7 +199,7 @@ const plugin = 'postcss-convert-values';
 
 /**
  * @typedef {Parameters<typeof convert>[2]} ConvertOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {{precision?: false | number} & ConvertOptions & BrowserslistOptions} Options
  */
 
@@ -214,10 +216,10 @@ function pluginCreator(opts = { precision: false }) {
      * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
      */
     prepare(result) {
-      const { stats, env } = result.opts || {};
+      const { stats, env, from } = result.opts || {};
       const browsers = browserslist(null, {
         stats: opts.stats || stats,
-        path: __dirname,
+        path: opts.path || dirname(from || __filename),
         env: opts.env || env,
       });
 

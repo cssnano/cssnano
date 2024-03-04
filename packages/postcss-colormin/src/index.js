@@ -1,4 +1,5 @@
 'use strict';
+const { dirname } = require('path');
 const browserslist = require('browserslist');
 const { isSupported } = require('caniuse-api');
 const valueParser = require('postcss-value-parser');
@@ -110,7 +111,7 @@ function addPluginDefaults(options, browsers) {
  */
 
 /**
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {MinifyColorOptions & BrowserslistOptions} Options
  */
 
@@ -127,10 +128,10 @@ function pluginCreator(config = {}) {
      * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
      */
     prepare(result) {
-      const { stats, env } = result.opts || {};
+      const { stats, env, from } = result.opts || {};
       const browsers = browserslist(null, {
         stats: config.stats || stats,
-        path: __dirname,
+        path: config.path || dirname(from || __filename),
         env: config.env || env,
       });
 

@@ -256,9 +256,25 @@ test(
 );
 
 test(
+  'should convert long color based on Browserslist config [legacy] env using custom path',
+  processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:rgba(255,0,0,.4)}', {
+    path: join(__dirname, 'browserslist'),
+    env: 'legacy',
+  })
+);
+
+test(
   'should convert long color based on Browserslist config [modern] env',
   processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
     from: join(__dirname, 'browserslist/example.css'),
+    env: 'modern',
+  })
+);
+
+test(
+  'should convert long color based on Browserslist config [modern] env using custom path',
+  processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
+    path: join(__dirname, 'browserslist'),
     env: 'modern',
   })
 );
