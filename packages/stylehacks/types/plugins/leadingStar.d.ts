@@ -9,3 +9,4 @@ declare class LeadingStar extends BasePlugin {
     detect(node: import('postcss').Declaration | import('postcss').AtRule): void;
 }
 import BasePlugin = require("../plugin");
+//# sourceMappingURL=leadingStar.d.ts.map

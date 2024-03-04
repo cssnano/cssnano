@@ -37,3 +37,4 @@ type AutoprefixerOptions = {
 };
 type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
 import browserslist = require("browserslist");
+//# sourceMappingURL=index.d.ts.map

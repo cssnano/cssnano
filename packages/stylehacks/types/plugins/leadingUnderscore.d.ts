@@ -9,3 +9,4 @@ declare class LeadingUnderscore extends BasePlugin {
     detect(decl: import('postcss').Declaration): void;
 }
 import BasePlugin = require("../plugin");
+//# sourceMappingURL=leadingUnderscore.d.ts.map

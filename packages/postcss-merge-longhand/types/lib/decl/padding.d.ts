@@ -3,3 +3,4 @@ declare const _exports: {
     merge: (rule: import("postcss/lib/rule").default) => void;
 };
 export = _exports;
+//# sourceMappingURL=padding.d.ts.map

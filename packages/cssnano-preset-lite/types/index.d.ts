@@ -21,3 +21,4 @@ type SimpleOptions<OptionsExtends extends void | object = void> = false | (Optio
     exclude?: true;
 });
 import postcssDiscardComments = require("postcss-discard-comments");
+//# sourceMappingURL=index.d.ts.map

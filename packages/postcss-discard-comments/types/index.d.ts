@@ -19,3 +19,4 @@ type Options = {
     remove?: ((s: string) => boolean) | undefined;
 };
 declare var postcss: true;
+//# sourceMappingURL=index.d.ts.map

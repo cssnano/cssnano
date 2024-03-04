@@ -14,3 +14,4 @@ type Options = {
 } & import('svgo').Config;
 declare var postcss: true;
 import { encode } from "./lib/url";
+//# sourceMappingURL=index.d.ts.map

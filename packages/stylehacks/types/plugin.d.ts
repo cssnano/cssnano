@@ -58,3 +58,4 @@ type Plugin = {
     detectAndResolve: (node: import('postcss').Node) => void;
     detectAndWarn: (node: import('postcss').Node) => void;
 };
+//# sourceMappingURL=plugin.d.ts.map

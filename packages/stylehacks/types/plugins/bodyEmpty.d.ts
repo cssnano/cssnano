@@ -15,3 +15,4 @@ declare class BodyEmpty extends BasePlugin {
 }
 import BasePlugin = require("../plugin");
 import parser = require("postcss-selector-parser");
+//# sourceMappingURL=bodyEmpty.d.ts.map

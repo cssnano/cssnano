@@ -36,3 +36,4 @@ type StringAst = {
     };
     quotes: boolean;
 };
+//# sourceMappingURL=index.d.ts.map

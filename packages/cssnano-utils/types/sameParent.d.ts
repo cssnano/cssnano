@@ -12,3 +12,4 @@ declare namespace sameParent {
 type Child = import('postcss').AnyNode & {
     parent?: Child;
 };
+//# sourceMappingURL=sameParent.d.ts.map

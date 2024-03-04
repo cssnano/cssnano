@@ -19,3 +19,4 @@ declare class LayerCache {
      */
     getValue(value: string): string;
 }
+//# sourceMappingURL=layerCache.d.ts.map

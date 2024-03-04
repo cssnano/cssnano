@@ -69,3 +69,4 @@ export const pseudoElements: {
  * @return {boolean}
  */
 export function ensureCompatibility(selectors: string[], browsers?: string[] | undefined, compatibilityCache?: Map<string, boolean> | undefined): boolean;
+//# sourceMappingURL=ensureCompatibility.d.ts.map

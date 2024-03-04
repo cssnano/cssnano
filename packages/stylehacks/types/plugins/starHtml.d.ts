@@ -15,3 +15,4 @@ declare class StarHtml extends BasePlugin {
 }
 import BasePlugin = require("../plugin");
 import parser = require("postcss-selector-parser");
+//# sourceMappingURL=starHtml.d.ts.map

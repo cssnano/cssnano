@@ -15,3 +15,4 @@ type Options = {
     add?: boolean;
 };
 declare var postcss: true;
+//# sourceMappingURL=index.d.ts.map

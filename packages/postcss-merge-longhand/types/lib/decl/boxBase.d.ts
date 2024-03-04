@@ -3,3 +3,4 @@ declare function _exports(prop: string): {
     merge: (rule: import('postcss').Rule) => void;
 };
 export = _exports;
+//# sourceMappingURL=boxBase.d.ts.map

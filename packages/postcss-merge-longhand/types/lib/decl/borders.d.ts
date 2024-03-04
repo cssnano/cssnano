@@ -8,3 +8,4 @@ export function explode(rule: import('postcss').Rule): void;
  * @return {void}
  */
 export function merge(rule: import('postcss').Rule): void;
+//# sourceMappingURL=borders.d.ts.map

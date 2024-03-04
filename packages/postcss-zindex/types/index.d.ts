@@ -13,3 +13,4 @@ type Options = {
     startIndex?: number;
 };
 declare var postcss: true;
+//# sourceMappingURL=index.d.ts.map

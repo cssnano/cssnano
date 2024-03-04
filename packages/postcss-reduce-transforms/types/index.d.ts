@@ -7,3 +7,4 @@ declare function pluginCreator(): import('postcss').Plugin;
 declare namespace pluginCreator {
     let postcss: true;
 }
+//# sourceMappingURL=index.d.ts.map

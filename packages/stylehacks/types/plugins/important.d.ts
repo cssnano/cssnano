@@ -9,3 +9,4 @@ declare class Important extends BasePlugin {
     detect(decl: import('postcss').Declaration): void;
 }
 import BasePlugin = require("../plugin");
+//# sourceMappingURL=important.d.ts.map

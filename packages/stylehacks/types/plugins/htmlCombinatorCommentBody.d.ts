@@ -14,3 +14,4 @@ declare class HtmlCombinatorCommentBody extends BasePlugin {
 }
 import BasePlugin = require("../plugin");
 import parser = require("postcss-selector-parser");
+//# sourceMappingURL=htmlCombinatorCommentBody.d.ts.map
