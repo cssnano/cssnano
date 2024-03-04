@@ -53,21 +53,21 @@ test.skip(
 test(
   'should normalise "all" in @media queries',
   processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
-    env: 'chrome58',
+    overrideBrowserslist: 'Chrome 58',
   })
 );
 
 test(
   'should normalise "all" in @media queries (uppercase)',
   processCSS('@MEDIA ALL{h1{color:blue}}', '@MEDIA{h1{color:blue}}', {
-    env: 'chrome58',
+    overrideBrowserslist: 'Chrome 58',
   })
 );
 
 test(
   'should not normalise "all" in @media queries',
   processCSS('@media all{h1{color:blue}}', '@media all{h1{color:blue}}', {
-    env: 'ie11',
+    overrideBrowserslist: 'IE 11',
   })
 );
 

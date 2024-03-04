@@ -12,8 +12,9 @@ const initial = 'initial';
 const defaultIgnoreProps = ignoreProps;
 
 /**
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
  * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {{ignore?: string[]} & BrowserslistOptions} Options
+ * @typedef {{ignore?: string[]} & AutoprefixerOptions & BrowserslistOptions} Options
  */
 
 /**
@@ -30,7 +31,7 @@ function pluginCreator(options = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(null, {
+      const browsers = browserslist(options.overrideBrowserslist, {
         stats: options.stats || stats,
         path: options.path || dirname(from || file || __filename),
         env: options.env || env,

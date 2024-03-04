@@ -111,8 +111,9 @@ function addPluginDefaults(options, browsers) {
  */
 
 /**
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
  * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {MinifyColorOptions & BrowserslistOptions} Options
+ * @typedef {MinifyColorOptions & AutoprefixerOptions & BrowserslistOptions} Options
  */
 
 /**
@@ -129,7 +130,7 @@ function pluginCreator(config = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(null, {
+      const browsers = browserslist(config.overrideBrowserslist, {
         stats: config.stats || stats,
         path: config.path || dirname(from || file || __filename),
         env: config.env || env,

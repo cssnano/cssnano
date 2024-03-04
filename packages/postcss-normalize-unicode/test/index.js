@@ -19,7 +19,7 @@ test(
   processCSS(
     fixture('u+2b00-2bff'), // Miscellaneous Symbols and Arrows
     fixture('u+2b??'),
-    { env: 'not ie' }
+    { overrideBrowserslist: ['defaults', 'not ie <=11'] }
   )
 );
 
@@ -28,46 +28,58 @@ test(
   processCSS(
     fixture('u+1e00-1eff'), // Latin Extended Additional
     fixture('u+1e??'),
-    { env: 'not ie' }
+    { overrideBrowserslist: ['defaults', 'not ie <=11'] }
   )
 );
 
 test(
   'should convert a unicode range to a wildcard range (3)',
-  processCSS(fixture('u+2120-212f'), fixture('u+212?'), { env: 'not ie' })
+  processCSS(fixture('u+2120-212f'), fixture('u+212?'), {
+    overrideBrowserslist: ['defaults', 'not ie <=11'],
+  })
 );
 
 test(
   'should convert a unicode range to a wildcard range (4)',
-  processCSS(fixture('u+2100-21ff'), fixture('u+21??'), { env: 'not ie' })
+  processCSS(fixture('u+2100-21ff'), fixture('u+21??'), {
+    overrideBrowserslist: ['defaults', 'not ie <=11'],
+  })
 );
 
 test(
   'should convert a unicode range to a wildcard range (5)',
-  processCSS(fixture('u+2000-2fff'), fixture('u+2???'), { env: 'not ie' })
+  processCSS(fixture('u+2000-2fff'), fixture('u+2???'), {
+    overrideBrowserslist: ['defaults', 'not ie <=11'],
+  })
 );
 
 test(
   'should pass through a unicode range that cannot be reduced',
   passthroughCSS(
     fixture('u+0-7f'), // Basic Latin
-    { env: 'not ie' }
+    { overrideBrowserslist: ['defaults', 'not ie <=11'] }
   )
 );
 
 test(
   'should pass through a unicode range that cannot be reduced (2)',
-  passthroughCSS(fixture('u+2125-2128'), { env: 'not ie' })
+  passthroughCSS(fixture('u+2125-2128'), {
+    overrideBrowserslist: ['defaults', 'not ie <=11'],
+  })
 );
 
 test(
   'should pass through a unicode range that cannot be reduced (3)',
-  passthroughCSS(fixture('u+2012-2f12'), { env: 'not ie' })
+  passthroughCSS(fixture('u+2012-2f12'), {
+    overrideBrowserslist: ['defaults', 'not ie <=11'],
+  })
 );
 
 test(
   'should pass through a unicode range that cannot be reduced (4)',
-  passthroughCSS(fixture('u+2002-2ff2'), { env: 'not ie' })
+  passthroughCSS(fixture('u+2002-2ff2'), {
+    overrideBrowserslist: ['defaults', 'not ie <=11'],
+  })
 );
 
 test(
@@ -92,18 +104,22 @@ test(
   processCSS(
     '@font-face{font-family:test;UNICODE-RANGE:U+07-F}*{font-family:test}',
     '@font-face{font-family:test;UNICODE-RANGE:u+07-f}*{font-family:test}',
-    { env: 'not ie' }
+    { overrideBrowserslist: ['defaults', 'not ie <=11'] }
   )
 );
 
 test(
   'should upcase the "u" prefix (IE)',
-  processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), { env: 'ie9' })
+  processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
+    overrideBrowserslist: 'IE 9',
+  })
 );
 
 test(
   'should upcase the "u" prefix (Edge 15)',
-  processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), { env: 'edge15' })
+  processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
+    overrideBrowserslist: 'Edge 15',
+  })
 );
 
 test(

@@ -9,8 +9,9 @@ export = pluginCreator;
  * @property {boolean} [transparent]
  */
 /**
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
  * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {MinifyColorOptions & BrowserslistOptions} Options
+ * @typedef {MinifyColorOptions & AutoprefixerOptions & BrowserslistOptions} Options
  */
 /**
  * @type {import('postcss').PluginCreator<Options>}
@@ -19,9 +20,9 @@ export = pluginCreator;
  */
 declare function pluginCreator(config?: Options): import('postcss').Plugin;
 declare namespace pluginCreator {
-    export { postcss, MinifyColorOptions, BrowserslistOptions, Options };
+    export { postcss, MinifyColorOptions, AutoprefixerOptions, BrowserslistOptions, Options };
 }
-type Options = MinifyColorOptions & BrowserslistOptions;
+type Options = MinifyColorOptions & AutoprefixerOptions & BrowserslistOptions;
 declare var postcss: true;
 type MinifyColorOptions = {
     hex?: boolean | undefined;
@@ -30,6 +31,9 @@ type MinifyColorOptions = {
     hsl?: boolean | undefined;
     name?: boolean | undefined;
     transparent?: boolean | undefined;
+};
+type AutoprefixerOptions = {
+    overrideBrowserslist?: string | string[];
 };
 type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
 import browserslist = require("browserslist");

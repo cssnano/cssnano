@@ -134,8 +134,9 @@ function transform(legacy, rule) {
 const allBugBrowers = new Set(['ie 10', 'ie 11']);
 
 /**
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
  * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {BrowserslistOptions} Options
+ * @typedef {AutoprefixerOptions & BrowserslistOptions} Options
  */
 
 /**
@@ -152,7 +153,7 @@ function pluginCreator(options = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(null, {
+      const browsers = browserslist(options.overrideBrowserslist, {
         stats: options.stats || stats,
         path: options.path || dirname(from || file || __filename),
         env: options.env || env,

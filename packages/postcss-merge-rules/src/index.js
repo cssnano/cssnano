@@ -409,8 +409,9 @@ function selectorMerger(browsers, compatibilityCache) {
 }
 
 /**
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
  * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {BrowserslistOptions} Options
+ * @typedef {AutoprefixerOptions & BrowserslistOptions} Options
  */
 
 /**
@@ -427,7 +428,7 @@ function pluginCreator(opts = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(null, {
+      const browsers = browserslist(opts.overrideBrowserslist, {
         stats: opts.stats || stats,
         path: opts.path || dirname(from || file || __filename),
         env: opts.env || env,

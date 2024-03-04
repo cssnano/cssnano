@@ -208,7 +208,9 @@ test('should passthrough broken syntax', passthroughCSS('h1{color:}'));
 
 test(
   'should not convert this specific rgba value to "transparent" (old IE)',
-  passthroughCSS('h1{color:rgba(0,0,0,0)}', { env: 'ie8' })
+  passthroughCSS('h1{color:rgba(0,0,0,0)}', {
+    overrideBrowserslist: 'IE 8',
+  })
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
@@ -236,14 +238,14 @@ test(
 test(
   'should convert long color to 8-digit hex when supported',
   processCSS('h1{color:rgba(100% 50% 0% / 50%)}', 'h1{color:#ff800080}', {
-    env: 'chrome62',
+    overrideBrowserslist: 'Chrome 62',
   })
 );
 
 test(
   'should convert long color to 4-digit hex when supported',
   processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
-    env: 'chrome62',
+    overrideBrowserslist: 'Chrome 62',
   })
 );
 
