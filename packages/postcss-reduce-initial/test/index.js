@@ -7,6 +7,7 @@ const {
 
 const fromInitial = require('../src/data/fromInitial.json');
 const toInitial = require('../src/data/toInitial.json');
+const ignoreProps = require('../src/lib/ignoreProps.js');
 const plugin = require('../src/index.js');
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -15,13 +16,15 @@ function convertInitial(property, value) {
   return processCSS(`${property}:initial`, `${property}:${value}`);
 }
 
-function convertToInitial(t, property, value) {
+function convertToInitial(property, value) {
+  const output = ignoreProps.includes(property) ? value : 'initial';
+
   return () =>
     Promise.all([
-      processCSS(t, `${property}:${value}`, `${property}:initial`, {
+      processCSS(`${property}:${value}`, `${property}:${output}`, {
         env: 'chrome58',
-      }),
-      passthroughCSS(t, `${property}:${value}`, { env: 'ie6' }),
+      })(),
+      passthroughCSS(`${property}:${value}`, { env: 'ie6' })(),
     ]);
 }
 
