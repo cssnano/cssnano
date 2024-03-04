@@ -133,8 +133,13 @@ function transform(legacy, rule) {
 const allBugBrowers = new Set(['ie 10', 'ie 11']);
 
 /**
- * @type {import('postcss').PluginCreator<browserslist.Options>}
- * @param {browserslist.Options} options
+ * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {BrowserslistOptions} Options
+ */
+
+/**
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} options
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(options = {}) {

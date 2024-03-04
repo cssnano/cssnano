@@ -406,6 +406,11 @@ function selectorMerger(browsers, compatibilityCache) {
     cache = partialMerge(cache, rule);
   };
 }
+
+/**
+ * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ */
+
 /**
  * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
@@ -414,8 +419,10 @@ function pluginCreator() {
   return {
     postcssPlugin: 'postcss-merge-rules',
 
+    /**
+     * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
+     */
     prepare(result) {
-      /** @type {typeof result.opts & browserslist.Options} */
       const resultOpts = result.opts || {};
       const browsers = browserslist(null, {
         stats: resultOpts.stats,

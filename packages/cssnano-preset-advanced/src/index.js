@@ -6,26 +6,41 @@ const postcssReduceIdents = require('postcss-reduce-idents');
 const postcssZindex = require('postcss-zindex');
 const autoprefixer = require('autoprefixer');
 
-/** @typedef {
-{autoprefixer?: autoprefixer.Options,
- discardUnused?: false | import('postcss-discard-unused').Options & { exclude?: true},
- mergeIdents?: false | { exclude?: true},
- reduceIdents?:false | import('postcss-reduce-idents').Options & { exclude?: true},
- zindex?: false | import('postcss-zindex').Options & { exclude?: true},
-}} AdvancedOptions */
-/** @typedef {import('cssnano-preset-default').Options & AdvancedOptions} Options */
+/**
+ * @template {object | void} [OptionsExtends=void]
+ * @typedef {false | OptionsExtends & {exclude?: true}} SimpleOptions
+ */
 
-/** @type {Options} */
+/**
+ * @typedef {object} AdvancedOptions
+ * @property {autoprefixer.Options} [autoprefixer]
+ * @property {SimpleOptions<import('postcss-discard-unused').Options>} [discardUnused]
+ * @property {SimpleOptions} [mergeIdents]
+ * @property {SimpleOptions<import('postcss-reduce-idents').Options>} [reduceIdents]
+ * @property {SimpleOptions<import('postcss-zindex').Options>} [zindex]
+ */
+
+/**
+ * @typedef {defaultPreset.Options & AdvancedOptions} Options
+ */
+
+/** @type {AdvancedOptions} */
 const defaultOpts = {
   autoprefixer: {
     add: false,
   },
 };
 
+/**
+ * Advanced optimisations for cssnano; may or may not break your CSS!
+ *
+ * @param {Options} opts
+ * @returns {{ plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][] }}
+ */
 function advancedPreset(opts = {}) {
   const options = Object.assign({}, defaultOpts, opts);
 
-  /** @type {[import('postcss').PluginCreator<any>, boolean | Record<string, any> | undefined][]} */
+  /** @type {ReturnType<typeof advancedPreset>["plugins"]} **/
   const plugins = [
     ...defaultPreset(options).plugins,
     [autoprefixer, options.autoprefixer],

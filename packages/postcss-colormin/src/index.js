@@ -41,7 +41,7 @@ function isMathFunctionNode(node) {
 
 /**
  * @param {string} value
- * @param {Record<string, boolean>} options
+ * @param {Options} options
  * @return {string}
  */
 function transform(value, options) {
@@ -83,9 +83,9 @@ function transform(value, options) {
 }
 
 /**
- * @param {Record<string, boolean>} options
+ * @param {Options} options
  * @param {string[]} browsers
- * @return {Record<string, boolean>}
+ * @return {Options}
  */
 function addPluginDefaults(options, browsers) {
   const defaults = {
@@ -98,17 +98,35 @@ function addPluginDefaults(options, browsers) {
   };
   return { ...defaults, ...options };
 }
+
 /**
- * @type {import('postcss').PluginCreator<Record<string, boolean>>}
- * @param {Record<string, boolean>} config
+ * @typedef {object} MinifyColorOptions
+ * @property {boolean} [hex]
+ * @property {boolean} [alphaHex]
+ * @property {boolean} [rgb]
+ * @property {boolean} [hsl]
+ * @property {boolean} [name]
+ * @property {boolean} [transparent]
+ */
+
+/**
+ * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {MinifyColorOptions & BrowserslistOptions} Options
+ */
+
+/**
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} config
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(config = {}) {
   return {
     postcssPlugin: 'postcss-colormin',
 
+    /**
+     * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
+     */
     prepare(result) {
-      /** @type {typeof result.opts & browserslist.Options} */
       const resultOptions = result.opts || {};
       const browsers = browserslist(null, {
         stats: resultOptions.stats,

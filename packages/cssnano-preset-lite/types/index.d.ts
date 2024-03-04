@@ -1,23 +1,23 @@
-export = defaultPreset;
+export = litePreset;
 /**
- * @param {Options} opts
- * @return {{plugins: [import('postcss').PluginCreator<any>, false | Record<string, any> | undefined][]}}
+ * Safe and minimum transformation with just removing whitespaces, line breaks and comments
+ *
+ * @param {LiteOptions} opts
+ * @returns {{ plugins: [import('postcss').PluginCreator<any>, LiteOptions[keyof LiteOptions]][] }}
  */
-declare function defaultPreset(opts?: Options): {
-    plugins: [import('postcss').PluginCreator<any>, false | Record<string, any> | undefined][];
+declare function litePreset(opts?: LiteOptions): {
+    plugins: [import('postcss').PluginCreator<any>, LiteOptions[keyof LiteOptions]][];
 };
-declare namespace defaultPreset {
-    export { SimpleOptions, Options };
+declare namespace litePreset {
+    export { SimpleOptions, LiteOptions };
 }
-type Options = {
-    discardComments?: false | import('postcss-discard-comments').Options & {
-        exclude?: true;
-    };
-    normalizeWhitespace?: SimpleOptions;
-    discardEmpty?: SimpleOptions;
-    rawCache?: SimpleOptions;
+type LiteOptions = {
+    discardComments?: SimpleOptions<postcssDiscardComments.Options> | undefined;
+    normalizeWhitespace?: SimpleOptions<void> | undefined;
+    discardEmpty?: SimpleOptions<void> | undefined;
+    rawCache?: SimpleOptions<void> | undefined;
 };
-type SimpleOptions = false | {
+type SimpleOptions<OptionsExtends extends void | object = void> = false | (OptionsExtends & {
     exclude?: true;
-};
-import { rawCache } from "cssnano-utils";
+});
+import postcssDiscardComments = require("postcss-discard-comments");

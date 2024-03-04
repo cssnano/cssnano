@@ -1,98 +1,60 @@
 export = defaultPreset;
 /**
+ * Safe defaults for cssnano which require minimal configuration
+ *
  * @param {Options} opts
- * @return {{plugins: [import('postcss').PluginCreator<any>, boolean | Record<string, any> | undefined][]}}
+ * @returns {{ plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][] }}
  */
 declare function defaultPreset(opts?: Options): {
-    plugins: [import('postcss').PluginCreator<any>, boolean | Record<string, any> | undefined][];
+    plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][];
 };
 declare namespace defaultPreset {
-    export { Options };
+    export { SimpleOptions, Options };
 }
 type Options = {
-    discardComments?: false | import('postcss-discard-comments').Options & {
-        exclude?: true;
-    };
-    reduceInitial?: false | {
-        exclude?: true;
-    };
-    minifyGradients?: false | {
-        exclude?: true;
-    };
-    svgo?: false | import('postcss-svgo').Options & {
-        exclude?: true;
-    };
-    reduceTransforms?: false | {
-        exclude?: true;
-    };
-    convertValues?: false | import('postcss-convert-values').Options & {
-        exclude?: true;
-    };
-    calc?: false | import('postcss-calc').PostCssCalcOptions & {
-        exclude?: true;
-    };
-    colormin?: false | (Record<string, any> & {
-        exclude?: true;
-    });
-    orderedValues?: false | {
-        exclude?: true;
-    };
-    minifySelectors?: false | {
-        exclude?: true;
-    };
-    minifyParams?: false | {
-        exclude?: true;
-    };
-    normalizeCharset?: false | import('postcss-normalize-charset').Options & {
-        exclude?: true;
-    };
-    minifyFontValues?: false | import('postcss-minify-font-values').Options & {
-        exclude?: true;
-    };
-    normalizeUrl?: false | {
-        exclude?: true;
-    };
-    mergeLonghand?: false | {
-        exclude?: true;
-    };
-    discardDuplicates?: false | {
-        exclude?: true;
-    };
-    discardOverridden?: false | {
-        exclude?: true;
-    };
-    normalizeRepeatStyle?: false | {
-        exclude?: true;
-    };
-    mergeRules?: false | {
-        exclude?: true;
-    };
-    discardEmpty?: false | {
-        exclude?: true;
-    };
-    uniqueSelectors?: false | {
-        exclude?: true;
-    };
-    normalizeString?: false | import('postcss-normalize-string').Options & {
-        exclude?: true;
-    };
-    normalizePositions?: false | {
-        exclude?: true;
-    };
-    normalizeWhitespace?: false | {
-        exclude?: true;
-    };
-    normalizeUnicode?: false | {
-        exclude?: true;
-    };
-    normalizeDisplayValues?: false | {
-        exclude?: true;
-    };
-    normalizeTimingFunctions?: false | {
-        exclude?: true;
-    };
-    rawCache?: false | {
-        exclude?: true;
-    };
+    cssDeclarationSorter?: SimpleOptions<{
+        order?: ("alphabetical" | "concentric-css" | "smacss") | ((propertyNameA: string, propertyNameB: string) => 0 | 1 | -1) | undefined;
+        keepOverrides?: boolean | undefined;
+    } | undefined> | undefined;
+    discardComments?: SimpleOptions<postcssDiscardComments.Options> | undefined;
+    reduceInitial?: SimpleOptions<postcssReduceInitial.Options> | undefined;
+    minifyGradients?: SimpleOptions<void> | undefined;
+    svgo?: SimpleOptions<postcssSvgo.Options> | undefined;
+    reduceTransforms?: SimpleOptions<void> | undefined;
+    convertValues?: SimpleOptions<postcssConvertValues.Options> | undefined;
+    calc?: SimpleOptions<postcssCalc.PostCssCalcOptions> | undefined;
+    colormin?: SimpleOptions<postcssColormin.Options> | undefined;
+    orderedValues?: SimpleOptions<void> | undefined;
+    minifySelectors?: SimpleOptions<void> | undefined;
+    minifyParams?: SimpleOptions<postcssMinifyParams.BrowserslistOptions> | undefined;
+    normalizeCharset?: SimpleOptions<postcssNormalizeCharset.Options> | undefined;
+    minifyFontValues?: SimpleOptions<postcssMinifyFontValues.Options> | undefined;
+    normalizeUrl?: SimpleOptions<void> | undefined;
+    mergeLonghand?: SimpleOptions<void> | undefined;
+    discardDuplicates?: SimpleOptions<void> | undefined;
+    discardOverridden?: SimpleOptions<void> | undefined;
+    normalizeRepeatStyle?: SimpleOptions<void> | undefined;
+    mergeRules?: SimpleOptions<void> | undefined;
+    discardEmpty?: SimpleOptions<void> | undefined;
+    uniqueSelectors?: SimpleOptions<void> | undefined;
+    normalizeString?: SimpleOptions<postcssNormalizeString.Options> | undefined;
+    normalizePositions?: SimpleOptions<void> | undefined;
+    normalizeWhitespace?: SimpleOptions<void> | undefined;
+    normalizeUnicode?: SimpleOptions<void> | undefined;
+    normalizeDisplayValues?: SimpleOptions<void> | undefined;
+    normalizeTimingFunctions?: SimpleOptions<void> | undefined;
+    rawCache?: SimpleOptions<void> | undefined;
 };
-import { rawCache } from "cssnano-utils";
+type SimpleOptions<OptionsExtends extends void | object = void> = false | (OptionsExtends & {
+    exclude?: true;
+});
+import postcssDiscardComments = require("postcss-discard-comments");
+import postcssReduceInitial = require("postcss-reduce-initial");
+import postcssSvgo = require("postcss-svgo");
+import postcssConvertValues = require("postcss-convert-values");
+import postcssCalc = require("postcss-calc");
+import postcssColormin = require("postcss-colormin");
+import postcssMinifyParams = require("postcss-minify-params");
+import postcssNormalizeCharset = require("postcss-normalize-charset");
+import postcssMinifyFontValues = require("postcss-minify-font-values");
+import postcssNormalizeString = require("postcss-normalize-string");

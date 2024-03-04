@@ -2,7 +2,10 @@
 const browserslist = require('browserslist');
 const plugins = require('./plugins');
 
-/** @typedef {{lint?: boolean}} Options */
+/**
+ * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {{lint?: boolean} & BrowserslistOptions} Options
+ */
 
 /**
  * @type {import('postcss').PluginCreator<Options>}
@@ -14,7 +17,7 @@ function pluginCreator(opts = {}) {
     postcssPlugin: 'stylehacks',
 
     OnceExit(css, { result }) {
-      /** @type {typeof result.opts & browserslist.Options} */
+      /** @type {typeof result.opts & BrowserslistOptions} */
       const resultOpts = result.opts || {};
       const browsers = browserslist(null, {
         stats: resultOpts.stats,

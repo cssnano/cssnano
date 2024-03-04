@@ -43,35 +43,43 @@ const postcssNormalizeDisplayValues = require('postcss-normalize-display-values'
 const postcssNormalizeTimingFunctions = require('postcss-normalize-timing-functions');
 const { rawCache } = require('cssnano-utils');
 
-/** @typedef {{
-discardComments?: false | import('postcss-discard-comments').Options & { exclude?: true},
-reduceInitial?:  false | { exclude?: true}
-minifyGradients?:  false | { exclude?: true}
-svgo?: false | import('postcss-svgo').Options & { exclude?: true},
-reduceTransforms?:  false | { exclude?: true}
-convertValues?: false | import('postcss-convert-values').Options & { exclude?: true},
-calc?: false | import('postcss-calc').PostCssCalcOptions & { exclude?: true},
-colormin?: false | Record<string, any> & { exclude?: true},
-orderedValues?: false | { exclude?: true},
-minifySelectors?: false | { exclude?: true},
-minifyParams?: false | { exclude?: true},
-normalizeCharset?: false | import('postcss-normalize-charset').Options & { exclude?: true},
-minifyFontValues?: false | import('postcss-minify-font-values').Options & { exclude?: true},
-normalizeUrl?: false | { exclude?: true},
-mergeLonghand?: false | { exclude?: true},
-discardDuplicates?: false | { exclude?: true},
-discardOverridden?: false | { exclude?: true},
-normalizeRepeatStyle?: false | { exclude?: true},
-mergeRules?: false | { exclude?: true},
-discardEmpty?: false | { exclude?: true},
-uniqueSelectors?: false | { exclude?: true},
-normalizeString?: false | import('postcss-normalize-string').Options & { exclude?: true},
-normalizePositions?: false | { exclude?: true},
-normalizeWhitespace?: false| { exclude?: true},
-normalizeUnicode?: false | { exclude?: true},
-normalizeDisplayValues?: false | { exclude?: true},
-normalizeTimingFunctions?: false | { exclude?: true},
-rawCache?: false | { exclude?: true}}} Options */
+/**
+ * @template {object | void} [OptionsExtends=void]
+ * @typedef {false | OptionsExtends & {exclude?: true}} SimpleOptions
+ */
+
+/**
+ * @typedef {object} Options
+ * @property {SimpleOptions<Parameters<typeof cssDeclarationSorter>[0]>} [cssDeclarationSorter]
+ * @property {SimpleOptions<import('postcss-discard-comments').Options>} [discardComments]
+ * @property {SimpleOptions<import('postcss-reduce-initial').Options>} [reduceInitial]
+ * @property {SimpleOptions} [minifyGradients]
+ * @property {SimpleOptions<import('postcss-svgo').Options>} [svgo]
+ * @property {SimpleOptions} [reduceTransforms]
+ * @property {SimpleOptions<import('postcss-convert-values').Options>} [convertValues]
+ * @property {SimpleOptions<import('postcss-calc').PostCssCalcOptions>} [calc]
+ * @property {SimpleOptions<import('postcss-colormin').Options>} [colormin]
+ * @property {SimpleOptions} [orderedValues]
+ * @property {SimpleOptions} [minifySelectors]
+ * @property {SimpleOptions<import('postcss-minify-params').Options>} [minifyParams]
+ * @property {SimpleOptions<import('postcss-normalize-charset').Options>} [normalizeCharset]
+ * @property {SimpleOptions<import('postcss-minify-font-values').Options>} [minifyFontValues]
+ * @property {SimpleOptions} [normalizeUrl]
+ * @property {SimpleOptions} [mergeLonghand]
+ * @property {SimpleOptions} [discardDuplicates]
+ * @property {SimpleOptions} [discardOverridden]
+ * @property {SimpleOptions} [normalizeRepeatStyle]
+ * @property {SimpleOptions} [mergeRules]
+ * @property {SimpleOptions} [discardEmpty]
+ * @property {SimpleOptions} [uniqueSelectors]
+ * @property {SimpleOptions<import('postcss-normalize-string').Options>} [normalizeString]
+ * @property {SimpleOptions} [normalizePositions]
+ * @property {SimpleOptions} [normalizeWhitespace]
+ * @property {SimpleOptions} [normalizeUnicode]
+ * @property {SimpleOptions} [normalizeDisplayValues]
+ * @property {SimpleOptions} [normalizeTimingFunctions]
+ * @property {SimpleOptions} [rawCache]
+ */
 
 const defaultOpts = {
   convertValues: {
@@ -86,13 +94,15 @@ const defaultOpts = {
 };
 
 /**
+ * Safe defaults for cssnano which require minimal configuration
+ *
  * @param {Options} opts
- * @return {{plugins: [import('postcss').PluginCreator<any>, boolean | Record<string, any> | undefined][]}}
+ * @returns {{ plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][] }}
  */
 function defaultPreset(opts = {}) {
   const options = Object.assign({}, defaultOpts, opts);
 
-  /** @type {[import('postcss').PluginCreator<any>, boolean | Record<string, any> | undefined][]} **/
+  /** @satisfies {ReturnType<typeof defaultPreset>["plugins"]} */
   const plugins = [
     [postcssDiscardComments, options.discardComments],
     [postcssMinifyGradients, options.minifyGradients],

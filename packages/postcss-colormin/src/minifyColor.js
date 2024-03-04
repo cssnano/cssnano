@@ -9,7 +9,7 @@ extend(/** @type {any[]} */ ([namesPlugin, minifierPlugin]));
  * Performs color value minification
  *
  * @param {string} input - CSS value
- * @param {Record<string, boolean>} options  object with colord.minify() options
+ * @param {import('./index.js').MinifyColorOptions} options - object with colord.minify() options
  * @return {string}
  */
 module.exports = function minifyColor(input, options = {}) {
