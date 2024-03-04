@@ -2,16 +2,18 @@ export = advancedPreset;
 /**
  * Advanced optimisations for cssnano; may or may not break your CSS!
  *
- * @param {Options} opts
+ * @param {Options & AutoprefixerOptions & BrowserslistOptions} opts
  * @returns {{ plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][] }}
  */
-declare function advancedPreset(opts?: Options): {
+declare function advancedPreset(opts?: Options & AutoprefixerOptions & BrowserslistOptions): {
     plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][];
 };
 declare namespace advancedPreset {
-    export { SimpleOptions, AdvancedOptions, Options };
+    export { SimpleOptions, AdvancedOptions, AutoprefixerOptions, BrowserslistOptions, Options };
 }
 type Options = defaultPreset.Options & AdvancedOptions;
+type AutoprefixerOptions = defaultPreset.AutoprefixerOptions;
+type BrowserslistOptions = defaultPreset.BrowserslistOptions;
 type SimpleOptions<OptionsExtends extends void | object = void> = false | (OptionsExtends & {
     exclude?: true;
 });

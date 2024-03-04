@@ -81,61 +81,115 @@ const { rawCache } = require('cssnano-utils');
  * @property {SimpleOptions} [rawCache]
  */
 
-const defaultOpts = {
-  convertValues: {
-    length: false,
-  },
-  normalizeCharset: {
-    add: false,
-  },
-  cssDeclarationSorter: {
-    keepOverrides: true,
-  },
-};
+/**
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
+ * @typedef {Pick<import('browserslist').Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
+ */
+
+/**
+ * @param {[import('postcss').PluginCreator<any>, keyof Options][]} plugins
+ * @param {Parameters<typeof defaultPreset>[0]} opts
+ * @returns {ReturnType<typeof defaultPreset>["plugins"]}
+ */
+function configurePlugins(plugins, opts = {}) {
+  const { overrideBrowserslist, stats, env, path } = opts;
+
+  // Shared Autoprefixer + Browserslist options
+  const sharedProps = {
+    overrideBrowserslist,
+    stats,
+    env,
+    path,
+  };
+
+  /**
+   * @type {Options}
+   */
+  const defaults = {
+    colormin: {
+      ...sharedProps,
+    },
+    convertValues: {
+      length: false,
+      ...sharedProps,
+    },
+    mergeRules: {
+      ...sharedProps,
+    },
+    minifyParams: {
+      ...sharedProps,
+    },
+    normalizeCharset: {
+      add: false,
+    },
+    normalizeUnicode: {
+      ...sharedProps,
+    },
+    reduceInitial: {
+      ...sharedProps,
+    },
+    cssDeclarationSorter: {
+      keepOverrides: true,
+    },
+  };
+
+  // Merge option properties for each plugin
+  return plugins.map(([plugin, opt]) => {
+    const defaultProps = defaults[opt] ?? {};
+    const presetProps = opts[opt] ?? {};
+
+    return [
+      plugin,
+      presetProps !== false
+        ? { ...defaultProps, ...presetProps }
+        : { exclude: true },
+    ];
+  });
+}
 
 /**
  * Safe defaults for cssnano which require minimal configuration
  *
- * @param {Options} opts
+ * @param {Options & AutoprefixerOptions & BrowserslistOptions} opts
  * @returns {{ plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][] }}
  */
 function defaultPreset(opts = {}) {
-  const options = Object.assign({}, defaultOpts, opts);
-
-  /** @satisfies {ReturnType<typeof defaultPreset>["plugins"]} */
-  const plugins = [
-    [postcssDiscardComments, options.discardComments],
-    [postcssMinifyGradients, options.minifyGradients],
-    [postcssReduceInitial, options.reduceInitial],
-    [postcssSvgo, options.svgo],
-    [postcssNormalizeDisplayValues, options.normalizeDisplayValues],
-    [postcssReduceTransforms, options.reduceTransforms],
-    [postcssColormin, options.colormin],
-    [postcssNormalizeTimingFunctions, options.normalizeTimingFunctions],
-    [postcssCalc, options.calc],
-    [postcssConvertValues, options.convertValues],
-    [postcssOrderedValues, options.orderedValues],
-    [postcssMinifySelectors, options.minifySelectors],
-    [postcssMinifyParams, options.minifyParams],
-    [postcssNormalizeCharset, options.normalizeCharset],
-    [postcssDiscardOverridden, options.discardOverridden],
-    [postcssNormalizeString, options.normalizeString],
-    [postcssNormalizeUnicode, options.normalizeUnicode],
-    [postcssMinifyFontValues, options.minifyFontValues],
-    [postcssNormalizeUrl, options.normalizeUrl],
-    [postcssNormalizeRepeatStyle, options.normalizeRepeatStyle],
-    [postcssNormalizePositions, options.normalizePositions],
-    [postcssNormalizeWhitespace, options.normalizeWhitespace],
-    [postcssMergeLonghand, options.mergeLonghand],
-    [postcssDiscardDuplicates, options.discardDuplicates],
-    [postcssMergeRules, options.mergeRules],
-    [postcssDiscardEmpty, options.discardEmpty],
-    [postcssUniqueSelectors, options.uniqueSelectors],
-    [cssDeclarationSorter, options.cssDeclarationSorter],
-    [rawCache, options.rawCache],
-  ];
-
-  return { plugins };
+  return {
+    plugins: configurePlugins(
+      [
+        [postcssDiscardComments, 'discardComments'],
+        [postcssMinifyGradients, 'minifyGradients'],
+        [postcssReduceInitial, 'reduceInitial'],
+        [postcssSvgo, 'svgo'],
+        [postcssNormalizeDisplayValues, 'normalizeDisplayValues'],
+        [postcssReduceTransforms, 'reduceTransforms'],
+        [postcssColormin, 'colormin'],
+        [postcssNormalizeTimingFunctions, 'normalizeTimingFunctions'],
+        [postcssCalc, 'calc'],
+        [postcssConvertValues, 'convertValues'],
+        [postcssOrderedValues, 'orderedValues'],
+        [postcssMinifySelectors, 'minifySelectors'],
+        [postcssMinifyParams, 'minifyParams'],
+        [postcssNormalizeCharset, 'normalizeCharset'],
+        [postcssDiscardOverridden, 'discardOverridden'],
+        [postcssNormalizeString, 'normalizeString'],
+        [postcssNormalizeUnicode, 'normalizeUnicode'],
+        [postcssMinifyFontValues, 'minifyFontValues'],
+        [postcssNormalizeUrl, 'normalizeUrl'],
+        [postcssNormalizeRepeatStyle, 'normalizeRepeatStyle'],
+        [postcssNormalizePositions, 'normalizePositions'],
+        [postcssNormalizeWhitespace, 'normalizeWhitespace'],
+        [postcssMergeLonghand, 'mergeLonghand'],
+        [postcssDiscardDuplicates, 'discardDuplicates'],
+        [postcssMergeRules, 'mergeRules'],
+        [postcssDiscardEmpty, 'discardEmpty'],
+        [postcssUniqueSelectors, 'uniqueSelectors'],
+        [cssDeclarationSorter, 'cssDeclarationSorter'],
+        [rawCache, 'rawCache'],
+      ],
+      opts
+    ),
+  };
 }
 
 module.exports = defaultPreset;

@@ -2,14 +2,14 @@ export = defaultPreset;
 /**
  * Safe defaults for cssnano which require minimal configuration
  *
- * @param {Options} opts
+ * @param {Options & AutoprefixerOptions & BrowserslistOptions} opts
  * @returns {{ plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][] }}
  */
-declare function defaultPreset(opts?: Options): {
+declare function defaultPreset(opts?: Options & AutoprefixerOptions & BrowserslistOptions): {
     plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][];
 };
 declare namespace defaultPreset {
-    export { SimpleOptions, Options };
+    export { SimpleOptions, Options, AutoprefixerOptions, BrowserslistOptions };
 }
 type Options = {
     cssDeclarationSorter?: SimpleOptions<{
@@ -26,7 +26,7 @@ type Options = {
     colormin?: SimpleOptions<postcssColormin.Options> | undefined;
     orderedValues?: SimpleOptions<void> | undefined;
     minifySelectors?: SimpleOptions<void> | undefined;
-    minifyParams?: SimpleOptions<postcssMinifyParams.BrowserslistOptions> | undefined;
+    minifyParams?: SimpleOptions<postcssMinifyParams.Options> | undefined;
     normalizeCharset?: SimpleOptions<postcssNormalizeCharset.Options> | undefined;
     minifyFontValues?: SimpleOptions<postcssMinifyFontValues.Options> | undefined;
     normalizeUrl?: SimpleOptions<void> | undefined;
@@ -34,17 +34,21 @@ type Options = {
     discardDuplicates?: SimpleOptions<void> | undefined;
     discardOverridden?: SimpleOptions<void> | undefined;
     normalizeRepeatStyle?: SimpleOptions<void> | undefined;
-    mergeRules?: SimpleOptions<postcssMergeRules.BrowserslistOptions> | undefined;
+    mergeRules?: SimpleOptions<postcssMergeRules.Options> | undefined;
     discardEmpty?: SimpleOptions<void> | undefined;
     uniqueSelectors?: SimpleOptions<void> | undefined;
     normalizeString?: SimpleOptions<postcssNormalizeString.Options> | undefined;
     normalizePositions?: SimpleOptions<void> | undefined;
     normalizeWhitespace?: SimpleOptions<void> | undefined;
-    normalizeUnicode?: SimpleOptions<postcssNormalizeUnicode.BrowserslistOptions> | undefined;
+    normalizeUnicode?: SimpleOptions<postcssNormalizeUnicode.Options> | undefined;
     normalizeDisplayValues?: SimpleOptions<void> | undefined;
     normalizeTimingFunctions?: SimpleOptions<void> | undefined;
     rawCache?: SimpleOptions<void> | undefined;
 };
+type AutoprefixerOptions = {
+    overrideBrowserslist?: string | string[];
+};
+type BrowserslistOptions = Pick<import('browserslist').Options, 'stats' | 'path' | 'env'>;
 type SimpleOptions<OptionsExtends extends void | object = void> = false | (OptionsExtends & {
     exclude?: true;
 });

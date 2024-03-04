@@ -21,36 +21,81 @@ const autoprefixer = require('autoprefixer');
  */
 
 /**
+ * @typedef {defaultPreset.AutoprefixerOptions} AutoprefixerOptions
+ * @typedef {defaultPreset.BrowserslistOptions} BrowserslistOptions
  * @typedef {defaultPreset.Options & AdvancedOptions} Options
  */
+/**
+ * @param {[import('postcss').PluginCreator<any>, keyof AdvancedOptions][]} plugins
+ * @param {Parameters<typeof advancedPreset>[0]} opts
+ * @returns {ReturnType<typeof advancedPreset>["plugins"]}
+ */
+function configurePlugins(plugins, opts = {}) {
+  const { overrideBrowserslist, stats, env, path } = opts;
 
-/** @type {AdvancedOptions} */
-const defaultOpts = {
-  autoprefixer: {
-    add: false,
-  },
-};
+  // Shared Autoprefixer + Browserslist options
+  const sharedProps = {
+    overrideBrowserslist,
+    stats,
+    env,
+    path,
+  };
+
+  /**
+   * @type {AdvancedOptions}
+   */
+  const defaults = {
+    autoprefixer: {
+      ...sharedProps,
+      add: false,
+
+      // Skip Browserslist "my stats" string for Autoprefixer
+      // https://github.com/browserslist/browserslist/blob/main/CHANGELOG.md#32
+      stats:
+        typeof sharedProps.stats !== 'string'
+          ? sharedProps.stats // Autoprefixer supports stats object only
+          : undefined,
+    },
+  };
+
+  // Merge option properties for each plugin
+  return plugins.map(([plugin, opt]) => {
+    const defaultProps = defaults[opt] ?? {};
+    const presetProps = opts[opt] ?? {};
+
+    return [
+      plugin,
+      presetProps !== false
+        ? { ...defaultProps, ...presetProps }
+        : { exclude: true },
+    ];
+  });
+}
 
 /**
  * Advanced optimisations for cssnano; may or may not break your CSS!
  *
- * @param {Options} opts
+ * @param {Options & AutoprefixerOptions & BrowserslistOptions} opts
  * @returns {{ plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][] }}
  */
 function advancedPreset(opts = {}) {
-  const options = Object.assign({}, defaultOpts, opts);
+  const { plugins: pluginsDefault } = defaultPreset(opts);
 
-  /** @type {ReturnType<typeof advancedPreset>["plugins"]} **/
-  const plugins = [
-    ...defaultPreset(options).plugins,
-    [autoprefixer, options.autoprefixer],
-    [postcssDiscardUnused, options.discardUnused],
-    [postcssMergeIdents, options.mergeIdents],
-    [postcssReduceIdents, options.reduceIdents],
-    [postcssZindex, options.zindex],
-  ];
-
-  return { plugins };
+  return {
+    plugins: [
+      ...pluginsDefault,
+      ...configurePlugins(
+        [
+          [autoprefixer, 'autoprefixer'],
+          [postcssDiscardUnused, 'discardUnused'],
+          [postcssMergeIdents, 'mergeIdents'],
+          [postcssReduceIdents, 'reduceIdents'],
+          [postcssZindex, 'zindex'],
+        ],
+        opts
+      ),
+    ],
+  };
 }
 
 module.exports = advancedPreset;
