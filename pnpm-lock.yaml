@@ -42,19 +42,6 @@ importers:
         specifier: ^0.5.6
         version: 0.5.6
 
-  packages/css-size:
-    dependencies:
-      cssnano:
-        specifier: workspace:^
-        version: link:../cssnano
-      minimist:
-        specifier: ^1.2.0
-        version: 1.2.8
-    devDependencies:
-      postcss:
-        specifier: ^8.4.35
-        version: 8.4.35
-
   packages/cssnano:
     dependencies:
       cssnano-preset-default:
@@ -2573,10 +2560,6 @@ packages:
       is-plain-obj: 1.1.0
       kind-of: 6.0.3
     dev: true
-
-  /minimist@1.2.8:
-    resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
-    dev: false
 
   /mixme@0.5.10:
     resolution: {integrity: sha512-5H76ANWinB1H3twpJ6JY8uvAtpmFvHNArpilJAjXRKXSDDLPIMoZArw5SH0q9z+lLs8IrMw7Q2VWpWimFKFT1Q==}
