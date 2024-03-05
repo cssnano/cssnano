@@ -1,10 +1,12 @@
 'use strict';
+const { dirname } = require('path');
 const browserslist = require('browserslist');
 const plugins = require('./plugins');
 
 /**
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
- * @typedef {{lint?: boolean} & BrowserslistOptions} Options
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
+ * @typedef {{lint?: boolean} & AutoprefixerOptions & BrowserslistOptions} Options
  */
 
 /**
@@ -16,36 +18,42 @@ function pluginCreator(opts = {}) {
   return {
     postcssPlugin: 'stylehacks',
 
-    OnceExit(css, { result }) {
-      /** @type {typeof result.opts & BrowserslistOptions} */
-      const resultOpts = result.opts || {};
-      const browsers = browserslist(null, {
-        stats: resultOpts.stats,
-        path: __dirname,
-        env: resultOpts.env,
+    /**
+     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
+     */
+    prepare(result) {
+      const { stats, env, from, file } = result.opts || {};
+      const browsers = browserslist(opts.overrideBrowserslist, {
+        stats: opts.stats || stats,
+        path: opts.path || dirname(from || file || __filename),
+        env: opts.env || env,
       });
 
-      /** @type {import('./plugin').Plugin[]} */
-      const processors = [];
-      for (const Plugin of plugins) {
-        const hack = new Plugin(result);
-        if (!browsers.some((browser) => hack.targets.has(browser))) {
-          processors.push(hack);
-        }
-      }
-      css.walk((node) => {
-        processors.forEach((proc) => {
-          if (!proc.nodeTypes.has(node.type)) {
-            return;
+      return {
+        OnceExit(css) {
+          /** @type {import('./plugin').Plugin[]} */
+          const processors = [];
+          for (const Plugin of plugins) {
+            const hack = new Plugin(result);
+            if (!browsers.some((browser) => hack.targets.has(browser))) {
+              processors.push(hack);
+            }
           }
+          css.walk((node) => {
+            processors.forEach((proc) => {
+              if (!proc.nodeTypes.has(node.type)) {
+                return;
+              }
 
-          if (opts.lint) {
-            return proc.detectAndWarn(node);
-          }
+              if (opts.lint) {
+                return proc.detectAndWarn(node);
+              }
 
-          return proc.detectAndResolve(node);
-        });
-      });
+              return proc.detectAndResolve(node);
+            });
+          });
+        },
+      };
     },
   };
 }

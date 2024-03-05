@@ -1,8 +1,9 @@
 export = pluginCreator;
 /**
  * @typedef {Parameters<typeof convert>[2]} ConvertOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
- * @typedef {{precision?: false | number} & ConvertOptions & BrowserslistOptions} Options
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
+ * @typedef {{precision?: false | number} & ConvertOptions & AutoprefixerOptions & BrowserslistOptions} Options
  */
 /**
  * @type {import('postcss').PluginCreator<Options>}
@@ -11,22 +12,19 @@ export = pluginCreator;
  */
 declare function pluginCreator(opts?: Options): import('postcss').Plugin;
 declare namespace pluginCreator {
-    export { postcss, ConvertOptions, BrowserslistOptions, Options };
+    export { postcss, ConvertOptions, AutoprefixerOptions, BrowserslistOptions, Options };
 }
 type Options = {
     precision?: false | number;
-} & ConvertOptions & BrowserslistOptions;
+} & ConvertOptions & AutoprefixerOptions & BrowserslistOptions;
 declare var postcss: true;
 type ConvertOptions = [number: number, unit: string, {
     time?: boolean | undefined;
-    /**
-     * @param {valueParser.Node} node
-     * @param {Options} opts
-     * @param {boolean} keepZeroUnit
-     * @return {void}
-     */
     length?: boolean | undefined;
     angle?: boolean | undefined;
 }][2];
-type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'env'>;
+type AutoprefixerOptions = {
+    overrideBrowserslist?: string | string[];
+};
+type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
 import browserslist = require("browserslist");

@@ -1,0 +1,12 @@
+defaults
+
+[legacy]
+IE <=11
+Chrome <=51
+Firefox <=48
+Safari <=9
+
+[modern]
+Chrome >=62
+Firefox >=49
+Safari >=10

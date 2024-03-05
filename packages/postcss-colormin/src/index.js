@@ -1,4 +1,5 @@
 'use strict';
+const { dirname } = require('path');
 const browserslist = require('browserslist');
 const { isSupported } = require('caniuse-api');
 const valueParser = require('postcss-value-parser');
@@ -110,8 +111,9 @@ function addPluginDefaults(options, browsers) {
  */
 
 /**
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
- * @typedef {MinifyColorOptions & BrowserslistOptions} Options
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
+ * @typedef {MinifyColorOptions & AutoprefixerOptions & BrowserslistOptions} Options
  */
 
 /**
@@ -124,14 +126,14 @@ function pluginCreator(config = {}) {
     postcssPlugin: 'postcss-colormin',
 
     /**
-     * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
+     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
      */
     prepare(result) {
-      const resultOptions = result.opts || {};
-      const browsers = browserslist(null, {
-        stats: resultOptions.stats,
-        path: __dirname,
-        env: resultOptions.env,
+      const { stats, env, from, file } = result.opts || {};
+      const browsers = browserslist(config.overrideBrowserslist, {
+        stats: config.stats || stats,
+        path: config.path || dirname(from || file || __filename),
+        env: config.env || env,
       });
 
       const cache = new Map();

@@ -5,16 +5,16 @@ const processCSS = require('./_processCSS');
 test(
   'ie 5.5-6 * html hack',
   processCSS('* html h1 { color: red }', '', {
-    target: 'ie6',
-    unaffected: 'ie7',
+    target: 'IE 6',
+    unaffected: 'IE 7',
   })
 );
 
 test(
   'ie 5.5-6 * html hack (uppercase)',
   processCSS('* HTML H1 { color: red }', '', {
-    target: 'ie6',
-    unaffected: 'ie7',
+    target: 'IE 6',
+    unaffected: 'IE 7',
   })
 );
 
@@ -23,7 +23,7 @@ test(
   processCSS(
     '.class { color: red }',
     '.class { color: red }',
-    { target: 'ie6', unaffected: 'ie7' },
+    { target: 'IE 6', unaffected: 'IE 7' },
     0
   )
 );
@@ -33,7 +33,7 @@ test(
   processCSS(
     '* { color: red }',
     '* { color: red }',
-    { target: 'ie6', unaffected: 'ie7' },
+    { target: 'IE 6', unaffected: 'IE 7' },
     0
   )
 );
@@ -43,7 +43,7 @@ test(
   processCSS(
     '[hidden] { color: red }',
     '[hidden] { color: red }',
-    { target: 'ie6', unaffected: 'ie7' },
+    { target: 'IE 6', unaffected: 'IE 7' },
     0
   )
 );

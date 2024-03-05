@@ -1,4 +1,5 @@
 'use strict';
+const { dirname } = require('path');
 const browserslist = require('browserslist');
 const valueParser = require('postcss-value-parser');
 const { getArguments } = require('cssnano-utils');
@@ -133,8 +134,9 @@ function transform(legacy, rule) {
 const allBugBrowers = new Set(['ie 10', 'ie 11']);
 
 /**
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
- * @typedef {BrowserslistOptions} Options
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
+ * @typedef {AutoprefixerOptions & BrowserslistOptions} Options
  */
 
 /**
@@ -143,18 +145,27 @@ const allBugBrowers = new Set(['ie 10', 'ie 11']);
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(options = {}) {
-  const browsers = browserslist(null, {
-    stats: options.stats,
-    path: __dirname,
-    env: options.env,
-  });
-
-  const hasAllBug = browsers.some((browser) => allBugBrowers.has(browser));
   return {
     postcssPlugin: 'postcss-minify-params',
 
-    OnceExit(css) {
-      css.walkAtRules((rule) => transform(hasAllBug, rule));
+    /**
+     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
+     */
+    prepare(result) {
+      const { stats, env, from, file } = result.opts || {};
+      const browsers = browserslist(options.overrideBrowserslist, {
+        stats: options.stats || stats,
+        path: options.path || dirname(from || file || __filename),
+        env: options.env || env,
+      });
+
+      const hasAllBug = browsers.some((browser) => allBugBrowers.has(browser));
+
+      return {
+        OnceExit(css) {
+          css.walkAtRules((rule) => transform(hasAllBug, rule));
+        },
+      };
     },
   };
 }

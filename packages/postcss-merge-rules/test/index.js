@@ -1,4 +1,5 @@
 'use strict';
+const { join } = require('path');
 const { test } = require('uvu');
 const assert = require('uvu/assert');
 const postcss = require('postcss');
@@ -553,58 +554,138 @@ test(
   processCSS(
     '::placeholder{color:blue}h1{color:blue}',
     '::placeholder,h1{color:blue}',
-    { env: 'chrome58' }
+    { overrideBrowserslist: 'Chrome 58' }
+  )
+);
+
+test(
+  'should not merge ::placeholder selectors based on Browserslist config [legacy] env',
+  passthroughCSS('::placeholder{color:blue}h1{color:blue}', {
+    from: join(__dirname, 'browserslist/example.css'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should not merge ::placeholder selectors based on Browserslist config [legacy] env using webpack file path',
+  passthroughCSS('::placeholder{color:blue}h1{color:blue}', {
+    file: join(__dirname, 'browserslist/example.css'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should not merge ::placeholder selectors based on Browserslist config [legacy] env using custom path',
+  passthroughCSS('::placeholder{color:blue}h1{color:blue}', {
+    path: join(__dirname, 'browserslist'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should merge ::placeholder selectors based on Browserslist config [modern] env',
+  processCSS(
+    '::placeholder{color:blue}h1{color:blue}',
+    '::placeholder,h1{color:blue}',
+    {
+      from: join(__dirname, 'browserslist/example.css'),
+      env: 'modern',
+    }
+  )
+);
+
+test(
+  'should merge ::placeholder selectors based on Browserslist config [modern] env using webpack file path',
+  processCSS(
+    '::placeholder{color:blue}h1{color:blue}',
+    '::placeholder,h1{color:blue}',
+    {
+      file: join(__dirname, 'browserslist/example.css'),
+      env: 'modern',
+    }
+  )
+);
+
+test(
+  'should merge ::placeholder selectors based on Browserslist config [modern] env using custom path',
+  processCSS(
+    '::placeholder{color:blue}h1{color:blue}',
+    '::placeholder,h1{color:blue}',
+    {
+      path: join(__dirname, 'browserslist'),
+      env: 'modern',
+    }
   )
 );
 
 test(
   'should not merge general sibling combinators',
-  passthroughCSS('div{color:#fff}a ~ b{color:#fff}', { env: 'ie6' })
+  passthroughCSS('div{color:#fff}a ~ b{color:#fff}', {
+    overrideBrowserslist: 'IE 6',
+  })
 );
 
 test(
   'should not merge child combinators',
-  passthroughCSS('div{color:#fff}a > b{color:#fff}', { env: 'ie6' })
+  passthroughCSS('div{color:#fff}a > b{color:#fff}', {
+    overrideBrowserslist: 'IE 6',
+  })
 );
 
 test(
   'should not merge attribute selectors (css 2.1)',
-  passthroughCSS('div{color:#fff}[href]{color:#fff}', { env: 'ie6' })
+  passthroughCSS('div{color:#fff}[href]{color:#fff}', {
+    overrideBrowserslist: 'IE 6',
+  })
 );
 
 test(
   'should not merge attribute selectors (css 2.1) (2)',
-  passthroughCSS('div{color:#fff}[href="foo"]{color:#fff}', { env: 'ie6' })
+  passthroughCSS('div{color:#fff}[href="foo"]{color:#fff}', {
+    overrideBrowserslist: 'IE 6',
+  })
 );
 
 test(
   'should not merge attribute selectors (css 2.1) (3)',
-  passthroughCSS('div{color:#fff}[href~="foo"]{color:#fff}', { env: 'ie6' })
+  passthroughCSS('div{color:#fff}[href~="foo"]{color:#fff}', {
+    overrideBrowserslist: 'IE 6',
+  })
 );
 
 test(
   'should not merge attribute selectors (css 2.1) (4)',
-  passthroughCSS('div{color:#fff}[href|="foo"]{color:#fff}', { env: 'ie6' })
+  passthroughCSS('div{color:#fff}[href|="foo"]{color:#fff}', {
+    overrideBrowserslist: 'IE 6',
+  })
 );
 
 test(
   'should not merge attribute selectors (css 3)',
-  passthroughCSS('div{color:#fff}[href^="foo"]{color:#fff}', { env: 'ie7' })
+  passthroughCSS('div{color:#fff}[href^="foo"]{color:#fff}', {
+    overrideBrowserslist: 'IE 7',
+  })
 );
 
 test(
   'should not merge attribute selectors (css 3) (2)',
-  passthroughCSS('div{color:#fff}[href$="foo"]{color:#fff}', { env: 'ie7' })
+  passthroughCSS('div{color:#fff}[href$="foo"]{color:#fff}', {
+    overrideBrowserslist: 'IE 7',
+  })
 );
 
 test(
   'should not merge attribute selectors (css 3) (3)',
-  passthroughCSS('div{color:#fff}[href*="foo"]{color:#fff}', { env: 'ie7' })
+  passthroughCSS('div{color:#fff}[href*="foo"]{color:#fff}', {
+    overrideBrowserslist: 'IE 7',
+  })
 );
 
 test(
   'should not merge case insensitive attribute selectors',
-  passthroughCSS('div{color:#fff}[href="foo" i]{color:#fff}', { env: 'edge15' })
+  passthroughCSS('div{color:#fff}[href="foo" i]{color:#fff}', {
+    overrideBrowserslist: 'Edge 15',
+  })
 );
 
 const pseudoKeys = Object.keys(pseudoElements);
@@ -617,7 +698,7 @@ test(`should not merge ${pseudoKeys.length} pseudo elements`, () => {
         processCSS(
           `${pseudo}{color:blue}h1{color:blue}`,
           `${pseudo}{color:blue}h1{color:blue}`,
-          { env: 'ie6' }
+          { overrideBrowserslist: 'IE 6' }
         ),
       ];
     }, [])

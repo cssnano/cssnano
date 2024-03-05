@@ -1,4 +1,5 @@
 'use strict';
+const { dirname } = require('path');
 const valueParser = require('postcss-value-parser');
 const browserslist = require('browserslist');
 const convert = require('./lib/convert.js');
@@ -114,6 +115,7 @@ function clampOpacity(node) {
 function shouldKeepZeroUnit(decl, browsers) {
   const { parent } = decl;
   const lowerCasedProp = decl.prop.toLowerCase();
+
   return (
     (decl.value.includes('%') &&
       keepZeroPercent.has(lowerCasedProp) &&
@@ -197,8 +199,9 @@ const plugin = 'postcss-convert-values';
 
 /**
  * @typedef {Parameters<typeof convert>[2]} ConvertOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
- * @typedef {{precision?: false | number} & ConvertOptions & BrowserslistOptions} Options
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
+ * @typedef {{precision?: false | number} & ConvertOptions & AutoprefixerOptions & BrowserslistOptions} Options
  */
 
 /**
@@ -207,16 +210,25 @@ const plugin = 'postcss-convert-values';
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(opts = { precision: false }) {
-  const browsers = browserslist(null, {
-    stats: opts.stats,
-    path: __dirname,
-    env: opts.env,
-  });
-
   return {
     postcssPlugin: plugin,
-    OnceExit(css) {
-      css.walkDecls((decl) => transform(opts, browsers, decl));
+
+    /**
+     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
+     */
+    prepare(result) {
+      const { stats, env, from, file } = result.opts || {};
+      const browsers = browserslist(opts.overrideBrowserslist, {
+        stats: opts.stats || stats,
+        path: opts.path || dirname(from || file || __filename),
+        env: opts.env || env,
+      });
+
+      return {
+        OnceExit(css) {
+          css.walkDecls((decl) => transform(opts, browsers, decl));
+        },
+      };
     },
   };
 }

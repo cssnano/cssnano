@@ -1,4 +1,5 @@
 'use strict';
+const { dirname } = require('path');
 const browserslist = require('browserslist');
 const { sameParent } = require('cssnano-utils');
 const {
@@ -408,26 +409,29 @@ function selectorMerger(browsers, compatibilityCache) {
 }
 
 /**
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
+ * @typedef {AutoprefixerOptions & BrowserslistOptions} Options
  */
 
 /**
- * @type {import('postcss').PluginCreator<void>}
+ * @type {import('postcss').PluginCreator<Options>}
+ * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
-function pluginCreator() {
+function pluginCreator(opts = {}) {
   return {
     postcssPlugin: 'postcss-merge-rules',
 
     /**
-     * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
+     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
      */
     prepare(result) {
-      const resultOpts = result.opts || {};
-      const browsers = browserslist(null, {
-        stats: resultOpts.stats,
-        path: __dirname,
-        env: resultOpts.env,
+      const { stats, env, from, file } = result.opts || {};
+      const browsers = browserslist(opts.overrideBrowserslist, {
+        stats: opts.stats || stats,
+        path: opts.path || dirname(from || file || __filename),
+        env: opts.env || env,
       });
 
       const compatibilityCache = new Map();

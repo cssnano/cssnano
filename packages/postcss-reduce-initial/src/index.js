@@ -1,4 +1,5 @@
 'use strict';
+const { dirname } = require('path');
 const browserslist = require('browserslist');
 const { isSupported } = require('caniuse-api');
 const fromInitial = require('./data/fromInitial.json');
@@ -11,8 +12,9 @@ const initial = 'initial';
 const defaultIgnoreProps = ignoreProps;
 
 /**
- * @typedef {Pick<browserslist.Options, 'stats' | 'env'>} BrowserslistOptions
- * @typedef {{ignore?: string[]} & BrowserslistOptions} Options
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
+ * @typedef {{ignore?: string[]} & AutoprefixerOptions & BrowserslistOptions} Options
  */
 
 /**
@@ -25,14 +27,14 @@ function pluginCreator(options = {}) {
     postcssPlugin: 'postcss-reduce-initial',
 
     /**
-     * @param {import('postcss').Result & {opts: BrowserslistOptions}} result
+     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
      */
     prepare(result) {
-      const resultOpts = result.opts || {};
-      const browsers = browserslist(null, {
-        stats: resultOpts.stats,
-        path: __dirname,
-        env: resultOpts.env,
+      const { stats, env, from, file } = result.opts || {};
+      const browsers = browserslist(options.overrideBrowserslist, {
+        stats: options.stats || stats,
+        path: options.path || dirname(from || file || __filename),
+        env: options.env || env,
       });
 
       const initialSupport = isSupported('css-initial-value', browsers);

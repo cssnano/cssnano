@@ -1,4 +1,5 @@
 'use strict';
+const { join } = require('path');
 const { test } = require('uvu');
 const {
   usePostCSSPlugin,
@@ -52,21 +53,69 @@ test.skip(
 test(
   'should normalise "all" in @media queries',
   processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
-    env: 'chrome58',
+    overrideBrowserslist: 'Chrome 58',
   })
 );
 
 test(
   'should normalise "all" in @media queries (uppercase)',
   processCSS('@MEDIA ALL{h1{color:blue}}', '@MEDIA{h1{color:blue}}', {
-    env: 'chrome58',
+    overrideBrowserslist: 'Chrome 58',
   })
 );
 
 test(
   'should not normalise "all" in @media queries',
   processCSS('@media all{h1{color:blue}}', '@media all{h1{color:blue}}', {
-    env: 'ie11',
+    overrideBrowserslist: 'IE 11',
+  })
+);
+
+test(
+  'should not normalise "all" in @media queries based on Browserslist config [legacy] env',
+  passthroughCSS('@media all{h1{color:blue}}', {
+    from: join(__dirname, 'browserslist/example.css'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should not normalise "all" in @media queries based on Browserslist config [legacy] env using webpack file path',
+  passthroughCSS('@media all{h1{color:blue}}', {
+    file: join(__dirname, 'browserslist/example.css'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should not normalise "all" in @media queries based on Browserslist config [legacy] env using custom path',
+  passthroughCSS('@media all{h1{color:blue}}', {
+    path: join(__dirname, 'browserslist'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should normalise "all" in @media queries based on Browserslist config [modern] env',
+  processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
+    from: join(__dirname, 'browserslist/example.css'),
+    env: 'modern',
+  })
+);
+
+test(
+  'should normalise "all" in @media queries based on Browserslist config [modern] env using webpack file path',
+  processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
+    file: join(__dirname, 'browserslist/example.css'),
+    env: 'modern',
+  })
+);
+
+test(
+  'should normalise "all" in @media queries based on Browserslist config [modern] env using custom path',
+  processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
+    path: join(__dirname, 'browserslist'),
+    env: 'modern',
   })
 );
 

@@ -1,4 +1,5 @@
 'use strict';
+const { join } = require('path');
 const { test } = require('uvu');
 const {
   usePostCSSPlugin,
@@ -254,6 +255,66 @@ test(
 test(
   'should not strip the percentage from 0 in max-height, height, and min-width props',
   passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}')
+);
+
+test(
+  'should not strip the percentage from 0 in max-height, height, and min-width props based on Browserslist config [legacy] env',
+  passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}', {
+    from: join(__dirname, 'browserslist/example.css'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should not strip the percentage from 0 in max-height, height, and min-width props based on Browserslist config [legacy] env using webpack file path',
+  passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}', {
+    file: join(__dirname, 'browserslist/example.css'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should not strip the percentage from 0 in max-height, height, and min-width props based on Browserslist config [legacy] env using custom path',
+  passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}', {
+    path: join(__dirname, 'browserslist'),
+    env: 'legacy',
+  })
+);
+
+test(
+  'should strip the percentage from 0 in max-height, height, and min-width props based on Browserslist config [modern] env',
+  processCSS(
+    'h1{height:0%;max-height:0%;min-width:0%}',
+    'h1{height:0;max-height:0;min-width:0}',
+    {
+      from: join(__dirname, 'browserslist/example.css'),
+      env: 'modern',
+    }
+  )
+);
+
+test(
+  'should strip the percentage from 0 in max-height, height, and min-width props based on Browserslist config [modern] env using webpack file path',
+  processCSS(
+    'h1{height:0%;max-height:0%;min-width:0%}',
+    'h1{height:0;max-height:0;min-width:0}',
+    {
+      file: join(__dirname, 'browserslist/example.css'),
+      env: 'modern',
+    }
+  )
+);
+
+test(
+  'should strip the percentage from 0 in max-height, height, and min-width props based on Browserslist config [modern] env using custom path',
+  processCSS(
+    'h1{height:0%;max-height:0%;min-width:0%}',
+    'h1{height:0;max-height:0;min-width:0}',
+    {
+      path: join(__dirname, 'browserslist'),
+      env: 'modern',
+    }
+  )
 );
 
 test(

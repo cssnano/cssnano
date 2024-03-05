@@ -1,4 +1,5 @@
 'use strict';
+const { join } = require('path');
 const { test } = require('uvu');
 const {
   usePostCSSPlugin,
@@ -22,9 +23,42 @@ function convertToInitial(property, value) {
   return () =>
     Promise.all([
       processCSS(`${property}:${value}`, `${property}:${output}`, {
-        env: 'chrome58',
+        overrideBrowserslist: 'Chrome 58',
       })(),
-      passthroughCSS(`${property}:${value}`, { env: 'ie6' })(),
+
+      passthroughCSS(`${property}:${value}`, {
+        overrideBrowserslist: 'IE 6',
+      })(),
+
+      processCSS(`${property}:${value}`, `${property}:${output}`, {
+        from: join(__dirname, 'browserslist/example.css'),
+        env: 'modern',
+      })(),
+
+      processCSS(`${property}:${value}`, `${property}:${output}`, {
+        file: join(__dirname, 'browserslist/example.css'),
+        env: 'modern',
+      })(),
+
+      processCSS(`${property}:${value}`, `${property}:${output}`, {
+        path: join(__dirname, 'browserslist'),
+        env: 'modern',
+      })(),
+
+      passthroughCSS(`${property}:${value}`, {
+        from: join(__dirname, 'browserslist/example.css'),
+        env: 'legacy',
+      })(),
+
+      passthroughCSS(`${property}:${value}`, {
+        file: join(__dirname, 'browserslist/example.css'),
+        env: 'legacy',
+      })(),
+
+      passthroughCSS(`${property}:${value}`, {
+        path: join(__dirname, 'browserslist'),
+        env: 'legacy',
+      })(),
     ]);
 }
 
@@ -57,7 +91,7 @@ test(
   processCSS(
     'border-block-color: currentColor',
     'border-block-color: initial',
-    { env: 'chrome58' }
+    { overrideBrowserslist: 'Chrome 58' }
   )
 );
 
@@ -66,7 +100,7 @@ test(
   processCSS(
     'BORDER-BLOCK-COLOR: CURRENTCOLOR',
     'BORDER-BLOCK-COLOR: initial',
-    { env: 'chrome58' }
+    { overrideBrowserslist: 'Chrome 58' }
   )
 );
 
@@ -107,7 +141,9 @@ test(
    but MDN has the wrong data so  */
 test(
   'preserve no-repeat mask-repeat',
-  passthroughCSS('div{mask-repeat:no-repeat}', { env: 'chrome58' })
+  passthroughCSS('div{mask-repeat:no-repeat}', {
+    overrideBrowserslist: 'Chrome 58',
+  })
 );
 
 test(

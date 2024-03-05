@@ -17,8 +17,27 @@ const { rawCache } = require('cssnano-utils');
  * @property {SimpleOptions} [rawCache]
  */
 
-/** @satisfies {LiteOptions} */
-const defaultOpts = {};
+/**
+ * @param {[import('postcss').PluginCreator<any>, keyof LiteOptions][]} plugins
+ * @param {Parameters<typeof litePreset>[0]} opts
+ * @returns {ReturnType<typeof litePreset>["plugins"]}
+ */
+function configurePlugins(plugins, opts = {}) {
+  const defaults = /** @type {LiteOptions} */ ({});
+
+  // Merge option properties for each plugin
+  return plugins.map(([plugin, opt]) => {
+    const defaultProps = defaults[opt] ?? {};
+    const presetProps = opts[opt] ?? {};
+
+    return [
+      plugin,
+      presetProps !== false
+        ? { ...defaultProps, ...presetProps }
+        : { exclude: true },
+    ];
+  });
+}
 
 /**
  * Safe and minimum transformation with just removing whitespaces, line breaks and comments
@@ -27,17 +46,17 @@ const defaultOpts = {};
  * @returns {{ plugins: [import('postcss').PluginCreator<any>, LiteOptions[keyof LiteOptions]][] }}
  */
 function litePreset(opts = {}) {
-  const options = Object.assign({}, defaultOpts, opts);
-
-  /** @satisfies {ReturnType<typeof litePreset>["plugins"]} */
-  const plugins = [
-    [postcssDiscardComments, options.discardComments],
-    [postcssNormalizeWhitespace, options.normalizeWhitespace],
-    [postcssDiscardEmpty, options.discardEmpty],
-    [rawCache, options.rawCache],
-  ];
-
-  return { plugins };
+  return {
+    plugins: configurePlugins(
+      [
+        [postcssDiscardComments, 'discardComments'],
+        [postcssNormalizeWhitespace, 'normalizeWhitespace'],
+        [postcssDiscardEmpty, 'discardEmpty'],
+        [rawCache, 'rawCache'],
+      ],
+      opts
+    ),
+  };
 }
 
 module.exports = litePreset;
