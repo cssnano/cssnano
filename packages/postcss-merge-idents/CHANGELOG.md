@@ -1,5 +1,13 @@
 # Change Log
 
+## 6.0.3
+
+### Patch Changes
+
+- enable “go to definition” via declaration maps
+- Updated dependencies
+  - cssnano-utils@4.0.2
+
 ## 6.0.2
 
 ### Patch Changes

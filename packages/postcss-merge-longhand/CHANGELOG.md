@@ -1,5 +1,13 @@
 # Change Log
 
+## 6.0.4
+
+### Patch Changes
+
+- enable “go to definition” via declaration maps
+- Updated dependencies
+  - stylehacks@6.1.0
+
 ## 6.0.3
 
 ### Patch Changes
