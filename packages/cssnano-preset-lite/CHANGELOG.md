@@ -1,5 +1,20 @@
 # Change Log
 
+## 3.1.0
+
+### Minor Changes
+
+- feat: add preset and plugin options for browserslist
+
+### Patch Changes
+
+- enable “go to definition” via declaration maps
+- Updated dependencies
+  - cssnano-utils@4.0.2
+  - postcss-discard-comments@6.0.2
+  - postcss-discard-empty@6.0.3
+  - postcss-normalize-whitespace@6.0.2
+
 ## 3.0.2
 
 ### Patch Changes

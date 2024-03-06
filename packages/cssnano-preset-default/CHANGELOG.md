@@ -1,5 +1,44 @@
 # Change Log
 
+## 6.1.0
+
+### Minor Changes
+
+- feat: add preset and plugin options for browserslist
+
+### Patch Changes
+
+- enable “go to definition” via declaration maps
+- fix: add missing type declarations to plugins with options
+- Updated dependencies
+  - postcss-colormin@6.1.0
+  - postcss-convert-values@6.1.0
+  - postcss-merge-rules@6.1.0
+  - postcss-minify-params@6.1.0
+  - postcss-normalize-unicode@6.1.0
+  - postcss-reduce-initial@6.1.0
+  - cssnano-utils@4.0.2
+  - postcss-discard-comments@6.0.2
+  - postcss-discard-duplicates@6.0.3
+  - postcss-discard-empty@6.0.3
+  - postcss-discard-overridden@6.0.2
+  - postcss-merge-longhand@6.0.4
+  - postcss-minify-font-values@6.0.3
+  - postcss-minify-gradients@6.0.3
+  - postcss-minify-selectors@6.0.3
+  - postcss-normalize-charset@6.0.2
+  - postcss-normalize-display-values@6.0.2
+  - postcss-normalize-positions@6.0.2
+  - postcss-normalize-repeat-style@6.0.2
+  - postcss-normalize-string@6.0.2
+  - postcss-normalize-timing-functions@6.0.2
+  - postcss-normalize-url@6.0.2
+  - postcss-normalize-whitespace@6.0.2
+  - postcss-ordered-values@6.0.2
+  - postcss-reduce-transforms@6.0.2
+  - postcss-svgo@6.0.3
+  - postcss-unique-selectors@6.0.3
+
 ## 6.0.5
 
 ### Patch Changes

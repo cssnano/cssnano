@@ -1,5 +1,22 @@
 # Change Log
 
+## 6.1.0
+
+### Minor Changes
+
+- feat: add preset and plugin options for browserslist
+
+### Patch Changes
+
+- enable “go to definition” via declaration maps
+- fix: add missing type declarations to plugins with options
+- Updated dependencies
+  - cssnano-preset-default@6.1.0
+  - postcss-discard-unused@6.0.4
+  - postcss-merge-idents@6.0.3
+  - postcss-reduce-idents@6.0.3
+  - postcss-zindex@6.0.2
+
 ## 6.0.5
 
 ### Patch Changes

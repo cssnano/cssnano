@@ -1,5 +1,19 @@
 # Change Log
 
+## 6.1.0
+
+### Minor Changes
+
+- feat: add preset and plugin options for browserslist
+
+### Patch Changes
+
+- fix(cssnano): prevent crash when first preset is already invoked
+- enable “go to definition” via declaration maps
+- fix: add missing type declarations to plugins with options
+- Updated dependencies
+  - cssnano-preset-default@6.1.0
+
 ## 6.0.5
 
 ### Patch Changes

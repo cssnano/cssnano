@@ -1,5 +1,16 @@
 # Change Log
 
+## 6.1.0
+
+### Minor Changes
+
+- feat: add preset and plugin options for browserslist
+
+### Patch Changes
+
+- enable “go to definition” via declaration maps
+- fix: add missing type declarations to plugins with options
+
 ## 6.0.3
 
 ### Patch Changes

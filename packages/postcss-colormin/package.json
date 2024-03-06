@@ -1,6 +1,6 @@
 {
   "name": "postcss-colormin",
-  "version": "6.0.3",
+  "version": "6.1.0",
   "description": "Minify colors in your CSS files with PostCSS.",
   "main": "src/index.js",
   "types": "types/index.d.ts",

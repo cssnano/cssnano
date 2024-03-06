@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- enable “go to definition” via declaration maps
+
 ## 6.0.1
 
 ### Patch Changes
