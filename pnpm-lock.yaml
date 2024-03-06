@@ -52,8 +52,8 @@ importers:
         version: 3.1.1
     devDependencies:
       autoprefixer:
-        specifier: ^10.4.17
-        version: 10.4.17(postcss@8.4.35)
+        specifier: ^10.4.18
+        version: 10.4.18(postcss@8.4.35)
       cssnano-preset-advanced:
         specifier: workspace:^
         version: link:../cssnano-preset-advanced
@@ -67,8 +67,8 @@ importers:
   packages/cssnano-preset-advanced:
     dependencies:
       autoprefixer:
-        specifier: ^10.4.17
-        version: 10.4.17(postcss@8.4.35)
+        specifier: ^10.4.18
+        version: 10.4.18(postcss@8.4.35)
       browserslist:
         specifier: ^4.23.0
         version: 4.23.0
@@ -1082,15 +1082,15 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /autoprefixer@10.4.17(postcss@8.4.35):
-    resolution: {integrity: sha512-/cpVNRLSfhOtcGflT13P2794gVSgmPgTR+erw5ifnMLZb0UnSlkK4tquLmkd3BhA+nLo5tX8Cu0upUsGKvKbmg==}
+  /autoprefixer@10.4.18(postcss@8.4.35):
+    resolution: {integrity: sha512-1DKbDfsr6KUElM6wg+0zRNkB/Q7WcKYAaK+pzXn+Xqmszm/5Xa9coeNdtP88Vi+dPzZnMjhge8GIV49ZQkDa+g==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
       postcss: ^8.1.0
     dependencies:
       browserslist: 4.23.0
-      caniuse-lite: 1.0.30001589
+      caniuse-lite: 1.0.30001594
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.0.0
@@ -1164,7 +1164,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001589
+      caniuse-lite: 1.0.30001594
       electron-to-chromium: 1.4.680
       node-releases: 2.0.14
       update-browserslist-db: 1.0.13(browserslist@4.23.0)
@@ -1221,13 +1221,13 @@ packages:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
     dependencies:
       browserslist: 4.23.0
-      caniuse-lite: 1.0.30001589
+      caniuse-lite: 1.0.30001594
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: false
 
-  /caniuse-lite@1.0.30001589:
-    resolution: {integrity: sha512-vNQWS6kI+q6sBlHbh71IIeC+sRwK2N3EDySc/updIGhIee2x5z00J4c1242/5/d6EpEMdOnk/m+6tuk4/tcsqg==}
+  /caniuse-lite@1.0.30001594:
+    resolution: {integrity: sha512-VblSX6nYqyJVs8DKFMldE2IVCJjZ225LW00ydtUWwh5hk9IfkTOffO6r8gJNsH0qqqeAF8KrbMYA2VEwTlGW5g==}
 
   /chalk@2.4.2:
     resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
