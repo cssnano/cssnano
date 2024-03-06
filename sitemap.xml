@@ -3,7 +3,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/blog/cssnano-5-release-notes/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/blog/cssnano-5-release-notes/</loc>
             <priority>0.5</priority>
             <lastmod>2021-04-10T00:00:00.000Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -12,16 +12,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/</loc>
-            <priority>0.5</priority>
-            <lastmod>2023-10-28T12:48:24.496Z</lastmod>
-            <changefreq>monthly</changefreq>
-        </url>
-        
-    
-       
-        <url>
-            <loc>https://cssnano.co/docs/config-file/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/docs/config-file/</loc>
             <priority>0.5</priority>
             <lastmod>2023-10-28T12:48:27.587Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -30,7 +21,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/docs/what-are-optimisations/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/docs/what-are-optimisations/</loc>
             <priority>0.5</priority>
             <lastmod>2023-10-28T12:48:27.727Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -39,7 +30,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/docs/getting-started/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/docs/getting-started/</loc>
             <priority>0.5</priority>
             <lastmod>2023-10-28T12:48:27.736Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -48,7 +39,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/docs/introduction/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/docs/introduction/</loc>
             <priority>0.5</priority>
             <lastmod>2023-10-28T12:48:27.739Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -57,7 +48,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/styles/index.css</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/styles/index.css</loc>
             <priority>0.5</priority>
             <lastmod>2023-10-28T12:48:27.740Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -66,7 +57,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/docs/advanced-transforms/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/docs/advanced-transforms/</loc>
             <priority>0.5</priority>
             <lastmod>2023-10-28T12:48:27.785Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -75,16 +66,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/docs/community/</loc>
-            <priority>0.5</priority>
-            <lastmod>2023-10-28T12:48:27.785Z</lastmod>
-            <changefreq>monthly</changefreq>
-        </url>
-        
-    
-       
-        <url>
-            <loc>https://cssnano.co/docs/contributing/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/docs/contributing/</loc>
             <priority>0.5</priority>
             <lastmod>2023-10-28T12:48:27.786Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -93,7 +75,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/blog/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/blog/</loc>
             <priority>0.5</priority>
             <lastmod>2023-10-28T12:48:27.988Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -102,7 +84,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/docs/changelog/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/docs/changelog/</loc>
             <priority>0.5</priority>
             <lastmod>2023-10-28T12:48:27.988Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -111,7 +93,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/docs/optimisations/autoprefixer/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/docs/optimisations/autoprefixer/</loc>
             <priority>0.5</priority>
             <lastmod>2023-10-28T12:48:27.988Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -120,7 +102,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/docs/presets/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/docs/presets/</loc>
             <priority>0.5</priority>
             <lastmod>2024-02-23T13:27:56.871Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -129,7 +111,7 @@
     
        
         <url>
-            <loc>https://cssnano.co/docs/support-us/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/docs/support-us/</loc>
             <priority>0.5</priority>
             <lastmod>2024-02-23T13:27:56.871Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -138,9 +120,27 @@
     
        
         <url>
-            <loc>https://cssnano.co/playground/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/</loc>
             <priority>0.5</priority>
-            <lastmod>2024-02-23T13:27:56.871Z</lastmod>
+            <lastmod>2024-03-06T13:52:18.652Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.github.io/cssnano/cssnano/docs/community/</loc>
+            <priority>0.5</priority>
+            <lastmod>2024-03-06T18:53:57.461Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.github.io/cssnano/cssnano/playground/</loc>
+            <priority>0.5</priority>
+            <lastmod>2024-03-06T18:53:57.461Z</lastmod>
             <changefreq>monthly</changefreq>
         </url>
         
