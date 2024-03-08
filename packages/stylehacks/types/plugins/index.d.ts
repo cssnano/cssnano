@@ -1,7 +1,7 @@
 declare const _exports: ({
-    new (result?: import("postcss/lib/result").default<import("postcss/lib/document").default | import("postcss/lib/root").default> | undefined): important;
+    new (result?: import("postcss").Result<import("postcss").Document | import("postcss").Root> | undefined): important;
 } | {
-    new (result?: import("postcss/lib/result").default<import("postcss/lib/document").default | import("postcss/lib/root").default> | undefined): trailingSlashComma;
+    new (result?: import("postcss").Result<import("postcss").Document | import("postcss").Root> | undefined): trailingSlashComma;
 })[];
 export = _exports;
 import important = require("./important");
