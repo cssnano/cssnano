@@ -291,8 +291,8 @@ importers:
   packages/postcss-discard-unused:
     dependencies:
       postcss-selector-parser:
-        specifier: ^6.0.15
-        version: 6.0.15
+        specifier: ^6.0.16
+        version: 6.0.16
     devDependencies:
       postcss:
         specifier: ^8.4.35
@@ -336,8 +336,8 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-selector-parser:
-        specifier: ^6.0.15
-        version: 6.0.15
+        specifier: ^6.0.16
+        version: 6.0.16
     devDependencies:
       '@types/caniuse-api':
         specifier: ^3.0.6
@@ -397,8 +397,8 @@ importers:
   packages/postcss-minify-selectors:
     dependencies:
       postcss-selector-parser:
-        specifier: ^6.0.15
-        version: 6.0.15
+        specifier: ^6.0.16
+        version: 6.0.16
     devDependencies:
       postcss:
         specifier: ^8.4.35
@@ -564,8 +564,8 @@ importers:
   packages/postcss-unique-selectors:
     dependencies:
       postcss-selector-parser:
-        specifier: ^6.0.15
-        version: 6.0.15
+        specifier: ^6.0.16
+        version: 6.0.16
     devDependencies:
       postcss:
         specifier: ^8.4.35
@@ -583,8 +583,8 @@ importers:
         specifier: ^4.23.0
         version: 4.23.0
       postcss-selector-parser:
-        specifier: ^6.0.15
-        version: 6.0.15
+        specifier: ^6.0.16
+        version: 6.0.16
     devDependencies:
       postcss:
         specifier: ^8.4.35
@@ -2820,6 +2820,14 @@ packages:
 
   /postcss-selector-parser@6.0.15:
     resolution: {integrity: sha512-rEYkQOMUCEMhsKbK66tbEU9QVIxbhN18YiniAwA7XQYTVBqrBy+P2p5JcdqsHgKM2zWylp8d7J6eszocfds5Sw==}
+    engines: {node: '>=4'}
+    dependencies:
+      cssesc: 3.0.0
+      util-deprecate: 1.0.2
+    dev: false
+
+  /postcss-selector-parser@6.0.16:
+    resolution: {integrity: sha512-A0RVJrX+IUkVZbW3ClroRWurercFhieevHB38sr2+l9eUClMqome3LmEmnhlNy+5Mr2EYN6B2Kaw9wYdd+VHiw==}
     engines: {node: '>=4'}
     dependencies:
       cssesc: 3.0.0
