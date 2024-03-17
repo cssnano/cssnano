@@ -24,15 +24,13 @@ function transform(prop, value, opts) {
   let lowerCasedProp = prop.toLowerCase();
   let variableType = '';
 
-  if (lowerCasedProp.startsWith('--')) {
-    if (typeof opts.removeQuotes === 'function') {
-      variableType = opts.removeQuotes(prop);
-      opts.removeQuotes = true;
-    }
+  if (typeof opts.removeQuotes === 'function') {
+    variableType = opts.removeQuotes(prop);
+    opts.removeQuotes = true;
   }
-  if ((lowerCasedProp === 'font-weight' && !hasVariableFunction(value)) || variableType === 'font-weight') {
+  if ((lowerCasedProp === 'font-weight' || variableType === 'font-weight') && !hasVariableFunction(value)) {
     return minifyWeight(value);
-  } else if ((lowerCasedProp === 'font-family' && !hasVariableFunction(value)) || variableType === 'font-family') {
+  } else if ((lowerCasedProp === 'font-family'  || variableType === 'font-family') && !hasVariableFunction(value)) {
     const tree = valueParser(value);
 
     tree.nodes = minifyFamily(tree.nodes, opts);
