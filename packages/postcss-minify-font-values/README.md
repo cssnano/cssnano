@@ -52,12 +52,14 @@ Pass `false` to disable the module from removing duplicated font families.
 
 ##### removeQuotes
 
-Type: `boolean`
+Type: `boolean` | `(prop: string) => '' | 'font' | 'font-family' | 'font-weight'`
 Default: `true`
 
 Pass `false` to disable the module from removing quotes from font families.
 Note that oftentimes, this is a *safe optimisation* & is done safely. For more
 details, see [Mathias Bynens' article][mathias].
+
+Pass a function to determine whether a css variable is one of `font`, `font-family`, and `font-weight` to determine whether the variable needs to remove quotes.
 
 ## Usage
 

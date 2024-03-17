@@ -22,23 +22,30 @@ function hasVariableFunction(value) {
  */
 function transform(prop, value, opts) {
   let lowerCasedProp = prop.toLowerCase();
+  let variableType = '';
 
-  if (lowerCasedProp === 'font-weight' && !hasVariableFunction(value)) {
+  if (lowerCasedProp.startsWith('--')) {
+    if (typeof opts.removeQuotes === 'function') {
+      variableType = opts.removeQuotes(prop);
+      opts.removeQuotes = true;
+    }
+  }
+  if ((lowerCasedProp === 'font-weight' && !hasVariableFunction(value)) || variableType === 'font-weight') {
     return minifyWeight(value);
-  } else if (lowerCasedProp === 'font-family' && !hasVariableFunction(value)) {
+  } else if ((lowerCasedProp === 'font-family' && !hasVariableFunction(value)) || variableType === 'font-family') {
     const tree = valueParser(value);
 
     tree.nodes = minifyFamily(tree.nodes, opts);
 
     return tree.toString();
-  } else if (lowerCasedProp === 'font') {
+  } else if (lowerCasedProp === 'font' || variableType === 'font') {
     return minifyFont(value, opts);
   }
 
   return value;
 }
 
-/** @typedef {{removeAfterKeyword?: boolean, removeDuplicates?: boolean, removeQuotes?: boolean}} Options */
+/** @typedef {{removeAfterKeyword?: boolean, removeDuplicates?: boolean, removeQuotes?: boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight')}} Options */
 
 /**
  * @type {import('postcss').PluginCreator<Options>}
