@@ -1,5 +1,13 @@
 # Change Log
 
+## 6.1.1
+
+### Patch Changes
+
+- Updated dependencies [0856f86]
+  - postcss-discard-unused@6.0.5
+  - cssnano-preset-default@6.1.1
+
 ## 6.1.0
 
 ### Minor Changes

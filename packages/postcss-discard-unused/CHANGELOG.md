@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.5
+
+### Patch Changes
+
+- 0856f86: chore: update postcss-selector-parser
+
 ## 6.0.4
 
 ### Patch Changes

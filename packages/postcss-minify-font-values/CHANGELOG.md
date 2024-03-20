@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.1.0
+
+### Minor Changes
+
+- 794dc6c: removeQuotes support custom functions to handle css variables
+
 ## 6.0.3
 
 ### Patch Changes

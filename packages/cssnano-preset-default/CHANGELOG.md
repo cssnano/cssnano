@@ -1,5 +1,17 @@
 # Change Log
 
+## 6.1.1
+
+### Patch Changes
+
+- Updated dependencies [0856f86]
+- Updated dependencies [794dc6c]
+  - postcss-minify-selectors@6.0.4
+  - postcss-unique-selectors@6.0.4
+  - postcss-merge-rules@6.1.1
+  - postcss-minify-font-values@6.1.0
+  - postcss-merge-longhand@6.0.5
+
 ## 6.1.0
 
 ### Minor Changes
