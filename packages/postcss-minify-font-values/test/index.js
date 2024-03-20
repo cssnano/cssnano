@@ -22,6 +22,17 @@ test(
 );
 
 test(
+  'css variable should unquote font names',
+  processCSS(
+    'h1{--font-family:"Helvetica Neue"}',
+    'h1{--font-family:Helvetica Neue}',
+    {
+      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : '')
+    }
+  )
+);
+
+test(
   'should unquote font names with one character name',
   processCSS('h1{font-family:"A"}', 'h1{font-family:A}')
 );
@@ -35,10 +46,32 @@ test(
 );
 
 test(
+  'css variable should unquote font names with one character name #1',
+  processCSS(
+    'h1{--font-family:"A";--font-family:"A"}',
+    'h1{--font-family:A;--font-family:A}',
+    {
+      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : '')
+    }
+  )
+);
+
+test(
   'should unquote font names with space at the start',
   processCSS(
     'h1{font-family:" Helvetica Neue"}',
     'h1{font-family:\\ Helvetica Neue}'
+  )
+);
+
+test(
+  'css variable should unquote font names with space at the start',
+  processCSS(
+    'h1{--font-family:" Helvetica Neue"}',
+    'h1{--font-family:\\ Helvetica Neue}',
+    {
+      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : '')
+    }
   )
 );
 
@@ -51,8 +84,30 @@ test(
 );
 
 test(
+  'css variable should unquote font names with space at the end',
+  processCSS(
+    'h1{--font-family:"Helvetica Neue "}',
+    'h1{--font-family:Helvetica Neue\\ }',
+    {
+      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : '')
+    }
+  )
+);
+
+test(
   'should unquote and join identifiers with a slash, if numeric',
   processCSS('h1{font-family:"Bond 007"}', 'h1{font-family:Bond\\ 007}')
+);
+
+test(
+  'css variable should unquote and join identifiers with a slash, if numeric',
+  processCSS(
+    'h1{--font-family:"Bond 007"}', 
+    'h1{--font-family:Bond\\ 007}',
+    {
+      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : '')
+    }
+  )
 );
 
 test(
