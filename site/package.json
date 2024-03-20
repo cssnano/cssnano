@@ -7,25 +7,25 @@
     "build": "eleventy --input src/"
   },
   "dependencies": {
-    "@codemirror/autocomplete": "^6.13.0",
+    "@codemirror/autocomplete": "^6.15.0",
     "@codemirror/commands": "^6.3.3",
     "@codemirror/lang-css": "^6.2.1",
     "@codemirror/language": "^6.10.1",
     "@codemirror/state": "^6.4.1",
-    "@codemirror/view": "^6.25.1",
+    "@codemirror/view": "^6.26.0",
     "cssnano-preset-advanced": "link:../packages/cssnano-preset-advanced",
     "cssnano-preset-default": "link:../packages/cssnano-preset-default",
     "cssnano-preset-lite": "link:../packages/cssnano-preset-lite",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
-    "postcss": "^8.4.35"
+    "postcss": "^8.4.37"
   },
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1",
     "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.0",
     "@iarna/toml": "^2.2.5",
     "cssnano": "link:../packages/cssnano",
-    "markdown-it": "^14.0.0",
+    "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^8.6.7",
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4"
