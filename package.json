@@ -26,10 +26,10 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^14.0.0",
-    "postcss": "^8.4.37",
+    "postcss": "^8.4.38",
     "postcss-font-magician": "^3.0.0",
     "prettier": "^3.2.5",
-    "typescript": "~5.4.2",
+    "typescript": "~5.4.3",
     "uvu": "^0.5.6"
   },
   "browserslist": {
