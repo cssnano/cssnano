@@ -41,7 +41,7 @@
         "node": "^14 || ^16 || >=18.0"
     },
     "devDependencies": {
-        "autoprefixer": "^10.4.18",
+        "autoprefixer": "^10.4.19",
         "cssnano-preset-advanced": "workspace:^",
         "cssnano-preset-lite": "workspace:^",
         "postcss": "^8.4.38"
