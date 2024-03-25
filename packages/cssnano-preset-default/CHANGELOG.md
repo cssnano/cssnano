@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.1.2
+
+### Patch Changes
+
+- fix(cssnano-preset-default): update css-declaration-sorter
+
 ## 6.1.1
 
 ### Patch Changes
