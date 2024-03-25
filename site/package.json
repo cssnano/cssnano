@@ -18,7 +18,7 @@
     "cssnano-preset-lite": "link:../packages/cssnano-preset-lite",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
-    "postcss": "^8.4.37"
+    "postcss": "^8.4.38"
   },
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1",
@@ -27,7 +27,7 @@
     "cssnano": "link:../packages/cssnano",
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^8.6.7",
-    "webpack": "^5.90.3",
+    "webpack": "^5.91.0",
     "webpack-cli": "^5.1.4"
   }
 }
