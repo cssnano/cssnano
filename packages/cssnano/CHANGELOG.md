@@ -1,5 +1,14 @@
 # Change Log
 
+## 6.1.2
+
+### Patch Changes
+
+- fix(cssnano-preset-default): update css-declaration-sorter
+- 2f3fb50: chore: update autoprefixer
+- Updated dependencies
+  - cssnano-preset-default@6.1.2
+
 ## 6.1.1
 
 ### Patch Changes
