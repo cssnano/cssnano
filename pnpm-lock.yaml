@@ -98,8 +98,8 @@ importers:
         specifier: ^4.23.0
         version: 4.23.0
       css-declaration-sorter:
-        specifier: ^7.1.1
-        version: 7.1.1(postcss@8.4.38)
+        specifier: ^7.2.0
+        version: 7.2.0(postcss@8.4.38)
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -1333,8 +1333,8 @@ packages:
       which: 2.0.2
     dev: true
 
-  /css-declaration-sorter@7.1.1(postcss@8.4.38):
-    resolution: {integrity: sha512-dZ3bVTEEc1vxr3Bek9vGwfB5Z6ESPULhcRvO472mfjVnj8jRcTnKO8/JTczlvxM10Myb+wBM++1MtdO76eWcaQ==}
+  /css-declaration-sorter@7.2.0(postcss@8.4.38):
+    resolution: {integrity: sha512-h70rUM+3PNFuaBDTLe8wF/cdWu+dOZmb7pJt8Z2sedYbAcQVQV/tEchueg3GWxwqS0cxtbxmaHEdkNACqcvsow==}
     engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
       postcss: ^8.0.9
