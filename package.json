@@ -25,7 +25,7 @@
     "c8": "^9.1.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "globals": "^14.0.0",
+    "globals": "^15.0.0",
     "postcss": "^8.4.38",
     "postcss-font-magician": "^3.0.0",
     "prettier": "^3.2.5",
