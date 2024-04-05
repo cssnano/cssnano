@@ -19,11 +19,11 @@ declare namespace pluginCreator {
     export { postcss, Options, Reducer };
 }
 type Options = {
-    counter?: boolean | undefined;
-    counterStyle?: boolean | undefined;
-    keyframes?: boolean | undefined;
-    gridTemplate?: boolean | undefined;
-    encoder?: ((value: string, index: number) => string) | undefined;
+    counter?: boolean;
+    counterStyle?: boolean;
+    keyframes?: boolean;
+    gridTemplate?: boolean;
+    encoder?: (value: string, index: number) => string;
 };
 declare var postcss: true;
 type Reducer = {

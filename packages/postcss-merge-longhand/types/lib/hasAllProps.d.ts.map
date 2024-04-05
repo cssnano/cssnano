@@ -1,1 +1,1 @@
-{"version":3,"file":"hasAllProps.d.ts","sourceRoot":"","sources":["../../src/lib/hasAllProps.js"],"names":[],"mappings":"+BACkB,OAAO,SAAS,EAAE,WAAW,EAAE,YAAY,MAAM,EAAE,KAAK,OAAO"}
+{"version":3,"file":"hasAllProps.d.ts","sourceRoot":"","sources":["../../src/lib/hasAllProps.js"],"names":[],"mappings":"wBACW,CAAC,IAAI,EAAE,OAAO,SAAS,EAAE,WAAW,EAAE,EAAE,GAAG,KAAK,EAAE,MAAM,EAAE,KAAK,OAAO"}
