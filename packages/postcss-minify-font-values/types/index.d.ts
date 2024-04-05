@@ -1,5 +1,5 @@
 export = pluginCreator;
-/** @typedef {{removeAfterKeyword?: boolean, removeDuplicates?: boolean, removeQuotes?: boolean}} Options */
+/** @typedef {{removeAfterKeyword?: boolean, removeDuplicates?: boolean, removeQuotes?: boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight')}} Options */
 /**
  * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
@@ -12,7 +12,7 @@ declare namespace pluginCreator {
 type Options = {
     removeAfterKeyword?: boolean;
     removeDuplicates?: boolean;
-    removeQuotes?: boolean;
+    removeQuotes?: boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight');
 };
 declare var postcss: true;
 //# sourceMappingURL=index.d.ts.map
