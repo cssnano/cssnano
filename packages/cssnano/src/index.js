@@ -15,7 +15,7 @@ function isResolvable(moduleId) {
   try {
     require.resolve(moduleId);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }

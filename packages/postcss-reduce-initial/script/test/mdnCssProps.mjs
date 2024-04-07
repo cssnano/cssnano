@@ -116,7 +116,7 @@ validationTests('should fail validation on missing data', async () => {
   try {
     await validate(undefined);
     assert.unreachable();
-  } catch (err) {
+  } catch {
     assert.ok('Threw an error');
   }
 });
@@ -128,7 +128,7 @@ validationTests('should fail validation on missing fromInitial', async () => {
   try {
     await validate(partialData);
     assert.unreachable();
-  } catch (err) {
+  } catch {
     assert.ok('Threw an error');
   }
 });
@@ -140,7 +140,7 @@ validationTests('should fail validation on missing toInitial', async () => {
   try {
     await validate(partialData);
     assert.unreachable();
-  } catch (err) {
+  } catch {
     assert.ok('Threw an error');
   }
 });
