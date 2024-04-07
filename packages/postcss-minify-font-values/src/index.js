@@ -28,9 +28,15 @@ function transform(prop, value, opts) {
     variableType = opts.removeQuotes(prop);
     opts.removeQuotes = true;
   }
-  if ((lowerCasedProp === 'font-weight' || variableType === 'font-weight') && !hasVariableFunction(value)) {
+  if (
+    (lowerCasedProp === 'font-weight' || variableType === 'font-weight') &&
+    !hasVariableFunction(value)
+  ) {
     return minifyWeight(value);
-  } else if ((lowerCasedProp === 'font-family'  || variableType === 'font-family') && !hasVariableFunction(value)) {
+  } else if (
+    (lowerCasedProp === 'font-family' || variableType === 'font-family') &&
+    !hasVariableFunction(value)
+  ) {
     const tree = valueParser(value);
 
     tree.nodes = minifyFamily(tree.nodes, opts);

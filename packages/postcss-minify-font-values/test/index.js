@@ -27,7 +27,7 @@ test(
     'h1{--font-family:"Helvetica Neue"}',
     'h1{--font-family:Helvetica Neue}',
     {
-      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : '')
+      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : ''),
     }
   )
 );
@@ -51,7 +51,7 @@ test(
     'h1{--font-family:"A";--font-family:"A"}',
     'h1{--font-family:A;--font-family:A}',
     {
-      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : '')
+      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : ''),
     }
   )
 );
@@ -70,7 +70,7 @@ test(
     'h1{--font-family:" Helvetica Neue"}',
     'h1{--font-family:\\ Helvetica Neue}',
     {
-      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : '')
+      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : ''),
     }
   )
 );
@@ -89,7 +89,7 @@ test(
     'h1{--font-family:"Helvetica Neue "}',
     'h1{--font-family:Helvetica Neue\\ }',
     {
-      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : '')
+      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : ''),
     }
   )
 );
@@ -101,13 +101,9 @@ test(
 
 test(
   'css variable should unquote and join identifiers with a slash, if numeric',
-  processCSS(
-    'h1{--font-family:"Bond 007"}', 
-    'h1{--font-family:Bond\\ 007}',
-    {
-      removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : '')
-    }
-  )
+  processCSS('h1{--font-family:"Bond 007"}', 'h1{--font-family:Bond\\ 007}', {
+    removeQuotes: (prop) => (prop === '--font-family' ? 'font-family' : ''),
+  })
 );
 
 test(
