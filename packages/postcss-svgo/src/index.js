@@ -24,7 +24,7 @@ function minifySVG(input, opts) {
   try {
     decodedUri = decode(input);
     isUriEncoded = decodedUri !== input;
-  } catch (e) {
+  } catch {
     // Swallow exception if we cannot decode the value
     isUriEncoded = false;
   }

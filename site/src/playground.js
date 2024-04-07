@@ -42,7 +42,7 @@ function getUrlState() {
       return null;
     }
     return parsed;
-  } catch (err) {
+  } catch {
     return null;
   }
 }

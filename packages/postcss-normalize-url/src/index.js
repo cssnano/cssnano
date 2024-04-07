@@ -35,7 +35,7 @@ function convert(url) {
 
     try {
       normalizedURL = normalize(url);
-    } catch (e) {
+    } catch {
       normalizedURL = url;
     }
 
