@@ -34,7 +34,7 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": "^14 || ^16 || >= 18"
+    "node": "^18.12.0 || ^20.9.0 || >= 18"
   },
   "devDependencies": {
     "pleeease-filters": "^4.0.0",
