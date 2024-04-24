@@ -1,5 +1,19 @@
 # Change Log
 
+## 4.0.0
+
+### Major Changes
+
+- 0d10597: chore: drop support for Node.js 14 and 16
+
+### Patch Changes
+
+- Updated dependencies [0d10597]
+  - postcss-normalize-whitespace@7.0.0
+  - postcss-discard-comments@7.0.0
+  - postcss-discard-empty@7.0.0
+  - cssnano-utils@5.0.0
+
 ## 3.1.0
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # Change Log
 
+## 7.0.0
+
+### Major Changes
+
+- 0d10597: chore: drop support for Node.js 14 and 16
+
+### Patch Changes
+
+- Updated dependencies [0d10597]
+  - cssnano-utils@5.0.0
+
 ## 6.0.3
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.0
+
+### Major Changes
+
+- 0d10597: chore: drop support for Node.js 14 and 16
+
 ## 6.0.2
 
 ### Patch Changes
