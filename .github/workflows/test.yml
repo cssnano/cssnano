@@ -12,7 +12,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v4.1.3
       - name: Install pnpm
         uses: pnpm/action-setup@v3.0.0
         with:
@@ -32,7 +32,7 @@ jobs:
   test_helpers:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v4.1.3
       - name: Install pnpm
         uses: pnpm/action-setup@v3.0.0
         with:
@@ -62,7 +62,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: git config --global core.autocrlf input
 
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v4.1.3
 
       - name: Install pnpm
         uses: pnpm/action-setup@v3.0.0
