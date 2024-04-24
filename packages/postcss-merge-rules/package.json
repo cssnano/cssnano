@@ -1,6 +1,6 @@
 {
   "name": "postcss-merge-rules",
-  "version": "6.1.1",
+  "version": "7.0.0",
   "description": "Merge CSS rules with PostCSS.",
   "types": "types/index.d.ts",
   "main": "src/index.js",

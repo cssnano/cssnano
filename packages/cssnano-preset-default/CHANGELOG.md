@@ -1,5 +1,42 @@
 # Change Log
 
+## 7.0.0
+
+### Major Changes
+
+- 0d10597: chore: drop support for Node.js 14 and 16
+
+### Patch Changes
+
+- Updated dependencies [0d10597]
+  - postcss-normalize-timing-functions@7.0.0
+  - postcss-normalize-display-values@7.0.0
+  - postcss-normalize-repeat-style@7.0.0
+  - postcss-normalize-whitespace@7.0.0
+  - postcss-normalize-positions@7.0.0
+  - postcss-discard-duplicates@7.0.0
+  - postcss-discard-overridden@7.0.0
+  - postcss-minify-font-values@7.0.0
+  - postcss-normalize-charset@7.0.0
+  - postcss-normalize-unicode@7.0.0
+  - postcss-reduce-transforms@7.0.0
+  - postcss-discard-comments@7.0.0
+  - postcss-minify-gradients@7.0.0
+  - postcss-minify-selectors@7.0.0
+  - postcss-normalize-string@7.0.0
+  - postcss-unique-selectors@7.0.0
+  - postcss-convert-values@7.0.0
+  - postcss-merge-longhand@7.0.0
+  - postcss-ordered-values@7.0.0
+  - postcss-reduce-initial@7.0.0
+  - postcss-discard-empty@7.0.0
+  - postcss-minify-params@7.0.0
+  - postcss-normalize-url@7.0.0
+  - postcss-merge-rules@7.0.0
+  - postcss-colormin@7.0.0
+  - cssnano-utils@5.0.0
+  - postcss-svgo@7.0.0
+
 ## 6.1.2
 
 ### Patch Changes

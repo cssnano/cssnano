@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-display-values",
-  "version": "6.0.2",
+  "version": "7.0.0",
   "description": "Normalize multiple value display syntaxes into single values.",
   "main": "src/index.js",
   "types": "types/index.d.ts",
