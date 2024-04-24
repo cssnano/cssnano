@@ -2,9 +2,9 @@
   "name": "example-cli-usage",
   "private": true,
   "dependencies": {
-    "cssnano": "^6.0.0",
+    "cssnano": "^7.0.0",
     "postcss": "^8.4.4",
-    "postcss-cli": "^10.1.0"
+    "postcss-cli": "^11.0.0"
   },
   "scripts": {
     "minify": "postcss input.css > output.css"
@@ -15,7 +15,7 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": "^14 || ^16 || >=18.0"
+    "node": "^18 || ^20 || >=22.0"
   },
   "license": "MIT",
   "author": {
