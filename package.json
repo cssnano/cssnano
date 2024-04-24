@@ -27,7 +27,7 @@
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.0.0",
     "postcss": "^8.4.38",
-    "postcss-font-magician": "^3.0.0",
+    "postcss-font-magician": "^4.0.0",
     "prettier": "^3.2.5",
     "typescript": "~5.4.5",
     "uvu": "^0.5.6"
