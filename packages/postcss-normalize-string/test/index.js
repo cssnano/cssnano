@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const {
   usePostCSSPlugin,
   processCSSFactory,
@@ -240,4 +240,3 @@ test(
 );
 
 test('should work for columns', passthroughCSS(`div{columns: 2 auto;}`));
-test.run();

@@ -1,7 +1,7 @@
 'use strict';
 const { join } = require('path');
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const vars = require('postcss-simple-vars');
 const comments = require('postcss-discard-comments'); // alias not loading correctly
@@ -719,7 +719,7 @@ test('should not crash when node.raws.value is null', () => {
     '$color: red; h1{box-shadow:inset 0 -10px 12px 0 $color, /* some comment */ inset 0 0 5px 0 $color;color:blue}h2{color:blue}';
   const res = postcss([vars(), comments(), plugin]).process(css).css;
 
-  assert.is(
+  assert.strictEqual(
     res,
     'h1{box-shadow:inset 0 -10px 12px 0 red, inset 0 0 5px 0 red}h1,h2{color:blue}'
   );
@@ -730,7 +730,7 @@ test('should not crash when node.raws.value is null (2)', () => {
     '#foo .bar { margin-left: auto ; margin-right: auto ; } #foo .qux { margin-right: auto ; }';
   const res = postcss([comments(), plugin]).process(css).css;
 
-  assert.is(
+  assert.strictEqual(
     res,
     '#foo .bar{ margin-left:auto; } #foo .bar,#foo .qux{ margin-right:auto; }'
   );
@@ -962,4 +962,3 @@ test(
 }`
   )
 );
-test.run();

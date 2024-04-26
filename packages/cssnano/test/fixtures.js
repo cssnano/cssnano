@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -358,4 +358,3 @@ test(
   'should remove leading zeroes from reduced calc values',
   processCss(`.box { margin: calc(-.5 * 1rem); }`, `.box{margin:-.5rem}`)
 );
-test.run();

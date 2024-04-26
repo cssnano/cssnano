@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -9,5 +9,3 @@ test(
     'h1{width:calc(10px - 100px/var(--test))}'
   )
 );
-
-test.run();

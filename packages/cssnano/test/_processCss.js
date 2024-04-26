@@ -1,5 +1,5 @@
 'use strict';
-const assert = require('uvu/assert');
+const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const cssnano = require('..');
 
@@ -8,7 +8,7 @@ function processCss(fixture, expected, options = { from: undefined }) {
     postcss([cssnano()])
       .process(fixture, options)
       .then(({ css }) => {
-        assert.is(css, expected);
+        assert.strictEqual(css, expected);
       });
 }
 module.exports = processCss;

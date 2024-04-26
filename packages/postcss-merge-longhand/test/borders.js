@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const trbl = require('../src/lib/trbl.js');
 const { processCSSFactory } = require('../../../util/testHelpers.js');
 const plugin = require('../src/index.js');
@@ -1298,4 +1298,3 @@ test(
 );
 
 test('should handle empty border', processCSS('h1{border:;}', 'h1{border:;}'));
-test.run();

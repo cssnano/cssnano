@@ -1,6 +1,6 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const sameParent = require('../src/sameParent.js');
 
@@ -11,7 +11,7 @@ test('should calculate same parent', () => {
       const h1 = result.root.nodes[0];
       const h2 = result.root.nodes[1];
 
-      assert.is(sameParent(h1, h2), true);
+      assert.strictEqual(sameParent(h1, h2), true);
     });
 });
 
@@ -25,7 +25,7 @@ test('should calculate same parent (detached nodes)', () => {
       h1.remove();
       h2.remove();
 
-      assert.is(sameParent(h1, h2), true);
+      assert.strictEqual(sameParent(h1, h2), true);
     });
 });
 
@@ -39,7 +39,7 @@ test('should calculate same parent (at rules)', () => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[0].nodes[1];
 
-      assert.is(sameParent(h1, h2), true);
+      assert.strictEqual(sameParent(h1, h2), true);
     });
 });
 
@@ -53,7 +53,7 @@ test('should calculate same parent (multiple at rules)', () => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0];
 
-      assert.is(sameParent(h1, h2), true);
+      assert.strictEqual(sameParent(h1, h2), true);
     });
 });
 
@@ -67,7 +67,7 @@ test('should calculate same parent (multiple at rules (uppercase))', () => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0];
 
-      assert.is(sameParent(h1, h2), true);
+      assert.strictEqual(sameParent(h1, h2), true);
     });
 });
 
@@ -92,7 +92,7 @@ test('should calculate same parent (nested at rules)', () => {
       const h1 = result.root.nodes[0].nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0].nodes[0];
 
-      assert.is(sameParent(h1, h2), true);
+      assert.strictEqual(sameParent(h1, h2), true);
     });
 });
 
@@ -117,7 +117,7 @@ test('should calculate not same parent (nested at rules)', () => {
       const h1 = result.root.nodes[0].nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0].nodes[0];
 
-      assert.is.not(sameParent(h1, h2), true);
+      assert.notStrictEqual(sameParent(h1, h2), true);
     });
 });
 
@@ -142,7 +142,7 @@ test('should calculate not same parent (nested at rules) (2)', () => {
       const h1 = result.root.nodes[0].nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0].nodes[0];
 
-      assert.is.not(sameParent(h1, h2), true);
+      assert.notStrictEqual(sameParent(h1, h2), true);
     });
 });
 
@@ -165,7 +165,7 @@ test('should calculate not same parent (nested at rules) (3)', () => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0].nodes[0];
 
-      assert.is.not(sameParent(h1, h2), true);
+      assert.notStrictEqual(sameParent(h1, h2), true);
     });
 });
 
@@ -188,7 +188,6 @@ test('should calculate not same parent (nested at rules) (4)', () => {
       const h1 = result.root.nodes[0].nodes[0];
       const h2 = result.root.nodes[1].nodes[0].nodes[0];
 
-      assert.is.not(sameParent(h1, h2), true);
+      assert.notStrictEqual(sameParent(h1, h2), true);
     });
 });
-test.run();

@@ -1,13 +1,13 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const valueParser = require('postcss-value-parser');
 const getArguments = require('../src/getArguments.js');
 
 test('should get arguments', () => {
   const parsed = valueParser('linear-gradient(to bottom left, red, blue)');
 
-  assert.equal(getArguments(parsed.nodes[0]), [
+  assert.deepStrictEqual(getArguments(parsed.nodes[0]), [
     [
       {
         type: 'word',
@@ -58,4 +58,3 @@ test('should get arguments', () => {
     ],
   ]);
 });
-test.run();

@@ -1,6 +1,6 @@
 'use strict';
 const { join } = require('path');
-const { test } = require('uvu');
+const { test } = require('node:test');
 const {
   usePostCSSPlugin,
   processCSSFactory,
@@ -186,5 +186,3 @@ test(
   'should ignore the data present in the ignore options , toInitial #3',
   passthroughCSS('WRITING-MODE:horizontal-tb', { ignore: ['writing-mode'] })
 );
-
-test.run();

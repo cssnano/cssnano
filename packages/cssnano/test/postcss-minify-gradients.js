@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -121,4 +121,3 @@ test(
     'background:repeating-radial-gradient(#121,#121 5px,#ffe500 0,#ffe500 10px)'
   )
 );
-test.run();

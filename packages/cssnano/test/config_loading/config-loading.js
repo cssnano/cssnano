@@ -1,7 +1,7 @@
 'use strict';
 const process = require('process');
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const litePreset = require('cssnano-preset-lite');
 const defaultPreset = require('cssnano-preset-default');
@@ -23,11 +23,10 @@ test.after(() => {
 
 test('should read the cssnano configuration file', () => {
   const processor = postcss([cssnano]);
-  assert.is(processor.plugins.length, litePreset().plugins.length);
+  assert.strictEqual(processor.plugins.length, litePreset().plugins.length);
 });
 
 test('PostCSS config should override the cssnano config', () => {
   const processor = postcss([cssnano({ preset: 'default' })]);
-  assert.is(processor.plugins.length, defaultPreset().plugins.length);
+  assert.strictEqual(processor.plugins.length, defaultPreset().plugins.length);
 });
-test.run();

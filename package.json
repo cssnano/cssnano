@@ -6,10 +6,10 @@
     "fixlint": "prettier --write . && pnpm lint -- --fix",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
-    "test:only": "uvu packages \"test.*\\.js$\"",
+    "test:only": "node --test \"packages/**/test/**/*js\"",
     "test:coverage": "c8 pnpm test:only",
     "test": "pnpm test:coverage",
-    "test:helpers": "uvu packages \"test.*\\.mjs$\"",
+    "test:helpers": "node --test \"packages/**/test/**/*mjs\"",
     "types": "tsc -b",
     "all-publish": "pnpm changeset publish"
   },
@@ -29,8 +29,7 @@
     "postcss": "^8.4.38",
     "postcss-font-magician": "^4.0.0",
     "prettier": "^3.2.5",
-    "typescript": "~5.4.5",
-    "uvu": "^0.5.6"
+    "typescript": "~5.4.5"
   },
   "browserslist": {
     "production": [

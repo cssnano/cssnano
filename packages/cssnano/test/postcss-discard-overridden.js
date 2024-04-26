@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -17,4 +17,3 @@ test(
     '@media screen and (max-width:500px){@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(358deg)}}}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}.box{animation-name:a}'
   )
 );
-test.run();

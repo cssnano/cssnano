@@ -1,14 +1,13 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const isColorStop = require('../src/isColorStop.js');
 
 test('should recognise color stops', () => {
-  assert.is(isColorStop('yellow'), true);
-  assert.is(isColorStop('yellow', '12px'), true);
-  assert.is(isColorStop('yellow', 'px'), false);
-  assert.is(isColorStop('yellow', 'calc(100%)'), true);
-  assert.is(isColorStop(undefined), false);
-  assert.is(isColorStop('yellow', '0'), true);
+  assert.strictEqual(isColorStop('yellow'), true);
+  assert.strictEqual(isColorStop('yellow', '12px'), true);
+  assert.strictEqual(isColorStop('yellow', 'px'), false);
+  assert.strictEqual(isColorStop('yellow', 'calc(100%)'), true);
+  assert.strictEqual(isColorStop(undefined), false);
+  assert.strictEqual(isColorStop('yellow', '0'), true);
 });
-test.run();

@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCSS = require('./_processCSS');
 
 const opts = { target: 'IE 7', unaffected: 'IE 8' };
@@ -36,4 +36,3 @@ test(
   'should also handle @hacks (uppercase)',
   processCSS('h1 { @COLOR: red }', 'h1 {}', opts)
 );
-test.run();

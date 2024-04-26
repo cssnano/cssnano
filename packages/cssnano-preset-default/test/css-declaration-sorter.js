@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const {
   processCSSWithPresetFactory,
 } = require('../../../util/integrationTestHelpers.js');
@@ -149,4 +149,3 @@ test(
     'a{border:0;border-top:3px solid}'
   )
 );
-test.run();

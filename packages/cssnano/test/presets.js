@@ -1,6 +1,6 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const advancedPreset = require('cssnano-preset-advanced');
 const defaultPreset = require('cssnano-preset-default');
@@ -12,7 +12,7 @@ test('should accept an invoked preset', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{content:"©"}`, { from: undefined })
     .then((result) => {
-      assert.is(result.css, `@charset "utf-8";h1{content:"©"}`);
+      assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
     });
 });
 
@@ -22,7 +22,7 @@ test('should accept a non-invoked preset', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{content:"©"}`, { from: undefined })
     .then((result) => {
-      assert.is(result.css, `@charset "utf-8";h1{content:"©"}`);
+      assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
     });
 });
 
@@ -32,7 +32,7 @@ test('should accept a default preset string', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{content:"©"}`, { from: undefined })
     .then((result) => {
-      assert.is(result.css, `@charset "utf-8";h1{content:"©"}`);
+      assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
     });
 });
 
@@ -42,7 +42,7 @@ test('should accept an invoked preset other than default', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      assert.is(result.css, `h1{z-index:15}`);
+      assert.strictEqual(result.css, `h1{z-index:15}`);
     });
 });
 
@@ -52,7 +52,7 @@ test('should accept a preset string other than default', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      assert.is(result.css, `h1{z-index:1}`);
+      assert.strictEqual(result.css, `h1{z-index:1}`);
     });
 });
 
@@ -62,7 +62,7 @@ test('should accept a preset string other than default, with options', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      assert.is(result.css, `h1{z-index:15}`);
+      assert.strictEqual(result.css, `h1{z-index:15}`);
     });
 });
 
@@ -72,7 +72,7 @@ test('should accept a preset string other than default (sugar syntax)', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      assert.is(result.css, `h1{z-index:15}`);
+      assert.strictEqual(result.css, `h1{z-index:15}`);
     });
 });
 
@@ -82,7 +82,7 @@ test('should be able to exclude plugins', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      assert.is(result.css, `h1{z-index:10}`);
+      assert.strictEqual(result.css, `h1{z-index:10}`);
     });
 });
 
@@ -92,7 +92,7 @@ test('should be able to include plugins', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      assert.is(result.css, `h1{z-index:1}`);
+      assert.strictEqual(result.css, `h1{z-index:1}`);
     });
 });
 
@@ -102,7 +102,7 @@ test('should be able to exclude plugins (exclude syntax)', () => {
   return postcss([cssnano({ preset })])
     .process(`h1{z-index:10}`, { from: undefined })
     .then((result) => {
-      assert.is(result.css, `h1{z-index:10}`);
+      assert.strictEqual(result.css, `h1{z-index:10}`);
     });
 });
 
@@ -117,7 +117,7 @@ test('should be able to exclude pointer-events plugin', () => {
   })
     .process('.selector { pointer-events: initial; }', { from: undefined })
     .then((result) => {
-      assert.is(result.css, '.selector{pointer-events:initial}');
+      assert.strictEqual(result.css, '.selector{pointer-events:initial}');
     });
 });
 test('should error on a bad preset', async () => {
@@ -130,4 +130,3 @@ test('should error on a bad preset', async () => {
     assert.ok(error);
   }
 });
-test.run();

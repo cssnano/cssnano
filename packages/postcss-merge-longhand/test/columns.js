@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const { processCSSFactory } = require('../../../util/testHelpers.js');
 const plugin = require('../src/index.js');
 
@@ -198,4 +198,3 @@ test(
   'should handle empty columns',
   processCSS('h1{columns:;}', 'h1{columns:;}')
 );
-test.run();

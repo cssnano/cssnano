@@ -1,7 +1,7 @@
 'use strict';
 const { join } = require('path');
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const {
   integrationTests,
   loadPreset,
@@ -51,11 +51,10 @@ function excludeProcessor(options) {
     loadPreset(preset(options))
       .process(input, { from: undefined })
       .then(({ css }) => {
-        assert.is(css, input);
+        assert.strictEqual(css, input);
       });
 }
 
 test('exclude zindex', excludeProcessor({ zindex: false }));
 
 test('exclude zindex #1', excludeProcessor({ zindex: { exclude: true } }));
-test.run();

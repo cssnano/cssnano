@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const { processCSSFactory } = require('../../../util/testHelpers.js');
 const plugin = require('../src/index.js');
 
@@ -99,4 +99,3 @@ test(
     'div{border-radius:var(border-rad, )}'
   )
 );
-test.run();

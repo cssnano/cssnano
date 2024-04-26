@@ -1,6 +1,6 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const minifyColor = require('../src/minifyColor.js');
 
 function min(input, options = {}) {
@@ -13,7 +13,7 @@ function min(input, options = {}) {
 }
 
 function isEqual(input, output) {
-  return () => assert.is(min(input), output);
+  return () => assert.strictEqual(min(input), output);
 }
 
 test('should lowercase keywords', isEqual('RED', 'red'));
@@ -153,30 +153,35 @@ test(
 );
 
 test('should pass through if not recognised', () => {
-  assert.is(min('Unrecognised'), 'Unrecognised');
-  assert.is(min('inherit'), 'inherit');
+  assert.strictEqual(min('Unrecognised'), 'Unrecognised');
+  assert.strictEqual(min('inherit'), 'inherit');
 });
 
 test('should convert to hex4', () => {
-  assert.is(min('#aabbcc33', { alphaHex: true }), '#abc3');
-  assert.is(min('transparent', { alphaHex: true }), '#0000');
-  assert.is(min('rgb(119,119,119,0.2)', { alphaHex: true }), '#7773');
-  assert.is(min('hsla(0,0%,100%,.4)', { alphaHex: true }), '#fff6');
+  assert.strictEqual(min('#aabbcc33', { alphaHex: true }), '#abc3');
+  assert.strictEqual(min('transparent', { alphaHex: true }), '#0000');
+  assert.strictEqual(min('rgb(119,119,119,0.2)', { alphaHex: true }), '#7773');
+  assert.strictEqual(min('hsla(0,0%,100%,.4)', { alphaHex: true }), '#fff6');
 });
 
 test('should convert to hex8', () => {
-  assert.is(min('rgba(128, 128, 128, 0.5)', { alphaHex: true }), '#80808080');
-  assert.is(min('hsla(180, 100%, 50%, 0.5)', { alphaHex: true }), '#00ffff80');
+  assert.strictEqual(
+    min('rgba(128, 128, 128, 0.5)', { alphaHex: true }),
+    '#80808080'
+  );
+  assert.strictEqual(
+    min('hsla(180, 100%, 50%, 0.5)', { alphaHex: true }),
+    '#00ffff80'
+  );
 });
 
 test('should not convert to alpha hex since the conversion is not lossless', () => {
-  assert.is(
+  assert.strictEqual(
     min('rgba(0, 0, 0, 0.075)', { alphaHex: true }),
     'rgba(0,0,0,.075)'
   );
-  assert.is(
+  assert.strictEqual(
     min('hsla(0, 0%, 50%, 0.515)', { alphaHex: true }),
     'hsla(0,0%,50%,.515)'
   );
 });
-test.run();

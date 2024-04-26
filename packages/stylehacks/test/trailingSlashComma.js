@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCSS = require('./_processCSS');
 
 test(
@@ -24,4 +24,3 @@ test(
   'ie 5.5-7 trailing slash hack (uppercase)',
   processCSS('H1\\ { COLOR: RED }', '', { target: 'IE 6', unaffected: 'IE 8' })
 );
-test.run();
