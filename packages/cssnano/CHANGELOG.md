@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.0.1
+
+### Patch Changes
+
+- Updated dependencies [2a26e29]
+  - cssnano-preset-default@7.0.1
+
 ## 7.0.0
 
 ### Major Changes

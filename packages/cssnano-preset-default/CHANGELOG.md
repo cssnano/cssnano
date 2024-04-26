@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.1
+
+### Patch Changes
+
+- 2a26e29: chore: update postcss-calc to latest release
+
 ## 7.0.0
 
 ### Major Changes
