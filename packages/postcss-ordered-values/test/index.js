@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const {
   usePostCSSPlugin,
   processCSSFactory,
@@ -797,4 +797,3 @@ test(
   'should order list-style 13',
   passthroughCSS('ul{list-style: unknown unset none}')
 );
-test.run();

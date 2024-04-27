@@ -1,6 +1,6 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const nano = require('..');
 
@@ -10,7 +10,7 @@ function pluginMacro(instance) {
 
   return () =>
     instance.process(css, { from: undefined }).then((result) => {
-      assert.is(result.css, min);
+      assert.strictEqual(result.css, min);
     });
 }
 
@@ -28,10 +28,9 @@ test('should work with sourcemaps', () => {
   return postcss([nano])
     .process('h1{z-index:1}', { from: undefined, map: { inline: true } })
     .then(({ css }) => {
-      assert.is(
+      assert.strictEqual(
         /sourceMappingURL=data:application\/json;base64/.test(css),
         true
       );
     });
 });
-test.run();

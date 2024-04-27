@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -89,4 +89,3 @@ test(
     'h1{-webkit-transform:translateZ(0)}'
   )
 );
-test.run();

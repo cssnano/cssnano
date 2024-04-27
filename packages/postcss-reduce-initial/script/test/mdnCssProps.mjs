@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { suite } from 'uvu';
-import * as assert from 'uvu/assert';
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
 import {
   isUserAgentDependent,
   isComplexSyntax,
@@ -14,8 +14,6 @@ const testData = JSON.parse(
   fs.readFileSync(new URL('./sampleProperties.json', import.meta.url), 'utf-8')
 );
 
-const propertiesTests = suite('Recognize properties and flags');
-
 for (const [flag, expected] of [
   ['dependsOnUserAgent', true],
   ['noPracticalInitialValue', true],
@@ -27,8 +25,8 @@ for (const [flag, expected] of [
   ['experimental', false],
   ['normal', false],
 ]) {
-  propertiesTests(`should recognize user agent dependent flag ${flag}`, () => {
-    assert.is(isUserAgentDependent(flag), expected);
+  test(`should recognize user agent dependent flag ${flag}`, () => {
+    assert.strictEqual(isUserAgentDependent(flag), expected);
   });
 }
 
@@ -39,12 +37,9 @@ for (const [initial, key, expected] of [
   ['normal', 'word-wrap', false],
   ['100%', 'text-align', false],
 ]) {
-  propertiesTests(
-    `isComplexSyntax(${initial}, ${key}) expected: ${expected}`,
-    () => {
-      assert.is(isComplexSyntax(initial, key), expected);
-    }
-  );
+  test(`isComplexSyntax(${initial}, ${key}) expected: ${expected}`, () => {
+    assert.strictEqual(isComplexSyntax(initial, key), expected);
+  });
 }
 
 for (const [status, key, expected] of [
@@ -54,12 +49,9 @@ for (const [status, key, expected] of [
   ['standard', 'align-items', false],
   ['experimental', 'aspect-ratio', false],
 ]) {
-  propertiesTests(
-    `isUnpredictable(${status}, ${key}) expected: ${expected}`,
-    () => {
-      assert.is(isUnpredictable(status, key), expected);
-    }
-  );
+  test(`isUnpredictable(${status}, ${key}) expected: ${expected}`, () => {
+    assert.strictEqual(isUnpredictable(status, key), expected);
+  });
 }
 
 for (const [string, expected] of [
@@ -76,74 +68,64 @@ for (const [string, expected] of [
   ['100%', '100%'],
   ['auto', 'auto'],
 ]) {
-  propertiesTests(
-    `strip HTML, but leave relevant chars and separating spaces ${string} expected: ${expected}`,
-    () => {
-      assert.is(toPlainText(string), expected);
-    }
-  );
+  test(`strip HTML, but leave relevant chars and separating spaces ${string} expected: ${expected}`, () => {
+    assert.strictEqual(toPlainText(string), expected);
+  });
 }
 
-const validationTests = suite('Reduce and validate sample data');
 let processedData = '';
 
-validationTests.before(() => {
+test.before(() => {
   processedData = reduceInitial(testData);
 });
 
-validationTests('should reduce to expected object structure', () => {
-  assert.type(processedData.fromInitial, 'object');
-  assert.type(processedData.toInitial, 'object');
+test('should reduce to expected object structure', () => {
+  assert.strictEqual(typeof processedData.fromInitial, 'object');
+  assert.strictEqual(typeof processedData.toInitial, 'object');
 });
 
-validationTests('should reduce to expected number of fromInitial items', () => {
-  assert.is(Object.keys(processedData.fromInitial).length, 5);
+test('should reduce to expected number of fromInitial items', () => {
+  assert.strictEqual(Object.keys(processedData.fromInitial).length, 5);
 });
 
-validationTests('should reduce to expected number of toInitial items', () => {
-  assert.is(Object.keys(processedData.toInitial).length, 3);
+test('should reduce to expected number of toInitial items', () => {
+  assert.strictEqual(Object.keys(processedData.toInitial).length, 3);
 });
 
-validationTests(
-  'should validate and return sample data as resolved promise',
-  async () => {
-    const result = await validate(processedData);
-    assert.equal(result, processedData);
-  }
-);
+test('should validate and return sample data as resolved promise', async () => {
+  const result = await validate(processedData);
+  assert.deepStrictEqual(result, processedData);
+});
 
-validationTests('should fail validation on missing data', async () => {
+test('should fail validation on missing data', async () => {
   try {
     await validate(undefined);
-    assert.unreachable();
+    assert.ok(true, false, 'Should not be reached');
   } catch {
     assert.ok('Threw an error');
   }
 });
 
-validationTests('should fail validation on missing fromInitial', async () => {
+test('should fail validation on missing fromInitial', async () => {
   const partialData = JSON.parse(JSON.stringify(processedData));
   delete partialData.fromInitial;
 
   try {
     await validate(partialData);
-    assert.unreachable();
+    assert.ok(true, false, 'Should not be reached');
   } catch {
     assert.ok('Threw an error');
   }
 });
 
-validationTests('should fail validation on missing toInitial', async () => {
+test('should fail validation on missing toInitial', async () => {
   const partialData = JSON.parse(JSON.stringify(processedData));
   delete partialData.toInitial;
 
   try {
     await validate(partialData);
-    assert.unreachable();
+    assert.ok(true, false, 'Should not be reached');
   } catch {
     assert.ok('Threw an error');
   }
 });
-
-propertiesTests.run();
-validationTests.run();

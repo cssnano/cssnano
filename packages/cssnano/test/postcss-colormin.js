@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -92,5 +92,3 @@ test(
     'h1{FILTER:progid:DXImageTransform.Microsoft.gradient(startColorstr= #000000,endColorstr= #ffffff)}'
   )
 );
-
-test.run();

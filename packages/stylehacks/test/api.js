@@ -1,6 +1,6 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const stylehacks = require('../');
 const packageJson = require('../package.json');
@@ -9,7 +9,7 @@ function processCss(fixture, expected, options) {
   return () =>
     postcss(stylehacks(options))
       .process(fixture, { from: undefined })
-      .then(({ css }) => assert.is(css, expected));
+      .then(({ css }) => assert.strictEqual(css, expected));
 }
 
 function passthroughCss(fixture, options) {
@@ -23,7 +23,7 @@ test('can be used as a postcss plugin', () => {
     .use(stylehacks())
     .process(css, { from: undefined })
     .then((result) => {
-      assert.is(result.css, 'h1 { }');
+      assert.strictEqual(result.css, 'h1 { }');
     });
 });
 
@@ -32,7 +32,7 @@ test('can be used as a postcss plugin (2)', () => {
 
   return postcss([stylehacks()])
     .process(css, { from: undefined })
-    .then((result) => assert.is(result.css, 'h1 { }'));
+    .then((result) => assert.strictEqual(result.css, 'h1 { }'));
 });
 
 test('can be used as a postcss plugin (3)', () => {
@@ -41,12 +41,12 @@ test('can be used as a postcss plugin (3)', () => {
   return postcss([stylehacks])
     .process(css, { from: undefined })
     .then((result) => {
-      assert.is(result.css, 'h1 { }');
+      assert.strictEqual(result.css, 'h1 { }');
     });
 });
 
 test('should use the postcss plugin api', () => {
-  assert.is(stylehacks().postcssPlugin, packageJson.name);
+  assert.strictEqual(stylehacks().postcssPlugin, packageJson.name);
 });
 
 test('should have a separate detect method', () => {
@@ -66,7 +66,7 @@ test('should have a separate detect method', () => {
 
   return postcss(plugin)
     .process('h1 { _color: red; =color: black }', { from: undefined })
-    .then(() => assert.is(counter, 2));
+    .then(() => assert.strictEqual(counter, 2));
 });
 
 test('should have a separate detect method (2)', () => {
@@ -86,7 +86,7 @@ test('should have a separate detect method (2)', () => {
 
   return postcss(plugin)
     .process('h1 { _color: red; =color: black }', { from: undefined })
-    .then(() => assert.is(counter, 0));
+    .then(() => assert.strictEqual(counter, 0));
 });
 
 test(
@@ -137,4 +137,3 @@ test(
     }`
   )
 );
-test.run();

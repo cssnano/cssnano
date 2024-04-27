@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -164,4 +164,3 @@ test(
     '@document url(http://www.w3.org/),url-prefix(http://www.w3.org/Style/){body{font-size:2em}}'
   )
 );
-test.run();

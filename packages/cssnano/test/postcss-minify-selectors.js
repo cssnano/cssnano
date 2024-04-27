@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -196,4 +196,3 @@ test(
     '[a=":not( *.b, h1, h1 )"]{color:#00f}'
   )
 );
-test.run();

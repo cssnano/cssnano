@@ -1,6 +1,6 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const {
   usePostCSSPlugin,
   processCSSFactory,
@@ -41,7 +41,7 @@ function testRemovals(fixture, expected, removedSelectors) {
         }
       });
 
-      assert.is(result.css, expected);
+      assert.strictEqual(result.css, expected);
     });
 }
 
@@ -115,4 +115,3 @@ test(
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
-test.run();

@@ -1,7 +1,7 @@
 'use strict';
 const { join } = require('path');
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const {
   integrationTests,
   loadPreset,
@@ -45,11 +45,10 @@ function excludeProcessor(options) {
     loadPreset(preset(options))
       .process(input, { from: undefined })
       .then(({ css }) => {
-        assert.is(css, input);
+        assert.strictEqual(css, input);
       });
 }
 
 test('exclude colormin', excludeProcessor({ colormin: false }));
 
 test('exclude colormin #1', excludeProcessor({ colormin: { exclude: true } }));
-test.run();

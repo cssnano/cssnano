@@ -1,6 +1,6 @@
 'use strict';
 const { join } = require('path');
-const { test } = require('uvu');
+const { test } = require('node:test');
 const {
   usePostCSSPlugin,
   processCSSFactory,
@@ -301,5 +301,3 @@ test(
   'should not attempt to convert font names',
   passthroughCSS('@font-face{src:local(Noto Sans Black)}')
 );
-
-test.run();

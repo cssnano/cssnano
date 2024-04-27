@@ -2,7 +2,7 @@
 const path = require('path');
 const fs = require('fs');
 const postcss = require('postcss');
-const assert = require('uvu/assert');
+const assert = require('node:assert/strict');
 const cssnano = require('../packages/cssnano/src/index.js');
 const { processCSSFactory } = require('./testHelpers.js');
 
@@ -31,7 +31,7 @@ function integrationTests(preset, integrations) {
       postcss([cssnano({ preset })])
         .process(css, { from: undefined })
         .then((result) => {
-          assert.is(
+          assert.strictEqual(
             result.css,
             fs.readFileSync(`${integrations}/${framework}.css`, 'utf8')
           );

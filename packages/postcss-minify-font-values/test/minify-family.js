@@ -1,6 +1,6 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const minifyFamily = require('../src/lib/minify-family.js');
 
 const tests = [
@@ -93,7 +93,6 @@ const tests = [
 
 test('minify-family', () => {
   tests.forEach(({ fixture, options, expected }) => {
-    assert.equal(minifyFamily(fixture, options), expected);
+    assert.deepStrictEqual(minifyFamily(fixture, options), expected);
   });
 });
-test.run();

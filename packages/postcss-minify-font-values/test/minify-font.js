@@ -1,6 +1,6 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const minifyFont = require('../src/lib/minify-font.js');
 
 test('.8em "Times New Roman", Arial, Helvetica, sans-serif', () => {
@@ -47,5 +47,3 @@ test('tabs and newlines', () => {
     '700 italic \t 20px \n Times New Roman,serif'
   );
 });
-
-test.run();

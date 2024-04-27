@@ -1,7 +1,7 @@
 'use strict';
 const { readFileSync: file } = require('fs');
-const assert = require('uvu/assert');
-const { test } = require('uvu');
+const assert = require('node:assert/strict');
+const { test } = require('node:test');
 const postcss = require('postcss');
 const filters = require('pleeease-filters');
 const {
@@ -171,7 +171,7 @@ test('should not warn on "escaped-quotes" svgs', async () => {
   const css =
     'h1{background-image:url("data:image/svg+xml,<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"400\\" height=\\"400\\" fill-opacity=\\".25\\" ><rect x=\\"200\\" width=\\"200\\" height=\\"200\\" /><rect y=\\"200\\" width=\\"200\\" height=\\"200\\" /></svg>")}';
   const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.is(result.messages.length, 0);
+  assert.strictEqual(result.messages.length, 0);
 });
 
 test(
@@ -236,8 +236,8 @@ test('should warn on SVG containing unclosed tags', async () => {
   const css =
     'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
   const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.is(result.messages.length, 1);
-  assert.is(result.messages[0].type, 'warning');
+  assert.strictEqual(result.messages.length, 1);
+  assert.strictEqual(result.messages[0].type, 'warning');
 });
 
 test('should only warn with svg data uri', async () => {
@@ -246,7 +246,7 @@ test('should only warn with svg data uri', async () => {
        url('data:image/svg+xml;charset=utf-8,<svg></svg>') format("svg");
   }`;
   const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.is(result.messages.length, 0);
+  assert.strictEqual(result.messages.length, 0);
 });
 
 test(
@@ -283,8 +283,7 @@ test(
 test('should not crash on malformed urls when encoded', () => {
   const svg = encode(file(`${__dirname}/border.svg`, 'utf-8'));
 
-  assert.not.throws(() => decode(svg));
+  assert.doesNotThrow(() => decode(svg));
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
-test.run();

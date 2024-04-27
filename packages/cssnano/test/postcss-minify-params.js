@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -9,4 +9,3 @@ test(
     '@media only screen and (min-width:400px,min-height:500px){h1{color:#00f}}'
   )
 );
-test.run();

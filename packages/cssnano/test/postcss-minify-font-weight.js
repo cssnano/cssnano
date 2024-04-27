@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -16,4 +16,3 @@ test(
   'should not update the font-style property',
   processCss('h1{font-style: normal}', 'h1{font-style:normal}')
 );
-test.run();

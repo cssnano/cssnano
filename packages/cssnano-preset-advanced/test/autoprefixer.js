@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const {
   processCSSWithPresetFactory,
 } = require('../../../util/integrationTestHelpers.js');
@@ -38,4 +38,3 @@ test(
   'should not remove outdated vendor prefixes if excluded',
   exclude('h1{-webkit-box-sizing:content-box;box-sizing:content-box}')
 );
-test.run();

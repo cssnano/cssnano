@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -270,4 +270,3 @@ test(
     '.box1{display:inline-block;display:block}.box2{display:inline-block}'
   )
 );
-test.run();

@@ -1,6 +1,5 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const assert = require('node:assert/strict');
 const { processCSSFactory } = require('../../../util/testHelpers.js');
 const stylehacks = require('..');
 
@@ -13,9 +12,8 @@ module.exports = (fixture, expected, { target, unaffected }, warnings = 1) => {
       processCSS(fixture, expected, { overrideBrowserslist: unaffected }),
       processor(fixture, { lint: true, overrideBrowserslist: unaffected }).then(
         (result) => {
-          assert.is(result.warnings().length, warnings);
+          assert.strictEqual(result.warnings().length, warnings);
         }
       ),
     ]);
 };
-test.run();

@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -110,4 +110,3 @@ test(
   'should support viewports units',
   processCss('h1,h2{letter-spacing:-0.1vmin}', 'h1,h2{letter-spacing:-.1vmin}')
 );
-test.run();

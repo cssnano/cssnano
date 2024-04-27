@@ -1,12 +1,11 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const minifyWeight = require('../src/lib/minify-weight.js');
 
 test('minify-weight', () => {
-  assert.is(minifyWeight('normal'), '400');
-  assert.is(minifyWeight('bold'), '700');
-  assert.is(minifyWeight('lighter'), 'lighter');
-  assert.is(minifyWeight('bolder'), 'bolder');
+  assert.strictEqual(minifyWeight('normal'), '400');
+  assert.strictEqual(minifyWeight('bold'), '700');
+  assert.strictEqual(minifyWeight('lighter'), 'lighter');
+  assert.strictEqual(minifyWeight('bolder'), 'bolder');
 });
-test.run();

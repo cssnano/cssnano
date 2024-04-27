@@ -1,6 +1,6 @@
 'use strict';
 const postcss = require('postcss');
-const assert = require('uvu/assert');
+const assert = require('node:assert/strict');
 
 function usePostCSSPlugin(plugin) {
   return () => {
@@ -21,7 +21,7 @@ function processCSSFactory(plugin) {
     processCSS = (fixture, expected, options) => {
       return () =>
         processor(fixture, options).then((result) => {
-          assert.is(result.css, expected);
+          assert.strictEqual(result.css, expected);
           return result;
         });
     };
@@ -40,7 +40,7 @@ function processCSSFactory(plugin) {
     processCSS = (fixture, expected, options) => {
       return () =>
         processor(fixture, options).then((result) => {
-          assert.is(result.css, expected);
+          assert.strictEqual(result.css, expected);
           return result;
         });
     };

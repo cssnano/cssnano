@@ -29,26 +29,6 @@ jobs:
       - name: Run lint
         run: pnpm lint
 
-  test_helpers:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4.1.3
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3.0.0
-        with:
-          version: 9.0.6
-      - name: Install Node.js 20.x
-        uses: actions/setup-node@v4.0.2
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Test helpers
-        run: pnpm test:helpers
-
   test:
     needs: lint
     runs-on: ${{ matrix.os }}

@@ -1,6 +1,6 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const nano = require('..');
 
@@ -30,7 +30,7 @@ test('it should compress the columns (old plugin syntax)', () => {
 
   return processor
     .process(fixture, { from: undefined })
-    .then((r) => assert.is(r.css, expected));
+    .then((r) => assert.strictEqual(r.css, expected));
 });
 
 test('it should compress the columns (new plugin syntax)', () => {
@@ -51,6 +51,5 @@ test('it should compress the columns (new plugin syntax)', () => {
 
   return processor
     .process(fixture, { from: undefined })
-    .then((r) => assert.is(r.css, expected));
+    .then((r) => assert.strictEqual(r.css, expected));
 });
-test.run();

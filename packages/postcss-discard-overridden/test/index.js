@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('fs');
-const assert = require('uvu/assert');
-const { test } = require('uvu');
+const assert = require('node:assert/strict');
+const { test } = require('node:test');
 const postcss = require('postcss');
 const { diffLines } = require('diff');
 const pc = require('picocolors');
@@ -60,7 +60,7 @@ function exec(input) {
           throw getDiff(result.css, output);
         }
 
-        assert.is(result.warnings().length, 0);
+        assert.strictEqual(result.warnings().length, 0);
       });
 }
 
@@ -70,4 +70,3 @@ test(
   'overridden @counter-style should be discarded correctly',
   exec('counter-style')
 );
-test.run();

@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCss = require('./_processCss');
 
 test(
@@ -31,5 +31,3 @@ test(
   'should not mangle font names',
   processCss.passthrough('h1{font-family:Glyphicons Halflings}')
 );
-
-test.run();

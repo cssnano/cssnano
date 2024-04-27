@@ -1,6 +1,6 @@
 'use strict';
-const { test } = require('uvu');
-const assert = require('uvu/assert');
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const magician = require('postcss-font-magician');
 const {
@@ -468,7 +468,7 @@ test(
 test('cssnano issue 39', () => {
   const css =
     'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
-  assert.not.throws(
+  assert.doesNotThrow(
     () => postcss([magician(), plugin()]).process(css, { from: undefined }).css
   );
 });
@@ -519,7 +519,7 @@ test('should handle selectors from other plugins', () => {
 .6f6b__ok {
   padding: 4px;
 }`;
-  assert.is(
+  assert.strictEqual(
     postcss([toModules, plugin]).process(css, { from: undefined }).css,
     expected
   );
@@ -556,4 +556,3 @@ test(
     ':where(:nth-child(7),:nth-child(7)~*) {  }'
   )
 );
-test.run();

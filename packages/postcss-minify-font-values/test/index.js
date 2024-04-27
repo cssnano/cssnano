@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const {
   usePostCSSPlugin,
   processCSSFactory,
@@ -521,4 +521,3 @@ test(
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
-test.run();

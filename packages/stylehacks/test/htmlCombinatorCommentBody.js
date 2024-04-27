@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const processCSS = require('./_processCSS');
 
 test(
@@ -25,4 +25,3 @@ test(
     unaffected: 'IE 8',
   })
 );
-test.run();

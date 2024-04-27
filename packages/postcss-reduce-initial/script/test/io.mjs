@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { test } from 'uvu';
-import * as assert from 'uvu/assert';
+import { test } from 'node:test';
+import * as assert from 'node:assert/strict';
 import { mock } from 'node:test';
 import { handleError, toJSONString, write, generate } from '../lib/io.mjs';
 
@@ -17,7 +17,7 @@ test('should produce parsable JSON', () => {
     'fred-plugh': 'xyzzy-thud',
   };
 
-  assert.equal(JSON.parse(toJSONString(rawData)), rawData);
+  assert.deepStrictEqual(JSON.parse(toJSONString(rawData)), rawData);
 });
 
 const data = {
@@ -33,13 +33,16 @@ for (const [key, path, expected] of [
   test(`should write JSON file based on key ${key}`, () => {
     const fileFunc = mock.fn();
     write(fileFunc, paths, data, key);
-    assert.is(fileFunc.mock.calls[0].arguments[0], path);
-    assert.is(fileFunc.mock.calls[0].arguments[1], toJSONString(expected));
+    assert.strictEqual(fileFunc.mock.calls[0].arguments[0], path);
+    assert.strictEqual(
+      fileFunc.mock.calls[0].arguments[1],
+      toJSONString(expected)
+    );
   });
 }
 
 test('should handle file operation errors', () => {
-  assert.not.throws(handleError);
+  assert.doesNotThrow(handleError);
   assert.throws(() => handleError(new Error('something went wrong')));
 });
 
@@ -55,7 +58,5 @@ test('should make it through promise chain with sample data and write 2 files', 
     'https://example.com/properties.json'
   );
 
-  assert.is(fileFunc.mock.calls.length, 2);
+  assert.strictEqual(fileFunc.mock.calls.length, 2);
 });
-
-test.run();

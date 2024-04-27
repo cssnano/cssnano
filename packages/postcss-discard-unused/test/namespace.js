@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('uvu');
+const { test } = require('node:test');
 const { processCSSFactory } = require('../../../util/testHelpers.js');
 const plugin = require('../src/index.js');
 
@@ -47,4 +47,3 @@ test(
     namespace: false,
   })
 );
-test.run();
