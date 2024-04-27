@@ -6,10 +6,9 @@
     "fixlint": "prettier --write . && pnpm lint -- --fix",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
-    "test:only": "node --test \"packages/**/test/**/*js\"",
+    "test:only": "node --test",
     "test:coverage": "c8 pnpm test:only",
     "test": "pnpm test:coverage",
-    "test:helpers": "node --test \"packages/**/test/**/*mjs\"",
     "types": "tsc -b",
     "all-publish": "pnpm changeset publish"
   },
