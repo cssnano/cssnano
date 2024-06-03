@@ -245,6 +245,24 @@ test(
 );
 
 test(
+  'should remove comments in selector',
+  processCSS('.x/*comment*/.y{color:#000}', '.x.y{color:#000}')
+);
+
+test(
+  'should remove comments in pseudo-class-function',
+  processCSS(':not(/*comment*/.foo){color:#000}', ':not(.foo){color:#000}')
+);
+
+test(
+  'should remove comments in @rule param',
+  processCSS(
+    '@media/*a*/screen/*b*/and/*c*/(min-width:/*d*/900px)/*e*/{color: red}',
+    '@media screen and (min-width: 900px){color:red}'
+  )
+);
+
+test(
   "should pass through when it doesn't find a comment",
   passthroughCSS('h1{color:#000;font-weight:700}')
 );

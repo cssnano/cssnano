@@ -149,15 +149,18 @@ function pluginCreator(opts = {}) {
           return;
         }
 
-        if (
-          node.type === 'rule' &&
-          node.raws.selector &&
-          node.raws.selector.raw
-        ) {
-          node.raws.selector.raw = replaceCommentsInSelector(
-            node.raws.selector.raw,
-            list.space
-          );
+        if (node.type === 'rule') {
+          if (node.raws.selector && node.raws.selector.raw) {
+            node.raws.selector.raw = replaceCommentsInSelector(
+              node.raws.selector.raw,
+              list.space
+            );
+          } else if (node.selector && node.selector.includes('/*')) {
+            node.selector = replaceCommentsInSelector(
+              node.selector,
+              list.space
+            );
+          }
 
           return;
         }
@@ -181,6 +184,8 @@ function pluginCreator(opts = {}) {
               node.raws.params.raw,
               list.space
             );
+          } else if (node.params && node.params.includes('/*')) {
+            node.params = replaceComments(node.params, list.space);
           }
         }
       });
