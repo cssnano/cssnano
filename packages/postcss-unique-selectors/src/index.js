@@ -13,7 +13,7 @@ function generateUniqueSelector(selectors) {
   const collectUniqueSelectors = (selNode) => {
     for (const node of selNode.nodes) {
       /** @type {string[]} */
-      const comments = []
+      const comments = [];
 
       // Duplicates are removed by stripping the comments and using the results as the Map key.
       const keyNode = node.clone();
@@ -24,11 +24,11 @@ function generateUniqueSelector(selectors) {
         }
       });
       const key = keyNode.toString().trim();
-      
-      const dupeSelector = uniqueSelectors.get(key)
-      if(!dupeSelector) {
+
+      const dupeSelector = uniqueSelectors.get(key);
+      if (!dupeSelector) {
         uniqueSelectors.set(key, node.toString());
-      } else if(comments.length) {
+      } else if (comments.length) {
         // If the duplicate selector has a comment, it is concatenated to the end of the selector.
         uniqueSelectors.set(key, `${dupeSelector}${comments.join('')}`);
       }
@@ -38,7 +38,7 @@ function generateUniqueSelector(selectors) {
   selectorParser(collectUniqueSelectors).processSync(selectors);
 
   return [...uniqueSelectors.entries()]
-    .sort(([a], [b]) => a > b ? 1 : a < b ? -1 : 0)
+    .sort(([a], [b]) => (a > b ? 1 : a < b ? -1 : 0))
     .map(([, selector]) => selector)
     .join();
 }
@@ -52,7 +52,9 @@ function pluginCreator() {
     OnceExit(css) {
       css.walkRules((nodes) => {
         if (nodes.raws.selector && nodes.raws.selector.raw) {
-          nodes.raws.selector.raw = generateUniqueSelector(nodes.raws.selector.raw);
+          nodes.raws.selector.raw = generateUniqueSelector(
+            nodes.raws.selector.raw
+          );
         } else {
           nodes.selector = generateUniqueSelector(nodes.selector);
         }
