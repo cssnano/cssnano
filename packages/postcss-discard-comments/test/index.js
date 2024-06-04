@@ -211,6 +211,22 @@ test(
 );
 
 test(
+  'should remove only a comment',
+  processCSS(
+    '.a /*comment*/ [attr="/* not a comment */"]{color:#000}',
+    '.a [attr="/* not a comment */"]{color:#000}'
+  )
+);
+
+test(
+  'should remove only a comment 2',
+  processCSS(
+    ':not(/*comment*/ [attr="/* not a comment */"]){color:#000}',
+    ':not( [attr="/* not a comment */"]){color:#000}'
+  )
+);
+
+test(
   "should pass through when it doesn't find a comment",
   passthroughCSS('h1{color:#000;font-weight:700}')
 );

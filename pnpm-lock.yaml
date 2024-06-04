@@ -250,6 +250,10 @@ importers:
         version: 8.4.38
 
   packages/postcss-discard-comments:
+    dependencies:
+      postcss-selector-parser:
+        specifier: ^6.1.0
+        version: 6.1.0
     devDependencies:
       postcss:
         specifier: ^8.4.38
