@@ -3,23 +3,45 @@ const selectorParser = require('postcss-selector-parser');
 
 /**
  * @param {string} selectors
- * @param {selectorParser.SyncProcessor<void>} callback
  * @return {string}
  */
-function parseSelectors(selectors, callback) {
-  return selectorParser(callback).processSync(selectors);
-}
+function generateUniqueSelector(selectors) {
+  /** @type {Map<string, string>} */
+  const uniqueSelectors = new Map();
 
-/**
- * @param {import('postcss').Rule} rule
- * @return {string}
- */
-function unique(rule) {
-  const selector = [...new Set(rule.selectors)];
-  selector.sort();
-  return selector.join();
-}
+  /** @type {selectorParser.SyncProcessor<void>} */
+  const collectUniqueSelectors = (selNode) => {
+    for (const node of selNode.nodes) {
+      /** @type {string[]} */
+      const comments = [];
 
+      // Duplicates are removed by stripping the comments and using the results as the Map key.
+      const keyNode = node.clone();
+      keyNode.walk((sel) => {
+        if (sel.type === 'comment') {
+          comments.push(sel.value);
+          sel.remove();
+        }
+      });
+      const key = keyNode.toString().trim();
+
+      const dupeSelector = uniqueSelectors.get(key);
+      if (!dupeSelector) {
+        uniqueSelectors.set(key, node.toString());
+      } else if (comments.length) {
+        // If the duplicate selector has a comment, it is concatenated to the end of the selector.
+        uniqueSelectors.set(key, `${dupeSelector}${comments.join('')}`);
+      }
+    }
+  };
+
+  selectorParser(collectUniqueSelectors).processSync(selectors);
+
+  return [...uniqueSelectors.entries()]
+    .sort(([a], [b]) => (a > b ? 1 : a < b ? -1 : 0))
+    .map(([, selector]) => selector)
+    .join();
+}
 /**
  * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
@@ -29,27 +51,13 @@ function pluginCreator() {
     postcssPlugin: 'postcss-unique-selectors',
     OnceExit(css) {
       css.walkRules((nodes) => {
-        /** @type {string[]} */
-        let comments = [];
-        /** @type {selectorParser.SyncProcessor<void>} */
-        const removeAndSaveComments = (selNode) => {
-          selNode.walk((sel) => {
-            if (sel.type === 'comment') {
-              comments.push(sel.value);
-              sel.remove();
-              return;
-            } else {
-              return;
-            }
-          });
-        };
         if (nodes.raws.selector && nodes.raws.selector.raw) {
-          parseSelectors(nodes.raws.selector.raw, removeAndSaveComments);
-          nodes.raws.selector.raw = unique(nodes);
+          nodes.raws.selector.raw = generateUniqueSelector(
+            nodes.raws.selector.raw
+          );
+        } else {
+          nodes.selector = generateUniqueSelector(nodes.selector);
         }
-        nodes.selector = parseSelectors(nodes.selector, removeAndSaveComments);
-        nodes.selector = unique(nodes);
-        nodes.selectors = nodes.selectors.concat(comments);
       });
     },
   };
