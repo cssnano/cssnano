@@ -1,5 +1,17 @@
 # Change Log
 
+## 7.0.2
+
+### Patch Changes
+
+- Updated dependencies [c14b9f5]
+- Updated dependencies [759e16e]
+  - postcss-minify-selectors@7.0.1
+  - postcss-unique-selectors@7.0.1
+  - postcss-merge-rules@7.0.1
+  - postcss-svgo@7.0.1
+  - postcss-merge-longhand@7.0.1
+
 ## 7.0.1
 
 ### Patch Changes
