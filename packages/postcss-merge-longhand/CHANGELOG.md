@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.0.1
+
+### Patch Changes
+
+- Updated dependencies [c14b9f5]
+  - stylehacks@7.0.1
+
 ## 7.0.0
 
 ### Major Changes

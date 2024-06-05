@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.0.1
+
+### Patch Changes
+
+- c14b9f5: chore: update postcss-selector-parser
+- fix(postcss-unique-selectors): fix some cases where input contains comments in selectors
+
 ## 7.0.0
 
 ### Major Changes

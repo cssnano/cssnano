@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.1
+
+### Patch Changes
+
+- 759e16e: chore(svgo): update svgo version as svgo 3.3.0 and 3.3.1 contain unintended breaking changes
+
 ## 7.0.0
 
 ### Major Changes
