@@ -231,6 +231,14 @@ test(
 test(
   'should remove only a comment 2',
   processCSS(
+    '.a [attr="/* not a comment */"] /*comment*/, .b {color:#000}',
+    '.a [attr="/* not a comment */"], .b{color:#000}'
+  )
+);
+
+test(
+  'should remove only a comment 3',
+  processCSS(
     ':not(/*comment*/ [attr="/* not a comment */"]){color:#000}',
     ':not( [attr="/* not a comment */"]){color:#000}'
   )
