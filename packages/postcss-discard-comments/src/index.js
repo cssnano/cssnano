@@ -85,11 +85,15 @@ function pluginCreator(opts = {}) {
             node.remove();
           }
         }
-        if (node.rawSpaceAfter.trim()) {
-          node.rawSpaceAfter = replaceComments(node.rawSpaceAfter, space, '');
+        const rawSpaceAfter = replaceComments(node.rawSpaceAfter, space, '');
+        const rawSpaceBefore = replaceComments(node.rawSpaceBefore, space, '');
+        // If comments are not removed, the result of trim will be returned,
+        // so if we compare and there are no changes, skip it.
+        if (rawSpaceAfter !== node.rawSpaceAfter.trim()) {
+          node.rawSpaceAfter = rawSpaceAfter;
         }
-        if (node.rawSpaceBefore.trim()) {
-          node.rawSpaceBefore = replaceComments(node.rawSpaceBefore, space, '');
+        if (rawSpaceBefore !== node.rawSpaceBefore.trim()) {
+          node.rawSpaceBefore = rawSpaceBefore;
         }
       });
     }).processSync(source);

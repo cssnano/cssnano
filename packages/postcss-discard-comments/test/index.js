@@ -168,6 +168,16 @@ test(
 );
 
 test(
+  'should keep special comments 14',
+  passthroughCSS('h1 /*!test comment*/, h2{color:#00f}')
+);
+
+test(
+  'should keep special comments 15',
+  passthroughCSS('h1 /*!test comment*/ span, h2{color:#00f}')
+);
+
+test(
   'should remove comments marked as @ but keep other',
   processCSS(
     '/* keep *//*@ remove */h1{color:#000;/*@ remove */font-weight:700}',
