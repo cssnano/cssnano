@@ -23,6 +23,9 @@
     "url": "http://beneb.info"
   },
   "repository": "cssnano/cssnano",
+  "dependencies": {
+    "postcss-selector-parser": "^6.1.0"
+  },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
   },
