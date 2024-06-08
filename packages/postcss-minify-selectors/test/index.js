@@ -286,6 +286,8 @@ test(
   )
 );
 
+test('should not change strings (6)', passthroughCSS("[a='½']{color:blue}"));
+
 test(
   'should transform qualified attribute selector inside not',
   processCSS(
