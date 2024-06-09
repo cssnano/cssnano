@@ -1,4 +1,6 @@
 'use strict';
+
+const cssesc = require('cssesc');
 /**
  * Can unquote attribute detection from mothereff.in
  * Copyright Mathias Bynens <https://mathiasbynens.be/>
@@ -20,5 +22,9 @@ module.exports = function canUnquote(value) {
 
   value = value.replace(escapes, 'a').replace(/\\./g, 'a');
 
-  return !(range.test(value) || /^(?:-?\d|--)/.test(value));
+  return (
+    !(range.test(value) || /^(?:-?\d|--)/.test(value)) &&
+    // Do not remove the quotes if escaping is required.
+    cssesc(value) === value
+  );
 };

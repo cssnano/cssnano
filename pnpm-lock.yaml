@@ -397,10 +397,16 @@ importers:
 
   packages/postcss-minify-selectors:
     dependencies:
+      cssesc:
+        specifier: ^3.0.0
+        version: 3.0.0
       postcss-selector-parser:
         specifier: ^6.1.0
         version: 6.1.0
     devDependencies:
+      '@types/cssesc':
+        specifier: ^3.0.2
+        version: 3.0.2
       postcss:
         specifier: ^8.4.38
         version: 8.4.38
@@ -742,6 +748,9 @@ packages:
 
   '@types/caniuse-api@3.0.6':
     resolution: {integrity: sha512-yMGwHJaqwIEXc3x7EyY3CeS73QG9WeC00w2nZ0/inoRv9DiLIhfvrY6vmXMSKlpRLFxrLcAWJh3JTwYNPl3ihg==}
+
+  '@types/cssesc@3.0.2':
+    resolution: {integrity: sha512-Qii6nTRktvtI380EloxH/V7MwgrYxkPgBI+NklUjQuhzgAd1AqT3QDJd+eD+0doRADgfwvtagLRo7JFa7aMHXg==}
 
   '@types/istanbul-lib-coverage@2.0.6':
     resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
@@ -2475,6 +2484,8 @@ snapshots:
   '@trysound/sax@0.2.0': {}
 
   '@types/caniuse-api@3.0.6': {}
+
+  '@types/cssesc@3.0.2': {}
 
   '@types/istanbul-lib-coverage@2.0.6': {}
 

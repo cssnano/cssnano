@@ -26,6 +26,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
+    "cssesc": "^3.0.0",
     "postcss-selector-parser": "^6.1.0"
   },
   "bugs": {
@@ -35,6 +36,7 @@
     "node": "^18.12.0 || ^20.9.0 || >=22.0"
   },
   "devDependencies": {
+    "@types/cssesc": "^3.0.2",
     "postcss": "^8.4.38"
   },
   "peerDependencies": {
