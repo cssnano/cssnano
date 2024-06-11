@@ -12,7 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "autoprefixer": "^10.4.19",
-    "browserslist": "^4.23.0",
+    "browserslist": "^4.23.1",
     "cssnano-preset-default": "workspace:^",
     "postcss-discard-unused": "workspace:^",
     "postcss-merge-idents": "workspace:^",
