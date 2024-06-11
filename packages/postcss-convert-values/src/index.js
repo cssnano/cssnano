@@ -39,8 +39,18 @@ const keepWhenZero = new Set([
 ]);
 
 // Can't remove the % on these properties when they're 0 on IE 11
-const keepZeroPercent = new Set(['max-height', 'height', 'min-width']);
+const keepZeroPercentOnIE11 = new Set(['max-height', 'height', 'min-width']);
 
+const keepZeroPercentAlways = new Set([
+  'calc',
+  'color-mix',
+  'min',
+  'max',
+  'clamp',
+  'hsl',
+  'hsla',
+  'hwb',
+]);
 /**
  * Numbers without digits after the dot are technically invalid,
  * but in that case css-value-parser returns the dot as part of the unit,
@@ -118,7 +128,7 @@ function shouldKeepZeroUnit(decl, browsers) {
 
   return (
     (decl.value.includes('%') &&
-      keepZeroPercent.has(lowerCasedProp) &&
+      keepZeroPercentOnIE11.has(lowerCasedProp) &&
       browsers.includes('ie 11')) ||
     (lowerCasedProp === 'stroke-dasharray' &&
       parent &&
@@ -172,14 +182,7 @@ function transform(opts, browsers, decl) {
           clampOpacity(node);
         }
       } else if (node.type === 'function') {
-        if (
-          lowerCasedValue === 'calc' ||
-          lowerCasedValue === 'min' ||
-          lowerCasedValue === 'max' ||
-          lowerCasedValue === 'clamp' ||
-          lowerCasedValue === 'hsl' ||
-          lowerCasedValue === 'hsla'
-        ) {
+        if (keepZeroPercentAlways.has(lowerCasedValue)) {
           valueParser.walk(node.nodes, (n) => {
             if (n.type === 'word') {
               parseWord(n, opts, true);
