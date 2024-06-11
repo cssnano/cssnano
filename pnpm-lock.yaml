@@ -45,8 +45,8 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-preset-default
       lilconfig:
-        specifier: ^3.1.1
-        version: 3.1.1
+        specifier: ^3.1.2
+        version: 3.1.2
     devDependencies:
       autoprefixer:
         specifier: ^10.4.19
@@ -1590,8 +1590,8 @@ packages:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
 
-  lilconfig@3.1.1:
-    resolution: {integrity: sha512-O18pf7nyvHTckunPWCV1XUNXU1piu01y2b7ATJ0ppkUkk8ocqVWBrYjJBCwHDjD/ZWcfyrA0P4gKhzWGi5EINQ==}
+  lilconfig@3.1.2:
+    resolution: {integrity: sha512-eop+wDAvpItUys0FWkHIKeC9ybYrTGbU41U5K7+bttZZeohvnY7M9dZ5kB21GNWiFT2q1OoPTvncPCgSOVO5ow==}
     engines: {node: '>=14'}
 
   lines-and-columns@1.2.4:
@@ -3444,7 +3444,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  lilconfig@3.1.1: {}
+  lilconfig@3.1.2: {}
 
   lines-and-columns@1.2.4: {}
 
