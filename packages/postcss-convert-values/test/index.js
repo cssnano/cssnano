@@ -499,4 +499,14 @@ test(
   )
 );
 
+test(
+  'should not strip the percentage from background-color',
+  passthroughCSS('background-color:color-mix(#000, #FFF 0%);')
+);
+
+test(
+  'should not strip the percentage from box-shadow',
+  passthroughCSS('box-shadow:inset 0 0 0 250pc hsla(0,0%,100%,.7215686275)')
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
