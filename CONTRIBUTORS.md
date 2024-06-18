@@ -71,3 +71,4 @@ Thanks goes to these wonderful people:
 - Jordy D'Hoker
 - Xiaojun Zhou
 - Seth Falco
+- Seiya
