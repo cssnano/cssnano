@@ -3,10 +3,11 @@ const { unit } = require('postcss-value-parser');
 const { getArguments } = require('cssnano-utils');
 const addSpace = require('../lib/addSpace');
 const getValue = require('../lib/getValue');
+const mathFunctions = require('../lib/mathfunctions.js');
 
 // animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
-const functions = new Set(['steps', 'cubic-bezier', 'frames']);
-const keywords = new Set([
+const timingFunctions = new Set(['steps', 'cubic-bezier', 'frames']);
+const timingKeywords = new Set([
   'ease',
   'ease-in',
   'ease-in-out',
@@ -28,11 +29,35 @@ const timeUnits = new Set(['ms', 's']);
 
 /**
  * @param {string} value
- * @param {string} type
+ * @param {import('postcss-value-parser').Node} node
+ * @return {false | import('postcss-value-parser').Dimension}
+ */
+function unitFromNode(value, node) {
+  if (node.type !== 'function') {
+    return unit(value);
+  }
+  if (mathFunctions.has(value)) {
+    // If it is a math function, it checks the unit of the parameter and returns it.
+    for (const param of node.nodes) {
+      const paramUnit = unitFromNode(param.value.toLowerCase(), param);
+      if (paramUnit && paramUnit.unit && paramUnit.unit !== '%') {
+        return paramUnit;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * @param {string} value
+ * @param {import('postcss-value-parser').Node} node
  * @return {boolean}
  */
-const isTimingFunction = (value, type) => {
-  return (type === 'function' && functions.has(value)) || keywords.has(value);
+const isTimingFunction = (value, { type }) => {
+  return (
+    (type === 'function' && timingFunctions.has(value)) ||
+    timingKeywords.has(value)
+  );
 };
 /**
  * @param {string} value
@@ -57,19 +82,21 @@ const isPlayState = (value) => {
 };
 /**
  * @param {string} value
+ * @param {import('postcss-value-parser').Node} node
  * @return {boolean}
  */
-const isTime = (value) => {
-  const quantity = unit(value);
+const isTime = (value, node) => {
+  const quantity = unitFromNode(value, node);
 
   return quantity && timeUnits.has(quantity.unit);
 };
 /**
  * @param {string} value
+ * @param {import('postcss-value-parser').Node} node
  * @return {boolean}
  */
-const isIterationCount = (value) => {
-  const quantity = unit(value);
+const isIterationCount = (value, node) => {
+  const quantity = unitFromNode(value, node);
 
   return value === 'infinite' || (quantity && !quantity.unit);
 };
@@ -113,7 +140,7 @@ function normalize(args) {
       value = value.toLowerCase();
 
       const hasMatch = stateConditions.some(({ property, delegate }) => {
-        if (delegate(value, type) && !state[property].length) {
+        if (delegate(value, node) && !state[property].length) {
           state[property] = [node, addSpace()];
           return true;
         }

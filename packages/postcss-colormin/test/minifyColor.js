@@ -185,3 +185,14 @@ test('should not convert to alpha hex since the conversion is not lossless', () 
     'hsla(0,0%,50%,.515)'
   );
 });
+
+test('should preserve percentage in color-mix', () => {
+  assert.strictEqual(
+    min('color-mix(#000, #FFF 0%)'),
+    'color-mix(#000, #FFF 0%)'
+  );
+});
+
+test('should preserve percentage in hsla', () => {
+  assert.strictEqual(min('rgba(255,255,255,.7)'), 'hsla(0,0%,100%,.7)');
+});

@@ -168,6 +168,16 @@ test(
 );
 
 test(
+  'should keep special comments 14',
+  passthroughCSS('h1 /*!test comment*/, h2{color:#00f}')
+);
+
+test(
+  'should keep special comments 15',
+  passthroughCSS('h1 /*!test comment*/ span, h2{color:#00f}')
+);
+
+test(
   'should remove comments marked as @ but keep other',
   processCSS(
     '/* keep *//*@ remove */h1{color:#000;/*@ remove */font-weight:700}',
@@ -207,6 +217,48 @@ test(
   processCSS(
     '/*\n\n# Pagination\n\n...\n\n*/.pagination{color:#000}',
     '.pagination{color:#000}'
+  )
+);
+
+test(
+  'should remove only a comment',
+  processCSS(
+    '.a /*comment*/ [attr="/* not a comment */"]{color:#000}',
+    '.a [attr="/* not a comment */"]{color:#000}'
+  )
+);
+
+test(
+  'should remove only a comment 2',
+  processCSS(
+    '.a [attr="/* not a comment */"] /*comment*/, .b {color:#000}',
+    '.a [attr="/* not a comment */"], .b{color:#000}'
+  )
+);
+
+test(
+  'should remove only a comment 3',
+  processCSS(
+    ':not(/*comment*/ [attr="/* not a comment */"]){color:#000}',
+    ':not( [attr="/* not a comment */"]){color:#000}'
+  )
+);
+
+test(
+  'should remove comments in selector',
+  processCSS('.x/*comment*/.y{color:#000}', '.x.y{color:#000}')
+);
+
+test(
+  'should remove comments in pseudo-class-function',
+  processCSS(':not(/*comment*/.foo){color:#000}', ':not(.foo){color:#000}')
+);
+
+test(
+  'should remove comments in @rule param',
+  processCSS(
+    '@media/*a*/screen/*b*/and/*c*/(min-width:/*d*/900px)/*e*/{color: red}',
+    '@media screen and (min-width: 900px){color:red}'
   )
 );
 

@@ -28,7 +28,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^4.23.0",
+    "browserslist": "^4.23.1",
     "postcss-selector-parser": "^6.1.0"
   },
   "bugs": {

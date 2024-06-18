@@ -1,6 +1,7 @@
 'use strict';
 const CommentRemover = require('./lib/commentRemover');
 const commentParser = require('./lib/commentParser');
+const selectorParser = require('postcss-selector-parser');
 
 /** @typedef {object} Options
  *  @property {boolean=} removeAll
@@ -65,6 +66,45 @@ function pluginCreator(opts = {}) {
     return result;
   }
 
+  /**
+   * @param {string} source
+   * @param {(s: string) => string[]} space
+   * @return {string}
+   */
+  function replaceCommentsInSelector(source, space) {
+    const key = source + '@|@';
+
+    if (replacerCache.has(key)) {
+      return replacerCache.get(key);
+    }
+    const processed = selectorParser((ast) => {
+      ast.walk((node) => {
+        if (node.type === 'comment') {
+          const contents = node.value.slice(2, -2);
+          if (remover.canRemove(contents)) {
+            node.remove();
+          }
+        }
+        const rawSpaceAfter = replaceComments(node.rawSpaceAfter, space, '');
+        const rawSpaceBefore = replaceComments(node.rawSpaceBefore, space, '');
+        // If comments are not removed, the result of trim will be returned,
+        // so if we compare and there are no changes, skip it.
+        if (rawSpaceAfter !== node.rawSpaceAfter.trim()) {
+          node.rawSpaceAfter = rawSpaceAfter;
+        }
+        if (rawSpaceBefore !== node.rawSpaceBefore.trim()) {
+          node.rawSpaceBefore = rawSpaceBefore;
+        }
+      });
+    }).processSync(source);
+
+    const result = space(processed).join(' ');
+
+    replacerCache.set(key, result);
+
+    return result;
+  }
+
   return {
     postcssPlugin: 'postcss-discard-comments',
 
@@ -109,16 +149,18 @@ function pluginCreator(opts = {}) {
           return;
         }
 
-        if (
-          node.type === 'rule' &&
-          node.raws.selector &&
-          node.raws.selector.raw
-        ) {
-          node.raws.selector.raw = replaceComments(
-            node.raws.selector.raw,
-            list.space,
-            ''
-          );
+        if (node.type === 'rule') {
+          if (node.raws.selector && node.raws.selector.raw) {
+            node.raws.selector.raw = replaceCommentsInSelector(
+              node.raws.selector.raw,
+              list.space
+            );
+          } else if (node.selector && node.selector.includes('/*')) {
+            node.selector = replaceCommentsInSelector(
+              node.selector,
+              list.space
+            );
+          }
 
           return;
         }
@@ -142,6 +184,8 @@ function pluginCreator(opts = {}) {
               node.raws.params.raw,
               list.space
             );
+          } else if (node.params && node.params.includes('/*')) {
+            node.params = replaceComments(node.params, list.space);
           }
         }
       });
