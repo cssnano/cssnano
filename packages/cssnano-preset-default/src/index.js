@@ -131,6 +131,18 @@ function configurePlugins(plugins, opts = {}) {
     cssDeclarationSorter: {
       keepOverrides: true,
     },
+    svgo: {
+      plugins: [
+        {
+          name: 'preset-default',
+          params: {
+            overrides: {
+              removeViewBox: false,
+            },
+          },
+        },
+      ],
+    },
   };
 
   // Merge option properties for each plugin

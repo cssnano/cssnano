@@ -278,7 +278,22 @@ This plugin is loaded with its default configuration.
 
 > Optimise inline SVG with PostCSS.
 
-This plugin is loaded with its default configuration.
+This plugin is loaded with the following configuration:
+
+```js
+{
+  plugins: [
+    {
+      name: 'preset-default',
+      params: {
+        overrides: {
+          removeViewBox: false,
+        },
+      },
+    },
+  ],
+}
+```
 
 ### [`postcss-unique-selectors`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-unique-selectors)
 
