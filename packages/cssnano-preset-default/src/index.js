@@ -138,6 +138,7 @@ function configurePlugins(plugins, opts = {}) {
           params: {
             overrides: {
               removeViewBox: false,
+              removeTitle: false,
             },
           },
         },
