@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.2
+
+### Patch Changes
+
+- 0c85fa9: fix: update Browserslist version
+
 ## 7.0.1
 
 ### Patch Changes

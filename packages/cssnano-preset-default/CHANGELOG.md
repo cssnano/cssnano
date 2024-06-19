@@ -1,5 +1,27 @@
 # Change Log
 
+## 7.0.3
+
+### Patch Changes
+
+- 0c85fa9: fix: update Browserslist version
+- 13fb841: fix(cssnano-preset-default): preserve title in SVG
+- 08989b0: fix(cssnano-preset-default): preserve SVG viewbox by default
+- Updated dependencies [9e8606a]
+- Updated dependencies [c192461]
+- Updated dependencies [0c85fa9]
+- Updated dependencies [30981b7]
+  - postcss-discard-comments@7.0.1
+  - postcss-minify-selectors@7.0.2
+  - postcss-ordered-values@7.0.1
+  - postcss-normalize-unicode@7.0.1
+  - postcss-convert-values@7.0.1
+  - postcss-reduce-initial@7.0.1
+  - postcss-minify-params@7.0.1
+  - postcss-merge-rules@7.0.2
+  - postcss-colormin@7.0.1
+  - postcss-merge-longhand@7.0.2
+
 ## 7.0.2
 
 ### Patch Changes

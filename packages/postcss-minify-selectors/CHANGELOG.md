@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.2
+
+### Patch Changes
+
+- 9e8606a: fix: solve some invalid output when minifying selectors
+
 ## 7.0.1
 
 ### Patch Changes
