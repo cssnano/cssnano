@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.1
+
+### Patch Changes
+
+- c192461: fix(postcss-orderded-values): fix incorrect order in animations
+
 ## 7.0.0
 
 ### Major Changes

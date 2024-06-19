@@ -1,5 +1,15 @@
 # Change Log
 
+## 7.0.3
+
+### Patch Changes
+
+- 0c85fa9: fix: update Browserslist version
+- Updated dependencies [0c85fa9]
+- Updated dependencies [13fb841]
+- Updated dependencies [08989b0]
+  - cssnano-preset-default@7.0.3
+
 ## 7.0.2
 
 ### Patch Changes

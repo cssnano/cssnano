@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.0.1
+
+### Patch Changes
+
+- 0c85fa9: fix: update Browserslist version
+- 30981b7: fix(postcss-convert-values): preserve percentage sign after 0 in more cases
+
 ## 7.0.0
 
 ### Major Changes
