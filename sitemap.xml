@@ -129,7 +129,7 @@
     
        
         <url>
-            <loc>https://cssnano.github.io/cssnano/cssnano/playground/</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/styles/index.css</loc>
             <priority>0.5</priority>
             <lastmod>2024-06-05T10:27:34.168Z</lastmod>
             <changefreq>monthly</changefreq>
@@ -138,9 +138,9 @@
     
        
         <url>
-            <loc>https://cssnano.github.io/cssnano/cssnano/styles/index.css</loc>
+            <loc>https://cssnano.github.io/cssnano/cssnano/playground/</loc>
             <priority>0.5</priority>
-            <lastmod>2024-06-05T10:27:34.168Z</lastmod>
+            <lastmod>2024-06-19T09:12:36.579Z</lastmod>
             <changefreq>monthly</changefreq>
         </url>
         
