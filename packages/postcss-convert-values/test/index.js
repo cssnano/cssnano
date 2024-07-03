@@ -509,4 +509,9 @@ test(
   passthroughCSS('box-shadow:inset 0 0 0 250pc hsla(0,0%,100%,.7215686275)')
 );
 
+test(
+  'should not strip percentage from border-image-width',
+  passthroughCSS('@keyframes test {0% {border-image-width: 0 0 100% 0%;}}')
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
