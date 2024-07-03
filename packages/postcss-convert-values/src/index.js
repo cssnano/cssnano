@@ -51,6 +51,12 @@ const keepZeroPercentAlways = new Set([
   'hsla',
   'hwb',
 ]);
+
+const keepZeroPercentageInKeyframe = new Set([
+  'border-image-width',
+  'stroke-dasharray',
+]);
+
 /**
  * Numbers without digits after the dot are technically invalid,
  * but in that case css-value-parser returns the dot as part of the unit,
@@ -130,7 +136,7 @@ function shouldKeepZeroUnit(decl, browsers) {
     (decl.value.includes('%') &&
       keepZeroPercentOnIE11.has(lowerCasedProp) &&
       browsers.includes('ie 11')) ||
-    (lowerCasedProp === 'stroke-dasharray' &&
+    (keepZeroPercentageInKeyframe.has(lowerCasedProp) &&
       parent &&
       parent.parent &&
       parent.parent.type === 'atrule' &&
