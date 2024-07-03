@@ -6,19 +6,19 @@ export = litePreset;
  * @returns {{ plugins: [import('postcss').PluginCreator<any>, LiteOptions[keyof LiteOptions]][] }}
  */
 declare function litePreset(opts?: LiteOptions): {
-    plugins: [import('postcss').PluginCreator<any>, LiteOptions[keyof LiteOptions]][];
+    plugins: [import("postcss").PluginCreator<any>, LiteOptions[keyof LiteOptions]][];
 };
 declare namespace litePreset {
     export { SimpleOptions, LiteOptions };
 }
+type SimpleOptions<OptionsExtends extends object | void = void> = false | (OptionsExtends & {
+    exclude?: true;
+});
 type LiteOptions = {
     discardComments?: SimpleOptions<postcssDiscardComments.Options> | undefined;
     normalizeWhitespace?: SimpleOptions<void> | undefined;
     discardEmpty?: SimpleOptions<void> | undefined;
     rawCache?: SimpleOptions<void> | undefined;
 };
-type SimpleOptions<OptionsExtends extends void | object = void> = false | (OptionsExtends & {
-    exclude?: true;
-});
 import postcssDiscardComments = require("postcss-discard-comments");
 //# sourceMappingURL=index.d.ts.map

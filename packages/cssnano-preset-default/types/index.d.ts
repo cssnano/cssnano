@@ -6,15 +6,18 @@ export = defaultPreset;
  * @returns {{ plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][] }}
  */
 declare function defaultPreset(opts?: Options & AutoprefixerOptions & BrowserslistOptions): {
-    plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][];
+    plugins: [import("postcss").PluginCreator<any>, Options[keyof Options]][];
 };
 declare namespace defaultPreset {
     export { SimpleOptions, Options, AutoprefixerOptions, BrowserslistOptions };
 }
+type SimpleOptions<OptionsExtends extends object | void = void> = false | (OptionsExtends & {
+    exclude?: true;
+});
 type Options = {
     cssDeclarationSorter?: SimpleOptions<{
-        order?: ("alphabetical" | "concentric-css" | "smacss") | ((propertyNameA: string, propertyNameB: string) => 0 | 1 | -1) | undefined;
-        keepOverrides?: boolean | undefined;
+        order?: ("alphabetical" | "concentric-css" | "smacss") | ((propertyNameA: string, propertyNameB: string) => -1 | 0 | 1) | undefined;
+        keepOverrides?: boolean;
     } | undefined> | undefined;
     discardComments?: SimpleOptions<postcssDiscardComments.Options> | undefined;
     reduceInitial?: SimpleOptions<postcssReduceInitial.Options> | undefined;
@@ -48,10 +51,7 @@ type Options = {
 type AutoprefixerOptions = {
     overrideBrowserslist?: string | string[];
 };
-type BrowserslistOptions = Pick<import('browserslist').Options, 'stats' | 'path' | 'env'>;
-type SimpleOptions<OptionsExtends extends void | object = void> = false | (OptionsExtends & {
-    exclude?: true;
-});
+type BrowserslistOptions = Pick<import("browserslist").Options, "stats" | "path" | "env">;
 import postcssDiscardComments = require("postcss-discard-comments");
 import postcssReduceInitial = require("postcss-reduce-initial");
 import postcssSvgo = require("postcss-svgo");

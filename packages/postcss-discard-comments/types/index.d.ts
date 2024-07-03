@@ -9,14 +9,14 @@ export = pluginCreator;
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
-declare function pluginCreator(opts?: Options): import('postcss').Plugin;
+declare function pluginCreator(opts?: Options): import("postcss").Plugin;
 declare namespace pluginCreator {
     export { postcss, Options };
 }
+declare var postcss: true;
 type Options = {
     removeAll?: boolean | undefined;
     removeAllButFirst?: boolean | undefined;
     remove?: ((s: string) => boolean) | undefined;
 };
-declare var postcss: true;
 //# sourceMappingURL=index.d.ts.map
