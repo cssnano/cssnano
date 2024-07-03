@@ -4,14 +4,14 @@ export = cssnanoPlugin;
  * @param {Options=} options
  * @return {import('postcss').Processor}
  */
-declare function cssnanoPlugin(options?: Options | undefined): import('postcss').Processor;
+declare function cssnanoPlugin(options?: Options | undefined): import("postcss").Processor;
 declare namespace cssnanoPlugin {
     export { postcss, Options };
 }
+declare var postcss: true;
 type Options = {
     preset?: any;
     plugins?: any[];
     configFile?: string;
 };
-declare var postcss: true;
 //# sourceMappingURL=index.d.ts.map

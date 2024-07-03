@@ -5,13 +5,10 @@ export = pluginCreator;
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
-declare function pluginCreator(opts: Options): import('postcss').Plugin;
+declare function pluginCreator(opts: Options): import("postcss").Plugin;
 declare namespace pluginCreator {
     export { postcss, StringAstNode, StringAst, Options };
 }
-type Options = {
-    preferredQuote?: 'double' | 'single';
-};
 declare var postcss: true;
 type StringAstNode = {
     type: string;
@@ -35,5 +32,8 @@ type StringAst = {
         doubleQuote: number;
     };
     quotes: boolean;
+};
+type Options = {
+    preferredQuote?: "double" | "single";
 };
 //# sourceMappingURL=index.d.ts.map
