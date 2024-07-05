@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.0.4
+
+### Patch Changes
+
+- Updated dependencies [d6f9a32]
+  - postcss-convert-values@7.0.2
+
 ## 7.0.3
 
 ### Patch Changes
