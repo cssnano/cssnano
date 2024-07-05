@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.2
+
+### Patch Changes
+
+- d6f9a32: fix(postcss-convert-values): preserve percent sign in border-image-width
+
 ## 7.0.1
 
 ### Patch Changes
