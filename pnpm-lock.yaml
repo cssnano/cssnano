@@ -67,7 +67,7 @@ importers:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.39)
       browserslist:
-        specifier: ^4.23.1
+        specifier: ^4.23.2
         version: 4.23.2
       cssnano-preset-default:
         specifier: workspace:^
@@ -92,7 +92,7 @@ importers:
   packages/cssnano-preset-default:
     dependencies:
       browserslist:
-        specifier: ^4.23.1
+        specifier: ^4.23.2
         version: 4.23.2
       css-declaration-sorter:
         specifier: ^7.2.0
@@ -217,7 +217,7 @@ importers:
   packages/postcss-colormin:
     dependencies:
       browserslist:
-        specifier: ^4.23.1
+        specifier: ^4.23.2
         version: 4.23.2
       caniuse-api:
         specifier: ^3.0.0
@@ -239,7 +239,7 @@ importers:
   packages/postcss-convert-values:
     dependencies:
       browserslist:
-        specifier: ^4.23.1
+        specifier: ^4.23.2
         version: 4.23.2
       postcss-value-parser:
         specifier: ^4.2.0
@@ -252,7 +252,7 @@ importers:
   packages/postcss-discard-comments:
     dependencies:
       postcss-selector-parser:
-        specifier: ^6.1.0
+        specifier: ^6.1.1
         version: 6.1.1
     devDependencies:
       postcss:
@@ -292,7 +292,7 @@ importers:
   packages/postcss-discard-unused:
     dependencies:
       postcss-selector-parser:
-        specifier: ^6.1.0
+        specifier: ^6.1.1
         version: 6.1.1
     devDependencies:
       postcss:
@@ -328,7 +328,7 @@ importers:
   packages/postcss-merge-rules:
     dependencies:
       browserslist:
-        specifier: ^4.23.1
+        specifier: ^4.23.2
         version: 4.23.2
       caniuse-api:
         specifier: ^3.0.0
@@ -337,7 +337,7 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-selector-parser:
-        specifier: ^6.1.0
+        specifier: ^6.1.1
         version: 6.1.1
     devDependencies:
       '@types/caniuse-api':
@@ -382,7 +382,7 @@ importers:
   packages/postcss-minify-params:
     dependencies:
       browserslist:
-        specifier: ^4.23.1
+        specifier: ^4.23.2
         version: 4.23.2
       cssnano-utils:
         specifier: workspace:^
@@ -401,7 +401,7 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       postcss-selector-parser:
-        specifier: ^6.1.0
+        specifier: ^6.1.1
         version: 6.1.1
     devDependencies:
       '@types/cssesc':
@@ -470,7 +470,7 @@ importers:
   packages/postcss-normalize-unicode:
     dependencies:
       browserslist:
-        specifier: ^4.23.1
+        specifier: ^4.23.2
         version: 4.23.2
       postcss-value-parser:
         specifier: ^4.2.0
@@ -526,7 +526,7 @@ importers:
   packages/postcss-reduce-initial:
     dependencies:
       browserslist:
-        specifier: ^4.23.1
+        specifier: ^4.23.2
         version: 4.23.2
       caniuse-api:
         specifier: ^3.0.0
@@ -571,7 +571,7 @@ importers:
   packages/postcss-unique-selectors:
     dependencies:
       postcss-selector-parser:
-        specifier: ^6.1.0
+        specifier: ^6.1.1
         version: 6.1.1
     devDependencies:
       postcss:
@@ -587,10 +587,10 @@ importers:
   packages/stylehacks:
     dependencies:
       browserslist:
-        specifier: ^4.23.1
+        specifier: ^4.23.2
         version: 4.23.2
       postcss-selector-parser:
-        specifier: ^6.1.0
+        specifier: ^6.1.1
         version: 6.1.1
     devDependencies:
       postcss:
@@ -864,9 +864,6 @@ packages:
 
   caniuse-api@3.0.0:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
-
-  caniuse-lite@1.0.30001632:
-    resolution: {integrity: sha512-udx3o7yHJfUxMLkGohMlVHCvFvWmirKh9JAH/d7WOLPetlH+LTL5cocMZ0t7oZx/mdlOWXti97xLZWc8uURRHg==}
 
   caniuse-lite@1.0.30001642:
     resolution: {integrity: sha512-3XQ0DoRgLijXJErLSl+bLnJ+Et4KqV1PY6JJBGAFlsNsz31zeAIncyeZfLCabHK/jtSh+671RM9YMldxjUPZtA==}
@@ -1388,8 +1385,8 @@ packages:
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
-  node-releases@2.0.14:
-    resolution: {integrity: sha512-y10wOWt8yZpqXmOgRo77WaHEmhYQYGNA6y421PKsKYWEK8aW+cqAphborZDhqfyKrbZEN92CN1X2KbafY2s7Yw==}
+  node-releases@2.0.17:
+    resolution: {integrity: sha512-Ww6ZlOiEQfPfXM45v17oabk77Z7mg5bOt7AjDyzy7RjK9OrLrLC8dyZQoAPEOtFX9SaNf1Tdvr5gRJWdTJj7GA==}
 
   normalize-range@0.1.2:
     resolution: {integrity: sha512-bdok/XvKII3nUpklnV6P2hxtMNrCboOjAcyBuQnWEhO665FwrSNRxU+AqpsyvO6LgGYPspN+lu5CLtw4jPRKNA==}
@@ -2078,7 +2075,7 @@ snapshots:
   autoprefixer@10.4.19(postcss@8.4.39):
     dependencies:
       browserslist: 4.23.2
-      caniuse-lite: 1.0.30001632
+      caniuse-lite: 1.0.30001642
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.0.1
@@ -2118,7 +2115,7 @@ snapshots:
     dependencies:
       caniuse-lite: 1.0.30001642
       electron-to-chromium: 1.4.832
-      node-releases: 2.0.14
+      node-releases: 2.0.17
       update-browserslist-db: 1.1.0(browserslist@4.23.2)
 
   c8@10.1.2:
@@ -2140,11 +2137,9 @@ snapshots:
   caniuse-api@3.0.0:
     dependencies:
       browserslist: 4.23.2
-      caniuse-lite: 1.0.30001632
+      caniuse-lite: 1.0.30001642
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
-
-  caniuse-lite@1.0.30001632: {}
 
   caniuse-lite@1.0.30001642: {}
 
@@ -2664,7 +2659,7 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  node-releases@2.0.14: {}
+  node-releases@2.0.17: {}
 
   normalize-range@0.1.2: {}
 
