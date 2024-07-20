@@ -11,7 +11,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "browserslist": "^4.23.1",
+    "browserslist": "^4.23.2",
     "css-declaration-sorter": "^7.2.0",
     "cssnano-utils": "workspace:^",
     "postcss-calc": "^10.0.0",
