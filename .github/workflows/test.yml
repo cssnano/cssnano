@@ -66,3 +66,4 @@ jobs:
         uses: codecov/codecov-action@v3.1.4
         with:
           name: codecov
+          files: ./coverage/codecov.json

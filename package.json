@@ -7,7 +7,7 @@
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
     "test:only": "node --test",
-    "test:coverage": "c8 pnpm test:only",
+    "test:coverage": "c8 --experimental-monocart pnpm test:only",
     "test": "pnpm test:coverage",
     "types": "tsc -b",
     "all-publish": "pnpm changeset publish"
@@ -25,6 +25,7 @@
     "eslint": "^9.6.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.8.0",
+    "monocart-coverage-reports": "^2.9.3",
     "postcss": "^8.4.39",
     "postcss-font-magician": "^4.0.0",
     "prettier": "^3.3.2",

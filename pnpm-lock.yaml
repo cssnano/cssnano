@@ -16,7 +16,7 @@ importers:
         version: 20.14.9
       c8:
         specifier: ^10.1.2
-        version: 10.1.2
+        version: 10.1.2(monocart-coverage-reports@2.9.3)
       eslint:
         specifier: ^9.6.0
         version: 9.6.0
@@ -26,6 +26,9 @@ importers:
       globals:
         specifier: ^15.8.0
         version: 15.8.0
+      monocart-coverage-reports:
+        specifier: ^2.9.3
+        version: 2.9.3
       postcss:
         specifier: ^8.4.39
         version: 8.4.39
@@ -710,6 +713,9 @@ packages:
   '@jridgewell/sourcemap-codec@1.4.15':
     resolution: {integrity: sha512-eF2rxCRulEKXHTRiDrDy6erMYWqNw4LPdQ8UQA4huuxaQsVeRPFl2oM8oDGxMFhJUWZf9McpLtJasDDZb/Bpeg==}
 
+  '@jridgewell/sourcemap-codec@1.5.0':
+    resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
+
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
@@ -764,6 +770,14 @@ packages:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
+
+  acorn-loose@8.4.0:
+    resolution: {integrity: sha512-M0EUka6rb+QC4l9Z3T0nJEzNOO7JcoJlYMrBlyBCiFSXRyxjLKayd4TbQs2FDRWQU1h9FR7QVNHt+PEaoNL5rQ==}
+    engines: {node: '>=0.4.0'}
+
+  acorn-walk@8.3.3:
+    resolution: {integrity: sha512-MxXdReSRhGO7VlFe1bRG/oI7/mdLV9B9JJT0N8vZOhF7gFRR5l3M8W9G8JxmKV+JC5mGqJ0QvqfSOLsCPa4nUw==}
+    engines: {node: '>=0.4.0'}
 
   acorn@8.12.1:
     resolution: {integrity: sha512-tcpGyI9zbizT9JbV6oYE477V6mTlXvvi0T0G3SNIYE2apm/G5huBa1+K89VGeovbg+jycCrfhl3ADxErOuO6Jg==}
@@ -903,12 +917,19 @@ packages:
   colord@2.9.3:
     resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
 
+  commander@12.1.0:
+    resolution: {integrity: sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==}
+    engines: {node: '>=18'}
+
   commander@7.2.0:
     resolution: {integrity: sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==}
     engines: {node: '>= 10'}
 
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
+
+  console-grid@2.2.2:
+    resolution: {integrity: sha512-ohlgXexdDTKLNsZz7DSJuCAwmRc8omSS61txOk39W3NOthgKGr1a1jJpZ5BCQe4PlrwMw01OvPQ1Bl3G7Y/uFg==}
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
@@ -970,6 +991,10 @@ packages:
     resolution: {integrity: sha512-reYkTUJAZb9gUuZ2RvVCNhVHdg62RHnJ7WJl8ftMi4diZ6NWlciOzQN88pUhSELEwflJht4oQDv0F0BMlwaYtA==}
     engines: {node: '>=8'}
 
+  diff-sequences@29.6.3:
+    resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
+    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+
   diff@5.2.0:
     resolution: {integrity: sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==}
     engines: {node: '>=0.3.1'}
@@ -996,6 +1021,9 @@ packages:
 
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
+
+  eight-colors@1.3.0:
+    resolution: {integrity: sha512-hVoK898cR71ADj7L1LZWaECLaSkzzPtqGXIaKv4K6Pzb72QgjLVsQaNI+ELDQQshzFvgp5xTPkaYkPGqw3YR+g==}
 
   electron-to-chromium@1.4.798:
     resolution: {integrity: sha512-by9J2CiM9KPGj9qfp5U4FcPSbXJG7FNzqnYaY4WLzX+v2PHieVGmnsA4dxfpGE3QEC7JofpPZmn7Vn1B9NR2+Q==}
@@ -1344,6 +1372,9 @@ packages:
   lru-cache@4.1.5:
     resolution: {integrity: sha512-sWZlbEP2OsHNkXrMl5GYk/jKk70MBng6UU4YI/qGDYbgf6YbP4EvmqISbXCoJiRKs+1bSpFHVgQxvJ17F2li5g==}
 
+  lz-utils@2.0.2:
+    resolution: {integrity: sha512-i1PJN4hNEevkrvLMqNWCCac1BcB5SRaghywG7HVzWOyVkFOasLCG19ND1sY1F/ZEsM6SnGtoXyBWnmfqOM5r6g==}
+
   make-dir@4.0.0:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
     engines: {node: '>=10'}
@@ -1372,6 +1403,19 @@ packages:
   minipass@7.1.2:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
+
+  monocart-code-viewer@1.1.4:
+    resolution: {integrity: sha512-ehSe1lBG7D1VDVLjTkHV63J3zAgzyhlC9OaxOri7D0X4L5/EcZUOG5TEoMmYErL+YGSOQXghU9kSSAelwNnp1Q==}
+
+  monocart-coverage-reports@2.9.3:
+    resolution: {integrity: sha512-guRHe/+FGwUc1x1XT4eKW4za5j9MQcq5Vp7CIZfzoGY1mwVp8LKZpDJUjoBkYAb5Xb+7CFAY3lSyNaQ8FKS6oQ==}
+    hasBin: true
+
+  monocart-formatter@3.0.0:
+    resolution: {integrity: sha512-91OQpUb/9iDqvrblUv6ki11Jxi1d3Fp5u2jfVAPl3UdNp9TM+iBleLzXntUS51W0o+zoya3CJjZZ01z2XWn25g==}
+
+  monocart-locator@1.0.2:
+    resolution: {integrity: sha512-v8W5hJLcWMIxLCcSi/MHh+VeefI+ycFmGz23Froer9QzWjrbg4J3gFJBuI/T1VLNoYxF47bVPPxq8ZlNX4gVCw==}
 
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
@@ -1689,6 +1733,9 @@ packages:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
 
+  turbogrid@3.2.0:
+    resolution: {integrity: sha512-c+2qrCGWzoYpLlxtHgRJ4V5dDRE9fUT7D9maxtdBCqJ0NzCdY+x7xF3/F6cG/+n3VIzKfIS+p9Z/0YMQPf6k/Q==}
+
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
@@ -1981,6 +2028,8 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.4.15': {}
 
+  '@jridgewell/sourcemap-codec@1.5.0': {}
+
   '@jridgewell/trace-mapping@0.3.25':
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
@@ -2039,6 +2088,14 @@ snapshots:
   '@types/semver@7.5.8': {}
 
   acorn-jsx@5.3.2(acorn@8.12.1):
+    dependencies:
+      acorn: 8.12.1
+
+  acorn-loose@8.4.0:
+    dependencies:
+      acorn: 8.12.1
+
+  acorn-walk@8.3.3:
     dependencies:
       acorn: 8.12.1
 
@@ -2121,7 +2178,7 @@ snapshots:
       node-releases: 2.0.14
       update-browserslist-db: 1.0.16(browserslist@4.23.1)
 
-  c8@10.1.2:
+  c8@10.1.2(monocart-coverage-reports@2.9.3):
     dependencies:
       '@bcoe/v8-coverage': 0.2.3
       '@istanbuljs/schema': 0.1.3
@@ -2134,6 +2191,8 @@ snapshots:
       v8-to-istanbul: 9.3.0
       yargs: 17.7.2
       yargs-parser: 21.1.1
+    optionalDependencies:
+      monocart-coverage-reports: 2.9.3
 
   callsites@3.1.0: {}
 
@@ -2181,9 +2240,13 @@ snapshots:
 
   colord@2.9.3: {}
 
+  commander@12.1.0: {}
+
   commander@7.2.0: {}
 
   concat-map@0.0.1: {}
+
+  console-grid@2.2.2: {}
 
   convert-source-map@2.0.0: {}
 
@@ -2239,6 +2302,8 @@ snapshots:
 
   detect-indent@6.1.0: {}
 
+  diff-sequences@29.6.3: {}
+
   diff@5.2.0: {}
 
   dir-glob@3.0.1:
@@ -2273,6 +2338,8 @@ snapshots:
       domhandler: 5.0.3
 
   eastasianwidth@0.2.0: {}
+
+  eight-colors@1.3.0: {}
 
   electron-to-chromium@1.4.798: {}
 
@@ -2629,6 +2696,8 @@ snapshots:
       pseudomap: 1.0.2
       yallist: 2.1.2
 
+  lz-utils@2.0.2: {}
+
   make-dir@4.0.0:
     dependencies:
       semver: 7.6.2
@@ -2653,6 +2722,34 @@ snapshots:
       brace-expansion: 2.0.1
 
   minipass@7.1.2: {}
+
+  monocart-code-viewer@1.1.4: {}
+
+  monocart-coverage-reports@2.9.3:
+    dependencies:
+      '@bcoe/v8-coverage': 0.2.3
+      '@jridgewell/sourcemap-codec': 1.5.0
+      acorn: 8.12.1
+      acorn-loose: 8.4.0
+      acorn-walk: 8.3.3
+      commander: 12.1.0
+      console-grid: 2.2.2
+      diff-sequences: 29.6.3
+      eight-colors: 1.3.0
+      foreground-child: 3.2.1
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-reports: 3.1.7
+      lz-utils: 2.0.2
+      minimatch: 9.0.5
+      monocart-code-viewer: 1.1.4
+      monocart-formatter: 3.0.0
+      monocart-locator: 1.0.2
+      turbogrid: 3.2.0
+
+  monocart-formatter@3.0.0: {}
+
+  monocart-locator@1.0.2: {}
 
   mri@1.2.0: {}
 
@@ -2923,6 +3020,8 @@ snapshots:
   to-regex-range@5.0.1:
     dependencies:
       is-number: 7.0.0
+
+  turbogrid@3.2.0: {}
 
   type-check@0.4.0:
     dependencies:

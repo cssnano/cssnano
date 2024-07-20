@@ -5,5 +5,5 @@
     "packages/postcss-reduce-initial/script/lib/mdnCssProps.mjs"
   ],
   "all": true,
-  "reporter": ["text", "lcovonly"]
+  "reporter": ["console-details", "codecov", "v8"]
 }
