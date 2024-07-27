@@ -20,15 +20,15 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.7",
-    "@types/node": "^20.14.11",
+    "@types/node": "^20.14.12",
     "c8": "^10.1.2",
-    "eslint": "^9.7.0",
+    "eslint": "^9.8.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.8.0",
-    "postcss": "^8.4.39",
+    "postcss": "^8.4.40",
     "postcss-font-magician": "^4.0.0",
     "prettier": "^3.3.3",
-    "typescript": "~5.5.3"
+    "typescript": "~5.5.4"
   },
   "browserslist": {
     "production": [
