@@ -11,10 +11,10 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "browserslist": "^4.23.2",
+    "browserslist": "^4.23.3",
     "css-declaration-sorter": "^7.2.0",
     "cssnano-utils": "workspace:^",
-    "postcss-calc": "^10.0.0",
+    "postcss-calc": "^10.0.1",
     "postcss-colormin": "workspace:^",
     "postcss-convert-values": "workspace:^",
     "postcss-discard-comments": "workspace:^",
