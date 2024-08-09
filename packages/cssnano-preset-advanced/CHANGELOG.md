@@ -1,5 +1,16 @@
 # Change Log
 
+## 7.0.5
+
+### Patch Changes
+
+- dff5c42: chore: update browserslist and postcss-selector-parser
+- f14a898: chore: update all dependencies
+- Updated dependencies [dff5c42]
+- Updated dependencies [f14a898]
+  - cssnano-preset-default@7.0.5
+  - postcss-discard-unused@7.0.2
+
 ## 7.0.4
 
 ### Patch Changes

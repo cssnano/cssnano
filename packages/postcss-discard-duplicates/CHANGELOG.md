@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.1
+
+### Patch Changes
+
+- 314868b: Prevents deduping of @layer rules which should not be deduped
+
 ## 7.0.0
 
 ### Major Changes

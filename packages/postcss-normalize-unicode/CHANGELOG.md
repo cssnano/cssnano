@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.0.2
+
+### Patch Changes
+
+- dff5c42: chore: update browserslist and postcss-selector-parser
+- f14a898: chore: update all dependencies
+
 ## 7.0.1
 
 ### Patch Changes

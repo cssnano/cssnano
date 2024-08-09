@@ -1,5 +1,26 @@
 # Change Log
 
+## 7.0.5
+
+### Patch Changes
+
+- dff5c42: chore: update browserslist and postcss-selector-parser
+- f14a898: chore: update all dependencies
+- Updated dependencies [dff5c42]
+- Updated dependencies [f14a898]
+- Updated dependencies [314868b]
+  - postcss-normalize-unicode@7.0.2
+  - postcss-discard-comments@7.0.2
+  - postcss-minify-selectors@7.0.3
+  - postcss-unique-selectors@7.0.2
+  - postcss-convert-values@7.0.3
+  - postcss-reduce-initial@7.0.2
+  - postcss-minify-params@7.0.2
+  - postcss-merge-rules@7.0.3
+  - postcss-colormin@7.0.2
+  - postcss-discard-duplicates@7.0.1
+  - postcss-merge-longhand@7.0.3
+
 ## 7.0.4
 
 ### Patch Changes
