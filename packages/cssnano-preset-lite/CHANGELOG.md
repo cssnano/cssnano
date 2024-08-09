@@ -1,5 +1,12 @@
 # Change Log
 
+## 4.0.2
+
+### Patch Changes
+
+- Updated dependencies [dff5c42]
+  - postcss-discard-comments@7.0.2
+
 ## 4.0.1
 
 ### Patch Changes
