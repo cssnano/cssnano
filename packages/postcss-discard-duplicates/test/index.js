@@ -110,7 +110,7 @@ test(
   'should not crash on @layer syntax',
   processCSS(
     '@layer ui-components { } @layer ui-components',
-    '@layer ui-components'
+    '@layer ui-components { } @layer ui-components'
   )
 );
 
