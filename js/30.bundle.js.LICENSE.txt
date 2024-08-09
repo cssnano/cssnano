@@ -6,6 +6,18 @@
 
 /*! Production::    dimension : CHS */
 
+/*! Production::    dimension : CQBS */
+
+/*! Production::    dimension : CQHS */
+
+/*! Production::    dimension : CQIS */
+
+/*! Production::    dimension : CQMAXS */
+
+/*! Production::    dimension : CQMINS */
+
+/*! Production::    dimension : CQWS */
+
 /*! Production::    dimension : EMS */
 
 /*! Production::    dimension : EXS */
@@ -75,6 +87,18 @@
 /*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)ch\b */
 
 /*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)cm\b */
+
+/*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)cqb\b */
+
+/*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)cqh\b */
+
+/*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)cqi\b */
+
+/*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)cqmax\b */
+
+/*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)cqmin\b */
+
+/*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)cqw\b */
 
 /*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)deg\b */
 
