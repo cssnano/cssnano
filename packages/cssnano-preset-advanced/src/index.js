@@ -5,6 +5,7 @@ const postcssMergeIdents = require('postcss-merge-idents');
 const postcssReduceIdents = require('postcss-reduce-idents');
 const postcssZindex = require('postcss-zindex');
 const autoprefixer = require('autoprefixer');
+const preserveGridTemplateAreas = require("./preserve-grid-template-areas");
 
 /**
  * @template {object | void} [OptionsExtends=void]
@@ -91,6 +92,7 @@ function advancedPreset(opts = {}) {
           [postcssMergeIdents, 'mergeIdents'],
           [postcssReduceIdents, 'reduceIdents'],
           [postcssZindex, 'zindex'],
+          [preserveGridTemplateAreas, "preserveGridTemplateAreas"]
         ],
         opts
       ),
