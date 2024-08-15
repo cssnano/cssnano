@@ -33,7 +33,7 @@
     "node": "^18.12.0 || ^20.9.0 || >=22.0"
   },
   "devDependencies": {
-    "postcss": "^8.4.40",
+    "postcss": "^8.4.41",
     "postcss-scss": "^4.0.9",
     "postcss-simple-vars": "^7.0.1"
   },
