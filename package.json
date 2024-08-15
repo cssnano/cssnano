@@ -20,12 +20,12 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.7",
-    "@types/node": "^22.1.0",
+    "@types/node": "^22.3.0",
     "c8": "^10.1.2",
-    "eslint": "^9.8.0",
+    "eslint": "^9.9.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.9.0",
-    "postcss": "^8.4.40",
+    "postcss": "^8.4.41",
     "postcss-font-magician": "^4.0.0",
     "prettier": "^3.3.3",
     "typescript": "~5.5.4"
