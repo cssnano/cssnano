@@ -23,7 +23,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "postcss-selector-parser": "^6.1.1"
+    "postcss-selector-parser": "^6.1.2"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
