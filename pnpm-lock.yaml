@@ -252,8 +252,8 @@ importers:
   packages/postcss-discard-comments:
     dependencies:
       postcss-selector-parser:
-        specifier: ^6.1.1
-        version: 6.1.1
+        specifier: ^6.1.2
+        version: 6.1.2
     devDependencies:
       postcss:
         specifier: ^8.4.41
@@ -292,8 +292,8 @@ importers:
   packages/postcss-discard-unused:
     dependencies:
       postcss-selector-parser:
-        specifier: ^6.1.1
-        version: 6.1.1
+        specifier: ^6.1.2
+        version: 6.1.2
     devDependencies:
       postcss:
         specifier: ^8.4.41
@@ -337,8 +337,8 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-selector-parser:
-        specifier: ^6.1.1
-        version: 6.1.1
+        specifier: ^6.1.2
+        version: 6.1.2
     devDependencies:
       '@types/caniuse-api':
         specifier: ^3.0.6
@@ -401,8 +401,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       postcss-selector-parser:
-        specifier: ^6.1.1
-        version: 6.1.1
+        specifier: ^6.1.2
+        version: 6.1.2
     devDependencies:
       '@types/cssesc':
         specifier: ^3.0.2
@@ -571,8 +571,8 @@ importers:
   packages/postcss-unique-selectors:
     dependencies:
       postcss-selector-parser:
-        specifier: ^6.1.1
-        version: 6.1.1
+        specifier: ^6.1.2
+        version: 6.1.2
     devDependencies:
       postcss:
         specifier: ^8.4.41
@@ -590,8 +590,8 @@ importers:
         specifier: ^4.23.3
         version: 4.23.3
       postcss-selector-parser:
-        specifier: ^6.1.1
-        version: 6.1.1
+        specifier: ^6.1.2
+        version: 6.1.2
     devDependencies:
       postcss:
         specifier: ^8.4.41
@@ -1507,10 +1507,6 @@ packages:
     engines: {node: '>=12.0'}
     peerDependencies:
       postcss: ^8.4.29
-
-  postcss-selector-parser@6.1.1:
-    resolution: {integrity: sha512-b4dlw/9V8A71rLIDsSwVmak9z2DuBUB7CA1/wSdelNEzqsjoSPeADTWNO09lpH49Diy3/JIZ2bSPB1dI3LJCHg==}
-    engines: {node: '>=4'}
 
   postcss-selector-parser@6.1.2:
     resolution: {integrity: sha512-Q8qQfPiZ+THO/3ZrOrO0cJJKfpYCagtMUkXbnEfmgUjwXg6z/WBeOyS9APBBPCTSiDV+s4SwQGu8yFsiMRIudg==}
@@ -2769,11 +2765,6 @@ snapshots:
   postcss-scss@4.0.9(postcss@8.4.41):
     dependencies:
       postcss: 8.4.41
-
-  postcss-selector-parser@6.1.1:
-    dependencies:
-      cssesc: 3.0.0
-      util-deprecate: 1.0.2
 
   postcss-selector-parser@6.1.2:
     dependencies:
