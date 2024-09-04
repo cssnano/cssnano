@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@types/caniuse-api": "^3.0.6",
-    "postcss": "^8.4.41",
+    "postcss": "^8.4.45",
     "postcss-discard-comments": "workspace:^",
     "postcss-simple-vars": "^7.0.1"
   },
