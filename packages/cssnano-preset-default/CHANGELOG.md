@@ -1,5 +1,20 @@
 # Change Log
 
+## 7.0.6
+
+### Patch Changes
+
+- 024ddef: fix(cssnano-preset-default): update postcss-calc
+- 1d65a10: fix: update postcss-selector-parser
+- Updated dependencies [34bdcb8]
+- Updated dependencies [1d65a10]
+  - postcss-convert-values@7.0.4
+  - postcss-discard-comments@7.0.3
+  - postcss-minify-selectors@7.0.4
+  - postcss-unique-selectors@7.0.3
+  - postcss-merge-rules@7.0.4
+  - postcss-merge-longhand@7.0.4
+
 ## 7.0.5
 
 ### Patch Changes

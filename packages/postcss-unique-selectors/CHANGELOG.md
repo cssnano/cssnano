@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.3
+
+### Patch Changes
+
+- 1d65a10: fix: update postcss-selector-parser
+
 ## 7.0.2
 
 ### Patch Changes
