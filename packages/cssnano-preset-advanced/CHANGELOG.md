@@ -1,5 +1,14 @@
 # Change Log
 
+## 7.0.6
+
+### Patch Changes
+
+- Updated dependencies [024ddef]
+- Updated dependencies [1d65a10]
+  - cssnano-preset-default@7.0.6
+  - postcss-discard-unused@7.0.3
+
 ## 7.0.5
 
 ### Patch Changes
