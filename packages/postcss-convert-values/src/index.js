@@ -90,6 +90,9 @@ function parseWord(node, opts, keepZeroUnit) {
         (keepZeroUnit || (!LENGTH_UNITS.has(u.toLowerCase()) && u !== '%')
           ? u
           : '');
+      if (node.value === '0ms') {
+        node.value = '0s';
+      }
     } else {
       node.value = convert(num, u, opts);
 

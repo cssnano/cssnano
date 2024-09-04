@@ -11,7 +11,7 @@ const fixture = `
 }
 `;
 
-const expected = '.b{animation:opacity 0ms calc(1s)}';
+const expected = '.b{animation:opacity 0s calc(1s)}';
 
 test('it should keep quote', () => {
   const processor = postcss([
