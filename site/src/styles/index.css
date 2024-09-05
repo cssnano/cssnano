@@ -229,6 +229,9 @@ footer {
 }
 
 body {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-block-size: 100dvh;
   font-family: var(--font-body);
   line-height: 1.5;
 }
