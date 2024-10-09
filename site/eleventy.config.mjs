@@ -1,16 +1,18 @@
-const postcss = require('postcss');
-const cssnano = require('cssnano');
-const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
-const {
-  EleventyRenderPlugin,
-  EleventyHtmlBasePlugin,
-} = require('@11ty/eleventy');
-const markdownItAnchor = require('markdown-it-anchor');
-const markdownIt = require('markdown-it');
-const cssnanoVersion = require('../packages/cssnano/package.json').version;
+import postcss from 'postcss';
+import cssnano from 'cssnano';
+import syntaxHighlight from '@11ty/eleventy-plugin-syntaxhighlight';
+import { EleventyRenderPlugin, EleventyHtmlBasePlugin } from '@11ty/eleventy';
+import markdownItAnchor from 'markdown-it-anchor';
+import markdownIt from 'markdown-it';
+import fs from 'fs';
 
+const cssnanoPackageInfo = JSON.parse(
+  fs.readFileSync('../packages/cssnano/package.json', 'utf8')
+);
+const cssnanoVersion = cssnanoPackageInfo.version;
 const processor = postcss([cssnano]);
-module.exports = (config) => {
+
+export default function (config) {
   // tabindex makes scrollable code samples accesible
   config.addPlugin(syntaxHighlight, { preAttributes: { tabindex: 0 } });
   config.addPlugin(EleventyRenderPlugin);
@@ -45,4 +47,4 @@ module.exports = (config) => {
     markdownTemplateEngine: 'njk',
     pathPrefix: '/cssnano/',
   };
-};
+}
