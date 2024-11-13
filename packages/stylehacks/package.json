@@ -29,7 +29,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "browserslist": "^4.24.0",
-    "postcss-selector-parser": "^6.1.2"
+    "postcss-selector-parser": "^7.0.0"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
