@@ -28,8 +28,8 @@
   },
   "devDependencies": {
     "diff": "^7.0.0",
-    "picocolors": "^1.1.0",
-    "postcss": "^8.4.47"
+    "picocolors": "^1.1.1",
+    "postcss": "^8.4.49"
   },
   "peerDependencies": {
     "postcss": "^8.4.32"

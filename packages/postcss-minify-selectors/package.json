@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@types/cssesc": "^3.0.2",
-    "postcss": "^8.4.47"
+    "postcss": "^8.4.49"
   },
   "peerDependencies": {
     "postcss": "^8.4.32"
