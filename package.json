@@ -19,10 +19,10 @@
     "node": "^18 || ^20 || >=22"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.9",
+    "@changesets/cli": "^2.27.10",
     "@types/node": "^22.9.3",
     "c8": "^10.1.2",
-    "eslint": "^9.14.0",
+    "eslint": "^9.15.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.12.0",
     "postcss": "^8.4.49",
