@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.9",
-    "@types/node": "^22.9.0",
+    "@types/node": "^22.9.3",
     "c8": "^10.1.2",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^9.1.0",
@@ -28,7 +28,7 @@
     "postcss": "^8.4.49",
     "postcss-font-magician": "^4.0.0",
     "prettier": "^3.3.3",
-    "typescript": "~5.6.3"
+    "typescript": "~5.7.2"
   },
   "browserslist": {
     "production": [
