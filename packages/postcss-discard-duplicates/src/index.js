@@ -144,7 +144,10 @@ function dedupe(root) {
     dedupe(last);
     if (last.type === 'rule') {
       dedupeRule(last, nodes);
-    } else if ((last.type === 'atrule' && last.name !== 'layer') || last.type === 'decl') {
+    } else if (
+      (last.type === 'atrule' && last.name !== 'layer') ||
+      last.type === 'decl'
+    ) {
       dedupeNode(last, nodes);
     }
   }
