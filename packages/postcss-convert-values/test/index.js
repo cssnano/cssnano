@@ -18,7 +18,7 @@ test(
 test(
   'should convert 0ms to 0s',
   processCSS('h1{animation:opacity 0ms 1000ms}', 'h1{animation:opacity 0s 1s}')
-)
+);
 
 test(
   'should convert seconds to milliseconds',
