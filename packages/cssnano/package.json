@@ -41,10 +41,10 @@
         "node": "^18.12.0 || ^20.9.0 || >=22.0"
     },
     "devDependencies": {
-        "autoprefixer": "^10.4.20",
+        "autoprefixer": "^10.4.21",
         "cssnano-preset-advanced": "workspace:^",
         "cssnano-preset-lite": "workspace:^",
-        "postcss": "^8.4.49"
+        "postcss": "^8.5.3"
     },
     "peerDependencies": {
         "postcss": "^8.4.32"
