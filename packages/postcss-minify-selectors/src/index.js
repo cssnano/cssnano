@@ -198,14 +198,14 @@ const reducers = new Map(
 );
 
 /** @typedef {object} Options
- *  @property {boolean=} preserveOrder
+ *  @property {boolean} [sort=true]
  */
 /**
  * @type {import('postcss').PluginCreator<void>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
-function pluginCreator(opts = {}) {
+function pluginCreator(opts = { sort: true }) {
   return {
     postcssPlugin: 'postcss-minify-selectors',
 
@@ -237,7 +237,7 @@ function pluginCreator(opts = {}) {
             }
           }
         });
-        if (opts.preserveOrder !== true) {
+        if (opts.sort) {
           selectors.nodes.sort();
         }
       });

@@ -1,6 +1,6 @@
 export = pluginCreator;
 /** @typedef {object} Options
-+ *  @property {boolean=} preserveOrder
++ *  @property {boolean=} sort
 + */
 /**
  * @type {import('postcss').PluginCreator<void>}
@@ -13,6 +13,6 @@ declare namespace pluginCreator {
 }
 declare var postcss: true;
 type Options = {
-    preserveOrder?: boolean | undefined;
+    sort?: boolean | undefined;
 };
 //# sourceMappingURL=index.d.ts.map

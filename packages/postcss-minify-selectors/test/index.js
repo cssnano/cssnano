@@ -105,11 +105,11 @@ test(
 );
 
 test(
-  'should preserve order',
+  'should not sort',
   processCSS(
     '.item1, .item2, .item10, .item11{color:blue}',
     '.item1,.item2,.item10,.item11{color:blue}',
-    { preserveOrder: true },
+    { sort: false },
   )
 );
 
