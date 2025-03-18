@@ -60,7 +60,7 @@ const { rawCache } = require('cssnano-utils');
  * @property {SimpleOptions<import('postcss-calc').PostCssCalcOptions>} [calc]
  * @property {SimpleOptions<import('postcss-colormin').Options>} [colormin]
  * @property {SimpleOptions} [orderedValues]
- * @property {SimpleOptions} [minifySelectors]
+ * @property {SimpleOptions<import('postcss-minify-selectors').Options>} [minifySelectors]
  * @property {SimpleOptions<import('postcss-minify-params').Options>} [minifyParams]
  * @property {SimpleOptions<import('postcss-normalize-charset').Options>} [normalizeCharset]
  * @property {SimpleOptions<import('postcss-minify-font-values').Options>} [minifyFontValues]
@@ -130,6 +130,9 @@ function configurePlugins(plugins, opts = {}) {
     },
     cssDeclarationSorter: {
       keepOverrides: true,
+    },
+    minifySelectors: {
+      sort: true,
     },
     svgo: {
       plugins: [

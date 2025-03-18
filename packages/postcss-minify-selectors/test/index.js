@@ -105,6 +105,15 @@ test(
 );
 
 test(
+  'should not sort',
+  processCSS(
+    '.item1, .item2, .item10, .item11{color:blue}',
+    '.item1,.item2,.item10,.item11{color:blue}',
+    { sort: false },
+  )
+);
+
+test(
   'should dedupe selectors',
   processCSS(
     'h1,h2,h3,h4,h5,h5,h6{color:blue}',
