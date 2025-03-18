@@ -3,6 +3,7 @@ const path = require('path');
 /** @type {any} */
 const postcss = require('postcss');
 const { lilconfigSync } = require('lilconfig');
+const defaultPreset = require('cssnano-preset-default');
 
 const cssnano = 'cssnano';
 
@@ -48,7 +49,7 @@ function resolvePreset(preset) {
 
   // Provide an alias for the default preset, as it is built-in.
   if (fn === 'default') {
-    return require('cssnano-preset-default')(options).plugins;
+    return defaultPreset(options).plugins;
   }
 
   // For non-JS setups; we'll need to invoke the preset ourselves.
