@@ -101,8 +101,8 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-calc:
-        specifier: ^10.0.2
-        version: 10.1.0(postcss@8.5.3)
+        specifier: ^10.1.1
+        version: 10.1.1(postcss@8.5.3)
       postcss-colormin:
         specifier: workspace:^
         version: link:../postcss-colormin
@@ -1514,8 +1514,8 @@ packages:
   pleeease-filters@4.0.0:
     resolution: {integrity: sha512-EtyjMK41s2+q/eM6wED/9U5bWzowfP/ImQb9AxKzt/+Xlbb5CxQ7dAToEoSQuxyidmkZzHAl483m2sBm2XvfFw==}
 
-  postcss-calc@10.1.0:
-    resolution: {integrity: sha512-uQ/LDGsf3mgsSUEXmAt3VsCSHR3aKqtEIkmB+4PhzYwRYOW5MZs/GhCCFpsOtJJkP6EC6uGipbrnaTjqaJZcJw==}
+  postcss-calc@10.1.1:
+    resolution: {integrity: sha512-NYEsLHh8DgG/PRH2+G9BTuUdtf9ViS+vdoQ0YA5OQdGsfN4ztiwtDWNtBl9EKeqNMFnIu8IKZ0cLxEQ5r5KVMw==}
     engines: {node: ^18.12 || ^20.9 || >=22.0}
     peerDependencies:
       postcss: ^8.4.38
@@ -2747,7 +2747,7 @@ snapshots:
       onecolor: 3.1.0
       postcss: 6.0.23
 
-  postcss-calc@10.1.0(postcss@8.5.3):
+  postcss-calc@10.1.1(postcss@8.5.3):
     dependencies:
       postcss: 8.5.3
       postcss-selector-parser: 7.0.0
