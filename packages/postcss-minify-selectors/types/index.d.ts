@@ -1,6 +1,6 @@
 export = pluginCreator;
 /** @typedef {object} Options
- *  @property {boolean=} sort
+ *  @property {boolean} [sort=true]
  */
 /**
  * @type {import('postcss').PluginCreator<void>}
