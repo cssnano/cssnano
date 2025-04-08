@@ -28,7 +28,7 @@ type Options = {
     calc?: SimpleOptions<postcssCalc.PostCssCalcOptions> | undefined;
     colormin?: SimpleOptions<postcssColormin.Options> | undefined;
     orderedValues?: SimpleOptions<void> | undefined;
-    minifySelectors?: SimpleOptions<void> | undefined;
+    minifySelectors?: SimpleOptions<postcssMinifySelectors.Options> | undefined;
     minifyParams?: SimpleOptions<postcssMinifyParams.Options> | undefined;
     normalizeCharset?: SimpleOptions<postcssNormalizeCharset.Options> | undefined;
     minifyFontValues?: SimpleOptions<postcssMinifyFontValues.Options> | undefined;
@@ -58,6 +58,7 @@ import postcssSvgo = require("postcss-svgo");
 import postcssConvertValues = require("postcss-convert-values");
 import postcssCalc = require("postcss-calc");
 import postcssColormin = require("postcss-colormin");
+import postcssMinifySelectors = require("postcss-minify-selectors");
 import postcssMinifyParams = require("postcss-minify-params");
 import postcssNormalizeCharset = require("postcss-normalize-charset");
 import postcssMinifyFontValues = require("postcss-minify-font-values");
