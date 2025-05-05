@@ -157,7 +157,7 @@ function shouldKeepZeroUnit(decl, browsers) {
         (node) =>
           node.type === 'decl' &&
           node.prop.toLowerCase() === 'syntax' &&
-          node.value === "'<percentage>'"
+          (node.value === "'<percentage>'" || node.value === '"<percentage>"')
       )) ||
     keepWhenZero.has(lowerCasedProp)
   );
