@@ -72,3 +72,4 @@ Thanks goes to these wonderful people:
 - Xiaojun Zhou
 - Seth Falco
 - Seiya
+- Aleksandr Kondrashov

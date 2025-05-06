@@ -109,7 +109,7 @@ test(
   processCSS(
     '.item1, .item2, .item10, .item11{color:blue}',
     '.item1,.item2,.item10,.item11{color:blue}',
-    { sort: false },
+    { sort: false }
   )
 );
 
