@@ -1,5 +1,7 @@
 /*! Conditions:: INITIAL */
 
+/*! Production::    calc_keyword : CALC_KEYWORD */
+
 /*! Production::    dimension : ADD dimension */
 
 /*! Production::    dimension : ANGLE */
@@ -38,6 +40,8 @@
 
 /*! Production::    dimension : LENGTH */
 
+/*! Production::    dimension : LHS */
+
 /*! Production::    dimension : LVBS */
 
 /*! Production::    dimension : LVHS */
@@ -55,6 +59,8 @@
 /*! Production::    dimension : REMS */
 
 /*! Production::    dimension : RES */
+
+/*! Production::    dimension : RLHS */
 
 /*! Production::    dimension : SVBS */
 
@@ -91,6 +97,8 @@
 /*! Production::    math_expression : CALC LPAREN math_expression RPAREN */
 
 /*! Production::    math_expression : LPAREN math_expression RPAREN */
+
+/*! Production::    math_expression : calc_keyword */
 
 /*! Production::    math_expression : dimension */
 
@@ -170,6 +178,8 @@
 
 /*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)kHz\b */
 
+/*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)lh\b */
+
 /*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)lvb\b */
 
 /*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)lvh\b */
@@ -195,6 +205,8 @@
 /*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)rad\b */
 
 /*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)rem\b */
+
+/*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)rlh\b */
 
 /*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)s\b */
 
@@ -225,6 +237,8 @@
 /*! Rule::       (([0-9]+(\.[0-9]+)?|\.[0-9]+)(e(\+|-)[0-9]+)?)vw\b */
 
 /*! Rule::       (-(webkit|moz)-)?calc\b */
+
+/*! Rule::       (infinity|pi|e)\b */
 
 /*! Rule::       - */
 
