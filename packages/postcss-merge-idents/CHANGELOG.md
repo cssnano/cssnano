@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.0.1
+
+### Patch Changes
+
+- 5672148: fix: update PostCSS peer dependency to version without vulnerabilities
+- Updated dependencies [5672148]
+  - cssnano-utils@5.0.1
+
 ## 7.0.0
 
 ### Major Changes

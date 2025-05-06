@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.0.2
+
+### Patch Changes
+
+- 2f03871: fix: update lilconfig and browserslist
+- 5672148: fix: update PostCSS peer dependency to version without vulnerabilities
+
 ## 7.0.1
 
 ### Patch Changes

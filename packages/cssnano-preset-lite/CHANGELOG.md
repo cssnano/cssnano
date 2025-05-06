@@ -1,5 +1,18 @@
 # Change Log
 
+## 4.0.4
+
+### Patch Changes
+
+- 5672148: fix: update PostCSS peer dependency to version without vulnerabilities
+- Updated dependencies [171b669]
+- Updated dependencies [4772407]
+- Updated dependencies [5672148]
+  - postcss-discard-comments@7.0.4
+  - postcss-normalize-whitespace@7.0.1
+  - postcss-discard-empty@7.0.1
+  - cssnano-utils@5.0.1
+
 ## 4.0.3
 
 ### Patch Changes
