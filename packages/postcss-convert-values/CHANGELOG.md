@@ -1,5 +1,15 @@
 # Change Log
 
+## 7.0.5
+
+### Patch Changes
+
+- 2f03871: fix: update lilconfig and browserslist
+- 171b669: chore: update dependencies to latest minor version
+- fix(postcss-convert-values): preserve percent sign in at-rules with double quotes
+- 20f4eb6: fix: update browserslist
+- 5672148: fix: update PostCSS peer dependency to version without vulnerabilities
+
 ## 7.0.4
 
 ### Patch Changes

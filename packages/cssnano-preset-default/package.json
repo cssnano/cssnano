@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-default",
-  "version": "7.0.6",
+  "version": "7.0.7",
   "main": "src/index.js",
   "types": "types/index.d.ts",
   "description": "Safe defaults for cssnano which require minimal configuration.",

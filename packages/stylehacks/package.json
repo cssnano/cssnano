@@ -1,6 +1,6 @@
 {
   "name": "stylehacks",
-  "version": "7.0.4",
+  "version": "7.0.5",
   "description": "Detect/remove browser hacks from CSS files.",
   "main": "src/index.js",
   "types": "types/index.d.ts",

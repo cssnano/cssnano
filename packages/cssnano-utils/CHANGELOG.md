@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.0.1
+
+### Patch Changes
+
+- 5672148: fix: update PostCSS peer dependency to version without vulnerabilities
+
 ## 5.0.0
 
 ### Major Changes

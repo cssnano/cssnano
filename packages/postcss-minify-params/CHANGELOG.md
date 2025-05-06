@@ -1,5 +1,16 @@
 # Change Log
 
+## 7.0.3
+
+### Patch Changes
+
+- 2f03871: fix: update lilconfig and browserslist
+- 171b669: chore: update dependencies to latest minor version
+- 20f4eb6: fix: update browserslist
+- 5672148: fix: update PostCSS peer dependency to version without vulnerabilities
+- Updated dependencies [5672148]
+  - cssnano-utils@5.0.1
+
 ## 7.0.2
 
 ### Patch Changes

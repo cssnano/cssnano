@@ -1,5 +1,18 @@
 # Change Log
 
+## 7.0.5
+
+### Patch Changes
+
+- e09cf7e: fix: update TypeScript declarations
+- 5672148: fix: update PostCSS peer dependency to version without vulnerabilities
+- Updated dependencies [2f03871]
+- Updated dependencies [171b669]
+- Updated dependencies [4772407]
+- Updated dependencies [20f4eb6]
+- Updated dependencies [5672148]
+  - stylehacks@7.0.5
+
 ## 7.0.4
 
 ### Patch Changes

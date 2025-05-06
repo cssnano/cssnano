@@ -1,5 +1,18 @@
 # Change Log
 
+## 7.0.7
+
+### Patch Changes
+
+- 2f03871: fix: update lilconfig and browserslist
+- perf: load default preset on startup
+- 5672148: fix: update PostCSS peer dependency to version without vulnerabilities
+- Updated dependencies [2f03871]
+- Updated dependencies [171b669]
+- Updated dependencies [20f4eb6]
+- Updated dependencies [5672148]
+  - cssnano-preset-default@7.0.7
+
 ## 7.0.6
 
 ### Patch Changes

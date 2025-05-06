@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.0.4
+
+### Patch Changes
+
+- 171b669: chore: update dependencies to latest minor version
+- 4772407: chore: update postcss-selector-parser
+- 5672148: fix: update PostCSS peer dependency to version without vulnerabilities
+
 ## 7.0.3
 
 ### Patch Changes

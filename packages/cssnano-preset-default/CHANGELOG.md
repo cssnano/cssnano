@@ -1,5 +1,48 @@
 # Change Log
 
+## 7.0.7
+
+### Patch Changes
+
+- 2f03871: fix: update lilconfig and browserslist
+- 171b669: chore: update dependencies to latest minor version
+- 20f4eb6: fix: update browserslist
+- 5672148: fix: update PostCSS peer dependency to version without vulnerabilities
+- Updated dependencies [2f03871]
+- Updated dependencies [171b669]
+- Updated dependencies [4772407]
+- Updated dependencies [e09cf7e]
+- Updated dependencies
+- Updated dependencies [20f4eb6]
+- Updated dependencies [5672148]
+  - postcss-discard-duplicates@7.0.2
+  - postcss-normalize-unicode@7.0.3
+  - postcss-convert-values@7.0.5
+  - postcss-reduce-initial@7.0.3
+  - postcss-minify-params@7.0.3
+  - postcss-merge-rules@7.0.5
+  - postcss-colormin@7.0.3
+  - postcss-discard-comments@7.0.4
+  - postcss-minify-selectors@7.0.5
+  - postcss-unique-selectors@7.0.4
+  - postcss-merge-longhand@7.0.5
+  - postcss-normalize-timing-functions@7.0.1
+  - postcss-normalize-display-values@7.0.1
+  - postcss-normalize-repeat-style@7.0.1
+  - postcss-normalize-whitespace@7.0.1
+  - postcss-normalize-positions@7.0.1
+  - postcss-discard-overridden@7.0.1
+  - postcss-minify-font-values@7.0.1
+  - postcss-normalize-charset@7.0.1
+  - postcss-reduce-transforms@7.0.1
+  - postcss-minify-gradients@7.0.1
+  - postcss-normalize-string@7.0.1
+  - postcss-ordered-values@7.0.2
+  - postcss-discard-empty@7.0.1
+  - postcss-normalize-url@7.0.1
+  - cssnano-utils@5.0.1
+  - postcss-svgo@7.0.2
+
 ## 7.0.6
 
 ### Patch Changes
