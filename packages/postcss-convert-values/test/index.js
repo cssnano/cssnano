@@ -513,6 +513,22 @@ test(
 );
 
 test(
+  `should not strip the percentage from 0 in @property, for initial-value (length-percentage)`,
+  processCSS(
+    `@property --percent{syntax:'<length-percentage>';inherits:false;initial-value:0%;}`,
+    `@property --percent{syntax:'<length-percentage>';inherits:false;initial-value:0%;}`
+  )
+);
+
+test(
+  `should not strip the percentage from 0 in @property, for initial-value (length-percentage, syntax string in double quotes)`,
+  processCSS(
+    `@property --percent{syntax:"<length-percentage>";inherits:false;initial-value:0%;}`,
+    `@property --percent{syntax:"<length-percentage>";inherits:false;initial-value:0%;}`
+  )
+);
+
+test(
   'should not strip the percentage from background-color',
   passthroughCSS('background-color:color-mix(#000, #FFF 0%);')
 );
