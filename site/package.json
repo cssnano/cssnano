@@ -21,13 +21,13 @@
     "postcss": "^8.5.3"
   },
   "devDependencies": {
-    "@11ty/eleventy": "^3.0.0",
-    "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.0",
+    "@11ty/eleventy": "^3.1.0",
+    "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.1",
     "@iarna/toml": "^2.2.5",
     "cssnano": "link:../packages/cssnano",
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^9.2.0",
-    "webpack": "^5.99.8",
+    "webpack": "^5.99.9",
     "webpack-cli": "^6.0.1"
   }
 }
