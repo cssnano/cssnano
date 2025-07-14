@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.1.0
+
+### Minor Changes
+
+- Update to SVGO 4.0
+- Update browserslist
+
 ## 7.0.7
 
 ### Patch Changes
@@ -750,7 +757,6 @@ the actual release.
 - Because of the new preset system, cssnano will not accept any transformation
   options; these must be set in the preset. The option names remain mostly the
   same, except some cases where "core" modules have been extracted out:
-
   - `core` is now `normalizeWhitespace`.
   - `reduceBackgroundRepeat` is now `normalizeRepeatStyle`.
   - `reduceDisplayValues` is now `normalizeDisplayValues`.
@@ -764,7 +770,6 @@ the actual release.
 
 - By default, the following transforms are no longer applied to any input CSS.
   You may see an increased output file size as a result:
-
   - `autoprefixer`
   - `postcss-discard-unused`
   - `postcss-merge-idents`
@@ -777,7 +782,6 @@ the actual release.
 - We no longer detect previous plugins to silently exclude our own, and now
   consider this to be an anti-pattern. So `postcss-filter-plugins` was removed.
 - We also changed some options to make the default transforms safer:
-
   - `postcss-minify-font-values`: `removeAfterKeyword` set to `false` from `true`.
   - `postcss-normalize-url`: `stripWWW` set to `false` from `true`.
 
