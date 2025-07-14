@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.1.0
+
+### Minor Changes
+
+- 98dd8f6: Update to svgo 4.0
+
 ## 7.0.2
 
 ### Patch Changes
