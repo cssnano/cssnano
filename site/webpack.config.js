@@ -25,6 +25,8 @@ module.exports = {
     fallback: {
       path: require.resolve('path-browserify'),
       os: require.resolve('os-browserify/browser'),
+      string_decoder: require.resolve('string_decoder/'),
+      buffer: require.resolve('buffer/'),
       fs: false,
       url: false,
     },
