@@ -1,3 +1,10 @@
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
+
 /*! Conditions:: INITIAL */
 
 /*! Production::    calc_keyword : CALC_KEYWORD */
@@ -254,7 +261,13 @@
 
 /*! Rule::       \/ */
 
+/*! http://mths.be/fromcodepoint v0.1.0 by @mathias */
+
 /*! https://mths.be/cssesc v3.0.0 by @mathias */
+
+/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
+
+/*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
 
 /**
  * @license Fraction.js v4.3.7 31/08/2023
