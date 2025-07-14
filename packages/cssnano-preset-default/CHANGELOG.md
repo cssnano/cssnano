@@ -1,5 +1,20 @@
 # Change Log
 
+## 7.0.8
+
+### Patch Changes
+
+- 906a785: fix: update browserslist
+- Updated dependencies [98dd8f6]
+- Updated dependencies [906a785]
+  - postcss-svgo@7.1.0
+  - postcss-normalize-unicode@7.0.4
+  - postcss-convert-values@7.0.6
+  - postcss-reduce-initial@7.0.4
+  - postcss-minify-params@7.0.4
+  - postcss-merge-rules@7.0.6
+  - postcss-colormin@7.0.4
+
 ## 7.0.7
 
 ### Patch Changes
