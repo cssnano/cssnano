@@ -539,6 +539,11 @@ test(
 );
 
 test(
+  'should not strip the percentage from linear()',
+  passthroughCSS('transition-timing-function: linear(0 0%, 1 100%)')
+);
+
+test(
   'should not strip percentage from border-image-width',
   passthroughCSS('@keyframes test {0% {border-image-width: 0 0 100% 0%;}}')
 );
