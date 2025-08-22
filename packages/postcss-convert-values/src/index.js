@@ -50,6 +50,7 @@ const keepZeroPercentAlways = new Set([
   'hsl',
   'hsla',
   'hwb',
+  'linear',
 ]);
 
 const keepZeroPercentageInKeyframe = new Set([
