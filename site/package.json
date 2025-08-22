@@ -10,9 +10,9 @@
     "@codemirror/autocomplete": "^6.18.6",
     "@codemirror/commands": "^6.8.1",
     "@codemirror/lang-css": "^6.3.1",
-    "@codemirror/language": "^6.11.2",
+    "@codemirror/language": "^6.11.3",
     "@codemirror/state": "^6.5.2",
-    "@codemirror/view": "^6.38.0",
+    "@codemirror/view": "^6.38.1",
     "buffer": "^6.0.3",
     "cssnano-preset-advanced": "link:../packages/cssnano-preset-advanced",
     "cssnano-preset-default": "link:../packages/cssnano-preset-default",
@@ -24,12 +24,12 @@
   },
   "devDependencies": {
     "@11ty/eleventy": "^3.1.2",
-    "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.1",
+    "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.2",
     "@iarna/toml": "^2.2.5",
     "cssnano": "link:../packages/cssnano",
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^9.2.0",
-    "webpack": "^5.100.1",
+    "webpack": "^5.101.3",
     "webpack-cli": "^6.0.1"
   }
 }
