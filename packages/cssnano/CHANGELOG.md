@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.1.1
+
+### Patch Changes
+
+- fix: do not strip % sign inside linear()
+- Updated dependencies
+  - cssnano-preset-default@7.0.9
+
 ## 7.1.0
 
 ### Minor Changes
