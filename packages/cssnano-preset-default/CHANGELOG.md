@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.0.9
+
+### Patch Changes
+
+- fix: do not strip % sign inside linear()
+- Updated dependencies
+  - postcss-convert-values@7.0.7
+
 ## 7.0.8
 
 ### Patch Changes
