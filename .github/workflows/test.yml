@@ -55,11 +55,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests with coverage
+      - name: Run tests
+        if: matrix.os != 'ubuntu-latest' || matrix.node-version != '24'
+        run: pnpm test:only
+
+      - name: Run tests with coverage on latest Node on Linux
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '24'
         run: pnpm test:coverage
 
       - name: Publish code coverage report
-        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '20'
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '24'
         uses: codecov/codecov-action@v3.1.4
         with:
           name: codecov
