@@ -11,10 +11,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5.0.0
       - name: Install pnpm
-        uses: pnpm/action-setup@v4.1.0
+        uses: pnpm/action-setup@v4.2.0
 
       - name: Setup .npmrc file to publish to npm
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@v5.0.0
         with:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
