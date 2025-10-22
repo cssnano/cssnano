@@ -1,25 +1,25 @@
 'use strict';
 
+// State machine states reused between parses for better perf
+const STATES = {
+  NORMAL: 0,
+  IN_SINGLE_QUOTE: 1,
+  IN_DOUBLE_QUOTE: 2,
+  IN_COMMENT: 3,
+};
+
 /**
  * CSS Comment Parser with context awareness
  * Properly handles comments inside strings, URLs, and escaped characters
- * 
+ *
  * @param {string} input
  * @return {[number, number, number][]}
  */
 module.exports = function commentParser(input) {
-  /** @type [number, number, number][] */
+  /** @type {[number, number, number][]} */
   const tokens = [];
   const length = input.length;
   let pos = 0;
-  
-  // State machine states
-  const STATES = {
-    NORMAL: 0,
-    IN_SINGLE_QUOTE: 1,
-    IN_DOUBLE_QUOTE: 2,
-    IN_COMMENT: 3
-  };
   
   let state = STATES.NORMAL;
   let tokenStart = 0;
