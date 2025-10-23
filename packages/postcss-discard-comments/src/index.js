@@ -16,7 +16,24 @@ const selectorParser = require('postcss-selector-parser');
 function pluginCreator(opts = {}) {
   const remover = new CommentRemover(opts);
   const matcherCache = new Map();
+  const parserCache = new Map();
   const replacerCache = new Map();
+
+  /**
+   * @param {string} source
+   * @return {[number, number, number][]}
+   */
+  function getTokens(source) {
+    if (parserCache.has(source)) {
+      return parserCache.get(source);
+    }
+
+    const tokens = commentParser(source);
+
+    parserCache.set(source, tokens);
+
+    return tokens;
+  }
 
   /**
    * @param {string} source
@@ -27,7 +44,7 @@ function pluginCreator(opts = {}) {
       return matcherCache.get(source);
     }
 
-    const result = commentParser(source).filter(([type]) => type);
+    const result = getTokens(source).filter(([type]) => type);
 
     matcherCache.set(source, result);
 
@@ -35,29 +52,46 @@ function pluginCreator(opts = {}) {
   }
 
   /**
-   * @param {string} source
+   * @param {string | undefined} rawSource
    * @param {(s: string) => string[]} space
+   * @param {string=} separator
    * @return {string}
    */
-  function replaceComments(source, space, separator = ' ') {
+  function replaceComments(rawSource, space, separator = ' ') {
+    const source = rawSource || '';
     const key = source + '@|@' + separator;
 
     if (replacerCache.has(key)) {
       return replacerCache.get(key);
     }
-    const parsed = commentParser(source).reduce((value, [type, start, end]) => {
+
+    if (source.indexOf('/*') === -1) {
+      const normalized = space(source).join(' ');
+
+      replacerCache.set(key, normalized);
+
+      return normalized;
+    }
+
+    const parts = [];
+
+    for (const [type, start, end] of getTokens(source)) {
+      if (!type) {
+        parts.push(source.slice(start, end));
+        continue;
+      }
+
       const contents = source.slice(start, end);
 
-      if (!type) {
-        return value + contents;
-      }
-
       if (remover.canRemove(contents)) {
-        return value + separator;
+        parts.push(separator);
+        continue;
       }
 
-      return `${value}/*${contents}*/`;
-    }, '');
+      parts.push('/*' + contents + '*/');
+    }
+
+    const parsed = parts.join('');
 
     const result = space(parsed).join(' ');
 
@@ -67,15 +101,23 @@ function pluginCreator(opts = {}) {
   }
 
   /**
-   * @param {string} source
+   * @param {string | undefined} rawSource
    * @param {(s: string) => string[]} space
    * @return {string}
    */
-  function replaceCommentsInSelector(source, space) {
+  function replaceCommentsInSelector(rawSource, space) {
+    const source = rawSource || '';
     const key = source + '@|@';
 
     if (replacerCache.has(key)) {
       return replacerCache.get(key);
+    }
+    if (source.indexOf('/*') === -1) {
+      const normalized = space(source).join(' ');
+
+      replacerCache.set(key, normalized);
+
+      return normalized;
     }
     const processed = selectorParser((ast) => {
       ast.walk((node) => {
