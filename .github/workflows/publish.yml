@@ -1,5 +1,6 @@
 name: Publish Package to npmjs
 permissions:
+  id-token: write #Required for trusted publishing
   contents: read
 on:
   release:
@@ -14,9 +15,9 @@ jobs:
         uses: pnpm/action-setup@v4.2.0
 
       - name: Setup .npmrc file to publish to npm
-        uses: actions/setup-node@v5.0.0
+        uses: actions/setup-node@v6.0.0
         with:
-          node-version: '22.x'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
@@ -30,6 +31,4 @@ jobs:
 
       - name: Publish
         run: pnpm all-publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
