@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.0.7
+
+### Patch Changes
+
+- 72dd9c9: fix: update browserslist
+- db8e1ee: fix: update browserslist
+
 ## 7.0.6
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # Change Log
 
+## 7.0.10
+
+### Patch Changes
+
+- 72dd9c9: fix: update browserslist
+- db8e1ee: fix: update browserslist
+- Updated dependencies [72dd9c9]
+- Updated dependencies [db8e1ee]
+  - cssnano-preset-default@7.0.10
+
 ## 7.0.9
 
 ### Patch Changes
