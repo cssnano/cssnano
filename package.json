@@ -20,8 +20,8 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
-    "@types/node": "^24.7.2",
-    "eslint": "^9.37.0",
+    "@types/node": "^24.9.2",
+    "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^16.4.0",
     "postcss": "^8.5.6",
@@ -34,5 +34,5 @@
       "IE 11 and last 2 versions"
     ]
   },
-  "packageManager": "pnpm@10.16.1"
+  "packageManager": "pnpm@10.20.0"
 }
