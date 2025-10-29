@@ -1,5 +1,22 @@
 # Change Log
 
+## 7.0.10
+
+### Patch Changes
+
+- 72dd9c9: fix: update browserslist
+- db8e1ee: fix: update browserslist
+- Updated dependencies [f31273c]
+- Updated dependencies [72dd9c9]
+- Updated dependencies [db8e1ee]
+  - postcss-discard-comments@7.0.5
+  - postcss-normalize-unicode@7.0.5
+  - postcss-convert-values@7.0.8
+  - postcss-reduce-initial@7.0.5
+  - postcss-minify-params@7.0.5
+  - postcss-merge-rules@7.0.7
+  - postcss-colormin@7.0.5
+
 ## 7.0.9
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.5
+
+### Patch Changes
+
+- f31273c: add the cache for parser & fix the unexpected comment
+
 ## 7.0.4
 
 ### Patch Changes
