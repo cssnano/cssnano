@@ -34,5 +34,5 @@
       "IE 11 and last 2 versions"
     ]
   },
-  "packageManager": "pnpm@10.20.0"
+  "packageManager": "pnpm@10.26.0"
 }
