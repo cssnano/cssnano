@@ -20,15 +20,15 @@ module.exports = function commentParser(input) {
   const tokens = [];
   const length = input.length;
   let pos = 0;
-  
+
   let state = STATES.NORMAL;
   let tokenStart = 0;
   let commentStart = 0;
-  
+
   while (pos < length) {
     const char = input[pos];
     const nextChar = pos + 1 < length ? input[pos + 1] : '';
-    
+
     switch (state) {
       case STATES.NORMAL:
         if (char === '/' && nextChar === '*') {
@@ -46,7 +46,7 @@ module.exports = function commentParser(input) {
           state = STATES.IN_SINGLE_QUOTE;
         }
         break;
-        
+
       case STATES.IN_SINGLE_QUOTE:
         if (char === '\\' && nextChar) {
           // Skip escaped character
@@ -56,7 +56,7 @@ module.exports = function commentParser(input) {
           state = STATES.NORMAL;
         }
         break;
-        
+
       case STATES.IN_DOUBLE_QUOTE:
         if (char === '\\' && nextChar) {
           // Skip escaped character
@@ -66,7 +66,7 @@ module.exports = function commentParser(input) {
           state = STATES.NORMAL;
         }
         break;
-        
+
       case STATES.IN_COMMENT:
         if (char === '*' && nextChar === '/') {
           // Found comment end
@@ -78,10 +78,10 @@ module.exports = function commentParser(input) {
         }
         break;
     }
-    
+
     pos++;
   }
-  
+
   // Handle remaining content
   if (state === STATES.IN_COMMENT) {
     // Unclosed comment - treat as comment to end
@@ -90,6 +90,6 @@ module.exports = function commentParser(input) {
     // Add final non-comment token
     tokens.push([0, tokenStart, length]);
   }
-  
+
   return tokens;
 };

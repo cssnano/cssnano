@@ -371,12 +371,16 @@ test(
 
 test(
   'should handle data URLs with embedded CSS',
-  passthroughCSS('h1{background:url("data:text/css,.test{color:red/*comment*/}")}')
+  passthroughCSS(
+    'h1{background:url("data:text/css,.test{color:red/*comment*/}")}'
+  )
 );
 
 test(
   'should handle SVG data URLs with comments',
-  passthroughCSS('h1{background:url("data:image/svg+xml;utf8,<svg><!-- comment --><style>/*css comment*/</style></svg>")}')
+  passthroughCSS(
+    'h1{background:url("data:image/svg+xml;utf8,<svg><!-- comment --><style>/*css comment*/</style></svg>")}'
+  )
 );
 
 test(
@@ -402,10 +406,7 @@ test(
 
 test(
   'should handle backslash at end of string',
-  processCSS(
-    'h1{content:"test\\\\"} /* comment */',
-    'h1{content:"test\\\\"}'
-  )
+  processCSS('h1{content:"test\\\\"} /* comment */', 'h1{content:"test\\\\"}')
 );
 
 test(
