@@ -277,8 +277,8 @@ importers:
   packages/postcss-discard-overridden:
     devDependencies:
       diff:
-        specifier: ^8.0.2
-        version: 8.0.2
+        specifier: ^8.0.3
+        version: 8.0.3
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -940,8 +940,8 @@ packages:
     resolution: {integrity: sha512-reYkTUJAZb9gUuZ2RvVCNhVHdg62RHnJ7WJl8ftMi4diZ6NWlciOzQN88pUhSELEwflJht4oQDv0F0BMlwaYtA==}
     engines: {node: '>=8'}
 
-  diff@8.0.2:
-    resolution: {integrity: sha512-sSuxWU5j5SR9QQji/o2qMvqRNYRDOcBTgsJ/DeCf4iSN4gW+gNMXM7wFIP+fdXZxoNiAnHUTGjCr+TSWXdRDKg==}
+  diff@8.0.3:
+    resolution: {integrity: sha512-qejHi7bcSD4hQAZE0tNAawRK1ZtafHDmMTMkrrIGgSLl7hTnQHmKCeB45xAcbfTqK2zowkM3j3bHt/4b/ARbYQ==}
     engines: {node: '>=0.3.1'}
 
   dir-glob@3.0.1:
@@ -2004,7 +2004,7 @@ snapshots:
 
   detect-indent@6.1.0: {}
 
-  diff@8.0.2: {}
+  diff@8.0.3: {}
 
   dir-glob@3.0.1:
     dependencies:
