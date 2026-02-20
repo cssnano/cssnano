@@ -170,6 +170,7 @@ function optimise(decl) {
             }
           } else {
             if (arg[0].type === 'function') {
+              // eslint-disable-next-line no-useless-assignment
               color = `${arg[0].value}(${valueParser.stringify(arg[0].nodes)})`;
             }
 
