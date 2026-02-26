@@ -55,19 +55,50 @@ function sameDeclarationsAndOrder(a, b) {
 }
 
 /**
+ * RuleMeta stores metadata about a `Rule` during the merging process.
+ * It tracks selectors and declarations without re-parsing the AST many times.
+ *
+ * @typedef {Object} RuleMeta
+ * @property {string[]} selectors - Array of selector strings for the rule
+ * @property {import('postcss').Declaration[]} declarations - Array of declaration nodes for the rule
+ * @property {boolean} dirty - Whether the selectors have been modified and need flushing
+ */
+
+/**
  * @param {import('postcss').Rule} ruleA
  * @param {import('postcss').Rule} ruleB
- * @param {string[]=} browsers
- * @param {Map<string, boolean>=} compatibilityCache
+ * @param {string[]} browsers
+ * @param {Map<string, boolean>} compatibilityCache
+ * @param {WeakSet<import('postcss').Rule>} ruleCache
+ * @param {WeakMap<import('postcss').Rule, RuleMeta>} ruleMeta
  * @return {boolean}
  */
-function canMerge(ruleA, ruleB, browsers, compatibilityCache) {
-  const a = ruleA.selectors;
-  const b = ruleB.selectors;
+function canMerge(
+  ruleA,
+  ruleB,
+  browsers,
+  compatibilityCache,
+  ruleCache,
+  ruleMeta
+) {
+  const metaA = getMeta(ruleA, ruleMeta);
+  const metaB = getMeta(ruleB, ruleMeta);
+  const a = metaA.selectors;
+  const b = metaB.selectors;
 
   const selectors = a.concat(b);
 
-  if (!ensureCompatibility(selectors, browsers, compatibilityCache)) {
+  if (ruleCache.has(ruleA) && ruleCache.has(ruleB)) {
+    // Both already validated
+  } else if (ruleCache.has(ruleA)) {
+    if (!ensureCompatibility(b, browsers, compatibilityCache)) {
+      return false;
+    }
+  } else if (ruleCache.has(ruleB)) {
+    if (!ensureCompatibility(a, browsers, compatibilityCache)) {
+      return false;
+    }
+  } else if (!ensureCompatibility(selectors, browsers, compatibilityCache)) {
     return false;
   }
 
@@ -105,6 +136,51 @@ function isRuleOrAtRule(node) {
 function isDeclaration(node) {
   return node.type === 'decl';
 }
+
+/**
+ * Retrieves or initializes virtual metadata for a PostCSS rule.
+ *
+ * This metadata caches selectors and declarations to avoid expensive AST
+ * re-parsing, especially for the selectors.
+ *
+ * @param {import('postcss').Rule} rule The PostCSS rule to get metadata for.
+ * @param {WeakMap<import('postcss').Rule, RuleMeta>} [ruleMeta] The metadata cache.
+ * @return {RuleMeta} The rule's virtual metadata.
+ */
+function getMeta(rule, ruleMeta) {
+  if (ruleMeta && rule) {
+    let meta = ruleMeta.get(rule);
+    if (!meta && rule.nodes) {
+      meta = {
+        selectors: rule.selectors,
+        declarations: rule.nodes.filter(isDeclaration),
+        dirty: false,
+      };
+      ruleMeta.set(rule, meta);
+    }
+    return meta ?? { selectors: [], declarations: [], dirty: false };
+  }
+  return {
+    selectors: rule?.selectors ?? [],
+    declarations: rule?.nodes?.filter(isDeclaration) ?? [],
+    dirty: false,
+  };
+}
+
+/**
+ * Commits virtual metadata changes back to the actual PostCSS rule.
+ *
+ * @param {import('postcss').Rule} rule The PostCSS rule to flush.
+ * @param {WeakMap<import('postcss').Rule, RuleMeta>} ruleMeta The metadata cache.
+ */
+function flush(rule, ruleMeta) {
+  const meta = ruleMeta.get(rule);
+  if (meta && meta.dirty) {
+    rule.selector = meta.selectors.join(',');
+    meta.dirty = false;
+  }
+}
+
 /**
  * @param {import('postcss').Rule} rule
  * @return {import('postcss').Declaration[]}
@@ -112,9 +188,6 @@ function isDeclaration(node) {
 function getDecls(rule) {
   return rule.nodes.filter(isDeclaration);
 }
-
-/** @type {(...rules: import('postcss').Rule[]) => string} */
-const joinSelectors = (...rules) => rules.map((s) => s.selector).join();
 
 /**
  * @param {...import('postcss').Rule} rules
@@ -227,10 +300,26 @@ function mergeParents(first, second) {
 /**
  * @param {import('postcss').Rule} first
  * @param {import('postcss').Rule} second
+ * @param {string[]} browsers
+ * @param {Map<string, boolean>} compatibilityCache
+ * @param {WeakSet<import('postcss').Rule>} ruleCache
+ * @param {WeakMap<import('postcss').Rule, RuleMeta>} ruleMeta
  * @return {import('postcss').Rule} mergedRule
  */
-function partialMerge(first, second) {
-  let intersection = intersect(getDecls(first), getDecls(second));
+function partialMerge(
+  first,
+  second,
+  browsers,
+  compatibilityCache,
+  ruleCache,
+  ruleMeta
+) {
+  if (ruleMeta) {
+    flush(first, ruleMeta);
+  }
+  const metaFirst = getMeta(first, ruleMeta);
+  const metaSecond = getMeta(second, ruleMeta);
+  let intersection = intersect(metaFirst.declarations, metaSecond.declarations);
   if (intersection.length === 0) {
     return second;
   }
@@ -244,8 +333,22 @@ function partialMerge(first, second) {
       ).next();
     nextRule = parentSibling && parentSibling.nodes && parentSibling.nodes[0];
   }
-  if (nextRule && nextRule.type === 'rule' && canMerge(second, nextRule)) {
-    let nextIntersection = intersect(getDecls(second), getDecls(nextRule));
+  if (
+    nextRule?.type === 'rule' &&
+    canMerge(
+      second,
+      nextRule,
+      browsers,
+      compatibilityCache,
+      ruleCache,
+      ruleMeta
+    )
+  ) {
+    const metaNext = getMeta(nextRule, ruleMeta);
+    let nextIntersection = intersect(
+      metaSecond.declarations,
+      metaNext.declarations
+    );
     if (nextIntersection.length > intersection.length) {
       mergeParents(second, nextRule);
       first = second;
@@ -254,7 +357,11 @@ function partialMerge(first, second) {
     }
   }
 
-  const firstDecls = getDecls(first);
+  const metaFirstActual = getMeta(first, ruleMeta);
+  const metaSecondActual = getMeta(second, ruleMeta);
+  let firstDecls = [...metaFirstActual.declarations];
+  let secondDecls = [...metaSecondActual.declarations];
+
   // Filter out intersections with later conflicts in First
   intersection = intersection.filter((decl, intersectIndex) => {
     const indexOfDecl = indexOfDeclaration(firstDecls, decl);
@@ -276,7 +383,6 @@ function partialMerge(first, second) {
   });
 
   // Filter out intersections with previous conflicts in Second
-  const secondDecls = getDecls(second);
   intersection = intersection.filter((decl) => {
     const nextConflictIndex = secondDecls.findIndex((d) =>
       isConflictingProp(d.prop, decl.prop)
@@ -306,15 +412,18 @@ function partialMerge(first, second) {
   }
 
   const receivingBlock = second.clone();
-  receivingBlock.selector = joinSelectors(first, second);
+  const firstSelectors = metaFirstActual.selectors;
+  const secondSelectors = metaSecondActual.selectors;
+
+  receivingBlock.selector = [...firstSelectors, ...secondSelectors].join();
   receivingBlock.nodes = [];
 
   /** @type {import('postcss').Container<import('postcss').ChildNode>} */ (
     second.parent
   ).insertBefore(second, receivingBlock);
 
-  const firstClone = first.clone();
-  const secondClone = second.clone();
+  const firstClone = first.clone({ selectors: firstSelectors });
+  const secondClone = second.clone({ selectors: secondSelectors });
 
   /**
    * @param {function(import('postcss').Declaration):void} callback
@@ -335,6 +444,13 @@ function partialMerge(first, second) {
     })
   );
   secondClone.walkDecls(moveDecl((decl) => decl.remove()));
+
+  // Ensure original rules are flushed for accurate length comparison
+  if (ruleMeta) {
+    flush(first, ruleMeta);
+    flush(second, ruleMeta);
+  }
+
   const merged = ruleLength(firstClone, receivingBlock, secondClone);
   const original = ruleLength(first, second);
   if (merged < original) {
@@ -346,8 +462,13 @@ function partialMerge(first, second) {
       }
     });
     if (!secondClone.parent) {
+      ruleCache?.add(receivingBlock);
       return receivingBlock;
     }
+    ruleCache?.add(receivingBlock);
+    ruleCache?.add(secondClone);
+    ruleMeta?.delete(first);
+    ruleMeta?.delete(second);
     return secondClone;
   } else {
     receivingBlock.remove();
@@ -358,53 +479,101 @@ function partialMerge(first, second) {
 /**
  * @param {string[]} browsers
  * @param {Map<string, boolean>} compatibilityCache
- * @return {function(import('postcss').Rule)}
+ * @param {WeakSet<import('postcss').Rule>} ruleCache
+ * @param {WeakMap<import('postcss').Rule, RuleMeta>} ruleMeta
+ * @return {{ merger: function(import('postcss').Rule): void, clean: function(): void }}
  */
-function selectorMerger(browsers, compatibilityCache) {
+function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
   /** @type {import('postcss').Rule | null} */
   let cache = null;
-  return function (rule) {
-    // Prime the cache with the first rule, or alternately ensure that it is
-    // safe to merge both declarations before continuing
-    if (!cache || !canMerge(rule, cache, browsers, compatibilityCache)) {
-      cache = rule;
-      return;
-    }
-    // Ensure that we don't deduplicate the same rule; this is sometimes
-    // caused by a partial merge
-    if (cache === rule) {
-      cache = rule;
-      return;
-    }
-
-    // Parents merge: check if the rules have same parents, but not same parent nodes
-    mergeParents(cache, rule);
-
-    // Merge when declarations are exactly equal
-    // e.g. h1 { color: red } h2 { color: red }
-    if (sameDeclarationsAndOrder(getDecls(rule), getDecls(cache))) {
-      rule.selector = joinSelectors(cache, rule);
-      cache.remove();
-      cache = rule;
-      return;
-    }
-    // Merge when both selectors are exactly equal
-    // e.g. a { color: blue } a { font-weight: bold }
-    if (cache.selector === rule.selector) {
-      const cached = getDecls(cache);
-      rule.walk((node) => {
-        if (node.type === 'decl' && indexOfDeclaration(cached, node) !== -1) {
-          node.remove();
-          return;
+  return {
+    merger(rule) {
+      // Prime the cache with the first rule, or alternately ensure that it is
+      // safe to merge both declarations before continuing
+      if (
+        !cache ||
+        !canMerge(
+          rule,
+          cache,
+          browsers,
+          compatibilityCache,
+          ruleCache,
+          ruleMeta
+        )
+      ) {
+        if (cache) {
+          flush(cache, ruleMeta);
         }
-        /** @type {import('postcss').Rule} */ (cache).append(node);
-      });
-      rule.remove();
-      return;
-    }
-    // Partial merge: check if the rule contains a subset of the last; if
-    // so create a joined selector with the subset, if smaller.
-    cache = partialMerge(cache, rule);
+        cache = rule;
+        return;
+      }
+      // Ensure that we don't deduplicate the same rule; this is sometimes
+      // caused by a partial merge
+      if (cache === rule) {
+        cache = rule;
+        return;
+      }
+
+      // Parents merge: check if the rules have same parents, but not same parent nodes
+      mergeParents(cache, rule);
+
+      // Merge when declarations are exactly equal
+      // e.g. h1 { color: red } h2 { color: red }
+      if (
+        sameDeclarationsAndOrder(
+          getMeta(rule, ruleMeta).declarations,
+          getMeta(cache, ruleMeta).declarations
+        )
+      ) {
+        const metaRule = getMeta(rule, ruleMeta);
+        const metaCache = getMeta(cache, ruleMeta);
+        metaRule.selectors = [...metaCache.selectors, ...metaRule.selectors];
+        metaRule.dirty = true;
+        cache.remove();
+        ruleMeta?.delete(cache);
+        cache = rule;
+        ruleCache?.add(rule);
+        return;
+      }
+      // Merge when both selectors are exactly equal
+      // e.g. a { color: blue } a { font-weight: bold }
+      if (
+        getMeta(cache, ruleMeta).selectors.join(',') ===
+        getMeta(rule, ruleMeta).selectors.join(',')
+      ) {
+        const cachedDecls = getMeta(cache, ruleMeta).declarations;
+        rule.walk((node) => {
+          if (
+            node.type === 'decl' &&
+            indexOfDeclaration(cachedDecls, node) !== -1
+          ) {
+            node.remove();
+            return;
+          }
+          /** @type {import('postcss').Rule} */ (cache).append(node);
+        });
+        getMeta(cache, ruleMeta).declarations = getDecls(cache);
+        rule.remove();
+        ruleMeta?.delete(rule);
+        return;
+      }
+      // Partial merge: check if the rule contains a subset of the last; if
+      // so create a joined selector with the subset, if smaller.
+      cache = partialMerge(
+        cache,
+        rule,
+        browsers,
+        compatibilityCache,
+        ruleCache,
+        ruleMeta
+      );
+    },
+    // Flushes any remaining rule in the cache to avoid memory leaks.
+    clean() {
+      if (cache) {
+        flush(cache, ruleMeta);
+      }
+    },
   };
 }
 
@@ -435,9 +604,21 @@ function pluginCreator(opts = {}) {
       });
 
       const compatibilityCache = new Map();
+
+      // Use WeakSet and WeakMap to avoid memory leaks because the keys are objects.
+      const ruleCache = new WeakSet();
+      const ruleMeta = new WeakMap();
+
       return {
         OnceExit(css) {
-          css.walkRules(selectorMerger(browsers, compatibilityCache));
+          const { merger, clean } = selectorMerger(
+            browsers,
+            compatibilityCache,
+            ruleCache,
+            ruleMeta
+          );
+          css.walkRules(merger);
+          clean();
         },
       };
     },
