@@ -27,9 +27,9 @@
     "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.2",
     "@iarna/toml": "^2.2.5",
     "cssnano": "link:../packages/cssnano",
-    "markdown-it": "^14.1.0",
+    "markdown-it": "^14.1.1",
     "markdown-it-anchor": "^9.2.0",
-    "webpack": "^5.102.1",
+    "webpack": "^5.105.4",
     "webpack-cli": "^6.0.1"
   }
 }
