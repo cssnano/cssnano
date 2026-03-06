@@ -1,5 +1,26 @@
 # Change Log
 
+## 7.0.11
+
+### Patch Changes
+
+- c3e537a: fix: update postcss-selector-parser
+- 5b9af42: fix: update browserslist and autoprefixer
+- Updated dependencies [5674f7a]
+- Updated dependencies [c3e537a]
+- Updated dependencies [c0053c8]
+- Updated dependencies [5b9af42]
+  - postcss-svgo@7.1.1
+  - postcss-normalize-unicode@7.0.6
+  - postcss-discard-comments@7.0.6
+  - postcss-minify-selectors@7.0.6
+  - postcss-unique-selectors@7.0.5
+  - postcss-convert-values@7.0.9
+  - postcss-reduce-initial@7.0.6
+  - postcss-minify-params@7.0.6
+  - postcss-merge-rules@7.0.8
+  - postcss-colormin@7.0.6
+
 ## 7.0.10
 
 ### Patch Changes

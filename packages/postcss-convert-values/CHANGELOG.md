@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.0.9
+
+### Patch Changes
+
+- c3e537a: fix: update postcss-selector-parser
+- 5b9af42: fix: update browserslist and autoprefixer
+
 ## 7.0.8
 
 ### Patch Changes
