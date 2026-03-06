@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.0.8
+
+### Patch Changes
+
+- c3e537a: fix: update postcss-selector-parser
+- c0053c8: fix(postcss-merge-rules): improve performance
+- 5b9af42: fix: update browserslist and autoprefixer
+
 ## 7.0.7
 
 ### Patch Changes

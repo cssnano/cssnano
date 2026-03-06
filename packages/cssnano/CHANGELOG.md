@@ -1,5 +1,15 @@
 # Change Log
 
+## 7.1.3
+
+### Patch Changes
+
+- c3e537a: fix: update postcss-selector-parser
+- 5b9af42: fix: update browserslist and autoprefixer
+- Updated dependencies [c3e537a]
+- Updated dependencies [5b9af42]
+  - cssnano-preset-default@7.0.11
+
 ## 7.1.2
 
 ### Patch Changes
