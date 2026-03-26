@@ -1,7 +1,7 @@
 'use strict';
-const { colord, extend } = require('colord');
-const namesPlugin = require('colord/plugins/names');
-const minifierPlugin = require('colord/plugins/minify');
+const { colordx: colord, extend } = require('@colordx/core');
+const namesPlugin = require('@colordx/core/plugins/names');
+const minifierPlugin = require('@colordx/core/plugins/minify');
 
 extend(/** @type {any[]} */ ([namesPlugin, minifierPlugin]));
 
@@ -9,7 +9,7 @@ extend(/** @type {any[]} */ ([namesPlugin, minifierPlugin]));
  * Performs color value minification
  *
  * @param {string} input - CSS value
- * @param {import('./index.js').MinifyColorOptions} options - object with colord.minify() options
+ * @param {import('./index.js').MinifyColorOptions} options - object with colordx.minify() options
  * @return {string}
  */
 module.exports = function minifyColor(input, options = {}) {

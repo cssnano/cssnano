@@ -63,8 +63,10 @@ test(
 );
 
 test(
-  'should convert rgba to hsla when shorter',
-  isEqual('rgba(221, 221, 221, 0.5)', 'hsla(0,0%,87%,.5)')
+  'should convert rgba to shortest lossless form',
+  // Previously produced hsla(0,0%,87%,.5) which was lossy (rgb roundtrip gives 222,222,222)
+  // @colordx/core >=2.0.0 produces hsla(0,0%,86.7%,.5) which is shorter (19 vs 20 chars) and lossless — fixes cssnano#1515
+  isEqual('rgba(221, 221, 221, 0.5)', 'hsla(0,0%,86.7%,.5)')
 );
 
 test(
@@ -159,9 +161,12 @@ test('should pass through if not recognised', () => {
 
 test('should convert to hex4', () => {
   assert.strictEqual(min('#aabbcc33', { alphaHex: true }), '#abc3');
-  assert.strictEqual(min('transparent', { alphaHex: true }), '#0000');
   assert.strictEqual(min('rgb(119,119,119,0.2)', { alphaHex: true }), '#7773');
   assert.strictEqual(min('hsla(0,0%,100%,.4)', { alphaHex: true }), '#fff6');
+});
+
+test('should convert transparent to hex4 when alphaHex enabled', () => {
+  assert.strictEqual(min('transparent', { alphaHex: true }), '#0000');
 });
 
 test('should convert to hex8', () => {
@@ -195,4 +200,57 @@ test('should preserve percentage in color-mix', () => {
 
 test('should preserve percentage in hsla', () => {
   assert.strictEqual(min('rgba(255,255,255,.7)'), 'hsla(0,0%,100%,.7)');
+});
+
+// Lossless round-trip tests (regression for https://github.com/cssnano/cssnano/issues/1515)
+test('should not produce a lossier representation for rgb(143 101 98 / 43%)', () => {
+  const result = min('rgb(143 101 98 / 43%)');
+  // Whatever the output is, it must round-trip back to the same rgb values
+  const { colordx } = require('@colordx/core');
+  const orig = colordx('rgb(143, 101, 98)').toRgb();
+  const roundtrip = colordx(result).toRgb();
+  assert.strictEqual(Math.round(roundtrip.r), Math.round(orig.r));
+  assert.strictEqual(Math.round(roundtrip.g), Math.round(orig.g));
+  assert.strictEqual(Math.round(roundtrip.b), Math.round(orig.b));
+});
+
+test('should not produce a lossier representation for rgba(221, 221, 221, 0.5)', () => {
+  const result = min('rgba(221, 221, 221, 0.5)');
+  const { colordx } = require('@colordx/core');
+  const orig = colordx('rgb(221, 221, 221)').toRgb();
+  const roundtrip = colordx(result).toRgb();
+  assert.strictEqual(Math.round(roundtrip.r), Math.round(orig.r));
+  assert.strictEqual(Math.round(roundtrip.g), Math.round(orig.g));
+  assert.strictEqual(Math.round(roundtrip.b), Math.round(orig.b));
+});
+
+// Modern CSS color format handling
+// At the unit level, minifyColor converts any valid color to its shortest sRGB form.
+// At the integration level (index.js), oklch/oklab/hwb function nodes are NOT passed
+// as whole strings to minifyColor — the walker recurses into them and only calls
+// minifyColor on individual number tokens, which are not valid colors and pass through.
+test('should minify sRGB-equivalent oklch to hex', () => {
+  // oklch(0.5 0.2 240) is within sRGB — minifies to hex
+  assert.strictEqual(min('oklch(0.5 0.2 240)'), '#0069c7');
+  // pure red in oklch — minifies to 'red' (names plugin loaded, 3 chars < 4 for #f00)
+  assert.strictEqual(min('oklch(0.6279 0.2577 29.23)'), 'red');
+});
+
+test('should minify sRGB-equivalent oklab to hex', () => {
+  assert.strictEqual(min('oklab(0.5 0.1 -0.2)'), '#7532d0');
+});
+
+test('should minify hwb to hex', () => {
+  assert.strictEqual(min('hwb(120 0% 0%)'), '#0f0');
+});
+
+test('should pass through lch values (requires lch plugin, not loaded by default)', () => {
+  assert.strictEqual(min('lch(54.29 106.84 40.85)'), 'lch(54.29 106.84 40.85)');
+});
+
+test('should pass through color() function values', () => {
+  assert.strictEqual(
+    min('color(display-p3 0.9176 0.2003 0.1386)'),
+    'color(display-p3 0.9176 0.2003 0.1386)'
+  );
 });
