@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es2018",
     "lib": ["es2018"],
-    "module": "commonjs",
+    "module": "nodenext",
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": true,
@@ -14,7 +14,8 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "types": ["node"]
+    "types": ["node"],
+    "moduleResolution": "nodenext"
   },
   "references": [
     {"path": "packages/postcss-normalize-display-values"},
