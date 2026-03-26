@@ -21,14 +21,14 @@
   "devDependencies": {
     "@changesets/cli": "^2.30.0",
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.3.0",
+    "@types/node": "^25.5.0",
     "eslint": "^10.0.2",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.4.0",
     "postcss": "^8.5.6",
     "postcss-font-magician": "^4.0.0",
     "prettier": "^3.8.1",
-    "typescript": "~5.9.3"
+    "typescript": "~6.0.2"
   },
   "browserslist": {
     "production": [

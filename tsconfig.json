@@ -13,7 +13,8 @@
     "newLine": "lf",
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true
+    "strict": true,
+    "types": ["node"]
   },
   "references": [
     {"path": "packages/postcss-normalize-display-values"},

@@ -1,4 +1,6 @@
-declare const _exports: (typeof borders)[];
+declare const _exports: {
+    explode: (rule: import("postcss/lib/rule").Rule) => void;
+    merge: (rule: import("postcss/lib/rule").Rule) => void;
+}[];
 export = _exports;
-import borders = require("./borders");
 //# sourceMappingURL=index.d.ts.map

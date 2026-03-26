@@ -1,6 +1,6 @@
 declare const _exports: {
-    explode: (rule: import("postcss").Rule) => void;
-    merge: (rule: import("postcss").Rule) => void;
+    explode: (rule: import("postcss/lib/rule").Rule) => void;
+    merge: (rule: import("postcss/lib/rule").Rule) => void;
 };
 export = _exports;
 //# sourceMappingURL=margin.d.ts.map
