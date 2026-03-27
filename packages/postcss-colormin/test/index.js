@@ -301,3 +301,37 @@ test(
   'should not attempt to convert font names',
   passthroughCSS('@font-face{src:local(Noto Sans Black)}')
 );
+
+// Modern CSS Color Level 4 syntax — space-separated
+test(
+  'should minify space-separated rgb() to shortest form',
+  processCSS('h1{color:rgb(255 0 0)}', 'h1{color:red}')
+);
+
+test(
+  'should minify space-separated rgb() with slash alpha',
+  processCSS('h1{color:rgb(255 0 0 / 0.5)}', 'h1{color:rgba(255,0,0,.5)}')
+);
+
+test(
+  'should minify space-separated hsl() to shortest form',
+  processCSS('h1{color:hsl(0 100% 50%)}', 'h1{color:red}')
+);
+
+// Modern color spaces — the plugin walker only matches rgb/hsl function nodes,
+// so oklch/oklab/hwb pass through the pipeline unchanged. Conversion of these
+// formats is handled at the minifyColor unit level (see minifyColor.js tests).
+test(
+  'should pass through oklch() values unchanged',
+  passthroughCSS('h1{color:oklch(0.6279 0.2577 29.23)}')
+);
+
+test(
+  'should pass through oklab() values unchanged',
+  passthroughCSS('h1{color:oklab(0.5 0.1 -0.2)}')
+);
+
+test(
+  'should pass through hwb() values unchanged',
+  passthroughCSS('h1{color:hwb(120 0% 0%)}')
+);
