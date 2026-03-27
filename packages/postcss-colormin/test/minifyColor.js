@@ -202,6 +202,73 @@ test('should preserve percentage in hsla', () => {
   assert.strictEqual(min('rgba(255,255,255,.7)'), 'hsla(0,0%,100%,.7)');
 });
 
+// namesPlugin — named color recognition and output
+test('should recognise named colors as valid and keep them when shortest', () => {
+  // These named colors are shorter than their hex equivalent
+  assert.strictEqual(min('red'), 'red');
+  assert.strictEqual(min('blue'), 'blue');
+  assert.strictEqual(min('rebeccapurple'), '#639'); // hex is shorter
+});
+
+test('should convert hex to named color when name is shorter', () => {
+  assert.strictEqual(min('#ff0000'), 'red');   // 'red' (3) < '#f00' (4) — name wins
+  assert.strictEqual(min('#0000ff'), '#00f');  // 'blue' (4) = '#00f' (4) — hex wins on equal length
+});
+
+test('name:false should use hex instead of named colors', () => {
+  assert.strictEqual(min('rgb(255,0,0)', { name: false }), '#f00');
+  assert.strictEqual(min('yellow', { name: false }), '#ff0');
+  assert.strictEqual(min('#ff0000', { name: false }), '#f00');
+});
+
+test('should pass through non-color keywords unchanged', () => {
+  // currentcolor and inherit are not valid paint colors — pass through
+  assert.strictEqual(min('currentcolor'), 'currentcolor');
+  assert.strictEqual(min('inherit'), 'inherit');
+});
+
+// Modern space-separated syntax (CSS Color Level 4)
+test('should minify space-separated rgb() to shortest form', () => {
+  assert.strictEqual(min('rgb(255 0 0)'), 'red');
+  assert.strictEqual(min('rgb(0 0 0)'), '#000');
+  assert.strictEqual(min('rgb(255 255 255)'), '#fff');
+});
+
+test('should minify space-separated rgb() with slash alpha', () => {
+  assert.strictEqual(min('rgb(255 0 0 / 0.5)'), 'rgba(255,0,0,.5)');
+  assert.strictEqual(min('rgb(255 0 0 / 50%)'), 'rgba(255,0,0,.5)');
+});
+
+test('should minify space-separated hsl() to shortest form', () => {
+  assert.strictEqual(min('hsl(0 100% 50%)'), 'red');
+  assert.strictEqual(min('hsl(0 100% 50% / 0.5)'), 'rgba(255,0,0,.5)');
+});
+
+// isValid() pass-through behaviour — non-color keywords must not be mangled
+test('should pass through currentColor unchanged', () => {
+  assert.strictEqual(min('currentColor'), 'currentColor');
+});
+
+test('should pass through transparent unchanged', () => {
+  assert.strictEqual(min('transparent'), 'transparent');
+});
+
+// minify() option flags
+test('hsl:false should avoid hsl output and use rgba instead', () => {
+  // normally rgba(50%,50%,50%,.5) -> hsla(0,0%,50%,.5), with hsl:false it stays rgba
+  assert.strictEqual(
+    min('rgba(50%, 50%, 50%, 0.5)', { hsl: false }),
+    'rgba(128,128,128,.5)'
+  );
+});
+
+test('rgb:false should avoid rgb output and use hsl instead', () => {
+  assert.strictEqual(
+    min('rgba(255, 0, 0, 0.5)', { rgb: false }),
+    'hsla(0,100%,50%,.5)'
+  );
+});
+
 // Lossless round-trip tests (regression for https://github.com/cssnano/cssnano/issues/1515)
 test('should not produce a lossier representation for rgb(143 101 98 / 43%)', () => {
   const result = min('rgb(143 101 98 / 43%)');
@@ -255,7 +322,7 @@ test('should pass through color() function values', () => {
   );
 });
 
-// Regression tests for @colordx/core v2 precision improvements (found via framework snapshots)
+// Regression tests for @colordx/core precision improvements
 // All old outputs were lossy — new outputs are lossless and/or more precise
 
 // bootstrap-v4.2.1: lossy HSL -> lossless rgba
