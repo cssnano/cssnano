@@ -1,9 +1,10 @@
 'use strict';
 const { colordx: colord, extend } = require('@colordx/core');
+const hwbPlugin = require('@colordx/core/plugins/hwb');
 const namesPlugin = require('@colordx/core/plugins/names');
 const minifierPlugin = require('@colordx/core/plugins/minify');
 
-extend(/** @type {any[]} */ ([namesPlugin, minifierPlugin]));
+extend(/** @type {any[]} */ ([hwbPlugin, namesPlugin, minifierPlugin]));
 
 /**
  * Performs color value minification
