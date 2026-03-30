@@ -1,5 +1,14 @@
 # Change Log
 
+## 7.0.12
+
+### Patch Changes
+
+- fix: improve color conversion precision
+- Updated dependencies [5f64972]
+  - postcss-colormin@7.0.7
+  - postcss-minify-gradients@7.0.2
+
 ## 7.0.11
 
 ### Patch Changes

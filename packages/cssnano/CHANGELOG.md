@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.1.4
+
+### Patch Changes
+
+- fix: improve color conversion precision
+- Updated dependencies
+  - cssnano-preset-default@7.0.12
+
 ## 7.1.3
 
 ### Patch Changes
