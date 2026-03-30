@@ -1,9 +1,10 @@
 'use strict';
 const { unit } = require('postcss-value-parser');
-const { colord, extend } = require('colord');
-const namesPlugin = require('colord/plugins/names');
+const { colordx: colord, extend } = require('@colordx/core');
+const hwbPlugin = require('@colordx/core/plugins/hwb');
+const namesPlugin = require('@colordx/core/plugins/names');
 
-extend([/** @type {any} */ (namesPlugin)]);
+extend([/** @type {any} */ (hwbPlugin), /** @type {any} */ (namesPlugin)]);
 
 /* Code derived from https://github.com/pigcan/is-color-stop */
 

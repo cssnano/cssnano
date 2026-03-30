@@ -63,8 +63,10 @@ test(
 );
 
 test(
-  'should convert rgba to hsla when shorter',
-  isEqual('rgba(221, 221, 221, 0.5)', 'hsla(0,0%,87%,.5)')
+  'should convert rgba to shortest lossless form',
+  // Previously produced hsla(0,0%,87%,.5) which was lossy (rgb roundtrip gives 222,222,222)
+  // @colordx/core >=2.0.0 produces hsla(0,0%,86.7%,.5) which is shorter (19 vs 20 chars) and lossless — fixes cssnano#1515
+  isEqual('rgba(221, 221, 221, 0.5)', 'hsla(0,0%,86.7%,.5)')
 );
 
 test(
@@ -159,9 +161,12 @@ test('should pass through if not recognised', () => {
 
 test('should convert to hex4', () => {
   assert.strictEqual(min('#aabbcc33', { alphaHex: true }), '#abc3');
-  assert.strictEqual(min('transparent', { alphaHex: true }), '#0000');
   assert.strictEqual(min('rgb(119,119,119,0.2)', { alphaHex: true }), '#7773');
   assert.strictEqual(min('hsla(0,0%,100%,.4)', { alphaHex: true }), '#fff6');
+});
+
+test('should convert transparent to hex4 when alphaHex enabled', () => {
+  assert.strictEqual(min('transparent', { alphaHex: true }), '#0000');
 });
 
 test('should convert to hex8', () => {
@@ -196,3 +201,215 @@ test('should preserve percentage in color-mix', () => {
 test('should preserve percentage in hsla', () => {
   assert.strictEqual(min('rgba(255,255,255,.7)'), 'hsla(0,0%,100%,.7)');
 });
+
+// namesPlugin — named color recognition and output
+test('should recognise named colors as valid and keep them when shortest', () => {
+  // These named colors are shorter than their hex equivalent
+  assert.strictEqual(min('red'), 'red');
+  assert.strictEqual(min('blue'), 'blue');
+  assert.strictEqual(min('rebeccapurple'), '#639'); // hex is shorter
+});
+
+test('should convert hex to named color when name is shorter', () => {
+  assert.strictEqual(min('#ff0000'), 'red');   // 'red' (3) < '#f00' (4) — name wins
+  assert.strictEqual(min('#0000ff'), '#00f');  // 'blue' (4) = '#00f' (4) — hex wins on equal length
+});
+
+test('name:false should use hex instead of named colors', () => {
+  assert.strictEqual(min('rgb(255,0,0)', { name: false }), '#f00');
+  assert.strictEqual(min('yellow', { name: false }), '#ff0');
+  assert.strictEqual(min('#ff0000', { name: false }), '#f00');
+});
+
+test('should pass through non-color keywords unchanged', () => {
+  // currentcolor and inherit are not valid paint colors — pass through
+  assert.strictEqual(min('currentcolor'), 'currentcolor');
+  assert.strictEqual(min('inherit'), 'inherit');
+});
+
+// Modern space-separated syntax (CSS Color Level 4)
+test('should minify space-separated rgb() to shortest form', () => {
+  assert.strictEqual(min('rgb(255 0 0)'), 'red');
+  assert.strictEqual(min('rgb(0 0 0)'), '#000');
+  assert.strictEqual(min('rgb(255 255 255)'), '#fff');
+});
+
+test('should minify space-separated rgb() with slash alpha', () => {
+  assert.strictEqual(min('rgb(255 0 0 / 0.5)'), 'rgba(255,0,0,.5)');
+  assert.strictEqual(min('rgb(255 0 0 / 50%)'), 'rgba(255,0,0,.5)');
+});
+
+test('should minify space-separated hsl() to shortest form', () => {
+  assert.strictEqual(min('hsl(0 100% 50%)'), 'red');
+  assert.strictEqual(min('hsl(0 100% 50% / 0.5)'), 'rgba(255,0,0,.5)');
+});
+
+// isValid() pass-through behaviour — non-color keywords must not be mangled
+test('should pass through currentColor unchanged', () => {
+  assert.strictEqual(min('currentColor'), 'currentColor');
+});
+
+test('should pass through transparent unchanged', () => {
+  assert.strictEqual(min('transparent'), 'transparent');
+});
+
+// minify() option flags
+test('hsl:false should avoid hsl output and use rgba instead', () => {
+  // normally rgba(50%,50%,50%,.5) -> hsla(0,0%,50%,.5), with hsl:false it stays rgba
+  assert.strictEqual(
+    min('rgba(50%, 50%, 50%, 0.5)', { hsl: false }),
+    'rgba(128,128,128,.5)'
+  );
+});
+
+test('rgb:false should avoid rgb output and use hsl instead', () => {
+  assert.strictEqual(
+    min('rgba(255, 0, 0, 0.5)', { rgb: false }),
+    'hsla(0,100%,50%,.5)'
+  );
+});
+
+// Lossless round-trip tests (regression for https://github.com/cssnano/cssnano/issues/1515)
+test('should not produce a lossier representation for rgb(143 101 98 / 43%)', () => {
+  const result = min('rgb(143 101 98 / 43%)');
+  // Whatever the output is, it must round-trip back to the same rgb values
+  const { colordx } = require('@colordx/core');
+  const orig = colordx('rgb(143, 101, 98)').toRgb();
+  const roundtrip = colordx(result).toRgb();
+  assert.strictEqual(Math.round(roundtrip.r), Math.round(orig.r));
+  assert.strictEqual(Math.round(roundtrip.g), Math.round(orig.g));
+  assert.strictEqual(Math.round(roundtrip.b), Math.round(orig.b));
+});
+
+test('should not produce a lossier representation for rgba(221, 221, 221, 0.5)', () => {
+  const result = min('rgba(221, 221, 221, 0.5)');
+  const { colordx } = require('@colordx/core');
+  const orig = colordx('rgb(221, 221, 221)').toRgb();
+  const roundtrip = colordx(result).toRgb();
+  assert.strictEqual(Math.round(roundtrip.r), Math.round(orig.r));
+  assert.strictEqual(Math.round(roundtrip.g), Math.round(orig.g));
+  assert.strictEqual(Math.round(roundtrip.b), Math.round(orig.b));
+});
+
+// Modern CSS color format handling
+// At the unit level, minifyColor converts any valid color to its shortest sRGB form.
+// At the integration level (index.js), oklch/oklab/hwb function nodes are NOT passed
+// as whole strings to minifyColor — the walker recurses into them and only calls
+// minifyColor on individual number tokens, which are not valid colors and pass through.
+test('should minify sRGB-equivalent oklch to hex', () => {
+  // oklch(0.5 0.2 240) is within sRGB — minifies to hex
+  assert.strictEqual(min('oklch(0.5 0.2 240)'), '#0069c7');
+  // pure red in oklch — minifies to 'red' (names plugin loaded, 3 chars < 4 for #f00)
+  assert.strictEqual(min('oklch(0.6279 0.2577 29.23)'), 'red');
+});
+
+test('should minify sRGB-equivalent oklab to hex', () => {
+  assert.strictEqual(min('oklab(0.5 0.1 -0.2)'), '#7532d0');
+});
+
+test('should minify hwb to hex', () => {
+  assert.strictEqual(min('hwb(120 0% 0%)'), '#0f0');
+});
+
+test('should pass through lch values (requires lch plugin, not loaded by default)', () => {
+  assert.strictEqual(min('lch(54.29 106.84 40.85)'), 'lch(54.29 106.84 40.85)');
+});
+
+test('should pass through color() function values', () => {
+  assert.strictEqual(
+    min('color(display-p3 0.9176 0.2003 0.1386)'),
+    'color(display-p3 0.9176 0.2003 0.1386)'
+  );
+});
+
+// Regression tests for @colordx/core precision improvements
+// All old outputs were lossy — new outputs are lossless and/or more precise
+
+// bootstrap-v4.2.1: lossy HSL -> lossless rgba
+// hsla(208,6%,54%,.5) round-trips to rgb(131,138,145) ≠ rgb(130,138,145)
+test(
+  'should keep rgba(130,138,145,.5) as rgba rather than lossy hsla',
+  isEqual('rgba(130, 138, 145, 0.5)', 'rgba(130,138,145,.5)')
+);
+// hsla(220,4%,85%,.5) round-trips to rgb(215,216,218) ≠ rgb(216,217,219)
+test(
+  'should keep rgba(216,217,219,.5) as rgba rather than lossy hsla',
+  isEqual('rgba(216, 217, 219, 0.5)', 'rgba(216,217,219,.5)')
+);
+// hsla(208,7%,46%,.5) round-trips to rgb(109,118,126) ≠ rgb(108,117,125)
+test(
+  'should keep rgba(108,117,125,.5) as rgba rather than lossy hsla',
+  isEqual('rgba(108, 117, 125, 0.5)', 'rgba(108,117,125,.5)')
+);
+
+// foundation-v6.5.3: rgba(254,254,254,.25) is not pure white — old hsla(0,0%,100%,.25) was lossy
+// 254/255 = 99.608...% lightness, not 100%
+test(
+  'should minify near-white rgba(254,254,254,.25) to hsla with decimal precision, not round to 100%',
+  isEqual('rgba(254, 254, 254, 0.25)', 'hsla(0,0%,99.6%,.25)')
+);
+
+// picnic-v6.4.0: rgba(17,17,17,.x) — old hsla(0,0%,7%,.x) was lossy
+// 7% * 255 = 17.85, so hsla round-trips to rgb(18,18,18) ≠ rgb(17,17,17)
+test(
+  'should keep rgba(17,17,17,.1) as rgba rather than lossy hsla(0,0%,7%)',
+  isEqual('rgba(17, 17, 17, 0.1)', 'rgba(17,17,17,.1)')
+);
+test(
+  'should keep rgba(17,17,17,.2) as rgba rather than lossy hsla(0,0%,7%)',
+  isEqual('rgba(17, 17, 17, 0.2)', 'rgba(17,17,17,.2)')
+);
+test(
+  'should keep rgba(17,17,17,.3) as rgba rather than lossy hsla(0,0%,7%)',
+  isEqual('rgba(17, 17, 17, 0.3)', 'rgba(17,17,17,.3)')
+);
+test(
+  'should keep rgba(17,17,17,.6) as rgba rather than lossy hsla(0,0%,7%)',
+  isEqual('rgba(17, 17, 17, 0.6)', 'rgba(17,17,17,.6)')
+);
+
+// semantic-ui-v2.4.1: HSL lightness precision (integer % was rounded, decimal is exact)
+// 100/255 = 39.215...% — old hsla(0,0%,39%,.x) rounded down, hsla(0,0%,39.2%,.x) is more accurate
+test(
+  'should output hsla with decimal lightness for rgba(100,100,100,.3) — 39.2% not 39%',
+  isEqual('rgba(100, 100, 100, 0.3)', 'hsla(0,0%,39.2%,.3)')
+);
+test(
+  'should output hsla with decimal lightness for rgba(100,100,100,.4) — 39.2% not 39%',
+  isEqual('rgba(100, 100, 100, 0.4)', 'hsla(0,0%,39.2%,.4)')
+);
+// hsla(202,5%,52%,.8) round-trips to rgb(126,134,139) ≠ rgb(128,135,139)
+test(
+  'should keep rgba(128,135,139,.8) as rgba rather than lossy hsla(202,5%,52%)',
+  isEqual('rgba(128, 135, 139, 0.8)', 'rgba(128,135,139,.8)')
+);
+// 225/255 = 88.235...% — old hsla(0,0%,88%,.3) rounded down
+test(
+  'should output hsla with decimal lightness for rgba(225,225,225,.3) — 88.2% not 88%',
+  isEqual('rgba(225, 225, 225, 0.3)', 'hsla(0,0%,88.2%,.3)')
+);
+
+// turret-v5.1.3: hsl() values with exact float RGB — new hex is pixel-perfect
+// hsl(220,80%,50%) = rgb(25.5, 93.5, 230.5) -> #195de6 (25,93,230), old #1a5de6 was rgb(26,93,230)
+test(
+  'should minify hsl(220,80%,50%) to exact hex #195de6',
+  isEqual('hsl(220, 80%, 50%)', '#195de6')
+);
+// hsl(20,100%,55%) -> #ff661a (255,102,26), old #ff6619 was rgb(255,102,25)
+test(
+  'should minify hsl(20,100%,55%) to exact hex #ff661a',
+  isEqual('hsl(20, 100%, 55%)', '#ff661a')
+);
+// hsl(270,80%,50%) = rgb(127.5,25.5,230.5) -> #7f19e6 (127,25,230), old #801ae6 was rgb(128,26,230)
+test(
+  'should minify hsl(270,80%,50%) to exact hex #7f19e6',
+  isEqual('hsl(270, 80%, 50%)', '#7f19e6')
+);
+// hsl(320,80%,50%) = rgb(230.5,25.5,161.5) -> #e619a1 (230,25,161), old #e61aa2 was rgb(230,26,162)
+test(
+  'should minify hsl(320,80%,50%) to exact hex #e619a1',
+  isEqual('hsl(320, 80%, 50%)', '#e619a1')
+);
+
+// uikit-v3.0.3: same decimal lightness precision as semantic-ui (rgba(100,100,100,.3) also in this file)
+// covered by the rgba(100,100,100,.3) test above

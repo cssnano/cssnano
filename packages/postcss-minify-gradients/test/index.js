@@ -423,4 +423,33 @@ test(
   passthroughCSS('background:red')
 );
 
+// Modern CSS color formats in gradient stops
+test(
+  'should pass through oklch color stops in gradients',
+  passthroughCSS(
+    'background:linear-gradient(oklch(0.5 0.2 240),oklch(0.8 0.1 200))'
+  )
+);
+
+test(
+  'should pass through oklab color stops in gradients',
+  passthroughCSS(
+    'background:linear-gradient(oklab(0.5 0.1 -0.2),oklab(0.8 0.05 -0.1))'
+  )
+);
+
+test(
+  'should pass through hwb color stops in gradients',
+  passthroughCSS(
+    'background:linear-gradient(hwb(0 0% 0%),hwb(240 0% 0%))'
+  )
+);
+
+test(
+  'should pass through lch color stops in gradients',
+  passthroughCSS(
+    'background:linear-gradient(lch(50 100 30),lch(80 50 200))'
+  )
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

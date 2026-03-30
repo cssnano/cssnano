@@ -23,7 +23,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "colord": "^2.9.3",
+    "@colordx/core": "^5.0.0",
     "cssnano-utils": "workspace:^",
     "postcss-value-parser": "^4.2.0"
   },
