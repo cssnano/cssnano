@@ -13,7 +13,6 @@
  * this preset require only minimal configuration.
  */
 
-const cssDeclarationSorter = require('css-declaration-sorter');
 const postcssDiscardComments = require('postcss-discard-comments');
 const postcssReduceInitial = require('postcss-reduce-initial');
 const postcssMinifyGradients = require('postcss-minify-gradients');
@@ -50,7 +49,6 @@ const { rawCache } = require('cssnano-utils');
 
 /**
  * @typedef {object} Options
- * @property {SimpleOptions<Parameters<typeof cssDeclarationSorter>[0]>} [cssDeclarationSorter]
  * @property {SimpleOptions<import('postcss-discard-comments').Options>} [discardComments]
  * @property {SimpleOptions<import('postcss-reduce-initial').Options>} [reduceInitial]
  * @property {SimpleOptions} [minifyGradients]
@@ -128,9 +126,6 @@ function configurePlugins(plugins, opts = {}) {
     reduceInitial: {
       ...sharedProps,
     },
-    cssDeclarationSorter: {
-      keepOverrides: true,
-    },
     minifySelectors: {
       sort: true,
     },
@@ -194,7 +189,6 @@ function defaultPreset(opts = {}) {
         [postcssMergeRules, 'mergeRules'],
         [postcssDiscardEmpty, 'discardEmpty'],
         [postcssUniqueSelectors, 'uniqueSelectors'],
-        [cssDeclarationSorter, 'cssDeclarationSorter'],
         [rawCache, 'rawCache'],
       ],
       opts
