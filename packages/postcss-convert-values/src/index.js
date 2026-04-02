@@ -176,7 +176,7 @@ function transform(opts, browsers, decl) {
   const lowerCasedProp = decl.prop.toLowerCase();
   if (
     lowerCasedProp.includes('flex') ||
-    lowerCasedProp.indexOf('--') === 0 ||
+    (lowerCasedProp.indexOf('--') === 0 && !opts.transformCustomProperties) ||
     notALength.has(lowerCasedProp)
   ) {
     return;
@@ -217,7 +217,7 @@ const plugin = 'postcss-convert-values';
  * @typedef {Parameters<typeof convert>[2]} ConvertOptions
  * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
  * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {{precision?: false | number} & ConvertOptions & AutoprefixerOptions & BrowserslistOptions} Options
+ * @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions & AutoprefixerOptions & BrowserslistOptions} Options
  */
 
 /**
