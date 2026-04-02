@@ -188,6 +188,22 @@ test(
 );
 
 test(
+  'should rename counters defined with counter-set',
+  processCSS(
+    'body{counter-set:section}h3:before{counter-increment:section;content:"Section" counter(section) ": "}',
+    'body{counter-set:a}h3:before{counter-increment:a;content:"Section" counter(a) ": "}'
+  )
+);
+
+test(
+  'should rename counters with counter-set and counter-reset together',
+  processCSS(
+    'body{counter-reset:section;counter-set:subsection}h3:before{counter-increment:subsection;content:counter(section) "." counter(subsection)}',
+    'body{counter-reset:a;counter-set:b}h3:before{counter-increment:b;content:counter(a) "." counter(b)}'
+  )
+);
+
+test(
   'should not touch counters that are not outputted',
   passthroughCSS('h1{counter-reset:chapter 1 section page 1}')
 );
