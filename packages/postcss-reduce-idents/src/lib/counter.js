@@ -25,7 +25,7 @@ module.exports = function () {
       }
       const { prop } = node;
 
-      if (/counter-(reset|increment)/i.test(prop)) {
+      if (/counter-(reset|increment|set)/i.test(prop)) {
         /** @type {unknown} */ (node.value) = valueParser(node.value).walk(
           (child) => {
             if (
