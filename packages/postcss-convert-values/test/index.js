@@ -41,6 +41,20 @@ test(
 );
 
 test(
+  'should not convert values in custom properties by default',
+  passthroughCSS('h1{--my-variable:500ms}')
+);
+
+test(
+  'should convert values in custom properties when transformCustomProperties is true',
+  processCSS(
+    'h1{--my-variable:500ms}',
+    'h1{--my-variable:.5s}',
+    { transformCustomProperties: true }
+  )
+);
+
+test(
   'should remove unnecessary plus signs',
   processCSS('h1{width:+14px}', 'h1{width:14px}')
 );
