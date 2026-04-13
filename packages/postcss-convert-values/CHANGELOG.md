@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.0.10
+
+### Patch Changes
+
+- 5cb8b09: fix: udpate browserslist
+- 9e615cc: fix: add tranformCustomProperties option and support counter-set property
+
 ## 7.0.9
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.2
+
+### Patch Changes
+
+- 9e615cc: fix: add tranformCustomProperties option and support counter-set property
+
 ## 7.0.1
 
 ### Patch Changes

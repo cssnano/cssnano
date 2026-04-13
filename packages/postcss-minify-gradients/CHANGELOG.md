@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.3
+
+### Patch Changes
+
+- 5cb8b09: fix: udpate browserslist
+
 ## 7.0.2
 
 ### Patch Changes
