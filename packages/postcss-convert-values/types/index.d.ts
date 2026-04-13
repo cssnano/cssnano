@@ -3,7 +3,7 @@ export = pluginCreator;
  * @typedef {Parameters<typeof convert>[2]} ConvertOptions
  * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
  * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {{precision?: false | number} & ConvertOptions & AutoprefixerOptions & BrowserslistOptions} Options
+ * @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions & AutoprefixerOptions & BrowserslistOptions} Options
  */
 /**
  * @type {import('postcss').PluginCreator<Options>}
@@ -22,6 +22,7 @@ type AutoprefixerOptions = {
 type BrowserslistOptions = Pick<browserslist.Options, "stats" | "path" | "env">;
 type Options = {
     precision?: false | number;
+    transformCustomProperties?: boolean;
 } & ConvertOptions & AutoprefixerOptions & BrowserslistOptions;
 import convert = require("./lib/convert.js");
 import browserslist = require("browserslist");
