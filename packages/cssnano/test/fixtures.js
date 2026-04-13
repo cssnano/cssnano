@@ -51,7 +51,7 @@ test(
 				font-weight: 900;;;;
 				color: red;;
 		}`,
-    `div{color:red;font-weight:900}`
+    `div{font-weight:900;color:red}`
   )
 );
 
@@ -144,7 +144,7 @@ test(
 				background-position: 0 0, 98px 0;
 				background-origin: padding-box, padding-box;
 		}`,
-    `.two-gradients{background:linear-gradient(#fff,#999) no-repeat border-box,linear-gradient(#eee,#777) no-repeat border-box;background-origin:padding-box,padding-box;background-position:0 0,98px 0;background-size:98px 50px,18px 50px}`
+    `.two-gradients{background:linear-gradient(#fff,#999) no-repeat border-box,linear-gradient(#eee,#777) no-repeat border-box;background-size:98px 50px,18px 50px;background-position:0 0,98px 0;background-origin:padding-box,padding-box}`
   )
 );
 
@@ -281,7 +281,7 @@ test(
 				margin-bottom: 14px;
 				margin-left: 10px !important;
 		}`,
-    `h1{margin-bottom:14px;margin-left:10px!important;margin-right:12px!important;margin-top:8px}`
+    `h1{margin-top:8px;margin-right:12px!important;margin-bottom:14px;margin-left:10px!important}`
   )
 );
 

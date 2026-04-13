@@ -69,6 +69,9 @@ importers:
       browserslist:
         specifier: ^4.28.1
         version: 4.28.1
+      css-declaration-sorter:
+        specifier: ^7.2.0
+        version: 7.3.1(postcss@8.5.8)
       cssnano-preset-default:
         specifier: workspace:^
         version: link:../cssnano-preset-default
@@ -94,9 +97,6 @@ importers:
       browserslist:
         specifier: ^4.28.1
         version: 4.28.1
-      css-declaration-sorter:
-        specifier: ^7.2.0
-        version: 7.2.0(postcss@8.5.8)
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -874,8 +874,8 @@ packages:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
 
-  css-declaration-sorter@7.2.0:
-    resolution: {integrity: sha512-h70rUM+3PNFuaBDTLe8wF/cdWu+dOZmb7pJt8Z2sedYbAcQVQV/tEchueg3GWxwqS0cxtbxmaHEdkNACqcvsow==}
+  css-declaration-sorter@7.3.1:
+    resolution: {integrity: sha512-gz6x+KkgNCjxq3Var03pRYLhyNfwhkKF1g/yoLgDNtFvVu0/fOLV9C8fFEZRjACp/XQLumjAYo7JVjzH3wLbxA==}
     engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
       postcss: ^8.0.9
@@ -1877,7 +1877,7 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  css-declaration-sorter@7.2.0(postcss@8.5.8):
+  css-declaration-sorter@7.3.1(postcss@8.5.8):
     dependencies:
       postcss: 8.5.8
 

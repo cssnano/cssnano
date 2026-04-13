@@ -21,7 +21,7 @@ test(
   'should process CSS with default options',
   withDefaults.processCSS(
     'button { color: hsla(0 100% 50% / 40%); appearance: none }',
-    'button{appearance:none;color:rgba(255,0,0,.4)}'
+    'button{color:rgba(255,0,0,.4);appearance:none}'
   )
 );
 
@@ -29,7 +29,7 @@ test(
   'should process CSS with Browserslist options',
   withBrowserslist.processCSS(
     'button { color: hsla(0 100% 50% / 40%); appearance: none }',
-    'button{appearance:none;color:#f006}'
+    'button{color:#f006;appearance:none}'
   )
 );
 
