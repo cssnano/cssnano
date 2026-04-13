@@ -1,5 +1,20 @@
 # Change Log
 
+## 7.0.13
+
+### Patch Changes
+
+- 5cb8b09: fix: udpate browserslist
+- Updated dependencies [5cb8b09]
+- Updated dependencies [9e615cc]
+  - postcss-normalize-unicode@7.0.7
+  - postcss-minify-gradients@7.0.3
+  - postcss-convert-values@7.0.10
+  - postcss-reduce-initial@7.0.7
+  - postcss-minify-params@7.0.7
+  - postcss-merge-rules@7.0.9
+  - postcss-colormin@7.0.8
+
 ## 7.0.12
 
 ### Patch Changes

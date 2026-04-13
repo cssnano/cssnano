@@ -1,5 +1,15 @@
 # Change Log
 
+## 7.0.13
+
+### Patch Changes
+
+- 5cb8b09: fix: udpate browserslist
+- Updated dependencies [5cb8b09]
+- Updated dependencies [9e615cc]
+  - cssnano-preset-default@7.0.13
+  - postcss-reduce-idents@7.0.2
+
 ## 7.0.12
 
 ### Patch Changes
