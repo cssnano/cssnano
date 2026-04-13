@@ -231,6 +231,16 @@ test(
 );
 
 test(
+  'should minify colors inside custom properties by default',
+  processCSS('a{--foo:rgb(0 0 0)}', 'a{--foo:#000}')
+);
+
+test(
+  'should not minify colors inside custom properties when transformCustomProperties is false',
+  passthroughCSS('a{--foo:rgb(0 0 0)}', { transformCustomProperties: false })
+);
+
+test(
   'should respect CSS variables',
   passthroughCSS('div{background-color:rgba(51,153,255,var(--tw-bg-opacity))}')
 );

@@ -108,6 +108,7 @@ function addPluginDefaults(options, browsers) {
  * @property {boolean} [hsl]
  * @property {boolean} [name]
  * @property {boolean} [transparent]
+ * @property {boolean} [transformCustomProperties] Whether to minify colors inside custom property values (default: true)
  */
 
 /**
@@ -147,6 +148,10 @@ function pluginCreator(config = {}) {
                 decl.prop
               )
             ) {
+              return;
+            }
+
+            if (config.transformCustomProperties === false && decl.prop.startsWith('--')) {
               return;
             }
 
