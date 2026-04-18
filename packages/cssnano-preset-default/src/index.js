@@ -133,6 +133,7 @@ function configurePlugins(plugins, opts = {}) {
     },
     minifySelectors: {
       sort: true,
+      ...sharedProps,
     },
     svgo: {
       plugins: [
