@@ -397,6 +397,12 @@ importers:
 
   packages/postcss-minify-selectors:
     dependencies:
+      browserslist:
+        specifier: ^4.28.1
+        version: 4.28.2
+      caniuse-api:
+        specifier: ^3.0.0
+        version: 3.0.0
       cssesc:
         specifier: ^3.0.0
         version: 3.0.0
@@ -404,6 +410,9 @@ importers:
         specifier: ^7.1.1
         version: 7.1.1
     devDependencies:
+      '@types/caniuse-api':
+        specifier: ^3.0.6
+        version: 3.0.6
       '@types/cssesc':
         specifier: ^3.0.2
         version: 3.0.2
