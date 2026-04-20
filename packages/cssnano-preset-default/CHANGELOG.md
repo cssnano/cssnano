@@ -1,5 +1,14 @@
 # Change Log
 
+## 7.0.15
+
+### Patch Changes
+
+- fix: publish all dependencies with attestations
+- Updated dependencies
+  - postcss-normalize-positions@7.0.3
+  - postcss-normalize-repeat-style@7.0.3
+
 ## 7.0.14
 
 ### Patch Changes
