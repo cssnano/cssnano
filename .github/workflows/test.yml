@@ -66,6 +66,6 @@ jobs:
 
       - name: Publish code coverage report
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '24'
-        uses: codecov/codecov-action@v6.0.0
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2
         with:
           name: codecov
