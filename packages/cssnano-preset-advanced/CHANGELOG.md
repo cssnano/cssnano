@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.0.15
+
+### Patch Changes
+
+- fix: publish all dependencies with attestations
+- Updated dependencies
+  - cssnano-preset-default@7.0.15
+
 ## 7.0.14
 
 ### Patch Changes

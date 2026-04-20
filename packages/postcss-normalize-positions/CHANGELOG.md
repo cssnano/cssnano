@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.3
+
+### Patch Changes
+
+- fix: publish all dependencies with attestations
+
 ## 7.0.2
 
 ### Patch Changes
