@@ -1,5 +1,15 @@
 # Change Log
 
+## 7.1.0
+
+### Minor Changes
+
+- 6d5b6cc: feat(postcss-minify-selectors): fold selector lists into :is()
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+
 ## 7.0.6
 
 ### Patch Changes

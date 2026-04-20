@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.1.6
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+- Updated dependencies [322ad33]
+  - cssnano-preset-default@7.0.14
+
 ## 7.1.5
 
 ### Patch Changes
