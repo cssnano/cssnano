@@ -12,14 +12,14 @@
     "@codemirror/lang-css": "^6.3.1",
     "@codemirror/language": "^6.12.3",
     "@codemirror/state": "^6.6.0",
-    "@codemirror/view": "^6.41.0",
+    "@codemirror/view": "^6.41.1",
     "buffer": "^6.0.3",
     "cssnano-preset-advanced": "link:../packages/cssnano-preset-advanced",
     "cssnano-preset-default": "link:../packages/cssnano-preset-default",
     "cssnano-preset-lite": "link:../packages/cssnano-preset-lite",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
-    "postcss": "^8.5.9",
+    "postcss": "^8.5.10",
     "string_decoder": "^1.3.0"
   },
   "devDependencies": {
@@ -29,7 +29,7 @@
     "cssnano": "link:../packages/cssnano",
     "markdown-it": "^14.1.1",
     "markdown-it-anchor": "^9.2.0",
-    "webpack": "^5.106.1",
+    "webpack": "^5.106.2",
     "webpack-cli": "^7.0.2"
   }
 }
