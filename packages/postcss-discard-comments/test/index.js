@@ -379,7 +379,7 @@ test(
 test(
   'should handle SVG data URLs with comments',
   passthroughCSS(
-    'h1{background:url("data:image/svg+xml;utf8,<svg><!-- comment --><style>/*css comment*/</style></svg>")}'
+    'h1{background:url("data:image/svg+xml;utf8,<svg>\\3c !-- comment -->\\3c style>/*css comment*/\\3c /style></svg>")}'
   )
 );
 
