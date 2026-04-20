@@ -1,5 +1,17 @@
 # Change Log
 
+## 7.0.14
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+- Updated dependencies [322ad33]
+  - cssnano-preset-default@7.0.14
+  - postcss-discard-unused@7.0.6
+  - postcss-reduce-idents@7.0.3
+  - postcss-merge-idents@7.0.2
+  - postcss-zindex@7.0.2
+
 ## 7.0.13
 
 ### Patch Changes

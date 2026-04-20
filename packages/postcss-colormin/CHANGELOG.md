@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.0.9
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+- a00036c: fix: update colordx
+
 ## 7.0.8
 
 ### Patch Changes

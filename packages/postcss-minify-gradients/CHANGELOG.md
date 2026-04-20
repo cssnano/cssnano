@@ -1,5 +1,14 @@
 # Change Log
 
+## 7.0.4
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+- a00036c: fix: update colordx
+- Updated dependencies [322ad33]
+  - cssnano-utils@5.0.2
+
 ## 7.0.3
 
 ### Patch Changes

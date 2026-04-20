@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.0.6
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+- Updated dependencies [322ad33]
+  - stylehacks@7.0.10
+
 ## 7.0.5
 
 ### Patch Changes

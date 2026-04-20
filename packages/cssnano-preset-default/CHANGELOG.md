@@ -1,5 +1,41 @@
 # Change Log
 
+## 7.0.14
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+- Updated dependencies [322ad33]
+- Updated dependencies [a00036c]
+- Updated dependencies [6d5b6cc]
+  - postcss-normalize-timing-functions@7.0.2
+  - postcss-normalize-display-values@7.0.2
+  - postcss-normalize-repeat-style@7.0.2
+  - postcss-normalize-whitespace@7.0.2
+  - postcss-normalize-positions@7.0.2
+  - postcss-discard-duplicates@7.0.3
+  - postcss-discard-overridden@7.0.2
+  - postcss-minify-font-values@7.0.2
+  - postcss-normalize-charset@7.0.2
+  - postcss-normalize-unicode@7.0.8
+  - postcss-reduce-transforms@7.0.2
+  - postcss-discard-comments@7.0.7
+  - postcss-minify-gradients@7.0.4
+  - postcss-minify-selectors@7.1.0
+  - postcss-normalize-string@7.0.2
+  - postcss-unique-selectors@7.0.6
+  - postcss-convert-values@7.0.11
+  - postcss-merge-longhand@7.0.6
+  - postcss-ordered-values@7.0.3
+  - postcss-reduce-initial@7.0.8
+  - postcss-discard-empty@7.0.2
+  - postcss-minify-params@7.0.8
+  - postcss-normalize-url@7.0.2
+  - postcss-merge-rules@7.0.10
+  - postcss-colormin@7.0.9
+  - cssnano-utils@5.0.2
+  - postcss-svgo@7.1.2
+
 ## 7.0.13
 
 ### Patch Changes

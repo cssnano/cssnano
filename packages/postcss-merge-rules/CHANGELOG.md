@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.0.10
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+- Updated dependencies [322ad33]
+  - cssnano-utils@5.0.2
+
 ## 7.0.9
 
 ### Patch Changes
