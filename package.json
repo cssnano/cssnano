@@ -19,15 +19,15 @@
     "node": "^18 || ^20 || >=22"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.30.0",
+    "@changesets/cli": "^2.31.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.6.0",
-    "eslint": "^10.2.0",
+    "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.5.0",
     "postcss": "^8.5.9",
     "postcss-font-magician": "^4.0.0",
-    "prettier": "^3.8.2",
+    "prettier": "^3.8.3",
     "typescript": "~6.0.3"
   },
   "browserslist": {
