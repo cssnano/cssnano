@@ -28,7 +28,7 @@
     "postcss": "^8.5.9",
     "postcss-font-magician": "^4.0.0",
     "prettier": "^3.8.2",
-    "typescript": "~6.0.2"
+    "typescript": "~6.0.3"
   },
   "browserslist": {
     "production": [
