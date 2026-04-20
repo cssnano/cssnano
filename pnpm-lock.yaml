@@ -217,8 +217,8 @@ importers:
   packages/postcss-colormin:
     dependencies:
       '@colordx/core':
-        specifier: ^5.0.3
-        version: 5.0.3
+        specifier: ^5.2.0
+        version: 5.2.0
       browserslist:
         specifier: ^4.28.2
         version: 4.28.2
@@ -366,8 +366,8 @@ importers:
   packages/postcss-minify-gradients:
     dependencies:
       '@colordx/core':
-        specifier: ^5.0.3
-        version: 5.0.3
+        specifier: ^5.2.0
+        version: 5.2.0
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -667,8 +667,8 @@ packages:
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
 
-  '@colordx/core@5.0.3':
-    resolution: {integrity: sha512-xBQ0MYRTNNxW3mS2sJtlQTT7C3Sasqgh1/PsHva7fyDb5uqYY+gv9V0utDdX8X80mqzbGz3u/IDJdn2d/uW09g==}
+  '@colordx/core@5.2.0':
+    resolution: {integrity: sha512-wifnqsGCXRh+lJdX4975nKEPJaSk7k8rMiA/VeGrS4tOTn06WZrow6cUA7wFJKPXfcqj0rXeH4BMgGoKZvBf7g==}
 
   '@eslint-community/eslint-utils@4.9.1':
     resolution: {integrity: sha512-phrYmNiYppR7znFEdqgfWHXR6NCkZEK7hwWDHZUjit/2/U0r6XvkDl0SYnoM51Hq7FhCGdLDT6zxCCOY1hexsQ==}
@@ -1680,7 +1680,7 @@ snapshots:
       human-id: 4.1.3
       prettier: 2.8.8
 
-  '@colordx/core@5.0.3': {}
+  '@colordx/core@5.2.0': {}
 
   '@eslint-community/eslint-utils@4.9.1(eslint@10.2.0)':
     dependencies:
