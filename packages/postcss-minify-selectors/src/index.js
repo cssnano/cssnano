@@ -4,7 +4,7 @@ const browserslist = require('browserslist');
 const { isSupported } = require('caniuse-api');
 const parser = require('postcss-selector-parser');
 const canUnquote = require('./lib/canUnquote.js');
-const foldToIs = require('./lib/foldToIs.js');
+const { tryFold } = require('./lib/foldToIs.js');
 
 const pseudoElements = new Set([
   '::before',
@@ -275,7 +275,7 @@ function pluginCreator(opts) {
               selectors.nodes.sort();
             }
             if (isFoldEnabled) {
-              const folded = foldToIs(selectors);
+              const folded = tryFold(selectors);
               if (folded !== null) {
                 selectors.nodes = parser().astSync(folded).nodes;
               }

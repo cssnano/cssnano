@@ -339,8 +339,8 @@ function tryFold(root) {
   return folded;
 }
 
-module.exports = tryFold;
-module.exports._internal = {
+module.exports = {
+  tryFold,
   tokenize,
   hasPseudoElementOrNesting,
   hasNthChildOfClause,
