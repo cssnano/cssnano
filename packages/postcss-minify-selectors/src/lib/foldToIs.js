@@ -4,7 +4,7 @@ const {
   hasPseudoElementOrNesting,
   hasNthChildOfClause,
   specificityOfMiddle,
-  sameSpecificity,
+  equalSpecificity,
   joinTokens,
 } = require('./foldToIsHelpers.js');
 
@@ -84,7 +84,7 @@ function tryFold(root) {
 
   const firstSpec = specificityOfMiddle(middles[0]);
   for (let i = 1; i < middles.length; i++) {
-    if (!sameSpecificity(firstSpec, specificityOfMiddle(middles[i]))) {
+    if (!equalSpecificity(firstSpec, specificityOfMiddle(middles[i]))) {
       return null;
     }
   }

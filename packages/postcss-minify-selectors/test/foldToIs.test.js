@@ -11,7 +11,7 @@ const {
   specificityOfMiddle,
   maxChildSpecificity,
   compareSpecificity,
-  sameSpecificity,
+  equalSpecificity,
 } = require('../src/lib/foldToIsHelpers.js');
 
 const parseSelector = (s) => parser().astSync(s).nodes[0];
@@ -334,20 +334,20 @@ test('compareSpecificity: type tiebreak', () => {
   assert.equal(compareSpecificity([0, 0, 2], [0, 0, 1]) > 0, true);
 });
 
-test('sameSpecificity: identical is true', () => {
-  assert.equal(sameSpecificity([1, 2, 3], [1, 2, 3]), true);
+test('equalSpecificity: identical is true', () => {
+  assert.equal(equalSpecificity([1, 2, 3], [1, 2, 3]), true);
 });
 
-test('sameSpecificity: differ in id is false', () => {
-  assert.equal(sameSpecificity([1, 0, 0], [0, 0, 0]), false);
+test('equalSpecificity: differ in id is false', () => {
+  assert.equal(equalSpecificity([1, 0, 0], [0, 0, 0]), false);
 });
 
-test('sameSpecificity: differ in class is false', () => {
-  assert.equal(sameSpecificity([0, 1, 0], [0, 0, 0]), false);
+test('equalSpecificity: differ in class is false', () => {
+  assert.equal(equalSpecificity([0, 1, 0], [0, 0, 0]), false);
 });
 
-test('sameSpecificity: differ in type is false', () => {
-  assert.equal(sameSpecificity([0, 0, 1], [0, 0, 0]), false);
+test('equalSpecificity: differ in type is false', () => {
+  assert.equal(equalSpecificity([0, 0, 1], [0, 0, 0]), false);
 });
 
 test('maxChildSpecificity: picks largest child', () => {

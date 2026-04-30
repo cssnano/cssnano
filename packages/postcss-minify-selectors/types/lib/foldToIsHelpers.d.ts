@@ -32,6 +32,9 @@ export function hasNthChildOfClause(token: Token): boolean;
  */
 export function specificityOf(nodes: import("postcss-selector-parser").Node[]): Specificity;
 /**
+ * Sums the specificity of compound tokens in a fold middle — the divergent
+ * portion of a selector list, between the shared prefix and shared suffix.
+ *
  * @param {Token[]} middle
  * @return {Specificity}
  */
@@ -52,7 +55,7 @@ export function compareSpecificity(a: Specificity, b: Specificity): number;
  * @param {Specificity} b
  * @return {boolean}
  */
-export function sameSpecificity(a: Specificity, b: Specificity): boolean;
+export function equalSpecificity(a: Specificity, b: Specificity): boolean;
 /**
  * @param {Token[]} tokens
  * @return {string}

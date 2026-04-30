@@ -164,6 +164,9 @@ function maxChildSpecificity(pseudo) {
 }
 
 /**
+ * Sums the specificity of compound tokens in a fold middle — the divergent
+ * portion of a selector list, between the shared prefix and shared suffix.
+ *
  * @param {Token[]} middle
  * @return {Specificity}
  */
@@ -197,7 +200,7 @@ function compareSpecificity(a, b) {
  * @param {Specificity} b
  * @return {boolean}
  */
-function sameSpecificity(a, b) {
+function equalSpecificity(a, b) {
   return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
 }
 
@@ -217,6 +220,6 @@ module.exports = {
   specificityOfMiddle,
   maxChildSpecificity,
   compareSpecificity,
-  sameSpecificity,
+  equalSpecificity,
   joinTokens,
 };
