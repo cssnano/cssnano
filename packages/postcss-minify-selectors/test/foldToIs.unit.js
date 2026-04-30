@@ -2,8 +2,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const parser = require('postcss-selector-parser');
+const tryFold = require('../src/lib/foldToIs.js');
 const {
-  tryFold,
   tokenize,
   hasPseudoElementOrNesting,
   hasNthChildOfClause,
@@ -12,7 +12,7 @@ const {
   maxChildSpecificity,
   compareSpecificity,
   sameSpecificity,
-} = require('../src/lib/foldToIs.js');
+} = require('../src/lib/foldToIsHelpers.js');
 
 const parseSelector = (s) => parser().astSync(s).nodes[0];
 const parseRoot = (s) => parser().astSync(s);
