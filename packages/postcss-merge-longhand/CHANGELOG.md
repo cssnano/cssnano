@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.0.7
+
+### Patch Changes
+
+- 7e56dba: fix: update postcss
+- Updated dependencies [7e56dba]
+  - stylehacks@7.0.11
+
 ## 7.0.6
 
 ### Patch Changes

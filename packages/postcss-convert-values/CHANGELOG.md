@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.12
+
+### Patch Changes
+
+- 7e56dba: fix: update postcss
+
 ## 7.0.11
 
 ### Patch Changes

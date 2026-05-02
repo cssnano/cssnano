@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.1.1
+
+### Patch Changes
+
+- 0005443: fix(postcss-minify-selectors): fix wrong behaviour when merging into is()
+- 7e56dba: fix: update postcss
+
 ## 7.1.0
 
 ### Minor Changes

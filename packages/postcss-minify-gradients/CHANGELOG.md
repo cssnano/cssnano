@@ -1,5 +1,14 @@
 # Change Log
 
+## 7.0.5
+
+### Patch Changes
+
+- d1780fd: fix: update @colordx/core
+- 7e56dba: fix: update postcss
+- Updated dependencies [7e56dba]
+  - cssnano-utils@5.0.3
+
 ## 7.0.4
 
 ### Patch Changes

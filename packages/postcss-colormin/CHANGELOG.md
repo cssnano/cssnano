@@ -1,5 +1,12 @@
 # Change Log
 
+## 7.0.10
+
+### Patch Changes
+
+- d1780fd: fix: update @colordx/core
+- 7e56dba: fix: update postcss
+
 ## 7.0.9
 
 ### Patch Changes
