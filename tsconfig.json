@@ -15,7 +15,8 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "types": ["node"],
-    "moduleResolution": "nodenext"
+    "moduleResolution": "nodenext",
+    "isolatedModules": true
   },
   "references": [
     {"path": "packages/postcss-normalize-display-values"},
