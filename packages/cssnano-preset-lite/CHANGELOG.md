@@ -1,5 +1,16 @@
 # Change Log
 
+## 4.0.6
+
+### Patch Changes
+
+- 7e56dba: fix: update postcss
+- Updated dependencies [7e56dba]
+  - postcss-normalize-whitespace@7.0.3
+  - postcss-discard-comments@7.0.8
+  - postcss-discard-empty@7.0.3
+  - cssnano-utils@5.0.3
+
 ## 4.0.5
 
 ### Patch Changes

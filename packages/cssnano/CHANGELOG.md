@@ -1,5 +1,15 @@
 # Change Log
 
+## 7.1.8
+
+### Patch Changes
+
+- 0005443: fix(postcss-minify-selectors): fix wrong behaviour when merging into is()
+- 7e56dba: fix: update postcss
+- Updated dependencies [0005443]
+- Updated dependencies [7e56dba]
+  - cssnano-preset-default@7.0.16
+
 ## 7.1.7
 
 ### Patch Changes
