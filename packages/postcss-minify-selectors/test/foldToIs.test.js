@@ -7,6 +7,7 @@ const {
   tokenize,
   hasPseudoElementOrNesting,
   hasNthChildOfClause,
+  hasUnknownPseudoWithArgs,
   specificityOf,
   specificityOfMiddle,
   maxChildSpecificity,
@@ -252,6 +253,124 @@ test('hasNthChildOfClause: :hover is false', () => {
 
 test('hasNthChildOfClause: tag named `of` outside :nth-child is false', () => {
   assert.equal(hasNthChildOfClause(compoundOf(':is(of)')), false);
+});
+
+test('hasNthChildOfClause: nested inside :is is true', () => {
+  assert.equal(
+    hasNthChildOfClause(compoundOf(':is(:nth-child(2n of .a))')),
+    true
+  );
+});
+
+test('hasNthChildOfClause: nested inside :not is true', () => {
+  assert.equal(
+    hasNthChildOfClause(compoundOf(':not(:nth-child(2n of .a))')),
+    true
+  );
+});
+
+test('hasNthChildOfClause: nested inside :has is true', () => {
+  assert.equal(
+    hasNthChildOfClause(compoundOf(':has(:nth-child(2n of .a))')),
+    true
+  );
+});
+
+test('hasNthChildOfClause: deeply nested is true', () => {
+  assert.equal(
+    hasNthChildOfClause(compoundOf(':is(:not(:nth-child(2n of .a)))')),
+    true
+  );
+});
+
+test('hasUnknownPseudoWithArgs: combinator is false', () => {
+  assert.equal(
+    hasUnknownPseudoWithArgs({ kind: 'combinator', str: '>' }),
+    false
+  );
+});
+
+test('hasUnknownPseudoWithArgs: plain compound is false', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf('div.foo')), false);
+});
+
+test('hasUnknownPseudoWithArgs: pseudo without args is false', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':hover')), false);
+});
+
+test('hasUnknownPseudoWithArgs: :--state without args is false', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':--state')), false);
+});
+
+test('hasUnknownPseudoWithArgs: :is(.a) is false (known)', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':is(.a)')), false);
+});
+
+test('hasUnknownPseudoWithArgs: :not(.a) is false (known)', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':not(.a)')), false);
+});
+
+test('hasUnknownPseudoWithArgs: :where(.a) is false (known)', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':where(.a)')), false);
+});
+
+test('hasUnknownPseudoWithArgs: :has(.a) is false (known)', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':has(.a)')), false);
+});
+
+test('hasUnknownPseudoWithArgs: :nth-child(2n) is false (known)', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':nth-child(2n)')), false);
+});
+
+test('hasUnknownPseudoWithArgs: :lang(en) is false (known)', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':lang(en)')), false);
+});
+
+test('hasUnknownPseudoWithArgs: :dir(ltr) is false (known)', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':dir(ltr)')), false);
+});
+
+test('hasUnknownPseudoWithArgs: :deep(.a) is true', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':deep(.a)')), true);
+});
+
+test('hasUnknownPseudoWithArgs: :slotted(.a) is true', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':slotted(.a)')), true);
+});
+
+test('hasUnknownPseudoWithArgs: :global(.a) is true', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':global(.a)')), true);
+});
+
+test('hasUnknownPseudoWithArgs: :host(.a) is true', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':host(.a)')), true);
+});
+
+test('hasUnknownPseudoWithArgs: :host-context(.a) is true', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':host-context(.a)')), true);
+});
+
+test('hasUnknownPseudoWithArgs: :--state(.a) is true', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':--state(.a)')), true);
+});
+
+test('hasUnknownPseudoWithArgs: :deep(.a) nested in :is is true', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':is(:deep(.a))')), true);
+});
+
+test('hasUnknownPseudoWithArgs: :deep(.a) nested in :not is true', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':not(:deep(.a))')), true);
+});
+
+test('hasUnknownPseudoWithArgs: :deep(.a) nested in :has is true', () => {
+  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':has(:deep(.a))')), true);
+});
+
+test('hasUnknownPseudoWithArgs: deeply nested is true', () => {
+  assert.equal(
+    hasUnknownPseudoWithArgs(compoundOf(':is(:not(:slotted(.a)))')),
+    true
+  );
 });
 
 test('tokenize: single compound', () => {
@@ -584,6 +703,129 @@ test('no-fold: :nth-last-child(... of S)', () => {
       parseRoot(
         '.x :nth-last-child(2n of .a) y,.x :nth-last-child(2n of .b) y,' +
           '.x :nth-last-child(2n of .c) y,.x :nth-last-child(2n of .d) y'
+      )
+    ),
+    null
+  );
+});
+
+test('no-fold: Vue :deep() middles (issue #1784)', () => {
+  assert.equal(
+    tryFold(
+      parseRoot(
+        '.field-input.field-input-default :deep(input),' +
+          '.field-input.field-input-default :deep(button[role="combobox"]),' +
+          '.field-input.field-input-default :deep(textarea),' +
+          '.field-input.field-input-default :deep(select)'
+      )
+    ),
+    null
+  );
+});
+
+test('no-fold: CSS Modules :global() middles', () => {
+  assert.equal(
+    tryFold(
+      parseRoot('.x :global(.a),.x :global(.b),.x :global(.c),.x :global(.d)')
+    ),
+    null
+  );
+});
+
+test('no-fold: shadow-DOM :slotted() middles', () => {
+  assert.equal(
+    tryFold(
+      parseRoot(
+        '.x :slotted(a),.x :slotted(b),.x :slotted(c),.x :slotted(d)'
+      )
+    ),
+    null
+  );
+});
+
+test('no-fold: :host() middles', () => {
+  assert.equal(
+    tryFold(parseRoot(':host(.a) y,:host(.b) y,:host(.c) y,:host(.d) y')),
+    null
+  );
+});
+
+test('no-fold: :host-context() middles', () => {
+  assert.equal(
+    tryFold(
+      parseRoot(
+        '.x :host-context(.a) y,.x :host-context(.b) y,' +
+          '.x :host-context(.c) y,.x :host-context(.d) y'
+      )
+    ),
+    null
+  );
+});
+
+test('no-fold: ::part(name) middles', () => {
+  assert.equal(
+    tryFold(
+      parseRoot(
+        '.x ::part(a) y,.x ::part(b) y,.x ::part(c) y,.x ::part(d) y'
+      )
+    ),
+    null
+  );
+});
+
+test('no-fold: custom-property pseudo with args :--state(.a)', () => {
+  assert.equal(
+    tryFold(
+      parseRoot(
+        '.x :--state(.a),.x :--state(.b),.x :--state(.c),.x :--state(.d)'
+      )
+    ),
+    null
+  );
+});
+
+test('no-fold: :nth-child(... of S) nested inside :is', () => {
+  assert.equal(
+    tryFold(
+      parseRoot(
+        '.x :is(:nth-child(2n of #a)) y,.x :is(:nth-child(2n of .b)) y,' +
+          '.x :is(:nth-child(2n of .c)) y,.x :is(:nth-child(2n of .d)) y'
+      )
+    ),
+    null
+  );
+});
+
+test('no-fold: :nth-child(... of S) nested inside :not', () => {
+  assert.equal(
+    tryFold(
+      parseRoot(
+        '.x :not(:nth-child(2n of #a)) y,.x :not(:nth-child(2n of .b)) y,' +
+          '.x :not(:nth-child(2n of .c)) y,.x :not(:nth-child(2n of .d)) y'
+      )
+    ),
+    null
+  );
+});
+
+test('no-fold: :deep() nested inside :is', () => {
+  assert.equal(
+    tryFold(
+      parseRoot(
+        '.x :is(:deep(.a)) y,.x :is(:deep(.b)) y,' +
+          '.x :is(:deep(.c)) y,.x :is(:deep(.d)) y'
+      )
+    ),
+    null
+  );
+});
+
+test('no-fold: :deep() nested inside :has', () => {
+  assert.equal(
+    tryFold(
+      parseRoot(
+        '.x :has(:deep(.a)) y,.x :has(:deep(.b)) y,' +
+          '.x :has(:deep(.c)) y,.x :has(:deep(.d)) y'
       )
     ),
     null
