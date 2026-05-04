@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.1.2
+
+### Patch Changes
+
+- fix(postcss-minify-selectors): do not fold non-standard selectors
+
 ## 7.1.1
 
 ### Patch Changes

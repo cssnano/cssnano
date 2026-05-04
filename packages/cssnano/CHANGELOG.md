@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.1.9
+
+### Patch Changes
+
+- fix(postcss-minify-selectors): do not fold non-standard selectors
+- Updated dependencies
+  - cssnano-preset-default@7.0.17
+
 ## 7.1.8
 
 ### Patch Changes
