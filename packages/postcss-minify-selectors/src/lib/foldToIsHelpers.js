@@ -1,22 +1,40 @@
 'use strict';
 
+/** @typedef {import('postcss-selector-parser').Node} Node */
+/** @typedef {import('postcss-selector-parser').Selector} Selector */
+/** @typedef {import('postcss-selector-parser').Pseudo} Pseudo */
+
 /**
  * @typedef {object} Token
  * @property {'compound'|'combinator'} kind
  * @property {string} str
- * @property {import('postcss-selector-parser').Node[]} [nodes]
+ * @property {Node[]} [nodes]
  */
 
 /** @typedef {[number, number, number]} Specificity */
 
+const KNOWN_PSEUDOS_WITH_ARGS = new Set([
+  ':where',
+  ':is',
+  ':matches',
+  ':not',
+  ':has',
+  ':nth-child',
+  ':nth-last-child',
+  ':nth-of-type',
+  ':nth-last-of-type',
+  ':lang',
+  ':dir',
+]);
+
 /**
- * @param {import('postcss-selector-parser').Selector} selector
+ * @param {Selector} selector
  * @return {Token[]}
  */
 function tokenize(selector) {
   /** @type {Token[]} */
   const tokens = [];
-  /** @type {import('postcss-selector-parser').Node[]} */
+  /** @type {Node[]} */
   let bucket = [];
 
   const flush = () => {
@@ -80,18 +98,33 @@ function hasNthChildOfClause(token) {
   if (token.kind !== 'compound' || !token.nodes) {
     return false;
   }
-  for (const n of token.nodes) {
+  return nodesContainNthChildOfClause(token.nodes);
+}
+
+/**
+ * @param {Node[]} nodes
+ * @return {boolean}
+ */
+function nodesContainNthChildOfClause(nodes) {
+  for (const n of nodes) {
     if (n.type !== 'pseudo') {
       continue;
     }
-    if (n.value !== ':nth-child' && n.value !== ':nth-last-child') {
-      continue;
+    if (n.value === ':nth-child' || n.value === ':nth-last-child') {
+      for (const child of n.nodes) {
+        for (const inner of child.nodes) {
+          if (inner.type === 'tag' && inner.value === 'of') {
+            return true;
+          }
+        }
+      }
     }
     for (const child of n.nodes) {
-      for (const inner of child.nodes) {
-        if (inner.type === 'tag' && inner.value === 'of') {
-          return true;
-        }
+      if (
+        child.type === 'selector' &&
+        nodesContainNthChildOfClause(child.nodes)
+      ) {
+        return true;
       }
     }
   }
@@ -99,7 +132,46 @@ function hasNthChildOfClause(token) {
 }
 
 /**
- * @param {import('postcss-selector-parser').Node[]} nodes
+ * @param {Token} token
+ * @return {boolean}
+ */
+function hasUnknownPseudoWithArgs(token) {
+  if (token.kind !== 'compound' || !token.nodes) {
+    return false;
+  }
+  return nodesContainUnknownPseudoWithArgs(token.nodes);
+}
+
+/**
+ * @param {Node[]} nodes
+ * @return {boolean}
+ */
+function nodesContainUnknownPseudoWithArgs(nodes) {
+  for (const n of nodes) {
+    if (n.type !== 'pseudo') {
+      continue;
+    }
+    if (
+      n.nodes &&
+      n.nodes.length > 0 &&
+      !KNOWN_PSEUDOS_WITH_ARGS.has(n.value)
+    ) {
+      return true;
+    }
+    for (const child of n.nodes) {
+      if (
+        child.type === 'selector' &&
+        nodesContainUnknownPseudoWithArgs(child.nodes)
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * @param {Node[]} nodes
  * @return {Specificity}
  */
 function specificityOf(nodes) {
@@ -145,7 +217,7 @@ function specificityOf(nodes) {
 }
 
 /**
- * @param {import('postcss-selector-parser').Pseudo} pseudo
+ * @param {Pseudo} pseudo
  * @return {Specificity}
  */
 function maxChildSpecificity(pseudo) {
@@ -216,6 +288,7 @@ module.exports = {
   tokenize,
   hasPseudoElementOrNesting,
   hasNthChildOfClause,
+  hasUnknownPseudoWithArgs,
   specificityOf,
   specificityOfMiddle,
   maxChildSpecificity,

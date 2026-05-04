@@ -3,6 +3,7 @@ const {
   tokenize,
   hasPseudoElementOrNesting,
   hasNthChildOfClause,
+  hasUnknownPseudoWithArgs,
   specificityOfMiddle,
   equalSpecificity,
   joinTokens,
@@ -77,6 +78,9 @@ function tryFold(root) {
         return null;
       }
       if (hasNthChildOfClause(token)) {
+        return null;
+      }
+      if (hasUnknownPseudoWithArgs(token)) {
         return null;
       }
     }
