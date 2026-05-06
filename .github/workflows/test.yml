@@ -17,7 +17,7 @@ jobs:
           persist-credentials: false
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
-      - name: Install Node.js 22.x
+      - name: Install Node.js 24.x
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: '24'
@@ -35,7 +35,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        node-version: ['18', '20', '22', '24']
+        node-version: ['22', '24', '26']
 
     steps:
       - name: Setup Git
