@@ -1,6 +1,6 @@
 {
   "name": "postcss-reduce-initial",
-  "version": "7.0.6",
+  "version": "7.0.9",
   "description": "Reduce initial definitions to the actual initial value, where possible.",
   "main": "src/index.js",
   "types": "types/index.d.ts",
@@ -26,7 +26,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^4.28.1",
+    "browserslist": "^4.28.2",
     "caniuse-api": "^3.0.0"
   },
   "bugs": {
@@ -38,9 +38,9 @@
   "devDependencies": {
     "@types/caniuse-api": "^3.0.6",
     "html-to-text": "^9.0.5",
-    "postcss": "^8.5.8"
+    "postcss": "^8.5.13"
   },
   "peerDependencies": {
-    "postcss": "^8.4.32"
+    "postcss": "^8.5.13"
   }
 }

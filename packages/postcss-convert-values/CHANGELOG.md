@@ -1,5 +1,24 @@
 # Change Log
 
+## 7.0.12
+
+### Patch Changes
+
+- 7e56dba: fix: update postcss
+
+## 7.0.11
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+
+## 7.0.10
+
+### Patch Changes
+
+- 5cb8b09: fix: udpate browserslist
+- 9e615cc: fix: add tranformCustomProperties option and support counter-set property
+
 ## 7.0.9
 
 ### Patch Changes

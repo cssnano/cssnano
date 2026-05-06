@@ -1,5 +1,17 @@
 # Change Log
 
+## 7.1.3
+
+### Patch Changes
+
+- 7e56dba: fix: update postcss
+
+## 7.1.2
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+
 ## 7.1.1
 
 ### Patch Changes

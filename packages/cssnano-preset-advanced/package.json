@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-advanced",
-  "version": "7.0.12",
+  "version": "7.0.16",
   "main": "src/index.js",
   "types": "types/index.d.ts",
   "description": "Advanced optimisations for cssnano; may or may not break your CSS!",
@@ -11,9 +11,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "autoprefixer": "^10.4.27",
+    "autoprefixer": "^10.5.0",
     "browserslist": "^4.28.1",
-    "css-declaration-sorter": "^7.2.0",
+    "css-declaration-sorter": "^7.4.0",
     "cssnano-preset-default": "workspace:^",
     "postcss-discard-unused": "workspace:^",
     "postcss-merge-idents": "workspace:^",
@@ -34,9 +34,9 @@
     "node": "^18.12.0 || ^20.9.0 || >=22.0"
   },
   "devDependencies": {
-    "postcss": "^8.5.8"
+    "postcss": "^8.5.13"
   },
   "peerDependencies": {
-    "postcss": "^8.4.32"
+    "postcss": "^8.5.13"
   }
 }

@@ -1,5 +1,49 @@
 # Change Log
 
+## 7.0.16
+
+### Patch Changes
+
+- 0005443: fix(postcss-minify-selectors): fix wrong behaviour when merging into is()
+- 7e56dba: fix: update postcss
+- Updated dependencies [0005443]
+- Updated dependencies [7e56dba]
+  - cssnano-preset-default@7.0.16
+  - postcss-discard-unused@7.0.7
+  - postcss-reduce-idents@7.0.4
+  - postcss-merge-idents@7.0.3
+  - postcss-zindex@7.0.3
+
+## 7.0.15
+
+### Patch Changes
+
+- fix: publish all dependencies with attestations
+- Updated dependencies
+  - cssnano-preset-default@7.0.15
+
+## 7.0.14
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+- Updated dependencies [322ad33]
+  - cssnano-preset-default@7.0.14
+  - postcss-discard-unused@7.0.6
+  - postcss-reduce-idents@7.0.3
+  - postcss-merge-idents@7.0.2
+  - postcss-zindex@7.0.2
+
+## 7.0.13
+
+### Patch Changes
+
+- 5cb8b09: fix: udpate browserslist
+- Updated dependencies [5cb8b09]
+- Updated dependencies [9e615cc]
+  - cssnano-preset-default@7.0.13
+  - postcss-reduce-idents@7.0.2
+
 ## 7.0.12
 
 ### Patch Changes

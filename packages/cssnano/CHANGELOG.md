@@ -1,5 +1,47 @@
 # Change Log
 
+## 7.1.9
+
+### Patch Changes
+
+- fix(postcss-minify-selectors): do not fold non-standard selectors
+- Updated dependencies
+  - cssnano-preset-default@7.0.17
+
+## 7.1.8
+
+### Patch Changes
+
+- 0005443: fix(postcss-minify-selectors): fix wrong behaviour when merging into is()
+- 7e56dba: fix: update postcss
+- Updated dependencies [0005443]
+- Updated dependencies [7e56dba]
+  - cssnano-preset-default@7.0.16
+
+## 7.1.7
+
+### Patch Changes
+
+- fix: publish all dependencies with attestations
+- Updated dependencies
+  - cssnano-preset-default@7.0.15
+
+## 7.1.6
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+- Updated dependencies [322ad33]
+  - cssnano-preset-default@7.0.14
+
+## 7.1.5
+
+### Patch Changes
+
+- fix: update dependencies
+- Updated dependencies [5cb8b09]
+  - cssnano-preset-default@7.0.13
+
 ## 7.1.4
 
 ### Patch Changes

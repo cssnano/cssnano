@@ -1,5 +1,27 @@
 # Change Log
 
+## 7.0.11
+
+### Patch Changes
+
+- 7e56dba: fix: update postcss
+- Updated dependencies [7e56dba]
+  - cssnano-utils@5.0.3
+
+## 7.0.10
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+- Updated dependencies [322ad33]
+  - cssnano-utils@5.0.2
+
+## 7.0.9
+
+### Patch Changes
+
+- 5cb8b09: fix: udpate browserslist
+
 ## 7.0.8
 
 ### Patch Changes

@@ -7,6 +7,7 @@ export = pluginCreator;
  * @property {boolean} [hsl]
  * @property {boolean} [name]
  * @property {boolean} [transparent]
+ * @property {boolean} [transformCustomProperties] Whether to minify colors inside custom property values (default: true)
  */
 /**
  * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
@@ -30,6 +31,10 @@ type MinifyColorOptions = {
     hsl?: boolean | undefined;
     name?: boolean | undefined;
     transparent?: boolean | undefined;
+    /**
+     * Whether to minify colors inside custom property values (default: true)
+     */
+    transformCustomProperties?: boolean | undefined;
 };
 type AutoprefixerOptions = {
     overrideBrowserslist?: string | string[];

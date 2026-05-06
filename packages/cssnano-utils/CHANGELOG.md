@@ -1,5 +1,17 @@
 # Change Log
 
+## 5.0.3
+
+### Patch Changes
+
+- 7e56dba: fix: update postcss
+
+## 5.0.2
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+
 ## 5.0.1
 
 ### Patch Changes

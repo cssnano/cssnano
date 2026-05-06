@@ -1,5 +1,29 @@
 # Change Log
 
+## 7.0.5
+
+### Patch Changes
+
+- d1780fd: fix: update @colordx/core
+- 7e56dba: fix: update postcss
+- Updated dependencies [7e56dba]
+  - cssnano-utils@5.0.3
+
+## 7.0.4
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+- a00036c: fix: update colordx
+- Updated dependencies [322ad33]
+  - cssnano-utils@5.0.2
+
+## 7.0.3
+
+### Patch Changes
+
+- 5cb8b09: fix: udpate browserslist
+
 ## 7.0.2
 
 ### Patch Changes

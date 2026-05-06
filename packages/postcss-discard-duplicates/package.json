@@ -1,6 +1,6 @@
 {
   "name": "postcss-discard-duplicates",
-  "version": "7.0.2",
+  "version": "7.0.4",
   "description": "Discard duplicate rules in your CSS files with PostCSS.",
   "main": "src/index.js",
   "types": "types/index.d.ts",
@@ -31,9 +31,9 @@
     "node": "^18.12.0 || ^20.9.0 || >=22.0"
   },
   "devDependencies": {
-    "postcss": "^8.5.8"
+    "postcss": "^8.5.13"
   },
   "peerDependencies": {
-    "postcss": "^8.4.32"
+    "postcss": "^8.5.13"
   }
 }

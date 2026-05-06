@@ -1,5 +1,28 @@
 # Change Log
 
+## 7.1.2
+
+### Patch Changes
+
+- fix(postcss-minify-selectors): do not fold non-standard selectors
+
+## 7.1.1
+
+### Patch Changes
+
+- 0005443: fix(postcss-minify-selectors): fix wrong behaviour when merging into is()
+- 7e56dba: fix: update postcss
+
+## 7.1.0
+
+### Minor Changes
+
+- 6d5b6cc: feat(postcss-minify-selectors): fold selector lists into :is()
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+
 ## 7.0.6
 
 ### Patch Changes

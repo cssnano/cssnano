@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-unicode",
-  "version": "7.0.6",
+  "version": "7.0.9",
   "description": "Normalize unicode-range descriptors, and can convert to wildcard ranges.",
   "main": "src/index.js",
   "types": "types/index.d.ts",
@@ -23,7 +23,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^4.28.1",
+    "browserslist": "^4.28.2",
     "postcss-value-parser": "^4.2.0"
   },
   "bugs": {
@@ -33,9 +33,9 @@
     "node": "^18.12.0 || ^20.9.0 || >=22.0"
   },
   "devDependencies": {
-    "postcss": "^8.5.8"
+    "postcss": "^8.5.13"
   },
   "peerDependencies": {
-    "postcss": "^8.4.32"
+    "postcss": "^8.5.13"
   }
 }

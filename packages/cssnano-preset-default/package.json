@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-default",
-  "version": "7.0.12",
+  "version": "7.0.17",
   "main": "src/index.js",
   "types": "types/index.d.ts",
   "description": "Safe defaults for cssnano which require minimal configuration.",
@@ -11,7 +11,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "browserslist": "^4.28.1",
+    "browserslist": "^4.28.2",
     "cssnano-utils": "workspace:^",
     "postcss-calc": "^10.1.1",
     "postcss-colormin": "workspace:^",
@@ -55,9 +55,9 @@
     "node": "^18.12.0 || ^20.9.0 || >=22.0"
   },
   "devDependencies": {
-    "postcss": "^8.5.8"
+    "postcss": "^8.5.13"
   },
   "peerDependencies": {
-    "postcss": "^8.4.32"
+    "postcss": "^8.5.13"
   }
 }

@@ -1,6 +1,10 @@
 'use strict';
+const { dirname } = require('path');
+const browserslist = require('browserslist');
+const { isSupported } = require('caniuse-api');
 const parser = require('postcss-selector-parser');
 const canUnquote = require('./lib/canUnquote.js');
+const foldToIs = require('./lib/foldToIs.js');
 
 const pseudoElements = new Set([
   '::before',
@@ -197,74 +201,112 @@ const reducers = new Map(
   ])
 );
 
-/** @typedef {object} Options
- *  @property {boolean} [sort=true]
- */
 /**
- * @type {import('postcss').PluginCreator<void>}
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
+ */
+
+/**
+ * @typedef {object} OwnOptions
+ * @property {boolean} [sort=true]
+ * @property {boolean} [convertToIs=true] Factor shared prefixes/suffixes in a
+ *   comma-separated selector list into `:is(...)` when it produces shorter
+ *   output and is safe with respect to cascade specificity. Automatically
+ *   skipped when the configured browserslist target doesn't support `:is()`.
+ */
+
+/** @typedef {OwnOptions & AutoprefixerOptions & BrowserslistOptions} Options */
+
+/**
+ * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
-function pluginCreator(opts = { sort: true }) {
+function pluginCreator(opts) {
+  const resolved = { sort: true, convertToIs: true, ...(opts || {}) };
   return {
     postcssPlugin: 'postcss-minify-selectors',
 
-    OnceExit(css) {
-      const cache = new Map();
-      const processor = parser((selectors) => {
-        const uniqueSelectors = new Set();
-
-        selectors.walk((sel) => {
-          // Trim whitespace around the value
-          sel.spaces.before = sel.spaces.after = '';
-          const reducer = reducers.get(sel.type);
-          if (reducer !== undefined) {
-            reducer(sel);
-            return;
-          }
-
-          const toString = String(sel);
-
-          if (
-            sel.type === 'selector' &&
-            sel.parent &&
-            sel.parent.type !== 'pseudo'
-          ) {
-            if (!uniqueSelectors.has(toString)) {
-              uniqueSelectors.add(toString);
-            } else {
-              sel.remove();
-            }
-          }
+    /**
+     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
+     */
+    prepare(result) {
+      let isFoldEnabled = resolved.convertToIs !== false;
+      if (isFoldEnabled) {
+        const { stats, env, from, file } = result.opts || {};
+        const browsers = browserslist(resolved.overrideBrowserslist, {
+          stats: resolved.stats || stats,
+          path: resolved.path || dirname(from || file || __filename),
+          env: resolved.env || env,
         });
-        if (opts.sort) {
-          selectors.nodes.sort();
-        }
-      });
+        isFoldEnabled = isSupported('css-matches-pseudo', browsers);
+      }
 
-      css.walkRules((rule) => {
-        const selector =
-          rule.raws.selector && rule.raws.selector.value === rule.selector
-            ? rule.raws.selector.raw
-            : rule.selector;
+      return {
+        OnceExit(css) {
+          const cache = new Map();
+          const processor = parser((selectors) => {
+            const uniqueSelectors = new Set();
 
-        // If the selector ends with a ':' it is likely a part of a custom mixin,
-        // so just pass through.
-        if (selector[selector.length - 1] === ':') {
-          return;
-        }
+            selectors.walk((sel) => {
+              // Trim whitespace around the value
+              sel.spaces.before = sel.spaces.after = '';
+              const reducer = reducers.get(sel.type);
+              if (reducer !== undefined) {
+                reducer(sel);
+                return;
+              }
 
-        if (cache.has(selector)) {
-          rule.selector = cache.get(selector);
+              const toString = String(sel);
 
-          return;
-        }
+              if (
+                sel.type === 'selector' &&
+                sel.parent &&
+                sel.parent.type !== 'pseudo'
+              ) {
+                if (!uniqueSelectors.has(toString)) {
+                  uniqueSelectors.add(toString);
+                } else {
+                  sel.remove();
+                }
+              }
+            });
+            if (resolved.sort) {
+              selectors.nodes.sort();
+            }
+            if (isFoldEnabled) {
+              const folded = foldToIs(selectors);
+              if (folded !== null) {
+                selectors.nodes = parser().astSync(folded).nodes;
+              }
+            }
+          });
 
-        const optimizedSelector = processor.processSync(selector);
+          css.walkRules((rule) => {
+            const selector =
+              rule.raws.selector && rule.raws.selector.value === rule.selector
+                ? rule.raws.selector.raw
+                : rule.selector;
 
-        rule.selector = optimizedSelector;
-        cache.set(selector, optimizedSelector);
-      });
+            // If the selector ends with a ':' it is likely a part of a custom
+            // mixin, so just pass through.
+            if (selector[selector.length - 1] === ':') {
+              return;
+            }
+
+            if (cache.has(selector)) {
+              rule.selector = cache.get(selector);
+
+              return;
+            }
+
+            const optimizedSelector = processor.processSync(selector);
+
+            rule.selector = optimizedSelector;
+            cache.set(selector, optimizedSelector);
+          });
+        },
+      };
     },
   };
 }

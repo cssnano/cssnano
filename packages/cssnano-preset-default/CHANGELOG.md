@@ -1,5 +1,110 @@
 # Change Log
 
+## 7.0.17
+
+### Patch Changes
+
+- fix(postcss-minify-selectors): do not fold non-standard selectors
+- Updated dependencies
+  - postcss-minify-selectors@7.1.2
+
+## 7.0.16
+
+### Patch Changes
+
+- 0005443: fix(postcss-minify-selectors): fix wrong behaviour when merging into is()
+- 7e56dba: fix: update postcss
+- Updated dependencies [0005443]
+- Updated dependencies [d1780fd]
+- Updated dependencies [7e56dba]
+  - postcss-minify-selectors@7.1.1
+  - postcss-minify-gradients@7.0.5
+  - postcss-colormin@7.0.10
+  - postcss-normalize-timing-functions@7.0.3
+  - postcss-normalize-display-values@7.0.3
+  - postcss-normalize-repeat-style@7.0.4
+  - postcss-normalize-whitespace@7.0.3
+  - postcss-normalize-positions@7.0.4
+  - postcss-discard-duplicates@7.0.4
+  - postcss-discard-overridden@7.0.3
+  - postcss-minify-font-values@7.0.3
+  - postcss-normalize-charset@7.0.3
+  - postcss-normalize-unicode@7.0.9
+  - postcss-reduce-transforms@7.0.3
+  - postcss-discard-comments@7.0.8
+  - postcss-normalize-string@7.0.3
+  - postcss-unique-selectors@7.0.7
+  - postcss-convert-values@7.0.12
+  - postcss-merge-longhand@7.0.7
+  - postcss-ordered-values@7.0.4
+  - postcss-reduce-initial@7.0.9
+  - postcss-discard-empty@7.0.3
+  - postcss-minify-params@7.0.9
+  - postcss-normalize-url@7.0.3
+  - postcss-merge-rules@7.0.11
+  - cssnano-utils@5.0.3
+  - postcss-svgo@7.1.3
+
+## 7.0.15
+
+### Patch Changes
+
+- fix: publish all dependencies with attestations
+- Updated dependencies
+  - postcss-normalize-positions@7.0.3
+  - postcss-normalize-repeat-style@7.0.3
+
+## 7.0.14
+
+### Patch Changes
+
+- 322ad33: fix: update postcss peer dependency
+- Updated dependencies [322ad33]
+- Updated dependencies [a00036c]
+- Updated dependencies [6d5b6cc]
+  - postcss-normalize-timing-functions@7.0.2
+  - postcss-normalize-display-values@7.0.2
+  - postcss-normalize-repeat-style@7.0.2
+  - postcss-normalize-whitespace@7.0.2
+  - postcss-normalize-positions@7.0.2
+  - postcss-discard-duplicates@7.0.3
+  - postcss-discard-overridden@7.0.2
+  - postcss-minify-font-values@7.0.2
+  - postcss-normalize-charset@7.0.2
+  - postcss-normalize-unicode@7.0.8
+  - postcss-reduce-transforms@7.0.2
+  - postcss-discard-comments@7.0.7
+  - postcss-minify-gradients@7.0.4
+  - postcss-minify-selectors@7.1.0
+  - postcss-normalize-string@7.0.2
+  - postcss-unique-selectors@7.0.6
+  - postcss-convert-values@7.0.11
+  - postcss-merge-longhand@7.0.6
+  - postcss-ordered-values@7.0.3
+  - postcss-reduce-initial@7.0.8
+  - postcss-discard-empty@7.0.2
+  - postcss-minify-params@7.0.8
+  - postcss-normalize-url@7.0.2
+  - postcss-merge-rules@7.0.10
+  - postcss-colormin@7.0.9
+  - cssnano-utils@5.0.2
+  - postcss-svgo@7.1.2
+
+## 7.0.13
+
+### Patch Changes
+
+- 5cb8b09: fix: udpate browserslist
+- Updated dependencies [5cb8b09]
+- Updated dependencies [9e615cc]
+  - postcss-normalize-unicode@7.0.7
+  - postcss-minify-gradients@7.0.3
+  - postcss-convert-values@7.0.10
+  - postcss-reduce-initial@7.0.7
+  - postcss-minify-params@7.0.7
+  - postcss-merge-rules@7.0.9
+  - postcss-colormin@7.0.8
+
 ## 7.0.12
 
 ### Patch Changes

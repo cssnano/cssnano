@@ -1,6 +1,6 @@
 {
   "name": "postcss-minify-selectors",
-  "version": "7.0.6",
+  "version": "7.1.2",
   "description": "Minify selectors with PostCSS.",
   "main": "src/index.js",
   "types": "types/index.d.ts",
@@ -26,6 +26,8 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
+    "browserslist": "^4.28.1",
+    "caniuse-api": "^3.0.0",
     "cssesc": "^3.0.0",
     "postcss-selector-parser": "^7.1.1"
   },
@@ -36,10 +38,11 @@
     "node": "^18.12.0 || ^20.9.0 || >=22.0"
   },
   "devDependencies": {
+    "@types/caniuse-api": "^3.0.6",
     "@types/cssesc": "^3.0.2",
-    "postcss": "^8.5.8"
+    "postcss": "^8.5.13"
   },
   "peerDependencies": {
-    "postcss": "^8.4.32"
+    "postcss": "^8.5.13"
   }
 }

@@ -567,3 +567,387 @@ test(
     ':where(:nth-child(7),:nth-child(7)~*) {  }'
   )
 );
+
+// ---------------------------------------------------------------------------
+// :is() folding (issue #1703)
+// ---------------------------------------------------------------------------
+
+const modernBl = { overrideBrowserslist: 'last 2 Chrome versions' };
+
+// -- folds that fire --------------------------------------------------------
+
+test(
+  'fold: MDN level-1 section headings example',
+  processCSS(
+    'section h1, article h1, aside h1, nav h1{font-size:25px}',
+    ':is(article,aside,nav,section) h1{font-size:25px}',
+    modernBl
+  )
+);
+
+test(
+  'fold: common suffix with multiple selectors',
+  processCSS(
+    'section h1,article h1,aside h1,nav h1{font-size:25px}',
+    ':is(article,aside,nav,section) h1{font-size:25px}',
+    modernBl
+  )
+);
+
+test(
+  'fold: common prefix with multiple selectors',
+  processCSS(
+    '.foo .a .x,.foo .b .x,.foo .c .x{color:red}',
+    '.foo :is(.a,.b,.c) .x{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: common prefix and suffix',
+  processCSS(
+    '.nav .item .home,.nav .item .shop,.nav .item .help{color:red}',
+    '.nav .item :is(.help,.home,.shop){color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: MDN deep list-style example (16-way)',
+  processCSS(
+    'ol ol ul,ol ul ul,ol menu ul,ol dir ul,ul ol ul,ul ul ul,ul menu ul,' +
+      'ul dir ul,menu ol ul,menu ul ul,menu menu ul,menu dir ul,dir ol ul,' +
+      'dir ul ul,dir menu ul,dir dir ul{list-style:square}',
+    ':is(dir dir,dir menu,dir ol,dir ul,menu dir,menu menu,menu ol,menu ul,' +
+      'ol dir,ol menu,ol ol,ol ul,ul dir,ul menu,ul ol,ul ul) ul' +
+      '{list-style:square}',
+    modernBl
+  )
+);
+
+test(
+  'fold: pseudo-class in middle (same specificity)',
+  processCSS(
+    '.btn a:hover,.btn a:focus,.btn a:active{color:red}',
+    '.btn :is(a:active,a:focus,a:hover){color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: :not() in middle preserves same specificity',
+  processCSS(
+    '.box :not(.a) .x,.box :not(.b) .x,.box :not(.c) .x{color:red}',
+    '.box :is(:not(.a),:not(.b),:not(.c)) .x{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: :where() in middle (zero specificity each)',
+  processCSS(
+    '.box :where(.a) .x,.box :where(.b) .x,.box :where(.c) .x{color:red}',
+    '.box :is(:where(.a),:where(.b),:where(.c)) .x{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: :has() in middle',
+  processCSS(
+    '.p :has(.a) .x,.p :has(.b) .x,.p :has(.c) .x{color:red}',
+    '.p :is(:has(.a),:has(.b),:has(.c)) .x{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: universal selector in common part stays outside `:is()`',
+  processCSS(
+    '.a * .x,.b * .x,.c * .x{color:red}',
+    ':is(.a,.b,.c) * .x{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: child combinator in common prefix',
+  processCSS(
+    '.wrap > .a .x,.wrap > .b .x,.wrap > .c .x{color:red}',
+    '.wrap>:is(.a,.b,.c) .x{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: sibling combinator in common prefix',
+  processCSS(
+    '.a~.m,.a~.n,.a~.o{color:red}',
+    '.a~:is(.m,.n,.o){color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: adjacent-sibling combinator in common prefix',
+  processCSS(
+    '.a+.m,.a+.n,.a+.o{color:red}',
+    '.a+:is(.m,.n,.o){color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: compound selector (multi-class) in common prefix',
+  processCSS(
+    '.menu.open a,.menu.open b,.menu.open c{color:red}',
+    '.menu.open :is(a,b,c){color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: multi-simple compound middle with same specificity',
+  processCSS(
+    '.root a.x b,.root a.y b,.root a.z b{color:red}',
+    '.root :is(a.x,a.y,a.z) b{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: ids in middle (all same specificity)',
+  processCSS(
+    '#a .x,#b .x,#c .x{color:red}',
+    ':is(#a,#b,#c) .x{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: attribute selectors with matching specificity',
+  processCSS(
+    '[data-a] .item .x,[data-b] .item .x,[data-c] .item .x{color:red}',
+    ':is([data-a],[data-b],[data-c]) .item .x{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: pseudo-class after compound in common prefix',
+  processCSS(
+    '.tab:hover .a,.tab:hover .b,.tab:hover .c{color:red}',
+    '.tab:hover :is(.a,.b,.c){color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: does not touch nested `&` selectors',
+  processCSS(
+    '& .a .x,& .b .x,& .c .x{color:red}',
+    '& :is(.a,.b,.c) .x{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: dedupes identical middles',
+  processCSS(
+    '.foo .a .x,.foo .a .x,.foo .b .x{color:red}',
+    '.foo :is(.a,.b) .x{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'fold: survives duplicates being removed before fold',
+  processCSS(
+    '.a .x,.a .x,.a .y,.a .z{color:red}',
+    '.a :is(.x,.y,.z){color:red}',
+    modernBl
+  )
+);
+
+// -- folds that do NOT fire -------------------------------------------------
+
+test(
+  'no-fold: 2-selector pair without byte savings is left alone',
+  processCSS(
+    'ol li a, ul li a{color:red}',
+    'ol li a,ul li a{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: byte-neutral 2-selector child-combinator case',
+  // `.foo>.a,.foo>.b` (15) == `.foo>:is(.a,.b)` (15) — equal, no fold.
+  processCSS(
+    '.foo>.a,.foo>.b{color:red}',
+    '.foo>.a,.foo>.b{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: only fires when strictly shorter',
+  // `:is(a,b) c` would be 11 chars, original `a c,b c` is 7 — stay put.
+  processCSS('a c,b c{color:red}', 'a c,b c{color:red}', modernBl)
+);
+
+test(
+  'no-fold: rejects mixed-specificity middles (id vs class)',
+  processCSS(
+    '.a b,#x b,.c b{color:red}',
+    '#x b,.a b,.c b{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: rejects mixed-specificity middles (tag vs class)',
+  processCSS(
+    'ol li a,ul li a,.menu li a{color:red}',
+    '.menu li a,ol li a,ul li a{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: rejects universal vs tag in middle (different specificity)',
+  processCSS(
+    '* h1,body h1{font-size:1rem}',
+    '* h1,body h1{font-size:1rem}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: rejects :not() with differing inner specificity',
+  processCSS(
+    '.p :not(.a) b,.p :not(#x) b{color:red}',
+    '.p :not(#x) b,.p :not(.a) b{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: rejects pseudo-element in middle',
+  processCSS(
+    '.a::before,.b::before,.c::before{content:""}',
+    '.a:before,.b:before,.c:before{content:""}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: rejects legacy single-colon pseudo-element in middle',
+  processCSS(
+    '.a:before,.b:before,.c:before{content:""}',
+    '.a:before,.b:before,.c:before{content:""}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: rejects pseudo-element that survived `::` → `:` shortening',
+  processCSS(
+    '.t a:hover::after,.t b:hover::after,.t c:hover::after{content:"x"}',
+    '.t a:hover:after,.t b:hover:after,.t c:hover:after{content:"x"}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: pseudo-element in common part stays put (not pulled into `:is()`)',
+  processCSS(
+    'a::before h1,b::before h1,c::before h1{content:"x"}',
+    'a:before h1,b:before h1,c:before h1{content:"x"}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: keyframes percentages are untouched (no combinator context)',
+  processCSS(
+    '@keyframes k{0%,50%,to{opacity:0}}',
+    '@keyframes k{0%,50%,to{opacity:0}}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: already-nested `:is()` when result would not be shorter',
+  processCSS(
+    ':is(.a,.b) .x,:is(.c,.d) .x{color:red}',
+    ':is(.a,.b) .x,:is(.c,.d) .x{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: idempotent on already-folded output',
+  processCSS(
+    ':is(article,aside,nav,section) h1{font-size:25px}',
+    ':is(article,aside,nav,section) h1{font-size:25px}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: single-selector rules',
+  processCSS('.foo .bar{color:red}', '.foo .bar{color:red}', modernBl)
+);
+
+test(
+  'no-fold: mixin-like selectors',
+  processCSS('.mixin:{color:red}', '.mixin:{color:red}', modernBl)
+);
+
+// -- option / browserslist interactions -------------------------------------
+
+test(
+  'fold: disabled by convertToIs=false',
+  processCSS(
+    'section h1,article h1,aside h1,nav h1{font-size:25px}',
+    'article h1,aside h1,nav h1,section h1{font-size:25px}',
+    { ...modernBl, convertToIs: false }
+  )
+);
+
+test(
+  'fold: disabled when browserslist does not support :is() (IE 11)',
+  processCSS(
+    'section h1,article h1,aside h1,nav h1{font-size:25px}',
+    'article h1,aside h1,nav h1,section h1{font-size:25px}',
+    { overrideBrowserslist: 'ie 11' }
+  )
+);
+
+test(
+  'fold: disabled when any target in a list is unsupported',
+  processCSS(
+    'section h1,article h1,aside h1,nav h1{font-size:25px}',
+    'article h1,aside h1,nav h1,section h1{font-size:25px}',
+    { overrideBrowserslist: ['last 2 Chrome versions', 'IE 11'] }
+  )
+);
+
+test(
+  'fold: honours sort=false (does not re-sort middles after fold)',
+  processCSS(
+    '.foo .z .x,.foo .a .x,.foo .m .x{color:red}',
+    '.foo :is(.z,.a,.m) .x{color:red}',
+    { ...modernBl, sort: false }
+  )
+);
+
+test(
+  'fold: sort=true reorders middles alphabetically',
+  processCSS(
+    '.foo .z .x,.foo .a .x,.foo .m .x{color:red}',
+    '.foo :is(.a,.m,.z) .x{color:red}',
+    modernBl
+  )
+);
