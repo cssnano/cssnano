@@ -1,5 +1,7 @@
 'use strict';
+
 const defaultPreset = require('cssnano-preset-default');
+const cssDeclarationSorter = require('css-declaration-sorter');
 const postcssDiscardUnused = require('postcss-discard-unused');
 const postcssMergeIdents = require('postcss-merge-idents');
 const postcssReduceIdents = require('postcss-reduce-idents');
@@ -13,6 +15,7 @@ const autoprefixer = require('autoprefixer');
 
 /**
  * @typedef {object} AdvancedOptions
+ * @property {SimpleOptions<Parameters<typeof cssDeclarationSorter>[0]>} [cssDeclarationSorter]
  * @property {autoprefixer.Options} [autoprefixer]
  * @property {SimpleOptions<import('postcss-discard-unused').Options>} [discardUnused]
  * @property {SimpleOptions} [mergeIdents]
@@ -56,6 +59,9 @@ function configurePlugins(plugins, opts = {}) {
           ? sharedProps.stats // Autoprefixer supports stats object only
           : undefined,
     },
+    cssDeclarationSorter: {
+      keepOverrides: true,
+    },
   };
 
   // Merge option properties for each plugin
@@ -91,6 +97,7 @@ function advancedPreset(opts = {}) {
           [postcssMergeIdents, 'mergeIdents'],
           [postcssReduceIdents, 'reduceIdents'],
           [postcssZindex, 'zindex'],
+          [cssDeclarationSorter, 'cssDeclarationSorter'],
         ],
         opts
       ),

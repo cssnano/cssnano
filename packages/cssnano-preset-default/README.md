@@ -13,7 +13,6 @@
 
 - [Plugins](#plugins)
 
-  - [css-declaration-sorter (external)](#css-declaration-sorter-external)
   - [cssnano-utils](#cssnano-utils)
   - [postcss-calc (external)](#postcss-calc-external)
   - [postcss-colormin](#postcss-colormin)
@@ -95,18 +94,6 @@ module.exports = defaultPreset({
 Note that you may wish to publish your own preset to npm for reusability, should it differ a lot from this one. This is highly encouraged!
 
 ## Plugins
-
-### [`css-declaration-sorter`](https://github.com/Siilwyn/css-declaration-sorter) (external)
-
-> Sorts CSS declarations fast and automatically in a certain order.
-
-This plugin is loaded with the following configuration:
-
-```js
-{
-	keepOverrides: true
-}
-```
 
 ### [`cssnano-utils`](https://github.com/cssnano/cssnano/tree/master/packages/cssnano-utils)
 

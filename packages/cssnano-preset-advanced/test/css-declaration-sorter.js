@@ -111,13 +111,16 @@ test(
   )
 );
 
-test(
-  'sort properties inside at-rules, @font-face',
-  processCSS(
-    '@font-face{font-family:a;src:url()}',
+test('sort properties inside at-rules, @font-face', () => {
+  const { processCSS: processCSSNoDiscardUnused } = processCSSWithPresetFactory(
+    preset({ discardUnused: false })
+  );
+
+  return processCSSNoDiscardUnused(
+    '@font-face{src:url();font-family:a}',
     '@font-face{font-family:a;src:url()}'
-  )
-);
+  );
+});
 
 test(
   'works with postcss-merge-longhand, margin',

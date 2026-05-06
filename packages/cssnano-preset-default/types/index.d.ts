@@ -15,10 +15,6 @@ type SimpleOptions<OptionsExtends extends object | void = void> = false | (Optio
     exclude?: true;
 });
 type Options = {
-    cssDeclarationSorter?: SimpleOptions<{
-        order?: ("alphabetical" | "concentric-css" | "smacss") | ((propertyNameA: string, propertyNameB: string) => -1 | 0 | 1) | undefined;
-        keepOverrides?: boolean;
-    } | undefined> | undefined;
     discardComments?: SimpleOptions<postcssDiscardComments.Options> | undefined;
     reduceInitial?: SimpleOptions<postcssReduceInitial.Options> | undefined;
     minifyGradients?: SimpleOptions<void> | undefined;

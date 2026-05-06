@@ -15,6 +15,10 @@ type SimpleOptions<OptionsExtends extends object | void = void> = false | (Optio
     exclude?: true;
 });
 type AdvancedOptions = {
+    cssDeclarationSorter?: SimpleOptions<{
+        order?: ("alphabetical" | "concentric-css" | "smacss" | "frakto") | ((propertyNameA: string, propertyNameB: string) => -1 | 0 | 1) | undefined;
+        keepOverrides?: boolean;
+    } | undefined> | undefined;
     autoprefixer?: autoprefixer.Options | undefined;
     discardUnused?: SimpleOptions<postcssDiscardUnused.Options> | undefined;
     mergeIdents?: SimpleOptions<void> | undefined;
