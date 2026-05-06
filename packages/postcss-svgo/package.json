@@ -1,6 +1,6 @@
 {
   "name": "postcss-svgo",
-  "version": "7.1.3",
+  "version": "8.0.0",
   "description": "Optimise inline SVG with PostCSS.",
   "main": "src/index.js",
   "types": "types/index.d.ts",

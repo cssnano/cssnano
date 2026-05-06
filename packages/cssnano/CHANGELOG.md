@@ -1,5 +1,36 @@
 # Change Log
 
+## 8.0.0
+
+### Major Changes
+
+- ea8e33a: chore: drop Node.js 20 support
+
+  Node.js 20 has reached end of life.
+
+- d7c57da: Removed `cssDeclarationSorter` from the `default` preset. It remains enabled in
+  the `advanced` preset.
+
+  ## Motivation
+
+  The plugin can cause breakages without notice whenever a new CSS longhand
+  property is released to browsers if it happens to cause a conflict with another
+  longhand property. To ensure safety and predictability, it is no longer enabled
+  by default.
+
+  ## How to Update
+
+  If you rely on declaration sorting, you can switch to the `advanced` preset or
+  explicitly enable `cssDeclarationSorter` in your configuration.
+
+### Patch Changes
+
+- aa11a12: chore: update PostCSS
+- Updated dependencies [aa11a12]
+- Updated dependencies [ea8e33a]
+- Updated dependencies [d7c57da]
+  - cssnano-preset-default@8.0.0
+
 ## 7.1.9
 
 ### Patch Changes
