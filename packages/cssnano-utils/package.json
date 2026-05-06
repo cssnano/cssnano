@@ -1,6 +1,6 @@
 {
   "name": "cssnano-utils",
-  "version": "5.0.3",
+  "version": "6.0.0",
   "repository": "cssnano/cssnano",
   "main": "src/index.js",
   "types": "types/index.d.ts",

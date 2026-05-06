@@ -1,5 +1,20 @@
 # Change Log
 
+## 8.0.0
+
+### Major Changes
+
+- ea8e33a: chore: drop Node.js 20 support
+
+  Node.js 20 has reached end of life.
+
+### Patch Changes
+
+- aa11a12: chore: update PostCSS
+- Updated dependencies [aa11a12]
+- Updated dependencies [ea8e33a]
+  - cssnano-utils@6.0.0
+
 ## 7.0.3
 
 ### Patch Changes

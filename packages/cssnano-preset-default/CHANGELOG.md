@@ -1,5 +1,61 @@
 # Change Log
 
+## 8.0.0
+
+### Major Changes
+
+- ea8e33a: chore: drop Node.js 20 support
+
+  Node.js 20 has reached end of life.
+
+- d7c57da: Removed `cssDeclarationSorter` from the `default` preset. It remains enabled in
+  the `advanced` preset.
+
+  ## Motivation
+
+  The plugin can cause breakages without notice whenever a new CSS longhand
+  property is released to browsers if it happens to cause a conflict with another
+  longhand property. To ensure safety and predictability, it is no longer enabled
+  by default.
+
+  ## How to Update
+
+  If you rely on declaration sorting, you can switch to the `advanced` preset or
+  explicitly enable `cssDeclarationSorter` in your configuration.
+
+### Patch Changes
+
+- aa11a12: chore: update PostCSS
+- Updated dependencies [aa11a12]
+- Updated dependencies [ea8e33a]
+  - postcss-normalize-timing-functions@8.0.0
+  - postcss-normalize-display-values@8.0.0
+  - postcss-normalize-repeat-style@8.0.0
+  - postcss-normalize-whitespace@8.0.0
+  - postcss-normalize-positions@8.0.0
+  - postcss-discard-duplicates@8.0.0
+  - postcss-discard-overridden@8.0.0
+  - postcss-minify-font-values@8.0.0
+  - postcss-normalize-charset@8.0.0
+  - postcss-normalize-unicode@8.0.0
+  - postcss-reduce-transforms@8.0.0
+  - postcss-discard-comments@8.0.0
+  - postcss-minify-gradients@8.0.0
+  - postcss-minify-selectors@8.0.0
+  - postcss-normalize-string@8.0.0
+  - postcss-unique-selectors@8.0.0
+  - postcss-convert-values@8.0.0
+  - postcss-merge-longhand@8.0.0
+  - postcss-ordered-values@8.0.0
+  - postcss-reduce-initial@8.0.0
+  - postcss-discard-empty@8.0.0
+  - postcss-minify-params@8.0.0
+  - postcss-normalize-url@8.0.0
+  - postcss-merge-rules@8.0.0
+  - postcss-colormin@8.0.0
+  - cssnano-utils@6.0.0
+  - postcss-svgo@8.0.0
+
 ## 7.0.17
 
 ### Patch Changes

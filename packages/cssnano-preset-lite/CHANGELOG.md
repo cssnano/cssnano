@@ -1,5 +1,23 @@
 # Change Log
 
+## 5.0.0
+
+### Major Changes
+
+- ea8e33a: chore: drop Node.js 20 support
+
+  Node.js 20 has reached end of life.
+
+### Patch Changes
+
+- aa11a12: chore: update PostCSS
+- Updated dependencies [aa11a12]
+- Updated dependencies [ea8e33a]
+  - postcss-normalize-whitespace@8.0.0
+  - postcss-discard-comments@8.0.0
+  - postcss-discard-empty@8.0.0
+  - cssnano-utils@6.0.0
+
 ## 4.0.6
 
 ### Patch Changes
