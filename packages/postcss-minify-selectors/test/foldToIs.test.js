@@ -7,7 +7,7 @@ const {
   tokenize,
   hasPseudoElementOrNesting,
   hasNthChildOfClause,
-  hasUnknownPseudoWithArgs,
+  hasUnsafeForFold,
   specificityOf,
   specificityOfMiddle,
   maxChildSpecificity,
@@ -283,94 +283,76 @@ test('hasNthChildOfClause: deeply nested is true', () => {
   );
 });
 
-test('hasUnknownPseudoWithArgs: combinator is false', () => {
-  assert.equal(
-    hasUnknownPseudoWithArgs({ kind: 'combinator', str: '>' }),
-    false
-  );
+test('hasUnsafeForFold: combinator is false', () => {
+  assert.equal(hasUnsafeForFold({ kind: 'combinator', str: '>' }), false);
 });
 
-test('hasUnknownPseudoWithArgs: plain compound is false', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf('div.foo')), false);
+test('hasUnsafeForFold: plain class is false', () => {
+  assert.equal(hasUnsafeForFold(compoundOf('.foo')), false);
 });
 
-test('hasUnknownPseudoWithArgs: pseudo without args is false', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':hover')), false);
+test('hasUnsafeForFold: plain id is false', () => {
+  assert.equal(hasUnsafeForFold(compoundOf('#foo')), false);
 });
 
-test('hasUnknownPseudoWithArgs: :--state without args is false', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':--state')), false);
+test('hasUnsafeForFold: plain tag is false', () => {
+  assert.equal(hasUnsafeForFold(compoundOf('div')), false);
 });
 
-test('hasUnknownPseudoWithArgs: :is(.a) is false (known)', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':is(.a)')), false);
+test('hasUnsafeForFold: simple attribute is false', () => {
+  assert.equal(hasUnsafeForFold(compoundOf('[type=text]')), false);
 });
 
-test('hasUnknownPseudoWithArgs: :not(.a) is false (known)', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':not(.a)')), false);
+test('hasUnsafeForFold: allowlisted user-action pseudo is false', () => {
+  assert.equal(hasUnsafeForFold(compoundOf(':hover')), false);
 });
 
-test('hasUnknownPseudoWithArgs: :where(.a) is false (known)', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':where(.a)')), false);
+test('hasUnsafeForFold: tag.class:hover compound is false', () => {
+  assert.equal(hasUnsafeForFold(compoundOf('div.foo:hover')), false);
 });
 
-test('hasUnknownPseudoWithArgs: :has(.a) is false (known)', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':has(.a)')), false);
+test('hasUnsafeForFold: namespaced tag is true', () => {
+  assert.equal(hasUnsafeForFold(compoundOf('svg|path')), true);
 });
 
-test('hasUnknownPseudoWithArgs: :nth-child(2n) is false (known)', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':nth-child(2n)')), false);
+test('hasUnsafeForFold: namespaced attribute is true', () => {
+  assert.equal(hasUnsafeForFold(compoundOf('[xlink|href]')), true);
 });
 
-test('hasUnknownPseudoWithArgs: :lang(en) is false (known)', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':lang(en)')), false);
+test('hasUnsafeForFold: attribute with i flag is true', () => {
+  assert.equal(hasUnsafeForFold(compoundOf('[t=a i]')), true);
 });
 
-test('hasUnknownPseudoWithArgs: :dir(ltr) is false (known)', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':dir(ltr)')), false);
+test('hasUnsafeForFold: attribute with s flag is true', () => {
+  assert.equal(hasUnsafeForFold(compoundOf('[t=a s]')), true);
 });
 
-test('hasUnknownPseudoWithArgs: :deep(.a) is true', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':deep(.a)')), true);
+test('hasUnsafeForFold: universal selector is true', () => {
+  assert.equal(hasUnsafeForFold(compoundOf('*')), true);
 });
 
-test('hasUnknownPseudoWithArgs: :slotted(.a) is true', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':slotted(.a)')), true);
+test('hasUnsafeForFold: nesting selector is true', () => {
+  assert.equal(hasUnsafeForFold(compoundOf('&')), true);
 });
 
-test('hasUnknownPseudoWithArgs: :global(.a) is true', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':global(.a)')), true);
+test('hasUnsafeForFold: pseudo-element is true', () => {
+  assert.equal(hasUnsafeForFold(compoundOf('::before')), true);
 });
 
-test('hasUnknownPseudoWithArgs: :host(.a) is true', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':host(.a)')), true);
+test('hasUnsafeForFold: legacy single-colon pseudo-element is true', () => {
+  assert.equal(hasUnsafeForFold(compoundOf(':before')), true);
 });
 
-test('hasUnknownPseudoWithArgs: :host-context(.a) is true', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':host-context(.a)')), true);
+test('hasUnsafeForFold: pseudo-class outside allowlist is true', () => {
+  assert.equal(hasUnsafeForFold(compoundOf(':first-child')), true);
 });
 
-test('hasUnknownPseudoWithArgs: :--state(.a) is true', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':--state(.a)')), true);
+test('hasUnsafeForFold: functional pseudo with args is true', () => {
+  assert.equal(hasUnsafeForFold(compoundOf(':not(.a)')), true);
 });
 
-test('hasUnknownPseudoWithArgs: :deep(.a) nested in :is is true', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':is(:deep(.a))')), true);
-});
-
-test('hasUnknownPseudoWithArgs: :deep(.a) nested in :not is true', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':not(:deep(.a))')), true);
-});
-
-test('hasUnknownPseudoWithArgs: :deep(.a) nested in :has is true', () => {
-  assert.equal(hasUnknownPseudoWithArgs(compoundOf(':has(:deep(.a))')), true);
-});
-
-test('hasUnknownPseudoWithArgs: deeply nested is true', () => {
-  assert.equal(
-    hasUnknownPseudoWithArgs(compoundOf(':is(:not(:slotted(.a)))')),
-    true
-  );
+test('hasUnsafeForFold: unknown pseudo is true', () => {
+  assert.equal(hasUnsafeForFold(compoundOf(':--state')), true);
 });
 
 test('tokenize: single compound', () => {
@@ -509,34 +491,36 @@ test('fold: dedupes identical middles', () => {
   );
 });
 
-test('fold: :where() middles all specificity 0', () => {
+test('no-fold: :where() in middle (functional pseudo outside allowlist)', () => {
   assert.equal(
     tryFold(
       parseRoot(
         '.x :where(.a) .y,.x :where(.b) .y,.x :where(.c) .y,.x :where(.d) .y'
       )
     ),
-    '.x :is(:where(.a),:where(.b),:where(.c),:where(.d)) .y'
+    null
   );
 });
 
-test('fold: :not(.a &) middles fold (nesting inside pseudo, same specificity)', () => {
+test('no-fold: :not(.a &) in middle (functional pseudo with nesting inside)', () => {
   assert.equal(
     tryFold(
       parseRoot('.x :not(.a &) y,.x :not(.b &) y,.x :not(.c &) y,.x :not(.d &) y')
     ),
-    '.x :is(:not(.a &),:not(.b &),:not(.c &),:not(.d &)) y'
+    null
   );
 });
 
-test('fold: :is(::before) middles fold', () => {
-  const out = tryFold(
-    parseRoot(
-      '.x :is(::before) y,.x :is(::after) y,' +
-        '.x :is(::backdrop) y,.x :is(::marker) y'
-    )
+test('no-fold: :is(::before) in middle (functional pseudo outside allowlist)', () => {
+  assert.equal(
+    tryFold(
+      parseRoot(
+        '.x :is(::before) y,.x :is(::after) y,' +
+          '.x :is(::backdrop) y,.x :is(::marker) y'
+      )
+    ),
+    null
   );
-  assert.match(out, /:is\(:is\(::before\)/);
 });
 
 test('fold: universal in shared prefix', () => {
@@ -564,7 +548,7 @@ test('fold: trailing combinator (nesting context)', () => {
   );
 });
 
-test('fold: case-insensitive attribute middles', () => {
+test('no-fold: case-insensitive attribute (i flag) in middle', () => {
   assert.equal(
     tryFold(
       parseRoot(
@@ -572,36 +556,36 @@ test('fold: case-insensitive attribute middles', () => {
           '.x [type="search" i],.x [type="url" i]'
       )
     ),
-    '.x :is([type="text" i],[type="email" i],[type="search" i],[type="url" i])'
+    null
   );
 });
 
-test('fold: namespaced attribute middles', () => {
+test('no-fold: namespaced attribute in middle', () => {
   assert.equal(
     tryFold(
       parseRoot(
         '.x [xlink|href],.x [xlink|title],.x [xlink|role],.x [xlink|type]'
       )
     ),
-    '.x :is([xlink|href],[xlink|title],[xlink|role],[xlink|type])'
+    null
   );
 });
 
-test('fold: custom-property pseudo-classes (same specificity)', () => {
+test('no-fold: custom-property pseudo-classes in middle', () => {
   assert.equal(
     tryFold(parseRoot('.x :--open,.x :--closed,.x :--hover,.x :--focus')),
-    '.x :is(:--open,:--closed,:--hover,:--focus)'
+    null
   );
 });
 
-test('fold: namespaced wildcard tag middles (svg|a etc.)', () => {
+test('no-fold: namespaced wildcard tag middles (svg|a etc.)', () => {
   assert.equal(
     tryFold(parseRoot('.x svg|a,.x svg|b,.x svg|c,.x svg|d')),
-    '.x :is(svg|a,svg|b,svg|c,svg|d)'
+    null
   );
 });
 
-test('fold: :nth-child(2n+1) without `of` clause', () => {
+test('no-fold: :nth-child(2n+1) in middle (structural pseudo outside allowlist)', () => {
   assert.equal(
     tryFold(
       parseRoot(
@@ -609,7 +593,7 @@ test('fold: :nth-child(2n+1) without `of` clause', () => {
           '.x :nth-child(3) y,.x :nth-child(4) y'
       )
     ),
-    '.x :is(:nth-child(1),:nth-child(2),:nth-child(3),:nth-child(4)) y'
+    null
   );
 });
 

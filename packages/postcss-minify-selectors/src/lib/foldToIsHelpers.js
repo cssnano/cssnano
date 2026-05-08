@@ -13,18 +13,14 @@
 
 /** @typedef {[number, number, number]} Specificity */
 
-const KNOWN_PSEUDOS_WITH_ARGS = new Set([
-  ':where',
-  ':is',
-  ':matches',
-  ':not',
-  ':has',
-  ':nth-child',
-  ':nth-last-child',
-  ':nth-of-type',
-  ':nth-last-of-type',
-  ':lang',
-  ':dir',
+// Pseudo-classes accepted inside a fold middle. Limited to user-action
+// pseudos. Anything outside this set risks the rule-list-strict vs `:is()`
+const SAFE_PSEUDO_CLASSES = new Set([
+  ':hover',
+  ':focus',
+  ':active',
+  ':visited',
+  ':link',
 ]);
 
 /**
@@ -135,37 +131,58 @@ function nodesContainNthChildOfClause(nodes) {
  * @param {Token} token
  * @return {boolean}
  */
-function hasUnknownPseudoWithArgs(token) {
+function hasUnsafeForFold(token) {
   if (token.kind !== 'compound' || !token.nodes) {
     return false;
   }
-  return nodesContainUnknownPseudoWithArgs(token.nodes);
+  return nodesContainUnsafeForFold(token.nodes);
 }
 
 /**
  * @param {Node[]} nodes
  * @return {boolean}
  */
-function nodesContainUnknownPseudoWithArgs(nodes) {
+function nodesContainUnsafeForFold(nodes) {
   for (const n of nodes) {
-    if (n.type !== 'pseudo') {
+    const t = n.type;
+    if (t === 'class' || t === 'id') {
       continue;
     }
-    if (
-      n.nodes &&
-      n.nodes.length > 0 &&
-      !KNOWN_PSEUDOS_WITH_ARGS.has(n.value)
-    ) {
-      return true;
+    if (t === 'tag') {
+      if (n.namespace !== undefined && n.namespace !== null) {
+        return true;
+      }
+      continue;
     }
-    for (const child of n.nodes) {
+    if (t === 'attribute') {
+      if (n.namespace !== undefined && n.namespace !== null) {
+        return true;
+      }
+      if (n.insensitive || (n.raws && 'insensitiveFlag' in n.raws)) {
+        return true;
+      }
+      continue;
+    }
+    if (t === 'pseudo') {
+      const v = n.value;
       if (
-        child.type === 'selector' &&
-        nodesContainUnknownPseudoWithArgs(child.nodes)
+        v.startsWith('::') ||
+        v === ':before' ||
+        v === ':after' ||
+        v === ':first-letter' ||
+        v === ':first-line'
       ) {
         return true;
       }
+      if (!SAFE_PSEUDO_CLASSES.has(v)) {
+        return true;
+      }
+      if (n.nodes && n.nodes.length > 0) {
+        return true;
+      }
+      continue;
     }
+    return true;
   }
   return false;
 }
@@ -288,7 +305,7 @@ module.exports = {
   tokenize,
   hasPseudoElementOrNesting,
   hasNthChildOfClause,
-  hasUnknownPseudoWithArgs,
+  hasUnsafeForFold,
   specificityOf,
   specificityOfMiddle,
   maxChildSpecificity,

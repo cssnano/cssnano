@@ -613,14 +613,14 @@ test(
 );
 
 test(
-  'fold: MDN deep list-style example (16-way)',
+  'no-fold: combinator in middle (MDN deep list-style example, 16-way)',
   processCSS(
     'ol ol ul,ol ul ul,ol menu ul,ol dir ul,ul ol ul,ul ul ul,ul menu ul,' +
       'ul dir ul,menu ol ul,menu ul ul,menu menu ul,menu dir ul,dir ol ul,' +
       'dir ul ul,dir menu ul,dir dir ul{list-style:square}',
-    ':is(dir dir,dir menu,dir ol,dir ul,menu dir,menu menu,menu ol,menu ul,' +
-      'ol dir,ol menu,ol ol,ol ul,ul dir,ul menu,ul ol,ul ul) ul' +
-      '{list-style:square}',
+    'dir dir ul,dir menu ul,dir ol ul,dir ul ul,menu dir ul,menu menu ul,' +
+      'menu ol ul,menu ul ul,ol dir ul,ol menu ul,ol ol ul,ol ul ul,' +
+      'ul dir ul,ul menu ul,ul ol ul,ul ul ul{list-style:square}',
     modernBl
   )
 );
@@ -635,28 +635,10 @@ test(
 );
 
 test(
-  'fold: :not() in middle preserves same specificity',
+  'no-fold: functional pseudo in middle (outside allowlist)',
   processCSS(
     '.box :not(.a) .x,.box :not(.b) .x,.box :not(.c) .x{color:red}',
-    '.box :is(:not(.a),:not(.b),:not(.c)) .x{color:red}',
-    modernBl
-  )
-);
-
-test(
-  'fold: :where() in middle (zero specificity each)',
-  processCSS(
-    '.box :where(.a) .x,.box :where(.b) .x,.box :where(.c) .x{color:red}',
-    '.box :is(:where(.a),:where(.b),:where(.c)) .x{color:red}',
-    modernBl
-  )
-);
-
-test(
-  'fold: :has() in middle',
-  processCSS(
-    '.p :has(.a) .x,.p :has(.b) .x,.p :has(.c) .x{color:red}',
-    '.p :is(:has(.a),:has(.b),:has(.c)) .x{color:red}',
+    '.box :not(.a) .x,.box :not(.b) .x,.box :not(.c) .x{color:red}',
     modernBl
   )
 );

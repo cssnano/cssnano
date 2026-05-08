@@ -3,7 +3,7 @@ const {
   tokenize,
   hasPseudoElementOrNesting,
   hasNthChildOfClause,
-  hasUnknownPseudoWithArgs,
+  hasUnsafeForFold,
   specificityOfMiddle,
   equalSpecificity,
   joinTokens,
@@ -72,13 +72,9 @@ function tryFold(root) {
     return null;
   }
 
-  // A non-empty prefix joined to a combinator-bearing middle changes the
-  // matched element: `:is()` binds to the rightmost compound of its arg, not
-  // the first. See cssnano/cssnano#1786.
-  const middleHasCombinator = middles.some((m) =>
-    m.some((t) => t.kind === 'combinator')
-  );
-  if (middleHasCombinator && prefix > 0) {
+  // Each middle must be a single compound. Combinators inside change the
+  // matched element under `:is()`. See cssnano/cssnano#1786.
+  if (middles.some((m) => m.some((t) => t.kind === 'combinator'))) {
     return null;
   }
 
@@ -90,7 +86,7 @@ function tryFold(root) {
       if (hasNthChildOfClause(token)) {
         return null;
       }
-      if (hasUnknownPseudoWithArgs(token)) {
+      if (hasUnsafeForFold(token)) {
         return null;
       }
     }
