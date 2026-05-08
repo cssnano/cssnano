@@ -878,6 +878,24 @@ test(
 );
 
 test(
+  'no-fold: rejects combinator in middle when prefix is non-empty (child)',
+  processCSS(
+    '.card>.header>.title,.card>.footer>.meta{color:red}',
+    '.card>.footer>.meta,.card>.header>.title{color:red}',
+    modernBl
+  )
+);
+
+test(
+  'no-fold: rejects combinator in middle when prefix is non-empty (descendant)',
+  processCSS(
+    '.x .a .b,.x .c .d{color:red}',
+    '.x .a .b,.x .c .d{color:red}',
+    modernBl
+  )
+);
+
+test(
   'no-fold: already-nested `:is()` when result would not be shorter',
   processCSS(
     ':is(.a,.b) .x,:is(.c,.d) .x{color:red}',
