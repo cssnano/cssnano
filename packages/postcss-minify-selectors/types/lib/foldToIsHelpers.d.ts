@@ -26,7 +26,7 @@ export function hasNthChildOfClause(token: Token): boolean;
  * @param {Token} token
  * @return {boolean}
  */
-export function hasUnknownPseudoWithArgs(token: Token): boolean;
+export function hasUnsafeForFold(token: Token): boolean;
 /**
  * @param {Node[]} nodes
  * @return {Specificity}
