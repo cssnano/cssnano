@@ -12,7 +12,7 @@
     "@codemirror/lang-css": "^6.3.1",
     "@codemirror/language": "^6.12.3",
     "@codemirror/state": "^6.6.0",
-    "@codemirror/view": "^6.42.0",
+    "@codemirror/view": "^6.42.1",
     "buffer": "^6.0.3",
     "cssnano-preset-advanced": "link:../packages/cssnano-preset-advanced",
     "cssnano-preset-default": "link:../packages/cssnano-preset-default",
