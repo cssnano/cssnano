@@ -161,10 +161,12 @@ function pluginCreator(config = {}) {
               return;
             }
 
-            const cacheKey = JSON.stringify({ value, options, browsers });
-
-            if (cache.has(cacheKey)) {
-              decl.value = cache.get(cacheKey);
+            // options and browsers are pass-invariant (set once in
+            // prepare()), so the per-decl cache key only needs to be the
+            // value itself. The prior JSON.stringify allocated a key string
+            // per declaration to no benefit.
+            if (cache.has(value)) {
+              decl.value = cache.get(value);
 
               return;
             }
@@ -172,7 +174,7 @@ function pluginCreator(config = {}) {
             const newValue = transform(value, options);
 
             decl.value = newValue;
-            cache.set(cacheKey, newValue);
+            cache.set(value, newValue);
           });
         },
       };

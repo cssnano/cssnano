@@ -22,17 +22,37 @@ function pluginCreator() {
           if (node.type !== 'decl') {
             continue;
           }
-          const prop = node.prop.toLowerCase();
-          if ((mask & 1) === 0 && prop.startsWith('border')) {
+          const prop = node.prop;
+          // Most CSS in the wild has lowercase props, so the
+          // case-sensitive startsWith short-circuit avoids the toLowerCase
+          // allocation on the common path; the case-insensitive fallback
+          // only runs when the first byte already mismatches.
+          if (
+            (mask & 1) === 0 &&
+            (prop.startsWith('border') ||
+              prop.toLowerCase().startsWith('border'))
+          ) {
             mask |= 1;
           }
-          if ((mask & 2) === 0 && prop.startsWith('column')) {
+          if (
+            (mask & 2) === 0 &&
+            (prop.startsWith('column') ||
+              prop.toLowerCase().startsWith('column'))
+          ) {
             mask |= 2;
           }
-          if ((mask & 4) === 0 && prop.startsWith('margin')) {
+          if (
+            (mask & 4) === 0 &&
+            (prop.startsWith('margin') ||
+              prop.toLowerCase().startsWith('margin'))
+          ) {
             mask |= 4;
           }
-          if ((mask & 8) === 0 && prop.startsWith('padding')) {
+          if (
+            (mask & 8) === 0 &&
+            (prop.startsWith('padding') ||
+              prop.toLowerCase().startsWith('padding'))
+          ) {
             mask |= 8;
           }
         }

@@ -61,8 +61,17 @@ function sameDeclarationsAndOrder(a, b) {
  * @typedef {Object} RuleMeta
  * @property {string[]} selectors - Array of selector strings for the rule
  * @property {import('postcss').Declaration[]} declarations - Array of declaration nodes for the rule
+ * @property {boolean} hasContainer - Whether the rule has any child rule or atrule
  * @property {boolean} dirty - Whether the selectors have been modified and need flushing
  */
+
+/** @type {RuleMeta} */
+const EMPTY_META = {
+  selectors: [],
+  declarations: [],
+  hasContainer: false,
+  dirty: false,
+};
 
 /**
  * @param {import('postcss').Rule} ruleA
@@ -81,54 +90,54 @@ function canMerge(
   ruleCache,
   ruleMeta
 ) {
-  const metaA = getMeta(ruleA, ruleMeta);
-  const metaB = getMeta(ruleB, ruleMeta);
-  const a = metaA.selectors;
-  const b = metaB.selectors;
-
-  const selectors = a.concat(b);
-
-  if (ruleCache.has(ruleA) && ruleCache.has(ruleB)) {
-    // Both already validated
-  } else if (ruleCache.has(ruleA)) {
-    if (!ensureCompatibility(b, browsers, compatibilityCache)) {
-      return false;
-    }
-  } else if (ruleCache.has(ruleB)) {
-    if (!ensureCompatibility(a, browsers, compatibilityCache)) {
-      return false;
-    }
-  } else if (!ensureCompatibility(selectors, browsers, compatibilityCache)) {
-    return false;
-  }
-
-  const parent = sameParent(
-    /** @type {any} */ (ruleA),
-    /** @type {any} */ (ruleB)
-  );
+  // Cheap structural checks first; the selector-parser-backed
+  // ensureCompatibility call is the expensive one and only worth running on
+  // pairs that survive these filters.
   if (
-    parent &&
-    ruleA.parent &&
-    ruleA.parent.type === 'atrule' &&
-    /** @type {import('postcss').AtRule} */ (ruleA.parent).name.includes(
-      'keyframes'
+    !sameParent(
+      /** @type {any} */ (ruleA),
+      /** @type {any} */ (ruleB)
     )
   ) {
     return false;
   }
-  if (ruleA.some(isRuleOrAtRule) || ruleB.some(isRuleOrAtRule)) {
+
+  const parentA = ruleA.parent;
+  if (
+    parentA &&
+    parentA.type === 'atrule' &&
+    /** @type {import('postcss').AtRule} */ (parentA).name.includes('keyframes')
+  ) {
     return false;
   }
-  return parent && (selectors.every(noVendor) || sameVendor(a, b));
+
+  const metaA = getMeta(ruleA, ruleMeta);
+  const metaB = getMeta(ruleB, ruleMeta);
+
+  if (metaA.hasContainer || metaB.hasContainer) {
+    return false;
+  }
+
+  const a = metaA.selectors;
+  const b = metaB.selectors;
+
+  // Split the compat check so we don't allocate a combined a.concat(b) array.
+  if (
+    !ruleCache.has(ruleA) &&
+    !ensureCompatibility(a, browsers, compatibilityCache)
+  ) {
+    return false;
+  }
+  if (
+    !ruleCache.has(ruleB) &&
+    !ensureCompatibility(b, browsers, compatibilityCache)
+  ) {
+    return false;
+  }
+
+  return (a.every(noVendor) && b.every(noVendor)) || sameVendor(a, b);
 }
 
-/**
- * @param {import('postcss').ChildNode} node
- * @return {boolean}
- */
-function isRuleOrAtRule(node) {
-  return node.type === 'rule' || node.type === 'atrule';
-}
 /**
  * @param {import('postcss').ChildNode} node
  * @return {node is import('postcss').Declaration}
@@ -144,27 +153,33 @@ function isDeclaration(node) {
  * re-parsing, especially for the selectors.
  *
  * @param {import('postcss').Rule} rule The PostCSS rule to get metadata for.
- * @param {WeakMap<import('postcss').Rule, RuleMeta>} [ruleMeta] The metadata cache.
+ * @param {WeakMap<import('postcss').Rule, RuleMeta>} ruleMeta The metadata cache.
  * @return {RuleMeta} The rule's virtual metadata.
  */
 function getMeta(rule, ruleMeta) {
-  if (ruleMeta && rule) {
-    let meta = ruleMeta.get(rule);
-    if (!meta && rule.nodes) {
-      meta = {
-        selectors: rule.selectors,
-        declarations: rule.nodes.filter(isDeclaration),
-        dirty: false,
-      };
-      ruleMeta.set(rule, meta);
+  let meta = ruleMeta.get(rule);
+  if (!meta && rule.nodes) {
+    // One pass through rule.nodes captures both declarations and the
+    // hasContainer flag — saves a second pass via `rule.some(...)` inside
+    // canMerge, where it would otherwise run per pair.
+    const declarations = /** @type {import('postcss').Declaration[]} */ ([]);
+    let hasContainer = false;
+    for (const node of rule.nodes) {
+      if (node.type === 'decl') {
+        declarations.push(node);
+      } else if (node.type === 'rule' || node.type === 'atrule') {
+        hasContainer = true;
+      }
     }
-    return meta ?? { selectors: [], declarations: [], dirty: false };
+    meta = {
+      selectors: rule.selectors,
+      declarations,
+      hasContainer,
+      dirty: false,
+    };
+    ruleMeta.set(rule, meta);
   }
-  return {
-    selectors: rule?.selectors ?? [],
-    declarations: rule?.nodes?.filter(isDeclaration) ?? [],
-    dirty: false,
-  };
+  return meta ?? EMPTY_META;
 }
 
 /**

@@ -11,9 +11,14 @@ export = pluginCreator;
  */
 declare function pluginCreator(opts?: Options): import("postcss").Plugin;
 declare namespace pluginCreator {
-    export { postcss, RuleMeta, AutoprefixerOptions, BrowserslistOptions, Options };
+    export { postcss, AutoprefixerOptions, BrowserslistOptions, Options, RuleMeta };
 }
 declare var postcss: true;
+type AutoprefixerOptions = {
+    overrideBrowserslist?: string | string[];
+};
+type BrowserslistOptions = Pick<browserslist.Options, "stats" | "path" | "env">;
+type Options = AutoprefixerOptions & BrowserslistOptions;
 /**
  * RuleMeta stores metadata about a `Rule` during the merging process.
  * It tracks selectors and declarations without re-parsing the AST many times.
@@ -28,14 +33,13 @@ type RuleMeta = {
      */
     declarations: import("postcss").Declaration[];
     /**
+     * - Whether the rule has any child rule or atrule
+     */
+    hasContainer: boolean;
+    /**
      * - Whether the selectors have been modified and need flushing
      */
     dirty: boolean;
 };
-type AutoprefixerOptions = {
-    overrideBrowserslist?: string | string[];
-};
-type BrowserslistOptions = Pick<browserslist.Options, "stats" | "path" | "env">;
-type Options = AutoprefixerOptions & BrowserslistOptions;
 import browserslist = require("browserslist");
 //# sourceMappingURL=index.d.ts.map

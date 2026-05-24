@@ -53,7 +53,13 @@ function pluginCreator() {
       css.walk((node) => {
         const { type } = node;
 
-        if ([decl, rule, atrule].includes(type) && node.raws.before) {
+        // Disjunction over interned string constants avoids the per-node
+        // 3-element array allocation that `[decl, rule, atrule].includes`
+        // would have done on every walked node.
+        if (
+          (type === decl || type === rule || type === atrule) &&
+          node.raws.before
+        ) {
           node.raws.before = node.raws.before.replace(/\s/g, '');
         }
 
@@ -63,8 +69,12 @@ function pluginCreator() {
             node.raws.important = '!important';
           }
 
-          // Remove whitespaces around ie 9 hack
-          node.value = node.value.replace(/\s*(\\9)\s*/, '$1');
+          // Remove whitespaces around the IE 9 `\9` hack only when present;
+          // skipping the regex scan on values without the token avoids work
+          // on every declaration.
+          if (node.value.indexOf('\\9') !== -1) {
+            node.value = node.value.replace(/\s*(\\9)\s*/, '$1');
+          }
           const value = node.value;
 
           if (cache.has(value)) {
