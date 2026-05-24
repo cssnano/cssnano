@@ -6,6 +6,10 @@ const selectorParser = require('postcss-selector-parser');
  * @return {string}
  */
 function generateUniqueSelector(selectors) {
+  // No comma => no top-level selector list => nothing to dedupe or sort.
+  if (selectors.indexOf(',') === -1) {
+    return selectors;
+  }
   /** @type {Map<string, string>} */
   const uniqueSelectors = new Map();
 
