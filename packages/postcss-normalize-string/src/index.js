@@ -268,12 +268,15 @@ function normalize(value, preferredQuote) {
  * @return {string}
  */
 function minify(original, cache, preferredQuote) {
-  const key = original + '|' + preferredQuote;
-  if (cache.has(key)) {
-    return /** @type {string} */ (cache.get(key));
+  // The cache is created fresh per OnceExit and preferredQuote is fixed for
+  // that pass, so the input string alone is a sufficient key — no need to
+  // allocate `original + '|' + preferredQuote` per call.
+  const hit = cache.get(original);
+  if (hit !== undefined) {
+    return hit;
   }
   const newValue = normalize(original, preferredQuote);
-  cache.set(key, newValue);
+  cache.set(original, newValue);
   return newValue;
 }
 
