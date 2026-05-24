@@ -12,13 +12,25 @@ function generateUniqueSelector(selectors) {
   }
   /** @type {Map<string, string>} */
   const uniqueSelectors = new Map();
+  // If the input has no comment marker, every per-node clone+walk to strip
+  // comments out of the dedupe key is wasted work; the node's own toString is
+  // already comment-free.
+  const hasComments = selectors.indexOf('/*') !== -1;
 
   /** @type {selectorParser.SyncProcessor<void>} */
   const collectUniqueSelectors = (selNode) => {
     for (const node of selNode.nodes) {
+      if (!hasComments) {
+        const text = node.toString();
+        const key = text.trim();
+        if (!uniqueSelectors.has(key)) {
+          uniqueSelectors.set(key, text);
+        }
+        continue;
+      }
+
       /** @type {string[]} */
       const comments = [];
-
       // Duplicates are removed by stripping the comments and using the results as the Map key.
       const keyNode = node.clone();
       keyNode.walk((sel) => {
