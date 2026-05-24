@@ -27,13 +27,17 @@ for (const n of nodes) {
 
 function frameLabel(n) {
   const cf = n.callFrame;
-  let name = cf.functionName || '(anonymous)';
+  const name = cf.functionName || '(anonymous)';
   let url = cf.url || '';
-  // Strip the long absolute path; show just the last two segments.
-  const m = url.match(/([^/]+\/[^/]+)$/);
-  if (m) url = m[1];
-  if (!url && cf.scriptId === '0') url = '<gc/internals>';
-  return `${name} @ ${url || '<?>'}`;
+  if (!url && cf.scriptId === '0') {
+    return `${name} @ <gc/internals>`;
+  }
+  // Prepend the package name so plugin OnceExit's are distinguishable, then
+  // show the in-package path (lib/foo.js or src/index.js).
+  const pkg = packageOf(n);
+  const inPkg = url.match(/\/(src|lib|dist|types)\/(.+)$/);
+  const tail = inPkg ? `${inPkg[1]}/${inPkg[2]}` : url.replace(/^.*\//, '');
+  return `${name} @ ${pkg}/${tail || '<?>'}`;
 }
 
 function packageOf(n) {
