@@ -12,7 +12,13 @@ function trimValue(value) {
  * @return {boolean}
  */
 function empty(node) {
-  return !node.nodes.filter((child) => child.type !== 'comment').length;
+  const nodes = node.nodes;
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].type !== 'comment') {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -83,72 +89,97 @@ function equals(nodeA, nodeB) {
 }
 
 /**
- * @param {import('postcss').Rule} last
- * @param {import('postcss').AnyNode[]} nodes
+ * @param {import('postcss').AnyNode} node
+ * @param {import('postcss').AnyNode[]} targetNodes
  * @return {void}
  */
-function dedupeRule(last, nodes) {
-  let index = nodes.indexOf(last) - 1;
-  while (index >= 0) {
-    const node = nodes[index--];
-    if (node && node.type === 'rule' && node.selector === last.selector) {
-      last.each((child) => {
-        if (child.type === 'decl') {
-          dedupeNode(child, node.nodes);
-        }
-      });
-
-      if (empty(node)) {
-        node.remove();
-      }
+function dedupeFrom(node, targetNodes) {
+  for (let i = targetNodes.length - 1; i >= 0; i--) {
+    const n = targetNodes[i];
+    if (n && equals(n, node)) {
+      n.remove();
     }
   }
 }
 
 /**
- * @param {import('postcss').AtRule | import('postcss').Declaration} last
- * @param {import('postcss').AnyNode[]} nodes
+ * @param {import('postcss').AnyNode} container
  * @return {void}
  */
-function dedupeNode(last, nodes) {
-  let index = nodes.includes(last) ? nodes.indexOf(last) - 1 : nodes.length - 1;
-
-  while (index >= 0) {
-    const node = nodes[index--];
-    if (node && equals(node, last)) {
-      node.remove();
-    }
-  }
-}
-
-/**
- * @param {import('postcss').AnyNode} root
- * @return {void}
- */
-function dedupe(root) {
-  const { nodes } =
+function dedupe(container) {
+  const nodes =
     /** @type {import('postcss').Container<import('postcss').ChildNode>} */ (
-      root
-    );
+      container
+    ).nodes;
 
   if (!nodes) {
     return;
   }
 
+  /** @type {Map<string, import('postcss').Rule[]> | null} */
+  let ruleGroups = null;
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    if (n.type === 'rule') {
+      if (!ruleGroups) {
+        ruleGroups = new Map();
+      }
+      const arr = ruleGroups.get(n.selector);
+      if (arr) {
+        arr.push(n);
+      } else {
+        ruleGroups.set(n.selector, [n]);
+      }
+    }
+  }
+
+  // Recurse-then-dispatch order preserves atrule equals() semantics: an earlier
+  // atrule must still see its (un-recursed) interior when compared at this level.
   let index = nodes.length - 1;
   while (index >= 0) {
-    let last = nodes[index--];
+    const last = nodes[index--];
     if (!last || !last.parent) {
       continue;
     }
-    dedupe(last);
+    if (last.type === 'rule' || last.type === 'atrule') {
+      dedupe(last);
+    }
+
     if (last.type === 'rule') {
-      dedupeRule(last, nodes);
+      const group = ruleGroups && ruleGroups.get(last.selector);
+      if (group && group.length > 1) {
+        const lastDecls = last.nodes;
+        for (let g = 0; g < group.length; g++) {
+          const earlier = group[g];
+          if (earlier === last) {
+            break;
+          }
+          if (!earlier.parent) {
+            continue;
+          }
+          const earlierNodes = earlier.nodes;
+          for (let d = 0; d < lastDecls.length; d++) {
+            const child = lastDecls[d];
+            if (child.type === 'decl') {
+              dedupeFrom(child, earlierNodes);
+            }
+          }
+          if (empty(earlier)) {
+            earlier.remove();
+          }
+        }
+      }
     } else if (
       (last.type === 'atrule' && last.name !== 'layer') ||
       last.type === 'decl'
     ) {
-      dedupeNode(last, nodes);
+      const cur = nodes.indexOf(last);
+      for (let i = cur - 1; i >= 0; i--) {
+        const n = nodes[i];
+        if (n && equals(n, last)) {
+          n.remove();
+        }
+      }
     }
   }
 }
