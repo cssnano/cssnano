@@ -16,6 +16,10 @@ site/src/docs/docs.11tydata.json
 # Testing
 .nyc_output
 coverage
+lcov.info
+
+# Benchmarks
+bench-results
 
 # Env
 .env.local
