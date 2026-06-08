@@ -72,7 +72,7 @@ async function benchOne(name, source, processor, iters, warmup) {
   // Warmup — let V8 optimize hot paths before we measure.
   for (let i = 0; i < warmup; i++) {
     const res = await processor.process(source, { from: undefined });
-    // Force stringification so plugins that defer work via .toResult() complete.
+    // `res.css` is a lazy getter; reading it forces stringification. `void` discards it.
     void res.css;
   }
 

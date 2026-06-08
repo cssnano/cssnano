@@ -6,14 +6,15 @@
 
 import { readFileSync } from 'fs';
 
-const file = process.argv[2];
-if (!file) {
+const profilePath = process.argv[2];
+if (!profilePath) {
   console.error('usage: node util/analyze-cpuprofile.mjs <profile> [topN]');
   process.exit(1);
 }
+// topN: number of rows to print in each leaderboard.
 const topN = Number(process.argv[3]) || 25;
 
-const prof = JSON.parse(readFileSync(file, 'utf8'));
+const prof = JSON.parse(readFileSync(profilePath, 'utf8'));
 const { nodes, samples, timeDeltas } = prof;
 
 // Index by id.
@@ -25,25 +26,25 @@ for (const n of nodes) {
   if (n.children) for (const c of n.children) parentOf.set(c, n.id);
 }
 
-function frameLabel(n) {
-  const cf = n.callFrame;
-  const name = cf.functionName || '(anonymous)';
-  let url = cf.url || '';
-  if (!url && cf.scriptId === '0') {
+function frameLabel(node) {
+  const callFrame = node.callFrame;
+  const name = callFrame.functionName || '(anonymous)';
+  let url = callFrame.url || '';
+  if (!url && callFrame.scriptId === '0') {
     return `${name} @ <gc/internals>`;
   }
   // Prepend the package name so plugin OnceExit's are distinguishable, then
   // show the in-package path (lib/foo.js or src/index.js).
-  const pkg = packageOf(n);
+  const pkg = packageOf(node);
   const inPkg = url.match(/\/(src|lib|dist|types)\/(.+)$/);
   const tail = inPkg ? `${inPkg[1]}/${inPkg[2]}` : url.replace(/^.*\//, '');
   return `${name} @ ${pkg}/${tail || '<?>'}`;
 }
 
-function packageOf(n) {
-  const url = n.callFrame.url || '';
+function packageOf(node) {
+  const url = node.callFrame.url || '';
   if (!url) {
-    const fn = n.callFrame.functionName;
+    const fn = node.callFrame.functionName;
     if (fn === '(garbage collector)') return '<gc>';
     if (fn === '(program)' || fn === '(root)' || fn === '(idle)') return fn;
     return '<internal>';
@@ -51,20 +52,23 @@ function packageOf(n) {
   if (url.startsWith('node:')) return url;
   const m = url.match(/packages\/([^/]+)\//);
   if (m) return m[1];
-  // pnpm layout: node_modules/.pnpm/<name>@<ver>/node_modules/<name>/...
-  const mpnpm = url.match(/node_modules\/\.pnpm\/([^/]+)\//);
-  if (mpnpm) return mpnpm[1].replace(/@[\d.][^@]*$/, '');
-  const m2 = url.match(/node_modules\/(@[^/]+\/[^/]+|[^/]+)\//);
-  if (m2) return m2[1];
+  // Name after the last node_modules/: independent of store layout (pnpm's
+  // .pnpm key, npm/yarn flat, nesting), so pnpm upgrades can't break it.
+  const lastNodeModules = url.lastIndexOf('node_modules/');
+  if (lastNodeModules !== -1) {
+    const after = url.slice(lastNodeModules + 'node_modules/'.length);
+    const m2 = after.match(/^(@[^/]+\/[^/]+|[^/]+)/);
+    if (m2 && m2[1] !== '.pnpm') return m2[1];
+  }
   return url.replace(/^.*\//, '');
 }
 
 // Self time per node id.
-const selfUs = new Map();
+const selfTimePerNodeId = new Map();
 for (let i = 0; i < samples.length; i++) {
   const id = samples[i];
   const dt = timeDeltas[i] || 0;
-  selfUs.set(id, (selfUs.get(id) || 0) + dt);
+  selfTimePerNodeId.set(id, (selfTimePerNodeId.get(id) || 0) + dt);
 }
 
 const totalUs = samples.length
@@ -72,7 +76,7 @@ const totalUs = samples.length
   : timeDeltas.reduce((a, b) => a + b, 0);
 
 // Inclusive time: walk from each sample leaf up to the root, adding the delta.
-const inclUs = new Map();
+const inclusiveTimePerNodeId = new Map();
 for (let i = 0; i < samples.length; i++) {
   const dt = timeDeltas[i] || 0;
   let id = samples[i];
@@ -80,7 +84,7 @@ for (let i = 0; i < samples.length; i++) {
   const seen = new Set();
   while (id != null && !seen.has(id)) {
     seen.add(id);
-    inclUs.set(id, (inclUs.get(id) || 0) + dt);
+    inclusiveTimePerNodeId.set(id, (inclusiveTimePerNodeId.get(id) || 0) + dt);
     id = parentOf.get(id);
   }
 }
@@ -88,7 +92,7 @@ for (let i = 0; i < samples.length; i++) {
 const us = (n) => (n / 1000).toFixed(1).padStart(9) + ' ms';
 const pct = (n) => ((n / totalUs) * 100).toFixed(2).padStart(6) + '%';
 
-console.log(`profile: ${file}`);
+console.log(`profile: ${profilePath}`);
 console.log(
   `samples: ${samples.length}, wall: ${(totalUs / 1000).toFixed(0)} ms`
 );
@@ -97,7 +101,7 @@ console.log();
 // Self-time leaderboard.
 console.log(`top ${topN} self time`);
 console.log('-'.repeat(110));
-const selfSorted = [...selfUs.entries()]
+const selfSorted = [...selfTimePerNodeId.entries()]
   .map(([id, t]) => ({ id, self: t, node: byId.get(id) }))
   .sort((a, b) => b.self - a.self)
   .slice(0, topN);
@@ -109,7 +113,7 @@ for (const r of selfSorted) {
 console.log();
 console.log(`top ${topN} inclusive time (excluding root/program/idle)`);
 console.log('-'.repeat(110));
-const inclSorted = [...inclUs.entries()]
+const inclSorted = [...inclusiveTimePerNodeId.entries()]
   .map(([id, t]) => ({ id, incl: t, node: byId.get(id) }))
   .filter(({ node }) => {
     const fn = node.callFrame.functionName;
@@ -128,7 +132,7 @@ console.log();
 console.log('self-time roll-up by package');
 console.log('-'.repeat(110));
 const byPkg = new Map();
-for (const [id, t] of selfUs) {
+for (const [id, t] of selfTimePerNodeId) {
   const p = packageOf(byId.get(id));
   byPkg.set(p, (byPkg.get(p) || 0) + t);
 }
