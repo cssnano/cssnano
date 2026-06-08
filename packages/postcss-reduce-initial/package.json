@@ -38,7 +38,7 @@
   "devDependencies": {
     "@types/caniuse-api": "^3.0.6",
     "html-to-text": "^10.0.0",
-    "postcss": "^8.5.14"
+    "postcss": "^8.5.15"
   },
   "peerDependencies": {
     "postcss": "^8.5.14"
