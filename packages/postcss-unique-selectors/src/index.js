@@ -6,15 +6,29 @@ const selectorParser = require('postcss-selector-parser');
  * @return {string}
  */
 function generateUniqueSelector(selectors) {
+  // No comma means a single selector; nothing to dedupe or sort.
+  if (selectors.indexOf(',') === -1) {
+    return selectors;
+  }
   /** @type {Map<string, string>} */
   const uniqueSelectors = new Map();
+  // Without comments the node's own toString is already a usable key.
+  const hasComments = selectors.indexOf('/*') !== -1;
 
   /** @type {selectorParser.SyncProcessor<void>} */
   const collectUniqueSelectors = (selNode) => {
     for (const node of selNode.nodes) {
+      if (!hasComments) {
+        const text = node.toString();
+        const key = text.trim();
+        if (!uniqueSelectors.has(key)) {
+          uniqueSelectors.set(key, text);
+        }
+        continue;
+      }
+
       /** @type {string[]} */
       const comments = [];
-
       // Duplicates are removed by stripping the comments and using the results as the Map key.
       const keyNode = node.clone();
       keyNode.walk((sel) => {
