@@ -84,23 +84,26 @@ function equals(nodeA, nodeB) {
 
 /**
  * @param {import('postcss').Rule} last
- * @param {import('postcss').AnyNode[]} nodes
+ * @param {import('postcss').Rule[]} group rules sharing last's selector, in document order
  * @return {void}
  */
-function dedupeRule(last, nodes) {
-  let index = nodes.indexOf(last) - 1;
-  while (index >= 0) {
-    const node = nodes[index--];
-    if (node && node.type === 'rule' && node.selector === last.selector) {
-      last.each((child) => {
-        if (child.type === 'decl') {
-          dedupeNode(child, node.nodes);
-        }
-      });
-
-      if (empty(node)) {
-        node.remove();
+function dedupeRule(last, group) {
+  for (let i = 0; i < group.length; i++) {
+    const node = group[i];
+    if (node === last) {
+      break;
+    }
+    if (!node.parent) {
+      continue;
+    }
+    last.each((child) => {
+      if (child.type === 'decl') {
+        dedupeNode(child, node.nodes);
       }
+    });
+
+    if (empty(node)) {
+      node.remove();
     }
   }
 }
@@ -135,6 +138,24 @@ function dedupe(root) {
     return;
   }
 
+  // Group rules by selector so each only dedupes against same-selector rules.
+  /** @type {Map<string, import('postcss').Rule[]> | undefined} */
+  let ruleGroups;
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    if (node.type === 'rule') {
+      if (!ruleGroups) {
+        ruleGroups = new Map();
+      }
+      const group = ruleGroups.get(node.selector);
+      if (group) {
+        group.push(node);
+      } else {
+        ruleGroups.set(node.selector, [node]);
+      }
+    }
+  }
+
   let index = nodes.length - 1;
   while (index >= 0) {
     let last = nodes[index--];
@@ -143,7 +164,10 @@ function dedupe(root) {
     }
     dedupe(last);
     if (last.type === 'rule') {
-      dedupeRule(last, nodes);
+      const group = ruleGroups && ruleGroups.get(last.selector);
+      if (group && group.length > 1) {
+        dedupeRule(last, group);
+      }
     } else if (
       (last.type === 'atrule' && last.name !== 'layer') ||
       last.type === 'decl'
