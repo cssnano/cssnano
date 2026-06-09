@@ -6,7 +6,8 @@
   "types": "types/index.d.ts",
   "files": [
     "LICENSE",
-    "src"
+    "src",
+    "types"
   ],
   "keywords": [
     "postcss",
