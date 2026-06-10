@@ -21,6 +21,7 @@ import { join, dirname, basename, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { performance } from 'perf_hooks';
 import { createRequire } from 'module';
+import { parseArgs } from 'node:util';
 
 const require = createRequire(import.meta.url);
 const cssnano = require('../packages/cssnano/src/index.js');
@@ -30,18 +31,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // of .css files (the corpus itself is not committed).
 const DEFAULT_DIR = join(__dirname, '..', 'frameworks');
 const RESULTS_DIR = join(__dirname, '..', 'bench-results');
-
-function parseArgs(argv) {
-  const out = { label: 'baseline', iters: 15, warmup: 3, only: null, dir: null };
-  for (const a of argv.slice(2)) {
-    const m = a.match(/^--([^=]+)=(.*)$/);
-    if (!m) continue;
-    const [, k, v] = m;
-    if (k === 'iters' || k === 'warmup') out[k] = Number(v);
-    else out[k] = v;
-  }
-  return out;
-}
 
 function quantile(sorted, q) {
   const idx = (sorted.length - 1) * q;
@@ -72,7 +61,7 @@ async function benchOne(name, source, processor, iters, warmup) {
   // Warmup — let V8 optimize hot paths before we measure.
   for (let i = 0; i < warmup; i++) {
     const res = await processor.process(source, { from: undefined });
-    // `res.css` is a lazy getter; reading it forces stringification. `void` discards it.
+    // Reading the lazy `res.css` getter runs stringification; `void` silences the unused-expression lint.
     void res.css;
   }
 
@@ -90,7 +79,22 @@ async function benchOne(name, source, processor, iters, warmup) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv);
+  const { values } = parseArgs({
+    options: {
+      label: { type: 'string', default: 'baseline' },
+      iters: { type: 'string', default: '15' },
+      warmup: { type: 'string', default: '3' },
+      only: { type: 'string' },
+      dir: { type: 'string' },
+    },
+  });
+  const args = {
+    label: values.label,
+    iters: Number(values.iters),
+    warmup: Number(values.warmup),
+    only: values.only ?? null,
+    dir: values.dir ?? null,
+  };
   const dir = args.dir ? resolve(args.dir) : DEFAULT_DIR;
 
   const files = readdirSync(dir)
