@@ -1,5 +1,12 @@
 # Change Log
 
+## 8.0.1
+
+### Patch Changes
+
+- fix(postcss-discard-overridden): publish types
+- chore: update the postcss peer dependency
+
 ## 8.0.0
 
 ### Major Changes

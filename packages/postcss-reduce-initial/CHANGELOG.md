@@ -1,5 +1,12 @@
 # Change Log
 
+## 8.0.1
+
+### Patch Changes
+
+- chore: update the postcss peer dependency
+- b245a0b: fix: update caniuse-api
+
 ## 8.0.0
 
 ### Major Changes

@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.1
+
+### Patch Changes
+
+- chore: update the postcss peer dependency
+
 ## 6.0.0
 
 ### Major Changes

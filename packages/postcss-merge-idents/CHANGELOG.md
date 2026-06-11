@@ -1,5 +1,13 @@
 # Change Log
 
+## 8.0.1
+
+### Patch Changes
+
+- chore: update the postcss peer dependency
+- Updated dependencies
+  - cssnano-utils@6.0.1
+
 ## 8.0.0
 
 ### Major Changes

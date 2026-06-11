@@ -1,5 +1,18 @@
 # Change Log
 
+## 5.0.1
+
+### Patch Changes
+
+- chore: update the postcss peer dependency
+- Updated dependencies
+- Updated dependencies [b245a0b]
+- Updated dependencies [3bf3f4d]
+  - postcss-normalize-whitespace@8.0.1
+  - postcss-discard-comments@8.0.1
+  - postcss-discard-empty@8.0.1
+  - cssnano-utils@6.0.1
+
 ## 5.0.0
 
 ### Major Changes
