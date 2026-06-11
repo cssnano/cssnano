@@ -223,15 +223,12 @@ importers:
         specifier: ^4.28.2
         version: 4.28.2
       caniuse-api:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^4.0.0
+        version: 4.0.0
       postcss-value-parser:
         specifier: ^4.2.0
         version: 4.2.0
     devDependencies:
-      '@types/caniuse-api':
-        specifier: ^3.0.6
-        version: 3.0.6
       postcss:
         specifier: ^8.5.15
         version: 8.5.15
@@ -331,8 +328,8 @@ importers:
         specifier: ^4.28.2
         version: 4.28.2
       caniuse-api:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^4.0.0
+        version: 4.0.0
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -340,9 +337,6 @@ importers:
         specifier: ^7.1.2
         version: 7.1.2
     devDependencies:
-      '@types/caniuse-api':
-        specifier: ^3.0.6
-        version: 3.0.6
       postcss:
         specifier: ^8.5.15
         version: 8.5.15
@@ -401,8 +395,8 @@ importers:
         specifier: ^4.28.1
         version: 4.28.2
       caniuse-api:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^4.0.0
+        version: 4.0.0
       cssesc:
         specifier: ^3.0.0
         version: 3.0.0
@@ -410,9 +404,6 @@ importers:
         specifier: ^7.1.2
         version: 7.1.2
     devDependencies:
-      '@types/caniuse-api':
-        specifier: ^3.0.6
-        version: 3.0.6
       '@types/cssesc':
         specifier: ^3.0.2
         version: 3.0.2
@@ -538,12 +529,9 @@ importers:
         specifier: ^4.28.2
         version: 4.28.2
       caniuse-api:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
-      '@types/caniuse-api':
-        specifier: ^3.0.6
-        version: 3.0.6
       html-to-text:
         specifier: ^10.0.0
         version: 10.0.0
@@ -761,9 +749,6 @@ packages:
     peerDependencies:
       selderee: ~0.12.0
 
-  '@types/caniuse-api@3.0.6':
-    resolution: {integrity: sha512-yMGwHJaqwIEXc3x7EyY3CeS73QG9WeC00w2nZ0/inoRv9DiLIhfvrY6vmXMSKlpRLFxrLcAWJh3JTwYNPl3ihg==}
-
   '@types/cssesc@3.0.2':
     resolution: {integrity: sha512-Qii6nTRktvtI380EloxH/V7MwgrYxkPgBI+NklUjQuhzgAd1AqT3QDJd+eD+0doRADgfwvtagLRo7JFa7aMHXg==}
 
@@ -862,11 +847,11 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
-  caniuse-api@3.0.0:
-    resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
+  caniuse-api@4.0.0:
+    resolution: {integrity: sha512-B0hQ1OLyJuHTQSOWXvwibWqM6DCoqJdvBA6X1S/53bd4XU7LJ1yurIPlrsouol3mw1jh9pGI4ivubSpmJeIqCA==}
 
-  caniuse-lite@1.0.30001788:
-    resolution: {integrity: sha512-6q8HFp+lOQtcf7wBK+uEenxymVWkGKkjFpCvw5W25cmMwEDU45p1xQFBQv8JDlMMry7eNxyBaR+qxgmTUZkIRQ==}
+  caniuse-lite@1.0.30001797:
+    resolution: {integrity: sha512-l8xKG+gwAIExZGl9FrF7KUwuOmk6wbEPC9Xoy/RtnWv1XG0Q4LFlagaLpUv3Kiza3W/wm27zy0yWJEieYKAP6w==}
 
   chalk@2.4.2:
     resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
@@ -1232,14 +1217,8 @@ packages:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
 
-  lodash.memoize@4.1.2:
-    resolution: {integrity: sha512-t7j+NzmgnQzTAYXcsHYLgimltOV1MXHtlOWf6GjL9Kj8GK5FInw5JotxvbOs+IvV1/Dzo04/fCGfLVs7aXb4Ag==}
-
   lodash.startcase@4.4.0:
     resolution: {integrity: sha512-+WKqsK294HMSc2jEbNgpHpd0JfIBhp7rEV4aqXWqFr6AlXov+SlcgB1Fv01y2kGe3Gc8nMW7VA0SrGuSkRfIEg==}
-
-  lodash.uniq@4.5.0:
-    resolution: {integrity: sha512-xfBaXQd9ryd9dlSDvnvI0lvxfLJlYAZzXomUYzLKtUeOQvOP5piqAWuGtrhWeqaXK9hhoM/iyJc5AV+XfsX3HQ==}
 
   mdn-data@2.0.28:
     resolution: {integrity: sha512-aylIc7Z9y4yzHYAJNuESG3hfhC+0Ibp/MAMiaOZgNv4pmEdFyfZhhhny4MNiAfWdBQ1RQ2mfDWmM1x8SvGyp8g==}
@@ -1783,8 +1762,6 @@ snapshots:
       domhandler: 5.0.3
       selderee: 0.12.0
 
-  '@types/caniuse-api@3.0.6': {}
-
   '@types/cssesc@3.0.2': {}
 
   '@types/esrecurse@4.3.1': {}
@@ -1831,7 +1808,7 @@ snapshots:
   autoprefixer@10.5.0(postcss@8.5.15):
     dependencies:
       browserslist: 4.28.2
-      caniuse-lite: 1.0.30001788
+      caniuse-lite: 1.0.30001797
       fraction.js: 5.3.4
       picocolors: 1.1.1
       postcss: 8.5.15
@@ -1866,19 +1843,17 @@ snapshots:
   browserslist@4.28.2:
     dependencies:
       baseline-browser-mapping: 2.10.18
-      caniuse-lite: 1.0.30001788
+      caniuse-lite: 1.0.30001797
       electron-to-chromium: 1.5.335
       node-releases: 2.0.36
       update-browserslist-db: 1.2.3(browserslist@4.28.2)
 
-  caniuse-api@3.0.0:
+  caniuse-api@4.0.0:
     dependencies:
       browserslist: 4.28.2
-      caniuse-lite: 1.0.30001788
-      lodash.memoize: 4.1.2
-      lodash.uniq: 4.5.0
+      caniuse-lite: 1.0.30001797
 
-  caniuse-lite@1.0.30001788: {}
+  caniuse-lite@1.0.30001797: {}
 
   chalk@2.4.2:
     dependencies:
@@ -2243,11 +2218,7 @@ snapshots:
     dependencies:
       p-locate: 5.0.0
 
-  lodash.memoize@4.1.2: {}
-
   lodash.startcase@4.4.0: {}
-
-  lodash.uniq@4.5.0: {}
 
   mdn-data@2.0.28: {}
 

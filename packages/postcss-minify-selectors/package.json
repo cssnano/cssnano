@@ -27,7 +27,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "browserslist": "^4.28.1",
-    "caniuse-api": "^3.0.0",
+    "caniuse-api": "^4.0.0",
     "cssesc": "^3.0.0",
     "postcss-selector-parser": "^7.1.2"
   },
@@ -38,7 +38,6 @@
     "node": "^22.11.0 || ^24.11.0 || >=26.0"
   },
   "devDependencies": {
-    "@types/caniuse-api": "^3.0.6",
     "@types/cssesc": "^3.0.2",
     "postcss": "^8.5.15"
   },
