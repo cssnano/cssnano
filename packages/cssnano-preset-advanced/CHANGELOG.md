@@ -1,5 +1,18 @@
 # Change Log
 
+## 8.0.2
+
+### Patch Changes
+
+- chore: update the postcss peer dependency
+- Updated dependencies [b245a0b]
+- Updated dependencies [3bf3f4d]
+  - cssnano-preset-default@8.0.2
+  - postcss-discard-unused@8.0.1
+  - postcss-reduce-idents@8.0.1
+  - postcss-merge-idents@8.0.1
+  - postcss-zindex@8.0.1
+
 ## 8.0.1
 
 ### Patch Changes

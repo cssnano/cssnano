@@ -1,5 +1,12 @@
 # Change Log
 
+## 8.0.1
+
+### Patch Changes
+
+- chore: update the postcss peer dependency
+- perf: avoid superfluous work in some plugins
+
 ## 8.0.0
 
 ### Major Changes

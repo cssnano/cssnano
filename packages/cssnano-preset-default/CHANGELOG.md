@@ -1,5 +1,42 @@
 # Change Log
 
+## 8.0.2
+
+### Patch Changes
+
+- chore: update the postcss peer dependency
+- Updated dependencies [b245a0b]
+- Updated dependencies [3bf3f4d]
+- Updated dependencies [7343c87]
+- Updated dependencies
+  - postcss-discard-overridden@8.0.1
+  - postcss-normalize-timing-functions@8.0.1
+  - postcss-normalize-display-values@8.0.1
+  - postcss-normalize-repeat-style@8.0.1
+  - postcss-normalize-whitespace@8.0.1
+  - postcss-normalize-positions@8.0.1
+  - postcss-discard-duplicates@8.0.1
+  - postcss-minify-font-values@8.0.1
+  - postcss-normalize-charset@8.0.1
+  - postcss-normalize-unicode@8.0.1
+  - postcss-reduce-transforms@8.0.1
+  - postcss-discard-comments@8.0.1
+  - postcss-minify-gradients@8.0.1
+  - postcss-minify-selectors@8.0.2
+  - postcss-normalize-string@8.0.1
+  - postcss-unique-selectors@8.0.1
+  - postcss-convert-values@8.0.1
+  - postcss-merge-longhand@8.0.1
+  - postcss-ordered-values@8.0.1
+  - postcss-reduce-initial@8.0.1
+  - postcss-discard-empty@8.0.1
+  - postcss-minify-params@8.0.1
+  - postcss-normalize-url@8.0.1
+  - postcss-merge-rules@8.0.1
+  - postcss-colormin@8.0.1
+  - cssnano-utils@6.0.1
+  - postcss-svgo@8.0.1
+
 ## 8.0.1
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # Change Log
 
+## 8.0.1
+
+### Patch Changes
+
+- chore: update the postcss peer dependency
+- 7343c87: Encode apostrophes as XML entities in SVG data URIs so optimized attributes remain valid when SVGO emits values containing apostrophes.
+
 ## 8.0.0
 
 ### Major Changes

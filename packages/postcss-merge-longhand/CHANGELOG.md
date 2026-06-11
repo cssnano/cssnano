@@ -1,5 +1,17 @@
 # Change Log
 
+## 8.0.1
+
+### Patch Changes
+
+- chore: update the postcss peer dependency
+- b245a0b: fix: update caniuse-api
+- perf: avoid superfluous work in some plugins
+- Updated dependencies
+- Updated dependencies [b245a0b]
+- Updated dependencies [3bf3f4d]
+  - stylehacks@8.0.1
+
 ## 8.0.0
 
 ### Major Changes
