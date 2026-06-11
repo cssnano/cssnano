@@ -27,7 +27,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "browserslist": "^4.28.2",
-    "caniuse-api": "^3.0.0"
+    "caniuse-api": "^4.0.0"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
@@ -36,7 +36,6 @@
     "node": "^22.11.0 || ^24.11.0 || >=26.0"
   },
   "devDependencies": {
-    "@types/caniuse-api": "^3.0.6",
     "html-to-text": "^10.0.0",
     "postcss": "^8.5.15"
   },
