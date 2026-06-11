@@ -5,6 +5,7 @@
  */
 function encode(data) {
   return data
+    .replace(/'/g, '&apos;')
     .replace(/"/g, "'")
     .replace(/%/g, '%25')
     .replace(/</g, '%3C')

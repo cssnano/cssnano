@@ -105,6 +105,14 @@ test(
 );
 
 test(
+  'should preserve apostrophes in uri-encoded svg attributes',
+  processCSS(
+    'h1{background:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%3E%3Ctext%20font-size=%2720%27%20font-family=%27%26apos;Arial%26apos;%27%20transform=%27translate%280%2C20%29%27%3E?%3C/text%3E%3C/svg%3E")}',
+    "h1{background:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Ctext font-family='%26apos;Arial%26apos;' font-size='20' transform='translate(0 20)'%3E?%3C/text%3E%3C/svg%3E\")}"
+  )
+);
+
+test(
   'should allow users to customise the output',
   processCSS(
     'h1{background:url(\'data:image/svg+xml;utf-8,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><circle cx="50" cy="50" r="40" fill="yellow" /><!--test comment--></svg>\')}',
