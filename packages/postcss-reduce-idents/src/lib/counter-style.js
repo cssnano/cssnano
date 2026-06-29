@@ -97,11 +97,17 @@ module.exports = function () {
     },
 
     transform() {
+      const referenced = new Set();
+
       // Iterate each property and change their names
       decls.forEach((decl) => {
         decl.value = valueParser(decl.value)
           .walk((node) => {
             if (node.type === 'word' && node.value in cache) {
+              if (!referenced.has(node.value)) {
+                referenced.add(node.value);
+              }
+
               cache[node.value].count++;
 
               node.value = cache[node.value].ident;
@@ -114,7 +120,7 @@ module.exports = function () {
       atRules.forEach((rule) => {
         const cached = cache[rule.params];
 
-        if (cached && cached.count > 0) {
+        if (cached && cached.count > 0 && referenced.has(rule.params)) {
           rule.params = cached.ident;
         }
       });
