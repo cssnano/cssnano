@@ -87,6 +87,6 @@ See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTOR
 
 This program uses a list of CSS properties derived from data maintained my the MDN team at Mozilla and licensed under the [CC0 1.0 Universal Public Domain Dedication](https://creativecommons.org/publicdomain/zero/1.0/).
 
-MIT © [Ben Briggs](http://beneb.info)
+MIT © [Ben Briggs](https://beneb.info)
 
 [postcss]: https://github.com/postcss/postcss
