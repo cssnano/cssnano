@@ -48,6 +48,6 @@ See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTOR
 
 ## License
 
-MIT © [Ben Briggs](http://beneb.info)
+MIT © [Ben Briggs](https://beneb.info)
 
 [postcss]: https://github.com/postcss/postcss

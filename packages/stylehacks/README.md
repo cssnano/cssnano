@@ -85,7 +85,7 @@ to cover it.
 
 ## License
 
-MIT © [Ben Briggs](http://beneb.info)
+MIT © [Ben Briggs](https://beneb.info)
 
 
 [stylelint]: https://github.com/stylelint/stylelint
