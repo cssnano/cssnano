@@ -51,7 +51,7 @@ shortName = "cssDeclarationSorter"
 
 [postcss-calc]
 shortDescription = "Reduces CSS calc expressions"
-longDescription = "Reduces CSS \`calc\` expressions whereever possible, ensuring both browser compatibility and compression."
+longDescription = "Reduces CSS \`calc\` expressions wherever possible, ensuring both browser compatibility and compression."
 inputExample = """
 .box {
     width: calc(2 * 100px);
