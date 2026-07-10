@@ -26,10 +26,10 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^4.28.1",
+    "browserslist": "^4.28.5",
     "caniuse-api": "^4.0.0",
     "cssesc": "^3.0.0",
-    "postcss-selector-parser": "^7.1.2"
+    "postcss-selector-parser": "^7.1.4"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
@@ -39,9 +39,9 @@
   },
   "devDependencies": {
     "@types/cssesc": "^3.0.2",
-    "postcss": "^8.5.15"
+    "postcss": "^8.5.16"
   },
   "peerDependencies": {
-    "postcss": "^8.5.15"
+    "postcss": "^8.5.16"
   }
 }

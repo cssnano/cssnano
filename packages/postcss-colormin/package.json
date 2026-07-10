@@ -27,8 +27,8 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "@colordx/core": "^5.4.3",
-    "browserslist": "^4.28.2",
+    "@colordx/core": "^5.5.0",
+    "browserslist": "^4.28.5",
     "caniuse-api": "^4.0.0",
     "postcss-value-parser": "^4.2.0"
   },
@@ -39,9 +39,9 @@
     "node": "^22.11.0 || ^24.11.0 || >=26.0"
   },
   "devDependencies": {
-    "postcss": "^8.5.15"
+    "postcss": "^8.5.16"
   },
   "peerDependencies": {
-    "postcss": "^8.5.15"
+    "postcss": "^8.5.16"
   }
 }
