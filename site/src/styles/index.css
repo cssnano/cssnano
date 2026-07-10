@@ -353,8 +353,6 @@ tr:nth-of-type(even) {
   background: var(--theme-bg-hover);
 }
 th {
-  background: var(--color-black);
-  color: var(--theme-color);
   font-weight: 700;
 }
 td,
