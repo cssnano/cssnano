@@ -21,15 +21,6 @@
     
        
         <url>
-            <loc>https://cssnano.github.io/cssnano/cssnano/</loc>
-            <priority>0.5</priority>
-            <lastmod>2026-05-05T10:43:09.719Z</lastmod>
-            <changefreq>monthly</changefreq>
-        </url>
-        
-    
-       
-        <url>
             <loc>https://cssnano.github.io/cssnano/cssnano/docs/presets/</loc>
             <priority>0.5</priority>
             <lastmod>2026-05-05T10:44:03.214Z</lastmod>
@@ -42,15 +33,6 @@
             <loc>https://cssnano.github.io/cssnano/cssnano/docs/support-us/</loc>
             <priority>0.5</priority>
             <lastmod>2026-05-05T10:44:03.214Z</lastmod>
-            <changefreq>monthly</changefreq>
-        </url>
-        
-    
-       
-        <url>
-            <loc>https://cssnano.github.io/cssnano/cssnano/styles/index.css</loc>
-            <priority>0.5</priority>
-            <lastmod>2026-05-05T10:44:23.735Z</lastmod>
             <changefreq>monthly</changefreq>
         </url>
         
@@ -138,9 +120,27 @@
     
        
         <url>
+            <loc>https://cssnano.github.io/cssnano/cssnano/</loc>
+            <priority>0.5</priority>
+            <lastmod>2026-07-10T15:44:35.014Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
             <loc>https://cssnano.github.io/cssnano/cssnano/playground/</loc>
             <priority>0.5</priority>
-            <lastmod>2026-06-11T07:45:56.826Z</lastmod>
+            <lastmod>2026-07-10T16:07:40.112Z</lastmod>
+            <changefreq>monthly</changefreq>
+        </url>
+        
+    
+       
+        <url>
+            <loc>https://cssnano.github.io/cssnano/cssnano/styles/index.css</loc>
+            <priority>0.5</priority>
+            <lastmod>2026-07-10T16:07:40.112Z</lastmod>
             <changefreq>monthly</changefreq>
         </url>
         
