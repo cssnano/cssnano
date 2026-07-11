@@ -440,16 +440,12 @@ test(
 
 test(
   'should pass through hwb color stops in gradients',
-  passthroughCSS(
-    'background:linear-gradient(hwb(0 0% 0%),hwb(240 0% 0%))'
-  )
+  passthroughCSS('background:linear-gradient(hwb(0 0% 0%),hwb(240 0% 0%))')
 );
 
 test(
   'should pass through lch color stops in gradients',
-  passthroughCSS(
-    'background:linear-gradient(lch(50 100 30),lch(80 50 200))'
-  )
+  passthroughCSS('background:linear-gradient(lch(50 100 30),lch(80 50 200))')
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

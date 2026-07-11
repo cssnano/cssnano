@@ -47,11 +47,9 @@ test(
 
 test(
   'should convert values in custom properties when transformCustomProperties is true',
-  processCSS(
-    'h1{--my-variable:500ms}',
-    'h1{--my-variable:.5s}',
-    { transformCustomProperties: true }
-  )
+  processCSS('h1{--my-variable:500ms}', 'h1{--my-variable:.5s}', {
+    transformCustomProperties: true,
+  })
 );
 
 test(

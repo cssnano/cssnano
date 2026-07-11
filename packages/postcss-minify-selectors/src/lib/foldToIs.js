@@ -14,9 +14,10 @@ const {
  * @return {string | null}
  */
 function tryFold(root) {
-  const selectors = /** @type {import('postcss-selector-parser').Selector[]} */ (
-    root.nodes.filter((n) => n.type === 'selector')
-  );
+  const selectors =
+    /** @type {import('postcss-selector-parser').Selector[]} */ (
+      root.nodes.filter((n) => n.type === 'selector')
+    );
   if (selectors.length < 2) {
     return null;
   }
@@ -46,7 +47,9 @@ function tryFold(root) {
     const ref = tokenLists[0][refIdx];
     const allMatch = tokenLists.every((t) => {
       const idx = t.length - 1 - suffix;
-      return idx >= prefix && t[idx].kind === ref.kind && t[idx].str === ref.str;
+      return (
+        idx >= prefix && t[idx].kind === ref.kind && t[idx].str === ref.str
+      );
     });
     if (!allMatch) {
       break;
@@ -58,7 +61,10 @@ function tryFold(root) {
   while (prefix > 0 && firstTokens[prefix - 1].kind !== 'combinator') {
     prefix--;
   }
-  while (suffix > 0 && firstTokens[firstTokens.length - suffix].kind !== 'combinator') {
+  while (
+    suffix > 0 &&
+    firstTokens[firstTokens.length - suffix].kind !== 'combinator'
+  ) {
     suffix--;
   }
 

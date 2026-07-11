@@ -505,7 +505,9 @@ test('no-fold: :where() in middle (functional pseudo outside allowlist)', () => 
 test('no-fold: :not(.a &) in middle (functional pseudo with nesting inside)', () => {
   assert.equal(
     tryFold(
-      parseRoot('.x :not(.a &) y,.x :not(.b &) y,.x :not(.c &) y,.x :not(.d &) y')
+      parseRoot(
+        '.x :not(.a &) y,.x :not(.b &) y,.x :not(.c &) y,.x :not(.d &) y'
+      )
     ),
     null
   );
@@ -528,10 +530,7 @@ test('fold: universal in shared prefix', () => {
 });
 
 test('fold: universal in shared suffix', () => {
-  assert.equal(
-    tryFold(parseRoot('.a *,.b *,.c *,.d *')),
-    ':is(.a,.b,.c,.d) *'
-  );
+  assert.equal(tryFold(parseRoot('.a *,.b *,.c *,.d *')), ':is(.a,.b,.c,.d) *');
 });
 
 test('fold: leading combinator (nesting context)', () => {
@@ -579,10 +578,7 @@ test('no-fold: custom-property pseudo-classes in middle', () => {
 });
 
 test('no-fold: namespaced wildcard tag middles (svg|a etc.)', () => {
-  assert.equal(
-    tryFold(parseRoot('.x svg|a,.x svg|b,.x svg|c,.x svg|d')),
-    null
-  );
+  assert.equal(tryFold(parseRoot('.x svg|a,.x svg|b,.x svg|c,.x svg|d')), null);
 });
 
 test('no-fold: :nth-child(2n+1) in middle (structural pseudo outside allowlist)', () => {
@@ -625,19 +621,14 @@ test('no-fold: all middles identical (after dedup < 2)', () => {
 test('no-fold: pseudo-element ::before in middle', () => {
   assert.equal(
     tryFold(
-      parseRoot(
-        '.x ::before .y,.x ::after .y,.x ::backdrop .y,.x ::marker .y'
-      )
+      parseRoot('.x ::before .y,.x ::after .y,.x ::backdrop .y,.x ::marker .y')
     ),
     null
   );
 });
 
 test('no-fold: nesting `&` in middle', () => {
-  assert.equal(
-    tryFold(parseRoot('.x & .y,.x .a .y,.x .b .y,.x .c .y')),
-    null
-  );
+  assert.equal(tryFold(parseRoot('.x & .y,.x .a .y,.x .b .y,.x .c .y')), null);
 });
 
 test('no-fold: prefix would split a compound', () => {
@@ -719,9 +710,7 @@ test('no-fold: CSS Modules :global() middles', () => {
 test('no-fold: shadow-DOM :slotted() middles', () => {
   assert.equal(
     tryFold(
-      parseRoot(
-        '.x :slotted(a),.x :slotted(b),.x :slotted(c),.x :slotted(d)'
-      )
+      parseRoot('.x :slotted(a),.x :slotted(b),.x :slotted(c),.x :slotted(d)')
     ),
     null
   );
@@ -749,9 +738,7 @@ test('no-fold: :host-context() middles', () => {
 test('no-fold: ::part(name) middles', () => {
   assert.equal(
     tryFold(
-      parseRoot(
-        '.x ::part(a) y,.x ::part(b) y,.x ::part(c) y,.x ::part(d) y'
-      )
+      parseRoot('.x ::part(a) y,.x ::part(b) y,.x ::part(c) y,.x ::part(d) y')
     ),
     null
   );
