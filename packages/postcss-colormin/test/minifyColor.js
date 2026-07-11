@@ -211,8 +211,8 @@ test('should recognise named colors as valid and keep them when shortest', () =>
 });
 
 test('should convert hex to named color when name is shorter', () => {
-  assert.strictEqual(min('#ff0000'), 'red');   // 'red' (3) < '#f00' (4) — name wins
-  assert.strictEqual(min('#0000ff'), '#00f');  // 'blue' (4) = '#00f' (4) — hex wins on equal length
+  assert.strictEqual(min('#ff0000'), 'red'); // 'red' (3) < '#f00' (4) — name wins
+  assert.strictEqual(min('#0000ff'), '#00f'); // 'blue' (4) = '#00f' (4) — hex wins on equal length
 });
 
 test('name:false should use hex instead of named colors', () => {

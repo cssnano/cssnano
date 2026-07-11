@@ -780,11 +780,7 @@ test(
 
 test(
   'no-fold: rejects mixed-specificity middles (id vs class)',
-  processCSS(
-    '.a b,#x b,.c b{color:red}',
-    '#x b,.a b,.c b{color:red}',
-    modernBl
-  )
+  processCSS('.a b,#x b,.c b{color:red}', '#x b,.a b,.c b{color:red}', modernBl)
 );
 
 test(

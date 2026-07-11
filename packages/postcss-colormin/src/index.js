@@ -151,7 +151,10 @@ function pluginCreator(config = {}) {
               return;
             }
 
-            if (config.transformCustomProperties === false && decl.prop.startsWith('--')) {
+            if (
+              config.transformCustomProperties === false &&
+              decl.prop.startsWith('--')
+            ) {
               return;
             }
 
