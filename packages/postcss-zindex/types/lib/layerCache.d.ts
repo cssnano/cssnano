@@ -1,6 +1,5 @@
 export = LayerCache;
 /** @constructor */
-declare function LayerCache(): void;
 declare class LayerCache {
     _values: Map<any, any>;
     /**
