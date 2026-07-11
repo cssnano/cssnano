@@ -72,6 +72,9 @@ function pluginCreator(opts) {
     prepare() {
       const cache = new Map();
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkDecls(/font/i, (decl) => {
             const value = decl.value;

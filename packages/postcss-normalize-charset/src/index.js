@@ -15,6 +15,10 @@ function pluginCreator(opts = {}) {
   return {
     postcssPlugin: 'postcss-normalize-' + charset,
 
+    /**
+     * @param {import('postcss').Root} css
+     * @param {import('postcss').Helpers} helper
+     */
     OnceExit(css, { AtRule }) {
       /** @type {import('postcss').AtRule | undefined} */
       let charsetRule;

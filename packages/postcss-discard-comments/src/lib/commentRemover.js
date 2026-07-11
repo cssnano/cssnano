@@ -5,6 +5,7 @@ class CommentRemover {
   constructor(options) {
     this.options = options;
   }
+
   /**
    * @param {string} comment
    * @return {boolean | undefined}

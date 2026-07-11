@@ -243,6 +243,9 @@ function pluginCreator(opts) {
       }
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           const cache = new Map();
           const processor = parser((selectors) => {

@@ -1,1 +1,1 @@
-{"version":3,"file":"getDecls.d.ts","sourceRoot":"","sources":["../../src/lib/getDecls.js"],"names":[],"mappings":"AAMiB,gCAJN,OAAO,SAAS,EAAE,IAAI,cACtB,MAAM,EAAE,GACP,OAAO,SAAS,EAAE,WAAW,EAAE,CAS1C"}
+{"version":3,"file":"getDecls.d.ts","sourceRoot":"","sources":["../../src/lib/getDecls.js"],"names":[],"mappings":";AACA;;;;GAIG;0BACgC,IAAI,EAJ5B,OAAO,SAAS,EAAE,IAIU,EAAE,UAAU,EAHxC,MAAM,EAGkC,GAFvC,OAAO,SAAS,EAAE,WAAW,EAAE"}

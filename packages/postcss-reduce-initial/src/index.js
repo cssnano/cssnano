@@ -39,6 +39,9 @@ function pluginCreator(options = {}) {
 
       const initialSupport = isSupported('css-initial-value', browsers);
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkDecls((decl) => {
             const lowerCasedProp = decl.prop.toLowerCase();

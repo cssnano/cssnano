@@ -141,6 +141,9 @@ function pluginCreator(config = {}) {
       const options = addPluginDefaults(config, browsers);
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkDecls((decl) => {
             if (

@@ -63,6 +63,9 @@ function generateUniqueSelector(selectors) {
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-unique-selectors',
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       css.walkRules((nodes) => {
         if (nodes.raws.selector && nodes.raws.selector.raw) {

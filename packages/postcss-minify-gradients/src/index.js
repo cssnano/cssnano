@@ -215,6 +215,9 @@ function optimise(decl) {
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-minify-gradients',
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       css.walkDecls(optimise);
     },

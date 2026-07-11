@@ -241,6 +241,9 @@ function pluginCreator(opts = { precision: false }) {
       });
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkDecls((decl) => transform(opts, browsers, decl));
         },

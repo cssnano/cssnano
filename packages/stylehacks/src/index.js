@@ -30,6 +30,9 @@ function pluginCreator(opts = {}) {
       });
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           /** @type {import('./plugin').Plugin[]} */
           const processors = [];

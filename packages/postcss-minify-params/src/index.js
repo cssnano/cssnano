@@ -162,6 +162,9 @@ function pluginCreator(options = {}) {
       const hasAllBug = browsers.some((browser) => allBugBrowers.has(browser));
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkAtRules((rule) => transform(hasAllBug, rule));
         },

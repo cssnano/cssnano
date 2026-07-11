@@ -7,7 +7,7 @@ const defaultPreset = require('cssnano-preset-default');
 
 const cssnano = 'cssnano';
 
-/** @typedef {{preset?: any, plugins?: any[], configFile?: string}} Options */
+/** @typedef {{preset?: {plugins: any[]}, plugins?: any[], configFile?: string}} Options */
 /**
  * @param {string} moduleId
  * @returns {boolean}
@@ -118,7 +118,7 @@ function resolveConfig(options) {
 
 /**
  * @type {import('postcss').PluginCreator<Options>}
- * @param {Options=} options
+ * @param {Options} [options={}]
  * @return {import('postcss').Processor}
  */
 function cssnanoPlugin(options = {}) {
@@ -129,6 +129,7 @@ function cssnanoPlugin(options = {}) {
 
     options.plugins.forEach((plugin) => {
       if (Array.isArray(plugin)) {
+        /** @type any[] */
         const [pluginDef, opts = {}] = plugin;
         if (typeof pluginDef === 'string' && isResolvable(pluginDef)) {
           options.preset.plugins.push([require(pluginDef), opts]);

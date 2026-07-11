@@ -118,6 +118,9 @@ function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-timing-functions',
 
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       const cache = new Map();
 

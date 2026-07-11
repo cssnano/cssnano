@@ -13,6 +13,9 @@ function pluginCreator(opts = {}) {
     prepare() {
       const cache = new LayerCache();
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           /** @type {import('postcss').Declaration[]} */
           const nodes = [];

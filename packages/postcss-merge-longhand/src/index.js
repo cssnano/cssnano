@@ -10,6 +10,9 @@ function pluginCreator() {
   return {
     postcssPlugin: 'postcss-merge-longhand',
 
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       css.walkRules((rule) => {
         // Scan the rule's props once, then run only the processors whose

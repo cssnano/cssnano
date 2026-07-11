@@ -1,9 +1,10 @@
 'use strict';
-/** @constructor */
 class LayerCache {
+  /** @constructor */
   constructor() {
     this._values = new Map();
   }
+
   /**
    * @param {number} startIndex
    * @return {void}
@@ -14,6 +15,7 @@ class LayerCache {
       this._values.set(sortedValues[i], i + startIndex);
     }
   }
+
   /**
    * @param {string} value
    * @return {void}
@@ -28,6 +30,7 @@ class LayerCache {
 
     this._values.set(parsedValue, parsedValue);
   }
+
   /**
    * @param {string} value
    * @return {string}

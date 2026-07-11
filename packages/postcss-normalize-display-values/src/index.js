@@ -42,6 +42,9 @@ function pluginCreator() {
     prepare() {
       const cache = new Map();
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkDecls(/^display$/i, (decl) => {
             const value = decl.value;

@@ -47,6 +47,10 @@ function discardAndReport(css, result) {
 function pluginCreator() {
   return {
     postcssPlugin: plugin,
+    /**
+     * @param {import('postcss').Root} css
+     * @param {import('postcss').Helpers} helper
+     */
     OnceExit(css, { result }) {
       discardAndReport(css, result);
     },

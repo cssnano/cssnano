@@ -119,6 +119,9 @@ function pluginCreator(opts = {}) {
       const isLegacy = browsers.some(hasLowerCaseUPrefixBug);
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkDecls(/^unicode-range$/i, (decl) => {
             const value = decl.value;

@@ -610,6 +610,9 @@ function pluginCreator(opts = {}) {
       const ruleMeta = new WeakMap();
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           const { merger, clean } = selectorMerger(
             browsers,

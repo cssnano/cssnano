@@ -66,6 +66,9 @@ function pluginCreator() {
       const rules = [];
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkAtRules((node) => {
             if (isOverridable(node.name)) {

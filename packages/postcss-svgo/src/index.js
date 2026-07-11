@@ -124,6 +124,10 @@ function pluginCreator(opts = {}) {
   return {
     postcssPlugin: PLUGIN,
 
+    /**
+     * @param {import('postcss').Root} css
+     * @param {import('postcss').Helpers} helper
+     */
     OnceExit(css, { result }) {
       css.walkDecls((decl) => {
         if (!dataURI.test(decl.value)) {

@@ -1,11 +1,16 @@
+declare const _exports: {
+    explode: typeof explode;
+    merge: typeof merge;
+};
+export = _exports;
 /**
  * @param {import('postcss').Rule} rule
  * @return {void}
  */
-export function explode(rule: import("postcss").Rule): void;
+declare function explode(rule: import('postcss').Rule): void;
 /**
  * @param {import('postcss').Rule} rule
  * @return {void}
  */
-export function merge(rule: import("postcss").Rule): void;
+declare function merge(rule: import('postcss').Rule): void;
 //# sourceMappingURL=borders.d.ts.map

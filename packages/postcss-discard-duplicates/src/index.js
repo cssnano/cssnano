@@ -184,6 +184,9 @@ function dedupe(root) {
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-discard-duplicates',
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       dedupe(css);
     },

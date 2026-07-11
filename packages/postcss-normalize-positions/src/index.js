@@ -216,6 +216,9 @@ function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-positions',
 
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       const cache = new Map();
 

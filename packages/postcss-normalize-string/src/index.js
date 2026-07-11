@@ -294,7 +294,9 @@ function pluginCreator(opts) {
 
   return {
     postcssPlugin: 'postcss-normalize-string',
-
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       const cache = new Map();
 

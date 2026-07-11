@@ -149,7 +149,10 @@ function pluginCreator(opts = {}) {
 
   return {
     postcssPlugin: 'postcss-discard-comments',
-
+    /**
+     * @param {import('postcss').Root} css
+     * @param {import('postcss').Helpers} helper
+     */
     OnceExit(css, { list }) {
       css.walk((node) => {
         if (node.type === 'comment' && remover.canRemove(node.text)) {

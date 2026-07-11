@@ -132,6 +132,9 @@ function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-url',
 
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       css.walk((node) => {
         if (node.type === 'decl') {

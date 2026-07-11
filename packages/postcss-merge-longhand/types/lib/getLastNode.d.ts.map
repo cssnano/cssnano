@@ -1,1 +1,1 @@
-{"version":3,"file":"getLastNode.d.ts","sourceRoot":"","sources":["../../src/lib/getLastNode.js"],"names":[],"mappings":"wBACW,CAAC,IAAI,EAAE,OAAO,SAAS,EAAE,OAAO,EAAE,EAAE,IAAI,EAAE,MAAM,KAAK,OAAO,SAAS,EAAE,WAAW"}
+{"version":3,"file":"getLastNode.d.ts","sourceRoot":"","sources":["../../src/lib/getLastNode.js"],"names":[],"mappings":";AACA,iGAAiG;0BAC/E,IAAI,sCAAA,EAAE,IAAI,QAAA,GACR,OAAO,SAAS,EAAE,WAAW"}

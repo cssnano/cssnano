@@ -47,6 +47,9 @@ function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-whitespace',
 
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       const cache = new Map();
 

@@ -3,8 +3,11 @@ export = pluginCreator;
  * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
-declare function pluginCreator(): import("postcss").Plugin;
-declare namespace pluginCreator {
-    let postcss: true;
-}
+declare function pluginCreator(): {
+    postcssPlugin: string;
+    /**
+     * @param {import('postcss').Root} css
+     */
+    OnceExit(css: import('postcss').Root): void;
+};
 //# sourceMappingURL=index.d.ts.map

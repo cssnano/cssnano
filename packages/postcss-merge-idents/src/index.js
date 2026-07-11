@@ -138,7 +138,9 @@ function mergeAtRules(css) {
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-merge-idents',
-
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       mergeAtRules(css);
     },

@@ -65,7 +65,7 @@ function hasFont(fontFamily, cache, comma) {
   return comma(fontFamily).some((font) => cache.some((c) => c.includes(font)));
 }
 
-/** 
+/**
  * fonts have slightly different logic
 
  * @param {{atRules: import('postcss').AtRule[], values: string[]}} cache
@@ -129,6 +129,10 @@ function pluginCreator(opts) {
       const fontCache = { atRules: [], values: [] };
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         * @param {import('postcss').Helpers} helper
+         */
         OnceExit(css, { list }) {
           const { comma, space } = list;
           css.walk((node) => {

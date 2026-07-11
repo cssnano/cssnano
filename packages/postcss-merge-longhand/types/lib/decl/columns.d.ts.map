@@ -1,1 +1,1 @@
-{"version":3,"file":"columns.d.ts","sourceRoot":"","sources":["../../../src/lib/decl/columns.js"],"names":[],"mappings":"AA6CA;;;GAGG;AACH,8BAHW,OAAO,SAAS,EAAE,IAAI,GACrB,IAAI,CAmCf;AAgDD;;;GAGG;AACH,4BAHW,OAAO,SAAS,EAAE,IAAI,GACrB,IAAI,CAwBf"}
+{"version":3,"file":"columns.d.ts","sourceRoot":"","sources":["../../../src/lib/decl/columns.js"],"names":[],"mappings":";;;;;AA6CA;;;GAGG;AACH,iBAAS,OAAO,CAAC,IAAI,EAHV,OAAO,SAAS,EAAE,IAGR,GAFT,IAAI,CAmCf;AAgDD;;;GAGG;AACH,iBAAS,KAAK,CAAC,IAAI,EAHR,OAAO,SAAS,EAAE,IAGV,GAFP,IAAI,CAwBf"}
