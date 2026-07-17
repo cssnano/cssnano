@@ -41,6 +41,28 @@ test(
   )
 );
 
+test('should handle calc expression with multiple custom property fallbacks', () => {
+  withDefaults.processCSS(
+    `.some-rule-lg {
+  --width-lg: 1px;
+  --width-md: 2px;
+  --width-sm: 3px;
+  --offset-lg: 4px;
+  --offset-md: 5px;
+  --offset-sm: 6px;
+  width: calc(var(--width-lg, var(--width-md, var(--width-sm, 0))) + var(--offset-lg, var(--offset-md, var(--offset-sm, 0))));
+}`,
+    `.some-rule-lg {
+  --width-lg: 1px;
+  --width-md: 2px;
+  --width-sm: 3px;
+  --offset-lg: 4px;
+  --offset-md: 5px;
+  --offset-sm: 6px;
+  width: calc(var(--width-lg, var(--width-md, var(--width-sm, 0))) + var(--offset-lg, var(--offset-md, var(--offset-sm, 0))));
+}`
+  );
+});
 test(
   'should correctly handle the framework tests',
   integrationTests(preset, `${__dirname}/integrations`)

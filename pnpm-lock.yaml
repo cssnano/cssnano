@@ -86,8 +86,8 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-calc:
-        specifier: ^10.1.1
-        version: 10.1.1(postcss@8.5.25)
+        specifier: ^11.0.0-rc.1
+        version: 11.0.0-rc.1(postcss@8.5.25)
       postcss-colormin:
         specifier: workspace:^
         version: link:../postcss-colormin
@@ -574,6 +574,10 @@ packages:
 
   '@colordx/core@5.5.0':
     resolution: {integrity: sha512-3PxTH8itZzltK0U9jTwVVnjLXvnDYuq3m+QXsHkENxWiPRh4WaoLcs1SQjqgZ55kS+QyirpH5BVwzP2gMVG6EQ==}
+
+  '@csstools/css-tokenizer@4.0.0':
+    resolution: {integrity: sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA==}
+    engines: {node: '>=20.19.0'}
 
   '@oxfmt/binding-android-arm-eabi@0.61.0':
     resolution: {integrity: sha512-BaS+1OVvg9sr+Xav0+KdWedQRcAzrdoEcwMZeqoc2F6ieC1s/t5eM35YQoRPQ7vAqkZ+p3tbQb1r9I9mrV5oGA==}
@@ -1149,11 +1153,11 @@ packages:
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
-  postcss-calc@10.1.1:
-    resolution: {integrity: sha512-NYEsLHh8DgG/PRH2+G9BTuUdtf9ViS+vdoQ0YA5OQdGsfN4ztiwtDWNtBl9EKeqNMFnIu8IKZ0cLxEQ5r5KVMw==}
-    engines: {node: ^18.12 || ^20.9 || >=22.0}
+  postcss-calc@11.0.0-rc.1:
+    resolution: {integrity: sha512-DTvOmusx32Pgerp4qTO+HoeUw/b4u3X8KTP2s853GmZot5Z6ZCRRv4XLhbp+g0ByPnHGfQwtML8QMWy4IeiePA==}
+    engines: {node: ^22.12 || ^24.11 || >=26.0}
     peerDependencies:
-      postcss: ^8.4.38
+      postcss: ^8.5.19
 
   postcss-font-magician@4.0.0:
     resolution: {integrity: sha512-gOZkpptK6/9rRy5pcUuEG0QgFYR7lW62LTZ6cprn8x5AA2BERcoNuzeq/P9RTW/X43f8bOgOoGzicVy3n1RdXA==}
@@ -1224,6 +1228,8 @@ packages:
 snapshots:
 
   '@colordx/core@5.5.0': {}
+
+  '@csstools/css-tokenizer@4.0.0': {}
 
   '@oxfmt/binding-android-arm-eabi@0.61.0':
     optional: true
@@ -1622,10 +1628,10 @@ snapshots:
 
   picocolors@1.1.1: {}
 
-  postcss-calc@10.1.1(postcss@8.5.25):
+  postcss-calc@11.0.0-rc.1(postcss@8.5.25):
     dependencies:
+      '@csstools/css-tokenizer': 4.0.0
       postcss: 8.5.25
-      postcss-selector-parser: 7.1.4
       postcss-value-parser: 4.2.0
 
   postcss-font-magician@4.0.0(postcss@8.5.25):
