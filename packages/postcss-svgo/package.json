@@ -28,7 +28,7 @@
   "repository": "cssnano/cssnano",
   "dependencies": {
     "postcss-value-parser": "^4.2.0",
-    "svgo": "^4.0.1"
+    "svgo": "^4.0.2"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
@@ -38,9 +38,9 @@
   },
   "devDependencies": {
     "pleeease-filters": "^4.0.0",
-    "postcss": "^8.5.16"
+    "postcss": "^8.5.19"
   },
   "peerDependencies": {
-    "postcss": "^8.5.16"
+    "postcss": "^8.5.19"
   }
 }

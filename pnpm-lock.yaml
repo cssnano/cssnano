@@ -27,11 +27,11 @@ importers:
         specifier: ^17.7.0
         version: 17.7.0
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
       postcss-font-magician:
         specifier: ^4.0.0
-        version: 4.0.0(postcss@8.5.16)
+        version: 4.0.0(postcss@8.5.19)
       prettier:
         specifier: ^3.9.5
         version: 3.9.5
@@ -49,8 +49,8 @@ importers:
         version: 3.1.3
     devDependencies:
       autoprefixer:
-        specifier: ^10.5.2
-        version: 10.5.2(postcss@8.5.16)
+        specifier: ^10.5.4
+        version: 10.5.4(postcss@8.5.19)
       cssnano-preset-advanced:
         specifier: workspace:^
         version: link:../cssnano-preset-advanced
@@ -58,20 +58,20 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-preset-lite
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/cssnano-preset-advanced:
     dependencies:
       autoprefixer:
-        specifier: ^10.5.2
-        version: 10.5.2(postcss@8.5.16)
+        specifier: ^10.5.4
+        version: 10.5.4(postcss@8.5.19)
       browserslist:
-        specifier: ^4.28.5
-        version: 4.28.5
+        specifier: ^4.28.6
+        version: 4.28.6
       css-declaration-sorter:
         specifier: ^7.4.0
-        version: 7.4.0(postcss@8.5.16)
+        version: 7.4.0(postcss@8.5.19)
       cssnano-preset-default:
         specifier: workspace:^
         version: link:../cssnano-preset-default
@@ -89,20 +89,20 @@ importers:
         version: link:../postcss-zindex
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/cssnano-preset-default:
     dependencies:
       browserslist:
-        specifier: ^4.28.5
-        version: 4.28.5
+        specifier: ^4.28.6
+        version: 4.28.6
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-calc:
         specifier: ^10.1.1
-        version: 10.1.1(postcss@8.5.16)
+        version: 10.1.1(postcss@8.5.19)
       postcss-colormin:
         specifier: workspace:^
         version: link:../postcss-colormin
@@ -183,8 +183,8 @@ importers:
         version: link:../postcss-unique-selectors
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/cssnano-preset-lite:
     dependencies:
@@ -202,14 +202,14 @@ importers:
         version: link:../postcss-normalize-whitespace
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/cssnano-utils:
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
       postcss-value-parser:
         specifier: ^4.2.0
         version: 4.2.0
@@ -220,8 +220,8 @@ importers:
         specifier: ^5.5.0
         version: 5.5.0
       browserslist:
-        specifier: ^4.28.5
-        version: 4.28.5
+        specifier: ^4.28.6
+        version: 4.28.6
       caniuse-api:
         specifier: ^4.0.0
         version: 4.0.0
@@ -230,21 +230,21 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-convert-values:
     dependencies:
       browserslist:
-        specifier: ^4.28.5
-        version: 4.28.5
+        specifier: ^4.28.6
+        version: 4.28.6
       postcss-value-parser:
         specifier: ^4.2.0
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-discard-comments:
     dependencies:
@@ -253,26 +253,26 @@ importers:
         version: 7.1.4
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
       postcss-scss:
         specifier: ^4.0.9
-        version: 4.0.9(postcss@8.5.16)
+        version: 4.0.9(postcss@8.5.19)
       postcss-simple-vars:
         specifier: ^7.0.1
-        version: 7.0.1(postcss@8.5.16)
+        version: 7.0.1(postcss@8.5.19)
 
   packages/postcss-discard-duplicates:
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-discard-empty:
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-discard-overridden:
     devDependencies:
@@ -283,8 +283,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-discard-unused:
     dependencies:
@@ -293,8 +293,8 @@ importers:
         version: 7.1.4
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-merge-idents:
     dependencies:
@@ -306,8 +306,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-merge-longhand:
     dependencies:
@@ -319,14 +319,14 @@ importers:
         version: link:../stylehacks
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-merge-rules:
     dependencies:
       browserslist:
-        specifier: ^4.28.5
-        version: 4.28.5
+        specifier: ^4.28.6
+        version: 4.28.6
       caniuse-api:
         specifier: ^4.0.0
         version: 4.0.0
@@ -338,14 +338,14 @@ importers:
         version: 7.1.4
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
       postcss-discard-comments:
         specifier: workspace:^
         version: link:../postcss-discard-comments
       postcss-simple-vars:
         specifier: ^7.0.1
-        version: 7.0.1(postcss@8.5.16)
+        version: 7.0.1(postcss@8.5.19)
 
   packages/postcss-minify-font-values:
     dependencies:
@@ -354,8 +354,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-minify-gradients:
     dependencies:
@@ -370,14 +370,14 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-minify-params:
     dependencies:
       browserslist:
-        specifier: ^4.28.5
-        version: 4.28.5
+        specifier: ^4.28.6
+        version: 4.28.6
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -386,14 +386,14 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-minify-selectors:
     dependencies:
       browserslist:
-        specifier: ^4.28.5
-        version: 4.28.5
+        specifier: ^4.28.6
+        version: 4.28.6
       caniuse-api:
         specifier: ^4.0.0
         version: 4.0.0
@@ -408,14 +408,14 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-normalize-charset:
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-normalize-display-values:
     dependencies:
@@ -424,8 +424,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-normalize-positions:
     dependencies:
@@ -434,8 +434,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-normalize-repeat-style:
     dependencies:
@@ -444,8 +444,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-normalize-string:
     dependencies:
@@ -454,8 +454,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-normalize-timing-functions:
     dependencies:
@@ -464,21 +464,21 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-normalize-unicode:
     dependencies:
       browserslist:
-        specifier: ^4.28.5
-        version: 4.28.5
+        specifier: ^4.28.6
+        version: 4.28.6
       postcss-value-parser:
         specifier: ^4.2.0
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-normalize-url:
     dependencies:
@@ -487,8 +487,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-normalize-whitespace:
     dependencies:
@@ -497,8 +497,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-ordered-values:
     dependencies:
@@ -510,8 +510,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-reduce-idents:
     dependencies:
@@ -520,14 +520,14 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-reduce-initial:
     dependencies:
       browserslist:
-        specifier: ^4.28.5
-        version: 4.28.5
+        specifier: ^4.28.6
+        version: 4.28.6
       caniuse-api:
         specifier: ^4.0.0
         version: 4.0.0
@@ -536,8 +536,8 @@ importers:
         specifier: ^10.0.0
         version: 10.0.0
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-reduce-transforms:
     dependencies:
@@ -546,8 +546,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-svgo:
     dependencies:
@@ -555,15 +555,15 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       svgo:
-        specifier: ^4.0.1
-        version: 4.0.1
+        specifier: ^4.0.2
+        version: 4.0.2
     devDependencies:
       pleeease-filters:
         specifier: ^4.0.0
         version: 4.0.0
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-unique-selectors:
     dependencies:
@@ -572,27 +572,27 @@ importers:
         version: 7.1.4
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/postcss-zindex:
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
   packages/stylehacks:
     dependencies:
       browserslist:
-        specifier: ^4.28.5
-        version: 4.28.5
+        specifier: ^4.28.6
+        version: 4.28.6
       postcss-selector-parser:
         specifier: ^7.1.4
         version: 7.1.4
     devDependencies:
       postcss:
-        specifier: ^8.5.16
-        version: 8.5.16
+        specifier: ^8.5.19
+        version: 8.5.19
 
 packages:
 
@@ -802,8 +802,8 @@ packages:
     resolution: {integrity: sha512-HGyxoOTYUyCM6stUe6EJgnd4EoewAI7zMdfqO+kGjnlZmBDz/cR5pf8r/cR4Wq60sL/p0IkcjUEEPwS3GFrIyw==}
     engines: {node: '>=8'}
 
-  autoprefixer@10.5.2:
-    resolution: {integrity: sha512-rD5t5DwOjJdmSORcTq64j8MawTC+tbQ+HHqjR4NDumamy/ambn1UJrlKL+KdwujWxMkFjPM3pPHOEA9tl4767Q==}
+  autoprefixer@10.5.4:
+    resolution: {integrity: sha512-MaU0U/za7N3r6brxD4YB/l4NSrFzLPlANv6wEuQVaIPlD3L4W9rFcQPbL/EilY9BHhHvhfcz3gInDLrEtWT4EA==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
@@ -842,16 +842,16 @@ packages:
   brotli@1.3.3:
     resolution: {integrity: sha512-oTKjJdShmDuGW94SyyaoQvAjf30dZaHnjJ8uAF+u2/vGJkJbJPJAT1gDiOJP5v1Zb6f9KEyW/1HpuaWIXtGHPg==}
 
-  browserslist@4.28.5:
-    resolution: {integrity: sha512-Cu2E6QejHWzuDMTkuwgpABFgDfZrXLQq5V13YOACZx4mFAG4IwGTbTfHPMr4WtxlHoXSM8FIuRwYYCz5XiabaQ==}
+  browserslist@4.28.6:
+    resolution: {integrity: sha512-FQBYNK15VMslhLHpA7+n+n1GOlF1kId2xcCg7/j95f24AOF6VDYMNH4mFxF7KuaTdv627faazpOAjFzMrfJOUw==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
   caniuse-api@4.0.0:
     resolution: {integrity: sha512-B0hQ1OLyJuHTQSOWXvwibWqM6DCoqJdvBA6X1S/53bd4XU7LJ1yurIPlrsouol3mw1jh9pGI4ivubSpmJeIqCA==}
 
-  caniuse-lite@1.0.30001803:
-    resolution: {integrity: sha512-g/uHREV2ZpK9qMalCsWaxmA6ol+DX8GYhuf3T40RKoP+oL7vhRJh8LNt73PCjpnR6l14FzfPrB5Yux4PKm2meg==}
+  caniuse-lite@1.0.30001806:
+    resolution: {integrity: sha512-72Cuvd95zbSYPKq6Fhg8eDJRlzgWDf7/mtoZv6Qe/DYNCEBdNxoA3+rZAU2ZhGCpZlns3EssFavaZomckT5Uuw==}
 
   chalk@2.4.2:
     resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
@@ -1369,8 +1369,8 @@ packages:
     resolution: {integrity: sha512-soOk1h6J3VMTZtVeVpv15/Hpdl2cBLX3CAw4TAbkpTJiNPk9YP/zWcD1ND+xEtvyuuvKzbxliTOIyvkSeSJ6ag==}
     engines: {node: '>=4.0.0'}
 
-  postcss@8.5.16:
-    resolution: {integrity: sha512-vuwillviilfKZsg0VGj5R/YwwcHx4SLsIOI/7K6mQkWx+l5cUHTjj5g0AasTBcyXsbfTgrwsUNmVUb5xVwyPwg==}
+  postcss@8.5.19:
+    resolution: {integrity: sha512-Mz8SaolMd8nB+G13WkORcxQKHZ/NE4xXevtkJHVuG+guo9/wYKlIMTKAqGdEmYOXR2ijPjTYNHssizdaVSUNdQ==}
     engines: {node: ^10 || ^12 || >=14}
 
   prelude-ls@1.2.1:
@@ -1469,8 +1469,8 @@ packages:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
     engines: {node: '>=4'}
 
-  svgo@4.0.1:
-    resolution: {integrity: sha512-XDpWUOPC6FEibaLzjfe0ucaV0YrOjYotGJO1WpF0Zd+n6ZGEQUsSugaoLq9QkEZtAfQIxT42UChcssDVPP3+/w==}
+  svgo@4.0.2:
+    resolution: {integrity: sha512-ekx94z1rRc5LDi6oSUaeRnYhd0UOJxdtQCL2rF8xpWxD3TPAsISWOrxezqGovqS38GRZOdpDfvQe3ts6F7nsng==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -1806,13 +1806,13 @@ snapshots:
 
   array-union@2.1.0: {}
 
-  autoprefixer@10.5.2(postcss@8.5.16):
+  autoprefixer@10.5.4(postcss@8.5.19):
     dependencies:
-      browserslist: 4.28.5
-      caniuse-lite: 1.0.30001803
+      browserslist: 4.28.6
+      caniuse-lite: 1.0.30001806
       fraction.js: 5.3.4
       picocolors: 1.1.1
-      postcss: 8.5.16
+      postcss: 8.5.19
       postcss-value-parser: 4.2.0
 
   b3b@0.0.1: {}
@@ -1841,20 +1841,20 @@ snapshots:
     dependencies:
       base64-js: 1.5.1
 
-  browserslist@4.28.5:
+  browserslist@4.28.6:
     dependencies:
       baseline-browser-mapping: 2.10.42
-      caniuse-lite: 1.0.30001803
+      caniuse-lite: 1.0.30001806
       electron-to-chromium: 1.5.389
       node-releases: 2.0.51
-      update-browserslist-db: 1.2.3(browserslist@4.28.5)
+      update-browserslist-db: 1.2.3(browserslist@4.28.6)
 
   caniuse-api@4.0.0:
     dependencies:
-      browserslist: 4.28.5
-      caniuse-lite: 1.0.30001803
+      browserslist: 4.28.6
+      caniuse-lite: 1.0.30001806
 
-  caniuse-lite@1.0.30001803: {}
+  caniuse-lite@1.0.30001806: {}
 
   chalk@2.4.2:
     dependencies:
@@ -1878,9 +1878,9 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  css-declaration-sorter@7.4.0(postcss@8.5.16):
+  css-declaration-sorter@7.4.0(postcss@8.5.19):
     dependencies:
-      postcss: 8.5.16
+      postcss: 8.5.19
 
   css-select@5.2.2:
     dependencies:
@@ -2116,9 +2116,9 @@ snapshots:
       merge2: 1.4.1
       slash: 3.0.0
 
-  google-fonts-complete@2.2.3(postcss@8.5.16):
+  google-fonts-complete@2.2.3(postcss@8.5.19):
     dependencies:
-      postcss: 8.5.16
+      postcss: 8.5.19
 
   graceful-fs@4.2.11: {}
 
@@ -2315,30 +2315,30 @@ snapshots:
       onecolor: 3.1.0
       postcss: 6.0.23
 
-  postcss-calc@10.1.1(postcss@8.5.16):
+  postcss-calc@10.1.1(postcss@8.5.19):
     dependencies:
-      postcss: 8.5.16
+      postcss: 8.5.19
       postcss-selector-parser: 7.1.4
       postcss-value-parser: 4.2.0
 
-  postcss-font-magician@4.0.0(postcss@8.5.16):
+  postcss-font-magician@4.0.0(postcss@8.5.19):
     dependencies:
       directory-fonts-complete: 1.2.0
-      google-fonts-complete: 2.2.3(postcss@8.5.16)
-      postcss: 8.5.16
+      google-fonts-complete: 2.2.3(postcss@8.5.19)
+      postcss: 8.5.19
 
-  postcss-scss@4.0.9(postcss@8.5.16):
+  postcss-scss@4.0.9(postcss@8.5.19):
     dependencies:
-      postcss: 8.5.16
+      postcss: 8.5.19
 
   postcss-selector-parser@7.1.4:
     dependencies:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
 
-  postcss-simple-vars@7.0.1(postcss@8.5.16):
+  postcss-simple-vars@7.0.1(postcss@8.5.19):
     dependencies:
-      postcss: 8.5.16
+      postcss: 8.5.19
 
   postcss-value-parser@4.2.0: {}
 
@@ -2348,7 +2348,7 @@ snapshots:
       source-map: 0.6.1
       supports-color: 5.5.0
 
-  postcss@8.5.16:
+  postcss@8.5.19:
     dependencies:
       nanoid: 3.3.15
       picocolors: 1.1.1
@@ -2422,7 +2422,7 @@ snapshots:
     dependencies:
       has-flag: 3.0.0
 
-  svgo@4.0.1:
+  svgo@4.0.2:
     dependencies:
       commander: 11.1.0
       css-select: 5.2.2
@@ -2448,9 +2448,9 @@ snapshots:
 
   universalify@0.1.2: {}
 
-  update-browserslist-db@1.2.3(browserslist@4.28.5):
+  update-browserslist-db@1.2.3(browserslist@4.28.6):
     dependencies:
-      browserslist: 4.28.5
+      browserslist: 4.28.6
       escalade: 3.2.0
       picocolors: 1.1.1
 
