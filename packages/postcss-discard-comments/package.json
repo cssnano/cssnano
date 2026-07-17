@@ -33,11 +33,11 @@
     "node": "^22.11.0 || ^24.11.0 || >=26.0"
   },
   "devDependencies": {
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.19",
     "postcss-scss": "^4.0.9",
     "postcss-simple-vars": "^7.0.1"
   },
   "peerDependencies": {
-    "postcss": "^8.5.16"
+    "postcss": "^8.5.19"
   }
 }
