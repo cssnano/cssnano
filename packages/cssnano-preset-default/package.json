@@ -13,7 +13,7 @@
   "dependencies": {
     "browserslist": "^4.28.6",
     "cssnano-utils": "workspace:^",
-    "postcss-calc": "^10.1.1",
+    "postcss-calc": "^11.0.0-rc.0",
     "postcss-colormin": "workspace:^",
     "postcss-convert-values": "workspace:^",
     "postcss-discard-comments": "workspace:^",
@@ -52,7 +52,7 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": "^22.11.0 || ^24.11.0 || >=26.0"
+    "node": "^22.12.0 || ^24.11.0 || >=26.0"
   },
   "devDependencies": {
     "postcss": "^8.5.19"

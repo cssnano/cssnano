@@ -101,8 +101,8 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-calc:
-        specifier: ^10.1.1
-        version: 10.1.1(postcss@8.5.19)
+        specifier: ^11.0.0-rc.0
+        version: 11.0.0-rc.0(postcss@8.5.19)
       postcss-colormin:
         specifier: workspace:^
         version: link:../postcss-colormin
@@ -657,6 +657,10 @@ packages:
 
   '@colordx/core@5.5.0':
     resolution: {integrity: sha512-3PxTH8itZzltK0U9jTwVVnjLXvnDYuq3m+QXsHkENxWiPRh4WaoLcs1SQjqgZ55kS+QyirpH5BVwzP2gMVG6EQ==}
+
+  '@csstools/css-tokenizer@4.0.0':
+    resolution: {integrity: sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA==}
+    engines: {node: '>=20.19.0'}
 
   '@eslint-community/eslint-utils@4.9.1':
     resolution: {integrity: sha512-phrYmNiYppR7znFEdqgfWHXR6NCkZEK7hwWDHZUjit/2/U0r6XvkDl0SYnoM51Hq7FhCGdLDT6zxCCOY1hexsQ==}
@@ -1334,11 +1338,11 @@ packages:
   pleeease-filters@4.0.0:
     resolution: {integrity: sha512-EtyjMK41s2+q/eM6wED/9U5bWzowfP/ImQb9AxKzt/+Xlbb5CxQ7dAToEoSQuxyidmkZzHAl483m2sBm2XvfFw==}
 
-  postcss-calc@10.1.1:
-    resolution: {integrity: sha512-NYEsLHh8DgG/PRH2+G9BTuUdtf9ViS+vdoQ0YA5OQdGsfN4ztiwtDWNtBl9EKeqNMFnIu8IKZ0cLxEQ5r5KVMw==}
-    engines: {node: ^18.12 || ^20.9 || >=22.0}
+  postcss-calc@11.0.0-rc.0:
+    resolution: {integrity: sha512-hQWvCY/ahUTY+iuL5topD2uJIWx6BVNqxf2fX7Y7y0awDMo3KMN51wwzRcY6XYuaEBOdi0wOpIP6pm+IWfeZZw==}
+    engines: {node: ^22.12 || ^24.11 || >=26.0}
     peerDependencies:
-      postcss: ^8.4.38
+      postcss: ^8.5.19
 
   postcss-font-magician@4.0.0:
     resolution: {integrity: sha512-gOZkpptK6/9rRy5pcUuEG0QgFYR7lW62LTZ6cprn8x5AA2BERcoNuzeq/P9RTW/X43f8bOgOoGzicVy3n1RdXA==}
@@ -1671,6 +1675,8 @@ snapshots:
       prettier: 2.8.8
 
   '@colordx/core@5.5.0': {}
+
+  '@csstools/css-tokenizer@4.0.0': {}
 
   '@eslint-community/eslint-utils@4.9.1(eslint@10.7.0)':
     dependencies:
@@ -2315,10 +2321,10 @@ snapshots:
       onecolor: 3.1.0
       postcss: 6.0.23
 
-  postcss-calc@10.1.1(postcss@8.5.19):
+  postcss-calc@11.0.0-rc.0(postcss@8.5.19):
     dependencies:
+      '@csstools/css-tokenizer': 4.0.0
       postcss: 8.5.19
-      postcss-selector-parser: 7.1.4
       postcss-value-parser: 4.2.0
 
   postcss-font-magician@4.0.0(postcss@8.5.19):
