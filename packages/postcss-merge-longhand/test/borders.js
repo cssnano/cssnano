@@ -1297,4 +1297,12 @@ test(
   )
 );
 
+test(
+  'should preserve border-color custom property fallback regardless of declaration order #1682',
+  processCSS(
+    '.arrow{border-style:solid;border-width:50px;border-color:#fff transparent;border-color:var(--col) transparent;border-top:none;height:0;width:0}',
+    '.arrow{border-color:#fff transparent;border-style:solid;border-width:50px;border-color:var(--col) transparent;border-top:none;height:0;width:0}'
+  )
+);
+
 test('should handle empty border', processCSS('h1{border:;}', 'h1{border:;}'));
