@@ -320,6 +320,32 @@ function merge(rule) {
       return false;
     }
 
+    // Bail when a custom-property border shorthand sits between the
+    // directions being merged. The synthesized border-wsc declarations are
+    // inserted after the last direction, which would leapfrog and silently
+    // override the custom property, dropping its var() fallback (#1682).
+    const ruleNodes = /** @type {import('postcss').Declaration[]} */ (
+      rule.nodes
+    );
+    const firstIndex = Math.min(
+      ...rules.map((node) => ruleNodes.indexOf(node))
+    );
+    const lastIndex = Math.max(...rules.map((node) => ruleNodes.indexOf(node)));
+
+    if (
+      ruleNodes
+        .slice(firstIndex + 1, lastIndex)
+        .some(
+          (node) =>
+            node.type === 'decl' &&
+            isCustomProp(node) &&
+            (node.prop.toLowerCase() === 'border' ||
+              properties.includes(node.prop.toLowerCase()))
+        )
+    ) {
+      return false;
+    }
+
     const values = rules.map(({ value }) => value);
 
     if (!canMergeValues(values)) {
