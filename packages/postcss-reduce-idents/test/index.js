@@ -569,6 +569,30 @@ test('should not generate same ident when plugin instance is reused', () => {
   });
 });
 
+test('should not rename an unreferenced counter style when plugin instance is reused', () => {
+  const instance = postcss(plugin);
+
+  return Promise.all([
+    instance.process(
+      '@counter-style custom{system:extends decimal;suffix:"> "}ol{list-style:custom}',
+      { from: undefined }
+    ),
+    instance.process(
+      '@counter-style custom{system:extends decimal;suffix:"> "}',
+      { from: undefined }
+    ),
+  ]).then(([result1, result2]) => {
+    assert.strictEqual(
+      result1.css,
+      '@counter-style a{system:extends decimal;suffix:"> "}ol{list-style:a}'
+    );
+    assert.strictEqual(
+      result2.css,
+      '@counter-style custom{system:extends decimal;suffix:"> "}'
+    );
+  });
+});
+
 test('encoder', () => {
   let iterations = new Array(1984);
   let arr = Array.apply([], iterations).map((a, b) => b);
