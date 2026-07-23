@@ -6,6 +6,13 @@ const DATA_URL_DEFAULT_MIME_TYPE = 'text/plain';
 const DATA_URL_DEFAULT_CHARSET = 'us-ascii';
 
 const supportedProtocols = new Set(['https:', 'http:', 'file:']);
+const dataUrlRegex = /^data:(?<type>[^,]*?),(?<data>[^#]*?)(?:#(?<hash>.*))?$/;
+const urlRegex = /^data:/i;
+const protocolRegex = /^(?!(?:\w+:)?\/\/)|^\/\//;
+const relativePathRegex = /^\.*\//;
+const trailingDotRegex = /\.$/;
+const trailingSlashRegex = /\/$/;
+const httpProtocolRegex = /^http:\/\//;
 
 /**
  * @param {string} urlString
@@ -23,7 +30,7 @@ function hasCustomProtocol(urlString) {
  * @param {string} urlString
  * @return {string} */
 function normalizeDataURL(urlString) {
-  const match = /^data:(?<type>[^,]*?),(?<data>[^#]*?)(?:#(?<hash>.*))?$/.exec(
+  const match = dataUrlRegex.exec(
     urlString
   );
 
@@ -92,7 +99,7 @@ function normalizeUrl(urlString) {
   urlString = urlString.trim();
 
   // Data URL
-  if (/^data:/i.test(urlString)) {
+  if (urlRegex.test(urlString)) {
     return normalizeDataURL(urlString);
   }
 
@@ -101,11 +108,11 @@ function normalizeUrl(urlString) {
   }
 
   const hasRelativeProtocol = urlString.startsWith('//');
-  const isRelativeUrl = !hasRelativeProtocol && /^\.*\//.test(urlString);
+  const isRelativeUrl = !hasRelativeProtocol && relativePathRegex.test(urlString);
 
   // Prepend protocol
   if (!isRelativeUrl) {
-    urlString = urlString.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, 'http:');
+    urlString = urlString.replace(protocolRegex, 'http:');
   }
 
   const urlObject = new URL(urlString);
@@ -129,22 +136,22 @@ function normalizeUrl(urlString) {
 
   if (urlObject.hostname) {
     // Remove trailing dot
-    urlObject.hostname = urlObject.hostname.replace(/\.$/, '');
+    urlObject.hostname = urlObject.hostname.replace(trailingDotRegex, '');
   }
 
-  urlObject.pathname = urlObject.pathname.replace(/\/$/, '');
+  urlObject.pathname = urlObject.pathname.replace(trailingSlashRegex, '');
 
   // Take advantage of many of the Node `url` normalizations
   urlString = urlObject.toString();
 
   // Remove ending `/`
   if (urlObject.pathname === '/' && urlObject.hash === '') {
-    urlString = urlString.replace(/\/$/, '');
+    urlString = urlString.replace(trailingSlashRegex, '');
   }
 
   // Restore relative protocol
   if (hasRelativeProtocol) {
-    urlString = urlString.replace(/^http:\/\//, '//');
+    urlString = urlString.replace(httpProtocolRegex, '//');
   }
 
   return urlString;

@@ -12,6 +12,8 @@ const escapeChars = /([\s\(\)"'])/g;
 const ABSOLUTE_URL_REGEX = /^[a-zA-Z][a-zA-Z\d+\-.]*?:/;
 // Windows paths like `c:\`
 const WINDOWS_PATH_REGEX = /^[a-zA-Z]:\\/;
+const dataUrlRegex = /^data:(.*)?,/i;
+const extensionRegex = /^.+-extension:\//i;
 
 /**
  * Originally in sindresorhus/is-absolute-url
@@ -100,11 +102,11 @@ function transformDecl(decl) {
         return false;
       }
 
-      if (/^data:(.*)?,/i.test(url.value)) {
+      if (dataUrlRegex.test(url.value)) {
         return false;
       }
 
-      if (!/^.+-extension:\//i.test(url.value)) {
+      if (!extensionRegex.test(url.value)) {
         url.value = convert(url.value);
       }
 

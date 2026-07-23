@@ -3,6 +3,8 @@ const valueParser = require('postcss-value-parser');
 
 /** @type {(node: valueParser.Node) => number} */
 const getValue = (node) => parseFloat(node.value);
+const animationTransitionRegex =
+  /^(-\w+-)?(animation|transition)(-timing-function)?$/i;
 
 /* Works because toString() normalizes the formatting,
    so comparing the string forms behaves the same as number equality*/
@@ -122,7 +124,7 @@ function pluginCreator() {
       const cache = new Map();
 
       css.walkDecls(
-        /^(-\w+-)?(animation|transition)(-timing-function)?$/i,
+        animationTransitionRegex,
         (decl) => {
           const value = decl.value;
 

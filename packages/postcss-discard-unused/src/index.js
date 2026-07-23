@@ -4,6 +4,12 @@ const selectorParser = require('postcss-selector-parser');
 const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
+const animationRegex = /animation/;
+const listStyleRegex = /list-style|system/;
+const fontRegex = /font(|-family)/;
+const counterStyleRegex = /counter-style/;
+const keyframesRegex = /keyframes/;
+
 /**
  * @param {{value: string}} arg
  * @param {(input: string) => string[]} comma
@@ -65,7 +71,7 @@ function hasFont(fontFamily, cache, comma) {
   return comma(fontFamily).some((font) => cache.some((c) => c.includes(font)));
 }
 
-/** 
+/**
  * fonts have slightly different logic
 
  * @param {{atRules: import('postcss').AtRule[], values: string[]}} cache
@@ -153,7 +159,7 @@ function pluginCreator(opts) {
 
             if (type === decl) {
               const { prop } = node;
-              if (counterStyle && /list-style|system/.test(prop)) {
+              if (counterStyle && listStyleRegex.test(prop)) {
                 counterStyleCache.values = counterStyleCache.values.concat(
                   splitValues(node, comma, space)
                 );
@@ -163,14 +169,14 @@ function pluginCreator(opts) {
                 fontFace &&
                 node.parent !== undefined &&
                 node.parent.type === rule &&
-                /font(|-family)/.test(prop)
+                fontRegex.test(prop)
               ) {
                 fontCache.values = fontCache.values.concat(
                   comma(node.value.toLowerCase())
                 );
               }
 
-              if (keyframes && /animation/.test(prop)) {
+              if (keyframes && animationRegex.test(prop)) {
                 keyframesCache.values = keyframesCache.values.concat(
                   splitValues(node, comma, space)
                 );
@@ -181,7 +187,7 @@ function pluginCreator(opts) {
 
             if (type === atrule) {
               const { name } = node;
-              if (counterStyle && /counter-style/.test(name)) {
+              if (counterStyle && counterStyleRegex.test(name)) {
                 counterStyleCache.atRules.push(node);
               }
 
@@ -189,7 +195,7 @@ function pluginCreator(opts) {
                 fontCache.atRules.push(node);
               }
 
-              if (keyframes && /keyframes/.test(name)) {
+              if (keyframes && keyframesRegex.test(name)) {
                 keyframesCache.atRules.push(node);
               }
 

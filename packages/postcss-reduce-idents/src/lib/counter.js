@@ -4,6 +4,8 @@ const addToCache = require('./cache');
 const isNum = require('./isNum');
 
 const RESERVED_KEYWORDS = new Set(['unset', 'initial', 'inherit', 'none']);
+const counterRegex = /counter-(reset|increment|set)/i;
+const contentRegex = /content/i;
 
 /**
  * @return {import('../index.js').Reducer}
@@ -25,7 +27,7 @@ module.exports = function () {
       }
       const { prop } = node;
 
-      if (/counter-(reset|increment|set)/i.test(prop)) {
+      if (counterRegex.test(prop)) {
         /** @type {unknown} */ (node.value) = valueParser(node.value).walk(
           (child) => {
             if (
@@ -41,8 +43,10 @@ module.exports = function () {
         );
 
         declOneCache.push(/** @type {any} */ (node));
-      } else if (/content/i.test(prop)) {
-        declTwoCache.push(node);
+      } else {
+        if (contentRegex.test(prop)) {
+                declTwoCache.push(node);
+              }
       }
     },
 

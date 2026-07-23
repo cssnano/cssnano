@@ -65,6 +65,8 @@ const RESERVED_KEYWORDS = new Set([
   'disclosure-open',
   'disclosure-close',
 ]);
+const counterStyleRegex = /counter-style/i;
+const listStyleRegex = /(list-style|system)/i;
 
 /**
  * @return {import('../index.js').Reducer}
@@ -83,7 +85,7 @@ module.exports = function () {
 
       if (
         type === 'atrule' &&
-        /counter-style/i.test(node.name) &&
+        counterStyleRegex.test(node.name) &&
         !RESERVED_KEYWORDS.has(node.params.toLowerCase())
       ) {
         addToCache(node.params, encoder, cache);
@@ -91,7 +93,7 @@ module.exports = function () {
         atRules.push(node);
       }
 
-      if (type === 'decl' && /(list-style|system)/i.test(node.prop)) {
+      if (type === 'decl' && listStyleRegex.test(node.prop)) {
         decls.push(node);
       }
     },
