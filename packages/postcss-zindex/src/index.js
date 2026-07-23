@@ -1,6 +1,7 @@
 'use strict';
 const LayerCache = require('./lib/layerCache');
 
+const zIndexRegex = /z-index/i;
 /** @typedef {{startIndex?: number}} Options */
 /**
  * @type {import('postcss').PluginCreator<Options>}
@@ -19,7 +20,7 @@ function pluginCreator(opts = {}) {
           let abort = false;
 
           // First pass; cache all z indexes
-          css.walkDecls(/z-index/i, (decl) => {
+          css.walkDecls(zIndexRegex, (decl) => {
             // Check that no negative values exist. Rebasing is only
             // safe if all indices are positive numbers.
             if (decl.value[0] === '-') {

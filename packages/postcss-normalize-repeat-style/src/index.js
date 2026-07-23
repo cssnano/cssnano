@@ -2,6 +2,7 @@
 const valueParser = require('postcss-value-parser');
 const mappings = require('./lib/map');
 
+const repeatPropertyRegex = /^(background(-repeat)?|(-\w+-)?mask-repeat)$/i;
 /**
  * @param {unknown} item
  * @param {number} index
@@ -150,7 +151,7 @@ function pluginCreator() {
       return {
         OnceExit(css) {
           css.walkDecls(
-            /^(background(-repeat)?|(-\w+-)?mask-repeat)$/i,
+            repeatPropertyRegex,
             (decl) => {
               const value = decl.value;
 

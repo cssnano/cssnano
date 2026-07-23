@@ -14,6 +14,7 @@ const verticalValue = new Map([
 ]);
 const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 const variableFunctions = new Set(['var', 'env', 'constant']);
+const propFilterRegex = /^(background(-position)?|(-\w+-)?perspective-origin)$/i;
 /**
  * @param {valueParser.Node} node
  * @return {boolean}
@@ -220,7 +221,7 @@ function pluginCreator() {
       const cache = new Map();
 
       css.walkDecls(
-        /^(background(-position)?|(-\w+-)?perspective-origin)$/i,
+        propFilterRegex,
         (decl) => {
           const value = decl.value;
 

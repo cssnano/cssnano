@@ -4,12 +4,13 @@ const { IE_6 } = require('../dictionary/browsers');
 const { PROPERTY } = require('../dictionary/identifiers');
 const { DECL } = require('../dictionary/postcss');
 
+const vendorPrefixRegex = /^(-\w+-)/;
 /**
  * @param {string} prop
  * @return {string}
  */
 function vendorPrefix(prop) {
-  let match = prop.match(/^(-\w+-)/);
+  let match = prop.match(vendorPrefixRegex);
   if (match) {
     return match[0];
   }

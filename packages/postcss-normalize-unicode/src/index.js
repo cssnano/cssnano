@@ -4,6 +4,7 @@ const browserslist = require('browserslist');
 const valueParser = require('postcss-value-parser');
 
 const regexLowerCaseUPrefix = /^u(?=\+)/;
+const unicodeRangeRegex = /^unicode-range$/i;
 
 /**
  * @param {string} range
@@ -120,7 +121,7 @@ function pluginCreator(opts = {}) {
 
       return {
         OnceExit(css) {
-          css.walkDecls(/^unicode-range$/i, (decl) => {
+          css.walkDecls(unicodeRangeRegex, (decl) => {
             const value = decl.value;
 
             if (cache.has(value)) {
