@@ -2,6 +2,8 @@
 const valueParser = require('postcss-value-parser');
 const mappings = require('./lib/map.js');
 
+const displayRegex = /^display$/i;
+
 /**
  * @param {string} value
  * @return {string}
@@ -43,7 +45,7 @@ function pluginCreator() {
       const cache = new Map();
       return {
         OnceExit(css) {
-          css.walkDecls(/^display$/i, (decl) => {
+          css.walkDecls(displayRegex, (decl) => {
             const value = decl.value;
 
             if (!value) {

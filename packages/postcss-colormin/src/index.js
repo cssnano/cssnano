@@ -5,6 +5,9 @@ const { isSupported } = require('caniuse-api');
 const valueParser = require('postcss-value-parser');
 const minifyColor = require('./minifyColor');
 
+const rgbOrHslRegex = /^(rgb|hsl)a?$/i;
+const notMinifiableRegex =
+  /^(composes|font|src$|filter|-webkit-tap-highlight-color)/i;
 /**
  * @param {{nodes: valueParser.Node[]}} parent
  * @param {(node: valueParser.Node, index: number, parent: {nodes: valueParser.Node[]}) => false | undefined} callback
@@ -50,7 +53,7 @@ function transform(value, options) {
 
   walk(parsed, (node, index, parent) => {
     if (node.type === 'function') {
-      if (/^(rgb|hsl)a?$/i.test(node.value)) {
+      if (rgbOrHslRegex.test(node.value)) {
         const { value: originalValue } = node;
 
         node.value = minifyColor(valueParser.stringify(node), options);
@@ -144,7 +147,7 @@ function pluginCreator(config = {}) {
         OnceExit(css) {
           css.walkDecls((decl) => {
             if (
-              /^(composes|font|src$|filter|-webkit-tap-highlight-color)/i.test(
+              notMinifiableRegex.test(
                 decl.prop
               )
             ) {

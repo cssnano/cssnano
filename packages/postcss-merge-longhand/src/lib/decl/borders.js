@@ -23,6 +23,11 @@ const defaults = ['medium', 'none', 'currentcolor'];
 const colorMightRequireFallback =
   /(hsla|rgba|color|hwb|lab|lch|oklab|oklch)\(/i;
 
+const borderSpacingRegex = /^border-spacing$/i;
+const borderStyleRegex = /^border($|-(top|right|bottom|left)$)/i;
+const borderRegex = /^border/i;
+const customPropRegex = /var\s*\(\s*--/i;
+
 /**
  * @param {...string} parts
  * @return {string}
@@ -68,7 +73,7 @@ function getLevel(prop) {
 
 /** @type {(value: string) => boolean} */
 const isValueCustomProp = (value) =>
-  value !== undefined && value.search(/var\s*\(\s*--/i) !== -1;
+  value !== undefined && value.search(customPropRegex) !== -1;
 
 /**
  * @param {string[]} values
@@ -180,7 +185,7 @@ function getDistinctShorthands(mapped) {
  * @return {void}
  */
 function explode(rule) {
-  rule.walkDecls(/^border/i, (decl) => {
+  rule.walkDecls(borderRegex, (decl) => {
     if (!canExplode(decl, false)) {
       return;
     }
@@ -623,7 +628,7 @@ function merge(rule) {
   let decls = getDecls(rule, directions);
 
   while (decls.length) {
-    const lastNode = decls[decls.length - 1];
+    const lastNode = decls.at(-1);
 
     wsc.forEach((d, i) => {
       const names = directions
@@ -665,7 +670,7 @@ function merge(rule) {
           value = /** @type {string} */ (filteredValues[0]);
         }
 
-        let refNode = props[props.length - 1];
+        let refNode = props.at(-1);
 
         if (value === lastNodeValue) {
           refNode = lastNode;
@@ -724,7 +729,7 @@ function merge(rule) {
     return mergeRedundant(config);
   });
 
-  rule.walkDecls(/^border($|-(top|right|bottom|left)$)/i, (decl) => {
+  rule.walkDecls(borderStyleRegex, (decl) => {
     let values = parseWsc(decl.value);
 
     if (!isValidWsc(values)) {
@@ -782,12 +787,12 @@ function merge(rule) {
   });
 
   // clean-up values
-  rule.walkDecls(/^border($|-(top|right|bottom|left)$)/i, (decl) => {
+  rule.walkDecls(borderStyleRegex, (decl) => {
     decl.value = minifyWsc(decl.value);
   });
 
   // border-spacing-hv -> border-spacing
-  rule.walkDecls(/^border-spacing$/i, (decl) => {
+  rule.walkDecls(borderSpacingRegex, (decl) => {
     const value = list.space(decl.value);
 
     // merge vertical and horizontal dups
@@ -800,7 +805,7 @@ function merge(rule) {
   decls = getDecls(rule, allProperties);
 
   while (decls.length) {
-    const lastNode = decls[decls.length - 1];
+    const lastNode = decls.at(-1);
     const lastPart = lastNode.prop.split('-').pop();
 
     // remove properties of lower precedence

@@ -14,6 +14,10 @@ const styles = new Set([
   'inset',
   'outset',
 ]);
+const widthRegex = /^(\d+(\.\d+)?|\.\d+)(\w+)?$/;
+const rgbaRegex = /rgba?\(/;
+const hslaRegex = /hsla?\(/;
+const hexColorRegex = /#([0-9a-z]{6}|[0-9a-z]{3})/;
 
 /**
  * @param {string} value
@@ -30,7 +34,7 @@ function isStyle(value) {
 function isWidth(value) {
   return (
     (value && widths.has(value.toLowerCase())) ||
-    /^(\d+(\.\d+)?|\.\d+)(\w+)?$/.test(value)
+    widthRegex.test(value)
   );
 }
 
@@ -45,15 +49,15 @@ function isColor(value) {
 
   value = value.toLowerCase();
 
-  if (/rgba?\(/.test(value)) {
+  if (rgbaRegex.test(value)) {
     return true;
   }
 
-  if (/hsla?\(/.test(value)) {
+  if (hslaRegex.test(value)) {
     return true;
   }
 
-  if (/#([0-9a-z]{6}|[0-9a-z]{3})/.test(value)) {
+  if (hexColorRegex.test(value)) {
     return true;
   }
 

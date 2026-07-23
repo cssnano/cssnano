@@ -4,6 +4,7 @@ const minifyWeight = require('./lib/minify-weight');
 const minifyFamily = require('./lib/minify-family');
 const minifyFont = require('./lib/minify-font');
 
+const fontRegex = /font/i;
 /**
  * @param {string} value
  * @return {boolean}
@@ -73,7 +74,7 @@ function pluginCreator(opts) {
       const cache = new Map();
       return {
         OnceExit(css) {
-          css.walkDecls(/font/i, (decl) => {
+          css.walkDecls(fontRegex, (decl) => {
             const value = decl.value;
 
             if (!value) {

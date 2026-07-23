@@ -5,6 +5,7 @@ const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
 const variableFunctions = new Set(['var', 'env', 'constant']);
+const ieHackRegex = /\s*(\\9)\s*/;
 
 /**
  * @param {valueParser.Node} node
@@ -64,7 +65,7 @@ function pluginCreator() {
           }
 
           // Remove whitespaces around ie 9 hack
-          node.value = node.value.replace(/\s*(\\9)\s*/, '$1');
+          node.value = node.value.replace(ieHackRegex, '$1');
           const value = node.value;
 
           if (cache.has(value)) {

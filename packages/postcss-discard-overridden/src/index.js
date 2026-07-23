@@ -1,13 +1,14 @@
 'use strict';
 const OVERRIDABLE_RULES = new Set(['keyframes', 'counter-style']);
 const SCOPE_RULES = new Set(['media', 'supports']);
+const vendorPrefixPattern = /^-\w+-/;
 
 /**
  * @param {string} prop
  * @return {string}
  */
 function vendorUnprefixed(prop) {
-  return prop.replace(/^-\w+-/, '');
+  return prop.replace(vendorPrefixPattern, '');
 }
 
 /**

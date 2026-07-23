@@ -7,11 +7,11 @@
  * @prop {(node: import('postcss').Node) => void} detectAndWarn
  */
 
-/** 
+/**
  * @typedef {import('postcss').Node & {_stylehacks: {
-                                          message: string, 
-                                          browsers: Set<string>, 
-                                          identifier: string, 
+                                          message: string,
+                                          browsers: Set<string>,
+                                          identifier: string,
                                           hack: string }}} NodeWithInfo
  */
 

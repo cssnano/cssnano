@@ -1,6 +1,7 @@
 'use strict';
 const valueParser = require('postcss-value-parser');
 
+const transformRegex = /transform$/i;
 /**
  * @param {(number|string)[]} list
  * @param {valueParser.Node} node
@@ -281,7 +282,7 @@ function pluginCreator() {
       const cache = new Map();
       return {
         OnceExit(css) {
-          css.walkDecls(/transform$/i, (decl) => {
+          css.walkDecls(transformRegex, (decl) => {
             const value = decl.value;
 
             if (!value) {

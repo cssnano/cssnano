@@ -1,6 +1,11 @@
 'use strict';
 const { stringify } = require('postcss-value-parser');
 
+const escapeCharacterRegex = /[\t\n\v\f:]/;
+const numberRegex = /\d/;
+const negativeNumberRegex = /^-[-\d]/;
+const digitRegex = /[0-9]/;
+
 /**
  * @param {string[]} list
  * @return {string[]}
@@ -58,7 +63,7 @@ function escape(string, escapeForString) {
 
     // \r is already tokenized away at this point
     // `:` can be escaped as `\:`, but that fails in IE < 8
-    if (!escapeForString && /[\t\n\v\f:]/.test(character)) {
+    if (!escapeForString && escapeCharacterRegex.test(character)) {
       value = '\\' + charCode.toString(16) + ' ';
     } else if (
       !escapeForString &&
@@ -73,13 +78,13 @@ function escape(string, escapeForString) {
   }
 
   if (!escapeForString) {
-    if (/^-[-\d]/.test(output)) {
+    if (negativeNumberRegex.test(output)) {
       output = '\\-' + output.slice(1);
     }
 
     const firstChar = string.charAt(0);
 
-    if (/\d/.test(firstChar)) {
+    if (numberRegex.test(firstChar)) {
       output = '\\3' + firstChar + ' ' + output.slice(1);
     }
   }
@@ -211,7 +216,7 @@ module.exports = function (nodes, opts) {
       if (
         !opts.removeQuotes ||
         isKeyword ||
-        /[0-9]/.test(node.value.slice(0, 1))
+        digitRegex.test(node.value.slice(0, 1))
       ) {
         return stringify(node);
       }

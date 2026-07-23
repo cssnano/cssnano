@@ -2,6 +2,10 @@
 const valueParser = require('postcss-value-parser');
 const { sameParent } = require('cssnano-utils');
 
+const keyframesRegex = /keyframes/i;
+const animationRegex = /animation/i;
+const counterStyleRegex = /counter-style/i;
+const listStyleSystemRegex = /(list-style|system)/i;
 /**
  * @param {Record<string, string>} obj
  * @return {(key: string) => string}
@@ -38,8 +42,8 @@ function canonical(obj) {
 function mergeAtRules(css) {
   const pairs = [
     {
-      atrule: /keyframes/i,
-      decl: /animation/i,
+      atrule: keyframesRegex,
+      decl: animationRegex,
       /** @type {import('postcss').AtRule[]} */
       cache: [],
       replacements: {},
@@ -49,8 +53,8 @@ function mergeAtRules(css) {
       removals: [],
     },
     {
-      atrule: /counter-style/i,
-      decl: /(list-style|system)/i,
+      atrule: counterStyleRegex,
+      decl: listStyleSystemRegex,
       cache: [],
       replacements: {},
       decls: [],

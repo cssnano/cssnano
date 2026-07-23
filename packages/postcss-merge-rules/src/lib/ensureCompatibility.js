@@ -26,6 +26,7 @@ function filterPrefixes(selector) {
   return selector.match(vendorPrefix);
 }
 
+const placeholderRegex = /-ms-input-placeholder/i;
 /**
  * Internet Explorer use :-ms-input-placeholder.
  * Microsoft Edge use ::-ms-input-placeholder.
@@ -33,7 +34,7 @@ function filterPrefixes(selector) {
  * @type {(selector: string) => number}
  */
 const findMsInputPlaceholder = (selector) =>
-  ~selector.search(/-ms-input-placeholder/i);
+  ~selector.search(placeholderRegex);
 
 /**
  * @param {string[]} selectorsA

@@ -28,6 +28,9 @@ const gridChildProperties = new Set([
   'grid-row-end',
 ]);
 
+const whitespaceRegex = /\s+/;
+const multipleDotsRegex = /\.+/;
+
 /**
  * @return {import('../index.js').Reducer}
  */
@@ -46,8 +49,8 @@ module.exports = function () {
       if (gridTemplateProperties.has(node.prop.toLowerCase())) {
         valueParser(node.value).walk((child) => {
           if (child.type === 'string') {
-            child.value.split(/\s+/).forEach((word) => {
-              if (/\.+/.test(word)) {
+            child.value.split(whitespaceRegex).forEach((word) => {
+              if (multipleDotsRegex.test(word)) {
                 // reduce empty zones to a single `.`
                 node.value = node.value.replace(word, '.');
               } else if (word && !RESERVED_KEYWORDS.has(word.toLowerCase())) {
@@ -91,7 +94,7 @@ module.exports = function () {
         decl.value = valueParser(decl.value)
           .walk((node) => {
             if (gridTemplateProperties.has(decl.prop.toLowerCase())) {
-              node.value.split(/\s+/).forEach((word) => {
+              node.value.split(whitespaceRegex).forEach((word) => {
                 if (word in cache) {
                   node.value = node.value.replace(word, cache[word].ident);
                 }

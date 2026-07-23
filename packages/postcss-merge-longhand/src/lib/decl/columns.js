@@ -13,6 +13,7 @@ const canExplode = require('../canExplode.js');
 const properties = ['column-width', 'column-count'];
 const auto = 'auto';
 const inherit = 'inherit';
+const columnsRegex = /^columns$/i;
 
 /**
  * Normalize a columns shorthand definition. Both of the longhand
@@ -48,7 +49,7 @@ function normalize(values) {
  * @return {void}
  */
 function explode(rule) {
-  rule.walkDecls(/^columns$/i, (decl) => {
+  rule.walkDecls(columnsRegex, (decl) => {
     if (!canExplode(decl)) {
       return;
     }
