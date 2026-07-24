@@ -12,7 +12,7 @@ function trimValue(value) {
  * @return {boolean}
  */
 function empty(node) {
-  return !node.nodes.filter((child) => child.type !== 'comment').length;
+  return !node.nodes.some((child) => child.type !== 'comment');
 }
 
 /**

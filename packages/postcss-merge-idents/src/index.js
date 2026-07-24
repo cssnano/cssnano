@@ -20,7 +20,7 @@ function canonical(obj) {
    */
   return function recurse(key) {
     if (
-      Object.prototype.hasOwnProperty.call(obj, key) &&
+      Object.hasOwn(obj, key) &&
       obj[key] !== key &&
       stack
     ) {

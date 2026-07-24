@@ -7,13 +7,13 @@ const selectorParser = require('postcss-selector-parser');
  */
 function generateUniqueSelector(selectors) {
   // No comma means a single selector; nothing to dedupe or sort.
-  if (selectors.indexOf(',') === -1) {
+  if (!selectors.includes(',')) {
     return selectors;
   }
   /** @type {Map<string, string>} */
   const uniqueSelectors = new Map();
   // Without comments the node's own toString is already a usable key.
-  const hasComments = selectors.indexOf('/*') !== -1;
+  const hasComments = selectors.includes('/*');
 
   /** @type {selectorParser.SyncProcessor<void>} */
   const collectUniqueSelectors = (selNode) => {
