@@ -2,9 +2,11 @@ import { createRequire } from 'module';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
-import toml from '@iarna/toml';
+import toml from 'smol-toml';
 import getPackages from './getPackages.mjs';
 import pluginName from './pluginName.mjs';
+
+const packagesRegex = /^(postcss|cssnano-util)-/;
 
 /* External repositories, so the data is added manually */
 
@@ -73,7 +75,7 @@ function camel(input) {
 }
 
 function shortName(pkgName) {
-  return camel(pkgName.replace(/^(postcss|cssnano-util)-/, ''));
+  return camel(pkgName.replace(packagesRegex, ''));
 }
 
 getPackages().then((packages) => {

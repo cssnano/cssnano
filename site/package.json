@@ -25,10 +25,10 @@
   "devDependencies": {
     "@11ty/eleventy": "^3.1.6",
     "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.2",
-    "@iarna/toml": "^2.2.5",
     "cssnano": "link:../packages/cssnano",
     "markdown-it": "^14.3.0",
     "markdown-it-anchor": "^9.2.1",
+    "smol-toml": "^1.7.0",
     "webpack": "^5.108.4",
     "webpack-cli": "^7.2.1"
   }

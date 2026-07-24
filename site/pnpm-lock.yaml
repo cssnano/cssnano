@@ -53,13 +53,10 @@ importers:
     devDependencies:
       '@11ty/eleventy':
         specifier: ^3.1.6
-        version: 3.1.6
+        version: 3.1.6(supports-color@8.1.1)
       '@11ty/eleventy-plugin-syntaxhighlight':
         specifier: ^5.0.2
         version: 5.0.2
-      '@iarna/toml':
-        specifier: ^2.2.5
-        version: 2.2.5
       cssnano:
         specifier: link:../packages/cssnano
         version: link:../packages/cssnano
@@ -69,9 +66,12 @@ importers:
       markdown-it-anchor:
         specifier: ^9.2.1
         version: 9.2.1(@types/markdown-it@14.1.2)(markdown-it@14.3.0)
+      smol-toml:
+        specifier: ^1.7.0
+        version: 1.7.0
       webpack:
         specifier: ^5.108.4
-        version: 5.108.4(cssnano@packages+cssnano)(postcss@8.5.16)(webpack-cli@7.2.1)
+        version: 5.108.4(postcss@8.5.16)(webpack-cli@7.2.1)
       webpack-cli:
         specifier: ^7.2.1
         version: 7.2.1(js-yaml@4.3.0)(webpack@5.108.4)
@@ -138,9 +138,6 @@ packages:
   '@discoveryjs/json-ext@1.1.0':
     resolution: {integrity: sha512-Xc3VhU02wqZ1HvHRJUwL09HkZSTvidqY5Ya0NXBSYOxAp+Ln9dcJr9fySI+CkONzP3PekQo9WdzCv0PGER/mOA==}
     engines: {node: '>=14.17.0'}
-
-  '@iarna/toml@2.2.5':
-    resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -995,6 +992,10 @@ packages:
     resolution: {integrity: sha512-vZ7rfeehZui7wQs438JXBckYLkIIdfHOXsaVEUMyS5fHo1483l1bMdo0EDSWYclY0yZKFOipDy4KHuKs6ssvdg==}
     engines: {node: '>=8.0.0'}
 
+  smol-toml@1.7.0:
+    resolution: {integrity: sha512-aqVvWoyO21L23mb+drl4RmMXbf6N7FdHjAhTRA9ZBL7apWBgfWC16KjrASI+1p9GAroljyMHj6fK67i0UiTNvQ==}
+    engines: {node: '>= 18'}
+
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
@@ -1156,17 +1157,17 @@ snapshots:
     dependencies:
       '@11ty/eleventy-utils': 2.0.7
 
-  '@11ty/eleventy-dev-server@2.0.8':
+  '@11ty/eleventy-dev-server@2.0.8(supports-color@8.1.1)':
     dependencies:
       '@11ty/eleventy-utils': 2.0.7
       chokidar: 3.6.0
-      debug: 4.4.3
-      finalhandler: 1.3.2
+      debug: 4.4.3(supports-color@8.1.1)
+      finalhandler: 1.3.2(supports-color@8.1.1)
       mime: 3.0.0
       minimist: 1.2.8
       morphdom: 2.7.8
       please-upgrade-node: 3.2.0
-      send: 1.2.1
+      send: 1.2.1(supports-color@8.1.1)
       ssri: 11.0.0
       urlpattern-polyfill: 10.1.0
       ws: 8.21.0
@@ -1175,10 +1176,10 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@11ty/eleventy-plugin-bundle@3.0.7(posthtml@0.16.7)':
+  '@11ty/eleventy-plugin-bundle@3.0.7(posthtml@0.16.7)(supports-color@8.1.1)':
     dependencies:
       '@11ty/eleventy-utils': 2.0.7
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
       posthtml-match-helper: 2.0.3(posthtml@0.16.7)
     transitivePeerDependencies:
       - posthtml
@@ -1190,12 +1191,12 @@ snapshots:
 
   '@11ty/eleventy-utils@2.0.7': {}
 
-  '@11ty/eleventy@3.1.6':
+  '@11ty/eleventy@3.1.6(supports-color@8.1.1)':
     dependencies:
       '@11ty/dependency-tree': 4.0.2
       '@11ty/dependency-tree-esm': 2.0.4
-      '@11ty/eleventy-dev-server': 2.0.8
-      '@11ty/eleventy-plugin-bundle': 3.0.7(posthtml@0.16.7)
+      '@11ty/eleventy-dev-server': 2.0.8(supports-color@8.1.1)
+      '@11ty/eleventy-plugin-bundle': 3.0.7(posthtml@0.16.7)(supports-color@8.1.1)
       '@11ty/eleventy-utils': 2.0.7
       '@11ty/lodash-custom': 4.17.21
       '@11ty/posthtml-urls': 1.0.3
@@ -1203,7 +1204,7 @@ snapshots:
       '@sindresorhus/slugify': 2.2.1
       bcp-47-normalize: 2.3.0
       chokidar: 3.6.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
       dependency-graph: 1.0.0
       entities: 6.0.1
       filesize: 10.1.6
@@ -1289,8 +1290,6 @@ snapshots:
       w3c-keyname: 2.2.8
 
   '@discoveryjs/json-ext@1.1.0': {}
-
-  '@iarna/toml@2.2.5': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -1561,13 +1560,17 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  debug@2.6.9:
+  debug@2.6.9(supports-color@8.1.1):
     dependencies:
       ms: 2.0.0
+    optionalDependencies:
+      supports-color: 8.1.1
 
-  debug@4.4.3:
+  debug@4.4.3(supports-color@8.1.1):
     dependencies:
       ms: 2.1.3
+    optionalDependencies:
+      supports-color: 8.1.1
 
   depd@2.0.0: {}
 
@@ -1669,9 +1672,9 @@ snapshots:
     dependencies:
       to-regex-range: 5.0.1
 
-  finalhandler@1.3.2:
+  finalhandler@1.3.2(supports-color@8.1.1):
     dependencies:
-      debug: 2.6.9
+      debug: 2.6.9(supports-color@8.1.1)
       encodeurl: 2.0.0
       escape-html: 1.0.3
       on-finished: 2.4.1
@@ -1854,15 +1857,14 @@ snapshots:
 
   minimist@1.2.8: {}
 
-  minimizer-webpack-plugin@5.6.1(cssnano@packages+cssnano)(postcss@8.5.16)(webpack@5.108.4):
+  minimizer-webpack-plugin@5.6.1(postcss@8.5.16)(webpack@5.108.4):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       terser: 5.49.0
-      webpack: 5.108.4(cssnano@packages+cssnano)(postcss@8.5.16)(webpack-cli@7.2.1)
+      webpack: 5.108.4(postcss@8.5.16)(webpack-cli@7.2.1)
     optionalDependencies:
-      cssnano: link:../packages/cssnano
       postcss: 8.5.16
 
   minipass@7.1.3: {}
@@ -2011,9 +2013,9 @@ snapshots:
 
   semver@7.8.5: {}
 
-  send@1.2.1:
+  send@1.2.1(supports-color@8.1.1):
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
@@ -2042,6 +2044,8 @@ snapshots:
   slash@3.0.0: {}
 
   slugify@1.6.9: {}
+
+  smol-toml@1.7.0: {}
 
   source-map-js@1.2.1: {}
 
@@ -2123,7 +2127,7 @@ snapshots:
       import-local: 3.2.0
       interpret: 3.1.1
       rechoir: 0.8.0
-      webpack: 5.108.4(cssnano@packages+cssnano)(postcss@8.5.16)(webpack-cli@7.2.1)
+      webpack: 5.108.4(postcss@8.5.16)(webpack-cli@7.2.1)
       webpack-merge: 6.0.1
     optionalDependencies:
       js-yaml: 4.3.0
@@ -2136,7 +2140,7 @@ snapshots:
 
   webpack-sources@3.5.1: {}
 
-  webpack@5.108.4(cssnano@packages+cssnano)(postcss@8.5.16)(webpack-cli@7.2.1):
+  webpack@5.108.4(postcss@8.5.16)(webpack-cli@7.2.1):
     dependencies:
       '@types/estree': 1.0.9
       '@types/json-schema': 7.0.15
@@ -2154,7 +2158,7 @@ snapshots:
       graceful-fs: 4.2.11
       loader-runner: 4.3.2
       mime-db: 1.54.0
-      minimizer-webpack-plugin: 5.6.1(cssnano@packages+cssnano)(postcss@8.5.16)(webpack@5.108.4)
+      minimizer-webpack-plugin: 5.6.1(postcss@8.5.16)(webpack@5.108.4)
       neo-async: 2.6.2
       schema-utils: 4.3.3
       tapable: 2.3.3
@@ -2168,7 +2172,6 @@ snapshots:
       - '@swc/css'
       - '@swc/html'
       - clean-css
-      - cssnano
       - csso
       - esbuild
       - html-minifier-terser
