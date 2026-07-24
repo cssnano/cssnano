@@ -19,11 +19,7 @@ function canonical(obj) {
    * @return {string}
    */
   return function recurse(key) {
-    if (
-      Object.hasOwn(obj, key) &&
-      obj[key] !== key &&
-      stack
-    ) {
+    if (Object.hasOwn(obj, key) && obj[key] !== key && stack) {
       stack--;
 
       return recurse(obj[key]);
@@ -136,13 +132,14 @@ function mergeAtRules(css) {
 }
 
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-merge-idents',
-
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       mergeAtRules(css);
     },
@@ -150,4 +147,6 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>} */ (
+  pluginCreator
+);

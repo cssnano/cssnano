@@ -153,15 +153,23 @@ function pluginCreator(options = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(options.overrideBrowserslist, {
-        stats: options.stats || stats,
-        path: options.path || dirname(from || file || __filename),
-        env: options.env || env,
-      });
+      const browsers = browserslist(
+        /** @type {Options} */ (options).overrideBrowserslist,
+        {
+          stats: /** @type {Options} */ (options).stats || stats,
+          path:
+            /** @type {Options} */ (options).path ||
+            dirname(from || file || __filename),
+          env: /** @type {Options} */ (options).env || env,
+        }
+      );
 
       const hasAllBug = browsers.some((browser) => allBugBrowers.has(browser));
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkAtRules((rule) => transform(hasAllBug, rule));
         },
@@ -171,4 +179,6 @@ function pluginCreator(options = {}) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
+  pluginCreator
+);

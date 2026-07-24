@@ -41,12 +41,15 @@ function discardAndReport(css, result) {
 }
 
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
   return {
     postcssPlugin: plugin,
+    /**
+     * @param {import('postcss').Root} css
+     * @param {import('postcss').Helpers} helpers
+     */
     OnceExit(css, { result }) {
       discardAndReport(css, result);
     },
@@ -54,4 +57,6 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
+  pluginCreator
+);

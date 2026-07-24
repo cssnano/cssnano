@@ -46,7 +46,7 @@ const T_SINGLE_QUOTE = { type: C_SINGLE_QUOTE, value: L_SINGLE_QUOTE };
 const T_DOUBLE_QUOTE = { type: C_DOUBLE_QUOTE, value: L_DOUBLE_QUOTE };
 const T_NEWLINE = { type: C_NEWLINE, value: L_NEWLINE };
 
-/** @typedef {T_ESCAPED_SINGLE_QUOTE | T_ESCAPED_DOUBLE_QUOTE | T_SINGLE_QUOTE | T_NEWLINE} StringAstNode */
+/** @typedef {typeof T_ESCAPED_SINGLE_QUOTE | typeof T_ESCAPED_DOUBLE_QUOTE | typeof T_SINGLE_QUOTE | typeof T_NEWLINE} StringAstNode */
 /**
  * @typedef {{nodes: StringAstNode[],
  *            types: {escapedSingleQuote: number, escapedDoubleQuote: number, singleQuote: number, doubleQuote: number},
@@ -279,7 +279,6 @@ function minify(original, cache, preferredQuote) {
 
 /** @typedef {{preferredQuote?: 'double' | 'single'}} Options */
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
@@ -295,6 +294,9 @@ function pluginCreator(opts) {
   return {
     postcssPlugin: 'postcss-normalize-string',
 
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       const cache = new Map();
 
@@ -316,4 +318,6 @@ function pluginCreator(opts) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
+  pluginCreator
+);

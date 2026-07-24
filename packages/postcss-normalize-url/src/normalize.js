@@ -30,9 +30,7 @@ function hasCustomProtocol(urlString) {
  * @param {string} urlString
  * @return {string} */
 function normalizeDataURL(urlString) {
-  const match = dataUrlRegex.exec(
-    urlString
-  );
+  const match = dataUrlRegex.exec(urlString);
 
   if (!match) {
     throw new Error(`Invalid URL: ${urlString}`);
@@ -108,7 +106,8 @@ function normalizeUrl(urlString) {
   }
 
   const hasRelativeProtocol = urlString.startsWith('//');
-  const isRelativeUrl = !hasRelativeProtocol && relativePathRegex.test(urlString);
+  const isRelativeUrl =
+    !hasRelativeProtocol && relativePathRegex.test(urlString);
 
   // Prepend protocol
   if (!isRelativeUrl) {

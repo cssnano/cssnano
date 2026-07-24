@@ -18,7 +18,6 @@ const defaultIgnoreProps = ignoreProps;
  */
 
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} options
  * @return {import('postcss').Plugin}
  */
@@ -31,19 +30,29 @@ function pluginCreator(options = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(options.overrideBrowserslist, {
-        stats: options.stats || stats,
-        path: options.path || dirname(from || file || __filename),
-        env: options.env || env,
-      });
+      const browsers = browserslist(
+        /** @type {Options} */ (options).overrideBrowserslist,
+        {
+          stats: /** @type {Options} */ (options).stats || stats,
+          path:
+            /** @type {Options} */ (options).path ||
+            dirname(from || file || __filename),
+          env: /** @type {Options} */ (options).env || env,
+        }
+      );
 
       const initialSupport = isSupported('css-initial-value', browsers);
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkDecls((decl) => {
             const lowerCasedProp = decl.prop.toLowerCase();
             const ignoreProp = new Set(
-              defaultIgnoreProps.concat(options.ignore || [])
+              defaultIgnoreProps.concat(
+                /** @type {Options} */ (options).ignore || []
+              )
             );
 
             if (ignoreProp.has(lowerCasedProp)) {
@@ -54,7 +63,7 @@ function pluginCreator(options = {}) {
               initialSupport &&
               Object.hasOwn(toInitial, lowerCasedProp) &&
               decl.value.toLowerCase() ===
-                toInitial[/** @type {keyof toInitial} */ (lowerCasedProp)]
+                toInitial[/** @type keyof typeof toInitial */ (lowerCasedProp)]
             ) {
               decl.value = initial;
               return;
@@ -62,13 +71,17 @@ function pluginCreator(options = {}) {
 
             if (
               decl.value.toLowerCase() !== initial ||
-              !fromInitial[/** @type {keyof fromInitial} */ (lowerCasedProp)]
+              !fromInitial[
+                /** @type keyof typeof fromInitial */ (lowerCasedProp)
+              ]
             ) {
               return;
             }
 
             decl.value =
-              fromInitial[/** @type {keyof fromInitial} */ (lowerCasedProp)];
+              fromInitial[
+                /** @type keyof typeof fromInitial */ (lowerCasedProp)
+              ];
           });
         },
       };
@@ -77,4 +90,6 @@ function pluginCreator(options = {}) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
+  pluginCreator
+);

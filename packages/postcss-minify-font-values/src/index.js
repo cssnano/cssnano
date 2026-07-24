@@ -53,7 +53,6 @@ function transform(prop, value, opts) {
 /** @typedef {{removeAfterKeyword?: boolean, removeDuplicates?: boolean, removeQuotes?: boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight')}} Options */
 
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
@@ -73,6 +72,9 @@ function pluginCreator(opts) {
     prepare() {
       const cache = new Map();
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkDecls(fontRegex, (decl) => {
             const value = decl.value;
@@ -103,4 +105,6 @@ function pluginCreator(opts) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
+  pluginCreator
+);

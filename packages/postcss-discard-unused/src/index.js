@@ -105,7 +105,6 @@ function filterFont({ atRules, values }, comma) {
 
 /**@typedef {{fontFace?: boolean, counterStyle?: boolean, keyframes?: boolean, namespace?: boolean}} Options */
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
@@ -135,6 +134,10 @@ function pluginCreator(opts) {
       const fontCache = { atRules: [], values: [] };
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         * @param {import('postcss').Helpers} helpers
+         */
         OnceExit(css, { list }) {
           const { comma, space } = list;
           css.walk((node) => {
@@ -218,4 +221,6 @@ function pluginCreator(opts) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
+  pluginCreator
+);

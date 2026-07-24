@@ -4,6 +4,8 @@ const { IE_5_5, IE_6, IE_7 } = require('../dictionary/browsers');
 const { PROPERTY } = require('../dictionary/identifiers');
 const { ATRULE, DECL } = require('../dictionary/postcss');
 
+/** @import {Declaration, AtRule} from 'postcss'; */
+
 const hacks = '!_$_&_*_)_=_%_+_,_._/_`_]_#_~_?_:_|'.split('_');
 
 module.exports = class LeadingStar extends BasePlugin {
@@ -13,7 +15,7 @@ module.exports = class LeadingStar extends BasePlugin {
   }
 
   /**
-   * @param {import('postcss').Declaration | import('postcss').AtRule} node
+   * @param {Declaration | AtRule} node
    * @return {void}
    */
   detect(node) {
@@ -21,10 +23,10 @@ module.exports = class LeadingStar extends BasePlugin {
       // some values are not picked up by before, so ensure they are
       // at the beginning of the value
       hacks.forEach((hack) => {
-        if (!node.prop.indexOf(hack)) {
+        if (!(/** @type Declaration */ (node).prop.indexOf(hack))) {
           this.push(node, {
             identifier: PROPERTY,
-            hack: node.prop,
+            hack: /** @type Declaration */ (node).prop,
           });
         }
       });
@@ -36,13 +38,13 @@ module.exports = class LeadingStar extends BasePlugin {
         if (before.includes(hack)) {
           this.push(node, {
             identifier: PROPERTY,
-            hack: `${before.trim()}${node.prop}`,
+            hack: `${before.trim()}${/** @type Declaration */ (node).prop}`,
           });
         }
       });
     } else {
       // test for the @property: value; hack
-      const { name } = node;
+      const { name } = /** @type AtRule */ (node);
       const len = name.length - 1;
       if (name.lastIndexOf(':') === len) {
         this.push(node, {

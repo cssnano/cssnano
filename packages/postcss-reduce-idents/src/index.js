@@ -6,8 +6,8 @@ const keyframesReducer = require('./lib/keyframes');
 const gridTemplateReducer = require('./lib/grid-template');
 
 /** @typedef {{
-    counter?: boolean, counterStyle?: boolean, 
-    keyframes?: boolean, gridTemplate?: boolean, 
+    counter?: boolean, counterStyle?: boolean,
+    keyframes?: boolean, gridTemplate?: boolean,
     encoder?: (value: string, index: number) => string}} Options
 */
 /** @typedef {{
@@ -16,7 +16,6 @@ const gridTemplateReducer = require('./lib/grid-template');
  *  }} Reducer
  */
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} arg
  * @return {import('postcss').Plugin}
  */
@@ -37,7 +36,9 @@ function pluginCreator({
 
   return {
     postcssPlugin: 'postcss-reduce-idents',
-
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       css.walk((node) => {
         reducers.forEach((reducer) => reducer.collect(node, encoder));
@@ -49,4 +50,6 @@ function pluginCreator({
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
+  pluginCreator
+);

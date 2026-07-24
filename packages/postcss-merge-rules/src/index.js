@@ -7,10 +7,10 @@ const {
   sameVendor,
   noVendor,
 } = require('./lib/ensureCompatibility');
-
+/** @import {Declaration, Rule} from 'postcss' */
 /**
- * @param {import('postcss').Declaration} a
- * @param {import('postcss').Declaration} b
+ * @param {Declaration} a
+ * @param {Declaration} b
  * @return {boolean}
  */
 function declarationIsEqual(a, b) {
@@ -20,8 +20,8 @@ function declarationIsEqual(a, b) {
 }
 
 /**
- * @param {import('postcss').Declaration[]} array
- * @param {import('postcss').Declaration} decl
+ * @param {Declaration[]} array
+ * @param {Declaration} decl
  * @return {number}
  */
 function indexOfDeclaration(array, decl) {
@@ -30,10 +30,10 @@ function indexOfDeclaration(array, decl) {
 
 /**
  * Returns filtered array of matched or unmatched declarations
- * @param {import('postcss').Declaration[]} a
- * @param {import('postcss').Declaration[]} b
+ * @param {Declaration[]} a
+ * @param {Declaration[]} b
  * @param {boolean} [not=false]
- * @return {import('postcss').Declaration[]}
+ * @return {Declaration[]}
  */
 function intersect(a, b, not) {
   return a.filter((c) => {
@@ -43,8 +43,8 @@ function intersect(a, b, not) {
 }
 
 /**
- * @param {import('postcss').Declaration[]} a
- * @param {import('postcss').Declaration[]} b
+ * @param {Declaration[]} a
+ * @param {Declaration[]} b
  * @return {boolean}
  */
 function sameDeclarationsAndOrder(a, b) {
@@ -60,17 +60,17 @@ function sameDeclarationsAndOrder(a, b) {
  *
  * @typedef {Object} RuleMeta
  * @property {string[]} selectors - Array of selector strings for the rule
- * @property {import('postcss').Declaration[]} declarations - Array of declaration nodes for the rule
+ * @property {Declaration[]} declarations - Array of declaration nodes for the rule
  * @property {boolean} dirty - Whether the selectors have been modified and need flushing
  */
 
 /**
- * @param {import('postcss').Rule} ruleA
- * @param {import('postcss').Rule} ruleB
+ * @param {Rule} ruleA
+ * @param {Rule} ruleB
  * @param {string[]} browsers
  * @param {Map<string, boolean>} compatibilityCache
- * @param {WeakSet<import('postcss').Rule>} ruleCache
- * @param {WeakMap<import('postcss').Rule, RuleMeta>} ruleMeta
+ * @param {WeakSet<Rule>} ruleCache
+ * @param {WeakMap<Rule, RuleMeta>} ruleMeta
  * @return {boolean}
  */
 function canMerge(
@@ -131,7 +131,7 @@ function isRuleOrAtRule(node) {
 }
 /**
  * @param {import('postcss').ChildNode} node
- * @return {node is import('postcss').Declaration}
+ * @return {node is Declaration}
  */
 function isDeclaration(node) {
   return node.type === 'decl';
@@ -143,8 +143,8 @@ function isDeclaration(node) {
  * This metadata caches selectors and declarations to avoid expensive AST
  * re-parsing, especially for the selectors.
  *
- * @param {import('postcss').Rule} rule The PostCSS rule to get metadata for.
- * @param {WeakMap<import('postcss').Rule, RuleMeta>} [ruleMeta] The metadata cache.
+ * @param {Rule} rule The PostCSS rule to get metadata for.
+ * @param {WeakMap<Rule, RuleMeta>} [ruleMeta] The metadata cache.
  * @return {RuleMeta} The rule's virtual metadata.
  */
 function getMeta(rule, ruleMeta) {
@@ -170,8 +170,8 @@ function getMeta(rule, ruleMeta) {
 /**
  * Commits virtual metadata changes back to the actual PostCSS rule.
  *
- * @param {import('postcss').Rule} rule The PostCSS rule to flush.
- * @param {WeakMap<import('postcss').Rule, RuleMeta>} ruleMeta The metadata cache.
+ * @param {Rule} rule The PostCSS rule to flush.
+ * @param {WeakMap<Rule, RuleMeta>} ruleMeta The metadata cache.
  */
 function flush(rule, ruleMeta) {
   const meta = ruleMeta.get(rule);
@@ -182,15 +182,15 @@ function flush(rule, ruleMeta) {
 }
 
 /**
- * @param {import('postcss').Rule} rule
- * @return {import('postcss').Declaration[]}
+ * @param {Rule} rule
+ * @return {Declaration[]}
  */
 function getDecls(rule) {
   return rule.nodes.filter(isDeclaration);
 }
 
 /**
- * @param {...import('postcss').Rule} rules
+ * @param {...Rule} rules
  * @return {number}
  */
 function ruleLength(...rules) {
@@ -275,8 +275,8 @@ function isConflictingProp(propA, propB) {
 }
 
 /**
- * @param {import('postcss').Rule} first
- * @param {import('postcss').Rule} second
+ * @param {Rule} first
+ * @param {Rule} second
  * @return {boolean} merged
  */
 function mergeParents(first, second) {
@@ -298,13 +298,13 @@ function mergeParents(first, second) {
 }
 
 /**
- * @param {import('postcss').Rule} first
- * @param {import('postcss').Rule} second
+ * @param {Rule} first
+ * @param {Rule} second
  * @param {string[]} browsers
  * @param {Map<string, boolean>} compatibilityCache
- * @param {WeakSet<import('postcss').Rule>} ruleCache
- * @param {WeakMap<import('postcss').Rule, RuleMeta>} ruleMeta
- * @return {import('postcss').Rule} mergedRule
+ * @param {WeakSet<Rule>} ruleCache
+ * @param {WeakMap<Rule, RuleMeta>} ruleMeta
+ * @return {Rule} mergedRule
  */
 function partialMerge(
   first,
@@ -426,9 +426,9 @@ function partialMerge(
   const secondClone = second.clone({ selectors: secondSelectors });
 
   /**
-   * @param {function(import('postcss').Declaration):void} callback
+   * @param {(decl: Declaration) => void} callback
    * @this void
-   * @return {function(import('postcss').Declaration)}
+   * @return {(decl: Declaration) => void}
    */
   function moveDecl(callback) {
     return (decl) => {
@@ -438,10 +438,15 @@ function partialMerge(
     };
   }
   firstClone.walkDecls(
-    moveDecl((decl) => {
-      decl.remove();
-      receivingBlock.append(decl);
-    })
+    moveDecl(
+      /**
+       * @param {Declaration} decl
+       */
+      (decl) => {
+        decl.remove();
+        receivingBlock.append(decl);
+      }
+    )
   );
   secondClone.walkDecls(moveDecl((decl) => decl.remove()));
 
@@ -479,12 +484,12 @@ function partialMerge(
 /**
  * @param {string[]} browsers
  * @param {Map<string, boolean>} compatibilityCache
- * @param {WeakSet<import('postcss').Rule>} ruleCache
- * @param {WeakMap<import('postcss').Rule, RuleMeta>} ruleMeta
- * @return {{ merger: function(import('postcss').Rule): void, clean: function(): void }}
+ * @param {WeakSet<Rule>} ruleCache
+ * @param {WeakMap<Rule, RuleMeta>} ruleMeta
+ * @return {{ merger: (rule: Rule) => void, clean: () => void }}
  */
 function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
-  /** @type {import('postcss').Rule | null} */
+  /** @type {Rule | null} */
   let cache = null;
   return {
     merger(rule) {
@@ -550,7 +555,7 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
             node.remove();
             return;
           }
-          /** @type {import('postcss').Rule} */ (cache).append(node);
+          /** @type {Rule} */ (cache).append(node);
         });
         getMeta(cache, ruleMeta).declarations = getDecls(cache);
         rule.remove();
@@ -584,7 +589,6 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
  */
 
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
@@ -597,11 +601,16 @@ function pluginCreator(opts = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(opts.overrideBrowserslist, {
-        stats: opts.stats || stats,
-        path: opts.path || dirname(from || file || __filename),
-        env: opts.env || env,
-      });
+      const browsers = browserslist(
+        /** @type {Options} */ (opts).overrideBrowserslist,
+        {
+          stats: /** @type {Options} */ (opts).stats || stats,
+          path:
+            /** @type {Options} */ (opts).path ||
+            dirname(from || file || __filename),
+          env: /** @type {Options} */ (opts).env || env,
+        }
+      );
 
       const compatibilityCache = new Map();
 
@@ -610,6 +619,9 @@ function pluginCreator(opts = {}) {
       const ruleMeta = new WeakMap();
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           const { merger, clean } = selectorMerger(
             browsers,
@@ -626,4 +638,6 @@ function pluginCreator(opts = {}) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
+  pluginCreator
+);

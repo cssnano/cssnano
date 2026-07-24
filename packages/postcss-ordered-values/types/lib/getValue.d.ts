@@ -1,3 +1,7 @@
-declare function _exports(values: import("postcss-value-parser").Node[][]): string;
-export = _exports;
+export = getValue;
+/**
+ * @param {import('postcss-value-parser').Node[][]} values
+ * @return {string}
+ */
+declare function getValue(values: import('postcss-value-parser').Node[][]): string;
 //# sourceMappingURL=getValue.d.ts.map

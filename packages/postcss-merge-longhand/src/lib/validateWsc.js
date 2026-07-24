@@ -32,10 +32,7 @@ function isStyle(value) {
  * @return {boolean}
  */
 function isWidth(value) {
-  return (
-    (value && widths.has(value.toLowerCase())) ||
-    widthRegex.test(value)
-  );
+  return (value && widths.has(value.toLowerCase())) || widthRegex.test(value);
 }
 
 /**

@@ -1,10 +1,3 @@
-export = pluginCreator;
-/**
- * @type {import('postcss').PluginCreator<void>}
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(): import("postcss").Plugin;
-declare namespace pluginCreator {
-    let postcss: true;
-}
+declare const _exports: import("postcss").PluginCreator<void>;
+export = _exports;
 //# sourceMappingURL=rawCache.d.ts.map

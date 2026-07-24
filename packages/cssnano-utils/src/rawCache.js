@@ -1,7 +1,6 @@
 'use strict';
 
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
@@ -31,4 +30,6 @@ function pluginCreator() {
 
 pluginCreator.postcss = true;
 
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>} */ (
+  pluginCreator
+);

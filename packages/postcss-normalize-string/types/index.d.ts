@@ -1,29 +1,23 @@
-export = pluginCreator;
-/** @typedef {{preferredQuote?: 'double' | 'single'}} Options */
-/**
- * @type {import('postcss').PluginCreator<Options>}
- * @param {Options} opts
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(opts: Options): import("postcss").Plugin;
-declare namespace pluginCreator {
-    export { postcss, StringAstNode, StringAst, Options };
-}
-declare var postcss: true;
-type StringAstNode = {
-    type: string;
-    value: string;
-} | {
-    type: string;
-    value: string;
-} | {
-    type: string;
-    value: string;
-} | {
+declare const _exports: import("postcss").PluginCreator<Options>;
+export = _exports;
+declare const T_ESCAPED_SINGLE_QUOTE: {
     type: string;
     value: string;
 };
-type StringAst = {
+declare const T_ESCAPED_DOUBLE_QUOTE: {
+    type: string;
+    value: string;
+};
+declare const T_SINGLE_QUOTE: {
+    type: string;
+    value: string;
+};
+declare const T_NEWLINE: {
+    type: string;
+    value: string;
+};
+export type StringAstNode = typeof T_ESCAPED_SINGLE_QUOTE | typeof T_ESCAPED_DOUBLE_QUOTE | typeof T_SINGLE_QUOTE | typeof T_NEWLINE;
+export type StringAst = {
     nodes: StringAstNode[];
     types: {
         escapedSingleQuote: number;
@@ -33,7 +27,7 @@ type StringAst = {
     };
     quotes: boolean;
 };
-type Options = {
-    preferredQuote?: "double" | "single";
+export type Options = {
+    preferredQuote?: 'double' | 'single';
 };
 //# sourceMappingURL=index.d.ts.map

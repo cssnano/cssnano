@@ -209,12 +209,14 @@ function optimise(decl) {
     .toString();
 }
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-minify-gradients',
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       css.walkDecls(optimise);
     },
@@ -222,4 +224,6 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
+  pluginCreator
+);

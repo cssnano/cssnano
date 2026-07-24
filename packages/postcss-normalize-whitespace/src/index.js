@@ -41,13 +41,15 @@ function reduceWhitespaces(node) {
 }
 
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-whitespace',
 
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       const cache = new Map();
 
@@ -106,4 +108,6 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
+  pluginCreator
+);

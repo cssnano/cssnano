@@ -149,12 +149,9 @@ function shouldKeepZeroUnit(decl, browsers) {
     (lowerCasedProp === 'initial-value' &&
       parent &&
       parent.type === 'atrule' &&
-      /** @type {import('postcss').AtRule} */
-      (parent).name === 'property' &&
-      /** @type {import('postcss').AtRule} */
-      (parent).nodes !== undefined &&
-      /** @type {import('postcss').AtRule} */
-      (parent).nodes.some(
+      parent.name === 'property' &&
+      parent.nodes !== undefined &&
+      parent.nodes.some(
         (node) =>
           node.type === 'decl' &&
           node.prop.toLowerCase() === 'syntax' &&
@@ -221,7 +218,6 @@ const plugin = 'postcss-convert-values';
  */
 
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
@@ -234,15 +230,25 @@ function pluginCreator(opts = { precision: false }) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(opts.overrideBrowserslist, {
-        stats: opts.stats || stats,
-        path: opts.path || dirname(from || file || __filename),
-        env: opts.env || env,
-      });
+      const browsers = browserslist(
+        /** @type {Options} */ (opts).overrideBrowserslist,
+        {
+          stats: /** @type {Options} */ (opts).stats || stats,
+          path:
+            /** @type {Options} */ (opts).path ||
+            dirname(from || file || __filename),
+          env: /** @type {Options} */ (opts).env || env,
+        }
+      );
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
-          css.walkDecls((decl) => transform(opts, browsers, decl));
+          css.walkDecls((decl) =>
+            transform(/** @type {Options} */ (opts), browsers, decl)
+          );
         },
       };
     },
@@ -250,4 +256,6 @@ function pluginCreator(opts = { precision: false }) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
+  pluginCreator
+);

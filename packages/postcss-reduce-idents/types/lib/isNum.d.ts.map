@@ -1,1 +1,1 @@
-{"version":3,"file":"isNum.d.ts","sourceRoot":"","sources":["../../src/lib/isNum.js"],"names":[],"mappings":"AAOiB,gCAHN,OAAO,sBAAsB,EAAE,IAAI,GAClC,OAAO,sBAAsB,EAAE,SAAS,GAAG,KAAK,CAI3D"}
+{"version":3,"file":"isNum.d.ts","sourceRoot":"","sources":["../../src/lib/isNum.js"],"names":[],"mappings":";AAGA;;;GAGG;uBAC6B,IAAI,EAHzB,OAAO,sBAAsB,EAAE,IAGN,GAFxB,OAAO,sBAAsB,EAAE,SAAS,GAAG,KAAK"}

@@ -178,7 +178,7 @@ function ensureCompatibility(selectors, browsers, compatibilityCache) {
         const { type, value } = node;
         if (type === 'pseudo') {
           const entry =
-            pseudoElements[/** @type {keyof pseudoElements} */ (value)];
+            pseudoElements[/** @type keyof typeof pseudoElements*/ (value)];
           if (!entry && noVendor(value)) {
             compatible = false;
           }
