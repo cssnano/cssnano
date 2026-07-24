@@ -218,7 +218,6 @@ const reducers = new Map(
 /** @typedef {OwnOptions & AutoprefixerOptions & BrowserslistOptions} Options */
 
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
@@ -243,6 +242,9 @@ function pluginCreator(opts) {
       }
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           const cache = new Map();
           const processor = parser((selectors) => {
@@ -312,4 +314,6 @@ function pluginCreator(opts) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
+  pluginCreator
+);

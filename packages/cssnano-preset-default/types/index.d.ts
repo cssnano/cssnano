@@ -1,4 +1,41 @@
 export = defaultPreset;
+export type SimpleOptions<OptionsExtends extends object | void = void> = false | (OptionsExtends & {
+    exclude?: true;
+});
+export type Options = {
+    discardComments?: SimpleOptions<import('postcss-discard-comments').Options>;
+    reduceInitial?: SimpleOptions<import('postcss-reduce-initial').Options>;
+    minifyGradients?: SimpleOptions;
+    svgo?: SimpleOptions<import('postcss-svgo').Options>;
+    reduceTransforms?: SimpleOptions;
+    convertValues?: SimpleOptions<import('postcss-convert-values').Options>;
+    calc?: SimpleOptions<import('postcss-calc').PostCssCalcOptions>;
+    colormin?: SimpleOptions<import('postcss-colormin').Options>;
+    orderedValues?: SimpleOptions;
+    minifySelectors?: SimpleOptions<import('postcss-minify-selectors').Options>;
+    minifyParams?: SimpleOptions<import('postcss-minify-params').Options>;
+    normalizeCharset?: SimpleOptions<import('postcss-normalize-charset').Options>;
+    minifyFontValues?: SimpleOptions<import('postcss-minify-font-values').Options>;
+    normalizeUrl?: SimpleOptions;
+    mergeLonghand?: SimpleOptions;
+    discardDuplicates?: SimpleOptions;
+    discardOverridden?: SimpleOptions;
+    normalizeRepeatStyle?: SimpleOptions;
+    mergeRules?: SimpleOptions<import('postcss-merge-rules').Options>;
+    discardEmpty?: SimpleOptions;
+    uniqueSelectors?: SimpleOptions;
+    normalizeString?: SimpleOptions<import('postcss-normalize-string').Options>;
+    normalizePositions?: SimpleOptions;
+    normalizeWhitespace?: SimpleOptions;
+    normalizeUnicode?: SimpleOptions<import('postcss-normalize-unicode').Options>;
+    normalizeDisplayValues?: SimpleOptions;
+    normalizeTimingFunctions?: SimpleOptions;
+    rawCache?: SimpleOptions;
+};
+export type AutoprefixerOptions = {
+    overrideBrowserslist?: string | string[];
+};
+export type BrowserslistOptions = Pick<import('browserslist').Options, 'stats' | 'path' | 'env'>;
 /**
  * Safe defaults for cssnano which require minimal configuration
  *
@@ -6,59 +43,6 @@ export = defaultPreset;
  * @returns {{ plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][] }}
  */
 declare function defaultPreset(opts?: Options & AutoprefixerOptions & BrowserslistOptions): {
-    plugins: [import("postcss").PluginCreator<any>, Options[keyof Options]][];
+    plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][];
 };
-declare namespace defaultPreset {
-    export { SimpleOptions, Options, AutoprefixerOptions, BrowserslistOptions };
-}
-type SimpleOptions<OptionsExtends extends object | void = void> = false | (OptionsExtends & {
-    exclude?: true;
-});
-type Options = {
-    discardComments?: SimpleOptions<postcssDiscardComments.Options> | undefined;
-    reduceInitial?: SimpleOptions<postcssReduceInitial.Options> | undefined;
-    minifyGradients?: SimpleOptions<void> | undefined;
-    svgo?: SimpleOptions<postcssSvgo.Options> | undefined;
-    reduceTransforms?: SimpleOptions<void> | undefined;
-    convertValues?: SimpleOptions<postcssConvertValues.Options> | undefined;
-    calc?: SimpleOptions<postcssCalc.PostCssCalcOptions> | undefined;
-    colormin?: SimpleOptions<postcssColormin.Options> | undefined;
-    orderedValues?: SimpleOptions<void> | undefined;
-    minifySelectors?: SimpleOptions<postcssMinifySelectors.Options> | undefined;
-    minifyParams?: SimpleOptions<postcssMinifyParams.Options> | undefined;
-    normalizeCharset?: SimpleOptions<postcssNormalizeCharset.Options> | undefined;
-    minifyFontValues?: SimpleOptions<postcssMinifyFontValues.Options> | undefined;
-    normalizeUrl?: SimpleOptions<void> | undefined;
-    mergeLonghand?: SimpleOptions<void> | undefined;
-    discardDuplicates?: SimpleOptions<void> | undefined;
-    discardOverridden?: SimpleOptions<void> | undefined;
-    normalizeRepeatStyle?: SimpleOptions<void> | undefined;
-    mergeRules?: SimpleOptions<postcssMergeRules.Options> | undefined;
-    discardEmpty?: SimpleOptions<void> | undefined;
-    uniqueSelectors?: SimpleOptions<void> | undefined;
-    normalizeString?: SimpleOptions<postcssNormalizeString.Options> | undefined;
-    normalizePositions?: SimpleOptions<void> | undefined;
-    normalizeWhitespace?: SimpleOptions<void> | undefined;
-    normalizeUnicode?: SimpleOptions<postcssNormalizeUnicode.Options> | undefined;
-    normalizeDisplayValues?: SimpleOptions<void> | undefined;
-    normalizeTimingFunctions?: SimpleOptions<void> | undefined;
-    rawCache?: SimpleOptions<void> | undefined;
-};
-type AutoprefixerOptions = {
-    overrideBrowserslist?: string | string[];
-};
-type BrowserslistOptions = Pick<import("browserslist").Options, "stats" | "path" | "env">;
-import postcssDiscardComments = require("postcss-discard-comments");
-import postcssReduceInitial = require("postcss-reduce-initial");
-import postcssSvgo = require("postcss-svgo");
-import postcssConvertValues = require("postcss-convert-values");
-import postcssCalc = require("postcss-calc");
-import postcssColormin = require("postcss-colormin");
-import postcssMinifySelectors = require("postcss-minify-selectors");
-import postcssMinifyParams = require("postcss-minify-params");
-import postcssNormalizeCharset = require("postcss-normalize-charset");
-import postcssMinifyFontValues = require("postcss-minify-font-values");
-import postcssMergeRules = require("postcss-merge-rules");
-import postcssNormalizeString = require("postcss-normalize-string");
-import postcssNormalizeUnicode = require("postcss-normalize-unicode");
 //# sourceMappingURL=index.d.ts.map

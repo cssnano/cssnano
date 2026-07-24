@@ -3,13 +3,14 @@ const processors = require('./lib/decl');
 const [borders, columns, margin, padding] = processors;
 
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-merge-longhand',
-
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       css.walkRules((rule) => {
         // Scan the rule's props once, then run only the processors whose
@@ -55,4 +56,6 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>} */ (
+  pluginCreator
+);

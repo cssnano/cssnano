@@ -178,12 +178,14 @@ function dedupe(root) {
 }
 
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-discard-duplicates',
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       dedupe(css);
     },
@@ -191,4 +193,6 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
+  pluginCreator
+);

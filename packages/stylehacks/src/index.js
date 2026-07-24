@@ -10,7 +10,6 @@ const plugins = require('./plugins');
  */
 
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
@@ -29,7 +28,10 @@ function pluginCreator(opts = {}) {
         env: opts.env || env,
       });
 
-      return {
+      return /** import('postcss').Plugin */ {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           /** @type {import('./plugin').Plugin[]} */
           const processors = [];
@@ -68,4 +70,7 @@ pluginCreator.detect = (node) => {
 };
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports =
+  /** @type {import('postcss').PluginCreator<Options> & {detect: (node: import('postcss').Node) => boolean}} */ (
+    pluginCreator
+  );

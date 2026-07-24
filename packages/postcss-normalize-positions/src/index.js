@@ -14,7 +14,8 @@ const verticalValue = new Map([
 ]);
 const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 const variableFunctions = new Set(['var', 'env', 'constant']);
-const propFilterRegex = /^(background(-position)?|(-\w+-)?perspective-origin)$/i;
+const propFilterRegex =
+  /^(background(-position)?|(-\w+-)?perspective-origin)$/i;
 /**
  * @param {valueParser.Node} node
  * @return {boolean}
@@ -210,40 +211,41 @@ function transform(value) {
 }
 
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-positions',
 
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       const cache = new Map();
 
-      css.walkDecls(
-        propFilterRegex,
-        (decl) => {
-          const value = decl.value;
+      css.walkDecls(propFilterRegex, (decl) => {
+        const value = decl.value;
 
-          if (!value) {
-            return;
-          }
-
-          if (cache.has(value)) {
-            decl.value = cache.get(value);
-
-            return;
-          }
-
-          const result = transform(value);
-
-          decl.value = result;
-          cache.set(value, result);
+        if (!value) {
+          return;
         }
-      );
+
+        if (cache.has(value)) {
+          decl.value = cache.get(value);
+
+          return;
+        }
+
+        const result = transform(value);
+
+        decl.value = result;
+        cache.set(value, result);
+      });
     },
   };
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
+  pluginCreator
+);

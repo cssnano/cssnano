@@ -1,4 +1,7 @@
-export const ATRULE: "atrule";
-export const DECL: "decl";
-export const RULE: "rule";
+declare const _exports: {
+    ATRULE: string;
+    DECL: string;
+    RULE: string;
+};
+export = _exports;
 //# sourceMappingURL=postcss.d.ts.map

@@ -272,7 +272,6 @@ function reduce(node) {
 }
 
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
@@ -281,6 +280,9 @@ function pluginCreator() {
     prepare() {
       const cache = new Map();
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkDecls(transformRegex, (decl) => {
             const value = decl.value;
@@ -307,4 +309,6 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>} */ (
+  pluginCreator
+);

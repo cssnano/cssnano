@@ -57,12 +57,14 @@ function generateUniqueSelector(selectors) {
     .join();
 }
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-unique-selectors',
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       css.walkRules((nodes) => {
         if (nodes.raws.selector && nodes.raws.selector.raw) {
@@ -78,4 +80,6 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>} */ (
+  pluginCreator
+);

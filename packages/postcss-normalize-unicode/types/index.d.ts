@@ -1,23 +1,9 @@
-export = pluginCreator;
-/**
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {AutoprefixerOptions & BrowserslistOptions} Options
- */
-/**
- * @type {import('postcss').PluginCreator<Options>}
- * @param {Options} opts
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(opts?: Options): import("postcss").Plugin;
-declare namespace pluginCreator {
-    export { postcss, AutoprefixerOptions, BrowserslistOptions, Options };
-}
-declare var postcss: true;
-type AutoprefixerOptions = {
+declare const _exports: import("postcss").PluginCreator<Options>;
+export = _exports;
+import browserslist = require('browserslist');
+export type AutoprefixerOptions = {
     overrideBrowserslist?: string | string[];
 };
-type BrowserslistOptions = Pick<browserslist.Options, "stats" | "path" | "env">;
-type Options = AutoprefixerOptions & BrowserslistOptions;
-import browserslist = require("browserslist");
+export type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
+export type Options = AutoprefixerOptions & BrowserslistOptions;
 //# sourceMappingURL=index.d.ts.map

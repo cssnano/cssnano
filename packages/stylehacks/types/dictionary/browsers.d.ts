@@ -1,7 +1,10 @@
-export const FF_2: "firefox 2";
-export const IE_5_5: "ie 5.5";
-export const IE_6: "ie 6";
-export const IE_7: "ie 7";
-export const IE_8: "ie 8";
-export const OP_9: "opera 9";
+declare const _exports: {
+    FF_2: string;
+    IE_5_5: string;
+    IE_6: string;
+    IE_7: string;
+    IE_8: string;
+    OP_9: string;
+};
+export = _exports;
 //# sourceMappingURL=browsers.d.ts.map

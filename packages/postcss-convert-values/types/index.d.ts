@@ -1,29 +1,14 @@
-export = pluginCreator;
-/**
- * @typedef {Parameters<typeof convert>[2]} ConvertOptions
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions & AutoprefixerOptions & BrowserslistOptions} Options
- */
-/**
- * @type {import('postcss').PluginCreator<Options>}
- * @param {Options} opts
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(opts?: Options): import("postcss").Plugin;
-declare namespace pluginCreator {
-    export { postcss, ConvertOptions, AutoprefixerOptions, BrowserslistOptions, Options };
-}
-declare var postcss: true;
-type ConvertOptions = Parameters<typeof convert>[2];
-type AutoprefixerOptions = {
+declare const _exports: import("postcss").PluginCreator<Options>;
+export = _exports;
+import browserslist = require('browserslist');
+import convert = require('./lib/convert.js');
+export type ConvertOptions = Parameters<typeof convert>[2];
+export type AutoprefixerOptions = {
     overrideBrowserslist?: string | string[];
 };
-type BrowserslistOptions = Pick<browserslist.Options, "stats" | "path" | "env">;
-type Options = {
+export type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
+export type Options = {
     precision?: false | number;
     transformCustomProperties?: boolean;
 } & ConvertOptions & AutoprefixerOptions & BrowserslistOptions;
-import convert = require("./lib/convert.js");
-import browserslist = require("browserslist");
 //# sourceMappingURL=index.d.ts.map

@@ -1,3 +1,7 @@
-declare function _exports(parsed: import("postcss-value-parser").ParsedValue): string;
-export = _exports;
+export = normalizeTransition;
+/**
+ * @param {import('postcss-value-parser').ParsedValue} parsed
+ * @return {string}
+ */
+declare function normalizeTransition(parsed: import('postcss-value-parser').ParsedValue): string;
 //# sourceMappingURL=transition.d.ts.map

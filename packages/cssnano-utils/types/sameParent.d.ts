@@ -1,4 +1,7 @@
 export = sameParent;
+export type Child = import('postcss').AnyNode & {
+    parent?: Child;
+};
 /** @typedef {import('postcss').AnyNode & {parent?: Child}} Child */
 /**
  * @param {Child} nodeA
@@ -6,10 +9,4 @@ export = sameParent;
  * @return {boolean}
  */
 declare function sameParent(nodeA: Child, nodeB: Child): boolean;
-declare namespace sameParent {
-    export { Child };
-}
-type Child = import("postcss").AnyNode & {
-    parent?: Child;
-};
 //# sourceMappingURL=sameParent.d.ts.map

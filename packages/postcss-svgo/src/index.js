@@ -116,14 +116,16 @@ function minify(decl, opts, postcssResult) {
 }
 /** @typedef {{encode?: boolean} & import('svgo').Config} Options */
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(opts = {}) {
   return {
     postcssPlugin: PLUGIN,
-
+    /**
+     * @param {import('postcss').Root} css
+     * @param {import('postcss').Helpers}  helpers
+     */
     OnceExit(css, { result }) {
       css.walkDecls((decl) => {
         if (!dataURI.test(decl.value)) {
@@ -137,4 +139,6 @@ function pluginCreator(opts = {}) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
+  pluginCreator
+);

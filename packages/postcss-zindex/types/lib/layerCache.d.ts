@@ -2,6 +2,7 @@ export = LayerCache;
 /** @constructor */
 declare class LayerCache {
     _values: Map<any, any>;
+    constructor();
     /**
      * @param {number} startIndex
      * @return {void}

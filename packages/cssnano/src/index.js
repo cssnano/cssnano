@@ -122,25 +122,39 @@ function resolveConfig(options) {
  * @return {import('postcss').Processor}
  */
 function cssnanoPlugin(options = {}) {
-  if (Array.isArray(options.plugins)) {
-    if (!options.preset || !options.preset.plugins) {
-      options.preset = { plugins: [] };
+  if (Array.isArray(/** @type {Options} */ (options).plugins)) {
+    if (
+      !(/** @type {Options} */ (options).preset) ||
+      !(/** @type {Options} */ (options).preset.plugins)
+    ) {
+      /** @type {Options} */ (options).preset = { plugins: [] };
     }
 
-    options.plugins.forEach((plugin) => {
-      if (Array.isArray(plugin)) {
-        const [pluginDef, opts = {}] = plugin;
-        if (typeof pluginDef === 'string' && isResolvable(pluginDef)) {
-          options.preset.plugins.push([require(pluginDef), opts]);
+    // prettier-ignore
+    /** @type {any[]} */ (/** @type {Options} */ (options).plugins)
+      .forEach((plugin) => {
+        if (Array.isArray(plugin)) {
+          const [pluginDef, opts = {}] = plugin;
+          if (typeof pluginDef === 'string' && isResolvable(pluginDef)) {
+            /** @type {Options} */ (options).preset.plugins.push([
+              require(pluginDef),
+              opts,
+            ]);
+          } else {
+            /** @type {Options} */ (options).preset.plugins.push([
+              pluginDef,
+              opts,
+            ]);
+          }
+        } else if (typeof plugin === 'string' && isResolvable(plugin)) {
+          /** @type {Options} */ (options).preset.plugins.push([
+            require(plugin),
+            {},
+          ]);
         } else {
-          options.preset.plugins.push([pluginDef, opts]);
+          /** @type {Options} */ (options).preset.plugins.push([plugin, {}]);
         }
-      } else if (typeof plugin === 'string' && isResolvable(plugin)) {
-        options.preset.plugins.push([require(plugin), {}]);
-      } else {
-        options.preset.plugins.push([plugin, {}]);
-      }
-    });
+      });
   }
   const plugins = [];
   const nanoPlugins = resolveConfig(options);

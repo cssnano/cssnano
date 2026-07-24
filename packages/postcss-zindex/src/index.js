@@ -4,7 +4,6 @@ const LayerCache = require('./lib/layerCache');
 const zIndexRegex = /z-index/i;
 /** @typedef {{startIndex?: number}} Options */
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
@@ -14,6 +13,9 @@ function pluginCreator(opts = {}) {
     prepare() {
       const cache = new LayerCache();
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           /** @type {import('postcss').Declaration[]} */
           const nodes = [];
@@ -38,7 +40,7 @@ function pluginCreator(opts = {}) {
             return;
           }
 
-          cache.optimizeValues(opts.startIndex || 1);
+          cache.optimizeValues(/** @type {Options} */ (opts).startIndex || 1);
 
           // Second pass; optimize
           nodes.forEach((decl) => {
@@ -53,4 +55,6 @@ function pluginCreator(opts = {}) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
+  pluginCreator
+);

@@ -121,7 +121,6 @@ function addPluginDefaults(options, browsers) {
  */
 
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} config
  * @return {import('postcss').Plugin}
  */
@@ -134,28 +133,33 @@ function pluginCreator(config = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(config.overrideBrowserslist, {
-        stats: config.stats || stats,
-        path: config.path || dirname(from || file || __filename),
-        env: config.env || env,
-      });
+      const browsers = browserslist(
+        /** @type Options */ (config).overrideBrowserslist,
+        {
+          stats: /** @type Options */ (config).stats || stats,
+          path:
+            /** @type Options */ (config).path ||
+            dirname(from || file || __filename),
+          env: /** @type Options */ (config).env || env,
+        }
+      );
 
       const cache = new Map();
       const options = addPluginDefaults(config, browsers);
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkDecls((decl) => {
-            if (
-              notMinifiableRegex.test(
-                decl.prop
-              )
-            ) {
+            if (notMinifiableRegex.test(decl.prop)) {
               return;
             }
 
             if (
-              config.transformCustomProperties === false &&
+              /** @type Options */ (config).transformCustomProperties ===
+                false &&
               decl.prop.startsWith('--')
             ) {
               return;
@@ -187,4 +191,6 @@ function pluginCreator(config = {}) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
+  pluginCreator
+);

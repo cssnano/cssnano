@@ -1,45 +1,21 @@
-export = pluginCreator;
-/**
- * @typedef {object} MinifyColorOptions
- * @property {boolean} [hex]
- * @property {boolean} [alphaHex]
- * @property {boolean} [rgb]
- * @property {boolean} [hsl]
- * @property {boolean} [name]
- * @property {boolean} [transparent]
- * @property {boolean} [transformCustomProperties] Whether to minify colors inside custom property values (default: true)
- */
-/**
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {MinifyColorOptions & AutoprefixerOptions & BrowserslistOptions} Options
- */
-/**
- * @type {import('postcss').PluginCreator<Options>}
- * @param {Options} config
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(config?: Options): import("postcss").Plugin;
-declare namespace pluginCreator {
-    export { postcss, MinifyColorOptions, AutoprefixerOptions, BrowserslistOptions, Options };
-}
-declare var postcss: true;
-type MinifyColorOptions = {
-    hex?: boolean | undefined;
-    alphaHex?: boolean | undefined;
-    rgb?: boolean | undefined;
-    hsl?: boolean | undefined;
-    name?: boolean | undefined;
-    transparent?: boolean | undefined;
+declare const _exports: import("postcss").PluginCreator<Options>;
+export = _exports;
+import browserslist = require('browserslist');
+export type MinifyColorOptions = {
+    hex?: boolean;
+    alphaHex?: boolean;
+    rgb?: boolean;
+    hsl?: boolean;
+    name?: boolean;
+    transparent?: boolean;
     /**
      * Whether to minify colors inside custom property values (default: true)
      */
-    transformCustomProperties?: boolean | undefined;
+    transformCustomProperties?: boolean;
 };
-type AutoprefixerOptions = {
+export type AutoprefixerOptions = {
     overrideBrowserslist?: string | string[];
 };
-type BrowserslistOptions = Pick<browserslist.Options, "stats" | "path" | "env">;
-type Options = MinifyColorOptions & AutoprefixerOptions & BrowserslistOptions;
-import browserslist = require("browserslist");
+export type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
+export type Options = MinifyColorOptions & AutoprefixerOptions & BrowserslistOptions;
 //# sourceMappingURL=index.d.ts.map

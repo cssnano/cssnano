@@ -18,6 +18,8 @@ const getLastNode = require('../getLastNode.js');
 const parseWsc = require('../parseWsc.js');
 const { isValidWsc } = require('../validateWsc.js');
 
+/** @import {Declaration} from 'postcss'; */
+
 const wsc = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentcolor'];
 const colorMightRequireFallback =
@@ -255,6 +257,15 @@ function explode(rule) {
       return decl.remove();
     });
   });
+}
+
+/**
+ * @param {import ('postcss').Declaration} lastNode
+ * @returns {[string,string,string]}
+ */
+function retrieveWscValues(lastNode) {
+  const values = parseWsc(lastNode.value);
+  return values;
 }
 
 /**
@@ -589,8 +600,7 @@ function merge(rule) {
       if (lastNode.prop !== 'border') {
         return false;
       }
-
-      const values = parseWsc(lastNode.value);
+      const values = retrieveWscValues(lastNode);
 
       if (!isValidWsc(values)) {
         return false;
@@ -632,10 +642,13 @@ function merge(rule) {
 
     wsc.forEach((d, i) => {
       const names = directions
-        .filter((name) => name !== lastNode.prop)
+        .filter((name) => name !== /** @type {Declaration} */ (lastNode).prop)
         .map((name) => `${name}-${d}`);
 
-      let nodes = rule.nodes.slice(0, rule.nodes.indexOf(lastNode));
+      let nodes = rule.nodes.slice(
+        0,
+        rule.nodes.indexOf(/** @type {Declaration} */ (lastNode))
+      );
 
       const border = getLastNode(nodes, 'border');
 
@@ -647,7 +660,7 @@ function merge(rule) {
         (node) =>
           node.type === 'decl' &&
           names.includes(node.prop) &&
-          node.important === lastNode.important
+          node.important === /** @type {Declaration} */ (lastNode).important
       );
       const rules = getRules(
         /** @type {import('postcss').Declaration[]} */ (props),
@@ -657,9 +670,12 @@ function merge(rule) {
       if (hasAllProps(rules, ...names) && !rules.some(stylehacks.detect)) {
         const values = rules.map((node) => (node ? node.value : null));
         const filteredValues = values.filter(Boolean);
-        const lastNodeValue = list.space(lastNode.value)[i];
+        const lastNodeValue = list.space(
+          /** @type {Declaration} */ (lastNode).value
+        )[i];
 
-        values[directions.indexOf(lastNode.prop)] = lastNodeValue;
+        values[directions.indexOf(/** @type {Declaration} */ (lastNode).prop)] =
+          lastNodeValue;
 
         let value = minifyTrbl(values.join(' '));
 
@@ -674,14 +690,18 @@ function merge(rule) {
 
         if (value === lastNodeValue) {
           refNode = lastNode;
-          let valueArray = list.space(lastNode.value);
+          let valueArray = list.space(
+            /** @type {Declaration} */ (lastNode).value
+          );
           valueArray.splice(i, 1);
-          lastNode.value = valueArray.join(' ');
+          /** @type {Declaration} */ (lastNode).value = valueArray.join(' ');
         }
 
         insertCloned(
-          /** @type {import('postcss').Rule} */ (refNode.parent),
-          /** @type {import('postcss').Declaration} */ (refNode),
+          /** @type {import('postcss').Rule} */ (
+            /** /** @type {Declaration} */ (refNode).parent
+          ),
+          /** @type {Declaration} */ (refNode),
           {
             prop: borderProperty(d),
             value,
@@ -806,19 +826,25 @@ function merge(rule) {
 
   while (decls.length) {
     const lastNode = decls.at(-1);
-    const lastPart = lastNode.prop.split('-').pop();
+    const lastPart = /** @type {Declaration} */ (lastNode).prop
+      .split('-')
+      .pop();
 
     // remove properties of lower precedence
     const lesser = decls.filter(
       (node) =>
-        !stylehacks.detect(lastNode) &&
+        !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
         !stylehacks.detect(node) &&
-        !isCustomProp(lastNode) &&
+        !isCustomProp(/** @type {Declaration} */ (lastNode)) &&
         node !== lastNode &&
-        node.important === lastNode.important &&
+        node.important === /** @type {Declaration} */ (lastNode).important &&
         /** @type {number} */ (getLevel(node.prop)) >
-          /** @type {number} */ (getLevel(lastNode.prop)) &&
-        (node.prop.toLowerCase().includes(lastNode.prop) ||
+          /** @type {number} */ (
+            getLevel(/** @type {Declaration} */ (lastNode).prop)
+          ) &&
+        (node.prop
+          .toLowerCase()
+          .includes(/** @type {Declaration} */ (lastNode).prop) ||
           node.prop.toLowerCase().endsWith(/** @type {string} */ (lastPart)))
     );
 
@@ -830,16 +856,23 @@ function merge(rule) {
     // get duplicate properties
     let duplicates = decls.filter(
       (node) =>
-        !stylehacks.detect(lastNode) &&
+        !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
         !stylehacks.detect(node) &&
         node !== lastNode &&
-        node.important === lastNode.important &&
-        node.prop === lastNode.prop &&
-        !(!isCustomProp(node) && isCustomProp(lastNode))
+        node.important === /** @type {Declaration} */ (lastNode).important &&
+        node.prop === /** @type {Declaration} */ (lastNode).prop &&
+        !(
+          !isCustomProp(node) &&
+          isCustomProp(/** @type {Declaration} */ (lastNode))
+        )
     );
 
     if (duplicates.length) {
-      if (colorMightRequireFallback.test(getColorValue(lastNode))) {
+      if (
+        colorMightRequireFallback.test(
+          getColorValue(/** @type {Declaration} */ (lastNode))
+        )
+      ) {
         const preserve = duplicates
           .filter(
             (node) => !colorMightRequireFallback.test(getColorValue(node))

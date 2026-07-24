@@ -101,7 +101,7 @@ function transform(value, isLegacy = false) {
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
-function pluginCreator(opts = {}) {
+function pluginCreator(/** @type {Options} */ opts = {}) {
   return {
     postcssPlugin: 'postcss-normalize-unicode',
 
@@ -120,6 +120,9 @@ function pluginCreator(opts = {}) {
       const isLegacy = browsers.some(hasLowerCaseUPrefixBug);
 
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
           css.walkDecls(unicodeRangeRegex, (decl) => {
             const value = decl.value;
@@ -142,4 +145,6 @@ function pluginCreator(opts = {}) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
+  pluginCreator
+);

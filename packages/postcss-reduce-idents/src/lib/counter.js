@@ -44,8 +44,8 @@ module.exports = function () {
 
         declOneCache.push(/** @type {any} */ (node));
       } else if (contentRegex.test(prop)) {
-                declTwoCache.push(node);
-              }
+        declTwoCache.push(node);
+      }
     },
 
     transform() {

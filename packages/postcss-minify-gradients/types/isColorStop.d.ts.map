@@ -1,1 +1,1 @@
-{"version":3,"file":"isColorStop.d.ts","sourceRoot":"","sources":["../src/isColorStop.js"],"names":[],"mappings":"AA4DiB,iCAJN,MAAM,SACN,MAAM,GACL,OAAO,CAIlB"}
+{"version":3,"file":"isColorStop.d.ts","sourceRoot":"","sources":["../src/isColorStop.js"],"names":[],"mappings":";AAuDA;;;;GAIG;6BACmC,KAAK,EAJhC,MAIgC,EAAE,IAAI,AAH9C,CACA,EADQ,MAGsC,GAFrC,OAAO"}

@@ -7,7 +7,6 @@ const nonAscii = /[^\x00-\x7F]/;
  * @typedef {{add?: boolean}} Options
  */
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
@@ -15,6 +14,10 @@ function pluginCreator(opts = {}) {
   return {
     postcssPlugin: 'postcss-normalize-' + charset,
 
+    /**
+     * @param {import('postcss').Root} css
+     * @param {import('postcss').Helpers} helpers
+     */
     OnceExit(css, { AtRule }) {
       /** @type {import('postcss').AtRule | undefined} */
       let charsetRule;
@@ -53,4 +56,6 @@ function pluginCreator(opts = {}) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
+  pluginCreator
+);

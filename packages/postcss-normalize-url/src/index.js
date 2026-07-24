@@ -127,13 +127,14 @@ function transformDecl(decl) {
 }
 
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-url',
-
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       css.walk((node) => {
         if (node.type === 'decl') {
@@ -150,4 +151,6 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
+  pluginCreator
+);

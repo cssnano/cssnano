@@ -1,6 +1,9 @@
-export let style: Set<string>;
-export let variant: Set<string>;
-export let weight: Set<string>;
-export let stretch: Set<string>;
-export let size: Set<string>;
+declare const _exports: {
+    style: Set<string>;
+    variant: Set<string>;
+    weight: Set<string>;
+    stretch: Set<string>;
+    size: Set<string>;
+};
+export = _exports;
 //# sourceMappingURL=keywords.d.ts.map

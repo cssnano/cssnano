@@ -113,36 +113,36 @@ function transform(value) {
 }
 
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-timing-functions',
-
+    /**
+     * @param {import('postcss').Root} css
+     */
     OnceExit(css) {
       const cache = new Map();
 
-      css.walkDecls(
-        animationTransitionRegex,
-        (decl) => {
-          const value = decl.value;
+      css.walkDecls(animationTransitionRegex, (decl) => {
+        const value = decl.value;
 
-          if (cache.has(value)) {
-            decl.value = cache.get(value);
+        if (cache.has(value)) {
+          decl.value = cache.get(value);
 
-            return;
-          }
-
-          const result = transform(value);
-
-          decl.value = result;
-          cache.set(value, result);
+          return;
         }
-      );
+
+        const result = transform(value);
+
+        decl.value = result;
+        cache.set(value, result);
+      });
     },
   };
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
+  pluginCreator
+);

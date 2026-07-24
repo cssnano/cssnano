@@ -140,7 +140,6 @@ function transform(value) {
 }
 
 /**
- * @type {import('postcss').PluginCreator<void>}
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
@@ -149,28 +148,28 @@ function pluginCreator() {
     prepare() {
       const cache = new Map();
       return {
+        /**
+         * @param {import('postcss').Root} css
+         */
         OnceExit(css) {
-          css.walkDecls(
-            repeatPropertyRegex,
-            (decl) => {
-              const value = decl.value;
+          css.walkDecls(repeatPropertyRegex, (decl) => {
+            const value = decl.value;
 
-              if (!value) {
-                return;
-              }
-
-              if (cache.has(value)) {
-                decl.value = cache.get(value);
-
-                return;
-              }
-
-              const result = transform(value);
-
-              decl.value = result;
-              cache.set(value, result);
+            if (!value) {
+              return;
             }
-          );
+
+            if (cache.has(value)) {
+              decl.value = cache.get(value);
+
+              return;
+            }
+
+            const result = transform(value);
+
+            decl.value = result;
+            cache.set(value, result);
+          });
         },
       };
     },
@@ -178,4 +177,6 @@ function pluginCreator() {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
+  pluginCreator
+);

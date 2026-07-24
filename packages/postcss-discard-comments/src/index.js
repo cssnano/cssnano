@@ -9,7 +9,6 @@ const selectorParser = require('postcss-selector-parser');
  *  @property {(s: string) => boolean=} remove
  */
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
@@ -149,7 +148,10 @@ function pluginCreator(opts = {}) {
 
   return {
     postcssPlugin: 'postcss-discard-comments',
-
+    /**
+     * @param {import('postcss').Root} css
+     * @param {import('postcss').Helpers} helpers
+     */
     OnceExit(css, { list }) {
       css.walk((node) => {
         if (node.type === 'comment' && remover.canRemove(node.text)) {
@@ -236,4 +238,6 @@ function pluginCreator(opts = {}) {
 }
 
 pluginCreator.postcss = true;
-module.exports = pluginCreator;
+module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
+  pluginCreator
+);
