@@ -3,7 +3,6 @@ const { readFileSync: file } = require('fs');
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
 const postcss = require('postcss');
-const filters = require('pleeease-filters');
 const {
   usePostCSSPlugin,
   processCSSFactory,
@@ -11,13 +10,11 @@ const {
 const plugin = require('../src/index.js');
 const { encode, decode } = require('../src/lib/url.js');
 
-const { processCSS: filterEffects } = processCSSFactory([filters(), plugin()]);
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 test(
   'should not mangle filter effects',
-  filterEffects(
-    'h1{filter:blur(5px)}',
+  passthroughCSS(
     'h1{filter:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><filter id="filter"><feGaussianBlur stdDeviation="5" /></filter></svg>#filter\');filter:blur(5px)}'
   )
 );
