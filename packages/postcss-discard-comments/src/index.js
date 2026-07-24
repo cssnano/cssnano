@@ -65,7 +65,7 @@ function pluginCreator(opts = {}) {
       return replacerCache.get(key);
     }
 
-    if (source.indexOf('/*') === -1) {
+    if (!source.includes('/*')) {
       const normalized = space(source).join(' ');
 
       replacerCache.set(key, normalized);
@@ -112,7 +112,7 @@ function pluginCreator(opts = {}) {
     if (replacerCache.has(key)) {
       return replacerCache.get(key);
     }
-    if (source.indexOf('/*') === -1) {
+    if (!source.includes('/*')) {
       const normalized = space(source).join(' ');
 
       replacerCache.set(key, normalized);

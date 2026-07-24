@@ -52,7 +52,7 @@ function pluginCreator(options = {}) {
 
             if (
               initialSupport &&
-              Object.prototype.hasOwnProperty.call(toInitial, lowerCasedProp) &&
+              Object.hasOwn(toInitial, lowerCasedProp) &&
               decl.value.toLowerCase() ===
                 toInitial[/** @type {keyof toInitial} */ (lowerCasedProp)]
             ) {
