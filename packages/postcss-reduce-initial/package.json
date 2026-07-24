@@ -37,9 +37,9 @@
   },
   "devDependencies": {
     "html-to-text": "^10.0.0",
-    "postcss": "^8.5.19"
+    "postcss": "^8.5.22"
   },
   "peerDependencies": {
-    "postcss": "^8.5.19"
+    "postcss": "^8.5.22"
   }
 }
