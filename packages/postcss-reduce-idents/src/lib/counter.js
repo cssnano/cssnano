@@ -43,11 +43,9 @@ module.exports = function () {
         );
 
         declOneCache.push(/** @type {any} */ (node));
-      } else {
-        if (contentRegex.test(prop)) {
+      } else if (contentRegex.test(prop)) {
                 declTwoCache.push(node);
               }
-      }
     },
 
     transform() {
