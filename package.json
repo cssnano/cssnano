@@ -26,7 +26,7 @@
     "globals": "^17.7.0",
     "postcss": "^8.5.23",
     "postcss-font-magician": "^4.0.0",
-    "prettier": "^3.9.5",
+    "prettier": "^3.9.6",
     "typescript": "~7.0.2"
   },
   "browserslist": {
