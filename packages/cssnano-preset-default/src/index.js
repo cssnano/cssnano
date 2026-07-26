@@ -62,7 +62,7 @@ const { rawCache } = require('cssnano-utils');
  * @property {SimpleOptions<import('postcss-minify-params').Options>} [minifyParams]
  * @property {SimpleOptions<import('postcss-normalize-charset').Options>} [normalizeCharset]
  * @property {SimpleOptions<import('postcss-minify-font-values').Options>} [minifyFontValues]
- * @property {SimpleOptions} [normalizeUrl]
+ * @property {SimpleOptions<import('postcss-normalize-url').Options>} [normalizeUrl]
  * @property {SimpleOptions} [mergeLonghand]
  * @property {SimpleOptions} [discardDuplicates]
  * @property {SimpleOptions} [discardOverridden]

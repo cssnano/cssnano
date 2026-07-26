@@ -69,3 +69,28 @@ test('should remove trailing semicolon', () => {
     'data:;charset=utf-8,foo'
   );
 });
+
+test('should remove trailing slash by default', () => {
+  assert.strictEqual(
+    normalizeUrl('http://example.com/assets/'),
+    'http://example.com/assets'
+  );
+});
+
+test('should preserve trailing slash when removeTrailingSlash is false', () => {
+  assert.strictEqual(
+    normalizeUrl('http://example.com/assets/', {
+      removeTrailingSlash: false,
+    }),
+    'http://example.com/assets/'
+  );
+});
+
+test('should decode URI octets while preserving trailing slash', () => {
+  assert.strictEqual(
+    normalizeUrl('http://example.com/%7Efoo/', {
+      removeTrailingSlash: false,
+    }),
+    'http://example.com/~foo/'
+  );
+});

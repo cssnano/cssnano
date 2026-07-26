@@ -31,6 +31,35 @@ h1 {
 Note that this module will also try to normalize relative URLs, and is capable
 of stripping unnecessary quotes. For more examples, see the [tests](test/index.js).
 
+## Options
+
+### `removeTrailingSlash`
+
+Type: `boolean`  
+Default: `true`
+
+Remove trailing slashes from absolute and protocol-relative URLs. Set to
+`false` when servers treat a trailing slash as significant:
+
+```js
+postcss([
+  require('postcss-normalize-url')({ removeTrailingSlash: false }),
+]);
+```
+
+With cssnano / `cssnano-preset-default`:
+
+```js
+cssnano({
+  preset: [
+    'default',
+    {
+      normalizeUrl: { removeTrailingSlash: false },
+    },
+  ],
+});
+```
+
 ## Usage
 
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for

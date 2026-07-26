@@ -302,4 +302,30 @@ test(
   passthroughCSS('h1{background:url(http://)}')
 );
 
+test(
+  'should remove trailing slashes by default',
+  processCSS(
+    'h1{background:url(http://website.com/assets/)}',
+    'h1{background:url(http://website.com/assets)}'
+  )
+);
+
+test(
+  'should preserve trailing slashes when removeTrailingSlash is false',
+  processCSS(
+    'h1{background:url("http://localhost:4321/api/woff2/inter.woff2/")}',
+    'h1{background:url(http://localhost:4321/api/woff2/inter.woff2/)}',
+    { removeTrailingSlash: false }
+  )
+);
+
+test(
+  'should still strip quotes when preserving trailing slashes',
+  processCSS(
+    'h1{background:url("http://website.com/assets/")}',
+    'h1{background:url(http://website.com/assets/)}',
+    { removeTrailingSlash: false }
+  )
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

@@ -90,10 +90,16 @@ function normalizeDataURL(urlString) {
 }
 
 /**
+ * @typedef {{removeTrailingSlash?: boolean}} Options
+ */
+
+/**
  * @param {string} urlString
+ * @param {Options} [options]
  * @return {string}
  */
-function normalizeUrl(urlString) {
+function normalizeUrl(urlString, options = {}) {
+  const removeTrailingSlash = options.removeTrailingSlash !== false;
   urlString = urlString.trim();
 
   // Data URL
@@ -138,13 +144,19 @@ function normalizeUrl(urlString) {
     urlObject.hostname = urlObject.hostname.replace(trailingDotRegex, '');
   }
 
-  urlObject.pathname = urlObject.pathname.replace(trailingSlashRegex, '');
+  if (removeTrailingSlash) {
+    urlObject.pathname = urlObject.pathname.replace(trailingSlashRegex, '');
+  }
 
   // Take advantage of many of the Node `url` normalizations
   urlString = urlObject.toString();
 
-  // Remove ending `/`
-  if (urlObject.pathname === '/' && urlObject.hash === '') {
+  // Remove ending `/` for bare origins (pathname is only `/`)
+  if (
+    removeTrailingSlash &&
+    urlObject.pathname === '/' &&
+    urlObject.hash === ''
+  ) {
     urlString = urlString.replace(trailingSlashRegex, '');
   }
 
