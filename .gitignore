@@ -47,4 +47,7 @@ lerna-debug.log*
 .DS_Store
 
 # Generated website files
-site/_site/js
+site/_site/
+
+# Demo lockfile
+example-cli-usage/package-lock.json
