@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "lint": "pnpm types && eslint . --cache",
-    "fixlint": "prettier --write . && pnpm lint -- --fix",
+    "fixlint": "oxfmt . && pnpm lint -- --fix",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
     "test:only": "node --test",
@@ -24,9 +24,9 @@
     "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.7.0",
+    "oxfmt": "^0.61.0",
     "postcss": "^8.5.23",
     "postcss-font-magician": "^4.0.0",
-    "prettier": "^3.9.6",
     "typescript": "~7.0.2"
   },
   "browserslist": {

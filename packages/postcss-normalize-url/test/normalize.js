@@ -32,7 +32,6 @@ test('should preserve trailing slash by default', () => {
   );
 });
 
-
 test('should handle spaces inside parameters', () => {
   assert.strictEqual(
     normalizeUrl('http://example.com/?foo=bar baz'),

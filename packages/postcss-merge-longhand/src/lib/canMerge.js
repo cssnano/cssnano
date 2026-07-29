@@ -6,7 +6,7 @@ const important = (node) => node.important;
 /** @type {(node: import('postcss').Declaration) => boolean} */
 const unimportant = (node) => !node.important;
 
-/* Cannot be combined with other values in shorthand 
+/* Cannot be combined with other values in shorthand
   https://www.w3.org/TR/css-cascade-5/#shorthand */
 const cssWideKeywords = ['inherit', 'initial', 'unset', 'revert'];
 /**
