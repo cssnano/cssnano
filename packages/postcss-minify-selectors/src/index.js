@@ -222,7 +222,7 @@ const reducers = new Map(
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(opts) {
-  const resolved = { sort: true, convertToIs: true, ...(opts || {}) };
+  const resolved = { sort: true, convertToIs: true, ...opts };
   return {
     postcssPlugin: 'postcss-minify-selectors',
 
