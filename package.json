@@ -2,7 +2,7 @@
   "name": "cssnano-core",
   "private": true,
   "scripts": {
-    "lint": "pnpm types && eslint . --cache",
+    "lint": "pnpm types && oxlint .",
     "fixlint": "oxfmt . && pnpm lint -- --fix",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
@@ -19,12 +19,9 @@
     "node": "^22.11 || ^24.11 || >=26.0"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@types/node": "^26.1.1",
-    "eslint": "^10.7.0",
-    "eslint-config-prettier": "^10.1.8",
-    "globals": "^17.7.0",
     "oxfmt": "^0.61.0",
+    "oxlint": "^1.76.0",
     "postcss": "^8.5.23",
     "postcss-font-magician": "^4.0.0",
     "typescript": "~7.0.2"
