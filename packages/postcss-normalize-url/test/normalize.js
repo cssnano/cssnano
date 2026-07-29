@@ -25,6 +25,14 @@ test('should decode URI octets', () => {
   );
 });
 
+test('should preserve trailing slash by default', () => {
+  assert.strictEqual(
+    normalizeUrl('https://example.com/assets/'),
+    'https://example.com/assets/'
+  );
+});
+
+
 test('should handle spaces inside parameters', () => {
   assert.strictEqual(
     normalizeUrl('http://example.com/?foo=bar baz'),

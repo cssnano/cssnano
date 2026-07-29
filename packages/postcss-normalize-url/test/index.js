@@ -88,6 +88,14 @@ test(
 );
 
 test(
+  'should preserve trailing slashes',
+  processCSS(
+    'h1{background:url("https://localhost:4321/api/woff2/inter.woff2/")}',
+    'h1{background:url(https://localhost:4321/api/woff2/inter.woff2/)}'
+  )
+);
+
+test(
   'should normalize urls with special characters',
   processCSS(
     'h1{background:url("http://website.com/test/../(images)/1.png")}',
