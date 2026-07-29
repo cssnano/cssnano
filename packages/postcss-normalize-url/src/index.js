@@ -3,10 +3,6 @@ const path = require('path');
 const valueParser = require('postcss-value-parser');
 const normalize = require('./normalize.js');
 
-/**
- * @typedef {{removeTrailingSlash?: boolean}} Options
- */
-
 const multiline = /\\[\r\n]/;
 // eslint-disable-next-line no-useless-escape
 const escapeChars = /([\s\(\)"'])/g;
@@ -33,15 +29,14 @@ function isAbsolute(url) {
 
 /**
  * @param {string} url
- * @param {Options} opts
  * @return {string}
  */
-function convert(url, opts) {
+function convert(url) {
   if (isAbsolute(url) || url.startsWith('//')) {
     let normalizedURL;
 
     try {
-      normalizedURL = normalize(url, opts);
+      normalizedURL = normalize(url);
     } catch {
       normalizedURL = url;
     }
@@ -80,10 +75,9 @@ function transformNamespace(rule) {
 
 /**
  * @param {import('postcss').Declaration} decl
- * @param {Options} opts
  * @return {void}
  */
-function transformDecl(decl, opts) {
+function transformDecl(decl) {
   decl.value = valueParser(decl.value)
     .walk((node) => {
       if (node.type !== 'function' || node.value.toLowerCase() !== 'url') {
@@ -113,7 +107,7 @@ function transformDecl(decl, opts) {
       }
 
       if (!extensionRegex.test(url.value)) {
-        url.value = convert(url.value, opts);
+        url.value = convert(url.value);
       }
 
       if (escapeChars.test(url.value) && url.type === 'string') {
@@ -133,10 +127,9 @@ function transformDecl(decl, opts) {
 }
 
 /**
- * @param {Options} [opts]
  * @return {import('postcss').Plugin}
  */
-function pluginCreator(opts = {}) {
+function pluginCreator() {
   return {
     postcssPlugin: 'postcss-normalize-url',
     /**
@@ -145,7 +138,7 @@ function pluginCreator(opts = {}) {
     OnceExit(css) {
       css.walk((node) => {
         if (node.type === 'decl') {
-          return transformDecl(node, opts);
+          return transformDecl(node);
         } else if (
           node.type === 'atrule' &&
           node.name.toLowerCase() === 'namespace'
@@ -158,6 +151,6 @@ function pluginCreator(opts = {}) {
 }
 
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
+module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
   pluginCreator
 );

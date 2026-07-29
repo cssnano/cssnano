@@ -1,6 +1,3 @@
-declare const _exports: import("postcss").PluginCreator<Options>;
+declare const _exports: import("postcss").PluginCreator<void>;
 export = _exports;
-export type Options = {
-    removeTrailingSlash?: boolean;
-};
 //# sourceMappingURL=index.d.ts.map
