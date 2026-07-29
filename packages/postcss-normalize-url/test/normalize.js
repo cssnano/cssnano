@@ -21,7 +21,7 @@ test('should leave encoded slashes alone', () => {
 test('should decode URI octets', () => {
   assert.strictEqual(
     normalizeUrl('http://example.com/%7Efoo/'),
-    'http://example.com/~foo'
+    'http://example.com/~foo/'
   );
 });
 

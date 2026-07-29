@@ -138,8 +138,6 @@ function normalizeUrl(urlString) {
     urlObject.hostname = urlObject.hostname.replace(trailingDotRegex, '');
   }
 
-  urlObject.pathname = urlObject.pathname.replace(trailingSlashRegex, '');
-
   // Take advantage of many of the Node `url` normalizations
   urlString = urlObject.toString();
 
