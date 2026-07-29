@@ -65,7 +65,7 @@ async function benchOne(name, source, processor, iters, warmup) {
     void res.css;
   }
 
-  const samples = new Array(iters);
+  const samples = Array.from({ length: iters });
   for (let i = 0; i < iters; i++) {
     const t0 = performance.now();
     const res = await processor.process(source, { from: undefined });

@@ -29,10 +29,18 @@ function pluginCreator({
   /** @type {Reducer[]} */
   const reducers = [];
 
-  counter && reducers.push(counterReducer());
-  counterStyle && reducers.push(counterStyleReducer());
-  keyframes && reducers.push(keyframesReducer());
-  gridTemplate && reducers.push(gridTemplateReducer());
+  if (counter) {
+    reducers.push(counterReducer());
+  }
+  if (counterStyle) {
+    reducers.push(counterStyleReducer());
+  }
+  if (keyframes) {
+    reducers.push(keyframesReducer());
+  }
+  if (gridTemplate) {
+    reducers.push(gridTemplateReducer());
+  }
 
   return {
     postcssPlugin: 'postcss-reduce-idents',

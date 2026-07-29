@@ -210,10 +210,18 @@ function pluginCreator(opts) {
             }
           });
 
-          counterStyle && filterAtRule(counterStyleCache);
-          fontFace && filterFont(fontCache, comma);
-          keyframes && filterAtRule(keyframesCache);
-          namespace && filterNamespace(namespaceCache);
+          if (counterStyle) {
+            filterAtRule(counterStyleCache);
+          }
+          if (fontFace) {
+            filterFont(fontCache, comma);
+          }
+          if (keyframes) {
+            filterAtRule(keyframesCache);
+          }
+          if (namespace) {
+            filterNamespace(namespaceCache);
+          }
         },
       };
     },
