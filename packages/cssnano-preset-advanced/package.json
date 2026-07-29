@@ -12,7 +12,6 @@
   "license": "MIT",
   "dependencies": {
     "autoprefixer": "^10.5.4",
-    "browserslist": "^4.28.7",
     "css-declaration-sorter": "^7.4.0",
     "cssnano-preset-default": "workspace:^",
     "postcss-discard-unused": "workspace:^",
