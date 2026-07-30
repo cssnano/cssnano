@@ -143,6 +143,8 @@ function normalize(args) {
         if (delegate(value, node) && !state[property].length) {
           state[property] = [node, addSpace()];
           return true;
+        } else {
+          return false;
         }
       });
 
