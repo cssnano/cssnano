@@ -205,8 +205,6 @@ function pluginCreator(opts) {
               if (namespace && name === 'namespace') {
                 namespaceCache.atRules.push(node);
               }
-
-              return;
             }
           });
 

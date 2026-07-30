@@ -142,15 +142,9 @@ function transform(value) {
     }
 
     if (ranges[rangeIndex].start !== null) {
-      if (node.type === 'space') {
-        return;
-      } else if (isPositionKeyword) {
+      if (node.type !== 'space' && isPositionKeyword) {
         ranges[rangeIndex].end = index;
-
-        return;
       }
-
-      return;
     }
   });
 
@@ -196,13 +190,9 @@ function transform(value) {
       if (horizontal.has(firstNode) && verticalValue.has(secondNode)) {
         nodes[0].value = /** @type {string} */ (horizontal.get(firstNode));
         nodes[2].value = /** @type {string} */ (verticalValue.get(secondNode));
-
-        return;
       } else if (verticalValue.has(firstNode) && horizontal.has(secondNode)) {
         nodes[0].value = /** @type {string} */ (horizontal.get(secondNode));
         nodes[2].value = /** @type {string} */ (verticalValue.get(firstNode));
-
-        return;
       }
     }
   });

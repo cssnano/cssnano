@@ -98,15 +98,9 @@ function transform(value) {
     }
 
     if (ranges[rangeIndex].start !== null) {
-      if (node.type === 'space') {
-        return;
-      } else if (isRepeatKeyword) {
+      if (node.type !== 'space' && isRepeatKeyword) {
         ranges[rangeIndex].end = index;
-
-        return;
       }
-
-      return;
     }
   });
 

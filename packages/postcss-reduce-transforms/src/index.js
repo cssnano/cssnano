@@ -143,8 +143,6 @@ function scale(node, values) {
   if (first === 1) {
     node.value = 'scaleY';
     node.nodes = [nodes[2]];
-
-    return;
   }
 }
 
@@ -181,8 +179,6 @@ function scale3d(node, values) {
   if (first === 1 && second === 1) {
     node.value = 'scaleZ';
     node.nodes = [nodes[4]];
-
-    return;
   }
 }
 
@@ -209,8 +205,6 @@ function translate(node, values) {
   if (values[0] === 0) {
     node.value = 'translateY';
     node.nodes = [nodes[2]];
-
-    return;
   }
 }
 
