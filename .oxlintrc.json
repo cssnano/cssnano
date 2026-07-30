@@ -12,6 +12,7 @@
   "rules": {
    "no-nested-ternary": "error",
    "array-callback-return": "error",
+   "unicorn/prefer-array-flat": "error",
    "unicorn/prefer-node-protocol": "error"
   },
   "env": {
