@@ -1,5 +1,5 @@
 'use strict';
-const { dirname } = require('path');
+const { dirname } = require('node:path');
 const browserslist = require('browserslist');
 const { sameParent } = require('cssnano-utils');
 const {

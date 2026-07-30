@@ -1,7 +1,7 @@
-import { createRequire } from 'module';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs/promises';
+import { createRequire } from 'node:module';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import fs from 'node:fs/promises';
 import toml from 'smol-toml';
 import getPackages from './getPackages.mjs';
 import pluginName from './pluginName.mjs';

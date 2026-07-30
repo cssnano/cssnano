@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import { test } from 'node:test';
 import * as assert from 'node:assert/strict';
 import { mock } from 'node:test';

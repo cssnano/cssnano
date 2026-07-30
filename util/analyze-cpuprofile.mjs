@@ -4,7 +4,7 @@
 // Usage:
 //   node util/analyze-cpuprofile.mjs <path/to/profile.cpuprofile> [topN]
 
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 
 const profilePath = process.argv[2];
 if (!profilePath) {

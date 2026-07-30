@@ -1,7 +1,7 @@
-import { join, dirname, basename } from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs/promises';
-import { readdirSync, readFileSync, readdir } from 'fs';
+import { join, dirname, basename } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import fs from 'node:fs/promises';
+import { readdirSync, readFileSync, readdir } from 'node:fs';
 import postcss from 'postcss';
 import cssnano from '../packages/cssnano/src/index.js';
 

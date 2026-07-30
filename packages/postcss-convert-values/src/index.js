@@ -1,5 +1,5 @@
 'use strict';
-const { dirname } = require('path');
+const { dirname } = require('node:path');
 const valueParser = require('postcss-value-parser');
 const browserslist = require('browserslist');
 const convert = require('./lib/convert.js');
