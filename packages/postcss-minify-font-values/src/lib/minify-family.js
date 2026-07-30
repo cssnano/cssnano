@@ -2,9 +2,8 @@
 const { stringify } = require('postcss-value-parser');
 
 const escapeCharacterRegex = /[\t\n\v\f:]/;
-const numberRegex = /\d/;
+const digitRegex = /\d/;
 const negativeNumberRegex = /^-[-\d]/;
-const digitRegex = /[0-9]/;
 
 /**
  * @param {string[]} list
@@ -84,7 +83,7 @@ function escape(string, escapeForString) {
 
     const firstChar = string.charAt(0);
 
-    if (numberRegex.test(firstChar)) {
+    if (digitRegex.test(firstChar)) {
       output = '\\3' + firstChar + ' ' + output.slice(1);
     }
   }
