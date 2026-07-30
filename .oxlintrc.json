@@ -10,6 +10,7 @@
     "correctness": "error"
   },
   "rules": {
+   "no-nested-ternary": "error",
    "unicorn/prefer-node-protocol": "error"
   },
   "env": {
