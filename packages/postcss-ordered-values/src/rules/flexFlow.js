@@ -28,7 +28,6 @@ module.exports = function normalizeFlexFlow(flexFlow) {
 
     if (flexWrap.has(value.toLowerCase())) {
       order.wrap = value;
-      return;
     }
   });
 
