@@ -1,7 +1,8 @@
 'use strict';
-const processors = require('./lib/decl');
-const [borders, columns, margin, padding] = processors;
-
+const borders = require('./lib/decl/borders.js');
+const columns = require('./lib/decl/columns.js');
+const margin = require('./lib/decl/margin.js');
+const padding = require('./lib/decl/padding.js');
 /**
  * @return {import('postcss').Plugin}
  */
