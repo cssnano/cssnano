@@ -59,7 +59,7 @@ const precedence = [
   directionalProperties,
 ];
 
-const allProperties = precedence.reduce((a, b) => a.concat(b));
+const allProperties = precedence.flat();
 
 /**
  * @param {string} prop
