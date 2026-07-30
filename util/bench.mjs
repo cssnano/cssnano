@@ -16,11 +16,11 @@
 //   node util/bench.mjs --warmup=5         # warmup iterations per file
 //   node util/bench.mjs --only=bootstrap   # substring filter on file name
 
-import { readFileSync, readdirSync, mkdirSync, writeFileSync } from 'fs';
-import { join, dirname, basename, resolve } from 'path';
-import { fileURLToPath } from 'url';
-import { performance } from 'perf_hooks';
-import { createRequire } from 'module';
+import { readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
+import { join, dirname, basename, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { performance } from 'node:perf_hooks';
+import { createRequire } from 'node:module';
 import { parseArgs } from 'node:util';
 
 const require = createRequire(import.meta.url);

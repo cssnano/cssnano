@@ -1,5 +1,5 @@
 'use strict';
-const path = require('path');
+const path = require('node:path');
 /** @type {any} */
 const postcss = require('postcss');
 const { lilconfigSync } = require('lilconfig');

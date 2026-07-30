@@ -1,7 +1,7 @@
 'use strict';
 
-const { writeFile } = require('fs');
-const { resolve } = require('path');
+const { writeFile } = require('node:fs');
+const { resolve } = require('node:path');
 
 const listTypeURL =
   'https://raw.githubusercontent.com/mdn/browser-compat-data/master/css/properties/list-style-type.json';

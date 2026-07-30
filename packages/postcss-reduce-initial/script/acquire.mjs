@@ -1,4 +1,4 @@
-import { writeFile } from 'fs';
+import { writeFile } from 'node:fs';
 import { generate } from './lib/io.mjs';
 
 const url =

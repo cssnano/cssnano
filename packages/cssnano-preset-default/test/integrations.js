@@ -1,5 +1,5 @@
 'use strict';
-const { join } = require('path');
+const { join } = require('node:path');
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const {

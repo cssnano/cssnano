@@ -4,7 +4,7 @@ import syntaxHighlight from '@11ty/eleventy-plugin-syntaxhighlight';
 import { EleventyRenderPlugin, EleventyHtmlBasePlugin } from '@11ty/eleventy';
 import markdownItAnchor from 'markdown-it-anchor';
 import markdownIt from 'markdown-it';
-import fs from 'fs';
+import fs from 'node:fs';
 
 const cssnanoPackageInfo = JSON.parse(
   fs.readFileSync('../packages/cssnano/package.json', 'utf8')

@@ -1,6 +1,6 @@
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { readdir } from 'fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { readdir } from 'node:fs';
 
 export default function getPackages() {
   const pkgDir = join(
