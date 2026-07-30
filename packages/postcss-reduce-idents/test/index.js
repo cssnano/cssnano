@@ -573,14 +573,14 @@ test('encoder', () => {
   let arr = Array.from({ length: 1984 }, (value, index) => index);
   let cache = [];
 
-  arr.map((num) => {
+  for (const num of arr) {
     let encoded = encode(null, num);
     cache.push(encoded);
 
     let indexes = cache.filter((c) => c === encoded);
 
     assert.strictEqual(indexes.length, 1);
-  });
+  }
 });
 
 test('encoder gen spec', () => {
