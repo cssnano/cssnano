@@ -58,14 +58,14 @@ const T_NEWLINE = { type: C_NEWLINE, value: L_NEWLINE };
  * @return {string}
  */
 function stringify(ast) {
-  return ast.nodes.reduce((str, { value }) => {
+  let str = '';
+  for (const { value } of ast.nodes) {
     // Collapse multiple line strings automatically
-    if (value === L_NEWLINE) {
-      return str;
+    if (value !== L_NEWLINE) {
+      str += value;
     }
-
-    return str + value;
-  }, '');
+  }
+  return str;
 }
 
 /**
