@@ -103,6 +103,20 @@ function filterFont({ atRules, values }, comma) {
   }
 }
 
+/**
+ *
+ * @param {{atRules: import('postcss').AtRule[], rules: (string | true)[]}} namespaceCache
+ * @param {import('postcss').Rule} node
+ * @return {void}
+ */
+function processAttributeSelector(namespaceCache, node) {
+  selectorParser((ast) => {
+    ast.walkAttributes(({ namespace: ns }) => {
+      namespaceCache.rules = namespaceCache.rules.concat(ns);
+    });
+  }).process(node.selector);
+}
+
 /**@typedef {{fontFace?: boolean, counterStyle?: boolean, keyframes?: boolean, namespace?: boolean}} Options */
 /**
  * @param {Options} opts
@@ -146,11 +160,7 @@ function pluginCreator(opts) {
             if (type === rule && namespace && node.selector.includes('|')) {
               if (node.selector.includes('[')) {
                 // Attribute selector, so we should parse further.
-                selectorParser((ast) => {
-                  ast.walkAttributes(({ namespace: ns }) => {
-                    namespaceCache.rules = namespaceCache.rules.concat(ns);
-                  });
-                }).process(node.selector);
+                processAttributeSelector(namespaceCache, node);
               } else {
                 // Use a simple split function for the namespace
                 namespaceCache.rules = namespaceCache.rules.concat(
