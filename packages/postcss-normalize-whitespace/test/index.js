@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const { processCSSFactory } = require('../../../util/testHelpers.js');
 const plugin = require('../src/index.js');
 
-const { processCSS } = processCSSFactory(plugin);
+const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 test(
   'should trim whitespace from nested functions',
@@ -46,13 +46,13 @@ test(
 );
 
 test(
-  'should trim space around custom property',
-  processCSS('h1{--prop:  }', 'h1{--prop: }')
+  'should preserve space in custom property',
+  passthroughCSS('h1{--prop:  }')
 );
 
 test(
-  'should add space around empty custom property',
-  processCSS('h1{--prop:}', 'h1{--prop: }')
+  'should not add space around empty custom property',
+  passthroughCSS('h1{--prop:}')
 );
 test(
   'should not trim spaces inside of nested var function',
@@ -98,4 +98,9 @@ test(
     'div{ border-radius:var(border-rad, ) }',
     'div{border-radius:var(border-rad, )}'
   )
+);
+
+test(
+  'should preserve whitespace after custom property declaration',
+  passthroughCSS(':root{--foo: bar}')
 );
