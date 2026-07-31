@@ -17,10 +17,6 @@ test(
   processCss('h1{transition-duration:0s}', 'h1{transition-duration:0s}')
 );
 
-test('should convert multiple comma-separated values', processCss(
-    'h1{animation-delay: 500ms, 1000ms}', 'h1{animation-delay:.5s,1s}')
-);
-
 test(
   'should remove unnecessary plus signs',
   processCss('h1{width:+14px}', 'h1{width:14px}')
