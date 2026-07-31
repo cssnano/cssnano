@@ -1,7 +1,7 @@
 'use strict';
 const parseWsc = require('./parseWsc.js');
-const minifyTrbl = require('./minifyTrbl.js');
-const { isValidWsc } = require('./validateWsc.js');
+const minifyTopBottomRightLeft = require('./minifyTrbl.js');
+const { isValidWidthStyleColor } = require('./validateWsc.js');
 
 const defaults = ['medium', 'none', 'currentcolor'];
 
@@ -9,8 +9,8 @@ const defaults = ['medium', 'none', 'currentcolor'];
 module.exports = (v) => {
   const values = parseWsc(v);
 
-  if (!isValidWsc(values)) {
-    return minifyTrbl(v);
+  if (!isValidWidthStyleColor(values)) {
+    return minifyTopBottomRightLeft(v);
   }
 
   const value = [...values, '']
@@ -27,5 +27,5 @@ module.exports = (v) => {
     })
     .trim();
 
-  return minifyTrbl(value || 'none');
+  return minifyTopBottomRightLeft(value || 'none');
 };

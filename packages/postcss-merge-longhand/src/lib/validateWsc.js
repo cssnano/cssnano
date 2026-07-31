@@ -73,7 +73,7 @@ function isColor(value) {
  * @param {[string, string, string]} wscs
  * @return {boolean}
  */
-function isValidWsc(wscs) {
+function isValidWidthStyleColor(wscs) {
   const validWidth = isWidth(wscs[0]);
   const validStyle = isStyle(wscs[1]);
   const validColor = isColor(wscs[2]);
@@ -85,4 +85,4 @@ function isValidWsc(wscs) {
   );
 }
 
-module.exports = { isStyle, isWidth, isColor, isValidWsc };
+module.exports = { isStyle, isWidth, isColor, isValidWidthStyleColor };
