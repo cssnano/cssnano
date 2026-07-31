@@ -15,7 +15,7 @@ const flexWrap = new Set(['nowrap', 'wrap', 'wrap-reverse']);
  * @return {string}
  */
 module.exports = function normalizeFlexFlow(flexFlow) {
-  let order = {
+  const order = {
     direction: '',
     wrap: '',
   };

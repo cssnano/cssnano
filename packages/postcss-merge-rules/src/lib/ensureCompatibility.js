@@ -43,9 +43,9 @@ const findMsInputPlaceholder = (selector) =>
  */
 function sameVendor(selectorsA, selectorsB) {
   /** @type {(selectors: string[]) => string} */
-  let same = (selectors) => selectors.map(filterPrefixes).join();
+  const same = (selectors) => selectors.map(filterPrefixes).join();
   /** @type {(selectors: string[]) => string | undefined} */
-  let findMsVendor = (selectors) => selectors.find(findMsInputPlaceholder);
+  const findMsVendor = (selectors) => selectors.find(findMsInputPlaceholder);
   return (
     same(selectorsA) === same(selectorsB) &&
     !(findMsVendor(selectorsA) && findMsVendor(selectorsB))

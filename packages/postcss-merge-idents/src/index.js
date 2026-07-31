@@ -116,7 +116,7 @@ function mergeAtRules(css) {
   });
 
   pairs.forEach((pair) => {
-    let canon = canonical(pair.replacements);
+    const canon = canonical(pair.replacements);
 
     pair.decls.forEach((decl) => {
       decl.value = valueParser(decl.value)

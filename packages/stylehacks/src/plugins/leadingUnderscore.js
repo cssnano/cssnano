@@ -10,7 +10,7 @@ const vendorPrefixRegex = /^(-\w+-)/;
  * @return {string}
  */
 function vendorPrefix(prop) {
-  let match = prop.match(vendorPrefixRegex);
+  const match = prop.match(vendorPrefixRegex);
   if (match) {
     return match[0];
   }

@@ -24,7 +24,7 @@ function normalize(args) {
   const list = [];
   for (const arg of args) {
     /** @type {Record<string, import('postcss-value-parser').Node[]>} */
-    let state = {
+    const state = {
       timingFunction: [],
       property: [],
       time1: [],

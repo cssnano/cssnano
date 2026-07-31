@@ -41,7 +41,7 @@ module.exports = (prop) => {
       decls = decls.filter((node) => !lesser.includes(node));
 
       // get duplicate properties
-      let duplicates = decls.filter(
+      const duplicates = decls.filter(
         (node) =>
           !stylehacks.detect(lastNode) &&
           !stylehacks.detect(node) &&

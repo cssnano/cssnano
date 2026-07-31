@@ -13,7 +13,7 @@ const vendorUnprefixed = require('../lib/vendorUnprefixed.js');
  * @return {string}
  */
 module.exports = function normalizeBoxShadow(parsed) {
-  let args = getArguments(parsed);
+  const args = getArguments(parsed);
 
   const normalized = normalize(args);
 
@@ -34,7 +34,7 @@ function normalize(args) {
     /** @type {import('postcss-value-parser').Node[]} */
     let val = [];
     /** @type {Record<'inset'|'color', import('postcss-value-parser').Node[]>} */
-    let state = {
+    const state = {
       inset: [],
       color: [],
     };

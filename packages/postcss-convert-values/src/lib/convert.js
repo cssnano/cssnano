@@ -41,7 +41,7 @@ function dropLeadingZero(number) {
  * @return {string}
  */
 function transform(number, originalUnit, conversions) {
-  let conversionUnits = [...conversions.keys()].filter((u) => {
+  const conversionUnits = [...conversions.keys()].filter((u) => {
     return originalUnit !== u;
   });
 

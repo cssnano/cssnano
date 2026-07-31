@@ -15,7 +15,7 @@ module.exports = class Slash9 extends BasePlugin {
    * @return {void}
    */
   detect(decl) {
-    let v = decl.value;
+    const v = decl.value;
     if (v && v.length > 2 && v.indexOf('\\9') === v.length - 2) {
       this.push(decl, {
         identifier: VALUE,

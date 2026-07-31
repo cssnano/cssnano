@@ -36,7 +36,7 @@ function normalizeDataURL(urlString) {
     throw new Error(`Invalid URL: ${urlString}`);
   }
 
-  let { type, data, hash } =
+  const { type, data, hash } =
     /** @type {{type: string, data: string, hash: string}} */ (match.groups);
   const mediaType = type.split(';');
 

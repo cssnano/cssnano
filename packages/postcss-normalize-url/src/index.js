@@ -89,7 +89,7 @@ function transformDecl(decl) {
       if (!node.nodes.length) {
         return false;
       }
-      let url = node.nodes[0];
+      const url = node.nodes[0];
       let escaped;
 
       url.value = url.value.trim().replace(multiline, '');

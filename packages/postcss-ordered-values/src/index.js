@@ -104,8 +104,8 @@ function shouldAbort(parsed) {
  * @return {string}
  */
 function getValue(decl) {
-  let { value, raws } = decl;
-
+  let value = decl.value;
+  const raws = decl.raws;
   if (raws && raws.value && raws.value.raw) {
     value = raws.value.raw;
   }

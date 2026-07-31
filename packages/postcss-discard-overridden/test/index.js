@@ -8,23 +8,23 @@ const pc = require('picocolors');
 const plugin = require('../src/index.js');
 
 function getDiff(left, right) {
-  let msg = ['\n'];
+  const msg = ['\n'];
 
   diffLines(left, right).forEach((item) => {
     if (item.added || item.removed) {
-      let text = item.value
+      const text = item.value
         .replace('\n', '\u00b6\n')
         .replace('\ufeff', '[[BOM]]');
 
       msg.push(pc[item.added ? 'green' : 'red'](text));
     } else {
-      let value = item.value.replace('\ufeff', '[[BOM]]');
-      let lines = value.split('\n');
+      const value = item.value.replace('\ufeff', '[[BOM]]');
+      const lines = value.split('\n');
 
       // max line count for each item
-      let keepLines = 6;
+      const keepLines = 6;
       // lines to be omitted
-      let omitLines = lines.length - keepLines;
+      const omitLines = lines.length - keepLines;
 
       if (lines.length > keepLines) {
         lines.splice(
@@ -50,7 +50,7 @@ function read(file) {
 }
 
 function exec(input) {
-  let output = read(`${input}.post`);
+  const output = read(`${input}.post`);
 
   return () =>
     postcss([plugin()])

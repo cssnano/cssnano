@@ -119,7 +119,7 @@ function clampOpacity(node) {
   if (!pair) {
     return;
   }
-  let num = Number(pair.number);
+  const num = Number(pair.number);
   if (num > 1) {
     node.value = pair.unit === '%' ? num + pair.unit : 1 + pair.unit;
   } else if (num < 0) {

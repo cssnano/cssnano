@@ -22,7 +22,7 @@ function hasVariableFunction(value) {
  * @return {string}
  */
 function transform(prop, value, opts) {
-  let lowerCasedProp = prop.toLowerCase();
+  const lowerCasedProp = prop.toLowerCase();
   let variableType = '';
 
   if (typeof opts.removeQuotes === 'function') {

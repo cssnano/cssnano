@@ -570,14 +570,14 @@ test('should not generate same ident when plugin instance is reused', () => {
 });
 
 test('encoder', () => {
-  let arr = Array.from({ length: 1984 }, (value, index) => index);
-  let cache = [];
+  const arr = Array.from({ length: 1984 }, (value, index) => index);
+  const cache = [];
 
   for (const num of arr) {
-    let encoded = encode(null, num);
+    const encoded = encode(null, num);
     cache.push(encoded);
 
-    let indexes = cache.filter((c) => c === encoded);
+    const indexes = cache.filter((c) => c === encoded);
 
     assert.strictEqual(indexes.length, 1);
   }

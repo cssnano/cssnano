@@ -12,7 +12,7 @@ const contentRegex = /content/i;
  */
 module.exports = function () {
   /** @type {Record<string, {ident: string, count: number}>} */
-  let cache = {};
+  const cache = {};
   /** @type {{value: import('postcss-value-parser').ParsedValue}[]} */
   let declOneCache = [];
   /** @type {import('postcss').Declaration[]} */

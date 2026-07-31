@@ -73,7 +73,7 @@ const listStyleRegex = /(list-style|system)/i;
  */
 module.exports = function () {
   /** @type {Record<string, {ident: string, count: number}>} */
-  let cache = {};
+  const cache = {};
   /** @type {import('postcss').AtRule[]} */
   let atRules = [];
   /** @type {import('postcss').Declaration[]} */

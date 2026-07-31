@@ -345,7 +345,7 @@ function partialMerge(
     )
   ) {
     const metaNext = getMeta(nextRule, ruleMeta);
-    let nextIntersection = intersect(
+    const nextIntersection = intersect(
       metaSecond.declarations,
       metaNext.declarations
     );
@@ -359,8 +359,8 @@ function partialMerge(
 
   const metaFirstActual = getMeta(first, ruleMeta);
   const metaSecondActual = getMeta(second, ruleMeta);
-  let firstDecls = [...metaFirstActual.declarations];
-  let secondDecls = [...metaSecondActual.declarations];
+  const firstDecls = [...metaFirstActual.declarations];
+  const secondDecls = [...metaSecondActual.declarations];
 
   // Filter out intersections with later conflicts in First
   intersection = intersection.filter((decl, intersectIndex) => {
