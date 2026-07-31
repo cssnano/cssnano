@@ -58,7 +58,7 @@ function explode(rule) {
       return;
     }
 
-    let values = list.space(decl.value);
+    const values = list.space(decl.value);
 
     if (values.length === 1) {
       values.push(auto);
@@ -110,7 +110,7 @@ function cleanup(rule) {
     decls = decls.filter((node) => !lesser.includes(node));
 
     // get duplicate properties
-    let duplicates = decls.filter(
+    const duplicates = decls.filter(
       (node) =>
         !stylehacks.detect(lastNode) &&
         !stylehacks.detect(node) &&

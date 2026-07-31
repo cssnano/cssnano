@@ -137,7 +137,7 @@ function mergeRedundant({ values, nextValues, decl, nextDecl, index }) {
   const prop1 = `${nextDecl.prop}-${prop}`;
   const prop2 = `border-${prop}`;
 
-  let props = parseTrbl(values[position]);
+  const props = parseTrbl(values[position]);
 
   props[index] = nextValues[position];
 
@@ -220,7 +220,7 @@ function explode(rule) {
 
     // border-trbl -> border-trbl-wsc
     if (directions.some((direction) => prop === direction)) {
-      let values = parseWidthStyleColor(decl.value);
+      const values = parseWidthStyleColor(decl.value);
 
       if (isValidWidthStyleColor(values)) {
         for (const [i, d] of widthStyleColor.entries()) {
@@ -689,7 +689,7 @@ function merge(rule) {
 
         if (value === lastNodeValue) {
           refNode = lastNode;
-          let valueArray = list.space(
+          const valueArray = list.space(
             /** @type {Declaration} */ (lastNode).value
           );
           valueArray.splice(i, 1);
@@ -752,14 +752,14 @@ function merge(rule) {
   });
 
   rule.walkDecls(borderStyleRegex, (decl) => {
-    let values = parseWidthStyleColor(decl.value);
+    const values = parseWidthStyleColor(decl.value);
 
     if (!isValidWidthStyleColor(values)) {
       return;
     }
 
     const position = directions.indexOf(decl.prop);
-    let dirs = [...directions];
+    const dirs = [...directions];
 
     dirs.splice(position, 1);
     for (const [i, d] of widthStyleColor.entries()) {

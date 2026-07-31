@@ -29,7 +29,7 @@ for (const n of nodes) {
 function frameLabel(node) {
   const callFrame = node.callFrame;
   const name = callFrame.functionName || '(anonymous)';
-  let url = callFrame.url || '';
+  const url = callFrame.url || '';
   if (!url && callFrame.scriptId === '0') {
     return `${name} @ <gc/internals>`;
   }

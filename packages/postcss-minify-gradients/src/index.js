@@ -29,7 +29,7 @@ function isLessThan(a, b) {
  * @returns {false}
  */
 function optimizeLinearGradient(node) {
-  let args = getArguments(node);
+  const args = getArguments(node);
 
   if (node.nodes[0].value.toLowerCase() === 'to' && args[0].length === 3) {
     node.nodes = node.nodes.slice(2);
@@ -49,8 +49,8 @@ function optimizeLinearGradient(node) {
       continue;
     }
 
-    let isFinalStop = index === args.length - 1;
-    let thisStop = valueParser.unit(arg[2].value);
+    const isFinalStop = index === args.length - 1;
+    const thisStop = valueParser.unit(arg[2].value);
 
     if (lastStop === undefined) {
       lastStop = thisStop;
@@ -88,7 +88,7 @@ function optimizeLinearGradient(node) {
  * @returns {false}
  */
 function optimizeRadialGradient(node) {
-  let args = getArguments(node);
+  const args = getArguments(node);
   /** @type {valueParser.Dimension | false | undefined} */
   let lastStop = undefined;
 
@@ -99,7 +99,7 @@ function optimizeRadialGradient(node) {
       continue;
     }
 
-    let thisStop = valueParser.unit(arg[2].value);
+    const thisStop = valueParser.unit(arg[2].value);
 
     if (!lastStop) {
       lastStop = thisStop;
@@ -124,7 +124,7 @@ function optimizeRadialGradient(node) {
  * @returns {false}
  */
 function optimizeWebkitRadialGradient(node) {
-  let args = getArguments(node);
+  const args = getArguments(node);
   /** @type {valueParser.Dimension | false | undefined} */
   let lastStop = undefined;
 
@@ -164,7 +164,7 @@ function optimizeWebkitRadialGradient(node) {
       continue;
     }
 
-    let thisStop = valueParser.unit(arg[2].value);
+    const thisStop = valueParser.unit(arg[2].value);
 
     if (!lastStop) {
       lastStop = thisStop;

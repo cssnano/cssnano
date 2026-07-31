@@ -13,7 +13,7 @@ function sourceTest(origin) {
   return {
     postcssPlugin: 'source-test',
     OnceExit(css) {
-      let node = css.first;
+      const node = css.first;
       let source;
 
       if (node.name === 'charset') {
@@ -38,7 +38,7 @@ function processCssWithSource(fixture, expected, source) {
   return withSource(fixture, expected);
 }
 
-let copyright = 'a{content:"©"}';
+const copyright = 'a{content:"©"}';
 
 test(
   'should add a charset if a file contains non-ascii',

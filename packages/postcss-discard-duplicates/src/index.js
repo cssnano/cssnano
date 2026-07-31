@@ -158,7 +158,7 @@ function dedupe(root) {
 
   let index = nodes.length - 1;
   while (index >= 0) {
-    let last = nodes[index--];
+    const last = nodes[index--];
     if (!last || !last.parent) {
       continue;
     }

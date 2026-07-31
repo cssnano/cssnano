@@ -17,7 +17,7 @@ function passthroughCss(fixture, options) {
 }
 
 test('can be used as a postcss plugin', () => {
-  let css = 'h1 { _color: #ffffff }';
+  const css = 'h1 { _color: #ffffff }';
 
   return postcss()
     .use(stylehacks())
@@ -28,7 +28,7 @@ test('can be used as a postcss plugin', () => {
 });
 
 test('can be used as a postcss plugin (2)', () => {
-  let css = 'h1 { _color: #ffffff }';
+  const css = 'h1 { _color: #ffffff }';
 
   return postcss([stylehacks()])
     .process(css, { from: undefined })
@@ -36,7 +36,7 @@ test('can be used as a postcss plugin (2)', () => {
 });
 
 test('can be used as a postcss plugin (3)', () => {
-  let css = 'h1 { _color: #ffffff }';
+  const css = 'h1 { _color: #ffffff }';
 
   return postcss([stylehacks])
     .process(css, { from: undefined })

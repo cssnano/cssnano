@@ -36,7 +36,7 @@ const multipleDotsRegex = /\.+/;
  */
 module.exports = function () {
   /** @type {Record<string, {ident: string, count: number}>} */
-  let cache = {};
+  const cache = {};
   /** @type {import('postcss').Declaration[]} */
   let declCache = [];
 

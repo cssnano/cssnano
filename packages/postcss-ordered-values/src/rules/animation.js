@@ -131,8 +131,8 @@ function normalize(args) {
     };
 
     arg.forEach((node) => {
-      let { type, value } = node;
-
+      const type = node.type;
+      let value = node.value;
       if (type === 'space') {
         return;
       }

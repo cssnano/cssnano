@@ -75,7 +75,7 @@ function stringify(ast) {
 function parse(str) {
   let code, next, value;
   let pos = 0;
-  let len = str.length;
+  const len = str.length;
 
   /** @type StringAst */
   const ast = {

@@ -34,7 +34,7 @@ const genericFontFamilykeywords = new Set([
  * @return {string[]}
  */
 function makeArray(value, length) {
-  let array = [];
+  const array = [];
   while (length--) {
     array[length] = value;
   }
@@ -108,14 +108,14 @@ const regexTrailingSpace = /\x20$/;
  * @return {string}
  */
 function escapeIdentifierSequence(string) {
-  let identifiers = string.split(regexWhitespace);
+  const identifiers = string.split(regexWhitespace);
   let index = 0;
   /** @type {string[] | string} */
   let result = [];
   let escapeResult;
 
   while (index < identifiers.length) {
-    let subString = identifiers[index++];
+    const subString = identifiers[index++];
 
     if (subString === '') {
       result.push(subString);
@@ -220,7 +220,7 @@ module.exports = function (nodes, opts) {
         return stringify(node);
       }
 
-      let escaped = escapeIdentifierSequence(node.value);
+      const escaped = escapeIdentifierSequence(node.value);
 
       if (escaped.length < node.value.length + 2) {
         return escaped;
