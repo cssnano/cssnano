@@ -90,7 +90,7 @@ function canMergeValues(values) {
  * @return {string}
  */
 function getColorValue(decl) {
-  if (decl.prop.substr(-5) === 'color') {
+  if (decl.prop.slice(-5) === 'color') {
     return decl.value;
   }
 
