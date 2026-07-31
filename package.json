@@ -22,7 +22,7 @@
     "@types/node": "^26.1.1",
     "oxfmt": "^0.61.0",
     "oxlint": "^1.76.0",
-    "postcss": "^8.5.23",
+    "postcss": "^8.5.25",
     "postcss-font-magician": "^4.0.0",
     "typescript": "~7.0.2"
   },

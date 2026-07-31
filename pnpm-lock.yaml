@@ -18,11 +18,11 @@ importers:
         specifier: ^1.76.0
         version: 1.76.0
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
       postcss-font-magician:
         specifier: ^4.0.0
-        version: 4.0.0(postcss@8.5.23)
+        version: 4.0.0(postcss@8.5.25)
       typescript:
         specifier: ~7.0.2
         version: 7.0.2
@@ -38,7 +38,7 @@ importers:
     devDependencies:
       autoprefixer:
         specifier: ^10.5.4
-        version: 10.5.4(postcss@8.5.23)
+        version: 10.5.4(postcss@8.5.25)
       cssnano-preset-advanced:
         specifier: workspace:^
         version: link:../cssnano-preset-advanced
@@ -46,17 +46,17 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-preset-lite
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/cssnano-preset-advanced:
     dependencies:
       autoprefixer:
         specifier: ^10.5.4
-        version: 10.5.4(postcss@8.5.23)
+        version: 10.5.4(postcss@8.5.25)
       css-declaration-sorter:
         specifier: ^7.4.0
-        version: 7.4.0(postcss@8.5.23)
+        version: 7.4.0(postcss@8.5.25)
       cssnano-preset-default:
         specifier: workspace:^
         version: link:../cssnano-preset-default
@@ -74,8 +74,8 @@ importers:
         version: link:../postcss-zindex
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/cssnano-preset-default:
     dependencies:
@@ -87,7 +87,7 @@ importers:
         version: link:../cssnano-utils
       postcss-calc:
         specifier: ^10.1.1
-        version: 10.1.1(postcss@8.5.23)
+        version: 10.1.1(postcss@8.5.25)
       postcss-colormin:
         specifier: workspace:^
         version: link:../postcss-colormin
@@ -168,8 +168,8 @@ importers:
         version: link:../postcss-unique-selectors
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/cssnano-preset-lite:
     dependencies:
@@ -187,14 +187,14 @@ importers:
         version: link:../postcss-normalize-whitespace
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/cssnano-utils:
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
       postcss-value-parser:
         specifier: ^4.2.0
         version: 4.2.0
@@ -215,8 +215,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-convert-values:
     dependencies:
@@ -228,8 +228,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-discard-comments:
     dependencies:
@@ -238,26 +238,26 @@ importers:
         version: 7.1.4
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
       postcss-scss:
         specifier: ^4.0.9
-        version: 4.0.9(postcss@8.5.23)
+        version: 4.0.9(postcss@8.5.25)
       postcss-simple-vars:
         specifier: ^7.0.1
-        version: 7.0.1(postcss@8.5.23)
+        version: 7.0.1(postcss@8.5.25)
 
   packages/postcss-discard-duplicates:
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-discard-empty:
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-discard-overridden:
     devDependencies:
@@ -268,8 +268,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-discard-unused:
     dependencies:
@@ -278,8 +278,8 @@ importers:
         version: 7.1.4
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-merge-idents:
     dependencies:
@@ -291,8 +291,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-merge-longhand:
     dependencies:
@@ -304,8 +304,8 @@ importers:
         version: link:../stylehacks
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-merge-rules:
     dependencies:
@@ -323,14 +323,14 @@ importers:
         version: 7.1.4
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
       postcss-discard-comments:
         specifier: workspace:^
         version: link:../postcss-discard-comments
       postcss-simple-vars:
         specifier: ^7.0.1
-        version: 7.0.1(postcss@8.5.23)
+        version: 7.0.1(postcss@8.5.25)
 
   packages/postcss-minify-font-values:
     dependencies:
@@ -339,8 +339,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-minify-gradients:
     dependencies:
@@ -355,8 +355,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-minify-params:
     dependencies:
@@ -371,8 +371,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-minify-selectors:
     dependencies:
@@ -393,14 +393,14 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-normalize-charset:
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-normalize-display-values:
     dependencies:
@@ -409,8 +409,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-normalize-positions:
     dependencies:
@@ -419,8 +419,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-normalize-repeat-style:
     dependencies:
@@ -429,8 +429,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-normalize-string:
     dependencies:
@@ -439,8 +439,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-normalize-timing-functions:
     dependencies:
@@ -449,8 +449,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-normalize-unicode:
     dependencies:
@@ -462,8 +462,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-normalize-url:
     dependencies:
@@ -472,8 +472,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-normalize-whitespace:
     dependencies:
@@ -482,8 +482,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-ordered-values:
     dependencies:
@@ -495,8 +495,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-reduce-idents:
     dependencies:
@@ -505,8 +505,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-reduce-initial:
     dependencies:
@@ -521,8 +521,8 @@ importers:
         specifier: ^10.0.0
         version: 10.0.0
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-reduce-transforms:
     dependencies:
@@ -531,8 +531,8 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-svgo:
     dependencies:
@@ -544,8 +544,8 @@ importers:
         version: 4.0.2
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-unique-selectors:
     dependencies:
@@ -554,14 +554,14 @@ importers:
         version: 7.1.4
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/postcss-zindex:
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
   packages/stylehacks:
     dependencies:
@@ -573,8 +573,8 @@ importers:
         version: 7.1.4
     devDependencies:
       postcss:
-        specifier: ^8.5.23
-        version: 8.5.23
+        specifier: ^8.5.25
+        version: 8.5.25
 
 packages:
 
@@ -1190,8 +1190,8 @@ packages:
   postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
 
-  postcss@8.5.23:
-    resolution: {integrity: sha512-g50586zr4bZmwFiTlflMu8E0bDTb5I5gertgwAKmsdUlTQIhZtunzUlD1WSzwcVWPoAVpsrA6vlfCD7oXvRwgg==}
+  postcss@8.5.25:
+    resolution: {integrity: sha512-DTPx3RWSSnWyzLxQnlH0rJP+EW5ekl16ZU4/psbIhA0e53kJfdgaN5vKM+xP7yJtXVu+nfdVFmlgFDEKAe4Pyw==}
     engines: {node: ^10 || ^12 || >=14}
 
   sax@1.5.0:
@@ -1421,13 +1421,13 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  autoprefixer@10.5.4(postcss@8.5.23):
+  autoprefixer@10.5.4(postcss@8.5.25):
     dependencies:
       browserslist: 4.28.7
       caniuse-lite: 1.0.30001806
       fraction.js: 5.3.4
       picocolors: 1.1.1
-      postcss: 8.5.23
+      postcss: 8.5.25
       postcss-value-parser: 4.2.0
 
   b3b@0.0.1: {}
@@ -1459,9 +1459,9 @@ snapshots:
 
   commander@11.1.0: {}
 
-  css-declaration-sorter@7.4.0(postcss@8.5.23):
+  css-declaration-sorter@7.4.0(postcss@8.5.25):
     dependencies:
-      postcss: 8.5.23
+      postcss: 8.5.25
 
   css-select@5.2.2:
     dependencies:
@@ -1530,9 +1530,9 @@ snapshots:
 
   fraction.js@5.3.4: {}
 
-  google-fonts-complete@2.2.3(postcss@8.5.23):
+  google-fonts-complete@2.2.3(postcss@8.5.25):
     dependencies:
-      postcss: 8.5.23
+      postcss: 8.5.25
 
   html-to-text@10.0.0:
     dependencies:
@@ -1634,34 +1634,34 @@ snapshots:
 
   picocolors@1.1.1: {}
 
-  postcss-calc@10.1.1(postcss@8.5.23):
+  postcss-calc@10.1.1(postcss@8.5.25):
     dependencies:
-      postcss: 8.5.23
+      postcss: 8.5.25
       postcss-selector-parser: 7.1.4
       postcss-value-parser: 4.2.0
 
-  postcss-font-magician@4.0.0(postcss@8.5.23):
+  postcss-font-magician@4.0.0(postcss@8.5.25):
     dependencies:
       directory-fonts-complete: 1.2.0
-      google-fonts-complete: 2.2.3(postcss@8.5.23)
-      postcss: 8.5.23
+      google-fonts-complete: 2.2.3(postcss@8.5.25)
+      postcss: 8.5.25
 
-  postcss-scss@4.0.9(postcss@8.5.23):
+  postcss-scss@4.0.9(postcss@8.5.25):
     dependencies:
-      postcss: 8.5.23
+      postcss: 8.5.25
 
   postcss-selector-parser@7.1.4:
     dependencies:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
 
-  postcss-simple-vars@7.0.1(postcss@8.5.23):
+  postcss-simple-vars@7.0.1(postcss@8.5.25):
     dependencies:
-      postcss: 8.5.23
+      postcss: 8.5.25
 
   postcss-value-parser@4.2.0: {}
 
-  postcss@8.5.23:
+  postcss@8.5.25:
     dependencies:
       nanoid: 3.3.16
       picocolors: 1.1.1
