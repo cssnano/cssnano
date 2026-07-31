@@ -156,7 +156,7 @@ test(
 				border-color: red #f00 red #f00;
 				border-style: solid solid solid solid;
 		}`,
-    `h1{border:1px solid red}`
+    `h1{border-color:red;border-style:solid;border-width:1px}`
   )
 );
 

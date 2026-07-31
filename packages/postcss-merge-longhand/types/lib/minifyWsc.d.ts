@@ -1,4 +1,4 @@
 export = _exports;
-/** @type {(v: string) => string} */
-declare function _exports(v: string): string;
+/** @type {(cssPropertyValue: string) => string} */
+declare function _exports(cssPropertyValue: string): string;
 //# sourceMappingURL=minifyWsc.d.ts.map

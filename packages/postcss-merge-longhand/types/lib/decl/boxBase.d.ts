@@ -1,6 +1,6 @@
 export = _exports;
 /**
- * @param {string} prop
+ * @param {string} prop A CSS property name
  * @return {{explode: (rule: import('postcss').Rule) => void, merge: (rule: import('postcss').Rule) => void}}
  */
 declare function _exports(prop: string): {

@@ -1,7 +1,7 @@
 'use strict';
 const isCustomProp = require('./isCustomProp');
 
-const globalKeywords = new Set(['inherit', 'initial', 'unset', 'revert']);
+const globalKeywords = require('./cssGlobalKeywords.js');
 
 /** @type {(prop: import('postcss').Declaration, includeCustomProps?: boolean) => boolean} */
 module.exports = (prop, includeCustomProps = true) => {

@@ -1,6 +1,6 @@
 'use strict';
 const { list } = require('postcss');
-const { isWidth, isStyle, isColor } = require('./validateWsc.js');
+const { isBorderWidth, isBorderStyle, isColor } = require('./validateWsc.js');
 
 const none = /^\s*(none|medium)(\s+none(\s+(none|currentcolor))?)?\s*$/i;
 
@@ -43,7 +43,7 @@ module.exports = function parseWsc(value) {
   const values = list.space(value);
   if (
     values.length > 1 &&
-    isStyle(values[1]) &&
+    isBorderStyle(values[1]) &&
     values[0].toLowerCase() === 'none'
   ) {
     values.unshift();
@@ -54,9 +54,9 @@ module.exports = function parseWsc(value) {
   const unknown = [];
 
   for (const v of values) {
-    if (isStyle(v)) {
+    if (isBorderStyle(v)) {
       style = toLower(v);
-    } else if (isWidth(v)) {
+    } else if (isBorderWidth(v)) {
       width = toLower(v);
     } else if (isColor(v)) {
       color = toLower(v);

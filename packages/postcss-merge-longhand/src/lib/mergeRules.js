@@ -1,24 +1,20 @@
 'use strict';
 const hasAllProps = require('./hasAllProps.js');
-const getDecls = require('./getDecls.js');
+const getDeclarationsThatMatchProperties = require('./getDecls.js');
 const getRules = require('./getRules.js');
 
 /**
- * @param {import('postcss').Declaration} propA
- * @param {import('postcss').Declaration} propB
+ * @param {import('postcss').Declaration} declA
+ * @param {import('postcss').Declaration} declB
  * @return {boolean}
  */
-function isConflictingProp(propA, propB) {
-  if (
-    !propB.prop ||
-    propB.important !== propA.important ||
-    propA.prop === propB.prop
-  ) {
+function arePropertiesConflicting(declA, declB) {
+  if (!declB.prop || declB.important !== declA.important) {
     return false;
   }
 
-  const partsA = propA.prop.split('-');
-  const partsB = propB.prop.split('-');
+  const partsA = declA.prop.split('-');
+  const partsB = declB.prop.split('-');
 
   /* Be safe: check that the first part matches. So we don't try to
    * combine e.g. border-color and color.
@@ -28,7 +24,8 @@ function isConflictingProp(propA, propB) {
   }
 
   const partsASet = new Set(partsA);
-  return partsB.every((partB) => partsASet.has(partB));
+  const partsBSet = new Set(partsB);
+  return partsBSet.isSubsetOf(partsASet);
 }
 
 /**
@@ -37,11 +34,21 @@ function isConflictingProp(propA, propB) {
  * @return {boolean}
  */
 function hasConflicts(match, nodes) {
-  const firstNode = Math.min(...match.map((n) => nodes.indexOf(n)));
-  const lastNode = Math.max(...match.map((n) => nodes.indexOf(n)));
-  const between = nodes.slice(firstNode + 1, lastNode);
+  /** @type {number[]} */
+  const nodeIndices = match.map((n) => nodes.indexOf(n));
+  const firstNodeIndex = Math.min(...nodeIndices);
+  const lastNodeIndex = Math.max(...nodeIndices);
+  const between = nodes
+    .slice(firstNodeIndex + 1, lastNodeIndex)
+    .filter((node) => !match.includes(node));
 
-  return match.some((a) => between.some((b) => isConflictingProp(a, b)));
+  return match.some((a) =>
+    between.some(
+      (b) =>
+        arePropertiesConflicting(a, b) &&
+        (a.prop !== b.prop || nodes.indexOf(b) > nodes.indexOf(a))
+    )
+  );
 }
 
 /**
@@ -51,11 +58,16 @@ function hasConflicts(match, nodes) {
  * @return {void}
  */
 module.exports = function mergeRules(rule, properties, callback) {
-  let decls = getDecls(rule, properties);
+  let declarations = getDeclarationsThatMatchProperties(
+    rule,
+    new Set(properties)
+  );
 
-  while (decls.length) {
-    const last = decls[decls.length - 1];
-    const props = decls.filter((node) => node.important === last.important);
+  while (declarations.length) {
+    const last = declarations[declarations.length - 1];
+    const props = declarations.filter(
+      (node) => node.important === last.important
+    );
     const rules = getRules(props, properties);
 
     if (
@@ -66,10 +78,10 @@ module.exports = function mergeRules(rule, properties, callback) {
       )
     ) {
       if (callback(rules, last, props)) {
-        decls = decls.filter((node) => !rules.includes(node));
+        declarations = declarations.filter((node) => !rules.includes(node));
       }
     }
 
-    decls = decls.filter((node) => node !== last);
+    declarations = declarations.filter((node) => node !== last);
   }
 };

@@ -1,8 +1,8 @@
 'use strict';
 const colors = require('./colornames.js');
 
-const widths = new Set(['thin', 'medium', 'thick']);
-const styles = new Set([
+const widthKeywords = new Set(['thin', 'medium', 'thick']);
+const borderStyles = new Set([
   'none',
   'hidden',
   'dotted',
@@ -14,25 +14,27 @@ const styles = new Set([
   'inset',
   'outset',
 ]);
-const widthRegex = /^(\d+(\.\d+)?|\.\d+)(\w+)?$/;
-const rgbaRegex = /rgba?\(/;
-const hslaRegex = /hsla?\(/;
+const lengthValueRegex = /^(\d+(\.\d+)?|\.\d+)(\w+)?$/;
+const colorFunctionRegex = /(:?rgba?|hsla?|hwb|lch|oklab|oklch|color)\(/;
 const hexColorRegex = /#([0-9a-z]{6}|[0-9a-z]{3})/;
 
 /**
  * @param {string} value
  * @return {boolean}
  */
-function isStyle(value) {
-  return value !== undefined && styles.has(value.toLowerCase());
+function isBorderStyle(value) {
+  return value !== undefined && borderStyles.has(value.toLowerCase());
 }
 
 /**
  * @param {string} value
  * @return {boolean}
  */
-function isWidth(value) {
-  return (value && widths.has(value.toLowerCase())) || widthRegex.test(value);
+function isBorderWidth(value) {
+  return (
+    (value && widthKeywords.has(value.toLowerCase())) ||
+    lengthValueRegex.test(value)
+  );
 }
 
 /**
@@ -46,11 +48,7 @@ function isColor(value) {
 
   value = value.toLowerCase();
 
-  if (rgbaRegex.test(value)) {
-    return true;
-  }
-
-  if (hslaRegex.test(value)) {
+  if (colorFunctionRegex.test(value)) {
     return true;
   }
 
@@ -74,8 +72,8 @@ function isColor(value) {
  * @return {boolean}
  */
 function isValidWidthStyleColor(wscs) {
-  const validWidth = isWidth(wscs[0]);
-  const validStyle = isStyle(wscs[1]);
+  const validWidth = isBorderWidth(wscs[0]);
+  const validStyle = isBorderStyle(wscs[1]);
   const validColor = isColor(wscs[2]);
 
   return (
@@ -85,4 +83,9 @@ function isValidWidthStyleColor(wscs) {
   );
 }
 
-module.exports = { isStyle, isWidth, isColor, isValidWidthStyleColor };
+module.exports = {
+  isBorderStyle,
+  isBorderWidth,
+  isColor,
+  isValidWidthStyleColor,
+};

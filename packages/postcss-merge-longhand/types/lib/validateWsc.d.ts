@@ -1,6 +1,6 @@
 declare const _exports: {
-    isStyle: typeof isStyle;
-    isWidth: typeof isWidth;
+    isBorderStyle: typeof isBorderStyle;
+    isBorderWidth: typeof isBorderWidth;
     isColor: typeof isColor;
     isValidWidthStyleColor: typeof isValidWidthStyleColor;
 };
@@ -9,12 +9,12 @@ export = _exports;
  * @param {string} value
  * @return {boolean}
  */
-declare function isStyle(value: string): boolean;
+declare function isBorderStyle(value: string): boolean;
 /**
  * @param {string} value
  * @return {boolean}
  */
-declare function isWidth(value: string): boolean;
+declare function isBorderWidth(value: string): boolean;
 /**
  * @param {string} value
  * @return {boolean}

@@ -1,4 +1,5 @@
 'use strict';
+
 const { list } = require('postcss');
 const stylehacks = require('stylehacks');
 const insertCloned = require('../insertCloned.js');
@@ -17,17 +18,22 @@ const canExplode = require('../canExplode.js');
 const getLastNode = require('../getLastNode.js');
 const parseWidthStyleColor = require('../parseWsc.js');
 const { isValidWidthStyleColor } = require('../validateWsc.js');
+const cssGlobalKeywords = require('../cssGlobalKeywords.js');
 
 /** @import {Declaration} from 'postcss'; */
 
 const widthStyleColor = ['width', 'style', 'color'];
-const defaults = ['medium', 'none', 'currentcolor'];
+const defaultBorderValues = ['medium', 'none', 'currentcolor'];
 const colorMightRequireFallback =
   /(hsla|rgba|color|hwb|lab|lch|oklab|oklch)\(/i;
 
 const borderSpacingRegex = /^border-spacing$/i;
 const borderStyleRegex = /^border($|-(top|right|bottom|left)$)/i;
 const borderRegex = /^border/i;
+const borderImageRegex = /^border-image($|-)/i;
+const logicalBorderRegex = /^border-(block|inline|start|end)($|-)/i;
+const directionalPhysicalRegex =
+  /^border-(top|right|bottom|left)($|-(width|style|color)$)/i;
 const customPropRegex = /var\s*\(\s*--/i;
 
 /**
@@ -37,31 +43,34 @@ const customPropRegex = /var\s*\(\s*--/i;
 function borderProperty(...parts) {
   return `border-${parts.join('-')}`;
 }
-/**
- * @param {string} value
- * @return {string}
- */
-function mapBorderProperty(value) {
-  return borderProperty(value);
-}
 
-const directions = topRightBottomLeft.map(mapBorderProperty);
-const properties = widthStyleColor.map(mapBorderProperty);
+const physicalBorderShorthands = [
+  'border-top',
+  'border-right',
+  'border-bottom',
+  'border-left',
+];
+const allSidesBorderShorthands = [
+  'border-width',
+  'border-style',
+  'border-color',
+];
 /** @type {string[]} */
-const directionalProperties = [];
-for (const direction of directions) {
+const physicalDirectionalProperties = [];
+for (const direction of physicalBorderShorthands) {
   for (const prop of widthStyleColor) {
-    directionalProperties.push(`${direction}-${prop}`);
+    physicalDirectionalProperties.push(`${direction}-${prop}`);
   }
 }
 
 const precedence = [
   ['border'],
-  directions.concat(properties),
-  directionalProperties,
+  physicalBorderShorthands.concat(allSidesBorderShorthands),
+  physicalDirectionalProperties,
 ];
 
-const allProperties = precedence.flat();
+const allPhysicalBorderProperties = new Set(precedence.flat());
+const borderResetRules = new WeakSet();
 
 /**
  * @param {string} prop
@@ -77,7 +86,7 @@ function getLevel(prop) {
 }
 
 /** @type {(value: string) => boolean} */
-const isValueCustomProp = (value) =>
+const isCustomProperty = (value) =>
   value !== undefined && value.search(customPropRegex) !== -1;
 
 /**
@@ -85,7 +94,7 @@ const isValueCustomProp = (value) =>
  * @return {boolean}
  */
 function canMergeValues(values) {
-  return !values.some(isValueCustomProp);
+  return !values.some(isCustomProperty);
 }
 
 /**
@@ -97,7 +106,7 @@ function getColorValue(decl) {
     return decl.value;
   }
 
-  return parseWidthStyleColor(decl.value)[2] || defaults[2];
+  return parseWidthStyleColor(decl.value)[2] || defaultBorderValues[2];
 }
 
 /**
@@ -192,13 +201,210 @@ function isCloseEnough(mapped) {
 function getDistinctShorthands(mapped) {
   return [...new Set(mapped)];
 }
+
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {boolean}
+ */
+function containsUnmergeableBorderDecls(rule) {
+  const declarations = /** @type {Declaration[]} */ (
+    rule.nodes.filter((node) => node.type === 'decl')
+  );
+
+  if (
+    declarations.some(
+      (declaration) =>
+        borderImageRegex.test(declaration.prop) ||
+        logicalBorderRegex.test(declaration.prop)
+    )
+  ) {
+    return true;
+  }
+
+  const physical = declarations.filter((declaration) =>
+    allPhysicalBorderProperties.has(declaration.prop.toLowerCase())
+  );
+
+  if (
+    physical.some(
+      (declaration) =>
+        cssGlobalKeywords.has(declaration.value.toLowerCase()) ||
+        ((borderStyleRegex.test(declaration.prop) ||
+          allSidesBorderShorthands.includes(declaration.prop.toLowerCase())) &&
+          isCustomProp(declaration))
+    )
+  ) {
+    return true;
+  }
+
+  const globalComponents = physical.filter((decl) =>
+    allSidesBorderShorthands.includes(decl.prop.toLowerCase())
+  );
+  const directionalDeclarations = physical.filter((decl) =>
+    directionalPhysicalRegex.test(decl.prop)
+  );
+
+  return globalComponents.length > 1 && directionalDeclarations.length > 0;
+}
+
+/**
+ * @param {import('postcss').Node} node
+ * @return {boolean}
+ */
+function establishesBorderReset(node) {
+  if (node.type !== 'decl') {
+    return false;
+  }
+
+  const declaration = /** @type {Declaration} */ (node);
+
+  if (
+    declaration.prop.toLowerCase() !== 'border' ||
+    !canExplode(declaration) ||
+    stylehacks.detect(declaration)
+  ) {
+    return false;
+  }
+
+  return isValidWidthStyleColor(parseWidthStyleColor(declaration.value));
+}
+
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {boolean}
+ */
+function hasBorderResetContext(rule) {
+  return borderResetRules.has(rule) || rule.nodes.some(establishesBorderReset);
+}
+
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
+function mergeBorderSpacing(rule) {
+  rule.walkDecls(borderSpacingRegex, (decl) => {
+    const value = list.space(decl.value);
+
+    if (value.length > 1 && value[0] === value[1]) {
+      decl.value = value.slice(1).join(' ');
+    }
+  });
+}
+
+/**
+ * Removes duplicate declarations from a declaration list.
+ *
+ * @param {import('postcss').Declaration[]} decls
+ * @param {import('postcss').Declaration | undefined} lastNode
+ * @returns {import('postcss').Declaration[]}
+ */
+function removeDuplicateDeclarations(decls, lastNode) {
+  let duplicateDeclarations = decls.filter(
+    (node) =>
+      !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
+      !stylehacks.detect(node) &&
+      node !== lastNode &&
+      node.important === /** @type {Declaration} */ (lastNode).important &&
+      node.prop === /** @type {Declaration} */ (lastNode).prop &&
+      !(
+        !isCustomProp(node) &&
+        isCustomProp(/** @type {Declaration} */ (lastNode))
+      )
+  );
+
+  if (duplicateDeclarations.length) {
+    if (
+      colorMightRequireFallback.test(
+        getColorValue(/** @type {Declaration} */ (lastNode))
+      )
+    ) {
+      const preserve = duplicateDeclarations
+        .filter((node) => !colorMightRequireFallback.test(getColorValue(node)))
+        .pop();
+
+      duplicateDeclarations = duplicateDeclarations.filter(
+        (node) => node !== preserve
+      );
+    }
+    for (const node of duplicateDeclarations) {
+      node.remove();
+    }
+  }
+
+  return decls.filter(
+    (node) => node !== lastNode && !duplicateDeclarations.includes(node)
+  );
+}
+
+/**
+ * Removes lower precedence declarations from a declaration list.
+ *
+ * @param {import('postcss').Declaration[]} decls
+ * @param {import('postcss').Declaration | undefined} lastNode
+ * @param {string | undefined} lastPart
+ * @returns {import('postcss').Declaration[]}
+ */
+function removeLowerPrecedenceDeclarations(decls, lastNode, lastPart) {
+  const lesser = decls.filter(
+    (node) =>
+      !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
+      !stylehacks.detect(node) &&
+      !isCustomProp(/** @type {Declaration} */ (lastNode)) &&
+      node !== lastNode &&
+      node.important === /** @type {Declaration} */ (lastNode).important &&
+      /** @type {number} */ (getLevel(node.prop)) >
+        /** @type {number} */ (
+          getLevel(/** @type {Declaration} */ (lastNode).prop)
+        ) &&
+      (node.prop
+        .toLowerCase()
+        .includes(/** @type {Declaration} */ (lastNode).prop) ||
+        node.prop.toLowerCase().endsWith(/** @type {string} */ (lastPart)))
+  );
+
+  for (const node of lesser) {
+    node.remove();
+  }
+  return decls.filter((node) => !lesser.includes(node));
+}
+
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
+function cleanup(rule) {
+  rule.walkDecls(borderStyleRegex, (decl) => {
+    decl.value = minifyWidthStyleColor(decl.value);
+  });
+
+  let decls = getDecls(rule, allPhysicalBorderProperties);
+
+  while (decls.length) {
+    const lastNode = decls.at(-1);
+    const lastPart = /** @type {Declaration} */ (lastNode).prop
+      .split('-')
+      .pop();
+    decls = removeLowerPrecedenceDeclarations(decls, lastNode, lastPart);
+
+    decls = removeDuplicateDeclarations(decls, lastNode);
+  }
+}
+
 /**
  * @param {import('postcss').Rule} rule
  * @return {void}
  */
 function explode(rule) {
+  if (rule.nodes.some(establishesBorderReset)) {
+    borderResetRules.add(rule);
+  }
+
+  if (containsUnmergeableBorderDecls(rule)) {
+    return;
+  }
+
   rule.walkDecls(borderRegex, (decl) => {
-    if (!canExplode(decl, false)) {
+    if (!canExplode(decl)) {
       return;
     }
 
@@ -211,7 +417,7 @@ function explode(rule) {
     // border -> border-trbl
     if (prop === 'border') {
       if (isValidWidthStyleColor(parseWidthStyleColor(decl.value))) {
-        for (const direction of directions) {
+        for (const direction of physicalBorderShorthands) {
           insertCloned(
             /** @type {import('postcss').Rule} */ (decl.parent),
             decl,
@@ -224,7 +430,7 @@ function explode(rule) {
     }
 
     // border-trbl -> border-trbl-wsc
-    if (directions.some((direction) => prop === direction)) {
+    if (physicalBorderShorthands.some((direction) => prop === direction)) {
       const values = parseWidthStyleColor(decl.value);
 
       if (isValidWidthStyleColor(values)) {
@@ -234,7 +440,7 @@ function explode(rule) {
             decl,
             {
               prop: `${prop}-${d}`,
-              value: values[i] || defaults[i],
+              value: values[i] || defaultBorderValues[i],
             }
           );
         }
@@ -274,6 +480,14 @@ function explode(rule) {
  * @return {void}
  */
 function merge(rule) {
+  mergeBorderSpacing(rule);
+
+  if (containsUnmergeableBorderDecls(rule)) {
+    return;
+  }
+
+  const canCreateBorder = hasBorderResetContext(rule);
+
   // border-trbl-wsc -> border-trbl
   for (const direction of topRightBottomLeft) {
     const prop = borderProperty(direction);
@@ -332,7 +546,7 @@ function merge(rule) {
   }
 
   // border-trbl -> border-wsc
-  mergeRules(rule, directions, (rules, lastNode) => {
+  mergeRules(rule, physicalBorderShorthands, (rules, lastNode) => {
     if (rules.some(stylehacks.detect)) {
       return false;
     }
@@ -350,7 +564,7 @@ function merge(rule) {
     }
 
     for (const [i, d] of widthStyleColor.entries()) {
-      const value = parsed.map((v) => v[i] || defaults[i]);
+      const value = parsed.map((v) => v[i] || defaultBorderValues[i]);
 
       if (canMergeValues(value)) {
         insertCloned(
@@ -381,8 +595,8 @@ function merge(rule) {
   // border-wsc -> border
   // border-wsc -> border + border-color
   // border-wsc -> border + border-dir
-  mergeRules(rule, properties, (rules, lastNode) => {
-    if (rules.some(stylehacks.detect)) {
+  mergeRules(rule, allSidesBorderShorthands, (rules, lastNode) => {
+    if (!canCreateBorder || rules.some(stylehacks.detect)) {
       return false;
     }
 
@@ -428,7 +642,7 @@ function merge(rule) {
       }
 
       return true;
-    } else if (reduced.length === 1) {
+    } else if (reduced.length === 1 && canMerge([width, style], false)) {
       rule.insertBefore(
         color,
         Object.assign(lastNode.clone(), {
@@ -438,7 +652,7 @@ function merge(rule) {
       );
 
       for (const node of rules) {
-        if (node.prop.toLowerCase() !== properties[2]) {
+        if (node.prop.toLowerCase() !== allSidesBorderShorthands[2]) {
           node.remove();
         }
       }
@@ -449,8 +663,8 @@ function merge(rule) {
   });
 
   // border-wsc -> border + border-trbl
-  mergeRules(rule, properties, (rules, lastNode) => {
-    if (rules.some(stylehacks.detect)) {
+  mergeRules(rule, allSidesBorderShorthands, (rules, lastNode) => {
+    if (!canCreateBorder || rules.some(stylehacks.detect)) {
       return false;
     }
 
@@ -478,7 +692,7 @@ function merge(rule) {
         })
       );
 
-      for (const [i, dir] of directions.entries()) {
+      for (const [i, dir] of physicalBorderShorthands.entries()) {
         if (mapped[i] !== borderValue) {
           rule.insertBefore(
             lastNode,
@@ -501,8 +715,8 @@ function merge(rule) {
 
   // border-trbl -> border
   // border-trbl -> border + border-trbl
-  mergeRules(rule, directions, (rules, lastNode) => {
-    if (rules.some(stylehacks.detect)) {
+  mergeRules(rule, physicalBorderShorthands, (rules, lastNode) => {
+    if (!canCreateBorder || rules.some(stylehacks.detect)) {
       return false;
     }
 
@@ -513,7 +727,9 @@ function merge(rule) {
         return node.value;
       }
 
-      return wscValue.map((value, i) => value || defaults[i]).join(' ');
+      return wscValue
+        .map((value, i) => value || defaultBorderValues[i])
+        .join(' ');
     });
 
     const reduced = getDistinctShorthands(values);
@@ -532,7 +748,7 @@ function merge(rule) {
 
       if (reduced[1]) {
         const value = first ? reduced[1] : reduced[0];
-        const prop = directions[values.indexOf(value)];
+        const prop = physicalBorderShorthands[values.indexOf(value)];
         rule.insertBefore(
           lastNode,
           Object.assign(lastNode.clone(), {
@@ -552,7 +768,7 @@ function merge(rule) {
   });
 
   // border-trbl-wsc + border-trbl (custom prop) -> border-trbl + border-trbl-wsc (custom prop)
-  for (const direction of directions) {
+  for (const direction of physicalBorderShorthands) {
     for (const [i, style] of widthStyleColor.entries()) {
       const prop = `${direction}-${style}`;
 
@@ -569,7 +785,7 @@ function merge(rule) {
 
         const wscProp = rules.filter((r) => r !== lastNode)[0];
 
-        if (!isValueCustomProp(values[i]) || isCustomProp(wscProp)) {
+        if (!isCustomProperty(values[i]) || isCustomProp(wscProp)) {
           return false;
         }
 
@@ -612,7 +828,7 @@ function merge(rule) {
 
       const wscProp = rules.filter((r) => r !== lastNode)[0];
 
-      if (!isValueCustomProp(values[i]) || isCustomProp(wscProp)) {
+      if (!isCustomProperty(values[i]) || isCustomProp(wscProp)) {
         return false;
       }
 
@@ -639,13 +855,13 @@ function merge(rule) {
   }
 
   // optimize border-trbl
-  let decls = getDecls(rule, directions);
+  let decls = getDecls(rule, new Set(physicalBorderShorthands));
 
   while (decls.length) {
     const lastNode = decls.at(-1);
 
     for (const [i, d] of widthStyleColor.entries()) {
-      const names = directions
+      const names = physicalBorderShorthands
         .filter((name) => name !== /** @type {Declaration} */ (lastNode).prop)
         .map((name) => `${name}-${d}`);
 
@@ -678,8 +894,11 @@ function merge(rule) {
           /** @type {Declaration} */ (lastNode).value
         )[i];
 
-        values[directions.indexOf(/** @type {Declaration} */ (lastNode).prop)] =
-          lastNodeValue;
+        values[
+          physicalBorderShorthands.indexOf(
+            /** @type {Declaration} */ (lastNode).prop
+          )
+        ] = lastNodeValue;
 
         let value = minifyTopBottoRightLeft(values.join(' '));
 
@@ -729,7 +948,7 @@ function merge(rule) {
       return false;
     }
 
-    const index = directions.indexOf(nextDecl.prop);
+    const index = physicalBorderShorthands.indexOf(nextDecl.prop);
 
     if (index === -1) {
       return;
@@ -763,8 +982,8 @@ function merge(rule) {
       return;
     }
 
-    const position = directions.indexOf(decl.prop);
-    const dirs = [...directions];
+    const position = physicalBorderShorthands.indexOf(decl.prop);
+    const dirs = [...physicalBorderShorthands];
 
     dirs.splice(position, 1);
     for (const [i, d] of widthStyleColor.entries()) {
@@ -813,90 +1032,7 @@ function merge(rule) {
     }
   });
 
-  // clean-up values
-  rule.walkDecls(borderStyleRegex, (decl) => {
-    decl.value = minifyWidthStyleColor(decl.value);
-  });
-
-  // border-spacing-hv -> border-spacing
-  rule.walkDecls(borderSpacingRegex, (decl) => {
-    const value = list.space(decl.value);
-
-    // merge vertical and horizontal dups
-    if (value.length > 1 && value[0] === value[1]) {
-      decl.value = value.slice(1).join(' ');
-    }
-  });
-
-  // clean-up rules
-  decls = getDecls(rule, allProperties);
-
-  while (decls.length) {
-    const lastNode = decls.at(-1);
-    const lastPart = /** @type {Declaration} */ (lastNode).prop
-      .split('-')
-      .pop();
-
-    // remove properties of lower precedence
-    const lesser = decls.filter(
-      (node) =>
-        !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
-        !stylehacks.detect(node) &&
-        !isCustomProp(/** @type {Declaration} */ (lastNode)) &&
-        node !== lastNode &&
-        node.important === /** @type {Declaration} */ (lastNode).important &&
-        /** @type {number} */ (getLevel(node.prop)) >
-          /** @type {number} */ (
-            getLevel(/** @type {Declaration} */ (lastNode).prop)
-          ) &&
-        (node.prop
-          .toLowerCase()
-          .includes(/** @type {Declaration} */ (lastNode).prop) ||
-          node.prop.toLowerCase().endsWith(/** @type {string} */ (lastPart)))
-    );
-
-    for (const node of lesser) {
-      node.remove();
-    }
-    decls = decls.filter((node) => !lesser.includes(node));
-
-    // get duplicate properties
-    let duplicates = decls.filter(
-      (node) =>
-        !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
-        !stylehacks.detect(node) &&
-        node !== lastNode &&
-        node.important === /** @type {Declaration} */ (lastNode).important &&
-        node.prop === /** @type {Declaration} */ (lastNode).prop &&
-        !(
-          !isCustomProp(node) &&
-          isCustomProp(/** @type {Declaration} */ (lastNode))
-        )
-    );
-
-    if (duplicates.length) {
-      if (
-        colorMightRequireFallback.test(
-          getColorValue(/** @type {Declaration} */ (lastNode))
-        )
-      ) {
-        const preserve = duplicates
-          .filter(
-            (node) => !colorMightRequireFallback.test(getColorValue(node))
-          )
-          .pop();
-
-        duplicates = duplicates.filter((node) => node !== preserve);
-      }
-      for (const node of duplicates) {
-        node.remove();
-      }
-    }
-
-    decls = decls.filter(
-      (node) => node !== lastNode && !duplicates.includes(node)
-    );
-  }
+  cleanup(rule);
 }
 
 module.exports = {
