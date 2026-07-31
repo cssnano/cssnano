@@ -53,7 +53,7 @@ module.exports = function parseWsc(value) {
   /** @type {string[]} */
   const unknown = [];
 
-  values.forEach((v) => {
+  for (const v of values) {
     if (isStyle(v)) {
       style = toLower(v);
     } else if (isWidth(v)) {
@@ -63,7 +63,7 @@ module.exports = function parseWsc(value) {
     } else {
       unknown.push(v);
     }
-  });
+  }
 
   if (unknown.length) {
     if (!width && style && color) {

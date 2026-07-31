@@ -206,13 +206,13 @@ function explode(rule) {
     // border -> border-trbl
     if (prop === 'border') {
       if (isValidWidthStyleColor(parseWidthStyleColor(decl.value))) {
-        directions.forEach((direction) => {
+        for (const direction of directions) {
           insertCloned(
             /** @type {import('postcss').Rule} */ (decl.parent),
             decl,
             { prop: direction }
           );
-        });
+        }
 
         decl.remove();
       }
@@ -223,7 +223,7 @@ function explode(rule) {
       let values = parseWidthStyleColor(decl.value);
 
       if (isValidWidthStyleColor(values)) {
-        widthStyleColor.forEach((d, i) => {
+        for (const [i, d] of widthStyleColor.entries()) {
           insertCloned(
             /** @type {import('postcss').Rule} */ (decl.parent),
             decl,
@@ -232,7 +232,7 @@ function explode(rule) {
               value: values[i] || defaults[i],
             }
           );
-        });
+        }
 
         decl.remove();
       }
@@ -248,7 +248,7 @@ function explode(rule) {
         decl.prop = decl.prop.toLowerCase();
         return false;
       }
-      parseTrbl(decl.value).forEach((value, i) => {
+      for (const [i, value] of parseTrbl(decl.value).entries()) {
         insertCloned(
           /** @type {import('postcss').Rule} */ (decl.parent),
           decl,
@@ -257,7 +257,7 @@ function explode(rule) {
             value,
           }
         );
-      });
+      }
 
       return decl.remove();
     });
@@ -279,7 +279,7 @@ function retrieveWscValues(lastNode) {
  */
 function merge(rule) {
   // border-trbl-wsc -> border-trbl
-  topRightBottomLeft.forEach((direction) => {
+  for (const direction of topRightBottomLeft) {
     const prop = borderProperty(direction);
 
     mergeRules(
@@ -304,10 +304,10 @@ function merge(rule) {
         return false;
       }
     );
-  });
+  }
 
   // border-trbl-wsc -> border-wsc
-  widthStyleColor.forEach((style) => {
+  for (const style of widthStyleColor) {
     const prop = borderProperty(style);
 
     mergeRules(
@@ -333,7 +333,7 @@ function merge(rule) {
         return false;
       }
     );
-  });
+  }
 
   // border-trbl -> border-wsc
   mergeRules(rule, directions, (rules, lastNode) => {
@@ -353,7 +353,7 @@ function merge(rule) {
       return false;
     }
 
-    widthStyleColor.forEach((d, i) => {
+    for (const [i, d] of widthStyleColor.entries()) {
       const value = parsed.map((v) => v[i] || defaults[i]);
 
       if (canMergeValues(value)) {
@@ -373,7 +373,7 @@ function merge(rule) {
           lastNode
         );
       }
-    });
+    }
 
     for (const node of rules) {
       node.remove();
@@ -440,9 +440,12 @@ function merge(rule) {
           value: [width, style].map(getValue).join(' '),
         })
       );
-      rules
-        .filter((node) => node.prop.toLowerCase() !== properties[2])
-        .forEach((node) => node.remove());
+
+      for (const node of rules) {
+        if (node.prop.toLowerCase() !== properties[2]) {
+          node.remove();
+        }
+      }
 
       return true;
     }
@@ -479,7 +482,7 @@ function merge(rule) {
         })
       );
 
-      directions.forEach((dir, i) => {
+      for (const [i, dir] of directions.entries()) {
         if (mapped[i] !== borderValue) {
           rule.insertBefore(
             lastNode,
@@ -489,7 +492,7 @@ function merge(rule) {
             })
           );
         }
-      });
+      }
 
       for (const node of rules) {
         node.remove();
@@ -553,8 +556,8 @@ function merge(rule) {
   });
 
   // border-trbl-wsc + border-trbl (custom prop) -> border-trbl + border-trbl-wsc (custom prop)
-  directions.forEach((direction) => {
-    widthStyleColor.forEach((style, i) => {
+  for (const direction of directions) {
+    for (const [i, style] of widthStyleColor.entries()) {
       const prop = `${direction}-${style}`;
 
       mergeRules(rule, [direction, prop], (rules, lastNode) => {
@@ -595,11 +598,11 @@ function merge(rule) {
         }
         return false;
       });
-    });
-  });
+    }
+  }
 
   // border-wsc + border (custom prop) -> border + border-wsc (custom prop)
-  widthStyleColor.forEach((style, i) => {
+  for (const [i, style] of widthStyleColor.entries()) {
     const prop = borderProperty(style);
     mergeRules(rule, ['border', prop], (rules, lastNode) => {
       if (lastNode.prop !== 'border') {
@@ -637,7 +640,7 @@ function merge(rule) {
       }
       return false;
     });
-  });
+  }
 
   // optimize border-trbl
   let decls = getDecls(rule, directions);
@@ -645,7 +648,7 @@ function merge(rule) {
   while (decls.length) {
     const lastNode = decls.at(-1);
 
-    widthStyleColor.forEach((d, i) => {
+    for (const [i, d] of widthStyleColor.entries()) {
       const names = directions
         .filter((name) => name !== /** @type {Declaration} */ (lastNode).prop)
         .map((name) => `${name}-${d}`);
@@ -718,7 +721,7 @@ function merge(rule) {
           node.remove();
         }
       }
-    });
+    }
 
     decls = decls.filter((node) => node !== lastNode);
   }
@@ -768,7 +771,7 @@ function merge(rule) {
     let dirs = [...directions];
 
     dirs.splice(position, 1);
-    widthStyleColor.forEach((d, i) => {
+    for (const [i, d] of widthStyleColor.entries()) {
       const props = dirs.map((dir) => `${dir}-${d}`);
 
       mergeRules(rule, [decl.prop, ...props], (rules) => {
@@ -811,7 +814,7 @@ function merge(rule) {
       } else {
         decl.remove();
       }
-    });
+    }
   });
 
   // clean-up values
