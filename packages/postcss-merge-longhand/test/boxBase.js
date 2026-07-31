@@ -181,6 +181,21 @@ addTests(
     expected: (prop) => `h1{${prop}-bottom:var(--variable)}`,
   },
   {
+    message: 'should not merge custom properties',
+    fixture: `.foo {
+  box-top: var(--padding-top);
+  box-bottom: var(--padding-bottom);
+  box-left: var(--padding-left);
+  box-right: var(--padding-right);
+}`,
+    expected: (prop) => `.foo {
+  ${prop}-top: var(--padding-top);
+  ${prop}-bottom: var(--padding-bottom);
+  ${prop}-left: var(--padding-left);
+  ${prop}-right: var(--padding-right);
+}`,
+  },
+  {
     message: 'should preserve case of custom properties (box)',
     fixture:
       'h1{box-top:10px;box-right:var(--fooBar);box-right:15px;box-bottom:var(--fooBar);box-bottom:20px;box-left:25px;box-top:var(--fooBar);box-left:var(--fooBar)}',

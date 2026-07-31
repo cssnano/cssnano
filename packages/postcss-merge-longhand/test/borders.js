@@ -238,6 +238,15 @@ test(
 );
 
 test(
+  'should preserve rules with inherit keyword when the rules',
+  passthroughCSS(`table tbody, table tr {
+    border-color: inherit;
+    border-style: inherit;
+    border-width: 0;
+`)
+);
+
+test(
   'should not merge rules with the inherit keyword (uppercase)',
   processCSS(
     'h1{BORDER-WIDTH:3PX;BORDER-STYLE:SOLID;BORDER-COLOR:INHERIT}',
@@ -1298,6 +1307,108 @@ test(
   passthroughCSS(
     'h1{border:1px solid;border-color:var(--BORDER);border-left-style:none;}'
   )
+);
+
+test(
+  'should preserve border with inherit in the middle',
+  passthroughCSS(`div {
+  border: 1em solid;
+  border-color: inherit;
+  border-top: none;
+}`)
+);
+
+test(
+  'should not overwrite border-inline-start property',
+  passthroughCSS(
+    `h1{border-width: 0; border-inline-start-width: 1px; border-style: solid;}`
+  )
+);
+
+test(
+  'should preserve custom property declared between two border properties',
+  passthroughCSS(`.arrow {
+  border-style: solid;
+  border-width: 50px;
+  border-color: #fff transparent;
+  border-color: var(--col) transparent;
+  border-top: none;
+  height: 0;
+  width: 0;
+}`)
+);
+
+test(
+  'should collapse identical border-radius',
+  processCSS(
+    ` .input {
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}`,
+    `.input { border-radius: 5px }`
+  )
+);
+
+test(
+  'should not override border image',
+  passthroughCSS(`.style {
+    border-image: linear-gradient(to right, rgba(230, 232, 235, 0), #e6e8eb) 0 0
+        0 100%;
+    border-left: 60px;
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 0;
+}`)
+);
+
+test(
+  'should preserve all axes',
+  passthroughCSS(`.selector  {
+  border-style: solid;
+  border-width: 0px 0px 5px 5px;
+  border-top-color: transparent;
+}`)
+);
+
+test('should not unsafely merge custom properties', () => {
+  passthroughCSS(`.foo {
+  padding-top: var(--padding-top);
+  padding-bottom: var(--padding-bottom);
+  padding-left: var(--padding-left);
+  padding-right: var(--padding-right);
+}`);
+});
+
+test(
+  'should not incorrectly merge values containing inherit',
+  passthroughCSS(`a {
+  border-color: inherit;
+  border-style: inherit;
+  border-width: inherit;
+  border-width: 0;
+}`)
+);
+
+test(
+  `s`,
+  passthroughCSS(`.parent .child {
+    border-width: 1px;
+    border-style: solid;
+    border-color: transparent;
+    border-right-color: inherit;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+}`)
+);
+
+test(
+  'should not introdudce spurious currentcolor',
+  passthroughCSS(`div {
+    border: 1px solid;
+    border-color: red var(--grey);
+}`)
 );
 
 test('should handle empty border', processCSS('h1{border:;}', 'h1{border:;}'));
