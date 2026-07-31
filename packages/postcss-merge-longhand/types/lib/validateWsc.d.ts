@@ -2,7 +2,7 @@ declare const _exports: {
     isStyle: typeof isStyle;
     isWidth: typeof isWidth;
     isColor: typeof isColor;
-    isValidWsc: typeof isValidWsc;
+    isValidWidthStyleColor: typeof isValidWidthStyleColor;
 };
 export = _exports;
 /**
@@ -24,5 +24,5 @@ declare function isColor(value: string): boolean;
  * @param {[string, string, string]} wscs
  * @return {boolean}
  */
-declare function isValidWsc(wscs: [string, string, string]): boolean;
+declare function isValidWidthStyleColor(wscs: [string, string, string]): boolean;
 //# sourceMappingURL=validateWsc.d.ts.map
