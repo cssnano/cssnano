@@ -1,12 +1,12 @@
 'use strict';
 const { test } = require('node:test');
-const trbl = require('../src/lib/trbl.js');
+const topRightBottomLeft = require('../src/lib/trbl.js');
 const { processCSSFactory } = require('../../../util/testHelpers.js');
 const plugin = require('../src/index.js');
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
-const wsc = [
+const widthStyleColor = [
   {
     property: 'width',
     fixture: '1px',
@@ -21,16 +21,16 @@ const wsc = [
   },
 ];
 
-wsc.forEach(({ property, fixture }) => {
+widthStyleColor.forEach(({ property, fixture }) => {
   test(
     `should merge to form a border-trbl-${property} definition`,
     processCSS(
       [
         `h1{`,
-        `border-${trbl[0]}-${property}:${fixture};`,
-        `border-${trbl[1]}-${property}:${fixture};`,
-        `border-${trbl[2]}-${property}:${fixture};`,
-        `border-${trbl[3]}-${property}:${fixture}`,
+        `border-${topRightBottomLeft[0]}-${property}:${fixture};`,
+        `border-${topRightBottomLeft[1]}-${property}:${fixture};`,
+        `border-${topRightBottomLeft[2]}-${property}:${fixture};`,
+        `border-${topRightBottomLeft[3]}-${property}:${fixture}`,
         `}`,
       ].join(''),
       `h1{border-${property}:${fixture}}`
@@ -42,10 +42,10 @@ wsc.forEach(({ property, fixture }) => {
     processCSS(
       [
         `h1{`,
-        `BORDER-${trbl[0].toUpperCase()}-${property.toUpperCase()}:${fixture.toUpperCase()};`,
-        `BORDER-${trbl[1].toUpperCase()}-${property.toUpperCase()}:${fixture.toUpperCase()};`,
-        `BORDER-${trbl[2].toUpperCase()}-${property.toUpperCase()}:${fixture.toUpperCase()};`,
-        `BORDER-${trbl[3].toUpperCase()}-${property.toUpperCase()}:${fixture.toUpperCase()}`,
+        `BORDER-${topRightBottomLeft[0].toUpperCase()}-${property.toUpperCase()}:${fixture.toUpperCase()};`,
+        `BORDER-${topRightBottomLeft[1].toUpperCase()}-${property.toUpperCase()}:${fixture.toUpperCase()};`,
+        `BORDER-${topRightBottomLeft[2].toUpperCase()}-${property.toUpperCase()}:${fixture.toUpperCase()};`,
+        `BORDER-${topRightBottomLeft[3].toUpperCase()}-${property.toUpperCase()}:${fixture.toUpperCase()}`,
         `}`,
       ].join(''),
       `h1{border-${property}:${fixture.toUpperCase()}}`
@@ -53,8 +53,11 @@ wsc.forEach(({ property, fixture }) => {
   );
 });
 
-trbl.forEach((direction) => {
-  const value = wsc.reduce((list, { fixture }) => [...list, fixture], []);
+topRightBottomLeft.forEach((direction) => {
+  const value = widthStyleColor.reduce(
+    (list, { fixture }) => [...list, fixture],
+    []
+  );
 
   test(
     `should merge to form a border-${direction} definition`,
@@ -904,7 +907,7 @@ test(
   passthroughCSS('h1{BORDER:revert}')
 );
 
-trbl.forEach((direction) => {
+topRightBottomLeft.forEach((direction) => {
   test(
     `should not explode border-${direction} with custom properties`,
     passthroughCSS(`h1{border-${direction}:var(--variable)}`)
