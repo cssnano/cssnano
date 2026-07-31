@@ -21,6 +21,14 @@ test(
 );
 
 test(
+  'should convert multiple comma-separated values',
+  processCSS(
+    'h1{animation-delay: 500ms, 1000ms}',
+    'h1{animation-delay: .5s, 1s}'
+  )
+);
+
+test(
   'should convert seconds to milliseconds',
   processCSS('h1{transition-duration:.005s}', 'h1{transition-duration:5ms}')
 );
