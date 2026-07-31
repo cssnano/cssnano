@@ -9,11 +9,7 @@ const getRules = require('./getRules.js');
  * @return {boolean}
  */
 function isConflictingProp(propA, propB) {
-  if (
-    !propB.prop ||
-    propB.important !== propA.important ||
-    propA.prop === propB.prop
-  ) {
+  if (!propB.prop || propB.important !== propA.important) {
     return false;
   }
 
@@ -39,9 +35,17 @@ function isConflictingProp(propA, propB) {
 function hasConflicts(match, nodes) {
   const firstNode = Math.min(...match.map((n) => nodes.indexOf(n)));
   const lastNode = Math.max(...match.map((n) => nodes.indexOf(n)));
-  const between = nodes.slice(firstNode + 1, lastNode);
+  const between = nodes
+    .slice(firstNode + 1, lastNode)
+    .filter((node) => !match.includes(node));
 
-  return match.some((a) => between.some((b) => isConflictingProp(a, b)));
+  return match.some((a) =>
+    between.some(
+      (b) =>
+        isConflictingProp(a, b) &&
+        (a.prop !== b.prop || nodes.indexOf(b) > nodes.indexOf(a))
+    )
+  );
 }
 
 /**

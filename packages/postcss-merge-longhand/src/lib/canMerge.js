@@ -22,12 +22,7 @@ module.exports = (props, includeCustomProps = true) => {
       }
     }
   }
-
-  if (
-    includeCustomProps &&
-    props.some(isCustomProp) &&
-    !props.every(isCustomProp)
-  ) {
+  if (includeCustomProps && props.some(isCustomProp)) {
     return false;
   }
 

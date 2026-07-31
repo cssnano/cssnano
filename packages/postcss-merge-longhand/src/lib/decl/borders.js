@@ -28,7 +28,18 @@ const colorMightRequireFallback =
 const borderSpacingRegex = /^border-spacing$/i;
 const borderStyleRegex = /^border($|-(top|right|bottom|left)$)/i;
 const borderRegex = /^border/i;
+const borderImageRegex = /^border-image($|-)/i;
+const logicalBorderRegex = /^border-(block|inline|start|end)($|-)/i;
+const directionalPhysicalRegex =
+  /^border-(top|right|bottom|left)($|-(width|style|color)$)/i;
 const customPropRegex = /var\s*\(\s*--/i;
+const cssWideKeywords = new Set([
+  'inherit',
+  'initial',
+  'unset',
+  'revert',
+  'revert-layer',
+]);
 
 /**
  * @param {...string} parts
@@ -62,6 +73,7 @@ const precedence = [
 ];
 
 const allProperties = precedence.flat();
+const borderResetRules = new WeakSet();
 
 /**
  * @param {string} prop
@@ -191,13 +203,185 @@ function isCloseEnough(mapped) {
 function getDistinctShorthands(mapped) {
   return [...new Set(mapped)];
 }
+
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {boolean}
+ */
+function hasUnsafePhysicalBorder(rule) {
+  const declarations = /** @type {Declaration[]} */ (
+    rule.nodes.filter((node) => node.type === 'decl')
+  );
+
+  if (
+    declarations.some(
+      (decl) =>
+        borderImageRegex.test(decl.prop) || logicalBorderRegex.test(decl.prop)
+    )
+  ) {
+    return true;
+  }
+
+  const physical = declarations.filter((decl) =>
+    allProperties.includes(decl.prop.toLowerCase())
+  );
+
+  if (
+    physical.some(
+      (decl) =>
+        cssWideKeywords.has(decl.value.toLowerCase()) ||
+        ((borderStyleRegex.test(decl.prop) ||
+          properties.includes(decl.prop.toLowerCase())) &&
+          isCustomProp(decl))
+    )
+  ) {
+    return true;
+  }
+
+  const globalComponents = physical.filter((decl) =>
+    properties.includes(decl.prop.toLowerCase())
+  );
+  const directionalDeclarations = physical.filter((decl) =>
+    directionalPhysicalRegex.test(decl.prop)
+  );
+
+  return globalComponents.length > 1 && directionalDeclarations.length > 0;
+}
+
+/**
+ * @param {import('postcss').Node} node
+ * @return {boolean}
+ */
+function establishesBorderReset(node) {
+  if (node.type !== 'decl') {
+    return false;
+  }
+
+  const declaration = /** @type {Declaration} */ (node);
+
+  if (
+    declaration.prop.toLowerCase() !== 'border' ||
+    !canExplode(declaration) ||
+    stylehacks.detect(declaration)
+  ) {
+    return false;
+  }
+
+  return isValidWidthStyleColor(parseWidthStyleColor(declaration.value));
+}
+
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {boolean}
+ */
+function hasBorderResetContext(rule) {
+  return borderResetRules.has(rule) || rule.nodes.some(establishesBorderReset);
+}
+
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
+function mergeBorderSpacing(rule) {
+  rule.walkDecls(borderSpacingRegex, (decl) => {
+    const value = list.space(decl.value);
+
+    if (value.length > 1 && value[0] === value[1]) {
+      decl.value = value.slice(1).join(' ');
+    }
+  });
+}
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
+function cleanup(rule) {
+  rule.walkDecls(borderStyleRegex, (decl) => {
+    decl.value = minifyWidthStyleColor(decl.value);
+  });
+
+  let decls = getDecls(rule, allProperties);
+
+  while (decls.length) {
+    const lastNode = decls.at(-1);
+    const lastPart = /** @type {Declaration} */ (lastNode).prop
+      .split('-')
+      .pop();
+    const lesser = decls.filter(
+      (node) =>
+        !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
+        !stylehacks.detect(node) &&
+        !isCustomProp(/** @type {Declaration} */ (lastNode)) &&
+        node !== lastNode &&
+        node.important === /** @type {Declaration} */ (lastNode).important &&
+        /** @type {number} */ (getLevel(node.prop)) >
+          /** @type {number} */ (
+            getLevel(/** @type {Declaration} */ (lastNode).prop)
+          ) &&
+        (node.prop
+          .toLowerCase()
+          .includes(/** @type {Declaration} */ (lastNode).prop) ||
+          node.prop.toLowerCase().endsWith(/** @type {string} */ (lastPart)))
+    );
+
+    for (const node of lesser) {
+      node.remove();
+    }
+    decls = decls.filter((node) => !lesser.includes(node));
+
+    let duplicates = decls.filter(
+      (node) =>
+        !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
+        !stylehacks.detect(node) &&
+        node !== lastNode &&
+        node.important === /** @type {Declaration} */ (lastNode).important &&
+        node.prop === /** @type {Declaration} */ (lastNode).prop &&
+        !(
+          !isCustomProp(node) &&
+          isCustomProp(/** @type {Declaration} */ (lastNode))
+        )
+    );
+
+    if (duplicates.length) {
+      if (
+        colorMightRequireFallback.test(
+          getColorValue(/** @type {Declaration} */ (lastNode))
+        )
+      ) {
+        const preserve = duplicates
+          .filter(
+            (node) => !colorMightRequireFallback.test(getColorValue(node))
+          )
+          .pop();
+
+        duplicates = duplicates.filter((node) => node !== preserve);
+      }
+      for (const node of duplicates) {
+        node.remove();
+      }
+    }
+
+    decls = decls.filter(
+      (node) => node !== lastNode && !duplicates.includes(node)
+    );
+  }
+}
+
 /**
  * @param {import('postcss').Rule} rule
  * @return {void}
  */
 function explode(rule) {
+  if (rule.nodes.some(establishesBorderReset)) {
+    borderResetRules.add(rule);
+  }
+
+  if (hasUnsafePhysicalBorder(rule)) {
+    return;
+  }
+
   rule.walkDecls(borderRegex, (decl) => {
-    if (!canExplode(decl, false)) {
+    if (!canExplode(decl)) {
       return;
     }
 
@@ -273,6 +457,14 @@ function explode(rule) {
  * @return {void}
  */
 function merge(rule) {
+  mergeBorderSpacing(rule);
+
+  if (hasUnsafePhysicalBorder(rule)) {
+    return;
+  }
+
+  const canCreateBorder = hasBorderResetContext(rule);
+
   // border-trbl-wsc -> border-trbl
   for (const direction of topRightBottomLeft) {
     const prop = borderProperty(direction);
@@ -381,7 +573,7 @@ function merge(rule) {
   // border-wsc -> border + border-color
   // border-wsc -> border + border-dir
   mergeRules(rule, properties, (rules, lastNode) => {
-    if (rules.some(stylehacks.detect)) {
+    if (!canCreateBorder || rules.some(stylehacks.detect)) {
       return false;
     }
 
@@ -427,7 +619,7 @@ function merge(rule) {
       }
 
       return true;
-    } else if (reduced.length === 1) {
+    } else if (reduced.length === 1 && canMerge([width, style], false)) {
       rule.insertBefore(
         color,
         Object.assign(lastNode.clone(), {
@@ -449,7 +641,7 @@ function merge(rule) {
 
   // border-wsc -> border + border-trbl
   mergeRules(rule, properties, (rules, lastNode) => {
-    if (rules.some(stylehacks.detect)) {
+    if (!canCreateBorder || rules.some(stylehacks.detect)) {
       return false;
     }
 
@@ -501,7 +693,7 @@ function merge(rule) {
   // border-trbl -> border
   // border-trbl -> border + border-trbl
   mergeRules(rule, directions, (rules, lastNode) => {
-    if (rules.some(stylehacks.detect)) {
+    if (!canCreateBorder || rules.some(stylehacks.detect)) {
       return false;
     }
 
@@ -812,90 +1004,7 @@ function merge(rule) {
     }
   });
 
-  // clean-up values
-  rule.walkDecls(borderStyleRegex, (decl) => {
-    decl.value = minifyWidthStyleColor(decl.value);
-  });
-
-  // border-spacing-hv -> border-spacing
-  rule.walkDecls(borderSpacingRegex, (decl) => {
-    const value = list.space(decl.value);
-
-    // merge vertical and horizontal dups
-    if (value.length > 1 && value[0] === value[1]) {
-      decl.value = value.slice(1).join(' ');
-    }
-  });
-
-  // clean-up rules
-  decls = getDecls(rule, allProperties);
-
-  while (decls.length) {
-    const lastNode = decls.at(-1);
-    const lastPart = /** @type {Declaration} */ (lastNode).prop
-      .split('-')
-      .pop();
-
-    // remove properties of lower precedence
-    const lesser = decls.filter(
-      (node) =>
-        !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
-        !stylehacks.detect(node) &&
-        !isCustomProp(/** @type {Declaration} */ (lastNode)) &&
-        node !== lastNode &&
-        node.important === /** @type {Declaration} */ (lastNode).important &&
-        /** @type {number} */ (getLevel(node.prop)) >
-          /** @type {number} */ (
-            getLevel(/** @type {Declaration} */ (lastNode).prop)
-          ) &&
-        (node.prop
-          .toLowerCase()
-          .includes(/** @type {Declaration} */ (lastNode).prop) ||
-          node.prop.toLowerCase().endsWith(/** @type {string} */ (lastPart)))
-    );
-
-    for (const node of lesser) {
-      node.remove();
-    }
-    decls = decls.filter((node) => !lesser.includes(node));
-
-    // get duplicate properties
-    let duplicates = decls.filter(
-      (node) =>
-        !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
-        !stylehacks.detect(node) &&
-        node !== lastNode &&
-        node.important === /** @type {Declaration} */ (lastNode).important &&
-        node.prop === /** @type {Declaration} */ (lastNode).prop &&
-        !(
-          !isCustomProp(node) &&
-          isCustomProp(/** @type {Declaration} */ (lastNode))
-        )
-    );
-
-    if (duplicates.length) {
-      if (
-        colorMightRequireFallback.test(
-          getColorValue(/** @type {Declaration} */ (lastNode))
-        )
-      ) {
-        const preserve = duplicates
-          .filter(
-            (node) => !colorMightRequireFallback.test(getColorValue(node))
-          )
-          .pop();
-
-        duplicates = duplicates.filter((node) => node !== preserve);
-      }
-      for (const node of duplicates) {
-        node.remove();
-      }
-    }
-
-    decls = decls.filter(
-      (node) => node !== lastNode && !duplicates.includes(node)
-    );
-  }
+  cleanup(rule);
 }
 
 module.exports = {

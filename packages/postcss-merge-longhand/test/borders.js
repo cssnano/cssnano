@@ -92,7 +92,7 @@ test(
   'should merge identical border values',
   processCSS(
     'h1{border-top:1px solid black;border-bottom:1px solid black;border-left:1px solid black;border-right:1px solid black}',
-    'h1{border:1px solid black}'
+    'h1{border-color:black;border-style:solid;border-width:1px}'
   )
 );
 
@@ -100,7 +100,7 @@ test(
   'should merge identical border values (uppercase)',
   processCSS(
     'h1{BORDER-TOP:1px solid black;BORDER-BOTTOM:1px solid black;BORDER-LEFT:1px solid black;BORDER-RIGHT:1px solid black}',
-    'h1{border:1px solid black}'
+    'h1{border-color:black;border-style:solid;border-width:1px}'
   )
 );
 
@@ -108,7 +108,7 @@ test(
   'should merge identical border values with !important',
   processCSS(
     'h1{border-top:1px solid black!important;border-bottom:1px solid black!important;border-left:1px solid black!important;border-right:1px solid black!important}',
-    'h1{border:1px solid black!important}'
+    'h1{border-color:black!important;border-style:solid!important;border-width:1px!important}'
   )
 );
 
@@ -116,7 +116,7 @@ test(
   'should merge identical border values with !important (uppercase)',
   processCSS(
     'h1{BORDER-TOP:1px solid black!important;BORDER-BOTTOM:1px solid black!important;BORDER-LEFT:1px solid black!important;BORDER-RIGHT:1px solid black!important}',
-    'h1{border:1px solid black!important}'
+    'h1{border-color:black!important;border-style:solid!important;border-width:1px!important}'
   )
 );
 
@@ -124,7 +124,7 @@ test(
   'should merge identical border values with !important 1 (uppercase)',
   processCSS(
     'h1{border-top:1px solid black!IMPORTANT;border-bottom:1px solid black!IMPORTANT;border-left:1px solid black!IMPORTANT;border-right:1px solid black!IMPORTANT}',
-    'h1{border:1px solid black!IMPORTANT}'
+    'h1{border-color:black!IMPORTANT;border-style:solid!IMPORTANT;border-width:1px!IMPORTANT}'
   )
 );
 
@@ -139,7 +139,7 @@ test(
   'should merge border values',
   processCSS(
     'h1{border-color:red;border-width:1px;border-style:dashed}',
-    'h1{border:1px dashed red}'
+    'h1{border-color:red;border-style:dashed;border-width:1px}'
   )
 );
 
@@ -147,7 +147,7 @@ test(
   'should merge border values (uppercase)',
   processCSS(
     'h1{BORDER-COLOR:RED;BORDER-WIDTH:1PX;BORDER-STYLE:DASHED}',
-    'h1{border:1px dashed red}'
+    'h1{border-color:red;border-style:dashed;border-width:1px}'
   )
 );
 
@@ -155,7 +155,7 @@ test(
   'should merge border values with !important',
   processCSS(
     'h1{border-color:red!important;border-width:1px!important;border-style:dashed!important}',
-    'h1{border:1px dashed red!important}'
+    'h1{border-color:red!important;border-style:dashed!important;border-width:1px!important}'
   )
 );
 
@@ -163,7 +163,7 @@ test(
   'should merge border values with !important (uppercase)',
   processCSS(
     'h1{BORDER-COLOR:RED!IMPORTANT;BORDER-WIDTH:1PX!IMPORTANT;BORDER-STYLE:DASHED!IMPORTANT}',
-    'h1{border:1px dashed red!IMPORTANT}'
+    'h1{border-color:red!IMPORTANT;border-style:dashed!IMPORTANT;border-width:1px!IMPORTANT}'
   )
 );
 
@@ -171,7 +171,7 @@ test(
   'should merge border values with identical values for all sides',
   processCSS(
     'h1{border-color:red red red red;border-width:1px 1px 1px 1px;border-style:solid solid solid solid}',
-    'h1{border:1px solid red}'
+    'h1{border-color:red;border-style:solid;border-width:1px}'
   )
 );
 
@@ -179,7 +179,7 @@ test(
   'should merge border values with identical values for all sides (uppercase)',
   processCSS(
     'h1{BORDER-COLOR:RED RED RED RED;BORDER-WIDTH:1PX 1PX 1PX 1PX;BORDER-STYLE:SOLID SOLID SOLID SOLID}',
-    'h1{border:1px solid red}'
+    'h1{border-color:red;border-style:solid;border-width:1px}'
   )
 );
 
@@ -231,25 +231,28 @@ test(
 
 test(
   'should not merge rules with the inherit keyword',
-  processCSS(
-    'h1{border-width:3px;border-style:solid;border-color:inherit}',
-    'h1{border:3px solid;border-color:inherit}'
-  )
+  passthroughCSS('h1{border-width:3px;border-style:solid;border-color:inherit}')
+);
+
+test(
+  'should preserve rules with inherit keyword when the rules',
+  passthroughCSS(`table tbody, table tr {
+    border-color: inherit;
+    border-style: inherit;
+    border-width: 0;
+  }`)
 );
 
 test(
   'should not merge rules with the inherit keyword (uppercase)',
-  processCSS(
-    'h1{BORDER-WIDTH:3PX;BORDER-STYLE:SOLID;BORDER-COLOR:INHERIT}',
-    'h1{border:3px solid;BORDER-COLOR:INHERIT}'
-  )
+  passthroughCSS('h1{BORDER-WIDTH:3PX;BORDER-STYLE:SOLID;BORDER-COLOR:INHERIT}')
 );
 
 test(
   'should not crash on comments',
   processCSS(
     'h1{\n  border-width:3px;/* 1 */\n  border-style:solid;/* 2 */\n  border-color:red;/* 3 */}',
-    'h1{/* 1 *//* 2 */\n  border:3px solid red;/* 3 */}'
+    'h1{/* 1 *//* 2 */\n  border-color:red;\n  border-style:solid;\n  border-width:3px;/* 3 */}'
   )
 );
 
@@ -442,17 +445,15 @@ test(
 
 test(
   'should merge redundant values (6)',
-  processCSS(
-    'h1{border-width:1px;border-top-width:none;border-left-width:none;border-style:solid;border-color:#000;}',
-    'h1{border-color:#000;border-style:solid;border-width:0 1px 1px 0;}'
+  passthroughCSS(
+    'h1{border-width:1px;border-top-width:none;border-left-width:none;border-style:solid;border-color:#000;}'
   )
 );
 
 test(
   'should merge redundant values (6) (uppercase)',
-  processCSS(
-    'h1{BORDER-WIDTH:1PX;BORDER-TOP-WIDTH:NONE;BORDER-LEFT-WIDTH:NONE;BORDER-STYLE:SOLID;BORDER-COLOR:#000;}',
-    'h1{border-color:#000;border-style:solid;border-width:0 1px 1px 0;}'
+  passthroughCSS(
+    'h1{BORDER-WIDTH:1PX;BORDER-TOP-WIDTH:NONE;BORDER-LEFT-WIDTH:NONE;BORDER-STYLE:SOLID;BORDER-COLOR:#000;}'
   )
 );
 
@@ -554,17 +555,15 @@ test(
 
 test(
   'should produce the minimum css necessary (3)',
-  processCSS(
-    'h1{border-top:0 solid transparent;border-right:4em solid transparent;border-bottom:4em solid transparent;border-left:0 solid transparent;border-right-color:inherit}',
-    'h1{border-color:transparent;border-style:solid;border-width:0 4em 4em 0;border-right-color:inherit}'
+  passthroughCSS(
+    'h1{border-top:0 solid transparent;border-right:4em solid transparent;border-bottom:4em solid transparent;border-left:0 solid transparent;border-right-color:inherit}'
   )
 );
 
 test(
   'should produce the minimum css necessary (3) (uppercase)',
-  processCSS(
-    'h1{BORDER-TOP:0 SOLID TRANSPARENT;BORDER-RIGHT:4EM SOLID TRANSPARENT;BORDER-BOTTOM:4EM SOLID TRANSPARENT;BORDER-LEFT:0 SOLID TRANSPARENT;BORDER-RIGHT-COLOR:INHERIT}',
-    'h1{border-color:transparent;border-style:solid;border-width:0 4em 4em 0;BORDER-RIGHT-COLOR:INHERIT}'
+  passthroughCSS(
+    'h1{BORDER-TOP:0 SOLID TRANSPARENT;BORDER-RIGHT:4EM SOLID TRANSPARENT;BORDER-BOTTOM:4EM SOLID TRANSPARENT;BORDER-LEFT:0 SOLID TRANSPARENT;BORDER-RIGHT-COLOR:INHERIT}'
   )
 );
 
@@ -588,7 +587,7 @@ test(
   'should produce the minimum css necessary (5)',
   processCSS(
     'h1{border-spacing:50px 50px;border-top:0 solid transparent;border-right:4em solid transparent;border-bottom:4em solid transparent;border-left:0 solid transparent;border-right-color:inherit}',
-    'h1{border-spacing:50px;border-color:transparent;border-style:solid;border-width:0 4em 4em 0;border-right-color:inherit}'
+    'h1{border-spacing:50px;border-top:0 solid transparent;border-right:4em solid transparent;border-bottom:4em solid transparent;border-left:0 solid transparent;border-right-color:inherit}'
   )
 );
 
@@ -596,7 +595,7 @@ test(
   'should produce the minimum css necessary (5) (uppercase)',
   processCSS(
     'h1{BORDER-SPACING:50PX 50PX;BORDER-TOP:0 SOLID TRANSPARENT;BORDER-RIGHT:4EM SOLID TRANSPARENT;BORDER-BOTTOM:4EM SOLID TRANSPARENT;BORDER-LEFT:0 SOLID TRANSPARENT;BORDER-RIGHT-COLOR:INHERIT}',
-    'h1{BORDER-SPACING:50PX;border-color:transparent;border-style:solid;border-width:0 4em 4em 0;BORDER-RIGHT-COLOR:INHERIT}'
+    'h1{BORDER-SPACING:50PX;BORDER-TOP:0 SOLID TRANSPARENT;BORDER-RIGHT:4EM SOLID TRANSPARENT;BORDER-BOTTOM:4EM SOLID TRANSPARENT;BORDER-LEFT:0 SOLID TRANSPARENT;BORDER-RIGHT-COLOR:INHERIT}'
   )
 );
 
@@ -620,7 +619,7 @@ test(
   'should produce the minimum css necessary (7)',
   processCSS(
     'h1{border-top:none;border-right:none;border-bottom:1px solid #cacaca;border-left:none}',
-    'h1{border:none;border-bottom:1px solid #cacaca}'
+    'h1{border-color:currentcolor currentcolor #cacaca;border-style:none none solid;border-width:medium medium 1px}'
   )
 );
 
@@ -628,7 +627,7 @@ test(
   'should produce the minimum css necessary (7) (uppercase)',
   processCSS(
     'h1{BORDER-TOP:NONE;BORDER-RIGHT:NONE;BORDER-BOTTOM:1PX SOLID #CACACA;BORDER-LEFT:NONE}',
-    'h1{border:none;border-bottom:1px solid #cacaca}'
+    'h1{border-color:currentcolor currentcolor #cacaca;border-style:none none solid;border-width:medium medium 1px}'
   )
 );
 
@@ -636,7 +635,7 @@ test(
   'should produce the minimum css necessary (8)',
   processCSS(
     'h1{border-top:none;border-right:none;border-bottom:none;border-left:5px}',
-    'h1{border:none;border-left:5px}'
+    'h1{border-top:none;border-right:none;border-bottom:none;border-left:5px}'
   )
 );
 
@@ -644,7 +643,7 @@ test(
   'should produce the minimum css necessary (8) (uppercase)',
   processCSS(
     'h1{BORDER-TOP:NONE;BORDER-RIGHT:NONE;BORDER-BOTTOM:NONE;BORDER-LEFT:5PX}',
-    'h1{border:none;border-left:5PX}'
+    'h1{border-top:none;border-right:none;border-bottom:none;BORDER-LEFT:5PX}'
   )
 );
 
@@ -668,7 +667,7 @@ test(
   'should produce the minimum css necessary (10)',
   processCSS(
     'h1{border-bottom:none;border-left:1px solid transparent;border-right:1px solid transparent;border-top:2px solid transparent}',
-    'h1{border:1px solid transparent;border-top:2px solid transparent;border-bottom:none}'
+    'h1{border-color:transparent transparent currentcolor;border-style:solid solid none;border-width:2px 1px medium}'
   )
 );
 
@@ -676,7 +675,7 @@ test(
   'should produce the minimum css necessary (10) (uppercase)',
   processCSS(
     'h1{BORDER-BOTTOM:NONE;BORDER-LEFT:1PX SOLID TRANSPARENT;BORDER-RIGHT:1PX SOLID TRANSPARENT;BORDER-TOP:2PX SOLID TRANSPARENT}',
-    'h1{border:1px solid transparent;border-top:2px solid transparent;border-bottom:none}'
+    'h1{border-color:transparent transparent currentcolor;border-style:solid solid none;border-width:2px 1px medium}'
   )
 );
 
@@ -733,41 +732,36 @@ test(
 
 test(
   'should merge together all initial values',
-  processCSS(
-    'h1{border-color:initial;border-width:initial;border-style:initial}',
-    'h1{border:initial}'
+  passthroughCSS(
+    'h1{border-color:initial;border-width:initial;border-style:initial}'
   )
 );
 
 test(
   'should merge together all initial values (uppercase)',
-  processCSS(
-    'h1{BORDER-COLOR:initial;BORDER-WIDTH:initial;BORDER-STYLE:initial}',
-    'h1{border:initial}'
+  passthroughCSS(
+    'h1{BORDER-COLOR:initial;BORDER-WIDTH:initial;BORDER-STYLE:initial}'
   )
 );
 
 test(
   'should merge together all initial values 1 (uppercase)',
-  processCSS(
-    'h1{border-color:INITIAL;border-width:INITIAL;border-style:INITIAL}',
-    'h1{border:INITIAL}'
+  passthroughCSS(
+    'h1{border-color:INITIAL;border-width:INITIAL;border-style:INITIAL}'
   )
 );
 
 test(
   'should merge together all inherit values',
-  processCSS(
-    'h1{border-color:inherit;border-width:inherit;border-style:inherit}',
-    'h1{border:inherit}'
+  passthroughCSS(
+    'h1{border-color:inherit;border-width:inherit;border-style:inherit}'
   )
 );
 
 test(
   'should merge together all inherit values (uppercase)',
-  processCSS(
-    'h1{BORDER-COLOR:INHERIT;BORDER-WIDTH:INHERIT;BORDER-STYLE:INHERIT}',
-    'h1{border:INHERIT}'
+  passthroughCSS(
+    'h1{BORDER-COLOR:INHERIT;BORDER-WIDTH:INHERIT;BORDER-STYLE:INHERIT}'
   )
 );
 
@@ -775,7 +769,7 @@ test(
   'should preserve nesting level',
   processCSS(
     'section{h1{border-color:red;border-width:1px;border-style:solid}}',
-    'section{h1{border:1px solid red}}'
+    'section{h1{border-color:red;border-style:solid;border-width:1px}}'
   )
 );
 
@@ -783,7 +777,7 @@ test(
   'should preserve nesting level (uppercase)',
   processCSS(
     'section{h1{BORDER-COLOR:RED;BORDER-WIDTH:1PX;BORDER-STYLE:SOLID}}',
-    'section{h1{border:1px solid red}}'
+    'section{h1{border-color:red;border-style:solid;border-width:1px}}'
   )
 );
 
@@ -841,10 +835,7 @@ test(
 
 test(
   'save fallbacks should border-color (uppercase)',
-  processCSS(
-    'h1{BORDER-COLOR:DOTTED;BORDER-COLOR:VAR(--VARIABLE)}',
-    'h1{border-color:DOTTED;border-color:VAR(--VARIABLE)}'
-  )
+  passthroughCSS('h1{BORDER-COLOR:DOTTED;BORDER-COLOR:VAR(--VARIABLE)}')
 );
 
 test(
@@ -905,6 +896,13 @@ test(
 test(
   'should not explode border with revert properties (uppercase)',
   passthroughCSS('h1{BORDER:revert}')
+);
+
+test(
+  'should not explode border with revert-layer properties',
+  passthroughCSS(
+    'h1{border-width:1px;border-style:solid;border-color:revert-layer}'
+  )
 );
 
 for (const direction of topRightBottomLeft) {
@@ -1024,25 +1022,22 @@ test(
 
 test(
   'Should not merge if there is a shorthand property between them (#557) (1) (uppercase)',
-  processCSS(
-    'h1{BORDER:1PX SOLID #D3D6DB;BORDER:1PX SOLID VAR(--GRAY-LIGHTER);BORDER-LEFT-WIDTH:0;}',
-    'h1{border:1px solid #d3d6db;border:1px solid VAR(--GRAY-LIGHTER);border-left-width:0;}'
+  passthroughCSS(
+    'h1{BORDER:1PX SOLID #D3D6DB;BORDER:1PX SOLID VAR(--GRAY-LIGHTER);BORDER-LEFT-WIDTH:0;}'
   )
 );
 
 test(
   'Should not merge if there is a shorthand property between them (#557) (2)',
-  processCSS(
-    'h1{border-left-style:solid;border-left-color:#d3d6db;border:1px solid var(--gray-lighter);border-left-width:0;}',
-    'h1{border-left:1px solid #d3d6db;border:1px solid var(--gray-lighter);border-left-width:0;}'
+  passthroughCSS(
+    'h1{border-left-style:solid;border-left-color:#d3d6db;border:1px solid var(--gray-lighter);border-left-width:0;}'
   )
 );
 
 test(
   'Should not merge if there is a shorthand property between them (#557) (2) (uppercase)',
-  processCSS(
-    'h1{BORDER-LEFT-STYLE:SOLID;BORDER-LEFT-COLOR:#D3D6DB;BORDER:1PX SOLID VAR(--GRAY-LIGHTER);BORDER-LEFT-WIDTH:0;}',
-    'h1{border-left:1px solid #d3d6db;border:1px solid VAR(--GRAY-LIGHTER);border-left-width:0;}'
+  passthroughCSS(
+    'h1{BORDER-LEFT-STYLE:SOLID;BORDER-LEFT-COLOR:#D3D6DB;BORDER:1PX SOLID VAR(--GRAY-LIGHTER);BORDER-LEFT-WIDTH:0;}'
   )
 );
 
@@ -1084,10 +1079,7 @@ test(
 
 test(
   'should not drop border-width with custom property from border shorthand (#561) (uppercase)',
-  processCSS(
-    'h1{BORDER:VAR(--border-width) SOLID GREY}',
-    'h1{border:VAR(--border-width) solid grey}'
-  )
+  passthroughCSS('h1{BORDER:VAR(--border-width) SOLID GREY}')
 );
 
 test(
@@ -1115,9 +1107,8 @@ test(
 
 test(
   'Should correctly merge borders with custom properties (#572) (uppercase)',
-  processCSS(
-    'h1{BORDER:6PX SOLID RED;BORDER-TOP:6PX SOLID VAR(--mycolor);}',
-    'h1{border:6px solid red;border-top:6px solid VAR(--mycolor);}'
+  passthroughCSS(
+    'h1{BORDER:6PX SOLID RED;BORDER-TOP:6PX SOLID VAR(--mycolor);}'
   )
 );
 
@@ -1128,10 +1119,7 @@ test(
 
 test(
   'Should correctly merge borders with custom properties (#619) (1) (uppercase)',
-  processCSS(
-    'h1{BORDER:1PX SOLID;BORDER-COLOR:VAR(--COLOR-VAR)}',
-    'h1{border:1px solid;border-color:VAR(--COLOR-VAR)}'
-  )
+  passthroughCSS('h1{BORDER:1PX SOLID;BORDER-COLOR:VAR(--COLOR-VAR)}')
 );
 
 test(
@@ -1164,18 +1152,12 @@ test(
 
 test(
   'Should not throw error when a border property value is undefined (#639)',
-  processCSS(
-    'h1{border:2px solid #fff;border-color:inherit}',
-    'h1{border:2px solid;border-color:inherit}'
-  )
+  passthroughCSS('h1{border:2px solid #fff;border-color:inherit}')
 );
 
 test(
   'Should not throw error when a border property value is undefined (#639) (uppercase)',
-  processCSS(
-    'h1{BORDER:2PX SOLID #FFF;BORDER-COLOR:INHERIT}',
-    'h1{border:2px solid;BORDER-COLOR:INHERIT}'
-  )
+  passthroughCSS('h1{BORDER:2PX SOLID #FFF;BORDER-COLOR:INHERIT}')
 );
 
 test(
@@ -1185,10 +1167,7 @@ test(
 
 test(
   'Should preserve case of css custom properties #648 (uppercase)',
-  processCSS(
-    'h1{BORDER:1PX SOLID RGBA(VAR(--fooBar));}',
-    'h1{border:1px solid rgba(var(--fooBar));}'
-  )
+  passthroughCSS('h1{BORDER:1PX SOLID RGBA(VAR(--fooBar));}')
 );
 
 test(
@@ -1205,9 +1184,8 @@ test(
 
 test(
   'Should preserve case of css custom properties example 2',
-  processCSS(
-    'h1 {border:solid 2px var(--buttonBorderColor, var(--buttonBaseColor, #000));}',
-    'h1 {border:2px solid var(--buttonBorderColor, var(--buttonBaseColor, #000));}'
+  passthroughCSS(
+    'h1 {border:solid 2px var(--buttonBorderColor, var(--buttonBaseColor, #000));}'
   )
 );
 
@@ -1246,19 +1224,12 @@ test(
 
 test(
   'do not crash',
-  processCSS(
-    `.next-step-arrow[dir='rtl'] .next-step-item:before {
+  passthroughCSS(`.next-step-arrow[dir='rtl'] .next-step-item:before {
   border: 16px solid transparent;
   border-right: 16px solid transparent;
   border: var(--step-arrow-item-border-width, 16px) solid transparent;
   border-right-color: transparent;
-}`,
-    `.next-step-arrow[dir='rtl'] .next-step-item:before {
-  border: 16px solid transparent;
-  border-right: 16px solid transparent;
-  border: var(--step-arrow-item-border-width, 16px) solid transparent;
-}`
-  )
+}`)
 );
 
 test(
@@ -1298,6 +1269,119 @@ test(
   passthroughCSS(
     'h1{border:1px solid;border-color:var(--BORDER);border-left-style:none;}'
   )
+);
+
+test(
+  'should preserve border with inherit in the middle',
+  passthroughCSS(`div {
+  border: 1em solid;
+  border-color: inherit;
+  border-top: none;
+}`)
+);
+
+test(
+  'should not overwrite border-inline-start property',
+  passthroughCSS(
+    `h1{border-width: 0; border-inline-start-width: 1px; border-style: solid;}`
+  )
+);
+
+test(
+  'should preserve custom property declared between two border properties',
+  passthroughCSS(`.arrow {
+  border-style: solid;
+  border-width: 50px;
+  border-color: #fff transparent;
+  border-color: var(--col) transparent;
+  border-top: none;
+  height: 0;
+  width: 0;
+}`)
+);
+
+for (const [name, values] of [
+  ['custom properties', ['var(--a)', '2px', '3px', '4px']],
+  ['CSS-wide keywords', ['inherit', 'inherit', 'inherit', 'inherit']],
+  ['malformed values', ['1px 2px 3px', '2px', '3px', '4px']],
+  ['invalid values', ['solid', '2px', '3px', '4px']],
+  ['negative values', ['-1px', '2px', '3px', '4px']],
+  ['hacked values', ['_1px', '2px', '3px', '4px']],
+]) {
+  test(
+    `should preserve border radii with ${name}`,
+    passthroughCSS(
+      `a{border-top-left-radius:${values[0]};border-top-right-radius:${values[1]};border-bottom-right-radius:${values[2]};border-bottom-left-radius:${values[3]}}`
+    )
+  );
+}
+
+test(
+  'should preserve border radii with mixed importance',
+  passthroughCSS(
+    'a{border-top-left-radius:1px!important;border-top-right-radius:2px;border-bottom-right-radius:3px;border-bottom-left-radius:4px}'
+  )
+);
+
+test(
+  'should not override border image',
+  passthroughCSS(`.style {
+    border-image: linear-gradient(to right, rgba(230, 232, 235, 0), #e6e8eb) 0 0
+        0 100%;
+    border-left: 60px;
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 0;
+}`)
+);
+
+test(
+  'should preserve all axes',
+  passthroughCSS(`.selector  {
+  border-style: solid;
+  border-width: 0px 0px 5px 5px;
+  border-top-color: transparent;
+}`)
+);
+
+test(
+  'should not unsafely merge custom properties',
+  passthroughCSS(`.foo {
+  padding-top: var(--padding-top);
+  padding-bottom: var(--padding-bottom);
+  padding-left: var(--padding-left);
+  padding-right: var(--padding-right);
+}`)
+);
+
+test(
+  'should not incorrectly merge values containing inherit',
+  passthroughCSS(`a {
+  border-color: inherit;
+  border-style: inherit;
+  border-width: inherit;
+  border-width: 0;
+}`)
+);
+
+test(
+  `s`,
+  passthroughCSS(`.parent .child {
+    border-width: 1px;
+    border-style: solid;
+    border-color: transparent;
+    border-right-color: inherit;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+}`)
+);
+
+test(
+  'should not introdudce spurious currentcolor',
+  passthroughCSS(`div {
+    border: 1px solid;
+    border-color: red var(--grey);
+}`)
 );
 
 test('should handle empty border', processCSS('h1{border:;}', 'h1{border:;}'));

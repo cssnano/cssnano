@@ -62,7 +62,7 @@ test(
   'should merge identical border values',
   processCss(
     'h1{border-top:1px solid #000;border-bottom:1px solid #000;border-left:1px solid #000;border-right:1px solid #000}',
-    'h1{border:1px solid #000}'
+    'h1{border-color:#000;border-style:solid;border-width:1px}'
   )
 );
 
@@ -70,7 +70,7 @@ test(
   'should merge identical border values with !important',
   processCss(
     'h1{border-top:1px solid #000!important;border-bottom:1px solid #000!important;border-left:1px solid #000!important;border-right:1px solid #000!important}',
-    'h1{border:1px solid #000!important}'
+    'h1{border-color:#000!important;border-style:solid!important;border-width:1px!important}'
   )
 );
 
@@ -83,18 +83,18 @@ test(
 );
 
 test(
-  'should merge border values',
+  'should not merge border values into the border shorthand',
   processCss(
     'h1{border-color:red;border-width:1px;border-style:dashed}',
-    'h1{border:1px dashed red}'
+    'h1{border-color:red;border-style:dashed;border-width:1px}'
   )
 );
 
 test(
-  'should merge border values with !important',
+  'should not merge border values with !important',
   processCss(
     'h1{border-color:red!important;border-width:1px!important;border-style:dashed!important}',
-    'h1{border:1px dashed red!important}'
+    'h1{border-color:red!important;border-style:dashed!important;border-width:1px!important}'
   )
 );
 
@@ -102,7 +102,7 @@ test(
   'should merge border values with identical values for all sides',
   processCss(
     'h1{border-color:red red red red;border-width:1px 1px 1px 1px;border-style:solid solid solid solid}',
-    'h1{border:1px solid red}'
+    'h1{border-color:red;border-style:solid;border-width:1px}'
   )
 );
 
@@ -189,18 +189,16 @@ test(
 );
 
 test(
-  'should merge rules with custom props',
-  processCss(
-    'h1{padding-top:var(--variable);padding-right:var(--variable);padding-bottom:var(--variable);padding-left:var(--variable)}',
-    'h1{padding:var(--variable)}'
-  )
+  'should not merge rules with custom props',
+  ('h1{padding-top:var(--variable);padding-right:var(--variable);padding-bottom:var(--variable);padding-left:var(--variable)}',
+  'h1{padding-top:var(--variable);padding-right:var(--variable);padding-bottom:var(--variable);padding-left:var(--variable)}')
 );
 
 test(
-  'should merge props and dont remove fallbacks',
+  'should not remove fallbacks and not merge declarations with custom properties',
   processCss(
     'h1{padding-top:10px;padding-right:15px;padding-bottom:20px;padding-left:25px;padding-top:var(--variable);padding-right:var(--variable);padding-bottom:var(--variable);padding-left:var(--variable)}',
-    'h1{padding:10px 15px 20px 25px;padding:var(--variable)}'
+    'h1{padding:10px 15px 20px 25px;padding-top:var(--variable);padding-right:var(--variable);padding-bottom:var(--variable);padding-left:var(--variable)}'
   )
 );
 
