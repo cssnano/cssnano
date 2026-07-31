@@ -8,19 +8,19 @@ const getDecls = require('../getDecls.js');
 const getRules = require('../getRules.js');
 const getValue = require('../getValue.js');
 const mergeRules = require('../mergeRules.js');
-const minifyTrbl = require('../minifyTrbl.js');
-const minifyWsc = require('../minifyWsc.js');
+const minifyTopBottoRightLeft = require('../minifyTrbl.js');
+const minifyWidthStyleColor = require('../minifyWsc.js');
 const canMerge = require('../canMerge.js');
-const trbl = require('../trbl.js');
+const topRightBottomLeft = require('../trbl.js');
 const isCustomProp = require('../isCustomProp.js');
 const canExplode = require('../canExplode.js');
 const getLastNode = require('../getLastNode.js');
-const parseWsc = require('../parseWsc.js');
-const { isValidWsc } = require('../validateWsc.js');
+const parseWidthStyleColor = require('../parseWsc.js');
+const { isValidWidthStyleColor } = require('../validateWsc.js');
 
 /** @import {Declaration} from 'postcss'; */
 
-const wsc = ['width', 'style', 'color'];
+const widthStyleColor = ['width', 'style', 'color'];
 const defaults = ['medium', 'none', 'currentcolor'];
 const colorMightRequireFallback =
   /(hsla|rgba|color|hwb|lab|lch|oklab|oklch)\(/i;
@@ -45,11 +45,11 @@ function mapBorderProperty(value) {
   return borderProperty(value);
 }
 
-const directions = trbl.map(mapBorderProperty);
-const properties = wsc.map(mapBorderProperty);
+const directions = topRightBottomLeft.map(mapBorderProperty);
+const properties = widthStyleColor.map(mapBorderProperty);
 /** @type {string[]} */
 const directionalProperties = directions.reduce(
-  (prev, curr) => prev.concat(wsc.map((prop) => `${curr}-${prop}`)),
+  (prev, curr) => prev.concat(widthStyleColor.map((prop) => `${curr}-${prop}`)),
   /** @type {string[]} */ ([])
 );
 
@@ -94,7 +94,7 @@ function getColorValue(decl) {
     return decl.value;
   }
 
-  return parseWsc(decl.value)[2] || defaults[2];
+  return parseWidthStyleColor(decl.value)[2] || defaults[2];
 }
 
 /**
@@ -103,7 +103,7 @@ function getColorValue(decl) {
  * @return {string[]}
  */
 function diffingProps(values, nextValues) {
-  return wsc.reduce((prev, curr, i) => {
+  return widthStyleColor.reduce((prev, curr, i) => {
     if (values[i] === nextValues[i]) {
       return prev;
     }
@@ -132,7 +132,7 @@ function mergeRedundant({ values, nextValues, decl, nextDecl, index }) {
   }
 
   const prop = /** @type {string} */ (diff.pop());
-  const position = wsc.indexOf(prop);
+  const position = widthStyleColor.indexOf(prop);
 
   const prop1 = `${nextDecl.prop}-${prop}`;
   const prop2 = `border-${prop}`;
@@ -142,12 +142,17 @@ function mergeRedundant({ values, nextValues, decl, nextDecl, index }) {
   props[index] = nextValues[position];
 
   const borderValue2 = values.filter((e, i) => i !== position).join(' ');
-  const propValue2 = minifyTrbl(props);
+  const propValue2 = minifyTopBottoRightLeft(props);
 
-  const origLength = (minifyWsc(decl.value) + nextDecl.prop + nextDecl.value)
-    .length;
+  const origLength = (
+    minifyWidthStyleColor(decl.value) +
+    nextDecl.prop +
+    nextDecl.value
+  ).length;
   const newLength1 =
-    decl.value.length + prop1.length + minifyWsc(nextValues[position]).length;
+    decl.value.length +
+    prop1.length +
+    minifyWidthStyleColor(nextValues[position]).length;
   const newLength2 = borderValue2.length + prop2.length + propValue2.length;
 
   if (newLength1 < newLength2 && newLength1 < origLength) {
@@ -200,7 +205,7 @@ function explode(rule) {
 
     // border -> border-trbl
     if (prop === 'border') {
-      if (isValidWsc(parseWsc(decl.value))) {
+      if (isValidWidthStyleColor(parseWidthStyleColor(decl.value))) {
         directions.forEach((direction) => {
           insertCloned(
             /** @type {import('postcss').Rule} */ (decl.parent),
@@ -215,10 +220,10 @@ function explode(rule) {
 
     // border-trbl -> border-trbl-wsc
     if (directions.some((direction) => prop === direction)) {
-      let values = parseWsc(decl.value);
+      let values = parseWidthStyleColor(decl.value);
 
-      if (isValidWsc(values)) {
-        wsc.forEach((d, i) => {
+      if (isValidWidthStyleColor(values)) {
+        widthStyleColor.forEach((d, i) => {
           insertCloned(
             /** @type {import('postcss').Rule} */ (decl.parent),
             decl,
@@ -234,7 +239,7 @@ function explode(rule) {
     }
 
     // border-wsc -> border-trbl-wsc
-    wsc.some((style) => {
+    widthStyleColor.some((style) => {
       if (prop !== borderProperty(style)) {
         return false;
       }
@@ -248,7 +253,7 @@ function explode(rule) {
           /** @type {import('postcss').Rule} */ (decl.parent),
           decl,
           {
-            prop: borderProperty(trbl[i], style),
+            prop: borderProperty(topRightBottomLeft[i], style),
             value,
           }
         );
@@ -264,7 +269,7 @@ function explode(rule) {
  * @returns {[string,string,string]}
  */
 function retrieveWscValues(lastNode) {
-  const values = parseWsc(lastNode.value);
+  const values = parseWidthStyleColor(lastNode.value);
   return values;
 }
 
@@ -274,12 +279,12 @@ function retrieveWscValues(lastNode) {
  */
 function merge(rule) {
   // border-trbl-wsc -> border-trbl
-  trbl.forEach((direction) => {
+  topRightBottomLeft.forEach((direction) => {
     const prop = borderProperty(direction);
 
     mergeRules(
       rule,
-      wsc.map((style) => borderProperty(direction, style)),
+      widthStyleColor.map((style) => borderProperty(direction, style)),
       (rules, lastNode) => {
         if (canMerge(rules, false) && !rules.some(stylehacks.detect)) {
           insertCloned(
@@ -302,12 +307,12 @@ function merge(rule) {
   });
 
   // border-trbl-wsc -> border-wsc
-  wsc.forEach((style) => {
+  widthStyleColor.forEach((style) => {
     const prop = borderProperty(style);
 
     mergeRules(
       rule,
-      trbl.map((direction) => borderProperty(direction, style)),
+      topRightBottomLeft.map((direction) => borderProperty(direction, style)),
       (rules, lastNode) => {
         if (canMerge(rules) && !rules.some(stylehacks.detect)) {
           insertCloned(
@@ -315,7 +320,7 @@ function merge(rule) {
             lastNode,
             {
               prop,
-              value: minifyTrbl(rules.map(getValue).join(' ')),
+              value: minifyTopBottoRightLeft(rules.map(getValue).join(' ')),
             }
           );
 
@@ -342,13 +347,13 @@ function merge(rule) {
       return false;
     }
 
-    const parsed = values.map((value) => parseWsc(value));
+    const parsed = values.map((value) => parseWidthStyleColor(value));
 
-    if (!parsed.every(isValidWsc)) {
+    if (!parsed.every(isValidWidthStyleColor)) {
       return false;
     }
 
-    wsc.forEach((d, i) => {
+    widthStyleColor.forEach((d, i) => {
       const value = parsed.map((v) => v[i] || defaults[i]);
 
       if (canMergeValues(value)) {
@@ -357,7 +362,7 @@ function merge(rule) {
           lastNode,
           {
             prop: borderProperty(d),
-            value: minifyTrbl(
+            value: minifyTopBottoRightLeft(
               /** @type {[string, string, string, string]} */ (value)
             ),
           }
@@ -412,7 +417,7 @@ function merge(rule) {
 
       if (reduced[1]) {
         const value = first ? reduced[1] : reduced[0];
-        const prop = borderProperty(trbl[mapped.indexOf(value)]);
+        const prop = borderProperty(topRightBottomLeft[mapped.indexOf(value)]);
 
         rule.insertAfter(
           border,
@@ -503,9 +508,9 @@ function merge(rule) {
     }
 
     const values = rules.map((node) => {
-      const wscValue = parseWsc(node.value);
+      const wscValue = parseWidthStyleColor(node.value);
 
-      if (!isValidWsc(wscValue)) {
+      if (!isValidWidthStyleColor(wscValue)) {
         return node.value;
       }
 
@@ -522,7 +527,7 @@ function merge(rule) {
         lastNode,
         Object.assign(lastNode.clone(), {
           prop: 'border',
-          value: minifyWsc(first ? values[0] : values[1]),
+          value: minifyWidthStyleColor(first ? values[0] : values[1]),
         })
       );
 
@@ -533,7 +538,7 @@ function merge(rule) {
           lastNode,
           Object.assign(lastNode.clone(), {
             prop: prop,
-            value: minifyWsc(value),
+            value: minifyWidthStyleColor(value),
           })
         );
       }
@@ -549,7 +554,7 @@ function merge(rule) {
 
   // border-trbl-wsc + border-trbl (custom prop) -> border-trbl + border-trbl-wsc (custom prop)
   directions.forEach((direction) => {
-    wsc.forEach((style, i) => {
+    widthStyleColor.forEach((style, i) => {
       const prop = `${direction}-${style}`;
 
       mergeRules(rule, [direction, prop], (rules, lastNode) => {
@@ -557,9 +562,9 @@ function merge(rule) {
           return false;
         }
 
-        const values = parseWsc(lastNode.value);
+        const values = parseWidthStyleColor(lastNode.value);
 
-        if (!isValidWsc(values)) {
+        if (!isValidWidthStyleColor(values)) {
           return false;
         }
 
@@ -582,7 +587,7 @@ function merge(rule) {
               value: wscValue,
             }
           );
-          lastNode.value = minifyWsc(/** @type {any} */ (values));
+          lastNode.value = minifyWidthStyleColor(/** @type {any} */ (values));
 
           wscProp.remove();
 
@@ -594,7 +599,7 @@ function merge(rule) {
   });
 
   // border-wsc + border (custom prop) -> border + border-wsc (custom prop)
-  wsc.forEach((style, i) => {
+  widthStyleColor.forEach((style, i) => {
     const prop = borderProperty(style);
     mergeRules(rule, ['border', prop], (rules, lastNode) => {
       if (lastNode.prop !== 'border') {
@@ -602,7 +607,7 @@ function merge(rule) {
       }
       const values = retrieveWscValues(lastNode);
 
-      if (!isValidWsc(values)) {
+      if (!isValidWidthStyleColor(values)) {
         return false;
       }
 
@@ -625,7 +630,7 @@ function merge(rule) {
             value: wscValue,
           }
         );
-        lastNode.value = minifyWsc(/** @type {any} */ (values));
+        lastNode.value = minifyWidthStyleColor(/** @type {any} */ (values));
         wscProp.remove();
 
         return true;
@@ -640,7 +645,7 @@ function merge(rule) {
   while (decls.length) {
     const lastNode = decls.at(-1);
 
-    wsc.forEach((d, i) => {
+    widthStyleColor.forEach((d, i) => {
       const names = directions
         .filter((name) => name !== /** @type {Declaration} */ (lastNode).prop)
         .map((name) => `${name}-${d}`);
@@ -677,7 +682,7 @@ function merge(rule) {
         values[directions.indexOf(/** @type {Declaration} */ (lastNode).prop)] =
           lastNodeValue;
 
-        let value = minifyTrbl(values.join(' '));
+        let value = minifyTopBottoRightLeft(values.join(' '));
 
         if (
           filteredValues[0] === filteredValues[1] &&
@@ -731,10 +736,13 @@ function merge(rule) {
       return;
     }
 
-    const values = parseWsc(decl.value);
-    const nextValues = parseWsc(nextDecl.value);
+    const values = parseWidthStyleColor(decl.value);
+    const nextValues = parseWidthStyleColor(nextDecl.value);
 
-    if (!isValidWsc(values) || !isValidWsc(nextValues)) {
+    if (
+      !isValidWidthStyleColor(values) ||
+      !isValidWidthStyleColor(nextValues)
+    ) {
       return;
     }
 
@@ -750,9 +758,9 @@ function merge(rule) {
   });
 
   rule.walkDecls(borderStyleRegex, (decl) => {
-    let values = parseWsc(decl.value);
+    let values = parseWidthStyleColor(decl.value);
 
-    if (!isValidWsc(values)) {
+    if (!isValidWidthStyleColor(values)) {
       return;
     }
 
@@ -760,7 +768,7 @@ function merge(rule) {
     let dirs = [...directions];
 
     dirs.splice(position, 1);
-    wsc.forEach((d, i) => {
+    widthStyleColor.forEach((d, i) => {
       const props = dirs.map((dir) => `${dir}-${d}`);
 
       mergeRules(rule, [decl.prop, ...props], (rules) => {
@@ -808,7 +816,7 @@ function merge(rule) {
 
   // clean-up values
   rule.walkDecls(borderStyleRegex, (decl) => {
-    decl.value = minifyWsc(decl.value);
+    decl.value = minifyWidthStyleColor(decl.value);
   });
 
   // border-spacing-hv -> border-spacing
