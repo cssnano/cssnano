@@ -6,7 +6,7 @@ const namesPlugin = require('@colordx/core/plugins/names');
 
 extend([/** @type {any} */ (hwbPlugin), /** @type {any} */ (namesPlugin)]);
 
-/* Code derived from https://github.com/pigcan/is-color-stop */
+/* Code derived from https://www.npmjs.com/package/is-color-stop Licensed under MIT license */
 
 const lengthUnits = new Set([
   'PX',
