@@ -44,9 +44,9 @@
         "autoprefixer": "^10.5.4",
         "cssnano-preset-advanced": "workspace:^",
         "cssnano-preset-lite": "workspace:^",
-        "postcss": "^8.5.23"
+        "postcss": "^8.5.25"
     },
     "peerDependencies": {
-        "postcss": "^8.5.23"
+        "postcss": "^8.5.25"
     }
 }
