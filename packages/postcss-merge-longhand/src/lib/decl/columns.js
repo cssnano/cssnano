@@ -64,7 +64,7 @@ function explode(rule) {
       values.push(auto);
     }
 
-    values.forEach((value, i) => {
+    for (const [i, value] of values.entries()) {
       let prop = properties[1];
       const dimension = unit(value);
       if (value.toLowerCase() === auto) {
@@ -77,7 +77,7 @@ function explode(rule) {
         prop,
         value,
       });
-    });
+    }
 
     decl.remove();
   });

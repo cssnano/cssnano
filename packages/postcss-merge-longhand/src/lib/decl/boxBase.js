@@ -74,7 +74,7 @@ module.exports = (prop) => {
 
         const values = parseTrbl(decl.value);
 
-        trbl.forEach((direction, index) => {
+        for (const index of trbl.keys()) {
           insertCloned(
             /** @type {import('postcss').Rule} */ (decl.parent),
             decl,
@@ -83,7 +83,7 @@ module.exports = (prop) => {
               value: values[index],
             }
           );
-        });
+        }
 
         decl.remove();
       });
