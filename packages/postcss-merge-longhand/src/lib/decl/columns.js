@@ -10,7 +10,7 @@ const insertCloned = require('../insertCloned.js');
 const isCustomProp = require('../isCustomProp.js');
 const canExplode = require('../canExplode.js');
 
-const properties = ['column-width', 'column-count'];
+const columnProperties = ['column-width', 'column-count'];
 const auto = 'auto';
 const inherit = 'inherit';
 const columnsRegex = /^columns$/i;
@@ -65,12 +65,12 @@ function explode(rule) {
     }
 
     for (const [i, value] of values.entries()) {
-      let prop = properties[1];
+      let prop = columnProperties[1];
       const dimension = unit(value);
       if (value.toLowerCase() === auto) {
-        prop = properties[i];
+        prop = columnProperties[i];
       } else if (dimension && dimension.unit !== '') {
-        prop = properties[0];
+        prop = columnProperties[0];
       }
 
       insertCloned(/** @type {import('postcss').Rule} */ (decl.parent), decl, {
@@ -88,7 +88,7 @@ function explode(rule) {
  * @return {void}
  */
 function cleanup(rule) {
-  let decls = getDecls(rule, ['columns'].concat(properties));
+  let decls = getDecls(rule, new Set(['columns'].concat(columnProperties)));
 
   while (decls.length) {
     const lastNode = decls[decls.length - 1];
@@ -134,7 +134,7 @@ function cleanup(rule) {
  * @return {void}
  */
 function merge(rule) {
-  mergeRules(rule, properties, (rules, lastNode) => {
+  mergeRules(rule, columnProperties, (rules, lastNode) => {
     if (canMerge(rules) && !rules.some(stylehacks.detect)) {
       insertCloned(
         /** @type {import('postcss').Rule} */ (lastNode.parent),

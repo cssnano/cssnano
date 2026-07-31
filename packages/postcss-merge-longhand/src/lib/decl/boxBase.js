@@ -7,25 +7,31 @@ const parseTrbl = require('../parseTrbl.js');
 const insertCloned = require('../insertCloned.js');
 const mergeRules = require('../mergeRules.js');
 const mergeValues = require('../mergeValues.js');
-const trbl = require('../trbl.js');
+const topRightBottomLeft = require('../trbl.js');
 const isCustomProp = require('../isCustomProp.js');
 const canExplode = require('../canExplode.js');
 
 /**
- * @param {string} prop
+ * @param {string} prop A CSS property name
  * @return {{explode: (rule: import('postcss').Rule) => void, merge: (rule: import('postcss').Rule) => void}}
  */
 module.exports = (prop) => {
-  const properties = trbl.map((direction) => `${prop}-${direction}`);
+  const physicalBoxProperties = topRightBottomLeft.map(
+    (direction) => `${prop}-${direction}`
+  );
   /** @type {(rule: import('postcss').Rule) => void} */
   const cleanup = (rule) => {
-    let decls = getDecls(rule, [prop].concat(properties));
+    let boxPropertyDeclarations = getDecls(
+      rule,
+      new Set([prop].concat(physicalBoxProperties))
+    );
 
-    while (decls.length) {
-      const lastNode = decls[decls.length - 1];
+    while (boxPropertyDeclarations.length) {
+      const lastNode =
+        boxPropertyDeclarations[boxPropertyDeclarations.length - 1];
 
       // remove properties of lower precedence
-      const lesser = decls.filter(
+      const lesser = boxPropertyDeclarations.filter(
         (node) =>
           !stylehacks.detect(lastNode) &&
           !stylehacks.detect(node) &&
@@ -38,10 +44,12 @@ module.exports = (prop) => {
       for (const node of lesser) {
         node.remove();
       }
-      decls = decls.filter((node) => !lesser.includes(node));
+      boxPropertyDeclarations = boxPropertyDeclarations.filter(
+        (node) => !lesser.includes(node)
+      );
 
       // get duplicate properties
-      const duplicates = decls.filter(
+      const duplicates = boxPropertyDeclarations.filter(
         (node) =>
           !stylehacks.detect(lastNode) &&
           !stylehacks.detect(node) &&
@@ -54,13 +62,13 @@ module.exports = (prop) => {
       for (const node of duplicates) {
         node.remove();
       }
-      decls = decls.filter(
+      boxPropertyDeclarations = boxPropertyDeclarations.filter(
         (node) => node !== lastNode && !duplicates.includes(node)
       );
     }
   };
 
-  const processor = {
+  return {
     /** @type {(rule: import('postcss').Rule) => void} */
     explode: (rule) => {
       rule.walkDecls(new RegExp('^' + prop + '$', 'i'), (decl) => {
@@ -74,12 +82,12 @@ module.exports = (prop) => {
 
         const values = parseTrbl(decl.value);
 
-        for (const index of trbl.keys()) {
+        for (const index of topRightBottomLeft.keys()) {
           insertCloned(
             /** @type {import('postcss').Rule} */ (decl.parent),
             decl,
             {
-              prop: properties[index],
+              prop: physicalBoxProperties[index],
               value: values[index],
             }
           );
@@ -90,7 +98,7 @@ module.exports = (prop) => {
     },
     /** @type {(rule: import('postcss').Rule) => void} */
     merge: (rule) => {
-      mergeRules(rule, properties, (rules, lastNode) => {
+      mergeRules(rule, physicalBoxProperties, (rules, lastNode) => {
         if (canMerge(rules) && !rules.some(stylehacks.detect)) {
           insertCloned(
             /** @type {import('postcss').Rule} */ (lastNode.parent),
@@ -112,6 +120,4 @@ module.exports = (prop) => {
       cleanup(rule);
     },
   };
-
-  return processor;
 };

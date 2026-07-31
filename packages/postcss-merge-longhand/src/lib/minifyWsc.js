@@ -1,16 +1,16 @@
 'use strict';
-const parseWsc = require('./parseWsc.js');
+const parseWidthStyleColor = require('./parseWsc.js');
 const minifyTopBottomRightLeft = require('./minifyTrbl.js');
 const { isValidWidthStyleColor } = require('./validateWsc.js');
 
-const defaults = ['medium', 'none', 'currentcolor'];
+const defaultBorderValue = ['medium', 'none', 'currentcolor'];
 
-/** @type {(v: string) => string} */
-module.exports = (v) => {
-  const values = parseWsc(v);
+/** @type {(cssPropertyValue: string) => string} */
+module.exports = (cssPropertyValue) => {
+  const values = parseWidthStyleColor(cssPropertyValue);
 
   if (!isValidWidthStyleColor(values)) {
-    return minifyTopBottomRightLeft(v);
+    return minifyTopBottomRightLeft(cssPropertyValue);
   }
 
   const valuesWithSentinel = [...values, ''];
@@ -19,7 +19,7 @@ module.exports = (v) => {
     const cur = valuesWithSentinel[i];
     if (
       cur === undefined ||
-      (cur.toLowerCase() === defaults[i] &&
+      (cur.toLowerCase() === defaultBorderValue[i] &&
         (!i ||
           (valuesWithSentinel[i - 1] || '').toLowerCase() !==
             cur.toLowerCase()))

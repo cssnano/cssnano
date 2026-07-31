@@ -1,35 +1,32 @@
 'use strict';
-const isCustomProp = require('./isCustomProp');
+const isCustomProp = require('./isCustomProp.js');
 
 /** @type {(node: import('postcss').Declaration) => boolean} */
-const important = (node) => node.important;
+const important = (decl) => decl.important;
 /** @type {(node: import('postcss').Declaration) => boolean} */
-const unimportant = (node) => !node.important;
+const unimportant = (decl) => !decl.important;
 
 /* Cannot be combined with other values in shorthand
   https://www.w3.org/TR/css-cascade-5/#shorthand */
-const cssWideKeywords = ['inherit', 'initial', 'unset', 'revert'];
+const cssGlobalKeywords = require('./cssGlobalKeywords.js');
 /**
  * @type {(props: import('postcss').Declaration[], includeCustomProps?: boolean) => boolean}
  */
-module.exports = (props, includeCustomProps = true) => {
-  const uniqueProps = new Set(props.map((node) => node.value.toLowerCase()));
+module.exports = (declarations, includeCustomProps = true) => {
+  const uniqueProperties = new Set(
+    declarations.map((node) => node.value.toLowerCase())
+  );
 
-  if (uniqueProps.size > 1) {
-    for (const unmergeable of cssWideKeywords) {
-      if (uniqueProps.has(unmergeable)) {
+  if (uniqueProperties.size > 1) {
+    for (const unmergeable of cssGlobalKeywords.values()) {
+      if (uniqueProperties.has(unmergeable)) {
         return false;
       }
     }
   }
-
-  if (
-    includeCustomProps &&
-    props.some(isCustomProp) &&
-    !props.every(isCustomProp)
-  ) {
+  if (includeCustomProps && declarations.some(isCustomProp)) {
     return false;
   }
 
-  return props.every(unimportant) || props.every(important);
+  return declarations.every(unimportant) || declarations.every(important);
 };
