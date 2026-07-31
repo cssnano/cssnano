@@ -21,7 +21,7 @@ const widthStyleColor = [
   },
 ];
 
-widthStyleColor.forEach(({ property, fixture }) => {
+for (const { property, fixture } of widthStyleColor) {
   test(
     `should merge to form a border-trbl-${property} definition`,
     processCSS(
@@ -51,9 +51,9 @@ widthStyleColor.forEach(({ property, fixture }) => {
       `h1{border-${property}:${fixture.toUpperCase()}}`
     )
   );
-});
+}
 
-topRightBottomLeft.forEach((direction) => {
+for (const direction of topRightBottomLeft) {
   const value = widthStyleColor.reduce(
     (list, { fixture }) => [...list, fixture],
     []
@@ -86,7 +86,7 @@ topRightBottomLeft.forEach((direction) => {
       `h1{border-${direction}:${value[0]} ${value[1]} ${value[2]}}`
     )
   );
-});
+}
 
 test(
   'should merge identical border values',
@@ -907,7 +907,7 @@ test(
   passthroughCSS('h1{BORDER:revert}')
 );
 
-topRightBottomLeft.forEach((direction) => {
+for (const direction of topRightBottomLeft) {
   test(
     `should not explode border-${direction} with custom properties`,
     passthroughCSS(`h1{border-${direction}:var(--variable)}`)
@@ -917,7 +917,7 @@ topRightBottomLeft.forEach((direction) => {
     `should not explode border-${direction.toUpperCase()} with custom properties`,
     passthroughCSS(`h1{BORDER-${direction.toUpperCase()}:VAR(--variable)}`)
   );
-});
+}
 
 test(
   'should not explode custom properties with less than two concrete sides (1)',
