@@ -830,6 +830,37 @@ test(
 );
 
 test(
+  'should merge @media inside @layer with custom properties',
+  passthroughCSS(`@layer utilities {
+  .dark\\:border-zinc-700 {
+    @media (prefers-color-scheme: dark) {
+      border-color: var(--color-zinc-700);
+    }
+  }
+  .dark\\:bg-black {
+    @media (prefers-color-scheme: dark) {
+      background-color: var(--color-black);
+    }
+  }
+  .dark\\:bg-neutralDark {
+    @media (prefers-color-scheme: dark) {
+      background-color: var(--color-neutralDark);
+    }
+  }
+  .dark\\:text-gray-200 {
+    @media (prefers-color-scheme: dark) {
+      color: var(--color-gray-200);
+    }
+  }
+  .dark\\:text-white {
+    @media (prefers-color-scheme: dark) {
+      color: var(--color-white);
+    }
+  }
+}`)
+);
+
+test(
   'should not merge with different at-rule parent',
   passthroughCSS(
     [
