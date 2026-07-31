@@ -10,7 +10,7 @@
     "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info",
     "test": "pnpm test:coverage",
     "types": "tsc -b",
-    "all-publish": "pnpm publish -r"
+    "all-publish": "pnpm stage publish -r"
   },
   "workspaces": [
     "./packages/*"
