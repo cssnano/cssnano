@@ -26,6 +26,8 @@ const lengthUnits = new Set([
   '%',
 ]);
 
+const colorStopRegex = /^calc\(\S+\)$/g;
+
 /**
  * @param {string} input
  * @return {boolean}
@@ -39,17 +41,17 @@ function isCSSLengthUnit(input) {
  */
 function isStop(str) {
   if (str) {
-    let stop = false;
+    let isColorStop = false;
     const node = unit(str);
     if (node) {
       const number = Number(node.number);
       if (number === 0 || (!isNaN(number) && isCSSLengthUnit(node.unit))) {
-        stop = true;
+        isColorStop = true;
       }
     } else {
-      stop = /^calc\(\S+\)$/g.test(str);
+      isColorStop = colorStopRegex.test(str);
     }
-    return stop;
+    return isColorStop;
   }
   return true;
 }
