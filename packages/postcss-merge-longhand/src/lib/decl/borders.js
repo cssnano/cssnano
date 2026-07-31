@@ -265,15 +265,6 @@ function explode(rule) {
 }
 
 /**
- * @param {import ('postcss').Declaration} lastNode
- * @returns {[string,string,string]}
- */
-function retrieveWscValues(lastNode) {
-  const values = parseWidthStyleColor(lastNode.value);
-  return values;
-}
-
-/**
  * @param {import('postcss').Rule} rule
  * @return {void}
  */
@@ -608,7 +599,7 @@ function merge(rule) {
       if (lastNode.prop !== 'border') {
         return false;
       }
-      const values = retrieveWscValues(lastNode);
+      const values = parseWidthStyleColor(lastNode.value);
 
       if (!isValidWidthStyleColor(values)) {
         return false;
