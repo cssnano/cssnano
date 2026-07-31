@@ -6,7 +6,7 @@ const plugin = require('../src/index.js');
 const { processCSS } = processCSSFactory(plugin);
 
 function addTests(...tests) {
-  tests.forEach(({ message, fixture, expected }) => {
+  for (const { message, fixture, expected } of tests) {
     const isExpectedFunc = typeof expected === 'function';
 
     test(
@@ -45,7 +45,7 @@ function addTests(...tests) {
           : expected.replace(/box/gi, 'padding')
       )
     );
-  });
+  }
 }
 
 addTests(
