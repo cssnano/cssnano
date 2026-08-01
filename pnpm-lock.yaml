@@ -261,12 +261,6 @@ importers:
 
   packages/postcss-discard-overridden:
     devDependencies:
-      diff:
-        specifier: ^9.0.0
-        version: 9.0.0
-      picocolors:
-        specifier: ^1.1.1
-        version: 1.1.1
       postcss:
         specifier: ^8.5.25
         version: 8.5.25
@@ -1029,10 +1023,6 @@ packages:
     resolution: {integrity: sha512-HOJkrhaYsweh+W+e74Yn7YStZOilkoPb6fycpwNLKzSPtruFs48nYis0zy5yJz1+ktUhHxoRDJ27RQAWLIJVJw==}
     engines: {node: '>=16.0.0'}
 
-  diff@9.0.0:
-    resolution: {integrity: sha512-svtcdpS8CgJyqAjEQIXdb3OjhFVVYjzGAPO8WGCmRbrml64SPw/jJD4GoE98aR7r25A0XcgrK3F02yw9R/vhQw==}
-    engines: {node: '>=0.3.1'}
-
   directory-fonts-complete@1.2.0:
     resolution: {integrity: sha512-/d3kxZmVS+2v774mZ9SoU7H93TsAvQNpf4s/guQTva3pQSxtwUWN9dSF+Zls7sfA8ybReuR92SQMhxxUTSIGvA==}
 
@@ -1490,8 +1480,6 @@ snapshots:
       css-tree: 2.2.1
 
   deepmerge-ts@7.1.5: {}
-
-  diff@9.0.0: {}
 
   directory-fonts-complete@1.2.0:
     dependencies:
