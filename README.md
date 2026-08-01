@@ -1,4 +1,4 @@
-<h1 align="center">
+<h1 style="text-align: center">
     <br>
     <img width="360" src="./media/logo.svg" alt="cssnano">
     <br>
@@ -6,9 +6,9 @@
     <br>
 </h1>
 
-> A modular minifier, built on top of the [PostCSS](https://github.com/postcss/postcss) ecosystem.
+> A modular CSS minifier, built on top of the [PostCSS](https://github.com/postcss/postcss) ecosystem.
 
-<div align="center">
+<div style="text-align: center">
 
 [![Backers on Open Collective](https://img.shields.io/opencollective/backers/cssnano?logo=opencollective&logoColor=white)](#backers)
 [![Sponsors on Open Collective](https://img.shields.io/opencollective/sponsors/cssnano?logo=opencollective&logoColor=white)](#sponsors)
@@ -19,9 +19,9 @@
 
 </div>
 
-cssnano is a modern, modular compression tool written on top of the PostCSS
-ecosystem, which allows us to use a lot of powerful features in order to compact
-CSS appropriately.
+cssnano is a modern, modular CSSS compression tool written on top of the PostCSS
+ecosystem, which allows us to use a lot of powerful features in order to minify
+CSS.
 
 Our preset system allow you to load cssnano in a different configuration
 depending on your needs; the default preset performs safe transforms, whereas
@@ -29,7 +29,7 @@ the advanced preset performs more aggressive transforms that are safe only when
 your site meets the requirements; but regardless of the preset you choose, we
 handle more than whitespace transforms!
 
-Optimisations range from compressing colors & removing comments, to discarding
+Optimisations range from compressing colours & removing comments, to discarding
 overridden at-rules, normalising `unicode-range` descriptors, even mangling
 gradient parameters for a smaller output value! In addition, where it's made
 sense for a transform, we've added [Browserslist](https://github.com/ai/browserslist)
