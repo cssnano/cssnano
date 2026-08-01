@@ -42,9 +42,10 @@ function optimizeLinearGradient(node) {
   }
 
   /** @type {valueParser.Dimension | false | undefined} */
-  let lastStop = undefined;
+  let previousStop = undefined;
 
   for (const [index, arg] of args.entries()) {
+    /* Check whether the stop contains a position */
     if (arg.length !== 3) {
       continue;
     }
@@ -52,14 +53,14 @@ function optimizeLinearGradient(node) {
     const isFinalStop = index === args.length - 1;
     const thisStop = valueParser.unit(arg[2].value);
 
-    if (lastStop === undefined) {
-      lastStop = thisStop;
+    if (previousStop === undefined) {
+      previousStop = thisStop;
 
       if (
         !isFinalStop &&
-        lastStop &&
-        lastStop.number === '0' &&
-        lastStop.unit.toLowerCase() !== 'deg'
+        previousStop &&
+        previousStop.number === '0' &&
+        previousStop.unit.toLowerCase() !== 'deg'
       ) {
         arg[1].value = arg[2].value = '';
       }
@@ -67,11 +68,11 @@ function optimizeLinearGradient(node) {
       continue;
     }
 
-    if (lastStop && thisStop && isLessThan(lastStop, thisStop)) {
+    if (previousStop && thisStop && isLessThan(previousStop, thisStop)) {
       arg[2].value = '0';
     }
 
-    lastStop = thisStop;
+    previousStop = thisStop;
 
     if (isFinalStop && arg[2].value === '100%') {
       arg[1].value = arg[2].value = '';
@@ -90,7 +91,7 @@ function optimizeLinearGradient(node) {
 function optimizeRadialGradient(node) {
   const args = getArguments(node);
   /** @type {valueParser.Dimension | false | undefined} */
-  let lastStop = undefined;
+  let previousStop = undefined;
 
   const hasAt = args[0].find((n) => n.value.toLowerCase() === 'at');
 
@@ -101,17 +102,17 @@ function optimizeRadialGradient(node) {
 
     const thisStop = valueParser.unit(arg[2].value);
 
-    if (!lastStop) {
-      lastStop = thisStop;
+    if (!previousStop) {
+      previousStop = thisStop;
 
       continue;
     }
 
-    if (lastStop && thisStop && isLessThan(lastStop, thisStop)) {
+    if (previousStop && thisStop && isLessThan(previousStop, thisStop)) {
       arg[2].value = '0';
     }
 
-    lastStop = thisStop;
+    previousStop = thisStop;
   }
 
   return false;
@@ -126,7 +127,7 @@ function optimizeRadialGradient(node) {
 function optimizeWebkitRadialGradient(node) {
   const args = getArguments(node);
   /** @type {valueParser.Dimension | false | undefined} */
-  let lastStop = undefined;
+  let previousStop = undefined;
 
   for (const arg of args) {
     let color;
@@ -166,17 +167,17 @@ function optimizeWebkitRadialGradient(node) {
 
     const thisStop = valueParser.unit(arg[2].value);
 
-    if (!lastStop) {
-      lastStop = thisStop;
+    if (!previousStop) {
+      previousStop = thisStop;
 
       continue;
     }
 
-    if (lastStop && thisStop && isLessThan(lastStop, thisStop)) {
+    if (previousStop && thisStop && isLessThan(previousStop, thisStop)) {
       arg[2].value = '0';
     }
 
-    lastStop = thisStop;
+    previousStop = thisStop;
   }
 
   return false;
