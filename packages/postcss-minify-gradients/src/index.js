@@ -3,17 +3,19 @@ const valueParser = require('postcss-value-parser');
 const { getArguments } = require('cssnano-utils');
 const isColorStop = require('./isColorStop.js');
 
-const angles = {
-  top: '0deg',
-  right: '90deg',
-  bottom: '180deg',
-  left: '270deg',
-};
+const directionsToAngles = new Map([
+  ['top', '0deg'],
+  ['right', '90deg'],
+  ['bottom', '180deg'],
+  ['left', '270deg'],
+]);
 
 /**
+ * Returns whether b is less than a.
+ *
  * @param {valueParser.Dimension} a
  * @param {valueParser.Dimension} b
- * @return {boolean}
+ * @returns {boolean}
  */
 function isLessThan(a, b) {
   return (
@@ -23,24 +25,29 @@ function isLessThan(a, b) {
 }
 
 /**
- * Optimizes a linear gradient.
+ * Shortens a direction like `to left top` into an angle.
  *
- * @param {import('postcss-value-parser').ParsedValue | import('postcss-value-parser').FunctionNode} node
+ * @param {import('postcss-value-parser').FunctionNode} node
+ * @returns {void}
+ */
+function shortenDirection(node) {
+  node.nodes = node.nodes.slice(2);
+  node.nodes[0].value = /** @type {string} */ (
+    directionsToAngles.get(node.nodes[0].value.toLowerCase())
+  );
+}
+
+/**
+ * Optimises a linear gradient.
+ *
+ * @param {import('postcss-value-parser').FunctionNode} node
  * @returns {false}
  */
 function optimizeLinearGradient(node) {
   const args = getArguments(node);
-
   if (node.nodes[0].value.toLowerCase() === 'to' && args[0].length === 3) {
-    node.nodes = node.nodes.slice(2);
-    node.nodes[0].value =
-      angles[
-        /** @type {'top'|'right'|'bottom'|'left'}*/ (
-          node.nodes[0].value.toLowerCase()
-        )
-      ];
+    shortenDirection(node);
   }
-
   /** @type {valueParser.Dimension | false | undefined} */
   let previousStop = undefined;
 
@@ -83,7 +90,7 @@ function optimizeLinearGradient(node) {
 }
 
 /**
- * Optimizes a radial gradient.
+ * Optimises a radial gradient.
  *
  * @param {import('postcss-value-parser').ParsedValue | import('postcss-value-parser').FunctionNode} node
  * @returns {false}
@@ -119,7 +126,7 @@ function optimizeRadialGradient(node) {
 }
 
 /**
- * Optimizes a radial gradient.
+ * Optimises a radial gradient.
  *
  * @param {import('postcss-value-parser').ParsedValue | import('postcss-value-parser').FunctionNode} node
  * @returns {false}
