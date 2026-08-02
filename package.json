@@ -2,8 +2,8 @@
   "name": "cssnano-core",
   "private": true,
   "scripts": {
-    "lint": "pnpm types && oxlint .",
-    "fixlint": "oxfmt . && pnpm lint -- --fix",
+    "lint": "pnpm types && oxlint . && oxfmt --check",
+    "fixlint": "oxfmt . && pnpm oxlint --fix .",
     "build:integration": "node ./util/buildFrameworks.mjs",
     "pretest": "pnpm lint",
     "test:only": "node --test",
