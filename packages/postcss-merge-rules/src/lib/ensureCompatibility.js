@@ -31,10 +31,10 @@ const inputPlaceholderRegex = /-ms-input-placeholder/i;
  * Internet Explorer use :-ms-input-placeholder.
  * Microsoft Edge use ::-ms-input-placeholder.
  *
- * @type {(selector: string) => number}
+ * @type {(selector: string) => boolean}
  */
 const findMsInputPlaceholder = (selector) =>
-  ~selector.search(inputPlaceholderRegex);
+  inputPlaceholderRegex.test(selector);
 
 /**
  * @param {string[]} selectorsA
