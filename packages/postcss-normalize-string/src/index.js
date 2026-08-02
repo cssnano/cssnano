@@ -150,6 +150,7 @@ function parse(str) {
        * We need to fall through here to handle the token as
        * a whole word. The missing 'break' is intentional.
        */
+      // oxlint-disable-next-line no-fallthrough
       default:
         WORD_END.lastIndex = pos + 1;
         WORD_END.test(str);
