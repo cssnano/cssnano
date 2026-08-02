@@ -49,7 +49,7 @@ const regexSimpleEscapeCharacters = /[ !"#$%&'()*+,.\/;<=>?@\[\\\]^`{|}~]/;
  * @param {boolean} escapeForString
  * @return {string}
  */
-function escape(string, escapeForString) {
+function customEscape(string, escapeForString) {
   let counter = 0;
   let character;
   let charCode;
@@ -122,7 +122,7 @@ function escapeIdentifierSequence(string) {
       continue;
     }
 
-    escapeResult = escape(subString, false);
+    escapeResult = customEscape(subString, false);
 
     if (regexIdentifierCharacter.test(subString)) {
       // the font family name part consists of allowed characters exclusively
@@ -138,7 +138,7 @@ function escapeIdentifierSequence(string) {
           // identifier rather than escaping the start characters of the
           // second identifier
           result[index - 2] += '\\';
-          result.push(escape(subString, true));
+          result.push(customEscape(subString, true));
         }
       } else {
         // the font family name part doesn’t start with two hyphens, a digit,
