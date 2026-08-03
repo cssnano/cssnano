@@ -12,7 +12,7 @@
     "@codemirror/lang-css": "^6.3.1",
     "@codemirror/language": "^6.12.4",
     "@codemirror/state": "^6.7.1",
-    "@codemirror/view": "^6.43.6",
+    "@codemirror/view": "^6.43.7",
     "buffer": "^6.0.3",
     "cssnano-preset-advanced": "link:../packages/cssnano-preset-advanced",
     "cssnano-preset-default": "link:../packages/cssnano-preset-default",
@@ -28,8 +28,8 @@
     "cssnano": "link:../packages/cssnano",
     "markdown-it": "^14.3.0",
     "markdown-it-anchor": "^9.2.1",
-    "smol-toml": "^1.7.0",
-    "webpack": "^5.109.0",
-    "webpack-cli": "^7.2.1"
+    "smol-toml": "^1.7.1",
+    "webpack": "^5.109.2",
+    "webpack-cli": "^7.2.2"
   }
 }
