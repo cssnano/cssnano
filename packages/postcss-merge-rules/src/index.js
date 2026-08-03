@@ -1,6 +1,9 @@
 'use strict';
-const { dirname } = require('node:path');
-const browserslist = require('browserslist');
+
+const getBrowsersList = require('#getBrowsersList');
+
+/** @import browserslist from 'browserslist' */
+
 const { sameParent } = require('cssnano-utils');
 const {
   ensureCompatibility,
@@ -601,16 +604,7 @@ function pluginCreator(opts = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(
-        /** @type {Options} */ (opts).overrideBrowserslist,
-        {
-          stats: /** @type {Options} */ (opts).stats || stats,
-          path:
-            /** @type {Options} */ (opts).path ||
-            dirname(from || file || __filename),
-          env: /** @type {Options} */ (opts).env || env,
-        }
-      );
+      const browsers = getBrowsersList(opts, stats, from, file, env);
 
       const compatibilityCache = new Map();
 

@@ -2,7 +2,7 @@ declare const _exports: import("postcss").PluginCreator<Options> & {
     detect: (node: import('postcss').Node) => boolean;
 };
 export = _exports;
-import browserslist = require('browserslist');
+import type browserslist from 'browserslist';
 export type AutoprefixerOptions = {
     overrideBrowserslist?: string | string[];
 };

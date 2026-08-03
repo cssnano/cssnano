@@ -1,10 +1,12 @@
 'use strict';
-const { dirname } = require('node:path');
-const browserslist = require('browserslist');
+
+const getBrowsersList = require('#getBrowsersList');
 const { isSupported } = require('caniuse-api');
 const parser = require('postcss-selector-parser');
 const canUnquote = require('./lib/canUnquote.js');
 const foldToIs = require('./lib/foldToIs.js');
+
+/** @import browserslist from 'browserslist' */
 
 const pseudoElements = new Set([
   '::before',
@@ -233,11 +235,8 @@ function pluginCreator(opts) {
       let isFoldEnabled = resolved.convertToIs !== false;
       if (isFoldEnabled) {
         const { stats, env, from, file } = result.opts || {};
-        const browsers = browserslist(resolved.overrideBrowserslist, {
-          stats: resolved.stats || stats,
-          path: resolved.path || dirname(from || file || __filename),
-          env: resolved.env || env,
-        });
+        const browsers = getBrowsersList(resolved, stats, from, file, env);
+
         isFoldEnabled = isSupported('css-matches-pseudo', browsers);
       }
 

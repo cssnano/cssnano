@@ -10,9 +10,19 @@
     "./src": "./src/index.js",
     "./src/index": "./src/index.js",
     "./src/index.js": "./src/index.js",
-    "./src/lib/*": "./src/lib/*.js",
-    "./src/lib/*.js": "./src/lib/*.js",
+    "./src/lib/canUnquote": "./src/lib/canUnquote.js",
+    "./src/lib/canUnquote.js": "./src/lib/canUnquote.js",
+    "./src/lib/foldTols": "./src/lib/foldTols.js",
+    "./src/lib/foldTols.js": "./src/lib/foldTols.js",
+    "./src/lib/foldTolsHelpers": "./src/lib/foldTolsHelpers.js",
+    "./src/lib/foldTolsHelpers.js": "./src/lib/foldTolsHelpers.js",
     "./package.json": "./package.json"
+  },
+  "imports": {
+    "#getBrowsersList": {
+      "node": "./src/lib/computeBrowsersToSupport.js",
+      "default": "./src/lib/getBrowsersForWebBuild.js"
+    }
   },
   "files": [
     "src",

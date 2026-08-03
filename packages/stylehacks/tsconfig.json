@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src/*", "src/dictionary/*", "src/plugins/*"],
+  "include": ["src/*", "src/dictionary/*", "src/plugins/*", "src/lib/*"],
   "compilerOptions": {
     "composite": true,
     "rootDir": "src/",

@@ -12,6 +12,12 @@
     "./src/index.js": "./src/index.js",
     "./package.json": "./package.json"
   },
+  "imports": {
+    "#getBrowsersList": {
+      "node": "./src/lib/computeBrowsersToSupport.js",
+      "default": "./src/lib/getBrowsersForWebBuild.js"
+    }
+  },
   "files": [
     "src",
     "LICENSE-MIT",

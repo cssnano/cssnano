@@ -1,8 +1,10 @@
 'use strict';
-const { dirname } = require('node:path');
-const browserslist = require('browserslist');
+
+const getBrowsersList = require('#getBrowsersList');
 const valueParser = require('postcss-value-parser');
 const { getArguments } = require('cssnano-utils');
+
+/** @import browserslist from 'browserslist' */
 
 /**
  * Return the greatest common divisor
@@ -153,16 +155,7 @@ function pluginCreator(options = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(
-        /** @type {Options} */ (options).overrideBrowserslist,
-        {
-          stats: /** @type {Options} */ (options).stats || stats,
-          path:
-            /** @type {Options} */ (options).path ||
-            dirname(from || file || __filename),
-          env: /** @type {Options} */ (options).env || env,
-        }
-      );
+      const browsers = getBrowsersList(options, stats, from, file, env);
 
       const hasAllBug = browsers.some((browser) => allBugBrowers.has(browser));
 

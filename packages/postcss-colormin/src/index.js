@@ -1,9 +1,11 @@
 'use strict';
-const { dirname } = require('node:path');
-const browserslist = require('browserslist');
+
+const getBrowsersList = require('#getBrowsersList');
 const { isSupported } = require('caniuse-api');
 const valueParser = require('postcss-value-parser');
 const minifyColor = require('./minifyColor');
+
+/** @import browserslist from 'browserslist' */
 
 const rgbOrHslRegex = /^(rgb|hsl)a?$/i;
 const notMinifiableRegex =
@@ -133,17 +135,7 @@ function pluginCreator(config = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(
-        /** @type Options */ (config).overrideBrowserslist,
-        {
-          stats: /** @type Options */ (config).stats || stats,
-          path:
-            /** @type Options */ (config).path ||
-            dirname(from || file || __filename),
-          env: /** @type Options */ (config).env || env,
-        }
-      );
-
+      const browsers = getBrowsersList(config, stats, from, file, env);
       const cache = new Map();
       const options = addPluginDefaults(config, browsers);
 

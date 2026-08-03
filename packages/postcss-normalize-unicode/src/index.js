@@ -1,7 +1,9 @@
 'use strict';
-const { dirname } = require('node:path');
-const browserslist = require('browserslist');
+
+const getBrowsersList = require('#getBrowsersList');
 const valueParser = require('postcss-value-parser');
+
+/** @import browserslist from 'browserslist' */
 
 const regexLowerCaseUPrefix = /^u(?=\+)/;
 const unicodeRangeRegex = /^unicode-range$/i;
@@ -67,7 +69,7 @@ function mergeRangeBounds(left, right) {
  * @return {boolean}
  */
 function hasLowerCaseUPrefixBug(browser) {
-  return browserslist('ie <=11, edge <= 15').includes(browser);
+  return getBrowsersList('ie <=11, edge <= 15').includes(browser);
 }
 
 /**
@@ -110,11 +112,7 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(opts.overrideBrowserslist, {
-        stats: opts.stats || stats,
-        path: opts.path || dirname(from || file || __filename),
-        env: opts.env || env,
-      });
+      const browsers = getBrowsersList(null, opts, stats, from, file, env);
 
       const cache = new Map();
       const isLegacy = browsers.some(hasLowerCaseUPrefixBug);

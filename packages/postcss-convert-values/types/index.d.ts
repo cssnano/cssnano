@@ -1,7 +1,7 @@
 declare const _exports: import("postcss").PluginCreator<Options>;
 export = _exports;
-import browserslist = require('browserslist');
 import convert = require('./lib/convert.js');
+import type browserslist from 'browserslist';
 export type ConvertOptions = Parameters<typeof convert>[2];
 export type AutoprefixerOptions = {
     overrideBrowserslist?: string | string[];
