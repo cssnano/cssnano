@@ -2,8 +2,16 @@
   "name": "postcss-minify-font-values",
   "version": "8.0.1",
   "description": "Minify font declarations with PostCSS",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/lib/*": "./src/lib/*.js",
+    "./src/lib/*.js": "./src/lib/*.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "src",
     "LICENSE",

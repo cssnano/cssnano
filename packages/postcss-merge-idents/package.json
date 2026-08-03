@@ -2,8 +2,16 @@
   "name": "postcss-merge-idents",
   "version": "8.0.1",
   "description": "Merge keyframe and counter style identifiers.",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/index.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "src",
     "LICENSE-MIT",

@@ -2,8 +2,16 @@
   "name": "postcss-merge-rules",
   "version": "8.0.1",
   "description": "Merge CSS rules with PostCSS.",
-  "types": "types/index.d.ts",
-  "main": "src/index.js",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/lib/ensureCompatibility.js": "./src/lib/ensureCompatibility.js",
+    "./src/lib/ensureCompatibility": "./src/lib/ensureCompatibility.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "LICENSE-MIT",
     "src",

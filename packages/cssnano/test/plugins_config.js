@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const litePreset = require('cssnano-preset-lite');
 const autoprefixer = require('autoprefixer');
-const cssnano = require('..');
+const cssnano = require('../src/index.js');
 
 test('should run the plugins in the preset', () => {
   const preset = litePreset();

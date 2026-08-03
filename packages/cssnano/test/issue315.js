@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const fontMagician = require('postcss-font-magician');
-const cssnano = require('..');
+const cssnano = require('../src/index.js');
 
 test('should work with postcss-font-magician', () => {
   const css = `

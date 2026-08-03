@@ -2,7 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const postcss = require('postcss');
-const nano = require('..');
+const nano = require('../src/index.js');
 
 function pluginMacro(instance) {
   const css = 'h1 { color: #ffffff }';

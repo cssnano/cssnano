@@ -7,7 +7,7 @@ const {
   loadPreset,
   processCSSWithPresetFactory,
 } = require('../../../util/integrationTestHelpers.js');
-const preset = require('..');
+const preset = require('../src/index.js');
 
 const withDefaults = processCSSWithPresetFactory(preset);
 const withBrowserslist = processCSSWithPresetFactory(

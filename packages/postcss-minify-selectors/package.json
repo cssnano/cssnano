@@ -2,8 +2,18 @@
   "name": "postcss-minify-selectors",
   "version": "8.0.2",
   "description": "Minify selectors with PostCSS.",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/index.js",
+    "./src/lib/*": "./src/lib/*.js",
+    "./src/lib/*.js": "./src/lib/*.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "src",
     "LICENSE-MIT",

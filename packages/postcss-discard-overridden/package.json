@@ -2,8 +2,16 @@
   "name": "postcss-discard-overridden",
   "version": "8.0.1",
   "description": "PostCSS plugin to discard overridden @keyframes or @counter-style.",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/index.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "LICENSE",
     "src",

@@ -2,8 +2,18 @@
   "name": "postcss-svgo",
   "version": "8.0.1",
   "description": "Optimise inline SVG with PostCSS.",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/index.js",
+    "./src/lib/url": "./src/lib/url.js",
+    "./src/lib/url.js": "./src/lib/url.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "LICENSE-MIT",
     "src",

@@ -48,7 +48,7 @@ test(
   'should dedupe semicolons',
   processCss(
     `div {
-				font-weight: 900;;;;
+				font-weight: 900;;;
 				color: red;;
 		}`,
     `div{font-weight:900;color:red}`

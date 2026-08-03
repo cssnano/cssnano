@@ -2,8 +2,18 @@
   "name": "postcss-reduce-initial",
   "version": "8.0.1",
   "description": "Reduce initial definitions to the actual initial value, where possible.",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/index.js",
+    "./src/lib/ignoreProps": "./src/lib/ignoreProps.js",
+    "./src/lib/ignoreProps.js": "./src/lib/ignoreProps.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "src",
     "LICENSE-MIT",

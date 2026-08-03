@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const {
   processCSSWithPresetFactory,
 } = require('../../../util/integrationTestHelpers.js');
-const preset = require('..');
+const preset = require('../src/index.js');
 
 const { processCSS } = processCSSWithPresetFactory(preset);
 

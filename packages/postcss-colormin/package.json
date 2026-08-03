@@ -2,8 +2,18 @@
   "name": "postcss-colormin",
   "version": "8.0.1",
   "description": "Minify colors in your CSS files with PostCSS.",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/*.js",
+    "./src/minifyColor": "./src/minifyColor.js",
+    "./src/minifyColor.js": "./src/minifyColor.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "src",
     "LICENSE-MIT",

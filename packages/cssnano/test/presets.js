@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const advancedPreset = require('cssnano-preset-advanced');
 const defaultPreset = require('cssnano-preset-default');
-const cssnano = require('..');
+const cssnano = require('../src/index.js');
 
 test('should accept an invoked preset', () => {
   const preset = defaultPreset({ normalizeCharset: { add: true } });

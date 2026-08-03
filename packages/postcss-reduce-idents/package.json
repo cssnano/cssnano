@@ -2,8 +2,18 @@
   "name": "postcss-reduce-idents",
   "version": "8.0.1",
   "description": "Reduce custom identifiers with PostCSS.",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/*.js",
+    "./src/lib/*": "./src/lib/*.js",
+    "./src/lib/*.js": "./src/lib/*.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "src",
     "LICENSE-MIT",
