@@ -66,6 +66,7 @@ function optimizeLinearGradient(node) {
       if (
         !isFinalStop &&
         previousStop &&
+        args.length < 4 &&
         previousStop.number === '0' &&
         previousStop.unit.toLowerCase() !== 'deg'
       ) {
