@@ -160,6 +160,14 @@ test(
 );
 
 test(
+  'linear: should correctly minimize multiple stops without position',
+  processCSS(
+    'border-image-source: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15), #FFFAB8 0%, #D39710 100%)',
+    'border-image-source: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15), #FFFAB8 0%, #D39710)'
+  )
+);
+
+test(
   'repeating-radial: should reduce length values if they are the same',
   processCSS(
     'background:repeating-radial-gradient(#121,#121 5px,#ffe500 5px,#ffe500 10px)',
