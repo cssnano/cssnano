@@ -2,8 +2,18 @@
   "name": "postcss-convert-values",
   "version": "8.0.1",
   "description": "Convert values with PostCSS (e.g. ms -> s)",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/index.js",
+    "./src/lib/convert": "./src/lib/convert.js",
+    "./src/lib/convert.js": "./src/lib/convert.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "LICENSE-MIT",
     "src",

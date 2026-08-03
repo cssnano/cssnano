@@ -2,6 +2,16 @@
   "name": "postcss-normalize-charset",
   "version": "8.0.1",
   "description": "Add necessary or remove extra charset with PostCSS",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/index.js",
+    "./package.json": "./package.json"
+  },
   "keywords": [
     "postcss",
     "css",
@@ -20,8 +30,6 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "homepage": "https://github.com/cssnano/cssnano",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
   "engines": {
     "node": "^22.11.0 || ^24.11.0 || >=26.0"
   },

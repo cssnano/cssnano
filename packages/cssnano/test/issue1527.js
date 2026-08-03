@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const preset = require('cssnano-preset-default');
-const nano = require('..');
+const nano = require('../src/index.js');
 
 const fixture = `
 .b {

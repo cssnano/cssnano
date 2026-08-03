@@ -2,7 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const postcss = require('postcss');
-const stylehacks = require('..');
+const stylehacks = require('../src/index.js');
 
 const insertZoom = () => {
   return {

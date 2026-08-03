@@ -2,8 +2,16 @@
     "name": "cssnano",
     "version": "8.0.2",
     "description": "A modular minifier, built on top of the PostCSS ecosystem.",
-    "main": "src/index.js",
-    "types": "types/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./types/index.d.ts",
+        "default": "./src/index.js"
+      },
+      "./src": "./src/index.js",
+      "./src/index": "./src/index.js",
+      "./src/index.js": "./src/index.js",
+      "./package.json": "./package.json"
+    },
     "funding": {
         "type": "opencollective",
         "url": "https://opencollective.com/cssnano"

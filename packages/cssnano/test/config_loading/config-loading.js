@@ -5,10 +5,10 @@ const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const litePreset = require('cssnano-preset-lite');
 const defaultPreset = require('cssnano-preset-default');
-const cssnano = require('../..');
+const cssnano = require('../../src/index.js');
 
 /* The configuration is loaded relative to the current working directory,
-  when running the repository tests, the working directory is 
+  when running the repository tests, the working directory is
   the repostiory root, so we need to change it to avoid having to place
   the configuration file for this test in the repo root */
 let originalWorkingDir;

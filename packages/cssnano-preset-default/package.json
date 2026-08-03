@@ -1,9 +1,17 @@
 {
   "name": "cssnano-preset-default",
   "version": "8.0.2",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
   "description": "Safe defaults for cssnano which require minimal configuration.",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/index.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "LICENSE-MIT",
     "src",

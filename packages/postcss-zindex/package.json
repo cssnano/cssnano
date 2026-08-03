@@ -2,8 +2,18 @@
   "name": "postcss-zindex",
   "version": "8.0.1",
   "description": "Reduce z-index values with PostCSS.",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/index.js",
+    "./src/lib/layerCache": "./src/lib/layerCache.js",
+    "./src/lib/layerCache.js": "./src/lib/layerCache.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "LICENSE-MIT",
     "src",

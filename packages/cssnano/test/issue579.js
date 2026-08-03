@@ -2,7 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const postcss = require('postcss');
-const cssnano = require('..');
+const cssnano = require('../src/index.js');
 
 test('should support `env()` and `constant()` is an iPhone X-only feature', () => {
   const css = `

@@ -2,9 +2,17 @@
   "name": "cssnano-utils",
   "version": "6.0.1",
   "repository": "cssnano/cssnano",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
   "description": "Utility methods and plugin for cssnano projects",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/*": "./src/*.js",
+    "./src/*.js": "./src/*.js",
+    "./package.json": "./package.json"
+  },
   "homepage": "https://github.com/cssnano/cssnano",
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

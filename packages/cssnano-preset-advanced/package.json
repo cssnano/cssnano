@@ -1,9 +1,17 @@
 {
   "name": "cssnano-preset-advanced",
   "version": "8.0.2",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
   "description": "Advanced optimisations for cssnano; may or may not break your CSS!",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/index.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "LICENSE-MIT",
     "src",

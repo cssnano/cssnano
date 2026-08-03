@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const { processCSSFactory } = require('../../../util/testHelpers.js');
-const stylehacks = require('..');
+const stylehacks = require('../src/index.js');
 
 const { processor, processCSS, passthroughCSS } = processCSSFactory(stylehacks);
 

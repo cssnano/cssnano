@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const postcss = require('postcss');
-const cssnano = require('..');
+const cssnano = require('../src/index.js');
 
 function processCss(fixture, expected, options = { from: undefined }) {
   return () =>
