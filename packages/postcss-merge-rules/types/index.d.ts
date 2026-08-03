@@ -1,6 +1,6 @@
 declare const _exports: import("postcss").PluginCreator<Options>;
 export = _exports;
-import browserslist = require('browserslist');
+import type browserslist from 'browserslist';
 import type { Declaration } from 'postcss';
 export type RuleMeta = {
     /**

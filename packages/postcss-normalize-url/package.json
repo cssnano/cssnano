@@ -8,9 +8,17 @@
       "default": "./src/index.js"
     },
     "./src": "./src/index.js",
-    "./src/*": "./src/*.js",
-    "./src/*.js": "./src/*.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/index.js",
+    "./src/normalize": "./src/normalize.js",
+    "./src/normalize.js": "./src/normalize.js",
     "./package.json": "./package.json"
+  },
+  "imports": {
+    "#path": {
+      "node": "./src/lib/path_normalizer.js",
+      "default": "./src/lib/path_shim.js"
+    }
   },
   "files": [
     "src",

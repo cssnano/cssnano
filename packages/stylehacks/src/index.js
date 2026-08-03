@@ -1,9 +1,9 @@
 'use strict';
-const { dirname } = require('node:path');
-const browserslist = require('browserslist');
+const getBrowsersList = require('#getBrowsersList');
 const plugins = require('./plugins');
 
 /**
+ * @import browserslist from 'browserslist'
  * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
  * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {{lint?: boolean} & AutoprefixerOptions & BrowserslistOptions} Options
@@ -22,11 +22,7 @@ function pluginCreator(opts = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(opts.overrideBrowserslist, {
-        stats: opts.stats || stats,
-        path: opts.path || dirname(from || file || __filename),
-        env: opts.env || env,
-      });
+      const browsers = getBrowsersList(opts, stats, from, file, env);
 
       return /** import('postcss').Plugin */ {
         /**

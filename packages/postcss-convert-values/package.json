@@ -14,6 +14,12 @@
     "./src/lib/convert.js": "./src/lib/convert.js",
     "./package.json": "./package.json"
   },
+  "imports": {
+    "#getBrowsersList": {
+      "node": "./src/lib/computeBrowsersToSupport.js",
+      "default": "./src/lib/getBrowsersForWebBuild.js"
+    }
+  },
   "files": [
     "LICENSE-MIT",
     "src",

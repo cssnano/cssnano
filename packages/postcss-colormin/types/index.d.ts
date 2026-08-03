@@ -1,6 +1,6 @@
 declare const _exports: import("postcss").PluginCreator<Options>;
 export = _exports;
-import browserslist = require('browserslist');
+import type browserslist from 'browserslist';
 export type MinifyColorOptions = {
     hex?: boolean;
     alphaHex?: boolean;

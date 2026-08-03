@@ -1,5 +1,5 @@
 'use strict';
-const path = require('node:path');
+const path = require('#path');
 const valueParser = require('postcss-value-parser');
 const normalize = require('./normalize.js');
 

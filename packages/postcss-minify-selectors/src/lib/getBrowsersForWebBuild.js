@@ -1,0 +1,35 @@
+'use strict';
+
+module.exports = function () {
+  return [
+    'and_chr 150',
+    'and_ff 152',
+    'and_qq 14.9',
+    'and_uc 15.5',
+    'android 150',
+    'chrome 150',
+    'chrome 149',
+    'chrome 148',
+    'chrome 118',
+    'chrome 109',
+    'edge 150',
+    'edge 149',
+    'edge 148',
+    'firefox 152',
+    'firefox 151',
+    'firefox 140',
+    'ios_saf 26.5',
+    'ios_saf 26.4',
+    'ios_saf 26.3',
+    'ios_saf 18.5-18.7',
+    'kaios 3.0-3.1',
+    'op_mob 80',
+    'opera 131',
+    'opera 127',
+    'safari 26.5',
+    'safari 26.4',
+    'safari 26.3',
+    'samsung 30',
+    'samsung 29',
+  ];
+};

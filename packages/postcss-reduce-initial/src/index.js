@@ -1,6 +1,6 @@
 'use strict';
-const { dirname } = require('node:path');
-const browserslist = require('browserslist');
+
+const getBrowsersList = require('#getBrowsersList');
 const { isSupported } = require('caniuse-api');
 const fromInitial = require('./data/fromInitial.json');
 const toInitial = require('./data/toInitial.json');
@@ -12,6 +12,7 @@ const initial = 'initial';
 const defaultIgnoreProps = ignoreProps;
 
 /**
+ * @import browserslist from 'browserslist'
  * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
  * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {{ignore?: string[]} & AutoprefixerOptions & BrowserslistOptions} Options
@@ -30,16 +31,7 @@ function pluginCreator(options = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(
-        /** @type {Options} */ (options).overrideBrowserslist,
-        {
-          stats: /** @type {Options} */ (options).stats || stats,
-          path:
-            /** @type {Options} */ (options).path ||
-            dirname(from || file || __filename),
-          env: /** @type {Options} */ (options).env || env,
-        }
-      );
+      const browsers = getBrowsersList(options, stats, from, file, env);
 
       const initialSupport = isSupported('css-initial-value', browsers);
       return {

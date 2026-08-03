@@ -14,6 +14,12 @@
     "./src/lib/ignoreProps.js": "./src/lib/ignoreProps.js",
     "./package.json": "./package.json"
   },
+  "imports": {
+    "#getBrowsersList": {
+      "node": "./src/lib/computeBrowsersToSupport.js",
+      "default": "./src/lib/getBrowsersForWebBuild.js"
+    }
+  },
   "files": [
     "src",
     "LICENSE-MIT",

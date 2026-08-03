@@ -1,8 +1,9 @@
 'use strict';
-const { dirname } = require('node:path');
 const valueParser = require('postcss-value-parser');
-const browserslist = require('browserslist');
+const getBrowsersList = require('#getBrowsersList');
 const convert = require('./lib/convert.js');
+
+/** @import browserslist from 'browserslist' */
 
 const LENGTH_UNITS = new Set([
   'em',
@@ -230,16 +231,7 @@ function pluginCreator(opts = { precision: false }) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const browsers = browserslist(
-        /** @type {Options} */ (opts).overrideBrowserslist,
-        {
-          stats: /** @type {Options} */ (opts).stats || stats,
-          path:
-            /** @type {Options} */ (opts).path ||
-            dirname(from || file || __filename),
-          env: /** @type {Options} */ (opts).env || env,
-        }
-      );
+      const browsers = getBrowsersList(opts, stats, from, file, env);
 
       return {
         /**
