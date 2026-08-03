@@ -22,13 +22,9 @@ module.exports = {
     },
   },
   resolve: {
-    fallback: {
-      path: require.resolve('path-browserify'),
-      os: require.resolve('os-browserify/browser'),
-      string_decoder: require.resolve('string_decoder/'),
-      buffer: require.resolve('buffer/'),
-      fs: false,
-      url: false,
+    /* Unfortunately the SVGO browser build does not resolve otherwise */
+    alias: {
+      svgo: path.resolve(__dirname, './node_modules/svgo/dist/svgo.browser.js'),
     },
   },
   plugins: [
