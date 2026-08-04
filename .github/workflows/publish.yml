@@ -2,9 +2,8 @@ name: Publish Package to npmjs
 permissions:
   id-token: write #Required for trusted publishing
   contents: read
-on:
-  release:
-    types: [published]
+
+on: workflow-dispatch
 
 jobs:
   build:
