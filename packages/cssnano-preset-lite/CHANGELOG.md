@@ -1,5 +1,21 @@
 # Change Log
 
+## 5.0.2
+
+### Patch Changes
+
+- chore: regenerate all type definitions with TypeScript 7
+
+- fix: update svgo, autoprefixer and postcss
+
+- fix: update PostCSS
+
+- chore: define package.json exports
+
+- chore: update dependencies
+
+  Update autoprefixer, browserslist, colordx and postcss
+
 ## 5.0.1
 
 ### Patch Changes

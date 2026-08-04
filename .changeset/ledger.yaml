@@ -1,0 +1,302 @@
+cssnano-preset-advanced@8.0.3:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - shaky-ads-call
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+cssnano-preset-default@8.0.3:
+  dir: packages/cssnano-preset-default
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+cssnano-preset-lite@5.0.2:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+cssnano-utils@6.0.2:
+  dir: packages/cssnano-utils
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+cssnano@8.0.3:
+  dir: packages/cssnano
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-colormin@8.0.2:
+  dir: packages/postcss-colormin
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sour-insects-bathe
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-convert-values@8.0.2:
+  dir: packages/postcss-convert-values
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sour-insects-bathe
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-discard-comments@8.0.2:
+  dir: packages/postcss-discard-comments
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-discard-duplicates@8.0.2:
+  dir: packages/postcss-discard-duplicates
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-discard-empty@8.0.2:
+  dir: packages/postcss-discard-empty
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-discard-overridden@8.0.2:
+  dir: packages/postcss-discard-overridden
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-discard-unused@8.0.2:
+  dir: packages/postcss-discard-unused
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-merge-idents@8.0.2:
+  dir: packages/postcss-merge-idents
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-merge-longhand@8.0.2:
+  dir: packages/postcss-merge-longhand
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-merge-rules@8.0.2:
+  dir: packages/postcss-merge-rules
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sour-insects-bathe
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-minify-font-values@8.0.2:
+  dir: packages/postcss-minify-font-values
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-minify-gradients@8.0.2:
+  dir: packages/postcss-minify-gradients
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - small-stars-write
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-minify-params@8.0.2:
+  dir: packages/postcss-minify-params
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sour-insects-bathe
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-minify-selectors@8.0.3:
+  dir: packages/postcss-minify-selectors
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sour-insects-bathe
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-normalize-charset@8.0.2:
+  dir: packages/postcss-normalize-charset
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-normalize-display-values@8.0.2:
+  dir: packages/postcss-normalize-display-values
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-normalize-positions@8.0.2:
+  dir: packages/postcss-normalize-positions
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-normalize-repeat-style@8.0.2:
+  dir: packages/postcss-normalize-repeat-style
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-normalize-string@8.0.2:
+  dir: packages/postcss-normalize-string
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-normalize-timing-functions@8.0.2:
+  dir: packages/postcss-normalize-timing-functions
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-normalize-unicode@8.0.2:
+  dir: packages/postcss-normalize-unicode
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sour-insects-bathe
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-normalize-url@8.0.2:
+  dir: packages/postcss-normalize-url
+  intents:
+    - common-turtles-burn
+    - great-words-wash
+    - pink-seas-end
+    - sour-insects-bathe
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-normalize-whitespace@8.0.2:
+  dir: packages/postcss-normalize-whitespace
+  intents:
+    - fuzzy-years-spend
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-ordered-values@8.0.2:
+  dir: packages/postcss-ordered-values
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-reduce-idents@8.0.2:
+  dir: packages/postcss-reduce-idents
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-reduce-initial@8.0.2:
+  dir: packages/postcss-reduce-initial
+  intents:
+    - great-words-wash
+    - legal-experts-draw
+    - pink-seas-end
+    - sour-insects-bathe
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-reduce-transforms@8.0.2:
+  dir: packages/postcss-reduce-transforms
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-svgo@8.0.2:
+  dir: packages/postcss-svgo
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-unique-selectors@8.0.2:
+  dir: packages/postcss-unique-selectors
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+postcss-zindex@8.0.2:
+  dir: packages/postcss-zindex
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
+stylehacks@8.0.2:
+  dir: packages/stylehacks
+  intents:
+    - great-words-wash
+    - pink-seas-end
+    - sour-insects-bathe
+    - sunny-bags-smell
+    - tough-planes-say
+    - tough-snails-behave
