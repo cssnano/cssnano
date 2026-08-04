@@ -4,6 +4,8 @@
 
 ### Patch Changes
 
+- fix(postcss-normalize-url): add missing TypeScript files
+
 - fix(postcss-normalize-url): do not remove trailing slash
 
 - chore: regenerate all type definitions with TypeScript 7

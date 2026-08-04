@@ -5,6 +5,7 @@ cssnano-preset-advanced@8.0.3:
     - pink-seas-end
     - shaky-ads-call
     - sunny-bags-smell
+    - tiny-oranges-kneel
     - tough-planes-say
     - tough-snails-behave
 cssnano-preset-default@8.0.3:
@@ -13,6 +14,7 @@ cssnano-preset-default@8.0.3:
     - great-words-wash
     - pink-seas-end
     - sunny-bags-smell
+    - tiny-oranges-kneel
     - tough-planes-say
     - tough-snails-behave
 cssnano-preset-lite@5.0.2:
@@ -37,6 +39,7 @@ cssnano@8.0.3:
     - great-words-wash
     - pink-seas-end
     - sunny-bags-smell
+    - tiny-oranges-kneel
     - tough-planes-say
     - tough-snails-behave
 postcss-colormin@8.0.2:
@@ -222,6 +225,7 @@ postcss-normalize-url@8.0.2:
     - pink-seas-end
     - sour-insects-bathe
     - sunny-bags-smell
+    - tiny-oranges-kneel
     - tough-planes-say
     - tough-snails-behave
 postcss-normalize-whitespace@8.0.2:
