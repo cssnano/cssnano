@@ -1,5 +1,23 @@
 # Change Log
 
+## 8.0.2
+
+### Patch Changes
+
+- chore: regenerate all type definitions with TypeScript 7
+
+- fix: update svgo, autoprefixer and postcss
+
+- feat: make some packages runnable on the web without extra polyfills
+
+- fix: update PostCSS
+
+- chore: define package.json exports
+
+- chore: update dependencies
+
+  Update autoprefixer, browserslist, colordx and postcss
+
 ## 8.0.1
 
 ### Patch Changes

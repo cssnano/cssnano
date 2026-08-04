@@ -1,5 +1,23 @@
 # Change Log
 
+## 8.0.3
+
+### Patch Changes
+
+- chore: regenerate all type definitions with TypeScript 7
+
+- fix: update svgo, autoprefixer and postcss
+
+- chore(cssnano-preset-avanced): remove unused dependency
+
+- fix: update PostCSS
+
+- chore: define package.json exports
+
+- chore: update dependencies
+
+  Update autoprefixer, browserslist, colordx and postcss
+
 ## 8.0.2
 
 ### Patch Changes
