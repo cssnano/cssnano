@@ -2,3 +2,7 @@ packages:
   - 'packages/**'
   - '!site/**'
 autoInstallPeers: true
+
+versioning:
+  changelog:
+    storage: repository
