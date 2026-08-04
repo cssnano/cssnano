@@ -4,6 +4,8 @@
 
 ### Patch Changes
 
+- fix(postcss-normalize-url): add missing TypeScript files
+
 - chore: regenerate all type definitions with TypeScript 7
 
 - fix: update svgo, autoprefixer and postcss
