@@ -14,7 +14,7 @@ jobs:
           persist-credentials: false
 
       - name: Install pnpm
-        uses: pnpm/c9883cc79df532ad1a7b81bf9ab944ceb090d65c # v2.0.0
+        uses: pnpm/setup@c9883cc79df532ad1a7b81bf9ab944ceb090d65c # v2.0.0
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
