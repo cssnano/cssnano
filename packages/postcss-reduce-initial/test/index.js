@@ -62,19 +62,19 @@ function convertToInitial(property, value) {
     ]);
 }
 
-Object.keys(fromInitial).forEach((property) => {
+for (const [property, value] of Object.entries(fromInitial)) {
   test(
-    `${property}: initial => ${property}: ${fromInitial[property]}`,
-    convertInitial(property, fromInitial[property])
+    `${property}: initial => ${property}: ${value}`,
+    convertInitial(property, value)
   );
-});
+}
 
-Object.keys(toInitial).forEach((property) => {
+for (const [property, value] of Object.entries(toInitial)) {
   test(
-    `${property}: ${toInitial[property]} => ${property}: initial`,
-    convertToInitial(property, toInitial[property])
+    `${property}: ${value} => ${property}: initial`,
+    convertToInitial(property, value)
   );
-});
+}
 
 test(
   'cursor: initial => cursor: auto (uppercase property and value)',
