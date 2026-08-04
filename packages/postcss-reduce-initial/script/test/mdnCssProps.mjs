@@ -2,10 +2,8 @@ import fs from 'node:fs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  isUserAgentDependent,
   isComplexSyntax,
   isUnpredictable,
-  toPlainText,
   reduceInitial,
   validate,
 } from '../lib/mdnCssProps.mjs';
@@ -13,22 +11,6 @@ import {
 const testData = JSON.parse(
   fs.readFileSync(new URL('./sampleProperties.json', import.meta.url), 'utf-8')
 );
-
-for (const [flag, expected] of [
-  ['dependsOnUserAgent', true],
-  ['noPracticalInitialValue', true],
-  ['noneButOverriddenInUserAgentCSS', true],
-  ['variesFromBrowserToBrowser', true],
-  ['invertOrCurrentColor', true],
-  ['startOrNamelessValueIfLTRRightIfRTL', true],
-  ['autoForSmartphoneBrowsersSupportingInflation', true],
-  ['experimental', false],
-  ['normal', false],
-]) {
-  test(`should recognize user agent dependent flag ${flag}`, () => {
-    assert.strictEqual(isUserAgentDependent(flag), expected);
-  });
-}
 
 for (const [initial, key, expected] of [
   [['foo', 'bar'], 'text-align', true],
@@ -51,25 +33,6 @@ for (const [status, key, expected] of [
 ]) {
   test(`isUnpredictable(${status}, ${key}) expected: ${expected}`, () => {
     assert.strictEqual(isUnpredictable(status, key), expected);
-  });
-}
-
-for (const [string, expected] of [
-  ['<script>foo</script>', ''],
-  ['<script type="text/javascript">bar<script>', ''],
-  ['<script src="myscripts.js">baz</script>', ''],
-  ['Hello &amp; Goodbye', 'Hello & Goodbye'],
-  ['Eye<br>glasses', 'Eyeglasses'],
-  ['Hand<p>writing</p>', 'Handwriting'],
-  ['No space at end ', 'No space at end'],
-  ['padding-box', 'padding-box'],
-  ['50% 50% 0', '50% 50% 0'],
-  ['0% 0%', '0% 0%'],
-  ['100%', '100%'],
-  ['auto', 'auto'],
-]) {
-  test(`strip HTML, but leave relevant chars and separating spaces ${string} expected: ${expected}`, () => {
-    assert.strictEqual(toPlainText(string), expected);
   });
 }
 

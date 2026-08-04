@@ -1,6 +1,4 @@
-import { htmlToText } from 'html-to-text';
-
-export const userAgentDependentFlag = [
+export const userAgentDependentFlag = new Set([
   'dependsOnUserAgent',
   'noPracticalInitialValue',
   'noneButOverriddenInUserAgentCSS',
@@ -8,11 +6,7 @@ export const userAgentDependentFlag = [
   'invertOrCurrentColor',
   'startOrNamelessValueIfLTRRightIfRTL',
   'autoForSmartphoneBrowsersSupportingInflation',
-];
-
-export function isUserAgentDependent(initial) {
-  return userAgentDependentFlag.includes(initial);
-}
+]);
 
 export function isComplexSyntax(initial, key) {
   return typeof initial !== 'string' || key === '--*';
@@ -22,34 +16,23 @@ export function isUnpredictable(status, key) {
   return status === 'nonstandard' || key === 'display';
 }
 
-export function toPlainText(value) {
-  return htmlToText(value, {
-    wordwrap: false,
-  })
-    .replace(/[\t\r\n\f\u200b]/g, '')
-    .trim();
-}
-
 export function reduceInitial(propertyData) {
-  return Object.keys(propertyData).reduce(
-    (values, key) => {
-      const { initial, status } = propertyData[key];
-      if (
-        !isUserAgentDependent(initial) &&
-        !isComplexSyntax(initial, key) &&
-        !isUnpredictable(status, key)
-      ) {
-        const value = toPlainText(initial);
-        if (value.length < 'initial'.length) {
-          values.fromInitial[key] = value;
-        } else if (value.length > 'initial'.length) {
-          values.toInitial[key] = value;
-        }
+  const propertyMapping = { fromInitial: {}, toInitial: {} };
+  for (const [key, { initial, status }] of Object.entries(propertyData)) {
+    if (
+      !userAgentDependentFlag.has(initial) &&
+      !isComplexSyntax(initial, key) &&
+      !isUnpredictable(status, key)
+    ) {
+      const value = initial.replace(/[\t\r\n\f\u200b]/g, '').trim();
+      if (value.length < 'initial'.length) {
+        propertyMapping.fromInitial[key] = value;
+      } else if (value.length > 'initial'.length) {
+        propertyMapping.toInitial[key] = value;
       }
-      return values;
-    },
-    { fromInitial: {}, toInitial: {} }
-  );
+    }
+  }
+  return propertyMapping;
 }
 
 export function validate(data) {

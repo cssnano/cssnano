@@ -52,7 +52,7 @@
     "node": "^22.11.0 || ^24.11.0 || >=26.0"
   },
   "devDependencies": {
-    "html-to-text": "^10.0.0",
+    "mdn-data": "^2.29.0",
     "postcss": "^8.5.25"
   },
   "peerDependencies": {

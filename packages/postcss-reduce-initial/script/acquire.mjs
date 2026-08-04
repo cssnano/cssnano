@@ -1,15 +1,34 @@
 import { writeFile } from 'node:fs';
-import { generate } from './lib/io.mjs';
+import data from 'mdn-data';
 
-const url =
-  'https://raw.githubusercontent.com/mdn/data/master/css/properties.json';
+import { reduceInitial } from './lib/mdnCssProps.mjs';
 
-const paths = {
-  fromInitial: new URL('../src/data/fromInitial.json', import.meta.url),
-  toInitial: new URL('../src/data/toInitial.json', import.meta.url),
-};
+const cssProperties = data.css.properties;
 
-generate(fetch, writeFile, paths, url).catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+const grouped = reduceInitial(cssProperties);
+
+if (
+  grouped !== undefined &&
+  Object.keys(grouped.fromInitial || {}).length &&
+  Object.keys(grouped.toInitial || {}).length
+) {
+  writeFile(
+    new URL('../src/data/fromInitial.json', import.meta.url),
+    toJSONString(grouped['fromInitial']),
+    handleError
+  );
+  writeFile(
+    new URL('../src/data/toInitial.json', import.meta.url),
+    toJSONString(grouped['toInitial']),
+    handleError
+  );
+}
+export function handleError(error) {
+  if (error) {
+    throw error;
+  }
+}
+
+function toJSONString(data) {
+  return `${JSON.stringify(data, null, 2)}\n`;
+}
