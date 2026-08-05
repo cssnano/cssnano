@@ -1,11 +1,6 @@
 declare const _exports: {
-    encode: typeof encode;
+    encode: typeof encodeURIComponent;
     decode: typeof decodeURIComponent;
 };
 export = _exports;
-/**
- * @param {string} data
- * @return {string}
- */
-declare function encode(data: string): string;
 //# sourceMappingURL=url.d.ts.map
