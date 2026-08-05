@@ -104,8 +104,8 @@ test(
 test(
   'should preserve apostrophes in uri-encoded svg attributes',
   processCSS(
-    'h1{background:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%3E%3Ctext%20font-size=%2720%27%20font-family=%27%26apos;Arial%26apos;%27%20transform=%27translate%280%2C20%29%27%3E?%3C/text%3E%3C/svg%3E")}',
-    "h1{background:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Ctext font-family='%26apos;Arial%26apos;' font-size='20' transform='translate(0 20)'%3E?%3C/text%3E%3C/svg%3E\")}"
+    'h1{background:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%3E%0A%20%20%20%20%3Ctext%20font-size=%2720%27%20font-family=%27%26apos;Arial%26apos;%27%20transform=%27translate%280%2C20%29%27%3E?%3C/text%3E%0A%3C/svg%3E%0A")}',
+    "h1{background:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Ctext font-family='%22Arial%22' font-size='20' transform='translate(0 20)'%3E?%3C/text%3E%3C/svg%3E\")}"
   )
 );
 
