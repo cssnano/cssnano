@@ -254,6 +254,4 @@
 
 /*! Rule::       \/ */
 
-/*! http://mths.be/fromcodepoint v0.1.0 by @mathias */
-
 /*! https://mths.be/cssesc v3.0.0 by @mathias */
