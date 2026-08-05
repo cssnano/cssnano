@@ -12,9 +12,6 @@
     "types": "tsc -b",
     "all-publish": "pnpm stage publish -r"
   },
-  "workspaces": [
-    "./packages/*"
-  ],
   "engines": {
     "node": "^22.11 || ^24.11 || >=26.0"
   },
