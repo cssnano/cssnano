@@ -30,5 +30,10 @@
       "IE 11 and last 2 versions"
     ]
   },
-  "packageManager": "pnpm@11.20.0"
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.20.0"
+    }
+  }
 }
