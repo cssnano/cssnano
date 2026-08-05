@@ -29,6 +29,12 @@
     "webpack": "^5.109.2",
     "webpack-cli": "^7.2.2"
   },
+  "devEngines": {
+    "packageManager":  {
+      "name": "pnpm",
+      "version": "11.20.0"
+    }
+  },
   "browserslist": [
     "defaults and fully supports es6-module"
   ]
