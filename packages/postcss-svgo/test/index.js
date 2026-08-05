@@ -97,15 +97,15 @@ test(
   'should optimise uri-encoded inline svg',
   processCSS(
     "h1{background:url('data:image/svg+xml;utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20xml%3Aspace%3D%22preserve%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2240%22%20fill%3D%22yellow%22%20%2F%3E%3C!--test%20comment--%3E%3C%2Fsvg%3E')}",
-    "h1{background:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve'%3E%3Ccircle cx='50' cy='50' r='40' fill='%23ff0'/%3E%3C/svg%3E\")}"
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xml%3Aspace%3D%22preserve%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2240%22%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E")}'
   )
 );
 
 test(
   'should preserve apostrophes in uri-encoded svg attributes',
   processCSS(
-    'h1{background:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%3E%0A%20%20%20%20%3Ctext%20font-size=%2720%27%20font-family=%27%26apos;Arial%26apos;%27%20transform=%27translate%280%2C20%29%27%3E?%3C/text%3E%0A%3C/svg%3E%0A")}',
-    "h1{background:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Ctext font-family='%22Arial%22' font-size='20' transform='translate(0 20)'%3E?%3C/text%3E%3C/svg%3E\")}"
+    'h1{background:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%3E%3Ctext%20font-size=%2720%27%20font-family=%27%26apos;Arial%26apos;%27%20transform=%27translate%280%2C20%29%27%3E?%3C/text%3E%3C/svg%3E")}',
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ctext%20font-family%3D%22\'Arial\'%22%20font-size%3D%2220%22%20transform%3D%22translate(0%2020)%22%3E%3F%3C%2Ftext%3E%3C%2Fsvg%3E")}'
   )
 );
 
@@ -141,7 +141,7 @@ test(
   'should encode unencoded data',
   processCSS(
     'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#ff0"/></svg>\')}',
-    "h1{background:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='40' fill='%23ff0'/%3E%3C/svg%3E\")}",
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2240%22%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E")}',
     { encode: true }
   )
 );
@@ -167,7 +167,7 @@ test(
   'should encode "malformed" svgs',
   processCSS(
     "h1{background-image:url(\"data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg'><line stroke-width='2' stroke='rgb(255,0,0)' x1='0' y1='100%' x2='100%' y2='0'></line></svg>\")}",
-    "h1{background-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cline x2='100%25' y1='100%25' stroke='red' stroke-width='2'/%3E%3C/svg%3E\")}",
+    'h1{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cline%20x2%3D%22100%25%22%20y1%3D%22100%25%22%20stroke%3D%22red%22%20stroke-width%3D%222%22%2F%3E%3C%2Fsvg%3E")}',
     { encode: true }
   )
 );
@@ -191,7 +191,7 @@ test(
   'should encode "unencoded-escaped-quotes" svgs',
   processCSS(
     'h1{background:url("data:image/svg+xml;charset=utf-8,<svg xmlns=\\"http://www.w3.org/2000/svg\\"><circle cx=\\"50\\" cy=\\"50\\" r=\\"40\\" fill=\\"#ff0\\"/></svg>")}',
-    "h1{background:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='40' fill='%23ff0'/%3E%3C/svg%3E\")}",
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2240%22%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E")}',
     { encode: true }
   )
 );
