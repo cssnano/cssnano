@@ -8,6 +8,11 @@ cssnano-preset-advanced@8.0.3:
     - tiny-oranges-kneel
     - tough-planes-say
     - tough-snails-behave
+cssnano-preset-advanced@8.0.4:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - every-teeth-stay
+    - petite-cobras-send
 cssnano-preset-default@8.0.3:
   dir: packages/cssnano-preset-default
   intents:
@@ -17,6 +22,11 @@ cssnano-preset-default@8.0.3:
     - tiny-oranges-kneel
     - tough-planes-say
     - tough-snails-behave
+cssnano-preset-default@8.0.4:
+  dir: packages/cssnano-preset-default
+  intents:
+    - every-teeth-stay
+    - petite-cobras-send
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -42,6 +52,11 @@ cssnano@8.0.3:
     - tiny-oranges-kneel
     - tough-planes-say
     - tough-snails-behave
+cssnano@8.0.4:
+  dir: packages/cssnano
+  intents:
+    - every-teeth-stay
+    - petite-cobras-send
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -279,6 +294,11 @@ postcss-svgo@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-svgo@8.0.3:
+  dir: packages/postcss-svgo
+  intents:
+    - every-teeth-stay
+    - petite-cobras-send
 postcss-unique-selectors@8.0.2:
   dir: packages/postcss-unique-selectors
   intents:

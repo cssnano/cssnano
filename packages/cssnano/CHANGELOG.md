@@ -1,5 +1,15 @@
 # Change Log
 
+## 8.0.4
+
+### Patch Changes
+
+- fix(postcss-svgo): encode chracters in the correct order
+
+- fix(postcss-svgo): do not roll our own URI encoding
+
+  Our own code, while producing smaller output, might end up producing
+  the wrong encoding, since it does not encode all characters.
 
 ## 8.0.3
 
