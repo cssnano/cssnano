@@ -23,6 +23,8 @@
    "no-regex-spaces": "error",
    "prefer-const": ["error", {"destructuring": "all" }],
    "preserve-caught-error": "error",
+   "unicorn/no-array-for-each": "error",
+   "unicorn/no-array-reduce": "error",
    "unicorn/prefer-array-flat": "error",
    "unicorn/prefer-node-protocol": "error"
   },
