@@ -69,46 +69,44 @@ h1::before, h1:before {
           </a>
           guide.
         </p>
-        <table>
-          <tbody>
-            <tr>
-              <td>Original (gzip)</td>
-              <td>325 B</td>
-            </tr>
-            <tr>
-              <td>Minified (gzip)</td>
-              <td>177 B</td>
-            </tr>
-            <tr>
-              <td>Difference</td>
-              <td>148 B</td>
-            </tr>
-            <tr>
-              <td>Percent</td>
-              <td>54.46%</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">325 B</div>
+            <div class="stat-label">Original (gzip)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">177 B</div>
+            <div class="stat-label">Minified (gzip)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">148 B</div>
+            <div class="stat-label">Difference</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">54.46%</div>
+            <div class="stat-label">Size Saved</div>
+          </div>
+        </div>
       </section>
 
       <section class="box stack">
 
-        <h2 class="text-center">Features</h2>
-        <div class="cluster">
-          <div class="stack">
-            <img src="/img/postcss.svg" alt="" width="200" height="200">
+        <h2>Features</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <img src="/img/postcss.svg" alt="" width="120" height="120">
             <h3>PostCSS Based</h3>
-            <p>CSSNANO is built upon postcss plugins and environments</p>
+            <p>CSSNANO is built upon PostCSS plugins and environments</p>
           </div>
-          <div class="stack">
-            <img src="/img/undraw_settings.svg" alt="" width="248" height="200">
+          <div class="feature-card">
+            <img src="/img/undraw_settings.svg" alt="" width="140" height="120">
             <h3>30+ Plugins</h3>
-            <p>CSSNANO has more than 30 plugins for optimizing your css</p>
+            <p>CSSNANO has more than 30 plugins for optimizing your CSS</p>
           </div>
-          <div class="stack">
-            <img src="/img/undraw_config.svg" alt="" width="244" height="200">
+          <div class="feature-card">
+            <img src="/img/undraw_config.svg" alt="" width="140" height="120">
             <h3>Configurable</h3>
-            <p>CSSNANO supports custom configs using presets which controls the level of optimization</p>
+            <p>CSSNANO supports custom configs using presets which control the optimization level</p>
           </div>
         </div>
       </section>
