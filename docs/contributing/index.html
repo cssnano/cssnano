@@ -82,13 +82,11 @@ you add yourself to the list of contributors, found in <a href="https://github.c
 <p>Since version 4, we develop in a monorepo. This is because a lot of transforms overlap with each other; it's
 easier to test them together. Other than this, you'll need Node.js, pnpm &amp;
 git installed. Then, you can run these commands to get the repository set up:</p>
-<pre><code>git clone git@github.com:cssnano/cssnano.git
-cd cssnano
-pnpm install
-</code></pre>
+<pre class="language-shell" tabindex="0"><code class="language-shell"><span class="token function">git</span> clone git@github.com:cssnano/cssnano.git
+<span class="token builtin class-name">cd</span> cssnano
+<span class="token function">pnpm</span> <span class="token function">install</span></code></pre>
 <p>You can run the tests with:</p>
-<pre><code>pnpm test
-</code></pre>
+<pre class="language-shell" tabindex="0"><code class="language-shell"><span class="token function">pnpm</span> <span class="token builtin class-name">test</span></code></pre>
 <p>We recommend that you look in the issue tracker to find anything tagged
 <a href="https://github.com/cssnano/cssnano/labels/help%20wanted">help wanted</a>; that's the first port of call for getting stuck
 in and writing code. If there's any other open issues that you think you can
@@ -105,26 +103,18 @@ by running <code>pnpm start</code>.</p>
 <p>Note that some of the documentation is automatically generated and should not
 be edited by hand.</p>
 <h3 id="releasing" tabindex="-1"><a class="header-anchor" href="#releasing">Releasing</a></h3>
-<p>We use @changesets/cli to update the changelog and tag releases.
+<p>We use pnpm changesets to update the changelog.
 First make sure a changeset exists for every change you want to publish. A changeset is a text file
 with the description of the change and the affected packages.
 To create a changeset run</p>
-<pre><code>pnpm changeset
-</code></pre>
+<pre class="language-shell" tabindex="0"><code class="language-shell"><span class="token function">pnpm</span> change</code></pre>
 <p>It's best to select the affected packages by hand rather than rely on the tools automatically
 discovering dependencies. For example, if a change affects a plugin <code>cssnano-preset-default</code>,
 select the plugin and <code>cssnano-preset-default</code> by hand (as well as any other dependent presets).
 To tag a release and generate the changelog, run:</p>
-<pre><code>pnpm changeset version
-</code></pre>
+<pre class="language-shell" tabindex="0"><code class="language-shell"><span class="token function">pnpm</span> version <span class="token parameter variable">-r</span></code></pre>
 <p>To publish release to npm, run:</p>
-<pre><code>pnpm all-publish
-</code></pre>
-<p>If you don't use the <code>package.json</code> script, do not forget to rebuild the packages first!</p>
-<ol>
-<li><code>pnpm prepare</code></li>
-<li><code>pnpm changeset publish</code></li>
-</ol>
+<pre class="language-shell" tabindex="0"><code class="language-shell"><span class="token function">pnpm</span> all-publish</code></pre>
 <h2 id="are-there-other-ways-of-contributing%3F" tabindex="-1"><a class="header-anchor" href="#are-there-other-ways-of-contributing%3F">Are there other ways of contributing?</a></h2>
 <p>Absolutely! Try any of the following areas:</p>
 <h3 id="improve-our-documentation" tabindex="-1"><a class="header-anchor" href="#improve-our-documentation">Improve our documentation</a></h3>
@@ -151,13 +141,9 @@ to keep our discourse focused on the topic at hand.</p>
 help by reviewing pull requests; even leaving a thumbs up reaction is better
 than nothing at all. Helping us to review means less time is wasted by all of
 us if a buggy release is cut.</p>
-<h3 id="talk-with-us!" tabindex="-1"><a class="header-anchor" href="#talk-with-us!">Talk with us!</a></h3>
-<p>We have an <a href="https://gitter.im/postcss/postcss">online chat</a> where you can ask questions or discuss features;
-help us by joining the chat, and answer any questions that the community may
-have. Feel free to ask any questions of your own!</p>
-<h2 id="how-you-can-support-us" tabindex="-1"><a class="header-anchor" href="#how-you-can-support-us">How you can support us</a></h2>
+<h2 id="support-us" tabindex="-1"><a class="header-anchor" href="#support-us">Support us</a></h2>
 <p>If you don't have time to contribute to the project directly, you can also
-help us out by starring the repository, or <a href="https://twitter.com/cssnano_">follow us on Twitter</a>.
+help us out by starring the repository.
 Word of mouth really does mean a lot to us!</p>
 <p>You can also <a href="/cssnano/docs/support-us/">help support us financially</a>.</p>
 

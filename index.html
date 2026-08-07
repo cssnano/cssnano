@@ -51,7 +51,7 @@
 
         <p class="text-center f3">Deliver your website's styles, faster.</p>
         <p class="text-center">
-          Plug in cssnano into your build step for modern CSS compression.
+          Plug in cssnano into your build for modern CSS compression.
         </p>
         <a class="f4 hero-link box text-center" href="docs/introduction">
           Get Started
@@ -90,14 +90,13 @@
             <h3>Output</h3>
             <pre class="language-css" tabindex="0"><code class="language-css"><span class="token atrule"><span class="token rule">@charset</span> <span class="token string">"utf-8"</span><span class="token punctuation">;</span></span><span class="token selector">h1:before</span><span class="token punctuation">{</span><span class="token property">margin</span><span class="token punctuation">:</span>10px 20px<span class="token punctuation">;</span><span class="token property">color</span><span class="token punctuation">:</span>red<span class="token punctuation">;</span><span class="token property">font-weight</span><span class="token punctuation">:</span>400<span class="token punctuation">;</span><span class="token property">background-position</span><span class="token punctuation">:</span>100% 100%<span class="token punctuation">;</span><span class="token property">quotes</span><span class="token punctuation">:</span><span class="token string">"«"</span> <span class="token string">"»"</span><span class="token punctuation">;</span><span class="token property">background</span><span class="token punctuation">:</span><span class="token function">linear-gradient</span><span class="token punctuation">(</span>180deg<span class="token punctuation">,</span>#ffe500<span class="token punctuation">,</span>#ffe500 50%<span class="token punctuation">,</span>#121 0<span class="token punctuation">,</span>#121<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token property">min-width</span><span class="token punctuation">:</span>0<span class="token punctuation">}</span></code></pre>
         <p>
-          The semantics of this CSS have been kept the same, but the
-          extraneous whitespace has been removed, the identifiers
-          compressed, and unnecessary definitions purged from the
-          stylesheet.
+          cssnano has preserved the semantics of this CSS, but has removed the
+          extraneous whitespace, compressed the identifiers,
+          and purged unnecessary definitions purged.
           This gives you a much smaller CSS for production use.</p>
         <p>
           By default, cssnano performs safe optimisations on your CSS
-          file, but we also offer an advanced preset with techniques
+          file, but also offers an advanced preset with techniques
           that you can use to maximise compression. For more details,
           see our
           <a href="/cssnano/docs/what-are-optimisations/">
@@ -105,54 +104,52 @@
           </a>
           guide.
         </p>
-        <table>
-          <tbody>
-            <tr>
-              <td>Original (gzip)</td>
-              <td>325 B</td>
-            </tr>
-            <tr>
-              <td>Minified (gzip)</td>
-              <td>177 B</td>
-            </tr>
-            <tr>
-              <td>Difference</td>
-              <td>148 B</td>
-            </tr>
-            <tr>
-              <td>Percent</td>
-              <td>54.46%</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">325 B</div>
+            <div class="stat-label">Original (gzip)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">177 B</div>
+            <div class="stat-label">Minified (gzip)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">148 B</div>
+            <div class="stat-label">Difference</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">54.46%</div>
+            <div class="stat-label">Size Saved</div>
+          </div>
+        </div>
       </section>
 
       <section class="box stack">
 
-        <h2 class="text-center">Features</h2>
-        <div class="cluster">
-          <div class="stack">
-            <img src="/cssnano/img/postcss.svg" alt="" width="200" height="200">
+        <h2>Features</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <img src="/cssnano/img/postcss.svg" alt="" width="120" height="120">
             <h3>PostCSS Based</h3>
-            <p>CSSNANO is built upon postcss plugins and environments</p>
+            <p>CSSNANO is built upon PostCSS plugins and environments</p>
           </div>
-          <div class="stack">
-            <img src="/cssnano/img/undraw_settings.svg" alt="" width="248" height="200">
+          <div class="feature-card">
+            <img src="/cssnano/img/undraw_settings.svg" alt="" width="140" height="120">
             <h3>30+ Plugins</h3>
-            <p>CSSNANO has more than 30 plugins for optimizing your css</p>
+            <p>CSSNANO has more than 30 plugins for optimizing your CSS</p>
           </div>
-          <div class="stack">
-            <img src="/cssnano/img/undraw_config.svg" alt="" width="244" height="200">
+          <div class="feature-card">
+            <img src="/cssnano/img/undraw_config.svg" alt="" width="140" height="120">
             <h3>Configurable</h3>
-            <p>CSSNANO supports custom configs using presets which controls the level of optimization</p>
+            <p>CSSNANO supports custom configs using presets which control the optimization level</p>
           </div>
         </div>
       </section>
       <section class="box stack">
         <h2>Technology</h2>
         <p>
-          cssnano is powered by PostCSS, a tool for transforming styles
-          with JavaScript. Specifically, its plugin architecture allows
+          cssnano is powered by <a href="https://postcss.org">PostCSS</a>, a tool for transforming styles
+          with JavaScript. Its plugin architecture allows
           us to compose cssnano out of small modules with limited
           responsibilities. It also allows you to easily insert cssnano
           into your build step, along with other processors that can
