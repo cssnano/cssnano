@@ -13,7 +13,7 @@ test('should pass through "block ruby"', passthroughCSS('display:block ruby;'));
 
 test('should pass through single values', passthroughCSS('display:block;'));
 /* source: https://www.w3.org/TR/css-display-3/#the-display-properties */
-[
+const fixtures = [
   { input: 'block flow', minified: 'block' },
   { input: 'block flow-root', minified: 'flow-root' },
   { input: 'inline flow', minified: 'inline' },
@@ -32,13 +32,13 @@ test('should pass through single values', passthroughCSS('display:block;'));
   { input: 'table-caption flow', minified: 'table-caption' },
   { input: 'ruby-base flow', minified: 'ruby-base' },
   { input: 'ruby-text flow', minified: 'ruby-text' },
-].forEach((fixture) => {
-  const { input, minified } = fixture;
+];
+for (const { input, minified } of fixtures) {
   test(
     `display: ${input} => display: ${minified}`,
     processCSS(`display:${input}`, `display:${minified}`)
   );
-});
+}
 
 test(
   `display: block flow => display: block (uppercase property and values)`,

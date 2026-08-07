@@ -26,7 +26,7 @@ const vkeys = Object.keys(vertical);
 function suite(property, additional = '', tail = '') {
   const tests = [];
   const push = (...examples) => {
-    examples.forEach(({ fixture, expected }) => {
+    for (const { fixture, expected } of examples) {
       tests.push(
         processCSS(
           `${property}${additional}${fixture}${tail}`,
@@ -37,7 +37,7 @@ function suite(property, additional = '', tail = '') {
           `${property}${additional}${expected}${tail},${expected}${tail}`
         )
       );
-    });
+    }
   };
 
   if (property === 'background:') {
@@ -62,7 +62,7 @@ function suite(property, additional = '', tail = '') {
     }
   );
 
-  directions.forEach((direction) => {
+  for (const direction of directions) {
     let conversion = horizontal[direction] || direction;
 
     if (direction === 'center') {
@@ -88,7 +88,7 @@ function suite(property, additional = '', tail = '') {
     });
 
     if (direction === 'center') {
-      return;
+      continue;
     }
 
     push({
@@ -97,50 +97,49 @@ function suite(property, additional = '', tail = '') {
       expected: `${conversion}`,
     });
 
-    directions
-      .slice(0, -1)
-      .filter((d) => {
-        if (
-          d === direction ||
-          (hkeys.includes(d) && hkeys.includes(direction)) ||
-          (vkeys.includes(d) && vkeys.includes(direction))
-        ) {
-          return false;
+    const others = directions.slice(0, -1).filter((d) => {
+      if (
+        d === direction ||
+        (hkeys.includes(d) && hkeys.includes(direction)) ||
+        (vkeys.includes(d) && vkeys.includes(direction))
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+    for (const other of others) {
+      let result;
+
+      if (Object.keys(horizontal).includes(direction)) {
+        result = horizontal[direction] + ' ' + vertical[other];
+      } else {
+        result = horizontal[other] + ' ' + vertical[direction];
+      }
+
+      push(
+        {
+          message: `should convert "${direction} ${other}" to "${result}"`,
+          fixture: `${direction} ${other}`,
+          expected: `${result}`,
+        },
+        {
+          message: `should not convert the three value syntax "${direction} ${other} 60px"`,
+          fixture: `${direction} ${other} 60px`,
+          expected: `${direction} ${other} 60px`,
         }
+      );
 
-        return true;
-      })
-      .forEach((other) => {
-        let result;
-
-        if (Object.keys(horizontal).includes(direction)) {
-          result = horizontal[direction] + ' ' + vertical[other];
-        } else {
-          result = horizontal[other] + ' ' + vertical[direction];
-        }
-
-        push(
-          {
-            message: `should convert "${direction} ${other}" to "${result}"`,
-            fixture: `${direction} ${other}`,
-            expected: `${result}`,
-          },
-          {
-            message: `should not convert the three value syntax "${direction} ${other} 60px"`,
-            fixture: `${direction} ${other} 60px`,
-            expected: `${direction} ${other} 60px`,
-          }
-        );
-
-        if (property === 'background:') {
-          push({
-            message: `should convert "${direction} ${other}"/50% 50% to "${result}/50% 50%"`,
-            fixture: `${direction} ${other}/50% 50%`,
-            expected: `${result}/50% 50%`,
-          });
-        }
-      });
-  });
+      if (property === 'background:') {
+        push({
+          message: `should convert "${direction} ${other}"/50% 50% to "${result}/50% 50%"`,
+          fixture: `${direction} ${other}/50% 50%`,
+          expected: `${result}/50% 50%`,
+        });
+      }
+    }
+  }
 
   return () => Promise.all(tests);
 }

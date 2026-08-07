@@ -603,9 +603,9 @@ test('encoder gen spec', () => {
     216423: 'Zaaa',
     13847860: 'aaaaa',
   };
-  Object.keys(edgeCaseList).forEach((num) => {
+  for (const num of Object.keys(edgeCaseList)) {
     assert.strictEqual(encode(null, num), edgeCaseList[num]);
-  });
+  }
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

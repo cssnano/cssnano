@@ -491,23 +491,27 @@ test(
   )
 );
 
-['stroke-dasharray', 'stroke-dashoffset', 'stroke-width'].forEach(
-  (property) => {
-    test(
-      `should not strip the percentage from 0 in SVG animation, for IE (${property})`,
-      passthroughCSS(`@keyframes a{0%{${property}:200%}to{${property}:0%}}`)
-    );
-  }
-);
+for (const property of [
+  'stroke-dasharray',
+  'stroke-dashoffset',
+  'stroke-width',
+]) {
+  test(
+    `should not strip the percentage from 0 in SVG animation, for IE (${property})`,
+    passthroughCSS(`@keyframes a{0%{${property}:200%}to{${property}:0%}}`)
+  );
+}
 
-['STROKE-DASHARRAY', 'STROKE-DASHOFFSET', 'STROKE-WIDTH'].forEach(
-  (property) => {
-    test(
-      `should not strip the percentage from 0 in SVG animation, for IE (${property}) (2)`,
-      passthroughCSS(`@KEYFRAMES a{0%{${property}:200%}to{${property}:0%}}`)
-    );
-  }
-);
+for (const property of [
+  'STROKE-DASHARRAY',
+  'STROKE-DASHOFFSET',
+  'STROKE-WIDTH',
+]) {
+  test(
+    `should not strip the percentage from 0 in SVG animation, for IE (${property}) (2)`,
+    passthroughCSS(`@KEYFRAMES a{0%{${property}:200%}to{${property}:0%}}`)
+  );
+}
 
 test(
   'should not convert ascent and descent-override',

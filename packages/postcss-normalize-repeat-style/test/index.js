@@ -37,18 +37,18 @@ function suite(fixture, expected) {
     ]);
 }
 
-[
+for (const conversion of [
   { input: 'repeat no-repeat', minified: 'repeat-x' },
   { input: 'no-repeat repeat', minified: 'repeat-y' },
   { input: 'repeat repeat', minified: 'repeat' },
   { input: 'space space', minified: 'space' },
   { input: 'round round', minified: 'round' },
   { input: 'no-repeat no-repeat', minified: 'no-repeat' },
-].forEach((conversion) => {
+]) {
   const { input, minified } = conversion;
 
   test(`should convert ${input} to ${minified}`, suite(input, minified));
-});
+}
 
 test(
   'should normalize uppercase property and value',
