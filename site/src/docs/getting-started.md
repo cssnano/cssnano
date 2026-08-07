@@ -21,16 +21,12 @@ systems.
 
 ## Installing Node.js & npm
 
-cssnano is installed using the command line, using [npm](https://npmjs.com); so
+cssnano is installed using the command line, using a package manager like [npm](https://npmjs.com); so
 you will need to use an application such as Terminal or the Windows Command
 Prompt. If you don't already have Node.js installed, then you'll need to
 install it.
 
-We require a minimum of Node.js version 10.13.0  to run, and we
-recommend that you install [nvm](https://github.com/creationix/nvm) to manage
-your Node.js versions.
-
-Alternately, you can [visit the Node.js website](https://nodejs.org/en/) and
+We require a minimum of Node.js version 22.11.0  to run. You can [visit the Node.js website](https://nodejs.org/en/) and
 follow the instructions there to install it for your machine.
 
 cssnano is a [PostCSS](https://postcss.org/) plugin, so running cssnano also requires installing PostCSS. 
