@@ -8,7 +8,6 @@
   "ignorePatterns": [
     "*.html",
     "*.md",
-    "*.json",
     "*.css",
     "*.yml",
     "*.yaml",

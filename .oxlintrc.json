@@ -1,32 +1,28 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "ignorePatterns": ["site/_site/**", "packages/**/types/**"],
-  "plugins": [
-    "typescript",
-    "unicorn",
-    "oxc"
-  ],
+  "plugins": ["typescript", "unicorn", "oxc"],
   "categories": {
     "correctness": "error"
   },
   "rules": {
-   "array-callback-return": "error",
-   "guard-for-in": "error",
-   "no-bitwise": "error",
-   "no-case-declarations": "error",
-   "no-empty": "error",
-   "no-nested-ternary": "error",
-   "no-fallthrough": "error",
-   "no-labels": "error",
-   "no-prototype-builtins": "error",
-   "no-redeclare": "error",
-   "no-regex-spaces": "error",
-   "prefer-const": ["error", {"destructuring": "all" }],
-   "preserve-caught-error": "error",
-   "unicorn/no-array-for-each": "error",
-   "unicorn/no-array-reduce": "error",
-   "unicorn/prefer-array-flat": "error",
-   "unicorn/prefer-node-protocol": "error"
+    "array-callback-return": "error",
+    "guard-for-in": "error",
+    "no-bitwise": "error",
+    "no-case-declarations": "error",
+    "no-empty": "error",
+    "no-nested-ternary": "error",
+    "no-fallthrough": "error",
+    "no-labels": "error",
+    "no-prototype-builtins": "error",
+    "no-redeclare": "error",
+    "no-regex-spaces": "error",
+    "prefer-const": ["error", { "destructuring": "all" }],
+    "preserve-caught-error": "error",
+    "unicorn/no-array-for-each": "error",
+    "unicorn/no-array-reduce": "error",
+    "unicorn/prefer-array-flat": "error",
+    "unicorn/prefer-node-protocol": "error"
   },
   "env": {
     "builtin": true

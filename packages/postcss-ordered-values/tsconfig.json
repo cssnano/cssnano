@@ -1,6 +1,11 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src/*", "src/rules/*", "src/lib/*", "src/rules/listStyleTypes.json"],
+  "include": [
+    "src/*",
+    "src/rules/*",
+    "src/lib/*",
+    "src/rules/listStyleTypes.json"
+  ],
   "compilerOptions": {
     "composite": true,
     "rootDir": "src/",

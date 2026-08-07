@@ -56,11 +56,7 @@
   },
   "border-block-end": {
     "comment": "should be ignored due to having complex syntax (multiple initial)",
-    "initial": [
-      "border-top-width",
-      "border-top-style",
-      "border-top-color"
-    ],
+    "initial": ["border-top-width", "border-top-style", "border-top-color"],
     "status": "standard"
   },
   "box-align": {
