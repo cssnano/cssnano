@@ -31,11 +31,11 @@ function normalize(args) {
       time2: [],
     };
 
-    arg.forEach((node) => {
+    for (const node of arg) {
       const { type, value } = node;
 
       if (type === 'space') {
-        return;
+        continue;
       }
 
       if (
@@ -54,7 +54,7 @@ function normalize(args) {
       } else {
         state.property = [...state.property, node, addSpace()];
       }
-    });
+    }
 
     list.push([
       ...state.property,

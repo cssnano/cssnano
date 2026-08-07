@@ -31,13 +31,13 @@ function splitValues({ value }, comma, space) {
  */
 function filterAtRule({ atRules, values }) {
   const uniqueValues = new Set(values);
-  atRules.forEach((node) => {
+  for (const node of atRules) {
     const hasAtRule = uniqueValues.has(node.params);
 
     if (!hasAtRule) {
       node.remove();
     }
-  });
+  }
 }
 
 /**

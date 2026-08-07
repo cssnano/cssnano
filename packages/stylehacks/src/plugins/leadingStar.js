@@ -22,26 +22,26 @@ module.exports = class LeadingStar extends BasePlugin {
     if (node.type === DECL) {
       // some values are not picked up by before, so ensure they are
       // at the beginning of the value
-      hacks.forEach((hack) => {
+      for (const hack of hacks) {
         if (!(/** @type Declaration */ (node).prop.indexOf(hack))) {
           this.push(node, {
             identifier: PROPERTY,
             hack: /** @type Declaration */ (node).prop,
           });
         }
-      });
+      }
       const { before } = node.raws;
       if (!before) {
         return;
       }
-      hacks.forEach((hack) => {
+      for (const hack of hacks) {
         if (before.includes(hack)) {
           this.push(node, {
             identifier: PROPERTY,
             hack: `${before.trim()}${/** @type Declaration */ (node).prop}`,
           });
         }
-      });
+      }
     } else {
       // test for the @property: value; hack
       const { name } = /** @type AtRule */ (node);

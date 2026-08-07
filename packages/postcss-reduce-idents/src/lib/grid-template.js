@@ -49,14 +49,14 @@ module.exports = function () {
       if (gridTemplateProperties.has(node.prop.toLowerCase())) {
         valueParser(node.value).walk((child) => {
           if (child.type === 'string') {
-            child.value.split(whitespaceRegex).forEach((word) => {
+            for (const word of child.value.split(whitespaceRegex)) {
               if (multipleDotsRegex.test(word)) {
                 // reduce empty zones to a single `.`
                 node.value = node.value.replace(word, '.');
               } else if (word && !RESERVED_KEYWORDS.has(word.toLowerCase())) {
                 addToCache(word, encoder, cache);
               }
-            });
+            }
           }
           /* handle gridline name lists like [name1 name2] */
           if (child.type === 'word') {
@@ -90,11 +90,11 @@ module.exports = function () {
     },
 
     transform() {
-      declCache.forEach((decl) => {
+      for (const decl of declCache) {
         decl.value = valueParser(decl.value)
           .walk((node) => {
             if (gridTemplateProperties.has(decl.prop.toLowerCase())) {
-              node.value.split(whitespaceRegex).forEach((word) => {
+              for (const word of node.value.split(whitespaceRegex)) {
                 if (word in cache) {
                   node.value = node.value.replace(word, cache[word].ident);
                 }
@@ -122,7 +122,7 @@ module.exports = function () {
                     cache[gridLine].ident
                   );
                 }
-              });
+              }
               node.value = node.value.replace(/\s+/g, ' '); // merge white-spaces
             }
 
@@ -138,7 +138,7 @@ module.exports = function () {
             return false;
           })
           .toString();
-      });
+      }
 
       // reset cache after transform
       declCache = [];

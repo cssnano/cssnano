@@ -464,11 +464,11 @@ function partialMerge(
   if (merged < original) {
     first.replaceWith(firstClone);
     second.replaceWith(secondClone);
-    [firstClone, receivingBlock, secondClone].forEach((r) => {
+    for (const r of [firstClone, receivingBlock, secondClone]) {
       if (r.nodes.length === 0) {
         r.remove();
       }
-    });
+    }
     if (!secondClone.parent) {
       ruleCache?.add(receivingBlock);
       return receivingBlock;

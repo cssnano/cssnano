@@ -9,26 +9,32 @@ function base(filepath = '') {
   return new URL(join('../frameworks', filepath), import.meta.url);
 }
 
-const frameworks = readdirSync(base()).reduce((list, framework) => {
-  list[basename(framework, '.css')] = readFileSync(base(framework), 'utf8');
-
-  return list;
-}, {});
+/** @type {Record<string, string>} */
+const frameworks = {};
+for (const framework of readdirSync(base())) {
+  frameworks[basename(framework, '.css')] = readFileSync(
+    base(framework),
+    'utf8'
+  );
+}
 
 function rebuild(pkg) {
-  return Object.keys(frameworks).forEach(async (framework) => {
-    const presetModule = await import(pkg + '/src/index.js');
-    const preset = presetModule.default();
+  for (const framework of Object.keys(frameworks)) {
+    import(pkg + '/src/index.js')
+      .then((presetModule) => {
+        const preset = presetModule.default();
 
-    return postcss([cssnano({ preset })])
-      .process(frameworks[framework], { from: undefined })
+        return postcss([cssnano({ preset })]).process(frameworks[framework], {
+          from: undefined,
+        });
+      })
       .then((result) => {
         return fs.writeFile(
           `${pkg}/test/integrations/${framework}.css`,
           result.css
         );
       });
-  });
+  }
 }
 
 const pkgDir = join(dirname(fileURLToPath(import.meta.url)), '../packages');

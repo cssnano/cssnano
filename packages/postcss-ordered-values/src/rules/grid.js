@@ -62,14 +62,14 @@ const normalizeGridColumnRow = (grid) => {
           back: '',
         };
         gridLine = gridLine.trim(); // '3 span ' -> '3 span'
-        gridLine.split(' ').forEach((node) => {
+        for (const node of gridLine.split(' ')) {
           // ['3','span']
           if (node === 'span') {
             normalizeValue.front = node; // span _
           } else {
             normalizeValue.back = `${normalizeValue.back} ${node}`; // _ 3
           }
-        });
+        }
         return `${normalizeValue.front.trim()} ${normalizeValue.back.trim()}`; // span 3
       })
       // returns "2 / span 3"
@@ -82,13 +82,13 @@ const normalizeGridColumnRow = (grid) => {
       back: '',
     };
     gridLine = gridLine.trim();
-    gridLine.split(' ').forEach((node) => {
+    for (const node of gridLine.split(' ')) {
       if (node === 'span') {
         normalizeValue.front = node;
       } else {
         normalizeValue.back = `${normalizeValue.back} ${node}`;
       }
-    });
+    }
     return `${normalizeValue.front.trim()} ${normalizeValue.back.trim()}`;
   });
 };

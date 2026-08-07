@@ -48,10 +48,12 @@ function mapBorderProperty(value) {
 const directions = topRightBottomLeft.map(mapBorderProperty);
 const properties = widthStyleColor.map(mapBorderProperty);
 /** @type {string[]} */
-const directionalProperties = directions.reduce(
-  (prev, curr) => prev.concat(widthStyleColor.map((prop) => `${curr}-${prop}`)),
-  /** @type {string[]} */ ([])
-);
+const directionalProperties = [];
+for (const direction of directions) {
+  for (const prop of widthStyleColor) {
+    directionalProperties.push(`${direction}-${prop}`);
+  }
+}
 
 const precedence = [
   ['border'],
@@ -103,13 +105,15 @@ function getColorValue(decl) {
  * @return {string[]}
  */
 function diffingProps(values, nextValues) {
-  return widthStyleColor.reduce((prev, curr, i) => {
+  const diff = [];
+  for (const [i, curr] of widthStyleColor.entries()) {
     if (values[i] === nextValues[i]) {
-      return prev;
+      continue;
     }
 
-    return [...prev, curr];
-  }, /** @type {string[]} */ ([]));
+    diff.push(curr);
+  }
+  return diff;
 }
 
 /**

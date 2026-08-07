@@ -50,17 +50,17 @@ function transform(value) {
   let rangeIndex = 0;
   let shouldContinue = true;
 
-  parsed.nodes.forEach((node, index) => {
+  for (const [index, node] of parsed.nodes.entries()) {
     // After comma (`,`) follows next background
     if (isCommaNode(node)) {
       rangeIndex += 1;
       shouldContinue = true;
 
-      return;
+      continue;
     }
 
     if (!shouldContinue) {
-      return;
+      continue;
     }
 
     // After separator (`/`) follows `background-size` values
@@ -68,7 +68,7 @@ function transform(value) {
     if (node.type === 'div' && node.value === '/') {
       shouldContinue = false;
 
-      return;
+      continue;
     }
 
     if (!ranges[rangeIndex]) {
@@ -84,7 +84,7 @@ function transform(value) {
       ranges[rangeIndex].start = null;
       ranges[rangeIndex].end = null;
 
-      return;
+      continue;
     }
 
     const isRepeatKeyword =
@@ -94,7 +94,7 @@ function transform(value) {
       ranges[rangeIndex].start = index;
       ranges[rangeIndex].end = index;
 
-      return;
+      continue;
     }
 
     if (ranges[rangeIndex].start !== null) {
@@ -102,11 +102,11 @@ function transform(value) {
         ranges[rangeIndex].end = index;
       }
     }
-  });
+  }
 
-  ranges.forEach((range) => {
+  for (const range of ranges) {
     if (range.start === null) {
-      return;
+      continue;
     }
 
     const nodes = parsed.nodes.slice(
@@ -115,7 +115,7 @@ function transform(value) {
     );
 
     if (nodes.length !== 3) {
-      return;
+      continue;
     }
     const key = nodes
       .filter(evenValues)
@@ -128,7 +128,7 @@ function transform(value) {
       nodes[0].value = match;
       nodes[1].value = nodes[2].value = '';
     }
-  });
+  }
 
   return parsed.toString();
 }

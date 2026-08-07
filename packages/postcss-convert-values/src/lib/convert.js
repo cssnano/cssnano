@@ -47,12 +47,17 @@ function transform(number, originalUnit, conversions) {
 
   const base = number * /** @type {number} */ (conversions.get(originalUnit));
 
-  return conversionUnits
-    .map(
-      (u) =>
-        dropLeadingZero(base / /** @type {number} */ (conversions.get(u))) + u
-    )
-    .reduce((a, b) => (a.length < b.length ? a : b));
+  let shortest = '';
+  for (const u of conversionUnits) {
+    const value =
+      dropLeadingZero(base / /** @type {number} */ (conversions.get(u))) + u;
+
+    if (!shortest || value.length < shortest.length) {
+      shortest = value;
+    }
+  }
+
+  return shortest;
 }
 
 /**

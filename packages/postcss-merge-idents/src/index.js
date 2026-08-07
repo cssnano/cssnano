@@ -79,7 +79,7 @@ function mergeAtRules(css) {
       } else {
         const toString = node.nodes ? node.nodes.toString() : '';
 
-        relevant.cache.forEach((cached) => {
+        for (const cached of relevant.cache) {
           const cachedStringContent = cached.nodes
             ? cached.nodes.toString()
             : '';
@@ -94,7 +94,7 @@ function mergeAtRules(css) {
             relevant.removals.push(cached);
             relevant.replacements[cached.params] = node.params;
           }
-        });
+        }
 
         relevant.cache.push(node);
 
@@ -115,10 +115,10 @@ function mergeAtRules(css) {
     }
   });
 
-  pairs.forEach((pair) => {
+  for (const pair of pairs) {
     const canon = canonical(pair.replacements);
 
-    pair.decls.forEach((decl) => {
+    for (const decl of pair.decls) {
       decl.value = valueParser(decl.value)
         .walk((node) => {
           if (node.type === 'word') {
@@ -126,9 +126,11 @@ function mergeAtRules(css) {
           }
         })
         .toString();
-    });
-    pair.removals.forEach((cached) => cached.remove());
-  });
+    }
+    for (const cached of pair.removals) {
+      cached.remove();
+    }
+  }
 }
 
 /**

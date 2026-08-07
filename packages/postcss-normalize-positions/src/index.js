@@ -90,17 +90,17 @@ function transform(value) {
   let rangeIndex = 0;
   let shouldContinue = true;
 
-  parsed.nodes.forEach((node, index) => {
+  for (const [index, node] of parsed.nodes.entries()) {
     // After comma (`,`) follows next background
     if (isCommaNode(node)) {
       rangeIndex += 1;
       shouldContinue = true;
 
-      return;
+      continue;
     }
 
     if (!shouldContinue) {
-      return;
+      continue;
     }
 
     // After separator (`/`) follows `background-size` values
@@ -108,7 +108,7 @@ function transform(value) {
     if (node.type === 'div' && node.value === '/') {
       shouldContinue = false;
 
-      return;
+      continue;
     }
 
     if (!ranges[rangeIndex]) {
@@ -124,7 +124,7 @@ function transform(value) {
       ranges[rangeIndex].start = null;
       ranges[rangeIndex].end = null;
 
-      return;
+      continue;
     }
 
     const isPositionKeyword =
@@ -138,7 +138,7 @@ function transform(value) {
       ranges[rangeIndex].start = index;
       ranges[rangeIndex].end = index;
 
-      return;
+      continue;
     }
 
     if (ranges[rangeIndex].start !== null) {
@@ -146,17 +146,17 @@ function transform(value) {
         ranges[rangeIndex].end = index;
       }
     }
-  });
+  }
 
-  ranges.forEach((range) => {
+  for (const range of ranges) {
     if (range.start === null) {
-      return;
+      continue;
     }
 
     const nodes = parsed.nodes.slice(range.start, range.end + 1);
 
     if (nodes.length > 3) {
-      return;
+      continue;
     }
 
     const firstNode = nodes[0].value.toLowerCase();
@@ -174,7 +174,7 @@ function transform(value) {
         nodes[0].value = /** @type {string}*/ (map.get(firstNode));
       }
 
-      return;
+      continue;
     }
 
     if (secondNode !== null) {
@@ -184,7 +184,7 @@ function transform(value) {
         if (horizontal.has(secondNode)) {
           nodes[2].value = /** @type {string} */ (horizontal.get(secondNode));
         }
-        return;
+        continue;
       }
 
       if (horizontal.has(firstNode) && verticalValue.has(secondNode)) {
@@ -195,7 +195,7 @@ function transform(value) {
         nodes[2].value = /** @type {string} */ (verticalValue.get(firstNode));
       }
     }
-  });
+  }
 
   return parsed.toString();
 }

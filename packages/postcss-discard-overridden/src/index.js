@@ -82,11 +82,11 @@ function pluginCreator() {
             }
           });
 
-          rules.forEach((rule) => {
+          for (const rule of rules) {
             if (cache.get(rule.scope) !== rule.node) {
               rule.node.remove();
             }
-          });
+          }
         },
       };
     },

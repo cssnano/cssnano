@@ -49,10 +49,14 @@ function pluginCreator({
      */
     OnceExit(css) {
       css.walk((node) => {
-        reducers.forEach((reducer) => reducer.collect(node, encoder));
+        for (const reducer of reducers) {
+          reducer.collect(node, encoder);
+        }
       });
 
-      reducers.forEach((reducer) => reducer.transform());
+      for (const reducer of reducers) {
+        reducer.transform();
+      }
     },
   };
 }

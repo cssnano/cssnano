@@ -130,31 +130,32 @@ function cssnanoPlugin(options = {}) {
       /** @type {Options} */ (options).preset = { plugins: [] };
     }
 
-    // prettier-ignore
-    /** @type {any[]} */ (/** @type {Options} */ (options).plugins)
-      .forEach((plugin) => {
-        if (Array.isArray(plugin)) {
-          const [pluginDef, opts = {}] = plugin;
-          if (typeof pluginDef === 'string' && isResolvable(pluginDef)) {
-            /** @type {Options} */ (options).preset.plugins.push([
-              require(pluginDef),
-              opts,
-            ]);
-          } else {
-            /** @type {Options} */ (options).preset.plugins.push([
-              pluginDef,
-              opts,
-            ]);
-          }
-        } else if (typeof plugin === 'string' && isResolvable(plugin)) {
+    const inputPlugins = /** @type {any[]} */ (
+      /** @type {Options} */ (options).plugins
+    );
+    for (const plugin of inputPlugins) {
+      if (Array.isArray(plugin)) {
+        const [pluginDef, opts = {}] = plugin;
+        if (typeof pluginDef === 'string' && isResolvable(pluginDef)) {
           /** @type {Options} */ (options).preset.plugins.push([
-            require(plugin),
-            {},
+            require(pluginDef),
+            opts,
           ]);
         } else {
-          /** @type {Options} */ (options).preset.plugins.push([plugin, {}]);
+          /** @type {Options} */ (options).preset.plugins.push([
+            pluginDef,
+            opts,
+          ]);
         }
-      });
+      } else if (typeof plugin === 'string' && isResolvable(plugin)) {
+        /** @type {Options} */ (options).preset.plugins.push([
+          require(plugin),
+          {},
+        ]);
+      } else {
+        /** @type {Options} */ (options).preset.plugins.push([plugin, {}]);
+      }
+    }
   }
   const plugins = [];
   const nanoPlugins = resolveConfig(options);

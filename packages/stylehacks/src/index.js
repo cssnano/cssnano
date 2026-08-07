@@ -38,17 +38,17 @@ function pluginCreator(opts = {}) {
             }
           }
           css.walk((node) => {
-            processors.forEach((proc) => {
+            for (const proc of processors) {
               if (!proc.nodeTypes.has(node.type)) {
-                return;
+                continue;
               }
 
               if (opts.lint) {
-                return proc.detectAndWarn(node);
+                proc.detectAndWarn(node);
+              } else {
+                proc.detectAndResolve(node);
               }
-
-              return proc.detectAndResolve(node);
-            });
+            }
           });
         },
       };

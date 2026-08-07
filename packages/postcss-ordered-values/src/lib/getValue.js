@@ -16,16 +16,16 @@ function flatten(values) {
   /** @type {import('postcss-value-parser').Node[]} */
   const nodes = [];
   for (const [index, arg] of values.entries()) {
-    arg.forEach((val, idx) => {
+    for (const [idx, val] of arg.entries()) {
       if (
         idx === arg.length - 1 &&
         index === values.length - 1 &&
         val.type === 'space'
       ) {
-        return;
+        continue;
       }
       nodes.push(val);
-    });
+    }
 
     if (index !== values.length - 1) {
       nodes[nodes.length - 1].type = 'div';
