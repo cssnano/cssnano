@@ -26,7 +26,8 @@
     "types"
   ],
   "scripts": {
-    "acquire": "node ./src/script/acquire.mjs"
+    "acquire": "node ./src/script/acquire.mjs",
+    "test": "node --test"
   },
   "keywords": [
     "css",

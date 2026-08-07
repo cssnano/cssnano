@@ -12,7 +12,9 @@
     "./src/index.js": "./src/index.js",
     "./package.json": "./package.json"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "node --test"
+  },
   "files": [
     "LICENSE-MIT",
     "src",
