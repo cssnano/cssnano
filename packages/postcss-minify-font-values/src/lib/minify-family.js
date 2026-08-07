@@ -186,7 +186,7 @@ module.exports = function (nodes, opts) {
   let last = null;
   let i, max;
 
-  nodes.forEach((node, index, arr) => {
+  for (const [index, node] of nodes.entries()) {
     if (node.type === 'string' || node.type === 'function') {
       family.push(node);
     } else if (node.type === 'word') {
@@ -200,13 +200,13 @@ module.exports = function (nodes, opts) {
 
       last.value += node.value;
     } else if (node.type === 'space') {
-      if (last && index !== arr.length - 1) {
+      if (last && index !== nodes.length - 1) {
         last.value += ' ';
       }
     } else {
       last = null;
     }
-  });
+  }
 
   let normalizedFamilies = family.map((node) => {
     if (node.type === 'string') {

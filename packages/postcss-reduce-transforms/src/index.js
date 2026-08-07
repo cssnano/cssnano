@@ -259,7 +259,12 @@ function reduce(node) {
     const normalizedReducerName = normalizeReducerName(node.value);
     const reducer = reducers.get(normalizedReducerName);
     if (reducer !== undefined) {
-      reducer(node, node.nodes.reduce(getValues, []));
+      /** @type {(number|string)[]} */
+      let values = [];
+      for (const [index, child] of node.nodes.entries()) {
+        values = getValues(values, child, index);
+      }
+      reducer(node, values);
     }
   }
   return false;

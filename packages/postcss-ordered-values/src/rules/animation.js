@@ -130,11 +130,11 @@ function normalize(args) {
       playState: [],
     };
 
-    arg.forEach((node) => {
+    for (const node of arg) {
       const type = node.type;
       let value = node.value;
       if (type === 'space') {
-        return;
+        continue;
       }
 
       value = value.toLowerCase();
@@ -151,7 +151,7 @@ function normalize(args) {
       if (!hasMatch) {
         state.name = [...state.name, node, addSpace()];
       }
-    });
+    }
 
     list.push([
       ...state.name,

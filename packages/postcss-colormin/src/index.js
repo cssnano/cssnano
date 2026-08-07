@@ -16,13 +16,13 @@ const notMinifiableRegex =
  * @return {void}
  */
 function walk(parent, callback) {
-  parent.nodes.forEach((node, index) => {
+  for (const [index, node] of parent.nodes.entries()) {
     const bubble = callback(node, index, parent);
 
     if (node.type === 'function' && bubble !== false) {
       walk(node, callback);
     }
-  });
+  }
 }
 
 /*

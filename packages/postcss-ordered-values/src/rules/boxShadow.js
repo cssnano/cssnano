@@ -39,7 +39,7 @@ function normalize(args) {
       color: [],
     };
 
-    arg.forEach((node) => {
+    for (const node of arg) {
       const { type, value } = node;
 
       if (
@@ -47,11 +47,11 @@ function normalize(args) {
         mathFunctions.has(vendorUnprefixed(value.toLowerCase()))
       ) {
         abort = true;
-        return;
+        continue;
       }
 
       if (type === 'space') {
-        return;
+        continue;
       }
 
       if (unit(value)) {
@@ -61,7 +61,7 @@ function normalize(args) {
       } else {
         state.color = [...state.color, node, addSpace()];
       }
-    });
+    }
 
     if (abort) {
       return false;

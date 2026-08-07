@@ -13,19 +13,23 @@ module.exports = (v) => {
     return minifyTopBottomRightLeft(v);
   }
 
-  const value = [...values, '']
-    .reduceRight((prev, cur, i, arr) => {
-      if (
-        cur === undefined ||
-        (cur.toLowerCase() === defaults[i] &&
-          (!i || (arr[i - 1] || '').toLowerCase() !== cur.toLowerCase()))
-      ) {
-        return prev;
-      }
+  const valuesWithSentinel = [...values, ''];
+  let value = '';
+  for (let i = valuesWithSentinel.length - 1; i >= 0; i--) {
+    const cur = valuesWithSentinel[i];
+    if (
+      cur === undefined ||
+      (cur.toLowerCase() === defaults[i] &&
+        (!i ||
+          (valuesWithSentinel[i - 1] || '').toLowerCase() !==
+            cur.toLowerCase()))
+    ) {
+      continue;
+    }
 
-      return cur + ' ' + prev;
-    })
-    .trim();
+    value = cur + ' ' + value;
+  }
+  value = value.trim();
 
   return minifyTopBottomRightLeft(value || 'none');
 };

@@ -92,17 +92,19 @@ module.exports = class BasePlugin {
 
   /** @return {void} */
   resolve() {
-    return this.nodes.forEach((node) => node.remove());
+    for (const node of this.nodes) {
+      node.remove();
+    }
   }
 
   warn() {
-    return this.nodes.forEach((node) => {
+    for (const node of this.nodes) {
       const { message, browsers, identifier, hack } = node._stylehacks;
 
-      return node.warn(
+      node.warn(
         /** @type {import('postcss').Result} */ (this.result),
         message + JSON.stringify({ browsers, identifier, hack })
       );
-    });
+    }
   }
 };

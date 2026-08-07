@@ -49,7 +49,7 @@ module.exports = function () {
     },
 
     transform() {
-      declTwoCache.forEach((decl) => {
+      for (const decl of declTwoCache) {
         decl.value = valueParser(decl.value)
           .walk((node) => {
             const { type } = node;
@@ -76,23 +76,23 @@ module.exports = function () {
             return false;
           })
           .toString();
-      });
+      }
 
-      declOneCache.forEach((decl) => {
+      for (const decl of declOneCache) {
         /** @type {unknown} */ (decl.value) = decl.value
           .walk((node) => {
             if (node.type === 'word' && !isNum(node)) {
-              Object.keys(cache).forEach((key) => {
+              for (const key of Object.keys(cache)) {
                 const cached = cache[key];
 
                 if (cached.ident === node.value && !cached.count) {
                   node.value = key;
                 }
-              });
+              }
             }
           })
           .toString();
-      });
+      }
 
       // reset cache after transform
       declOneCache = [];

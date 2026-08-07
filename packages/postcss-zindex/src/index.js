@@ -43,11 +43,11 @@ function pluginCreator(opts = {}) {
           cache.optimizeValues(/** @type {Options} */ (opts).startIndex || 1);
 
           // Second pass; optimize
-          nodes.forEach((decl) => {
+          for (const decl of nodes) {
             // Need to coerce to string so that the
             // AST is updated correctly
             decl.value = cache.getValue(decl.value).toString();
-          });
+          }
         },
       };
     },
