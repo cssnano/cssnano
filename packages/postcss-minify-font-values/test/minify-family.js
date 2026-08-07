@@ -92,7 +92,7 @@ const tests = [
 ];
 
 test('minify-family', () => {
-  tests.forEach(({ fixture, options, expected }) => {
+  for (const { fixture, options, expected } of tests) {
     assert.deepStrictEqual(minifyFamily(fixture, options), expected);
-  });
+  }
 });

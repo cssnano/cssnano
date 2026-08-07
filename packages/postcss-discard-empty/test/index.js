@@ -12,7 +12,7 @@ const { passthroughCSS, processCSS, processor } = processCSSFactory(plugin);
 function testRemovals(fixture, expected, removedSelectors) {
   return () =>
     processor(fixture).then((result) => {
-      removedSelectors.forEach((removedSelector) => {
+      for (const removedSelector of removedSelectors) {
         const message = result.messages.some((m) => {
           return (
             m.plugin === 'postcss-discard-empty' &&
@@ -26,9 +26,9 @@ function testRemovals(fixture, expected, removedSelectors) {
             'expected selector `' + removedSelector + '` was not removed'
           );
         }
-      });
+      }
 
-      result.messages.forEach((m) => {
+      for (const m of result.messages) {
         if (
           m.plugin !== 'postcss-discard-empty' ||
           m.type !== 'removal' ||
@@ -39,7 +39,7 @@ function testRemovals(fixture, expected, removedSelectors) {
             'unexpected selector `' + m.selector + '` was removed'
           );
         }
-      });
+      }
 
       assert.strictEqual(result.css, expected);
     });

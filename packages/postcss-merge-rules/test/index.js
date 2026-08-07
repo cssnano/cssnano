@@ -691,18 +691,17 @@ test(
 const pseudoKeys = Object.keys(pseudoElements);
 
 test(`should not merge ${pseudoKeys.length} pseudo elements`, () => {
-  return Promise.all(
-    pseudoKeys.reduce((promises, pseudo) => {
-      return [
-        ...promises,
-        processCSS(
-          `${pseudo}{color:blue}h1{color:blue}`,
-          `${pseudo}{color:blue}h1{color:blue}`,
-          { overrideBrowserslist: 'IE 6' }
-        ),
-      ];
-    }, [])
-  );
+  const promises = [];
+  for (const pseudo of pseudoKeys) {
+    promises.push(
+      processCSS(
+        `${pseudo}{color:blue}h1{color:blue}`,
+        `${pseudo}{color:blue}h1{color:blue}`,
+        { overrideBrowserslist: 'IE 6' }
+      )
+    );
+  }
+  return Promise.all(promises);
 });
 
 test(

@@ -54,10 +54,10 @@ for (const { property, fixture } of widthStyleColor) {
 }
 
 for (const direction of topRightBottomLeft) {
-  const value = widthStyleColor.reduce(
-    (list, { fixture }) => [...list, fixture],
-    []
-  );
+  const value = [];
+  for (const { fixture } of widthStyleColor) {
+    value.push(fixture);
+  }
 
   test(
     `should merge to form a border-${direction} definition`,
