@@ -12,7 +12,7 @@ Since version 4, we develop in a monorepo. This is because a lot of transforms o
 easier to test them together. Other than this, you'll need Node.js, pnpm &
 git installed. Then, you can run these commands to get the repository set up:
 
-```
+```shell
 git clone git@github.com:cssnano/cssnano.git
 cd cssnano
 pnpm install
@@ -20,7 +20,7 @@ pnpm install
 
 You can run the tests with:
 
-```
+```shell
 pnpm test
 ```
 
@@ -47,13 +47,13 @@ be edited by hand.
 
 ### Releasing
 
-We use @changesets/cli to update the changelog and tag releases.
+We use pnpm changesets to update the changelog.
 First make sure a changeset exists for every change you want to publish. A changeset is a text file
 with the description of the change and the affected packages.
 To create a changeset run
 
-```
-pnpm changeset
+```shell
+pnpm change
 ```
 
 It's best to select the affected packages by hand rather than rely on the tools automatically
@@ -61,20 +61,15 @@ discovering dependencies. For example, if a change affects a plugin `cssnano-pre
 select the plugin and `cssnano-preset-default` by hand (as well as any other dependent presets).
 To tag a release and generate the changelog, run:
 
-```
-pnpm changeset version
+```shell
+pnpm version -r
 ```
 
 To publish release to npm, run:
 
-```
+```shell
 pnpm all-publish
 ```
-
-If you don't use the `package.json` script, do not forget to rebuild the packages first!
-
-1. `pnpm prepare`
-2. `pnpm changeset publish`
 
 ## Are there other ways of contributing?
 
@@ -115,16 +110,10 @@ help by reviewing pull requests; even leaving a thumbs up reaction is better
 than nothing at all. Helping us to review means less time is wasted by all of
 us if a buggy release is cut.
 
-### Talk with us!
-
-We have an [online chat][chat] where you can ask questions or discuss features;
-help us by joining the chat, and answer any questions that the community may
-have. Feel free to ask any questions of your own!
-
-## How you can support us
+## Support us
 
 If you don't have time to contribute to the project directly, you can also
-help us out by starring the repository, or [follow us on Twitter][twitter].
+help us out by starring the repository.
 Word of mouth really does mean a lot to us!
 
 You can also [help support us financially](/docs/support-us/).
