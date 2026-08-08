@@ -22,14 +22,7 @@ module.exports = (props, includeCustomProps = true) => {
       }
     }
   }
-  const customProps = new Set(props.filter(isCustomProp));
-  const allProps = new Set(props);
-
-  if (
-    includeCustomProps &&
-    customProps.size > 1 &&
-    allProps.size !== customProps.size
-  ) {
+  if (includeCustomProps && props.some(isCustomProp)) {
     return false;
   }
 
