@@ -301,31 +301,10 @@ function mergeParents(first, second) {
 }
 
 /**
- * @param {Rule} first
  * @param {Rule} second
- * @param {string[]} browsers
- * @param {Map<string, boolean>} compatibilityCache
- * @param {WeakSet<Rule>} ruleCache
- * @param {WeakMap<Rule, RuleMeta>} ruleMeta
- * @return {Rule} mergedRule
+ * @return {Rule | null}
  */
-function partialMerge(
-  first,
-  second,
-  browsers,
-  compatibilityCache,
-  ruleCache,
-  ruleMeta
-) {
-  if (ruleMeta) {
-    flush(first, ruleMeta);
-  }
-  const metaFirst = getMeta(first, ruleMeta);
-  const metaSecond = getMeta(second, ruleMeta);
-  let intersection = intersect(metaFirst.declarations, metaSecond.declarations);
-  if (intersection.length === 0) {
-    return second;
-  }
+function getNextRule(second) {
   let nextRule = second.next();
   if (!nextRule) {
     // Grab next cousin
@@ -336,9 +315,32 @@ function partialMerge(
       ).next();
     nextRule = parentSibling && parentSibling.nodes && parentSibling.nodes[0];
   }
+  return nextRule?.type === 'rule' ? nextRule : null;
+}
+
+/**
+ * @param {Rule} first
+ * @param {Rule} second
+ * @param {Declaration[]} intersection
+ * @param {string[]} browsers
+ * @param {Map<string, boolean>} compatibilityCache
+ * @param {WeakSet<Rule>} ruleCache
+ * @param {WeakMap<Rule, RuleMeta>} ruleMeta
+ * @return {{first: Rule, second: Rule, intersection: Declaration[]}}
+ */
+function mergeWithNextRule(
+  first,
+  second,
+  intersection,
+  browsers,
+  compatibilityCache,
+  ruleCache,
+  ruleMeta
+) {
+  const nextRule = getNextRule(second);
   if (
-    nextRule?.type === 'rule' &&
-    canMerge(
+    !nextRule ||
+    !canMerge(
       second,
       nextRule,
       browsers,
@@ -347,24 +349,28 @@ function partialMerge(
       ruleMeta
     )
   ) {
-    const metaNext = getMeta(nextRule, ruleMeta);
-    const nextIntersection = intersect(
-      metaSecond.declarations,
-      metaNext.declarations
-    );
-    if (nextIntersection.length > intersection.length) {
-      mergeParents(second, nextRule);
-      first = second;
-      second = nextRule;
-      intersection = nextIntersection;
-    }
+    return { first, second, intersection };
   }
 
-  const metaFirstActual = getMeta(first, ruleMeta);
-  const metaSecondActual = getMeta(second, ruleMeta);
-  const firstDecls = [...metaFirstActual.declarations];
-  const secondDecls = [...metaSecondActual.declarations];
+  const nextIntersection = intersect(
+    getMeta(second, ruleMeta).declarations,
+    getMeta(nextRule, ruleMeta).declarations
+  );
+  if (nextIntersection.length <= intersection.length) {
+    return { first, second, intersection };
+  }
 
+  mergeParents(second, nextRule);
+  return { first: second, second: nextRule, intersection: nextIntersection };
+}
+
+/**
+ * @param {Declaration[]} intersection
+ * @param {Declaration[]} firstDecls
+ * @param {Declaration[]} secondDecls
+ * @return {Declaration[]}
+ */
+function filterIntersections(intersection, firstDecls, secondDecls) {
   // Filter out intersections with later conflicts in First
   intersection = intersection.filter((decl, intersectIndex) => {
     const indexOfDecl = indexOfDeclaration(firstDecls, decl);
@@ -386,7 +392,7 @@ function partialMerge(
   });
 
   // Filter out intersections with previous conflicts in Second
-  intersection = intersection.filter((decl) => {
+  return intersection.filter((decl) => {
     const nextConflictIndex = secondDecls.findIndex((d) =>
       isConflictingProp(d.prop, decl.prop)
     );
@@ -408,15 +414,20 @@ function partialMerge(
     secondDecls.splice(nextConflictIndex, 1);
     return true;
   });
+}
 
-  if (intersection.length === 0) {
-    // Nothing to merge
-    return second;
-  }
-
+/**
+ * @param {Rule} first
+ * @param {Rule} second
+ * @param {Declaration[]} intersection
+ * @param {WeakSet<Rule>} ruleCache
+ * @param {WeakMap<Rule, RuleMeta>} ruleMeta
+ * @return {Rule}
+ */
+function buildMergedRule(first, second, intersection, ruleCache, ruleMeta) {
   const receivingBlock = second.clone();
-  const firstSelectors = metaFirstActual.selectors;
-  const secondSelectors = metaSecondActual.selectors;
+  const firstSelectors = getMeta(first, ruleMeta).selectors;
+  const secondSelectors = getMeta(second, ruleMeta).selectors;
 
   receivingBlock.selector = [...firstSelectors, ...secondSelectors].join();
   receivingBlock.nodes = [];
@@ -478,10 +489,64 @@ function partialMerge(
     ruleMeta?.delete(first);
     ruleMeta?.delete(second);
     return secondClone;
-  } else {
-    receivingBlock.remove();
+  }
+
+  receivingBlock.remove();
+  return second;
+}
+
+/**
+ * @param {Rule} first
+ * @param {Rule} second
+ * @param {string[]} browsers
+ * @param {Map<string, boolean>} compatibilityCache
+ * @param {WeakSet<Rule>} ruleCache
+ * @param {WeakMap<Rule, RuleMeta>} ruleMeta
+ * @return {Rule} mergedRule
+ */
+function partialMerge(
+  first,
+  second,
+  browsers,
+  compatibilityCache,
+  ruleCache,
+  ruleMeta
+) {
+  if (ruleMeta) {
+    flush(first, ruleMeta);
+  }
+  const metaFirst = getMeta(first, ruleMeta);
+  const metaSecond = getMeta(second, ruleMeta);
+  let intersection = intersect(metaFirst.declarations, metaSecond.declarations);
+  if (intersection.length === 0) {
     return second;
   }
+  const mergedNext = mergeWithNextRule(
+    first,
+    second,
+    intersection,
+    browsers,
+    compatibilityCache,
+    ruleCache,
+    ruleMeta
+  );
+  first = mergedNext.first;
+  second = mergedNext.second;
+  intersection = mergedNext.intersection;
+
+  const metaFirstActual = getMeta(first, ruleMeta);
+  const metaSecondActual = getMeta(second, ruleMeta);
+  const firstDecls = [...metaFirstActual.declarations];
+  const secondDecls = [...metaSecondActual.declarations];
+
+  intersection = filterIntersections(intersection, firstDecls, secondDecls);
+
+  if (intersection.length === 0) {
+    // Nothing to merge
+    return second;
+  }
+
+  return buildMergedRule(first, second, intersection, ruleCache, ruleMeta);
 }
 
 /**
