@@ -9,6 +9,85 @@ const STATES = {
 };
 
 /**
+ * @typedef {object} ParserContext
+ * @property {string} input
+ * @property {[number, number, number][]} tokens
+ * @property {number} length
+ * @property {number} pos
+ * @property {number} state
+ * @property {number} tokenStart
+ * @property {number} commentStart
+ */
+
+/**
+ * @param {ParserContext} context
+ * @param {string} nextChar
+ * @return {boolean}
+ */
+function handleNormalState(context, nextChar) {
+  const { input, pos } = context;
+  const char = input[pos];
+
+  if (char === '/' && nextChar === '*') {
+    if (pos > context.tokenStart) {
+      context.tokens.push([0, context.tokenStart, pos]);
+    }
+    context.commentStart = pos;
+    context.state = STATES.IN_COMMENT;
+    context.pos += 2;
+    return true;
+  }
+
+  if (char === '"') {
+    context.state = STATES.IN_DOUBLE_QUOTE;
+  } else if (char === "'") {
+    context.state = STATES.IN_SINGLE_QUOTE;
+  }
+
+  return false;
+}
+
+/**
+ * @param {ParserContext} context
+ * @param {string} nextChar
+ * @param {string} quote
+ * @return {boolean}
+ */
+function handleQuoteState(context, nextChar, quote) {
+  const char = context.input[context.pos];
+
+  if (char === '\\' && nextChar) {
+    context.pos += 2;
+    return true;
+  }
+
+  if (char === quote) {
+    context.state = STATES.NORMAL;
+  }
+
+  return false;
+}
+
+/**
+ * @param {ParserContext} context
+ * @param {string} nextChar
+ * @return {boolean}
+ */
+function handleCommentState(context, nextChar) {
+  const { input, pos } = context;
+
+  if (input[pos] === '*' && nextChar === '/') {
+    context.tokens.push([1, context.commentStart + 2, pos]);
+    context.tokenStart = pos + 2;
+    context.state = STATES.NORMAL;
+    context.pos += 2;
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * CSS Comment Parser with context awareness
  * Properly handles comments inside strings, URLs, and escaped characters
  *
@@ -16,80 +95,55 @@ const STATES = {
  * @return {[number, number, number][]}
  */
 module.exports = function commentParser(input) {
-  /** @type {[number, number, number][]} */
-  const tokens = [];
-  const length = input.length;
-  let pos = 0;
+  /** @type {ParserContext} */
+  const context = {
+    input,
+    tokens: [],
+    length: input.length,
+    pos: 0,
+    state: STATES.NORMAL,
+    tokenStart: 0,
+    commentStart: 0,
+  };
 
-  let state = STATES.NORMAL;
-  let tokenStart = 0;
-  let commentStart = 0;
+  while (context.pos < context.length) {
+    const nextChar =
+      context.pos + 1 < context.length ? context.input[context.pos + 1] : '';
+    let handled;
 
-  while (pos < length) {
-    const char = input[pos];
-    const nextChar = pos + 1 < length ? input[pos + 1] : '';
-
-    switch (state) {
+    switch (context.state) {
       case STATES.NORMAL:
-        if (char === '/' && nextChar === '*') {
-          // Found comment start - add non-comment token if needed
-          if (pos > tokenStart) {
-            tokens.push([0, tokenStart, pos]);
-          }
-          commentStart = pos;
-          state = STATES.IN_COMMENT;
-          pos += 2; // Skip /*
-          continue;
-        } else if (char === '"') {
-          state = STATES.IN_DOUBLE_QUOTE;
-        } else if (char === "'") {
-          state = STATES.IN_SINGLE_QUOTE;
-        }
+        handled = handleNormalState(context, nextChar);
         break;
 
       case STATES.IN_SINGLE_QUOTE:
-        if (char === '\\' && nextChar) {
-          // Skip escaped character
-          pos += 2;
-          continue;
-        } else if (char === "'") {
-          state = STATES.NORMAL;
-        }
+        handled = handleQuoteState(context, nextChar, "'");
         break;
 
       case STATES.IN_DOUBLE_QUOTE:
-        if (char === '\\' && nextChar) {
-          // Skip escaped character
-          pos += 2;
-          continue;
-        } else if (char === '"') {
-          state = STATES.NORMAL;
-        }
+        handled = handleQuoteState(context, nextChar, '"');
         break;
 
       case STATES.IN_COMMENT:
-        if (char === '*' && nextChar === '/') {
-          // Found comment end
-          tokens.push([1, commentStart + 2, pos]);
-          tokenStart = pos + 2;
-          state = STATES.NORMAL;
-          pos += 2; // Skip */
-          continue;
-        }
+        handled = handleCommentState(context, nextChar);
         break;
     }
 
-    pos++;
+    if (handled) {
+      continue;
+    }
+
+    context.pos++;
   }
 
   // Handle remaining content
-  if (state === STATES.IN_COMMENT) {
+  if (context.state === STATES.IN_COMMENT) {
     // Unclosed comment - treat as comment to end
-    tokens.push([1, commentStart + 2, length]);
-  } else if (tokenStart < length) {
+    context.tokens.push([1, context.commentStart + 2, context.length]);
+  } else if (context.tokenStart < context.length) {
     // Add final non-comment token
-    tokens.push([0, tokenStart, length]);
+    context.tokens.push([0, context.tokenStart, context.length]);
   }
 
-  return tokens;
+  return context.tokens;
 };

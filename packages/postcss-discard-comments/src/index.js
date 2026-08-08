@@ -146,6 +146,94 @@ function pluginCreator(opts = {}) {
     return result;
   }
 
+  /**
+   * @param {import('postcss').Declaration} node
+   * @param {(s: string) => string[]} space
+   */
+  function processDeclaration(node, space) {
+    if (node.raws.value && node.raws.value.raw) {
+      if (node.raws.value.value === node.value) {
+        node.value = replaceComments(node.raws.value.raw, space);
+      } else {
+        node.value = replaceComments(node.value, space);
+      }
+
+      /** @type {null | {value: string, raw: string}} */ (node.raws.value) =
+        null;
+    }
+
+    if (node.raws.important) {
+      node.raws.important = replaceComments(node.raws.important, space);
+
+      const b = matchesComments(node.raws.important);
+
+      node.raws.important = b.length ? node.raws.important : '!important';
+    } else {
+      node.value = replaceComments(node.value, space);
+    }
+  }
+
+  /**
+   * @param {import('postcss').Rule} node
+   * @param {(s: string) => string[]} space
+   */
+  function processRule(node, space) {
+    if (node.raws.selector && node.raws.selector.raw) {
+      node.raws.selector.raw = replaceCommentsInSelector(
+        node.raws.selector.raw,
+        space
+      );
+    } else if (node.selector && node.selector.includes('/*')) {
+      node.selector = replaceCommentsInSelector(node.selector, space);
+    }
+  }
+
+  /**
+   * @param {import('postcss').AtRule} node
+   * @param {(s: string) => string[]} space
+   */
+  function processAtRule(node, space) {
+    if (node.raws.afterName) {
+      const commentsReplaced = replaceComments(node.raws.afterName, space);
+
+      if (!commentsReplaced.length) {
+        node.raws.afterName = commentsReplaced + ' ';
+      } else {
+        node.raws.afterName = ' ' + commentsReplaced + ' ';
+      }
+    }
+
+    if (node.raws.params && node.raws.params.raw) {
+      node.raws.params.raw = replaceComments(node.raws.params.raw, space);
+    } else if (node.params && node.params.includes('/*')) {
+      node.params = replaceComments(node.params, space);
+    }
+  }
+
+  /**
+   * @param {import('postcss').ChildNode} node
+   * @param {(s: string) => string[]} space
+   */
+  function processNode(node, space) {
+    if (node.type === 'comment' && remover.canRemove(node.text)) {
+      node.remove();
+
+      return;
+    }
+
+    if (typeof node.raws.between === 'string') {
+      node.raws.between = replaceComments(node.raws.between, space);
+    }
+
+    if (node.type === 'decl') {
+      processDeclaration(node, space);
+    } else if (node.type === 'rule') {
+      processRule(node, space);
+    } else if (node.type === 'atrule') {
+      processAtRule(node, space);
+    }
+  }
+
   return {
     postcssPlugin: 'postcss-discard-comments',
     /**
@@ -153,86 +241,7 @@ function pluginCreator(opts = {}) {
      * @param {import('postcss').Helpers} helpers
      */
     OnceExit(css, { list }) {
-      css.walk((node) => {
-        if (node.type === 'comment' && remover.canRemove(node.text)) {
-          node.remove();
-
-          return;
-        }
-
-        if (typeof node.raws.between === 'string') {
-          node.raws.between = replaceComments(node.raws.between, list.space);
-        }
-
-        if (node.type === 'decl') {
-          if (node.raws.value && node.raws.value.raw) {
-            if (node.raws.value.value === node.value) {
-              node.value = replaceComments(node.raws.value.raw, list.space);
-            } else {
-              node.value = replaceComments(node.value, list.space);
-            }
-
-            /** @type {null | {value: string, raw: string}} */ (
-              node.raws.value
-            ) = null;
-          }
-
-          if (node.raws.important) {
-            node.raws.important = replaceComments(
-              node.raws.important,
-              list.space
-            );
-
-            const b = matchesComments(node.raws.important);
-
-            node.raws.important = b.length ? node.raws.important : '!important';
-          } else {
-            node.value = replaceComments(node.value, list.space);
-          }
-
-          return;
-        }
-
-        if (node.type === 'rule') {
-          if (node.raws.selector && node.raws.selector.raw) {
-            node.raws.selector.raw = replaceCommentsInSelector(
-              node.raws.selector.raw,
-              list.space
-            );
-          } else if (node.selector && node.selector.includes('/*')) {
-            node.selector = replaceCommentsInSelector(
-              node.selector,
-              list.space
-            );
-          }
-
-          return;
-        }
-
-        if (node.type === 'atrule') {
-          if (node.raws.afterName) {
-            const commentsReplaced = replaceComments(
-              node.raws.afterName,
-              list.space
-            );
-
-            if (!commentsReplaced.length) {
-              node.raws.afterName = commentsReplaced + ' ';
-            } else {
-              node.raws.afterName = ' ' + commentsReplaced + ' ';
-            }
-          }
-
-          if (node.raws.params && node.raws.params.raw) {
-            node.raws.params.raw = replaceComments(
-              node.raws.params.raw,
-              list.space
-            );
-          } else if (node.params && node.params.includes('/*')) {
-            node.params = replaceComments(node.params, list.space);
-          }
-        }
-      });
+      css.walk((node) => processNode(node, list.space));
     },
   };
 }
