@@ -16,6 +16,7 @@ const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 const variableFunctions = new Set(['var', 'env', 'constant']);
 const propFilterRegex =
   /^(background(-position)?|(-\w+-)?perspective-origin)$/i;
+
 /**
  * @param {valueParser.Node} node
  * @return {boolean}
@@ -85,12 +86,26 @@ function isDimensionNode(node) {
  */
 function transform(value) {
   const parsed = valueParser(value);
-  /** @type {({start: number, end: number} | {start: null, end: null})[]} */
+  const ranges = collectRanges(parsed.nodes);
+
+  for (const range of ranges) {
+    normalizeRange(parsed, range);
+  }
+
+  return parsed.toString();
+}
+
+/**
+ * @param {valueParser.Node[]} nodes
+ * @return {{start: number | null, end: number | null}[]}
+ */
+function collectRanges(nodes) {
+  /** @type {{start: number | null, end: number | null}[]} */
   const ranges = [];
   let rangeIndex = 0;
   let shouldContinue = true;
 
-  for (const [index, node] of parsed.nodes.entries()) {
+  for (const [index, node] of nodes.entries()) {
     // After comma (`,`) follows next background
     if (isCommaNode(node)) {
       rangeIndex += 1;
@@ -148,56 +163,82 @@ function transform(value) {
     }
   }
 
-  for (const range of ranges) {
-    if (range.start === null) {
-      continue;
-    }
+  return ranges;
+}
 
-    const nodes = parsed.nodes.slice(range.start, range.end + 1);
-
-    if (nodes.length > 3) {
-      continue;
-    }
-
-    const firstNode = nodes[0].value.toLowerCase();
-    const secondNode =
-      nodes[2] && nodes[2].value ? nodes[2].value.toLowerCase() : null;
-
-    if (nodes.length === 1 || secondNode === 'center') {
-      if (secondNode) {
-        nodes[2].value = nodes[1].value = '';
-      }
-
-      const map = new Map([...horizontal, ['center', center]]);
-
-      if (map.has(firstNode)) {
-        nodes[0].value = /** @type {string}*/ (map.get(firstNode));
-      }
-
-      continue;
-    }
-
-    if (secondNode !== null) {
-      if (firstNode === 'center' && directionKeywords.has(secondNode)) {
-        nodes[0].value = nodes[1].value = '';
-
-        if (horizontal.has(secondNode)) {
-          nodes[2].value = /** @type {string} */ (horizontal.get(secondNode));
-        }
-        continue;
-      }
-
-      if (horizontal.has(firstNode) && verticalValue.has(secondNode)) {
-        nodes[0].value = /** @type {string} */ (horizontal.get(firstNode));
-        nodes[2].value = /** @type {string} */ (verticalValue.get(secondNode));
-      } else if (verticalValue.has(firstNode) && horizontal.has(secondNode)) {
-        nodes[0].value = /** @type {string} */ (horizontal.get(secondNode));
-        nodes[2].value = /** @type {string} */ (verticalValue.get(firstNode));
-      }
-    }
+/**
+ * @param {{nodes: valueParser.Node[]}} parsed
+ * @param {{start: number | null, end: number | null}} range
+ * @return {void}
+ */
+function normalizeRange(parsed, range) {
+  if (range.start === null || range.end === null) {
+    return;
   }
 
-  return parsed.toString();
+  const nodes = parsed.nodes.slice(range.start, range.end + 1);
+
+  if (nodes.length > 3) {
+    return;
+  }
+
+  const firstNode = nodes[0].value.toLowerCase();
+  const secondNode =
+    nodes[2] && nodes[2].value ? nodes[2].value.toLowerCase() : null;
+
+  if (nodes.length === 1 || secondNode === 'center') {
+    normalizeSinglePosition(nodes, firstNode, secondNode);
+    return;
+  }
+
+  normalizePairPosition(nodes, firstNode, secondNode);
+}
+
+/**
+ * @param {valueParser.Node[]} nodes
+ * @param {string} firstNode
+ * @param {string | null} secondNode
+ * @return {void}
+ */
+function normalizeSinglePosition(nodes, firstNode, secondNode) {
+  if (secondNode) {
+    nodes[2].value = nodes[1].value = '';
+  }
+
+  const map = new Map([...horizontal, ['center', center]]);
+
+  if (map.has(firstNode)) {
+    nodes[0].value = /** @type {string}*/ (map.get(firstNode));
+  }
+}
+
+/**
+ * @param {valueParser.Node[]} nodes
+ * @param {string} firstNode
+ * @param {string | null} secondNode
+ * @return {void}
+ */
+function normalizePairPosition(nodes, firstNode, secondNode) {
+  if (secondNode === null) {
+    return;
+  }
+
+  if (firstNode === 'center' && directionKeywords.has(secondNode)) {
+    nodes[0].value = nodes[1].value = '';
+
+    if (horizontal.has(secondNode)) {
+      nodes[2].value = /** @type {string} */ (horizontal.get(secondNode));
+    }
+    return;
+  }
+
+  if (horizontal.has(firstNode) && verticalValue.has(secondNode)) {
+    nodes[0].value = /** @type {string} */ (horizontal.get(firstNode));
+    nodes[2].value = /** @type {string} */ (verticalValue.get(secondNode));
+  } else if (verticalValue.has(firstNode) && horizontal.has(secondNode)) {
+    nodes[0].value = /** @type {string} */ (horizontal.get(secondNode));
+    nodes[2].value = /** @type {string} */ (verticalValue.get(firstNode));
+  }
 }
 
 /**
