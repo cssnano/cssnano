@@ -139,47 +139,69 @@ function hasUnsafeForFold(token) {
 }
 
 /**
+ * @param {Node & {namespace?: string | boolean | null}} node
+ * @return {boolean}
+ */
+function isUnsafeTag(node) {
+  return node.namespace !== undefined && node.namespace !== null;
+}
+
+/**
+ * @param {Node & {
+ *   namespace?: string | boolean | null,
+ *   insensitive?: boolean,
+ *   raws?: Record<string, unknown>,
+ * }} node
+ * @return {boolean}
+ */
+function isUnsafeAttribute(node) {
+  return Boolean(
+    (node.namespace !== undefined && node.namespace !== null) ||
+    node.insensitive ||
+    (node.raws && 'insensitiveFlag' in node.raws)
+  );
+}
+
+/**
+ * @param {Pseudo} node
+ * @return {boolean}
+ */
+function isUnsafePseudo(node) {
+  const value = /** @type {string} */ (node.value);
+  if (
+    value.startsWith('::') ||
+    value === ':before' ||
+    value === ':after' ||
+    value === ':first-letter' ||
+    value === ':first-line'
+  ) {
+    return true;
+  }
+  return (
+    !SAFE_PSEUDO_CLASSES.has(value) ||
+    Boolean(node.nodes && node.nodes.length > 0)
+  );
+}
+
+/**
  * @param {Node[]} nodes
  * @return {boolean}
  */
 function nodesContainUnsafeForFold(nodes) {
   for (const n of nodes) {
     const t = n.type;
-    if (t === 'class' || t === 'id') {
-      continue;
-    }
+    if (t === 'class' || t === 'id') continue;
+
     if (t === 'tag') {
-      if (n.namespace !== undefined && n.namespace !== null) {
-        return true;
-      }
+      if (isUnsafeTag(n)) return true;
       continue;
     }
     if (t === 'attribute') {
-      if (n.namespace !== undefined && n.namespace !== null) {
-        return true;
-      }
-      if (n.insensitive || (n.raws && 'insensitiveFlag' in n.raws)) {
-        return true;
-      }
+      if (isUnsafeAttribute(n)) return true;
       continue;
     }
     if (t === 'pseudo') {
-      const v = n.value;
-      if (
-        v.startsWith('::') ||
-        v === ':before' ||
-        v === ':after' ||
-        v === ':first-letter' ||
-        v === ':first-line'
-      ) {
-        return true;
-      }
-      if (!SAFE_PSEUDO_CLASSES.has(v)) {
-        return true;
-      }
-      if (n.nodes && n.nodes.length > 0) {
-        return true;
-      }
+      if (isUnsafePseudo(n)) return true;
       continue;
     }
     return true;
