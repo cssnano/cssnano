@@ -25,6 +25,67 @@ function normalizeNodes(nodes, toBeSpliced) {
 }
 
 /**
+ * @param {import('postcss-value-parser').Node} node
+ * @param {number} index
+ * @param {{familyStart: number, hasSize: boolean}} state
+ * @return {void}
+ */
+function processWord(node, index, state) {
+  if (state.hasSize) {
+    return;
+  }
+
+  const value = node.value.toLowerCase();
+  if (isUnmodifiedBoundary(value) || keywords.style.has(value)) {
+    state.familyStart = index;
+  } else if (keywords.variant.has(value)) {
+    state.familyStart = index;
+  } else if (keywords.weight.has(value)) {
+    node.value = minifyWeight(value);
+    state.familyStart = index;
+  } else if (keywords.stretch.has(value)) {
+    state.familyStart = index;
+  } else if (keywords.size.has(value) || valueParser.unit(value)) {
+    state.familyStart = index;
+    state.hasSize = true;
+  }
+}
+
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
+function isUnmodifiedBoundary(value) {
+  return (
+    value === 'normal' ||
+    value === 'inherit' ||
+    value === 'initial' ||
+    value === 'unset' ||
+    Boolean(valueParser.unit(value))
+  );
+}
+
+/**
+ * @param {import('postcss-value-parser').Node} node
+ * @param {number} index
+ * @param {import('postcss-value-parser').Node | undefined} nextNode
+ * @param {{familyStart: number}} state
+ * @return {boolean}
+ */
+function processNonWord(node, index, nextNode, state) {
+  if (node.type === 'function' && nextNode?.type === 'space') {
+    state.familyStart = index;
+  }
+
+  if (node.type === 'div' && node.value === '/') {
+    state.familyStart = index + 1;
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * @param {string} unminified
  * @param {import('../index').Options} opts
  * @return {string}
@@ -33,8 +94,7 @@ module.exports = function (unminified, opts) {
   const tree = valueParser(unminified);
   const nodes = tree.nodes;
 
-  let familyStart = NaN;
-  let hasSize = false;
+  const state = { familyStart: NaN, hasSize: false };
   const toBeSpliced = new Set();
 
   for (const [i, node] of nodes.entries()) {
@@ -43,45 +103,14 @@ module.exports = function (unminified, opts) {
     }
 
     if (node.type === 'word') {
-      if (hasSize) {
-        continue;
-      }
-
-      const value = node.value.toLowerCase();
-      if (
-        value === 'normal' ||
-        value === 'inherit' ||
-        value === 'initial' ||
-        value === 'unset'
-      ) {
-        familyStart = i;
-      } else if (keywords.style.has(value) || valueParser.unit(value)) {
-        familyStart = i;
-      } else if (keywords.variant.has(value)) {
-        familyStart = i;
-      } else if (keywords.weight.has(value)) {
-        node.value = minifyWeight(value);
-        familyStart = i;
-      } else if (keywords.stretch.has(value)) {
-        familyStart = i;
-      } else if (keywords.size.has(value) || valueParser.unit(value)) {
-        familyStart = i;
-        hasSize = true;
-      }
-    } else if (
-      node.type === 'function' &&
-      nodes[i + 1] &&
-      nodes[i + 1].type === 'space'
-    ) {
-      familyStart = i;
-    } else if (node.type === 'div' && node.value === '/') {
-      familyStart = i + 1;
+      processWord(node, i, state);
+    } else if (processNonWord(node, i, nodes[i + 1], state)) {
       break;
     }
   }
 
   normalizeNodes(nodes, toBeSpliced);
-  familyStart += 2;
+  const familyStart = state.familyStart + 2;
 
   const family = minifyFamily(nodes.slice(familyStart), opts);
 
