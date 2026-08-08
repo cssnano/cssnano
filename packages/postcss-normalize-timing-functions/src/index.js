@@ -31,76 +31,86 @@ function reduce(node) {
   const lowerCasedValue = node.value.toLowerCase();
 
   if (lowerCasedValue === 'steps') {
-    // Don't bother checking the step-end case as it has the same length
-    // as steps(1)
-    if (
-      node.nodes[0].type === 'word' &&
-      getValue(node.nodes[0]) === 1 &&
-      node.nodes[2] &&
-      node.nodes[2].type === 'word' &&
-      (node.nodes[2].value.toLowerCase() === 'start' ||
-        node.nodes[2].value.toLowerCase() === 'jump-start')
-    ) {
-      /** @type string */ (node.type) = 'word';
-      node.value = 'step-start';
-
-      delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
-
-      return;
-    }
-
-    if (
-      node.nodes[0].type === 'word' &&
-      getValue(node.nodes[0]) === 1 &&
-      node.nodes[2] &&
-      node.nodes[2].type === 'word' &&
-      (node.nodes[2].value.toLowerCase() === 'end' ||
-        node.nodes[2].value.toLowerCase() === 'jump-end')
-    ) {
-      /** @type string */ (node.type) = 'word';
-      node.value = 'step-end';
-
-      delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
-
-      return;
-    }
-
-    // The end case is actually the browser default, so it isn't required.
-    if (
-      node.nodes[2] &&
-      node.nodes[2].type === 'word' &&
-      (node.nodes[2].value.toLowerCase() === 'end' ||
-        node.nodes[2].value.toLowerCase() === 'jump-end')
-    ) {
-      node.nodes = [node.nodes[0]];
-
-      return;
-    }
-
-    return false;
+    return normalizeSteps(node);
   }
 
   if (lowerCasedValue === 'cubic-bezier') {
-    const values = node.nodes
-      .filter((list, index) => {
-        return index % 2 === 0;
-      })
-      .map(getValue);
+    return normalizeCubicBezier(node);
+  }
+}
 
-    if (values.length !== 4) {
-      return;
-    }
+/**
+ * @param {valueParser.FunctionNode} node
+ * @return {void | false}
+ */
+function normalizeSteps(node) {
+  const count = node.nodes[0];
+  const position = node.nodes[2];
+  const isSingleStep = count.type === 'word' && getValue(count) === 1;
 
-    const match = conversions.get(values.toString());
+  if (isSingleStep && isStepPosition(position, 'start', 'jump-start')) {
+    /** @type string */ (node.type) = 'word';
+    node.value = 'step-start';
 
-    if (match) {
-      /** @type string */ (node.type) = 'word';
-      node.value = match;
+    delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
 
-      delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
+    return;
+  }
 
-      return;
-    }
+  if (isSingleStep && isStepPosition(position, 'end', 'jump-end')) {
+    /** @type string */ (node.type) = 'word';
+    node.value = 'step-end';
+
+    delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
+
+    return;
+  }
+
+  // The end case is actually the browser default, so it isn't required.
+  if (isStepPosition(position, 'end', 'jump-end')) {
+    node.nodes = [count];
+
+    return;
+  }
+
+  return false;
+}
+
+/**
+ * @param {valueParser.Node | undefined} node
+ * @param {string} first
+ * @param {string} second
+ * @return {boolean}
+ */
+function isStepPosition(node, first, second) {
+  return (
+    node?.type === 'word' &&
+    (node.value.toLowerCase() === first || node.value.toLowerCase() === second)
+  );
+}
+
+/**
+ * @param {valueParser.FunctionNode} node
+ * @return {void}
+ */
+function normalizeCubicBezier(node) {
+  const values = node.nodes
+    .filter((list, index) => {
+      return index % 2 === 0;
+    })
+    .map(getValue);
+
+  if (values.length !== 4) {
+    return;
+  }
+
+  const match = conversions.get(values.toString());
+
+  if (match) {
+    /** @type string */ (node.type) = 'word';
+    node.value = match;
+
+    delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
   }
 }
 
