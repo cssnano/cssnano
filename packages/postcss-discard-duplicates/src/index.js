@@ -35,39 +35,69 @@ function equals(nodeA, nodeB) {
     return false;
   }
 
-  switch (a.type) {
-    case 'rule':
-      if (a.selector !== b.selector) {
-        return false;
-      }
-      break;
-    case 'atrule':
-      if (a.name !== b.name || a.params !== b.params) {
-        return false;
-      }
-
-      if (a.raws && trimValue(a.raws.before) !== trimValue(b.raws.before)) {
-        return false;
-      }
-
-      if (
-        a.raws &&
-        trimValue(a.raws.afterName) !== trimValue(b.raws.afterName)
-      ) {
-        return false;
-      }
-      break;
-    case 'decl':
-      if (a.prop !== b.prop || a.value !== b.value) {
-        return false;
-      }
-
-      if (a.raws && trimValue(a.raws.before) !== trimValue(b.raws.before)) {
-        return false;
-      }
-      break;
+  if (!equalsNodeProperties(a, b)) {
+    return false;
   }
 
+  return equalsChildren(a, b);
+}
+
+/**
+ * @param {any} a
+ * @param {any} b
+ * @return {boolean}
+ */
+function equalsNodeProperties(a, b) {
+  switch (a.type) {
+    case 'rule':
+      return a.selector === b.selector;
+    case 'atrule':
+      return equalsAtRule(a, b);
+    case 'decl':
+      return equalsDeclaration(a, b);
+    default:
+      return true;
+  }
+}
+
+/**
+ * @param {any} a
+ * @param {any} b
+ * @return {boolean}
+ */
+function equalsAtRule(a, b) {
+  if (a.name !== b.name || a.params !== b.params) {
+    return false;
+  }
+
+  if (a.raws && trimValue(a.raws.before) !== trimValue(b.raws.before)) {
+    return false;
+  }
+
+  return !(
+    a.raws && trimValue(a.raws.afterName) !== trimValue(b.raws.afterName)
+  );
+}
+
+/**
+ * @param {any} a
+ * @param {any} b
+ * @return {boolean}
+ */
+function equalsDeclaration(a, b) {
+  if (a.prop !== b.prop || a.value !== b.value) {
+    return false;
+  }
+
+  return !(a.raws && trimValue(a.raws.before) !== trimValue(b.raws.before));
+}
+
+/**
+ * @param {any} a
+ * @param {any} b
+ * @return {boolean}
+ */
+function equalsChildren(a, b) {
   if (a.nodes && b.nodes) {
     if (a.nodes.length !== b.nodes.length) {
       return false;
