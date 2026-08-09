@@ -53,7 +53,7 @@
     "node": "^22.11.0 || ^24.11.0 || >=26.0"
   },
   "devDependencies": {
-    "mdn-data": "^2.29.0",
+    "mdn-data": "^2.31.0",
     "postcss": "^8.5.26"
   },
   "peerDependencies": {
