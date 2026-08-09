@@ -1,5 +1,13 @@
 # Change Log
 
+## 8.0.5
+
+### Patch Changes
+
+- fix(postcss-merge-longhand): avoid merging border declarations when result is not equivalent
+
+- fix: update dependencies
+
 ## 8.0.4
 
 ### Patch Changes

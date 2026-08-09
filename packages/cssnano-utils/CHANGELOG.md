@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.3
+
+### Patch Changes
+
+- fix: update dependencies
+
 ## 6.0.2
 
 ### Patch Changes

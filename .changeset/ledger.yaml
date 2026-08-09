@@ -13,6 +13,11 @@ cssnano-preset-advanced@8.0.4:
   intents:
     - every-teeth-stay
     - petite-cobras-send
+cssnano-preset-advanced@8.0.5:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - bumpy-ideas-double
+    - strong-eggs-do
 cssnano-preset-default@8.0.3:
   dir: packages/cssnano-preset-default
   intents:
@@ -27,6 +32,11 @@ cssnano-preset-default@8.0.4:
   intents:
     - every-teeth-stay
     - petite-cobras-send
+cssnano-preset-default@8.0.5:
+  dir: packages/cssnano-preset-default
+  intents:
+    - bumpy-ideas-double
+    - strong-eggs-do
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -35,6 +45,10 @@ cssnano-preset-lite@5.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+cssnano-preset-lite@5.0.3:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - strong-eggs-do
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -43,6 +57,10 @@ cssnano-utils@6.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+cssnano-utils@6.0.3:
+  dir: packages/cssnano-utils
+  intents:
+    - strong-eggs-do
 cssnano@8.0.3:
   dir: packages/cssnano
   intents:
@@ -57,6 +75,11 @@ cssnano@8.0.4:
   intents:
     - every-teeth-stay
     - petite-cobras-send
+cssnano@8.0.5:
+  dir: packages/cssnano
+  intents:
+    - bumpy-ideas-double
+    - strong-eggs-do
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -66,6 +89,10 @@ postcss-colormin@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-colormin@8.0.3:
+  dir: packages/postcss-colormin
+  intents:
+    - strong-eggs-do
 postcss-convert-values@8.0.2:
   dir: packages/postcss-convert-values
   intents:
@@ -75,6 +102,10 @@ postcss-convert-values@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-convert-values@8.0.3:
+  dir: packages/postcss-convert-values
+  intents:
+    - strong-eggs-do
 postcss-discard-comments@8.0.2:
   dir: packages/postcss-discard-comments
   intents:
@@ -83,6 +114,10 @@ postcss-discard-comments@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-discard-comments@8.0.3:
+  dir: packages/postcss-discard-comments
+  intents:
+    - strong-eggs-do
 postcss-discard-duplicates@8.0.2:
   dir: packages/postcss-discard-duplicates
   intents:
@@ -91,6 +126,10 @@ postcss-discard-duplicates@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-discard-duplicates@8.0.3:
+  dir: packages/postcss-discard-duplicates
+  intents:
+    - strong-eggs-do
 postcss-discard-empty@8.0.2:
   dir: packages/postcss-discard-empty
   intents:
@@ -99,6 +138,10 @@ postcss-discard-empty@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-discard-empty@8.0.3:
+  dir: packages/postcss-discard-empty
+  intents:
+    - strong-eggs-do
 postcss-discard-overridden@8.0.2:
   dir: packages/postcss-discard-overridden
   intents:
@@ -107,6 +150,10 @@ postcss-discard-overridden@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-discard-overridden@8.0.3:
+  dir: packages/postcss-discard-overridden
+  intents:
+    - strong-eggs-do
 postcss-discard-unused@8.0.2:
   dir: packages/postcss-discard-unused
   intents:
@@ -115,6 +162,10 @@ postcss-discard-unused@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-discard-unused@8.0.3:
+  dir: packages/postcss-discard-unused
+  intents:
+    - strong-eggs-do
 postcss-merge-idents@8.0.2:
   dir: packages/postcss-merge-idents
   intents:
@@ -123,6 +174,10 @@ postcss-merge-idents@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-merge-idents@8.0.3:
+  dir: packages/postcss-merge-idents
+  intents:
+    - strong-eggs-do
 postcss-merge-longhand@8.0.2:
   dir: packages/postcss-merge-longhand
   intents:
@@ -131,6 +186,11 @@ postcss-merge-longhand@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-merge-longhand@8.0.3:
+  dir: packages/postcss-merge-longhand
+  intents:
+    - bumpy-ideas-double
+    - strong-eggs-do
 postcss-merge-rules@8.0.2:
   dir: packages/postcss-merge-rules
   intents:
@@ -140,6 +200,10 @@ postcss-merge-rules@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-merge-rules@8.0.3:
+  dir: packages/postcss-merge-rules
+  intents:
+    - strong-eggs-do
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -148,6 +212,10 @@ postcss-minify-font-values@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-minify-font-values@8.0.3:
+  dir: packages/postcss-minify-font-values
+  intents:
+    - strong-eggs-do
 postcss-minify-gradients@8.0.2:
   dir: packages/postcss-minify-gradients
   intents:
@@ -157,6 +225,10 @@ postcss-minify-gradients@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-minify-gradients@8.0.3:
+  dir: packages/postcss-minify-gradients
+  intents:
+    - strong-eggs-do
 postcss-minify-params@8.0.2:
   dir: packages/postcss-minify-params
   intents:
@@ -166,6 +238,10 @@ postcss-minify-params@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-minify-params@8.0.3:
+  dir: packages/postcss-minify-params
+  intents:
+    - strong-eggs-do
 postcss-minify-selectors@8.0.3:
   dir: packages/postcss-minify-selectors
   intents:
@@ -175,6 +251,10 @@ postcss-minify-selectors@8.0.3:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-minify-selectors@8.0.4:
+  dir: packages/postcss-minify-selectors
+  intents:
+    - strong-eggs-do
 postcss-normalize-charset@8.0.2:
   dir: packages/postcss-normalize-charset
   intents:
@@ -183,6 +263,10 @@ postcss-normalize-charset@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-normalize-charset@8.0.3:
+  dir: packages/postcss-normalize-charset
+  intents:
+    - strong-eggs-do
 postcss-normalize-display-values@8.0.2:
   dir: packages/postcss-normalize-display-values
   intents:
@@ -191,6 +275,10 @@ postcss-normalize-display-values@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-normalize-display-values@8.0.3:
+  dir: packages/postcss-normalize-display-values
+  intents:
+    - strong-eggs-do
 postcss-normalize-positions@8.0.2:
   dir: packages/postcss-normalize-positions
   intents:
@@ -199,6 +287,10 @@ postcss-normalize-positions@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-normalize-positions@8.0.3:
+  dir: packages/postcss-normalize-positions
+  intents:
+    - strong-eggs-do
 postcss-normalize-repeat-style@8.0.2:
   dir: packages/postcss-normalize-repeat-style
   intents:
@@ -207,6 +299,10 @@ postcss-normalize-repeat-style@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-normalize-repeat-style@8.0.3:
+  dir: packages/postcss-normalize-repeat-style
+  intents:
+    - strong-eggs-do
 postcss-normalize-string@8.0.2:
   dir: packages/postcss-normalize-string
   intents:
@@ -215,6 +311,10 @@ postcss-normalize-string@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-normalize-string@8.0.3:
+  dir: packages/postcss-normalize-string
+  intents:
+    - strong-eggs-do
 postcss-normalize-timing-functions@8.0.2:
   dir: packages/postcss-normalize-timing-functions
   intents:
@@ -223,6 +323,10 @@ postcss-normalize-timing-functions@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-normalize-timing-functions@8.0.3:
+  dir: packages/postcss-normalize-timing-functions
+  intents:
+    - strong-eggs-do
 postcss-normalize-unicode@8.0.2:
   dir: packages/postcss-normalize-unicode
   intents:
@@ -232,6 +336,10 @@ postcss-normalize-unicode@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-normalize-unicode@8.0.3:
+  dir: packages/postcss-normalize-unicode
+  intents:
+    - strong-eggs-do
 postcss-normalize-url@8.0.2:
   dir: packages/postcss-normalize-url
   intents:
@@ -243,6 +351,10 @@ postcss-normalize-url@8.0.2:
     - tiny-oranges-kneel
     - tough-planes-say
     - tough-snails-behave
+postcss-normalize-url@8.0.3:
+  dir: packages/postcss-normalize-url
+  intents:
+    - strong-eggs-do
 postcss-normalize-whitespace@8.0.2:
   dir: packages/postcss-normalize-whitespace
   intents:
@@ -252,6 +364,10 @@ postcss-normalize-whitespace@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-normalize-whitespace@8.0.3:
+  dir: packages/postcss-normalize-whitespace
+  intents:
+    - strong-eggs-do
 postcss-ordered-values@8.0.2:
   dir: packages/postcss-ordered-values
   intents:
@@ -260,6 +376,10 @@ postcss-ordered-values@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-ordered-values@8.0.3:
+  dir: packages/postcss-ordered-values
+  intents:
+    - strong-eggs-do
 postcss-reduce-idents@8.0.2:
   dir: packages/postcss-reduce-idents
   intents:
@@ -268,6 +388,10 @@ postcss-reduce-idents@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-reduce-idents@8.0.3:
+  dir: packages/postcss-reduce-idents
+  intents:
+    - strong-eggs-do
 postcss-reduce-initial@8.0.2:
   dir: packages/postcss-reduce-initial
   intents:
@@ -278,6 +402,10 @@ postcss-reduce-initial@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-reduce-initial@8.0.3:
+  dir: packages/postcss-reduce-initial
+  intents:
+    - strong-eggs-do
 postcss-reduce-transforms@8.0.2:
   dir: packages/postcss-reduce-transforms
   intents:
@@ -286,6 +414,10 @@ postcss-reduce-transforms@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-reduce-transforms@8.0.3:
+  dir: packages/postcss-reduce-transforms
+  intents:
+    - strong-eggs-do
 postcss-svgo@8.0.2:
   dir: packages/postcss-svgo
   intents:
@@ -299,6 +431,10 @@ postcss-svgo@8.0.3:
   intents:
     - every-teeth-stay
     - petite-cobras-send
+postcss-svgo@8.0.4:
+  dir: packages/postcss-svgo
+  intents:
+    - strong-eggs-do
 postcss-unique-selectors@8.0.2:
   dir: packages/postcss-unique-selectors
   intents:
@@ -307,6 +443,10 @@ postcss-unique-selectors@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-unique-selectors@8.0.3:
+  dir: packages/postcss-unique-selectors
+  intents:
+    - strong-eggs-do
 postcss-zindex@8.0.2:
   dir: packages/postcss-zindex
   intents:
@@ -315,6 +455,10 @@ postcss-zindex@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+postcss-zindex@8.0.3:
+  dir: packages/postcss-zindex
+  intents:
+    - strong-eggs-do
 stylehacks@8.0.2:
   dir: packages/stylehacks
   intents:
@@ -324,3 +468,7 @@ stylehacks@8.0.2:
     - sunny-bags-smell
     - tough-planes-say
     - tough-snails-behave
+stylehacks@8.0.3:
+  dir: packages/stylehacks
+  intents:
+    - strong-eggs-do
