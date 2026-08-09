@@ -5,5 +5,19 @@
     "composite": true,
     "rootDir": "src/",
     "declarationDir": "types"
-  }
+  },
+  "references": [
+    {
+      "path": "../cssnano-utils"
+    },
+    {
+      "path": "../postcss-discard-comments"
+    },
+    {
+      "path": "../postcss-discard-empty"
+    },
+    {
+      "path": "../postcss-normalize-whitespace"
+    }
+  ]
 }
