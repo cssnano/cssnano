@@ -1,6 +1,6 @@
 {
   "name": "postcss-minify-font-values",
-  "version": "8.0.2",
+  "version": "8.0.3",
   "description": "Minify font declarations with PostCSS",
   "exports": {
     ".": {

@@ -1,6 +1,6 @@
 {
   "name": "stylehacks",
-  "version": "8.0.2",
+  "version": "8.0.3",
   "description": "Detect/remove browser hacks from CSS files.",
   "exports": {
     ".": {

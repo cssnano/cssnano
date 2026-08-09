@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.4
+
+### Patch Changes
+
+- fix: update dependencies
+
 ## 8.0.3
 
 ### Patch Changes
