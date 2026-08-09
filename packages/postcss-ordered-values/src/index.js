@@ -94,6 +94,7 @@ function shouldAbort(parsed) {
 
       return false;
     }
+    return false;
   });
 
   return abort;

@@ -242,6 +242,7 @@ function optimise(decl) {
       ) {
         return optimizeWebkitRadialGradient(node);
       }
+      return false;
     })
     .toString();
 }

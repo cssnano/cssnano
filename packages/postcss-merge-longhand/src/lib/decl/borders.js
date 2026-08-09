@@ -73,6 +73,7 @@ function getLevel(prop) {
       return i;
     }
   }
+  return undefined;
 }
 
 /** @type {(value: string) => boolean} */
