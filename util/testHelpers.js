@@ -12,8 +12,10 @@ function processCSSFactory(plugin) {
   let processor, processCSS, passthroughCSS;
 
   if (Array.isArray(plugin)) {
+    const postcssProcessor = postcss(plugin);
+
     processor = (fixture, options) =>
-      postcss(plugin).process(
+      postcssProcessor.process(
         fixture,
         Object.assign({}, { from: undefined }, options)
       );
