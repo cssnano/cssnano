@@ -5,5 +5,88 @@
     "composite": true,
     "rootDir": "src/",
     "declarationDir": "types"
-  }
+  },
+  "references": [
+    {
+      "path": "../cssnano-utils"
+    },
+    {
+      "path": "../postcss-colormin"
+    },
+    {
+      "path": "../postcss-convert-values"
+    },
+    {
+      "path": "../postcss-discard-comments"
+    },
+    {
+      "path": "../postcss-discard-duplicates"
+    },
+    {
+      "path": "../postcss-discard-empty"
+    },
+    {
+      "path": "../postcss-discard-overridden"
+    },
+    {
+      "path": "../postcss-merge-longhand"
+    },
+    {
+      "path": "../postcss-merge-rules"
+    },
+    {
+      "path": "../postcss-minify-font-values"
+    },
+    {
+      "path": "../postcss-minify-gradients"
+    },
+    {
+      "path": "../postcss-minify-params"
+    },
+    {
+      "path": "../postcss-minify-selectors"
+    },
+    {
+      "path": "../postcss-normalize-charset"
+    },
+    {
+      "path": "../postcss-normalize-display-values"
+    },
+    {
+      "path": "../postcss-normalize-positions"
+    },
+    {
+      "path": "../postcss-normalize-repeat-style"
+    },
+    {
+      "path": "../postcss-normalize-string"
+    },
+    {
+      "path": "../postcss-normalize-timing-functions"
+    },
+    {
+      "path": "../postcss-normalize-unicode"
+    },
+    {
+      "path": "../postcss-normalize-url"
+    },
+    {
+      "path": "../postcss-normalize-whitespace"
+    },
+    {
+      "path": "../postcss-ordered-values"
+    },
+    {
+      "path": "../postcss-reduce-initial"
+    },
+    {
+      "path": "../postcss-reduce-transforms"
+    },
+    {
+      "path": "../postcss-svgo"
+    },
+    {
+      "path": "../postcss-unique-selectors"
+    }
+  ]
 }

@@ -5,5 +5,16 @@
     "composite": true,
     "rootDir": "src/",
     "declarationDir": "types"
-  }
+  },
+  "references": [
+    {
+      "path": "../cssnano-preset-default"
+    },
+    {
+      "path": "../cssnano-preset-advanced"
+    },
+    {
+      "path": "../cssnano-preset-lite"
+    }
+  ]
 }

@@ -14,6 +14,8 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "skipLibCheck": true,
+    "incremental": true,
     "types": ["node"],
     "moduleResolution": "nodenext",
     "isolatedModules": true

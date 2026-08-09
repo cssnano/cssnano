@@ -5,5 +5,22 @@
     "composite": true,
     "rootDir": "src/",
     "declarationDir": "types"
-  }
+  },
+  "references": [
+    {
+      "path": "../cssnano-preset-default"
+    },
+    {
+      "path": "../postcss-discard-unused"
+    },
+    {
+      "path": "../postcss-merge-idents"
+    },
+    {
+      "path": "../postcss-reduce-idents"
+    },
+    {
+      "path": "../postcss-zindex"
+    }
+  ]
 }
