@@ -28,6 +28,7 @@ class CommentRemover {
         return false;
       }
     }
+    return false;
   }
 }
 

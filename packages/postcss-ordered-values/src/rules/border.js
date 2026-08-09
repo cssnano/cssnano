@@ -54,6 +54,7 @@ module.exports = function normalizeBorder(border) {
       }
       return false;
     }
+    return false;
   });
 
   return `${order.width} ${order.style} ${order.color}`.trim();
