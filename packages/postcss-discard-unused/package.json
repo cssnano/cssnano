@@ -34,7 +34,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "postcss-selector-parser": "^7.1.4"
+    "postcss-selector-parser": "^7.1.5"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
@@ -43,10 +43,10 @@
     "node": "^22.11.0 || ^24.11.0 || >=26.0"
   },
   "devDependencies": {
-    "postcss": "^8.5.25"
+    "postcss": "^8.5.26"
   },
   "peerDependencies": {
-    "postcss": "^8.5.25"
+    "postcss": "^8.5.26"
   },
   "scripts": {
     "test": "node --test"
