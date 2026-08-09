@@ -16,10 +16,10 @@
     "node": "^22.11 || ^24.11 || >=26.0"
   },
   "devDependencies": {
-    "@types/node": "^26.1.2",
+    "@types/node": "^26.2.0",
     "oxfmt": "^0.62.0",
     "oxlint": "^1.77.0",
-    "postcss": "^8.5.25",
+    "postcss": "^8.5.26",
     "typescript": "~7.0.2"
   },
   "browserslist": {
