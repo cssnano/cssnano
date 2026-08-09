@@ -43,7 +43,7 @@
   },
   "repository": "cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^4.28.7",
+    "browserslist": "^4.28.8",
     "caniuse-api": "^4.0.0"
   },
   "bugs": {
@@ -54,9 +54,9 @@
   },
   "devDependencies": {
     "mdn-data": "^2.29.0",
-    "postcss": "^8.5.25"
+    "postcss": "^8.5.26"
   },
   "peerDependencies": {
-    "postcss": "^8.5.25"
+    "postcss": "^8.5.26"
   }
 }

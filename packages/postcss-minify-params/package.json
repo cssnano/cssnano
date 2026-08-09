@@ -39,7 +39,7 @@
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^4.28.7",
+    "browserslist": "^4.28.8",
     "cssnano-utils": "workspace:^",
     "postcss-value-parser": "^4.2.0"
   },
@@ -47,10 +47,10 @@
     "node": "^22.11.0 || ^24.11.0 || >=26.0"
   },
   "devDependencies": {
-    "postcss": "^8.5.25"
+    "postcss": "^8.5.26"
   },
   "peerDependencies": {
-    "postcss": "^8.5.25"
+    "postcss": "^8.5.26"
   },
   "scripts": {
     "test": "node --test"

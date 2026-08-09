@@ -19,7 +19,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "browserslist": "^4.28.7",
+    "browserslist": "^4.28.8",
     "cssnano-utils": "workspace:^",
     "postcss-calc": "^10.1.1",
     "postcss-colormin": "workspace:^",
@@ -63,10 +63,10 @@
     "node": "^22.11.0 || ^24.11.0 || >=26.0"
   },
   "devDependencies": {
-    "postcss": "^8.5.25"
+    "postcss": "^8.5.26"
   },
   "peerDependencies": {
-    "postcss": "^8.5.25"
+    "postcss": "^8.5.26"
   },
   "scripts": {
     "test": "node --test"
