@@ -38,7 +38,7 @@ function integrationTests(preset, integrations) {
         })
     );
   }
-  return () => Promise.all(expectations);
+  return async () => await Promise.all(expectations);
 }
 
 module.exports = { processCSSWithPresetFactory, loadPreset, integrationTests };
