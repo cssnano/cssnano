@@ -18,7 +18,7 @@ the most optimal output. For example, postcss-colormin will not trim whitespace
 inside color functions as this is handled by postcss-normalize-whitespace.
 
 
-## What optimisations do you support?
+## Supported optimisations
 
 The optimisations are different depending on which preset cssnano is configured with; with the default preset, we offer safe transforms only.
 
@@ -37,7 +37,13 @@ The optimisations are different depending on which preset cssnano is configured 
 <tr>
 <td><a href="/docs/optimisations/{{ opt.shortName | lower }}">{{ opt.shortName }}</a></td>
 {% for preset in presets %}
-<td>{% if opt[preset] === 'disabled' %}disabled{% elif opt[preset] === 'enabled' %}✅{% else %}❌{% endif %}</td>
+<td>
+{%- if opt[preset] === 'enabled' -%}
+<span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span>
+{%- else -%}
+<span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span>
+{%- endif -%}
+</td>
 {%     endfor                  %}
 </tr>
 {% endfor %}

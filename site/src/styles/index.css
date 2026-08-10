@@ -6,6 +6,12 @@
   --font-mono: consolas, monaco, monospace;
   --font-size-small: 0.875rem;
 
+  --space-xs: 0.25rem;   /* 4px */
+  --space-sm: 0.5rem;    /* 8px */
+  --space-md: 1rem;      /* 16px */
+  --space-lg: 1.5rem;    /* 24px */
+  --space-xl: 2rem;      /* 32px */
+
   /* Color Scale derived from cssnano logo */
   --brand-hue: 150;
   --brand-sat: 65%;
@@ -33,21 +39,17 @@
   --theme-hero-bg: var(--color-slate-800);
   --theme-hero-text: var(--color-white);
   --theme-border: var(--color-slate-200);
-  --theme-border-accent: var(--color-brand-20);
   --theme-border-width: 1px;
   --theme-active-bar-width: 3px;
-  --theme-code-bg: var(--color-slate-900);
-  --theme-code-text: var(--color-slate-100);
-  --theme-code-inline-bg: var(--color-slate-100);
-  --theme-code-inline-text: var(--color-slate-900);
-  --space-xs: 0.25rem;
-  --space-sm: 0.5rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
-  --border-radius-sm: 0.25rem;
   --border-radius: 0.5rem;
   --transition-fast: 0.15s ease;
+
+  --font-weight-strong: 700;
+
+  --checkmark-size: 2em;
+  --checkmark-weight: 700;
+  --checkmark-pad-inline-start: 0.125rem;
+  --opt-disabled-color: hsl(0deg 55% 40%);
 }
 
 /*
@@ -273,7 +275,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-weight: 700;
+  font-weight: var(--font-weight-strong);
   line-height: 1.2;
 }
 
@@ -282,21 +284,26 @@ h2 {
   max-inline-size: 40ch;
 }
 
+/* Fluid type scale */
 h1 {
-  font-size: clamp(2rem, 3vw, 4rem);
+  font-size: clamp(1.75rem, 1.25rem + 1.5vw, 3.5rem);
 }
 
 h2 {
-  font-size: clamp(1.5rem, 2vw, 3rem);
+  font-size: clamp(1.5rem, 1rem + 1.5vw, 3rem);
 }
 
-h3,
+h3 {
+  font-size: clamp(1.25rem, 0.75rem + 1.5vw, 2.5rem);
+}
+
 .f3 {
-  font-size: clamp(1.25rem, 1.2vw, 2.5rem);
+  font-size: clamp(1.125rem, 0.875rem + 1vw, 1.625rem);
+  line-height: 1.6;
 }
 
 .f4 {
-  font-size: 1.25rem;
+  font-size: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
 }
 
 small {
@@ -327,7 +334,7 @@ a:focus {
 }
 
 strong {
-  font-weight: 700;
+  font-weight: var(--font-weight-strong);
   color: inherit;
 }
 
@@ -373,7 +380,7 @@ table {
 }
 
 th {
-  font-weight: 700;
+  font-weight: var(--font-weight-strong);
 }
 
 td,
@@ -383,6 +390,26 @@ th {
   border: 1px solid rgb(218 221 225);
 }
 
+.checkmark {
+  display: inline-block;
+  font-size: var(--checkmark-size);
+  font-weight: var(--checkmark-weight);
+  line-height: 1;
+  padding-inline-start: var(--checkmark-pad-inline-start);
+  vertical-align: middle;
+}
+
+.opt-enabled {
+  color: var(--color-brand-20);
+}
+
+.opt-disabled {
+  color: var(--opt-disabled-color);
+}
+
+td:has(.checkmark) {
+   text-align: start;
+}
 blockquote {
   margin: 2rem 0;
   padding: 1.25em 1.5rem;
@@ -464,7 +491,7 @@ nav ul {
   color: var(--theme-accent);
   background-color: var(--theme-accent-light);
   border-inline-start: var(--theme-active-bar-width) solid var(--theme-accent);
-  font-weight: 700;
+  font-weight: var(--font-weight-strong);
 }
 
 .navbar {
@@ -563,7 +590,7 @@ nav ul {
 .hero-link {
   --s2: var(--space-sm) var(--space-lg);
 
-  font-weight: 700;
+  font-weight: var(--font-weight-strong);
   inline-size: max-content;
   border-radius: var(--border-radius);
   color: var(--color-black);
@@ -578,7 +605,7 @@ nav ul {
   padding: var(--space-sm) var(--space-md);
   color: var(--color-white);
   background-color: var(--theme-accent);
-  font-weight: 700;
+  font-weight: var(--font-weight-strong);
   min-inline-size: 14ch;
   border-radius: var(--border-radius);
   border: var(--theme-border-width) solid transparent;
@@ -636,8 +663,8 @@ nav ul {
 }
 
 .stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: clamp(1.25rem, 1rem + 1vw, 2rem);
+  font-weight: var(--font-weight-strong);
   color: var(--theme-accent);
 }
 
