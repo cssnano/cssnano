@@ -1,6 +1,3 @@
-import cssnanoPresetLite from 'cssnano-preset-lite';
-import cssnanoPresetDefault from 'cssnano-preset-default';
-import cssnanoPresetAdvanced from 'cssnano-preset-advanced';
 import postcss from 'postcss';
 
 /**
@@ -36,27 +33,27 @@ export function runOptimizer(input, outputView, config) {
 }
 
 /**
- * @param {string} input
  * @param {string} config
+ * @returns {Promise<import('postcss').AcceptedPlugin[]>}
  */
-function runner(input, config) {
-  let nanoPlugins;
+async function loadPlugins(config) {
+  let preset;
   switch (config) {
     case 'cssnano-preset-lite':
-      nanoPlugins = cssnanoPresetLite().plugins;
+      preset = (await import('cssnano-preset-lite')).default;
       break;
     case 'cssnano-preset-default':
-      nanoPlugins = cssnanoPresetDefault().plugins;
+      preset = (await import('cssnano-preset-default')).default;
       break;
     case 'cssnano-preset-advanced':
-      nanoPlugins = cssnanoPresetAdvanced().plugins;
+      preset = (await import('cssnano-preset-advanced')).default;
       break;
     default:
-      return Promise.reject(new Error('Invalid configuration preset'));
+      throw new Error('Invalid configuration preset');
   }
 
   const postcssPlugins = [];
-  for (const plugin of nanoPlugins) {
+  for (const plugin of preset().plugins) {
     const [processor, opts] = plugin;
     if (
       typeof opts === 'undefined' ||
@@ -66,10 +63,15 @@ function runner(input, config) {
       postcssPlugins.push(processor(opts));
     }
   }
-  return new Promise((resolve, reject) => {
-    postcss(postcssPlugins)
-      .process(input, { from: undefined })
-      .then((res) => resolve(res))
-      .catch((err) => reject(err));
-  });
+  return postcssPlugins;
+}
+
+/**
+ * @param {string} input
+ * @param {string} config
+ * @returns {Promise<import('postcss').Result>}
+ */
+async function runner(input, config) {
+  const postcssPlugins = await loadPlugins(config);
+  return postcss(postcssPlugins).process(input, { from: undefined });
 }

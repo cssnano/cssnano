@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const path = require('node:path');
 
 module.exports = {
+  mode: 'production',
   context: path.resolve(__dirname),
   cache: {
     type: 'filesystem',
