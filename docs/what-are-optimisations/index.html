@@ -85,7 +85,7 @@ together.</p>
 there will be some cases where using a transform standalone will not produce
 the most optimal output. For example, postcss-colormin will not trim whitespace
 inside color functions as this is handled by postcss-normalize-whitespace.</p>
-<h2 id="what-optimisations-do-you-support%3F" tabindex="-1"><a class="header-anchor" href="#what-optimisations-do-you-support%3F">What optimisations do you support?</a></h2>
+<h2 id="supported-optimisations" tabindex="-1"><a class="header-anchor" href="#supported-optimisations">Supported optimisations</a></h2>
 <p>The optimisations are different depending on which preset cssnano is configured with; with the default preset, we offer safe transforms only.</p>
 <table>
 <thead>
@@ -99,208 +99,208 @@ inside color functions as this is handled by postcss-normalize-whitespace.</p>
 <tbody>
 <tr>
 <td><a href="/cssnano/docs/optimisations/autoprefixer">autoprefixer</a></td>
-<td>❌</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/cssdeclarationsorter">cssDeclarationSorter</a></td>
-<td>❌</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/calc">calc</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/colormin">colormin</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/convertvalues">convertValues</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/discardcomments">discardComments</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>✅</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/discardduplicates">discardDuplicates</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/discardempty">discardEmpty</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>✅</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/discardoverridden">discardOverridden</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/discardunused">discardUnused</a></td>
-<td>❌</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/mergeidents">mergeIdents</a></td>
-<td>❌</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/mergelonghand">mergeLonghand</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/mergerules">mergeRules</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/minifyfontvalues">minifyFontValues</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/minifygradients">minifyGradients</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/minifyparams">minifyParams</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/minifyselectors">minifySelectors</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/normalizecharset">normalizeCharset</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/normalizedisplayvalues">normalizeDisplayValues</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/normalizepositions">normalizePositions</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/normalizerepeatstyle">normalizeRepeatStyle</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/normalizestring">normalizeString</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/normalizetimingfunctions">normalizeTimingFunctions</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/normalizeunicode">normalizeUnicode</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/normalizeurl">normalizeUrl</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/normalizewhitespace">normalizeWhitespace</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>✅</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/orderedvalues">orderedValues</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/reduceidents">reduceIdents</a></td>
-<td>❌</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/reduceinitial">reduceInitial</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/reducetransforms">reduceTransforms</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/svgo">svgo</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/uniqueselectors">uniqueSelectors</a></td>
-<td>✅</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 <tr>
 <td><a href="/cssnano/docs/optimisations/zindex">zindex</a></td>
-<td>❌</td>
-<td>✅</td>
-<td>❌</td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
+<td><span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span></td>
+<td><span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span></td>
 </tr>
 </tbody>
 </table>
 <p>You can read more about presets in our <a href="/cssnano/docs/presets">presets guide</a>.</p>
 
           
-          <p class="annotation">Last updated on Mon, 03 Aug 2026 20:56:09 GMT</p>
+          <p class="annotation">Last updated on Mon, 10 Aug 2026 12:05:39 GMT</p>
         </article>
     </main>
     <footer class="box stack bg-dark">
