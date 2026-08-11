@@ -706,6 +706,7 @@ nav ul {
   flex-basis: 0;
   flex-grow: 999;
   min-inline-size: 50%;
+  max-inline-size: min(80dvw, var(--measure));
 }
 
 .bg-dark {
