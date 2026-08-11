@@ -528,6 +528,55 @@ test(
 );
 
 test(
+  'should not hoist a declaration overridden later in the same rule',
+  processCSS(
+    `.name {
+        font-family:Inter,sans-serif;
+        font-weight:400;
+        font-size:18px;
+        line-height:1.5;
+        letter-spacing:-.01em;
+        -webkit-font-feature-settings:"ccmp","locl";
+        -moz-font-feature-settings:"ccmp","locl";
+        font-feature-settings:"ccmp","locl";
+        font-weight:600
+      }
+      .name.small {
+        font-family:Inter,sans-serif;
+        font-weight:400;
+        font-size:16px;
+        line-height:1.5;
+        letter-spacing:-.01em;
+        -webkit-font-feature-settings:"ccmp","locl";
+        -moz-font-feature-settings:"ccmp","locl";
+        font-feature-settings:"ccmp","locl";
+        font-weight:600
+      }`,
+    `.name {
+        font-weight:400;
+        font-size:18px;
+        -webkit-font-feature-settings:"ccmp","locl";
+        -moz-font-feature-settings:"ccmp","locl";
+        font-feature-settings:"ccmp","locl";
+        font-weight:600
+      }
+      .name,.name.small {
+        font-family:Inter,sans-serif;
+        line-height:1.5;
+        letter-spacing:-.01em
+      }
+      .name.small {
+        font-weight:400;
+        font-size:16px;
+        -webkit-font-feature-settings:"ccmp","locl";
+        -moz-font-feature-settings:"ccmp","locl";
+        font-feature-settings:"ccmp","locl";
+        font-weight:600
+      }`
+  )
+);
+
+test(
   'should not merge @keyframes rules',
   passthroughCSS(
     '@keyframes foo{0%{visibility:visible;transform:scale3d(.85,.85,.85);opacity:0}to{visibility:visible;opacity:1}}'
