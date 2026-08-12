@@ -1026,6 +1026,14 @@ test(
 );
 
 test(
+  'should not crash on comment',
+  processCSS(
+    '.a,/*! x, y */.b{color:red}\n.c{color:red}',
+    '.a,.b,.c{color:red}'
+  )
+);
+
+test(
   'should not merge nested container rules',
   passthroughCSS(
     `.mobile {
