@@ -577,6 +577,49 @@ test(
 );
 
 test(
+  'should not hoist a declaration whose only override is dropped later',
+  passthroughCSS(
+    '.a{font-weight:700;font:12px serif;font:14px serif}.b{font-weight:700;font:12px serif;font-family:serif;font:14px serif}'
+  )
+);
+
+test(
+  'should not hoist a longhand over a shorthand that stays behind',
+  passthroughCSS(
+    '.a{font-weight:700;font:12px serif}.b{font-weight:700;font-family:serif;font:12px serif}'
+  )
+);
+
+test(
+  'should not hoist a declaration reset by all in the same rule',
+  passthroughCSS('.a{color:red;all:initial}.b{color:red;font-size:12px}')
+);
+
+test(
+  'should keep hoisting declarations all does not reset',
+  processCSS(
+    '.a{direction:ltr;all:initial}.b{direction:ltr;color:red}',
+    '.a{all:initial}.a,.b{direction:ltr}.b{color:red}'
+  )
+);
+
+test(
+  'should only remove the declaration the merged rule replaces',
+  processCSS(
+    '.a{margin-left:2px;color:red}.b{margin-left:2px;margin:1px;margin-left:2px}',
+    '.a{color:red}.a,.b{margin-left:2px}.b{margin:1px;margin-left:2px}'
+  )
+);
+
+test(
+  'should hoist a declaration a later shorthand of another family does not reset',
+  processCSS(
+    '.a{border-radius:0;border:none;color:red}.b{border-radius:0;border:none}',
+    '.a{color:red}.a,.b{border-radius:0;border:none}'
+  )
+);
+
+test(
   'should not merge @keyframes rules',
   passthroughCSS(
     '@keyframes foo{0%{visibility:visible;transform:scale3d(.85,.85,.85);opacity:0}to{visibility:visible;opacity:1}}'
