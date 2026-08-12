@@ -1034,6 +1034,88 @@ test(
 );
 
 test(
+  'should merge identical media queries without reordering conflicting nth-child rules',
+  processCSS(
+    `@media screen and (min-width:1601px) {
+  .container .card:not(.nomargin) {
+    width: 15%;
+    margin-right: 1%;
+    margin-left: 1%
+  }
+
+  .container .card:not(.nomargin):nth-child(6n) {
+    margin-right: 0
+  }
+
+  .container .card:not(.nomargin):nth-child(6n-5) {
+    margin-left: 0
+  }
+}
+@media screen and (min-width:1601px) {
+  .container .card:not(.nomargin) {
+    width: 18.4%;
+    margin-right: 1%;
+    margin-left: 1%
+  }
+
+  .container .card:not(.nomargin):nth-child(6n) {
+    margin-right: 1%
+  }
+
+  .container .card:not(.nomargin):nth-child(6n-5) {
+    margin-left: 1%
+  }
+
+  .container .card:not(.nomargin):nth-child(5n) {
+    margin-right: 0
+  }
+
+  .container .card:not(.nomargin):nth-child(5n-4) {
+    margin-left: 0
+  }
+}`,
+    `@media screen and (min-width:1601px) {
+  .container .card:not(.nomargin) {
+    width: 15%;
+    margin-right: 1%;
+    margin-left: 1%
+  }
+
+  .container .card:not(.nomargin):nth-child(6n) {
+    margin-right: 0
+  }
+
+  .container .card:not(.nomargin):nth-child(6n-5) {
+    margin-left: 0
+  }
+  .container .card:not(.nomargin) {
+    width: 18.4%;
+    margin-right: 1%;
+    margin-left: 1%
+  }
+
+  .container .card:not(.nomargin):nth-child(6n) {
+    margin-right: 1%
+  }
+
+  .container .card:not(.nomargin):nth-child(6n-5) {
+    margin-left: 1%
+  }
+
+  .container .card:not(.nomargin):nth-child(5n) {
+    margin-right: 0
+  }
+
+  .container .card:not(.nomargin):nth-child(5n-4) {
+    margin-left: 0
+  }
+}
+@media screen and (min-width:1601px) {
+}`
+  )
+);
+
+test(
   'should not merge nested container rules',
   passthroughCSS(
     `.mobile {
