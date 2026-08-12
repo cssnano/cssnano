@@ -241,6 +241,9 @@ const conflictingBorderProperties = new Set([
   'style',
 ]);
 
+/** Border longhands the `border` shorthand does not write. */
+const borderSubfamilies = new Set(['radius', 'collapse', 'spacing']);
+
 /**
  * @param {string} propA
  * @param {string} propB
@@ -280,34 +283,56 @@ function isConflictingProp(propA, propB) {
 }
 
 /**
- * Stricter than `isConflictingProp`: returns true only when both properties
- * refer to the same logical property, ignoring vendor prefixes.
+ * True if a declaration of `overridingProp` appearing after a declaration of
+ * `prop` in the same rule can change what `prop` computes to: the same logical
+ * property (ignoring vendor prefixes), or a shorthand that writes it.
  *
- * `isConflictingProp` over-reports conflicts (e.g. it treats
- * `font-feature-settings` as conflicting with `font-weight` because of the
- * rest-count mismatch heuristic). That over-reporting must not be used to
- * decide cascade-safety, because it would drop declarations that are
- * actually independent.
+ * `isConflictingProp` cannot answer this: it reports a conflict whenever the
+ * segment counts differ, so it treats `font-feature-settings` as overriding
+ * `font-family`. That over-reporting is safe when deciding whether to bail out
+ * of a merge, but here it would keep independent declarations from being
+ * hoisted. Shorthands are recognised by their segments being a subset of the
+ * longhand's, which is what relates `font` to `font-weight` and
+ * `background` to `-webkit-background-clip`, but not `font-feature-settings`
+ * to `font-weight`.
  *
- * @param {string} propA
- * @param {string} propB
+ * @param {string} overridingProp
+ * @param {string} prop
  * @return {boolean}
  */
-function isSameProperty(propA, propB) {
-  if (propA === propB) {
+function overridesProp(overridingProp, prop) {
+  if (overridingProp.toLowerCase() === 'all') {
+    // `all` resets every property except these two, but shares no base with
+    // them, so the checks below would never report it.
+    const lowercased = prop.toLowerCase();
+    return lowercased !== 'direction' && lowercased !== 'unicode-bidi';
+  }
+  if (overridingProp === prop) {
     return true;
   }
-  const a = splitProp(propA);
-  const b = splitProp(propB);
-  // Don't treat css variables as the same property unless identical
+  const a = splitProp(overridingProp);
+  const b = splitProp(prop);
+  // Custom properties only override themselves, handled above
   if (!a.base || !b.base) {
     return false;
   }
-  return (
-    a.base === b.base &&
-    a.rest.length === b.rest.length &&
-    a.rest.every((s, index) => b.rest[index] === s)
-  );
+  if (a.base !== b.base && a.base !== 'place' && b.base !== 'place') {
+    return false;
+  }
+  if (a.base === 'border' || b.base === 'border') {
+    // `border` writes width, style, color and image, so `border-radius`,
+    // `border-collapse` and `border-spacing` belong to families of their own.
+    const familyA = a.rest.find((s) => borderSubfamilies.has(s));
+    const familyB = b.rest.find((s) => borderSubfamilies.has(s));
+    if (familyA !== familyB) {
+      return false;
+    }
+  }
+  const restA = new Set(a.rest);
+  const restB = new Set(b.rest);
+  return restA.size <= restB.size
+    ? restA.isSubsetOf(restB)
+    : restB.isSubsetOf(restA);
 }
 
 /**
@@ -420,13 +445,13 @@ function hoistingPreservesOverrideOrder(
   );
   const overridesInEarlierRule = earlierRuleDeclarations
     .slice(indexInEarlierRule + 1)
-    .filter((d) => isConflictingProp(d.prop, candidate.prop));
+    .filter((d) => overridesProp(d.prop, candidate.prop));
   if (overridesInEarlierRule.length === 0) {
     return true;
   }
   const overridesAmongCandidates = hoistCandidates
     .slice(candidateIndex + 1)
-    .filter((d) => isConflictingProp(d.prop, candidate.prop));
+    .filter((d) => overridesProp(d.prop, candidate.prop));
   if (overridesInEarlierRule.length !== overridesAmongCandidates.length) {
     return false;
   }
@@ -436,18 +461,20 @@ function hoistingPreservesOverrideOrder(
 }
 
 /**
- * True if the later rule has a declaration equal to
- * `candidate`. Splices it out, so no other candidate can match the
+ * True if the later rule has an unclaimed declaration equal to `candidate`.
+ * Records its index in `claimedIndices`, so no other candidate can match the
  * same declaration. Always false when the later rule contains `all`,
  * since `all` resets everything except `direction`/`unicode-bidi`.
  *
  * @param {Declaration} candidate
  * @param {Declaration[]} laterDeclarations
+ * @param {Set<number>} claimedIndices
  * @return {boolean}
  */
-function claimMatchInLaterRule(candidate, laterDeclarations) {
-  const matchIndex = laterDeclarations.findIndex((d) =>
-    isConflictingProp(d.prop, candidate.prop)
+function claimMatchInLaterRule(candidate, laterDeclarations, claimedIndices) {
+  const matchIndex = laterDeclarations.findIndex(
+    (d, index) =>
+      !claimedIndices.has(index) && isConflictingProp(d.prop, candidate.prop)
   );
   if (matchIndex === -1) {
     return false;
@@ -464,74 +491,73 @@ function claimMatchInLaterRule(candidate, laterDeclarations) {
   ) {
     return false;
   }
-  laterDeclarations.splice(matchIndex, 1);
+  claimedIndices.add(matchIndex);
   return true;
 }
 
 /**
  * Narrows the declarations shared by two adjacent rules down to those that can
- * safely move into a merged rule. First, prunes each candidate on its
- * own, then validates the whole surviving set.
+ * safely move into a merged rule, along with the indices of the later rule's
+ * declarations they claim.
+ *
+ * The merged rule is emitted after the earlier rule's remaining declarations,
+ * so hoisting a declaration that a later declaration in the earlier rule
+ * overrides would reverse the cascade and make the previously dead value
+ * effective again, unless that overriding declaration is hoisted too, so both
+ * move together and keep their relative order.
+ *
+ * Dropping a candidate can invalidate one that was only admitted because it
+ * travelled with it, so the pass repeats until the surviving set stops
+ * shrinking.
  *
  * @param {Declaration[]} hoistCandidates
  * @param {Declaration[]} earlierRuleDeclarations
  * @param {Declaration[]} laterRuleDeclarations
- * @return {Declaration[]}
+ * @return {{intersection: Declaration[], claimedIndices: Set<number>}}
  */
 function filterRuleIntersections(
   hoistCandidates,
   earlierRuleDeclarations,
   laterRuleDeclarations
 ) {
-  // Stage 1: keep only candidates whose overrides travel with them and that
-  // can claim an equal declaration in the later rule. A candidate rejected by the first check never claims a match.
-  hoistCandidates = hoistCandidates.filter(
-    (candidate, candidateIndex) =>
-      hoistingPreservesOverrideOrder(
-        candidate,
-        candidateIndex,
-        hoistCandidates,
-        earlierRuleDeclarations
-      ) && claimMatchInLaterRule(candidate, laterRuleDeclarations)
-  );
-
-  // Stage 2: the merged rule is emitted after the earlier rule's remaining
-  // declarations. Hoisting a declaration overridden by a later
-  // declaration in the earlier rule
-  // would reverse the cascade and make the previously dead value effective
-  // again, unless both declarations move together, preserving their relative order.
-  //
-  // Stage 1 checks the candidate set as it stood before
-  // claiming, but claiming can remove the overriding declaration, so the
-  // survivors are re-checked here. `isSameProperty` (not `isConflictingProp`)
-  // is used to avoid false positives such as `font-feature-settings` vs
-  // `font-family`.
-  const hoisted = hoistCandidates;
-  return hoistCandidates.filter((candidate) => {
-    const indexInEarlierRule = indexOfDeclaration(
-      earlierRuleDeclarations,
-      candidate
+  for (;;) {
+    // A candidate rejected by the override check never claims a match.
+    const claimedIndices = new Set();
+    const survivors = hoistCandidates.filter(
+      (candidate, candidateIndex) =>
+        hoistingPreservesOverrideOrder(
+          candidate,
+          candidateIndex,
+          hoistCandidates,
+          earlierRuleDeclarations
+        ) &&
+        claimMatchInLaterRule(candidate, laterRuleDeclarations, claimedIndices)
     );
-    return earlierRuleDeclarations
-      .slice(indexInEarlierRule + 1)
-      .filter(
-        (d) =>
-          isSameProperty(d.prop, candidate.prop) &&
-          !declarationIsEqual(d, candidate)
-      )
-      .every((d) => indexOfDeclaration(hoisted, d) !== -1);
-  });
+    if (survivors.length === hoistCandidates.length || survivors.length === 0) {
+      return { intersection: survivors, claimedIndices };
+    }
+    hoistCandidates = survivors;
+  }
 }
 
 /**
  * @param {Rule} first
  * @param {Rule} second
  * @param {Declaration[]} intersection
+ * @param {Set<number>} claimedIndices Positions of the declarations the
+ * intersection claimed in `second`, which the merged rule replaces.
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, RuleMeta>} ruleMeta
  * @return {Rule}
  */
-function buildMergedRule(first, second, intersection, ruleCache, ruleMeta) {
+function buildMergedRule(
+  first,
+  second,
+  intersection,
+  claimedIndices,
+  ruleCache,
+  ruleMeta
+) {
   const receivingBlock = second.clone();
   const firstSelectors = getMeta(first, ruleMeta).selectors;
   const secondSelectors = getMeta(second, ruleMeta).selectors;
@@ -569,7 +595,15 @@ function buildMergedRule(first, second, intersection, ruleCache, ruleMeta) {
       }
     )
   );
-  secondClone.walkDecls(moveDecl((decl) => decl.remove()));
+  // Remove exactly the declarations that were claimed: matching by value would
+  // also delete a duplicate that re-asserts the value later in the rule, after
+  // an overriding declaration that stays behind.
+  let laterIndex = 0;
+  secondClone.walkDecls((decl) => {
+    if (claimedIndices.has(laterIndex++)) {
+      decl.remove();
+    }
+  });
 
   // Ensure original rules are flushed for accurate length comparison
   if (ruleMeta) {
@@ -646,18 +680,26 @@ function partialMerge(
   const earlierRuleDeclarations = [...metaFirstActual.declarations];
   const laterRuleDeclarations = [...metaSecondActual.declarations];
 
-  intersection = filterRuleIntersections(
+  const filtered = filterRuleIntersections(
     intersection,
     earlierRuleDeclarations,
     laterRuleDeclarations
   );
+  intersection = filtered.intersection;
 
   if (intersection.length === 0) {
     // Nothing to merge
     return second;
   }
 
-  return buildMergedRule(first, second, intersection, ruleCache, ruleMeta);
+  return buildMergedRule(
+    first,
+    second,
+    intersection,
+    filtered.claimedIndices,
+    ruleCache,
+    ruleMeta
+  );
 }
 
 /**
