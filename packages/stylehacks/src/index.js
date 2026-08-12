@@ -23,6 +23,7 @@ function pluginCreator(opts = {}) {
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
       const browsers = getBrowsersList(opts, stats, from, file, env);
+      const browserSet = new Set(browsers);
 
       return /** import('postcss').Plugin */ {
         /**
@@ -33,7 +34,7 @@ function pluginCreator(opts = {}) {
           const processors = [];
           for (const Plugin of plugins) {
             const hack = new Plugin(result);
-            if (!browsers.some((browser) => hack.targets.has(browser))) {
+            if (browserSet.isDisjointFrom(hack.targets)) {
               processors.push(hack);
             }
           }

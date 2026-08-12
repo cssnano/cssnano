@@ -61,18 +61,6 @@ function mergeRangeBounds(left, right) {
 }
 
 /**
- * IE and Edge before 16 version ignore the unicode-range if the 'U' is lowercase
- *
- * https://caniuse.com/#search=unicode-range
- *
- * @param {string} browser
- * @return {boolean}
- */
-function hasLowerCaseUPrefixBug(browser) {
-  return getBrowsersList('ie <=11, edge <= 15').includes(browser);
-}
-
-/**
  * @param {string} value
  * @return {string}
  */
@@ -115,7 +103,18 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
       const browsers = getBrowsersList(null, opts, stats, from, file, env);
 
       const cache = new Map();
-      const isLegacy = browsers.some(hasLowerCaseUPrefixBug);
+      /**
+       * IE and Edge before 16 version ignore the unicode-range if the 'U' is
+       * lowercase
+       *
+       * https://caniuse.com/#search=unicode-range
+       */
+      const lowerCaseUPrefixBugBrowsers = new Set(
+        getBrowsersList('ie <=11, edge <= 15')
+      );
+      const isLegacy = !new Set(browsers).isDisjointFrom(
+        lowerCaseUPrefixBugBrowsers
+      );
 
       return {
         /**

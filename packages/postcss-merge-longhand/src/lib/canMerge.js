@@ -17,12 +17,11 @@ module.exports = (declarations, includeCustomProps = true) => {
     declarations.map((node) => node.value.toLowerCase())
   );
 
-  if (uniqueProperties.size > 1) {
-    for (const unmergeable of cssGlobalKeywords.values()) {
-      if (uniqueProperties.has(unmergeable)) {
-        return false;
-      }
-    }
+  if (
+    uniqueProperties.size > 1 &&
+    !uniqueProperties.isDisjointFrom(cssGlobalKeywords)
+  ) {
+    return false;
   }
   if (includeCustomProps && declarations.some(isCustomProp)) {
     return false;

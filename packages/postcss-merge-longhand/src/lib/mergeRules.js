@@ -2,6 +2,7 @@
 const hasAllProps = require('./hasAllProps.js');
 const getDeclarationsThatMatchProperties = require('./getDecls.js');
 const getRules = require('./getRules.js');
+const lastOf = require('./lastOf.js');
 
 /**
  * @param {import('postcss').Declaration} declA
@@ -38,9 +39,10 @@ function hasConflicts(match, nodes) {
   const nodeIndices = match.map((n) => nodes.indexOf(n));
   const firstNodeIndex = Math.min(...nodeIndices);
   const lastNodeIndex = Math.max(...nodeIndices);
+  const matchSet = new Set(match);
   const between = nodes
     .slice(firstNodeIndex + 1, lastNodeIndex)
-    .filter((node) => !match.includes(node));
+    .filter((node) => !matchSet.has(node));
 
   return match.some((a) =>
     between.some(
@@ -54,20 +56,26 @@ function hasConflicts(match, nodes) {
 /**
  * @param {import('postcss').Rule} rule
  * @param {string[]} properties
- * @param {(rules: import('postcss').Declaration[], last: import('postcss').Declaration, props: import('postcss').Declaration[]) => boolean} callback
+ * @param {(rules: import('postcss').Declaration[], last: import('postcss').Declaration, props: Set<import('postcss').Declaration>) => boolean} callback
  * @return {void}
  */
 module.exports = function mergeRules(rule, properties, callback) {
-  let declarations = getDeclarationsThatMatchProperties(
+  const declarations = getDeclarationsThatMatchProperties(
     rule,
     new Set(properties)
   );
 
-  while (declarations.length) {
-    const last = declarations[declarations.length - 1];
-    const props = declarations.filter(
-      (node) => node.important === last.important
-    );
+  while (declarations.size) {
+    const last = lastOf(declarations);
+    /** @type {Set<import('postcss').Declaration>} */
+    const props = new Set();
+
+    for (const node of declarations) {
+      if (node.important === last.important) {
+        props.add(node);
+      }
+    }
+
     const rules = getRules(props, properties);
 
     if (
@@ -78,10 +86,12 @@ module.exports = function mergeRules(rule, properties, callback) {
       )
     ) {
       if (callback(rules, last, props)) {
-        declarations = declarations.filter((node) => !rules.includes(node));
+        for (const node of rules) {
+          declarations.delete(node);
+        }
       }
     }
 
-    declarations = declarations.filter((node) => node !== last);
+    declarations.delete(last);
   }
 };

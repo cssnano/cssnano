@@ -96,8 +96,7 @@ function transform(value, options) {
 function addPluginDefaults(options, browsers) {
   const defaults = {
     // Does the browser support 4 & 8 character hex notation
-    transparent:
-      browsers.some((b) => browsersWithTransparentBug.has(b)) === false,
+    transparent: new Set(browsers).isDisjointFrom(browsersWithTransparentBug),
     // Does the browser support "transparent" value properly
     alphaHex: isSupported('css-rrggbbaa', browsers),
     name: true,

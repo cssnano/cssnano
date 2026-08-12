@@ -19,6 +19,7 @@ const getLastNode = require('../getLastNode.js');
 const parseWidthStyleColor = require('../parseWsc.js');
 const { isValidWidthStyleColor } = require('../validateWsc.js');
 const cssGlobalKeywords = require('../cssGlobalKeywords.js');
+const lastOf = require('../lastOf.js');
 
 /** @import {Declaration} from 'postcss'; */
 
@@ -294,13 +295,16 @@ function mergeBorderSpacing(rule) {
 /**
  * Removes duplicate declarations from a declaration list.
  *
- * @param {import('postcss').Declaration[]} decls
+ * @param {Set<import('postcss').Declaration>} declarations
  * @param {import('postcss').Declaration | undefined} lastNode
- * @returns {import('postcss').Declaration[]}
+ * @returns {void}
  */
-function removeDuplicateDeclarations(decls, lastNode) {
-  let duplicateDeclarations = decls.filter(
-    (node) =>
+function removeDuplicateDeclarations(declarations, lastNode) {
+  /** @type {Set<Declaration>} */
+  const duplicateDeclarations = new Set();
+
+  for (const node of declarations) {
+    if (
       !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
       !stylehacks.detect(node) &&
       node !== lastNode &&
@@ -310,43 +314,53 @@ function removeDuplicateDeclarations(decls, lastNode) {
         !isCustomProp(node) &&
         isCustomProp(/** @type {Declaration} */ (lastNode))
       )
-  );
+    ) {
+      duplicateDeclarations.add(node);
+    }
+  }
 
-  if (duplicateDeclarations.length) {
+  if (duplicateDeclarations.size !== 0) {
     if (
       colorMightRequireFallback.test(
         getColorValue(/** @type {Declaration} */ (lastNode))
       )
     ) {
-      const preserve = duplicateDeclarations
-        .filter((node) => !colorMightRequireFallback.test(getColorValue(node)))
-        .pop();
+      /** @type {Declaration | undefined} */
+      let preserve;
 
-      duplicateDeclarations = duplicateDeclarations.filter(
-        (node) => node !== preserve
-      );
+      /* Set order is deterministic */
+      for (const node of duplicateDeclarations) {
+        if (!colorMightRequireFallback.test(getColorValue(node))) {
+          preserve = node;
+        }
+      }
+
+      if (preserve !== undefined) {
+        duplicateDeclarations.delete(preserve);
+      }
     }
     for (const node of duplicateDeclarations) {
       node.remove();
+      declarations.delete(node);
     }
   }
 
-  return decls.filter(
-    (node) => node !== lastNode && !duplicateDeclarations.includes(node)
-  );
+  declarations.delete(/** @type {Declaration} */ (lastNode));
 }
 
 /**
  * Removes lower precedence declarations from a declaration list.
  *
- * @param {import('postcss').Declaration[]} decls
+ * @param {Set<import('postcss').Declaration>} decls
  * @param {import('postcss').Declaration | undefined} lastNode
  * @param {string | undefined} lastPart
- * @returns {import('postcss').Declaration[]}
+ * @returns {void}
  */
 function removeLowerPrecedenceDeclarations(decls, lastNode, lastPart) {
-  const lesser = decls.filter(
-    (node) =>
+  const lesser = [];
+
+  for (const node of decls) {
+    if (
       !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
       !stylehacks.detect(node) &&
       !isCustomProp(/** @type {Declaration} */ (lastNode)) &&
@@ -360,12 +374,15 @@ function removeLowerPrecedenceDeclarations(decls, lastNode, lastPart) {
         .toLowerCase()
         .includes(/** @type {Declaration} */ (lastNode).prop) ||
         node.prop.toLowerCase().endsWith(/** @type {string} */ (lastPart)))
-  );
+    ) {
+      lesser.push(node);
+    }
+  }
 
   for (const node of lesser) {
     node.remove();
+    decls.delete(node);
   }
-  return decls.filter((node) => !lesser.includes(node));
 }
 
 /**
@@ -377,16 +394,16 @@ function cleanup(rule) {
     decl.value = minifyWidthStyleColor(decl.value);
   });
 
-  let decls = getDecls(rule, allPhysicalBorderProperties);
+  const decls = getDecls(rule, allPhysicalBorderProperties);
 
-  while (decls.length) {
-    const lastNode = decls.at(-1);
+  while (decls.size) {
+    const lastNode = lastOf(decls);
     const lastPart = /** @type {Declaration} */ (lastNode).prop
       .split('-')
       .pop();
-    decls = removeLowerPrecedenceDeclarations(decls, lastNode, lastPart);
+    removeLowerPrecedenceDeclarations(decls, lastNode, lastPart);
 
-    decls = removeDuplicateDeclarations(decls, lastNode);
+    removeDuplicateDeclarations(decls, lastNode);
   }
 }
 
@@ -855,10 +872,10 @@ function merge(rule) {
   }
 
   // optimize border-trbl
-  let decls = getDecls(rule, new Set(physicalBorderShorthands));
+  const decls = getDecls(rule, new Set(physicalBorderShorthands));
 
-  while (decls.length) {
-    const lastNode = decls.at(-1);
+  while (decls.size) {
+    const lastNode = lastOf(decls);
 
     for (const [i, d] of widthStyleColor.entries()) {
       const names = physicalBorderShorthands
@@ -931,14 +948,14 @@ function merge(rule) {
           }
         );
 
-        decls = decls.filter((node) => !rules.includes(node));
         for (const node of rules) {
           node.remove();
+          decls.delete(node);
         }
       }
     }
 
-    decls = decls.filter((node) => node !== lastNode);
+    decls.delete(lastNode);
   }
 
   rule.walkDecls('border', (decl) => {
