@@ -10,6 +10,7 @@ const mergeValues = require('../mergeValues.js');
 const topRightBottomLeft = require('../trbl.js');
 const isCustomProp = require('../isCustomProp.js');
 const canExplode = require('../canExplode.js');
+const lastOf = require('../lastOf.js');
 
 /**
  * @param {string} prop A CSS property name
@@ -21,50 +22,55 @@ module.exports = (prop) => {
   );
   /** @type {(rule: import('postcss').Rule) => void} */
   const cleanup = (rule) => {
-    let boxPropertyDeclarations = getDecls(
+    const boxPropertyDeclarations = getDecls(
       rule,
       new Set([prop].concat(physicalBoxProperties))
     );
 
-    while (boxPropertyDeclarations.length) {
-      const lastNode =
-        boxPropertyDeclarations[boxPropertyDeclarations.length - 1];
+    while (boxPropertyDeclarations.size) {
+      const lastNode = lastOf(boxPropertyDeclarations);
 
       // remove properties of lower precedence
-      const lesser = boxPropertyDeclarations.filter(
-        (node) =>
+      const lesser = [];
+      for (const node of boxPropertyDeclarations) {
+        if (
           !stylehacks.detect(lastNode) &&
           !stylehacks.detect(node) &&
           node !== lastNode &&
           node.important === lastNode.important &&
           lastNode.prop === prop &&
           node.prop !== lastNode.prop
-      );
+        ) {
+          lesser.push(node);
+        }
+      }
 
       for (const node of lesser) {
         node.remove();
+        boxPropertyDeclarations.delete(node);
       }
-      boxPropertyDeclarations = boxPropertyDeclarations.filter(
-        (node) => !lesser.includes(node)
-      );
 
       // get duplicate properties
-      const duplicates = boxPropertyDeclarations.filter(
-        (node) =>
+      const duplicates = new Set();
+      for (const node of boxPropertyDeclarations) {
+        if (
           !stylehacks.detect(lastNode) &&
           !stylehacks.detect(node) &&
           node !== lastNode &&
           node.important === lastNode.important &&
           node.prop === lastNode.prop &&
           !(!isCustomProp(node) && isCustomProp(lastNode))
-      );
+        ) {
+          duplicates.add(node);
+        }
+      }
 
       for (const node of duplicates) {
         node.remove();
+        boxPropertyDeclarations.delete(node);
       }
-      boxPropertyDeclarations = boxPropertyDeclarations.filter(
-        (node) => node !== lastNode && !duplicates.includes(node)
-      );
+
+      boxPropertyDeclarations.delete(lastNode);
     }
   };
 

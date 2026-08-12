@@ -234,6 +234,13 @@ function splitProp(prop) {
   };
 }
 
+const conflictingBorderProperties = new Set([
+  'image',
+  'width',
+  'color',
+  'style',
+]);
+
 /**
  * @param {string} propA
  * @param {string} propB
@@ -263,13 +270,8 @@ function isConflictingProp(propA, propB) {
 
   /* Do not merge conflicting border properties */
   if (a.base === 'border') {
-    const allRestProps = new Set([...a.rest, ...b.rest]);
-    if (
-      allRestProps.has('image') ||
-      allRestProps.has('width') ||
-      allRestProps.has('color') ||
-      allRestProps.has('style')
-    ) {
+    const allRestProps = new Set(a.rest).union(new Set(b.rest));
+    if (!allRestProps.isDisjointFrom(conflictingBorderProperties)) {
       return true;
     }
   }

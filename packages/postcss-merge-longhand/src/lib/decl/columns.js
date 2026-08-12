@@ -9,6 +9,7 @@ const mergeRules = require('../mergeRules.js');
 const insertCloned = require('../insertCloned.js');
 const isCustomProp = require('../isCustomProp.js');
 const canExplode = require('../canExplode.js');
+const lastOf = require('../lastOf.js');
 
 const columnProperties = ['column-width', 'column-count'];
 const auto = 'auto';
@@ -88,44 +89,52 @@ function explode(rule) {
  * @return {void}
  */
 function cleanup(rule) {
-  let decls = getDecls(rule, new Set(['columns'].concat(columnProperties)));
+  const decls = getDecls(rule, new Set(['columns'].concat(columnProperties)));
 
-  while (decls.length) {
-    const lastNode = decls[decls.length - 1];
+  while (decls.size) {
+    const lastNode = lastOf(decls);
 
     // remove properties of lower precedence
-    const lesser = decls.filter(
-      (node) =>
+    const lesser = [];
+    for (const node of decls) {
+      if (
         !stylehacks.detect(lastNode) &&
         !stylehacks.detect(node) &&
         node !== lastNode &&
         node.important === lastNode.important &&
         lastNode.prop === 'columns' &&
         node.prop !== lastNode.prop
-    );
+      ) {
+        lesser.push(node);
+      }
+    }
 
     for (const node of lesser) {
       node.remove();
+      decls.delete(node);
     }
-    decls = decls.filter((node) => !lesser.includes(node));
 
     // get duplicate properties
-    const duplicates = decls.filter(
-      (node) =>
+    const duplicates = [];
+    for (const node of decls) {
+      if (
         !stylehacks.detect(lastNode) &&
         !stylehacks.detect(node) &&
         node !== lastNode &&
         node.important === lastNode.important &&
         node.prop === lastNode.prop &&
         !(!isCustomProp(node) && isCustomProp(lastNode))
-    );
+      ) {
+        duplicates.push(node);
+      }
+    }
 
     for (const node of duplicates) {
       node.remove();
+      decls.delete(node);
     }
-    decls = decls.filter(
-      (node) => node !== lastNode && !duplicates.includes(node)
-    );
+
+    decls.delete(lastNode);
   }
 }
 

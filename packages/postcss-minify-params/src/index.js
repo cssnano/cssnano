@@ -157,7 +157,7 @@ function pluginCreator(options = {}) {
       const { stats, env, from, file } = result.opts || {};
       const browsers = getBrowsersList(options, stats, from, file, env);
 
-      const hasAllBug = browsers.some((browser) => allBugBrowers.has(browser));
+      const hasAllBug = !new Set(browsers).isDisjointFrom(allBugBrowers);
 
       return {
         /**

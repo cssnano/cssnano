@@ -4,12 +4,16 @@
  *
  * @param {import('postcss').Rule} rule
  * @param {Set<string>} properties the CSS properties to search for
- * @return {import('postcss').Declaration[]}
+ * @return {Set<import('postcss').Declaration>}
  */
 module.exports = function getDeclarationsThatMatchProperties(rule, properties) {
-  return /** @type {import('postcss').Declaration[]} */ (
-    rule.nodes.filter(
-      (node) => node.type === 'decl' && properties.has(node.prop.toLowerCase())
-    )
-  );
+  const decls = new Set();
+
+  for (const node of rule.nodes) {
+    if (node.type === 'decl' && properties.has(node.prop.toLowerCase())) {
+      decls.add(node);
+    }
+  }
+
+  return decls;
 };

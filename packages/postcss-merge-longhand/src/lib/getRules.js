@@ -2,7 +2,7 @@
 const getLastNode = require('./getLastNode.js');
 
 /**
- * @param {import('postcss').Declaration[]} props
+ * @param {Iterable<import('postcss').Declaration>} props
  * @param {string[]} properties
  * @return {import('postcss').Declaration[]}
  */
