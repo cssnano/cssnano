@@ -515,6 +515,9 @@ importers:
         specifier: ^7.1.5
         version: 7.1.5
     devDependencies:
+      '@webref/css':
+        specifier: 8.7.1
+        version: 8.7.1(css-tree@3.2.1)
       postcss:
         specifier: ^8.5.26
         version: 8.5.26
@@ -1147,6 +1150,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@webref/css@8.7.1':
+    resolution: {integrity: sha512-O60bIKYKl5RpLYsWOnOlWzBCEa2NYKapaeg28gOxsjfHHFK51BWRFcwFNJG04lcZxE6yzrEhWzsW35Bjv5RRXA==}
+    peerDependencies:
+      css-tree: ^3.2.1
+
   autoprefixer@10.5.4:
     resolution: {integrity: sha512-MaU0U/za7N3r6brxD4YB/l4NSrFzLPlANv6wEuQVaIPlD3L4W9rFcQPbL/EilY9BHhHvhfcz3gInDLrEtWT4EA==}
     engines: {node: ^10 || ^12 || >=14}
@@ -1577,6 +1585,10 @@ snapshots:
 
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
+
+  '@webref/css@8.7.1(css-tree@3.2.1)':
+    dependencies:
+      css-tree: 3.2.1
 
   autoprefixer@10.5.4(postcss@8.5.26):
     dependencies:

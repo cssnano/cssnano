@@ -10,6 +10,7 @@ const {
   sameVendor,
   noVendor,
 } = require('./lib/ensureCompatibility');
+const { isConflictingProp } = require('./lib/propertyRelations.js');
 /** @import {Declaration, Rule} from 'postcss' */
 /**
  * @param {Declaration} a
@@ -201,141 +202,6 @@ function ruleLength(...rules) {
 }
 
 /**
- * @param {string} prop
- * @return {{prefix: string?, base:string?, rest:string[]}}
- */
-function splitProp(prop) {
-  // Treat vendor prefixed properties as if they were unprefixed;
-  // moving them when combined with non-prefixed properties can
-  // cause issues. e.g. moving -webkit-background-clip when there
-  // is a background shorthand definition.
-
-  const parts = prop.split('-');
-  if (prop[0] !== '-') {
-    return {
-      prefix: '',
-      base: parts[0],
-      rest: parts.slice(1),
-    };
-  }
-  // Don't split css variables
-  if (prop[1] === '-') {
-    return {
-      prefix: null,
-      base: null,
-      rest: [prop],
-    };
-  }
-  // Found prefix
-  return {
-    prefix: parts[1],
-    base: parts[2],
-    rest: parts.slice(3),
-  };
-}
-
-const conflictingBorderProperties = new Set([
-  'image',
-  'width',
-  'color',
-  'style',
-]);
-
-/** Border longhands the `border` shorthand does not write. */
-const borderSubfamilies = new Set(['radius', 'collapse', 'spacing']);
-
-/**
- * @param {string} propA
- * @param {string} propB
- * @return {boolean}
- */
-function isConflictingProp(propA, propB) {
-  if (propA === propB) {
-    // Same specificity
-    return true;
-  }
-  const a = splitProp(propA);
-  const b = splitProp(propB);
-  // Don't resort css variables
-  if (!a.base && !b.base) {
-    return true;
-  }
-
-  // Different base and none is `place`;
-  if (a.base !== b.base && a.base !== 'place' && b.base !== 'place') {
-    return false;
-  }
-
-  // Conflict if rest-count mismatches
-  if (a.rest.length !== b.rest.length) {
-    return true;
-  }
-
-  /* Do not merge conflicting border properties */
-  if (a.base === 'border') {
-    const allRestProps = new Set(a.rest).union(new Set(b.rest));
-    if (!allRestProps.isDisjointFrom(conflictingBorderProperties)) {
-      return true;
-    }
-  }
-  // Conflict if rest parameters are equal (same but unprefixed)
-  return a.rest.every((s, index) => b.rest[index] === s);
-}
-
-/**
- * True if a declaration of `overridingProp` appearing after a declaration of
- * `prop` in the same rule can change what `prop` computes to: the same logical
- * property (ignoring vendor prefixes), or a shorthand that writes it.
- *
- * `isConflictingProp` cannot answer this: it reports a conflict whenever the
- * segment counts differ, so it treats `font-feature-settings` as overriding
- * `font-family`. That over-reporting is safe when deciding whether to bail out
- * of a merge, but here it would keep independent declarations from being
- * hoisted. Shorthands are recognised by their segments being a subset of the
- * longhand's, which is what relates `font` to `font-weight` and
- * `background` to `-webkit-background-clip`, but not `font-feature-settings`
- * to `font-weight`.
- *
- * @param {string} overridingProp
- * @param {string} prop
- * @return {boolean}
- */
-function overridesProp(overridingProp, prop) {
-  if (overridingProp.toLowerCase() === 'all') {
-    // `all` resets every property except these two, but shares no base with
-    // them, so the checks below would never report it.
-    const lowercased = prop.toLowerCase();
-    return lowercased !== 'direction' && lowercased !== 'unicode-bidi';
-  }
-  if (overridingProp === prop) {
-    return true;
-  }
-  const a = splitProp(overridingProp);
-  const b = splitProp(prop);
-  // Custom properties only override themselves, handled above
-  if (!a.base || !b.base) {
-    return false;
-  }
-  if (a.base !== b.base && a.base !== 'place' && b.base !== 'place') {
-    return false;
-  }
-  if (a.base === 'border' || b.base === 'border') {
-    // `border` writes width, style, color and image, so `border-radius`,
-    // `border-collapse` and `border-spacing` belong to families of their own.
-    const familyA = a.rest.find((s) => borderSubfamilies.has(s));
-    const familyB = b.rest.find((s) => borderSubfamilies.has(s));
-    if (familyA !== familyB) {
-      return false;
-    }
-  }
-  const restA = new Set(a.rest);
-  const restB = new Set(b.rest);
-  return restA.size <= restB.size
-    ? restA.isSubsetOf(restB)
-    : restB.isSubsetOf(restA);
-}
-
-/**
  * @param {Rule} first
  * @param {Rule} second
  * @return {boolean} merged
@@ -445,13 +311,13 @@ function hoistingPreservesOverrideOrder(
   );
   const overridesInEarlierRule = earlierRuleDeclarations
     .slice(indexInEarlierRule + 1)
-    .filter((d) => overridesProp(d.prop, candidate.prop));
+    .filter((d) => isConflictingProp(d.prop, candidate.prop));
   if (overridesInEarlierRule.length === 0) {
     return true;
   }
   const overridesAmongCandidates = hoistCandidates
     .slice(candidateIndex + 1)
-    .filter((d) => overridesProp(d.prop, candidate.prop));
+    .filter((d) => isConflictingProp(d.prop, candidate.prop));
   if (overridesInEarlierRule.length !== overridesAmongCandidates.length) {
     return false;
   }
