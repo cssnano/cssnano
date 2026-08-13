@@ -11,8 +11,8 @@ const contentRegex = /content/i;
  * @return {import('../index.js').Reducer}
  */
 module.exports = function () {
-  /** @type {Record<string, {ident: string, count: number}>} */
-  const cache = {};
+  /** @type {Map<string, {ident: string, count: number}>} */
+  const cache = new Map();
   /** @type {{value: import('postcss-value-parser').ParsedValue}[]} */
   let declOneCache = [];
   /** @type {import('postcss').Declaration[]} */
@@ -37,7 +37,9 @@ module.exports = function () {
             ) {
               addToCache(child.value, encoder, cache);
 
-              child.value = cache[child.value].ident;
+              child.value = /** @type {{ident: string, count: number}} */ (
+                cache.get(child.value)
+              ).ident;
             }
           }
         );
@@ -61,10 +63,11 @@ module.exports = function () {
               (value === 'counter' || value === 'counters')
             ) {
               valueParser.walk(node.nodes, (child) => {
-                if (child.type === 'word' && child.value in cache) {
-                  cache[child.value].count++;
+                const cached = child.type === 'word' && cache.get(child.value);
+                if (cached) {
+                  cached.count++;
 
-                  child.value = cache[child.value].ident;
+                  child.value = cached.ident;
                 }
               });
             }
@@ -82,9 +85,7 @@ module.exports = function () {
         /** @type {unknown} */ (decl.value) = decl.value
           .walk((node) => {
             if (node.type === 'word' && !isNum(node)) {
-              for (const key of Object.keys(cache)) {
-                const cached = cache[key];
-
+              for (const [key, cached] of cache) {
                 if (cached.ident === node.value && !cached.count) {
                   node.value = key;
                 }

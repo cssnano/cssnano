@@ -2,16 +2,16 @@
 /**
  * @param {string} value
  * @param {(value: string, num: number) => string} encoder
- * @param {Record<string, {ident: string, count: number}>} cache
+ * @param {Map<string, {ident: string, count: number}>} cache
  * @return {void}
  */
 module.exports = function (value, encoder, cache) {
-  if (cache[value]) {
+  if (cache.has(value)) {
     return;
   }
 
-  cache[value] = {
-    ident: encoder(value, Object.keys(cache).length),
+  cache.set(value, {
+    ident: encoder(value, cache.size),
     count: 0,
-  };
+  });
 };
