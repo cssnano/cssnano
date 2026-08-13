@@ -32,7 +32,10 @@
     "email": "beneb.info@gmail.com",
     "url": "https://beneb.info"
   },
-  "repository": "cssnano/cssnano",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cssnano/cssnano.git"
+  },
   "homepage": "https://github.com/cssnano/cssnano",
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

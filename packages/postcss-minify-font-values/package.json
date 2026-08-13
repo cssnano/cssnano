@@ -30,7 +30,10 @@
   "dependencies": {
     "postcss-value-parser": "^4.2.0"
   },
-  "repository": "cssnano/cssnano",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cssnano/cssnano.git"
+  },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
   },

@@ -29,7 +29,10 @@
     "email": "beneb.info@gmail.com",
     "url": "https://beneb.info"
   },
-  "repository": "cssnano/cssnano",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cssnano/cssnano.git"
+  },
   "dependencies": {
     "postcss-value-parser": "^4.2.0"
   },

@@ -27,7 +27,10 @@
   ],
   "author": "Justineo <justice360@gmail.com>",
   "license": "MIT",
-  "repository": "cssnano/cssnano",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cssnano/cssnano.git"
+  },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
   },
