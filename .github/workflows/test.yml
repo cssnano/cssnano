@@ -28,6 +28,9 @@ jobs:
       - name: Run lint
         run: pnpm lint
 
+      - name: Check committed types are up to date
+        run: git diff --exit-code -- '**/types/*.d.ts'
+
   test:
     needs: lint
     runs-on: ${{ matrix.os }}
