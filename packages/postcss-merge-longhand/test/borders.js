@@ -1407,3 +1407,24 @@ test(
     'h1{border-color:#eee;border-color:rgba(0,0,0,.1)}'
   )
 );
+
+test(
+  'should merge borders whose colour comes from a modern colour function',
+  processCSS(
+    'h1{border-top:solid lab(50% 40 59.5);border-right:solid lab(50% 40 59.5);border-bottom:solid lab(50% 40 59.5);border-left:solid lab(50% 40 59.5)}',
+    'h1{border-color:lab(50% 40 59.5);border-style:solid;border-width:medium}'
+  )
+);
+
+test(
+  'should merge borders whose colour is mixed',
+  processCSS(
+    'h1{border-top:solid color-mix(in srgb,red,blue);border-right:solid color-mix(in srgb,red,blue);border-bottom:solid color-mix(in srgb,red,blue);border-left:solid color-mix(in srgb,red,blue)}',
+    'h1{border-color:color-mix(in srgb,red,blue);border-style:solid;border-width:medium}'
+  )
+);
+
+test(
+  'should not read a function that merely ends in a colour name as a colour',
+  passthroughCSS('h1{border-top:solid my-rgb(1,2,3)}')
+);

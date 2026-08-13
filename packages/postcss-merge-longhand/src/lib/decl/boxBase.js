@@ -78,7 +78,11 @@ module.exports = (prop) => {
   return {
     /** @type {(rule: import('postcss').Rule) => void} */
     explode: (rule) => {
-      rule.walkDecls(new RegExp('^' + prop + '$', 'i'), (decl) => {
+      rule.walkDecls((decl) => {
+        if (decl.prop.toLowerCase() !== prop) {
+          return;
+        }
+
         if (!canExplode(decl)) {
           return;
         }

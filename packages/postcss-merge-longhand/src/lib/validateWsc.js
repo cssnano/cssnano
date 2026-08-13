@@ -1,21 +1,9 @@
 'use strict';
 const colors = require('./colornames.js');
+const { lineStyles, lineWidthKeywords, colorFunctions } = require('./spec.js');
 
-const widthKeywords = new Set(['thin', 'medium', 'thick']);
-const borderStyles = new Set([
-  'none',
-  'hidden',
-  'dotted',
-  'dashed',
-  'solid',
-  'double',
-  'groove',
-  'ridge',
-  'inset',
-  'outset',
-]);
 const lengthValueRegex = /^(\d+(\.\d+)?|\.\d+)(\w+)?$/;
-const colorFunctionRegex = /(:?rgba?|hsla?|hwb|lch|oklab|oklch|color)\(/;
+const functionNameRegex = /([\w-]+)\(/g;
 const hexColorRegex = /#([0-9a-z]{6}|[0-9a-z]{3})/;
 
 /**
@@ -23,7 +11,7 @@ const hexColorRegex = /#([0-9a-z]{6}|[0-9a-z]{3})/;
  * @return {boolean}
  */
 function isBorderStyle(value) {
-  return value !== undefined && borderStyles.has(value.toLowerCase());
+  return value !== undefined && lineStyles.has(value.toLowerCase());
 }
 
 /**
@@ -32,9 +20,23 @@ function isBorderStyle(value) {
  */
 function isBorderWidth(value) {
   return (
-    (value && widthKeywords.has(value.toLowerCase())) ||
+    (value && lineWidthKeywords.has(value.toLowerCase())) ||
     lengthValueRegex.test(value)
   );
+}
+
+/**
+ * @param {string} value
+ * @return {boolean} whether the value calls a function that produces a colour
+ */
+function callsColorFunction(value) {
+  for (const [, name] of value.matchAll(functionNameRegex)) {
+    if (colorFunctions.has(name)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -48,7 +50,7 @@ function isColor(value) {
 
   value = value.toLowerCase();
 
-  if (colorFunctionRegex.test(value)) {
+  if (callsColorFunction(value)) {
     return true;
   }
 
@@ -56,10 +58,7 @@ function isColor(value) {
     return true;
   }
 
-  if (value === 'transparent') {
-    return true;
-  }
-
+  /* `currentcolor` stands outside the named colours, which hold `transparent`. */
   if (value === 'currentcolor') {
     return true;
   }

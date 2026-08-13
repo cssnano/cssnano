@@ -21,7 +21,7 @@ function pluginCreator() {
        * @type {import('postcss').Rule[]}
        */
       const columnRules = [];
-      let setsColumnHeight = false;
+      let setsOtherColumnProperty = false;
 
       css.walkRules((rule) => {
         // Scan the rule's props once, then run only the processors whose
@@ -39,7 +39,7 @@ function pluginCreator() {
             hasBorder = true;
           } else if (prop.startsWith('column')) {
             hasColumn = true;
-            setsColumnHeight ||= columns.setsColumnHeight(node);
+            setsOtherColumnProperty ||= columns.setsOtherColumnProperty(node);
           } else if (prop.startsWith('margin')) {
             hasMargin = true;
           } else if (prop.startsWith('padding')) {
@@ -63,7 +63,7 @@ function pluginCreator() {
         }
       });
 
-      if (setsColumnHeight) {
+      if (setsOtherColumnProperty) {
         return;
       }
 

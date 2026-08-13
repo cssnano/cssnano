@@ -303,6 +303,20 @@ addTests(
       `h1{${prop}-bottom:UNSET;${prop}-top:INITIAL;${prop}-left:INHERIT;${prop}-right:INITIAL}`,
   },
   {
+    message: 'should not merge box props where one has a revert-layer property',
+    fixture:
+      'h1{box-bottom:10px;box-top:revert-layer;box-left:20px;box-right:20px}',
+    expected: (prop) =>
+      `h1{${prop}-bottom:10px;${prop}-top:revert-layer;${prop}-left:20px;${prop}-right:20px}`,
+  },
+  {
+    message: 'should not merge box props where one has a revert-rule property',
+    fixture:
+      'h1{box-bottom:10px;box-top:revert-rule;box-left:20px;box-right:20px}',
+    expected: (prop) =>
+      `h1{${prop}-bottom:10px;${prop}-top:revert-rule;${prop}-left:20px;${prop}-right:20px}`,
+  },
+  {
     message: 'should merge box props when they are all unset',
     fixture:
       'h1{box-bottom:unset;box-top:unset;box-left:unset;box-right:unset}',

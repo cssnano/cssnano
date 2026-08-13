@@ -21,18 +21,12 @@ const parseWidthStyleColor = require('../parseWsc.js');
 const { isValidWidthStyleColor } = require('../validateWsc.js');
 const cssGlobalKeywords = require('../cssGlobalKeywords.js');
 const lastOf = require('../lastOf.js');
+const spec = require('../spec.js');
 
 /** @import {Declaration} from 'postcss'; */
 
-const widthStyleColor = ['width', 'style', 'color'];
-const defaultBorderValues = ['medium', 'none', 'currentcolor'];
-const borderSpacingRegex = /^border-spacing$/i;
-const borderStyleRegex = /^border($|-(top|right|bottom|left)$)/i;
-const borderRegex = /^border/i;
-const borderImageRegex = /^border-image($|-)/i;
-const logicalBorderRegex = /^border-(block|inline|start|end)($|-)/i;
-const directionalPhysicalRegex =
-  /^border-(top|right|bottom|left)($|-(width|style|color)$)/i;
+const borderSpacing = 'border-spacing';
+const widthStyleColor = spec.borderComponents;
 const customPropRegex = /var\s*\(\s*--/i;
 
 /**
@@ -43,17 +37,8 @@ function borderProperty(...parts) {
   return `border-${parts.join('-')}`;
 }
 
-const physicalBorderShorthands = [
-  'border-top',
-  'border-right',
-  'border-bottom',
-  'border-left',
-];
-const allSidesBorderShorthands = [
-  'border-width',
-  'border-style',
-  'border-color',
-];
+const physicalBorderShorthands = spec.sides.map((side) => borderProperty(side));
+const allSidesBorderShorthands = spec.shorthand('border').longhands;
 /** @type {string[]} */
 const physicalDirectionalProperties = [];
 for (const direction of physicalBorderShorthands) {
@@ -61,6 +46,22 @@ for (const direction of physicalBorderShorthands) {
     physicalDirectionalProperties.push(`${direction}-${prop}`);
   }
 }
+
+const defaultBorderValues = allSidesBorderShorthands.map(
+  (prop) => /** @type {string} */ (spec.initialValues.get(prop))
+);
+/* `border` and the shorthand for each side of the box. */
+const borderAndSideShorthands = new Set([
+  'border',
+  ...physicalBorderShorthands,
+]);
+/* Those, and the properties they are made of. */
+const directionalPhysicalProperties = new Set([
+  ...physicalBorderShorthands,
+  ...physicalDirectionalProperties,
+]);
+/* What `border` resets without being able to set. */
+const borderImageProperties = new Set(spec.shorthand('border').resets);
 
 const precedence = [
   ['border'],
@@ -199,11 +200,14 @@ function containsUnmergeableBorderDecls(rule) {
   );
 
   if (
-    declarations.some(
-      (declaration) =>
-        borderImageRegex.test(declaration.prop) ||
-        logicalBorderRegex.test(declaration.prop)
-    )
+    declarations.some((declaration) => {
+      const prop = declaration.prop.toLowerCase();
+
+      return (
+        borderImageProperties.has(prop) ||
+        spec.flowRelativeBorderProperties.has(prop)
+      );
+    })
   ) {
     return true;
   }
@@ -216,7 +220,7 @@ function containsUnmergeableBorderDecls(rule) {
     physical.some(
       (declaration) =>
         cssGlobalKeywords.has(declaration.value.toLowerCase()) ||
-        ((borderStyleRegex.test(declaration.prop) ||
+        ((borderAndSideShorthands.has(declaration.prop.toLowerCase()) ||
           allSidesBorderShorthands.includes(declaration.prop.toLowerCase())) &&
           isCustomProp(declaration))
     )
@@ -228,7 +232,7 @@ function containsUnmergeableBorderDecls(rule) {
     allSidesBorderShorthands.includes(decl.prop.toLowerCase())
   );
   const directionalDeclarations = physical.filter((decl) =>
-    directionalPhysicalRegex.test(decl.prop)
+    directionalPhysicalProperties.has(decl.prop.toLowerCase())
   );
 
   return globalComponents.length > 1 && directionalDeclarations.length > 0;
@@ -269,7 +273,11 @@ function hasBorderResetContext(rule) {
  * @return {void}
  */
 function mergeBorderSpacing(rule) {
-  rule.walkDecls(borderSpacingRegex, (decl) => {
+  rule.walkDecls((decl) => {
+    if (decl.prop.toLowerCase() !== borderSpacing) {
+      return;
+    }
+
     const value = list.space(decl.value);
 
     if (value.length > 1 && value[0] === value[1]) {
@@ -352,8 +360,10 @@ function removeLowerPrecedenceDeclarations(decls, lastNode, lastPart) {
  * @return {void}
  */
 function cleanup(rule) {
-  rule.walkDecls(borderStyleRegex, (decl) => {
-    decl.value = minifyWidthStyleColor(decl.value);
+  rule.walkDecls((decl) => {
+    if (borderAndSideShorthands.has(decl.prop.toLowerCase())) {
+      decl.value = minifyWidthStyleColor(decl.value);
+    }
   });
 
   const decls = getDecls(rule, allPhysicalBorderProperties);
@@ -382,7 +392,11 @@ function explode(rule) {
     return;
   }
 
-  rule.walkDecls(borderRegex, (decl) => {
+  rule.walkDecls((decl) => {
+    if (!spec.borderProperties.has(decl.prop.toLowerCase())) {
+      return;
+    }
+
     if (!canExplode(decl)) {
       return;
     }
@@ -954,7 +968,11 @@ function merge(rule) {
     return mergeRedundant(config);
   });
 
-  rule.walkDecls(borderStyleRegex, (decl) => {
+  rule.walkDecls((decl) => {
+    if (!borderAndSideShorthands.has(decl.prop.toLowerCase())) {
+      return;
+    }
+
     const values = parseWidthStyleColor(decl.value);
 
     if (!isValidWidthStyleColor(values)) {

@@ -10,12 +10,17 @@ const insertCloned = require('../insertCloned.js');
 const isFallback = require('../isFallback.js');
 const canExplode = require('../canExplode.js');
 const lastOf = require('../lastOf.js');
+const { shorthand, initialValues } = require('../spec.js');
 
+const columns = 'columns';
+/* The components the shorthand is put back together out of. */
 const columnProperties = ['column-width', 'column-count'];
-const auto = 'auto';
+/* The ones it also sets, which have no place in that value. */
+const otherColumnProperties = shorthand(columns).longhands.filter(
+  (property) => !columnProperties.includes(property)
+);
+const auto = /** @type {string} */ (initialValues.get(columnProperties[0]));
 const inherit = 'inherit';
-const columnsRegex = /^columns$/i;
-const columnHeightRegex = /^column-height$/i;
 /* A unit is a bare identifier, so `30em/10em` is not a length. */
 const lengthUnitRegex = /^[a-z]+$/i;
 
@@ -53,12 +58,13 @@ function normalize(values) {
  * length, `column-count` an integer, and `auto` fits either.
  *
  * @param {string} value
- * @return {'width' | 'count' | 'auto' | undefined} undefined for anything else,
- * since a value this cannot classify, `calc()` among them, could be either.
+ * @return {'width' | 'count' | 'initial' | undefined} undefined for anything
+ * else, since a value this cannot classify, `calc()` among them, could be
+ * either.
  */
 function componentRole(value) {
   if (value.toLowerCase() === auto) {
-    return auto;
+    return 'initial';
   }
 
   const dimension = unit(value);
@@ -104,7 +110,7 @@ function parseColumns(value) {
       return undefined;
     }
 
-    if (role === auto) {
+    if (role === 'initial') {
       ambiguous.push(component);
       continue;
     }
@@ -135,19 +141,21 @@ function parseColumns(value) {
 }
 
 /**
- * A `columns` declaration also sets `column-height`, which has no place in the
- * two component value this pair of transforms builds, so a stylesheet that sets
- * the property could tell a shorthand apart from the longhands it expands to.
- * Both spellings count: the property itself, and the `columns: <width> /
- * <height>` form of the shorthand.
+ * The shorthand sets more than the two components this pair of transforms puts
+ * back together — `column-height` as of css-multicol-2 — so a stylesheet that
+ * sets one of those could tell a `columns` declaration apart from the longhands
+ * it expands to. Both spellings count: the property itself, and the
+ * `columns: <width> / <height>` form of the shorthand.
  *
  * @param {import('postcss').Declaration} declaration
  * @return {boolean}
  */
-function setsColumnHeight(declaration) {
+function setsOtherColumnProperty(declaration) {
+  const prop = declaration.prop.toLowerCase();
+
   return (
-    columnHeightRegex.test(declaration.prop) ||
-    (columnsRegex.test(declaration.prop) && declaration.value.includes('/'))
+    otherColumnProperties.includes(prop) ||
+    (prop === columns && declaration.value.includes('/'))
   );
 }
 
@@ -156,7 +164,11 @@ function setsColumnHeight(declaration) {
  * @return {void}
  */
 function explode(rule) {
-  rule.walkDecls(columnsRegex, (decl) => {
+  rule.walkDecls((decl) => {
+    if (decl.prop.toLowerCase() !== columns) {
+      return;
+    }
+
     if (!canExplode(decl)) {
       return;
     }
@@ -187,7 +199,7 @@ function explode(rule) {
  * @return {void}
  */
 function cleanup(rule) {
-  const decls = getDecls(rule, new Set(['columns'].concat(columnProperties)));
+  const decls = getDecls(rule, new Set([columns].concat(columnProperties)));
 
   while (decls.size) {
     const lastNode = lastOf(decls);
@@ -200,7 +212,7 @@ function cleanup(rule) {
         !stylehacks.detect(node) &&
         node !== lastNode &&
         node.important === lastNode.important &&
-        lastNode.prop === 'columns' &&
+        lastNode.prop === columns &&
         node.prop !== lastNode.prop &&
         !isFallback(node, lastNode)
       ) {
@@ -248,7 +260,7 @@ function merge(rule) {
         /** @type {import('postcss').Rule} */ (lastNode.parent),
         lastNode,
         {
-          prop: 'columns',
+          prop: columns,
           value: normalize(/** @type [string, string] */ (rules.map(getValue))),
         }
       );
@@ -268,5 +280,5 @@ function merge(rule) {
 module.exports = {
   explode,
   merge,
-  setsColumnHeight,
+  setsOtherColumnProperty,
 };
