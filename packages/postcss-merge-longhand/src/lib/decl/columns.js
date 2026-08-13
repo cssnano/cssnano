@@ -7,7 +7,7 @@ const getDecls = require('../getDecls.js');
 const getValue = require('../getValue.js');
 const mergeRules = require('../mergeRules.js');
 const insertCloned = require('../insertCloned.js');
-const isCustomProp = require('../isCustomProp.js');
+const isFallback = require('../isFallback.js');
 const canExplode = require('../canExplode.js');
 const lastOf = require('../lastOf.js');
 
@@ -103,7 +103,8 @@ function cleanup(rule) {
         node !== lastNode &&
         node.important === lastNode.important &&
         lastNode.prop === 'columns' &&
-        node.prop !== lastNode.prop
+        node.prop !== lastNode.prop &&
+        !isFallback(node, lastNode)
       ) {
         lesser.push(node);
       }
@@ -123,7 +124,7 @@ function cleanup(rule) {
         node !== lastNode &&
         node.important === lastNode.important &&
         node.prop === lastNode.prop &&
-        !(!isCustomProp(node) && isCustomProp(lastNode))
+        !isFallback(node, lastNode)
       ) {
         duplicates.push(node);
       }

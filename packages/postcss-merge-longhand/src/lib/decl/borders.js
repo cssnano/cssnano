@@ -14,6 +14,7 @@ const minifyWidthStyleColor = require('../minifyWsc.js');
 const canMerge = require('../canMerge.js');
 const topRightBottomLeft = require('../trbl.js');
 const isCustomProp = require('../isCustomProp.js');
+const isFallback = require('../isFallback.js');
 const canExplode = require('../canExplode.js');
 const getLastNode = require('../getLastNode.js');
 const parseWidthStyleColor = require('../parseWsc.js');
@@ -25,9 +26,6 @@ const lastOf = require('../lastOf.js');
 
 const widthStyleColor = ['width', 'style', 'color'];
 const defaultBorderValues = ['medium', 'none', 'currentcolor'];
-const colorMightRequireFallback =
-  /(hsla|rgba|color|hwb|lab|lch|oklab|oklch)\(/i;
-
 const borderSpacingRegex = /^border-spacing$/i;
 const borderStyleRegex = /^border($|-(top|right|bottom|left)$)/i;
 const borderRegex = /^border/i;
@@ -96,18 +94,6 @@ const isCustomProperty = (value) =>
  */
 function canMergeValues(values) {
   return !values.some(isCustomProperty);
-}
-
-/**
- * @param {import('postcss').Declaration} decl
- * @return {string}
- */
-function getColorValue(decl) {
-  if (decl.prop.slice(-5) === 'color') {
-    return decl.value;
-  }
-
-  return parseWidthStyleColor(decl.value)[2] || defaultBorderValues[2];
 }
 
 /**
@@ -310,39 +296,15 @@ function removeDuplicateDeclarations(declarations, lastNode) {
       node !== lastNode &&
       node.important === /** @type {Declaration} */ (lastNode).important &&
       node.prop === /** @type {Declaration} */ (lastNode).prop &&
-      !(
-        !isCustomProp(node) &&
-        isCustomProp(/** @type {Declaration} */ (lastNode))
-      )
+      !isFallback(node, /** @type {Declaration} */ (lastNode))
     ) {
       duplicateDeclarations.add(node);
     }
   }
 
-  if (duplicateDeclarations.size !== 0) {
-    if (
-      colorMightRequireFallback.test(
-        getColorValue(/** @type {Declaration} */ (lastNode))
-      )
-    ) {
-      /** @type {Declaration | undefined} */
-      let preserve;
-
-      /* Set order is deterministic */
-      for (const node of duplicateDeclarations) {
-        if (!colorMightRequireFallback.test(getColorValue(node))) {
-          preserve = node;
-        }
-      }
-
-      if (preserve !== undefined) {
-        duplicateDeclarations.delete(preserve);
-      }
-    }
-    for (const node of duplicateDeclarations) {
-      node.remove();
-      declarations.delete(node);
-    }
+  for (const node of duplicateDeclarations) {
+    node.remove();
+    declarations.delete(node);
   }
 
   declarations.delete(/** @type {Declaration} */ (lastNode));

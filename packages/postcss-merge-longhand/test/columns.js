@@ -198,3 +198,18 @@ test(
   'should handle empty columns',
   processCSS('h1{columns:;}', 'h1{columns:;}')
 );
+
+test(
+  'should save fallbacks for column-width that use env()',
+  passthroughCSS(
+    'h1{column-width:1px;column-width:env(safe-area-inset-bottom);column-count:2}'
+  )
+);
+
+test(
+  'should merge column values that only repeat a plain value',
+  processCSS(
+    'h1{column-width:2px;column-width:3px;column-count:2}',
+    'h1{columns:3px 2}'
+  )
+);

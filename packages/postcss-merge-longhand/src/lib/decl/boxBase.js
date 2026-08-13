@@ -8,7 +8,7 @@ const insertCloned = require('../insertCloned.js');
 const mergeRules = require('../mergeRules.js');
 const mergeValues = require('../mergeValues.js');
 const topRightBottomLeft = require('../trbl.js');
-const isCustomProp = require('../isCustomProp.js');
+const isFallback = require('../isFallback.js');
 const canExplode = require('../canExplode.js');
 const lastOf = require('../lastOf.js');
 
@@ -39,7 +39,8 @@ module.exports = (prop) => {
           node !== lastNode &&
           node.important === lastNode.important &&
           lastNode.prop === prop &&
-          node.prop !== lastNode.prop
+          node.prop !== lastNode.prop &&
+          !isFallback(node, lastNode)
         ) {
           lesser.push(node);
         }
@@ -59,7 +60,7 @@ module.exports = (prop) => {
           node !== lastNode &&
           node.important === lastNode.important &&
           node.prop === lastNode.prop &&
-          !(!isCustomProp(node) && isCustomProp(lastNode))
+          !isFallback(node, lastNode)
         ) {
           duplicates.add(node);
         }

@@ -1385,3 +1385,25 @@ test(
 );
 
 test('should handle empty border', processCSS('h1{border:;}', 'h1{border:;}'));
+
+test(
+  'should save fallbacks for border-width that use env()',
+  passthroughCSS(
+    'h1{border-bottom-width:1px;border-bottom-width:env(safe-area-inset-bottom)}'
+  )
+);
+
+test(
+  'should not merge border longhands over a fallback',
+  passthroughCSS(
+    'h1{border-top-width:1px;border-top-width:env(safe-area-inset-bottom);border-top-style:solid;border-top-color:red}'
+  )
+);
+
+test(
+  'should keep only the last of a chain of fallback colours',
+  processCSS(
+    'h1{border-color:#ddd;border-color:#eee;border-color:rgba(0,0,0,.1)}',
+    'h1{border-color:#eee;border-color:rgba(0,0,0,.1)}'
+  )
+);

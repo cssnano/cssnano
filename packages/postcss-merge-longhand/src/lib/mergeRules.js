@@ -2,6 +2,7 @@
 const hasAllProps = require('./hasAllProps.js');
 const getDeclarationsThatMatchProperties = require('./getDecls.js');
 const getRules = require('./getRules.js');
+const skipsFallback = require('./skipsFallback.js');
 const lastOf = require('./lastOf.js');
 
 /**
@@ -10,7 +11,7 @@ const lastOf = require('./lastOf.js');
  * @return {boolean}
  */
 function arePropertiesConflicting(declA, declB) {
-  if (!declB.prop || declB.important !== declA.important) {
+  if (!declA.prop || !declB.prop || declB.important !== declA.important) {
     return false;
   }
 
@@ -45,11 +46,21 @@ function hasConflicts(match, nodes) {
     .filter((node) => !matchSet.has(node));
 
   return match.some((a) =>
-    between.some(
-      (b) =>
-        arePropertiesConflicting(a, b) &&
-        (a.prop !== b.prop || nodes.indexOf(b) > nodes.indexOf(a))
-    )
+    between.some((b) => {
+      /* Merging moves a to the end of the range, so anything in between that
+       * used to override it stops doing so.
+       */
+      const overridesA = nodes.indexOf(b) > nodes.indexOf(a);
+
+      if (arePropertiesConflicting(a, b)) {
+        return a.prop !== b.prop || overridesA;
+      }
+
+      /* b names part of a, such as border-left-width against border-left, and
+       * only wins where it comes later.
+       */
+      return overridesA && a.prop !== b.prop && arePropertiesConflicting(b, a);
+    })
   );
 }
 
@@ -83,7 +94,8 @@ module.exports = function mergeRules(rule, properties, callback) {
       !hasConflicts(
         rules,
         /** @type import('postcss').Declaration[]*/ (rule.nodes)
-      )
+      ) &&
+      !skipsFallback(rules, props)
     ) {
       if (callback(rules, last, props)) {
         for (const node of rules) {

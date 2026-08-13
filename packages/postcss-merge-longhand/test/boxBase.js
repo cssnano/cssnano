@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const { processCSSFactory } = require('../../../util/testHelpers.js');
 const plugin = require('../src/index.js');
 
-const { processCSS } = processCSSFactory(plugin);
+const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 function addTests(...tests) {
   for (const { message, fixture, expected } of tests) {
@@ -347,5 +347,40 @@ addTests(
     message: 'should handle empty box properties',
     fixture: 'h1{box:;}',
     expected: (prop) => `h1{${prop}:;}`,
+  },
+  {
+    message: 'should save fallbacks for box props that use env()',
+    fixture:
+      'h1{box:16px 35px;box-bottom:calc(constant(safe-area-inset-bottom) + 16px);box-bottom:calc(env(safe-area-inset-bottom) + 16px)}',
+    expected: (prop) =>
+      `h1{${prop.toLowerCase()}:16px 35px;${prop}-bottom:calc(constant(safe-area-inset-bottom) + 16px);${prop}-bottom:calc(env(safe-area-inset-bottom) + 16px)}`,
+  },
+  {
+    message: 'should not merge box props over a fallback',
+    fixture:
+      'h1{box-top:1px;box-right:2px;box-bottom:3px;box-bottom:env(safe-area-inset-bottom);box-left:4px}',
+    expected: (prop) =>
+      `h1{${prop}-top:1px;${prop}-right:2px;${prop}-bottom:3px;${prop}-bottom:env(safe-area-inset-bottom);${prop}-left:4px}`,
+  },
+  {
+    message: 'should merge box props that only repeat a plain value',
+    fixture: 'h1{box:1px;box-bottom:2px;box-bottom:3px}',
+    expected: (prop) => `h1{${prop.toLowerCase()}:1px 1px 3px}`,
+  },
+  {
+    message: 'should merge box props when the later value drops a function',
+    fixture:
+      'h1{box-bottom:env(safe-area-inset-bottom);box-bottom:3px;box-top:1px;box-right:2px;box-left:4px}',
+    expected: (prop) => `h1{${prop.toLowerCase()}:1px 2px 3px 4px}`,
   }
+);
+
+test(
+  'should keep the constant() fallback for a safe area inset',
+  passthroughCSS(`.my-class {
+padding: 16px 35px;
+padding-bottom: calc(constant(safe-area-inset-bottom) + 16px);
+padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+}
+`)
 );
