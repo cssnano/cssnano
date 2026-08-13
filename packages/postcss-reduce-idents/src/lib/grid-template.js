@@ -32,6 +32,25 @@ const whitespaceRegex = /\s+/;
 const multipleDotsRegex = /\.+/;
 
 /**
+ * Strips the brackets off a gridline name token, e.g. `[name]` -> `name`.
+ * Area name tokens without brackets are returned unchanged.
+ * @param {string} word
+ * @return {string}
+ */
+function stripBrackets(word) {
+  if (word.startsWith('[') && word.endsWith(']')) {
+    return word.slice(1, -1);
+  }
+  if (word.startsWith('[')) {
+    return word.slice(1);
+  }
+  if (word.endsWith(']')) {
+    return word.slice(0, -1);
+  }
+  return word;
+}
+
+/**
  * @return {import('../index.js').Reducer}
  */
 module.exports = function () {
@@ -90,48 +109,96 @@ module.exports = function () {
     },
 
     transform() {
-      for (const decl of declCache) {
-        decl.value = valueParser(decl.value)
+      // first pass: rename properties that reference an area/line name
+      // (grid-area, grid-column, grid-row, ...), and count how many times
+      // each name is referenced
+      for (const declaration of declCache) {
+        if (!gridChildProperties.has(declaration.prop.toLowerCase())) {
+          continue;
+        }
+
+        declaration.value = valueParser(declaration.value)
           .walk((node) => {
-            if (gridTemplateProperties.has(decl.prop.toLowerCase())) {
-              for (const word of node.value.split(whitespaceRegex)) {
-                const wordCached = cache.get(word);
-                if (wordCached) {
-                  node.value = node.value.replace(word, wordCached.ident);
-                }
-                /* replace gridline names inside lists like [name] */
-                if (word.startsWith('[') && word.endsWith(']')) {
-                  const gridLine = word.slice(1, -1);
-                  const cached = cache.get(gridLine);
-                  if (cached) {
-                    node.value = node.value.replace(gridLine, cached.ident);
-                  }
-                } else if (word.startsWith('[')) {
-                  const gridLine = word.slice(1);
-                  const cached = cache.get(gridLine);
-                  if (cached) {
-                    node.value = node.value.replace(gridLine, cached.ident);
-                  }
-                } else if (word.endsWith(']')) {
-                  const gridLine = word.slice(0, -1);
-                  const cached = cache.get(gridLine);
-                  if (cached) {
-                    node.value = node.value.replace(gridLine, cached.ident);
-                  }
-                }
-              }
-              node.value = node.value.replace(/\s+/g, ' '); // merge white-spaces
+            if (isNum(node)) {
+              return false;
             }
 
-            if (
-              gridChildProperties.has(decl.prop.toLowerCase()) &&
-              !isNum(node)
-            ) {
-              const cached = cache.get(node.value);
-              if (cached) {
-                node.value = cached.ident;
+            const cached = cache.get(node.value);
+            if (cached) {
+              cached.count++;
+              node.value = cached.ident;
+            }
+
+            return false;
+          })
+          .toString();
+      }
+
+      // second pass: rename grid-template-* declarations, but only when at
+      // least one of the names they define is referenced by a
+      // grid-area/grid-column/grid-row elsewhere. Once a declaration is
+      // known to be in use, every name it defines is renamed together so a
+      // list like `[a b]` doesn't end up half-renamed.
+      for (const declaration of declCache) {
+        if (!gridTemplateProperties.has(declaration.prop.toLowerCase())) {
+          continue;
+        }
+
+        let isUsed = false;
+        valueParser(declaration.value).walk((node) => {
+          for (const word of node.value.split(whitespaceRegex)) {
+            const cached = cache.get(stripBrackets(word));
+            if (cached && cached.count > 0) {
+              isUsed = true;
+            }
+          }
+          return false;
+        });
+
+        if (!isUsed) {
+          continue;
+        }
+
+        declaration.value = valueParser(declaration.value)
+          .walk((node) => {
+            const words = node.value.split(whitespaceRegex);
+            const newWords = [];
+            for (const word of words) {
+              const wordCached = cache.get(word);
+              if (wordCached) {
+                newWords.push(wordCached.ident);
+                continue;
+              }
+              /* replace gridline names inside lists like [name] */
+              if (word.startsWith('[') && word.endsWith(']')) {
+                const gridLine = word.slice(1, -1);
+                const cached = cache.get(gridLine);
+                if (cached) {
+                  newWords.push(`[${cached.ident}]`);
+                } else {
+                  newWords.push(word);
+                }
+              } else if (word.startsWith('[')) {
+                const gridLine = word.slice(1);
+                const cached = cache.get(gridLine);
+                if (cached) {
+                  newWords.push(`[${cached.ident}`);
+                } else {
+                  newWords.push(word);
+                }
+              } else if (word.endsWith(']')) {
+                const gridLine = word.slice(0, -1);
+                const cached = cache.get(gridLine);
+                if (cached) {
+                  newWords.push(`${cached.ident}]`);
+                } else {
+                  newWords.push(word);
+                }
+              } else {
+                newWords.push(word);
               }
             }
+            node.value = newWords.join(' '); // also merges white-spaces
 
             return false;
           })

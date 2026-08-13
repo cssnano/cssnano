@@ -488,6 +488,15 @@ test(
 );
 
 test(
+  'should preserve grid template area order',
+  passthroughCSS(`.project {
+  display: grid;
+  grid-template-areas:
+    'b a' 'b c';
+}`)
+);
+
+test(
   'should not touch grid templates',
   passthroughCSS(
     [
