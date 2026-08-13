@@ -69,6 +69,12 @@ The following example will not be transformed in any way:
 }
 ```
 
+A name that reads as a keyword of the property it is written in is also left
+alone, because renaming it would change what the declaration means. In
+`animation: linear 2s linear`, whether a `linear` is the easing function or the
+name of the animation depends on the order the value is matched in, so neither
+is touched.
+
 It works for `@keyframes`, `@counter-style`, custom `counter` values and grid area definitions. See the
 [documentation][idents] for more information, or the [tests](src/__tests__) for more
 examples.

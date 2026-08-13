@@ -2,10 +2,19 @@
 const valueParser = require('postcss-value-parser');
 const addToCache = require('./cache');
 const isNum = require('./isNum');
+const functionArguments = require('./functionArguments');
+const { counter, cssWideKeywords, resolveProperty } = require('./slots');
 
-const RESERVED_KEYWORDS = new Set(['unset', 'initial', 'inherit', 'none']);
-const counterRegex = /counter-(reset|increment|set)/i;
-const contentRegex = /content/i;
+// `list-item` and `page` are counters the user agent itself maintains, and the
+// specification introduces them in prose rather than in a grammar, so webref
+// has no data for them and they stay listed here. Renaming either detaches a
+// `counter-reset` from the numbering it was meant to control.
+const RESERVED_KEYWORDS = new Set([
+  ...cssWideKeywords,
+  ...counter.reservedKeywords,
+  'list-item',
+  'page',
+]);
 
 /**
  * @return {import('../index.js').Reducer}
@@ -25,9 +34,9 @@ module.exports = function () {
       if (type !== 'decl') {
         return;
       }
-      const { prop } = node;
+      const prop = resolveProperty(node.prop);
 
-      if (counterRegex.test(prop)) {
+      if (counter.properties.has(prop)) {
         /** @type {unknown} */ (node.value) = valueParser(node.value).walk(
           (child) => {
             if (
@@ -45,7 +54,7 @@ module.exports = function () {
         );
 
         declOneCache.push(/** @type {any} */ (node));
-      } else if (contentRegex.test(prop)) {
+      } else if (counter.functionProperties.has(prop)) {
         declTwoCache.push(node);
       }
     },
@@ -56,20 +65,27 @@ module.exports = function () {
           .walk((node) => {
             const { type } = node;
 
-            const value = node.value.toLowerCase();
+            if (type === 'function') {
+              // Only the arguments that name a counter are renamed: the others
+              // hold a counter style, a separator string or a link target,
+              // which a counter of the same name must not be confused with.
+              const args = counter.functions.get(node.value.toLowerCase());
 
-            if (
-              type === 'function' &&
-              (value === 'counter' || value === 'counters')
-            ) {
-              valueParser.walk(node.nodes, (child) => {
-                const cached = child.type === 'word' && cache.get(child.value);
-                if (cached) {
-                  cached.count++;
+              if (args) {
+                const parsed = functionArguments(node);
 
-                  child.value = cached.ident;
+                for (const index of args) {
+                  for (const child of parsed[index] ?? []) {
+                    const cached =
+                      child.type === 'word' && cache.get(child.value);
+                    if (cached) {
+                      cached.count++;
+
+                      child.value = cached.ident;
+                    }
+                  }
                 }
-              });
+              }
             }
 
             if (type === 'space') {

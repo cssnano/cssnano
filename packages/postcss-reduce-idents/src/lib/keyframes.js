@@ -1,10 +1,17 @@
 'use strict';
 const valueParser = require('postcss-value-parser');
 const addToCache = require('./cache');
+const {
+  cssWideKeywords,
+  keyframes,
+  resolveAtRule,
+  resolveProperty,
+} = require('./slots');
 
-const RESERVED_KEYWORDS = new Set(['none', 'inherit', 'initial', 'unset']);
-const keyframesRegex = /keyframes/i;
-const animationRegex = /animation/i;
+const RESERVED_KEYWORDS = new Set([
+  ...cssWideKeywords,
+  ...keyframes.reservedKeywords,
+]);
 
 /**
  * @return {import('../index.js').Reducer}
@@ -23,13 +30,19 @@ module.exports = function () {
 
       if (
         type === 'atrule' &&
-        keyframesRegex.test(node.name) &&
+        resolveAtRule(node.name) === keyframes.atRule &&
         !RESERVED_KEYWORDS.has(node.params.toLowerCase())
       ) {
         addToCache(node.params, encoder, cache);
         atRules.push(node);
       }
-      if (type === 'decl' && animationRegex.test(node.prop)) {
+      // Only `animation` and `animation-name` take a keyframes name; the rest
+      // of the animation family holds keywords of its own, which a name that
+      // happens to look like one must not be renamed into.
+      if (
+        type === 'decl' &&
+        keyframes.properties.has(resolveProperty(node.prop))
+      ) {
         decls.push(node);
       }
     },
