@@ -35,8 +35,8 @@ const multipleDotsRegex = /\.+/;
  * @return {import('../index.js').Reducer}
  */
 module.exports = function () {
-  /** @type {Record<string, {ident: string, count: number}>} */
-  const cache = {};
+  /** @type {Map<string, {ident: string, count: number}>} */
+  const cache = new Map();
   /** @type {import('postcss').Declaration[]} */
   let declCache = [];
 
@@ -95,32 +95,29 @@ module.exports = function () {
           .walk((node) => {
             if (gridTemplateProperties.has(decl.prop.toLowerCase())) {
               for (const word of node.value.split(whitespaceRegex)) {
-                if (word in cache) {
-                  node.value = node.value.replace(word, cache[word].ident);
+                const wordCached = cache.get(word);
+                if (wordCached) {
+                  node.value = node.value.replace(word, wordCached.ident);
                 }
                 /* replace gridline names inside lists like [name] */
-                if (
-                  word.startsWith('[') &&
-                  word.endsWith(']') &&
-                  word.slice(1, -1) in cache
-                ) {
+                if (word.startsWith('[') && word.endsWith(']')) {
                   const gridLine = word.slice(1, -1);
-                  node.value = node.value.replace(
-                    gridLine,
-                    cache[gridLine].ident
-                  );
-                } else if (word.startsWith('[') && word.slice(1) in cache) {
+                  const cached = cache.get(gridLine);
+                  if (cached) {
+                    node.value = node.value.replace(gridLine, cached.ident);
+                  }
+                } else if (word.startsWith('[')) {
                   const gridLine = word.slice(1);
-                  node.value = node.value.replace(
-                    gridLine,
-                    cache[gridLine].ident
-                  );
-                } else if (word.endsWith(']') && word.slice(0, -1) in cache) {
+                  const cached = cache.get(gridLine);
+                  if (cached) {
+                    node.value = node.value.replace(gridLine, cached.ident);
+                  }
+                } else if (word.endsWith(']')) {
                   const gridLine = word.slice(0, -1);
-                  node.value = node.value.replace(
-                    gridLine,
-                    cache[gridLine].ident
-                  );
+                  const cached = cache.get(gridLine);
+                  if (cached) {
+                    node.value = node.value.replace(gridLine, cached.ident);
+                  }
                 }
               }
               node.value = node.value.replace(/\s+/g, ' '); // merge white-spaces
@@ -130,8 +127,9 @@ module.exports = function () {
               gridChildProperties.has(decl.prop.toLowerCase()) &&
               !isNum(node)
             ) {
-              if (node.value in cache) {
-                node.value = cache[node.value].ident;
+              const cached = cache.get(node.value);
+              if (cached) {
+                node.value = cached.ident;
               }
             }
 

@@ -72,8 +72,8 @@ const listStyleRegex = /(list-style|system)/i;
  * @return {import('../index.js').Reducer}
  */
 module.exports = function () {
-  /** @type {Record<string, {ident: string, count: number}>} */
-  const cache = {};
+  /** @type {Map<string, {ident: string, count: number}>} */
+  const cache = new Map();
   /** @type {import('postcss').AtRule[]} */
   let atRules = [];
   /** @type {import('postcss').Declaration[]} */
@@ -103,10 +103,11 @@ module.exports = function () {
       for (const decl of decls) {
         decl.value = valueParser(decl.value)
           .walk((node) => {
-            if (node.type === 'word' && node.value in cache) {
-              cache[node.value].count++;
+            const cached = node.type === 'word' && cache.get(node.value);
+            if (cached) {
+              cached.count++;
 
-              node.value = cache[node.value].ident;
+              node.value = cached.ident;
             }
           })
           .toString();
@@ -114,7 +115,7 @@ module.exports = function () {
 
       // Iterate each at rule and change their name if references to them have been found
       for (const rule of atRules) {
-        const cached = cache[rule.params];
+        const cached = cache.get(rule.params);
 
         if (cached && cached.count > 0) {
           rule.params = cached.ident;
