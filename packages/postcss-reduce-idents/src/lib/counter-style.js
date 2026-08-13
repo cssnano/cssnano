@@ -1,12 +1,20 @@
 'use strict';
 const valueParser = require('postcss-value-parser');
 const addToCache = require('./cache');
+const functionArguments = require('./functionArguments');
+const {
+  counterStyle,
+  cssWideKeywords,
+  resolveAtRule,
+  resolveProperty,
+} = require('./slots');
 
+// The predefined counter styles are spelled out as `@counter-style` rules in
+// an appendix of the specification rather than in a grammar, so webref has no
+// data for them and they stay listed here.
 const RESERVED_KEYWORDS = new Set([
-  'unset',
-  'initial',
-  'inherit',
-  'none',
+  ...cssWideKeywords,
+  ...counterStyle.reservedKeywords,
   'inline',
   'outside',
   'disc',
@@ -65,8 +73,26 @@ const RESERVED_KEYWORDS = new Set([
   'disclosure-open',
   'disclosure-close',
 ]);
-const counterStyleRegex = /counter-style/i;
-const listStyleRegex = /(list-style|system)/i;
+
+/**
+ * True for a `@counter-style` descriptor that names another counter style,
+ * such as `fallback` or `system: extends <name>`. The same words are ordinary
+ * custom properties or unknown properties anywhere else, so the rule the
+ * declaration sits in decides.
+ *
+ * @param {import('postcss').Declaration} node
+ * @return {boolean}
+ */
+function isCounterStyleDescriptor(node) {
+  const { parent } = node;
+
+  return (
+    parent !== undefined &&
+    parent.type === 'atrule' &&
+    resolveAtRule(parent.name) === counterStyle.atRule &&
+    counterStyle.descriptors.has(node.prop.toLowerCase())
+  );
+}
 
 /**
  * @return {import('../index.js').Reducer}
@@ -78,6 +104,8 @@ module.exports = function () {
   let atRules = [];
   /** @type {import('postcss').Declaration[]} */
   let decls = [];
+  /** @type {import('postcss').Declaration[]} */
+  let functionDecls = [];
 
   return {
     collect(node, encoder) {
@@ -85,7 +113,7 @@ module.exports = function () {
 
       if (
         type === 'atrule' &&
-        counterStyleRegex.test(node.name) &&
+        resolveAtRule(node.name) === counterStyle.atRule &&
         !RESERVED_KEYWORDS.has(node.params.toLowerCase())
       ) {
         addToCache(node.params, encoder, cache);
@@ -93,21 +121,65 @@ module.exports = function () {
         atRules.push(node);
       }
 
-      if (type === 'decl' && listStyleRegex.test(node.prop)) {
+      if (type !== 'decl') {
+        return;
+      }
+
+      if (
+        counterStyle.properties.has(resolveProperty(node.prop)) ||
+        isCounterStyleDescriptor(node)
+      ) {
         decls.push(node);
+      } else if (
+        counterStyle.functionProperties.has(resolveProperty(node.prop))
+      ) {
+        functionDecls.push(node);
       }
     },
 
     transform() {
+      /** @param {import('postcss-value-parser').Node} node */
+      const rename = (node) => {
+        const cached = node.type === 'word' && cache.get(node.value);
+        if (cached) {
+          cached.count++;
+
+          node.value = cached.ident;
+        }
+      };
+
       // Iterate each property and change their names
       for (const decl of decls) {
         decl.value = valueParser(decl.value)
           .walk((node) => {
-            const cached = node.type === 'word' && cache.get(node.value);
-            if (cached) {
-              cached.count++;
+            rename(node);
 
-              node.value = cached.ident;
+            // A function holds values of its own, such as the strings of
+            // `symbols()`, rather than the name of a counter style.
+            return node.type !== 'function';
+          })
+          .toString();
+      }
+
+      // `content` and its kin name a counter style at one argument of a
+      // counter function, and something else at the others
+      for (const decl of functionDecls) {
+        decl.value = valueParser(decl.value)
+          .walk((node) => {
+            if (node.type !== 'function') {
+              return;
+            }
+
+            const args = counterStyle.functions.get(node.value.toLowerCase());
+            if (!args) {
+              return;
+            }
+
+            const parsed = functionArguments(node);
+            for (const index of args) {
+              for (const child of parsed[index] ?? []) {
+                rename(child);
+              }
             }
           })
           .toString();
@@ -125,6 +197,7 @@ module.exports = function () {
       // reset cache after transform
       atRules = [];
       decls = [];
+      functionDecls = [];
     },
   };
 };

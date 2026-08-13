@@ -127,6 +127,24 @@ test(
 );
 
 test(
+  'should not rename a descriptor keyword that reads as a counter style name',
+  processCSS(
+    [
+      '@counter-style words{system:cyclic;symbols:"x"}',
+      '@counter-style fixed{system:cyclic;symbols:"y"}',
+      '@counter-style custom{system:fixed 3;symbols:"0";speak-as:words}',
+      'ol{list-style:custom}',
+    ].join(''),
+    [
+      '@counter-style words{system:cyclic;symbols:"x"}',
+      '@counter-style fixed{system:cyclic;symbols:"y"}',
+      '@counter-style a{system:fixed 3;symbols:"0";speak-as:words}',
+      'ol{list-style:a}',
+    ].join('')
+  )
+);
+
+test(
   'should not touch list-styles that are not defined in the file',
   passthroughCSS('ol{list-style:custom2}')
 );
@@ -158,7 +176,7 @@ test(
 test(
   'should rename counters (3)',
   processCSS(
-    'li{counter-increment:list-item}li::marker{content:"(" counters(list-item,".") ")"}',
+    'li{counter-increment:item}li::marker{content:"(" counters(item,".") ")"}',
     'li{counter-increment:a}li::marker{content:"(" counters(a,".") ")"}'
   )
 );
@@ -166,7 +184,7 @@ test(
 test(
   'should rename counters (3) (uppercase)',
   processCSS(
-    'li{counter-increment:list-item}li::marker{content:"(" COUNTERS(list-item,".") ")"}',
+    'li{counter-increment:item}li::marker{content:"(" COUNTERS(item,".") ")"}',
     'li{counter-increment:a}li::marker{content:"(" COUNTERS(a,".") ")"}'
   )
 );
@@ -174,7 +192,7 @@ test(
 test(
   'should rename multiple counters',
   processCSS(
-    'h1:before{counter-reset:chapter 1 section page 1;content: counter(chapter) \t "."  counter(section) " (pg." counter(page) ") "}',
+    'h1:before{counter-reset:chapter 1 section pagenum 1;content: counter(chapter) \t "."  counter(section) " (pg." counter(pagenum) ") "}',
     'h1:before{counter-reset:a 1 b c 1;content: counter(a) "." counter(b) " (pg." counter(c) ") "}'
   )
 );
@@ -182,8 +200,23 @@ test(
 test(
   'should rename multiple counters with random order',
   processCSS(
-    'h1:before{content: counter(chapter) "." counter(section) " (pg." counter(page) ") ";counter-reset:chapter 1 section  page 1}',
+    'h1:before{content: counter(chapter) "." counter(section) " (pg." counter(pagenum) ") ";counter-reset:chapter 1 section  pagenum 1}',
     'h1:before{content: counter(a) "." counter(b) " (pg." counter(c) ") ";counter-reset:a 1 b  c 1}'
+  )
+);
+
+test(
+  'should not rename the counters the user agent maintains',
+  passthroughCSS(
+    '@page{counter-reset:page 1}ol{counter-reset:list-item 3}li:before{content:counter(list-item) "/" counter(page)}'
+  )
+);
+
+test(
+  'should rename a counter referenced from string-set',
+  processCSS(
+    'h1{counter-reset:chapter;string-set:title counter(chapter)}p:before{content:counter(chapter)}',
+    'h1{counter-reset:a;string-set:title counter(a)}p:before{content:counter(a)}'
   )
 );
 
@@ -365,6 +398,38 @@ test(
 );
 
 test(
+  'should rename gridline names inside repeat() and minmax()',
+  processCSS(
+    [
+      'body{grid-template-columns:repeat(2,[narrow] 1fr) minmax([wide] 100px,1fr);}',
+      '.narrow{grid-column:narrow}',
+      '.wide{grid-column:wide}',
+    ].join(''),
+    [
+      'body{grid-template-columns:repeat(2,[a] 1fr) minmax([b] 100px,1fr);}',
+      '.narrow{grid-column:a}',
+      '.wide{grid-column:b}',
+    ].join('')
+  )
+);
+
+test(
+  'should leave the line numbers of a grid placement alone',
+  processCSS(
+    [
+      'body{grid-template-areas:". narrow ." "wide wide wide";}',
+      '.left{grid-column:1/narrow}',
+      '.right{grid-column:2/wide}',
+    ].join(''),
+    [
+      'body{grid-template-areas:". a ." "b b b";}',
+      '.left{grid-column:1/a}',
+      '.right{grid-column:2/b}',
+    ].join('')
+  )
+);
+
+test(
   'should rename grid-column, grid-column-start and grid-column-end (uppercase)',
   processCSS(
     [
@@ -518,6 +583,87 @@ test(
       'main{grid-area: 2 / 2 / auto / span 3;}',
     ].join(''),
     { gridTemplate: true }
+  )
+);
+
+// Which declarations name an identifier, and which keywords such a name
+// cannot be, come from `@webref/css`. These are the cases the property name
+// heuristics that preceded that data got wrong.
+
+test(
+  'should not rename a keyframes name in a property that does not take one',
+  processCSS(
+    '@keyframes fade{from{opacity:0}}.a{animation-name:fade;animation-timing-function:fade}',
+    '@keyframes a{from{opacity:0}}.a{animation-name:a;animation-timing-function:fade}'
+  )
+);
+
+test(
+  'should not touch a keyframes name that reads as an animation keyword',
+  passthroughCSS(
+    '@keyframes linear{from{opacity:0}}.a{animation:linear 2s linear}'
+  )
+);
+
+test(
+  'should rename a counter style referenced by a fallback descriptor',
+  processCSS(
+    '@counter-style custom{system:cyclic;symbols:"x"}@counter-style other{system:numeric;symbols:"0" "1";fallback:custom}ol{list-style-type:custom}',
+    '@counter-style a{system:cyclic;symbols:"x"}@counter-style other{system:numeric;symbols:"0" "1";fallback:a}ol{list-style-type:a}'
+  )
+);
+
+test(
+  'should rename a counter style passed to a counter function',
+  processCSS(
+    '@counter-style custom{system:cyclic;symbols:"x"}ol{list-style-type:custom}li:before{content:counter(chapter,custom)}',
+    '@counter-style a{system:cyclic;symbols:"x"}ol{list-style-type:a}li:before{content:counter(chapter,a)}'
+  )
+);
+
+test(
+  'should not touch a counter style that reads as a list-style keyword',
+  passthroughCSS(
+    '@counter-style inside{system:cyclic;symbols:"x"}ol{list-style:inside inside}'
+  )
+);
+
+test(
+  'should rename a counter referenced by target-counter',
+  processCSS(
+    'body{counter-reset:section}h3:before{content:counter(section)}a:after{content:target-counter(attr(href),section)}',
+    'body{counter-reset:a}h3:before{content:counter(a)}a:after{content:target-counter(attr(href),a)}'
+  )
+);
+
+test(
+  'should tell a counter apart from the counter style beside it',
+  processCSS(
+    '@counter-style custom{system:cyclic;symbols:"x"}ol{list-style-type:custom}body{counter-reset:section}h3:before{content:counter(section,custom)}',
+    '@counter-style a{system:cyclic;symbols:"x"}ol{list-style-type:a}body{counter-reset:a}h3:before{content:counter(a,a)}'
+  )
+);
+
+test(
+  'should rename gridlines named by the grid shorthand',
+  processCSS(
+    '.grid{grid:[header] auto / 1fr}.a{grid-row:header}',
+    '.grid{grid:[a] auto / 1fr}.a{grid-row:a}'
+  )
+);
+
+test(
+  'should rename grid areas named by the grid shorthand',
+  processCSS(
+    '.grid{grid:"head head" auto / 1fr}.a{grid-area:head}',
+    '.grid{grid:"a a" auto / 1fr}.a{grid-area:a}'
+  )
+);
+
+test(
+  'should not touch a grid area that reads as a grid keyword',
+  passthroughCSS(
+    '.grid{grid-template-areas:"dense"}.a{grid-area:dense}.b{grid:auto-flow dense / 1fr}'
   )
 );
 

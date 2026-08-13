@@ -2,31 +2,15 @@
 const valueParser = require('postcss-value-parser');
 const addToCache = require('./cache');
 const isNum = require('./isNum');
+const { cssWideKeywords, grid, resolveProperty } = require('./slots');
 
 const RESERVED_KEYWORDS = new Set([
-  'auto',
-  'span',
-  'inherit',
-  'initial',
-  'unset',
+  ...cssWideKeywords,
+  ...grid.reservedKeywords,
 ]);
 
-const gridTemplateProperties = new Set([
-  'grid-template',
-  'grid-template-areas',
-  'grid-template-columns',
-  'grid-template-rows',
-]);
-
-const gridChildProperties = new Set([
-  'grid-area',
-  'grid-column',
-  'grid-row',
-  'grid-column-start',
-  'grid-column-end',
-  'grid-row-start',
-  'grid-row-end',
-]);
+const gridTemplateProperties = grid.templateProperties;
+const gridChildProperties = grid.referenceProperties;
 
 const whitespaceRegex = /\s+/;
 const multipleDotsRegex = /\.+/;
@@ -65,7 +49,7 @@ module.exports = function () {
         return;
       }
 
-      if (gridTemplateProperties.has(node.prop.toLowerCase())) {
+      if (gridTemplateProperties.has(resolveProperty(node.prop))) {
         valueParser(node.value).walk((child) => {
           if (child.type === 'string') {
             for (const word of child.value.split(whitespaceRegex)) {
@@ -94,10 +78,11 @@ module.exports = function () {
         });
 
         declCache.push(node);
-      } else if (gridChildProperties.has(node.prop.toLowerCase())) {
+      } else if (gridChildProperties.has(resolveProperty(node.prop))) {
         valueParser(node.value).walk((child) => {
           if (
             child.type === 'word' &&
+            !isNum(child) &&
             !RESERVED_KEYWORDS.has(child.value.toLowerCase())
           ) {
             addToCache(child.value, encoder, cache);
@@ -113,7 +98,7 @@ module.exports = function () {
       // (grid-area, grid-column, grid-row, ...), and count how many times
       // each name is referenced
       for (const declaration of declCache) {
-        if (!gridChildProperties.has(declaration.prop.toLowerCase())) {
+        if (!gridChildProperties.has(resolveProperty(declaration.prop))) {
           continue;
         }
 
@@ -140,12 +125,18 @@ module.exports = function () {
       // known to be in use, every name it defines is renamed together so a
       // list like `[a b]` doesn't end up half-renamed.
       for (const declaration of declCache) {
-        if (!gridTemplateProperties.has(declaration.prop.toLowerCase())) {
+        if (!gridTemplateProperties.has(resolveProperty(declaration.prop))) {
           continue;
         }
 
         let isUsed = false;
         valueParser(declaration.value).walk((node) => {
+          // `repeat()` and `minmax()` hold gridline names of their own, so
+          // walk into them; their own name is not one.
+          if (node.type === 'function') {
+            return;
+          }
+
           for (const word of node.value.split(whitespaceRegex)) {
             const cached = cache.get(stripBrackets(word));
             if (cached && cached.count > 0) {
@@ -161,6 +152,10 @@ module.exports = function () {
 
         declaration.value = valueParser(declaration.value)
           .walk((node) => {
+            if (node.type === 'function') {
+              return;
+            }
+
             const words = node.value.split(whitespaceRegex);
             const newWords = [];
             for (const word of words) {
