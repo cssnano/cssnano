@@ -1,4 +1,5 @@
 export = cssnanoPlugin;
+import postcss = require('postcss');
 export type Options = {
     preset?: any;
     plugins?: any[];
@@ -9,5 +10,5 @@ export type Options = {
  * @param {Options=} options
  * @return {import('postcss').Processor}
  */
-declare function cssnanoPlugin(options?: {}): any;
+declare function cssnanoPlugin(options?: {}): postcss.Processor;
 //# sourceMappingURL=index.d.ts.map

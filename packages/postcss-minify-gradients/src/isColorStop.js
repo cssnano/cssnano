@@ -4,7 +4,14 @@ const { colordx: colord, extend } = require('@colordx/core');
 const hwbPlugin = require('@colordx/core/plugins/hwb');
 const namesPlugin = require('@colordx/core/plugins/names');
 
-extend([/** @type {any} */ (hwbPlugin), /** @type {any} */ (namesPlugin)]);
+extend([
+  /** @type {import('@colordx/core').Plugin} */ (
+    /** @type {unknown} */ (hwbPlugin)
+  ),
+  /** @type {import('@colordx/core').Plugin} */ (
+    /** @type {unknown} */ (namesPlugin)
+  ),
+]);
 
 /* Code derived from https://www.npmjs.com/package/is-color-stop Licensed under MIT license */
 

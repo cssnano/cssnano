@@ -13,7 +13,7 @@ function discardAndReport(css, result) {
   function discardEmpty(node) {
     const { type } = node;
     /** @type {(import('postcss').ChildNode | import('postcss').ChildProps)[] | undefined} */
-    const sub = /** @type {any} */ (node).nodes;
+    const sub = /** @type {import('postcss').Container} */ (node).nodes;
     if (sub) {
       /** @type {import('postcss').Container} */ (node).each(discardEmpty);
     }
