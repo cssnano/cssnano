@@ -13,6 +13,16 @@ function pluginCreator() {
      * @param {import('postcss').Root} css
      */
     OnceExit(css) {
+      /**
+       * Whether a `columns` shorthand carries the same meaning as the longhands
+       * it expands to depends on declarations elsewhere in the stylesheet, so
+       * the family waits until the whole of it has been seen.
+       *
+       * @type {import('postcss').Rule[]}
+       */
+      const columnRules = [];
+      let setsColumnHeight = false;
+
       css.walkRules((rule) => {
         // Scan the rule's props once, then run only the processors whose
         // family is present.
@@ -29,6 +39,7 @@ function pluginCreator() {
             hasBorder = true;
           } else if (prop.startsWith('column')) {
             hasColumn = true;
+            setsColumnHeight ||= columns.setsColumnHeight(node);
           } else if (prop.startsWith('margin')) {
             hasMargin = true;
           } else if (prop.startsWith('padding')) {
@@ -40,8 +51,7 @@ function pluginCreator() {
           borders.merge(rule);
         }
         if (hasColumn) {
-          columns.explode(rule);
-          columns.merge(rule);
+          columnRules.push(rule);
         }
         if (hasMargin) {
           margin.explode(rule);
@@ -52,6 +62,15 @@ function pluginCreator() {
           padding.merge(rule);
         }
       });
+
+      if (setsColumnHeight) {
+        return;
+      }
+
+      for (const rule of columnRules) {
+        columns.explode(rule);
+        columns.merge(rule);
+      }
     },
   };
 }
