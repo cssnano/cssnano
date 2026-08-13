@@ -3,6 +3,12 @@ const path = require('#path');
 const valueParser = require('postcss-value-parser');
 const normalize = require('./normalize.js');
 
+/**
+ * A `quote` assignment target for value-parser nodes that aren't otherwise
+ * typed: retags the node as a (possibly unquoted) string node.
+ * @typedef {{ quote?: string }} QuotedNode
+ */
+
 const multiline = /\\[\r\n]/;
 // eslint-disable-next-line no-useless-escape
 const escapeChars = /([\s\(\)"'])/g;
@@ -61,7 +67,7 @@ function transformNamespace(rule) {
         node.nodes.length
       ) {
         /** @type {valueParser.Node} */ (node).type = 'string';
-        /** @type {any} */ (node).quote =
+        /** @type {QuotedNode} */ (node).quote =
           node.nodes[0].type === 'string' ? node.nodes[0].quote : '"';
         node.value = node.nodes[0].value;
       }
@@ -97,7 +103,7 @@ function transformDecl(decl) {
       // Skip empty URLs
       // Empty URL function equals request to current stylesheet where it is declared
       if (url.value.length === 0) {
-        /** @type {any} */ (url).quote = '';
+        /** @type {QuotedNode} */ (url).quote = '';
 
         return false;
       }

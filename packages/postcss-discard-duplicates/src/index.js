@@ -1,5 +1,21 @@
 'use strict';
 /**
+ * Structural view over the postcss node kinds compared by `equals` and its
+ * helpers.
+ * @typedef {{
+ *   type: string,
+ *   important?: boolean,
+ *   raws: { before?: string, afterName?: string },
+ *   selector?: string,
+ *   name?: string,
+ *   params?: string,
+ *   prop?: string,
+ *   value?: string,
+ *   nodes?: import('postcss').ChildNode[],
+ * }} ComparableNode
+ */
+
+/**
  * @param {string | undefined} value
  * @return {string | undefined}
  */
@@ -21,8 +37,8 @@ function empty(node) {
  * @return {boolean}
  */
 function equals(nodeA, nodeB) {
-  const a = /** @type {any} */ (nodeA);
-  const b = /** @type {any} */ (nodeB);
+  const a = /** @type {ComparableNode} */ (nodeA);
+  const b = /** @type {ComparableNode} */ (nodeB);
   if (a.type !== b.type) {
     return false;
   }
@@ -43,8 +59,8 @@ function equals(nodeA, nodeB) {
 }
 
 /**
- * @param {any} a
- * @param {any} b
+ * @param {ComparableNode} a
+ * @param {ComparableNode} b
  * @return {boolean}
  */
 function equalsNodeProperties(a, b) {
@@ -61,8 +77,8 @@ function equalsNodeProperties(a, b) {
 }
 
 /**
- * @param {any} a
- * @param {any} b
+ * @param {ComparableNode} a
+ * @param {ComparableNode} b
  * @return {boolean}
  */
 function equalsAtRule(a, b) {
@@ -80,8 +96,8 @@ function equalsAtRule(a, b) {
 }
 
 /**
- * @param {any} a
- * @param {any} b
+ * @param {ComparableNode} a
+ * @param {ComparableNode} b
  * @return {boolean}
  */
 function equalsDeclaration(a, b) {
@@ -93,8 +109,8 @@ function equalsDeclaration(a, b) {
 }
 
 /**
- * @param {any} a
- * @param {any} b
+ * @param {ComparableNode} a
+ * @param {ComparableNode} b
  * @return {boolean}
  */
 function equalsChildren(a, b) {

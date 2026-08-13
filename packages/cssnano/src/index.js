@@ -1,6 +1,5 @@
 'use strict';
 const path = require('node:path');
-/** @type {any} */
 const postcss = require('postcss');
 const { lilconfigSync } = require('lilconfig');
 const defaultPreset = require('cssnano-preset-default');
@@ -28,7 +27,7 @@ function isResolvable(moduleId) {
  * preset = function <- to be invoked
  * preset = {plugins: []} <- already invoked function
  *
- * @param {any} preset
+ * @param {unknown} preset
  * @return {[import('postcss').PluginCreator<any>, boolean | Record<string, any> | undefined][]}}
  */
 function resolvePreset(preset) {

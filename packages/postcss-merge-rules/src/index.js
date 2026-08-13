@@ -106,10 +106,7 @@ function canMerge(
     return false;
   }
 
-  const parent = sameParent(
-    /** @type {any} */ (ruleA),
-    /** @type {any} */ (ruleB)
-  );
+  const parent = sameParent(ruleA, ruleB);
   if (
     parent &&
     ruleA.parent &&
@@ -232,11 +229,12 @@ function getNextRule(second) {
   let nextRule = second.next();
   if (!nextRule) {
     // Grab next cousin
-    /** @type {any} */
     const parentSibling =
-      /** @type {import('postcss').Container<import('postcss').ChildNode>} */ (
-        second.parent
-      ).next();
+      /** @type {import('postcss').Container | undefined} */ (
+        /** @type {import('postcss').Container<import('postcss').ChildNode>} */ (
+          second.parent
+        ).next()
+      );
     nextRule = parentSibling && parentSibling.nodes && parentSibling.nodes[0];
   }
   return nextRule?.type === 'rule' ? nextRule : null;

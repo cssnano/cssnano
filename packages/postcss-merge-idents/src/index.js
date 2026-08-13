@@ -85,10 +85,7 @@ function mergeAtRules(css) {
             : '';
           if (
             cached.name.toLowerCase() === node.name.toLowerCase() &&
-            sameParent(
-              /** @type {any} */ (cached),
-              /** @type {any} */ (node)
-            ) &&
+            sameParent(cached, node) &&
             cachedStringContent === toString
           ) {
             relevant.removals.push(cached);

@@ -22,7 +22,7 @@ const RESERVED_KEYWORDS = new Set([
 module.exports = function () {
   /** @type {Map<string, {ident: string, count: number}>} */
   const cache = new Map();
-  /** @type {{value: import('postcss-value-parser').ParsedValue}[]} */
+  /** @type {{value: import('postcss-value-parser').ParsedValue | string}[]} */
   let declOneCache = [];
   /** @type {import('postcss').Declaration[]} */
   let declTwoCache = [];
@@ -53,7 +53,11 @@ module.exports = function () {
           }
         );
 
-        declOneCache.push(/** @type {any} */ (node));
+        declOneCache.push(
+          /** @type {{value: import('postcss-value-parser').ParsedValue | string}} */ (
+            node
+          )
+        );
       } else if (counter.functionProperties.has(prop)) {
         declTwoCache.push(node);
       }
@@ -98,7 +102,9 @@ module.exports = function () {
       }
 
       for (const decl of declOneCache) {
-        /** @type {unknown} */ (decl.value) = decl.value
+        decl.value = /** @type {import('postcss-value-parser').ParsedValue} */ (
+          decl.value
+        )
           .walk((node) => {
             if (node.type === 'word' && !isNum(node)) {
               for (const [key, cached] of cache) {
