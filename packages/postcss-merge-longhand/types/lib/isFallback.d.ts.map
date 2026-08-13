@@ -1,1 +1,1 @@
-{"version":3,"file":"isFallback.d.ts","sourceRoot":"","sources":["../../src/lib/isFallback.js"],"names":[],"mappings":";AAoBA;;;;;;;;;;;;;GAaG;0BACe,OAAO,EAJd,OAAO,SAAS,EAAE,WAIJ,EAAE,KAAK,EAHrB,OAAO,SAAS,EAAE,WAGG,GAFpB,OAAO"}
+{"version":3,"file":"isFallback.d.ts","sourceRoot":"","sources":["../../src/lib/isFallback.js"],"names":[],"mappings":";;;;;AA6CA;;;;;;;;;;;;GAYG;AACH,iBAAS,UAAU,CAAC,OAAO,EAJhB,OAAO,SAAS,EAAE,WAIF,EAAE,KAAK,EAHvB,OAAO,SAAS,EAAE,WAGK,GAFtB,OAAO,CAIlB;AAED;;;;;;;;GAQG;AACH,iBAAS,WAAW,CAAC,YAAY,EAHtB,OAAO,SAAS,EAAE,WAAW,EAGP,GAFrB,OAAO,CAsBlB"}

@@ -118,7 +118,11 @@ function webref(overrides = {}) {
           .join(' | '),
       },
       { name: 'color', syntax: '<color-base> | currentColor' },
-      { name: 'color-base', syntax: '<color-function> | <color-mix()>' },
+      {
+        name: 'color-base',
+        syntax: '<color-function> | <color-mix()> | <light-dark-color>',
+      },
+      { name: 'light-dark-color', syntax: 'light-dark(<color>, <color>)' },
       {
         name: 'color-function',
         syntax:
@@ -159,6 +163,29 @@ test('follows a grammar to the functions it can reach', () => {
   };
 
   assert.deepStrictEqual(reachableFunctions(data, 'paint'), ['mix', 'rgb']);
+});
+
+test('reaches a function spelled out as a call rather than named as a type', () => {
+  const data = {
+    properties: [],
+    types: [
+      { name: 'paint', syntax: '<colour> | none' },
+      { name: 'colour', syntax: '<rgb()> | <pale-colour>' },
+      { name: 'pale-colour', syntax: 'pale( <colour> )' },
+    ],
+    functions: [{ name: 'rgb()', syntax: 'rgb( <number>{3} )' }],
+  };
+
+  assert.deepStrictEqual(reachableFunctions(data, 'paint'), ['pale', 'rgb']);
+});
+
+test('rejects colour data that lost a function spelled out as a call', () => {
+  const data = buildLonghands(webref());
+  data.colorFunctions = data.colorFunctions.filter(
+    (name) => name !== 'light-dark'
+  );
+
+  assert.throws(() => validate(data), /include light-dark/);
 });
 
 test('stops at a production a spec only defines in prose', () => {

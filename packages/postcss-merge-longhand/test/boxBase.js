@@ -386,6 +386,18 @@ addTests(
     fixture:
       'h1{box-bottom:env(safe-area-inset-bottom);box-bottom:3px;box-top:1px;box-right:2px;box-left:4px}',
     expected: (prop) => `h1{${prop.toLowerCase()}:1px 2px 3px 4px}`,
+  },
+  {
+    message: 'should not merge box props over a fallback of zero',
+    fixture:
+      'h1{box-bottom:0;box-bottom:env(safe-area-inset-bottom);box-top:10px;box-left:10px;box-right:10px}',
+    expected: (prop) =>
+      `h1{${prop}-bottom:0;${prop}-bottom:env(safe-area-inset-bottom);${prop}-top:10px;${prop}-left:10px;${prop}-right:10px}`,
+  },
+  {
+    message: 'should collapse a repeated box prop that only reaches for calc()',
+    fixture: 'h1{box-bottom:1px;box-bottom:calc(1px + 1em)}',
+    expected: (prop) => `h1{${prop}-bottom:calc(1px + 1em)}`,
   }
 );
 

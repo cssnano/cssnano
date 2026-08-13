@@ -1428,3 +1428,31 @@ test(
   'should not read a function that merely ends in a colour name as a colour',
   passthroughCSS('h1{border-top:solid my-rgb(1,2,3)}')
 );
+
+test(
+  'should merge borders whose colour depends on the colour scheme',
+  processCSS(
+    'h1{border-top:solid light-dark(white,black);border-right:solid light-dark(white,black);border-bottom:solid light-dark(white,black);border-left:solid light-dark(white,black)}',
+    'h1{border-color:light-dark(white,black);border-style:solid;border-width:medium}'
+  )
+);
+
+test(
+  'should collapse a repeated border-width that only reaches for calc()',
+  processCSS(
+    'h1{border-width:1px;border-width:calc(1px + 1em)}',
+    'h1{border-width:calc(1px + 1em)}'
+  )
+);
+
+test(
+  'should leave a rule alone rather than strand a fallback among longhands',
+  passthroughCSS('h1{border-left-color:red;border:1px solid rgba(0,0,0,.5)}')
+);
+
+test(
+  'should keep the border-image reset a refused merge would lose',
+  passthroughCSS(
+    'h1{border-image:url(i.png) 30}h1{border-left-color:red;border:1px solid env(x)}'
+  )
+);

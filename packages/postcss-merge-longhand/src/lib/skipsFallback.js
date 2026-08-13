@@ -1,6 +1,6 @@
 'use strict';
-const isFallback = require('./isFallback.js');
-const isInitialValue = require('./initialValues.js');
+const { isFallback } = require('./isFallback.js');
+const { isAuthoredValue } = require('./authoredValues.js');
 
 /**
  * @param {import('postcss').Declaration} declaration
@@ -19,7 +19,7 @@ function precedingDeclarations(declaration, candidates) {
     if (node.prop.toLowerCase() === declaration.prop.toLowerCase()) {
       preceded = true;
 
-      if (!isInitialValue(node) && isFallback(node, declaration)) {
+      if (isAuthoredValue(node) && isFallback(node, declaration)) {
         return [true, true];
       }
     }

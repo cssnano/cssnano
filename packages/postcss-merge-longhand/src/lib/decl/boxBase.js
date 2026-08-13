@@ -8,7 +8,7 @@ const insertCloned = require('../insertCloned.js');
 const mergeRules = require('../mergeRules.js');
 const mergeValues = require('../mergeValues.js');
 const topRightBottomLeft = require('../trbl.js');
-const isFallback = require('../isFallback.js');
+const { isFallback } = require('../isFallback.js');
 const canExplode = require('../canExplode.js');
 const lastOf = require('../lastOf.js');
 

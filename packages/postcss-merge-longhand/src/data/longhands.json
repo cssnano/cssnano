@@ -419,6 +419,7 @@
   "colorFunctions": [
     "alpha",
     "color",
+    "color-hdr",
     "color-mix",
     "contrast-color",
     "device-cmyk",
@@ -431,9 +432,11 @@
     "jzczhz",
     "lab",
     "lch",
+    "light-dark",
     "oklab",
     "oklch",
     "rgb",
-    "rgba"
+    "rgba",
+    "wcag2"
   ]
 }

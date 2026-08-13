@@ -93,6 +93,31 @@ export function keywordTerminals(syntax) {
 }
 
 /**
+ * A grammar may spell a function out as a call instead of naming it through a
+ * `<name()>` reference: the syntax of `<light-dark-color>` is
+ * `light-dark(<color>, <color>)`, so following references alone never reaches
+ * `light-dark()`. This reads the functions spelled out that way.
+ *
+ * @param {string} [syntax]
+ * @return {string[]}
+ */
+export function functionTerminals(syntax) {
+  if (!syntax) {
+    return [];
+  }
+
+  const literals = syntax.replace(REFERENCE, ' ');
+  /** @type {string[]} */
+  const names = [];
+
+  for (const [, name] of literals.matchAll(/([a-zA-Z][a-zA-Z0-9-]*)\s*\(/g)) {
+    names.push(name.toLowerCase());
+  }
+
+  return names;
+}
+
+/**
  * Follows a grammar through the productions it names, collecting the functions
  * it can reach. `<color>` reaches `rgb()` through `<color-base>` and
  * `<color-function>`, so a value is a colour if it calls any of them.
@@ -132,6 +157,10 @@ export function reachableFunctions(data, root) {
 
     if (!syntax) {
       continue;
+    }
+
+    for (const called of functionTerminals(syntax)) {
+      functions.add(called);
     }
 
     for (const [, property, type] of syntax.matchAll(REFERENCE)) {
@@ -498,7 +527,20 @@ function validateKeywords(data) {
   );
   expectAll(
     data.colorFunctions,
-    ['rgb', 'rgba', 'hsl', 'hwb', 'lab', 'lch', 'oklab', 'oklch', 'color'],
+    [
+      'rgb',
+      'rgba',
+      'hsl',
+      'hwb',
+      'lab',
+      'lch',
+      'oklab',
+      'oklch',
+      'color',
+      /* Spelled out as a literal call rather than named as a type. */
+      'color-mix',
+      'light-dark',
+    ],
     'the colour functions'
   );
 
