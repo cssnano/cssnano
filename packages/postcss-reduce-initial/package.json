@@ -41,7 +41,10 @@
     "email": "beneb.info@gmail.com",
     "url": "https://beneb.info"
   },
-  "repository": "cssnano/cssnano",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cssnano/cssnano.git"
+  },
   "dependencies": {
     "browserslist": "^4.28.8",
     "caniuse-api": "^4.0.0"
