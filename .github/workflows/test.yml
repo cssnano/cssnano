@@ -13,6 +13,20 @@ on:
   pull_request:
 
 jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Configure test matrix
+        id: set-matrix
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo 'matrix={"os": ["ubuntu-latest"], "node-version": ["22", "24", "26"], "include": [{"os": "windows-latest", "node-version": "24"}]}' >> "$GITHUB_OUTPUT"
+          else
+            echo 'matrix={"os": ["ubuntu-latest", "macos-latest", "windows-latest"], "node-version": ["22", "24", "26"]}' >> "$GITHUB_OUTPUT"
+          fi
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -36,12 +50,10 @@ jobs:
         run: git diff --exit-code -- '**/types/*.d.ts'
 
   test:
-    needs: lint
+    needs: [matrix, lint]
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        node-version: ['22', '24', '26']
+      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
 
     steps:
       - name: Setup Git
