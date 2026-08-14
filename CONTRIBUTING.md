@@ -38,7 +38,7 @@ To help us generate the changelog, follow the [conventional commits](https://www
 ### Documentation
 
 The documentation website is also included with the repository, under `/site`.
-It runs [docusaurus](https://docusaurus.io) and requires a separate `pnpm install`
+It runs [eleventy](https://www.11ty.dev/) and requires a separate `pnpm install`
 to pull down the dependencies. You can then browse the documentation locally
 by running `pnpm start`.
 
