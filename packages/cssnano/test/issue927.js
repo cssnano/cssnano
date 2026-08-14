@@ -13,7 +13,7 @@ p{
 }
 `;
 
-const expected = `div{grid-column:span 2}p{column-count:2}`;
+const expected = `div{grid-column:span 2}p{columns:2}`;
 
 test('it should compress the columns (old plugin syntax)', () => {
   const processor = postcss([

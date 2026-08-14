@@ -1,6 +1,11 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src/*", "src/lib/*", "src/lib/decl/*"],
+  "include": [
+    "src/*",
+    "src/lib/*",
+    "src/lib/decl/*",
+    "src/data/longhands.json"
+  ],
   "compilerOptions": {
     "composite": true,
     "rootDir": "src/",

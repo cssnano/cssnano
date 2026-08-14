@@ -1,3 +1,3 @@
-declare const _exports: Set<string>;
-export = _exports;
+export = namedColors;
+import { namedColors } from './spec.js';
 //# sourceMappingURL=colornames.d.ts.map

@@ -1,9 +1,9 @@
 'use strict';
-const { test } = require('node:test');
+const { test, suite } = require('node:test');
 const { processCSSFactory } = require('../../../util/testHelpers.js');
 const plugin = require('../src/index.js');
 
-const { processCSS } = processCSSFactory(plugin);
+const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 function addTests(...tests) {
   for (const { message, fixture, expected } of tests) {
@@ -349,3 +349,286 @@ addTests(
     expected: (prop) => `h1{${prop}:;}`,
   }
 );
+
+suite('revert-layer and revert-rule keywords', () => {
+  addTests(
+    {
+      message:
+        'should not merge box props where one has a revert-layer property',
+      fixture:
+        'h1{box-bottom:10px;box-top:revert-layer;box-left:20px;box-right:20px}',
+      expected: (prop) =>
+        `h1{${prop}-bottom:10px;${prop}-top:revert-layer;${prop}-left:20px;${prop}-right:20px}`,
+    },
+    {
+      message:
+        'should not merge box props where one has a revert-rule property',
+      fixture:
+        'h1{box-bottom:10px;box-top:revert-rule;box-left:20px;box-right:20px}',
+      expected: (prop) =>
+        `h1{${prop}-bottom:10px;${prop}-top:revert-rule;${prop}-left:20px;${prop}-right:20px}`,
+    }
+  );
+});
+
+suite('fallbacks', () => {
+  addTests(
+    {
+      message: 'should save fallbacks for box props that use env()',
+      fixture:
+        'h1{box:16px 35px;box-bottom:calc(constant(safe-area-inset-bottom) + 16px);box-bottom:calc(env(safe-area-inset-bottom) + 16px)}',
+      expected: (prop) =>
+        `h1{${prop.toLowerCase()}:16px 35px;${prop}-bottom:calc(constant(safe-area-inset-bottom) + 16px);${prop}-bottom:calc(env(safe-area-inset-bottom) + 16px)}`,
+    },
+    {
+      message: 'should not merge box props over a fallback',
+      fixture:
+        'h1{box-top:1px;box-right:2px;box-bottom:3px;box-bottom:env(safe-area-inset-bottom);box-left:4px}',
+      expected: (prop) =>
+        `h1{${prop}-top:1px;${prop}-right:2px;${prop}-bottom:3px;${prop}-bottom:env(safe-area-inset-bottom);${prop}-left:4px}`,
+    },
+    {
+      message: 'should merge box props that only repeat a plain value',
+      fixture: 'h1{box:1px;box-bottom:2px;box-bottom:3px}',
+      expected: (prop) => `h1{${prop.toLowerCase()}:1px 1px 3px}`,
+    },
+    {
+      message: 'should merge box props when the later value drops a function',
+      fixture:
+        'h1{box-bottom:env(safe-area-inset-bottom);box-bottom:3px;box-top:1px;box-right:2px;box-left:4px}',
+      expected: (prop) => `h1{${prop.toLowerCase()}:1px 2px 3px 4px}`,
+    },
+    {
+      message: 'should not merge box props over a fallback of zero',
+      fixture:
+        'h1{box-bottom:0;box-bottom:env(safe-area-inset-bottom);box-top:10px;box-left:10px;box-right:10px}',
+      expected: (prop) =>
+        `h1{${prop}-bottom:0;${prop}-bottom:env(safe-area-inset-bottom);${prop}-top:10px;${prop}-left:10px;${prop}-right:10px}`,
+    },
+    {
+      message:
+        'should keep the fallback for a box prop that reaches for calc()',
+      fixture: 'h1{box-bottom:1px;box-bottom:calc(1px + 1em)}',
+      expected: (prop) =>
+        `h1{${prop}-bottom:1px;${prop}-bottom:calc(1px + 1em)}`,
+    },
+    {
+      message: 'should keep the fallback for a box prop that reaches for max()',
+      fixture: '.my-class{box-right:22px;box-right:max(4%, 22px)}',
+      expected: (prop) =>
+        `.my-class{${prop}-right:22px;${prop}-right:max(4%, 22px)}`,
+    }
+  );
+
+  test(
+    'should keep the constant() fallback for a safe area inset',
+    passthroughCSS(`.my-class {
+padding: 16px 35px;
+padding-bottom: calc(constant(safe-area-inset-bottom) + 16px);
+padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+}
+`)
+  );
+});
+
+suite('support-dependent env() merge blocking', () => {
+  /* When a shorthand contains a support-dependent function, a later longhand
+   * override must preserve that function's declaration instead of merging it into the
+   * shorthand. */
+  test(
+    'should not merge when a longhand requires env() support',
+    processCSS(
+      'a{padding-top:0;padding:env(x) 3px 1px;padding:var(--v);padding-top:1px}',
+      'a{padding:env(x) 3px 1px;padding:var(--v);padding-top:1px}'
+    )
+  );
+
+  /* A support-dependent longhand prevents the shorthand from consuming that
+   * position, so the merge applies properties that require no support from the
+   * first layer. */
+  test(
+    'should not merge when a single side in a box is support-dependent',
+    processCSS(
+      'a{padding-top:1px;padding-right:1px;padding-bottom:1px;padding-left:1px;padding-top:2px;padding-right:2px;padding-bottom:2px;padding-left:env(x)}',
+      'a{padding:2px 2px 2px 1px;padding-left:env(x)}'
+    )
+  );
+
+  test(
+    'should not merge a support-dependent shorthand into plain longhand',
+    passthroughCSS('a{padding:env(x) 3px 1px;padding-top:1px}')
+  );
+
+  test(
+    'should not merge a longhand over a fallback',
+    passthroughCSS('a{padding:1px;padding-top:env(x)}')
+  );
+
+  test(
+    'should merge complete support-dependent declarations when longhands do not contain fallbacks',
+    processCSS(
+      'a{padding-top:1px;padding-right:1px;padding-bottom:1px;padding-left:1px;padding-top:env(a);padding-right:env(a);padding-bottom:env(a);padding-left:env(a)}',
+      'a{padding:1px;padding:env(a)}'
+    )
+  );
+});
+
+suite('invalid value handling', () => {
+  /* User agents ignore invalid values, so merging declaration might change the rendered result.
+   */
+  test(
+    'should not let a margin declaration with two many values override the one before it',
+    passthroughCSS('a{margin:1px;margin:1px 2em 0 1px 2em}')
+  );
+
+  test(
+    'should not let an over-long padding override the one before it',
+    passthroughCSS('a{padding:1px;padding:1px 2em 0 1px 2em}')
+  );
+
+  test(
+    'should not let a multi-value longhand override the one before it',
+    passthroughCSS('a{margin-left:1px;margin-left:1px 2em}')
+  );
+
+  test(
+    'should not read a colour as a length',
+    passthroughCSS('a{margin-left:1px;margin-left:red}')
+  );
+
+  test(
+    'should not read a border style as a length',
+    passthroughCSS('a{padding:5px;padding:dotted none}')
+  );
+
+  /* Functions the plugin cannot evaluate (calc, env, var) are assumed valid. */
+
+  test(
+    'should not read a url as a length',
+    passthroughCSS(
+      'a{padding-top:1px;padding-right:1px;padding-bottom:1px;padding-left:1px;padding-top:url(x)}'
+    )
+  );
+
+  test(
+    'should not merge a longhand when the resulting shorthand might have a different browser support',
+    passthroughCSS('a{margin-left:1px;margin-left:rgb(0 0 0)}')
+  );
+
+  /* `revert-rule` is defined in the CSS spec but no browser implements it,
+   * so the declaration counts as invalid and earlier declarations remain in effect. */
+  test(
+    'should not let a CSS-wide keyword no browser ships override the one before it',
+    passthroughCSS('a{padding-top:1px;padding:revert-rule}')
+  );
+
+  test(
+    'should pass through a length missing its unit',
+    passthroughCSS('a{margin-top:1px;margin-top:5}')
+  );
+
+  test(
+    'should pass through a negative padding',
+    passthroughCSS('a{padding-top:1px;padding-top:-5px}')
+  );
+
+  test(
+    'should pass through auto in a padding',
+    passthroughCSS('a{padding-top:1px;padding-top:auto}')
+  );
+
+  test(
+    'should not merge longhands around an invalid shorthand',
+    passthroughCSS(
+      'a{margin:red;margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}'
+    )
+  );
+
+  test(
+    'should not explode a shorthand the user agent ignores',
+    passthroughCSS('a{margin:1px 2em 0 1px 2em;margin-top:5px}')
+  );
+
+  test(
+    'should not discard a longhand an ignored shorthand appears to override',
+    passthroughCSS('a{margin-left:1px;margin:red}')
+  );
+
+  test(
+    'should pass through an invalid value when property name is uppercase',
+    passthroughCSS('a{MARGIN-LEFT:1px;MARGIN-LEFT:red}')
+  );
+
+  test(
+    'should not merge important! longhands around a invalid shorthand',
+    passthroughCSS(
+      'a{padding:auto;padding-top:1px!important;padding-right:1px!important;padding-bottom:1px!important;padding-left:1px!important}'
+    )
+  );
+});
+/* The other direction: the check has to merge valid values. */
+suite('valid values merge', () => {
+  test(
+    'should merge auto in a margin',
+    processCSS(
+      'a{margin-top:0;margin-right:auto;margin-bottom:0;margin-left:auto}',
+      'a{margin:0 auto}'
+    )
+  );
+
+  test(
+    'should merge a negative margin',
+    processCSS(
+      'a{margin-top:-5px;margin-right:-5px;margin-bottom:-5px;margin-left:-5px}',
+      'a{margin:-5px}'
+    )
+  );
+
+  test(
+    'should merge zero without a unit',
+    processCSS(
+      'a{padding-top:0;padding-right:0;padding-bottom:0;padding-left:0}',
+      'a{padding:0}'
+    )
+  );
+
+  test(
+    'should merge a percentage',
+    processCSS(
+      'a{padding-top:10%;padding-right:10%;padding-bottom:10%;padding-left:10%}',
+      'a{padding:10%}'
+    )
+  );
+
+  test(
+    'should merge a value it cannot resolve',
+    processCSS(
+      'a{margin-top:calc(1px + 2%);margin-right:calc(1px + 2%);margin-bottom:calc(1px + 2%);margin-left:calc(1px + 2%)}',
+      'a{margin:calc(1px + 2%)}'
+    )
+  );
+
+  test(
+    'should merge a length in scientific notation',
+    processCSS(
+      'a{padding-top:1e2px;padding-right:1e2px;padding-bottom:1e2px;padding-left:1e2px}',
+      'a{padding:1e2px}'
+    )
+  );
+
+  test(
+    'should merge the family a invalid declaration does not belong to',
+    processCSS(
+      'a{margin:red;padding-top:1px;padding-right:1px;padding-bottom:1px;padding-left:1px}',
+      'a{margin:red;padding:1px}'
+    )
+  );
+
+  test(
+    'should merge a rule whose only invalid value is a stylehack',
+    processCSS(
+      'h1{margin-top:1px\\9;margin:4px 0 0 0}',
+      'h1{margin-top:1px\\9;margin:4px 0 0}'
+    )
+  );
+});

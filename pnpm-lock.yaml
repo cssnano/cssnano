@@ -496,6 +496,9 @@ importers:
         specifier: workspace:^
         version: link:../stylehacks
     devDependencies:
+      '@webref/css':
+        specifier: 8.7.1
+        version: 8.7.1(css-tree@3.2.1)
       postcss:
         specifier: ^8.5.26
         version: 8.5.26
