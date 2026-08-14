@@ -1,17 +1,13 @@
 import { writeFile } from 'node:fs';
 import data from 'mdn-data';
 
-import { reduceInitial } from './lib/mdnCssProps.mjs';
+import { reduceInitial, validate } from './lib/mdnCssProps.mjs';
 
 const cssProperties = data.css.properties;
 
 const grouped = reduceInitial(cssProperties);
 
-if (
-  grouped !== undefined &&
-  Object.keys(grouped.fromInitial || {}).length &&
-  Object.keys(grouped.toInitial || {}).length
-) {
+if (validate(grouped)) {
   writeFile(
     new URL('../src/data/fromInitial.json', import.meta.url),
     toJSONString(grouped['fromInitial']),

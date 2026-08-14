@@ -36,12 +36,9 @@ export function reduceInitial(propertyData) {
 }
 
 export function validate(data) {
-  if (
-    data === undefined ||
-    !Object.keys(data.fromInitial || {}).length ||
-    !Object.keys(data.toInitial || {}).length
-  ) {
-    return Promise.reject(new Error('"Initial" data is missing or malformed'));
-  }
-  return Promise.resolve(data);
+  return (
+    data !== undefined &&
+    Object.keys(data.fromInitial || {}).length &&
+    Object.keys(data.toInitial || {}).length
+  );
 }
