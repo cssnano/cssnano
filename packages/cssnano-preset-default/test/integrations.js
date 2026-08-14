@@ -43,6 +43,7 @@ test(
 
 test(
   'should correctly handle the framework tests',
+  { concurrency: true },
   integrationTests(preset, `${__dirname}/integrations`)
 );
 
