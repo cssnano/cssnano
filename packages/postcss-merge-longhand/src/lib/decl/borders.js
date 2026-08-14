@@ -18,7 +18,11 @@ const { isFallback, isDerived, inheritGates } = require('../isFallback.js');
 const canExplode = require('../canExplode.js');
 const getLastNode = require('../getLastNode.js');
 const parseWidthStyleColor = require('../parseWsc.js');
-const { isValidWidthStyleColor } = require('../validateWsc.js');
+const {
+  isValidWidthStyleColor,
+  statesComponent,
+  statesDistinctComponents,
+} = require('../validateWsc.js');
 const cssGlobalKeywords = require('../cssGlobalKeywords.js');
 const lastOf = require('../lastOf.js');
 const spec = require('../spec.js');
@@ -209,6 +213,30 @@ function getDistinctShorthands(mapped) {
 }
 
 /**
+ * A border declaration states a `<line-width>`, a `<line-style>` and a
+ * `<color>` — one of them if it names a component, one of each per side
+ * otherwise — and the browser drops it whole when a value is none of these,
+ * such as the `border-color: none` a stylesheet writes for `border: none`.
+ *
+ * @param {Declaration} declaration one of `allPhysicalBorderProperties`
+ * @return {boolean} whether the declaration sets anything at all
+ */
+function browserKeeps(declaration) {
+  const prop = declaration.prop.toLowerCase();
+
+  if (borderAndSideShorthands.has(prop)) {
+    return statesDistinctComponents(declaration.value);
+  }
+
+  const component = /** @type {string} */ (prop.split('-').at(-1));
+  const values = allSidesBorderShorthands.includes(prop)
+    ? parseTrbl(declaration.value)
+    : [declaration.value];
+
+  return values.every((value) => statesComponent(value, component));
+}
+
+/**
  * @param {import('postcss').Rule} rule
  * @return {boolean}
  */
@@ -246,6 +274,14 @@ function containsUnmergeableBorderDecls(rule) {
     return true;
   }
 
+  /* A declaration the browser drops sets nothing, so the ones around it mean
+   * what they would mean on their own. Every transform here reads it as one
+   * that applies, and would move, drop or rewrite those others against a
+   * border no side ever has. */
+  if (physical.some((declaration) => !browserKeeps(declaration))) {
+    return true;
+  }
+
   const globalComponents = physical.filter((decl) =>
     allSidesBorderShorthands.includes(decl.prop.toLowerCase())
   );
@@ -275,7 +311,10 @@ function establishesBorderReset(node) {
     return false;
   }
 
-  return isValidWidthStyleColor(parseWidthStyleColor(declaration.value));
+  return (
+    statesDistinctComponents(declaration.value) &&
+    isValidWidthStyleColor(parseWidthStyleColor(declaration.value))
+  );
 }
 
 /**
@@ -515,13 +554,22 @@ function merge(rule) {
       rule,
       widthStyleColor.map((style) => borderProperty(direction, style)),
       (rules, lastNode) => {
+        const value = rules.map(getValue).join(' ');
+
+        /* One longhand the browser drops costs that side its width, style or
+         * colour; written into the shorthand it costs the side every one of
+         * them, as the shorthand is then the invalid declaration. */
+        if (!statesDistinctComponents(value)) {
+          return false;
+        }
+
         if (canMerge(rules, false) && !rules.some(stylehacks.detect)) {
           insertCloned(
             /** @type {import('postcss').Rule} */ (lastNode.parent),
             lastNode,
             {
               prop,
-              value: rules.map(getValue).join(' '),
+              value,
             }
           );
           for (const node of rules) {
@@ -543,6 +591,12 @@ function merge(rule) {
       rule,
       topRightBottomLeft.map((direction) => borderProperty(direction, style)),
       (rules, lastNode) => {
+        /* The four sides share one declaration afterwards, so a value the
+         * browser drops on one side would take the other three down with it. */
+        if (!rules.every((node) => statesComponent(node.value, style))) {
+          return false;
+        }
+
         if (canMerge(rules) && !rules.some(stylehacks.detect)) {
           insertCloned(
             /** @type {import('postcss').Rule} */ (lastNode.parent),

@@ -6,7 +6,11 @@ const spec = require('../spec.js');
 const parseWsc = require('../parseWsc.js');
 const parseTrbl = require('../parseTrbl.js');
 const minifyWsc = require('../minifyWsc.js');
-const { isValidWidthStyleColor } = require('../validateWsc.js');
+const {
+  isValidWidthStyleColor,
+  statesComponent,
+  statesDistinctComponents,
+} = require('../validateWsc.js');
 const isCustomProp = require('../isCustomProp.js');
 const { requiredGates } = require('../isFallback.js');
 const canExplode = require('../canExplode.js');
@@ -48,28 +52,9 @@ function establishesBorderReset(decl) {
     decl.prop.toLowerCase() === 'border' &&
     canExplode(decl) &&
     !stylehacks.detect(decl) &&
+    statesDistinctComponents(decl.value) &&
     isValidWidthStyleColor(parseWsc(decl.value))
   );
-}
-
-/**
- * `isValidWidthStyleColor` asks for two components out of three, which a
- * `border: solid` does not have and does not need: the grid fills in what a
- * value leaves out. What it does need is that nothing be *dropped* — a token
- * `parseWsc` recognised as neither a width, a style nor a colour, or a second
- * one of a kind that overwrote the first.
- *
- * @param {string} value
- * @return {boolean}
- */
-function readsAsTriple(value) {
-  const parsed = new Set(
-    parseWsc(value)
-      .filter(Boolean)
-      .map((component) => component.toLowerCase())
-  );
-
-  return list.space(value).every((token) => parsed.has(token.toLowerCase()));
 }
 
 /**
@@ -93,14 +78,23 @@ function isResolvable(decl, important) {
   const tokens = list.space(decl.value);
 
   if (prop === 'border' || sideShorthands.includes(prop)) {
-    return tokens.length <= components.length && readsAsTriple(decl.value);
+    return (
+      tokens.length <= components.length && statesDistinctComponents(decl.value)
+    );
   }
+
+  /* A cell only holds what the property it came from can be set to: a value the
+   * browser drops, such as `border-color: none`, states no colour to read. */
+  const component = /** @type {string} */ (prop.split('-').at(-1));
 
   if (componentShorthands.includes(prop)) {
-    return tokens.length <= sides.length;
+    return (
+      tokens.length <= sides.length &&
+      parseTrbl(decl.value).every((value) => statesComponent(value, component))
+    );
   }
 
-  return tokens.length === 1;
+  return tokens.length === 1 && statesComponent(decl.value, component);
 }
 
 /**

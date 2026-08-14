@@ -529,12 +529,11 @@ test(
   passthroughCSS('h1{border-width:none;border-top:1px solid #e1e1e1}')
 );
 
+/* `border-width: none` is no width, so the browser drops it and the rule is
+ * left alone, down to the case its properties are written in. */
 test(
   'should produce the minimum css necessary (uppercase)',
-  processCSS(
-    'h1{BORDER-WIDTH:NONE;BORDER-TOP:1PX SOLID #E1E1E1}',
-    'h1{border-width:NONE;border-top:1px solid #e1e1e1}'
-  )
+  passthroughCSS('h1{BORDER-WIDTH:NONE;BORDER-TOP:1PX SOLID #E1E1E1}')
 );
 
 test(
@@ -1475,4 +1474,65 @@ test(
 test(
   'border grid: should not resolve border grid without border reset',
   passthroughCSS('a{border-left:solid;border-color:grey;border-width:2px}')
+);
+
+/* The browser drops a `border` that states a component twice, or that states
+ * something no component accepts, so it resets nothing and the sides it looked
+ * like it covered keep `border-style: none`. */
+test(
+  'border grid: should not read a reset out of a repeated component',
+  passthroughCSS(
+    'a{border:solid red red;border-left:solid;border-color:grey;border-width:2px}'
+  )
+);
+
+test(
+  'border grid: should not read a reset out of an unrecognised component',
+  passthroughCSS(
+    'a{border:1px solid 50%;border-left:solid;border-color:grey;border-width:2px}'
+  )
+);
+
+test(
+  'border grid: should not read a reset out of two line styles',
+  passthroughCSS(
+    'a{border:none none;border-left:solid;border-color:grey;border-width:2px}'
+  )
+);
+
+/* The same values, in the rules the rest of the plugin handles: a declaration
+ * the browser drops sets no border, and must not be shortened into one, read as
+ * overriding what comes before it, or written into what comes after. */
+test(
+  'should not shorten a border that states a component twice',
+  passthroughCSS('a{border:solid red red}')
+);
+
+test(
+  'should not shorten a border that states two widths',
+  passthroughCSS('a{border:1px 1px}')
+);
+
+test(
+  'should keep a border-color a dropped border does not override',
+  passthroughCSS('a{border-color:red;border:1px solid 50%}')
+);
+
+test(
+  'should not write a dropped longhand into a side shorthand',
+  passthroughCSS(
+    'a{border-top-width:1px;border-top-style:solid;border-top-color:50%}'
+  )
+);
+
+test(
+  'should not let a dropped longhand take the other sides with it',
+  passthroughCSS(
+    'a{border-top-color:50%;border-right-color:red;border-bottom-color:red;border-left-color:red}'
+  )
+);
+
+test(
+  'should leave a border-color that states no colour alone',
+  passthroughCSS('a{border-color:none;border-style:none;border-width:0}')
 );
