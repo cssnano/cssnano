@@ -25,20 +25,20 @@ function integrationTests(preset, integrations) {
     );
   }
 
-  const expectations = [];
-  for (const [framework, css] of frameworks) {
-    expectations.push(
-      postcss([cssnano({ preset })])
-        .process(css, { from: undefined })
-        .then((result) => {
+  return async (t) =>
+    Promise.all(
+      Array.from(frameworks, ([framework, css]) =>
+        t.test(framework, async () => {
+          const result = await postcss([cssnano({ preset })]).process(css, {
+            from: undefined,
+          });
           assert.strictEqual(
             result.css,
             fs.readFileSync(`${integrations}/${framework}.css`, 'utf8')
           );
         })
+      )
     );
-  }
-  return async () => await Promise.all(expectations);
 }
 
 module.exports = { processCSSWithPresetFactory, loadPreset, integrationTests };
