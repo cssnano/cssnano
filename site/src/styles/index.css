@@ -698,8 +698,9 @@ nav ul {
 }
 
 .sidebar {
-  flex-basis: 20rem;
+  flex-basis: max-content;
   flex-grow: 1;
+  max-inline-size: 25dvw;
 }
 
 .not-sidebar {
