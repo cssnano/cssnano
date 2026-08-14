@@ -3,8 +3,7 @@ const borders = require('./lib/decl/borders.js');
 const columns = require('./lib/decl/columns.js');
 const margin = require('./lib/decl/margin.js');
 const padding = require('./lib/decl/padding.js');
-const { hasFallback } = require('./lib/isFallback.js');
-const { rememberAuthoredValues } = require('./lib/authoredValues.js');
+const { requiredGates } = require('./lib/isFallback.js');
 
 /** @import {Declaration, Rule} from 'postcss'; */
 
@@ -34,11 +33,12 @@ function declarationsNamed(rule, prefix) {
 
 /**
  * Exploding a shorthand is only a step towards merging it back together with
- * the longhands around it. Where a fallback stops that merge, the longhands
- * stay where explode left them, which takes more room than the shorthand they
- * came from and drops whatever else the shorthand reset. Undoing the pair
- * whenever it leaves the rule larger than it found it keeps both from
- * happening.
+ * the longhands around it. Where a support gate stops that merge, the longhands
+ * stay where explode left them: they take more room than the shorthand they
+ * came from, they drop whatever else it reset, and they claim to apply to
+ * browsers the gated shorthand never reached. So the pair has to be undone
+ * whenever exploding did not round-trip, rather than merely whenever it grew
+ * the rule — a wrong rewrite can be a byte shorter.
  *
  * @param {Rule} rule
  * @param {Family} family
@@ -46,19 +46,27 @@ function declarationsNamed(rule, prefix) {
  * @return {void}
  */
 function rewrite(rule, family, declarations) {
-  if (!hasFallback(declarations)) {
+  /* Gates decreasing down a rule strand a shorthand just as gates increasing
+   * strand a fallback, so every gated declaration takes the guarded path.
+   * Ordinary CSS reaches neither, and does not pay for the clone. */
+  if (!declarations.some((decl) => requiredGates(decl).size)) {
     family.explode(rule);
     family.merge(rule);
     return;
   }
 
   const original = rule.nodes.map((node) => node.clone());
-  const before = rule.toString().length;
+  const before = new Set(rule.nodes);
 
   family.explode(rule);
+
+  const created = rule.nodes.filter((node) => !before.has(node));
+
   family.merge(rule);
 
-  if (rule.toString().length > before) {
+  /* A merge consumes its members with `remove()`, so a node explode created
+   * that still has a parent is one no merge took back. */
+  if (created.some((node) => node.parent)) {
     rule.removeAll();
     rule.append(...original);
   }
@@ -88,8 +96,6 @@ function pluginCreator() {
         // Scan the rule's declarations once, then run only the processors whose
         // family is present.
         /** @type {Declaration[]} */
-        const declarations = [];
-        /** @type {Declaration[]} */
         const borderDeclarations = [];
         /** @type {Declaration[]} */
         const marginDeclarations = [];
@@ -100,7 +106,6 @@ function pluginCreator() {
           if (node.type !== 'decl') {
             continue;
           }
-          declarations.push(node);
           const prop = node.prop.toLowerCase();
           if (prop.startsWith('border')) {
             borderDeclarations.push(node);
@@ -113,7 +118,6 @@ function pluginCreator() {
             paddingDeclarations.push(node);
           }
         }
-        rememberAuthoredValues(rule, declarations);
         if (borderDeclarations.length) {
           rewrite(rule, borders, borderDeclarations);
         }

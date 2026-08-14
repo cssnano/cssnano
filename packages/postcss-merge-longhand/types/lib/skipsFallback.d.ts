@@ -1,16 +1,22 @@
 export = _exports;
 /**
- * Only browsers that can parse a shorthand in full apply any of it, so folding
- * a declaration that overrides a fallback strands that fallback: browsers that
- * keep it read the shorthand instead and lose every other property in it.
+ * A browser applies a declaration only where it understands every support gate
+ * the declaration needs, and it applies a shorthand whole or not at all. So
+ * folding declarations into one shorthand is faithful exactly when they all
+ * needed the same gates: the shorthand then reaches the browsers each part
+ * already reached, and no others.
  *
- * When each declaration is itself preceded by one for the same property, the
- * layer left behind is complete and merges into its own, earlier shorthand, so
- * the merge is safe. The mixed case is the one to abandon.
+ * Where the gate sets differ, the shorthand goes to the narrowest audience
+ * among them, and the browsers that only understood the rest lose it — along
+ * with the fallback the author left for them, which they now read as the
+ * shorthand instead.
+ *
+ * The gates a value calls are not the whole set: a declaration exploded out of
+ * a gated shorthand carries its gates without naming them, which is why this
+ * asks `mergeBlockingGates` rather than reading the values.
  *
  * @param {import('postcss').Declaration[]} rules
- * @param {Iterable<import('postcss').Declaration>} candidates in document order
  * @return {boolean}
  */
-declare function _exports(rules: import('postcss').Declaration[], candidates: Iterable<import('postcss').Declaration>): boolean;
+declare function _exports(rules: import('postcss').Declaration[]): boolean;
 //# sourceMappingURL=skipsFallback.d.ts.map

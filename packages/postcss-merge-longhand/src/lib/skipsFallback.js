@@ -1,59 +1,36 @@
 'use strict';
-const { isFallback } = require('./isFallback.js');
-const { isAuthoredValue } = require('./authoredValues.js');
+const { mergeBlockingGates } = require('./isFallback.js');
 
 /**
- * @param {import('postcss').Declaration} declaration
- * @param {Iterable<import('postcss').Declaration>} candidates in document order
- * @return {[boolean, boolean]} whether an earlier declaration for the same
- * property exists, and whether declaration is an enhancement over one
- */
-function precedingDeclarations(declaration, candidates) {
-  let preceded = false;
-
-  for (const node of candidates) {
-    if (node === declaration) {
-      break;
-    }
-
-    if (node.prop.toLowerCase() === declaration.prop.toLowerCase()) {
-      preceded = true;
-
-      if (isAuthoredValue(node) && isFallback(node, declaration)) {
-        return [true, true];
-      }
-    }
-  }
-
-  return [preceded, false];
-}
-
-/**
- * Only browsers that can parse a shorthand in full apply any of it, so folding
- * a declaration that overrides a fallback strands that fallback: browsers that
- * keep it read the shorthand instead and lose every other property in it.
+ * A browser applies a declaration only where it understands every support gate
+ * the declaration needs, and it applies a shorthand whole or not at all. So
+ * folding declarations into one shorthand is faithful exactly when they all
+ * needed the same gates: the shorthand then reaches the browsers each part
+ * already reached, and no others.
  *
- * When each declaration is itself preceded by one for the same property, the
- * layer left behind is complete and merges into its own, earlier shorthand, so
- * the merge is safe. The mixed case is the one to abandon.
+ * Where the gate sets differ, the shorthand goes to the narrowest audience
+ * among them, and the browsers that only understood the rest lose it — along
+ * with the fallback the author left for them, which they now read as the
+ * shorthand instead.
+ *
+ * The gates a value calls are not the whole set: a declaration exploded out of
+ * a gated shorthand carries its gates without naming them, which is why this
+ * asks `mergeBlockingGates` rather than reading the values.
  *
  * @param {import('postcss').Declaration[]} rules
- * @param {Iterable<import('postcss').Declaration>} candidates in document order
  * @return {boolean}
  */
-module.exports = (rules, candidates) => {
-  let overridesFallback = false;
-  let everyOneIsPreceded = true;
+module.exports = (rules) => {
+  const [first, ...rest] = rules;
 
-  for (const declaration of rules) {
-    const [preceded, overriding] = precedingDeclarations(
-      declaration,
-      candidates
-    );
-
-    overridesFallback ||= overriding;
-    everyOneIsPreceded &&= preceded;
+  if (first === undefined) {
+    return false;
   }
 
-  return overridesFallback && !everyOneIsPreceded;
+  const gates = mergeBlockingGates(first);
+
+  return rest.some(
+    (declaration) =>
+      gates.symmetricDifference(mergeBlockingGates(declaration)).size
+  );
 };

@@ -95,7 +95,7 @@ module.exports = function mergeRules(rule, properties, callback) {
         rules,
         /** @type import('postcss').Declaration[]*/ (rule.nodes)
       ) &&
-      !skipsFallback(rules, props)
+      !skipsFallback(rules)
     ) {
       if (callback(rules, last, props)) {
         for (const node of rules) {

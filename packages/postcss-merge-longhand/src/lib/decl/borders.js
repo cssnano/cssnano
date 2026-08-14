@@ -14,7 +14,7 @@ const minifyWidthStyleColor = require('../minifyWsc.js');
 const canMerge = require('../canMerge.js');
 const topRightBottomLeft = require('../trbl.js');
 const isCustomProp = require('../isCustomProp.js');
-const { isFallback } = require('../isFallback.js');
+const { isFallback, isDerived, inheritGates } = require('../isFallback.js');
 const canExplode = require('../canExplode.js');
 const getLastNode = require('../getLastNode.js');
 const parseWidthStyleColor = require('../parseWsc.js');
@@ -22,6 +22,7 @@ const { isValidWidthStyleColor } = require('../validateWsc.js');
 const cssGlobalKeywords = require('../cssGlobalKeywords.js');
 const lastOf = require('../lastOf.js');
 const spec = require('../spec.js');
+const resolveBorderGrid = require('./borderGrid.js');
 
 /** @import {Declaration} from 'postcss'; */
 
@@ -88,6 +89,23 @@ function getLevel(prop) {
 /** @type {(value: string) => boolean} */
 const isCustomProperty = (value) =>
   value !== undefined && value.search(customPropRegex) !== -1;
+
+/**
+ * `insertCloned` records the support gates a new node inherits, but these
+ * merges place their node themselves; a clone postcss makes carries the value
+ * and not the provenance, so it has to be recorded here too.
+ *
+ * @param {Declaration} source
+ * @param {Partial<import('postcss').DeclarationProps>} props
+ * @return {Declaration}
+ */
+function cloneWithGates(source, props) {
+  const clone = Object.assign(source.clone(), props);
+
+  inheritGates(source, clone);
+
+  return clone;
+}
 
 /**
  * @param {string[]} values
@@ -321,6 +339,11 @@ function removeDuplicateDeclarations(declarations, lastNode) {
 /**
  * Removes lower precedence declarations from a declaration list.
  *
+ * A shorthand only overrides the longhands before it in the browsers that keep
+ * it, so one behind a support gate leaves an author's earlier longhand standing
+ * everywhere else. A longhand the plugin itself exploded out of some shorthand
+ * has no such audience of its own, and goes.
+ *
  * @param {Set<import('postcss').Declaration>} decls
  * @param {import('postcss').Declaration | undefined} lastNode
  * @param {string | undefined} lastPart
@@ -335,6 +358,8 @@ function removeLowerPrecedenceDeclarations(decls, lastNode, lastPart) {
       !stylehacks.detect(node) &&
       !isCustomProp(/** @type {Declaration} */ (lastNode)) &&
       node !== lastNode &&
+      (isDerived(node) ||
+        !isFallback(node, /** @type {Declaration} */ (lastNode))) &&
       node.important === /** @type {Declaration} */ (lastNode).important &&
       /** @type {number} */ (getLevel(node.prop)) >
         /** @type {number} */ (
@@ -476,6 +501,7 @@ function merge(rule) {
   mergeBorderSpacing(rule);
 
   if (containsUnmergeableBorderDecls(rule)) {
+    resolveBorderGrid(rule);
     return;
   }
 
@@ -624,7 +650,7 @@ function merge(rule) {
 
         rule.insertAfter(
           border,
-          Object.assign(lastNode.clone(), {
+          cloneWithGates(lastNode, {
             prop,
             value,
           })
@@ -638,7 +664,7 @@ function merge(rule) {
     } else if (reduced.length === 1 && canMerge([width, style], false)) {
       rule.insertBefore(
         color,
-        Object.assign(lastNode.clone(), {
+        cloneWithGates(lastNode, {
           prop: 'border',
           value: [width, style].map(getValue).join(' '),
         })
@@ -679,7 +705,7 @@ function merge(rule) {
 
       rule.insertBefore(
         lastNode,
-        Object.assign(lastNode.clone(), {
+        cloneWithGates(lastNode, {
           prop: 'border',
           value: borderValue,
         })
@@ -689,7 +715,7 @@ function merge(rule) {
         if (mapped[i] !== borderValue) {
           rule.insertBefore(
             lastNode,
-            Object.assign(lastNode.clone(), {
+            cloneWithGates(lastNode, {
               prop: dir,
               value: mapped[i],
             })
@@ -733,7 +759,7 @@ function merge(rule) {
 
       rule.insertBefore(
         lastNode,
-        Object.assign(lastNode.clone(), {
+        cloneWithGates(lastNode, {
           prop: 'border',
           value: minifyWidthStyleColor(first ? values[0] : values[1]),
         })
@@ -744,7 +770,7 @@ function merge(rule) {
         const prop = physicalBorderShorthands[values.indexOf(value)];
         rule.insertBefore(
           lastNode,
-          Object.assign(lastNode.clone(), {
+          cloneWithGates(lastNode, {
             prop: prop,
             value: minifyWidthStyleColor(value),
           })

@@ -1131,7 +1131,7 @@ test(
   'Should correctly merge borders with custom properties (#619) (2) (uppercase)',
   processCSS(
     'h1{BORDER-LEFT:1PX SOLID;BORDER-LEFT-COLOR:VAR(--COLOR-VAR)}',
-    'h1{border-left:1px solid;border-left-color:VAR(--COLOR-VAR)}'
+    'h1{border-left:1px solid;BORDER-LEFT-COLOR:VAR(--COLOR-VAR)}'
   )
 );
 
@@ -1461,7 +1461,7 @@ test(
   'border grid: should resolve border grid with reset and side override',
   processCSS(
     'button{color:blue;border:none;border-left:solid;border-color:grey;border-width:2px}',
-    'button{color:blue;border:2px none grey;border-left-style:solid}'
+    'button{color:blue;border:2px grey;border-left-style:solid}'
   )
 );
 
@@ -1476,4 +1476,3 @@ test(
   'border grid: should not resolve border grid without border reset',
   passthroughCSS('a{border-left:solid;border-color:grey;border-width:2px}')
 );
-

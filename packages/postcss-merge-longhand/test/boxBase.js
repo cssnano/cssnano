@@ -411,18 +411,25 @@ padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
 `)
 );
 
+/* The `padding-top: 0` goes because the unconditional `padding-top: 1px` at
+ * the end overrides it in every browser; what it must not do is take the
+ * place of the `env(x)` inside the shorthand. */
 test(
   'finding 1: should not merge when a longhand is gated by env()',
-  passthroughCSS(
-    'a{padding-top:0;padding:env(x) 3px 1px;padding:var(--v);padding-top:1px}'
+  processCSS(
+    'a{padding-top:0;padding:env(x) 3px 1px;padding:var(--v);padding-top:1px}',
+    'a{padding:env(x) 3px 1px;padding:var(--v);padding-top:1px}'
   )
 );
 
+/* The gated side keeps the shorthand from taking the second layer whole, so
+ * the merge falls back on the left the first layer set — which is what a
+ * browser without `env()` computes either way. */
 test(
   'finding 2: should not merge when a single side in a box is gated',
   processCSS(
     'a{padding-top:1px;padding-right:1px;padding-bottom:1px;padding-left:1px;padding-top:2px;padding-right:2px;padding-bottom:2px;padding-left:env(x)}',
-    'a{padding:1px;padding-top:2px;padding-right:2px;padding-bottom:2px;padding-left:env(x)}'
+    'a{padding:2px 2px 2px 1px;padding-left:env(x)}'
   )
 );
 
@@ -443,4 +450,3 @@ test(
     'a{padding:1px;padding:env(a)}'
   )
 );
-
