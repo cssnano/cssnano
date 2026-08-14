@@ -410,3 +410,37 @@ padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
 }
 `)
 );
+
+test(
+  'finding 1: should not merge when a longhand is gated by env()',
+  passthroughCSS(
+    'a{padding-top:0;padding:env(x) 3px 1px;padding:var(--v);padding-top:1px}'
+  )
+);
+
+test(
+  'finding 2: should not merge when a single side in a box is gated',
+  processCSS(
+    'a{padding-top:1px;padding-right:1px;padding-bottom:1px;padding-left:1px;padding-top:2px;padding-right:2px;padding-bottom:2px;padding-left:env(x)}',
+    'a{padding:1px;padding-top:2px;padding-right:2px;padding-bottom:2px;padding-left:env(x)}'
+  )
+);
+
+test(
+  'should not fold gated shorthand into plain longhand',
+  passthroughCSS('a{padding:env(x) 3px 1px;padding-top:1px}')
+);
+
+test(
+  'regression guard: should not merge plain shorthand with gated longhand',
+  passthroughCSS('a{padding:1px;padding-top:env(x)}')
+);
+
+test(
+  'should merge complete gated layers when gate set matches',
+  processCSS(
+    'a{padding-top:1px;padding-right:1px;padding-bottom:1px;padding-left:1px;padding-top:env(a);padding-right:env(a);padding-bottom:env(a);padding-left:env(a)}',
+    'a{padding:1px;padding:env(a)}'
+  )
+);
+

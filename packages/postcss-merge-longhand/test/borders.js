@@ -1456,3 +1456,24 @@ test(
     'h1{border-image:url(i.png) 30}h1{border-left-color:red;border:1px solid env(x)}'
   )
 );
+
+test(
+  'border grid: should resolve border grid with reset and side override',
+  processCSS(
+    'button{color:blue;border:none;border-left:solid;border-color:grey;border-width:2px}',
+    'button{color:blue;border:2px none grey;border-left-style:solid}'
+  )
+);
+
+test(
+  'should not merge borders with different gate sets across sides',
+  passthroughCSS(
+    'a{border-top:solid red;border-right:solid oklch(0.7 0.1 20);border-bottom:solid red;border-left:solid red}'
+  )
+);
+
+test(
+  'border grid: should not resolve border grid without border reset',
+  passthroughCSS('a{border-left:solid;border-color:grey;border-width:2px}')
+);
+
