@@ -3,6 +3,11 @@ permissions:
   id-token: write #Required for trusted publishing
   contents: read
 
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on: workflow_dispatch
 
 jobs:
