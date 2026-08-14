@@ -1,5 +1,5 @@
 'use strict';
-const { test } = require('node:test');
+const { test, suite } = require('node:test');
 const { processCSSFactory } = require('../../../util/testHelpers.js');
 const plugin = require('../src/index.js');
 
@@ -198,3 +198,116 @@ test(
   'should handle empty columns',
   processCSS('h1{columns:;}', 'h1{columns:;}')
 );
+
+suite('support-dependent (env()) merge blocking', () => {
+  test(
+    'should save fallbacks for column-width that use env()',
+    passthroughCSS(
+      'h1{column-width:1px;column-width:env(safe-area-inset-bottom);column-count:2}'
+    )
+  );
+
+  test(
+    'should merge column values that only repeat a plain value',
+    processCSS(
+      'h1{column-width:2px;column-width:3px;column-count:2}',
+      'h1{columns:3px 2}'
+    )
+  );
+});
+
+suite('count-only shorthand', () => {
+  test(
+    'should keep the column-width reset a count only shorthand performs',
+    passthroughCSS('h1{columns:2}')
+  );
+
+  test(
+    'should drop the auto a count only shorthand spells out',
+    processCSS('h1{columns:2 auto}', 'h1{columns:2}')
+  );
+
+  test(
+    'should drop the auto a count only shorthand spells out first',
+    processCSS('h1{columns:auto 2}', 'h1{columns:2}')
+  );
+});
+
+suite('column-height shorthand syntax', () => {
+  test(
+    'should pass through a shorthand that sets a column height',
+    passthroughCSS('h1{columns:30em / 10em}')
+  );
+
+  test(
+    'should pass through a shorthand that sets a column height without spaces',
+    passthroughCSS('h1{columns:30em/10em}')
+  );
+
+  test(
+    'should pass through a three component shorthand',
+    passthroughCSS('h1{columns:30em 2 / 10em}')
+  );
+});
+
+suite('column-height merge blocking', () => {
+  test(
+    'should not merge longhands past a column height in the same rule',
+    passthroughCSS('h1{column-height:5em;column-width:20em;column-count:2}')
+  );
+
+  test(
+    'should not merge longhands when another rule sets a column height',
+    passthroughCSS('h1{column-height:5em}h2{column-width:20em;column-count:2}')
+  );
+
+  test(
+    'should not explode a shorthand when another rule sets a column height',
+    passthroughCSS('h1{column-height:5em}h2{columns:2}')
+  );
+});
+
+suite('invalid-value handling', () => {
+  test(
+    'should pass through a value whose component is unclear',
+    passthroughCSS('h1{columns:calc(2em + 1px)}')
+  );
+
+  test(
+    'should pass through two values naming the same component',
+    passthroughCSS('h1{columns:3 4}')
+  );
+
+  test(
+    'should pass through a count that is not an integer',
+    passthroughCSS('h1{columns:2.5}')
+  );
+
+  test(
+    'should pass through a width that is not a length',
+    passthroughCSS('h1{columns:50%}')
+  );
+});
+
+suite('column-height merge blocking', () => {
+  test(
+    'should not merge longhands when another rule sets a column height with a slash',
+    passthroughCSS('h1{columns:30em/10em}h2{column-width:20em;column-count:2}')
+  );
+
+  test(
+    'should merge longhands when another rule contains a numerical division',
+    processCSS(
+      'h1{columns:calc(100%/3)}h2{column-width:20em;column-count:2}',
+      'h1{columns:calc(100%/3)}h2{columns:20em 2}'
+    )
+  );
+
+  test(
+    'should merge longhands beside a shorthand containing a numerical division sign',
+    processCSS(
+      'h1{columns:calc(100%/3);column-width:20em;column-count:2}',
+      'h1{columns:20em 2}'
+    )
+  );
+});

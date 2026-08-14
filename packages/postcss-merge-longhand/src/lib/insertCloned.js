@@ -1,4 +1,6 @@
 'use strict';
+const { inheritSupport } = require('./isFallback.js');
+
 /**
  * @param {import('postcss').Rule} rule
  * @param {import('postcss').Declaration} decl
@@ -9,6 +11,9 @@ module.exports = function insertCloned(rule, decl, props) {
   const newNode = Object.assign(decl.clone(), props);
 
   rule.insertAfter(decl, newNode);
+  // Propagate support context so cloned longhands preserve the
+  // original declaration's applicability constraints.
+  inheritSupport(decl, newNode);
 
   return newNode;
 };

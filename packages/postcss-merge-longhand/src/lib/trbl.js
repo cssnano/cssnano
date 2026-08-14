@@ -1,2 +1,4 @@
 'use strict';
-module.exports = ['top', 'right', 'bottom', 'left'];
+const { sides } = require('./spec.js');
+
+module.exports = sides;

@@ -4,9 +4,7 @@ const { list } = require('postcss');
 const stylehacks = require('stylehacks');
 const insertCloned = require('../insertCloned.js');
 const parseTrbl = require('../parseTrbl.js');
-const hasAllProps = require('../hasAllProps.js');
 const getDecls = require('../getDecls.js');
-const getRules = require('../getRules.js');
 const getValue = require('../getValue.js');
 const mergeRules = require('../mergeRules.js');
 const minifyTopBottoRightLeft = require('../minifyTrbl.js');
@@ -14,27 +12,27 @@ const minifyWidthStyleColor = require('../minifyWsc.js');
 const canMerge = require('../canMerge.js');
 const topRightBottomLeft = require('../trbl.js');
 const isCustomProp = require('../isCustomProp.js');
+const {
+  isFallback,
+  strandsFallback,
+  inheritSupport,
+} = require('../isFallback.js');
 const canExplode = require('../canExplode.js');
-const getLastNode = require('../getLastNode.js');
 const parseWidthStyleColor = require('../parseWsc.js');
-const { isValidWidthStyleColor } = require('../validateWsc.js');
+const {
+  isValidWidthStyleColor,
+  specifiesComponent,
+  specifiesDistinctComponents,
+} = require('../validateWsc.js');
 const cssGlobalKeywords = require('../cssGlobalKeywords.js');
 const lastOf = require('../lastOf.js');
+const spec = require('../spec.js');
+const resolveBorderGrid = require('./borderMatrix.js');
 
 /** @import {Declaration} from 'postcss'; */
 
-const widthStyleColor = ['width', 'style', 'color'];
-const defaultBorderValues = ['medium', 'none', 'currentcolor'];
-const colorMightRequireFallback =
-  /(hsla|rgba|color|hwb|lab|lch|oklab|oklch)\(/i;
-
-const borderSpacingRegex = /^border-spacing$/i;
-const borderStyleRegex = /^border($|-(top|right|bottom|left)$)/i;
-const borderRegex = /^border/i;
-const borderImageRegex = /^border-image($|-)/i;
-const logicalBorderRegex = /^border-(block|inline|start|end)($|-)/i;
-const directionalPhysicalRegex =
-  /^border-(top|right|bottom|left)($|-(width|style|color)$)/i;
+const borderSpacing = 'border-spacing';
+const widthStyleColor = spec.borderComponents;
 const customPropRegex = /var\s*\(\s*--/i;
 
 /**
@@ -45,17 +43,8 @@ function borderProperty(...parts) {
   return `border-${parts.join('-')}`;
 }
 
-const physicalBorderShorthands = [
-  'border-top',
-  'border-right',
-  'border-bottom',
-  'border-left',
-];
-const allSidesBorderShorthands = [
-  'border-width',
-  'border-style',
-  'border-color',
-];
+const physicalBorderShorthands = spec.sides.map((side) => borderProperty(side));
+const allSidesBorderShorthands = spec.shorthand('border').longhands;
 /** @type {string[]} */
 const physicalDirectionalProperties = [];
 for (const direction of physicalBorderShorthands) {
@@ -63,6 +52,22 @@ for (const direction of physicalBorderShorthands) {
     physicalDirectionalProperties.push(`${direction}-${prop}`);
   }
 }
+
+const defaultBorderValues = allSidesBorderShorthands.map(
+  (prop) => /** @type {string} */ (spec.initialValues.get(prop))
+);
+/* `border` and the shorthand for each side of the box. */
+const borderAndSideShorthands = new Set([
+  'border',
+  ...physicalBorderShorthands,
+]);
+/* Those, and the properties they are made of. */
+const directionalPhysicalProperties = new Set([
+  ...physicalBorderShorthands,
+  ...physicalDirectionalProperties,
+]);
+/* What `border` resets without being able to set. */
+const borderImageProperties = new Set(spec.shorthand('border').resets);
 
 const precedence = [
   ['border'],
@@ -91,23 +96,28 @@ const isCustomProperty = (value) =>
   value !== undefined && value.search(customPropRegex) !== -1;
 
 /**
+ * `insertCloned` records the support a new node inherits, but these
+ * merges place their node themselves; a clone postcss makes carries the value
+ * and not the provenance, so it has to be recorded here too.
+ *
+ * @param {Declaration} source
+ * @param {Partial<import('postcss').DeclarationProps>} props
+ * @return {Declaration}
+ */
+function cloneWithSupport(source, props) {
+  const clone = Object.assign(source.clone(), props);
+
+  inheritSupport(source, clone);
+
+  return clone;
+}
+
+/**
  * @param {string[]} values
  * @return {boolean}
  */
 function canMergeValues(values) {
   return !values.some(isCustomProperty);
-}
-
-/**
- * @param {import('postcss').Declaration} decl
- * @return {string}
- */
-function getColorValue(decl) {
-  if (decl.prop.slice(-5) === 'color') {
-    return decl.value;
-  }
-
-  return parseWidthStyleColor(decl.value)[2] || defaultBorderValues[2];
 }
 
 /**
@@ -204,6 +214,39 @@ function getDistinctShorthands(mapped) {
 }
 
 /**
+ * A border declaration specifies a `<line-width>`, a `<line-style>` and a
+ * `<color>` — one of them if it names a component, one of each per side
+ * otherwise — and the browser ignores it when a value is none of these,
+ * such as the `border-color: none` a stylesheet writes for `border: none`.
+ *
+ * @param {Declaration} declaration one of `allPhysicalBorderProperties`
+ * @return {boolean} whether the declaration sets anything at all
+ */
+function browserKeeps(declaration) {
+  const prop = declaration.prop.toLowerCase();
+
+  if (borderAndSideShorthands.has(prop)) {
+    return specifiesDistinctComponents(declaration.value);
+  }
+
+  const component = /** @type {string} */ (prop.split('-').at(-1));
+
+  if (!allSidesBorderShorthands.includes(prop)) {
+    return specifiesComponent(declaration.value, component);
+  }
+
+  /* `parseTrbl` takes the four sides it needs and says nothing about a fifth,
+   * which is a token that costs the declaration its meaning. */
+  if (list.space(declaration.value).length > spec.sides.length) {
+    return false;
+  }
+
+  return parseTrbl(declaration.value).every((value) =>
+    specifiesComponent(value, component)
+  );
+}
+
+/**
  * @param {import('postcss').Rule} rule
  * @return {boolean}
  */
@@ -213,11 +256,14 @@ function containsUnmergeableBorderDecls(rule) {
   );
 
   if (
-    declarations.some(
-      (declaration) =>
-        borderImageRegex.test(declaration.prop) ||
-        logicalBorderRegex.test(declaration.prop)
-    )
+    declarations.some((declaration) => {
+      const prop = declaration.prop.toLowerCase();
+
+      return (
+        borderImageProperties.has(prop) ||
+        spec.flowRelativeBorderProperties.has(prop)
+      );
+    })
   ) {
     return true;
   }
@@ -230,7 +276,7 @@ function containsUnmergeableBorderDecls(rule) {
     physical.some(
       (declaration) =>
         cssGlobalKeywords.has(declaration.value.toLowerCase()) ||
-        ((borderStyleRegex.test(declaration.prop) ||
+        ((borderAndSideShorthands.has(declaration.prop.toLowerCase()) ||
           allSidesBorderShorthands.includes(declaration.prop.toLowerCase())) &&
           isCustomProp(declaration))
     )
@@ -238,11 +284,19 @@ function containsUnmergeableBorderDecls(rule) {
     return true;
   }
 
+  /* A declaration the browser ignores sets nothing, so the ones around it mean
+   * what they would mean on their own. Every transform here reads it as one
+   * that applies, and would move, ignore or rewrite those others against a
+   * border no side ever has. */
+  if (physical.some((declaration) => !browserKeeps(declaration))) {
+    return true;
+  }
+
   const globalComponents = physical.filter((decl) =>
     allSidesBorderShorthands.includes(decl.prop.toLowerCase())
   );
   const directionalDeclarations = physical.filter((decl) =>
-    directionalPhysicalRegex.test(decl.prop)
+    directionalPhysicalProperties.has(decl.prop.toLowerCase())
   );
 
   return globalComponents.length > 1 && directionalDeclarations.length > 0;
@@ -267,7 +321,10 @@ function establishesBorderReset(node) {
     return false;
   }
 
-  return isValidWidthStyleColor(parseWidthStyleColor(declaration.value));
+  return (
+    specifiesDistinctComponents(declaration.value) &&
+    isValidWidthStyleColor(parseWidthStyleColor(declaration.value))
+  );
 }
 
 /**
@@ -283,7 +340,11 @@ function hasBorderResetContext(rule) {
  * @return {void}
  */
 function mergeBorderSpacing(rule) {
-  rule.walkDecls(borderSpacingRegex, (decl) => {
+  rule.walkDecls((decl) => {
+    if (decl.prop.toLowerCase() !== borderSpacing) {
+      return;
+    }
+
     const value = list.space(decl.value);
 
     if (value.length > 1 && value[0] === value[1]) {
@@ -310,39 +371,15 @@ function removeDuplicateDeclarations(declarations, lastNode) {
       node !== lastNode &&
       node.important === /** @type {Declaration} */ (lastNode).important &&
       node.prop === /** @type {Declaration} */ (lastNode).prop &&
-      !(
-        !isCustomProp(node) &&
-        isCustomProp(/** @type {Declaration} */ (lastNode))
-      )
+      !isFallback(node, /** @type {Declaration} */ (lastNode))
     ) {
       duplicateDeclarations.add(node);
     }
   }
 
-  if (duplicateDeclarations.size !== 0) {
-    if (
-      colorMightRequireFallback.test(
-        getColorValue(/** @type {Declaration} */ (lastNode))
-      )
-    ) {
-      /** @type {Declaration | undefined} */
-      let preserve;
-
-      /* Set order is deterministic */
-      for (const node of duplicateDeclarations) {
-        if (!colorMightRequireFallback.test(getColorValue(node))) {
-          preserve = node;
-        }
-      }
-
-      if (preserve !== undefined) {
-        duplicateDeclarations.delete(preserve);
-      }
-    }
-    for (const node of duplicateDeclarations) {
-      node.remove();
-      declarations.delete(node);
-    }
+  for (const node of duplicateDeclarations) {
+    node.remove();
+    declarations.delete(node);
   }
 
   declarations.delete(/** @type {Declaration} */ (lastNode));
@@ -350,6 +387,12 @@ function removeDuplicateDeclarations(declarations, lastNode) {
 
 /**
  * Removes lower precedence declarations from a declaration list.
+ *
+ * A shorthand only overrides the longhands before it in the browsers that keep
+ * it, so one requiring support the earlier browsers lack leaves an earlier
+ * longhand standing everywhere else. `strandsFallback` says which support
+ * requirements decide that, since a longhand the plugin exploded out of a
+ * shorthand answers for fewer of them than one the author wrote.
  *
  * @param {Set<import('postcss').Declaration>} decls
  * @param {import('postcss').Declaration | undefined} lastNode
@@ -365,6 +408,7 @@ function removeLowerPrecedenceDeclarations(decls, lastNode, lastPart) {
       !stylehacks.detect(node) &&
       !isCustomProp(/** @type {Declaration} */ (lastNode)) &&
       node !== lastNode &&
+      !strandsFallback(node, /** @type {Declaration} */ (lastNode)) &&
       node.important === /** @type {Declaration} */ (lastNode).important &&
       /** @type {number} */ (getLevel(node.prop)) >
         /** @type {number} */ (
@@ -390,8 +434,10 @@ function removeLowerPrecedenceDeclarations(decls, lastNode, lastPart) {
  * @return {void}
  */
 function cleanup(rule) {
-  rule.walkDecls(borderStyleRegex, (decl) => {
-    decl.value = minifyWidthStyleColor(decl.value);
+  rule.walkDecls((decl) => {
+    if (borderAndSideShorthands.has(decl.prop.toLowerCase())) {
+      decl.value = minifyWidthStyleColor(decl.value);
+    }
   });
 
   const decls = getDecls(rule, allPhysicalBorderProperties);
@@ -420,7 +466,11 @@ function explode(rule) {
     return;
   }
 
-  rule.walkDecls(borderRegex, (decl) => {
+  rule.walkDecls((decl) => {
+    if (!spec.borderProperties.has(decl.prop.toLowerCase())) {
+      return;
+    }
+
     if (!canExplode(decl)) {
       return;
     }
@@ -493,6 +543,93 @@ function explode(rule) {
 }
 
 /**
+ * `border`, `border-<side>` and `border-<component>` all reach a side's
+ * component without naming it, so the last declaration to set one side's
+ * component is not always the longhand that specifies it, and if
+ * they follow a longhand, they override the value set by the longhand.
+ *
+ * @param {import('postcss').ChildNode[]} nodes the nodes preceding the merge
+ * @param {string} side one of `topRightBottomLeft`
+ * @param {string} component one of `widthStyleColor`
+ * @return {Declaration | undefined} the longhand the side's component comes
+ * from, when a longhand is where it comes from
+ */
+function specifiedBy(nodes, side, component) {
+  const longhand = borderProperty(side, component);
+  const setters = new Set([
+    'border',
+    borderProperty(side),
+    borderProperty(component),
+    longhand,
+  ]);
+  /** @type {Declaration | undefined} */
+  let last;
+
+  for (const node of nodes) {
+    const { type } = node;
+
+    if (type !== 'decl') {
+      continue;
+    }
+
+    if (setters.has(node.prop.toLowerCase())) {
+      last = node;
+    }
+  }
+
+  return last && last.prop.toLowerCase() === longhand ? last : undefined;
+}
+
+/**
+ * When a merge inserts at a range's start, later declarations for the same
+ * property remain. Those that are fallbacks or hacks must stay;
+ * others can be subsumed. Returns undefined if any repeat must be preserved.
+ *
+ * @param {import('postcss').Rule} rule
+ * @param {Declaration} start merge insertion point
+ * @param {Declaration[]} chosen declarations being merged, one per property
+ * @return {Declaration[] | undefined} repeats that can be safely removed,
+ * or undefined if any is a fallback or hack
+ */
+function subsumedAfter(rule, start, chosen) {
+  /** @type {Map<string, Declaration>} */
+  const wanted = new Map(chosen.map((node) => [node.prop.toLowerCase(), node]));
+  const from = rule.index(start);
+  /** @type {Declaration[]} */
+  const subsumed = [];
+
+  for (const node of rule.nodes) {
+    const { type } = node;
+
+    if (type !== 'decl') {
+      continue;
+    }
+
+    const last = wanted.get(node.prop.toLowerCase());
+
+    if (last === undefined) {
+      continue;
+    }
+
+    const at = rule.index(node);
+
+    if (at <= from || at > rule.index(last)) {
+      continue;
+    }
+
+    /* A repeat the browsers that skip the one it repeats still keep is a
+     * fallback the author wrote, not a leftover. */
+    if (node !== last && (isFallback(node, last) || stylehacks.detect(node))) {
+      return undefined;
+    }
+
+    subsumed.push(node);
+  }
+
+  return subsumed;
+}
+
+/**
  * @param {import('postcss').Rule} rule
  * @return {void}
  */
@@ -500,6 +637,7 @@ function merge(rule) {
   mergeBorderSpacing(rule);
 
   if (containsUnmergeableBorderDecls(rule)) {
+    resolveBorderGrid(rule);
     return;
   }
 
@@ -513,13 +651,22 @@ function merge(rule) {
       rule,
       widthStyleColor.map((style) => borderProperty(direction, style)),
       (rules, lastNode) => {
+        const value = rules.map(getValue).join(' ');
+
+        /* One longhand the browser ignores costs that side its width, style or
+         * colour; written into the shorthand it costs the side every one of
+         * them, as the shorthand is then the invalid declaration. */
+        if (!specifiesDistinctComponents(value)) {
+          return false;
+        }
+
         if (canMerge(rules, false) && !rules.some(stylehacks.detect)) {
           insertCloned(
             /** @type {import('postcss').Rule} */ (lastNode.parent),
             lastNode,
             {
               prop,
-              value: rules.map(getValue).join(' '),
+              value,
             }
           );
           for (const node of rules) {
@@ -541,6 +688,12 @@ function merge(rule) {
       rule,
       topRightBottomLeft.map((direction) => borderProperty(direction, style)),
       (rules, lastNode) => {
+        /* The four sides share one declaration afterwards, so a value the
+         * browser ignores on one side would take the other three down with it. */
+        if (!rules.every((node) => specifiesComponent(node.value, style))) {
+          return false;
+        }
+
         if (canMerge(rules) && !rules.some(stylehacks.detect)) {
           insertCloned(
             /** @type {import('postcss').Rule} */ (lastNode.parent),
@@ -648,7 +801,7 @@ function merge(rule) {
 
         rule.insertAfter(
           border,
-          Object.assign(lastNode.clone(), {
+          cloneWithSupport(lastNode, {
             prop,
             value,
           })
@@ -662,7 +815,7 @@ function merge(rule) {
     } else if (reduced.length === 1 && canMerge([width, style], false)) {
       rule.insertBefore(
         color,
-        Object.assign(lastNode.clone(), {
+        cloneWithSupport(lastNode, {
           prop: 'border',
           value: [width, style].map(getValue).join(' '),
         })
@@ -694,7 +847,7 @@ function merge(rule) {
 
     if (reduced.length > 1 && reduced.length < 4 && reduced.includes(none)) {
       const filtered = mapped.filter((p) => p !== none);
-      const mostCommon = reduced.sort(
+      const mostCommon = reduced.toSorted(
         (a, b) =>
           mapped.filter((v) => v === b).length -
           mapped.filter((v) => v === a).length
@@ -703,7 +856,7 @@ function merge(rule) {
 
       rule.insertBefore(
         lastNode,
-        Object.assign(lastNode.clone(), {
+        cloneWithSupport(lastNode, {
           prop: 'border',
           value: borderValue,
         })
@@ -713,7 +866,7 @@ function merge(rule) {
         if (mapped[i] !== borderValue) {
           rule.insertBefore(
             lastNode,
-            Object.assign(lastNode.clone(), {
+            cloneWithSupport(lastNode, {
               prop: dir,
               value: mapped[i],
             })
@@ -757,7 +910,7 @@ function merge(rule) {
 
       rule.insertBefore(
         lastNode,
-        Object.assign(lastNode.clone(), {
+        cloneWithSupport(lastNode, {
           prop: 'border',
           value: minifyWidthStyleColor(first ? values[0] : values[1]),
         })
@@ -768,7 +921,7 @@ function merge(rule) {
         const prop = physicalBorderShorthands[values.indexOf(value)];
         rule.insertBefore(
           lastNode,
-          Object.assign(lastNode.clone(), {
+          cloneWithSupport(lastNode, {
             prop: prop,
             value: minifyWidthStyleColor(value),
           })
@@ -875,82 +1028,88 @@ function merge(rule) {
   const decls = getDecls(rule, new Set(physicalBorderShorthands));
 
   while (decls.size) {
-    const lastNode = lastOf(decls);
+    const lastNode = /** @type {Declaration} */ (lastOf(decls));
+    const lastSide = physicalBorderShorthands.indexOf(
+      lastNode.prop.toLowerCase()
+    );
 
-    for (const [i, d] of widthStyleColor.entries()) {
-      const names = physicalBorderShorthands
-        .filter((name) => name !== /** @type {Declaration} */ (lastNode).prop)
-        .map((name) => `${name}-${d}`);
+    if (
+      specifiesDistinctComponents(lastNode.value) &&
+      !stylehacks.detect(lastNode)
+    ) {
+      const lastValues = parseWidthStyleColor(lastNode.value);
+      /* `parseWsc` lower-cases what it hands back, and the longhands beside it
+       * keep the case the stylesheet wrote, so the token itself is what the
+       * two get compared and merged as. */
+      const tokens = list.space(lastNode.value);
+      /** @type {(component: string) => string} */
+      const asWritten = (component) =>
+        tokens.find((token) => token.toLowerCase() === component) ?? component;
 
-      let nodes = rule.nodes.slice(
-        0,
-        rule.nodes.indexOf(/** @type {Declaration} */ (lastNode))
-      );
-
-      const border = getLastNode(nodes, 'border');
-
-      if (border) {
-        nodes = nodes.slice(nodes.indexOf(border));
-      }
-
-      const props = nodes.filter(
-        (node) =>
-          node.type === 'decl' &&
-          names.includes(node.prop) &&
-          node.important === /** @type {Declaration} */ (lastNode).important
-      );
-      const rules = getRules(
-        /** @type {import('postcss').Declaration[]} */ (props),
-        names
-      );
-
-      if (hasAllProps(rules, ...names) && !rules.some(stylehacks.detect)) {
-        const values = rules.map((node) => (node ? node.value : null));
-        const filteredValues = values.filter(Boolean);
-        const lastNodeValue = list.space(
-          /** @type {Declaration} */ (lastNode).value
-        )[i];
-
-        values[
-          physicalBorderShorthands.indexOf(
-            /** @type {Declaration} */ (lastNode).prop
-          )
-        ] = lastNodeValue;
-
-        let value = minifyTopBottoRightLeft(values.join(' '));
+      for (const [i, d] of widthStyleColor.entries()) {
+        const nodes = rule.nodes.slice(0, rule.nodes.indexOf(lastNode));
+        const specifiers = topRightBottomLeft.map((side, index) =>
+          index === lastSide ? undefined : specifiedBy(nodes, side, d)
+        );
+        const longhands = /** @type {Declaration[]} */ (
+          specifiers.filter(Boolean)
+        );
 
         if (
-          filteredValues[0] === filteredValues[1] &&
-          filteredValues[1] === filteredValues[2]
+          longhands.length !== topRightBottomLeft.length - 1 ||
+          longhands.some(
+            (node) =>
+              node.important !== lastNode.important || stylehacks.detect(node)
+          )
         ) {
-          value = /** @type {string} */ (filteredValues[0]);
+          continue;
         }
 
-        let refNode = props.at(-1);
+        /* The three longhands come together where the last of them stands. */
+        let refNode = longhands[0];
+
+        for (const node of longhands) {
+          if (rule.index(node) > rule.index(refNode)) {
+            refNode = node;
+          }
+        }
+
+        /* The shorthand specifies a component or resets it to its initial
+         * value; either way that is what the side ends up with. */
+        const lastNodeValue = lastValues[i]
+          ? asWritten(lastValues[i])
+          : defaultBorderValues[i];
+        const values = specifiers.map((node, index) =>
+          index === lastSide
+            ? lastNodeValue
+            : /** @type {Declaration} */ (node).value
+        );
+        const value = minifyTopBottoRightLeft(values.join(' '));
 
         if (value === lastNodeValue) {
-          refNode = lastNode;
-          const valueArray = list.space(
-            /** @type {Declaration} */ (lastNode).value
-          );
-          valueArray.splice(i, 1);
-          /** @type {Declaration} */ (lastNode).value = valueArray.join(' ');
+          const remaining = tokens
+            .filter((token) => token.toLowerCase() !== lastValues[i])
+            .join(' ');
+
+          /* Dropping the component from the shorthand leaves the shorthand
+           * resetting it, so what replaces it has to come after. */
+          if (remaining && remaining.length < lastNode.value.length) {
+            lastNode.value = remaining;
+            refNode = lastNode;
+          }
         }
 
         insertCloned(
-          /** @type {import('postcss').Rule} */ (
-            /** /** @type {Declaration} */ (refNode).parent
-          ),
-          /** @type {Declaration} */ (refNode),
+          /** @type {import('postcss').Rule} */ (refNode.parent),
+          refNode,
           {
             prop: borderProperty(d),
             value,
           }
         );
 
-        for (const node of rules) {
+        for (const node of longhands) {
           node.remove();
-          decls.delete(node);
         }
       }
     }
@@ -992,7 +1151,11 @@ function merge(rule) {
     return mergeRedundant(config);
   });
 
-  rule.walkDecls(borderStyleRegex, (decl) => {
+  rule.walkDecls((decl) => {
+    if (!borderAndSideShorthands.has(decl.prop.toLowerCase())) {
+      return;
+    }
+
     const values = parseWidthStyleColor(decl.value);
 
     if (!isValidWidthStyleColor(values)) {
@@ -1012,6 +1175,11 @@ function merge(rule) {
         }
 
         const longhands = rules.filter((p) => p !== decl);
+        const subsumed = subsumedAfter(rule, decl, longhands);
+
+        if (subsumed === undefined) {
+          return false;
+        }
 
         if (
           longhands[0].value.toLowerCase() ===
@@ -1021,7 +1189,7 @@ function merge(rule) {
           values[i] !== undefined &&
           longhands[0].value.toLowerCase() === values[i].toLowerCase()
         ) {
-          for (const node of longhands) {
+          for (const node of subsumed) {
             node.remove();
           }
 
@@ -1034,7 +1202,10 @@ function merge(rule) {
             }
           );
 
-          /** @type {string|null} */ (values[i]) = null;
+          /* The same slot is offered again for the other sides, and a
+           * component hoisted out of the shorthand is no longer one it
+           * specifies — which is what an absent component already reads as. */
+          /** @type {string|undefined} */ (values[i]) = undefined;
         }
         return false;
       });

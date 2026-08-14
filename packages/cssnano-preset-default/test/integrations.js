@@ -42,6 +42,44 @@ test(
 );
 
 test(
+  "should merge rules sharing identical declarations without dropping the trailing rule's unique ones",
+  withDefaults.processCSS(
+    `.has-errors .input {
+  background-color: #fcebea;
+  border-color: #cc1f1a;
+}
+
+.has-errors .checkbox-label {
+  background-color: #fcebea;
+  border-color: #cc1f1a;
+}
+
+.has-errors .checkbox-inline {
+  background-color: #fcebea;
+  border-color: #cc1f1a;
+}
+
+.error-banner .field-errors.filled {
+  width: 100%;
+  padding: 1.5rem 1.5rem 1rem;
+  background-color: #fcebea;
+  border-bottom-width: 1px;
+  border-style: solid;
+  border-color: #cc1f1a;
+}
+
+.error-banner .field-errors.filled   .field-error {
+  width: 100%;
+  font-size: .875rem;
+  color: #22292f;
+  line-height: 1.5;
+  margin-bottom: .5rem;
+}`,
+    '.error-banner .field-errors.filled,.has-errors .checkbox-inline,.has-errors .checkbox-label,.has-errors .input{background-color:#fcebea;border-color:#cc1f1a}.error-banner .field-errors.filled{width:100%;padding:1.5rem 1.5rem 1rem;border-bottom-width:1px;border-style:solid}.error-banner .field-errors.filled .field-error{width:100%;font-size:.875rem;color:#22292f;line-height:1.5;margin-bottom:.5rem}'
+  )
+);
+
+test(
   'should correctly handle the framework tests',
   { concurrency: true },
   integrationTests(preset, `${__dirname}/integrations`)
