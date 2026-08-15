@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "ignorePatterns": ["site/_site/**", "packages/**/types/**"],
-  "plugins": ["typescript", "unicorn", "oxc"],
+  "plugins": ["typescript", "unicorn", "oxc", "promise"],
   "categories": {
     "correctness": "error"
   },
@@ -15,15 +15,21 @@
     "no-nested-ternary": "error",
     "no-fallthrough": "error",
     "no-labels": "error",
+    "no-param-reassign": "error",
     "no-prototype-builtins": "error",
     "no-redeclare": "error",
     "no-regex-spaces": "error",
+    "no-shadow": "error",
     "prefer-const": ["error", { "destructuring": "all" }],
     "preserve-caught-error": "error",
+    "unicorn/consistent-function-scoping": "error",
     "unicorn/no-array-for-each": "error",
     "unicorn/no-array-reduce": "error",
+    "unicorn/no-array-reverse": "error",
+    "unicorn/no-array-sort": "error",
     "unicorn/prefer-array-flat": "error",
-    "unicorn/prefer-node-protocol": "error"
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/prefer-number-properties": "error"
   },
   "env": {
     "builtin": true
