@@ -15,6 +15,7 @@ function loadPreset(preset) {
 }
 
 function integrationTests(preset, integrations) {
+  const presetName = path.basename(path.resolve(integrations, '../..'));
   const frameworks = new Map();
   for (const framework of fs.readdirSync(
     path.join(__dirname, '../frameworks')
@@ -28,13 +29,17 @@ function integrationTests(preset, integrations) {
   return async (t) =>
     Promise.all(
       Array.from(frameworks, ([framework, css]) =>
-        t.test(framework, async () => {
+        t.test(`${presetName} - ${framework}`, async () => {
           const result = await postcss([cssnano({ preset })]).process(css, {
             from: undefined,
           });
           assert.strictEqual(
             result.css,
-            fs.readFileSync(`${integrations}/${framework}.css`, 'utf8')
+            fs.readFileSync(
+              path.join(integrations, `${framework}.css`),
+              'utf8'
+            ),
+            `Mismatch for preset "${preset}" and framework "${framework}"`
           );
         })
       )
