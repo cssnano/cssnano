@@ -94,27 +94,27 @@ function normalizeDataURL(urlString) {
  * @return {string}
  */
 function normalizeUrl(urlString) {
-  urlString = urlString.trim();
+  const trimmedUrl = urlString.trim();
 
   // Data URL
-  if (urlRegex.test(urlString)) {
-    return normalizeDataURL(urlString);
+  if (urlRegex.test(trimmedUrl)) {
+    return normalizeDataURL(trimmedUrl);
   }
 
-  if (hasCustomProtocol(urlString)) {
-    return urlString;
+  if (hasCustomProtocol(trimmedUrl)) {
+    return trimmedUrl;
   }
 
-  const hasRelativeProtocol = urlString.startsWith('//');
+  const hasRelativeProtocol = trimmedUrl.startsWith('//');
   const isRelativeUrl =
-    !hasRelativeProtocol && relativePathRegex.test(urlString);
+    !hasRelativeProtocol && relativePathRegex.test(trimmedUrl);
 
   // Prepend protocol
-  if (!isRelativeUrl) {
-    urlString = urlString.replace(protocolRegex, 'http:');
-  }
+  const withProtocol = isRelativeUrl
+    ? trimmedUrl
+    : trimmedUrl.replace(protocolRegex, 'http:');
 
-  const urlObject = new URL(urlString);
+  const urlObject = new URL(withProtocol);
 
   // Remove duplicate slashes if not preceded by a protocol
   if (urlObject.pathname) {
@@ -139,19 +139,19 @@ function normalizeUrl(urlString) {
   }
 
   // Take advantage of many of the Node `url` normalizations
-  urlString = urlObject.toString();
+  let result = urlObject.toString();
 
   // Remove ending `/`
   if (urlObject.pathname === '/' && urlObject.hash === '') {
-    urlString = urlString.replace(trailingSlashRegex, '');
+    result = result.replace(trailingSlashRegex, '');
   }
 
   // Restore relative protocol
   if (hasRelativeProtocol) {
-    urlString = urlString.replace(httpProtocolRegex, '//');
+    result = result.replace(httpProtocolRegex, '//');
   }
 
-  return urlString;
+  return result;
 }
 
 module.exports = normalizeUrl;

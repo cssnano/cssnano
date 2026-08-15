@@ -57,7 +57,7 @@ function transform(prop, value, opts) {
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(opts) {
-  opts = Object.assign(
+  const normalizedOpts = Object.assign(
     {},
     {
       removeAfterKeyword: false,
@@ -93,7 +93,7 @@ function pluginCreator(opts) {
               return;
             }
 
-            const newValue = transform(prop, value, opts);
+            const newValue = transform(prop, value, normalizedOpts);
 
             decl.value = newValue;
             cache.set(cacheKey, newValue);
