@@ -32,6 +32,7 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
+.test-failures.json
 
 # Editor
 .idea
