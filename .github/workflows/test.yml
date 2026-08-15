@@ -14,20 +14,24 @@ on:
 
 jobs:
   matrix:
+    name: Configure matrix
     runs-on: ubuntu-slim
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Configure test matrix
         id: set-matrix
+        env:
+          EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [ "$EVENT_NAME" = "pull_request" ]; then
             echo 'matrix={"os": ["ubuntu-latest"], "node-version": ["22", "24", "26"], "include": [{"os": "windows-latest", "node-version": "24"}]}' >> "$GITHUB_OUTPUT"
           else
-            echo 'matrix={"os": ["ubuntu-latest", "macos-latest", "windows-latest"], "node-version": ["22", "24", "26"]}' >> "$GITHUB_OUTPUT"
+            echo 'matrix={"include": [{"os": "ubuntu-latest", "node-version": "22"}, {"os": "ubuntu-latest", "node-version": "24"}, {"os": "ubuntu-latest", "node-version": "26"}, {"os": "windows-latest", "node-version": "24"}, {"os": "macos-latest", "node-version": "24"}]}' >> "$GITHUB_OUTPUT"
           fi
 
   lint:
+    name: Lint
     runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -50,6 +54,7 @@ jobs:
         run: git diff --exit-code -- '**/types/*.d.ts'
 
   test:
+    name: Test
     needs: [matrix, lint]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -72,11 +77,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests
+      - name: Run unit tests
         if: matrix.os != 'ubuntu-latest' || matrix.node-version != '24'
-        run: pnpm test:only
+        run: pnpm test:unit
 
-      - name: Run tests with coverage on latest Node on Linux
+      - name: Run integration tests
+        if: matrix.os != 'ubuntu-latest' || matrix.node-version != '24'
+        run: pnpm test:integration
+
+      - name: Run all tests with coverage on latest Node on Linux
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '24'
         run: pnpm test:coverage
 
