@@ -2,7 +2,7 @@
 const valueParser = require('postcss-value-parser');
 
 /** @type {(node: valueParser.Node) => number} */
-const getValue = (node) => parseFloat(node.value);
+const getValue = (node) => Number.parseFloat(node.value);
 const animationTransitionRegex =
   /^(-\w+-)?(animation|transition)(-timing-function)?$/i;
 

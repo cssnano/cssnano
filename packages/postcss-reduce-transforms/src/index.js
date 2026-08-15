@@ -11,7 +11,7 @@ const transformRegex = /transform$/i;
 function getValues(list, node, index) {
   if (index % 2 === 0) {
     /** @type {number|string} */
-    let value = NaN;
+    let value = Number.NaN;
 
     if (
       node.type === 'function' &&
@@ -20,7 +20,7 @@ function getValues(list, node, index) {
     ) {
       value = valueParser.stringify(node.nodes);
     } else if (node.type === 'word') {
-      value = parseFloat(node.value);
+      value = Number.parseFloat(node.value);
     }
 
     return [...list, value];

@@ -57,9 +57,9 @@ function isNumberNode(node) {
     return false;
   }
 
-  const value = parseFloat(node.value);
+  const value = Number.parseFloat(node.value);
 
-  return !isNaN(value);
+  return !Number.isNaN(value);
 }
 
 /**

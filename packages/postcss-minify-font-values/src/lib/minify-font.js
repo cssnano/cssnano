@@ -94,7 +94,7 @@ module.exports = function (unminified, opts) {
   const tree = valueParser(unminified);
   const nodes = tree.nodes;
 
-  const state = { familyStart: NaN, hasSize: false };
+  const state = { familyStart: Number.NaN, hasSize: false };
   const toBeSpliced = new Set();
 
   for (const [i, node] of nodes.entries()) {
