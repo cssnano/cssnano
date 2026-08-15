@@ -61,8 +61,8 @@ const normalizeGridColumnRow = (grid) => {
           front: '',
           back: '',
         };
-        gridLine = gridLine.trim(); // '3 span ' -> '3 span'
-        for (const node of gridLine.split(' ')) {
+        const trimmedGridLine = gridLine.trim(); // '3 span ' -> '3 span'
+        for (const node of trimmedGridLine.split(' ')) {
           // ['3','span']
           if (node === 'span') {
             normalizeValue.front = node; // span _
@@ -81,8 +81,8 @@ const normalizeGridColumnRow = (grid) => {
       front: '',
       back: '',
     };
-    gridLine = gridLine.trim();
-    for (const node of gridLine.split(' ')) {
+    const trimmedGridLine = gridLine.trim();
+    for (const node of trimmedGridLine.split(' ')) {
       if (node === 'span') {
         normalizeValue.front = node;
       } else {

@@ -384,23 +384,27 @@ function filterRuleIntersections(
   earlierRuleDeclarations,
   laterRuleDeclarations
 ) {
+  let remainingCandidates = hoistCandidates;
   for (;;) {
     // A candidate rejected by the override check never claims a match.
     const claimedIndices = new Set();
-    const survivors = hoistCandidates.filter(
+    const survivors = remainingCandidates.filter(
       (candidate, candidateIndex) =>
         hoistingPreservesOverrideOrder(
           candidate,
           candidateIndex,
-          hoistCandidates,
+          remainingCandidates,
           earlierRuleDeclarations
         ) &&
         claimMatchInLaterRule(candidate, laterRuleDeclarations, claimedIndices)
     );
-    if (survivors.length === hoistCandidates.length || survivors.length === 0) {
+    if (
+      survivors.length === remainingCandidates.length ||
+      survivors.length === 0
+    ) {
       return { intersection: survivors, claimedIndices };
     }
-    hoistCandidates = survivors;
+    remainingCandidates = survivors;
   }
 }
 
@@ -535,12 +539,12 @@ function partialMerge(
     ruleCache,
     ruleMeta
   );
-  first = mergedNext.first;
-  second = mergedNext.second;
+  const mergedFirst = mergedNext.first;
+  const mergedSecond = mergedNext.second;
   intersection = mergedNext.intersection;
 
-  const metaFirstActual = getMeta(first, ruleMeta);
-  const metaSecondActual = getMeta(second, ruleMeta);
+  const metaFirstActual = getMeta(mergedFirst, ruleMeta);
+  const metaSecondActual = getMeta(mergedSecond, ruleMeta);
   const earlierRuleDeclarations = [...metaFirstActual.declarations];
   const laterRuleDeclarations = [...metaSecondActual.declarations];
 
@@ -553,12 +557,12 @@ function partialMerge(
 
   if (intersection.length === 0) {
     // Nothing to merge
-    return second;
+    return mergedSecond;
   }
 
   return buildMergedRule(
-    first,
-    second,
+    mergedFirst,
+    mergedSecond,
     intersection,
     filtered.claimedIndices,
     ruleCache,

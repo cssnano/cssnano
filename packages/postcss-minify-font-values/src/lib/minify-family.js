@@ -35,8 +35,9 @@ const genericFontFamilykeywords = new Set([
  */
 function makeArray(value, length) {
   const array = [];
-  while (length--) {
-    array[length] = value;
+  let remaining = length;
+  while (remaining--) {
+    array[remaining] = value;
   }
   return array;
 }

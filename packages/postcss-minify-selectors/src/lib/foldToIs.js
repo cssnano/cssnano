@@ -158,14 +158,15 @@ function suffixTokensMatch(tokenLists, suffix, prefix) {
  * @return {number}
  */
 function moveToCompoundBoundary(tokens, count, direction) {
+  let remaining = count;
   while (
-    count > 0 &&
-    tokens[direction === -1 ? count - 1 : tokens.length - count].kind !==
-      'combinator'
+    remaining > 0 &&
+    tokens[direction === -1 ? remaining - 1 : tokens.length - remaining]
+      .kind !== 'combinator'
   ) {
-    count--;
+    remaining--;
   }
-  return count;
+  return remaining;
 }
 
 /**

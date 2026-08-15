@@ -21,11 +21,11 @@ module.exports = function canUnquote(value) {
     return false;
   }
 
-  value = value.replace(escapes, 'a').replace(/\\./g, 'a');
+  const normalized = value.replace(escapes, 'a').replace(/\\./g, 'a');
 
   return (
-    !(range.test(value) || unquotableRegExp.test(value)) &&
+    !(range.test(normalized) || unquotableRegExp.test(normalized)) &&
     // Do not remove the quotes if escaping is required.
-    cssesc(value) === value
+    cssesc(normalized) === normalized
   );
 };

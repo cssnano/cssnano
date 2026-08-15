@@ -79,7 +79,7 @@ function hasFont(fontFamily, cache, comma) {
  * @return {void}
  */
 function filterFont({ atRules, values }, comma) {
-  values = [...new Set(values)];
+  const uniqueValues = [...new Set(values)];
   for (const r of atRules) {
     if (r.nodes !== undefined) {
       /** @type {import('postcss').Declaration[]} */
@@ -95,7 +95,7 @@ function filterFont({ atRules, values }, comma) {
       }
 
       for (const family of families) {
-        if (!hasFont(family.value.toLowerCase(), values, comma)) {
+        if (!hasFont(family.value.toLowerCase(), uniqueValues, comma)) {
           r.remove();
         }
       }
