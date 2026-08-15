@@ -26,20 +26,20 @@ const fixture = `
 
 const expected = `@media print{.test{-webkit-box-shadow:none;box-shadow:none;-webkit-border-radius:0;border-radius:0}}.test{width:500px}`;
 
-test('it should compress whitespace after node.clone()', () => {
-  const plugin = () => {
-    return {
-      postcssPlugin: 'cloner',
-      Once(root) {
-        root.walkAtRules((rule) => {
-          root.prepend(rule.clone());
-          rule.remove();
-        });
-      },
-    };
+const plugin = () => {
+  return {
+    postcssPlugin: 'cloner',
+    Once(root) {
+      root.walkAtRules((rule) => {
+        root.prepend(rule.clone());
+        rule.remove();
+      });
+    },
   };
-  plugin.postcss = true;
+};
+plugin.postcss = true;
 
+test('it should compress whitespace after node.clone()', () => {
   const processor = postcss([plugin, nano()]);
 
   return processor

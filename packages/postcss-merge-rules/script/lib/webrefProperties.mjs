@@ -119,7 +119,7 @@ export function buildPropertyGroups(properties) {
       continue;
     }
     names.push(name);
-    const longhands = [...longhandsOf(name)].sort();
+    const longhands = [...longhandsOf(name)].toSorted();
     if (longhands.length > 1 || longhands[0] !== canonical(name)) {
       shorthands.set(name, longhands);
     }
@@ -132,11 +132,11 @@ export function buildPropertyGroups(properties) {
   }
 
   return {
-    properties: names.sort(),
+    properties: names.toSorted(),
     aliases: sortEntries(aliases),
     shorthands: sortEntries(shorthands),
     logicalGroups: sortEntries(logicalGroups),
-    flowRelative: flowRelative.sort(),
+    flowRelative: flowRelative.toSorted(),
   };
 }
 
@@ -149,7 +149,7 @@ export function buildPropertyGroups(properties) {
  * @return {Map<string, T>}
  */
 function sortEntries(map) {
-  return new Map([...map].sort(([a], [b]) => (a < b ? -1 : 1)));
+  return new Map([...map].toSorted(([a], [b]) => (a < b ? -1 : 1)));
 }
 
 /**

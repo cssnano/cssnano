@@ -118,7 +118,7 @@ getPackages().then((packages) => {
         }
       }
     }
-    const sortedKeys = Object.keys(database).sort();
+    const sortedKeys = Object.keys(database).toSorted();
     const sorted = {};
     for (const key of sortedKeys) {
       sorted[key] = database[key];

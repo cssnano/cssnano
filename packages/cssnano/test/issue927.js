@@ -33,21 +33,21 @@ test('it should compress the columns (old plugin syntax)', () => {
     .then((r) => assert.strictEqual(r.css, expected));
 });
 
-test('it should compress the columns (new plugin syntax)', () => {
-  const plugin = () => {
-    return {
-      postcssPlugin: 'cloner',
-      Once(root) {
-        root.walkAtRules((rule) => {
-          root.prepend(rule.clone());
-          rule.remove();
-        });
-      },
-    };
+const clonerPlugin = () => {
+  return {
+    postcssPlugin: 'cloner',
+    Once(root) {
+      root.walkAtRules((rule) => {
+        root.prepend(rule.clone());
+        rule.remove();
+      });
+    },
   };
-  plugin.postcss = true;
+};
+clonerPlugin.postcss = true;
 
-  const processor = postcss([plugin, nano()]);
+test('it should compress the columns (new plugin syntax)', () => {
+  const processor = postcss([clonerPlugin, nano()]);
 
   return processor
     .process(fixture, { from: undefined })

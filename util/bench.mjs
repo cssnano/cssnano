@@ -41,7 +41,7 @@ function quantile(sorted, q) {
 }
 
 function stats(samples) {
-  const sorted = [...samples].sort((a, b) => a - b);
+  const sorted = [...samples].toSorted((a, b) => a - b);
   const sum = sorted.reduce((a, b) => a + b, 0);
   return {
     n: sorted.length,
@@ -100,7 +100,7 @@ async function main() {
   const files = readdirSync(dir)
     .filter((f) => f.endsWith('.css'))
     .filter((f) => !args.only || f.includes(args.only))
-    .sort();
+    .toSorted();
 
   const processor = cssnano({ preset: 'default' });
 
