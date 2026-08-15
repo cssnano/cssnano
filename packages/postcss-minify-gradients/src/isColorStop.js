@@ -52,7 +52,10 @@ function isStop(str) {
     const node = unit(str);
     if (node) {
       const number = Number(node.number);
-      if (number === 0 || (!isNaN(number) && isCSSLengthUnit(node.unit))) {
+      if (
+        number === 0 ||
+        (!Number.isNaN(number) && isCSSLengthUnit(node.unit))
+      ) {
         isColorStop = true;
       }
     } else {

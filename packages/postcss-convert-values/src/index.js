@@ -105,7 +105,7 @@ function parseWord(node, opts, keepZeroUnit) {
       ) {
         const precision = Math.pow(10, opts.precision);
         node.value =
-          Math.round(parseFloat(node.value) * precision) / precision + u;
+          Math.round(Number.parseFloat(node.value) * precision) / precision + u;
       }
     }
   }

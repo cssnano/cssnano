@@ -19,7 +19,7 @@ class LayerCache {
    * @return {void}
    */
   addValue(value) {
-    const parsedValue = parseInt(value, 10);
+    const parsedValue = Number.parseInt(value, 10);
 
     // pass only valid values
     if (!parsedValue || parsedValue < 0) {
@@ -33,7 +33,7 @@ class LayerCache {
    * @return {string}
    */
   getValue(value) {
-    const parsedValue = parseInt(value, 10);
+    const parsedValue = Number.parseInt(value, 10);
 
     return this._values.get(parsedValue) || value;
   }

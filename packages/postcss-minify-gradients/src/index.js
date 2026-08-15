@@ -20,7 +20,7 @@ const directionsToAngles = new Map([
 function isLessThan(a, b) {
   return (
     a.unit.toLowerCase() === b.unit.toLowerCase() &&
-    parseFloat(a.number) >= parseFloat(b.number)
+    Number.parseFloat(a.number) >= Number.parseFloat(b.number)
   );
 }
 
