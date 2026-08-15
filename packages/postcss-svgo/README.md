@@ -90,6 +90,15 @@ postcss([ svgo(opts) ]).process(css).then((result) => {
 You can view the [full list of plugins here][plugins].
 
 
+## Security
+
+This package optimises SVG data URIs; it is not an SVG sanitizer. Do not rely
+on it to remove active or unsafe SVG content.
+
+Sanitize user-controlled SVG with a purpose-built sanitizer before
+optimisation.
+
+
 ## Usage
 
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
