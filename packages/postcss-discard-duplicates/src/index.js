@@ -160,7 +160,8 @@ function dedupeRule(last, group) {
  * @return {void}
  */
 function dedupeNode(last, nodes) {
-  let index = nodes.includes(last) ? nodes.indexOf(last) - 1 : nodes.length - 1;
+  const found = nodes.indexOf(last);
+  let index = found === -1 ? nodes.length - 1 : found - 1;
 
   while (index >= 0) {
     const node = nodes[index--];
