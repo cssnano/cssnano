@@ -1,8 +1,5 @@
 name: Publish Package to npmjs
-permissions:
-  id-token: write #Required for trusted publishing
-  contents: read
-
+permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -11,8 +8,9 @@ concurrency:
 on: workflow_dispatch
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  lint:
+    name: Lint
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -20,6 +18,9 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        with:
+          runtime: node@24
+          cache: true
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -27,9 +28,51 @@ jobs:
       - name: Run lint
         run: pnpm lint
 
+  test:
+    name: Test
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: ['22', '24', '26']
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        with:
+          runtime: node@${{ matrix.node-version }}
+          cache: true
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Test
-        run: pnpm test:only
+        run: pnpm test
+
+  publish:
+    name: Publish
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write #Required for trusted publishing
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        with:
+          runtime: node@24
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Publish
         run: pnpm all-publish
-

@@ -5,10 +5,10 @@
     "lint": "pnpm types && oxlint . && oxfmt --check",
     "fixlint": "oxfmt . && pnpm oxlint --fix .",
     "build:integration": "node ./util/buildFrameworks.mjs",
-    "pretest": "pnpm lint",
-    "test:only": "node --test",
+    "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info",
-    "test": "pnpm test:coverage",
+    "test:unit": "node --test-skip-pattern=\"framework tests\"",
+    "test:integration": "node --test-name-pattern=\"framework tests\"",
     "types": "tsc -b",
     "all-publish": "pnpm stage publish -r"
   },
