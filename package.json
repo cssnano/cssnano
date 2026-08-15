@@ -8,7 +8,9 @@
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info",
     "test:unit": "node --test-skip-pattern=\"framework tests\"",
-    "test:integration": "node --test-name-pattern=\"framework tests\"",
+    "test:integration": "node --test packages/cssnano-preset-default/test/integrations.js packages/cssnano-preset-advanced/test/integrations.js packages/cssnano-preset-lite/test/integrations.js",
+    "test:watch": "node --test --watch",
+    "test:failed": "node --test --test-rerun-failures=.test-failures.json",
     "types": "tsc -b",
     "all-publish": "pnpm stage publish -r"
   },
