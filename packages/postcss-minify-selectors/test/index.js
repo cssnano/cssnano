@@ -488,17 +488,17 @@ test('cssnano issue 39', () => {
  * Reference: https://github.com/tivac/modular-css/issues/228
  */
 
-test('should handle selectors from other plugins', () => {
-  function encode(str) {
-    let result = '';
+function encode(str) {
+  let result = '';
 
-    for (let i = 0; i < str.length; i++) {
-      result += str.charCodeAt(i).toString(16);
-    }
-
-    return result;
+  for (let i = 0; i < str.length; i++) {
+    result += str.charCodeAt(i).toString(16);
   }
 
+  return result;
+}
+
+test('should handle selectors from other plugins', () => {
   const toModules = () => {
     return {
       postcssPlugin: 'toModules',

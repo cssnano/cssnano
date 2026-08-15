@@ -103,7 +103,7 @@ console.log(`top ${topN} self time`);
 console.log('-'.repeat(110));
 const selfSorted = [...selfTimePerNodeId.entries()]
   .map(([id, t]) => ({ id, self: t, node: byId.get(id) }))
-  .sort((a, b) => b.self - a.self)
+  .toSorted((a, b) => b.self - a.self)
   .slice(0, topN);
 for (const r of selfSorted) {
   console.log(`${us(r.self)}  ${pct(r.self)}  ${frameLabel(r.node)}`);
@@ -121,7 +121,7 @@ const inclSorted = [...inclusiveTimePerNodeId.entries()]
       fn
     );
   })
-  .sort((a, b) => b.incl - a.incl)
+  .toSorted((a, b) => b.incl - a.incl)
   .slice(0, topN);
 for (const r of inclSorted) {
   console.log(`${us(r.incl)}  ${pct(r.incl)}  ${frameLabel(r.node)}`);
@@ -136,7 +136,7 @@ for (const [id, t] of selfTimePerNodeId) {
   const p = packageOf(byId.get(id));
   byPkg.set(p, (byPkg.get(p) || 0) + t);
 }
-const pkgSorted = [...byPkg.entries()].sort((a, b) => b[1] - a[1]);
+const pkgSorted = [...byPkg.entries()].toSorted((a, b) => b[1] - a[1]);
 for (const [p, t] of pkgSorted) {
   if (t / totalUs < 0.001) continue;
   console.log(`${us(t)}  ${pct(t)}  ${p}`);

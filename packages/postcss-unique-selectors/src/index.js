@@ -15,19 +15,6 @@ function generateUniqueSelector(selectors) {
   // Without comments the node's own toString is already a usable key.
   const hasComments = selectors.includes('/*');
 
-  /**
-   *
-   * @param {string[]} param0
-   * @param {string[]} param1
-   * @returns {number}
-   */
-  function sortSelectors([a], [b]) {
-    if (a > b) {
-      return 1;
-    } else {
-      return a < b ? -1 : 0;
-    }
-  }
   /** @type {selectorParser.SyncProcessor<void>} */
   const collectUniqueSelectors = (selNode) => {
     for (const node of selNode.nodes) {
@@ -65,7 +52,13 @@ function generateUniqueSelector(selectors) {
   selectorParser(collectUniqueSelectors).processSync(selectors);
 
   return [...uniqueSelectors.entries()]
-    .sort(sortSelectors)
+    .toSorted(([a], [b]) => {
+      if (a > b) {
+        return 1;
+      } else {
+        return a < b ? -1 : 0;
+      }
+    })
     .map(([, selector]) => selector)
     .join();
 }

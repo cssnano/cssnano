@@ -9,7 +9,7 @@ class LayerCache {
    * @return {void}
    */
   optimizeValues(startIndex) {
-    const sortedValues = Array.from(this._values.keys()).sort(ascending);
+    const sortedValues = Array.from(this._values.keys()).toSorted(ascending);
     for (let i = 0; i < sortedValues.length; i++) {
       this._values.set(sortedValues[i], i + startIndex);
     }

@@ -25,6 +25,6 @@ export function handleError(error) {
   }
 }
 
-function toJSONString(data) {
-  return `${JSON.stringify(data, null, 2)}\n`;
+function toJSONString(obj) {
+  return `${JSON.stringify(obj, null, 2)}\n`;
 }

@@ -255,7 +255,7 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
         keywords.add(keyword);
       }
     }
-    return [...keywords].sort();
+    return [...keywords].toSorted();
   }
 
   /** @type {Map<string, Set<string>>} */
@@ -281,19 +281,11 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
         names.push(name);
       }
     }
-    return names.sort();
+    return names.toSorted();
   }
 
   const { counterFunctions, counterStyleFunctions } =
     counterFunctionSlots(functions);
-
-  /**
-   * @param {Map<string, number[]>} functionSlots
-   * @return {(reach: Set<string>) => boolean}
-   */
-  function takesOneOf(functionSlots) {
-    return (reach) => [...functionSlots.keys()].some((name) => reach.has(name));
-  }
 
   // A grid name is defined either in a gridline name list, `[header]`, or in
   // the strings of `grid-template-areas`, which the `grid` and `grid-template`
@@ -327,7 +319,7 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
     cssWideKeywords: keywordsOf(
       properties.find((property) => property.name === 'all')?.syntax
     ),
-    aliases: new Map([...aliases].sort(([a], [b]) => (a < b ? -1 : 1))),
+    aliases: new Map([...aliases].toSorted(([a], [b]) => (a < b ? -1 : 1))),
     atRules: {
       keyframes: unprefixedAtRule(atrules, 'keyframes'),
       counterStyle: unprefixedAtRule(atrules, 'counter-style'),
@@ -356,12 +348,12 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
           // is not reachable from the grammar and has to be named here.
           ...(propertyReach.has('string-set') ? ['string-set'] : []),
         ]),
-      ].sort(),
+      ].toSorted(),
       functions: counterFunctions,
       reservedKeywords: keywordsOfProperties(counterProperties),
     },
     grid: {
-      templateProperties: [...gridTemplateProperties].sort(),
+      templateProperties: [...gridTemplateProperties].toSorted(),
       referenceProperties: gridReferenceProperties,
       reservedKeywords: keywordsOfProperties([
         ...gridTemplateProperties,
@@ -436,20 +428,28 @@ function counterFunctionSlots(functions) {
  * @param {IdentSlots} data
  * @return {void}
  */
-export function validate(data) {
-  /**
-   * @param {string[]} actual
-   * @param {string[]} expected
-   * @param {string} what
-   */
-  const expectAll = (actual, expected, what) => {
-    for (const name of expected) {
-      if (!actual.includes(name)) {
-        throw new Error(`Expected ${what} to include ${name}`);
-      }
-    }
-  };
+/**
+ * @param {Map<string, number[]>} functionSlots
+ * @return {(reach: Set<string>) => boolean}
+ */
+function takesOneOf(functionSlots) {
+  return (reach) => [...functionSlots.keys()].some((name) => reach.has(name));
+}
 
+/**
+ * @param {string[]} actual
+ * @param {string[]} expected
+ * @param {string} what
+ */
+function expectAll(actual, expected, what) {
+  for (const name of expected) {
+    if (!actual.includes(name)) {
+      throw new Error(`Expected ${what} to include ${name}`);
+    }
+  }
+}
+
+export function validate(data) {
   expectAll(
     data.cssWideKeywords,
     ['inherit', 'initial', 'revert', 'unset'],
@@ -635,7 +635,7 @@ function keywordsOf(syntax) {
     .split('|')
     .map((alternative) => alternative.trim())
     .filter((alternative) => /^[a-z][a-z-]*$/.test(alternative))
-    .sort();
+    .toSorted();
 }
 
 /**
@@ -672,7 +672,7 @@ function descriptorsWhere(atrules, atRuleName, predicate) {
       found.push(descriptor);
     }
   }
-  return found.sort((a, b) => (a.name < b.name ? -1 : 1));
+  return found.toSorted((a, b) => (a.name < b.name ? -1 : 1));
 }
 
 /**
@@ -693,7 +693,7 @@ function shorthandsOf(longhand, properties) {
       names.push(property.name);
     }
   }
-  return names.sort();
+  return names.toSorted();
 
   /**
    * @param {WebrefProperty} property
