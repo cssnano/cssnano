@@ -5,9 +5,9 @@
  * substitutes at runtime. */
 const substitutionFunctions = ['var', 'env', 'constant'];
 
-/* Math functions that can produce computed lengths. Unlike sin(), pow(),
- * sqrt() which produce only numbers, these can appear where lengths are
- * needed. Inside other functions, their result type is determined by context. */
+/* Math functions that can produce computed lengths (unlike sin(), pow(),
+ * sqrt() which produce only numbers). Inside other functions, their type is
+ * determined by context. */
 const mathFunctions = [
   'calc',
   'min',
@@ -29,8 +29,26 @@ const trustedFunctions = new Set([
   'if',
 ]);
 
+/* Math functions, attr(), and if() have a fixed type from their own syntax
+ * or context—calc() produces a length or number, never a keyword or color.
+ * Unlike substitutions, they can only fill a component if its grammar accepts
+ * that type. */
+const trustedSupportFunctions = trustedFunctions.difference(
+  new Set(substitutionFunctions)
+);
+
 const vendorPrefix = /^-[a-z]+-/;
 const leadingFunction = /^(-?[a-z][\w-]*)\(/i;
+
+/**
+ * @param {string} token
+ * @return {string|undefined} the function name a token opens with, unprefixed
+ */
+function leadingFunctionName(token) {
+  const match = leadingFunction.exec(token);
+
+  return match?.[1].toLowerCase().replace(vendorPrefix, '');
+}
 
 /**
  * Whether a token represents an unresolved value this plugin cannot compute.
@@ -46,18 +64,29 @@ const leadingFunction = /^(-?[a-z][\w-]*)\(/i;
  * @return {boolean}
  */
 function isUnresolved(token) {
-  const match = leadingFunction.exec(token);
+  const name = leadingFunctionName(token);
 
-  if (!match) {
-    return false;
-  }
-
-  const name = match[1].toLowerCase();
-
-  return (
-    trustedFunctions.has(name) ||
-    trustedFunctions.has(name.replace(vendorPrefix, ''))
-  );
+  return name !== undefined && trustedFunctions.has(name);
 }
 
-module.exports = { isUnresolved, substitutionFunctions, trustedFunctions };
+/**
+ * Whether a token is a substitution function specifically — the one class of
+ * trusted function whose type stays unknowable after substitution, so it can
+ * fill any border component rather than only the ones its own type matches.
+ *
+ * @param {string} token
+ * @return {boolean}
+ */
+function isSubstitution(token) {
+  const name = leadingFunctionName(token);
+
+  return name !== undefined && substitutionFunctions.includes(name);
+}
+
+module.exports = {
+  isSubstitution,
+  isUnresolved,
+  substitutionFunctions,
+  trustedFunctions,
+  trustedSupportFunctions,
+};

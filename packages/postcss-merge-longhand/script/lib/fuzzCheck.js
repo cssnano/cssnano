@@ -1,0 +1,107 @@
+'use strict';
+const postcss = require('postcss');
+const plugin = require('../../src/index.js');
+const { differences, evaluate } = require('./fuzzEvaluate.js');
+const { shrink } = require('./fuzzGenerate.js');
+
+/**
+ * Runs one rule through the plugin and compares what it meant before with what
+ * it means after. Shared by the seeded sweep in `test/fuzz.js` and the soak
+ * run in `script/fuzz.js`.
+ */
+
+const processor = postcss([plugin()]);
+
+/**
+ * @param {string} css
+ * @return {string} the plugin's output.
+ */
+function process(css) {
+  return processor.process(css, { from: undefined }).css;
+}
+
+/**
+ * @typedef {object} Mismatch
+ * @property {string} input
+ * @property {string} output the plugin's output, or the message it threw with.
+ * @property {string} reason
+ * @property {{slot: string, expected: string, actual: string}[]} slots
+ */
+
+/**
+ * @param {string} css
+ * @return {Mismatch|undefined} undefined when the plugin preserved the meaning.
+ */
+function check(css) {
+  /** @type {string} */
+  let output;
+
+  try {
+    output = process(css);
+  } catch (error) {
+    return {
+      input: css,
+      output: error instanceof Error ? error.message : String(error),
+      reason: 'the plugin threw',
+      slots: [],
+    };
+  }
+
+  const before = evaluate(css);
+  const after = evaluate(output);
+
+  if (before.length !== after.length) {
+    return {
+      input: css,
+      output,
+      reason: `${before.length} rules in, ${after.length} out`,
+      slots: [],
+    };
+  }
+
+  for (const [index, state] of before.entries()) {
+    const slots = differences(state, after[index]);
+
+    if (slots.length > 0) {
+      return { input: css, output, reason: 'the sides changed', slots };
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * @param {string} css
+ * @return {Mismatch|undefined} the failure, minimised to the declarations that
+ * still cause it.
+ */
+function checkMinimised(css) {
+  const failure = check(css);
+
+  if (failure === undefined) {
+    return undefined;
+  }
+
+  return check(shrink(css, (candidate) => check(candidate) !== undefined));
+}
+
+/**
+ * @param {Mismatch} failure
+ * @param {number} seed
+ * @return {string}
+ */
+function report(failure, seed) {
+  const lines = [
+    `seed ${seed}: ${failure.reason}`,
+    `  in:  ${failure.input}`,
+    `  out: ${failure.output}`,
+  ];
+
+  for (const { slot, expected, actual } of failure.slots) {
+    lines.push(`  ${slot}: expected ${expected}, got ${actual}`);
+  }
+
+  return lines.join('\n');
+}
+
+module.exports = { check, checkMinimised, report };

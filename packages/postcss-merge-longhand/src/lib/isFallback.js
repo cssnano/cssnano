@@ -1,7 +1,10 @@
 'use strict';
 const valueParser = require('postcss-value-parser');
 const { colorFunctions } = require('./spec.js');
-const { substitutionFunctions, trustedFunctions } = require('./unresolved.js');
+const {
+  substitutionFunctions,
+  trustedSupportFunctions,
+} = require('./unresolved.js');
 
 /* Substitution functions prevent fallback detection because their values
  * are resolved at runtime, not statically analyzable. */
@@ -13,12 +16,6 @@ const originalColorFunctions = new Set(['rgb', 'hsl']);
 
 /* CSS Color 3 introduced rgba() and hsla(). */
 const colorLevel3Functions = new Set(['rgb', 'rgba', 'hsl', 'hsla']);
-
-/* Math functions, `attr()`, and `if()` are conditionally supported: user
- * agents ignore declarations they do not support. */
-const trustedSupportFunctions = trustedFunctions.difference(
-  new Set(substitutionFunctions)
-);
 
 /* Ubiquitous functions like rgba() and calc() are so widely supported that
  * authors rarely write fallbacks for them. Blocking merges for these would
