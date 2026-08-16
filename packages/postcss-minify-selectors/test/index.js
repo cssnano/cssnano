@@ -607,6 +607,11 @@ suite('namespace and duplicate handling', () => {
       ':where(:nth-child(7),:nth-child(7)~*) {  }'
     )
   );
+
+  test(
+    'should preserve selector namespaces with has pseudo-attribute',
+    passthroughCSS('bar|*:has(*),|*:has(*) {color: currentcolor }')
+  );
 });
 
 // ---------------------------------------------------------------------------

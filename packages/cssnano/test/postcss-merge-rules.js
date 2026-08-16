@@ -270,3 +270,11 @@ test(
     '.box1{display:inline-block;display:block}.box2{display:inline-block}'
   )
 );
+
+test(
+  'should correctly merge rules with namespaces',
+  processCss(
+    `bar|*,|* {color:currentcolor}bar|*:has(*),|*:has(*) {color:currentcolor}`,
+    `bar|*,|*{color:currentcolor}bar|*:has(*),|*:has(*){color:currentcolor}`
+  )
+);

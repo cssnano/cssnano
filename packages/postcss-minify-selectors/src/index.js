@@ -182,13 +182,15 @@ function tag(selector) {
 }
 
 /**
- * @param {parser.Universal} selector
+ * @param {parser.Universal & parser.Namespace} selector
  * @return {void}
  */
 function universal(selector) {
   const next = selector.next();
 
-  if (next && next.type !== 'combinator') {
+  // A namespaced universal selector (`ns|*`, `|*`) restricts which elements
+  // match; dropping it would widen the selector to any namespace
+  if (!selector.namespace && next && next.type !== 'combinator') {
     selector.remove();
   }
 }
