@@ -19,7 +19,10 @@ suite('trimming spaces', () => {
 
   test(
     'should trim spaces around combinators',
-    processCSS('h1 + p, h1 > p, h1 ~ p{color:blue}', 'h1+p,h1>p,h1~p{color:blue}')
+    processCSS(
+      'h1 + p, h1 > p, h1 ~ p{color:blue}',
+      'h1+p,h1>p,h1~p{color:blue}'
+    )
   );
 
   test(
@@ -403,7 +406,10 @@ suite(':nth-child and related pseudo-classes', () => {
 
   test(
     'should convert :nth-child(2n + 1) to :nth-child(odd)',
-    processCSS('p:nth-child(2n + 1){color:blue}', 'p:nth-child(odd){color:blue}')
+    processCSS(
+      'p:nth-child(2n + 1){color:blue}',
+      'p:nth-child(odd){color:blue}'
+    )
   );
 
   test(
@@ -439,7 +445,10 @@ suite(':nth-child and related pseudo-classes', () => {
 
   test(
     'should convert :nth-of-type(even) to :nth-of-type(2n)',
-    processCSS('p:nth-of-type(even){color:blue}', 'p:nth-of-type(2n){color:blue}')
+    processCSS(
+      'p:nth-of-type(even){color:blue}',
+      'p:nth-of-type(2n){color:blue}'
+    )
   );
 
   test(
@@ -465,7 +474,10 @@ suite(':nth-child and related pseudo-classes', () => {
 
   test(
     'should convert :nth-last-of-type(1) to :last-of-type',
-    processCSS('p:nth-last-of-type(1){color:blue}', 'p:last-of-type{color:blue}')
+    processCSS(
+      'p:nth-last-of-type(1){color:blue}',
+      'p:last-of-type{color:blue}'
+    )
   );
 
   test(
@@ -516,10 +528,10 @@ suite('plugin integration', () => {
     const css =
       'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
     assert.doesNotThrow(
-      () => postcss([magician(), plugin()]).process(css, { from: undefined }).css
+      () =>
+        postcss([magician(), plugin()]).process(css, { from: undefined }).css
     );
   });
-
 
   test('should handle selectors from other plugins', () => {
     const toModules = () => {
