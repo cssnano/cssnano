@@ -1,5 +1,13 @@
 # Change Log
 
+## 8.0.4
+
+### Patch Changes
+
+- fix: ensure packages reach registry with correct repository field
+
+- fix(postcss-reduce-initial: update MDN data
+
 ## 8.0.3
 
 ### Patch Changes

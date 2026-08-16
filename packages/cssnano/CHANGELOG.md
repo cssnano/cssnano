@@ -1,5 +1,42 @@
 # Change Log
 
+## 8.0.6
+
+### Patch Changes
+
+- fix(postcss-minify-selectors): preserve namespaced universal selector
+
+- fix(postcss-merge-rules): keep the cascade intact when hoisting declarations
+
+- fix(postcss-merge-rules): decide property conflicts from spec data
+
+  The plugin decides whether to reorder declarations using `@webref/css` data instead of a name-based heuristic. For example, the plugin now recognizes that `font` and `line-height`, `border-width` and `border-left`, `gap` and `row-gap`, and `inset` and `top` conflict, and that a flow-relative property and its physical counterpart override each other.
+
+  The plugin now merges properties that do not override each other, but only share part of the name, such as flex` and `flex-direction`. Vendor extensions that are not part of a W3C specification still fall back to comparing names.
+
+- fix(postcss-merge-longhand): improve shorthand merging correctness
+
+  Reject merges producing invalid values for `border`, `margin`, or `padding`; do not confuse math functions with border styles or colors; preserve fallback declarations before functions like `env()` or `calc()`; correctly weight `!important`; and stop resurrecting declarations overridden elsewhere.
+
+- fix: ensure packages reach registry with correct repository field
+
+- fix(postcss-merge-rules): merge interleaved declarations correctly
+
+- fix(postcss-reduce-idents): rewrite identifiers based on spec data
+
+  Which declarations define and reference a custom identifier now comes from `@webref/css` instead of matching property names against a substring. The plugin no longer leaves a renamed identifier dangling behind:
+
+  - a `@counter-style` renamed while another rule's `fallback` descriptor, or a `counter()`/`counters()`/`target-counter()` argument, still names it by its old name
+  - a gridline or grid area named by the `grid` shorthand, which was never rewritten even though the `grid-area` placing against it was
+  - a gridline named inside `repeat()` or `minmax()`
+  - a counter the experimental `string-set` property
+
+  It also no longer renames a keyframe name appearing where it is not allowed, such as `animation-timing-function`, and only renames the argument of a counter function that names a counter, rather than every word inside it.
+
+  Identifiers identical to a keyword of the property or descriptor, such as an animation called `linear`, a counter style called `inside`, or the `words` of `speak-as: words`, are now left alone: which of the two a value means depends on the order the grammar is matched in, so renaming it was unsafe.
+
+  The counters the user agent maintains itself, `list-item` and `page`, are no longer renamed either.
+
 ## 8.0.5
 
 ### Patch Changes

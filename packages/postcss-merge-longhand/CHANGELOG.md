@@ -1,5 +1,15 @@
 # Change Log
 
+## 8.0.4
+
+### Patch Changes
+
+- fix(postcss-merge-longhand): improve shorthand merging correctness
+
+  Reject merges producing invalid values for `border`, `margin`, or `padding`; do not confuse math functions with border styles or colors; preserve fallback declarations before functions like `env()` or `calc()`; correctly weight `!important`; and stop resurrecting declarations overridden elsewhere.
+
+- fix: ensure packages reach registry with correct repository field
+
 ## 8.0.3
 
 ### Patch Changes

@@ -18,6 +18,15 @@ cssnano-preset-advanced@8.0.5:
   intents:
     - bumpy-ideas-double
     - strong-eggs-do
+cssnano-preset-advanced@8.0.6:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - olive-donkeys-shout
+    - olive-pandas-refuse
+    - quiet-otters-drum
+    - salty-dolls-enter
+    - smooth-heads-tickle
+    - tall-moons-repeat
 cssnano-preset-default@8.0.3:
   dir: packages/cssnano-preset-default
   intents:
@@ -37,6 +46,15 @@ cssnano-preset-default@8.0.5:
   intents:
     - bumpy-ideas-double
     - strong-eggs-do
+cssnano-preset-default@8.0.6:
+  dir: packages/cssnano-preset-default
+  intents:
+    - olive-donkeys-shout
+    - olive-pandas-refuse
+    - quiet-otters-drum
+    - salty-dolls-enter
+    - smooth-heads-tickle
+    - tall-moons-repeat
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -49,6 +67,10 @@ cssnano-preset-lite@5.0.3:
   dir: packages/cssnano-preset-lite
   intents:
     - strong-eggs-do
+cssnano-preset-lite@5.0.4:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - salty-dolls-enter
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -61,6 +83,10 @@ cssnano-utils@6.0.3:
   dir: packages/cssnano-utils
   intents:
     - strong-eggs-do
+cssnano-utils@6.0.4:
+  dir: packages/cssnano-utils
+  intents:
+    - salty-dolls-enter
 cssnano@8.0.3:
   dir: packages/cssnano
   intents:
@@ -80,6 +106,16 @@ cssnano@8.0.5:
   intents:
     - bumpy-ideas-double
     - strong-eggs-do
+cssnano@8.0.6:
+  dir: packages/cssnano
+  intents:
+    - huge-ducks-shave
+    - olive-donkeys-shout
+    - olive-pandas-refuse
+    - quiet-otters-drum
+    - salty-dolls-enter
+    - smooth-heads-tickle
+    - tall-moons-repeat
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -93,6 +129,10 @@ postcss-colormin@8.0.3:
   dir: packages/postcss-colormin
   intents:
     - strong-eggs-do
+postcss-colormin@8.0.4:
+  dir: packages/postcss-colormin
+  intents:
+    - salty-dolls-enter
 postcss-convert-values@8.0.2:
   dir: packages/postcss-convert-values
   intents:
@@ -106,6 +146,10 @@ postcss-convert-values@8.0.3:
   dir: packages/postcss-convert-values
   intents:
     - strong-eggs-do
+postcss-convert-values@8.0.4:
+  dir: packages/postcss-convert-values
+  intents:
+    - salty-dolls-enter
 postcss-discard-comments@8.0.2:
   dir: packages/postcss-discard-comments
   intents:
@@ -118,6 +162,10 @@ postcss-discard-comments@8.0.3:
   dir: packages/postcss-discard-comments
   intents:
     - strong-eggs-do
+postcss-discard-comments@8.0.4:
+  dir: packages/postcss-discard-comments
+  intents:
+    - salty-dolls-enter
 postcss-discard-duplicates@8.0.2:
   dir: packages/postcss-discard-duplicates
   intents:
@@ -130,6 +178,10 @@ postcss-discard-duplicates@8.0.3:
   dir: packages/postcss-discard-duplicates
   intents:
     - strong-eggs-do
+postcss-discard-duplicates@8.0.4:
+  dir: packages/postcss-discard-duplicates
+  intents:
+    - salty-dolls-enter
 postcss-discard-empty@8.0.2:
   dir: packages/postcss-discard-empty
   intents:
@@ -142,6 +194,10 @@ postcss-discard-empty@8.0.3:
   dir: packages/postcss-discard-empty
   intents:
     - strong-eggs-do
+postcss-discard-empty@8.0.4:
+  dir: packages/postcss-discard-empty
+  intents:
+    - salty-dolls-enter
 postcss-discard-overridden@8.0.2:
   dir: packages/postcss-discard-overridden
   intents:
@@ -154,6 +210,10 @@ postcss-discard-overridden@8.0.3:
   dir: packages/postcss-discard-overridden
   intents:
     - strong-eggs-do
+postcss-discard-overridden@8.0.4:
+  dir: packages/postcss-discard-overridden
+  intents:
+    - salty-dolls-enter
 postcss-discard-unused@8.0.2:
   dir: packages/postcss-discard-unused
   intents:
@@ -166,6 +226,10 @@ postcss-discard-unused@8.0.3:
   dir: packages/postcss-discard-unused
   intents:
     - strong-eggs-do
+postcss-discard-unused@8.0.4:
+  dir: packages/postcss-discard-unused
+  intents:
+    - salty-dolls-enter
 postcss-merge-idents@8.0.2:
   dir: packages/postcss-merge-idents
   intents:
@@ -178,6 +242,10 @@ postcss-merge-idents@8.0.3:
   dir: packages/postcss-merge-idents
   intents:
     - strong-eggs-do
+postcss-merge-idents@8.0.4:
+  dir: packages/postcss-merge-idents
+  intents:
+    - salty-dolls-enter
 postcss-merge-longhand@8.0.2:
   dir: packages/postcss-merge-longhand
   intents:
@@ -191,6 +259,11 @@ postcss-merge-longhand@8.0.3:
   intents:
     - bumpy-ideas-double
     - strong-eggs-do
+postcss-merge-longhand@8.0.4:
+  dir: packages/postcss-merge-longhand
+  intents:
+    - quiet-otters-drum
+    - salty-dolls-enter
 postcss-merge-rules@8.0.2:
   dir: packages/postcss-merge-rules
   intents:
@@ -204,6 +277,13 @@ postcss-merge-rules@8.0.3:
   dir: packages/postcss-merge-rules
   intents:
     - strong-eggs-do
+postcss-merge-rules@8.0.4:
+  dir: packages/postcss-merge-rules
+  intents:
+    - olive-donkeys-shout
+    - olive-pandas-refuse
+    - salty-dolls-enter
+    - smooth-heads-tickle
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -216,6 +296,10 @@ postcss-minify-font-values@8.0.3:
   dir: packages/postcss-minify-font-values
   intents:
     - strong-eggs-do
+postcss-minify-font-values@8.0.4:
+  dir: packages/postcss-minify-font-values
+  intents:
+    - salty-dolls-enter
 postcss-minify-gradients@8.0.2:
   dir: packages/postcss-minify-gradients
   intents:
@@ -229,6 +313,10 @@ postcss-minify-gradients@8.0.3:
   dir: packages/postcss-minify-gradients
   intents:
     - strong-eggs-do
+postcss-minify-gradients@8.0.4:
+  dir: packages/postcss-minify-gradients
+  intents:
+    - salty-dolls-enter
 postcss-minify-params@8.0.2:
   dir: packages/postcss-minify-params
   intents:
@@ -242,6 +330,10 @@ postcss-minify-params@8.0.3:
   dir: packages/postcss-minify-params
   intents:
     - strong-eggs-do
+postcss-minify-params@8.0.4:
+  dir: packages/postcss-minify-params
+  intents:
+    - salty-dolls-enter
 postcss-minify-selectors@8.0.3:
   dir: packages/postcss-minify-selectors
   intents:
@@ -255,6 +347,11 @@ postcss-minify-selectors@8.0.4:
   dir: packages/postcss-minify-selectors
   intents:
     - strong-eggs-do
+postcss-minify-selectors@8.0.5:
+  dir: packages/postcss-minify-selectors
+  intents:
+    - huge-ducks-shave
+    - salty-dolls-enter
 postcss-normalize-charset@8.0.2:
   dir: packages/postcss-normalize-charset
   intents:
@@ -267,6 +364,10 @@ postcss-normalize-charset@8.0.3:
   dir: packages/postcss-normalize-charset
   intents:
     - strong-eggs-do
+postcss-normalize-charset@8.0.4:
+  dir: packages/postcss-normalize-charset
+  intents:
+    - salty-dolls-enter
 postcss-normalize-display-values@8.0.2:
   dir: packages/postcss-normalize-display-values
   intents:
@@ -279,6 +380,10 @@ postcss-normalize-display-values@8.0.3:
   dir: packages/postcss-normalize-display-values
   intents:
     - strong-eggs-do
+postcss-normalize-display-values@8.0.4:
+  dir: packages/postcss-normalize-display-values
+  intents:
+    - salty-dolls-enter
 postcss-normalize-positions@8.0.2:
   dir: packages/postcss-normalize-positions
   intents:
@@ -291,6 +396,10 @@ postcss-normalize-positions@8.0.3:
   dir: packages/postcss-normalize-positions
   intents:
     - strong-eggs-do
+postcss-normalize-positions@8.0.4:
+  dir: packages/postcss-normalize-positions
+  intents:
+    - salty-dolls-enter
 postcss-normalize-repeat-style@8.0.2:
   dir: packages/postcss-normalize-repeat-style
   intents:
@@ -303,6 +412,10 @@ postcss-normalize-repeat-style@8.0.3:
   dir: packages/postcss-normalize-repeat-style
   intents:
     - strong-eggs-do
+postcss-normalize-repeat-style@8.0.4:
+  dir: packages/postcss-normalize-repeat-style
+  intents:
+    - salty-dolls-enter
 postcss-normalize-string@8.0.2:
   dir: packages/postcss-normalize-string
   intents:
@@ -315,6 +428,10 @@ postcss-normalize-string@8.0.3:
   dir: packages/postcss-normalize-string
   intents:
     - strong-eggs-do
+postcss-normalize-string@8.0.4:
+  dir: packages/postcss-normalize-string
+  intents:
+    - salty-dolls-enter
 postcss-normalize-timing-functions@8.0.2:
   dir: packages/postcss-normalize-timing-functions
   intents:
@@ -327,6 +444,10 @@ postcss-normalize-timing-functions@8.0.3:
   dir: packages/postcss-normalize-timing-functions
   intents:
     - strong-eggs-do
+postcss-normalize-timing-functions@8.0.4:
+  dir: packages/postcss-normalize-timing-functions
+  intents:
+    - salty-dolls-enter
 postcss-normalize-unicode@8.0.2:
   dir: packages/postcss-normalize-unicode
   intents:
@@ -340,6 +461,10 @@ postcss-normalize-unicode@8.0.3:
   dir: packages/postcss-normalize-unicode
   intents:
     - strong-eggs-do
+postcss-normalize-unicode@8.0.4:
+  dir: packages/postcss-normalize-unicode
+  intents:
+    - salty-dolls-enter
 postcss-normalize-url@8.0.2:
   dir: packages/postcss-normalize-url
   intents:
@@ -355,6 +480,10 @@ postcss-normalize-url@8.0.3:
   dir: packages/postcss-normalize-url
   intents:
     - strong-eggs-do
+postcss-normalize-url@8.0.4:
+  dir: packages/postcss-normalize-url
+  intents:
+    - salty-dolls-enter
 postcss-normalize-whitespace@8.0.2:
   dir: packages/postcss-normalize-whitespace
   intents:
@@ -368,6 +497,10 @@ postcss-normalize-whitespace@8.0.3:
   dir: packages/postcss-normalize-whitespace
   intents:
     - strong-eggs-do
+postcss-normalize-whitespace@8.0.4:
+  dir: packages/postcss-normalize-whitespace
+  intents:
+    - salty-dolls-enter
 postcss-ordered-values@8.0.2:
   dir: packages/postcss-ordered-values
   intents:
@@ -380,6 +513,10 @@ postcss-ordered-values@8.0.3:
   dir: packages/postcss-ordered-values
   intents:
     - strong-eggs-do
+postcss-ordered-values@8.0.4:
+  dir: packages/postcss-ordered-values
+  intents:
+    - salty-dolls-enter
 postcss-reduce-idents@8.0.2:
   dir: packages/postcss-reduce-idents
   intents:
@@ -392,6 +529,12 @@ postcss-reduce-idents@8.0.3:
   dir: packages/postcss-reduce-idents
   intents:
     - strong-eggs-do
+postcss-reduce-idents@8.0.4:
+  dir: packages/postcss-reduce-idents
+  intents:
+    - salty-dolls-enter
+    - tall-moons-repeat
+    - tame-otters-swim
 postcss-reduce-initial@8.0.2:
   dir: packages/postcss-reduce-initial
   intents:
@@ -406,6 +549,11 @@ postcss-reduce-initial@8.0.3:
   dir: packages/postcss-reduce-initial
   intents:
     - strong-eggs-do
+postcss-reduce-initial@8.0.4:
+  dir: packages/postcss-reduce-initial
+  intents:
+    - salty-dolls-enter
+    - vast-llamas-sleep
 postcss-reduce-transforms@8.0.2:
   dir: packages/postcss-reduce-transforms
   intents:
@@ -418,6 +566,10 @@ postcss-reduce-transforms@8.0.3:
   dir: packages/postcss-reduce-transforms
   intents:
     - strong-eggs-do
+postcss-reduce-transforms@8.0.4:
+  dir: packages/postcss-reduce-transforms
+  intents:
+    - salty-dolls-enter
 postcss-svgo@8.0.2:
   dir: packages/postcss-svgo
   intents:
@@ -435,6 +587,10 @@ postcss-svgo@8.0.4:
   dir: packages/postcss-svgo
   intents:
     - strong-eggs-do
+postcss-svgo@8.0.5:
+  dir: packages/postcss-svgo
+  intents:
+    - salty-dolls-enter
 postcss-unique-selectors@8.0.2:
   dir: packages/postcss-unique-selectors
   intents:
@@ -447,6 +603,10 @@ postcss-unique-selectors@8.0.3:
   dir: packages/postcss-unique-selectors
   intents:
     - strong-eggs-do
+postcss-unique-selectors@8.0.4:
+  dir: packages/postcss-unique-selectors
+  intents:
+    - salty-dolls-enter
 postcss-zindex@8.0.2:
   dir: packages/postcss-zindex
   intents:
@@ -459,6 +619,10 @@ postcss-zindex@8.0.3:
   dir: packages/postcss-zindex
   intents:
     - strong-eggs-do
+postcss-zindex@8.0.4:
+  dir: packages/postcss-zindex
+  intents:
+    - salty-dolls-enter
 stylehacks@8.0.2:
   dir: packages/stylehacks
   intents:
@@ -472,3 +636,7 @@ stylehacks@8.0.3:
   dir: packages/stylehacks
   intents:
     - strong-eggs-do
+stylehacks@8.0.4:
+  dir: packages/stylehacks
+  intents:
+    - salty-dolls-enter

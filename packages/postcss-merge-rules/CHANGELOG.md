@@ -1,5 +1,21 @@
 # Change Log
 
+## 8.0.4
+
+### Patch Changes
+
+- fix(postcss-merge-rules): keep the cascade intact when hoisting declarations
+
+- fix(postcss-merge-rules): decide property conflicts from spec data
+
+  The plugin decides whether to reorder declarations using `@webref/css` data instead of a name-based heuristic. For example, the plugin now recognizes that `font` and `line-height`, `border-width` and `border-left`, `gap` and `row-gap`, and `inset` and `top` conflict, and that a flow-relative property and its physical counterpart override each other.
+
+  The plugin now merges properties that do not override each other, but only share part of the name, such as flex` and `flex-direction`. Vendor extensions that are not part of a W3C specification still fall back to comparing names.
+
+- fix: ensure packages reach registry with correct repository field
+
+- fix(postcss-merge-rules): merge interleaved declarations correctly
+
 ## 8.0.3
 
 ### Patch Changes
