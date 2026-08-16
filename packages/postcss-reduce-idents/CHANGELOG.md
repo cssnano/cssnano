@@ -1,5 +1,30 @@
 # Change Log
 
+## 8.0.4
+
+### Patch Changes
+
+- fix: ensure packages reach registry with correct repository field
+
+- fix(postcss-reduce-idents): rewrite identifiers based on spec data
+
+  Which declarations define and reference a custom identifier now comes from `@webref/css` instead of matching property names against a substring. The plugin no longer leaves a renamed identifier dangling behind:
+
+  - a `@counter-style` renamed while another rule's `fallback` descriptor, or a `counter()`/`counters()`/`target-counter()` argument, still names it by its old name
+  - a gridline or grid area named by the `grid` shorthand, which was never rewritten even though the `grid-area` placing against it was
+  - a gridline named inside `repeat()` or `minmax()`
+  - a counter the experimental `string-set` property
+
+  It also no longer renames a keyframe name appearing where it is not allowed, such as `animation-timing-function`, and only renames the argument of a counter function that names a counter, rather than every word inside it.
+
+  Identifiers identical to a keyword of the property or descriptor, such as an animation called `linear`, a counter style called `inside`, or the `words` of `speak-as: words`, are now left alone: which of the two a value means depends on the order the grammar is matched in, so renaming it was unsafe.
+
+  The counters the user agent maintains itself, `list-item` and `page`, are no longer renamed either.
+
+- fix(postcss-reduce-idents): rename grid-template-areas names without corrupting row order
+
+  `grid-area`/`grid-column`/`grid-row` names are now only renamed in `grid-template-areas`, `grid-template-columns`, `grid-template-rows`, and `grid-template` when a matching declaration references them. Previously, renaming could collide (e.g. two names swapping identifiers) and produce a non-rectangular `grid-template-areas` layout, which is invalid per the CSS Grid spec.
+
 ## 8.0.3
 
 ### Patch Changes

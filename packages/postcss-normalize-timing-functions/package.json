@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-timing-functions",
-  "version": "8.0.3",
+  "version": "8.0.4",
   "description": "Normalize CSS animation/transition timing functions.",
   "exports": {
     ".": {

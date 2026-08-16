@@ -1,6 +1,6 @@
 {
   "name": "postcss-reduce-transforms",
-  "version": "8.0.3",
+  "version": "8.0.4",
   "description": "Reduce transform functions with PostCSS.",
   "exports": {
     ".": {

@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.5
+
+### Patch Changes
+
+- fix: ensure packages reach registry with correct repository field
+
 ## 8.0.4
 
 ### Patch Changes
