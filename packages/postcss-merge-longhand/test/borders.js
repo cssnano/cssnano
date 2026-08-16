@@ -548,6 +548,16 @@ suite('border-width', () => {
     )
   );
 
+  /* Every maths function fixes its type the same way `calc()` does, not just
+   * `calc()` itself. */
+  test(
+    'should keep reading a min() as a width',
+    processCSS(
+      'h1{border-top-width:min(1px,2px);border-right-width:min(1px,2px);border-bottom-width:min(1px,2px);border-left-width:min(1px,2px)}',
+      'h1{border-width:min(1px,2px)}'
+    )
+  );
+
   /* `hairline` is in the grammar of `<line-width>` and in no browser, so a
    * border stating it paints nothing and the rule stands as written. */
   test(
@@ -557,11 +567,33 @@ suite('border-width', () => {
     )
   );
 
-  /* `border-width: none` is no width, so the browser drops it and the rule is
+  /* `border-width: none` is no width, so the browser ignores it and the rule is
    * left alone, down to the case its properties are written in. */
   test(
     'should produce the minimum css necessary (uppercase)',
     passthroughCSS('h1{BORDER-WIDTH:NONE;BORDER-TOP:1PX SOLID #E1E1E1}')
+  );
+});
+
+suite('maths functions never stand in for a style or a colour', () => {
+  /* `calc()`, `min()`, `max()` and their siblings fix their own type: always a
+   * number or a length, so the only border component whose grammar accepts
+   * them is the width. A user agent never reads a bare maths function as a
+   * `<line-style>` keyword or a `<color>` — unlike `var()`/`env()`, whose type
+   * stays unknowable until substitution and so can fill any of the three. */
+
+  test(
+    'should not merge a maths function into a border-style shorthand',
+    passthroughCSS(
+      'a{border-top-style:min(1px,2px);border-right-style:min(1px,2px);border-bottom-style:min(1px,2px);border-left-style:min(1px,2px)}'
+    )
+  );
+
+  test(
+    'should not merge a maths function into a border-color shorthand',
+    passthroughCSS(
+      'a{border-top-color:min(1px,2px);border-right-color:min(1px,2px);border-bottom-color:min(1px,2px);border-left-color:min(1px,2px)}'
+    )
   );
 });
 
@@ -1532,7 +1564,7 @@ suite('border grid resolution', () => {
     passthroughCSS('a{border-left:solid;border-color:grey;border-width:2px}')
   );
 
-  /* The browser drops a `border` that specifies a component twice, or that
+  /* the browser ignores a `border` that specifies a component twice, or that
    * specifies something no component accepts, so it resets nothing and the
    * sides it looked like it covered keep `border-style: none`. */
   test(
@@ -1555,11 +1587,23 @@ suite('border grid resolution', () => {
       'a{border:none none;border-left:solid;border-color:grey;border-width:2px}'
     )
   );
+
+  /* Found by the differential fuzzer: three sides shared an identical
+   * width/style/colour triple whose colour was a `calc()`, so the grid
+   * resolver folded them into `border:calc(2*1px)` — a value a user agent
+   * reads as the *width*, silently discarding the `medium` width and `none`
+   * style the sides actually had. */
+  test(
+    'border grid: should not fold a calc() colour into a bare border width',
+    passthroughCSS(
+      'a{border:medium;border-color:calc(2*1px) blue calc(2*1px) calc(2*1px)}'
+    )
+  );
 });
 
 suite('invalid declarations', () => {
   /* The same values, in the rules the rest of the plugin handles: a declaration
-   * the browser drops sets no border, and must not be shortened into one, read as
+   * the browser ignores sets no border, and must not be shortened into one, read as
    * overriding what comes before it, or written into what comes after. */
   test(
     'should not shorten a border that specifies a component twice',
@@ -1774,7 +1818,7 @@ test(
   passthroughCSS('a{border-left:solid;border-color:grey;border-width:2px}')
 );
 
-/* The browser drops a `border` that specifies a component twice, or that
+/* the browser ignores a `border` that specifies a component twice, or that
  * specifies something no component accepts, so it resets nothing and the
  * sides it looked like it covered keep `border-style: none`. */
 test(
@@ -1799,7 +1843,7 @@ test(
 );
 
 /* The same values, in the rules the rest of the plugin handles: a declaration
- * the browser drops sets no border, and must not be shortened into one, read as
+ * the browser ignores sets no border, and must not be shortened into one, read as
  * overriding what comes before it, or written into what comes after. */
 test(
   'should not shorten a border that specifies a component twice',

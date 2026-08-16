@@ -7,7 +7,7 @@ const {
   colorFunctions,
   borderComponents,
 } = require('./spec.js');
-const { isUnresolved } = require('./unresolved.js');
+const { isSubstitution, isUnresolved } = require('./unresolved.js');
 
 const lengthValueRegex = /^(\d+(\.\d+)?|\.\d+)(\w+)?$/;
 const functionNameRegex = /([\w-]+)\(/g;
@@ -22,13 +22,27 @@ function isBorderStyle(value) {
 }
 
 /**
+ * A math function (`calc()`, `min()`, ...), `attr()` or `if()` fixes its type
+ * from its own syntax or context rather than deferring it to substitution, and
+ * the only border component whose grammar accepts that type is the width —
+ * never a `<line-style>` keyword, never a `<color>`.
+ *
+ * @param {string} value
+ * @return {boolean}
+ */
+function isTypedAsWidth(value) {
+  return isUnresolved(value) && !isSubstitution(value);
+}
+
+/**
  * @param {string} value
  * @return {boolean}
  */
 function isBorderWidth(value) {
   return (
     (value && lineWidthKeywords.has(value.toLowerCase())) ||
-    lengthValueRegex.test(value)
+    lengthValueRegex.test(value) ||
+    isTypedAsWidth(value)
   );
 }
 
@@ -65,7 +79,7 @@ function isColor(value) {
     return true;
   }
 
-  /* `currentcolor` stands outside the named colours, which hold `transparent`. */
+  /* `currentcolor` is not in the CSS named-color keywords. */
   if (lowered === 'currentcolor') {
     return true;
   }
@@ -130,22 +144,17 @@ function specifiesComponent(value, component) {
 
   const [token] = tokens;
 
-  return componentOf(token) === component || isUnresolved(token);
+  return componentOf(token) === component || isSubstitution(token);
 }
 
 /**
- * `<line-width> || <line-style> || <color>` takes its three components in any
- * order and leaves any of them out, but specifies none of them twice and
- * admits nothing else, so `border: solid red red` and `border: 1px solid 50%`
- * are invalid and the browser ignores them.
- *
- * `parseWsc` does not validate this: it overwrites the component a repeat
- * already filled, and ignores unrecognized tokens into whichever slot is still
- * free, so the triple it returns can differ from the input's components.
+ * The grammar `<line-width> || <line-style> || <color>` requires each
+ * component to appear at most once. `parseWsc` doesn't enforce this: it
+ * overwrites repeated components and discards unrecognized tokens, so the
+ * returned triple can differ from the input.
  *
  * @param {string} value
- * @return {boolean} whether every token of the value specifies a component of
- * its own
+ * @return {boolean} whether every token specifies a distinct component
  */
 function specifiesDistinctComponents(value) {
   /** @type {Set<string>} */
@@ -156,7 +165,7 @@ function specifiesDistinctComponents(value) {
     const component = componentOf(token);
 
     if (component === undefined) {
-      if (!isUnresolved(token)) {
+      if (!isSubstitution(token)) {
         return false;
       }
 

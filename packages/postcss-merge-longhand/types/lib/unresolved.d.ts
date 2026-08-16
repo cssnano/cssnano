@@ -1,7 +1,9 @@
 declare const _exports: {
+    isSubstitution: typeof isSubstitution;
     isUnresolved: typeof isUnresolved;
     substitutionFunctions: string[];
     trustedFunctions: Set<string>;
+    trustedSupportFunctions: Set<string>;
 };
 export = _exports;
 /**
@@ -18,4 +20,13 @@ export = _exports;
  * @return {boolean}
  */
 declare function isUnresolved(token: string): boolean;
+/**
+ * Whether a token is a substitution function specifically — the one class of
+ * trusted function whose type stays unknowable after substitution, so it can
+ * fill any border component rather than only the ones its own type matches.
+ *
+ * @param {string} token
+ * @return {boolean}
+ */
+declare function isSubstitution(token: string): boolean;
 //# sourceMappingURL=unresolved.d.ts.map

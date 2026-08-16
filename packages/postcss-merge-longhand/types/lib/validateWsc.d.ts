@@ -38,18 +38,13 @@ declare function isValidWidthStyleColor(wscs: [string, string, string]): boolean
  */
 declare function specifiesComponent(value: string, component: string): boolean;
 /**
- * `<line-width> || <line-style> || <color>` takes its three components in any
- * order and leaves any of them out, but specifies none of them twice and
- * admits nothing else, so `border: solid red red` and `border: 1px solid 50%`
- * are invalid and the browser ignores them.
- *
- * `parseWsc` does not validate this: it overwrites the component a repeat
- * already filled, and ignores unrecognized tokens into whichever slot is still
- * free, so the triple it returns can differ from the input's components.
+ * The grammar `<line-width> || <line-style> || <color>` requires each
+ * component to appear at most once. `parseWsc` doesn't enforce this: it
+ * overwrites repeated components and discards unrecognized tokens, so the
+ * returned triple can differ from the input.
  *
  * @param {string} value
- * @return {boolean} whether every token of the value specifies a component of
- * its own
+ * @return {boolean} whether every token specifies a distinct component
  */
 declare function specifiesDistinctComponents(value: string): boolean;
 //# sourceMappingURL=validateWsc.d.ts.map
