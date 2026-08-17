@@ -4,18 +4,11 @@ const { getArguments } = require('cssnano-utils');
 const addSpace = require('../lib/addSpace');
 const getValue = require('../lib/getValue');
 const mathFunctions = require('../lib/mathfunctions.js');
+const easingFunctions = require('./easingFunctions.json');
 
 // animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
-const timingFunctions = new Set(['steps', 'cubic-bezier', 'frames']);
-const timingKeywords = new Set([
-  'ease',
-  'ease-in',
-  'ease-in-out',
-  'ease-out',
-  'linear',
-  'step-end',
-  'step-start',
-]);
+const timingFunctions = new Set([...easingFunctions.functions, 'frames']);
+const timingKeywords = new Set(easingFunctions.keywords);
 
 const directions = new Set([
   'normal',

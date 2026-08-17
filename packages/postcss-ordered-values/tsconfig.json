@@ -4,7 +4,8 @@
     "src/*",
     "src/rules/*",
     "src/lib/*",
-    "src/rules/listStyleTypes.json"
+    "src/rules/listStyleTypes.json",
+    "src/rules/easingFunctions.json"
   ],
   "compilerOptions": {
     "composite": true,
