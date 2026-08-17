@@ -277,4 +277,4 @@ function shrink(css, fails) {
   return `${selectors.join(',')}${body}`;
 }
 
-module.exports = { generate, random, shrink };
+module.exports = { generate, shrink };

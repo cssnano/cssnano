@@ -82,4 +82,4 @@ function* generate(seed, count) {
   }
 }
 
-module.exports = { generate, random };
+module.exports = { generate };
