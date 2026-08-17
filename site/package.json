@@ -36,6 +36,6 @@
     }
   },
   "browserslist": [
-    "defaults and fully supports es6-module"
+    "defaults and baseline widely available with downstream"
   ]
 }
