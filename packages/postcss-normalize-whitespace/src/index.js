@@ -9,6 +9,23 @@ const ieHackRegex = /\s*(\\9)\s*/;
 const whitespaceRegex = /\s/g;
 
 /**
+ * Reports whether a value ends in a backslash that begins an escape
+ * sequence, as opposed to a backslash that is itself escaped by a
+ * preceding backslash.
+ * @param {string} value
+ * @return {boolean}
+ */
+function endsWithEscapingBackslash(value) {
+  let backslashes = 0;
+
+  for (let i = value.length - 1; i >= 0 && value[i] === '\\'; i--) {
+    backslashes++;
+  }
+
+  return backslashes % 2 === 1;
+}
+
+/**
  * @param {valueParser.Node} node
  * @return {void}
  */
@@ -103,6 +120,27 @@ function pluginCreator() {
         if (type === decl && !node.prop.startsWith('--')) {
           trimDeclaration(node, declarationCache);
         } else if (type === rule || type === atrule) {
+          // When the last declaration has no trailing semicolon and its
+          // value ends in an escape sequence consuming whitespace (e.g.
+          // `\9` written as `\` followed by a literal tab), the parser
+          // attributes the escaped code point to the rule's trailing
+          // raw instead of the declaration's value. Reattach the single
+          // character the backslash escapes before discarding the rest
+          // of that raw, or the escape is left dangling and becomes a
+          // valid escape of whatever follows it in the output (`}`, or
+          // even a `;` inserted as a terminator, since only a newline or
+          // end of input is not a valid escape target).
+          const last = node.last;
+
+          if (
+            last &&
+            last.type === decl &&
+            endsWithEscapingBackslash(last.value) &&
+            node.raws.after
+          ) {
+            last.value += node.raws.after[0];
+          }
+
           node.raws.between = node.raws.after = '';
           node.raws.semicolon = false;
         }
