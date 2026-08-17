@@ -134,6 +134,7 @@ function isHostPseudoClass(selector) {
 const isSupportedCache = new WeakMap();
 // Stable stand-in key when `browsers` is undefined, since a fresh `[]` on
 // every call would never hit the WeakMap.
+/** @type {string[]} */
 const noBrowsers = [];
 
 // Move to util in future
@@ -144,6 +145,7 @@ const noBrowsers = [];
  *
  * @param {string} feature
  * @param {string[] | undefined} browsers
+ * @return {boolean}
  */
 function isSupportedCached(feature, browsers) {
   const key = browsers ?? noBrowsers;
@@ -153,8 +155,9 @@ function isSupportedCached(feature, browsers) {
     isSupportedCache.set(key, byFeature);
   }
 
-  if (byFeature.has(feature)) {
-    return byFeature.get(feature);
+  const cached = byFeature.get(feature);
+  if (cached !== undefined) {
+    return cached;
   }
 
   const result = isSupported(feature, /** @type {string[]} */ (browsers));
