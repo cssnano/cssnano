@@ -1,6 +1,7 @@
 {
   "name": "site",
   "private": true,
+  "type": "module",
   "scripts": {
     "build:metadata": "node ./util/buildMetadata.mjs",
     "start": "eleventy --serve --input src/",

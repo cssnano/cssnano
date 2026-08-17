@@ -1,7 +1,10 @@
-const webpack = require('webpack');
-const path = require('node:path');
+import webpack from 'webpack';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-module.exports = {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default {
   mode: 'production',
   context: path.resolve(__dirname),
   cache: {
