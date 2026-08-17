@@ -168,7 +168,7 @@ export function keywordTerminals(syntax) {
  * @param {string} [syntax]
  * @return {string[]}
  */
-export function functionTerminals(syntax) {
+function functionTerminals(syntax) {
   if (!syntax) {
     return [];
   }
