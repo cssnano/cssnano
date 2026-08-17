@@ -20,7 +20,24 @@ module.exports = {
     chunkIds: 'deterministic',
     splitChunks: {
       chunks: 'all',
+      maxSize: 244 * 1024,
+      cacheGroups: {
+        svgo: {
+          test: /[\\/]node_modules[\\/]svgo[\\/]/,
+          idHint: 'svgo',
+          priority: 20,
+        },
+        codemirror: {
+          test: /[\\/]node_modules[\\/]@codemirror[\\/]/,
+          name: 'codemirror',
+          priority: 10,
+        },
+      },
     },
+  },
+  performance: {
+    maxEntrypointSize: 350 * 1024,
+    maxAssetSize: 350 * 1024,
   },
   resolve: {
     /* Unfortunately the SVGO browser build does not resolve otherwise */
