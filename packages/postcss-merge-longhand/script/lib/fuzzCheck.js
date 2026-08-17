@@ -104,4 +104,4 @@ function report(failure, seed) {
   return lines.join('\n');
 }
 
-module.exports = { check, checkMinimised, report };
+module.exports = { checkMinimised, report };

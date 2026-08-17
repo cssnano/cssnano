@@ -1,4 +1,4 @@
-export const userAgentDependentFlag = new Set([
+const userAgentDependentFlag = new Set([
   'dependsOnUserAgent',
   'noPracticalInitialValue',
   'noneButOverriddenInUserAgentCSS',

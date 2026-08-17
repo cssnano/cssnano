@@ -54,6 +54,7 @@
     "postcss": "^8.5.26"
   },
   "scripts": {
+    "acquire": "node ./script/buildListStyleType.js",
     "test": "node --test"
   }
 }

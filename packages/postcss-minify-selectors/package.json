@@ -12,10 +12,10 @@
     "./src/index.js": "./src/index.js",
     "./src/lib/canUnquote": "./src/lib/canUnquote.js",
     "./src/lib/canUnquote.js": "./src/lib/canUnquote.js",
-    "./src/lib/foldTols": "./src/lib/foldTols.js",
-    "./src/lib/foldTols.js": "./src/lib/foldTols.js",
-    "./src/lib/foldTolsHelpers": "./src/lib/foldTolsHelpers.js",
-    "./src/lib/foldTolsHelpers.js": "./src/lib/foldTolsHelpers.js",
+    "./src/lib/foldTols": "./src/lib/foldToIs.js",
+    "./src/lib/foldTols.js": "./src/lib/foldToIs.js",
+    "./src/lib/foldTolsHelpers": "./src/lib/foldToIsHelpers.js",
+    "./src/lib/foldTolsHelpers.js": "./src/lib/foldToIsHelpers.js",
     "./package.json": "./package.json"
   },
   "imports": {
