@@ -13,28 +13,7 @@
  * character survives without needing an independent CSS tokenizer.
  */
 
-/**
- * A Lehmer generator; see the `merge-longhand-box-transforms` skill for
- * why this over xorshift (`.oxlintrc.json`'s `no-bitwise` forbids the
- * usual approach).
- * @param {number} seed
- * @return {{int: (bound: number) => number, pick: <T>(items: readonly T[]) => T, chance: (probability: number) => boolean}}
- */
-function random(seed) {
-  const modulus = 2147483647;
-  let state = (Math.trunc(Math.abs(seed)) % (modulus - 1)) + 1;
-
-  const next = () => {
-    state = (state * 48271) % modulus;
-    return (state - 1) / (modulus - 1);
-  };
-
-  return {
-    int: (bound) => Math.floor(next() * bound),
-    pick: (items) => items[Math.floor(next() * items.length)],
-    chance: (probability) => next() < probability,
-  };
-}
+const { random } = require('../../../../util/fuzzRng.js');
 
 const escapeTargets = [
   '9', // hex digit, the classic `\9` hack
