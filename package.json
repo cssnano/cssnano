@@ -5,6 +5,10 @@
     "lint": "pnpm types && oxlint . && oxfmt --check",
     "fixlint": "oxfmt . && pnpm oxlint --fix .",
     "build:integration": "node ./util/buildFrameworks.mjs",
+    "bench": "node ./util/bench.mjs",
+    "bench:profile": "node ./util/bench.mjs --profile",
+    "bench:compare": "node ./util/compare-bench.mjs",
+    "bench:analyze": "node ./util/analyze-cpuprofile.mjs",
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info",
     "test:unit": "node --test --test-skip-pattern=\"framework tests\"",
@@ -19,6 +23,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
+    "knip": "^6.32.2",
     "oxfmt": "^0.63.0",
     "oxlint": "^1.78.0",
     "postcss": "^8.5.26",

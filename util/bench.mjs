@@ -3,10 +3,10 @@
 // Runs the default preset over every CSS file in a corpus directory for a fixed
 // number of warmup + measured iterations and prints a per-file + total summary.
 // Writes a JSON snapshot to ../bench-results/<label>.json so different
-// branches/optimizations can be compared.
+// branches/optimizations can be compared — see compare-bench.mjs.
 //
-// The corpus is not committed; pass --dir to point at any folder of .css files
-// (defaults to ../frameworks).
+// Defaults to the `frameworks/*.css` corpus already committed for the
+// integration fixtures; pass --dir to point at any other folder of .css files.
 //
 // Usage:
 //   node util/bench.mjs                    # label = "baseline", dir = ../frameworks
@@ -15,6 +15,20 @@
 //   node util/bench.mjs --iters=30         # measured iterations per file
 //   node util/bench.mjs --warmup=5         # warmup iterations per file
 //   node util/bench.mjs --only=bootstrap   # substring filter on file name
+//   node util/bench.mjs --profile --only=bootstrap-v4  # also write a .cpuprofile
+//                                                       # per matched file, covering
+//                                                       # only the measured (not
+//                                                       # warmup) iterations —
+//                                                       # analyze with analyze-cpuprofile.mjs
+//
+// pnpm equivalents: `pnpm bench`, `pnpm bench:profile`, `pnpm bench:compare`,
+// `pnpm bench:analyze` — pass flags after `--`, e.g. `pnpm bench -- --label=foo`.
+//
+// Profiling every file in a large corpus is rarely useful and slows the run
+// down noticeably (the inspector session adds overhead of its own) — combine
+// --profile with --only to target the framework you actually want to look at,
+// and consider a smaller --iters since a profile only needs enough samples to
+// be representative, not a stable percentile.
 
 import { readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname, basename, resolve } from 'node:path';
@@ -22,13 +36,14 @@ import { fileURLToPath } from 'node:url';
 import { performance } from 'node:perf_hooks';
 import { createRequire } from 'node:module';
 import { parseArgs } from 'node:util';
+import { Session } from 'node:inspector/promises';
 
 const require = createRequire(import.meta.url);
 const cssnano = require('../packages/cssnano/src/index.js');
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// Default corpus directory. Override with `--dir=<path>` to point at any folder
-// of .css files (the corpus itself is not committed).
+// Default corpus directory. Override with `--dir=<path>` to point at any other
+// folder of .css files.
 const DEFAULT_DIR = join(__dirname, '..', 'frameworks');
 const RESULTS_DIR = join(__dirname, '..', 'bench-results');
 
@@ -57,12 +72,21 @@ function fmtMs(ms) {
   return ms.toFixed(2).padStart(8) + ' ms';
 }
 
-async function benchOne(name, source, processor, iters, warmup) {
+async function benchOne(name, source, processor, iters, warmup, profilePath) {
   // Warmup — let V8 optimize hot paths before we measure.
   for (let i = 0; i < warmup; i++) {
     const res = await processor.process(source, { from: undefined });
     // Reading the lazy `res.css` getter runs stringification; `void` silences the unused-expression lint.
     void res.css;
+  }
+
+  // Started after warmup so JIT warmup noise doesn't dilute the profile.
+  let session;
+  if (profilePath) {
+    session = new Session();
+    session.connect();
+    await session.post('Profiler.enable');
+    await session.post('Profiler.start');
   }
 
   const samples = Array.from({ length: iters });
@@ -71,6 +95,12 @@ async function benchOne(name, source, processor, iters, warmup) {
     const res = await processor.process(source, { from: undefined });
     void res.css;
     samples[i] = performance.now() - t0;
+  }
+
+  if (session) {
+    const { profile } = await session.post('Profiler.stop');
+    session.disconnect();
+    writeFileSync(profilePath, JSON.stringify(profile));
   }
 
   const s = stats(samples);
@@ -86,6 +116,7 @@ async function main() {
       warmup: { type: 'string', default: '3' },
       only: { type: 'string' },
       dir: { type: 'string' },
+      profile: { type: 'boolean', default: false },
     },
   });
   const args = {
@@ -94,6 +125,7 @@ async function main() {
     warmup: Number(values.warmup),
     only: values.only ?? null,
     dir: values.dir ?? null,
+    profile: values.profile,
   };
   const dir = args.dir ? resolve(args.dir) : DEFAULT_DIR;
 
@@ -119,15 +151,24 @@ async function main() {
   );
   console.log('-'.repeat(84));
 
+  if (args.profile) {
+    mkdirSync(RESULTS_DIR, { recursive: true });
+  }
+
   const results = [];
   for (const f of files) {
     const source = readFileSync(join(dir, f), 'utf8');
+    const name = basename(f, '.css');
+    const profilePath = args.profile
+      ? join(RESULTS_DIR, `${args.label}-${name}.cpuprofile`)
+      : null;
     const r = await benchOne(
-      basename(f, '.css'),
+      name,
       source,
       processor,
       args.iters,
-      args.warmup
+      args.warmup,
+      profilePath
     );
     results.push(r);
     console.log(
@@ -139,6 +180,9 @@ async function main() {
         fmtMs(r.p95).padStart(12) +
         r.kbPerSec.toFixed(0).padStart(10)
     );
+    if (profilePath) {
+      console.log(`  wrote ${profilePath}`);
+    }
   }
 
   const totalBytes = results.reduce((a, r) => a + r.bytes, 0);
