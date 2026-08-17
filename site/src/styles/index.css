@@ -22,7 +22,7 @@
   --slate-hue: 218;
   --color-slate-900: hsl(var(--slate-hue) 40% 14%);
   --color-slate-800: hsl(var(--slate-hue) 40% 20%);
-  --color-slate-200: hsl(var(--slate-hue) 20% 65%);
+  --color-slate-200: hsl(var(--slate-hue) 20% 57%);
   --color-slate-100: hsl(var(--slate-hue) 20% 85%);
   --color-slate-50: hsl(var(--slate-hue) 20% 98%);
   --color-white: hsl(0deg 0% 100%);
@@ -500,7 +500,7 @@ nav ul {
 
   inline-size: 100%;
   background-color: var(--theme-bg);
-  border-block-end: var(--theme-border-width) solid var(--color-slate-100);
+  border-block-end: var(--theme-border-width) solid var(--theme-border);
 }
 
 .navbar a {
