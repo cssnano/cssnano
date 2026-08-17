@@ -49,6 +49,7 @@
     "postcss": "^8.5.26"
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "fuzz": "node ./script/fuzz.js"
   }
 }
