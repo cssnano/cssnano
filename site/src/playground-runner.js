@@ -1,77 +1,77 @@
-import postcss from 'postcss';
+/** @import {PresetName, CssNanoWorker, MinificationResult, MinificationSuccess} from './types.js'*/
 
-/**
- * @param {string} input
- * @param {string} config
- * @param {import('@codemirror/view').EditorView} outputView
- * @return {Promise<void>}
- */
-export function runOptimizer(input, outputView, config) {
-  return runner(input, config)
-    .then((res) => {
-      const transaction = outputView.state.update({
-        changes: {
-          from: 0,
-          to: outputView.state.doc.length,
-          insert: res.css,
-        },
-      });
-      outputView.dispatch(transaction);
-    })
+export class PlaygroundRunner {
+  #cssnanoWorker;
+  /** @type {PromiseWithResolvers<MinificationSuccess> | undefined} */
+  #pendingMinification;
 
-    .catch((err) => {
-      switch (err.constructor) {
-        case postcss.CssSyntaxError:
-          throw new Error(
-            `CssSyntaxError: ${err.reason} (${err.line}:${err.column})`
-          );
-        default:
-          console.error(err);
-          throw new Error('Unknown error. See browser console for details.');
-      }
-    });
-}
-
-/**
- * @param {string} config
- * @returns {Promise<import('postcss').AcceptedPlugin[]>}
- */
-async function loadPlugins(config) {
-  let preset;
-  switch (config) {
-    case 'cssnano-preset-lite':
-      preset = (await import('cssnano-preset-lite')).default;
-      break;
-    case 'cssnano-preset-default':
-      preset = (await import('cssnano-preset-default')).default;
-      break;
-    case 'cssnano-preset-advanced':
-      preset = (await import('cssnano-preset-advanced')).default;
-      break;
-    default:
-      throw new Error('Invalid configuration preset');
+  /** @param {CssNanoWorker} cssnanoWorker */
+  constructor(cssnanoWorker) {
+    this.#cssnanoWorker = cssnanoWorker;
+    this.#cssnanoWorker.onmessage = (event) => {
+      this.#receiveMinificationResult(event.data);
+    };
+    this.#cssnanoWorker.onerror = (event) => this.#receiveWorkerError(event);
+    this.#cssnanoWorker.onmessageerror = () =>
+      this.#rejectPendingMinification(
+        new Error('Minifier worker message deserialization failed')
+      );
   }
 
-  const postcssPlugins = [];
-  for (const plugin of preset().plugins) {
-    const [processor, opts] = plugin;
-    if (
-      typeof opts === 'undefined' ||
-      (typeof opts === 'object' && !opts.exclude) ||
-      (typeof opts === 'boolean' && opts === true)
-    ) {
-      postcssPlugins.push(processor(opts));
+  /** @param {string} input
+   * @param {PresetName} preset
+   * @returns {Promise<string>} */
+  async minimizeCss(input, preset) {
+    if (this.#pendingMinification) {
+      throw new Error('Minification is busy');
+    }
+    const pendingMinification = Promise.withResolvers();
+    this.#pendingMinification = pendingMinification;
+    try {
+      this.#cssnanoWorker.postMessage({ input, config: preset });
+    } catch (err) {
+      this.#rejectPendingMinification(
+        err instanceof Error ? err : new Error(String(err))
+      );
+    }
+    const { css } = await pendingMinification.promise;
+    return css;
+  }
+
+  /** @param {ErrorEvent} ev */
+  #receiveWorkerError(ev) {
+    const msg =
+      'message' in ev && typeof ev.message === 'string'
+        ? ev.message
+        : 'Worker error';
+    this.#rejectPendingMinification(new Error(msg));
+  }
+
+  /** @param {MinificationResult} result */
+  #receiveMinificationResult(result) {
+    const pendingMinification = this.#takePendingMinification();
+    if (!pendingMinification) {
+      return;
+    }
+    if (result.ok) {
+      pendingMinification.resolve(result);
+    } else {
+      pendingMinification.reject(new Error(result.error.message));
     }
   }
-  return postcssPlugins;
-}
 
-/**
- * @param {string} input
- * @param {string} config
- * @returns {Promise<import('postcss').Result>}
- */
-async function runner(input, config) {
-  const postcssPlugins = await loadPlugins(config);
-  return postcss(postcssPlugins).process(input, { from: undefined });
+  /** @param {Error} err */
+  #rejectPendingMinification(err) {
+    const pendingMinification = this.#takePendingMinification();
+    if (!pendingMinification) {
+      return;
+    }
+    pendingMinification.reject(err);
+  }
+
+  #takePendingMinification() {
+    const pendingMinification = this.#pendingMinification;
+    this.#pendingMinification = undefined;
+    return pendingMinification;
+  }
 }
