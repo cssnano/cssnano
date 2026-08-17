@@ -334,6 +334,14 @@ test(
 );
 
 test(
+  'should order transition consistently (6) (linear timing function)',
+  processCSS(
+    'transition: .5s 2s width linear(0, 1)',
+    'transition: width .5s linear(0, 1) 2s'
+  )
+);
+
+test(
   'should order transition consistently (7)',
   processCSS(
     'transition: .5s 2s width ease-out,.8s 1s height ease',
@@ -391,6 +399,14 @@ test(
   processCSS(
     'animation: cubic-bezier(0, 0.3, 0.6, 1) 1s bounce',
     'animation: bounce 1s cubic-bezier(0, 0.3, 0.6, 1)'
+  )
+);
+
+test(
+  'should order animation consistently (3) (linear timing function)',
+  processCSS(
+    'animation: linear(0, 1) 1s bounce',
+    'animation: bounce 1s linear(0, 1)'
   )
 );
 

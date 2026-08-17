@@ -3,18 +3,12 @@ const { unit } = require('postcss-value-parser');
 const { getArguments } = require('cssnano-utils');
 const addSpace = require('../lib/addSpace');
 const getValue = require('../lib/getValue');
+const easingFunctions = require('./easingFunctions.json');
 
 // transition: [ none | <single-transition-property> ] || <time> || <single-transition-timing-function> || <time>
 
-const timingFunctions = new Set([
-  'ease',
-  'linear',
-  'ease-in',
-  'ease-out',
-  'ease-in-out',
-  'step-start',
-  'step-end',
-]);
+const timingFunctions = new Set(easingFunctions.keywords);
+const timingFunctionNames = new Set(easingFunctions.functions);
 
 /**
  * @param {import('postcss-value-parser').Node[][]} args
@@ -38,10 +32,7 @@ function normalize(args) {
         continue;
       }
 
-      if (
-        type === 'function' &&
-        new Set(['steps', 'cubic-bezier']).has(value.toLowerCase())
-      ) {
+      if (type === 'function' && timingFunctionNames.has(value.toLowerCase())) {
         state.timingFunction = [...state.timingFunction, node, addSpace()];
       } else if (unit(value)) {
         if (!state.time1.length) {

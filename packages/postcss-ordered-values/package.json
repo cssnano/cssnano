@@ -48,13 +48,14 @@
     "node": "^22.11.0 || ^24.11.0 || >=26.0"
   },
   "devDependencies": {
+    "@webref/css": "8.7.1",
     "postcss": "^8.5.26"
   },
   "peerDependencies": {
     "postcss": "^8.5.26"
   },
   "scripts": {
-    "acquire": "node ./script/buildListStyleType.js",
+    "acquire": "node ./script/acquire.mjs",
     "test": "node --test"
   }
 }
