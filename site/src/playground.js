@@ -1,15 +1,19 @@
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { playgroundSetup } from './playground-editor.js';
+import { PlaygroundRunner } from './playground-runner.js';
+
 /** @param {string} message */
 function setErrorMessage(message) {
-  const errorBox = document.getElementById('errorBox');
+  const errorBox = /** @type {HTMLDivElement} */ (
+    document.getElementById('errorBox')
+  );
   if (message === '') {
     errorBox.style.display = 'none';
   } else {
     errorBox.style.display = 'inline';
   }
-  document.getElementById('errorBox').textContent = message;
+  errorBox.textContent = message;
 }
 
 const inputView = new EditorView({
@@ -33,31 +37,72 @@ const outputView = new EditorView({
   }),
 });
 
-document
-  .getElementById('editors')
-  .replaceChildren(inputView.dom, outputView.dom);
-const presetSelector = document.getElementById('presetSelector');
+/** @type {HTMLDivElement} */
+(document.getElementById('editors')).replaceChildren(
+  inputView.dom,
+  outputView.dom
+);
+
+const presetSelector = /** @type {HTMLSelectElement} */ (
+  document.getElementById('presetSelector')
+);
 presetSelector.value = 'cssnano-preset-default';
-const runButton = document.getElementById('runButton');
-import('./playground-runner.js')
-  .catch(() => setErrorMessage('Loading cssnano failed.'))
-  .then((runner) => {
-    runButton.innerText = 'Minimize';
-    runButton.disabled = false;
-    runButton.addEventListener('click', () => {
-      runButton.disabled = true;
-      runButton.innerText = 'Working…';
-      setErrorMessage('');
-      const userInput = inputView.state.doc.sliceString(
-        0,
-        inputView.state.doc.length
-      );
-      runner
-        .runOptimizer(userInput, outputView, presetSelector.value)
-        .catch((error) => setErrorMessage(error.message))
-        .finally(() => {
-          runButton.disabled = false;
-          runButton.innerText = 'Minimize';
-        });
-    });
+
+const runButton = /** @type {HTMLButtonElement} */ (
+  document.getElementById('runButton')
+);
+runButton.innerText = 'Minimize';
+
+/** @type {PlaygroundRunner | undefined} */
+let cssMinifier;
+try {
+  cssMinifier = new PlaygroundRunner(
+    new Worker(new URL('./playground-worker.js', import.meta.url), {
+      type: 'module',
+    })
+  );
+  runButton.disabled = false;
+} catch {
+  runButton.disabled = true;
+  setErrorMessage('Minify unavailable in this browser');
+}
+
+let running = false;
+if (cssMinifier) {
+  runButton.addEventListener('click', () => {
+    // aria-disabled (not disabled) keeps the button focusable while busy, so
+    // a keyboard user doesn't lose focus the moment they activate it; guard
+    // re-entrancy explicitly since aria-disabled doesn't block activation.
+    if (running) return;
+    running = true;
+    runButton.setAttribute('aria-disabled', 'true');
+    runButton.setAttribute('aria-busy', 'true');
+    runButton.innerText = 'Working…';
+    setErrorMessage('');
+    const userInput = inputView.state.doc.sliceString(
+      0,
+      inputView.state.doc.length
+    );
+    cssMinifier
+      .minimizeCss(
+        userInput,
+        /** @type {import('./types.js').PresetName} */ (presetSelector.value)
+      )
+      .then((css) => {
+        outputView.dispatch(
+          outputView.state.update({
+            changes: { from: 0, to: outputView.state.doc.length, insert: css },
+          })
+        );
+      })
+      .catch((/** @type {unknown} */ err) => {
+        if (err instanceof Error) setErrorMessage(err.message);
+      })
+      .finally(() => {
+        running = false;
+        runButton.removeAttribute('aria-disabled');
+        runButton.removeAttribute('aria-busy');
+        runButton.innerText = 'Minimize';
+      });
   });
+}

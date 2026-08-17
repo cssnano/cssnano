@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "node --test && pnpm typecheck",
+    "typecheck": "tsc --project tsconfig.json",
     "build:metadata": "node ./util/buildMetadata.mjs",
     "start": "eleventy --serve --input src/",
     "build": "eleventy --input src/"
@@ -27,6 +29,7 @@
     "markdown-it": "^14.3.0",
     "markdown-it-anchor": "^9.2.1",
     "smol-toml": "^1.7.1",
+    "typescript": "~7.0.2",
     "webpack": "^5.109.2",
     "webpack-cli": "^7.2.2"
   },
