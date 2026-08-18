@@ -100,7 +100,23 @@ test(
   bar {
     color: green;
   }
-}`)
+  }`)
+);
+
+test(
+  'should discard empty layers after a non-empty layer with the same name',
+  processCSS(
+    '@layer components{.a{display:flex}}@layer components{}',
+    '@layer components{.a{display:flex}}'
+  )
+);
+
+test(
+  'should discard empty layers after a non-empty layer with an equivalent path',
+  processCSS(
+    '@layer a{@layer b{.a{display:flex}}}@layer a.b{}',
+    '@layer a{@layer b{.a{display:flex}}}'
+  )
 );
 
 test(
