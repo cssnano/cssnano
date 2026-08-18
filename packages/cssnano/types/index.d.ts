@@ -1,18 +1,21 @@
 export = cssnanoPlugin;
 import postcss = require('postcss');
-export type PresetPlugin = [import('postcss').PluginCreator<any>, boolean | Record<string, any> | void | undefined];
-export type PresetSpec = string | [string | import('postcss').PluginCreator<any>, object] | import('postcss').PluginCreator<any> | {
+export type PluginOptions = boolean | {
+    exclude?: boolean;
+} | void | undefined;
+export type PluginCreator = import('postcss').PluginCreator<any>;
+export type PresetPlugin = [PluginCreator, PluginOptions];
+export type PresetFactory = (options?: any) => {
     plugins: PresetPlugin[];
 };
+export type PresetSpec = string | PresetFactory | [string | PresetFactory, object] | {
+    plugins: PresetPlugin[];
+};
+export type PluginSpec = string | PluginCreator | [string | PluginCreator, object?];
 export type Options = {
     preset?: PresetSpec;
-    plugins?: import('postcss').AcceptedPlugin[];
+    plugins?: PluginSpec[];
     configFile?: string;
-};
-export type MutableOptions = Omit<Options, 'preset'> & {
-    preset: PresetSpec & {
-        plugins: PresetPlugin[];
-    };
 };
 /**
  * @type {import('postcss').PluginCreator<Options>}
