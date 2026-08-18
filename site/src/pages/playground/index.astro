@@ -1,0 +1,39 @@
+---
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Head from '../../components/Head.astro';
+import cssnanoPackage from '../../../../packages/cssnano/package.json';
+import '../../styles/index.css';
+---
+<!doctype html>
+<html lang="en">
+  <head><Head title="CSSNANO Playground" pathname={Astro.url.pathname} /></head>
+  <body>
+    <Header />
+    <main id="article">
+      <div class="playground-toolbar box">
+        <div class="preset-picker">
+          <label for="presetSelector">Choose a preset</label>
+          <select id="presetSelector" class="select">
+            <option value="cssnano-preset-default">Preset Default</option>
+            <option value="cssnano-preset-lite">Preset Lite</option>
+            <option value="cssnano-preset-advanced">Preset Advanced</option>
+          </select>
+        </div>
+        <button id="runButton" class="button" disabled>Minimize</button>
+      </div>
+      <div id="editors" class="editors box">
+        <div class="editor">
+          <label class="editor-label" for="input">Write or paste your CSS below</label>
+          <textarea id="input" class="editor-textarea" spellcheck="false"></textarea>
+        </div>
+        <div class="editor">
+          <label class="editor-label" for="output">Optimised output appears here</label>
+          <textarea id="output" class="editor-textarea" aria-live="polite" readonly spellcheck="false"></textarea>
+        </div>
+      </div>
+      <script src="../../playground.js"></script>
+    </main>
+    <Footer version={cssnanoPackage.version} />
+  </body>
+</html>

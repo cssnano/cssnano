@@ -6,7 +6,12 @@
     "test": "node --test && pnpm typecheck",
     "typecheck": "tsc --project tsconfig.json",
     "start": "eleventy --serve --input src/",
-    "build": "eleventy --input src/",
+    "build": "pnpm build:eleventy",
+    "build:eleventy": "eleventy --input src/ --output _site/",
+    "build:astro": "astro build",
+    "check:astro": "pnpm build:astro && node util/check-astro-artifacts.mjs",
+    "compare:routes": "node util/compare-routes.mjs",
+    "compare": "pnpm build:eleventy && pnpm build:astro && pnpm compare:routes",
     "build:webpack": "webpack --config webpack.config.js",
     "build:vite": "vite build --config vite.config.js",
     "check:vite": "pnpm build:webpack && pnpm build:vite && node util/check-vite-artifacts.mjs"
@@ -21,6 +26,7 @@
   "devDependencies": {
     "@11ty/eleventy": "^3.1.6",
     "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.2",
+    "astro": "7.2.3",
     "cssnano": "link:../packages/cssnano",
     "markdown-it": "^14.3.0",
     "markdown-it-anchor": "^9.2.1",

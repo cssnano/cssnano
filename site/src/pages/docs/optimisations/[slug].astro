@@ -1,0 +1,11 @@
+---
+import NoSidebar from '../../../layouts/NoSidebar.astro';
+import optimisations from '../../../_data/optimisations.js';
+export function getStaticPaths() { return optimisations.map((optimisation) => ({ params: { slug: optimisation.shortName.toLowerCase() }, props: { optimisation } })); }
+const { optimisation } = Astro.props;
+---
+<NoSidebar title={optimisation.shortName}>
+  <p>{optimisation.longDescription}</p>
+  <h2>Example</h2><h3>Input</h3><pre tabindex="0"><code class="language-css">{optimisation.inputExample}</code></pre>
+  <h3>Output</h3><pre tabindex="0"><code class="language-css">{optimisation.outputExample}</code></pre>
+</NoSidebar>

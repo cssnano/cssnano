@@ -46,6 +46,9 @@ lerna-debug.log*
 
 # Generated website files
 site/_site/
+site/_astro-site/
+site/_vite-site/
+site/.astro/
 
 # Demo lockfile
 example-cli-usage/package-lock.json

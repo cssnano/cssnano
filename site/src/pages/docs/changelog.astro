@@ -1,0 +1,7 @@
+---
+import { getEntry, render } from 'astro:content';
+import MainLayout from '../../layouts/MainLayout.astro';
+const entry = await getEntry('repository', 'changelog');
+const { Content } = await render(entry);
+---
+<MainLayout title="Changelog"><Content /></MainLayout>

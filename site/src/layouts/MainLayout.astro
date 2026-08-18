@@ -1,0 +1,10 @@
+---
+import '../styles/index.css';
+import Head from '../components/Head.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Sidebar from '../components/Sidebar.astro';
+import cssnanoPackage from '../../../packages/cssnano/package.json';
+const { title, date = new Date() } = Astro.props;
+---
+<!doctype html><html lang="en" class="initial"><head><Head title={title} pathname={Astro.url.pathname} /></head><body><Header /><main tabindex="-1" class="with-sidebar box"><Sidebar /><article id="article" class="not-sidebar stack"><slot /><p class="annotation">Last updated on {new Date(date).toUTCString()}</p></article></main><Footer version={cssnanoPackage.version} /></body></html>

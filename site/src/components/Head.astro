@@ -1,0 +1,19 @@
+---
+import { absoluteUrl, baseUrl, url } from '../lib/site.js';
+const { title, pathname = '/' } = Astro.props;
+const canonicalPathValue = pathname.startsWith(baseUrl) ? pathname : url(pathname);
+const canonicalPath = canonicalPathValue.endsWith('/') ? canonicalPathValue : `${canonicalPathValue}/`;
+---
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href={url('/img/favicon.svg')} />
+<link rel="alternate icon" type="image/x-icon" href={url('/img/favicon.ico')} />
+<link rel="sitemap" href={url('/sitemap.xml')} />
+<link rel="canonical" href={absoluteUrl(canonicalPath)} />
+<title>{title}</title>
+<meta property="og:title" content={title} />
+<meta property="og:type" content="article" />
+<meta property="og:url" content={canonicalPath} />
+<meta property="og:locale" content="en" />
+<meta name="description" property="og:description" content="CSSNANO - postcss based css optimizer" />
+<meta property="og:site_name" content="CSSNANO documentation" />
