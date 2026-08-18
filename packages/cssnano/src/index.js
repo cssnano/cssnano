@@ -6,10 +6,13 @@ const defaultPreset = require('cssnano-preset-default');
 
 const cssnano = 'cssnano';
 
-/** @typedef {[import('postcss').PluginCreator<any>, boolean | Record<string, any> | void | undefined]} PresetPlugin */
-/** @typedef {string | [string | import('postcss').PluginCreator<any>, object] | import('postcss').PluginCreator<any> | { plugins: PresetPlugin[] }} PresetSpec */
-/** @typedef {{ preset?: PresetSpec, plugins?: import('postcss').AcceptedPlugin[], configFile?: string }} Options */
-/** @typedef {Omit<Options, 'preset'> & { preset: PresetSpec & { plugins: PresetPlugin[] } }} MutableOptions */
+/** @typedef {boolean | { exclude?: boolean } | void | undefined} PluginOptions */
+/** @typedef {import('postcss').PluginCreator<any>} PluginCreator */
+/** @typedef {[PluginCreator, PluginOptions]} PresetPlugin */
+/** @typedef {(options?: any) => { plugins: PresetPlugin[] }} PresetFactory */
+/** @typedef {string | PresetFactory | [string | PresetFactory, object] | { plugins: PresetPlugin[] }} PresetSpec */
+/** @typedef {string | PluginCreator | [string | PluginCreator, object?]} PluginSpec */
+/** @typedef {{ preset?: PresetSpec, plugins?: PluginSpec[], configFile?: string }} Options */
 /**
  * @param {string} moduleId
  * @returns {boolean}
@@ -124,6 +127,7 @@ function resolveConfig(options) {
  * @return {import('postcss').Processor}
  */
 function cssnanoPlugin(options = {}) {
+  /** @typedef {Options & { preset: { plugins: PresetPlugin[] } }} MutableOptions */
   if (Array.isArray(/** @type {MutableOptions} */ (options).plugins)) {
     if (
       !(/** @type {MutableOptions} */ (options).preset) ||
@@ -132,7 +136,7 @@ function cssnanoPlugin(options = {}) {
       /** @type {MutableOptions} */ (options).preset = { plugins: [] };
     }
 
-    const inputPlugins = /** @type {import('postcss').AcceptedPlugin[]} */ (
+    const inputPlugins = /** @type {PluginSpec[]} */ (
       /** @type {MutableOptions} */ (options).plugins
     );
     for (const plugin of inputPlugins) {
@@ -145,7 +149,7 @@ function cssnanoPlugin(options = {}) {
           ]);
         } else {
           /** @type {MutableOptions} */ (options).preset.plugins.push([
-            pluginDef,
+            /** @type {PluginCreator} */ (pluginDef),
             opts,
           ]);
         }
@@ -156,7 +160,7 @@ function cssnanoPlugin(options = {}) {
         ]);
       } else {
         /** @type {MutableOptions} */ (options).preset.plugins.push([
-          /** @type {import('postcss').PluginCreator<any>} */ (plugin),
+          /** @type {PluginCreator} */ (plugin),
           {},
         ]);
       }

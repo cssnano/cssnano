@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const litePreset = require('cssnano-preset-lite');
 const defaultPreset = require('cssnano-preset-default');
+const autoprefixer = require('autoprefixer');
 const cssnano = require('../../src/index.js');
 
 /* The configuration is loaded relative to the current working directory,
@@ -29,4 +30,16 @@ test('should read the cssnano configuration file', () => {
 test('PostCSS config should override the cssnano config', () => {
   const processor = postcss([cssnano({ preset: 'default' })]);
   assert.strictEqual(processor.plugins.length, defaultPreset().plugins.length);
+});
+
+test('direct plugins should bypass the cssnano configuration file', async () => {
+  const result = await postcss([cssnano({ plugins: [autoprefixer] })]).process(
+    `.example { user-select: none; }`,
+    { from: undefined }
+  );
+
+  assert.strictEqual(
+    result.css,
+    `.example { -ms-user-select: none; user-select: none; }`
+  );
 });

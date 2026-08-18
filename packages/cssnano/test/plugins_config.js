@@ -72,6 +72,23 @@ test('should run the plugin passed through the cssnano config.plugins', () => {
     });
 });
 
+for (const [description, preset] of [
+  ['a string preset', 'lite'],
+  ['a preset factory', litePreset],
+  ['a configured preset', [litePreset, {}]],
+]) {
+  test(`should retain the plugins-only result with ${description}`, async () => {
+    const result = await postcss([
+      cssnano({ preset, plugins: [autoprefixer] }),
+    ]).process(`.example { user-select: none; }`, { from: undefined });
+
+    assert.strictEqual(
+      result.css,
+      `.example { -ms-user-select: none; user-select: none; }`
+    );
+  });
+}
+
 test('should run the plugin when plugin module is being used with no array inside plugins', () => {
   const preset = litePreset();
   return postcss([cssnano({ preset, plugins: [require('autoprefixer')] })])
