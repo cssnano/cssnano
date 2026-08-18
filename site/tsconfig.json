@@ -1,4 +1,5 @@
 {
+  "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
     "target": "es2025",
     "lib": ["es2025", "dom", "dom.iterable"],
@@ -11,6 +12,6 @@
     "moduleResolution": "nodenext",
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.js"],
+  "include": [".astro/types.d.ts", ".astro/content.d.ts", "src/**/*.js", "src/**/*.ts"],
   "exclude": ["node_modules", "test"]
 }

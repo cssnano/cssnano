@@ -1,0 +1,15 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { url } from '../../lib/site.js';
+import presets from '../../_data/presets.js';
+import optimisations from '../../_data/optimisations.js';
+---
+<MainLayout title="Optimisations">
+  <h2>What are optimisations?</h2>
+  <p>An optimisation is a module that performs a transform on some CSS code in order to reduce its size, or failing this, the final gzip size of the CSS. Each optimisation is performed by either one module or a few modules working together.</p>
+  <h2>Supported optimisations</h2>
+  <table><thead><tr><th>Optimisation</th>{presets.map((preset) => <th>{preset}</th>)}</tr></thead><tbody>
+    {optimisations.map((opt) => <tr><td><a href={url(`/docs/optimisations/${opt.shortName.toLowerCase()}/`)}>{opt.shortName}</a></td>{presets.map((preset) => <td>{opt.presets.includes(preset) ? <span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span> : <span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span>}</td>)}</tr>)}
+  </tbody></table>
+  <p>You can read more about presets in our <a href={url('/docs/presets/')}>presets guide</a>.</p>
+</MainLayout>

@@ -1,0 +1,12 @@
+---
+import { getCollection, render } from 'astro:content';
+import MainLayout from '../../layouts/MainLayout.astro';
+const entries = await getCollection('docs');
+export async function getStaticPaths() {
+  const entries = await getCollection('docs');
+  return entries.filter(({ id }) => !id.includes('optimisations/optimisation-page') && !['community', 'what-are-optimisations'].includes(id)).map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+<MainLayout title={entry.data.title ?? entry.id}><Content /></MainLayout>
