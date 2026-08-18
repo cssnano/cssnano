@@ -238,9 +238,6 @@ importers:
       markdown-it-anchor:
         specifier: ^9.2.1
         version: 9.2.1(@types/markdown-it@14.1.2)(markdown-it@14.3.0)
-      smol-toml:
-        specifier: ^1.7.1
-        version: 1.7.1
       typescript:
         specifier: ~7.0.2
         version: 7.0.2
@@ -1271,10 +1268,6 @@ packages:
   slugify@1.6.9:
     resolution: {integrity: sha512-vZ7rfeehZui7wQs438JXBckYLkIIdfHOXsaVEUMyS5fHo1483l1bMdo0EDSWYclY0yZKFOipDy4KHuKs6ssvdg==}
     engines: {node: '>=8.0.0'}
-
-  smol-toml@1.7.1:
-    resolution: {integrity: sha512-PPlsspAZ4jbMBu5DMFhfUGDQLu/vrL4SyBROVS37x8ynnVmFIs1VPBz1Co8Xks3TvpIaZXmU85y4DrQ+UyVFoQ==}
-    engines: {node: '>= 18'}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -2358,8 +2351,6 @@ snapshots:
   slash@3.0.0: {}
 
   slugify@1.6.9: {}
-
-  smol-toml@1.7.1: {}
 
   source-map-js@1.2.1: {}
 

@@ -6,9 +6,6 @@ dist
 _webpackOutput
 tsconfig.tsbuildinfo
 
-# Generated metadata
-site/src/docs/docs.11tydata.json
-
 # Cache
 .cache
 .eslintcache
