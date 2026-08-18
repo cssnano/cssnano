@@ -30,11 +30,6 @@ export default {
           idHint: 'svgo',
           priority: 20,
         },
-        codemirror: {
-          test: /[\\/]node_modules[\\/]@codemirror[\\/]/,
-          name: 'codemirror',
-          priority: 10,
-        },
       },
     },
   },

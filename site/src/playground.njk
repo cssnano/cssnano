@@ -7,8 +7,8 @@
   <body>
     {% include 'header.njk' %}
     <main>
-    <div class="box cluster">
-      <div>
+    <div class="playground-toolbar box">
+      <div class="preset-picker">
         <label for="presetSelector">
           Choose a preset
         </label>
@@ -18,15 +18,29 @@
           <option value="cssnano-preset-advanced">Preset Advanced</option>
         </select>
       </div>
-      <div class="cluster" style="--justify-content: space-between">
-        <button id="runButton" class="button" disabled>
-          Minimize
-        </button>
-        <span id="errorBox" class="error box" role="alert"></span>
-      </div>
+      <button id="runButton" class="button" disabled>
+        Minimize
+      </button>
     </div>
     <div id="editors" class="editors box">
-      <span class="center">Loading CSS editor…</span>
+      <div class="editor">
+        <label class="editor-label" for="input">Write or paste your CSS below</label>
+        <textarea
+          id="input"
+          class="editor-textarea"
+          spellcheck="false"
+        ></textarea>
+      </div>
+      <div class="editor">
+        <label class="editor-label" for="output">Optimised output appears here</label>
+        <textarea
+          id="output"
+          class="editor-textarea"
+          aria-live="polite"
+          readonly
+          spellcheck="false"
+        ></textarea>
+      </div>
     </div>
     <script type="module" src="/js/runtime.bundle.js"></script>
     <script type="module" src="/js/playground.bundle.js"></script>
