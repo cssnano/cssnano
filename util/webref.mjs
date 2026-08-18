@@ -1,7 +1,7 @@
 /**
  * Matches a reference to another CSS grammar production.
  */
-export const REFERENCE = /<'([^'>]+)'>|<([^'>\s]+)(?:\s+\[[^\]]*\])?>/g;
+export const REFERENCE = /<(?:'([^'>]+)'|([^'>\s]+)(?:\s+\[[^\]]*\])?)>/g;
 
 /**
  * Returns the literal keywords a grammar offers. Function calls do not count:
