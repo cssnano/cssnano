@@ -38,7 +38,7 @@ The optimisations are different depending on which preset cssnano is configured 
 <td><a href="/docs/optimisations/{{ opt.shortName | lower }}">{{ opt.shortName }}</a></td>
 {% for preset in presets %}
 <td>
-{%- if opt[preset] === 'enabled' -%}
+{%- if opt.presets.includes(preset) -%}
 <span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span>
 {%- else -%}
 <span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span>
