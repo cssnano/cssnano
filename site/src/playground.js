@@ -1,47 +1,20 @@
-import { EditorState } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
-import { playgroundSetup } from './playground-editor.js';
 import { PlaygroundRunner } from './playground-runner.js';
 
-/** @param {string} message */
-function setErrorMessage(message) {
-  const errorBox = /** @type {HTMLDivElement} */ (
-    document.getElementById('errorBox')
-  );
-  if (message === '') {
-    errorBox.style.display = 'none';
-  } else {
-    errorBox.style.display = 'inline';
-  }
-  errorBox.textContent = message;
-}
-
-const inputView = new EditorView({
-  state: EditorState.create({
-    doc: '/* write your css below */',
-    extensions: [
-      playgroundSetup,
-      EditorView.contentAttributes.of({ 'aria-label': 'Input' }),
-    ],
-  }),
-});
-
-const outputView = new EditorView({
-  state: EditorState.create({
-    doc: '/* your optimized output here */',
-    extensions: [
-      playgroundSetup,
-      EditorView.editable.of(false),
-      EditorView.contentAttributes.of({ 'aria-label': 'Output' }),
-    ],
-  }),
-});
-
-/** @type {HTMLDivElement} */
-(document.getElementById('editors')).replaceChildren(
-  inputView.dom,
-  outputView.dom
+const input = /** @type {HTMLTextAreaElement} */ (
+  document.getElementById('input')
 );
+const output = /** @type {HTMLTextAreaElement} */ (
+  document.getElementById('output')
+);
+
+/** @param {string} message
+ * @param {boolean} isError
+ */
+function setOutput(message, isError) {
+  output.value = message;
+  output.toggleAttribute('data-has-output', message !== '');
+  output.toggleAttribute('data-has-error', isError);
+}
 
 const presetSelector = /** @type {HTMLSelectElement} */ (
   document.getElementById('presetSelector')
@@ -64,7 +37,7 @@ try {
   runButton.disabled = false;
 } catch {
   runButton.disabled = true;
-  setErrorMessage('Minify unavailable in this browser');
+  setOutput('Minify unavailable in this browser', true);
 }
 
 let running = false;
@@ -78,25 +51,18 @@ if (cssMinifier) {
     runButton.setAttribute('aria-disabled', 'true');
     runButton.setAttribute('aria-busy', 'true');
     runButton.innerText = 'Working…';
-    setErrorMessage('');
-    const userInput = inputView.state.doc.sliceString(
-      0,
-      inputView.state.doc.length
-    );
+    output.removeAttribute('data-has-error');
+    const userInput = input.value;
     cssMinifier
       .minimizeCss(
         userInput,
         /** @type {import('./types.js').PresetName} */ (presetSelector.value)
       )
       .then((css) => {
-        outputView.dispatch(
-          outputView.state.update({
-            changes: { from: 0, to: outputView.state.doc.length, insert: css },
-          })
-        );
+        setOutput(css, false);
       })
       .catch((/** @type {unknown} */ err) => {
-        if (err instanceof Error) setErrorMessage(err.message);
+        if (err instanceof Error) setOutput(err.message, true);
       })
       .finally(() => {
         running = false;

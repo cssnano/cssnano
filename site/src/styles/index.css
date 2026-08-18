@@ -314,8 +314,6 @@ a {
   color: var(--theme-accent);
   font-weight: 400;
   text-decoration: none;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 :is(h2, h3)>a {
@@ -335,7 +333,6 @@ a:focus {
 
 strong {
   font-weight: var(--font-weight-strong);
-  color: inherit;
 }
 
 /* Supporting Content */
@@ -365,7 +362,6 @@ pre {
 pre {
   font-family: var(--font-mono);
   font-size: 0.875em;
-  position: relative;
 }
 
 pre:focus-visible {
@@ -408,7 +404,7 @@ th {
 }
 
 td:has(.checkmark) {
-   text-align: start;
+  text-align: start;
 }
 blockquote {
   margin: 2rem 0;
@@ -416,11 +412,6 @@ blockquote {
   background-color: var(--theme-bg-offset);
   border-radius: 0 var(--border-radius) var(--border-radius) 0;
   line-height: 1.7;
-}
-
-button {
-  padding: 0.25rem;
-  cursor: pointer;
 }
 
 ul,
@@ -445,25 +436,13 @@ img {
   border-width: 0;
 }
 
-.focus\:not-sr-only:focus,
-.focus\:not-sr-only:focus-visible {
-  position: static;
-  width: auto;
-  height: auto;
-  padding: 0;
-  margin: 0;
-  overflow: visible;
-  clip-path: none;
-  white-space: normal;
-}
-
 :target {
   scroll-margin: calc(var(--theme-sidebar-offset, 5rem) + 2rem) 0 2rem;
 }
 
 nav {
-  inline-size: 100%;
   margin-inline-end: 1rem;
+  min-inline-size: 0;
 
   --align: center;
 }
@@ -603,6 +582,7 @@ nav ul {
 
 .button {
   padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
   color: var(--color-white);
   background-color: var(--theme-accent);
   font-weight: var(--font-weight-strong);
@@ -628,6 +608,37 @@ nav ul {
   background-color: var(--theme-bg);
   border: var(--theme-border-width) solid var(--theme-border);
   border-radius: var(--border-radius);
+}
+
+.playground-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: var(--space-md);
+  column-gap: var(--space-sm);
+  align-items: end;
+  inline-size: 100%;
+  max-width: 160ch;
+  margin-inline: auto;
+}
+
+.preset-picker {
+  flex: 0 1 min(37.5ch, 100%);
+  min-inline-size: 0;
+}
+
+.preset-picker label {
+  display: block;
+  margin-block-end: var(--space-xs);
+}
+
+.preset-picker .select {
+  inline-size: 100%;
+}
+
+.playground-toolbar .button {
+  min-inline-size: min(14ch, 100%);
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
 }
 
 /* Features Grid */
@@ -675,19 +686,51 @@ nav ul {
 
 .editors {
   display: flex;
-  flex-flow: row wrap;
+  flex-wrap: wrap;
   gap: var(--space-md);
-  justify-content: space-around;
+  inline-size: 100%;
   max-width: 160ch;
   margin-inline: auto;
 }
 
 .editors>* {
-  flex: 1 1 0;
+  flex: 1 1 37.5ch;
+  min-inline-size: min(37.5ch, 100%);
   max-inline-size: 80ch;
-  min-height: 20em;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.editor-label {
+  font-weight: var(--font-weight-strong);
+  overflow-wrap: anywhere;
+}
+
+.editor-textarea {
+  flex: 1;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 20em;
+  padding: var(--space-sm);
+  color: var(--theme-text);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  background-color: var(--theme-bg);
   border: var(--theme-border-width) solid var(--theme-border);
   border-radius: var(--border-radius);
+  resize: vertical;
+}
+
+.editor-textarea[readonly]:not([data-has-output]) {
+  caret-color: transparent;
+}
+
+.editor-textarea[data-has-error] {
+  color: hsl(0deg 72% 51%);
 }
 
 .with-sidebar {
@@ -738,11 +781,6 @@ ul[class] {
 .text-center {
   align-self: center;
   text-align: center;
-}
-
-.error {
-  color: hsl(0deg 72% 51%);
-  display: none;
 }
 
 .annotation {
