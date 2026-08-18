@@ -1,3 +1,8 @@
+import {
+  REFERENCE,
+  keywordTerminals as readKeywordTerminals,
+} from '../../../../util/webref.mjs';
+
 /**
  * Derives, from the raw `@webref/css` data, the shorthand structure and the
  * keyword sets postcss-merge-longhand takes apart and puts back together.
@@ -83,13 +88,6 @@ const unimplemented = new Set([
 const implemented = (names) => names.filter((name) => !unimplemented.has(name));
 
 /**
- * Matches a reference to another production: `<length>`, `<rgb()>` for a
- * function, `<'border-width'>` for a property's own grammar. Ranges are written
- * inside the brackets, as in `<length [0,∞]>`.
- */
-const REFERENCE = /<'([^'>]+)'>|<([^'>\s]+)(?:\s+\[[^\]]*\])?>/g;
-
-/**
  * @param {string[]} actual
  * @param {string[]} expected
  * @param {string} what
@@ -136,28 +134,8 @@ const expectNone = (actual, rejected, what) => {
  * @param {string} [syntax]
  * @return {string[]}
  */
-export function keywordTerminals(syntax) {
-  if (!syntax) {
-    return [];
-  }
-
-  const literals = syntax.replace(REFERENCE, ' ');
-  /** @type {string[]} */
-  const keywords = [];
-
-  for (const match of literals.matchAll(/[a-zA-Z][a-zA-Z0-9-]*/g)) {
-    const [keyword] = match;
-    const rest = literals.slice(
-      /** @type {number} */ (match.index) + keyword.length
-    );
-
-    if (!/^\s*\(/.test(rest)) {
-      keywords.push(keyword.toLowerCase());
-    }
-  }
-
-  return keywords;
-}
+export const keywordTerminals = (syntax) =>
+  readKeywordTerminals(syntax).map((keyword) => keyword.toLowerCase());
 
 /**
  * A grammar may spell a function out as a call instead of naming it through a

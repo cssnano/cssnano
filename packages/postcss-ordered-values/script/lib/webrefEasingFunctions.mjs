@@ -1,3 +1,5 @@
+import { REFERENCE, keywordTerminals } from '../../../../util/webref.mjs';
+
 /**
  * Derives the terminal keywords and functions accepted by <easing-function>.
  * Kept free of I/O so that it can be unit tested.
@@ -13,31 +15,6 @@
  * @property {string[]} keywords
  * @property {string[]} functions
  */
-
-const REFERENCE = /<'([^'>]+)'>|<([^'>\s]+)(?:\s+\[[^\]]*\])?>/g;
-
-/**
- * @param {string} syntax
- * @return {string[]}
- */
-function keywordTerminals(syntax) {
-  const literals = syntax.replace(REFERENCE, ' ');
-  /** @type {string[]} */
-  const keywords = [];
-
-  for (const match of literals.matchAll(/[a-zA-Z][a-zA-Z0-9-]*/g)) {
-    const [keyword] = match;
-    const rest = literals.slice(
-      /** @type {number} */ (match.index) + keyword.length
-    );
-
-    if (!/^\s*\(/.test(rest)) {
-      keywords.push(keyword.toLowerCase());
-    }
-  }
-
-  return keywords;
-}
 
 /**
  * @param {WebrefData} data
@@ -69,7 +46,7 @@ export function buildEasingFunctions(data) {
     }
 
     for (const keyword of keywordTerminals(syntax)) {
-      keywords.add(keyword);
+      keywords.add(keyword.toLowerCase());
     }
     for (const match of syntax.matchAll(REFERENCE)) {
       const reference = match[1] || match[2];
