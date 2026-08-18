@@ -6,7 +6,10 @@
     "test": "node --test && pnpm typecheck",
     "typecheck": "tsc --project tsconfig.json",
     "start": "eleventy --serve --input src/",
-    "build": "eleventy --input src/"
+    "build": "eleventy --input src/",
+    "build:webpack": "webpack --config webpack.config.js",
+    "build:vite": "vite build --config vite.config.js",
+    "check:vite": "pnpm build:webpack && pnpm build:vite && node util/check-vite-artifacts.mjs"
   },
   "dependencies": {
     "cssnano-preset-advanced": "link:../packages/cssnano-preset-advanced",
@@ -22,6 +25,7 @@
     "markdown-it": "^14.3.0",
     "markdown-it-anchor": "^9.2.1",
     "typescript": "~7.0.2",
+    "vite": "^8.2.1",
     "webpack": "^5.109.2",
     "webpack-cli": "^7.2.2"
   },
