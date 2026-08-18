@@ -6,7 +6,10 @@ const defaultPreset = require('cssnano-preset-default');
 
 const cssnano = 'cssnano';
 
-/** @typedef {{preset?: any, plugins?: any[], configFile?: string}} Options */
+/** @typedef {[import('postcss').PluginCreator<any>, boolean | Record<string, any> | void | undefined]} PresetPlugin */
+/** @typedef {string | [string | import('postcss').PluginCreator<any>, object] | import('postcss').PluginCreator<any> | { plugins: PresetPlugin[] }} PresetSpec */
+/** @typedef {{ preset?: PresetSpec, plugins?: import('postcss').AcceptedPlugin[], configFile?: string }} Options */
+/** @typedef {Omit<Options, 'preset'> & { preset: PresetSpec & { plugins: PresetPlugin[] } }} MutableOptions */
 /**
  * @param {string} moduleId
  * @returns {boolean}
@@ -28,7 +31,7 @@ function isResolvable(moduleId) {
  * preset = {plugins: []} <- already invoked function
  *
  * @param {unknown} preset
- * @return {[import('postcss').PluginCreator<any>, boolean | Record<string, any> | undefined][]}}
+ * @return {PresetPlugin[]}
  */
 function resolvePreset(preset) {
   let fn, options;
@@ -121,38 +124,41 @@ function resolveConfig(options) {
  * @return {import('postcss').Processor}
  */
 function cssnanoPlugin(options = {}) {
-  if (Array.isArray(/** @type {Options} */ (options).plugins)) {
+  if (Array.isArray(/** @type {MutableOptions} */ (options).plugins)) {
     if (
-      !(/** @type {Options} */ (options).preset) ||
-      !(/** @type {Options} */ (options).preset.plugins)
+      !(/** @type {MutableOptions} */ (options).preset) ||
+      !(/** @type {MutableOptions} */ (options).preset.plugins)
     ) {
-      /** @type {Options} */ (options).preset = { plugins: [] };
+      /** @type {MutableOptions} */ (options).preset = { plugins: [] };
     }
 
-    const inputPlugins = /** @type {any[]} */ (
-      /** @type {Options} */ (options).plugins
+    const inputPlugins = /** @type {import('postcss').AcceptedPlugin[]} */ (
+      /** @type {MutableOptions} */ (options).plugins
     );
     for (const plugin of inputPlugins) {
       if (Array.isArray(plugin)) {
         const [pluginDef, opts = {}] = plugin;
         if (typeof pluginDef === 'string' && isResolvable(pluginDef)) {
-          /** @type {Options} */ (options).preset.plugins.push([
+          /** @type {MutableOptions} */ (options).preset.plugins.push([
             require(pluginDef),
             opts,
           ]);
         } else {
-          /** @type {Options} */ (options).preset.plugins.push([
+          /** @type {MutableOptions} */ (options).preset.plugins.push([
             pluginDef,
             opts,
           ]);
         }
       } else if (typeof plugin === 'string' && isResolvable(plugin)) {
-        /** @type {Options} */ (options).preset.plugins.push([
+        /** @type {MutableOptions} */ (options).preset.plugins.push([
           require(plugin),
           {},
         ]);
       } else {
-        /** @type {Options} */ (options).preset.plugins.push([plugin, {}]);
+        /** @type {MutableOptions} */ (options).preset.plugins.push([
+          /** @type {import('postcss').PluginCreator<any>} */ (plugin),
+          {},
+        ]);
       }
     }
   }
