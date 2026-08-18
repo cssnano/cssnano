@@ -1,3 +1,5 @@
+import { REFERENCE, keywordTerminals } from '../../../../util/webref.mjs';
+
 /**
  * Derives, from the raw `@webref/css` data, the places a custom identifier of
  * each kind the plugin renames can appear. Kept free of I/O so that it can be
@@ -54,37 +56,7 @@
 
 const VENDOR_PREFIX = /^-\w+-/;
 
-/**
- * Matches a reference to another production: `<length>`, `<counter()>` for a
- * function, `<'grid-template'>` for a property's own grammar. Ranges are
- * written inside the brackets, as in `<integer [1,∞]>`.
- */
-const REFERENCE = /<'([^'>]+)'>|<([^'>\s]+)(?:\s+\[[^\]]*\])?>/g;
-
-/**
- * The keywords a grammar offers as literal alternatives. A name spelled out
- * with an argument list, such as `minmax(` or `reversed(`, is a function
- * rather than a keyword: it cannot be written as a bare word, so a custom
- * identifier is free to be called that.
- *
- * @param {string} syntax
- * @return {string[]}
- */
-export function keywordTerminals(syntax) {
-  const literals = syntax.replace(REFERENCE, ' ');
-  /** @type {string[]} */
-  const keywords = [];
-  for (const match of literals.matchAll(/[a-zA-Z][a-zA-Z0-9-]*/g)) {
-    const [keyword] = match;
-    const rest = literals.slice(
-      /** @type {number} */ (match.index) + keyword.length
-    );
-    if (!/^\s*\(/.test(rest)) {
-      keywords.push(keyword);
-    }
-  }
-  return keywords;
-}
+export { keywordTerminals };
 
 /**
  * The productions a grammar names directly, without following them any
