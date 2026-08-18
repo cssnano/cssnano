@@ -633,16 +633,7 @@ function subsumedAfter(rule, start, chosen) {
  * @param {import('postcss').Rule} rule
  * @return {void}
  */
-function merge(rule) {
-  mergeBorderSpacing(rule);
-
-  if (containsUnmergeableBorderDecls(rule)) {
-    resolveBorderGrid(rule);
-    return;
-  }
-
-  const canCreateBorder = hasBorderResetContext(rule);
-
+function mergeSideComponentsToSide(rule) {
   // border-trbl-wsc -> border-trbl
   for (const direction of topRightBottomLeft) {
     const prop = borderProperty(direction);
@@ -679,7 +670,13 @@ function merge(rule) {
       }
     );
   }
+}
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
+function mergeSideComponentsToComponent(rule) {
   // border-trbl-wsc -> border-wsc
   for (const style of widthStyleColor) {
     const prop = borderProperty(style);
@@ -714,7 +711,13 @@ function merge(rule) {
       }
     );
   }
+}
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
+function mergeSidesToComponents(rule) {
   // border-trbl -> border-wsc
   mergeRules(rule, physicalBorderShorthands, (rules, lastNode) => {
     if (rules.some(stylehacks.detect)) {
@@ -761,7 +764,14 @@ function merge(rule) {
 
     return true;
   });
+}
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @param {boolean} canCreateBorder
+ * @return {void}
+ */
+function mergeComponentsToBorder(rule, canCreateBorder) {
   // border-wsc -> border
   // border-wsc -> border + border-color
   // border-wsc -> border + border-dir
@@ -831,7 +841,14 @@ function merge(rule) {
     }
     return false;
   });
+}
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @param {boolean} canCreateBorder
+ * @return {void}
+ */
+function mergeComponentsToBorderAndSides(rule, canCreateBorder) {
   // border-wsc -> border + border-trbl
   mergeRules(rule, allSidesBorderShorthands, (rules, lastNode) => {
     if (!canCreateBorder || rules.some(stylehacks.detect)) {
@@ -882,7 +899,14 @@ function merge(rule) {
     }
     return false;
   });
+}
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @param {boolean} canCreateBorder
+ * @return {void}
+ */
+function mergeSidesToBorder(rule, canCreateBorder) {
   // border-trbl -> border
   // border-trbl -> border + border-trbl
   mergeRules(rule, physicalBorderShorthands, (rules, lastNode) => {
@@ -936,7 +960,13 @@ function merge(rule) {
     }
     return false;
   });
+}
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
+function rebindSideCustomProp(rule) {
   // border-trbl-wsc + border-trbl (custom prop) -> border-trbl + border-trbl-wsc (custom prop)
   for (const direction of physicalBorderShorthands) {
     for (const [i, style] of widthStyleColor.entries()) {
@@ -982,7 +1012,13 @@ function merge(rule) {
       });
     }
   }
+}
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
+function rebindComponentCustomProp(rule) {
   // border-wsc + border (custom prop) -> border + border-wsc (custom prop)
   for (const [i, style] of widthStyleColor.entries()) {
     const prop = borderProperty(style);
@@ -1023,7 +1059,13 @@ function merge(rule) {
       return false;
     });
   }
+}
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
+function optimizeSides(rule) {
   // optimize border-trbl
   const decls = getDecls(rule, new Set(physicalBorderShorthands));
 
@@ -1116,42 +1158,57 @@ function merge(rule) {
 
     decls.delete(lastNode);
   }
+}
 
-  rule.walkDecls('border', (decl) => {
-    const nextDecl = decl.next();
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
+function mergeRedundantSweep(rule) {
+  rule.walkDecls(
+    'border',
+    (/** @type {import('postcss').Declaration} */ decl) => {
+      const nextDecl = decl.next();
 
-    if (!nextDecl || nextDecl.type !== 'decl') {
-      return false;
+      if (!nextDecl || nextDecl.type !== 'decl') {
+        return false;
+      }
+
+      const index = physicalBorderShorthands.indexOf(nextDecl.prop);
+
+      if (index === -1) {
+        return;
+      }
+
+      const values = parseWidthStyleColor(decl.value);
+      const nextValues = parseWidthStyleColor(nextDecl.value);
+
+      if (
+        !isValidWidthStyleColor(values) ||
+        !isValidWidthStyleColor(nextValues)
+      ) {
+        return;
+      }
+
+      const config = {
+        values,
+        nextValues,
+        decl,
+        nextDecl,
+        index,
+      };
+
+      return mergeRedundant(config);
     }
+  );
+}
 
-    const index = physicalBorderShorthands.indexOf(nextDecl.prop);
-
-    if (index === -1) {
-      return;
-    }
-
-    const values = parseWidthStyleColor(decl.value);
-    const nextValues = parseWidthStyleColor(nextDecl.value);
-
-    if (
-      !isValidWidthStyleColor(values) ||
-      !isValidWidthStyleColor(nextValues)
-    ) {
-      return;
-    }
-
-    const config = {
-      values,
-      nextValues,
-      decl,
-      nextDecl,
-      index,
-    };
-
-    return mergeRedundant(config);
-  });
-
-  rule.walkDecls((decl) => {
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
+function hoistSubsumedComponents(rule) {
+  rule.walkDecls((/** @type {import('postcss').Declaration} */ decl) => {
     if (!borderAndSideShorthands.has(decl.prop.toLowerCase())) {
       return;
     }
@@ -1219,10 +1276,36 @@ function merge(rule) {
       }
     }
   });
+}
+
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {void}
+ */
+function merge(rule) {
+  mergeBorderSpacing(rule);
+
+  if (containsUnmergeableBorderDecls(rule)) {
+    resolveBorderGrid(rule);
+    return;
+  }
+
+  const canCreateBorder = hasBorderResetContext(rule);
+
+  mergeSideComponentsToSide(rule);
+  mergeSideComponentsToComponent(rule);
+  mergeSidesToComponents(rule);
+  mergeComponentsToBorder(rule, canCreateBorder);
+  mergeComponentsToBorderAndSides(rule, canCreateBorder);
+  mergeSidesToBorder(rule, canCreateBorder);
+  rebindSideCustomProp(rule);
+  rebindComponentCustomProp(rule);
+  optimizeSides(rule);
+  mergeRedundantSweep(rule);
+  hoistSubsumedComponents(rule);
 
   cleanup(rule);
 }
-
 module.exports = {
   explode,
   merge,
