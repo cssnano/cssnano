@@ -31,13 +31,13 @@ jobs:
         run: pnpm install --prod --frozen-lockfile
 
       - name: Install website dependencies
-        run: pnpm --dir site install --frozen-lockfile
+        run: pnpm -C site install --frozen-lockfile
 
       - name: Build playground
-        run: pnpm --dir site webpack
+        run: pnpm -C site webpack
 
       - name: Build website
-        run: pnpm --dir site build
+        run: pnpm -C site build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
