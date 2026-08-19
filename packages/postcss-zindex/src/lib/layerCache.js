@@ -1,17 +1,18 @@
 'use strict';
 /** @constructor */
 class LayerCache {
+  #values;
   constructor() {
-    this._values = new Map();
+    this.#values = new Map();
   }
   /**
    * @param {number} startIndex
    * @return {void}
    */
   optimizeValues(startIndex) {
-    const sortedValues = Array.from(this._values.keys()).toSorted(ascending);
+    const sortedValues = Array.from(this.#values.keys()).toSorted(ascending);
     for (let i = 0; i < sortedValues.length; i++) {
-      this._values.set(sortedValues[i], i + startIndex);
+      this.#values.set(sortedValues[i], i + startIndex);
     }
   }
   /**
@@ -26,7 +27,7 @@ class LayerCache {
       return;
     }
 
-    this._values.set(parsedValue, parsedValue);
+    this.#values.set(parsedValue, parsedValue);
   }
   /**
    * @param {string} value
@@ -35,7 +36,7 @@ class LayerCache {
   getValue(value) {
     const parsedValue = Number.parseInt(value, 10);
 
-    return this._values.get(parsedValue) || value;
+    return this.#values.get(parsedValue) || value;
   }
 }
 

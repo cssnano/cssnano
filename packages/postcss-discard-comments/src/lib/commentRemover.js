@@ -1,9 +1,13 @@
 'use strict';
 
 class CommentRemover {
+  /** @type {boolean} */
+  #hasFirst;
+
   /** @param {import('../index.js').Options} options */
   constructor(options) {
     this.options = options;
+    this.#hasFirst = false;
   }
   /**
    * @param {string} comment
@@ -21,10 +25,10 @@ class CommentRemover {
         return true;
       }
 
-      if (this.options.removeAll || this._hasFirst) {
+      if (this.options.removeAll || this.#hasFirst) {
         return true;
-      } else if (this.options.removeAllButFirst && !this._hasFirst) {
-        this._hasFirst = true;
+      } else if (this.options.removeAllButFirst && !this.#hasFirst) {
+        this.#hasFirst = true;
         return false;
       }
     }
