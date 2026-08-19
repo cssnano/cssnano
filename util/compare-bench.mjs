@@ -15,11 +15,9 @@
 // pnpm equivalent: `pnpm bench:compare -- <baseline> <candidate>`.
 
 import { readFileSync, existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const RESULTS_DIR = join(__dirname, '..', 'bench-results');
+const RESULTS_DIR = join(import.meta.dirname, '..', 'bench-results');
 
 function resolveSnapshot(arg) {
   if (existsSync(arg)) return arg;

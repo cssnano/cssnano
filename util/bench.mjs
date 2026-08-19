@@ -30,9 +30,8 @@
 // and consider a smaller --iters since a profile only needs enough samples to
 // be representative, not a stable percentile.
 
-import { readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join, dirname, basename, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { basename, join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { createRequire } from 'node:module';
 import { parseArgs } from 'node:util';
@@ -41,11 +40,10 @@ import { Session } from 'node:inspector/promises';
 const require = createRequire(import.meta.url);
 const cssnano = require('../packages/cssnano/src/index.js');
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 // Default corpus directory. Override with `--dir=<path>` to point at any other
 // folder of .css files.
-const DEFAULT_DIR = join(__dirname, '..', 'frameworks');
-const RESULTS_DIR = join(__dirname, '..', 'bench-results');
+const DEFAULT_DIR = join(import.meta.dirname, '..', 'frameworks');
+const RESULTS_DIR = join(import.meta.dirname, '..', 'bench-results');
 
 function quantile(sorted, q) {
   const idx = (sorted.length - 1) * q;
