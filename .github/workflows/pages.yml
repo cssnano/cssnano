@@ -27,14 +27,11 @@ jobs:
           runtime: node@24
           cache: false
 
-      - name: Install production dependencies
+      - name: Install cssnano dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Install website dependencies
         run: pnpm -C site install --frozen-lockfile
-
-      - name: Build playground
-        run: pnpm -C site exec webpack
 
       - name: Build website
         run: pnpm -C site build
@@ -42,7 +39,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
-          path: site/_site
+          path: site/_astro-site
 
   deploy:
     name: Deploy website

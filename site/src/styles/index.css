@@ -52,202 +52,6 @@
   --opt-disabled-color: hsl(0deg 55% 40%);
 }
 
-/*
- * a11y theme for JavaScript, CSS, and HTML
- * Based on the okaidia theme: https://github.com/PrismJS/prism/blob/gh-pages/themes/prism-okaidia.css
- * @author ericwbailey
- */
-
-/*
- * MARK: Setup
- */
-@layer vendor-prism {
-  @media (forced-colors: none),
-  (forced-colors: active) {
-    :root {
-      --prism-a11y-border-radius: 0.3em;
-      --prism-a11y-font-family: consolas, monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-      --prism-a11y-line-height: 1.5;
-      --prism-a11y-code-block-margin: 0.5em 0;
-      --prism-a11y-code-block-padding: 1em;
-      --prism-a11y-code-inline-padding: 0.1em;
-      --prism-a11y-width-border: 1px;
-      --prism-a11y-width-tab: 2;
-    }
-  }
-
-  @media (forced-colors: none),
-  (forced-colors: active) {
-    :root {
-      --prism-a11y-color-background: hsl(0deg 0% 17% / 100%);
-      --prism-a11y-color-text-no-token: hsl(60deg 30% 96% / 100%);
-      --prism-a11y-color-text-comment: hsl(54deg 32% 75% / 100%);
-      --prism-a11y-color-text-blue: hsl(206deg 100% 71% / 100%);
-      --prism-a11y-color-text-cyan: hsl(187deg 77.9% 66.3% / 100%);
-      --prism-a11y-color-text-green: hsl(80deg 75% 55% / 100%);
-      --prism-a11y-color-text-gray: hsl(60deg 30% 96% / 100%);
-      --prism-a11y-color-text-purple: hsl(291deg 30% 83% / 100%);
-      --prism-a11y-color-text-red: hsl(17deg 100% 74% / 100%);
-      --prism-a11y-color-text-yellow: hsl(51deg 100% 50% / 100%);
-      --prism-a11y-plugin-color-border: hsl(51deg 100% 50% / 55%);
-      --prism-a11y-plugin-color-background: hsl(51deg 100% 50% / 10%);
-    }
-  }
-
-
-  @media (forced-colors: none),
-  (forced-colors: active) {
-    /*
-     * MARK: Theme
-     */
-    :where(code[class*="language-"],
-      pre[class*="language-"]) {
-      color: var(--prism-a11y-color-text-no-token);
-      background: var(--prism-a11y-color-background);
-      font-family: var(--prism-a11y-font-family);
-      text-align: start;
-      white-space: pre;
-      word-spacing: normal;
-      word-break: normal;
-      overflow-wrap: normal;
-      line-height: var(--prism-a11y-line-height);
-      tab-size: var(--prism-a11y-width-tab);
-      hyphens: none;
-    }
-
-    /* Code blocks */
-    pre[class*="language-"] {
-      padding: var(--prism-a11y-code-block-padding);
-      margin: var(--prism-a11y-code-block-margin);
-      overflow: auto;
-      border-radius: var(--prism-a11y-border-radius);
-    }
-
-    :where( :not(pre) > code[class*="language-"],
-      pre[class*="language-"]) {
-      background: var(--prism-a11y-color-background);
-    }
-
-    /* Inline code */
-    :not(pre)>code[class*="language-"] {
-      padding: var(--prism-a11y-code-inline-padding);
-      border-radius: var(--prism-a11y-border-radius);
-      white-space: normal;
-    }
-
-    :where(.token.comment,
-      .token.prolog,
-      .token.doctype,
-      .token.cdata) {
-      color: var(--prism-a11y-color-text-comment);
-    }
-
-    .token.punctuation {
-      color: var(--prism-a11y-color-text-gray);
-    }
-
-    :where(.token.property,
-      .token.tag,
-      .token.constant,
-      .token.symbol,
-      .token.deleted) {
-      color: var(--prism-a11y-color-text-red);
-    }
-
-    :where(.token.operator,
-      .token.entity,
-      .token.url,
-      .language-css .token.string,
-      .style .token.string,
-      .token.variable,
-      .token.keyword) {
-      color: var(--prism-a11y-color-text-cyan);
-    }
-
-    :where(.token.selector,
-      .token.attr-name,
-      .token.string,
-      .token.char,
-      .token.builtin,
-      .token.inserted) {
-      color: var(--prism-a11y-color-text-green);
-    }
-
-    :where(.token.atrule,
-      .token.attr-value,
-      .token.function,
-      .token.regex,
-      .token.important) {
-      color: var(--prism-a11y-color-text-yellow);
-    }
-
-    :where(.token.boolean,
-      .token.number,
-      .token.keyword) {
-      color: var(--prism-a11y-color-text-purple);
-    }
-
-    :where(.token.important,
-      .token.bold) {
-      font-weight: bold;
-    }
-
-    .token.italic {
-      font-style: italic;
-    }
-
-    .token.entity {
-      cursor: help;
-    }
-
-
-    /*
-     * MARK: Plugin support
-     */
-
-    /* Line highlight */
-    .line-highlight {
-      background: var(--prism-a11y-plugin-color-background);
-      border-top: var(--prism-a11y-width-border) solid var(--prism-a11y-plugin-color-border);
-      border-bottom: var(--prism-a11y-width-border) solid var(--prism-a11y-plugin-color-border);
-    }
-
-    /* Line numbers */
-    .line-numbers .line-numbers-rows {
-      border-right: var(--prism-a11y-width-border) solid var(--prism-a11y-color-text-no-token);
-    }
-
-    .line-numbers-rows>span::before {
-      color: var(--prism-a11y-color-text-comment);
-    }
-  }
-
-
-  /*
-   * MARK: Forced color mode support
-   */
-  @media (forced-colors: active) {
-    :root {
-      --prism-a11y-color-background: Canvas;
-      --prism-a11y-color-text-no-token: CanvasText;
-      --prism-a11y-color-text-comment: GrayText;
-      --prism-a11y-color-text-cyan: LinkText;
-      --prism-a11y-color-text-gray: LinkText;
-      --prism-a11y-color-text-green: CanvasText;
-      --prism-a11y-color-text-purple: CanvasText;
-      --prism-a11y-color-text-red: CanvasText;
-      --prism-a11y-color-text-yellow: GrayText;
-      --prism-a11y-plugin-color-border: LinkText;
-      --prism-a11y-plugin-color-background: Canvas;
-    }
-
-    :where(.token.boolean,
-      .token.number,
-      .token.keyword) {
-      font-weight: bold;
-    }
-  }
-}
 
 * {
   box-sizing: border-box;
@@ -354,7 +158,7 @@ pre {
   --padding-inline: 2rem;
 
   padding: var(--padding-block) var(--padding-inline);
-  padding-right: calc(var(--padding-inline) * 2);
+  padding-inline-end: calc(var(--padding-inline) * 2);
   line-height: 1.5;
   overflow: auto hidden;
 }
@@ -362,6 +166,7 @@ pre {
 pre {
   font-family: var(--font-mono);
   font-size: 0.875em;
+  border-radius: var(--border-radius);
 }
 
 pre:focus-visible {
@@ -431,7 +236,7 @@ img {
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip-path: rect(0 0 0 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border-width: 0;
 }

@@ -1,8 +1,6 @@
 ---
 id: advanced-transforms
 title: Advanced transforms
-layout: layouts/MainLayout.njk
-order: 5
 ---
 
 ## What are advanced transforms?
@@ -53,7 +51,7 @@ npm install cssnano-preset-advanced --save-dev
 ```
 
 You can then load it using any of the techniques mentioned in
-[our presets guide](/docs/presets). For example, using `package.json`:
+[our presets guide](../presets/). For example, using `package.json`:
 
 ```json
 {
@@ -68,4 +66,4 @@ You can then load it using any of the techniques mentioned in
 ## Do you have an idea for an advanced transform?
 
 Did we miss an opportunity to compress your CSS further? You can learn about
-[how to contribute](/docs/contributing) in our next guide.
+[how to contribute](../contributing/) in our next guide.

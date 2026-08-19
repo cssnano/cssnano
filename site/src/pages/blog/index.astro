@@ -1,7 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
 import NoSidebar from '../../layouts/NoSidebar.astro';
-import { url } from '../../lib/site.js';
 const posts = await getCollection('blog');
 ---
-<NoSidebar title="Blog"><ul class="list">{posts.map((post) => <li><h2><a href={url(`/${post.data.permalink ?? `blog/${post.id}/`}`)}>{post.data.title}</a></h2> {post.data.readableDate}</li>)}</ul></NoSidebar>
+<NoSidebar title="Blog"><ul class="list">{posts.map((post) => <li><h2><a href={`${import.meta.env.BASE_URL}blog/${post.data.slug}/`}>{post.data.title}</a></h2> {post.data.readableDate}</li>)}</ul></NoSidebar>

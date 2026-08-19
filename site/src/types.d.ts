@@ -17,14 +17,6 @@ export interface CssNanoWorker {
   onmessageerror: ((event: MessageEvent) => void) | null;
 }
 
-export interface EditorView {
-  state: {
-    doc: { length: number };
-    update: (spec: any) => any;
-  };
-  dispatch: (tx: any) => void;
-}
-
 export interface MinificationRequest {
   input: string;
   config: PresetName;

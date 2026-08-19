@@ -1,9 +1,19 @@
 ---
 import { getCollection, render } from 'astro:content';
 import NoSidebar from '../../layouts/NoSidebar.astro';
-const posts = await getCollection('blog');
-export async function getStaticPaths() { const posts = await getCollection('blog'); return posts.map((post) => ({ params: { slug: (post.data.permalink ?? `blog/${post.id}/`).replace(/^blog\//, '').replace(/\/$/, '') }, props: { post } })); }
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: {
+      slug: post.data.slug,
+    },
+    props: { post },
+  }));
+}
 const { post } = Astro.props;
 const { Content } = await render(post);
 ---
-<NoSidebar title={post.data.title}><p class="annotation">{post.data.author} · {post.data.readableDate}</p><Content /></NoSidebar>
+<NoSidebar title={post.data.title}>
+  <p class="annotation">{post.data.author} · {post.data.readableDate}</p>
+  <Content />
+</NoSidebar>

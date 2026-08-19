@@ -1,8 +1,6 @@
 ---
 id: config-file
 title: Configuration
-layout: layouts/MainLayout.njk
-order: 3
 ---
 
 You can configure cssnano either in the PostCSS configuration or in a dedicated cssnano configuration. The PostCSS configuration takes precedence over the dedicated cssnano configuration.
@@ -123,4 +121,3 @@ cssnano({ plugins: [['autoprefixer', {}]] });
     ]
   };
   ```
-

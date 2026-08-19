@@ -4,4 +4,4 @@ import NoSidebar from '../../layouts/NoSidebar.astro';
 const entry = await getEntry('repository', 'community');
 const { Content } = await render(entry);
 ---
-<NoSidebar title="Community"><Content /></NoSidebar>
+<NoSidebar title="Community" showTitle={false}><Content /></NoSidebar>

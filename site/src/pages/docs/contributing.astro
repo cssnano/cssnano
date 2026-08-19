@@ -4,4 +4,4 @@ import MainLayout from '../../layouts/MainLayout.astro';
 const entry = await getEntry('repository', 'contributing');
 const { Content } = await render(entry);
 ---
-<MainLayout title="Contributing"><Content /></MainLayout>
+<MainLayout title="Contributing" showTitle={false}><Content /></MainLayout>
