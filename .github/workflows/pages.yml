@@ -28,7 +28,7 @@ jobs:
           cache: false
 
       - name: Install production dependencies
-        run: pnpm install --prod --frozen-lockfile
+        run: pnpm install -r --prod --frozen-lockfile
 
       - name: Install website dependencies
         run: pnpm -C site install --frozen-lockfile
