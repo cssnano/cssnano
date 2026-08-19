@@ -59,7 +59,7 @@ if (cssMinifier) {
         /** @type {import('./types.js').PresetName} */ (presetSelector.value)
       )
       .then((css) => {
-        setOutput(css, false);
+        return setOutput(css, false);
       })
       .catch((/** @type {unknown} */ err) => {
         if (err instanceof Error) setOutput(err.message, true);
