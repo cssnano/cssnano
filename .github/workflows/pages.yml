@@ -34,7 +34,7 @@ jobs:
         run: pnpm -C site install --frozen-lockfile
 
       - name: Build playground
-        run: pnpm -C site webpack
+        run: pnpm -C site exec webpack
 
       - name: Build website
         run: pnpm -C site build
