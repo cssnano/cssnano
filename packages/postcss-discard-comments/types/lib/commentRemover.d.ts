@@ -1,7 +1,7 @@
 export = CommentRemover;
 declare class CommentRemover {
+    #private;
     options: import("../index.js").Options;
-    _hasFirst: boolean | undefined;
     /** @param {import('../index.js').Options} options */
     constructor(options: import('../index.js').Options);
     /**
