@@ -4,28 +4,26 @@ import { z } from 'astro/zod';
 
 const shared = {
   title: z.string().optional(),
-  id: z.string().optional(),
-  order: z.number().optional(),
-  next: z.string().optional(),
   author: z.string().optional(),
   readableDate: z.string().optional(),
-  tags: z.union([z.string(), z.array(z.string())]).optional(),
-  permalink: z.string().optional(),
-  layout: z.string().optional(),
-  draft: z.boolean().optional(),
-  changeFreq: z.string().optional(),
-  pagination: z.unknown().optional(),
-  eleventyComputed: z.unknown().optional(),
 };
 
 const docs = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/docs' }),
-  schema: z.object(shared),
+  loader: glob({
+    pattern: ['**/*.md', '!community.md', '!what-are-optimisations.md'],
+    base: './src/docs',
+  }),
+  schema: z.object({ ...shared, title: z.string() }),
 });
 
 const blog = defineCollection({
   loader: glob({ pattern: '*.md', base: './src/blog' }),
-  schema: z.object(shared),
+  schema: z.object({
+    title: z.string(),
+    author: z.string(),
+    readableDate: z.string(),
+    slug: z.string().min(1),
+  }),
 });
 
 const repositoryIds = new Map([

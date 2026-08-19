@@ -1,8 +1,6 @@
 ---
 id: getting-started
 title: Getting started
-layout: layouts/MainLayout.njk
-order: 2
 ---
 
 ## What is a build process?
@@ -73,7 +71,7 @@ module.exports = {
 };
 ```
 
-_Read more about presets in [our presets guide](/docs/presets)._
+_Read more about presets in [our presets guide](../presets/)._
 
 You can now minify your CSS files! Try it out by creating a CSS file in your
 project named `input.css`, with some styles in there. Then, run:

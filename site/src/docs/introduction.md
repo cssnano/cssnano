@@ -1,8 +1,6 @@
 ---
 id: Introduction
 title: Introduction
-layout: layouts/MainLayout.njk
-next: getting-started
 ---
 
 ## What is minification?
@@ -27,7 +25,7 @@ plugin which you can add to your build process, to ensure that the resulting
 stylesheet is as small as possible for a production environment.
 
 If you don't know what a build process is, don't worry as we cover this in
-[our getting started guide](/docs/getting-started).
+[our getting started guide](../getting-started/).
 
 
 ## How does it benefit me?
@@ -36,7 +34,7 @@ If you don't know what a build process is, don't worry as we cover this in
 
 We offer many different optimisations, ranging from simple transforms such as
 whitespace removal, to complex transforms that can merge identical keyframes
-with different names. See [the presets guide](/docs/presets) for
+with different names. See [the presets guide](../presets/) for
 more information.
 
 ### Unified CSS processing
@@ -56,4 +54,3 @@ CSS globally using regular expressions.
 [node.js]: https://nodejs.org
 
 [postcss]: http://postcss.org
-

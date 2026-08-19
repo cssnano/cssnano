@@ -3,7 +3,6 @@ import { Code } from 'astro:components';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Head from '../components/Head.astro';
-import { url } from '../lib/site.js';
 import cssnanoPackage from '../../../packages/cssnano/package.json';
 import '../styles/index.css';
 
@@ -37,10 +36,10 @@ const outputExample = '@charset "utf-8";h1:before{margin:10px 20px;color:red;fon
     <Header />
     <header class="hero" id="article">
       <div class="center stack">
-        <img width="400" height="280" alt="CSSNANO" src={url('/img/logo.svg')} />
+        <img width="400" height="280" alt="CSSNANO" src={`${import.meta.env.BASE_URL}img/logo.svg`} />
         <p class="text-center f3">Deliver your website's styles, faster.</p>
         <p class="text-center">Plug in cssnano into your build for modern CSS compression.</p>
-        <a class="f4 hero-link box text-center" href={url('/docs/introduction/')}>Get Started</a>
+        <a class="f4 hero-link box text-center" href={`${import.meta.env.BASE_URL}docs/introduction/`}>Get Started</a>
       </div>
     </header>
     <main class="center">
@@ -52,7 +51,7 @@ const outputExample = '@charset "utf-8";h1:before{margin:10px 20px;color:red;fon
         <h3>Output</h3>
         <Code code={outputExample} lang="css" theme="github-dark-high-contrast" />
         <p>cssnano has preserved the semantics of this CSS, but has removed the extraneous whitespace, compressed the identifiers, and purged unnecessary definitions. This gives you a much smaller CSS file for a production environment.</p>
-        <p>By default, cssnano performs safe optimisations on your CSS file, but also offers an advanced preset with techniques that you can use to maximise compression. For more details, see our <a href={url('/docs/what-are-optimisations/')}>optimisations</a> guide.</p>
+        <p>By default, cssnano performs safe optimisations on your CSS file, but also offers an advanced preset with techniques that you can use to maximise compression. For more details, see our <a href={`${import.meta.env.BASE_URL}docs/what-are-optimisations/`}>optimisations</a> guide.</p>
         <div class="stats-grid">
           <div class="stat-card"><div class="stat-value">325 B</div><div class="stat-label">Original (gzip)</div></div>
           <div class="stat-card"><div class="stat-value">177 B</div><div class="stat-label">Minified (gzip)</div></div>
@@ -63,14 +62,14 @@ const outputExample = '@charset "utf-8";h1:before{margin:10px 20px;color:red;fon
       <section class="box stack">
         <h2>Features</h2>
         <div class="features-grid">
-          <div class="feature-card"><img src={url('/img/postcss.svg')} alt="" width="120" height="120" /><h3>PostCSS Based</h3><p>CSSNANO is built upon PostCSS plugins and environments</p></div>
-          <div class="feature-card"><img src={url('/img/undraw_settings.svg')} alt="" width="140" height="120" /><h3>30+ Plugins</h3><p>CSSNANO has more than 30 plugins for optimizing your CSS</p></div>
-          <div class="feature-card"><img src={url('/img/undraw_config.svg')} alt="" width="140" height="120" /><h3>Configurable</h3><p>CSSNANO supports custom configs using presets which control the optimization level</p></div>
+          <div class="feature-card"><img src={`${import.meta.env.BASE_URL}img/postcss.svg`} alt="" width="120" height="120" /><h3>PostCSS Based</h3><p>CSSNANO is built upon PostCSS plugins and environments</p></div>
+          <div class="feature-card"><img src={`${import.meta.env.BASE_URL}img/undraw_settings.svg`} alt="" width="140" height="120" /><h3>30+ Plugins</h3><p>CSSNANO has more than 30 plugins for optimizing your CSS</p></div>
+          <div class="feature-card"><img src={`${import.meta.env.BASE_URL}img/undraw_config.svg`} alt="" width="140" height="120" /><h3>Configurable</h3><p>CSSNANO supports custom configs using presets which control the optimization level</p></div>
         </div>
       </section>
       <section class="box stack">
         <h2>Technology</h2>
-        <p>cssnano is powered by <a href="https://postcss.org">PostCSS</a>, a tool for transforming styles with JavaScript. Its plugin architecture allows us to compose cssnano out of small modules with limited responsibilities. <img class="fr" alt="" src={url('/img/postcss.svg')} width="80" height="100" /></p>
+        <p>cssnano is powered by <a href="https://postcss.org">PostCSS</a>, a tool for transforming styles with JavaScript. Its plugin architecture allows us to compose cssnano out of small modules with limited responsibilities. <img class="fr" alt="" src={`${import.meta.env.BASE_URL}img/postcss.svg`} width="80" height="100" /></p>
       </section>
     </main>
     <Footer version={cssnanoPackage.version} />

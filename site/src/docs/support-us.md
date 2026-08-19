@@ -1,7 +1,6 @@
 ---
 id: Support-Us
 title: Support cssnano development
-layout: layouts/NoSidebar.njk
 ---
 
 cssnano is a MIT licensed open source project and therefore completely free

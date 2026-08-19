@@ -1,17 +1,24 @@
 ---
-import { url } from '../lib/site.js';
 import ExternalIcon from './ExternalIcon.astro';
 ---
 <div class="navbar box">
   <a href="#article" class="sr-only skiplink"><span>Skip to Content</span></a>
   <nav class="cluster" title="Top Navigation">
-    <a href={url('/')}><h1 class="sr-only">CSSNANO</h1><img src={url('/img/logo-alt.svg')} alt="" width="160" height="32" /></a>
+    <a href={import.meta.env.BASE_URL}>
+      <h1 class="sr-only">CSSNANO</h1>
+      <img
+        src={`${import.meta.env.BASE_URL}img/logo-alt.svg`}
+        alt=""
+        width="160"
+        height="32"
+      />
+    </a>
     <span class="cluster">
-      <a href={url('/docs/introduction/')}>Guide</a>
-      <a href={url('/docs/what-are-optimisations/')}>Optimizations</a>
-      <a href={url('/playground/')}>Playground</a>
-      <a href={url('/docs/support-us/')}>Support</a>
-      <a href={url('/blog/')}>Blog</a>
+      <a href={`${import.meta.env.BASE_URL}docs/introduction/`}>Guide</a>
+      <a href={`${import.meta.env.BASE_URL}docs/what-are-optimisations/`}>Optimizations</a>
+      <a href={`${import.meta.env.BASE_URL}playground/`}>Playground</a>
+      <a href={`${import.meta.env.BASE_URL}docs/support-us/`}>Support</a>
+      <a href={`${import.meta.env.BASE_URL}blog/`}>Blog</a>
       <a href="https://github.com/cssnano/cssnano" rel="noopener noreferrer" target="_blank">GitHub <ExternalIcon /></a>
       <a href="https://opencollective.com/cssnano" rel="noopener noreferrer" target="_blank">Donate <ExternalIcon /></a>
     </span>

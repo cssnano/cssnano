@@ -5,13 +5,5 @@
   "arrowParens": "always",
   "printWidth": 80,
   "sortPackageJson": false,
-  "ignorePatterns": [
-    "*.html",
-    "*.md",
-    "*.css",
-    "*.yml",
-    "*.yaml",
-    "*.d.ts",
-    "site/_site"
-  ]
+  "ignorePatterns": ["*.html", "*.md", "*.css", "*.yml", "*.yaml", "*.d.ts"]
 }

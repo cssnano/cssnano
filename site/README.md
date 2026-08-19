@@ -1,7 +1,7 @@
 
 # Website
 
-This website is built using the [Eleventy](https://www.11ty.dev/) static website generator.
+This website is built using [Astro](https://astro.build/).
 
 ### Installation
 
@@ -23,9 +23,7 @@ This command starts a local development server and opens a browser window. Most 
 $ pnpm build
 ```
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
+This command generates static content into `_astro-site/` and can be served using any static content hosting service.
 
 
-Most pages are built with the templates in `src/_includes`, which use the [Nunjucks](https://mozilla.github.io/nunjucks/) template language. The Changelog and Contributing pages are included directly from the cssnano package in the repository.
-
-The `webpack.config.js` file contains the webpack configuration to bundle the Playground page.
+Pages and components live in `src/pages`, `src/components`, and `src/layouts`. Markdown content is loaded through Astro content collections, including documentation sourced from the repository.

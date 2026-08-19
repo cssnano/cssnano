@@ -12,6 +12,11 @@
     "moduleResolution": "nodenext",
     "resolveJsonModule": true
   },
-  "include": [".astro/types.d.ts", ".astro/content.d.ts", "src/**/*.js", "src/**/*.ts"],
+  "include": [
+    ".astro/types.d.ts",
+    ".astro/content.d.ts",
+    "src/**/*.js",
+    "src/**/*.ts"
+  ],
   "exclude": ["node_modules", "test"]
 }

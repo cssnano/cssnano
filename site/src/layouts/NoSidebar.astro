@@ -4,6 +4,27 @@ import Head from '../components/Head.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import cssnanoPackage from '../../../packages/cssnano/package.json';
-const { title } = Astro.props;
+
+interface Props {
+  title: string;
+  showTitle?: boolean;
+}
+
+const { title, showTitle = true } = Astro.props;
 ---
-<!doctype html><html lang="en"><head><Head title={title} pathname={Astro.url.pathname} /></head><body><Header /><main tabindex="-1" class="center"><article id="article" class="stack box"><h1>{title}</h1><slot /></article></main><Footer version={cssnanoPackage.version} /></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head title={title} pathname={Astro.url.pathname} />
+  </head>
+  <body>
+    <Header />
+    <main tabindex="-1" class="center">
+      <article id="article" class="stack box">
+        {showTitle && <h1>{title}</h1>}
+        <slot />
+      </article>
+    </main>
+    <Footer version={cssnanoPackage.version} />
+  </body>
+</html>

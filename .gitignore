@@ -45,9 +45,7 @@ lerna-debug.log*
 .DS_Store
 
 # Generated website files
-site/_site/
 site/_astro-site/
-site/_vite-site/
 site/.astro/
 
 # Demo lockfile

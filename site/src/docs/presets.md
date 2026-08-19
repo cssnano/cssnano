@@ -1,7 +1,6 @@
 ---
 id: presets
 title: Presets
-layout: layouts/MainLayout.njk
 ---
 
 ## What are presets?
@@ -167,4 +166,4 @@ module.exports = {
 };
 ```
 
-[guideadvancedtransforms]: /docs/advanced-transforms
+[guideadvancedtransforms]: ../advanced-transforms/

@@ -38,7 +38,7 @@ To help us generate the changelog, follow the [conventional commits](https://www
 ### Documentation
 
 The documentation website is also included with the repository, under `/site`.
-It runs [eleventy](https://www.11ty.dev/) and requires a separate `pnpm install`
+It runs [Astro](https://astro.build/) and requires a separate `pnpm install`
 to pull down the dependencies. You can then browse the documentation locally
 by running `pnpm start`.
 
@@ -116,7 +116,7 @@ If you don't have time to contribute to the project directly, you can also
 help us out by starring the repository.
 Word of mouth really does mean a lot to us!
 
-You can also [help support us financially](/docs/support-us/).
+You can also [help support us financially](https://cssnano.github.io/cssnano/docs/support-us/).
 
 [chat]: https://gitter.im/postcss/postcss
 [documentation]: https://github.com/cssnano/cssnano/labels/documentation

@@ -1,12 +1,41 @@
 ---
-import { url } from '../lib/site.js';
 const current = Astro.url.pathname;
 const links = [['introduction', 'Introduction'], ['getting-started', 'Getting Started'], ['config-file', 'Configuration'], ['what-are-optimisations', 'Optimisations'], ['advanced-transforms', 'Advanced Transforms']];
 const developers = [['contributing', 'Contributing'], ['changelog', 'Changelog']];
 ---
 <aside id="grid-left" title="Documentation table of contents" class="sidebar">
-  <nav aria-labelledby="grid-left"><ul class="stack">
-    <li><h2 class="f4">Getting Started</h2><ul>{links.map(([slug, label]) => <li class="nav-link"><a href={url(`/docs/${slug}/`)} aria-current={current === url(`/docs/${slug}/`) ? 'page' : undefined}>{label}</a></li>)}</ul></li>
-    <li><h2 class="f4">Developer Guide</h2><ul>{developers.map(([slug, label]) => <li class="nav-link"><a href={url(`/docs/${slug}/`)} aria-current={current === url(`/docs/${slug}/`) ? 'page' : undefined}>{label}</a></li>)}</ul></li>
-  </ul></nav>
+  <nav aria-labelledby="grid-left">
+    <ul class="stack">
+      <li>
+        <h2 class="f4">Getting Started</h2>
+        <ul>
+          {links.map(([slug, label]) => (
+            <li class="nav-link">
+              <a
+                href={`${import.meta.env.BASE_URL}docs/${slug}/`}
+                aria-current={current === `${import.meta.env.BASE_URL}docs/${slug}/` ? 'page' : undefined}
+              >
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </li>
+      <li>
+        <h2 class="f4">Developer Guide</h2>
+        <ul>
+          {developers.map(([slug, label]) => (
+            <li class="nav-link">
+              <a
+                href={`${import.meta.env.BASE_URL}docs/${slug}/`}
+                aria-current={current === `${import.meta.env.BASE_URL}docs/${slug}/` ? 'page' : undefined}
+              >
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </li>
+    </ul>
+  </nav>
 </aside>

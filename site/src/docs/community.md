@@ -1,6 +1,5 @@
 ---
 title: Community
-layout: layouts/NoSidebar.njk
 ---
 
 
@@ -12,6 +11,6 @@ layout: layouts/NoSidebar.njk
 ## Get involved
 
 Thanks for your interest in contributing to cssnano! Please see our
-[contributing guide](/docs/contributing) to find out how to get involved.
+[contributing guide](../contributing/) to find out how to get involved.
 
-{% renderFile "../CONTRIBUTORS.md" %}
+See the [project contributors](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md).
