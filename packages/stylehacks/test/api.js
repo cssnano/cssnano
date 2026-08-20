@@ -6,10 +6,11 @@ const stylehacks = require('../src/index.js');
 const packageJson = require('../package.json');
 
 function processCss(fixture, expected, options) {
-  return () =>
-    postcss(stylehacks(options))
-      .process(fixture, { from: undefined })
-      .then(({ css }) => assert.strictEqual(css, expected));
+  return async () => {
+    const { css } = await postcss(stylehacks(options))
+      .process(fixture, { from: undefined });
+    assert.strictEqual(css, expected)
+  }
 }
 
 function passthroughCss(fixture, options) {

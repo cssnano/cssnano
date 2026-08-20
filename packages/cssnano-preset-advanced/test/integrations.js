@@ -4,7 +4,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const {
   integrationTests,
-  loadPreset,
+  createCssnanoProcessor,
   processCSSWithPresetFactory,
 } = require('../../../util/integrationTestHelpers.js');
 const preset = require('../src/index.js');
@@ -45,17 +45,20 @@ test(
   integrationTests(preset, `${__dirname}/integrations`)
 );
 
-function excludeProcessor(options) {
-  const input = `h1{z-index:10}`;
+test('preserves z-index values when zindex is disabled', async () => {
+  const input = 'h1{z-index:10}';
+  const { css } = await createCssnanoProcessor(preset({ zindex: false })).process(input, {
+    from: undefined,
+  });
 
-  return () =>
-    loadPreset(preset(options))
-      .process(input, { from: undefined })
-      .then(({ css }) => {
-        assert.strictEqual(css, input);
-      });
-}
+  assert.strictEqual(css, input);
+});
 
-test('exclude zindex', excludeProcessor({ zindex: false }));
+test('preserves z-index values with the exclude option', async () => {
+  const input = 'h1{z-index:10}';
+  const { css } = await createCssnanoProcessor(
+    preset({ zindex: { exclude: true } })
+  ).process(input, { from: undefined });
 
-test('exclude zindex #1', excludeProcessor({ zindex: { exclude: true } }));
+  assert.strictEqual(css, input);
+});
