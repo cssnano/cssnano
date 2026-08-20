@@ -45,7 +45,7 @@
     "node": "^22.11.0 || ^24.11.0 || >=26.0"
   },
   "devDependencies": {
-    "@webref/css": "8.7.1",
+    "@webref/css": "catalog:",
     "postcss": "^8.5.26"
   },
   "peerDependencies": {

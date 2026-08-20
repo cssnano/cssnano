@@ -203,6 +203,15 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@webref/css':
+      specifier: 8.7.1
+      version: 8.7.1
+    mdn-data:
+      specifier: 2.32.0
+      version: 2.32.0
+
 importers:
 
   .:
@@ -500,7 +509,7 @@ importers:
         version: link:../stylehacks
     devDependencies:
       '@webref/css':
-        specifier: 8.7.1
+        specifier: 'catalog:'
         version: 8.7.1(css-tree@3.2.1)
       postcss:
         specifier: ^8.5.26
@@ -522,7 +531,7 @@ importers:
         version: 7.1.5
     devDependencies:
       '@webref/css':
-        specifier: 8.7.1
+        specifier: 'catalog:'
         version: 8.7.1(css-tree@3.2.1)
       postcss:
         specifier: ^8.5.26
@@ -703,7 +712,7 @@ importers:
         version: 4.2.0
     devDependencies:
       '@webref/css':
-        specifier: 8.7.1
+        specifier: 'catalog:'
         version: 8.7.1(css-tree@3.2.1)
       postcss:
         specifier: ^8.5.26
@@ -716,7 +725,7 @@ importers:
         version: 4.2.0
     devDependencies:
       '@webref/css':
-        specifier: 8.7.1
+        specifier: 'catalog:'
         version: 8.7.1(css-tree@3.2.1)
       postcss:
         specifier: ^8.5.26
@@ -732,7 +741,7 @@ importers:
         version: 4.0.0
     devDependencies:
       mdn-data:
-        specifier: ^2.32.0
+        specifier: 'catalog:'
         version: 2.32.0
       postcss:
         specifier: ^8.5.26
