@@ -863,13 +863,13 @@ function mergeComponentsToBorderAndSides(rule, canCreateBorder) {
     const none = 'medium none currentcolor';
 
     if (reduced.length > 1 && reduced.length < 4 && reduced.includes(none)) {
-      const filtered = mapped.filter((p) => p !== none);
+      const filtered = mapped.find((p) => p !== none);
       const mostCommon = reduced.toSorted(
         (a, b) =>
           mapped.filter((v) => v === b).length -
           mapped.filter((v) => v === a).length
       )[0];
-      const borderValue = reduced.length === 2 ? filtered[0] : mostCommon;
+      const borderValue = reduced.length === 2 ? filtered : mostCommon;
 
       rule.insertBefore(
         lastNode,
@@ -983,7 +983,11 @@ function rebindSideCustomProp(rule) {
           return false;
         }
 
-        const wscProp = rules.filter((r) => r !== lastNode)[0];
+        const wscProp = rules.find((r) => r !== lastNode);
+
+        if (!wscProp) {
+          return false;
+        }
 
         if (!isCustomProperty(values[i]) || isCustomProp(wscProp)) {
           return false;
@@ -1032,7 +1036,11 @@ function rebindComponentCustomProp(rule) {
         return false;
       }
 
-      const wscProp = rules.filter((r) => r !== lastNode)[0];
+      const wscProp = rules.find((r) => r !== lastNode);
+
+      if (!wscProp) {
+        return false;
+      }
 
       if (!isCustomProperty(values[i]) || isCustomProp(wscProp)) {
         return false;

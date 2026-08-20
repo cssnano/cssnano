@@ -15,9 +15,12 @@ const { shorthand, initialValues } = require('../spec.js');
 const columns = 'columns';
 /* The properties the shorthand sets */
 const columnProperties = ['column-width', 'column-count'];
+const columnPropertiesSet = new Set(columnProperties);
 /* Column properties the shorthand does not set */
-const otherColumnProperties = shorthand(columns).longhands.filter(
-  (property) => !columnProperties.includes(property)
+const otherColumnProperties = new Set(
+  shorthand(columns).longhands.filter(
+    (property) => !columnPropertiesSet.has(property)
+  )
 );
 const auto = /** @type {string} */ (initialValues.get(columnProperties[0]));
 const inherit = 'inherit';
@@ -152,7 +155,7 @@ function parseColumns(value) {
 function setsOtherColumnProperty(declaration) {
   const prop = declaration.prop.toLowerCase();
 
-  if (otherColumnProperties.includes(prop)) {
+  if (otherColumnProperties.has(prop)) {
     return true;
   }
 
