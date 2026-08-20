@@ -47,7 +47,9 @@ test(
 
 test('preserves z-index values when zindex is disabled', async () => {
   const input = 'h1{z-index:10}';
-  const { css } = await createCssnanoProcessor(preset({ zindex: false })).process(input, {
+  const { css } = await createCssnanoProcessor(
+    preset({ zindex: false })
+  ).process(input, {
     from: undefined,
   });
 

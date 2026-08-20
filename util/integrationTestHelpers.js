@@ -46,4 +46,8 @@ function integrationTests(preset, integrations) {
     );
 }
 
-module.exports = { processCSSWithPresetFactory, createCssnanoProcessor, integrationTests };
+module.exports = {
+  processCSSWithPresetFactory,
+  createCssnanoProcessor,
+  integrationTests,
+};
