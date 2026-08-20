@@ -7,10 +7,11 @@ const packageJson = require('../package.json');
 
 function processCss(fixture, expected, options) {
   return async () => {
-    const { css } = await postcss(stylehacks(options))
-      .process(fixture, { from: undefined });
-    assert.strictEqual(css, expected)
-  }
+    const { css } = await postcss(stylehacks(options)).process(fixture, {
+      from: undefined,
+    });
+    assert.strictEqual(css, expected);
+  };
 }
 
 function passthroughCss(fixture, options) {

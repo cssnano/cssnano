@@ -87,7 +87,9 @@ test(
 
 test('preserves color values when colormin is disabled', async () => {
   const input = 'h1{color:black}';
-  const { css } = await createCssnanoProcessor(preset({ colormin: false })).process(input, {
+  const { css } = await createCssnanoProcessor(
+    preset({ colormin: false })
+  ).process(input, {
     from: undefined,
   });
 
