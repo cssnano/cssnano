@@ -6,9 +6,10 @@ import { PlaygroundRunner } from '../src/playground-runner.js';
 function createMinifierWorker() {
   const worker = {
     postMessage({ input, config }) {
-      void minimize(input, config).then((result) => {
+      void (async () => {
+        const result = await minimize(input, config);
         worker.onmessage?.({ data: result });
-      });
+      })();
     },
     onmessage: null,
     onerror: null,

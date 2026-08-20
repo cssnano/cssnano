@@ -42,7 +42,7 @@ try {
 
 let running = false;
 if (cssMinifier) {
-  runButton.addEventListener('click', () => {
+  runButton.addEventListener('click', async () => {
     // aria-disabled (not disabled) keeps the button focusable while busy, so
     // a keyboard user doesn't lose focus the moment they activate it; guard
     // re-entrancy explicitly since aria-disabled doesn't block activation.
@@ -53,22 +53,19 @@ if (cssMinifier) {
     runButton.innerText = 'Working…';
     output.removeAttribute('data-has-error');
     const userInput = input.value;
-    cssMinifier
-      .minimizeCss(
+    try {
+      const css = await cssMinifier.minimizeCss(
         userInput,
         /** @type {import('./types.js').PresetName} */ (presetSelector.value)
-      )
-      .then((css) => {
-        return setOutput(css, false);
-      })
-      .catch((/** @type {unknown} */ err) => {
-        if (err instanceof Error) setOutput(err.message, true);
-      })
-      .finally(() => {
-        running = false;
-        runButton.removeAttribute('aria-disabled');
-        runButton.removeAttribute('aria-busy');
-        runButton.innerText = 'Minimize';
-      });
+      );
+      setOutput(css, false);
+    } catch (/** @type {unknown} */ err) {
+      if (err instanceof Error) setOutput(err.message, true);
+    } finally {
+      running = false;
+      runButton.removeAttribute('aria-disabled');
+      runButton.removeAttribute('aria-busy');
+      runButton.innerText = 'Minimize';
+    }
   });
 }
