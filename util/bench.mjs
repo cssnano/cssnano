@@ -230,7 +230,9 @@ async function main() {
   console.log(`\nwrote ${outPath}`);
 }
 
-main().catch((e) => {
+try {
+  await main();
+} catch (e) {
   console.error(e);
   process.exit(1);
-});
+}

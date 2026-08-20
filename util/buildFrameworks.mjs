@@ -1,7 +1,7 @@
 import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs/promises';
-import { readdirSync, readFileSync, readdir } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import postcss from 'postcss';
 import cssnano from '../packages/cssnano/src/index.js';
 
@@ -18,30 +18,25 @@ for (const framework of readdirSync(base())) {
   );
 }
 
-function rebuild(pkg) {
+async function rebuild(pkg) {
   for (const framework of Object.keys(frameworks)) {
-    import(pkg + '/src/index.js')
-      .then((presetModule) => {
-        const preset = presetModule.default();
+    const presetModule = await import(join(pkg, 'src', 'index.js'));
+    const preset = presetModule.default();
 
-        return postcss([cssnano({ preset })]).process(frameworks[framework], {
-          from: undefined,
-        });
-      })
-      .then((result) => {
-        return fs.writeFile(
-          `${pkg}/test/integrations/${framework}.css`,
-          result.css
-        );
-      });
+    const result = await postcss([cssnano({ preset })]).process(
+      frameworks[framework],
+      { from: undefined }
+    );
+    await fs.writeFile(
+      join(pkg, 'test', 'integrations', `${framework}.css`),
+      result.css
+    );
   }
 }
 
 const pkgDir = join(dirname(fileURLToPath(import.meta.url)), '../packages');
-readdir(pkgDir, (err, packages) => {
-  for (const pkg of packages) {
-    if (pkg.startsWith('cssnano-preset-')) {
-      rebuild(join(pkgDir, pkg));
-    }
+for (const pkg of await fs.readdir(pkgDir)) {
+  if (pkg.startsWith('cssnano-preset-')) {
+    await rebuild(join(pkgDir, pkg));
   }
-});
+}
