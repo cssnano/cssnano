@@ -27,7 +27,7 @@ registerHooks({
 
     try {
       if (typeof loaded.source !== 'string') {
-        throw new Error(
+        throw new TypeError(
           `Mutation target did not provide string source: ${url}`
         );
       }
