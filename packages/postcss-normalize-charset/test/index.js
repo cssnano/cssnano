@@ -1,10 +1,14 @@
 'use strict';
-const { test } = require('node:test');
+
+const { describe, test } = require('node:test');
+
 const assert = require('node:assert/strict');
+
 const {
   usePostCSSPlugin,
   processCSSFactory,
 } = require('../../../util/testHelpers.js');
+
 const plugin = require('../src/');
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -54,35 +58,39 @@ test(
   )
 );
 
-test(
-  'should remove extra charset rules',
-  processCssWithSource(
-    copyright + '@charset "utf-8";@charset "windows-1251";',
-    '@charset "utf-8";\n' + copyright,
-    copyright
-  )
-);
+describe('Remove', () => {
+  test(
+    'should remove extra charset rules',
+    processCssWithSource(
+      copyright + '@charset "utf-8";@charset "windows-1251";',
+      '@charset "utf-8";\n' + copyright,
+      copyright
+    )
+  );
 
-test(
-  "should remove all charset rules if a file doesn't contain non-ascii",
-  processCSS(
-    'a{content:"c"}@charset "utf-8";@charset "windows-1251";',
-    'a{content:"c"}'
-  )
-);
+  test(
+    "should remove all charset rules if a file doesn't contain non-ascii",
+    processCSS(
+      'a{content:"c"}@charset "utf-8";@charset "windows-1251";',
+      'a{content:"c"}'
+    )
+  );
+});
 
-test(
-  'should not add a charset with add set to false',
-  passthroughCSS(copyright, { add: false })
-);
+describe('Add', () => {
+  test(
+    'should not add a charset with add set to false',
+    passthroughCSS(copyright, { add: false })
+  );
 
-test('add on', processCSS(copyright, '@charset "utf-8";\n' + copyright));
+  test('add on', processCSS(copyright, '@charset "utf-8";\n' + copyright));
 
-test(
-  'add off',
-  processCSS(copyright, copyright, {
-    add: false,
-  })
-);
+  test(
+    'add off',
+    processCSS(copyright, copyright, {
+      add: false,
+    })
+  );
+});
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

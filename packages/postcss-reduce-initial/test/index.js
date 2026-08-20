@@ -1,14 +1,20 @@
 'use strict';
+
 const { join } = require('node:path');
-const { test } = require('node:test');
+
+const { describe, test } = require('node:test');
+
 const {
   usePostCSSPlugin,
   processCSSFactory,
 } = require('../../../util/testHelpers.js');
 
 const fromInitial = require('../src/data/fromInitial.json');
+
 const toInitial = require('../src/data/toInitial.json');
+
 const ignoreProps = require('../src/lib/ignoreProps.js');
+
 const plugin = require('../src/index.js');
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -86,44 +92,48 @@ test(
   processCSS('Z-INDEX: INITIAL', 'Z-INDEX: auto')
 );
 
-test(
-  'border-block-color: currentColor => border-block-color: initial',
-  processCSS(
-    'border-block-color: currentColor',
-    'border-block-color: initial',
-    { overrideBrowserslist: 'Chrome 58' }
-  )
-);
+describe('Border-Block-Color:', () => {
+  test(
+    'border-block-color: currentColor => border-block-color: initial',
+    processCSS(
+      'border-block-color: currentColor',
+      'border-block-color: initial',
+      { overrideBrowserslist: 'Chrome 58' }
+    )
+  );
 
-test(
-  'BORDER-BLOCK-COLOR: CURRENTCOLOR => border-block-color: initial (uppercase property and value)',
-  processCSS(
-    'BORDER-BLOCK-COLOR: CURRENTCOLOR',
-    'BORDER-BLOCK-COLOR: initial',
-    { overrideBrowserslist: 'Chrome 58' }
-  )
-);
+  test(
+    'BORDER-BLOCK-COLOR: CURRENTCOLOR => border-block-color: initial (uppercase property and value)',
+    processCSS(
+      'BORDER-BLOCK-COLOR: CURRENTCOLOR',
+      'BORDER-BLOCK-COLOR: initial',
+      { overrideBrowserslist: 'Chrome 58' }
+    )
+  );
+});
 
-test(
-  'should pass through when an initial value is longer',
-  passthroughCSS(
-    'writing-mode:initial' // initial value is horizontal-tb
-  )
-);
+describe('Pass', () => {
+  test(
+    'should pass through when an initial value is longer',
+    passthroughCSS(
+      'writing-mode:initial' // initial value is horizontal-tb
+    )
+  );
 
-test(
-  'should pass through when an initial value is longer (uppercase property and value)',
-  passthroughCSS(
-    'WRITING-MODE:INITIAL' // initial value is horizontal-tb
-  )
-);
+  test(
+    'should pass through when an initial value is longer (uppercase property and value)',
+    passthroughCSS(
+      'WRITING-MODE:INITIAL' // initial value is horizontal-tb
+    )
+  );
 
-test('should pass through non-initial values', passthroughCSS('all:inherit'));
+  test('should pass through non-initial values', passthroughCSS('all:inherit'));
 
-test(
-  'should pass through non-initial values (uppercase property and value)',
-  passthroughCSS('ALL:INHERIT')
-);
+  test(
+    'should pass through non-initial values (uppercase property and value)',
+    passthroughCSS('ALL:INHERIT')
+  );
+});
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
 
@@ -160,29 +170,32 @@ test(
   passthroughCSS('a{-webkit-line-clamp: initial;}')
 );
 
-test(
-  'should ignore the data present in the ignore options',
-  passthroughCSS('h1{min-height:initial}', { ignore: ['min-height'] })
-);
+describe('Ignore', () => {
+  test(
+    'should ignore the data present in the ignore options',
+    passthroughCSS('h1{min-height:initial}', { ignore: ['min-height'] })
+  );
 
-test(
-  'should ignore the data present in the ignore options #2',
-  processCSS(
-    'h1{  writing-mode: sideways-rl;}',
-    'h1{  writing-mode: sideways-rl;}',
-    { ignore: ['writing-mode'] }
-  )
-);
+  test(
+    'should ignore the data present in the ignore options #2',
+    processCSS(
+      'h1{  writing-mode: sideways-rl;}',
+      'h1{  writing-mode: sideways-rl;}',
+      { ignore: ['writing-mode'] }
+    )
+  );
 
-test(
-  'should ignore the data present in the ignore options #3',
-  processCSS(
-    'h1{  writing-mode: vertical-lr;}',
-    'h1{  writing-mode: vertical-lr;}',
-    { ignore: [] }
-  )
-);
-test(
-  'should ignore the data present in the ignore options , toInitial #3',
-  passthroughCSS('WRITING-MODE:horizontal-tb', { ignore: ['writing-mode'] })
-);
+  test(
+    'should ignore the data present in the ignore options #3',
+    processCSS(
+      'h1{  writing-mode: vertical-lr;}',
+      'h1{  writing-mode: vertical-lr;}',
+      { ignore: [] }
+    )
+  );
+
+  test(
+    'should ignore the data present in the ignore options , toInitial #3',
+    passthroughCSS('WRITING-MODE:horizontal-tb', { ignore: ['writing-mode'] })
+  );
+});
