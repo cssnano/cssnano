@@ -56,8 +56,8 @@
   },
   "devDependencies": {
     "@webref/css": "catalog:",
-    "postcss": "^8.5.26",
     "postcss-discard-comments": "workspace:^",
+    "postcss": "catalog:",
     "postcss-simple-vars": "^7.0.1"
   },
   "peerDependencies": {

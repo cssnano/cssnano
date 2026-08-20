@@ -27,8 +27,8 @@
     "knip": "^6.32.2",
     "oxfmt": "^0.64.0",
     "oxlint": "^1.79.0",
-    "postcss": "^8.5.26",
-    "typescript": "~7.0.2"
+    "typescript": "~7.0.2",
+    "postcss": "catalog:"
   },
   "browserslist": {
     "production": [
