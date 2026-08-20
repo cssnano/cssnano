@@ -1,5 +1,7 @@
 'use strict';
-const { test } = require('node:test');
+
+const { describe, test } = require('node:test');
+
 const {
   usePostCSSPlugin,
   processCSSFactory,
@@ -9,9 +11,15 @@ const plugin = require('../src/index.js');
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
-test('should pass through "block ruby"', passthroughCSS('display:block ruby;'));
+describe('Pass', () => {
+  test(
+    'should pass through "block ruby"',
+    passthroughCSS('display:block ruby;')
+  );
 
-test('should pass through single values', passthroughCSS('display:block;'));
+  test('should pass through single values', passthroughCSS('display:block;'));
+});
+
 /* source: https://www.w3.org/TR/css-display-3/#the-display-properties */
 const fixtures = [
   { input: 'block flow', minified: 'block' },
@@ -33,6 +41,7 @@ const fixtures = [
   { input: 'ruby-base flow', minified: 'ruby-base' },
   { input: 'ruby-text flow', minified: 'ruby-text' },
 ];
+
 for (const { input, minified } of fixtures) {
   test(
     `display: ${input} => display: ${minified}`,
