@@ -1,5 +1,13 @@
 # Change Log
 
+## 8.0.5
+
+### Patch Changes
+
+- perf(postcss-merge-rules): cache negative browser-support results when deciding whether to merge rules
+
+  Checking whether a selector feature is supported by the target browsers previously skipped the cache whenever the feature was not supported, so every occurrence of an unsupported feature re-ran the browserslist/caniuse lookup. This is now cached, which speeds up rule merging.
+
 ## 8.0.4
 
 ### Patch Changes

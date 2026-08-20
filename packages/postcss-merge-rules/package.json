@@ -1,6 +1,6 @@
 {
   "name": "postcss-merge-rules",
-  "version": "8.0.4",
+  "version": "8.0.5",
   "description": "Merge CSS rules with PostCSS.",
   "exports": {
     ".": {
@@ -56,8 +56,8 @@
   },
   "devDependencies": {
     "@webref/css": "catalog:",
-    "postcss-discard-comments": "workspace:^",
     "postcss": "catalog:",
+    "postcss-discard-comments": "workspace:^",
     "postcss-simple-vars": "^7.0.1"
   },
   "peerDependencies": {

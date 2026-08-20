@@ -1,6 +1,6 @@
 {
   "name": "cssnano",
-  "version": "8.0.6",
+  "version": "8.0.7",
   "description": "A modular CSS minifier, built on top of the PostCSS ecosystem.",
   "exports": {
     ".": {
@@ -55,8 +55,8 @@
     "autoprefixer": "^10.5.4",
     "cssnano-preset-advanced": "workspace:^",
     "cssnano-preset-lite": "workspace:^",
-    "postcss-font-magician": "^4.0.0",
-    "postcss": "catalog:"
+    "postcss": "catalog:",
+    "postcss-font-magician": "^4.0.0"
   },
   "peerDependencies": {
     "postcss": "^8.5.26"
