@@ -24,6 +24,19 @@ You can run the tests with:
 pnpm test
 ```
 
+Mutation testing is an opt-in test-quality check for realistic faults in a
+plugin. It requires Node 24 and applies curated mutations in memory in an
+isolated child process; source files are never changed. Run the initial slice
+with:
+
+```shell
+pnpm test:mutation
+```
+
+Mutation testing is not part of the required test or CI path. A surviving
+mutation means the current tests did not detect that simulated fault; a
+timeout or harness error is reported separately.
+
 We recommend that you look in the issue tracker to find anything tagged
 [help wanted][help wanted]; that's the first port of call for getting stuck
 in and writing code. If there's any other open issues that you think you can
