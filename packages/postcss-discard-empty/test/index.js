@@ -5,45 +5,14 @@ const {
   usePostCSSPlugin,
   processCSSFactory,
 } = require('../../../util/testHelpers.js');
-const plugin = require('../src/index.js');
+const discardEmptyPlugin = require('../src/index.js');
 
-const { passthroughCSS, processCSS, processor } = processCSSFactory(plugin);
+const { passthroughCSS, processCSS, processor } =
+  processCSSFactory(discardEmptyPlugin);
 
-function testRemovals(fixture, expected, removedSelectors) {
-  return () =>
-    processor(fixture).then((result) => {
-      for (const removedSelector of removedSelectors) {
-        const message = result.messages.some((m) => {
-          return (
-            m.plugin === 'postcss-discard-empty' &&
-            m.type === 'removal' &&
-            m.node.selector === removedSelector
-          );
-        });
-
-        if (!message) {
-          throw new Error(
-            'expected selector `' + removedSelector + '` was not removed'
-          );
-        }
-      }
-
-      for (const m of result.messages) {
-        if (
-          m.plugin !== 'postcss-discard-empty' ||
-          m.type !== 'removal' ||
-          m.selector !== undefined ||
-          removedSelectors.includes(m.selector)
-        ) {
-          throw new Error(
-            'unexpected selector `' + m.selector + '` was removed'
-          );
-        }
-      }
-
-      assert.strictEqual(result.css, expected);
-    });
-}
+const removalFixture = 'h1{}.hot{}.a.b{}{}@media screen, print{h1,h2{}}';
+const removedSelectors = ['h1', '.hot', '.a.b', '', 'h1,h2'];
+const removalCount = 6;
 
 test('should remove empty @ rules', processCSS('@font-face;', ''));
 
@@ -119,15 +88,49 @@ test(
   )
 );
 
-test(
-  'should report removed selectors',
-  testRemovals('h1{}.hot{}.a.b{}{}@media screen, print{h1,h2{}}', '', [
-    'h1',
-    '.hot',
-    '.a.b',
-    '',
-    'h1,h2',
-  ])
-);
+test('should discard empty rules and at-rules', processCSS(removalFixture, ''));
 
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+test('should identify removal messages by plugin', async () => {
+  const result = await processor(removalFixture);
+
+  assert.deepStrictEqual(
+    result.messages.map(({ plugin }) => plugin),
+    Array.from({ length: removalCount }, () => 'postcss-discard-empty')
+  );
+});
+
+test('should classify discarded nodes as removal messages', async () => {
+  const result = await processor(removalFixture);
+
+  assert.deepStrictEqual(
+    result.messages.map(({ type }) => type),
+    Array.from({ length: removalCount }, () => 'removal')
+  );
+});
+
+test('should report selectors for discarded rules', async () => {
+  const result = await processor(removalFixture);
+
+  assert.deepStrictEqual(
+    result.messages
+      .map(({ node }) => node.selector)
+      .filter((selector) => selector !== undefined),
+    removedSelectors
+  );
+});
+
+test('should not report unexpected selectors for discarded rules', async () => {
+  const result = await processor(removalFixture);
+
+  assert.ok(
+    result.messages
+      .map(({ node }) => node.selector)
+      .filter((selector) => selector !== undefined)
+      .every((selector) => removedSelectors.includes(selector))
+  );
+});
+
+test(
+  'should use the postcss plugin api',
+  usePostCSSPlugin(discardEmptyPlugin())
+);

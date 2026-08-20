@@ -4,7 +4,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const {
   integrationTests,
-  loadPreset,
+  createCssnanoProcessor,
   processCSSWithPresetFactory,
 } = require('../../../util/integrationTestHelpers.js');
 const preset = require('../src/index.js');
@@ -85,17 +85,20 @@ test(
   integrationTests(preset, `${__dirname}/integrations`)
 );
 
-function excludeProcessor(options) {
-  const input = `h1{color:black}`;
+test('preserves color values when colormin is disabled', async () => {
+  const input = 'h1{color:black}';
+  const { css } = await createCssnanoProcessor(preset({ colormin: false })).process(input, {
+    from: undefined,
+  });
 
-  return () =>
-    loadPreset(preset(options))
-      .process(input, { from: undefined })
-      .then(({ css }) => {
-        assert.strictEqual(css, input);
-      });
-}
+  assert.strictEqual(css, input);
+});
 
-test('exclude colormin', excludeProcessor({ colormin: false }));
+test('preserves color values with the exclude option', async () => {
+  const input = 'h1{color:black}';
+  const { css } = await createCssnanoProcessor(
+    preset({ colormin: { exclude: true } })
+  ).process(input, { from: undefined });
 
-test('exclude colormin #1', excludeProcessor({ colormin: { exclude: true } }));
+  assert.strictEqual(css, input);
+});

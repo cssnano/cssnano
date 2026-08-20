@@ -10,7 +10,7 @@ function processCSSWithPresetFactory(preset) {
   return processCSSFactory([cssnano({ preset })]);
 }
 
-function loadPreset(preset) {
+function createCssnanoProcessor(preset) {
   return postcss(cssnano({ preset }));
 }
 
@@ -46,4 +46,4 @@ function integrationTests(preset, integrations) {
     );
 }
 
-module.exports = { processCSSWithPresetFactory, loadPreset, integrationTests };
+module.exports = { processCSSWithPresetFactory, createCssnanoProcessor, integrationTests };

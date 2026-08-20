@@ -4,25 +4,45 @@ const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const nano = require('../src/index.js');
 
-function pluginMacro(instance) {
-  const css = 'h1 { color: #ffffff }';
-  const min = 'h1{color:#fff}';
+test('cssnano can be used as a configured plugin with postcss().use()', async () => {
+  const { css } = await postcss()
+    .use(nano())
+    .process('h1 { color: #ffffff }', { from: undefined });
 
-  return () =>
-    instance.process(css, { from: undefined }).then((result) => {
-      assert.strictEqual(result.css, min);
-    });
-}
+  assert.strictEqual(css, 'h1{color:#fff}');
+});
 
-test('can be used as a postcss plugin', pluginMacro(postcss().use(nano())));
+test('cssnano can be used as a configured plugin in a PostCSS plugin array', async () => {
+  const { css } = await postcss([nano()]).process('h1 { color: #ffffff }', {
+    from: undefined,
+  });
 
-test('can be used as a postcss plugin (2)', pluginMacro(postcss([nano()])));
+  assert.strictEqual(css, 'h1{color:#fff}');
+});
 
-test('can be used as a postcss plugin (3)', pluginMacro(postcss([nano])));
+test('cssnano can be used as a plugin creator in a PostCSS plugin array', async () => {
+  const { css } = await postcss([nano]).process('h1 { color: #ffffff }', {
+    from: undefined,
+  });
 
-test('can be used as a postcss plugin (4)', pluginMacro(postcss(nano)));
+  assert.strictEqual(css, 'h1{color:#fff}');
+});
 
-test('can be used as a postcss plugin (5)', pluginMacro(postcss().use(nano)));
+test('cssnano can be used as a plugin creator directly', async () => {
+  const { css } = await postcss(nano).process('h1 { color: #ffffff }', {
+    from: undefined,
+  });
+
+  assert.strictEqual(css, 'h1{color:#fff}');
+});
+
+test('cssnano can be used as a plugin creator with postcss().use()', async () => {
+  const { css } = await postcss()
+    .use(nano)
+    .process('h1 { color: #ffffff }', { from: undefined });
+
+  assert.strictEqual(css, 'h1{color:#fff}');
+});
 
 test('should work with sourcemaps', () => {
   return postcss([nano])
