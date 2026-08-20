@@ -33,6 +33,7 @@
     "unicorn/prefer-set-has": "error",
     "preserve-caught-error": "error",
     "promise/prefer-await-to-then": "error",
+    "promise/always-return": "error",
     "unicorn/consistent-function-scoping": "error",
     "unicorn/no-array-for-each": "error",
     "unicorn/no-array-reduce": "error",

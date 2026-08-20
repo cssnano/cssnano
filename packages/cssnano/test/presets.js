@@ -6,125 +6,122 @@ const advancedPreset = require('cssnano-preset-advanced');
 const defaultPreset = require('cssnano-preset-default');
 const cssnano = require('../src/index.js');
 
-test('should accept an invoked preset', () => {
+test('should accept an invoked preset', async () => {
   const preset = defaultPreset({ normalizeCharset: { add: true } });
 
-  return postcss([cssnano({ preset })])
-    .process(`h1{content:"©"}`, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
-    });
+  const result = await postcss([cssnano({ preset })]).process(
+    `h1{content:"©"}`,
+    { from: undefined }
+  );
+  assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
 });
 
-test('should accept a non-invoked preset', () => {
+test('should accept a non-invoked preset', async () => {
   const preset = [defaultPreset, { normalizeCharset: { add: true } }];
 
-  return postcss([cssnano({ preset })])
-    .process(`h1{content:"©"}`, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
-    });
+  const result = await postcss([cssnano({ preset })]).process(
+    `h1{content:"©"}`,
+    { from: undefined }
+  );
+  assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
 });
 
-test('should accept a default preset string', () => {
+test('should accept a default preset string', async () => {
   const preset = ['default', { normalizeCharset: { add: true } }];
 
-  return postcss([cssnano({ preset })])
-    .process(`h1{content:"©"}`, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
-    });
+  const result = await postcss([cssnano({ preset })]).process(
+    `h1{content:"©"}`,
+    { from: undefined }
+  );
+  assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
 });
 
-test('should accept an invoked preset other than default', () => {
+test('should accept an invoked preset other than default', async () => {
   const preset = advancedPreset({ zindex: { startIndex: 15 } });
 
-  return postcss([cssnano({ preset })])
-    .process(`h1{z-index:10}`, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, `h1{z-index:15}`);
-    });
+  const result = await postcss([cssnano({ preset })]).process(
+    `h1{z-index:10}`,
+    { from: undefined }
+  );
+  assert.strictEqual(result.css, `h1{z-index:15}`);
 });
 
-test('should accept a preset string other than default', () => {
+test('should accept a preset string other than default', async () => {
   const preset = 'cssnano-preset-advanced';
 
-  return postcss([cssnano({ preset })])
-    .process(`h1{z-index:10}`, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, `h1{z-index:1}`);
-    });
+  const result = await postcss([cssnano({ preset })]).process(
+    `h1{z-index:10}`,
+    { from: undefined }
+  );
+  assert.strictEqual(result.css, `h1{z-index:1}`);
 });
 
-test('should accept a preset string other than default, with options', () => {
+test('should accept a preset string other than default, with options', async () => {
   const preset = ['cssnano-preset-advanced', { zindex: { startIndex: 15 } }];
 
-  return postcss([cssnano({ preset })])
-    .process(`h1{z-index:10}`, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, `h1{z-index:15}`);
-    });
+  const result = await postcss([cssnano({ preset })]).process(
+    `h1{z-index:10}`,
+    { from: undefined }
+  );
+  assert.strictEqual(result.css, `h1{z-index:15}`);
 });
 
-test('should accept a preset string other than default (sugar syntax)', () => {
+test('should accept a preset string other than default (sugar syntax)', async () => {
   const preset = ['advanced', { zindex: { startIndex: 15 } }];
 
-  return postcss([cssnano({ preset })])
-    .process(`h1{z-index:10}`, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, `h1{z-index:15}`);
-    });
+  const result = await postcss([cssnano({ preset })]).process(
+    `h1{z-index:10}`,
+    { from: undefined }
+  );
+  assert.strictEqual(result.css, `h1{z-index:15}`);
 });
 
-test('should be able to exclude plugins', () => {
+test('should be able to exclude plugins', async () => {
   const preset = ['advanced', { zindex: false }];
 
-  return postcss([cssnano({ preset })])
-    .process(`h1{z-index:10}`, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, `h1{z-index:10}`);
-    });
+  const result = await postcss([cssnano({ preset })]).process(
+    `h1{z-index:10}`,
+    { from: undefined }
+  );
+  assert.strictEqual(result.css, `h1{z-index:10}`);
 });
 
-test('should be able to include plugins', () => {
+test('should be able to include plugins', async () => {
   const preset = ['advanced', { zindex: true }];
 
-  return postcss([cssnano({ preset })])
-    .process(`h1{z-index:10}`, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, `h1{z-index:1}`);
-    });
+  const result = await postcss([cssnano({ preset })]).process(
+    `h1{z-index:10}`,
+    { from: undefined }
+  );
+  assert.strictEqual(result.css, `h1{z-index:1}`);
 });
 
-test('should be able to exclude plugins (exclude syntax)', () => {
+test('should be able to exclude plugins (exclude syntax)', async () => {
   const preset = ['advanced', { zindex: { startIndex: 15, exclude: true } }];
 
-  return postcss([cssnano({ preset })])
-    .process(`h1{z-index:10}`, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, `h1{z-index:10}`);
-    });
+  const result = await postcss([cssnano({ preset })]).process(
+    `h1{z-index:10}`,
+    { from: undefined }
+  );
+  assert.strictEqual(result.css, `h1{z-index:10}`);
 });
 
-test('should be able to exclude pointer-events plugin', () => {
-  return cssnano({
+test('should be able to exclude pointer-events plugin', async () => {
+  const result = await cssnano({
     preset: [
       'default',
       {
         reduceInitial: { ignore: ['pointer-events'] },
       },
     ],
-  })
-    .process('.selector { pointer-events: initial; }', { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, '.selector{pointer-events:initial}');
-    });
+  }).process('.selector { pointer-events: initial; }', { from: undefined });
+  assert.strictEqual(result.css, '.selector{pointer-events:initial}');
 });
 test('should error on a bad preset', async () => {
   try {
-    await postcss([cssnano({ preset: 'avanced' })])
-      .process('h1{}', { from: undefined })
-      .then(() => {});
+    await postcss([cssnano({ preset: 'avanced' })]).process('h1{}', {
+      from: undefined,
+    });
     assert.unreachable();
   } catch (error) {
     assert.ok(error);
