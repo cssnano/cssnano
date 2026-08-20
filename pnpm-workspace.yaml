@@ -5,8 +5,8 @@ autoInstallPeers: true
 
 catalog:
   postcss: ^8.5.26
-  '@webref/css': 8.7.1
-  mdn-data: 2.32.0
+  '@webref/css': 8.7.2
+  mdn-data: 2.33.0
 
 versioning:
   changelog:

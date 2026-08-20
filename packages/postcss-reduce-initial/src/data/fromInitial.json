@@ -346,6 +346,7 @@
   "text-decoration-thickness": "auto",
   "text-emphasis-position": "auto",
   "text-emphasis-style": "none",
+  "text-fit": "none",
   "text-indent": "0",
   "text-justify": "auto",
   "text-orientation": "mixed",

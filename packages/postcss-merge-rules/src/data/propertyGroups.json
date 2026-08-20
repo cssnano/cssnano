@@ -636,6 +636,7 @@
     "rx",
     "ry",
     "scale",
+    "scroll-axis-lock",
     "scroll-behavior",
     "scroll-initial-target",
     "scroll-margin",
