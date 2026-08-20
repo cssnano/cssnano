@@ -6,10 +6,10 @@ const cssnano = require('../src/index.js');
 const processor = postcss([cssnano()]);
 
 function processCss(fixture, expected, options = { from: undefined }) {
-  return () =>
-    processor.process(fixture, options).then(({ css }) => {
-      assert.strictEqual(css, expected);
-    });
+  return async () => {
+    const { css } = await processor.process(fixture, options);
+    assert.strictEqual(css, expected);
+  };
 }
 module.exports = processCss;
 module.exports.passthrough = function (fixture, options = { from: undefined }) {

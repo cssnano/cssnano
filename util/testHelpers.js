@@ -21,11 +21,11 @@ function processCSSFactory(plugin) {
       );
 
     processCSS = (fixture, expected, options) => {
-      return () =>
-        processor(fixture, options).then((result) => {
-          assert.strictEqual(result.css, expected);
-          return result;
-        });
+      return async () => {
+        const result = await processor(fixture, options);
+        assert.strictEqual(result.css, expected);
+        return result;
+      };
     };
 
     passthroughCSS = (fixture, options) => {
@@ -40,11 +40,11 @@ function processCSSFactory(plugin) {
     };
 
     processCSS = (fixture, expected, options) => {
-      return () =>
-        processor(fixture, options).then((result) => {
-          assert.strictEqual(result.css, expected);
-          return result;
-        });
+      return async () => {
+        const result = await processor(fixture, options);
+        assert.strictEqual(result.css, expected);
+        return result;
+      };
     };
 
     passthroughCSS = (fixture, options) => {
