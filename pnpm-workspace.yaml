@@ -3,6 +3,10 @@ packages:
   - '!site/**'
 autoInstallPeers: true
 
+catalog:
+  '@webref/css': 8.7.1
+  mdn-data: 2.32.0
+
 versioning:
   changelog:
     storage: repository
