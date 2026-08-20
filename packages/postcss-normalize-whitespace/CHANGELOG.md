@@ -1,5 +1,13 @@
 # Change Log
 
+## 8.0.5
+
+### Patch Changes
+
+- fix(postcss-normalize-whitespace): stop dropping the escaped character in a trailing backslash escape
+
+  Keep the whitespace character when a declaration ends in a backslash character followed by a whitespace character and the declaration is the last in its rule, instead of leaving a dangling character and invalid CSS
+
 ## 8.0.4
 
 ### Patch Changes

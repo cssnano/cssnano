@@ -27,6 +27,14 @@ cssnano-preset-advanced@8.0.6:
     - salty-dolls-enter
     - smooth-heads-tickle
     - tall-moons-repeat
+cssnano-preset-advanced@8.0.7:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - cool-toes-fail
+    - fast-radios-love
+    - tame-otters-race
+    - tender-falcons-drive
+    - tidy-plums-shout
 cssnano-preset-default@8.0.3:
   dir: packages/cssnano-preset-default
   intents:
@@ -55,6 +63,14 @@ cssnano-preset-default@8.0.6:
     - salty-dolls-enter
     - smooth-heads-tickle
     - tall-moons-repeat
+cssnano-preset-default@8.0.7:
+  dir: packages/cssnano-preset-default
+  intents:
+    - cool-toes-fail
+    - fast-radios-love
+    - tame-otters-race
+    - tender-falcons-drive
+    - tidy-plums-shout
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -71,6 +87,11 @@ cssnano-preset-lite@5.0.4:
   dir: packages/cssnano-preset-lite
   intents:
     - salty-dolls-enter
+cssnano-preset-lite@5.0.5:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - tender-falcons-drive
+    - tidy-plums-shout
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -116,6 +137,15 @@ cssnano@8.0.6:
     - salty-dolls-enter
     - smooth-heads-tickle
     - tall-moons-repeat
+cssnano@8.0.7:
+  dir: packages/cssnano
+  intents:
+    - cool-toes-fail
+    - fast-radios-love
+    - silver-glasses-draw
+    - tame-otters-race
+    - tender-falcons-drive
+    - tidy-plums-shout
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -198,6 +228,10 @@ postcss-discard-empty@8.0.4:
   dir: packages/postcss-discard-empty
   intents:
     - salty-dolls-enter
+postcss-discard-empty@8.0.5:
+  dir: packages/postcss-discard-empty
+  intents:
+    - tender-falcons-drive
 postcss-discard-overridden@8.0.2:
   dir: packages/postcss-discard-overridden
   intents:
@@ -284,6 +318,10 @@ postcss-merge-rules@8.0.4:
     - olive-pandas-refuse
     - salty-dolls-enter
     - smooth-heads-tickle
+postcss-merge-rules@8.0.5:
+  dir: packages/postcss-merge-rules
+  intents:
+    - tame-otters-race
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -501,6 +539,10 @@ postcss-normalize-whitespace@8.0.4:
   dir: packages/postcss-normalize-whitespace
   intents:
     - salty-dolls-enter
+postcss-normalize-whitespace@8.0.5:
+  dir: packages/postcss-normalize-whitespace
+  intents:
+    - tidy-plums-shout
 postcss-ordered-values@8.0.2:
   dir: packages/postcss-ordered-values
   intents:
@@ -517,6 +559,10 @@ postcss-ordered-values@8.0.4:
   dir: packages/postcss-ordered-values
   intents:
     - salty-dolls-enter
+postcss-ordered-values@8.0.5:
+  dir: packages/postcss-ordered-values
+  intents:
+    - cool-toes-fail
 postcss-reduce-idents@8.0.2:
   dir: packages/postcss-reduce-idents
   intents:
@@ -554,6 +600,10 @@ postcss-reduce-initial@8.0.4:
   intents:
     - salty-dolls-enter
     - vast-llamas-sleep
+postcss-reduce-initial@8.0.5:
+  dir: packages/postcss-reduce-initial
+  intents:
+    - fast-radios-love
 postcss-reduce-transforms@8.0.2:
   dir: packages/postcss-reduce-transforms
   intents:

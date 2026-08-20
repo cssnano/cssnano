@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.5
+
+### Patch Changes
+
+- fix(postcss-ordered-values): recognise easing functions
+
 ## 8.0.4
 
 ### Patch Changes

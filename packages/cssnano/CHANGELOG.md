@@ -1,5 +1,25 @@
 # Change Log
 
+## 8.0.7
+
+### Patch Changes
+
+- fix(postcss-ordered-values): recognise easing functions
+
+- fix(postcss-reduce-initial): update MDN data
+
+- fix(cssnano): tighten option types
+
+- perf(postcss-merge-rules): cache negative browser-support results when deciding whether to merge rules
+
+  Checking whether a selector feature is supported by the target browsers previously skipped the cache whenever the feature was not supported, so every occurrence of an unsupported feature re-ran the browserslist/caniuse lookup. This is now cached, which speeds up rule merging.
+
+- fix(postcss-discard-empty): remove empty cascade layers when they do not affect the layer ordering
+
+- fix(postcss-normalize-whitespace): stop dropping the escaped character in a trailing backslash escape
+
+  Keep the whitespace character when a declaration ends in a backslash character followed by a whitespace character and the declaration is the last in its rule, instead of leaving a dangling character and invalid CSS
+
 ## 8.0.6
 
 ### Patch Changes

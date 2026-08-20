@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.5
+
+### Patch Changes
+
+- fix(postcss-discard-empty): remove empty cascade layers when they do not affect the layer ordering
+
 ## 8.0.4
 
 ### Patch Changes
