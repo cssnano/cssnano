@@ -4,6 +4,7 @@
   "plugins": ["typescript", "unicorn", "oxc", "promise"],
   "categories": {
     "correctness": "error"
+    //"suspicious": "error"
   },
   "rules": {
     "array-callback-return": "error",
@@ -11,6 +12,7 @@
     "guard-for-in": "error",
     "no-bitwise": "error",
     "no-case-declarations": "error",
+    "no-duplicate-imports": "error",
     "no-empty": "error",
     "no-nested-ternary": "error",
     "no-fallthrough": "error",
@@ -20,16 +22,29 @@
     "no-redeclare": "error",
     "no-regex-spaces": "error",
     "no-shadow": "error",
+    "no-throw-literal": "error",
+    "no-underscore-dangle": ["error", { "allow": ["_stylehacks"] }],
+    "no-unnecessary-await": "error",
+    "no-useless-assignment": "error",
+    "only-throw-error": "error",
+    "no-promise-executor-return": "error",
     "prefer-const": ["error", { "destructuring": "all" }],
+    "unicorn/prefer-array-find": "error",
+    "unicorn/prefer-set-has": "error",
     "preserve-caught-error": "error",
+    "promise/prefer-await-to-then": "error",
     "unicorn/consistent-function-scoping": "error",
     "unicorn/no-array-for-each": "error",
     "unicorn/no-array-reduce": "error",
     "unicorn/no-array-reverse": "error",
     "unicorn/no-array-sort": "error",
     "unicorn/prefer-array-flat": "error",
+    "unicorn/prefer-includes": "error",
     "unicorn/prefer-node-protocol": "error",
-    "unicorn/prefer-number-properties": "error"
+    "unicorn/prefer-number-properties": "error",
+    "unicorn/prefer-regexp-test": "error",
+    "unicorn/prefer-type-error": "error",
+    "promise/no-nesting": "error"
   },
   "env": {
     "builtin": true

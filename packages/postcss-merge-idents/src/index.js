@@ -59,15 +59,15 @@ function mergeAtRules(css) {
   ];
 
   /**
-   * @type {{atrule: RegExp, decl: RegExp, replacements: Record<string, string>, removals: import('postcss').AtRule[], cache: import('postcss').AtRule[], decls: import('postcss').Declaration[]}}
+   * @type {{atrule: RegExp, decl: RegExp, replacements: Record<string, string>, removals: import('postcss').AtRule[], cache: import('postcss').AtRule[], decls: import('postcss').Declaration[]} | undefined}
    */
   let relevant;
 
   css.walk((node) => {
     if (node.type === 'atrule') {
-      relevant = pairs.filter((pair) =>
+      relevant = pairs.find((pair) =>
         pair.atrule.test(node.name.toLowerCase())
-      )[0];
+      );
 
       if (!relevant) {
         return;
@@ -100,9 +100,7 @@ function mergeAtRules(css) {
     }
 
     if (node.type === 'decl') {
-      relevant = pairs.filter((pair) =>
-        pair.decl.test(node.prop.toLowerCase())
-      )[0];
+      relevant = pairs.find((pair) => pair.decl.test(node.prop.toLowerCase()));
 
       if (!relevant) {
         return;
