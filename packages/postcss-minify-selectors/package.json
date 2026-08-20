@@ -63,8 +63,8 @@
   "devDependencies": {
     "@types/cssesc": "^3.0.2",
     "jsdom": "^30.0.1",
-    "postcss": "^8.5.26",
-    "postcss-font-magician": "^4.0.0"
+    "postcss-font-magician": "^4.0.0",
+    "postcss": "catalog:"
   },
   "peerDependencies": {
     "postcss": "^8.5.26"

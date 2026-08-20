@@ -211,6 +211,9 @@ catalogs:
     mdn-data:
       specifier: 2.32.0
       version: 2.32.0
+    postcss:
+      specifier: ^8.5.26
+      version: 8.5.26
 
 importers:
 
@@ -229,7 +232,7 @@ importers:
         specifier: ^1.79.0
         version: 1.79.0
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
       typescript:
         specifier: ~7.0.2
@@ -254,7 +257,7 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-preset-lite
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
       postcss-font-magician:
         specifier: ^4.0.0
@@ -285,7 +288,7 @@ importers:
         version: link:../postcss-zindex
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/cssnano-preset-default:
@@ -379,7 +382,7 @@ importers:
         version: link:../postcss-unique-selectors
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/cssnano-preset-lite:
@@ -398,13 +401,13 @@ importers:
         version: link:../postcss-normalize-whitespace
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/cssnano-utils:
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
       postcss-value-parser:
         specifier: ^4.2.0
@@ -426,7 +429,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-convert-values:
@@ -439,7 +442,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-discard-comments:
@@ -449,7 +452,7 @@ importers:
         version: 7.1.5
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
       postcss-scss:
         specifier: ^4.0.9
@@ -461,19 +464,19 @@ importers:
   packages/postcss-discard-duplicates:
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-discard-empty:
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-discard-overridden:
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-discard-unused:
@@ -483,7 +486,7 @@ importers:
         version: 7.1.5
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-merge-idents:
@@ -496,7 +499,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-merge-longhand:
@@ -512,7 +515,7 @@ importers:
         specifier: 'catalog:'
         version: 8.7.1(css-tree@3.2.1)
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-merge-rules:
@@ -534,7 +537,7 @@ importers:
         specifier: 'catalog:'
         version: 8.7.1(css-tree@3.2.1)
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
       postcss-discard-comments:
         specifier: workspace:^
@@ -550,7 +553,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-minify-gradients:
@@ -566,7 +569,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-minify-params:
@@ -582,7 +585,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-minify-selectors:
@@ -607,7 +610,7 @@ importers:
         specifier: ^30.0.1
         version: 30.0.1
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
       postcss-font-magician:
         specifier: ^4.0.0
@@ -616,7 +619,7 @@ importers:
   packages/postcss-normalize-charset:
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-normalize-display-values:
@@ -626,7 +629,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-normalize-positions:
@@ -636,7 +639,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-normalize-repeat-style:
@@ -646,7 +649,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-normalize-string:
@@ -656,7 +659,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-normalize-timing-functions:
@@ -666,7 +669,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-normalize-unicode:
@@ -679,7 +682,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-normalize-url:
@@ -689,7 +692,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-normalize-whitespace:
@@ -699,7 +702,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-ordered-values:
@@ -715,7 +718,7 @@ importers:
         specifier: 'catalog:'
         version: 8.7.1(css-tree@3.2.1)
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-reduce-idents:
@@ -728,7 +731,7 @@ importers:
         specifier: 'catalog:'
         version: 8.7.1(css-tree@3.2.1)
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-reduce-initial:
@@ -744,7 +747,7 @@ importers:
         specifier: 'catalog:'
         version: 2.32.0
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-reduce-transforms:
@@ -754,7 +757,7 @@ importers:
         version: 4.2.0
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-svgo:
@@ -767,7 +770,7 @@ importers:
         version: 4.0.2
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-unique-selectors:
@@ -777,13 +780,13 @@ importers:
         version: 7.1.5
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/postcss-zindex:
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
   packages/stylehacks:
@@ -796,7 +799,7 @@ importers:
         version: 7.1.5
     devDependencies:
       postcss:
-        specifier: ^8.5.26
+        specifier: 'catalog:'
         version: 8.5.26
 
 packages:

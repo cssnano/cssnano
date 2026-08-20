@@ -55,8 +55,8 @@
     "autoprefixer": "^10.5.4",
     "cssnano-preset-advanced": "workspace:^",
     "cssnano-preset-lite": "workspace:^",
-    "postcss": "^8.5.26",
-    "postcss-font-magician": "^4.0.0"
+    "postcss-font-magician": "^4.0.0",
+    "postcss": "catalog:"
   },
   "peerDependencies": {
     "postcss": "^8.5.26"

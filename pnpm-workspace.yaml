@@ -4,6 +4,7 @@ packages:
 autoInstallPeers: true
 
 catalog:
+  postcss: ^8.5.26
   '@webref/css': 8.7.1
   mdn-data: 2.32.0
 

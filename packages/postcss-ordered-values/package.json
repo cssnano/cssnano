@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@webref/css": "catalog:",
-    "postcss": "^8.5.26"
+    "postcss": "catalog:"
   },
   "peerDependencies": {
     "postcss": "^8.5.26"
