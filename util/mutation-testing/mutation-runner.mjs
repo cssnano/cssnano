@@ -4,12 +4,16 @@ import { resolve } from 'node:path';
 
 const loader = fileURLToPath(new URL('./mutation-loader.mjs', import.meta.url));
 
-function argument(name, args) {
-  const index = args.indexOf(name);
-  if (index === -1 || !args[index + 1]) {
-    throw new Error(`Missing required argument ${name}`);
+function argumentsFor(name, args) {
+  const values = [];
+  for (let index = args.indexOf(name); index !== -1;) {
+    if (!args[index + 1]) {
+      throw new Error(`Missing value for ${name}`);
+    }
+    values.push(args[index + 1]);
+    index = args.indexOf(name, index + 1);
   }
-  return args[index + 1];
+  return values;
 }
 
 function runNode(args, env, timeout) {
@@ -56,23 +60,42 @@ try {
     throw new Error('Mutation testing requires Node 24');
   }
 
-  const catalogPath = resolve(argument('--catalog', args));
-  const testPath = resolve(argument('--test', args));
+  const catalogPaths = argumentsFor('--catalog', args).map((path) =>
+    resolve(path)
+  );
+  const testPaths = argumentsFor('--test', args).map((path) => resolve(path));
+  if (!catalogPaths.length) {
+    throw new Error('Missing required argument --catalog');
+  }
+  if (testPaths.length > 1) {
+    throw new Error('Only one legacy --test argument is supported');
+  }
   const timeoutIndex = args.indexOf('--timeout');
   const timeout = Number(timeoutIndex === -1 ? 10000 : args[timeoutIndex + 1]);
-  const catalog = await import(pathToFileURL(catalogPath));
-  const mutations = catalog.mutations;
-  const target = catalog.target;
+  for (const catalogPath of catalogPaths) {
+    const catalog = await import(pathToFileURL(catalogPath));
+    const mutations = catalog.mutations;
+    const target = catalog.target;
+    const testPath = catalog.test ? fileURLToPath(catalog.test) : testPaths[0];
 
-  if (!Array.isArray(mutations) || typeof target !== 'string') {
-    throw new Error('Catalog must export a string target and mutations array');
-  }
+    if (
+      !Array.isArray(mutations) ||
+      typeof target !== 'string' ||
+      typeof testPath !== 'string'
+    ) {
+      throw new TypeError(
+        'Catalog must export string target and test values and a mutations array'
+      );
+    }
 
-  const baseline = await runNode(['--test', testPath], process.env, timeout);
-  if (baseline.timedOut || baseline.code !== 0) {
-    printFailure('Baseline failed', baseline);
-    process.exitCode = 1;
-  } else {
+    const label = catalog.name ? `${catalog.name}: ` : '';
+    const baseline = await runNode(['--test', testPath], process.env, timeout);
+    if (baseline.timedOut || baseline.code !== 0) {
+      printFailure(`${label}baseline failed`, baseline);
+      process.exitCode = 1;
+      continue;
+    }
+
     const results = [];
     for (const mutation of mutations) {
       const environment = {
@@ -90,20 +113,20 @@ try {
     }
 
     for (const { mutation, result, status } of results) {
-      console.log(`${status}: ${mutation.name}`);
+      console.log(`${label}${status}: ${mutation.name}`);
       if (status === 'errored' || status === 'timed out') {
-        printFailure(`  ${status}`, result);
+        printFailure(`${label}  ${status}`, result);
       }
     }
 
     const counts = Object.groupBy(results, ({ status }) => status);
     console.log(
-      `Mutation summary: ${results.length} total, ${counts.killed?.length ?? 0} killed, ${counts.survived?.length ?? 0} survived, ${counts['timed out']?.length ?? 0} timed out, ${counts.errored?.length ?? 0} errored`
+      `${label}Mutation summary: ${results.length} total, ${counts.killed?.length ?? 0} killed, ${counts.survived?.length ?? 0} survived, ${counts['timed out']?.length ?? 0} timed out, ${counts.errored?.length ?? 0} errored`
     );
     if (counts.survived?.length) {
-      console.error('Surviving mutations:');
+      console.error(`${label}Surviving mutations:`);
       for (const { mutation } of counts.survived)
-        console.error(`- ${mutation.name}`);
+        console.error(`${label}- ${mutation.name}`);
     }
     if (
       counts.survived?.length ||

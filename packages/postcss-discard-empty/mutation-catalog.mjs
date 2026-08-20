@@ -1,4 +1,6 @@
+export const name = 'postcss-discard-empty';
 export const target = new URL('./src/index.js', import.meta.url).href;
+export const test = new URL('./test/index.js', import.meta.url).href;
 
 export const mutations = [
   {
@@ -22,6 +24,11 @@ export const mutations = [
     replace: "type === 'decl' && node.value",
   },
   {
+    name: 'discard empty custom properties',
+    find: "!node.prop.startsWith('--')",
+    replace: "node.prop.startsWith('--')",
+  },
+  {
     name: 'invert empty rule detection',
     find: "type === 'rule' && !node.selector",
     replace: "type === 'rule' && node.selector",
@@ -35,6 +42,36 @@ export const mutations = [
     name: 'invert empty at-rule detection',
     find: '((!sub && !node.params)',
     replace: '((!sub && node.params)',
+  },
+  {
+    name: 'discard parameterized at-rules',
+    find: '(!sub && !node.params)',
+    replace: '(!sub && node.params)',
+  },
+  {
+    name: 'invert empty at-rule container detection',
+    find: "!(/** @type {import('postcss').ChildNode[]} */ (sub).length)",
+    replace: "(/** @type {import('postcss').ChildNode[]} */ (sub).length)",
+  },
+  {
+    name: 'invert repeated empty layer detection',
+    find: '(isEmptyLayer && nonEmptyLayers.has(layerKey))',
+    replace: '(isEmptyLayer && !nonEmptyLayers.has(layerKey))',
+  },
+  {
+    name: 'drop non-empty layer bookkeeping',
+    find: '      nonEmptyLayers.add(layerKey);',
+    replace: '      void layerKey;',
+  },
+  {
+    name: 'split escaped layer names',
+    find: "else if (character === '.' && !escaped)",
+    replace: "else if (character === '.' && escaped)",
+  },
+  {
+    name: 'drop nested layer path components',
+    find: '[...layerPath, ...getLayerPath(layerName)]',
+    replace: 'getLayerPath(layerName)',
   },
   {
     name: 'record removals at the front',
