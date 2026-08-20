@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const postcss = require('postcss');
 const cssnano = require('../src/index.js');
 
-test('should support `env()` and `constant()` is an iPhone X-only feature', () => {
+test('should support `env()` and `constant()` is an iPhone X-only feature', async () => {
   const css = `
     @supports (height: env(safe-area-inset-bottom)) {
       .footer {
@@ -13,12 +13,9 @@ test('should support `env()` and `constant()` is an iPhone X-only feature', () =
     }
     `;
 
-  return postcss([cssnano])
-    .process(css, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(
-        result.css,
-        '@supports (height:env(safe-area-inset-bottom)){.footer{padding-bottom:calc(env(safe-area-inset-bottom)*3)!important}}'
-      );
-    });
+  const result = await postcss([cssnano]).process(css, { from: undefined });
+  assert.strictEqual(
+    result.css,
+    '@supports (height:env(safe-area-inset-bottom)){.footer{padding-bottom:calc(env(safe-area-inset-bottom)*3)!important}}'
+  );
 });

@@ -684,10 +684,10 @@ test(
   )
 );
 
-test('should not generate same ident when plugin instance is reused', () => {
+test('should not generate same ident when plugin instance is reused', async () => {
   const instance = postcss(plugin);
 
-  return Promise.all([
+  const [result1, result2, result3, result4] = await Promise.all([
     instance.process(
       '@keyframes whiteToBlack{0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}',
       { from: undefined }
@@ -704,27 +704,26 @@ test('should not generate same ident when plugin instance is reused', () => {
       '@KEYFRAMES fadeOut{0%{opacity:1}to{opacity:0}}.two{animation-name:fadeOut}',
       { from: undefined }
     ),
-  ]).then(([result1, result2, result3, result4]) => {
-    assert.strictEqual(
-      result1.css,
-      '@keyframes a{0%{color:#fff}to{color:#000}}.one{animation-name:a}'
-    );
-    assert.strictEqual(
-      result2.css,
-      '@KEYFRAMES a{0%{color:#fff}to{color:#000}}.one{animation-name:a}'
-    );
-    assert.strictEqual(
-      result3.css,
-      '@keyframes b{0%{opacity:1}to{opacity:0}}.two{animation-name:b}'
-    );
-    assert.strictEqual(
-      result4.css,
-      '@KEYFRAMES b{0%{opacity:1}to{opacity:0}}.two{animation-name:b}'
-    );
-  });
+  ]);
+  assert.strictEqual(
+    result1.css,
+    '@keyframes a{0%{color:#fff}to{color:#000}}.one{animation-name:a}'
+  );
+  assert.strictEqual(
+    result2.css,
+    '@KEYFRAMES a{0%{color:#fff}to{color:#000}}.one{animation-name:a}'
+  );
+  assert.strictEqual(
+    result3.css,
+    '@keyframes b{0%{opacity:1}to{opacity:0}}.two{animation-name:b}'
+  );
+  assert.strictEqual(
+    result4.css,
+    '@KEYFRAMES b{0%{opacity:1}to{opacity:0}}.two{animation-name:b}'
+  );
 });
 
-test('encoder', () => {
+test('encoder', async () => {
   const arr = Array.from({ length: 1984 }, (value, index) => index);
   const cache = [];
 
@@ -738,7 +737,7 @@ test('encoder', () => {
   }
 });
 
-test('encoder gen spec', () => {
+test('encoder gen spec', async () => {
   const edgeCaseList = {
     0: 'a',
     1: 'b',

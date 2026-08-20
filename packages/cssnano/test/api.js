@@ -44,13 +44,13 @@ test('cssnano can be used as a plugin creator with postcss().use()', async () =>
   assert.strictEqual(css, 'h1{color:#fff}');
 });
 
-test('should work with sourcemaps', () => {
-  return postcss([nano])
-    .process('h1{z-index:1}', { from: undefined, map: { inline: true } })
-    .then(({ css }) => {
-      assert.strictEqual(
-        /sourceMappingURL=data:application\/json;base64/.test(css),
-        true
-      );
-    });
+test('should work with sourcemaps', async () => {
+  const { css } = await postcss([nano]).process('h1{z-index:1}', {
+    from: undefined,
+    map: { inline: true },
+  });
+  assert.strictEqual(
+    /sourceMappingURL=data:application\/json;base64/.test(css),
+    true
+  );
 });

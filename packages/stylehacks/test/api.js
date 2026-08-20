@@ -18,40 +18,39 @@ function passthroughCss(fixture, options) {
   return processCss(fixture, fixture, options);
 }
 
-test('can be used as a postcss plugin', () => {
+test('can be used as a postcss plugin', async () => {
   const css = 'h1 { _color: #ffffff }';
 
-  return postcss()
+  const result = await postcss()
     .use(stylehacks())
-    .process(css, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, 'h1 { }');
-    });
+    .process(css, { from: undefined });
+
+  assert.strictEqual(result.css, 'h1 { }');
 });
 
-test('can be used as a postcss plugin (2)', () => {
+test('can be used as a postcss plugin (2)', async () => {
   const css = 'h1 { _color: #ffffff }';
 
-  return postcss([stylehacks()])
-    .process(css, { from: undefined })
-    .then((result) => assert.strictEqual(result.css, 'h1 { }'));
+  const result = await postcss([stylehacks()]).process(css, {
+    from: undefined,
+  });
+
+  assert.strictEqual(result.css, 'h1 { }');
 });
 
-test('can be used as a postcss plugin (3)', () => {
+test('can be used as a postcss plugin (3)', async () => {
   const css = 'h1 { _color: #ffffff }';
 
-  return postcss([stylehacks])
-    .process(css, { from: undefined })
-    .then((result) => {
-      assert.strictEqual(result.css, 'h1 { }');
-    });
+  const result = await postcss([stylehacks]).process(css, { from: undefined });
+
+  assert.strictEqual(result.css, 'h1 { }');
 });
 
 test('should use the postcss plugin api', () => {
   assert.strictEqual(stylehacks().postcssPlugin, packageJson.name);
 });
 
-test('should have a separate detect method', () => {
+test('should have a separate detect method', async () => {
   let counter = 0;
 
   const plugin = () => {
@@ -66,12 +65,13 @@ test('should have a separate detect method', () => {
   };
   plugin.postcss = true;
 
-  return postcss(plugin)
-    .process('h1 { _color: red; =color: black }', { from: undefined })
-    .then(() => assert.strictEqual(counter, 2));
+  await postcss(plugin).process('h1 { _color: red; =color: black }', {
+    from: undefined,
+  });
+  assert.strictEqual(counter, 2);
 });
 
-test('should have a separate detect method (2)', () => {
+test('should have a separate detect method (2)', async () => {
   let counter = 0;
 
   const plugin = () => {
@@ -86,9 +86,10 @@ test('should have a separate detect method (2)', () => {
   };
   plugin.postcss = true;
 
-  return postcss(plugin)
-    .process('h1 { _color: red; =color: black }', { from: undefined })
-    .then(() => assert.strictEqual(counter, 0));
+  await postcss(plugin).process('h1 { _color: red; =color: black }', {
+    from: undefined,
+  });
+  assert.strictEqual(counter, 0);
 });
 
 test(
