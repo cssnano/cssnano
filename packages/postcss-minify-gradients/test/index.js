@@ -106,9 +106,10 @@ test(
 );
 
 test(
-  'repeating-linear: should not remove necessary zero start length',
-  passthroughCSS(
-    'background:repeating-linear-gradient(-45deg,transparent 0 25%,#d1d3d5 25% 50%)'
+  'repeating-linear: should reduce a double-position stop fixed up to the preceding position',
+  processCSS(
+    'background:repeating-linear-gradient(-45deg,transparent 0 25%,#d1d3d5 25% 50%)',
+    'background:repeating-linear-gradient(-45deg,transparent 0 25%,#d1d3d5 0 50%)'
   )
 );
 
@@ -163,7 +164,31 @@ test(
   'linear: should correctly minimize multiple stops without position',
   processCSS(
     'border-image-source: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15), #FFFAB8 0%, #D39710 100%)',
-    'border-image-source: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15), #FFFAB8 0%, #D39710)'
+    'border-image-source: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15), #FFFAB8 0, #D39710)'
+  )
+);
+
+test(
+  'linear: should use the largest preceding position when fixing up color stops',
+  processCSS(
+    'background:linear-gradient(red 50%,blue 40%,green 45%)',
+    'background:linear-gradient(red 50%,blue 0,green 0)'
+  )
+);
+
+test(
+  'linear: should fix up transition hints',
+  processCSS(
+    'background:linear-gradient(red 50%,40%,blue 45%)',
+    'background:linear-gradient(red 50%,0,blue 0)'
+  )
+);
+
+test(
+  'conic: should apply color stop fixup to angular positions',
+  processCSS(
+    'background:conic-gradient(from 20deg at center,red 50deg,blue 40deg,green 45deg)',
+    'background:conic-gradient(from 20deg at center,red 50deg,blue 0,green 0)'
   )
 );
 

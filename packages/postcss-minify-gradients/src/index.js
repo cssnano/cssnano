@@ -11,7 +11,7 @@ const directionsToAngles = new Map([
 ]);
 
 /**
- * Returns whether b is less than a.
+ * Returns whether b is less than or equal to a.
  *
  * @param {valueParser.Dimension} a
  * @param {valueParser.Dimension} b
@@ -22,6 +22,176 @@ function isLessThan(a, b) {
     a.unit.toLowerCase() === b.unit.toLowerCase() &&
     Number.parseFloat(a.number) >= Number.parseFloat(b.number)
   );
+}
+
+/**
+ * Compares positions when their ordering is independent of layout.
+ *
+ * @param {valueParser.Dimension} a
+ * @param {valueParser.Dimension} b
+ * @returns {boolean | undefined}
+ */
+function isLessThanOrEqual(a, b) {
+  if (a.unit.toLowerCase() === b.unit.toLowerCase()) {
+    return isLessThan(a, b);
+  }
+
+  const aNumber = Number.parseFloat(a.number);
+  const bNumber = Number.parseFloat(b.number);
+
+  if (aNumber === 0) {
+    return bNumber <= 0;
+  }
+
+  if (bNumber === 0) {
+    return aNumber >= 0;
+  }
+}
+
+/**
+ * Returns whether a node is a literal color stop position.
+ *
+ * @param {import('postcss-value-parser').Node} node
+ * @returns {boolean}
+ */
+function isPosition(node) {
+  return node.type === 'word' && valueParser.unit(node.value) !== false;
+}
+
+/**
+ * Returns whether an argument begins a color stop.
+ *
+ * @param {import('postcss-value-parser').Node[]} argument
+ * @returns {boolean}
+ */
+function isColorStopArgument(argument) {
+  const first = argument[0];
+
+  if (!first) {
+    return false;
+  }
+
+  if (first.type === 'function') {
+    return !new Set(['calc', 'clamp', 'max', 'min']).has(
+      first.value.toLowerCase()
+    );
+  }
+
+  return first.type === 'word' && isColorStop(first.value);
+}
+
+/**
+ * Gets the position nodes from a color stop or transition hint.
+ *
+ * @param {import('postcss-value-parser').Node[]} argument
+ * @param {boolean} colorStopArgument
+ * @returns {import('postcss-value-parser').Node[]}
+ */
+function getPositions(argument, colorStopArgument) {
+  return argument.slice(colorStopArgument ? 1 : 0).filter((node) => {
+    return node.type !== 'space' && node.type !== 'comment';
+  });
+}
+
+/**
+ * Updates the largest preceding position, replacing a position that will be
+ * fixed up with its shorter equivalent.
+ *
+ * @param {valueParser.Dimension | undefined} largestPosition
+ * @param {import('postcss-value-parser').Node} position
+ * @returns {valueParser.Dimension | undefined}
+ */
+function updateLargestPosition(largestPosition, position) {
+  if (!isPosition(position)) {
+    return undefined;
+  }
+
+  const currentPosition = valueParser.unit(position.value);
+
+  if (!currentPosition) {
+    return undefined;
+  }
+
+  if (!largestPosition) {
+    return currentPosition;
+  }
+
+  const isFixedUp = isLessThanOrEqual(largestPosition, currentPosition);
+
+  if (isFixedUp) {
+    position.value = '0';
+    return largestPosition;
+  }
+
+  return isFixedUp === undefined ? undefined : currentPosition;
+}
+
+/**
+ * Optimizes a standard gradient color stop list using the color stop fixup
+ * algorithm. A non-literal position prevents later comparisons because its
+ * used value can only be known during layout.
+ *
+ * @param {import('postcss-value-parser').Node[][]} args
+ * @returns {void}
+ */
+function optimizeColorStops(args) {
+  const firstStopIndex = args.findIndex(isColorStopArgument);
+
+  if (firstStopIndex === -1) {
+    return;
+  }
+
+  const stops = [];
+  let largestPosition = /** @type {valueParser.Dimension | undefined} */ (
+    undefined
+  );
+  let hasSeenStop = false;
+
+  for (const argument of args.slice(firstStopIndex)) {
+    const colorStop = isColorStopArgument(argument);
+    const positions = getPositions(argument, colorStop);
+
+    if (colorStop) {
+      stops.push({ argument, positions });
+
+      if (!hasSeenStop && positions.length === 0) {
+        largestPosition = /** @type {valueParser.Dimension} */ (
+          valueParser.unit('0%')
+        );
+      }
+
+      hasSeenStop = true;
+    }
+
+    if (positions.length === 0) {
+      continue;
+    }
+
+    for (const position of positions) {
+      largestPosition = updateLargestPosition(largestPosition, position);
+    }
+  }
+
+  const firstStop = stops[0];
+  const lastStop = stops.at(-1);
+
+  if (
+    firstStop &&
+    firstStop.positions.length === 1 &&
+    firstStop.argument.length === 3 &&
+    firstStop.positions[0].value === '0%'
+  ) {
+    firstStop.argument[1].value = firstStop.positions[0].value = '';
+  }
+
+  if (
+    lastStop &&
+    lastStop.positions.length === 1 &&
+    lastStop.argument.length === 3 &&
+    lastStop.positions[0].value === '100%'
+  ) {
+    lastStop.argument[1].value = lastStop.positions[0].value = '';
+  }
 }
 
 /**
@@ -45,47 +215,10 @@ function shortenDirection(node) {
  */
 function optimizeLinearGradient(node) {
   const args = getArguments(node);
-  if (node.nodes[0].value.toLowerCase() === 'to' && args[0].length === 3) {
+  if (node.nodes[0]?.value.toLowerCase() === 'to' && args[0].length === 3) {
     shortenDirection(node);
   }
-  /** @type {valueParser.Dimension | false | undefined} */
-  let previousStop = undefined;
-
-  for (const [index, arg] of args.entries()) {
-    /* Check whether the stop contains a position */
-    if (arg.length !== 3) {
-      continue;
-    }
-
-    const isFinalStop = index === args.length - 1;
-    const thisStop = valueParser.unit(arg[2].value);
-
-    if (previousStop === undefined) {
-      previousStop = thisStop;
-
-      if (
-        !isFinalStop &&
-        previousStop &&
-        args.length < 4 &&
-        previousStop.number === '0' &&
-        previousStop.unit.toLowerCase() !== 'deg'
-      ) {
-        arg[1].value = arg[2].value = '';
-      }
-
-      continue;
-    }
-
-    if (previousStop && thisStop && isLessThan(previousStop, thisStop)) {
-      arg[2].value = '0';
-    }
-
-    previousStop = thisStop;
-
-    if (isFinalStop && arg[2].value === '100%') {
-      arg[1].value = arg[2].value = '';
-    }
-  }
+  optimizeColorStops(getArguments(node));
 
   return false;
 }
@@ -97,31 +230,7 @@ function optimizeLinearGradient(node) {
  * @returns {false}
  */
 function optimizeRadialGradient(node) {
-  const args = getArguments(node);
-  /** @type {valueParser.Dimension | false | undefined} */
-  let previousStop = undefined;
-
-  const hasAt = args[0].find((n) => n.value.toLowerCase() === 'at');
-
-  for (const [index, arg] of args.entries()) {
-    if (!arg[2] || (!index && hasAt)) {
-      continue;
-    }
-
-    const thisStop = valueParser.unit(arg[2].value);
-
-    if (!previousStop) {
-      previousStop = thisStop;
-
-      continue;
-    }
-
-    if (previousStop && thisStop && isLessThan(previousStop, thisStop)) {
-      arg[2].value = '0';
-    }
-
-    previousStop = thisStop;
-  }
+  optimizeColorStops(getArguments(node));
 
   return false;
 }
@@ -241,6 +350,13 @@ function optimise(decl) {
         lowerCasedValue === '-webkit-repeating-radial-gradient'
       ) {
         return optimizeWebkitRadialGradient(node);
+      }
+
+      if (
+        lowerCasedValue === 'conic-gradient' ||
+        lowerCasedValue === 'repeating-conic-gradient'
+      ) {
+        optimizeColorStops(getArguments(node));
       }
       return false;
     })
