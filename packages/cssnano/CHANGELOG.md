@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.8
+
+### Patch Changes
+
+- fix(postcss-minify-gradients): follow CSS specification more closely when minifying gradients
+
 ## 8.0.7
 
 ### Patch Changes
