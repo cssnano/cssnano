@@ -35,6 +35,10 @@ cssnano-preset-advanced@8.0.7:
     - tame-otters-race
     - tender-falcons-drive
     - tidy-plums-shout
+cssnano-preset-advanced@8.0.8:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - free-games-build
 cssnano-preset-default@8.0.3:
   dir: packages/cssnano-preset-default
   intents:
@@ -71,6 +75,10 @@ cssnano-preset-default@8.0.7:
     - tame-otters-race
     - tender-falcons-drive
     - tidy-plums-shout
+cssnano-preset-default@8.0.8:
+  dir: packages/cssnano-preset-default
+  intents:
+    - free-games-build
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -146,6 +154,10 @@ cssnano@8.0.7:
     - tame-otters-race
     - tender-falcons-drive
     - tidy-plums-shout
+cssnano@8.0.8:
+  dir: packages/cssnano
+  intents:
+    - free-games-build
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -355,6 +367,10 @@ postcss-minify-gradients@8.0.4:
   dir: packages/postcss-minify-gradients
   intents:
     - salty-dolls-enter
+postcss-minify-gradients@8.0.5:
+  dir: packages/postcss-minify-gradients
+  intents:
+    - free-games-build
 postcss-minify-params@8.0.2:
   dir: packages/postcss-minify-params
   intents:
