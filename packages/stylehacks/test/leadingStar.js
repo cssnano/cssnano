@@ -1,6 +1,5 @@
-'use strict';
-const { test } = require('node:test');
-const processCSS = require('./_processCSS');
+import { test } from 'node:test';
+import processCSS from './_processCSS.js';
 
 const opts = { target: 'IE 7', unaffected: 'IE 8' };
 

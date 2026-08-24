@@ -1,1 +1,1 @@
-{"version":3,"file":"functionArguments.d.ts","sourceRoot":"","sources":["../../src/lib/functionArguments.js"],"names":[],"mappings":";AACA;;;;;;;GAOG;mCACyC,IAAI,EAHrC,OAAO,sBAAsB,EAAE,YAGM,GAFpC,OAAO,sBAAsB,EAAE,IAAI,EAAE,EAAE"}
+{"version":3,"file":"functionArguments.d.ts","sourceRoot":"","sources":["../../src/lib/functionArguments.js"],"names":[],"mappings":"AACA;;;;;;;GAOG;AACH,iBAAS,iBAAiB,CAAC,IAAI,EAHpB,OAAO,sBAAsB,EAAE,YAGX,GAFnB,OAAO,sBAAsB,EAAE,IAAI,EAAE,EAAE,CAelD;eAEc,iBAAiB"}

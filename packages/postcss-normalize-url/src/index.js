@@ -1,7 +1,6 @@
-'use strict';
-const path = require('#path');
-const valueParser = require('postcss-value-parser');
-const normalize = require('./normalize.js');
+import path from '#path';
+import valueParser from 'postcss-value-parser';
+import normalize from './normalize.js';
 
 /**
  * A `quote` assignment target for value-parser nodes that aren't otherwise
@@ -155,8 +154,8 @@ function pluginCreator() {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

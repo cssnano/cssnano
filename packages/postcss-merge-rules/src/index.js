@@ -1,16 +1,14 @@
-'use strict';
-
-const getBrowsersList = require('#getBrowsersList');
-
-/** @import browserslist from 'browserslist' */
-
-const { sameParent } = require('cssnano-utils');
-const {
+import getBrowsersList from '#getBrowsersList';
+import cssnanoUtils from 'cssnano-utils';
+import {
   ensureCompatibility,
   sameVendor,
   noVendor,
-} = require('./lib/ensureCompatibility');
-const { isConflictingProp } = require('./lib/propertyRelations.js');
+} from './lib/ensureCompatibility.js';
+import { isConflictingProp } from './lib/propertyRelations.js';
+
+/** @import browserslist from 'browserslist' */
+const { sameParent } = cssnanoUtils;
 /** @import {Declaration, Rule} from 'postcss' */
 /**
  * @param {Declaration} a
@@ -716,8 +714,8 @@ function pluginCreator(opts = {}) {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

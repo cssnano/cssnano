@@ -6,13 +6,7 @@
     ".": {
       "types": "./types/index.d.ts",
       "default": "./src/index.js"
-    },
-    "./src": "./src/index.js",
-    "./src/index": "./src/index.js",
-    "./src/index.js": "./src/index.js",
-    "./src/lib/*": "./src/lib/*.js",
-    "./src/lib/*.js": "./src/lib/*.js",
-    "./package.json": "./package.json"
+    }
   },
   "files": [
     "LICENSE-MIT",
@@ -45,7 +39,7 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": "^22.11.0 || ^24.11.0 || >=26.0"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
     "@webref/css": "catalog:",
@@ -58,5 +52,6 @@
     "acquire": "node ./script/acquire.mjs",
     "fuzz": "node ./script/fuzz.js",
     "test": "node --test"
-  }
+  },
+  "type": "module"
 }

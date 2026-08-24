@@ -1,16 +1,14 @@
-'use strict';
-
-const { join } = require('node:path');
-
-const { describe, test } = require('node:test');
-
-const {
+import { fileURLToPath } from 'node:url';
+const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
+import nodepath from 'node:path';
+import { describe, test } from 'node:test';
+import {
   usePostCSSPlugin,
   processCSSFactory,
-} = require('../../../util/testHelpers.js');
+} from '../../../util/testHelpers.js';
+import plugin from '../src/index.js';
 
-const plugin = require('../src/index.js');
-
+const { join } = nodepath;
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
 describe('Convert', () => {
@@ -334,7 +332,7 @@ describe('Strip', () => {
   test(
     'should not strip the percentage from 0 in max-height, height, and min-width props based on Browserslist config [legacy] env',
     passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}', {
-      from: join(__dirname, 'browserslist/example.css'),
+      from: join(testDir, 'browserslist/example.css'),
       env: 'legacy',
     })
   );
@@ -342,7 +340,7 @@ describe('Strip', () => {
   test(
     'should not strip the percentage from 0 in max-height, height, and min-width props based on Browserslist config [legacy] env using webpack file path',
     passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}', {
-      file: join(__dirname, 'browserslist/example.css'),
+      file: join(testDir, 'browserslist/example.css'),
       env: 'legacy',
     })
   );
@@ -350,7 +348,7 @@ describe('Strip', () => {
   test(
     'should not strip the percentage from 0 in max-height, height, and min-width props based on Browserslist config [legacy] env using custom path',
     passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}', {
-      path: join(__dirname, 'browserslist'),
+      path: join(testDir, 'browserslist'),
       env: 'legacy',
     })
   );
@@ -361,7 +359,7 @@ describe('Strip', () => {
       'h1{height:0%;max-height:0%;min-width:0%}',
       'h1{height:0;max-height:0;min-width:0}',
       {
-        from: join(__dirname, 'browserslist/example.css'),
+        from: join(testDir, 'browserslist/example.css'),
         env: 'modern',
       }
     )
@@ -373,7 +371,7 @@ describe('Strip', () => {
       'h1{height:0%;max-height:0%;min-width:0%}',
       'h1{height:0;max-height:0;min-width:0}',
       {
-        file: join(__dirname, 'browserslist/example.css'),
+        file: join(testDir, 'browserslist/example.css'),
         env: 'modern',
       }
     )
@@ -385,7 +383,7 @@ describe('Strip', () => {
       'h1{height:0%;max-height:0%;min-width:0%}',
       'h1{height:0;max-height:0;min-width:0}',
       {
-        path: join(__dirname, 'browserslist'),
+        path: join(testDir, 'browserslist'),
         env: 'modern',
       }
     )
@@ -543,15 +541,13 @@ describe('Try', () => {
 
   test(
     'should not try to convert keyframe names in animation (case 2)',
-    passthroughCSS(
-      `
+    passthroughCSS(`
 .e4yw0Q {
     animation: e4yw0Q;
 }
 
 @keyframes e4yw0Q {}
-    `
-    )
+    `)
   );
 });
 

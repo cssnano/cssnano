@@ -1,1 +1,1 @@
-{"version":3,"file":"encode.d.ts","sourceRoot":"","sources":["../../src/lib/encode.js"],"names":[],"mappings":";AACA;;;;GAIG;wBAC8B,GAAG,EAJzB,MAIyB,EAAE,GAAG,EAH9B,MAG8B,GAF7B,MAAM"}
+{"version":3,"file":"encode.d.ts","sourceRoot":"","sources":["../../src/lib/encode.js"],"names":[],"mappings":"AACA;;;;GAIG;AACH,iBAAS,MAAM,CAAC,GAAG,EAJR,MAIQ,EAAE,GAAG,EAHb,MAGa,GAFZ,MAAM,CAqBjB;eAEc,MAAM"}

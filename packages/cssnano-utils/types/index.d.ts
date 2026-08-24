@@ -1,8 +1,10 @@
-declare const _exports: {
-    rawCache: import("postcss").PluginCreator<void>;
-    getArguments: (node: import('postcss-value-parser').ParsedValue | import('postcss-value-parser').FunctionNode) => import('postcss-value-parser').Node[][];
-    sameParent: (nodeA: sameParent.Child, nodeB: sameParent.Child) => boolean;
+import rawCache from './rawCache.js';
+import getArguments from './getArguments.js';
+import sameParent from './sameParent.js';
+declare const moduleExports: {
+    rawCache: typeof rawCache;
+    getArguments: typeof getArguments;
+    sameParent: typeof sameParent;
 };
-export = _exports;
-import sameParent = require('./sameParent.js');
+export { moduleExports as default, moduleExports as 'module.exports' };
 //# sourceMappingURL=index.d.ts.map

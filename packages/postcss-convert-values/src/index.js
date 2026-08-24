@@ -1,7 +1,6 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const getBrowsersList = require('#getBrowsersList');
-const convert = require('./lib/convert.js');
+import valueParser from 'postcss-value-parser';
+import getBrowsersList from '#getBrowsersList';
+import convert from './lib/convert.js';
 
 /** @import browserslist from 'browserslist' */
 
@@ -246,8 +245,8 @@ function pluginCreator(opts = { precision: false }) {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

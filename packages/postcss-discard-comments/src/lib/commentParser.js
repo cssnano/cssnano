@@ -1,5 +1,3 @@
-'use strict';
-
 // State machine states reused between parses for better perf
 const STATES = {
   NORMAL: 0,
@@ -94,7 +92,7 @@ function handleCommentState(context, nextChar) {
  * @param {string} input
  * @return {[number, number, number][]}
  */
-module.exports = function commentParser(input) {
+function commentParser(input) {
   /** @type {ParserContext} */
   const context = {
     input,
@@ -144,6 +142,7 @@ module.exports = function commentParser(input) {
     // Add final non-comment token
     context.tokens.push([0, context.tokenStart, context.length]);
   }
-
   return context.tokens;
-};
+}
+
+export default commentParser;

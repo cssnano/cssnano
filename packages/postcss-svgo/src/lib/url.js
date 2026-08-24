@@ -1,6 +1,9 @@
-'use strict';
-
 const encode = encodeURIComponent;
 
 const decode = decodeURIComponent;
-module.exports = { encode, decode };
+export { encode };
+export { decode };
+export default {
+  encode,
+  decode,
+};

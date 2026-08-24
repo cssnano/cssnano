@@ -1,5 +1,4 @@
-'use strict';
-const data = require('../data/longhands.json');
+import data from '../data/longhands.json' with { type: 'json' };
 
 /**
  * The shorthand structure and keyword sets the transforms rely on, derived from
@@ -68,20 +67,31 @@ function setsLonghands(name) {
   setsCache.set(name, reached);
   return reached;
 }
-
-module.exports = {
-  /** The sides of the box, in the order a shorthand lists them. */
-  sides: data.sides,
+export const sides = data.sides;
+export const borderComponents = data.borderComponents;
+export const borderProperties = new Set(data.borderProperties);
+export const flowRelativeBorderProperties = new Set(
+  data.flowRelativeBorderProperties
+);
+export const cssWideKeywords = new Set(data.cssWideKeywords);
+export const lineStyles = new Set(data.lineStyles);
+export const lineWidthKeywords = new Set(data.lineWidthKeywords);
+export const namedColors = new Set(data.namedColors);
+export const colorFunctions = new Set(data.colorFunctions);
+export { setsLonghands };
+export { shorthand };
+export { initialValues };
+export default {
+  sides,
   setsLonghands,
-  /** The parts of a border, in the order `border` lists them. */
-  borderComponents: data.borderComponents,
+  borderComponents,
   shorthand,
   initialValues,
-  borderProperties: new Set(data.borderProperties),
-  flowRelativeBorderProperties: new Set(data.flowRelativeBorderProperties),
-  cssWideKeywords: new Set(data.cssWideKeywords),
-  lineStyles: new Set(data.lineStyles),
-  lineWidthKeywords: new Set(data.lineWidthKeywords),
-  namedColors: new Set(data.namedColors),
-  colorFunctions: new Set(data.colorFunctions),
+  borderProperties,
+  flowRelativeBorderProperties,
+  cssWideKeywords,
+  lineStyles,
+  lineWidthKeywords,
+  namedColors,
+  colorFunctions,
 };

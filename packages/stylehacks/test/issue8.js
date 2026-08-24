@@ -1,8 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const postcss = require('postcss');
-const stylehacks = require('../src/index.js');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import stylehacks from '../src/index.js';
 
 const insertZoom = () => {
   return {

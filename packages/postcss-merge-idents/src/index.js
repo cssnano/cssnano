@@ -1,7 +1,7 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const { sameParent } = require('cssnano-utils');
+import valueParser from 'postcss-value-parser';
+import cssnanoUtils from 'cssnano-utils';
 
+const { sameParent } = cssnanoUtils;
 const keyframesRegex = /keyframes/i;
 const animationRegex = /animation/i;
 const counterStyleRegex = /counter-style/i;
@@ -142,8 +142,8 @@ function pluginCreator() {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<void>} */ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

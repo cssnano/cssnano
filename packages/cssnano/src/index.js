@@ -1,8 +1,10 @@
-'use strict';
-const path = require('node:path');
-const postcss = require('postcss');
-const { lilconfigSync } = require('lilconfig');
-const defaultPreset = require('cssnano-preset-default');
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import postcss from 'postcss';
+import { lilconfigSync } from 'lilconfig';
+import defaultPreset from 'cssnano-preset-default';
+
+const require = createRequire(import.meta.url);
 
 const cssnano = 'cssnano';
 
@@ -186,4 +188,5 @@ function cssnanoPlugin(options = {}) {
 }
 
 cssnanoPlugin.postcss = true;
-module.exports = cssnanoPlugin;
+
+export { cssnanoPlugin as default, cssnanoPlugin as 'module.exports' };

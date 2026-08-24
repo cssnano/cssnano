@@ -1,1 +1,1 @@
-{"version":3,"file":"isMixin.d.ts","sourceRoot":"","sources":["../src/isMixin.js"],"names":[],"mappings":";AACA;;;GAGG;yBAC+B,IAAI,EAH3B,OAAO,SAAS,EAAE,IAGS,GAF1B,OAAO"}
+{"version":3,"file":"isMixin.d.ts","sourceRoot":"","sources":["../src/isMixin.js"],"names":[],"mappings":"AACA;;;GAGG;AACH,iBAAS,OAAO,CAAC,IAAI,EAHV,OAAO,SAAS,EAAE,IAGR,GAFT,OAAO,CAUlB;eAEc,OAAO"}

@@ -1,14 +1,12 @@
-'use strict';
-const BasePlugin = require('../plugin');
-const { IE_5_5, IE_6, IE_7 } = require('../dictionary/browsers');
-const { PROPERTY } = require('../dictionary/identifiers');
-const { ATRULE, DECL } = require('../dictionary/postcss');
+import BasePlugin from '../plugin.js';
+import { IE_5_5, IE_6, IE_7 } from '../dictionary/browsers.js';
+import { PROPERTY } from '../dictionary/identifiers.js';
+import { ATRULE, DECL } from '../dictionary/postcss.js';
 
 /** @import {Declaration, AtRule} from 'postcss'; */
 
 const hacks = '!_$_&_*_)_=_%_+_,_._/_`_]_#_~_?_:_|'.split('_');
-
-module.exports = class LeadingStar extends BasePlugin {
+export default (class LeadingStar extends BasePlugin {
   /** @param {import('postcss').Result=} result */
   constructor(result) {
     super([IE_5_5, IE_6, IE_7], [ATRULE, DECL], result);
@@ -54,4 +52,4 @@ module.exports = class LeadingStar extends BasePlugin {
       }
     }
   }
-};
+});

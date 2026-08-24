@@ -1,11 +1,10 @@
-'use strict';
+import getBrowsersList from '#getBrowsersList';
+import caniuseApi from 'caniuse-api';
+import fromInitial from './data/fromInitial.json' with { type: 'json' };
+import toInitial from './data/toInitial.json' with { type: 'json' };
+import ignoreProps from './lib/ignoreProps.js';
 
-const getBrowsersList = require('#getBrowsersList');
-const { isSupported } = require('caniuse-api');
-const fromInitial = require('./data/fromInitial.json');
-const toInitial = require('./data/toInitial.json');
-const ignoreProps = require('./lib/ignoreProps.js');
-
+const { isSupported } = caniuseApi;
 const initial = 'initial';
 
 // In most of the browser including chrome the initial for `writing-mode` is not `horizontal-tb`. Ref https://github.com/cssnano/cssnano/pull/905
@@ -80,8 +79,8 @@ function pluginCreator(options = {}) {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

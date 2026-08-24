@@ -1,12 +1,10 @@
-'use strict';
-
-const defaultPreset = require('cssnano-preset-default');
-const cssDeclarationSorter = require('css-declaration-sorter');
-const postcssDiscardUnused = require('postcss-discard-unused');
-const postcssMergeIdents = require('postcss-merge-idents');
-const postcssReduceIdents = require('postcss-reduce-idents');
-const postcssZindex = require('postcss-zindex');
-const autoprefixer = require('autoprefixer');
+import defaultPreset from 'cssnano-preset-default';
+import cssDeclarationSorter from 'css-declaration-sorter';
+import postcssDiscardUnused from 'postcss-discard-unused';
+import postcssMergeIdents from 'postcss-merge-idents';
+import postcssReduceIdents from 'postcss-reduce-idents';
+import postcssZindex from 'postcss-zindex';
+import autoprefixer from 'autoprefixer';
 
 /**
  * @template {object | void} [OptionsExtends=void]
@@ -104,5 +102,6 @@ function advancedPreset(opts = {}) {
     ],
   };
 }
+const moduleExports = advancedPreset;
 
-module.exports = advancedPreset;
+export { moduleExports as default, moduleExports as 'module.exports' };

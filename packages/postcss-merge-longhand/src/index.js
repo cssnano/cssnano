@@ -1,9 +1,8 @@
-'use strict';
-const borders = require('./lib/decl/borders.js');
-const columns = require('./lib/decl/columns.js');
-const margin = require('./lib/decl/margin.js');
-const padding = require('./lib/decl/padding.js');
-const { requiredSupport } = require('./lib/isFallback.js');
+import borders from './lib/decl/borders.js';
+import columns from './lib/decl/columns.js';
+import margin from './lib/decl/margin.js';
+import padding from './lib/decl/padding.js';
+import { requiredSupport } from './lib/isFallback.js';
 
 /** @import {Declaration, Rule} from 'postcss'; */
 
@@ -154,8 +153,8 @@ function pluginCreator() {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<void>} */ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

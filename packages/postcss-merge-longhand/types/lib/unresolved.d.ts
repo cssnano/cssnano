@@ -1,11 +1,6 @@
-declare const _exports: {
-    isSubstitution: typeof isSubstitution;
-    isUnresolved: typeof isUnresolved;
-    substitutionFunctions: string[];
-    trustedFunctions: Set<string>;
-    trustedSupportFunctions: Set<string>;
-};
-export = _exports;
+declare const substitutionFunctions: string[];
+declare const trustedFunctions: Set<string>;
+declare const trustedSupportFunctions: Set<string>;
 /**
  * Whether a token represents an unresolved value this plugin cannot compute.
  *
@@ -29,4 +24,17 @@ declare function isUnresolved(token: string): boolean;
  * @return {boolean}
  */
 declare function isSubstitution(token: string): boolean;
+export { isSubstitution };
+export { isUnresolved };
+export { substitutionFunctions };
+export { trustedFunctions };
+export { trustedSupportFunctions };
+declare const _default: {
+    isSubstitution: typeof isSubstitution;
+    isUnresolved: typeof isUnresolved;
+    substitutionFunctions: string[];
+    trustedFunctions: Set<string>;
+    trustedSupportFunctions: Set<string>;
+};
+export default _default;
 //# sourceMappingURL=unresolved.d.ts.map

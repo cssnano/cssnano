@@ -1,5 +1,4 @@
-'use strict';
-const {
+import {
   tokenize,
   hasPseudoElementOrNesting,
   hasNthChildOfClause,
@@ -7,7 +6,7 @@ const {
   specificityOfMiddle,
   equalSpecificity,
   joinTokens,
-} = require('./foldToIsHelpers.js');
+} from './foldToIsHelpers.js';
 
 /**
  * @param {import('postcss-selector-parser').Root} root
@@ -238,5 +237,4 @@ function uniqueMiddleStrings(middles) {
   }
   return middleStrs;
 }
-
-module.exports = tryFold;
+export default tryFold;

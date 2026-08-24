@@ -1,16 +1,14 @@
-'use strict';
-
-const { join } = require('node:path');
-
-const { describe, test } = require('node:test');
-
-const {
+import { fileURLToPath } from 'node:url';
+const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
+import nodepath from 'node:path';
+import { describe, test } from 'node:test';
+import {
   usePostCSSPlugin,
   processCSSFactory,
-} = require('../../../util/testHelpers.js');
+} from '../../../util/testHelpers.js';
+import plugin from '../src/index.js';
 
-const plugin = require('../src/index.js');
-
+const { join } = nodepath;
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
 describe('Minify', () => {
@@ -290,7 +288,7 @@ describe('Convert', () => {
       'h1{color:hsla(0 100% 50% / 40%)}',
       'h1{color:rgba(255,0,0,.4)}',
       {
-        from: join(__dirname, 'browserslist/example.css'),
+        from: join(testDir, 'browserslist/example.css'),
         env: 'legacy',
       }
     )
@@ -302,7 +300,7 @@ describe('Convert', () => {
       'h1{color:hsla(0 100% 50% / 40%)}',
       'h1{color:rgba(255,0,0,.4)}',
       {
-        file: join(__dirname, 'browserslist/example.css'),
+        file: join(testDir, 'browserslist/example.css'),
         env: 'legacy',
       }
     )
@@ -314,7 +312,7 @@ describe('Convert', () => {
       'h1{color:hsla(0 100% 50% / 40%)}',
       'h1{color:rgba(255,0,0,.4)}',
       {
-        path: join(__dirname, 'browserslist'),
+        path: join(testDir, 'browserslist'),
         env: 'legacy',
       }
     )
@@ -323,7 +321,7 @@ describe('Convert', () => {
   test(
     'should convert long color based on Browserslist config [modern] env',
     processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
-      from: join(__dirname, 'browserslist/example.css'),
+      from: join(testDir, 'browserslist/example.css'),
       env: 'modern',
     })
   );
@@ -331,7 +329,7 @@ describe('Convert', () => {
   test(
     'should convert long color based on Browserslist config [modern] env using webpack file path',
     processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
-      file: join(__dirname, 'browserslist/example.css'),
+      file: join(testDir, 'browserslist/example.css'),
       env: 'modern',
     })
   );
@@ -339,7 +337,7 @@ describe('Convert', () => {
   test(
     'should convert long color based on Browserslist config [modern] env using custom path',
     processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
-      path: join(__dirname, 'browserslist'),
+      path: join(testDir, 'browserslist'),
       env: 'modern',
     })
   );

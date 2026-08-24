@@ -1,22 +1,17 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const addToCache = require('./cache');
-const {
+import valueParser from 'postcss-value-parser';
+import addToCache from './cache.js';
+import {
   cssWideKeywords,
   keyframes,
   resolveAtRule,
   resolveProperty,
-} = require('./slots');
+} from './slots.js';
 
 const RESERVED_KEYWORDS = new Set([
   ...cssWideKeywords,
   ...keyframes.reservedKeywords,
 ]);
-
-/**
- * @return {import('../index.js').Reducer}
- */
-module.exports = function () {
+export default (function () {
   /** @type {Map<string, {ident: string, count: number}>} */
   const cache = new Map();
   /** @type {import('postcss').AtRule[]} */
@@ -81,4 +76,4 @@ module.exports = function () {
       decls = [];
     },
   };
-};
+});

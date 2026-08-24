@@ -1,4 +1,3 @@
-'use strict';
-const base = require('./boxBase');
+import base from './boxBase.js';
 
-module.exports = base('padding');
+export default base('padding');

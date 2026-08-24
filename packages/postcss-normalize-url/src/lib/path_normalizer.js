@@ -1,5 +1,3 @@
-'use strict';
+import path from 'node:path';
 
-const path = require('node:path');
-
-module.exports = path;
+export default path;

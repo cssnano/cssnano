@@ -1,5 +1,3 @@
-'use strict';
-
 /** @typedef {import('postcss-selector-parser').Node} Node */
 /** @typedef {import('postcss-selector-parser').Selector} Selector */
 /** @typedef {import('postcss-selector-parser').Pseudo} Pseudo */
@@ -322,8 +320,17 @@ function equalSpecificity(a, b) {
 function joinTokens(tokens) {
   return tokens.map((t) => t.str).join('');
 }
-
-module.exports = {
+export { tokenize };
+export { hasPseudoElementOrNesting };
+export { hasNthChildOfClause };
+export { hasUnsafeForFold };
+export { specificityOf };
+export { specificityOfMiddle };
+export { maxChildSpecificity };
+export { compareSpecificity };
+export { equalSpecificity };
+export { joinTokens };
+export default {
   tokenize,
   hasPseudoElementOrNesting,
   hasNthChildOfClause,

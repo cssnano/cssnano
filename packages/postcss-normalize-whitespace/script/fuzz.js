@@ -1,8 +1,8 @@
-'use strict';
-const { parseArgs } = require('node:util');
-const { check, report } = require('./lib/fuzzCheck.js');
-const { generate } = require('./lib/fuzzGenerate.js');
+import nodeutil from 'node:util';
+import { check, report } from './lib/fuzzCheck.js';
+import { generate } from './lib/fuzzGenerate.js';
 
+const { parseArgs } = nodeutil;
 /**
  * Long differential fuzz runs, for reaching past a change to the trailing-
  * escape handling in the rule/at-rule branch of src/index.js. `test/fuzz.js`

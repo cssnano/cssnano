@@ -1,17 +1,19 @@
-'use strict';
-const { join } = require('node:path');
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const postcss = require('postcss');
-const vars = require('postcss-simple-vars');
-const comments = require('postcss-discard-comments'); // alias not loading correctly
-const {
+import { fileURLToPath } from 'node:url';
+const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
+import nodepath from 'node:path';
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import vars from 'postcss-simple-vars';
+import comments from 'postcss-discard-comments';
+import {
   usePostCSSPlugin,
   processCSSFactory,
-} = require('../../../util/testHelpers.js');
-const { pseudoElements } = require('../src/lib/ensureCompatibility.js');
-const plugin = require('../src/index.js');
+} from '../../../util/testHelpers.js';
+import { pseudoElements } from '../src/lib/ensureCompatibility.js';
+import plugin from '../src/index.js';
 
+const { join } = nodepath;
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 test(
@@ -153,8 +155,7 @@ test(
 
 test(
   'should not merge across container queries',
-  passthroughCSS(
-    `@container (min-width: 200px) {
+  passthroughCSS(`@container (min-width: 200px) {
   .mobile {
      display: none;
   }
@@ -163,8 +164,7 @@ test(
   .notMobile {
      display: none;
   }
-}`
-  )
+}`)
 );
 
 test(
@@ -655,7 +655,7 @@ test(
 test(
   'should not merge ::placeholder selectors based on Browserslist config [legacy] env',
   passthroughCSS('::placeholder{color:blue}h1{color:blue}', {
-    from: join(__dirname, 'browserslist/example.css'),
+    from: join(testDir, 'browserslist/example.css'),
     env: 'legacy',
   })
 );
@@ -663,7 +663,7 @@ test(
 test(
   'should not merge ::placeholder selectors based on Browserslist config [legacy] env using webpack file path',
   passthroughCSS('::placeholder{color:blue}h1{color:blue}', {
-    file: join(__dirname, 'browserslist/example.css'),
+    file: join(testDir, 'browserslist/example.css'),
     env: 'legacy',
   })
 );
@@ -671,7 +671,7 @@ test(
 test(
   'should not merge ::placeholder selectors based on Browserslist config [legacy] env using custom path',
   passthroughCSS('::placeholder{color:blue}h1{color:blue}', {
-    path: join(__dirname, 'browserslist'),
+    path: join(testDir, 'browserslist'),
     env: 'legacy',
   })
 );
@@ -682,7 +682,7 @@ test(
     '::placeholder{color:blue}h1{color:blue}',
     '::placeholder,h1{color:blue}',
     {
-      from: join(__dirname, 'browserslist/example.css'),
+      from: join(testDir, 'browserslist/example.css'),
       env: 'modern',
     }
   )
@@ -694,7 +694,7 @@ test(
     '::placeholder{color:blue}h1{color:blue}',
     '::placeholder,h1{color:blue}',
     {
-      file: join(__dirname, 'browserslist/example.css'),
+      file: join(testDir, 'browserslist/example.css'),
       env: 'modern',
     }
   )
@@ -706,7 +706,7 @@ test(
     '::placeholder{color:blue}h1{color:blue}',
     '::placeholder,h1{color:blue}',
     {
-      path: join(__dirname, 'browserslist'),
+      path: join(testDir, 'browserslist'),
       env: 'modern',
     }
   )
@@ -1162,8 +1162,7 @@ test(
 
 test(
   'should not merge nested container rules',
-  passthroughCSS(
-    `.mobile {
+  passthroughCSS(`.mobile {
   @container (min-width: 200px) {
      display: none;
   }
@@ -1173,8 +1172,7 @@ test(
   @container (max-width: 100px) {
      display: none;
   }
-}`
-  )
+}`)
 );
 
 // A shared declaration cannot be hoisted past a declaration that overrides it

@@ -1,4 +1,3 @@
-export = _exports;
-/** @type {(v: string | [string, string, string, string]) => string} */
-declare function _exports(v: string | [string, string, string, string]): string;
+export default _default;
+declare function _default(v: any): string;
 //# sourceMappingURL=minifyTrbl.d.ts.map

@@ -1,15 +1,10 @@
-'use strict';
-
-const { describe, test } = require('node:test');
-
-const assert = require('node:assert/strict');
-
-const {
+import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+import {
   usePostCSSPlugin,
   processCSSFactory,
-} = require('../../../util/testHelpers.js');
-
-const plugin = require('../src/');
+} from '../../../util/testHelpers.js';
+import plugin from '../src/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

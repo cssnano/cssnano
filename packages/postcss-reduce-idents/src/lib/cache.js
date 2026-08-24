@@ -1,11 +1,4 @@
-'use strict';
-/**
- * @param {string} value
- * @param {(value: string, num: number) => string} encoder
- * @param {Map<string, {ident: string, count: number}>} cache
- * @return {void}
- */
-module.exports = function (value, encoder, cache) {
+export default (function (value, encoder, cache) {
   if (cache.has(value)) {
     return;
   }
@@ -14,4 +7,4 @@ module.exports = function (value, encoder, cache) {
     ident: encoder(value, cache.size),
     count: 0,
   });
-};
+});

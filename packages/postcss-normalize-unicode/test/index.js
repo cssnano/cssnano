@@ -1,16 +1,14 @@
-'use strict';
-
-const { join } = require('node:path');
-
-const { describe, test } = require('node:test');
-
-const {
+import { fileURLToPath } from 'node:url';
+const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
+import nodepath from 'node:path';
+import { describe, test } from 'node:test';
+import {
   usePostCSSPlugin,
   processCSSFactory,
-} = require('../../../util/testHelpers.js');
+} from '../../../util/testHelpers.js';
+import plugin from '../src/index.js';
 
-const plugin = require('../src/index.js');
-
+const { join } = nodepath;
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
 function fixture(range) {
@@ -133,7 +131,7 @@ describe('Upcase', () => {
   test(
     'should upcase the "u" prefix based on Browserslist config [legacy] env',
     processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
-      from: join(__dirname, 'browserslist/example.css'),
+      from: join(testDir, 'browserslist/example.css'),
       env: 'legacy',
     })
   );
@@ -141,7 +139,7 @@ describe('Upcase', () => {
   test(
     'should upcase the "u" prefix based on Browserslist config [legacy] env using webpack file path',
     processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
-      file: join(__dirname, 'browserslist/example.css'),
+      file: join(testDir, 'browserslist/example.css'),
       env: 'legacy',
     })
   );
@@ -149,7 +147,7 @@ describe('Upcase', () => {
   test(
     'should upcase the "u" prefix based on Browserslist config [legacy] env using custom path',
     processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
-      path: join(__dirname, 'browserslist'),
+      path: join(testDir, 'browserslist'),
       env: 'legacy',
     })
   );
@@ -159,7 +157,7 @@ describe('Downcase', () => {
   test(
     'should downcase the "u" prefix based on Browserslist config [modern] env',
     processCSS(fixture('U+2002-2ff2'), fixture('u+2002-2ff2'), {
-      from: join(__dirname, 'browserslist/example.css'),
+      from: join(testDir, 'browserslist/example.css'),
       env: 'modern',
     })
   );
@@ -167,7 +165,7 @@ describe('Downcase', () => {
   test(
     'should downcase the "u" prefix based on Browserslist config [modern] env using webpack file path',
     processCSS(fixture('U+2002-2ff2'), fixture('u+2002-2ff2'), {
-      file: join(__dirname, 'browserslist/example.css'),
+      file: join(testDir, 'browserslist/example.css'),
       env: 'modern',
     })
   );
@@ -175,7 +173,7 @@ describe('Downcase', () => {
   test(
     'should downcase the "u" prefix based on Browserslist config [modern] env using custom path',
     processCSS(fixture('U+2002-2ff2'), fixture('u+2002-2ff2'), {
-      path: join(__dirname, 'browserslist'),
+      path: join(testDir, 'browserslist'),
       env: 'modern',
     })
   );

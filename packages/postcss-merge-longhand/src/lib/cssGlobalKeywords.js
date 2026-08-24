@@ -1,4 +1,3 @@
-'use strict';
-const { cssWideKeywords } = require('./spec.js');
+import { cssWideKeywords } from './spec.js';
 
-module.exports = cssWideKeywords;
+export default cssWideKeywords;

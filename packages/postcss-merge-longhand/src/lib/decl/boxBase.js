@@ -1,24 +1,19 @@
-'use strict';
-const stylehacks = require('stylehacks');
-const canMerge = require('../canMerge.js');
-const getDecls = require('../getDecls.js');
-const minifyTrbl = require('../minifyTrbl.js');
-const parseTrbl = require('../parseTrbl.js');
-const insertCloned = require('../insertCloned.js');
-const mergeRules = require('../mergeRules.js');
-const mergeValues = require('../mergeValues.js');
-const topRightBottomLeft = require('../trbl.js');
-const { isFallback } = require('../isFallback.js');
-const canExplode = require('../canExplode.js');
-const lastOf = require('../lastOf.js');
-const { browserKeeps } = require('../validateBox.js');
-const cssGlobalKeywords = require('../cssGlobalKeywords.js');
+import stylehacks from 'stylehacks';
+import canMerge from '../canMerge.js';
+import getDecls from '../getDecls.js';
+import minifyTrbl from '../minifyTrbl.js';
+import parseTrbl from '../parseTrbl.js';
+import insertCloned from '../insertCloned.js';
+import mergeRules from '../mergeRules.js';
+import mergeValues from '../mergeValues.js';
+import topRightBottomLeft from '../trbl.js';
+import { isFallback } from '../isFallback.js';
+import canExplode from '../canExplode.js';
+import lastOf from '../lastOf.js';
+import { browserKeeps } from '../validateBox.js';
+import cssGlobalKeywords from '../cssGlobalKeywords.js';
 
-/**
- * @param {string} prop A CSS property name
- * @return {{explode: (rule: import('postcss').Rule) => void, merge: (rule: import('postcss').Rule) => void}}
- */
-module.exports = (prop) => {
+export default (prop) => {
   const physicalBoxProperties = topRightBottomLeft.map(
     (direction) => `${prop}-${direction}`
   );

@@ -1,13 +1,12 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const addToCache = require('./cache');
-const functionArguments = require('./functionArguments');
-const {
+import valueParser from 'postcss-value-parser';
+import addToCache from './cache.js';
+import functionArguments from './functionArguments.js';
+import {
   counterStyle,
   cssWideKeywords,
   resolveAtRule,
   resolveProperty,
-} = require('./slots');
+} from './slots.js';
 
 // The predefined counter styles are spelled out as `@counter-style` rules in
 // an appendix of the specification rather than in a grammar, so webref has no
@@ -93,11 +92,7 @@ function isCounterStyleDescriptor(node) {
     counterStyle.descriptors.has(node.prop.toLowerCase())
   );
 }
-
-/**
- * @return {import('../index.js').Reducer}
- */
-module.exports = function () {
+export default (function () {
   /** @type {Map<string, {ident: string, count: number}>} */
   const cache = new Map();
   /** @type {import('postcss').AtRule[]} */
@@ -200,4 +195,4 @@ module.exports = function () {
       functionDecls = [];
     },
   };
-};
+});

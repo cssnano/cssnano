@@ -1,9 +1,9 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const { name } = require('../package.json');
-const plugin = require('../src/index.js');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import package$0 from '../package.json' with { type: 'json' };
+import plugin from '../src/index.js';
 
+const { name } = package$0;
 test('should use the postcss plugin api', () => {
   assert.strictEqual(plugin().postcssPlugin, name);
 });

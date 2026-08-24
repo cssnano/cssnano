@@ -1,6 +1,5 @@
-'use strict';
-const { list } = require('postcss');
-const { isBorderWidth, isBorderStyle, isColor } = require('./validateWsc.js');
+import { list } from 'postcss';
+import { isBorderWidth, isBorderStyle, isColor } from './validateWsc.js';
 
 const none = /^\s*(none|medium)(\s+none(\s+(none|currentcolor))?)?\s*$/i;
 
@@ -33,7 +32,7 @@ const toLower = (v) => {
  * @param {string} value
  * @return {[string, string, string]}
  */
-module.exports = function parseWsc(value) {
+function parseWsc(value) {
   if (none.test(value)) {
     return ['medium', 'none', 'currentcolor'];
   }
@@ -78,6 +77,7 @@ module.exports = function parseWsc(value) {
       color = unknown.pop();
     }
   }
-
   return /** @type {[string, string, string]} */ ([width, style, color]);
-};
+}
+
+export default parseWsc;

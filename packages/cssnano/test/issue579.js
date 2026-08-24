@@ -1,8 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const postcss = require('postcss');
-const cssnano = require('../src/index.js');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import cssnano from '../src/index.js';
 
 test('should support `env()` and `constant()` is an iPhone X-only feature', async () => {
   const css = `

@@ -1,20 +1,17 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const {
+import valueParser from 'postcss-value-parser';
+import {
   normalizeGridAutoFlow,
   normalizeGridColumnRowGap,
   normalizeGridColumnRow,
-} = require('./rules/grid');
-
-// rules
-const animation = require('./rules/animation');
-const border = require('./rules/border');
-const boxShadow = require('./rules/boxShadow');
-const flexFlow = require('./rules/flexFlow');
-const transition = require('./rules/transition');
-const listStyle = require('./rules/listStyle');
-const column = require('./rules/columns');
-const vendorUnprefixed = require('./lib/vendorUnprefixed.js');
+} from './rules/grid.js';
+import animation from './rules/animation.js';
+import border from './rules/border.js';
+import boxShadow from './rules/boxShadow.js';
+import flexFlow from './rules/flexFlow.js';
+import transition from './rules/transition.js';
+import listStyle from './rules/listStyle.js';
+import column from './rules/columns.js';
+import vendorUnprefixed from './lib/vendorUnprefixed.js';
 
 /** @type {[string, (parsed: valueParser.ParsedValue) => string][]} */
 const borderRules = [
@@ -161,8 +158,8 @@ function pluginCreator() {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<void>} */ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

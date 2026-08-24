@@ -1,9 +1,9 @@
-'use strict';
-const { unit } = require('postcss-value-parser');
-const { colordx: colord, extend } = require('@colordx/core');
-const hwbPlugin = require('@colordx/core/plugins/hwb');
-const namesPlugin = require('@colordx/core/plugins/names');
+import postcssValueParser from 'postcss-value-parser';
+import { colordx as colord, extend } from '@colordx/core';
+import hwbPlugin from '@colordx/core/plugins/hwb';
+import namesPlugin from '@colordx/core/plugins/names';
 
+const { unit } = postcssValueParser;
 extend([
   /** @type {import('@colordx/core').Plugin} */ (
     /** @type {unknown} */ (hwbPlugin)
@@ -48,7 +48,7 @@ function isCSSLengthUnit(input) {
  */
 function isStop(str) {
   if (str) {
-    let isColorStop = false;
+    let colorStop = false;
     const node = unit(str);
     if (node) {
       const number = Number(node.number);
@@ -56,12 +56,12 @@ function isStop(str) {
         number === 0 ||
         (!Number.isNaN(number) && isCSSLengthUnit(node.unit))
       ) {
-        isColorStop = true;
+        colorStop = true;
       }
     } else {
-      isColorStop = colorStopRegex.test(str);
+      colorStop = colorStopRegex.test(str);
     }
-    return isColorStop;
+    return colorStop;
   }
   return true;
 }
@@ -70,6 +70,8 @@ function isStop(str) {
  * @param {string} [stop]
  * @return {boolean}
  */
-module.exports = function isColorStop(color, stop) {
+function isColorStop(color, stop) {
   return colord(color).isValid() && isStop(stop);
-};
+}
+
+export default isColorStop;

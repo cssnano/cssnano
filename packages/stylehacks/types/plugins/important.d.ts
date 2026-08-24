@@ -1,4 +1,5 @@
-export = Important;
+import BasePlugin from '../plugin.js';
+export default Important;
 declare class Important extends BasePlugin {
     /** @param {import('postcss').Result=} result */
     constructor(result?: import('postcss').Result | undefined);
@@ -8,5 +9,4 @@ declare class Important extends BasePlugin {
      */
     detect(decl: import('postcss').Declaration): void;
 }
-import BasePlugin = require('../plugin');
 //# sourceMappingURL=important.d.ts.map

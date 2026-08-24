@@ -1,4 +1,3 @@
-export = _exports;
-/** @type {(node: import('postcss').Declaration) => boolean} */
-declare function _exports(node: import("postcss").Declaration): boolean;
+export default _default;
+declare function _default(node: any): boolean;
 //# sourceMappingURL=isCustomProp.d.ts.map

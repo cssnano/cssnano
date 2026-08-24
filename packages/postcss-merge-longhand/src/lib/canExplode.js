@@ -1,10 +1,7 @@
-'use strict';
-const isCustomProp = require('./isCustomProp');
+import isCustomProp from './isCustomProp.js';
+import globalKeywords from './cssGlobalKeywords.js';
 
-const globalKeywords = require('./cssGlobalKeywords.js');
-
-/** @type {(prop: import('postcss').Declaration, includeCustomProps?: boolean) => boolean} */
-module.exports = (prop, includeCustomProps = true) => {
+export default (prop, includeCustomProps = true) => {
   return !(
     !prop.value ||
     (includeCustomProps && isCustomProp(prop)) ||

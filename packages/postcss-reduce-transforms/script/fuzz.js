@@ -1,8 +1,8 @@
-'use strict';
-const { parseArgs } = require('node:util');
-const { checkMinimised, report } = require('./lib/fuzzCheck.js');
-const { generate } = require('./lib/fuzzGenerate.js');
+import nodeutil from 'node:util';
+import { checkMinimised, report } from './lib/fuzzCheck.js';
+import { generate } from './lib/fuzzGenerate.js';
 
+const { parseArgs } = nodeutil;
 /**
  * Long differential fuzz runs, for reaching past what the seeded sweep in
  * `test/fuzz.js` covers. Point this at a change before accepting it.

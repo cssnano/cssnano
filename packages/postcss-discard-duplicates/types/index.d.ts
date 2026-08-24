@@ -1,5 +1,3 @@
-declare const _exports: import("postcss").PluginCreator<void>;
-export = _exports;
 export type ComparableNode = {
     type: string;
     important?: boolean;
@@ -14,4 +12,13 @@ export type ComparableNode = {
     value?: string;
     nodes?: import('postcss').ChildNode[];
 };
+/**
+ * @return {import('postcss').Plugin}
+ */
+declare function pluginCreator(): import('postcss').Plugin;
+declare namespace pluginCreator {
+    var postcss: true;
+}
+declare const moduleExports: typeof pluginCreator;
+export { moduleExports as default, moduleExports as 'module.exports' };
 //# sourceMappingURL=index.d.ts.map

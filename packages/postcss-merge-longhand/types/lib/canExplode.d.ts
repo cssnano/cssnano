@@ -1,4 +1,3 @@
-export = _exports;
-/** @type {(prop: import('postcss').Declaration, includeCustomProps?: boolean) => boolean} */
-declare function _exports(prop: import("postcss").Declaration, includeCustomProps?: boolean | undefined): boolean;
+export default _default;
+declare function _default(prop: any, includeCustomProps?: boolean): boolean;
 //# sourceMappingURL=canExplode.d.ts.map

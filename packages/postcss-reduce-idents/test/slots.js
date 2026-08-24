@@ -1,17 +1,13 @@
-'use strict';
-
-const { describe, test } = require('node:test');
-
-const assert = require('node:assert/strict');
-
-const {
+import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+import {
   counter,
   counterStyle,
   grid,
   keyframes,
   resolveAtRule,
   resolveProperty,
-} = require('../src/lib/slots.js');
+} from '../src/lib/slots.js';
 
 // The slots themselves are spot-checked in script/lib/webrefIdents.mjs's
 // validate(), which runs at data-acquire time rather than test time: that

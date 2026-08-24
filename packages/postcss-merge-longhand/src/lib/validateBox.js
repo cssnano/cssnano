@@ -1,7 +1,6 @@
-'use strict';
-const { list } = require('postcss');
-const { sides } = require('./spec.js');
-const { isUnresolved } = require('./unresolved.js');
+import { list } from 'postcss';
+import { sides } from './spec.js';
+import { isUnresolved } from './unresolved.js';
 
 /* CSS user agents ignore margin and padding declarations that violate the
  * property's grammar: margin rejects negative values and auto,
@@ -75,5 +74,7 @@ function browserKeeps(prop, value) {
 
   return tokens.every((token) => specifiesSide(token, grammar));
 }
-
-module.exports = { browserKeeps };
+export { browserKeeps };
+export default {
+  browserKeeps,
+};

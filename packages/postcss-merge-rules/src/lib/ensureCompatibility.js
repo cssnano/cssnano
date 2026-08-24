@@ -1,7 +1,7 @@
-'use strict';
-const { isSupported } = require('caniuse-api');
-const selectorParser = require('postcss-selector-parser');
+import caniuseApi from 'caniuse-api';
+import selectorParser from 'postcss-selector-parser';
 
+const { isSupported } = caniuseApi;
 const simpleSelectorRe = /^#?[-._a-z0-9 ]+$/i;
 
 const cssSel2 = 'css-sel2';
@@ -245,5 +245,13 @@ function ensureCompatibility(selectors, browsers, compatibilityCache) {
     return compatible;
   });
 }
-
-module.exports = { sameVendor, noVendor, pseudoElements, ensureCompatibility };
+export { sameVendor };
+export { noVendor };
+export { pseudoElements };
+export { ensureCompatibility };
+export default {
+  sameVendor,
+  noVendor,
+  pseudoElements,
+  ensureCompatibility,
+};

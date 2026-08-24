@@ -1,13 +1,12 @@
-'use strict';
-const { list } = require('postcss');
-const colors = require('./colornames.js');
-const {
+import { list } from 'postcss';
+import colors from './colornames.js';
+import {
   lineStyles,
   lineWidthKeywords,
   colorFunctions,
   borderComponents,
-} = require('./spec.js');
-const { isSubstitution, isUnresolved } = require('./unresolved.js');
+} from './spec.js';
+import { isSubstitution, isUnresolved } from './unresolved.js';
 
 const lengthValueRegex = /^(\d+(\.\d+)?|\.\d+)(\w+)?$/;
 const functionNameRegex = /([\w-]+)\(/g;
@@ -182,8 +181,13 @@ function specifiesDistinctComponents(value) {
 
   return specified.size + unresolved <= borderComponents.length;
 }
-
-module.exports = {
+export { isBorderStyle };
+export { isBorderWidth };
+export { isColor };
+export { isValidWidthStyleColor };
+export { specifiesComponent };
+export { specifiesDistinctComponents };
+export default {
   isBorderStyle,
   isBorderWidth,
   isColor,

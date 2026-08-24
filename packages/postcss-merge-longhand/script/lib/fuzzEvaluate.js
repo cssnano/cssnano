@@ -1,5 +1,4 @@
-'use strict';
-const postcss = require('postcss');
+import postcss from 'postcss';
 
 /**
  * An independent evaluator for what a rule means to the browser, against which
@@ -518,8 +517,21 @@ function differences(expected, actual) {
 
   return found;
 }
-
-module.exports = {
+export { boxLengths };
+export { marginOnly };
+export { colors };
+export { components };
+export { differences };
+export { evaluate };
+export { globalKeywords };
+export { initialState };
+export { sides };
+export { styles };
+export { substitutionTokens };
+export { unresolvedTokens };
+export { widthTypedTokens };
+export { widths };
+export default {
   boxLengths,
   marginOnly,
   colors,

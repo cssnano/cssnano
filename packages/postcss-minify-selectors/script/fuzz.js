@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-'use strict';
-const { parseArgs } = require('node:util');
-const { generate } = require('./lib/fuzzGenerate.js');
-const { checkMinimised, report } = require('./lib/fuzzCheck.js');
+import nodeutil from 'node:util';
+import { generate } from './lib/fuzzGenerate.js';
+import { checkMinimised, report } from './lib/fuzzCheck.js';
 
+const { parseArgs } = nodeutil;
 const { values } = parseArgs({
   options: {
     seed: { type: 'string', default: '1' },

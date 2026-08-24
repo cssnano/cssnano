@@ -1,9 +1,8 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const postcss = require('postcss');
-const preset = require('cssnano-preset-default');
-const nano = require('../src/index.js');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import preset from 'cssnano-preset-default';
+import nano from '../src/index.js';
 
 const fixture = `
 .b {

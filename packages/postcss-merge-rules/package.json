@@ -6,13 +6,7 @@
     ".": {
       "types": "./types/index.d.ts",
       "default": "./src/index.js"
-    },
-    "./src": "./src/index.js",
-    "./src/index": "./src/index.js",
-    "./src/index.js": "./src/index.js",
-    "./src/lib/ensureCompatibility.js": "./src/lib/ensureCompatibility.js",
-    "./src/lib/ensureCompatibility": "./src/lib/ensureCompatibility.js",
-    "./package.json": "./package.json"
+    }
   },
   "imports": {
     "#getBrowsersList": {
@@ -52,7 +46,7 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": "^22.11.0 || ^24.11.0 || >=26.0"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
     "@webref/css": "catalog:",
@@ -66,5 +60,6 @@
   "scripts": {
     "acquire": "node ./script/acquire.mjs",
     "test": "node --test"
-  }
+  },
+  "type": "module"
 }

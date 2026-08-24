@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "ignorePatterns": ["packages/**/types/**"],
-  "plugins": ["typescript", "unicorn", "oxc", "promise"],
+  "plugins": ["typescript", "unicorn", "oxc", "promise", "import"],
   "categories": {
     "correctness": "error"
     //"suspicious": "error"

@@ -1,7 +1,3 @@
-export = _exports;
-/**
- * @param {string} value
- * @return {string}
- */
-declare function _exports(value: string): string;
+export default _default;
+declare function _default(value: any): any;
 //# sourceMappingURL=minify-weight.d.ts.map

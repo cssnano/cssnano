@@ -1,9 +1,6 @@
-'use strict';
-const { test } = require('node:test');
-const {
-  processCSSWithPresetFactory,
-} = require('../../../util/integrationTestHelpers.js');
-const preset = require('../src/index.js');
+import { test } from 'node:test';
+import { processCSSWithPresetFactory } from '../../../util/integrationTestHelpers.js';
+import preset from '../src/index.js';
 
 const { processCSS } = processCSSWithPresetFactory(preset);
 

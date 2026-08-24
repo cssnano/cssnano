@@ -1,4 +1,5 @@
-export = Slash9;
+import BasePlugin from '../plugin.js';
+export default Slash9;
 declare class Slash9 extends BasePlugin {
     /** @param {import('postcss').Result=} result */
     constructor(result?: import('postcss').Result | undefined);
@@ -8,5 +9,4 @@ declare class Slash9 extends BasePlugin {
      */
     detect(decl: import('postcss').Declaration): void;
 }
-import BasePlugin = require('../plugin.js');
 //# sourceMappingURL=slash9.d.ts.map

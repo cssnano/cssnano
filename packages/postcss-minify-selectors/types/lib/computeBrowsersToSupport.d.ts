@@ -1,4 +1,4 @@
-export = computeBrowsersToSupport;
+import browserslist from 'browserslist';
 /**
  *
  * @param {{overrideBrowserslist?: string | string[] | undefined, stats?: browserslist.Options["stats"], path?: browserslist.Options["path"], env?: browserslist.Options["env"]}} options
@@ -14,5 +14,5 @@ declare function computeBrowsersToSupport(options: {
     path?: browserslist.Options["path"];
     env?: browserslist.Options["env"];
 }, stats: browserslist.Options["stats"], from: string | undefined, file?: string, env?: browserslist.Options["env"]): string[];
-import browserslist = require('browserslist');
+export default computeBrowsersToSupport;
 //# sourceMappingURL=computeBrowsersToSupport.d.ts.map

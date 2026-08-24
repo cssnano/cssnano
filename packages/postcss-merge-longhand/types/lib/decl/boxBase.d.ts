@@ -1,10 +1,8 @@
-export = _exports;
-/**
- * @param {string} prop A CSS property name
- * @return {{explode: (rule: import('postcss').Rule) => void, merge: (rule: import('postcss').Rule) => void}}
- */
-declare function _exports(prop: string): {
+export default _default;
+declare function _default(prop: any): {
+    /** @type {(rule: import('postcss').Rule) => void} */
     explode: (rule: import('postcss').Rule) => void;
+    /** @type {(rule: import('postcss').Rule) => void} */
     merge: (rule: import('postcss').Rule) => void;
 };
 //# sourceMappingURL=boxBase.d.ts.map

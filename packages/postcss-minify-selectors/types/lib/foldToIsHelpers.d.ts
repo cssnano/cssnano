@@ -1,16 +1,3 @@
-declare const _exports: {
-    tokenize: typeof tokenize;
-    hasPseudoElementOrNesting: typeof hasPseudoElementOrNesting;
-    hasNthChildOfClause: typeof hasNthChildOfClause;
-    hasUnsafeForFold: typeof hasUnsafeForFold;
-    specificityOf: typeof specificityOf;
-    specificityOfMiddle: typeof specificityOfMiddle;
-    maxChildSpecificity: typeof maxChildSpecificity;
-    compareSpecificity: typeof compareSpecificity;
-    equalSpecificity: typeof equalSpecificity;
-    joinTokens: typeof joinTokens;
-};
-export = _exports;
 export type Node = import('postcss-selector-parser').Node;
 export type Selector = import('postcss-selector-parser').Selector;
 export type Pseudo = import('postcss-selector-parser').Pseudo;
@@ -75,4 +62,27 @@ declare function equalSpecificity(a: Specificity, b: Specificity): boolean;
  * @return {string}
  */
 declare function joinTokens(tokens: Token[]): string;
+export { tokenize };
+export { hasPseudoElementOrNesting };
+export { hasNthChildOfClause };
+export { hasUnsafeForFold };
+export { specificityOf };
+export { specificityOfMiddle };
+export { maxChildSpecificity };
+export { compareSpecificity };
+export { equalSpecificity };
+export { joinTokens };
+declare const _default: {
+    tokenize: typeof tokenize;
+    hasPseudoElementOrNesting: typeof hasPseudoElementOrNesting;
+    hasNthChildOfClause: typeof hasNthChildOfClause;
+    hasUnsafeForFold: typeof hasUnsafeForFold;
+    specificityOf: typeof specificityOf;
+    specificityOfMiddle: typeof specificityOfMiddle;
+    maxChildSpecificity: typeof maxChildSpecificity;
+    compareSpecificity: typeof compareSpecificity;
+    equalSpecificity: typeof equalSpecificity;
+    joinTokens: typeof joinTokens;
+};
+export default _default;
 //# sourceMappingURL=foldToIsHelpers.d.ts.map

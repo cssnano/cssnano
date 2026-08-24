@@ -1,1 +1,1 @@
-{"version":3,"file":"transition.d.ts","sourceRoot":"","sources":["../../src/rules/transition.js"],"names":[],"mappings":";AA0DA;;;GAGG;qCAC2C,MAAM,EAHzC,OAAO,sBAAsB,EAAE,WAGU,GAFxC,MAAM"}
+{"version":3,"file":"transition.d.ts","sourceRoot":"","sources":["../../src/rules/transition.js"],"names":[],"mappings":"AA2DA;;;GAGG;AACH,iBAAS,mBAAmB,CAAC,MAAM,EAHxB,OAAO,sBAAsB,EAAE,WAGP,GAFvB,MAAM,CAKjB;eAEc,mBAAmB"}

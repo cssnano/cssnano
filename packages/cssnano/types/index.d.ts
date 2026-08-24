@@ -1,5 +1,4 @@
-export = cssnanoPlugin;
-import postcss = require('postcss');
+import postcss from 'postcss';
 export type PluginOptions = boolean | {
     exclude?: boolean;
 } | void | undefined;
@@ -23,4 +22,5 @@ export type Options = {
  * @return {import('postcss').Processor}
  */
 declare function cssnanoPlugin(options?: {}): postcss.Processor;
+export { cssnanoPlugin as default, cssnanoPlugin as 'module.exports' };
 //# sourceMappingURL=index.d.ts.map

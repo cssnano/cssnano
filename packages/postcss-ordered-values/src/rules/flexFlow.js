@@ -1,4 +1,3 @@
-'use strict';
 // flex-flow: <flex-direction> || <flex-wrap>
 
 const flexDirection = new Set([
@@ -14,7 +13,7 @@ const flexWrap = new Set(['nowrap', 'wrap', 'wrap-reverse']);
  * @param {import('postcss-value-parser').ParsedValue} flexFlow
  * @return {string}
  */
-module.exports = function normalizeFlexFlow(flexFlow) {
+function normalizeFlexFlow(flexFlow) {
   const order = {
     direction: '',
     wrap: '',
@@ -30,6 +29,7 @@ module.exports = function normalizeFlexFlow(flexFlow) {
       order.wrap = value;
     }
   });
-
   return `${order.direction} ${order.wrap}`.trim();
-};
+}
+
+export default normalizeFlexFlow;

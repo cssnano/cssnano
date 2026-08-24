@@ -1,22 +1,18 @@
-'use strict';
-
-const { readFileSync: file } = require('node:fs');
-
-const assert = require('node:assert/strict');
-
-const { describe, test } = require('node:test');
-
-const postcss = require('postcss');
-
-const {
+import nodepath from 'node:path';
+import { fileURLToPath } from 'node:url';
+const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
+import nodefs from 'node:fs';
+import assert from 'node:assert/strict';
+import { describe, test } from 'node:test';
+import postcss from 'postcss';
+import {
   usePostCSSPlugin,
   processCSSFactory,
-} = require('../../../util/testHelpers.js');
+} from '../../../util/testHelpers.js';
+import plugin from '../src/index.js';
+import { encode, decode } from '../src/lib/url.js';
 
-const plugin = require('../src/index.js');
-
-const { encode, decode } = require('../src/lib/url.js');
-
+const { readFileSync: file } = nodefs;
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 test(
@@ -299,8 +295,7 @@ test(
 );
 
 test('should not crash on malformed urls when encoded', () => {
-  const svg = encode(file(`${__dirname}/border.svg`, 'utf-8'));
-
+  const svg = encode(file(`${testDir}/border.svg`, 'utf-8'));
   assert.doesNotThrow(() => decode(svg));
 });
 

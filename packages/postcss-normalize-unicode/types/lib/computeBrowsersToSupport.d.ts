@@ -1,4 +1,10 @@
-export = computeBrowsersToSupport;
+import browserslist from 'browserslist';
+export type OurOptions = {
+    overrideBrowserslist?: string | string[] | undefined;
+    stats?: browserslist.Options["stats"];
+    path?: browserslist.Options["path"];
+    env?: browserslist.Options["env"];
+};
 /** @typedef {{overrideBrowserslist?: string | string[] | undefined, stats?: browserslist.Options["stats"], path?: browserslist.Options["path"], env?: browserslist.Options["env"]}} OurOptions
 /**
  * @param {string | null} [query]
@@ -10,11 +16,5 @@ export = computeBrowsersToSupport;
  * @returns {string[]}
  */
 declare function computeBrowsersToSupport(query?: string | null, options?: OurOptions, stats?: browserslist.Options["stats"], from?: string | undefined, file?: string, env?: browserslist.Options["env"]): string[];
-import browserslist = require('browserslist');
-export type OurOptions = {
-    overrideBrowserslist?: string | string[] | undefined;
-    stats?: browserslist.Options["stats"];
-    path?: browserslist.Options["path"];
-    env?: browserslist.Options["env"];
-};
+export default computeBrowsersToSupport;
 //# sourceMappingURL=computeBrowsersToSupport.d.ts.map

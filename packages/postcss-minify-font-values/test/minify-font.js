@@ -1,19 +1,13 @@
-'use strict';
-
-const { describe, test } = require('node:test');
-
-const assert = require('node:assert/strict');
-
-const minifyFont = require('../src/lib/minify-font.js');
+import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+import minifyFont from '../src/lib/minify-font.js';
 
 describe('.8Em', () => {
   test('.8em "Times New Roman", Arial, Helvetica, sans-serif', () => {
     assert.equal(
-      minifyFont(
-        '.8em "Times New Roman", Arial, Helvetica, sans-serif',
-
-        { removeQuotes: true }
-      ),
+      minifyFont('.8em "Times New Roman", Arial, Helvetica, sans-serif', {
+        removeQuotes: true,
+      }),
       '.8em Times New Roman,Arial,Helvetica,sans-serif'
     );
   });

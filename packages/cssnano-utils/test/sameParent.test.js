@@ -1,8 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const postcss = require('postcss');
-const sameParent = require('../src/sameParent.js');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import sameParent from '../src/sameParent.js';
 
 test('should calculate same parent', async () => {
   const result = await postcss().process('h1 {} h2 {}', {

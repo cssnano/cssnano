@@ -1,14 +1,13 @@
-'use strict';
-const parser = require('postcss-selector-parser');
-const exists = require('../exists');
-const isMixin = require('../isMixin');
-const BasePlugin = require('../plugin');
-const { IE_5_5, IE_6 } = require('../dictionary/browsers');
-const { SELECTOR } = require('../dictionary/identifiers');
-const { RULE } = require('../dictionary/postcss');
-const { HTML } = require('../dictionary/tags');
+import parser from 'postcss-selector-parser';
+import exists from '../exists.js';
+import isMixin from '../isMixin.js';
+import BasePlugin from '../plugin.js';
+import { IE_5_5, IE_6 } from '../dictionary/browsers.js';
+import { SELECTOR } from '../dictionary/identifiers.js';
+import { RULE } from '../dictionary/postcss.js';
+import { HTML } from '../dictionary/tags.js';
 
-module.exports = class StarHtml extends BasePlugin {
+export default (class StarHtml extends BasePlugin {
   /** @param {import('postcss').Result=} result */
   constructor(result) {
     super([IE_5_5, IE_6], [RULE], result);
@@ -47,4 +46,4 @@ module.exports = class StarHtml extends BasePlugin {
       });
     };
   }
-};
+});

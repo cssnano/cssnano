@@ -1,8 +1,8 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const { getArguments } = require('cssnano-utils');
-const isColorStop = require('./isColorStop.js');
+import valueParser from 'postcss-value-parser';
+import cssnanoUtils from 'cssnano-utils';
+import isColorStop from './isColorStop.js';
 
+const { getArguments } = cssnanoUtils;
 const directionsToAngles = new Map([
   ['top', '0deg'],
   ['right', '90deg'],
@@ -376,8 +376,8 @@ function pluginCreator() {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

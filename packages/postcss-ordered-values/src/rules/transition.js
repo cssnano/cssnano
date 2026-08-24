@@ -1,10 +1,11 @@
-'use strict';
-const { unit } = require('postcss-value-parser');
-const { getArguments } = require('cssnano-utils');
-const addSpace = require('../lib/addSpace');
-const getValue = require('../lib/getValue');
-const easingFunctions = require('./easingFunctions.json');
+import postcssValueParser from 'postcss-value-parser';
+import cssnanoUtils from 'cssnano-utils';
+import addSpace from '../lib/addSpace.js';
+import getValue from '../lib/getValue.js';
+import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
+const { unit } = postcssValueParser;
+const { getArguments } = cssnanoUtils;
 // transition: [ none | <single-transition-property> ] || <time> || <single-transition-timing-function> || <time>
 
 const timingFunctions = new Set(easingFunctions.keywords);
@@ -60,8 +61,9 @@ function normalize(args) {
  * @param {import('postcss-value-parser').ParsedValue} parsed
  * @return {string}
  */
-module.exports = function normalizeTransition(parsed) {
+function normalizeTransition(parsed) {
   const values = normalize(getArguments(parsed));
-
   return getValue(values);
-};
+}
+
+export default normalizeTransition;

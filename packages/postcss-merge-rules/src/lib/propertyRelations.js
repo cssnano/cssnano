@@ -1,6 +1,4 @@
-'use strict';
-
-const data = require('../data/propertyGroups.json');
+import data from '../data/propertyGroups.json' with { type: 'json' };
 
 const vendorPrefixRegex = /^-\w+-/;
 /**
@@ -167,5 +165,7 @@ function isConflictingProp(propA, propB) {
   }
   return false;
 }
-
-module.exports = { isConflictingProp };
+export { isConflictingProp };
+export default {
+  isConflictingProp,
+};

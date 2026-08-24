@@ -1,6 +1,5 @@
-'use strict';
-const { test } = require('node:test');
-const processCSS = require('./_processCSS');
+import { test } from 'node:test';
+import processCSS from './_processCSS.js';
 
 test(
   'ie <= 8 media \\0screen\\,screen\\9 hack',
