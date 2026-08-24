@@ -1,28 +1,12 @@
-'use strict';
-const { unit } = require('postcss-value-parser');
-const { getArguments } = require('cssnano-utils');
-const addSpace = require('../lib/addSpace');
-const getValue = require('../lib/getValue');
-const mathFunctions = require('../lib/mathfunctions.js');
-const vendorUnprefixed = require('../lib/vendorUnprefixed.js');
+import postcssValueParser from 'postcss-value-parser';
+import cssnanoUtils from 'cssnano-utils';
+import addSpace from '../lib/addSpace.js';
+import getValue from '../lib/getValue.js';
+import mathFunctions from '../lib/mathfunctions.js';
+import vendorUnprefixed from '../lib/vendorUnprefixed.js';
 
-// box-shadow: inset? && <length>{2,4} && <color>?
-
-/**
- * @param {import('postcss-value-parser').ParsedValue} parsed
- * @return {string}
- */
-module.exports = function normalizeBoxShadow(parsed) {
-  const args = getArguments(parsed);
-
-  const normalized = normalize(args);
-
-  if (normalized === false) {
-    return parsed.toString();
-  }
-
-  return getValue(normalized);
-};
+const { unit } = postcssValueParser;
+const { getArguments } = cssnanoUtils;
 /**
  * @param {import('postcss-value-parser').Node[][]} args
  * @return {false | import('postcss-value-parser').Node[][]}
@@ -71,3 +55,17 @@ function normalize(args) {
   }
   return list;
 }
+/**
+ * @param {import('postcss-value-parser').ParsedValue} parsed
+ * @return {string}
+ */
+function normalizeBoxShadow(parsed) {
+  const args = getArguments(parsed);
+  const normalized = normalize(args);
+  if (normalized === false) {
+    return parsed.toString();
+  }
+  return getValue(normalized);
+}
+
+export default normalizeBoxShadow;

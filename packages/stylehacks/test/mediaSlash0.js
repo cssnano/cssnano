@@ -1,7 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const processCSS = require('./_processCSS');
+import nodetest from 'node:test';
+import processCSS from './_processCSS.js';
 
+const { test } = nodetest;
 test(
   'ie 8 media \\0screen hack',
   processCSS('@media \\0screen { h1 { color: red } }', '', {

@@ -1,17 +1,11 @@
-'use strict';
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import advancedPreset from 'cssnano-preset-advanced';
+import defaultPreset from 'cssnano-preset-default';
+import cssnano from '../src/index.js';
 
-const { describe, test } = require('node:test');
-
-const assert = require('node:assert/strict');
-
-const postcss = require('postcss');
-
-const advancedPreset = require('cssnano-preset-advanced');
-
-const defaultPreset = require('cssnano-preset-default');
-
-const cssnano = require('../src/index.js');
-
+const { describe, test } = nodetest;
 describe('preset resolution', () => {
   test('should accept an invoked preset', async () => {
     const preset = defaultPreset({ normalizeCharset: { add: true } });

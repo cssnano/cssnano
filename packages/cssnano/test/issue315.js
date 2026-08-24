@@ -1,10 +1,10 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const postcss = require('postcss');
-const fontMagician = require('postcss-font-magician');
-const cssnano = require('../src/index.js');
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import fontMagician from 'postcss-font-magician';
+import cssnano from '../src/index.js';
 
+const { test } = nodetest;
 test('should work with postcss-font-magician', async () => {
   const css = `
     body {

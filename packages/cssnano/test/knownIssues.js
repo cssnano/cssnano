@@ -1,7 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const processCss = require('./_processCss');
+import nodetest from 'node:test';
+import processCss from './_processCss.js';
 
+const { test } = nodetest;
 /*
  * This is due to linear plugin order; postcss-merge-longhand runs
  * before postcss-merge-rules. However, if the order of the

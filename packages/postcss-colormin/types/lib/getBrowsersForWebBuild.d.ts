@@ -1,3 +1,3 @@
-export = _exports;
-declare function _exports(): string[];
+export default _default;
+declare function _default(): string[];
 //# sourceMappingURL=getBrowsersForWebBuild.d.ts.map

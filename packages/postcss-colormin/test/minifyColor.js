@@ -1,8 +1,9 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const minifyColor = require('../src/minifyColor.js');
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import minifyColor from '../src/minifyColor.js';
+import * as core from '@colordx/core';
 
+const { test } = nodetest;
 function min(input, options = {}) {
   const defaultOptions = {
     alphaHex: false,
@@ -273,7 +274,7 @@ test('rgb:false should avoid rgb output and use hsl instead', () => {
 test('should not produce a lossier representation for rgb(143 101 98 / 43%)', () => {
   const result = min('rgb(143 101 98 / 43%)');
   // Whatever the output is, it must round-trip back to the same rgb values
-  const { colordx } = require('@colordx/core');
+  const { colordx } = core;
   const orig = colordx('rgb(143, 101, 98)').toRgb();
   const roundtrip = colordx(result).toRgb();
   assert.strictEqual(Math.round(roundtrip.r), Math.round(orig.r));
@@ -283,7 +284,7 @@ test('should not produce a lossier representation for rgb(143 101 98 / 43%)', ()
 
 test('should not produce a lossier representation for rgba(221, 221, 221, 0.5)', () => {
   const result = min('rgba(221, 221, 221, 0.5)');
-  const { colordx } = require('@colordx/core');
+  const { colordx } = core;
   const orig = colordx('rgb(221, 221, 221)').toRgb();
   const roundtrip = colordx(result).toRgb();
   assert.strictEqual(Math.round(roundtrip.r), Math.round(orig.r));
@@ -410,6 +411,3 @@ test(
   'should minify hsl(320,80%,50%) to exact hex #e619a1',
   isEqual('hsl(320, 80%, 50%)', '#e619a1')
 );
-
-// uikit-v3.0.3: same decimal lightness precision as semantic-ui (rgba(100,100,100,.3) also in this file)
-// covered by the rgba(100,100,100,.3) test above

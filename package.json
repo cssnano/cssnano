@@ -21,7 +21,7 @@
     "all-publish": "pnpm stage publish -r"
   },
   "engines": {
-    "node": "^22.11 || ^24.11 || >=26.0"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
     "@types/node": "^26.3.0",

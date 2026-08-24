@@ -1,16 +1,15 @@
-'use strict';
-const { list } = require('postcss');
-const valueParser = require('postcss-value-parser');
-const stylehacks = require('stylehacks');
-const canMerge = require('../canMerge.js');
-const getDecls = require('../getDecls.js');
-const getValue = require('../getValue.js');
-const mergeRules = require('../mergeRules.js');
-const insertCloned = require('../insertCloned.js');
-const { isFallback } = require('../isFallback.js');
-const canExplode = require('../canExplode.js');
-const lastOf = require('../lastOf.js');
-const { shorthand, initialValues } = require('../spec.js');
+import { list } from 'postcss';
+import valueParser from 'postcss-value-parser';
+import stylehacks from 'stylehacks';
+import canMerge from '../canMerge.js';
+import getDecls from '../getDecls.js';
+import getValue from '../getValue.js';
+import mergeRules from '../mergeRules.js';
+import insertCloned from '../insertCloned.js';
+import { isFallback } from '../isFallback.js';
+import canExplode from '../canExplode.js';
+import lastOf from '../lastOf.js';
+import { shorthand, initialValues } from '../spec.js';
 
 const columns = 'columns';
 /* The properties the shorthand sets */
@@ -284,8 +283,10 @@ function merge(rule) {
 
   cleanup(rule);
 }
-
-module.exports = {
+export { explode };
+export { merge };
+export { setsOtherColumnProperty };
+export default {
   explode,
   merge,
   setsOtherColumnProperty,

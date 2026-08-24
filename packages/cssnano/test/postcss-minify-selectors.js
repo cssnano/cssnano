@@ -1,7 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const processCss = require('./_processCss');
+import nodetest from 'node:test';
+import processCss from './_processCss.js';
 
+const { test } = nodetest;
 test(
   'should trim spaces in simple selectors',
   processCss('h1,  h2,  h3{color:#00f}', 'h1,h2,h3{color:#00f}')

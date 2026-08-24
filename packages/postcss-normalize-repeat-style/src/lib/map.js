@@ -1,5 +1,4 @@
-'use strict';
-module.exports = new Map([
+export default new Map([
   [['repeat', 'no-repeat'].toString(), 'repeat-x'],
   [['no-repeat', 'repeat'].toString(), 'repeat-y'],
   [['repeat', 'repeat'].toString(), 'repeat'],

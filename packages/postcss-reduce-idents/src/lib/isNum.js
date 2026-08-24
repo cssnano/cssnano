@@ -1,10 +1,12 @@
-'use strict';
-const { unit } = require('postcss-value-parser');
+import postcssValueParser from 'postcss-value-parser';
 
+const { unit } = postcssValueParser;
 /**
  * @param {import('postcss-value-parser').Node} node
  * @return {import('postcss-value-parser').Dimension | false}
  */
-module.exports = function isNum(node) {
+function isNum(node) {
   return unit(node.value);
-};
+}
+
+export default isNum;

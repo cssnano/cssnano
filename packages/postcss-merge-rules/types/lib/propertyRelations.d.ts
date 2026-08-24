@@ -1,7 +1,3 @@
-declare const _exports: {
-    isConflictingProp: typeof isConflictingProp;
-};
-export = _exports;
 /**
  * True if declarations of `propA` and `propB` can set the same underlying
  * property, so that reordering them within a rule can change what the rule
@@ -14,4 +10,9 @@ export = _exports;
  * @return {boolean}
  */
 declare function isConflictingProp(propA: string, propB: string): boolean;
+export { isConflictingProp };
+declare const _default: {
+    isConflictingProp: typeof isConflictingProp;
+};
+export default _default;
 //# sourceMappingURL=propertyRelations.d.ts.map

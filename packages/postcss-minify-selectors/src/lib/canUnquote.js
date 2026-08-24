@@ -1,6 +1,5 @@
-'use strict';
+import cssesc from 'cssesc';
 
-const cssesc = require('cssesc');
 /**
  * Can unquote attribute detection from mothereff.in
  * Copyright Mathias Bynens <https://mathiasbynens.be/>
@@ -16,7 +15,7 @@ const unquotableRegExp = /^(?:-?\d|--)/;
  * @param {string} value
  * @return {boolean}
  */
-module.exports = function canUnquote(value) {
+function canUnquote(value) {
   if (value === '-' || value === '') {
     return false;
   }
@@ -28,4 +27,6 @@ module.exports = function canUnquote(value) {
     // Do not remove the quotes if escaping is required.
     cssesc(normalized) === normalized
   );
-};
+}
+
+export default canUnquote;

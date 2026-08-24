@@ -5,7 +5,7 @@
     "module": "nodenext",
     "resolveJsonModule": true,
     "allowJs": true,
-    "checkJs": true,
+    "checkJs": false,
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,

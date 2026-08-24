@@ -1,8 +1,9 @@
-'use strict';
 /**
  * @param {import('postcss').Declaration} arg
  * @return {string}
  */
-module.exports = function getValue({ value }) {
+function getValue({ value }) {
   return value;
-};
+}
+
+export default getValue;

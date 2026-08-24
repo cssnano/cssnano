@@ -1,10 +1,10 @@
-'use strict';
-const { test, suite } = require('node:test');
-const assert = require('node:assert/strict');
-const postcss = require('postcss');
-const borders = require('../src/lib/decl/borders.js');
-const mergeRules = require('../src/lib/mergeRules.js');
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import borders from '../src/lib/decl/borders.js';
+import mergeRules from '../src/lib/mergeRules.js';
 
+const { test, suite } = nodetest;
 /**
  * Tests merge correctness without `index.js`'s size guard.
  * Unlike `test/borders.js`, which only verifies shorthand expansion,

@@ -1,11 +1,10 @@
-'use strict';
+import getBrowsersList from '#getBrowsersList';
+import caniuseApi from 'caniuse-api';
+import parser from 'postcss-selector-parser';
+import canUnquote from './lib/canUnquote.js';
+import foldToIs from './lib/foldToIs.js';
 
-const getBrowsersList = require('#getBrowsersList');
-const { isSupported } = require('caniuse-api');
-const parser = require('postcss-selector-parser');
-const canUnquote = require('./lib/canUnquote.js');
-const foldToIs = require('./lib/foldToIs.js');
-
+const { isSupported } = caniuseApi;
 /** @import browserslist from 'browserslist' */
 
 const pseudoElements = new Set([
@@ -313,8 +312,8 @@ function pluginCreator(opts) {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

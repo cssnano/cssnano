@@ -1,8 +1,8 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const { isConflictingProp } = require('../src/lib/propertyRelations.js');
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import { isConflictingProp } from '../src/lib/propertyRelations.js';
 
+const { test } = nodetest;
 // A subset of these shorthand/longhand relations is also spot-checked in
 // script/lib/webrefProperties.mjs's validate(), which runs at data-acquire
 // time rather than test time. Keep both in sync.

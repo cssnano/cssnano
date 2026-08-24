@@ -6,11 +6,7 @@
     ".": {
       "types": "./types/index.d.ts",
       "default": "./src/index.js"
-    },
-    "./src": "./src/index.js",
-    "./src/index": "./src/index.js",
-    "./src/index.js": "./src/index.js",
-    "./package.json": "./package.json"
+    }
   },
   "scripts": {
     "test": "node --test"
@@ -36,12 +32,13 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": "^22.11.0 || ^24.11.0 || >=26.0"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
     "postcss": "catalog:"
   },
   "peerDependencies": {
     "postcss": "^8.5.26"
-  }
+  },
+  "type": "module"
 }

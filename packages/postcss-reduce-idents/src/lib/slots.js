@@ -1,5 +1,4 @@
-'use strict';
-const data = require('../data/identSlots.json');
+import data from '../data/identSlots.json' with { type: 'json' };
 
 // The generated file is JSON, so its maps arrive as plain objects. Property
 // and function names come from the stylesheet, and `constructor` or `toString`
@@ -55,47 +54,52 @@ function toFunctionMap(functions) {
     ])
   );
 }
-
-module.exports = {
+export const cssWideKeywords = data.cssWideKeywords;
+export const keyframes = {
+  atRule: data.atRules.keyframes,
+  properties: new Set(data.keyframes.properties),
+  /** Keywords an `animation` value holds that are not a keyframes name. */
+  reservedKeywords: data.keyframes.reservedKeywords,
+};
+export const counterStyle = {
+  atRule: data.atRules.counterStyle,
+  /** Properties whose value can name a counter style directly. */
+  properties: new Set(data.counterStyle.properties),
+  /** `@counter-style` descriptors that name another counter style. */
+  descriptors: new Set(data.counterStyle.descriptors),
+  /** Properties whose value can name one inside a function. */
+  functionProperties: new Set(data.counterStyle.functionProperties),
+  /** Function to the arguments of it that name a counter style. */
+  functions: toFunctionMap(data.counterStyle.functions),
+  /** Keywords a `list-style` value holds that are not a style name. */
+  reservedKeywords: data.counterStyle.reservedKeywords,
+};
+export const counter = {
+  /** Properties that define a counter. */
+  properties: new Set(data.counter.properties),
+  /** Properties whose value can reference one inside a function. */
+  functionProperties: new Set(data.counter.functionProperties),
+  /** Function to the arguments of it that name a counter. */
+  functions: toFunctionMap(data.counter.functions),
+  /** Keywords a counter value holds that are not a counter name. */
+  reservedKeywords: data.counter.reservedKeywords,
+};
+export const grid = {
+  /** Properties that define gridline and grid area names. */
+  templateProperties: new Set(data.grid.templateProperties),
+  /** Properties that place an item against those names. */
+  referenceProperties: new Set(data.grid.referenceProperties),
+  /** Keywords a grid value holds that are not a line or area name. */
+  reservedKeywords: data.grid.reservedKeywords,
+};
+export { resolveProperty };
+export { resolveAtRule };
+export default {
   resolveProperty,
   resolveAtRule,
-  /** Keywords that are never a custom identifier, whatever the property. */
-  cssWideKeywords: data.cssWideKeywords,
-  keyframes: {
-    atRule: data.atRules.keyframes,
-    properties: new Set(data.keyframes.properties),
-    /** Keywords an `animation` value holds that are not a keyframes name. */
-    reservedKeywords: data.keyframes.reservedKeywords,
-  },
-  counterStyle: {
-    atRule: data.atRules.counterStyle,
-    /** Properties whose value can name a counter style directly. */
-    properties: new Set(data.counterStyle.properties),
-    /** `@counter-style` descriptors that name another counter style. */
-    descriptors: new Set(data.counterStyle.descriptors),
-    /** Properties whose value can name one inside a function. */
-    functionProperties: new Set(data.counterStyle.functionProperties),
-    /** Function to the arguments of it that name a counter style. */
-    functions: toFunctionMap(data.counterStyle.functions),
-    /** Keywords a `list-style` value holds that are not a style name. */
-    reservedKeywords: data.counterStyle.reservedKeywords,
-  },
-  counter: {
-    /** Properties that define a counter. */
-    properties: new Set(data.counter.properties),
-    /** Properties whose value can reference one inside a function. */
-    functionProperties: new Set(data.counter.functionProperties),
-    /** Function to the arguments of it that name a counter. */
-    functions: toFunctionMap(data.counter.functions),
-    /** Keywords a counter value holds that are not a counter name. */
-    reservedKeywords: data.counter.reservedKeywords,
-  },
-  grid: {
-    /** Properties that define gridline and grid area names. */
-    templateProperties: new Set(data.grid.templateProperties),
-    /** Properties that place an item against those names. */
-    referenceProperties: new Set(data.grid.referenceProperties),
-    /** Keywords a grid value holds that are not a line or area name. */
-    reservedKeywords: data.grid.reservedKeywords,
-  },
+  cssWideKeywords,
+  keyframes,
+  counterStyle,
+  counter,
+  grid,
 };

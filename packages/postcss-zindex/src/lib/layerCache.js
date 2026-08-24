@@ -1,4 +1,3 @@
-'use strict';
 /** @constructor */
 class LayerCache {
   #values;
@@ -48,5 +47,4 @@ class LayerCache {
 function ascending(a, b) {
   return a - b;
 }
-
-module.exports = LayerCache;
+export default LayerCache;

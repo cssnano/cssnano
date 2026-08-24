@@ -1,7 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const processCss = require('./_processCss');
+import nodetest from 'node:test';
+import processCss from './_processCss.js';
 
+const { test } = nodetest;
 test(
   'should shorten matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1) to matrix(a, b, c, d, tx, ty)',
   processCss(

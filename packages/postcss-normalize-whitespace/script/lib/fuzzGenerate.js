@@ -1,19 +1,4 @@
-'use strict';
-
-/**
- * Random declarations whose value ends in a run of backslashes and a
- * single following character, generated as the last declaration of a
- * rule or at-rule — the shape that makes PostCSS attribute a trailing
- * backslash escape's target to the container's `raws.after` instead of
- * the declaration's value (the `\9` IE hack, rewritten by tools like
- * esbuild into `\` followed by a literal tab, is one instance of it).
- *
- * The alphabet is small and every case's escape target is known at
- * generation time, which is what lets `fuzzCheck.js` assert the escaped
- * character survives without needing an independent CSS tokenizer.
- */
-
-const { random } = require('../../../../util/fuzzRng.js');
+import { random } from '../../../../util/fuzzRng.js';
 
 const escapeTargets = [
   '9', // hex digit, the classic `\9` hack
@@ -81,5 +66,7 @@ function* generate(seed, count) {
     yield { css, lastProp, siblingCount, escapeChar, backslashCount };
   }
 }
-
-module.exports = { generate };
+export { generate };
+export default {
+  generate,
+};

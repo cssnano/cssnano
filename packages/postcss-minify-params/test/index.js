@@ -1,16 +1,15 @@
-'use strict';
-
-const { join } = require('node:path');
-
-const { describe, test } = require('node:test');
-
-const {
+import { fileURLToPath } from 'node:url';
+const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
+import nodepath from 'node:path';
+import nodetest from 'node:test';
+import {
   usePostCSSPlugin,
   processCSSFactory,
-} = require('../../../util/testHelpers.js');
+} from '../../../util/testHelpers.js';
+import plugin from '../src/index.js';
 
-const plugin = require('../src/index.js');
-
+const { join } = nodepath;
+const { describe, test } = nodetest;
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 describe('Normalise', () => {
@@ -80,7 +79,7 @@ describe('Normalise', () => {
   test(
     'should not normalise "all" in @media queries based on Browserslist config [legacy] env',
     passthroughCSS('@media all{h1{color:blue}}', {
-      from: join(__dirname, 'browserslist/example.css'),
+      from: join(testDir, 'browserslist/example.css'),
       env: 'legacy',
     })
   );
@@ -88,7 +87,7 @@ describe('Normalise', () => {
   test(
     'should not normalise "all" in @media queries based on Browserslist config [legacy] env using webpack file path',
     passthroughCSS('@media all{h1{color:blue}}', {
-      file: join(__dirname, 'browserslist/example.css'),
+      file: join(testDir, 'browserslist/example.css'),
       env: 'legacy',
     })
   );
@@ -96,7 +95,7 @@ describe('Normalise', () => {
   test(
     'should not normalise "all" in @media queries based on Browserslist config [legacy] env using custom path',
     passthroughCSS('@media all{h1{color:blue}}', {
-      path: join(__dirname, 'browserslist'),
+      path: join(testDir, 'browserslist'),
       env: 'legacy',
     })
   );
@@ -104,7 +103,7 @@ describe('Normalise', () => {
   test(
     'should normalise "all" in @media queries based on Browserslist config [modern] env',
     processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
-      from: join(__dirname, 'browserslist/example.css'),
+      from: join(testDir, 'browserslist/example.css'),
       env: 'modern',
     })
   );
@@ -112,7 +111,7 @@ describe('Normalise', () => {
   test(
     'should normalise "all" in @media queries based on Browserslist config [modern] env using webpack file path',
     processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
-      file: join(__dirname, 'browserslist/example.css'),
+      file: join(testDir, 'browserslist/example.css'),
       env: 'modern',
     })
   );
@@ -120,7 +119,7 @@ describe('Normalise', () => {
   test(
     'should normalise "all" in @media queries based on Browserslist config [modern] env using custom path',
     processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
-      path: join(__dirname, 'browserslist'),
+      path: join(testDir, 'browserslist'),
       env: 'modern',
     })
   );

@@ -1,12 +1,13 @@
-'use strict';
-const { test } = require('node:test');
-const vars = require('postcss-simple-vars');
-const {
+import nodetest from 'node:test';
+import vars from 'postcss-simple-vars';
+import {
   usePostCSSPlugin,
   processCSSFactory,
-} = require('../../../util/testHelpers.js');
-const plugin = require('../src/index.js');
+} from '../../../util/testHelpers.js';
+import plugin from '../src/index.js';
+import postcssScss from 'postcss-scss';
 
+const { test } = nodetest;
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
 test(
@@ -279,7 +280,7 @@ const { processCSS: singleLine } = processCSSFactory(plugin);
 test(
   'should work with single line comments',
   singleLine('//!wow\n//wow\nh1{//color:red\n}', '//!wow\nh1{\n}', {
-    syntax: require('postcss-scss'),
+    syntax: postcssScss,
   })
 );
 

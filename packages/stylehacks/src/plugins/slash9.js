@@ -1,10 +1,9 @@
-'use strict';
-const BasePlugin = require('../plugin.js');
-const { IE_6, IE_7, IE_8 } = require('../dictionary/browsers');
-const { VALUE } = require('../dictionary/identifiers');
-const { DECL } = require('../dictionary/postcss');
+import BasePlugin from '../plugin.js';
+import { IE_6, IE_7, IE_8 } from '../dictionary/browsers.js';
+import { VALUE } from '../dictionary/identifiers.js';
+import { DECL } from '../dictionary/postcss.js';
 
-module.exports = class Slash9 extends BasePlugin {
+export default (class Slash9 extends BasePlugin {
   /** @param {import('postcss').Result=} result */
   constructor(result) {
     super([IE_6, IE_7, IE_8], [DECL], result);
@@ -23,4 +22,4 @@ module.exports = class Slash9 extends BasePlugin {
       });
     }
   }
-};
+});

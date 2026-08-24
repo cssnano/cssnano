@@ -1,4 +1,3 @@
-'use strict';
 /* Derived from normalize-url https://github.com/sindresorhus/normalize-url/main/index.js by Sindre Sorhus */
 
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
@@ -83,10 +82,7 @@ function normalizeDataURL(urlString) {
   ) {
     normalizedMediaType.unshift(mimeType);
   }
-
-  return `data:${normalizedMediaType.join(';')},${
-    isBase64 ? data.trim() : data
-  }${hash ? `#${hash}` : ''}`;
+  return `data:${normalizedMediaType.join(';')},${isBase64 ? data.trim() : data}${hash ? `#${hash}` : ''}`;
 }
 
 /**
@@ -153,5 +149,4 @@ function normalizeUrl(urlString) {
 
   return result;
 }
-
-module.exports = normalizeUrl;
+export default normalizeUrl;

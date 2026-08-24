@@ -1,20 +1,4 @@
-declare const _exports: {
-    /** The sides of the box, in the order a shorthand lists them. */
-    sides: string[];
-    setsLonghands: typeof setsLonghands;
-    /** The parts of a border, in the order `border` lists them. */
-    borderComponents: string[];
-    shorthand: typeof shorthand;
-    initialValues: Map<string, string>;
-    borderProperties: Set<string>;
-    flowRelativeBorderProperties: Set<string>;
-    cssWideKeywords: Set<string>;
-    lineStyles: Set<string>;
-    lineWidthKeywords: Set<string>;
-    namedColors: Set<string>;
-    colorFunctions: Set<string>;
-};
-export = _exports;
+declare const initialValues: Map<string, string>;
 /**
  * @param {string} name
  * @return {{longhands: string[], resets: string[]}}
@@ -37,4 +21,31 @@ declare function shorthand(name: string): {
  * @return {Set<string>}
  */
 declare function setsLonghands(name: string): Set<string>;
+export declare const sides: string[];
+export declare const borderComponents: string[];
+export declare const borderProperties: Set<string>;
+export declare const flowRelativeBorderProperties: Set<string>;
+export declare const cssWideKeywords: Set<string>;
+export declare const lineStyles: Set<string>;
+export declare const lineWidthKeywords: Set<string>;
+export declare const namedColors: Set<string>;
+export declare const colorFunctions: Set<string>;
+export { setsLonghands };
+export { shorthand };
+export { initialValues };
+declare const _default: {
+    sides: string[];
+    setsLonghands: typeof setsLonghands;
+    borderComponents: string[];
+    shorthand: typeof shorthand;
+    initialValues: Map<string, string>;
+    borderProperties: Set<string>;
+    flowRelativeBorderProperties: Set<string>;
+    cssWideKeywords: Set<string>;
+    lineStyles: Set<string>;
+    lineWidthKeywords: Set<string>;
+    namedColors: Set<string>;
+    colorFunctions: Set<string>;
+};
+export default _default;
 //# sourceMappingURL=spec.d.ts.map

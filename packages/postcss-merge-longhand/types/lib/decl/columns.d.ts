@@ -1,9 +1,3 @@
-declare const _exports: {
-    explode: typeof explode;
-    merge: typeof merge;
-    setsOtherColumnProperty: typeof setsOtherColumnProperty;
-};
-export = _exports;
 /**
  * Check if a declaration sets column properties beyond `column-width` and
  * `column-count`. The `columns: <width> / <height>` form sets others (like
@@ -24,4 +18,13 @@ declare function explode(rule: import('postcss').Rule): void;
  * @return {void}
  */
 declare function merge(rule: import('postcss').Rule): void;
+export { explode };
+export { merge };
+export { setsOtherColumnProperty };
+declare const _default: {
+    explode: typeof explode;
+    merge: typeof merge;
+    setsOtherColumnProperty: typeof setsOtherColumnProperty;
+};
+export default _default;
 //# sourceMappingURL=columns.d.ts.map

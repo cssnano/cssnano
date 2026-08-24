@@ -1,10 +1,9 @@
-'use strict';
+import getBrowsersList from '#getBrowsersList';
+import caniuseApi from 'caniuse-api';
+import valueParser from 'postcss-value-parser';
+import minifyColor from './minifyColor.js';
 
-const getBrowsersList = require('#getBrowsersList');
-const { isSupported } = require('caniuse-api');
-const valueParser = require('postcss-value-parser');
-const minifyColor = require('./minifyColor');
-
+const { isSupported } = caniuseApi;
 /** @import browserslist from 'browserslist' */
 
 const rgbOrHslRegex = /^(rgb|hsl)a?$/i;
@@ -180,8 +179,8 @@ function pluginCreator(config = {}) {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

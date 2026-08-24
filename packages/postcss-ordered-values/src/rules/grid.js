@@ -1,5 +1,4 @@
-'use strict';
-const joinGridValue = require('../lib/joinGridValue');
+import joinGridValue from '../lib/joinGridValue.js';
 
 /**
  * @param {import('postcss-value-parser').ParsedValue} gridAutoFlow
@@ -92,8 +91,10 @@ const normalizeGridColumnRow = (grid) => {
     return `${normalizeValue.front.trim()} ${normalizeValue.back.trim()}`;
   });
 };
-
-module.exports = {
+export { normalizeGridAutoFlow };
+export { normalizeGridColumnRowGap };
+export { normalizeGridColumnRow };
+export default {
   normalizeGridAutoFlow,
   normalizeGridColumnRowGap,
   normalizeGridColumnRow,

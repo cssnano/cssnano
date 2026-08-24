@@ -1,11 +1,11 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const postcss = require('postcss');
-const litePreset = require('cssnano-preset-lite');
-const autoprefixer = require('autoprefixer');
-const cssnano = require('../src/index.js');
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import litePreset from 'cssnano-preset-lite';
+import autoprefixer from 'autoprefixer';
+import cssnano from '../src/index.js';
 
+const { test } = nodetest;
 test('should run the plugins in the preset', async () => {
   const preset = litePreset();
 
@@ -85,7 +85,7 @@ for (const [description, preset] of [
 test('should run the plugin when plugin module is being used with no array inside plugins', async () => {
   const preset = litePreset();
   const result = await postcss([
-    cssnano({ preset, plugins: [require('autoprefixer')] }),
+    cssnano({ preset, plugins: [autoprefixer] }),
   ]).process(
     `.example { user-select: none; }
 `,
@@ -98,9 +98,7 @@ test('should run the plugin when plugin module is being used with no array insid
 });
 
 test('should run the plugin when no preset is mentioned', async () => {
-  const result = await postcss([
-    cssnano({ plugins: [require('autoprefixer')] }),
-  ]).process(
+  const result = await postcss([cssnano({ plugins: [autoprefixer] })]).process(
     `.example { user-select: none; }
 `,
     { from: undefined }
@@ -189,7 +187,7 @@ test('should run the plugin with string plugin name as in array and options', as
 
 test('should run the plugin when preset is empty array and plugin module as in array in plugins array', async () => {
   const result = await postcss([
-    cssnano({ preset: [], plugins: [[require('autoprefixer')]] }),
+    cssnano({ preset: [], plugins: [[autoprefixer]] }),
   ]).process(
     `.example { user-select: none; }
 `,
@@ -205,7 +203,7 @@ test('should run the plugin when preset is empty array and plugin module as in a
 test('should run the plugin plugin module as in array in plugins array', async () => {
   const preset = litePreset();
   const result = await postcss(
-    cssnano({ preset, plugins: [[require('autoprefixer')]] })
+    cssnano({ preset, plugins: [[autoprefixer]] })
   ).process(
     `.example { user-select: none; }
 `,
@@ -220,7 +218,7 @@ test('should run the plugin plugin module as in array in plugins array', async (
 test('should run the plugin plugin module as in array in plugins array with empty plugin option', async () => {
   const preset = litePreset();
   const result = await postcss([
-    cssnano({ preset, plugins: [[require('autoprefixer'), {}]] }),
+    cssnano({ preset, plugins: [[autoprefixer, {}]] }),
   ]).process(
     `.example { user-select: none; }
 `,
@@ -234,7 +232,7 @@ test('should run the plugin plugin module as in array in plugins array with empt
 
 test('should run the plugin when preset is empty array and plugin module as in non array in plugins array', async () => {
   const result = await postcss([
-    cssnano({ preset: [], plugins: [require('autoprefixer')] }),
+    cssnano({ preset: [], plugins: [autoprefixer] }),
   ]).process(
     `.example { user-select: none; }
 `,

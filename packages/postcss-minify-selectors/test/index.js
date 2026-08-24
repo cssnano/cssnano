@@ -1,14 +1,14 @@
-'use strict';
-const { test, suite } = require('node:test');
-const assert = require('node:assert/strict');
-const postcss = require('postcss');
-const magician = require('postcss-font-magician');
-const {
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import magician from 'postcss-font-magician';
+import {
   usePostCSSPlugin,
   processCSSFactory,
-} = require('../../../util/testHelpers.js');
-const plugin = require('../src/index.js');
+} from '../../../util/testHelpers.js';
+import plugin from '../src/index.js';
 
+const { test, suite } = nodetest;
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 suite('trimming spaces', () => {

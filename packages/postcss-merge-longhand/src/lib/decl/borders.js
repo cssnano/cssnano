@@ -1,33 +1,27 @@
-'use strict';
-
-const { list } = require('postcss');
-const stylehacks = require('stylehacks');
-const insertCloned = require('../insertCloned.js');
-const parseTrbl = require('../parseTrbl.js');
-const getDecls = require('../getDecls.js');
-const getValue = require('../getValue.js');
-const mergeRules = require('../mergeRules.js');
-const minifyTopBottoRightLeft = require('../minifyTrbl.js');
-const minifyWidthStyleColor = require('../minifyWsc.js');
-const canMerge = require('../canMerge.js');
-const topRightBottomLeft = require('../trbl.js');
-const isCustomProp = require('../isCustomProp.js');
-const {
-  isFallback,
-  strandsFallback,
-  inheritSupport,
-} = require('../isFallback.js');
-const canExplode = require('../canExplode.js');
-const parseWidthStyleColor = require('../parseWsc.js');
-const {
+import { list } from 'postcss';
+import stylehacks from 'stylehacks';
+import insertCloned from '../insertCloned.js';
+import parseTrbl from '../parseTrbl.js';
+import getDecls from '../getDecls.js';
+import getValue from '../getValue.js';
+import mergeRules from '../mergeRules.js';
+import minifyTopBottoRightLeft from '../minifyTrbl.js';
+import minifyWidthStyleColor from '../minifyWsc.js';
+import canMerge from '../canMerge.js';
+import topRightBottomLeft from '../trbl.js';
+import isCustomProp from '../isCustomProp.js';
+import { isFallback, strandsFallback, inheritSupport } from '../isFallback.js';
+import canExplode from '../canExplode.js';
+import parseWidthStyleColor from '../parseWsc.js';
+import {
   isValidWidthStyleColor,
   specifiesComponent,
   specifiesDistinctComponents,
-} = require('../validateWsc.js');
-const cssGlobalKeywords = require('../cssGlobalKeywords.js');
-const lastOf = require('../lastOf.js');
-const spec = require('../spec.js');
-const resolveBorderGrid = require('./borderMatrix.js');
+} from '../validateWsc.js';
+import cssGlobalKeywords from '../cssGlobalKeywords.js';
+import lastOf from '../lastOf.js';
+import spec from '../spec.js';
+import resolveBorderGrid from './borderMatrix.js';
 
 /** @import {Declaration} from 'postcss'; */
 
@@ -1314,7 +1308,9 @@ function merge(rule) {
 
   cleanup(rule);
 }
-module.exports = {
+export { explode };
+export { merge };
+export default {
   explode,
   merge,
 };

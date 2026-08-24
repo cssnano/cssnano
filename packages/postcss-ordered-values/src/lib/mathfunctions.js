@@ -1,3 +1,1 @@
-'use strict';
-// All of the curently implemented math functions
-module.exports = new Set(['calc', 'clamp', 'max', 'min']);
+export default new Set(['calc', 'clamp', 'max', 'min']);

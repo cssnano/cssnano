@@ -1,4 +1,3 @@
-export = _exports;
-/** @type {(...rules: import('postcss').Declaration[]) => string} */
-declare function _exports(...rules: import("postcss").Declaration[]): string;
+export default _default;
+declare function _default(...rules: any[]): string;
 //# sourceMappingURL=mergeValues.d.ts.map

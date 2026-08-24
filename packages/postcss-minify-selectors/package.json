@@ -6,17 +6,7 @@
     ".": {
       "types": "./types/index.d.ts",
       "default": "./src/index.js"
-    },
-    "./src": "./src/index.js",
-    "./src/index": "./src/index.js",
-    "./src/index.js": "./src/index.js",
-    "./src/lib/canUnquote": "./src/lib/canUnquote.js",
-    "./src/lib/canUnquote.js": "./src/lib/canUnquote.js",
-    "./src/lib/foldTols": "./src/lib/foldToIs.js",
-    "./src/lib/foldTols.js": "./src/lib/foldToIs.js",
-    "./src/lib/foldTolsHelpers": "./src/lib/foldToIsHelpers.js",
-    "./src/lib/foldTolsHelpers.js": "./src/lib/foldToIsHelpers.js",
-    "./package.json": "./package.json"
+    }
   },
   "imports": {
     "#getBrowsersList": {
@@ -58,7 +48,7 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": "^22.11.0 || ^24.11.0 || >=26.0"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
     "@types/cssesc": "^3.0.2",
@@ -72,5 +62,6 @@
   "scripts": {
     "fuzz": "node ./script/fuzz.js",
     "test": "node --test"
-  }
+  },
+  "type": "module"
 }

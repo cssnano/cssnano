@@ -1,9 +1,8 @@
-'use strict';
+import getBrowsersList from '#getBrowsersList';
+import valueParser from 'postcss-value-parser';
+import cssnanoUtils from 'cssnano-utils';
 
-const getBrowsersList = require('#getBrowsersList');
-const valueParser = require('postcss-value-parser');
-const { getArguments } = require('cssnano-utils');
-
+const { getArguments } = cssnanoUtils;
 /** @import browserslist from 'browserslist' */
 
 /**
@@ -170,8 +169,7 @@ function pluginCreator(options = {}) {
     },
   };
 }
-
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

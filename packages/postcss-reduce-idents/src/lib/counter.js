@@ -1,9 +1,8 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const addToCache = require('./cache');
-const isNum = require('./isNum');
-const functionArguments = require('./functionArguments');
-const { counter, cssWideKeywords, resolveProperty } = require('./slots');
+import valueParser from 'postcss-value-parser';
+import addToCache from './cache.js';
+import isNum from './isNum.js';
+import functionArguments from './functionArguments.js';
+import { counter, cssWideKeywords, resolveProperty } from './slots.js';
 
 // `list-item` and `page` are counters the user agent itself maintains, and the
 // specification introduces them in prose rather than in a grammar, so webref
@@ -15,11 +14,7 @@ const RESERVED_KEYWORDS = new Set([
   'list-item',
   'page',
 ]);
-
-/**
- * @return {import('../index.js').Reducer}
- */
-module.exports = function () {
+export default (function () {
   /** @type {Map<string, {ident: string, count: number}>} */
   const cache = new Map();
   /** @type {{value: import('postcss-value-parser').ParsedValue | string}[]} */
@@ -122,4 +117,4 @@ module.exports = function () {
       declTwoCache = [];
     },
   };
-};
+});

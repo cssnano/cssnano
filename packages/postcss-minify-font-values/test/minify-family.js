@@ -1,8 +1,8 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const minifyFamily = require('../src/lib/minify-family.js');
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import minifyFamily from '../src/lib/minify-family.js';
 
+const { test } = nodetest;
 const tests = [
   {
     // Should strip quotes for names without keywords

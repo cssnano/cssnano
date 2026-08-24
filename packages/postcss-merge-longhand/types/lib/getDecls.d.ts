@@ -1,4 +1,3 @@
-export = getDeclarationsThatMatchProperties;
 /**
  * Returns all declarations for the given CSS properties.
  *
@@ -7,4 +6,5 @@ export = getDeclarationsThatMatchProperties;
  * @return {Set<import('postcss').Declaration>}
  */
 declare function getDeclarationsThatMatchProperties(rule: import('postcss').Rule, properties: Set<string>): Set<import('postcss').Declaration>;
+export default getDeclarationsThatMatchProperties;
 //# sourceMappingURL=getDecls.d.ts.map

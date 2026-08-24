@@ -1,4 +1,3 @@
-'use strict';
 const plugin = 'postcss-discard-empty';
 
 /**
@@ -122,8 +121,8 @@ function pluginCreator() {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

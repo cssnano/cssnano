@@ -6,13 +6,7 @@
     ".": {
       "types": "./types/index.d.ts",
       "default": "./src/index.js"
-    },
-    "./src": "./src/index.js",
-    "./src/index": "./src/index.js",
-    "./src/index.js": "./src/index.js",
-    "./src/lib/ignoreProps": "./src/lib/ignoreProps.js",
-    "./src/lib/ignoreProps.js": "./src/lib/ignoreProps.js",
-    "./package.json": "./package.json"
+    }
   },
   "imports": {
     "#getBrowsersList": {
@@ -53,7 +47,7 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": "^22.11.0 || ^24.11.0 || >=26.0"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
     "mdn-data": "catalog:",
@@ -61,5 +55,6 @@
   },
   "peerDependencies": {
     "postcss": "^8.5.26"
-  }
+  },
+  "type": "module"
 }

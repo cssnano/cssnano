@@ -1,8 +1,7 @@
-'use strict';
-const { colordx: colord, extend } = require('@colordx/core');
-const hwbPlugin = require('@colordx/core/plugins/hwb');
-const namesPlugin = require('@colordx/core/plugins/names');
-const minifierPlugin = require('@colordx/core/plugins/minify');
+import { colordx as colord, extend } from '@colordx/core';
+import hwbPlugin from '@colordx/core/plugins/hwb';
+import namesPlugin from '@colordx/core/plugins/names';
+import minifierPlugin from '@colordx/core/plugins/minify';
 
 extend(/** @type {any[]} */ ([hwbPlugin, namesPlugin, minifierPlugin]));
 
@@ -13,7 +12,7 @@ extend(/** @type {any[]} */ ([hwbPlugin, namesPlugin, minifierPlugin]));
  * @param {import('./index.js').MinifyColorOptions} options - object with colordx.minify() options
  * @return {string}
  */
-module.exports = function minifyColor(input, options = {}) {
+function minifyColor(input, options = {}) {
   const instance = colord(input);
 
   if (instance.isValid()) {
@@ -26,4 +25,6 @@ module.exports = function minifyColor(input, options = {}) {
     // Possibly malformed, so pass through
     return input;
   }
-};
+}
+
+export default minifyColor;

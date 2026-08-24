@@ -1,4 +1,3 @@
-export = getArguments;
 /**
  * Extracts the arguments of a CSS function or AtRule.
  *
@@ -6,4 +5,5 @@ export = getArguments;
  * @return {import('postcss-value-parser').Node[][]}
  */
 declare function getArguments(node: import('postcss-value-parser').ParsedValue | import('postcss-value-parser').FunctionNode): import('postcss-value-parser').Node[][];
+export default getArguments;
 //# sourceMappingURL=getArguments.d.ts.map

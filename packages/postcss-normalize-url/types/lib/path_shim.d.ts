@@ -1,10 +1,6 @@
-declare const _exports: {
-    /**
-     *
-     * @param {string} url
-     * @returns {string}
-     */
-    normalize: (url: string) => string;
+export declare const normalize: (url: any) => any;
+declare const _default: {
+    normalize: typeof normalize;
 };
-export = _exports;
+export default _default;
 //# sourceMappingURL=path_shim.d.ts.map

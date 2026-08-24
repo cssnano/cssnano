@@ -1,5 +1,4 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
+import valueParser from 'postcss-value-parser';
 
 const directionKeywords = new Set(['top', 'right', 'bottom', 'left', 'center']);
 
@@ -275,8 +274,8 @@ function pluginCreator() {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

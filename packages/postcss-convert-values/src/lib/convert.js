@@ -1,4 +1,3 @@
-'use strict';
 const lengthConv = new Map([
   ['in', 96],
   ['px', 1],
@@ -59,14 +58,7 @@ function transform(number, originalUnit, conversions) {
 
   return shortest;
 }
-
-/**
- * @param {number} number
- * @param {string} unit
- * @param {{time?: boolean, length?: boolean, angle?: boolean}} options
- * @return {string}
- */
-module.exports = function (number, unit, { time, length, angle }) {
+export default (function (number, unit, { time, length, angle }) {
   let value = dropLeadingZero(number) + (unit ? unit : '');
   let converted;
   const lowerCaseUnit = unit.toLowerCase();
@@ -87,4 +79,4 @@ module.exports = function (number, unit, { time, length, angle }) {
   }
 
   return value;
-};
+});

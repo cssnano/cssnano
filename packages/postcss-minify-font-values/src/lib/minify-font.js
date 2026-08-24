@@ -1,8 +1,7 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const keywords = require('./keywords');
-const minifyFamily = require('./minify-family');
-const minifyWeight = require('./minify-weight');
+import valueParser from 'postcss-value-parser';
+import keywords from './keywords.js';
+import minifyFamily from './minify-family.js';
+import minifyWeight from './minify-weight.js';
 
 /**
  * Adds missing spaces before strings.
@@ -84,13 +83,7 @@ function processNonWord(node, index, nextNode, state) {
 
   return false;
 }
-
-/**
- * @param {string} unminified
- * @param {import('../index').Options} opts
- * @return {string}
- */
-module.exports = function (unminified, opts) {
+export default (function (unminified, opts) {
   const tree = valueParser(unminified);
   const nodes = tree.nodes;
 
@@ -116,4 +109,4 @@ module.exports = function (unminified, opts) {
 
   tree.nodes = nodes.slice(0, familyStart).concat(family);
   return tree.toString();
-};
+});

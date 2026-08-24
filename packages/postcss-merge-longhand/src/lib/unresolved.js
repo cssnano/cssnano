@@ -1,4 +1,3 @@
-'use strict';
 
 /* Substitution functions from CSS Values. If a user agent does not support
  * one, the entire declaration becomes invalid, so we cannot infer what value
@@ -82,8 +81,12 @@ function isSubstitution(token) {
 
   return name !== undefined && substitutionFunctions.includes(name);
 }
-
-module.exports = {
+export { isSubstitution };
+export { isUnresolved };
+export { substitutionFunctions };
+export { trustedFunctions };
+export { trustedSupportFunctions };
+export default {
   isSubstitution,
   isUnresolved,
   substitutionFunctions,

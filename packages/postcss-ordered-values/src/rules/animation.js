@@ -1,11 +1,12 @@
-'use strict';
-const { unit } = require('postcss-value-parser');
-const { getArguments } = require('cssnano-utils');
-const addSpace = require('../lib/addSpace');
-const getValue = require('../lib/getValue');
-const mathFunctions = require('../lib/mathfunctions.js');
-const easingFunctions = require('./easingFunctions.json');
+import postcssValueParser from 'postcss-value-parser';
+import cssnanoUtils from 'cssnano-utils';
+import addSpace from '../lib/addSpace.js';
+import getValue from '../lib/getValue.js';
+import mathFunctions from '../lib/mathfunctions.js';
+import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
+const { unit } = postcssValueParser;
+const { getArguments } = cssnanoUtils;
 // animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
 const timingFunctions = new Set([...easingFunctions.functions, 'frames']);
 const timingKeywords = new Set(easingFunctions.keywords);
@@ -163,8 +164,9 @@ function normalize(args) {
  * @param {import('postcss-value-parser').ParsedValue} parsed
  * @return {string}
  */
-module.exports = function normalizeAnimation(parsed) {
+function normalizeAnimation(parsed) {
   const values = normalize(getArguments(parsed));
-
   return getValue(values);
-};
+}
+
+export default normalizeAnimation;

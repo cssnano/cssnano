@@ -1,18 +1,21 @@
-'use strict';
-const { join } = require('node:path');
-const { describe, test } = require('node:test');
-const assert = require('node:assert/strict');
-const {
+import { fileURLToPath } from 'node:url';
+const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
+import nodepath from 'node:path';
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import {
   integrationTests,
   createCssnanoProcessor,
   processCSSWithPresetFactory,
-} = require('../../../util/integrationTestHelpers.js');
-const preset = require('../src/index.js');
+} from '../../../util/integrationTestHelpers.js';
+import preset from '../src/index.js';
 
+const { join } = nodepath;
+const { describe, test } = nodetest;
 const withDefaults = processCSSWithPresetFactory(preset);
 const withBrowserslist = processCSSWithPresetFactory(
   preset({
-    path: join(__dirname, 'browserslist/example.css'),
+    path: join(testDir, 'browserslist/example.css'),
     env: 'modern',
 
     // Add Autoprefix vendor prefixes to confirm output
@@ -45,7 +48,7 @@ describe('framework integrations', () => {
   test(
     'should correctly handle the framework tests',
     { concurrency: true },
-    integrationTests(preset, `${__dirname}/integrations`)
+    integrationTests(preset, `${testDir}/integrations`)
   );
 });
 

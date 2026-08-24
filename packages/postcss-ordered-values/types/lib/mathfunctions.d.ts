@@ -1,3 +1,3 @@
-declare const _exports: Set<string>;
-export = _exports;
+declare const _default: Set<string>;
+export default _default;
 //# sourceMappingURL=mathfunctions.d.ts.map

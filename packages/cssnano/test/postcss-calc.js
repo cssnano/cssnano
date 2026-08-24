@@ -1,7 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const processCss = require('./_processCss');
+import nodetest from 'node:test';
+import processCss from './_processCss.js';
 
+const { test } = nodetest;
 test(
   'should optimise inside calc',
   processCss('h1{width:calc(var(--h) * 1em)}', 'h1{width:calc(var(--h)*1em)}')

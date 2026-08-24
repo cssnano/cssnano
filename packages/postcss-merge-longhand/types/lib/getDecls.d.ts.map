@@ -1,1 +1,1 @@
-{"version":3,"file":"getDecls.d.ts","sourceRoot":"","sources":["../../src/lib/getDecls.js"],"names":[],"mappings":";AACA;;;;;;GAMG;oDAC0D,IAAI,EAJtD,OAAO,SAAS,EAAE,IAIoC,EAAE,UAAU,EAHlE,GAAG,CAAC,MAAM,CAGwD,GAFjE,GAAG,CAAC,OAAO,SAAS,EAAE,WAAW,CAAC"}
+{"version":3,"file":"getDecls.d.ts","sourceRoot":"","sources":["../../src/lib/getDecls.js"],"names":[],"mappings":"AACA;;;;;;GAMG;AACH,iBAAS,kCAAkC,CAAC,IAAI,EAJrC,OAAO,SAAS,EAAE,IAImB,EAAE,UAAU,EAHjD,GAAG,CAAC,MAAM,CAGuC,GAFhD,GAAG,CAAC,OAAO,SAAS,EAAE,WAAW,CAAC,CAW7C;eAEc,kCAAkC"}

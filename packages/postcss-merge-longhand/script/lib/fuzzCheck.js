@@ -1,8 +1,7 @@
-'use strict';
-const postcss = require('postcss');
-const plugin = require('../../src/index.js');
-const { differences, evaluate } = require('./fuzzEvaluate.js');
-const { shrink } = require('./fuzzGenerate.js');
+import postcss from 'postcss';
+import plugin from '../../src/index.js';
+import { differences, evaluate } from './fuzzEvaluate.js';
+import { shrink } from './fuzzGenerate.js';
 
 /**
  * Runs one rule through the plugin and compares what it meant before with what
@@ -103,5 +102,9 @@ function report(failure, seed) {
 
   return lines.join('\n');
 }
-
-module.exports = { checkMinimised, report };
+export { checkMinimised };
+export { report };
+export default {
+  checkMinimised,
+  report,
+};

@@ -1,6 +1,5 @@
-'use strict';
-const getBrowsersList = require('#getBrowsersList');
-const plugins = require('./plugins');
+import getBrowsersList from '#getBrowsersList';
+import plugins from './plugins/index.js';
 
 /**
  * @import browserslist from 'browserslist'
@@ -67,7 +66,9 @@ pluginCreator.detect = (node) => {
 };
 
 pluginCreator.postcss = true;
-module.exports =
+const moduleExports =
   /** @type {import('postcss').PluginCreator<Options> & {detect: (node: import('postcss').Node) => boolean}} */ (
     pluginCreator
   );
+
+export { moduleExports as default, moduleExports as 'module.exports' };

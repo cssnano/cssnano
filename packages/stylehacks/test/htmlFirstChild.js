@@ -1,7 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const processCSS = require('./_processCSS');
+import nodetest from 'node:test';
+import processCSS from './_processCSS.js';
 
+const { test } = nodetest;
 test(
   'opera html:first-child hack',
   processCSS('html:first-child h1 { color: red }', '', {

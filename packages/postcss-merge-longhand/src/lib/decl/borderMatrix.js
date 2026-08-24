@@ -1,21 +1,19 @@
-'use strict';
-
-const { list } = require('postcss');
-const stylehacks = require('stylehacks');
-const spec = require('../spec.js');
-const parseWsc = require('../parseWsc.js');
-const parseTrbl = require('../parseTrbl.js');
-const minifyWsc = require('../minifyWsc.js');
-const {
+import { list } from 'postcss';
+import stylehacks from 'stylehacks';
+import spec from '../spec.js';
+import parseWsc from '../parseWsc.js';
+import parseTrbl from '../parseTrbl.js';
+import minifyWsc from '../minifyWsc.js';
+import {
   isValidWidthStyleColor,
   specifiesComponent,
   specifiesDistinctComponents,
-} = require('../validateWsc.js');
-const isCustomProp = require('../isCustomProp.js');
-const { requiredSupport } = require('../isFallback.js');
-const canExplode = require('../canExplode.js');
-const cssGlobalKeywords = require('../cssGlobalKeywords.js');
-const insertCloned = require('../insertCloned.js');
+} from '../validateWsc.js';
+import isCustomProp from '../isCustomProp.js';
+import { requiredSupport } from '../isFallback.js';
+import canExplode from '../canExplode.js';
+import cssGlobalKeywords from '../cssGlobalKeywords.js';
+import insertCloned from '../insertCloned.js';
 
 /** @import {Declaration, Rule} from 'postcss'; */
 
@@ -237,7 +235,7 @@ function serialise(matrix, important) {
  * @param {Rule} rule
  * @return {void}
  */
-module.exports = function resolveBorderGrid(rule) {
+function resolveBorderGrid(rule) {
   /** @type {Declaration[]} */
   const physical = [];
 
@@ -286,4 +284,6 @@ module.exports = function resolveBorderGrid(rule) {
   for (const decl of physical) {
     decl.remove();
   }
-};
+}
+
+export default resolveBorderGrid;

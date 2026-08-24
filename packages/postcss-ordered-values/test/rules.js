@@ -1,17 +1,11 @@
-'use strict';
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import valueParser from 'postcss-value-parser';
+import normalizeBorder from '../src/rules/border.js';
+import normalizeBoxShadow from '../src/rules/boxShadow.js';
+import normalizeAnimation from '../src/rules/animation.js';
 
-const { describe, test } = require('node:test');
-
-const assert = require('node:assert/strict');
-
-const valueParser = require('postcss-value-parser');
-
-const normalizeBorder = require('../src/rules/border.js');
-
-const normalizeBoxShadow = require('../src/rules/boxShadow.js');
-
-const normalizeAnimation = require('../src/rules/animation.js');
-
+const { describe, test } = nodetest;
 describe('Border', () => {
   test('border order handles max', () => {
     assert.strictEqual(

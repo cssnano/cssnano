@@ -1,9 +1,9 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const valueParser = require('postcss-value-parser');
-const getArguments = require('../src/getArguments.js');
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import valueParser from 'postcss-value-parser';
+import getArguments from '../src/getArguments.js';
 
+const { test } = nodetest;
 test('should get arguments', () => {
   const parsed = valueParser('linear-gradient(to bottom left, red, blue)');
 

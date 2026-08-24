@@ -1,4 +1,6 @@
-export = LeadingStar;
+import BasePlugin from '../plugin.js';
+import type { Declaration, AtRule } from 'postcss';
+export default LeadingStar;
 declare class LeadingStar extends BasePlugin {
     /** @param {import('postcss').Result=} result */
     constructor(result?: import('postcss').Result | undefined);
@@ -8,6 +10,4 @@ declare class LeadingStar extends BasePlugin {
      */
     detect(node: Declaration | AtRule): void;
 }
-import BasePlugin = require('../plugin');
-import type { Declaration, AtRule } from 'postcss';
 //# sourceMappingURL=leadingStar.d.ts.map

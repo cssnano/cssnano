@@ -1,7 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const processCss = require('./_processCss');
+import nodetest from 'node:test';
+import processCss from './_processCss.js';
 
+const { test } = nodetest;
 test(
   'should not escape legal characters',
   processCss.passthrough('h1{font-family:€42}')

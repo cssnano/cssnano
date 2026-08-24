@@ -1,10 +1,9 @@
-'use strict';
-const hasAllProps = require('./hasAllProps.js');
-const getDeclarationsThatMatchProperties = require('./getDecls.js');
-const getRules = require('./getRules.js');
-const skipsFallback = require('./skipsFallback.js');
-const lastOf = require('./lastOf.js');
-const { setsLonghands } = require('./spec.js');
+import hasAllProps from './hasAllProps.js';
+import getDeclarationsThatMatchProperties from './getDecls.js';
+import getRules from './getRules.js';
+import skipsFallback from './skipsFallback.js';
+import lastOf from './lastOf.js';
+import { setsLonghands } from './spec.js';
 
 /**
  * @param {import('postcss').Declaration} declA
@@ -107,7 +106,7 @@ function hasConflicts(match, nodes) {
  * @param {(rules: import('postcss').Declaration[], last: import('postcss').Declaration, props: Set<import('postcss').Declaration>) => boolean} callback
  * @return {void}
  */
-module.exports = function mergeRules(rule, properties, callback) {
+function mergeRules(rule, properties, callback) {
   const declarations = getDeclarationsThatMatchProperties(
     rule,
     new Set(properties)
@@ -143,4 +142,6 @@ module.exports = function mergeRules(rule, properties, callback) {
 
     declarations.delete(last);
   }
-};
+}
+
+export default mergeRules;

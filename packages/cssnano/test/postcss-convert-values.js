@@ -1,7 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const processCss = require('./_processCss');
+import nodetest from 'node:test';
+import processCss from './_processCss.js';
 
+const { test } = nodetest;
 test(
   'should convert milliseconds to seconds',
   processCss('h1{transition-duration:500ms}', 'h1{transition-duration:.5s}')

@@ -1,6 +1,11 @@
-'use strict';
 const ATRULE = 'atrule';
 const DECL = 'decl';
 const RULE = 'rule';
-
-module.exports = { ATRULE, DECL, RULE };
+export { ATRULE };
+export { DECL };
+export { RULE };
+export default {
+  ATRULE,
+  DECL,
+  RULE,
+};

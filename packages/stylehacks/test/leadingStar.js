@@ -1,7 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const processCSS = require('./_processCSS');
+import nodetest from 'node:test';
+import processCSS from './_processCSS.js';
 
+const { test } = nodetest;
 const opts = { target: 'IE 7', unaffected: 'IE 8' };
 
 function testStarHack(character) {

@@ -1,4 +1,3 @@
-export = minifyColor;
 /**
  * Performs color value minification
  *
@@ -7,4 +6,5 @@ export = minifyColor;
  * @return {string}
  */
 declare function minifyColor(input: string, options?: import('./index.js').MinifyColorOptions): string;
+export default minifyColor;
 //# sourceMappingURL=minifyColor.d.ts.map

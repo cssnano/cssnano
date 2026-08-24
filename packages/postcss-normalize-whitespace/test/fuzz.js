@@ -1,9 +1,9 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const { check, report } = require('../script/lib/fuzzCheck.js');
-const { generate } = require('../script/lib/fuzzGenerate.js');
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import { check, report } from '../script/lib/fuzzCheck.js';
+import { generate } from '../script/lib/fuzzGenerate.js';
 
+const { test } = nodetest;
 /**
  * A differential sweep over declarations ending in a backslash escape,
  * generated as the last declaration of a rule or at-rule — the shape

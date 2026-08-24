@@ -1,4 +1,5 @@
-export = LeadingUnderscore;
+import BasePlugin from '../plugin.js';
+export default LeadingUnderscore;
 declare class LeadingUnderscore extends BasePlugin {
     /** @param {import('postcss').Result=} result */
     constructor(result?: import('postcss').Result | undefined);
@@ -8,5 +9,4 @@ declare class LeadingUnderscore extends BasePlugin {
      */
     detect(decl: import('postcss').Declaration): void;
 }
-import BasePlugin = require('../plugin');
 //# sourceMappingURL=leadingUnderscore.d.ts.map

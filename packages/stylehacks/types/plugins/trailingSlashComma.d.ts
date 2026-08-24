@@ -1,4 +1,5 @@
-export = TrailingSlashComma;
+import BasePlugin from '../plugin.js';
+export default TrailingSlashComma;
 declare class TrailingSlashComma extends BasePlugin {
     /** @param {import('postcss').Result=} result */
     constructor(result?: import('postcss').Result | undefined);
@@ -8,5 +9,4 @@ declare class TrailingSlashComma extends BasePlugin {
      */
     detect(rule: import('postcss').Rule): void;
 }
-import BasePlugin = require('../plugin');
 //# sourceMappingURL=trailingSlashComma.d.ts.map

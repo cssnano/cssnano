@@ -1,9 +1,9 @@
-'use strict';
-const postcssDiscardComments = require('postcss-discard-comments');
-const postcssNormalizeWhitespace = require('postcss-normalize-whitespace');
-const postcssDiscardEmpty = require('postcss-discard-empty');
-const { rawCache } = require('cssnano-utils');
+import postcssDiscardComments from 'postcss-discard-comments';
+import postcssNormalizeWhitespace from 'postcss-normalize-whitespace';
+import postcssDiscardEmpty from 'postcss-discard-empty';
+import cssnanoUtils from 'cssnano-utils';
 
+const { rawCache } = cssnanoUtils;
 /**
  * @template {object | void} [OptionsExtends=void]
  * @typedef {false | OptionsExtends & {exclude?: true}} SimpleOptions
@@ -58,5 +58,6 @@ function litePreset(opts = {}) {
     ),
   };
 }
+const moduleExports = litePreset;
 
-module.exports = litePreset;
+export { moduleExports as default, moduleExports as 'module.exports' };

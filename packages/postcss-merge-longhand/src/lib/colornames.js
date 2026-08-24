@@ -1,4 +1,3 @@
-'use strict';
-const { namedColors } = require('./spec.js');
+import { namedColors } from './spec.js';
 
-module.exports = namedColors;
+export default namedColors;

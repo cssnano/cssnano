@@ -1,7 +1,7 @@
-'use strict';
-const { unit, stringify } = require('postcss-value-parser');
-const mathFunctions = require('../lib/mathfunctions.js');
+import postcssValueParser from 'postcss-value-parser';
+import mathFunctions from '../lib/mathfunctions.js';
 
+const { unit, stringify } = postcssValueParser;
 // border: <line-width> || <line-style> || <color>
 // outline: <outline-color> || <outline-style> || <outline-width>
 
@@ -25,7 +25,7 @@ const borderStyles = new Set([
  * @param {import('postcss-value-parser').ParsedValue} border
  * @return {string}
  */
-module.exports = function normalizeBorder(border) {
+function normalizeBorder(border) {
   const order = { width: '', style: '', color: '' };
 
   border.walk((node) => {
@@ -56,6 +56,7 @@ module.exports = function normalizeBorder(border) {
     }
     return false;
   });
-
   return `${order.width} ${order.style} ${order.color}`.trim();
-};
+}
+
+export default normalizeBorder;

@@ -1,24 +1,23 @@
-export = BasePlugin;
-/**
- * @typedef {object} Plugin
- * @prop {Set<string>} targets
- * @prop {Set<string>} nodeTypes
- * @prop {(node: import('postcss').Node) => void} detectAndResolve
- * @prop {(node: import('postcss').Node) => void} detectAndWarn
- */
-/**
- * @typedef {import('postcss').Node & {_stylehacks: {
-                                          message: string,
-                                          browsers: Set<string>,
-                                          identifier: string,
-                                          hack: string }}} NodeWithInfo
- */
+export type Plugin = {
+    targets: Set<string>;
+    nodeTypes: Set<string>;
+    detectAndResolve: (node: import('postcss').Node) => void;
+    detectAndWarn: (node: import('postcss').Node) => void;
+};
+export default BasePlugin;
 declare class BasePlugin {
     /** @type {NodeWithInfo[]} */
     nodes: NodeWithInfo[];
     targets: Set<string>;
     nodeTypes: Set<string>;
     result: import("postcss").Result<import("postcss").Document | import("postcss").Root> | undefined;
+    /**
+     * @typedef {object} Plugin
+     * @prop {Set<string>} targets
+     * @prop {Set<string>} nodeTypes
+     * @prop {(node: import('postcss').Node) => void} detectAndResolve
+     * @prop {(node: import('postcss').Node) => void} detectAndWarn
+     */
     /**
      * @param {string[]} targets
      * @param {string[]} nodeTypes
@@ -55,18 +54,4 @@ declare class BasePlugin {
     resolve(): void;
     warn(): void;
 }
-export type Plugin = {
-    targets: Set<string>;
-    nodeTypes: Set<string>;
-    detectAndResolve: (node: import('postcss').Node) => void;
-    detectAndWarn: (node: import('postcss').Node) => void;
-};
-export type NodeWithInfo = import('postcss').Node & {
-    _stylehacks: {
-        message: string;
-        browsers: Set<string>;
-        identifier: string;
-        hack: string;
-    };
-};
 //# sourceMappingURL=plugin.d.ts.map

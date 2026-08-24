@@ -1,10 +1,9 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const { colorFunctions } = require('./spec.js');
-const {
+import valueParser from 'postcss-value-parser';
+import { colorFunctions } from './spec.js';
+import {
   substitutionFunctions,
   trustedSupportFunctions,
-} = require('./unresolved.js');
+} from './unresolved.js';
 
 /* Substitution functions prevent fallback detection because their values
  * are resolved at runtime, not statically analyzable. */
@@ -153,8 +152,12 @@ function strandsFallback(earlier, later) {
 
   return !mergeBlockingSupport(later).isSubsetOf(mergeBlockingSupport(earlier));
 }
-
-module.exports = {
+export { requiredSupport };
+export { mergeBlockingSupport };
+export { inheritSupport };
+export { isFallback };
+export { strandsFallback };
+export default {
   requiredSupport,
   mergeBlockingSupport,
   inheritSupport,

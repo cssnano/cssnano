@@ -1,4 +1,6 @@
-export = StarHtml;
+import parser from 'postcss-selector-parser';
+import BasePlugin from '../plugin.js';
+export default StarHtml;
 declare class StarHtml extends BasePlugin {
     /** @param {import('postcss').Result=} result */
     constructor(result?: import('postcss').Result | undefined);
@@ -13,6 +15,4 @@ declare class StarHtml extends BasePlugin {
      */
     analyse(rule: import('postcss').Rule): parser.SyncProcessor<void>;
 }
-import parser = require('postcss-selector-parser');
-import BasePlugin = require('../plugin');
 //# sourceMappingURL=starHtml.d.ts.map

@@ -1,8 +1,8 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const { setsLonghands } = require('../src/lib/spec.js');
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import { setsLonghands } from '../src/lib/spec.js';
 
+const { test } = nodetest;
 test('a shorthand reaches the longhands it names through nested shorthands', () => {
   assert.ok(setsLonghands('border').has('border-top-color'));
   assert.ok(setsLonghands('border-top').has('border-top-color'));

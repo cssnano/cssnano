@@ -1,4 +1,3 @@
-'use strict';
 
 /**
  * @param {import('postcss-selector-parser').Selector} selector
@@ -6,8 +5,9 @@
  * @param {string} value
  * @return {boolean | undefined | ''}
  */
-module.exports = function exists(selector, index, value) {
+function exists(selector, index, value) {
   const node = selector.at(index);
-
   return node && node.value && node.value.toLowerCase() === value;
-};
+}
+
+export default exists;

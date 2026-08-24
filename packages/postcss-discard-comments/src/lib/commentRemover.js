@@ -1,4 +1,3 @@
-'use strict';
 
 class CommentRemover {
   /** @type {boolean} */
@@ -35,5 +34,4 @@ class CommentRemover {
     return false;
   }
 }
-
-module.exports = CommentRemover;
+export default CommentRemover;

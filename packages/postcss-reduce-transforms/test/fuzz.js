@@ -1,9 +1,9 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const { checkMinimised, report } = require('../script/lib/fuzzCheck.js');
-const { generate } = require('../script/lib/fuzzGenerate.js');
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import { checkMinimised, report } from '../script/lib/fuzzCheck.js';
+import { generate } from '../script/lib/fuzzGenerate.js';
 
+const { test } = nodetest;
 /**
  * A differential sweep: random `transform` declarations, each compared
  * against what `script/lib/fuzzEvaluate.js` independently says the

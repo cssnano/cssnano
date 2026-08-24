@@ -1,7 +1,5 @@
-export = advancedPreset;
-import defaultPreset = require('cssnano-preset-default');
-import cssDeclarationSorter = require('css-declaration-sorter');
-import autoprefixer = require('autoprefixer');
+import cssDeclarationSorter from 'css-declaration-sorter';
+import autoprefixer from 'autoprefixer';
 export type SimpleOptions<OptionsExtends extends object | void = void> = false | (OptionsExtends & {
     exclude?: true;
 });
@@ -25,4 +23,6 @@ export type Options = defaultPreset.Options & AdvancedOptions;
 declare function advancedPreset(opts?: Options & AutoprefixerOptions & BrowserslistOptions): {
     plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][];
 };
+declare const moduleExports: typeof advancedPreset;
+export { moduleExports as default, moduleExports as 'module.exports' };
 //# sourceMappingURL=index.d.ts.map

@@ -1,14 +1,11 @@
-'use strict';
-
-const { describe, test } = require('node:test');
-
-const {
+import nodetest from 'node:test';
+import {
   usePostCSSPlugin,
   processCSSFactory,
-} = require('../../../util/testHelpers.js');
+} from '../../../util/testHelpers.js';
+import plugin from '../src/index.js';
 
-const plugin = require('../src/index.js');
-
+const { describe, test } = nodetest;
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 describe('Optimise', () => {

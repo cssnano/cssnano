@@ -1,9 +1,9 @@
-'use strict';
-const assert = require('node:assert/strict');
-const { test } = require('node:test');
-const { generate } = require('../script/lib/fuzzGenerate.js');
-const { checkMinimised, report } = require('../script/lib/fuzzCheck.js');
+import assert from 'node:assert/strict';
+import nodetest from 'node:test';
+import { generate } from '../script/lib/fuzzGenerate.js';
+import { checkMinimised, report } from '../script/lib/fuzzCheck.js';
 
+const { test } = nodetest;
 test('differential selector matching: no regressions', () => {
   const seeds = [1, 2];
   const casesPerSeed = 100;

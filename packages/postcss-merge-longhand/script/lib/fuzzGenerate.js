@@ -1,5 +1,4 @@
-'use strict';
-const {
+import {
   boxLengths,
   marginOnly,
   colors,
@@ -11,19 +10,8 @@ const {
   unresolvedTokens,
   widthTypedTokens,
   widths,
-} = require('./fuzzEvaluate.js');
-
-/**
- * Random rules for the box families, drawn from an alphabet small enough that
- * `fuzzEvaluate.js` can say exactly what each one means.
- *
- * The corpus is generated from a seed rather than checked in, because its job
- * is finding new bugs rather than pinning old ones: a case this turns up gets
- * minimised and promoted to a named test in `test/borders.js`, and nothing
- * depends on a seed continuing to produce it.
- */
-
-const { random } = require('../../../../util/fuzzRng.js');
+} from './fuzzEvaluate.js';
+import { random } from '../../../../util/fuzzRng.js';
 
 const widthTokens = [...widths];
 const styleTokens = [...styles];
@@ -360,5 +348,11 @@ function shrink(css, fails) {
 
   return `${head}${declarations.join(';')}}`;
 }
-
-module.exports = { generate, random, shrink };
+export { generate };
+export { random };
+export { shrink };
+export default {
+  generate,
+  random,
+  shrink,
+};

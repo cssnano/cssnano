@@ -1,20 +1,14 @@
-'use strict';
-
-const { describe, test } = require('node:test');
-
-const assert = require('node:assert/strict');
-
-const postcss = require('postcss');
-
-const {
+import nodetest from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import {
   usePostCSSPlugin,
   processCSSFactory,
-} = require('../../../util/testHelpers.js');
+} from '../../../util/testHelpers.js';
+import encode from '../src/lib/encode.js';
+import plugin from '../src/index.js';
 
-const encode = require('../src/lib/encode.js');
-
-const plugin = require('../src/index.js');
-
+const { describe, test } = nodetest;
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 describe('Rename', () => {

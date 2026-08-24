@@ -1,7 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const processCss = require('./_processCss');
+import nodetest from 'node:test';
+import processCss from './_processCss.js';
 
+const { test } = nodetest;
 test(
   'should remove duplicate rules',
   processCss('h1{font-weight:700}h1{font-weight:700}', 'h1{font-weight:700}')

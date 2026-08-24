@@ -1,8 +1,8 @@
-'use strict';
-const { test } = require('node:test');
-const { processCSSFactory } = require('../../../util/testHelpers.js');
-const plugin = require('../src/index.js');
+import nodetest from 'node:test';
+import { processCSSFactory } from '../../../util/testHelpers.js';
+import plugin from '../src/index.js';
 
+const { test } = nodetest;
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
 test(

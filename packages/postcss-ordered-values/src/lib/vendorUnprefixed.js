@@ -1,4 +1,3 @@
-'use strict';
 const vendorPrefixRegex = /^-\w+-/;
 /**
  * @param {string} prop
@@ -7,5 +6,4 @@ const vendorPrefixRegex = /^-\w+-/;
 function vendorUnprefixed(prop) {
   return prop.replace(vendorPrefixRegex, '');
 }
-
-module.exports = vendorUnprefixed;
+export default vendorUnprefixed;

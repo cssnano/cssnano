@@ -1,9 +1,8 @@
-'use strict';
-const BasePlugin = require('../plugin');
-const { IE_5_5, IE_6, IE_7 } = require('../dictionary/browsers');
-const { DECL } = require('../dictionary/postcss');
+import BasePlugin from '../plugin.js';
+import { IE_5_5, IE_6, IE_7 } from '../dictionary/browsers.js';
+import { DECL } from '../dictionary/postcss.js';
 
-module.exports = class Important extends BasePlugin {
+export default (class Important extends BasePlugin {
   /** @param {import('postcss').Result=} result */
   constructor(result) {
     super([IE_5_5, IE_6, IE_7], [DECL], result);
@@ -22,4 +21,4 @@ module.exports = class Important extends BasePlugin {
       });
     }
   }
-};
+});

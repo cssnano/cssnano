@@ -1,11 +1,10 @@
-'use strict';
-const BasePlugin = require('../plugin');
-const isMixin = require('../isMixin');
-const { IE_5_5, IE_6, IE_7 } = require('../dictionary/browsers');
-const { SELECTOR } = require('../dictionary/identifiers');
-const { RULE } = require('../dictionary/postcss');
+import BasePlugin from '../plugin.js';
+import isMixin from '../isMixin.js';
+import { IE_5_5, IE_6, IE_7 } from '../dictionary/browsers.js';
+import { SELECTOR } from '../dictionary/identifiers.js';
+import { RULE } from '../dictionary/postcss.js';
 
-module.exports = class TrailingSlashComma extends BasePlugin {
+export default (class TrailingSlashComma extends BasePlugin {
   /** @param {import('postcss').Result=} result */
   constructor(result) {
     super([IE_5_5, IE_6, IE_7], [RULE], result);
@@ -33,4 +32,4 @@ module.exports = class TrailingSlashComma extends BasePlugin {
       });
     }
   }
-};
+});

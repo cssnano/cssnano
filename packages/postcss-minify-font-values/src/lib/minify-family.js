@@ -1,6 +1,6 @@
-'use strict';
-const { stringify } = require('postcss-value-parser');
+import postcssValueParser from 'postcss-value-parser';
 
+const { stringify } = postcssValueParser;
 const escapeCharacterRegex = /[\t\n\v\f:]/;
 const digitRegex = /\d/;
 const negativeNumberRegex = /^-[-\d]/;
@@ -175,12 +175,7 @@ function escapeIdentifierSequence(string) {
 
   return result;
 }
-/**
- * @param {import('postcss-value-parser').Node[]} nodes
- * @param {import('../index').Options} opts
- * @return {import('postcss-value-parser').WordNode[]}
- */
-module.exports = function (nodes, opts) {
+export default (function (nodes, opts) {
   /** @type {import('postcss-value-parser').Node[]} */
   const family = [];
   /** @type {import('postcss-value-parser').WordNode | null} */
@@ -250,4 +245,4 @@ module.exports = function (nodes, opts) {
       value: normalizedFamilies.join(),
     }),
   ];
-};
+});

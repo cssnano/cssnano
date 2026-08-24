@@ -1,7 +1,6 @@
-'use strict';
-const CommentRemover = require('./lib/commentRemover');
-const commentParser = require('./lib/commentParser');
-const selectorParser = require('postcss-selector-parser');
+import CommentRemover from './lib/commentRemover.js';
+import commentParser from './lib/commentParser.js';
+import selectorParser from 'postcss-selector-parser';
 
 /** @typedef {object} Options
  *  @property {boolean=} removeAll
@@ -245,8 +244,8 @@ function pluginCreator(opts = {}) {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

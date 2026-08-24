@@ -1,7 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const processCss = require('./_processCss');
+import nodetest from 'node:test';
+import processCss from './_processCss.js';
 
+const { test } = nodetest;
 test(
   'should strip double quotes',
   processCss('h1{background:url("cat.jpg")}', 'h1{background:url(cat.jpg)}')

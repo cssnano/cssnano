@@ -1,8 +1,9 @@
-'use strict';
-const postcss = require('postcss');
-const plugin = require('../../src/index.js');
-const { JSDOM } = require('jsdom');
+import postcss from 'postcss';
+import plugin from '../../src/index.js';
+import jsdom from 'jsdom';
+import { shrink } from './fuzzGenerate.js';
 
+const { JSDOM } = jsdom;
 // One window is reused for every case: building a fresh JSDOM per query is the
 // dominant allocation, and never closing them lets the heap grow to the 4GB
 // limit on a long soak. Re-injecting each tree's markup keeps the match set
@@ -108,8 +109,6 @@ function check(rule, tree) {
  * @return {string}
  */
 function shrinkRule(rule, tree, predicate) {
-  const { shrink } = require('./fuzzGenerate.js');
-
   return shrink(rule, (candidate) => predicate(candidate, tree) !== undefined);
 }
 
@@ -166,5 +165,9 @@ function checkMinimised(rule, tree, seed) {
 
   return { failure: minimize(failure, tree), seed };
 }
-
-module.exports = { checkMinimised, report };
+export { checkMinimised };
+export { report };
+export default {
+  checkMinimised,
+  report,
+};

@@ -1,4 +1,3 @@
-'use strict';
 const block = 'block';
 const flex = 'flex';
 const flow = 'flow';
@@ -17,12 +16,7 @@ const runIn = 'run-in';
 const table = 'table';
 const tableCell = 'table-cell';
 const tableCaption = 'table-caption';
-
-/**
- * Specification: https://drafts.csswg.org/css-display/#the-display-properties
- */
-
-module.exports = new Map([
+export default new Map([
   [[block, flow].toString(), block],
   [[block, flowRoot].toString(), flowRoot],
   [[inline, flow].toString(), inline],
