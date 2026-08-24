@@ -1,4 +1,3 @@
-export = defaultPreset;
 export type SimpleOptions<OptionsExtends extends object | void = void> = false | (OptionsExtends & {
     exclude?: true;
 });
@@ -45,4 +44,6 @@ export type BrowserslistOptions = Pick<import('browserslist').Options, 'stats' |
 declare function defaultPreset(opts?: Options & AutoprefixerOptions & BrowserslistOptions): {
     plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][];
 };
+declare const moduleExports: typeof defaultPreset;
+export { moduleExports as default, moduleExports as 'module.exports' };
 //# sourceMappingURL=index.d.ts.map

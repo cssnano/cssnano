@@ -1,4 +1,3 @@
-'use strict';
 /**
  * Splits a parsed function into its arguments, e.g. `counter(x, y)` into the
  * nodes making up `x` and those making up `y`. The value parser reports the
@@ -7,7 +6,7 @@
  * @param {import('postcss-value-parser').FunctionNode} node
  * @return {import('postcss-value-parser').Node[][]}
  */
-module.exports = function functionArguments(node) {
+function functionArguments(node) {
   /** @type {import('postcss-value-parser').Node[][]} */
   const args = [[]];
 
@@ -19,6 +18,7 @@ module.exports = function functionArguments(node) {
 
     args[args.length - 1].push(child);
   }
-
   return args;
-};
+}
+
+export default functionArguments;

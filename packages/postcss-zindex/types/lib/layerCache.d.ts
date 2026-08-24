@@ -1,4 +1,3 @@
-export = LayerCache;
 /** @constructor */
 declare class LayerCache {
     #private;
@@ -19,4 +18,5 @@ declare class LayerCache {
      */
     getValue(value: string): string;
 }
+export default LayerCache;
 //# sourceMappingURL=layerCache.d.ts.map

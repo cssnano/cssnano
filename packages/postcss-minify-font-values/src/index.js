@@ -1,8 +1,7 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const minifyWeight = require('./lib/minify-weight');
-const minifyFamily = require('./lib/minify-family');
-const minifyFont = require('./lib/minify-font');
+import valueParser from 'postcss-value-parser';
+import minifyWeight from './lib/minify-weight.js';
+import minifyFamily from './lib/minify-family.js';
+import minifyFont from './lib/minify-font.js';
 
 const fontRegex = /font/i;
 /**
@@ -103,8 +102,8 @@ function pluginCreator(opts) {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

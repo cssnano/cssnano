@@ -1,9 +1,8 @@
-'use strict';
-const encode = require('./lib/encode');
-const counterReducer = require('./lib/counter');
-const counterStyleReducer = require('./lib/counter-style');
-const keyframesReducer = require('./lib/keyframes');
-const gridTemplateReducer = require('./lib/grid-template');
+import encode from './lib/encode.js';
+import counterReducer from './lib/counter.js';
+import counterStyleReducer from './lib/counter-style.js';
+import keyframesReducer from './lib/keyframes.js';
+import gridTemplateReducer from './lib/grid-template.js';
 
 /** @typedef {{
     counter?: boolean, counterStyle?: boolean,
@@ -60,8 +59,8 @@ function pluginCreator({
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

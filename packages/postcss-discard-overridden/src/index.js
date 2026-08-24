@@ -1,4 +1,3 @@
-'use strict';
 const OVERRIDABLE_RULES = new Set(['keyframes', 'counter-style']);
 const SCOPE_RULES = new Set(['media', 'supports']);
 const vendorPrefixPattern = /^-\w+-/;
@@ -92,8 +91,8 @@ function pluginCreator() {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<void>} */ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

@@ -1,1 +1,1 @@
-{"version":3,"file":"trbl.d.ts","sourceRoot":"","sources":["../../src/lib/trbl.js"],"names":[],"mappings":"SAGiB,KAAK;SAFd,KAAK,QAAa,WAAW"}
+{"version":3,"file":"trbl.d.ts","sourceRoot":"","sources":["../../src/lib/trbl.js"],"names":[],"mappings":"AAAA,OAAO,EAAE,KAAK,EAAE,MAAM,WAAW,CAAC;eAEnB,KAAK"}

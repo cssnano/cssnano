@@ -1,4 +1,3 @@
-'use strict';
-const { sides } = require('./spec.js');
+import { sides } from './spec.js';
 
-module.exports = sides;
+export default sides;

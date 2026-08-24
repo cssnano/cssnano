@@ -1,6 +1,4 @@
-'use strict';
-/** @type {(nodes: Iterable<import('postcss').AnyNode>, prop: string) => import('postcss').Declaration} */
-module.exports = (nodes, prop) => {
+export default (nodes, prop) => {
   /** @type {import('postcss').Declaration | undefined} */
   let last;
   for (const node of nodes) {

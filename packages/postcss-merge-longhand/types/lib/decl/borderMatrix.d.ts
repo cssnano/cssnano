@@ -1,4 +1,4 @@
-export = resolveBorderGrid;
+import type { Rule } from 'postcss';
 /**
  * This duplicates the main pipeline's intent for one case it can't otherwise
  * merge (a `border` reset followed by plain values), so it must stay guarded
@@ -8,5 +8,5 @@ export = resolveBorderGrid;
  * @return {void}
  */
 declare function resolveBorderGrid(rule: Rule): void;
-import type { Rule } from 'postcss';
+export default resolveBorderGrid;
 //# sourceMappingURL=borderMatrix.d.ts.map

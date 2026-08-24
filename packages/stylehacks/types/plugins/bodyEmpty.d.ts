@@ -1,4 +1,6 @@
-export = BodyEmpty;
+import parser from 'postcss-selector-parser';
+import BasePlugin from '../plugin.js';
+export default BodyEmpty;
 declare class BodyEmpty extends BasePlugin {
     /** @param {import('postcss').Result} result */
     constructor(result: import('postcss').Result);
@@ -13,6 +15,4 @@ declare class BodyEmpty extends BasePlugin {
      */
     analyse(rule: import('postcss').Rule): parser.SyncProcessor<void>;
 }
-import parser = require('postcss-selector-parser');
-import BasePlugin = require('../plugin');
 //# sourceMappingURL=bodyEmpty.d.ts.map

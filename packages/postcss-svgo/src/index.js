@@ -1,7 +1,6 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const { optimize } = require('svgo');
-const { encode, decode } = require('./lib/url');
+import valueParser from 'postcss-value-parser';
+import { optimize } from 'svgo';
+import { encode, decode } from './lib/url.js';
 
 const PLUGIN = 'postcss-svgo';
 const dataURI = /data:image\/svg\+xml(;((charset=)?utf-8|base64))?,/i;
@@ -137,8 +136,8 @@ function pluginCreator(opts = {}) {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<Options>}*/ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

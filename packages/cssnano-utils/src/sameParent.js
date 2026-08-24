@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * @param {import('postcss').AnyNode} nodeA
  * @param {import('postcss').AnyNode} nodeB
@@ -40,5 +38,4 @@ function sameParent(nodeA, nodeB) {
   // Check parents' parents
   return sameParent(nodeA.parent, nodeB.parent);
 }
-
-module.exports = sameParent;
+export default sameParent;

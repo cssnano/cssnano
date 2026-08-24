@@ -1,6 +1,4 @@
-'use strict';
-
-module.exports = function () {
+export default (function () {
   return [
     'and_chr 150',
     'and_ff 152',
@@ -32,4 +30,4 @@ module.exports = function () {
     'samsung 30',
     'samsung 29',
   ];
-};
+});

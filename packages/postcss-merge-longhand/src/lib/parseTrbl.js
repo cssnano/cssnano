@@ -1,7 +1,6 @@
-'use strict';
-const { list } = require('postcss');
-/** @type {(v: string | string[]) => [string, string, string, string]} */
-module.exports = (v) => {
+import { list } from 'postcss';
+
+export default (v) => {
   const s = typeof v === 'string' ? list.space(v) : v;
   return [
     s[0], // top

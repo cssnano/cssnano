@@ -1,7 +1,6 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const minifyFamily = require('../src/lib/minify-family.js');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import minifyFamily from '../src/lib/minify-family.js';
 
 const tests = [
   {

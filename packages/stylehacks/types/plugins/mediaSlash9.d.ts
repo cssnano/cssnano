@@ -1,4 +1,5 @@
-export = MediaSlash9;
+import BasePlugin from '../plugin.js';
+export default MediaSlash9;
 declare class MediaSlash9 extends BasePlugin {
     /** @param {import('postcss').Result=} result */
     constructor(result?: import('postcss').Result | undefined);
@@ -8,5 +9,4 @@ declare class MediaSlash9 extends BasePlugin {
      */
     detect(rule: import('postcss').AtRule): void;
 }
-import BasePlugin = require('../plugin');
 //# sourceMappingURL=mediaSlash9.d.ts.map

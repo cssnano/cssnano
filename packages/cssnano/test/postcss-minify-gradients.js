@@ -1,6 +1,5 @@
-'use strict';
-const { test } = require('node:test');
-const processCss = require('./_processCss');
+import { test } from 'node:test';
+import processCss from './_processCss.js';
 
 test(
   'linear: should convert "to top" to 0deg',

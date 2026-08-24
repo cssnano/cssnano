@@ -1,5 +1,4 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
+import valueParser from 'postcss-value-parser';
 
 /**
  * A `transform` declaration's meaning: the flattened 4x4 homogeneous matrix
@@ -17,11 +16,11 @@ const valueParser = require('postcss-value-parser');
 function identity() {
   // prettier-ignore
   return [
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1,
-  ];
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1,
+    ];
 }
 
 /**
@@ -57,11 +56,11 @@ function rotationMatrix([x, y, z], angleRad) {
   const t = 1 - c;
   // prettier-ignore
   return [
-    t * x * x + c,     t * x * y - s * z, t * x * z + s * y, 0,
-    t * x * y + s * z, t * y * y + c,     t * y * z - s * x, 0,
-    t * x * z - s * y, t * y * z + s * x, t * z * z + c,     0,
-    0, 0, 0, 1,
-  ];
+        t * x * x + c, t * x * y - s * z, t * x * z + s * y, 0,
+        t * x * y + s * z, t * y * y + c, t * y * z - s * x, 0,
+        t * x * z - s * y, t * y * z + s * x, t * z * z + c, 0,
+        0, 0, 0, 1,
+    ];
 }
 
 /**
@@ -87,11 +86,11 @@ function translationMatrix(tx = 0, ty = 0, tz = 0) {
 function scaleMatrix(sx = 1, sy = 1, sz = 1) {
   // prettier-ignore
   return [
-    sx, 0, 0, 0,
-    0, sy, 0, 0,
-    0, 0, sz, 0,
-    0, 0, 0, 1,
-  ];
+        sx, 0, 0, 0,
+        0, sy, 0, 0,
+        0, 0, sz, 0,
+        0, 0, 0, 1,
+    ];
 }
 
 /**
@@ -118,11 +117,11 @@ function matrix3dToRowMajor(v) {
   const [c0, c1, c2, c3] = [0, 1, 2, 3].map(column);
   // prettier-ignore
   return [
-    c0[0], c1[0], c2[0], c3[0],
-    c0[1], c1[1], c2[1], c3[1],
-    c0[2], c1[2], c2[2], c3[2],
-    c0[3], c1[3], c2[3], c3[3],
-  ];
+        c0[0], c1[0], c2[0], c3[0],
+        c0[1], c1[1], c2[1], c3[1],
+        c0[2], c1[2], c2[2], c3[2],
+        c0[3], c1[3], c2[3], c3[3],
+    ];
 }
 
 /**
@@ -137,11 +136,11 @@ function matrix3dToRowMajor(v) {
 function matrix2d(a, b, c, d, e, f) {
   // prettier-ignore
   return [
-    a, c, 0, e,
-    b, d, 0, f,
-    0, 0, 1, 0,
-    0, 0, 0, 1,
-  ];
+        a, c, 0, e,
+        b, d, 0, f,
+        0, 0, 1, 0,
+        0, 0, 0, 1,
+    ];
 }
 
 /**
@@ -407,5 +406,9 @@ function differences(before, after) {
 
   return slots;
 }
-
-module.exports = { evaluate, differences };
+export { evaluate };
+export { differences };
+export default {
+  evaluate,
+  differences,
+};

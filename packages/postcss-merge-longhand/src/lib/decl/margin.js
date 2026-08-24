@@ -1,4 +1,3 @@
-'use strict';
-const base = require('./boxBase.js');
+import base from './boxBase.js';
 
-module.exports = base('margin');
+export default base('margin');

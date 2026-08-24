@@ -1,22 +1,17 @@
-'use strict';
-
-const { join } = require('node:path');
-
-const { describe, test } = require('node:test');
-
-const {
+import { fileURLToPath } from 'node:url';
+const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
+import nodepath from 'node:path';
+import { describe, test } from 'node:test';
+import {
   usePostCSSPlugin,
   processCSSFactory,
-} = require('../../../util/testHelpers.js');
+} from '../../../util/testHelpers.js';
+import fromInitial from '../src/data/fromInitial.json' with { type: 'json' };
+import toInitial from '../src/data/toInitial.json' with { type: 'json' };
+import ignoreProps from '../src/lib/ignoreProps.js';
+import plugin from '../src/index.js';
 
-const fromInitial = require('../src/data/fromInitial.json');
-
-const toInitial = require('../src/data/toInitial.json');
-
-const ignoreProps = require('../src/lib/ignoreProps.js');
-
-const plugin = require('../src/index.js');
-
+const { join } = nodepath;
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 function convertInitial(property, value) {
@@ -37,32 +32,32 @@ function convertToInitial(property, value) {
       })(),
 
       processCSS(`${property}:${value}`, `${property}:${output}`, {
-        from: join(__dirname, 'browserslist/example.css'),
+        from: join(testDir, 'browserslist/example.css'),
         env: 'modern',
       })(),
 
       processCSS(`${property}:${value}`, `${property}:${output}`, {
-        file: join(__dirname, 'browserslist/example.css'),
+        file: join(testDir, 'browserslist/example.css'),
         env: 'modern',
       })(),
 
       processCSS(`${property}:${value}`, `${property}:${output}`, {
-        path: join(__dirname, 'browserslist'),
+        path: join(testDir, 'browserslist'),
         env: 'modern',
       })(),
 
       passthroughCSS(`${property}:${value}`, {
-        from: join(__dirname, 'browserslist/example.css'),
+        from: join(testDir, 'browserslist/example.css'),
         env: 'legacy',
       })(),
 
       passthroughCSS(`${property}:${value}`, {
-        file: join(__dirname, 'browserslist/example.css'),
+        file: join(testDir, 'browserslist/example.css'),
         env: 'legacy',
       })(),
 
       passthroughCSS(`${property}:${value}`, {
-        path: join(__dirname, 'browserslist'),
+        path: join(testDir, 'browserslist'),
         env: 'legacy',
       })(),
     ]);

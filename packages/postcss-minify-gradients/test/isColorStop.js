@@ -1,7 +1,6 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const isColorStop = require('../src/isColorStop.js');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import isColorStop from '../src/isColorStop.js';
 
 test('should recognise color stops', () => {
   assert.strictEqual(isColorStop('yellow'), true);

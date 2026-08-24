@@ -1,6 +1,5 @@
-'use strict';
-const postcss = require('postcss');
-const plugin = require('../../src/index.js');
+import postcss from 'postcss';
+import plugin from '../../src/index.js';
 
 /**
  * Runs one generated declaration through the plugin and checks that the
@@ -133,5 +132,9 @@ function report(failure, seed) {
     `  out: ${failure.output}`,
   ].join('\n');
 }
-
-module.exports = { check, report };
+export { check };
+export { report };
+export default {
+  check,
+  report,
+};

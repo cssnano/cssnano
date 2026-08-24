@@ -1,7 +1,8 @@
-'use strict';
+import { fileURLToPath } from 'node:url';
+import browserslist from 'browserslist';
+import nodepath from 'node:path';
 
-const browserslist = require('browserslist');
-const { dirname } = require('node:path');
+const { dirname } = nodepath;
 
 /**
  *
@@ -12,16 +13,13 @@ const { dirname } = require('node:path');
  * @param {browserslist.Options["env"]} [env]
  * @returns {string[]}
  */
-module.exports = function computeBrowsersToSupport(
-  options,
-  stats,
-  from,
-  file,
-  env
-) {
+function computeBrowsersToSupport(options, stats, from, file, env) {
   return browserslist(options.overrideBrowserslist, {
     stats: options.stats || stats,
-    path: options.path || dirname(from || file || __filename),
+    path:
+      options.path || dirname(from || file || fileURLToPath(import.meta.url)),
     env: options.env || env,
   });
-};
+}
+
+export default computeBrowsersToSupport;

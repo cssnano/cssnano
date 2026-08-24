@@ -1,7 +1,6 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const minifyWeight = require('../src/lib/minify-weight.js');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import minifyWeight from '../src/lib/minify-weight.js';
 
 test('minify-weight', () => {
   assert.strictEqual(minifyWeight('normal'), '400');

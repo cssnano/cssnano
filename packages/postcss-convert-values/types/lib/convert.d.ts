@@ -1,13 +1,7 @@
-export = _exports;
-/**
- * @param {number} number
- * @param {string} unit
- * @param {{time?: boolean, length?: boolean, angle?: boolean}} options
- * @return {string}
- */
-declare function _exports(number: number, unit: string, { time, length, angle }: {
-    time?: boolean;
-    length?: boolean;
-    angle?: boolean;
+export default _default;
+declare function _default(number: any, unit: any, { time, length, angle }: {
+    angle: any;
+    length: any;
+    time: any;
 }): string;
 //# sourceMappingURL=convert.d.ts.map

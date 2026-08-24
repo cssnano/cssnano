@@ -1,12 +1,7 @@
-'use strict';
-
-const { describe, test } = require('node:test');
-
-const assert = require('node:assert/strict');
-
-const postcss = require('postcss');
-
-const nano = require('../src/index.js');
+import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import nano from '../src/index.js';
 
 describe('plugin invocation forms', () => {
   test('cssnano can be used as a configured plugin with postcss().use()', async () => {

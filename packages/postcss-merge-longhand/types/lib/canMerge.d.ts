@@ -1,6 +1,3 @@
-export = _exports;
-/**
- * @type {(props: import('postcss').Declaration[], includeCustomProps?: boolean) => boolean}
- */
-declare function _exports(declarations: import("postcss").Declaration[], includeCustomProps?: boolean | undefined): boolean;
+export default _default;
+declare function _default(declarations: any, includeCustomProps?: boolean): any;
 //# sourceMappingURL=canMerge.d.ts.map

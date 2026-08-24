@@ -1,6 +1,5 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const mappings = require('./lib/map');
+import valueParser from 'postcss-value-parser';
+import mappings from './lib/map.js';
 
 const repeatPropertyRegex = /^(background(-repeat)?|(-\w+-)?mask-repeat)$/i;
 /**
@@ -169,8 +168,8 @@ function pluginCreator() {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

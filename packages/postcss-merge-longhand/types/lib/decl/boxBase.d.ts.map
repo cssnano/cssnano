@@ -1,1 +1,1 @@
-{"version":3,"file":"boxBase.d.ts","sourceRoot":"","sources":["../../../src/lib/decl/boxBase.js"],"names":[],"mappings":";AAgBA;;;GAGG;0BACe,IAAI,EAHX,MAGW,GAFV;IAAC,OAAO,EAAE,CAAC,IAAI,EAAE,OAAO,SAAS,EAAE,IAAI,KAAK,IAAI,CAAC;IAAC,KAAK,EAAE,CAAC,IAAI,EAAE,OAAO,SAAS,EAAE,IAAI,KAAK,IAAI,CAAA;CAAC"}
+{"version":3,"file":"boxBase.d.ts","sourceRoot":"","sources":["../../../src/lib/decl/boxBase.js"],"names":[],"mappings":";0BAegB,IAAI,KAAA;IAiGhB,qDAAqD;aAA1C,CAAC,IAAI,EAAE,OAAO,SAAS,EAAE,IAAI,KAAK,IAAI;IAmCjD,qDAAqD;WAA1C,CAAC,IAAI,EAAE,OAAO,SAAS,EAAE,IAAI,KAAK,IAAI"}

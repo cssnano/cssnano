@@ -1,8 +1,7 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const addToCache = require('./cache');
-const isNum = require('./isNum');
-const { cssWideKeywords, grid, resolveProperty } = require('./slots');
+import valueParser from 'postcss-value-parser';
+import addToCache from './cache.js';
+import isNum from './isNum.js';
+import { cssWideKeywords, grid, resolveProperty } from './slots.js';
 
 const RESERVED_KEYWORDS = new Set([
   ...cssWideKeywords,
@@ -33,11 +32,7 @@ function stripBrackets(word) {
   }
   return word;
 }
-
-/**
- * @return {import('../index.js').Reducer}
- */
-module.exports = function () {
+export default (function () {
   /** @type {Map<string, {ident: string, count: number}>} */
   const cache = new Map();
   /** @type {import('postcss').Declaration[]} */
@@ -204,4 +199,4 @@ module.exports = function () {
       declCache = [];
     },
   };
-};
+});

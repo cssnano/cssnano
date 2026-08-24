@@ -1,4 +1,3 @@
-'use strict';
 /**
  * Structural view over the postcss node kinds compared by `equals` and its
  * helpers.
@@ -238,8 +237,8 @@ function pluginCreator() {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<void>}*/ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };

@@ -10,18 +10,14 @@
     ".": {
       "types": "./types/index.d.ts",
       "default": "./src/index.js"
-    },
-    "./src": "./src/index.js",
-    "./src/*": "./src/*.js",
-    "./src/*.js": "./src/*.js",
-    "./package.json": "./package.json"
+    }
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": "^22.11.0 || ^24.11.0 || >=26.0"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "files": [
     "src",
@@ -38,5 +34,6 @@
   },
   "scripts": {
     "test": "node --test"
-  }
+  },
+  "type": "module"
 }

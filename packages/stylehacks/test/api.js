@@ -1,9 +1,8 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const postcss = require('postcss');
-const stylehacks = require('../src/index.js');
-const packageJson = require('../package.json');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import stylehacks from '../src/index.js';
+import packageJson from '../package.json' with { type: 'json' };
 
 function processCss(fixture, expected, options) {
   return async () => {
@@ -104,22 +103,19 @@ test(
 
 test(
   'should pass through css mixins',
-  passthroughCss(
-    `paper-card {
+  passthroughCss(`paper-card {
         --paper-card-content: {
             padding-top: 0;
         };
         margin: 0 auto 16px;
         width: 768px;
         max-width: calc(100% - 32px);
-    }`
-  )
+    }`)
 );
 
 test(
   'should pass through css mixins (2)',
-  passthroughCss(
-    `paper-card {
+  passthroughCss(`paper-card {
         --paper-card-header: {
             height: 128px;
             padding: 0 48px;
@@ -137,6 +133,5 @@ test(
             @apply(--layout-end-justified);
         };
         width: 384px;
-    }`
-  )
+    }`)
 );

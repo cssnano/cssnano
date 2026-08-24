@@ -1,21 +1,11 @@
-'use strict';
-/**
- * @typedef {object} Plugin
- * @prop {Set<string>} targets
- * @prop {Set<string>} nodeTypes
- * @prop {(node: import('postcss').Node) => void} detectAndResolve
- * @prop {(node: import('postcss').Node) => void} detectAndWarn
- */
-
-/**
- * @typedef {import('postcss').Node & {_stylehacks: {
-                                          message: string,
-                                          browsers: Set<string>,
-                                          identifier: string,
-                                          hack: string }}} NodeWithInfo
- */
-
-module.exports = class BasePlugin {
+export default (class BasePlugin {
+  /**
+   * @typedef {object} Plugin
+   * @prop {Set<string>} targets
+   * @prop {Set<string>} nodeTypes
+   * @prop {(node: import('postcss').Node) => void} detectAndResolve
+   * @prop {(node: import('postcss').Node) => void} detectAndWarn
+   */
   /**
    * @param {string[]} targets
    * @param {string[]} nodeTypes
@@ -107,4 +97,4 @@ module.exports = class BasePlugin {
       );
     }
   }
-};
+});

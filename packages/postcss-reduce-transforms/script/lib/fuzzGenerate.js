@@ -1,16 +1,4 @@
-'use strict';
-
-/**
- * Random `transform` declarations, biased toward the argument patterns each
- * reducer in `src/index.js` actually branches on (matched sx/sy, a zeroed
- * component, a unit-vector rotation axis, the `matrix3d()` affine pattern)
- * so most generated cases exercise a rename rather than passing through
- * untouched. `fuzzEvaluate.js` can say exactly what each generated function
- * means, so there's no need to special-case "will this match anything" the
- * way `postcss-minify-selectors`' generator does.
- */
-
-const { random } = require('../../../../util/fuzzRng.js');
+import { random } from '../../../../util/fuzzRng.js';
 
 const lengthUnits = ['px', '%', 'em', 'vw'];
 const angleUnits = ['deg', 'rad', 'turn', 'grad'];
@@ -255,5 +243,9 @@ function shrink(css, fails) {
 
   return `${head}${functions.join(' ')}${tail}`;
 }
-
-module.exports = { generate, shrink };
+export { generate };
+export { shrink };
+export default {
+  generate,
+  shrink,
+};

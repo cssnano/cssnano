@@ -1,15 +1,12 @@
-'use strict';
-const parseWidthStyleColor = require('./parseWsc.js');
-const minifyTopBottomRightLeft = require('./minifyTrbl.js');
-const {
+import parseWidthStyleColor from './parseWsc.js';
+import minifyTopBottomRightLeft from './minifyTrbl.js';
+import {
   isValidWidthStyleColor,
   specifiesDistinctComponents,
-} = require('./validateWsc.js');
+} from './validateWsc.js';
 
 const defaultBorderValue = ['medium', 'none', 'currentcolor'];
-
-/** @type {(cssPropertyValue: string) => string} */
-module.exports = (cssPropertyValue) => {
+export default (cssPropertyValue) => {
   /* Shortening a value the browser ignores for specifying a component twice, or
    * something that is no component, would put a border on the page that the
    * stylesheet never asked for: `border: 1px 1px` is no `border: 1px`. */

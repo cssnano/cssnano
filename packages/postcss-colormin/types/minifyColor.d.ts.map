@@ -1,1 +1,1 @@
-{"version":3,"file":"minifyColor.d.ts","sourceRoot":"","sources":["../src/minifyColor.js"],"names":[],"mappings":";AAQA;;;;;;GAMG;6BACmC,KAAK,EAJhC,MAIgC,EAAE,OAAO,GAHzC,OAAO,YAAY,EAAE,kBAGyB,GAF7C,MAAM"}
+{"version":3,"file":"minifyColor.d.ts","sourceRoot":"","sources":["../src/minifyColor.js"],"names":[],"mappings":"AAOA;;;;;;GAMG;AACH,iBAAS,WAAW,CAAC,KAAK,EAJf,MAIe,EAAE,OAAO,GAHxB,OAAO,YAAY,EAAE,kBAGQ,GAF5B,MAAM,CAejB;eAEc,WAAW"}

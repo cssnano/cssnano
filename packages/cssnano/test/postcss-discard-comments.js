@@ -1,6 +1,5 @@
-'use strict';
-const { test } = require('node:test');
-const processCss = require('./_processCss');
+import { test } from 'node:test';
+import processCss from './_processCss.js';
 
 test(
   'should remove non-special comments',

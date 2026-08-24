@@ -1,8 +1,7 @@
-'use strict';
-const { test, suite } = require('node:test');
-const topRightBottomLeft = require('../src/lib/trbl.js');
-const { processCSSFactory } = require('../../../util/testHelpers.js');
-const plugin = require('../src/index.js');
+import { test, suite } from 'node:test';
+import topRightBottomLeft from '../src/lib/trbl.js';
+import { processCSSFactory } from '../../../util/testHelpers.js';
+import plugin from '../src/index.js';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 

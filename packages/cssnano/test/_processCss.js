@@ -1,7 +1,6 @@
-'use strict';
-const assert = require('node:assert/strict');
-const postcss = require('postcss');
-const cssnano = require('../src/index.js');
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import cssnano from '../src/index.js';
 
 const processor = postcss([cssnano()]);
 
@@ -11,7 +10,8 @@ function processCss(fixture, expected, options = { from: undefined }) {
     assert.strictEqual(css, expected);
   };
 }
-module.exports = processCss;
-module.exports.passthrough = function (fixture, options = { from: undefined }) {
+processCss.passthrough = function (fixture, options = { from: undefined }) {
   return processCss(fixture, fixture, options);
 };
+
+export default processCss;

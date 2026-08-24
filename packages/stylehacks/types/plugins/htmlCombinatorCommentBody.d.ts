@@ -1,4 +1,6 @@
-export = HtmlCombinatorCommentBody;
+import parser from 'postcss-selector-parser';
+import BasePlugin from '../plugin.js';
+export default HtmlCombinatorCommentBody;
 declare class HtmlCombinatorCommentBody extends BasePlugin {
     /** @param {import('postcss').Result} result */
     constructor(result: import('postcss').Result);
@@ -12,6 +14,4 @@ declare class HtmlCombinatorCommentBody extends BasePlugin {
      */
     analyse(rule: import('postcss').Rule): parser.SyncProcessor<void>;
 }
-import parser = require('postcss-selector-parser');
-import BasePlugin = require('../plugin');
 //# sourceMappingURL=htmlCombinatorCommentBody.d.ts.map

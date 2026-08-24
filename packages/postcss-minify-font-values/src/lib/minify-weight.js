@@ -1,9 +1,4 @@
-'use strict';
-/**
- * @param {string} value
- * @return {string}
- */
-module.exports = function (value) {
+export default (function (value) {
   const lowerCasedValue = value.toLowerCase();
 
   if (lowerCasedValue === 'normal') {
@@ -11,4 +6,4 @@ module.exports = function (value) {
   } else {
     return lowerCasedValue === 'bold' ? '700' : value;
   }
-};
+});

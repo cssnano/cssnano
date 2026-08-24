@@ -1,2 +1,1 @@
-'use strict';
-module.exports = ['writing-mode', 'transform-box'];
+export default ['writing-mode', 'transform-box'];

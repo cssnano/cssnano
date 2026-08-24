@@ -1,8 +1,6 @@
-'use strict';
-
-const assert = require('node:assert/strict');
-const { test } = require('node:test');
-const normalizeUrl = require('../src/normalize.js');
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import normalizeUrl from '../src/normalize.js';
 
 test('should add the http prefix to unprefixed URLs', () => {
   assert.strictEqual(normalizeUrl('example.com'), 'http://example.com');

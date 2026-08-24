@@ -1,4 +1,3 @@
-export = CommentRemover;
 declare class CommentRemover {
     #private;
     options: import("../index.js").Options;
@@ -10,4 +9,5 @@ declare class CommentRemover {
      */
     canRemove(comment: string): boolean | undefined;
 }
+export default CommentRemover;
 //# sourceMappingURL=commentRemover.d.ts.map

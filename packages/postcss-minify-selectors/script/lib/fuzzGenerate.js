@@ -1,12 +1,4 @@
-'use strict';
-
-/**
- * Random selectors and DOM trees for match-set verification.
- * Generated from a seed for reproducibility; a found bug is promoted
- * to a named test rather than pinned by seed.
- */
-
-const { random } = require('../../../../util/fuzzRng.js');
+import { random } from '../../../../util/fuzzRng.js';
 
 const tagNames = [
   'div',
@@ -276,5 +268,9 @@ function shrink(css, fails) {
 
   return `${selectors.join(',')}${body}`;
 }
-
-module.exports = { generate, shrink };
+export { generate };
+export { shrink };
+export default {
+  generate,
+  shrink,
+};

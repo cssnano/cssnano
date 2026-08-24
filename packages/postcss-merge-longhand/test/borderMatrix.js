@@ -1,8 +1,7 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const postcss = require('postcss');
-const resolveBorderGrid = require('../src/lib/decl/borderMatrix.js');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import resolveBorderGrid from '../src/lib/decl/borderMatrix.js';
 
 /**
  * containsUnmergeableBorderDecls guards this resolver during plugin execution;

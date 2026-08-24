@@ -1,6 +1,5 @@
-'use strict';
-const valueParser = require('postcss-value-parser');
-const listStyleTypes = require('./listStyleTypes.json');
+import valueParser from 'postcss-value-parser';
+import listStyleTypes from './listStyleTypes.json' with { type: 'json' };
 
 const definedTypes = new Set(listStyleTypes['list-style-type']);
 
@@ -10,7 +9,7 @@ const definedPosition = new Set(['inside', 'outside']);
  * @param {import('postcss-value-parser').ParsedValue} listStyle
  * @return {string}
  */
-module.exports = function listStyleNormalizer(listStyle) {
+function listStyleNormalizer(listStyle) {
   const order = { type: '', position: '', image: '' };
 
   listStyle.walk((decl) => {
@@ -39,6 +38,7 @@ module.exports = function listStyleNormalizer(listStyle) {
       order.image = `${order.image} ${valueParser.stringify(decl)}`;
     }
   });
-
   return `${order.type.trim()} ${order.position.trim()} ${order.image.trim()}`.trim();
-};
+}
+
+export default listStyleNormalizer;

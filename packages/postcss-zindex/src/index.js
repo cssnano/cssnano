@@ -1,5 +1,4 @@
-'use strict';
-const LayerCache = require('./lib/layerCache');
+import LayerCache from './lib/layerCache.js';
 
 const zIndexRegex = /z-index/i;
 /** @typedef {{startIndex?: number}} Options */
@@ -53,8 +52,8 @@ function pluginCreator(opts = {}) {
     },
   };
 }
-
+/** @type {true} */
 pluginCreator.postcss = true;
-module.exports = /** @type {import('postcss').PluginCreator<Options>} */ (
-  pluginCreator
-);
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };
