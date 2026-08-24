@@ -8,6 +8,9 @@ catalog:
   '@webref/css': 8.7.2
   mdn-data: 2.33.0
 
+minimumReleaseAgeExclude:
+  - postcss-calc@11.0.1
+
 versioning:
   changelog:
     storage: repository

@@ -3,14 +3,14 @@ import processCss from './_processCss.js';
 
 test(
   'should optimise inside calc',
-  processCss('h1{width:calc(var(--h) * 1em)}', 'h1{width:calc(var(--h)*1em)}')
+  processCss('h1{width:calc(var(--h) * 1em)}', 'h1{width:calc(1em * var(--h))}')
 );
 
 test(
   'should optimise inside calc (1)',
   processCss(
     'h1{width:calc(1.5em / var(--h))}',
-    'h1{width:calc(1.5em/var(--h))}'
+    'h1{width:calc(1.5em / var(--h))}'
   )
 );
 
@@ -18,7 +18,7 @@ test(
   'should optimise inside calc (2)',
   processCss(
     'h1{--a:calc(var(--x, 1) * 10vw)}',
-    'h1{--a:calc(var(--x, 1)*10vw)}'
+    'h1{--a:calc(10vw * var(--x, 1))}'
   )
 );
 
@@ -26,7 +26,7 @@ test(
   'should optimise inside calc (3)',
   processCss(
     'h1{width:calc(calc(2.25rem + 2px) - 1px * 2)}',
-    'h1{width:2.25rem}'
+    'h1{width:calc(2.25rem + 0px)}'
   )
 );
 
@@ -34,7 +34,7 @@ test(
   'should optimise inside calc (4)',
   processCss(
     'h1{width:calc(env(safe-area-inset-bottom) * 3) !important}',
-    'h1{width:calc(env(safe-area-inset-bottom)*3)!important}'
+    'h1{width:calc(3 * env(safe-area-inset-bottom))!important}'
   )
 );
 
@@ -48,7 +48,10 @@ test(
 
 test(
   'should optimise inside calc (6)',
-  processCss('h1{width:calc((100px - 1em) + (-50px + 1em))}', 'h1{width:50px}')
+  processCss(
+    'h1{width:calc((100px - 1em) + (-50px + 1em))}',
+    'h1{width:calc(50px + 0em)}'
+  )
 );
 
 test(
@@ -58,7 +61,10 @@ test(
 
 test(
   'should optimise inside calc (8)',
-  processCss('h1{width:calc((99.99% * 1/1) - 0rem)}', 'h1{width:99.99%}')
+  processCss(
+    'h1{width:calc((99.99% * 1/1) - 0rem)}',
+    'h1{width:calc(99.99% + 0rem)}'
+  )
 );
 
 test(
@@ -71,7 +77,7 @@ test(
 
 test(
   'should keep spaces in calc',
-  processCss('h1{width:calc(100% * 120px)}', 'h1{width:calc(100%*120px)}')
+  processCss('h1{width:calc(100% * 120px)}', 'h1{width:calc(100% * 120px)}')
 );
 
 test(
