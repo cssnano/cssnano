@@ -416,8 +416,8 @@ importers:
   packages/postcss-colormin:
     dependencies:
       '@colordx/core':
-        specifier: ^5.5.0
-        version: 5.5.0
+        specifier: ^5.6.0
+        version: 5.6.0
       browserslist:
         specifier: ^4.28.8
         version: 4.28.8
@@ -559,8 +559,8 @@ importers:
   packages/postcss-minify-gradients:
     dependencies:
       '@colordx/core':
-        specifier: ^5.5.0
-        version: 5.5.0
+        specifier: ^5.6.0
+        version: 5.6.0
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -816,8 +816,8 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
-  '@colordx/core@5.5.0':
-    resolution: {integrity: sha512-3PxTH8itZzltK0U9jTwVVnjLXvnDYuq3m+QXsHkENxWiPRh4WaoLcs1SQjqgZ55kS+QyirpH5BVwzP2gMVG6EQ==}
+  '@colordx/core@5.6.0':
+    resolution: {integrity: sha512-EDlcg/Hmlj1WuFh/Os9YhA+A2aasB2XlgwFfGePUDuW7fVHC07HBi5AFIMx0Ct1eM8kHM9NRyOtZ0MuVYa8xvg==}
 
   '@csstools/color-helpers@6.1.1':
     resolution: {integrity: sha512-gLNsunvwf3mCi5u5o46/Z/JcJMnhbHSaZ69rkgPzNM3J4s8hWwpPUQB6/tt0EDFyCiWzxANlx+2LJwpYj4zS1w==}
@@ -1926,7 +1926,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@colordx/core@5.5.0': {}
+  '@colordx/core@5.6.0': {}
 
   '@csstools/color-helpers@6.1.1': {}
 
