@@ -1,4 +1,3 @@
-import valueParser from 'postcss-value-parser';
 import minifyWeight from '../../src/lib/minify-weight.js';
 import minifyFamily from '../../src/lib/minify-family.js';
 import minifyFont from '../../src/lib/minify-font.js';
@@ -29,9 +28,7 @@ function transform(prop, value, opts) {
     (lowerCasedProp === 'font-family' || variableType === 'font-family') &&
     !hasVariableFunction(value)
   ) {
-    const tree = valueParser(value);
-    tree.nodes = minifyFamily(tree.nodes, opts);
-    return tree.toString();
+    return minifyFamily(value, opts);
   }
   if (lowerCasedProp === 'font' || variableType === 'font') {
     return minifyFont(value, opts);

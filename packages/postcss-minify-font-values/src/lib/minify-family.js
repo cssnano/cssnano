@@ -1,22 +1,10 @@
-import { stringify } from './parse.js';
+import { isFunctionNode, isTokenNode } from '@csstools/css-parser-algorithms';
+import { isTokenIdent, isTokenString } from '@csstools/css-tokenizer';
+import { isComma, parse, stringify } from './parse.js';
 
 const escapeCharacterRegex = /[\t\n\v\f:]/;
 const digitRegex = /\d/;
 const negativeNumberRegex = /^-[-\d]/;
-
-/**
- * @param {string[]} list
- * @return {string[]}
- */
-function uniqueFontFamilies(list) {
-  return list.filter((item, i) => {
-    if (item.toLowerCase() === 'monospace') {
-      return true;
-    }
-    return i === list.indexOf(item);
-  });
-}
-
 const globalKeywords = ['inherit', 'initial', 'unset'];
 const genericFontFamilykeywords = new Set([
   'sans-serif',
@@ -26,73 +14,9 @@ const genericFontFamilykeywords = new Set([
   'monospace',
   'system-ui',
 ]);
-
-/**
- * @param {string} value
- * @param {number} length
- * @return {string[]}
- */
-function makeArray(value, length) {
-  const array = [];
-  let remaining = length;
-  while (remaining--) {
-    array[remaining] = value;
-  }
-  return array;
-}
-
-// eslint-disable-next-line no-useless-escape
-const regexSimpleEscapeCharacters = /[ !"#$%&'()*+,.\/;<=>?@\[\\\]^`{|}~]/;
-
-/**
- * @param {string} string
- * @param {boolean} escapeForString
- * @return {string}
- */
-function customEscape(string, escapeForString) {
-  let counter = 0;
-  let character;
-  let charCode;
-  let value;
-  let output = '';
-
-  while (counter < string.length) {
-    character = string.charAt(counter++);
-    charCode = character.charCodeAt(0);
-
-    // \r is already tokenized away at this point
-    // `:` can be escaped as `\:`, but that fails in IE < 8
-    if (!escapeForString && escapeCharacterRegex.test(character)) {
-      value = '\\' + charCode.toString(16) + ' ';
-    } else if (
-      !escapeForString &&
-      regexSimpleEscapeCharacters.test(character)
-    ) {
-      value = '\\' + character;
-    } else {
-      value = character;
-    }
-
-    output += value;
-  }
-
-  if (!escapeForString) {
-    if (negativeNumberRegex.test(output)) {
-      output = '\\-' + output.slice(1);
-    }
-
-    const firstChar = string.charAt(0);
-
-    if (digitRegex.test(firstChar)) {
-      output = '\\3' + firstChar + ' ' + output.slice(1);
-    }
-  }
-
-  return output;
-}
-
+const regexSimpleEscapeCharacters = /[ !"#$%&'()*+,.\/<=>?@\[\\\]^`{|}~]/;
 const regexKeyword = new RegExp(
-  [...genericFontFamilykeywords].concat(globalKeywords).join('|'),
+  [...genericFontFamilykeywords, ...globalKeywords].join('|'),
   'i'
 );
 const regexInvalidIdentifier = /^(-?\d|--)/;
@@ -103,145 +27,120 @@ const regexConsecutiveSpaces = /(\\(?:[a-fA-F0-9]{1,6}\x20|\x20))?(\x20{2,})/g;
 const regexTrailingEscape = /\\[a-fA-F0-9]{0,6}\x20$/;
 const regexTrailingSpace = /\x20$/;
 
-/**
- * @param {string} string
- * @return {string}
- */
+function customEscape(string, escapeForString) {
+  let output = '';
+  for (let index = 0; index < string.length; index++) {
+    const character = string[index];
+    if (!escapeForString && escapeCharacterRegex.test(character))
+      output += `\\${character.charCodeAt(0).toString(16)} `;
+    else if (!escapeForString && regexSimpleEscapeCharacters.test(character))
+      output += `\\${character}`;
+    else output += character;
+  }
+  if (!escapeForString && negativeNumberRegex.test(output))
+    output = `\\-${output.slice(1)}`;
+  if (!escapeForString && digitRegex.test(string[0]))
+    output = `\\3${string[0]} ${output.slice(1)}`;
+  return output;
+}
+
 function escapeIdentifierSequence(string) {
-  const identifiers = string.split(regexWhitespace);
-  let index = 0;
-  /** @type {string[] | string} */
-  let result = [];
-  let escapeResult;
-
-  while (index < identifiers.length) {
-    const subString = identifiers[index++];
-
-    if (subString === '') {
-      result.push(subString);
+  const parts = string.split(regexWhitespace);
+  const result = [];
+  for (let index = 0; index < parts.length; index++) {
+    const part = parts[index];
+    if (!part) {
+      result.push(part);
       continue;
     }
-
-    escapeResult = customEscape(subString, false);
-
-    if (regexIdentifierCharacter.test(subString)) {
-      // the font family name part consists of allowed characters exclusively
-      if (regexInvalidIdentifier.test(subString)) {
-        // the font family name part starts with two hyphens, a digit, or a
-        // hyphen followed by a digit
-        if (index === 1) {
-          // if this is the first item
-          result.push(escapeResult);
-        } else {
-          // if it’s not the first item, we can simply escape the space
-          // between the two identifiers to merge them into a single
-          // identifier rather than escaping the start characters of the
-          // second identifier
-          result[index - 2] += '\\';
-          result.push(customEscape(subString, true));
-        }
-      } else {
-        // the font family name part doesn’t start with two hyphens, a digit,
-        // or a hyphen followed by a digit
-        result.push(escapeResult);
-      }
-    } else {
-      // the font family name part contains invalid identifier characters
-      result.push(escapeResult);
-    }
+    if (regexInvalidIdentifier.test(part) && index > 0) {
+      result[index - 1] += '\\';
+      result.push(customEscape(part, true));
+    } else result.push(customEscape(part, false));
   }
-
-  result = result.join(' ').replace(regexConsecutiveSpaces, ($0, $1, $2) => {
-    const spaceCount = $2.length;
-    const escapesNeeded = Math.floor(spaceCount / 2);
-    const array = makeArray('\\ ', escapesNeeded);
-
-    if (spaceCount % 2) {
-      array[escapesNeeded - 1] += '\\ ';
-    }
-
-    return ($1 || '') + ' ' + array.join(' ');
-  });
-
-  // Escape trailing spaces unless they’re already part of an escape
-  if (regexTrailingSpace.test(result) && !regexTrailingEscape.test(result)) {
-    result = result.replace(regexTrailingSpace, '\\ ');
-  }
-
-  if (regexSpaceAtStart.test(result)) {
-    result = '\\ ' + result.slice(1);
-  }
-
-  return result;
+  let output = result
+    .join(' ')
+    .replace(regexConsecutiveSpaces, ($0, escape, spaces) => {
+      const escaped = Array.from(
+        { length: Math.floor(spaces.length / 2) },
+        () => '\\ '
+      );
+      if (spaces.length % 2) escaped[escaped.length - 1] += '\\ ';
+      return `${escape || ''} ${escaped.join(' ')}`;
+    });
+  if (regexTrailingSpace.test(output) && !regexTrailingEscape.test(output))
+    output = `${output.slice(0, -1)}\\ `;
+  return regexSpaceAtStart.test(output) ? `\\ ${output.slice(1)}` : output;
 }
-export default (function (nodes, opts) {
-  /** @type {import('postcss-value-parser').Node[]} */
-  const family = [];
-  /** @type {import('postcss-value-parser').WordNode | null} */
-  let last = null;
-  let i, max;
 
-  for (const [index, node] of nodes.entries()) {
-    if (node.type === 'string' || node.type === 'function') {
-      family.push(node);
-    } else if (node.type === 'word') {
-      if (!last) {
-        last = /** @type {import('postcss-value-parser').WordNode} */ ({
-          type: 'word',
-          value: '',
-        });
-        family.push(last);
-      }
-
-      last.value += node.value;
-    } else if (node.type === 'space') {
-      if (last && index !== nodes.length - 1) {
-        last.value += ' ';
-      }
-    } else {
-      last = null;
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} family @param {Options} opts */
+function minifyComponents(family, opts) {
+  const result = [];
+  let words = '';
+  const flush = () => {
+    if (words) {
+      result.push(words);
+      words = '';
     }
-  }
-
-  let normalizedFamilies = family.map((node) => {
-    if (node.type === 'string') {
-      const isKeyword = regexKeyword.test(node.value);
-
+  };
+  for (let index = 0; index < family.length; index++) {
+    const node = family[index];
+    if (isTokenNode(node) && isTokenString(node.value)) {
+      flush();
+      const raw = node.toString();
+      // Keep the source form for the legacy length comparison: decoded CSS
+      // escapes can look shorter even though replacing them would grow output.
+      const value = raw.slice(1, -1);
       if (
         !opts.removeQuotes ||
-        isKeyword ||
-        digitRegex.test(node.value.slice(0, 1))
-      ) {
-        return stringify([node]);
+        regexKeyword.test(value) ||
+        digitRegex.test(value[0])
+      )
+        result.push(raw);
+      else {
+        const escaped = escapeIdentifierSequence(value);
+        result.push(escaped.length < raw.length ? escaped : raw);
       }
+    } else if (isTokenNode(node) && isTokenIdent(node.value))
+      words += node.toString();
+    else if (node.type === 'whitespace') {
+      if (words && index !== family.length - 1) words += ' ';
+    } else if (isFunctionNode(node)) {
+      flush();
+      result.push(stringify([node]));
+    } else flush();
+  }
+  flush();
+  return result;
+}
 
-      const escaped = escapeIdentifierSequence(node.value);
+/** @param {string[]} values */
+function unique(values) {
+  return values.filter(
+    (value, index) =>
+      value.toLowerCase() === 'monospace' || index === values.indexOf(value)
+  );
+}
 
-      if (escaped.length < node.value.length + 2) {
-        return escaped;
-      }
-    }
-
-    return stringify([node]);
-  });
-
+/** @param {string} value @param {Options} opts */
+export default function minifyFamily(value, opts) {
+  const nodes = parse(value);
+  let families = [];
+  let current = [];
+  for (const node of nodes) {
+    if (isComma(node)) {
+      families.push(...minifyComponents(current, opts));
+      current = [];
+    } else current.push(node);
+  }
+  families.push(...minifyComponents(current, opts));
   if (opts.removeAfterKeyword) {
-    for (i = 0, max = normalizedFamilies.length; i < max; i += 1) {
-      if (genericFontFamilykeywords.has(normalizedFamilies[i].toLowerCase())) {
-        normalizedFamilies = normalizedFamilies.slice(0, i + 1);
-        break;
-      }
-    }
+    const keyword = families.findIndex((family) =>
+      genericFontFamilykeywords.has(family.toLowerCase())
+    );
+    if (keyword >= 0) families = families.slice(0, keyword + 1);
   }
+  return (opts.removeDuplicates ? unique(families) : families).join(',');
+}
 
-  if (opts.removeDuplicates) {
-    normalizedFamilies = uniqueFontFamilies(normalizedFamilies);
-  }
-
-  return [
-    /** @type {import('postcss-value-parser').WordNode} */ ({
-      type: 'word',
-      value: normalizedFamilies.join(),
-    }),
-  ];
-});
+/** @typedef {{removeAfterKeyword?: boolean, removeDuplicates?: boolean, removeQuotes?: boolean}} Options */

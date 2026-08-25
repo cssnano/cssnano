@@ -1,4 +1,3 @@
-import { parse as valueParser } from './lib/parse.js';
 import minifyWeight from './lib/minify-weight.js';
 import minifyFamily from './lib/minify-family.js';
 import minifyFont from './lib/minify-font.js';
@@ -37,11 +36,7 @@ function transform(prop, value, opts) {
     (lowerCasedProp === 'font-family' || variableType === 'font-family') &&
     !hasVariableFunction(value)
   ) {
-    const tree = valueParser(value);
-
-    tree.nodes = minifyFamily(tree.nodes, opts);
-
-    return tree.toString();
+    return minifyFamily(value, opts);
   } else if (lowerCasedProp === 'font' || variableType === 'font') {
     return minifyFont(value, opts);
   }

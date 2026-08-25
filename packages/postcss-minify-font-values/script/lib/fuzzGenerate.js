@@ -105,10 +105,7 @@ const edgeCases = [
   'a{FONT-WEIGHT:BOLD}',
 ];
 
-// The legacy parser flattens nested functions in font-family values. The
-// tokenizer preserves their comment and argument source; this invalid-family
-// difference is intentionally isolated until the adapter is removed.
-const intentionalDifferences = new Set(['a{font-family:foo(/**/bar),"A"}']);
+const intentionalDifferences = new Set();
 
 export {
   edgeCases,

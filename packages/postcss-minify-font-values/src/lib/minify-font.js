@@ -1,115 +1,122 @@
-import { parse as valueParser, unit } from './parse.js';
+import { isFunctionNode, isTokenNode } from '@csstools/css-parser-algorithms';
+import {
+  isTokenDimension,
+  isTokenIdent,
+  isTokenPercentage,
+} from '@csstools/css-tokenizer';
 import keywords from './keywords.js';
 import minifyFamily from './minify-family.js';
 import minifyWeight from './minify-weight.js';
+import { isSlash, parse, stringify } from './parse.js';
 
-/**
- * Adds missing spaces before strings.
- *
- * @param toBeSpliced {Set<number>}
- * @param {import('postcss-value-parser').Node[]} nodes
- * @return {void}
- */
-function normalizeNodes(nodes, toBeSpliced) {
-  for (const index of toBeSpliced) {
-    nodes.splice(
-      index,
-      0,
-      /** @type {import('postcss-value-parser').SpaceNode} */ ({
-        type: 'space',
-        value: ' ',
-      })
-    );
-  }
-}
-
-/**
- * @param {import('postcss-value-parser').Node} node
- * @param {number} index
- * @param {{familyStart: number, hasSize: boolean}} state
- * @return {void}
- */
-function processWord(node, index, state) {
-  if (state.hasSize) {
-    return;
-  }
-
-  const value = node.value.toLowerCase();
-  if (isUnmodifiedBoundary(value) || keywords.style.has(value)) {
-    state.familyStart = index;
-  } else if (keywords.variant.has(value)) {
-    state.familyStart = index;
-  } else if (keywords.weight.has(value)) {
-    node.value = minifyWeight(value);
-    state.familyStart = index;
-  } else if (keywords.stretch.has(value)) {
-    state.familyStart = index;
-  } else if (keywords.size.has(value) || unit(value)) {
-    state.familyStart = index;
-    state.hasSize = true;
-  }
-}
-
-/**
- * @param {string} value
- * @return {boolean}
- */
-function isUnmodifiedBoundary(value) {
+function isBoundary(value) {
   return (
     value === 'normal' ||
     value === 'inherit' ||
     value === 'initial' ||
-    value === 'unset' ||
-    Boolean(unit(value))
+    value === 'unset'
   );
 }
 
-/**
- * @param {import('postcss-value-parser').Node} node
- * @param {number} index
- * @param {import('postcss-value-parser').Node | undefined} nextNode
- * @param {{familyStart: number}} state
- * @return {boolean}
- */
-function processNonWord(node, index, nextNode, state) {
-  if (node.type === 'function' && nextNode?.type === 'space') {
-    state.familyStart = index;
-  }
+const fontSizeUnits = new Set([
+  'cap',
+  'ch',
+  'em',
+  'ex',
+  'ic',
+  'lh',
+  'rcap',
+  'rch',
+  'rem',
+  'rex',
+  'ric',
+  'rlh',
+  'vh',
+  'vmax',
+  'vmin',
+  'vw',
+  'vb',
+  'vi',
+  'px',
+  'cm',
+  'mm',
+  'q',
+  'in',
+  'pc',
+  'pt',
+]);
 
-  if (node.type === 'div' && node.value === '/') {
-    state.familyStart = index + 1;
-    return true;
-  }
-
-  return false;
-}
-export default (function (unminified, opts) {
-  const trailingSemicolon = unminified.endsWith(';') ? ';' : '';
-  const tree = valueParser(
-    trailingSemicolon ? unminified.slice(0, -1) : unminified
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue} node */
+function isFontSize(node) {
+  return (
+    isTokenNode(node) &&
+    (isTokenPercentage(node.value) ||
+      (isTokenDimension(node.value) &&
+        fontSizeUnits.has(node.value[4].unit.toLowerCase())))
   );
-  const nodes = tree.nodes;
+}
 
-  const state = { familyStart: Number.NaN, hasSize: false };
-  const toBeSpliced = new Set();
-
-  for (const [i, node] of nodes.entries()) {
-    if (node.type === 'string' && i > 0 && nodes[i - 1].type !== 'space') {
-      toBeSpliced.add(i);
+/** @param {string} value @param {Options} opts */
+export default function minifyFont(value, opts) {
+  const semicolon = value.endsWith(';') ? ';' : '';
+  const nodes = parse(semicolon ? value.slice(0, -1) : value);
+  let size = false;
+  let boundary = Number.NaN;
+  let familyStart = Number.NaN;
+  let afterSlash = false;
+  const replacements = new Map();
+  for (let index = 0; index < nodes.length; index++) {
+    const node = nodes[index];
+    if (isTokenNode(node) && isTokenIdent(node.value) && !size) {
+      const word = node.value[1].toLowerCase();
+      if (
+        isBoundary(word) ||
+        keywords.style.has(word) ||
+        keywords.variant.has(word) ||
+        keywords.stretch.has(word)
+      )
+        boundary = index;
+      else if (keywords.weight.has(word)) {
+        boundary = index;
+        replacements.set(index, minifyWeight(word));
+      } else if (keywords.size.has(word)) {
+        boundary = index;
+        size = true;
+      }
+    } else if (isFontSize(node) && !size) {
+      boundary = index;
+      size = true;
+    } else if (isFunctionNode(node) && nodes[index + 1]?.type === 'whitespace')
+      boundary = index;
+    if (isSlash(node)) {
+      afterSlash = true;
+      continue;
     }
-
-    if (node.type === 'word') {
-      processWord(node, i, state);
-    } else if (processNonWord(node, i, nodes[i + 1], state)) {
+    if (afterSlash && node.type === 'whitespace') {
+      familyStart = index + 1;
       break;
     }
+    if (size && Number.isNaN(familyStart)) {
+      const next = nodes[index + 1];
+      if (node.type === 'whitespace' || /^['"]/.test(next?.toString() || '')) {
+        familyStart = index + 1;
+      }
+    }
   }
+  if (Number.isNaN(familyStart)) familyStart = boundary + 2;
+  const prefix = nodes
+    .slice(0, familyStart)
+    .map((node, index) => replacements.get(index) || stringify([node]))
+    .join('');
+  let family = stringify(nodes.slice(familyStart));
+  const quotedFamily = /^['"]/.test(family);
+  const separator =
+    family &&
+    !/\s$/.test(prefix) &&
+    (quotedFamily || (/[a-z0-9%)]$/i.test(prefix) && /^[a-z]/i.test(family)))
+      ? ' '
+      : '';
+  return `${prefix}${separator}${minifyFamily(family, opts)}${semicolon}`;
+}
 
-  normalizeNodes(nodes, toBeSpliced);
-  const familyStart = state.familyStart + 2;
-
-  const family = minifyFamily(nodes.slice(familyStart), opts);
-
-  tree.nodes = nodes.slice(0, familyStart).concat(family);
-  return tree.toString() + trailingSemicolon;
-});
+/** @typedef {{removeAfterKeyword?: boolean, removeDuplicates?: boolean, removeQuotes?: boolean}} Options */
