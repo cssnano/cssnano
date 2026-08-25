@@ -193,6 +193,14 @@ describe('Rename', () => {
   );
 
   test(
+    'should preserve escaped strings while renaming counters',
+    processCSS(
+      'li{counter-increment:item}li::marker{content:"\\0028" counters(item,"\\002e") "\\0029"}',
+      'li{counter-increment:a}li::marker{content:"\\0028" counters(a,"\\002e") "\\0029"}'
+    )
+  );
+
+  test(
     'should rename counters (3) (uppercase)',
     processCSS(
       'li{counter-increment:item}li::marker{content:"(" COUNTERS(item,".") ")"}',

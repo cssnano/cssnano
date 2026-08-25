@@ -89,9 +89,13 @@ function makeFunction(type, name, nodes, source) {
 /** @param {string} type @param {string} value @param {object} source @return {Node} */
 function makeLeaf(type, value, source) {
   const node = /** @type {Node} */ ({ type, value, source });
+  const originalValue = value;
   node.toString = () => {
     if (node.type === 'space' || node.type === 'div') return node.value;
     if (node.type === 'string') {
+      // CSSTools exposes the decoded string value. Preserve the raw token
+      // while the reducer has not intentionally changed the string.
+      if (node.value === originalValue) return source.toString();
       const raw = source.toString();
       return raw[0] + node.value + raw[raw.length - 1];
     }
