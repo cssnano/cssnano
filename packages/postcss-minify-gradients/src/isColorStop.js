@@ -1,9 +1,13 @@
-import postcssValueParser from 'postcss-value-parser';
+import {
+  isTokenDimension,
+  isTokenNumber,
+  isTokenPercentage,
+  tokenize,
+} from '@csstools/css-tokenizer';
 import { colordx as colord, extend } from '@colordx/core';
 import hwbPlugin from '@colordx/core/plugins/hwb';
 import namesPlugin from '@colordx/core/plugins/names';
 
-const { unit } = postcssValueParser;
 extend([
   /** @type {import('@colordx/core').Plugin} */ (
     /** @type {unknown} */ (hwbPlugin)
@@ -49,13 +53,21 @@ function isCSSLengthUnit(input) {
 function isStop(str) {
   if (str) {
     let colorStop = false;
-    const node = unit(str);
-    if (node) {
-      const number = Number(node.number);
-      if (
-        number === 0 ||
-        (!Number.isNaN(number) && isCSSLengthUnit(node.unit))
-      ) {
+    const tokens = tokenize({ css: str }).filter(
+      (token) => token[0] !== 'EOF-token'
+    );
+    const token = tokens.length === 1 ? tokens[0] : undefined;
+    if (
+      token &&
+      (isTokenNumber(token) ||
+        isTokenDimension(token) ||
+        isTokenPercentage(token))
+    ) {
+      const number = Number.parseFloat(token[1]);
+      let unit = '';
+      if (isTokenDimension(token)) unit = token[4].unit;
+      else if (isTokenPercentage(token)) unit = '%';
+      if (number === 0 || (!Number.isNaN(number) && isCSSLengthUnit(unit))) {
         colorStop = true;
       }
     } else {

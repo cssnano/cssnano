@@ -1,11 +1,10 @@
-import postcssValueParser from 'postcss-value-parser';
+import { unit } from '../lib/parse.js';
 import cssnanoUtils from 'cssnano-utils';
 import addSpace from '../lib/addSpace.js';
 import getValue from '../lib/getValue.js';
 import mathFunctions from '../lib/mathfunctions.js';
 import vendorUnprefixed from '../lib/vendorUnprefixed.js';
 
-const { unit } = postcssValueParser;
 const { getArguments } = cssnanoUtils;
 /**
  * @param {import('postcss-value-parser').Node[][]} args

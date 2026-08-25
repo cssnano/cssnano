@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import { parse as valueParser } from './lib/parse.js';
 import {
   normalizeGridAutoFlow,
   normalizeGridColumnRowGap,

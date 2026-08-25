@@ -38,14 +38,16 @@
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "dependencies": {
+    "@csstools/css-parser-algorithms": "^4.0.0",
+    "@csstools/css-tokenizer": "^4.0.0",
     "browserslist": "^4.28.8",
-    "cssnano-utils": "workspace:^",
-    "postcss-value-parser": "^4.2.0"
+    "cssnano-utils": "workspace:^"
   },
   "engines": {
     "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
+    "postcss-value-parser": "^4.2.0",
     "postcss": "catalog:"
   },
   "peerDependencies": {

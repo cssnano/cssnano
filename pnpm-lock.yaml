@@ -402,6 +402,13 @@ importers:
         version: 8.5.26
 
   packages/cssnano-utils:
+    dependencies:
+      '@csstools/css-parser-algorithms':
+        specifier: ^4.0.0
+        version: 4.0.0(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -576,32 +583,44 @@ importers:
       '@colordx/core':
         specifier: ^5.6.0
         version: 5.6.0
+      '@csstools/css-parser-algorithms':
+        specifier: ^4.0.0
+        version: 4.0.0(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
         version: 8.5.26
+      postcss-value-parser:
+        specifier: ^4.2.0
+        version: 4.2.0
 
   packages/postcss-minify-params:
     dependencies:
+      '@csstools/css-parser-algorithms':
+        specifier: ^4.0.0
+        version: 4.0.0(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
       browserslist:
         specifier: ^4.28.8
         version: 4.28.8
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
         version: 8.5.26
+      postcss-value-parser:
+        specifier: ^4.2.0
+        version: 4.2.0
 
   packages/postcss-minify-selectors:
     dependencies:
@@ -740,12 +759,15 @@ importers:
 
   packages/postcss-ordered-values:
     dependencies:
+      '@csstools/css-parser-algorithms':
+        specifier: ^4.0.0
+        version: 4.0.0(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
@@ -753,6 +775,9 @@ importers:
       postcss:
         specifier: 'catalog:'
         version: 8.5.26
+      postcss-value-parser:
+        specifier: ^4.2.0
+        version: 4.2.0
 
   packages/postcss-reduce-idents:
     dependencies:

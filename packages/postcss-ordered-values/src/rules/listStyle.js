@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import { stringify } from '../lib/parse.js';
 import listStyleTypes from './listStyleTypes.json' with { type: 'json' };
 
 const definedTypes = new Set(listStyleTypes['list-style-type']);
@@ -35,7 +35,7 @@ function listStyleNormalizer(listStyle) {
       }
     }
     if (decl.type === 'function') {
-      order.image = `${order.image} ${valueParser.stringify(decl)}`;
+      order.image = `${order.image} ${stringify(decl)}`;
     }
   });
   return `${order.type.trim()} ${order.position.trim()} ${order.image.trim()}`.trim();

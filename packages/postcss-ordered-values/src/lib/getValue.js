@@ -1,6 +1,4 @@
-import postcssValueParser from 'postcss-value-parser';
-
-const { stringify } = postcssValueParser;
+import { stringify } from './parse.js';
 /**
  * @param {import('postcss-value-parser').Node[][]} values
  * @return {import('postcss-value-parser').Node[]}

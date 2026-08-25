@@ -1,6 +1,4 @@
-import postcssValueParser from 'postcss-value-parser';
-
-const { unit } = postcssValueParser;
+import { unit } from '../lib/parse.js';
 /**
  * @param {string} value
  * @return {boolean}

@@ -1,9 +1,9 @@
 /**
- * Extracts the arguments of a CSS function or AtRule.
+ * Extract comma-separated component-value lists without changing any nodes.
  *
- * @param {import('postcss-value-parser').ParsedValue | import('postcss-value-parser').FunctionNode} node
- * @return {import('postcss-value-parser').Node[][]}
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[] | import('@csstools/css-parser-algorithms').FunctionNode} node
+ * @return {import('@csstools/css-parser-algorithms').ComponentValue[][]}
  */
-declare function getArguments(node: import('postcss-value-parser').ParsedValue | import('postcss-value-parser').FunctionNode): import('postcss-value-parser').Node[][];
+declare function getArguments(node: import('@csstools/css-parser-algorithms').ComponentValue[] | import('@csstools/css-parser-algorithms').FunctionNode): import('@csstools/css-parser-algorithms').ComponentValue[][];
 export default getArguments;
 //# sourceMappingURL=getArguments.d.ts.map

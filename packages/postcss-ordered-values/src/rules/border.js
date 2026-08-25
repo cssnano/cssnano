@@ -1,7 +1,6 @@
-import postcssValueParser from 'postcss-value-parser';
+import { stringify, unit } from '../lib/parse.js';
 import mathFunctions from '../lib/mathfunctions.js';
 
-const { unit, stringify } = postcssValueParser;
 // border: <line-width> || <line-style> || <color>
 // outline: <outline-color> || <outline-style> || <outline-width>
 

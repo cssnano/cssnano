@@ -1,5 +1,17 @@
 import getBrowsersList from '#getBrowsersList';
-import valueParser from 'postcss-value-parser';
+import {
+  isFunctionNode,
+  isSimpleBlockNode,
+  isTokenNode,
+  parseListOfComponentValues,
+} from '@csstools/css-parser-algorithms';
+import {
+  isTokenComma,
+  isTokenDelim,
+  isTokenIdent,
+  isTokenNumber,
+  tokenize,
+} from '@csstools/css-tokenizer';
 import cssnanoUtils from 'cssnano-utils';
 
 const { getArguments } = cssnanoUtils;
@@ -29,20 +41,121 @@ function aspectRatio(a, b) {
 }
 
 /**
- * @param {valueParser.Node[]} args
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue} node
  * @return {string}
  */
-function split(args) {
-  return args.map((arg) => valueParser.stringify(arg)).join('');
+function serialize(node) {
+  if (!isFunctionNode(node) && !isSimpleBlockNode(node)) {
+    return node.toString();
+  }
+  return serializeContainer(node);
 }
 
 /**
- * @param {valueParser.Node} node
- * @return {void}
+ * @param {import('@csstools/css-parser-algorithms').FunctionNode | import('@csstools/css-parser-algorithms').SimpleBlock} node
+ * @return {string}
  */
-function removeNode(node) {
-  node.value = '';
-  node.type = 'word';
+function serializeContainer(node) {
+  let children = node.value.map(serialize);
+  const name = isFunctionNode(node) ? node.getName().toLowerCase() : '';
+  if (isAspectRatio(name, node.value)) {
+    children = normalizeAspectRatio(node.value, children);
+  }
+  const customProperty = isCustomProperty(name, node.value);
+  const customEmpty = isSimpleBlockNode(node) && isCustomEmpty(node.value);
+  if (!customProperty) {
+    if (children[0]?.trim() === '') children = children.slice(1);
+    if (!customEmpty && children.at(-1)?.trim() === '') children.pop();
+  }
+  const inner = children.join('');
+  return node
+    .toString()
+    .replace(node.value.map((child) => child.toString()).join(''), inner);
+}
+
+/**
+ * @param {string} name
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} nodes
+ * @return {boolean}
+ */
+function isAspectRatio(name, nodes) {
+  return (
+    name.includes('-aspect-ratio') ||
+    nodes.some(
+      (child) =>
+        isTokenNode(child) &&
+        isTokenIdent(child.value) &&
+        child.value[1].toLowerCase().includes('-aspect-ratio')
+    )
+  );
+}
+
+/**
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} nodes
+ * @param {string[]} children
+ * @return {string[]}
+ */
+function normalizeAspectRatio(nodes, children) {
+  const slash = nodes.findIndex(
+    (child) =>
+      isTokenNode(child) && isTokenDelim(child.value) && child.value[1] === '/'
+  );
+  const leftIndex = nodes
+    .slice(0, slash)
+    .findLastIndex((child) => isTokenNode(child));
+  const rightIndex =
+    slash + 1 + nodes.slice(slash + 1).findIndex((child) => isTokenNode(child));
+  const left = nodes[leftIndex];
+  const right = nodes[rightIndex];
+  if (
+    slash <= 0 ||
+    leftIndex < 0 ||
+    rightIndex >= nodes.length ||
+    !isTokenNode(left) ||
+    !isTokenNumber(left.value) ||
+    !isTokenNode(right) ||
+    !isTokenNumber(right.value)
+  ) {
+    return children;
+  }
+  const [a, b] = aspectRatio(Number(left.value[1]), Number(right.value[1]));
+  const normalized = [...children];
+  normalized[leftIndex] = a.toString();
+  normalized[rightIndex] = b.toString();
+  return normalized;
+}
+
+/**
+ * @param {string} name
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} nodes
+ * @return {boolean}
+ */
+function isCustomProperty(name, nodes) {
+  const first = nodes[0];
+  return Boolean(
+    name &&
+    isTokenNode(first) &&
+    isTokenIdent(first.value) &&
+    first.value[1].startsWith('--') &&
+    nodes.length === 1
+  );
+}
+
+/**
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} nodes
+ * @return {boolean}
+ */
+function isCustomEmpty(nodes) {
+  return (
+    nodes.at(-1)?.toString().trim() === '' &&
+    nodes.slice(0, -1).at(-1)?.toString() === ':' &&
+    nodes.some(
+      (child) =>
+        isTokenNode(child) &&
+        isTokenIdent(child.value) &&
+        child.value[1].startsWith('--')
+    )
+  );
 }
 
 /**
@@ -68,64 +181,58 @@ function transform(legacy, rule) {
     return;
   }
 
-  const params = valueParser(rule.params);
-
-  params.walk((node, index) => {
-    if (node.type === 'div') {
-      node.before = node.after = '';
-    } else if (node.type === 'function') {
-      node.before = '';
+  const params = parseListOfComponentValues(tokenize({ css: rule.params }));
+  const replacements = new Map();
+  const normalized = params.map((node, index) => {
+    if (isTokenNode(node) && isTokenComma(node.value)) return node;
+    if (isTokenNode(node) && isTokenIdent(node.value)) {
+      const next = params[index + 1];
+      const before = params[index - 2];
       if (
-        node.nodes[0] &&
-        node.nodes[0].type === 'word' &&
-        node.nodes[0].value.startsWith('--') &&
-        node.nodes[2] === undefined
+        node.value[1].toLowerCase() === 'all' &&
+        ruleName === 'media' &&
+        !before
       ) {
-        node.after = ' ';
-      } else {
-        node.after = '';
-      }
-      if (
-        node.nodes[4] &&
-        node.nodes[0].value.toLowerCase().indexOf('-aspect-ratio') === 3
-      ) {
-        const [a, b] = aspectRatio(
-          Number(node.nodes[2].value),
-          Number(node.nodes[4].value)
-        );
-
-        node.nodes[2].value = a.toString();
-        node.nodes[4].value = b.toString();
-      }
-    } else if (node.type === 'space') {
-      node.value = ' ';
-    } else {
-      const prevWord = params.nodes[index - 2];
-
-      if (
-        node.value.toLowerCase() === 'all' &&
-        rule.name.toLowerCase() === 'media' &&
-        !prevWord
-      ) {
-        const nextWord = params.nodes[index + 2];
-
-        if (!legacy || nextWord) {
-          removeNode(node);
-        }
-
-        if (nextWord && nextWord.value.toLowerCase() === 'and') {
-          const nextSpace = params.nodes[index + 1];
-          const secondSpace = params.nodes[index + 3];
-
-          removeNode(nextWord);
-          removeNode(nextSpace);
-          removeNode(secondSpace);
+        if (!legacy || next) replacements.set(node, '');
+        const and = params[index + 2];
+        if (
+          isTokenNode(and) &&
+          isTokenIdent(and.value) &&
+          and.value[1].toLowerCase() === 'and'
+        ) {
+          replacements.set(and, '');
+          if (params[index + 1]) replacements.set(params[index + 1], '');
+          if (params[index + 3]) replacements.set(params[index + 3], '');
         }
       }
     }
-  }, true);
+    return node;
+  });
 
-  rule.params = sortAndDedupe(getArguments(params).map(split));
+  const args = getArguments(normalized).map((arg) =>
+    arg
+      .map((node) =>
+        replacements.has(node) ? replacements.get(node) : serialize(node)
+      )
+      .join('')
+  );
+  rule.params = sortAndDedupe(
+    args
+      .map((arg) => arg.replace(/\s+/g, ' '))
+      .map((arg) => {
+        const compact = arg
+          .replace(/\s*,\s*/g, ',')
+          .replace(/\s*:\s*/g, ':')
+          .replace(/\s*\/\s*/g, '/');
+        const withEmptyCustomPropertySpace = compact.replace(
+          /(--[\w-]+:)(?=\))/g,
+          '$1 '
+        );
+        return /--[\w-]+:\s*\)/.test(withEmptyCustomPropertySpace)
+          ? withEmptyCustomPropertySpace
+          : compact.trim();
+      })
+  );
 
   if (!rule.params.length) {
     rule.raws.afterName = '';

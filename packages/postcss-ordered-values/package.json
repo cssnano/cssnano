@@ -30,8 +30,9 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "cssnano-utils": "workspace:^",
-    "postcss-value-parser": "^4.2.0"
+    "@csstools/css-parser-algorithms": "^4.0.0",
+    "@csstools/css-tokenizer": "^4.0.0",
+    "cssnano-utils": "workspace:^"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "@webref/css": "catalog:",
+    "postcss-value-parser": "^4.2.0",
     "postcss": "catalog:"
   },
   "peerDependencies": {

@@ -1,6 +1,6 @@
 import nodetest from 'node:test';
 import assert from 'node:assert/strict';
-import valueParser from 'postcss-value-parser';
+import { parse as valueParser } from '../src/lib/parse.js';
 import normalizeBorder from '../src/rules/border.js';
 import normalizeBoxShadow from '../src/rules/boxShadow.js';
 import normalizeAnimation from '../src/rules/animation.js';

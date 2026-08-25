@@ -1,10 +1,9 @@
-import postcssValueParser from 'postcss-value-parser';
+import { unit } from '../lib/parse.js';
 import cssnanoUtils from 'cssnano-utils';
 import addSpace from '../lib/addSpace.js';
 import getValue from '../lib/getValue.js';
 import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
-const { unit } = postcssValueParser;
 const { getArguments } = cssnanoUtils;
 // transition: [ none | <single-transition-property> ] || <time> || <single-transition-timing-function> || <time>
 
