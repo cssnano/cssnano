@@ -2,17 +2,24 @@
 const names = ['fade', 'spin-name', 'wide', 'narrow', 'title', '--custom'];
 const spaces = ['', ' ', '  ', '\t'];
 
-/** @param {ReturnType<typeof random>} rng */
-function randRule(rng) {
-  const a = rng.pick(names),
-    b = rng.pick(names),
+/** @param {ReturnType<typeof random>} rng @param {number} index */
+function randRule(rng, index) {
+  const a = `ident${index}`,
+    b = `${rng.pick(names)}${rng.int(1000)}`,
     space = rng.pick(spaces);
-  return (
-    `@keyframes ${a}{from{opacity:0}to{opacity:1}}@keyframes ${b}{to{transform:none}}` +
-    `@counter-style ${a}{system:cyclic;symbols:${a} ${b};fallback:${b}}` +
-    `:root{counter-reset:${a} 1 ${b} 2;counter-increment:${a};animation:${a} 1s${space},${b} 2s;` +
-    `grid-template-columns:[${a} ${b}] auto [end];grid-column:${a} / ${b}}`
-  );
+  const branches = [
+    () => `@keyframes ${a}{to{opacity:1}}a{animation:${a} 1s${space}}`,
+    () =>
+      `@counter-style ${a}{system:cyclic;symbols:a b;fallback:decimal}a{list-style:${a}}`,
+    () =>
+      `:root{counter-reset:${a} 1 ${b} 2;counter-increment:${a};content:counter(${a}) counters(${b},'.')}`,
+    () =>
+      `:root{grid-template-columns:[${a} ${b}] auto [end];grid-column:${a} / ${b};grid-template-areas:"${a} ${a}";grid-area:${a}}`,
+  ];
+  return {
+    branch: ['keyframes', 'counter-style', 'counters', 'grid'][index % 4],
+    css: branches[index % 4](),
+  };
 }
 
 const edgeCases = [

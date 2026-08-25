@@ -9,31 +9,24 @@ const ranges = [
   'u+??????',
   'u+1e00-1eff',
 ];
-const atoms = [
-  '/**/',
-  ' ',
-  ',',
-  '\t',
-  '',
-  'foo',
-  'var(--x)',
-  'env(foo)',
-  'initial',
-];
-/** @param {ReturnType<typeof random>} rng */
-function value(rng) {
-  const range = rng.pick(ranges);
-  if (rng.chance(0.25)) {
-    return `${rng.pick(['foo(', 'var(', 'calc('])}${range})`;
-  }
-  return Array.from(
-    { length: 1 + rng.int(3) },
-    () => `${rng.pick(atoms)}${range}`
-  ).join(rng.pick([' ', ',', '']));
-}
-/** @param {ReturnType<typeof random>} rng */
-function randRule(rng) {
-  return `@font-face{font-family:x;unicode-range:${value(rng)}}`;
+/** @param {ReturnType<typeof random>} rng @param {number} index */
+function randRule(rng, index) {
+  const prefix = (0x1000 + index).toString(16);
+  const branches = [
+    () => ['single-range', `u+${prefix}`],
+    () => ['mergeable-range', `u+${prefix}00-${prefix}ff`],
+    () => ['unmergeable-range', `u+${prefix}01-${prefix}fe`],
+    () => ['wildcard-range', `u+${prefix}??`],
+    () => [
+      'comma-separated-ranges',
+      `u+${prefix},u+${rng.pick(ranges).slice(2)}`,
+    ],
+  ];
+  const [branch, value] = branches[index % branches.length]();
+  return {
+    branch,
+    css: `@font-face{font-family:f${index};unicode-range:${value}}`,
+  };
 }
 const edgeCases = ranges.map((range) => `@font-face{unicode-range:${range}}`);
 export { edgeCases, randRule };

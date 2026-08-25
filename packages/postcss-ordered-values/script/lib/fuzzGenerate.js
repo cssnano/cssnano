@@ -18,13 +18,23 @@ const properties = [
   ['-webkit-border', ['solid red 1px']],
 ];
 
-/** @param {ReturnType<typeof random>} rng */
-function randRule(rng) {
-  const [property, propertyValues] = rng.pick(properties);
-  const value = rng.pick(propertyValues);
+/** @param {ReturnType<typeof random>} rng @param {number} index */
+function randRule(rng, index) {
+  const [property, propertyValues] = properties[index % properties.length];
+  const variants = [
+    () => rng.pick(propertyValues),
+    () => `${rng.pick(propertyValues)} /* fuzz ${index} */`,
+    () =>
+      `${rng.pick(propertyValues)}${property === 'box-shadow' ? ', transparent 0 0' : ''}`,
+  ];
+  const value =
+    variants[Math.floor(index / properties.length) % variants.length]();
   const casing = rng.chance(0.2) ? property.toUpperCase() : property;
   const spacing = rng.chance(0.25) ? ' ' : '';
-  return `a{${casing}:${spacing}${value}}`;
+  return {
+    branch: property,
+    css: `a.fuzz${index}{${casing}:${spacing}${value};--fuzz:${index}}`,
+  };
 }
 
 const edgeCases = [
@@ -38,4 +48,4 @@ const edgeCases = [
   'a{border:solid red 1px;outline:invert 1px solid}',
 ];
 
-export { edgeCases, randRule };
+export { edgeCases, properties, randRule };

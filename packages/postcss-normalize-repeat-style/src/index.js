@@ -1,4 +1,14 @@
-import { parse as valueParser } from './lib/parse.js';
+import {
+  isFunctionNode,
+  isTokenNode,
+  parseListOfComponentValues,
+} from '@csstools/css-parser-algorithms';
+import {
+  isTokenComma,
+  isTokenDelim,
+  isTokenIdent,
+  tokenize,
+} from '@csstools/css-tokenizer';
 import mappings from './lib/map.js';
 
 const repeatPropertyRegex = /^(background(-repeat)?|(-\w+-)?mask-repeat)$/i;
@@ -14,24 +24,24 @@ function evenValues(item, index) {
 const repeatKeywords = new Set(mappings.values());
 
 /**
- * @param {valueParser.Node} node
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue} node
  * @return {boolean}
  */
 function isCommaNode(node) {
-  return node.type === 'div' && node.value === ',';
+  return isTokenNode(node) && isTokenComma(node.value);
 }
 
 const variableFunctions = new Set(['var', 'env', 'constant']);
 /**
- * @param {valueParser.Node} node
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue} node
  * @return {boolean}
  */
 function isVariableFunctionNode(node) {
-  if (node.type !== 'function') {
+  if (!isFunctionNode(node)) {
     return false;
   }
 
-  return variableFunctions.has(node.value.toLowerCase());
+  return variableFunctions.has(node.getName().toLowerCase());
 }
 
 /**
@@ -39,9 +49,9 @@ function isVariableFunctionNode(node) {
  * @return {string}
  */
 function transform(value) {
-  const parsed = valueParser(value);
+  const nodes = parseListOfComponentValues(tokenize({ css: value }));
 
-  if (parsed.nodes.length === 1) {
+  if (nodes.length === 1) {
     return value;
   }
   /** @type {{start: number?, end: number?}[]} */
@@ -49,7 +59,7 @@ function transform(value) {
   let rangeIndex = 0;
   let shouldContinue = true;
 
-  for (const [index, node] of parsed.nodes.entries()) {
+  for (const [index, node] of nodes.entries()) {
     // After comma (`,`) follows next background
     if (isCommaNode(node)) {
       rangeIndex += 1;
@@ -64,7 +74,7 @@ function transform(value) {
 
     // After separator (`/`) follows `background-size` values
     // Avoid them
-    if (node.type === 'div' && node.value === '/') {
+    if (isSlashNode(node)) {
       shouldContinue = false;
 
       continue;
@@ -87,7 +97,9 @@ function transform(value) {
     }
 
     const isRepeatKeyword =
-      node.type === 'word' && repeatKeywords.has(node.value.toLowerCase());
+      isTokenNode(node) &&
+      isTokenIdent(node.value) &&
+      repeatKeywords.has(node.toString().toLowerCase());
 
     if (ranges[rangeIndex].start === null && isRepeatKeyword) {
       ranges[rangeIndex].start = index;
@@ -97,7 +109,7 @@ function transform(value) {
     }
 
     if (ranges[rangeIndex].start !== null) {
-      if (node.type !== 'space' && isRepeatKeyword) {
+      if (node.type !== 'whitespace' && isRepeatKeyword) {
         ranges[rangeIndex].end = index;
       }
     }
@@ -108,28 +120,35 @@ function transform(value) {
       continue;
     }
 
-    const nodes = parsed.nodes.slice(
+    const rangeNodes = nodes.slice(
       range.start,
       /** @type {number} */ (range.end) + 1
     );
 
-    if (nodes.length !== 3) {
+    if (rangeNodes.length !== 3) {
       continue;
     }
-    const key = nodes
+    const key = rangeNodes
       .filter(evenValues)
-      .map((n) => n.value.toLowerCase())
+      .map((n) => n.toString().toLowerCase())
       .toString();
 
     const match = mappings.get(key);
 
     if (match) {
-      nodes[0].value = match;
-      nodes[1].value = nodes[2].value = '';
+      nodes[range.start] = match;
+      nodes[range.start + 1] = nodes[range.start + 2] = '';
     }
   }
 
-  return parsed.toString();
+  return nodes
+    .map((node) => (typeof node === 'string' ? node : node.toString()))
+    .join('');
+}
+
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue} node */
+function isSlashNode(node) {
+  return isTokenNode(node) && isTokenDelim(node.value) && node.value[1] === '/';
 }
 
 /**

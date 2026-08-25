@@ -1,10 +1,27 @@
 /** @import { random } from '../../../../util/fuzzRng.js' */
-const names = ['fade', 'spin', 'a', 'b', 'var(--name)', 'none'];
-/** @param {ReturnType<typeof random>} rng */
-function randRule(rng) {
-  const a = rng.pick(names),
-    b = rng.pick(names);
-  return `@keyframes ${a}{from{opacity:0}to{opacity:1}}@keyframes ${b}{from{opacity:0}to{opacity:1}}a{animation:${a} 1s,${b} 2s}`;
+/** @param {ReturnType<typeof random>} rng @param {number} index */
+function randRule(rng, index) {
+  const name = `ident${index}`;
+  const other = `other${rng.int(1000)}`;
+  const branches = [
+    () => ({
+      branch: 'keyframes-animation-name',
+      css: `@keyframes ${name}{to{opacity:1}}@keyframes ${other}{to{opacity:1}}a{animation-name:${name},${other}}`,
+    }),
+    () => ({
+      branch: 'keyframes-animation-shorthand',
+      css: `@keyframes ${name}{to{opacity:1}}@keyframes ${other}{to{opacity:1}}a{animation:${name} 1s,${other} 2s}`,
+    }),
+    () => ({
+      branch: 'nested-keyframes',
+      css: `@media all{@keyframes ${name}{to{opacity:1}}@keyframes ${other}{to{opacity:1}}a{animation:${name} 1s,${other} 2s}}`,
+    }),
+    () => ({
+      branch: 'counter-style-list-style',
+      css: `@counter-style ${name}{system:cyclic;symbols:a}@counter-style ${other}{system:cyclic;symbols:a}a{list-style:${name}}`,
+    }),
+  ];
+  return branches[index % branches.length]();
 }
 const edgeCases = [
   '@keyframes a{to{opacity:1}}@keyframes b{to{opacity:1}}a{animation:a 1s,b 2s}',

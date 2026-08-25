@@ -1,4 +1,17 @@
-import { parse as valueParser, unit } from './lib/parse.js';
+import {
+  isFunctionNode,
+  isTokenNode,
+  parseListOfComponentValues,
+} from '@csstools/css-parser-algorithms';
+import {
+  isTokenComma,
+  isTokenDelim,
+  isTokenDimension,
+  isTokenIdent,
+  isTokenNumber,
+  isTokenPercentage,
+  tokenize,
+} from '@csstools/css-tokenizer';
 
 const directionKeywords = new Set(['top', 'right', 'bottom', 'left', 'center']);
 
@@ -17,66 +30,59 @@ const propFilterRegex =
   /^(background(-position)?|(-\w+-)?perspective-origin)$/i;
 
 /**
- * @param {valueParser.Node} node
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue} node
  * @return {boolean}
  */
 function isCommaNode(node) {
-  return node.type === 'div' && node.value === ',';
+  return isTokenNode(node) && isTokenComma(node.value);
 }
 
 /**
- * @param {valueParser.Node} node
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue} node
  * @return {boolean}
  */
 function isVariableFunctionNode(node) {
-  if (node.type !== 'function') {
+  if (!isFunctionNode(node)) {
     return false;
   }
 
-  return variableFunctions.has(node.value.toLowerCase());
+  return variableFunctions.has(node.getName().toLowerCase());
 }
 
 /**
- * @param {valueParser.Node} node
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue} node
  * @return {boolean}
  */
 function isMathFunctionNode(node) {
-  if (node.type !== 'function') {
+  if (!isFunctionNode(node)) {
     return false;
   }
-  return mathFunctions.has(node.value.toLowerCase());
+  return mathFunctions.has(node.getName().toLowerCase());
 }
 
 /**
- * @param {valueParser.Node} node
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue} node
  * @return {boolean}
  */
 function isNumberNode(node) {
-  if (node.type !== 'word') {
+  if (!isWordNode(node)) {
     return false;
   }
 
-  const value = Number.parseFloat(node.value);
+  const value = Number.parseFloat(node.toString());
 
   return !Number.isNaN(value);
 }
 
 /**
- * @param {valueParser.Node} node
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue} node
  * @return {boolean}
  */
 function isDimensionNode(node) {
-  if (node.type !== 'word') {
-    return false;
-  }
-
-  const parsed = unit(node.value);
-
-  if (!parsed) {
-    return false;
-  }
-
-  return parsed.unit !== '';
+  return (
+    isTokenNode(node) &&
+    (isTokenDimension(node.value) || isTokenPercentage(node.value))
+  );
 }
 
 /**
@@ -84,18 +90,21 @@ function isDimensionNode(node) {
  * @return {string}
  */
 function transform(value) {
-  const parsed = valueParser(value);
-  const ranges = collectRanges(parsed.nodes);
+  const nodes = parseListOfComponentValues(tokenize({ css: value }));
+  const ranges = collectRanges(nodes);
+  const replacements = new Map();
 
   for (const range of ranges) {
-    normalizeRange(parsed, range);
+    normalizeRange(nodes, range, replacements);
   }
 
-  return parsed.toString();
+  return nodes
+    .map((node, index) => replacements.get(index) ?? node.toString())
+    .join('');
 }
 
 /**
- * @param {valueParser.Node[]} nodes
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} nodes
  * @return {{start: number | null, end: number | null}[]}
  */
 function collectRanges(nodes) {
@@ -119,7 +128,7 @@ function collectRanges(nodes) {
 
     // After separator (`/`) follows `background-size` values
     // Avoid them
-    if (node.type === 'div' && node.value === '/') {
+    if (isSlashNode(node)) {
       shouldContinue = false;
 
       continue;
@@ -142,8 +151,8 @@ function collectRanges(nodes) {
     }
 
     const isPositionKeyword =
-      (node.type === 'word' &&
-        directionKeywords.has(node.value.toLowerCase())) ||
+      (isWordNode(node) &&
+        directionKeywords.has(node.toString().toLowerCase())) ||
       isDimensionNode(node) ||
       isNumberNode(node) ||
       isMathFunctionNode(node);
@@ -156,7 +165,7 @@ function collectRanges(nodes) {
     }
 
     if (ranges[rangeIndex].start !== null) {
-      if (node.type !== 'space' && isPositionKeyword) {
+      if (node.type !== 'whitespace' && isPositionKeyword) {
         ranges[rangeIndex].end = index;
       }
     }
@@ -166,78 +175,103 @@ function collectRanges(nodes) {
 }
 
 /**
- * @param {{nodes: valueParser.Node[]}} parsed
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} parsed
  * @param {{start: number | null, end: number | null}} range
+ * @param {Map<number, string>} replacements
  * @return {void}
  */
-function normalizeRange(parsed, range) {
+function normalizeRange(parsed, range, replacements) {
   if (range.start === null || range.end === null) {
     return;
   }
 
-  const nodes = parsed.nodes.slice(range.start, range.end + 1);
+  const nodes = parsed.slice(range.start, range.end + 1);
 
   if (nodes.length > 3) {
     return;
   }
 
-  const firstNode = nodes[0].value.toLowerCase();
-  const secondNode =
-    nodes[2] && nodes[2].value ? nodes[2].value.toLowerCase() : null;
+  const firstNode = nodes[0].toString().toLowerCase();
+  const secondNode = nodes[2] ? nodes[2].toString().toLowerCase() : null;
 
   if (nodes.length === 1 || secondNode === 'center') {
-    normalizeSinglePosition(nodes, firstNode, secondNode);
+    normalizeSinglePosition(firstNode, secondNode, range.start, replacements);
     return;
   }
 
-  normalizePairPosition(nodes, firstNode, secondNode);
+  normalizePairPosition(firstNode, secondNode, range.start, replacements);
 }
 
 /**
- * @param {valueParser.Node[]} nodes
  * @param {string} firstNode
  * @param {string | null} secondNode
  * @return {void}
  */
-function normalizeSinglePosition(nodes, firstNode, secondNode) {
+function normalizeSinglePosition(firstNode, secondNode, start, replacements) {
   if (secondNode) {
-    nodes[2].value = nodes[1].value = '';
+    replacements.set(start + 1, '');
+    replacements.set(start + 2, '');
   }
 
   const map = new Map([...horizontal, ['center', center]]);
 
   if (map.has(firstNode)) {
-    nodes[0].value = /** @type {string}*/ (map.get(firstNode));
+    replacements.set(start, /** @type {string}*/ (map.get(firstNode)));
   }
 }
 
 /**
- * @param {valueParser.Node[]} nodes
  * @param {string} firstNode
  * @param {string | null} secondNode
  * @return {void}
  */
-function normalizePairPosition(nodes, firstNode, secondNode) {
+function normalizePairPosition(firstNode, secondNode, start, replacements) {
   if (secondNode === null) {
     return;
   }
 
   if (firstNode === 'center' && directionKeywords.has(secondNode)) {
-    nodes[0].value = nodes[1].value = '';
+    replacements.set(start, '');
+    replacements.set(start + 1, '');
 
     if (horizontal.has(secondNode)) {
-      nodes[2].value = /** @type {string} */ (horizontal.get(secondNode));
+      replacements.set(
+        start + 2,
+        /** @type {string} */ (horizontal.get(secondNode))
+      );
     }
     return;
   }
 
   if (horizontal.has(firstNode) && verticalValue.has(secondNode)) {
-    nodes[0].value = /** @type {string} */ (horizontal.get(firstNode));
-    nodes[2].value = /** @type {string} */ (verticalValue.get(secondNode));
+    replacements.set(start, /** @type {string} */ (horizontal.get(firstNode)));
+    replacements.set(
+      start + 2,
+      /** @type {string} */ (verticalValue.get(secondNode))
+    );
   } else if (verticalValue.has(firstNode) && horizontal.has(secondNode)) {
-    nodes[0].value = /** @type {string} */ (horizontal.get(secondNode));
-    nodes[2].value = /** @type {string} */ (verticalValue.get(firstNode));
+    replacements.set(start, /** @type {string} */ (horizontal.get(secondNode)));
+    replacements.set(
+      start + 2,
+      /** @type {string} */ (verticalValue.get(firstNode))
+    );
   }
+}
+
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue} node */
+function isSlashNode(node) {
+  return isTokenNode(node) && isTokenDelim(node.value) && node.value[1] === '/';
+}
+
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue} node */
+function isWordNode(node) {
+  return (
+    isTokenNode(node) &&
+    (isTokenIdent(node.value) ||
+      isTokenNumber(node.value) ||
+      isTokenDimension(node.value) ||
+      isTokenPercentage(node.value))
+  );
 }
 
 /**
