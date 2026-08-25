@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "postcss-value-parser": "^4.2.0",
-    "svgo": "^4.0.2"
+    "svgo": "^4.1.0"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
