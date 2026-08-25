@@ -39,6 +39,10 @@ cssnano-preset-advanced@8.0.8:
   dir: packages/cssnano-preset-advanced
   intents:
     - free-games-build
+cssnano-preset-advanced@8.0.9:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - clever-vans-wash
 cssnano-preset-default@8.0.3:
   dir: packages/cssnano-preset-default
   intents:
@@ -79,6 +83,10 @@ cssnano-preset-default@8.0.8:
   dir: packages/cssnano-preset-default
   intents:
     - free-games-build
+cssnano-preset-default@8.0.9:
+  dir: packages/cssnano-preset-default
+  intents:
+    - clever-vans-wash
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -158,6 +166,10 @@ cssnano@8.0.8:
   dir: packages/cssnano
   intents:
     - free-games-build
+cssnano@8.0.9:
+  dir: packages/cssnano
+  intents:
+    - clever-vans-wash
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -175,6 +187,10 @@ postcss-colormin@8.0.4:
   dir: packages/postcss-colormin
   intents:
     - salty-dolls-enter
+postcss-colormin@8.0.5:
+  dir: packages/postcss-colormin
+  intents:
+    - heavy-banks-laugh
 postcss-convert-values@8.0.2:
   dir: packages/postcss-convert-values
   intents:
@@ -371,6 +387,10 @@ postcss-minify-gradients@8.0.5:
   dir: packages/postcss-minify-gradients
   intents:
     - free-games-build
+postcss-minify-gradients@8.0.6:
+  dir: packages/postcss-minify-gradients
+  intents:
+    - heavy-banks-laugh
 postcss-minify-params@8.0.2:
   dir: packages/postcss-minify-params
   intents:
@@ -657,6 +677,10 @@ postcss-svgo@8.0.5:
   dir: packages/postcss-svgo
   intents:
     - salty-dolls-enter
+postcss-svgo@8.0.6:
+  dir: packages/postcss-svgo
+  intents:
+    - goofy-spiders-marry
 postcss-unique-selectors@8.0.2:
   dir: packages/postcss-unique-selectors
   intents:
