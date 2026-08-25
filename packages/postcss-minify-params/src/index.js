@@ -63,14 +63,19 @@ function serializeContainer(node) {
   }
   const customProperty = isCustomProperty(name, node.value);
   const customEmpty = isSimpleBlockNode(node) && isCustomEmpty(node.value);
+  const trailingCommaSpace =
+    isFunctionNode(node) &&
+    node.value.at(-1)?.type === 'whitespace' &&
+    node.value.some((child) => isTokenNode(child) && isTokenComma(child.value));
   if (!customProperty) {
     if (children[0]?.trim() === '') children = children.slice(1);
-    if (!customEmpty && children.at(-1)?.trim() === '') children.pop();
+    if (!customEmpty && !trailingCommaSpace && children.at(-1)?.trim() === '')
+      children.pop();
   }
   const inner = children.join('');
-  return node
-    .toString()
-    .replace(node.value.map((child) => child.toString()).join(''), inner);
+  const opening = isFunctionNode(node) ? node.name[1] : node.startToken[1];
+  const closing = node.endToken?.[1] || '';
+  return `${opening}${inner}${closing}`;
 }
 
 /**
@@ -221,7 +226,7 @@ function transform(legacy, rule) {
       .map((arg) => arg.replace(/\s+/g, ' '))
       .map((arg) => {
         const compact = arg
-          .replace(/\s*,\s*/g, ',')
+          .replace(/\s*,\s*(?!\))/g, ',')
           .replace(/\s*:\s*/g, ':')
           .replace(/\s*\/\s*/g, '/');
         const withEmptyCustomPropertySpace = compact.replace(
@@ -229,7 +234,7 @@ function transform(legacy, rule) {
           '$1 '
         );
         return /--[\w-]+:\s*\)/.test(withEmptyCustomPropertySpace)
-          ? withEmptyCustomPropertySpace
+          ? withEmptyCustomPropertySpace.trim()
           : compact.trim();
       })
   );
