@@ -14,6 +14,30 @@ function createCssnanoProcessor(preset) {
   return postcss(cssnano({ preset }));
 }
 
+function firstDifference(actual, expected) {
+  let index = 0;
+  while (
+    index < actual.length &&
+    index < expected.length &&
+    actual[index] === expected[index]
+  ) {
+    index++;
+  }
+  return index;
+}
+
+function mismatchMessage(framework, actual, expected) {
+  const index = firstDifference(actual, expected);
+  const context = 40;
+  const start = Math.max(0, index - context);
+  const end = index + context;
+  return [
+    `Framework "${framework}" output differs at character ${index}`,
+    `actual  (${actual.length} chars): ${JSON.stringify(actual.slice(start, end))}`,
+    `expected (${expected.length} chars): ${JSON.stringify(expected.slice(start, end))}`,
+  ].join('\n');
+}
+
 function integrationTests(preset, integrations) {
   const presetName = path.basename(path.resolve(integrations, '../..'));
   const frameworks = new Map();
@@ -27,20 +51,19 @@ function integrationTests(preset, integrations) {
   }
 
   return async (t) =>
-    Promise.all(
+    Promise.allSettled(
       Array.from(frameworks, ([framework, css]) =>
         t.test(`${presetName} - ${framework}`, async () => {
           const result = await postcss([cssnano({ preset })]).process(css, {
             from: undefined,
           });
-          assert.strictEqual(
-            result.css,
-            fs.readFileSync(
-              path.join(integrations, `${framework}.css`),
-              'utf8'
-            ),
-            `Mismatch for preset "${preset}" and framework "${framework}"`
+          const expected = fs.readFileSync(
+            path.join(integrations, `${framework}.css`),
+            'utf8'
           );
+          if (result.css !== expected) {
+            assert.fail(mismatchMessage(framework, result.css, expected));
+          }
         })
       )
     );
