@@ -176,6 +176,14 @@ describe('Shorten', () => {
       'h1{transform:translateZ(2)}'
     )
   );
+
+  test(
+    'should shorten translate3d with zero percentage offsets to translateZ',
+    processCSS(
+      'h1{transform:translate3d(0%, 0%, 0)}',
+      'h1{transform:translateZ(0)}'
+    )
+  );
 });
 
 test(

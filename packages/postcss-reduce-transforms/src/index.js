@@ -6,6 +6,7 @@ import {
 import {
   isTokenDimension,
   isTokenNumber,
+  isTokenPercentage,
   tokenize,
 } from '@csstools/css-tokenizer';
 
@@ -48,7 +49,13 @@ function getValue(argument) {
     return Number.NaN;
   }
   const token = trimmedArgument[0].value;
-  if (!isTokenNumber(token) && !isTokenDimension(token)) return Number.NaN;
+  if (
+    !isTokenNumber(token) &&
+    !isTokenDimension(token) &&
+    !isTokenPercentage(token)
+  ) {
+    return Number.NaN;
+  }
   return Number.parseFloat(token[1]);
 }
 
