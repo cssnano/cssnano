@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.9
+
+### Patch Changes
+
+- fix: update svg and color processors
+
 ## 8.0.8
 
 ### Patch Changes

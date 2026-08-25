@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.6
+
+### Patch Changes
+
+- fix(postcss-svgo): update svgo
+
 ## 8.0.5
 
 ### Patch Changes
