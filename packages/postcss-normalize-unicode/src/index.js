@@ -1,6 +1,8 @@
 import getBrowsersList from '#getBrowsersList';
 import { tokenize } from '@csstools/css-tokenizer';
 import {
+  isFunctionNode,
+  isSimpleBlockNode,
   isTokenNode,
   parseListOfComponentValues,
 } from '@csstools/css-parser-algorithms';
@@ -107,7 +109,7 @@ function transform(value, isLegacy = false) {
         continue;
       }
 
-      if ('value' in node && Array.isArray(node.value)) {
+      if (isFunctionNode(node) || isSimpleBlockNode(node)) {
         const source = node.toString();
         const inner = node.value.map((child) => child.toString()).join('');
         output += source.replace(inner, serialize(node.value));

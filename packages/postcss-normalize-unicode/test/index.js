@@ -97,6 +97,11 @@ describe('Pass', () => {
     passthroughCSS(fixture('env(foo-bar)'))
   );
 
+  test(
+    'should pass through comments within nested component values',
+    passthroughCSS(fixture('foo(/**/bar)'))
+  );
+
   test('should pass through initial', passthroughCSS(fixture('initial')));
 
   test(
