@@ -1,6 +1,18 @@
+import {
+  isTokenHash,
+  isTokenIdent,
+  isTokenNumeric,
+  isTokenURL,
+  tokenize,
+} from '@csstools/css-tokenizer';
+import {
+  isFunctionNode,
+  isSimpleBlockNode,
+  isTokenNode,
+  parseListOfComponentValues,
+} from '@csstools/css-parser-algorithms';
 import getBrowsersList from '#getBrowsersList';
 import caniuseApi from 'caniuse-api';
-import valueParser from 'postcss-value-parser';
 import minifyColor from './minifyColor.js';
 
 const { isSupported } = caniuseApi;
@@ -9,21 +21,6 @@ const { isSupported } = caniuseApi;
 const rgbOrHslRegex = /^(rgb|hsl)a?$/i;
 const notMinifiableRegex =
   /^(composes|font|src$|filter|-webkit-tap-highlight-color)/i;
-/**
- * @param {{nodes: valueParser.Node[]}} parent
- * @param {(node: valueParser.Node, index: number, parent: {nodes: valueParser.Node[]}) => false | undefined} callback
- * @return {void}
- */
-function walk(parent, callback) {
-  for (const [index, node] of parent.nodes.entries()) {
-    const bubble = callback(node, index, parent);
-
-    if (node.type === 'function' && bubble !== false) {
-      walk(node, callback);
-    }
-  }
-}
-
 /*
  * IE 8 & 9 do not properly handle clicks on elements
  * with a `transparent` `background-color`.
@@ -34,14 +31,79 @@ const browsersWithTransparentBug = new Set(['ie 8', 'ie 9']);
 const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 
 /**
- * @param {valueParser.Node} node
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue} node
  * @return {boolean}
  */
 function isMathFunctionNode(node) {
-  if (node.type !== 'function') {
-    return false;
+  return (
+    isFunctionNode(node) && mathFunctions.has(node.getName().toLowerCase())
+  );
+}
+
+/**
+ * Serialize component values while replacing color-bearing words and functions.
+ * Keeping serialization in one pass also reproduces separator insertion when a
+ * color function becomes a word.
+ *
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} nodes
+ * @param {Options} options
+ * @return {string}
+ */
+function serialize(nodes, options) {
+  let output = '';
+
+  for (let index = 0; index < nodes.length; index++) {
+    const node = nodes[index];
+
+    if (isFunctionNode(node)) {
+      if (rgbOrHslRegex.test(node.getName())) {
+        const original = node.toString();
+        const replacement = minifyColor(original, options);
+        output += replacement;
+        const next = nodes[index + 1];
+        if (
+          replacement !== original &&
+          next &&
+          (isFunctionNode(next) ||
+            (isTokenNode(next) &&
+              (isTokenNumeric(next.value) ||
+                isTokenIdent(next.value) ||
+                isTokenHash(next.value) ||
+                isTokenURL(next.value))))
+        ) {
+          output += ' ';
+        }
+        continue;
+      }
+
+      if (isMathFunctionNode(node)) {
+        output += node.toString();
+      } else {
+        const source = node.toString();
+        const inner = node.value.map((child) => child.toString()).join('');
+        output += source.replace(inner, serialize(node.value, options));
+      }
+      continue;
+    }
+
+    if (isSimpleBlockNode(node)) {
+      const source = node.toString();
+      const inner = node.value.map((child) => child.toString()).join('');
+      output += source.replace(inner, serialize(node.value, options));
+      continue;
+    }
+
+    if (
+      isTokenNode(node) &&
+      (isTokenIdent(node.value) || isTokenHash(node.value))
+    ) {
+      output += minifyColor(node.value[1], options);
+    } else {
+      output += node.toString();
+    }
   }
-  return mathFunctions.has(node.value.toLowerCase());
+
+  return output;
 }
 
 /**
@@ -50,41 +112,9 @@ function isMathFunctionNode(node) {
  * @return {string}
  */
 function transform(value, options) {
-  const parsed = valueParser(value);
-
-  walk(parsed, (node, index, parent) => {
-    if (node.type === 'function') {
-      if (rgbOrHslRegex.test(node.value)) {
-        const { value: originalValue } = node;
-
-        node.value = minifyColor(valueParser.stringify(node), options);
-        /** @type {string} */ (node.type) = 'word';
-
-        const next = parent.nodes[index + 1];
-
-        if (
-          node.value !== originalValue &&
-          next &&
-          (next.type === 'word' || next.type === 'function')
-        ) {
-          parent.nodes.splice(
-            index + 1,
-            0,
-            /** @type {valueParser.SpaceNode} */ ({
-              type: 'space',
-              value: ' ',
-            })
-          );
-        }
-      } else if (isMathFunctionNode(node)) {
-        return false;
-      }
-    } else if (node.type === 'word') {
-      node.value = minifyColor(node.value, options);
-    }
-  });
-
-  return parsed.toString();
+  const tokens = tokenize({ css: value });
+  const nodes = parseListOfComponentValues(tokens);
+  return serialize(nodes, options);
 }
 
 /**
