@@ -1,4 +1,10 @@
-import valueParser from 'postcss-value-parser';
+import { isTokenIdent, tokenize } from '@csstools/css-tokenizer';
+import {
+  isFunctionNode,
+  isSimpleBlockNode,
+  isTokenNode,
+  parseListOfComponentValues,
+} from '@csstools/css-parser-algorithms';
 import cssnanoUtils from 'cssnano-utils';
 
 const { sameParent } = cssnanoUtils;
@@ -29,6 +35,49 @@ function canonical(obj) {
 
     return key;
   };
+}
+
+/**
+ * Replace identifier tokens while preserving the source of surrounding
+ * functions and blocks. In particular, quoted strings and URL tokens are not
+ * identifiers even when their decoded value matches a replacement.
+ *
+ * @param {string} value
+ * @param {(key: string) => string} resolve
+ * @return {string}
+ */
+function replaceIdentifiers(value, resolve) {
+  const nodes = parseListOfComponentValues(tokenize({ css: value }));
+
+  /**
+   * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} values
+   * @return {string}
+   */
+  function serialize(values) {
+    let output = '';
+
+    for (const node of values) {
+      if (isTokenNode(node)) {
+        output += isTokenIdent(node.value)
+          ? resolve(node.value[1])
+          : node.toString();
+        continue;
+      }
+
+      if (isFunctionNode(node) || isSimpleBlockNode(node)) {
+        const source = node.toString();
+        const inner = node.value.map((child) => child.toString()).join('');
+        output += source.replace(inner, serialize(node.value));
+        continue;
+      }
+
+      output += node.toString();
+    }
+
+    return output;
+  }
+
+  return serialize(nodes);
 }
 
 /**
@@ -114,13 +163,7 @@ function mergeAtRules(css) {
     const canon = canonical(pair.replacements);
 
     for (const decl of pair.decls) {
-      decl.value = valueParser(decl.value)
-        .walk((node) => {
-          if (node.type === 'word') {
-            node.value = canon(node.value);
-          }
-        })
-        .toString();
+      decl.value = replaceIdentifiers(decl.value, canon);
     }
     for (const cached of pair.removals) {
       cached.remove();

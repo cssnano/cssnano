@@ -223,3 +223,19 @@ test(
     `.hi{animation:hi 2s infinite linear}.ho{animation:ho 2s infinite linear}@-webkit-keyframes ho{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}@keyframes hi{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}`
   )
 );
+
+test(
+  'should not replace identifiers inside strings',
+  processCSS(
+    '@keyframes a{0%{color:#fff}}@keyframes b{0%{color:#fff}}div{animation:a;content:"a"}',
+    '@keyframes b{0%{color:#fff}}div{animation:b;content:"a"}'
+  )
+);
+
+test(
+  'should replace identifiers inside function arguments',
+  processCSS(
+    '@keyframes a{0%{color:#fff}}@keyframes b{0%{color:#fff}}div{animation:var(--name, a)}',
+    '@keyframes b{0%{color:#fff}}div{animation:var(--name, b)}'
+  )
+);
