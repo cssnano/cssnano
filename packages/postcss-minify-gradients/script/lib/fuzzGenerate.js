@@ -32,9 +32,9 @@ function stop(rng) {
     : `${color} ${first}`;
 }
 
-/** @param {ReturnType<typeof random>} rng */
-function gradient(rng) {
-  const name = rng.pick(gradientNames);
+/** @param {ReturnType<typeof random>} rng @param {number} index */
+function gradient(rng, index) {
+  const name = gradientNames[index % gradientNames.length];
   const stops = Array.from({ length: 2 + rng.int(4) }, () => stop(rng));
   if (name.includes('linear')) {
     const direction = rng.pick([
@@ -56,10 +56,19 @@ function gradient(rng) {
   return `${name}(${stops.join(rng.pick([',', ', ', ',  ']))})`;
 }
 
-/** @param {ReturnType<typeof random>} rng */
-function randRule(rng) {
-  const value = gradient(rng);
-  return `a{${rng.pick(['background', 'background-image', 'border-image-source'])}:${value}}`;
+/** @param {ReturnType<typeof random>} rng @param {number} index */
+function randRule(rng, index = 0) {
+  const value = gradient(rng, index);
+  const property = rng.pick([
+    'background',
+    'background-image',
+    'border-image-source',
+  ]);
+  return {
+    branch: gradientNames[index % gradientNames.length],
+    value,
+    css: `a.fuzz${index}{${property}:${value};--fuzz:${index}}`,
+  };
 }
 
 const edgeCases = [
@@ -76,6 +85,11 @@ const edgeCases = [
   'a{background:linear-gradient(red 0%,url(image.png) 100%)}',
   'a{background:linear-gradient(rgb(0 0 0 / .2) 0%,hsl(20 50% 50%) 100%)}',
   'a{background:linear-gradient(red 0%,color-mix(in srgb,red,blue) 100%)}',
+  'a{background:linear-gradient("red\\\\ blue" 0%, blue 100%)}',
+  'a{background:linear-gradient(red 0%, foo(/**/bar) 100%)}',
+  'a{background:linear-gradient((red) 0%, blue 100%)}',
+  'a{background:linear-gradient(red 0% / 20%, blue 100%)}',
+  'a{background:linear-gradient(red 0%, blue 100%);background:}',
 ];
 
 // The legacy flat parser associates the comment with the position node and
@@ -85,4 +99,4 @@ const intentionalDifferences = new Set([
   'a{background:linear-gradient(red 0% /* comment */, blue 100%)}',
 ]);
 
-export { edgeCases, intentionalDifferences, randRule };
+export { edgeCases, gradientNames, intentionalDifferences, randRule };
