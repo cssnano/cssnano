@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import valueParser from './parse.js';
 import addToCache from './cache.js';
 import isNum from './isNum.js';
 import { cssWideKeywords, grid, resolveProperty } from './slots.js';

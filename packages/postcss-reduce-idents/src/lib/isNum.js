@@ -1,6 +1,5 @@
-import postcssValueParser from 'postcss-value-parser';
+import { unit } from './parse.js';
 
-const { unit } = postcssValueParser;
 /**
  * @param {import('postcss-value-parser').Node} node
  * @return {import('postcss-value-parser').Dimension | false}
