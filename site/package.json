@@ -14,7 +14,7 @@
     "cssnano-preset-default": "link:../packages/cssnano-preset-default",
     "cssnano-preset-lite": "link:../packages/cssnano-preset-lite",
     "postcss": "^8.5.26",
-    "svgo": "^4.0.2"
+    "svgo": "^4.1.0"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.3",
@@ -25,7 +25,7 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "11.23.0"
+      "version": "11.24.0"
     }
   },
   "browserslist": [
