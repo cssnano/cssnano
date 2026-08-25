@@ -48,7 +48,7 @@ function toFunctionMap(functions) {
   return new Map(
     Object.entries(functions).map(([name, args]) => [
       // Stylesheets spell a function without the trailing `()` webref names it
-      // by, and postcss-value-parser reports it that way too.
+      // by.
       name.slice(0, -2),
       args,
     ])

@@ -1,6 +1,12 @@
-import valueParser from './parse.js';
 import addToCache from './cache.js';
-import functionArguments from './functionArguments.js';
+import {
+  argumentsOf,
+  isIdentifier,
+  name,
+  parse,
+  serialize,
+  walk,
+} from './components.js';
 import {
   counterStyle,
   cssWideKeywords,
@@ -133,51 +139,42 @@ export default (function () {
     },
 
     transform() {
-      /** @param {import('postcss-value-parser').Node} node */
-      const rename = (node) => {
-        const cached = node.type === 'word' && cache.get(node.value);
+      const rename = (node, replacements) => {
+        if (!isIdentifier(node)) return;
+        const cached = cache.get(node.value[1]);
         if (cached) {
           cached.count++;
-
-          node.value = cached.ident;
+          replacements.set(node, cached.ident);
         }
       };
 
       // Iterate each property and change their names
       for (const decl of decls) {
-        decl.value = valueParser(decl.value)
-          .walk((node) => {
-            rename(node);
-
-            // A function holds values of its own, such as the strings of
-            // `symbols()`, rather than the name of a counter style.
-            return node.type !== 'function';
-          })
-          .toString();
+        const values = parse(decl.value);
+        const replacements = new Map();
+        walk(values, (node) => {
+          rename(node, replacements);
+          // A function holds values of its own, such as `symbols()` strings.
+          return false;
+        });
+        decl.value = serialize(values, replacements);
       }
 
       // `content` and its kin name a counter style at one argument of a
       // counter function, and something else at the others
       for (const decl of functionDecls) {
-        decl.value = valueParser(decl.value)
-          .walk((node) => {
-            if (node.type !== 'function') {
-              return;
-            }
-
-            const args = counterStyle.functions.get(node.value.toLowerCase());
-            if (!args) {
-              return;
-            }
-
-            const parsed = functionArguments(node);
-            for (const index of args) {
-              for (const child of parsed[index] ?? []) {
-                rename(child);
-              }
-            }
-          })
-          .toString();
+        const values = parse(decl.value);
+        const replacements = new Map();
+        walk(values, (node) => {
+          const args = counterStyle.functions.get(name(node));
+          if (!args) return;
+          const parsed = argumentsOf(node);
+          for (const index of args) {
+            for (const child of parsed[index] ?? [])
+              rename(child, replacements);
+          }
+        });
+        decl.value = serialize(values, replacements);
       }
 
       // Iterate each at rule and change their name if references to them have been found

@@ -1,7 +1,13 @@
-import valueParser from './parse.js';
 import addToCache from './cache.js';
-import isNum from './isNum.js';
-import functionArguments from './functionArguments.js';
+import {
+  argumentsOf,
+  isIdentifier,
+  isNumeric,
+  name,
+  parse,
+  serialize,
+  walk,
+} from './components.js';
 import { counter, cssWideKeywords, resolveProperty } from './slots.js';
 
 // `list-item` and `page` are counters the user agent itself maintains, and the
@@ -17,7 +23,7 @@ const RESERVED_KEYWORDS = new Set([
 export default (function () {
   /** @type {Map<string, {ident: string, count: number}>} */
   const cache = new Map();
-  /** @type {{value: import('postcss-value-parser').ParsedValue | string}[]} */
+  /** @type {import('postcss').Declaration[]} */
   let declOneCache = [];
   /** @type {import('postcss').Declaration[]} */
   let declTwoCache = [];
@@ -32,27 +38,17 @@ export default (function () {
       const prop = resolveProperty(node.prop);
 
       if (counter.properties.has(prop)) {
-        /** @type {unknown} */ (node.value) = valueParser(node.value).walk(
-          (child) => {
-            if (
-              child.type === 'word' &&
-              !isNum(child) &&
-              !RESERVED_KEYWORDS.has(child.value.toLowerCase())
-            ) {
-              addToCache(child.value, encoder, cache);
-
-              child.value = /** @type {{ident: string, count: number}} */ (
-                cache.get(child.value)
-              ).ident;
-            }
-          }
-        );
-
-        declOneCache.push(
-          /** @type {{value: import('postcss-value-parser').ParsedValue | string}} */ (
-            node
-          )
-        );
+        const values = parse(node.value);
+        const replacements = new Map();
+        walk(values, (child) => {
+          if (!isIdentifier(child) || isNumeric(child)) return;
+          const value = child.value[1];
+          if (RESERVED_KEYWORDS.has(value.toLowerCase())) return;
+          addToCache(value, encoder, cache);
+          replacements.set(child, cache.get(value).ident);
+        });
+        node.value = serialize(values, replacements);
+        declOneCache.push(node);
       } else if (counter.functionProperties.has(prop)) {
         declTwoCache.push(node);
       }
@@ -60,56 +56,37 @@ export default (function () {
 
     transform() {
       for (const decl of declTwoCache) {
-        decl.value = valueParser(decl.value)
-          .walk((node) => {
-            const { type } = node;
-
-            if (type === 'function') {
-              // Only the arguments that name a counter are renamed: the others
-              // hold a counter style, a separator string or a link target,
-              // which a counter of the same name must not be confused with.
-              const args = counter.functions.get(node.value.toLowerCase());
-
-              if (args) {
-                const parsed = functionArguments(node);
-
-                for (const index of args) {
-                  for (const child of parsed[index] ?? []) {
-                    const cached =
-                      child.type === 'word' && cache.get(child.value);
-                    if (cached) {
-                      cached.count++;
-
-                      child.value = cached.ident;
-                    }
-                  }
-                }
+        const values = parse(decl.value);
+        const replacements = new Map();
+        walk(values, (node) => {
+          const args = counter.functions.get(name(node));
+          if (!args) return;
+          for (const index of args) {
+            for (const child of argumentsOf(node)[index] ?? []) {
+              if (!isIdentifier(child)) continue;
+              const cached = cache.get(child.value[1]);
+              if (cached) {
+                cached.count++;
+                replacements.set(child, cached.ident);
               }
             }
-
-            if (type === 'space') {
-              node.value = ' ';
-            }
-
-            return false;
-          })
-          .toString();
+          }
+        });
+        decl.value = serialize(values, replacements).replace(/\s+/g, ' ');
       }
 
       for (const decl of declOneCache) {
-        decl.value = /** @type {import('postcss-value-parser').ParsedValue} */ (
-          decl.value
-        )
-          .walk((node) => {
-            if (node.type === 'word' && !isNum(node)) {
-              for (const [key, cached] of cache) {
-                if (cached.ident === node.value && !cached.count) {
-                  node.value = key;
-                }
-              }
+        const values = parse(decl.value);
+        const replacements = new Map();
+        walk(values, (node) => {
+          if (!isIdentifier(node) || isNumeric(node)) return;
+          for (const [key, cached] of cache) {
+            if (cached.ident === node.value[1] && !cached.count) {
+              replacements.set(node, key);
             }
-          })
-          .toString();
+          }
+        });
+        decl.value = serialize(values, replacements);
       }
 
       // reset cache after transform

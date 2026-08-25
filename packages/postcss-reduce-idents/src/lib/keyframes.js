@@ -1,5 +1,5 @@
-import valueParser from './parse.js';
 import addToCache from './cache.js';
+import { isIdentifier, parse, serialize, walk } from './components.js';
 import {
   cssWideKeywords,
   keyframes,
@@ -47,19 +47,18 @@ export default (function () {
 
       // Iterate each property and change their names
       for (const decl of decls) {
-        decl.value = valueParser(decl.value)
-          .walk((node) => {
-            const cached = node.type === 'word' && cache.get(node.value);
-            if (cached) {
-              if (!referenced.has(node.value)) {
-                referenced.add(node.value);
-              }
-
-              cached.count++;
-              node.value = cached.ident;
-            }
-          })
-          .toString();
+        const values = parse(decl.value);
+        const replacements = new Map();
+        walk(values, (node) => {
+          if (!isIdentifier(node)) return;
+          const value = node.value[1];
+          const cached = cache.get(value);
+          if (!cached) return;
+          referenced.add(value);
+          cached.count++;
+          replacements.set(node, cached.ident);
+        });
+        decl.value = serialize(values, replacements);
       }
 
       // Iterate each at rule and change their name if references to them have been found

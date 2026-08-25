@@ -1,5 +1,4 @@
-export default _default;
-declare function _default(): {
+export default function gridTemplateReducer(): {
     collect(node: any, encoder: any): void;
     transform(): void;
 };
