@@ -19,10 +19,10 @@ for (const framework of readdirSync(base())) {
 }
 
 async function rebuild(pkg) {
-  for (const framework of Object.keys(frameworks)) {
-    const presetModule = await import(join(pkg, 'src', 'index.js'));
-    const preset = presetModule.default();
+  const presetModule = await import(join(pkg, 'src', 'index.js'));
+  const preset = presetModule.default();
 
+  for (const framework of Object.keys(frameworks)) {
     const result = await postcss([cssnano({ preset })]).process(
       frameworks[framework],
       { from: undefined }
