@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import { parse as valueParser } from './lib/parse.js';
 import mappings from './lib/map.js';
 
 const repeatPropertyRegex = /^(background(-repeat)?|(-\w+-)?mask-repeat)$/i;

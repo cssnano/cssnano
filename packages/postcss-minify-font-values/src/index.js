@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import { parse as valueParser } from './lib/parse.js';
 import minifyWeight from './lib/minify-weight.js';
 import minifyFamily from './lib/minify-family.js';
 import minifyFont from './lib/minify-font.js';

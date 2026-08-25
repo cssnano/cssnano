@@ -24,7 +24,8 @@
     "postcss-plugin"
   ],
   "dependencies": {
-    "postcss-value-parser": "^4.2.0"
+    "@csstools/css-parser-algorithms": "^4.0.0",
+    "@csstools/css-tokenizer": "^4.0.0"
   },
   "repository": {
     "type": "git",

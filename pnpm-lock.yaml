@@ -570,9 +570,12 @@ importers:
 
   packages/postcss-minify-font-values:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-parser-algorithms':
+        specifier: ^4.0.0
+        version: 4.0.0(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -674,9 +677,12 @@ importers:
 
   packages/postcss-normalize-positions:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-parser-algorithms':
+        specifier: ^4.0.0
+        version: 4.0.0(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -684,9 +690,12 @@ importers:
 
   packages/postcss-normalize-repeat-style:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-parser-algorithms':
+        specifier: ^4.0.0
+        version: 4.0.0(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'

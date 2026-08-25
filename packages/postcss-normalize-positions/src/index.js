@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import { parse as valueParser, unit } from './lib/parse.js';
 
 const directionKeywords = new Set(['top', 'right', 'bottom', 'left', 'center']);
 
@@ -70,7 +70,7 @@ function isDimensionNode(node) {
     return false;
   }
 
-  const parsed = valueParser.unit(node.value);
+  const parsed = unit(node.value);
 
   if (!parsed) {
     return false;

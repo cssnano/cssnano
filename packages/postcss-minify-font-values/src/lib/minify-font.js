@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import { parse as valueParser, unit } from './parse.js';
 import keywords from './keywords.js';
 import minifyFamily from './minify-family.js';
 import minifyWeight from './minify-weight.js';
@@ -44,7 +44,7 @@ function processWord(node, index, state) {
     state.familyStart = index;
   } else if (keywords.stretch.has(value)) {
     state.familyStart = index;
-  } else if (keywords.size.has(value) || valueParser.unit(value)) {
+  } else if (keywords.size.has(value) || unit(value)) {
     state.familyStart = index;
     state.hasSize = true;
   }
@@ -60,7 +60,7 @@ function isUnmodifiedBoundary(value) {
     value === 'inherit' ||
     value === 'initial' ||
     value === 'unset' ||
-    Boolean(valueParser.unit(value))
+    Boolean(unit(value))
   );
 }
 
@@ -84,7 +84,10 @@ function processNonWord(node, index, nextNode, state) {
   return false;
 }
 export default (function (unminified, opts) {
-  const tree = valueParser(unminified);
+  const trailingSemicolon = unminified.endsWith(';') ? ';' : '';
+  const tree = valueParser(
+    trailingSemicolon ? unminified.slice(0, -1) : unminified
+  );
   const nodes = tree.nodes;
 
   const state = { familyStart: Number.NaN, hasSize: false };
@@ -108,5 +111,5 @@ export default (function (unminified, opts) {
   const family = minifyFamily(nodes.slice(familyStart), opts);
 
   tree.nodes = nodes.slice(0, familyStart).concat(family);
-  return tree.toString();
+  return tree.toString() + trailingSemicolon;
 });

@@ -1,6 +1,5 @@
-import postcssValueParser from 'postcss-value-parser';
+import { stringify } from './parse.js';
 
-const { stringify } = postcssValueParser;
 const escapeCharacterRegex = /[\t\n\v\f:]/;
 const digitRegex = /\d/;
 const negativeNumberRegex = /^-[-\d]/;
@@ -213,7 +212,7 @@ export default (function (nodes, opts) {
         isKeyword ||
         digitRegex.test(node.value.slice(0, 1))
       ) {
-        return stringify(node);
+        return stringify([node]);
       }
 
       const escaped = escapeIdentifierSequence(node.value);
@@ -223,7 +222,7 @@ export default (function (nodes, opts) {
       }
     }
 
-    return stringify(node);
+    return stringify([node]);
   });
 
   if (opts.removeAfterKeyword) {
