@@ -4,7 +4,12 @@ import postcss from 'postcss';
 import { random } from '../../../util/fuzzRng.js';
 import oldPlugin from '../script/lib/oldPlugin.js';
 import plugin from '../src/index.js';
-import { edgeCases, properties, randRule } from '../script/lib/fuzzGenerate.js';
+import {
+  edgeCases,
+  intentionalDifferences,
+  properties,
+  randRule,
+} from '../script/lib/fuzzGenerate.js';
 
 /** @param {string} oldOutput @param {string} currentOutput @param {string} details */
 function assertSameOutput(oldOutput, currentOutput, details) {
@@ -30,6 +35,7 @@ test('preserves output across every ordered-value grammar branch', () => {
     const old = postcss([oldPlugin()]);
     const current = postcss([plugin()]);
     for (const css of edgeCases) {
+      if (intentionalDifferences.has(css)) continue;
       assertSameOutput(
         old.process(css, { from: undefined }).css,
         current.process(css, { from: undefined }).css,
@@ -39,6 +45,7 @@ test('preserves output across every ordered-value grammar branch', () => {
     for (let index = 0; index < 500; index++) {
       const sample = randRule(rng, index + (seed - 1) * 500);
       const { branch, css, value } = sample;
+      if (intentionalDifferences.has(css)) continue;
       branches.add(branch);
       values.add(value);
       assertSameOutput(
@@ -56,4 +63,13 @@ test('preserves output across every ordered-value grammar branch', () => {
     [...branches].toSorted(),
     properties.map(([property]) => property).toSorted()
   );
+});
+
+test('documents the property-scoped cache difference', () => {
+  const css = [...intentionalDifferences][0];
+  const old = postcss([oldPlugin()]).process(css, { from: undefined }).css;
+  const current = postcss([plugin()]).process(css, { from: undefined }).css;
+  assert.notStrictEqual(old, current);
+  assert.strictEqual(old, 'a{grid-row-gap:normal 1px;border:normal 1px}');
+  assert.strictEqual(current, 'a{grid-row-gap:normal 1px;border:1px  normal}');
 });

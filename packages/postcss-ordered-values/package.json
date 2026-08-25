@@ -50,6 +50,7 @@
   },
   "scripts": {
     "acquire": "node ./script/acquire.mjs",
+    "bench": "node ./script/bench.js",
     "test": "node --test"
   },
   "type": "module"

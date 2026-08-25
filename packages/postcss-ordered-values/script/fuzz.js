@@ -3,7 +3,11 @@ import postcss from 'postcss';
 import { random } from '../../../util/fuzzRng.js';
 import oldPlugin from './lib/oldPlugin.js';
 import plugin from '../src/index.js';
-import { edgeCases, randRule } from './lib/fuzzGenerate.js';
+import {
+  edgeCases,
+  intentionalDifferences,
+  randRule,
+} from './lib/fuzzGenerate.js';
 
 const { values } = parseArgs({
   options: {
@@ -27,6 +31,7 @@ const cases = [
 for (const [index, sample] of cases.entries()) {
   count++;
   const { branch, css } = sample;
+  if (intentionalDifferences.has(css)) continue;
   const options = { from: undefined };
   const oldOutput = old.process(css, options).css;
   const currentOutput = current.process(css, options).css;

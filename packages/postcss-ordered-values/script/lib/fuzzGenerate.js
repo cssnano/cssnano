@@ -91,4 +91,8 @@ const edgeCases = [
   'a{border:solid red 1px;outline:invert 1px solid}',
 ];
 
-export { edgeCases, properties, randRule };
+const intentionalDifferences = new Set([
+  'a{grid-row-gap:1px normal;border:1px normal}',
+]);
+
+export { edgeCases, intentionalDifferences, properties, randRule };

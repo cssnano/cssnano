@@ -1,0 +1,12 @@
+{
+  "keywords": [
+    "ease",
+    "ease-in",
+    "ease-in-out",
+    "ease-out",
+    "linear",
+    "step-end",
+    "step-start"
+  ],
+  "functions": ["cubic-bezier", "linear", "steps"]
+}

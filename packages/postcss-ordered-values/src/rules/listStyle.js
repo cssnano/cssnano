@@ -12,10 +12,19 @@ function listStyleNormalizer(listStyle) {
     if (isTokenNode(decl) && isTokenIdent(decl.value)) {
       const value = decl.value[1];
       if (definedTypes.has(value)) order.type = `${order.type} ${value}`;
-      else if (definedPosition.has(value)) order.position = `${order.position} ${value}`;
-      else if (value === 'none' && order.type.split(' ').filter(Boolean).includes('none')) order.image = `${order.image} ${value}`;
+      else if (definedPosition.has(value))
+        order.position = `${order.position} ${value}`;
+      else if (
+        value === 'none' &&
+        order.type.split(' ').filter(Boolean).includes('none')
+      )
+        order.image = `${order.image} ${value}`;
       else order.type = `${order.type} ${value}`;
-    } else if (isFunctionNode(decl)) order.image = `${order.image} ${decl}`;
+    } else if (
+      isFunctionNode(decl) ||
+      (isTokenNode(decl) && decl.value[0] === 'url-token')
+    )
+      order.image = `${order.image} ${decl}`;
   }
   return `${order.type.trim()} ${order.position.trim()} ${order.image.trim()}`.trim();
 }

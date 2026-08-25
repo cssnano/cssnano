@@ -1,4 +1,9 @@
-const flexDirection = new Set(['row', 'row-reverse', 'column', 'column-reverse']);
+const flexDirection = new Set([
+  'row',
+  'row-reverse',
+  'column',
+  'column-reverse',
+]);
 const flexWrap = new Set(['nowrap', 'wrap', 'wrap-reverse']);
 
 /** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} flexFlow */

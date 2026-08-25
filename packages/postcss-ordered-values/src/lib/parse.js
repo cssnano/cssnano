@@ -1,37 +1,44 @@
-import { isTokenNode, parseListOfComponentValues } from '@csstools/css-parser-algorithms';
 import {
-  isTokenComma,
+  isTokenNode,
+  parseListOfComponentValues,
+} from '@csstools/css-parser-algorithms';
+import {
   isTokenDimension,
-  isTokenIdent,
   isTokenNumber,
   isTokenPercentage,
   tokenize,
 } from '@csstools/css-tokenizer';
 
-/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} nodes */
-function stringify(nodes) {
+/**
+ * Serialize immutable CSSTools component values without reconstructing their
+ * source. Reducers receive immutable ComponentValue[] and must not construct
+ * legacy postcss-value-parser node shapes.
+ *
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} nodes
+ */
+function serializeComponentValues(nodes) {
   return nodes.map((node) => node.toString()).join('');
 }
 
 /** @param {import('@csstools/css-parser-algorithms').ComponentValue} node */
-function unit(node) {
-  if (!isTokenNode(node)) return false;
+function getNumericUnit(node) {
+  if (!isTokenNode(node)) return undefined;
   const token = node.value;
-  if (!isTokenNumber(token) && !isTokenDimension(token) && !isTokenPercentage(token))
-    return false;
-  return {
-    number: token[1],
-    unit: isTokenDimension(token)
-      ? token[4].unit.toLowerCase()
-      : isTokenPercentage(token)
-        ? '%'
-        : '',
-  };
+  if (
+    !isTokenNumber(token) &&
+    !isTokenDimension(token) &&
+    !isTokenPercentage(token)
+  )
+    return undefined;
+  let tokenUnit = '';
+  if (isTokenDimension(token)) tokenUnit = token[4].unit.toLowerCase();
+  else if (isTokenPercentage(token)) tokenUnit = '%';
+  return { number: token[1], unit: tokenUnit };
 }
 
 /** @param {string} value */
-function parse(value) {
+function parseComponentValues(value) {
   return parseListOfComponentValues(tokenize({ css: value }));
 }
 
-export { parse, stringify, unit };
+export { parseComponentValues, serializeComponentValues, getNumericUnit };

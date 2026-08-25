@@ -1,11 +1,40 @@
 import nodetest from 'node:test';
 import assert from 'node:assert/strict';
-import { parse as valueParser } from '../src/lib/parse.js';
+import {
+  getNumericUnit,
+  parseComponentValues as valueParser,
+  serializeComponentValues,
+} from '../src/lib/parse.js';
 import normalizeBorder from '../src/rules/border.js';
 import normalizeBoxShadow from '../src/rules/boxShadow.js';
 import normalizeAnimation from '../src/rules/animation.js';
 
 const { describe, test } = nodetest;
+
+test('numeric units identify numbers, dimensions, and percentages', () => {
+  assert.deepEqual(getNumericUnit(valueParser('1')[0]), {
+    number: '1',
+    unit: '',
+  });
+  assert.deepEqual(getNumericUnit(valueParser('1px')[0]), {
+    number: '1px',
+    unit: 'px',
+  });
+  assert.deepEqual(getNumericUnit(valueParser('25%')[0]), {
+    number: '25%',
+    unit: '%',
+  });
+  assert.strictEqual(getNumericUnit(valueParser('red')[0]), undefined);
+  assert.strictEqual(getNumericUnit(valueParser('solid')[0]), undefined);
+});
+
+test('component serialization preserves untouched source', () => {
+  const nodes = valueParser('solid /* keep */ url(foo.png) 1px');
+  assert.strictEqual(
+    serializeComponentValues(nodes),
+    'solid /* keep */ url(foo.png) 1px'
+  );
+});
 describe('Border', () => {
   test('border order handles max', () => {
     assert.strictEqual(

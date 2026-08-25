@@ -1,6 +1,6 @@
 import { isFunctionNode, isTokenNode } from '@csstools/css-parser-algorithms';
 import { isTokenComma } from '@csstools/css-tokenizer';
-import { stringify, unit } from '../lib/parse.js';
+import { getNumericUnit, serializeComponentValues } from '../lib/parse.js';
 import mathFunctions from '../lib/mathfunctions.js';
 import vendorUnprefixed from '../lib/vendorUnprefixed.js';
 
@@ -17,12 +17,18 @@ const getArguments = (nodes) => {
 function normalizeBoxShadow(parsed) {
   const result = [];
   for (const arg of getArguments(parsed)) {
-    const inset = [], lengths = [], color = [];
+    const inset = [],
+      lengths = [],
+      color = [];
     for (const node of arg) {
       if (node.type === 'whitespace') continue;
-      if (isFunctionNode(node) && mathFunctions.has(vendorUnprefixed(node.getName().toLowerCase()))) return stringify(parsed);
+      if (
+        isFunctionNode(node) &&
+        mathFunctions.has(vendorUnprefixed(node.getName().toLowerCase()))
+      )
+        return serializeComponentValues(parsed);
       const value = node.toString();
-      if (unit(node)) lengths.push(value);
+      if (getNumericUnit(node)) lengths.push(value);
       else if (value.toLowerCase() === 'inset') inset.push(value);
       else color.push(value);
     }

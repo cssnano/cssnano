@@ -1,1 +1,1 @@
-{"version":3,"file":"border.d.ts","sourceRoot":"","sources":["../../src/rules/border.js"],"names":[],"mappings":"AAQA,iFAAiF;AACjF,iBAAS,eAAe,CAAC,MAAM,EADnB,OAAO,iCAAiC,EAAE,cAAc,EACrC,UAmB9B;eAEc,eAAe"}
+{"version":3,"file":"border.d.ts","sourceRoot":"","sources":["../../src/rules/border.js"],"names":[],"mappings":"AAwBA,iFAAiF;AACjF,iBAAS,eAAe,CAAC,MAAM,EADnB,OAAO,iCAAiC,EAAE,cAAc,EACrC,UA0B9B;eAEc,eAAe"}

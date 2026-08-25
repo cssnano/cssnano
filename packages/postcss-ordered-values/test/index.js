@@ -39,6 +39,14 @@ test(
   )
 );
 
+test(
+  'isolates cache entries by reducer property',
+  processCSS(
+    'a{grid-row-gap:1px normal;border:1px normal}',
+    'a{grid-row-gap:normal 1px;border:1px  normal}'
+  )
+);
+
 describe('Order', () => {
   test(
     'should order border with color functions',
