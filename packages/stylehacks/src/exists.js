@@ -1,4 +1,3 @@
-
 /**
  * @param {import('postcss-selector-parser').Selector} selector
  * @param {number} index

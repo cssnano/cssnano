@@ -63,32 +63,46 @@ Note that this preset comes bundled with cssnano _by default_, so you don't need
 
 ### Configuration
 
-If you would like to use the default configuration, then you don't need to add anything to your `package.json`.
-
-But should you wish to customise this, you can pass an array with the second parameter as the options object to use. For example, to remove all comments:
-
-```diff
- {
-   "name": "awesome-application",
-+  "cssnano": {
-+    "preset": [
-+      "default",
-+      {"discardComments": {"removeAll": true}}
-+    ]
-+  }
- }
-```
-
-Depending on your usage, the JSON configuration might not work for you, such as in cases where you would like to use options with customisable function parameters. For this use case, we recommend a `cssnano.config.js` at the same location as your `package.json`. You can then load a preset and export it with your custom parameters:
+Configure options for `cssnano-preset-default` in your PostCSS configuration (such as `postcss.config.mjs`):
 
 ```js
-const defaultPreset = require('cssnano-preset-default');
+// postcss.config.mjs
+import cssnano from 'cssnano';
 
-module.exports = defaultPreset({
-  discardComments: {
-    remove: (comment) => comment[0] === '@',
-  },
-});
+export default {
+  plugins: [
+    cssnano({
+      preset: [
+        'default',
+        {
+          discardComments: {
+            removeAll: true,
+          },
+        },
+      ],
+    }),
+  ],
+};
+```
+
+You can also pass preset factory functions directly if you need to supply function parameters:
+
+```js
+// postcss.config.mjs
+import cssnano from 'cssnano';
+import defaultPreset from 'cssnano-preset-default';
+
+export default {
+  plugins: [
+    cssnano({
+      preset: defaultPreset({
+        discardComments: {
+          remove: (comment) => comment[0] === '@',
+        },
+      }),
+    }),
+  ],
+};
 ```
 
 Note that you may wish to publish your own preset to npm for reusability, should it differ a lot from this one. This is highly encouraged!

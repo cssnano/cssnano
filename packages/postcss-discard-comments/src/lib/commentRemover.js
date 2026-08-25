@@ -1,4 +1,3 @@
-
 class CommentRemover {
   /** @type {boolean} */
   #hasFirst;

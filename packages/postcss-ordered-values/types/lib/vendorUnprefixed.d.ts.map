@@ -1,1 +1,1 @@
-{"version":3,"file":"vendorUnprefixed.d.ts","sourceRoot":"","sources":["../../src/lib/vendorUnprefixed.js"],"names":[],"mappings":"AAEA;;;GAGG;AACH,iBAAS,gBAAgB,CAAC,IAAI,EAHnB,MAGmB,GAFlB,MAAM,CAIjB;eACc,gBAAgB"}
+{"version":3,"file":"vendorUnprefixed.d.ts","sourceRoot":"","sources":["../../src/lib/vendorUnprefixed.js"],"names":[],"mappings":"AACA;;;GAGG;AACH,iBAAS,gBAAgB,CAAC,IAAI,EAHnB,MAGmB,GAFlB,MAAM,CAIjB;eACc,gBAAgB"}

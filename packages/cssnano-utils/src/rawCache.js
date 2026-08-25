@@ -1,4 +1,3 @@
-
 /**
  * @return {import('postcss').Plugin}
  */

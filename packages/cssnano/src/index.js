@@ -1,12 +1,10 @@
 import { createRequire } from 'node:module';
-import path from 'node:path';
 import postcss from 'postcss';
-import { lilconfigSync } from 'lilconfig';
 import defaultPreset from 'cssnano-preset-default';
 
 const require = createRequire(import.meta.url);
 
-const cssnano = 'cssnano';
+let warnedAboutConfigFile = false;
 
 /** @typedef {boolean | { exclude?: boolean } | void | undefined} PluginOptions */
 /** @typedef {import('postcss').PluginCreator<any>} PluginCreator */
@@ -14,7 +12,7 @@ const cssnano = 'cssnano';
 /** @typedef {(options?: any) => { plugins: PresetPlugin[] }} PresetFactory */
 /** @typedef {string | PresetFactory | [string | PresetFactory, object] | { plugins: PresetPlugin[] }} PresetSpec */
 /** @typedef {string | PluginCreator | [string | PluginCreator, object?]} PluginSpec */
-/** @typedef {{ preset?: PresetSpec, plugins?: PluginSpec[], configFile?: string }} Options */
+/** @typedef {{ preset?: PresetSpec, plugins?: PluginSpec[] }} Options */
 /**
  * @param {string} moduleId
  * @returns {boolean}
@@ -26,6 +24,24 @@ function isResolvable(moduleId) {
   } catch {
     return false;
   }
+}
+
+/**
+ * @param {PluginSpec} plugin
+ * @return {PresetPlugin}
+ */
+function resolvePlugin(plugin) {
+  if (Array.isArray(plugin)) {
+    const [pluginDef, opts = {}] = plugin;
+    if (typeof pluginDef === 'string' && isResolvable(pluginDef)) {
+      return [require(pluginDef), opts];
+    }
+    return [/** @type {PluginCreator} */ (pluginDef), opts];
+  }
+  if (typeof plugin === 'string' && isResolvable(plugin)) {
+    return [require(plugin), {}];
+  }
+  return [/** @type {PluginCreator} */ (plugin), {}];
 }
 
 /**
@@ -49,8 +65,12 @@ function resolvePreset(preset) {
     options = {};
   }
 
+  if (!fn) {
+    return [];
+  }
+
   // For JS setups where we invoked the preset already
-  if (fn.plugins) {
+  if (typeof fn === 'object' && fn !== null && fn.plugins) {
     return fn.plugins;
   }
 
@@ -65,14 +85,14 @@ function resolvePreset(preset) {
   }
 
   // Try loading a preset from node_modules
-  if (isResolvable(fn)) {
+  if (typeof fn === 'string' && isResolvable(fn)) {
     return require(fn)(options).plugins;
   }
 
   const sugar = `cssnano-preset-${fn}`;
 
   // Try loading a preset from node_modules (sugar)
-  if (isResolvable(sugar)) {
+  if (typeof fn === 'string' && isResolvable(sugar)) {
     return require(sugar)(options).plugins;
   }
 
@@ -83,44 +103,14 @@ function resolvePreset(preset) {
 }
 
 /**
- * cssnano will look for configuration firstly as options passed
- * directly to it, and failing this it will use lilconfig to
- * load an external file.
-
  * @param {Options} options
+ * @return {PresetPlugin[]}
  */
 function resolveConfig(options) {
   if (options.preset) {
     return resolvePreset(options.preset);
   }
-
-  /** @type {string | undefined} */
-  let searchPath = process.cwd();
-  let configPath = undefined;
-
-  if (options.configFile) {
-    searchPath = undefined;
-    configPath = path.resolve(process.cwd(), options.configFile);
-  }
-
-  const configExplorer = lilconfigSync(cssnano, {
-    searchPlaces: [
-      'package.json',
-      '.cssnanorc',
-      '.cssnanorc.json',
-      '.cssnanorc.js',
-      'cssnano.config.js',
-    ],
-  });
-  const config = configPath
-    ? configExplorer.load(configPath)
-    : configExplorer.search(searchPath);
-
-  if (config === null) {
-    return resolvePreset('default');
-  }
-
-  return resolvePreset(config.config.preset || config.config);
+  return resolvePreset('default');
 }
 
 /**
@@ -129,53 +119,38 @@ function resolveConfig(options) {
  * @return {import('postcss').Processor}
  */
 function cssnanoPlugin(options = {}) {
-  /** @typedef {Options & { preset: { plugins: PresetPlugin[] } }} MutableOptions */
-  if (Array.isArray(/** @type {MutableOptions} */ (options).plugins)) {
-    if (
-      !(/** @type {MutableOptions} */ (options).preset) ||
-      !(/** @type {MutableOptions} */ (options).preset.plugins)
-    ) {
-      /** @type {MutableOptions} */ (options).preset = { plugins: [] };
-    }
-
-    const inputPlugins = /** @type {PluginSpec[]} */ (
-      /** @type {MutableOptions} */ (options).plugins
+  // configFile was removed; warn JS callers instead of silently ignoring it.
+  // The type omits it deliberately, so access through a widened view.
+  const { configFile } = /** @type {Options & { configFile?: string }} */ (
+    options
+  );
+  if (configFile !== undefined && !warnedAboutConfigFile) {
+    warnedAboutConfigFile = true;
+    console.warn(
+      'cssnano: the `configFile` option is no longer supported. Move your configuration into `postcss.config.mjs` or pass it directly to `cssnano(options)`.'
     );
-    for (const plugin of inputPlugins) {
-      if (Array.isArray(plugin)) {
-        const [pluginDef, opts = {}] = plugin;
-        if (typeof pluginDef === 'string' && isResolvable(pluginDef)) {
-          /** @type {MutableOptions} */ (options).preset.plugins.push([
-            require(pluginDef),
-            opts,
-          ]);
-        } else {
-          /** @type {MutableOptions} */ (options).preset.plugins.push([
-            /** @type {PluginCreator} */ (pluginDef),
-            opts,
-          ]);
-        }
-      } else if (typeof plugin === 'string' && isResolvable(plugin)) {
-        /** @type {MutableOptions} */ (options).preset.plugins.push([
-          require(plugin),
-          {},
-        ]);
-      } else {
-        /** @type {MutableOptions} */ (options).preset.plugins.push([
-          /** @type {PluginCreator} */ (plugin),
-          {},
-        ]);
-      }
-    }
   }
+
+  /** @type {PresetPlugin[]} */
+  let nanoPlugins;
+  if (options.plugins && !options.preset) {
+    nanoPlugins = [];
+  } else {
+    nanoPlugins = resolveConfig(options);
+  }
+
+  if (Array.isArray(options.plugins)) {
+    const extraPlugins = options.plugins.map(resolvePlugin);
+    nanoPlugins = [...nanoPlugins, ...extraPlugins];
+  }
+
   const plugins = [];
-  const nanoPlugins = resolveConfig(options);
   for (const nanoPlugin of nanoPlugins) {
     if (Array.isArray(nanoPlugin)) {
       const [processor, opts] = nanoPlugin;
       if (
         typeof opts === 'undefined' ||
-        (typeof opts === 'object' && !opts.exclude) ||
+        (typeof opts === 'object' && opts !== null && !opts.exclude) ||
         (typeof opts === 'boolean' && opts === true)
       ) {
         plugins.push(processor(opts));

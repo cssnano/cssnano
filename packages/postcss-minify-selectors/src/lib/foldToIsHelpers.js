@@ -1,4 +1,3 @@
-
 /** @typedef {import('postcss-selector-parser').Node} Node */
 /** @typedef {import('postcss-selector-parser').Selector} Selector */
 /** @typedef {import('postcss-selector-parser').Pseudo} Pseudo */

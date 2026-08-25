@@ -53,41 +53,7 @@ module.exports = {
 };
 ```
 
-For other cases where the preset was not explicitly set, cssnano will look
-for a section in your `package.json` or a `cssnano.config.js`, from the current
-working directory upwards until it reaches your home directory. These two
-configuration examples function identically to the above:
-
-```json
-{
-  "name": "awesome-application",
-  "cssnano": {
-    "preset": [
-      "default",
-      {"discardComments": {"removeAll": true}}
-    ]
-  }
-}
-```
-
-And the `cssnano.config.js`:
-
-```js
-const defaultPreset = require('cssnano-preset-default');
-
-module.exports = defaultPreset({
-    discardComments: {
-        removeAll: true,
-    },
-});
-```
-
-_The `cssnano.config.js` is useful if you need to make use of transformations
-that can accept functions as parameters, for more specific use cases._
-
-If cssnano was not loaded with a preset explicitly, or a config section/file
-were not found in any parent directories, then the defaults will be loaded.
-An example `postcss.config.js`:
+If cssnano is initialized without explicit options, the default preset will be loaded automatically:
 
 ```js
 module.exports = {

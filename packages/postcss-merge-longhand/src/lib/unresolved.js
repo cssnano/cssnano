@@ -1,4 +1,3 @@
-
 /* Substitution functions from CSS Values. If a user agent does not support
  * one, the entire declaration becomes invalid, so we cannot infer what value
  * substitutes at runtime. */

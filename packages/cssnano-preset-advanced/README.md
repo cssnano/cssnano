@@ -61,42 +61,47 @@ With [npm](https://npmjs.com/package/cssnano-preset-advanced) do:
 If you don't have npm then [check out this installation tutorial](https://npmjs.com/package/cssnano-preset-advanced/tutorial).
 
 ### Configuration
-
-If you would like to use the preset in its default configuration, specify a section in your `package.json`:
-
-```diff
- {
-   "name": "awesome-application",
-+  "cssnano": {
-+    "preset": "advanced"
-+  }
- }
-```
-
-But should you wish to customise this, you can pass an array with the second parameter as the options object to use. For example, to remove all comments:
-
-```diff
- {
-   "name": "awesome-application",
-+  "cssnano": {
-+    "preset": [
-+      "advanced",
-+      {"discardComments": {"removeAll": true}}
-+    ]
-+  }
- }
-```
-
-Depending on your usage, the JSON configuration might not work for you, such as in cases where you would like to use options with customisable function parameters. For this use case, we recommend a `cssnano.config.js` at the same location as your `package.json`. You can then load a preset and export it with your custom parameters:
+ 
+Configure options for `cssnano-preset-advanced` in your PostCSS configuration (such as `postcss.config.mjs`):
 
 ```js
-const advancedPreset = require('cssnano-preset-advanced');
+// postcss.config.mjs
+import cssnano from 'cssnano';
 
-module.exports = advancedPreset({
-  discardComments: {
-    remove: (comment) => comment[0] === '@',
-  },
-});
+export default {
+  plugins: [
+    cssnano({
+      preset: [
+        'advanced',
+        {
+          discardComments: {
+            removeAll: true,
+          },
+        },
+      ],
+    }),
+  ],
+};
+```
+
+You can also pass preset factory functions directly if you need to supply function parameters:
+
+```js
+// postcss.config.mjs
+import cssnano from 'cssnano';
+import advancedPreset from 'cssnano-preset-advanced';
+
+export default {
+  plugins: [
+    cssnano({
+      preset: advancedPreset({
+        discardComments: {
+          remove: (comment) => comment[0] === '@',
+        },
+      }),
+    }),
+  ],
+};
 ```
 
 Note that you may wish to publish your own preset to npm for reusability, should it differ a lot from this one. This is highly encouraged!

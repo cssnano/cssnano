@@ -67,17 +67,19 @@ test('should run the plugin passed through the cssnano config.plugins', async ()
 
 for (const [description, preset] of [
   ['a string preset', 'lite'],
+  ['a full package name preset', 'cssnano-preset-lite'],
   ['a preset factory', litePreset],
   ['a configured preset', [litePreset, {}]],
+  ['an invoked preset', litePreset()],
 ]) {
-  test(`should retain the plugins-only result with ${description}`, async () => {
+  test(`should combine plugins with ${description}`, async () => {
     const result = await postcss([
       cssnano({ preset, plugins: [autoprefixer] }),
     ]).process(`.example { user-select: none; }`, { from: undefined });
 
     assert.strictEqual(
       result.css,
-      `.example { -ms-user-select: none; user-select: none; }`
+      `.example{-ms-user-select:none;user-select:none}`
     );
   });
 }
@@ -334,4 +336,33 @@ test('should run the plugin when preset is empty array with options and string a
     `.example { -ms-user-select: none; user-select: none; }
 `
   );
+});
+
+test('should preserve plugin execution order', async () => {
+  /** @type {string[]} */
+  const executionOrder = [];
+  const plugin1 = () => ({
+    postcssPlugin: 'plugin1',
+    Once() {
+      executionOrder.push('plugin1');
+    },
+  });
+  plugin1.postcss = true;
+
+  const plugin2 = () => ({
+    postcssPlugin: 'plugin2',
+    Once() {
+      executionOrder.push('plugin2');
+    },
+  });
+  plugin2.postcss = true;
+
+  await postcss([
+    cssnano({
+      preset: [],
+      plugins: [plugin1, plugin2],
+    }),
+  ]).process('h1 { color: red }', { from: undefined });
+
+  assert.deepStrictEqual(executionOrder, ['plugin1', 'plugin2']);
 });

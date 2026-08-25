@@ -14,7 +14,6 @@ export type PluginSpec = string | PluginCreator | [string | PluginCreator, objec
 export type Options = {
     preset?: PresetSpec;
     plugins?: PluginSpec[];
-    configFile?: string;
 };
 /**
  * @type {import('postcss').PluginCreator<Options>}

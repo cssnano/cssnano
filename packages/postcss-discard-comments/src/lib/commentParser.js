@@ -1,4 +1,3 @@
-
 // State machine states reused between parses for better perf
 const STATES = {
   NORMAL: 0,

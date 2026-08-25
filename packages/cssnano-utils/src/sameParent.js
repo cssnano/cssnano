@@ -1,4 +1,3 @@
-
 /**
  * @param {import('postcss').AnyNode} nodeA
  * @param {import('postcss').AnyNode} nodeB
