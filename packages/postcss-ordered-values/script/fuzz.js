@@ -17,20 +17,29 @@ const old = postcss([oldPlugin()]);
 const current = postcss([plugin()]);
 let count = 0;
 
-for (const css of [
-  ...edgeCases,
-  ...Array.from(
-    { length: Number(values.count) },
-    (_, index) => randRule(rng, index).css
+const cases = [
+  ...edgeCases.map((css) => ({ branch: 'fixed', css })),
+  ...Array.from({ length: Number(values.count) }, (_, index) =>
+    randRule(rng, index)
   ),
-]) {
+];
+
+for (const [index, sample] of cases.entries()) {
   count++;
+  const { branch, css } = sample;
   const options = { from: undefined };
   const oldOutput = old.process(css, options).css;
   const currentOutput = current.process(css, options).css;
   if (currentOutput !== oldOutput) {
+    let firstDifferingByte = 0;
+    while (
+      firstDifferingByte < oldOutput.length &&
+      oldOutput[firstDifferingByte] === currentOutput[firstDifferingByte]
+    ) {
+      firstDifferingByte++;
+    }
     console.error(
-      `DIVERGENCE\nseed: ${seed}\ninput: ${css}\nold: ${oldOutput}\nnew: ${currentOutput}`
+      `DIVERGENCE\nclassification: unclassified\nseed: ${seed}\ncase: ${index}\nbranch: ${branch}\ninput: ${css}\nold: ${oldOutput}\nnew: ${currentOutput}\nfirst differing byte: ${firstDifferingByte}`
     );
     process.exit(1);
   }
