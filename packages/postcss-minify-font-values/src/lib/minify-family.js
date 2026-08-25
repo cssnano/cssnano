@@ -14,7 +14,7 @@ const genericFontFamilykeywords = new Set([
   'monospace',
   'system-ui',
 ]);
-const regexSimpleEscapeCharacters = /[ !"#$%&'()*+,.\/<=>?@\[\\\]^`{|}~]/;
+const regexSimpleEscapeCharacters = /[ !"#$%&'()*+,./<=>?@[\\\]^`{|}~]/;
 const regexKeyword = new RegExp(
   [...genericFontFamilykeywords, ...globalKeywords].join('|'),
   'i'
@@ -22,7 +22,6 @@ const regexKeyword = new RegExp(
 const regexInvalidIdentifier = /^(-?\d|--)/;
 const regexSpaceAtStart = /^\x20/;
 const regexWhitespace = /[\t\n\f\r\x20]/g;
-const regexIdentifierCharacter = /^[a-zA-Z\d\xa0-\uffff_-]+$/;
 const regexConsecutiveSpaces = /(\\(?:[a-fA-F0-9]{1,6}\x20|\x20))?(\x20{2,})/g;
 const regexTrailingEscape = /\\[a-fA-F0-9]{0,6}\x20$/;
 const regexTrailingSpace = /\x20$/;
