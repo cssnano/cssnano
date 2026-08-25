@@ -1,101 +1,36 @@
+import { isTokenNode } from '@csstools/css-parser-algorithms';
+import { isTokenDelim } from '@csstools/css-tokenizer';
+import { stringify } from '../lib/parse.js';
 import joinGridValue from '../lib/joinGridValue.js';
 
-/**
- * @param {import('postcss-value-parser').ParsedValue} gridAutoFlow
- * @return {import('postcss-value-parser').ParsedValue | string}
- */
+const valuesOf = (nodes) => nodes.filter((node) => node.type !== 'whitespace').map((node) => node.toString());
+
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} gridAutoFlow */
 const normalizeGridAutoFlow = (gridAutoFlow) => {
-  const newValue = { front: '', back: '' };
-  let shouldNormalize = false;
-  gridAutoFlow.walk((node) => {
-    if (node.value === 'dense') {
-      shouldNormalize = true;
-      newValue.back = node.value;
-    } else if (['row', 'column'].includes(node.value.trim().toLowerCase())) {
-      shouldNormalize = true;
-      newValue.front = node.value;
-    } else {
-      shouldNormalize = false;
-    }
-  });
-  if (shouldNormalize) {
-    return `${newValue.front.trim()} ${newValue.back.trim()}`;
-  }
-  return gridAutoFlow;
+  const values = valuesOf(gridAutoFlow);
+  if (!values.every((value) => ['dense', 'row', 'column'].includes(value.toLowerCase()))) return stringify(gridAutoFlow);
+  return `${values.find((value) => ['row', 'column'].includes(value.toLowerCase())) || ''} ${values.find((value) => value.toLowerCase() === 'dense') || ''}`.trim();
 };
 
-/**
- * @param {import('postcss-value-parser').ParsedValue} gridGap
- * @return {import('postcss-value-parser').ParsedValue | string}
- */
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} gridGap */
 const normalizeGridColumnRowGap = (gridGap) => {
-  const newValue = { front: '', back: '' };
-  let shouldNormalize = false;
-  gridGap.walk((node) => {
-    // console.log(node);
-    if (node.value === 'normal') {
-      shouldNormalize = true;
-      newValue.front = node.value;
-    } else {
-      newValue.back = `${newValue.back} ${node.value}`;
-    }
-  });
-  if (shouldNormalize) {
-    return `${newValue.front.trim()} ${newValue.back.trim()}`;
-  }
-  return gridGap;
+  const values = valuesOf(gridGap);
+  return values.includes('normal') ? `normal ${values.filter((value) => value !== 'normal').join(' ')}`.trim() : stringify(gridGap);
 };
 
-/**
- * @param {import('postcss-value-parser').ParsedValue} grid
- * @return {string | string[]}
- */
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} grid */
 const normalizeGridColumnRow = (grid) => {
-  // cant do normalization here using node, so copy it as a string
-  const gridValue = grid.toString().split('/'); // node -> string value, split ->  " 2 / 3 span " ->  [' 2','3 span ']
-  if (gridValue.length > 1) {
-    return joinGridValue(
-      gridValue.map((gridLine) => {
-        const normalizeValue = {
-          front: '',
-          back: '',
-        };
-        const trimmedGridLine = gridLine.trim(); // '3 span ' -> '3 span'
-        for (const node of trimmedGridLine.split(' ')) {
-          // ['3','span']
-          if (node === 'span') {
-            normalizeValue.front = node; // span _
-          } else {
-            normalizeValue.back = `${normalizeValue.back} ${node}`; // _ 3
-          }
-        }
-        return `${normalizeValue.front.trim()} ${normalizeValue.back.trim()}`; // span 3
-      })
-      // returns "2 / span 3"
-    );
+  const lines = [[]];
+  for (const node of grid) {
+    if (isTokenNode(node) && isTokenDelim(node.value) && node.value[1] === '/') lines.push([]);
+    else lines.at(-1).push(node);
   }
-  // doing this separating if `/` is not present as while joining('/') , it will add `/` at the end
-  return gridValue.map((gridLine) => {
-    const normalizeValue = {
-      front: '',
-      back: '',
-    };
-    const trimmedGridLine = gridLine.trim();
-    for (const node of trimmedGridLine.split(' ')) {
-      if (node === 'span') {
-        normalizeValue.front = node;
-      } else {
-        normalizeValue.back = `${normalizeValue.back} ${node}`;
-      }
-    }
-    return `${normalizeValue.front.trim()} ${normalizeValue.back.trim()}`;
-  });
+  const normalizeLine = (line) => {
+    const values = valuesOf(line);
+    return `${values.filter((value) => value === 'span').join(' ')} ${values.filter((value) => value !== 'span').join(' ')}`.trim();
+  };
+  return lines.length > 1 ? joinGridValue(lines.map(normalizeLine)) : normalizeLine(lines[0]);
 };
-export { normalizeGridAutoFlow };
-export { normalizeGridColumnRowGap };
-export { normalizeGridColumnRow };
-export default {
-  normalizeGridAutoFlow,
-  normalizeGridColumnRowGap,
-  normalizeGridColumnRow,
-};
+
+export { normalizeGridAutoFlow, normalizeGridColumnRowGap, normalizeGridColumnRow };
+export default { normalizeGridAutoFlow, normalizeGridColumnRowGap, normalizeGridColumnRow };

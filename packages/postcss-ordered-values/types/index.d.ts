@@ -1,6 +1,4 @@
-/**
- * @return {import('postcss').Plugin}
- */
+/** @return {import('postcss').Plugin} */
 declare function pluginCreator(): import('postcss').Plugin;
 declare namespace pluginCreator {
     var postcss: true;

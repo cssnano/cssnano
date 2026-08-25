@@ -1,7 +1,4 @@
-/**
- * @param {import('postcss-value-parser').ParsedValue} parsed
- * @return {string}
- */
-declare function normalizeTransition(parsed: import('postcss-value-parser').ParsedValue): string;
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} parsed */
+declare function normalizeTransition(parsed: import('@csstools/css-parser-algorithms').ComponentValue[]): string;
 export default normalizeTransition;
 //# sourceMappingURL=transition.d.ts.map

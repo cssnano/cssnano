@@ -1,34 +1,14 @@
-// flex-flow: <flex-direction> || <flex-wrap>
-
-const flexDirection = new Set([
-  'row',
-  'row-reverse',
-  'column',
-  'column-reverse',
-]);
-
+const flexDirection = new Set(['row', 'row-reverse', 'column', 'column-reverse']);
 const flexWrap = new Set(['nowrap', 'wrap', 'wrap-reverse']);
 
-/**
- * @param {import('postcss-value-parser').ParsedValue} flexFlow
- * @return {string}
- */
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} flexFlow */
 function normalizeFlexFlow(flexFlow) {
-  const order = {
-    direction: '',
-    wrap: '',
-  };
-
-  flexFlow.walk(({ value }) => {
-    if (flexDirection.has(value.toLowerCase())) {
-      order.direction = value;
-      return;
-    }
-
-    if (flexWrap.has(value.toLowerCase())) {
-      order.wrap = value;
-    }
-  });
+  const order = { direction: '', wrap: '' };
+  for (const node of flexFlow) {
+    const value = node.toString();
+    if (flexDirection.has(value.toLowerCase())) order.direction = value;
+    else if (flexWrap.has(value.toLowerCase())) order.wrap = value;
+  }
   return `${order.direction} ${order.wrap}`.trim();
 }
 

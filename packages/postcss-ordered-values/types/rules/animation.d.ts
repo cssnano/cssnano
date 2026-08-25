@@ -1,7 +1,4 @@
-/**
- * @param {import('postcss-value-parser').ParsedValue} parsed
- * @return {string}
- */
-declare function normalizeAnimation(parsed: import('postcss-value-parser').ParsedValue): string;
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} parsed */
+declare function normalizeAnimation(parsed: import('@csstools/css-parser-algorithms').ComponentValue[]): string;
 export default normalizeAnimation;
 //# sourceMappingURL=animation.d.ts.map

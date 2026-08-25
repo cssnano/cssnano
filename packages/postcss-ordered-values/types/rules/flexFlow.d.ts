@@ -1,7 +1,4 @@
-/**
- * @param {import('postcss-value-parser').ParsedValue} flexFlow
- * @return {string}
- */
-declare function normalizeFlexFlow(flexFlow: import('postcss-value-parser').ParsedValue): string;
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} flexFlow */
+declare function normalizeFlexFlow(flexFlow: import('@csstools/css-parser-algorithms').ComponentValue[]): string;
 export default normalizeFlexFlow;
 //# sourceMappingURL=flexFlow.d.ts.map

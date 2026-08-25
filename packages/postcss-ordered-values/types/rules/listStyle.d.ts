@@ -1,7 +1,4 @@
-/**
- * @param {import('postcss-value-parser').ParsedValue} listStyle
- * @return {string}
- */
-declare function listStyleNormalizer(listStyle: import('postcss-value-parser').ParsedValue): string;
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} listStyle */
+declare function listStyleNormalizer(listStyle: import('@csstools/css-parser-algorithms').ComponentValue[]): string;
 export default listStyleNormalizer;
 //# sourceMappingURL=listStyle.d.ts.map

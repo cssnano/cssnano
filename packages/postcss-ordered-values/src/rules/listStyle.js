@@ -1,43 +1,22 @@
-import { stringify } from '../lib/parse.js';
+import { isFunctionNode, isTokenNode } from '@csstools/css-parser-algorithms';
+import { isTokenIdent } from '@csstools/css-tokenizer';
 import listStyleTypes from './listStyleTypes.json' with { type: 'json' };
 
 const definedTypes = new Set(listStyleTypes['list-style-type']);
-
 const definedPosition = new Set(['inside', 'outside']);
 
-/**
- * @param {import('postcss-value-parser').ParsedValue} listStyle
- * @return {string}
- */
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} listStyle */
 function listStyleNormalizer(listStyle) {
   const order = { type: '', position: '', image: '' };
-
-  listStyle.walk((decl) => {
-    if (decl.type === 'word') {
-      if (definedTypes.has(decl.value)) {
-        // its a type field
-        order.type = `${order.type} ${decl.value}`;
-      } else if (definedPosition.has(decl.value)) {
-        order.position = `${order.position} ${decl.value}`;
-      } else if (decl.value === 'none') {
-        if (
-          order.type
-            .split(' ')
-            .filter((e) => e !== '' && e !== ' ')
-            .includes('none')
-        ) {
-          order.image = `${order.image} ${decl.value}`;
-        } else {
-          order.type = `${order.type} ${decl.value}`;
-        }
-      } else {
-        order.type = `${order.type} ${decl.value}`;
-      }
-    }
-    if (decl.type === 'function') {
-      order.image = `${order.image} ${stringify(decl)}`;
-    }
-  });
+  for (const decl of listStyle) {
+    if (isTokenNode(decl) && isTokenIdent(decl.value)) {
+      const value = decl.value[1];
+      if (definedTypes.has(value)) order.type = `${order.type} ${value}`;
+      else if (definedPosition.has(value)) order.position = `${order.position} ${value}`;
+      else if (value === 'none' && order.type.split(' ').filter(Boolean).includes('none')) order.image = `${order.image} ${value}`;
+      else order.type = `${order.type} ${value}`;
+    } else if (isFunctionNode(decl)) order.image = `${order.image} ${decl}`;
+  }
   return `${order.type.trim()} ${order.position.trim()} ${order.image.trim()}`.trim();
 }
 

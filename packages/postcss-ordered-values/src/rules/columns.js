@@ -1,32 +1,12 @@
+import { isTokenNode } from '@csstools/css-parser-algorithms';
 import { unit } from '../lib/parse.js';
-/**
- * @param {string} value
- * @return {boolean}
- */
-function hasUnit(value) {
-  const parsedVal = unit(value);
-  return parsedVal && parsedVal.unit !== '';
-}
+
 export default (columns) => {
-  /** @type {string[]} */
-  const widths = [];
-  /** @type {string[]} */
-  const other = [];
-  columns.walk((node) => {
-    const { type, value } = node;
-    if (type === 'word') {
-      if (hasUnit(value)) {
-        widths.push(value);
-      } else {
-        other.push(value);
-      }
-    }
-  });
-
-  // only transform if declaration is not invalid or a single value
-  if (other.length === 1 && widths.length === 1) {
-    return `${widths[0].trimStart()} ${other[0].trimStart()}`;
+  const widths = [], other = [];
+  for (const node of columns) {
+    if (!isTokenNode(node)) continue;
+    if (unit(node)?.unit) widths.push(node.toString());
+    else other.push(node.toString());
   }
-
-  return columns;
+  return other.length === 1 && widths.length === 1 ? `${widths[0].trimStart()} ${other[0].trimStart()}` : columns;
 };

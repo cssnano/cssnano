@@ -1,171 +1,58 @@
+import { isFunctionNode, isTokenNode } from '@csstools/css-parser-algorithms';
+import { isTokenComma } from '@csstools/css-tokenizer';
 import { unit } from '../lib/parse.js';
-import cssnanoUtils from 'cssnano-utils';
-import addSpace from '../lib/addSpace.js';
-import getValue from '../lib/getValue.js';
 import mathFunctions from '../lib/mathfunctions.js';
 import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
-const { getArguments } = cssnanoUtils;
-// animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
+const getArguments = (nodes) => {
+  const result = [[]];
+  for (const node of nodes) {
+    if (isTokenNode(node) && isTokenComma(node.value)) result.push([]);
+    else result.at(-1).push(node);
+  }
+  return result;
+};
 const timingFunctions = new Set([...easingFunctions.functions, 'frames']);
 const timingKeywords = new Set(easingFunctions.keywords);
-
-const directions = new Set([
-  'normal',
-  'reverse',
-  'alternate',
-  'alternate-reverse',
-]);
+const directions = new Set(['normal', 'reverse', 'alternate', 'alternate-reverse']);
 const fillModes = new Set(['none', 'forwards', 'backwards', 'both']);
 const playStates = new Set(['running', 'paused']);
 const timeUnits = new Set(['ms', 's']);
 
-/**
- * @param {string} value
- * @param {import('postcss-value-parser').Node} node
- * @return {false | import('postcss-value-parser').Dimension}
- */
-function unitFromNode(value, node) {
-  if (node.type !== 'function') {
-    return unit(value);
-  }
-  if (mathFunctions.has(value)) {
-    // If it is a math function, it checks the unit of the parameter and returns it.
-    for (const param of node.nodes) {
-      const paramUnit = unitFromNode(param.value.toLowerCase(), param);
-      if (paramUnit && paramUnit.unit && paramUnit.unit !== '%') {
-        return paramUnit;
-      }
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue} node */
+function unitFromNode(node) {
+  const quantity = unit(node);
+  if (quantity) return quantity;
+  if (isFunctionNode(node) && mathFunctions.has(node.getName().toLowerCase())) {
+    for (const child of node.value) {
+      const childUnit = unitFromNode(child);
+      if (childUnit?.unit && childUnit.unit !== '%') return childUnit;
     }
   }
   return false;
 }
 
-/**
- * @param {string} value
- * @param {import('postcss-value-parser').Node} node
- * @return {boolean}
- */
-const isTimingFunction = (value, { type }) => {
-  return (
-    (type === 'function' && timingFunctions.has(value)) ||
-    timingKeywords.has(value)
-  );
-};
-/**
- * @param {string} value
- * @return {boolean}
- */
-const isDirection = (value) => {
-  return directions.has(value);
-};
-/**
- * @param {string} value
- * @return {boolean}
- */
-const isFillMode = (value) => {
-  return fillModes.has(value);
-};
-/**
- * @param {string} value
- * @return {boolean}
- */
-const isPlayState = (value) => {
-  return playStates.has(value);
-};
-/**
- * @param {string} value
- * @param {import('postcss-value-parser').Node} node
- * @return {boolean}
- */
-const isTime = (value, node) => {
-  const quantity = unitFromNode(value, node);
-
-  return quantity && timeUnits.has(quantity.unit);
-};
-/**
- * @param {string} value
- * @param {import('postcss-value-parser').Node} node
- * @return {boolean}
- */
-const isIterationCount = (value, node) => {
-  const quantity = unitFromNode(value, node);
-
-  return value === 'infinite' || (quantity && !quantity.unit);
-};
-
-const stateConditions = [
-  { property: 'duration', delegate: isTime },
-  { property: 'timingFunction', delegate: isTimingFunction },
-  { property: 'delay', delegate: isTime },
-  { property: 'iterationCount', delegate: isIterationCount },
-  { property: 'direction', delegate: isDirection },
-  { property: 'fillMode', delegate: isFillMode },
-  { property: 'playState', delegate: isPlayState },
-];
-/**
- * @param {import('postcss-value-parser').Node[][]} args
- * @return {import('postcss-value-parser').Node[][]}
- */
-function normalize(args) {
-  const list = [];
-
-  for (const arg of args) {
-    /** @type {Record<string, import('postcss-value-parser').Node[]>} */
-    const state = {
-      name: [],
-      duration: [],
-      timingFunction: [],
-      delay: [],
-      iterationCount: [],
-      direction: [],
-      fillMode: [],
-      playState: [],
-    };
-
-    for (const node of arg) {
-      const type = node.type;
-      let value = node.value;
-      if (type === 'space') {
-        continue;
-      }
-
-      value = value.toLowerCase();
-
-      const hasMatch = stateConditions.some(({ property, delegate }) => {
-        if (delegate(value, node) && !state[property].length) {
-          state[property] = [node, addSpace()];
-          return true;
-        } else {
-          return false;
-        }
-      });
-
-      if (!hasMatch) {
-        state.name = [...state.name, node, addSpace()];
-      }
-    }
-
-    list.push([
-      ...state.name,
-      ...state.duration,
-      ...state.timingFunction,
-      ...state.delay,
-      ...state.iterationCount,
-      ...state.direction,
-      ...state.fillMode,
-      ...state.playState,
-    ]);
-  }
-  return list;
-}
-/**
- * @param {import('postcss-value-parser').ParsedValue} parsed
- * @return {string}
- */
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} parsed */
 function normalizeAnimation(parsed) {
-  const values = normalize(getArguments(parsed));
-  return getValue(values);
+  const result = [];
+  for (const arg of getArguments(parsed)) {
+    const state = { name: [], duration: [], timingFunction: [], delay: [], iterationCount: [], direction: [], fillMode: [], playState: [] };
+    for (const node of arg) {
+      if (node.type === 'whitespace') continue;
+      const value = node.toString(), lower = value.toLowerCase(), quantity = unitFromNode(node);
+      let property;
+      if (quantity && timeUnits.has(quantity.unit)) property = state.duration.length ? 'delay' : 'duration';
+      else if ((isFunctionNode(node) && timingFunctions.has(node.getName().toLowerCase())) || timingKeywords.has(lower)) property = 'timingFunction';
+      else if (lower === 'infinite' || (quantity && !quantity.unit)) property = 'iterationCount';
+      else if (directions.has(lower)) property = 'direction';
+      else if (fillModes.has(lower)) property = 'fillMode';
+      else if (playStates.has(lower)) property = 'playState';
+      if (property && !state[property].length) state[property].push(value);
+      else state.name.push(value);
+    }
+    result.push(Object.values(state).flat().join(' '));
+  }
+  return result.join(',');
 }
 
 export default normalizeAnimation;
