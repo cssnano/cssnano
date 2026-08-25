@@ -1,0 +1,252 @@
+import valueParser from 'postcss-value-parser';
+import getBrowsersList from '#getBrowsersList';
+import convert from '../../src/lib/convert.js';
+
+/** @import browserslist from 'browserslist' */
+
+const LENGTH_UNITS = new Set([
+  'em',
+  'ex',
+  'ch',
+  'rem',
+  'vw',
+  'vh',
+  'vmin',
+  'vmax',
+  'cm',
+  'mm',
+  'q',
+  'in',
+  'pt',
+  'pc',
+  'px',
+]);
+
+// These properties only accept percentages, so no point in trying to transform
+const notALength = new Set([
+  'descent-override',
+  'ascent-override',
+  'font-stretch',
+  'size-adjust',
+  'line-gap-override',
+]);
+
+// Can't change the unit on these properties when they're 0
+const keepWhenZero = new Set([
+  'stroke-dashoffset',
+  'stroke-width',
+  'line-height',
+]);
+
+// Can't remove the % on these properties when they're 0 on IE 11
+const keepZeroPercentOnIE11 = new Set(['max-height', 'height', 'min-width']);
+
+const keepZeroPercentAlways = new Set([
+  'calc',
+  'color-mix',
+  'min',
+  'max',
+  'clamp',
+  'hsl',
+  'hsla',
+  'hwb',
+  'linear',
+]);
+
+const keepZeroPercentageInKeyframe = new Set([
+  'border-image-width',
+  'stroke-dasharray',
+]);
+
+/**
+ * Numbers without digits after the dot are technically invalid,
+ * but in that case css-value-parser returns the dot as part of the unit,
+ * so we use this to remove the dot.
+ *
+ * @param {string} item
+ * @return {string}
+ */
+function stripLeadingDot(item) {
+  if (item.charCodeAt(0) === '.'.charCodeAt(0)) {
+    return item.slice(1);
+  } else {
+    return item;
+  }
+}
+
+/**
+ * @param {valueParser.Node} node
+ * @param {Options} opts
+ * @param {boolean} keepZeroUnit
+ * @return {void}
+ */
+function parseWord(node, opts, keepZeroUnit) {
+  const pair = valueParser.unit(node.value);
+  if (pair) {
+    const num = Number(pair.number);
+    const u = stripLeadingDot(pair.unit);
+    if (num === 0) {
+      node.value =
+        0 +
+        (keepZeroUnit || (!LENGTH_UNITS.has(u.toLowerCase()) && u !== '%')
+          ? u
+          : '');
+      if (node.value === '0ms') {
+        node.value = '0s';
+      }
+    } else {
+      node.value = convert(num, u, opts);
+
+      if (
+        typeof opts.precision === 'number' &&
+        u.toLowerCase() === 'px' &&
+        pair.number.includes('.')
+      ) {
+        const precision = Math.pow(10, opts.precision);
+        node.value =
+          Math.round(Number.parseFloat(node.value) * precision) / precision + u;
+      }
+    }
+  }
+}
+
+/**
+ * @param {valueParser.WordNode} node
+ * @return {void}
+ */
+function clampOpacity(node) {
+  const pair = valueParser.unit(node.value);
+  if (!pair) {
+    return;
+  }
+  const num = Number(pair.number);
+  if (num > 1) {
+    node.value = pair.unit === '%' ? num + pair.unit : 1 + pair.unit;
+  } else if (num < 0) {
+    node.value = 0 + pair.unit;
+  }
+}
+
+/**
+ * @param {import('postcss').Declaration} decl
+ * @param {string[]} browsers
+ * @return {boolean}
+ */
+function shouldKeepZeroUnit(decl, browsers) {
+  const { parent } = decl;
+  const lowerCasedProp = decl.prop.toLowerCase();
+
+  return (
+    (decl.value.includes('%') &&
+      keepZeroPercentOnIE11.has(lowerCasedProp) &&
+      browsers.includes('ie 11')) ||
+    (keepZeroPercentageInKeyframe.has(lowerCasedProp) &&
+      parent &&
+      parent.parent &&
+      parent.parent.type === 'atrule' &&
+      /** @type {import('postcss').AtRule} */
+      (parent.parent).name.toLowerCase() === 'keyframes') ||
+    (lowerCasedProp === 'initial-value' &&
+      parent &&
+      parent.type === 'atrule' &&
+      parent.name === 'property' &&
+      parent.nodes !== undefined &&
+      parent.nodes.some(
+        (node) =>
+          node.type === 'decl' &&
+          node.prop.toLowerCase() === 'syntax' &&
+          (node.value === "'<percentage>'" ||
+            node.value === '"<percentage>"' ||
+            node.value === "'<length-percentage>'" ||
+            node.value === '"<length-percentage>"')
+      )) ||
+    keepWhenZero.has(lowerCasedProp)
+  );
+}
+/**
+ * @param {Options} opts
+ * @param {string[]} browsers
+ * @param {import('postcss').Declaration} decl
+ * @return {void}
+ */
+function transform(opts, browsers, decl) {
+  const lowerCasedProp = decl.prop.toLowerCase();
+  if (
+    lowerCasedProp.includes('flex') ||
+    (lowerCasedProp.indexOf('--') === 0 && !opts.transformCustomProperties) ||
+    notALength.has(lowerCasedProp)
+  ) {
+    return;
+  }
+
+  decl.value = valueParser(decl.value)
+    .walk((node) => {
+      const lowerCasedValue = node.value.toLowerCase();
+
+      if (node.type === 'word') {
+        parseWord(node, opts, shouldKeepZeroUnit(decl, browsers));
+        if (
+          lowerCasedProp === 'opacity' ||
+          lowerCasedProp === 'shape-image-threshold'
+        ) {
+          clampOpacity(node);
+        }
+      } else if (node.type === 'function') {
+        if (keepZeroPercentAlways.has(lowerCasedValue)) {
+          valueParser.walk(node.nodes, (n) => {
+            if (n.type === 'word') {
+              parseWord(n, opts, true);
+            }
+          });
+          return false;
+        }
+        if (lowerCasedValue === 'url') {
+          return false;
+        }
+      }
+    })
+    .toString();
+}
+
+const plugin = 'postcss-convert-values';
+
+/**
+ * @typedef {Parameters<typeof convert>[2]} ConvertOptions
+ * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
+ * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
+ * @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions & AutoprefixerOptions & BrowserslistOptions} Options
+ */
+
+/**
+ * @param {Options} opts
+ * @return {import('postcss').Plugin}
+ */
+function pluginCreator(opts = { precision: false }) {
+  return {
+    postcssPlugin: plugin,
+
+    /**
+     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
+     */
+    prepare(result) {
+      const { stats, env, from, file } = result.opts || {};
+      const browsers = getBrowsersList(opts, stats, from, file, env);
+
+      return {
+        /**
+         * @param {import('postcss').Root} css
+         */
+        OnceExit(css) {
+          css.walkDecls((decl) =>
+            transform(/** @type {Options} */ (opts), browsers, decl)
+          );
+        },
+      };
+    },
+  };
+}
+/** @type {true} */
+pluginCreator.postcss = true;
+const moduleExports = pluginCreator;
+
+export { moduleExports as default, moduleExports as 'module.exports' };
