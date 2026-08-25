@@ -7,156 +7,37 @@ import {
 import {
   isTokenComma,
   isTokenDimension,
+  isTokenIdent,
   isTokenNumber,
   isTokenPercentage,
-  isTokenIdent,
   tokenize,
 } from '@csstools/css-tokenizer';
 import isColorStop from './isColorStop.js';
 
-function stringify(nodes) {
-  return nodes.map((node) => node.toString()).join('');
-}
-function unit(value) {
-  const tokens = tokenize({ css: value }).filter(
-    (token) => token[0] !== 'EOF-token'
-  );
-  if (
-    tokens.length !== 1 ||
-    (!isTokenNumber(tokens[0]) &&
-      !isTokenDimension(tokens[0]) &&
-      !isTokenPercentage(tokens[0]))
-  )
-    return false;
-  let tokenUnit = '';
-  if (isTokenDimension(tokens[0])) tokenUnit = tokens[0][4].unit;
-  else if (isTokenPercentage(tokens[0])) tokenUnit = '%';
-  return { number: tokens[0][1], unit: tokenUnit };
-}
-function legacyNode(node) {
-  if (isFunctionNode(node) || isSimpleBlockNode(node)) {
-    const value = isFunctionNode(node) ? node.getName() : '';
-    return {
-      type: 'function',
-      value,
-      nodes: node.value.map(legacyNode),
-      before: '',
-      after: '',
-      toString() {
-        return `${this.before}${this.value}(${stringify(this.nodes)})${this.after}`;
-      },
-    };
-  }
-  if (isTokenNode(node) && isTokenComma(node.value))
-    return {
-      type: 'div',
-      value: ',',
-      before: '',
-      after: '',
-      toString() {
-        return `${this.before}${this.value}${this.after}`;
-      },
-    };
-  if (node.type === 'whitespace')
-    return {
-      type: 'space',
-      value: node.toString(),
-      toString() {
-        return this.value;
-      },
-    };
-  if (node.type === 'comment')
-    return {
-      type: 'comment',
-      value: node.toString(),
-      toString() {
-        return this.value;
-      },
-    };
-  if (isTokenNode(node) && node.value[0] === 'url-token') {
-    return {
-      type: 'function',
-      value: 'url',
-      nodes: [],
-      before: '',
-      after: '',
-      toString() {
-        return node.toString();
-      },
-    };
-  }
-  const value = node.toString();
-  const word =
-    isTokenNode(node) &&
-    (isTokenIdent(node.value) ||
-      node.value[0] === 'hash-token' ||
-      isTokenNumber(node.value) ||
-      isTokenDimension(node.value) ||
-      isTokenPercentage(node.value));
-  return {
-    type: word ? 'word' : 'string',
-    value,
-    toString() {
-      return this.value;
-    },
-  };
-}
-function walk(nodes, callback) {
-  return nodes.some((node, index) => {
-    const result = callback(node, index);
-    if (result === false) return false;
-    if (node.nodes) return walk(node.nodes, callback);
-    return false;
-  });
-}
-
-function parseLegacy(value) {
-  const parsed = parseListOfComponentValues(tokenize({ css: value })).map(
-    legacyNode
-  );
-  return {
-    nodes: parsed,
-    walk(callback) {
-      walk(this.nodes, callback);
-      return this;
-    },
-    toString() {
-      return stringify(this.nodes);
-    },
-  };
-}
-const valueParser = Object.assign(parseLegacy, { stringify, unit });
-function getArguments(node) {
-  const list = [[]];
-  let followsComma = false;
-  for (const child of node.nodes) {
-    if (child.type === 'div' && child.value === ',') {
-      list.push([]);
-      followsComma = true;
-    } else if (followsComma && child.type === 'space') {
-      // postcss-value-parser stored this on the comma divider rather than
-      // making it the first component of the next argument.
-    } else {
-      list.at(-1).push(child);
-      followsComma = false;
-    }
-  }
-  return list;
-}
 const directionsToAngles = new Map([
   ['top', '0deg'],
   ['right', '90deg'],
   ['bottom', '180deg'],
   ['left', '270deg'],
 ]);
+const mathFunctions = new Set(['calc', 'clamp', 'max', 'min']);
 
-/**
- * Returns whether b is less than or equal to a.
- *
- * @param {valueParser.Dimension} a
- * @param {valueParser.Dimension} b
- * @returns {boolean}
- */
+/** @param {import('@csstools/css-tokenizer').CSSToken} token */
+function unit(token) {
+  if (
+    !isTokenNumber(token) &&
+    !isTokenDimension(token) &&
+    !isTokenPercentage(token)
+  ) {
+    return false;
+  }
+  let tokenUnit = '';
+  if (isTokenDimension(token)) tokenUnit = token[4].unit;
+  else if (isTokenPercentage(token)) tokenUnit = '%';
+  return { number: token[1], unit: tokenUnit };
+}
+
+/** @param {{ number: string, unit: string }} a @param {{ number: string, unit: string }} b */
 function isLessThan(a, b) {
   return (
     a.unit.toLowerCase() === b.unit.toLowerCase() &&
@@ -164,360 +45,247 @@ function isLessThan(a, b) {
   );
 }
 
-/**
- * Compares positions when their ordering is independent of layout.
- *
- * @param {valueParser.Dimension} a
- * @param {valueParser.Dimension} b
- * @returns {boolean | undefined}
- */
+/** @param {{ number: string, unit: string }} a @param {{ number: string, unit: string }} b */
 function isLessThanOrEqual(a, b) {
-  if (a.unit.toLowerCase() === b.unit.toLowerCase()) {
-    return isLessThan(a, b);
-  }
-
+  if (a.unit.toLowerCase() === b.unit.toLowerCase()) return isLessThan(a, b);
   const aNumber = Number.parseFloat(a.number);
   const bNumber = Number.parseFloat(b.number);
-
-  if (aNumber === 0) {
-    return bNumber <= 0;
-  }
-
-  if (bNumber === 0) {
-    return aNumber >= 0;
-  }
+  if (aNumber === 0) return bNumber <= 0;
+  if (bNumber === 0) return aNumber >= 0;
 }
 
-/**
- * Returns whether a node is a literal color stop position.
- *
- * @param {import('postcss-value-parser').Node} node
- * @returns {boolean}
- */
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue} node */
 function isPosition(node) {
-  return node.type === 'word' && valueParser.unit(node.value) !== false;
+  return isTokenNode(node) && unit(node.value) !== false;
 }
 
-/**
- * Returns whether an argument begins a color stop.
- *
- * @param {import('postcss-value-parser').Node[]} argument
- * @returns {boolean}
- */
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} argument */
 function isColorStopArgument(argument) {
   const first = argument[0];
-
-  if (!first) {
-    return false;
-  }
-
-  if (first.type === 'function') {
-    return !new Set(['calc', 'clamp', 'max', 'min']).has(
-      first.value.toLowerCase()
-    );
-  }
-
-  return first.type === 'word' && isColorStop(first.value);
+  if (!first) return false;
+  if (isSimpleBlockNode(first)) return true;
+  if (isFunctionNode(first))
+    return !mathFunctions.has(first.getName().toLowerCase());
+  return (
+    isTokenNode(first) &&
+    (first.value[0] === 'url-token' ||
+      ((isTokenIdent(first.value) || first.value[0] === 'hash-token') &&
+        isColorStop(first.toString())))
+  );
 }
 
-/**
- * Gets the position nodes from a color stop or transition hint.
- *
- * @param {import('postcss-value-parser').Node[]} argument
- * @param {boolean} colorStopArgument
- * @returns {import('postcss-value-parser').Node[]}
- */
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} argument @param {boolean} colorStopArgument */
 function getPositions(argument, colorStopArgument) {
-  return argument.slice(colorStopArgument ? 1 : 0).filter((node) => {
-    return node.type !== 'space' && node.type !== 'comment';
-  });
+  return argument
+    .slice(colorStopArgument ? 1 : 0)
+    .filter((node) => node.type !== 'whitespace' && node.type !== 'comment');
+}
+
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} values */
+function getArguments(values) {
+  const list = [[]];
+  let followsComma = false;
+  for (const child of values) {
+    if (isTokenNode(child) && isTokenComma(child.value)) {
+      list.push([]);
+      followsComma = true;
+    } else if (followsComma && child.type === 'whitespace') {
+      // This whitespace was attached to the legacy parser's comma divider.
+    } else {
+      list.at(-1).push(child);
+      followsComma = false;
+    }
+  }
+  return list;
+}
+
+/** @param {Map<object, string>} replacements @param {object} node @param {string} value */
+function replace(replacements, node, value) {
+  replacements.set(node, value);
 }
 
 /**
- * Updates the largest preceding position, replacing a position that will be
- * fixed up with its shorter equivalent.
- *
- * @param {valueParser.Dimension | undefined} largestPosition
- * @param {import('postcss-value-parser').Node} position
- * @returns {valueParser.Dimension | undefined}
+ * @param {{ number: string, unit: string } | undefined} largestPosition
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue} position
+ * @param {Map<object, string>} replacements
  */
-function updateLargestPosition(largestPosition, position) {
-  if (!isPosition(position)) {
-    return undefined;
-  }
-
-  const currentPosition = valueParser.unit(position.value);
-
-  if (!currentPosition) {
-    return undefined;
-  }
-
-  if (!largestPosition) {
-    return currentPosition;
-  }
-
+function updateLargestPosition(largestPosition, position, replacements) {
+  if (!isPosition(position)) return undefined;
+  const currentPosition = unit(position.value);
+  if (!currentPosition) return undefined;
+  if (!largestPosition) return currentPosition;
   const isFixedUp = isLessThanOrEqual(largestPosition, currentPosition);
-
   if (isFixedUp) {
-    position.value = '0';
+    replace(replacements, position, '0');
     return largestPosition;
   }
-
   return isFixedUp === undefined ? undefined : currentPosition;
 }
 
-/**
- * Optimizes a standard gradient color stop list using the color stop fixup
- * algorithm. A non-literal position prevents later comparisons because its
- * used value can only be known during layout.
- *
- * @param {import('postcss-value-parser').Node[][]} args
- * @returns {void}
- */
-function optimizeColorStops(args) {
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[][]} args @param {Map<object, string>} replacements */
+function optimizeColorStops(args, replacements) {
   const firstStopIndex = args.findIndex(isColorStopArgument);
-
-  if (firstStopIndex === -1) {
-    return;
-  }
+  if (firstStopIndex === -1) return;
 
   const stops = [];
-  let largestPosition = /** @type {valueParser.Dimension | undefined} */ (
-    undefined
-  );
+  let largestPosition;
   let hasSeenStop = false;
-
   for (const argument of args.slice(firstStopIndex)) {
     const colorStop = isColorStopArgument(argument);
     const positions = getPositions(argument, colorStop);
-
     if (colorStop) {
       stops.push({ argument, positions });
-
       if (!hasSeenStop && positions.length === 0) {
-        largestPosition = /** @type {valueParser.Dimension} */ (
-          valueParser.unit('0%')
-        );
+        largestPosition = { number: '0', unit: '%' };
       }
-
       hasSeenStop = true;
     }
-
-    if (positions.length === 0) {
-      continue;
-    }
-
     for (const position of positions) {
-      largestPosition = updateLargestPosition(largestPosition, position);
+      largestPosition = updateLargestPosition(
+        largestPosition,
+        position,
+        replacements
+      );
     }
   }
 
   const firstStop = stops[0];
   const lastStop = stops.at(-1);
-
   if (
     firstStop &&
     firstStop.positions.length === 1 &&
     firstStop.argument.length === 3 &&
-    firstStop.positions[0].value === '0%'
+    (replacements.get(firstStop.positions[0]) ??
+      firstStop.positions[0].toString()) === '0%'
   ) {
-    firstStop.argument[1].value = firstStop.positions[0].value = '';
+    replace(replacements, firstStop.argument[1], '');
+    replace(replacements, firstStop.positions[0], '');
   }
-
   if (
     lastStop &&
     lastStop.positions.length === 1 &&
     lastStop.argument.length === 3 &&
-    lastStop.positions[0].value === '100%'
+    (replacements.get(lastStop.positions[0]) ??
+      lastStop.positions[0].toString()) === '100%'
   ) {
-    lastStop.argument[1].value = lastStop.positions[0].value = '';
+    replace(replacements, lastStop.argument[1], '');
+    replace(replacements, lastStop.positions[0], '');
   }
 }
 
-/**
- * Shortens a direction like `to left top` into an angle.
- *
- * @param {import('postcss-value-parser').FunctionNode} node
- * @returns {void}
- */
-function shortenDirection(node) {
-  node.nodes = node.nodes.slice(2);
-  node.nodes[0].value = /** @type {string} */ (
-    directionsToAngles.get(node.nodes[0].value.toLowerCase())
-  );
-}
-
-/**
- * Optimises a linear gradient.
- *
- * @param {import('postcss-value-parser').FunctionNode} node
- * @returns {false}
- */
-function optimizeLinearGradient(node) {
-  const args = getArguments(node);
-  if (node.nodes[0]?.value.toLowerCase() === 'to' && args[0].length === 3) {
-    shortenDirection(node);
+/** @param {import('@csstools/css-parser-algorithms').FunctionNode} node @param {Map<object, string>} replacements */
+function optimizeLinearGradient(node, replacements) {
+  const args = getArguments(node.value);
+  const [first, whitespace, side] = node.value;
+  if (
+    isTokenNode(first) &&
+    isTokenIdent(first.value) &&
+    first.toString().toLowerCase() === 'to' &&
+    args[0].length === 3 &&
+    side
+  ) {
+    const angle = directionsToAngles.get(side.toString().toLowerCase());
+    if (angle) {
+      replace(replacements, first, '');
+      replace(replacements, whitespace, '');
+      replace(replacements, side, angle);
+    }
   }
-  optimizeColorStops(getArguments(node));
-
-  return false;
+  optimizeColorStops(args, replacements);
 }
 
-/**
- * Optimises a radial gradient.
- *
- * @param {import('postcss-value-parser').ParsedValue | import('postcss-value-parser').FunctionNode} node
- * @returns {false}
- */
-function optimizeRadialGradient(node) {
-  optimizeColorStops(getArguments(node));
-
-  return false;
-}
-
-/**
- * Optimises a radial gradient.
- *
- * @param {import('postcss-value-parser').ParsedValue | import('postcss-value-parser').FunctionNode} node
- * @returns {false}
- */
-function optimizeWebkitRadialGradient(node) {
-  const args = getArguments(node);
-  /** @type {valueParser.Dimension | false | undefined} */
-  let previousStop = undefined;
-
-  for (const arg of args) {
-    let color;
-    let stop;
-
-    if (arg[2] !== undefined) {
-      if (arg[0].type === 'function') {
-        color = `${arg[0].value}(${valueParser.stringify(arg[0].nodes)})`;
-      } else {
-        color = arg[0].value;
-      }
-
-      if (arg[2].type === 'function') {
-        stop = `${arg[2].value}(${valueParser.stringify(arg[2].nodes)})`;
-      } else {
-        stop = arg[2].value;
-      }
-    } else {
-      if (arg[0].type === 'function') {
-        // eslint-disable-next-line no-useless-assignment
-        color = `${arg[0].value}(${valueParser.stringify(arg[0].nodes)})`;
-      }
-
-      color = arg[0].value;
-    }
-
-    color = color.toLowerCase();
-
-    const colorStop =
-      stop !== undefined
-        ? isColorStop(color, stop.toLowerCase())
-        : isColorStop(color);
-
-    if (!colorStop || !arg[2]) {
-      continue;
-    }
-
-    const thisStop = valueParser.unit(arg[2].value);
-
+/** @param {import('@csstools/css-parser-algorithms').FunctionNode} node @param {Map<object, string>} replacements */
+function optimizeWebkitRadialGradient(node, replacements) {
+  let previousStop;
+  for (const argument of getArguments(node.value)) {
+    if (argument[2] === undefined) continue;
+    const color = argument[0]?.toString().toLowerCase();
+    const stop = argument[2].toString().toLowerCase();
+    if (!color || !isColorStop(color, stop)) continue;
+    const thisStop = isTokenNode(argument[2]) ? unit(argument[2].value) : false;
     if (!previousStop) {
       previousStop = thisStop;
-
-      continue;
+    } else if (thisStop && isLessThan(previousStop, thisStop)) {
+      replace(replacements, argument[2], '0');
+      previousStop = thisStop;
+    } else {
+      previousStop = thisStop;
     }
-
-    if (previousStop && thisStop && isLessThan(previousStop, thisStop)) {
-      arg[2].value = '0';
-    }
-
-    previousStop = thisStop;
   }
-
-  return false;
 }
 
-/**
- * @param {import('postcss').Declaration} decl
- * @return {void}
- */
-function optimise(decl) {
-  const value = decl.value;
-
-  if (!value) {
-    return;
+/** @param {import('@csstools/css-parser-algorithms').FunctionNode} node @param {Map<object, string>} replacements */
+function optimizeGradient(node, replacements) {
+  const name = node.getName().toLowerCase();
+  if (
+    name === 'linear-gradient' ||
+    name === 'repeating-linear-gradient' ||
+    name === '-webkit-linear-gradient' ||
+    name === '-webkit-repeating-linear-gradient'
+  ) {
+    optimizeLinearGradient(node, replacements);
+  } else if (
+    name === 'radial-gradient' ||
+    name === 'repeating-radial-gradient' ||
+    name === 'conic-gradient' ||
+    name === 'repeating-conic-gradient'
+  ) {
+    optimizeColorStops(getArguments(node.value), replacements);
+  } else if (
+    name === '-webkit-radial-gradient' ||
+    name === '-webkit-repeating-radial-gradient'
+  ) {
+    optimizeWebkitRadialGradient(node, replacements);
   }
+}
 
-  const normalizedValue = value.toLowerCase();
-
-  if (normalizedValue.includes('var(') || normalizedValue.includes('env(')) {
-    return;
-  }
-
-  if (!normalizedValue.includes('gradient')) {
-    return;
-  }
-
-  decl.value = valueParser(value)
-    .walk((node) => {
-      if (node.type !== 'function' || !node.nodes.length) {
-        return false;
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue[]} values @param {Map<object, string>} replacements @param {boolean} [walkGradients] */
+function serialize(values, replacements, walkGradients = true) {
+  return values
+    .map((node) => {
+      const replacement = replacements.get(node);
+      if (replacement !== undefined) return replacement;
+      if (!isFunctionNode(node) && !isSimpleBlockNode(node)) {
+        return node.toString();
       }
 
-      const lowerCasedValue = node.value.toLowerCase();
-
-      if (
-        lowerCasedValue === 'linear-gradient' ||
-        lowerCasedValue === 'repeating-linear-gradient' ||
-        lowerCasedValue === '-webkit-linear-gradient' ||
-        lowerCasedValue === '-webkit-repeating-linear-gradient'
-      ) {
-        return optimizeLinearGradient(node);
+      const source = node.toString();
+      const original = node.value.map((child) => child.toString()).join('');
+      if (isFunctionNode(node) && walkGradients) {
+        optimizeGradient(node, replacements);
       }
-
-      if (
-        lowerCasedValue === 'radial-gradient' ||
-        lowerCasedValue === 'repeating-radial-gradient'
-      ) {
-        return optimizeRadialGradient(node);
-      }
-
-      if (
-        lowerCasedValue === '-webkit-radial-gradient' ||
-        lowerCasedValue === '-webkit-repeating-radial-gradient'
-      ) {
-        return optimizeWebkitRadialGradient(node);
-      }
-
-      if (
-        lowerCasedValue === 'conic-gradient' ||
-        lowerCasedValue === 'repeating-conic-gradient'
-      ) {
-        optimizeColorStops(getArguments(node));
-      }
-      return false;
+      const content = serialize(node.value, replacements, false);
+      return source.replace(original, content);
     })
-    .toString();
+    .join('');
 }
-/**
- * @return {import('postcss').Plugin}
- */
+
+function optimize(value) {
+  const normalizedValue = value.toLowerCase();
+  if (
+    normalizedValue.includes('var(') ||
+    normalizedValue.includes('env(') ||
+    !normalizedValue.includes('gradient')
+  ) {
+    return value;
+  }
+  const values = parseListOfComponentValues(tokenize({ css: value }));
+  return serialize(values, new Map());
+}
+
+/** @return {import('postcss').Plugin} */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-minify-gradients',
-    /**
-     * @param {import('postcss').Root} css
-     */
+    /** @param {import('postcss').Root} css */
     OnceExit(css) {
-      css.walkDecls(optimise);
+      css.walkDecls((decl) => {
+        if (decl.value) decl.value = optimize(decl.value);
+      });
     },
   };
 }
 /** @type {true} */
 pluginCreator.postcss = true;
 const moduleExports = pluginCreator;
-
 export { moduleExports as default, moduleExports as 'module.exports' };
