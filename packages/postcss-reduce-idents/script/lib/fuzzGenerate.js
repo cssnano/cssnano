@@ -3,7 +3,7 @@ const names = ['fade', 'spin-name', 'wide', 'narrow', 'title', '--custom'];
 const spaces = ['', ' ', '  ', '\t'];
 
 /** @param {ReturnType<typeof random>} rng @param {number} index */
-function randRule(rng, index) {
+function randRule(rng, index = 0) {
   const a = `ident${index}`,
     b = `${rng.pick(names)}${rng.int(1000)}`,
     space = rng.pick(spaces);
@@ -29,5 +29,12 @@ const edgeCases = [
   ':root{grid-template-columns:[left middle] auto [right];grid-column:left / right}',
   ':root{grid-template-areas:"hero hero" "none hero";grid-area:hero}',
   ':root{counter-reset:foo/*comment*/ 1;content:counter(foo, "foo")}',
+  ':root{counter-reset:foo 1;content:counter(foo, "\\66 oo")}',
+  ':root{grid-template-columns:[foo bar] repeat(2,[baz] 1fr);grid-column:[foo bar] / span 2}',
+  ':root{grid-template-areas:"foo foo" /* keep */ "bar foo";grid-area:foo}',
+  ':root{content:counter(foo,decimal) counters(foo,foo/*comment*/)}',
 ];
-export { edgeCases, randRule };
+const intentionalDifferences = new Set([
+  ':root{grid-template-columns:[foo bar] repeat(2,[baz] 1fr);grid-column:[foo bar] / span 2}',
+]);
+export { edgeCases, intentionalDifferences, randRule };

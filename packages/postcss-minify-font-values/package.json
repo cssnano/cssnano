@@ -39,6 +39,7 @@
     "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
+    "postcss-value-parser": "^4.2.0",
     "postcss": "catalog:"
   },
   "peerDependencies": {

@@ -32,6 +32,15 @@ function stripBrackets(word) {
   }
   return word;
 }
+
+/** @param {string} word @param {Map<string, {ident: string, count: number}>} cache */
+function renameGridWord(word, cache) {
+  const cached = cache.get(stripBrackets(word));
+  if (!cached) return word;
+  const opening = word.startsWith('[') ? '[' : '';
+  const closing = word.endsWith(']') ? ']' : '';
+  return `${opening}${cached.ident}${closing}`;
+}
 export default (function () {
   /** @type {Map<string, {ident: string, count: number}>} */
   const cache = new Map();
@@ -103,10 +112,10 @@ export default (function () {
               return false;
             }
 
-            const cached = cache.get(node.value);
+            const cached = cache.get(stripBrackets(node.value));
             if (cached) {
               cached.count++;
-              node.value = cached.ident;
+              node.value = renameGridWord(node.value, cache);
             }
 
             return false;

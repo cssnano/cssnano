@@ -8,6 +8,7 @@ const colors = [
   '#123456',
   'rgb(1, 2, 3)',
   'hsl(120 50% 50%)',
+  'color-mix(in srgb, red 20%, blue)',
 ];
 const positions = ['0%', '25%', '40%', '50%', '75%', '100%', '0px', '5px'];
 const gradientNames = [
@@ -71,6 +72,17 @@ const edgeCases = [
   'a{background:linear-gradient(/**/red 0%, blue 100%)}',
   'a{background:linear-gradient(red 0%,url(foo.png) 100%)}',
   'a{background:linear-gradient(red 0%,var(--stop) 100%)}',
+  'a{background:linear-gradient(red 0%,url("image,one.png") 100%)}',
+  'a{background:linear-gradient(red 0%,url(image.png) 100%)}',
+  'a{background:linear-gradient(rgb(0 0 0 / .2) 0%,hsl(20 50% 50%) 100%)}',
+  'a{background:linear-gradient(red 0%,color-mix(in srgb,red,blue) 100%)}',
 ];
 
-export { edgeCases, randRule };
+// The legacy flat parser associates the comment with the position node and
+// drops that position; CSSTools preserves the comment and its adjacent raw
+// position. Keep this malformed/comment-sensitive case explicitly tracked.
+const intentionalDifferences = new Set([
+  'a{background:linear-gradient(red 0% /* comment */, blue 100%)}',
+]);
+
+export { edgeCases, intentionalDifferences, randRule };

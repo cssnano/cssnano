@@ -19,7 +19,10 @@ let count = 0;
 
 for (const css of [
   ...edgeCases,
-  ...Array.from({ length: Number(values.count) }, () => randRule(rng)),
+  ...Array.from(
+    { length: Number(values.count) },
+    (_, index) => randRule(rng, index).css
+  ),
 ]) {
   count++;
   const options = { from: undefined };
