@@ -1,5 +1,9 @@
 import getBrowsersList from '#getBrowsersList';
-import valueParser from 'postcss-value-parser';
+import { tokenize } from '@csstools/css-tokenizer';
+import {
+  isTokenNode,
+  parseListOfComponentValues,
+} from '@csstools/css-parser-algorithms';
 
 /** @import browserslist from 'browserslist' */
 
@@ -63,19 +67,59 @@ function mergeRangeBounds(left, right) {
  * @return {string}
  */
 function transform(value, isLegacy = false) {
-  return valueParser(value)
-    .walk((child) => {
-      if (child.type === 'unicode-range') {
-        const transformed = unicode(child.value.toLowerCase());
+  const nodes = parseListOfComponentValues(tokenize({ css: value }));
 
-        child.value = isLegacy
-          ? transformed.replace(regexLowerCaseUPrefix, 'U')
-          : transformed;
+  /**
+   * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} values
+   * @return {string}
+   */
+  function serialize(values) {
+    let output = '';
+
+    for (let index = 0; index < values.length; index++) {
+      const node = values[index];
+
+      if (isTokenNode(node)) {
+        let end = index + 1;
+        while (
+          end < values.length &&
+          isTokenNode(values[end]) &&
+          values[end - 1].value[3] + 1 === values[end].value[2]
+        ) {
+          end++;
+        }
+
+        const raw = values
+          .slice(index, end)
+          .map((token) => token.toString())
+          .join('');
+
+        if (/^u\+[a-f0-9?-]+$/i.test(raw)) {
+          const transformed = unicode(raw.toLowerCase());
+          output += isLegacy
+            ? transformed.replace(regexLowerCaseUPrefix, 'U')
+            : transformed;
+          index = end - 1;
+          continue;
+        }
+
+        output += node.toString();
+        continue;
       }
 
-      return false;
-    })
-    .toString();
+      if ('value' in node && Array.isArray(node.value)) {
+        const source = node.toString();
+        const inner = node.value.map((child) => child.toString()).join('');
+        output += source.replace(inner, serialize(node.value));
+      } else {
+        output += node.toString();
+      }
+    }
+
+    return output;
+  }
+
+  return serialize(nodes);
 }
 
 /**
