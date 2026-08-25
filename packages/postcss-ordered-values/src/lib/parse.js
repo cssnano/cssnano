@@ -42,15 +42,42 @@ function unit(value) {
 }
 
 /** @param {import('@csstools/css-parser-algorithms').ComponentValue} node */
+function legacyUrlNode(node) {
+  const source = node.toString();
+  const childValue = source.slice(4, -1);
+  return {
+    type: 'function',
+    value: 'url',
+    nodes: [
+      {
+        type: 'word',
+        value: childValue,
+        toString() {
+          return this.value;
+        },
+      },
+    ],
+    toString() {
+      return source;
+    },
+  };
+}
+
+/** @param {import('@csstools/css-parser-algorithms').ComponentValue} node */
+// oxlint-disable-next-line complexity
 function legacyNode(node) {
   if (isFunctionNode(node) || isSimpleBlockNode(node)) {
-    const value = isFunctionNode(node) ? node.getName() : '';
+    const functionNode = isFunctionNode(node);
+    const value = functionNode ? node.getName() : '';
+    const start = functionNode ? `${value}(` : node.startToken.toString();
+    const end = functionNode ? ')' : node.endToken?.[1] || '';
+    const blockStart = functionNode ? '' : node.startToken[1];
     return {
       type: 'function',
       value,
       nodes: node.value.map(legacyNode),
       toString() {
-        return `${this.value}(${stringify(this.nodes)})`;
+        return `${blockStart || start}${stringify(this.nodes)}${end}`;
       },
     };
   }
@@ -78,6 +105,8 @@ function legacyNode(node) {
         return this.value;
       },
     };
+  if (isTokenNode(node) && node.value[0] === 'url-token')
+    return legacyUrlNode(node);
   const value = node.toString();
   const word =
     isTokenNode(node) &&
