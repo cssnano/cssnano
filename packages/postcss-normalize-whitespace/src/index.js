@@ -1,4 +1,10 @@
-import valueParser from 'postcss-value-parser';
+import { isTokenComma, isTokenDelim, tokenize } from '@csstools/css-tokenizer';
+import {
+  isFunctionNode,
+  isSimpleBlockNode,
+  isTokenNode,
+  parseListOfComponentValues,
+} from '@csstools/css-parser-algorithms';
 
 const atrule = 'atrule';
 const decl = 'decl';
@@ -25,36 +31,112 @@ function endsWithEscapingBackslash(value) {
 }
 
 /**
- * @param {valueParser.Node} node
- * @return {void}
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue} node
+ * @return {boolean}
  */
-function reduceCalcWhitespaces(node) {
-  if (node.type === 'space') {
-    node.value = ' ';
-  } else if (node.type === 'function') {
-    if (!variableFunctions.has(node.value.toLowerCase())) {
-      node.before = node.after = '';
-    }
-  }
+function isDivider(node) {
+  return (
+    isTokenNode(node) &&
+    (isTokenComma(node.value) ||
+      (isTokenDelim(node.value) && node.value[1] === '/'))
+  );
 }
+
 /**
- * @param {valueParser.Node} node
- * @return {void | false}
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} nodes
+ * @param {number} index
+ * @param {boolean} inCalc
+ * @param {boolean} preserveTrailingBoundaryWhitespace
+ * @return {boolean}
  */
-function reduceWhitespaces(node) {
-  if (node.type === 'space') {
-    node.value = ' ';
-  } else if (node.type === 'div') {
-    node.before = node.after = '';
-  } else if (node.type === 'function') {
-    if (!variableFunctions.has(node.value.toLowerCase())) {
-      node.before = node.after = '';
-    }
-    if (node.value.toLowerCase() === 'calc') {
-      valueParser.walk(node.nodes, reduceCalcWhitespaces);
-      return false;
-    }
+function isDiscardableWhitespace(
+  nodes,
+  index,
+  inCalc,
+  preserveTrailingBoundaryWhitespace
+) {
+  if (
+    inCalc ||
+    (preserveTrailingBoundaryWhitespace && index === nodes.length - 1)
+  ) {
+    return false;
   }
+
+  if (endsWithEscapingBackslash(nodes[index - 1]?.toString() || '')) {
+    return false;
+  }
+
+  return isDivider(nodes[index - 1]) || isDivider(nodes[index + 1]);
+}
+
+/**
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} nodes
+ * @param {boolean} inCalc
+ * @param {boolean} preserveTrailingBoundaryWhitespace
+ * @return {string}
+ */
+function serialize(
+  nodes,
+  inCalc = false,
+  preserveTrailingBoundaryWhitespace = false
+) {
+  let output = '';
+
+  for (let index = 0; index < nodes.length; index++) {
+    const node = nodes[index];
+
+    if (node.type === 'whitespace') {
+      if (
+        isDiscardableWhitespace(
+          nodes,
+          index,
+          inCalc,
+          preserveTrailingBoundaryWhitespace
+        )
+      ) {
+        continue;
+      }
+
+      output += endsWithEscapingBackslash(nodes[index - 1]?.toString() || '')
+        ? node.toString()
+        : ' ';
+      continue;
+    }
+
+    if (isFunctionNode(node) || isSimpleBlockNode(node)) {
+      const name = isFunctionNode(node) ? node.getName().toLowerCase() : '';
+      const isVariable = variableFunctions.has(name);
+      const children = node.value;
+      let first = 0;
+      let last = children.length;
+
+      if (!isVariable) {
+        while (children[first]?.type === 'whitespace') first++;
+        while (children[last - 1]?.type === 'whitespace') last--;
+      }
+
+      const inner = children.map((child) => child.toString()).join('');
+      const replacement = serialize(
+        children.slice(first, last),
+        inCalc || name === 'calc',
+        isVariable
+      );
+      output += node.toString().replace(inner, replacement);
+      continue;
+    }
+
+    output += node.toString();
+  }
+
+  return output;
+}
+
+/**
+ * @param {string} value
+ * @return {string}
+ */
+function normalizeValue(value) {
+  return serialize(parseListOfComponentValues(tokenize({ css: value })));
 }
 
 /**
@@ -75,8 +157,7 @@ function trimDeclaration(node, cache) {
   if (cache.has(value)) {
     node.value = /** @type {string} **/ (cache.get(value));
   } else {
-    const parsed = valueParser(node.value);
-    const result = parsed.walk(reduceWhitespaces).toString();
+    const result = normalizeValue(node.value);
 
     // Trim whitespace inside functions & dividers
     node.value = result;

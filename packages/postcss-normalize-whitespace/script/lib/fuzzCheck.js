@@ -1,14 +1,16 @@
 import postcss from 'postcss';
 import plugin from '../../src/index.js';
+import oldPlugin from './oldPlugin.js';
 
 /**
- * Runs one generated declaration through the plugin and checks that the
- * output is still syntactically sound and that a real trailing escape's
- * target character survives. Shared by the seeded sweep in
- * `test/fuzz.js` and the soak run in `script/fuzz.js`.
+ * Runs one generated declaration through the migrated plugin and its legacy
+ * oracle, then checks exact output parity, syntactic soundness, and trailing
+ * escape preservation. Shared by the seeded sweep in `test/fuzz.js` and the
+ * soak run in `script/fuzz.js`.
  */
 
 const processor = postcss([plugin()]);
+const oldProcessor = postcss([oldPlugin()]);
 
 /**
  * @param {string} css
@@ -16,6 +18,14 @@ const processor = postcss([plugin()]);
  */
 function process(css) {
   return processor.process(css, { from: undefined }).css;
+}
+
+/**
+ * @param {string} css
+ * @return {string}
+ */
+function processOld(css) {
+  return oldProcessor.process(css, { from: undefined }).css;
 }
 
 const hexDigitRegex = /[0-9a-fA-F]/;
@@ -42,6 +52,26 @@ function check({ css, lastProp, siblingCount, escapeChar, backslashCount }) {
       input: css,
       output: error instanceof Error ? error.message : String(error),
       reason: 'the plugin threw',
+    };
+  }
+
+  let oldOutput;
+
+  try {
+    oldOutput = processOld(css);
+  } catch (error) {
+    return {
+      input: css,
+      output: error instanceof Error ? error.message : String(error),
+      reason: 'the legacy oracle threw',
+    };
+  }
+
+  if (output !== oldOutput) {
+    return {
+      input: css,
+      output,
+      reason: `output differed from the legacy oracle: ${JSON.stringify(oldOutput)}`,
     };
   }
 

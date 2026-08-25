@@ -758,13 +758,19 @@ importers:
 
   packages/postcss-normalize-whitespace:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-parser-algorithms':
+        specifier: ^4.0.0
+        version: 4.0.0(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
         version: 8.5.26
+      postcss-value-parser:
+        specifier: ^4.2.0
+        version: 4.2.0
 
   packages/postcss-ordered-values:
     dependencies:
