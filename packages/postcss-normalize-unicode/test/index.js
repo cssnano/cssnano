@@ -27,6 +27,13 @@ test(
 
 describe('Convert', () => {
   test(
+    'should convert each range in a comma-separated list',
+    processCSS(fixture('u+2b00-2bff,u+1e00-1eff'), fixture('u+2b??,u+1e??'), {
+      overrideBrowserslist: ['defaults', 'not ie <=11'],
+    })
+  );
+
+  test(
     'should convert a unicode range to a wildcard range (2)',
     processCSS(
       fixture('u+1e00-1eff'), // Latin Extended Additional
