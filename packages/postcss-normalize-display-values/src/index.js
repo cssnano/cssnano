@@ -1,4 +1,8 @@
-import valueParser from 'postcss-value-parser';
+import { isTokenIdent, tokenize } from '@csstools/css-tokenizer';
+import {
+  isTokenNode,
+  parseListOfComponentValues,
+} from '@csstools/css-parser-algorithms';
 import mappings from './lib/map.js';
 
 const displayRegex = /^display$/i;
@@ -8,16 +12,16 @@ const displayRegex = /^display$/i;
  * @return {string}
  */
 function transform(value) {
-  const { nodes } = valueParser(value);
+  const nodes = parseListOfComponentValues(tokenize({ css: value }));
 
   if (nodes.length === 1) {
     return value;
   }
 
   const values = nodes
-    .filter((list, index) => index % 2 === 0)
-    .filter((node) => node.type === 'word')
-    .map((n) => n.value.toLowerCase());
+    .filter((_node, index) => index % 2 === 0)
+    .filter((node) => isTokenNode(node) && isTokenIdent(node.value))
+    .map((node) => node.value[1].toLowerCase());
 
   if (values.length === 0) {
     return value;

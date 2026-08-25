@@ -1,45 +1,84 @@
-import valueParser from 'postcss-value-parser';
+import {
+  isFunctionNode,
+  isTokenNode,
+  parseListOfComponentValues,
+} from '@csstools/css-parser-algorithms';
+import {
+  isTokenDimension,
+  isTokenNumber,
+  tokenize,
+} from '@csstools/css-tokenizer';
 
 const transformRegex = /transform$/i;
-/**
- * @param {(number|string)[]} list
- * @param {valueParser.Node} node
- * @param {number} index
- * @return {(number|string)[]}
- */
-function getValues(list, node, index) {
-  if (index % 2 === 0) {
-    /** @type {number|string} */
-    let value = Number.NaN;
 
-    if (
-      node.type === 'function' &&
-      (node.value === 'var' || node.value === 'env') &&
-      node.nodes.length === 1
-    ) {
-      value = valueParser.stringify(node.nodes);
-    } else if (node.type === 'word') {
-      value = Number.parseFloat(node.value);
+function splitArguments(values) {
+  const argumentsList = [];
+  let current = [];
+  for (const value of values) {
+    if (value.toString() === ',') {
+      argumentsList.push(current);
+      current = [];
+    } else {
+      current.push(value);
     }
-
-    return [...list, value];
   }
+  argumentsList.push(current);
 
-  return list;
+  return argumentsList;
 }
 
-/**
- * @param {valueParser.FunctionNode} node
- * @param {(number|string)[]} values
- * @return {void}
- */
-function matrix3d(node, values) {
-  if (values.length !== 16) {
-    return;
+function getValue(argument) {
+  let first = 0;
+  let last = argument.length;
+  while (argument[first]?.type === 'whitespace') first++;
+  while (argument[last - 1]?.type === 'whitespace') last--;
+  const trimmedArgument = argument.slice(first, last);
+
+  if (trimmedArgument.length === 1 && isFunctionNode(trimmedArgument[0])) {
+    const name = trimmedArgument[0].getName().toLowerCase();
+    if (name === 'var' || name === 'env') {
+      const children = trimmedArgument[0].value.filter(
+        (child) => child.type !== 'whitespace'
+      );
+      if (children.length === 1) return children[0].toString();
+    }
   }
 
-  // matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1) => matrix(a, b, c, d, tx, ty)
+  if (trimmedArgument.length !== 1 || !isTokenNode(trimmedArgument[0])) {
+    return Number.NaN;
+  }
+  const token = trimmedArgument[0].value;
+  if (!isTokenNumber(token) && !isTokenDimension(token)) return Number.NaN;
+  return Number.parseFloat(token[1]);
+}
+
+function argumentSource(argument) {
+  let first = 0;
+  let last = argument.length;
+  while (argument[first]?.type === 'whitespace') first++;
+  while (argument[last - 1]?.type === 'whitespace') last--;
+  return argument
+    .slice(first, last)
+    .map((node) => node.toString())
+    .join('');
+}
+
+// The individual transform reductions share argument state; keeping them here
+// preserves the old plugin's exact reduction order.
+// eslint-disable-next-line complexity
+function reduceFunction(node, values, argumentsList) {
+  const name = node.getName().toLowerCase();
+  const args = argumentsList.map(argumentSource);
+  const separators = argumentsList.map((argument) => {
+    const whitespace = argument.find((item) => item.type === 'whitespace');
+    return whitespace?.toString() ?? '';
+  });
+  const replace = (newName, indexes) =>
+    `${newName}(${indexes.map((i, position) => `${position ? separators[indexes[position - 1] + 1] : ''}${args[i]}`).join(',')})`;
+
   if (
+    name === 'matrix3d' &&
+    values.length === 16 &&
     values[15] &&
     values[2] === 0 &&
     values[3] === 0 &&
@@ -52,221 +91,70 @@ function matrix3d(node, values) {
     values[14] === 0 &&
     values[15] === 1
   ) {
-    const { nodes } = node;
+    return replace('matrix', [0, 1, 4, 5, 12, 13]);
+  }
 
-    node.value = 'matrix';
-    node.nodes = [
-      nodes[0], // a
-      nodes[1], // ,
-      nodes[2], // b
-      nodes[3], // ,
-      nodes[8], // c
-      nodes[9], // ,
-      nodes[10], // d
-      nodes[11], // ,
-      nodes[24], // tx
-      nodes[25], // ,
-      nodes[26], // ty
-    ];
+  if (name === 'rotate3d' && values.length === 4) {
+    const match = new Map([
+      ['1,0,0', 'rotateX'],
+      ['0,1,0', 'rotateY'],
+      ['0,0,1', 'rotate'],
+    ]).get(values.slice(0, 3).toString());
+    if (match) return replace(match, [3]);
+  }
+
+  if (name === 'rotatez' && values.length === 1) return replace('rotate', [0]);
+
+  if (name === 'scale' && values.length === 2) {
+    if (values[0] === values[1]) return replace('scale', [0]);
+    if (values[1] === 1) return replace('scaleX', [0]);
+    if (values[0] === 1) return replace('scaleY', [1]);
+  }
+
+  if (name === 'scale3d' && values.length === 3) {
+    if (values[1] === 1 && values[2] === 1) return replace('scaleX', [0]);
+    if (values[0] === 1 && values[2] === 1) return replace('scaleY', [1]);
+    if (values[0] === 1 && values[1] === 1) return replace('scaleZ', [2]);
+  }
+
+  if (name === 'translate' && values.length === 2) {
+    if (values[1] === 0) return replace('translate', [0]);
+    if (values[0] === 0) return replace('translateY', [1]);
+  }
+
+  if (
+    name === 'translate3d' &&
+    values.length === 3 &&
+    values[0] === 0 &&
+    values[1] === 0
+  ) {
+    return replace('translateZ', [2]);
   }
 }
 
-const rotate3dMappings = new Map([
-  [[1, 0, 0].toString(), 'rotateX'], // rotate3d(1, 0, 0, a) => rotateX(a)
-  [[0, 1, 0].toString(), 'rotateY'], // rotate3d(0, 1, 0, a) => rotateY(a)
-  [[0, 0, 1].toString(), 'rotate'], // rotate3d(0, 0, 1, a) => rotate(a)
-]);
+function transform(value) {
+  const nodes = parseListOfComponentValues(tokenize({ css: value }));
 
-/**
- * @param {valueParser.FunctionNode} node
- * @param {(number|string)[]} values
- * @return {void}
- */
-function rotate3d(node, values) {
-  if (values.length !== 4) {
-    return;
+  function serialize(values) {
+    return values
+      .map((child) => {
+        if (!isFunctionNode(child)) return child.toString();
+        const children = serialize(child.value);
+        const argumentsList = splitArguments(child.value);
+        const replacement = reduceFunction(
+          child,
+          argumentsList.map(getValue),
+          argumentsList
+        );
+        if (replacement) return replacement;
+        const source = child.toString();
+        const original = child.value.map((item) => item.toString()).join('');
+        return source.replace(original, children);
+      })
+      .join('');
   }
 
-  const { nodes } = node;
-  const match = rotate3dMappings.get(values.slice(0, 3).toString());
-
-  if (match) {
-    node.value = match;
-    node.nodes = [nodes[6]];
-  }
-}
-
-/**
- * @param {valueParser.FunctionNode} node
- * @param {(number|string)[]} values
- * @return {void}
- */
-function rotateZ(node, values) {
-  if (values.length !== 1) {
-    return;
-  }
-
-  // rotateZ(rz) => rotate(rz)
-  node.value = 'rotate';
-}
-
-/**
- * @param {valueParser.FunctionNode} node
- * @param {(number|string)[]} values
- * @return {void}
- */
-function scale(node, values) {
-  if (values.length !== 2) {
-    return;
-  }
-
-  const { nodes } = node;
-  const [first, second] = values;
-
-  // scale(sx, sy) => scale(sx)
-  if (first === second) {
-    node.nodes = [nodes[0]];
-
-    return;
-  }
-
-  // scale(sx, 1) => scaleX(sx)
-  if (second === 1) {
-    node.value = 'scaleX';
-    node.nodes = [nodes[0]];
-
-    return;
-  }
-
-  // scale(1, sy) => scaleY(sy)
-  if (first === 1) {
-    node.value = 'scaleY';
-    node.nodes = [nodes[2]];
-  }
-}
-
-/**
- * @param {valueParser.FunctionNode} node
- * @param {(number|string)[]} values
- * @return {void}
- */
-function scale3d(node, values) {
-  if (values.length !== 3) {
-    return;
-  }
-
-  const { nodes } = node;
-  const [first, second, third] = values;
-
-  // scale3d(sx, 1, 1) => scaleX(sx)
-  if (second === 1 && third === 1) {
-    node.value = 'scaleX';
-    node.nodes = [nodes[0]];
-
-    return;
-  }
-
-  // scale3d(1, sy, 1) => scaleY(sy)
-  if (first === 1 && third === 1) {
-    node.value = 'scaleY';
-    node.nodes = [nodes[2]];
-
-    return;
-  }
-
-  // scale3d(1, 1, sz) => scaleZ(sz)
-  if (first === 1 && second === 1) {
-    node.value = 'scaleZ';
-    node.nodes = [nodes[4]];
-  }
-}
-
-/**
- * @param {valueParser.FunctionNode} node
- * @param {(number|string)[]} values
- * @return {void}
- */
-function translate(node, values) {
-  if (values.length !== 2) {
-    return;
-  }
-
-  const { nodes } = node;
-
-  // translate(tx, 0) => translate(tx)
-  if (values[1] === 0) {
-    node.nodes = [nodes[0]];
-
-    return;
-  }
-
-  // translate(0, ty) => translateY(ty)
-  if (values[0] === 0) {
-    node.value = 'translateY';
-    node.nodes = [nodes[2]];
-  }
-}
-
-/**
- * @param {valueParser.FunctionNode} node
- * @param {(number|string)[]} values
- * @return {void}
- */
-function translate3d(node, values) {
-  if (values.length !== 3) {
-    return;
-  }
-
-  const { nodes } = node;
-
-  // translate3d(0, 0, tz) => translateZ(tz)
-  if (values[0] === 0 && values[1] === 0) {
-    node.value = 'translateZ';
-    node.nodes = [nodes[4]];
-  }
-}
-
-const reducers = new Map([
-  ['matrix3d', matrix3d],
-  ['rotate3d', rotate3d],
-  ['rotateZ', rotateZ],
-  ['scale', scale],
-  ['scale3d', scale3d],
-  ['translate', translate],
-  ['translate3d', translate3d],
-]);
-/**
- * @param {string} name
- * @return {string}
- */
-function normalizeReducerName(name) {
-  const lowerCasedName = name.toLowerCase();
-
-  if (lowerCasedName === 'rotatez') {
-    return 'rotateZ';
-  }
-
-  return lowerCasedName;
-}
-
-/**
- * @param {valueParser.Node} node
- * @return {false}
- */
-function reduce(node) {
-  if (node.type === 'function') {
-    const normalizedReducerName = normalizeReducerName(node.value);
-    const reducer = reducers.get(normalizedReducerName);
-    if (reducer !== undefined) {
-      /** @type {(number|string)[]} */
-      let values = [];
-      for (const [index, child] of node.nodes.entries()) {
-        values = getValues(values, child, index);
-      }
-      reducer(node, values);
-    }
-  }
-  return false;
+  return serialize(nodes);
 }
 
 /**
@@ -283,20 +171,12 @@ function pluginCreator() {
          */
         OnceExit(css) {
           css.walkDecls(transformRegex, (decl) => {
+            if (cache.has(decl.value)) {
+              decl.value = cache.get(decl.value);
+              return;
+            }
             const value = decl.value;
-
-            if (!value) {
-              return;
-            }
-
-            if (cache.has(value)) {
-              decl.value = cache.get(value);
-
-              return;
-            }
-
-            const result = valueParser(value).walk(reduce).toString();
-
+            const result = transform(value);
             decl.value = result;
             cache.set(value, result);
           });
@@ -305,8 +185,8 @@ function pluginCreator() {
     },
   };
 }
+
 /** @type {true} */
 pluginCreator.postcss = true;
 const moduleExports = pluginCreator;
-
 export { moduleExports as default, moduleExports as 'module.exports' };

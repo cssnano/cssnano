@@ -1,7 +1,16 @@
-import valueParser from 'postcss-value-parser';
+import {
+  isTokenDimension,
+  isTokenIdent,
+  isTokenNumber,
+  tokenize,
+} from '@csstools/css-tokenizer';
+import {
+  isFunctionNode,
+  isSimpleBlockNode,
+  isTokenNode,
+  parseListOfComponentValues,
+} from '@csstools/css-parser-algorithms';
 
-/** @type {(node: valueParser.Node) => number} */
-const getValue = (node) => Number.parseFloat(node.value);
 const animationTransitionRegex =
   /^(-\w+-)?(animation|transition)(-timing-function)?$/i;
 
@@ -14,103 +23,122 @@ const conversions = new Map([
   [[0, 0, 0.58, 1].toString(), 'ease-out'],
   [[0.42, 0, 0.58, 1].toString(), 'ease-in-out'],
 ]);
-/**
- * @param {valueParser.Node} node
- * @return {void | false}
- */
-function reduce(node) {
-  if (node.type !== 'function') {
-    return false;
-  }
 
-  if (!node.value) {
+/**
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue} node
+ * @return {number | undefined}
+ */
+function getNumber(node) {
+  if (!isTokenNode(node)) {
     return;
   }
 
-  const lowerCasedValue = node.value.toLowerCase();
-
-  if (lowerCasedValue === 'steps') {
-    return normalizeSteps(node);
+  if (!isTokenNumber(node.value) && !isTokenDimension(node.value)) {
+    return;
   }
 
-  if (lowerCasedValue === 'cubic-bezier') {
-    return normalizeCubicBezier(node);
-  }
+  return node.value[4].value;
 }
 
 /**
- * @param {valueParser.FunctionNode} node
- * @return {void | false}
+ * Return the non-whitespace children while rejecting whitespace between
+ * arguments. This retains postcss-value-parser's malformed-input behavior.
+ *
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} values
+ * @return {import('@csstools/css-parser-algorithms').ComponentValue[]}
  */
-function normalizeSteps(node) {
-  const count = node.nodes[0];
-  const position = node.nodes[2];
-  const isSingleStep = count.type === 'word' && getValue(count) === 1;
+function argumentsWithoutWhitespace(values) {
+  const first = values.findIndex((node) => node.type !== 'whitespace');
+  const last = values.findLastIndex((node) => node.type !== 'whitespace');
 
-  if (isSingleStep && isStepPosition(position, 'start', 'jump-start')) {
-    /** @type string */ (node.type) = 'word';
-    node.value = 'step-start';
-
-    delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
-
-    return;
+  if (first < 0) {
+    return [];
   }
 
-  if (isSingleStep && isStepPosition(position, 'end', 'jump-end')) {
-    /** @type string */ (node.type) = 'word';
-    node.value = 'step-end';
+  const result = values.slice(first, last + 1);
+  for (let index = 0; index < result.length; index++) {
+    if (result[index].type !== 'whitespace') {
+      continue;
+    }
 
-    delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
+    let before = index - 1;
+    while (before >= 0 && result[before].type === 'whitespace') before--;
+    let after = index + 1;
+    while (after < result.length && result[after].type === 'whitespace')
+      after++;
 
-    return;
+    if (
+      result[before]?.toString() !== ',' &&
+      result[after]?.toString() !== ','
+    ) {
+      return [];
+    }
   }
 
-  // The end case is actually the browser default, so it isn't required.
-  if (isStepPosition(position, 'end', 'jump-end')) {
-    node.nodes = [count];
-
-    return;
-  }
-
-  return false;
+  return result.filter((node) => node.type !== 'whitespace');
 }
 
 /**
- * @param {valueParser.Node | undefined} node
+ * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} values
  * @param {string} first
  * @param {string} second
  * @return {boolean}
  */
-function isStepPosition(node, first, second) {
+function isStepPosition(values, first, second) {
   return (
-    node?.type === 'word' &&
-    (node.value.toLowerCase() === first || node.value.toLowerCase() === second)
+    values.length === 3 &&
+    isTokenNode(values[2]) &&
+    isTokenIdent(values[2].value) &&
+    (values[2].value[1].toLowerCase() === first ||
+      values[2].value[1].toLowerCase() === second)
   );
 }
 
 /**
- * @param {valueParser.FunctionNode} node
- * @return {void}
+ * @param {import('@csstools/css-parser-algorithms').FunctionNode} node
+ * @return {string | undefined}
  */
-function normalizeCubicBezier(node) {
-  const values = node.nodes
-    .filter((list, index) => {
-      return index % 2 === 0;
-    })
-    .map(getValue);
+function replacementForSteps(node) {
+  const values = argumentsWithoutWhitespace(node.value);
+  const count = getNumber(values[0]);
+  const isSingleStep = values.length >= 1 && count === 1;
 
-  if (values.length !== 4) {
+  if (isSingleStep && isStepPosition(values, 'start', 'jump-start')) {
+    return 'step-start';
+  }
+
+  if (isSingleStep && isStepPosition(values, 'end', 'jump-end')) {
+    return 'step-end';
+  }
+
+  // The end case is actually the browser default, so it isn't required.
+  if (values.length === 3 && isStepPosition(values, 'end', 'jump-end')) {
+    return `${node.name[1]}${values[0].toString()})`;
+  }
+}
+
+/**
+ * @param {import('@csstools/css-parser-algorithms').FunctionNode} node
+ * @return {string | undefined}
+ */
+function replacementForCubicBezier(node) {
+  const values = argumentsWithoutWhitespace(node.value);
+  if (
+    values.length !== 7 ||
+    values.some((value, index) => index % 2 === 1 && value.toString() !== ',')
+  ) {
     return;
   }
 
-  const match = conversions.get(values.toString());
+  const numbers = values
+    .filter((_value, index) => index % 2 === 0)
+    .map(getNumber);
 
-  if (match) {
-    /** @type string */ (node.type) = 'word';
-    node.value = match;
-
-    delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
+  if (numbers.some((value) => value === undefined)) {
+    return;
   }
+
+  return conversions.get(numbers.toString());
 }
 
 /**
@@ -118,7 +146,45 @@ function normalizeCubicBezier(node) {
  * @return {string}
  */
 function transform(value) {
-  return valueParser(value).walk(reduce).toString();
+  const nodes = parseListOfComponentValues(tokenize({ css: value }));
+
+  /**
+   * @param {import('@csstools/css-parser-algorithms').ComponentValue[]} values
+   * @return {string}
+   */
+  function serialize(values) {
+    let output = '';
+
+    for (const node of values) {
+      if (isFunctionNode(node)) {
+        const name = node.getName().toLowerCase();
+        let replacement;
+        if (name === 'steps') {
+          replacement = replacementForSteps(node);
+        } else if (name === 'cubic-bezier') {
+          replacement = replacementForCubicBezier(node);
+        }
+
+        if (replacement) {
+          output += replacement;
+          continue;
+        }
+      }
+
+      if (isFunctionNode(node) || isSimpleBlockNode(node)) {
+        const source = node.toString();
+        const inner = node.value.map((child) => child.toString()).join('');
+        output += source.replace(inner, serialize(node.value));
+        continue;
+      }
+
+      output += node.toString();
+    }
+
+    return output;
+  }
+
+  return serialize(nodes);
 }
 
 /**
