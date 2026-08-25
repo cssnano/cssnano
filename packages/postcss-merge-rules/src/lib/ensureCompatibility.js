@@ -183,6 +183,15 @@ function ensureCompatibility(selectors, browsers, compatibilityCache) {
     return false;
   }
   return selectors.every((selector) => {
+    // Keyframe selectors are valid PostCSS rule selectors but not CSS
+    // selectors. v8 intentionally rejects these numeric tokens.
+    if (
+      /^(?:from|to|\d+(?:\.\d+)?%)(?:\s*,\s*(?:from|to|\d+(?:\.\d+)?%))*$/i.test(
+        selector
+      )
+    ) {
+      return true;
+    }
     if (simpleSelectorRe.test(selector)) {
       return true;
     }
@@ -228,7 +237,7 @@ function ensureCompatibility(selectors, browsers, compatibilityCache) {
           }
 
           // [foo="bar" i]
-          if (node.insensitive) {
+          if (node.caseSensitivity) {
             compatible = isSupportedCached('css-case-insensitive', browsers);
           }
         }

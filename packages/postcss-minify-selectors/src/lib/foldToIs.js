@@ -63,7 +63,7 @@ function tryFold(root) {
  */
 function getSelectors(root) {
   return /** @type {import('postcss-selector-parser').Selector[]} */ (
-    root.nodes.filter((n) => n.type === 'selector')
+    root.children.filter((n) => n.type === 'selector')
   );
 }
 

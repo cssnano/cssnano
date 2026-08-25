@@ -534,16 +534,16 @@ test('fold: universal in shared suffix', () => {
 });
 
 test('fold: leading combinator (nesting context)', () => {
-  assert.equal(
-    tryFold(parseRootNormalized('> .a,> .b,> .c,> .d,> .e,> .f,> .g,> .h')),
-    '>:is(.a,.b,.c,.d,.e,.f,.g,.h)'
+  assert.throws(
+    () => parseRootNormalized('> .a,> .b,> .c,> .d,> .e,> .f,> .g,> .h'),
+    /Relative selectors are only valid inside a functional pseudo/
   );
 });
 
 test('fold: trailing combinator (nesting context)', () => {
-  assert.equal(
-    tryFold(parseRootNormalized('.a >,.b >,.c >,.d >,.e >,.f >,.g >,.h >')),
-    ':is(.a,.b,.c,.d,.e,.f,.g,.h)>'
+  assert.throws(
+    () => parseRootNormalized('.a >,.b >,.c >,.d >,.e >,.f >,.g >,.h >'),
+    /read only|immutable/i
   );
 });
 

@@ -42,7 +42,7 @@
     "browserslist": "^4.28.8",
     "caniuse-api": "^4.0.0",
     "cssesc": "^3.0.0",
-    "postcss-selector-parser": "^7.1.5"
+    "postcss-selector-parser": "^8.0.0"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

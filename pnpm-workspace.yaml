@@ -1,5 +1,6 @@
 packages:
   - 'packages/**'
+  - 'postcss-selector-parser'
   - '!site/**'
 autoInstallPeers: true
 

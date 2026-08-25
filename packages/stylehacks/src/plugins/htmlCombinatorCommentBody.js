@@ -22,12 +22,16 @@ export default (class HtmlCombinatorCommentBody extends BasePlugin {
       return;
     }
     if (rule.raws.selector && rule.raws.selector.raw) {
-      parser(this.analyse(rule)).processSync(rule.raws.selector.raw);
+      try {
+        parser(this.analyse(rule)).processSync(rule.raws.selector.raw);
+      } catch {
+        // v8 rejects malformed legacy hack selectors; they are not analyzable.
+      }
     }
   }
 
   /** @param {import('postcss').Rule} rule
-   *  @return {parser.SyncProcessor<void>}
+   *  @return {(selectors: parser.Root) => void}
    */
   analyse(rule) {
     return (selectors) => {

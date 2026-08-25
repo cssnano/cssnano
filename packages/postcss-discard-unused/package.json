@@ -33,7 +33,7 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "postcss-selector-parser": "^7.1.5"
+    "postcss-selector-parser": "^8.0.0"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

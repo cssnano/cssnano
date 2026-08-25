@@ -1,4 +1,4 @@
-import selectorParser from 'postcss-selector-parser';
+import selectorParser, { rewrite } from 'postcss-selector-parser';
 
 /**
  * @param {string} selectors
@@ -14,9 +14,9 @@ function generateUniqueSelector(selectors) {
   // Without comments the node's own toString is already a usable key.
   const hasComments = selectors.includes('/*');
 
-  /** @type {selectorParser.SyncProcessor<void>} */
+  /** @param {import('postcss-selector-parser').Root} selNode */
   const collectUniqueSelectors = (selNode) => {
-    for (const node of selNode.nodes) {
+    for (const node of selNode.children) {
       if (!hasComments) {
         const text = node.toString();
         const key = text.trim();
@@ -29,12 +29,12 @@ function generateUniqueSelector(selectors) {
       /** @type {string[]} */
       const comments = [];
       // Duplicates are removed by stripping the comments and using the results as the Map key.
-      const keyNode = node.clone();
-      keyNode.walk((sel) => {
+      const keyNode = rewrite(node, (sel) => {
         if (sel.type === 'comment') {
           comments.push(sel.value);
-          sel.remove();
+          return null;
         }
+        return sel;
       });
       const key = keyNode.toString().trim();
 
@@ -72,6 +72,12 @@ function pluginCreator() {
      */
     OnceExit(css) {
       css.walkRules((nodes) => {
+        if (
+          nodes.parent?.type === 'atrule' &&
+          /keyframes$/i.test(nodes.parent.name)
+        ) {
+          return;
+        }
         if (nodes.raws.selector && nodes.raws.selector.raw) {
           nodes.raws.selector.raw = generateUniqueSelector(
             nodes.raws.selector.raw

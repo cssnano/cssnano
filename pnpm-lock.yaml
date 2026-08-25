@@ -464,8 +464,8 @@ importers:
   packages/postcss-discard-comments:
     dependencies:
       postcss-selector-parser:
-        specifier: ^7.1.5
-        version: 7.1.5
+        specifier: ^8.0.0
+        version: link:../../postcss-selector-parser
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -498,8 +498,8 @@ importers:
   packages/postcss-discard-unused:
     dependencies:
       postcss-selector-parser:
-        specifier: ^7.1.5
-        version: 7.1.5
+        specifier: ^8.0.0
+        version: link:../../postcss-selector-parser
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -552,8 +552,8 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-selector-parser:
-        specifier: ^7.1.5
-        version: 7.1.5
+        specifier: ^8.0.0
+        version: link:../../postcss-selector-parser
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
@@ -640,8 +640,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       postcss-selector-parser:
-        specifier: ^7.1.5
-        version: 7.1.5
+        specifier: ^8.0.0
+        version: link:../../postcss-selector-parser
     devDependencies:
       '@types/cssesc':
         specifier: ^3.0.2
@@ -864,8 +864,8 @@ importers:
   packages/postcss-unique-selectors:
     dependencies:
       postcss-selector-parser:
-        specifier: ^7.1.5
-        version: 7.1.5
+        specifier: ^8.0.0
+        version: link:../../postcss-selector-parser
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -883,12 +883,31 @@ importers:
         specifier: ^4.28.8
         version: 4.28.8
       postcss-selector-parser:
-        specifier: ^7.1.5
-        version: 7.1.5
+        specifier: ^8.0.0
+        version: link:../../postcss-selector-parser
     devDependencies:
       postcss:
         specifier: 'catalog:'
         version: 8.5.26
+
+  postcss-selector-parser:
+    dependencies:
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
+    devDependencies:
+      oxfmt:
+        specifier: ^0.65.0
+        version: 0.65.0
+      oxlint:
+        specifier: ^1.69.0
+        version: 1.80.0
+      postcss:
+        specifier: ^8.4.31
+        version: 8.5.26
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
 
 packages:
 
@@ -1843,10 +1862,6 @@ packages:
     peerDependencies:
       postcss: ^8.4.29
 
-  postcss-selector-parser@7.1.5:
-    resolution: {integrity: sha512-KvvtD7SrlBP7dlgkBghEE3r84CABm5SmV2aNcG4oCA+qDnJ/tvKonFVvwWAyyWUEwxuNawdfEAZKP9zM3oZ2Uw==}
-    engines: {node: '>=4'}
-
   postcss-simple-vars@7.0.1:
     resolution: {integrity: sha512-5GLLXaS8qmzHMOjVxqkk1TZPf1jMqesiI7qLhnlyERalG0sMbHIbJqrcnrpmZdKCLglHnRHoEBB61RtGTsj++A==}
     engines: {node: '>=14.0'}
@@ -1946,9 +1961,6 @@ packages:
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
-
-  util-deprecate@1.0.2:
-    resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
   w3c-xmlserializer@5.0.0:
     resolution: {integrity: sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA==}
@@ -2706,11 +2718,6 @@ snapshots:
     dependencies:
       postcss: 8.5.26
 
-  postcss-selector-parser@7.1.5:
-    dependencies:
-      cssesc: 3.0.0
-      util-deprecate: 1.0.2
-
   postcss-simple-vars@7.0.1(postcss@8.5.26):
     dependencies:
       postcss: 8.5.26
@@ -2811,8 +2818,6 @@ snapshots:
       browserslist: 4.28.8
       escalade: 3.2.0
       picocolors: 1.1.1
-
-  util-deprecate@1.0.2: {}
 
   w3c-xmlserializer@5.0.0:
     dependencies:

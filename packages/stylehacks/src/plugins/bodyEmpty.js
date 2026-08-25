@@ -21,12 +21,16 @@ export default (class BodyEmpty extends BasePlugin {
     if (isMixin(rule)) {
       return;
     }
-    parser(this.analyse(rule)).processSync(rule.selector);
+    try {
+      parser(this.analyse(rule)).processSync(rule.selector);
+    } catch {
+      // v8 rejects malformed legacy hack selectors; they are not analyzable.
+    }
   }
 
   /**
    * @param {import('postcss').Rule} rule
-   * @return {parser.SyncProcessor<void>}
+   * @return {(selectors: parser.Root) => void}
    */
   analyse(rule) {
     return (selectors) => {

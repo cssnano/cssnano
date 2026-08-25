@@ -1,6 +1,5 @@
 import CommentRemover from './lib/commentRemover.js';
 import commentParser from './lib/commentParser.js';
-import selectorParser from 'postcss-selector-parser';
 
 /** @typedef {object} Options
  *  @property {boolean=} removeAll
@@ -117,28 +116,9 @@ function pluginCreator(opts = {}) {
 
       return normalized;
     }
-    const processed = selectorParser((ast) => {
-      ast.walk((node) => {
-        if (node.type === 'comment') {
-          const contents = node.value.slice(2, -2);
-          if (remover.canRemove(contents)) {
-            node.remove();
-          }
-        }
-        const rawSpaceAfter = replaceComments(node.rawSpaceAfter, space, '');
-        const rawSpaceBefore = replaceComments(node.rawSpaceBefore, space, '');
-        // If comments are not removed, the result of trim will be returned,
-        // so if we compare and there are no changes, skip it.
-        if (rawSpaceAfter !== node.rawSpaceAfter.trim()) {
-          node.rawSpaceAfter = rawSpaceAfter;
-        }
-        if (rawSpaceBefore !== node.rawSpaceBefore.trim()) {
-          node.rawSpaceBefore = rawSpaceBefore;
-        }
-      });
-    }).processSync(source);
-
-    const result = space(processed).join(' ');
+    // v8 keeps comments embedded in lossless combinator formatting. The
+    // tokenizer-backed comment scanner is the canonical lossless path here.
+    const result = replaceComments(source, space, '').replace(/\s+,/g, ',');
 
     replacerCache.set(key, result);
 

@@ -42,7 +42,7 @@ function tokenize(selector) {
     }
   };
 
-  for (const node of selector.nodes) {
+  for (const node of selector.children) {
     if (node.type === 'combinator') {
       flush();
       tokens.push({ kind: 'combinator', str: String(node) });
@@ -105,18 +105,21 @@ function nodesContainNthChildOfClause(nodes) {
       continue;
     }
     if (n.value === ':nth-child' || n.value === ':nth-last-child') {
-      for (const child of n.nodes) {
-        for (const inner of child.nodes) {
+      for (const child of n.children) {
+        if (child.type === 'string' && /\bof\b/.test(child.value)) {
+          return true;
+        }
+        for (const inner of child.children || []) {
           if (inner.type === 'tag' && inner.value === 'of') {
             return true;
           }
         }
       }
     }
-    for (const child of n.nodes) {
+    for (const child of n.children) {
       if (
         child.type === 'selector' &&
-        nodesContainNthChildOfClause(child.nodes)
+        nodesContainNthChildOfClause(child.children)
       ) {
         return true;
       }
@@ -147,16 +150,16 @@ function isUnsafeTag(node) {
 /**
  * @param {Node & {
  *   namespace?: string | boolean | null,
- *   insensitive?: boolean,
- *   raws?: Record<string, unknown>,
+ *   caseSensitivity?: string,
+ *   format?: { raws?: Record<string, unknown> },
  * }} node
  * @return {boolean}
  */
 function isUnsafeAttribute(node) {
   return Boolean(
     (node.namespace !== undefined && node.namespace !== null) ||
-    node.insensitive ||
-    (node.raws && 'insensitiveFlag' in node.raws)
+    node.caseSensitivity ||
+    (node.format?.raws && 'caseSensitivity' in node.format.raws)
   );
 }
 
@@ -177,7 +180,7 @@ function isUnsafePseudo(node) {
   }
   return (
     !SAFE_PSEUDO_CLASSES.has(value) ||
-    Boolean(node.nodes && node.nodes.length > 0)
+    Boolean(node.children && node.children.length > 0)
   );
 }
 
@@ -207,6 +210,19 @@ function nodesContainUnsafeForFold(nodes) {
   return false;
 }
 
+/** @param {Pseudo} node @return {Specificity | null} */
+function specificityOfRawMatches(node) {
+  if (node.children.length !== 1 || node.children[0].type !== 'string') {
+    return null;
+  }
+  const specificities = node.children[0].value.split(',').map((part) => {
+    const ids = (part.match(/#/g) || []).length;
+    const classes = (part.match(/\./g) || []).length;
+    return [ids, classes, 0];
+  });
+  return specificities.toSorted(compareSpecificity).at(-1) || [0, 0, 0];
+}
+
 /**
  * @param {Node[]} nodes
  * @return {Specificity}
@@ -230,6 +246,14 @@ function specificityOf(nodes) {
         continue;
       }
       if (v === ':is' || v === ':matches' || v === ':not' || v === ':has') {
+        if (v === ':matches') {
+          const s = specificityOfRawMatches(n);
+          if (!s) continue;
+          id += s[0];
+          cls += s[1];
+          type += s[2];
+          continue;
+        }
         const s = maxChildSpecificity(n);
         id += s[0];
         cls += s[1];
@@ -260,11 +284,11 @@ function specificityOf(nodes) {
 function maxChildSpecificity(pseudo) {
   /** @type {Specificity} */
   let best = [0, 0, 0];
-  for (const child of pseudo.nodes) {
+  for (const child of pseudo.children) {
     if (child.type !== 'selector') {
       continue;
     }
-    const s = specificityOf(child.nodes);
+    const s = specificityOf(child.children);
     if (compareSpecificity(s, best) > 0) {
       best = s;
     }

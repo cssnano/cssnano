@@ -1,4 +1,3 @@
-import parser from 'postcss-selector-parser';
 import BasePlugin from '../plugin.js';
 export default HtmlFirstChild;
 declare class HtmlFirstChild extends BasePlugin {
@@ -11,8 +10,8 @@ declare class HtmlFirstChild extends BasePlugin {
     detect(rule: import('postcss').Rule): void;
     /**
      * @param {import('postcss').Rule} rule
-     * @return {parser.SyncProcessor<void>}
+     * @return {(selectors: parser.Root) => void}
      */
-    analyse(rule: import('postcss').Rule): parser.SyncProcessor<void>;
+    analyse(rule: import('postcss').Rule): (selectors: parser.Root) => void;
 }
 //# sourceMappingURL=htmlFirstChild.d.ts.map
