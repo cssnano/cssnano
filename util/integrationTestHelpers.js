@@ -69,8 +69,36 @@ function integrationTests(preset, integrations) {
     );
 }
 
+function idempotencyTests(preset, integrations) {
+  const presetName = path.basename(path.resolve(integrations, '../..'));
+  const integrationsByFramework = new Map();
+  for (const integration of fs.readdirSync(integrations)) {
+    if (path.extname(integration) === '.css') {
+      integrationsByFramework.set(
+        path.basename(integration, '.css'),
+        fs.readFileSync(path.join(integrations, integration), 'utf8')
+      );
+    }
+  }
+
+  return async (t) =>
+    Promise.allSettled(
+      Array.from(integrationsByFramework, ([framework, css]) =>
+        t.test(`${presetName} - ${framework}`, async () => {
+          const result = await postcss([cssnano({ preset })]).process(css, {
+            from: undefined,
+          });
+          if (result.css !== css) {
+            assert.fail(mismatchMessage(framework, result.css, css));
+          }
+        })
+      )
+    );
+}
+
 module.exports = {
   processCSSWithPresetFactory,
   createCssnanoProcessor,
   integrationTests,
+  idempotencyTests,
 };

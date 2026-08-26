@@ -1,6 +1,9 @@
 'use strict';
 const { describe, test } = require('node:test');
-const { integrationTests } = require('../../../util/integrationTestHelpers.js');
+const {
+  idempotencyTests,
+  integrationTests,
+} = require('../../../util/integrationTestHelpers.js');
 const preset = require('../src/index.js');
 
 describe('lite preset framework integrations', () => {
@@ -8,5 +11,10 @@ describe('lite preset framework integrations', () => {
     'should correctly handle the framework tests',
     { concurrency: true },
     integrationTests(preset, `${__dirname}/integrations`)
+  );
+  test(
+    'should be idempotent on integration outputs',
+    { concurrency: true },
+    idempotencyTests(preset, `${__dirname}/integrations`)
   );
 });
