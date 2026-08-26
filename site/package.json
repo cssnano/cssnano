@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.3",
-    "astro": "7.2.4",
+    "astro": "^7.2.7",
     "cssnano": "link:../packages/cssnano",
     "typescript": "~7.0.2"
   },
