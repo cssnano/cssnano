@@ -27,8 +27,14 @@ postcss([cssnano({ preset, plugins: [autoprefixer] })])
 You can configure cssnano with a dedicated configuration, for example if you cannot access the PostCSS configuration file. The cssnano configuration can be in different formats:
 
 * a `cssnano` option in `package.json`
-* a JSON file named `.cssnanorc.config.json` or `.cssnanorc`
-* a file named `cssnano.config.js` that exports the configuration as a JavaScript object
+* a JSON file named `.cssnanorc.json`
+* a JavaScript file named `.cssnanorc.js` or `cssnano.config.js`
+
+cssnano checks these files in the order listed, in the current working
+directory only. It does not search parent directories, and `.cssnanorc` is not
+supported. Use the `configFile` option to select one of the supported filenames
+in another directory. The path may be relative to the current working
+directory or absolute.
 
 
 ## Configuration options

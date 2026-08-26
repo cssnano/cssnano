@@ -76,7 +76,7 @@ for (const [description, preset] of [
 
     assert.strictEqual(
       result.css,
-      `.example { -ms-user-select: none; user-select: none; }`
+      `.example{-ms-user-select:none;user-select:none}`
     );
   });
 }

@@ -1,12 +1,17 @@
 import { createRequire } from 'node:module';
+import fs from 'node:fs';
 import path from 'node:path';
 import postcss from 'postcss';
-import { lilconfigSync } from 'lilconfig';
 import defaultPreset from 'cssnano-preset-default';
 
 const require = createRequire(import.meta.url);
 
-const cssnano = 'cssnano';
+const configFileNames = [
+  'package.json',
+  '.cssnanorc.json',
+  '.cssnanorc.js',
+  'cssnano.config.js',
+];
 
 /** @typedef {boolean | { exclude?: boolean } | void | undefined} PluginOptions */
 /** @typedef {import('postcss').PluginCreator<any>} PluginCreator */
@@ -83,44 +88,76 @@ function resolvePreset(preset) {
 }
 
 /**
- * cssnano will look for configuration firstly as options passed
- * directly to it, and failing this it will use lilconfig to
- * load an external file.
+ * @param {string} filePath
+ * @returns {unknown}
+ */
+function loadConfigFile(filePath) {
+  if (path.basename(filePath) === 'package.json') {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8')).cssnano;
+  }
+  if (filePath.endsWith('.json')) {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  }
+  return createRequire(filePath)(filePath);
+}
 
+/**
+ * @param {string} filePath
+ * @returns {boolean}
+ */
+function isSupportedConfigFile(filePath) {
+  return configFileNames.includes(path.basename(filePath));
+}
+
+/**
+ * @param {string} [configFile]
+ * @returns {unknown | null}
+ */
+function loadDiscoveredConfig(configFile) {
+  if (configFile) {
+    const configPath = path.resolve(process.cwd(), configFile);
+    if (!isSupportedConfigFile(configPath)) {
+      throw new Error(
+        `Unsupported cssnano configuration file "${configFile}". Use package.json, .cssnanorc.json, .cssnanorc.js, or cssnano.config.js.`
+      );
+    }
+    if (!fs.existsSync(configPath)) {
+      throw new Error(
+        `Cannot find cssnano configuration file "${configFile}".`
+      );
+    }
+    return loadConfigFile(configPath);
+  }
+
+  for (const fileName of configFileNames) {
+    const configPath = path.join(process.cwd(), fileName);
+    if (!fs.existsSync(configPath)) continue;
+    const config = loadConfigFile(configPath);
+    if (
+      fileName !== 'package.json' ||
+      (config !== undefined && config !== null)
+    ) {
+      return config;
+    }
+  }
+  return null;
+}
+
+/**
  * @param {Options} options
+ * @returns {PresetPlugin[]}
  */
 function resolveConfig(options) {
   if (options.preset) {
+    if (Array.isArray(options.preset) && options.preset.length === 0) {
+      return [];
+    }
     return resolvePreset(options.preset);
   }
+  if (Array.isArray(options.plugins)) return [];
 
-  /** @type {string | undefined} */
-  let searchPath = process.cwd();
-  let configPath = undefined;
-
-  if (options.configFile) {
-    searchPath = undefined;
-    configPath = path.resolve(process.cwd(), options.configFile);
-  }
-
-  const configExplorer = lilconfigSync(cssnano, {
-    searchPlaces: [
-      'package.json',
-      '.cssnanorc',
-      '.cssnanorc.json',
-      '.cssnanorc.js',
-      'cssnano.config.js',
-    ],
-  });
-  const config = configPath
-    ? configExplorer.load(configPath)
-    : configExplorer.search(searchPath);
-
-  if (config === null) {
-    return resolvePreset('default');
-  }
-
-  return resolvePreset(config.config.preset || config.config);
+  const config = loadDiscoveredConfig(options.configFile);
+  return resolvePreset(config === null ? 'default' : config?.preset || config);
 }
 
 /**
@@ -129,47 +166,26 @@ function resolveConfig(options) {
  * @return {import('postcss').Processor}
  */
 function cssnanoPlugin(options = {}) {
-  /** @typedef {Options & { preset: { plugins: PresetPlugin[] } }} MutableOptions */
-  if (Array.isArray(/** @type {MutableOptions} */ (options).plugins)) {
-    if (
-      !(/** @type {MutableOptions} */ (options).preset) ||
-      !(/** @type {MutableOptions} */ (options).preset.plugins)
-    ) {
-      /** @type {MutableOptions} */ (options).preset = { plugins: [] };
-    }
-
-    const inputPlugins = /** @type {PluginSpec[]} */ (
-      /** @type {MutableOptions} */ (options).plugins
-    );
+  let nanoPlugins = resolveConfig(options);
+  if (Array.isArray(options.plugins)) {
+    nanoPlugins = nanoPlugins.slice();
+    const inputPlugins = options.plugins;
     for (const plugin of inputPlugins) {
       if (Array.isArray(plugin)) {
         const [pluginDef, opts = {}] = plugin;
         if (typeof pluginDef === 'string' && isResolvable(pluginDef)) {
-          /** @type {MutableOptions} */ (options).preset.plugins.push([
-            require(pluginDef),
-            opts,
-          ]);
+          nanoPlugins.push([require(pluginDef), opts]);
         } else {
-          /** @type {MutableOptions} */ (options).preset.plugins.push([
-            /** @type {PluginCreator} */ (pluginDef),
-            opts,
-          ]);
+          nanoPlugins.push([/** @type {PluginCreator} */ (pluginDef), opts]);
         }
       } else if (typeof plugin === 'string' && isResolvable(plugin)) {
-        /** @type {MutableOptions} */ (options).preset.plugins.push([
-          require(plugin),
-          {},
-        ]);
+        nanoPlugins.push([require(plugin), {}]);
       } else {
-        /** @type {MutableOptions} */ (options).preset.plugins.push([
-          /** @type {PluginCreator} */ (plugin),
-          {},
-        ]);
+        nanoPlugins.push([/** @type {PluginCreator} */ (plugin), {}]);
       }
     }
   }
   const plugins = [];
-  const nanoPlugins = resolveConfig(options);
   for (const nanoPlugin of nanoPlugins) {
     if (Array.isArray(nanoPlugin)) {
       const [processor, opts] = nanoPlugin;
