@@ -4,6 +4,7 @@ const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
 const {
   integrationTests,
+  pluginIdempotencyTests,
   createCssnanoProcessor,
   processCSSWithPresetFactory,
 } = require('../../../util/integrationTestHelpers.js');
@@ -86,6 +87,14 @@ describe('framework integrations', () => {
     'should correctly handle the framework tests',
     { concurrency: true },
     integrationTests(preset, `${__dirname}/integrations`)
+  );
+  test(
+    'should be idempotent for each default plugin except merge rules and svgo',
+    { concurrency: true },
+    pluginIdempotencyTests(preset, `${__dirname}/integrations`, [
+      'postcss-merge-rules',
+      'postcss-svgo',
+    ])
   );
 });
 
