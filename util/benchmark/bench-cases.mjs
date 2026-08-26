@@ -26,4 +26,19 @@ export const benchmarkCases = {
         `.grid-${index}{animation:2s ease-in ${index % 2 ? 'reverse' : 'normal'} 1s slide-${index};transition:opacity 1s ease-in 0s;background:top left/cover no-repeat url(image-${index}.png)}`
     ).join(''),
   },
+  'merge-rules-dense': {
+    plugin: 'postcss-merge-rules',
+    css: Array.from(
+      { length: 200 },
+      (_, index) =>
+        `.dense-${index}{color:red;background:#fff;border:0;font-weight:700}`
+    ).join(''),
+  },
+  'merge-rules-sparse': {
+    plugin: 'postcss-merge-rules',
+    css: Array.from(
+      { length: 200 },
+      (_, index) => `.sparse-${index}{--value:${index}}`
+    ).join(''),
+  },
 };

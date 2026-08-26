@@ -91,6 +91,7 @@ for (const field of [
   'corpusManifest',
   'target',
   'node',
+  'finalizationMode',
   'platform',
   'arch',
   'iters',

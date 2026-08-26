@@ -48,6 +48,8 @@ const cssnano = require('../../packages/cssnano/src/index.js');
 // folder of .css files.
 const DEFAULT_DIR = join(import.meta.dirname, '..', '..', 'frameworks');
 const RESULTS_DIR = join(import.meta.dirname, '..', '..', 'bench-results');
+const finalizationMode =
+  process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
 function quantile(sorted, q) {
   const idx = (sorted.length - 1) * q;
@@ -227,7 +229,8 @@ async function main() {
 
   console.log(
     `cssnano ${target} benchmark — preset=${args.preset}, node ${process.version}, ` +
-      `${corpus.length} files, warmup=${args.warmup}, iters=${args.iters}`
+      `${corpus.length} files, warmup=${args.warmup}, iters=${args.iters}, ` +
+      `finalization=${finalizationMode}`
   );
   console.log();
   console.log(
@@ -298,6 +301,7 @@ async function main() {
     corpusManifest: corpusManifest(corpus),
     gitRevision: gitRevision(),
     node: process.version,
+    finalizationMode,
     platform: process.platform,
     arch: process.arch,
     timestamp: new Date().toISOString(),
