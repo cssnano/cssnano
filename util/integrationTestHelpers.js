@@ -96,9 +96,62 @@ function idempotencyTests(preset, integrations) {
     );
 }
 
+function pluginIdempotencyTests(preset, integrations, excludedPlugins = []) {
+  const presetName = path.basename(path.resolve(integrations, '../..'));
+  const frameworks = [];
+  for (const file of fs.readdirSync(integrations)) {
+    if (path.extname(file) === '.css') {
+      frameworks.push({
+        name: path.basename(file, '.css'),
+        css: fs.readFileSync(path.join(integrations, file), 'utf8'),
+      });
+    }
+  }
+
+  const plugins = [];
+  for (const [creator, options] of preset().plugins) {
+    const plugin = creator(options);
+    if (!excludedPlugins.includes(plugin.postcssPlugin)) {
+      plugins.push({ creator, options, name: plugin.postcssPlugin });
+    }
+  }
+
+  return async (t) => {
+    const tests = [];
+    for (const plugin of plugins) {
+      for (const framework of frameworks) {
+        tests.push(
+          t.test(
+            `${presetName} - ${plugin.name} - ${framework.name}`,
+            async () => {
+              const firstPass = await postcss([
+                plugin.creator(plugin.options),
+              ]).process(framework.css, { from: undefined });
+              const secondPass = await postcss([
+                plugin.creator(plugin.options),
+              ]).process(firstPass.css, { from: undefined });
+              if (secondPass.css !== firstPass.css) {
+                assert.fail(
+                  mismatchMessage(
+                    `${plugin.name} - ${framework.name}`,
+                    secondPass.css,
+                    firstPass.css
+                  )
+                );
+              }
+            }
+          )
+        );
+      }
+    }
+    return Promise.allSettled(tests);
+  };
+}
+
 module.exports = {
   processCSSWithPresetFactory,
   createCssnanoProcessor,
   integrationTests,
   idempotencyTests,
+  pluginIdempotencyTests,
 };
