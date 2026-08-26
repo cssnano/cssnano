@@ -22,9 +22,9 @@ import autoprefixer from 'autoprefixer';
  */
 
 /**
- * @typedef {defaultPreset.AutoprefixerOptions} AutoprefixerOptions
- * @typedef {defaultPreset.BrowserslistOptions} BrowserslistOptions
- * @typedef {defaultPreset.Options & AdvancedOptions} Options
+ * @typedef {import('cssnano-preset-default').AutoprefixerOptions} AutoprefixerOptions
+ * @typedef {import('cssnano-preset-default').BrowserslistOptions} BrowserslistOptions
+ * @typedef {import('cssnano-preset-default').Options & AdvancedOptions} Options
  */
 /**
  * @param {[import('postcss').PluginCreator<any>, keyof AdvancedOptions][]} plugins

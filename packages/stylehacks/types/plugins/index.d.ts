@@ -1,10 +1,10 @@
 declare const _default: ({
     new (result?: import('postcss').Result | undefined): {
-        nodes: NodeWithInfo[];
+        detect(decl: import('postcss').Declaration): void;
+        nodes: import("../plugin.js").NodeWithInfo[];
         targets: Set<string>;
         nodeTypes: Set<string>;
         result: import("postcss").Result<import("postcss").Document | import("postcss").Root> | undefined;
-        detect(decl: import('postcss').Declaration): void;
         push(node: import('postcss').Node, metadata: {
             identifier: string;
             hack: string;
@@ -17,7 +17,7 @@ declare const _default: ({
     };
 } | {
     new (result?: import('postcss').Result | undefined): {
-        nodes: NodeWithInfo[];
+        nodes: import("../plugin.js").NodeWithInfo[];
         targets: Set<string>;
         nodeTypes: Set<string>;
         result: import("postcss").Result<import("postcss").Document | import("postcss").Root> | undefined;

@@ -83,7 +83,12 @@ function processNonWord(node, index, nextNode, state) {
 
   return false;
 }
-export default (function (unminified, opts) {
+/**
+ * @param {string} unminified
+ * @param {import('../index.js').Options} opts
+ * @return {string}
+ */
+const minifyFont = function (unminified, opts) {
   const tree = valueParser(unminified);
   const nodes = tree.nodes;
 
@@ -109,4 +114,6 @@ export default (function (unminified, opts) {
 
   tree.nodes = nodes.slice(0, familyStart).concat(family);
   return tree.toString();
-});
+};
+
+export default minifyFont;

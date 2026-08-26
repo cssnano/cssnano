@@ -29,7 +29,7 @@ function pluginCreator(opts = {}) {
          * @param {import('postcss').Root} css
          */
         OnceExit(css) {
-          /** @type {import('./plugin').Plugin[]} */
+          /** @type {import('./plugin.js').Plugin[]} */
           const processors = [];
           for (const Plugin of plugins) {
             const hack = new Plugin(result);

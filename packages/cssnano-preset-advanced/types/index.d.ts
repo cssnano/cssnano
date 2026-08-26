@@ -11,9 +11,9 @@ export type AdvancedOptions = {
     reduceIdents?: SimpleOptions<import('postcss-reduce-idents').Options>;
     zindex?: SimpleOptions<import('postcss-zindex').Options>;
 };
-export type AutoprefixerOptions = defaultPreset.AutoprefixerOptions;
-export type BrowserslistOptions = defaultPreset.BrowserslistOptions;
-export type Options = defaultPreset.Options & AdvancedOptions;
+export type AutoprefixerOptions = import('cssnano-preset-default').AutoprefixerOptions;
+export type BrowserslistOptions = import('cssnano-preset-default').BrowserslistOptions;
+export type Options = import('cssnano-preset-default').Options & AdvancedOptions;
 /**
  * Advanced optimisations for cssnano; may or may not break your CSS!
  *

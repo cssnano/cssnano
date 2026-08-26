@@ -6,6 +6,7 @@ import {
 } from './validateWsc.js';
 
 const defaultBorderValue = ['medium', 'none', 'currentcolor'];
+/** @param {string} cssPropertyValue */
 export default (cssPropertyValue) => {
   /* Shortening a value the browser ignores for specifying a component twice, or
    * something that is no component, would put a border on the page that the

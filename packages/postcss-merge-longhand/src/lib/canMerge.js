@@ -5,6 +5,7 @@ import cssGlobalKeywords from './cssGlobalKeywords.js';
 const important = (decl) => decl.important;
 /** @type {(node: import('postcss').Declaration) => boolean} */
 const unimportant = (decl) => !decl.important;
+/** @param {import('postcss').Declaration[]} declarations */
 export default (declarations, includeCustomProps = true) => {
   const uniqueProperties = new Set(
     declarations.map((node) => node.value.toLowerCase())

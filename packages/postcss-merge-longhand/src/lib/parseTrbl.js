@@ -1,5 +1,6 @@
 import { list } from 'postcss';
 
+/** @param {string | string[]} v */
 export default (v) => {
   const s = typeof v === 'string' ? list.space(v) : v;
   return [

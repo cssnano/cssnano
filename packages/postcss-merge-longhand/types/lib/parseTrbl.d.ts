@@ -1,3 +1,4 @@
 export default _default;
-declare function _default(v: any): any[];
+/** @param {string | string[]} v */
+declare function _default(v: string | string[]): string[];
 //# sourceMappingURL=parseTrbl.d.ts.map

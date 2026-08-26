@@ -1,3 +1,4 @@
 export default _default;
-declare function _default(rules: any): any;
+/** @param {import('postcss').Declaration[]} rules */
+declare function _default(rules: import('postcss').Declaration[]): boolean;
 //# sourceMappingURL=skipsFallback.d.ts.map

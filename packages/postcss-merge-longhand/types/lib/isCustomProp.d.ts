@@ -1,3 +1,4 @@
 export default _default;
-declare function _default(node: any): boolean;
+/** @param {import('postcss').Declaration} node */
+declare function _default(node: import('postcss').Declaration): boolean;
 //# sourceMappingURL=isCustomProp.d.ts.map

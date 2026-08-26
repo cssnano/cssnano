@@ -169,6 +169,7 @@ function pluginCreator(options = {}) {
     },
   };
 }
+/** @type {true} */
 pluginCreator.postcss = true;
 const moduleExports = pluginCreator;
 

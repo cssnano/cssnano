@@ -20,6 +20,10 @@ export default (function () {
   let decls = [];
 
   return {
+    /**
+     * @param {import('postcss').AnyNode} node
+     * @param {(value: string, index: number) => string} encoder
+     */
     collect(node, encoder) {
       const { type } = node;
 

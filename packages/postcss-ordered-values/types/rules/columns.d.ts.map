@@ -1,1 +1,1 @@
-{"version":3,"file":"columns.d.ts","sourceRoot":"","sources":["../../src/rules/columns.js"],"names":[],"mappings":";0BAWgB,OAAO,KAAA"}
+{"version":3,"file":"columns.d.ts","sourceRoot":"","sources":["../../src/rules/columns.js"],"names":[],"mappings":"AAAA,OAAO,kBAAkB,MAAM,sBAAsB,CAAC;;AAWtD,kEAAkE;0BAClD,OAAO,EADX,OAAO,sBAAsB,EAAE,WACpB"}

@@ -1,4 +1,5 @@
-export declare const normalize: (url: any) => any;
+/** @param {string} url */
+export declare const normalize: (url: string) => string;
 declare const _default: {
     normalize: typeof normalize;
 };

@@ -1,6 +1,7 @@
 import isCustomProp from './isCustomProp.js';
 import globalKeywords from './cssGlobalKeywords.js';
 
+/** @param {import('postcss').Declaration} prop */
 export default (prop, includeCustomProps = true) => {
   return !(
     !prop.value ||

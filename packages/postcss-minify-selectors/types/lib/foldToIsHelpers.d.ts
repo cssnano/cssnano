@@ -1,3 +1,6 @@
+/** @typedef {import('postcss-selector-parser').Node} Node */
+/** @typedef {import('postcss-selector-parser').Selector} Selector */
+/** @typedef {import('postcss-selector-parser').Pseudo} Pseudo */
 export type Node = import('postcss-selector-parser').Node;
 export type Selector = import('postcss-selector-parser').Selector;
 export type Pseudo = import('postcss-selector-parser').Pseudo;

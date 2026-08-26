@@ -1,4 +1,3 @@
-import postcss from 'postcss';
 export type PluginOptions = boolean | {
     exclude?: boolean;
 } | void | undefined;
@@ -17,10 +16,13 @@ export type Options = {
     configFile?: string;
 };
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options=} options
  * @return {import('postcss').Processor}
  */
-declare function cssnanoPlugin(options?: {}): postcss.Processor;
+declare function cssnanoPlugin(options?: Options | undefined): import('postcss').Processor;
+declare namespace cssnanoPlugin {
+    var _a: true;
+    export { _a as postcss };
+}
 export { cssnanoPlugin as default, cssnanoPlugin as 'module.exports' };
 //# sourceMappingURL=index.d.ts.map

@@ -1,1 +1,1 @@
-{"version":3,"file":"counter-style.d.ts","sourceRoot":"","sources":["../../src/lib/counter-style.js"],"names":[],"mappings":""}
+{"version":3,"file":"counter-style.d.ts","sourceRoot":"","sources":["../../src/lib/counter-style.js"],"names":[],"mappings":";;IAyGI;;;OAGG;IACH,OAAO,OAHI,OAAO,SAAS,EAAE,OAAO,WACzB,CAAC,KAAK,EAAE,MAAM,EAAE,KAAK,EAAE,MAAM,KAAK,MAAM;IA+BnD,SAAS"}

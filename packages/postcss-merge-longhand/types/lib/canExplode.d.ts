@@ -1,3 +1,4 @@
 export default _default;
-declare function _default(prop: any, includeCustomProps?: boolean): boolean;
+/** @param {import('postcss').Declaration} prop */
+declare function _default(prop: import('postcss').Declaration, includeCustomProps?: boolean): boolean;
 //# sourceMappingURL=canExplode.d.ts.map

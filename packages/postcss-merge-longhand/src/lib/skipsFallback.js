@@ -1,5 +1,6 @@
 import { mergeBlockingSupport } from './isFallback.js';
 
+/** @param {import('postcss').Declaration[]} rules */
 export default (rules) => {
   const [first, ...rest] = rules;
 
