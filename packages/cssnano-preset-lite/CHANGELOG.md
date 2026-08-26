@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.0.6
+
+### Patch Changes
+
+- fix(postcss-normalize-charset): ensure idempotent charset normalization
+
 ## 5.0.5
 
 ### Patch Changes
