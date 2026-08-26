@@ -1,1 +1,1 @@
-{"version":3,"file":"getLastNode.d.ts","sourceRoot":"","sources":["../../src/lib/getLastNode.js"],"names":[],"mappings":";0BACgB,KAAK,KAAA,EAAE,IAAI,KAAA,GAQP,OAAO,SAAS,EAAE,WAAW"}
+{"version":3,"file":"getLastNode.d.ts","sourceRoot":"","sources":["../../src/lib/getLastNode.js"],"names":[],"mappings":";AAAA;;;GAGG;0BACa,KAAK,EAHV,QAAQ,CAAC,OAAO,SAAS,EAAE,WAAW,CAG5B,EAAE,IAAI,EAFhB,MAEgB,GAQP,OAAO,SAAS,EAAE,WAAW"}

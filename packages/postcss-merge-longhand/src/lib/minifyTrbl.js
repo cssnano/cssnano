@@ -1,5 +1,9 @@
 import parseTrbl from './parseTrbl.js';
 
+/**
+ * @param {string | string[]} v
+ * @return {string}
+ */
 export default (v) => {
   const value = parseTrbl(v);
 

@@ -13,6 +13,7 @@ import lastOf from '../lastOf.js';
 import { browserKeeps } from '../validateBox.js';
 import cssGlobalKeywords from '../cssGlobalKeywords.js';
 
+/** @param {string} prop */
 export default (prop) => {
   const physicalBoxProperties = topRightBottomLeft.map(
     (direction) => `${prop}-${direction}`

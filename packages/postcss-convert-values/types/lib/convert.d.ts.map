@@ -1,1 +1,1 @@
-{"version":3,"file":"convert.d.ts","sourceRoot":"","sources":["../../src/lib/convert.js"],"names":[],"mappings":";0BA6D0B,MAAM,KAAA,EAAE,IAAI,KAAA,EAAE,EAAE,IAAI,EAAE,MAAM,EAAE,KAAK,EAAE;;;;CAAA"}
+{"version":3,"file":"convert.d.ts","sourceRoot":"","sources":["../../src/lib/convert.js"],"names":[],"mappings":"AAiBI,YAA+D,cAAc,GAAnE;IAAC,IAAI,CAAC,EAAE,OAAO,CAAC;IAAC,MAAM,CAAC,EAAE,OAAO,CAAC;IAAC,KAAK,CAAC,EAAE,OAAO,CAAA;CAAC,CAAgB;AA6CjF;;;;;GAKG;AACH,QAAA,MAAM,OAAO,WALF,MAAM,QACN,MAAM,WACN,cAAc,KACb,MAwBX,CAAC;eAEa,OAAO"}

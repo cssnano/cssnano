@@ -14,6 +14,8 @@ const angleConv = new Map([
   ['turn', 360],
   ['deg', 1],
 ]);
+
+/** @typedef {{time?: boolean, length?: boolean, angle?: boolean}} ConvertOptions */
 /**
  * @param {number} number
  * @return {string}
@@ -58,7 +60,14 @@ function transform(number, originalUnit, conversions) {
 
   return shortest;
 }
-export default (function (number, unit, { time, length, angle }) {
+/**
+ * @param {number} number
+ * @param {string} unit
+ * @param {ConvertOptions} options
+ * @return {string}
+ */
+const convert = function (number, unit, options) {
+  const { time, length, angle } = options;
   let value = dropLeadingZero(number) + (unit ? unit : '');
   let converted;
   const lowerCaseUnit = unit.toLowerCase();
@@ -79,4 +88,6 @@ export default (function (number, unit, { time, length, angle }) {
   }
 
   return value;
-});
+};
+
+export default convert;

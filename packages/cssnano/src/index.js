@@ -55,7 +55,7 @@ function resolvePreset(preset) {
   }
 
   // For JS setups where we invoked the preset already
-  if (fn.plugins) {
+  if (typeof fn === 'object' && fn !== null && 'plugins' in fn) {
     return fn.plugins;
   }
 
@@ -149,7 +149,10 @@ function loadDiscoveredConfig(configFile) {
  */
 function resolveConfig(options) {
   if (options.preset) {
-    if (Array.isArray(options.preset) && options.preset.length === 0) {
+    if (
+      Array.isArray(options.preset) &&
+      /** @type {unknown[]} */ (options.preset).length === 0
+    ) {
       return [];
     }
     return resolvePreset(options.preset);
@@ -157,11 +160,14 @@ function resolveConfig(options) {
   if (Array.isArray(options.plugins)) return [];
 
   const config = loadDiscoveredConfig(options.configFile);
-  return resolvePreset(config === null ? 'default' : config?.preset || config);
+  const preset =
+    config !== null && typeof config === 'object' && 'preset' in config
+      ? config.preset
+      : config;
+  return resolvePreset(config === null ? 'default' : preset);
 }
 
 /**
- * @type {import('postcss').PluginCreator<Options>}
  * @param {Options=} options
  * @return {import('postcss').Processor}
  */
@@ -174,12 +180,15 @@ function cssnanoPlugin(options = {}) {
       if (Array.isArray(plugin)) {
         const [pluginDef, opts = {}] = plugin;
         if (typeof pluginDef === 'string' && isResolvable(pluginDef)) {
-          nanoPlugins.push([require(pluginDef), opts]);
+          nanoPlugins.push([
+            /** @type {PluginCreator} */ (require(pluginDef)),
+            opts,
+          ]);
         } else {
           nanoPlugins.push([/** @type {PluginCreator} */ (pluginDef), opts]);
         }
       } else if (typeof plugin === 'string' && isResolvable(plugin)) {
-        nanoPlugins.push([require(plugin), {}]);
+        nanoPlugins.push([/** @type {PluginCreator} */ (require(plugin)), {}]);
       } else {
         nanoPlugins.push([/** @type {PluginCreator} */ (plugin), {}]);
       }
@@ -203,6 +212,7 @@ function cssnanoPlugin(options = {}) {
   return postcss(plugins);
 }
 
+/** @type {true} */
 cssnanoPlugin.postcss = true;
 
 export { cssnanoPlugin as default, cssnanoPlugin as 'module.exports' };

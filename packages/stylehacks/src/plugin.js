@@ -1,3 +1,14 @@
+/**
+ * @typedef {import('postcss').Node & {
+ *   _stylehacks: {
+ *     message: string,
+ *     browsers: Set<string>,
+ *     identifier: string,
+ *     hack: string
+ *   }
+ * }} NodeWithInfo
+ */
+
 export default (class BasePlugin {
   /**
    * @typedef {object} Plugin

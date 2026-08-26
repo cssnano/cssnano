@@ -1,3 +1,4 @@
 export default _default;
-declare function _default(...rules: any[]): string;
+/** @param {...import('postcss').Declaration} rules */
+declare function _default(...rules: import('postcss').Declaration[]): string;
 //# sourceMappingURL=mergeValues.d.ts.map

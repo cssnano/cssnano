@@ -1,1 +1,1 @@
-{"version":3,"file":"canMerge.d.ts","sourceRoot":"","sources":["../../src/lib/canMerge.js"],"names":[],"mappings":";0BAOgB,YAAY,KAAA,EAAE,kBAAkB,UAAO"}
+{"version":3,"file":"canMerge.d.ts","sourceRoot":"","sources":["../../src/lib/canMerge.js"],"names":[],"mappings":";AAOA,4DAA4D;0BAC5C,YAAY,EADhB,OAAO,SAAS,EAAE,WAAW,EACb,EAAE,kBAAkB,UAAO"}

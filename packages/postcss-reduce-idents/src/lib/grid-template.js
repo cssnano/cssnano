@@ -39,6 +39,10 @@ export default (function () {
   let declCache = [];
 
   return {
+    /**
+     * @param {import('postcss').AnyNode} node
+     * @param {(value: string, index: number) => string} encoder
+     */
     collect(node, encoder) {
       if (node.type !== 'decl') {
         return;

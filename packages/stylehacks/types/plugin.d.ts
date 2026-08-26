@@ -1,8 +1,26 @@
+/**
+ * @typedef {import('postcss').Node & {
+ *   _stylehacks: {
+ *     message: string,
+ *     browsers: Set<string>,
+ *     identifier: string,
+ *     hack: string
+ *   }
+ * }} NodeWithInfo
+ */
 export type Plugin = {
     targets: Set<string>;
     nodeTypes: Set<string>;
     detectAndResolve: (node: import('postcss').Node) => void;
     detectAndWarn: (node: import('postcss').Node) => void;
+};
+export type NodeWithInfo = import('postcss').Node & {
+    _stylehacks: {
+        message: string;
+        browsers: Set<string>;
+        identifier: string;
+        hack: string;
+    };
 };
 export default BasePlugin;
 declare class BasePlugin {

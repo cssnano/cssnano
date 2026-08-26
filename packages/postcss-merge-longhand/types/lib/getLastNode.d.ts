@@ -1,3 +1,7 @@
 export default _default;
-declare function _default(nodes: any, prop: any): import('postcss').Declaration;
+/**
+ * @param {Iterable<import('postcss').Declaration>} nodes
+ * @param {string} prop
+ */
+declare function _default(nodes: Iterable<import('postcss').Declaration>, prop: string): import('postcss').Declaration;
 //# sourceMappingURL=getLastNode.d.ts.map

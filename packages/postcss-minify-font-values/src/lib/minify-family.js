@@ -175,7 +175,12 @@ function escapeIdentifierSequence(string) {
 
   return result;
 }
-export default (function (nodes, opts) {
+/**
+ * @param {import('postcss-value-parser').Node[]} nodes
+ * @param {import('../index.js').Options} opts
+ * @return {import('postcss-value-parser').Node[]}
+ */
+const minifyFamily = function (nodes, opts) {
   /** @type {import('postcss-value-parser').Node[]} */
   const family = [];
   /** @type {import('postcss-value-parser').WordNode | null} */
@@ -245,4 +250,6 @@ export default (function (nodes, opts) {
       value: normalizedFamilies.join(),
     }),
   ];
-});
+};
+
+export default minifyFamily;

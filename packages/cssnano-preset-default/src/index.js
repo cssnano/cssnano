@@ -157,11 +157,19 @@ function defaultPreset(opts = {}) {
         [postcssReduceTransforms, 'reduceTransforms'],
         [postcssColormin, 'colormin'],
         [postcssNormalizeTimingFunctions, 'normalizeTimingFunctions'],
-        [postcssCalc, 'calc'],
+        [
+          /** @type {import('postcss').PluginCreator<any>} */ (postcssCalc),
+          'calc',
+        ],
         [postcssConvertValues, 'convertValues'],
         [postcssOrderedValues, 'orderedValues'],
         [postcssMinifySelectors, 'minifySelectors'],
-        [postcssMinifyParams, 'minifyParams'],
+        [
+          /** @type {import('postcss').PluginCreator<any>} */ (
+            /** @type {unknown} */ (postcssMinifyParams)
+          ),
+          'minifyParams',
+        ],
         [postcssNormalizeCharset, 'normalizeCharset'],
         [postcssDiscardOverridden, 'discardOverridden'],
         [postcssNormalizeString, 'normalizeString'],

@@ -1,4 +1,5 @@
-export default (function (value) {
+/** @param {string} value */
+const minifyWeight = function (value) {
   const lowerCasedValue = value.toLowerCase();
 
   if (lowerCasedValue === 'normal') {
@@ -6,4 +7,6 @@ export default (function (value) {
   } else {
     return lowerCasedValue === 'bold' ? '700' : value;
   }
-});
+};
+
+export default minifyWeight;

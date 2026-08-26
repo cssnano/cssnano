@@ -9,6 +9,7 @@ function hasUnit(value) {
   const parsedVal = unit(value);
   return parsedVal && parsedVal.unit !== '';
 }
+/** @param {import('postcss-value-parser').ParsedValue} columns */
 export default (columns) => {
   /** @type {string[]} */
   const widths = [];

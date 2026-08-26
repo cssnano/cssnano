@@ -1,1 +1,1 @@
-{"version":3,"file":"minify-family.d.ts","sourceRoot":"","sources":["../../src/lib/minify-family.js"],"names":[],"mappings":"AAAA,OAAO,kBAAkB,MAAM,sBAAsB,CAAC;;0BAiL5B,KAAK,KAAA,EAAE,IAAI,KAAA"}
+{"version":3,"file":"minify-family.d.ts","sourceRoot":"","sources":["../../src/lib/minify-family.js"],"names":[],"mappings":"AAiLA;;;;GAIG;AACH,QAAA,MAAM,YAAY,UAJP,OAAO,sBAAsB,EAAE,IAAI,EAAE,QACrC,OAAO,aAAa,EAAE,OAAO,KAC5B,OAAO,sBAAsB,EAAE,IAAI,EAwE9C,CAAC;eAEa,YAAY"}
