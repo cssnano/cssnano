@@ -1,3 +1,7 @@
+cssnano-preset-advanced@8.0.10:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - khaki-pillows-rest
 cssnano-preset-advanced@8.0.3:
   dir: packages/cssnano-preset-advanced
   intents:
@@ -43,6 +47,10 @@ cssnano-preset-advanced@8.0.9:
   dir: packages/cssnano-preset-advanced
   intents:
     - clever-vans-wash
+cssnano-preset-default@8.0.10:
+  dir: packages/cssnano-preset-default
+  intents:
+    - khaki-pillows-rest
 cssnano-preset-default@8.0.3:
   dir: packages/cssnano-preset-default
   intents:
@@ -108,6 +116,10 @@ cssnano-preset-lite@5.0.5:
   intents:
     - tender-falcons-drive
     - tidy-plums-shout
+cssnano-preset-lite@5.0.6:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - khaki-pillows-rest
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -124,6 +136,10 @@ cssnano-utils@6.0.4:
   dir: packages/cssnano-utils
   intents:
     - salty-dolls-enter
+cssnano@8.0.10:
+  dir: packages/cssnano
+  intents:
+    - khaki-pillows-rest
 cssnano@8.0.3:
   dir: packages/cssnano
   intents:
@@ -442,6 +458,10 @@ postcss-normalize-charset@8.0.4:
   dir: packages/postcss-normalize-charset
   intents:
     - salty-dolls-enter
+postcss-normalize-charset@8.0.5:
+  dir: packages/postcss-normalize-charset
+  intents:
+    - khaki-pillows-rest
 postcss-normalize-display-values@8.0.2:
   dir: packages/postcss-normalize-display-values
   intents:
