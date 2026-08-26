@@ -90,7 +90,6 @@ describe('framework integrations', () => {
   );
   test(
     'should be idempotent for each default plugin except merge rules and svgo',
-    { concurrency: true },
     pluginIdempotencyTests(preset, `${__dirname}/integrations`, [
       'postcss-merge-rules',
       'postcss-svgo',
