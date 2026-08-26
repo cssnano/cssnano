@@ -53,10 +53,10 @@ module.exports = {
 };
 ```
 
-For other cases where the preset was not explicitly set, cssnano will look
-for a section in your `package.json` or a `cssnano.config.js`, from the current
-working directory upwards until it reaches your home directory. These two
-configuration examples function identically to the above:
+For other cases where the preset was not explicitly set, cssnano checks the
+supported configuration files in the current working directory. It does not
+search parent directories. These two configuration examples function
+identically to the above:
 
 ```json
 {
@@ -85,8 +85,11 @@ module.exports = defaultPreset({
 _The `cssnano.config.js` is useful if you need to make use of transformations
 that can accept functions as parameters, for more specific use cases._
 
-If cssnano was not loaded with a preset explicitly, or a config section/file
-were not found in any parent directories, then the defaults will be loaded.
+If cssnano was not loaded with a preset explicitly, or a local configuration
+file was not found, then the defaults will be loaded. Use `configFile` when the
+configuration is stored in another directory. Supported filenames are
+`package.json`, `.cssnanorc.json`, `.cssnanorc.js`, and `cssnano.config.js`;
+`.cssnanorc` and extensionless files are unsupported.
 An example `postcss.config.js`:
 
 ```js
