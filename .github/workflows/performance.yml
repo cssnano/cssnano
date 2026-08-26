@@ -1,0 +1,72 @@
+name: performance
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  benchmark:
+    name: Advisory performance comparison
+    if: github.event.label.name == 'performance'
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        with:
+          runtime: node@24
+          cache: true
+
+      - name: Create isolated revisions
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git worktree add --detach "$RUNNER_TEMP/cssnano-base" "$BASE_SHA"
+          git worktree add --detach "$RUNNER_TEMP/cssnano-head" "$HEAD_SHA"
+
+      - name: Install dependencies in both revisions
+        run: |
+          pnpm --dir "$RUNNER_TEMP/cssnano-base" install --frozen-lockfile
+          pnpm --dir "$RUNNER_TEMP/cssnano-head" install --frozen-lockfile
+
+      - name: Benchmark base revision
+        run: |
+          for preset in default advanced lite; do
+            pnpm --dir "$RUNNER_TEMP/cssnano-base" bench -- --preset="$preset" --label="base-$preset"
+          done
+          for case in selector-reduction longhand-rule-merging ordered-value-normalization; do
+            pnpm --dir "$RUNNER_TEMP/cssnano-base" bench -- --case="$case" --preset=default --label="base-$case"
+          done
+          cp -R "$RUNNER_TEMP/cssnano-base/bench-results" "$RUNNER_TEMP/base-results"
+
+      - name: Benchmark candidate revision
+        run: |
+          for preset in default advanced lite; do
+            pnpm --dir "$RUNNER_TEMP/cssnano-head" bench -- --preset="$preset" --label="head-$preset"
+          done
+          for case in selector-reduction longhand-rule-merging ordered-value-normalization; do
+            pnpm --dir "$RUNNER_TEMP/cssnano-head" bench -- --case="$case" --preset=default --label="head-$case"
+          done
+          cp -R "$RUNNER_TEMP/cssnano-head/bench-results" "$RUNNER_TEMP/head-results"
+
+      - name: Compare benchmarks
+        run: |
+          mkdir -p "$RUNNER_TEMP/performance"
+          : > "$RUNNER_TEMP/performance/comparison.md"
+          for target in default advanced lite selector-reduction longhand-rule-merging ordered-value-normalization; do
+            node util/benchmark/compare-bench.mjs "$RUNNER_TEMP/base-results/base-$target.json" "$RUNNER_TEMP/head-results/head-$target.json" --markdown="$RUNNER_TEMP/performance/$target.md" | tee -a "$RUNNER_TEMP/performance/comparison.txt"
+            cat "$RUNNER_TEMP/performance/$target.md" >> "$RUNNER_TEMP/performance/comparison.md"
+          done
+          cat "$RUNNER_TEMP/performance/comparison.md" >> "$GITHUB_STEP_SUMMARY"
