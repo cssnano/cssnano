@@ -58,6 +58,14 @@ test(
   )
 );
 
+test(
+  'should preserve the separator after an existing first charset',
+  processCSS(
+    '@charset "utf-8";\n' + copyright,
+    '@charset "utf-8";\n' + copyright
+  )
+);
+
 describe('Remove', () => {
   test(
     'should remove extra charset rules',

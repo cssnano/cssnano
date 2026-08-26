@@ -23,11 +23,16 @@ function pluginCreator(opts = {}) {
       let charsetRule;
       /** @type {import('postcss').Node | undefined} */
       let nonAsciiNode;
+      /** @type {string | undefined} */
+      let charsetSeparator;
 
       css.walk((node) => {
         if (node.type === 'atrule' && node.name === charset) {
           if (!charsetRule) {
             charsetRule = node;
+            if (node === css.first) {
+              charsetSeparator = node.next()?.raws.before;
+            }
           }
           node.remove();
         } else if (
@@ -49,6 +54,10 @@ function pluginCreator(opts = {}) {
         if (charsetRule) {
           charsetRule.source = nonAsciiNode.source;
           css.prepend(charsetRule);
+          const nextNode = charsetRule.next();
+          if (charsetSeparator !== undefined && nextNode) {
+            nextNode.raws.before = charsetSeparator;
+          }
         }
       }
     },
