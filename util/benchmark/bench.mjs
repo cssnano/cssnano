@@ -2,20 +2,20 @@
 //
 // Runs the default preset over every CSS file in a corpus directory for a fixed
 // number of warmup + measured iterations and prints a per-file + total summary.
-// Writes a JSON snapshot to ../bench-results/<label>.json so different
+// Writes a JSON snapshot to ../../bench-results/<label>.json so different
 // branches/optimizations can be compared — see compare-bench.mjs.
 //
 // Defaults to the `frameworks/*.css` corpus already committed for the
 // integration fixtures; pass --dir to point at any other folder of .css files.
 //
 // Usage:
-//   node util/bench.mjs                    # label = "baseline", dir = ../frameworks
-//   node util/bench.mjs --dir=path/to/css  # corpus directory
-//   node util/bench.mjs --label=foo        # label = "foo"
-//   node util/bench.mjs --iters=30         # measured iterations per file
-//   node util/bench.mjs --warmup=5         # warmup iterations per file
-//   node util/bench.mjs --only=bootstrap   # substring filter on file name
-//   node util/bench.mjs --profile --only=bootstrap-v4  # also write a .cpuprofile
+//   node util/benchmark/bench.mjs                    # label = "baseline", dir = ../../frameworks
+//   node util/benchmark/bench.mjs --dir=path/to/css  # corpus directory
+//   node util/benchmark/bench.mjs --label=foo        # label = "foo"
+//   node util/benchmark/bench.mjs --iters=30         # measured iterations per file
+//   node util/benchmark/bench.mjs --warmup=5         # warmup iterations per file
+//   node util/benchmark/bench.mjs --only=bootstrap   # substring filter on file name
+//   node util/benchmark/bench.mjs --profile --only=bootstrap-v4  # also write a .cpuprofile
 //                                                       # per matched file, covering
 //                                                       # only the measured (not
 //                                                       # warmup) iterations —
@@ -30,20 +30,24 @@
 // and consider a smaller --iters since a profile only needs enough samples to
 // be representative, not a stable percentile.
 
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { createRequire } from 'node:module';
 import { parseArgs } from 'node:util';
 import { Session } from 'node:inspector/promises';
+import postcss from 'postcss';
+import { benchmarkCases } from './bench-cases.mjs';
 
 const require = createRequire(import.meta.url);
-const cssnano = require('../packages/cssnano/src/index.js');
+const cssnano = require('../../packages/cssnano/src/index.js');
 
 // Default corpus directory. Override with `--dir=<path>` to point at any other
 // folder of .css files.
-const DEFAULT_DIR = join(import.meta.dirname, '..', 'frameworks');
-const RESULTS_DIR = join(import.meta.dirname, '..', 'bench-results');
+const DEFAULT_DIR = join(import.meta.dirname, '..', '..', 'frameworks');
+const RESULTS_DIR = join(import.meta.dirname, '..', '..', 'bench-results');
 
 function quantile(sorted, q) {
   const idx = (sorted.length - 1) * q;
@@ -70,6 +74,28 @@ function fmtMs(ms) {
   return ms.toFixed(2).padStart(8) + ' ms';
 }
 
+function corpusManifest(files) {
+  const manifest = createHash('sha256');
+  for (const file of files) {
+    manifest.update(file.name);
+    manifest.update('\0');
+    manifest.update(createHash('sha256').update(file.source).digest('hex'));
+    manifest.update('\n');
+  }
+  return manifest.digest('hex');
+}
+
+function gitRevision() {
+  try {
+    return execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: join(import.meta.dirname, '..'),
+      encoding: 'utf8',
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
 async function benchOne(name, source, processor, iters, warmup, profilePath) {
   // Warmup — let V8 optimize hot paths before we measure.
   for (let i = 0; i < warmup; i++) {
@@ -80,34 +106,84 @@ async function benchOne(name, source, processor, iters, warmup, profilePath) {
 
   // Started after warmup so JIT warmup noise doesn't dilute the profile.
   let session;
-  if (profilePath) {
-    session = new Session();
-    session.connect();
-    await session.post('Profiler.enable');
-    await session.post('Profiler.start');
-  }
+  let profiling = false;
 
-  const samples = Array.from({ length: iters });
-  for (let i = 0; i < iters; i++) {
-    const t0 = performance.now();
-    const res = await processor.process(source, { from: undefined });
-    void res.css;
-    samples[i] = performance.now() - t0;
-  }
+  try {
+    if (profilePath) {
+      session = new Session();
+      session.connect();
+      await session.post('Profiler.enable');
+      await session.post('Profiler.start');
+      profiling = true;
+    }
 
-  if (session) {
-    const { profile } = await session.post('Profiler.stop');
-    session.disconnect();
-    writeFileSync(profilePath, JSON.stringify(profile));
-  }
+    const samples = Array.from({ length: iters });
+    for (let i = 0; i < iters; i++) {
+      const t0 = performance.now();
+      const res = await processor.process(source, { from: undefined });
+      void res.css;
+      samples[i] = performance.now() - t0;
+    }
 
-  const s = stats(samples);
-  const throughputKBs = source.length / 1024 / (s.median / 1000);
-  return { name, bytes: source.length, samples, ...s, kbPerSec: throughputKBs };
+    if (session) {
+      const { profile } = await session.post('Profiler.stop');
+      profiling = false;
+      writeFileSync(profilePath, JSON.stringify(profile));
+    }
+
+    const s = stats(samples);
+    const throughputKBs = source.length / 1024 / (s.median / 1000);
+    return {
+      name,
+      bytes: source.length,
+      ...s,
+      samples,
+      kbPerSec: throughputKBs,
+    };
+  } finally {
+    if (session) {
+      if (profiling) {
+        try {
+          await session.post('Profiler.stop');
+        } catch {
+          // The inspector may already be closed while handling another error.
+        }
+      }
+      session.disconnect();
+    }
+  }
+}
+
+function positiveInteger(value, name, allowZero = false) {
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < 0 || (!allowZero && number === 0)) {
+    throw new Error(
+      `${name} must be a ${allowZero ? 'non-negative' : 'positive'} integer`
+    );
+  }
+  return number;
+}
+
+function validateArgs(args) {
+  if (!args.label || /[\\/]/.test(args.label)) {
+    throw new Error('--label must be a non-empty filename component');
+  }
+  if (!['default', 'advanced', 'lite'].includes(args.preset)) {
+    throw new Error(
+      `unknown preset "${args.preset}"; expected default, advanced, or lite`
+    );
+  }
+  if (args.case && !benchmarkCases[args.case]) {
+    throw new Error(`unknown benchmark case "${args.case}"`);
+  }
+  if (args.case && args.dir) {
+    throw new Error('--case and --dir cannot be used together');
+  }
 }
 
 async function main() {
   const { values } = parseArgs({
+    args: process.argv.slice(2).filter((arg) => arg !== '--'),
     options: {
       label: { type: 'string', default: 'baseline' },
       iters: { type: 'string', default: '15' },
@@ -115,28 +191,43 @@ async function main() {
       only: { type: 'string' },
       dir: { type: 'string' },
       profile: { type: 'boolean', default: false },
+      preset: { type: 'string', default: 'default' },
+      case: { type: 'string' },
     },
   });
   const args = {
     label: values.label,
-    iters: Number(values.iters),
-    warmup: Number(values.warmup),
+    iters: positiveInteger(values.iters, '--iters'),
+    warmup: positiveInteger(values.warmup, '--warmup', true),
     only: values.only ?? null,
     dir: values.dir ?? null,
     profile: values.profile,
+    preset: values.preset,
+    case: values.case ?? null,
   };
+  validateArgs(args);
   const dir = args.dir ? resolve(args.dir) : DEFAULT_DIR;
 
-  const files = readdirSync(dir)
-    .filter((f) => f.endsWith('.css'))
-    .filter((f) => !args.only || f.includes(args.only))
-    .toSorted();
+  const corpus = args.case
+    ? [{ name: args.case, source: benchmarkCases[args.case].css }]
+    : readdirSync(dir)
+        .filter((f) => f.endsWith('.css'))
+        .filter((f) => !args.only || f.includes(args.only))
+        .toSorted()
+        .map((file) => ({
+          name: basename(file, '.css'),
+          source: readFileSync(join(dir, file), 'utf8'),
+        }));
+  if (!corpus.length) throw new Error('selected corpus contains no CSS files');
 
-  const processor = cssnano({ preset: 'default' });
+  const target = args.case ? benchmarkCases[args.case].plugin : 'cssnano';
+  const processor = args.case
+    ? postcss([require(`../../packages/${target}/src/index.js`)])
+    : cssnano({ preset: args.preset });
 
   console.log(
-    `cssnano baseline benchmark — node ${process.version}, ` +
-      `${files.length} files, warmup=${args.warmup}, iters=${args.iters}`
+    `cssnano ${target} benchmark — preset=${args.preset}, node ${process.version}, ` +
+      `${corpus.length} files, warmup=${args.warmup}, iters=${args.iters}`
   );
   console.log();
   console.log(
@@ -154,9 +245,8 @@ async function main() {
   }
 
   const results = [];
-  for (const f of files) {
-    const source = readFileSync(join(dir, f), 'utf8');
-    const name = basename(f, '.css');
+  const totalSamples = Array.from({ length: args.iters });
+  for (const { name, source } of corpus) {
     const profilePath = args.profile
       ? join(RESULTS_DIR, `${args.label}-${name}.cpuprofile`)
       : null;
@@ -168,6 +258,9 @@ async function main() {
       args.warmup,
       profilePath
     );
+    for (let i = 0; i < args.iters; i++) {
+      totalSamples[i] = (totalSamples[i] || 0) + r.samples[i];
+    }
     results.push(r);
     console.log(
       r.name.padEnd(28) +
@@ -184,34 +277,38 @@ async function main() {
   }
 
   const totalBytes = results.reduce((a, r) => a + r.bytes, 0);
-  const totalMedian = results.reduce((a, r) => a + r.median, 0);
-  const totalMin = results.reduce((a, r) => a + r.min, 0);
+  const total = stats(totalSamples);
   console.log('-'.repeat(84));
   console.log(
     'TOTAL'.padEnd(28) +
       (totalBytes / 1024).toFixed(1).padStart(8) +
       ' k' +
-      fmtMs(totalMedian).padStart(12) +
-      fmtMs(totalMin).padStart(12) +
+      fmtMs(total.median).padStart(12) +
+      fmtMs(total.min).padStart(12) +
       ''.padStart(12) +
-      (totalBytes / 1024 / (totalMedian / 1000)).toFixed(0).padStart(10)
+      (totalBytes / 1024 / (total.median / 1000)).toFixed(0).padStart(10)
   );
 
   // Persist JSON for later comparison.
   mkdirSync(RESULTS_DIR, { recursive: true });
   const out = {
     label: args.label,
+    preset: args.preset,
+    target,
+    corpusManifest: corpusManifest(corpus),
+    gitRevision: gitRevision(),
     node: process.version,
     platform: process.platform,
     arch: process.arch,
     timestamp: new Date().toISOString(),
+    arguments: process.argv.slice(2),
     warmup: args.warmup,
     iters: args.iters,
     total: {
       bytes: totalBytes,
-      medianMs: totalMedian,
-      minMs: totalMin,
-      kbPerSec: totalBytes / 1024 / (totalMedian / 1000),
+      medianMs: total.median,
+      minMs: total.min,
+      kbPerSec: totalBytes / 1024 / (total.median / 1000),
     },
     frameworks: results.map((r) => ({
       name: r.name,

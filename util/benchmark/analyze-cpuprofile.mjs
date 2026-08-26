@@ -2,13 +2,15 @@
 // time, plus a roll-up by package (postcss-* / postcss / node internals).
 //
 // Usage:
-//   node util/analyze-cpuprofile.mjs <path/to/profile.cpuprofile> [topN]
+//   node util/benchmark/analyze-cpuprofile.mjs <path/to/profile.cpuprofile> [topN]
 
 import { readFileSync } from 'node:fs';
 
 const profilePath = process.argv[2];
 if (!profilePath) {
-  console.error('usage: node util/analyze-cpuprofile.mjs <profile> [topN]');
+  console.error(
+    'usage: node util/benchmark/analyze-cpuprofile.mjs <profile> [topN]'
+  );
   process.exit(1);
 }
 // topN: number of rows to print in each leaderboard.
