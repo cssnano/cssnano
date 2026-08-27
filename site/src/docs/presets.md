@@ -87,10 +87,8 @@ that can accept functions as parameters, for more specific use cases._
 
 If cssnano was not loaded with a preset explicitly, or a local configuration
 file was not found, then the defaults will be loaded. Use `configFile` when the
-configuration is stored in another directory. Supported filenames are
-`.cssnanorc.json` and `cssnano.config.js`; `package.json`,
-`.cssnanorc`, `.cssnanorc.js`, and extensionless files are not discovered
-automatically. An explicit `configFile` can point to any filename.
+configuration is stored in another directory. cssnano automatically discovers
+`.cssnanorc.json` and `cssnano.config.js`. The `configFile` can point to any filename with a supported extension.
 An example `postcss.config.js`:
 
 ```js
@@ -101,7 +99,7 @@ module.exports = {
 };
 ```
 
-For most use cases, the default preset should be suitable for your needs, but
+For most use cases, the default preset should be suitable, but
 we also offer an advanced preset which performs more aggressive transformations.
 You can read more about this in
 [our advanced transformations guide][guideadvancedtransforms].
