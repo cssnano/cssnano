@@ -1,6 +1,6 @@
 {
   "name": "postcss-discard-comments",
-  "version": "8.0.4",
+  "version": "9.0.0",
   "description": "Discard comments in your CSS files with PostCSS.",
   "exports": {
     ".": {
@@ -40,8 +40,8 @@
     "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
-    "postcss-scss": "^4.0.9",
     "postcss": "catalog:",
+    "postcss-scss": "^4.0.9",
     "postcss-simple-vars": "^7.0.1"
   },
   "peerDependencies": {

@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-lite",
-  "version": "5.0.6",
+  "version": "6.0.0",
   "description": "Safe and minimum transformation",
   "exports": {
     ".": {

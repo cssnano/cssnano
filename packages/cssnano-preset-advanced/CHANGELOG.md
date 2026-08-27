@@ -1,5 +1,22 @@
 # Change Log
 
+## 9.0.0
+
+### Major Changes
+
+- The cssnano packages are now native ESM and require Node `^22.22.3 || ^24.15.0 || >=26.0`. Package subpath imports are no longer supported. See the migration documentation before upgrading.
+
+- fix!(cssnano): introduce new postcss-calc plugin
+
+### Patch Changes
+
+- Updated dependencies:
+  - cssnano-preset-default@9.0.0
+  - postcss-discard-unused@9.0.0
+  - postcss-merge-idents@9.0.0
+  - postcss-reduce-idents@9.0.0
+  - postcss-zindex@9.0.0
+
 ## 8.0.10
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # Change Log
 
+## 6.0.0
+
+### Major Changes
+
+- The cssnano packages are now native ESM and require Node `^22.22.3 || ^24.15.0 || >=26.0`. Package subpath imports are no longer supported. See the migration documentation before upgrading.
+
+### Patch Changes
+
+- Updated dependencies:
+  - cssnano-utils@7.0.0
+  - postcss-discard-comments@9.0.0
+  - postcss-discard-empty@9.0.0
+  - postcss-normalize-whitespace@9.0.0
+
 ## 5.0.6
 
 ### Patch Changes
