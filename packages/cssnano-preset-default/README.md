@@ -63,23 +63,21 @@ Note that this preset comes bundled with cssnano _by default_, so you don't need
 
 ### Configuration
 
-If you would like to use the default configuration, then you don't need to add anything to your `package.json`.
+If you would like to use the default configuration, then you don't need to add anything to a cssnano configuration file.
 
 But should you wish to customise this, you can pass an array with the second parameter as the options object to use. For example, to remove all comments:
 
-```diff
- {
-   "name": "awesome-application",
-+  "cssnano": {
-+    "preset": [
-+      "default",
-+      {"discardComments": {"removeAll": true}}
-+    ]
-+  }
- }
+```js
+// cssnano.config.js
+module.exports = {
+  preset: [
+    'default',
+    { discardComments: { removeAll: true } },
+  ],
+};
 ```
 
-Depending on your usage, the JSON configuration might not work for you, such as in cases where you would like to use options with customisable function parameters. For this use case, we recommend a `cssnano.config.js` at the same location as your `package.json`. You can then load a preset and export it with your custom parameters:
+For options with customisable function parameters, use a `cssnano.config.js` at the same location as your `package.json`. You can then load a preset and export it with your custom parameters:
 
 ```js
 const defaultPreset = require('cssnano-preset-default');

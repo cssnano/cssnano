@@ -51,15 +51,13 @@ npm install cssnano-preset-advanced --save-dev
 ```
 
 You can then load it using any of the techniques mentioned in
-[our presets guide](../presets/). For example, using `package.json`:
+[our presets guide](../presets/). For example, using `cssnano.config.js`:
 
-```json
-{
-  "name": "awesome-application",
-  "cssnano": {
-    "preset": "advanced"
-  }
-}
+```js
+// cssnano.config.js
+module.exports = {
+  preset: 'advanced',
+};
 ```
 
 

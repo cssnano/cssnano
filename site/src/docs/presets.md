@@ -31,9 +31,9 @@ module.exports = {
 };
 ```
 
-_The preset name points to a resolvable node module, optionally with the
-`cssnano-preset-` prefix. So you can specify `cssnano-preset-default` here
-instead if you wish._
+_The special preset names `default`, `lite`, and `advanced` are shorthand for
+the corresponding `cssnano-preset-*` packages. For other presets, pass the
+complete resolvable package name, such as `cssnano-preset-default`._
 
 If you need to pass any options to a preset, you must specify them using the
 array syntax instead. For example, you can remove all comments with the
@@ -88,8 +88,9 @@ that can accept functions as parameters, for more specific use cases._
 If cssnano was not loaded with a preset explicitly, or a local configuration
 file was not found, then the defaults will be loaded. Use `configFile` when the
 configuration is stored in another directory. Supported filenames are
-`package.json`, `.cssnanorc.json`, `.cssnanorc.js`, and `cssnano.config.js`;
-`.cssnanorc` and extensionless files are unsupported.
+`.cssnanorc.json` and `cssnano.config.js`; `package.json`,
+`.cssnanorc`, `.cssnanorc.js`, and extensionless files are not discovered
+automatically. An explicit `configFile` can point to any filename.
 An example `postcss.config.js`:
 
 ```js
