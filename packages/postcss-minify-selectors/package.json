@@ -1,6 +1,6 @@
 {
   "name": "postcss-minify-selectors",
-  "version": "8.0.5",
+  "version": "9.0.0",
   "description": "Minify selectors with PostCSS.",
   "exports": {
     ".": {
@@ -53,8 +53,8 @@
   "devDependencies": {
     "@types/cssesc": "^3.0.2",
     "jsdom": "^30.0.1",
-    "postcss-font-magician": "^4.0.0",
-    "postcss": "catalog:"
+    "postcss": "catalog:",
+    "postcss-font-magician": "^4.0.0"
   },
   "peerDependencies": {
     "postcss": "^8.5.26"

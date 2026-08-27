@@ -47,6 +47,11 @@ cssnano-preset-advanced@8.0.9:
   dir: packages/cssnano-preset-advanced
   intents:
     - clever-vans-wash
+cssnano-preset-advanced@9.0.0:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - native-esm-migration
+    - true-cycles-beg
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -95,6 +100,11 @@ cssnano-preset-default@8.0.9:
   dir: packages/cssnano-preset-default
   intents:
     - clever-vans-wash
+cssnano-preset-default@9.0.0:
+  dir: packages/cssnano-preset-default
+  intents:
+    - native-esm-migration
+    - true-cycles-beg
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -120,6 +130,10 @@ cssnano-preset-lite@5.0.6:
   dir: packages/cssnano-preset-lite
   intents:
     - khaki-pillows-rest
+cssnano-preset-lite@6.0.0:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - native-esm-migration
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -136,6 +150,10 @@ cssnano-utils@6.0.4:
   dir: packages/cssnano-utils
   intents:
     - salty-dolls-enter
+cssnano-utils@7.0.0:
+  dir: packages/cssnano-utils
+  intents:
+    - native-esm-migration
 cssnano@8.0.10:
   dir: packages/cssnano
   intents:
@@ -186,6 +204,13 @@ cssnano@8.0.9:
   dir: packages/cssnano
   intents:
     - clever-vans-wash
+cssnano@9.0.0:
+  dir: packages/cssnano
+  intents:
+    - early-mangos-share
+    - local-cssnano-config
+    - native-esm-migration
+    - true-cycles-beg
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -207,6 +232,10 @@ postcss-colormin@8.0.5:
   dir: packages/postcss-colormin
   intents:
     - heavy-banks-laugh
+postcss-colormin@9.0.0:
+  dir: packages/postcss-colormin
+  intents:
+    - native-esm-migration
 postcss-convert-values@8.0.2:
   dir: packages/postcss-convert-values
   intents:
@@ -224,6 +253,10 @@ postcss-convert-values@8.0.4:
   dir: packages/postcss-convert-values
   intents:
     - salty-dolls-enter
+postcss-convert-values@9.0.0:
+  dir: packages/postcss-convert-values
+  intents:
+    - native-esm-migration
 postcss-discard-comments@8.0.2:
   dir: packages/postcss-discard-comments
   intents:
@@ -240,6 +273,10 @@ postcss-discard-comments@8.0.4:
   dir: packages/postcss-discard-comments
   intents:
     - salty-dolls-enter
+postcss-discard-comments@9.0.0:
+  dir: packages/postcss-discard-comments
+  intents:
+    - native-esm-migration
 postcss-discard-duplicates@8.0.2:
   dir: packages/postcss-discard-duplicates
   intents:
@@ -256,6 +293,10 @@ postcss-discard-duplicates@8.0.4:
   dir: packages/postcss-discard-duplicates
   intents:
     - salty-dolls-enter
+postcss-discard-duplicates@9.0.0:
+  dir: packages/postcss-discard-duplicates
+  intents:
+    - native-esm-migration
 postcss-discard-empty@8.0.2:
   dir: packages/postcss-discard-empty
   intents:
@@ -276,6 +317,10 @@ postcss-discard-empty@8.0.5:
   dir: packages/postcss-discard-empty
   intents:
     - tender-falcons-drive
+postcss-discard-empty@9.0.0:
+  dir: packages/postcss-discard-empty
+  intents:
+    - native-esm-migration
 postcss-discard-overridden@8.0.2:
   dir: packages/postcss-discard-overridden
   intents:
@@ -292,6 +337,10 @@ postcss-discard-overridden@8.0.4:
   dir: packages/postcss-discard-overridden
   intents:
     - salty-dolls-enter
+postcss-discard-overridden@9.0.0:
+  dir: packages/postcss-discard-overridden
+  intents:
+    - native-esm-migration
 postcss-discard-unused@8.0.2:
   dir: packages/postcss-discard-unused
   intents:
@@ -308,6 +357,10 @@ postcss-discard-unused@8.0.4:
   dir: packages/postcss-discard-unused
   intents:
     - salty-dolls-enter
+postcss-discard-unused@9.0.0:
+  dir: packages/postcss-discard-unused
+  intents:
+    - native-esm-migration
 postcss-merge-idents@8.0.2:
   dir: packages/postcss-merge-idents
   intents:
@@ -324,6 +377,10 @@ postcss-merge-idents@8.0.4:
   dir: packages/postcss-merge-idents
   intents:
     - salty-dolls-enter
+postcss-merge-idents@9.0.0:
+  dir: packages/postcss-merge-idents
+  intents:
+    - native-esm-migration
 postcss-merge-longhand@8.0.2:
   dir: packages/postcss-merge-longhand
   intents:
@@ -342,6 +399,10 @@ postcss-merge-longhand@8.0.4:
   intents:
     - quiet-otters-drum
     - salty-dolls-enter
+postcss-merge-longhand@9.0.0:
+  dir: packages/postcss-merge-longhand
+  intents:
+    - native-esm-migration
 postcss-merge-rules@8.0.2:
   dir: packages/postcss-merge-rules
   intents:
@@ -366,6 +427,10 @@ postcss-merge-rules@8.0.5:
   dir: packages/postcss-merge-rules
   intents:
     - tame-otters-race
+postcss-merge-rules@9.0.0:
+  dir: packages/postcss-merge-rules
+  intents:
+    - native-esm-migration
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -382,6 +447,10 @@ postcss-minify-font-values@8.0.4:
   dir: packages/postcss-minify-font-values
   intents:
     - salty-dolls-enter
+postcss-minify-font-values@9.0.0:
+  dir: packages/postcss-minify-font-values
+  intents:
+    - native-esm-migration
 postcss-minify-gradients@8.0.2:
   dir: packages/postcss-minify-gradients
   intents:
@@ -407,6 +476,10 @@ postcss-minify-gradients@8.0.6:
   dir: packages/postcss-minify-gradients
   intents:
     - heavy-banks-laugh
+postcss-minify-gradients@9.0.0:
+  dir: packages/postcss-minify-gradients
+  intents:
+    - native-esm-migration
 postcss-minify-params@8.0.2:
   dir: packages/postcss-minify-params
   intents:
@@ -424,6 +497,10 @@ postcss-minify-params@8.0.4:
   dir: packages/postcss-minify-params
   intents:
     - salty-dolls-enter
+postcss-minify-params@9.0.0:
+  dir: packages/postcss-minify-params
+  intents:
+    - native-esm-migration
 postcss-minify-selectors@8.0.3:
   dir: packages/postcss-minify-selectors
   intents:
@@ -442,6 +519,10 @@ postcss-minify-selectors@8.0.5:
   intents:
     - huge-ducks-shave
     - salty-dolls-enter
+postcss-minify-selectors@9.0.0:
+  dir: packages/postcss-minify-selectors
+  intents:
+    - native-esm-migration
 postcss-normalize-charset@8.0.2:
   dir: packages/postcss-normalize-charset
   intents:
@@ -462,6 +543,10 @@ postcss-normalize-charset@8.0.5:
   dir: packages/postcss-normalize-charset
   intents:
     - khaki-pillows-rest
+postcss-normalize-charset@9.0.0:
+  dir: packages/postcss-normalize-charset
+  intents:
+    - native-esm-migration
 postcss-normalize-display-values@8.0.2:
   dir: packages/postcss-normalize-display-values
   intents:
@@ -478,6 +563,10 @@ postcss-normalize-display-values@8.0.4:
   dir: packages/postcss-normalize-display-values
   intents:
     - salty-dolls-enter
+postcss-normalize-display-values@9.0.0:
+  dir: packages/postcss-normalize-display-values
+  intents:
+    - native-esm-migration
 postcss-normalize-positions@8.0.2:
   dir: packages/postcss-normalize-positions
   intents:
@@ -494,6 +583,10 @@ postcss-normalize-positions@8.0.4:
   dir: packages/postcss-normalize-positions
   intents:
     - salty-dolls-enter
+postcss-normalize-positions@9.0.0:
+  dir: packages/postcss-normalize-positions
+  intents:
+    - native-esm-migration
 postcss-normalize-repeat-style@8.0.2:
   dir: packages/postcss-normalize-repeat-style
   intents:
@@ -510,6 +603,10 @@ postcss-normalize-repeat-style@8.0.4:
   dir: packages/postcss-normalize-repeat-style
   intents:
     - salty-dolls-enter
+postcss-normalize-repeat-style@9.0.0:
+  dir: packages/postcss-normalize-repeat-style
+  intents:
+    - native-esm-migration
 postcss-normalize-string@8.0.2:
   dir: packages/postcss-normalize-string
   intents:
@@ -526,6 +623,10 @@ postcss-normalize-string@8.0.4:
   dir: packages/postcss-normalize-string
   intents:
     - salty-dolls-enter
+postcss-normalize-string@9.0.0:
+  dir: packages/postcss-normalize-string
+  intents:
+    - native-esm-migration
 postcss-normalize-timing-functions@8.0.2:
   dir: packages/postcss-normalize-timing-functions
   intents:
@@ -542,6 +643,10 @@ postcss-normalize-timing-functions@8.0.4:
   dir: packages/postcss-normalize-timing-functions
   intents:
     - salty-dolls-enter
+postcss-normalize-timing-functions@9.0.0:
+  dir: packages/postcss-normalize-timing-functions
+  intents:
+    - native-esm-migration
 postcss-normalize-unicode@8.0.2:
   dir: packages/postcss-normalize-unicode
   intents:
@@ -559,6 +664,10 @@ postcss-normalize-unicode@8.0.4:
   dir: packages/postcss-normalize-unicode
   intents:
     - salty-dolls-enter
+postcss-normalize-unicode@9.0.0:
+  dir: packages/postcss-normalize-unicode
+  intents:
+    - native-esm-migration
 postcss-normalize-url@8.0.2:
   dir: packages/postcss-normalize-url
   intents:
@@ -578,6 +687,10 @@ postcss-normalize-url@8.0.4:
   dir: packages/postcss-normalize-url
   intents:
     - salty-dolls-enter
+postcss-normalize-url@9.0.0:
+  dir: packages/postcss-normalize-url
+  intents:
+    - native-esm-migration
 postcss-normalize-whitespace@8.0.2:
   dir: packages/postcss-normalize-whitespace
   intents:
@@ -599,6 +712,10 @@ postcss-normalize-whitespace@8.0.5:
   dir: packages/postcss-normalize-whitespace
   intents:
     - tidy-plums-shout
+postcss-normalize-whitespace@9.0.0:
+  dir: packages/postcss-normalize-whitespace
+  intents:
+    - native-esm-migration
 postcss-ordered-values@8.0.2:
   dir: packages/postcss-ordered-values
   intents:
@@ -619,6 +736,10 @@ postcss-ordered-values@8.0.5:
   dir: packages/postcss-ordered-values
   intents:
     - cool-toes-fail
+postcss-ordered-values@9.0.0:
+  dir: packages/postcss-ordered-values
+  intents:
+    - native-esm-migration
 postcss-reduce-idents@8.0.2:
   dir: packages/postcss-reduce-idents
   intents:
@@ -637,6 +758,10 @@ postcss-reduce-idents@8.0.4:
     - salty-dolls-enter
     - tall-moons-repeat
     - tame-otters-swim
+postcss-reduce-idents@9.0.0:
+  dir: packages/postcss-reduce-idents
+  intents:
+    - native-esm-migration
 postcss-reduce-initial@8.0.2:
   dir: packages/postcss-reduce-initial
   intents:
@@ -660,6 +785,10 @@ postcss-reduce-initial@8.0.5:
   dir: packages/postcss-reduce-initial
   intents:
     - fast-radios-love
+postcss-reduce-initial@9.0.0:
+  dir: packages/postcss-reduce-initial
+  intents:
+    - native-esm-migration
 postcss-reduce-transforms@8.0.2:
   dir: packages/postcss-reduce-transforms
   intents:
@@ -676,6 +805,10 @@ postcss-reduce-transforms@8.0.4:
   dir: packages/postcss-reduce-transforms
   intents:
     - salty-dolls-enter
+postcss-reduce-transforms@9.0.0:
+  dir: packages/postcss-reduce-transforms
+  intents:
+    - native-esm-migration
 postcss-svgo@8.0.2:
   dir: packages/postcss-svgo
   intents:
@@ -701,6 +834,10 @@ postcss-svgo@8.0.6:
   dir: packages/postcss-svgo
   intents:
     - goofy-spiders-marry
+postcss-svgo@9.0.0:
+  dir: packages/postcss-svgo
+  intents:
+    - native-esm-migration
 postcss-unique-selectors@8.0.2:
   dir: packages/postcss-unique-selectors
   intents:
@@ -717,6 +854,10 @@ postcss-unique-selectors@8.0.4:
   dir: packages/postcss-unique-selectors
   intents:
     - salty-dolls-enter
+postcss-unique-selectors@9.0.0:
+  dir: packages/postcss-unique-selectors
+  intents:
+    - native-esm-migration
 postcss-zindex@8.0.2:
   dir: packages/postcss-zindex
   intents:
@@ -733,6 +874,10 @@ postcss-zindex@8.0.4:
   dir: packages/postcss-zindex
   intents:
     - salty-dolls-enter
+postcss-zindex@9.0.0:
+  dir: packages/postcss-zindex
+  intents:
+    - native-esm-migration
 stylehacks@8.0.2:
   dir: packages/stylehacks
   intents:
@@ -750,3 +895,7 @@ stylehacks@8.0.4:
   dir: packages/stylehacks
   intents:
     - salty-dolls-enter
+stylehacks@9.0.0:
+  dir: packages/stylehacks
+  intents:
+    - native-esm-migration

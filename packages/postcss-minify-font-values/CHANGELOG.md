@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.0.0
+
+### Major Changes
+
+- The cssnano packages are now native ESM and require Node `^22.22.3 || ^24.15.0 || >=26.0`. Package subpath imports are no longer supported. See the migration documentation before upgrading.
+
 ## 8.0.4
 
 ### Patch Changes

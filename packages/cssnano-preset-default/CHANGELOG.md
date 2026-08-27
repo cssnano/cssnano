@@ -1,5 +1,44 @@
 # Change Log
 
+## 9.0.0
+
+### Major Changes
+
+- The cssnano packages are now native ESM and require Node `^22.22.3 || ^24.15.0 || >=26.0`. Package subpath imports are no longer supported. See the migration documentation before upgrading.
+
+- fix!(cssnano): introduce new postcss-calc plugin
+
+### Patch Changes
+
+- Updated dependencies:
+  - cssnano-utils@7.0.0
+  - postcss-colormin@9.0.0
+  - postcss-convert-values@9.0.0
+  - postcss-discard-comments@9.0.0
+  - postcss-discard-duplicates@9.0.0
+  - postcss-discard-empty@9.0.0
+  - postcss-discard-overridden@9.0.0
+  - postcss-merge-longhand@9.0.0
+  - postcss-merge-rules@9.0.0
+  - postcss-minify-font-values@9.0.0
+  - postcss-minify-gradients@9.0.0
+  - postcss-minify-params@9.0.0
+  - postcss-minify-selectors@9.0.0
+  - postcss-normalize-charset@9.0.0
+  - postcss-normalize-display-values@9.0.0
+  - postcss-normalize-positions@9.0.0
+  - postcss-normalize-repeat-style@9.0.0
+  - postcss-normalize-string@9.0.0
+  - postcss-normalize-timing-functions@9.0.0
+  - postcss-normalize-unicode@9.0.0
+  - postcss-normalize-url@9.0.0
+  - postcss-normalize-whitespace@9.0.0
+  - postcss-ordered-values@9.0.0
+  - postcss-reduce-initial@9.0.0
+  - postcss-reduce-transforms@9.0.0
+  - postcss-svgo@9.0.0
+  - postcss-unique-selectors@9.0.0
+
 ## 8.0.10
 
 ### Patch Changes

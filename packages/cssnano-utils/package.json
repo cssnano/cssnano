@@ -1,6 +1,6 @@
 {
   "name": "cssnano-utils",
-  "version": "6.0.4",
+  "version": "7.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cssnano/cssnano.git"
@@ -26,8 +26,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "postcss-value-parser": "^4.2.0",
-    "postcss": "catalog:"
+    "postcss": "catalog:",
+    "postcss-value-parser": "^4.2.0"
   },
   "peerDependencies": {
     "postcss": "^8.5.26"
