@@ -2,7 +2,7 @@
   "name": "example-cli-usage",
   "private": true,
   "dependencies": {
-    "cssnano": "^8.0.0",
+    "cssnano": "^9.0.0",
     "postcss": "^8.4.4",
     "postcss-cli": "^11.0.0"
   },
