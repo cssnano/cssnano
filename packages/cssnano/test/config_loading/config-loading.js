@@ -46,14 +46,10 @@ test('uses the default preset when no local configuration exists', async () => {
   });
 });
 
-test('uses configuration sources in documented precedence order', async () => {
+test('ignores package.json and uses the first supported configuration', async () => {
   await inTemporaryDirectory((directory) => {
     writeFileSync(`${directory}/package.json`, '{"cssnano":{"preset":"lite"}}');
-    writeFileSync(`${directory}/.cssnanorc.json`, '{"preset":"default"}');
-    writeFileSync(
-      `${directory}/.cssnanorc.js`,
-      'module.exports = { preset: "default" };'
-    );
+    writeFileSync(`${directory}/.cssnanorc.json`, '{"preset":"lite"}');
     writeFileSync(
       `${directory}/cssnano.config.js`,
       'module.exports = { preset: "default" };'
@@ -65,13 +61,12 @@ test('uses configuration sources in documented precedence order', async () => {
   });
 });
 
-test('continues to lower-priority configuration when package config is null', async () => {
+test('uses the default preset when package.json is the only configuration', async () => {
   await inTemporaryDirectory((directory) => {
-    writeFileSync(`${directory}/package.json`, '{"cssnano":null}');
-    writeFileSync(`${directory}/.cssnanorc.json`, '{"preset":"lite"}');
+    writeFileSync(`${directory}/package.json`, '{"cssnano":{"preset":"lite"}}');
     assert.strictEqual(
       postcss([cssnano]).plugins.length,
-      litePreset().plugins.length
+      defaultPreset().plugins.length
     );
   });
 });
@@ -80,6 +75,10 @@ test('does not discover unsupported or parent configuration files', async () => 
   await inTemporaryDirectory((directory) => {
     writeFileSync(`${directory}/.cssnanorc`, '{"preset":"lite"}');
     writeFileSync(`${directory}/.cssnanorc.json`, '{"preset":"lite"}');
+    writeFileSync(
+      `${directory}/.cssnanorc.js`,
+      'module.exports = { preset: "lite" };'
+    );
     mkdirSync(`${directory}/child`);
     process.chdir(`${directory}/child`);
     assert.strictEqual(
@@ -98,17 +97,20 @@ test('fails clearly when an explicit configuration file is missing', async () =>
   });
 });
 
-test('configFile accepts relative and absolute supported paths', async () => {
+test('configFile accepts relative and absolute paths', async () => {
   await inTemporaryDirectory((directory) => {
     writeFileSync(`${directory}/.cssnanorc.json`, '{"preset":"lite"}');
-    assert.throws(() => cssnano({ configFile: 'config' }), /Unsupported/);
+    writeFileSync(
+      `${directory}/custom-config.js`,
+      'module.exports = { preset: "lite" };'
+    );
     assert.strictEqual(
-      postcss([cssnano({ configFile: '.cssnanorc.json' })]).plugins.length,
+      postcss([cssnano({ configFile: 'custom-config.js' })]).plugins.length,
       litePreset().plugins.length
     );
     assert.strictEqual(
-      postcss([cssnano({ configFile: `${directory}/.cssnanorc.json` })]).plugins
-        .length,
+      postcss([cssnano({ configFile: `${directory}/custom-config.js` })])
+        .plugins.length,
       litePreset().plugins.length
     );
   });

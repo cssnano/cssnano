@@ -62,32 +62,28 @@ If you don't have npm then [check out this installation tutorial](https://npmjs.
 
 ### Configuration
 
-If you would like to use the preset in its default configuration, specify a section in your `package.json`:
+If you would like to use the preset in its default configuration, add it to your `cssnano.config.js`:
 
-```diff
- {
-   "name": "awesome-application",
-+  "cssnano": {
-+    "preset": "advanced"
-+  }
- }
+```js
+// cssnano.config.js
+module.exports = {
+  preset: 'advanced',
+};
 ```
 
 But should you wish to customise this, you can pass an array with the second parameter as the options object to use. For example, to remove all comments:
 
-```diff
- {
-   "name": "awesome-application",
-+  "cssnano": {
-+    "preset": [
-+      "advanced",
-+      {"discardComments": {"removeAll": true}}
-+    ]
-+  }
- }
+```js
+// cssnano.config.js
+module.exports = {
+  preset: [
+    'advanced',
+    { discardComments: { removeAll: true } },
+  ],
+};
 ```
 
-Depending on your usage, the JSON configuration might not work for you, such as in cases where you would like to use options with customisable function parameters. For this use case, we recommend a `cssnano.config.js` at the same location as your `package.json`. You can then load a preset and export it with your custom parameters:
+For options with customisable function parameters, use a `cssnano.config.js` at the same location as your `package.json`. You can then load a preset and export it with your custom parameters:
 
 ```js
 const advancedPreset = require('cssnano-preset-advanced');

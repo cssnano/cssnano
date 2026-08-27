@@ -26,15 +26,16 @@ postcss([cssnano({ preset, plugins: [autoprefixer] })])
 
 You can configure cssnano with a dedicated configuration, for example if you cannot access the PostCSS configuration file. The cssnano configuration can be in different formats:
 
-* a `cssnano` option in `package.json`
 * a JSON file named `.cssnanorc.json`
-* a JavaScript file named `.cssnanorc.js` or `cssnano.config.js`
+* a JavaScript file named `cssnano.config.js`
 
 cssnano checks these files in the order listed, in the current working
-directory only. It does not search parent directories, and `.cssnanorc` is not
-supported. Use the `configFile` option to select one of the supported filenames
-in another directory. The path may be relative to the current working
-directory or absolute.
+directory only. It does not search parent directories, and `.cssnanorc` and the
+`cssnano` field in `package.json` are not supported. Use the `configFile` option
+to select a configuration file in another directory. The path may be relative
+to the current working directory or absolute, and its filename is unrestricted.
+This means `.cssnanorc.js` is supported when selected explicitly, but is not
+discovered automatically.
 
 
 ## Configuration options
@@ -59,10 +60,18 @@ Using a string is useful if you use a configuration file in the JSON format.
 cssnano({ preset: 'cssnano-preset-default' })
 ```
 
-When you use a string, if the preset is called `cssnano-preset-<name>`, you can use `name` alone:
+The strings `default`, `lite`, and `advanced` are shorthand for the built-in
+`cssnano-preset-*` packages:
 
 ```js
-cssnano({ preset: 'default' })
+cssnano({ preset: 'lite' })
+```
+
+For any other preset, pass its complete resolvable package name. cssnano does
+not add a `cssnano-preset-` prefix to arbitrary strings:
+
+```js
+cssnano({ preset: 'my-custom-preset' })
 ```
 
 ### Disable a plugin included in a preset

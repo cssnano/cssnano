@@ -6,12 +6,7 @@ import defaultPreset from 'cssnano-preset-default';
 
 const require = createRequire(import.meta.url);
 
-const configFileNames = [
-  'package.json',
-  '.cssnanorc.json',
-  '.cssnanorc.js',
-  'cssnano.config.js',
-];
+const configFileNames = ['.cssnanorc.json', 'cssnano.config.js'];
 
 /** @typedef {boolean | { exclude?: boolean } | void | undefined} PluginOptions */
 /** @typedef {import('postcss').PluginCreator<any>} PluginCreator */
@@ -74,11 +69,13 @@ function resolvePreset(preset) {
     return require(fn)(options).plugins;
   }
 
-  const sugar = `cssnano-preset-${fn}`;
-
-  // Try loading a preset from node_modules (sugar)
-  if (isResolvable(sugar)) {
-    return require(sugar)(options).plugins;
+  // Only the built-in preset names support shorthand resolution. Other
+  // strings must be passed to the module resolver unchanged.
+  if (fn === 'lite' || fn === 'advanced') {
+    const sugar = `cssnano-preset-${fn}`;
+    if (isResolvable(sugar)) {
+      return require(sugar)(options).plugins;
+    }
   }
 
   // If all else fails, we probably have a typo in the config somewhere
@@ -92,21 +89,10 @@ function resolvePreset(preset) {
  * @returns {unknown}
  */
 function loadConfigFile(filePath) {
-  if (path.basename(filePath) === 'package.json') {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8')).cssnano;
-  }
   if (filePath.endsWith('.json')) {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
   }
   return createRequire(filePath)(filePath);
-}
-
-/**
- * @param {string} filePath
- * @returns {boolean}
- */
-function isSupportedConfigFile(filePath) {
-  return configFileNames.includes(path.basename(filePath));
 }
 
 /**
@@ -116,11 +102,6 @@ function isSupportedConfigFile(filePath) {
 function loadDiscoveredConfig(configFile) {
   if (configFile) {
     const configPath = path.resolve(process.cwd(), configFile);
-    if (!isSupportedConfigFile(configPath)) {
-      throw new Error(
-        `Unsupported cssnano configuration file "${configFile}". Use package.json, .cssnanorc.json, .cssnanorc.js, or cssnano.config.js.`
-      );
-    }
     if (!fs.existsSync(configPath)) {
       throw new Error(
         `Cannot find cssnano configuration file "${configFile}".`
@@ -132,13 +113,7 @@ function loadDiscoveredConfig(configFile) {
   for (const fileName of configFileNames) {
     const configPath = path.join(process.cwd(), fileName);
     if (!fs.existsSync(configPath)) continue;
-    const config = loadConfigFile(configPath);
-    if (
-      fileName !== 'package.json' ||
-      (config !== undefined && config !== null)
-    ) {
-      return config;
-    }
+    return loadConfigFile(configPath);
   }
   return null;
 }
