@@ -3,7 +3,14 @@ import { dirname } from 'node:path';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import process from 'node:process';
-import { test } from 'node:test';
+import {
+  after,
+  afterEach,
+  before,
+  beforeEach,
+  describe,
+  test,
+} from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import litePreset from 'cssnano-preset-lite';
@@ -11,47 +18,38 @@ import defaultPreset from 'cssnano-preset-default';
 import autoprefixer from 'autoprefixer';
 import cssnano from '../../src/index.js';
 
-/* The configuration is loaded relative to the current working directory,
-  when running the repository tests, the working directory is
-  the repostiory root, so we need to change it to avoid having to place
-  the configuration file for this test in the repo root */
-let originalWorkingDir;
-test.before(() => {
-  originalWorkingDir = process.cwd();
-  process.chdir(dirname(fileURLToPath(import.meta.url)));
-});
+const testDirectory = dirname(fileURLToPath(import.meta.url));
 
-test.after(() => {
-  process.chdir(originalWorkingDir);
-});
+describe('cssnano config loading', () => {
+  let temporaryDirectory;
+  let previousWorkingDirectory;
 
-async function inTemporaryDirectory(callback) {
-  const directory = mkdtempSync(`${tmpdir()}/cssnano-config-`);
-  const previous = process.cwd();
-  process.chdir(directory);
-  try {
-    return await callback(directory);
-  } finally {
-    process.chdir(previous);
-    rmSync(directory, { recursive: true, force: true });
-  }
-}
+  beforeEach(() => {
+    temporaryDirectory = mkdtempSync(`${tmpdir()}/cssnano-config-`);
+    previousWorkingDirectory = process.cwd();
+    process.chdir(temporaryDirectory);
+  });
 
-test('uses the default preset when no local configuration exists', async () => {
-  await inTemporaryDirectory(() => {
+  afterEach(() => {
+    process.chdir(previousWorkingDirectory);
+    rmSync(temporaryDirectory, { recursive: true, force: true });
+  });
+
+  test('uses the default preset when no local configuration exists', () => {
     assert.strictEqual(
       postcss([cssnano]).plugins.length,
       defaultPreset().plugins.length
     );
   });
-});
 
-test('ignores package.json and uses the first supported configuration', async () => {
-  await inTemporaryDirectory((directory) => {
-    writeFileSync(`${directory}/package.json`, '{"cssnano":{"preset":"lite"}}');
-    writeFileSync(`${directory}/.cssnanorc.json`, '{"preset":"lite"}');
+  test('ignores package.json and uses the first supported configuration', () => {
     writeFileSync(
-      `${directory}/cssnano.config.js`,
+      `${temporaryDirectory}/package.json`,
+      '{"cssnano":{"preset":"lite"}}'
+    );
+    writeFileSync(`${temporaryDirectory}/.cssnanorc.json`, '{"preset":"lite"}');
+    writeFileSync(
+      `${temporaryDirectory}/cssnano.config.js`,
       'module.exports = { preset: "default" };'
     );
     assert.strictEqual(
@@ -59,55 +57,52 @@ test('ignores package.json and uses the first supported configuration', async ()
       litePreset().plugins.length
     );
   });
-});
 
-test('uses the default preset when package.json is the only configuration', async () => {
-  await inTemporaryDirectory((directory) => {
-    writeFileSync(`${directory}/package.json`, '{"cssnano":{"preset":"lite"}}');
+  test('uses the default preset when package.json is the only configuration', () => {
+    writeFileSync(
+      `${temporaryDirectory}/package.json`,
+      '{"cssnano":{"preset":"lite"}}'
+    );
     assert.strictEqual(
       postcss([cssnano]).plugins.length,
       defaultPreset().plugins.length
     );
   });
-});
 
-test('does not discover unsupported or parent configuration files', async () => {
-  await inTemporaryDirectory((directory) => {
-    writeFileSync(`${directory}/.cssnanorc`, '{"preset":"lite"}');
-    writeFileSync(`${directory}/.cssnanorc.json`, '{"preset":"lite"}');
+  test('does not discover unsupported or parent configuration files', () => {
+    writeFileSync(`${temporaryDirectory}/.cssnanorc`, '{"preset":"lite"}');
+    writeFileSync(`${temporaryDirectory}/.cssnanorc.json`, '{"preset":"lite"}');
     writeFileSync(
-      `${directory}/.cssnanorc.js`,
+      `${temporaryDirectory}/.cssnanorc.js`,
       'module.exports = { preset: "lite" };'
     );
     writeFileSync(
-      `${directory}/cssnano.config.mjs`,
+      `${temporaryDirectory}/cssnano.config.mjs`,
       'export default { preset: "lite" };'
     );
     writeFileSync(
-      `${directory}/cssnano.config.ts`,
+      `${temporaryDirectory}/cssnano.config.ts`,
       'const preset: string = "lite"; export default { preset };'
     );
     writeFileSync(
-      `${directory}/cssnano.config.mts`,
+      `${temporaryDirectory}/cssnano.config.mts`,
       'export default { preset: "lite" };'
     );
-    mkdirSync(`${directory}/child`);
-    process.chdir(`${directory}/child`);
+    mkdirSync(`${temporaryDirectory}/child`);
+    process.chdir(`${temporaryDirectory}/child`);
     assert.strictEqual(
       postcss([cssnano]).plugins.length,
       defaultPreset().plugins.length
     );
   });
-});
 
-test('loads explicit ESM and TypeScript configuration files', async () => {
-  await inTemporaryDirectory((directory) => {
+  test('loads explicit ESM and TypeScript configuration files', () => {
     for (const extension of ['mjs', 'ts', 'mts']) {
       const config =
         extension === 'ts'
           ? 'const preset: string = "lite"; export default { preset };'
           : 'export default { preset: "lite" };';
-      writeFileSync(`${directory}/config.${extension}`, config);
+      writeFileSync(`${temporaryDirectory}/config.${extension}`, config);
       assert.strictEqual(
         postcss([cssnano({ configFile: `config.${extension}` })]).plugins
           .length,
@@ -115,17 +110,15 @@ test('loads explicit ESM and TypeScript configuration files', async () => {
       );
     }
   });
-});
 
-test('loads CommonJS TypeScript configuration files and ESM .mts files', async () => {
-  await inTemporaryDirectory((directory) => {
-    writeFileSync(`${directory}/package.json`, '{"type":"commonjs"}');
+  test('loads CommonJS TypeScript configuration files and ESM .mts files', () => {
+    writeFileSync(`${temporaryDirectory}/package.json`, '{"type":"commonjs"}');
     writeFileSync(
-      `${directory}/config.ts`,
+      `${temporaryDirectory}/config.ts`,
       'module.exports = { preset: "lite" };'
     );
     writeFileSync(
-      `${directory}/config.mts`,
+      `${temporaryDirectory}/config.mts`,
       'export default { preset: "lite" };'
     );
     for (const extension of ['ts', 'mts']) {
@@ -136,26 +129,22 @@ test('loads CommonJS TypeScript configuration files and ESM .mts files', async (
       );
     }
   });
-});
 
-test('fails clearly when an explicit configuration file is missing', async () => {
-  await inTemporaryDirectory(() => {
+  test('fails clearly when an explicit configuration file is missing', () => {
     assert.throws(
       () => cssnano({ configFile: 'cssnano.config.js' }),
       /Cannot find cssnano configuration file/
     );
   });
-});
 
-test('configFile accepts relative and absolute paths', async () => {
-  await inTemporaryDirectory((directory) => {
-    writeFileSync(`${directory}/.cssnanorc.json`, '{"preset":"lite"}');
+  test('configFile accepts relative and absolute paths', () => {
+    writeFileSync(`${temporaryDirectory}/.cssnanorc.json`, '{"preset":"lite"}');
     writeFileSync(
-      `${directory}/custom-config.js`,
+      `${temporaryDirectory}/custom-config.js`,
       'module.exports = { preset: "lite" };'
     );
     writeFileSync(
-      `${directory}/custom-config`,
+      `${temporaryDirectory}/custom-config`,
       'module.exports = { preset: "lite" };'
     );
     assert.strictEqual(
@@ -167,21 +156,20 @@ test('configFile accepts relative and absolute paths', async () => {
       litePreset().plugins.length
     );
     assert.strictEqual(
-      postcss([cssnano({ configFile: `${directory}/custom-config.js` })])
-        .plugins.length,
+      postcss([
+        cssnano({ configFile: `${temporaryDirectory}/custom-config.js` }),
+      ]).plugins.length,
       litePreset().plugins.length
     );
   });
-});
 
-test('resolves dependencies of JavaScript configuration files locally', async () => {
-  await inTemporaryDirectory((directory) => {
+  test('resolves dependencies of JavaScript configuration files locally', () => {
     writeFileSync(
-      `${directory}/local-preset.js`,
+      `${temporaryDirectory}/local-preset.js`,
       'module.exports = { preset: "lite" };'
     );
     writeFileSync(
-      `${directory}/cssnano.config.js`,
+      `${temporaryDirectory}/cssnano.config.js`,
       'module.exports = require("./local-preset.js");'
     );
     assert.strictEqual(
@@ -189,11 +177,12 @@ test('resolves dependencies of JavaScript configuration files locally', async ()
       litePreset().plugins.length
     );
   });
-});
 
-test('inline preset and plugins bypass discovered configuration', async () => {
-  await inTemporaryDirectory((directory) => {
-    writeFileSync(`${directory}/.cssnanorc.json`, '{"preset":"default"}');
+  test('inline preset and plugins bypass discovered configuration', () => {
+    writeFileSync(
+      `${temporaryDirectory}/.cssnanorc.json`,
+      '{"preset":"default"}'
+    );
     assert.strictEqual(
       postcss([cssnano({ preset: 'lite' })]).plugins.length,
       litePreset().plugins.length
@@ -215,14 +204,30 @@ test('does not mutate options or preset plugin arrays when adding plugins', () =
   assert.deepStrictEqual(options, { preset, plugins: [autoprefixer] });
 });
 
-test('should read the cssnano configuration file', () => {
-  const processor = postcss([cssnano]);
-  assert.strictEqual(processor.plugins.length, litePreset().plugins.length);
-});
+describe('configuration file priority', () => {
+  let previousWorkingDirectory;
 
-test('PostCSS config should override the cssnano config', () => {
-  const processor = postcss([cssnano({ preset: 'default' })]);
-  assert.strictEqual(processor.plugins.length, defaultPreset().plugins.length);
+  before(() => {
+    previousWorkingDirectory = process.cwd();
+    process.chdir(testDirectory);
+  });
+
+  after(() => {
+    process.chdir(previousWorkingDirectory);
+  });
+
+  test('should read the cssnano configuration file', () => {
+    const processor = postcss([cssnano]);
+    assert.strictEqual(processor.plugins.length, litePreset().plugins.length);
+  });
+
+  test('direct config should override the configuration file', () => {
+    const processor = postcss([cssnano({ preset: 'default' })]);
+    assert.strictEqual(
+      processor.plugins.length,
+      defaultPreset().plugins.length
+    );
+  });
 });
 
 test('direct plugins should bypass the cssnano configuration file', async () => {
