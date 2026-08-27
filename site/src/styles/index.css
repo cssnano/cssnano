@@ -142,7 +142,6 @@ strong {
 /* Supporting Content */
 code {
   font-family: var(--font-mono);
-  font-size: var(--font-size-small);
 }
 
 pre>code {

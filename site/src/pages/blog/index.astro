@@ -1,6 +1,19 @@
 ---
-import { getCollection } from 'astro:content';
+import {getCollection} from 'astro:content';
 import NoSidebar from '../../layouts/NoSidebar.astro';
-const posts = await getCollection('blog');
+import {formatDate} from '../../utils/date';
+
+const posts = (await getCollection('blog')).toSorted(
+  (a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf(),
+);
 ---
-<NoSidebar title="Blog"><ul class="list">{posts.map((post) => <li><h2><a href={`${import.meta.env.BASE_URL}blog/${post.data.slug}/`}>{post.data.title}</a></h2> {post.data.readableDate}</li>)}</ul></NoSidebar>
+<NoSidebar title="Blog">
+  <ul class="list stack">
+    {posts.map((post) =>
+      <li class="stack">
+        <h2><a href={`${import.meta.env.BASE_URL}blog/${post.data.slug}/`}>{post.data.title}</a></h2>
+        <time datetime={post.data.publishedAt.toISOString()}>{formatDate(post.data.publishedAt)}</time>
+        <p>{post.data.excerpt}</p>
+      </li>)}
+  </ul>
+</NoSidebar>

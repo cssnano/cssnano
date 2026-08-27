@@ -1,8 +1,8 @@
 ---
 title: Migrating to cssnano 9
 author: cssnano team
+excerpt: cssnano 9.0 should be mostly backward compatible if you are running the supported Node.js versions already. You will need to make adjustments to your configuration only if you use some of the standalone cssnano configuration files instead of configuring cssnano through your PostCSS configuration.
 publishedAt: 2026-08-27
-readableDate: "August 27, 2026"
 slug: cssnano-9-migration-guide
 ---
 
@@ -61,4 +61,3 @@ To ensure that using `require()` with ESM modules and type stripping for the con
 * `22.22.3` or later in the 22.x releases
 * `24.15.0` or later in the 24.x release stream
 * `>=26.0`
-
