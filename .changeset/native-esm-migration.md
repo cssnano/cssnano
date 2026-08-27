@@ -37,4 +37,4 @@
 "stylehacks": major
 ---
 
-The cssnano packages are now native ESM and require Node `^22.22.3 || ^24.15.0 || >=26.0`. Update imports to the documented package root entry points; package subpath imports are no longer supported. ESM consumers should use default imports. CommonJS consumers can continue using synchronous root `require()` on the supported Node versions, with the existing callable or object value shape. cssnano’s synchronous dynamic loading supports CommonJS plugins, presets, and configuration files, as well as explicitly selected `.mjs`, `.ts`, and `.mts` configuration files. ESM and TypeScript configurations must use a default export, and TypeScript is limited to Node’s erasable type syntax. See the migration documentation before upgrading.
+The cssnano packages are now native ESM and require Node `^22.22.3 || ^24.15.0 || >=26.0`. Package subpath imports are no longer supported. See the migration documentation before upgrading.
