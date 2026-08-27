@@ -107,6 +107,9 @@ function pluginIdempotencyTests(preset, integrations, excludedPlugins = []) {
       });
     }
   }
+  const aggregateCSS = frameworks
+    .map(({ name, css: frameworkCSS }) => `/* ${name} */\n${frameworkCSS}`)
+    .join('\n');
 
   const plugins = [];
   for (const [creator, options] of preset().plugins) {
@@ -119,30 +122,21 @@ function pluginIdempotencyTests(preset, integrations, excludedPlugins = []) {
   return async (t) => {
     const tests = [];
     for (const plugin of plugins) {
-      for (const framework of frameworks) {
-        tests.push(
-          t.test(
-            `${presetName} - ${plugin.name} - ${framework.name}`,
-            async () => {
-              const firstPass = await postcss([
-                plugin.creator(plugin.options),
-              ]).process(framework.css, { from: undefined });
-              const secondPass = await postcss([
-                plugin.creator(plugin.options),
-              ]).process(firstPass.css, { from: undefined });
-              if (secondPass.css !== firstPass.css) {
-                assert.fail(
-                  mismatchMessage(
-                    `${plugin.name} - ${framework.name}`,
-                    secondPass.css,
-                    firstPass.css
-                  )
-                );
-              }
-            }
-          )
-        );
-      }
+      tests.push(
+        t.test(`${presetName} - ${plugin.name}`, async () => {
+          const firstPass = await postcss([
+            plugin.creator(plugin.options),
+          ]).process(aggregateCSS, { from: undefined });
+          const secondPass = await postcss([
+            plugin.creator(plugin.options),
+          ]).process(firstPass.css, { from: undefined });
+          if (secondPass.css !== firstPass.css) {
+            assert.fail(
+              mismatchMessage(plugin.name, secondPass.css, firstPass.css)
+            );
+          }
+        })
+      );
     }
     return Promise.allSettled(tests);
   };
