@@ -11,8 +11,4 @@
  */
 declare function isConflictingProp(propA: string, propB: string): boolean;
 export { isConflictingProp };
-declare const _default: {
-    isConflictingProp: typeof isConflictingProp;
-};
-export default _default;
 //# sourceMappingURL=propertyRelations.d.ts.map

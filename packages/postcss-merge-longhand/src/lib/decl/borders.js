@@ -1308,8 +1308,7 @@ function merge(rule) {
 
   cleanup(rule);
 }
-export { explode };
-export { merge };
+
 export default {
   explode,
   merge,

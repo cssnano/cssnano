@@ -1,10 +1,7 @@
 import { suite, test } from 'node:test';
 import assert from 'node:assert/strict';
-import fuzzEvaluate from '../lib/fuzzEvaluate.js';
-import fuzzGenerate from '../lib/fuzzGenerate.js';
-
-const { differences, evaluate, initialState } = fuzzEvaluate;
-const { generate, random, shrink } = fuzzGenerate;
+import { differences, evaluate, initialState } from '../lib/fuzzEvaluate.js';
+import { generate, random, shrink } from '../lib/fuzzGenerate.js';
 
 /**
  * The evaluator is the fuzzer's oracle, so a bug in it either invents failures

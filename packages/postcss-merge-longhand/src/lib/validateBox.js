@@ -75,6 +75,3 @@ function browserKeeps(prop, value) {
   return tokens.every((token) => specifiesSide(token, grammar));
 }
 export { browserKeeps };
-export default {
-  browserKeeps,
-};

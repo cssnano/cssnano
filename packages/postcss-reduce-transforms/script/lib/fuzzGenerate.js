@@ -243,9 +243,5 @@ function shrink(css, fails) {
 
   return `${head}${functions.join(' ')}${tail}`;
 }
-export { generate };
-export { shrink };
-export default {
-  generate,
-  shrink,
-};
+
+export { generate, shrink };

@@ -268,9 +268,5 @@ function shrink(css, fails) {
 
   return `${selectors.join(',')}${body}`;
 }
-export { generate };
-export { shrink };
-export default {
-  generate,
-  shrink,
-};
+
+export { generate, shrink };

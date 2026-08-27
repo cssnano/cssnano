@@ -181,13 +181,8 @@ function specifiesDistinctComponents(value) {
 
   return specified.size + unresolved <= borderComponents.length;
 }
-export { isBorderStyle };
-export { isBorderWidth };
-export { isColor };
-export { isValidWidthStyleColor };
-export { specifiesComponent };
-export { specifiesDistinctComponents };
-export default {
+
+export {
   isBorderStyle,
   isBorderWidth,
   isColor,

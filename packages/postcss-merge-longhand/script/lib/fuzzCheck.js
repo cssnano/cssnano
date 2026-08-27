@@ -102,9 +102,5 @@ function report(failure, seed) {
 
   return lines.join('\n');
 }
-export { checkMinimised };
-export { report };
-export default {
-  checkMinimised,
-  report,
-};
+
+export { checkMinimised, report };

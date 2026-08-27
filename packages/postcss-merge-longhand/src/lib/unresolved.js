@@ -80,15 +80,10 @@ function isSubstitution(token) {
 
   return name !== undefined && substitutionFunctions.includes(name);
 }
-export { isSubstitution };
-export { isUnresolved };
-export { substitutionFunctions };
-export { trustedFunctions };
-export { trustedSupportFunctions };
-export default {
+
+export {
   isSubstitution,
   isUnresolved,
   substitutionFunctions,
-  trustedFunctions,
   trustedSupportFunctions,
 };

@@ -38,19 +38,5 @@ declare function specifiesComponent(value: string, component: string): boolean;
  * @return {boolean} whether every token specifies a distinct component
  */
 declare function specifiesDistinctComponents(value: string): boolean;
-export { isBorderStyle };
-export { isBorderWidth };
-export { isColor };
-export { isValidWidthStyleColor };
-export { specifiesComponent };
-export { specifiesDistinctComponents };
-declare const _default: {
-    isBorderStyle: typeof isBorderStyle;
-    isBorderWidth: typeof isBorderWidth;
-    isColor: typeof isColor;
-    isValidWidthStyleColor: typeof isValidWidthStyleColor;
-    specifiesComponent: typeof specifiesComponent;
-    specifiesDistinctComponents: typeof specifiesDistinctComponents;
-};
-export default _default;
+export { isBorderStyle, isBorderWidth, isColor, isValidWidthStyleColor, specifiesComponent, specifiesDistinctComponents, };
 //# sourceMappingURL=validateWsc.d.ts.map

@@ -4,19 +4,5 @@ declare const IE_6 = "ie 6";
 declare const IE_7 = "ie 7";
 declare const IE_8 = "ie 8";
 declare const OP_9 = "opera 9";
-export { FF_2 };
-export { IE_5_5 };
-export { IE_6 };
-export { IE_7 };
-export { IE_8 };
-export { OP_9 };
-declare const _default: {
-    FF_2: string;
-    IE_5_5: string;
-    IE_6: string;
-    IE_7: string;
-    IE_8: string;
-    OP_9: string;
-};
-export default _default;
+export { FF_2, IE_5_5, IE_6, IE_7, IE_8, OP_9 };
 //# sourceMappingURL=browsers.d.ts.map

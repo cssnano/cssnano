@@ -23,8 +23,6 @@ declare function shorthand(name: string): {
 declare function setsLonghands(name: string): Set<string>;
 export declare const sides: string[];
 export declare const borderComponents: string[];
-export declare const borderProperties: Set<string>;
-export declare const flowRelativeBorderProperties: Set<string>;
 export declare const cssWideKeywords: Set<string>;
 export declare const lineStyles: Set<string>;
 export declare const lineWidthKeywords: Set<string>;

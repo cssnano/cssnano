@@ -406,9 +406,5 @@ function differences(before, after) {
 
   return slots;
 }
-export { evaluate };
-export { differences };
-export default {
-  evaluate,
-  differences,
-};
+
+export { evaluate, differences };

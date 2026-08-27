@@ -1,6 +1,6 @@
-export const style = new Set(['italic', 'oblique']);
-export const variant = new Set(['small-caps']);
-export const weight = new Set([
+const style = new Set(['italic', 'oblique']);
+const variant = new Set(['small-caps']);
+const weight = new Set([
   '100',
   '200',
   '300',
@@ -14,7 +14,7 @@ export const weight = new Set([
   'lighter',
   'bolder',
 ]);
-export const stretch = new Set([
+const stretch = new Set([
   'ultra-condensed',
   'extra-condensed',
   'condensed',
@@ -24,7 +24,7 @@ export const stretch = new Set([
   'extra-expanded',
   'ultra-expanded',
 ]);
-export const size = new Set([
+const size = new Set([
   'xx-small',
   'x-small',
   'small',

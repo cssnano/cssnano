@@ -517,21 +517,8 @@ function differences(expected, actual) {
 
   return found;
 }
-export { boxLengths };
-export { marginOnly };
-export { colors };
-export { components };
-export { differences };
-export { evaluate };
-export { globalKeywords };
-export { initialState };
-export { sides };
-export { styles };
-export { substitutionTokens };
-export { unresolvedTokens };
-export { widthTypedTokens };
-export { widths };
-export default {
+
+export {
   boxLengths,
   marginOnly,
   colors,

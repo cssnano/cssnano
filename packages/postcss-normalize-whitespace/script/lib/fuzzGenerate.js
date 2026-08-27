@@ -67,6 +67,3 @@ function* generate(seed, count) {
   }
 }
 export { generate };
-export default {
-  generate,
-};

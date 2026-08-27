@@ -91,10 +91,8 @@ const normalizeGridColumnRow = (grid) => {
     return `${normalizeValue.front.trim()} ${normalizeValue.back.trim()}`;
   });
 };
-export { normalizeGridAutoFlow };
-export { normalizeGridColumnRowGap };
-export { normalizeGridColumnRow };
-export default {
+
+export {
   normalizeGridAutoFlow,
   normalizeGridColumnRowGap,
   normalizeGridColumnRow,
