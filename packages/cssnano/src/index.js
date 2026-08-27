@@ -92,7 +92,16 @@ function loadConfigFile(filePath) {
   if (filePath.endsWith('.json')) {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
   }
-  return createRequire(filePath)(filePath);
+  const config = createRequire(filePath)(filePath);
+  if (
+    config !== null &&
+    typeof config === 'object' &&
+    Object.prototype.toString.call(config) === '[object Module]' &&
+    'default' in config
+  ) {
+    return config.default;
+  }
+  return config;
 }
 
 /**

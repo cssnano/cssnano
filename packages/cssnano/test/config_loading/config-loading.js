@@ -79,12 +79,62 @@ test('does not discover unsupported or parent configuration files', async () => 
       `${directory}/.cssnanorc.js`,
       'module.exports = { preset: "lite" };'
     );
+    writeFileSync(
+      `${directory}/cssnano.config.mjs`,
+      'export default { preset: "lite" };'
+    );
+    writeFileSync(
+      `${directory}/cssnano.config.ts`,
+      'const preset: string = "lite"; export default { preset };'
+    );
+    writeFileSync(
+      `${directory}/cssnano.config.mts`,
+      'export default { preset: "lite" };'
+    );
     mkdirSync(`${directory}/child`);
     process.chdir(`${directory}/child`);
     assert.strictEqual(
       postcss([cssnano]).plugins.length,
       defaultPreset().plugins.length
     );
+  });
+});
+
+test('loads explicit ESM and TypeScript configuration files', async () => {
+  await inTemporaryDirectory((directory) => {
+    for (const extension of ['mjs', 'ts', 'mts']) {
+      const config =
+        extension === 'ts'
+          ? 'const preset: string = "lite"; export default { preset };'
+          : 'export default { preset: "lite" };';
+      writeFileSync(`${directory}/config.${extension}`, config);
+      assert.strictEqual(
+        postcss([cssnano({ configFile: `config.${extension}` })]).plugins
+          .length,
+        litePreset().plugins.length
+      );
+    }
+  });
+});
+
+test('loads CommonJS TypeScript configuration files and ESM .mts files', async () => {
+  await inTemporaryDirectory((directory) => {
+    writeFileSync(`${directory}/package.json`, '{"type":"commonjs"}');
+    writeFileSync(
+      `${directory}/config.ts`,
+      'module.exports = { preset: "lite" };'
+    );
+    writeFileSync(
+      `${directory}/config.mts`,
+      'export default { preset: "lite" };'
+    );
+    for (const extension of ['ts', 'mts']) {
+      assert.strictEqual(
+        postcss([cssnano({ configFile: `config.${extension}` })]).plugins
+          .length,
+        litePreset().plugins.length
+      );
+    }
   });
 });
 
@@ -104,8 +154,16 @@ test('configFile accepts relative and absolute paths', async () => {
       `${directory}/custom-config.js`,
       'module.exports = { preset: "lite" };'
     );
+    writeFileSync(
+      `${directory}/custom-config`,
+      'module.exports = { preset: "lite" };'
+    );
     assert.strictEqual(
       postcss([cssnano({ configFile: 'custom-config.js' })]).plugins.length,
+      litePreset().plugins.length
+    );
+    assert.strictEqual(
+      postcss([cssnano({ configFile: 'custom-config' })]).plugins.length,
       litePreset().plugins.length
     );
     assert.strictEqual(

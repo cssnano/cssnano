@@ -24,7 +24,11 @@ cssnano 9 checks configuration in the current working directory only, in this or
 It no longer searches parent directories, `package.json`, `.cssnanorc.js`, or the
 extensionless `.cssnanorc` file. Rename or move the configuration file if you
 were relying on automatic discovery of those names. The `configFile` option can
-still explicitly select any configuration filename.
+still explicitly select any configuration filename, including `.mjs`, `.ts`,
+and `.mts` files. These ESM and TypeScript files must use a default export.
+TypeScript uses Node's built-in type stripping, so only erasable TypeScript
+syntax is supported; for example, enums, decorators, parameter properties,
+path aliases, and `tsconfig.json`-dependent transforms are not supported.
 
 ```js
 import cssnano from 'cssnano';
@@ -34,7 +38,9 @@ cssnano({ configFile: './config/cssnano.config.js' });
 
 
 cssnano can synchronously load CommonJS plugins, presets, and configuration
-files, as well as entire ESM configuration file, but it cannot load an ESM preset defined as an ESM module and passed to the cssnano configuration as a string only. Import ESM modules in your application and pass the imported value:
+files, as well as ESM configuration files selected explicitly. It cannot load
+an ESM preset defined as an ESM module and passed to the cssnano configuration
+as a string only. Import ESM modules in your application and pass the imported value:
 
 ```js
 import cssnano from 'cssnano';

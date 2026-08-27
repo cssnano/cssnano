@@ -28,6 +28,8 @@ You can configure cssnano with a dedicated configuration, for example if you can
 
 * a JSON file named `.cssnanorc.json`
 * a JavaScript file named `cssnano.config.js`
+* an ESM file with an `.mjs` extension
+* a TypeScript file with a `.ts` or `.mts` extension
 
 cssnano checks these files in the order listed, in the current working
 directory only. It does not search parent directories, and `.cssnanorc` and the
@@ -35,7 +37,29 @@ directory only. It does not search parent directories, and `.cssnanorc` and the
 to select a configuration file in another directory. The path may be relative
 to the current working directory or absolute, and its filename is unrestricted.
 This means `.cssnanorc.js` is supported when selected explicitly, but is not
-discovered automatically.
+discovered automatically. Only `.cssnanorc.json` and `cssnano.config.js` are
+discovered automatically; the other formats, including `.mjs`, `.ts`, and
+`.mts`, must be selected with `configFile`.
+
+ESM configuration files and TypeScript files loaded as ESM must use a default
+export. A `.ts` file follows the nearest `package.json` module type. In a
+CommonJS project, use `.mts` for a TypeScript configuration with a default
+export, or use CommonJS exports from `.ts`:
+
+```js
+// cssnano.config.mjs, cssnano.config.mts, or cssnano.config.ts in an ESM project
+export default { preset: 'lite' };
+```
+
+```js
+// cssnano.config.ts in a CommonJS project
+module.exports = { preset: 'lite' };
+```
+
+TypeScript files are loaded using Node's built-in type stripping. They must use
+syntax that Node can erase natively; enums, decorators, parameter properties,
+path aliases, and transformations that depend on `tsconfig.json` are not
+supported.
 
 
 ## Configuration options
