@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import NoSidebar from '../../layouts/NoSidebar.astro';
+import { formatDate } from '../../utils/date';
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
   return posts.map((post) => ({
@@ -14,6 +15,6 @@ const { post } = Astro.props;
 const { Content } = await render(post);
 ---
 <NoSidebar title={post.data.title}>
-  <p class="annotation">{post.data.author} · {post.data.readableDate}</p>
+  <p class="annotation">{post.data.author} · {formatDate(post.data.publishedAt)}</p>
   <Content />
 </NoSidebar>
