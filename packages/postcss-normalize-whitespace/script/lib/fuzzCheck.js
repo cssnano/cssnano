@@ -134,7 +134,3 @@ function report(failure, seed) {
 }
 export { check };
 export { report };
-export default {
-  check,
-  report,
-};

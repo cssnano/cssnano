@@ -166,6 +166,3 @@ function isConflictingProp(propA, propB) {
   return false;
 }
 export { isConflictingProp };
-export default {
-  isConflictingProp,
-};

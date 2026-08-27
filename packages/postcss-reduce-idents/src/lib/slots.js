@@ -17,7 +17,7 @@ const VENDOR_PREFIX = /^-\w+-/;
  * @param {string} prop
  * @return {string}
  */
-function resolveProperty(prop) {
+export function resolveProperty(prop) {
   const name = prop.toLowerCase();
   const alias = aliases.get(name);
   if (alias !== undefined) {
@@ -36,7 +36,7 @@ function resolveProperty(prop) {
  * @param {string} name
  * @return {string}
  */
-function resolveAtRule(name) {
+export function resolveAtRule(name) {
   return name.toLowerCase().replace(VENDOR_PREFIX, '');
 }
 
@@ -91,15 +91,4 @@ export const grid = {
   referenceProperties: new Set(data.grid.referenceProperties),
   /** Keywords a grid value holds that are not a line or area name. */
   reservedKeywords: data.grid.reservedKeywords,
-};
-export { resolveProperty };
-export { resolveAtRule };
-export default {
-  resolveProperty,
-  resolveAtRule,
-  cssWideKeywords,
-  keyframes,
-  counterStyle,
-  counter,
-  grid,
 };

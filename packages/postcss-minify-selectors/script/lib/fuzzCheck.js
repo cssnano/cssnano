@@ -165,9 +165,5 @@ function checkMinimised(rule, tree, seed) {
 
   return { failure: minimize(failure, tree), seed };
 }
-export { checkMinimised };
-export { report };
-export default {
-  checkMinimised,
-  report,
-};
+
+export { checkMinimised, report };

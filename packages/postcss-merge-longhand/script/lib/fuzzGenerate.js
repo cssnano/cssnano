@@ -348,11 +348,5 @@ function shrink(css, fails) {
 
   return `${head}${declarations.join(';')}}`;
 }
-export { generate };
-export { random };
-export { shrink };
-export default {
-  generate,
-  random,
-  shrink,
-};
+
+export { generate, random, shrink };

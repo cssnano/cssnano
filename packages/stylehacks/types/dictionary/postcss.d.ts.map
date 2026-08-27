@@ -1,1 +1,1 @@
-{"version":3,"file":"postcss.d.ts","sourceRoot":"","sources":["../../src/dictionary/postcss.js"],"names":[],"mappings":"AAAA,QAAA,MAAM,MAAM,WAAW,CAAC;AACxB,QAAA,MAAM,IAAI,SAAS,CAAC;AACpB,QAAA,MAAM,IAAI,SAAS,CAAC;AACpB,OAAO,EAAE,MAAM,EAAE,CAAC;AAClB,OAAO,EAAE,IAAI,EAAE,CAAC;AAChB,OAAO,EAAE,IAAI,EAAE,CAAC"}
+{"version":3,"file":"postcss.d.ts","sourceRoot":"","sources":["../../src/dictionary/postcss.js"],"names":[],"mappings":"AAAA,QAAA,MAAM,MAAM,WAAW,CAAC;AACxB,QAAA,MAAM,IAAI,SAAS,CAAC;AACpB,QAAA,MAAM,IAAI,SAAS,CAAC;AACpB,OAAO,EAAE,MAAM,EAAE,IAAI,EAAE,IAAI,EAAE,CAAC"}

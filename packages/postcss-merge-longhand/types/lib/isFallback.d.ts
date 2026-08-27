@@ -36,17 +36,5 @@ declare function isFallback(earlier: import('postcss').Declaration, later: impor
  * @return {boolean}
  */
 declare function strandsFallback(earlier: import('postcss').Declaration, later: import('postcss').Declaration): boolean;
-export { requiredSupport };
-export { mergeBlockingSupport };
-export { inheritSupport };
-export { isFallback };
-export { strandsFallback };
-declare const _default: {
-    requiredSupport: typeof requiredSupport;
-    mergeBlockingSupport: typeof mergeBlockingSupport;
-    inheritSupport: typeof inheritSupport;
-    isFallback: typeof isFallback;
-    strandsFallback: typeof strandsFallback;
-};
-export default _default;
+export { requiredSupport, mergeBlockingSupport, inheritSupport, isFallback, strandsFallback, };
 //# sourceMappingURL=isFallback.d.ts.map

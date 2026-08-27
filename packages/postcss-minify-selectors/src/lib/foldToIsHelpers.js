@@ -320,17 +320,8 @@ function equalSpecificity(a, b) {
 function joinTokens(tokens) {
   return tokens.map((t) => t.str).join('');
 }
-export { tokenize };
-export { hasPseudoElementOrNesting };
-export { hasNthChildOfClause };
-export { hasUnsafeForFold };
-export { specificityOf };
-export { specificityOfMiddle };
-export { maxChildSpecificity };
-export { compareSpecificity };
-export { equalSpecificity };
-export { joinTokens };
-export default {
+
+export {
   tokenize,
   hasPseudoElementOrNesting,
   hasNthChildOfClause,

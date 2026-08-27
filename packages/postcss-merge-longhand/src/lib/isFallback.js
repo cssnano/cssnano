@@ -152,12 +152,8 @@ function strandsFallback(earlier, later) {
 
   return !mergeBlockingSupport(later).isSubsetOf(mergeBlockingSupport(earlier));
 }
-export { requiredSupport };
-export { mergeBlockingSupport };
-export { inheritSupport };
-export { isFallback };
-export { strandsFallback };
-export default {
+
+export {
   requiredSupport,
   mergeBlockingSupport,
   inheritSupport,

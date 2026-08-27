@@ -245,13 +245,5 @@ function ensureCompatibility(selectors, browsers, compatibilityCache) {
     return compatible;
   });
 }
-export { sameVendor };
-export { noVendor };
-export { pseudoElements };
-export { ensureCompatibility };
-export default {
-  sameVendor,
-  noVendor,
-  pseudoElements,
-  ensureCompatibility,
-};
+
+export { sameVendor, noVendor, pseudoElements, ensureCompatibility };

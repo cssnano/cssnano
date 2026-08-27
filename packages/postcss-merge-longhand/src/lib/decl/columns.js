@@ -283,9 +283,7 @@ function merge(rule) {
 
   cleanup(rule);
 }
-export { explode };
-export { merge };
-export { setsOtherColumnProperty };
+
 export default {
   explode,
   merge,

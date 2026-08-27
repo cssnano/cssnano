@@ -69,10 +69,8 @@ function setsLonghands(name) {
 }
 export const sides = data.sides;
 export const borderComponents = data.borderComponents;
-export const borderProperties = new Set(data.borderProperties);
-export const flowRelativeBorderProperties = new Set(
-  data.flowRelativeBorderProperties
-);
+const borderProperties = new Set(data.borderProperties);
+const flowRelativeBorderProperties = new Set(data.flowRelativeBorderProperties);
 export const cssWideKeywords = new Set(data.cssWideKeywords);
 export const lineStyles = new Set(data.lineStyles);
 export const lineWidthKeywords = new Set(data.lineWidthKeywords);

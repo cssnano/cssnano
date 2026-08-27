@@ -5,8 +5,4 @@
  */
 declare function browserKeeps(prop: string, value: string): boolean;
 export { browserKeeps };
-declare const _default: {
-    browserKeeps: typeof browserKeeps;
-};
-export default _default;
 //# sourceMappingURL=validateBox.d.ts.map
