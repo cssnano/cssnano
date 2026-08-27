@@ -39,21 +39,24 @@ If you don't have npm then [check out this installation tutorial](https://npmjs.
 
 ### Configuration
 
-If you would like to use the default configuration, then you don't need to add anything to a cssnano configuration file.
+If you would like to use the default configuration, then you don't need any additional configuration.
 
 But should you wish to customise this, you can pass an array with the second parameter as the options object to use. For example, to remove all comments:
 
-```js
-// cssnano.config.js
-module.exports = {
-  preset: [
-    'lite',
-    { discardComments: { removeAll: true } },
-  ],
-};
+```diff
+ {
+   "name": "awesome-application",
++  "cssnano": {
++    "preset": [
++      "lite",
++      {"discardComments": {"removeAll": true}}
++    ]
++  }
+ }
 ```
 
-For options with customisable function parameters, use a `cssnano.config.js` at the same location as your `package.json`. You can then load a preset and export it with your custom parameters:
+Depending on your usage, the JSON configuration might not work for you, such as in cases where you would like to use options with customisable function parameters.
+For this use case, create use a `cssnano.config.js`. You can then load a preset and export it with your custom parameters:
 
 ```js
 const defaultPreset = require('cssnano-preset-lite');

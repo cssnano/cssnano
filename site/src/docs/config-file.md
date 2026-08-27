@@ -28,18 +28,12 @@ You can configure cssnano with a dedicated configuration, for example if you can
 
 * a JSON file named `.cssnanorc.json`
 * a JavaScript file named `cssnano.config.js`
-* an ESM file with an `.mjs` extension
-* a TypeScript file with a `.ts` or `.mts` extension
 
 cssnano checks these files in the order listed, in the current working
-directory only. It does not search parent directories, and `.cssnanorc` and the
-`cssnano` field in `package.json` are not supported. Use the `configFile` option
+directory only.  Only `.cssnanorc.json` and `cssnano.config.js` are
+discovered automatically: use the `configFile` option
 to select a configuration file in another directory. The path may be relative
-to the current working directory or absolute, and its filename is unrestricted.
-This means `.cssnanorc.js` is supported when selected explicitly, but is not
-discovered automatically. Only `.cssnanorc.json` and `cssnano.config.js` are
-discovered automatically; the other formats, including `.mjs`, `.ts`, and
-`.mts`, must be selected with `configFile`.
+to the current working directory or absolute, and you may use ESM and TypeScript configuration files.
 
 ESM configuration files and TypeScript files loaded as ESM must use a default
 export. A `.ts` file follows the nearest `package.json` module type. In a
@@ -56,10 +50,7 @@ export default { preset: 'lite' };
 module.exports = { preset: 'lite' };
 ```
 
-TypeScript files are loaded using Node's built-in type stripping. They must use
-syntax that Node can erase natively; enums, decorators, parameter properties,
-path aliases, and transformations that depend on `tsconfig.json` are not
-supported.
+TypeScript files only support the TypeScript language features usable with Node.js built-in type stripping.
 
 
 ## Configuration options
@@ -91,8 +82,7 @@ The strings `default`, `lite`, and `advanced` are shorthand for the built-in
 cssnano({ preset: 'lite' })
 ```
 
-For any other preset, pass its complete resolvable package name. cssnano does
-not add a `cssnano-preset-` prefix to arbitrary strings:
+For any other preset, pass a name that points to a resolvable node module.
 
 ```js
 cssnano({ preset: 'my-custom-preset' })
