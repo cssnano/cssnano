@@ -92,6 +92,24 @@ const pseudoReplacements = new Map([
 ]);
 
 /**
+ * @param {parser.Pseudo} selectorList
+ * @return {void}
+ */
+function dedupeSelectorList(selectorList) {
+  const uniques = new Set();
+  const siblings = selectorList.nodes.slice();
+  for (const sibling of siblings) {
+    const siblingStr = String(sibling);
+
+    if (!uniques.has(siblingStr)) {
+      uniques.add(siblingStr);
+    } else {
+      sibling.remove();
+    }
+  }
+}
+
+/**
  * @param {parser.Pseudo} selector
  * @return {void}
  */
@@ -136,20 +154,7 @@ function pseudo(selector) {
     return;
   }
 
-  selector.walk((child) => {
-    if (child.type === 'selector' && child.parent) {
-      const uniques = new Set();
-      child.parent.each((sibling) => {
-        const siblingStr = String(sibling);
-
-        if (!uniques.has(siblingStr)) {
-          uniques.add(siblingStr);
-        } else {
-          sibling.remove();
-        }
-      });
-    }
-  });
+  dedupeSelectorList(selector);
 
   if (pseudoElements.has(value)) {
     selector.value = selector.value.slice(1);
@@ -198,7 +203,6 @@ const reducers = new Map(
   /** @type {[string, ((selector: parser.Node) => void)][]}*/ ([
     ['attribute', attribute],
     ['combinator', combinator],
-    ['pseudo', pseudo],
     ['tag', tag],
     ['universal', universal],
   ])
@@ -253,19 +257,23 @@ function pluginCreator(opts) {
             selectors.walk((sel) => {
               // Trim whitespace around the value
               sel.spaces.before = sel.spaces.after = '';
+              if (sel.type === 'pseudo') {
+                pseudo(sel);
+                return;
+              }
+
               const reducer = reducers.get(sel.type);
               if (reducer !== undefined) {
                 reducer(sel);
                 return;
               }
 
-              const toString = String(sel);
-
               if (
                 sel.type === 'selector' &&
                 sel.parent &&
                 sel.parent.type !== 'pseudo'
               ) {
+                const toString = String(sel);
                 if (!uniqueSelectors.has(toString)) {
                   uniqueSelectors.add(toString);
                 } else {

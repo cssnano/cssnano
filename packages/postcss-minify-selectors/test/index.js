@@ -155,6 +155,30 @@ suite(':not() pseudo-class', () => {
       'h1:not(h2,h3,h4,h5,h6){color:blue}'
     )
   );
+
+  test('should dedupe large nested :is() and :not() selector lists in first-occurrence order', async () => {
+    const selectors = Array.from(
+      { length: 100 },
+      (_, index) => `.item-${index % 20}`
+    ).join(',');
+    const uniqueSelectors = Array.from(
+      { length: 20 },
+      (_, index) => `.item-${index}`
+    ).join(',');
+    const input = `:is(${selectors},:not(${selectors})){color:blue}`;
+    const output = `:is(${uniqueSelectors},:not(${uniqueSelectors})){color:blue}`;
+
+    await processCSS(input, output, { sort: false })();
+  });
+
+  test(
+    'should dedupe nested :is() and :not() selector lists independently',
+    processCSS(
+      ':is(:not(:is(.first,.second,.first),:is(.first,.second,.first))){color:blue}',
+      ':is(:not(:is(.first,.second))){color:blue}',
+      { sort: false }
+    )
+  );
 });
 
 suite('attribute selector normalization', () => {

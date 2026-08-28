@@ -22,6 +22,20 @@ export const benchmarkCases = {
         `.scope-${index} :is(.item-${index}, .item-${index}):not(.disabled) > .child-${index}{color:red}`
     ).join(''),
   },
+  'nested-selector-deduplication': {
+    plugin: 'postcss-minify-selectors',
+    createProcessor() {
+      return pluginProcessor('postcss-minify-selectors');
+    },
+    css: Array.from({ length: 40 }, (_, index) => {
+      const selectors = Array.from(
+        { length: 200 },
+        (unused, selectorIndex) => `.item-${selectorIndex % 40}`
+      ).join(',');
+
+      return `.scope-${index}:is(:not(${selectors}),:not(${selectors})){color:red}`;
+    }).join(''),
+  },
   'longhand-rule-merging': {
     plugin: 'postcss-merge-longhand',
     createProcessor() {
