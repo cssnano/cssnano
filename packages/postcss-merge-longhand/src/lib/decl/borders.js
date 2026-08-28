@@ -22,12 +22,18 @@ import cssGlobalKeywords from '../cssGlobalKeywords.js';
 import lastOf from '../lastOf.js';
 import spec from '../spec.js';
 import resolveBorderGrid from './borderMatrix.js';
+import {
+  canMergeValues,
+  diffingProps,
+  getDistinctShorthands,
+  isCloseEnough,
+  isCustomProperty,
+} from './borderPredicates.js';
 
 /** @import {Declaration} from 'postcss'; */
 
 const borderSpacing = 'border-spacing';
 const widthStyleColor = spec.borderComponents;
-const customPropRegex = /var\s*\(\s*--/i;
 
 /**
  * @param {...string} parts
@@ -85,10 +91,6 @@ function getLevel(prop) {
   return undefined;
 }
 
-/** @type {(value: string) => boolean} */
-const isCustomProperty = (value) =>
-  value !== undefined && value.search(customPropRegex) !== -1;
-
 /**
  * `insertCloned` records the support a new node inherits, but these
  * merges place their node themselves; a clone postcss makes carries the value
@@ -107,31 +109,6 @@ function cloneWithSupport(source, props) {
 }
 
 /**
- * @param {string[]} values
- * @return {boolean}
- */
-function canMergeValues(values) {
-  return !values.some(isCustomProperty);
-}
-
-/**
- * @param {[string, string, string]} values
- * @param {[string, string, string]} nextValues
- * @return {string[]}
- */
-function diffingProps(values, nextValues) {
-  const diff = [];
-  for (const [i, curr] of widthStyleColor.entries()) {
-    if (values[i] === nextValues[i]) {
-      continue;
-    }
-
-    diff.push(curr);
-  }
-  return diff;
-}
-
-/**
  * @param {{values: [string, string, string], nextValues: [string, string, string], decl: import('postcss').Declaration, nextDecl: import('postcss').Declaration, index: number}} arg
  * @return {void}
  */
@@ -144,7 +121,7 @@ function mergeRedundant({ values, nextValues, decl, nextDecl, index }) {
     return;
   }
 
-  const diff = diffingProps(values, nextValues);
+  const diff = diffingProps(values, nextValues, widthStyleColor);
 
   if (diff.length !== 1) {
     return;
@@ -184,27 +161,6 @@ function mergeRedundant({ values, nextValues, decl, nextDecl, index }) {
     nextDecl.prop = prop2;
     nextDecl.value = propValue2;
   }
-}
-
-/**
- * @param {string | string[]} mapped
- * @return {boolean}
- */
-function isCloseEnough(mapped) {
-  return (
-    (mapped[0] === mapped[1] && mapped[1] === mapped[2]) ||
-    (mapped[1] === mapped[2] && mapped[2] === mapped[3]) ||
-    (mapped[2] === mapped[3] && mapped[3] === mapped[0]) ||
-    (mapped[3] === mapped[0] && mapped[0] === mapped[1])
-  );
-}
-
-/**
- * @param {string[]} mapped
- * @return {string[]}
- */
-function getDistinctShorthands(mapped) {
-  return [...new Set(mapped)];
 }
 
 /**
