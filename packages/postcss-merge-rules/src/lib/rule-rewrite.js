@@ -49,6 +49,7 @@ function ruleLength(...rules) {
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, import('./rule-meta.js').RuleMeta>} ruleMeta
  * @param {(a: Rule, b: Rule, browsers: string[], compatibilityCache: Map<string, boolean>, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, import('./rule-meta.js').RuleMeta>) => boolean} canMerge
+ * @param {(rule: Rule, oldParent: import('postcss').Container, newParent: import('postcss').Container) => void} [onMove]
  * @return {{first: Rule, second: Rule, intersection: Declaration[], moved: boolean}}
  */
 export function mergeWithNextRule(
@@ -59,7 +60,8 @@ export function mergeWithNextRule(
   compatibilityCache,
   ruleCache,
   ruleMeta,
-  canMerge
+  canMerge,
+  onMove
 ) {
   const nextRule = getNextRule(second);
   if (
@@ -82,7 +84,10 @@ export function mergeWithNextRule(
   if (nextIntersection.length <= intersection.length) {
     return { first, second, intersection, moved: false };
   }
+  const oldParent = nextRule.parent;
+  const newParent = second.parent;
   const moved = mergeParents(second, nextRule);
+  if (moved && oldParent && newParent) onMove?.(nextRule, oldParent, newParent);
   return {
     first: second,
     second: nextRule,
