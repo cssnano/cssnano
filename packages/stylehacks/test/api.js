@@ -91,6 +91,18 @@ test('should have a separate detect method (2)', async () => {
   assert.strictEqual(counter, 0);
 });
 
+test('detect finds at-rule hacks', () => {
+  const atRule = postcss.parse('@media \\0screen {}').first;
+
+  assert.equal(stylehacks.detect(atRule), true);
+});
+
+test('detect finds selector hacks', () => {
+  const rule = postcss.parse('* html .example {}').first;
+
+  assert.equal(stylehacks.detect(rule), true);
+});
+
 test('detect reclassifies a declaration after its value changes', () => {
   const decl = postcss.parse('a{margin:1px}').first.first;
 

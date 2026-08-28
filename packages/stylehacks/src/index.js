@@ -1,5 +1,5 @@
 import getBrowsersList from '#getBrowsersList';
-import plugins from './plugins/index.js';
+import plugins, { pluginsByNodeType } from './plugins/index.js';
 
 /** @import {Declaration} from 'postcss'; */
 
@@ -77,7 +77,7 @@ function detect(node) {
       return cached.detected;
     }
 
-    const detected = plugins.some((Plugin) => {
+    const detected = pluginsByNodeType.decl.some((Plugin) => {
       const hack = new Plugin();
 
       return hack.any(node);
@@ -92,7 +92,12 @@ function detect(node) {
     return detected;
   }
 
-  return plugins.some((Plugin) => {
+  const nodePlugins = pluginsByNodeType[node.type];
+  if (!nodePlugins) {
+    return false;
+  }
+
+  return nodePlugins.some((Plugin) => {
     const hack = new Plugin();
 
     return hack.any(node);

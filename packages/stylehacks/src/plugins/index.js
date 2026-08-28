@@ -11,7 +11,7 @@ import slash9 from './slash9.js';
 import starHtml from './starHtml.js';
 import trailingSlashComma from './trailingSlashComma.js';
 
-export default [
+const plugins = [
   bodyEmpty,
   htmlCombinatorCommentBody,
   htmlFirstChild,
@@ -25,3 +25,23 @@ export default [
   starHtml,
   trailingSlashComma,
 ];
+
+/**
+ * Detectors grouped by the PostCSS node types they accept. `detect()` uses
+ * this to avoid constructing detectors that cannot inspect the given node.
+ *
+ * @type {Record<string, (typeof plugins)[number][]>}
+ */
+export const pluginsByNodeType = {
+  atrule: [leadingStar, mediaSlash0, mediaSlash0Slash9, mediaSlash9],
+  decl: [important, leadingStar, leadingUnderscore, slash9],
+  rule: [
+    bodyEmpty,
+    htmlCombinatorCommentBody,
+    htmlFirstChild,
+    starHtml,
+    trailingSlashComma,
+  ],
+};
+
+export default plugins;

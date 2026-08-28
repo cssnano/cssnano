@@ -222,10 +222,26 @@ async function main() {
         }));
   if (!corpus.length) throw new Error('selected corpus contains no CSS files');
 
-  const target = args.case ? benchmarkCases[args.case].plugin : 'cssnano';
-  const processor = args.case
-    ? postcss([require(`../../packages/${target}/src/index.js`)])
-    : cssnano({ preset: args.preset });
+  const benchmarkCase = args.case ? benchmarkCases[args.case] : null;
+  const target = benchmarkCase ? benchmarkCase.plugin : 'cssnano';
+  const detect = benchmarkCase?.detect
+    ? require('../../packages/stylehacks/src/index.js').detect
+    : null;
+  let processor;
+  if (!args.case) {
+    processor = cssnano({ preset: args.preset });
+  } else if (detect) {
+    processor = postcss([
+      {
+        postcssPlugin: 'stylehacks-detect-benchmark',
+        Declaration(declaration) {
+          void detect(declaration);
+        },
+      },
+    ]);
+  } else {
+    processor = postcss([require(`../../packages/${target}/src/index.js`)]);
+  }
 
   console.log(
     `cssnano ${target} benchmark — preset=${args.preset}, node ${process.version}, ` +

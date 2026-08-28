@@ -18,6 +18,15 @@ export const benchmarkCases = {
         `.box-${index}{margin-top:1px;margin-right:2px;margin-bottom:1px;margin-left:2px;padding-top:3px;padding-right:4px;padding-bottom:3px;padding-left:4px}`
     ).join(''),
   },
+  'stylehacks-detect': {
+    plugin: 'stylehacks',
+    detect: true,
+    css: Array.from(
+      { length: 200 },
+      (_, index) =>
+        `.stylehacks-${index} { margin-top: 1px; margin-right: 2px; margin-bottom: 1px; margin-left: 2px; padding-top: 3px; padding-right: 4px; padding-bottom: 3px; padding-left: 4px; }`
+    ).join(''),
+  },
   'ordered-value-normalization': {
     plugin: 'postcss-ordered-values',
     css: Array.from(

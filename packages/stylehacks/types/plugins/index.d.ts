@@ -1,4 +1,4 @@
-declare const _default: ({
+declare const plugins: ({
     new (result?: import('postcss').Result | undefined): {
         detect(decl: import('postcss').Declaration): void;
         nodes: import("../plugin.js").NodeWithInfo[];
@@ -33,5 +33,12 @@ declare const _default: ({
         warn(): void;
     };
 })[];
-export default _default;
+/**
+ * Detectors grouped by the PostCSS node types they accept. `detect()` uses
+ * this to avoid constructing detectors that cannot inspect the given node.
+ *
+ * @type {Record<string, (typeof plugins)[number][]>}
+ */
+export declare const pluginsByNodeType: Record<string, (typeof plugins)[number][]>;
+export default plugins;
 //# sourceMappingURL=index.d.ts.map
