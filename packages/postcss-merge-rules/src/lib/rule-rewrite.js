@@ -49,7 +49,7 @@ function ruleLength(...rules) {
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, import('./rule-meta.js').RuleMeta>} ruleMeta
  * @param {(a: Rule, b: Rule, browsers: string[], compatibilityCache: Map<string, boolean>, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, import('./rule-meta.js').RuleMeta>) => boolean} canMerge
- * @return {{first: Rule, second: Rule, intersection: Declaration[]}}
+ * @return {{first: Rule, second: Rule, intersection: Declaration[], moved: boolean}}
  */
 export function mergeWithNextRule(
   first,
@@ -73,17 +73,22 @@ export function mergeWithNextRule(
       ruleMeta
     )
   ) {
-    return { first, second, intersection };
+    return { first, second, intersection, moved: false };
   }
   const nextIntersection = intersect(
     getMeta(second, ruleMeta).declarations,
     getMeta(nextRule, ruleMeta).declarations
   );
   if (nextIntersection.length <= intersection.length) {
-    return { first, second, intersection };
+    return { first, second, intersection, moved: false };
   }
-  mergeParents(second, nextRule);
-  return { first: second, second: nextRule, intersection: nextIntersection };
+  const moved = mergeParents(second, nextRule);
+  return {
+    first: second,
+    second: nextRule,
+    intersection: nextIntersection,
+    moved,
+  };
 }
 
 /**
@@ -93,7 +98,7 @@ export function mergeWithNextRule(
  * @param {Set<number>} claimedIndices
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, import('./rule-meta.js').RuleMeta>} ruleMeta
- * @return {Rule}
+ * @return {{rule: Rule, replacements: Rule[]}}
  */
 export function buildMergedRule(
   first,
@@ -137,14 +142,24 @@ export function buildMergedRule(
     }
     if (!secondClone.parent) {
       ruleCache?.add(receivingBlock);
-      return receivingBlock;
+      return {
+        rule: receivingBlock,
+        replacements: [firstClone, receivingBlock].filter((rule) =>
+          Boolean(rule.parent)
+        ),
+      };
     }
     ruleCache?.add(receivingBlock);
     ruleCache?.add(secondClone);
     ruleMeta?.delete(first);
     ruleMeta?.delete(second);
-    return secondClone;
+    return {
+      rule: secondClone,
+      replacements: [firstClone, receivingBlock, secondClone].filter((rule) =>
+        Boolean(rule.parent)
+      ),
+    };
   }
   receivingBlock.remove();
-  return second;
+  return { rule: second, replacements: [] };
 }

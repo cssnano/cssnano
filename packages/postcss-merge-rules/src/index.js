@@ -89,6 +89,15 @@ function canMerge(
 function isRuleOrAtRule(node) {
   return node.type === 'rule' || node.type === 'atrule';
 }
+
+/** @param {{benefit: number, position: number, key: string}} a @param {{benefit: number, position: number, key: string}} b */
+function compareCandidates(a, b) {
+  if (a.position !== b.position) return b.position - a.position;
+  if (a.benefit !== b.benefit) return a.benefit - b.benefit;
+  if (a.key < b.key) return 1;
+  if (a.key > b.key) return -1;
+  return 0;
+}
 /**
  * @param {Rule} first
  * @param {Rule} second
@@ -96,7 +105,7 @@ function isRuleOrAtRule(node) {
  * @param {Map<string, boolean>} compatibilityCache
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, RuleMeta>} ruleMeta
- * @return {Rule} mergedRule
+ * @return {{rule: Rule, replacements: Rule[], replaced: Rule[], changed: Rule[], moved: boolean}}
  */
 function partialMerge(
   first,
@@ -113,7 +122,13 @@ function partialMerge(
   const metaSecond = getMeta(second, ruleMeta);
   let intersection = intersect(metaFirst.declarations, metaSecond.declarations);
   if (intersection.length === 0) {
-    return second;
+    return {
+      rule: second,
+      replacements: [],
+      replaced: [],
+      changed: [],
+      moved: false,
+    };
   }
   const mergedNext = mergeWithNextRule(
     first,
@@ -143,10 +158,16 @@ function partialMerge(
 
   if (intersection.length === 0) {
     // Nothing to merge
-    return mergedSecond;
+    return {
+      rule: mergedSecond,
+      replacements: [],
+      replaced: [],
+      changed: mergedNext.moved ? [mergedFirst, mergedSecond] : [],
+      moved: mergedNext.moved,
+    };
   }
 
-  return buildMergedRule(
+  const merged = buildMergedRule(
     mergedFirst,
     mergedSecond,
     intersection,
@@ -154,6 +175,12 @@ function partialMerge(
     ruleCache,
     ruleMeta
   );
+  return {
+    ...merged,
+    replaced: merged.replacements.length ? [mergedFirst, mergedSecond] : [],
+    changed: mergedNext.moved ? [mergedFirst, mergedSecond] : [],
+    moved: mergedNext.moved,
+  };
 }
 
 /**
@@ -161,98 +188,285 @@ function partialMerge(
  * @param {Map<string, boolean>} compatibilityCache
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, RuleMeta>} ruleMeta
- * @return {{ merger: (rule: Rule) => void, clean: () => void }}
+ * @return {{ run: (root: import('postcss').Root) => void }}
  */
 function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
-  /** @type {Rule | null} */
-  let cache = null;
+  const stats = {
+    eligiblePairs: 0,
+    filteredPairs: 0,
+    candidatePops: 0,
+    staleRejections: 0,
+    heapPeak: 0,
+    successfulRewrites: 0,
+    compatibilityChecks: 0,
+    localRepairs: 0,
+  };
+  /** @typedef {RuleMeta & {id: number, selectorKey: string, declarationIds: number[], declarationIdSet: Set<number>, declarationLengths: number[], revision: number, previous: Rule | null, next: Rule | null, active: boolean}} ActiveMeta */
+  /** @type {WeakMap<Rule, ActiveMeta>} */
+  const active = new WeakMap();
+  /** @type {{first: Rule, second: Rule, firstRevision: number, secondRevision: number, benefit: number, position: number, key: string}[]} */
+  const heap = [];
+  /** @type {Map<string, number>} */
+  const declarationIds = new Map();
+  let nextId = 0;
+  let nextDeclarationId = 0;
+
+  /** @param {Declaration} declaration */
+  function getDeclarationId(declaration) {
+    const key = `${declaration.prop}:${declaration.value}:${declaration.important}`;
+    let id = declarationIds.get(key);
+    if (id === undefined) {
+      id = nextDeclarationId++;
+      declarationIds.set(key, id);
+    }
+    return id;
+  }
+
+  function refresh(rule) {
+    const previous = active.get(rule);
+    const base = getMeta(rule, ruleMeta);
+    const ids = base.declarations.map(getDeclarationId);
+    /** @type {ActiveMeta} */
+    const meta = Object.assign(base, {
+      id: previous?.id ?? nextId++,
+      selectorKey: base.selectors.join(','),
+      declarationIds: ids,
+      declarationIdSet: new Set(ids),
+      declarationLengths: base.declarations.map(
+        (declaration) => String(declaration).length
+      ),
+      revision: (previous?.revision ?? 0) + 1,
+      previous: previous?.previous ?? null,
+      next: previous?.next ?? null,
+      active: true,
+    });
+    active.set(rule, meta);
+    return meta;
+  }
+  function push(candidate, key) {
+    heap.push(candidate);
+    candidate.key = key();
+    for (let index = heap.length - 1; index > 0;) {
+      const parent = Math.floor((index - 1) / 2);
+      if (compareCandidates(heap[index], heap[parent]) <= 0) break;
+      [heap[index], heap[parent]] = [heap[parent], heap[index]];
+      index = parent;
+    }
+    stats.heapPeak = Math.max(stats.heapPeak, heap.length);
+  }
+  function pop() {
+    const first = heap[0];
+    const last = heap.pop();
+    if (heap.length && last) {
+      heap[0] = last;
+      for (let index = 0; ;) {
+        const left = index * 2 + 1;
+        const right = left + 1;
+        let largest = index;
+        if (
+          left < heap.length &&
+          compareCandidates(heap[left], heap[largest]) > 0
+        )
+          largest = left;
+        if (
+          right < heap.length &&
+          compareCandidates(heap[right], heap[largest]) > 0
+        )
+          largest = right;
+        if (largest === index) break;
+        [heap[index], heap[largest]] = [heap[largest], heap[index]];
+        index = largest;
+      }
+    }
+    return first;
+  }
+  function enqueue(first, second) {
+    if (!first || !second) return;
+    const a = active.get(first);
+    const b = active.get(second);
+    if (!a?.active || !b?.active || a.next !== second) return;
+    let benefit = 0;
+    for (const [index, id] of a.declarationIds.entries()) {
+      if (b.declarationIdSet.has(id)) benefit += a.declarationLengths[index];
+    }
+    // Empty rules and equivalent at-rule boundaries retain the legacy
+    // structural rewrites even though they cannot share a declaration.
+    const structuralRewrite =
+      (a.declarations.length === 0 && b.declarations.length === 0) ||
+      (first.parent !== second.parent && sameParent(first, second));
+    if (
+      a.selectorKey !== b.selectorKey &&
+      benefit === 0 &&
+      !structuralRewrite
+    ) {
+      stats.filteredPairs++;
+      return;
+    }
+    stats.eligiblePairs++;
+    push(
+      {
+        first,
+        second,
+        firstRevision: a.revision,
+        secondRevision: b.revision,
+        benefit,
+        position: a.id,
+        key: '',
+      },
+      () =>
+        `${a.selectorKey}|${a.declarations.map(String).join(';')}\u0000${b.selectorKey}|${b.declarations.map(String).join(';')}`
+    );
+  }
+  function detach(rule) {
+    const meta = active.get(rule);
+    if (!meta?.active) return;
+    const { previous, next } = meta;
+    if (previous) active.get(previous).next = next;
+    if (next) active.get(next).previous = previous;
+    meta.active = false;
+    meta.revision++;
+  }
+  function seed(root) {
+    /** @type {Rule | null} */ let previous = null;
+    root.walkRules((rule) => {
+      const meta = refresh(rule);
+      meta.previous = previous;
+      meta.next = null;
+      if (previous) {
+        active.get(previous).next = rule;
+        enqueue(previous, rule);
+      }
+      previous = rule;
+    });
+    if (previous) active.get(previous).next = null;
+  }
+  function local(...rules) {
+    stats.localRepairs++;
+    for (const rule of rules) {
+      const meta = active.get(rule);
+      if (meta?.active) {
+        enqueue(meta.previous, rule);
+        enqueue(rule, meta.next);
+      }
+    }
+  }
   return {
-    merger(rule) {
-      // Prime the cache with the first rule, or alternately ensure that it is
-      // safe to merge both declarations before continuing
-      if (
-        !cache ||
-        !canMerge(
-          rule,
-          cache,
+    // The rewrite cases are kept together so the candidate validity check is
+    // immediately adjacent to every AST mutation.
+    // eslint-disable-next-line complexity
+    run(root) {
+      seed(root);
+      const checkedCanMerge = (first, second) => {
+        stats.compatibilityChecks++;
+        return canMerge(
+          first,
+          second,
           browsers,
           compatibilityCache,
           ruleCache,
           ruleMeta
-        )
-      ) {
-        if (cache) {
-          flush(cache, ruleMeta);
+        );
+      };
+      while (heap.length) {
+        const candidate = pop();
+        stats.candidatePops++;
+        const firstMeta = active.get(candidate.first);
+        const secondMeta = active.get(candidate.second);
+        if (
+          !firstMeta?.active ||
+          !secondMeta?.active ||
+          firstMeta.next !== candidate.second ||
+          candidate.firstRevision !== firstMeta.revision ||
+          candidate.secondRevision !== secondMeta.revision
+        ) {
+          stats.staleRejections++;
+          continue;
         }
-        cache = rule;
-        return;
-      }
-      // Ensure that we don't deduplicate the same rule; this is sometimes
-      // caused by a partial merge
-      if (cache === rule) {
-        cache = rule;
-        return;
-      }
-
-      // Parents merge: check if the rules have same parents, but not same parent nodes
-      mergeParents(cache, rule);
-
-      // Merge when declarations are exactly equal
-      // e.g. h1 { color: red } h2 { color: red }
-      if (
-        sameDeclarationsAndOrder(
-          getMeta(rule, ruleMeta).declarations,
-          getMeta(cache, ruleMeta).declarations
-        )
-      ) {
-        const metaRule = getMeta(rule, ruleMeta);
-        const metaCache = getMeta(cache, ruleMeta);
-        metaRule.selectors = [...metaCache.selectors, ...metaRule.selectors];
-        metaRule.dirty = true;
-        cache.remove();
-        ruleMeta?.delete(cache);
-        cache = rule;
-        ruleCache?.add(rule);
-        return;
-      }
-      // Merge when both selectors are exactly equal
-      // e.g. a { color: blue } a { font-weight: bold }
-      if (
-        getMeta(cache, ruleMeta).selectors.join(',') ===
-        getMeta(rule, ruleMeta).selectors.join(',')
-      ) {
-        const cachedDecls = getMeta(cache, ruleMeta).declarations;
-        rule.walk((node) => {
-          if (
-            node.type === 'decl' &&
-            indexOfDeclaration(cachedDecls, node) !== -1
-          ) {
-            node.remove();
-            return;
+        if (!checkedCanMerge(candidate.first, candidate.second)) continue;
+        const first = candidate.first;
+        const second = candidate.second;
+        // Equivalent at-rule moves preserve depth-first leaf-rule order.
+        const moved = mergeParents(first, second);
+        if (
+          sameDeclarationsAndOrder(
+            getMeta(second, ruleMeta).declarations,
+            getMeta(first, ruleMeta).declarations
+          )
+        ) {
+          const metaSecond = getMeta(second, ruleMeta);
+          metaSecond.selectors = [
+            ...getMeta(first, ruleMeta).selectors,
+            ...metaSecond.selectors,
+          ];
+          metaSecond.dirty = true;
+          flush(second, ruleMeta);
+          detach(first);
+          first.remove();
+          ruleMeta?.delete(first);
+          refresh(second);
+          ruleCache?.add(second);
+          local(second, first);
+          stats.successfulRewrites++;
+          continue;
+        }
+        if (
+          getMeta(first, ruleMeta).selectors.join(',') ===
+          getMeta(second, ruleMeta).selectors.join(',')
+        ) {
+          const cachedDecls = getMeta(first, ruleMeta).declarations;
+          second.walk((node) => {
+            if (
+              node.type === 'decl' &&
+              indexOfDeclaration(cachedDecls, node) !== -1
+            )
+              node.remove();
+            else first.append(node);
+          });
+          getMeta(first, ruleMeta).declarations = getDecls(first);
+          detach(second);
+          second.remove();
+          ruleMeta?.delete(second);
+          refresh(first);
+          local(first, second);
+          stats.successfulRewrites++;
+          continue;
+        }
+        const outcome = partialMerge(
+          first,
+          second,
+          browsers,
+          compatibilityCache,
+          ruleCache,
+          ruleMeta
+        );
+        if (outcome.replacements.length) {
+          const previous = active.get(outcome.replaced[0])?.previous ?? null;
+          const next = active.get(outcome.replaced.at(-1))?.next ?? null;
+          for (const rule of outcome.replaced) {
+            detach(rule);
+            ruleMeta?.delete(rule);
           }
-          /** @type {Rule} */ (cache).append(node);
-        });
-        getMeta(cache, ruleMeta).declarations = getDecls(cache);
-        rule.remove();
-        ruleMeta?.delete(rule);
-        return;
+          let prior = previous;
+          for (const replacement of outcome.replacements) {
+            const meta = refresh(replacement);
+            meta.previous = prior;
+            if (prior) active.get(prior).next = replacement;
+            prior = replacement;
+          }
+          if (prior) active.get(prior).next = next;
+          if (next) active.get(next).previous = prior;
+          local(...outcome.replacements, previous, next, first);
+          stats.successfulRewrites++;
+        } else if (moved || outcome.moved) {
+          refresh(first);
+          refresh(second);
+          for (const changed of outcome.changed) refresh(changed);
+          local(first, second, ...outcome.changed);
+        }
       }
-      // Partial merge: check if the rule contains a subset of the last; if
-      // so create a joined selector with the subset, if smaller.
-      cache = partialMerge(
-        cache,
-        rule,
-        browsers,
-        compatibilityCache,
-        ruleCache,
-        ruleMeta
-      );
-    },
-    // Flushes any remaining rule in the cache to avoid memory leaks.
-    clean() {
-      if (cache) {
-        flush(cache, ruleMeta);
-      }
+      root.walkRules((rule) => flush(rule, ruleMeta));
+      if (process.env.CSSNANO_MERGE_RULES_STATS)
+        process.stderr.write(`postcss-merge-rules ${JSON.stringify(stats)}\n`);
     },
   };
 }
@@ -289,14 +503,13 @@ function pluginCreator(opts = {}) {
          * @param {import('postcss').Root} css
          */
         OnceExit(css) {
-          const { merger, clean } = selectorMerger(
+          const merger = selectorMerger(
             browsers,
             compatibilityCache,
             ruleCache,
             ruleMeta
           );
-          css.walkRules(merger);
-          clean();
+          merger.run(css);
         },
       };
     },

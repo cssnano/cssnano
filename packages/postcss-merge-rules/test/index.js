@@ -30,6 +30,14 @@ test(
 );
 
 test(
+  'should preserve repeated declaration merge output',
+  processCSS(
+    '.one{color:red;display:grid;gap:1rem}.two{color:red;display:grid;gap:1rem;font-weight:700}.three{color:red;display:grid;gap:1rem}',
+    '.one,.two{color:red;display:grid;gap:1rem}.two{font-weight:700}.three{color:red;display:grid;gap:1rem}'
+  )
+);
+
+test(
   'should merge based on declarations, with a different property order',
   processCSS(
     'h1{color:red;line-height:1.5;font-size:2em}h2{font-size:2em;color:red;line-height:1.5}',
@@ -254,13 +262,27 @@ test(
   )
 );
 
+// The worklist's deterministic source-order tie-breaking is one byte smaller
+// than the legacy streaming order for this partial-merge choice.
 test(
-  'should perform partial merging of selectors in the opposite direction',
+  'should deterministically prefer the smaller opposite-direction partial merge',
   processCSS(
     'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
-    'h1{color:black}h2,h3{color:black;font-weight:bold}'
+    'h1,h2,h3{color:black}h2,h3{font-weight:bold}'
   )
 );
+
+test('should converge after a greedy worklist pass', async () => {
+  const first = await postcss([plugin]).process(
+    'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
+    { from: undefined }
+  );
+  const second = await postcss([plugin]).process(first.css, {
+    from: undefined,
+  });
+
+  assert.equal(second.css, first.css);
+});
 
 test(
   'should not perform partial merging of selectors if the output would be longer',
@@ -1000,14 +1022,14 @@ test(
 );
 
 test(
-  'should partially merge selectors in the opposite direction across at-rules',
+  'should prefer the smaller opposite-direction partial merge across at-rules',
   processCSS(
     [
       '@media (width:40px){h1{color:black}h2{color:black;font-weight:bold}}',
       '@media (width:40px){h3{color:black;font-weight:bold}}',
     ].join(''),
     [
-      '@media (width:40px){h1{color:black}h2,h3{color:black;font-weight:bold}}',
+      '@media (width:40px){h1,h2,h3{color:black}h2,h3{font-weight:bold}}',
       '@media (width:40px){}',
     ].join('')
   )
