@@ -99,4 +99,19 @@ export const benchmarkCases = {
       (_, index) => `.sparse-${index}{--value:${index}}`
     ).join(''),
   },
+  'merge-rules-dependency-rich': {
+    plugin: 'postcss-merge-rules',
+    createProcessor() {
+      return pluginProcessor('postcss-merge-rules');
+    },
+    css: Array.from({ length: 80 }, (_, index) =>
+      [
+        `.card-${index}{color:red;display:grid;gap:1rem}`,
+        `.card-${index}{color:red;font-weight:${index % 2 ? '700' : '400'}}`,
+        `.feature-${index}{color:red;display:grid;gap:1rem}`,
+        `@media (width >= ${index + 320}px){.card-${index}{display:grid;gap:1rem}}`,
+        `@supports (selector(:has(*))){.card-${index}:has(img){color:red;display:grid}}`,
+      ].join('')
+    ).join(''),
+  },
 };
