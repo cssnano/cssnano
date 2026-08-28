@@ -1,5 +1,13 @@
 # Change Log
 
+## 9.0.1
+
+### Patch Changes
+
+- perf(postcss-minify-selectors): avoid quadratic selector scanning
+
+- pef(stylehacks): avoid rescanning the nodes when checking for compatibility hacks
+
 ## 9.0.0
 
 ### Major Changes

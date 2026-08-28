@@ -52,6 +52,11 @@ cssnano-preset-advanced@9.0.0:
   intents:
     - native-esm-migration
     - true-cycles-beg
+cssnano-preset-advanced@9.0.1:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - light-symbols-hear
+    - whole-spoons-try
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -105,6 +110,11 @@ cssnano-preset-default@9.0.0:
   intents:
     - native-esm-migration
     - true-cycles-beg
+cssnano-preset-default@9.0.1:
+  dir: packages/cssnano-preset-default
+  intents:
+    - light-symbols-hear
+    - whole-spoons-try
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -211,6 +221,11 @@ cssnano@9.0.0:
     - local-cssnano-config
     - native-esm-migration
     - true-cycles-beg
+cssnano@9.0.1:
+  dir: packages/cssnano
+  intents:
+    - light-symbols-hear
+    - whole-spoons-try
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -403,6 +418,10 @@ postcss-merge-longhand@9.0.0:
   dir: packages/postcss-merge-longhand
   intents:
     - native-esm-migration
+postcss-merge-longhand@9.0.1:
+  dir: packages/postcss-merge-longhand
+  intents:
+    - whole-spoons-try
 postcss-merge-rules@8.0.2:
   dir: packages/postcss-merge-rules
   intents:
@@ -431,6 +450,11 @@ postcss-merge-rules@9.0.0:
   dir: packages/postcss-merge-rules
   intents:
     - native-esm-migration
+postcss-merge-rules@9.0.1:
+  dir: packages/postcss-merge-rules
+  intents:
+    - greedy-merge-rules-worklist
+    - whole-spoons-try
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -523,6 +547,10 @@ postcss-minify-selectors@9.0.0:
   dir: packages/postcss-minify-selectors
   intents:
     - native-esm-migration
+postcss-minify-selectors@9.0.1:
+  dir: packages/postcss-minify-selectors
+  intents:
+    - light-symbols-hear
 postcss-normalize-charset@8.0.2:
   dir: packages/postcss-normalize-charset
   intents:
@@ -899,3 +927,7 @@ stylehacks@9.0.0:
   dir: packages/stylehacks
   intents:
     - native-esm-migration
+stylehacks@9.0.1:
+  dir: packages/stylehacks
+  intents:
+    - whole-spoons-try

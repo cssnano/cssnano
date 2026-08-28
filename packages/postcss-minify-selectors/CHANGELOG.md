@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.0.1
+
+### Patch Changes
+
+- perf(postcss-minify-selectors): avoid quadratic selector scanning
+
 ## 9.0.0
 
 ### Major Changes
