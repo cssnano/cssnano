@@ -285,6 +285,14 @@ test('should converge after a greedy worklist pass', async () => {
 });
 
 test(
+  'should prioritize the merge with the greatest shared-declaration benefit',
+  processCSS(
+    '@media x{.a{margin:1px;}}.b{margin:blue;color:1px;}.d{display:1px;margin:1px;}.d{color:1px;color:blue;}.d{color:1px;}',
+    '@media x{.a{margin:1px;}}.b{margin:blue;}.b,.d{color:1px;}.d{display:1px;margin:1px;color:blue;}'
+  )
+);
+
+test(
   'should revisit a predecessor after replacing an adjacent pair',
   processCSS(
     '.a,.b{x:1}.a{color:red}.b{color:red;background:blue}',

@@ -205,12 +205,13 @@ function partialMerge(
  * @return {{ run: (root: import('postcss').Root) => void }}
  */
 function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
-  /** @typedef {RuleMeta & {selectorKey: string, declarationIds: number[], declarationIdSet: Set<number>, previous: Rule | null, next: Rule | null, active: boolean}} ActiveMeta */
+  /** @typedef {RuleMeta & {selectorKey: string, contentKey: string, declarationIds: number[], declarationIdSet: Set<number>, previous: Rule | null, next: Rule | null, active: boolean, version: number, sourceOrder: number}} ActiveMeta */
   /** @type {WeakMap<Rule, ActiveMeta>} */
   const active = new WeakMap();
   /** @type {Map<string, number>} */
   const declarationIds = new Map();
   let nextDeclarationId = 0;
+  let nextSourceOrder = 0;
   /** @typedef {{first: Rule | null, last: Rule | null}} Boundary */
   /** @type {WeakMap<import('postcss').Container, Boundary>} */
   const boundaries = new WeakMap();
@@ -226,19 +227,22 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
     return id;
   }
 
-  /** @param {Rule} rule */
-  function refresh(rule) {
+  /** @param {Rule} rule @param {number} [sourceOrder] */
+  function refresh(rule, sourceOrder) {
     const previous = active.get(rule);
     const base = getMeta(rule, ruleMeta);
     const ids = base.declarations.map(getDeclarationId);
     /** @type {ActiveMeta} */
     const meta = Object.assign(base, {
       selectorKey: base.selectors.join(','),
+      contentKey: `${base.selectors.join(',')}|${ids.join(',')}`,
       declarationIds: ids,
       declarationIdSet: new Set(ids),
       previous: previous?.previous ?? null,
       next: previous?.next ?? null,
       active: true,
+      version: (previous?.version ?? 0) + 1,
+      sourceOrder: sourceOrder ?? previous?.sourceOrder ?? nextSourceOrder++,
     });
     active.set(rule, meta);
     return meta;
@@ -258,6 +262,20 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
       if (b.declarationIdSet.has(id)) return true;
     }
     return false;
+  }
+  /** @param {Rule} first @param {Rule} second */
+  function estimatedBenefit(first, second) {
+    const a = active.get(first);
+    const b = active.get(second);
+    if (!a || !b) return 0;
+    if (a.selectorKey === b.selectorKey) {
+      return a.declarationIds.length + b.declarationIds.length;
+    }
+    let benefit = 0;
+    for (const id of a.declarationIds) {
+      if (b.declarationIdSet.has(id)) benefit++;
+    }
+    return benefit;
   }
   /** @param {Rule} rule */
   function detach(rule) {
@@ -425,10 +443,95 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
     return boundaries.get(root)?.first ?? null;
   }
   return {
-    // Keep each rewrite next to the cursor repair for the AST mutation.
+    // Keep the heap scheduling and rewrite repair together for the AST mutation.
     // eslint-disable-next-line complexity
     run(root) {
-      let cursor = seed(root);
+      /** @typedef {{first: Rule, second: Rule, firstVersion: number, secondVersion: number, benefit: number, firstSourceOrder: number, contentKey: string}} Candidate */
+      /** @type {Candidate[]} */
+      let candidates = [];
+      let needsGlobalReseed = false;
+      /** @param {Candidate} a @param {Candidate} b */
+      // The comparator stays local with the heap's candidate type and ordering contract.
+      // eslint-disable-next-line unicorn/consistent-function-scoping
+      const comesBefore = (a, b) => {
+        if (a.benefit !== b.benefit) return a.benefit > b.benefit;
+        if (a.firstSourceOrder !== b.firstSourceOrder) {
+          return a.firstSourceOrder < b.firstSourceOrder;
+        }
+        return a.contentKey < b.contentKey;
+      };
+      /** @param {Candidate} candidate */
+      const pushCandidate = (candidate) => {
+        let index = candidates.length;
+        candidates.push(candidate);
+        while (index > 0) {
+          const parent = Math.floor((index - 1) / 2);
+          if (comesBefore(candidates[parent], candidate)) break;
+          candidates[index] = candidates[parent];
+          index = parent;
+        }
+        candidates[index] = candidate;
+      };
+      const popCandidate = () => {
+        const candidate = candidates[0];
+        const last = candidates.pop();
+        if (last && candidates.length) {
+          let index = 0;
+          while (true) {
+            const left = index * 2 + 1;
+            if (left >= candidates.length) break;
+            let child = left;
+            const right = left + 1;
+            if (
+              right < candidates.length &&
+              comesBefore(candidates[right], candidates[left])
+            )
+              child = right;
+            if (!comesBefore(candidates[child], last)) break;
+            candidates[index] = candidates[child];
+            index = child;
+          }
+          candidates[index] = last;
+        }
+        return candidate;
+      };
+      /** @param {Rule | null} first @param {Rule | null} second */
+      const enqueue = (first, second) => {
+        if (!first || !second || !hasPossibleSharedDeclaration(first, second)) {
+          return;
+        }
+        const firstMeta = active.get(first);
+        const secondMeta = active.get(second);
+        if (!firstMeta || !secondMeta) return;
+        pushCandidate({
+          first,
+          second,
+          firstVersion: firstMeta.version,
+          secondVersion: secondMeta.version,
+          benefit: estimatedBenefit(first, second),
+          firstSourceOrder: firstMeta.sourceOrder,
+          contentKey: `${firstMeta.contentKey}|${secondMeta.contentKey}`,
+        });
+      };
+      /** @param {Rule} rule */
+      const enqueueNeighbors = (rule) => {
+        const meta = active.get(rule);
+        if (!meta?.active) return;
+        enqueue(meta.previous, rule);
+        enqueue(rule, meta.next);
+      };
+      const reseedCandidates = () => {
+        candidates = [];
+        const initialRule = seed(root);
+        for (
+          let rule = initialRule;
+          rule;
+          rule = active.get(rule)?.next ?? null
+        ) {
+          enqueue(rule, active.get(rule)?.next ?? null);
+        }
+      };
+      reseedCandidates();
       /** @param {Rule} first @param {Rule} second */
       const checkedCanMerge = (first, second) => {
         return canMerge(
@@ -440,12 +543,25 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
           ruleMeta
         );
       };
-      while (cursor) {
-        const first = cursor;
-        const second = active.get(first)?.next ?? null;
-        if (!second) break;
-        cursor = second;
-        if (!hasPossibleSharedDeclaration(first, second)) continue;
+      while (candidates.length || needsGlobalReseed) {
+        if (!candidates.length) {
+          needsGlobalReseed = false;
+          reseedCandidates();
+          if (!candidates.length) break;
+        }
+        const candidate = popCandidate();
+        const first = candidate.first;
+        const second = candidate.second;
+        const firstMeta = active.get(first);
+        const secondMeta = active.get(second);
+        if (
+          !firstMeta?.active ||
+          !secondMeta?.active ||
+          firstMeta.next !== second ||
+          firstMeta.version !== candidate.firstVersion ||
+          secondMeta.version !== candidate.secondVersion
+        )
+          continue;
         if (!checkedCanMerge(first, second)) continue;
         // Equivalent at-rule moves preserve depth-first leaf-rule order.
         const oldParent = second.parent;
@@ -472,7 +588,7 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
           ruleMeta?.delete(first);
           refresh(second);
           ruleCache?.add(second);
-          cursor = active.get(second)?.previous ?? second;
+          enqueueNeighbors(second);
           continue;
         }
         if (
@@ -493,7 +609,7 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
           second.remove();
           ruleMeta?.delete(second);
           refresh(first);
-          cursor = active.get(first)?.previous ?? first;
+          enqueueNeighbors(first);
           continue;
         }
         const replacedRules = [first, second];
@@ -521,13 +637,14 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
           const previous = active.get(outcome.replaced[0])?.previous ?? null;
           const lastReplaced = /** @type {Rule} */ (outcome.replaced.at(-1));
           const next = active.get(lastReplaced)?.next ?? null;
+          const sourceOrder = active.get(outcome.replaced[0])?.sourceOrder;
           for (const rule of outcome.replaced) {
             detach(rule);
             ruleMeta?.delete(rule);
           }
           let prior = previous;
           for (const replacement of outcome.replacements) {
-            const meta = refresh(replacement);
+            const meta = refresh(replacement, sourceOrder);
             meta.previous = prior;
             if (prior) {
               /** @type {ActiveMeta} */ (active.get(prior)).next = replacement;
@@ -563,12 +680,29 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
               if (boundary) boundary.last = lastReplacement;
             }
           }
-          cursor = previous ?? outcome.replacements[0] ?? next;
+          if (outcome.moved) {
+            // repairMove keeps the current queue safe to drain. Rebuild once
+            // afterwards so a cascade of independent moves does not rescan
+            // the complete rule list after every boundary change.
+            needsGlobalReseed = true;
+            for (const replacement of outcome.replacements) {
+              enqueueNeighbors(replacement);
+            }
+            enqueue(previous, outcome.replacements[0] ?? next);
+            enqueue(outcome.replacements.at(-1) ?? previous, next);
+          } else {
+            for (const replacement of outcome.replacements) {
+              enqueueNeighbors(replacement);
+            }
+            enqueue(previous, outcome.replacements[0] ?? next);
+            enqueue(outcome.replacements.at(-1) ?? previous, next);
+          }
         } else if (moved || outcome.moved) {
           for (const changed of [first, second, ...outcome.changed]) {
             refresh(changed);
+            enqueueNeighbors(changed);
           }
-          cursor = active.get(second)?.previous ?? second;
+          needsGlobalReseed = true;
         }
       }
       root.walkRules((rule) => flush(rule, ruleMeta));
