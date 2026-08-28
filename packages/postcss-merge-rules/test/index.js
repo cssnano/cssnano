@@ -285,6 +285,14 @@ test('should converge after a greedy worklist pass', async () => {
 });
 
 test(
+  'should revisit a predecessor after replacing an adjacent pair',
+  processCSS(
+    '.a,.b{x:1}.a{color:red}.b{color:red;background:blue}',
+    '.a,.b{x:1;color:red}.b{background:blue}'
+  )
+);
+
+test(
   'should not perform partial merging of selectors if the output would be longer',
   passthroughCSS(
     '.test0{color:red;border:none;margin:0}.longlonglonglong{color:green;border:none;margin:0}'

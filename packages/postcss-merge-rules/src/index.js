@@ -90,14 +90,25 @@ function isRuleOrAtRule(node) {
   return node.type === 'rule' || node.type === 'atrule';
 }
 
-/** @param {{benefit: number, position: number, key: string}} a @param {{benefit: number, position: number, key: string}} b */
-function compareCandidates(a, b) {
-  if (a.position !== b.position) return b.position - a.position;
-  if (a.benefit !== b.benefit) return a.benefit - b.benefit;
-  if (a.key < b.key) return 1;
-  if (a.key > b.key) return -1;
-  return 0;
+/**
+ * @param {Rule | import('postcss').Container<import('postcss').ChildNode>} node
+ * @return {import('postcss').Container<import('postcss').ChildNode> | undefined}
+ */
+function getParent(node) {
+  return /** @type {import('postcss').Container<import('postcss').ChildNode> | undefined} */ (
+    node.parent
+  );
 }
+
+/** @param {Rule | null} rule @param {import('postcss').Container<import('postcss').ChildNode>} container */
+function isDescendant(rule, container) {
+  let parent = rule ? getParent(rule) : undefined;
+  for (; parent; parent = getParent(parent)) {
+    if (parent === container) return true;
+  }
+  return false;
+}
+
 /**
  * @param {Rule} first
  * @param {Rule} second
@@ -105,6 +116,7 @@ function compareCandidates(a, b) {
  * @param {Map<string, boolean>} compatibilityCache
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, RuleMeta>} ruleMeta
+ * @param {(rule: Rule, oldParent: import('postcss').Container, newParent: import('postcss').Container) => void} [onMove]
  * @return {{rule: Rule, replacements: Rule[], replaced: Rule[], changed: Rule[], moved: boolean}}
  */
 function partialMerge(
@@ -113,7 +125,8 @@ function partialMerge(
   browsers,
   compatibilityCache,
   ruleCache,
-  ruleMeta
+  ruleMeta,
+  onMove
 ) {
   if (ruleMeta) {
     flush(first, ruleMeta);
@@ -138,7 +151,8 @@ function partialMerge(
     compatibilityCache,
     ruleCache,
     ruleMeta,
-    canMerge
+    canMerge,
+    onMove
   );
   const mergedFirst = mergedNext.first;
   const mergedSecond = mergedNext.second;
@@ -191,25 +205,15 @@ function partialMerge(
  * @return {{ run: (root: import('postcss').Root) => void }}
  */
 function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
-  const stats = {
-    eligiblePairs: 0,
-    filteredPairs: 0,
-    candidatePops: 0,
-    staleRejections: 0,
-    heapPeak: 0,
-    successfulRewrites: 0,
-    compatibilityChecks: 0,
-    localRepairs: 0,
-  };
-  /** @typedef {RuleMeta & {id: number, selectorKey: string, declarationIds: number[], declarationIdSet: Set<number>, declarationLengths: number[], revision: number, previous: Rule | null, next: Rule | null, active: boolean}} ActiveMeta */
+  /** @typedef {RuleMeta & {selectorKey: string, declarationIds: number[], declarationIdSet: Set<number>, previous: Rule | null, next: Rule | null, active: boolean}} ActiveMeta */
   /** @type {WeakMap<Rule, ActiveMeta>} */
   const active = new WeakMap();
-  /** @type {{first: Rule, second: Rule, firstRevision: number, secondRevision: number, benefit: number, position: number, key: string}[]} */
-  const heap = [];
   /** @type {Map<string, number>} */
   const declarationIds = new Map();
-  let nextId = 0;
   let nextDeclarationId = 0;
+  /** @typedef {{first: Rule | null, last: Rule | null}} Boundary */
+  /** @type {WeakMap<import('postcss').Container, Boundary>} */
+  const boundaries = new WeakMap();
 
   /** @param {Declaration} declaration */
   function getDeclarationId(declaration) {
@@ -222,20 +226,16 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
     return id;
   }
 
+  /** @param {Rule} rule */
   function refresh(rule) {
     const previous = active.get(rule);
     const base = getMeta(rule, ruleMeta);
     const ids = base.declarations.map(getDeclarationId);
     /** @type {ActiveMeta} */
     const meta = Object.assign(base, {
-      id: previous?.id ?? nextId++,
       selectorKey: base.selectors.join(','),
       declarationIds: ids,
       declarationIdSet: new Set(ids),
-      declarationLengths: base.declarations.map(
-        (declaration) => String(declaration).length
-      ),
-      revision: (previous?.revision ?? 0) + 1,
       previous: previous?.previous ?? null,
       next: previous?.next ?? null,
       active: true,
@@ -243,121 +243,194 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
     active.set(rule, meta);
     return meta;
   }
-  function push(candidate, key) {
-    heap.push(candidate);
-    candidate.key = key();
-    for (let index = heap.length - 1; index > 0;) {
-      const parent = Math.floor((index - 1) / 2);
-      if (compareCandidates(heap[index], heap[parent]) <= 0) break;
-      [heap[index], heap[parent]] = [heap[parent], heap[index]];
-      index = parent;
-    }
-    stats.heapPeak = Math.max(stats.heapPeak, heap.length);
-  }
-  function pop() {
-    const first = heap[0];
-    const last = heap.pop();
-    if (heap.length && last) {
-      heap[0] = last;
-      for (let index = 0; ;) {
-        const left = index * 2 + 1;
-        const right = left + 1;
-        let largest = index;
-        if (
-          left < heap.length &&
-          compareCandidates(heap[left], heap[largest]) > 0
-        )
-          largest = left;
-        if (
-          right < heap.length &&
-          compareCandidates(heap[right], heap[largest]) > 0
-        )
-          largest = right;
-        if (largest === index) break;
-        [heap[index], heap[largest]] = [heap[largest], heap[index]];
-        index = largest;
-      }
-    }
-    return first;
-  }
-  function enqueue(first, second) {
-    if (!first || !second) return;
+  /** @param {Rule} first @param {Rule} second */
+  function hasPossibleSharedDeclaration(first, second) {
     const a = active.get(first);
     const b = active.get(second);
-    if (!a?.active || !b?.active || a.next !== second) return;
-    let benefit = 0;
-    for (const [index, id] of a.declarationIds.entries()) {
-      if (b.declarationIdSet.has(id)) benefit += a.declarationLengths[index];
-    }
+    if (!a?.active || !b?.active) return false;
     // Empty rules and equivalent at-rule boundaries retain the legacy
     // structural rewrites even though they cannot share a declaration.
     const structuralRewrite =
       (a.declarations.length === 0 && b.declarations.length === 0) ||
       (first.parent !== second.parent && sameParent(first, second));
-    if (
-      a.selectorKey !== b.selectorKey &&
-      benefit === 0 &&
-      !structuralRewrite
-    ) {
-      stats.filteredPairs++;
-      return;
+    if (a.selectorKey === b.selectorKey || structuralRewrite) return true;
+    for (const id of a.declarationIds) {
+      if (b.declarationIdSet.has(id)) return true;
     }
-    stats.eligiblePairs++;
-    push(
-      {
-        first,
-        second,
-        firstRevision: a.revision,
-        secondRevision: b.revision,
-        benefit,
-        position: a.id,
-        key: '',
-      },
-      () =>
-        `${a.selectorKey}|${a.declarations.map(String).join(';')}\u0000${b.selectorKey}|${b.declarations.map(String).join(';')}`
-    );
+    return false;
   }
+  /** @param {Rule} rule */
   function detach(rule) {
     const meta = active.get(rule);
     if (!meta?.active) return;
     const { previous, next } = meta;
-    if (previous) active.get(previous).next = next;
-    if (next) active.get(next).previous = previous;
-    meta.active = false;
-    meta.revision++;
-  }
-  function seed(root) {
-    /** @type {Rule | null} */ let previous = null;
-    root.walkRules((rule) => {
-      const meta = refresh(rule);
-      meta.previous = previous;
-      meta.next = null;
-      if (previous) {
-        active.get(previous).next = rule;
-        enqueue(previous, rule);
+    let container = getParent(rule);
+    for (; container; container = getParent(container)) {
+      const boundary = boundaries.get(container);
+      if (!boundary) continue;
+      if (boundary.first === rule) {
+        boundary.first = next && isDescendant(next, container) ? next : null;
       }
-      previous = rule;
-    });
-    if (previous) active.get(previous).next = null;
-  }
-  function local(...rules) {
-    stats.localRepairs++;
-    for (const rule of rules) {
-      const meta = active.get(rule);
-      if (meta?.active) {
-        enqueue(meta.previous, rule);
-        enqueue(rule, meta.next);
+      if (boundary.last === rule) {
+        boundary.last =
+          previous && isDescendant(previous, container) ? previous : null;
       }
     }
+    if (previous) {
+      const previousMeta = active.get(previous);
+      if (previousMeta) previousMeta.next = next;
+    }
+    if (next) {
+      const nextMeta = active.get(next);
+      if (nextMeta) nextMeta.previous = previous;
+    }
+    meta.active = false;
+  }
+  /** @param {Rule[]} rules */
+  function captureBoundaries(rules) {
+    const captured = new Map();
+    for (const rule of rules) {
+      for (
+        let container = getParent(rule);
+        container;
+        container = getParent(container)
+      ) {
+        const boundary = boundaries.get(container);
+        if (boundary && !captured.has(container)) {
+          captured.set(container, {
+            first: boundary.first,
+            last: boundary.last,
+          });
+        }
+      }
+    }
+    return captured;
+  }
+  /**
+   * Repair the active order for a rule moved by mergeParents. The old and new
+   * ancestor paths are the only paths whose first/last descendant can change.
+   * @param {Rule} rule
+   * @param {import('postcss').Container} oldParent
+   * @param {import('postcss').Container} newParent
+   */
+  // eslint-disable-next-line complexity
+  function repairMove(rule, oldParent, newParent) {
+    const oldAncestors = [];
+    /** @type {import('postcss').Container<import('postcss').ChildNode> | undefined} */
+    let container = oldParent;
+    for (; container; container = getParent(container)) {
+      oldAncestors.push(container);
+    }
+    const newAncestors = [];
+    container = newParent;
+    for (; container; container = getParent(container)) {
+      newAncestors.push(container);
+    }
+
+    const meta = active.get(rule);
+    if (!meta?.active) return;
+    const { previous, next } = meta;
+    if (previous) {
+      const previousMeta = active.get(previous);
+      if (previousMeta) previousMeta.next = next;
+    }
+    if (next) {
+      const nextMeta = active.get(next);
+      if (nextMeta) nextMeta.previous = previous;
+    }
+
+    for (const ancestor of oldAncestors) {
+      const boundary = boundaries.get(ancestor);
+      if (!boundary) continue;
+      if (boundary.first === rule) {
+        boundary.first = next && isDescendant(next, ancestor) ? next : null;
+      }
+      if (boundary.last === rule) {
+        boundary.last =
+          previous && isDescendant(previous, ancestor) ? previous : null;
+      }
+    }
+
+    const destinationBoundary = boundaries.get(newParent);
+    const destinationLast = destinationBoundary?.last ?? null;
+    meta.previous = destinationLast;
+    meta.next = destinationLast
+      ? (active.get(destinationLast)?.next ?? null)
+      : null;
+    if (destinationLast) {
+      const destinationMeta = active.get(destinationLast);
+      if (destinationMeta) destinationMeta.next = rule;
+    }
+    if (meta.next) {
+      const nextMeta = active.get(meta.next);
+      if (nextMeta) nextMeta.previous = rule;
+    }
+
+    for (const ancestor of newAncestors) {
+      const boundary = boundaries.get(ancestor);
+      if (!boundary) continue;
+      boundary.first ??= rule;
+      boundary.last = rule;
+    }
+  }
+  /** @param {import('postcss').Container<import('postcss').ChildNode>} container @param {boolean} refreshRules @param {{previous: Rule | null}} state */
+  function indexContainer(container, refreshRules, state) {
+    /** @type {Rule | null} */
+    let first = null;
+    /** @type {Rule | null} */
+    let last = null;
+    for (const node of container.nodes ?? []) {
+      if (node.type === 'rule') {
+        const rule = /** @type {Rule} */ (node);
+        const meta = refreshRules
+          ? refresh(rule)
+          : (active.get(rule) ?? refresh(rule));
+        meta.previous = state.previous;
+        if (state.previous) {
+          /** @type {ActiveMeta} */ (active.get(state.previous)).next = rule;
+        }
+        meta.next = null;
+        first ??= rule;
+        state.previous = rule;
+        last = rule;
+        indexContainer(rule, refreshRules, state);
+        const nested = boundaries.get(rule);
+        if (nested?.last) last = nested.last;
+        state.previous = last;
+        boundaries.set(rule, { first: rule, last });
+        continue;
+      }
+      if ('nodes' in node && node.nodes) {
+        indexContainer(
+          /** @type {import('postcss').Container} */ (node),
+          refreshRules,
+          state
+        );
+        const nested = boundaries.get(
+          /** @type {import('postcss').Container} */ (node)
+        );
+        if (nested?.first) {
+          if (!first) first = nested.first;
+          last = nested.last;
+        }
+      }
+    }
+    boundaries.set(container, { first, last });
+  }
+  /** @param {import('postcss').Root} root */
+  function seed(root) {
+    // indexContainer establishes links as it descends; this pass only gives
+    // the root a stable entry point for the cursor.
+    indexContainer(root, true, { previous: null });
+    return boundaries.get(root)?.first ?? null;
   }
   return {
-    // The rewrite cases are kept together so the candidate validity check is
-    // immediately adjacent to every AST mutation.
+    // Keep each rewrite next to the cursor repair for the AST mutation.
     // eslint-disable-next-line complexity
     run(root) {
-      seed(root);
+      let cursor = seed(root);
+      /** @param {Rule} first @param {Rule} second */
       const checkedCanMerge = (first, second) => {
-        stats.compatibilityChecks++;
         return canMerge(
           first,
           second,
@@ -367,26 +440,20 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
           ruleMeta
         );
       };
-      while (heap.length) {
-        const candidate = pop();
-        stats.candidatePops++;
-        const firstMeta = active.get(candidate.first);
-        const secondMeta = active.get(candidate.second);
-        if (
-          !firstMeta?.active ||
-          !secondMeta?.active ||
-          firstMeta.next !== candidate.second ||
-          candidate.firstRevision !== firstMeta.revision ||
-          candidate.secondRevision !== secondMeta.revision
-        ) {
-          stats.staleRejections++;
-          continue;
-        }
-        if (!checkedCanMerge(candidate.first, candidate.second)) continue;
-        const first = candidate.first;
-        const second = candidate.second;
+      while (cursor) {
+        const first = cursor;
+        const second = active.get(first)?.next ?? null;
+        if (!second) break;
+        cursor = second;
+        if (!hasPossibleSharedDeclaration(first, second)) continue;
+        if (!checkedCanMerge(first, second)) continue;
         // Equivalent at-rule moves preserve depth-first leaf-rule order.
+        const oldParent = second.parent;
+        const newParent = first.parent;
         const moved = mergeParents(first, second);
+        if (moved && oldParent && newParent) {
+          repairMove(second, oldParent, newParent);
+        }
         if (
           sameDeclarationsAndOrder(
             getMeta(second, ruleMeta).declarations,
@@ -405,8 +472,7 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
           ruleMeta?.delete(first);
           refresh(second);
           ruleCache?.add(second);
-          local(second, first);
-          stats.successfulRewrites++;
+          cursor = active.get(second)?.previous ?? second;
           continue;
         }
         if (
@@ -427,21 +493,34 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
           second.remove();
           ruleMeta?.delete(second);
           refresh(first);
-          local(first, second);
-          stats.successfulRewrites++;
+          cursor = active.get(first)?.previous ?? first;
           continue;
         }
+        const replacedRules = [first, second];
+        const capturedBoundaries = captureBoundaries(replacedRules);
         const outcome = partialMerge(
           first,
           second,
           browsers,
           compatibilityCache,
           ruleCache,
-          ruleMeta
+          ruleMeta,
+          (rule, movedFrom, movedTo) => repairMove(rule, movedFrom, movedTo)
         );
         if (outcome.replacements.length) {
+          const firstWasBoundary =
+            !outcome.moved &&
+            outcome.replaced.some((rule) =>
+              [...capturedBoundaries.values()].some((b) => b.first === rule)
+            );
+          const lastWasBoundary =
+            !outcome.moved &&
+            outcome.replaced.some((rule) =>
+              [...capturedBoundaries.values()].some((b) => b.last === rule)
+            );
           const previous = active.get(outcome.replaced[0])?.previous ?? null;
-          const next = active.get(outcome.replaced.at(-1))?.next ?? null;
+          const lastReplaced = /** @type {Rule} */ (outcome.replaced.at(-1));
+          const next = active.get(lastReplaced)?.next ?? null;
           for (const rule of outcome.replaced) {
             detach(rule);
             ruleMeta?.delete(rule);
@@ -450,23 +529,49 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
           for (const replacement of outcome.replacements) {
             const meta = refresh(replacement);
             meta.previous = prior;
-            if (prior) active.get(prior).next = replacement;
+            if (prior) {
+              /** @type {ActiveMeta} */ (active.get(prior)).next = replacement;
+            }
             prior = replacement;
           }
-          if (prior) active.get(prior).next = next;
-          if (next) active.get(next).previous = prior;
-          local(...outcome.replacements, previous, next, first);
-          stats.successfulRewrites++;
+          if (prior) {
+            /** @type {ActiveMeta} */ (active.get(prior)).next = next;
+          }
+          if (next) {
+            /** @type {ActiveMeta} */ (active.get(next)).previous = prior;
+          }
+          if (firstWasBoundary && outcome.replacements[0]?.parent) {
+            for (
+              let container = getParent(outcome.replacements[0]);
+              container;
+              container = getParent(container)
+            ) {
+              const boundary = boundaries.get(container);
+              if (boundary) boundary.first = outcome.replacements[0];
+            }
+          }
+          const lastReplacement = /** @type {Rule} */ (
+            outcome.replacements.at(-1)
+          );
+          if (lastWasBoundary && lastReplacement.parent) {
+            for (
+              let container = getParent(lastReplacement);
+              container;
+              container = getParent(container)
+            ) {
+              const boundary = boundaries.get(container);
+              if (boundary) boundary.last = lastReplacement;
+            }
+          }
+          cursor = previous ?? outcome.replacements[0] ?? next;
         } else if (moved || outcome.moved) {
-          refresh(first);
-          refresh(second);
-          for (const changed of outcome.changed) refresh(changed);
-          local(first, second, ...outcome.changed);
+          for (const changed of [first, second, ...outcome.changed]) {
+            refresh(changed);
+          }
+          cursor = active.get(second)?.previous ?? second;
         }
       }
       root.walkRules((rule) => flush(rule, ruleMeta));
-      if (process.env.CSSNANO_MERGE_RULES_STATS)
-        process.stderr.write(`postcss-merge-rules ${JSON.stringify(stats)}\n`);
     },
   };
 }
