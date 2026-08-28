@@ -91,6 +91,26 @@ test('should have a separate detect method (2)', async () => {
   assert.strictEqual(counter, 0);
 });
 
+test('detect reclassifies a declaration after its value changes', () => {
+  const decl = postcss.parse('a{margin:1px}').first.first;
+
+  assert.equal(stylehacks.detect(decl), false);
+
+  decl.value = '1px\\9';
+
+  assert.equal(stylehacks.detect(decl), true);
+});
+
+test('detect does not share classifications with cloned declarations', () => {
+  const decl = postcss.parse('a{margin:1px}').first.first;
+
+  assert.equal(stylehacks.detect(decl), false);
+
+  const clone = decl.clone({ value: '1px\\9' });
+
+  assert.equal(stylehacks.detect(clone), true);
+});
+
 test(
   'should handle rules with empty selectors',
   processCss('{ _color: red }', '{ }')
