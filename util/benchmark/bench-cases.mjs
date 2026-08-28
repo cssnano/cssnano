@@ -114,4 +114,23 @@ export const benchmarkCases = {
       ].join('')
     ).join(''),
   },
+  'merge-rules-reseed-cascade': {
+    plugin: 'postcss-merge-rules',
+    createProcessor() {
+      return pluginProcessor('postcss-merge-rules');
+    },
+    // Repeated equivalent media blocks reproduce the depth-first adjacency
+    // churn that makes cross-parent mergeParents() moves require reseeding.
+    css: Array.from({ length: 24 }, (_, index) => {
+      const query = index < 12 ? '(max-width: 767px)' : '(min-width: 768px)';
+      const previousBoundary =
+        index === 0 ? '' : `.shared-${index - 1}{color:red;display:block}`;
+      const noise = Array.from(
+        { length: 80 },
+        (unused, noiseIndex) =>
+          `.component-${index}-${noiseIndex}{--value:${index}-${noiseIndex}}`
+      ).join('');
+      return `@media ${query}{${previousBoundary}${noise}.shared-${index}{color:red;display:block}}`;
+    }).join(''),
+  },
 };
