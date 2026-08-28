@@ -391,8 +391,8 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
       boundary.last = rule;
     }
   }
-  /** @param {import('postcss').Container<import('postcss').ChildNode>} container @param {boolean} refreshRules @param {{previous: Rule | null}} state */
-  function indexContainer(container, refreshRules, state) {
+  /** @param {import('postcss').Container<import('postcss').ChildNode>} container @param {{previous: Rule | null}} state */
+  function indexContainer(container, state) {
     /** @type {Rule | null} */
     let first = null;
     /** @type {Rule | null} */
@@ -400,9 +400,7 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
     for (const node of container.nodes ?? []) {
       if (node.type === 'rule') {
         const rule = /** @type {Rule} */ (node);
-        const meta = refreshRules
-          ? refresh(rule)
-          : (active.get(rule) ?? refresh(rule));
+        const meta = refresh(rule);
         meta.previous = state.previous;
         if (state.previous) {
           /** @type {ActiveMeta} */ (active.get(state.previous)).next = rule;
@@ -411,7 +409,7 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
         first ??= rule;
         state.previous = rule;
         last = rule;
-        indexContainer(rule, refreshRules, state);
+        indexContainer(rule, state);
         const nested = boundaries.get(rule);
         if (nested?.last) last = nested.last;
         state.previous = last;
@@ -421,7 +419,6 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
       if ('nodes' in node && node.nodes) {
         indexContainer(
           /** @type {import('postcss').Container} */ (node),
-          refreshRules,
           state
         );
         const nested = boundaries.get(
@@ -437,9 +434,9 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
   }
   /** @param {import('postcss').Root} root */
   function seed(root) {
-    // indexContainer establishes links as it descends; this pass only gives
-    // the root a stable entry point for the cursor.
-    indexContainer(root, true, { previous: null });
+    // indexContainer establishes links as it descends, then exposes the root
+    // entry point used to seed candidates.
+    indexContainer(root, { previous: null });
     return boundaries.get(root)?.first ?? null;
   }
   return {
@@ -685,18 +682,12 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
             // afterwards so a cascade of independent moves does not rescan
             // the complete rule list after every boundary change.
             needsGlobalReseed = true;
-            for (const replacement of outcome.replacements) {
-              enqueueNeighbors(replacement);
-            }
-            enqueue(previous, outcome.replacements[0] ?? next);
-            enqueue(outcome.replacements.at(-1) ?? previous, next);
-          } else {
-            for (const replacement of outcome.replacements) {
-              enqueueNeighbors(replacement);
-            }
-            enqueue(previous, outcome.replacements[0] ?? next);
-            enqueue(outcome.replacements.at(-1) ?? previous, next);
           }
+          for (const replacement of outcome.replacements) {
+            enqueueNeighbors(replacement);
+          }
+          enqueue(previous, outcome.replacements[0] ?? next);
+          enqueue(outcome.replacements.at(-1) ?? previous, next);
         } else if (moved || outcome.moved) {
           for (const changed of [first, second, ...outcome.changed]) {
             refresh(changed);
