@@ -1,5 +1,13 @@
 # Change Log
 
+## 9.0.1
+
+### Patch Changes
+
+- Use deterministic greedy scheduling when considering safe adjacent rule merges. This can produce smaller valid CSS than the previous streaming order.
+
+- pef(stylehacks): avoid rescanning the nodes when checking for compatibility hacks
+
 ## 9.0.0
 
 ### Major Changes
