@@ -15,6 +15,10 @@
 //   node util/benchmark/bench.mjs --iters=30         # measured iterations per file
 //   node util/benchmark/bench.mjs --warmup=5         # warmup iterations per file
 //   node util/benchmark/bench.mjs --only=bootstrap   # substring filter on file name
+//   node util/benchmark/bench.mjs --mode=quick       # warmup=2, iters=5
+//   node util/benchmark/bench.mjs --summary          # concise output
+//   node util/benchmark/bench.mjs --runs=3           # repeat and aggregate medians
+//   node util/benchmark/bench.mjs --compare=before   # compare after writing snapshot
 //   node util/benchmark/bench.mjs --profile --only=bootstrap-v4  # also write a .cpuprofile
 //                                                       # per matched file, covering
 //                                                       # only the measured (not
@@ -38,7 +42,6 @@ import { performance } from 'node:perf_hooks';
 import { createRequire } from 'node:module';
 import { parseArgs } from 'node:util';
 import { Session } from 'node:inspector/promises';
-import postcss from 'postcss';
 import { benchmarkCases } from './bench-cases.mjs';
 
 const require = createRequire(import.meta.url);
@@ -181,93 +184,57 @@ function validateArgs(args) {
   if (args.case && args.dir) {
     throw new Error('--case and --dir cannot be used together');
   }
+  if (args.mode && !['quick', 'stable'].includes(args.mode)) {
+    throw new Error(`unknown mode "${args.mode}"; expected quick or stable`);
+  }
+  if (args.runs < 1) {
+    throw new Error('--runs must be a positive integer');
+  }
 }
 
-async function main() {
-  const { values } = parseArgs({
-    args: process.argv.slice(2).filter((arg) => arg !== '--'),
-    options: {
-      label: { type: 'string', default: 'baseline' },
-      iters: { type: 'string', default: '15' },
-      warmup: { type: 'string', default: '3' },
-      only: { type: 'string' },
-      dir: { type: 'string' },
-      profile: { type: 'boolean', default: false },
-      preset: { type: 'string', default: 'default' },
-      case: { type: 'string' },
-    },
-  });
-  const args = {
-    label: values.label,
-    iters: positiveInteger(values.iters, '--iters'),
-    warmup: positiveInteger(values.warmup, '--warmup', true),
-    only: values.only ?? null,
-    dir: values.dir ?? null,
-    profile: values.profile,
-    preset: values.preset,
-    case: values.case ?? null,
-  };
-  validateArgs(args);
-  const dir = args.dir ? resolve(args.dir) : DEFAULT_DIR;
+function runComparison(label, compare, markdown) {
+  const compareScript = join(import.meta.dirname, 'compare-bench.mjs');
+  const compareArgs = [compareScript, compare, label];
+  if (markdown) compareArgs.push(`--markdown=${markdown}`);
+  execFileSync(process.execPath, compareArgs, { stdio: 'inherit' });
+}
 
-  const corpus = args.case
-    ? [{ name: args.case, source: benchmarkCases[args.case].css }]
-    : readdirSync(dir)
-        .filter((f) => f.endsWith('.css'))
-        .filter((f) => !args.only || f.includes(args.only))
-        .toSorted()
-        .map((file) => ({
-          name: basename(file, '.css'),
-          source: readFileSync(join(dir, file), 'utf8'),
-        }));
-  if (!corpus.length) throw new Error('selected corpus contains no CSS files');
+const MODES = {
+  quick: { warmup: 2, iters: 5 },
+  stable: { warmup: 20, iters: 100 },
+};
 
+function resolvedCount(value, fallback, name, allowZero = false) {
+  return positiveInteger(value ?? String(fallback), name, allowZero);
+}
+
+async function runOnce(args, corpus, processor, snapshotLabel) {
   const benchmarkCase = args.case ? benchmarkCases[args.case] : null;
   const target = benchmarkCase ? benchmarkCase.plugin : 'cssnano';
-  const detect = benchmarkCase?.detect
-    ? require('../../packages/stylehacks/src/index.js').detect
-    : null;
-  let processor;
-  if (!args.case) {
-    processor = cssnano({ preset: args.preset });
-  } else if (detect) {
-    processor = postcss([
-      {
-        postcssPlugin: 'stylehacks-detect-benchmark',
-        Declaration(declaration) {
-          void detect(declaration);
-        },
-      },
-    ]);
-  } else {
-    processor = postcss([require(`../../packages/${target}/src/index.js`)]);
+  if (!args.summary) {
+    console.log(
+      `cssnano ${target} benchmark — preset=${args.preset}, node ${process.version}, ` +
+        `${corpus.length} files, warmup=${args.warmup}, iters=${args.iters}, ` +
+        `finalization=${finalizationMode}`
+    );
+    console.log();
+    console.log(
+      'framework'.padEnd(28) +
+        'size'.padStart(10) +
+        'median'.padStart(12) +
+        'min'.padStart(12) +
+        'p95'.padStart(12) +
+        'kB/s'.padStart(10)
+    );
+    console.log('-'.repeat(84));
   }
 
-  console.log(
-    `cssnano ${target} benchmark — preset=${args.preset}, node ${process.version}, ` +
-      `${corpus.length} files, warmup=${args.warmup}, iters=${args.iters}, ` +
-      `finalization=${finalizationMode}`
-  );
-  console.log();
-  console.log(
-    'framework'.padEnd(28) +
-      'size'.padStart(10) +
-      'median'.padStart(12) +
-      'min'.padStart(12) +
-      'p95'.padStart(12) +
-      'kB/s'.padStart(10)
-  );
-  console.log('-'.repeat(84));
-
-  if (args.profile) {
-    mkdirSync(RESULTS_DIR, { recursive: true });
-  }
-
+  if (args.profile) mkdirSync(RESULTS_DIR, { recursive: true });
   const results = [];
   const totalSamples = Array.from({ length: args.iters });
   for (const { name, source } of corpus) {
     const profilePath = args.profile
-      ? join(RESULTS_DIR, `${args.label}-${name}.cpuprofile`)
+      ? join(RESULTS_DIR, `${snapshotLabel}-${name}.cpuprofile`)
       : null;
     const r = await benchOne(
       name,
@@ -277,41 +244,41 @@ async function main() {
       args.warmup,
       profilePath
     );
-    for (let i = 0; i < args.iters; i++) {
+    for (let i = 0; i < args.iters; i++)
       totalSamples[i] = (totalSamples[i] || 0) + r.samples[i];
-    }
     results.push(r);
-    console.log(
-      r.name.padEnd(28) +
-        (r.bytes / 1024).toFixed(1).padStart(8) +
-        ' k' +
-        fmtMs(r.median).padStart(12) +
-        fmtMs(r.min).padStart(12) +
-        fmtMs(r.p95).padStart(12) +
-        r.kbPerSec.toFixed(0).padStart(10)
-    );
-    if (profilePath) {
-      console.log(`  wrote ${profilePath}`);
+    if (!args.summary) {
+      console.log(
+        r.name.padEnd(28) +
+          (r.bytes / 1024).toFixed(1).padStart(8) +
+          ' k' +
+          fmtMs(r.median).padStart(12) +
+          fmtMs(r.min).padStart(12) +
+          fmtMs(r.p95).padStart(12) +
+          r.kbPerSec.toFixed(0).padStart(10)
+      );
+      if (profilePath) console.log(`  wrote ${profilePath}`);
     }
   }
 
   const totalBytes = results.reduce((a, r) => a + r.bytes, 0);
   const total = stats(totalSamples);
-  console.log('-'.repeat(84));
-  console.log(
-    'TOTAL'.padEnd(28) +
-      (totalBytes / 1024).toFixed(1).padStart(8) +
-      ' k' +
-      fmtMs(total.median).padStart(12) +
-      fmtMs(total.min).padStart(12) +
-      ''.padStart(12) +
-      (totalBytes / 1024 / (total.median / 1000)).toFixed(0).padStart(10)
-  );
+  if (!args.summary) {
+    console.log('-'.repeat(84));
+    console.log(
+      'TOTAL'.padEnd(28) +
+        (totalBytes / 1024).toFixed(1).padStart(8) +
+        ' k' +
+        fmtMs(total.median).padStart(12) +
+        fmtMs(total.min).padStart(12) +
+        ''.padStart(12) +
+        (totalBytes / 1024 / (total.median / 1000)).toFixed(0).padStart(10)
+    );
+  }
 
-  // Persist JSON for later comparison.
   mkdirSync(RESULTS_DIR, { recursive: true });
   const out = {
-    label: args.label,
+    label: snapshotLabel,
     preset: args.preset,
     target,
     corpusManifest: corpusManifest(corpus),
@@ -322,6 +289,7 @@ async function main() {
     arch: process.arch,
     timestamp: new Date().toISOString(),
     arguments: process.argv.slice(2),
+    mode: args.mode ?? null,
     warmup: args.warmup,
     iters: args.iters,
     total: {
@@ -342,9 +310,138 @@ async function main() {
       kbPerSec: r.kbPerSec,
     })),
   };
-  const outPath = join(RESULTS_DIR, `${args.label}.json`);
+  const outPath = join(RESULTS_DIR, `${snapshotLabel}.json`);
   writeFileSync(outPath, JSON.stringify(out, null, 2));
+  if (args.summary) {
+    const largest = [...out.frameworks]
+      .toSorted((a, b) => b.median - a.median)
+      .slice(0, 5);
+    console.log(`total: ${fmtMs(total.median).trim()}`);
+    for (const entry of largest)
+      console.log(`  ${entry.name}: ${fmtMs(entry.median).trim()}`);
+  }
   console.log(`\nwrote ${outPath}`);
+  return out;
+}
+
+function selectCorpus(args, dir) {
+  const corpus = args.case
+    ? [{ name: args.case, source: benchmarkCases[args.case].css }]
+    : readdirSync(dir)
+        .filter((f) => f.endsWith('.css'))
+        .filter((f) => !args.only || f.includes(args.only))
+        .toSorted()
+        .map((file) => ({
+          name: basename(file, '.css'),
+          source: readFileSync(join(dir, file), 'utf8'),
+        }));
+  if (!corpus.length) throw new Error('selected corpus contains no CSS files');
+  return corpus;
+}
+
+function aggregateSnapshots(snapshots, label, runs) {
+  const aggregate = structuredClone(snapshots[0]);
+  aggregate.label = label;
+  aggregate.timestamp = new Date().toISOString();
+  for (const field of ['medianMs', 'minMs', 'kbPerSec']) {
+    aggregate.total[field] = quantile(
+      snapshots.map((s) => s.total[field]).toSorted((a, b) => a - b),
+      0.5
+    );
+  }
+  aggregate.frameworks = aggregate.frameworks.map((entry, index) => {
+    const aggregated = {};
+    for (const field of ['min', 'median', 'mean', 'p95', 'max', 'kbPerSec']) {
+      const values = snapshots
+        .map((s) => s.frameworks[index][field])
+        .toSorted((a, b) => a - b);
+      aggregated[field] = quantile(values, 0.5);
+    }
+    return { ...entry, ...aggregated };
+  });
+  writeFileSync(
+    join(RESULTS_DIR, `${label}.json`),
+    JSON.stringify(aggregate, null, 2)
+  );
+  console.log(
+    `median of ${runs} runs: ${fmtMs(aggregate.total.medianMs).trim()}`
+  );
+}
+
+function parseBenchmarkArgs() {
+  const { values } = parseArgs({
+    args: process.argv.slice(2).filter((arg) => arg !== '--'),
+    options: {
+      label: { type: 'string', default: 'baseline' },
+      iters: { type: 'string' },
+      warmup: { type: 'string' },
+      only: { type: 'string' },
+      dir: { type: 'string' },
+      profile: { type: 'boolean', default: false },
+      preset: { type: 'string', default: 'default' },
+      case: { type: 'string' },
+      mode: { type: 'string' },
+      compare: { type: 'string' },
+      markdown: { type: 'string' },
+      summary: { type: 'boolean', default: false },
+      runs: { type: 'string', default: '1' },
+    },
+  });
+  const args = {
+    label: values.label,
+    iters: values.iters,
+    warmup: values.warmup,
+    only: values.only ?? null,
+    dir: values.dir ?? null,
+    profile: values.profile,
+    preset: values.preset,
+    case: values.case ?? null,
+    mode: values.mode ?? null,
+    compare: values.compare ?? null,
+    markdown: values.markdown ?? null,
+    summary: values.summary,
+    runs: positiveInteger(values.runs, '--runs'),
+  };
+  validateArgs(args);
+  const mode = args.mode ? MODES[args.mode] : null;
+  args.iters = resolvedCount(args.iters, mode?.iters ?? 15, '--iters');
+  args.warmup = resolvedCount(args.warmup, mode?.warmup ?? 3, '--warmup', true);
+  return args;
+}
+
+function createBenchmarkProcessor(args) {
+  const benchmarkCase = args.case ? benchmarkCases[args.case] : null;
+  const processorFactory = benchmarkCase?.createProcessor;
+  return processorFactory
+    ? () => processorFactory()
+    : () => cssnano({ preset: args.preset });
+}
+
+async function main() {
+  const args = parseBenchmarkArgs();
+  const dir = args.dir ? resolve(args.dir) : DEFAULT_DIR;
+
+  const corpus = selectCorpus(args, dir);
+
+  if (args.profile && !args.case && corpus.length !== 1) {
+    throw new Error(
+      '--profile requires exactly one selected fixture (--only or --case)'
+    );
+  }
+  const createProcessor = createBenchmarkProcessor(args);
+  const snapshots = [];
+  for (let run = 1; run <= args.runs; run++) {
+    const snapshotLabel = args.runs === 1 ? args.label : `${args.label}-${run}`;
+    snapshots.push(
+      await runOnce(args, corpus, createProcessor(), snapshotLabel)
+    );
+  }
+
+  const candidateLabel = args.label;
+  if (args.runs > 1) {
+    aggregateSnapshots(snapshots, args.label, args.runs);
+  }
+  if (args.compare) runComparison(candidateLabel, args.compare, args.markdown);
 }
 
 try {

@@ -1,9 +1,21 @@
 // Focused, deterministic inputs for optimization areas where a full framework
 // corpus cannot isolate the cost of one plugin.
 
+import { createRequire } from 'node:module';
+import postcss from 'postcss';
+
+const require = createRequire(import.meta.url);
+
+function pluginProcessor(packageName) {
+  return postcss([require(`../../packages/${packageName}/src/index.js`)]);
+}
+
 export const benchmarkCases = {
   'selector-reduction': {
     plugin: 'postcss-minify-selectors',
+    createProcessor() {
+      return pluginProcessor('postcss-minify-selectors');
+    },
     css: Array.from(
       { length: 200 },
       (_, index) =>
@@ -12,6 +24,9 @@ export const benchmarkCases = {
   },
   'longhand-rule-merging': {
     plugin: 'postcss-merge-longhand',
+    createProcessor() {
+      return pluginProcessor('postcss-merge-longhand');
+    },
     css: Array.from(
       { length: 200 },
       (_, index) =>
@@ -20,7 +35,18 @@ export const benchmarkCases = {
   },
   'stylehacks-detect': {
     plugin: 'stylehacks',
-    detect: true,
+    createProcessor() {
+      const { detect } = require('../../packages/stylehacks/src/index.js');
+
+      return postcss([
+        {
+          postcssPlugin: 'stylehacks-detect-benchmark',
+          Declaration(declaration) {
+            void detect(declaration);
+          },
+        },
+      ]);
+    },
     css: Array.from(
       { length: 200 },
       (_, index) =>
@@ -29,6 +55,9 @@ export const benchmarkCases = {
   },
   'ordered-value-normalization': {
     plugin: 'postcss-ordered-values',
+    createProcessor() {
+      return pluginProcessor('postcss-ordered-values');
+    },
     css: Array.from(
       { length: 200 },
       (_, index) =>
@@ -37,6 +66,9 @@ export const benchmarkCases = {
   },
   'merge-rules-dense': {
     plugin: 'postcss-merge-rules',
+    createProcessor() {
+      return pluginProcessor('postcss-merge-rules');
+    },
     css: Array.from(
       { length: 200 },
       (_, index) =>
@@ -45,6 +77,9 @@ export const benchmarkCases = {
   },
   'merge-rules-sparse': {
     plugin: 'postcss-merge-rules',
+    createProcessor() {
+      return pluginProcessor('postcss-merge-rules');
+    },
     css: Array.from(
       { length: 200 },
       (_, index) => `.sparse-${index}{--value:${index}}`
