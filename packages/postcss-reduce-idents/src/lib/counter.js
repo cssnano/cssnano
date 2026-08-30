@@ -17,10 +17,12 @@ const RESERVED_KEYWORDS = new Set([
 export default (function () {
   /** @type {Map<string, {ident: string, count: number}>} */
   const cache = new Map();
-  /** @type {{value: import('postcss-value-parser').ParsedValue | string}[]} */
+  /** @type {import('postcss').Declaration[]} */
   let declOneCache = [];
   /** @type {import('postcss').Declaration[]} */
   let declTwoCache = [];
+  /** @type {WeakMap<import('postcss').Declaration, import('postcss-value-parser').ParsedValue>} */
+  const parsedValues = new WeakMap();
 
   return {
     /**
@@ -36,35 +38,34 @@ export default (function () {
       const prop = resolveProperty(node.prop);
 
       if (counter.properties.has(prop)) {
-        /** @type {unknown} */ (node.value) = valueParser(node.value).walk(
-          (child) => {
-            if (
-              child.type === 'word' &&
-              !isNum(child) &&
-              !RESERVED_KEYWORDS.has(child.value.toLowerCase())
-            ) {
-              addToCache(child.value, encoder, cache);
+        const parsed = valueParser(node.value);
+        parsed.walk((child) => {
+          if (
+            child.type === 'word' &&
+            !isNum(child) &&
+            !RESERVED_KEYWORDS.has(child.value.toLowerCase())
+          ) {
+            addToCache(child.value, encoder, cache);
 
-              child.value = /** @type {{ident: string, count: number}} */ (
-                cache.get(child.value)
-              ).ident;
-            }
+            child.value = /** @type {{ident: string, count: number}} */ (
+              cache.get(child.value)
+            ).ident;
           }
-        );
+        });
+        parsedValues.set(node, parsed);
 
-        declOneCache.push(
-          /** @type {{value: import('postcss-value-parser').ParsedValue | string}} */ (
-            node
-          )
-        );
+        declOneCache.push(node);
       } else if (counter.functionProperties.has(prop)) {
+        parsedValues.set(node, valueParser(node.value));
         declTwoCache.push(node);
       }
     },
 
     transform() {
       for (const decl of declTwoCache) {
-        decl.value = valueParser(decl.value)
+        const parsed = parsedValues.get(decl);
+        if (!parsed) continue;
+        decl.value = parsed
           .walk((node) => {
             const { type } = node;
 
@@ -75,10 +76,10 @@ export default (function () {
               const args = counter.functions.get(node.value.toLowerCase());
 
               if (args) {
-                const parsed = functionArguments(node);
+                const parsedArgs = functionArguments(node);
 
                 for (const index of args) {
-                  for (const child of parsed[index] ?? []) {
+                  for (const child of parsedArgs[index] ?? []) {
                     const cached =
                       child.type === 'word' && cache.get(child.value);
                     if (cached) {
@@ -101,9 +102,9 @@ export default (function () {
       }
 
       for (const decl of declOneCache) {
-        decl.value = /** @type {import('postcss-value-parser').ParsedValue} */ (
-          decl.value
-        )
+        const parsed = parsedValues.get(decl);
+        if (!parsed) continue;
+        decl.value = parsed
           .walk((node) => {
             if (node.type === 'word' && !isNum(node)) {
               for (const [key, cached] of cache) {

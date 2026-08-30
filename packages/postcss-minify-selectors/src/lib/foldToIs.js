@@ -1,3 +1,4 @@
+import parser from 'postcss-selector-parser';
 import {
   tokenize,
   hasPseudoElementOrNesting,
@@ -54,7 +55,33 @@ function tryFold(root) {
     return null;
   }
 
+  const foldedSelector = parser.selector({ value: '' });
+  for (const token of firstTokens.slice(0, prefix)) {
+    appendClones(foldedSelector, token.nodes);
+  }
+  const is = parser.pseudo({ value: ':is' });
+  for (const middleStr of middleStrs) {
+    const middle = middles.find(
+      (candidate) => joinTokens(candidate) === middleStr
+    );
+    if (!middle) continue;
+    const child = parser.selector({ value: '' });
+    for (const token of middle) appendClones(child, token.nodes);
+    /** @type {any} */ (is).append(child);
+  }
+  foldedSelector.append(is);
+  for (const token of firstTokens.slice(firstTokens.length - suffix)) {
+    appendClones(foldedSelector, token.nodes);
+  }
+  root.removeAll();
+  root.append(foldedSelector);
   return folded;
+}
+
+/** @param {import('postcss-selector-parser').Selector} target @param {import('postcss-selector-parser').Node[] | undefined} nodes */
+function appendClones(target, nodes) {
+  for (const node of nodes ?? [])
+    /** @type {any} */ (target).append(node.clone());
 }
 
 /**
