@@ -286,9 +286,7 @@ function pluginCreator(opts) {
             }
             if (isFoldEnabled) {
               const folded = foldToIs(selectors);
-              if (folded !== null) {
-                selectors.nodes = parser().astSync(folded).nodes;
-              }
+              void folded;
             }
           });
 
