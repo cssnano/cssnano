@@ -72,24 +72,24 @@ Note that you may wish to publish your own preset to npm for reusability, should
 
 ## Plugins
 
-### [`cssnano-utils`](https://github.com/cssnano/cssnano/tree/master/packages/cssnano-utils)
+### [`cssnano-utils`](https://github.com/cssnano/cssnano/tree/main/packages/cssnano-utils)
 
 > Utility methods used by cssnano
 
 
-### [`postcss-discard-comments`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-discard-comments)
+### [`postcss-discard-comments`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-discard-comments)
 
 > Discard comments in your CSS files with PostCSS.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-discard-empty`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-discard-empty)
+### [`postcss-discard-empty`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-discard-empty)
 
 > Discard empty rules and values with PostCSS.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-normalize-whitespace`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-normalize-whitespace)
+### [`postcss-normalize-whitespace`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-normalize-whitespace)
 
 > Trim whitespace inside and around CSS rules & declarations.
 
@@ -98,4 +98,4 @@ This plugin is loaded with its default configuration.
 
 ## Contributors
 
-See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md).
+See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/main/CONTRIBUTORS.md).
