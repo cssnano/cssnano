@@ -2,7 +2,6 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "tags": ["-lintignore"],
   "ignore": ["**/types/**", "example-cli-usage/**"],
-  "ignoreBinaries": ["stage"],
   "workspaces": {
     ".": {}
   }
