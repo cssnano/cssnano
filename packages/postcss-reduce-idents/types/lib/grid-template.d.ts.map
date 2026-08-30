@@ -1,1 +1,1 @@
-{"version":3,"file":"grid-template.d.ts","sourceRoot":"","sources":["../../src/lib/grid-template.js"],"names":[],"mappings":";;IAyCI;;;OAGG;IACH,OAAO,OAHI,OAAO,SAAS,EAAE,OAAO,WACzB,CAAC,KAAK,EAAE,MAAM,EAAE,KAAK,EAAE,MAAM,KAAK,MAAM;IAmDnD,SAAS"}
+{"version":3,"file":"grid-template.d.ts","sourceRoot":"","sources":["../../src/lib/grid-template.js"],"names":[],"mappings":";;IA6CI;;;OAGG;IACH,OAAO,OAHI,OAAO,SAAS,EAAE,OAAO,WACzB,CAAC,KAAK,EAAE,MAAM,EAAE,KAAK,EAAE,MAAM,KAAK,MAAM;IAwDnD,SAAS"}
