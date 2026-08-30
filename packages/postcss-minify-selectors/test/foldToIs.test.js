@@ -461,10 +461,10 @@ test('maxChildSpecificity: empty pseudo returns (0,0,0)', () => {
 });
 
 test('fold: shared prefix with multiple selectors', () => {
-  assert.equal(
-    tryFold(parseRoot('.x .a,.x .b,.x .c,.x .d')),
-    '.x :is(.a,.b,.c,.d)'
-  );
+  const root = parseRoot('.x .a,.x .b,.x .c,.x .d');
+
+  assert.equal(tryFold(root), '.x :is(.a,.b,.c,.d)');
+  assert.equal(root.nodes[0].parent, root);
 });
 
 test('fold: shared suffix with multiple selectors', () => {

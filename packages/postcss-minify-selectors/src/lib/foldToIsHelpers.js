@@ -45,7 +45,7 @@ function tokenize(selector) {
   for (const node of selector.nodes) {
     if (node.type === 'combinator') {
       flush();
-      tokens.push({ kind: 'combinator', str: String(node) });
+      tokens.push({ kind: 'combinator', str: String(node), nodes: [node] });
     } else {
       bucket.push(node);
     }

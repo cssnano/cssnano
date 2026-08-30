@@ -37,6 +37,10 @@ export default (function () {
   const cache = new Map();
   /** @type {import('postcss').Declaration[]} */
   let declCache = [];
+  /** @type {WeakMap<import('postcss').Declaration, import('postcss-value-parser').ParsedValue>} */
+  const parsedValues = new WeakMap();
+  /** @type {WeakSet<import('postcss').Declaration>} */
+  const normalizedValues = new WeakSet();
 
   return {
     /**
@@ -49,12 +53,14 @@ export default (function () {
       }
 
       if (gridTemplateProperties.has(resolveProperty(node.prop))) {
-        valueParser(node.value).walk((child) => {
+        const parsed = valueParser(node.value);
+        parsed.walk((child) => {
           if (child.type === 'string') {
             for (const word of child.value.split(whitespaceRegex)) {
               if (multipleDotsRegex.test(word)) {
                 // reduce empty zones to a single `.`
-                node.value = node.value.replace(word, '.');
+                child.value = child.value.replace(word, '.');
+                normalizedValues.add(node);
               } else if (word && !RESERVED_KEYWORDS.has(word.toLowerCase())) {
                 addToCache(word, encoder, cache);
               }
@@ -75,10 +81,12 @@ export default (function () {
             }
           }
         });
+        parsedValues.set(node, parsed);
 
         declCache.push(node);
       } else if (gridChildProperties.has(resolveProperty(node.prop))) {
-        valueParser(node.value).walk((child) => {
+        const parsed = valueParser(node.value);
+        parsed.walk((child) => {
           if (
             child.type === 'word' &&
             !isNum(child) &&
@@ -87,6 +95,7 @@ export default (function () {
             addToCache(child.value, encoder, cache);
           }
         });
+        parsedValues.set(node, parsed);
 
         declCache.push(node);
       }
@@ -101,7 +110,9 @@ export default (function () {
           continue;
         }
 
-        declaration.value = valueParser(declaration.value)
+        const parsed = parsedValues.get(declaration);
+        if (!parsed) continue;
+        declaration.value = parsed
           .walk((node) => {
             if (isNum(node)) {
               return false;
@@ -128,8 +139,10 @@ export default (function () {
           continue;
         }
 
+        const parsed = parsedValues.get(declaration);
+        if (!parsed) continue;
         let isUsed = false;
-        valueParser(declaration.value).walk((node) => {
+        parsed.walk((node) => {
           // `repeat()` and `minmax()` hold gridline names of their own, so
           // walk into them; their own name is not one.
           if (node.type === 'function') {
@@ -145,11 +158,11 @@ export default (function () {
           return false;
         });
 
-        if (!isUsed) {
+        if (!isUsed && !normalizedValues.has(declaration)) {
           continue;
         }
 
-        declaration.value = valueParser(declaration.value)
+        declaration.value = parsed
           .walk((node) => {
             if (node.type === 'function') {
               return;

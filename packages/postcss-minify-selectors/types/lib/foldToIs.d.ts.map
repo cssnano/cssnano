@@ -1,1 +1,1 @@
-{"version":3,"file":"foldToIs.d.ts","sourceRoot":"","sources":["../../src/lib/foldToIs.js"],"names":[],"mappings":"AAUA;;;GAGG;AACH,iBAAS,OAAO,CAAC,IAAI,EAHV,OAAO,yBAAyB,EAAE,IAGxB,GAFT,MAAM,GAAG,IAAI,CA6CxB;eAsLc,OAAO"}
+{"version":3,"file":"foldToIs.d.ts","sourceRoot":"","sources":["../../src/lib/foldToIs.js"],"names":[],"mappings":"AAWA;;;GAGG;AACH,iBAAS,OAAO,CAAC,IAAI,EAHV,OAAO,yBAAyB,EAAE,IAGxB,GAFT,MAAM,GAAG,IAAI,CAiExB;eA4Lc,OAAO"}

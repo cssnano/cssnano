@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import { colorFunctions } from './spec.js';
 import {
   substitutionFunctions,
@@ -57,17 +57,17 @@ function supportDependenciesIn(value) {
   /** @type {Set<string>} */
   const names = new Set();
 
-  valueParser(value).walk((node) => {
-    if (node.type !== 'function') {
-      return;
+  for (const token of tokenize({ css: value })) {
+    if (token[0] !== TokenType.Function) {
+      continue;
     }
 
-    const name = node.value.toLowerCase();
+    const name = /** @type {{value: string}} */ (token[4]).value.toLowerCase();
 
     if (supportDependentFunctions.has(name)) {
       names.add(name);
     }
-  });
+  }
 
   return names;
 }
@@ -81,16 +81,35 @@ function supportDependenciesIn(value) {
 const inheritedSupport = new WeakMap();
 
 /**
+ * @type {WeakMap<import('postcss').Declaration, {
+ *   value: string, inherited: Set<string> | undefined, support: Set<string>
+ * }>}
+ */
+const supportCache = new WeakMap();
+
+/**
  * @param {import('postcss').Declaration} declaration
  * @return {Set<string>} every function a browser had to support for the
  * declaration to apply: the ones its value calls, and the ones the declaration
  * it was cloned from needed
  */
 function requiredSupport(declaration) {
-  const own = supportDependenciesIn(declaration.value);
   const inherited = inheritedSupport.get(declaration);
+  const cached = supportCache.get(declaration);
 
-  return inherited === undefined ? own : own.union(inherited);
+  if (cached?.value === declaration.value && cached.inherited === inherited) {
+    return cached.support;
+  }
+
+  const own = supportDependenciesIn(declaration.value);
+  const support = inherited === undefined ? own : own.union(inherited);
+
+  supportCache.set(declaration, {
+    value: declaration.value,
+    inherited,
+    support,
+  });
+  return support;
 }
 
 /**

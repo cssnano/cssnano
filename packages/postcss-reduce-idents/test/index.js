@@ -82,6 +82,14 @@ describe('Support', () => {
 
 describe('Touch', () => {
   test(
+    'should normalize empty grid-template areas without area references',
+    processCSS(
+      'a{grid-template-areas:"... ..."}',
+      'a{grid-template-areas:". ."}'
+    )
+  );
+
+  test(
     'should not touch animation names that are not defined in the file',
     passthroughCSS('.one{animation-name:fadeInUp}')
   );
