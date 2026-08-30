@@ -93,7 +93,7 @@ Note that you may wish to publish your own preset to npm for reusability, should
 
 ## Plugins
 
-### [`cssnano-utils`](https://github.com/cssnano/cssnano/tree/master/packages/cssnano-utils)
+### [`cssnano-utils`](https://github.com/cssnano/cssnano/tree/main/packages/cssnano-utils)
 
 > Utility methods used by cssnano
 
@@ -103,13 +103,13 @@ Note that you may wish to publish your own preset to npm for reusability, should
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-colormin`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-colormin)
+### [`postcss-colormin`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-colormin)
 
 > Minify colors in your CSS files with PostCSS.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-convert-values`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-convert-values)
+### [`postcss-convert-values`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-convert-values)
 
 > Convert values with PostCSS (e.g. ms -> s)
 
@@ -121,67 +121,67 @@ This plugin is loaded with the following configuration:
 }
 ```
 
-### [`postcss-discard-comments`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-discard-comments)
+### [`postcss-discard-comments`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-discard-comments)
 
 > Discard comments in your CSS files with PostCSS.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-discard-duplicates`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-discard-duplicates)
+### [`postcss-discard-duplicates`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-discard-duplicates)
 
 > Discard duplicate rules in your CSS files with PostCSS.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-discard-empty`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-discard-empty)
+### [`postcss-discard-empty`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-discard-empty)
 
 > Discard empty rules and values with PostCSS.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-discard-overridden`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-discard-overridden)
+### [`postcss-discard-overridden`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-discard-overridden)
 
 > PostCSS plugin to discard overridden @keyframes or @counter-style.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-merge-longhand`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-merge-longhand)
+### [`postcss-merge-longhand`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-merge-longhand)
 
 > Merge longhand properties into shorthand with PostCSS.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-merge-rules`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-merge-rules)
+### [`postcss-merge-rules`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-merge-rules)
 
 > Merge CSS rules with PostCSS.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-minify-font-values`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-minify-font-values)
+### [`postcss-minify-font-values`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-minify-font-values)
 
 > Minify font declarations with PostCSS
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-minify-gradients`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-minify-gradients)
+### [`postcss-minify-gradients`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-minify-gradients)
 
 > Minify gradient parameters with PostCSS.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-minify-params`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-minify-params)
+### [`postcss-minify-params`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-minify-params)
 
 > Minify at-rule params with PostCSS
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-minify-selectors`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-minify-selectors)
+### [`postcss-minify-selectors`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-minify-selectors)
 
 > Minify selectors with PostCSS.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-normalize-charset`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-normalize-charset)
+### [`postcss-normalize-charset`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-normalize-charset)
 
 > Add necessary or remove extra charset with PostCSS
 
@@ -193,73 +193,73 @@ This plugin is loaded with the following configuration:
 }
 ```
 
-### [`postcss-normalize-display-values`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-normalize-display-values)
+### [`postcss-normalize-display-values`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-normalize-display-values)
 
 > Normalize multiple value display syntaxes into single values.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-normalize-positions`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-normalize-positions)
+### [`postcss-normalize-positions`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-normalize-positions)
 
 > Normalize keyword values for position into length values.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-normalize-repeat-style`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-normalize-repeat-style)
+### [`postcss-normalize-repeat-style`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-normalize-repeat-style)
 
 > Convert two value syntax for repeat-style into one value.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-normalize-string`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-normalize-string)
+### [`postcss-normalize-string`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-normalize-string)
 
 > Normalize wrapping quotes for CSS string literals.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-normalize-timing-functions`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-normalize-timing-functions)
+### [`postcss-normalize-timing-functions`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-normalize-timing-functions)
 
 > Normalize CSS animation/transition timing functions.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-normalize-unicode`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-normalize-unicode)
+### [`postcss-normalize-unicode`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-normalize-unicode)
 
 > Normalize unicode-range descriptors, and can convert to wildcard ranges.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-normalize-url`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-normalize-url)
+### [`postcss-normalize-url`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-normalize-url)
 
 > Normalize URLs with PostCSS
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-normalize-whitespace`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-normalize-whitespace)
+### [`postcss-normalize-whitespace`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-normalize-whitespace)
 
 > Trim whitespace inside and around CSS rules & declarations.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-ordered-values`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-ordered-values)
+### [`postcss-ordered-values`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-ordered-values)
 
 > Ensure values are ordered consistently in your CSS.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-reduce-initial`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-reduce-initial)
+### [`postcss-reduce-initial`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-reduce-initial)
 
 > Reduce initial definitions to the actual initial value, where possible.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-reduce-transforms`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-reduce-transforms)
+### [`postcss-reduce-transforms`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-reduce-transforms)
 
 > Reduce transform functions with PostCSS.
 
 This plugin is loaded with its default configuration.
 
-### [`postcss-svgo`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-svgo)
+### [`postcss-svgo`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-svgo)
 
 > Optimise inline SVG with PostCSS.
 
@@ -280,7 +280,7 @@ This plugin is loaded with the following configuration:
 }
 ```
 
-### [`postcss-unique-selectors`](https://github.com/cssnano/cssnano/tree/master/packages/postcss-unique-selectors)
+### [`postcss-unique-selectors`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-unique-selectors)
 
 > Ensure CSS selectors are unique.
 
@@ -288,7 +288,7 @@ This plugin is loaded with its default configuration.
 
 ## Contributors
 
-See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md).
+See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/main/CONTRIBUTORS.md).
 
 ## License
 
