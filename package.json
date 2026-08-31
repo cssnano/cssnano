@@ -30,6 +30,7 @@
     "oxfmt": "^0.65.0",
     "oxlint": "^1.80.0",
     "postcss": "catalog:",
+    "resolve": "^1.22.12",
     "typescript": "~7.0.2"
   },
   "browserslist": {
