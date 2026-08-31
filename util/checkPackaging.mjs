@@ -1,80 +1,49 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 /**
- * Nothing in the workspace resolves a package through its manifest — tests
- * import the source by relative path — so a manifest can point nowhere and
- * every test still passes. That is how 8.0.3 shipped without `main`.
+ * Checks that every package can still be resolved by tools that predate
+ * `exports`, which read `main` and `types` instead.
  *
- * `exports` is read by Node and by modern bundlers. `main` and `types` are
- * read by resolvers that predate it, such as eslint-plugin-import and
- * TypeScript's classic `moduleResolution: node`. Both have to be present, and
- * every path they name has to exist and be published.
+ * Nothing else here covers that. The test suite imports the source by
+ * relative path, and Node resolves the workspace through `exports`, so a
+ * package can become unresolvable for those tools while everything passes.
+ * That is how 8.0.3 shipped without `main`.
+ *
+ * The resolving is done by `resolve`, the same package eslint-plugin-import
+ * uses, rather than by a copy of its algorithm kept here.
  */
 
-/**
- * Every string in a manifest value, however deeply nested.
- * @param {unknown} value
- * @param {string[]} found
- * @return {string[]}
- */
-function targets(value, found = []) {
-  if (typeof value === 'string') {
-    found.push(value);
-  } else if (value !== null && typeof value === 'object') {
-    for (const nested of Object.values(value)) {
-      targets(nested, found);
-    }
-  }
+const require = createRequire(import.meta.url);
+const resolve = require('resolve');
 
-  return found;
-}
-
-const packagesDir = new URL('../packages/', import.meta.url);
+const root = fileURLToPath(new URL('..', import.meta.url));
+const packagesDir = path.join(root, 'packages');
 const names = readdirSync(packagesDir).toSorted();
 let failed = 0;
 
 for (const name of names) {
-  const dir = fileURLToPath(new URL(name, packagesDir));
+  const dir = path.join(packagesDir, name);
   const manifest = JSON.parse(
     readFileSync(path.join(dir, 'package.json'), 'utf8')
   );
-  const files = manifest.files ?? [];
   /** @type {string[]} */
   const problems = [];
 
-  if (!manifest.exports?.['.']) {
-    problems.push('"exports" has no "." entry');
+  try {
+    resolve.sync(`./packages/${name}`, { basedir: root });
+  } catch {
+    problems.push('does not resolve without `exports` support, add `main`');
+  }
+
+  if (!manifest.types || !existsSync(path.join(dir, manifest.types))) {
+    problems.push('has no `types` file, TypeScript on `node` finds no types');
   }
 
   if (!manifest.exports?.['./package.json']) {
-    problems.push('"exports" does not expose "./package.json"');
-  }
-
-  if (!manifest.main) {
-    problems.push('no "main", so resolvers predating "exports" cannot find it');
-  }
-
-  if (!manifest.types) {
-    problems.push('no "types", so "moduleResolution": "node" finds no types');
-  }
-
-  for (const target of targets([
-    manifest.exports,
-    manifest.main,
-    manifest.types,
-  ])) {
-    const relative = target.replace(/^\.\//, '');
-
-    if (!existsSync(path.resolve(dir, relative))) {
-      problems.push(`${target} does not exist`);
-    } else if (
-      relative !== 'package.json' &&
-      !files.some((entry) => relative.startsWith(entry))
-    ) {
-      problems.push(`${target} is not in "files", so it is not published`);
-    }
+    problems.push('does not export `./package.json`');
   }
 
   if (problems.length) {
@@ -87,8 +56,8 @@ for (const name of names) {
 }
 
 if (failed) {
-  console.error(`\n${failed} of ${names.length} manifests are broken.`);
+  console.error(`\n${failed} of ${names.length} packages have problems.`);
   process.exitCode = 1;
 } else {
-  console.log(`Checked ${names.length} package manifests.`);
+  console.log(`Resolved ${names.length} packages.`);
 }
