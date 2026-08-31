@@ -14,6 +14,7 @@
     "test:unit": "pnpm --recursive --workspace-concurrency=1 exec node --test --test-reporter=dot --test-skip-pattern=\"framework tests\"",
     "test:site": "node --test site/test/*.js",
     "test:integration": "node --test packages/cssnano-preset-default/test/integrations.js packages/cssnano-preset-advanced/test/integrations.js packages/cssnano-preset-lite/test/integrations.js",
+    "test:packaging": "node util/checkPackaging.mjs",
     "test:watch": "node --test --watch",
     "test:failed": "node --test --test-rerun-failures=.test-failures.json",
     "test:mutation": "node util/mutation-testing/mutation-runner.mjs --catalog packages/postcss-discard-empty/mutation-catalog.mjs --catalog packages/postcss-discard-comments/mutation-catalog.mjs --catalog packages/postcss-normalize-whitespace/mutation-catalog.mjs",

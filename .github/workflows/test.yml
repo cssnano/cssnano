@@ -53,6 +53,9 @@ jobs:
       - name: Check committed types are up to date
         run: git diff --exit-code -- '**/types/*.d.ts'
 
+      - name: Check package manifests resolve for consumers
+        run: pnpm test:packaging
+
   test:
     name: Test
     needs: [matrix, lint]
