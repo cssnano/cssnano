@@ -28,6 +28,9 @@ jobs:
       - name: Run lint
         run: pnpm lint
 
+      - name: Check package manifests resolve for consumers
+        run: pnpm test:packaging
+
   test:
     name: Test
     needs: lint
