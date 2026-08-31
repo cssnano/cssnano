@@ -6,8 +6,11 @@
     ".": {
       "types": "./types/index.d.ts",
       "default": "./src/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
+  "main": "./src/index.js",
+  "types": "./types/index.d.ts",
   "files": [
     "src",
     "LICENSE-MIT",
