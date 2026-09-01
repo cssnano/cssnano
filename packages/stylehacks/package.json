@@ -44,7 +44,7 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "browserslist": "^4.28.8",
+    "browserslist": "catalog:",
     "postcss-selector-parser": "^7.1.5"
   },
   "bugs": {
