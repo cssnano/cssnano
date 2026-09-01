@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@colordx/core": "^5.6.0",
-    "browserslist": "^4.28.8",
+    "browserslist": "catalog:",
     "caniuse-api": "^4.0.0",
     "postcss-value-parser": "^4.2.0"
   },

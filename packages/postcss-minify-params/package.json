@@ -41,7 +41,7 @@
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "dependencies": {
-    "browserslist": "^4.28.8",
+    "browserslist": "catalog:",
     "cssnano-utils": "workspace:^",
     "postcss-value-parser": "^4.2.0"
   },

@@ -40,7 +40,7 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "browserslist": "^4.28.8",
+    "browserslist": "catalog:",
     "caniuse-api": "^4.0.0",
     "cssnano-utils": "workspace:^",
     "postcss-selector-parser": "^7.1.5"
