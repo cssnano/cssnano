@@ -10,7 +10,7 @@ catalog:
   mdn-data: 2.34.0
 
 minimumReleaseAgeExclude:
-  - postcss-calc@11.0.1
+  - postcss-calc
 
 versioning:
   changelog:
