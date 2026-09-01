@@ -1,5 +1,13 @@
 # Change Log
 
+## 9.0.2
+
+### Patch Changes
+
+- fix: ensure older tools can resolve cssnano packages
+
+- fix(cssnano-preset-default): update postcss-calc
+
 ## 9.0.1
 
 ### Patch Changes

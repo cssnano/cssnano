@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-string",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "description": "Normalize wrapping quotes for CSS string literals.",
   "exports": {
     ".": {
