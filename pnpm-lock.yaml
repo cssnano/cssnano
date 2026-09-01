@@ -300,8 +300,8 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-calc:
-        specifier: ^11.0.1
-        version: 11.0.1(postcss@8.5.26)
+        specifier: ^11.0.2
+        version: 11.0.2(postcss@8.5.26)
       postcss-colormin:
         specifier: workspace:^
         version: link:../postcss-colormin
@@ -1758,8 +1758,8 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  postcss-calc@11.0.1:
-    resolution: {integrity: sha512-H7w0Btjlbv2IM5V2BPKKghb4utvDYwkVkgaFJsCOsiqByX1AXTzlWsc+MV7/QD4vxdpB9xfyFze3pAJlv8GnjA==}
+  postcss-calc@11.0.2:
+    resolution: {integrity: sha512-3gRujDcef82cgs/4aMWfKal/obVXfRlh6tMIZpDgWt6E6fMYTLbtodBtVXv7h3YSFB9SKOObaPBrPum7+Lv6lA==}
     engines: {node: ^22.22.3 || ^24.15 || >=26.0}
     peerDependencies:
       postcss: ^8.5.25
@@ -2649,7 +2649,7 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  postcss-calc@11.0.1(postcss@8.5.26):
+  postcss-calc@11.0.2(postcss@8.5.26):
     dependencies:
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0

@@ -20,7 +20,7 @@
   "dependencies": {
     "browserslist": "^4.28.8",
     "cssnano-utils": "workspace:^",
-    "postcss-calc": "^11.0.1",
+    "postcss-calc": "^11.0.2",
     "postcss-colormin": "workspace:^",
     "postcss-convert-values": "workspace:^",
     "postcss-discard-comments": "workspace:^",
