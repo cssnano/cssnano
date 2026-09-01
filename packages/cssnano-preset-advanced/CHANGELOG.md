@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.0.2
+
+### Patch Changes
+
+- fix: ensure older tools can resolve cssnano packages
+
 ## 9.0.1
 
 ### Patch Changes

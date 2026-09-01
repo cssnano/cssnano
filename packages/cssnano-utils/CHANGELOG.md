@@ -1,5 +1,11 @@
 # Change Log
 
+## 7.0.1
+
+### Patch Changes
+
+- fix: ensure older tools can resolve cssnano packages
+
 ## 7.0.0
 
 ### Major Changes

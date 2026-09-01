@@ -1,6 +1,6 @@
 {
   "name": "cssnano-preset-default",
-  "version": "9.0.1",
+  "version": "9.0.2",
   "description": "Safe defaults for cssnano which require minimal configuration.",
   "exports": {
     ".": {
