@@ -1,24 +1,25 @@
-import postcssValueParser from 'postcss-value-parser';
-import cssnanoUtils from 'cssnano-utils';
-import addSpace from '../lib/addSpace.js';
-import getValue from '../lib/getValue.js';
+import {
+  isDimension,
+  isFunction,
+  isNumber,
+  name,
+  serializeArguments,
+} from '../lib/tokenize.js';
 import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
-const { unit } = postcssValueParser;
-const { getArguments } = cssnanoUtils;
 // transition: [ none | <single-transition-property> ] || <time> || <single-transition-timing-function> || <time>
 
 const timingFunctions = new Set(easingFunctions.keywords);
 const timingFunctionNames = new Set(easingFunctions.functions);
 
 /**
- * @param {import('postcss-value-parser').Node[][]} args
- * @return {import('postcss-value-parser').Node[][]}
+ * @param {import('../lib/tokenize.js').Term[][]} args
+ * @return {import('../lib/tokenize.js').Term[][]}
  */
 function normalize(args) {
   const list = [];
   for (const arg of args) {
-    /** @type {Record<string, import('postcss-value-parser').Node[]>} */
+    /** @type {Record<string, import('../lib/tokenize.js').Term[]>} */
     const state = {
       timingFunction: [],
       property: [],
@@ -27,24 +28,20 @@ function normalize(args) {
     };
 
     for (const node of arg) {
-      const { type, value } = node;
+      const value = name(node);
 
-      if (type === 'space') {
-        continue;
-      }
-
-      if (type === 'function' && timingFunctionNames.has(value.toLowerCase())) {
-        state.timingFunction = [...state.timingFunction, node, addSpace()];
-      } else if (unit(value)) {
+      if (isFunction(node) && timingFunctionNames.has(value)) {
+        state.timingFunction.push(node);
+      } else if (isDimension(node) || isNumber(node)) {
         if (!state.time1.length) {
-          state.time1 = [...state.time1, node, addSpace()];
+          state.time1.push(node);
         } else {
-          state.time2 = [...state.time2, node, addSpace()];
+          state.time2.push(node);
         }
-      } else if (timingFunctions.has(value.toLowerCase())) {
-        state.timingFunction = [...state.timingFunction, node, addSpace()];
+      } else if (timingFunctions.has(value)) {
+        state.timingFunction.push(node);
       } else {
-        state.property = [...state.property, node, addSpace()];
+        state.property.push(node);
       }
     }
 
@@ -58,12 +55,11 @@ function normalize(args) {
   return list;
 }
 /**
- * @param {import('postcss-value-parser').ParsedValue} parsed
+ * @param {{ arguments: import('../lib/tokenize.js').Term[][] }} parsed
  * @return {string}
  */
 function normalizeTransition(parsed) {
-  const values = normalize(getArguments(parsed));
-  return getValue(values);
+  return serializeArguments(normalize(parsed.arguments));
 }
 
 export default normalizeTransition;
