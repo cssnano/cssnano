@@ -1,4 +1,5 @@
 import postcss from 'postcss';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import plugin from '../../src/index.js';
 
 /**
@@ -18,6 +19,34 @@ function process(css) {
   return processor.process(css, { from: undefined }).css;
 }
 
+/** @param {string} value */
+function getURLValue(value) {
+  return [...tokenize({ css: value })].find(
+    (token) => token[0] === TokenType.URL
+  )?.[4].value;
+}
+
+/**
+ * @param {string} css
+ * @param {import('postcss').Declaration} outputDeclaration
+ * @return {Mismatch|undefined}
+ */
+function checkURLValue(css, outputDeclaration) {
+  const original = postcss.parse(css);
+  const originalContainer = original.nodes[0];
+  const originalDecls =
+    'nodes' in originalContainer ? originalContainer.nodes : [];
+  const inputValue = getURLValue(originalDecls.at(-1).value);
+  const outputValue = getURLValue(outputDeclaration.value);
+
+  if (inputValue === outputValue) return undefined;
+  return {
+    input: css,
+    output: outputDeclaration.toString(),
+    reason: `expected URL value ${JSON.stringify(inputValue)} after reparsing, got ${JSON.stringify(outputValue)}`,
+  };
+}
+
 const hexDigitRegex = /[0-9a-fA-F]/;
 
 /**
@@ -31,7 +60,15 @@ const hexDigitRegex = /[0-9a-fA-F]/;
  * @param {import('./fuzzGenerate.js').Case} testCase
  * @return {Mismatch|undefined} undefined when nothing broke.
  */
-function check({ css, lastProp, siblingCount, escapeChar, backslashCount }) {
+function check({
+  css,
+  expected,
+  lastProp,
+  siblingCount,
+  escapeChar,
+  backslashCount,
+  preserveURLValue,
+}) {
   /** @type {string} */
   let output;
 
@@ -85,6 +122,19 @@ function check({ css, lastProp, siblingCount, escapeChar, backslashCount }) {
       output,
       reason: `expected the last declaration's property to be ${lastProp}, got ${'prop' in last ? last.prop : last.type}`,
     };
+  }
+
+  if (expected !== undefined && output !== expected) {
+    return {
+      input: css,
+      output,
+      reason: `expected normalized output ${JSON.stringify(expected)}`,
+    };
+  }
+
+  if (preserveURLValue) {
+    const failure = checkURLValue(css, last);
+    if (failure) return { ...failure, output };
   }
 
   // A hex-digit target (`\9`, `\a`, …) is a hex escape, not a

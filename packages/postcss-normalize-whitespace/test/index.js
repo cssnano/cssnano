@@ -1,14 +1,97 @@
 import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
+const processor = postcss([plugin()]);
+const staleRawPlugin = {
+  postcssPlugin: 'stale-raw',
+  Declaration(decl) {
+    decl.value = 'new value';
+  },
+};
 
 test(
   'should trim whitespace from nested functions',
   processCSS(
     'h1{width:calc(10px - ( 100px / var(--test) ))}',
     'h1{width:calc(10px - (100px / var(--test)))}'
+  )
+);
+
+test(
+  'should prefer a declaration value over stale raw metadata',
+  processCSSFactory([staleRawPlugin, plugin]).processCSS(
+    'a{color:old /* inline comment */}',
+    'a{color:new value /* inline comment */}'
+  )
+);
+
+test(
+  'should preserve whitespace in unquoted URLs',
+  passthroughCSS('a{background:url( assets/a.png )}')
+);
+
+test(
+  'should preserve whitespace in uppercase unquoted URLs',
+  passthroughCSS('a{background:URL( assets/a.png )}')
+);
+
+test(
+  'should preserve escaped whitespace in unquoted URLs',
+  passthroughCSS('a{background:url( a\\ b.png )}')
+);
+
+for (const [name, whitespace, expectedValue] of [
+  ['space', ' ', 'foo '],
+  ['tab', '\t', 'foo\t'],
+]) {
+  test(`should preserve escaped URL-boundary ${name}`, async () => {
+    const input = `a{x:url(foo\\${whitespace})}`;
+    const result = await processor.process(input, { from: undefined });
+
+    assert.equal(result.css, input);
+    const reparsed = postcss.parse(result.css);
+    const token = [...tokenize({ css: reparsed.first.first.value })].find(
+      (candidate) => candidate[0] === TokenType.URL
+    );
+
+    assert.equal(token?.[4].value, expectedValue);
+  });
+}
+
+test(
+  'should trim whitespace from regular functions, commas and dividers',
+  processCSS(
+    'a{transform:translate( 1px , 2px ) scale( 1 / 2 )}',
+    'a{transform:translate(1px,2px) scale(1/2)}'
+  )
+);
+
+test(
+  'should preserve calc whitespace around operators and trim its boundaries',
+  processCSS(
+    'a{width:calc( 100% - ( 10px / 2 ) )}',
+    'a{width:calc(100% - (10px / 2))}'
+  )
+);
+
+test(
+  'should preserve comments at function boundaries and around dividers',
+  processCSS(
+    'a{x:foo( /**/ a /**/ , /**/ b /**/ )}',
+    'a{x:foo(/**/ a /**/,/**/ b /**/)}'
+  )
+);
+
+test(
+  'should normalize nested calc, variable functions and blocks',
+  processCSS(
+    'a{x:calc( var(--x, env(safe-area-inset-top, )) + constant(--y, [ 1px / ( 2px ) ]) )}',
+    'a{x:calc(var(--x, env(safe-area-inset-top, )) + constant(--y, [ 1px / ( 2px ) ]))}'
   )
 );
 
