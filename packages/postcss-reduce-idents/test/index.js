@@ -192,6 +192,13 @@ describe('Rename', () => {
   );
 
   test(
+    'should not rename a counter style argument as a counter',
+    passthroughCSS(
+      'body{counter-reset:custom-style}h3:before{content:counter(foo,custom-style)}'
+    )
+  );
+
+  test(
     'should rename counters (3)',
     processCSS(
       'li{counter-increment:item}li::marker{content:"(" counters(item,".") ")"}',
@@ -645,6 +652,14 @@ describe('Rename', () => {
     processCSS(
       '@counter-style custom{system:cyclic;symbols:"x"}ol{list-style-type:custom}li:before{content:counter(chapter,custom)}',
       '@counter-style a{system:cyclic;symbols:"x"}ol{list-style-type:a}li:before{content:counter(chapter,a)}'
+    )
+  );
+
+  test(
+    'should not rename a counter argument as a counter style',
+    processCSS(
+      '@counter-style custom{system:cyclic;symbols:"x"}ol{list-style-type:custom}li:before{content:counter(custom,decimal)}',
+      '@counter-style a{system:cyclic;symbols:"x"}ol{list-style-type:a}li:before{content:counter(custom,decimal)}'
     )
   );
 });
