@@ -1,4 +1,9 @@
-import valueParser from 'postcss-value-parser';
+import {
+  isTokenIdent,
+  isTokenWhiteSpaceOrComment,
+  tokenize,
+  TokenType,
+} from '@csstools/css-tokenizer';
 import mappings from './lib/map.js';
 
 const displayRegex = /^display$/i;
@@ -8,28 +13,25 @@ const displayRegex = /^display$/i;
  * @return {string}
  */
 function transform(value) {
-  const { nodes } = valueParser(value);
+  let key = '';
+  for (const token of tokenize({ css: value })) {
+    if (token[0] === TokenType.EOF) {
+      break;
+    }
 
-  if (nodes.length === 1) {
-    return value;
+    if (isTokenWhiteSpaceOrComment(token)) {
+      continue;
+    }
+
+    if (!isTokenIdent(token)) {
+      return value;
+    }
+
+    const identifier = token[4].value.toLowerCase();
+    key = key ? `${key},${identifier}` : identifier;
   }
 
-  const values = nodes
-    .filter((list, index) => index % 2 === 0)
-    .filter((node) => node.type === 'word')
-    .map((n) => n.value.toLowerCase());
-
-  if (values.length === 0) {
-    return value;
-  }
-
-  const match = mappings.get(values.toString());
-
-  if (!match) {
-    return value;
-  }
-
-  return match;
+  return mappings.get(key) ?? value;
 }
 
 /**
@@ -47,7 +49,7 @@ function pluginCreator() {
          */
         OnceExit(css) {
           css.walkDecls(displayRegex, (decl) => {
-            const value = decl.value;
+            const value = decl.raws.value?.raw ?? decl.value;
 
             if (!value) {
               return;
@@ -62,6 +64,9 @@ function pluginCreator() {
             const result = transform(value);
 
             decl.value = result;
+            if (decl.raws.value?.raw) {
+              decl.raws.value = { raw: result, value: result };
+            }
             cache.set(value, result);
           });
         },
