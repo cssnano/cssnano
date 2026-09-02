@@ -5,10 +5,9 @@ import { generate } from '../script/lib/fuzzGenerate.js';
 
 /**
  * A differential sweep over declarations ending in a backslash escape,
- * generated as the last declaration of a rule or at-rule — the shape
- * that made the plugin drop or misplace the escaped character (see
- * `test/index.js`'s "escaped … character" tests for the named cases
- * this generalises).
+ * plus six fixed-output regression cases for value normalization. The
+ * normalization cases are repeated in varying containers and sibling
+ * contexts; the named tests in `test/index.js` cover them directly too.
  *
  * `node script/fuzz.js --seed 7 --count 200000` runs the same generator
  * for as long as you like, and is what to reach for after touching the
