@@ -24,8 +24,16 @@ describe('cssnano config loading', () => {
   let temporaryDirectory;
   let previousWorkingDirectory;
 
+  function writePackageType(type) {
+    writeFileSync(
+      `${temporaryDirectory}/package.json`,
+      JSON.stringify({ type })
+    );
+  }
+
   beforeEach(() => {
     temporaryDirectory = mkdtempSync(`${tmpdir()}/cssnano-config-`);
+    writePackageType('module');
     previousWorkingDirectory = process.cwd();
     process.chdir(temporaryDirectory);
   });
@@ -112,7 +120,7 @@ describe('cssnano config loading', () => {
   });
 
   test('loads CommonJS TypeScript configuration files and ESM .mts files', () => {
-    writeFileSync(`${temporaryDirectory}/package.json`, '{"type":"commonjs"}');
+    writePackageType('commonjs');
     writeFileSync(
       `${temporaryDirectory}/config.ts`,
       'module.exports = { preset: "lite" };'
@@ -138,6 +146,7 @@ describe('cssnano config loading', () => {
   });
 
   test('configFile accepts relative and absolute paths', () => {
+    writePackageType('commonjs');
     writeFileSync(`${temporaryDirectory}/.cssnanorc.json`, '{"preset":"lite"}');
     writeFileSync(
       `${temporaryDirectory}/custom-config.js`,
@@ -164,6 +173,7 @@ describe('cssnano config loading', () => {
   });
 
   test('resolves dependencies of JavaScript configuration files locally', () => {
+    writePackageType('commonjs');
     writeFileSync(
       `${temporaryDirectory}/local-preset.js`,
       'module.exports = { preset: "lite" };'
