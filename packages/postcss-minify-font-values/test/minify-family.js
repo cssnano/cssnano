@@ -92,6 +92,19 @@ const tests = [
 
 test('minify-family', () => {
   for (const { fixture, options, expected } of tests) {
-    assert.deepStrictEqual(minifyFamily(fixture, options), expected);
+    const value = fixture
+      .map((node, index) => {
+        const previous = fixture[index - 1];
+        const separator =
+          node.type === 'word' &&
+          (previous?.type === 'string' || previous?.type === 'function')
+            ? ','
+            : '';
+        if (node.type === 'string')
+          return `${node.quote}${node.value}${node.quote}`;
+        return separator + node.value;
+      })
+      .join('');
+    assert.equal(minifyFamily(value, options), expected[0].value);
   }
 });
