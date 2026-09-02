@@ -181,6 +181,24 @@ test(
 test('fade 3s steps(10, end())', testPassthrough('fade 3s steps(10, end())'));
 
 test(
+  'should preserve nested blocks in an unrecognized timing function',
+  testPassthrough('steps(10, calc(1 + (2)))')
+);
+
+test(
+  'should reduce recognized functions without touching unrelated functions',
+  processCSS(
+    'animation-timing-function:cubic-bezier(0,0,1,1),FOO(steps(1, start))',
+    'animation-timing-function:linear,FOO(step-start)'
+  )
+);
+
+test(
+  'should preserve malformed timing-function arguments',
+  testPassthrough('cubic-bezier(0,/*x*/0,1)')
+);
+
+test(
   'fade 3s steps(10, jump-end())',
   testPassthrough('fade 3s steps(10, jump-end())')
 );
