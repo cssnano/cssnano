@@ -103,6 +103,29 @@ test('detect finds selector hacks', () => {
   assert.equal(stylehacks.detect(rule), true);
 });
 
+test('reports and removes multiple selector hacks independently', async () => {
+  const css =
+    '* html h1, html:first-child h2, html > /**/ body h3, body:empty h4 { color: red }';
+  const lint = await postcss(
+    stylehacks({ lint: true, overrideBrowserslist: 'Chrome 58' })
+  ).process(css, { from: undefined });
+
+  assert.deepEqual(
+    lint.warnings().map((warning) => warning.text),
+    [
+      'Bad selector:  body:empty h4{"browsers":{},"identifier":"selector","hack":" body:empty h4"}',
+      'Bad selector:  html > /**/ body h3{"browsers":{},"identifier":"selector","hack":" html > /**/ body h3"}',
+      'Bad selector:  html:first-child h2{"browsers":{},"identifier":"selector","hack":" html:first-child h2"}',
+      'Bad selector: * html h1{"browsers":{},"identifier":"selector","hack":"* html h1"}',
+    ]
+  );
+
+  const removed = await postcss(
+    stylehacks({ overrideBrowserslist: 'Chrome 58' })
+  ).process(css, { from: undefined });
+  assert.equal(removed.css, '');
+});
+
 test('detect reclassifies a declaration after its value changes', () => {
   const decl = postcss.parse('a{margin:1px}').first.first;
 

@@ -1,8 +1,8 @@
 declare const plugins: ({
     new (result?: import('postcss').Result | undefined): {
-        detect(decl: import('postcss').Declaration): void;
         nodes: import("../plugin.js").NodeWithInfo[];
         targets: Set<string>;
+        detect(rule: import('postcss').Rule): void;
         nodeTypes: Set<string>;
         result: import("postcss").Result<import("postcss").Document | import("postcss").Root> | undefined;
         push(node: import('postcss').Node, metadata: {
@@ -17,11 +17,11 @@ declare const plugins: ({
     };
 } | {
     new (result?: import('postcss').Result | undefined): {
+        detect(decl: import('postcss').Declaration): void;
         nodes: import("../plugin.js").NodeWithInfo[];
         targets: Set<string>;
         nodeTypes: Set<string>;
         result: import("postcss").Result<import("postcss").Document | import("postcss").Root> | undefined;
-        detect(rule: import('postcss').Rule): void;
         push(node: import('postcss').Node, metadata: {
             identifier: string;
             hack: string;
