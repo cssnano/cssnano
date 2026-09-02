@@ -14,6 +14,17 @@ const escapeTargets = [
 const baseValues = ['none', 'red', '"str"', '1px', 'inherit'];
 const lastProps = ['color', 'display', 'width', '--custom'];
 const siblingProps = ['color:red', 'display:none', 'width:1px'];
+const normalizationCases = [
+  ['background:url( assets/a.png )', 'background:url( assets/a.png )'],
+  ['background:url(foo\\ )', 'background:url(foo\\ )', true],
+  ['background:url(foo\\\t)', 'background:url(foo\\\t)', true],
+  [
+    'transform:translate( 1px , 2px ) scale( 1 / 2 )',
+    'transform:translate(1px,2px) scale(1/2)',
+  ],
+  ['width:calc( 100% - ( 10px / 2 ) )', 'width:calc(100% - (10px / 2))'],
+  ['x:foo( /**/ a /**/ , /**/ b /**/ )', 'x:foo(/**/ a /**/,/**/ b /**/)'],
+];
 const containers = [
   { open: 'a{', close: '}' },
   { open: 'a::after{', close: '}' },
@@ -28,6 +39,8 @@ const containers = [
  * @property {number} siblingCount
  * @property {string} escapeChar
  * @property {number} backslashCount
+ * @property {boolean} [preserveURLValue]
+ * @property {string} [expected]
  */
 
 /**
@@ -41,6 +54,27 @@ function* generate(seed, count) {
   for (let i = 0; i < count; i++) {
     const container = rand.pick(containers);
     const siblingCount = rand.int(3);
+
+    if (rand.chance(0.2)) {
+      const [value, expectedValue, preserveURLValue] =
+        rand.pick(normalizationCases);
+      const siblings = Array.from({ length: siblingCount }, () =>
+        rand.pick(siblingProps)
+      )
+        .map((decl) => `${decl};`)
+        .join('');
+      yield {
+        css: `${container.open}${siblings}${value}${container.close}`,
+        expected: `${container.open}${siblings}${expectedValue}${container.close}`,
+        lastProp: value.slice(0, value.indexOf(':')),
+        siblingCount,
+        escapeChar: '',
+        backslashCount: 0,
+        preserveURLValue,
+      };
+      continue;
+    }
+
     const lastProp = rand.pick(lastProps);
     const backslashCount = rand.int(3) + 1;
     const escapeChar = rand.pick(escapeTargets);

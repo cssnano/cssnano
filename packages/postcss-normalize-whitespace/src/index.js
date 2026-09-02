@@ -150,7 +150,10 @@ function trimDeclaration(node, cache) {
     node.raws.important = '!important';
   }
   // Remove whitespaces around ie 9 hack
-  const value = (node.raws.value?.raw ?? node.value).replace(ieHackRegex, '$1');
+  const rawValue = node.raws.value;
+  const value = (
+    rawValue?.value === node.value ? rawValue.raw : node.value
+  ).replace(ieHackRegex, '$1');
 
   if (cache.has(value)) {
     node.value = /** @type {string} **/ (cache.get(value));
