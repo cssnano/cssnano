@@ -57,6 +57,23 @@ test(
   passthroughCSS(`display:var(--foo) var(--bar)`)
 );
 
+test(
+  'should preserve functions, delimiters, blocks, and escaped identifiers when they do not match',
+  passthroughCSS(
+    'display:block /* comment */ flow-root, var(--display), block\\+ flow, block [x] flow'
+  )
+);
+
+test(
+  'should preserve a block in an otherwise matching display value',
+  passthroughCSS('display:block [x] flow')
+);
+
+test(
+  'should preserve unmatched whitespace and raw spelling',
+  passthroughCSS('display:  BLOCK\\+   FLOW  ')
+);
+
 test(`should pass through invalid syntax`, passthroughCSS(`display:`));
 
 test(
