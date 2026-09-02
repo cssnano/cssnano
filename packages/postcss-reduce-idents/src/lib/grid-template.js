@@ -1,219 +1,95 @@
-import valueParser from 'postcss-value-parser';
 import addToCache from './cache.js';
+import { rewrite, TokenType, tokens } from './value.js';
 import isNum from './isNum.js';
 import { cssWideKeywords, grid, resolveProperty } from './slots.js';
 
-const RESERVED_KEYWORDS = new Set([
-  ...cssWideKeywords,
-  ...grid.reservedKeywords,
-]);
-
-const gridTemplateProperties = grid.templateProperties;
-const gridChildProperties = grid.referenceProperties;
-
-const whitespaceRegex = /\s+/;
-const multipleDotsRegex = /\.+/;
-
-/**
- * Strips the brackets off a gridline name token, e.g. `[name]` -> `name`.
- * Area name tokens without brackets are returned unchanged.
- * @param {string} word
- * @return {string}
- */
-function stripBrackets(word) {
-  if (word.startsWith('[') && word.endsWith(']')) {
-    return word.slice(1, -1);
-  }
-  if (word.startsWith('[')) {
-    return word.slice(1);
-  }
-  if (word.endsWith(']')) {
-    return word.slice(0, -1);
-  }
-  return word;
-}
-export default (function () {
-  /** @type {Map<string, {ident: string, count: number}>} */
+const RESERVED = new Set([...cssWideKeywords, ...grid.reservedKeywords]);
+export default function gridTemplateReducer() {
   const cache = new Map();
   /** @type {import('postcss').Declaration[]} */
-  let declCache = [];
-  /** @type {WeakMap<import('postcss').Declaration, import('postcss-value-parser').ParsedValue>} */
-  const parsedValues = new WeakMap();
-  /** @type {WeakSet<import('postcss').Declaration>} */
-  const normalizedValues = new WeakSet();
-
+  let templates = [];
+  /** @type {import('postcss').Declaration[]} */
+  let children = [];
   return {
-    /**
-     * @param {import('postcss').AnyNode} node
-     * @param {(value: string, index: number) => string} encoder
-     */
-    collect(node, encoder) {
-      if (node.type !== 'decl') {
-        return;
-      }
-
-      if (gridTemplateProperties.has(resolveProperty(node.prop))) {
-        const parsed = valueParser(node.value);
-        parsed.walk((child) => {
-          if (child.type === 'string') {
-            for (const word of child.value.split(whitespaceRegex)) {
-              if (multipleDotsRegex.test(word)) {
-                // reduce empty zones to a single `.`
-                child.value = child.value.replace(word, '.');
-                normalizedValues.add(node);
-              } else if (word && !RESERVED_KEYWORDS.has(word.toLowerCase())) {
+    /** @param {import('postcss').AnyNode} node @param {(value:string,index:number)=>string} encoder */ collect(
+      node,
+      encoder
+    ) {
+      if (node.type !== 'decl') return;
+      const property = resolveProperty(node.prop);
+      if (grid.templateProperties.has(property)) {
+        templates.push(node);
+        let squareDepth = 0;
+        for (const token of tokens(node.value)) {
+          if (token[0] === TokenType.String)
+            for (const word of token[4].value.split(/\s+/))
+              if (
+                word &&
+                !/^\.+$/.test(word) &&
+                !RESERVED.has(word.toLowerCase())
+              )
                 addToCache(word, encoder, cache);
-              }
-            }
-          }
-          /* handle gridline name lists like [name1 name2] */
-          if (child.type === 'word') {
-            const word = child.value;
-            if (word.startsWith('[') && word.endsWith(']')) {
-              const gridLine = word.slice(1, -1);
-              addToCache(gridLine, encoder, cache);
-            } else if (word.startsWith('[')) {
-              const gridLine = word.slice(1);
-              addToCache(gridLine, encoder, cache);
-            } else if (word.endsWith(']')) {
-              const gridLine = word.slice(0, -1);
-              addToCache(gridLine, encoder, cache);
-            }
-          }
-        });
-        parsedValues.set(node, parsed);
-
-        declCache.push(node);
-      } else if (gridChildProperties.has(resolveProperty(node.prop))) {
-        const parsed = valueParser(node.value);
-        parsed.walk((child) => {
+          if (token[0] === TokenType.OpenSquare) squareDepth++;
+          if (token[0] === TokenType.CloseSquare) squareDepth--;
           if (
-            child.type === 'word' &&
-            !isNum(child) &&
-            !RESERVED_KEYWORDS.has(child.value.toLowerCase())
-          ) {
-            addToCache(child.value, encoder, cache);
-          }
-        });
-        parsedValues.set(node, parsed);
-
-        declCache.push(node);
+            token[0] === TokenType.Ident &&
+            squareDepth &&
+            !RESERVED.has(token[4].value.toLowerCase())
+          )
+            addToCache(token[4].value, encoder, cache);
+        }
+      } else if (grid.referenceProperties.has(property)) {
+        children.push(node);
+        for (const token of tokens(node.value))
+          if (
+            token[0] === TokenType.Ident &&
+            !isNum({ value: token[1] }) &&
+            !RESERVED.has(token[4].value.toLowerCase())
+          )
+            addToCache(token[4].value, encoder, cache);
       }
     },
-
     transform() {
-      // first pass: rename properties that reference an area/line name
-      // (grid-area, grid-column, grid-row, ...), and count how many times
-      // each name is referenced
-      for (const declaration of declCache) {
-        if (!gridChildProperties.has(resolveProperty(declaration.prop))) {
-          continue;
-        }
-
-        const parsed = parsedValues.get(declaration);
-        if (!parsed) continue;
-        declaration.value = parsed
-          .walk((node) => {
-            if (isNum(node)) {
-              return false;
-            }
-
-            const cached = cache.get(node.value);
-            if (cached) {
-              cached.count++;
-              node.value = cached.ident;
-            }
-
-            return false;
-          })
-          .toString();
-      }
-
-      // second pass: rename grid-template-* declarations, but only when at
-      // least one of the names they define is referenced by a
-      // grid-area/grid-column/grid-row elsewhere. Once a declaration is
-      // known to be in use, every name it defines is renamed together so a
-      // list like `[a b]` doesn't end up half-renamed.
-      for (const declaration of declCache) {
-        if (!gridTemplateProperties.has(resolveProperty(declaration.prop))) {
-          continue;
-        }
-
-        const parsed = parsedValues.get(declaration);
-        if (!parsed) continue;
-        let isUsed = false;
-        parsed.walk((node) => {
-          // `repeat()` and `minmax()` hold gridline names of their own, so
-          // walk into them; their own name is not one.
-          if (node.type === 'function') {
-            return;
-          }
-
-          for (const word of node.value.split(whitespaceRegex)) {
-            const cached = cache.get(stripBrackets(word));
-            if (cached && cached.count > 0) {
-              isUsed = true;
-            }
-          }
-          return false;
+      for (const decl of children)
+        decl.value = rewrite(decl.value, (token) => {
+          const cached =
+            token[0] === TokenType.Ident && cache.get(token[4].value);
+          if (!cached) return;
+          cached.count++;
+          return cached.ident;
         });
-
-        if (!isUsed && !normalizedValues.has(declaration)) {
-          continue;
-        }
-
-        declaration.value = parsed
-          .walk((node) => {
-            if (node.type === 'function') {
-              return;
-            }
-
-            const words = node.value.split(whitespaceRegex);
-            const newWords = [];
-            for (const word of words) {
-              const wordCached = cache.get(word);
-              if (wordCached) {
-                newWords.push(wordCached.ident);
-                continue;
-              }
-              /* replace gridline names inside lists like [name] */
-              if (word.startsWith('[') && word.endsWith(']')) {
-                const gridLine = word.slice(1, -1);
-                const cached = cache.get(gridLine);
-                if (cached) {
-                  newWords.push(`[${cached.ident}]`);
-                } else {
-                  newWords.push(word);
-                }
-              } else if (word.startsWith('[')) {
-                const gridLine = word.slice(1);
-                const cached = cache.get(gridLine);
-                if (cached) {
-                  newWords.push(`[${cached.ident}`);
-                } else {
-                  newWords.push(word);
-                }
-              } else if (word.endsWith(']')) {
-                const gridLine = word.slice(0, -1);
-                const cached = cache.get(gridLine);
-                if (cached) {
-                  newWords.push(`${cached.ident}]`);
-                } else {
-                  newWords.push(word);
-                }
-              } else {
-                newWords.push(word);
-              }
-            }
-            node.value = newWords.join(' '); // also merges white-spaces
-
-            return false;
-          })
-          .toString();
+      for (const decl of templates) {
+        const used = tokens(decl.value).some((token) => {
+          if (token[0] === TokenType.String)
+            return token[4].value
+              .split(/\s+/)
+              .some((word) => cache.get(word)?.count);
+          return (
+            token[0] === TokenType.Ident &&
+            Boolean(cache.get(token[4].value)?.count)
+          );
+        });
+        decl.value = rewrite(decl.value, (token) => {
+          if (token[0] === TokenType.Whitespace) return ' ';
+          if (token[0] === TokenType.String) {
+            const value = token[4].value
+              .replace(/\.{2,}/g, '.')
+              .trim()
+              .split(/\s+/)
+              .map((word) =>
+                used && cache.get(word) ? cache.get(word).ident : word
+              )
+              .join(' ');
+            return token[1][0] + value + token[1].at(-1);
+          }
+          const cached =
+            token[0] === TokenType.Ident && cache.get(token[4].value);
+          if (!cached) return;
+          return used ? cached.ident : undefined;
+        });
       }
-
-      // reset cache after transform
-      declCache = [];
+      templates = [];
+      children = [];
     },
   };
-});
+}

@@ -1,12 +1,24 @@
-import postcssValueParser from 'postcss-value-parser';
-
-const { unit } = postcssValueParser;
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 /**
- * @param {import('postcss-value-parser').Node} node
- * @return {import('postcss-value-parser').Dimension | false}
+ * @param {{value: string}} node
+ * @return {{number: string, unit: string} | false}
  */
 function isNum(node) {
-  return unit(node.value);
+  const token = [...tokenize({ css: node.value })].find(
+    (item) => item[0] !== TokenType.EOF
+  );
+  if (
+    !token ||
+    ![TokenType.Number, TokenType.Dimension, TokenType.Percentage].includes(
+      token[0]
+    )
+  )
+    return false;
+  const metadata = /** @type {{value: number, unit?: string}} */ (token[4]);
+  return {
+    number: String(metadata.value),
+    unit: metadata.unit ?? (token[0] === TokenType.Percentage ? '%' : ''),
+  };
 }
 
 export default isNum;
