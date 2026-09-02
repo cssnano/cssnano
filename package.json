@@ -17,7 +17,7 @@
     "test:packaging": "node util/checkPackaging.mjs",
     "test:watch": "node --test --watch",
     "test:failed": "node --test --test-rerun-failures=.test-failures.json",
-    "test:mutation": "node util/mutation-testing/mutation-runner.mjs --catalog packages/postcss-discard-empty/mutation-catalog.mjs --catalog packages/postcss-discard-comments/mutation-catalog.mjs --catalog packages/postcss-normalize-whitespace/mutation-catalog.mjs",
+    "test:mutation": "node util/mutation-testing/mutation-runner.mjs --catalog packages/postcss-discard-empty/mutation-catalog.mjs --catalog packages/postcss-discard-comments/mutation-catalog.mjs --catalog packages/postcss-normalize-whitespace/mutation-catalog.mjs --catalog packages/postcss-normalize-positions/mutation-catalog.mjs",
     "types": "tsc -b",
     "all-publish": "pnpm publish -r"
   },
