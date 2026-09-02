@@ -244,12 +244,12 @@ describe('Skip', () => {
   );
 });
 
-test('should warn on SVG containing unclosed tags', async () => {
+test('should optimize malformed unquoted SVG URLs without warning', async () => {
   const css =
     'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
   const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 1);
-  assert.strictEqual(result.messages[0].type, 'warning');
+  assert.strictEqual(result.messages.length, 0);
+  assert.notEqual(result.css, css);
 });
 
 test('should only warn with svg data uri', async () => {
@@ -278,6 +278,75 @@ test(
        url('data:image/svg+xml;charset=utf-8,<svg/>') format("svg");
   }`)
 );
+
+test('should continue after a non-data URL', async () => {
+  const result = await postcss(plugin()).process(
+    'h1{background:url(foo.svg) url("data:image/svg+xml,<svg><circle/></svg>")}',
+    { from: undefined }
+  );
+  assert.match(result.css, /data:image\/svg\+xml;charset=utf-8/);
+  assert.match(result.css, /url\('data:image\/svg\+xml;charset=utf-8/);
+});
+
+test('should continue after an invalid base64 SVG data URI', async () => {
+  const result = await postcss(plugin()).process(
+    'h1{background:url("data:image/svg+xml;base64,foo") url("data:image/svg+xml,<svg><circle/></svg>")}',
+    { from: undefined }
+  );
+  assert.equal(result.messages.length, 1);
+  assert.equal(result.messages[0].type, 'warning');
+  assert.equal(
+    result.css,
+    'h1{background:url("data:image/svg+xml;base64,foo") url(\'data:image/svg+xml;charset=utf-8,<svg><circle/></svg>\')}'
+  );
+});
+
+test('should recognize escaped url function names and decode quoted payloads', async () => {
+  const result = await postcss(plugin()).process(
+    'h1{background:u\\72l("data:image/svg+xml,\\3c svg\\3e \\3c circle/\\3e \\3c/svg\\3e ")}',
+    { from: undefined }
+  );
+  assert.equal(
+    result.css,
+    "h1{background:u\\72l('data:image/svg+xml;charset=utf-8,<svg><circle/></svg>')}"
+  );
+});
+
+test('should preserve data-looking bad URLs byte-for-byte', async () => {
+  const css = 'h1{background:url(data:image/svg+xml,<svg>)}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.equal(result.css, css);
+});
+
+test('should process nested URL functions', async () => {
+  const nested =
+    'h1{background:var(--image, url("data:image/svg+xml,<svg><circle/></svg>"))}';
+  const result = await postcss(plugin()).process(nested, { from: undefined });
+  assert.equal(
+    result.css,
+    "h1{background:var(--image, url('data:image/svg+xml;charset=utf-8,<svg><circle/></svg>'))}"
+  );
+});
+
+test('should escape decoded quotes and backslashes in optimized URLs', async () => {
+  const css = String.raw`h1{background:url("data:image/svg+xml,<svg><path aria-label=\"it's\\value\" d=\"M0 0h1\"/></svg>")}`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.equal(
+    result.css,
+    String.raw`h1{background:url('data:image/svg+xml;charset=utf-8,<svg><path d="M0 0h1" aria-label="it\'s\\value"/></svg>')}`
+  );
+});
+
+test('should optimize a valid SVG URL next to an opaque URL', async () => {
+  const result = await postcss(plugin()).process(
+    'h1{background:url(foo\\ bar.svg) url("data:image/svg+xml,<svg><circle/></svg>")}',
+    { from: undefined }
+  );
+  assert.equal(
+    result.css,
+    "h1{background:url(foo\\ bar.svg) url('data:image/svg+xml;charset=utf-8,<svg><circle/></svg>')}"
+  );
+});
 
 describe('Pass', () => {
   test(

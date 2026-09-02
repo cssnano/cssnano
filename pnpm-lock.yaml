@@ -777,6 +777,9 @@ importers:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.0
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
       svgo:
         specifier: ^4.1.0
         version: 4.1.0

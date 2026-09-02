@@ -1,9 +1,10 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import { TokenType } from '@csstools/css-tokenizer';
 import { optimize } from 'svgo';
+import cssnanoUtils from 'cssnano-utils';
 import { encode, decode } from './lib/url.js';
 
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
 const PLUGIN = 'postcss-svgo';
+const { balancedTokens, decoded } = cssnanoUtils;
 const dataURI = /data:image\/svg\+xml(?:;(?:(?:charset=)?(?:utf-8|base64)))?,/i;
 const dataURIBase64 = /data:image\/svg\+xml;base64,/i;
 
@@ -70,6 +71,12 @@ function optimizeDataUri(value, opts) {
   };
 }
 
+/** @param {string} value @param {string} quote @return {string} */
+function escapeForQuote(value, quote) {
+  if (!quote) return value;
+  return value.replaceAll('\\', '\\\\').replaceAll(quote, `\\${quote}`);
+}
+
 /**
  * @param {import('postcss').Declaration} decl
  * @param {Options} opts
@@ -78,59 +85,59 @@ function optimizeDataUri(value, opts) {
  */
 function minify(decl, opts, postcssResult) {
   const original = decl.value;
-  /** @type {CSSToken[]} */ const tokens = [...tokenize({ css: original })];
+  const balanced = balancedTokens(original);
+  if (!balanced) return;
+  const tokens = balanced.tokens;
   /** @type {[number, number, string][]} */ const replacements = [];
   for (let i = 0; i < tokens.length; i++) {
     const functionToken = tokens[i];
-    let close = i + 1;
+    let close;
     let prefix;
     let value;
     let quote;
-    if (
-      functionToken[0] === TokenType.URL ||
-      functionToken[0] === TokenType.BadURL
-    ) {
+    if (functionToken[0] === TokenType.URL) {
       prefix = functionToken[1].slice(0, functionToken[1].indexOf('(') + 1);
-      value =
-        functionToken[4]?.value ?? functionToken[1].slice(prefix.length, -1);
+      value = decoded(functionToken);
       quote = '';
       close = i + 1;
     } else {
       if (
         functionToken[0] !== TokenType.Function ||
-        functionToken[1].slice(0, -1).toLowerCase() !== 'url'
+        decoded(functionToken).toLowerCase() !== 'url'
       )
         continue;
-      let depth = 1;
-      for (; close < tokens.length && depth; close++) {
-        if (tokens[close][0] === TokenType.Function) depth++;
-        if (tokens[close][0] === TokenType.CloseParen) depth--;
-      }
-      if (depth) continue;
+      close = balanced.endForOpening(i);
+      if (close === undefined) continue;
       const content = tokens
-        .slice(i + 1, close - 1)
-        .filter((token) => token[0] !== TokenType.Whitespace);
+        .slice(i + 1, close)
+        .filter(
+          (token) =>
+            token[0] !== TokenType.Whitespace && token[0] !== TokenType.Comment
+        );
       if (content.length !== 1 || content[0][0] !== TokenType.String) continue;
-      value = content[0][1].slice(1, -1);
+      value = decoded(content[0]);
       quote = content[0][1][0];
       prefix = functionToken[1];
     }
 
     try {
       const optimized = optimizeDataUri(value, opts);
-      if (!optimized) return;
+      if (!optimized) continue;
       value = optimized.value;
       quote = optimized.quote || quote;
+      value = escapeForQuote(value, quote);
     } catch (error) {
       decl.warn(postcssResult, `${error}`);
-      return;
+      continue;
     }
     replacements.push([
       functionToken[2],
-      tokens[close - 1][3] + 1,
+      functionToken[0] === TokenType.URL
+        ? functionToken[3] + 1
+        : tokens[close][3] + 1,
       prefix + quote + value + quote + ')',
     ]);
-    i = close - 1;
+    i = close ?? i;
   }
   let result = original;
   for (const [a, b, text] of replacements.toReversed())
