@@ -41,6 +41,49 @@ test(
 );
 
 test(
+  `shouldn't remove when an attribute selector has an escaped namespace`,
+  passthroughCSS(
+    "@namespace xlink url('http://www.w3.org/1999/xlink');use[x\\6c ink|href]{fill:blue}"
+  )
+);
+
+test(
+  `shouldn't mistake a pipe in an attribute value for a namespace`,
+  processCSS(
+    "@namespace xlink url('http://www.w3.org/1999/xlink');use[href='xlink|href']{fill:blue}",
+    "use[href='xlink|href']{fill:blue}"
+  )
+);
+
+test(
+  `shouldn't mistake a dash-match attribute operator for a namespace`,
+  processCSS(
+    '@namespace title url(http://example.com);a[title|=foo]{color:blue}',
+    'a[title|=foo]{color:blue}'
+  )
+);
+
+test(
+  `shouldn't mistake a spaced dash-match attribute operator for a namespace`,
+  processCSS(
+    '@namespace title url(http://example.com);a[title | = foo]{color:blue}',
+    'a[title | = foo]{color:blue}'
+  )
+);
+
+test(
+  `shouldn't remove a wildcard attribute namespace`,
+  passthroughCSS('@namespace svg url(http://example.com);a[*|href]{color:blue}')
+);
+
+test(
+  `shouldn't remove a namespace used by an attribute selector in :is()`,
+  passthroughCSS(
+    "@namespace xlink url('http://www.w3.org/1999/xlink');:is(use[xlink|href],a){fill:blue}"
+  )
+);
+
+test(
   "shouldn't remove unused prefixed namespace",
   passthroughCSS('@namespace svg url(http://www.w3.org/2000/svg)', {
     namespace: false,
