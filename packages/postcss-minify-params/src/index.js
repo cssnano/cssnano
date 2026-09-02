@@ -1,8 +1,15 @@
 import getBrowsersList from '#getBrowsersList';
-import valueParser from 'postcss-value-parser';
 import cssnanoUtils from 'cssnano-utils';
 
-const { getArguments } = cssnanoUtils;
+const {
+  TokenType,
+  applyEdits,
+  balancedTokens,
+  decoded,
+  numeric,
+  tokenEnd,
+  tokens,
+} = cssnanoUtils;
 /** @import browserslist from 'browserslist' */
 
 /**
@@ -29,20 +36,11 @@ function aspectRatio(a, b) {
 }
 
 /**
- * @param {valueParser.Node[]} args
+ * @param {string} args
  * @return {string}
  */
 function split(args) {
-  return args.map((arg) => valueParser.stringify(arg)).join('');
-}
-
-/**
- * @param {valueParser.Node} node
- * @return {void}
- */
-function removeNode(node) {
-  node.value = '';
-  node.type = 'word';
+  return args;
 }
 
 /**
@@ -55,11 +53,37 @@ function sortAndDedupe(items) {
   return a.join();
 }
 
+/** @param {string} value @return {string[]} */
+function splitTopLevel(value) {
+  const structure = balancedTokens(value);
+  if (!structure) return [value];
+  const { tokens: input } = structure;
+  return structure.topLevelSegments().map((segment) => {
+    const start = input[segment.startIndex]?.[2] ?? value.length;
+    const end =
+      segment.endIndex > segment.startIndex
+        ? tokenEnd(input[segment.endIndex - 1])
+        : start;
+    return value.slice(start, end);
+  });
+}
+
+/** @param {ReturnType<typeof tokens>} input @param {number} index @param {number} step @return {number} */
+function significantIndex(input, index, step) {
+  let cursor = index;
+  while (input[cursor] && input[cursor][0] === TokenType.Whitespace) {
+    cursor += step;
+  }
+  return cursor;
+}
+
 /**
  * @param {boolean} legacy
  * @param {import('postcss').AtRule} rule
  * @return {void}
  */
+// The media/supports grammar is handled as one token pass to preserve malformed input.
+// eslint-disable-next-line complexity
 function transform(legacy, rule) {
   const ruleName = rule.name.toLowerCase();
 
@@ -68,64 +92,120 @@ function transform(legacy, rule) {
     return;
   }
 
-  const params = valueParser(rule.params);
-
-  params.walk((node, index) => {
-    if (node.type === 'div') {
-      node.before = node.after = '';
-    } else if (node.type === 'function') {
-      node.before = '';
+  const source = rule.params;
+  const input = tokens(source);
+  /** @type {{start:number,end:number,text:string}[]} */
+  const changes = [];
+  /** @type {Set<number>} Whitespace tokens ending empty custom-property fallbacks. */
+  const customPropertySpaces = new Set();
+  /** @type {{open:number, close:string, first?:number, colon?:number, hasValue:boolean}[]} */
+  const stack = [];
+  const closeFor = new Map([
+    [TokenType.OpenParen, TokenType.CloseParen],
+    [TokenType.OpenSquare, TokenType.CloseSquare],
+    [TokenType.OpenCurly, TokenType.CloseCurly],
+  ]);
+  for (let i = 0; i < input.length; i++) {
+    const token = input[i];
+    const type = token[0];
+    const parent = stack.at(-1);
+    const close = closeFor.get(type);
+    if (close) {
+      stack.push({ open: i, close, hasValue: false });
+    } else if (
+      type === TokenType.CloseParen ||
+      type === TokenType.CloseSquare ||
+      type === TokenType.CloseCurly
+    ) {
+      if (parent?.close === type) stack.pop();
+    } else if (
+      parent &&
+      type !== TokenType.Whitespace &&
+      type !== TokenType.Comment
+    ) {
+      if (parent.first === undefined) parent.first = i;
+      else if (type === TokenType.Colon && parent.colon === undefined)
+        parent.colon = i;
+      else if (parent.colon !== undefined) parent.hasValue = true;
+    }
+    if (type === TokenType.Whitespace) {
+      const previous = input[i - 1];
+      const next = input[i + 1];
+      const tight =
+        previous?.[0] === TokenType.Function ||
+        previous?.[0] === TokenType.OpenParen ||
+        next?.[0] === TokenType.CloseParen ||
+        previous?.[0] === TokenType.Comma ||
+        next?.[0] === TokenType.Comma ||
+        previous?.[0] === TokenType.Colon ||
+        next?.[0] === TokenType.Colon ||
+        previous?.[0] === TokenType.Delim ||
+        next?.[0] === TokenType.Delim;
       if (
-        node.nodes[0] &&
-        node.nodes[0].type === 'word' &&
-        node.nodes[0].value.startsWith('--') &&
-        node.nodes[2] === undefined
-      ) {
-        node.after = ' ';
-      } else {
-        node.after = '';
-      }
+        next?.[0] === TokenType.CloseParen &&
+        parent?.first !== undefined &&
+        input[parent.first][0] === TokenType.Ident &&
+        decoded(input[parent.first]).startsWith('--') &&
+        parent.colon !== undefined &&
+        !parent.hasValue
+      )
+        customPropertySpaces.add(i);
+      changes.push({
+        start: token[2],
+        end: tokenEnd(token),
+        text: tight && !customPropertySpaces.has(i) ? '' : ' ',
+      });
+    }
+    if (
+      type === TokenType.Ident &&
+      decoded(token).toLowerCase().endsWith('-aspect-ratio')
+    ) {
+      const colon = significantIndex(input, i + 1, 1);
+      const left = significantIndex(input, colon + 1, 1);
+      const slash = significantIndex(input, left + 1, 1);
+      const right = significantIndex(input, slash + 1, 1);
+      const a = input[left] && numeric(input[left]);
+      const b = input[right] && numeric(input[right]);
       if (
-        node.nodes[4] &&
-        node.nodes[0].value.toLowerCase().indexOf('-aspect-ratio') === 3
+        input[colon]?.[0] === TokenType.Colon &&
+        input[slash]?.[0] === TokenType.Delim &&
+        input[slash][1] === '/' &&
+        a &&
+        b &&
+        !a.unit &&
+        !b.unit
       ) {
-        const [a, b] = aspectRatio(
-          Number(node.nodes[2].value),
-          Number(node.nodes[4].value)
+        const [x, y] = aspectRatio(a.number, b.number);
+        changes.push(
+          {
+            start: input[left][2],
+            end: tokenEnd(input[left]),
+            text: String(x),
+          },
+          {
+            start: input[right][2],
+            end: tokenEnd(input[right]),
+            text: String(y),
+          }
         );
-
-        node.nodes[2].value = a.toString();
-        node.nodes[4].value = b.toString();
-      }
-    } else if (node.type === 'space') {
-      node.value = ' ';
-    } else {
-      const prevWord = params.nodes[index - 2];
-
-      if (
-        node.value.toLowerCase() === 'all' &&
-        rule.name.toLowerCase() === 'media' &&
-        !prevWord
-      ) {
-        const nextWord = params.nodes[index + 2];
-
-        if (!legacy || nextWord) {
-          removeNode(node);
-        }
-
-        if (nextWord && nextWord.value.toLowerCase() === 'and') {
-          const nextSpace = params.nodes[index + 1];
-          const secondSpace = params.nodes[index + 3];
-
-          removeNode(nextWord);
-          removeNode(nextSpace);
-          removeNode(secondSpace);
-        }
       }
     }
-  }, true);
-
-  rule.params = sortAndDedupe(getArguments(params).map(split));
+  }
+  let normalized = applyEdits(source, changes);
+  if (rule.name.toLowerCase() === 'media') {
+    const mediaTokens = tokens(normalized);
+    const first = mediaTokens.find(
+      (token) => token[0] !== TokenType.Whitespace
+    );
+    if (first && decoded(first).toLowerCase() === 'all') {
+      const second = mediaTokens.find(
+        (token) => token[2] > first[3] && token[0] !== TokenType.Whitespace
+      );
+      if (!legacy || second)
+        normalized = normalized.slice(first[3] + 1).replace(/^\s+and\s+/i, '');
+    }
+  }
+  rule.params = sortAndDedupe(splitTopLevel(normalized).map(split));
 
   if (!rule.params.length) {
     rule.raws.afterName = '';
