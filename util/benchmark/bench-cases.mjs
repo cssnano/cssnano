@@ -11,6 +11,48 @@ function pluginProcessor(packageName) {
 }
 
 export const benchmarkCases = {
+  'normalize-display-values-cache-misses': {
+    plugin: 'postcss-normalize-display-values',
+    createProcessor() {
+      return pluginProcessor('postcss-normalize-display-values');
+    },
+    css: Array.from(
+      { length: 1000 },
+      (_, index) => `.display-${index}{display:inline/**/${index}*/flow-root}`
+    ).join(''),
+  },
+  'normalize-display-values-cache-hits': {
+    plugin: 'postcss-normalize-display-values',
+    createProcessor() {
+      return pluginProcessor('postcss-normalize-display-values');
+    },
+    css: Array.from(
+      { length: 1000 },
+      (_, index) => `.display-${index}{display:inline flow-root}`
+    ).join(''),
+  },
+  'normalize-unicode-cache-misses': {
+    plugin: 'postcss-normalize-unicode',
+    createProcessor() {
+      return pluginProcessor('postcss-normalize-unicode');
+    },
+    css: Array.from(
+      { length: 1000 },
+      (_, index) =>
+        `@font-face{font-family:font-${index};unicode-range:u+2b00-2bff/**/${index}*/}`
+    ).join(''),
+  },
+  'normalize-unicode-cache-hits': {
+    plugin: 'postcss-normalize-unicode',
+    createProcessor() {
+      return pluginProcessor('postcss-normalize-unicode');
+    },
+    css: Array.from(
+      { length: 1000 },
+      (_, index) =>
+        `@font-face{font-family:font-${index};unicode-range:u+2b00-2bff}`
+    ).join(''),
+  },
   'selector-reduction': {
     plugin: 'postcss-minify-selectors',
     createProcessor() {
@@ -47,6 +89,28 @@ export const benchmarkCases = {
         `.box-${index}{margin-top:1px;margin-right:2px;margin-bottom:1px;margin-left:2px;padding-top:3px;padding-right:4px;padding-bottom:3px;padding-left:4px}`
     ).join(''),
   },
+  'merge-longhand-columns': {
+    plugin: 'postcss-merge-longhand',
+    createProcessor() {
+      return pluginProcessor('postcss-merge-longhand');
+    },
+    css: Array.from(
+      { length: 200 },
+      (_, index) =>
+        `.columns-${index}{columns:12em auto;column-width:${index + 1}px;column-count:2}`
+    ).join(''),
+  },
+  'merge-longhand-columns-height-guard': {
+    plugin: 'postcss-merge-longhand',
+    createProcessor() {
+      return pluginProcessor('postcss-merge-longhand');
+    },
+    css: Array.from(
+      { length: 200 },
+      (_, index) =>
+        `.column-height-${index}{columns:30em/**//10em;column-width:${index + 1}px;column-count:2}`
+    ).join(''),
+  },
   'stylehacks-detect': {
     plugin: 'stylehacks',
     createProcessor() {
@@ -65,6 +129,26 @@ export const benchmarkCases = {
       { length: 200 },
       (_, index) =>
         `.stylehacks-${index} { margin-top: 1px; margin-right: 2px; margin-bottom: 1px; margin-left: 2px; padding-top: 3px; padding-right: 4px; padding-bottom: 3px; padding-left: 4px; }`
+    ).join(''),
+  },
+  'stylehacks-selector-detect': {
+    plugin: 'stylehacks',
+    createProcessor() {
+      const { detect } = require('../../packages/stylehacks/src/index.js');
+
+      return postcss([
+        {
+          postcssPlugin: 'stylehacks-selector-detect-benchmark',
+          Rule(rule) {
+            void detect(rule);
+          },
+        },
+      ]);
+    },
+    css: Array.from(
+      { length: 500 },
+      (_, index) =>
+        `* html .star-${index}, html:first-child .first-${index}, html > /**/ body .comment-${index}, body:empty .empty-${index}, :is(.nested-${index}, [data-value="a,b"]){color:red}`
     ).join(''),
   },
   'ordered-value-normalization': {
@@ -132,5 +216,27 @@ export const benchmarkCases = {
       ).join('');
       return `@media ${query}{${previousBoundary}${noise}.shared-${index}{color:red;display:block}}`;
     }).join(''),
+  },
+  'ordered-value-cache-sharing': {
+    plugin: 'postcss-ordered-values',
+    createProcessor() {
+      return pluginProcessor('postcss-ordered-values');
+    },
+    css: Array.from(
+      { length: 200 },
+      (_, index) =>
+        `.cache-${index}{border:solid 1px red;border-top:red solid 1px;border-right:1px red solid;border-bottom:solid red 1px;border-left:red 1px solid;grid-column:2 / 1;grid-row:1 / 2;grid-column-start:2;grid-row-start:1;flex-flow:wrap column;list-style:disc inside}`
+    ).join(''),
+  },
+  'ordered-value-tokenization': {
+    plugin: 'postcss-ordered-values',
+    createProcessor() {
+      return pluginProcessor('postcss-ordered-values');
+    },
+    css: Array.from(
+      { length: 200 },
+      (_, index) =>
+        `.tokens-${index}{border:1px solid red;outline:solid ${index}px blue;flex-flow:column wrap;transition:opacity 1s ease-in;animation:2s ease-in slide-${index};box-shadow:rgba(0,0,0,.2) 0 min(10px,2vw);border-color:var(--color,red) solid 1px;list-style:inside url("a,b") square}`
+    ).join(''),
   },
 };
