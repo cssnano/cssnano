@@ -1,1 +1,1 @@
-{"version":3,"file":"counter.d.ts","sourceRoot":"","sources":["../../src/lib/counter.js"],"names":[],"mappings":"AAWA,MAAM,CAAC,OAAO,UAAU,cAAc;IAKlC,mGAAmG,CAAC,OAAO,OAA/F,OAAO,SAAS,EAAE,OAAO,WAAe,CAAC,KAAK,EAAC,MAAM,EAAC,KAAK,EAAC,MAAM,KAAG,MAAM;IAqBvF,SAAS;EA8BZ"}
+{"version":3,"file":"counter.d.ts","sourceRoot":"","sources":["../../src/lib/counter.js"],"names":[],"mappings":"AAWA,MAAM,CAAC,OAAO,UAAU,cAAc;IAOlC,mGAAmG,CAAC,OAAO,OAA/F,OAAO,SAAS,EAAE,OAAO,WAAe,CAAC,KAAK,EAAC,MAAM,EAAC,KAAK,EAAC,MAAM,KAAG,MAAM;IAuBvF,SAAS;EAsCZ"}
