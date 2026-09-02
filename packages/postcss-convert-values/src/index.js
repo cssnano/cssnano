@@ -1,8 +1,10 @@
-import valueParser from 'postcss-value-parser';
 import getBrowsersList from '#getBrowsersList';
+import cssnanoUtils from 'cssnano-utils';
 import convert from './lib/convert.js';
 
 /** @import browserslist from 'browserslist' */
+
+const { TokenType, applyEdits, numericSource, tokens } = cssnanoUtils;
 
 const LENGTH_UNITS = new Set([
   'em',
@@ -59,72 +61,64 @@ const keepZeroPercentageInKeyframe = new Set([
 ]);
 
 /**
- * Numbers without digits after the dot are technically invalid,
- * but in that case css-value-parser returns the dot as part of the unit,
- * so we use this to remove the dot.
- *
- * @param {string} item
- * @return {string}
- */
-function stripLeadingDot(item) {
-  if (item.charCodeAt(0) === '.'.charCodeAt(0)) {
-    return item.slice(1);
-  } else {
-    return item;
-  }
-}
-
-/**
- * @param {valueParser.Node} node
+ * @param {number} number
+ * @param {string} unit
+ * @param {string} raw
  * @param {Options} opts
  * @param {boolean} keepZeroUnit
- * @return {void}
+ * @param {boolean} hasDecimal
+ * @return {string}
  */
-function parseWord(node, opts, keepZeroUnit) {
-  const pair = valueParser.unit(node.value);
-  if (pair) {
-    const num = Number(pair.number);
-    const u = stripLeadingDot(pair.unit);
-    if (num === 0) {
-      node.value =
-        0 +
-        (keepZeroUnit || (!LENGTH_UNITS.has(u.toLowerCase()) && u !== '%')
-          ? u
-          : '');
-      if (node.value === '0ms') {
-        node.value = '0s';
-      }
-    } else {
-      node.value = convert(num, u, opts);
-
-      if (
-        typeof opts.precision === 'number' &&
-        u.toLowerCase() === 'px' &&
-        pair.number.includes('.')
-      ) {
-        const precision = Math.pow(10, opts.precision);
-        node.value =
-          Math.round(Number.parseFloat(node.value) * precision) / precision + u;
-      }
-    }
+function parseNumber(number, unit, raw, opts, keepZeroUnit, hasDecimal) {
+  const lowerCasedUnit = unit.toLowerCase();
+  if (
+    unit !== '' &&
+    unit !== '%' &&
+    !LENGTH_UNITS.has(lowerCasedUnit) &&
+    !['s', 'ms', 'turn', 'deg'].includes(lowerCasedUnit)
+  ) {
+    return raw;
   }
+
+  if (number === 0) {
+    let result =
+      0 +
+      (keepZeroUnit || (!LENGTH_UNITS.has(lowerCasedUnit) && unit !== '%')
+        ? unit
+        : '');
+    if (result === '0ms') {
+      result = '0s';
+    }
+    return result;
+  }
+
+  let result = convert(number, unit, opts);
+
+  if (
+    typeof opts.precision === 'number' &&
+    lowerCasedUnit === 'px' &&
+    hasDecimal
+  ) {
+    const precision = Math.pow(10, opts.precision);
+    result =
+      Math.round(Number.parseFloat(result) * precision) / precision + unit;
+  }
+  return result;
 }
 
 /**
- * @param {valueParser.WordNode} node
- * @return {void}
+ * @param {string} value
+ * @param {number} number
+ * @param {string} unit
+ * @return {string}
  */
-function clampOpacity(node) {
-  const pair = valueParser.unit(node.value);
-  if (!pair) {
-    return;
+function clampOpacity(value, number, unit) {
+  if (number > 1) {
+    return unit === '%' ? number + unit : 1 + unit;
+  } else if (number < 0) {
+    return 0 + unit;
   }
-  const num = Number(pair.number);
-  if (num > 1) {
-    node.value = pair.unit === '%' ? num + pair.unit : 1 + pair.unit;
-  } else if (num < 0) {
-    node.value = 0 + pair.unit;
-  }
+  return value;
 }
 
 /**
@@ -163,6 +157,22 @@ function shouldKeepZeroUnit(decl, browsers) {
     keepWhenZero.has(lowerCasedProp)
   );
 }
+
+/** @param {string} property @param {Options} opts @return {boolean} */
+function skipsTransformation(property, opts) {
+  return (
+    property.includes('flex') ||
+    (property.startsWith('--') && !opts.transformCustomProperties) ||
+    notALength.has(property)
+  );
+}
+
+/** @param {string} property @param {string} replacement @param {number} number @param {string} unit @return {string} */
+function clampPropertyOpacity(property, replacement, number, unit) {
+  return property === 'opacity' || property === 'shape-image-threshold'
+    ? clampOpacity(replacement, number, unit)
+    : replacement;
+}
 /**
  * @param {Options} opts
  * @param {string[]} browsers
@@ -171,41 +181,66 @@ function shouldKeepZeroUnit(decl, browsers) {
  */
 function transform(opts, browsers, decl) {
   const lowerCasedProp = decl.prop.toLowerCase();
-  if (
-    lowerCasedProp.includes('flex') ||
-    (lowerCasedProp.indexOf('--') === 0 && !opts.transformCustomProperties) ||
-    notALength.has(lowerCasedProp)
-  ) {
+  if (skipsTransformation(lowerCasedProp, opts)) {
     return;
   }
 
-  decl.value = valueParser(decl.value)
-    .walk((node) => {
-      const lowerCasedValue = node.value.toLowerCase();
+  const value = decl.value;
+  /** @type {{start: number, end: number, text: string}[]} */
+  const replacements = [];
+  const keepUnits = [shouldKeepZeroUnit(decl, browsers)];
+  /** @type {boolean[]} */
+  const skippedFunctions = [];
+  const input = tokens(value);
 
-      if (node.type === 'word') {
-        parseWord(node, opts, shouldKeepZeroUnit(decl, browsers));
-        if (
-          lowerCasedProp === 'opacity' ||
-          lowerCasedProp === 'shape-image-threshold'
-        ) {
-          clampOpacity(node);
-        }
-      } else if (node.type === 'function') {
-        if (keepZeroPercentAlways.has(lowerCasedValue)) {
-          valueParser.walk(node.nodes, (n) => {
-            if (n.type === 'word') {
-              parseWord(n, opts, true);
-            }
-          });
-          return false;
-        }
-        if (lowerCasedValue === 'url') {
-          return false;
-        }
-      }
-    })
-    .toString();
+  for (let index = 0; index < input.length; index++) {
+    const token = input[index];
+    const type = token[0];
+
+    if (type === TokenType.Function) {
+      // Deliberately use the raw spelling: value-parser did not decode escapes.
+      const name = token[1].slice(0, -1).toLowerCase();
+      keepUnits.push(keepUnits.at(-1) || keepZeroPercentAlways.has(name));
+      skippedFunctions.push(Boolean(skippedFunctions.at(-1)) || name === 'url');
+      continue;
+    }
+    if (type === TokenType.CloseParen) {
+      skippedFunctions.pop();
+      if (keepUnits.length > 1) keepUnits.pop();
+      continue;
+    }
+    if (skippedFunctions.at(-1)) {
+      continue;
+    }
+
+    const source = numericSource(input, index);
+    if (!source) continue;
+    index = source.index;
+    const converted = parseNumber(
+      source.number,
+      source.unit,
+      source.raw,
+      opts,
+      /** @type {boolean} */ (keepUnits.at(-1)),
+      source.hasDecimal
+    );
+    const replacement = clampPropertyOpacity(
+      lowerCasedProp,
+      converted,
+      source.number,
+      source.unit
+    );
+    if (replacement !== source.raw)
+      replacements.push({
+        start: source.start,
+        end: source.end,
+        text: replacement,
+      });
+  }
+
+  if (replacements.length) {
+    decl.value = applyEdits(value, replacements);
+  }
 }
 
 const plugin = 'postcss-convert-values';

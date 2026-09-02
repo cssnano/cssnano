@@ -39,8 +39,24 @@ describe('Convert', () => {
   );
 
   test(
+    'should convert exponent-form numbers',
+    processCSS(
+      'h1{width:1e2px;transition-duration:1e3ms;letter-spacing:1e-2px}',
+      'h1{width:75pt;transition-duration:1s;letter-spacing:.01px}'
+    )
+  );
+
+  test(
     'should not convert negative milliseconds to seconds',
     passthroughCSS('h1{animation-duration:-569ms}')
+  );
+
+  test(
+    'should preserve opaque URL tokens while converting nested math',
+    processCSS(
+      'h1{width:calc(192px + 1e-2px);background:url(foo\\ bar.png)}',
+      'h1{width:calc(2in + .01px);background:url(foo\\ bar.png)}'
+    )
   );
 });
 
