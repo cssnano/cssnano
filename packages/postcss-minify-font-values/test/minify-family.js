@@ -109,7 +109,7 @@ test('minify-family', () => {
   }
 });
 
-test('fails closed for unbalanced blocks', () => {
+test('passes through unbalanced blocks', () => {
   const value = 'foo,bar(calc(1, 2)';
   assert.equal(minifyFamily(value, { removeQuotes: true }), value);
 });
