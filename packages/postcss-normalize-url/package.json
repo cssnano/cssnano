@@ -33,7 +33,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "postcss-value-parser": "^4.2.0"
+    "@csstools/css-tokenizer": "^4.0.0"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
