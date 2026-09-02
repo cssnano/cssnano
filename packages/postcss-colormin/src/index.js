@@ -1,29 +1,16 @@
 import getBrowsersList from '#getBrowsersList';
 import caniuseApi from 'caniuse-api';
-import valueParser from 'postcss-value-parser';
+import cssnanoUtils from 'cssnano-utils';
 import minifyColor from './minifyColor.js';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 const { isSupported } = caniuseApi;
+const { applyEdits, TokenType, tokenEnd, tokenStart, tokens } = cssnanoUtils;
 /** @import browserslist from 'browserslist' */
 
-const rgbOrHslRegex = /^(rgb|hsl)a?$/i;
+const rgbOrHslRegex = /^(?:rgb|hsl)a?$/i;
 const notMinifiableRegex =
-  /^(composes|font|src$|filter|-webkit-tap-highlight-color)/i;
-/**
- * @param {{nodes: valueParser.Node[]}} parent
- * @param {(node: valueParser.Node, index: number, parent: {nodes: valueParser.Node[]}) => false | undefined} callback
- * @return {void}
- */
-function walk(parent, callback) {
-  for (const [index, node] of parent.nodes.entries()) {
-    const bubble = callback(node, index, parent);
-
-    if (node.type === 'function' && bubble !== false) {
-      walk(node, callback);
-    }
-  }
-}
-
+  /^(?:composes|font|src$|filter|-webkit-tap-highlight-color)/i;
 /*
  * IE 8 & 9 do not properly handle clicks on elements
  * with a `transparent` `background-color`.
@@ -32,59 +19,81 @@ function walk(parent, callback) {
  */
 const browsersWithTransparentBug = new Set(['ie 8', 'ie 9']);
 const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
+const tokensRequiringSeparator = new Set([
+  TokenType.Ident,
+  TokenType.Function,
+  TokenType.URL,
+  TokenType.BadURL,
+  TokenType.Hash,
+  TokenType.Number,
+  TokenType.Dimension,
+  TokenType.Percentage,
+]);
 
-/**
- * @param {valueParser.Node} node
- * @return {boolean}
- */
-function isMathFunctionNode(node) {
-  if (node.type !== 'function') {
-    return false;
-  }
-  return mathFunctions.has(node.value.toLowerCase());
-}
-
-/**
- * @param {string} value
- * @param {Options} options
- * @return {string}
- */
+/** @param {string} value @param {Options} options @return {string} */
 function transform(value, options) {
-  const parsed = valueParser(value);
-
-  walk(parsed, (node, index, parent) => {
-    if (node.type === 'function') {
-      if (rgbOrHslRegex.test(node.value)) {
-        const { value: originalValue } = node;
-
-        node.value = minifyColor(valueParser.stringify(node), options);
-        /** @type {string} */ (node.type) = 'word';
-
-        const next = parent.nodes[index + 1];
-
-        if (
-          node.value !== originalValue &&
-          next &&
-          (next.type === 'word' || next.type === 'function')
-        ) {
-          parent.nodes.splice(
-            index + 1,
-            0,
-            /** @type {valueParser.SpaceNode} */ ({
-              type: 'space',
-              value: ' ',
-            })
-          );
+  /** @type {CSSToken[]} */ const input = tokens(value);
+  /** @type {{start:number,end:number,text:string}[]} */ const replacements =
+    [];
+  /** @type {{token: CSSToken, name: string, skipChildren: boolean, isMath: boolean}[]} */
+  const stack = [];
+  let mathDepth = 0;
+  let skipDepth = 0;
+  /** @param {number} end @param {number} index */
+  function separator(end, index) {
+    const next = input[index + 1];
+    return next &&
+      tokensRequiringSeparator.has(next[0]) &&
+      value.slice(end, tokenStart(next)) === ''
+      ? ' '
+      : '';
+  }
+  for (let i = 0; i < input.length; i++) {
+    const t = input[i];
+    if (t[0] === TokenType.Function) {
+      const name = t[1].slice(0, -1).toLowerCase();
+      const isMath = mathFunctions.has(name);
+      const isColor = rgbOrHslRegex.test(name);
+      stack.push({
+        token: t,
+        name,
+        skipChildren: isMath || isColor,
+        isMath,
+      });
+      if (isMath) mathDepth++;
+      if (isMath || isColor) skipDepth++;
+    } else if (t[0] === TokenType.CloseParen && stack.length) {
+      const entry = stack.pop();
+      if (!entry) continue;
+      if (entry.isMath) mathDepth--;
+      if (entry.skipChildren) skipDepth--;
+      if (mathDepth === 0) {
+        const { token: f, name } = entry;
+        if (!rgbOrHslRegex.test(name)) continue;
+        const raw = value.slice(tokenStart(f), tokenEnd(t));
+        const out = minifyColor(raw, options);
+        if (out !== raw) {
+          replacements.push({
+            start: tokenStart(f),
+            end: tokenEnd(t),
+            text: out + separator(tokenEnd(t), i),
+          });
         }
-      } else if (isMathFunctionNode(node)) {
-        return false;
       }
-    } else if (node.type === 'word') {
-      node.value = minifyColor(node.value, options);
+    } else if (
+      (t[0] === TokenType.Ident || t[0] === TokenType.Hash) &&
+      skipDepth === 0
+    ) {
+      const out = minifyColor(t[1], options);
+      if (out !== t[1])
+        replacements.push({
+          start: tokenStart(t),
+          end: tokenEnd(t),
+          text: out + separator(tokenEnd(t), i),
+        });
     }
-  });
-
-  return parsed.toString();
+  }
+  return applyEdits(value, replacements);
 }
 
 /**
