@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
 const atrule = 'atrule';
 const decl = 'decl';
@@ -24,37 +24,118 @@ function endsWithEscapingBackslash(value) {
   return backslashes % 2 === 1;
 }
 
-/**
- * @param {valueParser.Node} node
- * @return {void}
- */
-function reduceCalcWhitespaces(node) {
-  if (node.type === 'space') {
-    node.value = ' ';
-  } else if (node.type === 'function') {
-    if (!variableFunctions.has(node.value.toLowerCase())) {
-      node.before = node.after = '';
-    }
-  }
+/** @param {import('@csstools/css-tokenizer').TokenType} type */
+function isOpeningToken(type) {
+  return (
+    type === TokenType.OpenParen ||
+    type === TokenType.OpenSquare ||
+    type === TokenType.OpenCurly
+  );
 }
+
+/** @param {import('@csstools/css-tokenizer').TokenType} type */
+function isClosingToken(type) {
+  return (
+    type === TokenType.CloseParen ||
+    type === TokenType.CloseSquare ||
+    type === TokenType.CloseCurly
+  );
+}
+
+/** @param {import('@csstools/css-tokenizer').CSSToken | undefined} token */
+function isDivider(token) {
+  return (
+    token?.[0] === TokenType.Comma ||
+    (token?.[0] === TokenType.Delim && token[1] === '/')
+  );
+}
+
+/** @param {import('@csstools/css-tokenizer').CSSToken | undefined} previous @param {import('@csstools/css-tokenizer').CSSToken | undefined} next @param {{ calc?: boolean, variable?: boolean } | undefined} context */
+function removesWhitespace(previous, next, context) {
+  if (context?.variable) return false;
+  return (
+    previous?.[0] === TokenType.Function ||
+    previous?.[0] === TokenType.OpenParen ||
+    next?.[0] === TokenType.CloseParen
+  );
+}
+
 /**
- * @param {valueParser.Node} node
- * @return {void | false}
+ * @param {import('@csstools/css-tokenizer').CSSToken[]} tokens
+ * @param {number} index
+ * @param {{ calc?: boolean, variable?: boolean }[]} stack
+ * @return {string}
  */
-function reduceWhitespaces(node) {
-  if (node.type === 'space') {
-    node.value = ' ';
-  } else if (node.type === 'div') {
-    node.before = node.after = '';
-  } else if (node.type === 'function') {
-    if (!variableFunctions.has(node.value.toLowerCase())) {
-      node.before = node.after = '';
+function whitespaceReplacement(tokens, index, stack) {
+  const previous = tokens[index - 1];
+  const next = tokens[index + 1];
+  const context = stack.at(-1);
+  if (previous && endsWithEscapingBackslash(previous[1]))
+    return tokens[index][1];
+  const besideFunctionBoundary = removesWhitespace(previous, next, context);
+  const besideDivider =
+    !context?.calc && (isDivider(previous) || isDivider(next));
+  const variableTrailingFallback =
+    context?.variable &&
+    previous?.[0] === TokenType.Comma &&
+    next?.[0] === TokenType.CloseParen;
+  return !variableTrailingFallback && (besideFunctionBoundary || besideDivider)
+    ? ''
+    : ' ';
+}
+
+/**
+ * Normalize directly from source-backed tokenizer spans. The stack mirrors the
+ * legacy walk: calc descendants receive special delimiter treatment, while
+ * variable functions retain their immediate inner whitespace.
+ *
+ * @param {string} value
+ * @return {string}
+ */
+function reduceWhitespaces(value) {
+  const tokens = [...tokenize({ css: value })].filter(
+    (token) => token[0] !== TokenType.EOF
+  );
+  /** @type {{ calc?: boolean, variable?: boolean }[]} */
+  const stack = [];
+  /** @type {[number, number, string][]} */
+  const replacements = [];
+
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const type = token[0];
+    if (type === TokenType.Function) {
+      const name = token[1].slice(0, -1).toLowerCase();
+      stack.push({
+        calc: stack.at(-1)?.calc || name === 'calc',
+        variable: variableFunctions.has(name),
+      });
+      continue;
     }
-    if (node.value.toLowerCase() === 'calc') {
-      valueParser.walk(node.nodes, reduceCalcWhitespaces);
-      return false;
+    if (isOpeningToken(type)) {
+      stack.push({ ...stack.at(-1) });
+      continue;
+    }
+    if (isClosingToken(type)) {
+      stack.pop();
+      continue;
+    }
+    if (type !== TokenType.Whitespace) continue;
+
+    const replacement = whitespaceReplacement(tokens, index, stack);
+    if (replacement !== token[1]) {
+      replacements.push([token[2], token[3] + 1, replacement]);
     }
   }
+
+  if (!replacements.length) return value;
+  let result = '';
+  let start = 0;
+  for (const [from, to, replacement] of replacements) {
+    result += value.slice(start, from) + replacement;
+    start = to;
+  }
+  return result + value.slice(start);
 }
 
 /**
@@ -69,14 +150,12 @@ function trimDeclaration(node, cache) {
     node.raws.important = '!important';
   }
   // Remove whitespaces around ie 9 hack
-  node.value = node.value.replace(ieHackRegex, '$1');
-  const value = node.value;
+  const value = (node.raws.value?.raw ?? node.value).replace(ieHackRegex, '$1');
 
   if (cache.has(value)) {
     node.value = /** @type {string} **/ (cache.get(value));
   } else {
-    const parsed = valueParser(node.value);
-    const result = parsed.walk(reduceWhitespaces).toString();
+    const result = reduceWhitespaces(value);
 
     // Trim whitespace inside functions & dividers
     node.value = result;
