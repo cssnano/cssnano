@@ -1,6 +1,38 @@
 import CommentRemover from './lib/commentRemover.js';
 import commentParser from './lib/commentParser.js';
-import selectorParser from 'postcss-selector-parser';
+
+const selectorWhitespace = new Set(['\t', '\n', '\f', '\r', ' ']);
+
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
+function isSelectorWhitespace(value) {
+  return selectorWhitespace.has(value);
+}
+
+/**
+ * @param {string[]} parts
+ */
+function trimTrailingSelectorWhitespace(parts) {
+  for (let index = parts.length - 1; index >= 0; index--) {
+    const part = parts[index];
+    let end = part.length;
+
+    while (end > 0 && isSelectorWhitespace(part[end - 1])) {
+      end--;
+    }
+
+    if (end !== part.length) {
+      parts[index] = part.slice(0, end);
+      continue;
+    }
+
+    if (part.length) {
+      return;
+    }
+  }
+}
 
 /** @typedef {object} Options
  *  @property {boolean=} removeAll
@@ -117,26 +149,45 @@ function pluginCreator(opts = {}) {
 
       return normalized;
     }
-    const processed = selectorParser((ast) => {
-      ast.walk((node) => {
-        if (node.type === 'comment') {
-          const contents = node.value.slice(2, -2);
-          if (remover.canRemove(contents)) {
-            node.remove();
+    const parts = [];
+    let removedCommentBeforeComma = false;
+
+    for (const [type, start, end] of getTokens(source)) {
+      if (!type) {
+        let part = source.slice(start, end);
+
+        if (removedCommentBeforeComma) {
+          let offset = 0;
+
+          while (offset < part.length && isSelectorWhitespace(part[offset])) {
+            offset++;
+          }
+
+          if (part[offset] === ',') {
+            trimTrailingSelectorWhitespace(parts);
+            part = part.slice(offset);
           }
         }
-        const rawSpaceAfter = replaceComments(node.rawSpaceAfter, space, '');
-        const rawSpaceBefore = replaceComments(node.rawSpaceBefore, space, '');
-        // If comments are not removed, the result of trim will be returned,
-        // so if we compare and there are no changes, skip it.
-        if (rawSpaceAfter !== node.rawSpaceAfter.trim()) {
-          node.rawSpaceAfter = rawSpaceAfter;
-        }
-        if (rawSpaceBefore !== node.rawSpaceBefore.trim()) {
-          node.rawSpaceBefore = rawSpaceBefore;
-        }
-      });
-    }).processSync(source);
+
+        parts.push(part);
+        removedCommentBeforeComma = false;
+        continue;
+      }
+
+      const contents = source.slice(start, end);
+
+      if (!remover.canRemove(contents)) {
+        parts.push('/*' + contents + '*/');
+        removedCommentBeforeComma = false;
+      } else {
+        removedCommentBeforeComma = true;
+      }
+    }
+
+    // Selector-parser drops whitespace immediately before a comma when a
+    // preceding comment is removed. Keep that punctuation normalization while
+    // leaving whitespace around combinators intact.
+    const processed = parts.join('');
 
     const result = space(processed).join(' ');
 

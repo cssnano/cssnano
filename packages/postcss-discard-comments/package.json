@@ -33,9 +33,6 @@
     "type": "git",
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
-  "dependencies": {
-    "postcss-selector-parser": "catalog:"
-  },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
   },

@@ -237,6 +237,11 @@ test(
 );
 
 test(
+  'should remove all whitespace before a comma after multiple comments',
+  processCSS('.a /*first*/ /*second*/ , .b{color:#000}', '.a, .b{color:#000}')
+);
+
+test(
   'should remove only a comment 3',
   processCSS(
     ':not(/*comment*/ [attr="/* not a comment */"]){color:#000}',
@@ -252,6 +257,60 @@ test(
 test(
   'should remove comments in pseudo-class-function',
   processCSS(':not(/*comment*/.foo){color:#000}', ':not(.foo){color:#000}')
+);
+
+test(
+  'should preserve escaped comment delimiters in selectors',
+  processCSS(
+    '.foo\\/\\*bar\\*\\/\\\\\\n\\"baz/*remove*/.qux{color:red}',
+    '.foo\\/\\*bar\\*\\/\\\\\\n\\"baz.qux{color:red}'
+  )
+);
+
+test(
+  'should preserve comment-like text in quoted and unquoted attributes',
+  processCSS(
+    '[data-a="/*quoted*/"] [data-b=foo\\/\\*bar\\*\\/]/*remove*/[data-c=foo]{color:red}',
+    '[data-a="/*quoted*/"] [data-b=foo\\/\\*bar\\*\\/][data-c=foo]{color:red}'
+  )
+);
+
+test(
+  'should remove comments in nested selector functions and blocks',
+  processCSS(
+    ':is(.a/*one*/, :not([x="/*two*/"]/*three*/)) > ns|*/*four*/{color:red}',
+    ':is(.a, :not([x="/*two*/"])) > ns|*{color:red}'
+  )
+);
+
+test(
+  'should preserve comments in functional pseudo raw arguments',
+  processCSS(
+    ':raw(/*!keep*/ "/*keep*/" [x=foo\\/\\*keep\\*\\/])/*!keep*/{color:red}',
+    ':raw(/*!keep*/ "/*keep*/" [x=foo\\/\\*keep\\*\\/])/*!keep*/{color:red}'
+  )
+);
+
+test(
+  'should preserve selected comments in selectors with exact spacing',
+  processCSS(
+    '.a /*keep*/ > /*remove*/ .b, .c/*keep*/+.d{color:red}',
+    '.a /*keep*/ > .b, .c/*keep*/+.d{color:red}',
+    { remove: (comment) => comment.trim() === 'remove' }
+  )
+);
+
+test(
+  'should preserve commas inside quoted attribute values',
+  processCSS(
+    '[data="x , y"]/*remove*/.a{color:red}',
+    '[data="x , y"].a{color:red}'
+  )
+);
+
+test(
+  'should reuse selector comment replacements for repeated raw selectors',
+  processCSS('.a/*remove*/, .a/*remove*/{color:red}', '.a, .a{color:red}')
 );
 
 test(

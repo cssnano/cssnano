@@ -10,8 +10,8 @@ export const mutations = [
   },
   {
     name: 'preserve removable comments in selectors',
-    find: 'if (remover.canRemove(contents)) {\n            node.remove();',
-    replace: 'if (false) {\n            node.remove();',
+    find: "if (!remover.canRemove(contents)) {\n        parts.push('/*' + contents + '*/');",
+    replace: "if (false) {\n        parts.push('/*' + contents + '*/');",
   },
   {
     name: 'preserve removable comment nodes',
