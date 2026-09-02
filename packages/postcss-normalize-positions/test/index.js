@@ -170,6 +170,52 @@ test(
 );
 
 test(
+  'should preserve an arbitrary coordinate before center',
+  processCSS('background-position:95% center', 'background-position:95%')
+);
+
+test(
+  'should preserve a length coordinate before center',
+  processCSS('background-position:10px center', 'background-position:10px')
+);
+
+test(
+  'should preserve a math coordinate before center',
+  processCSS(
+    'background-position:calc(100% - 5px) center',
+    'background-position:calc(100% - 5px)'
+  )
+);
+
+test(
+  'should compact whitespace before the background size separator',
+  processCSS(
+    'background:calc(100% - 5px) center  / cover',
+    'background:calc(100% - 5px) / cover'
+  )
+);
+
+test(
+  'should normalize position in multiple background layers',
+  processCSS(
+    'background:url(a.png) 95% center/cover no-repeat,linear-gradient(red,blue) 10px center/50% 50%',
+    'background:url(a.png) 95%/cover no-repeat,linear-gradient(red,blue) 10px/50% 50%'
+  )
+);
+
+test(
+  'should preserve comments in an unnormalized position range',
+  passthroughCSS('background-position:95% /* source comment */ 60%')
+);
+
+test(
+  'should refuse three and four coordinate syntax',
+  passthroughCSS(
+    'background-position:left 10px top 20px,left 10px top 20px 1px'
+  )
+);
+
+test(
   'should pass through with calc function (uppercase)',
   passthroughCSS('background-position: center right CALC(0.375em + 0.1875rem)')
 );
@@ -288,6 +334,11 @@ test(
     'background: url(/media/examples/hand.jpg) right center / 200px 100px',
     'background: url(/media/examples/hand.jpg) 100% / 200px 100px'
   )
+);
+
+test(
+  'should preserve arbitrary horizontal values before center',
+  processCSS('background: 95% center', 'background: 95%')
 );
 
 test(
