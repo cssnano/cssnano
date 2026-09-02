@@ -32,14 +32,14 @@
     "type": "git",
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
-  "dependencies": {
-    "postcss-value-parser": "^4.2.0"
-  },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
     "node": "^22.22.3 || ^24.15.0 || >=26.0"
+  },
+  "dependencies": {
+    "@csstools/css-tokenizer": "^4.0.0"
   },
   "devDependencies": {
     "@webref/css": "catalog:",

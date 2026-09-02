@@ -3,9 +3,11 @@
  * nodes making up `x` and those making up `y`. The value parser reports the
  * separating commas as `div` nodes.
  *
- * @param {import('postcss-value-parser').FunctionNode} node
- * @return {import('postcss-value-parser').Node[][]}
+ * @param {{nodes?: unknown[]}} node
+ * @return {unknown[][]}
  */
-declare function functionArguments(node: import('postcss-value-parser').FunctionNode): import('postcss-value-parser').Node[][];
+declare function functionArguments(node: {
+    nodes?: unknown[];
+}): unknown[][];
 export default functionArguments;
 //# sourceMappingURL=functionArguments.d.ts.map
