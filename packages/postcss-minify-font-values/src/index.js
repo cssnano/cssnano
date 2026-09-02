@@ -22,10 +22,11 @@ function hasVariableFunction(value) {
 function transform(prop, value, opts) {
   const lowerCasedProp = prop.toLowerCase();
   let variableType = '';
+  let removeQuotes = opts.removeQuotes;
 
   if (typeof opts.removeQuotes === 'function') {
     variableType = opts.removeQuotes(prop);
-    opts.removeQuotes = true;
+    removeQuotes = true;
   }
   if (
     (lowerCasedProp === 'font-weight' || variableType === 'font-weight') &&
@@ -36,9 +37,9 @@ function transform(prop, value, opts) {
     (lowerCasedProp === 'font-family' || variableType === 'font-family') &&
     !hasVariableFunction(value)
   ) {
-    return minifyFamily(value, opts);
+    return minifyFamily(value, opts, removeQuotes);
   } else if (lowerCasedProp === 'font' || variableType === 'font') {
-    return minifyFont(value, opts);
+    return minifyFont(value, opts, removeQuotes);
   }
 
   return value;

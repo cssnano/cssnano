@@ -108,3 +108,29 @@ test('minify-family', () => {
     assert.equal(minifyFamily(value, options), expected[0].value);
   }
 });
+
+test('fails closed for unbalanced blocks', () => {
+  const value = 'foo,bar(calc(1, 2)';
+  assert.equal(minifyFamily(value, { removeQuotes: true }), value);
+});
+
+test('keeps reserved family names quoted', () => {
+  const value =
+    '"inherit","initial","unset","revert","revert-layer","inherit family","sans-serif","serif","fantasy","cursive","monospace","system-ui","math","ui-serif","ui-sans-serif","ui-monospace","ui-rounded","emoji","fangsong","Fancy serif","caption","icon","menu","message-box","small-caption","status-bar","caption family"';
+  assert.equal(minifyFamily(value, { removeQuotes: true }), value);
+});
+
+test('keeps quoted script generic syntax and later fallbacks', () => {
+  assert.equal(
+    minifyFamily('"generic(fangsong)",serif', {
+      removeAfterKeyword: true,
+      removeQuotes: true,
+    }),
+    '"generic(fangsong)",serif'
+  );
+});
+
+test('retains fallbacks after incomplete and script-specific generics', () => {
+  for (const value of ['generic(foo),serif', 'fangsong,serif'])
+    assert.equal(minifyFamily(value, { removeAfterKeyword: true }), value);
+});
