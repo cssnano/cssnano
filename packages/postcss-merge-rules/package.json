@@ -40,10 +40,10 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
+    "@csstools/css-tokenizer": "^4.0.0",
     "browserslist": "catalog:",
     "caniuse-api": "^4.0.0",
-    "cssnano-utils": "workspace:^",
-    "postcss-selector-parser": "catalog:"
+    "cssnano-utils": "workspace:^"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
@@ -55,6 +55,7 @@
     "@webref/css": "catalog:",
     "postcss": "catalog:",
     "postcss-discard-comments": "workspace:^",
+    "postcss-selector-parser": "^7.1.5",
     "postcss-simple-vars": "^7.0.1"
   },
   "peerDependencies": {
@@ -62,6 +63,7 @@
   },
   "scripts": {
     "acquire": "node ./script/acquire.mjs",
+    "fuzz": "node ./script/fuzz.js",
     "test": "node --test"
   },
   "type": "module"

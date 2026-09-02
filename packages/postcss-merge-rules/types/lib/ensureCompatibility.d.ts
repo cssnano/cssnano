@@ -63,11 +63,21 @@ declare const pseudoElements: {
     ':visited': string;
 };
 /**
+ * Scan selector tokens for the compatibility features checked here. This is
+ * deliberately not a selector parser: token values remain raw so escaped and
+ * differently-cased pseudo names retain the old behavior.
+ *
+ * @param {string} selector
+ * @param {string[] | undefined} browsers
+ * @return {boolean}
+ */
+declare function scanCompatibility(selector: string, browsers: string[] | undefined): boolean;
+/**
  * @param {string[]} selectors
  * @param{string[]=} browsers
  * @param{Map<string,boolean>=} compatibilityCache
  * @return {boolean}
  */
 declare function ensureCompatibility(selectors: string[], browsers?: string[] | undefined, compatibilityCache?: Map<string, boolean> | undefined): boolean;
-export { sameVendor, noVendor, pseudoElements, ensureCompatibility };
+export { sameVendor, noVendor, pseudoElements, ensureCompatibility, scanCompatibility, };
 //# sourceMappingURL=ensureCompatibility.d.ts.map

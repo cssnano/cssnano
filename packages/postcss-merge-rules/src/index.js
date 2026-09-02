@@ -109,6 +109,15 @@ function isDescendant(rule, container) {
   return false;
 }
 
+/** @param {Map<import('postcss').Container, {first: Rule | null, last: Rule | null}>} captured @param {Rule[]} replaced @param {'first'|'last'} edge */
+function replacedBoundary(captured, replaced, edge) {
+  for (const boundary of captured.values()) {
+    const rule = boundary[edge];
+    if (rule && replaced.includes(rule)) return true;
+  }
+  return false;
+}
+
 /**
  * @param {Rule} first
  * @param {Rule} second
@@ -324,30 +333,18 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
     }
     return captured;
   }
-  /**
-   * Repair the active order for a rule moved by mergeParents. The old and new
-   * ancestor paths are the only paths whose first/last descendant can change.
-   * @param {Rule} rule
-   * @param {import('postcss').Container} oldParent
-   * @param {import('postcss').Container} newParent
-   */
-  // eslint-disable-next-line complexity
-  function repairMove(rule, oldParent, newParent) {
-    const oldAncestors = [];
-    /** @type {import('postcss').Container<import('postcss').ChildNode> | undefined} */
-    let container = oldParent;
+  /** @param {import('postcss').Container} parent */
+  function ancestors(parent) {
+    const result = [];
+    /** @type {import('postcss').Container | undefined} */
+    let container = parent;
     for (; container; container = getParent(container)) {
-      oldAncestors.push(container);
+      result.push(container);
     }
-    const newAncestors = [];
-    container = newParent;
-    for (; container; container = getParent(container)) {
-      newAncestors.push(container);
-    }
-
-    const meta = active.get(rule);
-    if (!meta?.active) return;
-    const { previous, next } = meta;
+    return result;
+  }
+  /** @param {Rule | null} previous @param {Rule | null} next */
+  function unlink(previous, next) {
     if (previous) {
       const previousMeta = active.get(previous);
       if (previousMeta) previousMeta.next = next;
@@ -356,21 +353,34 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
       const nextMeta = active.get(next);
       if (nextMeta) nextMeta.previous = previous;
     }
-
-    for (const ancestor of oldAncestors) {
+  }
+  /**
+   * Repair the active order for a rule moved by mergeParents. The old and new
+   * ancestor paths are the only paths whose first/last descendant can change.
+   * @param {Rule} rule
+   * @param {import('postcss').Container} oldParent
+   * @param {import('postcss').Container} newParent
+   */
+  function repairMove(rule, oldParent, newParent) {
+    const meta = active.get(rule);
+    if (!meta?.active) return;
+    const { previous, next } = meta;
+    unlink(previous, next);
+    for (const ancestor of ancestors(oldParent)) {
       const boundary = boundaries.get(ancestor);
       if (!boundary) continue;
-      if (boundary.first === rule) {
+      if (boundary.first === rule)
         boundary.first = next && isDescendant(next, ancestor) ? next : null;
-      }
-      if (boundary.last === rule) {
+      if (boundary.last === rule)
         boundary.last =
           previous && isDescendant(previous, ancestor) ? previous : null;
-      }
     }
 
-    const destinationBoundary = boundaries.get(newParent);
-    const destinationLast = destinationBoundary?.last ?? null;
+    linkMovedRule(rule, meta, newParent);
+  }
+  /** @param {Rule} rule @param {ActiveMeta} meta @param {import('postcss').Container} newParent */
+  function linkMovedRule(rule, meta, newParent) {
+    const destinationLast = boundaries.get(newParent)?.last ?? null;
     meta.previous = destinationLast;
     meta.next = destinationLast
       ? (active.get(destinationLast)?.next ?? null)
@@ -384,7 +394,7 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
       if (nextMeta) nextMeta.previous = rule;
     }
 
-    for (const ancestor of newAncestors) {
+    for (const ancestor of ancestors(newParent)) {
       const boundary = boundaries.get(ancestor);
       if (!boundary) continue;
       boundary.first ??= rule;
@@ -439,9 +449,116 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
     indexContainer(root, { previous: null });
     return boundaries.get(root)?.first ?? null;
   }
+  /** @param {Rule} first @param {Rule} second @param {(rule: Rule) => void} enqueueNeighbors */
+  function mergeMatchingDeclarations(first, second, enqueueNeighbors) {
+    if (
+      !sameDeclarationsAndOrder(
+        getMeta(second, ruleMeta).declarations,
+        getMeta(first, ruleMeta).declarations
+      )
+    )
+      return false;
+    const metaSecond = getMeta(second, ruleMeta);
+    metaSecond.selectors = [
+      ...getMeta(first, ruleMeta).selectors,
+      ...metaSecond.selectors,
+    ];
+    metaSecond.dirty = true;
+    flush(second, ruleMeta);
+    detach(first);
+    first.remove();
+    ruleMeta?.delete(first);
+    refresh(second);
+    ruleCache?.add(second);
+    enqueueNeighbors(second);
+    return true;
+  }
+  /** @param {Rule} first @param {Rule} second @param {(rule: Rule) => void} enqueueNeighbors */
+  function mergeMatchingSelectors(first, second, enqueueNeighbors) {
+    if (
+      getMeta(first, ruleMeta).selectors.join(',') !==
+      getMeta(second, ruleMeta).selectors.join(',')
+    )
+      return false;
+    const cachedDecls = getMeta(first, ruleMeta).declarations;
+    second.walk((node) => {
+      if (node.type === 'decl' && indexOfDeclaration(cachedDecls, node) !== -1)
+        node.remove();
+      else first.append(node);
+    });
+    getMeta(first, ruleMeta).declarations = getDecls(first);
+    detach(second);
+    second.remove();
+    ruleMeta?.delete(second);
+    refresh(first);
+    enqueueNeighbors(first);
+    return true;
+  }
+  /** @param {Rule[]} replacements @param {Rule | null} previous @param {Rule | null} next @param {number | undefined} sourceOrder */
+  function linkReplacements(replacements, previous, next, sourceOrder) {
+    let prior = previous;
+    for (const replacement of replacements) {
+      const meta = refresh(replacement, sourceOrder);
+      meta.previous = prior;
+      if (prior)
+        /** @type {ActiveMeta} */ (active.get(prior)).next = replacement;
+      prior = replacement;
+    }
+    if (prior) /** @type {ActiveMeta} */ (active.get(prior)).next = next;
+    if (next) /** @type {ActiveMeta} */ (active.get(next)).previous = prior;
+  }
+  /** @param {Rule} replacement @param {'first'|'last'} edge */
+  function updateAncestorBoundaries(replacement, edge) {
+    for (
+      let container = getParent(replacement);
+      container;
+      container = getParent(container)
+    ) {
+      const boundary = boundaries.get(container);
+      if (boundary) boundary[edge] = replacement;
+    }
+  }
+  /** @param {ReturnType<typeof partialMerge>} outcome @param {Map<import('postcss').Container, Boundary>} captured @param {(first: Rule | null, second: Rule | null) => void} enqueue @param {(rule: Rule) => void} enqueueNeighbors @return {boolean} */
+  function installPartialMerge(outcome, captured, enqueue, enqueueNeighbors) {
+    if (!outcome.replacements.length) return false;
+    const firstWasBoundary =
+      !outcome.moved && replacedBoundary(captured, outcome.replaced, 'first');
+    const lastWasBoundary =
+      !outcome.moved && replacedBoundary(captured, outcome.replaced, 'last');
+    const previous = active.get(outcome.replaced[0])?.previous ?? null;
+    const lastReplaced = /** @type {Rule} */ (outcome.replaced.at(-1));
+    const next = active.get(lastReplaced)?.next ?? null;
+    const sourceOrder = active.get(outcome.replaced[0])?.sourceOrder;
+    for (const rule of outcome.replaced) {
+      detach(rule);
+      ruleMeta?.delete(rule);
+    }
+    linkReplacements(outcome.replacements, previous, next, sourceOrder);
+    const firstReplacement = outcome.replacements[0];
+    const lastReplacement = /** @type {Rule} */ (outcome.replacements.at(-1));
+    if (firstWasBoundary && firstReplacement.parent)
+      updateAncestorBoundaries(firstReplacement, 'first');
+    if (lastWasBoundary && lastReplacement.parent)
+      updateAncestorBoundaries(lastReplacement, 'last');
+    for (const replacement of outcome.replacements)
+      enqueueNeighbors(replacement);
+    enqueue(previous, firstReplacement ?? next);
+    enqueue(lastReplacement ?? previous, next);
+    return outcome.moved;
+  }
+  /** @param {{first: Rule, second: Rule, firstVersion: number, secondVersion: number}} candidate */
+  function isCurrentCandidate(candidate) {
+    const firstMeta = active.get(candidate.first);
+    const secondMeta = active.get(candidate.second);
+    return Boolean(
+      firstMeta?.active &&
+      secondMeta?.active &&
+      firstMeta.next === candidate.second &&
+      firstMeta.version === candidate.firstVersion &&
+      secondMeta.version === candidate.secondVersion
+    );
+  }
   return {
-    // Keep the heap scheduling and rewrite repair together for the AST mutation.
-    // eslint-disable-next-line complexity
     run(root) {
       /** @typedef {{first: Rule, second: Rule, firstVersion: number, secondVersion: number, benefit: number, firstSourceOrder: number, contentKey: string}} Candidate */
       /** @type {Candidate[]} */
@@ -549,16 +666,7 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
         const candidate = popCandidate();
         const first = candidate.first;
         const second = candidate.second;
-        const firstMeta = active.get(first);
-        const secondMeta = active.get(second);
-        if (
-          !firstMeta?.active ||
-          !secondMeta?.active ||
-          firstMeta.next !== second ||
-          firstMeta.version !== candidate.firstVersion ||
-          secondMeta.version !== candidate.secondVersion
-        )
-          continue;
+        if (!isCurrentCandidate(candidate)) continue;
         if (!checkedCanMerge(first, second)) continue;
         // Equivalent at-rule moves preserve depth-first leaf-rule order.
         const oldParent = second.parent;
@@ -567,48 +675,9 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
         if (moved && oldParent && newParent) {
           repairMove(second, oldParent, newParent);
         }
-        if (
-          sameDeclarationsAndOrder(
-            getMeta(second, ruleMeta).declarations,
-            getMeta(first, ruleMeta).declarations
-          )
-        ) {
-          const metaSecond = getMeta(second, ruleMeta);
-          metaSecond.selectors = [
-            ...getMeta(first, ruleMeta).selectors,
-            ...metaSecond.selectors,
-          ];
-          metaSecond.dirty = true;
-          flush(second, ruleMeta);
-          detach(first);
-          first.remove();
-          ruleMeta?.delete(first);
-          refresh(second);
-          ruleCache?.add(second);
-          enqueueNeighbors(second);
+        if (mergeMatchingDeclarations(first, second, enqueueNeighbors))
           continue;
-        }
-        if (
-          getMeta(first, ruleMeta).selectors.join(',') ===
-          getMeta(second, ruleMeta).selectors.join(',')
-        ) {
-          const cachedDecls = getMeta(first, ruleMeta).declarations;
-          second.walk((node) => {
-            if (
-              node.type === 'decl' &&
-              indexOfDeclaration(cachedDecls, node) !== -1
-            )
-              node.remove();
-            else first.append(node);
-          });
-          getMeta(first, ruleMeta).declarations = getDecls(first);
-          detach(second);
-          second.remove();
-          ruleMeta?.delete(second);
-          refresh(first);
-          enqueueNeighbors(first);
-          continue;
-        }
+        if (mergeMatchingSelectors(first, second, enqueueNeighbors)) continue;
         const replacedRules = [first, second];
         const capturedBoundaries = captureBoundaries(replacedRules);
         const outcome = partialMerge(
@@ -621,73 +690,13 @@ function selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta) {
           (rule, movedFrom, movedTo) => repairMove(rule, movedFrom, movedTo)
         );
         if (outcome.replacements.length) {
-          const firstWasBoundary =
-            !outcome.moved &&
-            outcome.replaced.some((rule) =>
-              [...capturedBoundaries.values()].some((b) => b.first === rule)
-            );
-          const lastWasBoundary =
-            !outcome.moved &&
-            outcome.replaced.some((rule) =>
-              [...capturedBoundaries.values()].some((b) => b.last === rule)
-            );
-          const previous = active.get(outcome.replaced[0])?.previous ?? null;
-          const lastReplaced = /** @type {Rule} */ (outcome.replaced.at(-1));
-          const next = active.get(lastReplaced)?.next ?? null;
-          const sourceOrder = active.get(outcome.replaced[0])?.sourceOrder;
-          for (const rule of outcome.replaced) {
-            detach(rule);
-            ruleMeta?.delete(rule);
-          }
-          let prior = previous;
-          for (const replacement of outcome.replacements) {
-            const meta = refresh(replacement, sourceOrder);
-            meta.previous = prior;
-            if (prior) {
-              /** @type {ActiveMeta} */ (active.get(prior)).next = replacement;
-            }
-            prior = replacement;
-          }
-          if (prior) {
-            /** @type {ActiveMeta} */ (active.get(prior)).next = next;
-          }
-          if (next) {
-            /** @type {ActiveMeta} */ (active.get(next)).previous = prior;
-          }
-          if (firstWasBoundary && outcome.replacements[0]?.parent) {
-            for (
-              let container = getParent(outcome.replacements[0]);
-              container;
-              container = getParent(container)
-            ) {
-              const boundary = boundaries.get(container);
-              if (boundary) boundary.first = outcome.replacements[0];
-            }
-          }
-          const lastReplacement = /** @type {Rule} */ (
-            outcome.replacements.at(-1)
-          );
-          if (lastWasBoundary && lastReplacement.parent) {
-            for (
-              let container = getParent(lastReplacement);
-              container;
-              container = getParent(container)
-            ) {
-              const boundary = boundaries.get(container);
-              if (boundary) boundary.last = lastReplacement;
-            }
-          }
-          if (outcome.moved) {
-            // repairMove keeps the current queue safe to drain. Rebuild once
-            // afterwards so a cascade of independent moves does not rescan
-            // the complete rule list after every boundary change.
-            needsGlobalReseed = true;
-          }
-          for (const replacement of outcome.replacements) {
-            enqueueNeighbors(replacement);
-          }
-          enqueue(previous, outcome.replacements[0] ?? next);
-          enqueue(outcome.replacements.at(-1) ?? previous, next);
+          needsGlobalReseed =
+            installPartialMerge(
+              outcome,
+              capturedBoundaries,
+              enqueue,
+              enqueueNeighbors
+            ) || needsGlobalReseed;
         } else if (moved || outcome.moved) {
           for (const changed of [first, second, ...outcome.changed]) {
             refresh(changed);
