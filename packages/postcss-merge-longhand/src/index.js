@@ -60,6 +60,10 @@ function familySize(rule, prefix) {
  * @return {void}
  */
 function rewrite(rule, family, prefix, declarations) {
+  if (!mayRewrite(prefix, declarations)) {
+    return;
+  }
+
   const original = rule.nodes.map((node) => node.clone());
   const before = new Set(rule.nodes);
   const size = familySize(rule, prefix);
@@ -81,6 +85,29 @@ function rewrite(rule, family, prefix, declarations) {
     rule.removeAll();
     rule.append(...original);
   }
+}
+
+/**
+ * A singleton longhand cannot be merged or cleaned up. Avoid cloning its rule
+ * when the family has no other single-declaration transform for it.
+ *
+ * @param {string} prefix
+ * @param {Declaration[]} declarations
+ * @return {boolean}
+ */
+function mayRewrite(prefix, declarations) {
+  if (declarations.length > 1) {
+    return true;
+  }
+
+  const prop = declarations[0].prop.toLowerCase();
+  if (prefix === 'border') {
+    return /^(?:border|border-(?:top|right|bottom|left|width|style|color|spacing))$/.test(
+      prop
+    );
+  }
+
+  return prop === prefix || prop === `${prefix}s`;
 }
 
 /**

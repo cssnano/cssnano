@@ -60,28 +60,36 @@ function arePropertiesCrossing(declA, declB) {
 
 /**
  * @param {import('postcss').Declaration[]} match
- * @param {import('postcss').Declaration[]} nodes
+ * @param {import('postcss').ChildNode[]} nodes
  * @return {boolean}
  */
 function hasConflicts(match, nodes) {
-  /** @type {number[]} */
-  const nodeIndices = match.map((n) => nodes.indexOf(n));
-  const firstNodeIndex = Math.min(...nodeIndices);
-  const lastNodeIndex = Math.max(...nodeIndices);
+  const nodePositions = new Map(nodes.map((node, index) => [node, index]));
+  const matchPositions = match.map(
+    (node) => /** @type {number} */ (nodePositions.get(node))
+  );
+  const firstNodeIndex = Math.min(...matchPositions);
+  const lastNodeIndex = Math.max(...matchPositions);
   const matchSet = new Set(match);
-  const between = nodes
-    .slice(firstNodeIndex + 1, lastNodeIndex)
-    .filter((node) => !matchSet.has(node));
 
-  return match.some((a) =>
-    between.some((b) => {
+  for (let index = firstNodeIndex + 1; index < lastNodeIndex; index++) {
+    const b = /** @type {import('postcss').Declaration} */ (nodes[index]);
+    if (matchSet.has(b)) {
+      continue;
+    }
+
+    for (const a of match) {
       /* Merging moves a to the end of the range, so anything in between that
        * used to override it stops doing so.
        */
-      const overridesA = nodes.indexOf(b) > nodes.indexOf(a);
+      const overridesA = index > /** @type {number} */ (nodePositions.get(a));
 
       if (arePropertiesConflicting(a, b)) {
-        return a.prop !== b.prop || overridesA;
+        if (a.prop !== b.prop || overridesA) {
+          return true;
+        }
+
+        continue;
       }
 
       /* b names part of a, such as border-left-width against border-left, and
@@ -95,9 +103,13 @@ function hasConflicts(match, nodes) {
        * longhands. Only the ones b currently overrides matter: a repeat that
        * already came before a still comes before whatever replaces it.
        */
-      return overridesA && arePropertiesCrossing(a, b);
-    })
-  );
+      if (overridesA && arePropertiesCrossing(a, b)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -127,10 +139,7 @@ function mergeRules(rule, properties, callback) {
 
     if (
       hasAllProps(rules, ...properties) &&
-      !hasConflicts(
-        rules,
-        /** @type import('postcss').Declaration[]*/ (rule.nodes)
-      ) &&
+      !hasConflicts(rules, rule.nodes) &&
       !skipsFallback(rules)
     ) {
       if (callback(rules, last, props)) {
