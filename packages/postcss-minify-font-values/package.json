@@ -18,6 +18,10 @@
   ],
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "license": "MIT",
+  "dependencies": {
+    "cssnano-utils": "workspace:^",
+    "@csstools/css-tokenizer": "^4.0.0"
+  },
   "keywords": [
     "css",
     "font",
@@ -26,9 +30,6 @@
     "optimise",
     "postcss-plugin"
   ],
-  "dependencies": {
-    "postcss-value-parser": "^4.2.0"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cssnano/cssnano.git"
