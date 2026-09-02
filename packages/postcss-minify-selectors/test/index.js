@@ -1020,3 +1020,93 @@ suite('options  / browserslist interactions', () => {
     )
   );
 });
+
+suite('top-level folding with functional pseudos', () => {
+  test(
+    'folds entries after normalizing comma-containing selector functions',
+    processCSS(
+      '.scope:is(.a,.b) .x,.scope:is(.a,.b) .y,' +
+        '.scope:is(.a,.b) .z{color:red}',
+      '.scope:is(.a,.b) :is(.x,.y,.z){color:red}',
+      modernBl
+    )
+  );
+
+  test(
+    'preserves nested :not(), :where(), and :has() while folding',
+    processCSS(
+      ':not(:is(.a,.b),:where(.c,.d)) .x,' +
+        ':not(:is(.a,.b),:where(.c,.d)) .y,' +
+        ':not(:is(.a,.b),:where(.c,.d)) .z{color:red}',
+      ':not(:is(.a,.b),:where(.c,.d)) :is(.x,.y,.z){color:red}',
+      modernBl
+    )
+  );
+
+  test(
+    'preserves source order when sorting is disabled',
+    processCSS(
+      '.scope:has(.a,.b) .z,.scope:has(.a,.b) .a,' +
+        '.scope:has(.a,.b) .m{color:red}',
+      '.scope:has(.a,.b) :is(.z,.a,.m){color:red}',
+      { ...modernBl, sort: false }
+    )
+  );
+
+  test(
+    'dedupes top-level entries without deduping vendor pseudo-elements',
+    processCSS(
+      '.scope:is(.a,.b) .x,.scope:is(.a,.b) .x,' +
+        '.scope:is(.a,.b) .y, .scope::-webkit-input-placeholder,' +
+        '.scope::-webkit-input-placeholder{color:red}',
+      '.scope::-webkit-input-placeholder,.scope::-webkit-input-placeholder,' +
+        '.scope:is(.a,.b) .x,.scope:is(.a,.b) .y{color:red}',
+      modernBl
+    )
+  );
+
+  test('is idempotent for folds containing nested functions', async () => {
+    const input =
+      '.scope:not(:is(.a,.b),:where(.c,.d)) .x,' +
+      '.scope:not(:is(.a,.b),:where(.c,.d)) .y{color:red}';
+    await processCSS(
+      input,
+      '.scope:not(:is(.a,.b),:where(.c,.d)) :is(.x,.y){color:red}',
+      modernBl
+    )();
+  });
+
+  test('rejects unsafe and mixed-specificity fold candidates', () => {
+    const cases = [
+      '.scope .a,.scope #id,.scope .b{color:red}',
+      '.scope svg|a,.scope svg|b,.scope svg|c{color:red}',
+      '.scope .a:hover,.scope .b:focus,.scope .c:nth-child(2n){color:red}',
+    ];
+    for (const input of cases) {
+      const output = [
+        '.scope #id,.scope .a,.scope .b{color:red}',
+        '.scope svg|a,.scope svg|b,.scope svg|c{color:red}',
+        '.scope .a:hover,.scope .b:focus,.scope .c:nth-child(2n){color:red}',
+      ][cases.indexOf(input)];
+      assert.equal(
+        postcss([plugin({ ...modernBl })]).process(input, { from: undefined })
+          .css,
+        output,
+        input
+      );
+    }
+  });
+
+  test('normalizes a large function-containing selector list in one pass', () => {
+    const selectors = Array.from(
+      { length: 1000 },
+      (_, index) => `.scope:is(.a${index % 10},.b${index % 10}) .item${index}`
+    ).join(',');
+    const output = postcss([plugin({ ...modernBl })]).process(
+      `${selectors}{color:red}`,
+      { from: undefined }
+    ).css;
+    assert.match(output, /^\.scope:is\(\.a0,\.b0\) /u);
+    assert.match(output, /\.item999\{color:red\}$/u);
+  });
+});
