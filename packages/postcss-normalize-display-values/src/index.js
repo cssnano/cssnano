@@ -7,13 +7,63 @@ import {
 import mappings from './lib/map.js';
 
 const displayRegex = /^display$/i;
+const displayOutside = new Set(['block', 'inline', 'run-in']);
+const displayInside = new Set([
+  'flow',
+  'flow-root',
+  'table',
+  'flex',
+  'grid',
+  'ruby',
+]);
+
+/**
+ * @param {string} value
+ * @return {string}
+ */
+function toASCIILowerCase(value) {
+  return value.replace(/[A-Z]/g, (character) =>
+    String.fromCharCode(character.charCodeAt(0) + 0x20)
+  );
+}
+
+/**
+ * @param {string} identifier
+ * @param {{ outer?: string, inner?: string, listItem?: string }} state
+ * @return {boolean}
+ */
+function addIdentifier(identifier, state) {
+  if (identifier === 'list-item') {
+    if (state.listItem) {
+      return false;
+    }
+    state.listItem = identifier;
+  } else if (displayOutside.has(identifier)) {
+    if (state.outer) {
+      return false;
+    }
+    state.outer = identifier;
+  } else if (displayInside.has(identifier)) {
+    if (state.inner) {
+      return false;
+    }
+    state.inner = identifier;
+  } else {
+    return false;
+  }
+
+  return true;
+}
 
 /**
  * @param {string} value
  * @return {string}
  */
 function transform(value) {
-  let key = '';
+  let count = 0;
+  /** @type {{ outer?: string, inner?: string, listItem?: string }} */
+  const state = {};
+
   for (const token of tokenize({ css: value })) {
     if (token[0] === TokenType.EOF) {
       break;
@@ -27,11 +77,46 @@ function transform(value) {
       return value;
     }
 
-    const identifier = token[4].value.toLowerCase();
-    key = key ? `${key},${identifier}` : identifier;
+    count++;
+    if (count > 3) {
+      return value;
+    }
+
+    const identifier = toASCIILowerCase(token[4].value);
+    if (!addIdentifier(identifier, state)) {
+      return value;
+    }
   }
 
+  if (count < 2) {
+    return value;
+  }
+
+  if (
+    state.listItem &&
+    state.inner &&
+    state.inner !== 'flow' &&
+    state.inner !== 'flow-root'
+  ) {
+    return value;
+  }
+
+  const key = state.listItem
+    ? `${state.outer ?? ''},${state.inner ?? ''},${state.listItem}`
+    : `${state.outer ?? ''},${state.inner ?? ''}`;
+
   return mappings.get(key) ?? value;
+}
+
+/**
+ * @param {import('postcss').Declaration} decl
+ * @param {string} value
+ */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) {
+    decl.raws.value = { raw: value, value };
+  }
 }
 
 /**
@@ -49,24 +134,24 @@ function pluginCreator() {
          */
         OnceExit(css) {
           css.walkDecls(displayRegex, (decl) => {
-            const value = decl.raws.value?.raw ?? decl.value;
+            const value =
+              decl.raws.value?.value === decl.value
+                ? (decl.raws.value.raw ?? decl.value)
+                : decl.value;
 
             if (!value) {
               return;
             }
 
             if (cache.has(value)) {
-              decl.value = cache.get(value);
+              assignValue(decl, cache.get(value));
 
               return;
             }
 
             const result = transform(value);
 
-            decl.value = result;
-            if (decl.raws.value?.raw) {
-              decl.raws.value = { raw: result, value: result };
-            }
+            assignValue(decl, result);
             cache.set(value, result);
           });
         },
