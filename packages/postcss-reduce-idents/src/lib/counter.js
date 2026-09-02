@@ -36,20 +36,25 @@ export default function counterReducer() {
       declarations.push(node);
     },
     transform() {
-      for (const decl of declarations)
-        decl.value = rewrite(decl.value, (token) => {
-          if (
-            token[0] === TokenType.Whitespace &&
-            counter.functionProperties.has(resolveProperty(decl.prop))
-          )
-            return ' ';
-          if (token[0] !== TokenType.Ident) return;
-          const cached = cache.get(token[4].value);
-          if (!cached) return;
-          if (counter.functionProperties.has(resolveProperty(decl.prop)))
-            cached.count++;
-          return cached.ident;
-        });
+      for (const decl of declarations) {
+        const functionProperty = counter.functionProperties.has(
+          resolveProperty(decl.prop)
+        );
+        decl.value = rewrite(
+          decl.value,
+          (token, isFunctionArgument) => {
+            if (token[0] === TokenType.Whitespace && functionProperty)
+              return ' ';
+            if (token[0] !== TokenType.Ident) return;
+            if (functionProperty && !isFunctionArgument) return;
+            const cached = cache.get(token[4].value);
+            if (!cached) return;
+            if (functionProperty) cached.count++;
+            return cached.ident;
+          },
+          functionProperty ? counter.functions : undefined
+        );
+      }
       for (const decl of declarations)
         if (counter.properties.has(resolveProperty(decl.prop)))
           decl.value = rewrite(decl.value, (token) => {
