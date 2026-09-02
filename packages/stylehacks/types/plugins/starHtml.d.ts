@@ -1,4 +1,3 @@
-import parser from 'postcss-selector-parser';
 import BasePlugin from '../plugin.js';
 export default StarHtml;
 declare class StarHtml extends BasePlugin {
@@ -9,10 +8,5 @@ declare class StarHtml extends BasePlugin {
      * @return {void}
      */
     detect(rule: import('postcss').Rule): void;
-    /**
-     * @param {import('postcss').Rule} rule
-     * @return {parser.SyncProcessor<void>}
-     */
-    analyse(rule: import('postcss').Rule): parser.SyncProcessor<void>;
 }
 //# sourceMappingURL=starHtml.d.ts.map
