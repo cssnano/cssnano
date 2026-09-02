@@ -1,9 +1,8 @@
-import postcssValueParser from 'postcss-value-parser';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import { colordx as colord, extend } from '@colordx/core';
 import hwbPlugin from '@colordx/core/plugins/hwb';
 import namesPlugin from '@colordx/core/plugins/names';
 
-const { unit } = postcssValueParser;
 extend([
   /** @type {import('@colordx/core').Plugin} */ (
     /** @type {unknown} */ (hwbPlugin)
@@ -49,15 +48,25 @@ function isCSSLengthUnit(input) {
 function isStop(str) {
   if (str) {
     let colorStop = false;
-    const node = unit(str);
-    if (node) {
-      const number = Number(node.number);
+    const node = [...tokenize({ css: str })].find(
+      (token) => token[0] !== TokenType.EOF
+    );
+    if (
+      node &&
+      [TokenType.Number, TokenType.Dimension, TokenType.Percentage].includes(
+        node[0]
+      )
+    ) {
+      const metadata = /** @type {{value?: number, unit?: string}} */ (node[4]);
+      const number = metadata.value;
       if (
         number === 0 ||
-        (!Number.isNaN(number) && isCSSLengthUnit(node.unit))
-      ) {
+        (number !== undefined &&
+          isCSSLengthUnit(
+            metadata.unit ?? (node[0] === TokenType.Percentage ? '%' : '')
+          ))
+      )
         colorStop = true;
-      }
     } else {
       colorStop = colorStopRegex.test(str);
     }

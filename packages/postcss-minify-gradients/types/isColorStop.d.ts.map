@@ -1,1 +1,1 @@
-{"version":3,"file":"isColorStop.d.ts","sourceRoot":"","sources":["../src/isColorStop.js"],"names":[],"mappings":"AAmEA;;;;GAIG;AACH,iBAAS,WAAW,CAAC,KAAK,EAJf,MAIe,EAAE,IAAI,AAH7B,CACA,EADQ,MAGqB,GAFpB,OAAO,CAIlB;eAEc,WAAW"}
+{"version":3,"file":"isColorStop.d.ts","sourceRoot":"","sources":["../src/isColorStop.js"],"names":[],"mappings":"AA4EA;;;;GAIG;AACH,iBAAS,WAAW,CAAC,KAAK,EAJf,MAIe,EAAE,IAAI,AAH7B,CACA,EADQ,MAGqB,GAFpB,OAAO,CAIlB;eAEc,WAAW"}
