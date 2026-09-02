@@ -267,6 +267,11 @@ test(
 );
 
 test(
+  'should preserve opaque and malformed non-data URL tokens',
+  passthroughCSS('h1{background:url(foo\\ bar.svg);mask-image:url(foo(})}')
+);
+
+test(
   'should skip non-SVG urls',
   passthroughCSS(`@font-face {
   src: url("../example/dfds.woff2") format("woff2"),
