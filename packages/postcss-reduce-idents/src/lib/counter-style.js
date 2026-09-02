@@ -47,14 +47,23 @@ export default function counterStyleReducer() {
         declarations.push(node);
     },
     transform() {
-      for (const decl of declarations)
-        decl.value = rewrite(decl.value, (token) => {
-          if (token[0] !== TokenType.Ident) return;
-          const cached = cache.get(token[4].value);
-          if (!cached) return;
-          cached.count++;
-          return cached.ident;
-        });
+      for (const decl of declarations) {
+        const functionProperty = counterStyle.functionProperties.has(
+          resolveProperty(decl.prop)
+        );
+        decl.value = rewrite(
+          decl.value,
+          (token, isFunctionArgument) => {
+            if (token[0] !== TokenType.Ident) return;
+            if (functionProperty && !isFunctionArgument) return;
+            const cached = cache.get(token[4].value);
+            if (!cached) return;
+            cached.count++;
+            return cached.ident;
+          },
+          functionProperty ? counterStyle.functions : undefined
+        );
+      }
       for (const rule of atRules) {
         const cached = cache.get(rule.params);
         if (cached?.count) rule.params = cached.ident;
