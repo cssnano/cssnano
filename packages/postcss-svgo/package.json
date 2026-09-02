@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@csstools/css-tokenizer": "catalog:",
+    "cssnano-utils": "workspace:^",
     "svgo": "^4.1.0"
   },
   "bugs": {
