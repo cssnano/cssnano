@@ -19,12 +19,35 @@ describe('Strip', () => {
   );
 
   test(
+    'should preserve escaped whitespace and malformed URL tokens',
+    passthroughCSS('h1{background:url(foo\\ bar.png);mask:url(foo(})}')
+  );
+
+  test(
+    'should normalize empty and quoted URLs',
+    processCSS(
+      'h1{background:url(   ),url(" ./images/../cat.png ")}',
+      'h1{background:url(),url(cat.png)}'
+    )
+  );
+
+  test(
     'should strip double quotes uppercase URL',
     processCSS('h1{background:URL("cat.jpg")}', 'h1{background:URL(cat.jpg)}')
   );
 });
 
 describe('Escape', () => {
+  test(
+    'should preserve escaped whitespace in unquoted urls',
+    passthroughCSS('h1{background:url(foo\\ bar.png)}')
+  );
+
+  test(
+    'should preserve escaped parentheses in unquoted urls',
+    passthroughCSS('h1{background:url(foo\\(bar.png)}')
+  );
+
   test(
     'should escape special characters',
     processCSS(
