@@ -151,10 +151,52 @@ test(
 );
 
 test(
+  'linear: should not compare positions after a non-literal position',
+  passthroughCSS('background:linear-gradient(red 50%,blue calc(40%),green 45%)')
+);
+
+test(
+  'linear: should continue comparing literal positions after a non-literal position',
+  processCSS(
+    'background:linear-gradient(red calc(40%),blue 50%,green 40%)',
+    'background:linear-gradient(red calc(40%),blue 50%,green 0)'
+  )
+);
+
+test(
+  'linear: should not compare positions when a double-position stop is non-literal',
+  passthroughCSS('background:linear-gradient(red 50% calc(40%),blue 45%)')
+);
+
+test(
+  'repeating-webkit-radial: should reduce length values if they are the same',
+  processCSS(
+    'background:-webkit-repeating-radial-gradient(#121,#121 5px,#ffe500 5px,#ffe500 10px)',
+    'background:-webkit-repeating-radial-gradient(#121,#121 5px,#ffe500 0,#ffe500 10px)'
+  )
+);
+
+test(
+  'repeating-webkit-radial: should reduce length values with an uppercase function',
+  processCSS(
+    'background:-WEBKIT-REPEATING-RADIAL-GRADIENT(#121,#121 5PX,#FFE500 5PX,#FFE500 10PX)',
+    'background:-WEBKIT-REPEATING-RADIAL-GRADIENT(#121,#121 5PX,#FFE500 0,#FFE500 10PX)'
+  )
+);
+
+test(
   'linear: should remove the (unnecessary) start/end length values',
   processCSS(
     'background:linear-gradient(#ffe500 0%,#121 100%)',
     'background:linear-gradient(#ffe500,#121)'
+  )
+);
+
+test(
+  'linear: should remove an end position after fixing it up to the preceding position',
+  processCSS(
+    'background:linear-gradient(red 100%,blue 100%)',
+    'background:linear-gradient(red 100%,blue)'
   )
 );
 
