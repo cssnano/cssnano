@@ -36,7 +36,6 @@
   },
   "dependencies": {
     "@csstools/css-tokenizer": "^4.0.0",
-    "postcss-value-parser": "^4.2.0",
     "stylehacks": "workspace:^"
   },
   "bugs": {
