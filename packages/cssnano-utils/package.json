@@ -28,9 +28,11 @@
     "types"
   ],
   "license": "MIT",
+  "dependencies": {
+    "@csstools/css-tokenizer": "^4.0.0"
+  },
   "devDependencies": {
-    "postcss": "catalog:",
-    "postcss-value-parser": "^4.2.0"
+    "postcss": "catalog:"
   },
   "peerDependencies": {
     "postcss": "^8.5.26"
