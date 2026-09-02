@@ -1,9 +1,5 @@
 import getBrowsersList from '#getBrowsersList';
-import {
-  isTokenUnicodeRange,
-  tokenize,
-  TokenType,
-} from '@csstools/css-tokenizer';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
 /** @import browserslist from 'browserslist' */
 
@@ -63,56 +59,65 @@ function mergeRangeBounds(left, right) {
 }
 
 /**
+ * @param {import('@csstools/css-tokenizer').CSSToken} token
+ * @return {boolean}
+ */
+function isUnicodeRangeDescriptorListToken(token) {
+  return token[0] === TokenType.UnicodeRange;
+}
+
+/**
  * @param {string} value
+ * @param {boolean} isLegacy
  * @return {string}
  */
 function transform(value, isLegacy = false) {
-  let result = value;
-  let previousEnd = 0;
-  let depth = 0;
+  let expectsRange = true;
+  const edits = [];
   for (const token of tokenize({ css: value, unicodeRangesAllowed: true })) {
-    if (
-      token[0] === TokenType.Function ||
-      token[0] === TokenType.OpenParen ||
-      token[0] === TokenType.OpenSquare ||
-      token[0] === TokenType.OpenCurly
-    ) {
-      depth++;
+    if (token[0] === TokenType.EOF) continue;
+    if (token[0] === TokenType.Whitespace) continue;
+    if (token[0] === TokenType.Comment) {
+      if (!token[1].endsWith('*/')) return value;
       continue;
     }
-
-    if (
-      token[0] === TokenType.CloseParen ||
-      token[0] === TokenType.CloseSquare ||
-      token[0] === TokenType.CloseCurly
-    ) {
-      depth = Math.max(0, depth - 1);
-      continue;
-    }
-
-    if (!isTokenUnicodeRange(token) || depth > 0) {
-      continue;
-    }
-
-    const normalized = unicode(token[1].toLowerCase());
-    const transformed = isLegacy
-      ? normalized.replace(regexLowerCaseUPrefix, 'U')
-      : normalized;
-
-    if (transformed === token[1]) {
-      continue;
-    }
-
-    if (result === value) {
-      result = value.slice(0, token[2]);
+    if (expectsRange && isUnicodeRangeDescriptorListToken(token)) {
+      expectsRange = false;
+    } else if (!expectsRange && token[0] === TokenType.Comma) {
+      expectsRange = true;
     } else {
-      result += value.slice(previousEnd, token[2]);
+      return value;
     }
-    result += transformed;
-    previousEnd = token[3] + 1;
+    if (isUnicodeRangeDescriptorListToken(token)) {
+      const normalized = unicode(token[1].toLowerCase());
+      const transformed = isLegacy
+        ? normalized.replace(regexLowerCaseUPrefix, 'U')
+        : normalized;
+      if (transformed !== token[1]) {
+        edits.push({ start: token[2], end: token[3] + 1, text: transformed });
+      }
+    }
   }
+  if (expectsRange || edits.length === 0) return value;
+  const chunks = [];
+  let cursor = 0;
+  for (const edit of edits) {
+    chunks.push(value.slice(cursor, edit.start), edit.text);
+    cursor = edit.end;
+  }
+  chunks.push(value.slice(cursor));
+  return chunks.join('');
+}
 
-  return result === value ? value : result + value.slice(previousEnd);
+/**
+ * @param {import('postcss').Declaration} decl
+ * @param {string} value
+ */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) {
+    decl.raws.value = { raw: value, value };
+  }
 }
 
 /**
@@ -160,17 +165,13 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
             const value = decl.raws.value?.raw ?? decl.value;
 
             if (cache.has(value)) {
-              decl.value = cache.get(value);
-
+              const newValue = cache.get(value);
+              assignValue(decl, newValue);
               return;
             }
 
             const newValue = transform(value, isLegacy);
-
-            decl.value = newValue;
-            if (decl.raws.value?.raw) {
-              decl.raws.value = { raw: newValue, value: newValue };
-            }
+            assignValue(decl, newValue);
             cache.set(value, newValue);
           });
         },
