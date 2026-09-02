@@ -17,8 +17,8 @@
     "svgo": "^4.1.0"
   },
   "devDependencies": {
-    "@astrojs/sitemap": "^3.7.3",
-    "astro": "^7.2.9",
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.2.10",
     "cssnano": "link:../packages/cssnano",
     "typescript": "~7.0.2"
   },
