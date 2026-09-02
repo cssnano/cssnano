@@ -1,6 +1,5 @@
 const block = 'block';
 const flex = 'flex';
-const flow = 'flow';
 const flowRoot = 'flow-root';
 const grid = 'grid';
 const inline = 'inline';
@@ -10,30 +9,25 @@ const inlineGrid = 'inline-grid';
 const inlineTable = 'inline-table';
 const listItem = 'list-item';
 const ruby = 'ruby';
-const rubyBase = 'ruby-base';
-const rubyText = 'ruby-text';
 const runIn = 'run-in';
 const table = 'table';
-const tableCell = 'table-cell';
-const tableCaption = 'table-caption';
+
 export default new Map([
-  [[block, flow].toString(), block],
-  [[block, flowRoot].toString(), flowRoot],
-  [[inline, flow].toString(), inline],
-  [[inline, flowRoot].toString(), inlineBlock],
-  [[runIn, flow].toString(), runIn],
-  [[listItem, block, flow].toString(), listItem],
-  [[inline, flow, listItem].toString(), inline + ' ' + listItem],
-  [[block, flex].toString(), flex],
-  [[inline, flex].toString(), inlineFlex],
-  [[block, grid].toString(), grid],
-  [[inline, grid].toString(), inlineGrid],
-  [[inline, ruby].toString(), ruby],
-  // `block ruby` is same
-  [[block, table].toString(), table],
-  [[inline, table].toString(), inlineTable],
-  [[tableCell, flow].toString(), tableCell],
-  [[tableCaption, flow].toString(), tableCaption],
-  [[rubyBase, flow].toString(), rubyBase],
-  [[rubyText, flow].toString(), rubyText],
+  ['block,flow', block],
+  ['block,flow-root', flowRoot],
+  ['inline,flow', inline],
+  ['inline,flow-root', inlineBlock],
+  ['run-in,flow', runIn],
+  ['block,flow,list-item', listItem],
+  ['block,,list-item', listItem],
+  [',flow,list-item', listItem],
+  ['inline,flow,list-item', inline + ' ' + listItem],
+  ['inline,,list-item', inline + ' ' + listItem],
+  ['block,flex', flex],
+  ['inline,flex', inlineFlex],
+  ['block,grid', grid],
+  ['inline,grid', inlineGrid],
+  ['inline,ruby', ruby],
+  ['block,table', table],
+  ['inline,table', inlineTable],
 ]);
