@@ -207,7 +207,7 @@ catalogs:
   default:
     '@colordx/core':
       specifier: ^6.2.0
-      version: 6.2.0
+      version: 6.3.0
     '@webref/css':
       specifier: 8.7.3
       version: 8.7.3
@@ -220,9 +220,6 @@ catalogs:
     postcss:
       specifier: ^8.5.28
       version: 8.5.28
-    postcss-selector-parser:
-      specifier: ^7.1.6
-      version: 7.1.6
 
 importers:
 
@@ -414,28 +411,32 @@ importers:
         version: 8.5.28
 
   packages/cssnano-utils:
+    dependencies:
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
 
   packages/postcss-colormin:
     dependencies:
       '@colordx/core':
         specifier: 'catalog:'
-        version: 6.2.0
+        version: 6.3.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
       browserslist:
         specifier: 'catalog:'
         version: 4.28.8
       caniuse-api:
         specifier: ^4.0.0
         version: 4.0.0
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -446,19 +447,15 @@ importers:
       browserslist:
         specifier: 'catalog:'
         version: 4.28.8
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
     devDependencies:
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
 
   packages/postcss-discard-comments:
-    dependencies:
-      postcss-selector-parser:
-        specifier: 'catalog:'
-        version: 7.1.6
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -490,9 +487,9 @@ importers:
 
   packages/postcss-discard-unused:
     dependencies:
-      postcss-selector-parser:
-        specifier: 'catalog:'
-        version: 7.1.6
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -500,12 +497,12 @@ importers:
 
   packages/postcss-merge-idents:
     dependencies:
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -516,9 +513,6 @@ importers:
       '@csstools/css-tokenizer':
         specifier: ^4.0.0
         version: 4.0.0
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
       stylehacks:
         specifier: workspace:^
         version: link:../stylehacks
@@ -532,6 +526,9 @@ importers:
 
   packages/postcss-merge-rules:
     dependencies:
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
       browserslist:
         specifier: 'catalog:'
         version: 4.28.8
@@ -541,9 +538,6 @@ importers:
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
-      postcss-selector-parser:
-        specifier: 'catalog:'
-        version: 7.1.6
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
@@ -554,15 +548,21 @@ importers:
       postcss-discard-comments:
         specifier: workspace:^
         version: link:../postcss-discard-comments
+      postcss-selector-parser:
+        specifier: ^7.1.5
+        version: 7.1.5
       postcss-simple-vars:
         specifier: ^7.0.1
         version: 7.0.1(postcss@8.5.28)
 
   packages/postcss-minify-font-values:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -572,13 +572,13 @@ importers:
     dependencies:
       '@colordx/core':
         specifier: 'catalog:'
-        version: 6.2.0
+        version: 6.3.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -592,9 +592,6 @@ importers:
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -611,9 +608,9 @@ importers:
       cssesc:
         specifier: ^3.0.0
         version: 3.0.0
-      postcss-selector-parser:
-        specifier: 'catalog:'
-        version: 7.1.6
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
     devDependencies:
       '@types/cssesc':
         specifier: ^3.0.2
@@ -636,9 +633,9 @@ importers:
 
   packages/postcss-normalize-display-values:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -646,9 +643,9 @@ importers:
 
   packages/postcss-normalize-positions:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -656,9 +653,12 @@ importers:
 
   packages/postcss-normalize-repeat-style:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -666,9 +666,9 @@ importers:
 
   packages/postcss-normalize-string:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -676,9 +676,9 @@ importers:
 
   packages/postcss-normalize-timing-functions:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -686,12 +686,12 @@ importers:
 
   packages/postcss-normalize-unicode:
     dependencies:
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
       browserslist:
         specifier: 'catalog:'
         version: 4.28.8
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -699,9 +699,9 @@ importers:
 
   packages/postcss-normalize-url:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -709,9 +709,9 @@ importers:
 
   packages/postcss-normalize-whitespace:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -719,12 +719,9 @@ importers:
 
   packages/postcss-ordered-values:
     dependencies:
-      cssnano-utils:
-        specifier: workspace:^
-        version: link:../cssnano-utils
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
@@ -735,9 +732,9 @@ importers:
 
   packages/postcss-reduce-idents:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
@@ -764,9 +761,9 @@ importers:
 
   packages/postcss-reduce-transforms:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -774,9 +771,9 @@ importers:
 
   packages/postcss-svgo:
     dependencies:
-      postcss-value-parser:
-        specifier: ^4.2.0
-        version: 4.2.0
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
       svgo:
         specifier: ^4.1.0
         version: 4.1.0
@@ -787,9 +784,9 @@ importers:
 
   packages/postcss-unique-selectors:
     dependencies:
-      postcss-selector-parser:
-        specifier: 'catalog:'
-        version: 7.1.6
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -803,12 +800,12 @@ importers:
 
   packages/stylehacks:
     dependencies:
+      '@csstools/css-tokenizer':
+        specifier: ^4.0.0
+        version: 4.0.0
       browserslist:
         specifier: 'catalog:'
         version: 4.28.8
-      postcss-selector-parser:
-        specifier: 'catalog:'
-        version: 7.1.6
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -828,8 +825,8 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
-  '@colordx/core@6.2.0':
-    resolution: {integrity: sha512-hf/gsfL/D/o+BG6mp0WPj4lLLdOHkGjYFakrR1N179nLh+MBgic42wZu7mYYf8idvRTatma95sr9DdJ3Y6gIoA==}
+  '@colordx/core@6.3.0':
+    resolution: {integrity: sha512-skoCSPWAZTfawy3t6Qk1lqXsx1OPb/mCNYBpbG667+PmXIc7kt+rhjoS2SmYywaW9fnKaufPG59NztX6jpRNaw==}
 
   '@csstools/color-helpers@6.1.1':
     resolution: {integrity: sha512-gLNsunvwf3mCi5u5o46/Z/JcJMnhbHSaZ69rkgPzNM3J4s8hWwpPUQB6/tt0EDFyCiWzxANlx+2LJwpYj4zS1w==}
@@ -1788,8 +1785,8 @@ packages:
     peerDependencies:
       postcss: ^8.4.29
 
-  postcss-selector-parser@7.1.6:
-    resolution: {integrity: sha512-7qASPzhKF2l2KLboRZux8CCTRMdGiV08vWmyKzPz22qZ7ZjQBOeY7rNzNoCLSUiftJ7HUq0GERHmxw/t0dCdMw==}
+  postcss-selector-parser@7.1.5:
+    resolution: {integrity: sha512-KvvtD7SrlBP7dlgkBghEE3r84CABm5SmV2aNcG4oCA+qDnJ/tvKonFVvwWAyyWUEwxuNawdfEAZKP9zM3oZ2Uw==}
     engines: {node: '>=4'}
 
   postcss-simple-vars@7.0.1:
@@ -1964,7 +1961,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@colordx/core@6.2.0': {}
+  '@colordx/core@6.3.0': {}
 
   '@csstools/color-helpers@6.1.1': {}
 
@@ -2676,7 +2673,7 @@ snapshots:
     dependencies:
       postcss: 8.5.28
 
-  postcss-selector-parser@7.1.6:
+  postcss-selector-parser@7.1.5:
     dependencies:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
