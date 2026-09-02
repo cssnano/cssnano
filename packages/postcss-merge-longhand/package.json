@@ -35,7 +35,7 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "@csstools/css-tokenizer": "^4.0.0",
+    "@csstools/css-tokenizer": "catalog:",
     "stylehacks": "workspace:^"
   },
   "bugs": {

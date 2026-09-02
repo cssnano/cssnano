@@ -167,6 +167,9 @@ catalogs:
     '@colordx/core':
       specifier: ^6.4.0
       version: 6.4.0
+    '@csstools/css-tokenizer':
+      specifier: ^4.0.0
+      version: 4.0.0
     '@webref/css':
       specifier: 8.7.4
       version: 8.7.4
@@ -375,7 +378,7 @@ importers:
   packages/cssnano-utils:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
     devDependencies:
       postcss:
@@ -388,7 +391,7 @@ importers:
         specifier: 'catalog:'
         version: 6.4.0
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
       browserslist:
         specifier: 'catalog:'
@@ -450,7 +453,7 @@ importers:
   packages/postcss-discard-unused:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
     devDependencies:
       postcss:
@@ -460,7 +463,7 @@ importers:
   packages/postcss-merge-idents:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
       cssnano-utils:
         specifier: workspace:^
@@ -473,7 +476,7 @@ importers:
   packages/postcss-merge-longhand:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
       stylehacks:
         specifier: workspace:^
@@ -489,7 +492,7 @@ importers:
   packages/postcss-merge-rules:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
       browserslist:
         specifier: 'catalog:'
@@ -520,7 +523,7 @@ importers:
   packages/postcss-minify-font-values:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
       cssnano-utils:
         specifier: workspace:^
@@ -536,7 +539,7 @@ importers:
         specifier: 'catalog:'
         version: 6.4.0
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
       cssnano-utils:
         specifier: workspace:^
@@ -596,7 +599,7 @@ importers:
   packages/postcss-normalize-display-values:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
     devDependencies:
       postcss:
@@ -606,7 +609,7 @@ importers:
   packages/postcss-normalize-positions:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
     devDependencies:
       postcss:
@@ -616,7 +619,7 @@ importers:
   packages/postcss-normalize-repeat-style:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
       cssnano-utils:
         specifier: workspace:^
@@ -629,7 +632,7 @@ importers:
   packages/postcss-normalize-string:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
     devDependencies:
       postcss:
@@ -639,7 +642,7 @@ importers:
   packages/postcss-normalize-timing-functions:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
     devDependencies:
       postcss:
@@ -649,7 +652,7 @@ importers:
   packages/postcss-normalize-unicode:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
       browserslist:
         specifier: 'catalog:'
@@ -662,7 +665,7 @@ importers:
   packages/postcss-normalize-url:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
     devDependencies:
       postcss:
@@ -672,7 +675,7 @@ importers:
   packages/postcss-normalize-whitespace:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
     devDependencies:
       postcss:
@@ -682,7 +685,7 @@ importers:
   packages/postcss-ordered-values:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
     devDependencies:
       '@webref/css':
@@ -695,7 +698,7 @@ importers:
   packages/postcss-reduce-idents:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
     devDependencies:
       '@webref/css':
@@ -724,7 +727,7 @@ importers:
   packages/postcss-reduce-transforms:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
     devDependencies:
       postcss:
@@ -734,7 +737,7 @@ importers:
   packages/postcss-svgo:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
       svgo:
         specifier: ^4.1.0
@@ -747,7 +750,7 @@ importers:
   packages/postcss-unique-selectors:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
     devDependencies:
       postcss:
@@ -763,7 +766,7 @@ importers:
   packages/stylehacks:
     dependencies:
       '@csstools/css-tokenizer':
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
       browserslist:
         specifier: 'catalog:'

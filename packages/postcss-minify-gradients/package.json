@@ -35,7 +35,7 @@
   "dependencies": {
     "@colordx/core": "catalog:",
     "cssnano-utils": "workspace:^",
-    "@csstools/css-tokenizer": "^4.0.0",
+    "@csstools/css-tokenizer": "catalog:",
     "cssnano-utils": "workspace:^"
   },
   "bugs": {
