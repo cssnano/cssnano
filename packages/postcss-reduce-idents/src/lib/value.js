@@ -43,12 +43,13 @@ function isFunctionArgument(token, functions, stack) {
  * @param {string} value
  * @param {(token: CSSToken, isFunctionArgument: boolean) => string|undefined} callback
  * @param {Map<string, number[]>} [functions]
+ * @param {CSSToken[]} [parsedTokens]
  * @return {string}
  */
-function rewrite(value, callback, functions) {
+function rewrite(value, callback, functions, parsedTokens = tokens(value)) {
   /** @type {{arguments?: number[], index: number, close: TokenType}[]} */
   const stack = [];
-  const changes = tokens(value).flatMap((token) => {
+  const changes = parsedTokens.flatMap((token) => {
     const isArgument = functions
       ? isFunctionArgument(token, functions, stack)
       : false;
