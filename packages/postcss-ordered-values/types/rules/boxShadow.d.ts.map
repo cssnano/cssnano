@@ -1,1 +1,1 @@
-{"version":3,"file":"boxShadow.d.ts","sourceRoot":"","sources":["../../src/rules/boxShadow.js"],"names":[],"mappings":"AAyDA;;;GAGG;AACH,iBAAS,kBAAkB,CAAC,MAAM,EAHvB,OAAO,sBAAsB,EAAE,WAGR,GAFtB,MAAM,CASjB;eAEc,kBAAkB"}
+{"version":3,"file":"boxShadow.d.ts","sourceRoot":"","sources":["../../src/rules/boxShadow.js"],"names":[],"mappings":"AAiDA;;;GAGG;AACH,iBAAS,kBAAkB,CAAC,MAAM,EAHvB;IAAE,SAAS,EAAE,OAAO,oBAAoB,EAAE,IAAI,EAAE,EAAE,CAAC;IAAC,KAAK,EAAE,MAAM,CAAA;CAG1C,GAFtB,MAAM,CAQjB;eAEc,kBAAkB"}

@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import { tokenizeValue } from './lib/tokenize.js';
 import {
   normalizeGridAutoFlow,
   normalizeGridColumnRowGap,
@@ -13,89 +13,67 @@ import listStyle from './rules/listStyle.js';
 import column from './rules/columns.js';
 import vendorUnprefixed from './lib/vendorUnprefixed.js';
 
-/** @type {[string, (parsed: valueParser.ParsedValue) => string][]} */
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+const borderProcessor = (parsed) => border(parsed.terms);
+/** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null][]} */
 const borderRules = [
-  ['border', border],
-  ['border-block', border],
-  ['border-inline', border],
-  ['border-block-end', border],
-  ['border-block-start', border],
-  ['border-inline-end', border],
-  ['border-inline-start', border],
-  ['border-top', border],
-  ['border-right', border],
-  ['border-bottom', border],
-  ['border-left', border],
+  ['border', borderProcessor],
+  ['border-block', borderProcessor],
+  ['border-inline', borderProcessor],
+  ['border-block-end', borderProcessor],
+  ['border-block-start', borderProcessor],
+  ['border-inline-end', borderProcessor],
+  ['border-inline-start', borderProcessor],
+  ['border-top', borderProcessor],
+  ['border-right', borderProcessor],
+  ['border-bottom', borderProcessor],
+  ['border-left', borderProcessor],
 ];
 
-/** @type {[string, (parsed: valueParser.ParsedValue) => string | string[] | valueParser.ParsedValue][]} */
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+const gridAutoFlowProcessor = (parsed) => normalizeGridAutoFlow(parsed.terms);
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+const gridGapProcessor = (parsed) => normalizeGridColumnRowGap(parsed.terms);
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+const gridLineProcessor = (parsed) => normalizeGridColumnRow(parsed.terms);
+/** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null][]} */
 const grid = [
-  ['grid-auto-flow', normalizeGridAutoFlow],
-  ['grid-column-gap', normalizeGridColumnRowGap], // normal | <length-percentage>
-  ['grid-row-gap', normalizeGridColumnRowGap], // normal | <length-percentage>
-  ['grid-column', normalizeGridColumnRow], // <grid-line>+
-  ['grid-row', normalizeGridColumnRow], // <grid-line>+
-  ['grid-row-start', normalizeGridColumnRow], // <grid-line>
-  ['grid-row-end', normalizeGridColumnRow], // <grid-line>
-  ['grid-column-start', normalizeGridColumnRow], // <grid-line>
-  ['grid-column-end', normalizeGridColumnRow], // <grid-line>
+  ['grid-auto-flow', gridAutoFlowProcessor],
+  ['grid-column-gap', gridGapProcessor], // normal | <length-percentage>
+  ['grid-row-gap', gridGapProcessor], // normal | <length-percentage>
+  ['grid-column', gridLineProcessor], // <grid-line>+
+  ['grid-row', gridLineProcessor], // <grid-line>+
+  ['grid-row-start', gridLineProcessor], // <grid-line>
+  ['grid-row-end', gridLineProcessor], // <grid-line>
+  ['grid-column-start', gridLineProcessor], // <grid-line>
+  ['grid-column-end', gridLineProcessor], // <grid-line>
 ];
 
-/** @type {[string, (parsed: valueParser.ParsedValue) => string | valueParser.ParsedValue][]} */
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+const columnRuleProcessor = borderProcessor;
+/** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null][]} */
 const columnRules = [
-  ['column-rule', border],
-  ['columns', column],
+  ['column-rule', columnRuleProcessor],
+  ['columns', (parsed) => column(parsed.terms)],
 ];
 
-/** @type {Map<string, ((parsed: valueParser.ParsedValue) => string | string[] | valueParser.ParsedValue)>} */
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+const flexFlowProcessor = (parsed) => flexFlow(parsed.terms);
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+const listStyleProcessor = (parsed) => listStyle(parsed.terms);
+
+/** @type {Map<string, (parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null>} */
 const rules = new Map([
   ['animation', animation],
-  ['outline', border],
+  ['outline', borderProcessor],
   ['box-shadow', boxShadow],
-  ['flex-flow', flexFlow],
-  ['list-style', listStyle],
+  ['flex-flow', flexFlowProcessor],
+  ['list-style', listStyleProcessor],
   ['transition', transition],
   ...borderRules,
   ...grid,
   ...columnRules,
 ]);
-
-const variableFunctions = new Set(['var', 'env', 'constant']);
-
-/**
- * @param {valueParser.Node} node
- * @return {boolean}
- */
-function isVariableFunctionNode(node) {
-  if (node.type !== 'function') {
-    return false;
-  }
-
-  return variableFunctions.has(node.value.toLowerCase());
-}
-
-/**
- * @param {valueParser.ParsedValue} parsed
- * @return {boolean}
- */
-function shouldAbort(parsed) {
-  let abort = false;
-
-  parsed.walk((node) => {
-    if (
-      node.type === 'comment' ||
-      isVariableFunctionNode(node) ||
-      (node.type === 'word' && node.value.includes(`___CSS_LOADER_IMPORT___`))
-    ) {
-      abort = true;
-
-      return false;
-    }
-    return false;
-  });
-
-  return abort;
-}
 
 /**
  * @param {import('postcss').Declaration} decl
@@ -146,15 +124,21 @@ function pluginCreator() {
               return;
             }
 
-            const parsed = valueParser(value);
+            if (value.length < 2 || !/[,\s]/.test(value)) {
+              processorCache.set(value, value);
+              return;
+            }
 
-            if (parsed.nodes.length < 2 || shouldAbort(parsed)) {
+            const parsed = tokenizeValue(value);
+
+            if (parsed.terms.length < 2 || parsed.abort) {
               processorCache.set(value, value);
 
               return;
             }
 
-            const result = processor(parsed).toString();
+            const processed = processor(parsed);
+            const result = processed === null ? value : processed.toString();
 
             decl.value = result;
             processorCache.set(value, result);
