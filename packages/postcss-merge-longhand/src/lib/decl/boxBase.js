@@ -9,7 +9,7 @@ import mergeValues from '../mergeValues.js';
 import topRightBottomLeft from '../trbl.js';
 import { isFallback } from '../isFallback.js';
 import canExplode from '../canExplode.js';
-import lastOf from '../lastOf.js';
+import cleanupDeclarations from '../cleanupDeclarations.js';
 import { browserKeeps } from '../validateBox.js';
 import cssGlobalKeywords from '../cssGlobalKeywords.js';
 
@@ -62,52 +62,13 @@ export default (prop) => {
       new Set([prop].concat(physicalBoxProperties))
     );
 
-    while (boxPropertyDeclarations.size) {
-      const lastNode = lastOf(boxPropertyDeclarations);
-
-      // remove properties of lower precedence
-      const lesser = [];
-      for (const node of boxPropertyDeclarations) {
-        if (
-          !stylehacks.detect(lastNode) &&
-          !stylehacks.detect(node) &&
-          node !== lastNode &&
-          node.important === lastNode.important &&
-          lastNode.prop === prop &&
-          node.prop !== lastNode.prop &&
-          !isFallback(node, lastNode)
-        ) {
-          lesser.push(node);
-        }
-      }
-
-      for (const node of lesser) {
-        node.remove();
-        boxPropertyDeclarations.delete(node);
-      }
-
-      // get duplicate properties
-      const duplicates = new Set();
-      for (const node of boxPropertyDeclarations) {
-        if (
-          !stylehacks.detect(lastNode) &&
-          !stylehacks.detect(node) &&
-          node !== lastNode &&
-          node.important === lastNode.important &&
-          node.prop === lastNode.prop &&
-          !isFallback(node, lastNode)
-        ) {
-          duplicates.add(node);
-        }
-      }
-
-      for (const node of duplicates) {
-        node.remove();
-        boxPropertyDeclarations.delete(node);
-      }
-
-      boxPropertyDeclarations.delete(lastNode);
-    }
+    cleanupDeclarations(
+      boxPropertyDeclarations,
+      (node, lastNode) =>
+        lastNode.prop === prop &&
+        node.prop !== lastNode.prop &&
+        !isFallback(node, lastNode)
+    );
   };
 
   return {
