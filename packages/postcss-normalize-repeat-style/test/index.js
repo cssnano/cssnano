@@ -12,6 +12,24 @@ test(
   passthroughCSS('background:space round')
 );
 
+test(
+  'should normalize keywords with comments and unusual whitespace',
+  processCSS(
+    'background-repeat:repeat/* between */\tno-repeat',
+    'background-repeat:repeat-x'
+  )
+);
+
+test(
+  'should preserve repeat syntax after a size separator',
+  passthroughCSS('background:repeat no-repeat/cover')
+);
+
+test(
+  'should not inspect escaped variable functions',
+  passthroughCSS('background-repeat:v\\61r(--repeat, repeat no-repeat)')
+);
+
 function suite(fixture, expected) {
   return () =>
     Promise.all([

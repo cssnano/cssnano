@@ -1,37 +1,80 @@
-import valueParser from 'postcss-value-parser';
+import cssnanoUtils from 'cssnano-utils';
 import mappings from './lib/map.js';
 
-const repeatPropertyRegex = /^(background(-repeat)?|(-\w+-)?mask-repeat)$/i;
-/**
- * @param {unknown} item
- * @param {number} index
- * @return {boolean}
- */
-function evenValues(item, index) {
-  return index % 2 === 0;
-}
+const { TokenType, tokens } = cssnanoUtils;
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+const repeatPropertyRegex =
+  /^(?:background(?:-repeat)?|(?:-\w+-)?mask-repeat)$/i;
 const repeatKeywords = new Set(mappings.values());
 
-/**
- * @param {valueParser.Node} node
- * @return {boolean}
- */
-function isCommaNode(node) {
-  return node.type === 'div' && node.value === ',';
+const variableFunctions = new Set(['var', 'env', 'constant']);
+
+/** @param {import('@csstools/css-tokenizer').TokenType} type */
+function changesDepth(type) {
+  if (
+    type === TokenType.Function ||
+    type === TokenType.OpenParen ||
+    type === TokenType.OpenSquare ||
+    type === TokenType.OpenCurly
+  )
+    return 1;
+  if (
+    type === TokenType.CloseParen ||
+    type === TokenType.CloseSquare ||
+    type === TokenType.CloseCurly
+  )
+    return -1;
+  return 0;
 }
 
-const variableFunctions = new Set(['var', 'env', 'constant']);
-/**
- * @param {valueParser.Node} node
- * @return {boolean}
- */
-function isVariableFunctionNode(node) {
-  if (node.type !== 'function') {
-    return false;
+/** @param {CSSToken[]} input @param {string} value @return {[number, number, CSSToken[], boolean][]} */
+function repeatLayers(input, value) {
+  let depth = 0;
+  let layerStart = 0;
+  let stopped = false;
+  /** @type {CSSToken[]} */ let candidates = [];
+  /** @type {[number, number, CSSToken[], boolean][]} */ const layers = [];
+  for (const token of input) {
+    const type = token[0];
+    if (type === TokenType.EOF) break;
+    if (
+      depth === 0 &&
+      type === TokenType.Function &&
+      variableFunctions.has(token[1].slice(0, -1).toLowerCase())
+    ) {
+      stopped = true;
+      candidates = [];
+    }
+    depth += changesDepth(type);
+    if (depth === 0 && type === TokenType.Comma) {
+      layers.push([layerStart, token[2] - 1, candidates, stopped]);
+      layerStart = token[3] + 1;
+      candidates = [];
+      stopped = false;
+    } else if (depth === 0 && type === TokenType.Delim && token[1] === '/')
+      stopped = true;
+    else if (
+      !stopped &&
+      depth === 0 &&
+      type === TokenType.Ident &&
+      repeatKeywords.has(token[1].toLowerCase())
+    )
+      candidates.push(token);
   }
+  layers.push([layerStart, value.length - 1, candidates, stopped]);
+  return layers;
+}
 
-  return variableFunctions.has(node.value.toLowerCase());
+/** @param {string} value @param {CSSToken[]} terms @return {[number, number, string] | undefined} */
+function repeatReplacement(value, terms) {
+  if (terms.length !== 2) return undefined;
+  const [first, second] = terms;
+  if (!/^\s+$/u.test(value.slice(first[3] + 1, second[2]))) return undefined;
+  const match = mappings.get(
+    [first[1], second[1]].map((x) => x.toLowerCase()).toString()
+  );
+  return match ? [first[2], second[3] + 1, match] : undefined;
 }
 
 /**
@@ -39,97 +82,20 @@ function isVariableFunctionNode(node) {
  * @return {string}
  */
 function transform(value) {
-  const parsed = valueParser(value);
-
-  if (parsed.nodes.length === 1) {
+  /** @type {CSSToken[]} */ const input = tokens(value);
+  if (input.length === 2) {
     return value;
   }
-  /** @type {{start: number?, end: number?}[]} */
-  const ranges = [];
-  let rangeIndex = 0;
-  let shouldContinue = true;
-
-  for (const [index, node] of parsed.nodes.entries()) {
-    // After comma (`,`) follows next background
-    if (isCommaNode(node)) {
-      rangeIndex += 1;
-      shouldContinue = true;
-
-      continue;
-    }
-
-    if (!shouldContinue) {
-      continue;
-    }
-
-    // After separator (`/`) follows `background-size` values
-    // Avoid them
-    if (node.type === 'div' && node.value === '/') {
-      shouldContinue = false;
-
-      continue;
-    }
-
-    if (!ranges[rangeIndex]) {
-      ranges[rangeIndex] = {
-        start: null,
-        end: null,
-      };
-    }
-
-    // Do not try to be processed `var and `env` function inside background
-    if (isVariableFunctionNode(node)) {
-      shouldContinue = false;
-      ranges[rangeIndex].start = null;
-      ranges[rangeIndex].end = null;
-
-      continue;
-    }
-
-    const isRepeatKeyword =
-      node.type === 'word' && repeatKeywords.has(node.value.toLowerCase());
-
-    if (ranges[rangeIndex].start === null && isRepeatKeyword) {
-      ranges[rangeIndex].start = index;
-      ranges[rangeIndex].end = index;
-
-      continue;
-    }
-
-    if (ranges[rangeIndex].start !== null) {
-      if (node.type !== 'space' && isRepeatKeyword) {
-        ranges[rangeIndex].end = index;
-      }
-    }
+  /** @type {[number, number, string][]} */
+  const replacements = [];
+  for (const [, , terms, skipped] of repeatLayers(input, value)) {
+    const replacement = skipped ? undefined : repeatReplacement(value, terms);
+    if (replacement) replacements.push(replacement);
   }
-
-  for (const range of ranges) {
-    if (range.start === null) {
-      continue;
-    }
-
-    const nodes = parsed.nodes.slice(
-      range.start,
-      /** @type {number} */ (range.end) + 1
-    );
-
-    if (nodes.length !== 3) {
-      continue;
-    }
-    const key = nodes
-      .filter(evenValues)
-      .map((n) => n.value.toLowerCase())
-      .toString();
-
-    const match = mappings.get(key);
-
-    if (match) {
-      nodes[0].value = match;
-      nodes[1].value = nodes[2].value = '';
-    }
-  }
-
-  return parsed.toString();
+  let result = value;
+  for (const [start, end, text] of replacements.toReversed())
+    result = result.slice(0, start) + text + result.slice(end);
+  return result;
 }
 
 /**
