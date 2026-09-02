@@ -13,6 +13,45 @@ test(
 );
 
 test(
+  'should preserve functional font sizes with nested commas',
+  processCSS(
+    'h1{font:calc(1em + 2px)/min(2, max(1, 2)) "A, B", serif}',
+    'h1{font:calc(1em + 2px)/min(2, max(1, 2)) A\\, B,serif}'
+  )
+);
+
+test(
+  'should keep numeric weights before the font size',
+  processCSS(
+    'h1{font:condensed oblique 25deg 753 12pt "Helvetica Neue", serif}',
+    'h1{font:condensed oblique 25deg 753 12pt Helvetica Neue,serif}'
+  )
+);
+
+test(
+  'should recognize a unitless zero font size',
+  processCSS(
+    'h1{font:italic 0 "Helvetica Neue", serif}',
+    'h1{font:italic 0 Helvetica Neue,serif}'
+  )
+);
+
+test(
+  'should keep current generic and CSS-wide family keywords quoted',
+  passthroughCSS(
+    'h1{font-family:"math","ui-sans-serif","generic(foo)","revert","revert-layer"}'
+  )
+);
+
+test(
+  'should remove duplicate families case-insensitively',
+  processCSS(
+    'h1{font-family:Inter,"inter",INTER,"Other"}',
+    'h1{font-family:Inter,Other}'
+  )
+);
+
+test(
   'should unquote font names',
   processCSS(
     'h1{font-family:"Helvetica Neue"}',
@@ -424,25 +463,23 @@ test(
 
 test(
   'should minify font property #3',
-  processCSS(
-    'h1{font:var(--foo) bold 16px/2 cursive}',
-    'h1{font:var(--foo) 700 16px/2 cursive}'
-  )
+  passthroughCSS('h1{font:var(--foo) bold 16px/2 cursive}')
 );
 
 test(
   'should minify font property #4',
-  processCSS(
-    'h1{font:italic var(--foo) bold 16px/2 cursive}',
-    'h1{font:italic var(--foo) 700 16px/2 cursive}'
-  )
+  passthroughCSS('h1{font:italic var(--foo) bold 16px/2 cursive}')
 );
 
 test(
   'should minify font property #5',
-  processCSS(
-    'h1{font:italic 1.2em "Helvetica Neue", var(--foo)}',
-    'h1{font:italic 1.2em Helvetica Neue,var(--foo)}'
+  passthroughCSS('h1{font:italic 1.2em "Helvetica Neue", var(--foo)}')
+);
+
+test(
+  'should pass through environment variables in font shorthands',
+  passthroughCSS(
+    'h1{font:italic 16px/env(--line-height) "Helvetica Neue",serif}'
   )
 );
 

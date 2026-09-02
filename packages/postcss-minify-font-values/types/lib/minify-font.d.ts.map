@@ -1,1 +1,1 @@
-{"version":3,"file":"minify-font.d.ts","sourceRoot":"","sources":["../../src/lib/minify-font.js"],"names":[],"mappings":"AAOA,yFAAyF;AAGzF,MAAM,CAAC,OAAO,UAAU,UAAU,CAAC,KAAK,EAH5B,MAG4B,EAAE,IAAI,EAHZ,OAAO,aAAa,EAAE,OAGV,GAHiC,MAAM,CA0DpF"}
+{"version":3,"file":"minify-font.d.ts","sourceRoot":"","sources":["../../src/lib/minify-font.js"],"names":[],"mappings":"AAOA,yFAAyF;AAGzF,MAAM,CAAC,OAAO,UAAU,UAAU,CAChC,KAAK,EAJK,MAIL,EACL,IAAI,EAL4B,OAAO,aAAa,EAAE,OAKlD,EACJ,YAAY,wFAAoB,GAN6C,MAAM,CAiFpF"}

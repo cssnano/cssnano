@@ -1,8 +1,14 @@
 import cssnanoUtils from 'cssnano-utils';
 
-const { TokenType, tokens } = cssnanoUtils;
+const { TokenType, balancedTokens, decoded } = cssnanoUtils;
 
-const globalKeywords = new Set(['inherit', 'initial', 'unset']);
+const globalKeywords = new Set([
+  'inherit',
+  'initial',
+  'unset',
+  'revert',
+  'revert-layer',
+]);
 const generic = new Set([
   'sans-serif',
   'serif',
@@ -10,13 +16,45 @@ const generic = new Set([
   'cursive',
   'monospace',
   'system-ui',
+  'math',
+  'ui-serif',
+  'ui-sans-serif',
+  'ui-monospace',
+  'ui-rounded',
+  'emoji',
+  'fangsong',
 ]);
-const keyword = new RegExp([...generic, ...globalKeywords].join('|'), 'i');
+const completeGeneric = new Set([
+  'sans-serif',
+  'serif',
+  'fantasy',
+  'cursive',
+  'monospace',
+  'system-ui',
+]);
+const systemFont = new Set([
+  'caption',
+  'icon',
+  'menu',
+  'message-box',
+  'small-caption',
+  'status-bar',
+]);
 const digit = /^\d/;
 const escapeCharacter = /[\t\n\v\f:]/;
 const simpleEscape = /[ !"#$%&'()*+,./<=>?@[\\\]^`{|}~]/;
 const invalidIdentifier = /^(-?\d|--)/;
 const identifier = /^[a-zA-Z\d\xa0-\uffff_-]+$/;
+
+/** @param {string} value */
+function containsReservedComponent(value) {
+  return value.split(/[\t\n\f\r ]+/).some((part) => {
+    const name = part.toLowerCase();
+    return (
+      generic.has(name) || globalKeywords.has(name) || systemFont.has(name)
+    );
+  });
+}
 
 /** @param {string} string */
 function escapeIdentifierSequence(string) {
@@ -70,79 +108,73 @@ function escapeIdentifierSequence(string) {
 }
 
 /** @param {string} value @param {import('../index.js').Options} opts @return {string} */
-function minifyFamily(value, opts) {
+function minifyFamily(value, opts, removeQuotes = opts.removeQuotes) {
   if (Array.isArray(value))
     throw new TypeError('minifyFamily accepts a CSS value string');
-  const input = tokens(value);
-  /** @type {string[]} */
+  const balanced = balancedTokens(value);
+  if (!balanced) return value;
+  const input = balanced.tokens;
+  /** @type {{value: string, folded: string, completeGeneric: boolean}[]} */
   const families = [];
-  /** @type {import('@csstools/css-tokenizer').CSSToken[]} */
-  let familyTokens = [];
-  let depth = 0;
-  const finish = () => {
-    const token = familyTokens.find((item) => item[0] === TokenType.String);
+  /** @param {number} startIndex @param {number} endIndex */
+  const finish = (startIndex, endIndex) => {
+    const familyTokens = input.slice(startIndex, endIndex);
+    const meaningful = familyTokens.filter(
+      (item) =>
+        item[0] !== TokenType.Whitespace && item[0] !== TokenType.Comment
+    );
+    /** @type {import('@csstools/css-tokenizer').CSSToken|undefined} */
+    const token = meaningful.length === 1 ? meaningful[0] : undefined;
     let family = familyTokens
       .map((item) => (item[0] === TokenType.Whitespace ? '\0' : item[1]))
       .join('')
       .replace(/^\0+|\0+$/g, '')
-      .replace(/\0+/g, ' ')
-      .replace(/\s*,\s*/g, ',');
-    const raw = /** @type {{value?: string}|undefined} */ (token?.[4])?.value;
+      .replace(/\0+/g, ' ');
+    const raw = token && decoded(token);
+    const isReservedString =
+      typeof raw === 'string' && containsReservedComponent(raw);
     if (
       typeof raw === 'string' &&
       token?.[0] === TokenType.String &&
       !token[1].includes('\\') &&
-      opts.removeQuotes &&
-      !keyword.test(raw) &&
+      removeQuotes &&
+      !isReservedString &&
+      !/^generic\([^)]*\)$/i.test(raw) &&
       !digit.test(raw)
     ) {
       const escaped = escapeIdentifierSequence(raw);
       if (escaped.length < raw.length + 2) family = escaped;
     }
-    families.push(family);
-    familyTokens = [];
+    families.push({
+      value: family,
+      folded:
+        typeof raw === 'string' && !isReservedString
+          ? raw.toLowerCase()
+          : family.toLowerCase(),
+      completeGeneric:
+        meaningful.length === 1 &&
+        token?.[0] === TokenType.Ident &&
+        completeGeneric.has(decoded(token).toLowerCase()),
+    });
   };
-  for (const token of input) {
-    if (
-      [
-        TokenType.Function,
-        TokenType.OpenParen,
-        TokenType.OpenSquare,
-        TokenType.OpenCurly,
-      ].includes(token[0])
-    )
-      depth++;
-    if (
-      [
-        TokenType.CloseParen,
-        TokenType.CloseSquare,
-        TokenType.CloseCurly,
-      ].includes(token[0])
-    )
-      depth--;
-    if (token[0] === TokenType.Comma && depth === 0) {
-      finish();
-    } else {
-      familyTokens.push(token);
-    }
+  for (const segment of balanced.topLevelSegments()) {
+    finish(segment.startIndex, segment.endIndex);
   }
-  finish();
-  let result = families.filter(Boolean);
+  let result = families.filter((family) => family.value);
   if (opts.removeAfterKeyword) {
-    const index = result.findIndex((item) => generic.has(item.toLowerCase()));
+    const index = result.findIndex((family) => family.completeGeneric);
     if (index !== -1) result = result.slice(0, index + 1);
   }
   if (opts.removeDuplicates) {
     const seen = new Set();
     result = result.filter((item) => {
-      const folded = item.toLowerCase();
-      if (folded === 'monospace') return true;
-      if (seen.has(folded)) return false;
-      seen.add(folded);
+      if (item.folded === 'monospace') return true;
+      if (seen.has(item.folded)) return false;
+      seen.add(item.folded);
       return true;
     });
   }
-  return result.join(',');
+  return result.map((family) => family.value).join(',');
 }
 
 export default minifyFamily;
