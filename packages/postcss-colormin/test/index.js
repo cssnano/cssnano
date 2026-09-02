@@ -155,6 +155,11 @@ describe('Minify', () => {
   );
 
   test(
+    'should not minify colors nested in math functions',
+    passthroughCSS('h1{color:calc(rgb(255, 0, 0))}')
+  );
+
+  test(
     'should minify hex colors without keywords',
     processCSS(
       'h1{background:linear-gradient(#ffffff,#999999) no-repeat;}',
@@ -168,6 +173,19 @@ test(
   processCSS(
     'h1{color:rgba(50%, 50%, 50%, 0.5)}',
     'h1{color:hsla(0,0%,50%,.5)}'
+  )
+);
+
+test(
+  'should preserve colors in malformed and variable math expressions',
+  passthroughCSS('h1{color:calc(rgb(255,0,0) + var(--offset))}')
+);
+
+test(
+  'should minify colors in nested recognized functions',
+  processCSS(
+    'h1{color:color-mix(in srgb, rgb(255, 0, 0), #ffffff)}',
+    'h1{color:color-mix(in srgb, red, #fff)}'
   )
 );
 
