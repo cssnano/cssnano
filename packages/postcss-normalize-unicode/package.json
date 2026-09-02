@@ -39,8 +39,8 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "browserslist": "catalog:",
-    "postcss-value-parser": "^4.2.0"
+    "@csstools/css-tokenizer": "^4.0.0",
+    "browserslist": "catalog:"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
