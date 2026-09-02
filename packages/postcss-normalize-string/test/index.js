@@ -90,6 +90,19 @@ test(
   )
 );
 
+test(
+  'should normalize strings containing nested function syntax',
+  processCSS(
+    `p:after{content:'(' attr(data-label) ')'}`,
+    `p:after{content:"(" attr(data-label) ")"}`
+  )
+);
+
+test(
+  'should preserve escaped whitespace and quote spelling when needed',
+  passthroughCSS(`p:after{content:"a \\"quoted\\" 'value'"}`)
+);
+
 /*
  * The whitespace here is kept because it might influence the design
  * e.g. through `white-space: pre;`

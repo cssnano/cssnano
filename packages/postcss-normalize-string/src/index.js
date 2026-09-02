@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
 /*
  * Constants (parser usage)
@@ -176,7 +176,7 @@ function parse(str) {
 }
 
 /**
- * @param {valueParser.StringNode} node
+ * @param {{quote: string, value: string}} node
  * @param {StringAst} ast
  * @return {void}
  */
@@ -240,25 +240,28 @@ function normalize(value, preferredQuote) {
     return value;
   }
 
-  return valueParser(value)
-    .walk((child) => {
-      if (child.type !== C_STRING) {
-        return;
-      }
-
-      const ast = parse(child.value);
-
-      if (ast.quotes) {
-        changeWrappingQuotes(child, ast);
-      } else if (preferredQuote === C_SINGLE) {
-        child.quote = L_SINGLE_QUOTE;
-      } else {
-        child.quote = L_DOUBLE_QUOTE;
-      }
-
-      child.value = stringify(ast);
-    })
-    .toString();
+  /** @type {[number, number, string][]} */
+  const replacements = [];
+  for (const token of tokenize({ css: value })) {
+    if (token[0] !== TokenType.String) continue;
+    const raw = token[1];
+    const quote = raw[0];
+    const child = { quote, value: raw.slice(1, -1) };
+    const ast = parse(child.value);
+    if (ast.quotes) changeWrappingQuotes(child, ast);
+    else
+      child.quote =
+        preferredQuote === C_SINGLE ? L_SINGLE_QUOTE : L_DOUBLE_QUOTE;
+    replacements.push([
+      token[2],
+      token[3] + 1,
+      child.quote + stringify(ast) + child.quote,
+    ]);
+  }
+  let result = value;
+  for (const [start, end, replacement] of replacements.toReversed())
+    result = result.slice(0, start) + replacement + result.slice(end);
+  return result;
 }
 
 /**
