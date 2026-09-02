@@ -1,4 +1,91 @@
-import selectorParser from 'postcss-selector-parser';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
+
+/**
+ * @param {string} selectors
+ * @return {{start: number, end: number, comments: {start: number, end: number, text: string}[]}[]}
+ */
+function splitSelectors(selectors) {
+  /** @type {{start: number, end: number, comments: {start: number, end: number, text: string}[]}[]} */
+  const parts = [];
+  let start = 0;
+  let depth = 0;
+  /** @type {{start: number, end: number, text: string}[]} */
+  let comments = [];
+
+  for (const token of tokenize({ css: selectors })) {
+    const [type, , tokenStart, tokenEnd] = token;
+
+    if (type === TokenType.Comment) {
+      comments.push({
+        start: tokenStart,
+        end: tokenEnd + 1,
+        text: token[1],
+      });
+    }
+
+    if (type === TokenType.Comma && depth === 0) {
+      parts.push({ start, end: tokenStart, comments });
+      start = tokenEnd + 1;
+      comments = [];
+      continue;
+    }
+
+    if (
+      type === TokenType.Function ||
+      type === TokenType.OpenParen ||
+      type === TokenType.OpenSquare ||
+      type === TokenType.OpenCurly
+    ) {
+      depth++;
+    } else if (
+      type === TokenType.CloseParen ||
+      type === TokenType.CloseSquare ||
+      type === TokenType.CloseCurly
+    ) {
+      depth = Math.max(0, depth - 1);
+    }
+  }
+
+  parts.push({ start, end: selectors.length, comments });
+
+  // PostCSS's selector parser associates trailing whitespace with the
+  // preceding selector, while a trailing empty selector is discarded.
+  const last = parts.at(-1);
+  if (last && !selectors.slice(last.start, last.end).trim()) {
+    // The parser preserves an empty selector for comment-free input, even
+    // though it discards one when comments are present in the selector list.
+    if (last.start !== last.end) {
+      if (parts.length > 1) {
+        parts[parts.length - 2].end = last.end;
+      }
+      parts.pop();
+    } else if (selectors.includes('/*')) {
+      parts.pop();
+    }
+  }
+
+  return parts;
+}
+
+/**
+ * @param {string} selectors
+ * @param {{start: number, end: number, comments: {start: number, end: number, text: string}[]}} part
+ * @return {[string, string]}
+ */
+function selectorText(selectors, part) {
+  const source = selectors.slice(part.start, part.end);
+  /** @type {string[]} */
+  const keyParts = [];
+  let start = part.start;
+
+  for (const comment of part.comments) {
+    keyParts.push(selectors.slice(start, comment.start));
+    start = comment.end;
+  }
+
+  keyParts.push(selectors.slice(start, part.end));
+  return [keyParts.join('').trim(), source];
+}
 
 /**
  * @param {string} selectors
@@ -9,46 +96,19 @@ function generateUniqueSelector(selectors) {
   if (!selectors.includes(',')) {
     return selectors;
   }
-  /** @type {Map<string, string>} */
+  /** @type {Map<string, {selector: string, comments: string[]}>} */
   const uniqueSelectors = new Map();
-  // Without comments the node's own toString is already a usable key.
-  const hasComments = selectors.includes('/*');
 
-  /** @type {selectorParser.SyncProcessor<void>} */
-  const collectUniqueSelectors = (selNode) => {
-    for (const node of selNode.nodes) {
-      if (!hasComments) {
-        const text = node.toString();
-        const key = text.trim();
-        if (!uniqueSelectors.has(key)) {
-          uniqueSelectors.set(key, text);
-        }
-        continue;
-      }
-
-      /** @type {string[]} */
-      const comments = [];
-      // Duplicates are removed by stripping the comments and using the results as the Map key.
-      const keyNode = node.clone();
-      keyNode.walk((sel) => {
-        if (sel.type === 'comment') {
-          comments.push(sel.value);
-          sel.remove();
-        }
-      });
-      const key = keyNode.toString().trim();
-
-      const dupeSelector = uniqueSelectors.get(key);
-      if (!dupeSelector) {
-        uniqueSelectors.set(key, node.toString());
-      } else if (comments.length) {
-        // If the duplicate selector has a comment, it is concatenated to the end of the selector.
-        uniqueSelectors.set(key, `${dupeSelector}${comments.join('')}`);
-      }
+  for (const part of splitSelectors(selectors)) {
+    const [key, text] = selectorText(selectors, part);
+    const selector = uniqueSelectors.get(key);
+    if (selector === undefined) {
+      uniqueSelectors.set(key, { selector: text, comments: [] });
+    } else if (part.comments.length) {
+      // Comments on duplicate selectors are concatenated to the first selector.
+      selector.comments.push(...part.comments.map((comment) => comment.text));
     }
-  };
-
-  selectorParser(collectUniqueSelectors).processSync(selectors);
+  }
 
   return [...uniqueSelectors.entries()]
     .toSorted(([a], [b]) => {
@@ -58,7 +118,7 @@ function generateUniqueSelector(selectors) {
         return a < b ? -1 : 0;
       }
     })
-    .map(([, selector]) => selector)
+    .map(([, selector]) => selector.selector + selector.comments.join(''))
     .join();
 }
 /**
