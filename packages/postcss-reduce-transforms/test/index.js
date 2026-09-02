@@ -502,3 +502,57 @@ test(
   'should work with transform:rotate3d(0)',
   processCSS('h1{transform:rotate3d(0)}', 'h1{transform:rotate3d(0)}')
 );
+
+describe('Handles nested syntax and source spelling', () => {
+  test(
+    'reduces nested known functions before their parent is inspected',
+    processCSS('h1{transform:foo(scale(1, 1))}', 'h1{transform:foo(scale(1))}')
+  );
+
+  test(
+    'reduces multiple transform functions in one value',
+    processCSS(
+      'h1{transform:scale(1, 1) rotateZ(20deg) translate(4, 0)}',
+      'h1{transform:scale(1) rotate(20deg) translate(4)}'
+    )
+  );
+
+  test(
+    'does not split arguments inside nested parentheses',
+    processCSS(
+      'h1{transform:scale(calc(1 + 1), 1)}',
+      'h1{transform:scaleX(calc(1 + 1))}'
+    )
+  );
+
+  test(
+    'keeps square and curly blocks intact when selecting an argument',
+    processCSS(
+      'h1{transform:scale([1, 2], 1) scale({x:1}, 1)}',
+      'h1{transform:scaleX([1, 2]) scaleX({x:1})}'
+    )
+  );
+
+  test(
+    'preserves comments on passthrough paths',
+    processCSS(
+      'h1{transform:scale(1/*keep*/, 1)}',
+      'h1{transform:scaleX(1/*keep*/)}'
+    )
+  );
+
+  test(
+    'preserves escaped function names when they are not legacy reducer names',
+    passthroughCSS('h1{transform:ROT\\41 TEZ(20deg)}')
+  );
+
+  test(
+    'preserves quoted strings and bare URLs',
+    passthroughCSS('h1{transform:translate("1", url(image.png))}')
+  );
+
+  test(
+    'applies reductions to transform-suffixed custom properties',
+    processCSS('h1{--transform:scale(1, 1)}', 'h1{--transform:scale(1)}')
+  );
+});

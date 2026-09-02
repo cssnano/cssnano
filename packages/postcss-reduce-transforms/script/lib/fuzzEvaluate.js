@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
 /**
  * A `transform` declaration's meaning: the flattened 4x4 homogeneous matrix
@@ -144,19 +144,23 @@ function matrix2d(a, b, c, d, e, f) {
 }
 
 /**
- * @param {valueParser.Node} node
+ * @param {import('@csstools/css-tokenizer').CSSToken} node
  * @return {{value: number, unit: string}}
  */
 function parseNumber(node) {
-  const match = /^(-?[\d.]+(?:e-?\d+)?)([a-z%]*)$/i.exec(
-    node.type === 'word' ? node.value : ''
-  );
-
-  if (!match) {
+  if (
+    ![TokenType.Number, TokenType.Dimension, TokenType.Percentage].includes(
+      node[0]
+    )
+  ) {
     return { value: Number.NaN, unit: '' };
   }
-
-  return { value: Number.parseFloat(match[1]), unit: match[2].toLowerCase() };
+  return {
+    value: node[4].value,
+    unit:
+      node[4].unit?.toLowerCase() ??
+      (node[0] === TokenType.Percentage ? '%' : ''),
+  };
 }
 
 /**
@@ -299,14 +303,18 @@ const matrixFunctions = new Map([
 
 /**
  * @param {string} name lower-cased function name
- * @param {valueParser.Node[]} argNodes
+ * @param {import('@csstools/css-tokenizer').CSSToken[]} argNodes
  * @return {number[]|undefined} undefined for functions this evaluator
  * doesn't model (`perspective()`, `var()`, ...); those never get renamed by
  * the plugin, so callers fall back to comparing the argument text verbatim.
  */
 function matrixOfFunction(name, argNodes) {
   const parsed = argNodes
-    .filter((node) => node.type === 'word')
+    .filter((node) =>
+      [TokenType.Number, TokenType.Dimension, TokenType.Percentage].includes(
+        node[0]
+      )
+    )
     .map(parseNumber);
   const nums = parsed.map(({ value }) => value);
 
@@ -331,18 +339,37 @@ function matrixOfFunction(name, argNodes) {
  * @return {TransformFunction[]}
  */
 function evaluate(value) {
-  const parsed = valueParser(value);
+  const parsed = [...tokenize({ css: value })].filter(
+    (token) => token[0] !== TokenType.EOF
+  );
   /** @type {TransformFunction[]} */
   const functions = [];
-
-  for (const node of parsed.nodes) {
-    if (node.type !== 'function') continue;
-
-    const matrix = matrixOfFunction(node.value.toLowerCase(), node.nodes);
+  const stack = [];
+  for (let index = 0; index < parsed.length; index++) {
+    const node = parsed[index];
+    if (node[0] === TokenType.Function) {
+      stack.push({ node, index });
+      continue;
+    }
+    if (node[0] !== TokenType.CloseParen || !stack.length) continue;
+    const entry = stack.pop();
+    const argNodes = parsed
+      .slice(entry.index + 1, index)
+      .filter(
+        (token) =>
+          token[0] !== TokenType.Whitespace && token[0] !== TokenType.Comma
+      );
+    const matrix = matrixOfFunction(
+      entry.node[4].value.toLowerCase(),
+      argNodes
+    );
     functions.push(
       matrix
-        ? { name: node.value, matrix }
-        : { name: node.value, raw: valueParser.stringify(node.nodes) }
+        ? { name: entry.node[4].value, matrix }
+        : {
+            name: entry.node[4].value,
+            raw: value.slice(entry.node[3] + 1, node[2]),
+          }
     );
   }
 
