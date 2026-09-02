@@ -40,6 +40,15 @@ function handleNormalState(context, nextChar) {
     context.state = STATES.IN_DOUBLE_QUOTE;
   } else if (char === "'") {
     context.state = STATES.IN_SINGLE_QUOTE;
+  } else if (char === '\\' && nextChar) {
+    // A CSS escape consumes the next code point, so an escaped slash or star
+    // cannot begin a comment. A CRLF escaped newline consumes both code units.
+    if (nextChar === '\r' && input[pos + 2] === '\n') {
+      context.pos += 3;
+    } else {
+      context.pos += 2;
+    }
+    return true;
   }
 
   return false;
