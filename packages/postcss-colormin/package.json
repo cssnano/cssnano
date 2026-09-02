@@ -46,7 +46,8 @@
     "@colordx/core": "catalog:",
     "browserslist": "catalog:",
     "caniuse-api": "^4.0.0",
-    "postcss-value-parser": "^4.2.0"
+    "cssnano-utils": "workspace:^",
+    "@csstools/css-tokenizer": "^4.0.0"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
