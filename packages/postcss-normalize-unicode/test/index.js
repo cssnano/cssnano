@@ -96,6 +96,37 @@ describe('Pass', () => {
     passthroughCSS(fixture('env(foo-bar)'))
   );
 
+  test(
+    'should preserve comments, strings, functions, delimiters, and malformed tokenizable values',
+    processCSS(
+      fixture('"u+2b00-2bff" /* comment */ var(--range) u+2b00-2bff]'),
+      fixture('"u+2b00-2bff" /* comment */ var(--range) u+2b??]'),
+      { overrideBrowserslist: ['defaults', 'not ie <=11'] }
+    )
+  );
+
+  test(
+    'should normalize multiple ranges while preserving separators',
+    processCSS(
+      fixture('u+2b00-2bff/**/U+1e00-1eff'),
+      fixture('u+2b??/**/u+1e??'),
+      { overrideBrowserslist: ['defaults', 'not ie <=11'] }
+    )
+  );
+
+  test(
+    'should normalize only top-level unicode ranges',
+    processCSS(
+      fixture(
+        'var(--range,u+2b00-2bff) func(u+2b00-2bff) [u+2b00-2bff] (u+2b00-2bff) u+2b00-2bff'
+      ),
+      fixture(
+        'var(--range,u+2b00-2bff) func(u+2b00-2bff) [u+2b00-2bff] (u+2b00-2bff) u+2b??'
+      ),
+      { overrideBrowserslist: ['defaults', 'not ie <=11'] }
+    )
+  );
+
   test('should pass through initial', passthroughCSS(fixture('initial')));
 
   test(

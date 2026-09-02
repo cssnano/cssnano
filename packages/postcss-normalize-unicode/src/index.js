@@ -1,5 +1,9 @@
 import getBrowsersList from '#getBrowsersList';
-import valueParser from 'postcss-value-parser';
+import {
+  isTokenUnicodeRange,
+  tokenize,
+  TokenType,
+} from '@csstools/css-tokenizer';
 
 /** @import browserslist from 'browserslist' */
 
@@ -63,19 +67,52 @@ function mergeRangeBounds(left, right) {
  * @return {string}
  */
 function transform(value, isLegacy = false) {
-  return valueParser(value)
-    .walk((child) => {
-      if (child.type === 'unicode-range') {
-        const transformed = unicode(child.value.toLowerCase());
+  let result = value;
+  let previousEnd = 0;
+  let depth = 0;
+  for (const token of tokenize({ css: value, unicodeRangesAllowed: true })) {
+    if (
+      token[0] === TokenType.Function ||
+      token[0] === TokenType.OpenParen ||
+      token[0] === TokenType.OpenSquare ||
+      token[0] === TokenType.OpenCurly
+    ) {
+      depth++;
+      continue;
+    }
 
-        child.value = isLegacy
-          ? transformed.replace(regexLowerCaseUPrefix, 'U')
-          : transformed;
-      }
+    if (
+      token[0] === TokenType.CloseParen ||
+      token[0] === TokenType.CloseSquare ||
+      token[0] === TokenType.CloseCurly
+    ) {
+      depth = Math.max(0, depth - 1);
+      continue;
+    }
 
-      return false;
-    })
-    .toString();
+    if (!isTokenUnicodeRange(token) || depth > 0) {
+      continue;
+    }
+
+    const normalized = unicode(token[1].toLowerCase());
+    const transformed = isLegacy
+      ? normalized.replace(regexLowerCaseUPrefix, 'U')
+      : normalized;
+
+    if (transformed === token[1]) {
+      continue;
+    }
+
+    if (result === value) {
+      result = value.slice(0, token[2]);
+    } else {
+      result += value.slice(previousEnd, token[2]);
+    }
+    result += transformed;
+    previousEnd = token[3] + 1;
+  }
+
+  return result === value ? value : result + value.slice(previousEnd);
 }
 
 /**
@@ -120,7 +157,7 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
          */
         OnceExit(css) {
           css.walkDecls(unicodeRangeRegex, (decl) => {
-            const value = decl.value;
+            const value = decl.raws.value?.raw ?? decl.value;
 
             if (cache.has(value)) {
               decl.value = cache.get(value);
@@ -131,6 +168,9 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
             const newValue = transform(value, isLegacy);
 
             decl.value = newValue;
+            if (decl.raws.value?.raw) {
+              decl.raws.value = { raw: newValue, value: newValue };
+            }
             cache.set(value, newValue);
           });
         },
