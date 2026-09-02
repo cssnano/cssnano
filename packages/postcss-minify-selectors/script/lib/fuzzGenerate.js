@@ -38,6 +38,22 @@ const pseudoClasses = [
 ];
 const pseudoClassesForIs = [':hover', ':focus', ':link', ':visited'];
 
+// These are intentionally authored as selector strings plus expected safety,
+// rather than derived from the minifier. They force the fuzzer to exercise the
+// fold path, which random selector lists reach only infrequently.
+const foldMiddleSets = [
+  { middles: ['.a', '.b', '.c'], folds: true },
+  { middles: ['a.foo', 'b.bar', 'c.baz'], folds: true },
+  { middles: [':hover', ':focus', ':active'], folds: true },
+  { middles: ['[data-a]', '[data-b]', '[data-c]'], folds: true },
+  { middles: [':hover', 'b.foo', 'c.bar'], folds: false },
+  { middles: ['.a', 'button', 'input'], folds: false },
+  { middles: ['#one', '.two', '.three'], folds: false },
+  { middles: [':not(.a)', ':not(.b)', ':not(.c)'], folds: false },
+  { middles: ['svg|a', 'svg|b', 'svg|c'], folds: false },
+  { middles: ['[lang=en i]', '[lang=fr i]', '[lang=nl i]'], folds: false },
+];
+
 // Prefixes usable in HTML markup via the foreign-content algorithm (`<svg>`,
 // `<math>` switch namespace during HTML parsing), so a generated selector's
 // namespace prefix can actually be exercised against real namespaced elements.
@@ -245,6 +261,25 @@ function generate(seed, count) {
 }
 
 /**
+ * Generates selector lists with a guaranteed shared prefix and suffix, making
+ * :is() folding decisions observable independently of DOM matching.
+ *
+ * @param {number} seed
+ * @param {number} count
+ * @return {{selector: string, folds: boolean}[]}
+ */
+function generateFoldCandidates(seed, count) {
+  const rng = random(seed);
+  return Array.from({ length: count }, () => {
+    const { middles, folds } = rng.pick(foldMiddleSets);
+    return {
+      selector: middles.map((middle) => `.scope ${middle} .tail`).join(','),
+      folds,
+    };
+  });
+}
+
+/**
  * Removes selectors one at a time from a selector list, keeping the minimal case.
  *
  * @param {string} css
@@ -269,4 +304,4 @@ function shrink(css, fails) {
   return `${selectors.join(',')}${body}`;
 }
 
-export { generate, shrink };
+export { generate, generateFoldCandidates, shrink };

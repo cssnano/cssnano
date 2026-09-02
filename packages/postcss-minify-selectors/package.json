@@ -42,10 +42,10 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
+    "cssnano-utils": "workspace:^",
     "browserslist": "catalog:",
     "caniuse-api": "^4.0.0",
-    "cssesc": "^3.0.0",
-    "postcss-selector-parser": "catalog:"
+    "cssesc": "^3.0.0"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
