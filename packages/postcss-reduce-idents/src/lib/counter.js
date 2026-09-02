@@ -13,6 +13,8 @@ export default function counterReducer() {
   const cache = new Map();
   /** @type {import('postcss').Declaration[]} */
   let declarations = [];
+  /** @type {WeakMap<import('postcss').Declaration, import('@csstools/css-tokenizer').CSSToken[]>} */
+  const parsedValues = new WeakMap();
   return {
     /** @param {import('postcss').AnyNode} node @param {(value:string,index:number)=>string} encoder */ collect(
       node,
@@ -25,8 +27,10 @@ export default function counterReducer() {
         !counter.functionProperties.has(property)
       )
         return;
+      const parsed = tokens(node.value);
+      parsedValues.set(node, parsed);
       if (counter.properties.has(property))
-        for (const token of tokens(node.value))
+        for (const token of parsed)
           if (
             token[0] === TokenType.Ident &&
             !RESERVED.has(token[4].value.toLowerCase()) &&
@@ -40,28 +44,36 @@ export default function counterReducer() {
         const functionProperty = counter.functionProperties.has(
           resolveProperty(decl.prop)
         );
+        if (!functionProperty) continue;
         decl.value = rewrite(
           decl.value,
           (token, isFunctionArgument) => {
-            if (token[0] === TokenType.Whitespace && functionProperty)
-              return ' ';
+            if (token[0] === TokenType.Whitespace) return ' ';
             if (token[0] !== TokenType.Ident) return;
-            if (functionProperty && !isFunctionArgument) return;
+            if (!isFunctionArgument) return;
             const cached = cache.get(token[4].value);
             if (!cached) return;
-            if (functionProperty) cached.count++;
+            cached.count++;
             return cached.ident;
           },
-          functionProperty ? counter.functions : undefined
+          counter.functions,
+          parsedValues.get(decl)
         );
       }
       for (const decl of declarations)
-        if (counter.properties.has(resolveProperty(decl.prop)))
-          decl.value = rewrite(decl.value, (token) => {
-            if (token[0] !== TokenType.Ident) return;
-            for (const [name, cached] of cache)
-              if (token[4].value === cached.ident && !cached.count) return name;
-          });
+        if (counter.properties.has(resolveProperty(decl.prop))) {
+          const parsed = parsedValues.get(decl);
+          decl.value = rewrite(
+            decl.value,
+            (token) => {
+              if (token[0] !== TokenType.Ident) return;
+              const cached = cache.get(token[4].value);
+              return cached?.count ? cached.ident : undefined;
+            },
+            undefined,
+            parsed
+          );
+        }
       declarations = [];
     },
   };

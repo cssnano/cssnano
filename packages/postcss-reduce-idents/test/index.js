@@ -346,6 +346,78 @@ test(
 );
 
 test(
+  'should treat escaped whitespace as a grid cell separator',
+  processCSS(
+    'body{grid-template-areas:"header\\ footer"}header{grid-area:header}footer{grid-area:footer}',
+    'body{grid-template-areas:"a b"}header{grid-area:a}footer{grid-area:b}'
+  )
+);
+
+test(
+  'should treat escaped CSS whitespace as a grid cell separator',
+  processCSS(
+    'body{grid-template-areas:"header\\20 footer" "nav\\000020main"}header{grid-area:header}footer{grid-area:footer}nav{grid-area:nav}main{grid-area:main}',
+    'body{grid-template-areas:"a b" "c d"}header{grid-area:a}footer{grid-area:b}nav{grid-area:c}main{grid-area:d}'
+  )
+);
+
+test(
+  'should keep non-CSS whitespace inside a grid area name',
+  processCSS(
+    'body{grid-template-areas:"foo bar"}main{grid-area:foo\\A0 bar}',
+    'body{grid-template-areas:"a"}main{grid-area:a}'
+  )
+);
+
+test(
+  'should escape decoded characters when serializing grid strings',
+  processCSS(
+    'body{grid-template-areas:"foo\\\"bar"}',
+    'body{grid-template-areas:"foo\\\"bar"}'
+  )
+);
+
+test(
+  'should handle invalid Unicode escapes in grid templates',
+  processCSS(
+    'body{grid-template-areas:"\\110000 \\D800"}',
+    'body{grid-template-areas:"��"}'
+  )
+);
+
+test(
+  'should normalize escaped dots as null cells',
+  processCSS(
+    'body{grid-template-areas:"content \\."}main{grid-area:content}',
+    'body{grid-template-areas:"a ."}main{grid-area:a}'
+  )
+);
+
+test(
+  'should normalize CSS whitespace in grid templates',
+  processCSS(
+    'body{grid-template-areas:"header\\9 footer" "nav\\c main" "aside\\d \\a content"}header{grid-area:header}footer{grid-area:footer}nav{grid-area:nav}main{grid-area:main}aside{grid-area:aside}content{grid-area:content}',
+    'body{grid-template-areas:"a b" "c d" "e f"}header{grid-area:a}footer{grid-area:b}nav{grid-area:c}main{grid-area:d}aside{grid-area:e}content{grid-area:f}'
+  )
+);
+
+test(
+  'should not split escaped newlines in grid area names',
+  processCSS(
+    'body{grid-template-areas:"header\\\nfooter"}main{grid-area:headerfooter}',
+    'body{grid-template-areas:"a"}main{grid-area:a}'
+  )
+);
+
+test(
+  'should rename referenced escaped grid area names',
+  processCSS(
+    'body{grid-template-areas:"header \\." "footer unused"}header{grid-area:header}footer{grid-area:footer}',
+    'body{grid-template-areas:"a ." "b c"}header{grid-area:a}footer{grid-area:b}'
+  )
+);
+
+test(
   'should leave grid-template-rows',
   processCSS(
     [
