@@ -1,14 +1,13 @@
-import { list } from 'postcss';
-import valueParser from 'postcss-value-parser';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import stylehacks from 'stylehacks';
 import canMerge from '../canMerge.js';
 import getDecls from '../getDecls.js';
+import cleanupDeclarations from '../cleanupDeclarations.js';
 import getValue from '../getValue.js';
 import mergeRules from '../mergeRules.js';
 import insertCloned from '../insertCloned.js';
 import { isFallback } from '../isFallback.js';
 import canExplode from '../canExplode.js';
-import lastOf from '../lastOf.js';
 import { shorthand, initialValues } from '../spec.js';
 
 const columns = 'columns';
@@ -25,6 +24,116 @@ const auto = /** @type {string} */ (initialValues.get(columnProperties[0]));
 const inherit = 'inherit';
 /* A unit is a bare identifier, so `30em/10em` is not a length. */
 const lengthUnitRegex = /^[a-z]+$/i;
+const openingTokens = new Set([
+  TokenType.Function,
+  TokenType.OpenParen,
+  TokenType.OpenSquare,
+  TokenType.OpenCurly,
+]);
+const closingTokens = new Set([
+  TokenType.CloseParen,
+  TokenType.CloseSquare,
+  TokenType.CloseCurly,
+]);
+
+/**
+ * @param {string} value
+ * @return {{ value: string, terms: { start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown, rawUnit: string }[] }}
+ */
+function tokenizeColumns(value) {
+  /** @type {{ start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown, rawUnit: string }[]} */
+  const terms = [];
+  let start = -1;
+  let end = -1;
+  let tokenCount = 0;
+  let type = TokenType.EOF;
+  /** @type {unknown} */
+  let decoded;
+  let rawUnit = '';
+  let depth = 0;
+
+  const push = () => {
+    if (!tokenCount) return;
+    terms.push({ start, end, tokenCount, type, decoded, rawUnit });
+    start = -1;
+    end = -1;
+    tokenCount = 0;
+    type = TokenType.EOF;
+    decoded = undefined;
+    rawUnit = '';
+  };
+
+  for (const token of tokenize({ css: value })) {
+    const tokenType = token[0];
+    if (tokenType === TokenType.EOF) continue;
+
+    if (depth === 0 && tokenType === TokenType.Whitespace) {
+      push();
+      continue;
+    }
+
+    if (tokenCount === 0) {
+      start = token[2];
+      type = /** @type {import('@csstools/css-tokenizer').TokenType} */ (
+        tokenType
+      );
+      decoded = token[4];
+      if (tokenType === TokenType.Dimension) {
+        rawUnit = token[1].replace(
+          /^[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/,
+          ''
+        );
+      }
+    }
+    tokenCount++;
+    end = token[3] + 1;
+    if (openingTokens.has(token[0])) depth++;
+    if (closingTokens.has(token[0]) && depth) depth--;
+  }
+  push();
+
+  return { value, terms };
+}
+
+/** @param {string} value @return {boolean} */
+function hasTopLevelSlash(value) {
+  let depth = 0;
+
+  for (const token of tokenize({ css: value })) {
+    const type = token[0];
+    if (type === TokenType.EOF) break;
+    if (depth === 0 && type === TokenType.Delim && token[1] === '/') {
+      return true;
+    }
+    if (openingTokens.has(type)) depth++;
+    if (closingTokens.has(type) && depth) depth--;
+  }
+
+  return false;
+}
+
+/** @type {WeakMap<import('postcss').Declaration, { value: string, parsed: ReturnType<typeof tokenizeColumns> }>} */
+const parsedDeclarations = new WeakMap();
+
+/** @param {import('postcss').Declaration} declaration @return {ReturnType<typeof tokenizeColumns>} */
+function parsedValue(declaration) {
+  const cached = parsedDeclarations.get(declaration);
+  if (!cached || cached.value !== declaration.value) {
+    const parsed = tokenizeColumns(declaration.value);
+    parsedDeclarations.set(declaration, { value: declaration.value, parsed });
+    return parsed;
+  }
+  return cached.parsed;
+}
+
+/**
+ * @param {ReturnType<typeof tokenizeColumns>} parsed
+ * @param {ReturnType<typeof tokenizeColumns>['terms'][number]} term
+ * @return {string}
+ */
+function rawValue(parsed, term) {
+  return parsed.value.slice(term.start, term.end);
+}
 
 /**
  * Normalize a columns shorthand definition. Both of the longhand
@@ -59,27 +168,36 @@ function normalize(values) {
  * The component a value can only have come from: `column-width` takes a
  * length, `column-count` an integer, and `auto` fits either.
  *
- * @param {string} value
+ * @param {ReturnType<typeof tokenizeColumns>['terms'][number]} term
  * @return {'width' | 'count' | 'initial' | undefined} undefined for anything
  * else, since a value this cannot classify, `calc()` among them, could be
  * either.
  */
-function componentRole(value) {
-  if (value.toLowerCase() === auto) {
+function componentRole(term) {
+  const decoded =
+    /** @type {{ value?: string } | undefined} */ (term.decoded)?.value;
+
+  if (
+    term.tokenCount === 1 &&
+    term.type === TokenType.Ident &&
+    decoded?.toLowerCase() === auto
+  ) {
     return 'initial';
   }
 
-  const dimension = valueParser.unit(value);
-
-  if (!dimension) {
-    return undefined;
+  if (term.tokenCount === 1 && term.type === TokenType.Number) {
+    return /** @type {{ type?: string }} */ (term.decoded).type === 'integer' &&
+      /** @type {{ signCharacter?: string }} */ (term.decoded).signCharacter ===
+        undefined
+      ? 'count'
+      : undefined;
   }
 
-  if (dimension.unit === '') {
-    return /^\d+$/.test(dimension.number) ? 'count' : undefined;
+  if (term.tokenCount === 1 && term.type === TokenType.Dimension) {
+    return lengthUnitRegex.test(term.rawUnit) ? 'width' : undefined;
   }
 
-  return lengthUnitRegex.test(dimension.unit) ? 'width' : undefined;
+  return undefined;
 }
 
 /**
@@ -89,19 +207,19 @@ function componentRole(value) {
  *
  * https://drafts.csswg.org/css-multicol-2/#columns
  *
- * @param {string} value
+ * @param {ReturnType<typeof tokenizeColumns>} parsed
  * @return {[string, string] | undefined} undefined when the value is not a form
  * that can be taken apart without guessing which component a value belongs to.
  */
-function parseColumns(value) {
-  const values = list.space(value);
+function parseColumns(parsed) {
+  const values = parsed.terms;
 
   if (values.length > columnProperties.length) {
     return undefined;
   }
 
   /** @type {(string | undefined)[]} */
-  const parsed = [undefined, undefined];
+  const result = [undefined, undefined];
   /** @type {string[]} */
   const ambiguous = [];
 
@@ -113,32 +231,32 @@ function parseColumns(value) {
     }
 
     if (role === 'initial') {
-      ambiguous.push(component);
+      ambiguous.push(rawValue(parsed, component));
       continue;
     }
 
     const index = role === 'width' ? 0 : 1;
 
-    if (parsed[index] !== undefined) {
+    if (result[index] !== undefined) {
       return undefined;
     }
 
-    parsed[index] = component;
+    result[index] = rawValue(parsed, component);
   }
 
   /* `auto` names whichever component the rest of the value does not. */
   for (const component of ambiguous) {
-    const free = parsed.indexOf(undefined);
+    const free = result.indexOf(undefined);
 
     if (free === -1) {
       return undefined;
     }
 
-    parsed[free] = component;
+    result[free] = component;
   }
 
   return /** @type {[string, string]} */ (
-    parsed.map((component) => component ?? auto)
+    result.map((component) => component ?? auto)
   );
 }
 
@@ -158,12 +276,7 @@ function setsOtherColumnProperty(declaration) {
     return true;
   }
 
-  return (
-    prop === columns &&
-    valueParser(declaration.value).nodes.some(
-      (node) => node.type === 'div' && node.value === '/'
-    )
-  );
+  return prop === columns && hasTopLevelSlash(declaration.value);
 }
 
 /**
@@ -184,7 +297,7 @@ function explode(rule) {
       return;
     }
 
-    const values = parseColumns(decl.value);
+    const values = parseColumns(parsedValue(decl));
 
     if (!values) {
       return;
@@ -207,53 +320,13 @@ function explode(rule) {
  */
 function cleanup(rule) {
   const decls = getDecls(rule, new Set([columns].concat(columnProperties)));
-
-  while (decls.size) {
-    const lastNode = lastOf(decls);
-
-    // remove properties of lower precedence
-    const lesser = [];
-    for (const node of decls) {
-      if (
-        !stylehacks.detect(lastNode) &&
-        !stylehacks.detect(node) &&
-        node !== lastNode &&
-        node.important === lastNode.important &&
-        lastNode.prop === columns &&
-        node.prop !== lastNode.prop &&
-        !isFallback(node, lastNode)
-      ) {
-        lesser.push(node);
-      }
-    }
-
-    for (const node of lesser) {
-      node.remove();
-      decls.delete(node);
-    }
-
-    // get duplicate properties
-    const duplicates = [];
-    for (const node of decls) {
-      if (
-        !stylehacks.detect(lastNode) &&
-        !stylehacks.detect(node) &&
-        node !== lastNode &&
-        node.important === lastNode.important &&
-        node.prop === lastNode.prop &&
-        !isFallback(node, lastNode)
-      ) {
-        duplicates.push(node);
-      }
-    }
-
-    for (const node of duplicates) {
-      node.remove();
-      decls.delete(node);
-    }
-
-    decls.delete(lastNode);
-  }
+  cleanupDeclarations(
+    decls,
+    (node, lastNode) =>
+      lastNode.prop === columns &&
+      node.prop !== lastNode.prop &&
+      !isFallback(node, lastNode)
+  );
 }
 
 /**

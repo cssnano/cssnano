@@ -247,6 +247,21 @@ suite('column-height shorthand syntax', () => {
     'should pass through a three component shorthand',
     passthroughCSS('h1{columns:30em 2 / 10em}')
   );
+
+  test(
+    'should not treat a slash inside calc as column-height syntax',
+    passthroughCSS('h1{columns:calc(30em/2)}')
+  );
+
+  test(
+    'should distinguish a top-level slash after a nested function',
+    passthroughCSS('h1{columns:calc(30em/2) / 10em}')
+  );
+
+  test(
+    'should preserve comments around a top-level slash',
+    passthroughCSS('h1{columns:30em/**//10em}')
+  );
 });
 
 suite('column-height merge blocking', () => {
@@ -286,6 +301,26 @@ suite('invalid-value handling', () => {
     'should pass through a width that is not a length',
     passthroughCSS('h1{columns:50%}')
   );
+
+  test(
+    'should preserve decimal, exponent, and percentage values as invalid counts',
+    passthroughCSS('h1{columns:2.5 1e2 50%}')
+  );
+
+  test(
+    'should reject escaped units while preserving their spelling',
+    passthroughCSS('h1{columns:12\\65 m}')
+  );
+
+  test(
+    'should preserve quoted strings and URLs as unclassifiable terms',
+    passthroughCSS('h1{columns:"a b" url(foo)}')
+  );
+
+  test(
+    'should preserve malformed but tokenizable values',
+    passthroughCSS('h1{columns:12em [foo / bar]}')
+  );
 });
 
 suite('column-height merge blocking', () => {
@@ -308,5 +343,18 @@ suite('column-height merge blocking', () => {
       'h1{columns:calc(100%/3);column-width:20em;column-count:2}',
       'h1{columns:20em 2}'
     )
+  );
+
+  test(
+    'should ignore slashes in nested square and curly blocks',
+    processCSS(
+      'h1{columns:calc(100%/3);column-width:20em;column-count:2}',
+      'h1{columns:20em 2}'
+    )
+  );
+
+  test(
+    'should detect a top-level slash without whitespace',
+    passthroughCSS('h1{columns:30em/**//10em}')
   );
 });

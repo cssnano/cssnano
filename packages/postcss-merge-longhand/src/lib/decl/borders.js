@@ -20,6 +20,7 @@ import {
 } from '../validateWsc.js';
 import cssGlobalKeywords from '../cssGlobalKeywords.js';
 import lastOf from '../lastOf.js';
+import cleanupDeclarations from '../cleanupDeclarations.js';
 import spec from '../spec.js';
 import resolveBorderGrid from './borderMatrix.js';
 import {
@@ -304,82 +305,6 @@ function mergeBorderSpacing(rule) {
 }
 
 /**
- * Removes duplicate declarations from a declaration list.
- *
- * @param {Set<import('postcss').Declaration>} declarations
- * @param {import('postcss').Declaration | undefined} lastNode
- * @returns {void}
- */
-function removeDuplicateDeclarations(declarations, lastNode) {
-  /** @type {Set<Declaration>} */
-  const duplicateDeclarations = new Set();
-
-  for (const node of declarations) {
-    if (
-      !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
-      !stylehacks.detect(node) &&
-      node !== lastNode &&
-      node.important === /** @type {Declaration} */ (lastNode).important &&
-      node.prop === /** @type {Declaration} */ (lastNode).prop &&
-      !isFallback(node, /** @type {Declaration} */ (lastNode))
-    ) {
-      duplicateDeclarations.add(node);
-    }
-  }
-
-  for (const node of duplicateDeclarations) {
-    node.remove();
-    declarations.delete(node);
-  }
-
-  declarations.delete(/** @type {Declaration} */ (lastNode));
-}
-
-/**
- * Removes lower precedence declarations from a declaration list.
- *
- * A shorthand only overrides the longhands before it in the browsers that keep
- * it, so one requiring support the earlier browsers lack leaves an earlier
- * longhand standing everywhere else. `strandsFallback` says which support
- * requirements decide that, since a longhand the plugin exploded out of a
- * shorthand answers for fewer of them than one the author wrote.
- *
- * @param {Set<import('postcss').Declaration>} decls
- * @param {import('postcss').Declaration | undefined} lastNode
- * @param {string | undefined} lastPart
- * @returns {void}
- */
-function removeLowerPrecedenceDeclarations(decls, lastNode, lastPart) {
-  const lesser = [];
-
-  for (const node of decls) {
-    if (
-      !stylehacks.detect(/** @type {Declaration} */ (lastNode)) &&
-      !stylehacks.detect(node) &&
-      !isCustomProp(/** @type {Declaration} */ (lastNode)) &&
-      node !== lastNode &&
-      !strandsFallback(node, /** @type {Declaration} */ (lastNode)) &&
-      node.important === /** @type {Declaration} */ (lastNode).important &&
-      /** @type {number} */ (getLevel(node.prop)) >
-        /** @type {number} */ (
-          getLevel(/** @type {Declaration} */ (lastNode).prop)
-        ) &&
-      (node.prop
-        .toLowerCase()
-        .includes(/** @type {Declaration} */ (lastNode).prop) ||
-        node.prop.toLowerCase().endsWith(/** @type {string} */ (lastPart)))
-    ) {
-      lesser.push(node);
-    }
-  }
-
-  for (const node of lesser) {
-    node.remove();
-    decls.delete(node);
-  }
-}
-
-/**
  * @param {import('postcss').Rule} rule
  * @return {void}
  */
@@ -392,15 +317,18 @@ function cleanup(rule) {
 
   const decls = getDecls(rule, allPhysicalBorderProperties);
 
-  while (decls.size) {
-    const lastNode = lastOf(decls);
-    const lastPart = /** @type {Declaration} */ (lastNode).prop
-      .split('-')
-      .pop();
-    removeLowerPrecedenceDeclarations(decls, lastNode, lastPart);
+  cleanupDeclarations(decls, (node, lastNode) => {
+    const lastPart = lastNode.prop.split('-').pop();
 
-    removeDuplicateDeclarations(decls, lastNode);
-  }
+    return (
+      !isCustomProp(lastNode) &&
+      !strandsFallback(node, lastNode) &&
+      /** @type {number} */ (getLevel(node.prop)) >
+        /** @type {number} */ (getLevel(lastNode.prop)) &&
+      (node.prop.toLowerCase().includes(lastNode.prop) ||
+        node.prop.toLowerCase().endsWith(/** @type {string} */ (lastPart)))
+    );
+  });
 }
 
 /**
@@ -518,7 +446,7 @@ function specifiedBy(nodes, side, component) {
   for (const node of nodes) {
     const { type } = node;
 
-    if (type !== 'decl') {
+    if (type !== 'decl' || !node.parent) {
       continue;
     }
 
@@ -1037,6 +965,8 @@ function optimizeSides(rule) {
       specifiesDistinctComponents(lastNode.value) &&
       !stylehacks.detect(lastNode)
     ) {
+      const prefix = rule.nodes.slice(0, rule.index(lastNode));
+      const positions = new Map(prefix.map((node, index) => [node, index]));
       const lastValues = parseWidthStyleColor(lastNode.value);
       /* `parseWsc` lower-cases what it hands back, and the longhands beside it
        * keep the case the stylesheet wrote, so the token itself is what the
@@ -1047,9 +977,8 @@ function optimizeSides(rule) {
         tokens.find((token) => token.toLowerCase() === component) ?? component;
 
       for (const [i, d] of widthStyleColor.entries()) {
-        const nodes = rule.nodes.slice(0, rule.nodes.indexOf(lastNode));
         const specifiers = topRightBottomLeft.map((side, index) =>
-          index === lastSide ? undefined : specifiedBy(nodes, side, d)
+          index === lastSide ? undefined : specifiedBy(prefix, side, d)
         );
         const longhands = /** @type {Declaration[]} */ (
           specifiers.filter(Boolean)
@@ -1069,7 +998,10 @@ function optimizeSides(rule) {
         let refNode = longhands[0];
 
         for (const node of longhands) {
-          if (rule.index(node) > rule.index(refNode)) {
+          if (
+            /** @type {number} */ (positions.get(node)) >
+            /** @type {number} */ (positions.get(refNode))
+          ) {
             refNode = node;
           }
         }
