@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "cssnano-utils": "workspace:^",
-    "@csstools/css-tokenizer": "^4.0.0"
+    "@csstools/css-tokenizer": "catalog:"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

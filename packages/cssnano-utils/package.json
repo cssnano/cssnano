@@ -29,7 +29,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@csstools/css-tokenizer": "^4.0.0"
+    "@csstools/css-tokenizer": "catalog:"
   },
   "devDependencies": {
     "postcss": "catalog:"
