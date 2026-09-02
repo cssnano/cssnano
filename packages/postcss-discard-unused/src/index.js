@@ -1,4 +1,12 @@
-import selectorParser from 'postcss-selector-parser';
+import {
+  isTokenComment,
+  isTokenCloseSquare,
+  isTokenDelim,
+  isTokenIdent,
+  isTokenOpenSquare,
+  isTokenWhitespace,
+  tokenize,
+} from '@csstools/css-tokenizer';
 
 const atrule = 'atrule';
 const decl = 'decl';
@@ -109,11 +117,52 @@ function filterFont({ atRules, values }, comma) {
  * @return {void}
  */
 function processAttributeSelector(namespaceCache, node) {
-  selectorParser((ast) => {
-    ast.walkAttributes(({ namespace: ns }) => {
-      namespaceCache.rules = namespaceCache.rules.concat(ns);
-    });
-  }).process(node.selector);
+  /** @type {{first: string | null, pendingNamespace: string | null, ready: boolean}[]} */
+  const attributes = [];
+
+  for (const token of tokenize({ css: node.selector })) {
+    if (isTokenOpenSquare(token)) {
+      attributes.push({ first: null, pendingNamespace: null, ready: true });
+      continue;
+    }
+
+    if (isTokenCloseSquare(token)) {
+      attributes.pop();
+      continue;
+    }
+
+    const attribute = attributes.at(-1);
+    if (!attribute || isTokenWhitespace(token) || isTokenComment(token)) {
+      continue;
+    }
+
+    if (attribute.pendingNamespace) {
+      if (isTokenDelim(token) && token[1] === '=') {
+        // `|=` is an attribute matcher, not a namespace separator.
+        attribute.pendingNamespace = null;
+      } else {
+        namespaceCache.rules.push(attribute.pendingNamespace);
+        attribute.pendingNamespace = null;
+      }
+    }
+
+    if (attribute.ready) {
+      attribute.ready = false;
+      if (isTokenIdent(token)) {
+        attribute.first = token[4].value;
+      } else if (isTokenDelim(token) && token[1] === '*') {
+        attribute.first = '*';
+      }
+      continue;
+    }
+
+    if (attribute.first && isTokenDelim(token) && token[1] === '|') {
+      attribute.pendingNamespace = attribute.first;
+      attribute.first = null;
+      continue;
+    }
+    attribute.first = null;
+  }
 }
 
 /**@typedef {{fontFace?: boolean, counterStyle?: boolean, keyframes?: boolean, namespace?: boolean}} Options */
@@ -160,9 +209,9 @@ function processRule(namespaceCache, node) {
     // Attribute selector, so we should parse further.
     processAttributeSelector(namespaceCache, node);
   } else {
-    // Use a simple split function for the namespace
-    namespaceCache.rules = namespaceCache.rules.concat(
-      node.selector.split('|')[0]
+    // Use the part before the separator for a simple namespace selector.
+    namespaceCache.rules.push(
+      node.selector.slice(0, node.selector.indexOf('|'))
     );
   }
 }
