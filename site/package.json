@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test && pnpm typecheck",
+    "test": "node --test --test-reporter=dot && pnpm typecheck",
     "typecheck": "astro sync && tsc --project tsconfig.json",
     "start": "astro dev",
     "build": "astro build",
