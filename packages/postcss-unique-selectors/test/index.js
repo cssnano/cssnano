@@ -47,4 +47,39 @@ test(
   )
 );
 
+test(
+  'should split only on top-level commas',
+  processCSS(
+    '.a\\,b, [data-value="a,b"], :is(.c, .d), .a\\,b{color:red}',
+    '.a\\,b, :is(.c, .d), [data-value="a,b"]{color:red}'
+  )
+);
+
+test(
+  'should preserve namespaces and escaped spelling',
+  processCSS('svg|a,svg\\7c a,svg|a{color:red}', 'svg\\7c a,svg|a{color:red}')
+);
+
+test(
+  'should preserve malformed selector fragments',
+  processCSS(
+    'a,,a, :is(.b, .c), :is(.b, .c){color:red}',
+    ', :is(.b, .c),a{color:red}'
+  )
+);
+
+test(
+  'should preserve a trailing empty selector fragment',
+  processCSS('a,{color:red}', ',a{color:red}')
+);
+
+const selectorWithManyComments = '.x' + '/*x*/'.repeat(100);
+test(
+  'should preserve selectors with many comments',
+  processCSS(
+    `${selectorWithManyComments},${selectorWithManyComments}{color:red}`,
+    `${selectorWithManyComments}${'/*x*/'.repeat(100)}{color:red}`
+  )
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
