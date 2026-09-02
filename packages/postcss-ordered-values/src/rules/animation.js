@@ -1,12 +1,13 @@
-import postcssValueParser from 'postcss-value-parser';
-import cssnanoUtils from 'cssnano-utils';
-import addSpace from '../lib/addSpace.js';
-import getValue from '../lib/getValue.js';
 import mathFunctions from '../lib/mathfunctions.js';
+import {
+  isDimension,
+  isFunction,
+  isNumber,
+  name,
+  serializeArguments,
+} from '../lib/tokenize.js';
 import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
-const { unit } = postcssValueParser;
-const { getArguments } = cssnanoUtils;
 // animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
 const timingFunctions = new Set([...easingFunctions.functions, 'frames']);
 const timingKeywords = new Set(easingFunctions.keywords);
@@ -23,33 +24,32 @@ const timeUnits = new Set(['ms', 's']);
 
 /**
  * @param {string} value
- * @param {import('postcss-value-parser').Node} node
- * @return {false | import('postcss-value-parser').Dimension}
+ * @param {import('../lib/tokenize.js').Term} node
+ * @return {string}
  */
 function unitFromNode(value, node) {
-  if (node.type !== 'function') {
-    return unit(value);
+  if (isDimension(node)) {
+    return /** @type {{ unit: string }} */ (
+      node.tokens[0][4]
+    ).unit.toLowerCase();
   }
-  if (mathFunctions.has(value)) {
-    // If it is a math function, it checks the unit of the parameter and returns it.
-    for (const param of node.nodes) {
-      const paramUnit = unitFromNode(param.value.toLowerCase(), param);
-      if (paramUnit && paramUnit.unit && paramUnit.unit !== '%') {
-        return paramUnit;
-      }
+  if (isFunction(node) && mathFunctions.has(value)) {
+    for (const token of node.tokens) {
+      if (token[0] === 'dimension-token' && token[4].unit !== '%')
+        return token[4].unit.toLowerCase();
     }
   }
-  return false;
+  return '';
 }
 
 /**
  * @param {string} value
- * @param {import('postcss-value-parser').Node} node
+ * @param {import('../lib/tokenize.js').Term} node
  * @return {boolean}
  */
-const isTimingFunction = (value, { type }) => {
+const isTimingFunction = (value, node) => {
   return (
-    (type === 'function' && timingFunctions.has(value)) ||
+    (isFunction(node) && timingFunctions.has(value)) ||
     timingKeywords.has(value)
   );
 };
@@ -76,23 +76,21 @@ const isPlayState = (value) => {
 };
 /**
  * @param {string} value
- * @param {import('postcss-value-parser').Node} node
+ * @param {import('../lib/tokenize.js').Term} node
  * @return {boolean}
  */
 const isTime = (value, node) => {
   const quantity = unitFromNode(value, node);
 
-  return quantity && timeUnits.has(quantity.unit);
+  return timeUnits.has(quantity);
 };
 /**
  * @param {string} value
- * @param {import('postcss-value-parser').Node} node
+ * @param {import('../lib/tokenize.js').Term} node
  * @return {boolean}
  */
 const isIterationCount = (value, node) => {
-  const quantity = unitFromNode(value, node);
-
-  return value === 'infinite' || (quantity && !quantity.unit);
+  return value === 'infinite' || isNumber(node);
 };
 
 const stateConditions = [
@@ -105,14 +103,14 @@ const stateConditions = [
   { property: 'playState', delegate: isPlayState },
 ];
 /**
- * @param {import('postcss-value-parser').Node[][]} args
- * @return {import('postcss-value-parser').Node[][]}
+ * @param {import('../lib/tokenize.js').Term[][]} args
+ * @return {import('../lib/tokenize.js').Term[][]}
  */
 function normalize(args) {
   const list = [];
 
   for (const arg of args) {
-    /** @type {Record<string, import('postcss-value-parser').Node[]>} */
+    /** @type {Record<string, import('../lib/tokenize.js').Term[]>} */
     const state = {
       name: [],
       duration: [],
@@ -125,17 +123,11 @@ function normalize(args) {
     };
 
     for (const node of arg) {
-      const type = node.type;
-      let value = node.value;
-      if (type === 'space') {
-        continue;
-      }
-
-      value = value.toLowerCase();
+      const value = name(node);
 
       const hasMatch = stateConditions.some(({ property, delegate }) => {
         if (delegate(value, node) && !state[property].length) {
-          state[property] = [node, addSpace()];
+          state[property].push(node);
           return true;
         } else {
           return false;
@@ -143,7 +135,7 @@ function normalize(args) {
       });
 
       if (!hasMatch) {
-        state.name = [...state.name, node, addSpace()];
+        state.name.push(node);
       }
     }
 
@@ -161,12 +153,11 @@ function normalize(args) {
   return list;
 }
 /**
- * @param {import('postcss-value-parser').ParsedValue} parsed
+ * @param {{ arguments: import('../lib/tokenize.js').Term[][] }} parsed
  * @return {string}
  */
 function normalizeAnimation(parsed) {
-  const values = normalize(getArguments(parsed));
-  return getValue(values);
+  return serializeArguments(normalize(parsed.arguments));
 }
 
 export default normalizeAnimation;

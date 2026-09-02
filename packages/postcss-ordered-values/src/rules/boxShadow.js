@@ -1,49 +1,41 @@
-import postcssValueParser from 'postcss-value-parser';
-import cssnanoUtils from 'cssnano-utils';
-import addSpace from '../lib/addSpace.js';
-import getValue from '../lib/getValue.js';
 import mathFunctions from '../lib/mathfunctions.js';
 import vendorUnprefixed from '../lib/vendorUnprefixed.js';
-
-const { unit } = postcssValueParser;
-const { getArguments } = cssnanoUtils;
+import {
+  isDimension,
+  isFunction,
+  name,
+  serializeArguments,
+} from '../lib/tokenize.js';
 /**
- * @param {import('postcss-value-parser').Node[][]} args
- * @return {false | import('postcss-value-parser').Node[][]}
+ * @param {import('../lib/tokenize.js').Term[][]} args
+ * @return {false | import('../lib/tokenize.js').Term[][]}
  */
 function normalize(args) {
   const list = [];
   let abort = false;
   for (const arg of args) {
-    /** @type {import('postcss-value-parser').Node[]} */
-    let val = [];
-    /** @type {Record<'inset'|'color', import('postcss-value-parser').Node[]>} */
+    /** @type {import('../lib/tokenize.js').Term[]} */
+    const val = [];
+    /** @type {Record<'inset'|'color', import('../lib/tokenize.js').Term[]>} */
     const state = {
       inset: [],
       color: [],
     };
 
     for (const node of arg) {
-      const { type, value } = node;
+      const value = name(node);
 
-      if (
-        type === 'function' &&
-        mathFunctions.has(vendorUnprefixed(value.toLowerCase()))
-      ) {
+      if (isFunction(node) && mathFunctions.has(vendorUnprefixed(value))) {
         abort = true;
         continue;
       }
 
-      if (type === 'space') {
-        continue;
-      }
-
-      if (unit(value)) {
-        val = [...val, node, addSpace()];
-      } else if (value.toLowerCase() === 'inset') {
-        state.inset = [...state.inset, node, addSpace()];
+      if (isDimension(node) || /^[-+]?\d/.test(node.raw)) {
+        val.push(node);
+      } else if (value === 'inset') {
+        state.inset.push(node);
       } else {
-        state.color = [...state.color, node, addSpace()];
+        state.color.push(node);
       }
     }
 
@@ -56,16 +48,15 @@ function normalize(args) {
   return list;
 }
 /**
- * @param {import('postcss-value-parser').ParsedValue} parsed
+ * @param {{ arguments: import('../lib/tokenize.js').Term[][], value: string }} parsed
  * @return {string}
  */
 function normalizeBoxShadow(parsed) {
-  const args = getArguments(parsed);
-  const normalized = normalize(args);
+  const normalized = normalize(parsed.arguments);
   if (normalized === false) {
-    return parsed.toString();
+    return parsed.value;
   }
-  return getValue(normalized);
+  return serializeArguments(normalized);
 }
 
 export default normalizeBoxShadow;

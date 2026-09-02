@@ -10,7 +10,7 @@ const flexDirection = new Set([
 const flexWrap = new Set(['nowrap', 'wrap', 'wrap-reverse']);
 
 /**
- * @param {import('postcss-value-parser').ParsedValue} flexFlow
+ * @param {import('../lib/tokenize.js').Term[]} flexFlow
  * @return {string}
  */
 function normalizeFlexFlow(flexFlow) {
@@ -19,16 +19,17 @@ function normalizeFlexFlow(flexFlow) {
     wrap: '',
   };
 
-  flexFlow.walk(({ value }) => {
+  for (const term of flexFlow) {
+    const value = term.raw;
     if (flexDirection.has(value.toLowerCase())) {
       order.direction = value;
-      return;
+      continue;
     }
 
     if (flexWrap.has(value.toLowerCase())) {
       order.wrap = value;
     }
-  });
+  }
   return `${order.direction} ${order.wrap}`.trim();
 }
 

@@ -1,7 +1,6 @@
-import postcssValueParser from 'postcss-value-parser';
 import mathFunctions from '../lib/mathfunctions.js';
+import { isDimension, isFunction, name } from '../lib/tokenize.js';
 
-const { unit, stringify } = postcssValueParser;
 // border: <line-width> || <line-style> || <color>
 // outline: <outline-color> || <outline-style> || <outline-width>
 
@@ -22,40 +21,39 @@ const borderStyles = new Set([
 ]);
 
 /**
- * @param {import('postcss-value-parser').ParsedValue} border
+ * @param {import('../lib/tokenize.js').Term[]} border
  * @return {string}
  */
 function normalizeBorder(border) {
   const order = { width: '', style: '', color: '' };
 
-  border.walk((node) => {
-    const { type, value } = node;
-    if (type === 'word') {
-      if (borderStyles.has(value.toLowerCase())) {
+  for (const term of border) {
+    const value = term.raw;
+    const lower = name(term);
+    if (!isFunction(term)) {
+      if (borderStyles.has(lower)) {
         order.style = value;
-        return false;
-      }
-      if (borderWidths.has(value.toLowerCase()) || unit(value.toLowerCase())) {
+      } else if (
+        borderWidths.has(lower) ||
+        isDimension(term) ||
+        /^[-+]?\d/.test(value)
+      ) {
         if (order.width !== '') {
           order.width = `${order.width} ${value}`;
-          return false;
+          continue;
         }
         order.width = value;
-        return false;
-      }
-      order.color = value;
-      return false;
-    }
-    if (type === 'function') {
-      if (mathFunctions.has(value.toLowerCase())) {
-        order.width = stringify(node);
       } else {
-        order.color = stringify(node);
+        order.color = value;
       }
-      return false;
+    } else {
+      if (mathFunctions.has(lower)) {
+        order.width = value;
+      } else {
+        order.color = value;
+      }
     }
-    return false;
-  });
+  }
   return `${order.width} ${order.style} ${order.color}`.trim();
 }
 

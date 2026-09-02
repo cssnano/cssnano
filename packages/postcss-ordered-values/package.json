@@ -33,8 +33,7 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "cssnano-utils": "workspace:^",
-    "postcss-value-parser": "^4.2.0"
+    "@csstools/css-tokenizer": "^4.0.0"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
@@ -51,7 +50,8 @@
   },
   "scripts": {
     "acquire": "node ./script/acquire.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "fuzz": "node ./script/fuzz.js"
   },
   "type": "module"
 }

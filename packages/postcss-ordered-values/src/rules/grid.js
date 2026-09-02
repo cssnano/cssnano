@@ -1,58 +1,62 @@
 import joinGridValue from '../lib/joinGridValue.js';
 
 /**
- * @param {import('postcss-value-parser').ParsedValue} gridAutoFlow
- * @return {import('postcss-value-parser').ParsedValue | string}
+ * @param {import('../lib/tokenize.js').Term[]} gridAutoFlow
+ * @return {string | null}
  */
 const normalizeGridAutoFlow = (gridAutoFlow) => {
   const newValue = { front: '', back: '' };
   let shouldNormalize = false;
-  gridAutoFlow.walk((node) => {
-    if (node.value === 'dense') {
+  for (const node of gridAutoFlow) {
+    const value = node.raw;
+    if (value === 'dense') {
       shouldNormalize = true;
-      newValue.back = node.value;
-    } else if (['row', 'column'].includes(node.value.trim().toLowerCase())) {
+      newValue.back = value;
+    } else if (['row', 'column'].includes(value.trim().toLowerCase())) {
       shouldNormalize = true;
-      newValue.front = node.value;
+      newValue.front = value;
     } else {
       shouldNormalize = false;
     }
-  });
+  }
   if (shouldNormalize) {
     return `${newValue.front.trim()} ${newValue.back.trim()}`;
   }
-  return gridAutoFlow;
+  return null;
 };
 
 /**
- * @param {import('postcss-value-parser').ParsedValue} gridGap
- * @return {import('postcss-value-parser').ParsedValue | string}
+ * @param {import('../lib/tokenize.js').Term[]} gridGap
+ * @return {string | null}
  */
 const normalizeGridColumnRowGap = (gridGap) => {
   const newValue = { front: '', back: '' };
   let shouldNormalize = false;
-  gridGap.walk((node) => {
+  for (const node of gridGap) {
     // console.log(node);
-    if (node.value === 'normal') {
+    if (node.raw === 'normal') {
       shouldNormalize = true;
-      newValue.front = node.value;
+      newValue.front = node.raw;
     } else {
-      newValue.back = `${newValue.back} ${node.value}`;
+      newValue.back = `${newValue.back} ${node.raw}`;
     }
-  });
+  }
   if (shouldNormalize) {
     return `${newValue.front.trim()} ${newValue.back.trim()}`;
   }
-  return gridGap;
+  return null;
 };
 
 /**
- * @param {import('postcss-value-parser').ParsedValue} grid
+ * @param {import('../lib/tokenize.js').Term[]} grid
  * @return {string | string[]}
  */
 const normalizeGridColumnRow = (grid) => {
   // cant do normalization here using node, so copy it as a string
-  const gridValue = grid.toString().split('/'); // node -> string value, split ->  " 2 / 3 span " ->  [' 2','3 span ']
+  const gridValue = grid
+    .map((term) => term.raw)
+    .join(' ')
+    .split('/');
   if (gridValue.length > 1) {
     return joinGridValue(
       gridValue.map((gridLine) => {
