@@ -264,6 +264,30 @@ test(
   passthroughCSS('@media (){h1{color:blue}}')
 );
 
+test(
+  'should remove function-boundary whitespace without removing required media spacing',
+  processCSS(
+    '@media only screen\n and ( min-width: 400px , min-height: 500px ) {}',
+    '@media only screen and (min-width:400px,min-height:500px) {}'
+  )
+);
+
+test(
+  'should replace aspect-ratio numbers at their tokenizer source offsets',
+  processCSS(
+    '@media screen and (min-aspect-ratio:\n 48000000 / 32000000) {}',
+    '@media screen and (min-aspect-ratio:3/2) {}'
+  )
+);
+
+test(
+  'should preserve the empty custom-property fallback space only',
+  processCSS(
+    '@supports ((--empty:  ) or (--value: green )) {}',
+    '@supports ((--empty: ) or (--value:green)) {}'
+  )
+);
+
 describe('Mangle', () => {
   test(
     'should not mangle @value',
