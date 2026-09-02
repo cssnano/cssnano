@@ -29,6 +29,11 @@ test(
 );
 
 test(
+  'should preserve comments while trimming whitespace from css variables',
+  processCSS('h1{width:var(/**/ x,  )}', 'h1{width:var(/**/ x, )}')
+);
+
+test(
   'should trim whitespace from env variables',
   processCSS(
     'h1{width:env(--foo, calc(10px + 10px))}',
