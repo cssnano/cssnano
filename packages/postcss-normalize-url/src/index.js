@@ -1,7 +1,8 @@
 import path from '#path';
-import valueParser from 'postcss-value-parser';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import normalize from './normalize.js';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /**
  * A `quote` assignment target for value-parser nodes that aren't otherwise
  * typed: retags the node as a (possibly unquoted) string node.
@@ -58,24 +59,26 @@ function convert(url) {
  * @return {void}
  */
 function transformNamespace(rule) {
-  rule.params = valueParser(rule.params)
-    .walk((node) => {
-      if (
-        node.type === 'function' &&
-        node.value.toLowerCase() === 'url' &&
-        node.nodes.length
-      ) {
-        /** @type {valueParser.Node} */ (node).type = 'string';
-        /** @type {QuotedNode} */ (node).quote =
-          node.nodes[0].type === 'string' ? node.nodes[0].quote : '"';
-        node.value = node.nodes[0].value;
-      }
-      if (node.type === 'string') {
-        node.value = node.value.trim();
-      }
-      return false;
-    })
-    .toString();
+  const value = rule.params;
+  /** @type {CSSToken[]} */ const tokens = [...tokenize({ css: value })];
+  /** @type {[number, number, string][]} */ const replacements = [];
+  forEachUrl(
+    value,
+    (start, end, raw) => {
+      replacements.push([start, end, `"${raw.trim()}"`]);
+    },
+    tokens
+  );
+  for (const token of tokens) {
+    if (token[0] !== TokenType.String) continue;
+    const quote = token[1][0];
+    replacements.push([
+      token[2],
+      token[3] + 1,
+      `${quote}${token[1].slice(1, -1).trim()}${quote}`,
+    ]);
+  }
+  rule.params = replace(value, replacements);
 }
 
 /**
@@ -83,52 +86,111 @@ function transformNamespace(rule) {
  * @return {void}
  */
 function transformDecl(decl) {
-  decl.value = valueParser(decl.value)
-    .walk((node) => {
-      if (node.type !== 'function' || node.value.toLowerCase() !== 'url') {
-        return false;
+  const value = decl.value;
+  /** @type {[number, number, string][]} */ const replacements = [];
+  forEachUrl(value, (start, end, input, quote, name) => {
+    let url = input.trim().replace(multiline, '');
+    if (!url) {
+      replacements.push([start, end, `${name}()`]);
+      return;
+    }
+    if (dataUrlRegex.test(url)) return;
+    if (!extensionRegex.test(url)) url = convert(url);
+
+    let outputQuote = quote;
+    if (quote && escapeChars.test(url)) {
+      const escaped = url.replace(escapeChars, '\\$1');
+      if (escaped.length < url.length + 2) {
+        url = escaped;
+        outputQuote = '';
       }
+    } else {
+      outputQuote = '';
+    }
+    replacements.push([
+      start,
+      end,
+      `${name}(${outputQuote}${url}${outputQuote})`,
+    ]);
+  });
+  decl.value = replace(value, replacements);
+}
 
-      node.before = node.after = '';
+/**
+ * Visit complete `url()` ranges without interpreting their opaque spelling.
+ * @param {string} value
+ * @param {(start: number, end: number, raw: string, quote: string, name: string) => void} callback
+ * @param {CSSToken[]} [tokens]
+ */
+function forEachUrl(value, callback, tokens = [...tokenize({ css: value })]) {
+  /** @type {number[]} */ const stack = [];
+  /** @type {Map<number, number>} */ const functionEnds = new Map();
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token[0] === TokenType.Function) stack.push(index);
+    else if (token[0] === TokenType.CloseParen) {
+      const start = stack.pop();
+      if (start !== undefined) functionEnds.set(start, index);
+    }
+  }
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token[0] === TokenType.URL) {
+      const raw = token[1].slice(4, -1);
+      callback(
+        token[2],
+        token[3] + 1,
+        raw,
+        '',
+        token[1].slice(0, token[1].indexOf('('))
+      );
+      continue;
+    }
+    if (
+      token[0] !== TokenType.Function ||
+      token[1].slice(0, -1).toLowerCase() !== 'url'
+    )
+      continue;
+    const close = functionEnds.get(index);
+    if (close === undefined) continue;
+    const content = tokens.slice(index + 1, close);
+    const significant = content.filter(
+      (child) => child[0] !== TokenType.Whitespace
+    );
+    if (significant.length === 1 && significant[0][0] === TokenType.String) {
+      const string = significant[0][1];
+      callback(
+        token[2],
+        tokens[close][3] + 1,
+        string.slice(1, -1),
+        string[0],
+        token[1].slice(0, -1)
+      );
+    } else if (
+      !significant.length ||
+      !significant.some((child) => child[0] === TokenType.Function)
+    ) {
+      callback(
+        token[2],
+        tokens[close][3] + 1,
+        value.slice(token[2] + token[1].length, tokens[close][2]),
+        '',
+        token[1].slice(0, -1)
+      );
+    }
+    index = close;
+  }
+}
 
-      if (!node.nodes.length) {
-        return false;
-      }
-      const url = node.nodes[0];
-      let escaped;
-
-      url.value = url.value.trim().replace(multiline, '');
-
-      // Skip empty URLs
-      // Empty URL function equals request to current stylesheet where it is declared
-      if (url.value.length === 0) {
-        /** @type {QuotedNode} */ (url).quote = '';
-
-        return false;
-      }
-
-      if (dataUrlRegex.test(url.value)) {
-        return false;
-      }
-
-      if (!extensionRegex.test(url.value)) {
-        url.value = convert(url.value);
-      }
-
-      if (escapeChars.test(url.value) && url.type === 'string') {
-        escaped = url.value.replace(escapeChars, '\\$1');
-
-        if (escaped.length < url.value.length + 2) {
-          url.value = escaped;
-          /** @type {valueParser.Node} */ (url).type = 'word';
-        }
-      } else {
-        url.type = 'word';
-      }
-
-      return false;
-    })
-    .toString();
+/** @param {string} value @param {[number, number, string][]} replacements */
+function replace(value, replacements) {
+  let result = value;
+  for (const [start, end, output] of replacements.toSorted(
+    (a, b) => b[0] - a[0]
+  )) {
+    result = result.slice(0, start) + output + result.slice(end);
+  }
+  return result;
 }
 
 /**
