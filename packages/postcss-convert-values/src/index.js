@@ -4,7 +4,7 @@ import convert from './lib/convert.js';
 
 /** @import browserslist from 'browserslist' */
 
-const { TokenType, applyEdits, numericSource, tokens } = cssnanoUtils;
+const { TokenType, applyEdits, decoded, numericSource, tokens } = cssnanoUtils;
 
 const LENGTH_UNITS = new Set([
   'em',
@@ -59,6 +59,8 @@ const keepZeroPercentageInKeyframe = new Set([
   'border-image-width',
   'stroke-dasharray',
 ]);
+
+const NUMBER_PREFIX = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/;
 
 /**
  * @param {number} number
@@ -173,6 +175,69 @@ function clampPropertyOpacity(property, replacement, number, unit) {
     ? clampOpacity(replacement, number, unit)
     : replacement;
 }
+
+const closingTokens = new Map([
+  [TokenType.OpenParen, TokenType.CloseParen],
+  [TokenType.OpenSquare, TokenType.CloseSquare],
+  [TokenType.OpenCurly, TokenType.CloseCurly],
+]);
+
+/**
+ * @param {typeof TokenType.OpenParen | typeof TokenType.OpenSquare | typeof TokenType.OpenCurly} type
+ * @return {typeof TokenType.CloseParen | typeof TokenType.CloseSquare | typeof TokenType.CloseCurly}
+ */
+function closeForOpening(type) {
+  const close = closingTokens.get(type);
+  if (close === undefined) {
+    throw new Error(`Unknown opening token: ${type}`);
+  }
+  return /** @type {typeof TokenType.CloseParen | typeof TokenType.CloseSquare | typeof TokenType.CloseCurly} */ (
+    close
+  );
+}
+
+/**
+ * @param {{close: string | undefined, keepUnits: boolean, skipped: boolean}[]} frames
+ * @param {ReturnType<typeof tokens>[number]} token
+ * @return {boolean}
+ */
+function updateFrames(frames, token) {
+  const type = token[0];
+  if (type === TokenType.Function) {
+    const name = decoded(token).toLowerCase();
+    const parent = frames.at(-1);
+    frames.push({
+      close: TokenType.CloseParen,
+      keepUnits: Boolean(parent?.keepUnits) || keepZeroPercentAlways.has(name),
+      skipped: Boolean(parent?.skipped) || name === 'url',
+    });
+    return true;
+  }
+  if (
+    type === TokenType.OpenParen ||
+    type === TokenType.OpenSquare ||
+    type === TokenType.OpenCurly
+  ) {
+    const parent = frames.at(-1);
+    frames.push({
+      close: closeForOpening(type),
+      keepUnits: Boolean(parent?.keepUnits),
+      skipped: Boolean(parent?.skipped),
+    });
+    return true;
+  }
+  if (
+    type === TokenType.CloseParen ||
+    type === TokenType.CloseSquare ||
+    type === TokenType.CloseCurly
+  ) {
+    const frame = frames.at(-1);
+    if (frame?.close === type) frames.pop();
+    return true;
+  }
+  return false;
+}
+
 /**
  * @param {Options} opts
  * @param {string[]} browsers
@@ -185,50 +250,48 @@ function transform(opts, browsers, decl) {
     return;
   }
 
-  const value = decl.value;
+  const raw = decl.raws.value;
+  const rawValue = raw?.value === decl.value ? raw.raw : undefined;
+  const value = rawValue ?? decl.value;
   /** @type {{start: number, end: number, text: string}[]} */
   const replacements = [];
-  const keepUnits = [shouldKeepZeroUnit(decl, browsers)];
-  /** @type {boolean[]} */
-  const skippedFunctions = [];
+  /** @type {{close: string | undefined, keepUnits: boolean, skipped: boolean}[]} */
+  const frames = [
+    {
+      close: undefined,
+      keepUnits: shouldKeepZeroUnit(decl, browsers),
+      skipped: false,
+    },
+  ];
   const input = tokens(value);
 
   for (let index = 0; index < input.length; index++) {
     const token = input[index];
-    const type = token[0];
-
-    if (type === TokenType.Function) {
-      // Deliberately use the raw spelling: value-parser did not decode escapes.
-      const name = token[1].slice(0, -1).toLowerCase();
-      keepUnits.push(keepUnits.at(-1) || keepZeroPercentAlways.has(name));
-      skippedFunctions.push(Boolean(skippedFunctions.at(-1)) || name === 'url');
-      continue;
-    }
-    if (type === TokenType.CloseParen) {
-      skippedFunctions.pop();
-      if (keepUnits.length > 1) keepUnits.pop();
-      continue;
-    }
-    if (skippedFunctions.at(-1)) {
+    if (updateFrames(frames, token)) continue;
+    if (frames.at(-1)?.skipped) {
       continue;
     }
 
     const source = numericSource(input, index);
     if (!source) continue;
     index = source.index;
+    const rawNumber = source.raw.match(NUMBER_PREFIX);
+    const unit = rawNumber
+      ? source.raw.slice(rawNumber[0].length)
+      : source.unit;
     const converted = parseNumber(
       source.number,
-      source.unit,
+      unit,
       source.raw,
       opts,
-      /** @type {boolean} */ (keepUnits.at(-1)),
+      frames.at(-1)?.keepUnits ?? false,
       source.hasDecimal
     );
     const replacement = clampPropertyOpacity(
       lowerCasedProp,
       converted,
       source.number,
-      source.unit
+      unit
     );
     if (replacement !== source.raw)
       replacements.push({
@@ -239,7 +302,11 @@ function transform(opts, browsers, decl) {
   }
 
   if (replacements.length) {
-    decl.value = applyEdits(value, replacements);
+    const result = applyEdits(value, replacements);
+    decl.value = result;
+    if (rawValue !== undefined) {
+      decl.raws.value = { raw: result, value: result };
+    }
   }
 }
 

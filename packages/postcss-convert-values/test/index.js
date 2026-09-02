@@ -1,7 +1,9 @@
 import { fileURLToPath } from 'node:url';
 const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
 import nodepath from 'node:path';
+import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import postcss from 'postcss';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -9,7 +11,7 @@ import {
 import plugin from '../src/index.js';
 
 const { join } = nodepath;
-const { passthroughCSS, processCSS } = processCSSFactory(plugin);
+const { passthroughCSS, processCSS, processor } = processCSSFactory(plugin);
 
 describe('Convert', () => {
   test(
@@ -169,6 +171,138 @@ describe('Operate', () => {
       'h1{width:CALC(2in + 2em - (0px * 4))}'
     )
   );
+
+  test(
+    'should preserve zero dimensions after grouping parentheses in calc',
+    processCSS('a{width:calc((1px) + 0px)}', 'a{width:calc((1px) + 0px)}')
+  );
+
+  test(
+    'should preserve zero dimensions through nested functions and grouping',
+    processCSS(
+      'a{width:calc(min((1px),0px) + 0px)}',
+      'a{width:calc(min((1px),0px) + 0px)}'
+    )
+  );
+
+  test(
+    'should convert dimensions inside square blocks',
+    processCSS('a{width:calc([192px] + 0px)}', 'a{width:calc([2in] + 0px)}')
+  );
+
+  test(
+    'should convert dimensions inside curly blocks',
+    processCSS('a{width:calc({192px} + 0px)}', 'a{width:calc({2in} + 0px)}')
+  );
+
+  test(
+    'should keep scanning after mismatched delimiters',
+    processCSS(
+      'a{width:calc([192px) + 0px] 192px}',
+      'a{width:calc([2in) + 0px] 2in}'
+    )
+  );
+
+  test(
+    'should recover from mismatched nested function and square delimiters',
+    processCSS(
+      'a{width:calc([min(0px)] 192px)}',
+      'a{width:calc([min(0px)] 2in)}'
+    )
+  );
+
+  test(
+    'should recover from mismatched curly and square delimiters',
+    processCSS('a{width:calc({[192px} 192px])}', 'a{width:calc({[2in} 2in])}')
+  );
+
+  test('should preserve zero units in escaped calc names', async () => {
+    const result = await processor('a{width:c\\61 lc(0px)}');
+    assert.equal(result.css, 'a{width:c\\61 lc(0px)}');
+  });
+
+  test('should preserve zero units in escaped min names', async () => {
+    const result = await processor('a{width:m\\69 n(0px)}');
+    assert.equal(result.css, 'a{width:m\\69 n(0px)}');
+  });
+
+  test('should preserve dimensions in escaped url names', async () => {
+    const result = await processor('a{background:u\\72 l(192px)}');
+    assert.equal(result.css, 'a{background:u\\72 l(192px)}');
+  });
+
+  test('should preserve zero units in case-insensitive color-mix names', async () => {
+    const result = await processor('a{color:COLOR-MIX(0px)}');
+    assert.equal(result.css, 'a{color:COLOR-MIX(0px)}');
+  });
+
+  test('should preserve zero units in escaped color-mix names', async () => {
+    const result = await processor('a{color:c\\6f lor-mix(0px)}');
+    assert.equal(result.css, 'a{color:c\\6f lor-mix(0px)}');
+  });
+
+  test('should preserve zero units in case-insensitive hsl names', async () => {
+    const result = await processor('a{color:HSL(0px)}');
+    assert.equal(result.css, 'a{color:HSL(0px)}');
+  });
+
+  test('should preserve zero units in escaped hsl names', async () => {
+    const result = await processor('a{color:h\\73 l(0px)}');
+    assert.equal(result.css, 'a{color:h\\73 l(0px)}');
+  });
+
+  test('should preserve zero units in case-insensitive linear names', async () => {
+    const result = await processor('a{width:LINEAR(0px)}');
+    assert.equal(result.css, 'a{width:LINEAR(0px)}');
+  });
+
+  test('should preserve zero units in escaped linear names', async () => {
+    const result = await processor('a{width:l\\69 near(0px)}');
+    assert.equal(result.css, 'a{width:l\\69 near(0px)}');
+  });
+
+  test(
+    'should convert dimensions with raw escaped units',
+    passthroughCSS('a{width:192\\70 x}')
+  );
+});
+
+test('should synchronize raw PostCSS value metadata after conversion', async () => {
+  const result = await processor('a{width:192px, /*x*/ 192px}');
+  assert.equal(result.css, 'a{width:2in, /*x*/ 2in}');
+  assert.deepEqual(result.root.first.first.raws.value, {
+    raw: '2in, /*x*/ 2in',
+    value: '2in, /*x*/ 2in',
+  });
+});
+
+test('should use a declaration value changed by a preceding plugin', async () => {
+  const preceding = {
+    postcssPlugin: 'change-value',
+    Declaration(decl) {
+      decl.value = '96px';
+    },
+  };
+  const result = await postcss([preceding, plugin()]).process(
+    'a{width:192px}',
+    { from: undefined }
+  );
+  assert.equal(result.css, 'a{width:1in}');
+});
+
+test('should ignore stale raw value metadata from a preceding plugin', async () => {
+  const preceding = {
+    postcssPlugin: 'change-value-and-raw',
+    Declaration(decl) {
+      decl.raws.value = { raw: '192px /* stale */', value: '192px' };
+      decl.value = '96px';
+    },
+  };
+  const result = await postcss([preceding, plugin()]).process(
+    'a{width:192px}',
+    { from: undefined }
+  );
+  assert.equal(result.css, 'a{width:1in}');
 });
 
 test(
