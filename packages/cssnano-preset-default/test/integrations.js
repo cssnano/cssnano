@@ -30,6 +30,14 @@ describe('CSS processing', () => {
   );
 
   test(
+    'should normalize timing functions after preset composition',
+    withDefaults.processCSS(
+      'a{animation-timing-function:steps(10 /*comment*/, end);transition-timing-function:steps(1,jump-none)}',
+      'a{animation-timing-function:steps(10);transition-timing-function:steps(1,jump-none)}'
+    )
+  );
+
+  test(
     'should process CSS with Browserslist options',
     withBrowserslist.processCSS(
       'button { color: hsla(0 100% 50% / 40%); appearance: none }',

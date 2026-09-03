@@ -130,11 +130,21 @@ test('steps(5,start)', testPassthrough('steps(5,start)'));
 test('steps(10, end)', testTimingFunction('steps(10, end)', 'steps(10)'));
 
 test(
+  'comments in steps count are omitted when reducing the function',
+  testTimingFunction('steps(10 /*comment*/, end)', 'steps(10)')
+);
+
+test(
   'steps(10, jump-end)',
   testTimingFunction('steps(10, jump-end)', 'steps(10)')
 );
 
 test('steps(10, END)', testTimingFunction('steps(10, END)', 'steps(10)'));
+
+test(
+  'steps(1, jump-none) is not reduced because it is invalid',
+  testPassthrough('steps(1, jump-none)')
+);
 
 test(
   'steps(10, JUMP-END)',
@@ -215,7 +225,68 @@ test(
 
 test(
   'cubic-bezier(0.250, 1e-1px, 0.250, 1)',
-  testTimingFunction('cubic-bezier(0.250, 1e-1px, 0.250, 1)', 'ease')
+  testPassthrough('cubic-bezier(0.250, 1e-1px, 0.250, 1)')
+);
+
+test(
+  'cubic-bezier percentages are not numbers',
+  testPassthrough('cubic-bezier(0%, 0, 1, 1)')
+);
+test(
+  'cubic-bezier adjacent numbers are not one number',
+  testPassthrough('cubic-bezier(0 0, 0, 1, 1)')
+);
+test(
+  'cubic-bezier dimensions are not numbers',
+  testPassthrough('cubic-bezier(0px, 0, 1, 1)')
+);
+
+test(
+  'steps requires a positive integer count',
+  testPassthrough('steps(0, end)')
+);
+test('steps rejects fractional counts', testPassthrough('steps(1.5, end)'));
+test('steps rejects dimensions', testPassthrough('steps(1px, end)'));
+test('steps rejects negative counts', testPassthrough('steps(-1, end)'));
+
+test(
+  'escaped and mixed-case timing function identifiers are recognized',
+  testTimingFunction('c\\75 Bic-Bezier(0, 0, 1, 1)', 'linear')
+);
+test(
+  'escaped and mixed-case step positions are recognized',
+  testTimingFunction('StEpS(1, \\65 ND)', 'step-end')
+);
+test(
+  'comments and whitespace are allowed around exact arguments',
+  testTimingFunction('cubic-bezier(/*a*/ 0 /*b*/, /*c*/ 0, 1, 1)', 'linear')
+);
+test(
+  'comments and whitespace are allowed around step arguments',
+  testTimingFunction('steps(/*a*/ 1 /*b*/, /*c*/ jump-\\65 nd)', 'step-end')
+);
+
+test(
+  'nested blocks do not hide top-level commas',
+  testTimingFunction(
+    'cubic-bezier(0, 0, 1, 1), FOO([a,b], {c:d})',
+    'linear, FOO([a,b], {c:d})'
+  )
+);
+test(
+  'mismatched and unclosed delimiters fail closed',
+  testPassthrough('cubic-bezier(0, 0, 1, 1]')
+);
+test(
+  'an unrelated malformed block prevents all value transformations',
+  testPassthrough('cubic-bezier(0,0,1,1), foo(')
+);
+test(
+  'unknown nested content is preserved',
+  testTimingFunction(
+    'FOO(steps(1, start()), [a,b], {c:d})',
+    'FOO(steps(1, start()), [a,b], {c:d})'
+  )
 );
 
 test(
