@@ -42,10 +42,10 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "cssnano-utils": "workspace:^",
     "browserslist": "catalog:",
     "caniuse-api": "^4.0.0",
-    "cssesc": "^3.0.0"
+    "cssesc": "^3.0.0",
+    "cssnano-utils": "workspace:^"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
@@ -57,7 +57,8 @@
     "@types/cssesc": "^3.0.2",
     "jsdom": "^30.0.1",
     "postcss": "catalog:",
-    "postcss-font-magician": "^4.0.0"
+    "postcss-font-magician": "^4.0.0",
+    "postcss-selector-parser": "^7.1.5"
   },
   "peerDependencies": {
     "postcss": "^8.5.26"

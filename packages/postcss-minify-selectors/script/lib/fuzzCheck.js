@@ -4,6 +4,10 @@ import jsdom from 'jsdom';
 import { shrink } from './fuzzGenerate.js';
 
 const { JSDOM } = jsdom;
+const namespaceUris = new Map([
+  ['svg', 'http://www.w3.org/2000/svg'],
+  ['math', 'http://www.w3.org/1998/Math/MathML'],
+]);
 // One window is reused for every case: building a fresh JSDOM per query is the
 // dominant allocation, and never closing them lets the heap grow to the 4GB
 // limit on a long soak. Re-injecting each tree's markup keeps the match set
@@ -37,21 +41,40 @@ function process(css) {
  *
  * @param {string} selector
  * @param {{html: string, css: string}} tree
- * @return {Set<string>}
+ * @return {{ids: Set<string>, valid: boolean}}
  */
 function matchElements(selector, tree) {
   sharedDocument.head.innerHTML = `<style>${tree.css}</style>`;
   sharedDocument.body.innerHTML = tree.html;
 
+  // querySelectorAll does not accept CSS namespace prefixes. Mark the
+  // namespaced elements and translate only generated namespace-qualified
+  // simple selectors to an equivalent, queryable compound selector.
+  for (const element of sharedDocument.querySelectorAll('*')) {
+    for (const [prefix, uri] of namespaceUris) {
+      if (element.namespaceURI === uri) {
+        element.setAttribute('data-fz-namespace', prefix);
+        break;
+      }
+    }
+  }
+  const querySelector = selector.replace(
+    /\b(svg|math)\|(?=[\w*-])/gu,
+    '[data-fz-namespace="$1"]'
+  );
+
   try {
-    const elements = sharedDocument.querySelectorAll(selector);
-    return new Set(
-      Array.from(elements)
-        .map((el) => el.getAttribute('data-fz'))
-        .filter((value) => value !== null)
-    );
+    const elements = sharedDocument.querySelectorAll(querySelector);
+    return {
+      ids: new Set(
+        Array.from(elements)
+          .map((el) => el.getAttribute('data-fz'))
+          .filter((value) => value !== null)
+      ),
+      valid: true,
+    };
   } catch {
-    return new Set();
+    return { ids: new Set(), valid: false };
   }
 }
 
@@ -86,9 +109,19 @@ function check(rule, tree) {
   const preIds = matchElements(selector, tree);
   const postIds = matchElements(outputSelector, tree);
 
+  if (preIds.valid !== postIds.valid) {
+    return {
+      input: rule,
+      output,
+      reason: 'selector validity changed',
+      preIds: preIds.ids,
+      postIds: postIds.ids,
+    };
+  }
   if (
-    preIds.size === postIds.size &&
-    [...preIds].every((id) => postIds.has(id))
+    !preIds.valid ||
+    (preIds.ids.size === postIds.ids.size &&
+      [...preIds.ids].every((id) => postIds.ids.has(id)))
   ) {
     return undefined;
   }
@@ -97,8 +130,8 @@ function check(rule, tree) {
     input: rule,
     output,
     reason: 'match set changed',
-    preIds,
-    postIds,
+    preIds: preIds.ids,
+    postIds: postIds.ids,
   };
 }
 
