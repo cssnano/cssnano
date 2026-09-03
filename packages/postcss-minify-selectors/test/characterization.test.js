@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import parser from 'postcss-selector-parser';
 import postcss from 'postcss';
 import plugin from '../src/index.js';
 import { normalizeList } from '../src/lib/selectorScanner.js';
+import { parsesSelectorList } from './referenceAst.js';
 
 const corpus = [
   ['.card, .card, article.card', '.card,article.card'],
@@ -57,6 +59,20 @@ test('normalizes nested selector-list functions and nth formulas', () => {
     minify(':is( .z, .a, .z )'),
     minify(minify(':is( .z, .a, .z )').slice(0, -5))
   );
+});
+
+test('scanner normalization remains parseable and preserves nested boundaries', () => {
+  const cases = [
+    ['.\\31 23, .a\\,b, [data-x="a,b"]', 3],
+    [':is(:where(.a, .b), :not(.c, :has(.d))), :nth-child(2n of .x, #y)', 2],
+    ['svg|a[lang=en i], |*[data-v~= "x" s]', 2],
+  ];
+  for (const [input, selectorCount] of cases) {
+    const output = normalizeList(input, false, false);
+    assert.equal(parsesSelectorList(output), true, output);
+    assert.equal(output.includes('('), input.includes('('), input);
+    assert.equal(parser().astSync(output).nodes.length, selectorCount, input);
+  }
 });
 
 test('malformed and unclosed selectors remain non-throwing', () => {
