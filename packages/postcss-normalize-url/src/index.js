@@ -13,6 +13,25 @@ const multiline = /\\[\r\n]/;
 // eslint-disable-next-line no-useless-escape
 const escapeChars = /([\s\(\)"'])/g;
 
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
+function isClosedString(value) {
+  if (value.length < 2 || !['"', "'"].includes(value[0])) return false;
+
+  let backslashes = 0;
+  for (
+    let index = value.length - 2;
+    index >= 0 && value[index] === '\\';
+    index--
+  ) {
+    backslashes++;
+  }
+
+  return value.at(-1) === value[0] && backslashes % 2 === 0;
+}
+
 // Scheme: https://tools.ietf.org/html/rfc3986#section-3.1
 // Absolute URL: https://tools.ietf.org/html/rfc3986#section-4.3
 const ABSOLUTE_URL_REGEX = /^[a-zA-Z][a-zA-Z\d+\-.]*?:/;
@@ -71,6 +90,7 @@ function transformNamespace(rule) {
   );
   for (const token of tokens) {
     if (token[0] !== TokenType.String) continue;
+    if (!isClosedString(token[1])) continue;
     const quote = token[1][0];
     replacements.push([
       token[2],

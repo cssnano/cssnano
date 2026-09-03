@@ -1,4 +1,6 @@
 import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -355,3 +357,17 @@ describe('Pass', () => {
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+
+test('should preserve malformed namespace strings byte-for-byte', async () => {
+  const values = ['"abc', '"abc\\'];
+  const atRules = values.map((params) =>
+    postcss.atRule({ name: 'namespace', params })
+  );
+  const root = postcss.root({ nodes: atRules });
+
+  await postcss([plugin()]).process(root, { from: undefined });
+
+  for (const [index, value] of values.entries()) {
+    assert.equal(atRules[index].params, value);
+  }
+});
