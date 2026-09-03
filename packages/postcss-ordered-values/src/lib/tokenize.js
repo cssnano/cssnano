@@ -1,15 +1,15 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
-const opening = new Set([
-  TokenType.Function,
-  TokenType.OpenParen,
-  TokenType.OpenSquare,
-  TokenType.OpenCurly,
-]);
 const closing = new Set([
   TokenType.CloseParen,
   TokenType.CloseSquare,
   TokenType.CloseCurly,
+]);
+const expectedClosing = new Map([
+  [TokenType.Function, TokenType.CloseParen],
+  [TokenType.OpenParen, TokenType.CloseParen],
+  [TokenType.OpenSquare, TokenType.CloseSquare],
+  [TokenType.OpenCurly, TokenType.CloseCurly],
 ]);
 
 /**
@@ -74,6 +74,16 @@ function isFunction(term) {
   return term.tokens[0]?.[0] === TokenType.Function;
 }
 
+/** @param {Term} term */
+function isUrl(term) {
+  return term.tokens.length === 1 && term.tokens[0][0] === TokenType.URL;
+}
+
+/** @param {Term} term */
+function isIdent(term) {
+  return term.tokens.length === 1 && term.tokens[0][0] === TokenType.Ident;
+}
+
 /**
  * Tokenize a declaration once and split it at top-level whitespace and commas.
  * Nested functions and simple blocks remain one term, including their raw source.
@@ -89,7 +99,8 @@ function tokenizeValue(value) {
   /** @type {import('@csstools/css-tokenizer').CSSToken[]} */
   let current = [];
   let raw = '';
-  let depth = 0;
+  /** @type {TokenType[]} */
+  const stack = [];
   let abort = false;
   const hasCssLoaderImport = value.includes('___CSS_LOADER_IMPORT___');
   const push = () => {
@@ -114,21 +125,35 @@ function tokenizeValue(value) {
     ) {
       abort = true;
     }
-    if (depth === 0 && type === TokenType.Whitespace) {
+    if (stack.length === 0 && type === TokenType.Whitespace) {
       push();
       continue;
     }
-    if (depth === 0 && type === TokenType.Comma) {
+    // Keep slash delimiters available to grammar-aware consumers. A slash
+    // inside a function or block remains part of that single nested term.
+    if (stack.length === 0 && token[1] === '/') {
+      push();
+      current.push(token);
+      raw += token[1];
+      push();
+      continue;
+    }
+    if (stack.length === 0 && type === TokenType.Comma) {
       push();
       argumentsList.push([]);
       continue;
     }
     current.push(token);
     raw += token[1];
-    if (opening.has(type)) depth++;
-    if (closing.has(type) && depth) depth--;
+    const expected = expectedClosing.get(type);
+    if (expected !== undefined) {
+      stack.push(expected);
+    } else if (closing.has(type)) {
+      if (stack.pop() !== type) abort = true;
+    }
   }
   push();
+  if (stack.length) abort = true;
   return { arguments: argumentsList, terms, abort, value };
 }
 
@@ -142,7 +167,9 @@ function serializeArguments(arguments_) {
 export {
   isDimension,
   isFunction,
+  isIdent,
   isNumber,
+  isUrl,
   name,
   serializeArguments,
   tokenizeValue,
