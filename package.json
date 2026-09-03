@@ -25,10 +25,10 @@
     "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
-    "@types/node": "^26.4.0",
-    "knip": "^6.33.0",
-    "oxfmt": "^0.65.0",
-    "oxlint": "^1.80.0",
+    "@types/node": "^26.4.1",
+    "knip": "^6.34.0",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
     "postcss": "catalog:",
     "resolve": "^1.22.12",
     "typescript": "~7.0.2"
