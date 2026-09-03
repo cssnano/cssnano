@@ -1,4 +1,4 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 import stylehacks from 'stylehacks';
 import canMerge from '../canMerge.js';
 import getDecls from '../getDecls.js';
@@ -9,6 +9,8 @@ import insertCloned from '../insertCloned.js';
 import { isFallback } from '../isFallback.js';
 import canExplode from '../canExplode.js';
 import { shorthand, initialValues } from '../spec.js';
+
+const { TokenType, tokenEnd, tokenStart, tokens } = cssnanoUtils;
 
 const columns = 'columns';
 /* The properties the shorthand sets */
@@ -38,7 +40,7 @@ const closingTokens = new Set([
 
 /**
  * @param {string} value
- * @return {{ value: string, terms: { start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown, rawUnit: string }[] }}
+ * @return {{ value: string, hasTopLevelSlash: boolean, terms: { start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown, rawUnit: string }[] }}
  */
 function tokenizeColumns(value) {
   /** @type {{ start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown, rawUnit: string }[]} */
@@ -51,6 +53,7 @@ function tokenizeColumns(value) {
   let decoded;
   let rawUnit = '';
   let depth = 0;
+  let hasTopLevelSlash = false;
 
   const push = () => {
     if (!tokenCount) return;
@@ -63,7 +66,7 @@ function tokenizeColumns(value) {
     rawUnit = '';
   };
 
-  for (const token of tokenize({ css: value })) {
+  for (const token of tokens(value)) {
     const tokenType = token[0];
     if (tokenType === TokenType.EOF) continue;
 
@@ -73,7 +76,7 @@ function tokenizeColumns(value) {
     }
 
     if (tokenCount === 0) {
-      start = token[2];
+      start = tokenStart(token);
       type = /** @type {import('@csstools/css-tokenizer').TokenType} */ (
         tokenType
       );
@@ -85,31 +88,16 @@ function tokenizeColumns(value) {
         );
       }
     }
+    if (depth === 0 && tokenType === TokenType.Delim && token[1] === '/')
+      hasTopLevelSlash = true;
     tokenCount++;
-    end = token[3] + 1;
+    end = tokenEnd(token);
     if (openingTokens.has(token[0])) depth++;
     if (closingTokens.has(token[0]) && depth) depth--;
   }
   push();
 
-  return { value, terms };
-}
-
-/** @param {string} value @return {boolean} */
-function hasTopLevelSlash(value) {
-  let depth = 0;
-
-  for (const token of tokenize({ css: value })) {
-    const type = token[0];
-    if (type === TokenType.EOF) break;
-    if (depth === 0 && type === TokenType.Delim && token[1] === '/') {
-      return true;
-    }
-    if (openingTokens.has(type)) depth++;
-    if (closingTokens.has(type) && depth) depth--;
-  }
-
-  return false;
+  return { value, hasTopLevelSlash, terms };
 }
 
 /** @type {WeakMap<import('postcss').Declaration, { value: string, parsed: ReturnType<typeof tokenizeColumns> }>} */
@@ -276,7 +264,7 @@ function setsOtherColumnProperty(declaration) {
     return true;
   }
 
-  return prop === columns && hasTopLevelSlash(declaration.value);
+  return prop === columns && parsedValue(declaration).hasTopLevelSlash;
 }
 
 /**

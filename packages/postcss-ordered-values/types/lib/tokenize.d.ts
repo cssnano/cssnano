@@ -2,6 +2,12 @@ export type Term = {
     raw: string;
     tokens: import('@csstools/css-tokenizer').CSSToken[];
 };
+/**
+ * A raw top-level component. Its source is intentionally never reserialized:
+ * CSS escapes and malformed-but-tokenizable input must survive a rewrite.
+ *
+ * @typedef {{ raw: string, tokens: import('@csstools/css-tokenizer').CSSToken[] }} Term
+ */
 /** @param {Term} term */
 declare function name(term: Term): string;
 /** @param {Term} term */

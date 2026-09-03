@@ -1,12 +1,12 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
+
+const { TokenType, numeric, tokens } = cssnanoUtils;
 /**
  * @param {{value: string}} node
  * @return {{number: string, unit: string} | false}
  */
 function isNum(node) {
-  const token = [...tokenize({ css: node.value })].find(
-    (item) => item[0] !== TokenType.EOF
-  );
+  const token = tokens(node.value)[0];
   if (
     !token ||
     ![TokenType.Number, TokenType.Dimension, TokenType.Percentage].includes(
@@ -14,10 +14,11 @@ function isNum(node) {
     )
   )
     return false;
-  const metadata = /** @type {{value: number, unit?: string}} */ (token[4]);
+  const metadata = numeric(token);
+  if (!metadata) return false;
   return {
-    number: String(metadata.value),
-    unit: metadata.unit ?? (token[0] === TokenType.Percentage ? '%' : ''),
+    number: String(metadata.number),
+    unit: metadata.unit,
   };
 }
 
