@@ -1,7 +1,7 @@
 import { parseArgs } from 'node:util';
 import postcss from 'postcss';
 import plugin from '../src/index.js';
-import { generate } from './lib/fuzzGenerate.js';
+import { edgeCases, generate } from './lib/fuzzGenerate.js';
 
 const { values } = parseArgs({
   args: process.argv.slice(2).filter((argument) => argument !== '--'),
@@ -19,7 +19,7 @@ if (!Number.isFinite(seed) || !Number.isInteger(count) || count < 1) {
 
 const processor = postcss([plugin()]);
 let index = 0;
-for (const sample of generate(seed, count)) {
+for (const sample of [...edgeCases, ...generate(seed, count)]) {
   try {
     const output = processor.process(sample.css, { from: undefined }).css;
     const second = postcss([plugin()]).process(output, { from: undefined }).css;
@@ -32,4 +32,4 @@ for (const sample of generate(seed, count)) {
   }
   index++;
 }
-console.log(`${count} cases, seed ${seed}, clean`);
+console.log(`${edgeCases.length + count} cases, seed ${seed}, clean`);

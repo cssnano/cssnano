@@ -10,6 +10,10 @@ declare function isDimension(term: Term): boolean;
 declare function isNumber(term: Term): boolean;
 /** @param {Term} term */
 declare function isFunction(term: Term): boolean;
+/** @param {Term} term */
+declare function isUrl(term: Term): boolean;
+/** @param {Term} term */
+declare function isIdent(term: Term): boolean;
 /**
  * Tokenize a declaration once and split it at top-level whitespace and commas.
  * Nested functions and simple blocks remain one term, including their raw source.
@@ -25,5 +29,5 @@ declare function tokenizeValue(value: string): {
 };
 /** @param {Term[][]} arguments_ */
 declare function serializeArguments(arguments_: Term[][]): string;
-export { isDimension, isFunction, isNumber, name, serializeArguments, tokenizeValue, };
+export { isDimension, isFunction, isIdent, isNumber, isUrl, name, serializeArguments, tokenizeValue, };
 //# sourceMappingURL=tokenize.d.ts.map

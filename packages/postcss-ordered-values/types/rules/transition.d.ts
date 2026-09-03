@@ -1,9 +1,9 @@
 /**
  * @param {{ arguments: import('../lib/tokenize.js').Term[][] }} parsed
- * @return {string}
+ * @return {string | null}
  */
 declare function normalizeTransition(parsed: {
     arguments: import('../lib/tokenize.js').Term[][];
-}): string;
+}): string | null;
 export default normalizeTransition;
 //# sourceMappingURL=transition.d.ts.map

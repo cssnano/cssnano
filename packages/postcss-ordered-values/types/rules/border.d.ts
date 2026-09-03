@@ -1,7 +1,7 @@
 /**
  * @param {import('../lib/tokenize.js').Term[]} border
- * @return {string}
+ * @return {string | null}
  */
-declare function normalizeBorder(border: import('../lib/tokenize.js').Term[]): string;
+declare function normalizeBorder(border: import('../lib/tokenize.js').Term[]): string | null;
 export default normalizeBorder;
 //# sourceMappingURL=border.d.ts.map

@@ -35,18 +35,21 @@ const gridAutoFlowProcessor = (parsed) => normalizeGridAutoFlow(parsed.terms);
 /** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
 const gridGapProcessor = (parsed) => normalizeGridColumnRowGap(parsed.terms);
 /** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
-const gridLineProcessor = (parsed) => normalizeGridColumnRow(parsed.terms);
+const gridLineProcessor = (parsed) => normalizeGridColumnRow(parsed.terms, 2);
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+const gridLonghandProcessor = (parsed) =>
+  normalizeGridColumnRow(parsed.terms, 1);
 /** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null][]} */
 const grid = [
   ['grid-auto-flow', gridAutoFlowProcessor],
-  ['grid-column-gap', gridGapProcessor], // normal | <length-percentage>
-  ['grid-row-gap', gridGapProcessor], // normal | <length-percentage>
-  ['grid-column', gridLineProcessor], // <grid-line>+
-  ['grid-row', gridLineProcessor], // <grid-line>+
-  ['grid-row-start', gridLineProcessor], // <grid-line>
-  ['grid-row-end', gridLineProcessor], // <grid-line>
-  ['grid-column-start', gridLineProcessor], // <grid-line>
-  ['grid-column-end', gridLineProcessor], // <grid-line>
+  ['grid-column-gap', gridGapProcessor],
+  ['grid-row-gap', gridGapProcessor],
+  ['grid-column', gridLineProcessor],
+  ['grid-row', gridLineProcessor],
+  ['grid-row-start', gridLonghandProcessor],
+  ['grid-row-end', gridLonghandProcessor],
+  ['grid-column-start', gridLonghandProcessor],
+  ['grid-column-end', gridLonghandProcessor],
 ];
 
 /** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
@@ -82,7 +85,7 @@ const rules = new Map([
 function getValue(decl) {
   let value = decl.value;
   const raws = decl.raws;
-  if (raws && raws.value && raws.value.raw) {
+  if (raws && raws.value && raws.value.raw && raws.value.value === decl.value) {
     value = raws.value.raw;
   }
 
@@ -124,7 +127,7 @@ function pluginCreator() {
               return;
             }
 
-            if (value.length < 2 || !/[,\s]/.test(value)) {
+            if (value.length < 2 || !/[,\s/]/.test(value)) {
               processorCache.set(value, value);
               return;
             }

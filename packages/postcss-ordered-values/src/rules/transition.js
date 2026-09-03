@@ -1,10 +1,10 @@
 import {
-  isDimension,
   isFunction,
-  isNumber,
+  isIdent,
   name,
   serializeArguments,
 } from '../lib/tokenize.js';
+import isTime, { isMath } from '../lib/isTime.js';
 import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
 // transition: [ none | <single-transition-property> ] || <time> || <single-transition-timing-function> || <time>
@@ -14,7 +14,7 @@ const timingFunctionNames = new Set(easingFunctions.functions);
 
 /**
  * @param {import('../lib/tokenize.js').Term[][]} args
- * @return {import('../lib/tokenize.js').Term[][]}
+ * @return {import('../lib/tokenize.js').Term[][] | null}
  */
 function normalize(args) {
   const list = [];
@@ -29,16 +29,21 @@ function normalize(args) {
 
     for (const node of arg) {
       const value = name(node);
+      if (isMath(node) && !isTime(node)) return null;
 
       if (isFunction(node) && timingFunctionNames.has(value)) {
+        if (state.timingFunction.length) return null;
         state.timingFunction.push(node);
-      } else if (isDimension(node) || isNumber(node)) {
+      } else if (isTime(node)) {
         if (!state.time1.length) {
           state.time1.push(node);
-        } else {
+        } else if (!state.time2.length) {
           state.time2.push(node);
+        } else {
+          return null;
         }
-      } else if (timingFunctions.has(value)) {
+      } else if (isIdent(node) && timingFunctions.has(value)) {
+        if (state.timingFunction.length) return null;
         state.timingFunction.push(node);
       } else {
         state.property.push(node);
@@ -56,10 +61,11 @@ function normalize(args) {
 }
 /**
  * @param {{ arguments: import('../lib/tokenize.js').Term[][] }} parsed
- * @return {string}
+ * @return {string | null}
  */
 function normalizeTransition(parsed) {
-  return serializeArguments(normalize(parsed.arguments));
+  const normalized = normalize(parsed.arguments);
+  return normalized === null ? null : serializeArguments(normalized);
 }
 
 export default normalizeTransition;

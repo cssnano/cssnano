@@ -1,1 +1,1 @@
-{"version":3,"file":"listStyle.d.ts","sourceRoot":"","sources":["../../src/rules/listStyle.js"],"names":[],"mappings":"AAOA;;;GAGG;AACH,iBAAS,mBAAmB,CAAC,SAAS,EAH3B,OAAO,oBAAoB,EAAE,IAAI,EAGN,GAF1B,MAAM,CAiCjB;eAEc,mBAAmB"}
+{"version":3,"file":"listStyle.d.ts","sourceRoot":"","sources":["../../src/rules/listStyle.js"],"names":[],"mappings":"AAOA;;;GAGG;AACH,iBAAS,mBAAmB,CAAC,SAAS,EAH3B,OAAO,oBAAoB,EAAE,IAAI,EAGN,GAF1B,MAAM,CAqBjB;eAEc,mBAAmB"}
