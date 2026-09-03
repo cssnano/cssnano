@@ -1,4 +1,6 @@
 import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -11,6 +13,13 @@ test(
   'should prefer double quotes by default',
   passthroughCSS(`p:after{content:""}`)
 );
+
+test('should not drop the final character of an unclosed string', async () => {
+  const decl = postcss.decl({ prop: 'content', value: "'abc" });
+  const root = postcss.root({ nodes: [decl] });
+  await postcss([plugin()]).process(root, { from: undefined });
+  assert.equal(decl.value, '"abc"');
+});
 
 describe('Transform', () => {
   test(

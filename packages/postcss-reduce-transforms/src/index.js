@@ -1,5 +1,11 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
+/** @param {import('@csstools/css-tokenizer').CSSToken} token @return {string} */
+const decoded = (token) => {
+  const value = /** @type {{value?: unknown}} */ (token[4])?.value;
+  return typeof value === 'string' ? value : token[1];
+};
+
 const transformRegex = /transform$/i;
 
 /** @param {import('@csstools/css-tokenizer').CSSToken} token @return {boolean} */
@@ -192,7 +198,7 @@ function transform(value) {
         const frame = {
           open: i,
           close: -1,
-          name: token[1].slice(0, -1),
+          name: decoded(token),
           args: [],
         };
         functions.push(frame);
@@ -275,20 +281,34 @@ function pluginCreator() {
       return {
         OnceExit(css) {
           css.walkDecls(transformRegex, (decl) => {
-            const value = decl.value;
+            const value =
+              decl.raws.value?.value === decl.value
+                ? (decl.raws.value.raw ?? decl.value)
+                : decl.value;
             if (!value) return;
+            if (!value.includes('(')) {
+              assignValue(decl, value);
+              cache.set(value, value);
+              return;
+            }
             if (cache.has(value)) {
-              decl.value = cache.get(value);
+              assignValue(decl, cache.get(value));
               return;
             }
             const result = transform(value);
-            decl.value = result;
+            assignValue(decl, result);
             cache.set(value, result);
           });
         },
       };
     },
   };
+}
+
+/** @param {import('postcss').Declaration} decl @param {string} value */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
 }
 /** @type {true} */
 pluginCreator.postcss = true;

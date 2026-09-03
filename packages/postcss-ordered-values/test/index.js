@@ -1097,7 +1097,7 @@ describe('Order', () => {
     'should order list-style 9',
     processCSS(
       'ul{list-style: circle url("https://mdn.mozillademos.org/files/11981/starsolid.gif")}',
-      'ul{list-style: circle  url("https://mdn.mozillademos.org/files/11981/starsolid.gif")}'
+      'ul{list-style: circle url("https://mdn.mozillademos.org/files/11981/starsolid.gif")}'
     )
   );
 
@@ -1119,7 +1119,7 @@ describe('Order', () => {
     'should order list-style 12',
     processCSS(
       'ul{list-style: circle url("https://mdn.mozillademos.org/files/11981/starsolid.gif") none}',
-      'ul{list-style: circle none  url("https://mdn.mozillademos.org/files/11981/starsolid.gif")}'
+      'ul{list-style: circle none url("https://mdn.mozillademos.org/files/11981/starsolid.gif")}'
     )
   );
 
@@ -1135,4 +1135,29 @@ describe('Order', () => {
       'a{list-style:none inside url(icon.svg)}'
     )
   );
+
+  test(
+    'should not introduce double spaces when border style is omitted',
+    processCSS('div{border:red 1px}', 'div{border:1px red}')
+  );
+
+  test('should synchronize raw values on cache hits and misses', async () => {
+    const first = postcss.decl({ prop: 'border', value: 'red solid 1px' });
+    first.raws.value = { raw: 'red solid 1px', value: 'red solid 1px' };
+    const second = postcss.decl({ prop: 'border', value: 'red solid 1px' });
+    second.raws.value = { raw: 'red solid 1px', value: 'red solid 1px' };
+    const root = postcss.root({ nodes: [first, second] });
+    await postcss([plugin()]).process(root, { from: undefined });
+
+    assert.deepStrictEqual(
+      [first, second].map((decl) => ({
+        raw: decl.raws.value?.raw,
+        value: decl.value,
+      })),
+      [
+        { raw: '1px solid red', value: '1px solid red' },
+        { raw: '1px solid red', value: '1px solid red' },
+      ]
+    );
+  });
 });
