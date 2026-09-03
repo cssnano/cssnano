@@ -542,8 +542,11 @@ describe('Handles nested syntax and source spelling', () => {
   );
 
   test(
-    'preserves escaped function names when they are not legacy reducer names',
-    passthroughCSS('h1{transform:ROT\\41 TEZ(20deg)}')
+    'recognizes escaped legacy function names',
+    processCSS(
+      'h1{transform:ROT\\41 TEZ(20deg)}',
+      'h1{transform:rotate(20deg)}'
+    )
   );
 
   test(

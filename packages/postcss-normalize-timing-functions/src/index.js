@@ -119,21 +119,30 @@ function pluginCreator() {
       const cache = new Map();
 
       css.walkDecls(animationTransitionRegex, (decl) => {
-        const value = decl.value;
+        const value =
+          decl.raws.value?.value === decl.value
+            ? (decl.raws.value.raw ?? decl.value)
+            : decl.value;
 
         if (cache.has(value)) {
-          decl.value = cache.get(value);
+          assignValue(decl, cache.get(value));
 
           return;
         }
 
         const result = transform(value);
 
-        decl.value = result;
+        assignValue(decl, result);
         cache.set(value, result);
       });
     },
   };
+}
+
+/** @param {import('postcss').Declaration} decl @param {string} value */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
 }
 /** @type {true} */
 pluginCreator.postcss = true;

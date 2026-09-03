@@ -246,7 +246,12 @@ function normalize(value, preferredQuote) {
     if (token[0] !== TokenType.String) continue;
     const raw = token[1];
     const quote = raw[0];
-    const child = { quote, value: raw.slice(1, -1) };
+    // An EOF-terminated string has no closing quote to remove. For closed
+    // strings retain the raw escape spelling because it affects quote choice.
+    const child = {
+      quote,
+      value: raw.endsWith(quote) ? raw.slice(1, -1) : token[4].value,
+    };
     const ast = parse(child.value);
     if (ast.quotes) changeWrappingQuotes(child, ast);
     else
@@ -280,6 +285,12 @@ function minify(original, cache, preferredQuote) {
   return newValue;
 }
 
+/** @param {import('postcss').Declaration} decl @param {string} value */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
+}
+
 /** @typedef {{preferredQuote?: 'double' | 'single'}} Options */
 /**
  * @param {Options} opts
@@ -309,7 +320,13 @@ function pluginCreator(opts) {
             node.selector = minify(node.selector, cache, preferredQuote);
             break;
           case 'decl':
-            node.value = minify(node.value, cache, preferredQuote);
+            {
+              const value =
+                node.raws.value?.value === node.value
+                  ? (node.raws.value.raw ?? node.value)
+                  : node.value;
+              assignValue(node, minify(value, cache, preferredQuote));
+            }
             break;
           case 'atrule':
             node.params = minify(node.params, cache, preferredQuote);

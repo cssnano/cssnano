@@ -442,9 +442,17 @@ function transform(legacy, rule) {
     return;
   }
 
-  const source = rule.raws.params?.raw ?? rule.params;
+  const source =
+    rule.raws.params?.value === rule.params
+      ? (rule.raws.params.raw ?? rule.params)
+      : rule.params;
   const structure = balancedTokens(source);
-  if (!structure) return;
+  if (!structure) {
+    if (rule.raws.params?.raw) {
+      rule.raws.params = { raw: rule.params, value: rule.params };
+    }
+    return;
+  }
   /** @type {{start:number,end:number,text:string}[]} */
   const changes = [];
   const parents = parentIndexes(structure);
@@ -452,6 +460,7 @@ function transform(legacy, rule) {
     ruleName === 'media' && minifyMediaAll(legacy, structure, changes);
   if (mediaIsUnconditional) {
     rule.params = '';
+    if (rule.raws.params?.raw) rule.raws.params = { raw: '', value: '' };
     rule.raws.afterName = '';
     return;
   }
@@ -468,6 +477,9 @@ function transform(legacy, rule) {
   changes.sort((a, b) => a.start - b.start);
   const segments = serializeSegments(source, segmentRanges, changes);
   rule.params = sortAndDedupe(segments);
+  if (rule.raws.params?.raw) {
+    rule.raws.params = { raw: rule.params, value: rule.params };
+  }
 
   if (!rule.params.length) {
     rule.raws.afterName = '';

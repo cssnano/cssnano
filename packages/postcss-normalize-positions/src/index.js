@@ -1,5 +1,11 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
+/** @param {CSSToken} token @return {string} */
+const decoded = (token) => {
+  const value = /** @type {{value?: unknown}} */ (token[4])?.value;
+  return typeof value === 'string' ? value : token[1];
+};
+
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 const directionKeywords = new Set(['top', 'right', 'bottom', 'left', 'center']);
 
@@ -19,10 +25,10 @@ const propFilterRegex =
 
 /** @param {CSSToken} token */ const isMathFunction = (token) =>
   token[0] === TokenType.Function &&
-  mathFunctions.has(token[1].slice(0, -1).toLowerCase());
+  mathFunctions.has(decoded(token).toLowerCase());
 /** @param {CSSToken} token */ const isVariableFunction = (token) =>
   token[0] === TokenType.Function &&
-  variableFunctions.has(token[1].slice(0, -1).toLowerCase());
+  variableFunctions.has(decoded(token).toLowerCase());
 /** @param {CSSToken} token */ const isNumber = (token) =>
   token[0] === TokenType.Number ||
   token[0] === TokenType.Percentage ||
@@ -50,7 +56,7 @@ function depthChange(type) {
 function isPositionTerm(token) {
   return (
     (token[0] === TokenType.Ident &&
-      directionKeywords.has(token[1].toLowerCase())) ||
+      directionKeywords.has(decoded(token).toLowerCase())) ||
     isNumber(token) ||
     isMathFunction(token)
   );
@@ -97,7 +103,7 @@ function transform(value) {
 
 /** @param {CSSToken} token @return {[number, number, string] | undefined} */
 function singlePositionReplacement(token) {
-  const keyword = token[1].toLowerCase();
+  const keyword = decoded(token).toLowerCase();
   const output = keyword === 'center' ? center : horizontal.get(keyword);
   return output ? [token[2], token[3] + 1, output] : undefined;
 }
@@ -127,8 +133,8 @@ function axisSwapReplacement(
 
 /** @param {string} value @param {CSSToken} firstToken @param {CSSToken} secondToken @return {[number, number, string] | undefined} */
 function twoPositionReplacement(value, firstToken, secondToken) {
-  const first = firstToken[1].toLowerCase();
-  const second = secondToken[1].toLowerCase();
+  const first = decoded(firstToken).toLowerCase();
+  const second = decoded(secondToken).toLowerCase();
   const firstOutput = horizontal.get(first) || verticalValue.get(first);
   const secondOutput = horizontal.get(second) || verticalValue.get(second);
   if (second === 'center') {
@@ -201,25 +207,34 @@ function pluginCreator() {
       const cache = new Map();
 
       css.walkDecls(propFilterRegex, (decl) => {
-        const value = decl.value;
+        const value =
+          decl.raws.value?.value === decl.value
+            ? (decl.raws.value.raw ?? decl.value)
+            : decl.value;
 
         if (!value) {
           return;
         }
 
         if (cache.has(value)) {
-          decl.value = cache.get(value);
+          assignValue(decl, cache.get(value));
 
           return;
         }
 
         const result = transform(value);
 
-        decl.value = result;
+        assignValue(decl, result);
         cache.set(value, result);
       });
     },
   };
+}
+
+/** @param {import('postcss').Declaration} decl @param {string} value */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
 }
 /** @type {true} */
 pluginCreator.postcss = true;

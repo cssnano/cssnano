@@ -132,12 +132,14 @@ function pluginCreator() {
      */
     OnceExit(css) {
       css.walkRules((nodes) => {
-        if (nodes.raws.selector && nodes.raws.selector.raw) {
-          nodes.raws.selector.raw = generateUniqueSelector(
-            nodes.raws.selector.raw
-          );
-        } else {
-          nodes.selector = generateUniqueSelector(nodes.selector);
+        const source =
+          nodes.raws.selector?.value === nodes.selector
+            ? (nodes.raws.selector.raw ?? nodes.selector)
+            : nodes.selector;
+        const selector = generateUniqueSelector(source);
+        nodes.selector = selector;
+        if (nodes.raws.selector?.raw) {
+          nodes.raws.selector = { raw: selector, value: selector };
         }
       });
     },

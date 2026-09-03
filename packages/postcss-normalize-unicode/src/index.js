@@ -162,7 +162,10 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
          */
         OnceExit(css) {
           css.walkDecls(unicodeRangeRegex, (decl) => {
-            const value = decl.raws.value?.raw ?? decl.value;
+            const value =
+              decl.raws.value?.value === decl.value
+                ? (decl.raws.value.raw ?? decl.value)
+                : decl.value;
 
             if (cache.has(value)) {
               const newValue = cache.get(value);

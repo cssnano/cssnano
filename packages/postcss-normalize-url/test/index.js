@@ -324,6 +324,11 @@ test(
 );
 
 test(
+  'should preserve escaped url function names',
+  passthroughCSS('h1{background:\\75rl(foo.png)}')
+);
+
+test(
   'should preserve paths in parameters',
   passthroughCSS(
     'background: url(https://ss0.example.com/70cFuh_Q1Yn/it/u=5088,2842&fm=26&gp=0.jpg?imageView2/1/w/750/h/1334)'

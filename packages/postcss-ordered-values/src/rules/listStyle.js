@@ -27,7 +27,9 @@ function listStyleNormalizer(listStyle) {
       order.type = `${order.type} ${decl.raw}`;
     }
   }
-  return `${order.type.trim()} ${order.position.trim()} ${order.image.trim()}`.trim();
+  return [order.type.trim(), order.position.trim(), order.image.trim()]
+    .filter(Boolean)
+    .join(' ');
 }
 
 export default listStyleNormalizer;
