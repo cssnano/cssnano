@@ -110,8 +110,16 @@ function findIntervalOverlap(node, edit) {
       return;
     visit(current.left);
     if (current.edit.start >= edit.end) return;
+    const overlaps =
+      (edit.start < current.edit.end && current.edit.start < edit.end) ||
+      (edit.start === edit.end &&
+        current.edit.start < edit.start &&
+        edit.start < current.edit.end) ||
+      (current.edit.start === current.edit.end &&
+        edit.start < current.edit.start &&
+        current.edit.start < edit.end);
     if (
-      edit.start < current.edit.end &&
+      overlaps &&
       (!overlap || intervalPriority(current.edit) > intervalPriority(overlap))
     )
       overlap = current.edit;
@@ -153,17 +161,13 @@ function applyEdits(source, edits) {
     (a, b) => (b.priority ?? 0) - (a.priority ?? 0)
   )) {
     const priority = edit.priority ?? 0;
-    // Empty ranges are insertions, so they cannot overlap an interval.
-    const overlap =
-      edit.start === edit.end
-        ? undefined
-        : findIntervalOverlap(intervals, edit);
+    const overlap = findIntervalOverlap(intervals, edit);
     if (overlap) {
       if ((overlap.priority ?? 0) === priority) return source;
       continue;
     }
     accepted.push(edit);
-    if (edit.start !== edit.end) intervals = insertInterval(intervals, edit);
+    intervals = insertInterval(intervals, edit);
   }
   const ordered = accepted.toSorted(
     (a, b) => a.start - b.start || a.end - a.start - (b.end - b.start)

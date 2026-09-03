@@ -53,6 +53,16 @@ test('applies adjacent exclusive-end edits and rejects overlap', () => {
   );
 });
 
+test('rejects an insertion inside a replacement', () => {
+  assert.equal(
+    applyEdits('abcdef', [
+      { start: 1, end: 4, text: 'X' },
+      { start: 2, end: 2, text: '!' },
+    ]),
+    'abcdef'
+  );
+});
+
 test('allows a higher-priority edit to supersede an overlapping edit', () => {
   assert.equal(
     applyEdits('abcdef', [
