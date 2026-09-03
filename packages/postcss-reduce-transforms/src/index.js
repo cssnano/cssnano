@@ -1,10 +1,12 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 
-/** @param {import('@csstools/css-tokenizer').CSSToken} token @return {string} */
-const decoded = (token) => {
-  const value = /** @type {{value?: unknown}} */ (token[4])?.value;
-  return typeof value === 'string' ? value : token[1];
-};
+const {
+  TokenType,
+  decoded,
+  tokenEnd,
+  tokenStart,
+  tokens: tokenizeValue,
+} = cssnanoUtils;
 
 const transformRegex = /transform$/i;
 
@@ -49,9 +51,9 @@ function argumentSource(argument, value, tokens, blockEnds) {
   const first = argument.significant[0];
   const last = argument.significant[argument.significant.length - 1];
   const end = isBlockStart(tokens[last])
-    ? tokens[blockEnds.get(first) ?? first][3] + 1
-    : tokens[last][3] + 1;
-  return value.slice(tokens[first][2], end);
+    ? tokenEnd(tokens[blockEnds.get(first) ?? first])
+    : tokenEnd(tokens[last]);
+  return value.slice(tokenStart(tokens[first]), end);
 }
 
 /** @param {(number|string)[]} values @param {(...indices: number[]) => string} select */
@@ -139,8 +141,8 @@ function reduce(frame, values, value, tokens, blockEnds) {
     const index = argument.significant[argument.significant.length - 1];
     if (index === undefined) return argument.start;
     if (isBlockStart(tokens[index]))
-      return tokens[blockEnds.get(index) ?? index][3] + 1;
-    return tokens[index][3] + 1;
+      return tokenEnd(tokens[blockEnds.get(index) ?? index]);
+    return tokenEnd(tokens[index]);
   };
   /** @param {{start:number,end:number,significant:number[]}} argument */
   const sourceStart = (argument) =>
@@ -172,14 +174,13 @@ function reduce(frame, values, value, tokens, blockEnds) {
   const out = reducedTransform(name, values, select);
   return out === undefined
     ? undefined
-    : [tokens[frame.open][2], tokens[frame.close][3] + 1, out];
+    : [tokenStart(tokens[frame.open]), tokenEnd(tokens[frame.close]), out];
 }
 
 /** @param {string} value @return {string} */
 function transform(value) {
-  /** @type {import('@csstools/css-tokenizer').CSSToken[]} */ const tokens = [
-    ...tokenize({ css: value }),
-  ];
+  /** @type {import('@csstools/css-tokenizer').CSSToken[]} */ const tokens =
+    tokenizeValue(value);
   /** @type {{open:number,close:number,name:string,args:{start:number,end:number,significant:number[]}[]}[]} */ const functions =
     [];
   /** @type {Map<number, {open:number,close:number,name:string,args:{start:number,end:number,significant:number[]}[]}>} */

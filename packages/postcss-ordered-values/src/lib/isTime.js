@@ -1,5 +1,7 @@
-import { TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 import { isDimension, isFunction, name } from './tokenize.js';
+
+const { TokenType } = cssnanoUtils;
 
 const timeUnits = new Set(['ms', 's']);
 

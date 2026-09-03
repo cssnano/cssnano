@@ -1,17 +1,14 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
+
+const { TokenType } = cssnanoUtils;
 
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
-/** @param {string} value @return {CSSToken[]} */
-function tokens(value) {
-  return [...tokenize({ css: value })].filter(
-    (token) => token[0] !== TokenType.EOF
-  );
-}
-
+/** @type {(value: string) => CSSToken[]} */
+const sharedTokens = cssnanoUtils.tokens;
 /**
  * @param {CSSToken} token
  * @param {Map<string, number[]>} functions
- * @param {{arguments?: number[], index: number, close: TokenType}[]} stack
+ * @param {{arguments?: number[], index: number, close: string}[]} stack
  * @return {boolean}
  */
 function isFunctionArgument(token, functions, stack) {
@@ -46,8 +43,13 @@ function isFunctionArgument(token, functions, stack) {
  * @param {CSSToken[]} [parsedTokens]
  * @return {string}
  */
-function rewrite(value, callback, functions, parsedTokens = tokens(value)) {
-  /** @type {{arguments?: number[], index: number, close: TokenType}[]} */
+function rewrite(
+  value,
+  callback,
+  functions,
+  parsedTokens = sharedTokens(value)
+) {
+  /** @type {{arguments?: number[], index: number, close: string}[]} */
   const stack = [];
   const changes = parsedTokens.flatMap((token) => {
     const isArgument = functions
@@ -64,4 +66,4 @@ function rewrite(value, callback, functions, parsedTokens = tokens(value)) {
       result.slice(change.end + 1);
   return result;
 }
-export { TokenType, rewrite, tokens };
+export { TokenType, rewrite, sharedTokens as tokens };
