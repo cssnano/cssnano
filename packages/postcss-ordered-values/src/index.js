@@ -91,6 +91,17 @@ function getValue(decl) {
 
   return value;
 }
+
+/**
+ * @param {import('postcss').Declaration} decl
+ * @param {string} value
+ */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) {
+    decl.raws.value = { raw: value, value };
+  }
+}
 /**
  * @return {import('postcss').Plugin}
  */
@@ -122,13 +133,17 @@ function pluginCreator() {
             }
 
             if (processorCache.has(value)) {
-              decl.value = /** @type {string} */ (processorCache.get(value));
+              assignValue(
+                decl,
+                /** @type {string} */ (processorCache.get(value))
+              );
 
               return;
             }
 
             if (value.length < 2 || !/[,\s/]/.test(value)) {
               processorCache.set(value, value);
+              assignValue(decl, value);
               return;
             }
 
@@ -136,6 +151,7 @@ function pluginCreator() {
 
             if (parsed.terms.length < 2 || parsed.abort) {
               processorCache.set(value, value);
+              assignValue(decl, value);
 
               return;
             }
@@ -143,7 +159,7 @@ function pluginCreator() {
             const processed = processor(parsed);
             const result = processed === null ? value : processed.toString();
 
-            decl.value = result;
+            assignValue(decl, result);
             processorCache.set(value, result);
           });
         },

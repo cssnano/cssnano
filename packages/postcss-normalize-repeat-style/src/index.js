@@ -1,7 +1,7 @@
 import cssnanoUtils from 'cssnano-utils';
 import mappings from './lib/map.js';
 
-const { TokenType, tokens } = cssnanoUtils;
+const { TokenType, decoded, tokens } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 const repeatPropertyRegex =
@@ -41,7 +41,7 @@ function repeatLayers(input, value) {
     if (
       depth === 0 &&
       type === TokenType.Function &&
-      variableFunctions.has(token[1].slice(0, -1).toLowerCase())
+      variableFunctions.has(decoded(token).toLowerCase())
     ) {
       stopped = true;
       candidates = [];
@@ -58,7 +58,7 @@ function repeatLayers(input, value) {
       !stopped &&
       depth === 0 &&
       type === TokenType.Ident &&
-      repeatKeywords.has(token[1].toLowerCase())
+      repeatKeywords.has(decoded(token).toLowerCase())
     )
       candidates.push(token);
   }
@@ -70,9 +70,10 @@ function repeatLayers(input, value) {
 function repeatReplacement(value, terms) {
   if (terms.length !== 2) return undefined;
   const [first, second] = terms;
-  if (!/^\s+$/u.test(value.slice(first[3] + 1, second[2]))) return undefined;
+  if (!/^(?:\s|\/\*[\s\S]*?\*\/)+$/u.test(value.slice(first[3] + 1, second[2])))
+    return undefined;
   const match = mappings.get(
-    [first[1], second[1]].map((x) => x.toLowerCase()).toString()
+    [decoded(first), decoded(second)].map((x) => x.toLowerCase()).toString()
   );
   return match ? [first[2], second[3] + 1, match] : undefined;
 }
@@ -112,27 +113,36 @@ function pluginCreator() {
          */
         OnceExit(css) {
           css.walkDecls(repeatPropertyRegex, (decl) => {
-            const value = decl.value;
+            const value =
+              decl.raws.value?.value === decl.value
+                ? (decl.raws.value.raw ?? decl.value)
+                : decl.value;
 
             if (!value) {
               return;
             }
 
             if (cache.has(value)) {
-              decl.value = cache.get(value);
+              assignValue(decl, cache.get(value));
 
               return;
             }
 
             const result = transform(value);
 
-            decl.value = result;
+            assignValue(decl, result);
             cache.set(value, result);
           });
         },
       };
     },
   };
+}
+
+/** @param {import('postcss').Declaration} decl @param {string} value */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
 }
 /** @type {true} */
 pluginCreator.postcss = true;

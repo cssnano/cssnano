@@ -28,7 +28,9 @@ const normalizeGridAutoFlow = (gridAutoFlow) => {
     }
   }
   if (shouldNormalize) {
-    return `${newValue.front.trim()} ${newValue.back.trim()}`;
+    return [newValue.front.trim(), newValue.back.trim()]
+      .filter(Boolean)
+      .join(' ');
   }
   return null;
 };
@@ -56,7 +58,9 @@ const normalizeGridColumnRowGap = (gridGap) => {
     }
   }
   if (shouldNormalize) {
-    return `${newValue.front.trim()} ${newValue.back.trim()}`;
+    return [newValue.front.trim(), newValue.back.trim()]
+      .filter(Boolean)
+      .join(' ');
   }
   return null;
 };

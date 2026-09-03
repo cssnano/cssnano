@@ -36,7 +36,7 @@ describe('Border', () => {
   test('border order handles max', () => {
     assert.strictEqual(
       normalizeBorder(tokenizeValue('red max(3em, 48px)').terms),
-      'max(3em, 48px)  red'
+      'max(3em, 48px) red'
     );
   });
 

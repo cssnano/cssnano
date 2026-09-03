@@ -86,7 +86,10 @@ function transformNamespace(rule) {
  * @return {void}
  */
 function transformDecl(decl) {
-  const value = decl.value;
+  const value =
+    decl.raws.value?.value === decl.value
+      ? (decl.raws.value.raw ?? decl.value)
+      : decl.value;
   /** @type {[number, number, string][]} */ const replacements = [];
   forEachUrl(value, (start, end, input, quote, name) => {
     let url = input.trim().replace(multiline, '');
@@ -98,11 +101,13 @@ function transformDecl(decl) {
     if (!extensionRegex.test(url)) url = convert(url);
 
     let outputQuote = quote;
-    if (quote && escapeChars.test(url)) {
-      const escaped = url.replace(escapeChars, '\\$1');
+    const escaped = url.replace(escapeChars, '\\$1');
+    if (escaped !== url) {
       if (escaped.length < url.length + 2) {
         url = escaped;
         outputQuote = '';
+      } else if (!quote) {
+        url = escaped;
       }
     } else {
       outputQuote = '';
@@ -113,7 +118,13 @@ function transformDecl(decl) {
       `${name}(${outputQuote}${url}${outputQuote})`,
     ]);
   });
-  decl.value = replace(value, replacements);
+  assignValue(decl, replace(value, replacements));
+}
+
+/** @param {import('postcss').Declaration} decl @param {string} value */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
 }
 
 /**
@@ -136,7 +147,7 @@ function forEachUrl(value, callback, tokens = [...tokenize({ css: value })]) {
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     if (token[0] === TokenType.URL) {
-      const raw = token[1].slice(4, -1);
+      const raw = token[4].value;
       callback(
         token[2],
         token[3] + 1,
@@ -148,7 +159,7 @@ function forEachUrl(value, callback, tokens = [...tokenize({ css: value })]) {
     }
     if (
       token[0] !== TokenType.Function ||
-      token[1].slice(0, -1).toLowerCase() !== 'url'
+      token[4].value.toLowerCase() !== 'url'
     )
       continue;
     const close = functionEnds.get(index);
@@ -158,12 +169,14 @@ function forEachUrl(value, callback, tokens = [...tokenize({ css: value })]) {
       (child) => child[0] !== TokenType.Whitespace
     );
     if (significant.length === 1 && significant[0][0] === TokenType.String) {
-      const string = significant[0][1];
+      const string = significant[0];
       callback(
         token[2],
         tokens[close][3] + 1,
-        string.slice(1, -1),
-        string[0],
+        string[1].endsWith(string[1][0])
+          ? string[1].slice(1, -1)
+          : string[4].value,
+        string[1][0],
         token[1].slice(0, -1)
       );
     } else if (
