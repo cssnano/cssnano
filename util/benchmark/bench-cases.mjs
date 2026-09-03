@@ -59,7 +59,7 @@ export const benchmarkCases = {
       return pluginProcessor('postcss-minify-selectors');
     },
     css: Array.from(
-      { length: 200 },
+      { length: 2000 },
       (_, index) =>
         `.scope-${index} :is(.item-${index}, .item-${index}):not(.disabled) > .child-${index}{color:red}`
     ).join(''),
@@ -76,6 +76,20 @@ export const benchmarkCases = {
       ).join(',');
 
       return `.scope-${index}:is(:not(${selectors}),:not(${selectors})){color:red}`;
+    }).join(''),
+  },
+  'selector-ir-long-nested': {
+    plugin: 'postcss-minify-selectors',
+    createProcessor() {
+      return pluginProcessor('postcss-minify-selectors');
+    },
+    css: Array.from({ length: 120 }, (_, index) => {
+      const common = `.scope-${index}:is(.a${index % 8},:not(.b${index % 8},.c${index % 8}))[data-label="x,${index}"]`;
+      const edges = Array.from(
+        { length: 24 },
+        (unused, edgeIndex) => `${common} .item-${edgeIndex}`
+      );
+      return `${edges.join(',')}{color:red}`;
     }).join(''),
   },
   'longhand-rule-merging': {
