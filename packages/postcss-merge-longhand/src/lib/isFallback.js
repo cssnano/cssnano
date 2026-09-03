@@ -1,9 +1,11 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 import { colorFunctions } from './spec.js';
 import {
   substitutionFunctions,
   trustedSupportFunctions,
 } from './unresolved.js';
+
+const { TokenType, decoded, tokens } = cssnanoUtils;
 
 /* Substitution functions prevent fallback detection because their values
  * are resolved at runtime, not statically analyzable. */
@@ -57,12 +59,12 @@ function supportDependenciesIn(value) {
   /** @type {Set<string>} */
   const names = new Set();
 
-  for (const token of tokenize({ css: value })) {
+  for (const token of tokens(value)) {
     if (token[0] !== TokenType.Function) {
       continue;
     }
 
-    const name = /** @type {{value: string}} */ (token[4]).value.toLowerCase();
+    const name = decoded(token).toLowerCase();
 
     if (supportDependentFunctions.has(name)) {
       names.add(name);

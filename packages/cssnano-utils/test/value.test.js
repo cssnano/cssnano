@@ -73,6 +73,16 @@ test('allows a higher-priority edit to supersede an overlapping edit', () => {
   );
 });
 
+test('allows a higher-priority insertion inside a lower-priority replacement', () => {
+  assert.equal(
+    applyEdits('abcdef', [
+      { start: 1, end: 5, text: 'X' },
+      { start: 3, end: 3, text: '!', priority: 1 },
+    ]),
+    'abc!def'
+  );
+});
+
 test('prefers the highest-priority edit among overlapping accepted edits', () => {
   assert.equal(
     applyEdits('abcdefghij', [

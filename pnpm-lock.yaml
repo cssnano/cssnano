@@ -513,13 +513,16 @@ importers:
 
   packages/postcss-merge-longhand:
     dependencies:
-      '@csstools/css-tokenizer':
-        specifier: 'catalog:'
-        version: 4.0.0
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
       stylehacks:
         specifier: workspace:^
         version: link:../stylehacks
     devDependencies:
+      '@csstools/css-tokenizer':
+        specifier: 'catalog:'
+        version: 4.0.0
       '@webref/css':
         specifier: 'catalog:'
         version: 8.7.3(css-tree@3.2.1)
@@ -646,23 +649,26 @@ importers:
 
   packages/postcss-normalize-positions:
     dependencies:
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
+    devDependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.0
-    devDependencies:
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
 
   packages/postcss-normalize-repeat-style:
     dependencies:
-      '@csstools/css-tokenizer':
-        specifier: 'catalog:'
-        version: 4.0.0
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
     devDependencies:
+      '@csstools/css-tokenizer':
+        specifier: 'catalog:'
+        version: 4.0.0
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
@@ -725,10 +731,13 @@ importers:
 
   packages/postcss-ordered-values:
     dependencies:
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
+    devDependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.0
-    devDependencies:
       '@webref/css':
         specifier: 'catalog:'
         version: 8.7.3(css-tree@3.2.1)
@@ -738,10 +747,13 @@ importers:
 
   packages/postcss-reduce-idents:
     dependencies:
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
+    devDependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.0
-    devDependencies:
       '@webref/css':
         specifier: 'catalog:'
         version: 8.7.3(css-tree@3.2.1)
@@ -767,10 +779,13 @@ importers:
 
   packages/postcss-reduce-transforms:
     dependencies:
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
+    devDependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.0
-    devDependencies:
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
