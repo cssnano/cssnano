@@ -263,6 +263,19 @@ suite('@keyframe normalization', () => {
 
 suite('comments and pseudo-elements', () => {
   test(
+    'should preserve ordinary comments as selector whitespace',
+    processCSS(
+      'h1/**/p,.a/* comment */.b{color:blue}',
+      '.a .b,h1 p{color:blue}'
+    )
+  );
+
+  test(
+    'should remove ordinary comments around explicit combinators',
+    processCSS('h1/**/>/**/p{color:blue}', 'h1>p{color:blue}')
+  );
+
+  test(
     'should not be responsible for normalising comments',
     processCSS(
       'h1 /*!test comment*/, h2{color:blue}',

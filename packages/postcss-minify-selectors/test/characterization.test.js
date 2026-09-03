@@ -16,6 +16,7 @@ const corpus = [
     '.a\\,b, .a\\,b, .x[attr="(deep, value)"]',
     '.a\\,b,.x[attr="(deep, value)"]',
   ],
+  ['h1/**/p, .a/* comment */.b', '.a .b,h1 p'],
 ];
 
 function minify(selector) {
