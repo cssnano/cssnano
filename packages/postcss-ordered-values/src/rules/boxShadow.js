@@ -3,16 +3,17 @@ import vendorUnprefixed from '../lib/vendorUnprefixed.js';
 import {
   isDimension,
   isFunction,
+  isIdent,
+  isNumber,
   name,
   serializeArguments,
 } from '../lib/tokenize.js';
 /**
  * @param {import('../lib/tokenize.js').Term[][]} args
- * @return {false | import('../lib/tokenize.js').Term[][]}
+ * @return {import('../lib/tokenize.js').Term[][] | null}
  */
 function normalize(args) {
   const list = [];
-  let abort = false;
   for (const arg of args) {
     /** @type {import('../lib/tokenize.js').Term[]} */
     const val = [];
@@ -26,21 +27,20 @@ function normalize(args) {
       const value = name(node);
 
       if (isFunction(node) && mathFunctions.has(vendorUnprefixed(value))) {
-        abort = true;
-        continue;
+        return null;
       }
 
-      if (isDimension(node) || /^[-+]?\d/.test(node.raw)) {
+      if (isFunction(node) && vendorUnprefixed(value) === 'inset') {
+        return null;
+      }
+
+      if (isDimension(node) || isNumber(node)) {
         val.push(node);
-      } else if (value === 'inset') {
+      } else if (isIdent(node) && value === 'inset') {
         state.inset.push(node);
       } else {
         state.color.push(node);
       }
-    }
-
-    if (abort) {
-      return false;
     }
 
     list.push([...state.inset, ...val, ...state.color]);
@@ -49,14 +49,11 @@ function normalize(args) {
 }
 /**
  * @param {{ arguments: import('../lib/tokenize.js').Term[][], value: string }} parsed
- * @return {string}
+ * @return {string | null}
  */
 function normalizeBoxShadow(parsed) {
   const normalized = normalize(parsed.arguments);
-  if (normalized === false) {
-    return parsed.value;
-  }
-  return serializeArguments(normalized);
+  return normalized === null ? null : serializeArguments(normalized);
 }
 
 export default normalizeBoxShadow;

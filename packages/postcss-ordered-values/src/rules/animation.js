@@ -1,11 +1,11 @@
-import mathFunctions from '../lib/mathfunctions.js';
 import {
-  isDimension,
   isFunction,
+  isIdent,
   isNumber,
   name,
   serializeArguments,
 } from '../lib/tokenize.js';
+import isTimeValue, { isMath } from '../lib/isTime.js';
 import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
 // animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
@@ -20,28 +20,6 @@ const directions = new Set([
 ]);
 const fillModes = new Set(['none', 'forwards', 'backwards', 'both']);
 const playStates = new Set(['running', 'paused']);
-const timeUnits = new Set(['ms', 's']);
-
-/**
- * @param {string} value
- * @param {import('../lib/tokenize.js').Term} node
- * @return {string}
- */
-function unitFromNode(value, node) {
-  if (isDimension(node)) {
-    return /** @type {{ unit: string }} */ (
-      node.tokens[0][4]
-    ).unit.toLowerCase();
-  }
-  if (isFunction(node) && mathFunctions.has(value)) {
-    for (const token of node.tokens) {
-      if (token[0] === 'dimension-token' && token[4].unit !== '%')
-        return token[4].unit.toLowerCase();
-    }
-  }
-  return '';
-}
-
 /**
  * @param {string} value
  * @param {import('../lib/tokenize.js').Term} node
@@ -50,29 +28,20 @@ function unitFromNode(value, node) {
 const isTimingFunction = (value, node) => {
   return (
     (isFunction(node) && timingFunctions.has(value)) ||
-    timingKeywords.has(value)
+    (isIdent(node) && timingKeywords.has(value))
   );
 };
-/**
- * @param {string} value
- * @return {boolean}
- */
-const isDirection = (value) => {
-  return directions.has(value);
+/** @param {string} value @param {import('../lib/tokenize.js').Term} node */
+const isDirection = (value, node) => {
+  return isIdent(node) && directions.has(value);
 };
-/**
- * @param {string} value
- * @return {boolean}
- */
-const isFillMode = (value) => {
-  return fillModes.has(value);
+/** @param {string} value @param {import('../lib/tokenize.js').Term} node */
+const isFillMode = (value, node) => {
+  return isIdent(node) && fillModes.has(value);
 };
-/**
- * @param {string} value
- * @return {boolean}
- */
-const isPlayState = (value) => {
-  return playStates.has(value);
+/** @param {string} value @param {import('../lib/tokenize.js').Term} node */
+const isPlayState = (value, node) => {
+  return isIdent(node) && playStates.has(value);
 };
 /**
  * @param {string} value
@@ -80,9 +49,7 @@ const isPlayState = (value) => {
  * @return {boolean}
  */
 const isTime = (value, node) => {
-  const quantity = unitFromNode(value, node);
-
-  return timeUnits.has(quantity);
+  return isTimeValue(node);
 };
 /**
  * @param {string} value
@@ -90,7 +57,7 @@ const isTime = (value, node) => {
  * @return {boolean}
  */
 const isIterationCount = (value, node) => {
-  return value === 'infinite' || isNumber(node);
+  return (isIdent(node) && value === 'infinite') || isNumber(node);
 };
 
 const stateConditions = [
@@ -104,7 +71,7 @@ const stateConditions = [
 ];
 /**
  * @param {import('../lib/tokenize.js').Term[][]} args
- * @return {import('../lib/tokenize.js').Term[][]}
+ * @return {import('../lib/tokenize.js').Term[][] | null}
  */
 function normalize(args) {
   const list = [];
@@ -124,6 +91,7 @@ function normalize(args) {
 
     for (const node of arg) {
       const value = name(node);
+      if (isMath(node) && !isTimeValue(node)) return null;
 
       const hasMatch = stateConditions.some(({ property, delegate }) => {
         if (delegate(value, node) && !state[property].length) {
@@ -154,10 +122,11 @@ function normalize(args) {
 }
 /**
  * @param {{ arguments: import('../lib/tokenize.js').Term[][] }} parsed
- * @return {string}
+ * @return {string | null}
  */
 function normalizeAnimation(parsed) {
-  return serializeArguments(normalize(parsed.arguments));
+  const normalized = normalize(parsed.arguments);
+  return normalized === null ? null : serializeArguments(normalized);
 }
 
 export default normalizeAnimation;
