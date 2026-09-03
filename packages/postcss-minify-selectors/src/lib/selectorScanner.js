@@ -146,7 +146,10 @@ function attributeString(value, inAttribute) {
 
 /** @param {string[]} output @param {string} value */
 function addComment(output, value) {
-  if (value.startsWith('/*!')) output.push(value);
+  // Ordinary comments are whitespace in CSS. Preserve a token boundary when
+  // removing one; otherwise `h1/**/p` would become the different selector
+  // `h1p`.
+  output.push(value.startsWith('/*!') ? value : ' ');
 }
 /** @param {CSSToken} token @param {CSSToken | undefined} next @param {CSSToken | undefined} name */
 function legacyPseudo(token, next, name) {
