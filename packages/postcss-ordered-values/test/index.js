@@ -1,4 +1,6 @@
 import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -7,7 +9,7 @@ import plugin from '../src/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
-describe('Order', () => {
+describe('Border order', () => {
   test(
     'should order border consistently',
     processCSS(
@@ -27,6 +29,41 @@ describe('Order', () => {
   test(
     'should order border with two properties',
     processCSS('h1{border:solid 1px}', 'h1{border:1px solid}')
+  );
+
+  test(
+    'should preserve duplicate border components',
+    passthroughCSS(
+      'h1{border:1px 2px solid red;border:1px solid dashed red;border:1px solid red blue;border:min(1px,2px) solid red min(2px,3px)}'
+    )
+  );
+});
+
+describe('Function and identifier roles', () => {
+  test(
+    'does not classify animation keyword functions as keywords',
+    processCSS(
+      'a{animation:reverse() bounce 1s running() infinite() ease()}',
+      'a{animation:reverse() bounce running() infinite() ease() 1s}'
+    )
+  );
+
+  test(
+    'does not classify transition keyword functions as timing keywords',
+    processCSS(
+      'a{transition:ease() opacity 1s}',
+      'a{transition:ease() opacity 1s}'
+    )
+  );
+});
+
+test('matches escaped and mixed-case keywords across ordered shorthands', () => {
+  assert.strictEqual(
+    postcss([plugin()]).process(
+      'a{animation:1s \\65 ase-in fade;transition:opacity 1S \\45 ase;list-style:\\6f utside square}',
+      { from: undefined }
+    ).css,
+    'a{animation:fade 1s \\65 ase-in;transition:opacity 1S \\45 ase;list-style:square \\6f utside}'
   );
 });
 
@@ -77,7 +114,7 @@ describe('Skip', () => {
   test('should skip border:unset', passthroughCSS('h1{border:unset}'));
 });
 
-describe('Order', () => {
+describe('Outline order', () => {
   test(
     'should order outline consistently',
     processCSS('h1{outline:solid red .6em}', 'h1{outline:.6em solid red}')
@@ -97,7 +134,7 @@ test(
   )
 );
 
-describe('Order', () => {
+describe('Flex-flow order', () => {
   test(
     'should order flex-flow',
     processCSS('h1{flex-flow: wrap column}', 'h1{flex-flow: column wrap}')
@@ -106,6 +143,23 @@ describe('Order', () => {
   test(
     'should order flex-flow (uppercase property and value)',
     processCSS('h1{FLEX-FLOW: WRAP COLUMN}', 'h1{FLEX-FLOW: COLUMN WRAP}')
+  );
+
+  test(
+    'should match escaped flex-flow keywords by decoded value',
+    processCSS('h1{flex-flow:wrap \\63 olumn}', 'h1{flex-flow:\\63 olumn wrap}')
+  );
+
+  test(
+    'should preserve unknown flex-flow functions instead of dropping them',
+    passthroughCSS('h1{flex-flow: wrap foo(column)}')
+  );
+
+  test(
+    'should preserve duplicate flex-flow keywords',
+    passthroughCSS(
+      'h1{flex-flow:row row wrap;flex-flow:nowrap wrap;flex-flow:column column-reverse}'
+    )
   );
 
   test(
@@ -135,6 +189,93 @@ test(
   processCSS(
     'h1 {border: solid red calc(20px - 10px);}',
     'h1 {border: calc(20px - 10px) solid red;}'
+  )
+);
+
+test(
+  'transition only classifies time dimensions as times',
+  processCSS(
+    'a{transition:opacity 10px ease 1s;transition:color 2deg ease 3;}',
+    'a{transition:opacity 10px 1s ease;transition:color 2deg 3 ease;}'
+  )
+);
+
+test('preserves uncertain animation and transition math', () => {
+  const input =
+    'a{animation:fade calc(1s +) ease 2s;transition:opacity calc(1s / 1s) ease 2s}';
+  assert.strictEqual(
+    postcss([plugin()]).process(input, { from: undefined }).css,
+    input
+  );
+});
+
+test('does not swap validated math durations and delays', () => {
+  const input =
+    'a{animation:calc(2s + 1s) fade ease 1s;transition:calc(2s + 1s) opacity ease 1s}';
+  assert.strictEqual(
+    postcss([plugin()]).process(input, { from: undefined }).css,
+    'a{animation:fade calc(2s + 1s) ease 1s;transition:opacity calc(2s + 1s) ease 1s}'
+  );
+});
+
+test('classifies nested comma-containing math durations', () => {
+  const input =
+    'a{animation:calc(min(1s, 2s) + 1s) fade ease 1s;transition:opacity min(calc(1s + 1s), 2s) ease 1s;transition:color calc(max(1s, 2s) - 1s) ease 1s}';
+  assert.strictEqual(
+    postcss([plugin()]).process(input, { from: undefined }).css,
+    'a{animation:fade calc(min(1s, 2s) + 1s) ease 1s;transition:opacity min(calc(1s + 1s), 2s) ease 1s;transition:color calc(max(1s, 2s) - 1s) ease 1s}'
+  );
+});
+
+test('preserves unsupported math functions in animation and transition', () => {
+  const input =
+    'a{animation:round(1s, 1s) fade ease 1s;transition:opacity abs(1s) ease 2s}';
+  assert.strictEqual(
+    postcss([plugin()]).process(input, { from: undefined }).css,
+    input
+  );
+});
+
+test('does not reuse stale raw declaration values after a mutation', async () => {
+  const mutate = {
+    postcssPlugin: 'mutate-value',
+    OnceExit(root) {
+      root.walkDecls('flex-flow', (decl) => {
+        decl.value = 'wrap column';
+      });
+    },
+  };
+  const result = await postcss([mutate, plugin()]).process(
+    'a{flex-flow:column wrap}',
+    { from: undefined }
+  );
+  assert.strictEqual(result.css, 'a{flex-flow:column wrap}');
+});
+
+test('preserves malformed values that cannot be safely reordered', () => {
+  const input =
+    'a{border:solid red 1px / blue;grid-column:2/;grid-row:/2;transition:opacity calc(1s +) ease}';
+  assert.strictEqual(
+    postcss([plugin()]).process(input, { from: undefined }).css,
+    input
+  );
+});
+
+test(
+  'preserves fractional unitless border widths',
+  processCSS('a{border:.5 solid red}', 'a{border:.5 solid red}')
+);
+
+test(
+  'preserves an inset() function in box-shadow',
+  passthroughCSS('a{box-shadow:red 2px 5px inset()}')
+);
+
+test(
+  'preserves box-shadow unknown functions as color-like terms',
+  processCSS(
+    'a{box-shadow:paint(foo) 2px 5px}',
+    'a{box-shadow:2px 5px paint(foo)}'
   )
 );
 
@@ -376,6 +517,13 @@ describe('Order', () => {
   );
 
   test(
+    'should preserve duplicate transition timing functions and times',
+    passthroughCSS(
+      'a{transition:width ease ease 1s;transition:width .5s 1s 2s 3s}'
+    )
+  );
+
+  test(
     'should order animation consistently (1)',
     passthroughCSS('animation: bounce 1s linear 2s 3 normal none running')
   );
@@ -553,7 +701,7 @@ describe('Order', () => {
   );
 });
 
-describe('Abort', () => {
+describe('Pass through', () => {
   test(
     'should abort ordering when a var is detected (animation)',
     passthroughCSS(
@@ -564,7 +712,7 @@ describe('Abort', () => {
   test(
     'should abort ordering when a var is detected (animation) (uppercase "var")',
     passthroughCSS(
-      'animation: bounce /*!wow*/ 1s var(--linear) 2s 5 normal none running'
+      'animation: bounce /*!wow*/ 1s VAR(--linear) 2s 5 normal none running'
     )
   );
 
@@ -675,11 +823,26 @@ test(
 );
 
 test(
+  'should not reorder columns when the width is a percentage',
+  passthroughCSS('h1 {columns: 2 50%;columns: 50% 2;}')
+);
+
+test(
   'should not crash on invalid columns declarations',
   processCSS(
     'h1 {columns: 2px 2px; columns: inherit 3rem; columns: 3rem 2 12em;}',
     'h1 {columns: 2px 2px; columns: 3rem inherit; columns: 3rem 2 12em;}'
   )
+);
+
+test(
+  'should preserve columns when a term cannot be classified',
+  passthroughCSS('h1{columns:2 20px calc(1px);columns:20px 2 invalid()}')
+);
+
+test(
+  'preserves calc() column widths as an intentional limitation',
+  passthroughCSS('h1{columns:2 calc(20px);columns:calc(20px) 2}')
 );
 
 describe('Order', () => {
@@ -700,11 +863,98 @@ describe('Order', () => {
   );
 
   test(
+    'should match grid-auto-flow keywords case-insensitively',
+    processCSS(
+      'a{grid-auto-flow:DENSE column;grid-column-gap:NORMAL 1px}',
+      'a{grid-auto-flow:column DENSE;grid-column-gap:NORMAL 1px}'
+    )
+  );
+
+  test(
+    'should preserve grid-auto-flow with an unknown term',
+    passthroughCSS('a{grid-auto-flow:dense junk row}')
+  );
+
+  test(
+    'should preserve duplicate grid-auto-flow keywords',
+    passthroughCSS('a{grid-auto-flow:row column;grid-auto-flow:dense dense}')
+  );
+
+  test(
     'should order grid-column-gap',
     processCSS(
       'grid-column-gap: normal; grid-column-gap: normal 3%; grid-column-gap: 3em normal;',
       'grid-column-gap: normal; grid-column-gap: normal 3%; grid-column-gap: normal 3em;'
     )
+  );
+
+  test(
+    'should preserve duplicate grid gap keywords',
+    passthroughCSS('a{grid-column-gap:normal normal}')
+  );
+
+  test(
+    'should preserve invalid grid-line combinations',
+    passthroughCSS(
+      'a{grid-column:foo span bar / 4;grid-column:span foo bar / 4;grid-column:2 foo bar / 4;grid-column:span span / 4;grid-column:2 / 3 / 4}'
+    )
+  );
+
+  test(
+    'should preserve grid-lines with two integers or an auto companion',
+    passthroughCSS(
+      'a{grid-column:2 3 / 4;grid-column:2 auto / 4;grid-column:auto 3 / 4}'
+    )
+  );
+
+  test(
+    'should normalize negative ordinary grid-line integers',
+    processCSS('a{grid-column:foo -2 / 3}', 'a{grid-column:-2 foo / 3}')
+  );
+
+  test(
+    'should preserve fractional and negative span integers',
+    passthroughCSS('a{grid-column:span 1.5 / 2;grid-column:span -2 / 2}')
+  );
+
+  test(
+    'should preserve excluded grid custom-ident keywords',
+    passthroughCSS(
+      'a{grid-column:SpAn 2 / 3;grid-column:DeFaUlT 2 / 3;grid-column:ReVeRt-LaYeR 2 / 3;grid-column:\\61 uto 2 / 3}'
+    )
+  );
+
+  test(
+    'should preserve zero integers and CSS-wide keywords in grid-lines',
+    passthroughCSS(
+      'a{grid-column:0 / 2;grid-column:0 span / 2;grid-column:span 0 / 2;grid-column:initial / 2;grid-column:2 inherit / 3;grid-column:span -2 / 2}'
+    )
+  );
+
+  test(
+    'should normalize none as a grid custom-ident',
+    processCSS('a{grid-column:none span / 2}', 'a{grid-column:span none / 2}')
+  );
+
+  test(
+    'should normalize span grid-lines with an integer and custom-ident',
+    processCSS(
+      'a{grid-column:foo 2 span / 4;grid-row-start:span 2 foo}',
+      'a{grid-column:span 2 foo / 4;grid-row-start:span 2 foo}'
+    )
+  );
+
+  test(
+    'should match escaped and mixed-case grid identifiers',
+    processCSS(
+      'a{grid-column:N\\6eNe SpAn / 2}',
+      'a{grid-column:SpAn N\\6eNe / 2}'
+    )
+  );
+
+  test(
+    'should preserve a bare span grid-line',
+    passthroughCSS('a{grid-column:2/span;grid-column:span / 2}')
   );
 
   test(
@@ -719,7 +969,15 @@ describe('Order', () => {
     'should order grid-column',
     processCSS(
       'grid-column: 2 / 4; grid-column: 2 span / 7; grid-column: auto;grid-column: 3;grid-column: custom-indent-name / 3;',
-      'grid-column: 2 /  4; grid-column: span 2 /  7; grid-column: auto;grid-column: 3;grid-column: custom-indent-name /  3;'
+      'grid-column: 2 / 4; grid-column: span 2 / 7; grid-column: auto;grid-column: 3;grid-column: custom-indent-name / 3;'
+    )
+  );
+
+  test(
+    'should preserve nested slashes while ordering grid lines',
+    processCSS(
+      'a{grid-column:2/span min(1px/2px);}',
+      'a{grid-column:2/span min(1px/2px);}'
     )
   );
 
@@ -727,39 +985,40 @@ describe('Order', () => {
     'should order grid-row',
     processCSS(
       'grid-row: 2 / 4; grid-row: 2 span / 7; grid-row: auto;grid-row: 3;grid-row: custom-indent-name / 3;',
-      'grid-row: 2 /  4; grid-row: span 2 /  7; grid-row: auto;grid-row: 3;grid-row: custom-indent-name /  3;'
+      'grid-row: 2 / 4; grid-row: span 2 / 7; grid-row: auto;grid-row: 3;grid-row: custom-indent-name / 3;'
     )
   );
 
   test(
-    'should order grid-row-start',
-    processCSS(
-      'grid-row-start: 2 / 4; grid-row-start: 2 span / 7; grid-row-start: auto;grid-row-start: 3;grid-row-start: custom-indent-name / 3;',
-      'grid-row-start: 2 /  4; grid-row-start: span 2 /  7; grid-row-start: auto;grid-row-start: 3;grid-row-start: custom-indent-name /  3;'
+    'should preserve slashes in grid-row-start (single grid-line longhand)',
+    passthroughCSS(
+      'grid-row-start: 2 / 4; grid-row-start: 2 span / 7; grid-row-start: custom-indent-name / 3;'
     )
   );
 
   test(
-    'should order grid-row-end',
-    processCSS(
-      'grid-row-end: 2 / 4; grid-row-end: 2 span / 7; grid-row-end: auto;grid-row-end: 3;grid-row-end: custom-indent-name / 3;',
-      'grid-row-end: 2 /  4; grid-row-end: span 2 /  7; grid-row-end: auto;grid-row-end: 3;grid-row-end: custom-indent-name /  3;'
+    'should normalize a single-line span in grid-row-start',
+    processCSS('grid-row-start: 2 span', 'grid-row-start: span 2')
+  );
+
+  test(
+    'should preserve slashes in grid-row-end (single grid-line longhand)',
+    passthroughCSS(
+      'grid-row-end: 2 / 4; grid-row-end: 2 span / 7; grid-row-end: custom-indent-name / 3;'
     )
   );
 
   test(
-    'should order grid-column-start',
-    processCSS(
-      'grid-column-start: 2 / 4; grid-column-start: 2 span / 7; grid-column-start: auto;grid-column-start: 3;grid-column-start: custom-indent-name / 3;',
-      'grid-column-start: 2 /  4; grid-column-start: span 2 /  7; grid-column-start: auto;grid-column-start: 3;grid-column-start: custom-indent-name /  3;'
+    'should preserve slashes in grid-column-start (single grid-line longhand)',
+    passthroughCSS(
+      'grid-column-start: 2 / 4; grid-column-start: 2 span / 7; grid-column-start: custom-indent-name / 3;'
     )
   );
 
   test(
-    'should order grid-column-end',
-    processCSS(
-      'grid-column-end: 2 / 4; grid-column-end: 2 span / 7; grid-column-end: auto;grid-column-end: 3;grid-column-end: custom-indent-name / 3;',
-      'grid-column-end: 2 /  4; grid-column-end: span 2 /  7; grid-column-end: auto;grid-column-end: 3;grid-column-end: custom-indent-name /  3;'
+    'should preserve slashes in grid-column-end (single grid-line longhand)',
+    passthroughCSS(
+      'grid-column-end: 2 / 4; grid-column-end: 2 span / 7; grid-column-end: custom-indent-name / 3;'
     )
   );
 
@@ -803,6 +1062,22 @@ describe('Order', () => {
             list-style-type: none;
      *
      */
+  );
+
+  test(
+    'should order list-style none as the image when type is already set',
+    processCSS(
+      'ul{list-style: inside none disc}',
+      'ul{list-style: none disc inside}'
+    )
+  );
+
+  test(
+    'should preserve list-style with one or two none tokens',
+    processCSS(
+      'ul{list-style:inside none;list-style:none inside none}',
+      'ul{list-style:none inside;list-style:none none inside}'
+    )
   );
 
   test(
@@ -851,5 +1126,13 @@ describe('Order', () => {
   test(
     'should order list-style 13',
     passthroughCSS('ul{list-style: unknown unset none}')
+  );
+
+  test(
+    'should classify unquoted URLs as list-style images',
+    processCSS(
+      'a{list-style:inside url(icon.svg) none}',
+      'a{list-style:none inside url(icon.svg)}'
+    )
   );
 });

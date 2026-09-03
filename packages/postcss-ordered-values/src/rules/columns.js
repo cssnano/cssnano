@@ -1,7 +1,5 @@
-/**
- * @param {string} value
- * @return {boolean}
- */
+import { isDimension } from '../lib/tokenize.js';
+
 /** @param {import('../lib/tokenize.js').Term[]} columns */
 export default (columns) => {
   /** @type {string[]} */
@@ -9,12 +7,12 @@ export default (columns) => {
   /** @type {string[]} */
   const other = [];
   for (const term of columns) {
-    if (term.tokens.length === 1) {
-      if (term.tokens[0][0] === 'dimension-token') {
-        widths.push(term.raw);
-      } else {
-        other.push(term.raw);
-      }
+    // Multi-token terms (e.g. functions) cannot be classified safely.
+    if (term.tokens.length !== 1) return null;
+    if (isDimension(term)) {
+      widths.push(term.raw);
+    } else {
+      other.push(term.raw);
     }
   }
 

@@ -1,1 +1,1 @@
-{"version":3,"file":"animation.d.ts","sourceRoot":"","sources":["../../src/rules/animation.js"],"names":[],"mappings":"AA0JA;;;GAGG;AACH,iBAAS,kBAAkB,CAAC,MAAM,EAHvB;IAAE,SAAS,EAAE,OAAO,oBAAoB,EAAE,IAAI,EAAE,EAAE,CAAA;CAG3B,GAFtB,MAAM,CAIjB;eAEc,kBAAkB"}
+{"version":3,"file":"animation.d.ts","sourceRoot":"","sources":["../../src/rules/animation.js"],"names":[],"mappings":"AA0HA;;;GAGG;AACH,iBAAS,kBAAkB,CAAC,MAAM,EAHvB;IAAE,SAAS,EAAE,OAAO,oBAAoB,EAAE,IAAI,EAAE,EAAE,CAAA;CAG3B,GAFtB,MAAM,GAAG,IAAI,CAKxB;eAEc,kBAAkB"}
