@@ -1,4 +1,6 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
+
+const { TokenType, decoded, tokens } = cssnanoUtils;
 
 const closing = new Set([
   TokenType.CloseParen,
@@ -18,11 +20,6 @@ const expectedClosing = new Map([
  *
  * @typedef {{ raw: string, tokens: import('@csstools/css-tokenizer').CSSToken[] }} Term
  */
-
-/** @param {import('@csstools/css-tokenizer').CSSToken} token */
-function decoded(token) {
-  return /** @type {{ value?: string }} */ (token[4]).value;
-}
 
 /** @param {Term} term */
 function name(term) {
@@ -99,7 +96,7 @@ function tokenizeValue(value) {
   /** @type {import('@csstools/css-tokenizer').CSSToken[]} */
   let current = [];
   let raw = '';
-  /** @type {TokenType[]} */
+  /** @type {string[]} */
   const stack = [];
   let abort = false;
   const hasCssLoaderImport = value.includes('___CSS_LOADER_IMPORT___');
@@ -115,7 +112,7 @@ function tokenizeValue(value) {
     raw = '';
   };
 
-  for (const token of tokenize({ css: value })) {
+  for (const token of tokens(value)) {
     const type = token[0];
     if (type === TokenType.EOF) continue;
     if (

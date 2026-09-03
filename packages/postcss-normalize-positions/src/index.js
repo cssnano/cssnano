@@ -1,10 +1,6 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 
-/** @param {CSSToken} token @return {string} */
-const decoded = (token) => {
-  const value = /** @type {{value?: unknown}} */ (token[4])?.value;
-  return typeof value === 'string' ? value : token[1];
-};
+const { TokenType, decoded, tokenEnd, tokenStart, tokens } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 const directionKeywords = new Set(['top', 'right', 'bottom', 'left', 'center']);
@@ -25,10 +21,10 @@ const propFilterRegex =
 
 /** @param {CSSToken} token */ const isMathFunction = (token) =>
   token[0] === TokenType.Function &&
-  mathFunctions.has(decoded(token).toLowerCase());
+  mathFunctions.has(String(decoded(token)).toLowerCase());
 /** @param {CSSToken} token */ const isVariableFunction = (token) =>
   token[0] === TokenType.Function &&
-  variableFunctions.has(decoded(token).toLowerCase());
+  variableFunctions.has(String(decoded(token)).toLowerCase());
 /** @param {CSSToken} token */ const isNumber = (token) =>
   token[0] === TokenType.Number ||
   token[0] === TokenType.Percentage ||
@@ -56,14 +52,14 @@ function depthChange(type) {
 function isPositionTerm(token) {
   return (
     (token[0] === TokenType.Ident &&
-      directionKeywords.has(decoded(token).toLowerCase())) ||
+      directionKeywords.has(String(decoded(token)).toLowerCase())) ||
     isNumber(token) ||
     isMathFunction(token)
   );
 }
 
-/** @param {CSSToken[]} tokens */
-function positionLayers(tokens) {
+/** @param {CSSToken[]} input */
+function positionLayers(input) {
   /** @type {CSSToken[][]} */ const layers = [];
   /** @type {CSSToken[]} */ let terms = [];
   let depth = 0;
@@ -73,7 +69,7 @@ function positionLayers(tokens) {
     terms = [];
     stopped = false;
   };
-  for (const token of tokens) {
+  for (const token of input) {
     if (token[0] === TokenType.EOF) break;
     if (depth === 0 && token[0] === TokenType.Comma) {
       flush();
@@ -97,15 +93,15 @@ function positionLayers(tokens) {
  * @return {string}
  */
 function transform(value) {
-  /** @type {CSSToken[]} */ const tokens = [...tokenize({ css: value })];
-  return applyPositionReplacements(value, positionLayers(tokens));
+  const input = tokens(value);
+  return applyPositionReplacements(value, positionLayers(input));
 }
 
 /** @param {CSSToken} token @return {[number, number, string] | undefined} */
 function singlePositionReplacement(token) {
-  const keyword = decoded(token).toLowerCase();
+  const keyword = String(decoded(token)).toLowerCase();
   const output = keyword === 'center' ? center : horizontal.get(keyword);
-  return output ? [token[2], token[3] + 1, output] : undefined;
+  return output ? [tokenStart(token), tokenEnd(token), output] : undefined;
 }
 
 /** @param {string} value @param {CSSToken} firstToken @param {CSSToken} secondToken @param {string} first @param {string} second @param {string | undefined} firstOutput @param {string | undefined} secondOutput @return {[number, number, string] | undefined} */
@@ -125,16 +121,16 @@ function axisSwapReplacement(
   const left = verticalValue.has(first) ? secondOutput : firstOutput;
   const right = verticalValue.has(first) ? firstOutput : secondOutput;
   return [
-    firstToken[2],
-    secondToken[3] + 1,
+    tokenStart(firstToken),
+    tokenEnd(secondToken),
     left + value.slice(firstToken[3] + 1, secondToken[2]) + right,
   ];
 }
 
 /** @param {string} value @param {CSSToken} firstToken @param {CSSToken} secondToken @return {[number, number, string] | undefined} */
 function twoPositionReplacement(value, firstToken, secondToken) {
-  const first = decoded(firstToken).toLowerCase();
-  const second = decoded(secondToken).toLowerCase();
+  const first = String(decoded(firstToken)).toLowerCase();
+  const second = String(decoded(secondToken)).toLowerCase();
   const firstOutput = horizontal.get(first) || verticalValue.get(first);
   const secondOutput = horizontal.get(second) || verticalValue.get(second);
   if (second === 'center') {
@@ -150,15 +146,15 @@ function twoPositionReplacement(value, firstToken, secondToken) {
         ? center
         : value.slice(firstToken[2], secondToken[2]).trimEnd());
     return [
-      firstToken[2],
+      tokenStart(firstToken),
       afterSecond + (slashFollows ? whitespace.length : 0),
       output + (slashFollows ? whitespace[0] || '' : ''),
     ];
   }
   if (first === 'center' && horizontal.has(second))
     return [
-      firstToken[2],
-      secondToken[3] + 1,
+      tokenStart(firstToken),
+      tokenEnd(secondToken),
       /** @type {string} */ (secondOutput),
     ];
   return axisSwapReplacement(

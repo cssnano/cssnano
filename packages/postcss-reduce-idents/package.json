@@ -39,9 +39,10 @@
     "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "dependencies": {
-    "@csstools/css-tokenizer": "catalog:"
+    "cssnano-utils": "workspace:^"
   },
   "devDependencies": {
+    "@csstools/css-tokenizer": "catalog:",
     "@webref/css": "catalog:",
     "postcss": "catalog:"
   },
