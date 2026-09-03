@@ -24,6 +24,7 @@ const classNames = [
 const ids = ['id1', 'id2', 'main', 'sidebar', 'content'];
 const attributes = ['href', 'data-test', 'aria-label', 'title', 'type'];
 const attributeValues = ['value1', 'value2', 'test', 'button'];
+const escapedNames = ['.\\61 ', '.\\31 23', '.private-\\e000'];
 const pseudoClasses = [
   ':hover',
   ':focus',
@@ -35,6 +36,9 @@ const pseudoClasses = [
   ':nth-child(1)',
   ':nth-child(2n)',
   ':nth-of-type(1)',
+  ':nth-child(2n of .foo, #main)',
+  ':is(:where(.foo, .bar), :not(.baz))',
+  ':has(> .selected)',
 ];
 const pseudoClassesForIs = [':hover', ':focus', ':link', ':visited'];
 
@@ -88,13 +92,16 @@ function simpleSelector(rng) {
     }
   }
 
+  if (rng.chance(0.15)) parts.push(rng.pick(escapedNames));
+
   if (rng.chance(0.3)) {
     const attr = rng.pick(attributes);
     const value = rng.pick(attributeValues);
     const modes = ['', '~=', '^=', '$=', '*=', '|='];
     const mode = rng.pick(modes);
     if (mode) {
-      parts.push(`[${attr}${mode}"${value}"]`);
+      const modifier = rng.chance(0.25) ? ` ${rng.pick(['i', 's'])}` : '';
+      parts.push(`[${attr}${mode}"${value}"${modifier}]`);
     } else {
       parts.push(`[${attr}]`);
     }
