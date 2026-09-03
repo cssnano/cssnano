@@ -232,6 +232,30 @@ function changeChildQuotes(childNodes, parentQuote) {
 
 /**
  * @param {string} value
+ * @return {boolean}
+ */
+function isClosedString(value) {
+  if (
+    value.length < 2 ||
+    (value[0] !== L_SINGLE_QUOTE && value[0] !== L_DOUBLE_QUOTE)
+  ) {
+    return false;
+  }
+
+  let backslashes = 0;
+  for (
+    let index = value.length - 2;
+    index >= 0 && value[index] === '\\';
+    index--
+  ) {
+    backslashes++;
+  }
+
+  return value.at(-1) === value[0] && backslashes % 2 === 0;
+}
+
+/**
+ * @param {string} value
  * @param {'single' | 'double'} preferredQuote
  * @return {string}
  */
@@ -240,33 +264,30 @@ function normalize(value, preferredQuote) {
     return value;
   }
 
-  /** @type {[number, number, string][]} */
-  const replacements = [];
-  for (const token of tokenize({ css: value })) {
-    if (token[0] !== TokenType.String) continue;
-    const raw = token[1];
+  const chunks = [];
+  let cursor = 0;
+  for (const [type, raw, start, end] of tokenize({ css: value })) {
+    if (type !== TokenType.String) continue;
+    if (!isClosedString(raw)) continue;
     const quote = raw[0];
-    // An EOF-terminated string has no closing quote to remove. For closed
-    // strings retain the raw escape spelling because it affects quote choice.
     const child = {
       quote,
-      value: raw.endsWith(quote) ? raw.slice(1, -1) : token[4].value,
+      // The closure check makes removing both delimiters safe here. Keeping
+      // the raw interior preserves escapes for quote selection and output.
+      value: raw.slice(1, -1),
     };
     const ast = parse(child.value);
     if (ast.quotes) changeWrappingQuotes(child, ast);
     else
       child.quote =
         preferredQuote === C_SINGLE ? L_SINGLE_QUOTE : L_DOUBLE_QUOTE;
-    replacements.push([
-      token[2],
-      token[3] + 1,
-      child.quote + stringify(ast) + child.quote,
-    ]);
+    chunks.push(value.slice(cursor, start));
+    chunks.push(child.quote + stringify(ast) + child.quote);
+    cursor = end + 1;
   }
-  let result = value;
-  for (const [start, end, replacement] of replacements.toReversed())
-    result = result.slice(0, start) + replacement + result.slice(end);
-  return result;
+  if (cursor === 0) return value;
+  chunks.push(value.slice(cursor));
+  return chunks.join('');
 }
 
 /**
