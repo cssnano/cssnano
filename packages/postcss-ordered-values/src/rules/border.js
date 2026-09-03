@@ -64,7 +64,7 @@ function normalizeBorder(border) {
       }
     }
   }
-  return `${order.width} ${order.style} ${order.color}`.trim();
+  return [order.width, order.style, order.color].filter(Boolean).join(' ');
 }
 
 export default normalizeBorder;
