@@ -6,7 +6,9 @@
  *   | 'an-plus-b-of'
  *   | 'an-plus-b'
  *   | 'ident-or-string-list'
+ *   | 'ident-list'
  *   | 'ident'
+ *   | 'pt-name-selector'
  * } ArgumentGrammar
  */
 
@@ -31,6 +33,19 @@ export const pseudoElements = new Set([
   'file-selector-button',
   'target-text',
   'cue',
+]);
+
+export const functionalPseudoElements = new Set([
+  'slotted',
+  'part',
+  'highlight',
+  'view-transition-group',
+  'view-transition-image-pair',
+  'view-transition-old',
+  'view-transition-new',
+  'view-transition-group-children',
+  'cue',
+  'cue-region',
 ]);
 
 export const operators = new Set(['=', '~', '|=', '^', '$', '*']);
@@ -64,4 +79,12 @@ export const selectorGrammar = new Map([
   ['nth-last-col', 'an-plus-b'],
   ['lang', 'ident-or-string-list'],
   ['dir', 'ident'],
+  ['state', 'ident'],
+  ['part', 'ident-list'],
+  ['highlight', 'ident'],
+  ['view-transition-group', 'pt-name-selector'],
+  ['view-transition-image-pair', 'pt-name-selector'],
+  ['view-transition-old', 'pt-name-selector'],
+  ['view-transition-new', 'pt-name-selector'],
+  ['view-transition-group-children', 'pt-name-selector'],
 ]);
