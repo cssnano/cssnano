@@ -128,6 +128,17 @@ export const benchmarkCases = {
         `.columns-${index}{columns:12em auto;column-width:${index + 1}px;column-count:2}`
     ).join(''),
   },
+  'minify-font-values-shorthands': {
+    plugin: 'postcss-minify-font-values',
+    createProcessor() {
+      return pluginProcessor('postcss-minify-font-values');
+    },
+    css: Array.from(
+      { length: 1000 },
+      (_, index) =>
+        `.font-${index}{font:bold italic 16px/1.5 "Font Family ${index}",Arial,sans-serif}`
+    ).join(''),
+  },
   'merge-longhand-columns-height-guard': {
     plugin: 'postcss-merge-longhand',
     createProcessor() {

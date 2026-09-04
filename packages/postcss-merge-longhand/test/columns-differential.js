@@ -27,7 +27,9 @@ function legacyCanExplode(value) {
   return used.size === roles.filter((role) => role !== 'initial').length;
 }
 
-for (const value of ['12em 3', '3 12em', 'auto 3', '2.5', '12\\65 m']) {
+// Escaped units are intentionally excluded: the tokenizer decodes them, while
+// the frozen legacy classifier treated their raw spelling as an unknown unit.
+for (const value of ['12em 3', '3 12em', 'auto 3', '2.5']) {
   test(`tokenizer columns agree with frozen legacy classifier for ${value}`, () => {
     const root = postcss.parse(`h1{columns:${value}}`);
     const rule = root.first;

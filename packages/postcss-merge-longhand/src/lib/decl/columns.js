@@ -95,10 +95,10 @@ const closingTokens = new Set([
 
 /**
  * @param {string} value
- * @return {{ value: string, hasTopLevelSlash: boolean, terms: { start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown, rawUnit: string }[] }}
+ * @return {{ value: string, hasTopLevelSlash: boolean, terms: { start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown }[] }}
  */
 function tokenizeColumns(value) {
-  /** @type {{ start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown, rawUnit: string }[]} */
+  /** @type {{ start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown }[]} */
   const terms = [];
   let start = -1;
   let end = -1;
@@ -106,19 +106,17 @@ function tokenizeColumns(value) {
   let type = TokenType.EOF;
   /** @type {unknown} */
   let decoded;
-  let rawUnit = '';
   let depth = 0;
   let hasTopLevelSlash = false;
 
   const push = () => {
     if (!tokenCount) return;
-    terms.push({ start, end, tokenCount, type, decoded, rawUnit });
+    terms.push({ start, end, tokenCount, type, decoded });
     start = -1;
     end = -1;
     tokenCount = 0;
     type = TokenType.EOF;
     decoded = undefined;
-    rawUnit = '';
   };
 
   for (const token of tokens(value)) {
@@ -136,12 +134,6 @@ function tokenizeColumns(value) {
         tokenType
       );
       decoded = token[4];
-      if (tokenType === TokenType.Dimension) {
-        rawUnit = token[1].replace(
-          /^[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/,
-          ''
-        );
-      }
     }
     if (depth === 0 && tokenType === TokenType.Delim && token[1] === '/')
       hasTopLevelSlash = true;
@@ -232,17 +224,19 @@ function isPositiveInteger(term) {
  * @return {boolean}
  */
 function isValidLength(term) {
-  const num =
-    /** @type {{ value?: number, signCharacter?: string } | undefined} */ (
-      term.decoded
+  const { value, type, signCharacter, unit } =
+    /** @type {{ value?: number, type?: string, signCharacter?: string, unit?: string }} */ (
+      term.decoded ?? {}
     );
   return (
     term.tokenCount === 1 &&
     term.type === TokenType.Dimension &&
-    lengthUnits.has(term.rawUnit.toLowerCase()) &&
-    typeof num?.value === 'number' &&
-    num.value >= 0 &&
-    num.signCharacter !== '-'
+    typeof unit === 'string' &&
+    lengthUnits.has(unit.toLowerCase()) &&
+    (type === 'integer' || type === 'number') &&
+    typeof value === 'number' &&
+    value >= 0 &&
+    signCharacter !== '-'
   );
 }
 

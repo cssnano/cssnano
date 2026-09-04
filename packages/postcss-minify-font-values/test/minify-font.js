@@ -49,6 +49,46 @@ test('tabs and newlines', () => {
   );
 });
 
+test('minifies plain, uppercase, and escaped bold weights', () => {
+  for (const [weight, expected] of [
+    ['bold', '700'],
+    ['BOLD', '700'],
+    ['b\\6f ld', '700'],
+  ]) {
+    assert.equal(
+      minifyFont(`${weight} 16px Arial`, { removeQuotes: true }),
+      `${expected} 16px Arial`,
+      weight
+    );
+  }
+});
+
+test('does not minify bold inside a compound identifier', () => {
+  const value = 'semi-bold 16px Arial';
+  assert.equal(minifyFont(value, { removeQuotes: true }), value);
+});
+
+test('does not minify quoted or unquoted families named bold', () => {
+  for (const value of ['16px bold', '16px "bold"']) {
+    assert.equal(minifyFont(value, { removeQuotes: false }), value);
+  }
+});
+
+test('does not minify bold in nested or post-size content', () => {
+  for (const value of [
+    'calc(bold) Arial',
+    'b/**/old 16px Arial',
+    '16px bold serif',
+  ]) {
+    assert.equal(minifyFont(value, { removeQuotes: true }), value);
+  }
+});
+
+test('preserves duplicate pre-size bold weights unchanged', () => {
+  const value = 'bold bold 16px "Helvetica Neue", serif';
+  assert.equal(minifyFont(value, { removeQuotes: true }), value);
+});
+
 test('preserves a functional font size and line height', () => {
   assert.equal(
     minifyFont(

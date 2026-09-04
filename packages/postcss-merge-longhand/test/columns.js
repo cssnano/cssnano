@@ -308,8 +308,27 @@ suite('invalid-value handling', () => {
   );
 
   test(
-    'should reject escaped units while preserving their spelling',
-    passthroughCSS('h1{columns:12\\65 m}')
+    'should recognize an escaped length unit and preserve its spelling',
+    processCSS('h1{columns:3 12\\65 m}', 'h1{columns:12\\65 m 3}')
+  );
+
+  test('should classify ordinary length units case-insensitively', () => {
+    return Promise.all([
+      processCSS('h1{columns:3 12em}', 'h1{columns:12em 3}')(),
+      processCSS('h1{columns:3 12EM}', 'h1{columns:12EM 3}')(),
+    ]);
+  });
+
+  test('should classify decimal and exponent-form dimensions', () => {
+    return Promise.all([
+      processCSS('h1{columns:3 .5em}', 'h1{columns:.5em 3}')(),
+      processCSS('h1{columns:3 1e2em}', 'h1{columns:1e2em 3}')(),
+    ]);
+  });
+
+  test(
+    'should preserve an escaped unknown dimension unit',
+    passthroughCSS('h1{columns:12\\66 oo 2}')
   );
 
   test(
