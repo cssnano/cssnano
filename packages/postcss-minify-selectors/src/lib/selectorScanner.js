@@ -1,5 +1,5 @@
 import cssnanoUtils from 'cssnano-utils';
-import { unquote, isDeepBoundary, keepWhitespace } from './tokenUtils.js';
+import { unquote, isDeepBoundary } from './tokenUtils.js';
 import {
   pseudoElements,
   legacyPseudoElements,
@@ -29,7 +29,7 @@ import {
   consumeLeading,
 } from './triviaScanner.js';
 
-const { TokenType } = cssnanoUtils;
+const { TokenType, decoded } = cssnanoUtils;
 /** @type {typeof cssnanoUtils.balancedTokens} */
 const balancedTokens = cssnanoUtils.balancedTokens;
 /** @typedef {import('./tokenUtils.js').CSSToken} CSSToken */
@@ -44,7 +44,6 @@ const balancedTokens = cssnanoUtils.balancedTokens;
  * @typedef {{
  *   output: (string | FunctionResult)[],
  *   specificity: Specificity,
- *   attributes: { operator: boolean, value: boolean }[],
  *   hasNamespace: boolean,
  *   hasPseudoElement: boolean,
  *   hasFunction: boolean,
@@ -91,33 +90,11 @@ function normalizeDoubleColonPseudo(state, tokens, index) {
   return true;
 }
 
-/** @param {{operator: boolean, value: boolean} | undefined} attribute @param {CSSToken} token @param {CSSToken | undefined} next */
-function updateAttribute(attribute, token, next) {
-  if (!attribute) return;
-  if (token[0] === TokenType.Delim) {
-    if (['=', '~', '^', '$', '*'].includes(token[1])) {
-      attribute.operator = true;
-    } else if (
-      token[1] === '|' &&
-      next?.[0] === TokenType.Delim &&
-      next[1] === '='
-    ) {
-      attribute.operator = true;
-    }
-  }
-  if (
-    attribute.operator &&
-    (token[0] === TokenType.Ident || token[0] === TokenType.String)
-  )
-    attribute.value = true;
-}
-
 /** @return {NormalizationState} */
 function createNormalizationState() {
   return {
     output: [],
     specificity: [0, 0, 0],
-    attributes: [],
     hasNamespace: false,
     hasPseudoElement: false,
     hasFunction: false,
@@ -140,23 +117,17 @@ function normalizeComment(state, tokens, index) {
     state.output.push(token[1]);
     return;
   }
-
-  if (state.attributes.length) {
-    state.hasAttributeModifier = true;
-    state.foldEligible = false;
-    state.output.push(' ');
-  }
 }
 
 /** @param {NormalizationState} state @param {readonly CSSToken[]} tokens @param {number} index */
 function normalizeWhitespace(state, tokens, index) {
   if (state.output.length === 0) return;
-  const attribute = state.attributes.at(-1);
-  if (state.attributes.length && attribute?.value) {
-    state.hasAttributeModifier = true;
-    state.foldEligible = false;
-  }
-  if (keepWhitespace(attribute, tokens[index - 1], tokens[index + 1]))
+  if (
+    tokens[index - 1]?.[0] !== TokenType.Comma &&
+    tokens[index + 1]?.[0] !== TokenType.Comma &&
+    tokens[index + 1]?.[0] !== TokenType.CloseParen &&
+    tokens[index + 1]?.[0] !== TokenType.CloseSquare
+  )
     state.output.push(' ');
 }
 
@@ -203,7 +174,6 @@ function updatePseudoSpecificity(state, next) {
 
 /** @param {NormalizationState} state @param {CSSToken} token @param {CSSToken | undefined} next @param {CSSToken | undefined} previous */
 function updateSpecificity(state, token, next, previous) {
-  if (state.attributes.length) return;
   updateSimpleSpecificity(state, token, next, previous);
   if (token[0] === TokenType.Colon) updatePseudoSpecificity(state, next);
 }
@@ -319,18 +289,6 @@ function normalizeStructuralToken(state, tokens, index) {
     normalizeComment(state, tokens, index);
     return true;
   }
-  if (type === TokenType.OpenSquare) {
-    state.attributes.push({ operator: false, value: false });
-    state.specificity[1]++;
-    state.output.push(token[1]);
-    return true;
-  }
-  if (type === TokenType.CloseSquare) {
-    const attribute = state.attributes.pop();
-    if (attribute?.operator && !attribute.value) state.valid = false;
-    state.output.push(token[1]);
-    return true;
-  }
   if (type === TokenType.Whitespace) {
     normalizeWhitespace(state, tokens, index);
     return true;
@@ -404,7 +362,6 @@ function normalizeDelimToken(
   }
   if (
     token[1] === '*' &&
-    !state.attributes.length &&
     normalizeUniversal(state, next, hasDefaultNamespace)
   ) {
     return { end: index, skipped: true };
@@ -421,10 +378,8 @@ function normalizeDelimToken(
 
 /** @param {NormalizationState} state @param {CSSToken} token */
 function normalizeStringToken(state, token) {
-  if (!state.attributes.length) state.valid = false;
-  return state.attributes.length
-    ? unquote(token[1]).replace(/\\\n/gu, '')
-    : token[1];
+  state.valid = false;
+  return token[1];
 }
 
 /** @param {CSSToken} token @param {CSSToken | undefined} next */
@@ -440,6 +395,191 @@ function normalizeIdentToken(token, next) {
     val = val.trimEnd();
   }
   return val;
+}
+
+/** @param {CSSToken | undefined} token @return {boolean} */
+function isAttributeNameToken(token) {
+  return (
+    token?.[0] === TokenType.Ident ||
+    (token?.[0] === TokenType.Delim && token[1] === '*')
+  );
+}
+
+/** @param {CSSToken | undefined} token @return {boolean} */
+function isAttributeLocalNameToken(token) {
+  return token?.[0] === TokenType.Ident;
+}
+
+/** @param {CSSToken | undefined} token @return {boolean} */
+function isTrivia(token) {
+  return (
+    token?.[0] === TokenType.Whitespace || token?.[0] === TokenType.Comment
+  );
+}
+
+/** @param {NormalizationState} state @param {readonly CSSToken[]} tokens @param {number} end @param {number} index */
+function consumeAttributeTrivia(state, tokens, end, index) {
+  let saw = false;
+  let cursor = index;
+  while (cursor < end && isTrivia(tokens[cursor])) {
+    saw = true;
+    if (
+      tokens[cursor][0] === TokenType.Comment &&
+      tokens[cursor][1].startsWith('/*!')
+    ) {
+      state.output.push(tokens[cursor][1]);
+    }
+    cursor++;
+  }
+  return { index: cursor, saw };
+}
+
+/** @param {readonly CSSToken[]} tokens @param {number} index */
+function parseAttributeName(tokens, index) {
+  const first = tokens[index];
+  if (!isAttributeNameToken(first) && first?.[1] !== '|') return;
+
+  if (first[1] === '|') {
+    const local = tokens[index + 1];
+    if (!isAttributeLocalNameToken(local)) return;
+    return {
+      name: `|${local[1]}`,
+      index: index + 2,
+      hasNamespace: true,
+    };
+  }
+
+  const separatorIndex = index + 1;
+  if (
+    tokens[separatorIndex]?.[1] !== '|' ||
+    tokens[separatorIndex + 1]?.[1] === '='
+  ) {
+    return first[1] === '*' ? undefined : { name: first[1], index: index + 1 };
+  }
+
+  const localIndex = separatorIndex + 1;
+  const local = tokens[localIndex];
+  if (!isAttributeLocalNameToken(local)) return;
+  return {
+    name: `${first[1]}|${local[1]}`,
+    index: localIndex + 1,
+    hasNamespace: true,
+  };
+}
+
+/** @param {readonly CSSToken[]} tokens @param {number} index */
+function parseAttributeMatcher(tokens, index) {
+  const first = tokens[index];
+  if (first?.[0] !== TokenType.Delim) return { operator: '', index };
+  if (first[1] === '=') return { operator: '=', index: index + 1 };
+  if (!['~', '|', '^', '$', '*'].includes(first[1]))
+    return { operator: '', index };
+  if (
+    tokens[index + 1]?.[0] !== TokenType.Delim ||
+    tokens[index + 1][1] !== '='
+  ) {
+    return { operator: undefined, index };
+  }
+  return { operator: `${first[1]}=`, index: index + 2 };
+}
+
+/** @param {NormalizationState} state @param {readonly CSSToken[]} tokens @param {number} end @param {{ index: number, saw: boolean }} trivia */
+function finishAttributeValue(state, tokens, end, trivia) {
+  const modifier = tokens[trivia.index];
+  if (modifier?.[0] !== TokenType.Ident) return trivia.index === end;
+  if (!trivia.saw || !['i', 's'].includes(decoded(modifier).toLowerCase())) {
+    return false;
+  }
+  // A modifier is a semantic folding boundary. Keep a separator even if its
+  // original whitespace was an ordinary comment.
+  state.output.push(' ', modifier[1]);
+  state.hasAttributeModifier = true;
+  state.foldEligible = false;
+  return (
+    consumeAttributeTrivia(state, tokens, end, trivia.index + 1).index === end
+  );
+}
+
+/**
+ * Normalize one complete attribute selector. Keeping this grammar separate from
+ * the outer selector scanner prevents whitespace removal from repairing a
+ * malformed attribute selector.
+ * @param {NormalizationState} state
+ * @param {readonly CSSToken[]} tokens
+ * @param {BalancedTokenStructure} structure
+ * @param {number} start
+ * @return {number}
+ */
+function normalizeAttribute(state, tokens, structure, start) {
+  const end = structure.endForOpening(start);
+  if (end === undefined || tokens[end]?.[0] !== TokenType.CloseSquare) {
+    state.valid = false;
+    return start;
+  }
+
+  state.output.push('[');
+  const leading = consumeAttributeTrivia(state, tokens, end, start + 1);
+  const parsedName = parseAttributeName(tokens, leading.index);
+  if (!parsedName) {
+    state.valid = false;
+    return end;
+  }
+  state.output.push(parsedName.name);
+  if (parsedName.hasNamespace) {
+    state.hasNamespace = true;
+    state.foldEligible = false;
+  }
+
+  const nameTrivia = consumeAttributeTrivia(
+    state,
+    tokens,
+    end,
+    parsedName.index
+  );
+  const matcher = parseAttributeMatcher(tokens, nameTrivia.index);
+  if (matcher.operator === undefined) {
+    state.valid = false;
+    return end;
+  }
+  const operator = matcher.operator;
+
+  if (!operator) {
+    const trailing = consumeAttributeTrivia(state, tokens, end, matcher.index);
+    if (trailing.index !== end) {
+      state.valid = false;
+      return end;
+    }
+    state.output.push(']');
+    state.specificity[1]++;
+    return end;
+  }
+
+  state.output.push(operator);
+  const trivia = consumeAttributeTrivia(state, tokens, end, matcher.index);
+  const value = tokens[trivia.index];
+  if (value?.[0] !== TokenType.Ident && value?.[0] !== TokenType.String) {
+    state.valid = false;
+    return end;
+  }
+  state.output.push(
+    value[0] === TokenType.String
+      ? unquote(value[1]).replace(/\\\n/gu, '')
+      : normalizeIdentToken(value, tokens[trivia.index + 1])
+  );
+
+  const valueTrivia = consumeAttributeTrivia(
+    state,
+    tokens,
+    end,
+    trivia.index + 1
+  );
+  if (!finishAttributeValue(state, tokens, end, valueTrivia)) {
+    state.valid = false;
+    return end;
+  }
+  state.output.push(']');
+  state.specificity[1]++;
+  return end;
 }
 
 /**
@@ -471,9 +611,6 @@ function normalizeToken(
   const previous = tokens[index - 1];
 
   if (normalizeStructuralToken(state, tokens, index)) return { end: index };
-
-  const attribute = state.attributes.at(-1);
-  updateAttribute(attribute, token, next);
 
   if (type === TokenType.Function)
     return normalizeFunctionToken(
@@ -610,7 +747,11 @@ function normalizeCompound(
 
   for (; index < end; index++) {
     const token = tokens[index];
-    if (state.attributes.length === 0) {
+    if (token[0] === TokenType.OpenSquare) {
+      index = normalizeAttribute(state, tokens, structure, index);
+      continue;
+    }
+    {
       if (token[0] === TokenType.Comma || checkCombinatorToken(tokens, index)) {
         return invalidCompound();
       }
@@ -623,20 +764,6 @@ function normalizeCompound(
         index = trivia.cursor - 1;
         continue;
       }
-    }
-
-    if (state.attributes.length > 0) {
-      index = handleAttributeToken(
-        state,
-        source,
-        tokens,
-        structure,
-        values,
-        index,
-        start,
-        end
-      );
-      continue;
     }
 
     const normalized = normalizeToken(
@@ -1267,38 +1394,6 @@ function recordCompound(compounds, compound, flags) {
  * @param {number} finish
  * @return {number}
  */
-function handleAttributeToken(
-  state,
-  source,
-  tokens,
-  structure,
-  values,
-  index,
-  compoundStart,
-  finish
-) {
-  const token = tokens[index];
-  if (token[0] === TokenType.Whitespace) {
-    normalizeWhitespace(state, tokens, index);
-    return index;
-  }
-  if (token[0] === TokenType.Comment) {
-    normalizeComment(state, tokens, index);
-    return index;
-  }
-  const normalized = normalizeToken(
-    state,
-    source,
-    tokens,
-    structure,
-    values,
-    index,
-    compoundStart,
-    finish
-  );
-  return normalized.end;
-}
-
 /**
  * @param {NormalizationState} state
  * @param {Compound[]} compounds
@@ -1458,21 +1553,12 @@ function parseComplex(
   for (; index < finish; index++) {
     const token = tokens[index];
 
-    if (state.attributes.length === 0 && token[0] === TokenType.Comma) {
+    if (token[0] === TokenType.Comma) {
       break;
     }
 
-    if (state.attributes.length > 0) {
-      index = handleAttributeToken(
-        state,
-        source,
-        tokens,
-        structure,
-        values,
-        index,
-        compoundStart,
-        finish
-      );
+    if (token[0] === TokenType.OpenSquare) {
+      index = normalizeAttribute(state, tokens, structure, index);
       continue;
     }
 

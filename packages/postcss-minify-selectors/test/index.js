@@ -183,6 +183,62 @@ suite(':not() pseudo-class', () => {
 
 suite('attribute selector normalization', () => {
   test(
+    'should preserve a modifier without an attribute value',
+    passthroughCSS('a[foo i]{color:blue}')
+  );
+
+  test(
+    'should preserve an attribute matcher with no value',
+    passthroughCSS('a[foo=]{color:blue}')
+  );
+
+  test(
+    'should treat i and s as identifier attribute values',
+    processCSS(
+      'a[foo= i],a[foo= s]{color:blue}',
+      'a[foo=i],a[foo=s]{color:blue}'
+    )
+  );
+
+  test(
+    'should preserve dash matchers in forgiving selector lists',
+    processCSS(
+      ':is([lang|=en],.ok){color:blue}',
+      ':is([lang|=en],.ok){color:blue}',
+      { sort: false }
+    )
+  );
+
+  test(
+    'should recognise escaped attribute modifiers',
+    processCSS(
+      ':is([foo=bar \\69],.ok){color:blue}',
+      ':is([foo=bar \\69],.ok){color:blue}',
+      { sort: false }
+    )
+  );
+
+  test(
+    'should preserve malformed attribute selector boundaries',
+    passthroughCSS(
+      'a[foo=bar baz],a[foo=bar i s],a[foo~ =bar],a[foo| =bar],a[ns | name=bar]{color:blue}'
+    )
+  );
+
+  test(
+    'should discard malformed attributes from forgiving selector lists',
+    processCSS(
+      ':is([foo i],.ok),:where([foo=],.also-ok){color:blue}',
+      ':is(.ok),:where(.also-ok){color:blue}'
+    )
+  );
+
+  test(
+    'should preserve malformed attributes in strict selector lists',
+    passthroughCSS(':not([foo i],.ok){color:blue}')
+  );
+
+  test(
     'should normalise attribute selectors',
     processCSS(
       'a[   color=   "blue"    ]{color:blue}',
@@ -848,6 +904,15 @@ suite('fold that fires', () => {
     processCSS(
       '[data-a] .item .x,[data-b] .item .x,[data-c] .item .x{color:red}',
       ':is([data-a],[data-b],[data-c]) .item .x{color:red}',
+      modernBl
+    )
+  );
+
+  test(
+    'no-fold: namespaced attribute selectors',
+    processCSS(
+      '.scope [ns|foo] .tail,.scope [ns|bar] .tail{color:red}',
+      '.scope [ns|bar] .tail,.scope [ns|foo] .tail{color:red}',
       modernBl
     )
   );

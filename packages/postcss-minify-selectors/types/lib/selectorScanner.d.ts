@@ -11,10 +11,6 @@ export type ArgumentGrammar = import('./grammar.js').ArgumentGrammar;
 export type NormalizationState = {
     output: (string | FunctionResult)[];
     specificity: Specificity;
-    attributes: {
-        operator: boolean;
-        value: boolean;
-    }[];
     hasNamespace: boolean;
     hasPseudoElement: boolean;
     hasFunction: boolean;

@@ -54,6 +54,105 @@ test('normalizes every attribute operator without leaking state between attribut
   );
 });
 
+test('preserves attribute matchers with missing values', () => {
+  for (const operator of ['=', '~=', '|=', '^=', '$=', '*=']) {
+    const selector = `[data${operator}]`;
+    assert.equal(normalizeList(selector, false, false), selector, selector);
+  }
+  for (const selector of ['[data=/**/]', '[data~=/**/]', '[data|=/**/]']) {
+    assert.equal(normalizeList(selector, false, false), selector, selector);
+  }
+});
+
+test('preserves unexpected identifiers in attribute selectors', () => {
+  for (const selector of [
+    '[data unexpected]',
+    '[data=value unexpected]',
+    '[data=value i unexpected]',
+    '[ns|data=value unexpected]',
+  ]) {
+    assert.equal(normalizeList(selector, false, false), selector, selector);
+  }
+});
+
+test('preserves invalid attribute modifiers', () => {
+  for (const selector of [
+    '[data=value x]',
+    '[data=value i s]',
+    '[data=value/**/x]',
+    '[data=value/**/i/**/x]',
+  ]) {
+    assert.equal(normalizeList(selector, false, false), selector, selector);
+  }
+});
+
+test('normalizes every namespaced attribute-selector form', () => {
+  const forms = ['data', 'ns|data', '*|data', '|data'];
+  for (const form of forms) {
+    const selector = `[/**/${form}/**/=/**/value/**/]`;
+    assert.equal(
+      normalizeList(selector, false, false),
+      `[${form}=value]`,
+      selector
+    );
+  }
+});
+
+test('preserves wildcard local names in attribute selectors', () => {
+  for (const selector of ['[ns|*]', '[*|*]', '[|*]', '[*]']) {
+    assert.equal(normalizeList(selector, false, false), selector, selector);
+  }
+});
+
+test('removes ordinary comments around attribute-selector boundaries', () => {
+  const cases = [
+    ['[/**/data/**/]', '[data]'],
+    ['[/**/data/**/=/**/value/**/]', '[data=value]'],
+    ['[data/**/=/**/value/**/i/**/]', '[data=value i]'],
+  ];
+  for (const [input, expected] of cases) {
+    assert.equal(normalizeList(input, false, false), expected, input);
+  }
+});
+
+test('preserves important comments around attribute-selector boundaries', () => {
+  const input =
+    '[/*! name */data/*! operator */=/*! value */value/*! modifier */i/*! close */]';
+  assert.equal(
+    normalizeList(input, false, false),
+    '[/*! name */data/*! operator */=/*! value */value/*! modifier */ i/*! close */]'
+  );
+});
+
+test('preserves comments that split a namespaced attribute name', () => {
+  for (const selector of ['[ns /**/|data=value]', '[* /**/|data=value]']) {
+    assert.equal(normalizeList(selector, false, false), selector, selector);
+  }
+});
+
+test('preserves comments that split any part of a namespaced attribute name', () => {
+  for (const selector of [
+    '[ns/**/|data=value]',
+    '[ns|/**/data=value]',
+    '[*|/**/data=value]',
+    '[|/**/data=value]',
+  ]) {
+    assert.equal(normalizeList(selector, false, false), selector, selector);
+  }
+});
+
+test('normalizes wide attribute compounds in one linear scan', () => {
+  const input = Array.from(
+    { length: 3000 },
+    (_, index) => `[data-${index} = value-${index} i]`
+  ).join('');
+  const expected = Array.from(
+    { length: 3000 },
+    (_, index) => `[data-${index}=value-${index} i]`
+  ).join('');
+  assert.equal(normalizeList(input, false, false), expected);
+});
+
 test('normalizes nested selector-list functions and nth formulas', () => {
   const input =
     ':is( .b, :not( .a, .a ), :where("a,b", .x /* comment */), .b, .\\61 )';
