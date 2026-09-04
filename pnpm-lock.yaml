@@ -205,6 +205,9 @@ settings:
 
 catalogs:
   default:
+    '@colordx/core':
+      specifier: ^6.1.0
+      version: 6.1.0
     '@webref/css':
       specifier: 8.7.3
       version: 8.7.3
@@ -419,7 +422,7 @@ importers:
   packages/postcss-colormin:
     dependencies:
       '@colordx/core':
-        specifier: ^6.1.0
+        specifier: 'catalog:'
         version: 6.1.0
       browserslist:
         specifier: 'catalog:'
@@ -562,7 +565,7 @@ importers:
   packages/postcss-minify-gradients:
     dependencies:
       '@colordx/core':
-        specifier: ^6.1.0
+        specifier: 'catalog:'
         version: 6.1.0
       cssnano-utils:
         specifier: workspace:^

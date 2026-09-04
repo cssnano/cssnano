@@ -43,7 +43,7 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "@colordx/core": "^6.1.0",
+    "@colordx/core": "catalog:",
     "browserslist": "catalog:",
     "caniuse-api": "^4.0.0",
     "postcss-value-parser": "^4.2.0"
