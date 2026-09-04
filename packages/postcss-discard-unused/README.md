@@ -65,7 +65,7 @@ h2 {
 
 However, you can mitigate this by including [postcss-minify-font-values][mfv]
 *before* this plugin, which will take care of normalising quotes, and
-deduplicating. For more examples, see the [tests](src/__tests__/index.js).
+deduplicating. For more examples, see the [tests](test).
 
 
 ## Usage

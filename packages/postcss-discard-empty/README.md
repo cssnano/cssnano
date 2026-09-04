@@ -12,7 +12,7 @@ npm install postcss-discard-empty --save
 
 ## Example
 
-For more examples see the [tests](src/__tests__/index.js).
+For more examples see the [tests](test).
 
 ### Input
 

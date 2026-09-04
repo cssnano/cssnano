@@ -13,7 +13,7 @@ npm install postcss-reduce-transforms --save
 ## Example
 
 This module will reduce transform functions where possible. For more examples,
-see the [tests](src/__tests__/index.js).
+see the [tests](test).
 
 ### Input
 

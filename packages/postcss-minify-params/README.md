@@ -1,4 +1,4 @@
-# postcss-minify-params [![Build Status][ci-img]][ci]
+# postcss-minify-params
 
 > Minify at-rule params with PostCSS.
 
@@ -35,5 +35,3 @@ See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/main/CONTRIBUTORS.
 MIT © [Bogdan Chadkin](mailto:trysound@yandex.ru)
 
 [PostCSS]: https://github.com/postcss/postcss
-[ci-img]:  https://travis-ci.org/cssnano/postcss-minify-params.svg
-[ci]:      https://travis-ci.org/cssnano/postcss-minify-params
