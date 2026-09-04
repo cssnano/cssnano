@@ -24,7 +24,12 @@ const classNames = [
 const ids = ['id1', 'id2', 'main', 'sidebar', 'content'];
 const attributes = ['href', 'data-test', 'aria-label', 'title', 'type'];
 const attributeValues = ['value1', 'value2', 'test', 'button'];
-const escapedNames = ['.\\61 ', '.\\31 23', '.private-\\e000'];
+const escapedNames = [
+  '.\\61 ',
+  '.\\31 23',
+  '.private-\\e000',
+  '.\\e0000\\e001',
+];
 const pseudoClasses = [
   ':hover',
   ':focus',
@@ -39,6 +44,14 @@ const pseudoClasses = [
   ':nth-child(2n of .foo, #main)',
   ':is(:where(.foo, .bar), :not(.baz))',
   ':has(> .selected)',
+  ':has( > .selected)',
+  ':has( /* relative whitespace */ + .selected)',
+  ':has(\t~\n.selected)',
+  ':has(/**/ > /**/ .selected)',
+  ':host(.foo)',
+  ':host-context(.bar)',
+  '::before',
+  '::after',
 ];
 const pseudoClassesForIs = [':hover', ':focus', ':link', ':visited'];
 
@@ -50,9 +63,9 @@ const foldMiddleSets = [
   { middles: ['a.foo', 'b.bar', 'c.baz'], folds: true },
   { middles: [':hover', ':focus', ':active'], folds: true },
   { middles: ['[data-a]', '[data-b]', '[data-c]'], folds: true },
-  { middles: [':hover', 'b.foo', 'c.bar'], folds: false },
-  { middles: ['.a', 'button', 'input'], folds: false },
-  { middles: ['#one', '.two', '.three'], folds: false },
+  { middles: [':hover', 'b.foo'], folds: false },
+  { middles: ['.a', 'button'], folds: false },
+  { middles: ['#one', '.two'], folds: false },
   { middles: [':not(.a)', ':not(.b)', ':not(.c)'], folds: false },
   { middles: ['svg|a', 'svg|b', 'svg|c'], folds: false },
   { middles: ['[lang=en i]', '[lang=fr i]', '[lang=nl i]'], folds: false },
@@ -75,9 +88,16 @@ function simpleSelector(rng) {
   const parts = [];
 
   if (rng.chance(0.2)) {
-    const prefix = rng.pick(namespacePrefixes);
+    const form = rng.pick(['prefix', 'any', 'none']);
     const subject = rng.chance(0.3) ? rng.pick(tagNames) : '*';
-    parts.push(`${prefix}|${subject}`);
+    if (form === 'prefix') {
+      const prefix = rng.pick(namespacePrefixes);
+      parts.push(`${prefix}|${subject}`);
+    } else if (form === 'any') {
+      parts.push(`*|${subject}`);
+    } else {
+      parts.push(`|${subject}`);
+    }
   } else if (rng.chance(0.3)) {
     parts.push(rng.pick(tagNames));
   }
@@ -136,7 +156,7 @@ function compoundSelector(rng) {
  */
 function complexSelector(rng) {
   const compounds = [];
-  const combinators = [' ', '>', '+', '~'];
+  const combinators = [' ', '>', '+', '~', ' /* c */ > ', ' + /*! c */ '];
 
   for (let i = 0; i < rng.int(3) + 1; i++) {
     if (i > 0) {
