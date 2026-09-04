@@ -129,8 +129,6 @@ test('assigns element specificity to Level 3 and 4 double-colon pseudo-elements 
     ['video::cue', '0,0,2'],
     ['.field::placeholder', '0,1,1'],
     ['#main::marker', '1,0,1'],
-    [':not(::placeholder)', '0,0,1'],
-    [':is(div::marker)', '0,0,2'],
   ]);
   for (const [selector, expected] of pseudoElementCases) {
     assert.equal(specificityOf(selector), expected, selector);

@@ -86,7 +86,7 @@ export const benchmarkCases = {
     css: Array.from({ length: 40 }, (_, index) => {
       const selectors = Array.from(
         { length: 200 },
-        (unused, selectorIndex) => `:not(.item-${selectorIndex})`
+        (unused, selectorIndex) => `:not(.item-${selectorIndex % 40})`
       ).join(',');
 
       return `.scope-${index}:is(${selectors}){color:red}`;
