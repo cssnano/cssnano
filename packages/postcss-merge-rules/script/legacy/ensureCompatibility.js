@@ -8,7 +8,6 @@ const cssSel2 = 'css-sel2';
 const cssSel3 = 'css-sel3';
 const level2Sel = new Set(['=', '~=', '|=']);
 const level3Sel = new Set(['^=', '$=', '*=']);
-const inputPlaceholderRegex = /-ms-input-placeholder/i;
 
 const isCssMixin = (selector) => selector.at(-1) === ':';
 const isHostPseudoClass = (selector) => selector.includes(':host');
@@ -48,5 +47,3 @@ export function ensureCompatibility(selectors, browsers) {
     return compatible;
   });
 }
-
-export const legacyMetadata = { inputPlaceholderRegex };

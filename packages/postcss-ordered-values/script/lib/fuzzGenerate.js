@@ -317,4 +317,4 @@ function* generate(seed, count) {
   for (let index = 0; index < count; index++) yield randRule(rng, index);
 }
 
-export { edgeCases, generate, properties, randRule };
+export { edgeCases, generate, properties };

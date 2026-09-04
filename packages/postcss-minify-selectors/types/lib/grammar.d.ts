@@ -16,8 +16,6 @@ export type GrammarEntry = ArgumentGrammar;
 /** @typedef {ArgumentGrammar} GrammarEntry */
 export declare const legacyPseudoElements: Set<string>;
 export declare const pseudoElements: Set<string>;
-export declare const functionalPseudoElements: Set<string>;
-export declare const operators: Set<string>;
 export declare const safePseudos: Set<string>;
 /**
  * Registry mapping recognized functional pseudos to their declarative argument grammar.

@@ -15,14 +15,6 @@ export function unquote(value) {
     : value;
 }
 
-/** @param {string} value */
-export function normalizeFormula(value) {
-  return value
-    .replace(/\s*([+])\s*/gu, '$1')
-    .replace(/\b[Ee][Vv][Ee][Nn]\b/gu, 'even')
-    .replace(/\b[Oo][Dd][Dd]\b/gu, 'odd');
-}
-
 /** @param {CSSToken | undefined} token */
 export function isCombinator(token) {
   return token?.[0] === TokenType.Delim && /^[>+~]$/u.test(token[1]);
@@ -44,20 +36,6 @@ export function isDeepBoundary(tokens, index) {
     tokens[index]?.[1] === '/' &&
     tokens[index + 1]?.[1]?.toLowerCase() === 'deep' &&
     tokens[index + 2]?.[1] === '/'
-  );
-}
-
-/** @param {CSSToken | undefined} next @param {string | undefined} before */
-export function skipUniversal(next, before) {
-  return Boolean(
-    next &&
-    next[0] !== TokenType.Whitespace &&
-    next[0] !== TokenType.Comma &&
-    next[0] !== TokenType.CloseParen &&
-    !['|'].includes(next[1]) &&
-    !['>', '+', '~'].includes(next[1] ?? '') &&
-    before !== '|' &&
-    !['>', '+', '~'].includes(before ?? '')
   );
 }
 
