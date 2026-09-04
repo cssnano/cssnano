@@ -1,9 +1,8 @@
 import cssnanoUtils from 'cssnano-utils';
 import keywords from './keywords.js';
 import minifyFamily from './minify-family.js';
-import minifyWeight from './minify-weight.js';
 
-const { TokenType, balancedTokens, decoded } = cssnanoUtils;
+const { TokenType, balancedTokens, decoded, tokenEnd } = cssnanoUtils;
 
 /** @param {string} value @param {import('../index.js').Options} opts @return {string} */
 // The grammar's mutually exclusive pre-size branches are intentionally kept together.
@@ -19,6 +18,8 @@ export default function minifyFont(
   let familyStart = -1;
   let possibleFamilyStart = -1;
   let sizeEnd = -1;
+  /** @type {{ start: number, end: number } | undefined} */
+  let boldSpan;
   /** @param {number} start @return {number} */
   const skipTrivia = (start) => {
     let index = start;
@@ -45,6 +46,10 @@ export default function minifyFont(
         keywords.stretch.has(name) ||
         keywords.weight.has(name))
     ) {
+      if (name === 'bold') {
+        if (boldSpan) return value;
+        boldSpan = { start: token[2], end: tokenEnd(token) };
+      }
       const next = skipTrivia(index + 1);
       possibleFamilyStart = input[next]?.[2] ?? -1;
       continue;
@@ -78,9 +83,11 @@ export default function minifyFont(
   }
   if (familyStart < 0) familyStart = possibleFamilyStart;
   if (familyStart < 0) return value;
-  let prefix = value
-    .slice(0, familyStart)
-    .replace(/\bbold\b/gi, (word) => minifyWeight(word.toLowerCase()));
+  let prefix = boldSpan
+    ? value.slice(0, boldSpan.start) +
+      '700' +
+      value.slice(boldSpan.end, familyStart)
+    : value.slice(0, familyStart);
   if (familyStart < value.length && !prefix.endsWith(' ') && prefix)
     prefix += ' ';
   return prefix + minifyFamily(value.slice(familyStart), opts, removeQuotes);
