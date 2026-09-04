@@ -1,5 +1,13 @@
 import parser from 'postcss-selector-parser';
 
+/**
+ * Reference AST oracle using `postcss-selector-parser`.
+ * Bounded strictly to the Selectors Level 3 / Level 4 subset supported by
+ * `postcss-selector-parser` (standard combinators, compounds, basic functional pseudos).
+ * Modern Level 4+ constructs (such as `:dir()`, `:lang()`, `:state()`,
+ * and `::view-transition-*()`) are tested via focused spec-derived assertions in
+ * `characterization.js` and `wptInspired.js` rather than this reference oracle.
+ */
 const selectorParser = parser();
 const selectorPseudos = new Set([':is', ':not', ':has', ':where']);
 const pseudoElements = new Set([

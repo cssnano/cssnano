@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { generate } from '../script/lib/fuzzGenerate.js';
+import { generate, generateMalformed } from '../script/lib/fuzzGenerate.js';
 import { checkMinimised, report } from '../script/lib/fuzzCheck.js';
+import { normalizeList } from '../src/lib/selectorScanner.js';
 
 test('differential selector matching: no regressions', () => {
   const seeds = [1, 2];
@@ -20,5 +21,12 @@ test('differential selector matching: no regressions', () => {
         );
       }
     }
+  }
+});
+
+test('malformed selector fuzzer corpus is fail-closed without a DOM oracle', () => {
+  for (const selector of generateMalformed(1, 100)) {
+    assert.doesNotThrow(() => normalizeList(selector, false, false), selector);
+    assert.equal(normalizeList(selector, false, false), selector, selector);
   }
 });

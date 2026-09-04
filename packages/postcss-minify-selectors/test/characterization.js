@@ -181,7 +181,7 @@ test('preserves invalid unforgiving functions as their complete raw source', () 
 
 test('preserves top-level malformed and invalid selectors without corruption', () => {
   const cases = [
-    ['div >', 'div>'],
+    ['div >', 'div >'],
     ['[a=]', '[a=]'],
     [':not(> a)', ':not(> a)'],
     [':has(+)', ':has(+)'],
@@ -751,7 +751,8 @@ test('preserves invalid ::view-transition-*() syntax without modification', () =
 
 test('calculates element specificity for ::view-transition-*()', () => {
   assert.equal(specificityOf('::view-transition-old(header)'), '0,0,1');
-  assert.equal(specificityOf('::view-transition-new(*)'), '0,0,1');
+  assert.equal(specificityOf('::view-transition-new(*)'), '0,0,0');
+  assert.equal(specificityOf('::view-transition-new(*.card)'), '0,0,1');
   assert.equal(specificityOf('html::view-transition-group(root)'), '0,0,2');
 });
 

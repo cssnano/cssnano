@@ -33,16 +33,30 @@ function pluginCreator(opts = {}) {
         /** @param {import('postcss').Root} css */
         OnceExit(css) {
           const cache = new Map();
+          let hasDefaultNamespace = false;
+          css.walkAtRules('namespace', (atRule) => {
+            hasDefaultNamespace ||= /^\s*(?:url\(|['"])/iu.test(atRule.params);
+          });
           css.walkRules((rule) => {
             const source =
               rule.raws.selector && rule.raws.selector.value === rule.selector
                 ? rule.raws.selector.raw
                 : rule.selector;
             if (source.at(-1) === ':') return;
-            let output = cache.get(source);
+            const inKeyframes =
+              rule.parent?.type === 'atrule' &&
+              /(?:^|-)(?:webkit-)?keyframes$/iu.test(rule.parent.name);
+            const cacheKey = `${inKeyframes ? 'k' : 's'}${hasDefaultNamespace ? 'n' : ''}\0${source}`;
+            let output = cache.get(cacheKey);
             if (output === undefined) {
-              output = normalizeList(source, resolved.sort, fold);
-              cache.set(source, output);
+              output = normalizeList(
+                source,
+                resolved.sort,
+                fold,
+                inKeyframes,
+                hasDefaultNamespace
+              );
+              cache.set(cacheKey, output);
             }
             rule.selector = output;
           });
