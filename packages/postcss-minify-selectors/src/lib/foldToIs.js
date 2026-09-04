@@ -100,7 +100,7 @@ export function serializeComplex(selector) {
  * @param {readonly (string | FunctionResult)[]} b
  * @return {boolean}
  */
-export function equalPieces(a, b) {
+function equalPieces(a, b) {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
     const itemA = a[i];
@@ -129,7 +129,7 @@ export function equalPieces(a, b) {
  * @param {Compound} b
  * @return {boolean}
  */
-export function equalCompound(a, b) {
+function equalCompound(a, b) {
   if (a === b) return true;
   if (
     a.specificity[0] !== b.specificity[0] ||
@@ -160,16 +160,6 @@ export function equalComplex(a, b) {
     }
   }
   return true;
-}
-
-/**
- * @param {Compound | string} a
- * @param {Compound | string} b
- * @return {boolean}
- */
-export function samePart(a, b) {
-  if (typeof a === 'string' || typeof b === 'string') return a === b;
-  return equalCompound(a, b);
 }
 
 /** @type {WeakMap<Compound, string>} */

@@ -35,20 +35,6 @@ export const pseudoElements = new Set([
   'cue',
 ]);
 
-export const functionalPseudoElements = new Set([
-  'slotted',
-  'part',
-  'highlight',
-  'view-transition-group',
-  'view-transition-image-pair',
-  'view-transition-old',
-  'view-transition-new',
-  'view-transition-group-children',
-  'cue',
-  'cue-region',
-]);
-
-export const operators = new Set(['=', '~', '|=', '^', '$', '*']);
 export const safePseudos = new Set([
   'hover',
   'focus',
