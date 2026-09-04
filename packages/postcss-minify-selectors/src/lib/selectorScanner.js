@@ -186,6 +186,15 @@ function updateSpecificity(state, token, next, previous) {
   if (token[0] === TokenType.Colon) updatePseudoSpecificity(state, next);
 }
 
+/** @param {NormalizationState} state @param {string} prefix */
+function popLeadingColon(state, prefix) {
+  if (prefix.startsWith('::')) {
+    if (state.output.at(-1) === '::') state.output.pop();
+  } else if (prefix.startsWith(':')) {
+    if (state.output.at(-1) === ':') state.output.pop();
+  }
+}
+
 /**
  * @param {NormalizationState} state
  * @param {string} source
@@ -218,20 +227,26 @@ function normalizeFunctionToken(
   const normalized = values.get(index);
   if (normalized) {
     values.delete(index);
-    if (
-      ((typeof normalized.pieces?.[0] === 'string' &&
-        normalized.pieces[0].startsWith(':')) ||
-        normalized.raw?.source[normalized.raw.start] === ':') &&
-      state.output.at(-1) === ':'
-    )
-      state.output.pop();
+    if (typeof normalized.pieces?.[0] === 'string') {
+      popLeadingColon(state, normalized.pieces[0]);
+    } else if (normalized.raw?.source[normalized.raw.start] === ':') {
+      popLeadingColon(
+        state,
+        normalized.raw.source.slice(
+          normalized.raw.start,
+          normalized.raw.start + 2
+        )
+      );
+    }
     state.output.push(normalized);
     addSpecificity(state.specificity, normalized.specificity);
     if (normalized.outcome === 'invalid') state.valid = false;
     if (normalized.hasNestedHas) state.hasNestedHas = true;
     if (normalized.hasPseudoElement) state.hasPseudoElement = true;
   } else {
-    state.output.push(rawFunction(source, tokens, index, end));
+    const raw = rawFunction(source, tokens, index, end);
+    popLeadingColon(state, raw);
+    state.output.push(raw);
   }
 
   state.hasFunction = true;
@@ -467,12 +482,25 @@ function normalizeRange(source, tokens, structure, values, start, finish) {
   return finishCompound(state);
 }
 
+/** @param {readonly CSSToken[]} tokens @param {number} index @return {number} */
+function functionStart(tokens, index) {
+  if (
+    tokens[index - 2]?.[0] === TokenType.Colon &&
+    tokens[index - 1]?.[0] === TokenType.Colon
+  ) {
+    return tokens[index - 2][2];
+  }
+  if (tokens[index - 1]?.[0] === TokenType.Colon) {
+    return tokens[index - 1][2];
+  }
+  return tokens[index][2];
+}
+
 /** @param {string} source @param {readonly CSSToken[]} tokens @param {number} index @param {number} end @return {string} */
 function rawFunction(source, tokens, index, end) {
+  const start = functionStart(tokens, index);
   const close = tokens[end];
-  return close
-    ? source.slice(tokens[index][2] - 1, close[3] + 1)
-    : source.slice(tokens[index][2] - 1);
+  return close ? source.slice(start, close[3] + 1) : source.slice(start);
 }
 
 /**
@@ -484,14 +512,19 @@ function rawFunction(source, tokens, index, end) {
  * @return {FunctionResult}
  */
 function rawFunctionResult(source, tokens, index, end, outcome = 'valid') {
+  const isDoubleColon =
+    tokens[index - 2]?.[0] === TokenType.Colon &&
+    tokens[index - 1]?.[0] === TokenType.Colon;
+  const start = functionStart(tokens, index);
+
   return {
     raw: {
       source,
-      start: tokens[index][2] - 1,
+      start,
       end: tokens[end]?.[3] + 1 || source.length,
     },
     pieces: undefined,
-    specificity: [0, 1, 0],
+    specificity: isDoubleColon ? [0, 0, 0] : [0, 1, 0],
     foldEligible: false,
     outcome,
     valid: outcome !== 'invalid',
@@ -718,6 +751,95 @@ function normalizeNthArgument(
  * @param {number} end
  * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
  */
+function normalizeIdentListArgument(tokens, start, end) {
+  /** @type {(string | FunctionResult)[]} */
+  const pieces = [];
+  let count = 0;
+
+  for (let i = start; i < end; i++) {
+    const token = tokens[i];
+    const type = token[0];
+
+    if (type === TokenType.Whitespace) {
+      continue;
+    }
+    if (type === TokenType.Comment) {
+      if (token[1].startsWith('/*!')) {
+        pieces.push(token[1]);
+      }
+      continue;
+    }
+    if (type === TokenType.Ident) {
+      if (count > 0) {
+        pieces.push(' ');
+      }
+      let val = token[1];
+      if (val.endsWith(' ')) val = val.trimEnd();
+      pieces.push(val);
+      count++;
+      continue;
+    }
+    return { valid: false };
+  }
+
+  if (count === 0) {
+    return { valid: false };
+  }
+
+  return { pieces, valid: true };
+}
+
+/**
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} start
+ * @param {number} end
+ * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
+ */
+function normalizePtNameArgument(tokens, start, end) {
+  /** @type {(string | FunctionResult)[]} */
+  const pieces = [];
+  let found = false;
+
+  for (let i = start; i < end; i++) {
+    const token = tokens[i];
+    const type = token[0];
+
+    if (type === TokenType.Whitespace) {
+      continue;
+    }
+    if (type === TokenType.Comment) {
+      if (token[1].startsWith('/*!')) {
+        pieces.push(token[1]);
+      }
+      continue;
+    }
+    if (
+      !found &&
+      (type === TokenType.Ident ||
+        (type === TokenType.Delim && token[1] === '*'))
+    ) {
+      found = true;
+      let val = token[1];
+      if (val.endsWith(' ')) val = val.trimEnd();
+      pieces.push(val);
+      continue;
+    }
+    return { valid: false };
+  }
+
+  if (!found) {
+    return { valid: false };
+  }
+
+  return { pieces, valid: true };
+}
+
+/**
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} start
+ * @param {number} end
+ * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
+ */
 function normalizeIdentArgument(tokens, start, end) {
   /** @type {(string | FunctionResult)[]} */
   const pieces = [];
@@ -848,7 +970,8 @@ function normalizeCompoundFunction(
   values,
   name,
   index,
-  end
+  end,
+  isDoubleColon = false
 ) {
   const inner = normalizeCompound(
     source,
@@ -862,7 +985,9 @@ function normalizeCompoundFunction(
     return rawFunctionResult(source, tokens, index, end, 'invalid');
   /** @type {Specificity} */
   const specificity = [...inner.specificity];
-  specificity[1]++;
+  if (!isDoubleColon) {
+    specificity[1]++;
+  }
   return {
     pieces: [name, '(', ...inner.pieces, ')'],
     specificity,
@@ -928,15 +1053,81 @@ function normalizeNthFunction(
  * @param {string} name
  * @param {number} index
  * @param {number} end
+ * @param {boolean} [isDoubleColon]
  * @return {FunctionResult}
  */
-function normalizeIdentFunction(source, tokens, name, index, end) {
+function normalizeIdentFunction(
+  source,
+  tokens,
+  name,
+  index,
+  end,
+  isDoubleColon = false
+) {
   const inner = normalizeIdentArgument(tokens, index + 1, end);
   if (!inner.valid)
     return rawFunctionResult(source, tokens, index, end, 'invalid');
   return {
     pieces: [name, '(', ...(inner.pieces ?? []), ')'],
-    specificity: [0, 1, 0],
+    specificity: isDoubleColon ? [0, 0, 0] : [0, 1, 0],
+    foldEligible: false,
+    outcome: 'valid',
+    valid: true,
+  };
+}
+
+/**
+ * @param {string} source
+ * @param {readonly CSSToken[]} tokens
+ * @param {string} name
+ * @param {number} index
+ * @param {number} end
+ * @param {boolean} [isDoubleColon]
+ * @return {FunctionResult}
+ */
+function normalizeIdentListFunction(
+  source,
+  tokens,
+  name,
+  index,
+  end,
+  isDoubleColon = false
+) {
+  const inner = normalizeIdentListArgument(tokens, index + 1, end);
+  if (!inner.valid)
+    return rawFunctionResult(source, tokens, index, end, 'invalid');
+  return {
+    pieces: [name, '(', ...(inner.pieces ?? []), ')'],
+    specificity: isDoubleColon ? [0, 0, 0] : [0, 1, 0],
+    foldEligible: false,
+    outcome: 'valid',
+    valid: true,
+  };
+}
+
+/**
+ * @param {string} source
+ * @param {readonly CSSToken[]} tokens
+ * @param {string} name
+ * @param {number} index
+ * @param {number} end
+ * @param {boolean} [isDoubleColon]
+ * @return {FunctionResult}
+ */
+function normalizePtNameFunction(
+  source,
+  tokens,
+  name,
+  index,
+  end,
+  isDoubleColon = false
+) {
+  const inner = normalizePtNameArgument(tokens, index + 1, end);
+  if (!inner.valid)
+    return rawFunctionResult(source, tokens, index, end, 'invalid');
+  return {
+    pieces: [name, '(', ...(inner.pieces ?? []), ')'],
+    specificity: isDoubleColon ? [0, 0, 0] : [0, 1, 0],
     foldEligible: false,
     outcome: 'valid',
     valid: true,
@@ -1027,6 +1218,10 @@ function normalizeFunction(source, tokens, structure, values, index, end) {
   const grammar = selectorGrammar.get(lower);
   if (!grammar) return rawFunctionResult(source, tokens, index, end, 'opaque');
 
+  const isDoubleColon =
+    tokens[index - 2]?.[0] === TokenType.Colon &&
+    tokens[index - 1]?.[0] === TokenType.Colon;
+
   switch (grammar) {
     case 'compound-selector':
       return normalizeCompoundFunction(
@@ -1036,7 +1231,8 @@ function normalizeFunction(source, tokens, structure, values, index, end) {
         values,
         name,
         index,
-        end
+        end,
+        isDoubleColon
       );
 
     case 'an-plus-b-of':
@@ -1061,7 +1257,34 @@ function normalizeFunction(source, tokens, structure, values, index, end) {
       );
 
     case 'ident':
-      return normalizeIdentFunction(source, tokens, name, index, end);
+      return normalizeIdentFunction(
+        source,
+        tokens,
+        name,
+        index,
+        end,
+        isDoubleColon
+      );
+
+    case 'ident-list':
+      return normalizeIdentListFunction(
+        source,
+        tokens,
+        name,
+        index,
+        end,
+        isDoubleColon
+      );
+
+    case 'pt-name-selector':
+      return normalizePtNameFunction(
+        source,
+        tokens,
+        name,
+        index,
+        end,
+        isDoubleColon
+      );
 
     case 'forgiving-selector-list':
     case 'selector-list':
