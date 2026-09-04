@@ -35,36 +35,6 @@ const normalizeGridAutoFlow = (gridAutoFlow) => {
   return null;
 };
 
-/**
- * @param {import('../lib/tokenize.js').Term[]} gridGap
- * @return {string | null}
- */
-const normalizeGridColumnRowGap = (gridGap) => {
-  const newValue = { front: '', back: '' };
-  let shouldNormalize = false;
-  let hasNormal = false;
-  let hasLength = false;
-  for (const node of gridGap) {
-    // console.log(node);
-    if (isIdent(node) && name(node) === 'normal') {
-      if (hasNormal) return null;
-      hasNormal = true;
-      shouldNormalize = true;
-      newValue.front = node.raw;
-    } else {
-      if (hasLength) return null;
-      hasLength = true;
-      newValue.back = `${newValue.back} ${node.raw}`;
-    }
-  }
-  if (shouldNormalize) {
-    return [newValue.front.trim(), newValue.back.trim()]
-      .filter(Boolean)
-      .join(' ');
-  }
-  return null;
-};
-
 const gridLineExcludedIdents = new Set([
   'initial',
   'inherit',
@@ -184,8 +154,4 @@ const normalizeGridColumnRow = (grid, maxLines = 2) => {
     : normalized.map((line) => line.map((term) => term.raw).join(' '));
 };
 
-export {
-  normalizeGridAutoFlow,
-  normalizeGridColumnRowGap,
-  normalizeGridColumnRow,
-};
+export { normalizeGridAutoFlow, normalizeGridColumnRow };
