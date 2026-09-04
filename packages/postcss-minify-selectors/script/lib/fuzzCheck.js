@@ -41,7 +41,7 @@ function process(css) {
  *
  * @param {string} selector
  * @param {{html: string, css: string}} tree
- * @return {{ids: Set<string>, valid: boolean}}
+ * @return {{ids: Set<string>, error?: string}}
  */
 function matchElements(selector, tree) {
   sharedDocument.head.innerHTML = `<style>${tree.css}</style>`;
@@ -71,10 +71,12 @@ function matchElements(selector, tree) {
           .map((el) => el.getAttribute('data-fz'))
           .filter((value) => value !== null)
       ),
-      valid: true,
     };
-  } catch {
-    return { ids: new Set(), valid: false };
+  } catch (error) {
+    return {
+      ids: new Set(),
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
 }
 
@@ -106,33 +108,42 @@ function check(rule, tree) {
   }
 
   const outputSelector = output.split('{')[0].trim();
-  const preIds = matchElements(selector, tree);
-  const postIds = matchElements(outputSelector, tree);
-
-  if (preIds.valid !== postIds.valid) {
+  const pre = matchElements(selector, tree);
+  if (pre.error !== undefined) {
     return {
       input: rule,
       output,
-      reason: 'selector validity changed',
-      preIds: preIds.ids,
-      postIds: postIds.ids,
+      reason: `pre-minify querySelectorAll threw: ${pre.error}`,
+      preIds: pre.ids,
+      postIds: new Set(),
     };
   }
-  if (
-    !preIds.valid ||
-    (preIds.ids.size === postIds.ids.size &&
-      [...preIds.ids].every((id) => postIds.ids.has(id)))
-  ) {
-    return undefined;
+
+  const post = matchElements(outputSelector, tree);
+  if (post.error !== undefined) {
+    return {
+      input: rule,
+      output,
+      reason: `post-minify querySelectorAll threw: ${post.error}`,
+      preIds: pre.ids,
+      postIds: post.ids,
+    };
   }
 
-  return {
-    input: rule,
-    output,
-    reason: 'match set changed',
-    preIds: preIds.ids,
-    postIds: postIds.ids,
-  };
+  if (
+    pre.ids.size !== post.ids.size ||
+    ![...pre.ids].every((id) => post.ids.has(id))
+  ) {
+    return {
+      input: rule,
+      output,
+      reason: 'match set changed',
+      preIds: pre.ids,
+      postIds: post.ids,
+    };
+  }
+
+  return undefined;
 }
 
 /**

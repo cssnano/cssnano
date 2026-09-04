@@ -7,8 +7,8 @@ import { normalizeList } from './lib/selectorScanner.js';
 /** @typedef {{ sort?: boolean, convertToIs?: boolean } & AutoprefixerOptions & BrowserslistOptions} Options */
 
 /**
- * Minify selectors from tokenizer spans. Parsing, normalization, and dedupe
- * are linear in selector tokens; only top-level sorting is O(k log k).
+ * Minify selectors from tokenizer spans. Function arguments are normalized
+ * bottom-up without recursive descent.
  * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
