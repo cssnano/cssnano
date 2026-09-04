@@ -231,6 +231,16 @@ suite('attribute selector normalization', () => {
     'should normalise attribute selectors (7)',
     processCSS('a[   target   ]{color:blue}', 'a[target]{color:blue}')
   );
+
+  test(
+    'should drop malformed attribute operator in forgiving selector list',
+    processCSS(':is([attr~], .ok){color:blue}', ':is(.ok){color:blue}')
+  );
+
+  test(
+    'should drop malformed prefix attribute operator in forgiving selector list',
+    processCSS(':is([attr^], .ok){color:blue}', ':is(.ok){color:blue}')
+  );
 });
 
 suite('@keyframe normalization', () => {
@@ -273,6 +283,30 @@ suite('comments and pseudo-elements', () => {
   test(
     'should remove ordinary comments around explicit combinators',
     processCSS('h1/**/>/**/p{color:blue}', 'h1>p{color:blue}')
+  );
+
+  test(
+    'should preserve comment before relative combinator in :has()',
+    processCSS(
+      ':has( /*! preserved */ > .x){color:blue}',
+      ':has(/*! preserved */>.x){color:blue}'
+    )
+  );
+
+  test(
+    'should preserve comments around relative combinators in :has()',
+    processCSS(
+      ':has( /*! preserved */ > /*! preserved */ .x){color:blue}',
+      ':has(/*! preserved */>/*! preserved */.x){color:blue}'
+    )
+  );
+
+  test(
+    'should preserve comment before plus relative combinator in :has()',
+    processCSS(
+      ':has( /*! preserved */ + .x){color:blue}',
+      ':has(/*! preserved */+.x){color:blue}'
+    )
   );
 
   test(
@@ -544,6 +578,30 @@ suite(':nth-child and related pseudo-classes', () => {
     'should handle first/last of type without parameters',
     passthroughCSS('body>h2:not(:first-of-type):not(:last-of-type){color:blue}')
   );
+
+  test(
+    'should convert :nth-child(even of S) to :nth-child(2n of S)',
+    processCSS(
+      ':nth-child(even of .a){color:blue}',
+      ':nth-child(2n of .a){color:blue}'
+    )
+  );
+
+  test(
+    'should convert :nth-last-child(even of S) to :nth-last-child(2n of S)',
+    processCSS(
+      ':nth-last-child(even of .a){color:blue}',
+      ':nth-last-child(2n of .a){color:blue}'
+    )
+  );
+
+  test(
+    'should normalize formula spacing with of S',
+    processCSS(
+      ':nth-child( 2n + 1 of .a, #b ){color:blue}',
+      ':nth-child(2n+1 of .a,#b){color:blue}'
+    )
+  );
 });
 /*
  * Reference: https://github.com/tivac/modular-css/issues/228
@@ -694,14 +752,12 @@ suite('fold that fires', () => {
   );
 
   test(
-    'no-fold: combinator in middle (MDN deep list-style example, 16-way)',
+    'fold: MDN deep list-style example (16-way)',
     processCSS(
       'ol ol ul,ol ul ul,ol menu ul,ol dir ul,ul ol ul,ul ul ul,ul menu ul,' +
         'ul dir ul,menu ol ul,menu ul ul,menu menu ul,menu dir ul,dir ol ul,' +
         'dir ul ul,dir menu ul,dir dir ul{list-style:square}',
-      'dir dir ul,dir menu ul,dir ol ul,dir ul ul,menu dir ul,menu menu ul,' +
-        'menu ol ul,menu ul ul,ol dir ul,ol menu ul,ol ol ul,ol ul ul,' +
-        'ul dir ul,ul menu ul,ul ol ul,ul ul ul{list-style:square}',
+      ':is(dir,menu,ol,ul) :is(dir,menu,ol,ul) ul{list-style:square}',
       modernBl
     )
   );
@@ -1073,7 +1129,7 @@ suite('top-level folding with functional pseudos', () => {
         '.scope:is(.a,.b) .y, .scope::-webkit-input-placeholder,' +
         '.scope::-webkit-input-placeholder{color:red}',
       '.scope::-webkit-input-placeholder,.scope::-webkit-input-placeholder,' +
-        '.scope:is(.a,.b) .x,.scope:is(.a,.b) .y{color:red}',
+        '.scope:is(.a,.b) :is(.x,.y){color:red}',
       modernBl
     )
   );
@@ -1091,20 +1147,43 @@ suite('top-level folding with functional pseudos', () => {
 
   test('rejects unsafe and mixed-specificity fold candidates', () => {
     const cases = [
-      '.scope .a,.scope #id,.scope .b{color:red}',
+      '.scope .a,.scope #id{color:red}',
       '.scope svg|a,.scope svg|b,.scope svg|c{color:red}',
-      '.scope .a:hover,.scope .b:focus,.scope .c:nth-child(2n){color:red}',
+      '.scope .a:hover,.scope .c:nth-child(2n){color:red}',
     ];
     for (const input of cases) {
       const output = [
-        '.scope #id,.scope .a,.scope .b{color:red}',
+        '.scope #id,.scope .a{color:red}',
         '.scope svg|a,.scope svg|b,.scope svg|c{color:red}',
-        '.scope .a:hover,.scope .b:focus,.scope .c:nth-child(2n){color:red}',
+        '.scope .a:hover,.scope .c:nth-child(2n){color:red}',
       ][cases.indexOf(input)];
       assert.equal(
         postcss([plugin({ ...modernBl })]).process(input, { from: undefined })
           .css,
         output,
+        input
+      );
+    }
+  });
+
+  test('folds valid subsets while excluding mixed-specificity or unsafe candidates', () => {
+    const cases = [
+      {
+        input: '.scope .a,.scope #id,.scope .b{color:red}',
+        expected: '.scope #id,.scope :is(.a,.b){color:red}',
+      },
+      {
+        input:
+          '.scope .a:hover,.scope .b:focus,.scope .c:nth-child(2n){color:red}',
+        expected:
+          '.scope .c:nth-child(2n),.scope :is(.a:hover,.b:focus){color:red}',
+      },
+    ];
+    for (const { input, expected } of cases) {
+      assert.equal(
+        postcss([plugin({ ...modernBl })]).process(input, { from: undefined })
+          .css,
+        expected,
         input
       );
     }
@@ -1120,6 +1199,21 @@ suite('top-level folding with functional pseudos', () => {
       { from: undefined }
     ).css;
     assert.match(output, /^\.scope:is\(\.a0,\.b0\) /u);
-    assert.match(output, /\.item999\{color:red\}$/u);
+    assert.match(output, /\.item999\)\{color:red\}$/u);
   });
+
+  test(
+    'should retain rule and sibling selectors when forgiving selector list becomes empty',
+    processCSS('.a, :is([attr~]){color:blue}', '.a,:is(){color:blue}')
+  );
+
+  test(
+    'should retain rule when :where() forgiving selector list becomes empty',
+    processCSS(':where([attr~]), .b{color:blue}', '.b,:where(){color:blue}')
+  );
+
+  test(
+    'should retain rule when single forgiving selector list becomes empty',
+    processCSS(':is([attr~]){color:blue}', ':is(){color:blue}')
+  );
 });

@@ -9,6 +9,11 @@ import {
   compoundBoundaries,
   referenceSpecificity,
 } from './referenceAst.js';
+import {
+  specificityOf,
+  parseSelectorList,
+} from '../src/lib/selectorScanner.js';
+import { fold, serializeComplex } from '../src/lib/foldToIs.js';
 
 const modernOptions = { overrideBrowserslist: 'last 2 Chrome versions' };
 const { JSDOM } = jsdom;
@@ -25,12 +30,12 @@ async function minify(selector) {
 const cases = [
   {
     name: 'does not raise an action pseudo-class specificity to match a type and class',
-    middles: [':hover', 'b.foo', 'c.bar'],
+    middles: [':hover', 'b.foo'],
     folds: false,
   },
   {
     name: 'does not fold an action pseudo-class with a type selector',
-    middles: [':focus', 'button', 'input'],
+    middles: [':focus', 'button'],
     folds: false,
   },
   {
@@ -45,12 +50,12 @@ const cases = [
   },
   {
     name: 'does not fold an attribute with a type and class compound',
-    middles: ['[data-a]', 'a.foo', 'b.bar'],
+    middles: ['[data-a]', 'a.foo'],
     folds: false,
   },
   {
     name: 'does not fold IDs with class selectors',
-    middles: ['#first', '.second', '.third'],
+    middles: ['#first', '.second'],
     folds: false,
   },
 ];
@@ -86,6 +91,68 @@ test('reference AST calculates Selectors 4 specificity', () => {
   ]);
   for (const [selector, expected] of specificityCases) {
     assert.equal(referenceSpecificity(selector), expected, selector);
+  }
+});
+
+test('scanner calculates Selectors 4 specificity matching reference contract', () => {
+  const specificityCases = new Map([
+    ['#id.foo[type=a] div', '1,2,1'],
+    [':where(#id).foo', '0,1,0'],
+    [':is(.a, #b, article.foo)', '1,0,0'],
+    [':not(.a, article#b)', '1,0,1'],
+    [':has(.a, article#b)', '1,0,1'],
+    ['::before', '0,0,1'],
+    ['div::marker', '0,0,2'],
+    ['::placeholder', '0,0,1'],
+    [':nth-child(1 of .a)', '0,2,0'],
+    [':nth-child(2n of .a, #b)', '1,1,0'],
+  ]);
+  for (const [selector, expected] of specificityCases) {
+    assert.equal(specificityOf(selector), expected, selector);
+  }
+});
+
+test('assigns element specificity to Level 3 and 4 double-colon pseudo-elements without adding class specificity', () => {
+  const pseudoElementCases = new Map([
+    ['::marker', '0,0,1'],
+    ['div::marker', '0,0,2'],
+    ['::placeholder', '0,0,1'],
+    ['input::placeholder', '0,0,2'],
+    ['::selection', '0,0,1'],
+    ['p::selection', '0,0,2'],
+    ['::backdrop', '0,0,1'],
+    ['dialog::backdrop', '0,0,2'],
+    ['::file-selector-button', '0,0,1'],
+    ['input::file-selector-button', '0,0,2'],
+    ['::target-text', '0,0,1'],
+    ['::cue', '0,0,1'],
+    ['video::cue', '0,0,2'],
+    ['.field::placeholder', '0,1,1'],
+    ['#main::marker', '1,0,1'],
+    [':not(::placeholder)', '0,0,1'],
+    [':is(div::marker)', '0,0,2'],
+  ]);
+  for (const [selector, expected] of pseudoElementCases) {
+    assert.equal(specificityOf(selector), expected, selector);
+  }
+});
+
+test('calculates specificity for :nth-child and :nth-last-child with of S without double-counting pseudo-class specificity', () => {
+  const nthSpecificityCases = new Map([
+    [':nth-child(1 of .a)', '0,2,0'],
+    [':nth-child(1 of div)', '0,1,1'],
+    [':nth-child(even of #id)', '1,1,0'],
+    [':nth-child(2n of .a, #b)', '1,1,0'],
+    [':nth-child(1 of .a.b)', '0,3,0'],
+    [':nth-child(1 of div.item#main)', '1,2,1'],
+    [':nth-last-child(1 of .a)', '0,2,0'],
+    [':nth-last-child(1 of div)', '0,1,1'],
+    [':nth-last-child(even of #id)', '1,1,0'],
+    [':nth-last-child(2n + 1 of .a, #b)', '1,1,0'],
+    [':nth-child(1 of :is(.a, #b))', '1,1,0'],
+  ]);
+  for (const [selector, expected] of nthSpecificityCases) {
+    assert.equal(specificityOf(selector), expected, selector);
   }
 });
 
@@ -182,4 +249,63 @@ test('targeted fold corpus agrees with its independent safety contract', async (
       assert.equal(output.includes(':is('), folds, `${seed}: ${output}`);
     }
   }
+});
+
+test('fold preserves AST structure, compounds, combinators, and true specificity', () => {
+  const parsed = parseSelectorList('.scope .a .tail, .scope .b .tail');
+  const folded = fold(parsed);
+  assert.equal(folded.length, 1);
+  const entry = folded[0];
+
+  assert.equal(entry.valid, true);
+  assert.equal(entry.hasFunction, true);
+  // Specificity should be: .scope (0,1,0) + :is(.a, .b) (0,1,0) + .tail (0,1,0) = [0, 3, 0]
+  assert.deepEqual(
+    entry.specificity,
+    [0, 3, 0],
+    'must retain combined specificity'
+  );
+
+  // Must preserve 5 parts: [Compound(.scope), ' ', Compound(:is(...)), ' ', Compound(.tail)]
+  assert.equal(
+    entry.parts.length,
+    5,
+    'must preserve compound and combinator parts'
+  );
+  assert.equal(typeof entry.parts[0], 'object');
+  assert.equal(entry.parts[1], ' ');
+  assert.equal(typeof entry.parts[2], 'object');
+  assert.equal(entry.parts[3], ' ');
+  assert.equal(typeof entry.parts[4], 'object');
+
+  // Check middle compound
+  const middleCompound =
+    /** @type {import('../src/lib/foldToIs.js').Compound} */ (entry.parts[2]);
+  assert.equal(middleCompound.hasFunction, true);
+  assert.deepEqual(middleCompound.specificity, [0, 1, 0]);
+  assert.equal(middleCompound.foldEligible, false);
+});
+
+test('fold supports subset folding when rule contains discordant selectors', async () => {
+  const input = 'section .heading,article .heading,.aside p';
+  const output = await minify(input);
+  assert.equal(output, '.aside p,:is(article,section) .heading{color:red}');
+});
+
+test('fold supports multiple disjoint subsets in the same rule', async () => {
+  const input =
+    'section .heading,article .heading,aside .nav-item,nav .nav-item';
+  const output = await minify(input);
+  assert.equal(
+    output,
+    ':is(article,section) .heading,:is(aside,nav) .nav-item{color:red}'
+  );
+});
+
+test('fold preserves source order when sorting is disabled during subset folding', () => {
+  const input = '.aside p,section .heading,article .heading';
+  const parsed = parseSelectorList(input, false);
+  const folded = fold(parsed, false);
+  const serialized = folded.map(serializeComplex).join(',');
+  assert.equal(serialized, '.aside p,:is(section,article) .heading');
 });
