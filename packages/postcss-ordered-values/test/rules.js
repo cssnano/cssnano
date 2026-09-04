@@ -133,21 +133,21 @@ describe('Grid-line validation', () => {
   test('normalizes a span with an integer operand', () => {
     assert.equal(
       normalizeGridColumnRow(tokenizeValue('2 span/7').terms),
-      'span 2 / 7'
+      'span 2/7'
     );
   });
 
   test('normalizes an ordinary integer before its custom-ident', () => {
     assert.equal(
       normalizeGridColumnRow(tokenizeValue('foo -2/3').terms),
-      '-2 foo / 3'
+      '-2 foo/3'
     );
   });
 
   test('accepts none as a custom-ident operand', () => {
     assert.equal(
       normalizeGridColumnRow(tokenizeValue('none span/2').terms),
-      'span none / 2'
+      'span none/2'
     );
   });
 

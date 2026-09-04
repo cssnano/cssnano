@@ -271,8 +271,13 @@ function scanCompatibility(selector, browsers) {
             (type === TokenType.Ident || type === TokenType.String)
           ) {
             attributeValuePending = false;
-          } else if (type === TokenType.Ident && value.toLowerCase() === 'i') {
-            if (!isSupportedCached('css-case-insensitive', browsers))
+          } else if (type === TokenType.Ident) {
+            const modifier = value.toLowerCase();
+            if (modifier === 's') return false;
+            if (
+              modifier === 'i' &&
+              !isSupportedCached('css-case-insensitive', browsers)
+            )
               return false;
           }
         }

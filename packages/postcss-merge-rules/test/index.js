@@ -820,6 +820,20 @@ test(
   })
 );
 
+test(
+  'should not merge unsupported case-sensitive attribute selectors',
+  passthroughCSS('div{color:#fff}[href="foo" s]{color:#fff}', {
+    overrideBrowserslist: 'Chrome 100',
+  })
+);
+
+test(
+  'should recognize uppercase case-sensitive attribute selectors',
+  passthroughCSS('div{color:#fff}[href="foo" S]{color:#fff}', {
+    overrideBrowserslist: 'Edge 15',
+  })
+);
+
 const pseudoKeys = Object.keys(pseudoElements);
 
 const compatibilityCases = [
@@ -917,6 +931,12 @@ const compatibilityCases = [
   {
     name: 'unquoted attribute value equal to the case-insensitive flag',
     first: '[data-mode=i]',
+    browsers: 'IE 7',
+    expected: 'merged',
+  },
+  {
+    name: 'unquoted attribute value equal to the case-sensitive flag',
+    first: '[data-mode=s]',
     browsers: 'IE 7',
     expected: 'merged',
   },
