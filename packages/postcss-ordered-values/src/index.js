@@ -1,9 +1,5 @@
 import { tokenizeValue } from './lib/tokenize.js';
-import {
-  normalizeGridAutoFlow,
-  normalizeGridColumnRowGap,
-  normalizeGridColumnRow,
-} from './rules/grid.js';
+import { normalizeGridAutoFlow, normalizeGridColumnRow } from './rules/grid.js';
 import animation from './rules/animation.js';
 import border from './rules/border.js';
 import boxShadow from './rules/boxShadow.js';
@@ -33,8 +29,6 @@ const borderRules = [
 /** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
 const gridAutoFlowProcessor = (parsed) => normalizeGridAutoFlow(parsed.terms);
 /** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
-const gridGapProcessor = (parsed) => normalizeGridColumnRowGap(parsed.terms);
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
 const gridLineProcessor = (parsed) => normalizeGridColumnRow(parsed.terms, 2);
 /** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
 const gridLonghandProcessor = (parsed) =>
@@ -42,8 +36,6 @@ const gridLonghandProcessor = (parsed) =>
 /** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null][]} */
 const grid = [
   ['grid-auto-flow', gridAutoFlowProcessor],
-  ['grid-column-gap', gridGapProcessor],
-  ['grid-row-gap', gridGapProcessor],
   ['grid-column', gridLineProcessor],
   ['grid-row', gridLineProcessor],
   ['grid-row-start', gridLonghandProcessor],

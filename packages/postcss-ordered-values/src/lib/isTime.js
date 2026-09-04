@@ -1,14 +1,8 @@
 import cssnanoUtils from 'cssnano-utils';
 import { isDimension, isFunction, name } from './tokenize.js';
 
-const { TokenType } = cssnanoUtils;
-
+const { TokenType, decoded } = cssnanoUtils;
 const timeUnits = new Set(['ms', 's']);
-
-/* Names isMath() recognises so the plugin passes theanimation/transition value
-through it cannot resolve to a time. Only calc/clamp/max/min are
- actually evaluated below; the rest abort because their units are unknown.
- */
 const mathFunctions = new Set([
   'calc',
   'clamp',
@@ -17,6 +11,7 @@ const mathFunctions = new Set([
   'round',
   'mod',
   'rem',
+  'hypot',
   'sin',
   'cos',
   'tan',
@@ -26,141 +21,191 @@ const mathFunctions = new Set([
   'atan2',
   'pow',
   'sqrt',
-  'hypot',
   'log',
   'exp',
   'abs',
   'sign',
 ]);
+const closers = new Set([
+  TokenType.CloseParen,
+  TokenType.CloseSquare,
+  TokenType.CloseCurly,
+]);
+const functionArgumentRanges = new Map([
+  ['abs', [1, 1]],
+  ['calc', [1, 1]],
+  ['clamp', [3, 3]],
+  ['hypot', [1, Infinity]],
+  ['max', [2, Infinity]],
+  ['min', [2, Infinity]],
+  ['mod', [2, 2]],
+  ['rem', [2, 2]],
+  ['round', [1, 2]],
+]);
 
-/**
- * @param {import('@csstools/css-tokenizer').CSSToken[]} tokens
- * @return {string | null}
- */
-function parseMath(tokens) {
-  const meaningful = tokens.filter(
-    (token) => token[0] !== TokenType.Whitespace
-  );
-  let index = 0;
-  /** @return {string | null} */
-  const primary = () => {
-    const token = meaningful[index++];
-    if (!token) return null;
-    if (token[0] === TokenType.Number) return 'number';
-    if (token[0] === TokenType.Dimension) {
-      const unit =
-        /** @type {{ unit: string }} */ (token[4]).unit.toLowerCase();
-      return timeUnits.has(unit) ? 'time' : `dimension:${unit}`;
-    }
-    if (token[0] === TokenType.Function) {
-      /** @type {import('@csstools/css-tokenizer').CSSToken[]} */
-      const nested = [token];
-      let depth = 1;
-      while (index < meaningful.length && depth) {
-        const next = meaningful[index++];
-        nested.push(next);
-        if (
-          next[0] === TokenType.Function ||
-          next[0] === TokenType.OpenParen ||
-          next[0] === TokenType.OpenSquare ||
-          next[0] === TokenType.OpenCurly
-        ) {
-          depth++;
-        } else if (
-          next[0] === TokenType.CloseParen ||
-          next[0] === TokenType.CloseSquare ||
-          next[0] === TokenType.CloseCurly
-        ) {
-          depth--;
-        }
-      }
-      if (depth) return null;
-      return mathType({ raw: '', tokens: nested });
-    }
-    if (token[0] === TokenType.OpenParen) {
-      const result = sum();
-      return meaningful[index++]?.[0] === TokenType.CloseParen ? result : null;
-    }
+/** @typedef {{name: string | null, values: string[], operators: string[], args: string[], expectOperand: boolean}} Frame */
+/** @typedef {{input: import('@csstools/css-tokenizer').CSSToken[], frames: Frame[], stack: import('@csstools/css-tokenizer').TokenType[]}} ParserState */
+
+/** @param {string} operator */
+function precedence(operator) {
+  return operator === '+' || operator === '-' ? 1 : 2;
+}
+
+/** @param {Frame} frame */
+function reduce(frame) {
+  const operator = frame.operators.pop();
+  const right = frame.values.pop();
+  const left = frame.values.pop();
+  if (!operator || right === undefined || left === undefined) return false;
+  if (operator === '+' || operator === '-') {
+    if (left !== right) return false;
+    frame.values.push(left);
+  } else if (operator === '*') {
+    if (left === 'number') frame.values.push(right);
+    else if (right === 'number') frame.values.push(left);
+    else return false;
+  } else if (right === 'number') frame.values.push(left);
+  else if (left === 'time' && right === 'time') frame.values.push('number');
+  else return false;
+  return true;
+}
+
+/** @param {Frame} frame */
+function finish(frame) {
+  while (frame.operators.length && !reduce(frame)) return null;
+  if (frame.expectOperand || frame.values.length !== 1) return null;
+  return frame.values[0];
+}
+
+/** @param {Frame} frame */
+function functionResult(frame) {
+  const values = frame.args;
+  const range = frame.name && functionArgumentRanges.get(frame.name);
+  if (!range || values.length < range[0] || values.length > range[1])
     return null;
-  };
-  /** @return {string | null} */
-  const product = () => {
-    let left = primary();
-    if (left === null) return null;
-    while (meaningful[index]?.[1] === '*' || meaningful[index]?.[1] === '/') {
-      const operator = meaningful[index++][1];
-      const right = primary();
-      if (right === null) return null;
-      if (operator === '*') {
-        if (left === 'number') left = right;
-        else if (right !== 'number') return null;
-      } else if (right === 'number') {
-        continue;
-      } else if (left === 'time' && right === 'time') {
-        left = 'number';
-      } else {
-        return null;
-      }
-    }
-    return left;
-  };
-  /** @return {string | null} */
-  function sum() {
-    const left = product();
-    if (left === null) return null;
-    while (meaningful[index]?.[1] === '+' || meaningful[index]?.[1] === '-') {
-      index++;
-      const right = product();
-      if (right === null || right !== left) return null;
-    }
-    return left;
-  }
-  const result = sum();
-  return result !== null && index === meaningful.length ? result : null;
+  return values.every((value) => value === values[0]) ? values[0] : null;
 }
 
-/** @param {import('@csstools/css-tokenizer').CSSToken[]} tokens */
-function splitMathArguments(tokens) {
-  /** @type {import('@csstools/css-tokenizer').CSSToken[][]} */
-  const groups = [[]];
-  let depth = 0;
-  for (const token of tokens) {
-    if (
-      token[0] === TokenType.Function ||
-      token[0] === TokenType.OpenParen ||
-      token[0] === TokenType.OpenSquare ||
-      token[0] === TokenType.OpenCurly
-    )
-      depth++;
-    if (token[0] === TokenType.Comma && depth === 0) groups.push([]);
-    else groups[groups.length - 1].push(token);
-    if (
-      token[0] === TokenType.CloseParen ||
-      token[0] === TokenType.CloseSquare ||
-      token[0] === TokenType.CloseCurly
-    )
-      depth--;
-  }
-  return groups;
+/** @param {Frame[]} frames @param {string | null} value */
+function addValue(frames, value) {
+  const frame = frames.at(-1);
+  if (!frame || !frame.expectOperand || value === null) return false;
+  frame.values.push(value);
+  frame.expectOperand = false;
+  return true;
 }
 
-/**
- * @param {import('./tokenize.js').Term} node
- * @return {string | null}
- */
-function mathType(node) {
-  if (!isFunction(node) || !mathFunctions.has(name(node))) return null;
-  const inner = node.tokens.slice(1, -1);
-  const groups = splitMathArguments(inner);
-  const functionName = name(node);
-  if (!['calc', 'clamp', 'max', 'min'].includes(functionName)) return null;
-  if (functionName === 'calc' && groups.length !== 1) return null;
-  if (functionName === 'clamp' && groups.length !== 3) return null;
-  if (functionName !== 'calc' && groups.length < 2) return null;
-  const types = groups.map(parseMath);
-  return types.every((type) => type !== null && type === types[0])
-    ? types[0]
-    : null;
+/** @param {ParserState} state @param {Frame} frame @param {import('@csstools/css-tokenizer').CSSToken} token */
+function consumeFunction(state, frame, token) {
+  const functionName = (decoded(token) ?? '').toLowerCase();
+  if (!mathFunctions.has(functionName) || !frame.expectOperand) return false;
+  state.frames.push({
+    name: functionName,
+    values: [],
+    operators: [],
+    args: [],
+    expectOperand: true,
+  });
+  state.stack.push(TokenType.CloseParen);
+  return true;
+}
+
+/** @param {ParserState} state @param {Frame} frame */
+function consumeOpenParen(state, frame) {
+  if (!frame.expectOperand) return false;
+  state.frames.push({
+    name: null,
+    values: [],
+    operators: [],
+    args: [],
+    expectOperand: true,
+  });
+  state.stack.push(TokenType.CloseParen);
+  return true;
+}
+
+/** @param {Frame} frame */
+function consumeComma(frame) {
+  if (!frame.name) return false;
+  const value = finish(frame);
+  if (value === null) return false;
+  frame.args.push(value);
+  frame.values = [];
+  frame.expectOperand = true;
+  return true;
+}
+
+/** @param {ParserState} state @param {Frame} frame @param {number} index @param {string} operator */
+function consumeOperator(state, frame, index, operator) {
+  if (frame.expectOperand) return false;
+  if (
+    (operator === '+' || operator === '-') &&
+    (state.input[index - 1]?.[0] !== TokenType.Whitespace ||
+      state.input[index + 1]?.[0] !== TokenType.Whitespace)
+  )
+    return false;
+  while (
+    frame.operators.length &&
+    precedence(frame.operators.at(-1) ?? '') >= precedence(operator)
+  ) {
+    if (!reduce(frame)) return false;
+  }
+  frame.operators.push(operator);
+  frame.expectOperand = true;
+  return true;
+}
+
+/** @param {ParserState} state @param {Frame} frame @param {import('@csstools/css-tokenizer').TokenType} type */
+function consumeCloser(state, frame, type) {
+  if (state.stack.pop() !== type) return false;
+  const value = finish(frame);
+  if (value === null) return false;
+  state.frames.pop();
+  if (!state.frames.at(-1)) return false;
+  if (!frame.name) return addValue(state.frames, value);
+  frame.args.push(value);
+  return addValue(state.frames, functionResult(frame));
+}
+
+/** @param {ParserState} state @param {number} index */
+function consumeToken(state, index) {
+  const token = state.input[index];
+  const type = token[0];
+  if (type === TokenType.Whitespace) return true;
+  const frame = state.frames.at(-1);
+  if (!frame) return false;
+  if (type === TokenType.Number) return addValue(state.frames, 'number');
+  if (type === TokenType.Dimension) {
+    const unit = /** @type {{unit: string}} */ (token[4]).unit.toLowerCase();
+    return addValue(
+      state.frames,
+      timeUnits.has(unit) ? 'time' : `dimension:${unit}`
+    );
+  }
+  if (type === TokenType.Function) return consumeFunction(state, frame, token);
+  if (type === TokenType.OpenParen) return consumeOpenParen(state, frame);
+  if (type === TokenType.Comma) return consumeComma(frame);
+  if (type === TokenType.Delim && ['+', '-', '*', '/'].includes(token[1]))
+    return consumeOperator(state, frame, index, token[1]);
+  if (closers.has(type)) return consumeCloser(state, frame, type);
+  return false;
+}
+
+/** @param {import('@csstools/css-tokenizer').CSSToken[]} input @return {string | null} */
+function parseMath(input) {
+  /** @type {ParserState} */
+  const state = {
+    input,
+    frames: [
+      { name: null, values: [], operators: [], args: [], expectOperand: true },
+    ],
+    stack: [],
+  };
+  for (let index = 0; index < input.length; index++) {
+    if (!consumeToken(state, index)) return null;
+  }
+  if (state.stack.length || state.frames.length !== 1) return null;
+  return finish(state.frames[0]);
 }
 
 /** @param {import('./tokenize.js').Term} node */
@@ -171,10 +216,10 @@ function isMath(node) {
 /** @param {import('./tokenize.js').Term} node */
 export default function isTime(node) {
   if (isDimension(node)) {
-    const { unit } = /** @type {{ unit: string }} */ (node.tokens[0][4]);
+    const { unit } = /** @type {{unit: string}} */ (node.tokens[0][4]);
     return timeUnits.has(unit.toLowerCase());
   }
-  return mathType(node) === 'time';
+  return isMath(node) && parseMath(node.tokens) === 'time';
 }
 
 export { isMath };
