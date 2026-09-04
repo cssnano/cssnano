@@ -321,6 +321,76 @@ suite('invalid-value handling', () => {
     'should preserve malformed but tokenizable values',
     passthroughCSS('h1{columns:12em [foo / bar]}')
   );
+
+  test(
+    'should not lose a valid fallback longhand after an invalid shorthand with zero count',
+    passthroughCSS('a{columns:1px 0;column-width:2px}')
+  );
+
+  test(
+    'should not lose a valid fallback longhand after an invalid shorthand with unvalidated unit',
+    passthroughCSS('a{columns:1foo 2;column-width:2px}')
+  );
+
+  test(
+    'should pass through zero column count in shorthand',
+    passthroughCSS('a{columns:0}')
+  );
+
+  test(
+    'should pass through zero count with valid width in shorthand',
+    passthroughCSS('a{columns:1px 0}')
+  );
+
+  test(
+    'should pass through negative column count in shorthand',
+    passthroughCSS('a{columns:1px -2}')
+  );
+
+  test(
+    'should pass through unvalidated dimension unit in shorthand',
+    passthroughCSS('a{columns:1foo 2}')
+  );
+
+  test(
+    'should pass through negative column width in shorthand',
+    passthroughCSS('a{columns:-1px 2}')
+  );
+
+  test(
+    'should not merge longhands when column-count is zero',
+    passthroughCSS('a{column-width:2px;column-count:0}')
+  );
+
+  test(
+    'should not merge longhands when column-count is negative',
+    passthroughCSS('a{column-width:2px;column-count:-1}')
+  );
+
+  test(
+    'should not merge longhands when column-count is a float',
+    passthroughCSS('a{column-width:2px;column-count:2.5}')
+  );
+
+  test(
+    'should not merge longhands when column-width is an unvalidated dimension unit',
+    passthroughCSS('a{column-width:1foo;column-count:2}')
+  );
+
+  test(
+    'should not merge longhands when column-width is negative',
+    passthroughCSS('a{column-width:-2px;column-count:2}')
+  );
+
+  test(
+    'should not discard a valid longhand when followed by an invalid shorthand with zero count',
+    passthroughCSS('a{column-width:2px;columns:1px 0}')
+  );
+
+  test(
+    'should not discard a valid longhand when followed by an invalid shorthand with unvalidated unit',
+    passthroughCSS('a{column-width:2px;columns:1foo 2}')
+  );
 });
 
 suite('column-height merge blocking', () => {
