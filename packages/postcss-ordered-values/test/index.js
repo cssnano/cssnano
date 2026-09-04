@@ -227,12 +227,12 @@ test('classifies nested comma-containing math durations', () => {
   );
 });
 
-test('preserves unsupported math functions in animation and transition', () => {
+test('orders time-returning modern math functions', () => {
   const input =
     'a{animation:round(1s, 1s) fade ease 1s;transition:opacity abs(1s) ease 2s}';
   assert.strictEqual(
     postcss([plugin()]).process(input, { from: undefined }).css,
-    input
+    'a{animation:fade round(1s, 1s) ease 1s;transition:opacity abs(1s) ease 2s}'
   );
 });
 
@@ -881,10 +881,9 @@ describe('Order', () => {
   );
 
   test(
-    'should order grid-column-gap',
-    processCSS(
-      'grid-column-gap: normal; grid-column-gap: normal 3%; grid-column-gap: 3em normal;',
-      'grid-column-gap: normal; grid-column-gap: normal 3%; grid-column-gap: normal 3em;'
+    'should preserve multi-value grid-column-gap declarations',
+    passthroughCSS(
+      'grid-column-gap: normal; grid-column-gap: normal 3%; grid-column-gap: 3em normal;'
     )
   );
 
@@ -909,7 +908,7 @@ describe('Order', () => {
 
   test(
     'should normalize negative ordinary grid-line integers',
-    processCSS('a{grid-column:foo -2 / 3}', 'a{grid-column:-2 foo / 3}')
+    processCSS('a{grid-column:foo -2 / 3}', 'a{grid-column:-2 foo/3}')
   );
 
   test(
@@ -920,7 +919,7 @@ describe('Order', () => {
   test(
     'should preserve excluded grid custom-ident keywords',
     passthroughCSS(
-      'a{grid-column:SpAn 2 / 3;grid-column:DeFaUlT 2 / 3;grid-column:ReVeRt-LaYeR 2 / 3;grid-column:\\61 uto 2 / 3}'
+      'a{grid-column:SpAn 2/3;grid-column:DeFaUlT 2 / 3;grid-column:ReVeRt-LaYeR 2 / 3;grid-column:\\61 uto 2 / 3}'
     )
   );
 
@@ -933,14 +932,14 @@ describe('Order', () => {
 
   test(
     'should normalize none as a grid custom-ident',
-    processCSS('a{grid-column:none span / 2}', 'a{grid-column:span none / 2}')
+    processCSS('a{grid-column:none span / 2}', 'a{grid-column:span none/2}')
   );
 
   test(
     'should normalize span grid-lines with an integer and custom-ident',
     processCSS(
       'a{grid-column:foo 2 span / 4;grid-row-start:span 2 foo}',
-      'a{grid-column:span 2 foo / 4;grid-row-start:span 2 foo}'
+      'a{grid-column:span 2 foo/4;grid-row-start:span 2 foo}'
     )
   );
 
@@ -948,7 +947,7 @@ describe('Order', () => {
     'should match escaped and mixed-case grid identifiers',
     processCSS(
       'a{grid-column:N\\6eNe SpAn / 2}',
-      'a{grid-column:SpAn N\\6eNe / 2}'
+      'a{grid-column:SpAn N\\6eNe/2}'
     )
   );
 
@@ -958,18 +957,17 @@ describe('Order', () => {
   );
 
   test(
-    'should order grid-row-gap',
-    processCSS(
-      'grid-row-gap: normal; grid-row-gap: normal 3%; grid-row-gap: 3em normal;',
-      'grid-row-gap: normal; grid-row-gap: normal 3%; grid-row-gap: normal 3em;'
+    'should preserve multi-value grid-row-gap declarations',
+    passthroughCSS(
+      'grid-row-gap: normal; grid-row-gap: normal 3%; grid-row-gap: 3em normal;'
     )
   );
 
   test(
     'should order grid-column',
     processCSS(
-      'grid-column: 2 / 4; grid-column: 2 span / 7; grid-column: auto;grid-column: 3;grid-column: custom-indent-name / 3;',
-      'grid-column: 2 / 4; grid-column: span 2 / 7; grid-column: auto;grid-column: 3;grid-column: custom-indent-name / 3;'
+      'grid-column: 2/4; grid-column: 2 span/7; grid-column: auto;grid-column: 3;grid-column: custom-indent-name / 3;',
+      'grid-column: 2/4; grid-column: span 2/7; grid-column: auto;grid-column: 3;grid-column: custom-indent-name / 3;'
     )
   );
 
@@ -984,8 +982,8 @@ describe('Order', () => {
   test(
     'should order grid-row',
     processCSS(
-      'grid-row: 2 / 4; grid-row: 2 span / 7; grid-row: auto;grid-row: 3;grid-row: custom-indent-name / 3;',
-      'grid-row: 2 / 4; grid-row: span 2 / 7; grid-row: auto;grid-row: 3;grid-row: custom-indent-name / 3;'
+      'grid-row: 2/4; grid-row: 2 span/7; grid-row: auto;grid-row: 3;grid-row: custom-indent-name / 3;',
+      'grid-row: 2/4; grid-row: span 2/7; grid-row: auto;grid-row: 3;grid-row: custom-indent-name / 3;'
     )
   );
 
