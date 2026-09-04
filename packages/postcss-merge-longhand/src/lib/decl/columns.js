@@ -8,7 +8,8 @@ import mergeRules from '../mergeRules.js';
 import insertCloned from '../insertCloned.js';
 import { isFallback } from '../isFallback.js';
 import canExplode from '../canExplode.js';
-import { shorthand, initialValues } from '../spec.js';
+import { shorthand, initialValues, cssWideKeywords } from '../spec.js';
+import { isUnresolved } from '../unresolved.js';
 
 const { TokenType, tokenEnd, tokenStart, tokens } = cssnanoUtils;
 
@@ -24,8 +25,62 @@ const otherColumnProperties = new Set(
 );
 const auto = /** @type {string} */ (initialValues.get(columnProperties[0]));
 const inherit = 'inherit';
-/* A unit is a bare identifier, so `30em/10em` is not a length. */
-const lengthUnitRegex = /^[a-z]+$/i;
+
+/* CSS Values 4 length units. */
+const lengthUnits = new Set([
+  // Absolute lengths
+  'cm',
+  'in',
+  'mm',
+  'pc',
+  'pt',
+  'px',
+  'q',
+  // Font-relative lengths
+  'cap',
+  'ch',
+  'em',
+  'ex',
+  'ic',
+  'lh',
+  'rcap',
+  'rch',
+  'rem',
+  'rex',
+  'ric',
+  'rlh',
+  // Viewport-percentage lengths
+  'cqb',
+  'cqh',
+  'cqi',
+  'cqmax',
+  'cqmin',
+  'cqw',
+  'dvb',
+  'dvh',
+  'dvi',
+  'dvmax',
+  'dvmin',
+  'dvw',
+  'lvb',
+  'lvh',
+  'lvi',
+  'lvmax',
+  'lvmin',
+  'lvw',
+  'svb',
+  'svh',
+  'svi',
+  'svmax',
+  'svmin',
+  'svw',
+  'vb',
+  'vh',
+  'vi',
+  'vmax',
+  'vmin',
+  'vw',
+]);
 const openingTokens = new Set([
   TokenType.Function,
   TokenType.OpenParen,
@@ -153,6 +208,45 @@ function normalize(values) {
   return values.join(' ');
 }
 /**
+ * @param {ReturnType<typeof tokenizeColumns>['terms'][number]} term
+ * @return {boolean}
+ */
+function isPositiveInteger(term) {
+  const num =
+    /** @type {{ type?: string, value?: number, signCharacter?: string } | undefined} */ (
+      term.decoded
+    );
+  return (
+    term.tokenCount === 1 &&
+    term.type === TokenType.Number &&
+    num?.type === 'integer' &&
+    num.signCharacter === undefined &&
+    typeof num.value === 'number' &&
+    num.value > 0 &&
+    num.value <= Number.MAX_SAFE_INTEGER
+  );
+}
+
+/**
+ * @param {ReturnType<typeof tokenizeColumns>['terms'][number]} term
+ * @return {boolean}
+ */
+function isValidLength(term) {
+  const num =
+    /** @type {{ value?: number, signCharacter?: string } | undefined} */ (
+      term.decoded
+    );
+  return (
+    term.tokenCount === 1 &&
+    term.type === TokenType.Dimension &&
+    lengthUnits.has(term.rawUnit.toLowerCase()) &&
+    typeof num?.value === 'number' &&
+    num.value >= 0 &&
+    num.signCharacter !== '-'
+  );
+}
+
+/**
  * The component a value can only have come from: `column-width` takes a
  * length, `column-count` an integer, and `auto` fits either.
  *
@@ -162,27 +256,23 @@ function normalize(values) {
  * either.
  */
 function componentRole(term) {
+  if (term.tokenCount !== 1) {
+    return undefined;
+  }
+
   const decoded =
     /** @type {{ value?: string } | undefined} */ (term.decoded)?.value;
 
-  if (
-    term.tokenCount === 1 &&
-    term.type === TokenType.Ident &&
-    decoded?.toLowerCase() === auto
-  ) {
+  if (term.type === TokenType.Ident && decoded?.toLowerCase() === auto) {
     return 'initial';
   }
 
-  if (term.tokenCount === 1 && term.type === TokenType.Number) {
-    return /** @type {{ type?: string }} */ (term.decoded).type === 'integer' &&
-      /** @type {{ signCharacter?: string }} */ (term.decoded).signCharacter ===
-        undefined
-      ? 'count'
-      : undefined;
+  if (isPositiveInteger(term)) {
+    return 'count';
   }
 
-  if (term.tokenCount === 1 && term.type === TokenType.Dimension) {
-    return lengthUnitRegex.test(term.rawUnit) ? 'width' : undefined;
+  if (isValidLength(term)) {
+    return 'width';
   }
 
   return undefined;
@@ -302,6 +392,36 @@ function explode(rule) {
   });
 }
 
+/** @param {import('postcss').Declaration} declaration @return {boolean} */
+function isValidColumns(declaration) {
+  const value = declaration.value.toLowerCase();
+  if (value === auto || cssWideKeywords.has(value) || isUnresolved(value)) {
+    return true;
+  }
+  return parseColumns(parsedValue(declaration)) !== undefined;
+}
+
+/** @param {import('postcss').Declaration} declaration @return {boolean} */
+function isValidColumnProperty(declaration) {
+  const prop = declaration.prop.toLowerCase();
+  const value = declaration.value.toLowerCase();
+  if (value === auto || cssWideKeywords.has(value) || isUnresolved(value)) {
+    return true;
+  }
+  const parsed = parsedValue(declaration);
+  if (parsed.terms.length !== 1) {
+    return false;
+  }
+  const role = componentRole(parsed.terms[0]);
+  if (prop === 'column-width') {
+    return role === 'width';
+  }
+  if (prop === 'column-count') {
+    return role === 'count';
+  }
+  return false;
+}
+
 /**
  * @param {import('postcss').Rule} rule
  * @return {void}
@@ -313,7 +433,8 @@ function cleanup(rule) {
     (node, lastNode) =>
       lastNode.prop === columns &&
       node.prop !== lastNode.prop &&
-      !isFallback(node, lastNode)
+      !isFallback(node, lastNode) &&
+      isValidColumns(lastNode)
   );
 }
 
@@ -323,7 +444,11 @@ function cleanup(rule) {
  */
 function merge(rule) {
   mergeRules(rule, columnProperties, (rules, lastNode) => {
-    if (canMerge(rules) && !rules.some(stylehacks.detect)) {
+    if (
+      canMerge(rules) &&
+      !rules.some(stylehacks.detect) &&
+      rules.every(isValidColumnProperty)
+    ) {
       insertCloned(
         /** @type {import('postcss').Rule} */ (lastNode.parent),
         lastNode,
