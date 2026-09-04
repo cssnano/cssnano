@@ -13,19 +13,19 @@
     "cssnano-preset-advanced": "link:../packages/cssnano-preset-advanced",
     "cssnano-preset-default": "link:../packages/cssnano-preset-default",
     "cssnano-preset-lite": "link:../packages/cssnano-preset-lite",
-    "postcss": "^8.5.26",
+    "postcss": "^8.5.28",
     "svgo": "^4.1.0"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.4",
-    "astro": "^7.2.10",
+    "astro": "^7.3.1",
     "cssnano": "link:../packages/cssnano",
     "typescript": "~7.0.2"
   },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "11.24.0"
+      "version": "11.25.0"
     }
   },
   "browserslist": [
