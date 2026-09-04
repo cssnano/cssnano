@@ -48,6 +48,16 @@ test(
 );
 
 test(
+  'should not deduplicate comments that provide selector whitespace',
+  processCSS('a/**/b,ab{color:red}', 'a/**/b,ab{color:red}')
+);
+
+test(
+  'should deduplicate comments next to existing selector whitespace',
+  processCSS('a/**/ b,a b{color:red}', 'a/**/ b{color:red}')
+);
+
+test(
   'should split only on top-level commas',
   processCSS(
     '.a\\,b, [data-value="a,b"], :is(.c, .d), .a\\,b{color:red}',

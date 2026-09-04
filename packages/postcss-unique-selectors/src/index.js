@@ -2,17 +2,19 @@ import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
 /**
  * @param {string} selectors
- * @return {{start: number, end: number, comments: {start: number, end: number, text: string}[]}[]}
+ * @return {{start: number, end: number, comments: {start: number, end: number, text: string, structuralWhitespace: boolean}[]}[]}
  */
 function splitSelectors(selectors) {
-  /** @type {{start: number, end: number, comments: {start: number, end: number, text: string}[]}[]} */
+  /** @type {{start: number, end: number, comments: {start: number, end: number, text: string, structuralWhitespace: boolean}[]}[]} */
   const parts = [];
   let start = 0;
   let depth = 0;
-  /** @type {{start: number, end: number, text: string}[]} */
+  /** @type {{start: number, end: number, text: string, structuralWhitespace: boolean}[]} */
   let comments = [];
 
-  for (const token of tokenize({ css: selectors })) {
+  const tokens = [...tokenize({ css: selectors })];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
     const [type, , tokenStart, tokenEnd] = token;
 
     if (type === TokenType.Comment) {
@@ -20,6 +22,7 @@ function splitSelectors(selectors) {
         start: tokenStart,
         end: tokenEnd + 1,
         text: token[1],
+        structuralWhitespace: commentProvidesWhitespace(tokens, index),
       });
     }
 
@@ -68,8 +71,67 @@ function splitSelectors(selectors) {
 }
 
 /**
+ * @param {ReturnType<typeof tokenize>} tokens
+ * @param {number} index
+ * @return {boolean}
+ */
+function commentProvidesWhitespace(tokens, index) {
+  // Comments are whitespace in selector grammar. Retain that whitespace in a
+  // comparison key only when it separates two selector components.
+  if (tokens[index - 1]?.[0] === TokenType.Comment) return false;
+
+  let previous = index - 1;
+  while (tokens[previous]?.[0] === TokenType.Comment) previous--;
+  let next = index + 1;
+  while (tokens[next]?.[0] === TokenType.Comment) next++;
+
+  return (
+    canEndSelectorComponent(tokens[previous]) &&
+    canStartSelectorComponent(tokens[next])
+  );
+}
+
+/** @param {ReturnType<typeof tokenize>[number] | undefined} token @return {boolean} */
+function canEndSelectorComponent(token) {
+  if (!token) return false;
+  if (
+    [
+      TokenType.Whitespace,
+      TokenType.Comment,
+      TokenType.Comma,
+      TokenType.Function,
+      TokenType.OpenParen,
+      TokenType.OpenSquare,
+      TokenType.OpenCurly,
+      TokenType.Colon,
+    ].includes(token[0])
+  ) {
+    return false;
+  }
+  return token[0] !== TokenType.Delim || !['>', '+', '~'].includes(token[1]);
+}
+
+/** @param {ReturnType<typeof tokenize>[number] | undefined} token @return {boolean} */
+function canStartSelectorComponent(token) {
+  if (!token) return false;
+  if (
+    [
+      TokenType.Whitespace,
+      TokenType.Comment,
+      TokenType.Comma,
+      TokenType.CloseParen,
+      TokenType.CloseSquare,
+      TokenType.CloseCurly,
+    ].includes(token[0])
+  ) {
+    return false;
+  }
+  return token[0] !== TokenType.Delim || !['>', '+', '~'].includes(token[1]);
+}
+
+/**
  * @param {string} selectors
- * @param {{start: number, end: number, comments: {start: number, end: number, text: string}[]}} part
+ * @param {{start: number, end: number, comments: {start: number, end: number, text: string, structuralWhitespace: boolean}[]}} part
  * @return {[string, string]}
  */
 function selectorText(selectors, part) {
@@ -80,6 +142,7 @@ function selectorText(selectors, part) {
 
   for (const comment of part.comments) {
     keyParts.push(selectors.slice(start, comment.start));
+    if (comment.structuralWhitespace) keyParts.push(' ');
     start = comment.end;
   }
 
