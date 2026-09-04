@@ -12,7 +12,7 @@ npm install postcss-reduce-initial --save
 
 ## Examples
 
-See the [data](data) for more conversions. This data is courtesy
+See the [data](src/data) for more conversions. This data is courtesy
 of Mozilla.
 
 ### Convert `initial` values

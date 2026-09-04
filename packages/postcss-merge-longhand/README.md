@@ -12,17 +12,22 @@ npm install postcss-merge-longhand --save
 
 ## Example
 
-Merge longhand properties into shorthand; works with `margin`, `padding` &
-`border`. For more examples see the [tests](src/__tests__/index.js).
+Merge longhand properties into shorthand; works with `margin`, `padding`,
+`border` & `columns`. For more examples see the [tests](test).
 
 ### Input
 
 ```css
 h1 {
-    margin-top: 10px;
-    margin-right: 20px;
-    margin-bottom: 10px;
-    margin-left: 20px;
+  margin-top: 10px;
+  margin-right: 20px;
+  margin-bottom: 10px;
+  margin-left: 20px;
+}
+
+h2 {
+  column-width: 12em;
+  column-count: 2;
 }
 ```
 
@@ -30,7 +35,11 @@ h1 {
 
 ```css
 h1 {
-    margin: 10px 20px;
+  margin: 10px 20px;
+}
+
+h2 {
+  columns: 12em 2;
 }
 ```
 

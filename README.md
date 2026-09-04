@@ -14,12 +14,12 @@
 [![Sponsors on Open Collective](https://img.shields.io/opencollective/sponsors/cssnano?logo=opencollective&logoColor=white)](#sponsors)
 [![NPM version](https://img.shields.io/npm/v/cssnano.svg?logo=npm)](https://www.npmjs.org/package/cssnano)
 [![Build Status](https://github.com/cssnano/cssnano/actions/workflows/test.yml/badge.svg)](https://github.com/cssnano/cssnano/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/cssnano/cssnano/branch/master/graph/badge.svg)](https://codecov.io/gh/cssnano/cssnano)
+[![codecov](https://codecov.io/gh/cssnano/cssnano/branch/main/graph/badge.svg)](https://codecov.io/gh/cssnano/cssnano)
 [![Gitter](https://img.shields.io/badge/Gitter-Join_the_PostCSS_chat-brightgreen.svg?logo=gitter)](https://gitter.im/postcss/postcss)
 
 </div>
 
-cssnano is a modern, modular CSSS compression tool written on top of the PostCSS
+cssnano is a modern, modular CSS compression tool written on top of the PostCSS
 ecosystem, which allows us to use a lot of powerful features in order to minify
 CSS.
 

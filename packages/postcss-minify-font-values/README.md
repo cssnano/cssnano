@@ -1,4 +1,4 @@
-# postcss-minify-font-values [![Build Status][ci-img]][ci]
+# postcss-minify-font-values
 
 > Minify font declarations with PostCSS.
 
@@ -79,5 +79,3 @@ MIT © [Bogdan Chadkin](mailto:trysound@yandex.ru)
 
 [mathias]: https://mathiasbynens.be/notes/unquoted-font-family
 [PostCSS]: https://github.com/postcss/postcss
-[ci-img]:  https://travis-ci.org/cssnano/postcss-minify-font-values.svg
-[ci]:      https://travis-ci.org/cssnano/postcss-minify-font-values
