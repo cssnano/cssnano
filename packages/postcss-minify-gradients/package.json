@@ -33,7 +33,7 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "@colordx/core": "^5.6.0",
+    "@colordx/core": "^6.1.0",
     "cssnano-utils": "workspace:^",
     "postcss-value-parser": "^4.2.0"
   },
