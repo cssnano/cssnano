@@ -12,7 +12,8 @@ import { compoundSpecificityKey, addSpecificity } from './specificity.js';
  *   outcome?: 'valid' | 'invalid' | 'opaque',
  *   valid: boolean,
  *   hasNestedHas?: boolean,
- *   hasPseudoElement?: boolean
+ *   hasPseudoElement?: boolean,
+ *   dedupeHash?: number
  * }} FunctionResult
  */
 /**
@@ -28,7 +29,8 @@ import { compoundSpecificityKey, addSpecificity } from './specificity.js';
  *   hasVendorPseudo: boolean,
  *   foldEligible: boolean,
  *   valid: boolean,
- *   hasNestedHas?: boolean
+ *   hasNestedHas?: boolean,
+ *   dedupeHash?: number
  * }} Compound
  */
 /**
@@ -41,7 +43,8 @@ import { compoundSpecificityKey, addSpecificity } from './specificity.js';
  *   specificity: Specificity,
  *   serializationKey?: string,
  *   hasNestedHas?: boolean,
- *   hasPseudoElement?: boolean
+ *   hasPseudoElement?: boolean,
+ *   dedupeHash?: number
  * }} ComplexSelector
  */
 
@@ -377,11 +380,13 @@ function extractUniqueMiddles(occurrences, sort) {
 
 /**
  * @param {ComplexSelector[]} selectors
- * @return {Map<string, CandidateGroup>}
+ * @return {CandidateGroup[]}
  */
 function collectFoldCandidateGroups(selectors) {
+  /** @type {CandidateGroup[]} */
+  const groups = [];
   /** @type {Map<string, CandidateGroup>} */
-  const groups = new Map();
+  const groupedCandidates = new Map();
 
   for (let i = 0; i < selectors.length; i++) {
     const selector = selectors[i];
@@ -397,33 +402,38 @@ function collectFoldCandidateGroups(selectors) {
     const { parts } = selector;
     if (parts.length < 3) continue;
 
+    /** @type {string[]} */
+    const prefixKeys = Array(parts.length + 1);
+    prefixKeys[0] = '';
+    for (let p = 0; p < parts.length; p++) {
+      prefixKeys[p + 1] = prefixKeys[p] + '\x1f' + getPartKey(parts[p]);
+    }
+
+    /** @type {string[]} */
+    const suffixKeys = Array(parts.length + 1);
+    suffixKeys[parts.length] = '';
+    for (let p = parts.length - 1; p >= 0; p--) {
+      suffixKeys[p] = getPartKey(parts[p]) + '\x1f' + suffixKeys[p + 1];
+    }
+
     for (let k = 0; k < parts.length; k += 2) {
       const middle = parts[k];
       if (typeof middle === 'string' || !middle.foldEligible) {
         continue;
       }
 
-      const prefixParts = parts.slice(0, k);
-      const suffixParts = parts.slice(k + 1);
-
-      if (prefixParts.length === 0 && suffixParts.length === 0) {
-        continue;
-      }
-
-      const prefixKey = prefixParts.map(getPartKey).join('\x1f');
-      const suffixKey = suffixParts.map(getPartKey).join('\x1f');
       const specKey = compoundSpecificityKey(middle);
-      const groupKey = `${prefixKey}\x1e${suffixKey}\x1e${specKey}`;
-
-      let group = groups.get(groupKey);
+      const groupKey = `${prefixKeys[k]}\x1e${suffixKeys[k + 1]}\x1e${specKey}`;
+      let group = groupedCandidates.get(groupKey);
       if (!group) {
         group = {
           occurrences: [],
-          prefixParts,
-          suffixParts,
+          prefixParts: parts.slice(0, k),
+          suffixParts: parts.slice(k + 1),
           middleSpecificity: middle.specificity,
         };
-        groups.set(groupKey, group);
+        groupedCandidates.set(groupKey, group);
+        groups.push(group);
       }
       group.occurrences.push({
         selectorIndex: i,
@@ -438,7 +448,7 @@ function collectFoldCandidateGroups(selectors) {
 }
 
 /**
- * @param {Map<string, CandidateGroup>} groups
+ * @param {CandidateGroup[]} groups
  * @param {boolean} sort
  * @return {ValidatedFold[]}
  */
@@ -446,7 +456,7 @@ function validateCandidateGroups(groups, sort) {
   /** @type {ValidatedFold[]} */
   const validatedFolds = [];
 
-  for (const group of groups.values()) {
+  for (const group of groups) {
     if (group.occurrences.length < 2) continue;
 
     const middles = extractUniqueMiddles(group.occurrences, sort);

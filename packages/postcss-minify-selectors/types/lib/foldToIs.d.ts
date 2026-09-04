@@ -14,6 +14,7 @@ export type FunctionResult = {
     valid: boolean;
     hasNestedHas?: boolean;
     hasPseudoElement?: boolean;
+    dedupeHash?: number;
 };
 export type Compound = {
     pieces: (string | FunctionResult)[];
@@ -28,6 +29,7 @@ export type Compound = {
     foldEligible: boolean;
     valid: boolean;
     hasNestedHas?: boolean;
+    dedupeHash?: number;
 };
 export type ComplexSelector = {
     parts: (Compound | string)[];
@@ -39,6 +41,7 @@ export type ComplexSelector = {
     serializationKey?: string;
     hasNestedHas?: boolean;
     hasPseudoElement?: boolean;
+    dedupeHash?: number;
 };
 /** @typedef {import('./specificity.js').Specificity} Specificity */
 /** @typedef {import('./specificity.js').HasSpecificity} HasSpecificity */
@@ -52,7 +55,8 @@ export type ComplexSelector = {
  *   outcome?: 'valid' | 'invalid' | 'opaque',
  *   valid: boolean,
  *   hasNestedHas?: boolean,
- *   hasPseudoElement?: boolean
+ *   hasPseudoElement?: boolean,
+ *   dedupeHash?: number
  * }} FunctionResult
  */
 /**
@@ -68,7 +72,8 @@ export type ComplexSelector = {
  *   hasVendorPseudo: boolean,
  *   foldEligible: boolean,
  *   valid: boolean,
- *   hasNestedHas?: boolean
+ *   hasNestedHas?: boolean,
+ *   dedupeHash?: number
  * }} Compound
  */
 /**
@@ -81,7 +86,8 @@ export type ComplexSelector = {
  *   specificity: Specificity,
  *   serializationKey?: string,
  *   hasNestedHas?: boolean,
- *   hasPseudoElement?: boolean
+ *   hasPseudoElement?: boolean,
+ *   dedupeHash?: number
  * }} ComplexSelector
  */
 /**
