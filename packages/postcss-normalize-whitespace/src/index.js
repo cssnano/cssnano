@@ -4,6 +4,29 @@ const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
 const variableFunctions = new Set(['var', 'env', 'constant']);
+const mathFunctions = new Set([
+  'calc',
+  'min',
+  'max',
+  'clamp',
+  'round',
+  'mod',
+  'rem',
+  'sin',
+  'cos',
+  'tan',
+  'asin',
+  'acos',
+  'atan',
+  'atan2',
+  'pow',
+  'sqrt',
+  'hypot',
+  'log',
+  'exp',
+  'abs',
+  'sign',
+]);
 const ieHackRegex = /\s*(\\9)\s*/;
 const whitespaceRegex = /\s/g;
 
@@ -43,14 +66,16 @@ function isClosingToken(type) {
 }
 
 /** @param {import('@csstools/css-tokenizer').CSSToken | undefined} token */
-function isDivider(token) {
-  return (
-    token?.[0] === TokenType.Comma ||
-    (token?.[0] === TokenType.Delim && token[1] === '/')
-  );
+function isComma(token) {
+  return token?.[0] === TokenType.Comma;
 }
 
-/** @param {import('@csstools/css-tokenizer').CSSToken | undefined} previous @param {import('@csstools/css-tokenizer').CSSToken | undefined} next @param {{ calc?: boolean, variable?: boolean } | undefined} context */
+/** @param {import('@csstools/css-tokenizer').CSSToken | undefined} token */
+function isSlash(token) {
+  return token?.[0] === TokenType.Delim && token[1] === '/';
+}
+
+/** @param {import('@csstools/css-tokenizer').CSSToken | undefined} previous @param {import('@csstools/css-tokenizer').CSSToken | undefined} next @param {{ math?: boolean, variable?: boolean } | undefined} context */
 function removesWhitespace(previous, next, context) {
   if (context?.variable) return false;
   return (
@@ -63,7 +88,7 @@ function removesWhitespace(previous, next, context) {
 /**
  * @param {import('@csstools/css-tokenizer').CSSToken[]} tokens
  * @param {number} index
- * @param {{ calc?: boolean, variable?: boolean }[]} stack
+ * @param {{ math?: boolean, variable?: boolean }[]} stack
  * @return {string}
  */
 function whitespaceReplacement(tokens, index, stack) {
@@ -73,20 +98,21 @@ function whitespaceReplacement(tokens, index, stack) {
   if (previous && endsWithEscapingBackslash(previous[1]))
     return tokens[index][1];
   const besideFunctionBoundary = removesWhitespace(previous, next, context);
-  const besideDivider =
-    !context?.calc && (isDivider(previous) || isDivider(next));
+  const besideComma = isComma(previous) || isComma(next);
+  const besideSlash = !context?.math && (isSlash(previous) || isSlash(next));
   const variableTrailingFallback =
     context?.variable &&
     previous?.[0] === TokenType.Comma &&
     next?.[0] === TokenType.CloseParen;
-  return !variableTrailingFallback && (besideFunctionBoundary || besideDivider)
+  return !variableTrailingFallback &&
+    (besideFunctionBoundary || besideComma || besideSlash)
     ? ''
     : ' ';
 }
 
 /**
  * Normalize directly from source-backed tokenizer spans. The stack mirrors the
- * legacy walk: calc descendants receive special delimiter treatment, while
+ * legacy walk: math descendants receive special delimiter treatment, while
  * variable functions retain their immediate inner whitespace.
  *
  * @param {string} value
@@ -96,7 +122,7 @@ function reduceWhitespaces(value) {
   const tokens = [...tokenize({ css: value })].filter(
     (token) => token[0] !== TokenType.EOF
   );
-  /** @type {{ calc?: boolean, variable?: boolean }[]} */
+  /** @type {{ math?: boolean, variable?: boolean }[]} */
   const stack = [];
   /** @type {[number, number, string][]} */
   const replacements = [];
@@ -107,7 +133,7 @@ function reduceWhitespaces(value) {
     if (type === TokenType.Function) {
       const name = token[1].slice(0, -1).toLowerCase();
       stack.push({
-        calc: stack.at(-1)?.calc || name === 'calc',
+        math: Boolean(stack.at(-1)?.math || mathFunctions.has(name)),
         variable: variableFunctions.has(name),
       });
       continue;

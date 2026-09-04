@@ -15,18 +15,16 @@ npm install postcss-normalize-whitespace --save
 ### Input
 
 ```css
-h1{
-    width: calc(10px - ( 100px / var(--test) )) 
+h1 {
+    width: calc(10px - ( 100px / var(--test) ));
 }
 ```
 
 ### Output
 
 ```css
-h1{
-    width: calc(10px - 100px / var(--test))
-}
-``` 
+h1{width:calc(10px - (100px / var(--test)))}
+```
 
 ## Usage
 
