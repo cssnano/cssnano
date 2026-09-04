@@ -95,29 +95,11 @@ export declare function serializePieces(rootPieces: readonly (string | FunctionR
  */
 export declare function serializeComplex(selector: ComplexSelector): string;
 /**
- * @param {readonly (string | FunctionResult)[]} a
- * @param {readonly (string | FunctionResult)[]} b
- * @return {boolean}
- */
-export declare function equalPieces(a: readonly (string | FunctionResult)[], b: readonly (string | FunctionResult)[]): boolean;
-/**
- * @param {Compound} a
- * @param {Compound} b
- * @return {boolean}
- */
-export declare function equalCompound(a: Compound, b: Compound): boolean;
-/**
  * @param {ComplexSelector} a
  * @param {ComplexSelector} b
  * @return {boolean}
  */
 export declare function equalComplex(a: ComplexSelector, b: ComplexSelector): boolean;
-/**
- * @param {Compound | string} a
- * @param {Compound | string} b
- * @return {boolean}
- */
-export declare function samePart(a: Compound | string, b: Compound | string): boolean;
 export type CandidateOccurrence = {
     selectorIndex: number;
     compoundIndex: number;

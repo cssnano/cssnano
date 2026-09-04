@@ -1788,18 +1788,6 @@ function normalizeList(
     .join(',');
 }
 
-/** @param {string} source @return {string[]} */
-function splitList(source) {
-  const structure = balancedTokens(source);
-  if (!structure) return [source];
-  return structure.topLevelSegments().map(({ startIndex, endIndex }) => {
-    const start = structure.tokens[startIndex]?.[2] ?? source.length;
-    const end =
-      endIndex > startIndex ? structure.tokens[endIndex - 1][3] + 1 : start;
-    return source.slice(start, end);
-  });
-}
-
 /** @param {string} source @return {string} */
 function specificityOf(source) {
   const structure = balancedTokens(source);
@@ -1835,4 +1823,4 @@ function parseSelectorList(source, sort = true) {
   ).entries;
 }
 
-export { normalizeList, splitList, specificityOf, parseSelectorList };
+export { normalizeList, specificityOf, parseSelectorList };

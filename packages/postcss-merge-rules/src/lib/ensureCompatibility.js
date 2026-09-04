@@ -315,10 +315,4 @@ function ensureCompatibility(selectors, browsers, compatibilityCache) {
   });
 }
 
-export {
-  sameVendor,
-  noVendor,
-  pseudoElements,
-  ensureCompatibility,
-  scanCompatibility,
-};
+export { sameVendor, noVendor, pseudoElements, ensureCompatibility };
