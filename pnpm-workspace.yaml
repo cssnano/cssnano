@@ -8,6 +8,7 @@ catalog:
   postcss: ^8.5.26
   '@webref/css': 8.7.3
   mdn-data: 2.34.0
+  '@colordx/core': ^6.1.0
 
 minimumReleaseAgeExclude:
   - postcss-calc
