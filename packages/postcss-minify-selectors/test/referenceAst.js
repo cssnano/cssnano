@@ -18,16 +18,18 @@ function parse(source) {
 }
 
 /** @param {import('postcss-selector-parser').Node} node @return {[number, number, number]} */
-function addSpecificity(node) {
-  if (node.type === 'id') return [1, 0, 0];
-  if (node.type === 'class' || node.type === 'attribute') return [0, 1, 0];
-  if (node.type === 'tag') return [0, 0, 1];
-  if (node.type === 'universal' || node.type === 'combinator') return [0, 0, 0];
-  if (node.type === 'nesting') return [0, 0, 0];
-  if (node.type !== 'pseudo') return [0, 0, 0];
-
+function pseudoSpecificity(node) {
   const name = node.value.toLowerCase().replace(/^::?/u, '');
-  if (node.value.startsWith('::') || pseudoElements.has(name)) return [0, 0, 1];
+  if (node.value.startsWith('::') || pseudoElements.has(name)) {
+    if (name === 'slotted' && node.nodes?.length) {
+      let maximum = [0, 0, 0];
+      for (const selector of node.nodes) {
+        maximum = maxSpecificity(maximum, specificity(selector));
+      }
+      return add([0, 0, 1], maximum);
+    }
+    return [0, 0, 1];
+  }
   if (name === 'where') return [0, 0, 0];
   if (selectorPseudos.has(`:${name}`)) {
     let maximum = [0, 0, 0];
@@ -47,6 +49,15 @@ function addSpecificity(node) {
     return add([0, 1, 0], maximum);
   }
   return [0, 1, 0];
+}
+
+/** @param {import('postcss-selector-parser').Node} node @return {[number, number, number]} */
+function addSpecificity(node) {
+  if (node.type === 'id') return [1, 0, 0];
+  if (node.type === 'class' || node.type === 'attribute') return [0, 1, 0];
+  if (node.type === 'tag') return [0, 0, 1];
+  if (node.type !== 'pseudo') return [0, 0, 0];
+  return pseudoSpecificity(node);
 }
 
 /** @param {import('postcss-selector-parser').Container} selector @return {[number, number, number]} */
