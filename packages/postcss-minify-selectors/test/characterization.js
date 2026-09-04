@@ -433,6 +433,35 @@ test('deduplicates wide selector lists with functions in linear time', () => {
   assert.ok(elapsed < 100, `Expected < 100ms, took ${elapsed.toFixed(1)}ms`);
 });
 
+test('deduplicates wide inner selector lists with functions in linear time', () => {
+  const count = 2000;
+  const items = Array.from({ length: count }, (_, i) => `:not(.item-${i})`);
+  const input = `:is(${items.join(',')})`;
+  const start = performance.now();
+  const output = normalizeList(input, false, false);
+  const elapsed = performance.now() - start;
+  assert.equal(output, input);
+  assert.ok(elapsed < 150, `Expected < 150ms, took ${elapsed.toFixed(1)}ms`);
+});
+
+test('deduplicates identical opaque and raw functional pseudos in inner selector lists', () => {
+  assert.equal(
+    normalizeList(':is(:unknown(x), :unknown(x))', false, false),
+    ':is(:unknown(x))'
+  );
+  assert.equal(
+    normalizeList(':is(:not(:unknown(x)), :not(:unknown(x)))', false, false),
+    ':is(:not(:unknown(x)))'
+  );
+});
+
+test('normalizes compound arguments with attribute whitespace inside functional pseudos', () => {
+  assert.equal(
+    normalizeList(':host([attr = "val"])', false, false),
+    ':host([attr=val])'
+  );
+});
+
 test('preserves compound-only functional pseudos when arguments contain combinators or commas', () => {
   for (const input of [
     ':host(.a > .b)',

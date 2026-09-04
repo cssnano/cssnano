@@ -78,6 +78,20 @@ export const benchmarkCases = {
       return `.scope-${index}:is(:not(${selectors}),:not(${selectors})){color:red}`;
     }).join(''),
   },
+  'function-selector-deduplication': {
+    plugin: 'postcss-minify-selectors',
+    createProcessor() {
+      return pluginProcessor('postcss-minify-selectors');
+    },
+    css: Array.from({ length: 40 }, (_, index) => {
+      const selectors = Array.from(
+        { length: 200 },
+        (unused, selectorIndex) => `:not(.item-${selectorIndex})`
+      ).join(',');
+
+      return `.scope-${index}:is(${selectors}){color:red}`;
+    }).join(''),
+  },
   'selector-ir-long-nested': {
     plugin: 'postcss-minify-selectors',
     createProcessor() {
