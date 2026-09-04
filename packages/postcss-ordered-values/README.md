@@ -44,13 +44,16 @@ h1 {
 
 ## Support List
 
-For more examples, see the [tests](src/__tests__/index.js).
+For more examples, see the [tests](test).
 
 * `animation`, `-webkit-animation`
 * `border(border-left|right|top|bottom)`
 * `box-shadow`
-* `outline`
+* `columns`
 * `flex-flow`
+* `grid`
+* `list-style`
+* `outline`
 * `transition`, `-webkit-transition`
 
 

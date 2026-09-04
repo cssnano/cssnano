@@ -76,7 +76,7 @@ name of the animation depends on the order the value is matched in, so neither
 is touched.
 
 It works for `@keyframes`, `@counter-style`, custom `counter` values and grid area definitions. See the
-[documentation][idents] for more information, or the [tests](src/__tests__) for more
+[documentation][idents] for more information, or the [tests](test) for more
 examples.
 
 
