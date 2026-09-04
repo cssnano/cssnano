@@ -1,13 +1,5 @@
 import cssnanoUtils from 'cssnano-utils';
-import {
-  unquote,
-  normalizeFormula,
-  isCombinator,
-  isColumnCombinator,
-  isDeepBoundary,
-  skipUniversal,
-  keepWhitespace,
-} from './tokenUtils.js';
+import { unquote, isDeepBoundary, keepWhitespace } from './tokenUtils.js';
 import {
   pseudoElements,
   legacyPseudoElements,
@@ -21,6 +13,21 @@ import {
   serializePieces,
   equalComplex,
 } from './foldToIs.js';
+import {
+  parseAnPlusB,
+  normalizePtNameArgument,
+  normalizeIdentListArgument,
+  normalizeIdentArgument,
+  normalizeIdentOrStringList,
+  firstPseudoReplacement,
+} from './argumentParsers.js';
+import {
+  checkCombinatorToken,
+  skipTriviaAfterCombinator,
+  scanTriviaSegment,
+  appendImportantTrivia,
+  consumeLeading,
+} from './triviaScanner.js';
 
 const { TokenType } = cssnanoUtils;
 /** @type {typeof cssnanoUtils.balancedTokens} */
@@ -59,13 +66,23 @@ function normalizeDoubleColonPseudo(state, tokens, index) {
     tokens[index + 1]?.[0] !== TokenType.Colon
   )
     return false;
-  const name = tokens[index + 2]?.[1]?.toLowerCase() ?? '';
+  const following = tokens[index + 2];
+  if (
+    following?.[0] !== TokenType.Ident &&
+    following?.[0] !== TokenType.Function
+  ) {
+    state.valid = false;
+    return false;
+  }
+  const name = following[1]?.toLowerCase() ?? '';
   if (legacyPseudoElements.has(name)) {
     state.output.push(':');
   } else {
     state.output.push('::');
   }
-  state.specificity[2]++;
+  // Functional pseudo-elements select their specificity from their argument
+  // grammar. Non-functional pseudo-elements always have type specificity.
+  if (following[0] !== TokenType.Function) state.specificity[2]++;
   state.hasPseudoElement = true;
   state.foldEligible = false;
   if (tokens[index + 2]?.[1]?.startsWith('-')) {
@@ -115,108 +132,6 @@ function createNormalizationState() {
   };
 }
 
-/** @param {number} hash @param {number} value @return {number} */
-function combineHash(hash, value) {
-  return (hash * 65_599 + value) % 4_294_967_291;
-}
-
-/** @param {number} hash @param {string} value @return {number} */
-function hashString(hash, value) {
-  let result = hash;
-  for (let index = 0; index < value.length; index++) {
-    result = combineHash(result, value.charCodeAt(index));
-  }
-  return result;
-}
-
-/** @param {number} hash @param {string} source @param {number} start @param {number} end @return {number} */
-function hashSubstring(hash, source, start, end) {
-  let result = hash;
-  for (let index = start; index < end; index++) {
-    result = combineHash(result, source.charCodeAt(index));
-  }
-  return result;
-}
-
-const ROLLING_MOD = 1_000_000_007;
-const ROLLING_BASE = 31;
-let powB = new Int32Array([1, 31]);
-
-/** @param {number} length @return {number} */
-function getPowB(length) {
-  if (length >= powB.length) {
-    let newLen = powB.length;
-    while (newLen <= length) newLen *= 2;
-    const next = new Int32Array(newLen);
-    next.set(powB);
-    for (let i = powB.length; i < newLen; i++) {
-      next[i] = (next[i - 1] * ROLLING_BASE) % ROLLING_MOD;
-    }
-    powB = next;
-  }
-  return powB[length];
-}
-
-/** @param {string} source @return {Int32Array} */
-function buildPrefixHash(source) {
-  const len = source.length;
-  const H = new Int32Array(len + 1);
-  for (let i = 0; i < len; i++) {
-    H[i + 1] = (H[i] * ROLLING_BASE + source.charCodeAt(i)) % ROLLING_MOD;
-  }
-  return H;
-}
-
-/** @param {Int32Array} H @param {number} start @param {number} end @return {number} */
-function queryRollingHash(H, start, end) {
-  const len = end - start;
-  const term = (H[start] * getPowB(len)) % ROLLING_MOD;
-  return (H[end] - term + ROLLING_MOD) % ROLLING_MOD;
-}
-
-/** @param {readonly (string | FunctionResult)[]} pieces @return {number} */
-function hashPieces(pieces) {
-  let hash = 2_166_136_261;
-  for (const piece of pieces) {
-    if (typeof piece === 'string') {
-      hash = hashString(combineHash(hash, 1), piece);
-    } else if (piece.dedupeHash !== undefined) {
-      hash = combineHash(hash, piece.dedupeHash);
-    } else if (piece.raw) {
-      hash = hashSubstring(
-        combineHash(hash, 2),
-        piece.raw.source,
-        piece.raw.start,
-        piece.raw.end
-      );
-    }
-  }
-  return hash;
-}
-
-/** @param {Compound} compound @return {number} */
-function compoundHash(compound) {
-  if (compound.dedupeHash !== undefined) return compound.dedupeHash;
-  let hash = hashPieces(compound.pieces);
-  for (const value of compound.specificity) hash = combineHash(hash, value);
-  compound.dedupeHash = hash;
-  return hash;
-}
-
-/** @param {ComplexSelector} entry @return {number} */
-function complexHash(entry) {
-  if (entry.dedupeHash !== undefined) return entry.dedupeHash;
-  let hash = hashString(2_166_136_261, entry.leadingCombinator ?? '');
-  for (const part of entry.parts) {
-    hash =
-      typeof part === 'string'
-        ? hashString(combineHash(hash, 1), part)
-        : combineHash(hash, compoundHash(part));
-  }
-  entry.dedupeHash = hash;
-  return hash;
-}
-
 /** @param {NormalizationState} state @param {readonly CSSToken[]} tokens @param {number} index */
 function normalizeComment(state, tokens, index) {
   const token = tokens[index];
@@ -245,15 +160,17 @@ function normalizeWhitespace(state, tokens, index) {
     state.output.push(' ');
 }
 
-/** @param {NormalizationState} state @param {CSSToken} token @param {CSSToken | undefined} previous */
-function updateSimpleSpecificity(state, token, previous) {
+/** @param {NormalizationState} state @param {CSSToken} token @param {CSSToken | undefined} next @param {CSSToken | undefined} previous */
+function updateSimpleSpecificity(state, token, next, previous) {
   if (token[0] === TokenType.Hash) state.specificity[0]++;
   if (token[0] === TokenType.Delim && token[1] === '.') state.specificity[1]++;
   if (
     token[0] === TokenType.Ident &&
     previous?.[0] !== TokenType.Colon &&
     previous?.[0] !== TokenType.Hash &&
-    !(previous?.[0] === TokenType.Delim && previous[1] === '.')
+    !(previous?.[0] === TokenType.Delim && previous[1] === '.') &&
+    // A namespace prefix is an identifier followed by `|`, not a type name.
+    !(next?.[0] === TokenType.Delim && next[1] === '|')
   )
     state.specificity[2]++;
 }
@@ -261,16 +178,19 @@ function updateSimpleSpecificity(state, token, previous) {
 /** @param {NormalizationState} state @param {CSSToken | undefined} next */
 function updatePseudoSpecificity(state, next) {
   if (next?.[0] === TokenType.Function) return;
-  const isPseudoElem =
-    next?.[0] === TokenType.Colon ||
-    pseudoElements.has(next?.[1]?.toLowerCase() ?? '');
+  if (next?.[0] === TokenType.Colon) return;
+  if (next?.[0] !== TokenType.Ident) {
+    state.valid = false;
+    return;
+  }
+  const isPseudoElem = pseudoElements.has(next[1]?.toLowerCase() ?? '');
   if (isPseudoElem) {
     state.specificity[2]++;
     state.hasPseudoElement = true;
     state.foldEligible = false;
   } else {
     state.specificity[1]++;
-    const name = next?.[1]?.toLowerCase() ?? '';
+    const name = next[1]?.toLowerCase() ?? '';
     if (name.startsWith('-')) {
       state.hasVendorPseudo = true;
     }
@@ -284,7 +204,7 @@ function updatePseudoSpecificity(state, next) {
 /** @param {NormalizationState} state @param {CSSToken} token @param {CSSToken | undefined} next @param {CSSToken | undefined} previous */
 function updateSpecificity(state, token, next, previous) {
   if (state.attributes.length) return;
-  updateSimpleSpecificity(state, token, previous);
+  updateSimpleSpecificity(state, token, next, previous);
   if (token[0] === TokenType.Colon) updatePseudoSpecificity(state, next);
 }
 
@@ -370,11 +290,6 @@ function finishCompound(state) {
     !state.hasCommentDescendant &&
     state.allPseudosSafe;
 
-  let dedupeHash = hashPieces(state.output);
-  for (const value of state.specificity) {
-    dedupeHash = combineHash(dedupeHash, value);
-  }
-
   return {
     pieces: state.output,
     specificity: state.specificity,
@@ -388,7 +303,6 @@ function finishCompound(state) {
     foldEligible,
     valid: state.valid,
     hasNestedHas: state.hasNestedHas,
-    dedupeHash,
   };
 }
 
@@ -424,13 +338,60 @@ function normalizeStructuralToken(state, tokens, index) {
   return false;
 }
 
+/** @param {CSSToken} [next] */
+function canQualifyUniversal(next) {
+  if (!next) return false;
+  const type = next[0];
+  return (
+    type === TokenType.Hash ||
+    type === TokenType.OpenSquare ||
+    type === TokenType.Colon ||
+    (type === TokenType.Delim && next[1] === '.')
+  );
+}
+
+/** @param {readonly (string | FunctionResult)[]} output */
+function lastNonCommentPiece(output) {
+  for (let i = output.length - 1; i >= 0; i--) {
+    const item = output[i];
+    if (typeof item === 'string' && item.startsWith('/*')) continue;
+    return item;
+  }
+  return undefined;
+}
+
+/**
+ * @param {NormalizationState} state
+ * @param {CSSToken} [next]
+ * @param {boolean} [hasDefaultNamespace]
+ * @return {boolean}
+ */
+function normalizeUniversal(state, next, hasDefaultNamespace = false) {
+  const previousPiece = lastNonCommentPiece(state.output);
+  const atCompoundStart =
+    previousPiece === undefined ||
+    previousPiece === ' ' ||
+    previousPiece === '/deep/';
+  if (!atCompoundStart && previousPiece !== '|') state.valid = false;
+  if (next?.[0] === TokenType.Ident || next?.[1] === '*') state.valid = false;
+  if (hasDefaultNamespace) return false;
+  if (atCompoundStart && canQualifyUniversal(next)) return true;
+  return false;
+}
+
 /**
  * @param {NormalizationState} state
  * @param {readonly CSSToken[]} tokens
  * @param {number} index
+ * @param {boolean} [hasDefaultNamespace]
  * @return {{ end: number, skipped?: boolean }}
  */
-function normalizeDelimToken(state, tokens, index) {
+function normalizeDelimToken(
+  state,
+  tokens,
+  index,
+  hasDefaultNamespace = false
+) {
   const token = tokens[index];
   const next = tokens[index + 1];
   if (token[1] === '&') {
@@ -444,14 +405,10 @@ function normalizeDelimToken(state, tokens, index) {
   if (
     token[1] === '*' &&
     !state.attributes.length &&
-    skipUniversal(
-      next,
-      typeof state.output.at(-1) === 'string'
-        ? /** @type {string} */ (state.output.at(-1))?.at(-1)
-        : undefined
-    )
-  )
+    normalizeUniversal(state, next, hasDefaultNamespace)
+  ) {
     return { end: index, skipped: true };
+  }
 
   if (isDeepBoundary(tokens, index)) {
     if (state.output.at(-1) === ' ') state.output.pop();
@@ -494,6 +451,7 @@ function normalizeIdentToken(token, next) {
  * @param {number} index
  * @param {number} start
  * @param {number} finish
+ * @param {boolean} [hasDefaultNamespace]
  * @return {{ end: number, text?: string }}
  */
 function normalizeToken(
@@ -504,7 +462,8 @@ function normalizeToken(
   values,
   index,
   start,
-  finish
+  finish,
+  hasDefaultNamespace = false
 ) {
   const token = tokens[index];
   const type = token[0];
@@ -538,7 +497,12 @@ function normalizeToken(
   updateSpecificity(state, token, next, previous);
 
   if (type === TokenType.Delim) {
-    const delim = normalizeDelimToken(state, tokens, index);
+    const delim = normalizeDelimToken(
+      state,
+      tokens,
+      index,
+      hasDefaultNamespace
+    );
     if (delim.skipped) return { end: delim.end };
     if (delim.end !== index) return delim;
   }
@@ -547,47 +511,6 @@ function normalizeToken(
     type === TokenType.Ident ? normalizeIdentToken(token, next) : token[1];
   state.output.push(val);
   return { end: index };
-}
-
-/**
- * @param {string} source
- * @param {readonly CSSToken[]} tokens
- * @param {BalancedTokenStructure} structure
- * @param {Map<number, FunctionResult>} values
- * @param {number} start
- * @param {number} finish
- * @return {Compound}
- */
-function normalizeRange(source, tokens, structure, values, start, finish) {
-  const state = createNormalizationState();
-  for (let index = start; index < finish; index++) {
-    const normalized = normalizeToken(
-      state,
-      source,
-      tokens,
-      structure,
-      values,
-      index,
-      start,
-      finish
-    );
-    if (normalized.text !== undefined)
-      return {
-        pieces: [normalized.text],
-        specificity: state.specificity,
-        hasNamespace: false,
-        hasPseudoElement: false,
-        hasFunction: false,
-        hasNesting: false,
-        hasAttributeModifier: false,
-        hasCommentDescendant: false,
-        hasVendorPseudo: false,
-        foldEligible: false,
-        valid: false,
-      };
-    index = normalized.end;
-  }
-  return finishCompound(state);
 }
 
 /** @param {readonly CSSToken[]} tokens @param {number} index @return {number} */
@@ -632,7 +555,7 @@ function rawFunctionResult(source, tokens, index, end, outcome = 'valid') {
       end: tokens[end]?.[3] + 1 || source.length,
     },
     pieces: undefined,
-    specificity: isDoubleColon ? [0, 0, 0] : [0, 1, 0],
+    specificity: isDoubleColon ? [0, 0, 1] : [0, 1, 0],
     foldEligible: false,
     outcome,
     valid: outcome !== 'invalid',
@@ -666,9 +589,18 @@ function invalidCompound() {
  * @param {Map<number, FunctionResult>} values
  * @param {number} start
  * @param {number} end
+ * @param {boolean} [hasDefaultNamespace]
  * @return {Compound}
  */
-function normalizeCompound(source, tokens, structure, values, start, end) {
+function normalizeCompound(
+  source,
+  tokens,
+  structure,
+  values,
+  start,
+  end,
+  hasDefaultNamespace = false
+) {
   const state = createNormalizationState();
   let index = start;
 
@@ -715,7 +647,8 @@ function normalizeCompound(source, tokens, structure, values, start, end) {
       values,
       index,
       start,
-      end
+      end,
+      hasDefaultNamespace
     );
     if (normalized.text !== undefined) return invalidCompound();
     index = normalized.end;
@@ -735,6 +668,7 @@ function normalizeCompound(source, tokens, structure, values, start, end) {
  * @param {number} start
  * @param {number} end
  * @param {'forgiving-selector-list' | 'selector-list' | 'relative-selector-list'} grammar
+ * @param {boolean} [hasDefaultNamespace]
  * @return {FunctionResult}
  */
 function normalizeSelectorList(
@@ -744,7 +678,8 @@ function normalizeSelectorList(
   values,
   start,
   end,
-  grammar
+  grammar,
+  hasDefaultNamespace = false
 ) {
   const relative = grammar === 'relative-selector-list';
   const forgiving = grammar === 'forgiving-selector-list';
@@ -756,18 +691,20 @@ function normalizeSelectorList(
     start,
     end,
     false,
-    relative
+    relative,
+    false,
+    hasDefaultNamespace
   );
 
-  if (relative && (result.hasPseudoElement || result.hasNestedHas)) {
-    result.valid = false;
-  }
-
   const entries = forgiving
-    ? result.entries.filter((entry) => entry.valid)
+    ? result.entries.filter((entry) => entry.valid && !entry.hasPseudoElement)
     : result.entries;
 
-  const valid = forgiving ? true : result.valid;
+  const valid = forgiving
+    ? true
+    : result.valid &&
+      !result.hasPseudoElement &&
+      !(relative && result.hasNestedHas);
   /** @type {'valid' | 'invalid'} */
   const outcome = valid ? 'valid' : 'invalid';
 
@@ -776,15 +713,9 @@ function normalizeSelectorList(
     specificity: maximumSpecificity(entries),
     outcome,
     valid,
+    hasNestedHas: result.hasNestedHas,
+    hasPseudoElement: forgiving ? false : result.hasPseudoElement,
   };
-}
-
-/** @param {string} kind @return {string | undefined} */
-function firstPseudoReplacement(kind) {
-  if (kind === 'child') return ':first-child';
-  if (kind === 'of-type') return ':first-of-type';
-  if (kind === 'last-child' || kind === 'last-of-type') return `:${kind}`;
-  return undefined;
 }
 
 /**
@@ -795,6 +726,7 @@ function firstPseudoReplacement(kind) {
  * @param {number} start
  * @param {number} end
  * @param {string} [name]
+ * @param {boolean} [hasDefaultNamespace]
  * @return {FunctionResult}
  */
 function normalizeNthArgument(
@@ -804,7 +736,8 @@ function normalizeNthArgument(
   values,
   start,
   end,
-  name = ''
+  name = '',
+  hasDefaultNamespace = false
 ) {
   let ofIndex = -1;
   for (let index = start; index < end; index++) {
@@ -831,23 +764,16 @@ function normalizeNthArgument(
     };
   }
 
-  const formulaResult = normalizeRange(
+  const formula = parseAnPlusB(
     source,
     tokens,
-    structure,
-    values,
     start,
     ofIndex < 0 ? end : ofIndex
   );
-  const formulaText = serializePieces(formulaResult.pieces);
-  const formula = normalizeFormula(formulaText).trim();
-  if (!formula || !formulaResult.valid)
-    return { pieces: [formulaText], specificity: [0, 1, 0], valid: false };
+  if (!formula.valid || formula.value === undefined)
+    return { pieces: [], specificity: [0, 1, 0], valid: false };
 
-  let normalizedFormula = formula;
-  if (normalizedFormula.toLowerCase() === 'even') {
-    normalizedFormula = '2n';
-  }
+  const normalizedFormula = formula.value;
 
   if (ofIndex >= 0) {
     const list = normalizeListFromTokens(
@@ -858,7 +784,9 @@ function normalizeNthArgument(
       ofIndex + 1,
       end,
       false,
-      false
+      false,
+      false,
+      hasDefaultNamespace
     );
     return {
       pieces: [normalizedFormula, ' of ', ...selectorListPieces(list.entries)],
@@ -893,226 +821,11 @@ function normalizeNthArgument(
  * @param {readonly CSSToken[]} tokens
  * @param {BalancedTokenStructure} structure
  * @param {Map<number, FunctionResult>} values
- * @param {number} index
- * @param {number} end
- * @return {FunctionResult}
- */
-/**
- * @param {readonly CSSToken[]} tokens
- * @param {number} start
- * @param {number} end
- * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
- */
-function normalizeIdentListArgument(tokens, start, end) {
-  /** @type {(string | FunctionResult)[]} */
-  const pieces = [];
-  let count = 0;
-
-  for (let i = start; i < end; i++) {
-    const token = tokens[i];
-    const type = token[0];
-
-    if (type === TokenType.Whitespace) {
-      continue;
-    }
-    if (type === TokenType.Comment) {
-      if (token[1].startsWith('/*!')) {
-        pieces.push(token[1]);
-      }
-      continue;
-    }
-    if (type === TokenType.Ident) {
-      if (count > 0) {
-        pieces.push(' ');
-      }
-      let val = token[1];
-      if (val.endsWith(' ')) val = val.trimEnd();
-      pieces.push(val);
-      count++;
-      continue;
-    }
-    return { valid: false };
-  }
-
-  if (count === 0) {
-    return { valid: false };
-  }
-
-  return { pieces, valid: true };
-}
-
-/**
- * @param {readonly CSSToken[]} tokens
- * @param {number} start
- * @param {number} end
- * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
- */
-function normalizePtNameArgument(tokens, start, end) {
-  /** @type {(string | FunctionResult)[]} */
-  const pieces = [];
-  let found = false;
-
-  for (let i = start; i < end; i++) {
-    const token = tokens[i];
-    const type = token[0];
-
-    if (type === TokenType.Whitespace) {
-      continue;
-    }
-    if (type === TokenType.Comment) {
-      if (token[1].startsWith('/*!')) {
-        pieces.push(token[1]);
-      }
-      continue;
-    }
-    if (
-      !found &&
-      (type === TokenType.Ident ||
-        (type === TokenType.Delim && token[1] === '*'))
-    ) {
-      found = true;
-      let val = token[1];
-      if (val.endsWith(' ')) val = val.trimEnd();
-      pieces.push(val);
-      continue;
-    }
-    return { valid: false };
-  }
-
-  if (!found) {
-    return { valid: false };
-  }
-
-  return { pieces, valid: true };
-}
-
-/**
- * @param {readonly CSSToken[]} tokens
- * @param {number} start
- * @param {number} end
- * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
- */
-function normalizeIdentArgument(tokens, start, end) {
-  /** @type {(string | FunctionResult)[]} */
-  const pieces = [];
-  let foundIdent = false;
-
-  for (let i = start; i < end; i++) {
-    const token = tokens[i];
-    const type = token[0];
-
-    if (type === TokenType.Whitespace) {
-      continue;
-    }
-    if (type === TokenType.Comment) {
-      if (token[1].startsWith('/*!')) {
-        pieces.push(token[1]);
-      }
-      continue;
-    }
-    if (type === TokenType.Ident && !foundIdent) {
-      foundIdent = true;
-      let val = token[1];
-      if (val.endsWith(' ')) val = val.trimEnd();
-      pieces.push(val);
-      continue;
-    }
-    return { valid: false };
-  }
-
-  if (!foundIdent) {
-    return { valid: false };
-  }
-
-  return { pieces, valid: true };
-}
-
-/**
- * @param {readonly CSSToken[]} tokens
- * @param {number} start
- * @param {number} end
- * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
- */
-function normalizeIdentOrStringList(tokens, start, end) {
-  /** @type {{ value: string, trivia: string[] }[]} */
-  const items = [];
-  /** @type {string[]} */
-  let currentTrivia = [];
-  /** @type {Set<string>} */
-  const seen = new Set();
-  let expectItem = true;
-  let hasTokenInItem = false;
-
-  for (let i = start; i < end; i++) {
-    const token = tokens[i];
-    const type = token[0];
-
-    if (type === TokenType.Whitespace) {
-      continue;
-    }
-    if (type === TokenType.Comment) {
-      if (token[1].startsWith('/*!')) {
-        currentTrivia.push(token[1]);
-      }
-      continue;
-    }
-    if (type === TokenType.Comma) {
-      if (expectItem || !hasTokenInItem) {
-        return { valid: false };
-      }
-      expectItem = true;
-      hasTokenInItem = false;
-      continue;
-    }
-    if (expectItem && (type === TokenType.Ident || type === TokenType.String)) {
-      let val = type === TokenType.String ? unquote(token[1]) : token[1];
-      if (val.endsWith(' ')) val = val.trimEnd();
-      if (!seen.has(val)) {
-        seen.add(val);
-        items.push({ value: val, trivia: currentTrivia });
-      }
-      currentTrivia = [];
-      expectItem = false;
-      hasTokenInItem = true;
-      continue;
-    }
-    return { valid: false };
-  }
-
-  if (expectItem || items.length === 0) {
-    return { valid: false };
-  }
-
-  /** @type {(string | FunctionResult)[]} */
-  const pieces = [];
-  for (let i = 0; i < items.length; i++) {
-    if (i > 0) pieces.push(',');
-    pieces.push(...items[i].trivia, items[i].value);
-  }
-  if (currentTrivia.length > 0) {
-    pieces.push(...currentTrivia);
-  }
-
-  return { pieces, valid: true };
-}
-
-/**
- * @param {string} source
- * @param {readonly CSSToken[]} tokens
- * @param {BalancedTokenStructure} structure
- * @param {Map<number, FunctionResult>} values
- * @param {number} index
- * @param {number} end
- * @return {FunctionResult}
- */
-/**
- * @param {string} source
- * @param {readonly CSSToken[]} tokens
- * @param {BalancedTokenStructure} structure
- * @param {Map<number, FunctionResult>} values
  * @param {string} name
  * @param {number} index
  * @param {number} end
+ * @param {boolean} [isDoubleColon]
+ * @param {boolean} [hasDefaultNamespace]
  * @return {FunctionResult}
  */
 function normalizeCompoundFunction(
@@ -1123,7 +836,8 @@ function normalizeCompoundFunction(
   name,
   index,
   end,
-  isDoubleColon = false
+  isDoubleColon = false,
+  hasDefaultNamespace = false
 ) {
   const inner = normalizeCompound(
     source,
@@ -1131,13 +845,16 @@ function normalizeCompoundFunction(
     structure,
     values,
     index + 1,
-    end
+    end,
+    hasDefaultNamespace
   );
   if (!inner.valid)
     return rawFunctionResult(source, tokens, index, end, 'invalid');
   /** @type {Specificity} */
   const specificity = [...inner.specificity];
-  if (!isDoubleColon) {
+  if (isDoubleColon) {
+    specificity[2]++;
+  } else {
     specificity[1]++;
   }
   return {
@@ -1146,6 +863,8 @@ function normalizeCompoundFunction(
     foldEligible: false,
     outcome: 'valid',
     valid: true,
+    hasNestedHas: inner.hasNestedHas,
+    hasPseudoElement: inner.hasPseudoElement,
   };
 }
 
@@ -1157,6 +876,7 @@ function normalizeCompoundFunction(
  * @param {string} lower
  * @param {number} index
  * @param {number} end
+ * @param {boolean} [hasDefaultNamespace]
  * @return {FunctionResult}
  */
 function normalizeNthFunction(
@@ -1166,7 +886,8 @@ function normalizeNthFunction(
   values,
   lower,
   index,
-  end
+  end,
+  hasDefaultNamespace = false
 ) {
   const inner = normalizeNthArgument(
     source,
@@ -1175,7 +896,8 @@ function normalizeNthFunction(
     values,
     index + 1,
     end,
-    lower
+    lower,
+    hasDefaultNamespace
   );
   if (!inner.valid)
     return rawFunctionResult(source, tokens, index, end, 'invalid');
@@ -1221,7 +943,7 @@ function normalizeIdentFunction(
     return rawFunctionResult(source, tokens, index, end, 'invalid');
   return {
     pieces: [name, '(', ...(inner.pieces ?? []), ')'],
-    specificity: isDoubleColon ? [0, 0, 0] : [0, 1, 0],
+    specificity: isDoubleColon ? [0, 0, 1] : [0, 1, 0],
     foldEligible: false,
     outcome: 'valid',
     valid: true,
@@ -1250,7 +972,7 @@ function normalizeIdentListFunction(
     return rawFunctionResult(source, tokens, index, end, 'invalid');
   return {
     pieces: [name, '(', ...(inner.pieces ?? []), ')'],
-    specificity: isDoubleColon ? [0, 0, 0] : [0, 1, 0],
+    specificity: isDoubleColon ? [0, 0, 1] : [0, 1, 0],
     foldEligible: false,
     outcome: 'valid',
     valid: true,
@@ -1279,7 +1001,7 @@ function normalizePtNameFunction(
     return rawFunctionResult(source, tokens, index, end, 'invalid');
   return {
     pieces: [name, '(', ...(inner.pieces ?? []), ')'],
-    specificity: isDoubleColon ? [0, 0, 0] : [0, 1, 0],
+    specificity: isDoubleColon ? (inner.specificity ?? [0, 0, 1]) : [0, 1, 0],
     foldEligible: false,
     outcome: 'valid',
     valid: true,
@@ -1317,6 +1039,7 @@ function normalizeIdentOrStringListFunction(source, tokens, name, index, end) {
  * @param {number} index
  * @param {number} end
  * @param {'forgiving-selector-list' | 'selector-list' | 'relative-selector-list'} grammar
+ * @param {boolean} [hasDefaultNamespace]
  * @return {FunctionResult}
  */
 function normalizeSelectorListFunction(
@@ -1328,7 +1051,8 @@ function normalizeSelectorListFunction(
   lower,
   index,
   end,
-  grammar
+  grammar,
+  hasDefaultNamespace = false
 ) {
   const inner = normalizeSelectorList(
     source,
@@ -1337,7 +1061,8 @@ function normalizeSelectorListFunction(
     values,
     index + 1,
     end,
-    grammar
+    grammar,
+    hasDefaultNamespace
   );
   if (!inner.valid && grammar !== 'forgiving-selector-list')
     return rawFunctionResult(source, tokens, index, end, 'invalid');
@@ -1352,6 +1077,8 @@ function normalizeSelectorListFunction(
     foldEligible: false,
     outcome: inner.outcome,
     valid: inner.valid,
+    hasNestedHas: inner.hasNestedHas,
+    hasPseudoElement: inner.hasPseudoElement,
   };
 }
 
@@ -1362,9 +1089,18 @@ function normalizeSelectorListFunction(
  * @param {Map<number, FunctionResult>} values
  * @param {number} index
  * @param {number} end
+ * @param {boolean} [hasDefaultNamespace]
  * @return {FunctionResult}
  */
-function normalizeFunction(source, tokens, structure, values, index, end) {
+function normalizeFunction(
+  source,
+  tokens,
+  structure,
+  values,
+  index,
+  end,
+  hasDefaultNamespace = false
+) {
   const name = tokens[index][1].slice(0, -1);
   const lower = name.toLowerCase();
   const grammar = selectorGrammar.get(lower);
@@ -1384,7 +1120,8 @@ function normalizeFunction(source, tokens, structure, values, index, end) {
         name,
         index,
         end,
-        isDoubleColon
+        isDoubleColon,
+        hasDefaultNamespace
       );
 
     case 'an-plus-b-of':
@@ -1396,7 +1133,8 @@ function normalizeFunction(source, tokens, structure, values, index, end) {
         values,
         lower,
         index,
-        end
+        end,
+        hasDefaultNamespace
       );
 
     case 'ident-or-string-list':
@@ -1450,7 +1188,8 @@ function normalizeFunction(source, tokens, structure, values, index, end) {
         lower,
         index,
         end,
-        grammar
+        grammar,
+        hasDefaultNamespace
       );
   }
 }
@@ -1506,106 +1245,6 @@ function makeComplexParts(compounds, combinators, leadingCombinator) {
 }
 
 /**
- * @param {string} source
- * @param {readonly CSSToken[]} tokens
- * @param {BalancedTokenStructure} structure
- * @param {Map<number, FunctionResult>} values
- * @param {number} start
- * @param {number} finish
- * @param {boolean} [preserveLeading]
- * @return {{ entry: ComplexSelector, nextIndex: number }}
- */
-/**
- * @param {readonly CSSToken[]} tokens
- * @param {number} index
- * @return {{ value: string, length: number } | undefined}
- */
-function checkCombinatorToken(tokens, index) {
-  if (isColumnCombinator(tokens, index)) {
-    return { value: '||', length: 2 };
-  }
-  if (isDeepBoundary(tokens, index)) {
-    return { value: '/deep/', length: 3 };
-  }
-  const token = tokens[index];
-  if (isCombinator(token)) {
-    return { value: token[1], length: 1 };
-  }
-  return undefined;
-}
-
-/**
- * @param {NormalizationState} state
- * @param {readonly CSSToken[]} tokens
- * @param {number} start
- * @param {number} finish
- * @return {number}
- */
-function skipTriviaAfterCombinator(state, tokens, start, finish) {
-  let index = start;
-  while (index < finish) {
-    const t = tokens[index];
-    if (t[0] === TokenType.Whitespace) {
-      index++;
-    } else if (t[0] === TokenType.Comment) {
-      if (t[1].startsWith('/*!')) state.output.push(t[1]);
-      index++;
-    } else {
-      break;
-    }
-  }
-  return index;
-}
-
-/**
- * @param {readonly CSSToken[]} tokens
- * @param {number} start
- * @param {number} finish
- * @return {{ cursor: number, hasOrdinaryComment: boolean, importantIndices: number[] }}
- */
-function scanTriviaSegment(tokens, start, finish) {
-  let cursor = start;
-  let hasOrdinaryComment = false;
-  /** @type {number[]} */
-  const importantIndices = [];
-  while (cursor < finish) {
-    const t = tokens[cursor];
-    if (t[0] === TokenType.Whitespace) {
-      cursor++;
-    } else if (t[0] === TokenType.Comment) {
-      if (t[1].startsWith('/*!')) {
-        importantIndices.push(cursor);
-      } else {
-        hasOrdinaryComment = true;
-      }
-      cursor++;
-    } else {
-      break;
-    }
-  }
-  return { cursor, hasOrdinaryComment, importantIndices };
-}
-
-/**
- * @param {NormalizationState} state
- * @param {readonly CSSToken[]} tokens
- * @param {number[]} importantIndices
- * @param {number} triviaStart
- */
-function appendImportantTrivia(state, tokens, importantIndices, triviaStart) {
-  if (importantIndices.length === 0) return;
-  if (state.output.length > 0 && importantIndices[0] > triviaStart) {
-    state.output.push(' ');
-  }
-  for (let i = 0; i < importantIndices.length; i++) {
-    if (i > 0 && importantIndices[i] > importantIndices[i - 1] + 1) {
-      state.output.push(' ');
-    }
-    state.output.push(tokens[importantIndices[i]][1]);
-  }
-}
-
-/**
  * @param {Compound[]} compounds
  * @param {Compound} compound
  * @param {{ valid: boolean, hasNestedHas: boolean, hasPseudoElement: boolean }} flags
@@ -1658,65 +1297,6 @@ function handleAttributeToken(
     finish
   );
   return normalized.end;
-}
-
-/**
- * @param {NormalizationState} state
- * @param {readonly CSSToken[]} tokens
- * @param {number} start
- * @param {number} finish
- * @param {boolean} preserveLeading
- * @param {Compound[]} compounds
- * @return {{ index: number, leadingCombinator: string | undefined }}
- */
-function consumeLeading(
-  state,
-  tokens,
-  start,
-  finish,
-  preserveLeading,
-  compounds
-) {
-  let index = start;
-  /** @type {string[]} */
-  const leadingImportantComments = [];
-  while (index < finish) {
-    const t = tokens[index];
-    if (t[0] === TokenType.Whitespace) {
-      index++;
-    } else if (t[0] === TokenType.Comment) {
-      if (t[1].startsWith('/*!')) leadingImportantComments.push(t[1]);
-      index++;
-    } else {
-      break;
-    }
-  }
-
-  let leadingCombinator;
-  if (preserveLeading && index < finish) {
-    if (isColumnCombinator(tokens, index)) {
-      leadingCombinator = '||';
-      index += 2;
-    } else if (isCombinator(tokens[index])) {
-      leadingCombinator = tokens[index][1];
-      index += 1;
-    }
-    if (leadingCombinator) {
-      if (leadingImportantComments.length > 0) {
-        leadingCombinator =
-          leadingImportantComments.join('') + leadingCombinator;
-        leadingImportantComments.length = 0;
-      }
-      index = skipTriviaAfterCombinator(state, tokens, index, finish);
-      compounds.push(finishCompound(createNormalizationState()));
-    }
-  }
-
-  for (const c of leadingImportantComments) {
-    state.output.push(c);
-  }
-
-  return { index, leadingCombinator };
 }
 
 /**
@@ -1842,6 +1422,7 @@ function handleTriviaToken(
  * @param {number} start
  * @param {number} finish
  * @param {boolean} [preserveLeading]
+ * @param {boolean} [hasDefaultNamespace]
  * @return {{ entry: ComplexSelector, nextIndex: number }}
  */
 function parseComplex(
@@ -1851,7 +1432,8 @@ function parseComplex(
   values,
   start,
   finish,
-  preserveLeading = false
+  preserveLeading = false,
+  hasDefaultNamespace = false
 ) {
   /** @type {Compound[]} */
   const compounds = [];
@@ -1866,7 +1448,8 @@ function parseComplex(
     start,
     finish,
     preserveLeading,
-    compounds
+    compounds,
+    () => finishCompound(createNormalizationState())
   );
 
   let index = startIndex;
@@ -1934,7 +1517,8 @@ function parseComplex(
       values,
       index,
       compoundStart,
-      finish
+      finish,
+      hasDefaultNamespace
     );
     if (normalized.text !== undefined) {
       return {
@@ -2003,6 +1587,7 @@ function summarizeCompounds(compounds) {
  * @param {boolean} sort
  * @param {boolean} [preserveLeading]
  * @param {boolean} [isOuterBoundary]
+ * @param {boolean} [hasDefaultNamespace]
  * @return {{ entries: ComplexSelector[], valid: boolean, specificity: Specificity, hasNestedHas: boolean, hasPseudoElement: boolean }}
  */
 function normalizeListFromTokens(
@@ -2014,13 +1599,12 @@ function normalizeListFromTokens(
   finish,
   sort,
   preserveLeading = false,
-  isOuterBoundary = false
+  isOuterBoundary = false,
+  hasDefaultNamespace = false
 ) {
   /** @type {ComplexSelector[]} */
   const entries = [];
   const seen = new Set();
-  /** @type {Map<number, ComplexSelector[]>} */
-  const structuralSeen = new Map();
   let valid = true;
   let hasNestedHas = false;
   let hasPseudoElement = false;
@@ -2034,12 +1618,13 @@ function normalizeListFromTokens(
       values,
       index,
       finish,
-      preserveLeading
+      preserveLeading,
+      hasDefaultNamespace
     );
     valid &&= Boolean(entry.valid);
     if (entry.hasNestedHas) hasNestedHas = true;
     if (entry.hasPseudoElement) hasPseudoElement = true;
-    addEntry(entries, seen, structuralSeen, entry, isOuterBoundary);
+    addEntry(entries, seen, entry, isOuterBoundary);
 
     if (nextIndex < finish && tokens[nextIndex][0] === TokenType.Comma) {
       index = nextIndex + 1;
@@ -2072,34 +1657,35 @@ function compareSerialized(a, b) {
 /**
  * @param {ComplexSelector[]} entries
  * @param {Set<string>} seen
- * @param {Map<number, ComplexSelector[]>} structuralSeen
  * @param {ComplexSelector} entry
  * @param {boolean} isOuterBoundary
  */
-function addEntry(entries, seen, structuralSeen, entry, isOuterBoundary) {
-  const first = entry.parts[0];
-  if (first && typeof first !== 'string' && first.pieces.length === 1) {
-    if (typeof first.pieces[0] === 'string') {
-      if (first.pieces[0].toLowerCase() === 'from') first.pieces = ['0%'];
-      else if (first.pieces[0] === '100%') first.pieces = ['to'];
-      first.dedupeHash = undefined;
-      entry.dedupeHash = undefined;
-    }
-  }
-
+function addEntry(entries, seen, entry, isOuterBoundary) {
   if (entry.hasVendorPseudo) {
     entries.push(entry);
     return;
   }
 
-  if (!isOuterBoundary) {
-    const hash = complexHash(entry);
-    const collisions = structuralSeen.get(hash);
-    if (collisions?.some((existing) => equalComplex(existing, entry))) return;
-    if (collisions) collisions.push(entry);
-    else structuralSeen.set(hash, [entry]);
+  if (isOuterBoundary || !entry.hasFunction) {
+    const text = serializeComplex(entry);
+    if (!text || seen.has(text)) return;
+    seen.add(text);
     entries.push(entry);
     return;
+  }
+
+  if (entries.length < 16) {
+    if (!entries.some((existing) => equalComplex(existing, entry))) {
+      entries.push(entry);
+    }
+    return;
+  }
+
+  if (seen.size === 0) {
+    for (const item of entries) {
+      const s = serializeComplex(item);
+      if (s) seen.add(s);
+    }
   }
 
   const text = serializeComplex(entry);
@@ -2111,56 +1697,64 @@ function addEntry(entries, seen, structuralSeen, entry, isOuterBoundary) {
 /**
  * Normalize function arguments from the leaves upward. `balancedTokens()` has
  * already made nesting explicit, so this reverse traversal is post-order
- * without using the JavaScript call stack. Function results retain structural
- * handles and raw source spans, releasing child work once consumed, so
- * serialization occurs strictly at the outer boundary.
+ * without using the JavaScript call stack.
  * @param {string} source
  * @param {readonly CSSToken[]} tokens
  * @param {BalancedTokenStructure} structure
+ * @param {boolean} [hasDefaultNamespace]
  * @return {Map<number, FunctionResult>}
  */
-function normalizeFunctionValues(source, tokens, structure) {
+function normalizeFunctionValues(
+  source,
+  tokens,
+  structure,
+  hasDefaultNamespace = false
+) {
   /** @type {Map<number, FunctionResult>} */
   const values = new Map();
-  const rollingHash = source.length > 512 ? buildPrefixHash(source) : undefined;
   for (let index = tokens.length - 1; index >= 0; index--) {
     if (tokens[index][0] !== TokenType.Function) continue;
     const end = structure.endForOpening(index);
     if (end === undefined) continue;
-    const value = normalizeFunction(
-      source,
-      tokens,
-      structure,
-      values,
+    values.set(
       index,
-      end
+      normalizeFunction(
+        source,
+        tokens,
+        structure,
+        values,
+        index,
+        end,
+        hasDefaultNamespace
+      )
     );
-    let dedupeHash;
-    if (value.pieces) {
-      dedupeHash = hashPieces(value.pieces);
-    } else if (value.raw) {
-      dedupeHash = rollingHash
-        ? queryRollingHash(rollingHash, value.raw.start, value.raw.end)
-        : hashSubstring(
-            2_166_136_261,
-            value.raw.source,
-            value.raw.start,
-            value.raw.end
-          );
-    } else {
-      dedupeHash = combineHash(2_166_136_261, 0);
-    }
-    value.dedupeHash = dedupeHash;
-    values.set(index, value);
   }
   return values;
 }
 
-/** @param {string} source @param {boolean} [sort] @param {boolean} [convertToIs] @return {string} */
-function normalizeList(source, sort = true, convertToIs = true) {
+/**
+ * @param {string} source
+ * @param {boolean} [sort]
+ * @param {boolean} [convertToIs]
+ * @param {boolean} [keyframe]
+ * @param {boolean} [hasDefaultNamespace]
+ * @return {string}
+ */
+function normalizeList(
+  source,
+  sort = true,
+  convertToIs = true,
+  keyframe = false,
+  hasDefaultNamespace = false
+) {
   const structure = balancedTokens(source);
   if (!structure) return source;
-  const values = normalizeFunctionValues(source, structure.tokens, structure);
+  const values = normalizeFunctionValues(
+    source,
+    structure.tokens,
+    structure,
+    hasDefaultNamespace
+  );
   const entries = normalizeListFromTokens(
     source,
     structure.tokens,
@@ -2170,8 +1764,25 @@ function normalizeList(source, sort = true, convertToIs = true) {
     structure.tokens.length,
     sort,
     false,
-    true
+    true,
+    hasDefaultNamespace
   );
+  if (!entries.valid) return source;
+  if (keyframe) {
+    for (const entry of entries.entries) {
+      const [part] = entry.parts;
+      if (
+        entry.parts.length === 1 &&
+        typeof part !== 'string' &&
+        part.pieces.length === 1 &&
+        typeof part.pieces[0] === 'string'
+      ) {
+        if (part.pieces[0].toLowerCase() === 'from') part.pieces = ['0%'];
+        else if (part.pieces[0] === '100%') part.pieces = ['to'];
+        entry.serializationKey = undefined;
+      }
+    }
+  }
   return (convertToIs ? fold(entries.entries, sort) : entries.entries)
     .map(serializeComplex)
     .join(',');

@@ -12,8 +12,7 @@ import { compoundSpecificityKey, addSpecificity } from './specificity.js';
  *   outcome?: 'valid' | 'invalid' | 'opaque',
  *   valid: boolean,
  *   hasNestedHas?: boolean,
- *   hasPseudoElement?: boolean,
- *   dedupeHash?: number
+ *   hasPseudoElement?: boolean
  * }} FunctionResult
  */
 /**
@@ -29,8 +28,7 @@ import { compoundSpecificityKey, addSpecificity } from './specificity.js';
  *   hasVendorPseudo: boolean,
  *   foldEligible: boolean,
  *   valid: boolean,
- *   hasNestedHas?: boolean,
- *   dedupeHash?: number
+ *   hasNestedHas?: boolean
  * }} Compound
  */
 /**
@@ -43,8 +41,7 @@ import { compoundSpecificityKey, addSpecificity } from './specificity.js';
  *   specificity: Specificity,
  *   serializationKey?: string,
  *   hasNestedHas?: boolean,
- *   hasPseudoElement?: boolean,
- *   dedupeHash?: number
+ *   hasPseudoElement?: boolean
  * }} ComplexSelector
  */
 

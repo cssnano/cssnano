@@ -54,6 +54,20 @@ const pseudoClasses = [
   '::after',
 ];
 const pseudoClassesForIs = [':hover', ':focus', ':link', ':visited'];
+// Invalid cases stay outside the DOM differential oracle: two rejected
+// querySelectorAll calls prove neither validity nor selector equivalence.
+const malformedSelectors = [
+  ',.item',
+  '.item,',
+  '.item,,.other',
+  ':nth-child(+ n)',
+  ':nth-child(+ 1)',
+  ':has(:has(.item))',
+  ':not(.item,::before)',
+  '*div',
+  '.item*#other',
+  '::',
+];
 
 // These are intentionally authored as selector strings plus expected safety,
 // rather than derived from the minifier. They force the fuzzer to exercise the
@@ -307,6 +321,18 @@ function generateFoldCandidates(seed, count) {
 }
 
 /**
+ * Generates malformed selector corpus entries for recovery testing. They are
+ * intentionally not passed through jsdom's matching oracle.
+ * @param {number} seed
+ * @param {number} count
+ * @return {string[]}
+ */
+function generateMalformed(seed, count) {
+  const rng = random(seed);
+  return Array.from({ length: count }, () => rng.pick(malformedSelectors));
+}
+
+/**
  * Removes selectors one at a time from a selector list, keeping the minimal case.
  *
  * @param {string} css
@@ -331,4 +357,4 @@ function shrink(css, fails) {
   return `${selectors.join(',')}${body}`;
 }
 
-export { generate, generateFoldCandidates, shrink };
+export { generate, generateFoldCandidates, generateMalformed, shrink };

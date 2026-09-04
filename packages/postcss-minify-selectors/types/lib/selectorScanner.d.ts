@@ -27,8 +27,15 @@ export type NormalizationState = {
     valid: boolean;
     hasNestedHas: boolean;
 };
-/** @param {string} source @param {boolean} [sort] @param {boolean} [convertToIs] @return {string} */
-declare function normalizeList(source: string, sort?: boolean, convertToIs?: boolean): string;
+/**
+ * @param {string} source
+ * @param {boolean} [sort]
+ * @param {boolean} [convertToIs]
+ * @param {boolean} [keyframe]
+ * @param {boolean} [hasDefaultNamespace]
+ * @return {string}
+ */
+declare function normalizeList(source: string, sort?: boolean, convertToIs?: boolean, keyframe?: boolean, hasDefaultNamespace?: boolean): string;
 /** @param {string} source @return {string[]} */
 declare function splitList(source: string): string[];
 /** @param {string} source @return {string} */
