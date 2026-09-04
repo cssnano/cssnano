@@ -5,7 +5,7 @@ import { generate } from '../script/lib/fuzzGenerate.js';
 
 /**
  * A differential sweep over declarations ending in a backslash escape,
- * plus six fixed-output regression cases for value normalization. The
+ * plus fixed-output regression cases for value normalization. The
  * normalization cases are repeated in varying containers and sibling
  * contexts; the named tests in `test/index.js` cover them directly too.
  *

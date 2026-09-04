@@ -20,8 +20,8 @@ export const mutations = [
   },
   {
     name: 'preserve spaces around dividers',
-    find: '  const besideDivider =\n    !context?.calc && (isDivider(previous) || isDivider(next));',
-    replace: '  const besideDivider = false;',
+    find: '  const besideSlash = !context?.math && (isSlash(previous) || isSlash(next));',
+    replace: '  const besideSlash = false;',
   },
   {
     name: 'change the declaration separator',

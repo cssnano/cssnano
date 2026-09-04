@@ -23,6 +23,10 @@ const normalizationCases = [
     'transform:translate(1px,2px) scale(1/2)',
   ],
   ['width:calc( 100% - ( 10px / 2 ) )', 'width:calc(100% - (10px / 2))'],
+  ['width:min( 100px , 1 / 2 )', 'width:min(100px,1 / 2)'],
+  ['width:clamp( 1px , 1 / 2 , 5px )', 'width:clamp(1px,1 / 2,5px)'],
+  ['width:round( 1 / 2 , 1px )', 'width:round(1 / 2,1px)'],
+  ['color:hsl( 0 0% 0% / 0.5 )', 'color:hsl(0 0% 0%/0.5)'],
   ['x:foo( /**/ a /**/ , /**/ b /**/ )', 'x:foo(/**/ a /**/,/**/ b /**/)'],
 ];
 const containers = [
