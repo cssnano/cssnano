@@ -123,11 +123,14 @@ async function benchOne(name, source, processor, iters, warmup, profilePath) {
     }
 
     const samples = Array.from({ length: iters });
+    let outputHash;
     for (let i = 0; i < iters; i++) {
       const t0 = performance.now();
       const res = await processor.process(source, { from: undefined });
-      void res.css;
+      const css = res.css;
       samples[i] = performance.now() - t0;
+      if (outputHash === undefined)
+        outputHash = createHash('sha256').update(css).digest('hex');
     }
 
     if (session) {
@@ -143,6 +146,7 @@ async function benchOne(name, source, processor, iters, warmup, profilePath) {
       bytes: source.length,
       ...s,
       samples,
+      outputHash,
       kbPerSec: throughputKBs,
     };
   } finally {
@@ -309,6 +313,7 @@ async function runOnce(args, corpus, processor, snapshotLabel) {
       p95: r.p95,
       max: r.max,
       kbPerSec: r.kbPerSec,
+      outputHash: r.outputHash,
     })),
   };
   const outPath = join(RESULTS_DIR, `${snapshotLabel}.json`);
@@ -342,6 +347,15 @@ function selectCorpus(args, dir) {
 
 function aggregateSnapshots(snapshots, label, runs) {
   const aggregate = structuredClone(snapshots[0]);
+  for (let index = 0; index < aggregate.frameworks.length; index++) {
+    const hashes = new Set(
+      snapshots.map((snapshot) => snapshot.frameworks[index].outputHash)
+    );
+    if (hashes.size !== 1)
+      throw new Error(
+        `output changed between benchmark runs for ${aggregate.frameworks[index].name}`
+      );
+  }
   aggregate.label = label;
   aggregate.timestamp = new Date().toISOString();
   for (const field of ['medianMs', 'minMs', 'kbPerSec', 'maxRSS']) {

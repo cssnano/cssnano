@@ -1,9 +1,7 @@
 export type CSSToken = import('./tokenUtils.js').CSSToken;
-export type Specificity = import('./specificity.js').Specificity;
-export type FunctionResult = import('./foldToIs.js').FunctionResult;
+export type Specificity = import('./arena.js').Specificity;
 /** @typedef {import('./tokenUtils.js').CSSToken} CSSToken */
-/** @typedef {import('./specificity.js').Specificity} Specificity */
-/** @typedef {import('./foldToIs.js').FunctionResult} FunctionResult */
+/** @typedef {import('./arena.js').Specificity} Specificity */
 /** @param {string} kind @return {string | undefined} */
 export declare function firstPseudoReplacement(kind: string): string | undefined;
 /**
@@ -20,10 +18,10 @@ export declare function parseAnPlusB(tokens: readonly CSSToken[], start: number,
  * @param {readonly CSSToken[]} tokens
  * @param {number} start
  * @param {number} end
- * @return {{ pieces?: (string | FunctionResult)[], specificity?: Specificity, valid: boolean }}
+ * @return {{ pieces?: string[], specificity?: Specificity, valid: boolean }}
  */
 export declare function normalizePtNameArgument(tokens: readonly CSSToken[], start: number, end: number): {
-    pieces?: (string | FunctionResult)[];
+    pieces?: string[];
     specificity?: Specificity;
     valid: boolean;
 };
@@ -31,30 +29,30 @@ export declare function normalizePtNameArgument(tokens: readonly CSSToken[], sta
  * @param {readonly CSSToken[]} tokens
  * @param {number} start
  * @param {number} end
- * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
+ * @return {{ pieces?: string[], valid: boolean }}
  */
 export declare function normalizeIdentListArgument(tokens: readonly CSSToken[], start: number, end: number): {
-    pieces?: (string | FunctionResult)[];
+    pieces?: string[];
     valid: boolean;
 };
 /**
  * @param {readonly CSSToken[]} tokens
  * @param {number} start
  * @param {number} end
- * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
+ * @return {{ pieces?: string[], valid: boolean }}
  */
 export declare function normalizeIdentArgument(tokens: readonly CSSToken[], start: number, end: number): {
-    pieces?: (string | FunctionResult)[];
+    pieces?: string[];
     valid: boolean;
 };
 /**
  * @param {readonly CSSToken[]} tokens
  * @param {number} start
  * @param {number} end
- * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
+ * @return {{ pieces?: string[], valid: boolean }}
  */
 export declare function normalizeIdentOrStringList(tokens: readonly CSSToken[], start: number, end: number): {
-    pieces?: (string | FunctionResult)[];
+    pieces?: string[];
     valid: boolean;
 };
 //# sourceMappingURL=argumentParsers.d.ts.map

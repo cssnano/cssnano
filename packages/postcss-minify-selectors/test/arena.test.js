@@ -2,15 +2,16 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import cssnanoUtils from 'cssnano-utils';
 import {
+  addSemanticFact,
   addSpecificity,
   buildSelectorArena,
   createSemanticFacts,
+  hasSemanticFact,
   isFoldEligible,
+  semanticFacts,
 } from '../src/lib/arena.js';
 import { serializeArena, serializeEmit } from '../src/lib/serializeArena.js';
 import { parseSelectorArena } from '../src/lib/parseArena.js';
-import { normalizeArena } from '../src/lib/normalizeArena.js';
-import { normalizeList } from '../src/lib/selectorScanner.js';
 
 const { tokens } = cssnanoUtils;
 
@@ -96,11 +97,17 @@ test('fold eligibility includes function and unsafe-pseudo barriers', () => {
   const eligible = { kind: 'compound', status: 'valid', facts: safe };
   assert.equal(isFoldEligible(eligible), true);
   assert.equal(
-    isFoldEligible({ ...eligible, facts: { ...safe, hasFunction: true } }),
+    isFoldEligible({
+      ...eligible,
+      facts: addSemanticFact(safe, semanticFacts.function),
+    }),
     false
   );
   assert.equal(
-    isFoldEligible({ ...eligible, facts: { ...safe, hasUnsafePseudo: true } }),
+    isFoldEligible({
+      ...eligible,
+      facts: addSemanticFact(safe, semanticFacts.unsafePseudo),
+    }),
     false
   );
 });
@@ -452,7 +459,10 @@ test('parser applies keyframe and default-namespace context', () => {
   const namespaced = parseSelectorArena('*.item', {
     hasDefaultNamespace: true,
   });
-  assert.equal(namespaced.nodes[0].facts.hasNamespace, true);
+  assert.equal(
+    hasSemanticFact(namespaced.nodes[0].facts, semanticFacts.namespace),
+    true
+  );
   assert.equal(namespaced.payloads.lists[0].hasDefaultNamespace, true);
   const compound = namespaced.nodes.find(({ kind }) => kind === 'compound');
   assert.equal(isFoldEligible(compound), false);
@@ -474,7 +484,10 @@ test('parser records descendant and explicit combinators with exact spans', () =
     ),
     ['/**/', '||', '>']
   );
-  assert.equal(arena.nodes[0].facts.hasCommentDescendant, true);
+  assert.equal(
+    hasSemanticFact(arena.nodes[0].facts, semanticFacts.commentDescendant),
+    true
+  );
 });
 
 test('parser models every qualified-name namespace form', () => {
@@ -507,7 +520,10 @@ test('parser records exact attribute grammar and case behavior', () => {
     caseBehavior: 'ascii-insensitive',
   });
   assert.deepEqual(arena.nodes[0].specificity, [0, 1, 0]);
-  assert.equal(arena.nodes[0].facts.hasAttributeModifier, true);
+  assert.equal(
+    hasSemanticFact(arena.nodes[0].facts, semanticFacts.attributeModifier),
+    true
+  );
   assert.equal(parseSelectorArena('[x=]').nodes[0].status, 'invalid');
   const escaped = parseSelectorArena('[x=y \\69]');
   assert.equal(escaped.nodes[0].status, 'valid');
@@ -534,9 +550,15 @@ test('parser finalizes compound semantic facts conservatively', () => {
   const arena = parseSelectorArena('svg|a#id.c[x=y i]:hover::before');
   const compound = arena.nodes.find(({ kind }) => kind === 'compound');
   assert.deepEqual(compound.specificity, [1, 3, 2]);
-  assert.equal(compound.facts.hasNamespace, true);
-  assert.equal(compound.facts.hasAttributeModifier, true);
-  assert.equal(compound.facts.hasPseudoElement, true);
+  assert.equal(hasSemanticFact(compound.facts, semanticFacts.namespace), true);
+  assert.equal(
+    hasSemanticFact(compound.facts, semanticFacts.attributeModifier),
+    true
+  );
+  assert.equal(
+    hasSemanticFact(compound.facts, semanticFacts.pseudoElement),
+    true
+  );
   assert.equal(isFoldEligible(compound), false);
 
   const unknown = parseSelectorArena(':future(.x)');
@@ -579,13 +601,20 @@ test('parser distinguishes known-invalid compounds from opaque syntax', () => {
 
 test('parser applies contextual pseudo-element and nested-has recovery', () => {
   assert.equal(
-    parseSelectorArena(':has(.a)').nodes[0].facts.hasNestedHas,
+    hasSemanticFact(
+      parseSelectorArena(':has(.a)').nodes[0].facts,
+      semanticFacts.nestedHas
+    ),
     false
   );
   for (const source of [':has(:has(.a))', ':has(:is(:has(.a)))']) {
     const arena = parseSelectorArena(source);
     assert.equal(arena.nodes[0].status, 'invalid', source);
-    assert.equal(arena.nodes[0].facts.hasNestedHas, true, source);
+    assert.equal(
+      hasSemanticFact(arena.nodes[0].facts, semanticFacts.nestedHas),
+      true,
+      source
+    );
   }
   assert.deepEqual(
     parseSelectorArena(':is(.a,::before)').nodes[0].specificity,
@@ -594,30 +623,31 @@ test('parser applies contextual pseudo-element and nested-has recovery', () => {
   assert.equal(parseSelectorArena(':not(::before)').nodes[0].status, 'invalid');
 });
 
-test('test-only arena overlay preserves legacy bytes across transform families', () => {
-  for (const [source, options] of [
-    ['  *.b > .a,*.b>.a  ', {}],
-    ['[data-value = "foo" i]', {}],
-    [':is(.b, .a, .b):nth-child(2n + 1 of .x, #y)', { sort: false }],
-    ['::part( tab   active )::view-transition-old(*.card)', {}],
-    ['.scope .a,.scope .b', { convertToIs: true }],
-    ['from,100%', { keyframe: true }],
-    ['*.a', { hasDefaultNamespace: true }],
-  ]) {
-    const arena = parseSelectorArena(source, {
-      keyframe: options.keyframe,
-      hasDefaultNamespace: options.hasDefaultNamespace,
-    });
-    assert.equal(
-      serializeArena(arena, normalizeArena(arena, options)),
-      normalizeList(
-        source,
-        options.sort,
-        options.convertToIs,
-        options.keyframe,
-        options.hasDefaultNamespace
-      ),
-      source
-    );
-  }
+test('production parsing retains full arena structure before normalization', () => {
+  const arena = parseSelectorArena('.card:is(.active,.pending)', {
+    hasDefaultNamespace: true,
+  });
+  assert.equal(arena.nodes[0].kind, 'list');
+  assert.ok(arena.nodes.some(({ kind }) => kind === 'compound'));
+  assert.ok(arena.nodes.some(({ kind }) => kind === 'pseudo'));
+});
+
+test('compound-only pseudo arguments reject selector lists', () => {
+  for (const source of [':host(.a,.b)', ':host-context(.a,.b)'])
+    assert.equal(parseSelectorArena(source).nodes[0].status, 'invalid', source);
+});
+
+test('literal non-ASCII identifier continuations remain one qualified name', () => {
+  const source = 'a\uE0000\uE001';
+  const arena = parseSelectorArena(source);
+  assert.equal(arena.nodes[0].status, 'valid');
+  const qualified = arena.nodes.find(({ kind }) => kind === 'qualified-name');
+  assert.equal(
+    arena.tokens
+      .slice(qualified.startToken, qualified.endToken)
+      .map((token) => token[1])
+      .join(''),
+    source
+  );
+  assert.deepEqual(arena.nodes[0].specificity, [0, 0, 1]);
 });

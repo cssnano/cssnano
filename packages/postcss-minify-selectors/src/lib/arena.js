@@ -4,8 +4,8 @@
  * @typedef {'outer-unforgiving' | 'forgiving' | 'unforgiving' | 'relative' | 'compound-only'} ListMode
  * @typedef {readonly [number, number, number]} Specificity
  * @typedef {{status:'valid',specificity:Specificity}|{status:'opaque'}} SpecificityResult
- * @typedef {{hasNamespace:boolean,hasPseudoElement:boolean,hasVendorPseudo:boolean,hasNesting:boolean,hasAttributeModifier:boolean,hasCommentDescendant:boolean,hasNestedHas:boolean,hasFunction:boolean,hasUnsafePseudo:boolean}} SemanticFacts
- * @typedef {{kind:NodeKind,startToken:number,endToken:number,subtreeEnd:number,status:ParseStatus,specificity?:Specificity,facts?:Readonly<SemanticFacts>,payload:number}} ArenaNode
+ * @typedef {number} SemanticFacts
+ * @typedef {{kind:NodeKind,startToken:number,endToken:number,subtreeEnd:number,status:ParseStatus,specificity?:Specificity,facts?:SemanticFacts,payload:number}} ArenaNode
  * @typedef {{mode:ListMode,keyframe?:boolean,hasDefaultNamespace?:boolean}} ListPayload
  * @typedef {{value:string}} CombinatorPayload
  * @typedef {{namespace:{kind:'absent'}|{kind:'empty'}|{kind:'wildcard'}|{kind:'named',token:number},subject:{kind:'universal',token:number}|{kind:'type',token:number}}} QualifiedNamePayload
@@ -17,6 +17,17 @@
  */
 
 const summaryKinds = new Set(['list', 'complex', 'compound', 'pseudo']);
+export const semanticFacts = Object.freeze({
+  namespace: 1,
+  pseudoElement: 2,
+  vendorPseudo: 4,
+  nesting: 8,
+  attributeModifier: 16,
+  commentDescendant: 32,
+  nestedHas: 64,
+  function: 128,
+  unsafePseudo: 256,
+});
 /** @type {ReadonlyMap<NodeKind, keyof PayloadTables>} */
 const payloadTableForKind = new Map([
   ['list', 'lists'],
@@ -29,18 +40,30 @@ const payloadTableForKind = new Map([
 
 /** @return {SemanticFacts} */
 export function createSemanticFacts() {
-  return {
-    hasNamespace: false,
-    hasPseudoElement: false,
-    hasVendorPseudo: false,
-    hasNesting: false,
-    hasAttributeModifier: false,
-    hasCommentDescendant: false,
-    hasNestedHas: false,
-    hasFunction: false,
-    hasUnsafePseudo: false,
-  };
+  return 0;
 }
+
+/** @param {SemanticFacts | undefined} facts @param {number} fact */
+export function hasSemanticFact(facts, fact) {
+  return (facts ?? 0) % (fact * 2) >= fact;
+}
+
+/** @param {SemanticFacts} facts @param {number} fact */
+export function addSemanticFact(facts, fact) {
+  return hasSemanticFact(facts, fact) ? facts : facts + fact;
+}
+
+/** @param {SemanticFacts} left @param {SemanticFacts} right */
+export function mergeSemanticFacts(left, right) {
+  let merged = left;
+  for (let fact = 1; fact <= semanticFacts.unsafePseudo; fact *= 2)
+    if (hasSemanticFact(right, fact)) merged = addSemanticFact(merged, fact);
+  return merged;
+}
+
+/** @type {Specificity} */
+const ZERO_SPECIFICITY = Object.freeze([0, 0, 0]);
+const EMPTY_FACTS = createSemanticFacts();
 
 /** @param {ArenaNode} compound @return {boolean} */
 export function isFoldEligible(compound) {
@@ -48,22 +71,13 @@ export function isFoldEligible(compound) {
   return (
     compound.kind === 'compound' &&
     compound.status === 'valid' &&
-    facts !== undefined &&
-    !facts.hasNamespace &&
-    !facts.hasPseudoElement &&
-    !facts.hasVendorPseudo &&
-    !facts.hasNesting &&
-    !facts.hasAttributeModifier &&
-    !facts.hasCommentDescendant &&
-    !facts.hasNestedHas &&
-    !facts.hasFunction &&
-    !facts.hasUnsafePseudo
+    facts === EMPTY_FACTS
   );
 }
 
 /** @return {Specificity} */
 export function zeroSpecificity() {
-  return [0, 0, 0];
+  return ZERO_SPECIFICITY;
 }
 
 /** @param {Specificity} a @param {Specificity} b @return {SpecificityResult} */
@@ -75,31 +89,16 @@ export function addSpecificity(a, b) {
   return { status: 'valid', specificity: result };
 }
 
-/** @param {object} value */
-function deepFreeze(value) {
-  /** @type {object[]} */ const pending = [value];
-  const seen = new WeakSet();
-  while (pending.length > 0) {
-    const current = pending.pop();
-    if (!current || seen.has(current)) continue;
-    seen.add(current);
-    for (const nested of Object.values(current)) {
-      if (nested !== null && typeof nested === 'object') pending.push(nested);
-    }
-    Object.freeze(current);
-  }
-}
-
 class SelectorArenaBuilder {
-  /** @param {string} source @param {readonly CSSToken[]} tokens @param {unknown} [structure] */
-  constructor(source, tokens, structure) {
+  /** @param {string} source @param {readonly CSSToken[]} tokens */
+  constructor(source, tokens) {
     this.source = source;
     this.tokens = tokens;
-    this.structure = structure;
     /** @type {ArenaNode[]} */ this.nodes = [];
     /** @type {number[]} */ this.frames = [];
     /** @type {number[]} */ this.lastChildren = [];
     /** @type {number[]} */ this.roots = [];
+    this.specificities = new Map([['0,0,0', ZERO_SPECIFICITY]]);
     /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[],raw:RawPayload[]}} */
     this.payloads = {
       lists: [],
@@ -141,11 +140,9 @@ class SelectorArenaBuilder {
       subtreeEnd: index + 1,
       status: options.status ?? 'valid',
       specificity: hasSummary
-        ? [...(options.specificity ?? zeroSpecificity())]
+        ? (options.specificity ?? ZERO_SPECIFICITY)
         : undefined,
-      facts: hasSummary
-        ? { ...(options.facts ?? createSemanticFacts()) }
-        : undefined,
+      facts: hasSummary ? (options.facts ?? EMPTY_FACTS) : undefined,
       payload: options.payload ?? -1,
     });
     if (parent !== undefined) this.lastChildren[parent] = index;
@@ -182,10 +179,23 @@ class SelectorArenaBuilder {
         : requestedStatus;
     node.specificity =
       node.status === 'valid' && hasSafeSpecificity
-        ? [...specificity]
+        ? this.internSpecificity(specificity)
         : undefined;
-    node.facts = { ...(summary.facts ?? node.facts ?? createSemanticFacts()) };
+    node.facts = summary.facts ?? node.facts ?? EMPTY_FACTS;
     this.#closeFrame(nodeIndex);
+  }
+
+  /** @param {Specificity} specificity */
+  internSpecificity(specificity) {
+    const key = specificity.join(',');
+    let found = this.specificities.get(key);
+    if (!found) {
+      found = Object.freeze(
+        /** @type {[number, number, number]} */ ([...specificity])
+      );
+      this.specificities.set(key, found);
+    }
+    return found;
   }
 
   /** @param {number} nodeIndex */
@@ -250,22 +260,27 @@ class SelectorArenaBuilder {
         'arena root must be a selector list or a full-span opaque raw fallback'
       );
     for (const node of this.nodes) {
-      if (node.specificity) Object.freeze(node.specificity);
-      if (node.facts) deepFreeze(node.facts);
       Object.freeze(node);
     }
     for (const table of Object.values(this.payloads)) {
-      for (const payload of table) deepFreeze(payload);
+      for (const payload of table) {
+        Object.freeze(payload);
+      }
       Object.freeze(table);
     }
+    for (const payload of this.payloads.qualifiedNames) {
+      Object.freeze(payload.namespace);
+      Object.freeze(payload.subject);
+    }
+    for (const payload of this.payloads.attributes)
+      Object.freeze(payload.namespace);
     Object.freeze(this.nodes);
     Object.freeze(this.payloads);
     return new SelectorArena(
       this.source,
       this.tokens,
       this.nodes,
-      this.payloads,
-      this.structure
+      this.payloads
     );
   }
 
@@ -352,13 +367,12 @@ class SelectorArenaBuilder {
 }
 
 export class SelectorArena {
-  /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {unknown} [structure] */
-  constructor(source, tokens, nodes, payloads, structure) {
+  /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads */
+  constructor(source, tokens, nodes, payloads) {
     this.source = source;
     this.tokens = tokens;
     this.nodes = nodes;
     this.payloads = payloads;
-    this.structure = structure;
     Object.freeze(this);
   }
 
@@ -374,9 +388,9 @@ export class SelectorArena {
   }
 }
 
-/** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @param {unknown} [structure] @return {SelectorArena} */
-export function buildSelectorArena(source, tokens, build, structure) {
-  const builder = new SelectorArenaBuilder(source, tokens, structure);
+/** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @return {SelectorArena} */
+export function buildSelectorArena(source, tokens, build) {
+  const builder = new SelectorArenaBuilder(source, tokens);
   build(builder);
   return builder.finish();
 }
