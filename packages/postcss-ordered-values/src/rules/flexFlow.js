@@ -11,6 +11,7 @@ const flexDirection = new Set([
 
 const flexWrap = new Set(['nowrap', 'wrap', 'wrap-reverse']);
 
+/** @type {readonly { name: 'direction' | 'wrap', match: (k: string) => boolean }[]} */
 const flexFlowSlots = [
   { name: 'direction', match: (k) => flexDirection.has(k) },
   { name: 'wrap', match: (k) => flexWrap.has(k) },

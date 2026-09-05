@@ -21,8 +21,8 @@ declare function isUrl(term: Term): boolean;
 /** @param {Term} term */
 declare function isIdent(term: Term): boolean;
 /**
- * Tokenize a declaration once and split it at top-level whitespace and commas.
- * Nested functions and simple blocks remain one term, including their raw source.
+ * Tokenize a declaration in a single streaming pass and split it at top-level
+ * whitespace, commas, and structural slashes.
  *
  * @param {string} value
  * @return {{ arguments: Term[][], terms: Term[], abort: boolean, value: string }}

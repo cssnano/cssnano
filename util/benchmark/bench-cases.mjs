@@ -106,6 +106,22 @@ export const benchmarkCases = {
       return `${edges.join(',')}{color:red}`;
     }).join(''),
   },
+  'ordered-values-tokenization': {
+    plugin: 'postcss-ordered-values',
+    createProcessor() {
+      return pluginProcessor('postcss-ordered-values');
+    },
+    css: Array.from({ length: 250 }, (_, index) => {
+      const nested = `calc((var(--delay-${index}, 1s) + min(2s, 3s)))`;
+      return [
+        `.flat-${index}{transition:opacity 1s linear ${index}ms}`,
+        `.nested-${index}{transition:transform ${nested} ease-in}`,
+        `.comment-${index}{animation:fade/**/ 1s linear ${index}ms}`,
+        `.variable-${index}{border:var(--border-${index}) solid red}`,
+        `.grouped-${index}{box-shadow:rgb(0 0 0 / .2) 1px 2px}`,
+      ].join('');
+    }).join(''),
+  },
   'longhand-rule-merging': {
     plugin: 'postcss-merge-longhand',
     createProcessor() {
