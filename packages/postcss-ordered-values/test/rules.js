@@ -177,3 +177,35 @@ describe('Grid-line validation', () => {
     );
   });
 });
+
+describe('Tokenizer boundary invariants', () => {
+  test('aborts on unexpected closing delimiters at top level', () => {
+    for (const value of ['1px solid red )', '10px ]', '} 10px']) {
+      assert.equal(tokenizeValue(value).abort, true, value);
+    }
+  });
+
+  test('handles empty or whitespace-only inputs without crashing', () => {
+    for (const value of ['', '   ', '\t\n']) {
+      const result = tokenizeValue(value);
+      assert.equal(result.terms.length, 0);
+      assert.equal(result.abort, false);
+    }
+  });
+
+  test('splits consecutive and leading/trailing top-level slashes cleanly', () => {
+    const parsed = tokenizeValue('10px / / 20px');
+    assert.deepEqual(
+      parsed.terms.map((term) => term.raw),
+      ['10px', '/', '/', '20px']
+    );
+  });
+
+  test('preserves inner function whitespace and nested separators byte-for-byte', () => {
+    const parsed = tokenizeValue('calc( 10px  +  20px ) rgb(0 0 0 / 50%)');
+    assert.deepEqual(
+      parsed.terms.map((term) => term.raw),
+      ['calc( 10px  +  20px )', 'rgb(0 0 0 / 50%)']
+    );
+  });
+});

@@ -1,13 +1,8 @@
 import cssnanoUtils from 'cssnano-utils';
 
-const { TokenType, decoded, tokens } = cssnanoUtils;
+const { TokenType, decoded, tokenEnd, tokenStart, tokens } = cssnanoUtils;
 
-const closing = new Set([
-  TokenType.CloseParen,
-  TokenType.CloseSquare,
-  TokenType.CloseCurly,
-]);
-const expectedClosing = new Map([
+const closeFor = new Map([
   [TokenType.Function, TokenType.CloseParen],
   [TokenType.OpenParen, TokenType.CloseParen],
   [TokenType.OpenSquare, TokenType.CloseSquare],
@@ -82,8 +77,8 @@ function isIdent(term) {
 }
 
 /**
- * Tokenize a declaration once and split it at top-level whitespace and commas.
- * Nested functions and simple blocks remain one term, including their raw source.
+ * Tokenize a declaration in a single streaming pass and split it at top-level
+ * whitespace, commas, and structural slashes.
  *
  * @param {string} value
  * @return {{ arguments: Term[][], terms: Term[], abort: boolean, value: string }}
@@ -95,26 +90,27 @@ function tokenizeValue(value) {
   const terms = [];
   /** @type {import('@csstools/css-tokenizer').CSSToken[]} */
   let current = [];
-  let raw = '';
   /** @type {string[]} */
   const stack = [];
   let abort = false;
   const hasCssLoaderImport = value.includes('___CSS_LOADER_IMPORT___');
-  const push = () => {
-    if (!current.length) return;
+
+  const pushTerm = () => {
+    if (current.length === 0) return;
     const term = {
-      raw,
+      raw: value.slice(
+        tokenStart(current[0]),
+        tokenEnd(current[current.length - 1])
+      ),
       tokens: current,
     };
     argumentsList[argumentsList.length - 1].push(term);
     terms.push(term);
     current = [];
-    raw = '';
   };
 
   for (const token of tokens(value)) {
     const type = token[0];
-    if (type === TokenType.EOF) continue;
     if (
       type === TokenType.Comment ||
       isVariableFunction(token) ||
@@ -122,35 +118,42 @@ function tokenizeValue(value) {
     ) {
       abort = true;
     }
-    if (stack.length === 0 && type === TokenType.Whitespace) {
-      push();
-      continue;
+
+    if (stack.length === 0) {
+      if (type === TokenType.Whitespace) {
+        pushTerm();
+        continue;
+      }
+      // Keep slash delimiters available to grammar-aware consumers. A slash
+      // inside a function or block remains part of that single nested term.
+      if (token[1] === '/') {
+        pushTerm();
+        current.push(token);
+        pushTerm();
+        continue;
+      }
+      if (type === TokenType.Comma) {
+        pushTerm();
+        argumentsList.push([]);
+        continue;
+      }
     }
-    // Keep slash delimiters available to grammar-aware consumers. A slash
-    // inside a function or block remains part of that single nested term.
-    if (stack.length === 0 && token[1] === '/') {
-      push();
-      current.push(token);
-      raw += token[1];
-      push();
-      continue;
-    }
-    if (stack.length === 0 && type === TokenType.Comma) {
-      push();
-      argumentsList.push([]);
-      continue;
-    }
+
     current.push(token);
-    raw += token[1];
-    const expected = expectedClosing.get(type);
+    const expected = closeFor.get(type);
     if (expected !== undefined) {
       stack.push(expected);
-    } else if (closing.has(type)) {
+    } else if (
+      type === TokenType.CloseParen ||
+      type === TokenType.CloseSquare ||
+      type === TokenType.CloseCurly
+    ) {
       if (stack.pop() !== type) abort = true;
     }
   }
-  push();
-  if (stack.length) abort = true;
+
+  pushTerm();
+  if (stack.length > 0) abort = true;
   return { arguments: argumentsList, terms, abort, value };
 }
 
