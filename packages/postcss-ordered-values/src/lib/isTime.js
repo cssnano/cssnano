@@ -1,31 +1,13 @@
 import cssnanoUtils from 'cssnano-utils';
+import mathFunctions from './mathfunctions.js';
 import { isDimension, isFunction, name } from './tokenize.js';
 
 const { TokenType, decoded } = cssnanoUtils;
 const timeUnits = new Set(['ms', 's']);
-const mathFunctions = new Set([
-  'calc',
-  'clamp',
-  'max',
-  'min',
-  'round',
-  'mod',
-  'rem',
-  'hypot',
-  'sin',
-  'cos',
-  'tan',
-  'asin',
-  'acos',
-  'atan',
-  'atan2',
-  'pow',
-  'sqrt',
-  'log',
-  'exp',
-  'abs',
-  'sign',
-]);
+const angleUnits = new Set(['deg', 'grad', 'rad', 'turn']);
+const trigFunctions = new Set(['sin', 'cos', 'tan']);
+const inverseTrigFunctions = new Set(['asin', 'acos', 'atan']);
+const numberToNumberFunctions = new Set(['pow', 'sqrt', 'log', 'exp']);
 const closers = new Set([
   TokenType.CloseParen,
   TokenType.CloseSquare,
@@ -33,14 +15,26 @@ const closers = new Set([
 ]);
 const functionArgumentRanges = new Map([
   ['abs', [1, 1]],
+  ['acos', [1, 1]],
+  ['asin', [1, 1]],
+  ['atan', [1, 1]],
+  ['atan2', [2, 2]],
   ['calc', [1, 1]],
   ['clamp', [3, 3]],
+  ['cos', [1, 1]],
+  ['exp', [1, 1]],
   ['hypot', [1, Infinity]],
-  ['max', [2, Infinity]],
-  ['min', [2, Infinity]],
+  ['log', [1, 2]],
+  ['max', [1, Infinity]],
+  ['min', [1, Infinity]],
   ['mod', [2, 2]],
+  ['pow', [2, 2]],
   ['rem', [2, 2]],
   ['round', [1, 2]],
+  ['sign', [1, 1]],
+  ['sin', [1, 1]],
+  ['sqrt', [1, 1]],
+  ['tan', [1, 1]],
 ]);
 
 /** @typedef {{name: string | null, values: string[], operators: string[], args: string[], expectOperand: boolean}} Frame */
@@ -65,7 +59,7 @@ function reduce(frame) {
     else if (right === 'number') frame.values.push(left);
     else return false;
   } else if (right === 'number') frame.values.push(left);
-  else if (left === 'time' && right === 'time') frame.values.push('number');
+  else if (left === right) frame.values.push('number');
   else return false;
   return true;
 }
@@ -80,9 +74,32 @@ function finish(frame) {
 /** @param {Frame} frame */
 function functionResult(frame) {
   const values = frame.args;
-  const range = frame.name && functionArgumentRanges.get(frame.name);
+  const fn = frame.name;
+  if (!fn) return null;
+  const range = functionArgumentRanges.get(fn);
   if (!range || values.length < range[0] || values.length > range[1])
     return null;
+  if (trigFunctions.has(fn)) {
+    return values[0] === 'number' || values[0] === 'angle' ? 'number' : null;
+  }
+  if (inverseTrigFunctions.has(fn)) {
+    return values[0] === 'number' ? 'angle' : null;
+  }
+  if (fn === 'atan2') {
+    return values[0] === values[1] ? 'angle' : null;
+  }
+  if (numberToNumberFunctions.has(fn)) {
+    return values.every((value) => value === 'number') ? 'number' : null;
+  }
+  if (fn === 'sign') {
+    return 'number';
+  }
+  if (fn === 'round') {
+    if (values.length === 1) {
+      return values[0] === 'number' ? 'number' : null;
+    }
+    return values[0] === values[1] ? values[0] : null;
+  }
   return values.every((value) => value === values[0]) ? values[0] : null;
 }
 
@@ -172,20 +189,27 @@ function consumeToken(state, index) {
   const token = state.input[index];
   const type = token[0];
   if (type === TokenType.Whitespace) return true;
+  if (state.frames.length === 1 && state.frames[0].values.length > 0)
+    return false;
   const frame = state.frames.at(-1);
   if (!frame) return false;
   if (type === TokenType.Number) return addValue(state.frames, 'number');
   if (type === TokenType.Dimension) {
     const unit = /** @type {{unit: string}} */ (token[4]).unit.toLowerCase();
-    return addValue(
-      state.frames,
-      timeUnits.has(unit) ? 'time' : `dimension:${unit}`
-    );
+    if (timeUnits.has(unit)) return addValue(state.frames, 'time');
+    if (angleUnits.has(unit)) return addValue(state.frames, 'angle');
+    return addValue(state.frames, `dimension:${unit}`);
   }
   if (type === TokenType.Function) return consumeFunction(state, frame, token);
   if (type === TokenType.OpenParen) return consumeOpenParen(state, frame);
   if (type === TokenType.Comma) return consumeComma(frame);
-  if (type === TokenType.Delim && ['+', '-', '*', '/'].includes(token[1]))
+  if (
+    type === TokenType.Delim &&
+    (token[1] === '+' ||
+      token[1] === '-' ||
+      token[1] === '*' ||
+      token[1] === '/')
+  )
     return consumeOperator(state, frame, index, token[1]);
   if (closers.has(type)) return consumeCloser(state, frame, type);
   return false;

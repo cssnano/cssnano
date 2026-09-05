@@ -236,6 +236,15 @@ test('orders time-returning modern math functions', () => {
   );
 });
 
+test('orders animation and transition with trigonometric and exponential calculations', () => {
+  const input =
+    'a{animation:calc(1s * sin(0)) fade ease 1s;transition:opacity calc(1s * sqrt(4)) ease 2s}';
+  assert.strictEqual(
+    postcss([plugin()]).process(input, { from: undefined }).css,
+    'a{animation:fade calc(1s * sin(0)) ease 1s;transition:opacity calc(1s * sqrt(4)) ease 2s}'
+  );
+});
+
 test('does not reuse stale raw declaration values after a mutation', async () => {
   const mutate = {
     postcssPlugin: 'mutate-value',
@@ -269,6 +278,69 @@ test(
 test(
   'preserves an inset() function in box-shadow',
   passthroughCSS('a{box-shadow:red 2px 5px inset()}')
+);
+
+test(
+  'preserves box-shadow with modern math functions',
+  passthroughCSS(
+    'a{box-shadow:round(2px, 1px) 0 0 #000;box-shadow:hypot(3px, 4px) 0 0 #000;box-shadow:0 0 abs(-5px) red;box-shadow:sign(10px) 0 0 blue;box-shadow:0 0 mod(10px, 3px) green}'
+  )
+);
+
+test(
+  'preserves animation with trailing operators outside calc',
+  passthroughCSS('a{animation:infinite calc(1s)*2}')
+);
+
+test(
+  'orders border with modern math functions as width',
+  processCSS(
+    'a{border:solid red round(2px, 1px);border:solid red hypot(3px, 4px);border:solid red min(10px)}',
+    'a{border:round(2px, 1px) solid red;border:hypot(3px, 4px) solid red;border:min(10px) solid red}'
+  )
+);
+
+test(
+  'orders list-style with uppercase and mixed-case keywords',
+  processCSS(
+    'a{list-style:inside NONE disc;list-style:INSIDE none square;list-style:NONE inside none;list-style:none inside NONE}',
+    'a{list-style:disc inside NONE;list-style:square INSIDE none;list-style:NONE inside none;list-style:none inside NONE}'
+  )
+);
+
+test(
+  'preserves declarations in non-list properties with top-level commas',
+  passthroughCSS(
+    'a{border:1px, red;grid-column:my-line, 1;columns:100px, 2;flex-flow:row, wrap;list-style:inside, disc}'
+  )
+);
+
+test(
+  'preserves invalid list-style declarations',
+  passthroughCSS(
+    'a{list-style:inside 10px;list-style:inside / foo;list-style:inside outside disc;list-style:none none none;list-style:initial disc;list-style:default inside disc;list-style:url(a.png) disc none;list-style:disc none none}'
+  )
+);
+
+test(
+  'orders list-style with custom counter styles and none',
+  processCSS(
+    'a{list-style:none inside my-counter;list-style:none inside ">"}',
+    'a{list-style:my-counter inside none;list-style:">" inside none}'
+  )
+);
+
+test(
+  'orders animation and transition with round() math function',
+  processCSS(
+    'a{animation:calc(1s * round(2)) fade ease 1s;transition:opacity round(1s, 200ms) ease 2s}',
+    'a{animation:fade calc(1s * round(2)) ease 1s;transition:opacity round(1s, 200ms) ease 2s}'
+  )
+);
+
+test(
+  'preserves animation with invalid single-argument dimension round()',
+  passthroughCSS('a{animation:round(1s) fade ease 1s}')
 );
 
 test(
@@ -850,9 +922,12 @@ test(
 
 test(
   'should reject invalid column counts',
-  passthroughCSS(
-    'h1 {columns: 0 20px; columns: -2 20px; columns: 2.5 20px; columns: +2 20px;}'
-  )
+  passthroughCSS('h1 {columns: 0 20px; columns: -2 20px; columns: 2.5 20px;}')
+);
+
+test(
+  'should order column counts with explicit plus sign',
+  processCSS('h1 {columns: +2 20px;}', 'h1 {columns: 20px +2;}')
 );
 
 test(
@@ -994,7 +1069,7 @@ describe('Order', () => {
     'should order grid-column',
     processCSS(
       'grid-column: 2/4; grid-column: 2 span/7; grid-column: auto;grid-column: 3;grid-column: custom-indent-name / 3;',
-      'grid-column: 2/4; grid-column: span 2/7; grid-column: auto;grid-column: 3;grid-column: custom-indent-name / 3;'
+      'grid-column: 2/4; grid-column: span 2/7; grid-column: auto;grid-column: 3;grid-column: custom-indent-name/3;'
     )
   );
 
@@ -1010,7 +1085,7 @@ describe('Order', () => {
     'should order grid-row',
     processCSS(
       'grid-row: 2/4; grid-row: 2 span/7; grid-row: auto;grid-row: 3;grid-row: custom-indent-name / 3;',
-      'grid-row: 2/4; grid-row: span 2/7; grid-row: auto;grid-row: 3;grid-row: custom-indent-name / 3;'
+      'grid-row: 2/4; grid-row: span 2/7; grid-row: auto;grid-row: 3;grid-row: custom-indent-name/3;'
     )
   );
 
@@ -1093,7 +1168,7 @@ describe('Order', () => {
     'should order list-style none as the image when type is already set',
     processCSS(
       'ul{list-style: inside none disc}',
-      'ul{list-style: none disc inside}'
+      'ul{list-style: disc inside none}'
     )
   );
 
@@ -1101,7 +1176,7 @@ describe('Order', () => {
     'should preserve list-style with one or two none tokens',
     processCSS(
       'ul{list-style:inside none;list-style:none inside none}',
-      'ul{list-style:none inside;list-style:none none inside}'
+      'ul{list-style:none inside;list-style:none inside none}'
     )
   );
 
@@ -1142,9 +1217,8 @@ describe('Order', () => {
 
   test(
     'should order list-style 12',
-    processCSS(
-      'ul{list-style: circle url("https://mdn.mozillademos.org/files/11981/starsolid.gif") none}',
-      'ul{list-style: circle none url("https://mdn.mozillademos.org/files/11981/starsolid.gif")}'
+    passthroughCSS(
+      'ul{list-style: circle url("https://mdn.mozillademos.org/files/11981/starsolid.gif") none}'
     )
   );
 
