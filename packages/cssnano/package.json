@@ -50,7 +50,7 @@
     "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
-    "autoprefixer": "^10.5.4",
+    "autoprefixer": "catalog:",
     "cssnano-preset-advanced": "workspace:^",
     "cssnano-preset-lite": "workspace:^",
     "postcss": "catalog:",
