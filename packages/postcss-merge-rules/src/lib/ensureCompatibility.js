@@ -16,6 +16,11 @@ const vendorPrefix =
   /-(ah|apple|atsc|epub|hp|khtml|moz|ms|o|rim|ro|tc|wap|webkit|xv)-/;
 
 const level2Sel = new Set(['=', '~=', '|=']);
+const combinatorFeatures = new Map([
+  ['~', cssSel3],
+  ['>', cssSel2],
+  ['+', cssSel2],
+]);
 const attributeOperatorCharacters = new Set(['~', '|', '^', '$', '*']);
 
 /**
@@ -218,13 +223,9 @@ function scanCompatibility(selector, browsers) {
       }
 
       if (attributeDepth === 0) {
-        if (
-          type === TokenType.Delim &&
-          (value.includes('~') || value.includes('>') || value.includes('+'))
-        ) {
-          if (value.includes('~')) {
-            if (!isSupportedCached(cssSel3, browsers)) return false;
-          } else if (!isSupportedCached(cssSel2, browsers)) {
+        if (type === TokenType.Delim) {
+          const feature = combinatorFeatures.get(value);
+          if (feature && !isSupportedCached(feature, browsers)) {
             return false;
           }
         }

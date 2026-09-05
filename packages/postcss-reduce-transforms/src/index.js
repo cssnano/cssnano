@@ -40,17 +40,35 @@ function reduceMatrix(values, select) {
     : undefined;
 }
 
+/**
+ * Declarative 3D vector reduction tables.
+ * Each entry specifies the exact axis pattern to match and the target function.
+ */
+const rotate3dAxes = [
+  { match: [1, 0, 0], target: 'rotateX' },
+  { match: [0, 1, 0], target: 'rotateY' },
+  { match: [0, 0, 1], target: 'rotate' },
+];
+
+const scale3dAxes = [
+  { match: [null, 1, 1], target: 'scaleX', index: 0 },
+  { match: [1, null, 1], target: 'scaleY', index: 1 },
+  { match: [1, 1, null], target: 'scaleZ', index: 2 },
+];
+
 /** @param {string} name @param {(number|string)[]} values @param {(...indices: number[]) => string} select */
 function reduceRotation(name, values, select) {
   if (name === 'rotate3d' && values.length === 4) {
-    let match;
-    if (values[0] === 1 && values[1] === 0 && values[2] === 0)
-      match = 'rotateX';
-    else if (values[0] === 0 && values[1] === 1 && values[2] === 0)
-      match = 'rotateY';
-    else if (values[0] === 0 && values[1] === 0 && values[2] === 1)
-      match = 'rotate';
-    return match ? `${match}(${select(3)})` : undefined;
+    for (const { match, target } of rotate3dAxes) {
+      if (
+        values[0] === match[0] &&
+        values[1] === match[1] &&
+        values[2] === match[2]
+      ) {
+        return `${target}(${select(3)})`;
+      }
+    }
+    return undefined;
   }
   if (name === 'rotateZ' && values.length === 1) return `rotate(${select(0)})`;
   return undefined;
@@ -64,9 +82,15 @@ function reduceScale(name, values, select) {
     if (values[0] === 1) return `scaleY(${select(1)})`;
   }
   if (name === 'scale3d' && values.length === 3) {
-    if (values[1] === 1 && values[2] === 1) return `scaleX(${select(0)})`;
-    if (values[0] === 1 && values[2] === 1) return `scaleY(${select(1)})`;
-    if (values[0] === 1 && values[1] === 1) return `scaleZ(${select(2)})`;
+    for (const { match, target, index } of scale3dAxes) {
+      if (
+        (match[0] === null || values[0] === match[0]) &&
+        (match[1] === null || values[1] === match[1]) &&
+        (match[2] === null || values[2] === match[2])
+      ) {
+        return `${target}(${select(index)})`;
+      }
+    }
   }
   return undefined;
 }
@@ -87,16 +111,27 @@ function reduceTranslation(name, values, select) {
   return undefined;
 }
 
+/** @type {Map<string, (values: (number|string)[], select: (...indices: number[]) => string) => string | undefined>} */
+const reducers = new Map([
+  ['matrix3d', reduceMatrix],
+  ['rotate3d', (values, select) => reduceRotation('rotate3d', values, select)],
+  ['rotateZ', (values, select) => reduceRotation('rotateZ', values, select)],
+  ['scale', (values, select) => reduceScale('scale', values, select)],
+  ['scale3d', (values, select) => reduceScale('scale3d', values, select)],
+  [
+    'translate',
+    (values, select) => reduceTranslation('translate', values, select),
+  ],
+  [
+    'translate3d',
+    (values, select) => reduceTranslation('translate3d', values, select),
+  ],
+]);
+
 /** @param {string} name @param {(number|string)[]} values @param {(...indices: number[]) => string} select @return {string | undefined} */
 function reducedTransform(name, values, select) {
-  if (name === 'matrix3d') return reduceMatrix(values, select);
-  if (name === 'rotate3d' || name === 'rotateZ')
-    return reduceRotation(name, values, select);
-  if (name === 'scale' || name === 'scale3d')
-    return reduceScale(name, values, select);
-  if (name === 'translate' || name === 'translate3d')
-    return reduceTranslation(name, values, select);
-  return undefined;
+  const reducer = reducers.get(name);
+  return reducer ? reducer(values, select) : undefined;
 }
 
 /** @param {{open:number,close:number,name:string,args:{start:number,end:number,significant:number[]}[]}} frame @param {(number|string)[]} values @param {string} value @param {readonly import('@csstools/css-tokenizer').CSSToken[]} tokens @param {NonNullable<ReturnType<typeof balancedTokens>>} structure @return {[number, number, string] | undefined} */

@@ -2,7 +2,7 @@ import minifyWeight from './lib/minify-weight.js';
 import minifyFamily from './lib/minify-family.js';
 import minifyFont from './lib/minify-font.js';
 
-const fontRegex = /font/i;
+const fontRegex = /^(?:font|font-family|font-weight)$/i;
 /**
  * @param {string} value
  * @return {boolean}
@@ -13,6 +13,25 @@ function hasVariableFunction(value) {
   return lowerCasedValue.includes('var(') || lowerCasedValue.includes('env(');
 }
 
+/** @type {Map<string, (value: string, opts: Options, removeQuotes: boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight') | undefined) => string>} */
+const propertyMinifiers = new Map([
+  [
+    'font-weight',
+    (value) => (hasVariableFunction(value) ? value : minifyWeight(value)),
+  ],
+  [
+    'font-family',
+    (value, opts, removeQuotes) =>
+      hasVariableFunction(value)
+        ? value
+        : minifyFamily(value, opts, removeQuotes),
+  ],
+  [
+    'font',
+    (value, opts, removeQuotes) => minifyFont(value, opts, removeQuotes),
+  ],
+]);
+
 /**
  * @param {string} prop
  * @param {string} value
@@ -20,26 +39,17 @@ function hasVariableFunction(value) {
  * @return {string}
  */
 function transform(prop, value, opts) {
-  const lowerCasedProp = prop.toLowerCase();
-  let variableType = '';
+  let targetType = prop.toLowerCase();
   let removeQuotes = opts.removeQuotes;
 
   if (typeof opts.removeQuotes === 'function') {
-    variableType = opts.removeQuotes(prop);
+    targetType = opts.removeQuotes(prop) || targetType;
     removeQuotes = true;
   }
-  if (
-    (lowerCasedProp === 'font-weight' || variableType === 'font-weight') &&
-    !hasVariableFunction(value)
-  ) {
-    return minifyWeight(value);
-  } else if (
-    (lowerCasedProp === 'font-family' || variableType === 'font-family') &&
-    !hasVariableFunction(value)
-  ) {
-    return minifyFamily(value, opts, removeQuotes);
-  } else if (lowerCasedProp === 'font' || variableType === 'font') {
-    return minifyFont(value, opts, removeQuotes);
+
+  const minifier = propertyMinifiers.get(targetType);
+  if (minifier) {
+    return minifier(value, opts, removeQuotes);
   }
 
   return value;
@@ -71,7 +81,8 @@ function pluginCreator(opts) {
          * @param {import('postcss').Root} css
          */
         OnceExit(css) {
-          css.walkDecls(fontRegex, (decl) => {
+          /** @param {import('postcss').Declaration} decl */
+          const handleDecl = (decl) => {
             const value = decl.value;
 
             if (!value) {
@@ -92,7 +103,13 @@ function pluginCreator(opts) {
 
             decl.value = newValue;
             cache.set(cacheKey, newValue);
-          });
+          };
+
+          if (typeof normalizedOpts.removeQuotes === 'function') {
+            css.walkDecls(handleDecl);
+          } else {
+            css.walkDecls(fontRegex, handleDecl);
+          }
         },
       };
     },
