@@ -845,6 +845,141 @@ function normalizeSelectorList(
   };
 }
 
+/** @param {string | undefined} character */
+function isHexDigit(character) {
+  if (!character) return false;
+  const code = character.codePointAt(0) ?? -1;
+  return (
+    (code >= 0x30 && code <= 0x39) ||
+    (code >= 0x41 && code <= 0x46) ||
+    (code >= 0x61 && code <= 0x66)
+  );
+}
+
+/** @param {string} value */
+function endsInShortHexEscape(value) {
+  let index = value.length;
+  while (index > 0 && value[index - 1] === ' ') index--;
+  let digits = 0;
+  while (index > 0 && digits < 6 && isHexDigit(value[index - 1])) {
+    index--;
+    digits++;
+  }
+  return digits > 0 && digits < 6 && value[index - 1] === '\\';
+}
+
+/**
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} start
+ * @param {number} end
+ */
+function nextSerializedToken(tokens, start, end) {
+  for (let index = start; index < end; index++) {
+    const token = tokens[index];
+    if (token[0] === TokenType.Whitespace) continue;
+    if (token[0] !== TokenType.Comment || token[1].startsWith('/*!')) {
+      return token;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Compact a formula that has already passed the token grammar while retaining
+ * source spelling beyond this plugin's existing leading-sign and ASCII `N`
+ * policies.
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} start
+ * @param {number} end
+ * @param {boolean} preserveImportantComments
+ */
+function formatAnPlusB(tokens, start, end, preserveImportantComments) {
+  const pieces = [];
+  let foundSyntax = false;
+  for (let index = start; index < end; index++) {
+    const token = tokens[index];
+    if (token[0] === TokenType.Whitespace) continue;
+    if (token[0] === TokenType.Comment) {
+      if (token[1].startsWith('/*!')) pieces.push(token[1]);
+      continue;
+    }
+
+    let value = token[1];
+    if (value.endsWith(' ')) {
+      const next = nextSerializedToken(tokens, index + 1, end);
+      value =
+        endsInShortHexEscape(value) && isHexDigit(next?.[1][0])
+          ? `${value.trimEnd()} `
+          : value.trimEnd();
+    }
+    if (!preserveImportantComments) {
+      if (
+        !foundSyntax &&
+        ((token[0] === TokenType.Delim && value === '+') ||
+          (token[0] === TokenType.Dimension && value.startsWith('+')))
+      ) {
+        value = value.slice(1);
+      }
+      if (
+        (token[0] === TokenType.Ident || token[0] === TokenType.Dimension) &&
+        !value.includes('\\')
+      ) {
+        let normalized = '';
+        for (const character of value) {
+          normalized += character === 'N' ? 'n' : character;
+        }
+        value = normalized;
+      }
+    }
+    pieces.push(value);
+    foundSyntax = true;
+  }
+  return pieces.join('');
+}
+
+/**
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} start
+ * @param {number} end
+ */
+function hasImportantComment(tokens, start, end) {
+  for (let index = start; index < end; index++) {
+    if (
+      tokens[index][0] === TokenType.Comment &&
+      tokens[index][1].startsWith('/*!')
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} start
+ * @param {number} end
+ */
+function normalizeAnPlusBFormula(tokens, start, end) {
+  const formula = parseAnPlusB(tokens, start, end);
+  if (!formula) return undefined;
+  const preserveImportantComments = hasImportantComment(tokens, start, end);
+  let text = formatAnPlusB(tokens, start, end, preserveImportantComments);
+  if (!preserveImportantComments) {
+    const significant = tokens
+      .slice(start, end)
+      .filter(
+        (token) =>
+          token[0] !== TokenType.Whitespace && token[0] !== TokenType.Comment
+      );
+    if (significant.length === 1 && significant[0][0] === TokenType.Ident) {
+      const keyword = decoded(significant[0]).toLowerCase();
+      if (keyword === 'even') text = '2n';
+      else if (keyword === 'odd') text = 'odd';
+    }
+  }
+  return { formula, preserveImportantComments, text };
+}
+
 /**
  * @param {string} source
  * @param {readonly CSSToken[]} tokens
@@ -891,16 +1026,14 @@ function normalizeNthArgument(
     };
   }
 
-  const formula = parseAnPlusB(
-    source,
-    tokens,
-    start,
-    ofIndex < 0 ? end : ofIndex
-  );
-  if (!formula.valid || formula.value === undefined)
-    return { pieces: [], specificity: [0, 1, 0], valid: false };
-
-  const normalizedFormula = formula.value;
+  const formulaEnd = ofIndex < 0 ? end : ofIndex;
+  const normalized = normalizeAnPlusBFormula(tokens, start, formulaEnd);
+  if (!normalized) return { pieces: [], specificity: [0, 1, 0], valid: false };
+  const {
+    formula,
+    preserveImportantComments,
+    text: normalizedFormula,
+  } = normalized;
 
   if (ofIndex >= 0) {
     const list = normalizeListFromTokens(
@@ -933,9 +1066,12 @@ function normalizeNthArgument(
         valid: true,
       };
   }
-  if (/^2n\+1$/iu.test(normalizedFormula))
+  if (
+    !preserveImportantComments &&
+    formula.isTwoNPlusOne &&
+    (normalizedFormula === '2n+1' || normalizedFormula.includes('\\'))
+  )
     return { pieces: ['odd'], specificity: [0, 0, 0], valid: true };
-
   return {
     pieces: [normalizedFormula],
     specificity: [0, 0, 0],
