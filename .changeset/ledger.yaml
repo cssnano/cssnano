@@ -61,6 +61,13 @@ cssnano-preset-advanced@9.0.2:
   dir: packages/cssnano-preset-advanced
   intents:
     - blue-paws-crash
+cssnano-preset-advanced@9.0.3:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - dry-poems-taste
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -124,6 +131,13 @@ cssnano-preset-default@9.0.2:
   intents:
     - blue-paws-crash
     - cuddly-schools-battle
+cssnano-preset-default@9.0.3:
+  dir: packages/cssnano-preset-default
+  intents:
+    - dry-poems-taste
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -157,6 +171,11 @@ cssnano-preset-lite@6.0.1:
   dir: packages/cssnano-preset-lite
   intents:
     - blue-paws-crash
+cssnano-preset-lite@6.0.2:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -181,6 +200,11 @@ cssnano-utils@7.0.1:
   dir: packages/cssnano-utils
   intents:
     - blue-paws-crash
+cssnano-utils@7.0.2:
+  dir: packages/cssnano-utils
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 cssnano@8.0.10:
   dir: packages/cssnano
   intents:
@@ -247,6 +271,13 @@ cssnano@9.0.2:
   dir: packages/cssnano
   intents:
     - blue-paws-crash
+cssnano@9.0.3:
+  dir: packages/cssnano
+  intents:
+    - dry-poems-taste
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -276,6 +307,13 @@ postcss-colormin@9.0.1:
   dir: packages/postcss-colormin
   intents:
     - blue-paws-crash
+postcss-colormin@9.0.2:
+  dir: packages/postcss-colormin
+  intents:
+    - dry-poems-taste
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 postcss-convert-values@8.0.2:
   dir: packages/postcss-convert-values
   intents:
@@ -301,6 +339,11 @@ postcss-convert-values@9.0.1:
   dir: packages/postcss-convert-values
   intents:
     - blue-paws-crash
+postcss-convert-values@9.0.2:
+  dir: packages/postcss-convert-values
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-discard-comments@8.0.2:
   dir: packages/postcss-discard-comments
   intents:
@@ -325,6 +368,11 @@ postcss-discard-comments@9.0.1:
   dir: packages/postcss-discard-comments
   intents:
     - blue-paws-crash
+postcss-discard-comments@9.0.2:
+  dir: packages/postcss-discard-comments
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-discard-duplicates@8.0.2:
   dir: packages/postcss-discard-duplicates
   intents:
@@ -349,6 +397,11 @@ postcss-discard-duplicates@9.0.1:
   dir: packages/postcss-discard-duplicates
   intents:
     - blue-paws-crash
+postcss-discard-duplicates@9.0.2:
+  dir: packages/postcss-discard-duplicates
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-discard-empty@8.0.2:
   dir: packages/postcss-discard-empty
   intents:
@@ -377,6 +430,12 @@ postcss-discard-empty@9.0.1:
   dir: packages/postcss-discard-empty
   intents:
     - blue-paws-crash
+postcss-discard-empty@9.0.2:
+  dir: packages/postcss-discard-empty
+  intents:
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 postcss-discard-overridden@8.0.2:
   dir: packages/postcss-discard-overridden
   intents:
@@ -401,6 +460,11 @@ postcss-discard-overridden@9.0.1:
   dir: packages/postcss-discard-overridden
   intents:
     - blue-paws-crash
+postcss-discard-overridden@9.0.2:
+  dir: packages/postcss-discard-overridden
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-discard-unused@8.0.2:
   dir: packages/postcss-discard-unused
   intents:
@@ -425,6 +489,12 @@ postcss-discard-unused@9.0.1:
   dir: packages/postcss-discard-unused
   intents:
     - blue-paws-crash
+postcss-discard-unused@9.0.2:
+  dir: packages/postcss-discard-unused
+  intents:
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 postcss-merge-idents@8.0.2:
   dir: packages/postcss-merge-idents
   intents:
@@ -449,6 +519,11 @@ postcss-merge-idents@9.0.1:
   dir: packages/postcss-merge-idents
   intents:
     - blue-paws-crash
+postcss-merge-idents@9.0.2:
+  dir: packages/postcss-merge-idents
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-merge-longhand@8.0.2:
   dir: packages/postcss-merge-longhand
   intents:
@@ -479,6 +554,12 @@ postcss-merge-longhand@9.0.2:
   dir: packages/postcss-merge-longhand
   intents:
     - blue-paws-crash
+postcss-merge-longhand@9.0.3:
+  dir: packages/postcss-merge-longhand
+  intents:
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 postcss-merge-rules@8.0.2:
   dir: packages/postcss-merge-rules
   intents:
@@ -516,6 +597,12 @@ postcss-merge-rules@9.0.2:
   dir: packages/postcss-merge-rules
   intents:
     - blue-paws-crash
+postcss-merge-rules@9.0.3:
+  dir: packages/postcss-merge-rules
+  intents:
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -540,6 +627,12 @@ postcss-minify-font-values@9.0.1:
   dir: packages/postcss-minify-font-values
   intents:
     - blue-paws-crash
+postcss-minify-font-values@9.0.2:
+  dir: packages/postcss-minify-font-values
+  intents:
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 postcss-minify-gradients@8.0.2:
   dir: packages/postcss-minify-gradients
   intents:
@@ -573,6 +666,12 @@ postcss-minify-gradients@9.0.1:
   dir: packages/postcss-minify-gradients
   intents:
     - blue-paws-crash
+postcss-minify-gradients@9.0.2:
+  dir: packages/postcss-minify-gradients
+  intents:
+    - dry-poems-taste
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-minify-params@8.0.2:
   dir: packages/postcss-minify-params
   intents:
@@ -598,6 +697,12 @@ postcss-minify-params@9.0.1:
   dir: packages/postcss-minify-params
   intents:
     - blue-paws-crash
+postcss-minify-params@9.0.2:
+  dir: packages/postcss-minify-params
+  intents:
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 postcss-minify-selectors@8.0.3:
   dir: packages/postcss-minify-selectors
   intents:
@@ -628,6 +733,11 @@ postcss-minify-selectors@9.0.2:
   dir: packages/postcss-minify-selectors
   intents:
     - blue-paws-crash
+postcss-minify-selectors@9.0.3:
+  dir: packages/postcss-minify-selectors
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-normalize-charset@8.0.2:
   dir: packages/postcss-normalize-charset
   intents:
@@ -656,6 +766,11 @@ postcss-normalize-charset@9.0.1:
   dir: packages/postcss-normalize-charset
   intents:
     - blue-paws-crash
+postcss-normalize-charset@9.0.2:
+  dir: packages/postcss-normalize-charset
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-normalize-display-values@8.0.2:
   dir: packages/postcss-normalize-display-values
   intents:
@@ -680,6 +795,11 @@ postcss-normalize-display-values@9.0.1:
   dir: packages/postcss-normalize-display-values
   intents:
     - blue-paws-crash
+postcss-normalize-display-values@9.0.2:
+  dir: packages/postcss-normalize-display-values
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-normalize-positions@8.0.2:
   dir: packages/postcss-normalize-positions
   intents:
@@ -704,6 +824,11 @@ postcss-normalize-positions@9.0.1:
   dir: packages/postcss-normalize-positions
   intents:
     - blue-paws-crash
+postcss-normalize-positions@9.0.2:
+  dir: packages/postcss-normalize-positions
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-normalize-repeat-style@8.0.2:
   dir: packages/postcss-normalize-repeat-style
   intents:
@@ -728,6 +853,11 @@ postcss-normalize-repeat-style@9.0.1:
   dir: packages/postcss-normalize-repeat-style
   intents:
     - blue-paws-crash
+postcss-normalize-repeat-style@9.0.2:
+  dir: packages/postcss-normalize-repeat-style
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-normalize-string@8.0.2:
   dir: packages/postcss-normalize-string
   intents:
@@ -752,6 +882,11 @@ postcss-normalize-string@9.0.1:
   dir: packages/postcss-normalize-string
   intents:
     - blue-paws-crash
+postcss-normalize-string@9.0.2:
+  dir: packages/postcss-normalize-string
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-normalize-timing-functions@8.0.2:
   dir: packages/postcss-normalize-timing-functions
   intents:
@@ -776,6 +911,11 @@ postcss-normalize-timing-functions@9.0.1:
   dir: packages/postcss-normalize-timing-functions
   intents:
     - blue-paws-crash
+postcss-normalize-timing-functions@9.0.2:
+  dir: packages/postcss-normalize-timing-functions
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-normalize-unicode@8.0.2:
   dir: packages/postcss-normalize-unicode
   intents:
@@ -801,6 +941,11 @@ postcss-normalize-unicode@9.0.1:
   dir: packages/postcss-normalize-unicode
   intents:
     - blue-paws-crash
+postcss-normalize-unicode@9.0.2:
+  dir: packages/postcss-normalize-unicode
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-normalize-url@8.0.2:
   dir: packages/postcss-normalize-url
   intents:
@@ -828,6 +973,11 @@ postcss-normalize-url@9.0.1:
   dir: packages/postcss-normalize-url
   intents:
     - blue-paws-crash
+postcss-normalize-url@9.0.2:
+  dir: packages/postcss-normalize-url
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-normalize-whitespace@8.0.2:
   dir: packages/postcss-normalize-whitespace
   intents:
@@ -857,6 +1007,11 @@ postcss-normalize-whitespace@9.0.1:
   dir: packages/postcss-normalize-whitespace
   intents:
     - blue-paws-crash
+postcss-normalize-whitespace@9.0.2:
+  dir: packages/postcss-normalize-whitespace
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-ordered-values@8.0.2:
   dir: packages/postcss-ordered-values
   intents:
@@ -885,6 +1040,12 @@ postcss-ordered-values@9.0.1:
   dir: packages/postcss-ordered-values
   intents:
     - blue-paws-crash
+postcss-ordered-values@9.0.2:
+  dir: packages/postcss-ordered-values
+  intents:
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 postcss-reduce-idents@8.0.2:
   dir: packages/postcss-reduce-idents
   intents:
@@ -911,6 +1072,12 @@ postcss-reduce-idents@9.0.1:
   dir: packages/postcss-reduce-idents
   intents:
     - blue-paws-crash
+postcss-reduce-idents@9.0.2:
+  dir: packages/postcss-reduce-idents
+  intents:
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 postcss-reduce-initial@8.0.2:
   dir: packages/postcss-reduce-initial
   intents:
@@ -942,6 +1109,12 @@ postcss-reduce-initial@9.0.1:
   dir: packages/postcss-reduce-initial
   intents:
     - blue-paws-crash
+postcss-reduce-initial@9.0.2:
+  dir: packages/postcss-reduce-initial
+  intents:
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 postcss-reduce-transforms@8.0.2:
   dir: packages/postcss-reduce-transforms
   intents:
@@ -966,6 +1139,12 @@ postcss-reduce-transforms@9.0.1:
   dir: packages/postcss-reduce-transforms
   intents:
     - blue-paws-crash
+postcss-reduce-transforms@9.0.2:
+  dir: packages/postcss-reduce-transforms
+  intents:
+    - khaki-colts-stop
+    - ninety-mangos-send
+    - violet-ads-ask
 postcss-svgo@8.0.2:
   dir: packages/postcss-svgo
   intents:
@@ -999,6 +1178,11 @@ postcss-svgo@9.0.1:
   dir: packages/postcss-svgo
   intents:
     - blue-paws-crash
+postcss-svgo@9.0.2:
+  dir: packages/postcss-svgo
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-unique-selectors@8.0.2:
   dir: packages/postcss-unique-selectors
   intents:
@@ -1023,6 +1207,11 @@ postcss-unique-selectors@9.0.1:
   dir: packages/postcss-unique-selectors
   intents:
     - blue-paws-crash
+postcss-unique-selectors@9.0.2:
+  dir: packages/postcss-unique-selectors
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 postcss-zindex@8.0.2:
   dir: packages/postcss-zindex
   intents:
@@ -1047,6 +1236,11 @@ postcss-zindex@9.0.1:
   dir: packages/postcss-zindex
   intents:
     - blue-paws-crash
+postcss-zindex@9.0.2:
+  dir: packages/postcss-zindex
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask
 stylehacks@8.0.2:
   dir: packages/stylehacks
   intents:
@@ -1076,3 +1270,8 @@ stylehacks@9.0.2:
   dir: packages/stylehacks
   intents:
     - blue-paws-crash
+stylehacks@9.0.3:
+  dir: packages/stylehacks
+  intents:
+    - khaki-colts-stop
+    - violet-ads-ask

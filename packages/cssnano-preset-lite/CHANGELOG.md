@@ -1,5 +1,13 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- fix: update postcss and selector parser
+
+- fix: update PostCSS peer dependency
+
 ## 6.0.1
 
 ### Patch Changes

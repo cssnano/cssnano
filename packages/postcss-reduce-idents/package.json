@@ -1,6 +1,6 @@
 {
   "name": "postcss-reduce-idents",
-  "version": "9.0.1",
+  "version": "9.0.2",
   "description": "Reduce custom identifiers with PostCSS.",
   "exports": {
     ".": {
