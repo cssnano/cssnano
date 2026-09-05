@@ -106,6 +106,41 @@ export const benchmarkCases = {
       return `${edges.join(',')}{color:red}`;
     }).join(''),
   },
+  'selector-deep-supported-functions': {
+    plugin: 'postcss-minify-selectors',
+    createProcessor() {
+      return pluginProcessor('postcss-minify-selectors');
+    },
+    css: `${':is('.repeat(12_000)}.item${')'.repeat(12_000)}{color:red}`,
+  },
+  'selector-deep-opaque-functions': {
+    plugin: 'postcss-minify-selectors',
+    createProcessor() {
+      return pluginProcessor('postcss-minify-selectors');
+    },
+    css: `${':future('.repeat(12_000)}.item${')'.repeat(12_000)}{color:red}`,
+  },
+  'selector-nested-functions-with-siblings': {
+    plugin: 'postcss-minify-selectors',
+    createProcessor() {
+      return pluginProcessor('postcss-minify-selectors');
+    },
+    css: Array.from(
+      { length: 2_000 },
+      (_, index) =>
+        `.scope-${index}:is(.a-${index},:not(.b-${index},.c-${index}))>.item-${index}{color:red}`
+    ).join(''),
+  },
+  'selector-wide-mostly-unique': {
+    plugin: 'postcss-minify-selectors',
+    createProcessor() {
+      return pluginProcessor('postcss-minify-selectors');
+    },
+    css: `${Array.from(
+      { length: 10_000 },
+      (_, index) => `.item-${index}:not(.disabled-${index})`
+    ).join(',')}{color:red}`,
+  },
   'ordered-values-tokenization': {
     plugin: 'postcss-ordered-values',
     createProcessor() {
