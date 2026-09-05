@@ -813,7 +813,8 @@ suite('fold that fires', () => {
       'ol ol ul,ol ul ul,ol menu ul,ol dir ul,ul ol ul,ul ul ul,ul menu ul,' +
         'ul dir ul,menu ol ul,menu ul ul,menu menu ul,menu dir ul,dir ol ul,' +
         'dir ul ul,dir menu ul,dir dir ul{list-style:square}',
-      ':is(dir,menu,ol,ul) :is(dir,menu,ol,ul) ul{list-style:square}',
+      ':is(dir,menu,ol,ul) :is(dir,menu) ul,' +
+        ':is(dir,menu,ol,ul) :is(ol,ul) ul{list-style:square}',
       modernBl
     )
   );

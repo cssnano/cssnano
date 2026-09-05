@@ -4,8 +4,7 @@ import { unquote } from './tokenUtils.js';
 const { TokenType } = cssnanoUtils;
 
 /** @typedef {import('./tokenUtils.js').CSSToken} CSSToken */
-/** @typedef {import('./specificity.js').Specificity} Specificity */
-/** @typedef {import('./foldToIs.js').FunctionResult} FunctionResult */
+/** @typedef {import('./arena.js').Specificity} Specificity */
 
 /** @param {string} kind @return {string | undefined} */
 export function firstPseudoReplacement(kind) {
@@ -269,10 +268,10 @@ function compactTokenValue(token) {
  * @param {readonly CSSToken[]} tokens
  * @param {number} start
  * @param {number} end
- * @return {{ pieces?: (string | FunctionResult)[], specificity?: Specificity, valid: boolean }}
+ * @return {{ pieces?: string[], specificity?: Specificity, valid: boolean }}
  */
 export function normalizePtNameArgument(tokens, start, end) {
-  /** @type {(string | FunctionResult)[]} */
+  /** @type {string[]} */
   const pieces = [];
   let foundName = false;
   let expectsClass = false;
@@ -333,10 +332,10 @@ export function normalizePtNameArgument(tokens, start, end) {
  * @param {readonly CSSToken[]} tokens
  * @param {number} start
  * @param {number} end
- * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
+ * @return {{ pieces?: string[], valid: boolean }}
  */
 export function normalizeIdentListArgument(tokens, start, end) {
-  /** @type {(string | FunctionResult)[]} */
+  /** @type {string[]} */
   const pieces = [];
   let count = 0;
 
@@ -377,10 +376,10 @@ export function normalizeIdentListArgument(tokens, start, end) {
  * @param {readonly CSSToken[]} tokens
  * @param {number} start
  * @param {number} end
- * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
+ * @return {{ pieces?: string[], valid: boolean }}
  */
 export function normalizeIdentArgument(tokens, start, end) {
-  /** @type {(string | FunctionResult)[]} */
+  /** @type {string[]} */
   const pieces = [];
   let foundIdent = false;
 
@@ -441,7 +440,7 @@ function recordLanguageItem(items, seen, value, trivia) {
  * @param {readonly CSSToken[]} tokens
  * @param {number} start
  * @param {number} end
- * @return {{ pieces?: (string | FunctionResult)[], valid: boolean }}
+ * @return {{ pieces?: string[], valid: boolean }}
  */
 export function normalizeIdentOrStringList(tokens, start, end) {
   /** @type {{ value: string, trivia: string[], trailingTrivia: string[] }[]} */
@@ -490,7 +489,7 @@ export function normalizeIdentOrStringList(tokens, start, end) {
     return { valid: false };
   }
 
-  /** @type {(string | FunctionResult)[]} */
+  /** @type {string[]} */
   const pieces = [];
   for (let i = 0; i < items.length; i++) {
     if (i > 0) pieces.push(',');

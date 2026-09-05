@@ -101,7 +101,7 @@ export function serializeEmit(arena, rewrites, root) {
 }
 
 /** @param {SelectorArena} arena @param {ReadonlyMap<number,Emit>} rewrites @param {number} nodeIndex */
-export function serializeArenaNode(arena, rewrites, nodeIndex) {
+function serializeArenaNode(arena, rewrites, nodeIndex) {
   return serializeEmit(arena, rewrites, { kind: 'node', node: nodeIndex });
 }
 /** @param {SelectorArena} arena @param {ReadonlyMap<number,Emit>} rewrites */

@@ -1,5 +1,5 @@
 import cssnanoUtils from 'cssnano-utils';
-import { buildSelectorArena, SelectorArena } from './arena.js';
+import { buildSelectorArena } from './arena.js';
 /** @type {typeof cssnanoUtils.balancedTokens} */
 declare const balancedTokens: typeof cssnanoUtils.balancedTokens;
 export type ListMode = import('./arena.js').ListMode;
@@ -13,7 +13,6 @@ export type ParseContext = {
     mode?: ListMode;
     keyframe?: boolean;
     hasDefaultNamespace?: boolean;
-    structureOnly?: boolean;
 };
 export type ListWork = {
     kind: 'list';
@@ -83,6 +82,6 @@ export type CloseWork = {
 };
 export type ParseWork = ListWork | ComplexWork | CompoundWork | PseudoWork | AttributeWork | NamedSimpleWork | QualifiedNameWork | RawWork | CombinatorWork | CloseWork;
 /** @param {string} source @param {ParseContext} [context] */
-export declare function parseSelectorArena(source: string, context?: ParseContext): SelectorArena;
+export declare function parseSelectorArena(source: string, context?: ParseContext): import("./arena.js").SelectorArena;
 export {};
 //# sourceMappingURL=parseArena.d.ts.map
