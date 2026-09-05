@@ -29,6 +29,7 @@ const isWidth = (term, lower) =>
 /** @param {import('../lib/tokenize.js').Term} term @param {string} lower */
 const isStyle = (term, lower) => !isFunction(term) && borderStyles.has(lower);
 
+/** @type {readonly { name: 'width' | 'style' | 'color', match: (term: import('../lib/tokenize.js').Term, lower: string) => boolean }[]} */
 const borderSlots = [
   { name: 'style', match: isStyle },
   { name: 'width', match: isWidth },

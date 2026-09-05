@@ -1,1 +1,1 @@
-{"version":3,"file":"flexFlow.d.ts","sourceRoot":"","sources":["../../src/rules/flexFlow.js"],"names":[],"mappings":"AAaA;;;GAGG;AACH,iBAAS,iBAAiB,CAAC,QAAQ,EAHxB,OAAO,oBAAoB,EAAE,IAAI,EAGT,GAFvB,MAAM,GAAG,IAAI,CA+BxB;eAEc,iBAAiB"}
+{"version":3,"file":"flexFlow.d.ts","sourceRoot":"","sources":["../../src/rules/flexFlow.js"],"names":[],"mappings":"AAmBA;;;GAGG;AACH,iBAAS,iBAAiB,CAAC,QAAQ,EAHxB,OAAO,oBAAoB,EAAE,IAAI,EAGT,GAFvB,MAAM,GAAG,IAAI,CAgBxB;eAEc,iBAAiB"}
