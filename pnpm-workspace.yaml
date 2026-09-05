@@ -4,12 +4,12 @@ packages:
 autoInstallPeers: true
 
 catalog:
-  browserslist: ^4.28.8
+  browserslist: ^4.28.9
   postcss: ^8.5.28
   postcss-selector-parser: ^7.1.6
   '@webref/css': 8.7.3
   mdn-data: 2.34.0
-  '@colordx/core': ^6.2.0
+  '@colordx/core': ^6.3.0
 
 minimumReleaseAgeExclude:
   - postcss-calc
