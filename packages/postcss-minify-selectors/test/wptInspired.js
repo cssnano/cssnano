@@ -87,6 +87,62 @@ test('preserves important comments in An+B formulas', () => {
   );
 });
 
+test('recognizes escaped An+B token forms without canonicalizing generic formulas', () => {
+  assert.equal(
+    normalizeList(':nth-child(2\\6e +1)', false, false),
+    ':nth-child(odd)'
+  );
+  assert.equal(
+    normalizeList(':nth-child(3\\6e +1)', false, false),
+    ':nth-child(3\\6e+1)'
+  );
+  assert.equal(
+    normalizeList(':nth-child(02n + 1)', false, false),
+    ':nth-child(02n+1)'
+  );
+  assert.equal(
+    normalizeList(':nth-child(\\6e-\\33 )', false, false),
+    ':nth-child(\\6e-\\33)'
+  );
+  assert.equal(
+    normalizeList(':nth-child(2n\\2d 3)', false, false),
+    ':nth-child(2n\\2d 3)'
+  );
+});
+
+test('keeps escaped formulas subject to existing of-clause restrictions', () => {
+  assert.equal(
+    normalizeList(':nth-child(2\\6e +1 of .a, #b)', false, false),
+    ':nth-child(2\\6e+1 of .a,#b)'
+  );
+  assert.equal(
+    normalizeList(':nth-of-type(2\\6e +1 of .a)', false, false),
+    ':nth-of-type(2\\6e +1 of .a)'
+  );
+});
+
+test('preserves important comments in escaped formulas', () => {
+  assert.equal(
+    normalizeList(':nth-child(2\\6e +/*! keep */1)', false, false),
+    ':nth-child(2\\6e+/*! keep */1)'
+  );
+});
+
+test('calculates specificity for escaped formulas and their of selector lists', () => {
+  assert.equal(specificityOf(':nth-child(2\\6e +1)'), '0,1,0');
+  assert.equal(specificityOf(':nth-child(2\\6e +1 of #id)'), '1,1,0');
+});
+
+test('fails closed for malformed escaped formulas', () => {
+  for (const selector of [
+    ':nth-child(+ \\6e )',
+    ':nth-child(2\\6e + +1)',
+    ':nth-child(2\\78 )',
+  ]) {
+    assert.equal(normalizeList(selector, false, false), selector, selector);
+  }
+});
+
 test('normalizes nested forgiving pseudo-elements without dropping the outer pseudo', () => {
   assert.equal(normalizeList(':is(:is(::before))', false, false), ':is(:is())');
   assert.equal(
