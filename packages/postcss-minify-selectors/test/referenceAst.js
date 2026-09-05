@@ -17,6 +17,15 @@ const pseudoElements = new Set([
   'first-line',
   'marker',
   'placeholder',
+  'selection',
+  'backdrop',
+  'file-selector-button',
+  'target-text',
+  'cue',
+  'details-content',
+  'view-transition',
+  'grammar-error',
+  'spelling-error',
 ]);
 const safePseudos = new Set(['hover', 'focus', 'active', 'visited', 'link']);
 

@@ -11,6 +11,11 @@ const flexDirection = new Set([
 
 const flexWrap = new Set(['nowrap', 'wrap', 'wrap-reverse']);
 
+const flexFlowSlots = [
+  { name: 'direction', match: (k) => flexDirection.has(k) },
+  { name: 'wrap', match: (k) => flexWrap.has(k) },
+];
+
 /**
  * @param {import('../lib/tokenize.js').Term[]} flexFlow
  * @return {string | null}
@@ -20,28 +25,13 @@ function normalizeFlexFlow(flexFlow) {
     direction: '',
     wrap: '',
   };
-  let hasDirection = false;
-  let hasWrap = false;
 
   for (const term of flexFlow) {
-    const value = term.raw;
     if (!isIdent(term)) return null;
     const keyword = name(term);
-    if (flexDirection.has(keyword)) {
-      if (hasDirection) return null;
-      hasDirection = true;
-      order.direction = value;
-      continue;
-    }
-
-    if (flexWrap.has(keyword)) {
-      if (hasWrap) return null;
-      hasWrap = true;
-      order.wrap = value;
-      continue;
-    }
-
-    return null;
+    const slot = flexFlowSlots.find((s) => s.match(keyword));
+    if (!slot || order[slot.name]) return null;
+    order[slot.name] = term.raw;
   }
   return `${order.direction} ${order.wrap}`.trim();
 }

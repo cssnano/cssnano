@@ -33,6 +33,10 @@ export const pseudoElements = new Set([
   'file-selector-button',
   'target-text',
   'cue',
+  'details-content',
+  'view-transition',
+  'grammar-error',
+  'spelling-error',
 ]);
 
 export const safePseudos = new Set([

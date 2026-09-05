@@ -150,6 +150,21 @@ describe('Mangle', () => {
   test('should not mangle flex basis (2)', passthroughCSS('h1{FLEX-BASIC:0%}'));
 
   test(
+    'should retain IE flex-order declaration and not convert unitless zero',
+    passthroughCSS('a{-ms-flex-order:5;-ms-flex-order:0px}')
+  );
+
+  test(
+    'should not mangle -webkit-flex-basis',
+    passthroughCSS('h1{-webkit-flex-basis:0%}')
+  );
+
+  test(
+    'should not mangle -ms-flex-preferred-size',
+    passthroughCSS('h1{-ms-flex-preferred-size:0%}')
+  );
+
+  test(
     'should not mangle values without units',
     passthroughCSS('h1{z-index:5}')
   );
@@ -631,6 +646,56 @@ describe('Clamp', () => {
     processCSS(
       'h1{shape-image-threshold:-0.5;shape-image-threshold:-5;shape-image-threshold:-50}',
       'h1{shape-image-threshold:0;shape-image-threshold:0;shape-image-threshold:0}'
+    )
+  );
+});
+
+describe('Clamp', () => {
+  test(
+    'should clamp fill-opacity to 1 maximum',
+    processCSS(
+      'svg{fill-opacity:150;fill-opacity:15;fill-opacity:1.5}',
+      'svg{fill-opacity:1;fill-opacity:1;fill-opacity:1}'
+    )
+  );
+
+  test(
+    'should clamp fill-opacity to 0 minimum',
+    processCSS(
+      'svg{fill-opacity:-0.5;fill-opacity:-5;fill-opacity:-50}',
+      'svg{fill-opacity:0;fill-opacity:0;fill-opacity:0}'
+    )
+  );
+
+  test(
+    'should clamp stroke-opacity to 1 maximum',
+    processCSS(
+      'svg{stroke-opacity:150;stroke-opacity:15;stroke-opacity:1.5}',
+      'svg{stroke-opacity:1;stroke-opacity:1;stroke-opacity:1}'
+    )
+  );
+
+  test(
+    'should clamp stroke-opacity to 0 minimum',
+    processCSS(
+      'svg{stroke-opacity:-0.5;stroke-opacity:-5;stroke-opacity:-50}',
+      'svg{stroke-opacity:0;stroke-opacity:0;stroke-opacity:0}'
+    )
+  );
+
+  test(
+    'should clamp stop-opacity to 1 maximum',
+    processCSS(
+      'stop{stop-opacity:150;stop-opacity:15;stop-opacity:1.5}',
+      'stop{stop-opacity:1;stop-opacity:1;stop-opacity:1}'
+    )
+  );
+
+  test(
+    'should clamp stop-opacity to 0 minimum',
+    processCSS(
+      'stop{stop-opacity:-0.5;stop-opacity:-5;stop-opacity:-50}',
+      'stop{stop-opacity:0;stop-opacity:0;stop-opacity:0}'
     )
   );
 });
