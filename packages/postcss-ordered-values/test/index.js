@@ -829,9 +829,36 @@ test(
 
 test(
   'should not crash on invalid columns declarations',
-  processCSS(
-    'h1 {columns: 2px 2px; columns: inherit 3rem; columns: 3rem 2 12em;}',
-    'h1 {columns: 2px 2px; columns: 3rem inherit; columns: 3rem 2 12em;}'
+  passthroughCSS(
+    'h1 {columns: 2px 2px; columns: inherit 3rem; columns: 3rem 2 12em;}'
+  )
+);
+
+test(
+  'should reject CSS-wide keywords combined with a value in columns',
+  passthroughCSS(
+    'h1 {columns: inherit 3rem; columns: 3rem inherit; columns: initial 20px; columns: unset 20px; columns: revert 20px; columns: revert-layer 20px;}'
+  )
+);
+
+test(
+  'should reject invalid idents in columns',
+  passthroughCSS(
+    'h1 {columns: foo 20px; columns: 20px foo; columns: none 20px;}'
+  )
+);
+
+test(
+  'should reject invalid column counts',
+  passthroughCSS(
+    'h1 {columns: 0 20px; columns: -2 20px; columns: 2.5 20px; columns: +2 20px;}'
+  )
+);
+
+test(
+  'should reject invalid column widths',
+  passthroughCSS(
+    'h1 {columns: 2 1foo; columns: 2 -1px; columns: 2 10deg; columns: 2 10s;}'
   )
 );
 

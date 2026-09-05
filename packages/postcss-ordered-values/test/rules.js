@@ -4,6 +4,7 @@ import { tokenizeValue } from '../src/lib/tokenize.js';
 import normalizeBorder from '../src/rules/border.js';
 import normalizeBoxShadow from '../src/rules/boxShadow.js';
 import normalizeAnimation from '../src/rules/animation.js';
+import normalizeColumns from '../src/rules/columns.js';
 import { normalizeGridColumnRow } from '../src/rules/grid.js';
 import isTime from '../src/lib/isTime.js';
 
@@ -70,9 +71,108 @@ test('box-shadow rejects an unclosed function', () => {
   assert.equal(parsed.abort, true);
 });
 
-test('columns rejects an unclosed function before reordering', () => {
-  const parsed = tokenizeValue('2 20px calc(1px');
-  assert.equal(parsed.abort, true);
+describe('Columns', () => {
+  test('columns rejects an unclosed function before reordering', () => {
+    const parsed = tokenizeValue('2 20px calc(1px');
+    assert.equal(parsed.abort, true);
+  });
+
+  test('reorders count and width to width first', () => {
+    assert.strictEqual(
+      normalizeColumns(tokenizeValue('2 20px').terms),
+      '20px 2'
+    );
+  });
+
+  test('preserves already ordered width and count', () => {
+    assert.strictEqual(
+      normalizeColumns(tokenizeValue('20px 2').terms),
+      '20px 2'
+    );
+  });
+
+  test('reorders auto and length with preserved casing and escapes', () => {
+    assert.strictEqual(
+      normalizeColumns(tokenizeValue('AUTO 12em').terms),
+      '12em AUTO'
+    );
+    assert.strictEqual(
+      normalizeColumns(tokenizeValue('\\61uto 12em').terms),
+      '12em \\61uto'
+    );
+  });
+
+  test('rejects CSS-wide keywords combined with values', () => {
+    for (const kw of [
+      'inherit',
+      'initial',
+      'unset',
+      'revert',
+      'revert-layer',
+      'INHERIT',
+      '\\69nherit',
+    ]) {
+      assert.strictEqual(
+        normalizeColumns(tokenizeValue(`${kw} 3rem`).terms),
+        null
+      );
+      assert.strictEqual(
+        normalizeColumns(tokenizeValue(`3rem ${kw}`).terms),
+        null
+      );
+    }
+  });
+
+  test('rejects invalid identifiers', () => {
+    for (const ident of ['foo', 'none', 'default', 'solid']) {
+      assert.strictEqual(
+        normalizeColumns(tokenizeValue(`${ident} 20px`).terms),
+        null
+      );
+      assert.strictEqual(
+        normalizeColumns(tokenizeValue(`20px ${ident}`).terms),
+        null
+      );
+    }
+  });
+
+  test('rejects invalid column counts', () => {
+    for (const count of ['0', '-1', '2.5', '+2', '9007199254740992']) {
+      assert.strictEqual(
+        normalizeColumns(tokenizeValue(`${count} 20px`).terms),
+        null
+      );
+    }
+  });
+
+  test('rejects invalid column widths', () => {
+    for (const width of ['1foo', '-1px', '-0px', '10deg', '10s', '50%']) {
+      assert.strictEqual(
+        normalizeColumns(tokenizeValue(`2 ${width}`).terms),
+        null
+      );
+    }
+  });
+
+  test('rejects non-binary arities and ambiguous auto combinations', () => {
+    assert.strictEqual(normalizeColumns(tokenizeValue('20px').terms), null);
+    assert.strictEqual(normalizeColumns(tokenizeValue('2').terms), null);
+    assert.strictEqual(normalizeColumns(tokenizeValue('auto').terms), null);
+    assert.strictEqual(
+      normalizeColumns(tokenizeValue('3rem 2 12em').terms),
+      null
+    );
+    assert.strictEqual(normalizeColumns(tokenizeValue('2 auto').terms), null);
+    assert.strictEqual(normalizeColumns(tokenizeValue('auto 2').terms), null);
+    assert.strictEqual(
+      normalizeColumns(tokenizeValue('auto auto').terms),
+      null
+    );
+    assert.strictEqual(
+      normalizeColumns(tokenizeValue('20px 20px').terms),
+      null
+    );
+  });
 });
 
 describe('Animation', () => {
