@@ -23,13 +23,14 @@ const lengthUnits = new Set([
   'rex',
   'ric',
   'rlh',
-  // Viewport-percentage lengths
+  // Container query lengths
   'cqb',
   'cqh',
   'cqi',
   'cqmax',
   'cqmin',
   'cqw',
+  // Viewport-percentage lengths
   'dvb',
   'dvh',
   'dvi',
@@ -70,7 +71,7 @@ function isPositiveInteger(term) {
     );
   return (
     data?.type === 'integer' &&
-    data.signCharacter === undefined &&
+    data.signCharacter !== '-' &&
     typeof data.value === 'number' &&
     data.value > 0 &&
     data.value <= Number.MAX_SAFE_INTEGER
