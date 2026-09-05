@@ -1,4 +1,6 @@
+import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import postcss from 'postcss';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -494,6 +496,18 @@ describe('Pass', () => {
   );
 
   test('should pass through broken syntax', passthroughCSS('h1{transform:}'));
+
+  test('should pass through unbalanced values on declaration', async () => {
+    for (const value of ['scale(1, 1', '[scale(1, 1)', 'scale(1, 1]']) {
+      const root = postcss.root();
+      const rule = postcss.rule({ selector: 'h1' });
+      const decl = postcss.decl({ prop: 'transform', value });
+      rule.append(decl);
+      root.append(rule);
+      await postcss([plugin()]).process(root, { from: undefined });
+      assert.strictEqual(decl.value, value);
+    }
+  });
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

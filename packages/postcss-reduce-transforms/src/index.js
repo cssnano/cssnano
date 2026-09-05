@@ -1,59 +1,26 @@
 import cssnanoUtils from 'cssnano-utils';
 
-const {
-  TokenType,
-  decoded,
-  tokenEnd,
-  tokenStart,
-  tokens: tokenizeValue,
-} = cssnanoUtils;
+const { TokenType, balancedTokens, decoded, tokenEnd, tokenStart } =
+  cssnanoUtils;
 
 const transformRegex = /transform$/i;
 
-/** @param {import('@csstools/css-tokenizer').CSSToken} token @return {boolean} */
-function isBlockStart(token) {
-  return (
-    token[0] === TokenType.Function ||
-    token[0] === TokenType.OpenParen ||
-    token[0] === TokenType.OpenSquare ||
-    token[0] === TokenType.OpenCurly
-  );
-}
-/** @param {import('@csstools/css-tokenizer').CSSToken} token @return {boolean} */
-function isBlockEnd(token) {
-  return (
-    token[0] === TokenType.CloseParen ||
-    token[0] === TokenType.CloseSquare ||
-    token[0] === TokenType.CloseCurly
-  );
-}
-/** @param {import('@csstools/css-tokenizer').TokenType} type @return {import('@csstools/css-tokenizer').TokenType} */
-function matchingOpen(type) {
-  if (type === TokenType.CloseSquare) return TokenType.OpenSquare;
-  if (type === TokenType.CloseCurly) return TokenType.OpenCurly;
-  return TokenType.Function;
-}
-/** @param {import('@csstools/css-tokenizer').TokenType} type @param {import('@csstools/css-tokenizer').TokenType} open @return {boolean} */
-function closes(type, open) {
-  return type === TokenType.CloseParen
-    ? open === TokenType.Function || open === TokenType.OpenParen
-    : matchingOpen(type) === open;
-}
 /** @param {string} name @return {string} */
 function normalizeReducerName(name) {
   const lower = name.toLowerCase();
   return lower === 'rotatez' ? 'rotateZ' : lower;
 }
 
-/** @param {{start:number,end:number,significant:number[]}} argument @param {string} value @param {import('@csstools/css-tokenizer').CSSToken[]} tokens @param {Map<number, number>} blockEnds @return {string} */
-function argumentSource(argument, value, tokens, blockEnds) {
+/** @param {{start:number,end:number,significant:number[]}} argument @param {string} value @param {readonly import('@csstools/css-tokenizer').CSSToken[]} tokens @param {NonNullable<ReturnType<typeof balancedTokens>>} structure @return {string} */
+function argumentSource(argument, value, tokens, structure) {
   if (argument.significant.length === 0) return '';
   const first = argument.significant[0];
   const last = argument.significant[argument.significant.length - 1];
-  const end = isBlockStart(tokens[last])
-    ? tokenEnd(tokens[blockEnds.get(first) ?? first])
-    : tokenEnd(tokens[last]);
-  return value.slice(tokenStart(tokens[first]), end);
+  const end = structure.endForOpening(first);
+  return value.slice(
+    tokenStart(tokens[first]),
+    end !== undefined ? tokenEnd(tokens[end]) : tokenEnd(tokens[last])
+  );
 }
 
 /** @param {(number|string)[]} values @param {(...indices: number[]) => string} select */
@@ -132,16 +99,16 @@ function reducedTransform(name, values, select) {
   return undefined;
 }
 
-/** @param {{open:number,close:number,name:string,args:{start:number,end:number,significant:number[]}[]}} frame @param {(number|string)[]} values @param {string} value @param {import('@csstools/css-tokenizer').CSSToken[]} tokens @param {Map<number, number>} blockEnds @return {[number, number, string] | undefined} */
-function reduce(frame, values, value, tokens, blockEnds) {
+/** @param {{open:number,close:number,name:string,args:{start:number,end:number,significant:number[]}[]}} frame @param {(number|string)[]} values @param {string} value @param {readonly import('@csstools/css-tokenizer').CSSToken[]} tokens @param {NonNullable<ReturnType<typeof balancedTokens>>} structure @return {[number, number, string] | undefined} */
+function reduce(frame, values, value, tokens, structure) {
   const { args } = frame;
   const name = normalizeReducerName(frame.name);
   /** @param {{start:number,end:number,significant:number[]}} argument */
   const sourceEnd = (argument) => {
     const index = argument.significant[argument.significant.length - 1];
     if (index === undefined) return argument.start;
-    if (isBlockStart(tokens[index]))
-      return tokenEnd(tokens[blockEnds.get(index) ?? index]);
+    const end = structure.endForOpening(index);
+    if (end !== undefined) return tokenEnd(tokens[end]);
     return tokenEnd(tokens[index]);
   };
   /** @param {{start:number,end:number,significant:number[]}} argument */
@@ -179,49 +146,35 @@ function reduce(frame, values, value, tokens, blockEnds) {
 
 /** @param {string} value @return {string} */
 function transform(value) {
-  /** @type {import('@csstools/css-tokenizer').CSSToken[]} */ const tokens =
-    tokenizeValue(value);
-  /** @type {{open:number,close:number,name:string,args:{start:number,end:number,significant:number[]}[]}[]} */ const functions =
-    [];
+  const structure = balancedTokens(value);
+  if (!structure) return value;
+  const { tokens } = structure;
+  /** @type {{open:number,close:number,name:string,args:{start:number,end:number,significant:number[]}[]}[]} */
+  const functions = [];
   /** @type {Map<number, {open:number,close:number,name:string,args:{start:number,end:number,significant:number[]}[]}>} */
   const functionsByOpen = new Map();
-  /** @type {Map<number, number>} */ const blockEnds = new Map();
-  /** @type {{type:import('@csstools/css-tokenizer').TokenType,index:number}[]} */ const stack =
-    [];
+
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
-    if (isBlockStart(token)) {
-      stack.push({
-        type: token[0] === TokenType.Function ? TokenType.Function : token[0],
-        index: i,
-      });
-      if (token[0] === TokenType.Function) {
-        const frame = {
-          open: i,
-          close: -1,
-          name: decoded(token),
-          args: [],
-        };
-        functions.push(frame);
-        functionsByOpen.set(i, frame);
-      }
-    } else if (isBlockEnd(token)) {
-      const entry = stack.at(-1);
-      if (!entry || !closes(token[0], entry.type)) continue;
-      stack.pop();
-      blockEnds.set(entry.index, i);
-      if (entry.type === TokenType.Function) {
-        const frame = functionsByOpen.get(entry.index);
-        if (frame) frame.close = i;
-      }
+    if (token[0] === TokenType.Function) {
+      const close = structure.endForOpening(i);
+      if (close === undefined) continue;
+      const frame = {
+        open: i,
+        close,
+        name: decoded(token),
+        args: [],
+      };
+      functions.push(frame);
+      functionsByOpen.set(i, frame);
     }
   }
+
   /** @type {[number, number, string][]} */ const replacements = [];
   for (const frame of functions.toReversed()) {
-    if (frame.close < 0) continue;
     /** @type {number[]} */ const direct = [];
     for (let i = frame.open + 1; i < frame.close; i++) {
-      const end = blockEnds.get(i);
+      const end = structure.endForOpening(i);
       if (end !== undefined) {
         direct.push(i);
         i = end;
@@ -258,13 +211,16 @@ function transform(value) {
         child.args[0].significant.length === 1
       ) {
         const inner = child.args[0];
-        return argumentSource(inner, value, tokens, blockEnds);
+        return argumentSource(inner, value, tokens, structure);
       }
-      if (token[0] === TokenType.Function || isBlockStart(token))
+      if (
+        token[0] === TokenType.Function ||
+        structure.endForOpening(index) !== undefined
+      )
         return Number.NaN;
       return Number.parseFloat(token[1]);
     });
-    const edit = reduce(frame, values, value, tokens, blockEnds);
+    const edit = reduce(frame, values, value, tokens, structure);
     if (edit) replacements.push(edit);
   }
   let result = value;
