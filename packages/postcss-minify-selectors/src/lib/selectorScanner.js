@@ -28,6 +28,9 @@ import {
   appendImportantTrivia,
   consumeLeading,
 } from './triviaScanner.js';
+import { parseSelectorArena } from './parseArena.js';
+import { normalizeArena } from './normalizeArena.js';
+import { serializeArena } from './serializeArena.js';
 
 const { TokenType, decoded } = cssnanoUtils;
 /** @type {typeof cssnanoUtils.balancedTokens} */
@@ -191,6 +194,7 @@ function popLeadingColon(state, prefix) {
  * @param {NormalizationState} state
  * @param {string} source
  * @param {readonly CSSToken[]} tokens
+ * @param {string} source
  * @param {BalancedTokenStructure} structure
  * @param {number} index
  * @param {number} finish
@@ -1359,18 +1363,79 @@ function normalizeSelectorListFunction(
 const grammarDispatchers = new Map([
   [
     'compound-selector',
-    (source, tokens, structure, values, name, _lower, index, end, isDoubleColon, hasDefaultNamespace) =>
-      normalizeCompoundFunction(source, tokens, structure, values, name, index, end, isDoubleColon, hasDefaultNamespace),
+    (
+      source,
+      tokens,
+      structure,
+      values,
+      name,
+      _lower,
+      index,
+      end,
+      isDoubleColon,
+      hasDefaultNamespace
+    ) =>
+      normalizeCompoundFunction(
+        source,
+        tokens,
+        structure,
+        values,
+        name,
+        index,
+        end,
+        isDoubleColon,
+        hasDefaultNamespace
+      ),
   ],
   [
     'an-plus-b-of',
-    (source, tokens, structure, values, _name, lower, index, end, _isDoubleColon, hasDefaultNamespace) =>
-      normalizeNthFunction(source, tokens, structure, values, lower, index, end, hasDefaultNamespace),
+    (
+      source,
+      tokens,
+      structure,
+      values,
+      _name,
+      lower,
+      index,
+      end,
+      _isDoubleColon,
+      hasDefaultNamespace
+    ) =>
+      normalizeNthFunction(
+        source,
+        tokens,
+        structure,
+        values,
+        lower,
+        index,
+        end,
+        hasDefaultNamespace
+      ),
   ],
   [
     'an-plus-b',
-    (source, tokens, structure, values, _name, lower, index, end, _isDoubleColon, hasDefaultNamespace) =>
-      normalizeNthFunction(source, tokens, structure, values, lower, index, end, hasDefaultNamespace),
+    (
+      source,
+      tokens,
+      structure,
+      values,
+      _name,
+      lower,
+      index,
+      end,
+      _isDoubleColon,
+      hasDefaultNamespace
+    ) =>
+      normalizeNthFunction(
+        source,
+        tokens,
+        structure,
+        values,
+        lower,
+        index,
+        end,
+        hasDefaultNamespace
+      ),
   ],
   [
     'ident-or-string-list',
@@ -1379,33 +1444,139 @@ const grammarDispatchers = new Map([
   ],
   [
     'ident',
-    (source, tokens, _structure, _values, name, _lower, index, end, isDoubleColon) =>
+    (
+      source,
+      tokens,
+      _structure,
+      _values,
+      name,
+      _lower,
+      index,
+      end,
+      isDoubleColon
+    ) =>
       normalizeIdentFunction(source, tokens, name, index, end, isDoubleColon),
   ],
   [
     'ident-list',
-    (source, tokens, _structure, _values, name, _lower, index, end, isDoubleColon) =>
-      normalizeIdentListFunction(source, tokens, name, index, end, isDoubleColon),
+    (
+      source,
+      tokens,
+      _structure,
+      _values,
+      name,
+      _lower,
+      index,
+      end,
+      isDoubleColon
+    ) =>
+      normalizeIdentListFunction(
+        source,
+        tokens,
+        name,
+        index,
+        end,
+        isDoubleColon
+      ),
   ],
   [
     'pt-name-selector',
-    (source, tokens, _structure, _values, name, _lower, index, end, isDoubleColon) =>
+    (
+      source,
+      tokens,
+      _structure,
+      _values,
+      name,
+      _lower,
+      index,
+      end,
+      isDoubleColon
+    ) =>
       normalizePtNameFunction(source, tokens, name, index, end, isDoubleColon),
   ],
   [
     'forgiving-selector-list',
-    (source, tokens, structure, values, name, lower, index, end, _isDoubleColon, hasDefaultNamespace, grammar) =>
-      normalizeSelectorListFunction(source, tokens, structure, values, name, lower, index, end, grammar, hasDefaultNamespace),
+    (
+      source,
+      tokens,
+      structure,
+      values,
+      name,
+      lower,
+      index,
+      end,
+      _isDoubleColon,
+      hasDefaultNamespace,
+      _grammar
+    ) =>
+      normalizeSelectorListFunction(
+        source,
+        tokens,
+        structure,
+        values,
+        name,
+        lower,
+        index,
+        end,
+        'forgiving-selector-list',
+        hasDefaultNamespace
+      ),
   ],
   [
     'selector-list',
-    (source, tokens, structure, values, name, lower, index, end, _isDoubleColon, hasDefaultNamespace, grammar) =>
-      normalizeSelectorListFunction(source, tokens, structure, values, name, lower, index, end, grammar, hasDefaultNamespace),
+    (
+      source,
+      tokens,
+      structure,
+      values,
+      name,
+      lower,
+      index,
+      end,
+      _isDoubleColon,
+      hasDefaultNamespace,
+      _grammar
+    ) =>
+      normalizeSelectorListFunction(
+        source,
+        tokens,
+        structure,
+        values,
+        name,
+        lower,
+        index,
+        end,
+        'selector-list',
+        hasDefaultNamespace
+      ),
   ],
   [
     'relative-selector-list',
-    (source, tokens, structure, values, name, lower, index, end, _isDoubleColon, hasDefaultNamespace, grammar) =>
-      normalizeSelectorListFunction(source, tokens, structure, values, name, lower, index, end, grammar, hasDefaultNamespace),
+    (
+      source,
+      tokens,
+      structure,
+      values,
+      name,
+      lower,
+      index,
+      end,
+      _isDoubleColon,
+      hasDefaultNamespace,
+      _grammar
+    ) =>
+      normalizeSelectorListFunction(
+        source,
+        tokens,
+        structure,
+        values,
+        name,
+        lower,
+        index,
+        end,
+        'relative-selector-list',
+        hasDefaultNamespace
+      ),
   ],
 ]);
 
@@ -1438,7 +1609,8 @@ function normalizeFunction(
     tokens[index - 1]?.[0] === TokenType.Colon;
 
   const dispatcher = grammarDispatchers.get(grammar);
-  if (!dispatcher) return rawFunctionResult(source, tokens, index, end, 'opaque');
+  if (!dispatcher)
+    return rawFunctionResult(source, tokens, index, end, 'opaque');
 
   return dispatcher(
     source,
@@ -1967,8 +2139,40 @@ function normalizeList(
   keyframe = false,
   hasDefaultNamespace = false
 ) {
-  const structure = balancedTokens(source);
-  if (!structure) return source;
+  const arena = parseSelectorArena(source, {
+    keyframe,
+    hasDefaultNamespace,
+    structureOnly: true,
+  });
+  const rewrites = normalizeArena(arena, {
+    sort,
+    convertToIs,
+    keyframe,
+    hasDefaultNamespace,
+  });
+  const root = rewrites.get(0);
+  return root?.kind === 'text' ? root.value : serializeArena(arena, rewrites);
+}
+
+/**
+ * Normalize an already-tokenized selector list. This is the compatibility
+ * boundary used while normalization families move to arena overlays.
+ * @param {string} source
+ * @param {BalancedTokenStructure} structure
+ * @param {boolean} [sort]
+ * @param {boolean} [convertToIs]
+ * @param {boolean} [keyframe]
+ * @param {boolean} [hasDefaultNamespace]
+ * @return {string}
+ */
+function normalizeParsedList(
+  source,
+  structure,
+  sort = true,
+  convertToIs = true,
+  keyframe = false,
+  hasDefaultNamespace = false
+) {
   const values = normalizeFunctionValues(
     source,
     structure.tokens,
@@ -2010,19 +2214,8 @@ function normalizeList(
 
 /** @param {string} source @return {string} */
 function specificityOf(source) {
-  const structure = balancedTokens(source);
-  if (!structure) return '0,0,0';
-  const values = normalizeFunctionValues(source, structure.tokens, structure);
-  const result = normalizeListFromTokens(
-    source,
-    structure.tokens,
-    structure,
-    values,
-    0,
-    structure.tokens.length,
-    false
-  );
-  return result.specificity.join(',');
+  const arena = parseSelectorArena(source);
+  return (arena.nodes[0].specificity ?? [0, 0, 0]).join(',');
 }
 
 /** @param {string} source @param {boolean} [sort] @return {ComplexSelector[]} */
@@ -2043,4 +2236,4 @@ function parseSelectorList(source, sort = true) {
   ).entries;
 }
 
-export { normalizeList, specificityOf, parseSelectorList };
+export { normalizeList, normalizeParsedList, specificityOf, parseSelectorList };
