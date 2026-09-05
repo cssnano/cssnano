@@ -101,24 +101,29 @@ export function serializeComplex(selector) {
  * @return {boolean}
  */
 function equalPieces(a, b) {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    const itemA = a[i];
-    const itemB = b[i];
-    if (typeof itemA === 'string' || typeof itemB === 'string') {
-      if (itemA !== itemB) return false;
-    } else if (itemA === itemB) {
-      continue;
-    } else if (itemA.raw && itemB.raw) {
-      if (
-        itemA.raw.source.slice(itemA.raw.start, itemA.raw.end) !==
-        itemB.raw.source.slice(itemB.raw.start, itemB.raw.end)
-      )
+  /** @type {{a:readonly (string|FunctionResult)[],b:readonly (string|FunctionResult)[]}[]} */
+  const stack = [{ a, b }];
+  while (stack.length > 0) {
+    const pair = stack.pop();
+    if (!pair || pair.a.length !== pair.b.length) return false;
+    for (let i = 0; i < pair.a.length; i++) {
+      const itemA = pair.a[i];
+      const itemB = pair.b[i];
+      if (typeof itemA === 'string' || typeof itemB === 'string') {
+        if (itemA !== itemB) return false;
+      } else if (itemA === itemB) {
+        continue;
+      } else if (itemA.raw && itemB.raw) {
+        if (
+          itemA.raw.source.slice(itemA.raw.start, itemA.raw.end) !==
+          itemB.raw.source.slice(itemB.raw.start, itemB.raw.end)
+        )
+          return false;
+      } else if (itemA.pieces && itemB.pieces) {
+        stack.push({ a: itemA.pieces, b: itemB.pieces });
+      } else {
         return false;
-    } else if (itemA.pieces && itemB.pieces) {
-      if (!equalPieces(itemA.pieces, itemB.pieces)) return false;
-    } else {
-      return false;
+      }
     }
   }
   return true;

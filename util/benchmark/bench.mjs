@@ -297,6 +297,7 @@ async function runOnce(args, corpus, processor, snapshotLabel) {
       medianMs: total.median,
       minMs: total.min,
       kbPerSec: totalBytes / 1024 / (total.median / 1000),
+      maxRSS: process.resourceUsage().maxRSS,
     },
     frameworks: results.map((r) => ({
       name: r.name,
@@ -343,7 +344,7 @@ function aggregateSnapshots(snapshots, label, runs) {
   const aggregate = structuredClone(snapshots[0]);
   aggregate.label = label;
   aggregate.timestamp = new Date().toISOString();
-  for (const field of ['medianMs', 'minMs', 'kbPerSec']) {
+  for (const field of ['medianMs', 'minMs', 'kbPerSec', 'maxRSS']) {
     aggregate.total[field] = quantile(
       snapshots.map((s) => s.total[field]).toSorted((a, b) => a - b),
       0.5
@@ -385,6 +386,7 @@ function parseBenchmarkArgs() {
       markdown: { type: 'string' },
       summary: { type: 'boolean', default: false },
       runs: { type: 'string', default: '1' },
+      childRun: { type: 'boolean', default: false },
     },
   });
   const args = {
@@ -401,6 +403,7 @@ function parseBenchmarkArgs() {
     markdown: values.markdown ?? null,
     summary: values.summary,
     runs: positiveInteger(values.runs, '--runs'),
+    childRun: values.childRun,
   };
   validateArgs(args);
   const mode = args.mode ? MODES[args.mode] : null;
@@ -419,6 +422,39 @@ function createBenchmarkProcessor(args) {
 
 async function main() {
   const args = parseBenchmarkArgs();
+  if (args.runs > 1 && !args.childRun) {
+    const forwarded = process.argv
+      .slice(2)
+      .filter(
+        (argument) =>
+          argument !== '--' &&
+          !argument.startsWith('--runs=') &&
+          !argument.startsWith('--label=') &&
+          !argument.startsWith('--compare=') &&
+          !argument.startsWith('--markdown=')
+      );
+    const snapshots = [];
+    for (let run = 1; run <= args.runs; run++) {
+      const label = `${args.label}-${run}`;
+      execFileSync(
+        process.execPath,
+        [
+          import.meta.filename,
+          ...forwarded,
+          `--label=${label}`,
+          '--runs=1',
+          '--childRun',
+        ],
+        { stdio: 'inherit', env: process.env }
+      );
+      snapshots.push(
+        JSON.parse(readFileSync(join(RESULTS_DIR, `${label}.json`), 'utf8'))
+      );
+    }
+    aggregateSnapshots(snapshots, args.label, args.runs);
+    if (args.compare) runComparison(args.label, args.compare, args.markdown);
+    return;
+  }
   const dir = args.dir ? resolve(args.dir) : DEFAULT_DIR;
 
   const corpus = selectCorpus(args, dir);
