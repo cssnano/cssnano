@@ -1,5 +1,13 @@
 # Change Log
 
+## 7.0.2
+
+### Patch Changes
+
+- fix: update postcss and selector parser
+
+- fix: update PostCSS peer dependency
+
 ## 7.0.1
 
 ### Patch Changes

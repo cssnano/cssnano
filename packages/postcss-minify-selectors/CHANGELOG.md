@@ -1,5 +1,13 @@
 # Change Log
 
+## 9.0.3
+
+### Patch Changes
+
+- fix: update postcss and selector parser
+
+- fix: update PostCSS peer dependency
+
 ## 9.0.2
 
 ### Patch Changes

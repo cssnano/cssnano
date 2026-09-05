@@ -1,5 +1,15 @@
 # Change Log
 
+## 9.0.2
+
+### Patch Changes
+
+- fix(postcss-colormin, postcss-minify-gradients): update color parsing library
+
+- fix: update postcss and selector parser
+
+- fix: update PostCSS peer dependency
+
 ## 9.0.1
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # Change Log
 
+## 9.0.2
+
+### Patch Changes
+
+- fix: update postcss and selector parser
+
+- fix: update conflict detection and color conversion CSS spec conformance
+
+- fix: update PostCSS peer dependency
+
 ## 9.0.1
 
 ### Patch Changes
