@@ -9,9 +9,9 @@ import listStyle from './rules/listStyle.js';
 import column from './rules/columns.js';
 import vendorUnprefixed from './lib/vendorUnprefixed.js';
 
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
 const borderProcessor = (parsed) => border(parsed.terms);
-/** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null][]} */
+/** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | null][]} */
 const borderRules = [
   ['border', borderProcessor],
   ['border-block', borderProcessor],
@@ -26,14 +26,14 @@ const borderRules = [
   ['border-left', borderProcessor],
 ];
 
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
 const gridAutoFlowProcessor = (parsed) => normalizeGridAutoFlow(parsed.terms);
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
 const gridLineProcessor = (parsed) => normalizeGridColumnRow(parsed.terms, 2);
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
 const gridLonghandProcessor = (parsed) =>
   normalizeGridColumnRow(parsed.terms, 1);
-/** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null][]} */
+/** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | null][]} */
 const grid = [
   ['grid-auto-flow', gridAutoFlowProcessor],
   ['grid-column', gridLineProcessor],
@@ -44,20 +44,22 @@ const grid = [
   ['grid-column-end', gridLonghandProcessor],
 ];
 
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
 const columnRuleProcessor = borderProcessor;
-/** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null][]} */
+/** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | null][]} */
 const columnRules = [
   ['column-rule', columnRuleProcessor],
   ['columns', (parsed) => column(parsed.terms)],
 ];
 
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
 const flexFlowProcessor = (parsed) => flexFlow(parsed.terms);
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null} */
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
 const listStyleProcessor = (parsed) => listStyle(parsed.terms);
 
-/** @type {Map<string, (parsed: ReturnType<typeof tokenizeValue>) => string | string[] | null>} */
+const listRules = new Set(['animation', 'box-shadow', 'transition']);
+
+/** @type {Map<string, (parsed: ReturnType<typeof tokenizeValue>) => string | null>} */
 const rules = new Map([
   ['animation', animation],
   ['outline', borderProcessor],
@@ -141,7 +143,11 @@ function pluginCreator() {
 
             const parsed = tokenizeValue(value);
 
-            if (parsed.terms.length < 2 || parsed.abort) {
+            if (
+              parsed.terms.length < 2 ||
+              parsed.abort ||
+              (!listRules.has(normalizedProp) && parsed.arguments.length > 1)
+            ) {
               processorCache.set(value, value);
               assignValue(decl, value);
 
@@ -149,7 +155,7 @@ function pluginCreator() {
             }
 
             const processed = processor(parsed);
-            const result = processed === null ? value : processed.toString();
+            const result = processed ?? value;
 
             assignValue(decl, result);
             processorCache.set(value, result);

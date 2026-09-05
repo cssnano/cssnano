@@ -126,7 +126,7 @@ function tokenizeValue(value) {
       }
       // Keep slash delimiters available to grammar-aware consumers. A slash
       // inside a function or block remains part of that single nested term.
-      if (token[1] === '/') {
+      if (type === TokenType.Delim && token[1] === '/') {
         pushTerm();
         current.push(token);
         pushTerm();
