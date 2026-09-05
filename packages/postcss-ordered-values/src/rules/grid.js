@@ -52,7 +52,12 @@ function isGridInteger(term) {
   const data = /** @type {{ type?: string, value?: number }} */ (
     term.tokens[0][4]
   );
-  return data.type === 'integer' && data.value !== 0;
+  return (
+    data.type === 'integer' &&
+    typeof data.value === 'number' &&
+    data.value !== 0 &&
+    Math.abs(data.value) <= Number.MAX_SAFE_INTEGER
+  );
 }
 
 /** @param {import('../lib/tokenize.js').Term} term */
@@ -99,6 +104,9 @@ function isGridLine(line) {
     return value > 0;
   }
 
+  // Standalone custom-ident line.
+  if (line.length === 1 && kinds[0] === 'ident') return true;
+
   // integer && custom-ident?, where the ordinary integer may be negative.
   return (
     line.length <= 2 &&
@@ -110,7 +118,7 @@ function isGridLine(line) {
 /**
  * @param {import('../lib/tokenize.js').Term[]} grid
  * @param {number} [maxLines=2] Maximum number of <grid-line>s the property accepts.
- * @return {string | string[] | null}
+ * @return {string | null}
  */
 const normalizeGridColumnRow = (grid, maxLines = 2) => {
   /** @type {import('../lib/tokenize.js').Term[][]} */
@@ -147,11 +155,9 @@ const normalizeGridColumnRow = (grid, maxLines = 2) => {
     return [integer, ...line.filter((term) => term !== integer)];
   });
 
-  return normalized.length > 1
-    ? joinGridValue(
-        normalized.map((line) => line.map((term) => term.raw).join(' '))
-      )
-    : normalized.map((line) => line.map((term) => term.raw).join(' '));
+  return joinGridValue(
+    normalized.map((line) => line.map((term) => term.raw).join(' '))
+  );
 };
 
 export { normalizeGridAutoFlow, normalizeGridColumnRow };
