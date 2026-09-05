@@ -248,7 +248,7 @@ test(
 );
 
 test(
-  'should preserve opaque and malformed non-data URL tokens',
+  'should pass through opaque and malformed non-data URL tokens',
   passthroughCSS('h1{background:url(foo\\ bar.svg);mask-image:url(foo(})}')
 );
 
@@ -293,7 +293,7 @@ test('should recognize escaped url function names and decode quoted payloads', a
   );
 });
 
-test('should preserve data-looking bad URLs byte-for-byte', async () => {
+test('should pass through data-looking bad URLs byte-for-byte', async () => {
   const css = 'h1{background:url(data:image/svg+xml,<svg>)}';
   const result = await postcss(plugin()).process(css, { from: undefined });
   assert.equal(result.css, css);
@@ -326,6 +326,36 @@ test('should optimize a valid SVG URL next to an opaque URL', async () => {
   assert.equal(
     result.css,
     "h1{background:url(foo\\ bar.svg) url('data:image/svg+xml;charset=utf-8,<svg><circle/></svg>')}"
+  );
+});
+
+test('should optimize consecutive SVG URLs without whitespace', async () => {
+  const base64Input =
+    'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZS8+PC9zdmc+';
+  const base64Expected =
+    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUvPjwvc3ZnPg==';
+  const result = await postcss(plugin()).process(
+    `h1{background:url(${base64Input})url("${base64Input}")}`,
+    { from: undefined }
+  );
+  assert.equal(
+    result.css,
+    `h1{background:url(${base64Expected})url("${base64Expected}")}`
+  );
+});
+
+test('should optimize consecutive unquoted SVG URLs without whitespace', async () => {
+  const base64Input =
+    'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZS8+PC9zdmc+';
+  const base64Expected =
+    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUvPjwvc3ZnPg==';
+  const result = await postcss(plugin()).process(
+    `h1{background:url(${base64Input})url(${base64Input})}`,
+    { from: undefined }
+  );
+  assert.equal(
+    result.css,
+    `h1{background:url(${base64Expected})url(${base64Expected})}`
   );
 });
 

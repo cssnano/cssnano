@@ -1,7 +1,11 @@
 import {
+  isDimension,
   isFunction,
   isIdent,
   isNumber,
+  isPercentage,
+  isString,
+  isUrl,
   name,
   serializeArguments,
 } from '../lib/tokenize.js';
@@ -103,6 +107,20 @@ function normalize(args) {
       });
 
       if (!hasMatch) {
+        if (
+          isNumber(node) ||
+          isDimension(node) ||
+          isPercentage(node) ||
+          isUrl(node)
+        ) {
+          return null;
+        }
+        if (
+          (isIdent(node) || isString(node)) &&
+          state.name.some((t) => isIdent(t) || isString(t))
+        ) {
+          return null;
+        }
         state.name.push(node);
       }
     }

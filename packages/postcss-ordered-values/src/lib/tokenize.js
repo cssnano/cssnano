@@ -76,6 +76,16 @@ function isIdent(term) {
   return term.tokens.length === 1 && term.tokens[0][0] === TokenType.Ident;
 }
 
+/** @param {Term} term */
+function isString(term) {
+  return term.tokens.length === 1 && term.tokens[0][0] === TokenType.String;
+}
+
+/** @param {Term} term */
+function isPercentage(term) {
+  return term.tokens.length === 1 && term.tokens[0][0] === TokenType.Percentage;
+}
+
 /**
  * Tokenize a declaration in a single streaming pass and split it at top-level
  * whitespace, commas, and structural slashes.
@@ -169,6 +179,8 @@ export {
   isFunction,
   isIdent,
   isNumber,
+  isPercentage,
+  isString,
   isUrl,
   name,
   serializeArguments,
