@@ -894,3 +894,19 @@ test('calculates specificity for ::slotted() without double-counting pseudo-clas
   assert.equal(specificityOf('::slotted(.a)'), '0,1,1');
   assert.equal(specificityOf('slot::slotted(div.card)'), '0,1,3');
 });
+
+test('preserves escape terminators when legacy output requires them', () => {
+  for (const [input, expected] of [
+    ['.\\61 :hover', '.\\61 :hover'],
+    ['.\\61 [data-x]', '.\\61 [data-x]'],
+    ['.\\61 > .item', '.\\61 >.item'],
+    ['.\\61  > .item', '.\\61>.item'],
+    ['.\\61 , .item', '.\\61,.item'],
+  ])
+    assert.equal(normalizeList(input, false, false), expected, input);
+});
+
+test('preserves an invalid qualified name after a simple selector', () => {
+  const input = '.item\\e0000\\e001 |name';
+  assert.equal(normalizeList(input, false, false), input);
+});

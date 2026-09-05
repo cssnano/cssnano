@@ -9,11 +9,7 @@ import {
   compoundBoundaries,
   referenceSpecificity,
 } from './referenceAst.js';
-import {
-  specificityOf,
-  parseSelectorList,
-} from '../src/lib/selectorScanner.js';
-import { fold, serializeComplex } from '../src/lib/foldToIs.js';
+import { normalizeList, specificityOf } from '../src/lib/selectorScanner.js';
 
 const modernOptions = { overrideBrowserslist: 'last 2 Chrome versions' };
 const { JSDOM } = jsdom;
@@ -249,39 +245,14 @@ test('targeted fold corpus agrees with its independent safety contract', async (
   }
 });
 
-test('fold preserves AST structure, compounds, combinators, and true specificity', () => {
-  const parsed = parseSelectorList('.scope .a .tail, .scope .b .tail');
-  const folded = fold(parsed);
-  assert.equal(folded.length, 1);
-  const entry = folded[0];
-
-  assert.equal(entry.valid, true);
-  assert.equal(entry.hasFunction, true);
-  // Specificity should be: .scope (0,1,0) + :is(.a, .b) (0,1,0) + .tail (0,1,0) = [0, 3, 0]
-  assert.deepEqual(
-    entry.specificity,
-    [0, 3, 0],
-    'must retain combined specificity'
-  );
-
-  // Must preserve 5 parts: [Compound(.scope), ' ', Compound(:is(...)), ' ', Compound(.tail)]
-  assert.equal(
-    entry.parts.length,
-    5,
-    'must preserve compound and combinator parts'
-  );
-  assert.equal(typeof entry.parts[0], 'object');
-  assert.equal(entry.parts[1], ' ');
-  assert.equal(typeof entry.parts[2], 'object');
-  assert.equal(entry.parts[3], ' ');
-  assert.equal(typeof entry.parts[4], 'object');
-
-  // Check middle compound
-  const middleCompound =
-    /** @type {import('../src/lib/foldToIs.js').Compound} */ (entry.parts[2]);
-  assert.equal(middleCompound.hasFunction, true);
-  assert.deepEqual(middleCompound.specificity, [0, 1, 0]);
-  assert.equal(middleCompound.foldEligible, false);
+test('fold preserves compounds, combinators, and true specificity', () => {
+  const folded = normalizeList('.scope .a .tail, .scope .b .tail');
+  assert.equal(folded, '.scope :is(.a,.b) .tail');
+  assert.deepEqual(compoundBoundaries(folded), {
+    compounds: ['.scope', ':is(.a,.b)', '.tail'],
+    combinators: [' ', ' '],
+  });
+  assert.equal(specificityOf(folded), '0,3,0');
 });
 
 test('fold supports subset folding when rule contains discordant selectors', async () => {
@@ -302,8 +273,8 @@ test('fold supports multiple disjoint subsets in the same rule', async () => {
 
 test('fold preserves source order when sorting is disabled during subset folding', () => {
   const input = '.aside p,section .heading,article .heading';
-  const parsed = parseSelectorList(input, false);
-  const folded = fold(parsed, false);
-  const serialized = folded.map(serializeComplex).join(',');
-  assert.equal(serialized, '.aside p,:is(section,article) .heading');
+  assert.equal(
+    normalizeList(input, false),
+    '.aside p,:is(section,article) .heading'
+  );
 });

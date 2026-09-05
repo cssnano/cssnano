@@ -1,9 +1,12 @@
 import cssnanoUtils from 'cssnano-utils';
 import {
+  addSemanticFact,
   addSpecificity,
   buildSelectorArena,
   createSemanticFacts,
-  SelectorArena,
+  hasSemanticFact,
+  mergeSemanticFacts,
+  semanticFacts,
   zeroSpecificity,
 } from './arena.js';
 import { pseudoElements, safePseudos, selectorGrammar } from './grammar.js';
@@ -25,7 +28,7 @@ const balancedTokens = cssnanoUtils.balancedTokens;
 /** @typedef {import('./arena.js').QualifiedNamePayload} QualifiedNamePayload */
 /** @typedef {NonNullable<ReturnType<typeof balancedTokens>>} Structure */
 /** @typedef {Parameters<Parameters<typeof buildSelectorArena>[2]>[0]} Builder */
-/** @typedef {{mode?:ListMode,keyframe?:boolean,hasDefaultNamespace?:boolean,structureOnly?:boolean}} ParseContext */
+/** @typedef {{mode?:ListMode,keyframe?:boolean,hasDefaultNamespace?:boolean}} ParseContext */
 /** @typedef {{kind:'list',start:number,end:number,mode:ListMode,argumentPayload?:number,insideHas:boolean}} ListWork */
 /** @typedef {{kind:'complex',start:number,end:number,mode:ListMode,status?:ParseStatus,insideHas:boolean}} ComplexWork */
 /** @typedef {{kind:'compound',start:number,end:number,mode:ListMode,insideHas:boolean}} CompoundWork */
@@ -72,6 +75,13 @@ function explicitCombinator(input, index) {
     input[index + 1][1] === '|'
   )
     return { value: '||', end: index + 2 };
+  if (
+    token[1] === '/' &&
+    decodedIdent(input[index + 1]) === 'deep' &&
+    input[index + 2]?.[0] === TokenType.Delim &&
+    input[index + 2][1] === '/'
+  )
+    return { value: '/deep/', end: index + 3 };
 }
 
 /** @param {ListMode} mode @param {readonly object[]} parts */
@@ -152,15 +162,6 @@ function complexParts(structure, start, end, mode) {
   return { parts, status };
 }
 
-/** @param {SemanticFacts} target @param {Readonly<SemanticFacts> | undefined} source */
-function mergeFacts(target, source) {
-  if (!source) return;
-  for (const key of Object.keys(target)) {
-    const fact = /** @type {keyof SemanticFacts} */ (key);
-    target[fact] ||= source[fact];
-  }
-}
-
 /** @param {ParseStatus} current @param {ParseStatus} child */
 function mergeStatus(current, child) {
   if (current === 'invalid' || child === 'invalid') return 'invalid';
@@ -186,15 +187,16 @@ function isGreaterSpecificity(left, right) {
   return left[2] > right[2];
 }
 
-/** @param {Builder} builder @param {number[]} children @param {ListMode | undefined} mode @param {SemanticFacts} facts */
-function summarizeList(builder, children, mode, facts) {
+/** @param {Builder} builder @param {number[]} children @param {ListMode | undefined} mode @param {SemanticFacts} initialFacts */
+function summarizeList(builder, children, mode, initialFacts) {
+  let facts = initialFacts;
   let hasValid = false;
   let hasInvalid = false;
   let hasOpaque = false;
   /** @type {Specificity} */ let specificity = [0, 0, 0];
   for (const childIndex of children) {
     const child = builder.nodes[childIndex];
-    mergeFacts(facts, child.facts);
+    facts = mergeSemanticFacts(facts, child.facts ?? 0);
     hasValid ||= child.status === 'valid';
     hasInvalid ||= child.status === 'invalid';
     hasOpaque ||= child.status === 'opaque';
@@ -206,11 +208,20 @@ function summarizeList(builder, children, mode, facts) {
       specificity = [...child.specificity];
   }
   let status = /** @type {ParseStatus} */ ('valid');
-  if (mode === 'forgiving') status = hasOpaque ? 'opaque' : 'valid';
+  if (mode === 'compound-only' && children.length !== 1) status = 'invalid';
+  else if (mode === 'forgiving') status = hasOpaque ? 'opaque' : 'valid';
   else if (hasInvalid) status = 'invalid';
   else if (hasOpaque) status = 'opaque';
   else if (!hasValid) status = 'invalid';
   return { status, specificity, facts };
+}
+
+/** @param {import('./tokenUtils.js').CSSToken | undefined} token */
+function isIdentifierContinuationToken(token) {
+  if (!token) return false;
+  if (token[0] === TokenType.Number || token[0] === TokenType.Dimension)
+    return true;
+  return token[0] === TokenType.Delim && (token[1].codePointAt(0) ?? 0) >= 0x80;
 }
 
 /** @param {ParseStatus} status @param {Specificity} specificity @param {Specificity | undefined} addition */
@@ -233,19 +244,20 @@ function accumulateSummary(status, specificity, addition) {
   return { status, specificity: result.specificity };
 }
 
-/** @param {Builder} builder @param {number[]} children @param {ParseStatus} initialStatus @param {Specificity} initialSpecificity @param {SemanticFacts} facts */
+/** @param {Builder} builder @param {number[]} children @param {ParseStatus} initialStatus @param {Specificity} initialSpecificity @param {SemanticFacts} initialFacts */
 function summarizeComplex(
   builder,
   children,
   initialStatus,
   initialSpecificity,
-  facts
+  initialFacts
 ) {
   let status = initialStatus;
   let specificity = initialSpecificity;
+  let facts = initialFacts;
   for (const childIndex of children) {
     const child = builder.nodes[childIndex];
-    mergeFacts(facts, child.facts);
+    facts = mergeSemanticFacts(facts, child.facts ?? 0);
     status = mergeStatus(status, child.status);
     if (child.kind === 'combinator') continue;
     ({ status, specificity } = accumulateSummary(
@@ -257,14 +269,13 @@ function summarizeComplex(
   return { status, specificity, facts };
 }
 
-/** @param {Builder} builder @param {import('./arena.js').ArenaNode} child @param {SemanticFacts} facts */
-function compoundChildSpecificity(builder, child, facts) {
+/** @param {Builder} builder @param {import('./arena.js').ArenaNode} child */
+function compoundChildSpecificity(builder, child) {
   if (child.kind === 'id') return /** @type {Specificity} */ ([1, 0, 0]);
   if (child.kind === 'class') return /** @type {Specificity} */ ([0, 1, 0]);
   if (child.kind === 'pseudo') return child.specificity;
   if (child.kind === 'qualified-name') {
     const payload = builder.payloads.qualifiedNames[child.payload];
-    if (payload.namespace.kind !== 'absent') facts.hasNamespace = true;
     return /** @type {Specificity} */ (
       payload.subject.kind === 'type' ? [0, 0, 1] : [0, 0, 0]
     );
@@ -272,29 +283,39 @@ function compoundChildSpecificity(builder, child, facts) {
   if (child.kind === 'raw' && child.status === 'valid')
     return /** @type {Specificity} */ ([0, 0, 0]);
   if (child.kind !== 'attribute') return;
-  const payload = builder.payloads.attributes[child.payload];
-  if (payload.modifierToken !== undefined) facts.hasAttributeModifier = true;
-  if (payload.namespace.kind !== 'absent') facts.hasNamespace = true;
   return /** @type {Specificity} */ ([0, 1, 0]);
 }
 
-/** @param {Builder} builder @param {number[]} children @param {ParseStatus} initialStatus @param {Specificity} initialSpecificity @param {SemanticFacts} facts */
+/** @param {Builder} builder @param {number[]} children @param {ParseStatus} initialStatus @param {Specificity} initialSpecificity @param {SemanticFacts} initialFacts */
 function summarizeCompound(
   builder,
   children,
   initialStatus,
   initialSpecificity,
-  facts
+  initialFacts
 ) {
   let status = initialStatus;
   let specificity = initialSpecificity;
+  let facts = initialFacts;
   for (const childIndex of children) {
     const child = builder.nodes[childIndex];
-    mergeFacts(facts, child.facts);
+    facts = mergeSemanticFacts(facts, child.facts ?? 0);
+    if (child.kind === 'qualified-name') {
+      const payload = builder.payloads.qualifiedNames[child.payload];
+      if (payload.namespace.kind !== 'absent')
+        facts = addSemanticFact(facts, semanticFacts.namespace);
+    } else if (child.kind === 'attribute') {
+      const payload = builder.payloads.attributes[child.payload];
+      if (payload.modifierToken !== undefined)
+        facts = addSemanticFact(facts, semanticFacts.attributeModifier);
+      if (payload.namespace.kind !== 'absent')
+        facts = addSemanticFact(facts, semanticFacts.namespace);
+    } else if (child.kind === 'nesting')
+      facts = addSemanticFact(facts, semanticFacts.nesting);
     const accumulated = accumulateSummary(
       mergeStatus(status, child.status),
       specificity,
-      compoundChildSpecificity(builder, child, facts)
+      compoundChildSpecificity(builder, child)
     );
     status = accumulated.status;
     specificity = accumulated.specificity;
@@ -302,21 +323,22 @@ function summarizeCompound(
   return { status, specificity, facts };
 }
 
-/** @param {Builder} builder @param {number[]} children @param {ParseStatus} initialStatus @param {Specificity} initialSpecificity @param {SemanticFacts} facts @param {number} node */
+/** @param {Builder} builder @param {number[]} children @param {ParseStatus} initialStatus @param {Specificity} initialSpecificity @param {SemanticFacts} initialFacts @param {number} node */
 function summarizePseudo(
   builder,
   children,
   initialStatus,
   initialSpecificity,
-  facts,
+  initialFacts,
   node
 ) {
   let status = initialStatus;
   let specificity = initialSpecificity;
+  let facts = initialFacts;
   const payload = builder.payloads.pseudos[builder.nodes[node].payload];
   for (const childIndex of children) {
     const child = builder.nodes[childIndex];
-    mergeFacts(facts, child.facts);
+    facts = mergeSemanticFacts(facts, child.facts ?? 0);
     status = mergeStatus(status, child.status);
     if (payload.specificityPolicy === 'zero') specificity = [0, 0, 0];
     else if (payload.specificityPolicy === 'argument')
@@ -334,14 +356,15 @@ function summarizePseudo(
         child.specificity
       ));
   }
-  if (payload.name === 'has' && facts.hasNestedHas) status = 'invalid';
+  if (payload.name === 'has' && hasSemanticFact(facts, semanticFacts.nestedHas))
+    status = 'invalid';
   return { status, specificity, facts };
 }
 
 /** @param {Builder} builder @param {Extract<ParseWork,{kind:'close'}>} item */
 function closeWork(builder, item) {
   const children = directChildren(builder, item.node);
-  const facts = { ...(item.facts ?? createSemanticFacts()) };
+  const facts = item.facts ?? createSemanticFacts();
   const status = item.status ?? 'valid';
   const specificity = /** @type {Specificity} */ ([
     ...(item.specificity ?? zeroSpecificity()),
@@ -365,7 +388,7 @@ function closeWork(builder, item) {
   if (
     item.role === 'complex' &&
     item.mode !== 'outer-unforgiving' &&
-    summary.facts.hasPseudoElement
+    hasSemanticFact(summary.facts, semanticFacts.pseudoElement)
   )
     summary.status = 'invalid';
   builder.closeSummary(item.node, summary);
@@ -471,7 +494,21 @@ function addAttribute(builder, structure, index) {
   const close = structure.endForOpening(index);
   if (close === undefined) return index + 1;
   let cursor = skipTrivia(input, index + 1, close);
-  const name = qualifiedNameAt(input, cursor, close);
+  const name =
+    input[cursor]?.[0] === TokenType.Ident &&
+    input[cursor + 1]?.[1] === '|' &&
+    input[cursor + 2]?.[1] === '='
+      ? {
+          end: cursor + 1,
+          payload: {
+            namespace: { kind: /** @type {const} */ ('absent') },
+            subject: {
+              kind: /** @type {const} */ ('type'),
+              token: cursor,
+            },
+          },
+        }
+      : qualifiedNameAt(input, cursor, close);
   let status = /** @type {ParseStatus} */ ('valid');
   if (!name?.end || name.payload.subject.kind !== 'type') status = 'invalid';
   const namespace = name?.end
@@ -635,6 +672,20 @@ function functionalSpecificityPolicy(grammar, listMode, name, isElement) {
   return pseudoSpecificityPolicy(name, listMode, isElement);
 }
 
+/** @param {string} name @param {boolean} isFunction @param {boolean} isElement @param {boolean} insideHas */
+function pseudoFacts(name, isFunction, isElement, insideHas) {
+  let facts = createSemanticFacts();
+  if (isFunction) facts = addSemanticFact(facts, semanticFacts.function);
+  if (isElement) facts = addSemanticFact(facts, semanticFacts.pseudoElement);
+  if (name.startsWith('-'))
+    facts = addSemanticFact(facts, semanticFacts.vendorPseudo);
+  if (!isElement && !safePseudos.has(name))
+    facts = addSemanticFact(facts, semanticFacts.unsafePseudo);
+  if (name === 'has' && insideHas)
+    facts = addSemanticFact(facts, semanticFacts.nestedHas);
+  return facts;
+}
+
 /** @param {Builder} builder @param {Structure} structure @param {Extract<ParseWork,{kind:'pseudo'}>} item @param {ParseWork[]} work */
 function openPseudo(builder, structure, item, work) {
   const details = pseudoDetails(structure, item.start);
@@ -674,12 +725,7 @@ function openPseudo(builder, structure, item, work) {
     argumentGrammar: grammar,
     argumentNode: undefined,
   });
-  const facts = createSemanticFacts();
-  facts.hasFunction = isFunction;
-  facts.hasPseudoElement = isElement;
-  facts.hasVendorPseudo = name.startsWith('-');
-  facts.hasUnsafePseudo = !isElement && !safePseudos.has(name);
-  facts.hasNestedHas = name === 'has' && item.insideHas;
+  const facts = pseudoFacts(name, isFunction, isElement, item.insideHas);
   const specificity =
     argument.specificity ??
     /** @type {Specificity} */ (isElement ? [0, 0, 1] : [0, 1, 0]);
@@ -722,6 +768,20 @@ function pseudoEndAt(structure, index, end) {
     : functionEnd + 1;
 }
 
+/** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} index */
+function opaqueNumericClass(input, index) {
+  const token = input[index];
+  const nextType = input[index + 1]?.[0];
+  if (
+    token[0] === TokenType.Delim &&
+    token[1] === '.' &&
+    (nextType === TokenType.Number || nextType === TokenType.Dimension)
+  )
+    return index + 2;
+  if (token[0] === TokenType.Dimension && token[1].startsWith('.'))
+    return index + 1;
+}
+
 /** @param {Structure} structure @param {number} index @param {number} end @param {boolean} hasQualifiedName */
 function compoundChildAt(
   structure,
@@ -760,6 +820,18 @@ function compoundChildAt(
         end: index + 2,
       }),
       end: index + 2,
+    };
+  const opaqueClassEnd = opaqueNumericClass(input, index);
+  if (opaqueClassEnd !== undefined)
+    return {
+      work: /** @type {ParseWork} */ ({
+        kind: 'raw',
+        start: index,
+        end: opaqueClassEnd,
+        status: 'opaque',
+      }),
+      end: opaqueClassEnd,
+      status: /** @type {ParseStatus} */ ('opaque'),
     };
   if (token[0] === TokenType.Hash)
     return {
@@ -823,11 +895,30 @@ function compoundChildren(
   insideHas,
   keyframe = false
 ) {
+  const input = structure.tokens;
   /** @type {ParseWork[]} */ const children = [];
   let status = /** @type {ParseStatus} */ ('valid');
   let index = start;
   let hasQualifiedName = false;
   while (index < end) {
+    if (
+      (hasQualifiedName || index !== start) &&
+      input[index]?.[0] === TokenType.Ident &&
+      isIdentifierContinuationToken(input[index + 1])
+    ) {
+      let rawEnd = index + 1;
+      while (rawEnd < end && isIdentifierContinuationToken(input[rawEnd]))
+        rawEnd++;
+      children.push({
+        kind: 'raw',
+        start: index,
+        end: rawEnd,
+        status: 'opaque',
+      });
+      status = mergeStatus(status, 'opaque');
+      index = rawEnd;
+      continue;
+    }
     const child = compoundChildAt(
       structure,
       index,
@@ -835,6 +926,18 @@ function compoundChildren(
       hasQualifiedName || index !== start,
       keyframe
     );
+    if (
+      child.work.kind === 'qualified-name' &&
+      child.work.payload.namespace.kind === 'absent' &&
+      child.work.payload.subject.kind === 'type'
+    ) {
+      while (
+        child.end < end &&
+        isIdentifierContinuationToken(structure.tokens[child.end])
+      )
+        child.end++;
+      child.work.end = child.end;
+    }
     if (child.work.kind === 'pseudo') {
       child.work.mode = mode;
       child.work.insideHas = insideHas;
@@ -887,80 +990,48 @@ export function parseSelectorArena(source, context = {}) {
     });
   }
   const input = structure.tokens;
-  if (context.structureOnly) {
-    return new SelectorArena(
-      source,
-      input,
-      [
-        {
-          kind: 'raw',
-          startToken: 0,
-          endToken: input.length,
-          subtreeEnd: 1,
-          status: 'opaque',
-          payload: 0,
-        },
-      ],
-      {
-        lists: [],
-        combinators: [],
-        qualifiedNames: [],
-        pseudos: [],
-        attributes: [],
-        raw: [{ text: source }],
-      },
-      structure
-    );
-  }
-  return buildSelectorArena(
-    source,
-    input,
-    (builder) => {
-      /** @type {ParseWork[]} */ const work = [
-        { kind: 'list', start: 0, end: input.length, mode, insideHas: false },
-      ];
-      while (work.length > 0) {
-        const item = work.pop();
-        if (!item) break;
-        if (item.kind === 'close') closeWork(builder, item);
-        else if (item.kind === 'list') {
-          const node = builder.open('list', item.start, item.end, {
-            payload: builder.payload('lists', {
-              mode: item.mode,
-              keyframe,
-              hasDefaultNamespace,
-            }),
+  return buildSelectorArena(source, input, (builder) => {
+    /** @type {ParseWork[]} */ const work = [
+      { kind: 'list', start: 0, end: input.length, mode, insideHas: false },
+    ];
+    while (work.length > 0) {
+      const item = work.pop();
+      if (!item) break;
+      if (item.kind === 'close') closeWork(builder, item);
+      else if (item.kind === 'list') {
+        const node = builder.open('list', item.start, item.end, {
+          payload: builder.payload('lists', {
+            mode: item.mode,
+            keyframe,
+            hasDefaultNamespace,
+          }),
+        });
+        if (item.argumentPayload !== undefined)
+          builder.payloads.pseudos[item.argumentPayload].argumentNode = node;
+        work.push({ kind: 'close', node, role: 'list', mode: item.mode });
+        const segments = structure.topLevelSegments(
+          item.start,
+          item.end,
+          TokenType.Comma
+        );
+        for (let index = segments.length - 1; index >= 0; index--) {
+          const segment = segments[index];
+          work.push({
+            kind: 'complex',
+            start: segment.startIndex,
+            end: segment.endIndex,
+            mode: item.mode,
+            insideHas: item.insideHas,
+            status: hasContent(input, segment.startIndex, segment.endIndex)
+              ? 'valid'
+              : 'invalid',
           });
-          if (item.argumentPayload !== undefined)
-            builder.payloads.pseudos[item.argumentPayload].argumentNode = node;
-          work.push({ kind: 'close', node, role: 'list', mode: item.mode });
-          const segments = structure.topLevelSegments(
-            item.start,
-            item.end,
-            TokenType.Comma
-          );
-          for (let index = segments.length - 1; index >= 0; index--) {
-            const segment = segments[index];
-            work.push({
-              kind: 'complex',
-              start: segment.startIndex,
-              end: segment.endIndex,
-              mode: item.mode,
-              insideHas: item.insideHas,
-              status: hasContent(input, segment.startIndex, segment.endIndex)
-                ? 'valid'
-                : 'invalid',
-            });
-          }
-        } else if (item.kind === 'complex') {
-          const parsed = complexParts(
-            structure,
-            item.start,
-            item.end,
-            item.mode
-          );
-          const facts = createSemanticFacts();
-          facts.hasCommentDescendant = parsed.parts.some(
+        }
+      } else if (item.kind === 'complex') {
+        const parsed = complexParts(structure, item.start, item.end, item.mode);
+        let facts = createSemanticFacts();
+        if (
+          parsed.parts.some(
             (part) =>
               part.kind === 'combinator' &&
               part.value === ' ' &&
@@ -971,77 +1042,77 @@ export function parseSelectorArena(source, context = {}) {
                     token[0] === TokenType.Comment &&
                     !token[1].startsWith('/*!')
                 )
-          );
-          const node = builder.open('complex', item.start, item.end, {
-            status: mergeStatus(item.status ?? 'valid', parsed.status),
-            facts,
-          });
-          work.push({
-            kind: 'close',
-            node,
-            role: 'complex',
-            status: builder.nodes[node].status,
-            facts,
-            mode: item.mode,
-          });
-          for (let index = parsed.parts.length - 1; index >= 0; index--) {
-            const part = parsed.parts[index];
-            work.push(
-              part.kind === 'compound'
-                ? {
-                    kind: 'compound',
-                    start: part.start,
-                    end: part.end,
-                    mode: item.mode,
-                    insideHas: item.insideHas,
-                  }
-                : {
-                    kind: 'combinator',
-                    start: part.start,
-                    end: part.end,
-                    value: part.value ?? '',
-                  }
-            );
-          }
-        } else if (item.kind === 'compound') {
-          const facts = createSemanticFacts();
-          const node = builder.open('compound', item.start, item.end, {
-            facts,
-          });
-          const parsed = compoundChildren(
-            structure,
-            item.start,
-            item.end,
-            item.mode,
-            item.insideHas,
-            keyframe
-          );
-          if (
-            hasDefaultNamespace &&
-            parsed.children.some(
-              (child) =>
-                child.kind === 'qualified-name' &&
-                child.payload.namespace?.kind === 'absent' &&
-                child.payload.subject?.kind === 'universal'
-            )
           )
-            facts.hasNamespace = true;
-          work.push({
-            kind: 'close',
-            node,
-            role: 'compound',
-            status: parsed.status,
-            facts,
-          });
-          for (let index = parsed.children.length - 1; index >= 0; index--)
-            work.push(parsed.children[index]);
-        } else if (item.kind === 'combinator') {
-          builder.leaf('combinator', item.start, item.end, {
-            payload: builder.payload('combinators', { value: item.value }),
-          });
-        } else addLeafWork(builder, item, structure, work);
-      }
-    },
-    structure
-  );
+        )
+          facts = addSemanticFact(facts, semanticFacts.commentDescendant);
+        const node = builder.open('complex', item.start, item.end, {
+          status: mergeStatus(item.status ?? 'valid', parsed.status),
+          facts,
+        });
+        work.push({
+          kind: 'close',
+          node,
+          role: 'complex',
+          status: builder.nodes[node].status,
+          facts,
+          mode: item.mode,
+        });
+        for (let index = parsed.parts.length - 1; index >= 0; index--) {
+          const part = parsed.parts[index];
+          work.push(
+            part.kind === 'compound'
+              ? {
+                  kind: 'compound',
+                  start: part.start,
+                  end: part.end,
+                  mode: item.mode,
+                  insideHas: item.insideHas,
+                }
+              : {
+                  kind: 'combinator',
+                  start: part.start,
+                  end: part.end,
+                  value: part.value ?? '',
+                }
+          );
+        }
+      } else if (item.kind === 'compound') {
+        let facts = createSemanticFacts();
+        const node = builder.open('compound', item.start, item.end, {
+          facts,
+        });
+        const parsed = compoundChildren(
+          structure,
+          item.start,
+          item.end,
+          item.mode,
+          item.insideHas,
+          keyframe
+        );
+        if (
+          hasDefaultNamespace &&
+          parsed.children.some(
+            (child) =>
+              child.kind === 'qualified-name' &&
+              child.payload.namespace?.kind === 'absent' &&
+              child.payload.subject?.kind === 'universal'
+          )
+        )
+          facts = addSemanticFact(facts, semanticFacts.namespace);
+        work.push({
+          kind: 'close',
+          node,
+          role: 'compound',
+          status: parsed.status,
+          facts,
+        });
+        for (let index = parsed.children.length - 1; index >= 0; index--)
+          work.push(parsed.children[index]);
+      } else if (item.kind === 'combinator') {
+        builder.leaf('combinator', item.start, item.end, {
+          payload: builder.payload('combinators', { value: item.value }),
+        });
+      } else addLeafWork(builder, item, structure, work);
+    }
+  });
 }
