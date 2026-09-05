@@ -1,4 +1,5 @@
 const style = new Set(['italic', 'oblique']);
+// CSS 2.1 / Fonts 3 font shorthand grammar restricts font-variant to normal | small-caps.
 const variant = new Set(['small-caps']);
 const weight = new Set([
   '100',
