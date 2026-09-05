@@ -33,15 +33,41 @@ const notALength = new Set([
   'line-gap-override',
 ]);
 
-// Can't change the unit on these properties when they're 0
-const keepWhenZero = new Set([
-  'stroke-dashoffset',
-  'stroke-width',
-  'line-height',
+const flexProperties = new Set([
+  'flex',
+  'flex-grow',
+  'flex-shrink',
+  'flex-basis',
+  'flex-basic',
+  '-webkit-flex',
+  '-webkit-flex-grow',
+  '-webkit-flex-shrink',
+  '-webkit-flex-basis',
+  '-webkit-box-flex',
+  '-ms-flex',
+  '-ms-flex-order',
+  '-ms-flex-positive',
+  '-ms-flex-negative',
+  '-ms-flex-preferred-size',
 ]);
 
-// Can't remove the % on these properties when they're 0 on IE 11
-const keepZeroPercentOnIE11 = new Set(['max-height', 'height', 'min-width']);
+const alphaProperties = new Set([
+  'opacity',
+  'shape-image-threshold',
+  'fill-opacity',
+  'stroke-opacity',
+  'stop-opacity',
+]);
+
+// Properties whose 0 values must retain units under specific conditions
+const zeroUnitRetention = {
+  // Can't change the unit on these properties when they're 0
+  always: new Set(['stroke-dashoffset', 'stroke-width', 'line-height']),
+  // Can't remove the % on these properties when they're 0 on IE 11
+  ie11Percent: new Set(['max-height', 'height', 'min-width']),
+  // Keyframe percentages that cannot be converted to unitless zero
+  keyframePercent: new Set(['border-image-width', 'stroke-dasharray']),
+};
 
 const keepZeroPercentAlways = new Set([
   'calc',
@@ -53,11 +79,6 @@ const keepZeroPercentAlways = new Set([
   'hsla',
   'hwb',
   'linear',
-]);
-
-const keepZeroPercentageInKeyframe = new Set([
-  'border-image-width',
-  'stroke-dasharray',
 ]);
 
 const NUMBER_PREFIX = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/;
@@ -134,9 +155,9 @@ function shouldKeepZeroUnit(decl, browsers) {
 
   return (
     (decl.value.includes('%') &&
-      keepZeroPercentOnIE11.has(lowerCasedProp) &&
+      zeroUnitRetention.ie11Percent.has(lowerCasedProp) &&
       browsers.includes('ie 11')) ||
-    (keepZeroPercentageInKeyframe.has(lowerCasedProp) &&
+    (zeroUnitRetention.keyframePercent.has(lowerCasedProp) &&
       parent &&
       parent.parent &&
       parent.parent.type === 'atrule' &&
@@ -156,14 +177,14 @@ function shouldKeepZeroUnit(decl, browsers) {
             node.value === "'<length-percentage>'" ||
             node.value === '"<length-percentage>"')
       )) ||
-    keepWhenZero.has(lowerCasedProp)
+    zeroUnitRetention.always.has(lowerCasedProp)
   );
 }
 
 /** @param {string} property @param {Options} opts @return {boolean} */
 function skipsTransformation(property, opts) {
   return (
-    property.includes('flex') ||
+    flexProperties.has(property) ||
     (property.startsWith('--') && !opts.transformCustomProperties) ||
     notALength.has(property)
   );
@@ -171,7 +192,7 @@ function skipsTransformation(property, opts) {
 
 /** @param {string} property @param {string} replacement @param {number} number @param {string} unit @return {string} */
 function clampPropertyOpacity(property, replacement, number, unit) {
-  return property === 'opacity' || property === 'shape-image-threshold'
+  return alphaProperties.has(property)
     ? clampOpacity(replacement, number, unit)
     : replacement;
 }

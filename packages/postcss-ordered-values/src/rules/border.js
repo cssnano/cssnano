@@ -20,49 +20,34 @@ const borderStyles = new Set([
   'outset',
 ]);
 
+/** @param {import('../lib/tokenize.js').Term} term @param {string} lower */
+const isWidth = (term, lower) =>
+  isFunction(term)
+    ? mathFunctions.has(lower)
+    : borderWidths.has(lower) || isDimension(term) || isNumber(term);
+
+/** @param {import('../lib/tokenize.js').Term} term @param {string} lower */
+const isStyle = (term, lower) => !isFunction(term) && borderStyles.has(lower);
+
+const borderSlots = [
+  { name: 'style', match: isStyle },
+  { name: 'width', match: isWidth },
+  { name: 'color', match: () => true },
+];
+
 /**
  * @param {import('../lib/tokenize.js').Term[]} border
  * @return {string | null}
  */
 function normalizeBorder(border) {
   const order = { width: '', style: '', color: '' };
-  let hasWidth = false;
-  let hasStyle = false;
-  let hasColor = false;
 
   for (const term of border) {
     if (term.raw === '/' && term.tokens.length === 1) return null;
-    const value = term.raw;
     const lower = name(term);
-    if (!isFunction(term)) {
-      if (borderStyles.has(lower)) {
-        if (hasStyle) return null;
-        hasStyle = true;
-        order.style = value;
-      } else if (
-        borderWidths.has(lower) ||
-        isDimension(term) ||
-        isNumber(term)
-      ) {
-        if (hasWidth) return null;
-        hasWidth = true;
-        order.width = value;
-      } else {
-        if (hasColor) return null;
-        hasColor = true;
-        order.color = value;
-      }
-    } else {
-      if (mathFunctions.has(lower)) {
-        if (hasWidth) return null;
-        hasWidth = true;
-        order.width = value;
-      } else {
-        if (hasColor) return null;
-        hasColor = true;
-        order.color = value;
-      }
-    }
+    const slot = borderSlots.find((s) => s.match(term, lower));
+    if (!slot || order[slot.name]) return null;
+    order[slot.name] = term.raw;
   }
   return [order.width, order.style, order.color].filter(Boolean).join(' ');
 }

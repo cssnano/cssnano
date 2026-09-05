@@ -1355,6 +1355,70 @@ function normalizeSelectorListFunction(
  * @param {boolean} [hasDefaultNamespace]
  * @return {FunctionResult}
  */
+/** @type {Map<import('./grammar.js').ArgumentGrammar, (source: string, tokens: readonly CSSToken[], structure: BalancedTokenStructure, values: Map<number, FunctionResult>, name: string, lower: string, index: number, end: number, isDoubleColon: boolean, hasDefaultNamespace: boolean, grammar: import('./grammar.js').ArgumentGrammar) => FunctionResult>} */
+const grammarDispatchers = new Map([
+  [
+    'compound-selector',
+    (source, tokens, structure, values, name, _lower, index, end, isDoubleColon, hasDefaultNamespace) =>
+      normalizeCompoundFunction(source, tokens, structure, values, name, index, end, isDoubleColon, hasDefaultNamespace),
+  ],
+  [
+    'an-plus-b-of',
+    (source, tokens, structure, values, _name, lower, index, end, _isDoubleColon, hasDefaultNamespace) =>
+      normalizeNthFunction(source, tokens, structure, values, lower, index, end, hasDefaultNamespace),
+  ],
+  [
+    'an-plus-b',
+    (source, tokens, structure, values, _name, lower, index, end, _isDoubleColon, hasDefaultNamespace) =>
+      normalizeNthFunction(source, tokens, structure, values, lower, index, end, hasDefaultNamespace),
+  ],
+  [
+    'ident-or-string-list',
+    (source, tokens, _structure, _values, name, _lower, index, end) =>
+      normalizeIdentOrStringListFunction(source, tokens, name, index, end),
+  ],
+  [
+    'ident',
+    (source, tokens, _structure, _values, name, _lower, index, end, isDoubleColon) =>
+      normalizeIdentFunction(source, tokens, name, index, end, isDoubleColon),
+  ],
+  [
+    'ident-list',
+    (source, tokens, _structure, _values, name, _lower, index, end, isDoubleColon) =>
+      normalizeIdentListFunction(source, tokens, name, index, end, isDoubleColon),
+  ],
+  [
+    'pt-name-selector',
+    (source, tokens, _structure, _values, name, _lower, index, end, isDoubleColon) =>
+      normalizePtNameFunction(source, tokens, name, index, end, isDoubleColon),
+  ],
+  [
+    'forgiving-selector-list',
+    (source, tokens, structure, values, name, lower, index, end, _isDoubleColon, hasDefaultNamespace, grammar) =>
+      normalizeSelectorListFunction(source, tokens, structure, values, name, lower, index, end, grammar, hasDefaultNamespace),
+  ],
+  [
+    'selector-list',
+    (source, tokens, structure, values, name, lower, index, end, _isDoubleColon, hasDefaultNamespace, grammar) =>
+      normalizeSelectorListFunction(source, tokens, structure, values, name, lower, index, end, grammar, hasDefaultNamespace),
+  ],
+  [
+    'relative-selector-list',
+    (source, tokens, structure, values, name, lower, index, end, _isDoubleColon, hasDefaultNamespace, grammar) =>
+      normalizeSelectorListFunction(source, tokens, structure, values, name, lower, index, end, grammar, hasDefaultNamespace),
+  ],
+]);
+
+/**
+ * @param {string} source
+ * @param {readonly CSSToken[]} tokens
+ * @param {BalancedTokenStructure} structure
+ * @param {Map<number, FunctionResult>} values
+ * @param {number} index
+ * @param {number} end
+ * @param {boolean} [hasDefaultNamespace]
+ * @return {FunctionResult}
+ */
 function normalizeFunction(
   source,
   tokens,
@@ -1373,88 +1437,22 @@ function normalizeFunction(
     tokens[index - 2]?.[0] === TokenType.Colon &&
     tokens[index - 1]?.[0] === TokenType.Colon;
 
-  switch (grammar) {
-    case 'compound-selector':
-      return normalizeCompoundFunction(
-        source,
-        tokens,
-        structure,
-        values,
-        name,
-        index,
-        end,
-        isDoubleColon,
-        hasDefaultNamespace
-      );
+  const dispatcher = grammarDispatchers.get(grammar);
+  if (!dispatcher) return rawFunctionResult(source, tokens, index, end, 'opaque');
 
-    case 'an-plus-b-of':
-    case 'an-plus-b':
-      return normalizeNthFunction(
-        source,
-        tokens,
-        structure,
-        values,
-        lower,
-        index,
-        end,
-        hasDefaultNamespace
-      );
-
-    case 'ident-or-string-list':
-      return normalizeIdentOrStringListFunction(
-        source,
-        tokens,
-        name,
-        index,
-        end
-      );
-
-    case 'ident':
-      return normalizeIdentFunction(
-        source,
-        tokens,
-        name,
-        index,
-        end,
-        isDoubleColon
-      );
-
-    case 'ident-list':
-      return normalizeIdentListFunction(
-        source,
-        tokens,
-        name,
-        index,
-        end,
-        isDoubleColon
-      );
-
-    case 'pt-name-selector':
-      return normalizePtNameFunction(
-        source,
-        tokens,
-        name,
-        index,
-        end,
-        isDoubleColon
-      );
-
-    case 'forgiving-selector-list':
-    case 'selector-list':
-    case 'relative-selector-list':
-      return normalizeSelectorListFunction(
-        source,
-        tokens,
-        structure,
-        values,
-        name,
-        lower,
-        index,
-        end,
-        grammar,
-        hasDefaultNamespace
-      );
-  }
+  return dispatcher(
+    source,
+    tokens,
+    structure,
+    values,
+    name,
+    lower,
+    index,
+    end,
+    isDoubleColon,
+    hasDefaultNamespace,
+    grammar
+  );
 }
 
 /** @param {ComplexSelector} selector */
