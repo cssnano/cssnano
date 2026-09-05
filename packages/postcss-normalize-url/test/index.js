@@ -21,8 +21,13 @@ describe('Strip', () => {
   );
 
   test(
-    'should preserve escaped whitespace and malformed URL tokens',
+    'should pass through escaped whitespace and malformed URL tokens',
     passthroughCSS('h1{background:url(foo\\ bar.png);mask:url(foo(})}')
+  );
+
+  test(
+    'should pass through unclosed strings and strings with escaped quotes at EOF',
+    passthroughCSS('h1{background:url("foo\\");mask:url("cat.jpg)}')
   );
 
   test(
@@ -41,12 +46,12 @@ describe('Strip', () => {
 
 describe('Escape', () => {
   test(
-    'should preserve escaped whitespace in unquoted urls',
+    'should pass through escaped whitespace in unquoted urls',
     passthroughCSS('h1{background:url(foo\\ bar.png)}')
   );
 
   test(
-    'should preserve escaped parentheses in unquoted urls',
+    'should pass through escaped parentheses in unquoted urls',
     passthroughCSS('h1{background:url(foo\\(bar.png)}')
   );
 
@@ -119,7 +124,7 @@ test(
 );
 
 test(
-  'should preserve trailing slashes',
+  'should pass through trailing slashes',
   processCSS(
     'h1{background:url("https://localhost:4321/api/woff2/inter.woff2/")}',
     'h1{background:url(https://localhost:4321/api/woff2/inter.woff2/)}'
@@ -326,12 +331,12 @@ test(
 );
 
 test(
-  'should preserve escaped url function names',
+  'should pass through escaped url function names',
   passthroughCSS('h1{background:\\75rl(foo.png)}')
 );
 
 test(
-  'should preserve paths in parameters',
+  'should pass through paths in parameters',
   passthroughCSS(
     'background: url(https://ss0.example.com/70cFuh_Q1Yn/it/u=5088,2842&fm=26&gp=0.jpg?imageView2/1/w/750/h/1334)'
   )
@@ -358,7 +363,7 @@ describe('Pass', () => {
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
 
-test('should preserve malformed namespace strings byte-for-byte', async () => {
+test('should pass through malformed namespace strings byte-for-byte', async () => {
   const values = ['"abc', '"abc\\'];
   const atRules = values.map((params) =>
     postcss.atRule({ name: 'namespace', params })
@@ -369,5 +374,21 @@ test('should preserve malformed namespace strings byte-for-byte', async () => {
 
   for (const [index, value] of values.entries()) {
     assert.equal(atRules[index].params, value);
+  }
+});
+
+test('should pass through malformed and unclosed url strings byte-for-byte', async () => {
+  const values = ['url("abc', 'url("abc\\', 'url("abc\n)'];
+  const decls = values.map((value) =>
+    postcss.decl({ prop: 'background', value })
+  );
+  const root = postcss.root({
+    nodes: [postcss.rule({ selector: 'h1', nodes: decls })],
+  });
+
+  await postcss([plugin()]).process(root, { from: undefined });
+
+  for (const [index, value] of values.entries()) {
+    assert.equal(decls[index].value, value);
   }
 });

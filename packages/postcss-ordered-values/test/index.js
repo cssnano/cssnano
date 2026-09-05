@@ -32,7 +32,7 @@ describe('Border order', () => {
   );
 
   test(
-    'should preserve duplicate border components',
+    'should pass through duplicate border components',
     passthroughCSS(
       'h1{border:1px 2px solid red;border:1px solid dashed red;border:1px solid red blue;border:min(1px,2px) solid red min(2px,3px)}'
     )
@@ -151,12 +151,12 @@ describe('Flex-flow order', () => {
   );
 
   test(
-    'should preserve unknown flex-flow functions instead of dropping them',
+    'should pass through unknown flex-flow functions instead of dropping them',
     passthroughCSS('h1{flex-flow: wrap foo(column)}')
   );
 
   test(
-    'should preserve duplicate flex-flow keywords',
+    'should pass through duplicate flex-flow keywords',
     passthroughCSS(
       'h1{flex-flow:row row wrap;flex-flow:nowrap wrap;flex-flow:column column-reverse}'
     )
@@ -589,7 +589,7 @@ describe('Order', () => {
   );
 
   test(
-    'should preserve duplicate transition timing functions and times',
+    'should pass through duplicate transition timing functions and times',
     passthroughCSS(
       'a{transition:width ease ease 1s;transition:width .5s 1s 2s 3s}'
     )
@@ -749,6 +749,52 @@ describe('Order', () => {
   );
 
   test(
+    'should order animation with string keyframe names',
+    processCSS(
+      'a{animation: 1s "fade", 2s ease "bounce"}',
+      'a{animation: "fade" 1s,"bounce" 2s ease}'
+    )
+  );
+
+  test(
+    'should pass through animation declarations with excess time values or multiple names',
+    passthroughCSS('a{animation: 1s 2s 3s;animation: 1s foo bar}')
+  );
+
+  test(
+    'should pass through animation declarations with string keyframe names or invalid terms',
+    passthroughCSS(
+      'a{animation: 1s "foo" "bar";animation: 1s foo "bar";animation: 1s 2 3;animation: 1s foo 10px}'
+    )
+  );
+
+  test(
+    'should pass through transition declarations with multiple property names',
+    passthroughCSS('a{transition: 1s opacity transform}')
+  );
+
+  test(
+    'should pass through transition declarations with string or invalid property names',
+    passthroughCSS(
+      'a{transition: 1s "opacity";transition: 1s "opacity" "transform";transition: 1s opacity "transform"}'
+    )
+  );
+
+  test(
+    'should pass through animation declarations with percentage or url keyframe names',
+    passthroughCSS(
+      'a{animation: 1s 50%;animation: 1s foo 50%;animation: 1s url(fade.svg)}'
+    )
+  );
+
+  test(
+    'should pass through transition declarations with percentage or url property names',
+    passthroughCSS(
+      'a{transition: 1s 50%;transition: 1s opacity 50%;transition: 1s url(prop.svg)}'
+    )
+  );
+
+  test(
     'should order animation consistently (10) (handle multiple animation values)',
     processCSS(
       'animation: 1s 2s bounce linear, 8s 1s shake ease',
@@ -890,7 +936,7 @@ describe('Order', () => {
 });
 
 test(
-  'should preserve already ordered columns declaration',
+  'should pass through already ordered columns declaration',
   passthroughCSS('h1 {columns: 20px 2;}')
 );
 
@@ -938,7 +984,7 @@ test(
 );
 
 test(
-  'should preserve columns when a term cannot be classified',
+  'should pass through columns when a term cannot be classified',
   passthroughCSS('h1{columns:2 20px calc(1px);columns:20px 2 invalid()}')
 );
 
@@ -973,36 +1019,36 @@ describe('Order', () => {
   );
 
   test(
-    'should preserve grid-auto-flow with an unknown term',
+    'should pass through grid-auto-flow with an unknown term',
     passthroughCSS('a{grid-auto-flow:dense junk row}')
   );
 
   test(
-    'should preserve duplicate grid-auto-flow keywords',
+    'should pass through duplicate grid-auto-flow keywords',
     passthroughCSS('a{grid-auto-flow:row column;grid-auto-flow:dense dense}')
   );
 
   test(
-    'should preserve multi-value grid-column-gap declarations',
+    'should pass through multi-value grid-column-gap declarations',
     passthroughCSS(
       'grid-column-gap: normal; grid-column-gap: normal 3%; grid-column-gap: 3em normal;'
     )
   );
 
   test(
-    'should preserve duplicate grid gap keywords',
+    'should pass through duplicate grid gap keywords',
     passthroughCSS('a{grid-column-gap:normal normal}')
   );
 
   test(
-    'should preserve invalid grid-line combinations',
+    'should pass through invalid grid-line combinations',
     passthroughCSS(
       'a{grid-column:foo span bar / 4;grid-column:span foo bar / 4;grid-column:2 foo bar / 4;grid-column:span span / 4;grid-column:2 / 3 / 4}'
     )
   );
 
   test(
-    'should preserve grid-lines with two integers or an auto companion',
+    'should pass through grid-lines with two integers or an auto companion',
     passthroughCSS(
       'a{grid-column:2 3 / 4;grid-column:2 auto / 4;grid-column:auto 3 / 4}'
     )
@@ -1014,19 +1060,19 @@ describe('Order', () => {
   );
 
   test(
-    'should preserve fractional and negative span integers',
+    'should pass through fractional and negative span integers',
     passthroughCSS('a{grid-column:span 1.5 / 2;grid-column:span -2 / 2}')
   );
 
   test(
-    'should preserve excluded grid custom-ident keywords',
+    'should pass through excluded grid custom-ident keywords',
     passthroughCSS(
       'a{grid-column:SpAn 2/3;grid-column:DeFaUlT 2 / 3;grid-column:ReVeRt-LaYeR 2 / 3;grid-column:\\61 uto 2 / 3}'
     )
   );
 
   test(
-    'should preserve zero integers and CSS-wide keywords in grid-lines',
+    'should pass through zero integers and CSS-wide keywords in grid-lines',
     passthroughCSS(
       'a{grid-column:0 / 2;grid-column:0 span / 2;grid-column:span 0 / 2;grid-column:initial / 2;grid-column:2 inherit / 3;grid-column:span -2 / 2}'
     )
@@ -1054,12 +1100,12 @@ describe('Order', () => {
   );
 
   test(
-    'should preserve a bare span grid-line',
+    'should pass through a bare span grid-line',
     passthroughCSS('a{grid-column:2/span;grid-column:span / 2}')
   );
 
   test(
-    'should preserve multi-value grid-row-gap declarations',
+    'should pass through multi-value grid-row-gap declarations',
     passthroughCSS(
       'grid-row-gap: normal; grid-row-gap: normal 3%; grid-row-gap: 3em normal;'
     )
@@ -1074,7 +1120,7 @@ describe('Order', () => {
   );
 
   test(
-    'should preserve nested slashes while ordering grid lines',
+    'should pass through nested slashes while ordering grid lines',
     processCSS(
       'a{grid-column:2/span min(1px/2px);}',
       'a{grid-column:2/span min(1px/2px);}'
@@ -1090,7 +1136,7 @@ describe('Order', () => {
   );
 
   test(
-    'should preserve slashes in grid-row-start (single grid-line longhand)',
+    'should pass through slashes in grid-row-start (single grid-line longhand)',
     passthroughCSS(
       'grid-row-start: 2 / 4; grid-row-start: 2 span / 7; grid-row-start: custom-indent-name / 3;'
     )
@@ -1102,21 +1148,21 @@ describe('Order', () => {
   );
 
   test(
-    'should preserve slashes in grid-row-end (single grid-line longhand)',
+    'should pass through slashes in grid-row-end (single grid-line longhand)',
     passthroughCSS(
       'grid-row-end: 2 / 4; grid-row-end: 2 span / 7; grid-row-end: custom-indent-name / 3;'
     )
   );
 
   test(
-    'should preserve slashes in grid-column-start (single grid-line longhand)',
+    'should pass through slashes in grid-column-start (single grid-line longhand)',
     passthroughCSS(
       'grid-column-start: 2 / 4; grid-column-start: 2 span / 7; grid-column-start: custom-indent-name / 3;'
     )
   );
 
   test(
-    'should preserve slashes in grid-column-end (single grid-line longhand)',
+    'should pass through slashes in grid-column-end (single grid-line longhand)',
     passthroughCSS(
       'grid-column-end: 2 / 4; grid-column-end: 2 span / 7; grid-column-end: custom-indent-name / 3;'
     )
@@ -1173,7 +1219,7 @@ describe('Order', () => {
   );
 
   test(
-    'should preserve list-style with one or two none tokens',
+    'should pass through list-style with one or two none tokens',
     processCSS(
       'ul{list-style:inside none;list-style:none inside none}',
       'ul{list-style:none inside;list-style:none inside none}'

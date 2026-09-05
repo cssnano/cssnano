@@ -1,6 +1,9 @@
 import {
   isFunction,
   isIdent,
+  isPercentage,
+  isString,
+  isUrl,
   name,
   serializeArguments,
 } from '../lib/tokenize.js';
@@ -46,6 +49,8 @@ function normalize(args) {
         if (state.timingFunction.length) return null;
         state.timingFunction.push(node);
       } else {
+        if (isString(node) || isPercentage(node) || isUrl(node)) return null;
+        if (isIdent(node) && state.property.some(isIdent)) return null;
         state.property.push(node);
       }
     }
