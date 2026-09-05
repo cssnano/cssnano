@@ -99,7 +99,8 @@ function minify(decl, opts, postcssResult) {
       prefix = functionToken[1].slice(0, functionToken[1].indexOf('(') + 1);
       value = decoded(functionToken);
       quote = '';
-      close = i + 1;
+      // TokenType.URL spans the entire construct; i will advance on loop increment.
+      close = i;
     } else {
       if (
         functionToken[0] !== TokenType.Function ||

@@ -107,7 +107,7 @@ describe('Optimise', () => {
 });
 
 test(
-  'should preserve apostrophes in uri-encoded svg attributes',
+  'should pass through apostrophes in uri-encoded svg attributes',
   processCSS(
     'h1{background:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%3E%3Ctext%20font-size=%2720%27%20font-family=%27%26apos;Arial%26apos;%27%20transform=%27translate%280%2C20%29%27%3E?%3C/text%3E%3C/svg%3E")}',
     'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ctext%20font-family%3D%22\'Arial\'%22%20font-size%3D%2220%22%20transform%3D%22translate(0%2020)%22%3E%3F%3C%2Ftext%3E%3C%2Fsvg%3E")}'
@@ -267,7 +267,7 @@ test(
 );
 
 test(
-  'should preserve opaque and malformed non-data URL tokens',
+  'should pass through opaque and malformed non-data URL tokens',
   passthroughCSS('h1{background:url(foo\\ bar.svg);mask-image:url(foo(})}')
 );
 
@@ -312,7 +312,7 @@ test('should recognize escaped url function names and decode quoted payloads', a
   );
 });
 
-test('should preserve data-looking bad URLs byte-for-byte', async () => {
+test('should pass through data-looking bad URLs byte-for-byte', async () => {
   const css = 'h1{background:url(data:image/svg+xml,<svg>)}';
   const result = await postcss(plugin()).process(css, { from: undefined });
   assert.equal(result.css, css);
@@ -345,6 +345,36 @@ test('should optimize a valid SVG URL next to an opaque URL', async () => {
   assert.equal(
     result.css,
     "h1{background:url(foo\\ bar.svg) url('data:image/svg+xml;charset=utf-8,<svg><circle/></svg>')}"
+  );
+});
+
+test('should optimize consecutive SVG URLs without whitespace', async () => {
+  const base64Input =
+    'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZS8+PC9zdmc+';
+  const base64Expected =
+    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUvPjwvc3ZnPg==';
+  const result = await postcss(plugin()).process(
+    `h1{background:url(${base64Input})url("${base64Input}")}`,
+    { from: undefined }
+  );
+  assert.equal(
+    result.css,
+    `h1{background:url(${base64Expected})url("${base64Expected}")}`
+  );
+});
+
+test('should optimize consecutive unquoted SVG URLs without whitespace', async () => {
+  const base64Input =
+    'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZS8+PC9zdmc+';
+  const base64Expected =
+    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUvPjwvc3ZnPg==';
+  const result = await postcss(plugin()).process(
+    `h1{background:url(${base64Input})url(${base64Input})}`,
+    { from: undefined }
+  );
+  assert.equal(
+    result.css,
+    `h1{background:url(${base64Expected})url(${base64Expected})}`
   );
 });
 

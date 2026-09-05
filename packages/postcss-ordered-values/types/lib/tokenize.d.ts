@@ -20,6 +20,10 @@ declare function isFunction(term: Term): boolean;
 declare function isUrl(term: Term): boolean;
 /** @param {Term} term */
 declare function isIdent(term: Term): boolean;
+/** @param {Term} term */
+declare function isString(term: Term): boolean;
+/** @param {Term} term */
+declare function isPercentage(term: Term): boolean;
 /**
  * Tokenize a declaration in a single streaming pass and split it at top-level
  * whitespace, commas, and structural slashes.
@@ -35,5 +39,5 @@ declare function tokenizeValue(value: string): {
 };
 /** @param {Term[][]} arguments_ */
 declare function serializeArguments(arguments_: Term[][]): string;
-export { isDimension, isFunction, isIdent, isNumber, isUrl, name, serializeArguments, tokenizeValue, };
+export { isDimension, isFunction, isIdent, isNumber, isPercentage, isString, isUrl, name, serializeArguments, tokenizeValue, };
 //# sourceMappingURL=tokenize.d.ts.map

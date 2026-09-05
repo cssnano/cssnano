@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { tokenizeValue } from '../src/lib/tokenize.js';
+import { tokenizeValue, isPercentage, isString } from '../src/lib/tokenize.js';
 import normalizeBorder from '../src/rules/border.js';
 import normalizeBoxShadow from '../src/rules/boxShadow.js';
 import normalizeAnimation from '../src/rules/animation.js';
@@ -32,6 +32,22 @@ test('tokenization aborts on mismatched or unclosed delimiters', () => {
   for (const value of ['a (b]', 'a [b)', 'a {b', 'a (b']) {
     assert.equal(tokenizeValue(value).abort, true, value);
   }
+});
+
+test('tokenization classifies string terms', () => {
+  const parsed = tokenizeValue('"fade" ident 1s 2');
+  assert.strictEqual(isString(parsed.terms[0]), true);
+  assert.strictEqual(isString(parsed.terms[1]), false);
+  assert.strictEqual(isString(parsed.terms[2]), false);
+  assert.strictEqual(isString(parsed.terms[3]), false);
+});
+
+test('tokenization classifies percentage terms', () => {
+  const parsed = tokenizeValue('50% ident 1s 2');
+  assert.strictEqual(isPercentage(parsed.terms[0]), true);
+  assert.strictEqual(isPercentage(parsed.terms[1]), false);
+  assert.strictEqual(isPercentage(parsed.terms[2]), false);
+  assert.strictEqual(isPercentage(parsed.terms[3]), false);
 });
 
 describe('Border', () => {
@@ -404,6 +420,15 @@ describe('List-style validation', () => {
         tokenizeValue("symbols(cyclic '*' 'o') inside url(a.png)").terms
       ),
       "symbols(cyclic '*' 'o') inside url(a.png)"
+    );
+  });
+
+  test('normalizes list-style with image function', () => {
+    assert.strictEqual(
+      normalizeListStyle(
+        tokenizeValue('inside linear-gradient(red, blue) disc').terms
+      ),
+      'disc inside linear-gradient(red, blue)'
     );
   });
 

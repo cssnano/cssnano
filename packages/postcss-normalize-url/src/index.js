@@ -190,18 +190,25 @@ function forEachUrl(value, callback, tokens = [...tokenize({ css: value })]) {
     );
     if (significant.length === 1 && significant[0][0] === TokenType.String) {
       const string = significant[0];
+      if (!isClosedString(string[1])) {
+        index = close;
+        continue;
+      }
       callback(
         token[2],
         tokens[close][3] + 1,
-        string[1].endsWith(string[1][0])
-          ? string[1].slice(1, -1)
-          : string[4].value,
+        string[1].slice(1, -1),
         string[1][0],
         token[1].slice(0, -1)
       );
     } else if (
       !significant.length ||
-      !significant.some((child) => child[0] === TokenType.Function)
+      !significant.some(
+        (child) =>
+          child[0] === TokenType.Function ||
+          child[0] === TokenType.String ||
+          child[0] === TokenType.BadString
+      )
     ) {
       callback(
         token[2],
