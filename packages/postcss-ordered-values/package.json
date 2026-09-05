@@ -47,7 +47,7 @@
     "postcss": "catalog:"
   },
   "peerDependencies": {
-    "postcss": "^8.5.26"
+    "postcss": "^8.5.28"
   },
   "scripts": {
     "acquire": "node ./script/acquire.mjs",
