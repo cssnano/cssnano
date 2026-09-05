@@ -209,8 +209,8 @@ catalogs:
       specifier: ^6.3.0
       version: 6.3.0
     '@webref/css':
-      specifier: 8.7.3
-      version: 8.7.3
+      specifier: 8.7.4
+      version: 8.7.4
     autoprefixer:
       specifier: ^10.5.5
       version: 10.5.5
@@ -218,8 +218,8 @@ catalogs:
       specifier: ^4.28.9
       version: 4.28.9
     mdn-data:
-      specifier: 2.34.0
-      version: 2.34.0
+      specifier: 2.35.0
+      version: 2.35.0
     postcss:
       specifier: ^8.5.28
       version: 8.5.28
@@ -525,7 +525,7 @@ importers:
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
-        version: 8.7.3(css-tree@3.2.1)
+        version: 8.7.4(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
@@ -547,7 +547,7 @@ importers:
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
-        version: 8.7.3(css-tree@3.2.1)
+        version: 8.7.4(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
@@ -728,7 +728,7 @@ importers:
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
-        version: 8.7.3(css-tree@3.2.1)
+        version: 8.7.4(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
@@ -741,7 +741,7 @@ importers:
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
-        version: 8.7.3(css-tree@3.2.1)
+        version: 8.7.4(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
@@ -757,7 +757,7 @@ importers:
     devDependencies:
       mdn-data:
         specifier: 'catalog:'
-        version: 2.34.0
+        version: 2.35.0
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
@@ -1493,8 +1493,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@webref/css@8.7.3':
-    resolution: {integrity: sha512-iQZOkW9TqVz7p3qnEyv0KsutpXmPh8Ey9oJKHLeo//kn4mrrdG+XLBhmx4IoSWSazlVyK5NTp/FqsvV3U1yc9w==}
+  '@webref/css@8.7.4':
+    resolution: {integrity: sha512-Wo1iEFRPnMehms5A9xUpZxUkUMkNEGXEVX97yB3up2CsqyK/UtKgVcxUOplMVeL1SLVry0c1JPepMIXNAOWXPA==}
     peerDependencies:
       css-tree: ^3.2.1
 
@@ -1706,8 +1706,8 @@ packages:
   mdn-data@2.27.1:
     resolution: {integrity: sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==}
 
-  mdn-data@2.34.0:
-    resolution: {integrity: sha512-OgIlLv0NxJKVW4GTSAoEgpRGd4F2XCqGinK0MsMlBCCS/Zcm2/LsbercNWNA7PeMMcjl75NnI97eqyo7zkdxWA==}
+  mdn-data@2.35.0:
+    resolution: {integrity: sha512-k+1+dEIm2z/BEfdvYzT/fIyAGeDBo/1AJNJI4ilFXJRYoxP/3Ds+GP8shAOIq8jYXY9N5nGB3Ag104NsagmLAA==}
 
   nanoid@3.3.18:
     resolution: {integrity: sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w==}
@@ -2320,7 +2320,7 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  '@webref/css@8.7.3(css-tree@3.2.1)':
+  '@webref/css@8.7.4(css-tree@3.2.1)':
     dependencies:
       css-tree: 3.2.1
 
@@ -2547,7 +2547,7 @@ snapshots:
 
   mdn-data@2.27.1: {}
 
-  mdn-data@2.34.0: {}
+  mdn-data@2.35.0: {}
 
   nanoid@3.3.18: {}
 

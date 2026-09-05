@@ -501,11 +501,13 @@
     "max-height",
     "max-inline-size",
     "max-lines",
+    "max-size",
     "max-width",
     "min-block-size",
     "min-height",
     "min-inline-size",
     "min-intrinsic-sizing",
+    "min-size",
     "min-width",
     "mix-blend-mode",
     "nav-down",
@@ -678,6 +680,7 @@
     "shape-outside",
     "shape-padding",
     "shape-rendering",
+    "size",
     "slider-orientation",
     "spatial-navigation-action",
     "spatial-navigation-contain",
@@ -1403,6 +1406,8 @@
       "mask-border-source",
       "mask-border-width"
     ],
+    "max-size": ["max-height", "max-width"],
+    "min-size": ["min-height", "min-width"],
     "offset": [
       "offset-anchor",
       "offset-distance",
@@ -1537,6 +1542,7 @@
       "scroll-padding-inline-start"
     ],
     "scroll-timeline": ["scroll-timeline-axis", "scroll-timeline-name"],
+    "size": ["height", "width"],
     "text-align": ["text-align-all", "text-align-last"],
     "text-decoration": [
       "text-decoration-color",
