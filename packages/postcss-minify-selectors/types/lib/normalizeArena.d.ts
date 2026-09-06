@@ -3,11 +3,12 @@ export type ArenaNode = import('./arena.js').ArenaNode;
 export type Specificity = import('./arena.js').Specificity;
 export type Emit = import('./outputOverlay.js').Emit;
 export type Output = {
-    emit: Emit;
+    emit?: Emit;
     id: number;
     length: number;
     text?: string;
     sourceNode?: number;
+    changed?: boolean;
 };
 export type Normalized = Output & {
     node: number;
@@ -24,7 +25,7 @@ export type Normalized = Output & {
 export type Part = Normalized | {
     kind: 'combinator';
     id: number;
-    emit: Emit;
+    emit?: Emit;
     text: string;
     length: number;
 };
@@ -73,12 +74,12 @@ export declare function foldCandidateBefore(sort: boolean, left: FoldCandidate, 
  * Normalize immutable arena nodes once in iterative postorder.
  * @param {SelectorArena} arena
  * @param {{sort?:boolean,convertToIs?:boolean,keyframe?:boolean,hasDefaultNamespace?:boolean}} [options]
- * @return {Map<number, Emit>}
+ * @return {Emit | undefined}
  */
 export declare function normalizeArena(arena: SelectorArena, options?: {
     sort?: boolean;
     convertToIs?: boolean;
     keyframe?: boolean;
     hasDefaultNamespace?: boolean;
-}): Map<number, Emit>;
+}): Emit | undefined;
 //# sourceMappingURL=normalizeArena.d.ts.map

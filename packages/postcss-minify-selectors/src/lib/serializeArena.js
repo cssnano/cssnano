@@ -100,6 +100,39 @@ export function serializeEmit(arena, rewrites, root) {
   return output.join('');
 }
 
+/**
+ * Serialize trusted normalizer output. Node emissions always mean an unchanged
+ * source-backed subtree, so this path needs no rewrite lookup or cycle guard.
+ * @param {SelectorArena} arena
+ * @param {Emit | undefined} root
+ */
+export function serializeNormalized(arena, root) {
+  if (root === undefined) return arena.source;
+  /** @type {Emit[]} */ const work = [root];
+  /** @type {string[]} */ const output = [];
+  while (work.length > 0) {
+    const emit = work.pop();
+    if (!emit) break;
+    if (emit.kind === 'text') output.push(emit.value);
+    else if (emit.kind === 'source')
+      output.push(arena.source.slice(emit.start, emit.end));
+    else if (emit.kind === 'node') {
+      const node = arena.nodes[emit.node];
+      if (!node)
+        throw new RangeError('emission references an unknown arena node');
+      output.push(
+        arena.source.slice(
+          sourceOffset(arena, node.startToken),
+          sourceOffset(arena, node.endToken)
+        )
+      );
+    } else
+      for (let index = emit.items.length - 1; index >= 0; index--)
+        work.push(emit.items[index]);
+  }
+  return output.join('');
+}
+
 /** @param {SelectorArena} arena @param {ReadonlyMap<number,Emit>} rewrites @param {number} nodeIndex */
 function serializeArenaNode(arena, rewrites, nodeIndex) {
   return serializeEmit(arena, rewrites, { kind: 'node', node: nodeIndex });
