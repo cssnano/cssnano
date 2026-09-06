@@ -212,7 +212,7 @@ function isPositiveInteger(term) {
     term.tokenCount === 1 &&
     term.type === TokenType.Number &&
     num?.type === 'integer' &&
-    num.signCharacter === undefined &&
+    num.signCharacter !== '-' &&
     typeof num.value === 'number' &&
     num.value > 0 &&
     num.value <= Number.MAX_SAFE_INTEGER
@@ -235,7 +235,7 @@ function isValidLength(term) {
     lengthUnits.has(unit.toLowerCase()) &&
     (type === 'integer' || type === 'number') &&
     typeof value === 'number' &&
-    value >= 0 &&
+    value > 0 &&
     signCharacter !== '-'
   );
 }

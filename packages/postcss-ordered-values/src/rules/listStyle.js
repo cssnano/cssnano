@@ -14,6 +14,21 @@ const cssWideKeywords = new Set([
   'default',
 ]);
 
+const imageFunctions = new Set([
+  'image',
+  'image-set',
+  'element',
+  'cross-fade',
+  'linear-gradient',
+  'radial-gradient',
+  'conic-gradient',
+  'repeating-linear-gradient',
+  'repeating-radial-gradient',
+  'repeating-conic-gradient',
+]);
+
+const typeFunctions = new Set(['symbols', 'counter', 'counters']);
+
 /**
  * @param {import('../lib/tokenize.js').Term} term
  * @return {'none' | 'position' | 'image' | 'type' | null}
@@ -36,7 +51,14 @@ function classifyTerm(term) {
     return 'image';
   }
   if (isFunction(term)) {
-    return name(term) === 'symbols' ? 'type' : 'image';
+    const fn = name(term);
+    if (typeFunctions.has(fn)) {
+      return 'type';
+    }
+    if (imageFunctions.has(fn)) {
+      return 'image';
+    }
+    return null;
   }
   if (isString(term)) {
     return 'type';

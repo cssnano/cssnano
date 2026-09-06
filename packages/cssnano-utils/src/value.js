@@ -172,13 +172,15 @@ function applyEdits(source, edits) {
   const ordered = accepted.toSorted(
     (a, b) => a.start - b.start || a.end - a.start - (b.end - b.start)
   );
+  const pieces = [];
   let cursor = 0;
-  let result = '';
   for (const edit of ordered) {
-    result += source.slice(cursor, edit.start) + edit.text;
+    if (cursor < edit.start) pieces.push(source.slice(cursor, edit.start));
+    if (edit.text) pieces.push(edit.text);
     cursor = edit.end;
   }
-  return result + source.slice(cursor);
+  if (cursor < source.length) pieces.push(source.slice(cursor));
+  return pieces.join('');
 }
 
 /** @param {CSSToken} token @return {{number: number, unit: string} | false} */
@@ -294,6 +296,7 @@ class BalancedTokens {
     for (let index = startIndex; index < endIndex; index++) {
       const frameEnd = this.endForOpening(index);
       if (frameEnd !== undefined) {
+        if (frameEnd >= endIndex) break;
         index = frameEnd;
         continue;
       }

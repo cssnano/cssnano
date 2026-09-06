@@ -474,7 +474,10 @@ function attributeValue(input, index, end) {
     /** @type {'default'|'ascii-insensitive'|'case-sensitive'} */ ('default');
   if (input[cursor]?.[0] === TokenType.Ident) {
     const lower = decodedIdent(input[cursor]);
-    if (cursor === beforeTrivia || (lower !== 'i' && lower !== 's'))
+    if (
+      (input[valueToken]?.[0] === TokenType.Ident && cursor === beforeTrivia) ||
+      (lower !== 'i' && lower !== 's')
+    )
       return { status: /** @type {ParseStatus} */ ('invalid'), cursor };
     modifierToken = cursor++;
     caseBehavior = lower === 'i' ? 'ascii-insensitive' : 'case-sensitive';
@@ -886,6 +889,50 @@ function compoundChildAt(
   };
 }
 
+/** @param {string} kind */
+const isSubclassAfterPseudo = (kind) =>
+  kind === 'class' ||
+  kind === 'id' ||
+  kind === 'attribute' ||
+  kind === 'qualified-name';
+
+/**
+ * @param {readonly import('./tokenUtils.js').CSSToken[]} input
+ * @param {number} index
+ * @param {number} end
+ * @return {RawWork}
+ */
+function readRawContinuation(input, index, end) {
+  let rawEnd = index + 1;
+  while (rawEnd < end && isIdentifierContinuationToken(input[rawEnd])) rawEnd++;
+  return {
+    kind: 'raw',
+    start: index,
+    end: rawEnd,
+    status: 'opaque',
+  };
+}
+
+/**
+ * @param {{ work: ParseWork, end: number, status?: ParseStatus, hasQualifiedName?: boolean }} child
+ * @param {Structure} structure
+ * @param {number} end
+ */
+function extendQualifiedNameType(child, structure, end) {
+  if (
+    child.work.kind === 'qualified-name' &&
+    child.work.payload.namespace.kind === 'absent' &&
+    child.work.payload.subject.kind === 'type'
+  ) {
+    while (
+      child.end < end &&
+      isIdentifierContinuationToken(structure.tokens[child.end])
+    )
+      child.end++;
+    child.work.end = child.end;
+  }
+}
+
 /** @param {Structure} structure @param {number} start @param {number} end @param {ListMode} mode @param {boolean} insideHas */
 function compoundChildren(
   structure,
@@ -900,23 +947,17 @@ function compoundChildren(
   let status = /** @type {ParseStatus} */ ('valid');
   let index = start;
   let hasQualifiedName = false;
+  let sawPseudoElement = false;
   while (index < end) {
     if (
       (hasQualifiedName || index !== start) &&
       input[index]?.[0] === TokenType.Ident &&
       isIdentifierContinuationToken(input[index + 1])
     ) {
-      let rawEnd = index + 1;
-      while (rawEnd < end && isIdentifierContinuationToken(input[rawEnd]))
-        rawEnd++;
-      children.push({
-        kind: 'raw',
-        start: index,
-        end: rawEnd,
-        status: 'opaque',
-      });
+      const rawWork = readRawContinuation(input, index, end);
+      children.push(rawWork);
       status = mergeStatus(status, 'opaque');
-      index = rawEnd;
+      index = rawWork.end;
       continue;
     }
     const child = compoundChildAt(
@@ -926,22 +967,17 @@ function compoundChildren(
       hasQualifiedName || index !== start,
       keyframe
     );
-    if (
-      child.work.kind === 'qualified-name' &&
-      child.work.payload.namespace.kind === 'absent' &&
-      child.work.payload.subject.kind === 'type'
-    ) {
-      while (
-        child.end < end &&
-        isIdentifierContinuationToken(structure.tokens[child.end])
-      )
-        child.end++;
-      child.work.end = child.end;
+    if (sawPseudoElement && isSubclassAfterPseudo(child.work.kind)) {
+      status = 'invalid';
+      child.status = 'invalid';
     }
     if (child.work.kind === 'pseudo') {
+      const details = pseudoDetails(structure, child.work.start);
+      if (details.isElement) sawPseudoElement = true;
       child.work.mode = mode;
       child.work.insideHas = insideHas;
     }
+    extendQualifiedNameType(child, structure, end);
     children.push(child.work);
     status = mergeStatus(status, child.status ?? 'valid');
     hasQualifiedName ||= child.hasQualifiedName ?? false;

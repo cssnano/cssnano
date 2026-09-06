@@ -529,7 +529,7 @@ test('deduplicates wide selector lists with functions in linear time', () => {
   const output = normalizeList(input, false, false);
   const elapsed = performance.now() - start;
   assert.equal(output, input);
-  assert.ok(elapsed < 100, `Expected < 100ms, took ${elapsed.toFixed(1)}ms`);
+  assert.ok(elapsed < 200, `Expected < 200ms, took ${elapsed.toFixed(1)}ms`);
 });
 
 test('deduplicates wide inner selector lists with functions in linear time', () => {

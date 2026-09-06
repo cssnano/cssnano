@@ -18,6 +18,7 @@ export type Normalized = Output & {
     entries?: Normalized[];
     valid?: boolean;
     hasPseudoElement?: boolean;
+    trailing?: Output;
 };
 export type Part = Normalized | {
     kind: 'combinator';

@@ -20,7 +20,7 @@ const emptyChildren = Object.freeze([]);
 /** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {import('./outputOverlay.js').Emit} Emit */
 /** @typedef {{emit:Emit,id:number,length:number,text?:string,sourceNode?:number,sourceArena?:SelectorArena}} Output */
-/** @typedef {Output & {node:number,parts?:Part[],foldEligible?:boolean,specificity?:Specificity,entries?:Normalized[],valid?:boolean,hasPseudoElement?:boolean}} Normalized */
+/** @typedef {Output & {node:number,parts?:Part[],foldEligible?:boolean,specificity?:Specificity,entries?:Normalized[],valid?:boolean,hasPseudoElement?:boolean,trailing?:Output}} Normalized */
 /** @typedef {Normalized | {kind:'combinator',id:number,emit:Emit,text:string,length:number}} Part */
 
 class OutputPool {
@@ -318,7 +318,8 @@ function normalizedFormulaToken(input, index, end, important, foundSyntax) {
   if (
     !foundSyntax &&
     ((token[0] === TokenType.Delim && value === '+') ||
-      (token[0] === TokenType.Dimension && value.startsWith('+')))
+      (token[0] === TokenType.Dimension && value.startsWith('+')) ||
+      (token[0] === TokenType.Number && value.startsWith('+')))
   )
     value = value.slice(1);
   if (
@@ -646,8 +647,14 @@ function complexOutput(arena, pool, nodeIndex, normalized, children) {
     }
     cursor = child.endToken;
   }
-  output.push(trailingListTrivia(arena, pool, cursor, node.endToken));
-  return { ...pool.sequence(output), node: nodeIndex, parts };
+  const trailing = trailingListTrivia(arena, pool, cursor, node.endToken);
+  output.push(trailing);
+  return {
+    ...pool.sequence(output),
+    node: nodeIndex,
+    parts,
+    trailing: trailing.length !== 0 ? trailing : undefined,
+  };
 }
 
 /** @param {OutputPool} pool @param {readonly Normalized[]} entries */
@@ -707,7 +714,14 @@ function listOutput(arena, pool, nodeIndex, normalized, sort, children) {
         : node.endToken;
     const trailing = trailingListTrivia(arena, pool, child.endToken, nextStart);
     if (trailing.length > 0)
-      entry = { ...entry, ...pool.sequence([entry, trailing]) };
+      entry = {
+        ...entry,
+        node: entry.node,
+        ...pool.sequence([entry, trailing]),
+        trailing: entry.trailing
+          ? pool.sequence([entry.trailing, trailing])
+          : trailing,
+      };
     addListEntry(
       entries,
       seenText,
@@ -1046,6 +1060,15 @@ function buildFoldedSelector(pool, candidate, occurrences, order, sort) {
     newParts.push(value);
     output.push(value);
   }
+  /** @type {Output[]} */ const trailingComments = [];
+  for (const occurrence of occurrences) {
+    if (occurrence.selector.trailing) {
+      trailingComments.push(occurrence.selector.trailing);
+    }
+  }
+  if (trailingComments.length > 0) {
+    output.push(...trailingComments);
+  }
   return {
     ...pool.sequence(output),
     node: -1,
@@ -1053,6 +1076,8 @@ function buildFoldedSelector(pool, candidate, occurrences, order, sort) {
     active: true,
     order,
     memberships: [],
+    trailing:
+      trailingComments.length > 0 ? pool.sequence(trailingComments) : undefined,
   };
 }
 
@@ -1294,9 +1319,10 @@ function finalizeEntries(arena, pool, entries, options) {
         entries[index] = { ...pool.text('to'), node: -1 };
     }
   }
-  let folded = options.convertToIs
-    ? foldSelectors(arena, pool, entries, sort)
-    : entries;
+  let folded =
+    options.convertToIs && !options.keyframe
+      ? foldSelectors(arena, pool, entries, sort)
+      : entries;
   if (!options.keyframe && sort && folded.length > 1)
     folded = folded.toSorted(compareOutputs);
   return joinEntries(pool, folded).emit;

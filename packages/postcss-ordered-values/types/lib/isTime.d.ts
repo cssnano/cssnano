@@ -13,6 +13,8 @@ export type ParserState = {
 /** @param {import('./tokenize.js').Term} node */
 declare function isMath(node: import('./tokenize.js').Term): boolean;
 /** @param {import('./tokenize.js').Term} node */
+declare function isNonNegativeTime(node: import('./tokenize.js').Term): boolean;
+/** @param {import('./tokenize.js').Term} node */
 export default function isTime(node: import('./tokenize.js').Term): boolean;
-export { isMath };
+export { isMath, isNonNegativeTime };
 //# sourceMappingURL=isTime.d.ts.map

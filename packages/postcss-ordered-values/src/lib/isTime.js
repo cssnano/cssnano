@@ -238,6 +238,20 @@ function isMath(node) {
 }
 
 /** @param {import('./tokenize.js').Term} node */
+function isNonNegativeTime(node) {
+  if (isDimension(node)) {
+    const { unit, value, signCharacter } =
+      /** @type {{unit: string, value: number, signCharacter?: string}} */ (
+        node.tokens[0][4]
+      );
+    return (
+      timeUnits.has(unit.toLowerCase()) && signCharacter !== '-' && value >= 0
+    );
+  }
+  return isMath(node) && parseMath(node.tokens) === 'time';
+}
+
+/** @param {import('./tokenize.js').Term} node */
 export default function isTime(node) {
   if (isDimension(node)) {
     const { unit } = /** @type {{unit: string}} */ (node.tokens[0][4]);
@@ -246,4 +260,4 @@ export default function isTime(node) {
   return isMath(node) && parseMath(node.tokens) === 'time';
 }
 
-export { isMath };
+export { isMath, isNonNegativeTime };

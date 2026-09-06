@@ -134,3 +134,5 @@ export default (columns) => {
 
   return null;
 };
+
+export { lengthUnits };

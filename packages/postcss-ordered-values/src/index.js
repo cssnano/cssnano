@@ -57,12 +57,15 @@ const flexFlowProcessor = (parsed) => flexFlow(parsed.terms);
 /** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
 const listStyleProcessor = (parsed) => listStyle(parsed.terms);
 
+/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
+const outlineProcessor = (parsed) => border(parsed.terms, true);
+
 const listRules = new Set(['animation', 'box-shadow', 'transition']);
 
 /** @type {Map<string, (parsed: ReturnType<typeof tokenizeValue>) => string | null>} */
 const rules = new Map([
   ['animation', animation],
-  ['outline', borderProcessor],
+  ['outline', outlineProcessor],
   ['box-shadow', boxShadow],
   ['flex-flow', flexFlowProcessor],
   ['list-style', listStyleProcessor],
@@ -92,7 +95,7 @@ function getValue(decl) {
  */
 function assignValue(decl, value) {
   decl.value = value;
-  if (decl.raws.value?.raw) {
+  if (decl.raws?.value?.raw) {
     decl.raws.value = { raw: value, value };
   }
 }

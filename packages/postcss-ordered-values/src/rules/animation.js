@@ -9,7 +9,7 @@ import {
   name,
   serializeArguments,
 } from '../lib/tokenize.js';
-import isTimeValue, { isMath } from '../lib/isTime.js';
+import isTimeValue, { isMath, isNonNegativeTime } from '../lib/isTime.js';
 import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
 // animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
@@ -52,22 +52,12 @@ const isPlayState = (value, node) => {
  * @param {import('../lib/tokenize.js').Term} node
  * @return {boolean}
  */
-const isTime = (value, node) => {
-  return isTimeValue(node);
-};
-/**
- * @param {string} value
- * @param {import('../lib/tokenize.js').Term} node
- * @return {boolean}
- */
 const isIterationCount = (value, node) => {
   return (isIdent(node) && value === 'infinite') || isNumber(node);
 };
 
 const stateConditions = [
-  { property: 'duration', delegate: isTime },
   { property: 'timingFunction', delegate: isTimingFunction },
-  { property: 'delay', delegate: isTime },
   { property: 'iterationCount', delegate: isIterationCount },
   { property: 'direction', delegate: isDirection },
   { property: 'fillMode', delegate: isFillMode },
@@ -96,6 +86,17 @@ function normalize(args) {
     for (const node of arg) {
       const value = name(node);
       if (isMath(node) && !isTimeValue(node)) return null;
+
+      if (isTimeValue(node)) {
+        if (!state.duration.length && isNonNegativeTime(node)) {
+          state.duration.push(node);
+        } else if (state.duration.length && !state.delay.length) {
+          state.delay.push(node);
+        } else {
+          return null;
+        }
+        continue;
+      }
 
       const hasMatch = stateConditions.some(({ property, delegate }) => {
         if (delegate(value, node) && !state[property].length) {

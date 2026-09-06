@@ -402,6 +402,26 @@ suite('invalid-value handling', () => {
   );
 
   test(
+    'should not merge longhands when column-width is zero',
+    passthroughCSS('a{column-width:0px;column-count:2}')
+  );
+
+  test(
+    'should pass through zero column width in shorthand',
+    passthroughCSS('a{columns:0px 2}')
+  );
+
+  test(
+    'should merge column-count with explicit positive sign',
+    processCSS('a{column-width:10em;column-count:+2}', 'a{columns:10em +2}')
+  );
+
+  test(
+    'should recognize explicit positive sign for count in shorthand',
+    passthroughCSS('a{columns:10em +2}')
+  );
+
+  test(
     'should not discard a valid longhand when followed by an invalid shorthand with zero count',
     passthroughCSS('a{column-width:2px;columns:1px 0}')
   );

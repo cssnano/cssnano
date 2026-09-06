@@ -261,3 +261,17 @@ test(
   'should preserve an escaped tab character in a custom property that is the last declaration',
   passthroughCSS(':root{--x:1;--y:red\\\t}')
 );
+
+test(
+  'should retain whitespace around division in escaped math functions',
+  processCSS('h1{width:c\\61lc(10px / 2)}', 'h1{width:c\\61lc(10px / 2)}')
+);
+
+test('should synchronize decl.raws.value when normalized', async () => {
+  const input = 'a{width:  10px  }';
+  const root = postcss.parse(input);
+  const decl = root.first.first;
+  decl.raws.value = { raw: '  10px  ', value: '10px' };
+  await processor.process(root, { from: undefined });
+  assert.deepEqual(decl.raws.value, { raw: ' 10px ', value: ' 10px ' });
+});

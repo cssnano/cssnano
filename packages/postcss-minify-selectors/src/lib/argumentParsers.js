@@ -277,13 +277,19 @@ export function normalizePtNameArgument(tokens, start, end) {
   let expectsClass = false;
   let hasClass = false;
   let isWildcard = false;
+  let sawTrailingWhitespace = false;
 
   for (let i = start; i < end; i++) {
     const token = tokens[i];
     const type = token[0];
 
     if (type === TokenType.Whitespace) {
+      if (expectsClass) return { valid: false };
+      sawTrailingWhitespace = sawTrailingWhitespace || foundName;
       continue;
+    }
+    if (sawTrailingWhitespace && type !== TokenType.Comment) {
+      return { valid: false };
     }
     if (type === TokenType.Comment) {
       if (token[1].startsWith('/*!')) {
@@ -297,15 +303,10 @@ export function normalizePtNameArgument(tokens, start, end) {
       pieces.push(compactTokenValue(token));
       continue;
     }
-    if (!foundName && isPtClassSeparator(token)) {
+    if (!expectsClass && isPtClassSeparator(token)) {
       foundName = true;
       expectsClass = true;
       pieces.push('.');
-      continue;
-    }
-    if (foundName && !expectsClass && isPtClassSeparator(token)) {
-      pieces.push('.');
-      expectsClass = true;
       continue;
     }
     if (expectsClass && type === TokenType.Ident) {
