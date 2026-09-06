@@ -1,6 +1,6 @@
 import { normalizeArena } from './normalizeArena.js';
 import { parseSelectorArena } from './parseArena.js';
-import { serializeArena } from './serializeArena.js';
+import { serializeNormalized } from './serializeArena.js';
 
 /**
  * @param {string} source
@@ -19,8 +19,9 @@ function normalizeList(
   const arena = parseSelectorArena(source, {
     keyframe,
     hasDefaultNamespace,
+    verifyArena: false,
   });
-  return serializeArena(
+  return serializeNormalized(
     arena,
     normalizeArena(arena, {
       sort,
@@ -33,7 +34,7 @@ function normalizeList(
 
 /** @param {string} source */
 function specificityOf(source) {
-  const arena = parseSelectorArena(source);
+  const arena = parseSelectorArena(source, { verifyArena: false });
   return (arena.nodes[0].specificity ?? [0, 0, 0]).join(',');
 }
 

@@ -10,8 +10,13 @@ import {
   isFoldEligible,
   semanticFacts,
 } from '../src/lib/arena.js';
-import { serializeArena, serializeEmit } from '../src/lib/serializeArena.js';
+import {
+  serializeArena,
+  serializeEmit,
+  serializeNormalized,
+} from '../src/lib/serializeArena.js';
 import { parseSelectorArena } from '../src/lib/parseArena.js';
+import { normalizeArena } from '../src/lib/normalizeArena.js';
 
 const { tokens } = cssnanoUtils;
 
@@ -412,7 +417,10 @@ test('iterative parser records list modes and explicit selector constructs', () 
   const unknownPseudo = arena.nodes.find(
     (node) =>
       node.kind === 'raw' &&
-      arena.payloads.raw[node.payload].text === ':future(.x)'
+      arena.tokens
+        .slice(node.startToken, node.endToken)
+        .map((token) => token[1])
+        .join('') === ':future(.x)'
   );
   assert.equal(unknownPseudo.status, 'opaque');
 });
@@ -643,6 +651,65 @@ test('production parsing retains full arena structure before normalization', () 
   assert.equal(arena.nodes[0].kind, 'list');
   assert.ok(arena.nodes.some(({ kind }) => kind === 'compound'));
   assert.ok(arena.nodes.some(({ kind }) => kind === 'pseudo'));
+});
+
+test('verified and trusted parsing have equivalent semantic arenas', () => {
+  for (const source of [
+    '.a,.b',
+    'svg|a > [x=y i]:future(.x),|*',
+    ':is(.a,#b):where(div)',
+    ':nth-child(odd of .a,#b)',
+    ':is(.a',
+  ]) {
+    const verified = parseSelectorArena(source);
+    const trusted = parseSelectorArena(source, { verifyArena: false });
+
+    assert.deepEqual(trusted, verified, source);
+    assert.equal(serializeArena(trusted, new Map()), source);
+    assert.equal(Object.isFrozen(verified.nodes), true);
+    assert.equal(Object.isFrozen(trusted.nodes), false);
+  }
+});
+
+test('direct normalized serialization matches the general serializer', () => {
+  const deep = `${':is('.repeat(1_000)}.a${')'.repeat(1_000)}`;
+  for (const [source, options] of [
+    ['.a', {}],
+    ['.card:is(.active,.pending)', {}],
+    ['.a x,.b x', { convertToIs: true }],
+    ['.b/*!keep*/,.a', {}],
+    [deep, {}],
+    [':future(.x)', {}],
+  ]) {
+    const arena = parseSelectorArena(source, { verifyArena: false });
+    const emit = normalizeArena(arena, options);
+    assert.equal(
+      serializeNormalized(arena, emit),
+      emit === undefined ? source : serializeEmit(arena, new Map(), emit),
+      source
+    );
+  }
+});
+
+test('unchanged simple and nested selectors stay source-backed', () => {
+  for (const source of [
+    '.a',
+    ':is(.a)',
+    `${':is('.repeat(12_000)}.a${')'.repeat(12_000)}`,
+  ]) {
+    const arena = parseSelectorArena(source, { verifyArena: false });
+    assert.equal(
+      normalizeArena(arena, { sort: false, convertToIs: false }),
+      undefined
+    );
+  }
+});
+
+test('a changed container materializes an unchanged child reference', () => {
+  const arena = parseSelectorArena('*.a', { verifyArena: false });
+  const emit = normalizeArena(arena, { sort: false, convertToIs: false });
+  assert.notEqual(emit, undefined);
+  assert.equal(serializeNormalized(arena, emit), '.a');
 });
 
 test('compound-only pseudo arguments reject selector lists', () => {
