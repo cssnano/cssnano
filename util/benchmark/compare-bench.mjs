@@ -41,8 +41,7 @@ function cliArgs(argv) {
         throw new Error(`duplicate output hash allowlist entry for "${name}"`);
       }
       outputHashAllowlist.set(name, { base, candidate });
-    }
-    else positional.push(arg);
+    } else positional.push(arg);
   }
   return {
     base: positional[0],

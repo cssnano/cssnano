@@ -19,8 +19,8 @@ const emptyChildren = Object.freeze([]);
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
 /** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {import('./outputOverlay.js').Emit} Emit */
-/** @typedef {{emit:Emit,id:number,length:number,text?:string,sourceNode?:number,sourceArena?:SelectorArena}} Output */
-/** @typedef {Output & {node:number,parts?:Part[],foldEligible?:boolean,specificity?:Specificity,entries?:Normalized[],valid?:boolean,hasPseudoElement?:boolean,trailing?:Output}} Normalized */
+/** @typedef {{emit:Emit,id:number,length:number,text?:string,sourceNode?:number}} Output */
+/** @typedef {Output & {node:number,parts?:Part[],foldEligible?:boolean,specificity?:Specificity,specificityId?:number,facts:number,entries?:Normalized[],valid:boolean,hasPseudoElement:boolean,trailing?:Output}} Normalized */
 /** @typedef {Normalized | {kind:'combinator',id:number,emit:Emit,text:string,length:number}} Part */
 
 class OutputPool {
@@ -28,6 +28,9 @@ class OutputPool {
   constructor(arena) {
     this.arena = arena;
     /** @type {Map<string,Output>} */ this.texts = new Map();
+    /** @type {Map<string,Map<number,Map<number,number>>>} */
+    this.identities = new Map();
+    /** @type {Map<string,number>} */ this.payloads = new Map();
     /** @type {Map<number,Map<number,number>>} */ this.pairs = new Map();
     this.nextId = 1;
     this.empty = this.text('');
@@ -45,6 +48,43 @@ class OutputPool {
     };
     this.texts.set(value, output);
     return output;
+  }
+
+  /** @param {string} value */
+  payload(value) {
+    let id = this.payloads.get(value);
+    if (id === undefined) {
+      id = this.nextId++;
+      this.payloads.set(value, id);
+    }
+    return id;
+  }
+
+  /**
+   * The structural ID is interned from normalized local text and ordered child
+   * IDs as each output sequence is assembled. It therefore carries significant
+   * raw bytes without retaining arena positions.
+   * @param {string} kind
+   * @param {number} payload
+   * @param {number} structure
+   */
+  identity(kind, payload, structure) {
+    let byPayload = this.identities.get(kind);
+    if (!byPayload) {
+      byPayload = new Map();
+      this.identities.set(kind, byPayload);
+    }
+    let structures = byPayload.get(payload);
+    if (!structures) {
+      structures = new Map();
+      byPayload.set(payload, structures);
+    }
+    let id = structures.get(structure);
+    if (id === undefined) {
+      id = this.nextId++;
+      structures.set(structure, id);
+    }
+    return id;
   }
 
   /** @param {number} left @param {number} right */
@@ -77,7 +117,7 @@ class OutputPool {
       kind: /** @type {const} */ ('sequence'),
       items: items.map(({ emit: item }) => item),
     };
-    return { emit, id, length, sourceArena: this.arena };
+    return { emit, id, length };
   }
 }
 
@@ -143,6 +183,25 @@ function trailingListTrivia(arena, pool, start, end) {
       output.push(pool.text(token[1]));
       pendingSpace = false;
     }
+  }
+  return pool.sequence(output);
+}
+
+/** @param {SelectorArena} arena @param {OutputPool} pool @param {number} start @param {number} end */
+function leadingListTrivia(arena, pool, start, end) {
+  /** @type {Output[]} */ const output = [];
+  let afterComma = false;
+  for (let index = start; index < end; index++) {
+    const token = arena.tokens[index];
+    if (token[0] === TokenType.Comma) {
+      output.length = 0;
+      afterComma = true;
+    } else if (
+      afterComma &&
+      token[0] === TokenType.Comment &&
+      token[1].startsWith('/*!')
+    )
+      output.push(pool.text(token[1]));
   }
   return pool.sequence(output);
 }
@@ -383,28 +442,23 @@ function flatten(root, arena) {
   return output.join('');
 }
 
-/** @param {Output} output */
-function outputText(output) {
+/** @param {OutputPool} pool @param {Output} output */
+function outputText(pool, output) {
   if (output.text === undefined) {
-    if (output.sourceNode !== undefined && output.sourceArena) {
-      const node = output.sourceArena.nodes[output.sourceNode];
-      output.text = sourceText(
-        output.sourceArena,
-        node.startToken,
-        node.endToken
-      );
-    } else output.text = flatten(output.emit, output.sourceArena);
+    if (output.sourceNode !== undefined) {
+      const node = pool.arena.nodes[output.sourceNode];
+      output.text = sourceText(pool.arena, node.startToken, node.endToken);
+    } else output.text = flatten(output.emit, pool.arena);
   }
   return output.text;
 }
 
-/** @param {SelectorArena} arena @param {number} nodeIndex @param {Output} output */
-function sourceNodeOutput(arena, nodeIndex, output) {
+/** @param {number} nodeIndex @param {Output} output */
+function sourceNodeOutput(nodeIndex, output) {
   return {
     ...output,
     emit: /** @type {const} */ ({ kind: 'node', node: nodeIndex }),
     sourceNode: nodeIndex,
-    sourceArena: arena,
     text: undefined,
   };
 }
@@ -475,10 +529,42 @@ function canReuseSourceNode(arena, nodeIndex, normalized, children, output) {
   return false;
 }
 
-/** @param {Output} left @param {Output} right */
-function compareOutputs(left, right) {
-  const a = outputText(left);
-  const b = outputText(right);
+/** @param {SelectorArena} arena @param {ArenaNode} node @param {OutputPool} pool @param {Output} output */
+function normalizedPayload(arena, node, pool, output) {
+  let status = 2;
+  if (node.status === 'valid') status = 0;
+  else if (node.status === 'invalid') status = 1;
+  const summary =
+    ((node.specificityId ?? -1) + 1) * 3 * 1024 +
+    status * 1024 +
+    (node.facts ?? 0);
+  if (node.kind === 'list') {
+    const payload = arena.payloads.lists[node.payload];
+    return pool.payload(
+      `${summary};${payload.mode};${Boolean(payload.keyframe)};${Boolean(payload.hasDefaultNamespace)}`
+    );
+  }
+  if (node.kind === 'qualified-name') return summary;
+  if (node.kind === 'pseudo') {
+    const payload = arena.payloads.pseudos[node.payload];
+    return pool.payload(
+      `${summary};${[
+        payload.name,
+        payload.colonCount,
+        payload.pseudoKind,
+        payload.argumentGrammar ?? '',
+        payload.specificityPolicy,
+        payload.argumentNode === undefined ? output.id : 0,
+      ].join(';')}`
+    );
+  }
+  return summary;
+}
+
+/** @param {OutputPool} pool @param {Output} left @param {Output} right */
+function compareOutputs(pool, left, right) {
+  const a = outputText(pool, left);
+  const b = outputText(pool, right);
   if (a < b) return -1;
   if (a > b) return 1;
   return 0;
@@ -631,17 +717,26 @@ function complexOutput(arena, pool, nodeIndex, normalized, children) {
   let cursor = node.startToken;
   for (const childIndex of children) {
     const child = arena.nodes[childIndex];
-    output.push(importantTrivia(arena, pool, cursor, child.startToken));
+    const leading = importantTrivia(arena, pool, cursor, child.startToken);
     if (child.kind === 'combinator') {
+      output.push(leading);
       const value = arena.payloads.combinators[child.payload].value;
       const item =
         value === ' '
           ? descendantCombinator(arena, pool, child)
           : pool.text(value);
       output.push(item);
-      parts.push({ kind: 'combinator', ...item, text: outputText(item) });
+      parts.push({ kind: 'combinator', ...item, text: outputText(pool, item) });
     } else {
-      const item = normalizedAt(normalized, childIndex);
+      const childOutput = normalizedAt(normalized, childIndex);
+      const item =
+        leading.length === 0
+          ? childOutput
+          : /** @type {Normalized} */ ({
+              ...childOutput,
+              ...pool.sequence([leading, childOutput]),
+              node: childOutput.node,
+            });
       output.push(item);
       parts.push(item);
     }
@@ -667,14 +762,14 @@ function joinEntries(pool, entries) {
   return pool.sequence(output);
 }
 
-/** @param {Normalized[]} entries @param {Set<string>} seenText @param {Normalized} entry @param {boolean} isOuter @param {boolean} vendor */
-function addListEntry(entries, seenText, entry, isOuter, vendor) {
+/** @param {OutputPool} pool @param {Normalized[]} entries @param {Set<string>} seenText @param {Normalized} entry @param {boolean} isOuter @param {boolean} vendor */
+function addListEntry(pool, entries, seenText, entry, isOuter, vendor) {
   if (vendor) {
     entries.push(entry);
     return;
   }
   if (isOuter) {
-    const text = outputText(entry);
+    const text = outputText(pool, entry);
     if (!text || seenText.has(text)) return;
     seenText.add(text);
     entries.push(entry);
@@ -685,8 +780,8 @@ function addListEntry(entries, seenText, entry, isOuter, vendor) {
     return;
   }
   if (seenText.size === 0)
-    for (const item of entries) seenText.add(outputText(item));
-  const text = outputText(entry);
+    for (const item of entries) seenText.add(outputText(pool, item));
+  const text = outputText(pool, entry);
   if (!text || seenText.has(text)) return;
   seenText.add(text);
   entries.push(entry);
@@ -708,6 +803,22 @@ function listOutput(arena, pool, nodeIndex, normalized, sort, children) {
       continue;
     let entry = normalized[childIndex];
     if (!entry) continue;
+    const previousEnd =
+      position === 0
+        ? node.startToken
+        : arena.nodes[children[position - 1]].endToken;
+    const leading = leadingListTrivia(
+      arena,
+      pool,
+      previousEnd,
+      child.startToken
+    );
+    if (leading.length > 0)
+      entry = {
+        ...entry,
+        ...pool.sequence([leading, entry]),
+        node: entry.node,
+      };
     const nextStart =
       position + 1 < children.length
         ? arena.nodes[children[position + 1]].startToken
@@ -723,6 +834,7 @@ function listOutput(arena, pool, nodeIndex, normalized, sort, children) {
           : trailing,
       };
     addListEntry(
+      pool,
       entries,
       seenText,
       entry,
@@ -730,7 +842,8 @@ function listOutput(arena, pool, nodeIndex, normalized, sort, children) {
       hasSemanticFact(child.facts ?? 0, semanticFacts.vendorPseudo)
     );
   }
-  if (sort && entries.length > 1) entries.sort(compareOutputs);
+  if (sort && entries.length > 1)
+    entries.sort((left, right) => compareOutputs(pool, left, right));
   return { ...joinEntries(pool, entries), entries };
 }
 
@@ -750,9 +863,9 @@ function consId(state, left, right) {
 }
 
 /** @typedef {{selector:ActiveSelector,position:number,middle:Normalized,group:FoldGroup,text:string}} FoldOccurrence */
-/** @typedef {{occurrences:FoldOccurrence[],orderHeap:FoldOccurrence[],lexHeap:FoldOccurrence[],middleCounts:Map<number,{count:number,middle:Normalized}>,specificity:Specificity,activeCount:number,selectorLength:number,middleLength:number,version:number,sequence:number}} FoldGroup */
+/** @typedef {{occurrences:FoldOccurrence[],orderHeap:FoldOccurrence[],lexHeap:FoldOccurrence[],middleCounts:Map<number,{count:number,middle:Normalized}>,specificity:Specificity,specificityId:number,activeCount:number,selectorLength:number,middleLength:number,version:number,sequence:number}} FoldGroup */
 /** @typedef {{group:FoldGroup,version:number,savings:number,count:number,first:FoldOccurrence,lex:string}} FoldCandidate */
-/** @typedef {Normalized & {active:boolean,order:number,memberships:FoldOccurrence[],previous?:ActiveSelector,next?:ActiveSelector}} ActiveSelector */
+/** @typedef {Normalized & {active:boolean,activeId:number,order:number,memberships:FoldOccurrence[],previousId?:number,nextId?:number}} ActiveSelector */
 
 /** @param {Normalized} selector @param {SelectorArena} arena */
 function arenaUnsafeForFold(selector, arena) {
@@ -776,9 +889,9 @@ function selectorCanFold(selector, arena) {
   return false;
 }
 
-/** @param {Map<number,Map<number,Map<string,FoldGroup>>>} groups @param {{value:number}} sequence @param {number} prefix @param {number} suffix @param {Normalized} middle */
+/** @param {Map<number,Map<number,Map<number,FoldGroup>>>} groups @param {{value:number}} sequence @param {number} prefix @param {number} suffix @param {Normalized} middle */
 function foldGroup(groups, sequence, prefix, suffix, middle) {
-  const spec = /** @type {Specificity} */ (middle.specificity).join(',');
+  const specificityId = /** @type {number} */ (middle.specificityId);
   let bySuffix = groups.get(prefix);
   if (!bySuffix) {
     bySuffix = new Map();
@@ -789,7 +902,7 @@ function foldGroup(groups, sequence, prefix, suffix, middle) {
     bySpec = new Map();
     bySuffix.set(suffix, bySpec);
   }
-  let group = bySpec.get(spec);
+  let group = bySpec.get(specificityId);
   if (!group) {
     group = {
       occurrences: [],
@@ -797,13 +910,14 @@ function foldGroup(groups, sequence, prefix, suffix, middle) {
       lexHeap: [],
       middleCounts: new Map(),
       specificity: /** @type {Specificity} */ (middle.specificity),
+      specificityId,
       activeCount: 0,
       selectorLength: 0,
       middleLength: 0,
       version: 0,
       sequence: sequence.value++,
     };
-    bySpec.set(spec, group);
+    bySpec.set(specificityId, group);
   }
   return group;
 }
@@ -901,25 +1015,7 @@ class CandidateHeap {
 
   /** @param {FoldCandidate} left @param {FoldCandidate} right */
   before(left, right) {
-    if (!this.sort)
-      return (
-        left.first.selector.order < right.first.selector.order ||
-        (left.first.selector.order === right.first.selector.order &&
-          (left.first.position < right.first.position ||
-            (left.first.position === right.first.position &&
-              left.group.sequence < right.group.sequence)))
-      );
-    return (
-      left.savings > right.savings ||
-      (left.savings === right.savings &&
-        (left.count > right.count ||
-          (left.count === right.count &&
-            (left.lex < right.lex ||
-              (left.lex === right.lex &&
-                (left.first.position < right.first.position ||
-                  (left.first.position === right.first.position &&
-                    left.group.sequence < right.group.sequence)))))))
-    );
+    return foldCandidateBefore(this.sort, left, right);
   }
 
   /** @param {FoldCandidate} value */
@@ -959,6 +1055,29 @@ class CandidateHeap {
   }
 }
 
+/** @param {boolean} sort @param {FoldCandidate} left @param {FoldCandidate} right */
+export function foldCandidateBefore(sort, left, right) {
+  if (!sort)
+    return (
+      left.first.selector.order < right.first.selector.order ||
+      (left.first.selector.order === right.first.selector.order &&
+        (left.first.position < right.first.position ||
+          (left.first.position === right.first.position &&
+            left.group.sequence < right.group.sequence)))
+    );
+  return (
+    left.savings > right.savings ||
+    (left.savings === right.savings &&
+      (left.count > right.count ||
+        (left.count === right.count &&
+          (left.lex < right.lex ||
+            (left.lex === right.lex &&
+              (left.first.position < right.first.position ||
+                (left.first.position === right.first.position &&
+                  left.group.sequence < right.group.sequence)))))))
+  );
+}
+
 /** @param {FoldGroup} group @param {FoldOccurrence} occurrence */
 function addOccurrence(group, occurrence) {
   group.occurrences.push(occurrence);
@@ -992,8 +1111,16 @@ function removeOccurrence(group, occurrence) {
   group.version++;
 }
 
-/** @param {ActiveSelector} selector @param {SelectorArena} arena @param {{pairs:Map<number,Map<number,number>>,next:number}} cons @param {Map<number,Map<number,Map<string,FoldGroup>>>} groups @param {{value:number}} sequence @param {Set<FoldGroup>} touched */
-function registerSelector(selector, arena, cons, groups, sequence, touched) {
+/** @param {ActiveSelector} selector @param {SelectorArena} arena @param {OutputPool} pool @param {{pairs:Map<number,Map<number,number>>,next:number}} cons @param {Map<number,Map<number,Map<number,FoldGroup>>>} groups @param {{value:number}} sequence @param {Set<FoldGroup>} touched */
+function registerSelector(
+  selector,
+  arena,
+  pool,
+  cons,
+  groups,
+  sequence,
+  touched
+) {
   const parts = selector.parts;
   if (!parts || !selectorCanFold(selector, arena)) return;
   const prefix = Array(parts.length + 1).fill(0);
@@ -1004,7 +1131,11 @@ function registerSelector(selector, arena, cons, groups, sequence, touched) {
     suffix[index] = consId(cons, parts[index].id, suffix[index + 1]);
   for (let position = 0; position < parts.length; position += 2) {
     const middle = parts[position];
-    if ('kind' in middle || !middle.foldEligible || !middle.specificity)
+    if (
+      'kind' in middle ||
+      !middle.foldEligible ||
+      middle.specificityId === undefined
+    )
       continue;
     const group = foldGroup(
       groups,
@@ -1018,7 +1149,7 @@ function registerSelector(selector, arena, cons, groups, sequence, touched) {
       position,
       middle,
       group,
-      text: outputText(selector),
+      text: outputText(pool, selector),
     };
     selector.memberships.push(occurrence);
     addOccurrence(group, occurrence);
@@ -1040,23 +1171,34 @@ function buildFoldedSelector(pool, candidate, occurrences, order, sort) {
       middles.push(occurrence.middle);
     }
   }
-  if (sort) middles.sort(compareOutputs);
+  if (sort) middles.sort((left, right) => compareOutputs(pool, left, right));
   const foldedMiddle = pool.sequence([
     pool.text(':is('),
     joinEntries(pool, middles),
     pool.text(')'),
   ]);
+  const syntheticMiddle = /** @type {Normalized} */ ({
+    ...foldedMiddle,
+    node: -1,
+    specificity: candidate.group.specificity,
+    specificityId: candidate.group.specificityId,
+    foldEligible: false,
+    facts: semanticFacts.function,
+    valid: true,
+    hasPseudoElement: false,
+  });
+  syntheticMiddle.id = pool.identity(
+    'pseudo',
+    pool.payload(
+      `valid;${candidate.group.specificityId};${semanticFacts.function};is`
+    ),
+    foldedMiddle.id
+  );
   /** @type {Part[]} */ const newParts = [];
   /** @type {Output[]} */ const output = [];
   for (let index = 0; index < parts.length; index++) {
     let value = parts[index];
-    if (index === first.position)
-      value = {
-        ...foldedMiddle,
-        node: -1,
-        specificity: candidate.group.specificity,
-        foldEligible: false,
-      };
+    if (index === first.position) value = syntheticMiddle;
     newParts.push(value);
     output.push(value);
   }
@@ -1069,16 +1211,26 @@ function buildFoldedSelector(pool, candidate, occurrences, order, sort) {
   if (trailingComments.length > 0) {
     output.push(...trailingComments);
   }
-  return {
+  const replacement = /** @type {ActiveSelector} */ ({
     ...pool.sequence(output),
     node: -1,
     parts: newParts,
+    facts: semanticFacts.function,
+    valid: true,
+    hasPseudoElement: original.hasPseudoElement,
     active: true,
+    activeId: -1,
     order,
     memberships: [],
     trailing:
       trailingComments.length > 0 ? pool.sequence(trailingComments) : undefined,
-  };
+  });
+  replacement.id = pool.identity(
+    'complex',
+    pool.payload(`valid;-1;${semanticFacts.function};synthetic`),
+    replacement.id
+  );
+  return replacement;
 }
 
 /** @param {CandidateHeap} heap @param {Iterable<FoldGroup>} groups */
@@ -1099,9 +1251,9 @@ function canFoldSelectorList(selectors, arena) {
   return false;
 }
 
-/** @param {ActiveSelector[]} consumed @param {Set<FoldGroup>} touched @param {ActiveSelector | undefined} head */
-function deactivateSelectors(consumed, touched, head) {
-  let nextHead = head;
+/** @param {ActiveSelector[]} consumed @param {Set<FoldGroup>} touched @param {Map<number,ActiveSelector>} selectorsById @param {number | undefined} headId */
+function deactivateSelectors(consumed, touched, selectorsById, headId) {
+  let nextHeadId = headId;
   for (const selector of consumed) {
     if (!selector.active) continue;
     selector.active = false;
@@ -1109,11 +1261,19 @@ function deactivateSelectors(consumed, touched, head) {
       removeOccurrence(occurrence.group, occurrence);
       touched.add(occurrence.group);
     }
-    if (selector.previous) selector.previous.next = selector.next;
-    else nextHead = selector.next;
-    if (selector.next) selector.next.previous = selector.previous;
+    const previous =
+      selector.previousId === undefined
+        ? undefined
+        : selectorsById.get(selector.previousId);
+    const next =
+      selector.nextId === undefined
+        ? undefined
+        : selectorsById.get(selector.nextId);
+    if (previous) previous.nextId = selector.nextId;
+    else nextHeadId = selector.nextId;
+    if (next) next.previousId = selector.previousId;
   }
-  return nextHead;
+  return nextHeadId;
 }
 
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {Normalized[]} selectors @param {boolean} sort */
@@ -1121,30 +1281,35 @@ function foldSelectors(arena, pool, selectors, sort) {
   if (selectors.length < 2 || !canFoldSelectorList(selectors, arena))
     return selectors;
   const cons = { pairs: new Map(), next: 1 };
-  /** @type {Map<number,Map<number,Map<string,FoldGroup>>>} */ const groups =
+  /** @type {Map<number,Map<number,Map<number,FoldGroup>>>} */ const groups =
     new Map();
   const sequence = { value: 0 };
   const heap = new CandidateHeap(sort);
+  let nextActiveId = 1;
   /** @type {ActiveSelector[]} */ const active = selectors.map(
     (selector, order) => ({
       ...selector,
       active: true,
+      activeId: nextActiveId++,
       order,
       memberships: [],
     })
+  );
+  const selectorsById = new Map(
+    active.map((selector) => [selector.activeId, selector])
   );
   for (let index = 0; index < active.length; index++) {
     const selector = active[index];
     const previous = active[index - 1];
     const next = active[index + 1];
-    if (previous) selector.previous = previous;
-    if (next) selector.next = next;
+    if (previous) selector.previousId = previous.activeId;
+    if (next) selector.nextId = next.activeId;
   }
-  /** @type {ActiveSelector | undefined} */
-  let head = active[0];
+  /** @type {number | undefined} */
+  let headId = active[0]?.activeId;
   const touched = new Set();
   for (const selector of active)
-    registerSelector(selector, arena, cons, groups, sequence, touched);
+    registerSelector(selector, arena, pool, cons, groups, sequence, touched);
   enqueueGroups(heap, touched);
 
   while (heap.values.length > 0) {
@@ -1163,23 +1328,32 @@ function foldSelectors(arena, pool, selectors, sort) {
       first.order,
       sort
     );
-    replacement.previous = first.previous;
-    replacement.next = first;
-    if (first.previous) first.previous.next = replacement;
-    else head = replacement;
-    first.previous = replacement;
+    replacement.activeId = nextActiveId++;
+    replacement.previousId = first.previousId;
+    replacement.nextId = first.activeId;
+    selectorsById.set(replacement.activeId, replacement);
+    const previous =
+      first.previousId === undefined
+        ? undefined
+        : selectorsById.get(first.previousId);
+    if (previous) previous.nextId = replacement.activeId;
+    else headId = replacement.activeId;
+    first.previousId = replacement.activeId;
 
     touched.clear();
-    head = deactivateSelectors(consumed, touched, head);
-    registerSelector(replacement, arena, cons, groups, sequence, touched);
+    headId = deactivateSelectors(consumed, touched, selectorsById, headId);
+    registerSelector(replacement, arena, pool, cons, groups, sequence, touched);
     enqueueGroups(heap, touched);
   }
 
   /** @type {Normalized[]} */ const result = [];
-  let selector = head;
+  let selector = headId === undefined ? undefined : selectorsById.get(headId);
   while (selector) {
     result.push(selector);
-    selector = selector.next;
+    selector =
+      selector.nextId === undefined
+        ? undefined
+        : selectorsById.get(selector.nextId);
   }
   return result;
 }
@@ -1272,12 +1446,16 @@ function addNormalizedNodeSummary(
     );
   }
   const foldEligible = node.kind === 'compound' && isFoldEligible(node);
-  if (!valid) output.valid = false;
-  if (hasPseudoElement) output.hasPseudoElement = true;
+  output.valid = valid;
+  output.hasPseudoElement = hasPseudoElement;
+  output.facts = node.facts ?? 0;
   if (foldEligible) output.foldEligible = true;
   if (node.kind === 'compound' || node.kind === 'complex')
     output.node = nodeIndex;
-  if (foldEligible) output.specificity = node.specificity;
+  if (node.specificity !== undefined) {
+    output.specificity = node.specificity;
+    output.specificityId = node.specificityId;
+  }
 }
 
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {number} nodeIndex @param {(Normalized | undefined)[]} normalized @param {boolean} outerSort */
@@ -1298,10 +1476,13 @@ function normalizeNode(arena, pool, nodeIndex, normalized, outerSort) {
     ),
   });
   if (canReuseSourceNode(arena, nodeIndex, normalized, children, output))
-    output = /** @type {Normalized} */ (
-      sourceNodeOutput(arena, nodeIndex, output)
-    );
+    output = /** @type {Normalized} */ (sourceNodeOutput(nodeIndex, output));
   addNormalizedNodeSummary(arena, nodeIndex, normalized, children, output);
+  output.id = pool.identity(
+    node.kind,
+    normalizedPayload(arena, node, pool, output),
+    output.id
+  );
   return output;
 }
 
@@ -1309,14 +1490,14 @@ function normalizeNode(arena, pool, nodeIndex, normalized, outerSort) {
 function finalizeEntries(arena, pool, entries, options) {
   const sort = options.sort ?? true;
   if (options.keyframe && sort && entries.length > 1)
-    entries.sort(compareOutputs);
+    entries.sort((left, right) => compareOutputs(pool, left, right));
   if (options.keyframe) {
     for (let index = 0; index < entries.length; index++) {
-      const value = outputText(entries[index]);
+      const value = outputText(pool, entries[index]);
       if (value.toLowerCase() === 'from')
-        entries[index] = { ...pool.text('0%'), node: -1 };
+        entries[index] = { ...entries[index], ...pool.text('0%'), node: -1 };
       else if (value === '100%')
-        entries[index] = { ...pool.text('to'), node: -1 };
+        entries[index] = { ...entries[index], ...pool.text('to'), node: -1 };
     }
   }
   let folded =
@@ -1324,7 +1505,9 @@ function finalizeEntries(arena, pool, entries, options) {
       ? foldSelectors(arena, pool, entries, sort)
       : entries;
   if (!options.keyframe && sort && folded.length > 1)
-    folded = folded.toSorted(compareOutputs);
+    folded = folded.toSorted((left, right) =>
+      compareOutputs(pool, left, right)
+    );
   return joinEntries(pool, folded).emit;
 }
 

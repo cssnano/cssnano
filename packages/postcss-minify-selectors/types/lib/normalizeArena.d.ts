@@ -8,16 +8,17 @@ export type Output = {
     length: number;
     text?: string;
     sourceNode?: number;
-    sourceArena?: SelectorArena;
 };
 export type Normalized = Output & {
     node: number;
     parts?: Part[];
     foldEligible?: boolean;
     specificity?: Specificity;
+    specificityId?: number;
+    facts: number;
     entries?: Normalized[];
-    valid?: boolean;
-    hasPseudoElement?: boolean;
+    valid: boolean;
+    hasPseudoElement: boolean;
     trailing?: Output;
 };
 export type Part = Normalized | {
@@ -43,6 +44,7 @@ export type FoldGroup = {
         middle: Normalized;
     }>;
     specificity: Specificity;
+    specificityId: number;
     activeCount: number;
     selectorLength: number;
     middleLength: number;
@@ -59,11 +61,14 @@ export type FoldCandidate = {
 };
 export type ActiveSelector = Normalized & {
     active: boolean;
+    activeId: number;
     order: number;
     memberships: FoldOccurrence[];
-    previous?: ActiveSelector;
-    next?: ActiveSelector;
+    previousId?: number;
+    nextId?: number;
 };
+/** @param {boolean} sort @param {FoldCandidate} left @param {FoldCandidate} right */
+export declare function foldCandidateBefore(sort: boolean, left: FoldCandidate, right: FoldCandidate): boolean;
 /**
  * Normalize immutable arena nodes once in iterative postorder.
  * @param {SelectorArena} arena
