@@ -11,8 +11,7 @@
  * @typedef {{namespace:{kind:'absent'}|{kind:'empty'}|{kind:'wildcard'}|{kind:'named',token:number},subject:{kind:'universal',token:number}|{kind:'type',token:number}}} QualifiedNamePayload
  * @typedef {{name:string,nameToken:number,colonCount:1|2,pseudoKind:'class'|'element'|'unknown',argumentGrammar?:string,specificityPolicy:string,argumentNode?:number}} PseudoPayload
  * @typedef {{namespace:{kind:'absent'}|{kind:'empty'}|{kind:'wildcard'}|{kind:'named',token:number},nameToken:number,matcher?:string,valueToken?:number,modifierToken?:number,caseBehavior:'default'|'ascii-insensitive'|'case-sensitive'}} AttributePayload
- * @typedef {{text:string}} RawPayload
- * @typedef {{lists:readonly Readonly<ListPayload>[],combinators:readonly Readonly<CombinatorPayload>[],qualifiedNames:readonly Readonly<QualifiedNamePayload>[],pseudos:readonly Readonly<PseudoPayload>[],attributes:readonly Readonly<AttributePayload>[],raw:readonly Readonly<RawPayload>[]}} PayloadTables
+ * @typedef {{lists:readonly Readonly<ListPayload>[],combinators:readonly Readonly<CombinatorPayload>[],qualifiedNames:readonly Readonly<QualifiedNamePayload>[],pseudos:readonly Readonly<PseudoPayload>[],attributes:readonly Readonly<AttributePayload>[]}} PayloadTables
  * @typedef {import('./tokenUtils.js').CSSToken} CSSToken
  */
 export type NodeKind = 'list' | 'complex' | 'compound' | 'combinator' | 'qualified-name' | 'class' | 'id' | 'attribute' | 'pseudo' | 'nesting' | 'raw';
@@ -90,16 +89,12 @@ export type AttributePayload = {
     modifierToken?: number;
     caseBehavior: 'default' | 'ascii-insensitive' | 'case-sensitive';
 };
-export type RawPayload = {
-    text: string;
-};
 export type PayloadTables = {
     lists: readonly Readonly<ListPayload>[];
     combinators: readonly Readonly<CombinatorPayload>[];
     qualifiedNames: readonly Readonly<QualifiedNamePayload>[];
     pseudos: readonly Readonly<PseudoPayload>[];
     attributes: readonly Readonly<AttributePayload>[];
-    raw: readonly Readonly<RawPayload>[];
 };
 export type CSSToken = import('./tokenUtils.js').CSSToken;
 export declare const semanticFacts: Readonly<{
@@ -131,6 +126,7 @@ declare class SelectorArenaBuilder {
     #private;
     source: string;
     tokens: readonly import("@csstools/css-tokenizer").CSSToken[];
+    verifyArena: boolean;
     /** @type {ArenaNode[]} */ nodes: ArenaNode[];
     /** @type {number[]} */ frames: number[];
     /** @type {number[]} */ lastChildren: number[];
@@ -141,17 +137,16 @@ declare class SelectorArenaBuilder {
     }>;
     /** @type {Specificity[]} */
     specificities: Specificity[];
-    /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[],raw:RawPayload[]}} */
+    /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[]}} */
     payloads: {
         lists: ListPayload[];
         combinators: CombinatorPayload[];
         qualifiedNames: QualifiedNamePayload[];
         pseudos: PseudoPayload[];
         attributes: AttributePayload[];
-        raw: RawPayload[];
     };
-    /** @param {string} source @param {readonly CSSToken[]} tokens */
-    constructor(source: string, tokens: readonly CSSToken[]);
+    /** @param {string} source @param {readonly CSSToken[]} tokens @param {boolean} verifyArena */
+    constructor(source: string, tokens: readonly CSSToken[], verifyArena: boolean);
     /** @param {NodeKind} kind @param {number} startToken @param {number} endToken @param {{status?:ParseStatus,payload?:number,specificity?:Specificity,facts?:SemanticFacts}} [options] */
     open(kind: NodeKind, startToken: number, endToken: number, options?: {
         status?: ParseStatus;
@@ -192,12 +187,12 @@ export declare class SelectorArena {
     nodes: readonly Readonly<ArenaNode>[];
     payloads: PayloadTables;
     specificities: readonly Specificity[];
-    /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {readonly Specificity[]} specificities */
-    constructor(source: string, tokens: readonly CSSToken[], nodes: readonly Readonly<ArenaNode>[], payloads: PayloadTables, specificities: readonly Specificity[]);
+    /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {readonly Specificity[]} specificities @param {boolean} freeze */
+    constructor(source: string, tokens: readonly CSSToken[], nodes: readonly Readonly<ArenaNode>[], payloads: PayloadTables, specificities: readonly Specificity[], freeze: boolean);
     /** @param {number} nodeIndex @param {(childIndex:number)=>void} callback */
     forEachChild(nodeIndex: number, callback: (childIndex: number) => void): void;
 }
-/** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @return {SelectorArena} */
-export declare function buildSelectorArena(source: string, tokens: readonly CSSToken[], build: (builder: SelectorArenaBuilder) => void): SelectorArena;
+/** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @param {boolean} [verifyArena] @return {SelectorArena} */
+export declare function buildSelectorArena(source: string, tokens: readonly CSSToken[], build: (builder: SelectorArenaBuilder) => void, verifyArena?: boolean): SelectorArena;
 export {};
 //# sourceMappingURL=arena.d.ts.map

@@ -14,14 +14,16 @@ import { unquote } from './tokenUtils.js';
 const { TokenType, tokenStart } = cssnanoUtils;
 /** @type {readonly number[]} */
 const emptyChildren = Object.freeze([]);
+/** Reused only during synchronous scalar fast-path checks. @type {number[]} */
+const singleChild = [0];
 
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
 /** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {import('./outputOverlay.js').Emit} Emit */
-/** @typedef {{emit:Emit,id:number,length:number,text?:string,sourceNode?:number}} Output */
+/** @typedef {{emit?:Emit,id:number,length:number,text?:string,sourceNode?:number,changed?:boolean}} Output */
 /** @typedef {Output & {node:number,parts?:Part[],foldEligible?:boolean,specificity?:Specificity,specificityId?:number,facts:number,entries?:Normalized[],valid:boolean,hasPseudoElement:boolean,trailing?:Output}} Normalized */
-/** @typedef {Normalized | {kind:'combinator',id:number,emit:Emit,text:string,length:number}} Part */
+/** @typedef {Normalized | {kind:'combinator',id:number,emit?:Emit,text:string,length:number}} Part */
 
 class OutputPool {
   /** @param {SelectorArena} arena */
@@ -45,6 +47,7 @@ class OutputPool {
       id: this.nextId++,
       length: value.length,
       text: value,
+      changed: true,
     };
     this.texts.set(value, output);
     return output;
@@ -102,6 +105,23 @@ class OutputPool {
     return id;
   }
 
+  /** @param {readonly number[]} values */
+  sequenceId(values) {
+    if (values.length === 0) return this.empty.id;
+    if (values.length === 1) return values[0];
+    let id = 0;
+    for (const value of values) id = this.pairId(id, value);
+    return id;
+  }
+
+  /** @param {Output} output @return {Emit} */
+  emit(output) {
+    if (output.emit) return output.emit;
+    if (output.sourceNode !== undefined)
+      return { kind: 'node', node: output.sourceNode };
+    throw new Error('normalized output has no emission');
+  }
+
   /** @param {readonly Output[]} values @return {Output} */
   sequence(values) {
     const items = values.filter(({ length }) => length !== 0);
@@ -115,9 +135,9 @@ class OutputPool {
     }
     const emit = {
       kind: /** @type {const} */ ('sequence'),
-      items: items.map(({ emit: item }) => item),
+      items: items.map((item) => this.emit(item)),
     };
-    return { emit, id, length };
+    return { emit, id, length, changed: true };
   }
 }
 
@@ -448,7 +468,7 @@ function outputText(pool, output) {
     if (output.sourceNode !== undefined) {
       const node = pool.arena.nodes[output.sourceNode];
       output.text = sourceText(pool.arena, node.startToken, node.endToken);
-    } else output.text = flatten(output.emit, pool.arena);
+    } else output.text = flatten(pool.emit(output), pool.arena);
   }
   return output.text;
 }
@@ -457,10 +477,147 @@ function outputText(pool, output) {
 function sourceNodeOutput(nodeIndex, output) {
   return {
     ...output,
-    emit: /** @type {const} */ ({ kind: 'node', node: nodeIndex }),
+    emit: undefined,
     sourceNode: nodeIndex,
     text: undefined,
+    changed: false,
   };
+}
+
+/** @param {SelectorArena} arena @param {number} nodeIndex @param {number} id */
+function unchangedOutput(arena, nodeIndex, id) {
+  const node = arena.nodes[nodeIndex];
+  return {
+    id,
+    length: offset(arena, node.endToken) - offset(arena, node.startToken),
+    sourceNode: nodeIndex,
+    changed: false,
+  };
+}
+
+/** @param {SelectorArena} arena @param {OutputPool} pool @param {number} nodeIndex @param {(Normalized | undefined)[]} normalized */
+function unchangedPseudoOutput(arena, pool, nodeIndex, normalized) {
+  const node = arena.nodes[nodeIndex];
+  const payload = arena.payloads.pseudos[node.payload];
+  const argument = payload.argumentNode;
+  const name = compactIdent(arena.tokens[payload.nameToken]).replace(
+    /\($/u,
+    ''
+  );
+  const prefix =
+    payload.colonCount === 2 && legacyPseudoElements.has(payload.name)
+      ? ':'
+      : ':'.repeat(payload.colonCount);
+  if (argument === undefined) {
+    const text = `${prefix}${name}`;
+    if (text === sourceText(arena, node.startToken, node.endToken))
+      return unchangedOutput(arena, nodeIndex, pool.text(text).id);
+    return;
+  }
+  const argumentOutput = normalized[argument];
+  if (
+    !argumentOutput ||
+    argumentOutput.valid === false ||
+    !canReusePseudo(arena, node, normalized)
+  )
+    return;
+  const opening = `${prefix}${name}(`;
+  if (
+    opening !==
+      sourceText(arena, node.startToken, arena.nodes[argument].startToken) ||
+    sourceText(arena, arena.nodes[argument].endToken, node.endToken) !== ')'
+  )
+    return;
+  return unchangedOutput(
+    arena,
+    nodeIndex,
+    pool.sequenceId([
+      pool.text(opening).id,
+      argumentOutput.id,
+      pool.text(')').id,
+    ])
+  );
+}
+
+/** @param {SelectorArena} arena @param {OutputPool} pool @param {number} nodeIndex @param {(Normalized | undefined)[]} normalized @param {readonly number[]} children */
+function unchangedNodeOutput(arena, pool, nodeIndex, normalized, children) {
+  const node = arena.nodes[nodeIndex];
+  if (node.kind === 'raw')
+    return unchangedOutput(
+      arena,
+      nodeIndex,
+      pool.text(sourceText(arena, node.startToken, node.endToken)).id
+    );
+  if (node.kind === 'class') {
+    const text = `${arena.tokens[node.startToken][1]}${compactTerminalIdent(
+      arena,
+      node,
+      node.startToken + 1
+    )}`;
+    if (
+      text ===
+      `${arena.tokens[node.startToken][1]}${arena.tokens[node.startToken + 1][1]}`
+    )
+      return unchangedOutput(arena, nodeIndex, pool.text(text).id);
+    return;
+  }
+  if (node.kind === 'id') {
+    const text = compactTerminalIdent(arena, node, node.startToken);
+    if (text === arena.tokens[node.startToken][1])
+      return unchangedOutput(arena, nodeIndex, pool.text(text).id);
+    return;
+  }
+  if (node.kind === 'compound') {
+    if (!canReuseContainer(arena, nodeIndex, normalized, children)) return;
+    if (
+      children.length > 1 &&
+      children.some((childIndex) => {
+        const child = arena.nodes[childIndex];
+        if (child.kind !== 'qualified-name') return false;
+        const payload = arena.payloads.qualifiedNames[child.payload];
+        return (
+          payload.namespace.kind === 'absent' &&
+          payload.subject.kind === 'universal'
+        );
+      })
+    )
+      return;
+    if (children.length === 1)
+      return unchangedOutput(
+        arena,
+        nodeIndex,
+        normalizedAt(normalized, children[0]).id
+      );
+    return unchangedOutput(
+      arena,
+      nodeIndex,
+      pool.sequenceId(
+        children.map((child) => normalizedAt(normalized, child).id)
+      )
+    );
+  }
+  if (node.kind === 'complex') {
+    if (!canReuseContainer(arena, nodeIndex, normalized, children)) return;
+    return unchangedOutput(
+      arena,
+      nodeIndex,
+      normalizedAt(normalized, children[0]).id
+    );
+  }
+  if (node.kind === 'list') {
+    if (
+      nodeIndex === 0 ||
+      !canReuseContainer(arena, nodeIndex, normalized, children)
+    )
+      return;
+    return unchangedOutput(
+      arena,
+      nodeIndex,
+      normalizedAt(normalized, children[0]).id
+    );
+  }
+  if (node.kind === 'pseudo')
+    return unchangedPseudoOutput(arena, pool, nodeIndex, normalized);
 }
 
 /** @param {SelectorArena} arena @param {number} nodeIndex @param {(Normalized | undefined)[]} normalized @param {readonly number[]} children */
@@ -787,12 +944,28 @@ function addListEntry(pool, entries, seenText, entry, isOuter, vendor) {
   entries.push(entry);
 }
 
+/** @param {SelectorArena} arena @param {ArenaNode} node @param {(Normalized | undefined)[]} normalized @param {readonly number[]} children */
+function canForwardSingleList(arena, node, normalized, children) {
+  if (children.length !== 1) return false;
+  const payload = arena.payloads.lists[node.payload];
+  const childIndex = children[0];
+  const child = arena.nodes[childIndex];
+  return (
+    !payload.keyframe &&
+    child.startToken === node.startToken &&
+    child.endToken === node.endToken &&
+    (payload.mode !== 'forgiving' || normalized[childIndex]?.valid !== false)
+  );
+}
+
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {number} nodeIndex @param {(Normalized | undefined)[]} normalized @param {boolean} sort @param {readonly number[]} children */
 function listOutput(arena, pool, nodeIndex, normalized, sort, children) {
   const node = arena.nodes[nodeIndex];
   const payload = arena.payloads.lists[node.payload];
   if (node.status === 'invalid' && payload.mode !== 'forgiving')
     return rawOutput(arena, pool, node);
+  if (canForwardSingleList(arena, node, normalized, children))
+    return normalizedAt(normalized, children[0]);
   /** @type {Normalized[]} */ const entries = [];
   const seenText = new Set();
   const isOuter = nodeIndex === 0;
@@ -1461,20 +1634,35 @@ function addNormalizedNodeSummary(
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {number} nodeIndex @param {(Normalized | undefined)[]} normalized @param {boolean} outerSort */
 function normalizeNode(arena, pool, nodeIndex, normalized, outerSort) {
   const node = arena.nodes[nodeIndex];
-  const children =
-    node.subtreeEnd === nodeIndex + 1
-      ? emptyChildren
-      : childrenOf(arena, nodeIndex);
-  let output = /** @type {Normalized} */ ({
-    ...normalizedNodeOutput(
+  const firstChild = nodeIndex + 1;
+  const isLeaf = node.subtreeEnd === firstChild;
+  const hasSingleChild =
+    !isLeaf && arena.nodes[firstChild].subtreeEnd === node.subtreeEnd;
+  let children;
+  if (isLeaf) children = emptyChildren;
+  else if (hasSingleChild) {
+    singleChild[0] = firstChild;
+    children = singleChild;
+  } else children = childrenOf(arena, nodeIndex);
+  let output = /** @type {Normalized | undefined} */ (
+    unchangedNodeOutput(arena, pool, nodeIndex, normalized, children)
+  );
+  if (!output) {
+    const generated = normalizedNodeOutput(
       arena,
       pool,
       nodeIndex,
       normalized,
       outerSort,
       children
-    ),
-  });
+    );
+    output = /** @type {Normalized} */ ({
+      ...generated,
+      emit: pool.emit(generated),
+      sourceNode: undefined,
+      changed: true,
+    });
+  }
   if (canReuseSourceNode(arena, nodeIndex, normalized, children, output))
     output = /** @type {Normalized} */ (sourceNodeOutput(nodeIndex, output));
   addNormalizedNodeSummary(arena, nodeIndex, normalized, children, output);
@@ -1515,12 +1703,12 @@ function finalizeEntries(arena, pool, entries, options) {
  * Normalize immutable arena nodes once in iterative postorder.
  * @param {SelectorArena} arena
  * @param {{sort?:boolean,convertToIs?:boolean,keyframe?:boolean,hasDefaultNamespace?:boolean}} [options]
- * @return {Map<number, Emit>}
+ * @return {Emit | undefined}
  */
 export function normalizeArena(arena, options = {}) {
-  if (arena.nodes.length === 0) return new Map();
+  if (arena.nodes.length === 0) return;
   const root = arena.nodes[0];
-  if (root.kind === 'raw' || root.status === 'invalid') return new Map();
+  if (root.kind === 'raw' || root.status === 'invalid') return;
   if (
     root.status === 'opaque' &&
     arena.nodes.some(
@@ -1531,7 +1719,7 @@ export function normalizeArena(arena, options = {}) {
         node.endToken === root.endToken
     )
   )
-    return new Map();
+    return;
   const pool = new OutputPool(arena);
   /** @type {(Normalized | undefined)[]} */ const normalized = Array(
     arena.nodes.length
@@ -1552,7 +1740,6 @@ export function normalizeArena(arena, options = {}) {
   const rootResult = normalized[0];
   if (!rootResult) throw new Error('arena root was not normalized');
   const entries = rootResult.entries;
-  if (entries)
-    return new Map([[0, finalizeEntries(arena, pool, entries, options)]]);
-  return new Map([[0, rootResult.emit]]);
+  if (entries) return finalizeEntries(arena, pool, entries, options);
+  return rootResult.changed === false ? undefined : pool.emit(rootResult);
 }

@@ -11,8 +11,7 @@
  * @typedef {{namespace:{kind:'absent'}|{kind:'empty'}|{kind:'wildcard'}|{kind:'named',token:number},subject:{kind:'universal',token:number}|{kind:'type',token:number}}} QualifiedNamePayload
  * @typedef {{name:string,nameToken:number,colonCount:1|2,pseudoKind:'class'|'element'|'unknown',argumentGrammar?:string,specificityPolicy:string,argumentNode?:number}} PseudoPayload
  * @typedef {{namespace:{kind:'absent'}|{kind:'empty'}|{kind:'wildcard'}|{kind:'named',token:number},nameToken:number,matcher?:string,valueToken?:number,modifierToken?:number,caseBehavior:'default'|'ascii-insensitive'|'case-sensitive'}} AttributePayload
- * @typedef {{text:string}} RawPayload
- * @typedef {{lists:readonly Readonly<ListPayload>[],combinators:readonly Readonly<CombinatorPayload>[],qualifiedNames:readonly Readonly<QualifiedNamePayload>[],pseudos:readonly Readonly<PseudoPayload>[],attributes:readonly Readonly<AttributePayload>[],raw:readonly Readonly<RawPayload>[]}} PayloadTables
+ * @typedef {{lists:readonly Readonly<ListPayload>[],combinators:readonly Readonly<CombinatorPayload>[],qualifiedNames:readonly Readonly<QualifiedNamePayload>[],pseudos:readonly Readonly<PseudoPayload>[],attributes:readonly Readonly<AttributePayload>[]}} PayloadTables
  * @typedef {import('./tokenUtils.js').CSSToken} CSSToken
  */
 
@@ -35,7 +34,6 @@ const payloadTableForKind = new Map([
   ['qualified-name', 'qualifiedNames'],
   ['pseudo', 'pseudos'],
   ['attribute', 'attributes'],
-  ['raw', 'raw'],
 ]);
 
 /** @return {SemanticFacts} */
@@ -90,10 +88,11 @@ export function addSpecificity(a, b) {
 }
 
 class SelectorArenaBuilder {
-  /** @param {string} source @param {readonly CSSToken[]} tokens */
-  constructor(source, tokens) {
+  /** @param {string} source @param {readonly CSSToken[]} tokens @param {boolean} verifyArena */
+  constructor(source, tokens, verifyArena) {
     this.source = source;
     this.tokens = tokens;
+    this.verifyArena = verifyArena;
     /** @type {ArenaNode[]} */ this.nodes = [];
     /** @type {number[]} */ this.frames = [];
     /** @type {number[]} */ this.lastChildren = [];
@@ -103,22 +102,21 @@ class SelectorArenaBuilder {
     ]);
     /** @type {Specificity[]} */
     this.specificities = [ZERO_SPECIFICITY];
-    /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[],raw:RawPayload[]}} */
+    /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[]}} */
     this.payloads = {
       lists: [],
       combinators: [],
       qualifiedNames: [],
       pseudos: [],
       attributes: [],
-      raw: [],
     };
   }
 
   /** @param {NodeKind} kind @param {number} startToken @param {number} endToken @param {{status?:ParseStatus,payload?:number,specificity?:Specificity,facts?:SemanticFacts}} [options] */
   open(kind, startToken, endToken, options = {}) {
-    this.#validateBounds(startToken, endToken);
+    if (this.verifyArena) this.#validateBounds(startToken, endToken);
     const parent = this.frames.at(-1);
-    if (parent !== undefined) {
+    if (this.verifyArena && parent !== undefined) {
       const parentNode = this.nodes[parent];
       if (startToken < parentNode.startToken || endToken > parentNode.endToken)
         throw new RangeError(
@@ -132,7 +130,7 @@ class SelectorArenaBuilder {
         throw new RangeError(
           'sibling token spans must be ordered and non-overlapping'
         );
-    } else {
+    } else if (parent === undefined) {
       this.roots.push(this.nodes.length);
     }
     const index = this.nodes.length;
@@ -150,7 +148,8 @@ class SelectorArenaBuilder {
       facts: hasSummary ? (options.facts ?? EMPTY_FACTS) : undefined,
       payload: options.payload ?? -1,
     });
-    if (parent !== undefined) this.lastChildren[parent] = index;
+    if (this.verifyArena && parent !== undefined)
+      this.lastChildren[parent] = index;
     this.frames.push(index);
     return index;
   }
@@ -199,9 +198,8 @@ class SelectorArenaBuilder {
     const key = specificity.join(',');
     let found = this.specificityByKey.get(key);
     if (!found) {
-      const tuple = Object.freeze(
-        /** @type {[number, number, number]} */ ([...specificity])
-      );
+      const tuple = /** @type {[number, number, number]} */ ([...specificity]);
+      if (this.verifyArena) Object.freeze(tuple);
       found = { id: this.specificities.length, tuple };
       this.specificityByKey.set(key, found);
       this.specificities.push(tuple);
@@ -215,6 +213,7 @@ class SelectorArenaBuilder {
       throw new Error('arena nodes must close in stack order');
     const node = this.nodes[nodeIndex];
     node.subtreeEnd = this.nodes.length;
+    if (!this.verifyArena) return;
     let child = nodeIndex + 1;
     while (child < node.subtreeEnd) {
       const childNode = this.nodes[child];
@@ -248,6 +247,16 @@ class SelectorArenaBuilder {
   finish() {
     if (this.frames.length !== 0)
       throw new Error('cannot finish an open arena');
+    if (!this.nodes[0]) throw new Error('arena must contain a root');
+    if (!this.verifyArena)
+      return new SelectorArena(
+        this.source,
+        this.tokens,
+        this.nodes,
+        this.payloads,
+        this.specificities,
+        false
+      );
     if (
       this.roots.length !== 1 ||
       this.roots[0] !== 0 ||
@@ -293,7 +302,8 @@ class SelectorArenaBuilder {
       this.tokens,
       this.nodes,
       this.payloads,
-      this.specificities
+      this.specificities,
+      true
     );
   }
 
@@ -380,14 +390,14 @@ class SelectorArenaBuilder {
 }
 
 export class SelectorArena {
-  /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {readonly Specificity[]} specificities */
-  constructor(source, tokens, nodes, payloads, specificities) {
+  /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {readonly Specificity[]} specificities @param {boolean} freeze */
+  constructor(source, tokens, nodes, payloads, specificities, freeze) {
     this.source = source;
     this.tokens = tokens;
     this.nodes = nodes;
     this.payloads = payloads;
     this.specificities = specificities;
-    Object.freeze(this);
+    if (freeze) Object.freeze(this);
   }
 
   /** @param {number} nodeIndex @param {(childIndex:number)=>void} callback */
@@ -402,9 +412,9 @@ export class SelectorArena {
   }
 }
 
-/** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @return {SelectorArena} */
-export function buildSelectorArena(source, tokens, build) {
-  const builder = new SelectorArenaBuilder(source, tokens);
+/** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @param {boolean} [verifyArena] @return {SelectorArena} */
+export function buildSelectorArena(source, tokens, build, verifyArena = true) {
+  const builder = new SelectorArenaBuilder(source, tokens, verifyArena);
   build(builder);
   return builder.finish();
 }
