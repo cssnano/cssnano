@@ -131,7 +131,7 @@ function reduceWhitespaces(value) {
     const token = tokens[index];
     const type = token[0];
     if (type === TokenType.Function) {
-      const name = token[1].slice(0, -1).toLowerCase();
+      const name = (token[4]?.value ?? token[1].slice(0, -1)).toLowerCase();
       stack.push({
         math: Boolean(stack.at(-1)?.math || mathFunctions.has(name)),
         variable: variableFunctions.has(name),
@@ -155,13 +155,17 @@ function reduceWhitespaces(value) {
   }
 
   if (!replacements.length) return value;
-  let result = '';
+  const pieces = [];
   let start = 0;
   for (const [from, to, replacement] of replacements) {
-    result += value.slice(start, from) + replacement;
+    if (from > start) pieces.push(value.slice(start, from));
+    pieces.push(replacement);
     start = to;
   }
-  return result + value.slice(start);
+  if (start < value.length) {
+    pieces.push(value.slice(start));
+  }
+  return pieces.join('');
 }
 
 /**
@@ -177,18 +181,26 @@ function trimDeclaration(node, cache) {
   }
   // Remove whitespaces around ie 9 hack
   const rawValue = node.raws.value;
+  const hasMatchingRaw = Boolean(
+    node.raws?.value?.raw && rawValue?.value === node.value
+  );
   const value = (
     rawValue?.value === node.value ? rawValue.raw : node.value
   ).replace(ieHackRegex, '$1');
 
+  let result;
   if (cache.has(value)) {
-    node.value = /** @type {string} **/ (cache.get(value));
+    result = /** @type {string} **/ (cache.get(value));
+    node.value = result;
   } else {
-    const result = reduceWhitespaces(value);
+    result = reduceWhitespaces(value);
 
     // Trim whitespace inside functions & dividers
     node.value = result;
     cache.set(value, result);
+  }
+  if (hasMatchingRaw) {
+    node.raws.value = { raw: result, value: result };
   }
 
   // Remove extra semicolons and whitespace before the declaration

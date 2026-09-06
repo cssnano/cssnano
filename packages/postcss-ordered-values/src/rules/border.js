@@ -1,14 +1,13 @@
 import mathFunctions from '../lib/mathfunctions.js';
+import { lengthUnits } from './columns.js';
 import { isDimension, isFunction, isNumber, name } from '../lib/tokenize.js';
 
 // border: <line-width> || <line-style> || <color>
-// outline: <outline-color> || <outline-style> || <outline-width>
 
 const borderWidths = new Set(['thin', 'medium', 'thick']);
 
 const borderStyles = new Set([
   'none',
-  'auto', // only in outline-style
   'hidden',
   'dotted',
   'dashed',
@@ -21,26 +20,46 @@ const borderStyles = new Set([
 ]);
 
 /** @param {import('../lib/tokenize.js').Term} term @param {string} lower */
-const isWidth = (term, lower) =>
-  isFunction(term)
-    ? mathFunctions.has(lower)
-    : borderWidths.has(lower) || isDimension(term) || isNumber(term);
+const isWidth = (term, lower) => {
+  if (isFunction(term)) return mathFunctions.has(lower);
+  if (borderWidths.has(lower)) return true;
+  if (isDimension(term)) {
+    const unit = /** @type {{unit: string}} */ (term.tokens[0][4])?.unit;
+    return typeof unit === 'string' && lengthUnits.has(unit.toLowerCase());
+  }
+  if (isNumber(term)) {
+    const value = /** @type {{value: number}} */ (term.tokens[0][4])?.value;
+    return value === 0;
+  }
+  return false;
+};
 
-/** @param {import('../lib/tokenize.js').Term} term @param {string} lower */
-const isStyle = (term, lower) => !isFunction(term) && borderStyles.has(lower);
+/** @param {import('../lib/tokenize.js').Term} term @param {string} lower @param {boolean} allowAuto */
+const isStyle = (term, lower, allowAuto) =>
+  !isFunction(term) &&
+  (borderStyles.has(lower) || (allowAuto && lower === 'auto'));
 
-/** @type {readonly { name: 'width' | 'style' | 'color', match: (term: import('../lib/tokenize.js').Term, lower: string) => boolean }[]} */
-const borderSlots = [
-  { name: 'style', match: isStyle },
-  { name: 'width', match: isWidth },
-  { name: 'color', match: () => true },
-];
+/** @param {import('../lib/tokenize.js').Term} term */
+const isColor = (term) => !isNumber(term) && !isDimension(term);
+
+/**
+ * @typedef {'width' | 'style' | 'color'} BorderSlotName
+ * @typedef {{ name: BorderSlotName, match: (term: import('../lib/tokenize.js').Term, lower: string) => boolean }} BorderSlot
+ */
 
 /**
  * @param {import('../lib/tokenize.js').Term[]} border
+ * @param {boolean} [allowAuto]
  * @return {string | null}
  */
-function normalizeBorder(border) {
+function normalizeBorder(border, allowAuto = false) {
+  /** @type {BorderSlot[]} */
+  const borderSlots = [
+    { name: 'style', match: (term, lower) => isStyle(term, lower, allowAuto) },
+    { name: 'width', match: isWidth },
+    { name: 'color', match: isColor },
+  ];
+  /** @type {Record<BorderSlotName, string>} */
   const order = { width: '', style: '', color: '' };
 
   for (const term of border) {

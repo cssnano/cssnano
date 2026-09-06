@@ -1283,3 +1283,66 @@ suite('top-level folding with functional pseudos', () => {
     processCSS(':is([attr~]){color:blue}', ':is(){color:blue}')
   );
 });
+
+suite('CSS specification alignment and conformance', () => {
+  test(
+    'should allow attribute modifier without whitespace after string value',
+    processCSS(
+      ':is([attr="val"i]){color:blue}',
+      ':is([attr=val i]){color:blue}'
+    )
+  );
+
+  test(
+    'should not fold keyframe selectors to :is()',
+    processCSS(
+      '@keyframes foo{0%,50%{opacity:0}to{opacity:1}}',
+      '@keyframes foo{0%,50%{opacity:0}to{opacity:1}}',
+      modernBl
+    )
+  );
+
+  test(
+    'should preserve trailing important comments when folding selectors',
+    processCSS(
+      'section h1 /*! keep */, article h1, aside h1, nav h1{font-size:25px}',
+      ':is(article,aside,nav,section) h1 /*! keep */{font-size:25px}',
+      modernBl
+    )
+  );
+
+  test(
+    'should reject whitespace inside view-transition pseudo-element argument',
+    passthroughCSS('::view-transition-group(foo .bar){animation:none}')
+  );
+
+  test(
+    'should mark compound selector invalid when subclass follows pseudo-element',
+    passthroughCSS('::before.foo{color:blue}')
+  );
+
+  test(
+    'should mark compound selector invalid when id follows pseudo-element',
+    passthroughCSS('::before#bar{color:blue}')
+  );
+
+  test(
+    'should mark compound selector invalid when attribute follows pseudo-element',
+    passthroughCSS('::before[baz]{color:blue}')
+  );
+
+  test(
+    'should convert :nth-child(+1) to :first-child',
+    processCSS('p:nth-child(+1){color:blue}', 'p:first-child{color:blue}')
+  );
+
+  test(
+    'should convert :nth-last-child(+1) to :last-child',
+    processCSS('p:nth-last-child(+1){color:blue}', 'p:last-child{color:blue}')
+  );
+
+  test(
+    'should convert :nth-of-type(+1) to :first-of-type',
+    processCSS('p:nth-of-type(+1){color:blue}', 'p:first-of-type{color:blue}')
+  );
+});

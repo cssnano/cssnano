@@ -882,3 +882,29 @@ describe('Encoder', () => {
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+
+describe('At-rule parameter trimming and grid-template scope', () => {
+  test(
+    'should rename keyframes with extra whitespace in at-rule params',
+    processCSS(
+      '@keyframes  whiteToBlack  {0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}',
+      '@keyframes  a  {0%{color:#fff}to{color:#000}}.one{animation-name:a}'
+    )
+  );
+
+  test(
+    'should rename counter-style with extra whitespace in at-rule params',
+    processCSS(
+      '@counter-style  custom  {system:cyclic}.one{list-style:custom}',
+      '@counter-style  a  {system:cyclic}.one{list-style:a}'
+    )
+  );
+
+  test(
+    'should not rename idents outside brackets in grid-template matching line names',
+    processCSS(
+      'header{grid-template:[line] "area" line;grid-column:line;grid-area:area}',
+      'header{grid-template:[a] "b" line;grid-column:a;grid-area:b}'
+    )
+  );
+});

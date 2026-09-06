@@ -19,11 +19,13 @@ export default function keyframesReducer() {
     ) {
       if (
         node.type === 'atrule' &&
-        resolveAtRule(node.name) === keyframes.atRule &&
-        !RESERVED.has(node.params.toLowerCase())
+        resolveAtRule(node.name) === keyframes.atRule
       ) {
-        addToCache(node.params, encoder, cache);
-        atRules.push(node);
+        const name = node.params.trim();
+        if (!RESERVED.has(name.toLowerCase())) {
+          addToCache(name, encoder, cache);
+          atRules.push(node);
+        }
       }
       if (
         node.type === 'decl' &&
@@ -43,9 +45,9 @@ export default function keyframesReducer() {
           return cached.ident;
         });
       for (const rule of atRules) {
-        const cached = cache.get(rule.params);
-        if (cached?.count && referenced.has(rule.params))
-          rule.params = cached.ident;
+        const name = rule.params.trim();
+        const cached = cache.get(name);
+        if (cached?.count && referenced.has(name)) rule.params = cached.ident;
       }
       atRules = [];
       decls = [];

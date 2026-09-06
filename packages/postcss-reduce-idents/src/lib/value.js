@@ -58,12 +58,20 @@ function rewrite(
     const text = callback(token, isArgument);
     return text === undefined ? [] : [{ start: token[2], end: token[3], text }];
   });
-  let result = value;
-  for (const change of changes.toSorted((a, b) => b.start - a.start))
-    result =
-      result.slice(0, change.start) +
-      change.text +
-      result.slice(change.end + 1);
-  return result;
+  if (changes.length === 0) return value;
+  const sorted = changes.toSorted((a, b) => a.start - b.start);
+  const pieces = [];
+  let cursor = 0;
+  for (const change of sorted) {
+    if (change.start > cursor) {
+      pieces.push(value.slice(cursor, change.start));
+    }
+    pieces.push(change.text);
+    cursor = change.end + 1;
+  }
+  if (cursor < value.length) {
+    pieces.push(value.slice(cursor));
+  }
+  return pieces.join('');
 }
 export { TokenType, rewrite, sharedTokens as tokens };
