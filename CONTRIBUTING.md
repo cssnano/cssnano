@@ -33,6 +33,22 @@ with:
 pnpm test:mutation
 ```
 
+### Benchmarking
+
+The default benchmark uses stable settings and five independent process runs:
+
+```shell
+pnpm bench
+pnpm bench -- --case=selector-reduction
+pnpm bench:smoke -- --case=selector-reduction
+pnpm bench:profile -- --case=selector-reduction
+pnpm bench:compare -- before after
+```
+
+Smoke output only verifies that the harness and fixture work. Use the stable
+default for performance comparisons; it retains raw replicates and reports a
+confidence interval and verdict.
+
 Mutation testing is not part of the required test or CI path. A surviving
 mutation means the current tests did not detect that simulated fault; a
 timeout or harness error is reported separately.
