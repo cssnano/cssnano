@@ -78,20 +78,27 @@ export default function gridTemplateReducer() {
       for (const decl of templates) {
         const parsed = parsedValues.get(decl);
         if (!parsed) continue;
+        let squareDepthUsed = 0;
         const used = parsed.some((token) => {
+          if (token[0] === TokenType.OpenSquare) squareDepthUsed++;
+          if (token[0] === TokenType.CloseSquare) squareDepthUsed--;
           if (token[0] === TokenType.String)
             return stringWords(token[4].value).some(
               (word) => cache.get(word)?.count
             );
           return (
             token[0] === TokenType.Ident &&
+            squareDepthUsed > 0 &&
             Boolean(cache.get(token[4].value)?.count)
           );
         });
+        let squareDepth = 0;
         decl.value = rewrite(
           decl.value,
           (token) => {
             if (token[0] === TokenType.Whitespace) return ' ';
+            if (token[0] === TokenType.OpenSquare) squareDepth++;
+            if (token[0] === TokenType.CloseSquare) squareDepth--;
             if (token[0] === TokenType.String) {
               const value = stringWords(token[4].value)
                 .map((word) => {
@@ -103,7 +110,9 @@ export default function gridTemplateReducer() {
               return serializeString(value, token[1][0]);
             }
             const cached =
-              token[0] === TokenType.Ident && cache.get(token[4].value);
+              token[0] === TokenType.Ident &&
+              squareDepth > 0 &&
+              cache.get(token[4].value);
             if (!cached) return;
             return used ? cached.ident : undefined;
           },
@@ -124,16 +133,17 @@ export default function gridTemplateReducer() {
  * @return {string}
  */
 function serializeString(value, quote) {
-  let result = quote;
+  const pieces = [quote];
   for (const character of value) {
     const codePoint = character.codePointAt(0) ?? 0;
     if (character === quote || character === '\\') {
-      result += `\\${character}`;
+      pieces.push(`\\${character}`);
     } else if (codePoint < 0x20 || codePoint === 0x7f) {
-      result += `\\${codePoint.toString(16)} `;
+      pieces.push(`\\${codePoint.toString(16)} `);
     } else {
-      result += character;
+      pieces.push(character);
     }
   }
-  return result + quote;
+  pieces.push(quote);
+  return pieces.join('');
 }

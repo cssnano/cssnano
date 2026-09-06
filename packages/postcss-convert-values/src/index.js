@@ -75,6 +75,23 @@ const keepZeroPercentAlways = new Set([
   'min',
   'max',
   'clamp',
+  'round',
+  'mod',
+  'rem',
+  'hypot',
+  'abs',
+  'sign',
+  'sqrt',
+  'pow',
+  'sin',
+  'cos',
+  'tan',
+  'asin',
+  'acos',
+  'atan',
+  'atan2',
+  'exp',
+  'log',
   'hsl',
   'hsla',
   'hwb',
@@ -103,7 +120,17 @@ function parseNumber(number, unit, raw, opts, keepZeroUnit, hasDecimal) {
     return raw;
   }
 
-  if (number === 0) {
+  let num = number;
+  if (
+    typeof opts.precision === 'number' &&
+    lowerCasedUnit === 'px' &&
+    hasDecimal
+  ) {
+    const precision = Math.pow(10, opts.precision);
+    num = Math.round(num * precision) / precision;
+  }
+
+  if (num === 0) {
     let result =
       0 +
       (keepZeroUnit || (!LENGTH_UNITS.has(lowerCasedUnit) && unit !== '%')
@@ -115,18 +142,7 @@ function parseNumber(number, unit, raw, opts, keepZeroUnit, hasDecimal) {
     return result;
   }
 
-  let result = convert(number, unit, opts);
-
-  if (
-    typeof opts.precision === 'number' &&
-    lowerCasedUnit === 'px' &&
-    hasDecimal
-  ) {
-    const precision = Math.pow(10, opts.precision);
-    result =
-      Math.round(Number.parseFloat(result) * precision) / precision + unit;
-  }
-  return result;
+  return convert(num, unit, opts);
 }
 
 /**
@@ -325,7 +341,7 @@ function transform(opts, browsers, decl) {
   if (replacements.length) {
     const result = applyEdits(value, replacements);
     decl.value = result;
-    if (rawValue !== undefined) {
+    if (decl.raws?.value?.raw) {
       decl.raws.value = { raw: result, value: result };
     }
   }

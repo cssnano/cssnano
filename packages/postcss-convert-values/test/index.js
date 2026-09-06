@@ -587,6 +587,18 @@ describe('Round', () => {
     'should not round pixel values to two decimal places by default',
     passthroughCSS('h1{right:6.66667px}')
   );
+
+  test(
+    'should convert pixel values to shorter units correctly when precision is configured',
+    processCSS('h1{width:96.0px}', 'h1{width:1in}', { precision: 2 })
+  );
+
+  test(
+    'should preserve zero units inside CSS Values 4 math functions',
+    passthroughCSS(
+      'a{width:round(0px, 10px);x:mod(0px, 5px);y:hypot(0px, 3px);z:abs(0px)}'
+    )
+  );
 });
 
 describe('Clamp', () => {

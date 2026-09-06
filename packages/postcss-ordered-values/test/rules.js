@@ -6,6 +6,7 @@ import normalizeBoxShadow from '../src/rules/boxShadow.js';
 import normalizeAnimation from '../src/rules/animation.js';
 import normalizeColumns from '../src/rules/columns.js';
 import normalizeListStyle from '../src/rules/listStyle.js';
+import normalizeTransition from '../src/rules/transition.js';
 import { normalizeGridColumnRow } from '../src/rules/grid.js';
 import isTime from '../src/lib/isTime.js';
 
@@ -628,6 +629,55 @@ describe('Tokenizer boundary invariants', () => {
     assert.deepEqual(
       parsed.terms.map((term) => term.raw),
       ['calc( 10px  +  20px )', 'rgb(0 0 0 / 50%)']
+    );
+  });
+});
+
+describe('Fail-closed grammar conformance', () => {
+  test('animation fails closed on excess times and negative duration', () => {
+    assert.strictEqual(
+      normalizeAnimation(tokenizeValue('1s calc(2s) calc(3s)')),
+      null
+    );
+    assert.strictEqual(
+      normalizeAnimation(tokenizeValue('-1s ease infinite')),
+      null
+    );
+  });
+
+  test('transition fails closed on invalid and negative times', () => {
+    assert.strictEqual(normalizeTransition(tokenizeValue('-1s ease')), null);
+    assert.strictEqual(normalizeTransition(tokenizeValue('1s 2s 3s')), null);
+  });
+
+  test('box-shadow fails closed on invalid length count and unitless length', () => {
+    assert.strictEqual(normalizeBoxShadow(tokenizeValue('10px red')), null);
+    assert.strictEqual(
+      normalizeBoxShadow(tokenizeValue('10px 10px 10px 10px 10px red')),
+      null
+    );
+    assert.strictEqual(normalizeBoxShadow(tokenizeValue('10 10px red')), null);
+  });
+
+  test('border fails closed on auto style and non-zero unitless width', () => {
+    assert.strictEqual(
+      normalizeBorder(tokenizeValue('solid 5 red').terms),
+      null
+    );
+    assert.strictEqual(
+      normalizeBorder(tokenizeValue('auto red 1px').terms),
+      null
+    );
+  });
+
+  test('list-style fails closed on unknown functions and supports counter/counters', () => {
+    assert.strictEqual(
+      normalizeListStyle(tokenizeValue('foo() inside').terms),
+      null
+    );
+    assert.strictEqual(
+      normalizeListStyle(tokenizeValue('counter(x) inside').terms),
+      'counter(x) inside'
     );
   });
 });

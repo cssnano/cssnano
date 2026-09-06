@@ -30,11 +30,13 @@ export default function counterStyleReducer() {
     ) {
       if (
         node.type === 'atrule' &&
-        resolveAtRule(node.name) === counterStyle.atRule &&
-        !RESERVED.has(node.params.toLowerCase())
+        resolveAtRule(node.name) === counterStyle.atRule
       ) {
-        addToCache(node.params, encoder, cache);
-        atRules.push(node);
+        const name = node.params.trim();
+        if (!RESERVED.has(name.toLowerCase())) {
+          addToCache(name, encoder, cache);
+          atRules.push(node);
+        }
       }
       if (
         node.type === 'decl' &&
@@ -65,7 +67,8 @@ export default function counterStyleReducer() {
         );
       }
       for (const rule of atRules) {
-        const cached = cache.get(rule.params);
+        const name = rule.params.trim();
+        const cached = cache.get(name);
         if (cached?.count) rule.params = cached.ident;
       }
       atRules = [];
