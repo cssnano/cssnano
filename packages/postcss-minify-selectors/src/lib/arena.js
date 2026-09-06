@@ -5,7 +5,7 @@
  * @typedef {readonly [number, number, number]} Specificity
  * @typedef {{status:'valid',specificity:Specificity}|{status:'opaque'}} SpecificityResult
  * @typedef {number} SemanticFacts
- * @typedef {{kind:NodeKind,startToken:number,endToken:number,subtreeEnd:number,status:ParseStatus,specificity?:Specificity,facts?:SemanticFacts,payload:number}} ArenaNode
+ * @typedef {{kind:NodeKind,startToken:number,endToken:number,subtreeEnd:number,status:ParseStatus,specificity?:Specificity,specificityId?:number,facts?:SemanticFacts,payload:number}} ArenaNode
  * @typedef {{mode:ListMode,keyframe?:boolean,hasDefaultNamespace?:boolean}} ListPayload
  * @typedef {{value:string}} CombinatorPayload
  * @typedef {{namespace:{kind:'absent'}|{kind:'empty'}|{kind:'wildcard'}|{kind:'named',token:number},subject:{kind:'universal',token:number}|{kind:'type',token:number}}} QualifiedNamePayload
@@ -98,7 +98,11 @@ class SelectorArenaBuilder {
     /** @type {number[]} */ this.frames = [];
     /** @type {number[]} */ this.lastChildren = [];
     /** @type {number[]} */ this.roots = [];
-    this.specificities = new Map([['0,0,0', ZERO_SPECIFICITY]]);
+    this.specificityByKey = new Map([
+      ['0,0,0', { id: 0, tuple: ZERO_SPECIFICITY }],
+    ]);
+    /** @type {Specificity[]} */
+    this.specificities = [ZERO_SPECIFICITY];
     /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[],raw:RawPayload[]}} */
     this.payloads = {
       lists: [],
@@ -142,6 +146,7 @@ class SelectorArenaBuilder {
       specificity: hasSummary
         ? (options.specificity ?? ZERO_SPECIFICITY)
         : undefined,
+      specificityId: undefined,
       facts: hasSummary ? (options.facts ?? EMPTY_FACTS) : undefined,
       payload: options.payload ?? -1,
     });
@@ -177,10 +182,14 @@ class SelectorArenaBuilder {
       requestedStatus === 'valid' && !hasSafeSpecificity
         ? 'opaque'
         : requestedStatus;
-    node.specificity =
-      node.status === 'valid' && hasSafeSpecificity
-        ? this.internSpecificity(specificity)
-        : undefined;
+    if (node.status === 'valid' && hasSafeSpecificity) {
+      const interned = this.internSpecificity(specificity);
+      node.specificity = interned.tuple;
+      node.specificityId = interned.id;
+    } else {
+      node.specificity = undefined;
+      node.specificityId = undefined;
+    }
     node.facts = summary.facts ?? node.facts ?? EMPTY_FACTS;
     this.#closeFrame(nodeIndex);
   }
@@ -188,12 +197,14 @@ class SelectorArenaBuilder {
   /** @param {Specificity} specificity */
   internSpecificity(specificity) {
     const key = specificity.join(',');
-    let found = this.specificities.get(key);
+    let found = this.specificityByKey.get(key);
     if (!found) {
-      found = Object.freeze(
+      const tuple = Object.freeze(
         /** @type {[number, number, number]} */ ([...specificity])
       );
-      this.specificities.set(key, found);
+      found = { id: this.specificities.length, tuple };
+      this.specificityByKey.set(key, found);
+      this.specificities.push(tuple);
     }
     return found;
   }
@@ -276,11 +287,13 @@ class SelectorArenaBuilder {
       Object.freeze(payload.namespace);
     Object.freeze(this.nodes);
     Object.freeze(this.payloads);
+    Object.freeze(this.specificities);
     return new SelectorArena(
       this.source,
       this.tokens,
       this.nodes,
-      this.payloads
+      this.payloads,
+      this.specificities
     );
   }
 
@@ -367,12 +380,13 @@ class SelectorArenaBuilder {
 }
 
 export class SelectorArena {
-  /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads */
-  constructor(source, tokens, nodes, payloads) {
+  /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {readonly Specificity[]} specificities */
+  constructor(source, tokens, nodes, payloads, specificities) {
     this.source = source;
     this.tokens = tokens;
     this.nodes = nodes;
     this.payloads = payloads;
+    this.specificities = specificities;
     Object.freeze(this);
   }
 

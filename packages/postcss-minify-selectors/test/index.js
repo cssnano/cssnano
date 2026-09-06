@@ -1303,10 +1303,24 @@ suite('CSS specification alignment and conformance', () => {
   );
 
   test(
+    'should preserve keyframe-only percentages in a style selector list',
+    passthroughCSS('from,to,50%,100%{color:blue}')
+  );
+
+  test(
     'should preserve trailing important comments when folding selectors',
     processCSS(
       'section h1 /*! keep */, article h1, aside h1, nav h1{font-size:25px}',
       ':is(article,aside,nav,section) h1 /*! keep */{font-size:25px}',
+      modernBl
+    )
+  );
+
+  test(
+    'should preserve leading important comments when folding selectors',
+    processCSS(
+      '.a .tail,/*! keep */.b .tail,.c .tail{color:blue}',
+      ':is(.a,/*! keep */.b,.c) .tail{color:blue}',
       modernBl
     )
   );

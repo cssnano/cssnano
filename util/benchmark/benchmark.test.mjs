@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import {
   MODES,
+  aggregateSnapshots,
+  childRunArguments,
   main,
   processCorpus,
   resolveBenchmarkArgs,
@@ -217,6 +219,38 @@ test('stable benchmarks require a validated explicit revision', () => {
   );
 });
 
+test('fresh child runs preserve revision provenance unchanged', () => {
+  const revision = '0123456789abcdef0123456789abcdef01234567';
+  assert.deepEqual(
+    childRunArguments([
+      '--',
+      '--mode=stable',
+      `--revision=${revision}`,
+      '--runs=5',
+      '--label=candidate',
+      '--run-index=4',
+      '--child-run',
+    ]),
+    ['--mode=stable', `--revision=${revision}`]
+  );
+});
+
+test('aggregate snapshots reject revision provenance changes', () => {
+  const first = snapshot([100]);
+  const second = {
+    ...snapshot([100]),
+    gitRevision: 'fedcba9876543210fedcba9876543210fedcba98',
+  };
+  assert.throws(
+    () =>
+      aggregateSnapshots([first, second], 'aggregate', {
+        runs: 2,
+        resultsDir: mkdtempSync(join(tmpdir(), 'cssnano-benchmark-')),
+      }),
+    /revision changed/
+  );
+});
+
 test('legacy snapshots are loaded with an uncertainty warning', () => {
   const directory = mkdtempSync(join(tmpdir(), 'cssnano-benchmark-'));
   const path = join(directory, 'legacy.json');
@@ -277,10 +311,7 @@ test('smoke benchmark writes a versioned snapshot with stable output hashes', as
     readFileSync(join(resultsDirectory, 'smoke-repeat.json'), 'utf8')
   );
   assert.equal(result.schemaVersion, 2);
-  assert.equal(
-    result.gitRevision,
-    '0123456789abcdef0123456789abcdef01234567'
-  );
+  assert.equal(result.gitRevision, '0123456789abcdef0123456789abcdef01234567');
   assert.equal(result.runs.length, 1);
   assert.equal(result.outputHashes.fixture, repeat.outputHashes.fixture);
 });

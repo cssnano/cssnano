@@ -185,6 +185,9 @@ export async function runOnce(
 export function aggregateSnapshots(snapshots, label, args) {
   const first = snapshots[0];
   for (const snapshot of snapshots.slice(1)) {
+    if (snapshot.gitRevision !== first.gitRevision) {
+      throw new Error('revision changed between benchmark runs');
+    }
     if (snapshot.corpusManifest !== first.corpusManifest) {
       throw new Error('corpus changed between benchmark runs');
     }

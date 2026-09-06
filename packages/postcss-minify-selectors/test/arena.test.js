@@ -566,6 +566,19 @@ test('parser finalizes compound semantic facts conservatively', () => {
   assert.equal(unknown.nodes[0].specificity, undefined);
 });
 
+test('arena interns specificity tuples with stable numeric identities', () => {
+  const arena = parseSelectorArena('.a,.b,#id');
+  const compounds = arena.nodes.filter(({ kind }) => kind === 'compound');
+  assert.equal(compounds[0].specificityId, compounds[1].specificityId);
+  assert.notEqual(compounds[0].specificityId, compounds[2].specificityId);
+  assert.equal(
+    arena.specificities[compounds[0].specificityId],
+    compounds[0].specificity
+  );
+  assert.equal(Object.isFrozen(arena.specificities), true);
+  assert.equal(Object.isFrozen(compounds[0].specificity), true);
+});
+
 test('parser applies functional pseudo grammar specificity policies', () => {
   for (const [source, expected] of [
     [':host(.a)', [0, 2, 0]],

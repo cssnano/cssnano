@@ -52,6 +52,21 @@ function runComparison(label, compare, markdown, resultsDir) {
   execFileSync(process.execPath, compareArgs, { stdio: 'inherit' });
 }
 
+export function childRunArguments(argv) {
+  return argv.filter(
+    (argument) =>
+      argument !== '--' &&
+      !argument.startsWith('--runs=') &&
+      !argument.startsWith('--label=') &&
+      !argument.startsWith('--compare=') &&
+      !argument.startsWith('--markdown=') &&
+      !argument.startsWith('--childRun') &&
+      !argument.startsWith('--child-run') &&
+      !argument.startsWith('--runIndex=') &&
+      !argument.startsWith('--run-index=')
+  );
+}
+
 export async function main(argv = process.argv.slice(2)) {
   const args = resolveBenchmarkArgs(argv);
   const dir = args.dir ? resolve(args.dir) : DEFAULT_DIR;
@@ -71,18 +86,7 @@ export async function main(argv = process.argv.slice(2)) {
   console.log(`results: ${args.resultsDir}`);
 
   if (args.runs > 1 && !args.childRun) {
-    const forwarded = argv.filter(
-      (argument) =>
-        argument !== '--' &&
-        !argument.startsWith('--runs=') &&
-        !argument.startsWith('--label=') &&
-        !argument.startsWith('--compare=') &&
-        !argument.startsWith('--markdown=') &&
-        !argument.startsWith('--childRun') &&
-        !argument.startsWith('--child-run') &&
-        !argument.startsWith('--runIndex=') &&
-        !argument.startsWith('--run-index=')
-    );
+    const forwarded = childRunArguments(argv);
     const snapshots = [];
     for (let run = 1; run <= args.runs; run++) {
       const label = `${args.label}-${run}`;
