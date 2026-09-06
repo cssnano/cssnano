@@ -36,30 +36,51 @@ jobs:
           git worktree add --detach "$RUNNER_TEMP/cssnano-base" "$BASE_SHA"
           git worktree add --detach "$RUNNER_TEMP/cssnano-head" "$HEAD_SHA"
 
+      - name: Use candidate benchmark harness for base revision
+        env:
+          BASE_DIR: ${{ runner.temp }}/cssnano-base
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git -C "$BASE_DIR" checkout "$HEAD_SHA" -- \
+            util/benchmark
+
       - name: Install dependencies in both revisions
         run: |
           pnpm --dir "$RUNNER_TEMP/cssnano-base" install --frozen-lockfile
           pnpm --dir "$RUNNER_TEMP/cssnano-head" install --frozen-lockfile
 
-      - name: Benchmark base revision
+      - name: Benchmark target blocks in alternating order
+        env:
+          NODE_ENV: production
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          for preset in default advanced lite; do
-            pnpm --dir "$RUNNER_TEMP/cssnano-base" bench -- --preset="$preset" --label="base-$preset"
+          mkdir -p "$RUNNER_TEMP/base-results" "$RUNNER_TEMP/head-results"
+          targets=(default advanced lite selector-reduction longhand-rule-merging ordered-value-normalization)
+          for index in "${!targets[@]}"; do
+            target="${targets[$index]}"
+            if [[ "$target" == selector-reduction || "$target" == longhand-rule-merging || "$target" == ordered-value-normalization ]]; then
+              target_args=(--case="$target" --preset=default)
+            else
+              target_args=(--preset="$target")
+            fi
+            if (( index % 2 == 0 )); then
+              first=base
+              second=head
+            else
+              first=head
+              second=base
+            fi
+            if [[ "$first" == base ]]; then
+              first_revision="$BASE_SHA"
+              second_revision="$HEAD_SHA"
+            else
+              first_revision="$HEAD_SHA"
+              second_revision="$BASE_SHA"
+            fi
+            pnpm --dir "$RUNNER_TEMP/cssnano-$first" bench -- "${target_args[@]}" --revision="$first_revision" --label="$first-$target" --results-dir="$RUNNER_TEMP/$first-results"
+            pnpm --dir "$RUNNER_TEMP/cssnano-$second" bench -- "${target_args[@]}" --revision="$second_revision" --label="$second-$target" --results-dir="$RUNNER_TEMP/$second-results"
           done
-          for case in selector-reduction longhand-rule-merging ordered-value-normalization; do
-            pnpm --dir "$RUNNER_TEMP/cssnano-base" bench -- --case="$case" --preset=default --label="base-$case"
-          done
-          cp -R "$RUNNER_TEMP/cssnano-base/bench-results" "$RUNNER_TEMP/base-results"
-
-      - name: Benchmark candidate revision
-        run: |
-          for preset in default advanced lite; do
-            pnpm --dir "$RUNNER_TEMP/cssnano-head" bench -- --preset="$preset" --label="head-$preset"
-          done
-          for case in selector-reduction longhand-rule-merging ordered-value-normalization; do
-            pnpm --dir "$RUNNER_TEMP/cssnano-head" bench -- --case="$case" --preset=default --label="head-$case"
-          done
-          cp -R "$RUNNER_TEMP/cssnano-head/bench-results" "$RUNNER_TEMP/head-results"
 
       - name: Compare benchmarks
         run: |
