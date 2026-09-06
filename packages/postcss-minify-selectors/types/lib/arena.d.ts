@@ -5,7 +5,7 @@
  * @typedef {readonly [number, number, number]} Specificity
  * @typedef {{status:'valid',specificity:Specificity}|{status:'opaque'}} SpecificityResult
  * @typedef {number} SemanticFacts
- * @typedef {{kind:NodeKind,startToken:number,endToken:number,subtreeEnd:number,status:ParseStatus,specificity?:Specificity,facts?:SemanticFacts,payload:number}} ArenaNode
+ * @typedef {{kind:NodeKind,startToken:number,endToken:number,subtreeEnd:number,status:ParseStatus,specificity?:Specificity,specificityId?:number,facts?:SemanticFacts,payload:number}} ArenaNode
  * @typedef {{mode:ListMode,keyframe?:boolean,hasDefaultNamespace?:boolean}} ListPayload
  * @typedef {{value:string}} CombinatorPayload
  * @typedef {{namespace:{kind:'absent'}|{kind:'empty'}|{kind:'wildcard'}|{kind:'named',token:number},subject:{kind:'universal',token:number}|{kind:'type',token:number}}} QualifiedNamePayload
@@ -33,6 +33,7 @@ export type ArenaNode = {
     subtreeEnd: number;
     status: ParseStatus;
     specificity?: Specificity;
+    specificityId?: number;
     facts?: SemanticFacts;
     payload: number;
 };
@@ -134,7 +135,12 @@ declare class SelectorArenaBuilder {
     /** @type {number[]} */ frames: number[];
     /** @type {number[]} */ lastChildren: number[];
     /** @type {number[]} */ roots: number[];
-    specificities: Map<string, Specificity>;
+    specificityByKey: Map<string, {
+        id: number;
+        tuple: Specificity;
+    }>;
+    /** @type {Specificity[]} */
+    specificities: Specificity[];
     /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[],raw:RawPayload[]}} */
     payloads: {
         lists: ListPayload[];
@@ -165,7 +171,10 @@ declare class SelectorArenaBuilder {
         facts?: SemanticFacts;
     }): void;
     /** @param {Specificity} specificity */
-    internSpecificity(specificity: Specificity): Specificity;
+    internSpecificity(specificity: Specificity): {
+        id: number;
+        tuple: Specificity;
+    };
     /** @param {NodeKind} kind @param {number} startToken @param {number} endToken @param {{status?:ParseStatus,payload?:number,specificity?:Specificity,facts?:SemanticFacts}} [options] */
     leaf(kind: NodeKind, startToken: number, endToken: number, options?: {
         status?: ParseStatus;
@@ -182,8 +191,9 @@ export declare class SelectorArena {
     tokens: readonly import("@csstools/css-tokenizer").CSSToken[];
     nodes: readonly Readonly<ArenaNode>[];
     payloads: PayloadTables;
-    /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads */
-    constructor(source: string, tokens: readonly CSSToken[], nodes: readonly Readonly<ArenaNode>[], payloads: PayloadTables);
+    specificities: readonly Specificity[];
+    /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {readonly Specificity[]} specificities */
+    constructor(source: string, tokens: readonly CSSToken[], nodes: readonly Readonly<ArenaNode>[], payloads: PayloadTables, specificities: readonly Specificity[]);
     /** @param {number} nodeIndex @param {(childIndex:number)=>void} callback */
     forEachChild(nodeIndex: number, callback: (childIndex: number) => void): void;
 }
