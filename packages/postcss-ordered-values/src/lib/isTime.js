@@ -66,7 +66,7 @@ function reduce(frame) {
 
 /** @param {Frame} frame */
 function finish(frame) {
-  while (frame.operators.length && !reduce(frame)) return null;
+  if (frame.operators.length && !reduce(frame)) return null;
   if (frame.expectOperand || frame.values.length !== 1) return null;
   return frame.values[0];
 }
