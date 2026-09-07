@@ -85,18 +85,24 @@ function pluginCreator(opts = {}) {
    * @param {string | undefined} rawSource
    * @param {(s: string) => string[]} space
    * @param {string=} separator
+   * @param {boolean=} preserveWhitespace
    * @return {string}
    */
-  function replaceComments(rawSource, space, separator = ' ') {
+  function replaceComments(
+    rawSource,
+    space,
+    separator = ' ',
+    preserveWhitespace = false
+  ) {
     const source = rawSource || '';
-    const key = source + '@|@' + separator;
+    const key = source + '@|@' + separator + '@|@' + String(preserveWhitespace);
 
     if (replacerCache.has(key)) {
       return replacerCache.get(key);
     }
 
     if (!source.includes('/*')) {
-      const normalized = space(source).join(' ');
+      const normalized = preserveWhitespace ? source : space(source).join(' ');
 
       replacerCache.set(key, normalized);
 
@@ -104,6 +110,7 @@ function pluginCreator(opts = {}) {
     }
 
     const parts = [];
+    let removedComment = false;
 
     for (const [type, start, end] of getTokens(source)) {
       if (!type) {
@@ -115,15 +122,23 @@ function pluginCreator(opts = {}) {
 
       if (remover.canRemove(contents)) {
         parts.push(separator);
+        removedComment = true;
         continue;
       }
 
-      parts.push('/*' + contents + '*/');
+      parts.push(
+        preserveWhitespace
+          ? source.slice(start - 2, end + 2)
+          : '/*' + contents + '*/'
+      );
     }
 
-    const parsed = parts.join('');
-
-    const result = space(parsed).join(' ');
+    let result;
+    if (preserveWhitespace) {
+      result = removedComment ? parts.join('') : source;
+    } else {
+      result = space(parts.join('')).join(' ');
+    }
 
     replacerCache.set(key, result);
 
@@ -201,11 +216,23 @@ function pluginCreator(opts = {}) {
    * @param {(s: string) => string[]} space
    */
   function processDeclaration(node, space) {
+    const preserveWhitespace = node.prop.startsWith('--');
+
     if (node.raws.value && node.raws.value.raw) {
       if (node.raws.value.value === node.value) {
-        node.value = replaceComments(node.raws.value.raw, space);
+        node.value = replaceComments(
+          node.raws.value.raw,
+          space,
+          ' ',
+          preserveWhitespace
+        );
       } else {
-        node.value = replaceComments(node.value, space);
+        node.value = replaceComments(
+          node.value,
+          space,
+          ' ',
+          preserveWhitespace
+        );
       }
 
       /** @type {null | {value: string, raw: string}} */ (node.raws.value) =
@@ -219,7 +246,7 @@ function pluginCreator(opts = {}) {
 
       node.raws.important = b.length ? node.raws.important : '!important';
     } else {
-      node.value = replaceComments(node.value, space);
+      node.value = replaceComments(node.value, space, ' ', preserveWhitespace);
     }
   }
 

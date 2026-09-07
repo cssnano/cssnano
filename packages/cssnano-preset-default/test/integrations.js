@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
+import postcss from 'postcss';
 import {
   integrationTests,
   pluginIdempotencyTests,
@@ -59,6 +60,31 @@ describe('CSS processing', () => {
       'h1{opacity:calc(5 * var(--foo))}'
     )
   );
+
+  test('should preserve whitespace-only custom properties', async () => {
+    const input = ':root{--x: ;--empty:}';
+    const processor = createCssnanoProcessor(preset);
+    const firstPass = await processor.process(input, { from: undefined });
+    const declarations = new Map(
+      postcss
+        .parse(firstPass.css)
+        .first.nodes.filter((node) => node.type === 'decl')
+        .map((node) => [node.prop, node.value])
+    );
+
+    assert.deepStrictEqual(
+      [...declarations],
+      [
+        ['--x', ' '],
+        ['--empty', ''],
+      ]
+    );
+
+    const secondPass = await processor.process(firstPass.css, {
+      from: undefined,
+    });
+    assert.strictEqual(secondPass.css, firstPass.css);
+  });
 
   test(
     'should process CSS with Browserslist options',
