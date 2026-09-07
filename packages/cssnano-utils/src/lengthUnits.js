@@ -1,5 +1,5 @@
 /* CSS Values 4 length units. */
-export const lengthUnits = new Set([
+const lengthUnits = new Set([
   // Absolute lengths
   'cm',
   'in',
