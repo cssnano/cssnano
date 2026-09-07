@@ -2,6 +2,7 @@ import borders from './lib/decl/borders.js';
 import columns from './lib/decl/columns.js';
 import margin from './lib/decl/margin.js';
 import padding from './lib/decl/padding.js';
+import minifyShorthandIdentities from './lib/minifyShorthand.js';
 import { requiredSupport } from './lib/isFallback.js';
 
 /** @import {Declaration, Rule} from 'postcss'; */
@@ -170,13 +171,13 @@ function pluginCreator() {
         }
       });
 
-      if (setsOtherColumnProperty) {
-        return;
+      if (!setsOtherColumnProperty) {
+        for (const rule of columnRules) {
+          rewrite(rule, columns, 'column', declarationsNamed(rule, 'column'));
+        }
       }
 
-      for (const rule of columnRules) {
-        rewrite(rule, columns, 'column', declarationsNamed(rule, 'column'));
-      }
+      minifyShorthandIdentities(css);
     },
   };
 }
