@@ -36,7 +36,17 @@ test('reports numeric facts with exclusive source bounds', () => {
   assert.equal(malformed?.end, 17);
 });
 
-test('applies adjacent exclusive-end edits and rejects overlap', () => {
+test('applies unordered disjoint edits', () => {
+  assert.equal(
+    applyEdits('abcdef', [
+      { start: 4, end: 6, text: 'Z' },
+      { start: 0, end: 2, text: 'X' },
+    ]),
+    'XcdZ'
+  );
+});
+
+test('applies adjacent exclusive-end edits', () => {
   assert.equal(
     applyEdits('abcdef', [
       { start: 1, end: 3, text: 'X' },
@@ -44,6 +54,40 @@ test('applies adjacent exclusive-end edits and rejects overlap', () => {
     ]),
     'aXYf'
   );
+});
+
+test('preserves same-offset insertion order', () => {
+  assert.equal(
+    applyEdits('abcd', [
+      { start: 2, end: 2, text: 'x' },
+      { start: 2, end: 2, text: 'y' },
+    ]),
+    'abxycd'
+  );
+});
+
+test('allows insertions at replacement boundaries', () => {
+  assert.equal(
+    applyEdits('abcdef', [
+      { start: 1, end: 4, text: 'X' },
+      { start: 1, end: 1, text: '[' },
+      { start: 4, end: 4, text: ']' },
+    ]),
+    'a[X]ef'
+  );
+});
+
+test('rejects an insertion strictly inside a replacement', () => {
+  assert.equal(
+    applyEdits('abcdef', [
+      { start: 1, end: 5, text: 'X' },
+      { start: 3, end: 3, text: '!' },
+    ]),
+    'abcdef'
+  );
+});
+
+test('rejects overlapping replacements in either order', () => {
   assert.equal(
     applyEdits('abcdef', [
       { start: 1, end: 4, text: 'X' },
@@ -51,58 +95,44 @@ test('applies adjacent exclusive-end edits and rejects overlap', () => {
     ]),
     'abcdef'
   );
-});
-
-test('rejects an insertion inside a replacement', () => {
   assert.equal(
     applyEdits('abcdef', [
+      { start: 3, end: 5, text: 'Y' },
       { start: 1, end: 4, text: 'X' },
-      { start: 2, end: 2, text: '!' },
     ]),
     'abcdef'
   );
 });
 
-test('allows a higher-priority edit to supersede an overlapping edit', () => {
+test('does not resolve overlapping replacements using priority metadata', () => {
+  const editWithLegacyMetadata = {
+    start: 1,
+    end: 5,
+    text: '',
+    priority: 1,
+  };
   assert.equal(
     applyEdits('abcdef', [
       { start: 2, end: 4, text: 'X' },
-      { start: 1, end: 5, text: '', priority: 1 },
+      editWithLegacyMetadata,
     ]),
-    'af'
+    'abcdef'
   );
 });
 
-test('allows a higher-priority insertion inside a lower-priority replacement', () => {
-  assert.equal(
-    applyEdits('abcdef', [
-      { start: 1, end: 5, text: 'X' },
-      { start: 3, end: 3, text: '!', priority: 1 },
-    ]),
-    'abc!def'
-  );
+test('rejects invalid source bounds', () => {
+  for (const edit of [
+    { start: -1, end: 1, text: 'X' },
+    { start: 1.5, end: 2, text: 'X' },
+    { start: 2, end: 1, text: 'X' },
+    { start: 1, end: 2.5, text: 'X' },
+    { start: 1, end: 7, text: 'X' },
+  ]) {
+    assert.equal(applyEdits('abcdef', [edit]), 'abcdef');
+  }
 });
 
-test('prefers the highest-priority edit among overlapping accepted edits', () => {
-  assert.equal(
-    applyEdits('abcdefghij', [
-      { start: 5, end: 10, text: 'H', priority: 1 },
-      { start: 0, end: 5, text: 'L', priority: 0 },
-      { start: 0, end: 9, text: 'C', priority: 0 },
-    ]),
-    'LH'
-  );
-});
-
-test('preserves ordered insertions and accepts a large disjoint edit set', () => {
-  assert.equal(
-    applyEdits('abcd', [
-      { start: 2, end: 2, text: 'x' },
-      { start: 2, end: 2, text: 'y' },
-      { start: 2, end: 3, text: 'Z' },
-    ]),
-    'abxyZd'
-  );
+test('accepts a large disjoint edit set', () => {
   const source = 'a'.repeat(10_000);
   assert.equal(
     applyEdits(
@@ -114,17 +144,6 @@ test('preserves ordered insertions and accepts a large disjoint edit set', () =>
       }))
     ),
     'ba'.repeat(5_000)
-  );
-});
-
-test('rejects equal-priority overlaps after accepting other edits', () => {
-  assert.equal(
-    applyEdits('abcdef', [
-      { start: 0, end: 1, text: 'A', priority: 1 },
-      { start: 2, end: 5, text: 'X' },
-      { start: 3, end: 6, text: 'Y' },
-    ]),
-    'abcdef'
   );
 });
 

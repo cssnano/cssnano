@@ -1,8 +1,7 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
-/** @typedef {{start: number, end: number, text: string, priority?: number}} SourceEdit */
-/** @typedef {{edit: SourceEdit, left?: IntervalNode, right?: IntervalNode, height: number, maxEnd: number, maxPriority: number}} IntervalNode */
+/** @typedef {{start: number, end: number, text: string}} SourceEdit */
 /** @typedef {{index: number, start: number, end: number, raw: string, number: number, unit: string, hasDecimal: boolean}} NumericSource */
 
 /** @param {CSSToken} token @return {string} */
@@ -27,111 +26,9 @@ function tokenEnd(token) {
   return token[3] + 1;
 }
 
-/** @param {IntervalNode | undefined} node */
-function intervalHeight(node) {
-  return node?.height ?? 0;
-}
-/** @param {SourceEdit} edit */
-function intervalPriority(edit) {
-  return edit.priority ?? 0;
-}
-/** @param {IntervalNode} node */
-function refreshInterval(node) {
-  node.height =
-    Math.max(intervalHeight(node.left), intervalHeight(node.right)) + 1;
-  node.maxEnd = Math.max(
-    node.edit.end,
-    node.left?.maxEnd ?? -Infinity,
-    node.right?.maxEnd ?? -Infinity
-  );
-  node.maxPriority = Math.max(
-    intervalPriority(node.edit),
-    node.left?.maxPriority ?? -Infinity,
-    node.right?.maxPriority ?? -Infinity
-  );
-  return node;
-}
-/** @param {IntervalNode} node */
-function rotateIntervalRight(node) {
-  const pivot = /** @type {IntervalNode} */ (node.left);
-  node.left = pivot.right;
-  pivot.right = refreshInterval(node);
-  return refreshInterval(pivot);
-}
-/** @param {IntervalNode} node */
-function rotateIntervalLeft(node) {
-  const pivot = /** @type {IntervalNode} */ (node.right);
-  node.right = pivot.left;
-  pivot.left = refreshInterval(node);
-  return refreshInterval(pivot);
-}
-/** @param {IntervalNode} node */
-function balanceInterval(node) {
-  refreshInterval(node);
-  const difference = intervalHeight(node.left) - intervalHeight(node.right);
-  if (difference > 1) {
-    if (intervalHeight(node.left?.right) > intervalHeight(node.left?.left))
-      node.left = rotateIntervalLeft(/** @type {IntervalNode} */ (node.left));
-    return rotateIntervalRight(node);
-  }
-  if (difference < -1) {
-    if (intervalHeight(node.right?.left) > intervalHeight(node.right?.right))
-      node.right = rotateIntervalRight(
-        /** @type {IntervalNode} */ (node.right)
-      );
-    return rotateIntervalLeft(node);
-  }
-  return node;
-}
-/** @param {IntervalNode | undefined} node @param {SourceEdit} edit @return {IntervalNode} */
-function insertInterval(node, edit) {
-  if (!node)
-    return {
-      edit,
-      height: 1,
-      maxEnd: edit.end,
-      maxPriority: intervalPriority(edit),
-    };
-  if (edit.start < node.edit.start) node.left = insertInterval(node.left, edit);
-  else node.right = insertInterval(node.right, edit);
-  return balanceInterval(node);
-}
-/** @param {IntervalNode | undefined} node @param {SourceEdit} edit @return {SourceEdit | undefined} */
-function findIntervalOverlap(node, edit) {
-  /** @type {SourceEdit | undefined} */
-  let overlap;
-  /** @param {IntervalNode | undefined} current */
-  function visit(current) {
-    if (
-      !current ||
-      current.maxEnd <= edit.start ||
-      (overlap && current.maxPriority <= intervalPriority(overlap))
-    )
-      return;
-    visit(current.left);
-    if (current.edit.start >= edit.end) return;
-    const overlaps =
-      (edit.start < current.edit.end && current.edit.start < edit.end) ||
-      (edit.start === edit.end &&
-        current.edit.start < edit.start &&
-        edit.start < current.edit.end) ||
-      (current.edit.start === current.edit.end &&
-        edit.start < current.edit.start &&
-        current.edit.start < edit.end);
-    if (
-      overlaps &&
-      (!overlap || intervalPriority(current.edit) > intervalPriority(overlap))
-    )
-      overlap = current.edit;
-    visit(current.right);
-  }
-  visit(node);
-  return overlap;
-}
-
 /**
- * Apply source edits. Invalid source bounds and equally prioritized overlaps
- * fail closed, preserving the complete input instead of a partial rewrite.
+ * Apply non-overlapping source edits. Invalid source bounds and overlaps fail
+ * closed, preserving the complete input instead of a partial rewrite.
  *
  * @param {string} source
  * @param {SourceEdit[]} edits
@@ -141,11 +38,9 @@ function applyEdits(source, edits) {
   // Validate before accepting anything: callers rely on one bad candidate
   // leaving the complete value untouched.
   for (const edit of edits) {
-    const priority = edit.priority ?? 0;
     if (
       !Number.isInteger(edit.start) ||
       !Number.isInteger(edit.end) ||
-      !Number.isFinite(priority) ||
       edit.start < 0 ||
       edit.end < edit.start ||
       edit.end > source.length
@@ -153,31 +48,25 @@ function applyEdits(source, edits) {
       return source;
   }
 
-  /** @type {IntervalNode | undefined} */
-  let intervals;
-  /** @type {SourceEdit[]} */
-  const accepted = [];
-  for (const edit of [...edits].toSorted(
-    (a, b) => (b.priority ?? 0) - (a.priority ?? 0)
-  )) {
-    const priority = edit.priority ?? 0;
-    const overlap = findIntervalOverlap(intervals, edit);
-    if (overlap) {
-      if ((overlap.priority ?? 0) === priority) return source;
-      continue;
-    }
-    accepted.push(edit);
-    intervals = insertInterval(intervals, edit);
-  }
-  const ordered = accepted.toSorted(
+  const ordered = edits.toSorted(
     (a, b) => a.start - b.start || a.end - a.start - (b.end - b.start)
   );
   const pieces = [];
   let cursor = 0;
+  let replacementStart = -1;
+  let replacementEnd = -1;
   for (const edit of ordered) {
+    if (edit.start === edit.end) {
+      if (replacementStart < edit.start && edit.start < replacementEnd)
+        return source;
+    } else {
+      if (edit.start < replacementEnd) return source;
+      replacementStart = edit.start;
+      replacementEnd = edit.end;
+    }
     if (cursor < edit.start) pieces.push(source.slice(cursor, edit.start));
     if (edit.text) pieces.push(edit.text);
-    cursor = edit.end;
+    if (edit.end > cursor) cursor = edit.end;
   }
   if (cursor < source.length) pieces.push(source.slice(cursor));
   return pieces.join('');

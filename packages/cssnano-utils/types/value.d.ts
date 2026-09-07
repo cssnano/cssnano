@@ -4,15 +4,6 @@ export type SourceEdit = {
     start: number;
     end: number;
     text: string;
-    priority?: number;
-};
-export type IntervalNode = {
-    edit: SourceEdit;
-    left?: IntervalNode;
-    right?: IntervalNode;
-    height: number;
-    maxEnd: number;
-    maxPriority: number;
 };
 export type NumericSource = {
     index: number;
@@ -24,8 +15,7 @@ export type NumericSource = {
     hasDecimal: boolean;
 };
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
-/** @typedef {{start: number, end: number, text: string, priority?: number}} SourceEdit */
-/** @typedef {{edit: SourceEdit, left?: IntervalNode, right?: IntervalNode, height: number, maxEnd: number, maxPriority: number}} IntervalNode */
+/** @typedef {{start: number, end: number, text: string}} SourceEdit */
 /** @typedef {{index: number, start: number, end: number, raw: string, number: number, unit: string, hasDecimal: boolean}} NumericSource */
 /** @param {CSSToken} token @return {string} */
 declare function decoded(token: CSSToken): string;
@@ -36,8 +26,8 @@ declare function tokenStart(token: CSSToken): number;
 /** @param {CSSToken} token @return {number} */
 declare function tokenEnd(token: CSSToken): number;
 /**
- * Apply source edits. Invalid source bounds and equally prioritized overlaps
- * fail closed, preserving the complete input instead of a partial rewrite.
+ * Apply non-overlapping source edits. Invalid source bounds and overlaps fail
+ * closed, preserving the complete input instead of a partial rewrite.
  *
  * @param {string} source
  * @param {SourceEdit[]} edits

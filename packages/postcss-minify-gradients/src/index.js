@@ -57,7 +57,7 @@ function optimise(decl) {
   if (!structure) return;
   const { tokens: input } = structure;
   const tokenIndexes = new Map(input.map((token, index) => [token, index]));
-  /** @type {{start:number,end:number,text:string,priority?:number}[]} */
+  /** @type {{start:number,end:number,text:string}[]} */
   const replacements = [];
   // Visit nested gradients as the token walker does; their ranges are already
   // available from the shared delimiter map.
@@ -70,6 +70,10 @@ function optimise(decl) {
       continue;
     const end = structure.endForOpening(index);
     if (end === undefined) continue;
+    /** @type {{start:number,end:number,text:string}[]} */
+    const gradientReplacements = [];
+    /** @type {Map<CSSToken, {start:number,end:number,text:string}>} */
+    const positionReplacements = new Map();
     const args = structure.topLevelSegments(index + 1, end);
     const first = significant(input, structure, args[0]);
     if (
@@ -82,7 +86,7 @@ function optimise(decl) {
       const direction = directions.get(decoded(first[1]).toLowerCase());
       if (direction) {
         const text = direction;
-        replacements.push({
+        gradientReplacements.push({
           start: first[0][2],
           end: tokenEnd(first[1]),
           text,
@@ -139,7 +143,11 @@ function optimise(decl) {
           continue;
         }
         if (largest && largest.number >= current.number)
-          replacements.push({ start: item[2], end: tokenEnd(item), text: '0' });
+          positionReplacements.set(item, {
+            start: item[2],
+            end: tokenEnd(item),
+            text: '0',
+          });
         else largest = current;
       }
     }
@@ -151,15 +159,20 @@ function optimise(decl) {
           position?.length === 1 &&
           ((stop === stops[0] && position[0][1] === '0%') ||
             (stop === stops.at(-1) && position[0][1] === '100%'))
-        )
-          replacements.push({
+        ) {
+          gradientReplacements.push({
             start: stop.colorEnd + 1,
             end: tokenEnd(position[0]),
             text: '',
-            priority: 1,
           });
+          positionReplacements.delete(position[0]);
+        }
       }
     }
+    replacements.push(
+      ...gradientReplacements,
+      ...positionReplacements.values()
+    );
   }
   decl.value = applyEdits(source, replacements);
 }
