@@ -38,6 +38,22 @@ describe('CSS processing', () => {
   );
 
   test(
+    'should preserve registered percentage initial values after preset composition',
+    withDefaults.processCSS(
+      `@property --percent-and-number{syntax:'<percentage> <number>';inherits:false;initial-value:0% 1;}`,
+      '@property --percent-and-number{syntax:"<percentage> <number>";inherits:false;initial-value:0% 1}'
+    )
+  );
+
+  test(
+    'should preserve variable-backed opacity calculations after preset composition',
+    withDefaults.processCSS(
+      'h1{opacity:calc(var(--foo)*5)}',
+      'h1{opacity:calc(5 * var(--foo))}'
+    )
+  );
+
+  test(
     'should process CSS with Browserslist options',
     withBrowserslist.processCSS(
       'button { color: hsla(0 100% 50% / 40%); appearance: none }',
