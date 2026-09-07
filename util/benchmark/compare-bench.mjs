@@ -6,7 +6,7 @@ import {
   bootstrapConfidenceInterval,
   pairedPercentChange,
   quantile,
-} from './compare-statistics.mjs';
+} from './bench-stats.mjs';
 import { loadSnapshot } from './compare-snapshot-io.mjs';
 import { compareSnapshots } from './compare-snapshots.mjs';
 import { markdownComparison, printComparison } from './compare-report.mjs';

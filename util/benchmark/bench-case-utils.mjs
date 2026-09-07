@@ -3,7 +3,7 @@ import postcss from 'postcss';
 
 const require = createRequire(import.meta.url);
 
-export function pluginProcessor(packageName) {
+function pluginProcessor(packageName) {
   return postcss([require(`../../packages/${packageName}/src/index.js`)]);
 }
 

@@ -147,6 +147,33 @@ test('comparison verdicts distinguish improvement, regression, and noise', () =>
   );
 });
 
+test('comparison results expose only report fields', () => {
+  const result = compareSnapshots(
+    snapshot([100, 100, 100, 100, 100]),
+    snapshot([90, 90, 90, 90, 90])
+  );
+  assert.deepEqual(Object.keys(result.total).toSorted(), [
+    'baseMedianMs',
+    'candidateMedianMs',
+    'confidenceIntervalPct',
+    'medianDeltaPct',
+    'replicateCount',
+    'spreadPct',
+    'verdict',
+  ]);
+  assert.deepEqual(Object.keys(result.rows[0]).toSorted(), [
+    'baseMedianMs',
+    'bytes',
+    'candidateMedianMs',
+    'confidenceIntervalPct',
+    'medianDeltaPct',
+    'name',
+    'replicateCount',
+    'spreadPct',
+    'verdict',
+  ]);
+});
+
 test('comparison rejects mismatched metadata and corpus', () => {
   const base = snapshot([100, 100, 100, 100, 100]);
   const differentSeed = { ...snapshot([90, 90, 90, 90, 90]), seed: 'other' };
