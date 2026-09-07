@@ -1,8 +1,4 @@
-/**
- * @param {import('postcss').Rule} rule
- * @return {void}
- */
-declare function explode(rule: import('postcss').Rule): void;
+import { explode } from './borderLifecycle.js';
 /**
  * @param {import('postcss').Rule} rule
  * @return {void}
