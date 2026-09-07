@@ -7,8 +7,7 @@ const transformRegex = /transform$/i;
 
 /** @param {string} name @return {string} */
 function normalizeReducerName(name) {
-  const lower = name.toLowerCase();
-  return lower === 'rotatez' ? 'rotateZ' : lower;
+  return name.toLowerCase();
 }
 
 /** @param {{start:number,end:number,significant:number[]}} argument @param {string} value @param {readonly import('@csstools/css-tokenizer').CSSToken[]} tokens @param {NonNullable<ReturnType<typeof balancedTokens>>} structure @return {string} */
@@ -23,38 +22,16 @@ function argumentSource(argument, value, tokens, structure) {
   );
 }
 
-/** @param {(number|string)[]} values @param {(...indices: number[]) => string} select */
-function reduceMatrix(values, select) {
-  if (values.length !== 16) return undefined;
-  return values[2] === 0 &&
-    values[3] === 0 &&
-    values[6] === 0 &&
-    values[7] === 0 &&
-    values[8] === 0 &&
-    values[9] === 0 &&
-    values[10] === 1 &&
-    values[11] === 0 &&
-    values[14] === 0 &&
-    values[15] === 1
-    ? `matrix(${select(0, 1, 4, 5, 12, 13)})`
-    : undefined;
-}
-
 /**
  * Declarative 3D vector reduction tables.
- * Each entry specifies the exact axis pattern to match and the target function.
+ * Every target remains a 3D function, preserving 3D-transformed status.
  */
 const rotate3dAxes = [
   { match: [1, 0, 0], target: 'rotateX' },
   { match: [0, 1, 0], target: 'rotateY' },
-  { match: [0, 0, 1], target: 'rotate' },
 ];
 
-const scale3dAxes = [
-  { match: [null, 1, 1], target: 'scaleX', index: 0 },
-  { match: [1, null, 1], target: 'scaleY', index: 1 },
-  { match: [1, 1, null], target: 'scaleZ', index: 2 },
-];
+const scale3dAxes = [{ match: [1, 1, null], target: 'scaleZ', index: 2 }];
 
 /** @param {string} name @param {(number|string)[]} values @param {(...indices: number[]) => string} select */
 function reduceRotation(name, values, select) {
@@ -70,7 +47,6 @@ function reduceRotation(name, values, select) {
     }
     return undefined;
   }
-  if (name === 'rotateZ' && values.length === 1) return `rotate(${select(0)})`;
   return undefined;
 }
 
@@ -113,9 +89,7 @@ function reduceTranslation(name, values, select) {
 
 /** @type {Map<string, (values: (number|string)[], select: (...indices: number[]) => string) => string | undefined>} */
 const reducers = new Map([
-  ['matrix3d', reduceMatrix],
   ['rotate3d', (values, select) => reduceRotation('rotate3d', values, select)],
-  ['rotateZ', (values, select) => reduceRotation('rotateZ', values, select)],
   ['scale', (values, select) => reduceScale('scale', values, select)],
   ['scale3d', (values, select) => reduceScale('scale3d', values, select)],
   [

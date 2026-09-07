@@ -9,28 +9,25 @@ import plugin from '../src/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
-describe('Shorten', () => {
+describe('Preserves 3D-transformed classification', () => {
   test(
-    'should shorten matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1) to matrix(a, b, c, d, tx, ty)',
-    processCSS(
-      'h1{transform:matrix3d(20, 20, 0, 0, 40, 40, 0, 0, 0, 0, 1, 0, 80, 80, 0, 1)}',
-      'h1{transform:matrix(20, 20, 40, 40, 80, 80)}'
+    'keeps matrix3d() that describes a 2D matrix',
+    passthroughCSS(
+      'h1{transform:matrix3d(20, 20, 0, 0, 40, 40, 0, 0, 0, 0, 1, 0, 80, 80, 0, 1)}'
     )
   );
 
   test(
-    'should shorten matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1) to matrix(a, b, c, d, tx, ty) (uppercase property)',
-    processCSS(
-      'h1{TRANSFORM:matrix3d(20, 20, 0, 0, 40, 40, 0, 0, 0, 0, 1, 0, 80, 80, 0, 1)}',
-      'h1{TRANSFORM:matrix(20, 20, 40, 40, 80, 80)}'
+    'keeps matrix3d() with an uppercase property name',
+    passthroughCSS(
+      'h1{TRANSFORM:matrix3d(20, 20, 0, 0, 40, 40, 0, 0, 0, 0, 1, 0, 80, 80, 0, 1)}'
     )
   );
 
   test(
-    'should shorten matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1) to matrix(a, b, c, d, tx, ty) (uppercase value)',
-    processCSS(
-      'h1{TRANSFORM:MATRIX3D(20, 20, 0, 0, 40, 40, 0, 0, 0, 0, 1, 0, 80, 80, 0, 1)}',
-      'h1{TRANSFORM:matrix(20, 20, 40, 40, 80, 80)}'
+    'keeps matrix3d() with an uppercase function name',
+    passthroughCSS(
+      'h1{TRANSFORM:MATRIX3D(20, 20, 0, 0, 40, 40, 0, 0, 0, 0, 1, 0, 80, 80, 0, 1)}'
     )
   );
 });
@@ -42,19 +39,16 @@ test(
   )
 );
 
-describe('Shorten', () => {
+describe('Reduces equivalent 3D transform functions', () => {
+  test('keeps rotateZ()', passthroughCSS('h1{transform:rotateZ(180deg)}'));
+
   test(
-    'should shorten rotateZ to rotate',
-    processCSS('h1{transform:rotateZ(180deg)}', 'h1{transform:rotate(180deg)}')
+    'keeps rotateZ() with an uppercase function name',
+    passthroughCSS('h1{transform:ROTATEZ(180deg)}')
   );
 
   test(
-    'should shorten rotateZ to rotate (uppercase value)',
-    processCSS('h1{transform:ROTATEZ(180deg)}', 'h1{transform:rotate(180deg)}')
-  );
-
-  test(
-    'should shorten rotate3d(1, 0, 0, a) to rotateX(a)',
+    'reduces x-axis rotate3d() to rotateX()',
     processCSS(
       'h1{transform:rotate3d(1, 0, 0, 20deg)}',
       'h1{transform:rotateX(20deg)}'
@@ -62,7 +56,7 @@ describe('Shorten', () => {
   );
 
   test(
-    'should shorten rotate3d(1, 0, 0, a) to rotateX(a) (uppercase value)',
+    'reduces x-axis rotate3d() with an uppercase function name',
     processCSS(
       'h1{transform:ROTATE3D(1, 0, 0, 20deg)}',
       'h1{transform:rotateX(20deg)}'
@@ -70,7 +64,7 @@ describe('Shorten', () => {
   );
 
   test(
-    'should shorten rotate3d(0, 1, 0, a) to rotateY(a)',
+    'reduces y-axis rotate3d() to rotateY()',
     processCSS(
       'h1{transform:rotate3d(0, 1, 0, 20deg)}',
       'h1{transform:rotateY(20deg)}'
@@ -78,11 +72,8 @@ describe('Shorten', () => {
   );
 
   test(
-    'should shorten rotate3d(0, 0, 1, a) to rotate(a)',
-    processCSS(
-      'h1{transform:rotate3d(0, 0, 1, 20deg)}',
-      'h1{transform:rotate(20deg)}'
-    )
+    'keeps z-axis rotate3d()',
+    passthroughCSS('h1{transform:rotate3d(0, 0, 1, 20deg)}')
   );
 });
 
@@ -125,19 +116,19 @@ describe('Pass', () => {
   );
 });
 
-describe('Shorten', () => {
+describe('Preserves 3D-transformed classification', () => {
   test(
-    'should shorten scale3d(sx, 1, 1) to scaleX(sx)',
-    processCSS('h1{transform:scale3d(1.5, 1, 1)}', 'h1{transform:scaleX(1.5)}')
+    'keeps x-axis scale3d()',
+    passthroughCSS('h1{transform:scale3d(1.5, 1, 1)}')
   );
 
   test(
-    'should shorten scale3d(1, sy, 1) to scaleY(sy)',
-    processCSS('h1{transform:scale3d(1, 1.5, 1)}', 'h1{transform:scaleY(1.5)}')
+    'keeps y-axis scale3d()',
+    passthroughCSS('h1{transform:scale3d(1, 1.5, 1)}')
   );
 
   test(
-    'should shorten scale3d(1, 1, sz) to scaleZ(sz)',
+    'reduces z-axis scale3d() to scaleZ()',
     processCSS('h1{transform:scale3d(1, 1, 1.5)}', 'h1{transform:scaleZ(1.5)}')
   );
 });
@@ -171,7 +162,7 @@ describe('Shorten', () => {
   );
 
   test(
-    'should shorten translate3d(0, 0, tz) to translateZ(tz)',
+    'reduces translate3d() to translateZ()',
     processCSS(
       'h1{transform:translate3d(0, 0, 2)}',
       'h1{transform:translateZ(2)}'
@@ -186,7 +177,7 @@ test(
 
 describe('Work', () => {
   test(
-    'should work with vendor prefixes',
+    'reduces vendor-prefixed 3D transforms',
     processCSS(
       'h1{-webkit-transform:translate3d(0, 0, 0)}',
       'h1{-webkit-transform:translateZ(0)}'
@@ -194,7 +185,7 @@ describe('Work', () => {
   );
 
   test(
-    'should work with vendor prefixes #1',
+    'reduces Mozilla-prefixed 3D transforms',
     processCSS(
       'h1{-moz-transform:translate3d(0, 0, 0)}',
       'h1{-moz-transform:translateZ(0)}'
@@ -202,7 +193,7 @@ describe('Work', () => {
   );
 
   test(
-    'should work with vendor prefixes (uppercase property)',
+    'reduces vendor-prefixed 3D transforms with uppercase properties',
     processCSS(
       'h1{-WEBKIT-TRANSFORM:translate3d(0, 0, 0)}',
       'h1{-WEBKIT-TRANSFORM:translateZ(0)}'
@@ -210,7 +201,7 @@ describe('Work', () => {
   );
 
   test(
-    'should work with vendor prefixes (uppercase value)',
+    'reduces vendor-prefixed 3D transforms with uppercase values',
     processCSS(
       'h1{-WEBKIT-TRANSFORM:TRANSLATE3D(0, 0, 0)}',
       'h1{-WEBKIT-TRANSFORM:translateZ(0)}'
@@ -300,10 +291,9 @@ describe('Pass', () => {
 
 describe('Work', () => {
   test(
-    'should work with variables',
-    processCSS(
-      'h1{transform:matrix3d(var(--a), var(--b), 0, 0, var(--c), var(--d), 0, 0, 0, 0, 1, 0, var(--tx), var(--ty), 0, 1)}',
-      'h1{transform:matrix(var(--a), var(--b), var(--c), var(--d), var(--tx), var(--ty))}'
+    'keeps a 2D matrix3d() with variables',
+    passthroughCSS(
+      'h1{transform:matrix3d(var(--a), var(--b), 0, 0, var(--c), var(--d), 0, 0, 0, 0, 1, 0, var(--tx), var(--ty), 0, 1)}'
     )
   );
 
@@ -324,19 +314,13 @@ describe('Work', () => {
   );
 
   test(
-    'should work with variables #3',
-    processCSS(
-      'h1{transform:rotate3d(0, 0, 1, var(--foo))}',
-      'h1{transform:rotate(var(--foo))}'
-    )
+    'keeps z-axis rotate3d() with variables',
+    passthroughCSS('h1{transform:rotate3d(0, 0, 1, var(--foo))}')
   );
 
   test(
-    'should work with variables #4',
-    processCSS(
-      'h1{transform:rotateZ(var(--foo))}',
-      'h1{transform:rotate(var(--foo))}'
-    )
+    'keeps rotateZ() with variables',
+    passthroughCSS('h1{transform:rotateZ(var(--foo))}')
   );
 
   test(
@@ -372,19 +356,13 @@ describe('Work', () => {
   );
 
   test(
-    'should work with variables #9',
-    processCSS(
-      'h1{transform:scale3d(var(--foo), 1, 1)}',
-      'h1{transform:scaleX(var(--foo))}'
-    )
+    'keeps x-axis scale3d() with variables',
+    passthroughCSS('h1{transform:scale3d(var(--foo), 1, 1)}')
   );
 
   test(
-    'should work with variables #10',
-    processCSS(
-      'h1{transform:scale3d(1, var(--foo), 1)}',
-      'h1{transform:scaleY(var(--foo))}'
-    )
+    'keeps y-axis scale3d() with variables',
+    passthroughCSS('h1{transform:scale3d(1, var(--foo), 1)}')
   );
 
   test(
@@ -527,7 +505,7 @@ describe('Handles nested syntax and source spelling', () => {
     'reduces multiple transform functions in one value',
     processCSS(
       'h1{transform:scale(1, 1) rotateZ(20deg) translate(4, 0)}',
-      'h1{transform:scale(1) rotate(20deg) translate(4)}'
+      'h1{transform:scale(1) rotateZ(20deg) translate(4)}'
     )
   );
 
@@ -556,11 +534,8 @@ describe('Handles nested syntax and source spelling', () => {
   );
 
   test(
-    'recognizes escaped legacy function names',
-    processCSS(
-      'h1{transform:ROT\\41 TEZ(20deg)}',
-      'h1{transform:rotate(20deg)}'
-    )
+    'preserves escaped 3D function names',
+    passthroughCSS('h1{transform:ROT\\41 TEZ(20deg)}')
   );
 
   test(

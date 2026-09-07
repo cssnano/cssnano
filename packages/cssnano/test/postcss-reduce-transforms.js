@@ -2,16 +2,16 @@ import { test } from 'node:test';
 import processCss from './_processCss.js';
 
 test(
-  'should shorten matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1) to matrix(a, b, c, d, tx, ty)',
+  'keeps matrix3d() that describes a 2D matrix',
   processCss(
     'h1{transform:matrix3d(20, 20, 0, 0, 40, 40, 0, 0, 0, 0, 1, 0, 80, 80, 0, 1)}',
-    'h1{transform:matrix(20,20,40,40,80,80)}'
+    'h1{transform:matrix3d(20,20,0,0,40,40,0,0,0,0,1,0,80,80,0,1)}'
   )
 );
 
 test(
-  'should shorten rotateZ to rotate',
-  processCss('h1{transform:rotateZ(180deg)}', 'h1{transform:rotate(180deg)}')
+  'keeps rotateZ()',
+  processCss('h1{transform:rotateZ(180deg)}', 'h1{transform:rotateZ(180deg)}')
 );
 
 test(
@@ -31,10 +31,10 @@ test(
 );
 
 test(
-  'should shorten rotate3d(0, 0, 1, a) to rotate(a)',
+  'keeps z-axis rotate3d()',
   processCss(
     'h1{transform:rotate3d(0, 0, 1, 20deg)}',
-    'h1{transform:rotate(20deg)}'
+    'h1{transform:rotate3d(0,0,1,20deg)}'
   )
 );
 
