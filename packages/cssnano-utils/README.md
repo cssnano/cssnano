@@ -23,7 +23,7 @@ Utility methods and plugins for cssnano projects.
 | `numeric` | Parse a single token into `{ number, unit }`, or `false` if not a numeric token. |
 | `numericSource` | Capture a numeric token or multi-token sequence (e.g. `1.em`) with exclusive source bounds. |
 | `balancedTokens` | Parse CSS into a `BalancedTokens` index of matching delimiters (`()`, `[]`, `{}`), or `undefined` if unbalanced. |
-| `applyEdits` | Apply non-overlapping string replacements using an interval tree with priority-based conflict resolution. |
+| `applyEdits` | Apply validated, non-overlapping string edits. Invalid bounds or overlaps fail closed by returning the complete original source. |
 
 ### `BalancedTokens` Methods
 
