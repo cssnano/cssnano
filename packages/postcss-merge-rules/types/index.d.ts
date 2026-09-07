@@ -1,5 +1,4 @@
 import type browserslist from 'browserslist';
-import type { Declaration } from 'postcss';
 export type RuleMeta = {
     /**
      * - Array of selector strings for the rule
@@ -8,7 +7,7 @@ export type RuleMeta = {
     /**
      * - Array of declaration nodes for the rule
      */
-    declarations: Declaration[];
+    declarations: import('postcss').Declaration[];
     /**
      * - Whether the selectors have been modified and need flushing
      */
@@ -19,15 +18,19 @@ export type AutoprefixerOptions = {
 };
 export type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
 export type Options = AutoprefixerOptions & BrowserslistOptions;
+/** @import browserslist from 'browserslist' */
+/**
+ * @typedef {Object} RuleMeta
+ * @property {string[]} selectors - Array of selector strings for the rule
+ * @property {import('postcss').Declaration[]} declarations - Array of declaration nodes for the rule
+ * @property {boolean} dirty - Whether the selectors have been modified and need flushing
+ */
 /**
  * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
  * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {AutoprefixerOptions & BrowserslistOptions} Options
  */
-/**
- * @param {Options} opts
- * @return {import('postcss').Plugin}
- */
+/** @param {Options} opts @return {import('postcss').Plugin} */
 declare function pluginCreator(opts?: Options): import('postcss').Plugin;
 declare namespace pluginCreator {
     var postcss: true;
