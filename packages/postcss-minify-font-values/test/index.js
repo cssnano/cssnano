@@ -44,6 +44,11 @@ test(
 );
 
 test(
+  'should keep reserved and generic keywords quoted: default and none',
+  passthroughCSS('h1{font-family:"default","none"}')
+);
+
+test(
   'should remove duplicate families case-insensitively',
   processCSS(
     'h1{font-family:Inter,"inter",INTER,"Other"}',

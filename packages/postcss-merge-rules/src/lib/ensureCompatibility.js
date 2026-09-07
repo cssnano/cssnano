@@ -107,6 +107,7 @@ const pseudoElements = {
   ':required': formValidation,
   ':root': cssSel3,
   ':target': cssSel3,
+  ':where': 'css-matches-pseudo',
   '::after': cssGencontent,
   '::backdrop': 'dialog',
   '::before': cssGencontent,

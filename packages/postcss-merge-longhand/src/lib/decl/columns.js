@@ -11,7 +11,7 @@ import canExplode from '../canExplode.js';
 import { shorthand, initialValues, cssWideKeywords } from '../spec.js';
 import { isUnresolved } from '../unresolved.js';
 
-const { TokenType, tokenEnd, tokenStart, tokens } = cssnanoUtils;
+const { TokenType, lengthUnits, tokenEnd, tokenStart, tokens } = cssnanoUtils;
 
 const columns = 'columns';
 /* The properties the shorthand sets */
@@ -26,61 +26,6 @@ const otherColumnProperties = new Set(
 const auto = /** @type {string} */ (initialValues.get(columnProperties[0]));
 const inherit = 'inherit';
 
-/* CSS Values 4 length units. */
-const lengthUnits = new Set([
-  // Absolute lengths
-  'cm',
-  'in',
-  'mm',
-  'pc',
-  'pt',
-  'px',
-  'q',
-  // Font-relative lengths
-  'cap',
-  'ch',
-  'em',
-  'ex',
-  'ic',
-  'lh',
-  'rcap',
-  'rch',
-  'rem',
-  'rex',
-  'ric',
-  'rlh',
-  // Viewport-percentage lengths
-  'cqb',
-  'cqh',
-  'cqi',
-  'cqmax',
-  'cqmin',
-  'cqw',
-  'dvb',
-  'dvh',
-  'dvi',
-  'dvmax',
-  'dvmin',
-  'dvw',
-  'lvb',
-  'lvh',
-  'lvi',
-  'lvmax',
-  'lvmin',
-  'lvw',
-  'svb',
-  'svh',
-  'svi',
-  'svmax',
-  'svmin',
-  'svw',
-  'vb',
-  'vh',
-  'vi',
-  'vmax',
-  'vmin',
-  'vw',
-]);
 const openingTokens = new Set([
   TokenType.Function,
   TokenType.OpenParen,

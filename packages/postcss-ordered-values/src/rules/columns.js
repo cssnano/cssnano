@@ -1,61 +1,7 @@
+import cssnanoUtils from 'cssnano-utils';
 import { isDimension, isIdent, isNumber, name } from '../lib/tokenize.js';
 
-/* CSS Values 4 length units. */
-const lengthUnits = new Set([
-  // Absolute lengths
-  'cm',
-  'in',
-  'mm',
-  'pc',
-  'pt',
-  'px',
-  'q',
-  // Font-relative lengths
-  'cap',
-  'ch',
-  'em',
-  'ex',
-  'ic',
-  'lh',
-  'rcap',
-  'rch',
-  'rem',
-  'rex',
-  'ric',
-  'rlh',
-  // Container query lengths
-  'cqb',
-  'cqh',
-  'cqi',
-  'cqmax',
-  'cqmin',
-  'cqw',
-  // Viewport-percentage lengths
-  'dvb',
-  'dvh',
-  'dvi',
-  'dvmax',
-  'dvmin',
-  'dvw',
-  'lvb',
-  'lvh',
-  'lvi',
-  'lvmax',
-  'lvmin',
-  'lvw',
-  'svb',
-  'svh',
-  'svi',
-  'svmax',
-  'svmin',
-  'svw',
-  'vb',
-  'vh',
-  'vi',
-  'vmax',
-  'vmin',
-  'vw',
-]);
+const { lengthUnits } = cssnanoUtils;
 
 /**
  * @param {import('../lib/tokenize.js').Term} term

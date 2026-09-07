@@ -2052,3 +2052,34 @@ test(
     'a{border-color:red;border-style:solid;border-width:1px}'
   )
 );
+
+test(
+  'should not merge unitless non-zero border-width into shorthand',
+  passthroughCSS(
+    'a{border-top-width:1;border-right-width:1px;border-bottom-width:1px;border-left-width:1px}'
+  )
+);
+
+test(
+  'should merge CSS Color 4 system color Canvas in border-color',
+  processCSS(
+    'a{border-top-color:Canvas;border-right-color:Canvas;border-bottom-color:Canvas;border-left-color:Canvas}',
+    'a{border-color:Canvas}'
+  )
+);
+
+test(
+  'should merge border shorthand with system color Canvas',
+  processCSS(
+    'a{border-top:1px solid Canvas;border-right:1px solid Canvas;border-bottom:1px solid Canvas;border-left:1px solid Canvas}',
+    'a{border-color:canvas;border-style:solid;border-width:1px}'
+  )
+);
+
+test(
+  'should merge CSS Color 4 system color Highlight in border-color',
+  processCSS(
+    'a{border-top-color:Highlight;border-right-color:Highlight;border-bottom-color:Highlight;border-left-color:Highlight}',
+    'a{border-color:Highlight}'
+  )
+);

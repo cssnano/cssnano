@@ -51,6 +51,7 @@ declare const pseudoElements: {
     ':required': string;
     ':root': string;
     ':target': string;
+    ':where': string;
     '::after': string;
     '::backdrop': string;
     '::before': string;

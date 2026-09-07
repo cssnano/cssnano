@@ -1,6 +1,9 @@
+import cssnanoUtils from 'cssnano-utils';
 import { list } from 'postcss';
 import { sides } from './spec.js';
 import { isUnresolved } from './unresolved.js';
+
+const { lengthUnits } = cssnanoUtils;
 
 /* CSS user agents ignore margin and padding declarations that violate the
  * property's grammar: margin rejects negative values and auto,
@@ -43,6 +46,10 @@ function specifiesSide(token, grammar) {
 
   /* Only zero may go without a unit; `margin: 5` is no length. */
   if (unit === undefined && Number(number) !== 0) {
+    return false;
+  }
+
+  if (unit !== undefined && unit !== '%' && !lengthUnits.has(unit)) {
     return false;
   }
 

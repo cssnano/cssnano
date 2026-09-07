@@ -8,6 +8,8 @@ const globalKeywords = new Set([
   'unset',
   'revert',
   'revert-layer',
+  'default',
+  'none',
 ]);
 const generic = new Set([
   'sans-serif',

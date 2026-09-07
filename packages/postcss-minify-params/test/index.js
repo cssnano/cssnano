@@ -567,4 +567,30 @@ describe('Mangle', () => {
   );
 });
 
+describe('Media Queries Level 4 range syntax', () => {
+  test(
+    'should normalize range context with dimension on the left',
+    processCSS(
+      '@media (400px <= width <= 800px){h1{color:blue}}',
+      '@media (400px<=width<=800px){h1{color:blue}}'
+    )
+  );
+
+  test(
+    'should normalize range context with spaces',
+    processCSS(
+      '@media ( 400px <= width <= 800px ){h1{color:blue}}',
+      '@media (400px<=width<=800px){h1{color:blue}}'
+    )
+  );
+
+  test(
+    'should normalize range context with unitless zero',
+    processCSS(
+      '@media (0 < width < 1000px){h1{color:blue}}',
+      '@media (0<width<1000px){h1{color:blue}}'
+    )
+  );
+});
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

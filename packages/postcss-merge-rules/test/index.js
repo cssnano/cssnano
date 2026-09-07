@@ -1483,3 +1483,31 @@ test(
     '.a{appearance:none}.a,.b{place-items:center}'
   )
 );
+
+test(
+  'should merge rules with :where when supported',
+  processCSS(
+    'div:where(.a){color:red}div:where(.b){color:red}',
+    'div:where(.a),div:where(.b){color:red}',
+    { overrideBrowserslist: ['chrome 120', 'safari 17', 'firefox 120'] }
+  )
+);
+
+test(
+  'should not merge rules with :where when unsupported',
+  passthroughCSS('div:where(.a){color:red}div:where(.b){color:red}', {
+    overrideBrowserslist: ['ie 11'],
+  })
+);
+
+test(
+  'should not merge rules across distinct anonymous @layer at-rules',
+  passthroughCSS('@layer{#main.foo{color:red}}@layer{.foo{color:blue}}')
+);
+
+test(
+  'should not merge rules across distinct anonymous @layer at-rules with comments',
+  passthroughCSS(
+    '@layer /*! important 1 */ {#main.foo{color:red}}@layer /*! important 2 */ {.foo{color:blue}}'
+  )
+);
