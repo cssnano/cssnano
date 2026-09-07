@@ -1,6 +1,14 @@
 import { pluginCase } from './bench-case-utils.mjs';
 
 export const selectorCases = {
+  'selector-fixed-point': pluginCase(
+    'postcss-minify-selectors',
+    Array.from(
+      { length: 20_000 },
+      (_, index) =>
+        `.utility-${index}.enabled #target-${index} item-${index}{color:red}`
+    ).join('')
+  ),
   'selector-reduction': pluginCase(
     'postcss-minify-selectors',
     Array.from(

@@ -1,5 +1,6 @@
 import getBrowsersList from '#getBrowsersList';
 import caniuseApi from 'caniuse-api';
+import { isFixedPointSelector } from './lib/fixedPointSelector.js';
 import { normalizeList } from './lib/selectorScanner.js';
 
 /** @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions */
@@ -46,6 +47,13 @@ function pluginCreator(opts = {}) {
             const inKeyframes =
               rule.parent?.type === 'atrule' &&
               /(?:^|-)(?:webkit-)?keyframes$/iu.test(rule.parent.name);
+            if (
+              !inKeyframes &&
+              !hasDefaultNamespace &&
+              isFixedPointSelector(source)
+            ) {
+              return;
+            }
             const cacheKey = `${inKeyframes ? 'k' : 's'}${hasDefaultNamespace ? 'n' : ''}\0${source}`;
             let output = cache.get(cacheKey);
             if (output === undefined) {
