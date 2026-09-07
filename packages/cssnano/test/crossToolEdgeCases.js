@@ -114,6 +114,26 @@ describe('Cross-tool edge cases and modern CSS specifications', () => {
     )
   );
 
+  // esbuild#4395: nested media-query conditions must remain nested when
+  // minifying a query that combines `and` and `or`.
+  test(
+    'preserves nested media-query parentheses',
+    processCss(
+      '@media screen and ((min-width:10px) or (min-height:10px)){color:blue}',
+      '@media screen and ((min-width:10px) or (min-height:10px)){color:blue}'
+    )
+  );
+
+  // esbuild#2552: rules with identical declarations can share one selector
+  // list without changing their cascade behavior.
+  test(
+    'merges rules with identical declarations',
+    processCss(
+      'a:not([href]){color:inherit;text-decoration:none}a:not([href]):hover{color:inherit;text-decoration:none}',
+      'a:not([href]),a:not([href]):hover{color:inherit;text-decoration:none}'
+    )
+  );
+
   test(
     'retains the declaration separator before a nested rule',
     processCss(
@@ -146,6 +166,15 @@ describe('Cross-tool edge cases and modern CSS specifications', () => {
   test(
     'preserves duplicate monospace font-family fallbacks',
     processCss.passthrough('code{font-family:monospace,monospace}')
+  );
+
+  // lightningcss#1107: legacy WebKit gradient directions are retained when
+  // cssnano cannot safely normalize their direction keywords.
+  test(
+    'preserves legacy WebKit gradient direction keywords',
+    processCss.passthrough(
+      'a{background:-webkit-linear-gradient(left,red,blue)}'
+    )
   );
 
   // lightningcss#1080: a 3D-to-2D rewrite changes 3D-transformed status.
@@ -242,12 +271,62 @@ describe('Cross-tool edge cases and modern CSS specifications', () => {
     )
   );
 
+  // clean-css#1257: the zero in a translateX() calc() retains its length
+  // unit because a unitless zero is not interchangeable in this context.
+  test(
+    'preserves length units on translateX() calc() zeros',
+    processCss(
+      'a{transform:translateX(calc(0vw + var(--x)))}',
+      'a{transform:translateX(calc(0vw + var(--x)))}'
+    )
+  );
+
+  // clean-css#1292: percentages in color-mix() identify the color-stop
+  // proportion and must not become unitless zeros.
+  test(
+    'preserves percentages in color-mix() color stops',
+    processCss(
+      '.x{color:color-mix(in srgb,var(--my-color,#0ff) 0%,transparent)}',
+      '.x{color:color-mix(in srgb,var(--my-color,#0ff) 0%,transparent)}'
+    )
+  );
+
   // clean-css#331: a custom family beginning with a digit must remain quoted.
   test(
     'keeps quotes required by custom font-family names',
     processCss(
       'a{font:20px/60px "22pro","Trebuchet MS","Helvetica Neue",Helvetica,Arial,sans-serif}',
       'a{font:20px/60px "22pro",Trebuchet MS,Helvetica Neue,Helvetica,Arial,sans-serif}'
+    )
+  );
+
+  // clean-css#1208: quoted generic family names are custom family names, not
+  // the generic keywords themselves.
+  test(
+    'keeps quoted generic font-family names',
+    processCss(
+      ".foo{font-family:'sans-serif','default'}",
+      '.foo{font-family:"sans-serif","default"}'
+    )
+  );
+
+  // clean-css#1230: a preserved comment must not be treated as part of the
+  // following selector when the preceding selector contains `--`.
+  test(
+    'preserves comments before double-hyphen selectors',
+    processCss(
+      '.double--hyphen{color:blue}/*! Please, keep this comment. */.disappears{color:red}.stays{color:green}',
+      '.double--hyphen{color:blue}/*! Please, keep this comment. */.disappears{color:red}.stays{color:green}'
+    )
+  );
+
+  // clean-css#466: a background shorthand must not cause a later gradient
+  // background-image declaration to disappear.
+  test(
+    'retains gradients when background shorthands coexist',
+    processCss(
+      '.test{background:url("http://placehold.it/100x100");background-repeat:repeat;background-image:linear-gradient(rgba(44,44,44,.1),rgba(44,44,44,.5)),url("http://placehold.it/100x100")}',
+      '.test{background:url(http://placehold.it/100x100);background-repeat:repeat;background-image:linear-gradient(rgba(44,44,44,.1),rgba(44,44,44,.5)),url(http://placehold.it/100x100)}'
     )
   );
 
