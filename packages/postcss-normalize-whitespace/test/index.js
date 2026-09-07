@@ -275,3 +275,15 @@ test('should synchronize decl.raws.value when normalized', async () => {
   await processor.process(root, { from: undefined });
   assert.deepEqual(decl.raws.value, { raw: ' 10px ', value: ' 10px ' });
 });
+
+// lightningcss#1201: whitespace between adjacent var() calls must be preserved
+test(
+  'should preserve whitespace between adjacent var() calls',
+  processCSS('h1{margin: var(--a)  var(--b)}', 'h1{margin:var(--a) var(--b)}')
+);
+
+// lightningcss#1141: var(--x, ) with empty fallback must be idempotent
+test(
+  'should be idempotent on var() with empty fallback',
+  passthroughCSS('h1{width:var(--x, )}')
+);
