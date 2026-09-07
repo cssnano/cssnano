@@ -10,11 +10,12 @@ export type ParserState = {
     frames: Frame[];
     stack: import('@csstools/css-tokenizer').TokenType[];
 };
-/** @param {import('./tokenize.js').Term} node */
-declare function isMath(node: import('./tokenize.js').Term): boolean;
-/** @param {import('./tokenize.js').Term} node */
-declare function isNonNegativeTime(node: import('./tokenize.js').Term): boolean;
-/** @param {import('./tokenize.js').Term} node */
-export default function isTime(node: import('./tokenize.js').Term): boolean;
-export { isMath, isNonNegativeTime };
+export type Dimension = 'time' | 'angle' | 'number' | `dimension:${string}` | null;
+export type TimeClassification = {
+    isMath: boolean;
+    dimension: Dimension;
+    isNonNegative: boolean;
+};
+/** @param {import('./tokenize.js').Term} node @return {TimeClassification} */
+export default function classifyTime(node: import('./tokenize.js').Term): TimeClassification;
 //# sourceMappingURL=isTime.d.ts.map

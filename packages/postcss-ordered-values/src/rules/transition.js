@@ -7,7 +7,7 @@ import {
   name,
   serializeArguments,
 } from '../lib/tokenize.js';
-import isTime, { isMath, isNonNegativeTime } from '../lib/isTime.js';
+import classifyTime from '../lib/isTime.js';
 import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
 // transition: [ none | <single-transition-property> ] || <time> || <single-transition-timing-function> || <time>
@@ -30,7 +30,8 @@ function normalizeArg(arg) {
 
   for (const node of arg) {
     const value = name(node);
-    if (isMath(node) && !isTime(node)) return null;
+    const time = classifyTime(node);
+    if (time.isMath && time.dimension !== 'time') return null;
 
     const isTimingFunc =
       (isFunction(node) && timingFunctionNames.has(value)) ||
@@ -39,11 +40,15 @@ function normalizeArg(arg) {
     if (isTimingFunc) {
       if (state.timingFunction.length) return null;
       state.timingFunction.push(node);
-    } else if (!state.time1.length && isNonNegativeTime(node)) {
+    } else if (!state.time1.length && time.isNonNegative) {
       state.time1.push(node);
-    } else if (state.time1.length && !state.time2.length && isTime(node)) {
+    } else if (
+      state.time1.length &&
+      !state.time2.length &&
+      time.dimension === 'time'
+    ) {
       state.time2.push(node);
-    } else if (isTime(node)) {
+    } else if (time.dimension === 'time') {
       return null;
     } else {
       if (isString(node) || isPercentage(node) || isUrl(node)) return null;
