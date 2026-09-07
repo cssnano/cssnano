@@ -200,11 +200,13 @@ function isAspectRatioFeature(
   after,
   close
 ) {
+  if (name >= close || input[name]?.[0] !== TokenType.Ident) {
+    return false;
+  }
   const a = input[left] ? numeric(input[left]) : false;
   const b = input[right] ? numeric(input[right]) : false;
-  const lowerName = name < close ? decoded(input[name]).toLowerCase() : '';
+  const lowerName = String(decoded(input[name])).toLowerCase();
   return (
-    input[name]?.[0] === TokenType.Ident &&
     aspectRatioFeatures.has(lowerName) &&
     input[colon]?.[0] === TokenType.Colon &&
     input[slash]?.[0] === TokenType.Delim &&

@@ -559,6 +559,20 @@ suite('invalid value handling', () => {
   );
 
   test(
+    'should not merge longhands around an unvalidated dimension unit',
+    passthroughCSS(
+      'a{margin-top:10px;margin-right:10foo;margin-bottom:10px;margin-left:10px}'
+    )
+  );
+
+  test(
+    'should not merge padding around an unvalidated dimension unit',
+    passthroughCSS(
+      'a{padding-top:10px;padding-right:10bar;padding-bottom:10px;padding-left:10px}'
+    )
+  );
+
+  test(
     'should not merge important! longhands around a invalid shorthand',
     passthroughCSS(
       'a{padding:auto;padding-top:1px!important;padding-right:1px!important;padding-bottom:1px!important;padding-left:1px!important}'

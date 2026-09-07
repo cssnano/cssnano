@@ -1,3 +1,20 @@
+import { TokenType, tokens } from './value.js';
+
+/**
+ * @param {import('postcss').AtRule} node
+ * @return {boolean}
+ */
+function isAnonymousLayer(node) {
+  const params = node.params?.trim();
+  if (!params) {
+    return true;
+  }
+  if (!params.includes('/*')) {
+    return false;
+  }
+  return !tokens(params).some((token) => token[0] === TokenType.Ident);
+}
+
 /**
  * @param {import('postcss').AnyNode} nodeA
  * @param {import('postcss').AnyNode} nodeB
@@ -5,9 +22,29 @@
  */
 function checkMatch(nodeA, nodeB) {
   if (nodeA.type === 'atrule' && nodeB.type === 'atrule') {
+    const nameA = nodeA.name.toLowerCase();
+    const nameB = nodeB.name.toLowerCase();
+    if (nameA !== nameB) {
+      return false;
+    }
+    if (nameA === 'layer') {
+      const anonA = isAnonymousLayer(
+        /** @type {import('postcss').AtRule} */ (nodeA)
+      );
+      const anonB = isAnonymousLayer(
+        /** @type {import('postcss').AtRule} */ (nodeB)
+      );
+      if (anonA || anonB) {
+        return anonA && anonB && nodeA === nodeB;
+      }
+    }
+    return nodeA.params === nodeB.params;
+  }
+  if (nodeA.type === 'rule' && nodeB.type === 'rule') {
     return (
-      nodeA.params === nodeB.params &&
-      nodeA.name.toLowerCase() === nodeB.name.toLowerCase()
+      nodeA === nodeB ||
+      /** @type {import('postcss').Rule} */ (nodeA).selector ===
+        /** @type {import('postcss').Rule} */ (nodeB).selector
     );
   }
   return nodeA.type === nodeB.type;
