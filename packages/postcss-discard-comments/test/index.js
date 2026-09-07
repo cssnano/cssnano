@@ -352,6 +352,39 @@ test(
   )
 );
 
+test(
+  'should preserve whitespace-only custom property values',
+  passthroughCSS(':root{--x: ;--empty:}')
+);
+
+test(
+  'should preserve all whitespace characters in custom property values',
+  passthroughCSS(':root{--x:\t\n\f\r }')
+);
+
+test(
+  'should preserve whitespace around removed comments in custom properties',
+  processCSS(':root{--x: \t/* remove */\n ;}', ':root{--x: \t \n ;}')
+);
+
+test(
+  'should preserve comment-like text in custom property strings and URLs',
+  processCSS(
+    ':root{--x: url("/* keep */") /* remove */ ;--y:"/* keep */" }',
+    ':root{--x:url("/* keep */")   ;--y:"/* keep */" }'
+  )
+);
+
+test(
+  'should not reuse custom property whitespace replacements for declarations',
+  processCSS(':root{--x: ;color: ;}', ':root{--x: ;color:;}')
+);
+
+test(
+  'should continue normalizing ordinary declaration values',
+  processCSS('h1{color:  red  }', 'h1{color:red  }')
+);
+
 // New tests for string context awareness
 test(
   'should not remove comments inside URL strings with double quotes',
