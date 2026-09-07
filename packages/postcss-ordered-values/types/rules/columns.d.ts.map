@@ -1,1 +1,1 @@
-{"version":3,"file":"columns.d.ts","sourceRoot":"","sources":["../../src/rules/columns.js"],"names":[],"mappings":"AAGA,QAAA,MAAM,WAAW,aAsDf,CAAC;;AA6CH,2DAA2D;0BAC3C,OAAO,EADX,OAAO,oBAAoB,EAAE,IAAI,EACtB;AAkCvB,OAAO,EAAE,WAAW,EAAE,CAAC"}
+{"version":3,"file":"columns.d.ts","sourceRoot":"","sources":["../../src/rules/columns.js"],"names":[],"mappings":"AAGA,QAAA,MAAQ,WAAW,aAAiB,CAAC;;AA6CrC,2DAA2D;0BAC3C,OAAO,EADX,OAAO,oBAAoB,EAAE,IAAI,EACtB;AAkCvB,OAAO,EAAE,WAAW,EAAE,CAAC"}

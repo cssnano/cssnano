@@ -4,25 +4,8 @@ import convert from './lib/convert.js';
 
 /** @import browserslist from 'browserslist' */
 
-const { TokenType, applyEdits, decoded, numericSource, tokens } = cssnanoUtils;
-
-const LENGTH_UNITS = new Set([
-  'em',
-  'ex',
-  'ch',
-  'rem',
-  'vw',
-  'vh',
-  'vmin',
-  'vmax',
-  'cm',
-  'mm',
-  'q',
-  'in',
-  'pt',
-  'pc',
-  'px',
-]);
+const { TokenType, applyEdits, decoded, lengthUnits, numericSource, tokens } =
+  cssnanoUtils;
 
 // These properties only accept percentages, so no point in trying to transform
 const notALength = new Set([
@@ -96,6 +79,9 @@ const keepZeroPercentAlways = new Set([
   'hsla',
   'hwb',
   'linear',
+  'conic-gradient',
+  'repeating-conic-gradient',
+  'cross-fade',
 ]);
 
 const NUMBER_PREFIX = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/;
@@ -114,7 +100,7 @@ function parseNumber(number, unit, raw, opts, keepZeroUnit, hasDecimal) {
   if (
     unit !== '' &&
     unit !== '%' &&
-    !LENGTH_UNITS.has(lowerCasedUnit) &&
+    !lengthUnits.has(lowerCasedUnit) &&
     !['s', 'ms', 'turn', 'deg'].includes(lowerCasedUnit)
   ) {
     return raw;
@@ -133,7 +119,7 @@ function parseNumber(number, unit, raw, opts, keepZeroUnit, hasDecimal) {
   if (num === 0) {
     let result =
       0 +
-      (keepZeroUnit || (!LENGTH_UNITS.has(lowerCasedUnit) && unit !== '%')
+      (keepZeroUnit || (!lengthUnits.has(lowerCasedUnit) && unit !== '%')
         ? unit
         : '');
     if (result === '0ms') {

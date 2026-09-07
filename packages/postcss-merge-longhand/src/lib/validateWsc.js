@@ -1,5 +1,9 @@
+import cssnanoUtils from 'cssnano-utils';
 import { list } from 'postcss';
 import colors from './colornames.js';
+import { systemColors } from './systemColors.js';
+
+const { lengthUnits } = cssnanoUtils;
 import {
   lineStyles,
   lineWidthKeywords,
@@ -8,7 +12,8 @@ import {
 } from './spec.js';
 import { isSubstitution, isUnresolved } from './unresolved.js';
 
-const lengthValueRegex = /^(\d+(\.\d+)?|\.\d+)(\w+)?$/;
+const lengthValueRegex =
+  /^([+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?)([a-z]+)?$/i;
 const functionNameRegex = /([\w-]+)\(/g;
 const hexColorRegex = /^#([\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/;
 
@@ -38,11 +43,37 @@ function isTypedAsWidth(value) {
  * @return {boolean}
  */
 function isBorderWidth(value) {
-  return (
-    (value && lineWidthKeywords.has(value.toLowerCase())) ||
-    lengthValueRegex.test(value) ||
-    isTypedAsWidth(value)
-  );
+  if (!value) {
+    return false;
+  }
+
+  const lowered = value.toLowerCase();
+
+  if (lineWidthKeywords.has(lowered)) {
+    return true;
+  }
+
+  if (isTypedAsWidth(value)) {
+    return true;
+  }
+
+  const match = lengthValueRegex.exec(lowered);
+
+  if (!match) {
+    return false;
+  }
+
+  const [, number, unit] = match;
+
+  if (number.startsWith('-')) {
+    return false;
+  }
+
+  if (unit === undefined) {
+    return Number(number) === 0;
+  }
+
+  return lengthUnits.has(unit);
 }
 
 /**
@@ -80,6 +111,10 @@ function isColor(value) {
 
   /* `currentcolor` is not in the CSS named-color keywords. */
   if (lowered === 'currentcolor') {
+    return true;
+  }
+
+  if (systemColors.has(lowered)) {
     return true;
   }
 

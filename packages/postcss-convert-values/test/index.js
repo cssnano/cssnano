@@ -859,6 +859,31 @@ describe('Strip', () => {
     'should not strip percentage from border-image-width',
     passthroughCSS('@keyframes test {0% {border-image-width: 0 0 100% 0%;}}')
   );
+
+  test(
+    'should not strip the percentage from conic-gradient',
+    passthroughCSS('background:conic-gradient(red 0%, blue 100%)')
+  );
+
+  test(
+    'should not strip the percentage from repeating-conic-gradient',
+    passthroughCSS('background:repeating-conic-gradient(red 0%, blue 50%)')
+  );
+
+  test(
+    'should not strip the percentage from cross-fade',
+    passthroughCSS(
+      'background-image:cross-fade(url(a.png) 0%, url(b.png) 100%)'
+    )
+  );
+
+  test(
+    'should convert modern viewport and container query units when zero',
+    processCSS(
+      'h1{margin:0dvh 0cqw;padding:0svh 0vi}',
+      'h1{margin:0 0;padding:0 0}'
+    )
+  );
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
