@@ -593,4 +593,41 @@ describe('Media Queries Level 4 range syntax', () => {
   );
 });
 
+describe('cross-tool regressions', () => {
+  // csso#483: calc() inside media query conditions must not be removed
+  test(
+    'should preserve calc() in media query conditions',
+    passthroughCSS('@media (min-width:calc(100vw - 2rem)){h1{color:red}}')
+  );
+
+  test(
+    'should preserve whitespace around binary plus in calc()',
+    passthroughCSS('@media (min-width:calc(100vw + 2rem)){h1{color:red}}')
+  );
+
+  test(
+    'should preserve whitespace around binary plus in non-math functions',
+    processCSS(
+      '@supports (width:calc-size(auto + 1px, size)){h1{color:red}}',
+      '@supports (width:calc-size(auto + 1px,size)){h1{color:red}}'
+    )
+  );
+
+  test(
+    'should preserve whitespace around binary plus in unknown functions',
+    passthroughCSS('@supports (width:future(auto + 1px)){h1{color:red}}')
+  );
+
+  test(
+    'should remove selector combinator whitespace in supports queries',
+    processCSS('@supports selector(a + b){}', '@supports selector(a+b){}')
+  );
+
+  // csso#476: @media with and (not ...) must not be removed
+  test(
+    'should preserve @media with negated condition using and (not ...)',
+    passthroughCSS('@media screen and (not (hover:hover)){h1{color:red}}')
+  );
+});
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

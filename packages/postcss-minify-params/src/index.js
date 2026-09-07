@@ -15,6 +15,45 @@ const closingTypes = new Set([
   TokenType.CloseSquare,
   TokenType.CloseCurly,
 ]);
+const calcProductEndTypes = new Set([
+  TokenType.Number,
+  TokenType.Percentage,
+  TokenType.Dimension,
+  TokenType.Ident,
+  TokenType.CloseParen,
+]);
+const calcProductStartTypes = new Set([
+  TokenType.Number,
+  TokenType.Percentage,
+  TokenType.Dimension,
+  TokenType.Ident,
+  TokenType.Function,
+  TokenType.OpenParen,
+]);
+const mathFunctions = new Set([
+  'calc',
+  'min',
+  'max',
+  'clamp',
+  'round',
+  'mod',
+  'rem',
+  'sin',
+  'cos',
+  'tan',
+  'asin',
+  'acos',
+  'atan',
+  'atan2',
+  'pow',
+  'sqrt',
+  'hypot',
+  'log',
+  'exp',
+  'abs',
+  'sign',
+]);
+const whitespaceInsensitiveFunctions = new Set(['selector']);
 const aspectRatioFeatures = new Set([
   'aspect-ratio',
   'min-aspect-ratio',
@@ -189,6 +228,52 @@ function isTightWhitespace(input, index) {
   ].some(Boolean);
 }
 
+/** @param {unknown} token @return {boolean} */
+function isAdditiveOperator(token) {
+  return (
+    Array.isArray(token) &&
+    token[0] === TokenType.Delim &&
+    (token[1] === '+' || token[1] === '-')
+  );
+}
+
+/**
+ * Whether a whitespace token separates a binary + or - from its operands.
+ *
+ * @param {Exclude<ReturnType<typeof balancedTokens>, undefined>['tokens']} input
+ * @param {number} index
+ * @param {(number|undefined)[]} parents
+ * @return {boolean}
+ */
+function isRequiredMathOperatorWhitespace(input, index, parents) {
+  const previous = significantIndex(input, index - 1, -1);
+  const next = significantIndex(input, index + 1, 1);
+  const before = input[previous];
+  const after = input[next];
+  let operator;
+  if (isAdditiveOperator(before)) operator = previous;
+  else if (isAdditiveOperator(after)) operator = next;
+  if (operator === undefined) return false;
+
+  let parent = parents[index];
+  while (parent !== undefined) {
+    const token = input[parent];
+    if (token?.[0] === TokenType.Function) {
+      const name = String(decoded(token)).toLowerCase();
+      if (whitespaceInsensitiveFunctions.has(name)) return false;
+      if (!mathFunctions.has(name)) return true;
+      break;
+    }
+    parent = parents[parent];
+  }
+
+  const left = input[significantIndex(input, operator - 1, -1)];
+  const right = input[significantIndex(input, operator + 1, 1)];
+  return (
+    calcProductEndTypes.has(left?.[0]) && calcProductStartTypes.has(right?.[0])
+  );
+}
+
 /** @param {Exclude<ReturnType<typeof balancedTokens>, undefined>['tokens']} input @param {number} name @param {number} colon @param {number} left @param {number} slash @param {number} right @param {number} after @param {number} close @return {boolean} */
 function isAspectRatioFeature(
   input,
@@ -246,7 +331,12 @@ function whitespaceEdit(structure, index, parents) {
   return {
     start: token[2],
     end: tokenEnd(token),
-    text: tight && !emptyCustomProperty ? '' : ' ',
+    text:
+      tight &&
+      !emptyCustomProperty &&
+      !isRequiredMathOperatorWhitespace(input, index, parents)
+        ? ''
+        : ' ',
   };
 }
 
