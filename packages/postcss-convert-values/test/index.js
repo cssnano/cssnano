@@ -886,4 +886,45 @@ describe('Strip', () => {
   );
 });
 
+describe('cross-tool regressions', () => {
+  // lightningcss#1136: rotate: 0deg must not convert to rotate: none
+  test(
+    'should preserve 0deg on the rotate property',
+    passthroughCSS('h1{rotate:0deg}')
+  );
+
+  // csso#468: 0px inside max() must keep its unit
+  test(
+    'should preserve 0px inside max()',
+    passthroughCSS('h1{width:max(0px,100vw)}')
+  );
+
+  // csso#426: 0px inside min() must keep its unit
+  test(
+    'should preserve 0px inside min()',
+    passthroughCSS('h1{width:min(0px,100vw)}')
+  );
+
+  // csso#426: 0px inside clamp() must keep its unit
+  test(
+    'should preserve 0px inside clamp()',
+    passthroughCSS('h1{width:clamp(0px,50vw,100vw)}')
+  );
+
+  // csso#426: 0% inside calc() must keep its unit
+  test(
+    'should preserve 0% inside calc()',
+    processCSS('h1{width:calc(0% + 100px)}', 'h1{width:calc(0% + 75pt)}')
+  );
+
+  // lightningcss#1097: scientific notation gradient angle must not invert sign
+  test(
+    'should not corrupt scientific notation in gradient angles',
+    processCSS(
+      'h1{background:linear-gradient(-1e1deg,red,blue)}',
+      'h1{background:linear-gradient(-10deg,red,blue)}'
+    )
+  );
+});
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

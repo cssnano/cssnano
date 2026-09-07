@@ -1360,3 +1360,44 @@ suite('CSS specification alignment and conformance', () => {
     processCSS('p:nth-of-type(+1){color:blue}', 'p:first-of-type{color:blue}')
   );
 });
+
+suite('cross-tool regressions', () => {
+  // lightningcss#1239: pseudo-element arguments must not be dropped inside :has()
+  test(
+    'should preserve pseudo-element arguments inside :has()',
+    passthroughCSS('.a:has(::part(foo)){color:red}')
+  );
+
+  // lightningcss#1239: pseudo-element arguments must not be dropped inside :is()
+  test(
+    'should preserve pseudo-element arguments inside :is()',
+    passthroughCSS('.a:is(::slotted(.b)){color:red}')
+  );
+
+  // lightningcss#975: pseudo-elements must not be wrapped in :is()
+  test(
+    'should not wrap pseudo-elements in :is()',
+    processCSS(
+      '.a::before,.b::before{color:red}',
+      '.a:before,.b:before{color:red}'
+    )
+  );
+
+  // esbuild#4497: leading & nesting selector must not be removed
+  test(
+    'should preserve the leading & nesting selector',
+    passthroughCSS('.parent{& .child{color:red}}')
+  );
+
+  // lightningcss#1318: nested selector lists must not be dropped
+  test(
+    'should preserve nested selector lists',
+    passthroughCSS('.a{.b,.c{color:red}}')
+  );
+
+  // lightningcss#1002: :has() with complex relative selectors must be preserved
+  test(
+    'should preserve :has() with chained relative selectors',
+    processCSS('.a:has(> .b + .c){color:red}', '.a:has(>.b+.c){color:red}')
+  );
+});

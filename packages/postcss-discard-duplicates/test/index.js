@@ -166,4 +166,16 @@ test(
   passthroughCSS('@media \0 all {}@media all {}')
 );
 
+// csso#471: duplicate content with alt text fallback must be preserved
+test(
+  'should preserve content property fallbacks with alt text',
+  passthroughCSS('h1{content:"⚠";content:"⚠" / "Warning"}')
+);
+
+// display: block; display: flex fallback pair must be preserved
+test(
+  'should preserve display fallback pairs',
+  passthroughCSS('h1{display:block;display:flex}')
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

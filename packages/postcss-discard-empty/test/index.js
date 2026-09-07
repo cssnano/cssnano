@@ -150,3 +150,19 @@ test(
   'should use the postcss plugin api',
   usePostCSSPlugin(discardEmptyPlugin())
 );
+
+describe('cross-tool regressions', () => {
+  // lightningcss#1222: bare @layer ordering declaration must not be dropped
+  test(
+    'should preserve a bare @layer ordering declaration before block layers',
+    passthroughCSS(
+      '@layer base, components;@layer base{h1{color:red}}@layer components{h2{color:blue}}'
+    )
+  );
+
+  // Standalone @layer declaration without any following blocks must survive
+  test(
+    'should preserve a standalone @layer ordering declaration',
+    passthroughCSS('@layer reset, base, components;')
+  );
+});
