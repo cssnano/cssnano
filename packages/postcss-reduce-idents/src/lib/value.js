@@ -51,24 +51,24 @@ function rewrite(
 ) {
   /** @type {{arguments?: number[], index: number, close: string}[]} */
   const stack = [];
-  const changes = parsedTokens.flatMap((token) => {
+  const pieces = [];
+  let cursor = 0;
+  let changed = false;
+  for (const token of parsedTokens) {
     const isArgument = functions
       ? isFunctionArgument(token, functions, stack)
       : false;
     const text = callback(token, isArgument);
-    return text === undefined ? [] : [{ start: token[2], end: token[3], text }];
-  });
-  if (changes.length === 0) return value;
-  const sorted = changes.toSorted((a, b) => a.start - b.start);
-  const pieces = [];
-  let cursor = 0;
-  for (const change of sorted) {
-    if (change.start > cursor) {
-      pieces.push(value.slice(cursor, change.start));
+    if (text === undefined) continue;
+    const start = token[2];
+    if (start > cursor) {
+      pieces.push(value.slice(cursor, start));
     }
-    pieces.push(change.text);
-    cursor = change.end + 1;
+    pieces.push(text);
+    cursor = token[3] + 1;
+    changed = true;
   }
+  if (!changed) return value;
   if (cursor < value.length) {
     pieces.push(value.slice(cursor));
   }

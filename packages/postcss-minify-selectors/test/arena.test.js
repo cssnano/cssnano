@@ -579,11 +579,8 @@ test('arena interns specificity tuples with stable numeric identities', () => {
   const compounds = arena.nodes.filter(({ kind }) => kind === 'compound');
   assert.equal(compounds[0].specificityId, compounds[1].specificityId);
   assert.notEqual(compounds[0].specificityId, compounds[2].specificityId);
-  assert.equal(
-    arena.specificities[compounds[0].specificityId],
-    compounds[0].specificity
-  );
-  assert.equal(Object.isFrozen(arena.specificities), true);
+  assert.equal(compounds[0].specificity, compounds[1].specificity);
+  assert.equal('specificities' in arena, false);
   assert.equal(Object.isFrozen(compounds[0].specificity), true);
 });
 
