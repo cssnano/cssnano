@@ -24,9 +24,7 @@ declare function pluginCreator(options?: {}): {
             file?: string;
         };
     }): {
-        /**
-         * @param {import('postcss').Root} css
-         */
+        /** @param {import('postcss').Root} css */
         OnceExit(css: import('postcss').Root): void;
     };
 };
