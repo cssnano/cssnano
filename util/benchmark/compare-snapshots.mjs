@@ -2,7 +2,7 @@ import {
   bootstrapConfidenceInterval,
   pairedPercentChange,
   quantile,
-} from './compare-statistics.mjs';
+} from './bench-stats.mjs';
 import {
   frameworkByName,
   validateMatchingMetadata,
@@ -41,13 +41,9 @@ function compareValues(baseValues, candidateValues, base, candidate) {
       0.5
     ),
     medianDeltaPct,
-    medianDelta: medianDeltaPct,
     confidenceIntervalPct: interval,
-    confidenceInterval: interval,
     replicateCount: changes.length,
-    replicates: changes.length,
     spreadPct,
-    spread: spreadPct,
     verdict: verdictFor(
       interval,
       base,
