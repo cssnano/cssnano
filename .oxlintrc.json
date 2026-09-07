@@ -45,7 +45,25 @@
     "unicorn/prefer-number-properties": "error",
     "unicorn/prefer-regexp-test": "error",
     "unicorn/prefer-type-error": "error",
-    "promise/no-nesting": "error"
+    "promise/no-nesting": "error",
+    "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "import/no-duplicates": "error",
+    "import/no-self-import": "error",
+    "no-self-compare": "error",
+    "no-template-curly-in-string": "error",
+    "no-unmodified-loop-condition": "error",
+    "no-unreachable-loop": "error",
+    "oxc/no-accumulating-spread": "error",
+    "radix": "error",
+    "unicorn/no-instanceof-array": "error",
+    "unicorn/no-unnecessary-slice-end": "error",
+    "unicorn/no-useless-fallback-in-spread": "error",
+    "unicorn/no-useless-spread": "error",
+    "unicorn/prefer-array-some": "error",
+    "unicorn/prefer-math-trunc": "error",
+    "unicorn/prefer-modern-math-apis": "error",
+    "unicorn/prefer-negative-index": "error",
+    "unicorn/prefer-set-size": "error"
   },
   "env": {
     "builtin": true
