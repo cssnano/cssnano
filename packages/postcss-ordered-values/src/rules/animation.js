@@ -9,7 +9,7 @@ import {
   name,
   serializeArguments,
 } from '../lib/tokenize.js';
-import isTimeValue, { isMath, isNonNegativeTime } from '../lib/isTime.js';
+import classifyTime from '../lib/isTime.js';
 import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
 // animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
@@ -85,10 +85,11 @@ function normalize(args) {
 
     for (const node of arg) {
       const value = name(node);
-      if (isMath(node) && !isTimeValue(node)) return null;
+      const time = classifyTime(node);
+      if (time.isMath && time.dimension !== 'time') return null;
 
-      if (isTimeValue(node)) {
-        if (!state.duration.length && isNonNegativeTime(node)) {
+      if (time.dimension === 'time') {
+        if (!state.duration.length && time.isNonNegative) {
           state.duration.push(node);
         } else if (state.duration.length && !state.delay.length) {
           state.delay.push(node);

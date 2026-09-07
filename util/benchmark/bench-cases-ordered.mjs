@@ -1,6 +1,14 @@
 import { pluginCase } from './bench-case-utils.mjs';
 
 export const orderedCases = {
+  'ordered-value-time-classification': pluginCase(
+    'postcss-ordered-values',
+    Array.from({ length: 500 }, (_, index) => {
+      const duration = `calc(${index + 1}ms * sqrt(4))`;
+      const delay = `calc(${index + 2}ms * sqrt(9))`;
+      return `.time-${index}{animation:fade ${delay} ease ${duration};transition:opacity ${delay} ease ${duration}}`;
+    }).join('')
+  ),
   'ordered-values-tokenization': pluginCase(
     'postcss-ordered-values',
     Array.from({ length: 250 }, (_, index) => {

@@ -8,7 +8,7 @@ import normalizeColumns from '../src/rules/columns.js';
 import normalizeListStyle from '../src/rules/listStyle.js';
 import normalizeTransition from '../src/rules/transition.js';
 import { normalizeGridColumnRow } from '../src/rules/grid.js';
-import isTime from '../src/lib/isTime.js';
+import classifyTime from '../src/lib/isTime.js';
 
 test('tokenization preserves escaped names and nested separators as one term', () => {
   const parsed = tokenizeValue('opacity 1s v\\61r(--x, min(1s, 2s))');
@@ -229,9 +229,29 @@ describe('Animation', () => {
 });
 
 describe('Time classification', () => {
+  test('classifies direct terms without math parsing', () => {
+    for (const [value, expected] of [
+      ['1s', { isMath: false, dimension: 'time', isNonNegative: true }],
+      ['-1s', { isMath: false, dimension: 'time', isNonNegative: false }],
+      ['-0s', { isMath: false, dimension: 'time', isNonNegative: false }],
+      ['1deg', { isMath: false, dimension: 'angle', isNonNegative: false }],
+      [
+        '1px',
+        { isMath: false, dimension: 'dimension:px', isNonNegative: false },
+      ],
+      ['1', { isMath: false, dimension: 'number', isNonNegative: false }],
+      ['fade', { isMath: false, dimension: null, isNonNegative: false }],
+    ]) {
+      assert.deepEqual(classifyTime(tokenizeValue(value).terms[0]), expected);
+    }
+  });
+
   for (const value of ['1s', '1ms']) {
     test(`${value} is a time`, () => {
-      assert.equal(isTime(tokenizeValue(value).terms[0]), true);
+      assert.equal(
+        classifyTime(tokenizeValue(value).terms[0]).dimension,
+        'time'
+      );
     });
   }
 
@@ -281,13 +301,20 @@ describe('Time classification', () => {
     'calc(1s * 1px)',
   ]) {
     test(`${value} is not a time`, () => {
-      assert.equal(isTime(tokenizeValue(value).terms[0]), false);
+      assert.notEqual(
+        classifyTime(tokenizeValue(value).terms[0]).dimension,
+        'time'
+      );
     });
   }
 
   for (const value of ['calc(1s +)']) {
     test(`${value} is not classified as a direct time`, () => {
-      assert.equal(isTime(tokenizeValue(value).terms[0]), false);
+      assert.deepEqual(classifyTime(tokenizeValue(value).terms[0]), {
+        isMath: true,
+        dimension: null,
+        isNonNegative: false,
+      });
     });
   }
 });
@@ -333,7 +360,11 @@ for (const value of [
   'calc(1s * 2 + 3s)',
 ]) {
   test(`${value} is a validated time`, () => {
-    assert.equal(isTime(tokenizeValue(value).terms[0]), true);
+    assert.deepEqual(classifyTime(tokenizeValue(value).terms[0]), {
+      isMath: true,
+      dimension: 'time',
+      isNonNegative: true,
+    });
   });
 }
 

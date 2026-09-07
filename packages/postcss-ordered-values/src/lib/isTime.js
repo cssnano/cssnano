@@ -1,6 +1,6 @@
 import cssnanoUtils from 'cssnano-utils';
 import mathFunctions from './mathfunctions.js';
-import { isDimension, isFunction, name } from './tokenize.js';
+import { isDimension, isFunction, isNumber, name } from './tokenize.js';
 
 const { TokenType, decoded } = cssnanoUtils;
 const timeUnits = new Set(['ms', 's']);
@@ -232,32 +232,46 @@ function parseMath(input) {
   return finish(state.frames[0]);
 }
 
-/** @param {import('./tokenize.js').Term} node */
-function isMath(node) {
-  return isFunction(node) && mathFunctions.has(name(node));
-}
+/** @typedef {'time' | 'angle' | 'number' | `dimension:${string}` | null} Dimension */
+/** @typedef {{isMath: boolean, dimension: Dimension, isNonNegative: boolean}} TimeClassification */
 
-/** @param {import('./tokenize.js').Term} node */
-function isNonNegativeTime(node) {
-  if (isDimension(node)) {
-    const { unit, value, signCharacter } =
-      /** @type {{unit: string, value: number, signCharacter?: string}} */ (
-        node.tokens[0][4]
-      );
-    return (
-      timeUnits.has(unit.toLowerCase()) && signCharacter !== '-' && value >= 0
-    );
-  }
-  return isMath(node) && parseMath(node.tokens) === 'time';
-}
-
-/** @param {import('./tokenize.js').Term} node */
-export default function isTime(node) {
+/** @param {import('./tokenize.js').Term} node @return {Dimension} */
+function directDimension(node) {
   if (isDimension(node)) {
     const { unit } = /** @type {{unit: string}} */ (node.tokens[0][4]);
-    return timeUnits.has(unit.toLowerCase());
+    const normalizedUnit = unit.toLowerCase();
+    if (timeUnits.has(normalizedUnit)) return 'time';
+    if (angleUnits.has(normalizedUnit)) return 'angle';
+    return `dimension:${normalizedUnit}`;
   }
-  return isMath(node) && parseMath(node.tokens) === 'time';
+  return isNumber(node) ? 'number' : null;
 }
 
-export { isMath, isNonNegativeTime };
+/** @param {import('./tokenize.js').Term} node @return {TimeClassification} */
+export default function classifyTime(node) {
+  const direct = directDimension(node);
+  if (direct !== null) {
+    if (direct !== 'time') {
+      return { isMath: false, dimension: direct, isNonNegative: false };
+    }
+    const { value, signCharacter } =
+      /** @type {{value: number, signCharacter?: string}} */ (
+        node.tokens[0][4]
+      );
+    return {
+      isMath: false,
+      dimension: direct,
+      isNonNegative: signCharacter !== '-' && value >= 0,
+    };
+  }
+
+  const isMath = isFunction(node) && mathFunctions.has(name(node));
+  const dimension = /** @type {Dimension} */ (
+    isMath ? parseMath(node.tokens) : null
+  );
+  return {
+    isMath,
+    dimension,
+    isNonNegative: dimension === 'time',
+  };
+}
