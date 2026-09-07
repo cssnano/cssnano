@@ -135,8 +135,6 @@ declare class SelectorArenaBuilder {
         id: number;
         tuple: Specificity;
     }>;
-    /** @type {Specificity[]} */
-    specificities: Specificity[];
     /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[]}} */
     payloads: {
         lists: ListPayload[];
@@ -186,9 +184,8 @@ export declare class SelectorArena {
     tokens: readonly import("@csstools/css-tokenizer").CSSToken[];
     nodes: readonly Readonly<ArenaNode>[];
     payloads: PayloadTables;
-    specificities: readonly Specificity[];
-    /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {readonly Specificity[]} specificities @param {boolean} freeze */
-    constructor(source: string, tokens: readonly CSSToken[], nodes: readonly Readonly<ArenaNode>[], payloads: PayloadTables, specificities: readonly Specificity[], freeze: boolean);
+    /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {boolean} freeze */
+    constructor(source: string, tokens: readonly CSSToken[], nodes: readonly Readonly<ArenaNode>[], payloads: PayloadTables, freeze: boolean);
     /** @param {number} nodeIndex @param {(childIndex:number)=>void} callback */
     forEachChild(nodeIndex: number, callback: (childIndex: number) => void): void;
 }

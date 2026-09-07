@@ -100,8 +100,6 @@ class SelectorArenaBuilder {
     this.specificityByKey = new Map([
       ['0,0,0', { id: 0, tuple: ZERO_SPECIFICITY }],
     ]);
-    /** @type {Specificity[]} */
-    this.specificities = [ZERO_SPECIFICITY];
     /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[]}} */
     this.payloads = {
       lists: [],
@@ -200,9 +198,8 @@ class SelectorArenaBuilder {
     if (!found) {
       const tuple = /** @type {[number, number, number]} */ ([...specificity]);
       if (this.verifyArena) Object.freeze(tuple);
-      found = { id: this.specificities.length, tuple };
+      found = { id: this.specificityByKey.size, tuple };
       this.specificityByKey.set(key, found);
-      this.specificities.push(tuple);
     }
     return found;
   }
@@ -254,7 +251,6 @@ class SelectorArenaBuilder {
         this.tokens,
         this.nodes,
         this.payloads,
-        this.specificities,
         false
       );
     if (
@@ -296,13 +292,11 @@ class SelectorArenaBuilder {
       Object.freeze(payload.namespace);
     Object.freeze(this.nodes);
     Object.freeze(this.payloads);
-    Object.freeze(this.specificities);
     return new SelectorArena(
       this.source,
       this.tokens,
       this.nodes,
       this.payloads,
-      this.specificities,
       true
     );
   }
@@ -390,13 +384,12 @@ class SelectorArenaBuilder {
 }
 
 export class SelectorArena {
-  /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {readonly Specificity[]} specificities @param {boolean} freeze */
-  constructor(source, tokens, nodes, payloads, specificities, freeze) {
+  /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {boolean} freeze */
+  constructor(source, tokens, nodes, payloads, freeze) {
     this.source = source;
     this.tokens = tokens;
     this.nodes = nodes;
     this.payloads = payloads;
-    this.specificities = specificities;
     if (freeze) Object.freeze(this);
   }
 
