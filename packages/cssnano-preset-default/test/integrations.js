@@ -38,6 +38,14 @@ describe('CSS processing', () => {
   );
 
   test(
+    'should collapse shorthand identities after ordered-value normalization',
+    withDefaults.processCSS(
+      'a{gap:1rem 1rem;inset:1px 2px 1px 2px;place-content:center center;aspect-ratio:auto 2/1;transition:all 0s ease 0s}',
+      'a{gap:1rem;inset:1px 2px;place-content:center;aspect-ratio:auto 2;transition:all}'
+    )
+  );
+
+  test(
     'should preserve registered percentage initial values after preset composition',
     withDefaults.processCSS(
       `@property --percent-and-number{syntax:'<percentage> <number>';inherits:false;initial-value:0% 1;}`,

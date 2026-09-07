@@ -4,7 +4,8 @@
     "src/*",
     "src/lib/*",
     "src/lib/decl/*",
-    "src/data/longhands.json"
+    "src/data/longhands.json",
+    "src/data/shorthandIdentities.json"
   ],
   "compilerOptions": {
     "composite": true,
