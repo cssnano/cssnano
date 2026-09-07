@@ -81,4 +81,44 @@ describe('Cross-tool edge cases and modern CSS specifications', () => {
       'a{border-color:Canvas}'
     )
   );
+
+  test(
+    'keeps static fallbacks before var() declarations for position, direction, and unicode-bidi',
+    processCss(
+      '.x{position:static;position:var(--x,static)}.y{direction:ltr;direction:var(--x,ltr)}.z{unicode-bidi:normal;unicode-bidi:var(--x,normal)}',
+      '.x{position:static;position:var(--x,static)}.y{direction:ltr;direction:var(--x,ltr)}.z{unicode-bidi:normal;unicode-bidi:var(--x,normal)}'
+    )
+  );
+
+  test(
+    'keeps animation-timeline separate from the animation shorthand',
+    processCss(
+      '.x{animation:parallax 1ms linear both;animation-timeline:view()}',
+      '.x{animation:parallax 1ms linear both;animation-timeline:view()}'
+    )
+  );
+
+  test(
+    'does not combine inherited transition shorthand with a transition longhand',
+    processCss(
+      '.x{transition:inherit;transition-property:bar}',
+      '.x{transition:inherit;transition-property:bar}'
+    )
+  );
+
+  test(
+    'keeps the time unit multiplied with sibling-index()',
+    processCss(
+      '.x{animation-delay:calc(sibling-index() * .05s)}',
+      '.x{animation-delay:calc(.05s * sibling-index())}'
+    )
+  );
+
+  test(
+    'retains the declaration separator before a nested rule',
+    processCss(
+      '.x{color:red;.y{color:blue}background:green}',
+      '.x{color:red;.y{color:blue}background:green}'
+    )
+  );
 });

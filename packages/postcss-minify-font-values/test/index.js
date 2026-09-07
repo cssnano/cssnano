@@ -561,4 +561,28 @@ test(
   passthroughCSS('h1{font-weight:env(--font-size)}')
 );
 
+// lightningcss#1054: font-family with internal double spaces must not break
+test(
+  'should handle font-family names with internal spaces',
+  processCSS(
+    'h1{font-family:"HW Impey  Bold"}',
+    'h1{font-family:HW Impey \\ Bold}'
+  )
+);
+
+// esbuild#3452: font shorthand must keep space before quoted family name
+test(
+  'should preserve spacing between font-size and quoted family name',
+  processCSS(
+    'h1{font:16px "Menlo", monospace}',
+    'h1{font:16px Menlo,monospace}'
+  )
+);
+
+// font-family: monospace, monospace is a system-font hack and must not deduplicate
+test(
+  'should preserve monospace, monospace system-font hack',
+  passthroughCSS('h1{font-family:monospace,monospace}')
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
