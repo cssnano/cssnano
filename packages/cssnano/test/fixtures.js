@@ -355,5 +355,5 @@ test(
 
 test(
   'should remove leading zeroes from reduced calc values',
-  processCss(`.box { margin: calc(-.5 * 1rem); }`, `.box{margin:-.5rem}`)
+  processCss(`.box { margin: calc(-.5 * 1rem); }`, `.box{margin:calc(-.5rem)}`)
 );

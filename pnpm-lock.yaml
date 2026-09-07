@@ -312,8 +312,8 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-calc:
-        specifier: ^11.0.3
-        version: 11.0.3(postcss@8.5.28)
+        specifier: ^11.1.1
+        version: 11.1.1(postcss@8.5.28)
       postcss-colormin:
         specifier: workspace:^
         version: link:../postcss-colormin
@@ -1770,11 +1770,11 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  postcss-calc@11.0.3:
-    resolution: {integrity: sha512-G0KjDwYacZXdyG0ijvvQleSh4AOTTNcjHny34t0Fh6v76dvTOMO1kyr7eKq3MPKD8Q7rxHzUXj4lpzT3cebatw==}
+  postcss-calc@11.1.1:
+    resolution: {integrity: sha512-EazB2CtQwKoBOCi8l334i/gnaObqcv418pLTvw4CmcqPLhPgP8IipVSixQO7lTRDrOBIwL72krecBfi5tpl4EA==}
     engines: {node: ^22.22.3 || ^24.15 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.25
+      postcss: ^8.5.28
 
   postcss-font-magician@4.0.0:
     resolution: {integrity: sha512-gOZkpptK6/9rRy5pcUuEG0QgFYR7lW62LTZ6cprn8x5AA2BERcoNuzeq/P9RTW/X43f8bOgOoGzicVy3n1RdXA==}
@@ -2661,7 +2661,7 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  postcss-calc@11.0.3(postcss@8.5.28):
+  postcss-calc@11.1.1(postcss@8.5.28):
     dependencies:
       '@csstools/css-tokenizer': 4.0.0
       postcss: 8.5.28
