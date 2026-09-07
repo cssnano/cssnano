@@ -277,6 +277,8 @@ describe('Time classification', () => {
     'calc(1s',
     'mod(10s, 3px)',
     'hypot(3s, 4px)',
+    'calc(1s + 1px)',
+    'calc(1s * 1px)',
   ]) {
     test(`${value} is not a time`, () => {
       assert.equal(isTime(tokenizeValue(value).terms[0]), false);
