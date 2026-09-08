@@ -68,6 +68,10 @@ cssnano-preset-advanced@9.0.3:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+cssnano-preset-advanced@9.0.4:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - young-knives-greet
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -138,6 +142,10 @@ cssnano-preset-default@9.0.3:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+cssnano-preset-default@9.0.4:
+  dir: packages/cssnano-preset-default
+  intents:
+    - young-knives-greet
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -278,6 +286,10 @@ cssnano@9.0.3:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+cssnano@9.0.4:
+  dir: packages/cssnano
+  intents:
+    - young-knives-greet
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
