@@ -1,4 +1,6 @@
 import lengthUnits from './lengthUnits.js';
+import mathFunctions from './mathFunctions.js';
+import mathFunctionArgumentRanges from './mathFunctionArgumentRanges.js';
 import rawCache from './rawCache.js';
 import sameParent from './sameParent.js';
 import { TokenType, applyEdits, balancedTokens, decoded, numeric, numericSource, tokenEnd, tokenStart, tokens } from './value.js';
@@ -10,6 +12,8 @@ declare const moduleExports: {
     balancedTokens: typeof balancedTokens;
     decoded: typeof decoded;
     lengthUnits: typeof lengthUnits;
+    mathFunctions: typeof mathFunctions;
+    mathFunctionArgumentRanges: typeof mathFunctionArgumentRanges;
     numeric: typeof numeric;
     numericSource: typeof numericSource;
     tokenEnd: typeof tokenEnd;

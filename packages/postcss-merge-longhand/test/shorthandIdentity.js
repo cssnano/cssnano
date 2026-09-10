@@ -54,6 +54,13 @@ describe('two-axis shorthand identities', () => {
     )
   );
   test(
+    'accepts a two-argument log nested in a length calculation',
+    processCSS(
+      'a{inset:calc(log(10,2) * 1px) 2px calc(log(10,2) * 1px) 2px}',
+      'a{inset:calc(log(10,2) * 1px) 2px}'
+    )
+  );
+  test(
     'does not collapse mixed axes',
     passthroughCSS(
       'a{gap:1rem 2rem;overflow:auto hidden;overscroll-behavior:auto none}'
@@ -81,6 +88,14 @@ describe('four-side shorthand identities', () => {
   test(
     'does not collapse mixed inset sides',
     passthroughCSS('a{inset:1px 2px 3px 4px}')
+  );
+  test(
+    'does not accept sin as an inset length',
+    passthroughCSS('a{inset:sin(0) 1px sin(0) 1px}')
+  );
+  test(
+    'does not accept atan2 as an inset length',
+    passthroughCSS('a{inset:atan2(1,2) 1px atan2(1,2) 1px}')
   );
 });
 

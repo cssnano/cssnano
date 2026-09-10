@@ -18,6 +18,9 @@ const notMinifiableRegex =
  * https://developer.mozilla.org/en-US/docs/Web/Events/click#Internet_Explorer
  */
 const browsersWithTransparentBug = new Set(['ie 8', 'ie 9']);
+/* The four widely-implemented math functions; cssnano-utils' mathFunctions
+ * holds the full Values 4 table. Their arguments are colour components rather
+ * than a colour, so their interior is never minified as a colour. */
 const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 const tokensRequiringSeparator = new Set([
   TokenType.Ident,

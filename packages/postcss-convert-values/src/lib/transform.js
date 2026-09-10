@@ -2,8 +2,15 @@ import cssnanoUtils from 'cssnano-utils';
 import convert from './convert.js';
 import { closeForOpening, syntaxAllowsPercentage } from './parse-syntax.js';
 
-const { TokenType, applyEdits, decoded, lengthUnits, numericSource, tokens } =
-  cssnanoUtils;
+const {
+  TokenType,
+  applyEdits,
+  decoded,
+  lengthUnits,
+  mathFunctions,
+  numericSource,
+  tokens,
+} = cssnanoUtils;
 
 const notALength = new Set([
   'descent-override',
@@ -41,29 +48,14 @@ const zeroUnitRetention = {
   ie11Percent: new Set(['max-height', 'height', 'min-width']),
   keyframePercent: new Set(['border-image-width', 'stroke-dasharray']),
 };
+/* Functions in which a zero cannot lose its unit. Every math function qualifies
+ * because `calc(0%)` and `calc(0)` differ in type; the rest are listed per
+ * grammar, e.g. conic-gradient stops take an <angle-percentage>, which no
+ * unitless zero represents, while linear-gradient stops take a
+ * <length-percentage>, which it does. */
 const keepZeroPercentAlways = new Set([
-  'calc',
+  ...mathFunctions,
   'color-mix',
-  'min',
-  'max',
-  'clamp',
-  'round',
-  'mod',
-  'rem',
-  'hypot',
-  'abs',
-  'sign',
-  'sqrt',
-  'pow',
-  'sin',
-  'cos',
-  'tan',
-  'asin',
-  'acos',
-  'atan',
-  'atan2',
-  'exp',
-  'log',
   'hsl',
   'hsla',
   'hwb',
