@@ -1,6 +1,8 @@
-import mathFunctions from '../lib/mathfunctions.js';
+import cssnanoUtils from 'cssnano-utils';
 import { lengthUnits } from './columns.js';
 import { isDimension, isFunction, isNumber, name } from '../lib/tokenize.js';
+
+const { mathFunctions } = cssnanoUtils;
 
 // border: <line-width> || <line-style> || <color>
 

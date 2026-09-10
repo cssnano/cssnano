@@ -60,6 +60,12 @@ addTests(
     expected: 'h1{box:10px 20px 30px 40px!important}',
   },
   {
+    message: 'should merge box values with hypot',
+    fixture:
+      'h1{box-top:hypot(1px,2px);box-right:hypot(1px,2px);box-bottom:hypot(1px,2px);box-left:hypot(1px,2px)}',
+    expected: 'h1{box:hypot(1px,2px)}',
+  },
+  {
     message: 'should merge & then condense box values',
     fixture: 'h1{box-top:10px;box-bottom:10px;box-left:10px;box-right:10px}',
     expected: 'h1{box:10px}',

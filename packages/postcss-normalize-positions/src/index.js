@@ -14,6 +14,9 @@ const verticalValue = new Map([
   ['bottom', '100%'],
   ['top', '0'],
 ]);
+/* Only the length-producing math functions a position slot accepts; a
+ * number-returning one such as sin() makes the declaration invalid. See
+ * cssnano-utils' mathFunctions for the full Values 4 table. */
 const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 const variableFunctions = new Set(['var', 'env', 'constant']);
 const propFilterRegex =

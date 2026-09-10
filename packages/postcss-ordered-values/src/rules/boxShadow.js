@@ -1,4 +1,4 @@
-import mathFunctions from '../lib/mathfunctions.js';
+import cssnanoUtils from 'cssnano-utils';
 import vendorUnprefixed from '../lib/vendorUnprefixed.js';
 import { lengthUnits } from './columns.js';
 import {
@@ -9,6 +9,8 @@ import {
   name,
   serializeArguments,
 } from '../lib/tokenize.js';
+
+const { mathFunctions } = cssnanoUtils;
 
 /** @param {import('../lib/tokenize.js').Term} term */
 function isLength(term) {

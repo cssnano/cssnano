@@ -38,29 +38,7 @@ export const calcProductStartTypes = new Set([
   TokenType.Function,
   TokenType.OpenParen,
 ]);
-export const mathFunctions = new Set([
-  'calc',
-  'min',
-  'max',
-  'clamp',
-  'round',
-  'mod',
-  'rem',
-  'sin',
-  'cos',
-  'tan',
-  'asin',
-  'acos',
-  'atan',
-  'atan2',
-  'pow',
-  'sqrt',
-  'hypot',
-  'log',
-  'exp',
-  'abs',
-  'sign',
-]);
+export const mathFunctions = cssnanoUtils.mathFunctions;
 export const whitespaceInsensitiveFunctions = new Set(['selector']);
 export const aspectRatioFeatures = new Set([
   'aspect-ratio',

@@ -11,6 +11,7 @@ const mathFunctions = [
   'min',
   'max',
   'clamp',
+  'hypot',
   'round',
   'mod',
   'rem',

@@ -1,32 +1,12 @@
+import cssnanoUtils from 'cssnano-utils';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
+
+const { mathFunctions } = cssnanoUtils;
 
 const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
 const variableFunctions = new Set(['var', 'env', 'constant']);
-const mathFunctions = new Set([
-  'calc',
-  'min',
-  'max',
-  'clamp',
-  'round',
-  'mod',
-  'rem',
-  'sin',
-  'cos',
-  'tan',
-  'asin',
-  'acos',
-  'atan',
-  'atan2',
-  'pow',
-  'sqrt',
-  'hypot',
-  'log',
-  'exp',
-  'abs',
-  'sign',
-]);
 const ieHackRegex = /\s*(\\9)\s*/;
 const whitespaceRegex = /\s/g;
 
