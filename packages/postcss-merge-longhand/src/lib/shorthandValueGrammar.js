@@ -1,7 +1,14 @@
 import cssnanoUtils from 'cssnano-utils';
 import cssGlobalKeywords from './cssGlobalKeywords.js';
 
-const { TokenType, decoded, lengthUnits, numeric } = cssnanoUtils;
+const {
+  TokenType,
+  decoded,
+  lengthUnits,
+  mathFunctions,
+  mathFunctionArgumentRanges,
+  numeric,
+} = cssnanoUtils;
 
 const openingTokens = new Map([
   [TokenType.Function, TokenType.CloseParen],
@@ -17,29 +24,24 @@ const closingTokens = new Set([
 ]);
 
 const substitutionFunctions = new Set(['var', 'env', 'constant', 'attr']);
-const valueFunctions = new Set([
-  'calc',
-  'min',
-  'max',
-  'clamp',
-  'round',
-  'mod',
-  'rem',
-  'abs',
-  'sign',
-  'sin',
-  'cos',
-  'tan',
-  'asin',
+/* Math functions resolve to a value the grammar can accept positionally, and
+ * anchor-size() always resolves to a length. */
+const valueFunctions = new Set([...mathFunctions, 'anchor-size']);
+/* These functions have a fixed result type that cannot be a length. They
+ * remain in valueFunctions so valid uses nested in calc() are accepted. */
+const nonLengthResultFunctions = new Set([
   'acos',
+  'asin',
   'atan',
   'atan2',
-  'pow',
-  'sqrt',
-  'hypot',
-  'log',
+  'cos',
   'exp',
-  'anchor-size',
+  'log',
+  'pow',
+  'sign',
+  'sin',
+  'sqrt',
+  'tan',
 ]);
 
 /** @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean}} FunctionFrame */
@@ -214,32 +216,12 @@ function commaHasNoOperand(input, index) {
 /** @param {string | null} name @param {number} argumentCount @return {boolean} */
 function functionArityIsValid(name, argumentCount) {
   if (!name) return true;
+  const range = mathFunctionArgumentRanges.get(name);
+  if (range) {
+    return argumentCount >= range[0] && argumentCount <= range[1];
+  }
   if (name === 'calc') return argumentCount === 1;
   if (name === 'clamp') return argumentCount === 3;
-  if (name === 'min' || name === 'max' || name === 'hypot') {
-    return argumentCount > 0;
-  }
-  if (name === 'round') return argumentCount === 1 || argumentCount === 2;
-  if (name === 'mod' || name === 'rem' || name === 'atan2' || name === 'pow') {
-    return argumentCount === 2;
-  }
-  if (
-    [
-      'abs',
-      'sign',
-      'sin',
-      'cos',
-      'tan',
-      'asin',
-      'acos',
-      'atan',
-      'sqrt',
-      'log',
-      'exp',
-    ].includes(name)
-  ) {
-    return argumentCount === 1;
-  }
   if (name === 'anchor-size') return argumentCount === 1 || argumentCount === 2;
   if (name === 'cubic-bezier') return argumentCount === 4;
   if (name === 'steps') return argumentCount === 1 || argumentCount === 2;
@@ -262,6 +244,9 @@ export function directNumeric(component) {
 export function isLengthComponent(component, grammar) {
   if (hasCssWideKeyword(component)) return false;
   if (component.tokens[0]?.[0] === TokenType.Function) {
+    if (nonLengthResultFunctions.has(tokenName(component.tokens[0]))) {
+      return false;
+    }
     return hasAllowedFunctions(component, valueFunctions);
   }
   const value = directNumeric(component);

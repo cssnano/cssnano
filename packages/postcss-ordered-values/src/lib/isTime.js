@@ -1,8 +1,8 @@
 import cssnanoUtils from 'cssnano-utils';
-import mathFunctions from './mathfunctions.js';
 import { isDimension, isFunction, isNumber, name } from './tokenize.js';
 
-const { TokenType, decoded } = cssnanoUtils;
+const { TokenType, decoded, mathFunctions, mathFunctionArgumentRanges } =
+  cssnanoUtils;
 const timeUnits = new Set(['ms', 's']);
 const angleUnits = new Set(['deg', 'grad', 'rad', 'turn']);
 const trigFunctions = new Set(['sin', 'cos', 'tan']);
@@ -12,29 +12,6 @@ const closers = new Set([
   TokenType.CloseParen,
   TokenType.CloseSquare,
   TokenType.CloseCurly,
-]);
-const functionArgumentRanges = new Map([
-  ['abs', [1, 1]],
-  ['acos', [1, 1]],
-  ['asin', [1, 1]],
-  ['atan', [1, 1]],
-  ['atan2', [2, 2]],
-  ['calc', [1, 1]],
-  ['clamp', [3, 3]],
-  ['cos', [1, 1]],
-  ['exp', [1, 1]],
-  ['hypot', [1, Infinity]],
-  ['log', [1, 2]],
-  ['max', [1, Infinity]],
-  ['min', [1, Infinity]],
-  ['mod', [2, 2]],
-  ['pow', [2, 2]],
-  ['rem', [2, 2]],
-  ['round', [1, 2]],
-  ['sign', [1, 1]],
-  ['sin', [1, 1]],
-  ['sqrt', [1, 1]],
-  ['tan', [1, 1]],
 ]);
 
 /** @typedef {{name: string | null, values: string[], operators: string[], args: string[], expectOperand: boolean}} Frame */
@@ -76,7 +53,7 @@ function functionResult(frame) {
   const values = frame.args;
   const fn = frame.name;
   if (!fn) return null;
-  const range = functionArgumentRanges.get(fn);
+  const range = mathFunctionArgumentRanges.get(fn);
   if (!range || values.length < range[0] || values.length > range[1])
     return null;
   if (trigFunctions.has(fn)) {
