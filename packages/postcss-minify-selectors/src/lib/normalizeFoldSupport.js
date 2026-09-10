@@ -83,21 +83,29 @@ export function activeOccurrences(group) {
   return group.occurrences.filter(({ selector }) => selector.active);
 }
 
-/** @param {FoldOccurrence[]} values @param {FoldOccurrence} value @param {(left:FoldOccurrence,right:FoldOccurrence)=>boolean} before */
-export function pushOccurrence(values, value, before) {
-  let index = values.length;
-  values.push(value);
-  while (index > 0) {
-    const parent = Math.floor((index - 1) / 2);
+/**
+ * Sift the element at `index` up to restore a binary-heap invariant.
+ * `before` is a strict higher-priority relation. No-op when `index` is 0.
+ * @template T @param {T[]} values @param {number} index @param {(left:T,right:T)=>boolean} before
+ */
+function siftUp(values, index, before) {
+  const value = values[index];
+  let current = index;
+  while (current > 0) {
+    const parent = Math.floor((current - 1) / 2);
     if (!before(value, values[parent])) break;
-    values[index] = values[parent];
-    index = parent;
+    values[current] = values[parent];
+    current = parent;
   }
-  values[index] = value;
+  values[current] = value;
 }
 
-/** @param {FoldOccurrence[]} values @param {(left:FoldOccurrence,right:FoldOccurrence)=>boolean} before */
-function popOccurrence(values, before) {
+/**
+ * Remove the root of `values` and restore the binary-heap invariant by
+ * sifting the former last element down from the top.
+ * @template T @param {T[]} values @param {(left:T,right:T)=>boolean} before
+ */
+function siftDown(values, before) {
   const last = values.pop();
   if (!last || values.length === 0) return;
   let index = 0;
@@ -116,6 +124,12 @@ function popOccurrence(values, before) {
   values[index] = last;
 }
 
+/** @param {FoldOccurrence[]} values @param {FoldOccurrence} value @param {(left:FoldOccurrence,right:FoldOccurrence)=>boolean} before */
+export function pushOccurrence(values, value, before) {
+  values.push(value);
+  siftUp(values, values.length - 1, before);
+}
+
 /** @param {FoldOccurrence} left @param {FoldOccurrence} right */
 export function occurrenceOrder(left, right) {
   return (
@@ -132,7 +146,7 @@ export function occurrenceText(left, right) {
 
 /** @param {FoldOccurrence[]} values @param {(left:FoldOccurrence,right:FoldOccurrence)=>boolean} before */
 function activeOccurrence(values, before) {
-  while (values[0] && !values[0].selector.active) popOccurrence(values, before);
+  while (values[0] && !values[0].selector.active) siftDown(values, before);
   return values[0];
 }
 
@@ -176,37 +190,15 @@ export class CandidateHeap {
 
   /** @param {FoldCandidate} value */
   push(value) {
-    const values = this.values;
-    let index = values.length;
-    values.push(value);
-    while (index > 0) {
-      const parent = Math.floor((index - 1) / 2);
-      if (!this.before(value, values[parent])) break;
-      values[index] = values[parent];
-      index = parent;
-    }
-    values[index] = value;
+    this.values.push(value);
+    siftUp(this.values, this.values.length - 1, (left, right) =>
+      this.before(left, right)
+    );
   }
 
   pop() {
-    const values = this.values;
-    const root = values[0];
-    const last = values.pop();
-    if (!root || !last || values.length === 0) return root;
-    let index = 0;
-    while (true) {
-      const left = index * 2 + 1;
-      if (left >= values.length) break;
-      const right = left + 1;
-      const child =
-        right < values.length && this.before(values[right], values[left])
-          ? right
-          : left;
-      if (!this.before(values[child], last)) break;
-      values[index] = values[child];
-      index = child;
-    }
-    values[index] = last;
+    const root = this.values[0];
+    siftDown(this.values, (left, right) => this.before(left, right));
     return root;
   }
 }
