@@ -199,8 +199,8 @@ function componentRole(term) {
     return undefined;
   }
 
-  const decoded =
-    /** @type {{ value?: string } | undefined} */ (term.decoded)?.value;
+  const decoded = /** @type {{ value?: string } | undefined} */ (term.decoded)
+    ?.value;
 
   if (term.type === TokenType.Ident && decoded?.toLowerCase() === auto) {
     return 'initial';

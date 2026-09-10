@@ -37,11 +37,6 @@ function significant(input, structure, range) {
   }
   return result;
 }
-/** @param {CSSToken} token */
-function unit(token) {
-  return numeric(token);
-}
-
 /** @param {import('postcss').Declaration} decl */
 // A single pass keeps related gradient-stop rewrites ordered by their source offsets.
 // eslint-disable-next-line complexity
@@ -131,7 +126,7 @@ function optimise(decl) {
       }
       if (!started) continue;
       for (const item of position) {
-        const current = unit(item);
+        const current = numeric(item);
         if (
           !current ||
           (largest &&
