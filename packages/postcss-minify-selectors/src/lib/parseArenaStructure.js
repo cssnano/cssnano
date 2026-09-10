@@ -8,6 +8,7 @@ import {
   semanticFacts,
   zeroSpecificity,
 } from './arena.js';
+import { decodedIdent } from './tokenUtils.js';
 
 const { TokenType } = cssnanoUtils;
 /** @typedef {import('./arena.js').ListMode} ListMode */
@@ -22,12 +23,6 @@ const { TokenType } = cssnanoUtils;
 /** @typedef {{kind:'pseudo',start:number,end:number,mode:ListMode,insideHas:boolean}} PseudoWork */
 /** @typedef {{kind:'close',node:number,role:'list'|'complex'|'compound'|'pseudo',mode?:ListMode,status?:ParseStatus,facts?:SemanticFacts,specificity?:Specificity}} CloseWork */
 /** @typedef {ListWork|ComplexWork|CompoundWork|PseudoWork|CloseWork} ParseWork */
-
-/** @param {import('./tokenUtils.js').CSSToken} token */
-function decodedIdent(token) {
-  const metadata = /** @type {{value?:string} | undefined} */ (token[4]);
-  return (metadata?.value ?? token[1]).toLowerCase();
-}
 
 /** @param {import('./tokenUtils.js').CSSToken | undefined} token */
 export function isTrivia(token) {

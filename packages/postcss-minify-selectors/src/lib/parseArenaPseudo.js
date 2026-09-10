@@ -13,6 +13,7 @@ import {
   parseAnPlusB,
 } from './argumentParsers.js';
 import { isTrivia, mergeStatus } from './parseArenaStructure.js';
+import { decodedIdent } from './tokenUtils.js';
 
 const { TokenType } = cssnanoUtils;
 /** @typedef {import('./arena.js').ListMode} ListMode */
@@ -210,12 +211,6 @@ function pseudoSpecificityPolicy(name, listMode, isElement) {
   if (!listMode) return 'normal';
   if (name === 'host' || name === 'host-context') return 'class-plus-argument';
   return isElement ? 'element-plus-argument' : 'argument';
-}
-
-/** @param {import('./tokenUtils.js').CSSToken} token */
-function decodedIdent(token) {
-  const metadata = /** @type {{value?:string} | undefined} */ (token[4]);
-  return (metadata?.value ?? token[1]).toLowerCase();
 }
 
 /** @param {Structure} structure @param {number} start @param {number} end */
