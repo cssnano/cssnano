@@ -1,9 +1,8 @@
 import {
   isTokenComment,
-  isTokenCloseSquare,
+  isTokenComma,
   isTokenDelim,
   isTokenIdent,
-  isTokenOpenSquare,
   isTokenWhitespace,
   tokenize,
 } from '@csstools/css-tokenizer';
@@ -16,6 +15,7 @@ const listStyleRegex = /list-style|system/;
 const fontRegex = /font(|-family)/;
 const counterStyleRegex = /counter-style/;
 const keyframesRegex = /keyframes/;
+const wildcard = true;
 
 /**
  * @param {{value: string}} arg
@@ -48,19 +48,91 @@ function filterAtRule({ atRules, values }) {
 }
 
 /**
+ * @param {string} source
+ * @return {string | true | undefined}
+ */
+function namespacePrefix(source) {
+  for (const token of tokenize({ css: source })) {
+    if (isTokenWhitespace(token) || isTokenComment(token)) continue;
+    return namespacePrefixToken(token);
+  }
+}
+
+/**
+ * @param {import('@csstools/css-tokenizer').CSSToken | undefined} token
+ * @return {string | true | undefined}
+ */
+function namespacePrefixToken(token) {
+  if (token === undefined) return;
+  if (isTokenIdent(token)) return token[4].value;
+  if (isTokenDelim(token) && token[1] === '*') return wildcard;
+}
+
+/**
+ * Find namespace prefixes in each selector-list item. A comma resets the
+ * candidate prefix so a type selector in an earlier item cannot be mistaken
+ * for the prefix of a later qualified selector. Intervening whitespace or
+ * comments also reset the candidate prefix because CSS qualified names cannot
+ * contain whitespace between the prefix, '|', and the element/attribute name.
+ *
+ * @param {string} source
+ * @return {(string | true)[]}
+ */
+function namespacePrefixes(source) {
+  /** @type {(string | true)[]} */
+  const prefixes = [];
+  /** @type {import('@csstools/css-tokenizer').CSSToken | undefined} */
+  let previous;
+  /** @type {string | true | undefined} */
+  let pendingPrefix;
+
+  for (const token of tokenize({ css: source })) {
+    if (isTokenComma(token)) {
+      previous = undefined;
+      pendingPrefix = undefined;
+      continue;
+    }
+    if (isTokenWhitespace(token) || isTokenComment(token)) {
+      previous = undefined;
+      pendingPrefix = undefined;
+      continue;
+    }
+
+    if (pendingPrefix !== undefined) {
+      if (isTokenIdent(token) || (isTokenDelim(token) && token[1] === '*')) {
+        prefixes.push(pendingPrefix);
+      }
+      pendingPrefix = undefined;
+    }
+
+    if (isTokenDelim(token) && token[1] === '|') {
+      pendingPrefix = namespacePrefixToken(previous);
+      previous = undefined;
+      continue;
+    }
+
+    previous = token;
+  }
+
+  return prefixes;
+}
+
+/**
  * @param {{atRules: import('postcss').AtRule[], rules: (string | true)[]}} arg
  * @return {void}
  */
 function filterNamespace({ atRules, rules }) {
   const uniqueRules = new Set(rules);
   for (const atRule of atRules) {
-    const { 0: param, length: len } = atRule.params.split(' ').filter(Boolean);
+    const prefix = namespacePrefix(atRule.params);
 
-    if (len === 1) {
-      return;
+    if (prefix === undefined) {
+      if (atRule.params.trim()) continue;
+      atRule.remove();
+      continue;
     }
 
-    const hasRule = uniqueRules.has(param) || uniqueRules.has('*');
+    const hasRule = uniqueRules.has(prefix) || uniqueRules.has(wildcard);
 
     if (!hasRule) {
       atRule.remove();
@@ -110,61 +182,6 @@ function filterFont({ atRules, values }, comma) {
   }
 }
 
-/**
- *
- * @param {{atRules: import('postcss').AtRule[], rules: (string | true)[]}} namespaceCache
- * @param {import('postcss').Rule} node
- * @return {void}
- */
-function processAttributeSelector(namespaceCache, node) {
-  /** @type {{first: string | null, pendingNamespace: string | null, ready: boolean}[]} */
-  const attributes = [];
-
-  for (const token of tokenize({ css: node.selector })) {
-    if (isTokenOpenSquare(token)) {
-      attributes.push({ first: null, pendingNamespace: null, ready: true });
-      continue;
-    }
-
-    if (isTokenCloseSquare(token)) {
-      attributes.pop();
-      continue;
-    }
-
-    const attribute = attributes.at(-1);
-    if (!attribute || isTokenWhitespace(token) || isTokenComment(token)) {
-      continue;
-    }
-
-    if (attribute.pendingNamespace) {
-      if (isTokenDelim(token) && token[1] === '=') {
-        // `|=` is an attribute matcher, not a namespace separator.
-        attribute.pendingNamespace = null;
-      } else {
-        namespaceCache.rules.push(attribute.pendingNamespace);
-        attribute.pendingNamespace = null;
-      }
-    }
-
-    if (attribute.ready) {
-      attribute.ready = false;
-      if (isTokenIdent(token)) {
-        attribute.first = token[4].value;
-      } else if (isTokenDelim(token) && token[1] === '*') {
-        attribute.first = '*';
-      }
-      continue;
-    }
-
-    if (attribute.first && isTokenDelim(token) && token[1] === '|') {
-      attribute.pendingNamespace = attribute.first;
-      attribute.first = null;
-      continue;
-    }
-    attribute.first = null;
-  }
-}
-
 /**@typedef {{fontFace?: boolean, counterStyle?: boolean, keyframes?: boolean, namespace?: boolean}} Options */
 
 /**
@@ -205,14 +222,8 @@ function processNode(node, context) {
  * @return {void}
  */
 function processRule(namespaceCache, node) {
-  if (node.selector.includes('[')) {
-    // Attribute selector, so we should parse further.
-    processAttributeSelector(namespaceCache, node);
-  } else {
-    // Use the part before the separator for a simple namespace selector.
-    namespaceCache.rules.push(
-      node.selector.slice(0, node.selector.indexOf('|'))
-    );
+  for (const prefix of namespacePrefixes(node.selector)) {
+    namespaceCache.rules.push(prefix);
   }
 }
 

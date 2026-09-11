@@ -357,3 +357,11 @@ test(
   'should remove leading zeroes from reduced calc values',
   processCss(`.box { margin: calc(-.5 * 1rem); }`, `.box{margin:calc(-.5rem)}`)
 );
+
+test(
+  'should preserve strange property names',
+  processCss(
+    'a {--kendo-spacing-1\\.5: 12px; margin: var(--kendo-spacing-1\\.5);}',
+    'a{--kendo-spacing-1\\.5:12px;margin:var(--kendo-spacing-1\\.5)}'
+  )
+);
