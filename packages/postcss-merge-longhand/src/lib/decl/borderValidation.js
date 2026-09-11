@@ -20,123 +20,96 @@ import {
   specifiesDistinctComponents,
 } from '../validateWsc.js';
 
-/** @import {Declaration} from 'postcss'; */
+/** @import {Declaration, Rule, Node} from 'postcss'; */
 
 /**
- * A border declaration specifies a `<line-width>`, a `<line-style>` and a
- * `<color>` — one of them if it names a component, one of each per side
- * otherwise — and the browser ignores it when a value is none of these.
- *
  * @param {Declaration} declaration one of `allPhysicalBorderProperties`
- * @return {boolean} whether the declaration sets anything at all
+ * @return {boolean}
  */
-function browserKeeps(declaration) {
+export function browserKeeps(declaration) {
   const prop = declaration.prop.toLowerCase();
-
   if (borderAndSideShorthands.has(prop)) {
     return specifiesDistinctComponents(declaration.value);
   }
-
   const component = /** @type {string} */ (prop.split('-').at(-1));
-
   if (!allSidesBorderShorthands.includes(prop)) {
     return specifiesComponent(declaration.value, component);
   }
-
-  /* `parseTrbl` takes the four sides it needs and says nothing about a fifth,
-   * which is a token that costs the declaration its meaning. */
-  if (list.space(declaration.value).length > spec.sides.length) {
-    return false;
-  }
-
-  return parseTrbl(declaration.value).every((value) =>
-    specifiesComponent(value, component)
+  if (list.space(declaration.value).length > spec.sides.length) return false;
+  return parseTrbl(declaration.value).every((v) =>
+    specifiesComponent(v, component)
   );
 }
 
 /**
- * @param {import('postcss').Rule} rule
+ * @param {Rule} rule
  * @return {boolean}
  */
 export function containsUnmergeableBorderDecls(rule) {
-  const declarations = /** @type {Declaration[]} */ (
-    rule.nodes.filter((node) => node.type === 'decl')
+  const decls = /** @type {Declaration[]} */ (
+    rule.nodes.filter((n) => n.type === 'decl')
   );
-
   if (
-    declarations.some((declaration) => {
-      const prop = declaration.prop.toLowerCase();
-
+    decls.some((d) => {
+      const p = d.prop.toLowerCase();
       return (
-        borderImageProperties.has(prop) ||
-        spec.flowRelativeBorderProperties.has(prop)
+        borderImageProperties.has(p) || spec.flowRelativeBorderProperties.has(p)
       );
     })
   ) {
     return true;
   }
 
-  const physical = declarations.filter((declaration) =>
-    allPhysicalBorderProperties.has(declaration.prop.toLowerCase())
+  const physical = decls.filter((d) =>
+    allPhysicalBorderProperties.has(d.prop.toLowerCase())
   );
-
   if (
-    physical.some(
-      (declaration) =>
-        cssGlobalKeywords.has(declaration.value.toLowerCase()) ||
-        ((borderAndSideShorthands.has(declaration.prop.toLowerCase()) ||
-          allSidesBorderShorthands.includes(declaration.prop.toLowerCase())) &&
-          isCustomProp(declaration))
-    )
+    physical.some((d) => {
+      const p = d.prop.toLowerCase();
+      const isCustom =
+        (borderAndSideShorthands.has(p) ||
+          allSidesBorderShorthands.includes(p)) &&
+        isCustomProp(d);
+      return (
+        cssGlobalKeywords.has(d.value.toLowerCase()) ||
+        isCustom ||
+        !browserKeeps(d)
+      );
+    })
   ) {
     return true;
   }
 
-  /* A declaration the browser ignores sets nothing, so the ones around it mean
-   * what they would mean on their own. Every transform here reads it as one
-   * that applies, and would move, ignore or rewrite those others against a
-   * border no side ever has. */
-  if (physical.some((declaration) => !browserKeeps(declaration))) {
-    return true;
-  }
-
-  const globalComponents = physical.filter((decl) =>
-    allSidesBorderShorthands.includes(decl.prop.toLowerCase())
+  const globalComps = physical.filter((d) =>
+    allSidesBorderShorthands.includes(d.prop.toLowerCase())
   );
-  const directionalDeclarations = physical.filter((decl) =>
-    directionalPhysicalProperties.has(decl.prop.toLowerCase())
+  const directional = physical.filter((d) =>
+    directionalPhysicalProperties.has(d.prop.toLowerCase())
   );
-
-  return globalComponents.length > 1 && directionalDeclarations.length > 0;
+  return globalComps.length > 1 && directional.length > 0;
 }
 
 /**
- * @param {import('postcss').Node} node
+ * @param {Node} node
  * @return {boolean}
  */
 function establishesBorderReset(node) {
-  if (node.type !== 'decl') {
-    return false;
-  }
-
-  const declaration = /** @type {Declaration} */ (node);
-
+  if (node.type !== 'decl') return false;
+  const d = /** @type {Declaration} */ (node);
   if (
-    declaration.prop.toLowerCase() !== 'border' ||
-    !canExplode(declaration) ||
-    stylehacks.detect(declaration)
-  ) {
+    d.prop.toLowerCase() !== 'border' ||
+    !canExplode(d) ||
+    stylehacks.detect(d)
+  )
     return false;
-  }
-
   return (
-    specifiesDistinctComponents(declaration.value) &&
-    isValidWidthStyleColor(parseWidthStyleColor(declaration.value))
+    specifiesDistinctComponents(d.value) &&
+    isValidWidthStyleColor(parseWidthStyleColor(d.value))
   );
 }
 
 /**
- * @param {import('postcss').Rule} rule
+ * @param {Rule} rule
  * @return {boolean}
  */
 export function hasBorderResetContext(rule) {

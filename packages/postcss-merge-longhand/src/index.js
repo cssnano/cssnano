@@ -1,7 +1,7 @@
 import borders from './lib/decl/borders.js';
 import columns from './lib/decl/columns.js';
-import margin from './lib/decl/margin.js';
-import padding from './lib/decl/padding.js';
+import { reduceBox } from './lib/decl/boxReducer.js';
+import { isConcreteBorder, reduceBorder } from './lib/decl/borderReducer.js';
 import minifyShorthandIdentities from './lib/minifyShorthand.js';
 import { requiredSupport } from './lib/isFallback.js';
 
@@ -132,8 +132,6 @@ function pluginCreator() {
       let setsOtherColumnProperty = false;
 
       css.walkRules((rule) => {
-        // Scan the rule's declarations once, then run only the processors whose
-        // family is present.
         /** @type {Declaration[]} */
         const borderDeclarations = [];
         /** @type {Declaration[]} */
@@ -141,6 +139,7 @@ function pluginCreator() {
         /** @type {Declaration[]} */
         const paddingDeclarations = [];
         let hasColumn = false;
+
         for (const node of rule.nodes) {
           if (node.type !== 'decl') {
             continue;
@@ -157,17 +156,22 @@ function pluginCreator() {
             paddingDeclarations.push(node);
           }
         }
+
+        if (marginDeclarations.length) {
+          reduceBox(rule, 'margin', marginDeclarations);
+        }
+        if (paddingDeclarations.length) {
+          reduceBox(rule, 'padding', paddingDeclarations);
+        }
         if (borderDeclarations.length) {
-          rewrite(rule, borders, 'border', borderDeclarations);
+          if (isConcreteBorder(rule, borderDeclarations)) {
+            reduceBorder(rule, borderDeclarations);
+          } else {
+            rewrite(rule, borders, 'border', borderDeclarations);
+          }
         }
         if (hasColumn) {
           columnRules.push(rule);
-        }
-        if (marginDeclarations.length) {
-          rewrite(rule, margin, 'margin', marginDeclarations);
-        }
-        if (paddingDeclarations.length) {
-          rewrite(rule, padding, 'padding', paddingDeclarations);
         }
       });
 

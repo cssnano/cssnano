@@ -1,52 +1,26 @@
-import resolveBorderGrid from './borderMatrix.js';
-import { cleanup, explode, mergeBorderSpacing } from './borderLifecycle.js';
-import {
-  containsUnmergeableBorderDecls,
-  hasBorderResetContext,
-} from './borderValidation.js';
-import {
-  mergeComponentsToBorder,
-  mergeComponentsToBorderAndSides,
-  mergeSideComponentsToComponent,
-  mergeSideComponentsToSide,
-  mergeSidesToBorder,
-  mergeSidesToComponents,
-  rebindComponentCustomProp,
-  rebindSideCustomProp,
-} from './borderMerges.js';
-import {
-  hoistSubsumedComponents,
-  mergeRedundantSweep,
-  optimizeSides,
-} from './borderFinalizers.js';
+import * as lifecycle from './borderLifecycle.js';
+import * as validation from './borderValidation.js';
+import * as merges from './borderMerges.js';
+import * as finalizers from './borderFinalizers.js';
 
-/**
- * @param {import('postcss').Rule} rule
- * @return {void}
- */
+/** @param {import('postcss').Rule} rule */
 function merge(rule) {
-  mergeBorderSpacing(rule);
+  lifecycle.mergeBorderSpacing(rule);
+  if (validation.containsUnmergeableBorderDecls(rule)) return;
 
-  if (containsUnmergeableBorderDecls(rule)) {
-    resolveBorderGrid(rule);
-    return;
-  }
-
-  const canCreateBorder = hasBorderResetContext(rule);
-
-  mergeSideComponentsToSide(rule);
-  mergeSideComponentsToComponent(rule);
-  mergeSidesToComponents(rule);
-  mergeComponentsToBorder(rule, canCreateBorder);
-  mergeComponentsToBorderAndSides(rule, canCreateBorder);
-  mergeSidesToBorder(rule, canCreateBorder);
-  rebindSideCustomProp(rule);
-  rebindComponentCustomProp(rule);
-  optimizeSides(rule);
-  mergeRedundantSweep(rule);
-  hoistSubsumedComponents(rule);
-
-  cleanup(rule);
+  const canCreateBorder = validation.hasBorderResetContext(rule);
+  merges.mergeSideComponentsToSide(rule);
+  merges.mergeSideComponentsToComponent(rule);
+  merges.mergeSidesToComponents(rule);
+  merges.mergeComponentsToBorder(rule, canCreateBorder);
+  merges.mergeComponentsToBorderAndSides(rule, canCreateBorder);
+  merges.mergeSidesToBorder(rule, canCreateBorder);
+  merges.rebindSideCustomProp(rule);
+  merges.rebindComponentCustomProp(rule);
+  finalizers.optimizeSides(rule);
+  finalizers.mergeRedundantSweep(rule);
+  finalizers.hoistSubsumedComponents(rule);
+  lifecycle.cleanup(rule);
 }
 
-export default { explode, merge };
+export default { explode: lifecycle.explode, merge };

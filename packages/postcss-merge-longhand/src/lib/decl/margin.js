@@ -1,3 +1,2 @@
-import base from './boxBase.js';
-
-export default base('margin');
+import { box } from './boxReducer.js';
+export default box('margin');

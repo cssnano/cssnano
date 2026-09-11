@@ -1,41 +1,31 @@
 import spec from '../spec.js';
 
 export const widthStyleColor = spec.borderComponents;
-
-/**
- * @param {...string} parts
- * @return {string}
- */
-export function borderProperty(...parts) {
-  return `border-${parts.join('-')}`;
-}
-
+/** @param {string[]} parts */
+export const borderProperty = (...parts) => `border-${parts.join('-')}`;
 export const physicalBorderShorthands = spec.sides.map((side) =>
   borderProperty(side)
 );
 export const allSidesBorderShorthands = spec.shorthand('border').longhands;
+
 /** @type {string[]} */
 const physicalDirectionalProperties = [];
 for (const direction of physicalBorderShorthands) {
-  for (const prop of widthStyleColor) {
+  for (const prop of widthStyleColor)
     physicalDirectionalProperties.push(`${direction}-${prop}`);
-  }
 }
 
 export const defaultBorderValues = allSidesBorderShorthands.map(
   (prop) => /** @type {string} */ (spec.initialValues.get(prop))
 );
-/* `border` and the shorthand for each side of the box. */
 export const borderAndSideShorthands = new Set([
   'border',
   ...physicalBorderShorthands,
 ]);
-/* Those, and the properties they are made of. */
 export const directionalPhysicalProperties = new Set([
   ...physicalBorderShorthands,
   ...physicalDirectionalProperties,
 ]);
-/* What `border` resets without being able to set. */
 export const borderImageProperties = new Set(spec.shorthand('border').resets);
 
 const precedence = [
@@ -52,10 +42,8 @@ export const borderResetRules = new WeakSet();
  * @return {number | undefined}
  */
 export function getLevel(prop) {
+  const p = prop.toLowerCase();
   for (let i = 0; i < precedence.length; i++) {
-    if (precedence[i].includes(prop.toLowerCase())) {
-      return i;
-    }
+    if (precedence[i].includes(p)) return i;
   }
-  return undefined;
 }

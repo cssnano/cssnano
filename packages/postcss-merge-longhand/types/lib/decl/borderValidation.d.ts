@@ -1,17 +1,24 @@
+import type { Declaration, Rule, Node } from 'postcss';
+/** @import {Declaration, Rule, Node} from 'postcss'; */
 /**
- * @param {import('postcss').Rule} rule
+ * @param {Declaration} declaration one of `allPhysicalBorderProperties`
  * @return {boolean}
  */
-export declare function containsUnmergeableBorderDecls(rule: import('postcss').Rule): boolean;
+export declare function browserKeeps(declaration: Declaration): boolean;
 /**
- * @param {import('postcss').Node} node
+ * @param {Rule} rule
  * @return {boolean}
  */
-declare function establishesBorderReset(node: import('postcss').Node): boolean;
+export declare function containsUnmergeableBorderDecls(rule: Rule): boolean;
 /**
- * @param {import('postcss').Rule} rule
+ * @param {Node} node
  * @return {boolean}
  */
-export declare function hasBorderResetContext(rule: import('postcss').Rule): boolean;
+declare function establishesBorderReset(node: Node): boolean;
+/**
+ * @param {Rule} rule
+ * @return {boolean}
+ */
+export declare function hasBorderResetContext(rule: Rule): boolean;
 export { establishesBorderReset };
 //# sourceMappingURL=borderValidation.d.ts.map
