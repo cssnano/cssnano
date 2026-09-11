@@ -130,10 +130,3 @@ export function reduceBox(rule, prop, declarations) {
     if (laneDecls.length) processLane(rule, prop, sideProps, laneDecls, lane);
   }
 }
-
-/** @param {string} p */
-export const box = (p) => ({
-  explode() {},
-  /** @param {Rule} r */
-  merge: (r) => reduceBox(r, p),
-});

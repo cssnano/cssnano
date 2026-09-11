@@ -83,13 +83,6 @@ function supportDependenciesIn(value) {
 const inheritedSupport = new WeakMap();
 
 /**
- * @type {WeakMap<import('postcss').Declaration, {
- *   value: string, inherited: Set<string> | undefined, support: Set<string>
- * }>}
- */
-const supportCache = new WeakMap();
-
-/**
  * @param {import('postcss').Declaration} declaration
  * @return {Set<string>} every function a browser had to support for the
  * declaration to apply: the ones its value calls, and the ones the declaration
@@ -97,21 +90,8 @@ const supportCache = new WeakMap();
  */
 function requiredSupport(declaration) {
   const inherited = inheritedSupport.get(declaration);
-  const cached = supportCache.get(declaration);
-
-  if (cached?.value === declaration.value && cached.inherited === inherited) {
-    return cached.support;
-  }
-
   const own = supportDependenciesIn(declaration.value);
-  const support = inherited === undefined ? own : own.union(inherited);
-
-  supportCache.set(declaration, {
-    value: declaration.value,
-    inherited,
-    support,
-  });
-  return support;
+  return inherited === undefined ? own : own.union(inherited);
 }
 
 /**

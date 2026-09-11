@@ -12,7 +12,7 @@
 import { register } from 'node:module';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import postcss from 'postcss';
@@ -138,19 +138,134 @@ const { default: cssnano } = await import(
 const { corpusManifest } = await import('./bench-corpus.mjs');
 const { benchmarkCases } = await import('./bench-cases.mjs');
 
-const argCase = process.argv.indexOf('--case');
+function formatComparison(base, cand) {
+  const lines = [];
+  lines.push('### Operation Counter Comparison');
+  lines.push('');
+  lines.push(`- Baseline: \`${base.revision?.slice(0, 8) ?? 'baseline'}\``);
+  lines.push(`- Candidate: \`${cand.revision?.slice(0, 8) ?? 'candidate'}\``);
+  lines.push('');
+
+  const hashDiffs = [];
+  for (const bFile of base.files) {
+    const cFile = cand.files.find((f) => f.name === bFile.name);
+    if (cFile && cFile.hash !== bFile.hash) {
+      hashDiffs.push(
+        `${bFile.name}: \`${bFile.hash.slice(0, 8)}\` -> \`${cFile.hash.slice(0, 8)}\``
+      );
+    }
+  }
+  if (hashDiffs.length === 0) {
+    lines.push(
+      `- **Output Hashes**: 100% byte-identical across all ${base.files.length} corpus files.`
+    );
+  } else {
+    lines.push(
+      `- **Output Hashes**: ${hashDiffs.length} files changed output:`
+    );
+    for (const d of hashDiffs) lines.push(`  - ${d}`);
+  }
+  lines.push('');
+
+  lines.push('#### Totals');
+  lines.push('');
+  lines.push('| Counter Metric | Baseline | Candidate | Delta | % Change |');
+  lines.push('| :--- | :--- | :--- | :--- | :--- |');
+
+  const keys = Object.keys(base.totals).filter((k) => k !== 'pass');
+  for (const key of keys) {
+    const b = base.totals[key] ?? 0;
+    const c = cand.totals[key] ?? 0;
+    const delta = c - b;
+    const sign = delta > 0 ? '+' : '';
+    const pct =
+      b === 0
+        ? c === 0
+          ? '0.0%'
+          : '+Inf'
+        : `${((delta / b) * 100).toFixed(1)}%`;
+    lines.push(
+      `| \`${key}\` | ${b.toLocaleString()} | ${c.toLocaleString()} | ${sign}${delta.toLocaleString()} | ${pct} |`
+    );
+  }
+  lines.push('');
+
+  lines.push('#### Pass Invocations');
+  lines.push('');
+  lines.push('| Pass Name | Baseline | Candidate | Delta | % Change |');
+  lines.push('| :--- | :--- | :--- | :--- | :--- |');
+  for (const passKey of PASS_KEYS) {
+    const b = base.totals.pass?.[passKey] ?? 0;
+    const c = cand.totals.pass?.[passKey] ?? 0;
+    const delta = c - b;
+    const sign = delta > 0 ? '+' : '';
+    const pct =
+      b === 0
+        ? c === 0
+          ? '0.0%'
+          : '+Inf'
+        : `${((delta / b) * 100).toFixed(1)}%`;
+    lines.push(
+      `| \`${passKey}\` | ${b.toLocaleString()} | ${c.toLocaleString()} | ${sign}${delta.toLocaleString()} | ${pct} |`
+    );
+  }
+  lines.push('');
+
+  return lines.join('\n');
+}
+
+const args = process.argv.slice(2);
+const positional = args.filter((a) => !a.startsWith('--'));
+const argCase =
+  args.find((a) => a.startsWith('--case='))?.slice(7) ??
+  (args.indexOf('--case') !== -1
+    ? args[args.indexOf('--case') + 1]
+    : undefined);
+const argCompare =
+  args.find((a) => a.startsWith('--compare='))?.slice(10) ??
+  (args.indexOf('--compare') !== -1
+    ? args[args.indexOf('--compare') + 1]
+    : undefined);
+const argOutput =
+  args.find((a) => a.startsWith('--output='))?.slice(9) ??
+  (args.indexOf('--output') !== -1
+    ? args[args.indexOf('--output') + 1]
+    : undefined);
+const argMarkdown =
+  args.find((a) => a.startsWith('--markdown='))?.slice(11) ??
+  (args.indexOf('--markdown') !== -1
+    ? args[args.indexOf('--markdown') + 1]
+    : undefined);
+
+if (
+  positional.length === 2 &&
+  positional[0].endsWith('.json') &&
+  positional[1].endsWith('.json')
+) {
+  const base = JSON.parse(
+    readFileSync(resolve(repoRoot, positional[0]), 'utf8')
+  );
+  const cand = JSON.parse(
+    readFileSync(resolve(repoRoot, positional[1]), 'utf8')
+  );
+  const md = formatComparison(base, cand);
+  process.stdout.write(`${md}\n`);
+  if (argMarkdown) {
+    writeFileSync(resolve(repoRoot, argMarkdown), `${md}\n`, 'utf8');
+  }
+  process.exit(0);
+}
 
 /** @type {{name: string, source: string}[]} */
 let files;
 /** @type {() => import('postcss').Processor} */
 let makeProcessor;
-if (argCase !== -1) {
-  const name = process.argv[argCase + 1];
-  const entry = benchmarkCases[name];
+if (argCase !== undefined) {
+  const entry = benchmarkCases[argCase];
   if (!entry) {
-    throw new Error(`unknown benchmark case "${name}"`);
+    throw new Error(`unknown benchmark case "${argCase}"`);
   }
-  files = [{ name, source: entry.css }];
+  files = [{ name: argCase, source: entry.css }];
   makeProcessor = () => entry.createProcessor();
 } else {
   const dir = resolve(repoRoot, 'frameworks');
@@ -203,4 +318,24 @@ const report = {
   files: fileReports,
   totals,
 };
-process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+
+if (argOutput) {
+  writeFileSync(
+    resolve(repoRoot, argOutput),
+    `${JSON.stringify(report, null, 2)}\n`,
+    'utf8'
+  );
+}
+
+if (argCompare) {
+  const base = JSON.parse(
+    readFileSync(resolve(repoRoot, argCompare), 'utf8')
+  );
+  const md = formatComparison(base, report);
+  process.stdout.write(`${md}\n`);
+  if (argMarkdown) {
+    writeFileSync(resolve(repoRoot, argMarkdown), `${md}\n`, 'utf8');
+  }
+} else if (!argOutput) {
+  process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+}

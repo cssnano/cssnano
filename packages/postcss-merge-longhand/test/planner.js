@@ -3,8 +3,6 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import pluginFactory from '../src/index.js';
 import borders from '../src/lib/decl/borders.js';
-import margin from '../src/lib/decl/margin.js';
-import padding from '../src/lib/decl/padding.js';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(pluginFactory);
@@ -150,18 +148,6 @@ suite('direct normalization equals the legacy round-trip', () => {
     for (const css of singles.filter((entry) => entry.includes('border'))) {
       const result = await postcss([plugin]).process(css, { from: undefined });
       assert.strictEqual(result.css, roundTrip(css, borders), css);
-    }
-  });
-
-  test('box singletons', async () => {
-    const plugin = pluginFactory();
-    for (const css of singles.filter((entry) => entry.includes('margin'))) {
-      const result = await postcss([plugin]).process(css, { from: undefined });
-      assert.strictEqual(result.css, roundTrip(css, margin), css);
-    }
-    for (const css of singles.filter((entry) => entry.includes('padding'))) {
-      const result = await postcss([plugin]).process(css, { from: undefined });
-      assert.strictEqual(result.css, roundTrip(css, padding), css);
     }
   });
 });
