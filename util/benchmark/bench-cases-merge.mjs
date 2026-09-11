@@ -1,5 +1,8 @@
 import { pluginCase } from './bench-case-utils.mjs';
 
+/* Focused merge-longhand cases: the no-op negative path (single standalone
+ * shorthands, and multi-declaration rules that revert), and the concrete
+ * leaf-to-side and leaf-to-component merges the refactor must not slow down. */
 export const mergeCases = {
   'longhand-rule-merging': pluginCase(
     'postcss-merge-longhand',
@@ -7,6 +10,54 @@ export const mergeCases = {
       { length: 200 },
       (_, index) =>
         `.box-${index}{margin-top:1px;margin-right:2px;margin-bottom:1px;margin-left:2px;padding-top:3px;padding-right:4px;padding-bottom:3px;padding-left:4px}`
+    ).join('')
+  ),
+  'merge-longhand-noop-singles': pluginCase(
+    'postcss-merge-longhand',
+    Array.from(
+      { length: 500 },
+      (_, index) =>
+        `.noop-${index}{border:1px solid red;margin:1px 2px 3px 4px;padding:5px 6px}`
+    ).join('')
+  ),
+  'merge-longhand-noop-border-multi': pluginCase(
+    'postcss-merge-longhand',
+    Array.from(
+      { length: 500 },
+      (_, index) =>
+        `.revert-${index}{border:1px solid red;border-top:2px dashed blue}`
+    ).join('')
+  ),
+  'merge-longhand-leaf-to-side': pluginCase(
+    'postcss-merge-longhand',
+    Array.from(
+      { length: 500 },
+      (_, index) =>
+        `.leaf-side-${index}{border-top-width:1px;border-top-style:solid;border-top-color:red}`
+    ).join('')
+  ),
+  'merge-longhand-leaf-to-component': pluginCase(
+    'postcss-merge-longhand',
+    Array.from(
+      { length: 500 },
+      (_, index) =>
+        `.leaf-component-${index}{border-top-width:1px;border-right-width:1px;border-bottom-width:1px;border-left-width:1px}`
+    ).join('')
+  ),
+  'merge-longhand-side-to-border': pluginCase(
+    'postcss-merge-longhand',
+    Array.from(
+      { length: 500 },
+      (_, index) =>
+        `.side-border-${index}{border-top:1px solid red;border-right:1px solid red;border-bottom:1px solid red;border-left:1px solid red}`
+    ).join('')
+  ),
+  'merge-longhand-component-to-border': pluginCase(
+    'postcss-merge-longhand',
+    Array.from(
+      { length: 500 },
+      (_, index) =>
+        `.component-border-${index}{border-width:1px;border-style:solid;border-color:red}`
     ).join('')
   ),
   'merge-longhand-columns': pluginCase(

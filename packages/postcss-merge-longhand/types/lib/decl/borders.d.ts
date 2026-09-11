@@ -1,11 +1,8 @@
-import { explode } from './borderLifecycle.js';
-/**
- * @param {import('postcss').Rule} rule
- * @return {void}
- */
+import * as lifecycle from './borderLifecycle.js';
+/** @param {import('postcss').Rule} rule */
 declare function merge(rule: import('postcss').Rule): void;
 declare const _default: {
-    explode: typeof explode;
+    explode: typeof lifecycle.explode;
     merge: typeof merge;
 };
 export default _default;
