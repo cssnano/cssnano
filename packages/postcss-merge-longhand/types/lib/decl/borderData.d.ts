@@ -1,9 +1,6 @@
 export declare const widthStyleColor: string[];
-/**
- * @param {...string} parts
- * @return {string}
- */
-export declare function borderProperty(...parts: string[]): string;
+/** @param {string[]} parts */
+export declare const borderProperty: (...parts: string[]) => string;
 export declare const physicalBorderShorthands: string[];
 export declare const allSidesBorderShorthands: string[];
 export declare const defaultBorderValues: string[];

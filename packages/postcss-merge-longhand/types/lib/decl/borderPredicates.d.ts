@@ -1,14 +1,11 @@
-/**
- * @param {string} value
- * @return {boolean}
- */
-export declare function isCustomProperty(value: string): boolean;
-/** @param {string[]} values @return {boolean} */
-export declare function canMergeValues(values: string[]): boolean;
-/** @param {string[]} mapped @return {boolean} */
-export declare function isCloseEnough(mapped: string[]): boolean;
-/** @param {string[]} mapped @return {string[]} */
-export declare function getDistinctShorthands(mapped: string[]): string[];
+/** @param {string} value */
+export declare const isCustomProperty: (value: string) => boolean;
+/** @param {string[]} values */
+export declare const canMergeValues: (values: string[]) => boolean;
+/** @param {string[]} m */
+export declare const isCloseEnough: (m: string[]) => boolean;
+/** @param {string[]} mapped */
+export declare const getDistinctShorthands: (mapped: string[]) => string[];
 /**
  * @param {[string, string, string]} values
  * @param {[string, string, string]} nextValues

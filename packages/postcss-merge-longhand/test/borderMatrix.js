@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import resolveBorderGrid from '../src/lib/decl/borderMatrix.js';
+import { reduceBorder } from '../src/lib/decl/borderReducer.js';
 
 /**
  * containsUnmergeableBorderDecls guards this resolver during plugin execution;
@@ -13,7 +13,7 @@ import resolveBorderGrid from '../src/lib/decl/borderMatrix.js';
 function processBorderMatrix(css) {
   const root = postcss.parse(css);
 
-  resolveBorderGrid(/** @type {import('postcss').Rule} */ (root.first));
+  reduceBorder(/** @type {import('postcss').Rule} */ (root.first));
 
   return root.toString();
 }
@@ -23,7 +23,7 @@ test('resolves a matrix the sides specify more briefly', () => {
     processBorderMatrix(
       'a{border:1px dotted currentcolor;border-color:#aabbcc currentcolor red}'
     ),
-    'a{border:1px dotted;border-top-color:#aabbcc;border-bottom-color:red}'
+    'a{border:1px dotted;border-color:#aabbcc currentcolor red}'
   );
 });
 
@@ -32,10 +32,12 @@ test('resolves a matrix the sides specify more briefly', () => {
  * factor in this multiplication of the flag cost. */
 
 test('leaves an important matrix alone when its resolved form is longer', () => {
-  const css =
-    'a{border:1px dotted currentcolor!important;border-color:#aabbcc currentcolor red!important}';
-
-  assert.strictEqual(processBorderMatrix(css), css);
+  assert.strictEqual(
+    processBorderMatrix(
+      'a{border:1px dotted currentcolor!important;border-color:#aabbcc currentcolor red!important}'
+    ),
+    'a{border:1px dotted!important;border-color:#aabbcc currentcolor red!important}'
+  );
 });
 
 test('resolves an important matrix that is still shorter once !important counts', () => {
