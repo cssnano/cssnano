@@ -205,7 +205,11 @@ const emitGroup = (groups, shorthand, cells, touched) =>
       : grp
           .filter((idx) => touched.has(idx))
           .map((idx) =>
-            leaf(Math.floor(idx / 3), idx % 3, /** @type {string} */ (cells[idx]))
+            leaf(
+              Math.floor(idx / 3),
+              idx % 3,
+              /** @type {string} */ (cells[idx])
+            )
           )
   );
 
@@ -221,7 +225,12 @@ function generateCandidates(cells, touched, hasReset, lane) {
   const sideDecls = emitGroup(
     SIDE_GROUPS,
     (s) =>
-      side(s, minifyWidthStyleColor(`${cells[s * 3]} ${cells[s * 3 + 1]} ${cells[s * 3 + 2]}`)),
+      side(
+        s,
+        minifyWidthStyleColor(
+          `${cells[s * 3]} ${cells[s * 3 + 1]} ${cells[s * 3 + 2]}`
+        )
+      ),
     cells,
     touched
   );
@@ -229,7 +238,12 @@ function generateCandidates(cells, touched, hasReset, lane) {
     COMP_GROUPS,
     (i) => {
       const c = [2, 1, 0][i];
-      return comp(c, minifyTrbl(`${cells[c]} ${cells[3 + c]} ${cells[6 + c]} ${cells[9 + c]}`));
+      return comp(
+        c,
+        minifyTrbl(
+          `${cells[c]} ${cells[3 + c]} ${cells[6 + c]} ${cells[9 + c]}`
+        )
+      );
     },
     cells,
     touched
