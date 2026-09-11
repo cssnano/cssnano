@@ -16,6 +16,10 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import postcss from 'postcss';
+import {
+  parseCounterArgs,
+  validateComparisonCorpus,
+} from './merge-longhand-counters-compare.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '..', '..');
@@ -138,7 +142,19 @@ const { default: cssnano } = await import(
 const { corpusManifest } = await import('./bench-corpus.mjs');
 const { benchmarkCases } = await import('./bench-cases.mjs');
 
+function formatCounterDelta(base, candidate) {
+  const delta = candidate - base;
+  let pct;
+  if (base === 0) {
+    pct = candidate === 0 ? '0.0%' : '+Inf';
+  } else {
+    pct = `${((delta / base) * 100).toFixed(1)}%`;
+  }
+  return { delta, pct };
+}
+
 function formatComparison(base, cand) {
+  validateComparisonCorpus(base, cand);
   const lines = [];
   lines.push('### Operation Counter Comparison');
   lines.push('');
@@ -176,16 +192,9 @@ function formatComparison(base, cand) {
   for (const key of keys) {
     const b = base.totals[key] ?? 0;
     const c = cand.totals[key] ?? 0;
-    const delta = c - b;
-    const sign = delta > 0 ? '+' : '';
-    const pct =
-      b === 0
-        ? c === 0
-          ? '0.0%'
-          : '+Inf'
-        : `${((delta / b) * 100).toFixed(1)}%`;
+    const { delta, pct } = formatCounterDelta(b, c);
     lines.push(
-      `| \`${key}\` | ${b.toLocaleString()} | ${c.toLocaleString()} | ${sign}${delta.toLocaleString()} | ${pct} |`
+      `| \`${key}\` | ${b.toLocaleString()} | ${c.toLocaleString()} | ${delta > 0 ? '+' : ''}${delta.toLocaleString()} | ${pct} |`
     );
   }
   lines.push('');
@@ -197,16 +206,9 @@ function formatComparison(base, cand) {
   for (const passKey of PASS_KEYS) {
     const b = base.totals.pass?.[passKey] ?? 0;
     const c = cand.totals.pass?.[passKey] ?? 0;
-    const delta = c - b;
-    const sign = delta > 0 ? '+' : '';
-    const pct =
-      b === 0
-        ? c === 0
-          ? '0.0%'
-          : '+Inf'
-        : `${((delta / b) * 100).toFixed(1)}%`;
+    const { delta, pct } = formatCounterDelta(b, c);
     lines.push(
-      `| \`${passKey}\` | ${b.toLocaleString()} | ${c.toLocaleString()} | ${sign}${delta.toLocaleString()} | ${pct} |`
+      `| \`${passKey}\` | ${b.toLocaleString()} | ${c.toLocaleString()} | ${delta > 0 ? '+' : ''}${delta.toLocaleString()} | ${pct} |`
     );
   }
   lines.push('');
@@ -215,27 +217,8 @@ function formatComparison(base, cand) {
 }
 
 const args = process.argv.slice(2);
-const positional = args.filter((a) => !a.startsWith('--'));
-const argCase =
-  args.find((a) => a.startsWith('--case='))?.slice(7) ??
-  (args.indexOf('--case') !== -1
-    ? args[args.indexOf('--case') + 1]
-    : undefined);
-const argCompare =
-  args.find((a) => a.startsWith('--compare='))?.slice(10) ??
-  (args.indexOf('--compare') !== -1
-    ? args[args.indexOf('--compare') + 1]
-    : undefined);
-const argOutput =
-  args.find((a) => a.startsWith('--output='))?.slice(9) ??
-  (args.indexOf('--output') !== -1
-    ? args[args.indexOf('--output') + 1]
-    : undefined);
-const argMarkdown =
-  args.find((a) => a.startsWith('--markdown='))?.slice(11) ??
-  (args.indexOf('--markdown') !== -1
-    ? args[args.indexOf('--markdown') + 1]
-    : undefined);
+const { positional, argCase, argCompare, argOutput, argMarkdown } =
+  parseCounterArgs(args);
 
 if (
   positional.length === 2 &&
@@ -328,9 +311,7 @@ if (argOutput) {
 }
 
 if (argCompare) {
-  const base = JSON.parse(
-    readFileSync(resolve(repoRoot, argCompare), 'utf8')
-  );
+  const base = JSON.parse(readFileSync(resolve(repoRoot, argCompare), 'utf8'));
   const md = formatComparison(base, report);
   process.stdout.write(`${md}\n`);
   if (argMarkdown) {
