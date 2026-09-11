@@ -23,8 +23,8 @@ import {
 
 /** @import {Declaration, Rule} from 'postcss'; */
 
-const sides = spec.sides;
-const components = widthStyleColor;
+const sides = spec.sides,
+  components = widthStyleColor;
 
 /** @param {{prop: string, value: string}[]} decls @param {boolean} [important] */
 function declSize(decls, important) {
@@ -55,8 +55,8 @@ function hasForeignBorderNodes(rule) {
   return false;
 }
 
-/** @param {Declaration[]} declarations @param {boolean} hasReset @param {Rule} rule */
-function hasMixedBorderShapes(declarations, hasReset, rule) {
+/** @param {Declaration[]} declarations @param {boolean} hasReset @param {boolean} unmergeable */
+function hasMixedBorderShapes(declarations, hasReset, unmergeable) {
   const hasLong = declarations.some((d) => d.prop.split('-').length === 3);
   const hasComp = declarations.some((d) =>
     allSidesBorderShorthands.includes(d.prop.toLowerCase())
@@ -64,8 +64,7 @@ function hasMixedBorderShapes(declarations, hasReset, rule) {
   const hasSide = declarations.some((d) =>
     physicalBorderShorthands.includes(d.prop.toLowerCase())
   );
-  if (hasReset)
-    return hasLong || (hasComp && !containsUnmergeableBorderDecls(rule));
+  if (hasReset) return hasLong || (hasComp && !unmergeable);
   return (hasSide && hasComp) || (hasSide && hasLong);
 }
 
@@ -113,8 +112,9 @@ export function isConcreteBorder(rule, declarations) {
   if (declarations.some(badDecl) || hasForeignBorderNodes(rule)) return false;
 
   const hasReset = declarations.some((d) => d.prop.toLowerCase() === 'border');
-  if (containsUnmergeableBorderDecls(rule)) return hasReset;
-  if (hasMixedBorderShapes(declarations, hasReset, rule)) return false;
+  const unmergeable = containsUnmergeableBorderDecls(rule);
+  if (unmergeable) return hasReset;
+  if (hasMixedBorderShapes(declarations, hasReset, unmergeable)) return false;
 
   const touched = computeTouchedCells(declarations);
   return touched.size === 12 || (hasReset && touched.size > 0);
@@ -194,48 +194,48 @@ function addResetCandidates(cells, lane, rawCandidates) {
   }
 }
 
+const SIDE_GROUPS = [0, 1, 2, 3].map((s) => [s * 3, s * 3 + 1, s * 3 + 2]);
+const COMP_GROUPS = [2, 1, 0].map((c) => [c, 3 + c, 6 + c, 9 + c]);
+
+/** @param {number[][]} groups @param {(i: number) => {prop: string, value: string}} shorthand @param {(string | null)[]} cells @param {Set<number>} touched */
+const emitGroup = (groups, shorthand, cells, touched) =>
+  groups.flatMap((grp, i) =>
+    grp.every((idx) => touched.has(idx))
+      ? [shorthand(i)]
+      : grp
+          .filter((idx) => touched.has(idx))
+          .map((idx) =>
+            leaf(Math.floor(idx / 3), idx % 3, /** @type {string} */ (cells[idx]))
+          )
+  );
+
 /** @param {(string | null)[]} cells @param {Set<number>} touched @param {boolean} hasReset @param {boolean} lane */
 function generateCandidates(cells, touched, hasReset, lane) {
-  /** @type {{prop: string, value: string}[][]} */
-  const raw = [];
-
   const leaves = [];
-  for (let s = 0; s < 4; s++) {
-    for (let c = 0; c < 3; c++) {
-      if (touched.has(s * 3 + c))
-        leaves.push(leaf(s, c, /** @type {string} */ (cells[s * 3 + c])));
-    }
+  for (let i = 0; i < 12; i++) {
+    if (touched.has(i))
+      leaves.push(
+        leaf(Math.floor(i / 3), i % 3, /** @type {string} */ (cells[i]))
+      );
   }
-  raw.push(leaves);
-
-  const sideDecls = [];
-  for (let s = 0; s < 4; s++) {
-    if ([0, 1, 2].every((c) => touched.has(s * 3 + c))) {
-      const rawSide = `${cells[s * 3]} ${cells[s * 3 + 1]} ${cells[s * 3 + 2]}`;
-      sideDecls.push(side(s, minifyWidthStyleColor(rawSide)));
-    } else {
-      for (let c = 0; c < 3; c++) {
-        if (touched.has(s * 3 + c))
-          sideDecls.push(leaf(s, c, /** @type {string} */ (cells[s * 3 + c])));
-      }
-    }
-  }
-  raw.push(sideDecls);
-
-  const compDecls = [];
-  for (const c of [2, 1, 0]) {
-    if ([0, 1, 2, 3].every((s) => touched.has(s * 3 + c))) {
-      const rawComp = `${cells[c]} ${cells[3 + c]} ${cells[6 + c]} ${cells[9 + c]}`;
-      compDecls.push(comp(c, minifyTrbl(rawComp)));
-    } else {
-      for (let s = 0; s < 4; s++) {
-        if (touched.has(s * 3 + c))
-          compDecls.push(leaf(s, c, /** @type {string} */ (cells[s * 3 + c])));
-      }
-    }
-  }
-  raw.push(compDecls);
-
+  const sideDecls = emitGroup(
+    SIDE_GROUPS,
+    (s) =>
+      side(s, minifyWidthStyleColor(`${cells[s * 3]} ${cells[s * 3 + 1]} ${cells[s * 3 + 2]}`)),
+    cells,
+    touched
+  );
+  const compDecls = emitGroup(
+    COMP_GROUPS,
+    (i) => {
+      const c = [2, 1, 0][i];
+      return comp(c, minifyTrbl(`${cells[c]} ${cells[3 + c]} ${cells[6 + c]} ${cells[9 + c]}`));
+    },
+    cells,
+    touched
+  );
+  /** @type {{prop: string, value: string}[][]} */
+  const raw = [leaves, sideDecls, compDecls];
   if (hasReset && touched.size === 12) addResetCandidates(cells, lane, raw);
   return raw.filter((cand) => footprintValid(cand, touched, hasReset));
 }
