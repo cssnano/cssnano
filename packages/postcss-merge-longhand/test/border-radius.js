@@ -15,6 +15,45 @@ const { tokens } = cssnanoUtils;
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 suite('border-radius merging', () => {
+  suite('all reset boundaries', () => {
+    test(
+      'should not merge physical corners across a normal all reset',
+      passthroughCSS(
+        'a{border-top-left-radius:1px;border-top-right-radius:2px;all:initial;border-bottom-right-radius:3px;border-bottom-left-radius:4px}'
+      )
+    );
+
+    test(
+      'should not merge physical corners across an important all reset',
+      passthroughCSS(
+        'a{border-top-left-radius:1px!important;border-top-right-radius:2px!important;all:unset!important;border-bottom-right-radius:3px!important;border-bottom-left-radius:4px!important}'
+      )
+    );
+
+    test(
+      'should merge physical corners across an invalid all declaration in the opposite lane',
+      processCSS(
+        'a{border-top-left-radius:1px;border-top-right-radius:2px;all:invalid!important;border-bottom-right-radius:3px;border-bottom-left-radius:4px}',
+        'a{all:invalid!important;border-radius:1px 2px 3px 4px}'
+      )
+    );
+
+    test(
+      'should reduce complete physical corner groups on both sides of an all reset',
+      processCSS(
+        'a{border-top-left-radius:1px;border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px;all:initial;border-top-left-radius:2px;border-top-right-radius:2px;border-bottom-right-radius:2px;border-bottom-left-radius:2px}',
+        'a{border-radius:1px;all:initial;border-radius:2px}'
+      )
+    );
+
+    test(
+      'should recognize a case-insensitive ALL reset between physical corners',
+      passthroughCSS(
+        'a{border-top-left-radius:1px;border-top-right-radius:2px;ALL:initial;border-bottom-right-radius:3px;border-bottom-left-radius:4px}'
+      )
+    );
+  });
+
   test(
     'should merge 4 identical corner longhands into a 1-value shorthand',
     processCSS(

@@ -128,6 +128,23 @@ suite('evaluator', () => {
     );
   });
 
+  test('decodes an escaped all property before applying its reset', () => {
+    assert.equal(
+      slotOf(
+        String.raw`a{margin-top:1px;\61ll:initial;margin-right:2em}`,
+        'margin-top'
+      ),
+      '0'
+    );
+    assert.equal(
+      slotOf(
+        String.raw`a{margin-top:1px;\61ll:initial;margin-right:2em}`,
+        'margin-right'
+      ),
+      '2em'
+    );
+  });
+
   test('spreads border-radius shorthand across corners and axes', () => {
     const [state] = evaluate('a{border-radius:1px 2em / 10% 0}');
 

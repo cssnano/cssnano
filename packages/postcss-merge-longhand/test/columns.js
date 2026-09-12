@@ -7,6 +7,41 @@ import { reduceColumns } from '../src/lib/decl/columns.js';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
+suite('all reset boundaries', () => {
+  test(
+    'should not merge columns across a normal all reset',
+    passthroughCSS('h1{column-width:12em;all:initial;column-count:3}')
+  );
+
+  test(
+    'should not merge columns across an important all reset',
+    passthroughCSS(
+      'h1{column-width:12em!important;all:unset!important;column-count:3!important}'
+    )
+  );
+
+  test(
+    'should merge columns across an invalid all declaration in the opposite lane',
+    processCSS(
+      'h1{column-width:12em;all:invalid!important;column-count:3}',
+      'h1{all:invalid!important;columns:12em 3}'
+    )
+  );
+
+  test(
+    'should reduce complete column groups on both sides of an all reset',
+    processCSS(
+      'h1{column-width:12em;column-count:2;all:initial;column-width:20em;column-count:3}',
+      'h1{columns:12em 2;all:initial;columns:20em 3}'
+    )
+  );
+
+  test(
+    'should recognize a case-insensitive ALL reset between column declarations',
+    passthroughCSS('h1{column-width:12em;ALL:initial;column-count:3}')
+  );
+});
+
 test(
   'should merge column values',
   processCSS('h1{column-width:12em;column-count:auto}', 'h1{columns:12em}')

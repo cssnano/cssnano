@@ -376,6 +376,56 @@ suite('revert-layer and revert-rule keywords', () => {
   );
 });
 
+suite('all reset boundaries', () => {
+  test(
+    'does not merge margin declarations across an escaped all reset',
+    processCSS(
+      String.raw`a{margin-top:1px;\61ll:initial;margin-right:2px;margin-bottom:3px;margin-left:4px}`,
+      String.raw`a{margin-top:1px;\61ll:initial;margin-right:2px;margin-bottom:3px;margin-left:4px}`
+    )
+  );
+
+  addTests(
+    {
+      message: 'should not merge box declarations across a normal all reset',
+      fixture:
+        'h1{box-top:1px;box-right:2px;all:initial;box-bottom:3px;box-left:4px}',
+      expected: (prop) =>
+        `h1{${prop}-top:1px;${prop}-right:2px;all:initial;${prop}-bottom:3px;${prop}-left:4px}`,
+    },
+    {
+      message:
+        'should not merge box declarations across an important all reset',
+      fixture:
+        'h1{box-top:1px!important;box-right:2px!important;all:unset!important;box-bottom:3px!important;box-left:4px!important}',
+      expected: (prop) =>
+        `h1{${prop}-top:1px!important;${prop}-right:2px!important;all:unset!important;${prop}-bottom:3px!important;${prop}-left:4px!important}`,
+    },
+    {
+      message:
+        'should merge box declarations across an invalid all declaration in the opposite lane',
+      fixture:
+        'h1{box-top:1px;box-right:2px;all:invalid!important;box-bottom:3px;box-left:4px}',
+      expected: 'h1{all:invalid!important;box:1px 2px 3px 4px}',
+    },
+    {
+      message:
+        'should reduce complete box groups on both sides of an all reset',
+      fixture:
+        'h1{box-top:1px;box-right:1px;box-bottom:1px;box-left:1px;all:initial;box-top:2px;box-right:2px;box-bottom:2px;box-left:2px}',
+      expected: 'h1{box:1px;all:initial;box:2px}',
+    },
+    {
+      message:
+        'should recognize a case-insensitive ALL reset between box declarations',
+      fixture:
+        'h1{box-top:1px;box-right:2px;ALL:initial;box-bottom:3px;box-left:4px}',
+      expected: (prop) =>
+        `h1{${prop}-top:1px;${prop}-right:2px;ALL:initial;${prop}-bottom:3px;${prop}-left:4px}`,
+    }
+  );
+});
+
 suite('fallbacks', () => {
   addTests(
     {
