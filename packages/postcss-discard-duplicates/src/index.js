@@ -128,97 +128,177 @@ function equalsChildren(a, b) {
 }
 
 /**
- * @param {import('postcss').Rule} last
- * @param {import('postcss').Rule[]} group rules sharing last's selector, in document order
- * @return {void}
+ * @param {import('postcss').AnyNode | import('postcss').AnyNode[]} existing
+ * @param {import('postcss').AnyNode} node
+ * @return {boolean}
  */
-function dedupeRule(last, group) {
-  for (let i = 0; i < group.length; i++) {
-    const node = group[i];
-    if (node === last) {
-      break;
-    }
-    if (!node.parent) {
-      continue;
-    }
-    last.each((child) => {
-      if (child.type === 'decl') {
-        dedupeNode(child, node.nodes);
+function hasEqual(existing, node) {
+  if (Array.isArray(existing)) {
+    for (let i = 0; i < existing.length; i++) {
+      if (equals(existing[i], node)) {
+        return true;
       }
-    });
-
-    if (empty(node)) {
-      node.remove();
     }
+    return false;
+  }
+  return equals(existing, node);
+}
+
+/**
+ * @param {Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]>} map
+ * @param {string} key
+ * @param {import('postcss').AnyNode} node
+ * @return {void}
+ */
+function addToSeen(map, key, node) {
+  const existing = map.get(key);
+  if (!existing) {
+    map.set(key, node);
+  } else if (Array.isArray(existing)) {
+    existing.push(node);
+  } else {
+    map.set(key, [existing, node]);
   }
 }
 
 /**
- * @param {import('postcss').AtRule | import('postcss').Declaration} last
- * @param {import('postcss').AnyNode[]} nodes
- * @return {void}
+ * @param {import('postcss').Rule} rule
+ * @return {boolean}
  */
-function dedupeNode(last, nodes) {
-  const found = nodes.indexOf(last);
-  let index = found === -1 ? nodes.length - 1 : found - 1;
-
-  while (index >= 0) {
-    const node = nodes[index--];
-    if (node && equals(node, last)) {
-      node.remove();
-    }
-  }
-}
-
-/**
- * @param {import('postcss').AnyNode} root
- * @return {void}
- */
-function dedupe(root) {
-  const { nodes } =
-    /** @type {import('postcss').Container<import('postcss').ChildNode>} */ (
-      root
-    );
-
+function hasNestedContainers(rule) {
+  const { nodes } = rule;
   if (!nodes) {
+    return false;
+  }
+  for (let i = 0; i < nodes.length; i++) {
+    const type = nodes[i].type;
+    if (type === 'rule' || type === 'atrule') {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @param {import('postcss').Rule} rule
+ * @param {Map<string, Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]>>} seenRuleDecls
+ * @return {void}
+ */
+function dedupeRule(rule, seenRuleDecls) {
+  let isSubsequent = true;
+  let declMap = seenRuleDecls.get(rule.selector);
+  if (!declMap) {
+    isSubsequent = false;
+    declMap = new Map();
+    seenRuleDecls.set(rule.selector, declMap);
+  }
+
+  const { nodes } = rule;
+  if (nodes) {
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      const child = nodes[i];
+      if (child.type === 'decl') {
+        const existing = declMap.get(child.prop);
+        if (existing && hasEqual(existing, child)) {
+          child.remove();
+        } else {
+          addToSeen(declMap, child.prop, child);
+        }
+      }
+    }
+  }
+
+  if (isSubsequent && empty(rule)) {
+    rule.remove();
+  }
+}
+
+/**
+ * @param {import('postcss').Declaration} decl
+ * @param {Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]>} seenDecls
+ * @return {void}
+ */
+function dedupeDecl(decl, seenDecls) {
+  const existing = seenDecls.get(decl.prop);
+  if (existing && hasEqual(existing, decl)) {
+    decl.remove();
+  } else {
+    addToSeen(seenDecls, decl.prop, decl);
+  }
+}
+
+/**
+ * @param {import('postcss').AtRule} atrule
+ * @param {Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]>} seenAtRules
+ * @return {void}
+ */
+function dedupeAtRule(atrule, seenAtRules) {
+  if (atrule.nodes) {
+    dedupe(atrule);
+  }
+
+  if (atrule.name === 'layer') {
     return;
   }
 
-  // Group rules by selector so each only dedupes against same-selector rules.
-  /** @type {Map<string, import('postcss').Rule[]> | undefined} */
-  let ruleGroups;
-  for (let i = 0; i < nodes.length; i++) {
-    const node = nodes[i];
-    if (node.type === 'rule') {
-      if (!ruleGroups) {
-        ruleGroups = new Map();
-      }
-      const group = ruleGroups.get(node.selector);
-      if (group) {
-        group.push(node);
-      } else {
-        ruleGroups.set(node.selector, [node]);
-      }
-    }
+  const existing = seenAtRules.get(atrule.name);
+  if (existing && hasEqual(existing, atrule)) {
+    atrule.remove();
+  } else {
+    addToSeen(seenAtRules, atrule.name, atrule);
+  }
+}
+
+/**
+ * @param {import('postcss').AnyNode} container
+ * @return {void}
+ */
+function dedupe(container) {
+  const { nodes } =
+    /** @type {import('postcss').Container<import('postcss').ChildNode>} */ (
+      container
+    );
+
+  if (!nodes || nodes.length === 0) {
+    return;
   }
 
-  let index = nodes.length - 1;
-  while (index >= 0) {
-    const last = nodes[index--];
-    if (!last || !last.parent) {
+  const children = nodes.slice();
+  /** @type {Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]> | undefined} */
+  let seenDecls;
+  /** @type {Map<string, Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]>> | undefined} */
+  let seenRuleDecls;
+  /** @type {Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]> | undefined} */
+  let seenAtRules;
+
+  for (let i = children.length - 1; i >= 0; i--) {
+    const node = children[i];
+    if (!node.parent) {
       continue;
     }
-    dedupe(last);
-    if (last.type === 'rule') {
-      const group = ruleGroups && ruleGroups.get(last.selector);
-      if (group && group.length > 1) {
-        dedupeRule(last, group);
-      }
-    } else if (
-      (last.type === 'atrule' && last.name !== 'layer') ||
-      last.type === 'decl'
-    ) {
-      dedupeNode(last, nodes);
+
+    switch (node.type) {
+      case 'decl':
+        if (!seenDecls) {
+          seenDecls = new Map();
+        }
+        dedupeDecl(node, seenDecls);
+        break;
+      case 'rule':
+        if (!seenRuleDecls) {
+          seenRuleDecls = new Map();
+        }
+        if (hasNestedContainers(node)) {
+          dedupe(node);
+        }
+        dedupeRule(node, seenRuleDecls);
+        break;
+      case 'atrule':
+        if (!seenAtRules) {
+          seenAtRules = new Map();
+        }
+        dedupeAtRule(node, seenAtRules);
+        break;
     }
   }
 }
