@@ -36,6 +36,37 @@ const precedence = [
 
 export const allPhysicalBorderProperties = new Set(precedence.flat());
 export const borderResetRules = new WeakSet();
+export const physicalRadiusLonghands = [
+  'border-top-left-radius',
+  'border-top-right-radius',
+  'border-bottom-right-radius',
+  'border-bottom-left-radius',
+];
+export const physicalRadiusProperties = new Set([
+  'border-radius',
+  ...physicalRadiusLonghands,
+]);
+export const logicalRadiusProperties = new Set([
+  'border-start-start-radius',
+  'border-start-end-radius',
+  'border-end-start-radius',
+  'border-end-end-radius',
+  'border-block-start-radius',
+  'border-block-end-radius',
+  'border-inline-start-radius',
+  'border-inline-end-radius',
+]);
+export const otherRadiusProperties = new Set([
+  'border-top-radius',
+  'border-right-radius',
+  'border-bottom-radius',
+  'border-left-radius',
+]);
+export const allRadiusProperties = new Set([
+  ...physicalRadiusProperties,
+  ...logicalRadiusProperties,
+  ...otherRadiusProperties,
+]);
 
 /**
  * @param {string} prop
