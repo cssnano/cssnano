@@ -1,5 +1,5 @@
 const OVERRIDABLE_RULES = new Set(['keyframes', 'counter-style']);
-const SCOPE_RULES = new Set(['media', 'supports']);
+const SCOPE_RULES = new Set(['media', 'supports', 'container', 'layer']);
 const vendorPrefixPattern = /^-\w+-/;
 
 /**
@@ -41,10 +41,11 @@ function getScope(node) {
       current.type === 'atrule' &&
       isScope(/** @type import('postcss').AtRule */ (current).name)
     ) {
+      const atRule = /** @type import('postcss').AtRule */ (current);
       chain.unshift(
-        /** @type import('postcss').AtRule */ (current).name +
-          ' ' +
-          /** @type import('postcss').AtRule */ (current).params
+        atRule.params
+          ? atRule.name.toLowerCase() + ' ' + atRule.params
+          : atRule.name.toLowerCase()
       );
     }
     current = current.parent;
@@ -54,40 +55,59 @@ function getScope(node) {
 }
 
 /**
+ * Traverses container nodes from bottom to top so the winning at-rule
+ * in any scope is visited first. Earlier duplicate scopes are removed.
+ *
+ * @param {import('postcss').Container<import('postcss').ChildNode> | import('postcss').Document} container
+ * @param {Set<string>} seen
+ * @return {void}
+ */
+function walkBackward(container, seen) {
+  const { nodes } = container;
+
+  if (!nodes) {
+    return;
+  }
+
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const child = nodes[i];
+
+    if (child.type === 'atrule') {
+      if (isOverridable(child.name)) {
+        const scope = getScope(child);
+
+        if (seen.has(scope)) {
+          child.remove();
+        } else {
+          seen.add(scope);
+        }
+        continue;
+      }
+    }
+
+    if (/** @type {import('postcss').Container} */ (child).nodes) {
+      walkBackward(
+        /** @type {import('postcss').Container<import('postcss').ChildNode>} */ (
+          child
+        ),
+        seen
+      );
+    }
+  }
+}
+
+/**
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-discard-overridden',
-    prepare() {
-      const cache = new Map();
-      /** @type {{node: import('postcss').AtRule, scope: string}[]} */
-      const rules = [];
-
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          css.walkAtRules((node) => {
-            if (isOverridable(node.name)) {
-              const scope = getScope(node);
-
-              cache.set(scope, node);
-              rules.push({
-                node,
-                scope,
-              });
-            }
-          });
-
-          for (const rule of rules) {
-            if (cache.get(rule.scope) !== rule.node) {
-              rule.node.remove();
-            }
-          }
-        },
-      };
+    /**
+     * @param {import('postcss').Root} css
+     */
+    OnceExit(css) {
+      const seen = new Set();
+      walkBackward(css, seen);
     },
   };
 }

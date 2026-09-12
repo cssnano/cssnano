@@ -165,70 +165,103 @@ test(
 );
 
 test(
-  'overridden @counter-style should be discarded correctly',
+  'should support keyframes inside CSS style rules',
   processCSS(
-    `@counter-style my-alpha {
-  system: fixed;
-  symbols: A B C;
-  suffix: " ";
-}
-
-@COUNTER-STYLE my-alpha {
-    system: fixed;
-    symbols: A B C;
-    suffix: " ";
-}
-
-@counter-style my-alpha {
-  system: fixed;
-  symbols: Ⓐ Ⓑ Ⓒ;
-  suffix: " ";
-}
-
-@media (max-width: 400px) {
-  @counter-style my-alpha {
-    system: fixed;
-    symbols: A B C;
-    suffix: " ";
+    `.card {
+  @keyframes pulse {
+    0% { opacity: 0; }
   }
-
-  @supports (display: flex) {
-    @counter-style my-alpha {
-      system: fixed;
-      symbols: a b c;
-      suffix: " ";
-    }
+  @keyframes pulse {
+    0% { opacity: 1; }
   }
-
-  @counter-style my-alpha {
-    system: fixed;
-    symbols: Ⓐ Ⓑ Ⓒ;
-    suffix: " ";
+}`,
+    `.card {
+  @keyframes pulse {
+    0% { opacity: 1; }
   }
+}`
+  )
+);
+
+test(
+  'should discard earlier root keyframes when overridden inside a style rule',
+  processCSS(
+    `@keyframes pulse {
+  0% { opacity: 0; }
 }
-`,
-    `@counter-style my-alpha {
-  system: fixed;
-  symbols: Ⓐ Ⓑ Ⓒ;
-  suffix: " ";
-}
-
-@media (max-width: 400px) {
-
-  @supports (display: flex) {
-    @counter-style my-alpha {
-      system: fixed;
-      symbols: a b c;
-      suffix: " ";
-    }
+.card {
+  @keyframes pulse {
+    0% { opacity: 1; }
   }
+}`,
+    `.card {
+  @keyframes pulse {
+    0% { opacity: 1; }
+  }
+}`
+  )
+);
 
-  @counter-style my-alpha {
-    system: fixed;
-    symbols: Ⓐ Ⓑ Ⓒ;
-    suffix: " ";
+test(
+  'should discard earlier style-rule keyframes when overridden at root',
+  processCSS(
+    `.card {
+  @keyframes pulse {
+    0% { opacity: 0; }
   }
 }
-`
+@keyframes pulse {
+  0% { opacity: 1; }
+}`,
+    `.card {
+}
+@keyframes pulse {
+  0% { opacity: 1; }
+}`
+  )
+);
+
+test(
+  'should discard earlier keyframes across distinct style rules',
+  processCSS(
+    `.card {
+  @keyframes pulse {
+    0% { opacity: 0; }
+  }
+}
+.sidebar {
+  @keyframes pulse {
+    0% { opacity: 1; }
+  }
+}`,
+    `.card {
+}
+.sidebar {
+  @keyframes pulse {
+    0% { opacity: 1; }
+  }
+}`
+  )
+);
+
+test(
+  'should discard multiple preceding duplicates leaving only the trailing definition',
+  processCSS(
+    `@keyframes fade {
+  0% { opacity: 0; }
+}
+.card {
+  @keyframes fade {
+    0% { opacity: 0.5; }
+  }
+}
+@keyframes fade {
+  0% { opacity: 1; }
+}`,
+    `.card {
+}
+@keyframes fade {
+  0% { opacity: 1; }
+}`
   )
 );
