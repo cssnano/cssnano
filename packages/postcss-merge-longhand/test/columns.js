@@ -1,6 +1,9 @@
+import assert from 'node:assert/strict';
 import { test, suite } from 'node:test';
+import postcss from 'postcss';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
+import { reduceColumns } from '../src/lib/decl/columns.js';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -465,5 +468,211 @@ suite('column-height merge blocking', () => {
   test(
     'should detect a top-level slash without whitespace',
     passthroughCSS('h1{columns:30em/**//10em}')
+  );
+});
+
+suite('direct reduceColumns contract', () => {
+  test('merges longhands into shorthand when called directly on a rule', () => {
+    const root = postcss.parse('h1{column-width:12em;column-count:3}');
+    const rule = /** @type {import('postcss').Rule} */ (root.first);
+    reduceColumns(rule);
+    assert.strictEqual(rule.toString(), 'h1{columns:12em 3}');
+  });
+
+  test('preserves fallbacks when called directly on a rule', () => {
+    const root = postcss.parse(
+      'h1{column-width:12em;column-width:var(--w);column-count:3}'
+    );
+    const rule = /** @type {import('postcss').Rule} */ (root.first);
+    reduceColumns(rule);
+    assert.strictEqual(
+      rule.toString(),
+      'h1{column-width:12em;column-width:var(--w);column-count:3}'
+    );
+  });
+
+  test('normalizes a singleton columns shorthand directly on a rule', () => {
+    const root = postcss.parse('h1{columns:3 auto}');
+    const rule = /** @type {import('postcss').Rule} */ (root.first);
+    reduceColumns(rule);
+    assert.strictEqual(rule.toString(), 'h1{columns:3}');
+  });
+});
+
+suite('unrelated border rollback interaction', () => {
+  test(
+    'reduces column pair when an unrelated border rewrite reverts on the same rule',
+    processCSS(
+      'h1{border:1px solid red;border-top:2px dashed blue;border-left-width:3px;column-width:12em;column-count:3}',
+      'h1{border:1px solid red;border-top:2px dashed blue;border-left-width:3px;columns:12em 3}'
+    )
+  );
+});
+
+suite('ordered shorthand/longhand interleavings', () => {
+  test(
+    'supersedes earlier longhands when followed by a shorthand',
+    processCSS(
+      'h1{column-width:10em;column-count:2;columns:20em 3}',
+      'h1{columns:20em 3}'
+    )
+  );
+
+  test(
+    'overrides one component of an earlier shorthand with a later longhand',
+    processCSS('h1{columns:10em 2;column-width:20em}', 'h1{columns:20em 2}')
+  );
+
+  test(
+    'overrides count of an earlier shorthand with a later longhand',
+    processCSS('h1{columns:10em 2;column-count:4}', 'h1{columns:10em 4}')
+  );
+
+  test(
+    'handles interleaved longhand, shorthand, and overriding longhand',
+    processCSS(
+      'h1{column-count:3;columns:10em 2;column-width:15em}',
+      'h1{columns:15em 2}'
+    )
+  );
+
+  test(
+    'overrides both components of an earlier shorthand with subsequent longhands',
+    processCSS(
+      'h1{columns:10em 2;column-width:20em;column-count:4}',
+      'h1{columns:20em 4}'
+    )
+  );
+});
+
+suite('important and non-important lanes', () => {
+  test(
+    'merges normal and important lanes independently in the same rule',
+    processCSS(
+      'h1{column-width:10em;column-count:2;column-width:20em !important;column-count:4 !important}',
+      'h1{columns:10em 2;columns:20em 4 !important}'
+    )
+  );
+
+  test(
+    'leaves incomplete normal lane unmerged while merging complete important lane',
+    processCSS(
+      'h1{column-width:10em;column-width:20em !important;column-count:4 !important}',
+      'h1{column-width:10em;columns:20em 4 !important}'
+    )
+  );
+
+  test(
+    'leaves incomplete important lane unmerged while merging complete normal lane',
+    processCSS(
+      'h1{column-width:10em;column-count:2;column-count:4 !important}',
+      'h1{columns:10em 2;column-count:4 !important}'
+    )
+  );
+
+  test(
+    'does not cross-merge properties across different importance lanes',
+    passthroughCSS('h1{column-width:10em;column-count:2 !important}')
+  );
+});
+
+suite('fallback-sensitive var(), env(), and calc() cases', () => {
+  test(
+    'preserves earlier fallback and refuses merge when subsequent longhand uses var()',
+    passthroughCSS('h1{column-width:12em;column-width:var(--w);column-count:3}')
+  );
+
+  test(
+    'preserves earlier fallback when subsequent longhand uses calc()',
+    processCSS(
+      'h1{column-width:12em;column-width:calc(10em + 2em);column-count:3}',
+      'h1{column-width:12em;columns:calc(10em + 2em) 3}'
+    )
+  );
+
+  test(
+    'refuses merge when one longhand introduces unsupported env() without partner support',
+    passthroughCSS(
+      'h1{column-width:12em;column-width:env(col-w);column-count:3}'
+    )
+  );
+
+  test(
+    'merges when both components share identical env() support requirements',
+    processCSS(
+      'h1{column-width:env(col-w);column-count:env(col-c)}',
+      'h1{columns:env(col-w) env(col-c)}'
+    )
+  );
+
+  test(
+    'preserves unmergeable pair using var() after earlier mergeable pair',
+    processCSS(
+      'h1{column-width:10em;column-count:2;column-width:var(--w);column-count:var(--c)}',
+      'h1{columns:10em 2;column-width:var(--w);column-count:var(--c)}'
+    )
+  );
+});
+
+suite(
+  'CSS-wide keywords and invalid declarations beside mergeable values',
+  () => {
+    test(
+      'merges identical CSS-wide keyword pair into single shorthand keyword',
+      processCSS(
+        'h1{column-width:inherit;column-count:inherit}',
+        'h1{columns:inherit}'
+      )
+    );
+
+    test(
+      'merges identical initial keyword pair into single shorthand initial',
+      processCSS(
+        'h1{column-width:initial;column-count:initial}',
+        'h1{columns:initial}'
+      )
+    );
+
+    test(
+      'does not merge when only one component is a CSS-wide keyword',
+      passthroughCSS('h1{column-width:inherit;column-count:3}')
+    );
+
+    test(
+      'does not merge when components use different CSS-wide keywords',
+      passthroughCSS('h1{column-width:inherit;column-count:unset}')
+    );
+
+    test(
+      'aborts entire family merge when an invalid negative width declaration is present',
+      passthroughCSS('h1{column-width:12em;column-count:3;column-width:-5px}')
+    );
+
+    test(
+      'aborts merge when count is zero or non-integer',
+      passthroughCSS('h1{column-width:12em;column-count:0}')
+    );
+
+    test(
+      'aborts merge when count is a float',
+      passthroughCSS('h1{column-width:12em;column-count:2.5}')
+    );
+  }
+);
+
+suite('equal-size versus larger replacement decisions', () => {
+  test(
+    'replaces with equal-size normalized shorthand when omitted initial value is dropped',
+    processCSS('h1{column-width:auto;column-count:2}', 'h1{columns:2}')
+  );
+
+  test(
+    'normalizes redundant initial value in shorthand',
+    processCSS('h1{columns:12em auto}', 'h1{columns:12em}')
+  );
+
+  test(
+    'normalizes both initial values in shorthand to single auto',
+    processCSS('h1{columns:auto auto}', 'h1{columns:auto}')
   );
 });
