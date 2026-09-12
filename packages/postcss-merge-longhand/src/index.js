@@ -8,7 +8,10 @@ import { reduceBorder } from './lib/decl/borderReducer.js';
 import { reduceBorderSpacing } from './lib/decl/borderSpacingReducer.js';
 import { reduceBorderRadius } from './lib/decl/borderRadiusReducer.js';
 import { allRadiusProperties } from './lib/decl/borderData.js';
-import minifyShorthandIdentities from './lib/minifyShorthand.js';
+import {
+  foldableShorthands,
+  foldShorthandDeclaration,
+} from './lib/minifyShorthand.js';
 
 /** @import {Declaration, Rule} from 'postcss'; */
 
@@ -30,6 +33,12 @@ function pluginCreator() {
        */
       const columnRules = [];
       let setsOtherColumn = false;
+      /**
+       * Memoization table for identity-folding evaluations across rules.
+       * Scoped strictly to this stylesheet pass.
+       * @type {Map<string, string | null>}
+       */
+      const shorthandMemoTable = new Map();
 
       css.walkRules((rule) => {
         /** @type {Declaration[]} */
@@ -62,6 +71,8 @@ function pluginCreator() {
             marginDeclarations.push(node);
           } else if (prop.startsWith('padding')) {
             paddingDeclarations.push(node);
+          } else if (foldableShorthands.has(prop)) {
+            foldShorthandDeclaration(node, shorthandMemoTable);
           }
         }
 
@@ -81,7 +92,28 @@ function pluginCreator() {
         for (const [rule, decls] of columnRules) reduceColumns(rule, decls);
       }
 
-      minifyShorthandIdentities(css);
+      if (css.nodes) {
+        for (const node of css.nodes) {
+          if (
+            node.type === 'decl' &&
+            foldableShorthands.has(node.prop.toLowerCase())
+          ) {
+            foldShorthandDeclaration(node, shorthandMemoTable);
+          }
+        }
+      }
+
+      css.walkAtRules((atRule) => {
+        if (!atRule.nodes) return;
+        for (const node of atRule.nodes) {
+          if (
+            node.type === 'decl' &&
+            foldableShorthands.has(node.prop.toLowerCase())
+          ) {
+            foldShorthandDeclaration(node, shorthandMemoTable);
+          }
+        }
+      });
     },
   };
 }
