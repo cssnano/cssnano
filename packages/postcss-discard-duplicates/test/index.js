@@ -178,4 +178,75 @@ test(
   passthroughCSS('h1{display:block;display:flex}')
 );
 
+test('should preserve standalone empty rule', passthroughCSS('h1{}'));
+
+test(
+  'should remove earlier duplicate empty rule sharing selector',
+  processCSS('h1{}h1{}', 'h1{}')
+);
+
+test(
+  'should remove earlier rule when declaration matches one in a multi-declaration fallback',
+  processCSS(
+    'h1{display:block}h1{display:block;display:flex}',
+    'h1{display:block;display:flex}'
+  )
+);
+
+test(
+  'should deduplicate duplicate declarations within @page rule',
+  processCSS('@page{margin:1cm;margin:1cm}', '@page{margin:1cm}')
+);
+
+test(
+  'should deduplicate declarations and nested rules within a parent rule',
+  processCSS(
+    '.card{color:red;color:red;.header{font-size:14px;font-size:14px;}}',
+    '.card{color:red;.header{font-size:14px;}}'
+  )
+);
+
+test(
+  'should deduplicate at-rules whose inner rules contain duplicate declarations',
+  processCSS(
+    '@media print{h1{color:red;color:red}}@media print{h1{color:red}}',
+    '@media print{h1{color:red}}'
+  )
+);
+
+test(
+  'should deduplicate rules with pseudo-class selectors',
+  processCSS('a:hover{color:red}a:hover{color:red}', 'a:hover{color:red}')
+);
+
+test(
+  'should deduplicate rules with escaped selectors',
+  processCSS('.\\:hover{color:red}.\\:hover{color:red}', '.\\:hover{color:red}')
+);
+
+test(
+  'should deduplicate rules with empty selectors',
+  processCSS('{color:red}{color:red}', '{color:red}')
+);
+
+test(
+  'should deduplicate declarations with empty values',
+  processCSS('h1{color:;color:;}', 'h1{color:;}')
+);
+
+test(
+  'should deduplicate top-level declarations without a rule',
+  processCSS('color:red;color:red;', 'color:red;')
+);
+
+test(
+  'should deduplicate empty at-rules without params or blocks',
+  processCSS('@media;@media;', '@media;')
+);
+
+test(
+  'should deduplicate identical unknown at-rules',
+  processCSS('@unknown{color:red}@unknown{color:red}', '@unknown{color:red}')
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
