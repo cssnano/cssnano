@@ -1,27 +1,16 @@
+import type { Declaration, Rule } from 'postcss';
+export declare const allColumnProps: Set<string>;
 /**
- * Check if a declaration sets column properties beyond `column-width` and
- * `column-count`. The `columns: <width> / <height>` form sets others (like
- * `column-height`), so we detect the slash. Only top-level slashes separate
- * components; ones in functions like `calc(100%/3)` do not.
+ * Check if a declaration sets column properties beyond column-width/count.
+ * The `columns: <width> / <height>` form sets column-height via top-level slash.
  *
- * @param {import('postcss').Declaration} declaration
+ * @param {Declaration} declaration
  * @return {boolean}
  */
-declare function setsOtherColumnProperty(declaration: import('postcss').Declaration): boolean;
+export declare const setsOtherColumnProperty: (declaration: Declaration) => boolean;
 /**
- * @param {import('postcss').Rule} rule
- * @return {void}
+ * @param {Rule} rule
+ * @param {Declaration[]} [declarations]
  */
-declare function explode(rule: import('postcss').Rule): void;
-/**
- * @param {import('postcss').Rule} rule
- * @return {void}
- */
-declare function merge(rule: import('postcss').Rule): void;
-declare const _default: {
-    explode: typeof explode;
-    merge: typeof merge;
-    setsOtherColumnProperty: typeof setsOtherColumnProperty;
-};
-export default _default;
+export declare function reduceColumns(rule: Rule, declarations?: Declaration[]): void;
 //# sourceMappingURL=columns.d.ts.map

@@ -1,7 +1,6 @@
 import stylehacks from 'stylehacks';
 import insertCloned from '../insertCloned.js';
 import parseTrbl from '../parseTrbl.js';
-import getValue from '../getValue.js';
 import mergeRules from '../mergeRules.js';
 import minifyTopBottoRightLeft from '../minifyTrbl.js';
 import minifyWidthStyleColor from '../minifyWsc.js';
@@ -28,6 +27,9 @@ import {
   isCloseEnough,
   isCustomProperty,
 } from './borderPredicates.js';
+
+/** @param {import('postcss').Declaration} decl @return {string} */
+const getValue = ({ value }) => value;
 
 /**
  * @param {import('postcss').Rule} rule
