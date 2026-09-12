@@ -6,6 +6,11 @@ import minifyTrbl from '../minifyTrbl.js';
 import { isFallback, mergeBlockingSupport } from '../isFallback.js';
 import cleanupDeclarations from '../cleanupDeclarations.js';
 import {
+  cleanupLaneSegments,
+  importanceLanes,
+  isAll,
+} from './importanceLanes.js';
+import {
   parseCornerRadius,
   parseRadiusShorthand,
   isGlobalKeyword,
@@ -208,6 +213,10 @@ function processLane(rule, laneDecls, lane, getCorner, getShorthand) {
 
   for (const decl of laneDecls) {
     const p = decl.prop.toLowerCase();
+    if (isAll(decl)) {
+      reset();
+      continue;
+    }
     const isShort = p === 'border-radius';
 
     if (stylehacks.detect(decl) || (isShort && !canExplode(decl))) {
@@ -328,7 +337,8 @@ export function reduceBorderRadius(rule, declarations) {
 
   if (decls.length === 0 || decls.some(isInvalid)) return;
 
-  cleanupDeclarations(new Set(decls));
+  const lanes = importanceLanes(rule, decls);
+  cleanupLaneSegments(lanes, (segment) => cleanupDeclarations(segment));
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
@@ -337,8 +347,8 @@ export function reduceBorderRadius(rule, declarations) {
   }
 
   for (const lane of [false, true]) {
-    const laneDecls = live.filter((d) => Boolean(d.important) === lane);
-    if (laneDecls.length) {
+    const laneDecls = lanes[lane ? 1 : 0].filter((d) => d.parent === rule);
+    if (laneDecls.some((d) => !isAll(d))) {
       processLane(rule, laneDecls, lane, getCorner, getShorthand);
     }
   }

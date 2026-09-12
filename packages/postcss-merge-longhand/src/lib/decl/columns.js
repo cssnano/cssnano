@@ -8,6 +8,11 @@ import { isFallback, mergeBlockingSupport } from '../isFallback.js';
 import cssGlobalKeywords from '../cssGlobalKeywords.js';
 import { shorthand, initialValues, cssWideKeywords } from '../spec.js';
 import { isUnresolved } from '../unresolved.js';
+import {
+  cleanupLaneSegments,
+  importanceLanes,
+  isAll,
+} from './importanceLanes.js';
 
 /** @import {Declaration, Rule} from 'postcss'; */
 
@@ -344,6 +349,10 @@ function processLane(rule, laneDecls, lane) {
 
   for (const decl of laneDecls) {
     const p = decl.prop.toLowerCase();
+    if (isAll(decl)) {
+      reset();
+      continue;
+    }
     const isShort = p === columns;
 
     if (stylehacks.detect(decl) || (isShort && !canExplode(decl))) {
@@ -410,7 +419,8 @@ export function reduceColumns(rule, declarations) {
 
   if (decls.length === 0 || decls.some(isInvalid)) return;
 
-  cleanupDeclarations(new Set(decls));
+  const lanes = importanceLanes(rule, decls);
+  cleanupLaneSegments(lanes, (segment) => cleanupDeclarations(segment));
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
@@ -418,21 +428,24 @@ export function reduceColumns(rule, declarations) {
     return;
   }
 
-  /** @type {[Declaration[], Declaration[]]} */
-  const lanes = [[], []];
-  for (const d of live) lanes[d.important ? 1 : 0].push(d);
-  if (lanes[0].length) processLane(rule, lanes[0], false);
-  if (lanes[1].length) processLane(rule, lanes[1], true);
+  for (const lane of [false, true]) {
+    const laneDecls = lanes[lane ? 1 : 0].filter((d) => d.parent === rule);
+    if (laneDecls.some((d) => !isAll(d))) {
+      processLane(rule, laneDecls, lane);
+    }
+  }
 
   const remaining = getColDecls();
   if (remaining.length > 1) {
-    cleanupDeclarations(
-      new Set(remaining),
-      (node, lastNode) =>
-        lastNode.prop.toLowerCase() === columns &&
-        node.prop.toLowerCase() !== columns &&
-        !isFallback(node, lastNode) &&
-        isValidColumns(lastNode)
+    cleanupLaneSegments(importanceLanes(rule, remaining), (segment) =>
+      cleanupDeclarations(
+        segment,
+        (node, lastNode) =>
+          lastNode.prop.toLowerCase() === columns &&
+          node.prop.toLowerCase() !== columns &&
+          !isFallback(node, lastNode) &&
+          isValidColumns(lastNode)
+      )
     );
   }
 }

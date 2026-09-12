@@ -62,6 +62,14 @@ describe('CSS processing', () => {
     )
   );
 
+  test(
+    'should preserve all reset boundaries for merge-longhand families',
+    withDefaults.processCSS(
+      '.margin{margin-top:1px;margin-right:2px;all:initial;margin-bottom:3px;margin-left:4px}.padding{padding-top:1px!important;padding-right:2px!important;all:unset!important;padding-bottom:3px!important;padding-left:4px!important}.radius{border-top-left-radius:1px;border-top-right-radius:2px;ALL:initial;border-bottom-right-radius:3px;border-bottom-left-radius:4px}.columns{column-width:12em;all:initial;column-count:3}',
+      '.margin{margin-top:1px;margin-right:2px;all:initial;margin-bottom:3px;margin-left:4px}.padding{padding-top:1px!important;padding-right:2px!important;all:unset!important;padding-bottom:3px!important;padding-left:4px!important}.radius{border-top-left-radius:1px;border-top-right-radius:2px;ALL:initial;border-bottom-right-radius:3px;border-bottom-left-radius:4px}.columns{column-width:12em;all:initial;column-count:3}'
+    )
+  );
+
   test('should preserve whitespace-only custom properties', async () => {
     const input = ':root{--x: ;--empty:}';
     const processor = createCssnanoProcessor(preset);

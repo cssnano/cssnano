@@ -32,6 +32,7 @@ import {
   physicalBorderShorthands,
   widthStyleColor,
 } from './borderData.js';
+import { isAll } from './importanceLanes.js';
 /** @import {Declaration, Rule} from 'postcss'; */
 
 const sides = spec.sides,
@@ -100,6 +101,7 @@ function hasForeignBorderNodes(rule) {
   if (!rule.nodes) return false;
   for (const node of rule.nodes) {
     if (node.type !== 'decl') continue;
+    if (isAll(/** @type {Declaration} */ (node))) return true;
     const p = node.prop.toLowerCase();
     if (allRadiusProperties.has(p) || p === 'border-spacing') continue;
     if (
@@ -849,13 +851,6 @@ function processLane(rule, laneDecls, lane) {
  */
 export function reduceBorder(rule, declarations) {
   if (!rule.nodes || hasForeignBorderNodes(rule)) return;
-
-  if (
-    rule.nodes.some(
-      (node) => node.type === 'decl' && node.prop.toLowerCase() === 'all'
-    )
-  )
-    return;
 
   const decls =
     declarations ??

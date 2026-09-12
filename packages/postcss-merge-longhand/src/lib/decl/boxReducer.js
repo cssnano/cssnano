@@ -9,6 +9,11 @@ import { browserKeeps } from '../validateBox.js';
 import { isFallback, mergeBlockingSupport } from '../isFallback.js';
 import topRightBottomLeft from '../trbl.js';
 import cleanupDeclarations from '../cleanupDeclarations.js';
+import {
+  cleanupLaneSegments,
+  importanceLanes,
+  isAll,
+} from './importanceLanes.js';
 
 /** @import {Declaration, Rule} from 'postcss'; */
 
@@ -76,6 +81,10 @@ function processLane(rule, prop, sideProps, laneDecls, lane) {
 
   for (const decl of laneDecls) {
     const p = decl.prop.toLowerCase();
+    if (isAll(decl)) {
+      reset();
+      continue;
+    }
     const isShort = p === prop;
     if (stylehacks.detect(decl) || (isShort && !canExplode(decl))) {
       reset();
@@ -112,7 +121,8 @@ export function reduceBox(rule, prop, declarations) {
 
   if (decls.length === 0 || decls.some(isInvalid)) return;
 
-  cleanupDeclarations(new Set(decls));
+  const lanes = importanceLanes(rule, decls);
+  cleanupLaneSegments(lanes, (segment) => cleanupDeclarations(segment));
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
@@ -126,7 +136,9 @@ export function reduceBox(rule, prop, declarations) {
   }
 
   for (const lane of [false, true]) {
-    const laneDecls = live.filter((d) => Boolean(d.important) === lane);
-    if (laneDecls.length) processLane(rule, prop, sideProps, laneDecls, lane);
+    const laneDecls = lanes[lane ? 1 : 0].filter((d) => d.parent === rule);
+    if (laneDecls.some((d) => !isAll(d))) {
+      processLane(rule, prop, sideProps, laneDecls, lane);
+    }
   }
 }

@@ -1,4 +1,8 @@
 import postcss from 'postcss';
+import {
+  TokenType,
+  tokenize as tokenizeProperty,
+} from '@csstools/css-tokenizer';
 
 /**
  * An independent evaluator for what a rule means to the browser, against which
@@ -55,6 +59,27 @@ const marginOnly = new Set(['auto', '-5px']);
  * families, none of which inherit.
  */
 const globalKeywords = new Set(['initial', 'unset']);
+
+/**
+ * Decode a property identifier without sharing the production predicate: the
+ * evaluator must recognize escaped `all` even if the reducer does not.
+ *
+ * @param {string} property
+ * @return {string}
+ */
+function propertyName(property) {
+  if (!property.includes('\\')) return property.toLowerCase();
+  const propertyTokens = [...tokenizeProperty({ css: property })];
+  const [token, eof] = propertyTokens;
+  if (
+    propertyTokens.length === 2 &&
+    token?.[0] === TokenType.Ident &&
+    eof?.[0] === TokenType.EOF
+  ) {
+    return /** @type {{value: string}} */ (token[4]).value.toLowerCase();
+  }
+  return property.toLowerCase();
+}
 
 /**
  * A small, hand-written stand-in for CSS's substitution and maths functions —
@@ -339,6 +364,11 @@ function expandRadiusShorthand(value) {
 function expand(prop, value) {
   const parts = prop.split('-');
 
+  if (prop === 'all') {
+    const token = value.trim().toLowerCase();
+    return globalKeywords.has(token) ? initialState() : undefined;
+  }
+
   if (prop === 'border-radius') {
     return expandRadiusShorthand(value);
   }
@@ -581,7 +611,7 @@ function evaluateRule(rule) {
         continue;
       }
 
-      const slots = expand(node.prop.toLowerCase(), node.value);
+      const slots = expand(propertyName(node.prop), node.value);
 
       if (slots === undefined) {
         continue;
