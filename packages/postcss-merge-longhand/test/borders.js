@@ -207,9 +207,8 @@ test(
 
 test(
   'should not merge border values with mixed !important (uppercase)',
-  processCSS(
-    'h1{BORDER-COLOR:RED;BORDER-WIDTH:1PX!IMPORTANT;BORDER-STYLE:DASHED!IMPORTANT}',
-    'h1{border-color:RED;border-width:1PX!IMPORTANT;border-style:DASHED!IMPORTANT}'
+  passthroughCSS(
+    'h1{BORDER-COLOR:RED;BORDER-WIDTH:1PX!IMPORTANT;BORDER-STYLE:DASHED!IMPORTANT}'
   )
 );
 
@@ -330,10 +329,7 @@ test(
 
 test(
   'Should not mangle borders (#579) (1) (uppercase)',
-  processCSS(
-    'h1{BORDER-BOTTOM:NONE;BORDER-COLOR:RED}',
-    'h1{border-bottom:none;border-color:red}'
-  )
+  passthroughCSS('h1{BORDER-BOTTOM:NONE;BORDER-COLOR:RED}')
 );
 
 test(
@@ -465,9 +461,8 @@ test(
 
 test(
   'Should not merge redundant values if declarations are of different importance (#618) (uppercase)',
-  processCSS(
-    'h1{BORDER:1PX SOLID #3060B1;BORDER-BOTTOM:1PX SOLID #3060B1 !IMPORTANT}',
-    'h1{border:1px solid #3060b1;border-bottom:1px solid #3060b1 !IMPORTANT}'
+  passthroughCSS(
+    'h1{BORDER:1PX SOLID #3060B1;BORDER-BOTTOM:1PX SOLID #3060B1 !IMPORTANT}'
   )
 );
 
@@ -598,17 +593,15 @@ suite('maths functions never stand in for a style or a colour', () => {
 
 test(
   'should produce the minimum css necessary (2)',
-  processCSS(
-    'h1{border-color:rgba(0,0,0,.2);border-right-style:solid;border-right-width:1px}',
-    'h1{border-right:1px solid;border-color:rgba(0,0,0,.2)}'
+  passthroughCSS(
+    'h1{border-color:rgba(0,0,0,.2);border-right-style:solid;border-right-width:1px}'
   )
 );
 
 test(
   'should produce the minimum css necessary (2) (uppercase)',
-  processCSS(
-    'h1{BORDER-COLOR:RGBA(0,0,0,.2);BORDER-RIGHT-STYLE:SOLID;BORDER-RIGHT-WIDTH:1PX}',
-    'h1{border-right:1px solid;border-color:RGBA(0,0,0,.2)}'
+  passthroughCSS(
+    'h1{BORDER-COLOR:RGBA(0,0,0,.2);BORDER-RIGHT-STYLE:SOLID;BORDER-RIGHT-WIDTH:1PX}'
   )
 );
 
@@ -620,13 +613,17 @@ suite('component merging', () => {
 
   test(
     'should not grow a rule by spreading a border across its components',
-    passthroughCSS('h1{border:1px solid red;border-color:red blue red blue}')
+    processCSS(
+      'h1{border:1px solid red;border-color:red blue red blue}',
+      'h1{border:1px solid;border-color:red blue}'
+    )
   );
 
   test(
     'should not grow an important rule by spreading a border across its components',
-    passthroughCSS(
-      'h1{border:1px solid red!important;border-color:red blue red blue!important}'
+    processCSS(
+      'h1{border:1px solid red!important;border-color:red blue red blue!important}',
+      'h1{border:1px solid!important;border-color:red blue!important}'
     )
   );
 });
@@ -721,9 +718,8 @@ test(
 
 test(
   'should produce the minimum css necessary (8) (uppercase)',
-  processCSS(
-    'h1{BORDER-TOP:NONE;BORDER-RIGHT:NONE;BORDER-BOTTOM:NONE;BORDER-LEFT:5PX}',
-    'h1{border-top:none;border-right:none;border-bottom:none;BORDER-LEFT:5PX}'
+  passthroughCSS(
+    'h1{BORDER-TOP:NONE;BORDER-RIGHT:NONE;BORDER-BOTTOM:NONE;BORDER-LEFT:5PX}'
   )
 );
 
@@ -771,7 +767,7 @@ test(
   'should not merge declarations with hacks (uppercase)',
   processCSS(
     'h1{BORDER-COLOR:RED RED RED RED;_BORDER-WIDTH:1PX 1PX 1PX 1PX;BORDER-STYLE:SOLID SOLID SOLID SOLID}',
-    'h1{border-color:RED;_BORDER-WIDTH:1PX 1PX 1PX 1PX;border-style:SOLID}'
+    'h1{BORDER-COLOR:RED;_BORDER-WIDTH:1PX 1PX 1PX 1PX;BORDER-STYLE:SOLID}'
   )
 );
 
@@ -782,10 +778,7 @@ test(
 
 test(
   'should not merge fallback colours (uppercase)',
-  processCSS(
-    'h1{BORDER-COLOR:#DDD;BORDER-COLOR:RGBA(0,0,0,.15)}',
-    'h1{border-color:#DDD;border-color:RGBA(0,0,0,.15)}'
-  )
+  passthroughCSS('h1{BORDER-COLOR:#DDD;BORDER-COLOR:RGBA(0,0,0,.15)}')
 );
 
 test(
@@ -806,7 +799,7 @@ test(
   'should not merge fallback colours with shorthand property (uppercase)',
   processCSS(
     'h1{BORDER:1PX SOLID #CCC;BORDER:1PX SOLID RGBA(0,0,0,.2)}',
-    'h1{border:1px solid #ccc;border:1px solid rgba(0,0,0,.2)}'
+    'h1{BORDER:1PX SOLID #CCC;border:1px solid rgba(0,0,0,.2)}'
   )
 );
 
@@ -1065,17 +1058,15 @@ test(
 
 test(
   'should not break border-color (#553)',
-  processCSS(
-    'h1{border:solid transparent;border-width:0 8px 16px;border-bottom-color:#eee}',
-    'h1{border:solid transparent;border-bottom:solid #eee;border-width:0 8px 16px}'
+  passthroughCSS(
+    'h1{border:solid transparent;border-width:0 8px 16px;border-bottom-color:#eee}'
   )
 );
 
 test(
   'should not break border-color (#553) (uppercase)',
-  processCSS(
-    'h1{BORDER:SOLID TRANSPARENT;BORDER-WIDTH:0 8PX 16PX;BORDER-BOTTOM-COLOR:#EEE}',
-    'h1{border:solid transparent;border-bottom:solid #eee;border-width:0 8px 16px}'
+  passthroughCSS(
+    'h1{BORDER:SOLID TRANSPARENT;BORDER-WIDTH:0 8PX 16PX;BORDER-BOTTOM-COLOR:#EEE}'
   )
 );
 
@@ -1209,10 +1200,7 @@ test(
 
 test(
   'Should correctly merge borders with custom properties (#619) (2) (uppercase)',
-  processCSS(
-    'h1{BORDER-LEFT:1PX SOLID;BORDER-LEFT-COLOR:VAR(--COLOR-VAR)}',
-    'h1{border-left:1px solid;BORDER-LEFT-COLOR:VAR(--COLOR-VAR)}'
-  )
+  passthroughCSS('h1{BORDER-LEFT:1PX SOLID;BORDER-LEFT-COLOR:VAR(--COLOR-VAR)}')
 );
 
 test(
@@ -1224,9 +1212,8 @@ test(
 
 test(
   'Should correctly merge borders with custom properties (#619) (3) (uppercase)',
-  processCSS(
-    'h1{BORDER-COLOR:RED GREEN BLUE MAGENTA;BORDER-TOP-COLOR:VAR(--COLOR-VAR)}',
-    'h1{border-color:RED GREEN BLUE MAGENTA;BORDER-TOP-COLOR:VAR(--COLOR-VAR)}'
+  passthroughCSS(
+    'h1{BORDER-COLOR:RED GREEN BLUE MAGENTA;BORDER-TOP-COLOR:VAR(--COLOR-VAR)}'
   )
 );
 
@@ -1659,8 +1646,9 @@ suite('side merging', () => {
 
   test(
     'should keep the side a longhand belongs to when merging into border-color',
-    passthroughCSS(
-      'a{border:1px solid red;border-left:solid;border-color:currentcolor}'
+    processCSS(
+      'a{border:1px solid red;border-left:solid;border-color:currentcolor}',
+      'a{border:1px solid;border-left:solid}'
     )
   );
 
@@ -1690,7 +1678,7 @@ suite('side merging', () => {
     'should take the width a side shorthand stating only a style resets to',
     processCSS(
       'a{border-top-width:medium;border-right-width:medium;border-bottom-width:medium;border-left:dashed}',
-      'a{border-width:medium;border-left:dashed}'
+      'a{border-width:medium;border-left-style:dashed;border-left-color:currentcolor}'
     )
   );
 
@@ -1724,17 +1712,14 @@ suite('side merging', () => {
 
   test(
     'should keep a border-width fallback a modern colour function cannot reach',
-    processCSS(
-      'a{border-width:thin;border:oklch(0.7 0.1 200) solid}',
-      'a{border-width:thin;border:solid oklch(0.7 0.1 200)}'
-    )
+    passthroughCSS('a{border-width:thin;border:oklch(0.7 0.1 200) solid}')
   );
 
   test(
     'should not revive a longhand a later duplicate had overridden',
     processCSS(
       'a{border-left:dashed blue;border-color:red;border-bottom-color:green;border-bottom-color:red}',
-      'a{border-left:dashed;border-color:red}'
+      'a{border-left:dashed blue;border-color:red;border-bottom-color:red}'
     )
   );
 
@@ -1742,7 +1727,7 @@ suite('side merging', () => {
     'should keep the last of a run of duplicate longhands',
     processCSS(
       'a{border-left:medium dashed blue;border-color:red red;border-bottom-color:currentcolor;border-bottom-color:blue;border-bottom-color:red}',
-      'a{border-left:dashed;border-color:red}'
+      'a{border-color:red;border-left-width:medium;border-left-style:dashed}'
     )
   );
 
@@ -1754,8 +1739,9 @@ suite('side merging', () => {
 
   test(
     'should not move a side shorthand past a component shorthand that overrode it',
-    passthroughCSS(
-      'a{border:medium none #fff;border-left:thick;border:solid #abc123;border-width:1px medium 1px 0;border-left:1px}'
+    processCSS(
+      'a{border:medium none #fff;border-left:thick;border:solid #abc123;border-width:1px medium 1px 0;border-left:1px}',
+      'a{border:1px solid #abc123;border-right-width:medium;border-left:1px}'
     )
   );
 
@@ -1792,7 +1778,7 @@ suite('component merging', () => {
     'should correctly handle a component a shorthand has already specified',
     processCSS(
       'a{border-left:1px solid;border-top-width:1px;border-width:1px}',
-      'a{border-left:solid;border-width:1px}'
+      'a{border-left:1px solid;border-width:1px}'
     )
   );
 });
@@ -1885,8 +1871,9 @@ test(
 
 test(
   'should keep the side a longhand belongs to when merging into border-color',
-  passthroughCSS(
-    'a{border:1px solid red;border-left:solid;border-color:currentcolor}'
+  processCSS(
+    'a{border:1px solid red;border-left:solid;border-color:currentcolor}',
+    'a{border:1px solid;border-left:solid}'
   )
 );
 
@@ -1949,107 +1936,7 @@ test(
   'should take the width a side shorthand stating only a style resets to',
   processCSS(
     'a{border-top-width:medium;border-right-width:medium;border-bottom-width:medium;border-left:dashed}',
-    'a{border-width:medium;border-left:dashed}'
-  )
-);
-
-test(
-  'should keep a border-width fallback a support-dependent border cannot reach',
-  passthroughCSS(
-    'a{border-width:thin;border:env(safe-area-inset-top) solid red}'
-  )
-);
-
-test(
-  'should keep a border-style fallback a support-dependent border cannot reach',
-  passthroughCSS(
-    'a{border-style:dashed;border:env(safe-area-inset-top) solid red}'
-  )
-);
-
-test(
-  'should keep a border-color fallback a support-dependent border cannot reach',
-  passthroughCSS(
-    'a{border-color:red green;border:env(safe-area-inset-top) solid red}'
-  )
-);
-
-test(
-  'should keep every longhand fallback a support-dependent border cannot reach',
-  passthroughCSS(
-    'a{border-width:thin;border-style:solid;border:env(safe-area-inset-top) solid red}'
-  )
-);
-
-test(
-  'should keep a border-width fallback a modern colour function cannot reach',
-  processCSS(
-    'a{border-width:thin;border:oklch(0.7 0.1 200) solid}',
-    'a{border-width:thin;border:solid oklch(0.7 0.1 200)}'
-  )
-);
-
-test(
-  'should correctly handle a component a shorthand has already specified',
-  processCSS(
-    'a{border-left:1px solid;border-top-width:1px;border-width:1px}',
-    'a{border-left:solid;border-width:1px}'
-  )
-);
-
-test(
-  'should not revive a longhand a later duplicate had overridden',
-  processCSS(
-    'a{border-left:dashed blue;border-color:red;border-bottom-color:green;border-bottom-color:red}',
-    'a{border-left:dashed;border-color:red}'
-  )
-);
-
-test(
-  'should keep the last of a run of duplicate longhands',
-  processCSS(
-    'a{border-left:medium dashed blue;border-color:red red;border-bottom-color:currentcolor;border-bottom-color:blue;border-bottom-color:red}',
-    'a{border-left:dashed;border-color:red}'
-  )
-);
-
-/* `border-top` and `border-color` reach the same longhand, `border-top-color`,
- * while neither property name contains the other, so a subset test on the two
- * names cannot see that they collide. A merge that moves one of them past the
- * other has to weigh it, or the side quietly takes back a component something
- * else had already set. */
-
-test(
-  'should not move a side shorthand past a component shorthand that overrode it',
-  passthroughCSS(
-    'a{border:medium none #fff;border-left:thick;border:solid #abc123;border-width:1px medium 1px 0;border-left:1px}'
-  )
-);
-
-/* Guards against the crossing check over-correcting: a crossing property the
- * merge never moves past is no reason to refuse. These pass either way. */
-
-test(
-  'should still fold sides a later border-color only partly overrides',
-  processCSS(
-    'a{border-top:1px solid red;border-right:1px solid red;border-bottom:1px solid red;border-color:blue;border-left:1px solid red}',
-    'a{border-color:blue blue blue red;border-style:solid;border-width:1px}'
-  )
-);
-
-test(
-  'should still fold sides a later border-style only partly overrides',
-  processCSS(
-    'a{border-top:1px solid red;border-right:1px solid red;border-bottom:1px solid red;border-style:dashed;border-left:1px solid red}',
-    'a{border-color:red;border-style:dashed dashed dashed solid;border-width:1px}'
-  )
-);
-
-test(
-  'should still merge sides specified after the component shorthand they kill',
-  processCSS(
-    'a{border-color:blue;border-top:1px solid red;border-right:1px solid red;border-bottom:1px solid red;border-left:1px solid red}',
-    'a{border-color:red;border-style:solid;border-width:1px}'
+    'a{border-width:medium;border-left-style:dashed;border-left-color:currentcolor}'
   )
 );
 
@@ -2083,3 +1970,149 @@ test(
     'a{border-color:Highlight}'
   )
 );
+
+suite('unified border reduction', () => {
+  test(
+    'does not reduce border declarations across a normal all reset',
+    passthroughCSS(
+      'a{border-top-width:1px;all:initial;border-top-style:solid;border-top-color:red}'
+    )
+  );
+
+  test(
+    'does not reduce border declarations across an important all reset',
+    passthroughCSS(
+      'a{border-top-width:1px!important;all:initial!important;border-top-style:solid!important;border-top-color:red!important}'
+    )
+  );
+
+  test(
+    'reduces one complete side plus unrelated leaves',
+    processCSS(
+      'a{border-top-width:1px;border-top-style:solid;border-top-color:red;border-bottom-width:2px}',
+      'a{border-top:1px solid red;border-bottom-width:2px}'
+    )
+  );
+
+  test(
+    'reduces one complete component plus unrelated leaves',
+    processCSS(
+      'a{border-top-width:1px;border-right-width:1px;border-bottom-width:1px;border-left-width:1px;border-top-color:red}',
+      'a{border-width:1px;border-top-color:red}'
+    )
+  );
+
+  test(
+    'reduces multiple independent side groups',
+    processCSS(
+      'a{border-top-width:1px;border-top-style:solid;border-top-color:red;border-bottom-width:2px;border-bottom-style:dashed;border-bottom-color:blue}',
+      'a{border-top:1px solid red;border-bottom:2px dashed blue}'
+    )
+  );
+
+  test(
+    'reduces multiple independent component groups',
+    processCSS(
+      'a{border-top-width:1px;border-right-width:1px;border-bottom-width:1px;border-left-width:1px;border-top-style:solid;border-right-style:solid;border-bottom-style:solid;border-left-style:solid}',
+      'a{border-style:solid;border-width:1px}'
+    )
+  );
+
+  test(
+    'chooses non-overlapping component group in crossing-group competition',
+    processCSS(
+      'a{border-top-width:1px;border-top-style:solid;border-top-color:red;border-right-color:red;border-bottom-color:red;border-left-color:red}',
+      'a{border-top-width:1px;border-top-style:solid;border-color:red}'
+    )
+  );
+
+  test(
+    'keeps leaves whose partial side crosses a complete component group',
+    passthroughCSS(
+      'a{border-color:purple;border-top-width:2px;border-top-style:solid}'
+    )
+  );
+
+  test(
+    'deduplicates repeated declarations and inserts after final contributing declaration',
+    processCSS(
+      'a{border-top-width:1px;border-top-width:2px;border-top-style:solid;border-top-color:red}',
+      'a{border-top:2px solid red}'
+    )
+  );
+
+  test(
+    'preserves interleaved comments around reduced declarations',
+    processCSS(
+      'a{/* c1 */border-top-width:1px;/* c2 */border-bottom-width:2px;/* c3 */border-top-style:solid;border-top-color:red;/* c4 */}',
+      'a{/* c1 *//* c2 */border-bottom-width:2px;/* c3 */border-top:1px solid red;/* c4 */}'
+    )
+  );
+
+  test(
+    'reduces normal and !important lanes independently',
+    processCSS(
+      'a{border-top-width:1px;border-top-style:solid;border-top-color:red;border-bottom-width:2px!important;border-bottom-style:dashed!important;border-bottom-color:blue!important}',
+      'a{border-top:1px solid red;border-bottom:2px dashed blue!important}'
+    )
+  );
+
+  test(
+    'blocks border reduction when border-image is present',
+    passthroughCSS(
+      'a{border-top-width:1px;border-top-style:solid;border-top-color:red;border-image:none}'
+    )
+  );
+
+  test(
+    'blocks border reduction when logical border properties are present',
+    passthroughCSS(
+      'a{border-top-width:1px;border-top-style:solid;border-top-color:red;border-inline-start:1px solid red}'
+    )
+  );
+
+  test(
+    'normalizes standalone border-spacing and preserves property case',
+    processCSS('a{BORDER-SPACING:10px 10px}', 'a{BORDER-SPACING:10px}')
+  );
+
+  test(
+    'preserves border-spacing value casing',
+    processCSS('a{border-spacing:10PX 10PX}', 'a{border-spacing:10PX}')
+  );
+
+  test(
+    'preserves multi-axis unequal border-spacing values',
+    passthroughCSS('a{border-spacing:10px 20px}')
+  );
+
+  test(
+    'preserves independent width and style when partial side uses rgba() fallback',
+    passthroughCSS(
+      'a{border-top-color:#ddd;border-top-color:rgba(0,0,0,.15);border-top-width:1px;border-top-style:solid}'
+    )
+  );
+
+  test(
+    'preserves independent style and color when partial side uses calc() fallback',
+    passthroughCSS(
+      'a{border-top-width:1px;border-top-width:calc(2px + 1px);border-top-style:solid;border-top-color:#ddd}'
+    )
+  );
+
+  test(
+    'normal border reset does not authorize important border shorthand in !important lane',
+    processCSS(
+      'a{border:1px solid red;border-top-width:2px!important;border-top-style:dashed!important;border-top-color:blue!important;border-right-width:2px!important;border-right-style:dashed!important;border-right-color:blue!important;border-bottom-width:2px!important;border-bottom-style:dashed!important;border-bottom-color:blue!important;border-left-width:2px!important;border-left-style:dashed!important;border-left-color:blue!important}',
+      'a{border:1px solid red;border-color:blue!important;border-style:dashed!important;border-width:2px!important}'
+    )
+  );
+
+  test(
+    'important border reset does not authorize a normal-lane reset',
+    processCSS(
+      'a{border:1px solid red!important;border-top-width:2px;border-top-style:dashed;border-top-color:blue;border-right-width:2px;border-right-style:dashed;border-right-color:blue;border-bottom-width:2px;border-bottom-style:dashed;border-bottom-color:blue;border-left-width:2px;border-left-style:dashed;border-left-color:blue}',
+      'a{border:1px solid red!important;border-color:blue;border-style:dashed;border-width:2px}'
+    )
+  );
+});

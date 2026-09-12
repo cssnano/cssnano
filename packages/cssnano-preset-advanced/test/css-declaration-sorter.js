@@ -138,7 +138,7 @@ test(
   'works with postcss-merge-longhand, border keep short- and longhand order',
   processCSS(
     'a{border-color:purple;border-top-width:2px;border-top-style:solid}',
-    'a{border-top:2px solid;border-color:purple}'
+    'a{border-color:purple;border-top-style:solid;border-top-width:2px}'
   )
 );
 

@@ -28,6 +28,14 @@ export const mergeCases = {
         `.revert-${index}{border:1px solid red;border-top:2px dashed blue}`
     ).join('')
   ),
+  'merge-longhand-cleanup-retention': pluginCase(
+    'postcss-merge-longhand',
+    Array.from(
+      { length: 500 },
+      (_, index) =>
+        `.retention-${index}{border-top-width:1px;border-top-width:calc(1px);border-top-width:env(top-width);border-top-width:1px\\9;border-top-style:solid;border-top-color:red;border-top-width:2px!important;border-top-width:calc(2px)!important;border-top-width:env(important-top-width)!important;border-top-width:2px\\9!important;border-top-style:dashed!important;border-top-color:blue!important;margin-top:1px;margin-top:calc(1px);margin-top:env(margin-top);margin-top:1px\\9;margin-top:2px!important;margin-top:calc(2px)!important;margin-top:env(important-margin-top)!important;margin-top:2px\\9!important}`
+    ).join('')
+  ),
   'merge-longhand-leaf-to-side': pluginCase(
     'postcss-merge-longhand',
     Array.from(

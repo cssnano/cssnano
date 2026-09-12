@@ -48,3 +48,71 @@ test('resolves an important matrix that is still shorter once !important counts'
     'a{border:none!important;border-top:2px!important;border-left:#ddeeff!important}'
   );
 });
+
+test('refuses no-growth decisions where candidate is not shorter', () => {
+  assert.strictEqual(
+    processBorderMatrix('a{border-top-width:1px;border-top-style:solid}'),
+    'a{border-top-width:1px;border-top-style:solid}'
+  );
+});
+
+test('does not cross importance lanes for partial groups', () => {
+  assert.strictEqual(
+    processBorderMatrix(
+      'a{border-top-width:1px;border-top-style:solid!important;border-top-color:red}'
+    ),
+    'a{border-top-width:1px;border-top-style:solid!important;border-top-color:red}'
+  );
+});
+
+test('preserves invalid border declarations', () => {
+  assert.strictEqual(
+    processBorderMatrix(
+      'a{border-top-width:-1px;border-top-style:solid;border-top-color:red}'
+    ),
+    'a{border-top-width:-1px;border-top-style:solid;border-top-color:red}'
+  );
+});
+
+test('preserves CSS-wide keywords in longhands', () => {
+  assert.strictEqual(
+    processBorderMatrix(
+      'a{border-top-width:inherit;border-top-style:solid;border-top-color:red}'
+    ),
+    'a{border-top-width:inherit;border-top-style:solid;border-top-color:red}'
+  );
+});
+
+test('treats style hacks as barriers and preserves authored declaration', () => {
+  assert.strictEqual(
+    processBorderMatrix(
+      'a{border-top-width:1px\\9;border-top-width:1px;border-top-style:solid;border-top-color:red}'
+    ),
+    'a{border-top-width:1px\\9;border-top:1px solid red}'
+  );
+});
+
+test('preserves unresolved custom properties', () => {
+  assert.strictEqual(
+    processBorderMatrix(
+      'a{border-top-width:var(--w);border-top-style:solid;border-top-color:red}'
+    ),
+    'a{border-top-width:var(--w);border-top-style:solid;border-top-color:red}'
+  );
+});
+
+test('preserves support-dependent fallback declarations', () => {
+  assert.strictEqual(
+    processBorderMatrix('a{border-color:#ddd;border-color:rgba(0,0,0,.15)}'),
+    'a{border-color:#ddd;border-color:rgba(0,0,0,.15)}'
+  );
+});
+
+test('preserves an env barrier when reducing the other border cells', () => {
+  assert.strictEqual(
+    processBorderMatrix(
+      'a{border-top:1px dashed currentcolor;border-top-width:1px;border-top-style:env(safe-area-inset-top);border-bottom:thin solid currentcolor}'
+    ),
+    'a{border-top:1px dashed currentcolor;border-top-width:1px;border-top-style:env(safe-area-inset-top);border-bottom:thin solid}'
+  );
+});

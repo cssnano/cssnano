@@ -38,6 +38,8 @@ export declare function hasCssWideKeyword(component: Component): boolean;
  * @return {boolean}
  */
 export declare function hasAllowedFunctions(component: Component, allowed: Set<string>): boolean;
+/** @param {import('@csstools/css-tokenizer').CSSToken[]} input @return {boolean} */
+export declare function hasValidFunctionSyntax(input: import('@csstools/css-tokenizer').CSSToken[]): boolean;
 /** @param {Component} component @return {{number: number, unit: string} | false} */
 export declare function directNumeric(component: Component): {
     number: number;
