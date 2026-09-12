@@ -1,4 +1,4 @@
-import addToCache from './cache.js';
+import registerSymbol from './cache.js';
 import { rewrite, TokenType, tokens } from './value.js';
 import isNum from './isNum.js';
 import { cssWideKeywords, grid, resolveProperty } from './slots.js';
@@ -14,84 +14,124 @@ function stringWords(value) {
   return value.split(/[ \t\n\f\r]+/).filter(Boolean);
 }
 
+/**
+ * Bind named areas and bracketed line names defined in a grid template declaration.
+ * @param {import('postcss').Declaration} decl
+ * @param {(value: string, index: number) => string} encoderFn
+ * @param {Map<string, { ident: string, count: number }>} symbolTable
+ */
+function bindTemplateSymbols(decl, encoderFn, symbolTable) {
+  let squareDepth = 0;
+  for (const token of tokens(decl.value)) {
+    if (token[0] === TokenType.String) {
+      for (const word of stringWords(token[4].value)) {
+        if (!/^\.+$/.test(word) && !RESERVED.has(word.toLowerCase())) {
+          registerSymbol(word, encoderFn, symbolTable);
+        }
+      }
+    }
+    if (token[0] === TokenType.OpenSquare) squareDepth++;
+    if (token[0] === TokenType.CloseSquare) squareDepth--;
+    if (
+      token[0] === TokenType.Ident &&
+      squareDepth > 0 &&
+      !RESERVED.has(token[4].value.toLowerCase())
+    ) {
+      registerSymbol(token[4].value, encoderFn, symbolTable);
+    }
+  }
+}
+
+/**
+ * Bind identifier references in grid placement declarations.
+ * @param {import('postcss').Declaration} decl
+ * @param {(value: string, index: number) => string} encoderFn
+ * @param {Map<string, { ident: string, count: number }>} symbolTable
+ */
+function bindReferenceSymbols(decl, encoderFn, symbolTable) {
+  for (const token of tokens(decl.value)) {
+    if (
+      token[0] === TokenType.Ident &&
+      !isNum({ value: token[1] }) &&
+      !RESERVED.has(token[4].value.toLowerCase())
+    ) {
+      registerSymbol(token[4].value, encoderFn, symbolTable);
+    }
+  }
+}
+
 export default function gridTemplateReducer() {
-  const cache = new Map();
+  /** @type {Map<string, { ident: string, count: number }>} */
+  const symbolTable = new Map();
   /** @type {import('postcss').Declaration[]} */
-  let templates = [];
+  let defSites = [];
   /** @type {import('postcss').Declaration[]} */
-  let children = [];
-  /** @type {WeakMap<import('postcss').Declaration, import('@csstools/css-tokenizer').CSSToken[]>} */
-  const parsedValues = new WeakMap();
+  let useSites = [];
+  /** @type {(value: string, index: number) => string} */
+  let encoderFn;
+
   return {
     /** @param {import('postcss').AnyNode} node @param {(value:string,index:number)=>string} encoder */ collect(
       node,
       encoder
     ) {
       if (node.type !== 'decl') return;
+      encoderFn = encoder;
       const property = resolveProperty(node.prop);
       if (grid.templateProperties.has(property)) {
-        templates.push(node);
-        let squareDepth = 0;
-        const parsed = tokens(node.value);
-        parsedValues.set(node, parsed);
-        for (const token of parsed) {
-          if (token[0] === TokenType.String)
-            for (const word of stringWords(token[4].value))
-              if (!/^\.+$/.test(word) && !RESERVED.has(word.toLowerCase()))
-                addToCache(word, encoder, cache);
-          if (token[0] === TokenType.OpenSquare) squareDepth++;
-          if (token[0] === TokenType.CloseSquare) squareDepth--;
-          if (
-            token[0] === TokenType.Ident &&
-            squareDepth &&
-            !RESERVED.has(token[4].value.toLowerCase())
-          )
-            addToCache(token[4].value, encoder, cache);
-        }
+        defSites.push(node);
       } else if (grid.referenceProperties.has(property)) {
-        children.push(node);
-        const parsed = tokens(node.value);
-        parsedValues.set(node, parsed);
-        for (const token of parsed)
-          if (
-            token[0] === TokenType.Ident &&
-            !isNum({ value: token[1] }) &&
-            !RESERVED.has(token[4].value.toLowerCase())
-          )
-            addToCache(token[4].value, encoder, cache);
+        useSites.push(node);
       }
     },
     transform() {
-      for (const decl of children)
-        decl.value = rewrite(
-          decl.value,
-          (token) => {
-            const cached =
-              token[0] === TokenType.Ident && cache.get(token[4].value);
-            if (!cached) return;
-            cached.count++;
-            return cached.ident;
-          },
-          undefined,
-          parsedValues.get(decl)
-        );
-      for (const decl of templates) {
-        const parsed = parsedValues.get(decl);
-        if (!parsed) continue;
+      if (defSites.length === 0 && useSites.length === 0) {
+        defSites = [];
+        useSites = [];
+        return;
+      }
+
+      // Symbol binding pass: collect symbols declared at template definition sites
+      for (const decl of defSites) {
+        bindTemplateSymbols(decl, encoderFn, symbolTable);
+      }
+
+      // Symbol binding pass: collect symbols referenced in placement properties
+      for (const decl of useSites) {
+        bindReferenceSymbols(decl, encoderFn, symbolTable);
+      }
+
+      // Use-site rewrite pass: rewrite references and collect live symbols
+      const liveSymbols = new Set();
+      for (const decl of useSites) {
+        decl.value = rewrite(decl.value, (token) => {
+          const symbol =
+            token[0] === TokenType.Ident && symbolTable.get(token[4].value);
+          if (!symbol) return;
+          liveSymbols.add(token[4].value);
+          return symbol.ident;
+        });
+      }
+
+      // Def-site rewrite pass: rewrite template definitions if live, normalize dots
+      for (const decl of defSites) {
+        const parsedTokens = tokens(decl.value);
         let squareDepthUsed = 0;
-        const used = parsed.some((token) => {
+        const isLive = parsedTokens.some((token) => {
           if (token[0] === TokenType.OpenSquare) squareDepthUsed++;
           if (token[0] === TokenType.CloseSquare) squareDepthUsed--;
-          if (token[0] === TokenType.String)
-            return stringWords(token[4].value).some(
-              (word) => cache.get(word)?.count
+          if (token[0] === TokenType.String) {
+            return stringWords(token[4].value).some((word) =>
+              liveSymbols.has(word)
             );
+          }
           return (
             token[0] === TokenType.Ident &&
             squareDepthUsed > 0 &&
-            Boolean(cache.get(token[4].value)?.count)
+            liveSymbols.has(token[4].value)
           );
         });
+
         let squareDepth = 0;
         decl.value = rewrite(
           decl.value,
@@ -103,25 +143,26 @@ export default function gridTemplateReducer() {
               const value = stringWords(token[4].value)
                 .map((word) => {
                   const normalized = /^\.+$/.test(word) ? '.' : word;
-                  const cached = cache.get(word);
-                  return used && cached ? cached.ident : normalized;
+                  const symbol = symbolTable.get(word);
+                  return isLive && symbol ? symbol.ident : normalized;
                 })
                 .join(' ');
               return serializeString(value, token[1][0]);
             }
-            const cached =
+            const symbol =
               token[0] === TokenType.Ident &&
               squareDepth > 0 &&
-              cache.get(token[4].value);
-            if (!cached) return;
-            return used ? cached.ident : undefined;
+              symbolTable.get(token[4].value);
+            if (!symbol) return;
+            return isLive ? symbol.ident : undefined;
           },
           undefined,
-          parsed
+          parsedTokens
         );
       }
-      templates = [];
-      children = [];
+
+      defSites = [];
+      useSites = [];
     },
   };
 }
