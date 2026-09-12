@@ -1,4 +1,5 @@
 import { parseArgs } from 'node:util';
+import { runFuzz } from '../../../util/fuzzRunner.js';
 import { check, report } from './lib/fuzzCheck.js';
 import { generate } from './lib/fuzzGenerate.js';
 
@@ -26,23 +27,10 @@ if (!Number.isFinite(seed) || !Number.isFinite(count) || count < 1) {
   process.exit(2);
 }
 
-const started = Date.now();
-let checked = 0;
-
-for (const testCase of generate(seed, count)) {
-  const failure = check(testCase);
-  checked++;
-
-  if (failure) {
-    console.error(report(failure, seed));
-    console.error(`\nfound after ${checked} of ${count} cases`);
-    process.exit(1);
-  }
-
-  if (checked % 10000 === 0) {
-    console.log(`${checked}/${count}`);
-  }
-}
-
-const elapsed = ((Date.now() - started) / 1000).toFixed(1);
-console.log(`${count} cases, seed ${seed}, clean in ${elapsed}s`);
+runFuzz({
+  cases: generate(seed, count),
+  check,
+  report: (failure) => report(failure, seed),
+  count,
+  seed,
+});
