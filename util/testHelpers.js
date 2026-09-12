@@ -9,48 +9,34 @@ function usePostCSSPlugin(plugin) {
 }
 
 function processCSSFactory(plugin) {
-  let processor, processCSS, passthroughCSS;
+  let processor;
 
   if (Array.isArray(plugin)) {
     const postcssProcessor = postcss(plugin);
-
     processor = (fixture, options) =>
       postcssProcessor.process(
         fixture,
         Object.assign({}, { from: undefined }, options)
       );
-
-    processCSS = (fixture, expected, options) => {
-      return async () => {
-        const result = await processor(fixture, options);
-        assert.strictEqual(result.css, expected);
-        return result;
-      };
-    };
-
-    passthroughCSS = (fixture, options) => {
-      return processCSS(fixture, fixture, options);
-    };
   } else {
-    processor = (fixture, options) => {
-      return postcss(plugin(options)).process(
+    processor = (fixture, options) =>
+      postcss(plugin(options)).process(
         fixture,
         Object.assign({}, { from: undefined }, options)
       );
-    };
-
-    processCSS = (fixture, expected, options) => {
-      return async () => {
-        const result = await processor(fixture, options);
-        assert.strictEqual(result.css, expected);
-        return result;
-      };
-    };
-
-    passthroughCSS = (fixture, options) => {
-      return processCSS(fixture, fixture, options);
-    };
   }
+
+  const processCSS = (fixture, expected, options) => {
+    return async () => {
+      const result = await processor(fixture, options);
+      assert.strictEqual(result.css, expected);
+      return result;
+    };
+  };
+
+  const passthroughCSS = (fixture, options) => {
+    return processCSS(fixture, fixture, options);
+  };
 
   return { processor, processCSS, passthroughCSS };
 }
