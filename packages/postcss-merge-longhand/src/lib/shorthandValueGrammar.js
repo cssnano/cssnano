@@ -171,7 +171,7 @@ function consumeFunctionCloser(stack, type) {
 }
 
 /** @param {import('@csstools/css-tokenizer').CSSToken[]} input @return {boolean} */
-function hasValidFunctionSyntax(input) {
+export function hasValidFunctionSyntax(input) {
   for (let index = 0; index < input.length; index++) {
     const token = input[index];
     if (token[0] === TokenType.Delim && isMathOperator(token[1])) {

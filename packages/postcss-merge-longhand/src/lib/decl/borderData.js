@@ -2,7 +2,7 @@ import spec from '../spec.js';
 
 export const widthStyleColor = spec.borderComponents;
 /** @param {string[]} parts */
-export const borderProperty = (...parts) => `border-${parts.join('-')}`;
+const borderProperty = (...parts) => `border-${parts.join('-')}`;
 export const physicalBorderShorthands = spec.sides.map((side) =>
   borderProperty(side)
 );
@@ -15,16 +15,9 @@ for (const direction of physicalBorderShorthands) {
     physicalDirectionalProperties.push(`${direction}-${prop}`);
 }
 
-export const defaultBorderValues = allSidesBorderShorthands.map(
-  (prop) => /** @type {string} */ (spec.initialValues.get(prop))
-);
 export const borderAndSideShorthands = new Set([
   'border',
   ...physicalBorderShorthands,
-]);
-export const directionalPhysicalProperties = new Set([
-  ...physicalBorderShorthands,
-  ...physicalDirectionalProperties,
 ]);
 export const borderImageProperties = new Set(spec.shorthand('border').resets);
 
@@ -35,7 +28,6 @@ const precedence = [
 ];
 
 export const allPhysicalBorderProperties = new Set(precedence.flat());
-export const borderResetRules = new WeakSet();
 export const physicalRadiusLonghands = [
   'border-top-left-radius',
   'border-top-right-radius',
@@ -56,7 +48,7 @@ export const logicalRadiusProperties = new Set([
   'border-inline-start-radius',
   'border-inline-end-radius',
 ]);
-export const otherRadiusProperties = new Set([
+const otherRadiusProperties = new Set([
   'border-top-radius',
   'border-right-radius',
   'border-bottom-radius',

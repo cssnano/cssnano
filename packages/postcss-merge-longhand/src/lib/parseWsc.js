@@ -99,4 +99,5 @@ function parseWsc(value) {
   return /** @type {[string, string, string]} */ ([width, style, color]);
 }
 
+export { toLower };
 export default parseWsc;
