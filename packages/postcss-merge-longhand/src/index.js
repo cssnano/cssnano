@@ -2,6 +2,8 @@ import borders from './lib/decl/borders.js';
 import columns from './lib/decl/columns.js';
 import { reduceBox } from './lib/decl/boxReducer.js';
 import { isConcreteBorder, reduceBorder } from './lib/decl/borderReducer.js';
+import { reduceBorderRadius } from './lib/decl/borderRadiusReducer.js';
+import { allRadiusProperties } from './lib/decl/borderData.js';
 import minifyShorthandIdentities from './lib/minifyShorthand.js';
 import { requiredSupport } from './lib/isFallback.js';
 
@@ -135,6 +137,8 @@ function pluginCreator() {
         /** @type {Declaration[]} */
         const borderDeclarations = [];
         /** @type {Declaration[]} */
+        const borderRadiusDeclarations = [];
+        /** @type {Declaration[]} */
         const marginDeclarations = [];
         /** @type {Declaration[]} */
         const paddingDeclarations = [];
@@ -146,7 +150,11 @@ function pluginCreator() {
           }
           const prop = node.prop.toLowerCase();
           if (prop.startsWith('border')) {
-            borderDeclarations.push(node);
+            if (allRadiusProperties.has(prop)) {
+              borderRadiusDeclarations.push(node);
+            } else {
+              borderDeclarations.push(node);
+            }
           } else if (prop.startsWith('column')) {
             hasColumn = true;
             setsOtherColumnProperty ||= columns.setsOtherColumnProperty(node);
@@ -162,6 +170,9 @@ function pluginCreator() {
         }
         if (paddingDeclarations.length) {
           reduceBox(rule, 'padding', paddingDeclarations);
+        }
+        if (borderRadiusDeclarations.length) {
+          reduceBorderRadius(rule, borderRadiusDeclarations);
         }
         if (borderDeclarations.length) {
           if (isConcreteBorder(rule, borderDeclarations)) {

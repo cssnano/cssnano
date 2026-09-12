@@ -15,6 +15,7 @@ import {
 } from './borderValidation.js';
 import {
   allPhysicalBorderProperties,
+  allRadiusProperties,
   allSidesBorderShorthands,
   borderImageProperties,
   physicalBorderShorthands,
@@ -39,16 +40,13 @@ function hasForeignBorderNodes(rule) {
   for (const node of rule.nodes) {
     if (node.type !== 'decl') continue;
     const p = node.prop.toLowerCase();
+    if (allRadiusProperties.has(p) || p === 'border-spacing') continue;
     if (
       borderImageProperties.has(p) ||
       spec.flowRelativeBorderProperties.has(p)
     )
       return true;
-    if (
-      p.startsWith('border-') &&
-      !allPhysicalBorderProperties.has(p) &&
-      p !== 'border-spacing'
-    ) {
+    if (p.startsWith('border-') && !allPhysicalBorderProperties.has(p)) {
       return true;
     }
   }

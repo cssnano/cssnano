@@ -23,12 +23,14 @@ suite('evaluator', () => {
   test('starts every slot at its initial value', () => {
     const state = initialState();
 
-    assert.equal(state.size, 20);
+    assert.equal(state.size, 28);
     assert.equal(state.get('border-top-width'), 'medium');
     assert.equal(state.get('border-left-style'), 'none');
     assert.equal(state.get('border-right-color'), 'currentcolor');
     assert.equal(state.get('margin-bottom'), '0');
     assert.equal(state.get('padding-top'), '0');
+    assert.equal(state.get('border-top-left-radius-h'), '0');
+    assert.equal(state.get('border-top-left-radius-v'), '0');
   });
 
   test('a shorthand resets the components it leaves out', () => {
@@ -98,6 +100,14 @@ suite('evaluator', () => {
       slotOf('a{margin-left:1px;margin-left:1px 2em}', 'margin-left'),
       '1px'
     );
+    /* A corner radius takes at most two values and no slash. */
+    assert.equal(
+      slotOf(
+        'a{border-top-left-radius:1px;border-top-left-radius:1px / 2em}',
+        'border-top-left-radius-h'
+      ),
+      '1px'
+    );
   });
 
   test('resolves the global keywords it models to the initial value', () => {
@@ -109,6 +119,46 @@ suite('evaluator', () => {
       'none'
     );
     assert.equal(slotOf('a{margin:5px;margin:unset}', 'margin-top'), '0');
+    assert.equal(
+      slotOf(
+        'a{border-radius:1px;border-radius:initial}',
+        'border-top-left-radius-h'
+      ),
+      '0'
+    );
+  });
+
+  test('spreads border-radius shorthand across corners and axes', () => {
+    const [state] = evaluate('a{border-radius:1px 2em / 10% 0}');
+
+    assert.equal(state.get('border-top-left-radius-h'), '1px');
+    assert.equal(state.get('border-top-right-radius-h'), '2em');
+    assert.equal(state.get('border-bottom-right-radius-h'), '1px');
+    assert.equal(state.get('border-bottom-left-radius-h'), '2em');
+
+    assert.equal(state.get('border-top-left-radius-v'), '10%');
+    assert.equal(state.get('border-top-right-radius-v'), '0');
+    assert.equal(state.get('border-bottom-right-radius-v'), '10%');
+    assert.equal(state.get('border-bottom-left-radius-v'), '0');
+  });
+
+  test('corner radius sets horizontal and vertical components', () => {
+    assert.equal(
+      slotOf('a{border-top-left-radius:1px}', 'border-top-left-radius-h'),
+      '1px'
+    );
+    assert.equal(
+      slotOf('a{border-top-left-radius:1px}', 'border-top-left-radius-v'),
+      '1px'
+    );
+    assert.equal(
+      slotOf('a{border-top-left-radius:1px 2em}', 'border-top-left-radius-h'),
+      '1px'
+    );
+    assert.equal(
+      slotOf('a{border-top-left-radius:1px 2em}', 'border-top-left-radius-v'),
+      '2em'
+    );
   });
 
   test('important declarations take precedence over ordinary regardless of order', () => {
@@ -162,6 +212,7 @@ suite('generator', () => {
       'border-width:',
       'margin:',
       'padding-top:',
+      'border-radius:',
       '!important',
       'initial',
     ]) {

@@ -10,6 +10,8 @@ import {
   unresolvedTokens,
   widthTypedTokens,
   widths,
+  corners,
+  radiusLengths,
 } from './fuzzEvaluate.js';
 import { random } from '../../../../util/fuzzRng.js';
 
@@ -28,8 +30,11 @@ const widthTypedList = [...widthTypedTokens];
  */
 const marginTokens = [...boxLengths, ...unresolvedList];
 const paddingTokens = marginTokens.filter((token) => !marginOnly.has(token));
+const radiusTokens = [...radiusLengths, ...unresolvedList];
+const radiusLonghands = new Set(corners.map((c) => `border-${c}-radius`));
 
 /** The alphabet each border component draws from, for a value whose tokens
+
  * must each specify their own component: `border`, `border-<side>`. A lone
  * trusted-function token here could stand for any component, so this
  * alphabet leaves them out. */
@@ -129,6 +134,23 @@ function malformedBoxValue(rng, family) {
  * @return {string}
  */
 function malformedValue(rng, prop) {
+  if (prop === 'border-radius' || radiusLonghands.has(prop)) {
+    switch (rng.int(6)) {
+      case 0:
+        return '-5px';
+      case 1:
+        return rng.pick([...styleTokens, ...colorTokens]);
+      case 2:
+        return '10px 20px 30px 40px 50px';
+      case 3:
+        return '10px /* comment */ 20px';
+      case 4:
+        return '10px / 20px / 30px';
+      default:
+        return prop === 'border-radius' ? '10px /' : '10px / 20px';
+    }
+  }
+
   const parts = prop.split('-');
 
   if (parts[0] !== 'border') {
@@ -200,6 +222,41 @@ function boxDeclaration(rng, family) {
 }
 
 /**
+ * @param {ReturnType<typeof random>} rng
+ * @return {{prop: string, value: string}}
+ */
+function radiusDeclaration(rng) {
+  const prop = rng.chance(0.35)
+    ? 'border-radius'
+    : `border-${rng.pick(corners)}-radius`;
+  return { prop, value: radiusValue(rng, prop) };
+}
+
+/**
+ * @param {ReturnType<typeof random>} rng
+ * @param {string} prop
+ * @return {string}
+ */
+function radiusValue(rng, prop) {
+  if (prop === 'border-radius') {
+    const hCount = rng.int(4) + 1;
+    const h = Array.from({ length: hCount }, () => rng.pick(radiusTokens)).join(
+      ' '
+    );
+    if (rng.chance(0.35)) {
+      const vCount = rng.int(4) + 1;
+      const v = Array.from({ length: vCount }, () =>
+        rng.pick(radiusTokens)
+      ).join(' ');
+      return `${h} / ${v}`;
+    }
+    return h;
+  }
+  const count = rng.chance(0.3) ? 2 : 1;
+  return Array.from({ length: count }, () => rng.pick(radiusTokens)).join(' ');
+}
+
+/**
  * A fresh value for a property already chosen, so that a repeat says something
  * different from what it repeats.
  *
@@ -208,6 +265,10 @@ function boxDeclaration(rng, family) {
  * @return {string}
  */
 function valueFor(rng, prop) {
+  if (prop === 'border-radius' || radiusLonghands.has(prop)) {
+    return radiusValue(rng, prop);
+  }
+
   const parts = prop.split('-');
   /* Determines family from the property itself, not from the current draw,
    * since a mixed rule can repeat a `margin` while currently generating
@@ -234,13 +295,20 @@ function valueFor(rng, prop) {
 
 /**
  * @param {ReturnType<typeof random>} rng
- * @param {'border' | 'margin' | 'padding'} family
+ * @param {'border' | 'margin' | 'padding' | 'radius'} family
  * @param {string[]} used the properties the rule has written so far
+ * @param {boolean} [important]
  * @return {string} a declaration, `prop:value` with no trailing semicolon.
  */
-function declaration(rng, family, used) {
-  const fresh =
-    family === 'border' ? borderDeclaration(rng) : boxDeclaration(rng, family);
+function declaration(rng, family, used, important = false) {
+  let fresh;
+  if (family === 'border') {
+    fresh = borderDeclaration(rng);
+  } else if (family === 'radius') {
+    fresh = radiusDeclaration(rng);
+  } else {
+    fresh = boxDeclaration(rng, family);
+  }
 
   /* Sometimes declare a property the rule already declares, rather than
    * drawing from the whole property space. Repeated properties are common in
@@ -254,7 +322,7 @@ function declaration(rng, family, used) {
 
   const written = valueAsWritten(rng, prop, value);
 
-  return `${prop}:${written}${rng.chance(0.08) ? ' !important' : ''}`;
+  return `${prop}:${written}${important ? ' !important' : ''}`;
 }
 
 /**
@@ -281,7 +349,12 @@ function valueAsWritten(rng, prop, value) {
   return value;
 }
 
-const families = /** @type {const} */ (['border', 'margin', 'padding']);
+const families = /** @type {const} */ ([
+  'border',
+  'margin',
+  'padding',
+  'radius',
+]);
 
 /**
  * @param {ReturnType<typeof random>} rng
@@ -293,6 +366,7 @@ function rule(rng) {
    * rest mixed, to catch a transform reaching outside its own family. */
   const family = rng.pick(families);
   const mixed = rng.chance(0.2);
+  const importanceMode = rng.int(5);
 
   /** @type {string[]} */
   const declarations = [];
@@ -300,7 +374,23 @@ function rule(rng) {
   const used = [];
 
   for (let i = 0; i < count; i++) {
-    const written = declaration(rng, mixed ? rng.pick(families) : family, used);
+    let important = false;
+    if (importanceMode === 1) {
+      important = true;
+    } else if (importanceMode === 2) {
+      important = i < Math.floor(count / 2);
+    } else if (importanceMode === 3) {
+      important = i % 2 === 0;
+    } else if (importanceMode === 4) {
+      important = rng.chance(0.2);
+    }
+
+    const written = declaration(
+      rng,
+      mixed ? rng.pick(families) : family,
+      used,
+      important
+    );
 
     declarations.push(written);
     used.push(/** @type {string} */ (written.split(':')[0]));
