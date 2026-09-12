@@ -1,8 +1,6 @@
-import hasAllProps from './hasAllProps.js';
 import getDeclarationsThatMatchProperties from './getDecls.js';
-import getRules from './getRules.js';
-import skipsFallback from './skipsFallback.js';
 import lastOf from './lastOf.js';
+import { mergeBlockingSupport } from './isFallback.js';
 import { setsLonghands } from './spec.js';
 
 /**
@@ -110,6 +108,63 @@ function hasConflicts(match, nodes) {
   }
 
   return false;
+}
+
+/**
+ * @param {Iterable<import('postcss').Declaration>} nodes
+ * @param {string} prop
+ * @return {import('postcss').Declaration}
+ */
+function getLastNode(nodes, prop) {
+  /** @type {import('postcss').Declaration | undefined} */
+  let last;
+  for (const node of nodes) {
+    if (node.prop.toLowerCase() === prop) {
+      last = node;
+    }
+  }
+  return /** @type {import('postcss').Declaration} */ (last);
+}
+
+/**
+ * @param {Iterable<import('postcss').Declaration>} props
+ * @param {string[]} properties
+ * @return {import('postcss').Declaration[]}
+ */
+function getRules(props, properties) {
+  return properties
+    .map((property) => getLastNode(props, property))
+    .filter(Boolean);
+}
+
+/**
+ * @param {import('postcss').Declaration[]} decls
+ * @param {...string} props
+ * @return {boolean}
+ */
+function hasAllProps(decls, ...props) {
+  return props.every((p) =>
+    decls.some((node) => node.prop.toLowerCase().includes(p))
+  );
+}
+
+/**
+ * @param {import('postcss').Declaration[]} rules
+ * @return {boolean}
+ */
+function skipsFallback(rules) {
+  const [first, ...rest] = rules;
+
+  if (first === undefined) {
+    return false;
+  }
+
+  const support = mergeBlockingSupport(first);
+
+  return rest.some(
+    (declaration) =>
+      support.symmetricDifference(mergeBlockingSupport(declaration)).size
+  );
 }
 
 /**

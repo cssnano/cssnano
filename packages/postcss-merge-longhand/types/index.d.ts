@@ -1,8 +1,3 @@
-import type { Rule } from 'postcss';
-export type Family = {
-    explode: (rule: Rule) => void;
-    merge: (rule: Rule) => void;
-};
 /**
  * @return {import('postcss').Plugin}
  */
