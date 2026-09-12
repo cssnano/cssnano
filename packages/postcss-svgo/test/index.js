@@ -299,4 +299,36 @@ test('should not crash on malformed urls when encoded', () => {
   assert.doesNotThrow(() => decode(svg));
 });
 
+test('decode should leave a bare percent sign next to valid escapes untouched', () => {
+  assert.strictEqual(decode('rgb(0 0 0 / 80%)'), 'rgb(0 0 0 / 80%)');
+  assert.strictEqual(decode('%3crgb(0 0 0 / 80%)'), '<rgb(0 0 0 / 80%)');
+});
+
+test('decode should still correctly decode multi-byte UTF-8 sequences', () => {
+  assert.strictEqual(decode('caf%C3%A9'), 'café');
+});
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+
+// https://github.com/cssnano/cssnano/issues/1961
+test(
+  'should not warn on a partially-encoded svg containing a bare percent sign',
+  processCSS(
+    "h1{background:url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' style='background: rgb(0 0 0 / 80%);' ></svg>\")}",
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20style%3D%22background%3Argb(0%200%200%2F80%25)%22%20viewBox%3D%220%200%20100%20100%22%2F%3E")}'
+  )
+);
+
+test('should not warn on an unencoded svg containing a bare percent sign', async () => {
+  const css =
+    "h1{background:url(\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' style='background: rgb(0 0 0 / 80%);' ></svg>\")}";
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+});
+
+test('should not warn on a fully-encoded svg with an encoded percent sign', async () => {
+  const css =
+    "h1{background:url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' style='background: rgb(0 0 0 / 80%25);' ></svg>\")}";
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+});
