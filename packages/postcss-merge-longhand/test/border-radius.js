@@ -514,4 +514,106 @@ suite('border-radius merging', () => {
     'should retain earlier corner fallback when followed by shorthand requiring new support',
     passthroughCSS('a{border-top-left-radius:10px;border-radius:max(10px,2vw)}')
   );
+
+  test(
+    'should preserve global keyword shorthand followed by corner longhand',
+    passthroughCSS('a{border-radius:inherit;border-top-left-radius:10px}')
+  );
+
+  test(
+    'should reject invalid mid-stream corner longhand in 4-corner rule and leave declarations untouched',
+    passthroughCSS(
+      'a{border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-right-radius:invalid;border-bottom-left-radius:10px}'
+    )
+  );
+
+  test('should reject rule with logical corner property when declarations argument is omitted', () => {
+    const root = postcss.parse(
+      'a{border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-right-radius:10px;border-bottom-left-radius:10px;border-start-start-radius:20px}'
+    );
+    const rule = /** @type {import('postcss').Rule} */ (root.first);
+    reduceBorderRadius(rule);
+    assert.equal(
+      rule.toString(),
+      'a{border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-right-radius:10px;border-bottom-left-radius:10px;border-start-start-radius:20px}'
+    );
+  });
+
+  test(
+    'should reduce complete physical corner groups across multiple all resets',
+    processCSS(
+      'a{border-top-left-radius:1px;border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px;all:initial;border-top-left-radius:2px;border-top-right-radius:2px;border-bottom-right-radius:2px;border-bottom-left-radius:2px;all:unset;border-top-left-radius:3px;border-top-right-radius:3px;border-bottom-right-radius:3px;border-bottom-left-radius:3px}',
+      'a{border-radius:1px;all:initial;border-radius:2px;all:unset;border-radius:3px}'
+    )
+  );
+
+  test(
+    'should not merge corner longhands across an intervening stylehacked shorthand',
+    passthroughCSS(
+      'a{border-top-left-radius:10px;border-top-right-radius:10px;border-radius:10px \\9;border-bottom-right-radius:10px;border-bottom-left-radius:10px}'
+    )
+  );
+
+  test('should safely ignore detached declarations passed in declarations argument', () => {
+    const root = postcss.parse(
+      'a{border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-right-radius:10px;border-bottom-left-radius:10px}'
+    );
+    const rule = /** @type {import('postcss').Rule} */ (root.first);
+    const detachedDecl = postcss.decl({
+      prop: 'border-radius',
+      value: '20px',
+    });
+    reduceBorderRadius(rule, [
+      detachedDecl,
+      /** @type {import('postcss').Declaration} */ (rule.nodes[0]),
+      /** @type {import('postcss').Declaration} */ (rule.nodes[1]),
+      /** @type {import('postcss').Declaration} */ (rule.nodes[2]),
+      /** @type {import('postcss').Declaration} */ (rule.nodes[3]),
+    ]);
+    assert.equal(rule.toString(), 'a{border-radius:10px}');
+  });
+
+  test('should safely no-op on empty rules or rules with comments only', () => {
+    const root = postcss.parse('a{/* comment */}');
+    const rule = /** @type {import('postcss').Rule} */ (root.first);
+    reduceBorderRadius(rule);
+    assert.equal(rule.toString(), 'a{/* comment */}');
+  });
+
+  test('should safely no-op when empty declarations array is passed', () => {
+    const root = postcss.parse(
+      'a{border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-right-radius:10px;border-bottom-left-radius:10px}'
+    );
+    const rule = /** @type {import('postcss').Rule} */ (root.first);
+    reduceBorderRadius(rule, []);
+    assert.equal(
+      rule.toString(),
+      'a{border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-right-radius:10px;border-bottom-left-radius:10px}'
+    );
+  });
+
+  test('should safely no-op and preserve rule when declarations array is out of document order', () => {
+    const root = postcss.parse(
+      'a{border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-right-radius:10px;border-bottom-left-radius:10px}'
+    );
+    const rule = /** @type {import('postcss').Rule} */ (root.first);
+    reduceBorderRadius(rule, [
+      /** @type {import('postcss').Declaration} */ (rule.nodes[3]),
+      /** @type {import('postcss').Declaration} */ (rule.nodes[2]),
+      /** @type {import('postcss').Declaration} */ (rule.nodes[1]),
+      /** @type {import('postcss').Declaration} */ (rule.nodes[0]),
+    ]);
+    assert.equal(
+      rule.toString(),
+      'a{border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-right-radius:10px;border-bottom-left-radius:10px}'
+    );
+  });
+
+  test(
+    'should eliminate earlier dead-store corner declaration before coalescing into shorthand',
+    processCSS(
+      'a{border-top-left-radius:5px;border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-right-radius:10px;border-bottom-left-radius:10px}',
+      'a{border-radius:10px}'
+    )
+  );
 });

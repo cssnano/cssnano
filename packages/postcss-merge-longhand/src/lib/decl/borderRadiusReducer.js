@@ -5,17 +5,14 @@ import insertCloned from '../insertCloned.js';
 import minifyTrbl from '../minifyTrbl.js';
 import { isFallback, mergeBlockingSupport } from '../isFallback.js';
 import cleanupDeclarations from '../cleanupDeclarations.js';
-import {
-  cleanupLaneSegments,
-  importanceLanes,
-  isAll,
-} from './importanceLanes.js';
+import { isAll } from './importanceLanes.js';
 import {
   parseCornerRadius,
   parseRadiusShorthand,
   isGlobalKeyword,
 } from '../validateRadius.js';
 import {
+  allRadiusProperties,
   physicalRadiusLonghands,
   physicalRadiusProperties,
   logicalRadiusProperties,
@@ -24,30 +21,58 @@ import {
 /** @import {Declaration, Rule} from 'postcss'; */
 
 /**
- * @param {({ value: string, decl: Declaration } | null)[]} slots
+ * Intermediate Representation (IR) descriptor for a declaration in the border-radius family.
+ *
+ * @typedef {object} RadiusDeclarationDescriptor
+ * @property {Declaration} decl
+ * @property {string} [prop]
+ * @property {string} [val]
+ * @property {boolean} isBarrier
+ * @property {boolean} [isHacked]
+ * @property {boolean} [isGlobalKeyword]
+ * @property {boolean} [isShorthand]
+ * @property {number} [longhandIndex]
+ * @property {boolean} [canExplode]
+ * @property {ReturnType<typeof parseRadiusShorthand> | ReturnType<typeof parseCornerRadius> | null} [parsed]
+ */
+
+/**
+ * Writes a component value to the target slot vector and registers fallback dependence edges.
+ *
+ * @param {({ value: string, decl: Declaration } | null)[]} slotVector
  * @param {number} idx
  * @param {string} value
  * @param {Declaration} decl
- * @param {Set<Declaration>} fallbacks
+ * @param {Set<Declaration>} fallbackDefinitions
  */
-function setSlot(slots, idx, value, decl, fallbacks) {
-  const existing = slots[idx];
+function assignSlot(slotVector, idx, value, decl, fallbackDefinitions) {
+  const existing = slotVector[idx];
   if (existing && isFallback(existing.decl, decl)) {
-    fallbacks.add(existing.decl);
+    fallbackDefinitions.add(existing.decl);
   }
-  slots[idx] = { value, decl };
+  slotVector[idx] = { value, decl };
 }
 
 /**
+ * Synthesizes and commits a merged shorthand declaration if cost-model benefit is non-negative.
+ *
  * @param {Rule} rule
- * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @param {Set<Declaration>} contributing
- * @param {Set<Declaration>} fallbacks
- * @param {boolean} lane
+ * @param {({ value: string, decl: Declaration } | null)[]} slotVector
+ * @param {Set<Declaration>} liveDefinitions
+ * @param {Set<Declaration>} fallbackDefinitions
+ * @param {boolean} isImportant
  */
-function flush(rule, slots, contributing, fallbacks, lane) {
-  if (slots.some((s) => !s || isCustomProp(s.decl))) return;
-  const full = /** @type {{ value: string, decl: Declaration }[]} */ (slots);
+function commitSlotVector(
+  rule,
+  slotVector,
+  liveDefinitions,
+  fallbackDefinitions,
+  isImportant
+) {
+  if (slotVector.some((s) => !s || isCustomProp(s.decl))) return;
+  const full = /** @type {{ value: string, decl: Declaration }[]} */ (
+    slotVector
+  );
   const s0 = mergeBlockingSupport(full[0].decl);
 
   /* Preserve CSS-wide keywords without merging to respect author inheritance contracts */
@@ -72,7 +97,9 @@ function flush(rule, slots, contributing, fallbacks, lane) {
   const shorthandVal =
     horizontal === vertical ? horizontal : `${horizontal}/${vertical}`;
 
-  const toRemove = Array.from(contributing).filter((d) => !fallbacks.has(d));
+  const toRemove = Array.from(liveDefinitions).filter(
+    (d) => !fallbackDefinitions.has(d)
+  );
   if (toRemove.length === 0) return;
   if (
     toRemove.length === 1 &&
@@ -84,200 +111,379 @@ function flush(rule, slots, contributing, fallbacks, lane) {
     return;
   }
 
-  let remSize = -(
+  let sizeBenefit = -(
     'border-radius'.length +
     shorthandVal.length +
     2 +
-    (lane ? 10 : 0)
+    (isImportant ? 10 : 0)
   );
   for (const d of toRemove) {
-    remSize += d.prop.length + d.value.length + (d.important ? 12 : 2);
+    sizeBenefit += d.prop.length + d.value.length + (d.important ? 12 : 2);
   }
 
-  if (remSize >= 0) {
+  if (sizeBenefit >= 0) {
     let a = toRemove[0];
     for (const d of toRemove) if (rule.index(d) > rule.index(a)) a = d;
     insertCloned(rule, a, {
       prop: 'border-radius',
       value: shorthandVal,
-      important: lane,
+      important: isImportant,
     });
     for (const d of toRemove) d.remove();
   }
 }
 
 /**
- * @param {({ value: string, decl: Declaration } | null)[]} slots
+ * Evaluates hazard detection: returns true if active slots must be flushed and reset.
+ *
+ * @param {({ value: string, decl: Declaration } | null)[]} slotVector
  * @param {number} idx
- * @param {Declaration} decl
+ * @param {RadiusDeclarationDescriptor} desc
+ * @return {boolean}
  */
-function shouldReset(slots, idx, decl) {
-  if (!slots.every(Boolean)) return false;
+function shouldInvalidateSlots(slotVector, idx, desc) {
+  if (!slotVector.every(Boolean)) return false;
   const isFb = (/** @type {{decl: Declaration} | null} */ s) =>
-    Boolean(s && isFallback(s.decl, decl));
-  if (idx === -1) return slots.some(isFb);
+    Boolean(s && isFallback(s.decl, desc.decl));
+  if (idx === -1) return slotVector.some(isFb);
   return (
-    isGlobalKeyword(decl.value) ||
-    isFb(slots[idx * 2]) ||
-    isFb(slots[idx * 2 + 1])
+    Boolean(desc.isGlobalKeyword) ||
+    isFb(slotVector[idx * 2]) ||
+    isFb(slotVector[idx * 2 + 1])
   );
 }
 
 /**
- * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @param {Declaration} decl
- * @param {string} val
- * @param {Set<Declaration>} contributing
- * @param {Set<Declaration>} fallbacks
- * @param {(d: Declaration) => ReturnType<typeof parseRadiusShorthand>} getShorthand
- * @return {boolean} false if invalid and should reset
+ * Assigns all 8 slot registers from a shorthand vector declaration.
+ *
+ * @param {({ value: string, decl: Declaration } | null)[]} slotVector
+ * @param {RadiusDeclarationDescriptor} desc
+ * @param {Set<Declaration>} liveDefinitions
+ * @param {Set<Declaration>} fallbackDefinitions
+ * @return {boolean}
  */
-function applyShorthand(
-  slots,
-  decl,
-  val,
-  contributing,
-  fallbacks,
-  getShorthand
+function accumulateShorthand(
+  slotVector,
+  desc,
+  liveDefinitions,
+  fallbackDefinitions
 ) {
-  if (isGlobalKeyword(val)) {
-    for (let i = 0; i < 8; i++) {
-      setSlot(slots, i, decl.value, decl, fallbacks);
-    }
-    contributing.add(decl);
-    return true;
-  }
-  const parsed = getShorthand(decl);
+  const parsed = /** @type {ReturnType<typeof parseRadiusShorthand>} */ (
+    desc.parsed
+  );
   if (!parsed) return false;
+  const decl = desc.decl;
   for (let i = 0; i < 4; i++) {
-    setSlot(slots, i * 2, parsed.horizontal[i], decl, fallbacks);
-    setSlot(slots, i * 2 + 1, parsed.vertical[i], decl, fallbacks);
+    assignSlot(
+      slotVector,
+      i * 2,
+      parsed.horizontal[i],
+      decl,
+      fallbackDefinitions
+    );
+    assignSlot(
+      slotVector,
+      i * 2 + 1,
+      parsed.vertical[i],
+      decl,
+      fallbackDefinitions
+    );
   }
-  contributing.add(decl);
+  liveDefinitions.add(decl);
   return true;
 }
 
 /**
- * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @param {Declaration} decl
- * @param {string} val
+ * Assigns paired slot registers from a scalar corner longhand declaration.
+ *
+ * @param {({ value: string, decl: Declaration } | null)[]} slotVector
+ * @param {RadiusDeclarationDescriptor} desc
  * @param {number} idx
- * @param {Set<Declaration>} contributing
- * @param {Set<Declaration>} fallbacks
- * @param {(d: Declaration) => ReturnType<typeof parseCornerRadius>} getCorner
- * @return {boolean} false if invalid and should reset
+ * @param {Set<Declaration>} liveDefinitions
+ * @param {Set<Declaration>} fallbackDefinitions
+ * @return {boolean}
  */
-function applyLonghand(
-  slots,
-  decl,
-  val,
+function accumulateCorner(
+  slotVector,
+  desc,
   idx,
-  contributing,
-  fallbacks,
-  getCorner
+  liveDefinitions,
+  fallbackDefinitions
 ) {
-  if (isGlobalKeyword(val)) {
-    setSlot(slots, idx * 2, decl.value, decl, fallbacks);
-    setSlot(slots, idx * 2 + 1, decl.value, decl, fallbacks);
-    contributing.add(decl);
+  const decl = desc.decl;
+  if (desc.isGlobalKeyword) {
+    assignSlot(slotVector, idx * 2, decl.value, decl, fallbackDefinitions);
+    assignSlot(slotVector, idx * 2 + 1, decl.value, decl, fallbackDefinitions);
+    liveDefinitions.add(decl);
     return true;
   }
-  const parsed = getCorner(decl);
+  const parsed = /** @type {ReturnType<typeof parseCornerRadius>} */ (
+    desc.parsed
+  );
   if (!parsed) return false;
 
-  setSlot(slots, idx * 2, parsed[0], decl, fallbacks);
-  setSlot(slots, idx * 2 + 1, parsed[1], decl, fallbacks);
-  contributing.add(decl);
+  assignSlot(slotVector, idx * 2, parsed[0], decl, fallbackDefinitions);
+  assignSlot(slotVector, idx * 2 + 1, parsed[1], decl, fallbackDefinitions);
+  liveDefinitions.add(decl);
   return true;
 }
 
 /**
+ * Executes greedy vector coalescing over a lane's IR descriptors.
+ *
  * @param {Rule} rule
- * @param {Declaration[]} laneDecls
- * @param {boolean} lane
- * @param {(d: Declaration) => ReturnType<typeof parseCornerRadius>} getCorner
- * @param {(d: Declaration) => ReturnType<typeof parseRadiusShorthand>} getShorthand
+ * @param {RadiusDeclarationDescriptor[]} laneDescriptors
+ * @param {boolean} isImportant
  */
-function processLane(rule, laneDecls, lane, getCorner, getShorthand) {
+function coalesceLane(rule, laneDescriptors, isImportant) {
   /** @type {({ value: string, decl: Declaration } | null)[]} */
-  let slots = [null, null, null, null, null, null, null, null];
-  const contributing = new Set();
-  const fallbacks = new Set();
+  let slotVector = [null, null, null, null, null, null, null, null];
+  const liveDefinitions = new Set();
+  const fallbackDefinitions = new Set();
 
-  const reset = () => {
-    flush(rule, slots, contributing, fallbacks, lane);
-    slots = [null, null, null, null, null, null, null, null];
-    contributing.clear();
-    fallbacks.clear();
+  const commitAndResetSlots = () => {
+    commitSlotVector(
+      rule,
+      slotVector,
+      liveDefinitions,
+      fallbackDefinitions,
+      isImportant
+    );
+    slotVector = [null, null, null, null, null, null, null, null];
+    liveDefinitions.clear();
+    fallbackDefinitions.clear();
   };
 
-  for (const decl of laneDecls) {
-    const p = decl.prop.toLowerCase();
-    if (isAll(decl)) {
-      reset();
-      continue;
-    }
-    const isShort = p === 'border-radius';
+  for (const desc of laneDescriptors) {
+    if (desc.decl.parent !== rule) continue;
 
-    if (stylehacks.detect(decl) || (isShort && !canExplode(decl))) {
-      reset();
+    if (desc.isBarrier) {
+      commitAndResetSlots();
       continue;
     }
 
-    const idx = isShort ? -1 : physicalRadiusLonghands.indexOf(p);
-    if (idx === -1 && !isShort) {
-      reset();
+    if (desc.isHacked || (desc.isShorthand && !desc.canExplode)) {
+      commitAndResetSlots();
       continue;
     }
 
-    if (shouldReset(slots, idx, decl)) reset();
-    const val = decl.raws?.value?.raw ?? decl.value;
+    const idx = desc.isShorthand
+      ? -1
+      : /** @type {number} */ (desc.longhandIndex);
 
-    const ok = isShort
-      ? applyShorthand(slots, decl, val, contributing, fallbacks, getShorthand)
-      : applyLonghand(
-          slots,
-          decl,
-          val,
+    if (shouldInvalidateSlots(slotVector, idx, desc)) {
+      commitAndResetSlots();
+    }
+
+    const ok = desc.isShorthand
+      ? accumulateShorthand(
+          slotVector,
+          desc,
+          liveDefinitions,
+          fallbackDefinitions
+        )
+      : accumulateCorner(
+          slotVector,
+          desc,
           idx,
-          contributing,
-          fallbacks,
-          getCorner
+          liveDefinitions,
+          fallbackDefinitions
         );
 
-    if (!ok) reset();
+    if (!ok) commitAndResetSlots();
   }
 
-  flush(rule, slots, contributing, fallbacks, lane);
+  commitSlotVector(
+    rule,
+    slotVector,
+    liveDefinitions,
+    fallbackDefinitions,
+    isImportant
+  );
 }
 
 /**
- * @param {Declaration} s
- * @param {(d: Declaration) => ReturnType<typeof parseCornerRadius>} getCorner
- * @param {(d: Declaration) => ReturnType<typeof parseRadiusShorthand>} getShorthand
+ * Applies peephole canonicalization / algebraic folding to a standalone declaration.
+ *
+ * @param {RadiusDeclarationDescriptor} desc
  */
-function normalizeSingleton(s, getCorner, getShorthand) {
-  if (!s || stylehacks.detect(s)) return;
-  const val = s.raws?.value?.raw ?? s.value;
-  if (isGlobalKeyword(val)) return;
-  const p = s.prop.toLowerCase();
-  if (p === 'border-radius' && canExplode(s)) {
-    const parsed = getShorthand(s);
-    if (parsed) {
-      const h = minifyTrbl(parsed.horizontal);
-      const v = minifyTrbl(parsed.vertical);
-      s.prop = 'border-radius';
-      s.value = h === v ? h : `${h}/${v}`;
-      if (s.raws) delete s.raws.value;
-    }
-  } else if (physicalRadiusLonghands.includes(p)) {
-    const parsed = getCorner(s);
-    if (parsed && parsed[0] === parsed[1]) {
-      s.prop = p;
-      s.value = parsed[0];
-      if (s.raws) delete s.raws.value;
+function canonicalizeSingleton(desc) {
+  const {
+    decl,
+    prop,
+    isHacked,
+    isGlobalKeyword: isGlobal,
+    isShorthand,
+    canExplode: explodable,
+    parsed,
+  } = desc;
+  if (isHacked || isGlobal || !parsed) return;
+  if (isShorthand && explodable) {
+    const shorthandParsed =
+      /** @type {NonNullable<ReturnType<typeof parseRadiusShorthand>>} */ (
+        parsed
+      );
+    const h = minifyTrbl(shorthandParsed.horizontal);
+    const v = minifyTrbl(shorthandParsed.vertical);
+    decl.prop = 'border-radius';
+    decl.value = h === v ? h : `${h}/${v}`;
+    if (decl.raws) delete decl.raws.value;
+  } else if (desc.longhandIndex !== -1) {
+    const cornerParsed =
+      /** @type {NonNullable<ReturnType<typeof parseCornerRadius>>} */ (parsed);
+    if (cornerParsed[0] === cornerParsed[1]) {
+      decl.prop = /** @type {string} */ (prop);
+      decl.value = cornerParsed[0];
+      if (decl.raws) delete decl.raws.value;
     }
   }
+}
+
+/**
+ * Intra-block dead-store elimination across barrier-delimited segments.
+ *
+ * @param {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} lanes
+ */
+function eliminateRedundantDeclarations(lanes) {
+  for (const lane of lanes) {
+    /** @type {Declaration[]} */
+    let segmentDecls = [];
+    for (const desc of lane) {
+      if (desc.isBarrier) {
+        if (segmentDecls.length > 1) {
+          cleanupDeclarations(new Set(segmentDecls));
+        }
+        segmentDecls = [];
+      } else {
+        segmentDecls.push(desc.decl);
+      }
+    }
+    if (segmentDecls.length > 1) {
+      cleanupDeclarations(new Set(segmentDecls));
+    }
+  }
+}
+
+/**
+ * Creates an IR descriptor for a radius declaration.
+ * Returns null if the declaration violates syntax or domain grammar.
+ *
+ * @param {Declaration} node
+ * @param {string} prop
+ * @param {boolean} isHacked
+ * @return {RadiusDeclarationDescriptor | null}
+ */
+function createRadiusDescriptor(node, prop, isHacked) {
+  const isShorthand = prop === 'border-radius';
+  const longhandIndex = isShorthand
+    ? -1
+    : physicalRadiusLonghands.indexOf(prop);
+
+  if (isHacked) {
+    return {
+      decl: node,
+      prop,
+      val: node.raws?.value?.raw ?? node.value,
+      isBarrier: false,
+      isHacked: true,
+      isGlobalKeyword: false,
+      isShorthand,
+      longhandIndex,
+      canExplode: false,
+      parsed: null,
+    };
+  }
+
+  if (
+    logicalRadiusProperties.has(prop) ||
+    !physicalRadiusProperties.has(prop)
+  ) {
+    return null;
+  }
+
+  const val = node.raws?.value?.raw ?? node.value;
+  const isGlobal = isGlobalKeyword(val);
+
+  let parsed = null;
+  if (!isGlobal) {
+    parsed = isShorthand ? parseRadiusShorthand(val) : parseCornerRadius(val);
+    if (parsed === null) return null;
+  }
+
+  return {
+    decl: node,
+    prop,
+    val,
+    isBarrier: false,
+    isHacked: false,
+    isGlobalKeyword: isGlobal,
+    isShorthand,
+    longhandIndex,
+    canExplode: isShorthand ? canExplode(node) : false,
+    parsed,
+  };
+}
+
+/**
+ * @param {Declaration} node
+ * @param {string} prop
+ * @param {Declaration[] | undefined} live
+ * @param {number} liveIndex
+ * @return {boolean}
+ */
+function isTargetDeclaration(node, prop, live, liveIndex) {
+  if (live) return liveIndex < live.length && node === live[liveIndex];
+  return allRadiusProperties.has(prop);
+}
+
+/**
+ * Frontend scan: lexes, validates, and partitions declarations into lane IR descriptors.
+ * Fails fast and returns null if any declaration violates syntax or domain grammar.
+ *
+ * @param {Rule} rule
+ * @param {Declaration[]} [declarations]
+ * @return {{ lanes: [RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]], radiusDescriptors: RadiusDeclarationDescriptor[] } | null}
+ */
+function scanAndPartitionDeclarations(rule, declarations) {
+  if (!rule.nodes || rule.nodes.length === 0) return null;
+  if (declarations && declarations.length === 0) return null;
+
+  const live = declarations
+    ? declarations.filter((d) => d.parent === rule)
+    : undefined;
+  if (live && live.length === 0) return null;
+
+  /** @type {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} */
+  const lanes = [[], []];
+  /** @type {RadiusDeclarationDescriptor[]} */
+  const radiusDescriptors = [];
+  let liveIndex = 0;
+
+  for (const node of rule.nodes) {
+    if (node.type !== 'decl') continue;
+
+    const laneIndex = node.important ? 1 : 0;
+    if (isAll(node)) {
+      lanes[laneIndex].push({ decl: node, isBarrier: true });
+      continue;
+    }
+
+    const prop = node.prop.toLowerCase();
+    if (!isTargetDeclaration(node, prop, live, liveIndex)) continue;
+    if (live) liveIndex++;
+
+    const isHacked = Boolean(stylehacks.detect(node));
+    const desc = createRadiusDescriptor(node, prop, isHacked);
+    if (!desc) return null;
+
+    lanes[laneIndex].push(desc);
+    radiusDescriptors.push(desc);
+  }
+
+  if (live && liveIndex < live.length) return null;
+  if (radiusDescriptors.length === 0) return null;
+
+  return { lanes, radiusDescriptors };
 }
 
 /**
@@ -285,71 +491,23 @@ function normalizeSingleton(s, getCorner, getShorthand) {
  * @param {Declaration[]} [declarations]
  */
 export function reduceBorderRadius(rule, declarations) {
-  if (!rule.nodes) return;
-  const decls =
-    declarations ??
-    /** @type {Declaration[]} */ (
-      rule.nodes.filter(
-        (n) =>
-          n.type === 'decl' &&
-          physicalRadiusProperties.has(n.prop.toLowerCase())
-      )
-    );
+  const partitioned = scanAndPartitionDeclarations(rule, declarations);
+  if (!partitioned) return;
 
-  /** @type {Map<Declaration, ReturnType<typeof parseCornerRadius>>} */
-  const cornerCache = new Map();
-  /** @type {Map<Declaration, ReturnType<typeof parseRadiusShorthand>>} */
-  const shorthandCache = new Map();
+  const { lanes, radiusDescriptors } = partitioned;
 
-  const getCorner = (/** @type {Declaration} */ d) => {
-    let cached = cornerCache.get(d);
-    if (cached === undefined) {
-      const val = d.raws?.value?.raw ?? d.value;
-      cached = parseCornerRadius(val);
-      cornerCache.set(d, cached);
-    }
-    return cached;
-  };
+  eliminateRedundantDeclarations(lanes);
 
-  const getShorthand = (/** @type {Declaration} */ d) => {
-    let cached = shorthandCache.get(d);
-    if (cached === undefined) {
-      const val = d.raws?.value?.raw ?? d.value;
-      cached = parseRadiusShorthand(val);
-      shorthandCache.set(d, cached);
-    }
-    return cached;
-  };
-
-  const isInvalid = (/** @type {Declaration} */ d) => {
-    if (stylehacks.detect(d)) return false;
-    const p = d.prop.toLowerCase();
-    if (logicalRadiusProperties.has(p) || !physicalRadiusProperties.has(p)) {
-      return true;
-    }
-    const val = d.raws?.value?.raw ?? d.value;
-    if (isGlobalKeyword(val)) return false;
-    if (p === 'border-radius') {
-      return getShorthand(d) === null;
-    }
-    return getCorner(d) === null;
-  };
-
-  if (decls.length === 0 || decls.some(isInvalid)) return;
-
-  const lanes = importanceLanes(rule, decls);
-  cleanupLaneSegments(lanes, (segment) => cleanupDeclarations(segment));
-
-  const live = decls.filter((d) => d.parent);
-  if (live.length <= 1) {
-    if (live[0]) normalizeSingleton(live[0], getCorner, getShorthand);
+  const liveDecls = radiusDescriptors.filter((d) => d.decl.parent);
+  if (liveDecls.length <= 1) {
+    if (liveDecls[0]) canonicalizeSingleton(liveDecls[0]);
     return;
   }
 
-  for (const lane of [false, true]) {
-    const laneDecls = lanes[lane ? 1 : 0].filter((d) => d.parent === rule);
-    if (laneDecls.some((d) => !isAll(d))) {
-      processLane(rule, laneDecls, lane, getCorner, getShorthand);
+  for (const isImportant of [false, true]) {
+    const laneDescriptors = lanes[isImportant ? 1 : 0];
+    if (laneDescriptors.some((d) => !d.isBarrier && d.decl.parent === rule)) {
+      coalesceLane(rule, laneDescriptors, isImportant);
     }
   }
 }
