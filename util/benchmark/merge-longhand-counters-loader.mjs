@@ -48,66 +48,10 @@ seam(
   'cleanupDeclarations'
 );
 seam(
-  'index.js',
-  'function rewrite(rule, family, prefix, declarations) {',
-  'rewrite'
+  'lib/decl/borderReducer.js',
+  'export function reduceBorder(rule, declarations) {',
+  'reduceBorder'
 );
-seam('lib/decl/borders.js', 'function merge(rule) {', 'mergeBorder');
-seam(
-  'lib/decl/borderLifecycle.js',
-  'export function explode(rule) {',
-  'explodeBorder'
-);
-seam(
-  'lib/decl/borderLifecycle.js',
-  'export function cleanup(rule) {',
-  'cleanupBorder'
-);
-seam(
-  'lib/decl/borderMatrix.js',
-  'function resolveBorderGrid(rule) {',
-  'resolveBorderGrid'
-);
-seam('lib/decl/boxBase.js', 'explode: (rule) => {', 'explodeBox');
-seam('lib/decl/boxBase.js', 'merge: (rule) => {', 'mergeBox');
-
-for (const key of [
-  'mergeSideComponentsToSide',
-  'mergeSideComponentsToComponent',
-  'mergeSidesToComponents',
-  'rebindSideCustomProp',
-  'rebindComponentCustomProp',
-]) {
-  seam(
-    'lib/decl/borderMerges.js',
-    `export function ${key}(rule) {`,
-    `pass.${key}`
-  );
-}
-
-for (const key of [
-  'mergeComponentsToBorder',
-  'mergeComponentsToBorderAndSides',
-  'mergeSidesToBorder',
-]) {
-  seam(
-    'lib/decl/borderMerges.js',
-    `export function ${key}(rule, canCreateBorder) {`,
-    `pass.${key}`
-  );
-}
-
-for (const key of [
-  'optimizeSides',
-  'mergeRedundantSweep',
-  'hoistSubsumedComponents',
-]) {
-  seam(
-    'lib/decl/borderFinalizers.js',
-    `export function ${key}(rule) {`,
-    `pass.${key}`
-  );
-}
 
 /**
  * @param {string} url

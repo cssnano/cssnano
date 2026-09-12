@@ -1,56 +1,55 @@
 import stylehacks from 'stylehacks';
-import lastOf from './lastOf.js';
 import { isFallback } from './isFallback.js';
 
 /**
- * Remove declarations superseded by the last remaining declaration for a
- * family. Detection is cached for this cleanup pass because it checks the
- * same declarations against several later candidates.
- *
  * @param {Set<import('postcss').Declaration>} declarations
- * @param {(node: import('postcss').Declaration, lastNode: import('postcss').Declaration) => boolean} isLowerPrecedence
- * @return {void}
+ * @param {(node: import('postcss').Declaration, lastNode: import('postcss').Declaration) => boolean} [isLowerPrecedence]
+ * @param {(node: import('postcss').Declaration) => Iterable<string>} [footprint]
  */
-function cleanupDeclarations(declarations, isLowerPrecedence) {
-  /** @type {Map<import('postcss').Declaration, boolean>} */
-  const stylehackResults = new Map();
-  /** @param {import('postcss').Declaration} node @return {boolean} */
-  const isStylehack = (node) => {
-    if (!stylehackResults.has(node)) {
-      stylehackResults.set(node, stylehacks.detect(node));
+function cleanupDeclarations(declarations, isLowerPrecedence, footprint) {
+  /** @type {Map<string, import('postcss').Declaration[]>[]} */
+  const properties = [new Map(), new Map()];
+  /** @type {Map<string, import('postcss').Declaration[]>[]} */
+  const footprints = [new Map(), new Map()];
+  const nodes = Array.from(declarations);
+
+  for (let index = nodes.length - 1; index >= 0; index--) {
+    const node = nodes[index];
+    if (stylehacks.detect(node)) continue;
+
+    const lane = node.important ? 1 : 0;
+    const propertyFrontier = properties[lane];
+    const sameProperty = propertyFrontier.get(node.prop);
+    let removable = Boolean(
+      sameProperty?.some((later) => !isFallback(node, later))
+    );
+
+    if (!removable && isLowerPrecedence) {
+      const candidates = footprint ? footprint(node) : propertyFrontier.keys();
+      const candidateFrontier = footprint ? footprints[lane] : propertyFrontier;
+      for (const property of candidates) {
+        if (
+          candidateFrontier
+            .get(property)
+            ?.some((later) => isLowerPrecedence(node, later))
+        ) {
+          removable = true;
+          break;
+        }
+      }
     }
 
-    return /** @type {boolean} */ (stylehackResults.get(node));
-  };
-
-  while (declarations.size) {
-    const lastNode = lastOf(declarations);
-    const removable = [];
-
-    for (const node of declarations) {
-      if (
-        isStylehack(lastNode) ||
-        isStylehack(node) ||
-        node === lastNode ||
-        node.important !== lastNode.important
-      ) {
-        continue;
-      }
-
-      if (
-        (node.prop === lastNode.prop && !isFallback(node, lastNode)) ||
-        isLowerPrecedence(node, lastNode)
-      ) {
-        removable.push(node);
-      }
-    }
-
-    for (const node of removable) {
+    if (removable) {
       node.remove();
-      declarations.delete(node);
+      continue;
     }
 
-    declarations.delete(lastNode);
+    propertyFrontier.set(node.prop, [...(sameProperty ?? []), node]);
+    if (!footprint) continue;
+    for (const property of footprint(node)) {
+      const frontier = footprints[lane];
+      frontier.set(property, [...(frontier.get(property) ?? []), node]);
+    }
   }
 }
 

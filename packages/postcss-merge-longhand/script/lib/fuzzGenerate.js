@@ -357,15 +357,83 @@ const families = /** @type {const} */ ([
 ]);
 
 /**
+ * Generates a rule explicitly containing a complete side group or component group,
+ * with optional surrounding declarations and mixed importance lanes.
+ *
+ * @param {ReturnType<typeof random>} rng
+ * @return {string}
+ */
+function groupRule(rng) {
+  const isSide = rng.chance(0.5);
+  /** @type {string[]} */
+  let groupProps;
+  if (isSide) {
+    const side = rng.pick(sides);
+    groupProps = components.map((c) => `border-${side}-${c}`);
+  } else {
+    const comp = rng.pick(components);
+    groupProps = sides.map((s) => `border-${s}-${comp}`);
+  }
+
+  const importanceMode = rng.int(5);
+  /** @type {string[]} */
+  const declarations = [];
+  /** @type {string[]} */
+  const used = [];
+
+  const extraBefore = rng.int(2);
+  for (let i = 0; i < extraBefore; i++) {
+    const important =
+      importanceMode === 1 || (importanceMode > 1 && rng.chance(0.3));
+    const written = declaration(rng, 'border', used, important);
+    declarations.push(written);
+    used.push(/** @type {string} */ (written.split(':')[0]));
+  }
+
+  for (let i = 0; i < groupProps.length; i++) {
+    const prop = groupProps[i];
+    let important = false;
+    if (importanceMode === 1) {
+      important = true;
+    } else if (importanceMode === 2) {
+      important = i < Math.floor(groupProps.length / 2);
+    } else if (importanceMode === 3) {
+      important = i % 2 === 0;
+    } else if (importanceMode === 4) {
+      important = rng.chance(0.3);
+    }
+    const val = valueFor(rng, prop);
+    const written = `${prop}:${val}${important ? ' !important' : ''}`;
+    declarations.push(written);
+    used.push(prop);
+  }
+
+  const extraAfter = rng.int(2);
+  for (let i = 0; i < extraAfter; i++) {
+    const important =
+      importanceMode === 1 || (importanceMode > 1 && rng.chance(0.3));
+    const written = declaration(rng, 'border', used, important);
+    declarations.push(written);
+    used.push(/** @type {string} */ (written.split(':')[0]));
+  }
+
+  return `a{${declarations.join(';')}}`;
+}
+
+/**
  * @param {ReturnType<typeof random>} rng
  * @return {string} one rule, `a{...}`.
  */
 function rule(rng) {
-  const count = rng.int(5) + 2;
   /* Mostly one family per rule, so that declarations actually interact; the
    * rest mixed, to catch a transform reaching outside its own family. */
   const family = rng.pick(families);
   const mixed = rng.chance(0.2);
+  if (family === 'border' && !mixed && rng.chance(0.35)) {
+    return groupRule(rng);
+  }
+
+  const count = rng.int(5) + 2;
   const importanceMode = rng.int(5);
 
   /** @type {string[]} */

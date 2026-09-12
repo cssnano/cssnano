@@ -1,1 +1,1 @@
-{"version":3,"file":"parseWsc.d.ts","sourceRoot":"","sources":["../../src/lib/parseWsc.js"],"names":[],"mappings":"AA8BA;;;GAGG;AACH,iBAAS,QAAQ,CAAC,KAAK,EAHZ,MAGY,GAFX,CAAC,MAAM,EAAE,MAAM,EAAE,MAAM,CAAC,CAmEnC;eAEc,QAAQ"}
+{"version":3,"file":"parseWsc.d.ts","sourceRoot":"","sources":["../../src/lib/parseWsc.js"],"names":[],"mappings":"AAQA,oCAAoC;AACpC,QAAA,MAAM,OAAO,EADF,CAAC,CAAC,EAAE,MAAM,KAAK,MAoBzB,CAAC;AAEF;;;GAGG;AACH,iBAAS,QAAQ,CAAC,KAAK,EAHZ,MAGY,GAFX,CAAC,MAAM,EAAE,MAAM,EAAE,MAAM,CAAC,CAmEnC;AAED,OAAO,EAAE,OAAO,EAAE,CAAC;eACJ,QAAQ"}

@@ -410,7 +410,7 @@ export function reduceColumns(rule, declarations) {
 
   if (decls.length === 0 || decls.some(isInvalid)) return;
 
-  cleanupDeclarations(new Set(decls), () => false);
+  cleanupDeclarations(new Set(decls));
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {

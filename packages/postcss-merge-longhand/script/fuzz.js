@@ -5,7 +5,7 @@ import { generate } from './lib/fuzzGenerate.js';
 const { parseArgs } = nodeutil;
 /**
  * Long differential fuzz runs, for reaching past a validity or support check
- * in `src/lib/decl/borders.js`. `test/fuzz.js` runs a small seeded sweep of
+ * in `src/lib/decl/borderReducer.js`. `test/fuzz.js` runs a small seeded sweep of
  * the same generator with the rest of the suite; point this at a
  * change before accepting it, since tightening a check and loosening it again
  * are both easy to overshoot.

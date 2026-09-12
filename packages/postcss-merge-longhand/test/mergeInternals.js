@@ -1,7 +1,7 @@
 import { test, suite } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import borders from '../src/lib/decl/borders.js';
+import { reduceBorder } from '../src/lib/decl/borderReducer.js';
 import mergeRules from '../src/lib/mergeRules.js';
 
 /**
@@ -16,8 +16,7 @@ function mergeBorders(css) {
   const root = postcss.parse(css);
   const rule = /** @type {import('postcss').Rule} */ (root.first);
 
-  borders.explode(rule);
-  borders.merge(rule);
+  reduceBorder(rule);
 
   return root.toString();
 }
@@ -28,7 +27,7 @@ suite('side shorthand merge positioning', () => {
       mergeBorders(
         'a{border:1px solid red;border-left:solid;border-color:currentcolor}'
       ),
-      'a{border-left:solid;border-color:red red currentcolor currentcolor;border-bottom:1px solid;border-right:1px solid;border-top:1px solid}'
+      'a{border:1px solid;border-left:solid}'
     );
   });
 
@@ -37,7 +36,7 @@ suite('side shorthand merge positioning', () => {
       mergeBorders(
         'a{border:medium none #fff;border-left:thick;border:solid #abc123;border-width:1px medium 1px 0;border-left:1px}'
       ),
-      'a{border-bottom:#fff;border-right:#fff;border-top:#fff;border-color:#abc123;border-style:solid;border-width:1px medium 1px 0;border-left:1px}'
+      'a{border:1px solid #abc123;border-right-width:medium;border-left:1px}'
     );
   });
 });

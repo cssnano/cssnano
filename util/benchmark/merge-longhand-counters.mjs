@@ -27,19 +27,8 @@ const repoRoot = resolve(here, '..', '..');
 /* Register the seam loader before the plugin module graph loads. */
 register(new URL('./merge-longhand-counters-loader.mjs', import.meta.url));
 
-const PASS_KEYS = [
-  'mergeSideComponentsToSide',
-  'mergeSideComponentsToComponent',
-  'mergeSidesToComponents',
-  'mergeComponentsToBorder',
-  'mergeComponentsToBorderAndSides',
-  'mergeSidesToBorder',
-  'rebindSideCustomProp',
-  'rebindComponentCustomProp',
-  'optimizeSides',
-  'mergeRedundantSweep',
-  'hoistSubsumedComponents',
-];
+/** @type {string[]} */
+const PASS_KEYS = [];
 
 /**
  * @return {Record<string, number> & {pass: Record<string, number>}}
@@ -51,13 +40,7 @@ function newCounterState() {
     insertCloned: 0,
     getDecls: 0,
     cleanupDeclarations: 0,
-    rewrite: 0,
-    explodeBorder: 0,
-    mergeBorder: 0,
-    cleanupBorder: 0,
-    explodeBox: 0,
-    mergeBox: 0,
-    resolveBorderGrid: 0,
+    reduceBorder: 0,
     walk: 0,
     walkDecls: 0,
     walkRules: 0,
@@ -153,15 +136,7 @@ function formatCounterDelta(base, candidate) {
   return { delta, pct };
 }
 
-function formatComparison(base, cand) {
-  validateComparisonCorpus(base, cand);
-  const lines = [];
-  lines.push('### Operation Counter Comparison');
-  lines.push('');
-  lines.push(`- Baseline: \`${base.revision?.slice(0, 8) ?? 'baseline'}\``);
-  lines.push(`- Candidate: \`${cand.revision?.slice(0, 8) ?? 'candidate'}\``);
-  lines.push('');
-
+function formatHashDiffs(base, cand) {
   const hashDiffs = [];
   for (const bFile of base.files) {
     const cFile = cand.files.find((f) => f.name === bFile.name);
@@ -172,23 +147,28 @@ function formatComparison(base, cand) {
     }
   }
   if (hashDiffs.length === 0) {
-    lines.push(
-      `- **Output Hashes**: 100% byte-identical across all ${base.files.length} corpus files.`
-    );
-  } else {
-    lines.push(
-      `- **Output Hashes**: ${hashDiffs.length} files changed output:`
-    );
-    for (const d of hashDiffs) lines.push(`  - ${d}`);
+    return [
+      `- **Output Hashes**: 100% byte-identical across all ${base.files.length} corpus files.`,
+      '',
+    ];
   }
-  lines.push('');
+  return [
+    `- **Output Hashes**: ${hashDiffs.length} files changed output:`,
+    ...hashDiffs.map((d) => `  - ${d}`),
+    '',
+  ];
+}
 
-  lines.push('#### Totals');
-  lines.push('');
-  lines.push('| Counter Metric | Baseline | Candidate | Delta | % Change |');
-  lines.push('| :--- | :--- | :--- | :--- | :--- |');
-
-  const keys = Object.keys(base.totals).filter((k) => k !== 'pass');
+function formatTotals(base, cand) {
+  const lines = [
+    '#### Totals',
+    '',
+    '| Counter Metric | Baseline | Candidate | Delta | % Change |',
+    '| :--- | :--- | :--- | :--- | :--- |',
+  ];
+  const keys = [
+    ...new Set([...Object.keys(base.totals), ...Object.keys(cand.totals)]),
+  ].filter((k) => k !== 'pass');
   for (const key of keys) {
     const b = base.totals[key] ?? 0;
     const c = cand.totals[key] ?? 0;
@@ -198,12 +178,25 @@ function formatComparison(base, cand) {
     );
   }
   lines.push('');
+  return lines;
+}
 
-  lines.push('#### Pass Invocations');
-  lines.push('');
-  lines.push('| Pass Name | Baseline | Candidate | Delta | % Change |');
-  lines.push('| :--- | :--- | :--- | :--- | :--- |');
-  for (const passKey of PASS_KEYS) {
+function formatPassInvocations(base, cand) {
+  const passKeys = [
+    ...new Set([
+      ...PASS_KEYS,
+      ...Object.keys(base.totals.pass ?? {}),
+      ...Object.keys(cand.totals.pass ?? {}),
+    ]),
+  ];
+  if (passKeys.length === 0) return [];
+  const lines = [
+    '#### Pass Invocations',
+    '',
+    '| Pass Name | Baseline | Candidate | Delta | % Change |',
+    '| :--- | :--- | :--- | :--- | :--- |',
+  ];
+  for (const passKey of passKeys) {
     const b = base.totals.pass?.[passKey] ?? 0;
     const c = cand.totals.pass?.[passKey] ?? 0;
     const { delta, pct } = formatCounterDelta(b, c);
@@ -212,7 +205,21 @@ function formatComparison(base, cand) {
     );
   }
   lines.push('');
+  return lines;
+}
 
+function formatComparison(base, cand) {
+  validateComparisonCorpus(base, cand);
+  const lines = [
+    '### Operation Counter Comparison',
+    '',
+    `- Baseline: \`${base.revision?.slice(0, 8) ?? 'baseline'}\``,
+    `- Candidate: \`${cand.revision?.slice(0, 8) ?? 'candidate'}\``,
+    '',
+    ...formatHashDiffs(base, cand),
+    ...formatTotals(base, cand),
+    ...formatPassInvocations(base, cand),
+  ];
   return lines.join('\n');
 }
 
