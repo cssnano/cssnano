@@ -94,6 +94,24 @@ function inspectLaneGroups(decls) {
   };
 }
 
+/** @param {string[]} decls */
+function inspectResetLanes(decls) {
+  const parsed = decls.map((d) => {
+    const colonIdx = d.indexOf(':');
+    return {
+      prop: d.slice(0, colonIdx).trim().toLowerCase(),
+      important: d.toLowerCase().endsWith('!important'),
+    };
+  });
+  const reset = parsed.find((d) => d.prop === 'all');
+  if (!reset) return { matching: false, opposite: false };
+  const familyDeclarations = parsed.filter((d) => d.prop !== 'all');
+  return {
+    matching: familyDeclarations.some((d) => d.important === reset.important),
+    opposite: familyDeclarations.some((d) => d.important !== reset.important),
+  };
+}
+
 for (const seed of [1, 2, 3, 4]) {
   test(`preserves what the rule means, seed ${seed}`, () => {
     let importantCount = 0;
@@ -104,6 +122,8 @@ for (const seed of [1, 2, 3, 4]) {
     let normalGroupCount = 0;
     let importantGroupCount = 0;
     let mixedGroupCount = 0;
+    let matchingResetCount = 0;
+    let oppositeResetCount = 0;
     const familiesSeen = new Set();
 
     for (const css of generate(seed, casesPerSeed)) {
@@ -135,6 +155,9 @@ for (const seed of [1, 2, 3, 4]) {
       if (groups.hasNormalGroup) normalGroupCount++;
       if (groups.hasImportantGroup) importantGroupCount++;
       if (groups.hasMixedGroup) mixedGroupCount++;
+      const resets = inspectResetLanes(decls);
+      matchingResetCount += Number(resets.matching);
+      oppositeResetCount += Number(resets.opposite);
     }
 
     assert(
@@ -173,6 +196,14 @@ for (const seed of [1, 2, 3, 4]) {
     assert(
       mixedGroupCount >= 20,
       `seed ${seed} should exercise mixed-lane complete groups`
+    );
+    assert(
+      matchingResetCount >= 50,
+      `seed ${seed} should exercise matching-lane all resets`
+    );
+    assert(
+      oppositeResetCount >= 50,
+      `seed ${seed} should exercise opposite-lane all resets`
     );
   });
 }

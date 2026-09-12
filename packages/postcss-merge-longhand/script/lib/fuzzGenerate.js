@@ -421,10 +421,47 @@ function groupRule(rng) {
 }
 
 /**
+ * Generates declarations on both sides of an `all` reset in the matching lane,
+ * the opposite lane, or both lanes at once.
+ *
+ * @param {ReturnType<typeof random>} rng
+ * @return {string}
+ */
+function resetRule(rng) {
+  const family = rng.pick(families);
+  const allImportant = rng.chance(0.5);
+  const mode = rng.int(3);
+  /** @type {string[]} */
+  const declarations = [];
+  /** @type {string[]} */
+  const used = [];
+
+  for (let side = 0; side < 2; side++) {
+    for (let i = 0; i < 2; i++) {
+      let important = i === 0 ? allImportant : !allImportant;
+      if (mode === 0) important = allImportant;
+      if (mode === 1) important = !allImportant;
+      const written = declaration(rng, family, used, important);
+      declarations.push(written);
+      used.push(/** @type {string} */ (written.split(':')[0]));
+    }
+    if (side === 0) {
+      declarations.push(
+        `${rng.pick(['all', 'ALL', String.raw`\61ll`])}:${rng.pick(globalTokens)}${allImportant ? ' !important' : ''}`
+      );
+    }
+  }
+
+  return `a{${declarations.join(';')}}`;
+}
+
+/**
  * @param {ReturnType<typeof random>} rng
  * @return {string} one rule, `a{...}`.
  */
 function rule(rng) {
+  if (rng.chance(0.2)) return resetRule(rng);
+
   /* Mostly one family per rule, so that declarations actually interact; the
    * rest mixed, to catch a transform reaching outside its own family. */
   const family = rng.pick(families);

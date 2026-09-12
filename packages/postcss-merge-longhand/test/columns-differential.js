@@ -216,6 +216,15 @@ function evaluateColumns(cssOrRule, env) {
   for (const node of rule.nodes) {
     if (node.type !== 'decl') continue;
     const prop = node.prop.toLowerCase();
+    if (prop === 'all') {
+      const value = node.value.trim().toLowerCase();
+      if (value === 'initial' || value === 'unset') {
+        const target = node.important ? important : normal;
+        target.width = 'auto';
+        target.count = 'auto';
+      }
+      continue;
+    }
     if (
       prop !== 'columns' &&
       prop !== 'column-width' &&
@@ -487,6 +496,21 @@ function generateRandomRule(rng) {
 }
 
 /**
+ * @param {ReturnType<typeof random>} rng
+ * @return {string}
+ */
+function generateResetRule(rng) {
+  const allImportant = rng.chance(0.5);
+  const matching = rng.chance(0.5);
+  const declarationImportant = matching ? allImportant : !allImportant;
+  const important = declarationImportant ? ' !important' : '';
+  const resetImportant = allImportant ? ' !important' : '';
+  const prop = rng.chance(0.2) ? 'ALL' : 'all';
+  const value = rng.chance(0.5) ? 'initial' : 'unset';
+  return `h1{column-width:10px${important};${prop}:${value}${resetImportant};column-count:2${important}}`;
+}
+
+/**
  * Deterministic generator for retention-heavy rules.
  * @param {ReturnType<typeof random>} rng
  * @return {string}
@@ -540,10 +564,16 @@ suite('randomized seeded differential cascade sweep', () => {
       let fallbackCount = 0;
       let cssWideCount = 0;
       let reducedCount = 0;
+      let matchingResetCount = 0;
+      let oppositeResetCount = 0;
+      let normalResetCount = 0;
+      let importantResetCount = 0;
 
       for (let i = 0; i < casesPerSeed; i++) {
-        const css =
-          i < 50 ? generateRetentionHeavyRule(rng) : generateRandomRule(rng);
+        let css;
+        if (i < 50) css = generateRetentionHeavyRule(rng);
+        else if (i < 100) css = generateResetRule(rng);
+        else css = generateRandomRule(rng);
 
         const hasImportant = css.includes('!important');
         const hasNormal =
@@ -558,6 +588,17 @@ suite('randomized seeded differential cascade sweep', () => {
           css.includes('initial')
         ) {
           cssWideCount++;
+        }
+        const reset = /(?:^|;)all:(?:initial|unset)( !important)?;/i.exec(css);
+        if (reset) {
+          const resetImportant = Boolean(reset[1]);
+          if (resetImportant) importantResetCount++;
+          else normalResetCount++;
+          const declarationImportant = css
+            .slice(0, css.toLowerCase().indexOf('all:'))
+            .includes('!important');
+          if (declarationImportant === resetImportant) matchingResetCount++;
+          else oppositeResetCount++;
         }
 
         const root = postcss.parse(css);
@@ -588,6 +629,18 @@ suite('randomized seeded differential cascade sweep', () => {
       assert(
         cssWideCount >= 60,
         `seed ${seed} must exercise at least 60 CSS-wide keyword rules`
+      );
+      assert(
+        matchingResetCount >= 10,
+        `seed ${seed} should exercise matching-lane all resets`
+      );
+      assert(
+        oppositeResetCount >= 10,
+        `seed ${seed} should exercise opposite-lane all resets`
+      );
+      assert(
+        normalResetCount >= 10 && importantResetCount >= 10,
+        `seed ${seed} should exercise all resets in both importance lanes`
       );
       assert(reducedCount >= 80, `seed ${seed} must reduce at least 80 rules`);
     });
