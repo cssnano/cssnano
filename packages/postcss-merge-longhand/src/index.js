@@ -13,7 +13,82 @@ import {
   foldShorthandDeclaration,
 } from './lib/minifyShorthand.js';
 
-/** @import {Declaration, Rule} from 'postcss'; */
+/** @import {Container, Declaration, Rule} from 'postcss'; */
+
+/**
+ * Folds immediate shorthand declarations within a container (e.g. root or at-rule).
+ * @param {Container} container
+ * @param {Map<string, string | null>} shorthandMemoTable
+ * @return {void}
+ */
+function foldContainerDeclarations(container, shorthandMemoTable) {
+  if (!container.nodes) return;
+  for (const node of container.nodes) {
+    if (
+      node.type === 'decl' &&
+      foldableShorthands.has(node.prop.toLowerCase())
+    ) {
+      foldShorthandDeclaration(node, shorthandMemoTable);
+    }
+  }
+}
+
+/**
+ * Classifies declarations within a rule, runs box/border reducers, and tracks column candidates.
+ * @param {Rule} rule
+ * @param {{
+ *   columnRules: [Rule, Declaration[]][],
+ *   setsOtherColumn: boolean,
+ *   shorthandMemoTable: Map<string, string | null>
+ * }} context
+ * @return {void}
+ */
+function processRule(rule, context) {
+  /** @type {Declaration[]} */
+  const borderDeclarations = [];
+  const borderSpacingDeclarations = /** @type {Declaration[]} */ ([]);
+  const borderRadiusDeclarations = /** @type {Declaration[]} */ ([]);
+  const marginDeclarations = /** @type {Declaration[]} */ ([]);
+  const paddingDeclarations = /** @type {Declaration[]} */ ([]);
+  /** @type {Declaration[] | undefined} */
+  let columnDeclarations;
+
+  for (const child of rule.nodes) {
+    if (child.type !== 'decl') continue;
+    const prop = child.prop.toLowerCase();
+    if (prop.startsWith('border')) {
+      if (allRadiusProperties.has(prop)) {
+        borderRadiusDeclarations.push(child);
+      } else if (prop === 'border-spacing') {
+        borderSpacingDeclarations.push(child);
+      } else {
+        borderDeclarations.push(child);
+      }
+    } else if (prop.startsWith('column')) {
+      context.setsOtherColumn ||= setsOtherColumnProperty(child);
+      if (allColumnProps.has(prop)) {
+        if (columnDeclarations) columnDeclarations.push(child);
+        else columnDeclarations = [child];
+      }
+    } else if (prop.startsWith('margin')) {
+      marginDeclarations.push(child);
+    } else if (prop.startsWith('padding')) {
+      paddingDeclarations.push(child);
+    } else if (foldableShorthands.has(prop)) {
+      foldShorthandDeclaration(child, context.shorthandMemoTable);
+    }
+  }
+
+  if (marginDeclarations.length) reduceBox(rule, 'margin', marginDeclarations);
+  if (paddingDeclarations.length)
+    reduceBox(rule, 'padding', paddingDeclarations);
+  if (borderRadiusDeclarations.length)
+    reduceBorderRadius(rule, borderRadiusDeclarations);
+  if (borderSpacingDeclarations.length)
+    reduceBorderSpacing(rule, borderSpacingDeclarations);
+  if (borderDeclarations.length) reduceBorder(rule, borderDeclarations);
+  if (columnDeclarations) context.columnRules.push([rule, columnDeclarations]);
+}
 
 /**
  * @return {import('postcss').Plugin}
@@ -25,95 +100,27 @@ function pluginCreator() {
      * @param {import('postcss').Root} css
      */
     OnceExit(css) {
-      /**
-       * Whether expanding a `columns` shorthand produces equivalent computed
-       * values depends on declarations elsewhere in the stylesheet, so the
-       * column family's merge is deferred until all declarations have been seen.
-       * @type {[Rule, Declaration[]][]}
-       */
-      const columnRules = [];
-      let setsOtherColumn = false;
-      /**
-       * Memoization table for identity-folding evaluations across rules.
-       * Scoped strictly to this stylesheet pass.
-       * @type {Map<string, string | null>}
-       */
-      const shorthandMemoTable = new Map();
+      const context = {
+        /** @type {[Rule, Declaration[]][]} */
+        columnRules: [],
+        setsOtherColumn: false,
+        shorthandMemoTable: new Map(),
+      };
 
-      css.walkRules((rule) => {
-        /** @type {Declaration[]} */
-        const borderDeclarations = [];
-        const borderSpacingDeclarations = /** @type {Declaration[]} */ ([]);
-        const borderRadiusDeclarations = /** @type {Declaration[]} */ ([]);
-        const marginDeclarations = /** @type {Declaration[]} */ ([]);
-        const paddingDeclarations = /** @type {Declaration[]} */ ([]);
-        /** @type {Declaration[] | undefined} */
-        let columnDeclarations;
+      foldContainerDeclarations(css, context.shorthandMemoTable);
 
-        for (const node of rule.nodes) {
-          if (node.type !== 'decl') continue;
-          const prop = node.prop.toLowerCase();
-          if (prop.startsWith('border')) {
-            if (allRadiusProperties.has(prop)) {
-              borderRadiusDeclarations.push(node);
-            } else if (prop === 'border-spacing') {
-              borderSpacingDeclarations.push(node);
-            } else {
-              borderDeclarations.push(node);
-            }
-          } else if (prop.startsWith('column')) {
-            setsOtherColumn ||= setsOtherColumnProperty(node);
-            if (allColumnProps.has(prop)) {
-              if (columnDeclarations) columnDeclarations.push(node);
-              else columnDeclarations = [node];
-            }
-          } else if (prop.startsWith('margin')) {
-            marginDeclarations.push(node);
-          } else if (prop.startsWith('padding')) {
-            paddingDeclarations.push(node);
-          } else if (foldableShorthands.has(prop)) {
-            foldShorthandDeclaration(node, shorthandMemoTable);
-          }
-        }
-
-        if (marginDeclarations.length)
-          reduceBox(rule, 'margin', marginDeclarations);
-        if (paddingDeclarations.length)
-          reduceBox(rule, 'padding', paddingDeclarations);
-        if (borderRadiusDeclarations.length)
-          reduceBorderRadius(rule, borderRadiusDeclarations);
-        if (borderSpacingDeclarations.length)
-          reduceBorderSpacing(rule, borderSpacingDeclarations);
-        if (borderDeclarations.length) reduceBorder(rule, borderDeclarations);
-        if (columnDeclarations) columnRules.push([rule, columnDeclarations]);
-      });
-
-      if (!setsOtherColumn) {
-        for (const [rule, decls] of columnRules) reduceColumns(rule, decls);
-      }
-
-      if (css.nodes) {
-        for (const node of css.nodes) {
-          if (
-            node.type === 'decl' &&
-            foldableShorthands.has(node.prop.toLowerCase())
-          ) {
-            foldShorthandDeclaration(node, shorthandMemoTable);
-          }
-        }
-      }
-
-      css.walkAtRules((atRule) => {
-        if (!atRule.nodes) return;
-        for (const node of atRule.nodes) {
-          if (
-            node.type === 'decl' &&
-            foldableShorthands.has(node.prop.toLowerCase())
-          ) {
-            foldShorthandDeclaration(node, shorthandMemoTable);
-          }
+      css.walk((node) => {
+        if (node.type === 'rule') {
+          processRule(node, context);
+        } else if (node.type === 'atrule') {
+          foldContainerDeclarations(node, context.shorthandMemoTable);
         }
       });
+
+      if (!context.setsOtherColumn) {
+        for (const [rule, decls] of context.columnRules)
+          reduceColumns(rule, decls);
+      }
     },
   };
 }

@@ -1,4 +1,3 @@
-/** @import {Declaration, Rule} from 'postcss'; */
 /**
  * @return {import('postcss').Plugin}
  */
