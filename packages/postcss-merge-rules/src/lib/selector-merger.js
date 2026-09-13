@@ -4,7 +4,7 @@ import {
   indexOfDeclaration,
   sameDeclarationsAndOrder,
 } from './declarations.js';
-import { flush, getDecls, getMeta } from './rule-meta.js';
+import { getDecls, getMeta } from './rule-meta.js';
 import { mergeParents } from './rule-rewrite.js';
 import runWorklist from './worklist.js';
 
@@ -294,8 +294,7 @@ export default function selectorMerger(
       ...getMeta(first, ruleMeta).selectors,
       ...metaSecond.selectors,
     ];
-    metaSecond.dirty = true;
-    flush(second, ruleMeta);
+    second.selector = metaSecond.selectors.join(',');
     detach(first);
     first.remove();
     ruleMeta?.delete(first);
@@ -429,7 +428,6 @@ export default function selectorMerger(
           ),
         installPartialMerge,
         refresh,
-        flush: (rule) => flush(rule, ruleMeta),
       });
     },
   };

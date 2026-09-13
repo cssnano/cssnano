@@ -16,7 +16,6 @@
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule, onMove: (rule: import('postcss').Rule, oldParent: import('postcss').Container, newParent: import('postcss').Container) => void) => MergeOutcome} partialMerge
  * @property {(outcome: MergeOutcome, captured: Map<import('postcss').Container, {first: import('postcss').Rule | null, last: import('postcss').Rule | null}>, enqueue: (first: import('postcss').Rule | null, second: import('postcss').Rule | null) => void, enqueueNeighbors: (rule: import('postcss').Rule) => void) => boolean} installPartialMerge
  * @property {(rule: import('postcss').Rule) => ActiveMeta} refresh
- * @property {(rule: import('postcss').Rule) => void} flush
  */
 
 /**
@@ -164,5 +163,4 @@ export default function runWorklist(root, api) {
       needsGlobalReseed = true;
     }
   }
-  root.walkRules((rule) => api.flush(rule));
 }

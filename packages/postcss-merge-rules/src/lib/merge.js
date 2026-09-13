@@ -5,7 +5,7 @@ import {
   noVendor,
 } from './ensureCompatibility.js';
 import { filterRuleIntersections, intersect } from './declarations.js';
-import { flush, getMeta } from './rule-meta.js';
+import { getMeta } from './rule-meta.js';
 import { buildMergedRule, mergeWithNextRule } from './rule-rewrite.js';
 
 const { sameParent } = cssnanoUtils;
@@ -83,7 +83,6 @@ export function partialMerge(
   ruleMeta,
   onMove
 ) {
-  if (ruleMeta) flush(first, ruleMeta);
   const metaFirst = getMeta(first, ruleMeta);
   const metaSecond = getMeta(second, ruleMeta);
   let intersection = intersect(metaFirst.declarations, metaSecond.declarations);

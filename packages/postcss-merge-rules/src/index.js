@@ -7,7 +7,6 @@ import selectorMerger from './lib/selector-merger.js';
  * @typedef {Object} RuleMeta
  * @property {string[]} selectors - Array of selector strings for the rule
  * @property {import('postcss').Declaration[]} declarations - Array of declaration nodes for the rule
- * @property {boolean} dirty - Whether the selectors have been modified and need flushing
  */
 
 /**

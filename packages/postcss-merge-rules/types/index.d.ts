@@ -8,10 +8,6 @@ export type RuleMeta = {
      * - Array of declaration nodes for the rule
      */
     declarations: import('postcss').Declaration[];
-    /**
-     * - Whether the selectors have been modified and need flushing
-     */
-    dirty: boolean;
 };
 export type AutoprefixerOptions = {
     overrideBrowserslist?: string | string[];
@@ -23,7 +19,6 @@ export type Options = AutoprefixerOptions & BrowserslistOptions;
  * @typedef {Object} RuleMeta
  * @property {string[]} selectors - Array of selector strings for the rule
  * @property {import('postcss').Declaration[]} declarations - Array of declaration nodes for the rule
- * @property {boolean} dirty - Whether the selectors have been modified and need flushing
  */
 /**
  * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
