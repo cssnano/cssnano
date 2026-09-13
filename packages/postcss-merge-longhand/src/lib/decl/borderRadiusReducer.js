@@ -122,8 +122,8 @@ function commitSlotVector(
   }
 
   if (sizeBenefit >= 0) {
-    let a = toRemove[0];
-    for (const d of toRemove) if (rule.index(d) > rule.index(a)) a = d;
+    const a = toRemove.at(-1);
+    if (!a) return;
     insertCloned(rule, a, {
       prop: 'border-radius',
       value: shorthandVal,

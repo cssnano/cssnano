@@ -50,8 +50,8 @@ function flush(rule, prop, slots, contributing, fallbacks, lane) {
   for (const d of toRemove)
     remSize += d.prop.length + d.value.length + (d.important ? 12 : 2);
   if (remSize >= 0) {
-    let a = toRemove[0];
-    for (const d of toRemove) if (rule.index(d) > rule.index(a)) a = d;
+    const a = toRemove.at(-1);
+    if (!a) return;
     insertCloned(rule, a, { prop, value: shorthandVal, important: lane });
     for (const d of toRemove) d.remove();
   }

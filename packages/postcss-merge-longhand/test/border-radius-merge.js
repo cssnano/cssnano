@@ -190,3 +190,35 @@ test(
     'a{border-radius:10px}'
   )
 );
+
+test(
+  'should merge corner longhands in reverse source order with interleaved properties',
+  processCSS(
+    'a{border-bottom-left-radius:40px;color:red;border-bottom-right-radius:30px;font-size:12px;border-top-right-radius:20px;border-top-left-radius:10px}',
+    'a{color:red;font-size:12px;border-radius:10px 20px 30px 40px}'
+  )
+);
+
+test(
+  'should preserve comments around latest source-order corner longhand',
+  processCSS(
+    'a{border-bottom-left-radius:10px;border-bottom-right-radius:10px;border-top-right-radius:10px;/* c1 */border-top-left-radius:10px/* c2 */}',
+    'a{/* c1 */border-radius:10px/* c2 */}'
+  )
+);
+
+test(
+  'should merge corner longhands with repeated override at the latest position',
+  processCSS(
+    'a{border-top-left-radius:5px;border-top-right-radius:10px;border-bottom-right-radius:15px;border-bottom-left-radius:20px;color:blue;border-top-left-radius:25px}',
+    'a{color:blue;border-radius:25px 10px 15px 20px}'
+  )
+);
+
+test(
+  'should merge corner longhands with an earlier fallback and anchor shorthand to latest candidate',
+  processCSS(
+    'a{border-top-left-radius:10px;border-top-left-radius:calc(10px + 1em);border-top-right-radius:20px;border-bottom-right-radius:30px;color:red;border-bottom-left-radius:40px}',
+    'a{border-top-left-radius:10px;color:red;border-radius:calc(10px + 1em) 20px 30px 40px}'
+  )
+);
