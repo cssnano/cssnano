@@ -36,16 +36,30 @@ function canonical(obj) {
  * @return {void}
  */
 function mergeAtRules(css) {
+  /**
+   * @typedef {{
+   *   node: import('postcss').AtRule,
+   *   body: string,
+   * }} Candidate
+   *
+   * @typedef {{
+   *   atrule: RegExp,
+   *   decl: RegExp,
+   *   cache: Candidate[],
+   *   replacements: Record<string, string>,
+   *   decls: import('postcss').Declaration[],
+   *   removals: import('postcss').AtRule[],
+   * }} Pair
+   */
+
+  /** @type {Pair[]} */
   const pairs = [
     {
       atrule: keyframesRegex,
       decl: animationRegex,
-      /** @type {import('postcss').AtRule[]} */
       cache: [],
       replacements: {},
-      /** @type {import('postcss').Declaration[]} */
       decls: [],
-      /** @type {import('postcss').AtRule[]} */
       removals: [],
     },
     {
@@ -58,9 +72,7 @@ function mergeAtRules(css) {
     },
   ];
 
-  /**
-   * @type {{atrule: RegExp, decl: RegExp, replacements: Record<string, string>, removals: import('postcss').AtRule[], cache: import('postcss').AtRule[], decls: import('postcss').Declaration[]} | undefined}
-   */
+  /** @type {Pair | undefined} */
   let relevant;
 
   css.walk((node) => {
@@ -73,30 +85,22 @@ function mergeAtRules(css) {
         return;
       }
 
-      if (relevant.cache.length < 1) {
-        relevant.cache.push(node);
-        return;
-      } else {
-        const toString = node.nodes ? node.nodes.toString() : '';
+      const body = node.nodes ? node.nodes.toString() : '';
 
-        for (const cached of relevant.cache) {
-          const cachedStringContent = cached.nodes
-            ? cached.nodes.toString()
-            : '';
-          if (
-            cached.name.toLowerCase() === node.name.toLowerCase() &&
-            sameParent(cached, node) &&
-            cachedStringContent === toString
-          ) {
-            relevant.removals.push(cached);
-            relevant.replacements[cached.params] = node.params;
-          }
+      for (const cached of relevant.cache) {
+        if (
+          cached.node.name.toLowerCase() === node.name.toLowerCase() &&
+          sameParent(cached.node, node) &&
+          cached.body === body
+        ) {
+          relevant.removals.push(cached.node);
+          relevant.replacements[cached.node.params] = node.params;
         }
-
-        relevant.cache.push(node);
-
-        return;
       }
+
+      relevant.cache.push({ node, body });
+
+      return;
     }
 
     if (node.type === 'decl') {
