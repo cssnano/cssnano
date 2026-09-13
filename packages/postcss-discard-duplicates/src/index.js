@@ -23,14 +23,6 @@ function trimValue(value) {
 }
 
 /**
- * @param {{nodes: import('postcss').Node[]}} node
- * @return {boolean}
- */
-function empty(node) {
-  return !node.nodes.some((child) => child.type !== 'comment');
-}
-
-/**
  * @param {import('postcss').AnyNode} nodeA
  * @param {import('postcss').AnyNode} nodeB
  * @return {boolean}
@@ -163,24 +155,6 @@ function addToSeen(map, key, node) {
 
 /**
  * @param {import('postcss').Rule} rule
- * @return {boolean}
- */
-function hasNestedContainers(rule) {
-  const { nodes } = rule;
-  if (!nodes) {
-    return false;
-  }
-  for (let i = 0; i < nodes.length; i++) {
-    const type = nodes[i].type;
-    if (type === 'rule' || type === 'atrule') {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * @param {import('postcss').Rule} rule
  * @param {Map<string, Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]>>} seenRuleDecls
  * @return {void}
  */
@@ -193,6 +167,9 @@ function dedupeRule(rule, seenRuleDecls) {
     seenRuleDecls.set(rule.selector, declMap);
   }
 
+  let hasContainers = false;
+  let hasNonComment = false;
+
   const { nodes } = rule;
   if (nodes) {
     for (let i = nodes.length - 1; i >= 0; i--) {
@@ -203,13 +180,21 @@ function dedupeRule(rule, seenRuleDecls) {
           child.remove();
         } else {
           addToSeen(declMap, child.prop, child);
+          hasNonComment = true;
         }
+      } else if (child.type === 'rule' || child.type === 'atrule') {
+        hasContainers = true;
+        hasNonComment = true;
+      } else if (child.type !== 'comment') {
+        hasNonComment = true;
       }
     }
   }
 
-  if (isSubsequent && empty(rule)) {
+  if (isSubsequent && !hasNonComment) {
     rule.remove();
+  } else if (hasContainers) {
+    dedupe(rule);
   }
 }
 
@@ -287,9 +272,6 @@ function dedupe(container) {
       case 'rule':
         if (!seenRuleDecls) {
           seenRuleDecls = new Map();
-        }
-        if (hasNestedContainers(node)) {
-          dedupe(node);
         }
         dedupeRule(node, seenRuleDecls);
         break;
