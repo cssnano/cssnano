@@ -1,4 +1,6 @@
+import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import postcss from 'postcss';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -222,3 +224,114 @@ test(
     `.hi{animation:hi 2s infinite linear}.ho{animation:ho 2s infinite linear}@-webkit-keyframes ho{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}@keyframes hi{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}`
   )
 );
+
+test('should serialize each keyframes body only once when entering candidate collection', async () => {
+  let toStringCalls = 0;
+  const input = [
+    '@keyframes a{0%{color:#fff}to{color:#000}}',
+    '@keyframes b{0%{color:#fff}to{color:#000}}',
+    '@keyframes c{0%{color:#fff}to{color:#000}}',
+    '@keyframes d{0%{color:#fff}to{color:#000}}',
+  ].join('');
+
+  const root = postcss.parse(input);
+  for (const node of root.nodes) {
+    if (node.type === 'atrule' && node.nodes) {
+      const origToString = node.nodes.toString;
+      node.nodes.toString = function (...args) {
+        toStringCalls++;
+        return origToString.apply(this, args);
+      };
+    }
+  }
+
+  await postcss([plugin()]).process(root, { from: undefined });
+
+  assert.strictEqual(toStringCalls, 4);
+  assert.strictEqual(
+    root.toString(),
+    '@keyframes d{0%{color:#fff}to{color:#000}}'
+  );
+});
+
+test('should serialize each counter-style body only once when entering candidate collection', async () => {
+  let toStringCalls = 0;
+  const input = [
+    '@counter-style a{system:extends decimal;suffix:"> "}',
+    '@counter-style b{system:extends decimal;suffix:"> "}',
+    '@counter-style c{system:extends decimal;suffix:"> "}',
+    '@counter-style d{system:extends decimal;suffix:"> "}',
+    'ol{list-style:a}',
+  ].join('');
+
+  const root = postcss.parse(input);
+  for (const node of root.nodes) {
+    if (node.type === 'atrule' && node.nodes) {
+      const origToString = node.nodes.toString;
+      node.nodes.toString = function (...args) {
+        toStringCalls++;
+        return origToString.apply(this, args);
+      };
+    }
+  }
+
+  await postcss([plugin()]).process(root, { from: undefined });
+
+  assert.strictEqual(toStringCalls, 4);
+  assert.strictEqual(
+    root.toString(),
+    '@counter-style d{system:extends decimal;suffix:"> "}ol{list-style:d}'
+  );
+});
+
+test('should serialize interleaved matching and non-matching candidates linearly and merge accurately', async () => {
+  let toStringCalls = 0;
+  const input = [
+    '@keyframes a{0%{top:0}}',
+    '@keyframes b{0%{left:0}}',
+    '@keyframes c{0%{top:0}}',
+    '@keyframes d{0%{left:0}}',
+    'div{animation:a 1s, b 2s}',
+  ].join('');
+
+  const root = postcss.parse(input);
+  for (const node of root.nodes) {
+    if (node.type === 'atrule' && node.nodes) {
+      const origToString = node.nodes.toString;
+      node.nodes.toString = function (...args) {
+        toStringCalls++;
+        return origToString.apply(this, args);
+      };
+    }
+  }
+
+  await postcss([plugin()]).process(root, { from: undefined });
+
+  assert.strictEqual(toStringCalls, 4);
+  assert.strictEqual(
+    root.toString(),
+    '@keyframes c{0%{top:0}}@keyframes d{0%{left:0}}div{animation:c 1s, d 2s}'
+  );
+});
+
+test(
+  'should merge identical keyframes within the same media query',
+  processCSS(
+    '@media (max-width:400px){@keyframes a{0%{opacity:0}to{opacity:1}}@keyframes b{0%{opacity:0}to{opacity:1}}}',
+    '@media (max-width:400px){@keyframes b{0%{opacity:0}to{opacity:1}}}'
+  )
+);
+
+test('should handle empty at-rule bodies and statement at-rules', async () => {
+  const emptyResult = await postcss([plugin()]).process(
+    '@keyframes a{}@keyframes b{}',
+    { from: undefined }
+  );
+  assert.strictEqual(emptyResult.css, '@keyframes b{}');
+
+  const stmtResult = await postcss([plugin()]).process(
+    '@counter-style a;@counter-style b;',
+    { from: undefined }
+  );
+  assert.strictEqual(stmtResult.css, '@counter-style b;');
+});
