@@ -5,7 +5,7 @@ import insertCloned from '../insertCloned.js';
 import minifyTrbl from '../minifyTrbl.js';
 import { isFallback, mergeBlockingSupport } from '../isFallback.js';
 import cleanupDeclarations from '../cleanupDeclarations.js';
-import { isAll } from './importanceLanes.js';
+import { importanceLanes, isAll } from './importanceLanes.js';
 import {
   parseCornerRadius,
   parseRadiusShorthand,
@@ -425,78 +425,88 @@ function createRadiusDescriptor(node, prop, isHacked) {
 }
 
 /**
+ * Appends a node descriptor to lanes or returns false on invalid syntax.
  * @param {Declaration} node
- * @param {string} prop
- * @param {Declaration[] | undefined} live
- * @param {number} liveIndex
+ * @param {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} lanes
+ * @param {RadiusDeclarationDescriptor[]} radiusDescriptors
  * @return {boolean}
  */
-function isTargetDeclaration(node, prop, live, liveIndex) {
-  if (live) return liveIndex < live.length && node === live[liveIndex];
-  return allRadiusProperties.has(prop);
+function appendRadiusNode(node, lanes, radiusDescriptors) {
+  const laneIndex = node.important ? 1 : 0;
+  if (isAll(node)) {
+    lanes[laneIndex].push({ decl: node, isBarrier: true });
+    return true;
+  }
+  const prop = node.prop.toLowerCase();
+  const isHacked = Boolean(stylehacks.detect(node));
+  const desc = createRadiusDescriptor(node, prop, isHacked);
+  if (!desc) return false;
+  lanes[laneIndex].push(desc);
+  radiusDescriptors.push(desc);
+  return true;
 }
 
 /**
- * Frontend scan: lexes, validates, and partitions declarations into lane IR descriptors.
- * Fails fast and returns null if any declaration violates syntax or domain grammar.
- *
+ * Partitions family lanes into descriptor lanes.
  * @param {Rule} rule
- * @param {Declaration[]} [declarations]
+ * @param {[Declaration[], Declaration[]]} familyLanes
  * @return {{ lanes: [RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]], radiusDescriptors: RadiusDeclarationDescriptor[] } | null}
  */
-function scanAndPartitionDeclarations(rule, declarations) {
-  if (!rule.nodes || rule.nodes.length === 0) return null;
-  if (declarations && declarations.length === 0) return null;
-
-  const live = declarations
-    ? declarations.filter((d) => d.parent === rule)
-    : undefined;
-  if (live && live.length === 0) return null;
-
+function partitionLanes(rule, familyLanes) {
   /** @type {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} */
   const lanes = [[], []];
   /** @type {RadiusDeclarationDescriptor[]} */
   const radiusDescriptors = [];
-  let liveIndex = 0;
 
-  for (const node of rule.nodes) {
-    if (node.type !== 'decl') continue;
-
-    const laneIndex = node.important ? 1 : 0;
-    if (isAll(node)) {
-      lanes[laneIndex].push({ decl: node, isBarrier: true });
-      continue;
+  for (const lane of familyLanes) {
+    for (const node of lane) {
+      if (
+        node.parent === rule &&
+        !appendRadiusNode(node, lanes, radiusDescriptors)
+      ) {
+        return null;
+      }
     }
-
-    const prop = node.prop.toLowerCase();
-    if (!isTargetDeclaration(node, prop, live, liveIndex)) continue;
-    if (live) liveIndex++;
-
-    const isHacked = Boolean(stylehacks.detect(node));
-    const desc = createRadiusDescriptor(node, prop, isHacked);
-    if (!desc) return null;
-
-    lanes[laneIndex].push(desc);
-    radiusDescriptors.push(desc);
   }
-
-  if (live && liveIndex < live.length) return null;
-  if (radiusDescriptors.length === 0) return null;
-
-  return { lanes, radiusDescriptors };
+  return radiusDescriptors.length ? { lanes, radiusDescriptors } : null;
 }
 
 /**
  * @param {Rule} rule
  * @param {Declaration[]} [declarations]
+ * @param {[Declaration[], Declaration[]]} [lanes]
  */
-export function reduceBorderRadius(rule, declarations) {
-  const partitioned = scanAndPartitionDeclarations(rule, declarations);
+export function reduceBorderRadius(rule, declarations, lanes) {
+  if (!rule.nodes || rule.nodes.length === 0) return;
+  const decls =
+    declarations &&
+    declarations.every(
+      (d) => d.parent === rule && allRadiusProperties.has(d.prop.toLowerCase())
+    )
+      ? declarations
+      : /** @type {Declaration[]} */ (
+          rule.nodes.filter(
+            (n) =>
+              n.type === 'decl' && allRadiusProperties.has(n.prop.toLowerCase())
+          )
+        );
+  if (decls.length === 0) return;
+
+  if (!lanes && declarations) {
+    let index = 0;
+    for (const node of rule.nodes) {
+      if (index < decls.length && node === decls[index]) index++;
+    }
+    if (index < decls.length) return;
+  }
+
+  const familyLanes = lanes ?? importanceLanes(rule, decls);
+  const partitioned = partitionLanes(rule, familyLanes);
   if (!partitioned) return;
 
-  const { lanes, radiusDescriptors } = partitioned;
+  const { lanes: descriptorLanes, radiusDescriptors } = partitioned;
 
-  eliminateRedundantDeclarations(lanes);
+  eliminateRedundantDeclarations(descriptorLanes);
 
   const liveDecls = radiusDescriptors.filter((d) => d.decl.parent);
   if (liveDecls.length <= 1) {
@@ -505,7 +515,7 @@ export function reduceBorderRadius(rule, declarations) {
   }
 
   for (const isImportant of [false, true]) {
-    const laneDescriptors = lanes[isImportant ? 1 : 0];
+    const laneDescriptors = descriptorLanes[isImportant ? 1 : 0];
     if (laneDescriptors.some((d) => !d.isBarrier && d.decl.parent === rule)) {
       coalesceLane(rule, laneDescriptors, isImportant);
     }

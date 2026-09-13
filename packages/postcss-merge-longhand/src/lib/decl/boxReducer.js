@@ -15,6 +15,16 @@ import {
   isAll,
 } from './importanceLanes.js';
 
+export const physicalMarginProperties = new Set([
+  'margin',
+  ...topRightBottomLeft.map((d) => `margin-${d}`),
+]);
+
+export const physicalPaddingProperties = new Set([
+  'padding',
+  ...topRightBottomLeft.map((d) => `padding-${d}`),
+]);
+
 /** @import {Declaration, Rule} from 'postcss'; */
 
 /** @param {Declaration} d */
@@ -86,11 +96,15 @@ function processLane(rule, prop, sideProps, laneDecls, lane) {
       continue;
     }
     const isShort = p === prop;
+    const idx = isShort ? -1 : sideProps.indexOf(p);
+    if (!isShort && idx === -1) {
+      reset();
+      continue;
+    }
     if (stylehacks.detect(decl) || (isShort && !canExplode(decl))) {
       reset();
       continue;
     }
-    const idx = isShort ? -1 : sideProps.indexOf(p);
     if (shouldReset(slots, idx, decl)) reset();
 
     const vals = isShort ? parseTrbl(decl.value) : null;
@@ -106,23 +120,36 @@ function processLane(rule, prop, sideProps, laneDecls, lane) {
   flush(rule, prop, slots, contributing, fallbacks, lane);
 }
 
-/** @param {Rule} rule @param {string} prop @param {Declaration[]} [declarations] */
-export function reduceBox(rule, prop, declarations) {
+/** @param {Rule} rule @param {string} prop @param {Declaration[]} [declarations] @param {[Declaration[], Declaration[]]} [lanes] */
+export function reduceBox(rule, prop, declarations, lanes) {
   if (!rule.nodes) return;
   const sideProps = topRightBottomLeft.map((d) => `${prop}-${d}`);
   const family = new Set([prop, ...sideProps]);
   const decls =
-    declarations ??
-    /** @type {Declaration[]} */ (
-      rule.nodes.filter(
-        (n) => n.type === 'decl' && family.has(n.prop.toLowerCase())
-      )
-    );
+    declarations &&
+    declarations.every(
+      (d) => d.parent === rule && family.has(d.prop.toLowerCase())
+    )
+      ? declarations
+      : /** @type {Declaration[]} */ (
+          rule.nodes.filter(
+            (n) => n.type === 'decl' && family.has(n.prop.toLowerCase())
+          )
+        );
 
   if (decls.length === 0 || decls.some(isInvalid)) return;
 
-  const lanes = importanceLanes(rule, decls);
-  cleanupLaneSegments(lanes, (segment) => cleanupDeclarations(segment));
+  const familyLanes =
+    lanes ??
+    importanceLanes(
+      rule,
+      /** @type {Declaration[]} */ (
+        rule.nodes.filter(
+          (n) => n.type === 'decl' && n.prop.toLowerCase().startsWith(prop)
+        )
+      )
+    );
+  cleanupLaneSegments(familyLanes, (segment) => cleanupDeclarations(segment));
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
@@ -136,7 +163,9 @@ export function reduceBox(rule, prop, declarations) {
   }
 
   for (const lane of [false, true]) {
-    const laneDecls = lanes[lane ? 1 : 0].filter((d) => d.parent === rule);
+    const laneDecls = familyLanes[lane ? 1 : 0].filter(
+      (d) => d.parent === rule
+    );
     if (laneDecls.some((d) => !isAll(d))) {
       processLane(rule, prop, sideProps, laneDecls, lane);
     }

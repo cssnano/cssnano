@@ -3,11 +3,19 @@ import {
   reduceColumns,
   setsOtherColumnProperty,
 } from './lib/decl/columns.js';
-import { reduceBox } from './lib/decl/boxReducer.js';
+import {
+  physicalMarginProperties,
+  physicalPaddingProperties,
+  reduceBox,
+} from './lib/decl/boxReducer.js';
 import { reduceBorder } from './lib/decl/borderReducer.js';
 import { reduceBorderSpacing } from './lib/decl/borderSpacingReducer.js';
 import { reduceBorderRadius } from './lib/decl/borderRadiusReducer.js';
-import { allRadiusProperties } from './lib/decl/borderData.js';
+import {
+  allPhysicalBorderProperties,
+  allRadiusProperties,
+} from './lib/decl/borderData.js';
+import { isAll } from './lib/decl/importanceLanes.js';
 import {
   foldableShorthands,
   foldShorthandDeclaration,
@@ -34,60 +42,129 @@ function foldContainerDeclarations(container, shorthandMemoTable) {
 }
 
 /**
+ * @param {Rule} rule
+ * @param {{
+ *   marginDecls: Declaration[],
+ *   marginLanes: [Declaration[], Declaration[]],
+ *   paddingDecls: Declaration[],
+ *   paddingLanes: [Declaration[], Declaration[]],
+ *   borderRadiusDecls: Declaration[],
+ *   borderRadiusLanes: [Declaration[], Declaration[]],
+ *   columnDecls: Declaration[],
+ *   columnLanes: [Declaration[], Declaration[]],
+ *   borderDeclarations: Declaration[],
+ *   borderSpacingDeclarations: Declaration[],
+ *   hasForeignBorder: boolean,
+ * }} state
+ * @param {{
+ *   columnRules: [Rule, Declaration[], [Declaration[], Declaration[]]][],
+ *   setsOtherColumn: boolean,
+ *   shorthandMemoTable: Map<string, string | null>
+ * }} context
+ * @return {void}
+ */
+function reduceClassifiedRule(rule, state, context) {
+  if (state.marginDecls.length) {
+    reduceBox(rule, 'margin', state.marginDecls, state.marginLanes);
+  }
+  if (state.paddingDecls.length) {
+    reduceBox(rule, 'padding', state.paddingDecls, state.paddingLanes);
+  }
+  if (state.borderRadiusDecls.length) {
+    reduceBorderRadius(rule, state.borderRadiusDecls, state.borderRadiusLanes);
+  }
+  if (state.borderSpacingDeclarations.length) {
+    reduceBorderSpacing(rule, state.borderSpacingDeclarations);
+  }
+  if (state.borderDeclarations.length) {
+    reduceBorder(rule, state.borderDeclarations, state.hasForeignBorder);
+  }
+  if (state.columnDecls.length) {
+    context.columnRules.push([rule, state.columnDecls, state.columnLanes]);
+  }
+}
+
+/**
  * Classifies declarations within a rule, runs box/border reducers, and tracks column candidates.
  * @param {Rule} rule
  * @param {{
- *   columnRules: [Rule, Declaration[]][],
+ *   columnRules: [Rule, Declaration[], [Declaration[], Declaration[]]][],
  *   setsOtherColumn: boolean,
  *   shorthandMemoTable: Map<string, string | null>
  * }} context
  * @return {void}
  */
 function processRule(rule, context) {
-  /** @type {Declaration[]} */
-  const borderDeclarations = [];
-  const borderSpacingDeclarations = /** @type {Declaration[]} */ ([]);
-  const borderRadiusDeclarations = /** @type {Declaration[]} */ ([]);
-  const marginDeclarations = /** @type {Declaration[]} */ ([]);
-  const paddingDeclarations = /** @type {Declaration[]} */ ([]);
-  /** @type {Declaration[] | undefined} */
-  let columnDeclarations;
+  const state = {
+    /** @type {Declaration[]} */
+    marginDecls: [],
+    /** @type {[Declaration[], Declaration[]]} */
+    marginLanes: [[], []],
+    /** @type {Declaration[]} */
+    paddingDecls: [],
+    /** @type {[Declaration[], Declaration[]]} */
+    paddingLanes: [[], []],
+    /** @type {Declaration[]} */
+    borderRadiusDecls: [],
+    /** @type {[Declaration[], Declaration[]]} */
+    borderRadiusLanes: [[], []],
+    /** @type {Declaration[]} */
+    columnDecls: [],
+    /** @type {[Declaration[], Declaration[]]} */
+    columnLanes: [[], []],
+    /** @type {Declaration[]} */
+    borderDeclarations: [],
+    /** @type {Declaration[]} */
+    borderSpacingDeclarations: [],
+    hasForeignBorder: false,
+  };
 
   for (const child of rule.nodes) {
     if (child.type !== 'decl') continue;
+    const laneIndex = child.important ? 1 : 0;
+    if (isAll(child)) {
+      state.hasForeignBorder = true;
+      state.marginLanes[laneIndex].push(child);
+      state.paddingLanes[laneIndex].push(child);
+      state.borderRadiusLanes[laneIndex].push(child);
+      state.columnLanes[laneIndex].push(child);
+      continue;
+    }
+
     const prop = child.prop.toLowerCase();
     if (prop.startsWith('border')) {
       if (allRadiusProperties.has(prop)) {
-        borderRadiusDeclarations.push(child);
+        state.borderRadiusDecls.push(child);
+        state.borderRadiusLanes[laneIndex].push(child);
       } else if (prop === 'border-spacing') {
-        borderSpacingDeclarations.push(child);
+        state.borderSpacingDeclarations.push(child);
+      } else if (allPhysicalBorderProperties.has(prop)) {
+        state.borderDeclarations.push(child);
       } else {
-        borderDeclarations.push(child);
+        state.hasForeignBorder = true;
       }
     } else if (prop.startsWith('column')) {
       context.setsOtherColumn ||= setsOtherColumnProperty(child);
       if (allColumnProps.has(prop)) {
-        if (columnDeclarations) columnDeclarations.push(child);
-        else columnDeclarations = [child];
+        state.columnDecls.push(child);
+        state.columnLanes[laneIndex].push(child);
       }
     } else if (prop.startsWith('margin')) {
-      marginDeclarations.push(child);
+      if (physicalMarginProperties.has(prop)) {
+        state.marginDecls.push(child);
+      }
+      state.marginLanes[laneIndex].push(child);
     } else if (prop.startsWith('padding')) {
-      paddingDeclarations.push(child);
+      if (physicalPaddingProperties.has(prop)) {
+        state.paddingDecls.push(child);
+      }
+      state.paddingLanes[laneIndex].push(child);
     } else if (foldableShorthands.has(prop)) {
       foldShorthandDeclaration(child, context.shorthandMemoTable);
     }
   }
 
-  if (marginDeclarations.length) reduceBox(rule, 'margin', marginDeclarations);
-  if (paddingDeclarations.length)
-    reduceBox(rule, 'padding', paddingDeclarations);
-  if (borderRadiusDeclarations.length)
-    reduceBorderRadius(rule, borderRadiusDeclarations);
-  if (borderSpacingDeclarations.length)
-    reduceBorderSpacing(rule, borderSpacingDeclarations);
-  if (borderDeclarations.length) reduceBorder(rule, borderDeclarations);
-  if (columnDeclarations) context.columnRules.push([rule, columnDeclarations]);
+  reduceClassifiedRule(rule, state, context);
 }
 
 /**
@@ -101,7 +178,7 @@ function pluginCreator() {
      */
     OnceExit(css) {
       const context = {
-        /** @type {[Rule, Declaration[]][]} */
+        /** @type {[Rule, Declaration[], [Declaration[], Declaration[]]][]} */
         columnRules: [],
         setsOtherColumn: false,
         shorthandMemoTable: new Map(),
@@ -118,8 +195,8 @@ function pluginCreator() {
       });
 
       if (!context.setsOtherColumn) {
-        for (const [rule, decls] of context.columnRules)
-          reduceColumns(rule, decls);
+        for (const [rule, decls, lanes] of context.columnRules)
+          reduceColumns(rule, decls, lanes);
       }
     },
   };

@@ -36,13 +36,24 @@ export function importanceLanes(rule, declarations) {
   const live = declarations.filter((d) => d.parent === rule);
   /** @type {[Declaration[], Declaration[]]} */
   const lanes = [[], []];
-  let liveIndex = 0;
 
-  for (const node of rule.nodes) {
+  const containsAll = Boolean(
+    rule.nodes?.some((n) => n.type === 'decl' && isAll(n))
+  );
+
+  if (!containsAll) {
+    for (const node of live) {
+      lanes[node.important ? 1 : 0].push(node);
+    }
+    return lanes;
+  }
+
+  const liveSet = new Set(live);
+
+  for (const node of rule.nodes ?? []) {
     if (node.type === 'decl') {
-      if (liveIndex < live.length && node === live[liveIndex]) {
+      if (liveSet.has(node)) {
         lanes[node.important ? 1 : 0].push(node);
-        liveIndex++;
       } else if (isAll(node)) {
         lanes[node.important ? 1 : 0].push(node);
       }
@@ -55,7 +66,7 @@ export function importanceLanes(rule, declarations) {
 /**
  * Apply declaration cleanup independently between matching `all` boundaries.
  *
- * @param {[Declaration[], Declaration[]]} lanes
+ * @param {Declaration[][]} lanes
  * @param {(declarations: Set<Declaration>) => void} cleanup
  */
 export function cleanupLaneSegments(lanes, cleanup) {

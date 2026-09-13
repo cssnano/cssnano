@@ -15,6 +15,7 @@ export type RadiusDeclarationDescriptor = {
 /**
  * @param {Rule} rule
  * @param {Declaration[]} [declarations]
+ * @param {[Declaration[], Declaration[]]} [lanes]
  */
-export declare function reduceBorderRadius(rule: Rule, declarations?: Declaration[]): void;
+export declare function reduceBorderRadius(rule: Rule, declarations?: Declaration[], lanes?: [Declaration[], Declaration[]]): void;
 //# sourceMappingURL=borderRadiusReducer.d.ts.map
