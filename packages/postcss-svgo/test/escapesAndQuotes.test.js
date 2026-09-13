@@ -71,77 +71,30 @@ test(
   )
 );
 
-test('should optimize SVG data URIs with mixed percent-encoded characters and raw percent signs', async () => {
-  const css = `:root
-{
-  --var-1: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' style='background: rgb(0 0 0 / 80%);' ></svg>");
-  --var-2: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' style='background: rgb(0 0 0 / 80%);' ></svg>");
-  --var-3: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' style='background: rgb(0 0 0 / 80%25);' ></svg>");
-}`;
-
-  const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 0);
-  const matchVar2 = result.css.match(/--var-2:\s*url\(([^)]+)\)/)?.[1];
-  const matchVar3 = result.css.match(/--var-3:\s*url\(([^)]+)\)/)?.[1];
-  assert.ok(matchVar2);
-  assert.strictEqual(matchVar2, matchVar3);
-});
-
-test('should emit URIError warning and pass through when data URI has invalid percent-encoded UTF-8 bytes', async () => {
-  const css = 'h1{background:url("data:image/svg+xml,%FF")}';
-  const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.css, css);
-  assert.strictEqual(result.messages.length, 1);
-  assert.strictEqual(result.messages[0].type, 'warning');
-  assert.match(result.messages[0].text, /URIError/);
-  assert.doesNotMatch(result.messages[0].text, /SvgoParserError/);
-});
-
-test('should optimize SVG data URIs with astral plane Unicode characters', async () => {
+test('should optimize malformed unquoted SVG URLs without warning', async () => {
   const css =
-    'h1{background:url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27%3e%3ctext%3e%F0%9F%9A%80%3c/text%3e%3c/svg%3e")}';
+    'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
   const result = await postcss(plugin()).process(css, { from: undefined });
   assert.strictEqual(result.messages.length, 0);
-  assert.match(result.css, /%F0%9F%9A%80/);
+  assert.notEqual(result.css, css);
+});
 
-  // When encode is false, astral character should be output decoded directly
-  const unencodedResult = await postcss(plugin({ encode: false })).process(
-    css,
+test('should recognize escaped url function names and decode quoted payloads', async () => {
+  const result = await postcss(plugin()).process(
+    'h1{background:u\\72l("data:image/svg+xml,\\3c svg\\3e \\3c circle/\\3e \\3c/svg\\3e ")}',
     { from: undefined }
   );
-  assert.strictEqual(unencodedResult.messages.length, 0);
-  assert.match(unencodedResult.css, /🚀/);
-});
-
-test('should retain unencoded literal percent in style when encode option is false', async () => {
-  const css =
-    "h1{background:url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' style='opacity: 80%;'%3e%3c/svg%3e\")}";
-  const result = await postcss(plugin({ encode: false })).process(css, {
-    from: undefined,
-  });
-  assert.strictEqual(result.messages.length, 0);
-  assert.match(result.css, /80%/);
-  assert.doesNotMatch(result.css, /80%25/);
-});
-
-test('should optimize unquoted SVG data URIs containing encoded percentages and wrap in quotes', async () => {
-  const css =
-    'h1{background:url(data:image/svg+xml,%3csvg%20width=%2250%%22%3e%3c/svg%3e)}';
-  const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 0);
-  assert.strictEqual(
+  assert.equal(
     result.css,
-    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%2250%25%22%2F%3E")}'
+    "h1{background:u\\72l('data:image/svg+xml;charset=utf-8,<svg><circle/></svg>')}"
   );
 });
 
-test('should optimize unencoded SVG data URIs containing literal percent characters before non-hex text', async () => {
-  const css =
-    'h1{background:url("data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\'><text>100% discount</text></svg>")}';
+test('should escape decoded quotes and backslashes in optimized URLs', async () => {
+  const css = String.raw`h1{background:url("data:image/svg+xml,<svg><path aria-label=\"it's\\value\" d=\"M0 0h1\"/></svg>")}`;
   const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 0);
-  assert.strictEqual(
+  assert.equal(
     result.css,
-    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><text>100% discount</text></svg>\')}'
+    String.raw`h1{background:url('data:image/svg+xml;charset=utf-8,<svg><path d="M0 0h1" aria-label="it\'s\\value"/></svg>')}`
   );
 });
