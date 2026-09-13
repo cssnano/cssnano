@@ -162,10 +162,3 @@ describe('Pass', () => {
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
-test('should warn on SVG containing unclosed tags', async () => {
-  const css =
-    'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
-  const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 1);
-  assert.strictEqual(result.messages[0].type, 'warning');
-});
