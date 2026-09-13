@@ -16,7 +16,6 @@
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule, onMove: (rule: import('postcss').Rule, oldParent: import('postcss').Container, newParent: import('postcss').Container) => void) => MergeOutcome} partialMerge
  * @property {(outcome: MergeOutcome, captured: Map<import('postcss').Container, {first: import('postcss').Rule | null, last: import('postcss').Rule | null}>, enqueue: (first: import('postcss').Rule | null, second: import('postcss').Rule | null) => void, enqueueNeighbors: (rule: import('postcss').Rule) => void) => boolean} installPartialMerge
  * @property {(rule: import('postcss').Rule) => ActiveMeta} refresh
- * @property {(rule: import('postcss').Rule) => void} flush
  */
 export type Candidate = {
     first: import('postcss').Rule;
@@ -63,7 +62,6 @@ export type WorklistApi = {
         last: import('postcss').Rule | null;
     }>, enqueue: (first: import('postcss').Rule | null, second: import('postcss').Rule | null) => void, enqueueNeighbors: (rule: import('postcss').Rule) => void) => boolean;
     refresh: (rule: import('postcss').Rule) => ActiveMeta;
-    flush: (rule: import('postcss').Rule) => void;
 };
 /**
  * Run the incremental merge queue. Rule metadata and merge operations stay in

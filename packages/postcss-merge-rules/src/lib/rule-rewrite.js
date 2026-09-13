@@ -1,5 +1,5 @@
 import { intersect, indexOfDeclaration } from './declarations.js';
-import { flush, getMeta } from './rule-meta.js';
+import { getMeta } from './rule-meta.js';
 
 /** @import {Declaration, Rule} from 'postcss' */
 
@@ -135,8 +135,6 @@ export function buildMergedRule(
       decl.remove();
     }
   });
-  flush(first, ruleMeta);
-  flush(second, ruleMeta);
   const merged = ruleLength(firstClone, receivingBlock, secondClone);
   const original = ruleLength(first, second);
   if (merged < original) {
