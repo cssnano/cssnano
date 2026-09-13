@@ -155,4 +155,39 @@ describe('shorthand identity rule integration contracts', () => {
     foldShorthandDeclaration(decl);
     assert.strictEqual(decl.value, 'red');
   });
+
+  test('executes a single AST walk across the stylesheet', async () => {
+    let walkCalls = 0;
+    function countingPlugin() {
+      return {
+        postcssPlugin: 'counting-walk-plugin',
+        Once(root) {
+          const originalWalk = root.walk.bind(root);
+          root.walk = (callback) => {
+            walkCalls++;
+            return originalWalk(callback);
+          };
+        },
+      };
+    }
+    countingPlugin.postcss = true;
+    const processor = postcss([countingPlugin(), plugin()]);
+    const result = await processor.process(
+      '@media (min-width:600px){gap:1rem 1rem;a{inset:0 0 0 0}}b{overflow:hidden hidden}',
+      { from: undefined }
+    );
+    assert.strictEqual(walkCalls, 1, 'should only walk the AST once');
+    assert.strictEqual(
+      result.css,
+      '@media (min-width:600px){gap:1rem;a{inset:0}}b{overflow:hidden}'
+    );
+  });
+
+  test(
+    'handles bodyless at-rules without error during container walk',
+    processCSS(
+      '@import "test.css";@charset "utf-8";@layer utilities;a{gap:1rem 1rem}',
+      '@import "test.css";@charset "utf-8";@layer utilities;a{gap:1rem}'
+    )
+  );
 });
