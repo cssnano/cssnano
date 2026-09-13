@@ -206,5 +206,33 @@ addTests(
       'h1{box-top:10px;box-right:var(--fooBar);box-right:15px;box-bottom:var(--fooBar);box-bottom:20px;box-left:25px;box-top:var(--fooBar);box-left:var(--fooBar)}',
     expected: (prop) =>
       `h1{${prop.toLowerCase()}:10px 15px 20px 25px;${prop}-top:var(--fooBar);${prop}-left:var(--fooBar)}`,
+  },
+  {
+    message:
+      'should merge out-of-order box longhands and place shorthand at latest position',
+    fixture:
+      'h1{box-left:10px;color:red;box-bottom:20px;font-size:14px;box-right:30px;box-top:40px}',
+    expected: 'h1{color:red;font-size:14px;box:40px 30px 20px 10px}',
+  },
+  {
+    message: 'should preserve comments around latest source-order box longhand',
+    fixture:
+      'h1{box-left:10px;box-bottom:20px;box-right:30px;/* c1 */box-top:40px/* c2 */}',
+    expected: 'h1{/* c1 */box:40px 30px 20px 10px/* c2 */}',
+  },
+  {
+    message:
+      'should merge box longhands with repeated values placing shorthand at the latest override',
+    fixture:
+      'h1{box-top:10px;box-right:20px;box-bottom:30px;box-left:40px;color:blue;box-top:50px}',
+    expected: 'h1{color:blue;box:50px 20px 30px 40px}',
+  },
+  {
+    message:
+      'should merge box longhands with an earlier fallback and anchor shorthand to latest candidate',
+    fixture:
+      'h1{box-left:10px;box-left:calc(10px + 1em);box-bottom:20px;color:red;box-right:30px;box-top:40px}',
+    expected: (prop) =>
+      `h1{${prop}-left:10px;color:red;${prop.toLowerCase()}:40px 30px 20px calc(10px + 1em)}`,
   }
 );
