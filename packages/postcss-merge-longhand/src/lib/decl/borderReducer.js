@@ -104,11 +104,6 @@ function hasForeignBorderNodes(rule) {
     if (isAll(/** @type {Declaration} */ (node))) return true;
     const p = node.prop.toLowerCase();
     if (allRadiusProperties.has(p) || p === 'border-spacing') continue;
-    if (
-      borderImageProperties.has(p) ||
-      spec.flowRelativeBorderProperties.has(p)
-    )
-      return true;
     if (p.startsWith('border-') && !allPhysicalBorderProperties.has(p)) {
       return true;
     }
@@ -847,10 +842,13 @@ function processLane(rule, laneDecls, lane) {
 /**
  * @param {Rule} rule
  * @param {Declaration[]} [declarations]
+ * @param {boolean} [hasForeignBorder]
  * @return {void}
  */
-export function reduceBorder(rule, declarations) {
-  if (!rule.nodes || hasForeignBorderNodes(rule)) return;
+export function reduceBorder(rule, declarations, hasForeignBorder) {
+  if (!rule.nodes) return;
+  if (hasForeignBorder === true) return;
+  if (hasForeignBorder === undefined && hasForeignBorderNodes(rule)) return;
 
   const decls =
     declarations ??

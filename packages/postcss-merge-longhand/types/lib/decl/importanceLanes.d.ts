@@ -19,8 +19,8 @@ export declare function importanceLanes(rule: Rule, declarations: Declaration[])
 /**
  * Apply declaration cleanup independently between matching `all` boundaries.
  *
- * @param {[Declaration[], Declaration[]]} lanes
+ * @param {Declaration[][]} lanes
  * @param {(declarations: Set<Declaration>) => void} cleanup
  */
-export declare function cleanupLaneSegments(lanes: [Declaration[], Declaration[]], cleanup: (declarations: Set<Declaration>) => void): void;
+export declare function cleanupLaneSegments(lanes: Declaration[][], cleanup: (declarations: Set<Declaration>) => void): void;
 //# sourceMappingURL=importanceLanes.d.ts.map

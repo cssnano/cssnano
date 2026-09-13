@@ -11,6 +11,7 @@ export declare const setsOtherColumnProperty: (declaration: Declaration) => bool
 /**
  * @param {Rule} rule
  * @param {Declaration[]} [declarations]
+ * @param {[Declaration[], Declaration[]]} [lanes]
  */
-export declare function reduceColumns(rule: Rule, declarations?: Declaration[]): void;
+export declare function reduceColumns(rule: Rule, declarations?: Declaration[], lanes?: [Declaration[], Declaration[]]): void;
 //# sourceMappingURL=columns.d.ts.map

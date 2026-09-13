@@ -274,8 +274,9 @@ function setSlot(slots, i, value, decl, fallbacks) {
  * @param {Set<Declaration>} contributing
  * @param {Set<Declaration>} fallbacks
  * @param {boolean} lane
+ * @param {Map<Declaration, Declaration>} [inserted]
  */
-function flush(rule, slots, contributing, fallbacks, lane) {
+function flush(rule, slots, contributing, fallbacks, lane, inserted) {
   if (slots.some((s) => !s || isCustomProp(s.decl))) return;
   const full = /** @type {{ value: string, decl: Declaration }[]} */ (slots);
   const s0 = mergeBlockingSupport(full[0].decl);
@@ -305,11 +306,12 @@ function flush(rule, slots, contributing, fallbacks, lane) {
 
   if (remSize >= 0) {
     const a = toRemove[toRemove.length - 1];
-    insertCloned(rule, a, {
+    const newNode = insertCloned(rule, a, {
       prop: columns,
       value: shorthandVal,
       important: a.important,
     });
+    if (inserted) inserted.set(a, newNode);
     for (const d of toRemove) d.remove();
   }
 }
@@ -339,9 +341,11 @@ function processLane(rule, laneDecls, lane) {
   const contributing = new Set();
   /** @type {Set<Declaration>} */
   const fallbacks = new Set();
+  /** @type {Map<Declaration, Declaration>} */
+  const inserted = new Map();
 
   const reset = () => {
-    flush(rule, slots, contributing, fallbacks, lane);
+    flush(rule, slots, contributing, fallbacks, lane, inserted);
     slots = [null, null];
     contributing.clear();
     fallbacks.clear();
@@ -377,7 +381,31 @@ function processLane(rule, laneDecls, lane) {
     contributing.add(decl);
   }
 
-  flush(rule, slots, contributing, fallbacks, lane);
+  flush(rule, slots, contributing, fallbacks, lane, inserted);
+
+  /** @type {Declaration[]} */
+  const remaining = [];
+  for (const d of laneDecls) {
+    const repl = inserted.get(d);
+    if (repl) {
+      remaining.push(repl);
+    } else if (d.parent === rule) {
+      remaining.push(d);
+    }
+  }
+
+  if (remaining.length > 1) {
+    cleanupLaneSegments([remaining], (segment) =>
+      cleanupDeclarations(
+        segment,
+        (node, lastNode) =>
+          lastNode.prop.toLowerCase() === columns &&
+          node.prop.toLowerCase() !== columns &&
+          !isFallback(node, lastNode) &&
+          isValidColumns(lastNode)
+      )
+    );
+  }
 }
 
 /** @param {Declaration | undefined} s */
@@ -403,8 +431,9 @@ function normalizeSingleton(s) {
 /**
  * @param {Rule} rule
  * @param {Declaration[]} [declarations]
+ * @param {[Declaration[], Declaration[]]} [lanes]
  */
-export function reduceColumns(rule, declarations) {
+export function reduceColumns(rule, declarations, lanes) {
   if (!rule.nodes) return;
   const getColDecls = () =>
     /** @type {Declaration[]} */ (
@@ -413,14 +442,17 @@ export function reduceColumns(rule, declarations) {
       )
     );
   const decls =
-    declarations && declarations.every((d) => d.parent === rule)
+    declarations &&
+    declarations.every(
+      (d) => d.parent === rule && allColumnProps.has(d.prop.toLowerCase())
+    )
       ? declarations
       : getColDecls();
 
   if (decls.length === 0 || decls.some(isInvalid)) return;
 
-  const lanes = importanceLanes(rule, decls);
-  cleanupLaneSegments(lanes, (segment) => cleanupDeclarations(segment));
+  const familyLanes = lanes ?? importanceLanes(rule, decls);
+  cleanupLaneSegments(familyLanes, (segment) => cleanupDeclarations(segment));
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
@@ -429,23 +461,11 @@ export function reduceColumns(rule, declarations) {
   }
 
   for (const lane of [false, true]) {
-    const laneDecls = lanes[lane ? 1 : 0].filter((d) => d.parent === rule);
+    const laneDecls = familyLanes[lane ? 1 : 0].filter(
+      (d) => d.parent === rule
+    );
     if (laneDecls.some((d) => !isAll(d))) {
       processLane(rule, laneDecls, lane);
     }
-  }
-
-  const remaining = getColDecls();
-  if (remaining.length > 1) {
-    cleanupLaneSegments(importanceLanes(rule, remaining), (segment) =>
-      cleanupDeclarations(
-        segment,
-        (node, lastNode) =>
-          lastNode.prop.toLowerCase() === columns &&
-          node.prop.toLowerCase() !== columns &&
-          !isFallback(node, lastNode) &&
-          isValidColumns(lastNode)
-      )
-    );
   }
 }
