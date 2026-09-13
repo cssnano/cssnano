@@ -1,6 +1,7 @@
 import getBrowsersList from '#getBrowsersList';
 import caniuseApi from 'caniuse-api';
 import { isFixedPointSelector } from './lib/fixedPointSelector.js';
+import { isDefaultNamespace } from './lib/isDefaultNamespace.js';
 import { normalizeList } from './lib/selectorScanner.js';
 
 /** @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions */
@@ -35,15 +36,24 @@ function pluginCreator(opts = {}) {
         OnceExit(css) {
           const cache = new Map();
           let hasDefaultNamespace = false;
-          css.walkAtRules('namespace', (atRule) => {
-            hasDefaultNamespace ||= /^\s*(?:url\(|['"])/iu.test(atRule.params);
+          /** @type {import('postcss').Rule[]} */
+          const rules = [];
+          css.walk((node) => {
+            if (node.type === 'rule') {
+              rules.push(node);
+            } else if (
+              node.type === 'atrule' &&
+              node.name.toLowerCase() === 'namespace'
+            ) {
+              hasDefaultNamespace ||= isDefaultNamespace(node.params);
+            }
           });
-          css.walkRules((rule) => {
+          for (const rule of rules) {
             const source =
               rule.raws.selector && rule.raws.selector.value === rule.selector
                 ? rule.raws.selector.raw
                 : rule.selector;
-            if (source.at(-1) === ':') return;
+            if (source.at(-1) === ':') continue;
             const inKeyframes =
               rule.parent?.type === 'atrule' &&
               /(?:^|-)(?:webkit-)?keyframes$/iu.test(rule.parent.name);
@@ -52,7 +62,7 @@ function pluginCreator(opts = {}) {
               !hasDefaultNamespace &&
               isFixedPointSelector(source)
             ) {
-              return;
+              continue;
             }
             const cacheKey = `${inKeyframes ? 'k' : 's'}${hasDefaultNamespace ? 'n' : ''}\0${source}`;
             let output = cache.get(cacheKey);
@@ -67,7 +77,7 @@ function pluginCreator(opts = {}) {
               cache.set(cacheKey, output);
             }
             rule.selector = output;
-          });
+          }
         },
       };
     },
