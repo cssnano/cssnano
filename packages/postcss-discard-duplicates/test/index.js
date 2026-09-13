@@ -249,4 +249,88 @@ test(
   processCSS('@unknown{color:red}@unknown{color:red}', '@unknown{color:red}')
 );
 
+test(
+  'should retain earlier rule sharing selector when declarations are deduplicated but nested containers remain',
+  processCSS(
+    '.card{color:red;.inner{color:blue}}.card{color:red}',
+    '.card{.inner{color:blue}}.card{color:red}'
+  )
+);
+
+test(
+  'should deduplicate duplicate nested rules within a parent rule',
+  processCSS(
+    '.card{.header{color:red}.header{color:red}}',
+    '.card{.header{color:red}}'
+  )
+);
+
+test(
+  'should preserve standalone rule containing only comments',
+  passthroughCSS('h1{/*comment*/}')
+);
+
+test(
+  'should retain earlier rule sharing selector when declarations are deduplicated but nested at-rules remain',
+  processCSS(
+    '.card{color:red;@media print{color:blue}}.card{color:red}',
+    '.card{@media print{color:blue}}.card{color:red}'
+  )
+);
+
+test(
+  'should deduplicate duplicate nested at-rules within a parent rule',
+  processCSS(
+    '.card{@media print{color:red}@media print{color:red}}',
+    '.card{@media print{color:red}}'
+  )
+);
+
+test(
+  'should remove earlier rule sharing selector when it contains only comments',
+  processCSS('h1{/*comment*/}h1{color:red}', 'h1{color:red}')
+);
+
+test(
+  'should remove earlier rule sharing selector when all declarations are deduplicated even if comments remain',
+  processCSS('h1{/*comment*/color:red}h1{color:red}', 'h1{color:red}')
+);
+
+test(
+  'should deduplicate duplicate nested rules across multiple nesting levels within a parent rule',
+  processCSS(
+    '.card{.inner{.leaf{color:red}.leaf{color:red}}}',
+    '.card{.inner{.leaf{color:red}}}'
+  )
+);
+
+test(
+  'should retain earlier rule sharing selector with comments and nested containers after declarations are deduplicated',
+  processCSS(
+    '.card{/*note*/color:red;.inner{color:blue}}.card{color:red}',
+    '.card{/*note*/.inner{color:blue}}.card{color:red}'
+  )
+);
+
+test(
+  'should deduplicate declarations surrounding a nested rule',
+  processCSS(
+    '.card{color:red;.inner{color:blue}color:red}',
+    '.card{.inner{color:blue}color:red}'
+  )
+);
+
+test(
+  'should deduplicate duplicate empty nested rules within a container',
+  processCSS('.card{.inner{}.inner{}}', '.card{.inner{}}')
+);
+
+test(
+  'should deduplicate duplicate declarations within nested rules inside an at-rule',
+  processCSS(
+    '.card{@media print{.inner{color:red;color:red}}}',
+    '.card{@media print{.inner{color:red}}}'
+  )
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
