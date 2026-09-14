@@ -1,8 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import browserslist from 'browserslist';
-import nodepath from 'node:path';
-
-const { dirname } = nodepath;
+import { dirname } from 'node:path';
 
 /** @typedef {{overrideBrowserslist?: string | string[] | undefined, stats?: browserslist.Options["stats"], path?: browserslist.Options["path"], env?: browserslist.Options["env"]}} OurOptions
 /**

@@ -1,6 +1,5 @@
 import { fileURLToPath } from 'node:url';
-const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
-import nodepath from 'node:path';
+import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
@@ -13,7 +12,8 @@ import {
 import { pseudoElements } from '../src/lib/ensureCompatibility.js';
 import plugin from '../src/index.js';
 
-const { join } = nodepath;
+const testDir = dirname(fileURLToPath(import.meta.url));
+
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 test(

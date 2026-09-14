@@ -1,6 +1,5 @@
 import { fileURLToPath } from 'node:url';
-const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
-import nodepath from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, test } from 'node:test';
 import {
   usePostCSSPlugin,
@@ -11,7 +10,8 @@ import toInitial from '../src/data/toInitial.json' with { type: 'json' };
 import ignoreProps from '../src/lib/ignoreProps.js';
 import plugin from '../src/index.js';
 
-const { join } = nodepath;
+const testDir = dirname(fileURLToPath(import.meta.url));
+
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 function convertInitial(property, value) {

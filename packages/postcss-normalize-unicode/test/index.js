@@ -1,6 +1,5 @@
 import { fileURLToPath } from 'node:url';
-const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
-import nodepath from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, test } from 'node:test';
 import {
   usePostCSSPlugin,
@@ -8,9 +7,8 @@ import {
 } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 
-const { join } = nodepath;
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
-
+const testDir = dirname(fileURLToPath(import.meta.url));
 function fixture(range) {
   return `@font-face{font-family:test;unicode-range:${range}}*{font-family:test}`;
 }

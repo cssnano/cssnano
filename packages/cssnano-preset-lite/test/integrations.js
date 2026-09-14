@@ -1,6 +1,6 @@
-import nodepath from 'node:path';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
+const testDir = path.dirname(fileURLToPath(import.meta.url));
 import { describe, test } from 'node:test';
 import {
   idempotencyTests,

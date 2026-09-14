@@ -1,8 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import browserslist from 'browserslist';
-import nodepath from 'node:path';
-
-const { dirname } = nodepath;
+import { dirname } from 'node:path';
 
 /**
  *
