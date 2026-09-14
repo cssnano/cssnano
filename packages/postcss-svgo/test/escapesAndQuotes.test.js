@@ -98,3 +98,124 @@ test('should escape decoded quotes and backslashes in optimized URLs', async () 
     String.raw`h1{background:url('data:image/svg+xml;charset=utf-8,<svg><path d="M0 0h1" aria-label="it\'s\\value"/></svg>')}`
   );
 });
+
+test('should optimize SVG data URIs with mixed percent-encoded characters and raw percent signs', async () => {
+  const css = `:root
+{
+  --var-1: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' style='background: rgb(0 0 0 / 80%);' ></svg>");
+  --var-2: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' style='background: rgb(0 0 0 / 80%);' ></svg>");
+  --var-3: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' style='background: rgb(0 0 0 / 80%25);' ></svg>");
+}`;
+
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  const matchVar2 = result.css.match(/--var-2:\s*url\(([^)]+)\)/)?.[1];
+  const matchVar3 = result.css.match(/--var-3:\s*url\(([^)]+)\)/)?.[1];
+  assert.ok(matchVar2);
+  assert.strictEqual(matchVar2, matchVar3);
+});
+
+test('should emit URIError warning and pass through when data URI has invalid percent-encoded UTF-8 bytes', async () => {
+  const css = 'h1{background:url("data:image/svg+xml,%FF")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.css, css);
+  assert.strictEqual(result.messages.length, 1);
+  assert.strictEqual(result.messages[0].type, 'warning');
+  assert.match(result.messages[0].text, /URIError/);
+  assert.doesNotMatch(result.messages[0].text, /SvgoParserError/);
+});
+
+test('should optimize SVG data URIs with astral plane Unicode characters', async () => {
+  const css =
+    'h1{background:url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27%3e%3ctext%3e%F0%9F%9A%80%3c/text%3e%3c/svg%3e")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.match(result.css, /%F0%9F%9A%80/);
+
+  // When encode is false, astral character should be output decoded directly
+  const unencodedResult = await postcss(plugin({ encode: false })).process(
+    css,
+    { from: undefined }
+  );
+  assert.strictEqual(unencodedResult.messages.length, 0);
+  assert.match(unencodedResult.css, /🚀/);
+});
+
+test('should retain unencoded literal percent in style when encode option is false', async () => {
+  const css =
+    "h1{background:url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' style='opacity: 80%;'%3e%3c/svg%3e\")}";
+  const result = await postcss(plugin({ encode: false })).process(css, {
+    from: undefined,
+  });
+  assert.strictEqual(result.messages.length, 0);
+  assert.match(result.css, /80%/);
+  assert.doesNotMatch(result.css, /80%25/);
+});
+
+test('should optimize base64 SVG data URIs containing raw percent characters', async () => {
+  const rawSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg"><rect width="50%" height="50%"/></svg>';
+  const base64 = Buffer.from(rawSvg).toString('base64');
+  const css = `h1{background:url("data:image/svg+xml;base64,${base64}")}`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.match(result.css, /data:image\/svg\+xml;base64,/);
+  const outputBase64 = result.css.match(
+    /data:image\/svg\+xml;base64,([^"')]+)/
+  )?.[1];
+  assert.ok(outputBase64);
+  const decodedOutput = Buffer.from(outputBase64, 'base64').toString('utf8');
+  assert.match(decodedOutput, /50%/);
+});
+
+test('should optimize base64 SVG data URIs containing %FF without throwing URIError', async () => {
+  const rawSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg"><text>%FF</text></svg>';
+  const base64 = Buffer.from(rawSvg).toString('base64');
+  const css = `h1{background:url("data:image/svg+xml;base64,${base64}")}`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  const outputBase64 = result.css.match(
+    /data:image\/svg\+xml;base64,([^"')]+)/
+  )?.[1];
+  assert.ok(outputBase64);
+  const decodedOutput = Buffer.from(outputBase64, 'base64').toString('utf8');
+  assert.match(decodedOutput, /%FF/);
+});
+
+test('should optimize base64 SVG data URIs containing %3c without corrupting XML', async () => {
+  const rawSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg"><text>%3c</text></svg>';
+  const base64 = Buffer.from(rawSvg).toString('base64');
+  const css = `h1{background:url("data:image/svg+xml;base64,${base64}")}`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  const outputBase64 = result.css.match(
+    /data:image\/svg\+xml;base64,([^"')]+)/
+  )?.[1];
+  assert.ok(outputBase64);
+  const decodedOutput = Buffer.from(outputBase64, 'base64').toString('utf8');
+  assert.match(decodedOutput, /%3c/);
+});
+
+test('should optimize unquoted SVG data URIs containing encoded percentages and wrap in quotes', async () => {
+  const css =
+    'h1{background:url(data:image/svg+xml,%3csvg%20width=%2250%%22%3e%3c/svg%3e)}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%2250%25%22%2F%3E")}'
+  );
+});
+
+test('should optimize unencoded SVG data URIs containing literal percent characters before non-hex text', async () => {
+  const css =
+    'h1{background:url("data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\'><text>100% discount</text></svg>")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><text>100% discount</text></svg>\')}'
+  );
+});

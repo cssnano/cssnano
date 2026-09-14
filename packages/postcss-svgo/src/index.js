@@ -36,13 +36,20 @@ function optimizeDataUri(value, opts) {
     const url = new URL(value);
     const base64String = `${url.protocol}${url.pathname}`.replace(dataURI, '');
     const svg = Buffer.from(base64String, 'base64').toString('utf8');
-    const { result } = minifySVG(svg, opts);
+    const result = minifySVG(svg, opts);
     const data = Buffer.from(result).toString('base64');
     return { value: 'data:image/svg+xml;base64,' + data + url.hash, quote: '' };
   }
   if (!dataURI.test(value)) return undefined;
-  const svg = value.replace(dataURI, '');
-  const { result, isUriEncoded } = minifySVG(svg, opts);
+  const rawPayload = value.replace(dataURI, '');
+  const decodedUri = decode(rawPayload);
+  let isUriEncoded = decodedUri !== rawPayload;
+
+  if (opts.encode !== undefined) {
+    isUriEncoded = opts.encode;
+  }
+
+  const result = minifySVG(decodedUri, opts);
   const data = (isUriEncoded ? encode(result) : result).replace(/#/g, '%23');
   return {
     value: 'data:image/svg+xml;charset=utf-8,' + data,
