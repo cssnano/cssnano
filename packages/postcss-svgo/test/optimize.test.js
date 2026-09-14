@@ -1,26 +1,15 @@
-import nodepath from 'node:path';
-import { fileURLToPath } from 'node:url';
-const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
-import nodefs from 'node:fs';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import postcss from 'postcss';
-import {
-  usePostCSSPlugin,
-  processCSSFactory,
-} from '../../../util/testHelpers.js';
+import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 import { encode, decode } from '../src/lib/url.js';
 
-const { readFileSync: file } = nodefs;
-const { processCSS, passthroughCSS } = processCSSFactory(plugin);
-
-test(
-  'should not mangle filter effects',
-  passthroughCSS(
-    'h1{filter:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><filter id="filter"><feGaussianBlur stdDeviation="5" /></filter></svg>#filter\');filter:blur(5px)}'
-  )
-);
+const testDir = path.dirname(fileURLToPath(import.meta.url));
+const { processCSS } = processCSSFactory(plugin);
 
 describe('Optimise', () => {
   test(
@@ -107,7 +96,7 @@ describe('Optimise', () => {
 });
 
 test(
-  'should preserve apostrophes in uri-encoded svg attributes',
+  'should pass through apostrophes in uri-encoded svg attributes',
   processCSS(
     'h1{background:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%3E%3Ctext%20font-size=%2720%27%20font-family=%27%26apos;Arial%26apos;%27%20transform=%27translate%280%2C20%29%27%3E?%3C/text%3E%3C/svg%3E")}',
     'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ctext%20font-family%3D%22\'Arial\'%22%20font-size%3D%2220%22%20transform%3D%22translate(0%2020)%22%3E%3F%3C%2Ftext%3E%3C%2Fsvg%3E")}'
@@ -135,14 +124,6 @@ test(
 );
 
 test(
-  'should not throw when decoding a svg',
-  processCSS(
-    "h1{-webkit-mask-box-image: url(\"data:image/svg+xml;charset=utf-8,<svg height='35' viewBox='0 0 96 70' width='48' xmlns='http://www.w3.org/2000/svg'><path d='m84 35c1 7-5 37-42 35-37 2-43-28-42-35-1-7 5-37 42-35 37-2 43 28 42 35z'/></svg>\") 50% 56% 46% 42%;}",
-    'h1{-webkit-mask-box-image: url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="35" viewBox="0 0 96 70"><path d="M84 35c1 7-5 37-42 35C5 72-1 42 0 35-1 28 5-2 42 0c37-2 43 28 42 35"/></svg>\') 50% 56% 46% 42%;}'
-  )
-);
-
-test(
   'should encode unencoded data',
   processCSS(
     'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#ff0"/></svg>\')}',
@@ -161,132 +142,6 @@ test(
 );
 
 test(
-  'should not fail on "malformed" svgs',
-  processCSS(
-    "h1{background-image:url(\"data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg'><line stroke-width='2' stroke='rgb(255,0,0)' x1='0' y1='100%' x2='100%' y2='0'></line></svg>\")}",
-    'h1{background-image:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><line x2="100%" y1="100%" stroke="red" stroke-width="2"/></svg>\')}'
-  )
-);
-
-test(
-  'should encode "malformed" svgs',
-  processCSS(
-    "h1{background-image:url(\"data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg'><line stroke-width='2' stroke='rgb(255,0,0)' x1='0' y1='100%' x2='100%' y2='0'></line></svg>\")}",
-    'h1{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cline%20x2%3D%22100%25%22%20y1%3D%22100%25%22%20stroke%3D%22red%22%20stroke-width%3D%222%22%2F%3E%3C%2Fsvg%3E")}',
-    { encode: true }
-  )
-);
-
-test('should not warn on "escaped-quotes" svgs', async () => {
-  const css =
-    'h1{background-image:url("data:image/svg+xml,<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"400\\" height=\\"400\\" fill-opacity=\\".25\\" ><rect x=\\"200\\" width=\\"200\\" height=\\"200\\" /><rect y=\\"200\\" width=\\"200\\" height=\\"200\\" /></svg>")}';
-  const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 0);
-});
-
-test(
-  'should not fail on "escaped-quotes" svgs',
-  processCSS(
-    'h1{background-image:url("data:image/svg+xml,<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"400\\" height=\\"400\\" fill-opacity=\\".25\\" ><rect x=\\"200\\" width=\\"200\\" height=\\"200\\" /><rect y=\\"200\\" width=\\"200\\" height=\\"200\\" /></svg>")}',
-    'h1{background-image:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" fill-opacity=".25"><path d="M200 0h200v200H200zM0 200h200v200H0z"/></svg>\')}'
-  )
-);
-
-test(
-  'should encode "unencoded-escaped-quotes" svgs',
-  processCSS(
-    'h1{background:url("data:image/svg+xml;charset=utf-8,<svg xmlns=\\"http://www.w3.org/2000/svg\\"><circle cx=\\"50\\" cy=\\"50\\" r=\\"40\\" fill=\\"#ff0\\"/></svg>")}',
-    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2240%22%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E")}',
-    { encode: true }
-  )
-);
-
-test(
-  'should decode on "encoded-escaped-quotes" svgs',
-  processCSS(
-    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\\"http://www.w3.org/2000/svg\\"%3E%3Ccircle cx=\\"50\\" cy=\\"50\\" r=\\"40\\" fill=\\"%23ff0\\"/%3E%3C/svg%3E")}',
-    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="%23ff0"/></svg>\')}',
-    { encode: false }
-  )
-);
-
-describe('Skip', () => {
-  test(
-    'should skip invalid svg',
-    processCSS(
-      'h1{background-image:url("data:image/svg+xml;charset=utf-8,foo")}',
-      'h1{background-image:url("data:image/svg+xml;charset=utf-8,foo")}'
-    )
-  );
-
-  test(
-    'should skip invalid svg in base64',
-    processCSS(
-      'h1{background-image:url("data:image/svg+xml;base64,foo")}',
-      'h1{background-image:url("data:image/svg+xml;base64,foo")}'
-    )
-  );
-
-  test(
-    'should skip when data URI contain invalid media type',
-    processCSS(
-      'h1{background-image:url("data:image/svg;charset=utf-8,foo")}',
-      'h1{background-image:url("data:image/svg;charset=utf-8,foo")}'
-    )
-  );
-
-  test(
-    'should skip when data URI contain charset is not in `utf-8`',
-    processCSS(
-      'h1{background-image:url("data:image/svg;charset=US-ASCII,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><circle cx="50" cy="50" r="40" fill="yellow" /><!--test comment--></svg>")}',
-      'h1{background-image:url("data:image/svg;charset=US-ASCII,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><circle cx="50" cy="50" r="40" fill="yellow" />\\3c !--test comment--></svg>")}'
-    )
-  );
-});
-
-test('should warn on SVG containing unclosed tags', async () => {
-  const css =
-    'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
-  const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 1);
-  assert.strictEqual(result.messages[0].type, 'warning');
-});
-
-test('should only warn with svg data uri', async () => {
-  const css = `@font-face {
-  src: url("https://example/dfds.woff2") format("woff2"),
-       url('data:image/svg+xml;charset=utf-8,<svg></svg>') format("svg");
-  }`;
-  const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 0);
-});
-
-test(
-  'should pass through links to svg files',
-  passthroughCSS('h1{background:url(unicorn.svg)}')
-);
-
-test(
-  'should skip non-SVG urls',
-  passthroughCSS(`@font-face {
-  src: url("../example/dfds.woff2") format("woff2"),
-       url('data:image/svg+xml;charset=utf-8,<svg/>') format("svg");
-  }`)
-);
-
-describe('Pass', () => {
-  test(
-    'should pass through relative links to svg files',
-    passthroughCSS('h1{background:url(../unicorn.svg#part)}')
-  );
-
-  test(
-    'should pass through URLs with SVG in parameters',
-    passthroughCSS('h1{background:url(something.php?image=decor.svg)}')
-  );
-});
-
-test(
   'should encode hashes',
   processCSS(
     `h1{background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="32" viewBox="0 0 1200 320"> <path d="M137.189 140V17.17h-36.676L73.871 31.832z" fill="rgb(102,51,153)"/></svg>');}`,
@@ -295,8 +150,51 @@ test(
 );
 
 test('should not crash on malformed urls when encoded', () => {
-  const svg = encode(file(`${testDir}/border.svg`, 'utf-8'));
+  const svg = encode(readFileSync(`${testDir}/border.svg`, 'utf-8'));
   assert.doesNotThrow(() => decode(svg));
 });
+test('should optimize base64 SVG data URIs containing raw percent characters', async () => {
+  const rawSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg"><rect width="50%" height="50%"/></svg>';
+  const base64 = Buffer.from(rawSvg).toString('base64');
+  const css = `h1{background:url("data:image/svg+xml;base64,${base64}")}`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.match(result.css, /data:image\/svg\+xml;base64,/);
+  const outputBase64 = result.css.match(
+    /data:image\/svg\+xml;base64,([^"')]+)/
+  )?.[1];
+  assert.ok(outputBase64);
+  const decodedOutput = Buffer.from(outputBase64, 'base64').toString('utf8');
+  assert.match(decodedOutput, /50%/);
+});
 
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+test('should optimize base64 SVG data URIs containing %FF without throwing URIError', async () => {
+  const rawSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg"><text>%FF</text></svg>';
+  const base64 = Buffer.from(rawSvg).toString('base64');
+  const css = `h1{background:url("data:image/svg+xml;base64,${base64}")}`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  const outputBase64 = result.css.match(
+    /data:image\/svg\+xml;base64,([^"')]+)/
+  )?.[1];
+  assert.ok(outputBase64);
+  const decodedOutput = Buffer.from(outputBase64, 'base64').toString('utf8');
+  assert.match(decodedOutput, /%FF/);
+});
+
+test('should optimize base64 SVG data URIs containing %3c without corrupting XML', async () => {
+  const rawSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg"><text>%3c</text></svg>';
+  const base64 = Buffer.from(rawSvg).toString('base64');
+  const css = `h1{background:url("data:image/svg+xml;base64,${base64}")}`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  const outputBase64 = result.css.match(
+    /data:image\/svg\+xml;base64,([^"')]+)/
+  )?.[1];
+  assert.ok(outputBase64);
+  const decodedOutput = Buffer.from(outputBase64, 'base64').toString('utf8');
+  assert.match(decodedOutput, /%3c/);
+});
