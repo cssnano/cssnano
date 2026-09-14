@@ -63,12 +63,22 @@ export async function processCorpus(
     const result = await processor.process(source, { from: undefined });
     const css = result.css;
     const elapsed = now() - fileStarted;
+    if (!Number.isFinite(elapsed) || elapsed < 0) {
+      throw new RangeError(
+        `elapsed timing must be a non-negative finite number; got ${elapsed} for "${name}"`
+      );
+    }
     if (measure) {
       samples[name] = elapsed;
       processedOutputs.push({ name, css });
     }
   }
   const elapsed = now() - started;
+  if (!Number.isFinite(elapsed) || elapsed < 0) {
+    throw new RangeError(
+      `total elapsed timing must be a non-negative finite number; got ${elapsed}`
+    );
+  }
   for (const { name, css } of processedOutputs) outputs[name] = hash(css);
   return { elapsed, samples, outputs };
 }

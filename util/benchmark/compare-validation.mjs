@@ -43,16 +43,28 @@ function validateBasicMetadata(base, candidate) {
   }
 }
 
+const REQUIRED_ENV_FIELDS = [
+  'node',
+  'v8',
+  'platform',
+  'arch',
+  'nodeFlags',
+  'nodeEnv',
+  'finalizationMode',
+];
+
 function validateEnvironment(base, candidate) {
   if (!base.environment && !candidate.environment) return;
   if (!base.environment || !candidate.environment) {
     throw new Error('incompatible snapshots: environment metadata differs');
   }
-  const fields = new Set([
-    ...Object.keys(base.environment),
-    ...Object.keys(candidate.environment),
-  ]);
-  for (const field of fields) {
+  for (const field of REQUIRED_ENV_FIELDS) {
+    if (
+      base.environment[field] === undefined &&
+      candidate.environment[field] === undefined
+    ) {
+      continue;
+    }
     if (
       stableJson(base.environment[field]) !==
       stableJson(candidate.environment[field])
@@ -62,59 +74,50 @@ function validateEnvironment(base, candidate) {
   }
 }
 
-function validateReplicates(base, candidate) {
-  if (base.runs.length !== candidate.runs.length) {
-    throw new Error(
-      `incompatible snapshots: replicate count differs (${base.runs.length} vs ${candidate.runs.length})`
-    );
-  }
-  const baseIndexes = base.runs.map((run) => run.index).toSorted();
-  const candidateIndexes = candidate.runs.map((run) => run.index).toSorted();
-  if (stableJson(baseIndexes) !== stableJson(candidateIndexes)) {
-    throw new Error('incompatible snapshots: replicate indexes differ');
-  }
-}
-
 function approvedHashChange(allowlist, name, baseHash, candidateHash) {
   const approved = allowlist.get(name);
   return approved?.base === baseHash && approved.candidate === candidateHash;
 }
 
-function validateOutputHashes(base, candidate, allowlist) {
-  const approvedChanges = new Map();
-  const baseRuns = new Map(base.runs.map((run) => [run.index, run]));
-  const candidateRuns = new Map(candidate.runs.map((run) => [run.index, run]));
-  for (const [index, baseRun] of baseRuns) {
-    const candidateRun = candidateRuns.get(index);
-    const names = new Set([
-      ...Object.keys(baseRun.outputHashes),
-      ...Object.keys(candidateRun.outputHashes),
-    ]);
-    for (const name of names) {
-      if (baseRun.outputHashes[name] !== candidateRun.outputHashes[name]) {
-        if (
-          approvedHashChange(
-            allowlist,
-            name,
-            baseRun.outputHashes[name],
-            candidateRun.outputHashes[name]
-          )
-        ) {
-          approvedChanges.set(name, allowlist.get(name));
-          continue;
-        }
+function hashesFor(snapshot) {
+  const hashes = new Map();
+  for (const run of snapshot.runs) {
+    for (const [name, hash] of Object.entries(run.outputHashes)) {
+      if (hashes.has(name) && hashes.get(name) !== hash) {
         throw new Error(
-          `incompatible snapshots: output hash differs for "${name}" in replicate ${index}; ` +
-            `base hash "${baseRun.outputHashes[name]}"; candidate hash "${candidateRun.outputHashes[name]}"`
+          `incompatible snapshots: output hash changed between independent runs for "${name}"`
         );
       }
+      hashes.set(name, hash);
     }
   }
-  const names = new Set([
+  return hashes;
+}
+
+function validateOutputHashes(base, candidate, allowlist) {
+  const approvedChanges = new Map();
+  const baseHashes = hashesFor(base);
+  const candidateHashes = hashesFor(candidate);
+  const names = new Set([...baseHashes.keys(), ...candidateHashes.keys()]);
+  for (const name of names) {
+    const baseHash = baseHashes.get(name);
+    const candidateHash = candidateHashes.get(name);
+    if (baseHash !== candidateHash) {
+      if (approvedHashChange(allowlist, name, baseHash, candidateHash)) {
+        approvedChanges.set(name, allowlist.get(name));
+        continue;
+      }
+      throw new Error(
+        `incompatible snapshots: output hash differs for "${name}"; ` +
+          `base hash "${baseHash}"; candidate hash "${candidateHash}"`
+      );
+    }
+  }
+  const aggregateNames = new Set([
     ...Object.keys(base.outputHashes ?? {}),
     ...Object.keys(candidate.outputHashes ?? {}),
   ]);
-  for (const name of names) {
+  for (const name of aggregateNames) {
     if (base.outputHashes?.[name] !== candidate.outputHashes?.[name]) {
       if (
         approvedHashChange(
@@ -146,7 +149,6 @@ function validateOutputHashes(base, candidate, allowlist) {
 export function validateMatchingMetadata(base, candidate, options = {}) {
   validateBasicMetadata(base, candidate);
   validateEnvironment(base, candidate);
-  validateReplicates(base, candidate);
   return validateOutputHashes(
     base,
     candidate,

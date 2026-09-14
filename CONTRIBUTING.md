@@ -35,7 +35,16 @@ pnpm test:mutation
 
 ### Benchmarking
 
-The default benchmark uses stable settings and five independent process runs:
+Benchmark comparisons are advisory comparative reports, not regression gates.
+The primary estimand is the candidate/base runtime ratio for one complete pass
+over the fixed selected corpus. `TOTAL` is the sole primary endpoint; per-file
+and memory results are exploratory. The comparison uses balanced paired fresh
+process blocks, confidence intervals, a declared 10% practical margin, and a
+precision check. See [the benchmark contract](util/benchmark/README.md) for
+the statistical and operational details.
+
+The standalone benchmark uses stable settings and five independent process
+runs:
 
 ```shell
 pnpm bench
@@ -45,9 +54,16 @@ pnpm bench:profile -- --case=selector-reduction
 pnpm bench:compare -- before after
 ```
 
-Smoke output only verifies that the harness and fixture work. Use the stable
-default for performance comparisons; it retains raw replicates and reports a
-confidence interval and verdict.
+Smoke output only verifies that the harness and fixture work. Use the balanced
+comparison workflow for performance reports. It retains every measured
+iteration and fresh-process block, provenance, schedule metadata, and raw
+artifact. An interval spanning 1 is statistically inconclusive; reports say
+“within the declared 10% margin,” never “the same.”
+
+The comparison CLI exits 0 for a generated report, including an inconclusive
+report. Invalid artifacts, execution failures, and correctness mismatches exit
+nonzero. Performance conclusions remain advisory and cannot fail the command
+until an explicitly documented `--policy=gate` mode is introduced.
 
 Mutation testing is not part of the required test or CI path. A surviving
 mutation means the current tests did not detect that simulated fault; a

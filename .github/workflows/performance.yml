@@ -42,52 +42,70 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           git -C "$BASE_DIR" checkout "$HEAD_SHA" -- \
-            util/benchmark
+            util/benchmark .github/workflows/performance.yml
 
       - name: Install dependencies in both revisions
         run: |
           pnpm --dir "$RUNNER_TEMP/cssnano-base" install --frozen-lockfile
           pnpm --dir "$RUNNER_TEMP/cssnano-head" install --frozen-lockfile
 
-      - name: Benchmark target blocks in alternating order
+      - name: Run balanced comparison blocks
         env:
           NODE_ENV: production
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          mkdir -p "$RUNNER_TEMP/base-results" "$RUNNER_TEMP/head-results"
+          comparison_failure=0
+          mkdir -p "$RUNNER_TEMP/comparison-results"
           targets=(default advanced lite selector-reduction longhand-rule-merging ordered-value-normalization)
-          for index in "${!targets[@]}"; do
-            target="${targets[$index]}"
+          for target in "${targets[@]}"; do
             if [[ "$target" == selector-reduction || "$target" == longhand-rule-merging || "$target" == ordered-value-normalization ]]; then
               target_args=(--case="$target" --preset=default)
             else
               target_args=(--preset="$target")
             fi
-            if (( index % 2 == 0 )); then
-              first=base
-              second=head
-            else
-              first=head
-              second=base
+            if ! node util/benchmark/compare-revisions.mjs \
+              --base-dir="$RUNNER_TEMP/cssnano-base" \
+              --candidate-dir="$RUNNER_TEMP/cssnano-head" \
+              --base-revision="$BASE_SHA" \
+              --candidate-revision="$HEAD_SHA" \
+              --results-dir="$RUNNER_TEMP/comparison-results/$target" \
+              --blocks=20 --minimum-blocks=5 --requested-blocks=20 \
+              "${target_args[@]}"; then
+              comparison_failure=1
+              echo "structural or execution failure for $target; raw evidence retained"
             fi
-            if [[ "$first" == base ]]; then
-              first_revision="$BASE_SHA"
-              second_revision="$HEAD_SHA"
-            else
-              first_revision="$HEAD_SHA"
-              second_revision="$BASE_SHA"
-            fi
-            pnpm --dir "$RUNNER_TEMP/cssnano-$first" bench -- "${target_args[@]}" --revision="$first_revision" --label="$first-$target" --results-dir="$RUNNER_TEMP/$first-results"
-            pnpm --dir "$RUNNER_TEMP/cssnano-$second" bench -- "${target_args[@]}" --revision="$second_revision" --label="$second-$target" --results-dir="$RUNNER_TEMP/$second-results"
           done
+          exit "$comparison_failure"
 
-      - name: Compare benchmarks
+      - name: Compare benchmarks and write advisory reports
+        if: always()
+        env:
+          RESULTS_DIR: ${{ runner.temp }}/comparison-results
+          PERFORMANCE_DIR: ${{ runner.temp }}/performance
         run: |
-          mkdir -p "$RUNNER_TEMP/performance"
-          : > "$RUNNER_TEMP/performance/comparison.md"
+          report_failure=0
+          mkdir -p "$PERFORMANCE_DIR"
+          : > "$PERFORMANCE_DIR/comparison.md"
           for target in default advanced lite selector-reduction longhand-rule-merging ordered-value-normalization; do
-            node util/benchmark/compare-bench.mjs "$RUNNER_TEMP/base-results/base-$target.json" "$RUNNER_TEMP/head-results/head-$target.json" --markdown="$RUNNER_TEMP/performance/$target.md" | tee -a "$RUNNER_TEMP/performance/comparison.txt"
-            cat "$RUNNER_TEMP/performance/$target.md" >> "$RUNNER_TEMP/performance/comparison.md"
+            artifact="$RESULTS_DIR/$target/comparison-v3.json"
+            report="$PERFORMANCE_DIR/$target.md"
+            if [[ -f "$artifact" ]] && node util/benchmark/compare-bench.mjs "$artifact" --markdown="$report" | tee -a "$PERFORMANCE_DIR/comparison.txt"; then
+              cat "$report" >> "$PERFORMANCE_DIR/comparison.md"
+            else
+              report_failure=1
+              printf '## %s\n\n> Structural failure: no validated v3 evidence was available.\n\n' "$target" > "$report"
+              cat "$report" >> "$PERFORMANCE_DIR/comparison.md"
+            fi
           done
-          cat "$RUNNER_TEMP/performance/comparison.md" >> "$GITHUB_STEP_SUMMARY"
+          cat "$PERFORMANCE_DIR/comparison.md" >> "$GITHUB_STEP_SUMMARY"
+          exit "$report_failure"
+
+      - name: Upload raw comparison artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: performance-comparisons
+          path: |
+            ${{ runner.temp }}/comparison-results
+            ${{ runner.temp }}/performance

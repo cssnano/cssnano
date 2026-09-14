@@ -11,6 +11,22 @@ function fmtRSS(rss) {
   return rss.toLocaleString();
 }
 
+function directionFor(value) {
+  return value?.statisticalDirection ?? value?.verdict ?? 'inconclusive';
+}
+
+function practicalFor(value) {
+  return value?.practicalConclusion ?? 'exploratory';
+}
+
+function overallFor(value) {
+  return value?.overallVerdict ?? value?.verdict ?? 'inconclusive';
+}
+
+function nameFor(value) {
+  return value?.name ?? value?.endpoint ?? 'TOTAL';
+}
+
 export function printComparison(result) {
   const {
     base,
@@ -24,9 +40,15 @@ export function printComparison(result) {
   console.log(`baseline:  ${base.label} (${base.path})`);
   console.log(`candidate: ${candidate.label} (${candidate.path})`);
   console.log();
+  if (!total) {
+    console.error(
+      `structural failure: ${result.inconclusiveReason ?? 'no performance analysis is available'}`
+    );
+    return;
+  }
   if (maxRSS) {
     console.log(
-      `max RSS: ${fmtRSS(maxRSS.baseMedian)} -> ${fmtRSS(maxRSS.candidateMedian)} (${fmtPct(maxRSS.medianDeltaPct)})`
+      `process max RSS (independent-run diagnostic): ${fmtRSS(maxRSS.baseMedian)} -> ${fmtRSS(maxRSS.candidateMedian)} (${fmtPct(maxRSS.medianDeltaPct)})`
     );
     console.log();
   }
@@ -35,16 +57,16 @@ export function printComparison(result) {
       'base median'.padStart(14) +
       'cand median'.padStart(14) +
       'delta'.padStart(10) +
-      'verdict'.padStart(16)
+      'direction'.padStart(16)
   );
   console.log('-'.repeat(82));
   for (const row of rows) {
     console.log(
-      row.name.padEnd(28) +
+      nameFor(row).padEnd(28) +
         fmtMs(row.baseMedianMs) +
         fmtMs(row.candidateMedianMs) +
         fmtPct(row.medianDeltaPct).padStart(10) +
-        row.verdict.padStart(16)
+        directionFor(row).padStart(16)
     );
   }
   console.log('-'.repeat(82));
@@ -53,12 +75,29 @@ export function printComparison(result) {
       fmtMs(total.baseMedianMs) +
       fmtMs(total.candidateMedianMs) +
       fmtPct(total.medianDeltaPct).padStart(10) +
-      total.verdict.padStart(16)
+      directionFor(total).padStart(16)
   );
-  console.log(
-    `95% bootstrap CI: ${fmtPct(total.confidenceIntervalPct.low)} to ${fmtPct(total.confidenceIntervalPct.high)}; ` +
-      `replicates=${total.replicateCount}, spread=${fmtPct(total.spreadPct)}`
-  );
+  if (total.confidenceIntervalPct) {
+    console.log(
+      `superiority CI: ${fmtPct(total.confidenceIntervalPct.low)} to ${fmtPct(total.confidenceIntervalPct.high)}; ` +
+        `direction=${directionFor(total)}, practical=${practicalFor(total)}, ` +
+        `overall=${overallFor(result)}`
+    );
+    if (total.equivalenceConfidenceInterval) {
+      console.log(
+        `equivalence CI: ${total.equivalenceConfidenceInterval.low.toFixed(3)} to ${total.equivalenceConfidenceInterval.high.toFixed(3)} ` +
+          `(within the declared 10% margin: ${practicalFor(total)})`
+      );
+    }
+  }
+  if (result.precision) {
+    console.log(
+      `precision: width=${result.precision.confidenceIntervalWidth.toFixed(3)}, ` +
+        `target=${result.precision.precisionTarget}, ` +
+        `blocks=${result.blocks?.length ?? 'unknown'}/${result.precision.requestedBlocks}, ` +
+        `achieved=${result.precision.precisionAchieved}`
+    );
+  }
   if (warning) console.warn(`warning: ${warning}`);
   for (const [name, hashes] of approvedOutputChanges ?? []) {
     console.warn(
@@ -69,7 +108,16 @@ export function printComparison(result) {
 
 function markdownRow(row) {
   const interval = `${fmtPct(row.confidenceIntervalPct.low)} to ${fmtPct(row.confidenceIntervalPct.high)}`;
-  return `| ${row.name} | ${row.baseMedianMs.toFixed(2)} ms | ${row.candidateMedianMs.toFixed(2)} ms | ${fmtPct(row.medianDeltaPct)} | ${interval} | ${row.replicateCount} | ${row.verdict} |`;
+  const equivalence = row.equivalenceConfidenceInterval
+    ? `${row.equivalenceConfidenceInterval.low.toFixed(3)} to ${row.equivalenceConfidenceInterval.high.toFixed(3)}`
+    : 'exploratory';
+  return `| ${nameFor(row)} | ${row.baseMedianMs.toFixed(2)} ms | ${row.candidateMedianMs.toFixed(2)} ms | ${fmtPct(row.medianDeltaPct)} | ${interval} | ${equivalence} | ${directionFor(row)} | ${practicalFor(row)} |`;
+}
+
+function equivalenceText(value) {
+  return value
+    ? `${value.low.toFixed(3)} to ${value.high.toFixed(3)}`
+    : 'legacy/unavailable';
 }
 
 export function markdownComparison(result) {
@@ -88,21 +136,31 @@ export function markdownComparison(result) {
     `- Preset: \`${base.preset}\``,
     `- Target: \`${base.target}\``,
     `- Corpus manifest: \`${base.corpusManifest}\``,
-    `- Seed: \`${base.seed ?? 'legacy/unknown'}\``,
+    `- Seed: \`${base.seed ?? base.configuration?.bootstrapSeed ?? 'legacy/unknown'}\``,
     `- Baseline: \`${base.label}\` (${base.gitRevision ?? 'unknown revision'})`,
     `- Candidate: \`${candidate.label}\` (${candidate.gitRevision ?? 'unknown revision'})`,
     ...(maxRSS
       ? [
-          `- Median max RSS: ${fmtRSS(maxRSS.baseMedian)} -> ${fmtRSS(maxRSS.candidateMedian)} (${fmtPct(maxRSS.medianDeltaPct)})`,
+          `- Median process max RSS: ${fmtRSS(maxRSS.baseMedian)} -> ${fmtRSS(maxRSS.candidateMedian)} (${fmtPct(maxRSS.medianDeltaPct)})`,
         ]
       : []),
     '',
-    '| Corpus entry | Base median | Candidate median | Median delta | 95% CI | Replicates | Verdict |',
-    '| --- | ---: | ---: | ---: | --- | ---: | --- |',
-    ...rows.map(markdownRow),
-    `| **TOTAL** | **${total.baseMedianMs.toFixed(2)} ms** | **${total.candidateMedianMs.toFixed(2)} ms** | **${fmtPct(total.medianDeltaPct)}** | **${fmtPct(total.confidenceIntervalPct.low)} to ${fmtPct(total.confidenceIntervalPct.high)}** | **${total.replicateCount}** | **${total.verdict}** |`,
-    '',
   ];
+  if (!total) {
+    lines.push(
+      `> Structural failure: ${result.inconclusiveReason ?? 'no performance analysis is available'}`,
+      ''
+    );
+    return lines.join('\n');
+  }
+  lines.push(
+    '| Corpus entry | Base median | Candidate median | Median delta | 95% superiority CI | 90% equivalence CI | Statistical direction | Practical conclusion |',
+    '| --- | ---: | ---: | ---: | --- | --- | --- | --- |',
+    ...rows.map(markdownRow),
+    `| **TOTAL** | **${total.baseMedianMs.toFixed(2)} ms** | **${total.candidateMedianMs.toFixed(2)} ms** | **${fmtPct(total.medianDeltaPct)}** | **${fmtPct(total.confidenceIntervalPct.low)} to ${fmtPct(total.confidenceIntervalPct.high)}** | **${equivalenceText(total.equivalenceConfidenceInterval)}** | **${directionFor(total)}** | **${practicalFor(total)}** |`,
+    `- Overall verdict: **${overallFor(result)}**`,
+    ''
+  );
   if (warning) lines.push(`> Warning: ${warning}`, '');
   for (const [name, hashes] of approvedOutputChanges ?? []) {
     lines.push(
