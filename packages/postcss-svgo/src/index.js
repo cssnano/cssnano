@@ -13,40 +13,19 @@ const dataURIBase64 = /data:image\/svg\+xml;base64,/i;
 const escapedQuotes = /\b([\w-]+)\s*=\s*\\"([\S\s]+?)\\"/g;
 
 /**
- * @param {string} input the SVG string
+ * @param {string} svg the SVG string
  * @param {Options} opts
- * @return {{result: string, isUriEncoded: boolean}} the minification result
+ * @return {string} the minified SVG string
  */
-function minifySVG(input, opts) {
-  let svg = input;
-  let decodedUri, isUriEncoded;
-  try {
-    decodedUri = decode(input);
-    isUriEncoded = decodedUri !== input;
-  } catch {
-    // Swallow exception if we cannot decode the value
-    isUriEncoded = false;
-  }
-
-  if (isUriEncoded) {
-    svg = /** @type {string} */ (decodedUri);
-  }
-
-  if (opts.encode !== undefined) {
-    isUriEncoded = opts.encode;
-  }
-
+function minifySVG(svg, opts) {
   // normalize all escaped quote characters from svg attributes
   // from <svg attr=\"value\"... /> to <svg attr="value"... />
   // see: https://github.com/cssnano/cssnano/issues/1194
-  svg = svg.replace(escapedQuotes, '$1="$2"');
+  const normalized = svg.replace(escapedQuotes, '$1="$2"');
 
-  const result = optimize(svg, opts);
+  const result = optimize(normalized, opts);
 
-  return {
-    result: /** @type {import('svgo').Output}*/ (result).data,
-    isUriEncoded,
-  };
+  return /** @type {import('svgo').Output}*/ (result).data;
 }
 
 /**
@@ -80,12 +59,19 @@ function minify(decl, opts, postcssResult) {
           ''
         );
         const svg = Buffer.from(base64String, 'base64').toString('utf8');
-        const { result } = minifySVG(svg, opts);
+        const result = minifySVG(svg, opts);
         const data = Buffer.from(result).toString('base64');
         optimizedValue = 'data:image/svg+xml;base64,' + data + url.hash;
       } else if (dataURI.test(value)) {
-        const svg = value.replace(dataURI, '');
-        const { result, isUriEncoded } = minifySVG(svg, opts);
+        const rawPayload = value.replace(dataURI, '');
+        const decodedUri = decode(rawPayload);
+        let isUriEncoded = decodedUri !== rawPayload;
+
+        if (opts.encode !== undefined) {
+          isUriEncoded = opts.encode;
+        }
+
+        const result = minifySVG(decodedUri, opts);
         let data = isUriEncoded ? encode(result) : result;
         // Should always encode # otherwise we yield a broken SVG
         // in Firefox (works in Chrome however). See this issue:
