@@ -1,6 +1,5 @@
 import { fileURLToPath } from 'node:url';
-const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
-import nodepath from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -10,7 +9,7 @@ import {
 } from '../../../util/integrationTestHelpers.js';
 import preset from '../src/index.js';
 
-const { join } = nodepath;
+const testDir = dirname(fileURLToPath(import.meta.url));
 const withDefaults = processCSSWithPresetFactory(preset);
 const withBrowserslist = processCSSWithPresetFactory(
   preset({
