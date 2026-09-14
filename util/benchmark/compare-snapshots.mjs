@@ -1,54 +1,101 @@
 import {
-  bootstrapConfidenceInterval,
-  pairedPercentChange,
+  clusteredTwoSampleBootstrapConfidenceInterval,
+  twoSampleBootstrapConfidenceInterval,
+  percentChange,
   quantile,
 } from './bench-stats.mjs';
+import { MIN_USEFUL_SAMPLE_MS } from './bench-snapshots.mjs';
 import {
   frameworkByName,
   validateMatchingMetadata,
 } from './compare-validation.mjs';
 
-function verdictFor(interval, base, candidate, legacy) {
+function verdictFor(
+  interval,
+  medianDeltaPct,
+  base,
+  candidate,
+  legacy,
+  usefulSignal
+) {
   if (
     legacy ||
-    base.runs.length < 2 ||
-    candidate.runs.length < 2 ||
+    base.runs.length < 3 ||
+    candidate.runs.length < 3 ||
     base.reliability !== 'reliable' ||
-    candidate.reliability !== 'reliable'
+    candidate.reliability !== 'reliable' ||
+    !usefulSignal
   ) {
     return 'inconclusive';
   }
-  if (interval.high < 0) return 'improvement';
-  if (interval.low > 0) return 'regression';
+  if (interval.high < 0 && medianDeltaPct < 0) {
+    return 'improvement';
+  }
+  if (interval.low > 0 && medianDeltaPct > 0) {
+    return 'regression';
+  }
   return 'inconclusive';
 }
 
-function compareValues(baseValues, candidateValues, base, candidate) {
-  const changes = baseValues.map((value, index) =>
-    pairedPercentChange(value, candidateValues[index])
+function sampleGroupsForRuns(runs, sampleForRun, summaryForRun) {
+  return runs.map((run) => {
+    const samples = sampleForRun(run);
+    return Array.isArray(samples) && samples.length
+      ? samples
+      : [summaryForRun(run)];
+  });
+}
+
+function compareValues(
+  baseRuns,
+  candidateRuns,
+  sampleForRun,
+  summaryForRun,
+  base,
+  candidate
+) {
+  const baseGroups = sampleGroupsForRuns(baseRuns, sampleForRun, summaryForRun);
+  const candidateGroups = sampleGroupsForRuns(
+    candidateRuns,
+    sampleForRun,
+    summaryForRun
   );
-  const interval = bootstrapConfidenceInterval(changes);
-  const sorted = changes.toSorted((a, b) => a - b);
-  const medianDeltaPct = quantile(sorted, 0.5);
-  const spreadPct = quantile(sorted, 0.95) - quantile(sorted, 0.05);
+  const baseValues = baseGroups.flat();
+  const candidateValues = candidateGroups.flat();
+  const baseMedian = quantile(
+    baseValues.toSorted((a, b) => a - b),
+    0.5
+  );
+  const candidateMedian = quantile(
+    candidateValues.toSorted((a, b) => a - b),
+    0.5
+  );
+  const medianDeltaPct = percentChange(baseMedian, candidateMedian);
+  const interval = clusteredTwoSampleBootstrapConfidenceInterval(
+    baseGroups,
+    candidateGroups
+  );
+  const usefulSignal =
+    baseMedian >= MIN_USEFUL_SAMPLE_MS &&
+    candidateMedian >= MIN_USEFUL_SAMPLE_MS;
   return {
-    baseMedianMs: quantile(
-      baseValues.toSorted((a, b) => a - b),
-      0.5
-    ),
-    candidateMedianMs: quantile(
-      candidateValues.toSorted((a, b) => a - b),
-      0.5
-    ),
+    baseMedianMs: baseMedian,
+    candidateMedianMs: candidateMedian,
     medianDeltaPct,
     confidenceIntervalPct: interval,
-    replicateCount: changes.length,
-    spreadPct,
+    replicateCount: baseRuns.length,
+    baseReplicateCount: baseRuns.length,
+    candidateReplicateCount: candidateRuns.length,
+    baseSampleCount: baseValues.length,
+    candidateSampleCount: candidateValues.length,
+    spreadPct: interval.high - interval.low,
     verdict: verdictFor(
       interval,
+      medianDeltaPct,
       base,
       candidate,
-      base.legacy || candidate.legacy
+      base.legacy || candidate.legacy,
+      usefulSignal
     ),
   };
 }
@@ -61,27 +108,27 @@ function compareMaxRSS(baseRuns, candidateRuns) {
   ) {
     return null;
   }
-  const baseValues = [...baseRuns.keys()]
-    .toSorted()
-    .map((index) => baseRuns.get(index).resourceUsage.maxRSS);
-  const candidateValues = [...baseRuns.keys()]
-    .toSorted()
-    .map((index) => candidateRuns.get(index).resourceUsage.maxRSS);
-  const changes = baseValues.map((value, index) =>
-    pairedPercentChange(value, candidateValues[index])
+  const baseValues = [...baseRuns.values()].map(
+    (run) => run.resourceUsage.maxRSS
+  );
+  const candidateValues = [...candidateRuns.values()].map(
+    (run) => run.resourceUsage.maxRSS
+  );
+  const baseMedian = quantile(
+    baseValues.toSorted((a, b) => a - b),
+    0.5
+  );
+  const candidateMedian = quantile(
+    candidateValues.toSorted((a, b) => a - b),
+    0.5
   );
   return {
-    baseMedian: quantile(
-      baseValues.toSorted((a, b) => a - b),
-      0.5
-    ),
-    candidateMedian: quantile(
-      candidateValues.toSorted((a, b) => a - b),
-      0.5
-    ),
-    medianDeltaPct: quantile(
-      changes.toSorted((a, b) => a - b),
-      0.5
+    baseMedian,
+    candidateMedian,
+    medianDeltaPct: percentChange(baseMedian, candidateMedian),
+    confidenceIntervalPct: twoSampleBootstrapConfidenceInterval(
+      baseValues,
+      candidateValues
     ),
   };
 }
@@ -90,8 +137,8 @@ function comparisonWarning(base, candidate) {
   if (base.legacy || candidate.legacy) {
     return 'legacy single-run snapshot: uncertainty evidence is unavailable';
   }
-  if (base.runs.length < 2) {
-    return 'fewer than two independent replicates: uncertainty evidence is weak';
+  if (base.runs.length < 3 || candidate.runs.length < 3) {
+    return 'fewer than three independent replicates: uncertainty evidence is weak';
   }
   if (base.reliability !== 'reliable' || candidate.reliability !== 'reliable') {
     return 'smoke or insufficient-signal benchmark: uncertainty evidence is unavailable';
@@ -125,15 +172,13 @@ export function compareSnapshots(base, candidate, options = {}) {
     }
   }
 
-  const baseRuns = new Map(base.runs.map((run) => [run.index, run]));
-  const candidateRuns = new Map(candidate.runs.map((run) => [run.index, run]));
-  const pair = (read) =>
-    [...baseRuns.keys()]
-      .toSorted()
-      .map((index) => read(baseRuns.get(index), candidateRuns.get(index)));
+  const baseRuns = base.runs;
+  const candidateRuns = candidate.runs;
   const total = compareValues(
-    pair((baseRun) => baseRun.summary.total.medianMs),
-    pair((_, candidateRun) => candidateRun.summary.total.medianMs),
+    baseRuns,
+    candidateRuns,
+    (run) => run.totalSamples,
+    (run) => run.summary.total.medianMs,
     base,
     candidate
   );
@@ -141,12 +186,10 @@ export function compareSnapshots(base, candidate, options = {}) {
   const rows = names
     .map((name) => {
       const row = compareValues(
-        pair(
-          (run) => frameworkByName(run.summary.frameworks).get(name).medianMs
-        ),
-        pair(
-          (_, run) => frameworkByName(run.summary.frameworks).get(name).medianMs
-        ),
+        baseRuns,
+        candidateRuns,
+        (run) => run.perFileSamples?.[name],
+        (run) => frameworkByName(run.summary.frameworks).get(name).medianMs,
         base,
         candidate
       );
@@ -156,10 +199,18 @@ export function compareSnapshots(base, candidate, options = {}) {
   return {
     base,
     candidate,
-    total,
+    total:
+      base.schemaVersion === 3 && candidate.schemaVersion === 3
+        ? { endpoint: 'TOTAL', ...total }
+        : total,
     maxRSS,
     rows,
     warning: comparisonWarning(base, candidate),
     approvedOutputChanges,
+    analysisClass:
+      base.legacy || candidate.legacy
+        ? 'legacy-analysis'
+        : 'independent-analysis',
+    overallVerdict: 'inconclusive',
   };
 }

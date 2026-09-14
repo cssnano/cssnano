@@ -8,8 +8,21 @@ import {
 } from './bench-runner.mjs';
 import { fmtMs, quantile, summaryStatistics } from './bench-stats.mjs';
 import { benchmarkCases } from './bench-cases.mjs';
+import { createProvenance } from './bench-provenance.mjs';
+import {
+  BOOTSTRAP_RESAMPLES,
+  BOOTSTRAP_SEED,
+  EQUIVALENCE_CONFIDENCE_LEVEL,
+  MINIMUM_BLOCKS,
+  ORDER_INTERACTION_THRESHOLD,
+  PRECISION_TARGET,
+  PRACTICAL_EQUIVALENCE_MARGIN,
+  REQUESTED_BLOCKS,
+  RUNTIME_NON_REGRESSION_MARGIN,
+  SUPERIORITY_CONFIDENCE_LEVEL,
+} from './bench-config.mjs';
 
-export const SNAPSHOT_VERSION = 2;
+export const SNAPSHOT_VERSION = 3;
 export const MIN_USEFUL_SAMPLE_MS = 5;
 
 function frameworkSummary(name, bytes, samples, outputHash) {
@@ -51,9 +64,6 @@ export async function runOnce(
   snapshotLabel,
   replicateIndex
 ) {
-  if (args.revision === null) {
-    console.warn('warning: quick benchmark has no explicit revision metadata');
-  }
   const orderedCorpus = shuffleCorpus(corpus, args.seed, replicateIndex);
   const target = args.case ? benchmarkCases[args.case].plugin : 'cssnano';
   const profilePath = args.profile
@@ -80,6 +90,13 @@ export async function runOnce(
     reliability,
     resourceUsage: resourceMetadata(),
   };
+
+  const corpusHash = corpusManifest(corpus);
+  const provenance = createProvenance({
+    command: process.argv,
+    corpusHash,
+    gitRevision: args.revision,
+  });
 
   if (!args.summary) {
     console.log(
@@ -139,25 +156,50 @@ export async function runOnce(
   const environment = environmentMetadata();
   return {
     schemaVersion: SNAPSHOT_VERSION,
+    ...provenance,
     label: snapshotLabel,
     preset: args.preset,
     target,
-    corpusManifest: corpusManifest(corpus),
+    corpusManifest: corpusHash,
+    corpusHash,
     corpus: corpus
       .map(({ name, source }) => ({ name, bytes: source.length }))
       .toSorted((a, b) => a.name.localeCompare(b.name)),
-    gitRevision: args.revision,
+    gitRevision: provenance.gitRevision,
     environment,
+    provenance,
     finalizationMode: environment.finalizationMode,
     timestamp: new Date().toISOString(),
     arguments: process.argv.slice(2),
     configuration: {
+      runs: args.runs,
+      seed: args.seed,
+      target,
+      reliability: args.mode === 'quick' ? 'smoke' : 'reliable',
+      superiorityConfidenceLevel:
+        args.superiorityConfidenceLevel ?? SUPERIORITY_CONFIDENCE_LEVEL,
+      equivalenceConfidenceLevel:
+        args.equivalenceConfidenceLevel ?? EQUIVALENCE_CONFIDENCE_LEVEL,
+      runtimeNonRegressionMargin:
+        args.runtimeNonRegressionMargin ?? RUNTIME_NON_REGRESSION_MARGIN,
+      practicalEquivalenceMargin:
+        args.practicalEquivalenceMargin ?? PRACTICAL_EQUIVALENCE_MARGIN,
+      bootstrapResamples: args.bootstrapResamples ?? BOOTSTRAP_RESAMPLES,
+      bootstrapSeed: args.bootstrapSeed ?? BOOTSTRAP_SEED,
+      minimumBlocks: args.minimumBlocks ?? MINIMUM_BLOCKS,
+      requestedBlocks: args.requestedBlocks ?? REQUESTED_BLOCKS,
+      precisionTarget: args.precisionTarget ?? PRECISION_TARGET,
+      orderInteractionThreshold:
+        args.orderInteractionThreshold ?? ORDER_INTERACTION_THRESHOLD,
+      intervalMethod: 'stratified-percentile-bootstrap',
+      analyzerVersion: '3.0.0',
       mode: args.mode,
       warmup: args.warmup,
       iters: args.iters,
-      runs: args.runs,
-      seed: args.seed,
-      reliability: args.mode === 'quick' ? 'smoke' : 'reliable',
+      preset: args.preset,
+      case: args.case,
+      corpusSelector: args.only,
+      nodeEnv: process.env.NODE_ENV ?? 'production',
     },
     seed: args.seed,
     warmup: args.warmup,

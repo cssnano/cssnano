@@ -1,25 +1,36 @@
-// Compare versioned benchmark snapshots using paired process replicates.
+// Compare versioned benchmark snapshots using independent process samples.
 
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import {
   BOOTSTRAP_RESAMPLES,
   bootstrapConfidenceInterval,
+  clusteredTwoSampleBootstrapConfidenceInterval,
+  percentChange,
   pairedPercentChange,
   quantile,
+  twoSampleBootstrapConfidenceInterval,
 } from './bench-stats.mjs';
 import { loadSnapshot } from './compare-snapshot-io.mjs';
 import { compareSnapshots } from './compare-snapshots.mjs';
+import {
+  analyzeComparison,
+  validateComparisonArtifact,
+} from './compare-analysis.mjs';
 import { markdownComparison, printComparison } from './compare-report.mjs';
 
 export {
   BOOTSTRAP_RESAMPLES,
   bootstrapConfidenceInterval,
+  clusteredTwoSampleBootstrapConfidenceInterval,
   compareSnapshots,
+  analyzeComparison,
   loadSnapshot,
   markdownComparison,
+  percentChange,
   pairedPercentChange,
   printComparison,
   quantile,
+  twoSampleBootstrapConfidenceInterval,
 };
 
 function cliArgs(argv) {
@@ -51,18 +62,60 @@ function cliArgs(argv) {
   };
 }
 
+function loadComparison(path) {
+  const artifact = JSON.parse(readFileSync(path, 'utf8'));
+  if (artifact.schemaVersion !== 3 || artifact.artifactType !== 'comparison') {
+    throw new TypeError('comparison artifact must use schema v3');
+  }
+  validateComparisonArtifact(artifact);
+  const analysis = analyzeComparison(artifact);
+  const baseline = artifact.blocks.find(
+    (block) => block.observations?.baseline
+  );
+  const candidate = artifact.blocks.find(
+    (block) => block.observations?.candidate
+  );
+  return {
+    ...analysis,
+    blocks: artifact.blocks,
+    base: {
+      label: 'baseline',
+      path,
+      preset: artifact.configuration?.preset ?? 'unknown',
+      target: artifact.configuration?.target ?? 'cssnano',
+      corpusManifest: artifact.corpusHash,
+      gitRevision: artifact.gitRevision?.baseline,
+      seed: artifact.configuration?.seed,
+    },
+    candidate: {
+      label: 'candidate',
+      path,
+      preset: artifact.configuration?.preset ?? 'unknown',
+      target: artifact.configuration?.target ?? 'cssnano',
+      corpusManifest: artifact.corpusHash,
+      gitRevision: artifact.gitRevision?.candidate,
+      seed: artifact.configuration?.seed,
+    },
+    maxRSS: null,
+    warning: analysis.structuralFailure
+      ? 'correctness or process failure; no performance verdict is available'
+      : null,
+    _observations: { baseline, candidate },
+  };
+}
+
 async function main() {
   const args = cliArgs(process.argv.slice(2));
-  if (!args.base || !args.candidate) {
+  if (!args.base) {
     throw new Error(
-      'usage: node util/benchmark/compare-bench.mjs <baseline> <candidate> [--markdown=path] [--allow-output-hash=fixture,base-hash,candidate-hash]'
+      'usage: node util/benchmark/compare-bench.mjs <comparison-artifact> [--markdown=path] or <baseline> <candidate>'
     );
   }
-  const result = compareSnapshots(
-    loadSnapshot(args.base),
-    loadSnapshot(args.candidate),
-    { outputHashAllowlist: args.outputHashAllowlist }
-  );
+  const result = args.candidate
+    ? compareSnapshots(loadSnapshot(args.base), loadSnapshot(args.candidate), {
+        outputHashAllowlist: args.outputHashAllowlist,
+      })
+    : loadComparison(args.base);
   printComparison(result);
   if (args.markdown) writeFileSync(args.markdown, markdownComparison(result));
 }
