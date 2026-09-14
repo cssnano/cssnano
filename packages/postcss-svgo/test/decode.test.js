@@ -146,3 +146,9 @@ test('should handle valid percent escapes mixed with literal unencoded percent c
   assert.strictEqual(decode('%3c100%%20valid%'), '<100% valid%');
   assert.strictEqual(decode('%25%3c%25'), '%<%');
 });
+
+test('should preserve an encoded leading UTF-8 BOM', () => {
+  const input = '%EF%BB%BF%3Csvg%2F%3E';
+
+  assert.strictEqual(decode(input), '\uFEFF<svg/>');
+});

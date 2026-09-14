@@ -1,6 +1,10 @@
+/*
+ * Encoding is identical to encodeURIComponent, per the WHATWG URL Standard,
+ * since it can produce standard input.
+ */
 const encode = encodeURIComponent;
 
-const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+const utf8Decoder = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
 const utf8Encoder = new TextEncoder();
 
 /**
@@ -29,8 +33,9 @@ function hexVal(byte) {
 }
 
 /**
- * Percent-decodes a string according to WHATWG URL Standard § 1.3
- * (Percent-encoded bytes).
+ * Percent-decodes a string according to WHATWG URL Standard § 1.3.
+ * This is more tolerant than decodeURIComponent.
+ *
  * @param {string} input
  * @return {string}
  */
