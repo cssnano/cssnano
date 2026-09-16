@@ -10,7 +10,7 @@ catalog:
   postcss-selector-parser: ^7.1.6
   '@webref/css': 8.7.4
   mdn-data: 2.35.0
-  '@colordx/core': ^6.4.0
+  '@colordx/core': ^6.5.0
 
 minimumReleaseAgeExclude:
   - postcss-calc
