@@ -165,8 +165,8 @@ settings:
 catalogs:
   default:
     '@colordx/core':
-      specifier: ^6.4.0
-      version: 6.4.0
+      specifier: ^6.5.0
+      version: 6.5.0
     '@webref/css':
       specifier: 8.7.4
       version: 8.7.4
@@ -388,7 +388,7 @@ importers:
     dependencies:
       '@colordx/core':
         specifier: 'catalog:'
-        version: 6.4.0
+        version: 6.5.0
       browserslist:
         specifier: 'catalog:'
         version: 4.28.9
@@ -531,7 +531,7 @@ importers:
     dependencies:
       '@colordx/core':
         specifier: 'catalog:'
-        version: 6.4.0
+        version: 6.5.0
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -787,8 +787,8 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
-  '@colordx/core@6.4.0':
-    resolution: {integrity: sha512-KJf2x955gXdCXTVQVd4kh4V89UJq/iUg366DHL1dv5+Bdugehak9lK2veBvOBwOqlusCCo+hKpVXDG437EW2/g==}
+  '@colordx/core@6.5.0':
+    resolution: {integrity: sha512-mhkTHXTERodsL6kMw2LRrXVlGaY+osu/YnxkcwO8c/JO+YOb+/f+F+gOxmeBWTP+nzG47Kz6gZCJq8tyESqrWg==}
 
   '@csstools/color-helpers@6.1.1':
     resolution: {integrity: sha512-gLNsunvwf3mCi5u5o46/Z/JcJMnhbHSaZ69rkgPzNM3J4s8hWwpPUQB6/tt0EDFyCiWzxANlx+2LJwpYj4zS1w==}
@@ -1923,7 +1923,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@colordx/core@6.4.0': {}
+  '@colordx/core@6.5.0': {}
 
   '@csstools/color-helpers@6.1.1': {}
 
