@@ -177,8 +177,8 @@ catalogs:
       specifier: ^4.28.9
       version: 4.28.9
     mdn-data:
-      specifier: 2.35.0
-      version: 2.35.0
+      specifier: 2.36.0
+      version: 2.36.0
     postcss:
       specifier: ^8.5.28
       version: 8.5.28
@@ -716,7 +716,7 @@ importers:
     devDependencies:
       mdn-data:
         specifier: 'catalog:'
-        version: 2.35.0
+        version: 2.36.0
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
@@ -1665,8 +1665,8 @@ packages:
   mdn-data@2.27.1:
     resolution: {integrity: sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==}
 
-  mdn-data@2.35.0:
-    resolution: {integrity: sha512-k+1+dEIm2z/BEfdvYzT/fIyAGeDBo/1AJNJI4ilFXJRYoxP/3Ds+GP8shAOIq8jYXY9N5nGB3Ag104NsagmLAA==}
+  mdn-data@2.36.0:
+    resolution: {integrity: sha512-EdCTmJ/7XyvlyqkbL0iHDbK/4b1f1qsZb3+jSihfwfxepmeBfQB7m6nQj6iLv0te037dqYCkbQe+/q0PxWdIOA==}
 
   nanoid@3.3.19:
     resolution: {integrity: sha512-Y2tUNy4ouw6tq5oDSKeQYGOyhkUBhNOcGV/02KC+6kd9eDGqdZd++mjMiIDilrBYvjEnCYvVtsuHCuP+okSfug==}
@@ -2506,7 +2506,7 @@ snapshots:
 
   mdn-data@2.27.1: {}
 
-  mdn-data@2.35.0: {}
+  mdn-data@2.36.0: {}
 
   nanoid@3.3.19: {}
 
