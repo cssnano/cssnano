@@ -23,6 +23,7 @@ function provenance(revision) {
     cpu: 'test',
     cpuCount: 1,
     governor: null,
+    pinnedCore: null,
   };
 }
 
@@ -93,7 +94,7 @@ function configuration(resamples, seed = 1) {
     requestedBlocks: 80,
     precisionTarget: 0.05,
     orderInteractionThreshold: 0.05,
-    intervalMethod: 'stratified-percentile-bootstrap',
+    intervalMethod: 'crossover-t-interval',
     analyzerVersion: '3.0.0',
     mode: 'stable',
     warmup: 20,
@@ -232,6 +233,7 @@ export function simulatedArtifact(scenario, seed = 1, resamples = 500) {
   };
 }
 
+// eslint-disable-next-line complexity
 export function runCalibration({ replicates = 2_000, resamples = 100 } = {}) {
   const results = [];
   for (const scenario of SCENARIOS) {
@@ -257,8 +259,9 @@ export function runCalibration({ replicates = 2_000, resamples = 100 } = {}) {
       }
       if (
         analysis.total &&
-        Math.abs(analysis.total.orderInteraction) >
-          configuration(resamples).orderInteractionThreshold
+        (!analysis.total.orderIsStable ||
+          Math.abs(analysis.total.orderInteraction) >
+            configuration(resamples).orderInteractionThreshold)
       )
         interactionDetected++;
     }

@@ -96,6 +96,8 @@ export async function runOnce(
     command: process.argv,
     corpusHash,
     gitRevision: args.revision,
+    mode: args.mode,
+    pinnedCore: args.pinCore ?? null,
   });
 
   if (!args.summary) {
@@ -191,7 +193,7 @@ export async function runOnce(
       precisionTarget: args.precisionTarget ?? PRECISION_TARGET,
       orderInteractionThreshold:
         args.orderInteractionThreshold ?? ORDER_INTERACTION_THRESHOLD,
-      intervalMethod: 'stratified-percentile-bootstrap',
+      intervalMethod: 'crossover-t-interval',
       analyzerVersion: '3.0.0',
       mode: args.mode,
       warmup: args.warmup,

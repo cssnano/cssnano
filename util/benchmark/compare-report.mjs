@@ -77,16 +77,30 @@ export function printComparison(result) {
       fmtPct(total.medianDeltaPct).padStart(10) +
       directionFor(total).padStart(16)
   );
+  const marginPct = result.configuration?.practicalEquivalenceMargin
+    ? `${Math.round((result.configuration.practicalEquivalenceMargin - 1) * 100)}%`
+    : '10%';
+  const marginLabel = `${marginPct} margin`;
+
   if (total.confidenceIntervalPct) {
     console.log(
-      `superiority CI: ${fmtPct(total.confidenceIntervalPct.low)} to ${fmtPct(total.confidenceIntervalPct.high)}; ` +
-        `direction=${directionFor(total)}, practical=${practicalFor(total)}, ` +
-        `overall=${overallFor(result)}`
+      `superiority CI: ${fmtPct(total.confidenceIntervalPct.low)} to ${fmtPct(total.confidenceIntervalPct.high)}`
     );
     if (total.equivalenceConfidenceInterval) {
       console.log(
         `equivalence CI: ${total.equivalenceConfidenceInterval.low.toFixed(3)} to ${total.equivalenceConfidenceInterval.high.toFixed(3)} ` +
-          `(within the declared 10% margin: ${practicalFor(total)})`
+          `(within the declared ${marginLabel}: ${practicalFor(total)})`
+      );
+    }
+    console.log(`Statistical Direction: ${directionFor(total)}`);
+    console.log(`Practical Tolerance (${marginLabel}): ${practicalFor(total)}`);
+    console.log(`Actionable Verdict: ${overallFor(result)}`);
+    if (
+      directionFor(total) === 'slower' &&
+      practicalFor(total) === 'within-margin'
+    ) {
+      console.log(
+        'Note: Slowdown observed but confirmed within the accepted 10% non-regression margin; no gating action required.'
       );
     }
   }
@@ -130,6 +144,10 @@ export function markdownComparison(result) {
     warning,
     approvedOutputChanges,
   } = result;
+  const marginPct = result.configuration?.practicalEquivalenceMargin
+    ? `${Math.round((result.configuration.practicalEquivalenceMargin - 1) * 100)}%`
+    : '10%';
+  const marginLabel = `${marginPct} margin`;
   const lines = [
     '## cssnano performance comparison',
     '',
@@ -158,9 +176,21 @@ export function markdownComparison(result) {
     '| --- | ---: | ---: | ---: | --- | --- | --- | --- |',
     ...rows.map(markdownRow),
     `| **TOTAL** | **${total.baseMedianMs.toFixed(2)} ms** | **${total.candidateMedianMs.toFixed(2)} ms** | **${fmtPct(total.medianDeltaPct)}** | **${fmtPct(total.confidenceIntervalPct.low)} to ${fmtPct(total.confidenceIntervalPct.high)}** | **${equivalenceText(total.equivalenceConfidenceInterval)}** | **${directionFor(total)}** | **${practicalFor(total)}** |`,
-    `- Overall verdict: **${overallFor(result)}**`,
+    '',
+    `- Statistical Direction: **${directionFor(total)}**`,
+    `- Practical Tolerance (${marginLabel}): **${practicalFor(total)}**`,
+    `- Actionable Verdict: **${overallFor(result)}**`,
     ''
   );
+  if (
+    directionFor(total) === 'slower' &&
+    practicalFor(total) === 'within-margin'
+  ) {
+    lines.push(
+      '> Note: Slowdown observed but confirmed within the accepted 10% non-regression margin; no gating action required.',
+      ''
+    );
+  }
   if (warning) lines.push(`> Warning: ${warning}`, '');
   for (const [name, hashes] of approvedOutputChanges ?? []) {
     lines.push(

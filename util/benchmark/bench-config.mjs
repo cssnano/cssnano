@@ -80,6 +80,7 @@ export function createBenchmarkProcessor(args) {
     : () => cssnano({ preset: args.preset });
 }
 
+// eslint-disable-next-line complexity
 export function resolveBenchmarkArgs(argv = process.argv.slice(2)) {
   const { values } = parseArgs({
     args: argv.filter((arg) => arg !== '--'),
@@ -136,6 +137,7 @@ export function resolveBenchmarkArgs(argv = process.argv.slice(2)) {
       'child-run': { type: 'boolean', default: false },
       'run-index': { type: 'string', default: '1' },
       revision: { type: 'string' },
+      'pin-core': { type: 'string' },
     },
   });
   const mode = values.mode ?? 'stable';
@@ -185,6 +187,10 @@ export function resolveBenchmarkArgs(argv = process.argv.slice(2)) {
     childRun: values['child-run'],
     runIndex: positiveInteger(values['run-index'], '--run-index'),
     revision: values.revision ?? null,
+    pinCore:
+      values['pin-core'] !== undefined
+        ? positiveInteger(values['pin-core'], '--pin-core', true)
+        : null,
   };
   for (const [name, value] of [
     ['--precision-target', args.precisionTarget],

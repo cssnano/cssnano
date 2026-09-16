@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { analyzeComparison } from './compare-analysis.mjs';
+import {
+  analyzeComparison,
+  analyzeIndependentSnapshots,
+  analyzePairedComparison,
+} from './compare-analysis.mjs';
 import { createComparisonSchedule } from './comparison-schedule.mjs';
 
 const HASH = 'a'.repeat(64);
@@ -25,6 +29,7 @@ function provenance(revision) {
     cpu: 'test',
     cpuCount: 1,
     governor: null,
+    pinnedCore: null,
   };
 }
 
@@ -305,4 +310,51 @@ test('a structural failure prevents a performance verdict', () => {
   });
   assert.equal(result.structuralFailure, true);
   assert.equal(result.overallVerdict, 'inconclusive');
+});
+
+test('analyzePairedComparison and analyzeIndependentSnapshots are separate public wrappers', () => {
+  assert.equal(typeof analyzePairedComparison, 'function');
+  assert.equal(typeof analyzeIndependentSnapshots, 'function');
+  assert.equal(analyzeComparison, analyzePairedComparison);
+});
+
+test('exact output-hash approvals allow intentional changes in paired comparisons', () => {
+  const source = artifact(Array(20).fill(1.0));
+  const newHash = 'b'.repeat(64);
+  for (const block of source.blocks) {
+    block.observations.candidate.run.outputHashes.fixture = newHash;
+    block.observations.candidate.run.summary.frameworks[0].outputHash = newHash;
+  }
+  const allowlist = new Map([['fixture', { base: HASH, candidate: newHash }]]);
+  const approved = analyzePairedComparison(source, {
+    outputHashAllowlist: allowlist,
+  });
+  assert.equal(approved.structuralFailure, false);
+  assert.equal(approved.approvedOutputChanges?.length, 1);
+
+  const unapproved = analyzePairedComparison(source);
+  assert.equal(unapproved.structuralFailure, true);
+});
+
+test('estimatedBlocksNeeded targets precisionTarget using residual standard deviation', () => {
+  const source = artifact(Array(20).fill(1.01));
+  const result = analyzePairedComparison(source);
+  assert.ok(result.precision.estimatedBlocksNeeded >= 1);
+  assert.ok(Number.isInteger(result.precision.estimatedBlocksNeeded));
+  assert.equal(
+    result.precision.residualStandardDeviation,
+    result.total.residualStandardDeviation
+  );
+});
+
+test('order equivalence interval check conservatively flags carryover noise', () => {
+  const source = artifact(
+    Array.from({ length: 20 }, (_, index) => (index % 2 ? 1.2 : 1))
+  );
+  const result = analyzePairedComparison(source);
+  assert.equal(result.total.orderIsStable, false);
+  assert.equal(
+    result.inconclusiveReason,
+    'process-order interaction cannot be ruled out'
+  );
 });

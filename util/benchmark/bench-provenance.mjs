@@ -22,6 +22,7 @@ export const PROVENANCE_FIELDS = [
   'cpu',
   'cpuCount',
   'governor',
+  'pinnedCore',
 ];
 
 function sha256(value) {
@@ -136,13 +137,23 @@ function dirtyPaths(root) {
     .toSorted();
 }
 
-function cpuGovernor() {
+function cpuGovernor(mode) {
   const path = '/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor';
+  let governor = null;
   try {
-    return readFileSync(path, 'utf8').trim() || null;
+    governor = readFileSync(path, 'utf8').trim() || null;
   } catch {
-    return null;
+    // scaling governor file not available on this platform
   }
+  if (
+    mode === 'stable' &&
+    (governor === 'powersave' || governor === 'ondemand')
+  ) {
+    console.warn(
+      `Warning: CPU scaling governor is "${governor}". Frequency scaling induces timing jitter; performance benchmarks should use "performance" governor.`
+    );
+  }
+  return governor;
 }
 
 export function currentGitRevision(root = process.cwd()) {
@@ -180,6 +191,8 @@ export function createProvenance({
   gitRevision,
   root = process.cwd(),
   createdAt = new Date().toISOString(),
+  mode = null,
+  pinnedCore = null,
 } = {}) {
   if (typeof corpusHash !== 'string' || !/^[\da-f]{64}$/u.test(corpusHash)) {
     throw new TypeError('corpusHash must be a SHA-256 hash');
@@ -204,7 +217,8 @@ export function createProvenance({
     osRelease: release(),
     cpu: cpu?.model ?? null,
     cpuCount: cpus().length,
-    governor: cpuGovernor(),
+    governor: cpuGovernor(mode),
+    pinnedCore: pinnedCore ?? null,
   };
 }
 
@@ -283,6 +297,14 @@ export function validateProvenance(provenance, { root, corpusHash } = {}) {
   if (provenance.governor !== null && typeof provenance.governor !== 'string') {
     throw new TypeError(
       'benchmark provenance.governor must be a string or null'
+    );
+  }
+  if (
+    provenance.pinnedCore !== null &&
+    (!Number.isInteger(provenance.pinnedCore) || provenance.pinnedCore < 0)
+  ) {
+    throw new TypeError(
+      'benchmark provenance.pinnedCore must be a non-negative integer or null'
     );
   }
   return provenance;

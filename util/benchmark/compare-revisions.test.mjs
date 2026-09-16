@@ -27,6 +27,7 @@ function provenance(revision) {
     cpu: 'test',
     cpuCount: 1,
     governor: null,
+    pinnedCore: null,
   };
 }
 
@@ -103,7 +104,7 @@ function childConfiguration(values) {
     requestedBlocks: values.requestedBlocks,
     precisionTarget: values.precisionTarget,
     orderInteractionThreshold: values.orderInteractionThreshold,
-    intervalMethod: 'stratified-percentile-bootstrap',
+    intervalMethod: 'crossover-t-interval',
     analyzerVersion: '3.0.0',
     mode: values.mode,
     warmup: values.warmup,

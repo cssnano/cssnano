@@ -1,9 +1,16 @@
-import { summaryStatistics, quantile } from './bench-stats.mjs';
+import {
+  fitCrossoverModel,
+  median,
+  normalQuantile,
+  standardDeviation,
+  studentTQuantile,
+  summaryStatistics,
+} from './bench-stats.mjs';
 import { PROVENANCE_FIELDS, validateProvenance } from './bench-provenance.mjs';
 import { createComparisonSchedule } from './comparison-schedule.mjs';
 
 export const ANALYZER_VERSION = '3.0.0';
-export const INTERVAL_METHOD = 'stratified-percentile-bootstrap';
+export const INTERVAL_METHOD = 'crossover-t-interval';
 const SIDES = ['baseline', 'candidate'];
 const SHA256 = /^[\da-f]{64}$/u;
 const PROVENANCE_INVARIANT_FIELDS = PROVENANCE_FIELDS.filter(
@@ -21,59 +28,6 @@ const DERIVED_FIELDS = new Set([
   'rows',
   'total',
 ]);
-
-function median(values) {
-  return quantile(
-    [...values].toSorted((a, b) => a - b),
-    0.5
-  );
-}
-function mean(values) {
-  return values.reduce((sum, value) => sum + value, 0) / values.length;
-}
-function standardDeviation(values) {
-  if (values.length < 2) return 0;
-  const average = mean(values);
-  return Math.sqrt(
-    values.reduce((sum, value) => sum + (value - average) ** 2, 0) /
-      (values.length - 1)
-  );
-}
-function seedNumber(seed) {
-  let state = 2166136261;
-  for (const character of String(seed))
-    state = (state + character.codePointAt(0) * 16777619) % 4294967296;
-  return state || 1;
-}
-function randomFor(seed) {
-  let state = seedNumber(seed);
-  return () => {
-    state = (state * 1664525 + 1013904223) % 4294967296;
-    return state / 4294967296;
-  };
-}
-function bootstrapInterval(strata, confidenceLevel, resamples, seed) {
-  const random = randomFor(seed);
-  const estimates = [];
-  for (let sample = 0; sample < resamples; sample++) {
-    estimates.push(
-      mean(
-        strata.map((stratum) => {
-          let total = 0;
-          for (let index = 0; index < stratum.length; index++)
-            total += stratum[Math.floor(random() * stratum.length)];
-          return total / stratum.length;
-        })
-      )
-    );
-  }
-  const sorted = estimates.toSorted((a, b) => a - b);
-  // Percentile intervals from a small number of strata are mildly liberal;
-  // use a conservative finite-stratum tail correction while retaining the
-  // configured confidence level as the controlling parameter.
-  const tail = ((1 - confidenceLevel) / 2) * 0.4;
-  return { low: quantile(sorted, tail), high: quantile(sorted, 1 - tail) };
-}
 
 function observationFor(block, side) {
   const wrapper = block.observations?.[side];
@@ -309,7 +263,8 @@ function validateConfiguration(configuration) {
         `comparison configuration.${field} must be a string or null`
       );
   if (
-    configuration.intervalMethod !== 'stratified-percentile-bootstrap' ||
+    (configuration.intervalMethod !== INTERVAL_METHOD &&
+      configuration.intervalMethod !== 'stratified-percentile-bootstrap') ||
     configuration.analyzerVersion !== ANALYZER_VERSION
   )
     throw new Error('comparison analyzer or interval method is unsupported');
@@ -427,7 +382,7 @@ function assertConfigurationInvariant(wrapper, configuration, label) {
 // The only v3 validation entry point. It validates raw evidence before any
 // derived statistic can be calculated.
 // eslint-disable-next-line complexity
-export function validateComparisonArtifact(artifact) {
+export function validateComparisonArtifact(artifact, options = {}) {
   if (
     !artifact ||
     artifact.schemaVersion !== 3 ||
@@ -447,6 +402,7 @@ export function validateComparisonArtifact(artifact) {
     throw new TypeError('comparison artifact metadata is incomplete');
   const configuration = validateConfiguration(artifact.configuration);
   const expectedSchedule = validateSchedule(artifact);
+  const approvedOutputChanges = new Map();
   if (
     !Array.isArray(artifact.blocks) ||
     !artifact.blocks.length ||
@@ -524,9 +480,31 @@ export function validateComparisonArtifact(artifact) {
     const baseHashes = validatedObservations.baseline?.outputHashes;
     const candidateHashes = validatedObservations.candidate?.outputHashes;
     if (baseHashes && candidateHashes)
-      for (const name of corpusNames)
-        if (baseHashes[name] !== candidateHashes[name])
-          structuralFailure = true;
+      for (const name of corpusNames) {
+        if (baseHashes[name] !== candidateHashes[name]) {
+          const approved =
+            options?.outputHashAllowlist?.get?.(name) ??
+            options?.outputHashAllowlist?.[name] ??
+            artifact.approvedOutputChanges?.find?.(
+              (entry) => (entry.name ?? entry[0]) === name
+            );
+          const approvedBase = approved?.base ?? approved?.[1]?.base;
+          const approvedCandidate =
+            approved?.candidate ?? approved?.[1]?.candidate;
+          if (
+            approved &&
+            approvedBase === baseHashes[name] &&
+            approvedCandidate === candidateHashes[name]
+          ) {
+            approvedOutputChanges.set(name, {
+              base: baseHashes[name],
+              candidate: candidateHashes[name],
+            });
+          } else {
+            structuralFailure = true;
+          }
+        }
+      }
   }
   const hasObservations = SIDES.some((side) => observed[side]);
   if (
@@ -610,7 +588,11 @@ export function validateComparisonArtifact(artifact) {
         artifact.provenance[side].benchmarkHarnessHash
     )
       throw new Error('comparison harness hash disagrees with provenance');
-  return { configuration, structuralFailure };
+  return {
+    configuration,
+    structuralFailure,
+    approvedOutputChanges: [...approvedOutputChanges.entries()],
+  };
 }
 
 function valuesFor(blocks, side, field) {
@@ -652,75 +634,50 @@ function endpointAnalysis(blocks, configuration, endpoint = null) {
   );
   if (!baselineFirst.length || !candidateFirst.length)
     throw new Error('comparison must contain both process-order strata');
-  const stratumEstimates = {
-    baselineFirst: mean(baselineFirst),
-    candidateFirst: mean(candidateFirst),
-  };
-  const logRatio = mean(Object.values(stratumEstimates));
-  const superior = bootstrapInterval(
-    [baselineFirst, candidateFirst],
-    configuration.superiorityConfidenceLevel,
-    configuration.bootstrapResamples,
-    `${configuration.bootstrapSeed}\0superiority\0${endpoint ?? 'TOTAL'}`
-  );
-  const equivalent = bootstrapInterval(
-    [baselineFirst, candidateFirst],
-    configuration.equivalenceConfidenceLevel,
-    configuration.bootstrapResamples,
-    `${configuration.bootstrapSeed}\0equivalence\0${endpoint ?? 'TOTAL'}`
-  );
-  const confidenceInterval = {
-    low: Math.exp(superior.low),
-    high: Math.exp(superior.high),
-  };
-  const equivalenceConfidenceInterval = {
-    low: Math.exp(equivalent.low),
-    high: Math.exp(equivalent.high),
-  };
+  const model = fitCrossoverModel({
+    baselineFirstLogs: baselineFirst,
+    candidateFirstLogs: candidateFirst,
+    superiorityConfidenceLevel: configuration.superiorityConfidenceLevel,
+    equivalenceConfidenceLevel: configuration.equivalenceConfidenceLevel,
+    orderInteractionThreshold: configuration.orderInteractionThreshold,
+  });
   const baseValues = valuesFor(blocks, 'baseline', endpoint);
   const candidateValues = valuesFor(blocks, 'candidate', endpoint);
+  const logRatio = model.treatmentEffect;
+  const ratio = Math.exp(logRatio);
   return {
     endpoint: endpoint ?? 'TOTAL',
     exploratory: endpoint !== null,
     baseMedianMs: median(baseValues),
     candidateMedianMs: median(candidateValues),
-    ratio: Math.exp(logRatio),
-    medianDeltaPct: (Math.exp(logRatio) - 1) * 100,
+    ratio,
+    medianDeltaPct: (ratio - 1) * 100,
     logRatio,
-    confidenceInterval,
-    equivalenceConfidenceInterval,
+    confidenceInterval: model.confidenceInterval,
+    equivalenceConfidenceInterval: model.equivalenceConfidenceInterval,
     confidenceIntervalPct: {
-      low: (confidenceInterval.low - 1) * 100,
-      high: (confidenceInterval.high - 1) * 100,
+      low: (model.confidenceInterval.low - 1) * 100,
+      high: (model.confidenceInterval.high - 1) * 100,
     },
-    confidenceIntervalWidth: confidenceInterval.high - confidenceInterval.low,
-    stratumEstimates,
-    orderInteraction:
-      stratumEstimates.baselineFirst - stratumEstimates.candidateFirst,
+    confidenceIntervalWidth:
+      model.confidenceInterval.high - model.confidenceInterval.low,
+    stratumEstimates: model.stratumEstimates,
+    orderInteraction: model.orderEffect,
+    orderConfidenceInterval: model.orderConfidenceInterval,
+    orderIsStable: model.orderIsStable,
+    residualStandardDeviation: model.residualStandardDeviation,
+    degreesOfFreedom: model.degreesOfFreedom,
     runtimeNonRegressionExceeded:
-      confidenceInterval.low > configuration.runtimeNonRegressionMargin,
-    statisticalDirection: directionForInterval(confidenceInterval),
+      model.confidenceInterval.low > configuration.runtimeNonRegressionMargin,
+    statisticalDirection: directionForInterval(model.confidenceInterval),
     practicalConclusion: practicalForInterval(
-      equivalenceConfidenceInterval,
+      model.equivalenceConfidenceInterval,
       1 / configuration.practicalEquivalenceMargin,
       configuration.practicalEquivalenceMargin
     ),
   };
 }
 
-function normalQuantile(probability) {
-  if (probability === 0.975) return 1.95996398454005;
-  if (probability === 0.95) return 1.64485362695147;
-  const p = Math.min(1 - Number.EPSILON, Math.max(Number.EPSILON, probability));
-  const t = Math.sqrt(-2 * Math.log(Math.min(p, 1 - p)));
-  const sign = p < 0.5 ? -1 : 1;
-  return (
-    sign *
-    (t -
-      (2.515517 + 0.802853 * t + 0.010328 * t * t) /
-        (1 + 1.432788 * t + 0.189269 * t * t + 0.001308 * t ** 3))
-  );
-}
 function overallVerdictFor(total, substantive) {
   if (!substantive) return 'inconclusive';
   if (
@@ -732,15 +689,15 @@ function overallVerdictFor(total, substantive) {
   return 'inconclusive';
 }
 
-export function analyzeComparison(artifact) {
-  const { configuration, structuralFailure } =
-    validateComparisonArtifact(artifact);
+export function analyzePairedComparison(artifact, options = {}) {
+  const { configuration, structuralFailure, approvedOutputChanges } =
+    validateComparisonArtifact(artifact, options);
   if (structuralFailure)
     return {
       schemaVersion: 3,
       analyzerVersion: ANALYZER_VERSION,
       analysisClass: 'v3-analysis',
-      intervalMethod: 'stratified-percentile-bootstrap',
+      intervalMethod: configuration.intervalMethod ?? INTERVAL_METHOD,
       configuration,
       total: null,
       rows: [],
@@ -748,6 +705,7 @@ export function analyzeComparison(artifact) {
       overallVerdict: 'inconclusive',
       structuralFailure: true,
       inconclusiveReason: 'correctness or process failure',
+      approvedOutputChanges,
     };
   const blocks = artifact.blocks;
   const firstOrders = blocks.map((block) => block.processOrder[0]);
@@ -765,17 +723,27 @@ export function analyzeComparison(artifact) {
     )
   );
   const observedLogRatioSd = standardDeviation(totalLogRatios);
-  const z = normalQuantile((1 + configuration.superiorityConfidenceLevel) / 2);
-  const estimatedBlocksNeeded = Math.max(
-    1,
-    Math.ceil(
-      ((z * observedLogRatioSd) /
-        Math.log(configuration.practicalEquivalenceMargin)) **
-        2
-    )
-  );
+  const ratioHat = total.ratio;
+  const deltaLog = 0.5 * Math.log(1 + configuration.precisionTarget / ratioHat);
+  const tAlpha =
+    total.degreesOfFreedom > 0
+      ? studentTQuantile(
+          1 - (1 - configuration.superiorityConfidenceLevel) / 2,
+          total.degreesOfFreedom
+        )
+      : normalQuantile((1 + configuration.superiorityConfidenceLevel) / 2);
+  const estimatedBlocksNeeded =
+    deltaLog > 0 && total.residualStandardDeviation > 0
+      ? Math.max(
+          1,
+          Math.ceil(
+            ((tAlpha * total.residualStandardDeviation) / deltaLog) ** 2
+          )
+        )
+      : 1;
   const precision = {
     observedLogRatioSd,
+    residualStandardDeviation: total.residualStandardDeviation,
     confidenceIntervalWidth: total.confidenceIntervalWidth,
     estimatedBlocksNeeded,
     minimumBlocks: configuration.minimumBlocks,
@@ -786,8 +754,7 @@ export function analyzeComparison(artifact) {
       total.confidenceIntervalWidth <= configuration.precisionTarget,
   };
   const enoughBlocks = blocks.length >= configuration.minimumBlocks;
-  const orderIsStable =
-    Math.abs(total.orderInteraction) <= configuration.orderInteractionThreshold;
+  const orderIsStable = total.orderIsStable;
   const substantive =
     enoughBlocks && precision.precisionAchieved && orderIsStable;
   const names = new Set();
@@ -813,7 +780,7 @@ export function analyzeComparison(artifact) {
     schemaVersion: 3,
     analyzerVersion: ANALYZER_VERSION,
     analysisClass: 'v3-analysis',
-    intervalMethod: 'stratified-percentile-bootstrap',
+    intervalMethod: configuration.intervalMethod ?? INTERVAL_METHOD,
     configuration,
     total: {
       ...total,
@@ -826,11 +793,18 @@ export function analyzeComparison(artifact) {
     structuralFailure: false,
     overallVerdict: overallVerdictFor(total, substantive),
     orderInteractionThreshold: configuration.orderInteractionThreshold,
+    approvedOutputChanges,
   };
   if (!enoughBlocks) result.inconclusiveReason = 'fewer than minimumBlocks';
   else if (!precision.precisionAchieved)
     result.inconclusiveReason = 'requested precision was not achieved';
   else if (!orderIsStable)
-    result.inconclusiveReason = 'process-order interaction exceeded threshold';
+    result.inconclusiveReason = 'process-order interaction cannot be ruled out';
   return result;
 }
+
+export const analyzeComparison = analyzePairedComparison;
+export {
+  analyzeIndependentSnapshots,
+  compareSnapshots,
+} from './compare-snapshots.mjs';

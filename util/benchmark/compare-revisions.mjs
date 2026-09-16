@@ -20,7 +20,22 @@ import { createComparisonSchedule } from './comparison-schedule.mjs';
 // eslint-disable-next-line complexity
 function options(argv) {
   const values = {};
+  const outputHashAllowlist = new Map();
   for (const argument of argv.filter((value) => value !== '--')) {
+    if (argument.startsWith('--allow-output-hash=')) {
+      const value = argument.slice('--allow-output-hash='.length);
+      const [name, base, candidate, extra] = value.split(',');
+      if (!name || !base || !candidate || extra !== undefined) {
+        throw new Error(
+          '--allow-output-hash must be fixture,base-hash,candidate-hash'
+        );
+      }
+      if (outputHashAllowlist.has(name)) {
+        throw new Error(`duplicate output hash allowlist entry for "${name}"`);
+      }
+      outputHashAllowlist.set(name, { base, candidate });
+      continue;
+    }
     const match = argument.match(/^--([^=]+)=(.*)$/u);
     if (!match) throw new Error(`expected --name=value, received ${argument}`);
     values[match[1]] = match[2];
@@ -72,6 +87,9 @@ function options(argv) {
       'practical-equivalence-margin',
       PRACTICAL_EQUIVALENCE_MARGIN
     ),
+    pinCore:
+      values['pin-core'] !== undefined ? Number(values['pin-core']) : null,
+    outputHashAllowlist,
   };
   if (!result.baseRevision || !result.candidateRevision) {
     throw new Error('--base-revision and --candidate-revision are required');
@@ -108,6 +126,12 @@ function options(argv) {
     if (!Number.isFinite(value) || value < 1)
       throw new Error(`--${name} must be at least 1`);
   }
+  if (
+    result.pinCore !== null &&
+    (!Number.isInteger(result.pinCore) || result.pinCore < 0)
+  ) {
+    throw new Error('--pin-core must be a non-negative integer');
+  }
   return result;
 }
 
@@ -137,6 +161,9 @@ function commandFor(config, side, blockId, directory, revision, resultsDir) {
   if (config.only) args.push(`--only=${config.only}`);
   if (config.warmup !== undefined) args.push(`--warmup=${config.warmup}`);
   if (config.iters !== undefined) args.push(`--iters=${config.iters}`);
+  if (config.pinCore !== null && config.pinCore !== undefined) {
+    args.push(`--pin-core=${config.pinCore}`);
+  }
   return args;
 }
 
@@ -145,11 +172,39 @@ function runProcess(config, side, blockId, directory, revision, resultsDir) {
   const startedAt = new Date().toISOString();
   const started = performance.now();
   try {
-    execFileSync(
-      process.execPath,
-      commandFor(config, side, blockId, directory, revision, resultsDir),
-      { cwd: directory, env: process.env, stdio: 'inherit' }
+    const benchArgs = commandFor(
+      config,
+      side,
+      blockId,
+      directory,
+      revision,
+      resultsDir
     );
+    let executable = process.execPath;
+    let args = benchArgs;
+    if (config.pinCore !== null && config.pinCore !== undefined) {
+      if (typeof process.setAffinity === 'function') {
+        try {
+          process.setAffinity([config.pinCore]);
+        } catch {
+          // ignore or fall back
+        }
+      }
+      if (process.platform === 'linux') {
+        try {
+          execFileSync('which', ['taskset'], { stdio: 'ignore' });
+          executable = 'taskset';
+          args = ['-c', String(config.pinCore), process.execPath, ...benchArgs];
+        } catch {
+          // taskset unavailable
+        }
+      }
+    }
+    execFileSync(executable, args, {
+      cwd: directory,
+      env: process.env,
+      stdio: 'inherit',
+    });
     const snapshot = JSON.parse(
       readFileSync(join(resultsDir, `${label}.json`), 'utf8')
     );
@@ -180,6 +235,7 @@ export function executeComparison(config, run = runProcess) {
   mkdirSync(config.resultsDir, { recursive: true });
   const schedule = createComparisonSchedule(config.blocks, config.seed);
   const blocks = [];
+  const approvedOutputChanges = new Map();
   for (const scheduled of schedule) {
     const startedAt = new Date().toISOString();
     const blockStarted = performance.now();
@@ -208,10 +264,24 @@ export function executeComparison(config, run = runProcess) {
         ...Object.keys(baseHashes),
         ...Object.keys(candidateHashes),
       ]);
-      if (
-        [...names].some((name) => baseHashes[name] !== candidateHashes[name])
-      ) {
-        blockFailure = true;
+      for (const name of names) {
+        if (baseHashes[name] !== candidateHashes[name]) {
+          const approved =
+            config.outputHashAllowlist?.get?.(name) ??
+            config.outputHashAllowlist?.[name];
+          if (
+            approved &&
+            approved.base === baseHashes[name] &&
+            approved.candidate === candidateHashes[name]
+          ) {
+            approvedOutputChanges.set(name, {
+              base: baseHashes[name],
+              candidate: candidateHashes[name],
+            });
+          } else {
+            blockFailure = true;
+          }
+        }
       }
     }
     const block = {
@@ -277,7 +347,7 @@ export function executeComparison(config, run = runProcess) {
       requestedBlocks: config.requestedBlocks,
       precisionTarget: config.precisionTarget,
       orderInteractionThreshold: config.orderInteractionThreshold,
-      intervalMethod: 'stratified-percentile-bootstrap',
+      intervalMethod: 'crossover-t-interval',
       analyzerVersion: '3.0.0',
       mode: config.mode,
       warmup: config.warmup,
@@ -290,6 +360,7 @@ export function executeComparison(config, run = runProcess) {
       seed: config.seed,
       nodeEnv: process.env.NODE_ENV ?? 'production',
     },
+    approvedOutputChanges: [...approvedOutputChanges.entries()],
     schedule: schedule.slice(0, blocks.length),
     blocks,
   };

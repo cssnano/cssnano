@@ -11,11 +11,15 @@ import {
   twoSampleBootstrapConfidenceInterval,
 } from './bench-stats.mjs';
 import { loadSnapshot } from './compare-snapshot-io.mjs';
-import { compareSnapshots } from './compare-snapshots.mjs';
 import {
   analyzeComparison,
+  analyzePairedComparison,
   validateComparisonArtifact,
 } from './compare-analysis.mjs';
+import {
+  analyzeIndependentSnapshots,
+  compareSnapshots,
+} from './compare-snapshots.mjs';
 import { markdownComparison, printComparison } from './compare-report.mjs';
 
 export {
@@ -24,6 +28,9 @@ export {
   clusteredTwoSampleBootstrapConfidenceInterval,
   compareSnapshots,
   analyzeComparison,
+  analyzePairedComparison,
+  analyzeIndependentSnapshots,
+  loadComparison,
   loadSnapshot,
   markdownComparison,
   percentChange,
@@ -62,13 +69,13 @@ function cliArgs(argv) {
   };
 }
 
-function loadComparison(path) {
+function loadComparison(path, options = {}) {
   const artifact = JSON.parse(readFileSync(path, 'utf8'));
   if (artifact.schemaVersion !== 3 || artifact.artifactType !== 'comparison') {
     throw new TypeError('comparison artifact must use schema v3');
   }
-  validateComparisonArtifact(artifact);
-  const analysis = analyzeComparison(artifact);
+  validateComparisonArtifact(artifact, options);
+  const analysis = analyzeComparison(artifact, options);
   const baseline = artifact.blocks.find(
     (block) => block.observations?.baseline
   );
@@ -115,7 +122,9 @@ async function main() {
     ? compareSnapshots(loadSnapshot(args.base), loadSnapshot(args.candidate), {
         outputHashAllowlist: args.outputHashAllowlist,
       })
-    : loadComparison(args.base);
+    : loadComparison(args.base, {
+        outputHashAllowlist: args.outputHashAllowlist,
+      });
   printComparison(result);
   if (args.markdown) writeFileSync(args.markdown, markdownComparison(result));
 }

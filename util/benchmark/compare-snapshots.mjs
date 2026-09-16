@@ -146,7 +146,7 @@ function comparisonWarning(base, candidate) {
   return null;
 }
 
-export function compareSnapshots(base, candidate, options = {}) {
+export function analyzeIndependentSnapshots(base, candidate, options = {}) {
   const approvedOutputChanges = validateMatchingMetadata(
     base,
     candidate,
@@ -214,3 +214,5 @@ export function compareSnapshots(base, candidate, options = {}) {
     overallVerdict: 'inconclusive',
   };
 }
+
+export const compareSnapshots = analyzeIndependentSnapshots;
