@@ -1,5 +1,12 @@
 import type { Rule } from 'postcss';
 import type { RuleMeta } from './rule-meta.js';
+export type MutationOutcome = {
+    previous: Rule | null;
+    replacements: Rule[];
+    next: Rule | null;
+    movedAcrossParents: boolean;
+    kind: 'equal-declaration' | 'equal-selector' | 'partial';
+};
 /**
  * @param {string[]} browsers
  * @param {Map<string, boolean>} compatibilityCache

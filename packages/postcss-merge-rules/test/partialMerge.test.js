@@ -71,6 +71,37 @@ test(
 );
 
 test(
+  'should keep a profitable adjacent merge when the higher-benefit merge is unprofitable',
+  processCSS(
+    '.a{color:red}.b{color:red;font-weight:bold}.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx{color:red;font-weight:bold;p0:v}',
+    '.a,.b{color:red}.b{font-weight:bold}.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx{color:red;font-weight:bold;p0:v}'
+  )
+);
+
+test('should converge after partial merging duplicate declarations', async () => {
+  const input =
+    '.a{color:red;color:red}.b{color:red;font-weight:bold}.c{color:red;font-weight:bold}';
+  const first = await postcss([plugin]).process(input, { from: undefined });
+  const second = await postcss([plugin]).process(first.css, {
+    from: undefined,
+  });
+
+  assert.equal(
+    first.css,
+    '.a{color:red;color:red}.b,.c{color:red;font-weight:bold}'
+  );
+  assert.equal(second.css, first.css);
+});
+
+test(
+  'should expose partial-merge edges after equivalent at-rule parents are combined',
+  processCSS(
+    '@media x{.a{color:red}}@media x{.b{color:red;font-weight:bold}}@media x{.c{font-weight:bold;background:blue}}',
+    '@media x{.a,.b{color:red}.b,.c{font-weight:bold}.c{background:blue}}@media x{}@media x{}'
+  )
+);
+
+test(
   'should not merge over-eagerly (cssnano#36 [case 3])',
   passthroughCSS(
     '.foobam{font-family:serif;display:block}.barim{display:block;line-height:1}.bazaz{font-size:3em;font-family:serif}'

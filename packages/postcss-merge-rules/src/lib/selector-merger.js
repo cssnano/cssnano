@@ -12,6 +12,7 @@ const { sameParent } = cssnanoUtils;
 
 /** @import {Rule} from 'postcss' */
 /** @import {RuleMeta} from './rule-meta.js' */
+/** @typedef {{previous: Rule | null, replacements: Rule[], next: Rule | null, movedAcrossParents: boolean, kind: 'equal-declaration' | 'equal-selector' | 'partial'}} MutationOutcome */
 
 /** @param {Rule | null} rule @param {import('postcss').Container<import('postcss').ChildNode>} container */
 function isDescendant(rule, container) {
@@ -111,8 +112,10 @@ export default function selectorMerger(
       (a.declarations.length === 0 && b.declarations.length === 0) ||
       (first.parent !== second.parent && sameParent(first, second));
     if (a.selectorKey === b.selectorKey || structuralRewrite) return true;
-    for (const id of a.declarationIds) {
-      if (b.declarationIdSet.has(id)) return true;
+    const smaller = a.declarationIds.length <= b.declarationIds.length ? a : b;
+    const larger = smaller === a ? b.declarationIdSet : a.declarationIdSet;
+    for (const id of smaller.declarationIds) {
+      if (larger.has(id)) return true;
     }
     return false;
   }
@@ -125,8 +128,10 @@ export default function selectorMerger(
     if (a.selectorKey === b.selectorKey)
       return a.declarationIds.length + b.declarationIds.length;
     let benefit = 0;
-    for (const id of a.declarationIds) {
-      if (b.declarationIdSet.has(id)) benefit++;
+    const smaller = a.declarationIds.length <= b.declarationIds.length ? a : b;
+    const larger = smaller === a ? b.declarationIdSet : a.declarationIdSet;
+    for (const id of smaller.declarationIdSet) {
+      if (larger.has(id)) benefit++;
     }
     return benefit;
   }
@@ -280,15 +285,19 @@ export default function selectorMerger(
     return boundaries.get(root)?.first ?? null;
   }
 
-  /** @param {Rule} first @param {Rule} second @param {(rule: Rule) => void} enqueueNeighbors */
-  function mergeMatchingDeclarations(first, second, enqueueNeighbors) {
+  /** @param {Rule} first @param {Rule} second @return {MutationOutcome | null} */
+  function mergeMatchingDeclarations(first, second) {
     if (
+      !first.nodes.every((node) => node.type === 'decl') ||
+      !second.nodes.every((node) => node.type === 'decl') ||
       !sameDeclarationsAndOrder(
         getMeta(second, ruleMeta).declarations,
         getMeta(first, ruleMeta).declarations
       )
     )
-      return false;
+      return null;
+    const previous = active.get(first)?.previous ?? null;
+    const next = active.get(second)?.next ?? null;
     const metaSecond = getMeta(second, ruleMeta);
     metaSecond.selectors = [
       ...getMeta(first, ruleMeta).selectors,
@@ -300,17 +309,24 @@ export default function selectorMerger(
     ruleMeta?.delete(first);
     refresh(second);
     ruleCache?.add(second);
-    enqueueNeighbors(second);
-    return true;
+    return {
+      previous,
+      replacements: [second],
+      next,
+      movedAcrossParents: false,
+      kind: 'equal-declaration',
+    };
   }
 
-  /** @param {Rule} first @param {Rule} second @param {(rule: Rule) => void} enqueueNeighbors */
-  function mergeMatchingSelectors(first, second, enqueueNeighbors) {
+  /** @param {Rule} first @param {Rule} second @return {MutationOutcome | null} */
+  function mergeMatchingSelectors(first, second) {
     if (
       getMeta(first, ruleMeta).selectors.join(',') !==
       getMeta(second, ruleMeta).selectors.join(',')
     )
-      return false;
+      return null;
+    const previous = active.get(first)?.previous ?? null;
+    const next = active.get(second)?.next ?? null;
     const cachedDecls = getMeta(first, ruleMeta).declarations;
     second.walk((node) => {
       if (node.type === 'decl' && indexOfDeclaration(cachedDecls, node) !== -1)
@@ -322,8 +338,13 @@ export default function selectorMerger(
     second.remove();
     ruleMeta?.delete(second);
     refresh(first);
-    enqueueNeighbors(first);
-    return true;
+    return {
+      previous,
+      replacements: [first],
+      next,
+      movedAcrossParents: false,
+      kind: 'equal-selector',
+    };
   }
 
   /** @param {Rule[]} replacements @param {Rule | null} previous @param {Rule | null} next @param {number | undefined} sourceOrder */
@@ -352,13 +373,15 @@ export default function selectorMerger(
     }
   }
 
-  /** @param {ReturnType<typeof partialMerge>} outcome @param {Map<import('postcss').Container, Boundary>} captured @param {(first: Rule | null, second: Rule | null) => void} enqueue @param {(rule: Rule) => void} enqueueNeighbors @return {boolean} */
-  function installPartialMerge(outcome, captured, enqueue, enqueueNeighbors) {
-    if (!outcome.replacements.length) return false;
+  /** @param {ReturnType<typeof partialMerge>} outcome @param {Map<import('postcss').Container, Boundary>} captured @param {boolean} movedAcrossParents @return {MutationOutcome | null} */
+  function installPartialMerge(outcome, captured, movedAcrossParents) {
+    if (!outcome.replacements.length) return null;
     const firstWasBoundary =
-      !outcome.moved && replacedBoundary(captured, outcome.replaced, 'first');
+      !movedAcrossParents &&
+      replacedBoundary(captured, outcome.replaced, 'first');
     const lastWasBoundary =
-      !outcome.moved && replacedBoundary(captured, outcome.replaced, 'last');
+      !movedAcrossParents &&
+      replacedBoundary(captured, outcome.replaced, 'last');
     const previous = active.get(outcome.replaced[0])?.previous ?? null;
     const lastReplaced = /** @type {Rule} */ (outcome.replaced.at(-1));
     const next = active.get(lastReplaced)?.next ?? null;
@@ -374,11 +397,13 @@ export default function selectorMerger(
       updateAncestorBoundaries(firstReplacement, 'first');
     if (lastWasBoundary && lastReplacement.parent)
       updateAncestorBoundaries(lastReplacement, 'last');
-    for (const replacement of outcome.replacements)
-      enqueueNeighbors(replacement);
-    enqueue(previous, firstReplacement ?? next);
-    enqueue(lastReplacement ?? previous, next);
-    return outcome.moved;
+    return {
+      previous,
+      replacements: outcome.replacements,
+      next,
+      movedAcrossParents,
+      kind: 'partial',
+    };
   }
 
   /** @param {{first: Rule, second: Rule, firstVersion: number, secondVersion: number}} candidate */
@@ -416,16 +441,8 @@ export default function selectorMerger(
         mergeMatchingDeclarations,
         mergeMatchingSelectors,
         captureBoundaries,
-        partialMerge: (first, second, onMove) =>
-          partialMerge(
-            first,
-            second,
-            browsers,
-            compatibilityCache,
-            ruleCache,
-            ruleMeta,
-            onMove
-          ),
+        partialMerge: (first, second) =>
+          partialMerge(first, second, ruleCache, ruleMeta),
         installPartialMerge,
         refresh,
       });

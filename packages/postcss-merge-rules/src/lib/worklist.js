@@ -1,6 +1,6 @@
-/** @typedef {{first: import('postcss').Rule, second: import('postcss').Rule, firstVersion: number, secondVersion: number, benefit: number, firstSourceOrder: number, contentKey: string}} Candidate */
+/** @typedef {{first: import('postcss').Rule, second: import('postcss').Rule, firstVersion: number, secondVersion: number, benefit: number, firstSourceOrder: number, contentKey: string, candidateId: number, edgeKey: string}} Candidate */
 /** @typedef {{version: number, sourceOrder: number, contentKey: string, active: boolean, previous: import('postcss').Rule | null, next: import('postcss').Rule | null}} ActiveMeta */
-/** @typedef {{rule: import('postcss').Rule, replacements: import('postcss').Rule[], replaced: import('postcss').Rule[], changed: import('postcss').Rule[], moved: boolean}} MergeOutcome */
+/** @typedef {{rule: import('postcss').Rule, replacements: import('postcss').Rule[], replaced: import('postcss').Rule[]}} MergeOutcome */
 /** @typedef {Object} WorklistApi
  * @property {WeakMap<import('postcss').Rule, ActiveMeta>} active
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => boolean} hasPossibleSharedDeclaration
@@ -10,13 +10,25 @@
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => boolean} canMerge
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => boolean} mergeParents
  * @property {(rule: import('postcss').Rule, oldParent: import('postcss').Container, newParent: import('postcss').Container) => void} repairMove
- * @property {(first: import('postcss').Rule, second: import('postcss').Rule, enqueueNeighbors: (rule: import('postcss').Rule) => void) => boolean} mergeMatchingDeclarations
- * @property {(first: import('postcss').Rule, second: import('postcss').Rule, enqueueNeighbors: (rule: import('postcss').Rule) => void) => boolean} mergeMatchingSelectors
+ * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => MutationOutcome | null} mergeMatchingDeclarations
+ * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => MutationOutcome | null} mergeMatchingSelectors
  * @property {(rules: import('postcss').Rule[]) => Map<import('postcss').Container, {first: import('postcss').Rule | null, last: import('postcss').Rule | null}>} captureBoundaries
- * @property {(first: import('postcss').Rule, second: import('postcss').Rule, onMove: (rule: import('postcss').Rule, oldParent: import('postcss').Container, newParent: import('postcss').Container) => void) => MergeOutcome} partialMerge
- * @property {(outcome: MergeOutcome, captured: Map<import('postcss').Container, {first: import('postcss').Rule | null, last: import('postcss').Rule | null}>, enqueue: (first: import('postcss').Rule | null, second: import('postcss').Rule | null) => void, enqueueNeighbors: (rule: import('postcss').Rule) => void) => boolean} installPartialMerge
+ * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => MergeOutcome} partialMerge
+ * @property {(outcome: MergeOutcome, captured: Map<import('postcss').Container, {first: import('postcss').Rule | null, last: import('postcss').Rule | null}>, movedAcrossParents: boolean) => MutationOutcome | null} installPartialMerge
  * @property {(rule: import('postcss').Rule) => ActiveMeta} refresh
  */
+
+/** @typedef {{previous: import('postcss').Rule | null, replacements: import('postcss').Rule[], next: import('postcss').Rule | null, movedAcrossParents: boolean, kind: 'equal-declaration' | 'equal-selector' | 'partial'}} MutationOutcome */
+
+/** @param {Candidate} a @param {Candidate} b */
+export function comesBefore(a, b) {
+  if (a.benefit !== b.benefit) return a.benefit > b.benefit;
+  if (a.firstSourceOrder !== b.firstSourceOrder) {
+    return a.firstSourceOrder < b.firstSourceOrder;
+  }
+  if (a.contentKey !== b.contentKey) return a.contentKey < b.contentKey;
+  return a.candidateId < b.candidateId;
+}
 
 /**
  * Run the incremental merge queue. Rule metadata and merge operations stay in
@@ -30,22 +42,44 @@ export default function runWorklist(root, api) {
   /** @type {Candidate[]} */
   let candidates = [];
   let needsGlobalReseed = false;
+  let nextCandidateId = 0;
+  let nextRuleId = 0;
+  /** @type {WeakMap<import('postcss').Rule, number>} */
+  const ruleIds = new WeakMap();
+  const queuedEdges = new Set();
+  const stats = {
+    initialSeeds: 0,
+    localEdgesConsidered: 0,
+    localEdgesQueued: 0,
+    globalReseeds: 0,
+    candidatePushes: 0,
+    candidatePops: 0,
+    peakHeapSize: 0,
+    staleCandidateRejections: 0,
+    duplicateEdgeSuppressions: 0,
+    canMergeCalls: 0,
+    successfulEqualDeclarationRewrites: 0,
+    successfulEqualSelectorRewrites: 0,
+    successfulPartialRewrites: 0,
+    crossParentMoves: 0,
+  };
 
-  /** @param {Candidate} a @param {Candidate} b */
-  // The comparator stays local with the heap's candidate type and ordering contract.
-  // eslint-disable-next-line unicorn/consistent-function-scoping
-  const comesBefore = (a, b) => {
-    if (a.benefit !== b.benefit) return a.benefit > b.benefit;
-    if (a.firstSourceOrder !== b.firstSourceOrder) {
-      return a.firstSourceOrder < b.firstSourceOrder;
+  /** @param {import('postcss').Rule} rule */
+  const getRuleId = (rule) => {
+    let id = ruleIds.get(rule);
+    if (id === undefined) {
+      id = nextRuleId++;
+      ruleIds.set(rule, id);
     }
-    return a.contentKey < b.contentKey;
+    return id;
   };
 
   /** @param {Candidate} candidate */
   const pushCandidate = (candidate) => {
+    stats.candidatePushes++;
     let index = candidates.length;
     candidates.push(candidate);
+    stats.peakHeapSize = Math.max(stats.peakHeapSize, candidates.length);
     while (index > 0) {
       const parent = Math.floor((index - 1) / 2);
       if (comesBefore(candidates[parent], candidate)) break;
@@ -56,6 +90,7 @@ export default function runWorklist(root, api) {
   };
 
   const popCandidate = () => {
+    stats.candidatePops++;
     const candidate = candidates[0];
     const last = candidates.pop();
     if (last && candidates.length) {
@@ -81,11 +116,19 @@ export default function runWorklist(root, api) {
 
   /** @param {import('postcss').Rule | null} first @param {import('postcss').Rule | null} second */
   const enqueue = (first, second) => {
+    stats.localEdgesConsidered++;
     if (!first || !second || !api.hasPossibleSharedDeclaration(first, second))
       return;
     const firstMeta = api.active.get(first);
     const secondMeta = api.active.get(second);
     if (!firstMeta || !secondMeta) return;
+    const edgeKey = `${getRuleId(first)}:${firstMeta.version}|${getRuleId(second)}:${secondMeta.version}`;
+    if (queuedEdges.has(edgeKey)) {
+      stats.duplicateEdgeSuppressions++;
+      return;
+    }
+    queuedEdges.add(edgeKey);
+    stats.localEdgesQueued++;
     pushCandidate({
       first,
       second,
@@ -94,19 +137,25 @@ export default function runWorklist(root, api) {
       benefit: api.estimatedBenefit(first, second),
       firstSourceOrder: firstMeta.sourceOrder,
       contentKey: `${firstMeta.contentKey}|${secondMeta.contentKey}`,
+      candidateId: nextCandidateId++,
+      edgeKey,
     });
   };
 
-  /** @param {import('postcss').Rule} rule */
-  const enqueueNeighbors = (rule) => {
-    const meta = api.active.get(rule);
-    if (!meta?.active) return;
-    enqueue(meta.previous, rule);
-    enqueue(rule, meta.next);
+  /** @param {import('postcss').Rule | null} previous @param {import('postcss').Rule[]} replacements @param {import('postcss').Rule | null} next */
+  const enqueueSegment = (previous, replacements, next) => {
+    let prior = previous;
+    for (const replacement of replacements) {
+      enqueue(prior, replacement);
+      prior = replacement;
+    }
+    enqueue(prior, next);
   };
 
-  const reseedCandidates = () => {
+  const reseedCandidates = (initial = false) => {
     candidates = [];
+    if (initial) stats.initialSeeds++;
+    else stats.globalReseeds++;
     const initialRule = api.seed(root);
     for (
       let rule = initialRule;
@@ -117,50 +166,85 @@ export default function runWorklist(root, api) {
     }
   };
 
-  reseedCandidates();
+  /** @param {Candidate} candidate @return {boolean} */
+  const processCandidate = (candidate) => {
+    const first = candidate.first;
+    const second = candidate.second;
+    if (!api.isCurrentCandidate(candidate)) {
+      stats.staleCandidateRejections++;
+      return false;
+    }
+    stats.canMergeCalls++;
+    if (!api.canMerge(first, second)) return false;
+
+    // Equivalent at-rule moves preserve depth-first leaf-rule order.
+    const oldParent = second.parent;
+    const newParent = first.parent;
+    const moved = api.mergeParents(first, second);
+    if (moved) stats.crossParentMoves++;
+    if (moved && oldParent && newParent)
+      api.repairMove(second, oldParent, newParent);
+
+    const declarationMutation = api.mergeMatchingDeclarations(first, second);
+    if (declarationMutation) {
+      enqueueSegment(
+        declarationMutation.previous,
+        declarationMutation.replacements,
+        declarationMutation.next
+      );
+      stats.successfulEqualDeclarationRewrites++;
+      return declarationMutation.movedAcrossParents || moved;
+    }
+
+    const selectorMutation = api.mergeMatchingSelectors(first, second);
+    if (selectorMutation) {
+      enqueueSegment(
+        selectorMutation.previous,
+        selectorMutation.replacements,
+        selectorMutation.next
+      );
+      stats.successfulEqualSelectorRewrites++;
+      return selectorMutation.movedAcrossParents || moved;
+    }
+
+    const replacedRules = [first, second];
+    const capturedBoundaries = api.captureBoundaries(replacedRules);
+    const outcome = api.partialMerge(first, second);
+    if (outcome.replacements.length) {
+      const mutation = api.installPartialMerge(
+        outcome,
+        capturedBoundaries,
+        moved
+      );
+      if (mutation) {
+        enqueueSegment(mutation.previous, mutation.replacements, mutation.next);
+        if (mutation.kind === 'partial') stats.successfulPartialRewrites++;
+        return mutation.movedAcrossParents || moved;
+      }
+    } else if (moved) {
+      for (const changed of [first, second]) {
+        const refreshed = api.refresh(changed);
+        enqueueSegment(refreshed.previous, [changed], refreshed.next);
+      }
+      return true;
+    }
+    return false;
+  };
+
+  reseedCandidates(true);
   while (candidates.length || needsGlobalReseed) {
     if (!candidates.length) {
       needsGlobalReseed = false;
       reseedCandidates();
       if (!candidates.length) break;
     }
-    const candidate = popCandidate();
-    const first = candidate.first;
-    const second = candidate.second;
-    if (!api.isCurrentCandidate(candidate)) continue;
-    if (!api.canMerge(first, second)) continue;
+    needsGlobalReseed = processCandidate(popCandidate()) || needsGlobalReseed;
+  }
 
-    // Equivalent at-rule moves preserve depth-first leaf-rule order.
-    const oldParent = second.parent;
-    const newParent = first.parent;
-    const moved = api.mergeParents(first, second);
-    if (moved && oldParent && newParent)
-      api.repairMove(second, oldParent, newParent);
-    if (api.mergeMatchingDeclarations(first, second, enqueueNeighbors))
-      continue;
-    if (api.mergeMatchingSelectors(first, second, enqueueNeighbors)) continue;
-
-    const replacedRules = [first, second];
-    const capturedBoundaries = api.captureBoundaries(replacedRules);
-    const outcome = api.partialMerge(
-      first,
-      second,
-      (rule, movedFrom, movedTo) => api.repairMove(rule, movedFrom, movedTo)
-    );
-    if (outcome.replacements.length) {
-      needsGlobalReseed =
-        api.installPartialMerge(
-          outcome,
-          capturedBoundaries,
-          enqueue,
-          enqueueNeighbors
-        ) || needsGlobalReseed;
-    } else if (moved || outcome.moved) {
-      for (const changed of [first, second, ...outcome.changed]) {
-        api.refresh(changed);
-        enqueueNeighbors(changed);
-      }
-      needsGlobalReseed = true;
-    }
+  if (
+    typeof process !== 'undefined' &&
+    process.env.CSSNANO_MERGE_RULES_STATS !== undefined
+  ) {
+    console.error(`postcss-merge-rules stats ${JSON.stringify(stats)}`);
   }
 }

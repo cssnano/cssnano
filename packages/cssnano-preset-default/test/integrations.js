@@ -193,3 +193,12 @@ describe('colormin options', () => {
     assert.strictEqual(css, input);
   });
 });
+
+test('should preserve important comments while merging equal declarations', async () => {
+  const input = '.a{/*!keep*/color:red}.b{color:red}';
+  const { css } = await createCssnanoProcessor(preset()).process(input, {
+    from: undefined,
+  });
+
+  assert.equal(css, '.a{/*!keep*/}.a,.b{color:red}');
+});

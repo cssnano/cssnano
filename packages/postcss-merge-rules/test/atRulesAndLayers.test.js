@@ -177,6 +177,13 @@ test(
 );
 
 test(
+  'should preserve nested rules when their parent also has matching declarations',
+  passthroughCSS(
+    '.a { & .child { color: blue; } color: red; } .b { color: red; }'
+  )
+);
+
+test(
   'should not merge nested container rules',
   passthroughCSS(`.mobile {
   @container (min-width: 200px) {

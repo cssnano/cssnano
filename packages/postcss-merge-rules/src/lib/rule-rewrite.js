@@ -1,4 +1,4 @@
-import { intersect, indexOfDeclaration } from './declarations.js';
+import { indexOfDeclaration } from './declarations.js';
 import { getMeta } from './rule-meta.js';
 
 /** @import {Declaration, Rule} from 'postcss' */
@@ -17,83 +17,12 @@ export function mergeParents(first, second) {
   return true;
 }
 
-/** @param {Rule} second @return {Rule | null} */
-function getNextRule(second) {
-  let nextRule = second.next();
-  if (!nextRule) {
-    const parentSibling =
-      /** @type {import('postcss').Container | undefined} */ (
-        /** @type {import('postcss').Container<import('postcss').ChildNode>} */ (
-          second.parent
-        ).next()
-      );
-    nextRule = parentSibling && parentSibling.nodes && parentSibling.nodes[0];
-  }
-  return nextRule?.type === 'rule' ? nextRule : null;
-}
-
 /**
  * @param {...Rule} rules
  * @return {number}
  */
 function ruleLength(...rules) {
   return rules.map((r) => (r.nodes.length ? String(r) : '')).join('').length;
-}
-
-/**
- * @param {Rule} first
- * @param {Rule} second
- * @param {Declaration[]} intersection
- * @param {string[]} browsers
- * @param {Map<string, boolean>} compatibilityCache
- * @param {WeakSet<Rule>} ruleCache
- * @param {WeakMap<Rule, import('./rule-meta.js').RuleMeta>} ruleMeta
- * @param {(a: Rule, b: Rule, browsers: string[], compatibilityCache: Map<string, boolean>, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, import('./rule-meta.js').RuleMeta>) => boolean} canMerge
- * @param {(rule: Rule, oldParent: import('postcss').Container, newParent: import('postcss').Container) => void} [onMove]
- * @return {{first: Rule, second: Rule, intersection: Declaration[], moved: boolean}}
- */
-export function mergeWithNextRule(
-  first,
-  second,
-  intersection,
-  browsers,
-  compatibilityCache,
-  ruleCache,
-  ruleMeta,
-  canMerge,
-  onMove
-) {
-  const nextRule = getNextRule(second);
-  if (
-    !nextRule ||
-    !canMerge(
-      second,
-      nextRule,
-      browsers,
-      compatibilityCache,
-      ruleCache,
-      ruleMeta
-    )
-  ) {
-    return { first, second, intersection, moved: false };
-  }
-  const nextIntersection = intersect(
-    getMeta(second, ruleMeta).declarations,
-    getMeta(nextRule, ruleMeta).declarations
-  );
-  if (nextIntersection.length <= intersection.length) {
-    return { first, second, intersection, moved: false };
-  }
-  const oldParent = nextRule.parent;
-  const newParent = second.parent;
-  const moved = mergeParents(second, nextRule);
-  if (moved && oldParent && newParent) onMove?.(nextRule, oldParent, newParent);
-  return {
-    first: second,
-    second: nextRule,
-    intersection: nextIntersection,
-    moved,
-  };
 }
 
 /**

@@ -17,6 +17,61 @@ test(
 );
 
 test(
+  'should preserve an important comment in the first equal-declaration block',
+  processCSS(
+    '.a{/*!keep*/color:red}.b{color:red}',
+    '.a{/*!keep*/}.a,.b{color:red}'
+  )
+);
+
+test(
+  'should preserve an important comment in the second equal-declaration block',
+  processCSS(
+    '.a{color:red}.b{/*!keep*/color:red}',
+    '.a,.b{color:red}.b{/*!keep*/}'
+  )
+);
+
+test(
+  'should preserve important comments from both equal-declaration blocks',
+  processCSS(
+    '.a{/*!one*/color:red}.b{/*!two*/color:red}',
+    '.a{/*!one*/}.a,.b{color:red}.b{/*!two*/}'
+  )
+);
+
+test(
+  'should not merge equal declarations with comments when selector length makes it unprofitable',
+  passthroughCSS(
+    '.very-long-selector-name-one{/*!keep*/color:red}.very-long-selector-name-two{color:red}'
+  )
+);
+
+test(
+  'should preserve comments when rules share multiple declarations',
+  processCSS(
+    '.a{/*!license*/color:red;font-size:12px}.b{color:red;font-size:12px}',
+    '.a{/*!license*/}.a,.b{color:red;font-size:12px}'
+  )
+);
+
+test(
+  'should preserve an interspersed important comment while merging declarations',
+  processCSS(
+    '.a{color:red;/*!note*/font-size:12px}.b{color:red;font-size:12px}',
+    '.a{/*!note*/}.a,.b{color:red;font-size:12px}'
+  )
+);
+
+test(
+  'should preserve an unimportant comment while merging declarations',
+  processCSS(
+    '.a{/*note*/color:red}.b{color:red}',
+    '.a{/*note*/}.a,.b{color:red}'
+  )
+);
+
+test(
   'should merge based on declarations (2)',
   processCSS(
     'h1{color:red;line-height:1.5;font-size:2em}h2{color:red;line-height:1.5;font-size:2em}',

@@ -6,7 +6,7 @@ import {
 } from './ensureCompatibility.js';
 import { filterRuleIntersections, intersect } from './declarations.js';
 import { getMeta } from './rule-meta.js';
-import { buildMergedRule, mergeWithNextRule } from './rule-rewrite.js';
+import { buildMergedRule } from './rule-rewrite.js';
 
 const { sameParent } = cssnanoUtils;
 
@@ -67,22 +67,11 @@ export function canMerge(
 /**
  * @param {Rule} first
  * @param {Rule} second
- * @param {string[]} browsers
- * @param {Map<string, boolean>} compatibilityCache
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, RuleMeta>} ruleMeta
- * @param {(rule: Rule, oldParent: import('postcss').Container, newParent: import('postcss').Container) => void} [onMove]
- * @return {{rule: Rule, replacements: Rule[], replaced: Rule[], changed: Rule[], moved: boolean}}
+ * @return {{rule: Rule, replacements: Rule[], replaced: Rule[]}}
  */
-export function partialMerge(
-  first,
-  second,
-  browsers,
-  compatibilityCache,
-  ruleCache,
-  ruleMeta,
-  onMove
-) {
+export function partialMerge(first, second, ruleCache, ruleMeta) {
   const metaFirst = getMeta(first, ruleMeta);
   const metaSecond = getMeta(second, ruleMeta);
   let intersection = intersect(metaFirst.declarations, metaSecond.declarations);
@@ -91,24 +80,10 @@ export function partialMerge(
       rule: second,
       replacements: [],
       replaced: [],
-      changed: [],
-      moved: false,
     };
   }
-  const mergedNext = mergeWithNextRule(
-    first,
-    second,
-    intersection,
-    browsers,
-    compatibilityCache,
-    ruleCache,
-    ruleMeta,
-    canMerge,
-    onMove
-  );
-  const mergedFirst = mergedNext.first;
-  const mergedSecond = mergedNext.second;
-  intersection = mergedNext.intersection;
+  const mergedFirst = first;
+  const mergedSecond = second;
   const earlierRuleDeclarations = [
     ...getMeta(mergedFirst, ruleMeta).declarations,
   ];
@@ -126,8 +101,6 @@ export function partialMerge(
       rule: mergedSecond,
       replacements: [],
       replaced: [],
-      changed: mergedNext.moved ? [mergedFirst, mergedSecond] : [],
-      moved: mergedNext.moved,
     };
   }
   const merged = buildMergedRule(
@@ -141,7 +114,5 @@ export function partialMerge(
   return {
     ...merged,
     replaced: merged.replacements.length ? [mergedFirst, mergedSecond] : [],
-    changed: mergedNext.moved ? [mergedFirst, mergedSecond] : [],
-    moved: mergedNext.moved,
   };
 }
