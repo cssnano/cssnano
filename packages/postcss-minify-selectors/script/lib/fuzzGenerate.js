@@ -340,7 +340,7 @@ function generateMalformed(seed, count) {
  * @return {string}
  */
 function shrink(css, fails) {
-  const match = /^([^{]+)\{/.exec(css);
+  const match = /^([^\{]+)\{/v.exec(css);
   if (!match) return css;
 
   let selectors = match[1].split(',').map((s) => s.trim());

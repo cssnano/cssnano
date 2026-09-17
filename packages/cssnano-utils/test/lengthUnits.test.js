@@ -111,7 +111,7 @@ describe('lengthUnits specification contract', () => {
     for (const unit of cssnanoUtils.lengthUnits) {
       assert.match(
         unit,
-        /^[a-z]+$/,
+        /^[a-z]+$/v,
         `unit "${unit}" must be non-empty and strictly lowercase ASCII alphabetic`
       );
     }

@@ -1,4 +1,4 @@
-const vendorPrefixRegex = /^-\w+-/;
+const vendorPrefixRegex = /^-\w+-/v;
 /**
  * @param {string} prop
  * @return {string}

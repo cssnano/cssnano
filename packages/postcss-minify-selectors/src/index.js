@@ -56,7 +56,7 @@ function pluginCreator(opts = {}) {
             if (source.at(-1) === ':') continue;
             const inKeyframes =
               rule.parent?.type === 'atrule' &&
-              /(?:^|-)(?:webkit-)?keyframes$/iu.test(rule.parent.name);
+              /(?:^|-)(?:webkit-)?keyframes$/iv.test(rule.parent.name);
             if (
               !inKeyframes &&
               !hasDefaultNamespace &&

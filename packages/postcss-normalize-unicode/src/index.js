@@ -3,8 +3,8 @@ import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
 /** @import browserslist from 'browserslist' */
 
-const regexLowerCaseUPrefix = /^u(?=\+)/;
-const unicodeRangeRegex = /^unicode-range$/i;
+const regexLowerCaseUPrefix = /^u(?=\+)/v;
+const unicodeRangeRegex = /^unicode-range$/iv;
 
 /**
  * @param {string} range

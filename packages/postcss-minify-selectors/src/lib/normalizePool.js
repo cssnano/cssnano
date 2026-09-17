@@ -312,7 +312,7 @@ export function attributeOutput(arena, pool, node) {
     importantTrivia(arena, pool, matcherEnd, payload.valueToken),
     pool.text(
       arena.tokens[payload.valueToken][0] === TokenType.String
-        ? unquote(arena.tokens[payload.valueToken][1]).replace(/\\\n/gu, '')
+        ? unquote(arena.tokens[payload.valueToken][1]).replace(/\\\n/gv, '')
         : compactIdent(arena.tokens[payload.valueToken])
     )
   );
@@ -330,7 +330,7 @@ export function attributeOutput(arena, pool, node) {
 
 /** @param {string | undefined} character */
 function isHexDigit(character) {
-  return character !== undefined && /^[\dA-F]$/iu.test(character);
+  return character !== undefined && /^[\dA-F]$/iv.test(character);
 }
 
 /** @param {string} value */

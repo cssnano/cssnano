@@ -101,7 +101,7 @@ export function pseudoOutput(arena, pool, node, normalized) {
   if (node.status === 'invalid') return rawOutput(arena, pool, node);
   const payload = arena.payloads.pseudos[node.payload];
   const name = compactIdent(arena.tokens[payload.nameToken]).replace(
-    /\($/u,
+    /\($/v,
     ''
   );
   const prefix =

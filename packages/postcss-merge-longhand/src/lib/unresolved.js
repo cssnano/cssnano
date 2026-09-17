@@ -36,8 +36,8 @@ const trustedSupportFunctions = trustedFunctions.difference(
   new Set(substitutionFunctions)
 );
 
-const vendorPrefix = /^-[a-z]+-/;
-const leadingFunction = /^(-?[a-z][\w-]*)\(/i;
+const vendorPrefix = /^-[a-z]+-/v;
+const leadingFunction = /^(-?[a-z][\w\-]*)\(/iv;
 
 /**
  * @param {string} token

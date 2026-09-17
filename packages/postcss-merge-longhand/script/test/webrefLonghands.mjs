@@ -341,14 +341,14 @@ suite('validate', () => {
     const data = buildLonghands(webref());
     data.lineWidthKeywords = ['hairline', ...data.lineWidthKeywords];
 
-    assert.throws(() => validate(data), /exclude hairline/);
+    assert.throws(() => validate(data), /exclude hairline/v);
   });
 
   test('rejects colour data that took in a function naming no colour', () => {
     const data = buildLonghands(webref());
     data.colorFunctions = [...data.colorFunctions, 'wcag2'];
 
-    assert.throws(() => validate(data), /exclude wcag2/);
+    assert.throws(() => validate(data), /exclude wcag2/v);
   });
 
   test('rejects colour data that lost a function spelled out as a call', () => {
@@ -357,7 +357,7 @@ suite('validate', () => {
       (name) => name !== 'light-dark'
     );
 
-    assert.throws(() => validate(data), /include light-dark/);
+    assert.throws(() => validate(data), /include light-dark/v);
   });
 
   test('accepts data with the shape the plugin assumes', () => {
@@ -368,14 +368,14 @@ suite('validate', () => {
     const data = buildLonghands(webref());
     data.sides = ['top', 'right', 'bottom'];
 
-    assert.throws(() => validate(data), /the sides/);
+    assert.throws(() => validate(data), /the sides/v);
   });
 
   test('rejects a longhand left without an initial value', () => {
     const data = buildLonghands(webref());
     data.initialValues.delete('margin-top');
 
-    assert.throws(() => validate(data), /No initial value for margin-top/);
+    assert.throws(() => validate(data), /No initial value for margin-top/v);
   });
 
   test('rejects a columns shorthand that stops setting a width', () => {
@@ -385,6 +385,9 @@ suite('validate', () => {
       resets: [],
     });
 
-    assert.throws(() => validate(data), /Expected columns to set column-width/);
+    assert.throws(
+      () => validate(data),
+      /Expected columns to set column-width/v
+    );
   });
 });

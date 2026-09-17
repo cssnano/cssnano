@@ -204,14 +204,14 @@ test('comparison results expose only report fields', () => {
 test('comparison rejects mismatched metadata and corpus', () => {
   const base = snapshot([100, 100, 100, 100, 100]);
   const differentSeed = { ...snapshot([90, 90, 90, 90, 90]), seed: 'other' };
-  assert.throws(() => compareSnapshots(base, differentSeed), /seed differs/);
+  assert.throws(() => compareSnapshots(base, differentSeed), /seed differs/v);
   const differentCorpus = {
     ...snapshot([90, 90, 90, 90, 90]),
     corpusManifest: 'other',
   };
   assert.throws(
     () => compareSnapshots(base, differentCorpus),
-    /corpusManifest/
+    /corpusManifest/v
   );
 });
 
@@ -221,7 +221,7 @@ test('comparison rejects output changes and compares maximum RSS', () => {
   for (const run of candidate.runs) run.outputHashes.fixture = 'different-hash';
   assert.throws(
     () => compareSnapshots(base, candidate),
-    /output hash differs for "fixture"/
+    /output hash differs for "fixture"/v
   );
 
   const result = compareSnapshots(base, snapshot([90, 90, 90, 90, 90]));
@@ -253,18 +253,18 @@ test('comparison accepts only explicitly allowlisted output changes', () => {
           ['fixture', { base: 'wrong', candidate: candidateHash }],
         ]),
       }),
-    /hash differs.*base hash "hash".*candidate hash "different-hash"/
+    /hash differs.*base hash "hash".*candidate hash "different-hash"/v
   );
 });
 
 test('stable benchmarks require a validated explicit revision', () => {
   assert.throws(
     () => resolveBenchmarkArgs(['--mode=stable']),
-    /--revision is required for stable benchmarks/
+    /--revision is required for stable benchmarks/v
   );
   assert.throws(
     () => resolveBenchmarkArgs(['--mode=stable', '--revision=short']),
-    /full commit SHA/
+    /full commit SHA/v
   );
   const revision = currentGitRevision();
   assert.equal(
@@ -301,7 +301,7 @@ test('aggregate snapshots reject revision provenance changes', () => {
         runs: 2,
         resultsDir: mkdtempSync(join(tmpdir(), 'cssnano-benchmark-')),
       }),
-    /revision changed/
+    /revision changed/v
   );
 });
 
@@ -366,7 +366,7 @@ test('smoke benchmark writes a versioned snapshot with stable output hashes', as
     readFileSync(join(resultsDirectory, 'smoke-repeat.json'), 'utf8')
   );
   assert.equal(result.schemaVersion, 3);
-  assert.match(result.gitRevision, /^[\da-f]{40}$/u);
+  assert.match(result.gitRevision, /^[\da-f]{40}$/v);
   assert.equal(result.runs.length, 1);
   assert.equal(result.outputHashes.fixture, repeat.outputHashes.fixture);
   assert.doesNotThrow(() => compareSnapshots(result, repeat));
@@ -379,48 +379,48 @@ test('smoke benchmark writes a versioned snapshot with stable output hashes', as
 });
 
 test('summary statistics and quantiles reject nonsensical values (negative, NaN, out-of-bounds q)', () => {
-  assert.throws(() => quantile([1, 2, 3], -0.1), /between 0 and 1/);
-  assert.throws(() => quantile([1, 2, 3], 1.1), /between 0 and 1/);
-  assert.throws(() => quantile([1, 2, 3], Number.NaN), /between 0 and 1/);
+  assert.throws(() => quantile([1, 2, 3], -0.1), /between 0 and 1/v);
+  assert.throws(() => quantile([1, 2, 3], 1.1), /between 0 and 1/v);
+  assert.throws(() => quantile([1, 2, 3], Number.NaN), /between 0 and 1/v);
   assert.throws(
     () => quantile([], 0.5),
-    /cannot calculate a quantile of no samples/
+    /cannot calculate a quantile of no samples/v
   );
   assert.throws(
     () => quantile([1, Number.NaN, 3], 0.5),
-    /must be finite numbers/
+    /must be finite numbers/v
   );
-  assert.throws(() => summaryStatistics([]), /cannot be empty/);
+  assert.throws(() => summaryStatistics([]), /cannot be empty/v);
   assert.throws(
     () => summaryStatistics([-1, 2, 3]),
-    /must be non-negative finite numbers/
+    /must be non-negative finite numbers/v
   );
   assert.throws(
     () => summaryStatistics([1, Number.NaN, 3]),
-    /must be non-negative finite numbers/
+    /must be non-negative finite numbers/v
   );
   assert.throws(
     () => summaryStatistics([1, Infinity, 3]),
-    /must be non-negative finite numbers/
+    /must be non-negative finite numbers/v
   );
 });
 
 test('paired percent change rejects negative and non-finite timings', () => {
   assert.throws(
     () => pairedPercentChange(-1, 2),
-    /must be non-negative finite numbers/
+    /must be non-negative finite numbers/v
   );
   assert.throws(
     () => pairedPercentChange(2, -1),
-    /must be non-negative finite numbers/
+    /must be non-negative finite numbers/v
   );
   assert.throws(
     () => pairedPercentChange(Number.NaN, 2),
-    /must be non-negative finite numbers/
+    /must be non-negative finite numbers/v
   );
   assert.throws(
     () => pairedPercentChange(2, Infinity),
-    /must be non-negative finite numbers/
+    /must be non-negative finite numbers/v
   );
   assert.equal(pairedPercentChange(0, 0), 0);
   assert.equal(pairedPercentChange(0, 5), Infinity);
@@ -428,18 +428,18 @@ test('paired percent change rejects negative and non-finite timings', () => {
 });
 
 test('confidence intervals reject non-finite values and non-positive resamples', () => {
-  assert.throws(() => bootstrapConfidenceInterval([]), /cannot be empty/);
+  assert.throws(() => bootstrapConfidenceInterval([]), /cannot be empty/v);
   assert.throws(
     () => bootstrapConfidenceInterval([1, Number.NaN, 3]),
-    /must be finite numbers/
+    /must be finite numbers/v
   );
   assert.throws(
     () => bootstrapConfidenceInterval([1, 2, 3], 0),
-    /must be a positive integer/
+    /must be a positive integer/v
   );
   assert.throws(
     () => bootstrapConfidenceInterval([1, 2, 3], -5),
-    /must be a positive integer/
+    /must be a positive integer/v
   );
 });
 
@@ -458,7 +458,7 @@ test('processCorpus rejects negative elapsed timings', async () => {
           },
         }
       ),
-    /elapsed timing must be a non-negative finite number/
+    /elapsed timing must be a non-negative finite number/v
   );
 });
 
@@ -472,11 +472,11 @@ test('snapshot loader rejects negative or zero timings and negative bytes', () =
 
   assert.throws(
     () => loadSnapshot(createTestSnapshot({ total: { medianMs: -5 } })),
-    /must be positive numbers/
+    /must be positive numbers/v
   );
   assert.throws(
     () => loadSnapshot(createTestSnapshot({ total: { medianMs: 0 } })),
-    /must be positive numbers/
+    /must be positive numbers/v
   );
   assert.throws(
     () =>
@@ -485,7 +485,7 @@ test('snapshot loader rejects negative or zero timings and negative bytes', () =
           frameworks: [{ name: 'fixture', bytes: -1, medianMs: 10 }],
         })
       ),
-    /bytes must be a non-negative finite number/
+    /bytes must be a non-negative finite number/v
   );
 });
 
@@ -509,7 +509,7 @@ test('comparison marks runs with fewer than three replicates as inconclusive', (
   const candidate = snapshot([80, 80]);
   const result = compareSnapshots(base, candidate);
   assert.equal(result.total.verdict, 'inconclusive');
-  assert.match(result.warning, /fewer than three independent replicates/i);
+  assert.match(result.warning, /fewer than three independent replicates/iv);
 });
 
 test('environment validation checks required runtime fields while ignoring volatile hardware stats', () => {
@@ -536,7 +536,7 @@ test('environment validation checks required runtime fields while ignoring volat
   };
   assert.throws(
     () => compareSnapshots(base, candWithDifferentNodeFlags),
-    /environment\.nodeFlags differs/
+    /environment\.nodeFlags differs/v
   );
 });
 
@@ -557,23 +557,23 @@ test('two-sample bootstrap intervals are deterministic and reject invalid inputs
   assert.ok(first.high < 0);
   assert.throws(
     () => twoSampleBootstrapConfidenceInterval([], [1, 2, 3]),
-    /cannot be empty/
+    /cannot be empty/v
   );
   assert.throws(
     () => twoSampleBootstrapConfidenceInterval([1, 2, 3], []),
-    /cannot be empty/
+    /cannot be empty/v
   );
   assert.throws(
     () => twoSampleBootstrapConfidenceInterval([-1, 2, 3], [1, 2, 3]),
-    /non-negative finite numbers/
+    /non-negative finite numbers/v
   );
   assert.throws(
     () => twoSampleBootstrapConfidenceInterval([1, 2, 3], [1, Number.NaN, 3]),
-    /non-negative finite numbers/
+    /non-negative finite numbers/v
   );
   assert.throws(
     () => twoSampleBootstrapConfidenceInterval([1, 2, 3], [1, 2, 3], 0),
-    /must be a positive integer/
+    /must be a positive integer/v
   );
   const clustered = clusteredTwoSampleBootstrapConfidenceInterval(
     [
@@ -606,7 +606,7 @@ test('two-sample bootstrap intervals are deterministic and reject invalid inputs
   );
   assert.throws(
     () => clusteredTwoSampleBootstrapConfidenceInterval([[]], [[1, 2, 3]]),
-    /sample groups cannot be empty/
+    /sample groups cannot be empty/v
   );
 });
 

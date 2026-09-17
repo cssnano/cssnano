@@ -1,6 +1,6 @@
 import LayerCache from './lib/layerCache.js';
 
-const zIndexRegex = /z-index/i;
+const zIndexRegex = /z-index/iv;
 /** @typedef {{startIndex?: number}} Options */
 /**
  * @param {Options} opts

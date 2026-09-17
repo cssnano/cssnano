@@ -116,8 +116,8 @@ suite('top-level folding with functional pseudos', () => {
       `${selectors}{color:red}`,
       { from: undefined }
     ).css;
-    assert.match(output, /^\.scope:is\(\.a0,\.b0\) /u);
-    assert.match(output, /\.item999\)\{color:red\}$/u);
+    assert.match(output, /^\.scope:is\(\.a0,\.b0\) /v);
+    assert.match(output, /\.item999\)\{color:red\}$/v);
   });
 
   test(

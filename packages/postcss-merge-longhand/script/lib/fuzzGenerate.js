@@ -525,7 +525,7 @@ function generate(seed, count) {
  * @return {string}
  */
 function shrink(css, fails) {
-  const [, head, body] = /^(a\{)(.*)\}$/.exec(css) ?? [];
+  const [, head, body] = /^(a\{)(.*)\}$/v.exec(css) ?? [];
 
   if (body === undefined) {
     return css;

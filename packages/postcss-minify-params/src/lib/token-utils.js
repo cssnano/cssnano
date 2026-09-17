@@ -57,7 +57,7 @@ export const aspectRatioFeatures = new Set([
  */
 function rational(source) {
   const match = source.match(
-    /^[+]?((?:\d+(?:\.\d*)?)|(?:\.\d+))(?:[eE]([+-]?\d+))?$/
+    /^[+]?((?:\d+(?:\.\d*)?)|(?:\.\d+))(?:[eE]([+\-]?\d+))?$/v
   );
   if (!match) return undefined;
   const [, coefficient, exponent = '0'] = match;

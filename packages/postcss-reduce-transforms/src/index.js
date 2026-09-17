@@ -3,7 +3,7 @@ import cssnanoUtils from 'cssnano-utils';
 const { TokenType, balancedTokens, decoded, tokenEnd, tokenStart } =
   cssnanoUtils;
 
-const transformRegex = /transform$/i;
+const transformRegex = /transform$/iv;
 
 /** @param {string} name @return {string} */
 function normalizeReducerName(name) {

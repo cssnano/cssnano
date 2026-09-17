@@ -2,10 +2,10 @@ import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from 'cssnano-utils';
 
 const { sameParent } = cssnanoUtils;
-const keyframesRegex = /keyframes/i;
-const animationRegex = /animation/i;
-const counterStyleRegex = /counter-style/i;
-const listStyleSystemRegex = /(?:list-style|system)/i;
+const keyframesRegex = /keyframes/iv;
+const animationRegex = /animation/iv;
+const counterStyleRegex = /counter-style/iv;
+const listStyleSystemRegex = /(?:list-style|system)/iv;
 /**
  * @param {Record<string, string>} obj
  * @return {(key: string) => string}

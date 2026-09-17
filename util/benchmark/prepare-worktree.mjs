@@ -24,7 +24,7 @@ function findRepoRoot(startDir = import.meta.dirname, runner = defaultRunner) {
 }
 
 function sanitizeRevision(revision) {
-  return revision.replaceAll(/[^a-zA-Z0-9._-]/gu, '_');
+  return revision.replaceAll(/[^a-zA-Z0-9._\-]/gv, '_');
 }
 
 /**
@@ -134,7 +134,7 @@ function parseArgs(argv) {
       values.copyHarness = false;
       continue;
     }
-    const match = arg.match(/^--([^=]+)=(.*)$/u);
+    const match = arg.match(/^--([^=]+)=(.*)$/v);
     if (match) {
       values[match[1]] = match[2];
     }

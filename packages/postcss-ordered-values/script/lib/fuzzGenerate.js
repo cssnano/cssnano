@@ -194,24 +194,24 @@ function composeValue(value, rng) {
 function semanticKey(value) {
   return value
     .trim()
-    .replaceAll(/\s+/g, ' ')
-    .replaceAll(/\s*,\s*/g, ',')
-    .replaceAll(/\s*\/\s*/g, '/');
+    .replaceAll(/\s+/gv, ' ')
+    .replaceAll(/\s*,\s*/gv, ',')
+    .replaceAll(/\s*\/\s*/gv, '/');
 }
 
 function features(value) {
   const result = new Set();
   if (value.includes(',')) result.add('comma');
   if (value.includes('/')) result.add('slash');
-  if (/\b(?:min|max|clamp|calc|steps|rgb|rgba|color)\(/i.test(value)) {
+  if (/\b(?:min|max|clamp|calc|steps|rgb|rgba|color)\(/iv.test(value)) {
     result.add('nested-function');
   }
-  if (/\burl\(/i.test(value)) result.add('url');
-  if (/url\("/i.test(value)) result.add('quoted-url');
-  if (/"/.test(value)) result.add('string');
-  if (/\\/.test(value)) result.add('escape');
-  if (/[[\](){}]/.test(value)) result.add('block');
-  if (/\b(?:var|env|constant)\(/i.test(value)) result.add('substitution');
+  if (/\burl\(/iv.test(value)) result.add('url');
+  if (/url\("/iv.test(value)) result.add('quoted-url');
+  if (/"/v.test(value)) result.add('string');
+  if (/\\/v.test(value)) result.add('escape');
+  if (/[\[\]\(\)\{\}]/v.test(value)) result.add('block');
+  if (/\b(?:var|env|constant)\(/iv.test(value)) result.add('substitution');
   if (value.includes('___CSS_LOADER_IMPORT___')) result.add('css-loader');
   if (value.includes('/*')) result.add('comment');
   if (value.trim().endsWith('/')) result.add('malformed');

@@ -59,7 +59,7 @@ function matchElements(selector, tree) {
     }
   }
   const querySelector = selector.replace(
-    /\b(svg|math)\|(?=[\w*-])/gu,
+    /\b(svg|math)\|(?=[\w*\-])/gv,
     '[data-fz-namespace="$1"]'
   );
 

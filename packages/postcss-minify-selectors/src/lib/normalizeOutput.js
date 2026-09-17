@@ -77,7 +77,7 @@ function unchangedPseudoOutput(arena, pool, nodeIndex, normalized) {
   const payload = arena.payloads.pseudos[node.payload];
   const argument = payload.argumentNode;
   const name = compactIdent(arena.tokens[payload.nameToken]).replace(
-    /\($/u,
+    /\($/v,
     ''
   );
   const prefix =

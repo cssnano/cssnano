@@ -141,7 +141,7 @@ describe('cssnano config loading', () => {
   test('fails clearly when an explicit configuration file is missing', () => {
     assert.throws(
       () => cssnano({ configFile: 'cssnano.config.js' }),
-      /Cannot find cssnano configuration file/
+      /Cannot find cssnano configuration file/v
     );
   });
 

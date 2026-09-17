@@ -69,13 +69,13 @@ test('markdownComparison includes statistical direction, practical tolerance, an
     verdict: 'improvement',
   });
   const md = markdownComparison(result);
-  assert.match(md, /- Statistical Direction: \*\*faster\*\*/);
+  assert.match(md, /- Statistical Direction: \*\*faster\*\*/v);
   assert.match(
     md,
-    /- Practical Tolerance \(10% margin\): \*\*outside-margin\*\*/
+    /- Practical Tolerance \(10% margin\): \*\*outside-margin\*\*/v
   );
-  assert.match(md, /- Actionable Verdict: \*\*improvement\*\*/);
-  assert.doesNotMatch(md, /Slowdown observed but confirmed/);
+  assert.match(md, /- Actionable Verdict: \*\*improvement\*\*/v);
+  assert.doesNotMatch(md, /Slowdown observed but confirmed/v);
 });
 
 test('markdownComparison includes footnote for within-margin slowdown', () => {
@@ -85,15 +85,15 @@ test('markdownComparison includes footnote for within-margin slowdown', () => {
     verdict: 'inconclusive',
   });
   const md = markdownComparison(result);
-  assert.match(md, /- Statistical Direction: \*\*slower\*\*/);
+  assert.match(md, /- Statistical Direction: \*\*slower\*\*/v);
   assert.match(
     md,
-    /- Practical Tolerance \(10% margin\): \*\*within-margin\*\*/
+    /- Practical Tolerance \(10% margin\): \*\*within-margin\*\*/v
   );
-  assert.match(md, /- Actionable Verdict: \*\*inconclusive\*\*/);
+  assert.match(md, /- Actionable Verdict: \*\*inconclusive\*\*/v);
   assert.match(
     md,
-    /> Note: Slowdown observed but confirmed within the accepted 10% non-regression margin; no gating action required\./
+    /> Note: Slowdown observed but confirmed within the accepted 10% non-regression margin; no gating action required\./v
   );
 });
 
@@ -112,11 +112,11 @@ test('printComparison prints direction, tolerance, actionable verdict and footno
     console.log = originalLog;
   }
   const output = logged.join('\n');
-  assert.match(output, /Statistical Direction: slower/);
-  assert.match(output, /Practical Tolerance \(10% margin\): within-margin/);
-  assert.match(output, /Actionable Verdict: inconclusive/);
+  assert.match(output, /Statistical Direction: slower/v);
+  assert.match(output, /Practical Tolerance \(10% margin\): within-margin/v);
+  assert.match(output, /Actionable Verdict: inconclusive/v);
   assert.match(
     output,
-    /Note: Slowdown observed but confirmed within the accepted 10% non-regression margin; no gating action required\./
+    /Note: Slowdown observed but confirmed within the accepted 10% non-regression margin; no gating action required\./v
   );
 });

@@ -47,8 +47,8 @@ function check(css) {
     };
   }
 
-  const match = /^a\{(?:-webkit-)?transform:(.*)\}$/.exec(css);
-  const outputMatch = /^a\{(?:-webkit-)?transform:(.*)\}$/.exec(output);
+  const match = /^a\{(?:-webkit-)?transform:(.*)\}$/v.exec(css);
+  const outputMatch = /^a\{(?:-webkit-)?transform:(.*)\}$/v.exec(output);
 
   if (!match || !outputMatch) {
     return {

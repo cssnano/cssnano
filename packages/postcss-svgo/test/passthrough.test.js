@@ -75,8 +75,8 @@ test('should continue after a non-data URL', async () => {
     'h1{background:url(foo.svg) url("data:image/svg+xml,<svg><circle/></svg>")}',
     { from: undefined }
   );
-  assert.match(result.css, /data:image\/svg\+xml;charset=utf-8/);
-  assert.match(result.css, /url\('data:image\/svg\+xml;charset=utf-8/);
+  assert.match(result.css, /data:image\/svg\+xml;charset=utf-8/v);
+  assert.match(result.css, /url\('data:image\/svg\+xml;charset=utf-8/v);
 });
 
 test('should continue after an invalid base64 SVG data URI', async () => {

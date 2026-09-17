@@ -80,33 +80,33 @@ export function generateCases(seed = 0x5eed, count = 400) {
 
 function featureMetadata(selector) {
   const features = [];
-  if (/[>+~]/.test(selector)) features.push('combinator');
+  if (/[>+~]/v.test(selector)) features.push('combinator');
   if (selector.includes('[')) features.push('attribute');
-  if (/\bi\]/i.test(selector)) features.push('attribute-flag');
+  if (/\bi\]/iv.test(selector)) features.push('attribute-flag');
   if (selector.includes(':')) features.push('pseudo');
   if (selector.includes('\\')) features.push('escape');
   if (selector.includes('/*')) features.push('comment');
-  if (/["']/.test(selector)) features.push('string');
+  if (/["']/v.test(selector)) features.push('string');
   return features;
 }
 
 /** Return a canonical structural description, independent of generated names. */
 export function structuralShape(selector) {
   const combinators = new Set();
-  for (const match of selector.matchAll(/(?:^|[^\\])[>+~]/g))
+  for (const match of selector.matchAll(/(?:^|[^\\])[>+~]/gv))
     combinators.add(match[0].at(-1));
-  if (/\s+(?=[.#*:a-z])/i.test(selector) || /\s+\[/.test(selector))
+  if (/\s+(?=[.#*:a-z])/iv.test(selector) || /\s+\[/v.test(selector))
     combinators.add('descendant');
 
-  const attributes = [...selector.matchAll(/\[([^\]]*)\]/g)].flatMap(
+  const attributes = [...selector.matchAll(/\[([^\]]*)\]/gv)].flatMap(
     (match) => {
       const value = match[1];
-      const operator = value.match(/(?:~|\||\^|\$|\*)?=/)?.[0];
+      const operator = value.match(/(?:~|\||\^|\$|\*)?=/v)?.[0];
       return [operator ?? 'presence'];
     }
   );
   const namespace =
-    /(?:^|[\s,(>+~])(?:[a-z][\w-]*|\*)?\|(?:[a-z][\w-]*|\*)/i.test(selector)
+    /(?:^|[\s,\(>+~])(?:[a-z][\w\-]*|\*)?\|(?:[a-z][\w\-]*|\*)/iv.test(selector)
       ? 'present'
       : 'absent';
   let depth = 0;
@@ -116,8 +116,8 @@ export function structuralShape(selector) {
     if (character === ')') depth--;
   }
   const canonical = selector
-    .replace(/(?:data-)?\d+/gi, 'N')
-    .replace(/\s+/g, ' ')
+    .replace(/(?:data-)?\d+/giv, 'N')
+    .replace(/\s+/gv, ' ')
     .trim();
   return {
     key: JSON.stringify([
@@ -127,7 +127,7 @@ export function structuralShape(selector) {
       namespace,
       Math.min(maxDepth, 3),
       selector.includes('/*'),
-      /["']/.test(selector),
+      /["']/v.test(selector),
       selector.includes('\\'),
     ]),
     combinators,

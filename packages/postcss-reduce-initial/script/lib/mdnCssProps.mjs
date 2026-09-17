@@ -24,7 +24,7 @@ export function reduceInitial(propertyData) {
       !isComplexSyntax(initial, key) &&
       !isUnpredictable(status, key)
     ) {
-      const value = initial.replace(/[\t\r\n\f\u200b]/g, '').trim();
+      const value = initial.replace(/[\t\r\n\f\u200b]/gv, '').trim();
       if (value.length < 'initial'.length) {
         propertyMapping.fromInitial[key] = value;
       } else if (value.length > 'initial'.length) {

@@ -13,9 +13,9 @@ import {
 import { isSubstitution, isUnresolved } from './unresolved.js';
 
 const lengthValueRegex =
-  /^([+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?)([a-z]+)?$/i;
-const functionNameRegex = /([\w-]+)\(/g;
-const hexColorRegex = /^#([\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/;
+  /^([+\-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+\-]?\d+)?)([a-z]+)?$/iv;
+const functionNameRegex = /([\w\-]+)\(/gv;
+const hexColorRegex = /^#([\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/v;
 
 /**
  * @param {string} value

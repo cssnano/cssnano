@@ -15,9 +15,9 @@ export const CSS_WIDE = new Set([
   'revert',
   'revert-layer',
 ]);
-export const COUNT_RE = /^\+?[1-9]\d*$/;
+export const COUNT_RE = /^\+?[1-9]\d*$/v;
 export const LENGTH_RE =
-  /^\+?(?:\d*\.\d+|\d+)(px|em|rem|ex|ch|vw|vh|vmin|vmax|cm|mm|in|pt|pc|q)$/i;
+  /^\+?(?:\d*\.\d+|\d+)(px|em|rem|ex|ch|vw|vh|vmin|vmax|cm|mm|in|pt|pc|q)$/iv;
 
 /**
  * Splits CSS declaration values respecting nested function boundaries.
@@ -37,7 +37,7 @@ export function tokenizeValue(value) {
     } else if (ch === ')' || ch === ']' || ch === '}') {
       if (depth > 0) depth--;
       current += ch;
-    } else if (depth === 0 && /\s/.test(ch)) {
+    } else if (depth === 0 && /\s/v.test(ch)) {
       if (current.length > 0) {
         tokens.push(current);
         current = '';
@@ -59,7 +59,7 @@ export function tokenizeValue(value) {
  * @return {boolean}
  */
 export function isSupported(token, env) {
-  const matches = token.match(/([a-zA-Z_-][\w-]*)\s*\(/g);
+  const matches = token.match(/([a-zA-Z_\-][\w\-]*)\s*\(/gv);
   if (!matches) return true;
   for (const m of matches) {
     const fn = m.slice(0, m.indexOf('(')).trim().toLowerCase();
@@ -73,7 +73,7 @@ export function isSupported(token, env) {
 /**
  * Classifies a token independently according to CSS Multi-column specification.
  * @param {string} token
- * @return {'auto' | 'css-wide' | 'count' | 'width' | 'substitution' | 'invalid'}
+ * @return {'count' | 'width' | 'auto' | 'css-wide' | 'substitution' | 'invalid'}
  */
 export function classifyToken(token) {
   const lower = token.toLowerCase();
@@ -81,8 +81,8 @@ export function classifyToken(token) {
   if (CSS_WIDE.has(lower)) return 'css-wide';
   if (COUNT_RE.test(token)) return 'count';
   if (LENGTH_RE.test(token)) return 'width';
-  if (/^calc\(/i.test(token)) return 'width';
-  if (/^(?:var|env)\(/i.test(token)) return 'substitution';
+  if (/^calc\(/iv.test(token)) return 'width';
+  if (/^(?:var|env)\(/iv.test(token)) return 'substitution';
   return 'invalid';
 }
 

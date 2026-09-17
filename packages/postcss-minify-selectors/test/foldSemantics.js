@@ -186,7 +186,7 @@ test('folding retains :is() specificity in the cascade', async () => {
   const output = await postcss([plugin(modernOptions)]).process(source, {
     from: undefined,
   }).css;
-  assert.match(output, /:is\(#h,#i,#j\) \.target/u);
+  assert.match(output, /:is\(#h,#i,#j\) \.target/v);
   const before = new JSDOM(
     `<style>${source}</style><div id="h"><div class="target low"></div></div>`
   );

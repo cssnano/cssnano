@@ -36,7 +36,7 @@ function parse(source) {
 
 /** @param {import('postcss-selector-parser').Node} node @return {[number, number, number]} */
 function pseudoSpecificity(node) {
-  const name = node.value.toLowerCase().replace(/^::?/u, '');
+  const name = node.value.toLowerCase().replace(/^::?/v, '');
   if (node.value.startsWith('::') || pseudoElements.has(name)) {
     if (name === 'slotted' && node.nodes?.length) {
       let maximum = [0, 0, 0];
@@ -57,7 +57,7 @@ function pseudoSpecificity(node) {
   }
   if (name.startsWith('nth-') && node.nodes.length > 1) {
     const formula = node.nodes[0].toString();
-    const of = /\bof\s+(.+)$/iu.exec(formula);
+    const of = /\bof\s+(.+)$/iv.exec(formula);
     if (!of) return [0, 1, 0];
     let maximum = specificity(parse(of[1]).first);
     for (const selector of node.nodes.slice(1)) {
@@ -128,7 +128,7 @@ function unsafeNode(node) {
   if ((node.type === 'universal' || node.type === 'tag') && node.namespace)
     return true;
   if (node.type !== 'pseudo') return false;
-  const name = node.value.toLowerCase().replace(/^::?/u, '');
+  const name = node.value.toLowerCase().replace(/^::?/v, '');
   if (node.value.startsWith('::') || pseudoElements.has(name)) return true;
   if (node.nodes.length > 0) return true;
   return !safePseudos.has(name);
@@ -144,7 +144,7 @@ function classifyFoldCandidate(source) {
     (node) =>
       node.type === 'pseudo' &&
       node.value.toLowerCase().startsWith(':nth-') &&
-      node.nodes.some((child) => /\bof\s/iu.test(child.toString()))
+      node.nodes.some((child) => /\bof\s/iv.test(child.toString()))
   );
   const safe =
     selector.nodes.length > 0 &&

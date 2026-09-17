@@ -51,7 +51,7 @@ test('should work with sourcemaps', async () => {
     map: { inline: true },
   });
   assert.strictEqual(
-    /sourceMappingURL=data:application\/json;base64/.test(css),
+    /sourceMappingURL=data:application\/json;base64/v.test(css),
     true
   );
 });

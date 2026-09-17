@@ -128,7 +128,7 @@ suite('validateShorthandIdentities', () => {
     );
     assert.throws(
       () => validateShorthandIdentities(data),
-      /place-self forms to include auto/
+      /place-self forms to include auto/v
     );
   });
 

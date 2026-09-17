@@ -36,7 +36,7 @@ function options(argv) {
       outputHashAllowlist.set(name, { base, candidate });
       continue;
     }
-    const match = argument.match(/^--([^=]+)=(.*)$/u);
+    const match = argument.match(/^--([^=]+)=(.*)$/v);
     if (!match) throw new Error(`expected --name=value, received ${argument}`);
     values[match[1]] = match[2];
   }

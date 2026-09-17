@@ -168,7 +168,7 @@ function componentOf(token) {
  * @return {string[]}
  */
 function tokenize(value) {
-  return value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  return value.trim().toLowerCase().split(/\s+/v).filter(Boolean);
 }
 
 /**
@@ -326,7 +326,7 @@ function expandRadiusShorthand(value) {
   const slashParts = trimmed.split('/');
   if (slashParts.length > 2) return undefined;
 
-  const hTokens = slashParts[0].trim().split(/\s+/).filter(Boolean);
+  const hTokens = slashParts[0].trim().split(/\s+/v).filter(Boolean);
   if (hTokens.length === 0 || hTokens.length > 4) return undefined;
   if (hTokens.some((t) => !radiusLengths.has(t) && !unresolvedTokens.has(t))) {
     return undefined;
@@ -334,7 +334,7 @@ function expandRadiusShorthand(value) {
 
   const vTokens =
     slashParts.length === 2
-      ? slashParts[1].trim().split(/\s+/).filter(Boolean)
+      ? slashParts[1].trim().split(/\s+/v).filter(Boolean)
       : hTokens;
 
   if (vTokens.length === 0 || vTokens.length > 4) return undefined;

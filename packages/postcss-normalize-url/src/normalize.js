@@ -5,13 +5,13 @@ const DATA_URL_DEFAULT_MIME_TYPE = 'text/plain';
 const DATA_URL_DEFAULT_CHARSET = 'us-ascii';
 
 const supportedProtocols = new Set(['https:', 'http:', 'file:']);
-const dataUrlRegex = /^data:(?<type>[^,]*?),(?<data>[^#]*?)(?:#(?<hash>.*))?$/;
-const urlRegex = /^data:/i;
-const protocolRegex = /^(?!(?:\w+:)?\/\/)|^\/\//;
-const relativePathRegex = /^\.*\//;
-const trailingDotRegex = /\.$/;
-const trailingSlashRegex = /\/$/;
-const httpProtocolRegex = /^http:\/\//;
+const dataUrlRegex = /^data:(?<type>[^,]*?),(?<data>[^#]*?)(?:#(?<hash>.*))?$/v;
+const urlRegex = /^data:/iv;
+const protocolRegex = /^(?!(?:\w+:)?\/\/)|^\/\//v;
+const relativePathRegex = /^\.*\//v;
+const trailingDotRegex = /\.$/v;
+const trailingSlashRegex = /\/$/v;
+const httpProtocolRegex = /^http:\/\//v;
 
 /**
  * @param {string} urlString
@@ -115,7 +115,7 @@ function normalizeUrl(urlString) {
   // Remove duplicate slashes if not preceded by a protocol
   if (urlObject.pathname) {
     urlObject.pathname = urlObject.pathname.replace(
-      /(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/g,
+      /(?<!\b[a-z][a-z\d+\-.]{1,50}:)\/{2,}/gv,
       '/'
     );
   }

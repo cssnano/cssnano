@@ -15,9 +15,9 @@ import { loadSnapshot } from './compare-snapshot-io.mjs';
 
 test('repository provenance exposes separate harness, source, and lockfile hashes', () => {
   const hashes = repositoryHashes();
-  assert.match(hashes.benchmarkHarnessHash, /^[\da-f]{64}$/u);
-  assert.match(hashes.sourceTreeHash, /^[\da-f]{64}$/u);
-  assert.match(hashes.lockfileHash, /^[\da-f]{64}$/u);
+  assert.match(hashes.benchmarkHarnessHash, /^[\da-f]{64}$/v);
+  assert.match(hashes.sourceTreeHash, /^[\da-f]{64}$/v);
+  assert.match(hashes.lockfileHash, /^[\da-f]{64}$/v);
 });
 
 test('corpus changes alter the corpus hash', () => {
@@ -29,9 +29,9 @@ test('corpus changes alter the corpus hash', () => {
 test('a false revision is rejected', () => {
   assert.throws(
     () => assertRevision('0'.repeat(40), process.cwd()),
-    /does not match checkout HEAD/
+    /does not match checkout HEAD/v
   );
-  assert.match(currentGitRevision(), /^[\da-f]{40}$/u);
+  assert.match(currentGitRevision(), /^[\da-f]{40}$/v);
 });
 
 function temporaryRepository() {
@@ -150,7 +150,7 @@ test('schema-v3 snapshots reject missing decision configuration', () => {
   const root = mkdtempSync(join(tmpdir(), 'cssnano-v3-'));
   const path = join(root, 'invalid.json');
   writeFileSync(path, JSON.stringify({ schemaVersion: 3 }));
-  assert.throws(() => loadSnapshot(path), /configuration/);
+  assert.throws(() => loadSnapshot(path), /configuration/v);
 
   const invalidPath = join(root, 'invalid-value.json');
   writeFileSync(
@@ -181,5 +181,5 @@ test('schema-v3 snapshots reject missing decision configuration', () => {
       },
     })
   );
-  assert.throws(() => loadSnapshot(invalidPath), /bootstrapResamples/);
+  assert.throws(() => loadSnapshot(invalidPath), /bootstrapResamples/v);
 });

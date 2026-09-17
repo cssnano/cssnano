@@ -16,8 +16,9 @@ export function decodedIdent(token) {
 /** @param {string} value */
 export function unquote(value) {
   const raw = value.slice(1, -1);
-  if (!raw || raw === '-' || /[\s"'()[\]{}=~|^$*]/u.test(raw)) return value;
-  const unescaped = raw.replace(/\\([\\"'])/gu, '$1');
+  if (!raw || raw === '-' || /[\s"'\(\)\[\]\{\}=~\|^$*]/v.test(raw))
+    return value;
+  const unescaped = raw.replace(/\\([\\"'])/gv, '$1');
   return cssesc(unescaped, { isIdentifier: true }) === unescaped
     ? unescaped
     : value;

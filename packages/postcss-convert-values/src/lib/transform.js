@@ -64,7 +64,7 @@ const keepZeroPercentAlways = new Set([
   'repeating-conic-gradient',
   'cross-fade',
 ]);
-const NUMBER_PREFIX = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/;
+const NUMBER_PREFIX = /^[+\-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+\-]?\d+)?/v;
 
 /** @typedef {Parameters<typeof convert>[2]} ConvertOptions */
 /** @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions & { overrideBrowserslist?: string | string[] } & import('browserslist').Options} Options */

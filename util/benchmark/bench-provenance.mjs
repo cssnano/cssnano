@@ -103,26 +103,26 @@ function hashSourceFiles(root, paths) {
 }
 
 function isHarnessFile(file) {
-  return /^util\/benchmark\/[^/]+\.(?:c?m?js|sh)$/u.test(file);
+  return /^util\/benchmark\/[^\/]+\.(?:c?m?js|sh)$/v.test(file);
 }
 
 function sourceFiles(files) {
   return files.filter(
     (file) =>
-      (/^packages\/[^/]+\/src\//u.test(file) && !file.startsWith('util/')) ||
+      (/^packages\/[^\/]+\/src\//v.test(file) && !file.startsWith('util/')) ||
       file === 'package.json' ||
-      /^packages\/[^/]+\/package\.json$/u.test(file) ||
-      /(?:^|\/)(?:tsconfig|\.browserslistrc|browserslist)(?:\.|$)/u.test(
+      /^packages\/[^\/]+\/package\.json$/v.test(file) ||
+      /(?:^|\/)(?:tsconfig|\.browserslistrc|browserslist)(?:\.|$)/v.test(
         file
       ) ||
-      /(?:^|\/)[^/]+\.config\.[cm]?[jt]s$/u.test(file)
+      /(?:^|\/)[^\/]+\.config\.[cm]?[jt]s$/v.test(file)
   );
 }
 
 function benchmarkScripts(packageJson) {
   return Object.fromEntries(
     Object.entries(packageJson.scripts ?? {})
-      .filter(([name]) => /^(?:bench(?:$|:)|test:benchmark(?:$|:))/u.test(name))
+      .filter(([name]) => /^(?:bench(?:$|:)|test:benchmark(?:$|:))/v.test(name))
       .toSorted(([a], [b]) => a.localeCompare(b))
   );
 }
@@ -132,7 +132,7 @@ function dirtyPaths(root) {
     .toString()
     .split('\0')
     .filter(Boolean)
-    .map((entry) => entry.slice(3).trim().replace(/^"|"$/gu, ''))
+    .map((entry) => entry.slice(3).trim().replace(/^"|"$/gv, ''))
     .map((file) => file.split(sep).join('/'))
     .toSorted();
 }
@@ -194,7 +194,7 @@ export function createProvenance({
   mode = null,
   pinnedCore = null,
 } = {}) {
-  if (typeof corpusHash !== 'string' || !/^[\da-f]{64}$/u.test(corpusHash)) {
+  if (typeof corpusHash !== 'string' || !/^[\da-f]{64}$/v.test(corpusHash)) {
     throw new TypeError('corpusHash must be a SHA-256 hash');
   }
   const revision = gitRevision ?? currentGitRevision(root);
@@ -246,7 +246,7 @@ export function validateProvenance(provenance, { root, corpusHash } = {}) {
       'benchmark provenance.command must be an array of strings'
     );
   }
-  if (!/^[\da-f]{40}$/u.test(provenance.gitRevision)) {
+  if (!/^[\da-f]{40}$/v.test(provenance.gitRevision)) {
     throw new TypeError('benchmark provenance.gitRevision must be a full SHA');
   }
   for (const field of [
@@ -255,7 +255,7 @@ export function validateProvenance(provenance, { root, corpusHash } = {}) {
     'lockfileHash',
     'corpusHash',
   ]) {
-    if (!/^[\da-f]{64}$/u.test(provenance[field])) {
+    if (!/^[\da-f]{64}$/v.test(provenance[field])) {
       throw new TypeError(
         `benchmark provenance.${field} must be a SHA-256 hash`
       );

@@ -11,7 +11,7 @@ const RESERVED = new Set([...cssWideKeywords, ...grid.reservedKeywords]);
  * @return {string[]}
  */
 function stringWords(value) {
-  return value.split(/[ \t\n\f\r]+/).filter(Boolean);
+  return value.split(/[ \t\n\f\r]+/v).filter(Boolean);
 }
 
 /**
@@ -25,7 +25,7 @@ function bindTemplateSymbols(decl, encoderFn, symbolTable) {
   for (const token of tokens(decl.value)) {
     if (token[0] === TokenType.String) {
       for (const word of stringWords(token[4].value)) {
-        if (!/^\.+$/.test(word) && !RESERVED.has(word.toLowerCase())) {
+        if (!/^\.+$/v.test(word) && !RESERVED.has(word.toLowerCase())) {
           registerSymbol(word, encoderFn, symbolTable);
         }
       }
@@ -142,7 +142,7 @@ export default function gridTemplateReducer() {
             if (token[0] === TokenType.String) {
               const value = stringWords(token[4].value)
                 .map((word) => {
-                  const normalized = /^\.+$/.test(word) ? '.' : word;
+                  const normalized = /^\.+$/v.test(word) ? '.' : word;
                   const symbol = symbolTable.get(word);
                   return isLive && symbol ? symbol.ident : normalized;
                 })

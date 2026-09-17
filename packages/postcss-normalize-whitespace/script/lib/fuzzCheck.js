@@ -47,7 +47,7 @@ function checkURLValue(css, outputDeclaration) {
   };
 }
 
-const hexDigitRegex = /[0-9a-fA-F]/;
+const hexDigitRegex = /[0-9a-fA-F]/v;
 
 /**
  * @typedef {object} Mismatch

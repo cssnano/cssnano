@@ -8,9 +8,9 @@ const { isSupported } = caniuseApi;
 const { applyEdits, TokenType, tokenEnd, tokenStart, tokens } = cssnanoUtils;
 /** @import browserslist from 'browserslist' */
 
-const rgbOrHslRegex = /^(?:rgb|hsl)a?$/i;
+const rgbOrHslRegex = /^(?:rgb|hsl)a?$/iv;
 const notMinifiableRegex =
-  /^(?:composes|font|src$|filter|-webkit-tap-highlight-color)/i;
+  /^(?:composes|font|src$|filter|-webkit-tap-highlight-color)/iv;
 /*
  * IE 8 & 9 do not properly handle clicks on elements
  * with a `transparent` `background-color`.

@@ -6,14 +6,14 @@ import { test } from 'node:test';
 import { cleanupWorktree, prepareWorktree } from './prepare-worktree.mjs';
 
 test('prepareWorktree validates options', () => {
-  assert.throws(() => prepareWorktree(null), /options must be an object/);
+  assert.throws(() => prepareWorktree(null), /options must be an object/v);
   assert.throws(
     () => prepareWorktree({}),
-    /options\.revision must be a non-empty string/
+    /options\.revision must be a non-empty string/v
   );
   assert.throws(
     () => prepareWorktree({ revision: '' }),
-    /options\.revision must be a non-empty string/
+    /options\.revision must be a non-empty string/v
   );
 });
 
@@ -105,7 +105,7 @@ test('prepareWorktree respects installDeps: false and copyHarness: false', () =>
 test('cleanupWorktree validates targetPath and invokes git worktree remove', () => {
   assert.throws(
     () => cleanupWorktree(null),
-    /targetPath must be a non-empty string/
+    /targetPath must be a non-empty string/v
   );
 
   const commands = [];

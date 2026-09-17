@@ -2,7 +2,7 @@ import minifyWeight from './lib/minify-weight.js';
 import minifyFamily from './lib/minify-family.js';
 import minifyFont from './lib/minify-font.js';
 
-const fontRegex = /^(?:font|font-family|font-weight)$/i;
+const fontRegex = /^(?:font|font-family|font-weight)$/iv;
 /**
  * @param {string} value
  * @return {boolean}

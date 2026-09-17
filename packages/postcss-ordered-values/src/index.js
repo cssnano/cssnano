@@ -138,7 +138,7 @@ function pluginCreator() {
               return;
             }
 
-            if (value.length < 2 || !/[,\s/]/.test(value)) {
+            if (value.length < 2 || !/[,\s\/]/v.test(value)) {
               processorCache.set(value, value);
               assignValue(decl, value);
               return;

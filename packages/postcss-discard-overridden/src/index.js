@@ -1,6 +1,6 @@
 const OVERRIDABLE_RULES = new Set(['keyframes', 'counter-style']);
 const SCOPE_RULES = new Set(['media', 'supports', 'container', 'layer']);
-const vendorPrefixPattern = /^-\w+-/;
+const vendorPrefixPattern = /^-\w+-/v;
 
 /**
  * @param {string} prop

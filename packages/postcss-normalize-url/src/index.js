@@ -9,9 +9,9 @@ import normalize from './normalize.js';
  * @typedef {{ quote?: string }} QuotedNode
  */
 
-const multiline = /\\[\r\n]/;
+const multiline = /\\[\r\n]/v;
 // eslint-disable-next-line no-useless-escape
-const escapeChars = /([\s\(\)"'])/g;
+const escapeChars = /([\s\(\)"'])/gv;
 
 /**
  * @param {string} value
@@ -34,11 +34,11 @@ function isClosedString(value) {
 
 // Scheme: https://tools.ietf.org/html/rfc3986#section-3.1
 // Absolute URL: https://tools.ietf.org/html/rfc3986#section-4.3
-const ABSOLUTE_URL_REGEX = /^[a-zA-Z][a-zA-Z\d+\-.]*?:/;
+const ABSOLUTE_URL_REGEX = /^[a-zA-Z][a-zA-Z\d+\-.]*?:/v;
 // Windows paths like `c:\`
-const WINDOWS_PATH_REGEX = /^[a-zA-Z]:\\/;
-const dataUrlRegex = /^data:(.*)?,/i;
-const extensionRegex = /^.+-extension:\//i;
+const WINDOWS_PATH_REGEX = /^[a-zA-Z]:\\/v;
+const dataUrlRegex = /^data:(.*)?,/iv;
+const extensionRegex = /^.+-extension:\//iv;
 
 /**
  * Originally in sindresorhus/is-absolute-url
@@ -70,7 +70,7 @@ function convert(url) {
   }
 
   // `path.normalize` always returns backslashes on Windows, need replace in `/`
-  return path.normalize(url).replace(new RegExp('\\' + path.sep, 'g'), '/');
+  return path.normalize(url).replace(new RegExp('\\' + path.sep, 'gv'), '/');
 }
 
 /**

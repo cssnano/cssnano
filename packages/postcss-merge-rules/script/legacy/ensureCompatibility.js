@@ -3,7 +3,7 @@ import selectorParser from 'postcss-selector-parser';
 import { noVendor, pseudoElements } from '../../src/lib/ensureCompatibility.js';
 
 const { isSupported } = caniuseApi;
-const simpleSelectorRe = /^#?[-._a-z0-9 ]+$/i;
+const simpleSelectorRe = /^#?[\-._a-z0-9 ]+$/iv;
 const cssSel2 = 'css-sel2';
 const cssSel3 = 'css-sel3';
 const level2Sel = new Set(['=', '~=', '|=']);

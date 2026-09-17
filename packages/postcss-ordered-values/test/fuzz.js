@@ -69,9 +69,9 @@ test('repeated declarations use the same result without changing output', () => 
 
 test('abort cases preserve declaration values byte-for-byte', () => {
   for (const sample of edgeCases.slice(0, 3)) {
-    const inputValue = sample.css.match(/:(.*)}/s)?.[1] ?? '';
+    const inputValue = sample.css.match(/:(.*)\}/sv)?.[1] ?? '';
     const output = process(sample.css);
-    const outputValue = output.match(/:(.*)}/s)?.[1] ?? '';
+    const outputValue = output.match(/:(.*)\}/sv)?.[1] ?? '';
     assert.equal(outputValue, inputValue, sample.name);
   }
 });

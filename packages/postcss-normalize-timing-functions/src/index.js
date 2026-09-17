@@ -5,7 +5,7 @@ const { TokenType, decoded } = cssnanoUtils;
 /** @type {(source: string) => {tokens: readonly CSSToken[], endForOpening(index: number): number | undefined, topLevelSegments(start: number, end: number): {startIndex: number, endIndex: number}[]} | undefined} */
 const getBalancedTokens = cssnanoUtils.balancedTokens;
 const animationTransitionRegex =
-  /^(?:-\w+-)?(?:animation|transition)(?:-timing-function)?$/i;
+  /^(?:-\w+-)?(?:animation|transition)(?:-timing-function)?$/iv;
 
 /* Works because toString() normalizes the formatting,
    so comparing the string forms behaves the same as number equality*/
@@ -18,7 +18,7 @@ const conversions = new Map([
 ]);
 /** @param {string} value @return {string} */
 const asciiLowerCase = (value) =>
-  value.replace(/[A-Z]/g, (char) => char.toLowerCase());
+  value.replace(/[A-Z]/gv, (char) => char.toLowerCase());
 
 /** @param {readonly CSSToken[]} input @param {{startIndex: number, endIndex: number}} segment @return {CSSToken | undefined} */
 function singleToken(input, segment) {

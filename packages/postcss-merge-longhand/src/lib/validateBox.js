@@ -12,7 +12,7 @@ const { lengthUnits } = cssnanoUtils;
 /* Parse CSS dimension format: a number with optional exponent and unit
  * (percentage or keyword). Only zero can omit a unit. */
 const dimensionRegex =
-  /^([+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?)(%|[a-z]+)?$/i;
+  /^([+\-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+\-]?\d+)?)(%|[a-z]+)?$/iv;
 
 /* Padding forbids auto and negative values; margin allows both. */
 const grammars = new Map([

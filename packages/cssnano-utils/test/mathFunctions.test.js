@@ -114,7 +114,7 @@ describe('mathFunctions specification contract', () => {
     for (const name of cssnanoUtils.mathFunctions) {
       assert.match(
         name,
-        /^[a-z][a-z0-9]*$/,
+        /^[a-z][a-z0-9]*$/v,
         `function "${name}" must be non-empty, lowercase and free of separators`
       );
     }

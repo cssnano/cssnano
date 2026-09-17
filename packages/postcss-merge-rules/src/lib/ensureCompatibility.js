@@ -2,7 +2,7 @@ import caniuseApi from 'caniuse-api';
 import { tokenizer, TokenType } from '@csstools/css-tokenizer';
 
 const { isSupported } = caniuseApi;
-const simpleSelectorRe = /^#?[-._a-z0-9 ]+$/i;
+const simpleSelectorRe = /^#?[\-._a-z0-9 ]+$/iv;
 
 const cssSel2 = 'css-sel2';
 const cssSel3 = 'css-sel3';
@@ -13,7 +13,7 @@ const cssInOutOfRange = 'css-in-out-of-range';
 const formValidation = 'form-validation';
 
 const vendorPrefix =
-  /-(ah|apple|atsc|epub|hp|khtml|moz|ms|o|rim|ro|tc|wap|webkit|xv)-/;
+  /-(ah|apple|atsc|epub|hp|khtml|moz|ms|o|rim|ro|tc|wap|webkit|xv)-/v;
 
 const level2Sel = new Set(['=', '~=', '|=']);
 const combinatorFeatures = new Map([
@@ -31,7 +31,7 @@ function filterPrefixes(selector) {
   return selector.match(vendorPrefix);
 }
 
-const inputPlaceholderRegex = /-ms-input-placeholder/i;
+const inputPlaceholderRegex = /-ms-input-placeholder/iv;
 /**
  * Internet Explorer use :-ms-input-placeholder.
  * Microsoft Edge use ::-ms-input-placeholder.

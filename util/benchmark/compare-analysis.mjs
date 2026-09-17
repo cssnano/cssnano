@@ -12,7 +12,7 @@ import { createComparisonSchedule } from './comparison-schedule.mjs';
 export const ANALYZER_VERSION = '3.0.0';
 export const INTERVAL_METHOD = 'crossover-t-interval';
 const SIDES = ['baseline', 'candidate'];
-const SHA256 = /^[\da-f]{64}$/u;
+const SHA256 = /^[\da-f]{64}$/v;
 const PROVENANCE_INVARIANT_FIELDS = PROVENANCE_FIELDS.filter(
   (field) => field !== 'createdAt' && field !== 'command'
 );
@@ -412,7 +412,7 @@ export function validateComparisonArtifact(artifact, options = {}) {
   if (
     !artifact.gitRevision ||
     typeof artifact.gitRevision !== 'object' ||
-    SIDES.some((side) => !/^[\da-f]{40}$/u.test(artifact.gitRevision[side]))
+    SIDES.some((side) => !/^[\da-f]{40}$/v.test(artifact.gitRevision[side]))
   )
     throw new TypeError('comparison artifact revisions must be full SHAs');
   const observed = Object.fromEntries(SIDES.map((side) => [side, false]));

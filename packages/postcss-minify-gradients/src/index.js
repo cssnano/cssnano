@@ -44,7 +44,7 @@ function optimise(decl) {
   const source = decl.value;
   if (
     !source ||
-    /\b(?:var|env)\s*\(/i.test(source) ||
+    /\b(?:var|env)\s*\(/iv.test(source) ||
     !source.toLowerCase().includes('gradient')
   )
     return;

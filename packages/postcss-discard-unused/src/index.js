@@ -10,11 +10,11 @@ import {
 const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
-const animationRegex = /animation/;
-const listStyleRegex = /list-style|system/;
-const fontRegex = /font(|-family)/;
-const counterStyleRegex = /counter-style/;
-const keyframesRegex = /keyframes/;
+const animationRegex = /animation/v;
+const listStyleRegex = /list-style|system/v;
+const fontRegex = /font(|-family)/v;
+const counterStyleRegex = /counter-style/v;
+const keyframesRegex = /keyframes/v;
 const wildcard = true;
 
 /**

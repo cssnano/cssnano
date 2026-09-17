@@ -190,12 +190,15 @@ test('per-file summary corruption and missing corpus rows are rejected', () => {
   valid.blocks[0].observations.baseline.run.summary.frameworks = [];
   assert.throws(
     () => analyzeComparison(valid),
-    /selected corpus entries are required/
+    /selected corpus entries are required/v
   );
 
   const corrupt = artifact(Array(20).fill(0.8));
   corrupt.blocks[0].observations.baseline.run.summary.frameworks[0].medianMs = 999;
-  assert.throws(() => analyzeComparison(corrupt), /disagrees with raw samples/);
+  assert.throws(
+    () => analyzeComparison(corrupt),
+    /disagrees with raw samples/v
+  );
 });
 
 test('the schedule seed and block process orders are authenticated', () => {
@@ -203,51 +206,54 @@ test('the schedule seed and block process orders are authenticated', () => {
   scheduleTampered.schedule[0].processOrder.reverse();
   assert.throws(
     () => analyzeComparison(scheduleTampered),
-    /schedule differs|process order differs/
+    /schedule differs|process order differs/v
   );
 
   const blockTampered = artifact(Array(20).fill(0.8));
   blockTampered.blocks[0].processOrder.reverse();
   assert.throws(
     () => analyzeComparison(blockTampered),
-    /process order differs/
+    /process order differs/v
   );
 
   const seedTampered = artifact(Array(20).fill(0.8));
   seedTampered.configuration.seed = 'test-seed';
-  assert.throws(() => analyzeComparison(seedTampered), /seed-derived schedule/);
+  assert.throws(
+    () => analyzeComparison(seedTampered),
+    /seed-derived schedule/v
+  );
 });
 
 test('observation provenance must match its side of top-level provenance', () => {
   const source = artifact(Array(20).fill(0.8));
   source.blocks[0].observations.baseline.provenance.cpu = 'different cpu';
-  assert.throws(() => analyzeComparison(source), /provenance differs/);
+  assert.throws(() => analyzeComparison(source), /provenance differs/v);
 });
 
 test('observation configuration is required and must match the comparison', () => {
   const missing = artifact(Array(20).fill(0.8));
   delete missing.blocks[0].observations.candidate.configuration;
-  assert.throws(() => analyzeComparison(missing), /configuration is required/);
+  assert.throws(() => analyzeComparison(missing), /configuration is required/v);
 
   const different = artifact(Array(20).fill(0.8));
   different.blocks[0].observations.candidate.configuration.mode = 'stable';
   assert.throws(
     () => analyzeComparison(different),
-    /configuration.mode differs/
+    /configuration.mode differs/v
   );
 });
 
 test('every corpus entry requires raw samples and output hashes on both sides', () => {
   const missingHash = artifact(Array(20).fill(0.8));
   delete missingHash.blocks[0].observations.baseline.run.outputHashes.fixture;
-  assert.throws(() => analyzeComparison(missingHash), /output hash.*required/);
+  assert.throws(() => analyzeComparison(missingHash), /output hash.*required/v);
 
   const missingSamples = artifact(Array(20).fill(0.8));
   delete missingSamples.blocks[0].observations.candidate.run.perFileSamples
     .fixture;
   assert.throws(
     () => analyzeComparison(missingSamples),
-    /do not match selected corpus/
+    /do not match selected corpus/v
   );
 });
 
@@ -270,7 +276,7 @@ test('order interaction forces an inconclusive overall verdict', () => {
   );
   const result = analyzeComparison(source);
   assert.equal(result.overallVerdict, 'inconclusive');
-  assert.match(result.inconclusiveReason, /interaction/);
+  assert.match(result.inconclusiveReason, /interaction/v);
 });
 
 test('runtime and practical margins are independent', () => {

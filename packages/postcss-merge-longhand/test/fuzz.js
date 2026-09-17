@@ -147,7 +147,8 @@ for (const seed of [1, 2, 3, 4]) {
       if (css.includes('radius')) familiesSeen.add('radius');
       if (css.includes('margin')) familiesSeen.add('margin');
       if (css.includes('padding')) familiesSeen.add('padding');
-      if (/(?:^|[;{])border(?:-[a-z]+)?:/.test(css)) familiesSeen.add('border');
+      if (/(?:^|[;\{])border(?:-[a-z]+)?:/v.test(css))
+        familiesSeen.add('border');
 
       const groups = inspectLaneGroups(decls);
       if (groups.hasSideGroup) sideGroupCount++;

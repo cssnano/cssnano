@@ -1,11 +1,11 @@
 import { list } from 'postcss';
 import { isBorderWidth, isBorderStyle, isColor } from './validateWsc.js';
 
-const none = /^\s*(none|medium)(\s+none(\s+(none|currentcolor))?)?\s*$/i;
+const none = /^\s*(none|medium)(\s+none(\s+(none|currentcolor))?)?\s*$/iv;
 
 /* Approximate https://drafts.csswg.org/css-values-4/#typedef-dashed-ident */
 // eslint-disable-next-line no-control-regex
-const varRE = /--(\w|-|[^\x00-\x7F])+/g;
+const varRE = /--(\w|-|[^\x00-\x7F])+/gv;
 /** @type {(v: string) => string} */
 const toLower = (v) => {
   let match;

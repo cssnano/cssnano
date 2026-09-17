@@ -1,6 +1,6 @@
 import data from '../data/propertyGroups.json' with { type: 'json' };
 
-const vendorPrefixRegex = /^-\w+-/;
+const vendorPrefixRegex = /^-\w+-/v;
 /**
  * @param {string} prop
  * @return {string}

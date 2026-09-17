@@ -5,7 +5,7 @@ const { TokenType, decoded, tokens } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 const repeatPropertyRegex =
-  /^(?:background(?:-repeat)?|(?:-\w+-)?mask-repeat)$/i;
+  /^(?:background(?:-repeat)?|(?:-\w+-)?mask-repeat)$/iv;
 const repeatKeywords = new Set(mappings.values());
 
 const variableFunctions = new Set(['var', 'env', 'constant']);
@@ -70,7 +70,7 @@ function repeatLayers(input, value) {
 function repeatReplacement(value, terms) {
   if (terms.length !== 2) return undefined;
   const [first, second] = terms;
-  if (!/^(?:\s|\/\*[\s\S]*?\*\/)+$/u.test(value.slice(first[3] + 1, second[2])))
+  if (!/^(?:\s|\/\*[\s\S]*?\*\/)+$/v.test(value.slice(first[3] + 1, second[2])))
     return undefined;
   const match = mappings.get(
     [decoded(first), decoded(second)].map((x) => x.toLowerCase()).toString()

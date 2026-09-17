@@ -224,7 +224,7 @@ function* generate(seed, count) {
  * @return {string}
  */
 function shrink(css, fails) {
-  const match = /^(a\{(?:-webkit-)?transform:)(.*)(\})$/.exec(css);
+  const match = /^(a\{(?:-webkit-)?transform:)(.*)(\})$/v.exec(css);
 
   if (!match) {
     return css;

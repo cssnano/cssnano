@@ -78,7 +78,7 @@ test('arena validates bounds and close order', () => {
       buildSelectorArena('.a', tokenList, (builder) => {
         builder.open('list', 0, tokenList.length + 1);
       }),
-    /exclusive token span/
+    /exclusive token span/v
   );
   assert.throws(
     () =>
@@ -87,7 +87,7 @@ test('arena validates bounds and close order', () => {
         builder.open('complex', 0, tokenList.length);
         builder.closeSummary(root);
       }),
-    /stack order/
+    /stack order/v
   );
 });
 
@@ -165,7 +165,7 @@ test('arena rejects overlapping and out-of-order sibling spans', () => {
           facts: createSemanticFacts(),
         });
       }),
-    /ordered and non-overlapping/
+    /ordered and non-overlapping/v
   );
   assert.throws(
     () =>
@@ -179,7 +179,7 @@ test('arena rejects overlapping and out-of-order sibling spans', () => {
           facts: createSemanticFacts(),
         });
       }),
-    /ordered and non-overlapping/
+    /ordered and non-overlapping/v
   );
 });
 
@@ -191,21 +191,21 @@ test('arena rejects malformed root preorder shape at completion', () => {
         builder.leaf('class', 0, tokenList.length);
         builder.leaf('class', 0, tokenList.length);
       }),
-    /single preorder root/
+    /single preorder root/v
   );
   assert.throws(
     () =>
       buildSelectorArena('.a', tokenList, (builder) => {
         builder.leaf('class', 0, 1);
       }),
-    /root token span/
+    /root token span/v
   );
   assert.throws(
     () =>
       buildSelectorArena('.a', tokenList, (builder) => {
         builder.leaf('class', 0, tokenList.length);
       }),
-    /arena root must be a selector list/
+    /arena root must be a selector list/v
   );
 });
 
@@ -221,14 +221,14 @@ test('arena rejects payload indexes that do not match the node table', () => {
           facts: createSemanticFacts(),
         });
       }),
-    /payload index/
+    /payload index/v
   );
   assert.throws(
     () =>
       buildSelectorArena('.a', tokenList, (builder) => {
         builder.leaf('class', 0, tokenList.length, { payload: 0 });
       }),
-    /must not have a payload index/
+    /must not have a payload index/v
   );
 });
 
@@ -262,7 +262,7 @@ test('arena validates embedded token and argument-node references', () => {
         });
         builder.closeSummary(root);
       }),
-    /invalid pseudo token reference/
+    /invalid pseudo token reference/v
   );
   assert.throws(
     () =>
@@ -282,6 +282,6 @@ test('arena validates embedded token and argument-node references', () => {
         });
         builder.closeSummary(root);
       }),
-    /invalid pseudo argument node reference/
+    /invalid pseudo argument node reference/v
   );
 });

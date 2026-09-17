@@ -13,7 +13,7 @@ const FEED = '\f'.charCodeAt(0);
 const TAB = '\t'.charCodeAt(0);
 const CR = '\r'.charCodeAt(0);
 
-const WORD_END = /[ \n\t\r\f'"\\]/g;
+const WORD_END = /[ \n\t\r\f'"\\]/gv;
 
 /*
  * Constants (node type strings)

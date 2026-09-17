@@ -39,7 +39,7 @@ function legacyMinifyFont(value, opts) {
       !hasSize &&
       (token[0] === TokenType.Percentage ||
         (token[0] === TokenType.Dimension &&
-          !/(deg|grad|rad|turn)$/i.test(token[4].unit)))
+          !/(deg|grad|rad|turn)$/iv.test(token[4].unit)))
     )
       hasSize = true;
     if (hasSize) {
@@ -58,7 +58,7 @@ function legacyMinifyFont(value, opts) {
   if (familyStart < 0) return value;
   let prefix = value
     .slice(0, familyStart)
-    .replace(/\bbold\b/gi, (word) => minifyWeight(word.toLowerCase()));
+    .replace(/\bbold\b/giv, (word) => minifyWeight(word.toLowerCase()));
   if (!prefix.endsWith(' ') && prefix) prefix += ' ';
   return prefix + minifyFamily(value.slice(familyStart), opts);
 }

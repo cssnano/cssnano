@@ -140,7 +140,7 @@ suite('randomized seeded differential cascade sweep', () => {
 
         const hasImportant = css.includes('!important');
         const hasNormal =
-          css.includes(';') && /(?:^|;)[^;]*:(?:(?!important).)*$/.test(css);
+          css.includes(';') && /(?:^|;)[^;]*:(?:(?!important).)*$/v.test(css);
         if (hasImportant) importantCount++;
         if (hasImportant && hasNormal) mixedLaneCount++;
         if (css.includes('env(') || css.includes('var(')) fallbackCount++;
@@ -152,7 +152,7 @@ suite('randomized seeded differential cascade sweep', () => {
         ) {
           cssWideCount++;
         }
-        const reset = /(?:^|;)all:(?:initial|unset)( !important)?;/i.exec(css);
+        const reset = /(?:^|;)all:(?:initial|unset)( !important)?;/iv.exec(css);
         if (reset) {
           const resetImportant = Boolean(reset[1]);
           if (resetImportant) importantResetCount++;

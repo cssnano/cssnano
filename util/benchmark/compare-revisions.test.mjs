@@ -210,6 +210,6 @@ test('coordinator records both exit statuses when the first process fails', () =
 test('coordinator rejects more executed blocks than requested', () => {
   assert.throws(
     () => executeComparison(config({ blocks: 6, requestedBlocks: 5 })),
-    /blocks must not exceed requested blocks/
+    /blocks must not exceed requested blocks/v
   );
 });

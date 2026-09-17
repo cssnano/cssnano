@@ -40,8 +40,8 @@ test('selector characterization corpus preserves reference bytes and is idempote
 test('large selector lists complete without recursive overflow', () => {
   const input = Array.from({ length: 3000 }, (_, i) => `.item-${i}`).join(',');
   const output = minify(input);
-  assert.match(output, /^\.item-0,/u);
-  assert.match(output, /\.item-2999(?:,|\{)/u);
+  assert.match(output, /^\.item-0,/v);
+  assert.match(output, /\.item-2999(?:,|\{)/v);
 });
 
 test('normalizes every attribute operator without leaking state between attributes', () => {

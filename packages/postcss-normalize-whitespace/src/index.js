@@ -7,8 +7,8 @@ const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
 const variableFunctions = new Set(['var', 'env', 'constant']);
-const ieHackRegex = /\s*(\\9)\s*/;
-const whitespaceRegex = /\s/g;
+const ieHackRegex = /\s*(\\9)\s*/v;
+const whitespaceRegex = /\s/gv;
 
 /**
  * Reports whether a value ends in a backslash that begins an escape
@@ -200,7 +200,7 @@ function trimDeclaration(node, cache) {
     const prev = node.prev();
 
     if (prev && prev.type !== rule) {
-      node.raws.before = node.raws.before.replace(/;/g, '');
+      node.raws.before = node.raws.before.replace(/;/gv, '');
     }
   }
 

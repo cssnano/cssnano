@@ -1,7 +1,7 @@
 /**
  * Matches a reference to another CSS grammar production.
  */
-export const REFERENCE = /<(?:'([^'>]+)'|([^'>\s]+)(?:\s+\[[^\]]*\])?)>/g;
+export const REFERENCE = /<(?:'([^'>]+)'|([^'>\s]+)(?:\s+\[[^\]]*\])?)>/gv;
 
 /**
  * Returns the literal keywords a grammar offers. Function calls do not count:
@@ -19,13 +19,13 @@ export function keywordTerminals(syntax) {
   /** @type {string[]} */
   const keywords = [];
 
-  for (const match of literals.matchAll(/[a-zA-Z][a-zA-Z0-9-]*/g)) {
+  for (const match of literals.matchAll(/[a-zA-Z][a-zA-Z0-9\-]*/gv)) {
     const [keyword] = match;
     const rest = literals.slice(
       /** @type {number} */ (match.index) + keyword.length
     );
 
-    if (!/^\s*\(/.test(rest)) {
+    if (!/^\s*\(/v.test(rest)) {
       keywords.push(keyword);
     }
   }

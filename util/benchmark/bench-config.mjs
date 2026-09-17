@@ -42,7 +42,7 @@ function positiveInteger(value, name, allowZero = false) {
 }
 
 function validateArgs(args) {
-  if (!args.label || /[\\/]/.test(args.label)) {
+  if (!args.label || /[\\\/]/v.test(args.label)) {
     throw new Error('--label must be a non-empty filename component');
   }
   if (!['default', 'advanced', 'lite'].includes(args.preset)) {
@@ -64,7 +64,7 @@ function validateArgs(args) {
     throw new Error('--profile requires exactly one process run');
   }
   if (!args.seed) throw new Error('--seed must be a non-empty string');
-  if (args.revision !== null && !/^[\da-f]{40}$/u.test(args.revision)) {
+  if (args.revision !== null && !/^[\da-f]{40}$/v.test(args.revision)) {
     throw new Error('--revision must be a validated full commit SHA');
   }
   if (args.revision !== null) assertRevision(args.revision);

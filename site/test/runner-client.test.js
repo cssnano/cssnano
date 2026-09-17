@@ -47,7 +47,7 @@ test('CSS minifier client rejects overlapping minification requests', async () =
       'b { color: blue; }',
       'cssnano-preset-default'
     ),
-    /Minification is busy/
+    /Minification is busy/v
   );
 
   await pending;
@@ -62,5 +62,5 @@ test('CSS minifier client reports worker failures', async () => {
   );
 
   minifierWorker.emitError('Worker crashed');
-  await assert.rejects(minification, /Worker crashed/);
+  await assert.rejects(minification, /Worker crashed/v);
 });

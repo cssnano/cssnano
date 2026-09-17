@@ -57,14 +57,14 @@ function normalizedPosition(first, second, firstRaw, separator, fallback) {
 }
 
 function normalizeLayer(layer) {
-  const leading = layer.match(/^\s*/)?.[0] ?? '';
+  const leading = layer.match(/^\s*/v)?.[0] ?? '';
   const input = layer.slice(leading.length);
-  if (/\b(?:var|env|constant)\s*\(/i.test(input)) return leading + input;
-  const arbitraryCenter = input.match(/^(.*?)\s+center(\s|$)/i);
+  if (/\b(?:var|env|constant)\s*\(/iv.test(input)) return leading + input;
+  const arbitraryCenter = input.match(/^(.*?)\s+center(\s|$)/iv);
   if (arbitraryCenter && !keywords.has(arbitraryCenter[1].trim().toLowerCase()))
     return leading + arbitraryCenter[1].trimEnd() + arbitraryCenter[2];
   const match = input.match(
-    /^(.*?)(\s+|^)(top|right|bottom|left|center)(?:\s+(center|top|right|bottom|left))?(.*)$/i
+    /^(.*?)(\s+|^)(top|right|bottom|left|center)(?:\s+(center|top|right|bottom|left))?(.*)$/iv
   );
   if (!match) return leading + input;
   const [, prefix, positionSeparator, firstRaw, secondRaw, suffix] = match;
@@ -72,7 +72,7 @@ function normalizeLayer(layer) {
   const second = secondRaw?.toLowerCase();
   const separator =
     input.match(
-      /(?:center|top|right|bottom|left)(\s+)(?:center|top|right|bottom|left)/i
+      /(?:center|top|right|bottom|left)(\s+)(?:center|top|right|bottom|left)/iv
     )?.[1] ?? ' ';
   const replacement = normalizedPosition(
     first,

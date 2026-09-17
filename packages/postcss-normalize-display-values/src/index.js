@@ -6,7 +6,7 @@ import {
 } from '@csstools/css-tokenizer';
 import mappings from './lib/map.js';
 
-const displayRegex = /^display$/i;
+const displayRegex = /^display$/iv;
 const displayOutside = new Set(['block', 'inline', 'run-in']);
 const displayInside = new Set([
   'flow',
@@ -22,7 +22,7 @@ const displayInside = new Set([
  * @return {string}
  */
 function toASCIILowerCase(value) {
-  return value.replace(/[A-Z]/g, (character) =>
+  return value.replace(/[A-Z]/gv, (character) =>
     String.fromCharCode(character.charCodeAt(0) + 0x20)
   );
 }

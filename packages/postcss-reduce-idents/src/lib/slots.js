@@ -6,7 +6,7 @@ import data from '../data/identSlots.json' with { type: 'json' };
 // directly.
 const aliases = new Map(Object.entries(data.aliases));
 
-const VENDOR_PREFIX = /^-\w+-/;
+const VENDOR_PREFIX = /^-\w+-/v;
 
 /**
  * The name the generated data knows a property by: vendor prefixed spellings

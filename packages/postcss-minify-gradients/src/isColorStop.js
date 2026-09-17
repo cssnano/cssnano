@@ -32,7 +32,7 @@ const lengthUnits = new Set([
   '%',
 ]);
 
-const colorStopRegex = /^calc\(\S+\)$/g;
+const colorStopRegex = /^calc\(\S+\)$/gv;
 
 /**
  * @param {string} input

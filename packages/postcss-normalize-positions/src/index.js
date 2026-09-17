@@ -20,7 +20,7 @@ const verticalValue = new Map([
 const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 const variableFunctions = new Set(['var', 'env', 'constant']);
 const propFilterRegex =
-  /^(?:background(?:-position)?|(?:-\w+-)?perspective-origin)$/i;
+  /^(?:background(?:-position)?|(?:-\w+-)?perspective-origin)$/iv;
 
 /** @param {CSSToken} token */ const isMathFunction = (token) =>
   token[0] === TokenType.Function &&
@@ -138,7 +138,7 @@ function twoPositionReplacement(value, firstToken, secondToken) {
   const secondOutput = horizontal.get(second) || verticalValue.get(second);
   if (second === 'center') {
     const afterSecond = secondToken[3] + 1;
-    const whitespace = value.slice(afterSecond).match(/^\s*/)?.[0] || '';
+    const whitespace = value.slice(afterSecond).match(/^\s*/v)?.[0] || '';
     const slashFollows =
       !firstOutput &&
       first !== 'center' &&

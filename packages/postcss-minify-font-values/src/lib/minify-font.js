@@ -32,7 +32,7 @@ export default function minifyFont(
   };
   for (let index = 0; index < input.length; index++) {
     const token = input[index];
-    if (token[0] === TokenType.Function && /^(var|env)$/i.test(decoded(token)))
+    if (token[0] === TokenType.Function && /^(var|env)$/iv.test(decoded(token)))
       return value;
     if (sizeEnd >= 0) continue;
     if (token[0] === TokenType.Whitespace || token[0] === TokenType.Comment)
@@ -67,7 +67,7 @@ export default function minifyFont(
       (token[0] === TokenType.Number && Number(decoded(token)) === 0) ||
       token[0] === TokenType.Percentage ||
       (token[0] === TokenType.Dimension &&
-        !/(deg|grad|rad|turn)$/i.test(token[4].unit)) ||
+        !/(deg|grad|rad|turn)$/iv.test(token[4].unit)) ||
       token[0] === TokenType.Function;
     if (!isSize) continue;
     if (sizeEnd < 0) sizeEnd = balanced.endForOpening(index) ?? index;

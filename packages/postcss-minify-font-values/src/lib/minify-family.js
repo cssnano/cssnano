@@ -42,15 +42,15 @@ const systemFont = new Set([
   'small-caption',
   'status-bar',
 ]);
-const digit = /^\d/;
-const escapeCharacter = /[\t\n\v\f:]/;
-const simpleEscape = /[ !"#$%&'()*+,./<=>?@[\\\]^`{|}~]/;
-const invalidIdentifier = /^(-?\d|--)/;
-const identifier = /^[a-zA-Z\d\xa0-\uffff_-]+$/;
+const digit = /^\d/v;
+const escapeCharacter = /[\t\n\v\f:]/v;
+const simpleEscape = /[ !"#$%\x26'\(\)*+,.\/<=>?@\[\\\]^`\{\|\}~]/v;
+const invalidIdentifier = /^(-?\d|--)/v;
+const identifier = /^[a-zA-Z\d\xa0-\uffff_\-]+$/v;
 
 /** @param {string} value */
 function containsReservedComponent(value) {
-  return value.split(/[\t\n\f\r ]+/).some((part) => {
+  return value.split(/[\t\n\f\r ]+/v).some((part) => {
     const name = part.toLowerCase();
     return (
       generic.has(name) || globalKeywords.has(name) || systemFont.has(name)
@@ -78,7 +78,7 @@ function escapeIdentifierSequence(string) {
         : `\\3${result[0]} ${result.slice(1)}`;
     return result;
   };
-  const parts = string.split(/[\t\n\f\r ]/g);
+  const parts = string.split(/[\t\n\f\r ]/gv);
   const escapedParts = [];
   for (const [index, part] of parts.entries()) {
     if (!part) {
@@ -94,7 +94,7 @@ function escapeIdentifierSequence(string) {
   }
   let result = escapedParts.join(' ');
   result = result.replace(
-    /(\\(?:[a-fA-F0-9]{1,6} | ))?( {2,})/g,
+    /(\\(?:[a-fA-F0-9]{1,6} | ))?( {2,})/gv,
     (_, prefix, spaces) => {
       const escaped = Array.from(
         { length: Math.ceil(spaces.length / 2) },
@@ -104,7 +104,7 @@ function escapeIdentifierSequence(string) {
       return (prefix ?? '') + ' ' + escaped.join(' ');
     }
   );
-  if (result.endsWith(' ') && !/\\[a-fA-F0-9]{0,6} $/.test(result))
+  if (result.endsWith(' ') && !/\\[a-fA-F0-9]{0,6} $/v.test(result))
     result = `${result.slice(0, -1)}\\ `;
   return result.startsWith(' ') ? `\\ ${result.slice(1)}` : result;
 }
@@ -130,8 +130,8 @@ function minifyFamily(value, opts, removeQuotes = opts.removeQuotes) {
     let family = familyTokens
       .map((item) => (item[0] === TokenType.Whitespace ? '\0' : item[1]))
       .join('')
-      .replace(/^\0+|\0+$/g, '')
-      .replace(/\0+/g, ' ');
+      .replace(/^\0+|\0+$/gv, '')
+      .replace(/\0+/gv, ' ');
     const raw = token && decoded(token);
     const isReservedString =
       typeof raw === 'string' && containsReservedComponent(raw);
@@ -141,7 +141,7 @@ function minifyFamily(value, opts, removeQuotes = opts.removeQuotes) {
       !token[1].includes('\\') &&
       removeQuotes &&
       !isReservedString &&
-      !/^generic\([^)]*\)$/i.test(raw) &&
+      !/^generic\([^\)]*\)$/iv.test(raw) &&
       !digit.test(raw)
     ) {
       const escaped = escapeIdentifierSequence(raw);

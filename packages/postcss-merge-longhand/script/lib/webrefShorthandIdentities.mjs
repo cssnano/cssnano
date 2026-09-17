@@ -78,7 +78,7 @@ function alignmentLonghandForms(property, definitions) {
       }
     }
     const [, grouped = ''] =
-      /<overflow-position>\?\s*\[([^\]]+)\]/.exec(syntax) ?? [];
+      /<overflow-position>\?\s*\[([^\]]+)\]/v.exec(syntax) ?? [];
     for (const keyword of keywordTerminals(grouped)) {
       targets.add(keyword.toLowerCase());
     }

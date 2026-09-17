@@ -53,67 +53,67 @@ test('should preserve unencoded percent characters per WHATWG URL spec', () => {
 test('should throw URIError when percent-encoded bytes form invalid UTF-8', () => {
   assert.throws(
     () => decode('%FF'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
   assert.throws(
     () => decode('%E2%82'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
   assert.throws(
     () => decode('%C0%AF'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
 });
 
 test('should throw URIError on UTF-16 surrogate halves encoded in UTF-8', () => {
   assert.throws(
     () => decode('%ED%A0%80'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
   assert.throws(
     () => decode('%ED%BF%BF'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
 });
 
 test('should throw URIError on code points exceeding Unicode maximum range', () => {
   assert.throws(
     () => decode('%F4%90%80%80'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
   assert.throws(
     () => decode('%F5%80%80%80'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
 });
 
 test('should throw URIError on stray continuation bytes or truncated multi-byte sequences', () => {
   assert.throws(
     () => decode('%80'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
   assert.throws(
     () => decode('%BF'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
   assert.throws(
     () => decode('%C2'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
   assert.throws(
     () => decode('%F0%9F%9A'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
 });
 
 test('should throw URIError on overlong 3-byte and 4-byte UTF-8 encodings', () => {
   assert.throws(
     () => decode('%E0%80%AF'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
   assert.throws(
     () => decode('%F0%80%80%AF'),
-    (err) => err instanceof URIError && /UTF-8/i.test(err.message)
+    (err) => err instanceof URIError && /UTF-8/iv.test(err.message)
   );
 });
 
