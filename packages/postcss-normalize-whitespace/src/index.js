@@ -55,9 +55,8 @@ function isSlash(token) {
   return token?.[0] === TokenType.Delim && token[1] === '/';
 }
 
-/** @param {import('@csstools/css-tokenizer').CSSToken | undefined} previous @param {import('@csstools/css-tokenizer').CSSToken | undefined} next @param {{ math?: boolean, variable?: boolean } | undefined} context */
-function removesWhitespace(previous, next, context) {
-  if (context?.variable) return false;
+/** @param {import('@csstools/css-tokenizer').CSSToken | undefined} previous @param {import('@csstools/css-tokenizer').CSSToken | undefined} next */
+function removesWhitespace(previous, next) {
   return (
     previous?.[0] === TokenType.Function ||
     previous?.[0] === TokenType.OpenParen ||
@@ -77,7 +76,7 @@ function whitespaceReplacement(tokens, index, stack) {
   const context = stack.at(-1);
   if (previous && endsWithEscapingBackslash(previous[1]))
     return tokens[index][1];
-  const besideFunctionBoundary = removesWhitespace(previous, next, context);
+  const besideFunctionBoundary = removesWhitespace(previous, next);
   const besideComma = isComma(previous) || isComma(next);
   const besideSlash = !context?.math && (isSlash(previous) || isSlash(next));
   const variableTrailingFallback =
@@ -91,9 +90,29 @@ function whitespaceReplacement(tokens, index, stack) {
 }
 
 /**
+ * @param {string} value
+ * @param {[number, number, string][]} replacements
+ * @return {string}
+ */
+function applyReplacements(value, replacements) {
+  if (!replacements.length) return value;
+  const pieces = [];
+  let start = 0;
+  for (const [from, to, replacement] of replacements) {
+    if (from > start) pieces.push(value.slice(start, from));
+    pieces.push(replacement);
+    start = to;
+  }
+  if (start < value.length) {
+    pieces.push(value.slice(start));
+  }
+  return pieces.join('');
+}
+
+/**
  * Normalize directly from source-backed tokenizer spans. The stack mirrors the
  * legacy walk: math descendants receive special delimiter treatment, while
- * variable functions retain their immediate inner whitespace.
+ * variable functions trim whitespace around the name and comma delimiters.
  *
  * @param {string} value
  * @return {string}
@@ -112,14 +131,18 @@ function reduceWhitespaces(value) {
     const type = token[0];
     if (type === TokenType.Function) {
       const name = (token[4]?.value ?? token[1].slice(0, -1)).toLowerCase();
+      const isVariable = variableFunctions.has(name);
       stack.push({
         math: Boolean(stack.at(-1)?.math || mathFunctions.has(name)),
-        variable: variableFunctions.has(name),
+        variable: isVariable,
       });
       continue;
     }
     if (isOpeningToken(type)) {
-      stack.push({ ...stack.at(-1) });
+      stack.push({
+        math: Boolean(stack.at(-1)?.math),
+        variable: Boolean(stack.at(-1)?.variable),
+      });
       continue;
     }
     if (isClosingToken(type)) {
@@ -134,18 +157,7 @@ function reduceWhitespaces(value) {
     }
   }
 
-  if (!replacements.length) return value;
-  const pieces = [];
-  let start = 0;
-  for (const [from, to, replacement] of replacements) {
-    if (from > start) pieces.push(value.slice(start, from));
-    pieces.push(replacement);
-    start = to;
-  }
-  if (start < value.length) {
-    pieces.push(value.slice(start));
-  }
-  return pieces.join('');
+  return applyReplacements(value, replacements);
 }
 
 /**

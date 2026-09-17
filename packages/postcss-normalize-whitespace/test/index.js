@@ -131,7 +131,7 @@ test(
   'should normalize nested calc, variable functions and blocks',
   processCSS(
     'a{x:calc( var(--x, env(safe-area-inset-top, )) + constant(--y, [ 1px / ( 2px ) ]) )}',
-    'a{x:calc(var(--x,env(safe-area-inset-top, )) + constant(--y,[ 1px / ( 2px ) ]))}'
+    'a{x:calc(var(--x,env(safe-area-inset-top, )) + constant(--y,[ 1px / (2px) ]))}'
   )
 );
 
@@ -287,3 +287,232 @@ test(
   'should be idempotent on var() with empty fallback',
   passthroughCSS('h1{width:var(--x, )}')
 );
+
+test(
+  'should trim whitespace surrounding custom property name in var()',
+  processCSS('h1{color:var(  --custom  )}', 'h1{color:var(--custom)}')
+);
+
+test(
+  'should trim whitespace surrounding identifier in env()',
+  processCSS(
+    'h1{color:env(  safe-area-inset-top  )}',
+    'h1{color:env(safe-area-inset-top)}'
+  )
+);
+
+test(
+  'should trim whitespace surrounding identifier in constant()',
+  processCSS(
+    'h1{color:constant(  safe-area-inset-top  )}',
+    'h1{color:constant(safe-area-inset-top)}'
+  )
+);
+
+test(
+  'should trim whitespace surrounding custom property name in uppercase VAR()',
+  processCSS('h1{color:VAR(  --custom  )}', 'h1{color:VAR(--custom)}')
+);
+
+test(
+  'should trim whitespace surrounding identifier in uppercase ENV()',
+  processCSS('h1{color:ENV(  safe-area  )}', 'h1{color:ENV(safe-area)}')
+);
+
+test(
+  'should trim whitespace surrounding identifier in uppercase CONSTANT()',
+  processCSS(
+    'h1{color:CONSTANT(  safe-area  )}',
+    'h1{color:CONSTANT(safe-area)}'
+  )
+);
+
+test(
+  'should trim whitespace before and after first comma with fallback',
+  processCSS(
+    'h1{color:var(  --custom   ,  10px  )}',
+    'h1{color:var(--custom,10px)}'
+  )
+);
+
+test(
+  'should trim whitespace around multiple fallback commas',
+  processCSS(
+    'h1{font-family:var(  --font  ,  "Helvetica Neue"  ,  Arial  ,  sans-serif  )}',
+    'h1{font-family:var(--font,"Helvetica Neue",Arial,sans-serif)}'
+  )
+);
+
+test(
+  'should preserve comments while trimming whitespace around fallback commas',
+  processCSS(
+    'h1{color:var(--custom /**/ , /**/ 10px)}',
+    'h1{color:var(--custom /**/,/**/ 10px)}'
+  )
+);
+
+test(
+  'should trim fallback division whitespace outside math functions',
+  processCSS('h1{width:var(--ratio, 16 / 9)}', 'h1{width:var(--ratio,16/9)}')
+);
+
+test(
+  'should preserve fallback division whitespace inside math functions',
+  processCSS(
+    'h1{width:calc(var(--ratio, 16 / 9))}',
+    'h1{width:calc(var(--ratio,16 / 9))}'
+  )
+);
+
+test(
+  'should trim whitespace around parenthesized fallback expressions',
+  processCSS('h1{width:var(--foo, ( 10px ))}', 'h1{width:var(--foo,(10px))}')
+);
+
+test(
+  'should preserve operator whitespace in parenthesized fallback expressions',
+  processCSS(
+    'h1{width:var(--foo, ( 10px + 20px ))}',
+    'h1{width:var(--foo,(10px + 20px))}'
+  )
+);
+
+test(
+  'should trim fallback separators without changing commas in strings',
+  processCSS(
+    'h1{content:var(--x, "hello, " , "world")}',
+    'h1{content:var(--x,"hello, ","world")}'
+  )
+);
+
+test(
+  'should preserve spaces in string fallback arguments',
+  processCSS(
+    'h1{font-family:var(--f, "Helvetica Neue" , sans-serif)}',
+    'h1{font-family:var(--f,"Helvetica Neue",sans-serif)}'
+  )
+);
+
+test(
+  'should normalize multiple spaces in empty fallback to single space',
+  processCSS('h1{color:var(  --custom   ,    )}', 'h1{color:var(--custom, )}')
+);
+
+test(
+  'should retain bare comma empty fallback when input has no space',
+  processCSS('h1{color:var(  --custom   ,)}', 'h1{color:var(--custom,)}')
+);
+
+test(
+  'should trim whitespace from an empty var() function',
+  processCSS('h1{color:var( )}', 'h1{color:var()}')
+);
+
+test(
+  'should preserve the empty fallback space in var( , )',
+  processCSS('h1{color:var( , )}', 'h1{color:var(, )}')
+);
+
+test(
+  'should trim the boundary after a comment-only fallback',
+  processCSS('h1{color:var(--foo, /**/ )}', 'h1{color:var(--foo,/**/)}')
+);
+
+test(
+  'should normalize a comment-only fallback without trailing whitespace',
+  processCSS('h1{color:var(--foo, /**/)}', 'h1{color:var(--foo,/**/)}')
+);
+
+test(
+  'should not alter custom property declarations containing var()',
+  passthroughCSS('h1{--custom: var(  --other  )}')
+);
+
+test(
+  'should preserve whitespace between adjacent var() calls while trimming internal whitespace',
+  processCSS(
+    'h1{margin:var(  --a  )   var(  --b  )}',
+    'h1{margin:var(--a) var(--b)}'
+  )
+);
+
+test(
+  'should trim whitespace surrounding custom property name with comments',
+  processCSS(
+    'h1{color:var( /**/ --custom /**/ )}',
+    'h1{color:var(/**/ --custom /**/)}'
+  )
+);
+
+test(
+  'should trim whitespace in nested variable functions',
+  processCSS(
+    'h1{color:var(  --a  , var(  --b  )  )}',
+    'h1{color:var(--a,var(--b))}'
+  )
+);
+
+test(
+  'should trim boundary whitespace in indexed env() while preserving required index spacing',
+  processCSS(
+    'h1{color:env(  viewport-segment-width 0 0  )}',
+    'h1{color:env(viewport-segment-width 0 0)}'
+  )
+);
+
+test(
+  'should trim boundary whitespace and separator comma in indexed env() with fallback',
+  processCSS(
+    'h1{color:env(  viewport-segment-width 0 0  ,  10px  )}',
+    'h1{color:env(viewport-segment-width 0 0,10px)}'
+  )
+);
+
+test(
+  'should trim whitespace surrounding custom property name in escaped var()',
+  processCSS('h1{color:v\\61r(  --custom  )}', 'h1{color:v\\61r(--custom)}')
+);
+
+test(
+  'should trim whitespace before and after first comma in escaped var() with fallback',
+  processCSS(
+    'h1{color:v\\61r(  --custom  ,  10px  )}',
+    'h1{color:v\\61r(--custom,10px)}'
+  )
+);
+
+test(
+  'should trim whitespace surrounding identifier in escaped env()',
+  processCSS('h1{color:\\65nv(  safe-area  )}', 'h1{color:\\65nv(safe-area)}')
+);
+
+test(
+  'should trim whitespace in deeply nested variable fallback containing commas',
+  processCSS(
+    'h1{color:var(  --x  , fn(  fn(  1px  ,  2px  )  ,  3px  )  )}',
+    'h1{color:var(--x,fn(fn(1px,2px),3px))}'
+  )
+);
+
+test('should process deeply nested variable fallback with many commas without quadratic cost', () => {
+  let input = Array.from({ length: 50 }, (_, i) => `  ${i}px  `).join(',');
+  let expected = Array.from({ length: 50 }, (_, i) => `${i}px`).join(',');
+  for (let d = 0; d < 50; d++) {
+    input = `fn(  ${input}  ,  ${d}px  )`;
+    expected = `fn(${expected},${d}px)`;
+  }
+  return processCSS(
+    `h1{color:var(  --x  ,  ${input}  )}`,
+    `h1{color:var(--x,${expected})}`
+  )();
+});
+
+test('should be idempotent on fallback boundary whitespace', async () => {
+  const first = await processor.process('h1{width:var(--foo, 10px )}', {
+    from: undefined,
+  });
+  const second = await processor.process(first.css, { from: undefined });
+
+  assert.equal(first.css, 'h1{width:var(--foo,10px)}');
+  assert.equal(second.css, first.css);
+});

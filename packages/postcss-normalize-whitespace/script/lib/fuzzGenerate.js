@@ -28,6 +28,38 @@ const normalizationCases = [
   ['width:round( 1 / 2 , 1px )', 'width:round(1 / 2,1px)'],
   ['color:hsl( 0 0% 0% / 0.5 )', 'color:hsl(0 0% 0%/0.5)'],
   ['x:foo( /**/ a /**/ , /**/ b /**/ )', 'x:foo(/**/ a /**/,/**/ b /**/)'],
+  ['width:var(  --foo  )', 'width:var(--foo)'],
+  ['width:var(  --foo  ,  10px  )', 'width:var(--foo,10px)'],
+  ['width:var(  --foo  , )', 'width:var(--foo, )'],
+  ['width:env(  safe-area  )', 'width:env(safe-area)'],
+  [
+    'width:env(  viewport-segment-width 0 0  )',
+    'width:env(viewport-segment-width 0 0)',
+  ],
+  [
+    'width:env(  viewport-segment-width 0 0  ,  10px  )',
+    'width:env(viewport-segment-width 0 0,10px)',
+  ],
+  ['width:v\\61r(  --foo  )', 'width:v\\61r(--foo)'],
+  ['width:v\\61r(  --foo  ,  10px  )', 'width:v\\61r(--foo,10px)'],
+  [
+    'width:var(  --x  , f( f( f( f( 1 , 2 , 3 ) , 4 ) , 5 ) )  )',
+    'width:var(--x,f(f(f(f(1,2,3),4),5)))',
+  ],
+  [
+    'width:var(  --x  , fn( fn( fn( fn( fn( fn( fn( fn(  0px , 1px , 2px  , 0px ) , 1px ) , 2px ) , 3px ) , 4px ) , 5px ) , 6px ) , 7px )  )',
+    'width:var(--x,fn(fn(fn(fn(fn(fn(fn(fn(0px,1px,2px,0px),1px),2px),3px),4px),5px),6px),7px))',
+  ],
+  ['width:var(  --foo  , ( 10px ) )', 'width:var(--foo,(10px))'],
+  ['width:var(  --foo  , ( 10px + 20px ) )', 'width:var(--foo,(10px + 20px))'],
+  [
+    'content:var(  --x  , "hello, "  ,  "world"  )',
+    'content:var(--x,"hello, ","world")',
+  ],
+  [
+    'font-family:var(  --f  , "Helvetica Neue"  ,  sans-serif  )',
+    'font-family:var(--f,"Helvetica Neue",sans-serif)',
+  ],
 ];
 const containers = [
   { open: 'a{', close: '}' },
@@ -35,6 +67,36 @@ const containers = [
   { open: '@font-face{', close: '}' },
   { open: '@page{', close: '}' },
 ];
+
+/**
+ * Generate a normalization case whose fallback grammar changes on every
+ * selection, rather than relying only on the fixed regression corpus above.
+ * @param {{ int: (bound: number) => number, pick: <T>(items: readonly T[]) => T, chance: (probability: number) => boolean }} rand
+ * @return {[string, string]}
+ */
+function generateNormalizationCase(rand) {
+  if (rand.chance(0.5)) {
+    const left = rand.pick(['10px', '1em', '2rem']);
+    const right = rand.pick(['20px', '2em', '3rem']);
+    const operator = rand.pick(['+', '-']);
+    let input = `( ${left} ${operator} ${right} )`;
+    let expected = `(${left} ${operator} ${right})`;
+
+    for (let index = 0; index < rand.int(3); index++) {
+      input = `fn( ${input} , ${index + 1}px )`;
+      expected = `fn(${expected},${index + 1}px)`;
+    }
+
+    return [`width:var(  --x  ,  ${input}  )`, `width:var(--x,${expected})`];
+  }
+
+  const first = rand.pick(['"hello, "', '"Helvetica Neue"']);
+  const second = rand.pick(['"world"', 'sans-serif']);
+  return [
+    `content:var(  --x  ,  ${first}  ,  ${second}  )`,
+    `content:var(--x,${first},${second})`,
+  ];
+}
 
 /**
  * @typedef {object} Case
@@ -60,8 +122,9 @@ function* generate(seed, count) {
     const siblingCount = rand.int(3);
 
     if (rand.chance(0.2)) {
-      const [value, expectedValue, preserveURLValue] =
-        rand.pick(normalizationCases);
+      const [value, expectedValue, preserveURLValue] = rand.chance(0.5)
+        ? rand.pick(normalizationCases)
+        : [...generateNormalizationCase(rand), undefined];
       const siblings = Array.from({ length: siblingCount }, () =>
         rand.pick(siblingProps)
       )
