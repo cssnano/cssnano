@@ -58,7 +58,7 @@
     "jsdom": "^30.1.0",
     "postcss": "catalog:",
     "postcss-font-magician": "^4.0.0",
-    "postcss-selector-parser": "^7.1.5"
+    "postcss-selector-parser": "^7.1.6"
   },
   "peerDependencies": {
     "postcss": "^8.5.28"
