@@ -329,7 +329,7 @@ test(
     `div {
 				width: calc(100vw / 2 - 6px + 0);
 		}`,
-    `div{width:calc(50vw - 6px)}`
+    `div{width:calc(100vw / 2 - 6px + 0)}`
   )
 );
 
@@ -339,7 +339,7 @@ test(
     `h1 {
 				width: calc(3px * 2 - 1px);
 		}`,
-    `h1{width:5px}`
+    `h1{width:calc(5px)}`
   )
 );
 

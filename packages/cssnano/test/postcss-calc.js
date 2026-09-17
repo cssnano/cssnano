@@ -63,7 +63,7 @@ test(
   'should optimise inside calc (8)',
   processCss(
     'h1{width:calc((99.99% * 1/1) - 0rem)}',
-    'h1{width:calc(99.99% + 0rem)}'
+    'h1{width:calc(99.99% + calc(-1 * 0rem))}'
   )
 );
 
