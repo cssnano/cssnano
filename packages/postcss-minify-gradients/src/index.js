@@ -1,7 +1,8 @@
 import cssnanoUtils from 'cssnano-utils';
 import isColorStop from './isColorStop.js';
 
-const { TokenType, applyEdits, decoded, numeric, tokenEnd } = cssnanoUtils;
+const { TokenType, applyEdits, asciiLowerCase, decoded, numeric, tokenEnd } =
+  cssnanoUtils;
 /** @type {typeof cssnanoUtils.balancedTokens} */
 const balancedTokens = cssnanoUtils.balancedTokens;
 
@@ -23,6 +24,8 @@ const gradientNames = new Set([
   '-webkit-radial-gradient',
   '-webkit-repeating-radial-gradient',
 ]);
+const variableFunctions = new Set(['var', 'env']);
+const gradientSourceRegex = /[gG][rR][aA][dD][iI][eE][nN][tT]/v;
 /** @typedef {ReturnType<typeof balancedTokens> extends infer Structure ? Structure extends {tokens: readonly (infer Token)[]} ? Token : never : never} CSSToken */
 /** @param {readonly CSSToken[]} input @param {NonNullable<ReturnType<typeof balancedTokens>>} structure @param {{startIndex: number, endIndex: number}} range */
 function significant(input, structure, range) {
@@ -42,15 +45,18 @@ function significant(input, structure, range) {
 // eslint-disable-next-line complexity
 function optimise(decl) {
   const source = decl.value;
-  if (
-    !source ||
-    /\b(?:var|env)\s*\(/iv.test(source) ||
-    !source.toLowerCase().includes('gradient')
-  )
-    return;
+  if (!source || !gradientSourceRegex.test(source)) return;
   const structure = balancedTokens(source);
   if (!structure) return;
   const { tokens: input } = structure;
+  if (
+    input.some(
+      (token) =>
+        token[0] === TokenType.Function &&
+        variableFunctions.has(asciiLowerCase(decoded(token)))
+    )
+  )
+    return;
   const tokenIndexes = new Map(input.map((token, index) => [token, index]));
   /** @type {{start:number,end:number,text:string}[]} */
   const replacements = [];
@@ -60,7 +66,7 @@ function optimise(decl) {
     const token = input[index];
     if (
       token[0] !== TokenType.Function ||
-      !gradientNames.has(decoded(token).toLowerCase())
+      !gradientNames.has(asciiLowerCase(decoded(token)))
     )
       continue;
     const end = structure.endForOpening(index);
@@ -72,13 +78,13 @@ function optimise(decl) {
     const args = structure.topLevelSegments(index + 1, end);
     const first = significant(input, structure, args[0]);
     if (
-      decoded(token).toLowerCase().includes('linear') &&
+      asciiLowerCase(decoded(token)).includes('linear') &&
       first.length === 2 &&
       first[0][0] === TokenType.Ident &&
       first[1][0] === TokenType.Ident &&
-      decoded(first[0]).toLowerCase() === 'to'
+      asciiLowerCase(decoded(first[0])) === 'to'
     ) {
-      const direction = directions.get(decoded(first[1]).toLowerCase());
+      const direction = directions.get(asciiLowerCase(decoded(first[1])));
       if (direction) {
         const text = direction;
         gradientReplacements.push({
@@ -104,12 +110,12 @@ function optimise(decl) {
             : structure.endForOpening(colorIndex);
         if (matchingColor !== undefined) colorEnd = input[matchingColor][3];
       }
-      const color = source.slice(parts[0][2], colorEnd + 1).toLowerCase();
+      const color = asciiLowerCase(source.slice(parts[0][2], colorEnd + 1));
       const stop =
         isColorStop(color) ||
         (parts[0][0] === TokenType.Function &&
           !['calc', 'clamp', 'max', 'min'].includes(
-            decoded(parts[0]).toLowerCase()
+            asciiLowerCase(decoded(parts[0]))
           ));
       /** @type {CSSToken[]} */
       let position = [];
@@ -130,7 +136,7 @@ function optimise(decl) {
         if (
           !current ||
           (largest &&
-            current.unit.toLowerCase() !== largest.unit.toLowerCase() &&
+            asciiLowerCase(current.unit) !== asciiLowerCase(largest.unit) &&
             current.number !== 0 &&
             largest.number !== 0)
         ) {

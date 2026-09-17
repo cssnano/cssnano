@@ -69,6 +69,11 @@ describe('Mangle', () => {
   );
 
   test(
+    'should not identify a Unicode lookalike data scheme',
+    passthroughCSS('.has-svg:before{content:url(daťа:image/svg+xml,foo)}')
+  );
+
+  test(
     'should not mangle plain data urls',
     passthroughCSS(
       '.has-svg:before{content:url(data:text/plain;base64,SGVsbG8sIFdvcmxkIQ%3D%3D)}'

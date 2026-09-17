@@ -11,7 +11,12 @@ import plugin from '../src/index.js';
 
 const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
 const { join } = nodepath;
-const { processCSS } = processCSSFactory(plugin);
+const { processCSS, passthroughCSS } = processCSSFactory(plugin);
+
+test(
+  'should not match a Unicode lookalike unicode-range property',
+  passthroughCSS('@font-face{unicode-ranſe:u+0-7}')
+);
 
 function fixture(range) {
   return `@font-face{font-family:test;unicode-range:${range}}*{font-family:test}`;

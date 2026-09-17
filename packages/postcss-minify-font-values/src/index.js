@@ -1,14 +1,17 @@
 import minifyWeight from './lib/minify-weight.js';
 import minifyFamily from './lib/minify-family.js';
 import minifyFont from './lib/minify-font.js';
+import cssnanoUtils from 'cssnano-utils';
 
-const fontRegex = /^(?:font|font-family|font-weight)$/iv;
+const { asciiLowerCase } = cssnanoUtils;
+const fontRegex =
+  /^(?:[fF][oO][nN][tT]|[fF][oO][nN][tT]-[fF][aA][mM][iI][lL][yY]|[fF][oO][nN][tT]-[wW][eE][iI][gG][hH][tT])$/v;
 /**
  * @param {string} value
  * @return {boolean}
  */
 function hasVariableFunction(value) {
-  const lowerCasedValue = value.toLowerCase();
+  const lowerCasedValue = asciiLowerCase(value);
 
   return lowerCasedValue.includes('var(') || lowerCasedValue.includes('env(');
 }
@@ -39,7 +42,7 @@ const propertyMinifiers = new Map([
  * @return {string}
  */
 function transform(prop, value, opts) {
-  let targetType = prop.toLowerCase();
+  let targetType = asciiLowerCase(prop);
   let removeQuotes = opts.removeQuotes;
 
   if (typeof opts.removeQuotes === 'function') {

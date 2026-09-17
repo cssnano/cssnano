@@ -1,8 +1,10 @@
 import caniuseApi from 'caniuse-api';
 import { tokenizer, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 
 const { isSupported } = caniuseApi;
-const simpleSelectorRe = /^#?[\-._a-z0-9 ]+$/iv;
+const { asciiLowerCase } = cssnanoUtils;
+const simpleSelectorRe = /^#?[\-._A-Za-z0-9 ]+$/v;
 
 const cssSel2 = 'css-sel2';
 const cssSel3 = 'css-sel3';
@@ -31,7 +33,7 @@ function filterPrefixes(selector) {
   return selector.match(vendorPrefix);
 }
 
-const inputPlaceholderRegex = /-ms-input-placeholder/iv;
+const inputPlaceholderRegex = /-ms-input-placeholder/v;
 /**
  * Internet Explorer use :-ms-input-placeholder.
  * Microsoft Edge use ::-ms-input-placeholder.
@@ -39,7 +41,7 @@ const inputPlaceholderRegex = /-ms-input-placeholder/iv;
  * @type {(selector: string) => boolean}
  */
 const findMsInputPlaceholder = (selector) =>
-  inputPlaceholderRegex.test(selector);
+  inputPlaceholderRegex.test(asciiLowerCase(selector));
 
 /**
  * @param {string[]} selectorsA
@@ -274,7 +276,7 @@ function scanCompatibility(selector, browsers) {
           ) {
             attributeValuePending = false;
           } else if (type === TokenType.Ident) {
-            const modifier = value.toLowerCase();
+            const modifier = asciiLowerCase(value);
             if (modifier === 's') return false;
             if (
               modifier === 'i' &&

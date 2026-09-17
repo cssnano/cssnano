@@ -1,10 +1,13 @@
 import getBrowsersList from '#getBrowsersList';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 
 /** @import browserslist from 'browserslist' */
 
 const regexLowerCaseUPrefix = /^u(?=\+)/v;
-const unicodeRangeRegex = /^unicode-range$/iv;
+const { asciiLowerCase } = cssnanoUtils;
+const unicodeRangePropertyRegex =
+  /^[uU][nN][iI][cC][oO][dD][eE]-[rR][aA][nN][gG][eE]$/v;
 
 /**
  * @param {string} range
@@ -89,7 +92,7 @@ function transform(value, isLegacy = false) {
       return value;
     }
     if (isUnicodeRangeDescriptorListToken(token)) {
-      const normalized = unicode(token[1].toLowerCase());
+      const normalized = unicode(asciiLowerCase(token[1]));
       const transformed = isLegacy
         ? normalized.replace(regexLowerCaseUPrefix, 'U')
         : normalized;
@@ -161,7 +164,7 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
          * @param {import('postcss').Root} css
          */
         OnceExit(css) {
-          css.walkDecls(unicodeRangeRegex, (decl) => {
+          css.walkDecls(unicodeRangePropertyRegex, (decl) => {
             const value =
               decl.raws.value?.value === decl.value
                 ? (decl.raws.value.raw ?? decl.value)

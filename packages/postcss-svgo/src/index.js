@@ -4,10 +4,12 @@ import cssnanoUtils from 'cssnano-utils';
 import { encode, decode } from './lib/url.js';
 
 const PLUGIN = 'postcss-svgo';
-const { balancedTokens, decoded } = cssnanoUtils;
+const { asciiLowerCase, balancedTokens, decoded } = cssnanoUtils;
 const dataURI =
-  /data:image\/svg\+xml(?:;(?:(?:charset=)?(?:utf-8|base64)))?,/iv;
-const dataURIBase64 = /data:image\/svg\+xml;base64,/iv;
+  /^data:image\/svg\+xml(?:;(?:(?:charset=)?(?:utf-8|base64)))?,/v;
+const dataURIBase64 = /^data:image\/svg\+xml;base64,/v;
+const svgDataURI =
+  /[dD][aA][tT][aA]:[iI][mM][aA][gG][eE]\/[sS][vV][gG]\+[xX][mM][lL]/v;
 
 // the following regex will globally match:
 // \b([\w-]+)       --> a word (a sequence of one or more [alphanumeric|underscore|dash] characters; followed by
@@ -33,16 +35,25 @@ function minifySVG(svg, opts) {
 
 /** @param {string} value @param {Options} opts @return {{value: string, quote: string} | undefined} */
 function optimizeDataUri(value, opts) {
-  if (dataURIBase64.test(value)) {
-    const url = new URL(value);
-    const base64String = `${url.protocol}${url.pathname}`.replace(dataURI, '');
+  const comma = value.indexOf(',');
+  if (comma === -1) return undefined;
+  const loweredPrefix = asciiLowerCase(value.slice(0, comma + 1));
+  if (dataURIBase64.test(loweredPrefix)) {
+    const rawPayload = value.slice(comma + 1);
+    const hash = rawPayload.indexOf('#');
+    const base64String = rawPayload.slice(0, hash === -1 ? undefined : hash);
     const svg = Buffer.from(base64String, 'base64').toString('utf8');
     const result = minifySVG(svg, opts);
     const data = Buffer.from(result).toString('base64');
-    return { value: 'data:image/svg+xml;base64,' + data + url.hash, quote: '' };
+    const hashString = hash === -1 ? '' : rawPayload.slice(hash);
+    return {
+      value: 'data:image/svg+xml;base64,' + data + hashString,
+      quote: '',
+    };
   }
-  if (!dataURI.test(value)) return undefined;
-  const rawPayload = value.replace(dataURI, '');
+  const prefix = dataURI.exec(loweredPrefix)?.[0];
+  if (!prefix) return undefined;
+  const rawPayload = value.slice(prefix.length);
   const decodedUri = decode(rawPayload);
   let isUriEncoded = decodedUri !== rawPayload;
 
@@ -91,7 +102,7 @@ function minify(decl, opts, postcssResult) {
     } else {
       if (
         functionToken[0] !== TokenType.Function ||
-        decoded(functionToken).toLowerCase() !== 'url'
+        asciiLowerCase(decoded(functionToken)) !== 'url'
       )
         continue;
       close = balanced.endForOpening(i);
@@ -146,7 +157,7 @@ function pluginCreator(opts = {}) {
      */
     OnceExit(css, { result }) {
       css.walkDecls((decl) => {
-        if (!dataURI.test(decl.value)) {
+        if (!svgDataURI.test(decl.value)) {
           return;
         }
 

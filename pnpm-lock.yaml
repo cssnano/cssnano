@@ -455,6 +455,9 @@ importers:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.0
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -607,6 +610,9 @@ importers:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.0
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -669,6 +675,9 @@ importers:
       browserslist:
         specifier: 'catalog:'
         version: 4.29.0
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -679,6 +688,9 @@ importers:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.0
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
     devDependencies:
       postcss:
         specifier: 'catalog:'

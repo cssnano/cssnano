@@ -1,11 +1,11 @@
 import cssnanoUtils from 'cssnano-utils';
 import mappings from './lib/map.js';
 
-const { TokenType, decoded, tokens } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, tokens } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 const repeatPropertyRegex =
-  /^(?:background(?:-repeat)?|(?:-\w+-)?mask-repeat)$/iv;
+  /^(?:[bB][aA][cC][kK][gG][rR][oO][uU][nN][dD](?:-[rR][eE][pP][eE][aA][tT])?|(?:-[A-Za-z0-9_]+-)?[mM][aA][sS][kK]-[rR][eE][pP][eE][aA][tT])$/v;
 const repeatKeywords = new Set(mappings.values());
 
 const variableFunctions = new Set(['var', 'env', 'constant']);
@@ -41,7 +41,7 @@ function repeatLayers(input, value) {
     if (
       depth === 0 &&
       type === TokenType.Function &&
-      variableFunctions.has(decoded(token).toLowerCase())
+      variableFunctions.has(asciiLowerCase(decoded(token)))
     ) {
       stopped = true;
       candidates = [];
@@ -58,7 +58,7 @@ function repeatLayers(input, value) {
       !stopped &&
       depth === 0 &&
       type === TokenType.Ident &&
-      repeatKeywords.has(decoded(token).toLowerCase())
+      repeatKeywords.has(asciiLowerCase(decoded(token)))
     )
       candidates.push(token);
   }
@@ -70,10 +70,14 @@ function repeatLayers(input, value) {
 function repeatReplacement(value, terms) {
   if (terms.length !== 2) return undefined;
   const [first, second] = terms;
-  if (!/^(?:\s|\/\*[\s\S]*?\*\/)+$/v.test(value.slice(first[3] + 1, second[2])))
+  if (
+    !/^(?:[ \t\n\r\f]|\/\*[\s\S]*?\*\/)+$/v.test(
+      value.slice(first[3] + 1, second[2])
+    )
+  )
     return undefined;
   const match = mappings.get(
-    [decoded(first), decoded(second)].map((x) => x.toLowerCase()).toString()
+    [decoded(first), decoded(second)].map(asciiLowerCase).toString()
   );
   return match ? [first[2], second[3] + 1, match] : undefined;
 }

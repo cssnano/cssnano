@@ -5,12 +5,22 @@ import minifyColor from './minifyColor.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 const { isSupported } = caniuseApi;
-const { applyEdits, TokenType, tokenEnd, tokenStart, tokens } = cssnanoUtils;
+const {
+  applyEdits,
+  asciiLowerCase,
+  decoded,
+  TokenType,
+  tokenEnd,
+  tokenStart,
+  tokens,
+} = cssnanoUtils;
 /** @import browserslist from 'browserslist' */
 
-const rgbOrHslRegex = /^(?:rgb|hsl)a?$/iv;
+const rgbOrHslRegex = /^(?:rgb|hsl)a?$/v;
+/* These properties are case-insensitive CSS names. Lower the property before
+ * matching so this list stays readable without Unicode /i case folding. */
 const notMinifiableRegex =
-  /^(?:composes|font|src$|filter|-webkit-tap-highlight-color)/iv;
+  /^(?:composes|font|src$|filter|-webkit-tap-highlight-color)/v;
 /*
  * IE 8 & 9 do not properly handle clicks on elements
  * with a `transparent` `background-color`.
@@ -54,7 +64,7 @@ function transform(value, options) {
   for (let i = 0; i < input.length; i++) {
     const t = input[i];
     if (t[0] === TokenType.Function) {
-      const name = t[1].slice(0, -1).toLowerCase();
+      const name = asciiLowerCase(decoded(t));
       const isMath = mathFunctions.has(name);
       const isColor = rgbOrHslRegex.test(name);
       stack.push({
@@ -155,7 +165,10 @@ function pluginCreator(config = {}) {
          */
         OnceExit(css) {
           css.walkDecls((decl) => {
-            if (notMinifiableRegex.test(decl.prop)) {
+            if (
+              !decl.prop ||
+              notMinifiableRegex.test(asciiLowerCase(decl.prop))
+            ) {
               return;
             }
 

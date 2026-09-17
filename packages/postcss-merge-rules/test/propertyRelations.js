@@ -10,6 +10,8 @@ const cases = [
   // Same property, however spelled
   ['color', 'color', true],
   ['COLOR', 'color', true],
+  ['CoLoR', 'color', true],
+  ['coloſ', 'color', false],
   ['-webkit-transform', 'transform', true],
   ['-webkit-background-clip', 'background', true],
   // Prefixed spellings webref lists as known in their own right, with no

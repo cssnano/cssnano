@@ -26,6 +26,22 @@ test(
 );
 
 test(
+  'should not match a Unicode lookalike counter-style at-rule',
+  processCSS(
+    '@counter-ſtyle a{system:extends decimal;suffix:"> "}@counter-ſtyle b{system:extends decimal;suffix:"> "}',
+    '@counter-ſtyle a{system:extends decimal;suffix:"> "}@counter-ſtyle b{system:extends decimal;suffix:"> "}'
+  )
+);
+
+test(
+  'should not match a Unicode lookalike list-style declaration',
+  processCSS(
+    '@counter-style a{system:extends decimal;suffix:"> "}@counter-style b{system:extends decimal;suffix:"> "}ol{list-ſtyle:a}',
+    '@counter-style b{system:extends decimal;suffix:"> "}ol{list-ſtyle:a}'
+  )
+);
+
+test(
   'should merge counter style identifiers',
   processCSS(
     '@counter-style a{system:extends decimal;suffix:"> "}@counter-style b{system:extends decimal;suffix:"> "}',

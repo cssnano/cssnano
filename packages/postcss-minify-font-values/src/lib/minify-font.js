@@ -2,7 +2,8 @@ import cssnanoUtils from 'cssnano-utils';
 import keywords from './keywords.js';
 import minifyFamily from './minify-family.js';
 
-const { TokenType, balancedTokens, decoded, tokenEnd } = cssnanoUtils;
+const { TokenType, asciiLowerCase, balancedTokens, decoded, tokenEnd } =
+  cssnanoUtils;
 
 /** @param {string} value @param {import('../index.js').Options} opts @return {string} */
 // The grammar's mutually exclusive pre-size branches are intentionally kept together.
@@ -32,13 +33,16 @@ export default function minifyFont(
   };
   for (let index = 0; index < input.length; index++) {
     const token = input[index];
-    if (token[0] === TokenType.Function && /^(var|env)$/iv.test(decoded(token)))
+    if (
+      token[0] === TokenType.Function &&
+      /^(var|env)$/v.test(asciiLowerCase(decoded(token)))
+    )
       return value;
     if (sizeEnd >= 0) continue;
     if (token[0] === TokenType.Whitespace || token[0] === TokenType.Comment)
       continue;
     const name =
-      token[0] === TokenType.Ident ? decoded(token).toLowerCase() : '';
+      token[0] === TokenType.Ident ? asciiLowerCase(decoded(token)) : '';
     if (
       token[0] === TokenType.Ident &&
       (keywords.style.has(name) ||
@@ -67,7 +71,7 @@ export default function minifyFont(
       (token[0] === TokenType.Number && Number(decoded(token)) === 0) ||
       token[0] === TokenType.Percentage ||
       (token[0] === TokenType.Dimension &&
-        !/(deg|grad|rad|turn)$/iv.test(token[4].unit)) ||
+        !/(deg|grad|rad|turn)$/v.test(asciiLowerCase(token[4].unit))) ||
       token[0] === TokenType.Function;
     if (!isSize) continue;
     if (sizeEnd < 0) sizeEnd = balanced.endForOpening(index) ?? index;

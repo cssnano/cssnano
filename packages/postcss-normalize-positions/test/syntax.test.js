@@ -10,6 +10,11 @@ test(
 );
 
 test(
+  'should not match a Unicode lookalike position property',
+  passthroughCSS('background-poſition:center')
+);
+
+test(
   'should pass through with calc function',
   passthroughCSS('background-position: center right calc(0.375em + 0.1875rem)')
 );

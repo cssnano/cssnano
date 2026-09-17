@@ -68,6 +68,13 @@ test('should keep spaces when not base64', () => {
   assert.strictEqual(normalizeUrl('data:, foo #bar'), 'data:, foo #bar');
 });
 
+test('should recognize uppercase base64 parameters', () => {
+  assert.strictEqual(
+    normalizeUrl('data:image/svg+xml;BASE64, AAAA '),
+    'data:image/svg+xml;base64,AAAA'
+  );
+});
+
 test('should remove trailing semicolon', () => {
   assert.strictEqual(
     normalizeUrl('data:;charset=UTF-8;,foo'),

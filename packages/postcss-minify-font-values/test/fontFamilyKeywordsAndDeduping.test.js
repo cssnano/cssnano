@@ -4,6 +4,11 @@ import plugin from '../src/index.js';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
+test(
+  'should not treat a Unicode lookalike as a generic family keyword',
+  processCSS('h1{font-family:"sаns-serif"}', 'h1{font-family:sаns-serif}')
+);
+
 describe('Generic and reserved keywords', () => {
   test(
     'should keep current generic and CSS-wide family keywords quoted',

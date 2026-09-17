@@ -4,6 +4,11 @@ import plugin from '../src/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
+test(
+  'should not recognize a Unicode lookalike gradient function',
+  passthroughCSS('background:linear-gradiеnt(red,blue)')
+);
+
 describe('Linear gradient direction conversion', () => {
   test(
     'linear: should convert "to top" to 0deg',

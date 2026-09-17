@@ -1,5 +1,6 @@
 import path from '#path';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 import normalize from './normalize.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
@@ -10,8 +11,9 @@ import normalize from './normalize.js';
  */
 
 const multiline = /\\[\r\n]/v;
+const { asciiLowerCase } = cssnanoUtils;
 // eslint-disable-next-line no-useless-escape
-const escapeChars = /([\s\(\)"'])/gv;
+const escapeChars = /([ \t\n\r\f\(\)"'])/gv;
 
 /**
  * @param {string} value
@@ -37,8 +39,8 @@ function isClosedString(value) {
 const ABSOLUTE_URL_REGEX = /^[a-zA-Z][a-zA-Z\d+\-.]*?:/v;
 // Windows paths like `c:\`
 const WINDOWS_PATH_REGEX = /^[a-zA-Z]:\\/v;
-const dataUrlRegex = /^data:(.*)?,/iv;
-const extensionRegex = /^.+-extension:\//iv;
+const dataUrlRegex = /^[dD][aA][tT][aA]:/v;
+const extensionRegex = /^.+-[eE][xX][tT][eE][nN][sS][iI][oO][nN]:\//v;
 
 /**
  * Originally in sindresorhus/is-absolute-url
@@ -179,7 +181,7 @@ function forEachUrl(value, callback, tokens = [...tokenize({ css: value })]) {
     }
     if (
       token[0] !== TokenType.Function ||
-      token[4].value.toLowerCase() !== 'url'
+      asciiLowerCase(token[4].value) !== 'url'
     )
       continue;
     const close = functionEnds.get(index);
@@ -248,7 +250,7 @@ function pluginCreator() {
           return transformDecl(node);
         } else if (
           node.type === 'atrule' &&
-          node.name.toLowerCase() === 'namespace'
+          asciiLowerCase(node.name) === 'namespace'
         ) {
           return transformNamespace(node);
         }

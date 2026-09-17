@@ -98,6 +98,12 @@ test('should pass through data-looking bad URLs byte-for-byte', async () => {
   assert.equal(result.css, css);
 });
 
+test('should pass through SVG-like URLs without a data scheme', async () => {
+  const css = 'h1{background:url(xdata:image/svg+xml,<svg/>)}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.equal(result.css, css);
+});
+
 test('should process nested URL functions', async () => {
   const nested =
     'h1{background:var(--image, url("data:image/svg+xml,<svg><circle/></svg>"))}';

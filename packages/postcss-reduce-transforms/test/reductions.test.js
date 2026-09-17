@@ -197,3 +197,8 @@ describe('Vendor-prefixed 3D transforms', () => {
     )
   );
 });
+
+test(
+  'should not match a Unicode lookalike transform property',
+  passthroughCSS('h1{tranſform:scale(1,1)}')
+);

@@ -7,4 +7,5 @@ test('minify-weight', () => {
   assert.strictEqual(minifyWeight('bold'), '700');
   assert.strictEqual(minifyWeight('lighter'), 'lighter');
   assert.strictEqual(minifyWeight('bolder'), 'bolder');
+  assert.strictEqual(minifyWeight('bοld'), 'bοld');
 });

@@ -1,3 +1,8 @@
+import cssnanoUtils from 'cssnano-utils';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
+
+const { asciiLowerCase, decoded } = cssnanoUtils;
+
 /* Substitution functions from CSS Values. If a user agent does not support
  * one, the entire declaration becomes invalid, so we cannot infer what value
  * substitutes at runtime. */
@@ -37,16 +42,26 @@ const trustedSupportFunctions = trustedFunctions.difference(
 );
 
 const vendorPrefix = /^-[a-z]+-/v;
-const leadingFunction = /^(-?[a-z][\w\-]*)\(/iv;
 
 /**
  * @param {string} token
  * @return {string|undefined} the function name a token opens with, unprefixed
  */
 function leadingFunctionName(token) {
-  const match = leadingFunction.exec(token);
+  let firstToken;
+  for (const candidate of tokenize({ css: token })) {
+    if (
+      candidate[0] !== TokenType.Whitespace &&
+      candidate[0] !== TokenType.Comment &&
+      candidate[0] !== TokenType.EOF
+    ) {
+      firstToken = candidate;
+      break;
+    }
+  }
+  if (!firstToken || firstToken[0] !== TokenType.Function) return undefined;
 
-  return match?.[1].toLowerCase().replace(vendorPrefix, '');
+  return asciiLowerCase(decoded(firstToken)).replace(vendorPrefix, '');
 }
 
 /**

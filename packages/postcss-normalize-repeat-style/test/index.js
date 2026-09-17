@@ -75,6 +75,21 @@ test(
 );
 
 test(
+  'should normalize mixed-case ASCII repeat properties and values',
+  processCSS('MaSk-RePeAt:RePeAt No-RePeAt', 'MaSk-RePeAt:repeat-x')
+);
+
+test(
+  'should not match a Unicode lookalike repeat property',
+  passthroughCSS('maſk-repeat:repeat no-repeat')
+);
+
+test(
+  'should not treat non-CSS whitespace as a repeat separator',
+  passthroughCSS('background-repeat:repeat\u00a0no-repeat')
+);
+
+test(
   'should pass through when there are no repeat values',
   passthroughCSS('background:url(cat.jpg)')
 );

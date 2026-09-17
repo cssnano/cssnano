@@ -23,6 +23,11 @@ test(
 );
 
 test(
+  'should not match a Unicode lookalike keyframes at-rule',
+  passthroughCSS('@Keyframes a{0%{color:#fff}}@Keyframes b{0%{color:#fff}}')
+);
+
+test(
   'should merge multiple keyframe identifiers',
   processCSS(
     '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes b{0%{color:#fff}to{color:#000}}@keyframes c{0%{color:#fff}to{color:#000}}',

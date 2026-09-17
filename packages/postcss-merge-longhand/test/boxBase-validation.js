@@ -4,6 +4,11 @@ import plugin from '../src/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
+test(
+  'should not merge box values separated by non-CSS whitespace',
+  passthroughCSS(`a{margin:1px${String.fromCharCode(160)}2px}`)
+);
+
 suite('invalid value handling', () => {
   /* User agents ignore invalid values, so merging declaration might change the rendered result.
    */
@@ -114,6 +119,14 @@ suite('invalid value handling', () => {
 
 /* The other direction: the check has to merge valid values. */
 suite('valid values merge', () => {
+  test(
+    'should merge uppercase CSS keywords and dimensions',
+    processCSS(
+      'a{margin-top:0;margin-right:AUTO;margin-bottom:0;margin-left:AUTO;border-top:1PX SOLID RED;border-right:1PX SOLID RED;border-bottom:1PX SOLID RED;border-left:1PX SOLID RED}',
+      'a{margin:0 AUTO;border-color:red;border-style:solid;border-width:1px}'
+    )
+  );
+
   test(
     'should merge auto in a margin',
     processCSS(

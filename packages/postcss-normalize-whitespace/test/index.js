@@ -243,6 +243,11 @@ test(
 );
 
 test(
+  'should preserve non-CSS whitespace after an IE hack',
+  processCSS('div{display:none \\9\u00a0}', 'div{display:none\\9\u00a0}')
+);
+
+test(
   'should not let a trailing backslash followed by a newline become an escape of the closing brace',
   passthroughCSS('div{display:none\\\n}')
 );

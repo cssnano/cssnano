@@ -1,11 +1,11 @@
 import cssnanoUtils from 'cssnano-utils';
 
-const { TokenType, decoded } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @type {(source: string) => {tokens: readonly CSSToken[], endForOpening(index: number): number | undefined, topLevelSegments(start: number, end: number): {startIndex: number, endIndex: number}[]} | undefined} */
 const getBalancedTokens = cssnanoUtils.balancedTokens;
 const animationTransitionRegex =
-  /^(?:-\w+-)?(?:animation|transition)(?:-timing-function)?$/iv;
+  /^(?:-[A-Za-z0-9_]+-)?(?:[aA][nN][iI][mM][aA][tT][iI][oO][nN]|[tT][rR][aA][nN][sS][iI][tT][iI][oO][nN])(?:-[tT][iI][mM][iI][nN][gG]-[fF][uU][nN][cC][tT][iI][oO][nN])?$/v;
 
 /* Works because toString() normalizes the formatting,
    so comparing the string forms behaves the same as number equality*/
@@ -16,10 +16,6 @@ const conversions = new Map([
   [[0, 0, 0.58, 1].toString(), 'ease-out'],
   [[0.42, 0, 0.58, 1].toString(), 'ease-in-out'],
 ]);
-/** @param {string} value @return {string} */
-const asciiLowerCase = (value) =>
-  value.replace(/[A-Z]/gv, (char) => char.toLowerCase());
-
 /** @param {readonly CSSToken[]} input @param {{startIndex: number, endIndex: number}} segment @return {CSSToken | undefined} */
 function singleToken(input, segment) {
   /** @type {CSSToken | undefined} */

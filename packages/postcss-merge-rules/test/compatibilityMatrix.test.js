@@ -100,6 +100,12 @@ const compatibilityCases = [
     expected: 'first',
   },
   {
+    name: 'uppercase case-insensitive attribute flag',
+    first: '[href="foo" I]',
+    browsers: 'Edge 15',
+    expected: 'first',
+  },
+  {
     name: 'unquoted attribute value equal to the case-insensitive flag',
     first: '[data-mode=i]',
     browsers: 'IE 7',

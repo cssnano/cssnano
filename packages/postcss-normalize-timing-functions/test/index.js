@@ -84,6 +84,19 @@ test(
   )
 );
 
+test(
+  'should normalize mixed-case ASCII timing-function properties',
+  processCSS(
+    'TrAnSiTiOn-TiMiNg-FuNcTiOn:CuBiC-BeZiEr(0,0,1,1)',
+    'TrAnSiTiOn-TiMiNg-FuNcTiOn:linear'
+  )
+);
+
+test(
+  'should not match a Unicode lookalike timing-function property',
+  passthroughCSS('tranſition-timing-function:cubic-bezier(0,0,1,1)')
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
 
 test('mismatched and unclosed delimiters fail closed', async () => {

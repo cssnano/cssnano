@@ -1,6 +1,7 @@
 import cssnanoUtils from 'cssnano-utils';
 
-const { TokenType, decoded, tokenEnd, tokenStart, tokens } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, tokenEnd, tokenStart, tokens } =
+  cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 const directionKeywords = new Set(['top', 'right', 'bottom', 'left', 'center']);
@@ -20,14 +21,14 @@ const verticalValue = new Map([
 const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 const variableFunctions = new Set(['var', 'env', 'constant']);
 const propFilterRegex =
-  /^(?:background(?:-position)?|(?:-\w+-)?perspective-origin)$/iv;
+  /^(?:[bB][aA][cC][kK][gG][rR][oO][uU][nN][dD](?:-[pP][oO][sS][iI][tT][iI][oO][nN])?|(?:-[A-Za-z0-9_]+-)?[pP][eE][rR][sS][pP][eE][cC][tT][iI][vV][eE]-[oO][rR][iI][gG][iI][nN])$/v;
 
 /** @param {CSSToken} token */ const isMathFunction = (token) =>
   token[0] === TokenType.Function &&
-  mathFunctions.has(String(decoded(token)).toLowerCase());
+  mathFunctions.has(asciiLowerCase(String(decoded(token))));
 /** @param {CSSToken} token */ const isVariableFunction = (token) =>
   token[0] === TokenType.Function &&
-  variableFunctions.has(String(decoded(token)).toLowerCase());
+  variableFunctions.has(asciiLowerCase(String(decoded(token))));
 /** @param {CSSToken} token */ const isNumber = (token) =>
   token[0] === TokenType.Number ||
   token[0] === TokenType.Percentage ||
@@ -55,7 +56,7 @@ function depthChange(type) {
 function isPositionTerm(token) {
   return (
     (token[0] === TokenType.Ident &&
-      directionKeywords.has(String(decoded(token)).toLowerCase())) ||
+      directionKeywords.has(asciiLowerCase(String(decoded(token))))) ||
     isNumber(token) ||
     isMathFunction(token)
   );
@@ -102,7 +103,7 @@ function transform(value) {
 
 /** @param {CSSToken} token @return {[number, number, string] | undefined} */
 function singlePositionReplacement(token) {
-  const keyword = String(decoded(token)).toLowerCase();
+  const keyword = asciiLowerCase(String(decoded(token)));
   const output = keyword === 'center' ? center : horizontal.get(keyword);
   return output ? [tokenStart(token), tokenEnd(token), output] : undefined;
 }
@@ -132,13 +133,14 @@ function axisSwapReplacement(
 
 /** @param {string} value @param {CSSToken} firstToken @param {CSSToken} secondToken @return {[number, number, string] | undefined} */
 function twoPositionReplacement(value, firstToken, secondToken) {
-  const first = String(decoded(firstToken)).toLowerCase();
-  const second = String(decoded(secondToken)).toLowerCase();
+  const first = asciiLowerCase(String(decoded(firstToken)));
+  const second = asciiLowerCase(String(decoded(secondToken)));
   const firstOutput = horizontal.get(first) || verticalValue.get(first);
   const secondOutput = horizontal.get(second) || verticalValue.get(second);
   if (second === 'center') {
     const afterSecond = secondToken[3] + 1;
-    const whitespace = value.slice(afterSecond).match(/^\s*/v)?.[0] || '';
+    const whitespace =
+      value.slice(afterSecond).match(/^[ \t\n\r\f]*/v)?.[0] || '';
     const slashFollows =
       !firstOutput &&
       first !== 'center' &&

@@ -1,6 +1,6 @@
 import cssnanoUtils from 'cssnano-utils';
 
-const { TokenType, balancedTokens, decoded } = cssnanoUtils;
+const { TokenType, asciiLowerCase, balancedTokens, decoded } = cssnanoUtils;
 
 const globalKeywords = new Set([
   'inherit',
@@ -51,7 +51,7 @@ const identifier = /^[a-zA-Z\d\xa0-\uffff_\-]+$/v;
 /** @param {string} value */
 function containsReservedComponent(value) {
   return value.split(/[\t\n\f\r ]+/v).some((part) => {
-    const name = part.toLowerCase();
+    const name = asciiLowerCase(part);
     return (
       generic.has(name) || globalKeywords.has(name) || systemFont.has(name)
     );
@@ -141,7 +141,7 @@ function minifyFamily(value, opts, removeQuotes = opts.removeQuotes) {
       !token[1].includes('\\') &&
       removeQuotes &&
       !isReservedString &&
-      !/^generic\([^\)]*\)$/iv.test(raw) &&
+      !/^generic\([^\)]*\)$/v.test(asciiLowerCase(raw)) &&
       !digit.test(raw)
     ) {
       const escaped = escapeIdentifierSequence(raw);
@@ -151,12 +151,12 @@ function minifyFamily(value, opts, removeQuotes = opts.removeQuotes) {
       value: family,
       folded:
         typeof raw === 'string' && !isReservedString
-          ? raw.toLowerCase()
-          : family.toLowerCase(),
+          ? asciiLowerCase(raw)
+          : asciiLowerCase(family),
       completeGeneric:
         meaningful.length === 1 &&
         token?.[0] === TokenType.Ident &&
-        completeGeneric.has(decoded(token).toLowerCase()),
+        completeGeneric.has(asciiLowerCase(decoded(token))),
     });
   };
   for (const segment of balanced.topLevelSegments()) {

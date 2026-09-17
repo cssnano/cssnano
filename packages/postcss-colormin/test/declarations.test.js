@@ -126,6 +126,13 @@ describe('Font and tap-highlight exceptions', () => {
   );
 
   test(
+    'should skip uppercase excluded properties',
+    passthroughCSS(
+      'h1{FONT:rgb(255,0,0);SRC:rgb(255,0,0);FILTER:rgb(255,0,0);-WEBKIT-TAP-HIGHLIGHT-COLOR:rgba(0,0,0,0)}'
+    )
+  );
+
+  test(
     'should make an exception for webkit tap highlight color (issue 1)',
     passthroughCSS('h1{-webkit-tap-highlight-color:rgba(0,0,0,0)}')
   );
@@ -138,6 +145,11 @@ describe('Font and tap-highlight exceptions', () => {
   test(
     'should not crash on inherit in webkit tap highlight color',
     passthroughCSS('h1{-webkit-tap-highlight-color:inherit}')
+  );
+
+  test(
+    'should not treat a Unicode lookalike as a skipped property',
+    processCSS('h1{compoſes:rgb(255,0,0)}', 'h1{compoſes:red}')
   );
 });
 
@@ -186,6 +198,11 @@ describe('Math and functions', () => {
   test(
     'should handle errored cases',
     passthroughCSS('h1{color:rgb(50%, 23, 54)}')
+  );
+
+  test(
+    'should not treat a Unicode lookalike as an hsl() function',
+    processCSS('h1{color:hſl(#ff0000)}', 'h1{color:hſl(red)}')
   );
 });
 

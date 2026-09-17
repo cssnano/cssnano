@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import cssnanoUtils from '../src/index.js';
+
+const { asciiLowerCase } = cssnanoUtils;
+
+test('asciiLowerCase only folds ASCII uppercase letters', () => {
+  assert.equal(asciiLowerCase('A-Z Ä K ſ'), 'a-z Ä K ſ');
+});
 import {
   TokenType,
   applyEdits,

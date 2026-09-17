@@ -1,13 +1,18 @@
 import cssnanoUtils from 'cssnano-utils';
 
-const { TokenType, balancedTokens, decoded, tokenEnd, tokenStart } =
-  cssnanoUtils;
-
-const transformRegex = /transform$/iv;
+const {
+  TokenType,
+  asciiLowerCase,
+  balancedTokens,
+  decoded,
+  tokenEnd,
+  tokenStart,
+} = cssnanoUtils;
+const transformPropertyRegex = /[tT][rR][aA][nN][sS][fF][oO][rR][mM]$/v;
 
 /** @param {string} name @return {string} */
 function normalizeReducerName(name) {
-  return name.toLowerCase();
+  return asciiLowerCase(name);
 }
 
 /** @param {{start:number,end:number,significant:number[]}} argument @param {string} value @param {readonly import('@csstools/css-tokenizer').CSSToken[]} tokens @param {NonNullable<ReturnType<typeof balancedTokens>>} structure @return {string} */
@@ -246,7 +251,7 @@ function pluginCreator() {
       const cache = new Map();
       return {
         OnceExit(css) {
-          css.walkDecls(transformRegex, (decl) => {
+          css.walkDecls(transformPropertyRegex, (decl) => {
             const value =
               decl.raws.value?.value === decl.value
                 ? (decl.raws.value.raw ?? decl.value)

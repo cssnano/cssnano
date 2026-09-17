@@ -330,7 +330,7 @@ export function attributeOutput(arena, pool, node) {
 
 /** @param {string | undefined} character */
 function isHexDigit(character) {
-  return character !== undefined && /^[\dA-F]$/iv.test(character);
+  return character !== undefined && /^[\dA-Fa-f]$/v.test(character);
 }
 
 /** @param {string} value */

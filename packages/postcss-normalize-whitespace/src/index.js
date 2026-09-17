@@ -1,14 +1,14 @@
 import cssnanoUtils from 'cssnano-utils';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
-const { mathFunctions } = cssnanoUtils;
+const { asciiLowerCase, decoded, mathFunctions } = cssnanoUtils;
 
 const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
 const variableFunctions = new Set(['var', 'env', 'constant']);
-const ieHackRegex = /\s*(\\9)\s*/v;
-const whitespaceRegex = /\s/gv;
+const ieHackRegex = /[ \t\n\r\f]*(\\9)[ \t\n\r\f]*/v;
+const whitespaceRegex = /[ \t\n\r\f]/gv;
 
 /**
  * Reports whether a value ends in a backslash that begins an escape
@@ -130,7 +130,7 @@ function reduceWhitespaces(value) {
     const token = tokens[index];
     const type = token[0];
     if (type === TokenType.Function) {
-      const name = (token[4]?.value ?? token[1].slice(0, -1)).toLowerCase();
+      const name = asciiLowerCase(decoded(token));
       const isVariable = variableFunctions.has(name);
       stack.push({
         math: Boolean(stack.at(-1)?.math || mathFunctions.has(name)),

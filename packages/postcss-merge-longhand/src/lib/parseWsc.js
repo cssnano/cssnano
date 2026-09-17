@@ -1,7 +1,10 @@
 import { list } from 'postcss';
+import cssnanoUtils from 'cssnano-utils';
 import { isBorderWidth, isBorderStyle, isColor } from './validateWsc.js';
 
-const none = /^\s*(none|medium)(\s+none(\s+(none|currentcolor))?)?\s*$/iv;
+const { asciiLowerCase } = cssnanoUtils;
+const none =
+  /^[ \t\n\r\f]*(none|medium)([ \t\n\r\f]+none([ \t\n\r\f]+(none|currentcolor))?)?[ \t\n\r\f]*$/v;
 
 /* Approximate https://drafts.csswg.org/css-values-4/#typedef-dashed-ident */
 // eslint-disable-next-line no-control-regex
@@ -33,7 +36,7 @@ const toLower = (v) => {
  * @return {[string, string, string]}
  */
 function parseWsc(value) {
-  if (none.test(value)) {
+  if (none.test(asciiLowerCase(value))) {
     return ['medium', 'none', 'currentcolor'];
   }
 
@@ -43,7 +46,7 @@ function parseWsc(value) {
   if (
     values.length > 1 &&
     isBorderStyle(values[1]) &&
-    values[0].toLowerCase() === 'none'
+    asciiLowerCase(values[0]) === 'none'
   ) {
     values.unshift();
     width = '0';

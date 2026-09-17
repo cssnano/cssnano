@@ -11,7 +11,7 @@ import { normalizeList } from './lib/selectorScanner.js';
 /**
  * These vendor spellings were used by browsers before unprefixed keyframes
  * support; arbitrary suffixes must not receive keyframe-selector semantics.
- * @type {readonly string[]}
+ * @type {ReadonlySet<string>}
  */
 const keyframeAtRuleNames = new Set([
   'keyframes',

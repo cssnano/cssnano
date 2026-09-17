@@ -3,7 +3,6 @@ import { list } from 'postcss';
 import colors from './colornames.js';
 import { systemColors } from './systemColors.js';
 
-const { lengthUnits } = cssnanoUtils;
 import {
   lineStyles,
   lineWidthKeywords,
@@ -12,9 +11,10 @@ import {
 } from './spec.js';
 import { isSubstitution, isUnresolved } from './unresolved.js';
 
+const { TokenType, asciiLowerCase, decoded, lengthUnits, tokens } =
+  cssnanoUtils;
 const lengthValueRegex =
-  /^([+\-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+\-]?\d+)?)([a-z]+)?$/iv;
-const functionNameRegex = /([\w\-]+)\(/gv;
+  /^([+\-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+\-]?\d+)?)([a-z]+)?$/v;
 const hexColorRegex = /^#([\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/v;
 
 /**
@@ -22,7 +22,7 @@ const hexColorRegex = /^#([\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/v;
  * @return {boolean}
  */
 function isBorderStyle(value) {
-  return value !== undefined && lineStyles.has(value.toLowerCase());
+  return value !== undefined && lineStyles.has(asciiLowerCase(value));
 }
 
 /**
@@ -47,7 +47,7 @@ function isBorderWidth(value) {
     return false;
   }
 
-  const lowered = value.toLowerCase();
+  const lowered = asciiLowerCase(value);
 
   if (lineWidthKeywords.has(lowered)) {
     return true;
@@ -81,8 +81,11 @@ function isBorderWidth(value) {
  * @return {boolean} whether the value calls a function that produces a colour
  */
 function callsColorFunction(value) {
-  for (const [, name] of value.matchAll(functionNameRegex)) {
-    if (colorFunctions.has(name)) {
+  for (const token of tokens(value)) {
+    if (
+      token[0] === TokenType.Function &&
+      colorFunctions.has(asciiLowerCase(decoded(token)))
+    ) {
       return true;
     }
   }
@@ -99,7 +102,7 @@ function isColor(value) {
     return false;
   }
 
-  const lowered = value.toLowerCase();
+  const lowered = asciiLowerCase(value);
 
   if (callsColorFunction(lowered)) {
     return true;
@@ -170,13 +173,13 @@ function componentOf(token) {
  * @return {boolean} whether the value can be what that component is set to
  */
 function specifiesComponent(value, component) {
-  const tokens = list.space(value);
+  const parts = list.space(value);
 
-  if (tokens.length !== 1) {
+  if (parts.length !== 1) {
     return false;
   }
 
-  const [token] = tokens;
+  const [token] = parts;
 
   return componentOf(token) === component || isSubstitution(token);
 }

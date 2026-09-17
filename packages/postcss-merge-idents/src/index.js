@@ -1,11 +1,11 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from 'cssnano-utils';
 
-const { sameParent } = cssnanoUtils;
-const keyframesRegex = /keyframes/iv;
-const animationRegex = /animation/iv;
-const counterStyleRegex = /counter-style/iv;
-const listStyleSystemRegex = /(?:list-style|system)/iv;
+const { asciiLowerCase, sameParent } = cssnanoUtils;
+const keyframesRegex = /keyframes/v;
+const animationRegex = /animation/v;
+const counterStyleRegex = /counter-style/v;
+const listStyleSystemRegex = /(?:list-style|system)/v;
 /**
  * @param {Record<string, string>} obj
  * @return {(key: string) => string}
@@ -78,7 +78,7 @@ function mergeAtRules(css) {
   css.walk((node) => {
     if (node.type === 'atrule') {
       relevant = pairs.find((pair) =>
-        pair.atrule.test(node.name.toLowerCase())
+        pair.atrule.test(asciiLowerCase(node.name))
       );
 
       if (!relevant) {
@@ -89,7 +89,7 @@ function mergeAtRules(css) {
 
       for (const cached of relevant.cache) {
         if (
-          cached.node.name.toLowerCase() === node.name.toLowerCase() &&
+          asciiLowerCase(cached.node.name) === asciiLowerCase(node.name) &&
           sameParent(cached.node, node) &&
           cached.body === body
         ) {
@@ -104,7 +104,9 @@ function mergeAtRules(css) {
     }
 
     if (node.type === 'decl') {
-      relevant = pairs.find((pair) => pair.decl.test(node.prop.toLowerCase()));
+      relevant = pairs.find((pair) =>
+        pair.decl.test(asciiLowerCase(node.prop))
+      );
 
       if (!relevant) {
         return;

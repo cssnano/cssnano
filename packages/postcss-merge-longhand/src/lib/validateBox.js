@@ -3,7 +3,7 @@ import { list } from 'postcss';
 import { sides } from './spec.js';
 import { isUnresolved } from './unresolved.js';
 
-const { lengthUnits } = cssnanoUtils;
+const { asciiLowerCase, lengthUnits } = cssnanoUtils;
 
 /* CSS user agents ignore margin and padding declarations that violate the
  * property's grammar: margin rejects negative values and auto,
@@ -12,7 +12,7 @@ const { lengthUnits } = cssnanoUtils;
 /* Parse CSS dimension format: a number with optional exponent and unit
  * (percentage or keyword). Only zero can omit a unit. */
 const dimensionRegex =
-  /^([+\-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+\-]?\d+)?)(%|[a-z]+)?$/iv;
+  /^([+\-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+\-]?\d+)?)(%|[a-z]+)?$/v;
 
 /* Padding forbids auto and negative values; margin allows both. */
 const grammars = new Map([
@@ -30,7 +30,7 @@ function specifiesSide(token, grammar) {
     return true;
   }
 
-  const lowered = token.toLowerCase();
+  const lowered = asciiLowerCase(token);
 
   if (lowered === 'auto') {
     return grammar.auto;

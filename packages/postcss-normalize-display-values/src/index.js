@@ -4,9 +4,11 @@ import {
   tokenize,
   TokenType,
 } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 import mappings from './lib/map.js';
 
-const displayRegex = /^display$/iv;
+const { asciiLowerCase } = cssnanoUtils;
+const displayPropertyRegex = /^[dD][iI][sS][pP][lL][aA][yY]$/v;
 const displayOutside = new Set(['block', 'inline', 'run-in']);
 const displayInside = new Set([
   'flow',
@@ -22,9 +24,7 @@ const displayInside = new Set([
  * @return {string}
  */
 function toASCIILowerCase(value) {
-  return value.replace(/[A-Z]/gv, (character) =>
-    String.fromCharCode(character.charCodeAt(0) + 0x20)
-  );
+  return asciiLowerCase(value);
 }
 
 /**
@@ -133,7 +133,7 @@ function pluginCreator() {
          * @param {import('postcss').Root} css
          */
         OnceExit(css) {
-          css.walkDecls(displayRegex, (decl) => {
+          css.walkDecls(displayPropertyRegex, (decl) => {
             const value =
               decl.raws.value?.value === decl.value
                 ? (decl.raws.value.raw ?? decl.value)

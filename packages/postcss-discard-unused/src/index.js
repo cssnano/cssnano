@@ -6,10 +6,12 @@ import {
   isTokenWhitespace,
   tokenize,
 } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 
 const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
+const { asciiLowerCase } = cssnanoUtils;
 const animationRegex = /animation/v;
 const listStyleRegex = /list-style|system/v;
 const fontRegex = /font(|-family)/v;
@@ -164,7 +166,8 @@ function filterFont({ atRules, values }, comma) {
       /** @type {import('postcss').Declaration[]} */
       const families = /** @type {import('postcss').Declaration[]} */ (
         r.nodes.filter(
-          (node) => node.type === 'decl' && node.prop === 'font-family'
+          (node) =>
+            node.type === 'decl' && asciiLowerCase(node.prop) === 'font-family'
         )
       );
 
@@ -174,7 +177,7 @@ function filterFont({ atRules, values }, comma) {
       }
 
       for (const family of families) {
-        if (!hasFont(family.value.toLowerCase(), uniqueValues, comma)) {
+        if (!hasFont(asciiLowerCase(family.value), uniqueValues, comma)) {
           r.remove();
         }
       }
@@ -245,7 +248,7 @@ function processRule(namespaceCache, node) {
  */
 function processDeclaration(node, context) {
   const { prop } = node;
-  if (context.counterStyle && listStyleRegex.test(prop)) {
+  if (context.counterStyle && listStyleRegex.test(asciiLowerCase(prop))) {
     context.counterStyleCache.values = context.counterStyleCache.values.concat(
       splitValues(node, context.comma, context.space)
     );
@@ -255,14 +258,14 @@ function processDeclaration(node, context) {
     context.fontFace &&
     node.parent !== undefined &&
     node.parent.type === rule &&
-    fontRegex.test(prop)
+    fontRegex.test(asciiLowerCase(prop))
   ) {
     context.fontCache.values = context.fontCache.values.concat(
-      context.comma(node.value.toLowerCase())
+      context.comma(asciiLowerCase(node.value))
     );
   }
 
-  if (context.keyframes && animationRegex.test(prop)) {
+  if (context.keyframes && animationRegex.test(asciiLowerCase(prop))) {
     context.keyframesCache.values = context.keyframesCache.values.concat(
       splitValues(node, context.comma, context.space)
     );
@@ -287,19 +290,19 @@ function processDeclaration(node, context) {
  */
 function processAtRule(node, context) {
   const { name } = node;
-  if (context.counterStyle && counterStyleRegex.test(name)) {
+  if (context.counterStyle && counterStyleRegex.test(asciiLowerCase(name))) {
     context.counterStyleCache.atRules.push(node);
   }
 
-  if (context.fontFace && name === 'font-face' && node.nodes) {
+  if (context.fontFace && asciiLowerCase(name) === 'font-face' && node.nodes) {
     context.fontCache.atRules.push(node);
   }
 
-  if (context.keyframes && keyframesRegex.test(name)) {
+  if (context.keyframes && keyframesRegex.test(asciiLowerCase(name))) {
     context.keyframesCache.atRules.push(node);
   }
 
-  if (context.namespace && name === 'namespace') {
+  if (context.namespace && asciiLowerCase(name) === 'namespace') {
     context.namespaceCache.atRules.push(node);
   }
 }

@@ -1,12 +1,13 @@
 /* Derived from normalize-url https://github.com/sindresorhus/normalize-url/main/index.js by Sindre Sorhus */
+import cssnanoUtils from 'cssnano-utils';
 
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
 const DATA_URL_DEFAULT_MIME_TYPE = 'text/plain';
 const DATA_URL_DEFAULT_CHARSET = 'us-ascii';
+const { asciiLowerCase } = cssnanoUtils;
 
 const supportedProtocols = new Set(['https:', 'http:', 'file:']);
 const dataUrlRegex = /^data:(?<type>[^,]*?),(?<data>[^#]*?)(?:#(?<hash>.*))?$/v;
-const urlRegex = /^data:/iv;
 const protocolRegex = /^(?!(?:\w+:)?\/\/)|^\/\//v;
 const relativePathRegex = /^\.*\//v;
 const trailingDotRegex = /\.$/v;
@@ -29,7 +30,8 @@ function hasCustomProtocol(urlString) {
  * @param {string} urlString
  * @return {string} */
 function normalizeDataURL(urlString) {
-  const match = dataUrlRegex.exec(urlString);
+  const source = asciiLowerCase(urlString.slice(0, 5)) + urlString.slice(5);
+  const match = dataUrlRegex.exec(source);
 
   if (!match) {
     throw new Error(`Invalid URL: ${urlString}`);
@@ -40,13 +42,13 @@ function normalizeDataURL(urlString) {
   const mediaType = type.split(';');
 
   let isBase64 = false;
-  if (mediaType[mediaType.length - 1] === 'base64') {
+  if (asciiLowerCase(mediaType[mediaType.length - 1] ?? '') === 'base64') {
     mediaType.pop();
     isBase64 = true;
   }
 
   // Lowercase MIME type
-  const mimeType = mediaType.shift()?.toLowerCase() ?? '';
+  const mimeType = asciiLowerCase(mediaType.shift() ?? '');
   const attributes = mediaType
     .map(
       /** @type {(string: string) => string} */ (attribute) => {
@@ -57,8 +59,9 @@ function normalizeDataURL(urlString) {
           );
 
         // Lowercase `charset`
+        key = asciiLowerCase(key);
         if (key === 'charset') {
-          value = value.toLowerCase();
+          value = asciiLowerCase(value);
 
           if (value === DATA_URL_DEFAULT_CHARSET) {
             return '';
@@ -93,7 +96,7 @@ function normalizeUrl(urlString) {
   const trimmedUrl = urlString.trim();
 
   // Data URL
-  if (urlRegex.test(trimmedUrl)) {
+  if (/^[dD][aA][tT][aA]:/v.test(trimmedUrl)) {
     return normalizeDataURL(trimmedUrl);
   }
 

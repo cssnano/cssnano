@@ -92,6 +92,16 @@ test(
   processCSS(`DISPLAY:BLOCK FLOW`, `DISPLAY:block`)
 );
 
+test(
+  'should normalize mixed-case ASCII display properties and values',
+  processCSS('DiSpLaY:BlOcK FlOw', 'DiSpLaY:block')
+);
+
+test(
+  'should not match a Unicode lookalike display property',
+  passthroughCSS('diſplay:block flow')
+);
+
 test(`should pass through variables`, passthroughCSS(`display:var(--foo)`));
 
 test(

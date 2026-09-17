@@ -4,6 +4,14 @@ import classifyTime from '../src/lib/isTime.js';
 import { isPercentage, isString, tokenizeValue } from '../src/lib/tokenize.js';
 
 describe('Tokenization', () => {
+  test('does not treat non-CSS whitespace as a value delimiter', () => {
+    const parsed = tokenizeValue(`1px${String.fromCharCode(160)}2px`);
+    assert.deepEqual(
+      parsed.terms.map((term) => term.raw),
+      [`1px${String.fromCharCode(160)}2px`]
+    );
+  });
+
   test('tokenization preserves escaped names and nested separators as one term', () => {
     const parsed = tokenizeValue('opacity 1s v\\61r(--x, min(1s, 2s))');
 
