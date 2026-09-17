@@ -72,6 +72,13 @@ cssnano-preset-advanced@9.0.4:
   dir: packages/cssnano-preset-advanced
   intents:
     - young-knives-greet
+cssnano-preset-advanced@9.0.5:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - honest-doors-call
+    - proud-melons-scream
+    - tidy-rabbits-fry
+    - wild-hairs-bow
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -146,6 +153,13 @@ cssnano-preset-default@9.0.4:
   dir: packages/cssnano-preset-default
   intents:
     - young-knives-greet
+cssnano-preset-default@9.0.5:
+  dir: packages/cssnano-preset-default
+  intents:
+    - honest-doors-call
+    - proud-melons-scream
+    - tidy-rabbits-fry
+    - wild-hairs-bow
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -184,6 +198,10 @@ cssnano-preset-lite@6.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+cssnano-preset-lite@6.0.3:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - honest-doors-call
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -213,6 +231,10 @@ cssnano-utils@7.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+cssnano-utils@7.0.3:
+  dir: packages/cssnano-utils
+  intents:
+    - honest-doors-call
 cssnano@8.0.10:
   dir: packages/cssnano
   intents:
@@ -290,6 +312,13 @@ cssnano@9.0.4:
   dir: packages/cssnano
   intents:
     - young-knives-greet
+cssnano@9.0.5:
+  dir: packages/cssnano
+  intents:
+    - honest-doors-call
+    - proud-melons-scream
+    - tidy-rabbits-fry
+    - wild-hairs-bow
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -326,6 +355,11 @@ postcss-colormin@9.0.2:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+postcss-colormin@9.0.3:
+  dir: packages/postcss-colormin
+  intents:
+    - honest-doors-call
+    - wild-hairs-bow
 postcss-convert-values@8.0.2:
   dir: packages/postcss-convert-values
   intents:
@@ -356,6 +390,10 @@ postcss-convert-values@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-convert-values@9.0.3:
+  dir: packages/postcss-convert-values
+  intents:
+    - honest-doors-call
 postcss-discard-comments@8.0.2:
   dir: packages/postcss-discard-comments
   intents:
@@ -385,6 +423,10 @@ postcss-discard-comments@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-discard-comments@9.0.3:
+  dir: packages/postcss-discard-comments
+  intents:
+    - honest-doors-call
 postcss-discard-duplicates@8.0.2:
   dir: packages/postcss-discard-duplicates
   intents:
@@ -414,6 +456,10 @@ postcss-discard-duplicates@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-discard-duplicates@9.0.3:
+  dir: packages/postcss-discard-duplicates
+  intents:
+    - honest-doors-call
 postcss-discard-empty@8.0.2:
   dir: packages/postcss-discard-empty
   intents:
@@ -448,6 +494,10 @@ postcss-discard-empty@9.0.2:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+postcss-discard-empty@9.0.3:
+  dir: packages/postcss-discard-empty
+  intents:
+    - honest-doors-call
 postcss-discard-overridden@8.0.2:
   dir: packages/postcss-discard-overridden
   intents:
@@ -477,6 +527,10 @@ postcss-discard-overridden@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-discard-overridden@9.0.3:
+  dir: packages/postcss-discard-overridden
+  intents:
+    - honest-doors-call
 postcss-discard-unused@8.0.2:
   dir: packages/postcss-discard-unused
   intents:
@@ -507,6 +561,10 @@ postcss-discard-unused@9.0.2:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+postcss-discard-unused@9.0.3:
+  dir: packages/postcss-discard-unused
+  intents:
+    - honest-doors-call
 postcss-merge-idents@8.0.2:
   dir: packages/postcss-merge-idents
   intents:
@@ -536,6 +594,10 @@ postcss-merge-idents@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-merge-idents@9.0.3:
+  dir: packages/postcss-merge-idents
+  intents:
+    - honest-doors-call
 postcss-merge-longhand@8.0.2:
   dir: packages/postcss-merge-longhand
   intents:
@@ -572,6 +634,10 @@ postcss-merge-longhand@9.0.3:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+postcss-merge-longhand@9.0.4:
+  dir: packages/postcss-merge-longhand
+  intents:
+    - honest-doors-call
 postcss-merge-rules@8.0.2:
   dir: packages/postcss-merge-rules
   intents:
@@ -615,6 +681,10 @@ postcss-merge-rules@9.0.3:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+postcss-merge-rules@9.0.4:
+  dir: packages/postcss-merge-rules
+  intents:
+    - honest-doors-call
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -645,6 +715,10 @@ postcss-minify-font-values@9.0.2:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+postcss-minify-font-values@9.0.3:
+  dir: packages/postcss-minify-font-values
+  intents:
+    - honest-doors-call
 postcss-minify-gradients@8.0.2:
   dir: packages/postcss-minify-gradients
   intents:
@@ -684,6 +758,11 @@ postcss-minify-gradients@9.0.2:
     - dry-poems-taste
     - khaki-colts-stop
     - violet-ads-ask
+postcss-minify-gradients@9.0.3:
+  dir: packages/postcss-minify-gradients
+  intents:
+    - honest-doors-call
+    - wild-hairs-bow
 postcss-minify-params@8.0.2:
   dir: packages/postcss-minify-params
   intents:
@@ -715,6 +794,10 @@ postcss-minify-params@9.0.2:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+postcss-minify-params@9.0.3:
+  dir: packages/postcss-minify-params
+  intents:
+    - honest-doors-call
 postcss-minify-selectors@8.0.3:
   dir: packages/postcss-minify-selectors
   intents:
@@ -750,6 +833,10 @@ postcss-minify-selectors@9.0.3:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-minify-selectors@9.0.4:
+  dir: packages/postcss-minify-selectors
+  intents:
+    - honest-doors-call
 postcss-normalize-charset@8.0.2:
   dir: packages/postcss-normalize-charset
   intents:
@@ -783,6 +870,10 @@ postcss-normalize-charset@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-normalize-charset@9.0.3:
+  dir: packages/postcss-normalize-charset
+  intents:
+    - honest-doors-call
 postcss-normalize-display-values@8.0.2:
   dir: packages/postcss-normalize-display-values
   intents:
@@ -812,6 +903,10 @@ postcss-normalize-display-values@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-normalize-display-values@9.0.3:
+  dir: packages/postcss-normalize-display-values
+  intents:
+    - honest-doors-call
 postcss-normalize-positions@8.0.2:
   dir: packages/postcss-normalize-positions
   intents:
@@ -841,6 +936,10 @@ postcss-normalize-positions@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-normalize-positions@9.0.3:
+  dir: packages/postcss-normalize-positions
+  intents:
+    - honest-doors-call
 postcss-normalize-repeat-style@8.0.2:
   dir: packages/postcss-normalize-repeat-style
   intents:
@@ -870,6 +969,10 @@ postcss-normalize-repeat-style@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-normalize-repeat-style@9.0.3:
+  dir: packages/postcss-normalize-repeat-style
+  intents:
+    - honest-doors-call
 postcss-normalize-string@8.0.2:
   dir: packages/postcss-normalize-string
   intents:
@@ -899,6 +1002,10 @@ postcss-normalize-string@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-normalize-string@9.0.3:
+  dir: packages/postcss-normalize-string
+  intents:
+    - honest-doors-call
 postcss-normalize-timing-functions@8.0.2:
   dir: packages/postcss-normalize-timing-functions
   intents:
@@ -928,6 +1035,10 @@ postcss-normalize-timing-functions@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-normalize-timing-functions@9.0.3:
+  dir: packages/postcss-normalize-timing-functions
+  intents:
+    - honest-doors-call
 postcss-normalize-unicode@8.0.2:
   dir: packages/postcss-normalize-unicode
   intents:
@@ -958,6 +1069,10 @@ postcss-normalize-unicode@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-normalize-unicode@9.0.3:
+  dir: packages/postcss-normalize-unicode
+  intents:
+    - honest-doors-call
 postcss-normalize-url@8.0.2:
   dir: packages/postcss-normalize-url
   intents:
@@ -990,6 +1105,10 @@ postcss-normalize-url@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-normalize-url@9.0.3:
+  dir: packages/postcss-normalize-url
+  intents:
+    - honest-doors-call
 postcss-normalize-whitespace@8.0.2:
   dir: packages/postcss-normalize-whitespace
   intents:
@@ -1024,6 +1143,10 @@ postcss-normalize-whitespace@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-normalize-whitespace@9.0.3:
+  dir: packages/postcss-normalize-whitespace
+  intents:
+    - honest-doors-call
 postcss-ordered-values@8.0.2:
   dir: packages/postcss-ordered-values
   intents:
@@ -1058,6 +1181,10 @@ postcss-ordered-values@9.0.2:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+postcss-ordered-values@9.0.3:
+  dir: packages/postcss-ordered-values
+  intents:
+    - honest-doors-call
 postcss-reduce-idents@8.0.2:
   dir: packages/postcss-reduce-idents
   intents:
@@ -1090,6 +1217,10 @@ postcss-reduce-idents@9.0.2:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+postcss-reduce-idents@9.0.3:
+  dir: packages/postcss-reduce-idents
+  intents:
+    - honest-doors-call
 postcss-reduce-initial@8.0.2:
   dir: packages/postcss-reduce-initial
   intents:
@@ -1127,6 +1258,10 @@ postcss-reduce-initial@9.0.2:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+postcss-reduce-initial@9.0.3:
+  dir: packages/postcss-reduce-initial
+  intents:
+    - honest-doors-call
 postcss-reduce-transforms@8.0.2:
   dir: packages/postcss-reduce-transforms
   intents:
@@ -1157,6 +1292,10 @@ postcss-reduce-transforms@9.0.2:
     - khaki-colts-stop
     - ninety-mangos-send
     - violet-ads-ask
+postcss-reduce-transforms@9.0.3:
+  dir: packages/postcss-reduce-transforms
+  intents:
+    - honest-doors-call
 postcss-svgo@8.0.2:
   dir: packages/postcss-svgo
   intents:
@@ -1195,6 +1334,11 @@ postcss-svgo@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-svgo@9.0.3:
+  dir: packages/postcss-svgo
+  intents:
+    - honest-doors-call
+    - proud-melons-scream
 postcss-unique-selectors@8.0.2:
   dir: packages/postcss-unique-selectors
   intents:
@@ -1224,6 +1368,10 @@ postcss-unique-selectors@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-unique-selectors@9.0.3:
+  dir: packages/postcss-unique-selectors
+  intents:
+    - honest-doors-call
 postcss-zindex@8.0.2:
   dir: packages/postcss-zindex
   intents:
@@ -1253,6 +1401,10 @@ postcss-zindex@9.0.2:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+postcss-zindex@9.0.3:
+  dir: packages/postcss-zindex
+  intents:
+    - honest-doors-call
 stylehacks@8.0.2:
   dir: packages/stylehacks
   intents:
@@ -1287,3 +1439,7 @@ stylehacks@9.0.3:
   intents:
     - khaki-colts-stop
     - violet-ads-ask
+stylehacks@9.0.4:
+  dir: packages/stylehacks
+  intents:
+    - honest-doors-call

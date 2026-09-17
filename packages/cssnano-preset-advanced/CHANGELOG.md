@@ -1,5 +1,17 @@
 # Change Log
 
+## 9.0.5
+
+### Patch Changes
+
+- fix: updae browserslist, mdn-data, autoprefixer
+
+- fix(postcss-svgo): better decode encoded SVG
+
+- fix: update postcss-calc
+
+- fix: update calc and color minifiers, autoprefixer
+
 ## 9.0.4
 
 ### Patch Changes
