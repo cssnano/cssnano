@@ -46,6 +46,7 @@
     "unicorn/prefer-regexp-test": "error",
     "unicorn/prefer-type-error": "error",
     "promise/no-nesting": "error",
+    "require-unicode-regexp": ["error", { "requireFlag": "v" }],
     "eqeqeq": ["error", "always", { "null": "ignore" }],
     "import/no-duplicates": "error",
     "import/no-self-import": "error",
