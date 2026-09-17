@@ -140,6 +140,62 @@ suite('@keyframe normalization', () => {
   );
 
   test(
+    'should convert recognized vendor-prefixed keyframes',
+    processCSS(
+      '@-WEBKIT-KEYFRAMES test{FROM{color:red}}',
+      '@-WEBKIT-KEYFRAMES test{0%{color:red}}'
+    )
+  );
+
+  test(
+    'should convert 100% to to in vendor-prefixed keyframes',
+    processCSS(
+      '@-webkit-keyframes test{100%{color:red}}',
+      '@-webkit-keyframes test{to{color:red}}'
+    )
+  );
+
+  test(
+    'should not fold stops into :is() under vendor-prefixed keyframes',
+    processCSS(
+      '@-webkit-keyframes test{0%,100%{color:red}}',
+      '@-webkit-keyframes test{0%,to{color:red}}'
+    )
+  );
+
+  test(
+    'should convert mixed-case vendor-prefixed keyframes',
+    processCSS(
+      '@-Webkit-Keyframes test{from{color:red}}',
+      '@-Webkit-Keyframes test{0%{color:red}}'
+    )
+  );
+
+  test(
+    'should convert @-moz-keyframes from',
+    processCSS(
+      '@-moz-keyframes test{from{color:red}}',
+      '@-moz-keyframes test{0%{color:red}}'
+    )
+  );
+
+  test(
+    'should convert @-o-keyframes from',
+    processCSS(
+      '@-o-keyframes test{from{color:red}}',
+      '@-o-keyframes test{0%{color:red}}'
+    )
+  );
+
+  test(
+    'should convert uppercase unprefixed keyframes',
+    processCSS(
+      '@KEYFRAMES test{from{color:red}}',
+      '@KEYFRAMES test{0%{color:red}}'
+    )
+  );
+
+  test(
     'should not mangle @keyframe from & 100% in other values',
     passthroughCSS('@keyframes test{x-from-tag{color:red}5100%{color:blue}}')
   );
@@ -147,5 +203,25 @@ suite('@keyframe normalization', () => {
   test(
     'should not mangle @keyframe 100% in named timeline range names and percentages',
     passthroughCSS('@keyframes test{entry 100%{color:red}}')
+  );
+
+  test(
+    'should not treat suffixed at-rules as keyframes',
+    passthroughCSS('@foo-keyframes x{from{color:red}}')
+  );
+
+  test(
+    'should not treat prefixed at-rules as keyframes',
+    passthroughCSS('@not-webkit-keyframes x{from{color:red}}')
+  );
+
+  test(
+    'should use ASCII case-insensitive keyframe matching',
+    passthroughCSS('@Keyframes x{from{color:red}}')
+  );
+
+  test(
+    'should not treat length-matching at-rules as keyframes',
+    passthroughCSS('@container (min-width:0px){from{color:red}}')
   );
 });

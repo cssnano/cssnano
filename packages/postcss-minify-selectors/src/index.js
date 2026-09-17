@@ -9,6 +9,42 @@ import { normalizeList } from './lib/selectorScanner.js';
 /** @typedef {{ sort?: boolean, convertToIs?: boolean } & AutoprefixerOptions & BrowserslistOptions} Options */
 
 /**
+ * These vendor spellings were used by browsers before unprefixed keyframes
+ * support; arbitrary suffixes must not receive keyframe-selector semantics.
+ * @type {readonly string[]}
+ */
+const keyframeAtRuleNames = new Set([
+  'keyframes',
+  '-webkit-keyframes',
+  '-moz-keyframes',
+  '-o-keyframes',
+]);
+
+/**
+ * @param {string} value
+ * @param {string} expected Lowercase ASCII reference spelling.
+ * @return {boolean}
+ */
+function isAsciiCaseInsensitive(value, expected) {
+  if (value.length !== expected.length) return false;
+  for (let index = 0; index < value.length; index++) {
+    let code = value.charCodeAt(index);
+    if (code >= 0x41 && code <= 0x5a) code += 0x20;
+    if (code !== expected.charCodeAt(index)) return false;
+  }
+  return true;
+}
+
+/** @param {unknown} name @return {boolean} */
+function isKeyframesAtRule(name) {
+  if (typeof name !== 'string') return false;
+  for (const expected of keyframeAtRuleNames) {
+    if (isAsciiCaseInsensitive(name, expected)) return true;
+  }
+  return false;
+}
+
+/**
  * Minify selectors from tokenizer spans. Function arguments are normalized
  * bottom-up without recursive descent.
  * @param {Options} opts
@@ -43,7 +79,7 @@ function pluginCreator(opts = {}) {
               rules.push(node);
             } else if (
               node.type === 'atrule' &&
-              node.name.toLowerCase() === 'namespace'
+              isAsciiCaseInsensitive(node.name, 'namespace')
             ) {
               hasDefaultNamespace ||= isDefaultNamespace(node.params);
             }
@@ -56,7 +92,7 @@ function pluginCreator(opts = {}) {
             if (source.at(-1) === ':') continue;
             const inKeyframes =
               rule.parent?.type === 'atrule' &&
-              /(?:^|-)(?:webkit-)?keyframes$/iv.test(rule.parent.name);
+              isKeyframesAtRule(rule.parent.name);
             if (
               !inKeyframes &&
               !hasDefaultNamespace &&

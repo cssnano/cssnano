@@ -6,9 +6,6 @@ export type Options = {
     sort?: boolean;
     convertToIs?: boolean;
 } & AutoprefixerOptions & BrowserslistOptions;
-/** @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions */
-/** @typedef {Pick<import('browserslist').Options, 'stats' | 'path' | 'env'>} BrowserslistOptions */
-/** @typedef {{ sort?: boolean, convertToIs?: boolean } & AutoprefixerOptions & BrowserslistOptions} Options */
 /**
  * Minify selectors from tokenizer spans. Function arguments are normalized
  * bottom-up without recursive descent.

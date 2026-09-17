@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
-import { performance } from 'node:perf_hooks';
 import { test } from 'node:test';
 import { normalizeList } from '../src/lib/selectorScanner.js';
 
 test('folds many independent eligible positions without pairwise scans', () => {
-  const elapsed = [];
-  for (const count of [250, 500, 1_000]) {
+  const cpuTime = [];
+  for (const count of [1_000, 2_000, 4_000, 8_000]) {
     const selectors = [];
     const expected = [];
     for (let index = 0; index < count; index++) {
@@ -13,17 +12,18 @@ test('folds many independent eligible positions without pairwise scans', () => {
       selectors.push(`.prefix-${index} .b .suffix-${index}`);
       expected.push(`.prefix-${index} :is(.a,.b) .suffix-${index}`);
     }
-    const start = performance.now();
+    const start = process.cpuUsage();
     assert.equal(
       normalizeList(selectors.join(','), false, true),
       expected.join(',')
     );
-    elapsed.push(performance.now() - start);
+    const usage = process.cpuUsage(start);
+    cpuTime.push(usage.user + usage.system);
   }
-  for (let index = 1; index < elapsed.length; index++)
+  for (let index = 1; index < cpuTime.length; index++)
     assert.ok(
-      elapsed[index] / elapsed[index - 1] < 6,
-      `fold doubling ratio ${index}: ${(elapsed[index] / elapsed[index - 1]).toFixed(2)}`
+      cpuTime[index] / cpuTime[index - 1] < 3,
+      `fold doubling ratio ${index}: ${(cpuTime[index] / cpuTime[index - 1]).toFixed(2)}`
     );
 });
 
@@ -45,20 +45,21 @@ test('folds a wide group sharing long structural prefixes and suffixes', () => {
 });
 
 test('mostly-unique widths have bounded doubling ratios', () => {
-  const elapsed = [];
-  for (const count of [2_000, 4_000, 8_000]) {
+  const cpuTime = [];
+  for (const count of [2_000, 4_000, 8_000, 16_000]) {
     const input = Array.from(
       { length: count },
       (_, index) => `.item-${index}:not(.disabled-${index})`
     ).join(',');
-    const start = performance.now();
+    const start = process.cpuUsage();
     assert.equal(normalizeList(input, false, false), input);
-    elapsed.push(performance.now() - start);
+    const usage = process.cpuUsage(start);
+    cpuTime.push(usage.user + usage.system);
   }
-  for (let index = 1; index < elapsed.length; index++)
+  for (let index = 1; index < cpuTime.length; index++)
     assert.ok(
-      elapsed[index] / elapsed[index - 1] < 6,
-      `doubling ratio ${index}: ${(elapsed[index] / elapsed[index - 1]).toFixed(2)}`
+      cpuTime[index] / cpuTime[index - 1] < 3,
+      `doubling ratio ${index}: ${(cpuTime[index] / cpuTime[index - 1]).toFixed(2)}`
     );
 });
 
