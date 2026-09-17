@@ -1,6 +1,6 @@
 {
   "name": "postcss-merge-rules",
-  "version": "9.0.3",
+  "version": "9.0.4",
   "description": "Merge CSS rules with PostCSS.",
   "exports": {
     ".": {

@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-positions",
-  "version": "9.0.2",
+  "version": "9.0.3",
   "description": "Normalize keyword values for position into length values.",
   "exports": {
     ".": {

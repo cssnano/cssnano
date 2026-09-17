@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-display-values",
-  "version": "9.0.2",
+  "version": "9.0.3",
   "description": "Normalize multiple value display syntaxes into single values.",
   "exports": {
     ".": {

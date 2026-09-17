@@ -1,6 +1,6 @@
 {
   "name": "postcss-zindex",
-  "version": "9.0.2",
+  "version": "9.0.3",
   "description": "Reduce z-index values with PostCSS.",
   "exports": {
     ".": {
