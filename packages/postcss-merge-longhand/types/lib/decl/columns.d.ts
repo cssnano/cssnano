@@ -1,4 +1,4 @@
-import type { Declaration, Rule } from 'postcss';
+import type { Container, Declaration } from 'postcss';
 export declare const allColumnProps: Set<string>;
 /**
  * Check if a declaration sets column properties beyond column-width/count.
@@ -9,9 +9,9 @@ export declare const allColumnProps: Set<string>;
  */
 export declare const setsOtherColumnProperty: (declaration: Declaration) => boolean;
 /**
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {Declaration[]} [declarations]
  * @param {[Declaration[], Declaration[]]} [lanes]
  */
-export declare function reduceColumns(rule: Rule, declarations?: Declaration[], lanes?: [Declaration[], Declaration[]]): void;
+export declare function reduceColumns(rule: Container, declarations?: Declaration[], lanes?: [Declaration[], Declaration[]]): void;
 //# sourceMappingURL=columns.d.ts.map

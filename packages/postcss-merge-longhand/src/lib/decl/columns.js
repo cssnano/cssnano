@@ -14,7 +14,7 @@ import {
   isAll,
 } from './importanceLanes.js';
 
-/** @import {Declaration, Rule} from 'postcss'; */
+/** @import {Container, Declaration} from 'postcss'; */
 
 const { TokenType, lengthUnits, tokens } = cssnanoUtils;
 
@@ -229,12 +229,46 @@ const isKeywordOrUnresolved = (v) =>
   v === auto || cssWideKeywords.has(v) || isUnresolved(v);
 
 /** @param {Declaration} d @return {boolean} */
-const isValidColumns = (d) =>
-  Boolean(
-    d.value &&
-    (isKeywordOrUnresolved(d.value.toLowerCase()) ||
-      parseColumns(parsedValue(d)))
-  );
+function isValidColumns(d) {
+  if (!d.value) return false;
+  const parsed = parsedValue(d);
+  if (parseColumns(parsed)) return true;
+  if (parsed.hasTopLevelSlash) return true;
+
+  if (parsed.terms.length === 1) {
+    const val = parsed.value
+      .slice(parsed.terms[0].start, parsed.terms[0].end)
+      .toLowerCase();
+    return (
+      isKeywordOrUnresolved(val) || componentRole(parsed.terms[0]) !== undefined
+    );
+  }
+
+  if (parsed.terms.length === 2) {
+    /** @type {('width' | 'count' | 'initial' | 'unresolved')[]} */
+    const roles = [];
+    for (const term of parsed.terms) {
+      const role = componentRole(term);
+      if (role !== undefined) {
+        roles.push(role);
+      } else {
+        const val = parsed.value.slice(term.start, term.end).toLowerCase();
+        // CSS-wide keywords cannot combine with other tokens (CSS Cascading 4
+        // § 7.2); only unresolved functions keep a two-term value valid.
+        if (isUnresolved(val)) {
+          roles.push('unresolved');
+        } else {
+          return false;
+        }
+      }
+    }
+    if (roles[0] === 'width' && roles[1] === 'width') return false;
+    if (roles[0] === 'count' && roles[1] === 'count') return false;
+    return true;
+  }
+
+  return false;
+}
 
 /** @param {Declaration} d @return {boolean} */
 function isValidColumnProperty(d) {
@@ -269,7 +303,7 @@ function setSlot(slots, i, value, decl, fallbacks) {
 }
 
 /**
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {({ value: string, decl: Declaration } | null)[]} slots
  * @param {Set<Declaration>} contributing
  * @param {Set<Declaration>} fallbacks
@@ -330,7 +364,7 @@ const shouldReset = (slots, idx, decl) =>
       Boolean(slots[idx] && isFallback(slots[idx].decl, decl)));
 
 /**
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {Declaration[]} laneDecls
  * @param {boolean} lane
  */
@@ -429,15 +463,16 @@ function normalizeSingleton(s) {
 }
 
 /**
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {Declaration[]} [declarations]
  * @param {[Declaration[], Declaration[]]} [lanes]
  */
 export function reduceColumns(rule, declarations, lanes) {
-  if (!rule.nodes) return;
+  const nodes = rule.nodes;
+  if (!nodes) return;
   const getColDecls = () =>
     /** @type {Declaration[]} */ (
-      rule.nodes.filter(
+      nodes.filter(
         (n) => n.type === 'decl' && allColumnProps.has(n.prop.toLowerCase())
       )
     );

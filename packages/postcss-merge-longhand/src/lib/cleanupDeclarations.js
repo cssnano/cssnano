@@ -44,11 +44,20 @@ function cleanupDeclarations(declarations, isLowerPrecedence, footprint) {
       continue;
     }
 
-    propertyFrontier.set(node.prop, [...(sameProperty ?? []), node]);
+    if (sameProperty) {
+      sameProperty.push(node);
+    } else {
+      propertyFrontier.set(node.prop, [node]);
+    }
     if (!footprint) continue;
     for (const property of footprint(node)) {
       const frontier = footprints[lane];
-      frontier.set(property, [...(frontier.get(property) ?? []), node]);
+      const existing = frontier.get(property);
+      if (existing) {
+        existing.push(node);
+      } else {
+        frontier.set(property, [node]);
+      }
     }
   }
 }

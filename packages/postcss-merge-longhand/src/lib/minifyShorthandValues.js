@@ -87,6 +87,17 @@ function reduceTwoAxisProperty(property, components) {
       )
     )
       return null;
+  } else if (property === 'border-spacing') {
+    if (
+      !components.every((component) =>
+        isLengthComponent(component, {
+          percentage: false,
+          auto: false,
+          nonNegative: true,
+        })
+      )
+    )
+      return null;
   } else {
     return null;
   }
@@ -333,6 +344,7 @@ export function normalizeValue(property, value) {
   if (!parsed || parsed.length !== 1) return null;
   const components = parsed[0].components;
   if (
+    property === 'border-spacing' ||
     property === 'gap' ||
     property === 'overflow' ||
     property === 'overscroll-behavior'

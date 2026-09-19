@@ -1,6 +1,6 @@
 import cssnanoUtils from 'cssnano-utils';
 
-/** @import {Declaration, Rule} from 'postcss'; */
+/** @import {Container, Declaration} from 'postcss'; */
 
 const { TokenType, decoded, tokens } = cssnanoUtils;
 
@@ -28,7 +28,7 @@ export function isAll(declaration) {
  * Reconstruct the normal and important lanes in rule order. A matching `all`
  * declaration is retained only as a segment boundary for family reducers.
  *
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {Declaration[]} declarations
  * @return {[Declaration[], Declaration[]]}
  */

@@ -7,6 +7,7 @@ import { normalizeValue } from './minifyShorthandValues.js';
  */
 export const foldableShorthands = new Set([
   'aspect-ratio',
+  'border-spacing',
   'gap',
   'inset',
   'overflow',

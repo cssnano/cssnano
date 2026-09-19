@@ -25,7 +25,7 @@ export const physicalPaddingProperties = new Set([
   ...topRightBottomLeft.map((d) => `padding-${d}`),
 ]);
 
-/** @import {Declaration, Rule} from 'postcss'; */
+/** @import {Container, Declaration} from 'postcss'; */
 
 /** @param {Declaration} d */
 const isInvalid = (d) =>
@@ -33,7 +33,7 @@ const isInvalid = (d) =>
   !cssGlobalKeywords.has(d.value.toLowerCase()) &&
   !browserKeeps(d.prop.toLowerCase(), d.value);
 
-/** @param {Rule} rule @param {string} prop @param {({ value: string, decl: Declaration } | null)[]} slots @param {Set<Declaration>} contributing @param {Set<Declaration>} fallbacks @param {boolean} lane */
+/** @param {Container} rule @param {string} prop @param {({ value: string, decl: Declaration } | null)[]} slots @param {Set<Declaration>} contributing @param {Set<Declaration>} fallbacks @param {boolean} lane */
 
 function flush(rule, prop, slots, contributing, fallbacks, lane) {
   if (slots.some((s) => !s || isCustomProp(s.decl))) return;
@@ -54,6 +54,7 @@ function flush(rule, prop, slots, contributing, fallbacks, lane) {
   if (toRemove.length === 1 && toRemove[0].prop.toLowerCase() === prop) {
     toRemove[0].prop = prop;
     toRemove[0].value = shorthandVal;
+    delete toRemove[0].raws?.value;
     return;
   }
   let remSize = -(prop.length + shorthandVal.length + 2 + (lane ? 10 : 0));
@@ -76,7 +77,7 @@ function shouldReset(slots, idx, decl) {
   return cssGlobalKeywords.has(decl.value.toLowerCase()) || isFb(slots[idx]);
 }
 
-/** @param {Rule} rule @param {string} prop @param {string[]} sideProps @param {Declaration[]} laneDecls @param {boolean} lane */
+/** @param {Container} rule @param {string} prop @param {string[]} sideProps @param {Declaration[]} laneDecls @param {boolean} lane */
 function processLane(rule, prop, sideProps, laneDecls, lane) {
   /** @type {({ value: string, decl: Declaration } | null)[]} */
   let slots = [null, null, null, null];
@@ -120,7 +121,7 @@ function processLane(rule, prop, sideProps, laneDecls, lane) {
   flush(rule, prop, slots, contributing, fallbacks, lane);
 }
 
-/** @param {Rule} rule @param {string} prop @param {Declaration[]} [declarations] @param {[Declaration[], Declaration[]]} [lanes] */
+/** @param {Container} rule @param {string} prop @param {Declaration[]} [declarations] @param {[Declaration[], Declaration[]]} [lanes] */
 export function reduceBox(rule, prop, declarations, lanes) {
   if (!rule.nodes) return;
   const sideProps = topRightBottomLeft.map((d) => `${prop}-${d}`);
@@ -158,6 +159,7 @@ export function reduceBox(rule, prop, declarations, lanes) {
     if (isTarget && !stylehacks.detect(s) && canExplode(s)) {
       s.prop = prop;
       s.value = minifyTrbl(s.value);
+      delete s.raws?.value;
     }
     return;
   }

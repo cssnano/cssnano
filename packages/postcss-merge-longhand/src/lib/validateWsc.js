@@ -81,6 +81,10 @@ function isBorderWidth(value) {
  * @return {boolean} whether the value calls a function that produces a colour
  */
 function callsColorFunction(value) {
+  if (!value.includes('(')) {
+    return false;
+  }
+
   for (const token of tokens(value)) {
     if (
       token[0] === TokenType.Function &&
@@ -104,10 +108,6 @@ function isColor(value) {
 
   const lowered = asciiLowerCase(value);
 
-  if (callsColorFunction(lowered)) {
-    return true;
-  }
-
   if (hexColorRegex.test(lowered)) {
     return true;
   }
@@ -117,11 +117,15 @@ function isColor(value) {
     return true;
   }
 
+  if (colors.has(lowered)) {
+    return true;
+  }
+
   if (systemColors.has(lowered)) {
     return true;
   }
 
-  return colors.has(lowered);
+  return callsColorFunction(lowered);
 }
 
 /**

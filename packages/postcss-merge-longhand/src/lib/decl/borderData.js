@@ -60,13 +60,18 @@ export const allRadiusProperties = new Set([
   ...otherRadiusProperties,
 ]);
 
+/** @type {Map<string, number>} */
+const levelMap = new Map();
+for (let i = 0; i < precedence.length; i++) {
+  for (const p of precedence[i]) {
+    levelMap.set(p, i);
+  }
+}
+
 /**
  * @param {string} prop
  * @return {number | undefined}
  */
 export function getLevel(prop) {
-  const p = prop.toLowerCase();
-  for (let i = 0; i < precedence.length; i++) {
-    if (precedence[i].includes(p)) return i;
-  }
+  return levelMap.get(prop.toLowerCase());
 }

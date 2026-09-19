@@ -33,10 +33,21 @@ import {
   widthStyleColor,
 } from './borderData.js';
 import { isAll } from './importanceLanes.js';
-/** @import {Declaration, Rule} from 'postcss'; */
+/** @import {Container, Declaration} from 'postcss'; */
 
 const sides = spec.sides,
   components = widthStyleColor;
+
+/** @type {Map<string, number>} */
+const borderPropertyToCellIndex = new Map();
+for (let s = 0; s < sides.length; s++) {
+  for (let c = 0; c < components.length; c++) {
+    borderPropertyToCellIndex.set(
+      `border-${sides[s]}-${components[c]}`,
+      s * 3 + c
+    );
+  }
+}
 
 /**
  * @param {string} value
@@ -96,7 +107,7 @@ function declSize(decls, important) {
     sum += d.prop.length + d.value.length + (important ? 12 : 2);
   return sum;
 }
-/** @param {Rule} rule */
+/** @param {Container} rule */
 function hasForeignBorderNodes(rule) {
   if (!rule.nodes) return false;
   for (const node of rule.nodes) {
@@ -115,10 +126,8 @@ function footprintValid(candDecls, touched, hasReset) {
   for (const { prop } of candDecls) {
     for (const p of setsLonghands(prop.toLowerCase())) {
       if (borderImageProperties.has(p) && !hasReset) return false;
-      const [sName, cName] = p.slice(7).split('-');
-      const s = sides.indexOf(sName),
-        c = components.indexOf(cName);
-      if (s !== -1 && c !== -1 && !touched.has(s * 3 + c)) return false;
+      const cellIndex = borderPropertyToCellIndex.get(p);
+      if (cellIndex !== undefined && !touched.has(cellIndex)) return false;
     }
   }
   return true;
@@ -527,9 +536,11 @@ function normalizeBorderSingleton(d) {
   if (p === 'border' || physicalBorderShorthands.includes(p)) {
     d.prop = p;
     d.value = minifyWidthStyleColor(d.value);
+    delete d.raws?.value;
   } else if (allSidesBorderShorthands.includes(p)) {
     d.prop = p;
     d.value = minifyTrbl(d.value);
+    delete d.raws?.value;
   }
 }
 /**
@@ -671,10 +682,8 @@ function selectBestCandidate(
      * barriers and preserved fallbacks deliberately prevent that completion. */
     const removesOutsideFootprint = removable.some((d) =>
       [...setsLonghands(d.prop.toLowerCase())].some((p) => {
-        const [sName, cName] = p.slice(7).split('-');
-        const s = sides.indexOf(sName);
-        const c = components.indexOf(cName);
-        return s !== -1 && c !== -1 && !cand.coveredCells.has(s * 3 + c);
+        const cellIndex = borderPropertyToCellIndex.get(p);
+        return cellIndex !== undefined && !cand.coveredCells.has(cellIndex);
       })
     );
     if (removesOutsideFootprint) continue;
@@ -699,7 +708,7 @@ function selectBestCandidate(
 }
 
 /**
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {{ cand: { decls: { prop: string, value: string }[], rank: number, mask: number, coveredCells: Set<number> }, repList: Declaration[], removable: Declaration[], diff: number, size: number, fallbacks: Set<Declaration> }} best
  * @param {Declaration[]} segment
  * @param {boolean} lane
@@ -769,7 +778,7 @@ function applyBestCandidate(rule, best, segment, lane) {
 }
 
 /**
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {Declaration[]} segment
  * @param {boolean} lane
  */
@@ -815,7 +824,7 @@ function reduceSegment(rule, segment, lane) {
 }
 
 /**
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {Declaration[]} laneDecls
  * @param {boolean} lane
  */
@@ -840,7 +849,7 @@ function processLane(rule, laneDecls, lane) {
 }
 
 /**
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {Declaration[]} [declarations]
  * @param {boolean} [hasForeignBorder]
  * @return {void}

@@ -18,7 +18,7 @@ import {
   logicalRadiusProperties,
 } from './borderData.js';
 
-/** @import {Declaration, Rule} from 'postcss'; */
+/** @import {Container, Declaration} from 'postcss'; */
 
 /**
  * Intermediate Representation (IR) descriptor for a declaration in the border-radius family.
@@ -56,7 +56,7 @@ function assignSlot(slotVector, idx, value, decl, fallbackDefinitions) {
 /**
  * Synthesizes and commits a merged shorthand declaration if cost-model benefit is non-negative.
  *
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {({ value: string, decl: Declaration } | null)[]} slotVector
  * @param {Set<Declaration>} liveDefinitions
  * @param {Set<Declaration>} fallbackDefinitions
@@ -231,7 +231,7 @@ function accumulateCorner(
 /**
  * Executes greedy vector coalescing over a lane's IR descriptors.
  *
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {RadiusDeclarationDescriptor[]} laneDescriptors
  * @param {boolean} isImportant
  */
@@ -448,7 +448,7 @@ function appendRadiusNode(node, lanes, radiusDescriptors) {
 
 /**
  * Partitions family lanes into descriptor lanes.
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {[Declaration[], Declaration[]]} familyLanes
  * @return {{ lanes: [RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]], radiusDescriptors: RadiusDeclarationDescriptor[] } | null}
  */
@@ -472,7 +472,7 @@ function partitionLanes(rule, familyLanes) {
 }
 
 /**
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {Declaration[]} [declarations]
  * @param {[Declaration[], Declaration[]]} [lanes]
  */

@@ -1,4 +1,4 @@
-import type { Declaration, Rule } from 'postcss';
+import type { Container, Declaration } from 'postcss';
 /**
  * Property names are CSS identifiers, so match their decoded spelling. A
  * malformed property fails closed and cannot become a segment boundary.
@@ -11,11 +11,11 @@ export declare function isAll(declaration: Declaration): boolean;
  * Reconstruct the normal and important lanes in rule order. A matching `all`
  * declaration is retained only as a segment boundary for family reducers.
  *
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {Declaration[]} declarations
  * @return {[Declaration[], Declaration[]]}
  */
-export declare function importanceLanes(rule: Rule, declarations: Declaration[]): [Declaration[], Declaration[]];
+export declare function importanceLanes(rule: Container, declarations: Declaration[]): [Declaration[], Declaration[]];
 /**
  * Apply declaration cleanup independently between matching `all` boundaries.
  *

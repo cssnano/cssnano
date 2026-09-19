@@ -48,6 +48,7 @@ const vendorPrefix = /^-[a-z]+-/v;
  * @return {string|undefined} the function name a token opens with, unprefixed
  */
 function leadingFunctionName(token) {
+  if (!token.includes('(')) return undefined;
   let firstToken;
   for (const candidate of tokenize({ css: token })) {
     if (

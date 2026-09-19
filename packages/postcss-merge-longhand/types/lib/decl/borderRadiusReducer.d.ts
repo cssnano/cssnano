@@ -1,5 +1,5 @@
 import { parseCornerRadius, parseRadiusShorthand } from '../validateRadius.js';
-import type { Declaration, Rule } from 'postcss';
+import type { Container, Declaration } from 'postcss';
 export type RadiusDeclarationDescriptor = {
     decl: Declaration;
     prop?: string;
@@ -13,9 +13,9 @@ export type RadiusDeclarationDescriptor = {
     parsed?: ReturnType<typeof parseRadiusShorthand> | ReturnType<typeof parseCornerRadius> | null;
 };
 /**
- * @param {Rule} rule
+ * @param {Container} rule
  * @param {Declaration[]} [declarations]
  * @param {[Declaration[], Declaration[]]} [lanes]
  */
-export declare function reduceBorderRadius(rule: Rule, declarations?: Declaration[], lanes?: [Declaration[], Declaration[]]): void;
+export declare function reduceBorderRadius(rule: Container, declarations?: Declaration[], lanes?: [Declaration[], Declaration[]]): void;
 //# sourceMappingURL=borderRadiusReducer.d.ts.map

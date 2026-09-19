@@ -43,14 +43,6 @@ function parseWsc(value) {
   let width, style, color;
 
   const values = list.space(value);
-  if (
-    values.length > 1 &&
-    isBorderStyle(values[1]) &&
-    asciiLowerCase(values[0]) === 'none'
-  ) {
-    values.unshift();
-    width = '0';
-  }
 
   /** @type {string[]} */
   const unknown = [];

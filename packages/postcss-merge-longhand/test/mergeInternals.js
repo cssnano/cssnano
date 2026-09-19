@@ -2,7 +2,6 @@ import { test, suite } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { reduceBorder } from '../src/lib/decl/borderReducer.js';
-import mergeRules from '../src/lib/mergeRules.js';
 
 /**
  * Tests merge correctness without `index.js`'s size guard.
@@ -41,56 +40,28 @@ suite('side shorthand merge positioning', () => {
   });
 });
 
-const sideShorthands = [
-  'border-top',
-  'border-right',
-  'border-bottom',
-  'border-left',
-];
-
-/**
- * @param {string} css one rule
- * @return {number} how many times `mergeRules` offers the merge
- */
-function offeredMerges(css) {
-  const root = postcss.parse(css);
-  let offers = 0;
-
-  mergeRules(
-    /** @type {import('postcss').Rule} */ (root.first),
-    sideShorthands,
-    () => {
-      offers++;
-      return false;
-    }
-  );
-
-  return offers;
-}
-
 /* border-top and border-color cross: both affect the same CSS values
  * (top-color), creating an order-dependent conflict the property names
- * don't reveal. arePropertiesConflicting cannot detect this; only
- * arePropertiesCrossing can. A merge takes the source position of its
- * last member, so a crossing property blocks it only if positioned after
- * that member. */
+ * don't reveal. Segment cell tracking and candidate footprint checking
+ * detect this. A merge takes the source position of its last member,
+ * so a crossing property blocks it only if positioned after that member. */
 
 suite('crossing property merge blocking', () => {
   test('refuses a merge that would move a side shorthand past a crossing one', () => {
     assert.strictEqual(
-      offeredMerges(
+      mergeBorders(
         'a{border-top:1px solid red;border-right:1px solid red;border-color:blue;border-bottom:1px solid red;border-left:1px solid red}'
       ),
-      0
+      'a{border-color:blue blue red red;border-style:solid;border-width:1px}'
     );
   });
 
   test('allows a merge whose crossing shorthand already comes first', () => {
     assert.strictEqual(
-      offeredMerges(
+      mergeBorders(
         'a{border-color:blue;border-top:1px solid red;border-right:1px solid red;border-bottom:1px solid red;border-left:1px solid red}'
       ),
-      1
+      'a{border-color:red;border-style:solid;border-width:1px}'
     );
   });
 });

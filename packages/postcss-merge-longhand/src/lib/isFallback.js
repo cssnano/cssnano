@@ -51,11 +51,24 @@ const mergeSensitiveFunctions = new Set([
   ...conditionalSupportFunctions.difference(ubiquitousFunctions),
 ]);
 
+const EMPTY_SET = new Set();
+/** @type {Map<string, Set<string>>} */
+const supportDepsCache = new Map();
+
 /**
  * @param {string} value
  * @return {Set<string>} the support-dependent functions the value calls
  */
 function supportDependenciesIn(value) {
+  if (!value.includes('(')) {
+    return EMPTY_SET;
+  }
+
+  const cached = supportDepsCache.get(value);
+  if (cached !== undefined) {
+    return cached;
+  }
+
   /** @type {Set<string>} */
   const names = new Set();
 
@@ -71,6 +84,7 @@ function supportDependenciesIn(value) {
     }
   }
 
+  supportDepsCache.set(value, names);
   return names;
 }
 

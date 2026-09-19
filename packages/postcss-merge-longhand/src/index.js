@@ -9,7 +9,6 @@ import {
   reduceBox,
 } from './lib/decl/boxReducer.js';
 import { reduceBorder } from './lib/decl/borderReducer.js';
-import { reduceBorderSpacing } from './lib/decl/borderSpacingReducer.js';
 import { reduceBorderRadius } from './lib/decl/borderRadiusReducer.js';
 import {
   allPhysicalBorderProperties,
@@ -21,7 +20,7 @@ import {
   foldShorthandDeclaration,
 } from './lib/minifyShorthand.js';
 
-/** @import {Container, Declaration, Rule} from 'postcss'; */
+/** @import {Container, Declaration} from 'postcss'; */
 
 /**
  * Folds immediate shorthand declarations within a container (e.g. root or at-rule).
@@ -42,7 +41,8 @@ function foldContainerDeclarations(container, shorthandMemoTable) {
 }
 
 /**
- * @param {Rule} rule
+ * Runs property-family reducers on classified declarations for a container.
+ * @param {Container} container
  * @param {{
  *   marginDecls: Declaration[],
  *   marginLanes: [Declaration[], Declaration[]],
@@ -53,48 +53,48 @@ function foldContainerDeclarations(container, shorthandMemoTable) {
  *   columnDecls: Declaration[],
  *   columnLanes: [Declaration[], Declaration[]],
  *   borderDeclarations: Declaration[],
- *   borderSpacingDeclarations: Declaration[],
  *   hasForeignBorder: boolean,
  * }} state
  * @param {{
- *   columnRules: [Rule, Declaration[], [Declaration[], Declaration[]]][],
+ *   columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][],
  *   setsOtherColumn: boolean,
  *   shorthandMemoTable: Map<string, string | null>
  * }} context
  * @return {void}
  */
-function reduceClassifiedRule(rule, state, context) {
+function reduceClassifiedContainer(container, state, context) {
   if (state.marginDecls.length) {
-    reduceBox(rule, 'margin', state.marginDecls, state.marginLanes);
+    reduceBox(container, 'margin', state.marginDecls, state.marginLanes);
   }
   if (state.paddingDecls.length) {
-    reduceBox(rule, 'padding', state.paddingDecls, state.paddingLanes);
+    reduceBox(container, 'padding', state.paddingDecls, state.paddingLanes);
   }
   if (state.borderRadiusDecls.length) {
-    reduceBorderRadius(rule, state.borderRadiusDecls, state.borderRadiusLanes);
-  }
-  if (state.borderSpacingDeclarations.length) {
-    reduceBorderSpacing(rule, state.borderSpacingDeclarations);
+    reduceBorderRadius(
+      container,
+      state.borderRadiusDecls,
+      state.borderRadiusLanes
+    );
   }
   if (state.borderDeclarations.length) {
-    reduceBorder(rule, state.borderDeclarations, state.hasForeignBorder);
+    reduceBorder(container, state.borderDeclarations, state.hasForeignBorder);
   }
   if (state.columnDecls.length) {
-    context.columnRules.push([rule, state.columnDecls, state.columnLanes]);
+    context.columnRules.push([container, state.columnDecls, state.columnLanes]);
   }
 }
 
 /**
- * Classifies declarations within a rule, runs box/border reducers, and tracks column candidates.
- * @param {Rule} rule
+ * Classifies declarations within a container, runs reducers, and tracks column candidates.
+ * @param {Container} container
  * @param {{
- *   columnRules: [Rule, Declaration[], [Declaration[], Declaration[]]][],
+ *   columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][],
  *   setsOtherColumn: boolean,
  *   shorthandMemoTable: Map<string, string | null>
  * }} context
  * @return {void}
  */
-function processRule(rule, context) {
+function processContainer(container, context) {
   const state = {
     /** @type {Declaration[]} */
     marginDecls: [],
@@ -114,12 +114,12 @@ function processRule(rule, context) {
     columnLanes: [[], []],
     /** @type {Declaration[]} */
     borderDeclarations: [],
-    /** @type {Declaration[]} */
-    borderSpacingDeclarations: [],
     hasForeignBorder: false,
   };
 
-  for (const child of rule.nodes) {
+  if (!container.nodes) return;
+
+  for (const child of container.nodes) {
     if (child.type !== 'decl') continue;
     const laneIndex = child.important ? 1 : 0;
     if (isAll(child)) {
@@ -136,10 +136,10 @@ function processRule(rule, context) {
       if (allRadiusProperties.has(prop)) {
         state.borderRadiusDecls.push(child);
         state.borderRadiusLanes[laneIndex].push(child);
-      } else if (prop === 'border-spacing') {
-        state.borderSpacingDeclarations.push(child);
       } else if (allPhysicalBorderProperties.has(prop)) {
         state.borderDeclarations.push(child);
+      } else if (foldableShorthands.has(prop)) {
+        foldShorthandDeclaration(child, context.shorthandMemoTable);
       } else {
         state.hasForeignBorder = true;
       }
@@ -164,7 +164,7 @@ function processRule(rule, context) {
     }
   }
 
-  reduceClassifiedRule(rule, state, context);
+  reduceClassifiedContainer(container, state, context);
 }
 
 /**
@@ -178,25 +178,26 @@ function pluginCreator() {
      */
     OnceExit(css) {
       const context = {
-        /** @type {[Rule, Declaration[], [Declaration[], Declaration[]]][]} */
+        /** @type {[Container, Declaration[], [Declaration[], Declaration[]]][]} */
         columnRules: [],
         setsOtherColumn: false,
+        /** @type {Map<string, string | null>} */
         shorthandMemoTable: new Map(),
       };
 
       foldContainerDeclarations(css, context.shorthandMemoTable);
 
       css.walk((node) => {
-        if (node.type === 'rule') {
-          processRule(node, context);
-        } else if (node.type === 'atrule') {
-          foldContainerDeclarations(node, context.shorthandMemoTable);
+        if (node.type !== 'rule' && node.type !== 'atrule') return;
+        if (node.nodes?.some((n) => n.type === 'decl')) {
+          processContainer(node, context);
         }
       });
 
       if (!context.setsOtherColumn) {
-        for (const [rule, decls, lanes] of context.columnRules)
+        for (const [rule, decls, lanes] of context.columnRules) {
           reduceColumns(rule, decls, lanes);
+        }
       }
     },
   };
