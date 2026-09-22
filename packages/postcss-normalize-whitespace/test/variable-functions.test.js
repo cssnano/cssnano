@@ -5,22 +5,6 @@ import plugin from '../src/index.js';
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 test(
-  'should trim whitespace from nested functions',
-  processCSS(
-    'h1{width:calc(10px - ( 100px / var(--test) ))}',
-    'h1{width:calc(10px - (100px / var(--test)))}'
-  )
-);
-
-test(
-  'should trim whitespace from nested functions (uppercase "calc")',
-  processCSS(
-    'h1{width:CALC(10px - ( 100px / var(--test) ))}',
-    'h1{width:CALC(10px - (100px / var(--test)))}'
-  )
-);
-
-test(
   'should trim whitespace from css variables',
   processCSS(
     'h1{width:var(--foo, calc(10px + 10px))}',
@@ -44,15 +28,6 @@ test(
   )
 );
 
-test(
-  'should preserve space in custom property',
-  passthroughCSS('h1{--prop:  }')
-);
-
-test(
-  'should not add space around empty custom property',
-  passthroughCSS('h1{--prop:}')
-);
 test(
   'should not trim spaces inside of nested var function',
   processCSS(
@@ -99,37 +74,35 @@ test(
   )
 );
 
+// lightningcss#1201: whitespace between adjacent var() calls must be preserved
 test(
-  'should preserve whitespace after custom property declaration',
-  passthroughCSS(':root{--foo: bar}')
+  'should preserve whitespace between adjacent var() calls',
+  processCSS('h1{margin: var(--a)  var(--b)}', 'h1{margin:var(--a) var(--b)}')
+);
+
+// lightningcss#1141: var(--x, ) with empty fallback must be idempotent
+test(
+  'should be idempotent on var() with empty fallback',
+  passthroughCSS('h1{width:var(--x, )}')
 );
 
 test(
-  'should preserve an escaped tab character used as an IE hack',
-  passthroughCSS('div{display:none\\\t}')
+  'should trim whitespace from an empty var() function',
+  processCSS('h1{color:var( )}', 'h1{color:var()}')
 );
 
 test(
-  'should preserve an escaped tab character and drop redundant trailing whitespace',
-  processCSS('div{display:none\\\t   }', 'div{display:none\\\t}')
+  'should preserve whitespace between adjacent var() calls while trimming internal whitespace',
+  processCSS(
+    'h1{margin:var(  --a  )   var(  --b  )}',
+    'h1{margin:var(--a) var(--b)}'
+  )
 );
 
 test(
-  'should not let a trailing backslash followed by a newline become an escape of the closing brace',
-  passthroughCSS('div{display:none\\\n}')
-);
-
-test(
-  'should not treat an escaped backslash as a dangling escape',
-  passthroughCSS('div{content:"x"\\\\}')
-);
-
-test(
-  'should preserve an escaped tab character in the last declaration of an at-rule',
-  passthroughCSS('@font-face{src:url(a)\\\t}')
-);
-
-test(
-  'should preserve an escaped tab character in a custom property that is the last declaration',
-  passthroughCSS(':root{--x:1;--y:red\\\t}')
+  'should trim whitespace in nested variable functions',
+  processCSS(
+    'h1{color:var(  --a  , var(  --b  )  )}',
+    'h1{color:var(--a,var(--b))}'
+  )
 );

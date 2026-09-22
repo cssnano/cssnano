@@ -1,6 +1,8 @@
 export const name = 'postcss-normalize-whitespace';
 export const target = new URL('./src/index.js', import.meta.url).href;
-export const test = new URL('./test/index.js', import.meta.url).href;
+// node --test expands this glob; a directory path would resolve to a single
+// entry module instead of running every split test file.
+export const test = new URL('./test/*.test.js', import.meta.url).href;
 
 export const mutations = [
   {
@@ -9,9 +11,9 @@ export const mutations = [
     replace: 'node.raws.before = node.raws.before;',
   },
   {
-    name: 'trim custom properties',
-    find: "if (type === decl && !node.prop.startsWith('--'))",
-    replace: "if (type === decl && node.prop.startsWith('--'))",
+    name: 'trim custom properties as standard declarations',
+    find: "if (!node.prop.startsWith('--')) {",
+    replace: "if (node.prop.startsWith('--')) {",
   },
   {
     name: 'skip declaration trimming',
@@ -20,14 +22,24 @@ export const mutations = [
   },
   {
     name: 'preserve spaces around dividers',
-    find: "  } else if (node.type === 'div') {\n    node.before = node.after = '';",
-    replace:
-      "  } else if (node.type === 'div') {\n    node.before = node.after = ' ';",
+    find: '  const besideSlash = !context?.math && (isSlash(previous) || isSlash(next));',
+    replace: '  const besideSlash = false;',
   },
   {
-    name: 'change the declaration separator',
-    find: "node.raws.between = ':';",
-    replace: "node.raws.between = '=';",
+    name: 'drop preserved comments from the declaration separator',
+    find: `  node.raws.between = trimSeparator(node.raws.between || ':');
+  node.raws.semicolon = false;
+}`,
+    replace: `  node.raws.between = ':';
+  node.raws.semicolon = false;
+}`,
+  },
+  {
+    name: 'keep custom property separator whitespace',
+    find: `            node.raws.between = trimCustomPropertySeparator(
+              node.raws.between || ':'
+            );`,
+    replace: `            node.raws.between = node.raws.between;`,
   },
   {
     name: 'drop trailing escape repair',
