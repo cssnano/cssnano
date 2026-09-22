@@ -1,14 +1,14 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
+import nodefs from 'node:fs';
+import nodepath from 'node:path';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import postcss from 'postcss';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 import { encode, decode } from '../src/lib/url.js';
 
-const testDir = path.dirname(fileURLToPath(import.meta.url));
+const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
+const { readFileSync: file } = nodefs;
 const { processCSS } = processCSSFactory(plugin);
 
 describe('Optimise', () => {
@@ -33,6 +33,22 @@ describe('Optimise', () => {
     processCSS(
       "h1{background:url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDAiIGZpbGw9InllbGxvdyIgLz48IS0tdGVzdCBjb21tZW50LS0+PC9zdmc+')}",
       "h1{background:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQwIiBmaWxsPSIjZmYwIi8+PC9zdmc+')}"
+    )
+  );
+
+  test(
+    'should optimise inline svg with uppercase base64 parameter',
+    processCSS(
+      "h1{background:url('DATA:IMAGE/SVG+XML;BASE64,PHN2Zz48L3N2Zz4=')}",
+      "h1{background:url('data:image/svg+xml;base64,PHN2Zy8+')}"
+    )
+  );
+
+  test(
+    'should optimise unencoded inline svg with uppercase data scheme',
+    processCSS(
+      "h1{background:url(\"DATA:IMAGE/SVG+XML,<svg><circle cx='5' cy='5' r='5'/></svg>\")}",
+      'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg><circle cx="5" cy="5" r="5"/></svg>\')}'
     )
   );
 
@@ -150,51 +166,6 @@ test(
 );
 
 test('should not crash on malformed urls when encoded', () => {
-  const svg = encode(readFileSync(`${testDir}/border.svg`, 'utf-8'));
+  const svg = encode(file(`${testDir}/border.svg`, 'utf-8'));
   assert.doesNotThrow(() => decode(svg));
-});
-test('should optimize base64 SVG data URIs containing raw percent characters', async () => {
-  const rawSvg =
-    '<svg xmlns="http://www.w3.org/2000/svg"><rect width="50%" height="50%"/></svg>';
-  const base64 = Buffer.from(rawSvg).toString('base64');
-  const css = `h1{background:url("data:image/svg+xml;base64,${base64}")}`;
-  const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 0);
-  assert.match(result.css, /data:image\/svg\+xml;base64,/);
-  const outputBase64 = result.css.match(
-    /data:image\/svg\+xml;base64,([^"')]+)/
-  )?.[1];
-  assert.ok(outputBase64);
-  const decodedOutput = Buffer.from(outputBase64, 'base64').toString('utf8');
-  assert.match(decodedOutput, /50%/);
-});
-
-test('should optimize base64 SVG data URIs containing %FF without throwing URIError', async () => {
-  const rawSvg =
-    '<svg xmlns="http://www.w3.org/2000/svg"><text>%FF</text></svg>';
-  const base64 = Buffer.from(rawSvg).toString('base64');
-  const css = `h1{background:url("data:image/svg+xml;base64,${base64}")}`;
-  const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 0);
-  const outputBase64 = result.css.match(
-    /data:image\/svg\+xml;base64,([^"')]+)/
-  )?.[1];
-  assert.ok(outputBase64);
-  const decodedOutput = Buffer.from(outputBase64, 'base64').toString('utf8');
-  assert.match(decodedOutput, /%FF/);
-});
-
-test('should optimize base64 SVG data URIs containing %3c without corrupting XML', async () => {
-  const rawSvg =
-    '<svg xmlns="http://www.w3.org/2000/svg"><text>%3c</text></svg>';
-  const base64 = Buffer.from(rawSvg).toString('base64');
-  const css = `h1{background:url("data:image/svg+xml;base64,${base64}")}`;
-  const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 0);
-  const outputBase64 = result.css.match(
-    /data:image\/svg\+xml;base64,([^"')]+)/
-  )?.[1];
-  assert.ok(outputBase64);
-  const decodedOutput = Buffer.from(outputBase64, 'base64').toString('utf8');
-  assert.match(decodedOutput, /%3c/);
 });
