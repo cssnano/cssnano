@@ -1,376 +1,401 @@
-import valueParser from 'postcss-value-parser';
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 import cssnanoUtils from 'cssnano-utils';
-import isColorStop from './isColorStop.js';
+import isKnownColor from './isKnownColor.js';
 
-const { getArguments } = cssnanoUtils;
-const directionsToAngles = new Map([
+const {
+  TokenType,
+  applyEdits,
+  asciiLowerCase,
+  decoded,
+  lengthUnits,
+  numeric,
+  tokenEnd,
+} = cssnanoUtils;
+/** @type {typeof cssnanoUtils.balancedTokens} */
+const balancedTokens = cssnanoUtils.balancedTokens;
+
+const directions = new Map([
   ['top', '0deg'],
   ['right', '90deg'],
   ['bottom', '180deg'],
   ['left', '270deg'],
 ]);
+const gradientNames = new Set([
+  'linear-gradient',
+  'repeating-linear-gradient',
+  '-webkit-linear-gradient',
+  '-webkit-repeating-linear-gradient',
+  'radial-gradient',
+  'repeating-radial-gradient',
+  'conic-gradient',
+  'repeating-conic-gradient',
+  '-webkit-radial-gradient',
+  '-webkit-repeating-radial-gradient',
+]);
+const variableFunctions = new Set(['var', 'env']);
+// Only these functions can compute a position, so any other leading function
+// such as `rgb()` or `var()` cannot be one.
+const positionFunctions = new Set(['calc', 'clamp', 'max', 'min']);
+const gradientSourceRegex = /[gG][rR][aA][dD][iI][eE][nN][tT]/v;
+// Identifiers that may start a gradient line, shape or size specification, so
+// the argument carrying one is never a colour stop slot.
+const lineKeywords = new Set([
+  'at',
+  'bottom',
+  'center',
+  'circle',
+  'closest-corner',
+  'closest-side',
+  'ellipse',
+  'farthest-corner',
+  'farthest-side',
+  'from',
+  'in',
+  'left',
+  'right',
+  'to',
+  'top',
+]);
+
+/** @typedef {{start: number, end: number, text: string}} SourceEdit */
+/**
+ * A gradient stop before fixup: the argument it came from, the extent of its
+ * colour, and the position tokens following that colour.
+ *
+ * @typedef {object} ColorStop
+ * @property {number} argIndex Comma-separated argument the stop came from.
+ * @property {number} colorEnd Offset just past the colour in the declaration value.
+ * @property {readonly number[]} position Positions following the colour.
+ */
+/**
+ * A position as a number and its unit, as reported by `numeric()`.
+ *
+ * @typedef {{number: number, unit: string}} PositionValue
+ */
 
 /**
- * Returns whether b is less than or equal to a.
+ * Significant tokens of a range, skipping whitespace, comments and the contents
+ * of any balanced frame the range opens.
  *
- * @param {valueParser.Dimension} a
- * @param {valueParser.Dimension} b
- * @returns {boolean}
+ * @param {readonly CSSToken[]} input
+ * @param {NonNullable<ReturnType<typeof balancedTokens>>} structure
+ * @param {{startIndex: number, endIndex: number}} range
+ * @return {number[]} Indexes of the significant tokens in `input`.
  */
-function isLessThan(a, b) {
+function significant(input, structure, range) {
+  const result = [];
+  for (let index = range.startIndex; index < range.endIndex; index++) {
+    const token = input[index];
+    if (token[0] !== TokenType.Whitespace && token[0] !== TokenType.Comment) {
+      result.push(index);
+    }
+    const frameEnd = structure.endForOpening(index);
+    if (frameEnd !== undefined) index = frameEnd;
+  }
+  return result;
+}
+
+/**
+ * Whether an argument starts a line, shape or size specification instead of a
+ * colour. Numbers cannot start a colour, and every other token here has to be
+ * an identifier the gradient grammar reserves for its first argument.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {readonly number[]} parts Offsets of an argument's significant tokens.
+ * @return {boolean}
+ */
+function startsLineSpecification(input, parts) {
+  const token = input[parts[0]];
+  if (!token) return false;
+  if (
+    token[0] === TokenType.Dimension ||
+    token[0] === TokenType.Number ||
+    token[0] === TokenType.Percentage
+  ) {
+    return true;
+  }
   return (
-    a.unit.toLowerCase() === b.unit.toLowerCase() &&
-    Number.parseFloat(a.number) >= Number.parseFloat(b.number)
+    token[0] === TokenType.Ident &&
+    lineKeywords.has(asciiLowerCase(decoded(token)))
   );
 }
 
 /**
- * Compares positions when their ordering is independent of layout.
+ * A zero length and a zero percentage name the same gradient position, which is
+ * also what the unitless zero this plugin emits denotes. Angles and other
+ * dimensions only share a spelling with it.
  *
- * @param {valueParser.Dimension} a
- * @param {valueParser.Dimension} b
- * @returns {boolean | undefined}
+ * @param {string} unit
+ * @return {boolean}
  */
-function isLessThanOrEqual(a, b) {
-  if (a.unit.toLowerCase() === b.unit.toLowerCase()) {
-    return isLessThan(a, b);
-  }
-
-  const aNumber = Number.parseFloat(a.number);
-  const bNumber = Number.parseFloat(b.number);
-
-  if (aNumber === 0) {
-    return bNumber <= 0;
-  }
-
-  if (bNumber === 0) {
-    return aNumber >= 0;
-  }
+function isPositionZeroUnit(unit) {
+  const lowered = asciiLowerCase(unit);
+  return lowered === '' || lowered === '%' || lengthUnits.has(lowered);
 }
 
 /**
- * Returns whether a node is a literal color stop position.
+ * Whether two positions are on the same scale, so their numbers can be ordered.
+ * Only a length and a percentage naming zero are interchangeable.
  *
- * @param {import('postcss-value-parser').Node} node
- * @returns {boolean}
+ * @param {PositionValue} current
+ * @param {PositionValue} largest
+ * @return {boolean}
  */
-function isPosition(node) {
-  return node.type === 'word' && valueParser.unit(node.value) !== false;
-}
-
-/**
- * Returns whether an argument begins a color stop.
- *
- * @param {import('postcss-value-parser').Node[]} argument
- * @returns {boolean}
- */
-function isColorStopArgument(argument) {
-  const first = argument[0];
-
-  if (!first) {
-    return false;
-  }
-
-  if (first.type === 'function') {
-    return !new Set(['calc', 'clamp', 'max', 'min']).has(
-      first.value.toLowerCase()
-    );
-  }
-
-  return first.type === 'word' && isColorStop(first.value);
-}
-
-/**
- * Gets the position nodes from a color stop or transition hint.
- *
- * @param {import('postcss-value-parser').Node[]} argument
- * @param {boolean} colorStopArgument
- * @returns {import('postcss-value-parser').Node[]}
- */
-function getPositions(argument, colorStopArgument) {
-  return argument.slice(colorStopArgument ? 1 : 0).filter((node) => {
-    return node.type !== 'space' && node.type !== 'comment';
-  });
-}
-
-/**
- * Updates the largest preceding position, replacing a position that will be
- * fixed up with its shorter equivalent.
- *
- * @param {valueParser.Dimension | undefined} largestPosition
- * @param {import('postcss-value-parser').Node} position
- * @returns {valueParser.Dimension | undefined}
- */
-function updateLargestPosition(largestPosition, position) {
-  if (!isPosition(position)) {
-    return undefined;
-  }
-
-  const currentPosition = valueParser.unit(position.value);
-
-  if (!currentPosition) {
-    return undefined;
-  }
-
-  if (!largestPosition) {
-    return currentPosition;
-  }
-
-  const isFixedUp = isLessThanOrEqual(largestPosition, currentPosition);
-
-  if (isFixedUp) {
-    position.value = '0';
-    return largestPosition;
-  }
-
-  return isFixedUp === undefined ? undefined : currentPosition;
-}
-
-/**
- * Optimizes a standard gradient color stop list using the color stop fixup
- * algorithm. A non-literal position prevents later comparisons because its
- * used value can only be known during layout.
- *
- * @param {import('postcss-value-parser').Node[][]} args
- * @returns {void}
- */
-function optimizeColorStops(args) {
-  const firstStopIndex = args.findIndex(isColorStopArgument);
-
-  if (firstStopIndex === -1) {
-    return;
-  }
-
-  const stops = [];
-  let largestPosition = /** @type {valueParser.Dimension | undefined} */ (
-    undefined
+function positionsComparable(current, largest) {
+  const unit = asciiLowerCase(current.unit);
+  const largestUnit = asciiLowerCase(largest.unit);
+  if (unit === largestUnit) return true;
+  return (
+    (current.number === 0 || largest.number === 0) &&
+    isPositionZeroUnit(unit) &&
+    isPositionZeroUnit(largestUnit)
   );
-  let hasSeenStop = false;
+}
 
-  for (const argument of args.slice(firstStopIndex)) {
-    const colorStop = isColorStopArgument(argument);
-    const positions = getPositions(argument, colorStop);
+/**
+ * Offset just past the leading colour of an argument, so a functional colour
+ * such as `rgb(0 0 0 / 50%)` ends at its closing parenthesis.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {NonNullable<ReturnType<typeof balancedTokens>>} structure
+ * @param {readonly number[]} parts Offsets of an argument's significant tokens.
+ * @return {number}
+ */
+function colorEnd(input, structure, parts) {
+  const leading = parts[0];
+  const component = input[leading];
+  if (component[0] !== TokenType.Function) return component[3];
+  const closing = structure.endForOpening(leading);
+  return closing === undefined ? component[3] : input[closing][3];
+}
 
-    if (colorStop) {
-      stops.push({ argument, positions });
+/**
+ * A `to <side>` line specification is an angle in fewer bytes.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {readonly number[]} parts Significant tokens of the first argument.
+ * @return {SourceEdit | undefined}
+ */
+function lineDirectionEdit(input, parts) {
+  if (parts.length !== 2) return undefined;
+  const from = input[parts[0]];
+  const side = input[parts[1]];
+  if (
+    from[0] !== TokenType.Ident ||
+    side[0] !== TokenType.Ident ||
+    asciiLowerCase(decoded(from)) !== 'to'
+  )
+    return undefined;
+  const direction = directions.get(asciiLowerCase(decoded(side)));
+  if (!direction) return undefined;
+  return { start: from[2], end: tokenEnd(side), text: direction };
+}
 
-      if (!hasSeenStop && positions.length === 0) {
-        largestPosition = /** @type {valueParser.Dimension} */ (
-          valueParser.unit('0%')
-        );
-      }
-
-      hasSeenStop = true;
-    }
-
-    if (positions.length === 0) {
+/**
+ * Colour stop fixup raises a position to the largest position before it, so a
+ * position at or below that non-negative maximum can be written as a zero.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {readonly number[]} position Offsets of the position tokens.
+ * @param {PositionValue | undefined} maximum Running maximum of the preceding positions.
+ * @param {Map<number, SourceEdit>} edits Collects the positions reduced to a zero.
+ * @return {PositionValue | undefined} The maximum the following stops clamp to.
+ */
+function zeroPositionEdits(input, position, maximum, edits) {
+  let largest = maximum;
+  for (const index of position) {
+    const token = input[index];
+    const current = numeric(token);
+    if (!current) {
+      largest = undefined;
       continue;
     }
-
-    for (const position of positions) {
-      largestPosition = updateLargestPosition(largestPosition, position);
+    // A zero clamps to any non-negative maximum whatever units name them, so
+    // the maximum survives the rewritten spelling instead of resetting on the
+    // next pass.
+    if (
+      largest &&
+      largest.number >= 0 &&
+      current.number === 0 &&
+      isPositionZeroUnit(current.unit)
+    ) {
+      edits.set(index, { start: token[2], end: tokenEnd(token), text: '0' });
+      continue;
     }
-  }
-
-  const firstStop = stops[0];
-  const lastStop = stops.at(-1);
-
-  if (
-    firstStop &&
-    firstStop.positions.length === 1 &&
-    firstStop.argument.length === 3 &&
-    firstStop.positions[0].value === '0%'
-  ) {
-    firstStop.argument[1].value = firstStop.positions[0].value = '';
-  }
-
-  if (
-    lastStop &&
-    lastStop.positions.length === 1 &&
-    lastStop.argument.length === 3 &&
-    lastStop.positions[0].value === '100%'
-  ) {
-    lastStop.argument[1].value = lastStop.positions[0].value = '';
-  }
-}
-
-/**
- * Shortens a direction like `to left top` into an angle.
- *
- * @param {import('postcss-value-parser').FunctionNode} node
- * @returns {void}
- */
-function shortenDirection(node) {
-  node.nodes = node.nodes.slice(2);
-  node.nodes[0].value = /** @type {string} */ (
-    directionsToAngles.get(node.nodes[0].value.toLowerCase())
-  );
-}
-
-/**
- * Optimises a linear gradient.
- *
- * @param {import('postcss-value-parser').FunctionNode} node
- * @returns {false}
- */
-function optimizeLinearGradient(node) {
-  const args = getArguments(node);
-  if (node.nodes[0]?.value.toLowerCase() === 'to' && args[0].length === 3) {
-    shortenDirection(node);
-  }
-  optimizeColorStops(getArguments(node));
-
-  return false;
-}
-
-/**
- * Optimises a radial gradient.
- *
- * @param {import('postcss-value-parser').ParsedValue | import('postcss-value-parser').FunctionNode} node
- * @returns {false}
- */
-function optimizeRadialGradient(node) {
-  optimizeColorStops(getArguments(node));
-
-  return false;
-}
-
-/**
- * Optimises a radial gradient.
- *
- * @param {import('postcss-value-parser').ParsedValue | import('postcss-value-parser').FunctionNode} node
- * @returns {false}
- */
-function optimizeWebkitRadialGradient(node) {
-  const args = getArguments(node);
-  /** @type {valueParser.Dimension | false | undefined} */
-  let previousStop = undefined;
-
-  for (const arg of args) {
-    let color;
-    let stop;
-
-    if (arg[2] !== undefined) {
-      if (arg[0].type === 'function') {
-        color = `${arg[0].value}(${valueParser.stringify(arg[0].nodes)})`;
-      } else {
-        color = arg[0].value;
-      }
-
-      if (arg[2].type === 'function') {
-        stop = `${arg[2].value}(${valueParser.stringify(arg[2].nodes)})`;
-      } else {
-        stop = arg[2].value;
-      }
+    if (largest && !positionsComparable(current, largest)) {
+      largest = undefined;
+      continue;
+    }
+    if (largest && largest.number >= 0 && largest.number >= current.number) {
+      edits.set(index, { start: token[2], end: tokenEnd(token), text: '0' });
     } else {
-      if (arg[0].type === 'function') {
-        // eslint-disable-next-line no-useless-assignment
-        color = `${arg[0].value}(${valueParser.stringify(arg[0].nodes)})`;
-      }
-
-      color = arg[0].value;
+      largest = current;
     }
-
-    color = color.toLowerCase();
-
-    const colorStop =
-      stop !== undefined
-        ? isColorStop(color, stop.toLowerCase())
-        : isColorStop(color);
-
-    if (!colorStop || !arg[2]) {
-      continue;
-    }
-
-    const thisStop = valueParser.unit(arg[2].value);
-
-    if (!previousStop) {
-      previousStop = thisStop;
-
-      continue;
-    }
-
-    if (previousStop && thisStop && isLessThan(previousStop, thisStop)) {
-      arg[2].value = '0';
-    }
-
-    previousStop = thisStop;
   }
+  return largest;
+}
 
-  return false;
+/**
+ * Collect the colour stops of one gradient argument list, the count of leading
+ * arguments naming the line or shape instead of a stop, and the positions that
+ * colour stop fixup clamps to a zero.
+ *
+ * @param {string} source
+ * @param {readonly CSSToken[]} input
+ * @param {NonNullable<ReturnType<typeof balancedTokens>>} structure
+ * @param {{startIndex: number, endIndex: number}[]} args
+ * @param {boolean} linear Whether the line specification may hold an angle.
+ * @return {{stops: ColorStop[], lineSpecifications: number, zeroEdits: Map<number, SourceEdit>, directionEdit: SourceEdit | undefined}}
+ */
+function collectColorStops(source, input, structure, args, linear) {
+  /** @type {ColorStop[]} */
+  const stops = [];
+  /** @type {Map<number, SourceEdit>} */
+  const zeroEdits = new Map();
+  /** @type {SourceEdit | undefined} */
+  let directionEdit;
+  // A stop may only drop its start position when nothing but these arguments
+  // precede it.
+  let lineSpecifications = 0;
+  /** @type {PositionValue | undefined} */
+  let largest;
+  for (const [argIndex, range] of args.entries()) {
+    const parts = significant(input, structure, range);
+    if (!parts.length) continue;
+    if (linear && argIndex === 0)
+      directionEdit = lineDirectionEdit(input, parts);
+    const end = colorEnd(input, structure, parts);
+    const leading = input[parts[0]];
+    const color = asciiLowerCase(source.slice(leading[2], end + 1));
+    const isColor =
+      isKnownColor(color) ||
+      (leading[0] === TokenType.Function &&
+        !positionFunctions.has(asciiLowerCase(decoded(leading))));
+    const position = isColor ? parts.slice(1) : parts;
+    if (
+      !isColor &&
+      argIndex === lineSpecifications &&
+      startsLineSpecification(input, parts)
+    )
+      lineSpecifications = argIndex + 1;
+    if (isColor) {
+      // A stop without a position sits at the running maximum, which starts at zero.
+      if (!position.length && !largest) largest = { number: 0, unit: '%' };
+      stops.push({ argIndex, colorEnd: end, position });
+    }
+    // Positions before the first stop belong to the line specification.
+    if (!stops.length) continue;
+    largest = zeroPositionEdits(input, position, largest, zeroEdits);
+  }
+  return { stops, lineSpecifications, zeroEdits, directionEdit };
+}
+
+/**
+ * The first colour stop defaults to the zero position and the last one to 100%,
+ * so either can drop a position already spelling its default. A single-stop
+ * gradient holds one stop in both slots, hence the slots by index and the
+ * zero edit dropped in favour of the wider removal.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {readonly ColorStop[]} stops
+ * @param {number} lineSpecifications
+ * @param {number} args
+ * @param {Map<number, SourceEdit>} zeroEdits
+ * @return {SourceEdit[]}
+ */
+function boundaryStopEdits(input, stops, lineSpecifications, args, zeroEdits) {
+  /** @type {SourceEdit[]} */
+  const edits = [];
+  for (const slot of new Set([0, stops.length - 1])) {
+    const stop = stops[slot];
+    if (!stop || stop.position.length !== 1) continue;
+    const [index] = stop.position;
+    const position = input[index];
+    const value = numeric(position);
+    if (!value) continue;
+    let removable = false;
+    if (slot === 0 && stop.argIndex === lineSpecifications) {
+      removable = value.number === 0 && isPositionZeroUnit(value.unit);
+    }
+    if (
+      slot === stops.length - 1 &&
+      stop.argIndex === args - 1 &&
+      value.number === 100 &&
+      asciiLowerCase(value.unit) === '%'
+    ) {
+      removable = true;
+    }
+    if (!removable) continue;
+    // Removing the position from the colour onwards also covers a zero edit
+    // emitted for the same token.
+    zeroEdits.delete(index);
+    edits.push({
+      start: stop.colorEnd + 1,
+      end: tokenEnd(position),
+      text: '',
+    });
+  }
+  return edits;
 }
 
 /**
  * @param {import('postcss').Declaration} decl
- * @return {void}
  */
 function optimise(decl) {
-  const value = decl.value;
-
-  if (!value) {
+  const source = decl.value;
+  if (!source || !gradientSourceRegex.test(source)) return;
+  const structure = balancedTokens(source);
+  if (!structure) return;
+  const { tokens: input } = structure;
+  if (
+    input.some(
+      (token) =>
+        token[0] === TokenType.Function &&
+        variableFunctions.has(asciiLowerCase(decoded(token)))
+    )
+  )
     return;
+  /** @type {SourceEdit[]} */
+  const replacements = [];
+  // Nested gradients are visited in token order; their argument ranges come
+  // from the shared delimiter map.
+  for (let index = 0; index < input.length; index++) {
+    const token = input[index];
+    if (token[0] !== TokenType.Function) continue;
+    const name = asciiLowerCase(decoded(token));
+    if (!gradientNames.has(name)) continue;
+    const end = structure.endForOpening(index);
+    if (end === undefined) continue;
+    const args = structure.topLevelSegments(index + 1, end);
+    const { stops, lineSpecifications, zeroEdits, directionEdit } =
+      collectColorStops(
+        source,
+        input,
+        structure,
+        args,
+        name.includes('linear')
+      );
+    if (directionEdit) replacements.push(directionEdit);
+    replacements.push(
+      ...boundaryStopEdits(
+        input,
+        stops,
+        lineSpecifications,
+        args.length,
+        zeroEdits
+      ),
+      ...zeroEdits.values()
+    );
   }
-
-  const normalizedValue = value.toLowerCase();
-
-  if (normalizedValue.includes('var(') || normalizedValue.includes('env(')) {
-    return;
-  }
-
-  if (!normalizedValue.includes('gradient')) {
-    return;
-  }
-
-  decl.value = valueParser(value)
-    .walk((node) => {
-      if (node.type !== 'function' || !node.nodes.length) {
-        return false;
-      }
-
-      const lowerCasedValue = node.value.toLowerCase();
-
-      if (
-        lowerCasedValue === 'linear-gradient' ||
-        lowerCasedValue === 'repeating-linear-gradient' ||
-        lowerCasedValue === '-webkit-linear-gradient' ||
-        lowerCasedValue === '-webkit-repeating-linear-gradient'
-      ) {
-        return optimizeLinearGradient(node);
-      }
-
-      if (
-        lowerCasedValue === 'radial-gradient' ||
-        lowerCasedValue === 'repeating-radial-gradient'
-      ) {
-        return optimizeRadialGradient(node);
-      }
-
-      if (
-        lowerCasedValue === '-webkit-radial-gradient' ||
-        lowerCasedValue === '-webkit-repeating-radial-gradient'
-      ) {
-        return optimizeWebkitRadialGradient(node);
-      }
-
-      if (
-        lowerCasedValue === 'conic-gradient' ||
-        lowerCasedValue === 'repeating-conic-gradient'
-      ) {
-        optimizeColorStops(getArguments(node));
-      }
-      return false;
-    })
-    .toString();
+  // With nothing to rewrite, neither the edit pass nor the write can change the
+  // declaration.
+  if (replacements.length) decl.value = applyEdits(source, replacements);
 }
-/**
- * @return {import('postcss').Plugin}
- */
+
+/** @return {import('postcss').Plugin} */
 function pluginCreator() {
   return {
     postcssPlugin: 'postcss-minify-gradients',
-    /**
-     * @param {import('postcss').Root} css
-     */
     OnceExit(css) {
       css.walkDecls(optimise);
     },
@@ -378,6 +403,4 @@ function pluginCreator() {
 }
 /** @type {true} */
 pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
-
-export { moduleExports as default, moduleExports as 'module.exports' };
+export { pluginCreator as default, pluginCreator as 'module.exports' };
