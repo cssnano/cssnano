@@ -1,6 +1,10 @@
+import cssnanoUtils from 'cssnano-utils';
+
+const { asciiLowerCase } = cssnanoUtils;
+
 /** @param {string} value */
 const minifyWeight = function (value) {
-  const lowerCasedValue = value.toLowerCase();
+  const lowerCasedValue = asciiLowerCase(value);
 
   if (lowerCasedValue === 'normal') {
     return '400';

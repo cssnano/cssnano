@@ -1,18 +1,39 @@
-import valueParser from 'postcss-value-parser';
 import minifyWeight from './lib/minify-weight.js';
 import minifyFamily from './lib/minify-family.js';
 import minifyFont from './lib/minify-font.js';
+import cssnanoUtils from 'cssnano-utils';
 
-const fontRegex = /font/i;
+const { asciiLowerCase } = cssnanoUtils;
+const fontRegex =
+  /^(?:[fF][oO][nN][tT]|[fF][oO][nN][tT]-[fF][aA][mM][iI][lL][yY]|[fF][oO][nN][tT]-[wW][eE][iI][gG][hH][tT])$/v;
 /**
  * @param {string} value
  * @return {boolean}
  */
 function hasVariableFunction(value) {
-  const lowerCasedValue = value.toLowerCase();
+  const lowerCasedValue = asciiLowerCase(value);
 
   return lowerCasedValue.includes('var(') || lowerCasedValue.includes('env(');
 }
+
+/** @type {Map<string, (value: string, opts: Options, removeQuotes: boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight') | undefined) => string>} */
+const propertyMinifiers = new Map([
+  [
+    'font-weight',
+    (value) => (hasVariableFunction(value) ? value : minifyWeight(value)),
+  ],
+  [
+    'font-family',
+    (value, opts, removeQuotes) =>
+      hasVariableFunction(value)
+        ? value
+        : minifyFamily(value, opts, removeQuotes),
+  ],
+  [
+    'font',
+    (value, opts, removeQuotes) => minifyFont(value, opts, removeQuotes),
+  ],
+]);
 
 /**
  * @param {string} prop
@@ -21,29 +42,17 @@ function hasVariableFunction(value) {
  * @return {string}
  */
 function transform(prop, value, opts) {
-  const lowerCasedProp = prop.toLowerCase();
-  let variableType = '';
+  let targetType = asciiLowerCase(prop);
+  let removeQuotes = opts.removeQuotes;
 
   if (typeof opts.removeQuotes === 'function') {
-    variableType = opts.removeQuotes(prop);
-    opts.removeQuotes = true;
+    targetType = opts.removeQuotes(prop) || targetType;
+    removeQuotes = true;
   }
-  if (
-    (lowerCasedProp === 'font-weight' || variableType === 'font-weight') &&
-    !hasVariableFunction(value)
-  ) {
-    return minifyWeight(value);
-  } else if (
-    (lowerCasedProp === 'font-family' || variableType === 'font-family') &&
-    !hasVariableFunction(value)
-  ) {
-    const tree = valueParser(value);
 
-    tree.nodes = minifyFamily(tree.nodes, opts);
-
-    return tree.toString();
-  } else if (lowerCasedProp === 'font' || variableType === 'font') {
-    return minifyFont(value, opts);
+  const minifier = propertyMinifiers.get(targetType);
+  if (minifier) {
+    return minifier(value, opts, removeQuotes);
   }
 
   return value;
@@ -75,7 +84,8 @@ function pluginCreator(opts) {
          * @param {import('postcss').Root} css
          */
         OnceExit(css) {
-          css.walkDecls(fontRegex, (decl) => {
+          /** @param {import('postcss').Declaration} decl */
+          const handleDecl = (decl) => {
             const value = decl.value;
 
             if (!value) {
@@ -96,7 +106,13 @@ function pluginCreator(opts) {
 
             decl.value = newValue;
             cache.set(cacheKey, newValue);
-          });
+          };
+
+          if (typeof normalizedOpts.removeQuotes === 'function') {
+            css.walkDecls(handleDecl);
+          } else {
+            css.walkDecls(fontRegex, handleDecl);
+          }
         },
       };
     },
