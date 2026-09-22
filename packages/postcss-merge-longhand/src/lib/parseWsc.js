@@ -1,11 +1,14 @@
 import { list } from 'postcss';
+import cssnanoUtils from 'cssnano-utils';
 import { isBorderWidth, isBorderStyle, isColor } from './validateWsc.js';
 
-const none = /^\s*(none|medium)(\s+none(\s+(none|currentcolor))?)?\s*$/i;
+const { asciiLowerCase } = cssnanoUtils;
+const none =
+  /^[ \t\n\r\f]*(none|medium)([ \t\n\r\f]+none([ \t\n\r\f]+(none|currentcolor))?)?[ \t\n\r\f]*$/v;
 
 /* Approximate https://drafts.csswg.org/css-values-4/#typedef-dashed-ident */
 // eslint-disable-next-line no-control-regex
-const varRE = /--(\w|-|[^\x00-\x7F])+/g;
+const varRE = /--(\w|-|[^\x00-\x7F])+/gv;
 /** @type {(v: string) => string} */
 const toLower = (v) => {
   let match;
@@ -33,32 +36,43 @@ const toLower = (v) => {
  * @return {[string, string, string]}
  */
 function parseWsc(value) {
-  if (none.test(value)) {
+  if (none.test(asciiLowerCase(value))) {
     return ['medium', 'none', 'currentcolor'];
   }
 
   let width, style, color;
 
   const values = list.space(value);
-  if (
-    values.length > 1 &&
-    isBorderStyle(values[1]) &&
-    values[0].toLowerCase() === 'none'
-  ) {
-    values.unshift();
-    width = '0';
-  }
 
   /** @type {string[]} */
   const unknown = [];
 
+  /** @type {{ match: (v: string) => boolean, set: (v: string) => void }[]} */
+  const classifiers = [
+    {
+      match: isBorderStyle,
+      set: (v) => {
+        style = toLower(v);
+      },
+    },
+    {
+      match: isBorderWidth,
+      set: (v) => {
+        width = toLower(v);
+      },
+    },
+    {
+      match: isColor,
+      set: (v) => {
+        color = toLower(v);
+      },
+    },
+  ];
+
   for (const v of values) {
-    if (isBorderStyle(v)) {
-      style = toLower(v);
-    } else if (isBorderWidth(v)) {
-      width = toLower(v);
-    } else if (isColor(v)) {
-      color = toLower(v);
+    const classifier = classifiers.find((c) => c.match(v));
+    if (classifier) {
+      classifier.set(v);
     } else {
       unknown.push(v);
     }
@@ -80,4 +94,5 @@ function parseWsc(value) {
   return /** @type {[string, string, string]} */ ([width, style, color]);
 }
 
+export { toLower };
 export default parseWsc;

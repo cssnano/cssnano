@@ -1,6 +1,9 @@
+import cssnanoUtils from 'cssnano-utils';
 import { list } from 'postcss';
 import { sides } from './spec.js';
 import { isUnresolved } from './unresolved.js';
+
+const { asciiLowerCase, lengthUnits } = cssnanoUtils;
 
 /* CSS user agents ignore margin and padding declarations that violate the
  * property's grammar: margin rejects negative values and auto,
@@ -9,7 +12,7 @@ import { isUnresolved } from './unresolved.js';
 /* Parse CSS dimension format: a number with optional exponent and unit
  * (percentage or keyword). Only zero can omit a unit. */
 const dimensionRegex =
-  /^([+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?)(%|[a-z]+)?$/i;
+  /^([+\-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+\-]?\d+)?)(%|[a-z]+)?$/v;
 
 /* Padding forbids auto and negative values; margin allows both. */
 const grammars = new Map([
@@ -27,7 +30,7 @@ function specifiesSide(token, grammar) {
     return true;
   }
 
-  const lowered = token.toLowerCase();
+  const lowered = asciiLowerCase(token);
 
   if (lowered === 'auto') {
     return grammar.auto;
@@ -43,6 +46,10 @@ function specifiesSide(token, grammar) {
 
   /* Only zero may go without a unit; `margin: 5` is no length. */
   if (unit === undefined && Number(number) !== 0) {
+    return false;
+  }
+
+  if (unit !== undefined && unit !== '%' && !lengthUnits.has(unit)) {
     return false;
   }
 

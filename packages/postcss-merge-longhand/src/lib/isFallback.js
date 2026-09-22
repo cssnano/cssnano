@@ -1,9 +1,11 @@
-import valueParser from 'postcss-value-parser';
+import cssnanoUtils from 'cssnano-utils';
 import { colorFunctions } from './spec.js';
 import {
   substitutionFunctions,
   trustedSupportFunctions,
 } from './unresolved.js';
+
+const { TokenType, decoded, tokens } = cssnanoUtils;
 
 /* Substitution functions prevent fallback detection because their values
  * are resolved at runtime, not statically analyzable. */
@@ -49,26 +51,40 @@ const mergeSensitiveFunctions = new Set([
   ...conditionalSupportFunctions.difference(ubiquitousFunctions),
 ]);
 
+const EMPTY_SET = new Set();
+/** @type {Map<string, Set<string>>} */
+const supportDepsCache = new Map();
+
 /**
  * @param {string} value
  * @return {Set<string>} the support-dependent functions the value calls
  */
 function supportDependenciesIn(value) {
+  if (!value.includes('(')) {
+    return EMPTY_SET;
+  }
+
+  const cached = supportDepsCache.get(value);
+  if (cached !== undefined) {
+    return cached;
+  }
+
   /** @type {Set<string>} */
   const names = new Set();
 
-  valueParser(value).walk((node) => {
-    if (node.type !== 'function') {
-      return;
+  for (const token of tokens(value)) {
+    if (token[0] !== TokenType.Function) {
+      continue;
     }
 
-    const name = node.value.toLowerCase();
+    const name = decoded(token).toLowerCase();
 
     if (supportDependentFunctions.has(name)) {
       names.add(name);
     }
-  });
+  }
 
+  supportDepsCache.set(value, names);
   return names;
 }
 
@@ -87,9 +103,8 @@ const inheritedSupport = new WeakMap();
  * it was cloned from needed
  */
 function requiredSupport(declaration) {
-  const own = supportDependenciesIn(declaration.value);
   const inherited = inheritedSupport.get(declaration);
-
+  const own = supportDependenciesIn(declaration.value);
   return inherited === undefined ? own : own.union(inherited);
 }
 

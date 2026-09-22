@@ -1,5 +1,8 @@
+import cssnanoUtils from 'cssnano-utils';
 import { list } from 'postcss';
 import colors from './colornames.js';
+import { systemColors } from './systemColors.js';
+
 import {
   lineStyles,
   lineWidthKeywords,
@@ -8,16 +11,18 @@ import {
 } from './spec.js';
 import { isSubstitution, isUnresolved } from './unresolved.js';
 
-const lengthValueRegex = /^(\d+(\.\d+)?|\.\d+)(\w+)?$/;
-const functionNameRegex = /([\w-]+)\(/g;
-const hexColorRegex = /^#([\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/;
+const { TokenType, asciiLowerCase, decoded, lengthUnits, tokens } =
+  cssnanoUtils;
+const lengthValueRegex =
+  /^([+\-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+\-]?\d+)?)([a-z]+)?$/v;
+const hexColorRegex = /^#([\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/v;
 
 /**
  * @param {string} value
  * @return {boolean}
  */
 function isBorderStyle(value) {
-  return value !== undefined && lineStyles.has(value.toLowerCase());
+  return value !== undefined && lineStyles.has(asciiLowerCase(value));
 }
 
 /**
@@ -38,11 +43,37 @@ function isTypedAsWidth(value) {
  * @return {boolean}
  */
 function isBorderWidth(value) {
-  return (
-    (value && lineWidthKeywords.has(value.toLowerCase())) ||
-    lengthValueRegex.test(value) ||
-    isTypedAsWidth(value)
-  );
+  if (!value) {
+    return false;
+  }
+
+  const lowered = asciiLowerCase(value);
+
+  if (lineWidthKeywords.has(lowered)) {
+    return true;
+  }
+
+  if (isTypedAsWidth(value)) {
+    return true;
+  }
+
+  const match = lengthValueRegex.exec(lowered);
+
+  if (!match) {
+    return false;
+  }
+
+  const [, number, unit] = match;
+
+  if (number.startsWith('-')) {
+    return false;
+  }
+
+  if (unit === undefined) {
+    return Number(number) === 0;
+  }
+
+  return lengthUnits.has(unit);
 }
 
 /**
@@ -50,8 +81,15 @@ function isBorderWidth(value) {
  * @return {boolean} whether the value calls a function that produces a colour
  */
 function callsColorFunction(value) {
-  for (const [, name] of value.matchAll(functionNameRegex)) {
-    if (colorFunctions.has(name)) {
+  if (!value.includes('(')) {
+    return false;
+  }
+
+  for (const token of tokens(value)) {
+    if (
+      token[0] === TokenType.Function &&
+      colorFunctions.has(asciiLowerCase(decoded(token)))
+    ) {
       return true;
     }
   }
@@ -68,11 +106,7 @@ function isColor(value) {
     return false;
   }
 
-  const lowered = value.toLowerCase();
-
-  if (callsColorFunction(lowered)) {
-    return true;
-  }
+  const lowered = asciiLowerCase(value);
 
   if (hexColorRegex.test(lowered)) {
     return true;
@@ -83,7 +117,15 @@ function isColor(value) {
     return true;
   }
 
-  return colors.has(lowered);
+  if (colors.has(lowered)) {
+    return true;
+  }
+
+  if (systemColors.has(lowered)) {
+    return true;
+  }
+
+  return callsColorFunction(lowered);
 }
 
 /**
@@ -135,13 +177,13 @@ function componentOf(token) {
  * @return {boolean} whether the value can be what that component is set to
  */
 function specifiesComponent(value, component) {
-  const tokens = list.space(value);
+  const parts = list.space(value);
 
-  if (tokens.length !== 1) {
+  if (parts.length !== 1) {
     return false;
   }
 
-  const [token] = tokens;
+  const [token] = parts;
 
   return componentOf(token) === component || isSubstitution(token);
 }
