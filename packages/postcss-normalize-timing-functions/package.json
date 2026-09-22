@@ -18,7 +18,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "postcss-value-parser": "^4.2.0"
+    "@csstools/css-tokenizer": "catalog:",
+    "cssnano-utils": "workspace:^"
   },
   "author": {
     "name": "Ben Briggs",

@@ -34,8 +34,8 @@
   },
   "dependencies": {
     "@colordx/core": "catalog:",
-    "cssnano-utils": "workspace:^",
-    "postcss-value-parser": "^4.2.0"
+    "@csstools/css-tokenizer": "catalog:",
+    "cssnano-utils": "workspace:^"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
@@ -50,6 +50,7 @@
     "postcss": "^8.5.28"
   },
   "scripts": {
+    "fuzz": "node ./script/fuzz.js",
     "test": "node --test"
   },
   "type": "module"

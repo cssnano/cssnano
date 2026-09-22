@@ -33,7 +33,7 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "postcss-value-parser": "^4.2.0"
+    "@csstools/css-tokenizer": "catalog:"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
