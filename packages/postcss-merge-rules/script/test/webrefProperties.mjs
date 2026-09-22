@@ -83,7 +83,7 @@ test('rejects cyclic shorthand definitions', () => {
         { name: 'a', longhands: ['b'] },
         { name: 'b', longhands: ['a'] },
       ]),
-    /Cyclic shorthand definition/
+    /Cyclic shorthand definition/v
   );
 });
 
@@ -107,12 +107,15 @@ test('validate rejects a lopsided logical property group', () => {
       { name: 'margin-bottom', logicalPropertyGroup: 'margin' },
     ])
   );
-  assert.throws(() => validate(data), /Logical property group margin is split/);
+  assert.throws(
+    () => validate(data),
+    /Logical property group margin is split/v
+  );
 });
 
 test('validate rejects data that lost the relations the plugin needs', () => {
   assert.throws(
     () => validate(buildPropertyGroups([{ name: 'color' }])),
-    /Expected at least 500 properties/
+    /Expected at least 500 properties/v
   );
 });

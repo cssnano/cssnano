@@ -4,7 +4,6 @@
  * @typedef {Object} RuleMeta
  * @property {string[]} selectors
  * @property {Declaration[]} declarations
- * @property {boolean} dirty
  */
 
 /**
@@ -27,29 +26,15 @@ export function getMeta(rule, ruleMeta) {
       meta = {
         selectors: rule.selectors,
         declarations: rule.nodes.filter(isDeclaration),
-        dirty: false,
       };
       ruleMeta.set(rule, meta);
     }
-    return meta ?? { selectors: [], declarations: [], dirty: false };
+    return meta ?? { selectors: [], declarations: [] };
   }
   return {
     selectors: rule?.selectors ?? [],
     declarations: rule?.nodes?.filter(isDeclaration) ?? [],
-    dirty: false,
   };
-}
-
-/**
- * @param {Rule} rule
- * @param {WeakMap<Rule, RuleMeta>} ruleMeta
- */
-export function flush(rule, ruleMeta) {
-  const meta = ruleMeta.get(rule);
-  if (meta && meta.dirty) {
-    rule.selector = meta.selectors.join(',');
-    meta.dirty = false;
-  }
 }
 
 /** @param {Rule} rule @return {Declaration[]} */
