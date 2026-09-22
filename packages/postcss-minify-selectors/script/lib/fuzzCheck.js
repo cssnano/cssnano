@@ -4,6 +4,10 @@ import jsdom from 'jsdom';
 import { shrink } from './fuzzGenerate.js';
 
 const { JSDOM } = jsdom;
+const namespaceUris = new Map([
+  ['svg', 'http://www.w3.org/2000/svg'],
+  ['math', 'http://www.w3.org/1998/Math/MathML'],
+]);
 // One window is reused for every case: building a fresh JSDOM per query is the
 // dominant allocation, and never closing them lets the heap grow to the 4GB
 // limit on a long soak. Re-injecting each tree's markup keeps the match set
@@ -37,21 +41,42 @@ function process(css) {
  *
  * @param {string} selector
  * @param {{html: string, css: string}} tree
- * @return {Set<string>}
+ * @return {{ids: Set<string>, error?: string}}
  */
 function matchElements(selector, tree) {
   sharedDocument.head.innerHTML = `<style>${tree.css}</style>`;
   sharedDocument.body.innerHTML = tree.html;
 
+  // querySelectorAll does not accept CSS namespace prefixes. Mark the
+  // namespaced elements and translate only generated namespace-qualified
+  // simple selectors to an equivalent, queryable compound selector.
+  for (const element of sharedDocument.querySelectorAll('*')) {
+    for (const [prefix, uri] of namespaceUris) {
+      if (element.namespaceURI === uri) {
+        element.setAttribute('data-fz-namespace', prefix);
+        break;
+      }
+    }
+  }
+  const querySelector = selector.replace(
+    /\b(svg|math)\|(?=[\w*\-])/gv,
+    '[data-fz-namespace="$1"]'
+  );
+
   try {
-    const elements = sharedDocument.querySelectorAll(selector);
-    return new Set(
-      Array.from(elements)
-        .map((el) => el.getAttribute('data-fz'))
-        .filter((value) => value !== null)
-    );
-  } catch {
-    return new Set();
+    const elements = sharedDocument.querySelectorAll(querySelector);
+    return {
+      ids: new Set(
+        Array.from(elements)
+          .map((el) => el.getAttribute('data-fz'))
+          .filter((value) => value !== null)
+      ),
+    };
+  } catch (error) {
+    return {
+      ids: new Set(),
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
 }
 
@@ -83,23 +108,42 @@ function check(rule, tree) {
   }
 
   const outputSelector = output.split('{')[0].trim();
-  const preIds = matchElements(selector, tree);
-  const postIds = matchElements(outputSelector, tree);
-
-  if (
-    preIds.size === postIds.size &&
-    [...preIds].every((id) => postIds.has(id))
-  ) {
-    return undefined;
+  const pre = matchElements(selector, tree);
+  if (pre.error !== undefined) {
+    return {
+      input: rule,
+      output,
+      reason: `pre-minify querySelectorAll threw: ${pre.error}`,
+      preIds: pre.ids,
+      postIds: new Set(),
+    };
   }
 
-  return {
-    input: rule,
-    output,
-    reason: 'match set changed',
-    preIds,
-    postIds,
-  };
+  const post = matchElements(outputSelector, tree);
+  if (post.error !== undefined) {
+    return {
+      input: rule,
+      output,
+      reason: `post-minify querySelectorAll threw: ${post.error}`,
+      preIds: pre.ids,
+      postIds: post.ids,
+    };
+  }
+
+  if (
+    pre.ids.size !== post.ids.size ||
+    ![...pre.ids].every((id) => post.ids.has(id))
+  ) {
+    return {
+      input: rule,
+      output,
+      reason: 'match set changed',
+      preIds: pre.ids,
+      postIds: post.ids,
+    };
+  }
+
+  return undefined;
 }
 
 /**
