@@ -1,6 +1,6 @@
 const charset = 'charset';
 // eslint-disable-next-line no-control-regex
-const nonAscii = /[^\x00-\x7F]/;
+const nonAscii = /[^\x00-\x7F]/v;
 
 /**
  * @typedef {{add?: boolean}} Options
