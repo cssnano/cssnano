@@ -54,7 +54,7 @@ import { REFERENCE, keywordTerminals } from '../../../../util/webref.mjs';
  * }} grid
  */
 
-const VENDOR_PREFIX = /^-\w+-/;
+const VENDOR_PREFIX = /^-\w+-/v;
 
 export { keywordTerminals };
 
@@ -606,7 +606,7 @@ function keywordsOf(syntax) {
   return syntax
     .split('|')
     .map((alternative) => alternative.trim())
-    .filter((alternative) => /^[a-z][a-z-]*$/.test(alternative))
+    .filter((alternative) => /^[a-z][a-z\-]*$/v.test(alternative))
     .toSorted();
 }
 

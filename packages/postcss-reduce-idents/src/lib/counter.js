@@ -1,124 +1,91 @@
-import valueParser from 'postcss-value-parser';
-import addToCache from './cache.js';
+import registerSymbol from './cache.js';
 import isNum from './isNum.js';
-import functionArguments from './functionArguments.js';
+import { rewrite, TokenType, tokens } from './value.js';
 import { counter, cssWideKeywords, resolveProperty } from './slots.js';
 
-// `list-item` and `page` are counters the user agent itself maintains, and the
-// specification introduces them in prose rather than in a grammar, so webref
-// has no data for them and they stay listed here. Renaming either detaches a
-// `counter-reset` from the numbering it was meant to control.
-const RESERVED_KEYWORDS = new Set([
+const RESERVED = new Set([
   ...cssWideKeywords,
   ...counter.reservedKeywords,
   'list-item',
   'page',
 ]);
-export default (function () {
-  /** @type {Map<string, {ident: string, count: number}>} */
-  const cache = new Map();
-  /** @type {{value: import('postcss-value-parser').ParsedValue | string}[]} */
-  let declOneCache = [];
+
+export default function counterReducer() {
+  /** @type {Map<string, { ident: string, count: number }>} */
+  const symbolTable = new Map();
   /** @type {import('postcss').Declaration[]} */
-  let declTwoCache = [];
+  let defSites = [];
+  /** @type {import('postcss').Declaration[]} */
+  let useSites = [];
+  /** @type {(value: string, index: number) => string} */
+  let encoderFn;
 
   return {
-    /**
-     * @param {import('postcss').AnyNode} node
-     * @param {(value: string, index: number) => string} encoder
-     */
-    collect(node, encoder) {
-      const { type } = node;
-
-      if (type !== 'decl') {
+    /** @param {import('postcss').AnyNode} node @param {(value:string,index:number)=>string} encoder */ collect(
+      node,
+      encoder
+    ) {
+      if (node.type !== 'decl') return;
+      encoderFn = encoder;
+      const property = resolveProperty(node.prop);
+      if (counter.properties.has(property)) {
+        defSites.push(node);
+      } else if (counter.functionProperties.has(property)) {
+        useSites.push(node);
+      }
+    },
+    transform() {
+      // Def-use analysis: renaming requires both definition and use sites
+      if (defSites.length === 0 || useSites.length === 0) {
+        defSites = [];
+        useSites = [];
         return;
       }
-      const prop = resolveProperty(node.prop);
 
-      if (counter.properties.has(prop)) {
-        /** @type {unknown} */ (node.value) = valueParser(node.value).walk(
-          (child) => {
-            if (
-              child.type === 'word' &&
-              !isNum(child) &&
-              !RESERVED_KEYWORDS.has(child.value.toLowerCase())
-            ) {
-              addToCache(child.value, encoder, cache);
-
-              child.value = /** @type {{ident: string, count: number}} */ (
-                cache.get(child.value)
-              ).ident;
-            }
+      // Symbol binding pass: collect symbols declared at definition sites
+      for (const decl of defSites) {
+        for (const token of tokens(decl.value)) {
+          if (
+            token[0] === TokenType.Ident &&
+            !RESERVED.has(token[4].value.toLowerCase()) &&
+            !isNum({ value: token[1] })
+          ) {
+            registerSymbol(token[4].value, encoderFn, symbolTable);
           }
+        }
+      }
+
+      // Use-site rewrite pass: rewrite references and collect live symbols
+      const liveSymbols = new Set();
+      for (const decl of useSites) {
+        decl.value = rewrite(
+          decl.value,
+          (token, isFunctionArgument) => {
+            if (token[0] === TokenType.Whitespace) return ' ';
+            if (token[0] !== TokenType.Ident) return;
+            if (!isFunctionArgument) return;
+            const symbol = symbolTable.get(token[4].value);
+            if (!symbol) return;
+            liveSymbols.add(token[4].value);
+            return symbol.ident;
+          },
+          counter.functions
         );
-
-        declOneCache.push(
-          /** @type {{value: import('postcss-value-parser').ParsedValue | string}} */ (
-            node
-          )
-        );
-      } else if (counter.functionProperties.has(prop)) {
-        declTwoCache.push(node);
-      }
-    },
-
-    transform() {
-      for (const decl of declTwoCache) {
-        decl.value = valueParser(decl.value)
-          .walk((node) => {
-            const { type } = node;
-
-            if (type === 'function') {
-              // Only the arguments that name a counter are renamed: the others
-              // hold a counter style, a separator string or a link target,
-              // which a counter of the same name must not be confused with.
-              const args = counter.functions.get(node.value.toLowerCase());
-
-              if (args) {
-                const parsed = functionArguments(node);
-
-                for (const index of args) {
-                  for (const child of parsed[index] ?? []) {
-                    const cached =
-                      child.type === 'word' && cache.get(child.value);
-                    if (cached) {
-                      cached.count++;
-
-                      child.value = cached.ident;
-                    }
-                  }
-                }
-              }
-            }
-
-            if (type === 'space') {
-              node.value = ' ';
-            }
-
-            return false;
-          })
-          .toString();
       }
 
-      for (const decl of declOneCache) {
-        decl.value = /** @type {import('postcss-value-parser').ParsedValue} */ (
-          decl.value
-        )
-          .walk((node) => {
-            if (node.type === 'word' && !isNum(node)) {
-              for (const [key, cached] of cache) {
-                if (cached.ident === node.value && !cached.count) {
-                  node.value = key;
-                }
-              }
-            }
-          })
-          .toString();
+      // Def-site rewrite pass: only rewrite definitions for live symbols
+      if (liveSymbols.size > 0) {
+        for (const decl of defSites) {
+          decl.value = rewrite(decl.value, (token) => {
+            if (token[0] !== TokenType.Ident) return;
+            const symbol = symbolTable.get(token[4].value);
+            return liveSymbols.has(token[4].value) ? symbol?.ident : undefined;
+          });
+        }
       }
 
-      // reset cache after transform
-      declOneCache = [];
-      declTwoCache = [];
+      defSites = [];
+      useSites = [];
     },
   };
-});
+}
