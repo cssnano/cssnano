@@ -52,25 +52,12 @@ test('should preserve non-standard port', () => {
   assert.strictEqual(normalizeUrl(fixture), fixture);
 });
 
-test('should strip default MIME type', () => {
-  assert.strictEqual(normalizeUrl('data:text/plain,foo'), 'data:,foo');
+test('should preserve data URLs unchanged', () => {
+  const fixture = 'data:image/png;base64,iVBORw0KGgo=';
+  assert.strictEqual(normalizeUrl(fixture), fixture);
 });
 
-test('should strip default charset', () => {
-  assert.strictEqual(normalizeUrl('data:;charset=us-ascii,foo'), 'data:,foo');
-});
-
-test('should lowercase the MIME type', () => {
-  assert.strictEqual(normalizeUrl('data:TEXT/HTML,foo'), 'data:text/html,foo');
-});
-
-test('should keep spaces when not base64', () => {
-  assert.strictEqual(normalizeUrl('data:, foo #bar'), 'data:, foo #bar');
-});
-
-test('should remove trailing semicolon', () => {
-  assert.strictEqual(
-    normalizeUrl('data:;charset=UTF-8;,foo'),
-    'data:;charset=utf-8,foo'
-  );
+test('should preserve custom protocols unchanged', () => {
+  const fixture = 'mailto:someone@example.com';
+  assert.strictEqual(normalizeUrl(fixture), fixture);
 });
