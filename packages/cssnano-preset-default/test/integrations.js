@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
+import postcss from 'postcss';
 import {
   integrationTests,
   pluginIdempotencyTests,
@@ -29,6 +30,86 @@ describe('CSS processing', () => {
   );
 
   test(
+    'should normalize timing functions after preset composition',
+    withDefaults.processCSS(
+      'a{animation-timing-function:steps(10 /*comment*/, end);transition-timing-function:steps(1,jump-none)}',
+      'a{animation-timing-function:steps(10);transition-timing-function:steps(1,jump-none)}'
+    )
+  );
+
+  test(
+    'should collapse shorthand identities after ordered-value normalization',
+    withDefaults.processCSS(
+      'a{gap:1rem 1rem;inset:1px 2px 1px 2px;place-content:center center;aspect-ratio:auto 2/1;transition:all 0s ease 0s}',
+      'a{gap:1rem;inset:1px 2px;place-content:center;aspect-ratio:auto 2;transition:all}'
+    )
+  );
+
+  test(
+    'should keep a preserved comment between a declaration name and value after preset composition',
+    withDefaults.processCSS(
+      'a{--x:/*! keep */1;color:/*! keep */red}',
+      'a{--x:/*! keep */1;color:/*! keep */red}'
+    )
+  );
+
+  // Two-plugin interaction pinned at the preset level: authored whitespace
+  // is part of the specified value.
+  test(
+    'should preserve authored whitespace after a kept comment in a custom property after preset composition',
+    withDefaults.processCSS('a{--x:/*! keep */ 1}', 'a{--x:/*! keep */ 1}')
+  );
+
+  test(
+    'should preserve registered percentage initial values after preset composition',
+    withDefaults.processCSS(
+      `@property --percent-and-number{syntax:'<percentage> <number>';inherits:false;initial-value:0% 1;}`,
+      '@property --percent-and-number{syntax:"<percentage> <number>";inherits:false;initial-value:0% 1}'
+    )
+  );
+
+  test(
+    'should preserve variable-backed opacity calculations after preset composition',
+    withDefaults.processCSS(
+      'h1{opacity:calc(var(--foo)*5)}',
+      'h1{opacity:calc(5 * var(--foo))}'
+    )
+  );
+
+  test(
+    'should preserve all reset boundaries for merge-longhand families',
+    withDefaults.processCSS(
+      '.margin{margin-top:1px;margin-right:2px;all:initial;margin-bottom:3px;margin-left:4px}.padding{padding-top:1px!important;padding-right:2px!important;all:unset!important;padding-bottom:3px!important;padding-left:4px!important}.radius{border-top-left-radius:1px;border-top-right-radius:2px;ALL:initial;border-bottom-right-radius:3px;border-bottom-left-radius:4px}.columns{column-width:12em;all:initial;column-count:3}',
+      '.margin{margin-top:1px;margin-right:2px;all:initial;margin-bottom:3px;margin-left:4px}.padding{padding-top:1px!important;padding-right:2px!important;all:unset!important;padding-bottom:3px!important;padding-left:4px!important}.radius{border-top-left-radius:1px;border-top-right-radius:2px;ALL:initial;border-bottom-right-radius:3px;border-bottom-left-radius:4px}.columns{column-width:12em;all:initial;column-count:3}'
+    )
+  );
+
+  test('should preserve whitespace-only custom properties', async () => {
+    const input = ':root{--x: ;--empty:}';
+    const processor = createCssnanoProcessor(preset);
+    const firstPass = await processor.process(input, { from: undefined });
+    const declarations = new Map(
+      postcss
+        .parse(firstPass.css)
+        .first.nodes.filter((node) => node.type === 'decl')
+        .map((node) => [node.prop, node.value])
+    );
+
+    assert.deepStrictEqual(
+      [...declarations],
+      [
+        ['--x', ' '],
+        ['--empty', ''],
+      ]
+    );
+
+    const secondPass = await processor.process(firstPass.css, {
+      from: undefined,
+    });
+    assert.strictEqual(secondPass.css, firstPass.css);
+  });
+
+  test(
     'should process CSS with Browserslist options',
     withBrowserslist.processCSS(
       'button { color: hsla(0 100% 50% / 40%); appearance: none }',
@@ -41,6 +122,14 @@ describe('CSS processing', () => {
     withDefaults.processCSS(
       `a { background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100"><rect width="100" height="100" /></svg>'); }`,
       `a{background-image:url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100"><path d="M0 0h100v100H0z"/></svg>')}`
+    )
+  );
+
+  test(
+    'should optimize SVG data URI containing CSS percentages through preset pipeline',
+    withDefaults.processCSS(
+      `a { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' style='background: rgb(0 0 0 / 80%);'%3e%3c/svg%3e"); }`,
+      `a{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20style%3D%22background%3Argb(0%200%200%2F80%25)%22%20viewBox%3D%220%200%20100%20100%22%2F%3E")}`
     )
   );
 
@@ -118,4 +207,13 @@ describe('colormin options', () => {
 
     assert.strictEqual(css, input);
   });
+});
+
+test('should preserve important comments while merging equal declarations', async () => {
+  const input = '.a{/*!keep*/color:red}.b{color:red}';
+  const { css } = await createCssnanoProcessor(preset()).process(input, {
+    from: undefined,
+  });
+
+  assert.equal(css, '.a{/*!keep*/}.a,.b{color:red}');
 });
