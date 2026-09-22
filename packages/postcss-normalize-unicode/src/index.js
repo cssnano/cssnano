@@ -1,10 +1,13 @@
 import getBrowsersList from '#getBrowsersList';
-import valueParser from 'postcss-value-parser';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 
 /** @import browserslist from 'browserslist' */
 
-const regexLowerCaseUPrefix = /^u(?=\+)/;
-const unicodeRangeRegex = /^unicode-range$/i;
+const regexLowerCaseUPrefix = /^u(?=\+)/v;
+const { asciiLowerCase } = cssnanoUtils;
+const unicodeRangePropertyRegex =
+  /^[uU][nN][iI][cC][oO][dD][eE]-[rR][aA][nN][gG][eE]$/v;
 
 /**
  * @param {string} range
@@ -59,23 +62,65 @@ function mergeRangeBounds(left, right) {
 }
 
 /**
+ * @param {import('@csstools/css-tokenizer').CSSToken} token
+ * @return {boolean}
+ */
+function isUnicodeRangeDescriptorListToken(token) {
+  return token[0] === TokenType.UnicodeRange;
+}
+
+/**
  * @param {string} value
+ * @param {boolean} isLegacy
  * @return {string}
  */
 function transform(value, isLegacy = false) {
-  return valueParser(value)
-    .walk((child) => {
-      if (child.type === 'unicode-range') {
-        const transformed = unicode(child.value.toLowerCase());
-
-        child.value = isLegacy
-          ? transformed.replace(regexLowerCaseUPrefix, 'U')
-          : transformed;
+  let expectsRange = true;
+  const edits = [];
+  for (const token of tokenize({ css: value, unicodeRangesAllowed: true })) {
+    if (token[0] === TokenType.EOF) continue;
+    if (token[0] === TokenType.Whitespace) continue;
+    if (token[0] === TokenType.Comment) {
+      if (!token[1].endsWith('*/')) return value;
+      continue;
+    }
+    if (expectsRange && isUnicodeRangeDescriptorListToken(token)) {
+      expectsRange = false;
+    } else if (!expectsRange && token[0] === TokenType.Comma) {
+      expectsRange = true;
+    } else {
+      return value;
+    }
+    if (isUnicodeRangeDescriptorListToken(token)) {
+      const normalized = unicode(asciiLowerCase(token[1]));
+      const transformed = isLegacy
+        ? normalized.replace(regexLowerCaseUPrefix, 'U')
+        : normalized;
+      if (transformed !== token[1]) {
+        edits.push({ start: token[2], end: token[3] + 1, text: transformed });
       }
+    }
+  }
+  if (expectsRange || edits.length === 0) return value;
+  const chunks = [];
+  let cursor = 0;
+  for (const edit of edits) {
+    chunks.push(value.slice(cursor, edit.start), edit.text);
+    cursor = edit.end;
+  }
+  chunks.push(value.slice(cursor));
+  return chunks.join('');
+}
 
-      return false;
-    })
-    .toString();
+/**
+ * @param {import('postcss').Declaration} decl
+ * @param {string} value
+ */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) {
+    decl.raws.value = { raw: value, value };
+  }
 }
 
 /**
@@ -119,18 +164,20 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
          * @param {import('postcss').Root} css
          */
         OnceExit(css) {
-          css.walkDecls(unicodeRangeRegex, (decl) => {
-            const value = decl.value;
+          css.walkDecls(unicodeRangePropertyRegex, (decl) => {
+            const value =
+              decl.raws.value?.value === decl.value
+                ? (decl.raws.value.raw ?? decl.value)
+                : decl.value;
 
             if (cache.has(value)) {
-              decl.value = cache.get(value);
-
+              const newValue = cache.get(value);
+              assignValue(decl, newValue);
               return;
             }
 
             const newValue = transform(value, isLegacy);
-
-            decl.value = newValue;
+            assignValue(decl, newValue);
             cache.set(value, newValue);
           });
         },
