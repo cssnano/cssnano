@@ -155,7 +155,7 @@ function functionTerminals(syntax) {
   /** @type {string[]} */
   const names = [];
 
-  for (const [, name] of literals.matchAll(/([a-zA-Z][a-zA-Z0-9-]*)\s*\(/g)) {
+  for (const [, name] of literals.matchAll(/([a-zA-Z][a-zA-Z0-9\-]*)\s*\(/gv)) {
     names.push(name.toLowerCase());
   }
 
@@ -208,7 +208,7 @@ export function reachableFunctions(data, root) {
        * always the name the definition carries: css-color-hdr defines
        * `hdr-color()` as `color-hdr(…)`, and the stylesheet writes the
        * latter. Nothing deeper counts, since arguments are not results. */
-      const [, call] = /^\s*([\w-]+)\(/.exec(syntax ?? '') ?? [];
+      const [, call] = /^\s*([\w\-]+)\(/v.exec(syntax ?? '') ?? [];
 
       if (call) {
         functions.add(call.toLowerCase());

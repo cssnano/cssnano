@@ -1,11 +1,12 @@
 import nodeutil from 'node:util';
+import { runFuzz } from '../../../util/fuzzRunner.js';
 import { checkMinimised, report } from './lib/fuzzCheck.js';
 import { generate } from './lib/fuzzGenerate.js';
 
 const { parseArgs } = nodeutil;
 /**
  * Long differential fuzz runs, for reaching past a validity or support check
- * in `src/lib/decl/borders.js`. `test/fuzz.js` runs a small seeded sweep of
+ * in `src/lib/decl/borderReducer.js`. `test/fuzz.js` runs a small seeded sweep of
  * the same generator with the rest of the suite; point this at a
  * change before accepting it, since tightening a check and loosening it again
  * are both easy to overshoot.
@@ -28,23 +29,11 @@ if (!Number.isFinite(seed) || !Number.isFinite(count) || count < 1) {
   process.exit(2);
 }
 
-const started = Date.now();
-let checked = 0;
-
-for (const css of generate(seed, count)) {
-  const failure = checkMinimised(css);
-  checked++;
-
-  if (failure) {
-    console.error(report(failure, seed));
-    console.error(`\nfound after ${checked} of ${count} rules`);
-    process.exit(1);
-  }
-
-  if (checked % 10000 === 0) {
-    console.log(`${checked}/${count}`);
-  }
-}
-
-const elapsed = ((Date.now() - started) / 1000).toFixed(1);
-console.log(`${count} rules, seed ${seed}, clean in ${elapsed}s`);
+runFuzz({
+  cases: generate(seed, count),
+  check: (css) => checkMinimised(css),
+  report: (failure) => report(failure, seed),
+  count,
+  seed,
+  unit: 'rules',
+});

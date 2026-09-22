@@ -1,4 +1,4 @@
-import { test, suite } from 'node:test';
+import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildLonghands,
@@ -142,7 +142,7 @@ function webref(overrides = {}) {
   };
 }
 
-suite('keywordTerminals', () => {
+describe('keywordTerminals', () => {
   test('reads the keywords a grammar offers as alternatives', () => {
     assert.deepStrictEqual(
       keywordTerminals('<length [0,∞]> | hairline | thin | medium | thick'),
@@ -161,7 +161,7 @@ suite('keywordTerminals', () => {
   });
 });
 
-suite('reachableFunctions', () => {
+describe('reachableFunctions', () => {
   test('follows a grammar to the functions it can reach', () => {
     const data = {
       properties: [],
@@ -237,7 +237,7 @@ suite('reachableFunctions', () => {
   });
 });
 
-suite('isFlowRelative', () => {
+describe('isFlowRelative', () => {
   for (const [name, expected] of [
     ['border-inline-start-width', true],
     ['border-start-start-radius', true],
@@ -250,7 +250,7 @@ suite('isFlowRelative', () => {
   }
 });
 
-suite('buildLonghands', () => {
+describe('buildLonghands', () => {
   test('leaves out a line width keyword no browser implements', () => {
     const data = buildLonghands(webref());
 
@@ -336,19 +336,19 @@ suite('buildLonghands', () => {
   });
 });
 
-suite('validate', () => {
+describe('validate', () => {
   test('rejects data that took back a keyword no browser implements', () => {
     const data = buildLonghands(webref());
     data.lineWidthKeywords = ['hairline', ...data.lineWidthKeywords];
 
-    assert.throws(() => validate(data), /exclude hairline/);
+    assert.throws(() => validate(data), /exclude hairline/v);
   });
 
   test('rejects colour data that took in a function naming no colour', () => {
     const data = buildLonghands(webref());
     data.colorFunctions = [...data.colorFunctions, 'wcag2'];
 
-    assert.throws(() => validate(data), /exclude wcag2/);
+    assert.throws(() => validate(data), /exclude wcag2/v);
   });
 
   test('rejects colour data that lost a function spelled out as a call', () => {
@@ -357,7 +357,7 @@ suite('validate', () => {
       (name) => name !== 'light-dark'
     );
 
-    assert.throws(() => validate(data), /include light-dark/);
+    assert.throws(() => validate(data), /include light-dark/v);
   });
 
   test('accepts data with the shape the plugin assumes', () => {
@@ -368,14 +368,14 @@ suite('validate', () => {
     const data = buildLonghands(webref());
     data.sides = ['top', 'right', 'bottom'];
 
-    assert.throws(() => validate(data), /the sides/);
+    assert.throws(() => validate(data), /the sides/v);
   });
 
   test('rejects a longhand left without an initial value', () => {
     const data = buildLonghands(webref());
     data.initialValues.delete('margin-top');
 
-    assert.throws(() => validate(data), /No initial value for margin-top/);
+    assert.throws(() => validate(data), /No initial value for margin-top/v);
   });
 
   test('rejects a columns shorthand that stops setting a width', () => {
@@ -385,6 +385,9 @@ suite('validate', () => {
       resets: [],
     });
 
-    assert.throws(() => validate(data), /Expected columns to set column-width/);
+    assert.throws(
+      () => validate(data),
+      /Expected columns to set column-width/v
+    );
   });
 });

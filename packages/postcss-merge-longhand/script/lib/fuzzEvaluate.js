@@ -1,4 +1,8 @@
 import postcss from 'postcss';
+import {
+  TokenType,
+  tokenize as tokenizeProperty,
+} from '@csstools/css-tokenizer';
 
 /**
  * An independent evaluator for what a rule means to the browser, against which
@@ -9,9 +13,10 @@ import postcss from 'postcss';
  * the implementation's own data agrees with the implementation's own bugs, and
  * the whole point here is to disagree.
  *
- * The model is the twenty longhands the box families reach — four sides times
- * three border components, plus a margin and a padding per side — each holding
- * the value the cascade leaves it with.
+ * The model is the twenty-eight longhands the box and radius families reach —
+ * four sides times three border components, plus a margin and a padding per
+ * side, plus horizontal and vertical components for four corner radii — each
+ * holding the value the cascade leaves it with.
  */
 
 const sides = ['top', 'right', 'bottom', 'left'];
@@ -25,6 +30,8 @@ const initialValues = new Map([
 ]);
 
 const boxInitial = '0';
+const corners = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
+const radiusLengths = new Set(['0', '1px', '2em', '10%']);
 
 /**
  * The three component alphabets. They are disjoint, which is what lets the
@@ -52,6 +59,27 @@ const marginOnly = new Set(['auto', '-5px']);
  * families, none of which inherit.
  */
 const globalKeywords = new Set(['initial', 'unset']);
+
+/**
+ * Decode a property identifier without sharing the production predicate: the
+ * evaluator must recognize escaped `all` even if the reducer does not.
+ *
+ * @param {string} property
+ * @return {string}
+ */
+function propertyName(property) {
+  if (!property.includes('\\')) return property.toLowerCase();
+  const propertyTokens = [...tokenizeProperty({ css: property })];
+  const [token, eof] = propertyTokens;
+  if (
+    propertyTokens.length === 2 &&
+    token?.[0] === TokenType.Ident &&
+    eof?.[0] === TokenType.EOF
+  ) {
+    return /** @type {{value: string}} */ (token[4]).value.toLowerCase();
+  }
+  return property.toLowerCase();
+}
 
 /**
  * A small, hand-written stand-in for CSS's substitution and maths functions —
@@ -101,6 +129,11 @@ function initialState() {
     state.set(`padding-${side}`, boxInitial);
   }
 
+  for (const corner of corners) {
+    state.set(`border-${corner}-radius-h`, boxInitial);
+    state.set(`border-${corner}-radius-v`, boxInitial);
+  }
+
   return state;
 }
 
@@ -135,7 +168,7 @@ function componentOf(token) {
  * @return {string[]}
  */
 function tokenize(value) {
-  return value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  return value.trim().toLowerCase().split(/\s+/v).filter(Boolean);
 }
 
 /**
@@ -229,6 +262,98 @@ function parseSides(tokens) {
 }
 
 /**
+ * @param {string} corner
+ * @param {string} value
+ * @return {Map<string, string>|undefined}
+ */
+function expandRadiusCorner(corner, value) {
+  if (value.includes('/')) {
+    return undefined;
+  }
+  const tokens = tokenize(value);
+  if (tokens.length === 1 && globalKeywords.has(tokens[0])) {
+    return new Map([
+      [`border-${corner}-radius-h`, boxInitial],
+      [`border-${corner}-radius-v`, boxInitial],
+    ]);
+  }
+  if (tokens.length !== 1 && tokens.length !== 2) {
+    return undefined;
+  }
+  if (tokens.some((t) => !radiusLengths.has(t) && !unresolvedTokens.has(t))) {
+    return undefined;
+  }
+  const h = tokens[0];
+  const v = tokens.length === 2 ? tokens[1] : tokens[0];
+  return new Map([
+    [`border-${corner}-radius-h`, h],
+    [`border-${corner}-radius-v`, v],
+  ]);
+}
+
+/**
+ * @param {string[]} t
+ * @return {[string, string, string, string]}
+ */
+const expand4 = (t) => {
+  if (t.length === 1) return [t[0], t[0], t[0], t[0]];
+  if (t.length === 2) return [t[0], t[1], t[0], t[1]];
+  if (t.length === 3) return [t[0], t[1], t[2], t[1]];
+  return [
+    /** @type {string} */ (t[0]),
+    /** @type {string} */ (t[1]),
+    /** @type {string} */ (t[2]),
+    /** @type {string} */ (t[3]),
+  ];
+};
+
+/**
+ * @param {string} value
+ * @return {Map<string, string>|undefined}
+ */
+function expandRadiusShorthand(value) {
+  const trimmed = value.trim().toLowerCase();
+  if (trimmed === '') return undefined;
+  if (trimmed === 'initial' || trimmed === 'unset') {
+    const slots = new Map();
+    for (const corner of corners) {
+      slots.set(`border-${corner}-radius-h`, boxInitial);
+      slots.set(`border-${corner}-radius-v`, boxInitial);
+    }
+    return slots;
+  }
+
+  const slashParts = trimmed.split('/');
+  if (slashParts.length > 2) return undefined;
+
+  const hTokens = slashParts[0].trim().split(/\s+/v).filter(Boolean);
+  if (hTokens.length === 0 || hTokens.length > 4) return undefined;
+  if (hTokens.some((t) => !radiusLengths.has(t) && !unresolvedTokens.has(t))) {
+    return undefined;
+  }
+
+  const vTokens =
+    slashParts.length === 2
+      ? slashParts[1].trim().split(/\s+/v).filter(Boolean)
+      : hTokens;
+
+  if (vTokens.length === 0 || vTokens.length > 4) return undefined;
+  if (vTokens.some((t) => !radiusLengths.has(t) && !unresolvedTokens.has(t))) {
+    return undefined;
+  }
+
+  const h4 = expand4(hTokens);
+  const v4 = expand4(vTokens);
+
+  const slots = new Map();
+  for (let i = 0; i < 4; i++) {
+    slots.set(`border-${corners[i]}-radius-h`, h4[i]);
+    slots.set(`border-${corners[i]}-radius-v`, v4[i]);
+  }
+  return slots;
+}
+
+/**
  * The slots a property sets, and what it sets them to.
  *
  * @param {string} prop lower-cased
@@ -238,6 +363,24 @@ function parseSides(tokens) {
  */
 function expand(prop, value) {
   const parts = prop.split('-');
+
+  if (prop === 'all') {
+    const token = value.trim().toLowerCase();
+    return globalKeywords.has(token) ? initialState() : undefined;
+  }
+
+  if (prop === 'border-radius') {
+    return expandRadiusShorthand(value);
+  }
+
+  if (
+    parts.length === 4 &&
+    parts[0] === 'border' &&
+    parts[3] === 'radius' &&
+    corners.includes(`${parts[1]}-${parts[2]}`)
+  ) {
+    return expandRadiusCorner(`${parts[1]}-${parts[2]}`, value);
+  }
 
   if (parts[0] === 'border') {
     return expandBorder(parts, value);
@@ -468,7 +611,7 @@ function evaluateRule(rule) {
         continue;
       }
 
-      const slots = expand(node.prop.toLowerCase(), node.value);
+      const slots = expand(propertyName(node.prop), node.value);
 
       if (slots === undefined) {
         continue;
@@ -533,4 +676,6 @@ export {
   unresolvedTokens,
   widthTypedTokens,
   widths,
+  corners,
+  radiusLengths,
 };
