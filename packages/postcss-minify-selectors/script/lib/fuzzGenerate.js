@@ -24,6 +24,12 @@ const classNames = [
 const ids = ['id1', 'id2', 'main', 'sidebar', 'content'];
 const attributes = ['href', 'data-test', 'aria-label', 'title', 'type'];
 const attributeValues = ['value1', 'value2', 'test', 'button'];
+const escapedNames = [
+  '.\\61 ',
+  '.\\31 23',
+  '.private-\\e000',
+  '.\\e0000\\e001',
+];
 const pseudoClasses = [
   ':hover',
   ':focus',
@@ -35,8 +41,49 @@ const pseudoClasses = [
   ':nth-child(1)',
   ':nth-child(2n)',
   ':nth-of-type(1)',
+  ':nth-child(2n of .foo, #main)',
+  ':is(:where(.foo, .bar), :not(.baz))',
+  ':has(> .selected)',
+  ':has( > .selected)',
+  ':has( /* relative whitespace */ + .selected)',
+  ':has(\t~\n.selected)',
+  ':has(/**/ > /**/ .selected)',
+  ':host(.foo)',
+  ':host-context(.bar)',
+  '::before',
+  '::after',
 ];
 const pseudoClassesForIs = [':hover', ':focus', ':link', ':visited'];
+// Invalid cases stay outside the DOM differential oracle: two rejected
+// querySelectorAll calls prove neither validity nor selector equivalence.
+const malformedSelectors = [
+  ',.item',
+  '.item,',
+  '.item,,.other',
+  ':nth-child(+ n)',
+  ':nth-child(+ 1)',
+  ':has(:has(.item))',
+  ':not(.item,::before)',
+  '*div',
+  '.item*#other',
+  '::',
+];
+
+// These are intentionally authored as selector strings plus expected safety,
+// rather than derived from the minifier. They force the fuzzer to exercise the
+// fold path, which random selector lists reach only infrequently.
+const foldMiddleSets = [
+  { middles: ['.a', '.b', '.c'], folds: true },
+  { middles: ['a.foo', 'b.bar', 'c.baz'], folds: true },
+  { middles: [':hover', ':focus', ':active'], folds: true },
+  { middles: ['[data-a]', '[data-b]', '[data-c]'], folds: true },
+  { middles: [':hover', 'b.foo'], folds: false },
+  { middles: ['.a', 'button'], folds: false },
+  { middles: ['#one', '.two'], folds: false },
+  { middles: [':not(.a)', ':not(.b)', ':not(.c)'], folds: false },
+  { middles: ['svg|a', 'svg|b', 'svg|c'], folds: false },
+  { middles: ['[lang=en i]', '[lang=fr i]', '[lang=nl i]'], folds: false },
+];
 
 // Prefixes usable in HTML markup via the foreign-content algorithm (`<svg>`,
 // `<math>` switch namespace during HTML parsing), so a generated selector's
@@ -55,9 +102,16 @@ function simpleSelector(rng) {
   const parts = [];
 
   if (rng.chance(0.2)) {
-    const prefix = rng.pick(namespacePrefixes);
+    const form = rng.pick(['prefix', 'any', 'none']);
     const subject = rng.chance(0.3) ? rng.pick(tagNames) : '*';
-    parts.push(`${prefix}|${subject}`);
+    if (form === 'prefix') {
+      const prefix = rng.pick(namespacePrefixes);
+      parts.push(`${prefix}|${subject}`);
+    } else if (form === 'any') {
+      parts.push(`*|${subject}`);
+    } else {
+      parts.push(`|${subject}`);
+    }
   } else if (rng.chance(0.3)) {
     parts.push(rng.pick(tagNames));
   }
@@ -72,13 +126,16 @@ function simpleSelector(rng) {
     }
   }
 
+  if (rng.chance(0.15)) parts.push(rng.pick(escapedNames));
+
   if (rng.chance(0.3)) {
     const attr = rng.pick(attributes);
     const value = rng.pick(attributeValues);
     const modes = ['', '~=', '^=', '$=', '*=', '|='];
     const mode = rng.pick(modes);
     if (mode) {
-      parts.push(`[${attr}${mode}"${value}"]`);
+      const modifier = rng.chance(0.25) ? ` ${rng.pick(['i', 's'])}` : '';
+      parts.push(`[${attr}${mode}"${value}"${modifier}]`);
     } else {
       parts.push(`[${attr}]`);
     }
@@ -113,7 +170,7 @@ function compoundSelector(rng) {
  */
 function complexSelector(rng) {
   const compounds = [];
-  const combinators = [' ', '>', '+', '~'];
+  const combinators = [' ', '>', '+', '~', ' /* c */ > ', ' + /*! c */ '];
 
   for (let i = 0; i < rng.int(3) + 1; i++) {
     if (i > 0) {
@@ -245,6 +302,37 @@ function generate(seed, count) {
 }
 
 /**
+ * Generates selector lists with a guaranteed shared prefix and suffix, making
+ * :is() folding decisions observable independently of DOM matching.
+ *
+ * @param {number} seed
+ * @param {number} count
+ * @return {{selector: string, folds: boolean}[]}
+ */
+function generateFoldCandidates(seed, count) {
+  const rng = random(seed);
+  return Array.from({ length: count }, () => {
+    const { middles, folds } = rng.pick(foldMiddleSets);
+    return {
+      selector: middles.map((middle) => `.scope ${middle} .tail`).join(','),
+      folds,
+    };
+  });
+}
+
+/**
+ * Generates malformed selector corpus entries for recovery testing. They are
+ * intentionally not passed through jsdom's matching oracle.
+ * @param {number} seed
+ * @param {number} count
+ * @return {string[]}
+ */
+function generateMalformed(seed, count) {
+  const rng = random(seed);
+  return Array.from({ length: count }, () => rng.pick(malformedSelectors));
+}
+
+/**
  * Removes selectors one at a time from a selector list, keeping the minimal case.
  *
  * @param {string} css
@@ -252,7 +340,7 @@ function generate(seed, count) {
  * @return {string}
  */
 function shrink(css, fails) {
-  const match = /^([^{]+)\{/.exec(css);
+  const match = /^([^\{]+)\{/v.exec(css);
   if (!match) return css;
 
   let selectors = match[1].split(',').map((s) => s.trim());
@@ -269,4 +357,4 @@ function shrink(css, fails) {
   return `${selectors.join(',')}${body}`;
 }
 
-export { generate, shrink };
+export { generate, generateFoldCandidates, generateMalformed, shrink };
