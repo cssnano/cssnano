@@ -1,246 +1,457 @@
+import { TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 import CommentRemover from './lib/commentRemover.js';
-import commentParser from './lib/commentParser.js';
-import selectorParser from 'postcss-selector-parser';
+import {
+  commentContents,
+  getTokens,
+  joinsIntoDifferentTokens,
+} from './lib/tokenUtils.js';
+
+const { asciiLowerCase, calcSumFunctions, decoded, mathFunctions } =
+  cssnanoUtils;
+
+/** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 
 /** @typedef {object} Options
  *  @property {boolean=} removeAll
  *  @property {boolean=} removeAllButFirst
  *  @property {(s: string) => boolean=} remove
  */
+
+// Functions whose argument grammar is <calc-sum>, requiring whitespace
+// around '+' and '-' operators.
+const calcSumArgumentFunctions = new Set([
+  ...mathFunctions,
+  ...calcSumFunctions,
+]);
+
+// calc() syntax requires whitespace around these operators.
+const mathOperators = new Set(['+', '-']);
+
 /**
- * @param {Options} opts
- * @return {import('postcss').Plugin}
+ * Flag tokens by whether they sit inside a math function argument list.
+ *
+ * @param {CSSToken[]} tokens
+ * @return {boolean[]}
  */
-function pluginCreator(opts = {}) {
-  const remover = new CommentRemover(opts);
-  const matcherCache = new Map();
-  const parserCache = new Map();
-  const replacerCache = new Map();
+function mathContexts(tokens) {
+  /** @type {boolean[]} */
+  const contexts = [];
+  let depth = 0;
 
-  /**
-   * @param {string} source
-   * @return {[number, number, number][]}
-   */
-  function getTokens(source) {
-    if (parserCache.has(source)) {
-      return parserCache.get(source);
+  /** @type {boolean[]} */
+  const stack = [];
+
+  for (const token of tokens) {
+    const type = token[0];
+
+    if (type === TokenType.Function) {
+      // Function tokens may spell names with escapes; the decoded value
+      // resolves both.
+      const isMathFunction = calcSumArgumentFunctions.has(
+        asciiLowerCase(decoded(token))
+      );
+      stack.push(isMathFunction);
+
+      if (isMathFunction) {
+        depth++;
+      }
+    } else if (type === TokenType.OpenParen) {
+      // A bare parenthesis inherits the math context but owns no depth
+      // increment.
+      stack.push(false);
+    } else if (type === TokenType.CloseParen) {
+      if (stack.pop()) {
+        depth--;
+      }
     }
 
-    const tokens = commentParser(source);
-
-    parserCache.set(source, tokens);
-
-    return tokens;
+    contexts.push(depth > 0);
   }
 
-  /**
-   * @param {string} source
-   * @return {[number, number, number][]}
-   */
-  function matchesComments(source) {
-    if (matcherCache.has(source)) {
-      return matcherCache.get(source);
+  return contexts;
+}
+
+/**
+ * Reconstruct an ordinary value with comments removed or preserved,
+ * normalizing whitespace and math operator spacing.
+ *
+ * @param {string} source
+ * @param {CommentRemover} remover
+ * @param {Map<string, CSSToken[]>} parserCache
+ * @return {string}
+ */
+function normalizeValue(source, remover, parserCache) {
+  const tokens = getTokens(source, parserCache);
+  const inMathFunction = mathContexts(tokens);
+  let result = '';
+  let pendingSpace = false;
+  let started = false;
+
+  for (const [index, [type, raw]] of tokens.entries()) {
+    if (type === TokenType.EOF) {
+      continue;
     }
 
-    const result = getTokens(source).filter(([type]) => type);
+    if (type === TokenType.Whitespace) {
+      if (started) {
+        pendingSpace = true;
+      }
+      continue;
+    }
 
-    matcherCache.set(source, result);
+    if (type === TokenType.Comment && remover.canRemove(commentContents(raw))) {
+      pendingSpace = started;
+      continue;
+    }
 
-    return result;
+    // A removed comment must not leave operands touching a math operator.
+    if (
+      inMathFunction[index] &&
+      type === TokenType.Delim &&
+      mathOperators.has(raw)
+    ) {
+      if (started && !result.endsWith(' ') && !result.endsWith('(')) {
+        result += ' ';
+      }
+
+      result += raw;
+      pendingSpace = true;
+      started = true;
+      continue;
+    }
+
+    // Closing punctuation and commas absorb pending whitespace; openers
+    // suppress a leading gap.
+    if (
+      type === TokenType.CloseParen ||
+      type === TokenType.CloseSquare ||
+      type === TokenType.Comma
+    ) {
+      pendingSpace = false;
+    }
+
+    if (
+      pendingSpace &&
+      started &&
+      !result.endsWith('(') &&
+      !result.endsWith('[')
+    ) {
+      result += ' ';
+    }
+    pendingSpace = false;
+    result += raw;
+    started = true;
   }
 
-  /**
-   * @param {string | undefined} rawSource
-   * @param {(s: string) => string[]} space
-   * @param {string=} separator
-   * @return {string}
-   */
-  function replaceComments(rawSource, space, separator = ' ') {
-    const source = rawSource || '';
-    const key = source + '@|@' + separator;
+  return result;
+}
 
-    if (replacerCache.has(key)) {
-      return replacerCache.get(key);
-    }
+/**
+ * Reconstruct a value with comments removed or preserved. Kept comments
+ * pass through byte-exact; removal decisions consult the per-document
+ * remover.
+ *
+ * @param {string | undefined} rawSource
+ * @param {CommentRemover} remover
+ * @param {Map<string, CSSToken[]>} parserCache
+ * @param {string=} separator
+ * @param {boolean=} preserveWhitespace
+ * @return {string}
+ */
+function replaceComments(
+  rawSource,
+  remover,
+  parserCache,
+  separator = ' ',
+  preserveWhitespace = false
+) {
+  const source = rawSource || '';
 
-    if (!source.includes('/*')) {
-      const normalized = space(source).join(' ');
+  if (!source.includes('/*')) {
+    return source;
+  }
 
-      replacerCache.set(key, normalized);
+  if (preserveWhitespace) {
+    // Custom property values keep their whitespace byte-for-byte.
+    let preserved = '';
 
-      return normalized;
-    }
-
-    const parts = [];
-
-    for (const [type, start, end] of getTokens(source)) {
-      if (!type) {
-        parts.push(source.slice(start, end));
+    for (const [type, raw] of getTokens(source, parserCache)) {
+      if (type === TokenType.EOF) {
         continue;
       }
 
-      const contents = source.slice(start, end);
-
-      if (remover.canRemove(contents)) {
-        parts.push(separator);
+      if (
+        type === TokenType.Comment &&
+        remover.canRemove(commentContents(raw))
+      ) {
+        preserved += separator;
         continue;
       }
 
-      parts.push('/*' + contents + '*/');
+      preserved += raw;
     }
 
-    const parsed = parts.join('');
-
-    const result = space(parsed).join(' ');
-
-    replacerCache.set(key, result);
-
-    return result;
+    return preserved;
   }
 
-  /**
-   * @param {string | undefined} rawSource
-   * @param {(s: string) => string[]} space
-   * @return {string}
-   */
-  function replaceCommentsInSelector(rawSource, space) {
-    const source = rawSource || '';
-    const key = source + '@|@';
+  return normalizeValue(source, remover, parserCache);
+}
 
-    if (replacerCache.has(key)) {
-      return replacerCache.get(key);
-    }
-    if (!source.includes('/*')) {
-      const normalized = space(source).join(' ');
+/**
+ * Reconstruct a selector with comments removed or preserved. Whitespace
+ * runs collapse to a single space and trim at the edges; kept comments
+ * pass through byte-exact.
+ *
+ * @param {string | undefined} rawSource
+ * @param {CommentRemover} remover
+ * @param {Map<string, CSSToken[]>} parserCache
+ * @return {string}
+ */
+function replaceCommentsInSelector(rawSource, remover, parserCache) {
+  const source = rawSource || '';
 
-      replacerCache.set(key, normalized);
-
-      return normalized;
-    }
-    const processed = selectorParser((ast) => {
-      ast.walk((node) => {
-        if (node.type === 'comment') {
-          const contents = node.value.slice(2, -2);
-          if (remover.canRemove(contents)) {
-            node.remove();
-          }
-        }
-        const rawSpaceAfter = replaceComments(node.rawSpaceAfter, space, '');
-        const rawSpaceBefore = replaceComments(node.rawSpaceBefore, space, '');
-        // If comments are not removed, the result of trim will be returned,
-        // so if we compare and there are no changes, skip it.
-        if (rawSpaceAfter !== node.rawSpaceAfter.trim()) {
-          node.rawSpaceAfter = rawSpaceAfter;
-        }
-        if (rawSpaceBefore !== node.rawSpaceBefore.trim()) {
-          node.rawSpaceBefore = rawSpaceBefore;
-        }
-      });
-    }).processSync(source);
-
-    const result = space(processed).join(' ');
-
-    replacerCache.set(key, result);
-
-    return result;
+  if (!source.includes('/*')) {
+    return source;
   }
 
-  /**
-   * @param {import('postcss').Declaration} node
-   * @param {(s: string) => string[]} space
-   */
-  function processDeclaration(node, space) {
-    if (node.raws.value && node.raws.value.raw) {
-      if (node.raws.value.value === node.value) {
-        node.value = replaceComments(node.raws.value.raw, space);
-      } else {
-        node.value = replaceComments(node.value, space);
+  let result = '';
+  let pendingSpace = false;
+  let started = false;
+  let removedCommentBefore = false;
+  let lastRaw = '';
+
+  for (const [type, raw] of getTokens(source, parserCache)) {
+    if (type === TokenType.EOF) {
+      continue;
+    }
+
+    if (type === TokenType.Whitespace) {
+      if (started) {
+        pendingSpace = true;
+      }
+      continue;
+    }
+
+    if (type === TokenType.Comment) {
+      if (remover.canRemove(commentContents(raw))) {
+        removedCommentBefore = true;
+        continue;
       }
 
+      if (pendingSpace && started) {
+        result += ' ';
+      }
+      pendingSpace = false;
+      result += raw;
+      started = true;
+      lastRaw = raw;
+      removedCommentBefore = false;
+      continue;
+    }
+
+    // Selector-parser drops whitespace immediately before a comma when a
+    // preceding comment is removed. Keep that punctuation normalization
+    // while leaving whitespace around combinators intact.
+    if (removedCommentBefore && type === TokenType.Comma) {
+      pendingSpace = false;
+    }
+
+    // A removed comment separated its neighbors; fuse them only if they
+    // re-tokenize identically.
+    if (
+      removedCommentBefore &&
+      started &&
+      !pendingSpace &&
+      joinsIntoDifferentTokens(lastRaw, raw, parserCache)
+    ) {
+      pendingSpace = true;
+    }
+
+    if (pendingSpace && started) {
+      result += ' ';
+    }
+    pendingSpace = false;
+    result += raw;
+    started = true;
+    lastRaw = raw;
+    removedCommentBefore = false;
+  }
+
+  return result;
+}
+
+/**
+ * @param {import('postcss').Declaration} node
+ * @param {CommentRemover} remover
+ * @param {Map<string, CSSToken[]>} parserCache
+ */
+function processDeclaration(node, remover, parserCache) {
+  const preserveWhitespace = node.prop.startsWith('--');
+
+  // Raw value metadata is authoritative only while it still mirrors the
+  // value; a previous plugin may have changed the value underneath it.
+  const rawValue = node.raws.value?.raw ? node.raws.value : null;
+  const rawMirrorsValue = rawValue !== null && rawValue.value === node.value;
+
+  if (rawValue && rawValue.raw.includes('/*')) {
+    node.value = replaceComments(
+      rawMirrorsValue ? rawValue.raw : node.value,
+      remover,
+      parserCache,
+      ' ',
+      preserveWhitespace
+    );
+
+    /** @type {null | {value: string, raw: string}} */ (node.raws.value) = null;
+  } else if (node.value.includes('/*')) {
+    node.value = replaceComments(
+      node.value,
+      remover,
+      parserCache,
+      ' ',
+      preserveWhitespace
+    );
+
+    if (rawValue) {
+      // The raw captured an earlier value and must not outlive it.
       /** @type {null | {value: string, raw: string}} */ (node.raws.value) =
         null;
     }
-
-    if (node.raws.important) {
-      node.raws.important = replaceComments(node.raws.important, space);
-
-      const b = matchesComments(node.raws.important);
-
-      node.raws.important = b.length ? node.raws.important : '!important';
-    } else {
-      node.value = replaceComments(node.value, space);
-    }
   }
 
-  /**
-   * @param {import('postcss').Rule} node
-   * @param {(s: string) => string[]} space
-   */
-  function processRule(node, space) {
-    if (node.raws.selector && node.raws.selector.raw) {
+  if (node.raws.important && node.raws.important.includes('/*')) {
+    node.raws.important = replaceComments(
+      node.raws.important,
+      remover,
+      parserCache
+    );
+
+    const hasComment = getTokens(
+      /** @type {string} */ (node.raws.important),
+      parserCache
+    ).some(([type]) => type === TokenType.Comment);
+
+    if (!hasComment) {
+      node.raws.important = '!important';
+    }
+  }
+}
+
+/**
+ * @param {import('postcss').Rule} node
+ * @param {CommentRemover} remover
+ * @param {Map<string, CSSToken[]>} parserCache
+ */
+function processRule(node, remover, parserCache) {
+  if (node.raws.selector && node.raws.selector.raw) {
+    if (node.raws.selector.raw.includes('/*')) {
       node.raws.selector.raw = replaceCommentsInSelector(
         node.raws.selector.raw,
-        space
+        remover,
+        parserCache
       );
-    } else if (node.selector && node.selector.includes('/*')) {
-      node.selector = replaceCommentsInSelector(node.selector, space);
+    }
+  } else if (node.selector && node.selector.includes('/*')) {
+    node.selector = replaceCommentsInSelector(
+      node.selector,
+      remover,
+      parserCache
+    );
+  }
+}
+
+/**
+ * @param {import('postcss').AtRule} node
+ * @param {CommentRemover} remover
+ * @param {Map<string, CSSToken[]>} parserCache
+ */
+function processAtRule(node, remover, parserCache) {
+  if (node.raws.afterName && node.raws.afterName.includes('/*')) {
+    const commentsReplaced = replaceComments(
+      node.raws.afterName,
+      remover,
+      parserCache
+    );
+
+    if (!commentsReplaced.length) {
+      node.raws.afterName = commentsReplaced + ' ';
+    } else {
+      node.raws.afterName = ' ' + commentsReplaced + ' ';
     }
   }
 
-  /**
-   * @param {import('postcss').AtRule} node
-   * @param {(s: string) => string[]} space
-   */
-  function processAtRule(node, space) {
-    if (node.raws.afterName) {
-      const commentsReplaced = replaceComments(node.raws.afterName, space);
-
-      if (!commentsReplaced.length) {
-        node.raws.afterName = commentsReplaced + ' ';
-      } else {
-        node.raws.afterName = ' ' + commentsReplaced + ' ';
-      }
+  if (node.raws.params && node.raws.params.raw) {
+    if (node.raws.params.raw.includes('/*')) {
+      node.raws.params.raw = replaceComments(
+        node.raws.params.raw,
+        remover,
+        parserCache
+      );
     }
+  } else if (node.params && node.params.includes('/*')) {
+    node.params = replaceComments(node.params, remover, parserCache);
+  }
+}
 
-    if (node.raws.params && node.raws.params.raw) {
-      node.raws.params.raw = replaceComments(node.raws.params.raw, space);
-    } else if (node.params && node.params.includes('/*')) {
-      node.params = replaceComments(node.params, space);
+/**
+ * @param {import('postcss').ChildNode} node
+ * @param {CommentRemover} remover
+ * @param {Map<string, CSSToken[]>} parserCache
+ */
+function processNode(node, remover, parserCache) {
+  if (node.type === 'comment' && remover.canRemove(node.text)) {
+    node.remove();
+
+    return;
+  }
+
+  if (
+    typeof node.raws.between === 'string' &&
+    node.raws.between.includes('/*')
+  ) {
+    const preserveWhitespace =
+      node.type === 'decl' && node.prop.startsWith('--');
+
+    node.raws.between = replaceComments(
+      node.raws.between,
+      remover,
+      parserCache,
+      ' ',
+      preserveWhitespace
+    );
+
+    if (preserveWhitespace && !node.raws.between.includes('/*')) {
+      node.raws.between = ': ';
     }
   }
 
-  /**
-   * @param {import('postcss').ChildNode} node
-   * @param {(s: string) => string[]} space
-   */
-  function processNode(node, space) {
-    if (node.type === 'comment' && remover.canRemove(node.text)) {
-      node.remove();
-
-      return;
-    }
-
-    if (typeof node.raws.between === 'string') {
-      node.raws.between = replaceComments(node.raws.between, space);
-    }
-
-    if (node.type === 'decl') {
-      processDeclaration(node, space);
-    } else if (node.type === 'rule') {
-      processRule(node, space);
-    } else if (node.type === 'atrule') {
-      processAtRule(node, space);
-    }
+  if (node.type === 'decl') {
+    processDeclaration(node, remover, parserCache);
+  } else if (node.type === 'rule') {
+    processRule(node, remover, parserCache);
+  } else if (node.type === 'atrule') {
+    processAtRule(node, remover, parserCache);
   }
+}
 
+/**
+ * @param {Options} [opts]
+ * @return {import('postcss').Plugin}
+ */
+function pluginCreator(opts = {}) {
   return {
     postcssPlugin: 'postcss-discard-comments',
     /**
      * @param {import('postcss').Root} css
-     * @param {import('postcss').Helpers} helpers
      */
-    OnceExit(css, { list }) {
-      css.walk((node) => processNode(node, list.space));
+    OnceExit(css) {
+      // Removal decisions are stateful and parsing is pure, so neither is
+      // cached across traversals.
+      const remover = new CommentRemover(opts);
+      const parserCache = new Map();
+
+      css.walk((node) => processNode(node, remover, parserCache));
     },
   };
 }

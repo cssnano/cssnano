@@ -4,6 +4,10 @@ class CommentRemover {
 
   /** @param {import('../index.js').Options} options */
   constructor(options) {
+    if (options.remove !== undefined && typeof options.remove !== 'function') {
+      throw new TypeError('The remove option must be a function or undefined.');
+    }
+
     this.options = options;
     this.#hasFirst = false;
   }
