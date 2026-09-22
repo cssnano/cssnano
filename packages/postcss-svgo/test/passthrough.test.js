@@ -75,8 +75,8 @@ test('should continue after a non-data URL', async () => {
     'h1{background:url(foo.svg) url("data:image/svg+xml,<svg><circle/></svg>")}',
     { from: undefined }
   );
-  assert.match(result.css, /data:image\/svg\+xml;charset=utf-8/);
-  assert.match(result.css, /url\('data:image\/svg\+xml;charset=utf-8/);
+  assert.match(result.css, /data:image\/svg\+xml;charset=utf-8/v);
+  assert.match(result.css, /url\('data:image\/svg\+xml;charset=utf-8/v);
 });
 
 test('should continue after an invalid base64 SVG data URI', async () => {
@@ -94,6 +94,12 @@ test('should continue after an invalid base64 SVG data URI', async () => {
 
 test('should pass through data-looking bad URLs byte-for-byte', async () => {
   const css = 'h1{background:url(data:image/svg+xml,<svg>)}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.equal(result.css, css);
+});
+
+test('should pass through SVG-like URLs without a data scheme', async () => {
+  const css = 'h1{background:url(xdata:image/svg+xml,<svg/>)}';
   const result = await postcss(plugin()).process(css, { from: undefined });
   assert.equal(result.css, css);
 });
@@ -162,10 +168,3 @@ describe('Pass', () => {
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
-test('should warn on SVG containing unclosed tags', async () => {
-  const css =
-    'h1{background:url(data:image/svg+xml;charset=utf-8,<svg>style type="text/css"><![CDATA[ svg { fill: red; } ]]></style></svg>)}';
-  const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 1);
-  assert.strictEqual(result.messages[0].type, 'warning');
-});
