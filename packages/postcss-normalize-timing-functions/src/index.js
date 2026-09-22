@@ -1,9 +1,11 @@
-import valueParser from 'postcss-value-parser';
+import cssnanoUtils from 'cssnano-utils';
 
-/** @type {(node: valueParser.Node) => number} */
-const getValue = (node) => Number.parseFloat(node.value);
+const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @type {(source: string) => {tokens: readonly CSSToken[], endForOpening(index: number): number | undefined, topLevelSegments(start: number, end: number): {startIndex: number, endIndex: number}[]} | undefined} */
+const getBalancedTokens = cssnanoUtils.balancedTokens;
 const animationTransitionRegex =
-  /^(-\w+-)?(animation|transition)(-timing-function)?$/i;
+  /^(?:-[A-Za-z0-9_]+-)?(?:[aA][nN][iI][mM][aA][tT][iI][oO][nN]|[tT][rR][aA][nN][sS][iI][tT][iI][oO][nN])(?:-[tT][iI][mM][iI][nN][gG]-[fF][uU][nN][cC][tT][iI][oO][nN])?$/v;
 
 /* Works because toString() normalizes the formatting,
    so comparing the string forms behaves the same as number equality*/
@@ -14,103 +16,62 @@ const conversions = new Map([
   [[0, 0, 0.58, 1].toString(), 'ease-out'],
   [[0.42, 0, 0.58, 1].toString(), 'ease-in-out'],
 ]);
-/**
- * @param {valueParser.Node} node
- * @return {void | false}
- */
-function reduce(node) {
-  if (node.type !== 'function') {
-    return false;
+/** @param {readonly CSSToken[]} input @param {{startIndex: number, endIndex: number}} segment @return {CSSToken | undefined} */
+function singleToken(input, segment) {
+  /** @type {CSSToken | undefined} */
+  let result;
+  for (let index = segment.startIndex; index < segment.endIndex; index++) {
+    const token = input[index];
+    if (token[0] === TokenType.Whitespace || token[0] === TokenType.Comment)
+      continue;
+    if (result) return;
+    result = token;
   }
-
-  if (!node.value) {
-    return;
-  }
-
-  const lowerCasedValue = node.value.toLowerCase();
-
-  if (lowerCasedValue === 'steps') {
-    return normalizeSteps(node);
-  }
-
-  if (lowerCasedValue === 'cubic-bezier') {
-    return normalizeCubicBezier(node);
-  }
+  return result;
 }
 
-/**
- * @param {valueParser.FunctionNode} node
- * @return {void | false}
- */
-function normalizeSteps(node) {
-  const count = node.nodes[0];
-  const position = node.nodes[2];
-  const isSingleStep = count.type === 'word' && getValue(count) === 1;
-
-  if (isSingleStep && isStepPosition(position, 'start', 'jump-start')) {
-    /** @type string */ (node.type) = 'word';
-    node.value = 'step-start';
-
-    delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
-
-    return;
-  }
-
-  if (isSingleStep && isStepPosition(position, 'end', 'jump-end')) {
-    /** @type string */ (node.type) = 'word';
-    node.value = 'step-end';
-
-    delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
-
-    return;
-  }
-
-  // The end case is actually the browser default, so it isn't required.
-  if (isStepPosition(position, 'end', 'jump-end')) {
-    node.nodes = [count];
-
-    return;
-  }
-
-  return false;
+/** @param {string} value @param {CSSToken} token @return {string} */
+function tokenSource(value, token) {
+  return value.slice(token[2], token[3] + 1);
 }
 
-/**
- * @param {valueParser.Node | undefined} node
- * @param {string} first
- * @param {string} second
- * @return {boolean}
- */
-function isStepPosition(node, first, second) {
-  return (
-    node?.type === 'word' &&
-    (node.value.toLowerCase() === first || node.value.toLowerCase() === second)
-  );
-}
-
-/**
- * @param {valueParser.FunctionNode} node
- * @return {void}
- */
-function normalizeCubicBezier(node) {
-  const values = node.nodes
-    .filter((list, index) => {
-      return index % 2 === 0;
-    })
-    .map(getValue);
-
-  if (values.length !== 4) {
-    return;
+/** @param {string} value @param {readonly CSSToken[]} input @param {NonNullable<ReturnType<typeof getBalancedTokens>>} structure @param {number} index @param {number} end @return {string | null} */
+function reduceFunction(value, input, structure, index, end) {
+  const name = asciiLowerCase(decoded(input[index]));
+  const segments = structure.topLevelSegments(index + 1, end);
+  if (name === 'cubic-bezier' && segments.length === 4) {
+    const values = segments.map((segment) => {
+      const token = singleToken(input, segment);
+      return token?.[0] === TokenType.Number
+        ? /** @type {{value: number}} */ (token[4]).value
+        : Number.NaN;
+    });
+    return values.every((number) => !Number.isNaN(number))
+      ? (conversions.get(values.toString()) ?? null)
+      : null;
   }
-
-  const match = conversions.get(values.toString());
-
-  if (match) {
-    /** @type string */ (node.type) = 'word';
-    node.value = match;
-
-    delete (/** @type Partial<valueParser.FunctionNode> */ (node).nodes);
+  if (name !== 'steps' || segments.length !== 2) return null;
+  const count = singleToken(input, segments[0]);
+  if (
+    !count ||
+    count[0] !== TokenType.Number ||
+    !Number.isInteger(/** @type {{value: number}} */ (count[4]).value) ||
+    /** @type {{value: number}} */ (count[4]).value < 1
+  )
+    return null;
+  const position = singleToken(input, segments[1]);
+  if (!position || position[0] !== TokenType.Ident) return null;
+  const positionName = asciiLowerCase(decoded(position));
+  const countValue = /** @type {{value: number}} */ (count[4]).value;
+  if (countValue === 1) {
+    if (positionName === 'start' || positionName === 'jump-start')
+      return 'step-start';
+    if (positionName === 'end' || positionName === 'jump-end')
+      return 'step-end';
   }
+  return positionName === 'end' || positionName === 'jump-end'
+    ? `steps(${tokenSource(value, count)})`
+    : null;
 }
 
 /**
@@ -118,7 +79,27 @@ function normalizeCubicBezier(node) {
  * @return {string}
  */
 function transform(value) {
-  return valueParser(value).walk(reduce).toString();
+  const structure = getBalancedTokens(value);
+  if (!structure) return value;
+  const { tokens: input } = structure;
+  /** @type {{start:number,end:number,text:string}[]} */
+  const edits = [];
+  for (let index = 0; index < input.length; index++) {
+    if (input[index][0] !== TokenType.Function) continue;
+    const end = structure.endForOpening(index);
+    if (end === undefined) continue;
+    const replacement = reduceFunction(value, input, structure, index, end);
+    if (replacement)
+      edits.push({
+        start: input[index][2],
+        end: input[end][3] + 1,
+        text: replacement,
+      });
+  }
+  let result = value;
+  for (const edit of edits.toSorted((a, b) => b.start - a.start))
+    result = result.slice(0, edit.start) + edit.text + result.slice(edit.end);
+  return result;
 }
 
 /**
@@ -134,21 +115,30 @@ function pluginCreator() {
       const cache = new Map();
 
       css.walkDecls(animationTransitionRegex, (decl) => {
-        const value = decl.value;
+        const value =
+          decl.raws.value?.value === decl.value
+            ? (decl.raws.value.raw ?? decl.value)
+            : decl.value;
 
         if (cache.has(value)) {
-          decl.value = cache.get(value);
+          assignValue(decl, cache.get(value));
 
           return;
         }
 
         const result = transform(value);
 
-        decl.value = result;
+        assignValue(decl, result);
         cache.set(value, result);
       });
     },
   };
+}
+
+/** @param {import('postcss').Declaration} decl @param {string} value */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
 }
 /** @type {true} */
 pluginCreator.postcss = true;
