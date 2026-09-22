@@ -3,7 +3,7 @@ import { IE_6 } from '../dictionary/browsers.js';
 import { PROPERTY } from '../dictionary/identifiers.js';
 import { DECL } from '../dictionary/postcss.js';
 
-const vendorPrefixRegex = /^(-\w+-)/;
+const vendorPrefixRegex = /^(-\w+-)/v;
 /**
  * @param {string} prop
  * @return {string}

@@ -12,7 +12,7 @@ export default (class Important extends BasePlugin {
    * @return {void}
    */
   detect(decl) {
-    const match = decl.value.match(/!\w/);
+    const match = decl.value.match(/!\w/v);
     if (match && match.index) {
       const hack = decl.value.substr(match.index, decl.value.length - 1);
       this.push(decl, {
