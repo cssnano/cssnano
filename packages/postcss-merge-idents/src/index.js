@@ -125,12 +125,15 @@ function mergeAtRules(css) {
         ...tokenize({ css: value }),
       ]
         .filter((token) => token[0] === TokenType.Ident)
-        .map((token) => /** @type {[number, number, string, string]} */ ([
-          token[2],
-          token[3] + 1,
-          canon(token[1]),
-          token[1],
-        ]))
+        .map(
+          (token) =>
+            /** @type {[number, number, string, string]} */ ([
+              token[2],
+              token[3] + 1,
+              canon(token[1]),
+              token[1],
+            ])
+        )
         .filter(([, , replacement, original]) => replacement !== original);
       let result = value;
       for (const [start, end, replacement] of replacements.toReversed())

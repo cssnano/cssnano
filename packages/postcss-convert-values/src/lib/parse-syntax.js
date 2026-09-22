@@ -22,6 +22,37 @@ export function closeForOpening(type) {
   );
 }
 
+/** @param {ReturnType<typeof tokens>[number] | undefined} token */
+function isTrivia(token) {
+  return (
+    token?.[0] === TokenType.Whitespace || token?.[0] === TokenType.Comment
+  );
+}
+
+/** @param {ReturnType<typeof tokens>[number] | undefined} token */
+function isClosing(token) {
+  return (
+    token?.[0] === TokenType.CloseParen ||
+    token?.[0] === TokenType.CloseSquare ||
+    token?.[0] === TokenType.CloseCurly
+  );
+}
+
+/** @param {ReturnType<typeof tokens>[number] | undefined} token */
+function isLiteral(token) {
+  return (
+    token?.[0] === TokenType.AtKeyword ||
+    token?.[0] === TokenType.Dimension ||
+    token?.[0] === TokenType.Hash ||
+    token?.[0] === TokenType.Ident ||
+    token?.[0] === TokenType.Number ||
+    token?.[0] === TokenType.Percentage ||
+    token?.[0] === TokenType.String ||
+    token?.[0] === TokenType.URL ||
+    token?.[0] === TokenType.UnicodeRange
+  );
+}
+
 /**
  * @param {ReturnType<typeof tokens>} input
  * @return {{containsPercentage: boolean, valid: boolean}}
@@ -32,28 +63,10 @@ function parseSyntax(input) {
   /** @type {string[]} */
   const delimiters = [];
 
-  /** @param {ReturnType<typeof tokens>[number] | undefined} token */
-  const isTrivia = (token) =>
-    token?.[0] === TokenType.Whitespace || token?.[0] === TokenType.Comment;
   const skipTrivia = () => {
     while (isTrivia(input[index])) index++;
   };
-  /** @param {ReturnType<typeof tokens>[number] | undefined} token */
-  const isClosing = (token) =>
-    token?.[0] === TokenType.CloseParen ||
-    token?.[0] === TokenType.CloseSquare ||
-    token?.[0] === TokenType.CloseCurly;
-  /** @param {ReturnType<typeof tokens>[number] | undefined} token */
-  const isLiteral = (token) =>
-    token?.[0] === TokenType.AtKeyword ||
-    token?.[0] === TokenType.Dimension ||
-    token?.[0] === TokenType.Hash ||
-    token?.[0] === TokenType.Ident ||
-    token?.[0] === TokenType.Number ||
-    token?.[0] === TokenType.Percentage ||
-    token?.[0] === TokenType.String ||
-    token?.[0] === TokenType.URL ||
-    token?.[0] === TokenType.UnicodeRange;
+
   /** @param {number} start @return {number} */
   const nextSignificant = (start) => {
     let cursor = start;

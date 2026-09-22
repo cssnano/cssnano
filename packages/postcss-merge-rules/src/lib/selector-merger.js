@@ -48,6 +48,15 @@ function replacedBoundary(captured, replaced, edge) {
   }
   return false;
 }
+/** @param {import('postcss').Container} parent */
+function ancestors(parent) {
+  /** @type {import('postcss').Container<import('postcss').ChildNode>[]} */
+  const result = [];
+  /** @type {import('postcss').Container<import('postcss').ChildNode> | undefined} */
+  let container = parent;
+  for (; container; container = getParent(container)) result.push(container);
+  return result;
+}
 
 /**
  * @param {string[]} browsers
@@ -182,16 +191,6 @@ export default function selectorMerger(
       }
     }
     return captured;
-  }
-
-  /** @param {import('postcss').Container} parent */
-  function ancestors(parent) {
-    /** @type {import('postcss').Container<import('postcss').ChildNode>[]} */
-    const result = [];
-    /** @type {import('postcss').Container<import('postcss').ChildNode> | undefined} */
-    let container = parent;
-    for (; container; container = getParent(container)) result.push(container);
-    return result;
   }
 
   /** @param {Rule | null} previous @param {Rule | null} next */

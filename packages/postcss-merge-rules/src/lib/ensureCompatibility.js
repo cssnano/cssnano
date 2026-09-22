@@ -59,14 +59,17 @@ const inputPlaceholderRegex = /-ms-input-placeholder/v;
 const findMsInputPlaceholder = (selector) =>
   inputPlaceholderRegex.test(asciiLowerCase(selector));
 
+/** @type {(selectors: string[]) => string | undefined} */
+function findMsVendor(selectors) {
+  return selectors.find(findMsInputPlaceholder);
+}
+
 /**
  * @param {string[]} selectorsA
  * @param {string[]} selectorsB
  * @return {boolean}
  */
 function sameVendor(selectorsA, selectorsB) {
-  /** @type {(selectors: string[]) => string | undefined} */
-  const findMsVendor = (selectors) => selectors.find(findMsInputPlaceholder);
   const prefixA = sharedVendorPrefix(selectorsA);
   const prefixB = sharedVendorPrefix(selectorsB);
   if (prefixA === undefined || prefixB === undefined || prefixA !== prefixB) {
