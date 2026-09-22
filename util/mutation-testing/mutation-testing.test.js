@@ -22,7 +22,7 @@ test('applies a mutation exactly once', () => {
 test('rejects an unmatched mutation', () => {
   assert.throws(
     () => applyMutation('one', { find: 'missing', replace: 'changed' }),
-    /was not found/
+    /was not found/v
   );
 });
 
@@ -30,7 +30,7 @@ test('rejects a mutation that matches more than once', () => {
   assert.throws(
     () =>
       applyMutation('target target', { find: 'target', replace: 'changed' }),
-    /more than once/
+    /more than once/v
   );
 });
 
