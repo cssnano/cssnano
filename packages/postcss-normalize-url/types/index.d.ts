@@ -1,6 +1,3 @@
-export type QuotedNode = {
-    quote?: string;
-};
 /**
  * @return {import('postcss').Plugin}
  */

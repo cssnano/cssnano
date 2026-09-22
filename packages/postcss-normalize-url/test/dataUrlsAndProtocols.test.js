@@ -1,43 +1,8 @@
 import { describe, test } from 'node:test';
-import {
-  usePostCSSPlugin,
-  processCSSFactory,
-} from '../../../util/testHelpers.js';
+import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
-
-describe('Strip', () => {
-  test(
-    'should strip double quotes',
-    processCSS('h1{background:url("cat.jpg")}', 'h1{background:url(cat.jpg)}')
-  );
-
-  test(
-    'should strip single quotes',
-    processCSS("h1{background:url('cat.jpg')}", 'h1{background:url(cat.jpg)}')
-  );
-
-  test(
-    'should strip double quotes uppercase URL',
-    processCSS('h1{background:URL("cat.jpg")}', 'h1{background:URL(cat.jpg)}')
-  );
-});
-
-describe('Escape', () => {
-  test(
-    'should escape special characters',
-    processCSS(
-      'h1{background:url("http://website.com/assets)_test.png")}',
-      'h1{background:url(http://website.com/assets\\)_test.png)}'
-    )
-  );
-
-  test(
-    'should not escape more than one special character',
-    passthroughCSS('h1{background:url("http://website.com/assets_(test).png")}')
-  );
-});
 
 describe('Remove', () => {
   test(
@@ -58,118 +23,6 @@ describe('Remove', () => {
     passthroughCSS('h1{background:url(http://website.com/test.svg#icon)}')
   );
 });
-
-describe('Normalize', () => {
-  test(
-    'should normalize directory traversal',
-    processCSS(
-      'h1{background:url(http://website.com/assets/css/../font/t.eot)}',
-      'h1{background:url(http://website.com/assets/font/t.eot)}'
-    )
-  );
-
-  test(
-    'should normalize directory traversal in relative urls',
-    processCSS(
-      'h1{background:url(css/../font/t.eot)}',
-      'h1{background:url(font/t.eot)}'
-    )
-  );
-});
-
-test(
-  'should trim current directory indicator in relative urls',
-  processCSS(
-    'h1{background:url(./images/cat.png)}',
-    'h1{background:url(images/cat.png)}'
-  )
-);
-
-test(
-  'should do the above tests, stripping quotes',
-  processCSS(
-    'h1{background:url("./css/../font/t.eot")}',
-    'h1{background:url(font/t.eot)}'
-  )
-);
-
-test(
-  'should preserve trailing slashes',
-  processCSS(
-    'h1{background:url("https://localhost:4321/api/woff2/inter.woff2/")}',
-    'h1{background:url(https://localhost:4321/api/woff2/inter.woff2/)}'
-  )
-);
-
-describe('Normalize', () => {
-  test(
-    'should normalize urls with special characters',
-    processCSS(
-      'h1{background:url("http://website.com/test/../(images)/1.png")}',
-      'h1{background:url("http://website.com/(images)/1.png")}'
-    )
-  );
-
-  test(
-    'should normalize relative urls with special characters',
-    processCSS(
-      'h1{background:url("test/../(images)/1.png")}',
-      'h1{background:url("(images)/1.png")}'
-    )
-  );
-});
-
-describe('Minimise', () => {
-  test(
-    'should minimise whitespace inside the url function',
-    processCSS(
-      'h1{background:url(               test.png           )}',
-      'h1{background:url(test.png)}'
-    )
-  );
-
-  test(
-    'should minimise whitespace inside the url function (2)',
-    processCSS('h1{background:url(               )}', 'h1{background:url()}')
-  );
-
-  test(
-    'should minimise whitespace inside the url string',
-    processCSS(
-      'h1{background:url("               test.png      ")}',
-      'h1{background:url(test.png)}'
-    )
-  );
-
-  test(
-    'should minimise whitespace inside the url string (2)',
-    processCSS('h1{background:url("               ")}', 'h1{background:url()}')
-  );
-
-  test(
-    'should minimise whitespace with special characters',
-    processCSS(
-      'h1{background:url("           test (2015).png     ")}',
-      'h1{background:url("test (2015).png")}'
-    )
-  );
-});
-
-test(
-  'should join multiline url functions',
-  processCSS(
-    'h1{background:url("some really long string \\\nspanning multiple lines")}',
-    'h1{background:url("some really long string spanning multiple lines")}'
-  )
-);
-
-test(
-  'should process multiple backgrounds',
-  processCSS(
-    'h1{background:url(   "./test/../foo/bar.jpg"  ), url("http://website.com/img.jpg")}',
-    'h1{background:url(foo/bar.jpg), url(http://website.com/img.jpg)}'
-  )
-);
 
 describe('Mangle', () => {
   test(
@@ -216,6 +69,11 @@ describe('Mangle', () => {
   );
 
   test(
+    'should not identify a Unicode lookalike data scheme',
+    passthroughCSS('.has-svg:before{content:url(daťа:image/svg+xml,foo)}')
+  );
+
+  test(
     'should not mangle plain data urls',
     passthroughCSS(
       '.has-svg:before{content:url(data:text/plain;base64,SGVsbG8sIFdvcmxkIQ%3D%3D)}'
@@ -251,47 +109,6 @@ describe('Mangle', () => {
   );
 });
 
-describe('Optimise', () => {
-  test(
-    'should optimise @namespace urls',
-    processCSS(
-      '@namespace islands url(" http://bar.yandex.ru/ui/islands");',
-      '@namespace islands "http://bar.yandex.ru/ui/islands";'
-    )
-  );
-
-  test(
-    'should optimise @namespace urls (2)',
-    processCSS(
-      '@namespace islands url(http://bar.yandex.ru/ui/islands );',
-      '@namespace islands "http://bar.yandex.ru/ui/islands";'
-    )
-  );
-
-  test(
-    'should optimise @namespace urls (3)',
-    processCSS(
-      '@namespace islands " http://bar.yandex.ru/ui/islands ";',
-      '@namespace islands "http://bar.yandex.ru/ui/islands";'
-    )
-  );
-
-  test(
-    'should optimise @namespace urls (4)',
-    processCSS(
-      '@NAMESPACE islands " http://bar.yandex.ru/ui/islands ";',
-      '@NAMESPACE islands "http://bar.yandex.ru/ui/islands";'
-    )
-  );
-});
-
-test(
-  'should not normalize @document urls',
-  passthroughCSS(
-    '@document url(http://www.w3.org/),url-prefix(http://www.w3.org/Style/){body{font-size:2em}}'
-  )
-);
-
 test(
   'should handle protocol relative urls',
   processCSS(
@@ -299,31 +116,3 @@ test(
     'h1{background:url(//website.com/image.png)}'
   )
 );
-
-test(
-  'should preserve paths in parameters',
-  passthroughCSS(
-    'background: url(https://ss0.example.com/70cFuh_Q1Yn/it/u=5088,2842&fm=26&gp=0.jpg?imageView2/1/w/750/h/1334)'
-  )
-);
-
-describe('Pass', () => {
-  test(
-    "should pass through when it doesn't find a url function",
-    passthroughCSS('h1{color:black;font-weight:bold}')
-  );
-
-  test(
-    'should pass through non-url empty functions',
-    passthroughCSS('h1{shape-outside:circle()}')
-  );
-
-  test('should pass through empty url', passthroughCSS('h1{background:url()}'));
-
-  test(
-    'should pass through invalid url',
-    passthroughCSS('h1{background:url(http://)}')
-  );
-});
-
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

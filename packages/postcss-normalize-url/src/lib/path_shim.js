@@ -4,4 +4,6 @@ export const normalize = function (url) {
 };
 export default {
   normalize,
+  // Keep the shape of the Node path module so callers can use posix semantics.
+  posix: { normalize },
 };

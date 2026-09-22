@@ -1,24 +1,42 @@
 import path from '#path';
-import valueParser from 'postcss-value-parser';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 import normalize from './normalize.js';
 
-/**
- * A `quote` assignment target for value-parser nodes that aren't otherwise
- * typed: retags the node as a (possibly unquoted) string node.
- * @typedef {{ quote?: string }} QuotedNode
- */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
-const multiline = /\\[\r\n]/;
+const multiline = /\\(?:\r\n|[\r\n])/gv;
+const { asciiLowerCase } = cssnanoUtils;
 // eslint-disable-next-line no-useless-escape
-const escapeChars = /([\s\(\)"'])/g;
+const urlTokenEscapeChars = /[\\ \t\n\r\f\(\)"']/gv;
+const singleQuoteStringEscapeChars = /[\\\n\r\f']/gv;
+const doubleQuoteStringEscapeChars = /[\\\n\r\f"]/gv;
+
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
+function isClosedString(value) {
+  if (value.length < 2 || !['"', "'"].includes(value[0])) return false;
+
+  let backslashes = 0;
+  for (
+    let index = value.length - 2;
+    index >= 0 && value[index] === '\\';
+    index--
+  ) {
+    backslashes++;
+  }
+
+  return value.at(-1) === value[0] && backslashes % 2 === 0;
+}
 
 // Scheme: https://tools.ietf.org/html/rfc3986#section-3.1
 // Absolute URL: https://tools.ietf.org/html/rfc3986#section-4.3
-const ABSOLUTE_URL_REGEX = /^[a-zA-Z][a-zA-Z\d+\-.]*?:/;
+const ABSOLUTE_URL_REGEX = /^[a-zA-Z][a-zA-Z\d+\-.]*?:/v;
 // Windows paths like `c:\`
-const WINDOWS_PATH_REGEX = /^[a-zA-Z]:\\/;
-const dataUrlRegex = /^data:(.*)?,/i;
-const extensionRegex = /^.+-extension:\//i;
+const WINDOWS_PATH_REGEX = /^[a-zA-Z]:\\/v;
+const dataUrlRegex = /^[dD][aA][tT][aA]:/v;
 
 /**
  * Originally in sindresorhus/is-absolute-url
@@ -49,8 +67,52 @@ function convert(url) {
     return normalizedURL;
   }
 
-  // `path.normalize` always returns backslashes on Windows, need replace in `/`
-  return path.normalize(url).replace(new RegExp('\\' + path.sep, 'g'), '/');
+  // Normalize against POSIX separators only: in a CSS url() a `\` is a literal
+  // character, not a path separator, so it must survive on every platform.
+  return path.posix.normalize(url);
+}
+
+/**
+ * Escape characters that terminate or invalidate an unquoted CSS url() token.
+ * @param {string} value
+ * @return {string}
+ */
+function escapeForUrlToken(value) {
+  return value.replace(urlTokenEscapeChars, (match) => {
+    switch (match) {
+      case '\n':
+        return '\\a ';
+      case '\r':
+        return '\\d ';
+      case '\f':
+        return '\\c ';
+      default:
+        return '\\' + match;
+    }
+  });
+}
+
+/**
+ * Escape characters for a CSS string token in the given quote context.
+ * @param {string} value
+ * @param {string} quote
+ * @return {string}
+ */
+function escapeForString(value, quote) {
+  const pattern =
+    quote === "'" ? singleQuoteStringEscapeChars : doubleQuoteStringEscapeChars;
+  return value.replace(pattern, (match) => {
+    switch (match) {
+      case '\n':
+        return '\\a ';
+      case '\r':
+        return '\\d ';
+      case '\f':
+        return '\\c ';
+      default:
+        return '\\' + match;
+    }
+  });
 }
 
 /**
@@ -58,24 +120,39 @@ function convert(url) {
  * @return {void}
  */
 function transformNamespace(rule) {
-  rule.params = valueParser(rule.params)
-    .walk((node) => {
-      if (
-        node.type === 'function' &&
-        node.value.toLowerCase() === 'url' &&
-        node.nodes.length
-      ) {
-        /** @type {valueParser.Node} */ (node).type = 'string';
-        /** @type {QuotedNode} */ (node).quote =
-          node.nodes[0].type === 'string' ? node.nodes[0].quote : '"';
-        node.value = node.nodes[0].value;
-      }
-      if (node.type === 'string') {
-        node.value = node.value.trim();
-      }
-      return false;
-    })
-    .toString();
+  const value = rule.params;
+  /** @type {CSSToken[]} */ const tokens = [...tokenize({ css: value })];
+  /** @type {[number, number, string][]} */ const replacements = [];
+  /** @type {[number, number][]} */ const urlRanges = [];
+  forEachUrl(
+    value,
+    (start, end, decoded) => {
+      urlRanges.push([start, end]);
+      replacements.push([
+        start,
+        end,
+        `"${escapeForString(decoded.trim(), '"')}"`,
+      ]);
+    },
+    tokens
+  );
+  for (const token of tokens) {
+    if (token[0] !== TokenType.String) continue;
+    if (!isClosedString(token[1])) continue;
+    // Strings inside a url() were already rewritten by forEachUrl; overlapping
+    // replacements would be applied against shifted indices and corrupt output.
+    if (
+      urlRanges.some(([start, end]) => token[2] >= start && token[3] + 1 <= end)
+    )
+      continue;
+    const quote = token[1][0];
+    replacements.push([
+      token[2],
+      token[3] + 1,
+      `${quote}${token[1].slice(1, -1).trim()}${quote}`,
+    ]);
+  }
+  rule.params = replace(value, replacements);
 }
 
 /**
@@ -83,52 +160,137 @@ function transformNamespace(rule) {
  * @return {void}
  */
 function transformDecl(decl) {
-  decl.value = valueParser(decl.value)
-    .walk((node) => {
-      if (node.type !== 'function' || node.value.toLowerCase() !== 'url') {
-        return false;
-      }
+  const value =
+    decl.raws.value?.value === decl.value
+      ? (decl.raws.value.raw ?? decl.value)
+      : decl.value;
+  /** @type {[number, number, string][]} */ const replacements = [];
+  forEachUrl(value, (start, end, decoded, quote, name) => {
+    let url = decoded.trim();
+    if (!url) {
+      replacements.push([start, end, `${name}()`]);
+      return;
+    }
+    if (dataUrlRegex.test(url)) return;
+    url = convert(url);
 
-      node.before = node.after = '';
-
-      if (!node.nodes.length) {
-        return false;
-      }
-      const url = node.nodes[0];
-      let escaped;
-
-      url.value = url.value.trim().replace(multiline, '');
-
-      // Skip empty URLs
-      // Empty URL function equals request to current stylesheet where it is declared
-      if (url.value.length === 0) {
-        /** @type {QuotedNode} */ (url).quote = '';
-
-        return false;
-      }
-
-      if (dataUrlRegex.test(url.value)) {
-        return false;
-      }
-
-      if (!extensionRegex.test(url.value)) {
-        url.value = convert(url.value);
-      }
-
-      if (escapeChars.test(url.value) && url.type === 'string') {
-        escaped = url.value.replace(escapeChars, '\\$1');
-
-        if (escaped.length < url.value.length + 2) {
-          url.value = escaped;
-          /** @type {valueParser.Node} */ (url).type = 'word';
-        }
+    let outputQuote = quote;
+    if (quote) {
+      const unquoted = escapeForUrlToken(url);
+      const quoted = escapeForString(url, quote);
+      if (unquoted.length < quoted.length + 2) {
+        url = unquoted;
+        outputQuote = '';
       } else {
-        url.type = 'word';
+        url = quoted;
       }
+    } else {
+      url = escapeForUrlToken(url);
+      outputQuote = '';
+    }
+    replacements.push([
+      start,
+      end,
+      `${name}(${outputQuote}${url}${outputQuote})`,
+    ]);
+  });
+  assignValue(decl, replace(value, replacements));
+}
 
-      return false;
-    })
-    .toString();
+/** @param {import('postcss').Declaration} decl @param {string} value */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
+}
+
+/**
+ * Visit complete `url()` ranges with their decoded string or URL value.
+ * @param {string} value
+ * @param {(start: number, end: number, decoded: string, quote: string, name: string) => void} callback
+ * @param {CSSToken[]} [tokens]
+ */
+function forEachUrl(value, callback, tokens = [...tokenize({ css: value })]) {
+  /** @type {number[]} */ const stack = [];
+  /** @type {Map<number, number>} */ const functionEnds = new Map();
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token[0] === TokenType.Function) stack.push(index);
+    else if (token[0] === TokenType.CloseParen) {
+      const start = stack.pop();
+      if (start !== undefined) functionEnds.set(start, index);
+    }
+  }
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token[0] === TokenType.URL) {
+      const decoded = token[4].value;
+      callback(
+        token[2],
+        token[3] + 1,
+        decoded,
+        '',
+        token[1].slice(0, token[1].indexOf('('))
+      );
+      continue;
+    }
+    if (
+      token[0] !== TokenType.Function ||
+      asciiLowerCase(token[4].value) !== 'url'
+    )
+      continue;
+    const close = functionEnds.get(index);
+    if (close === undefined) continue;
+    const content = tokens.slice(index + 1, close);
+    const significant = content.filter(
+      (child) => child[0] !== TokenType.Whitespace
+    );
+    if (significant.length === 1 && significant[0][0] === TokenType.String) {
+      const string = significant[0];
+      if (!isClosedString(string[1])) {
+        index = close;
+        continue;
+      }
+      // Like unquoted url tokens, hand the caller the decoded string value so
+      // escaping operates on the URL's semantic value, not its raw spelling.
+      callback(
+        token[2],
+        tokens[close][3] + 1,
+        string[4].value,
+        string[1][0],
+        token[1].slice(0, -1)
+      );
+    } else if (
+      !significant.length ||
+      !significant.some(
+        (child) =>
+          child[0] === TokenType.Function ||
+          child[0] === TokenType.String ||
+          child[0] === TokenType.BadString
+      )
+    ) {
+      callback(
+        token[2],
+        tokens[close][3] + 1,
+        value
+          .slice(token[2] + token[1].length, tokens[close][2])
+          .replace(multiline, ''),
+        '',
+        token[1].slice(0, -1)
+      );
+    }
+    index = close;
+  }
+}
+
+/** @param {string} value @param {[number, number, string][]} replacements */
+function replace(value, replacements) {
+  let result = value;
+  for (const [start, end, output] of replacements.toSorted(
+    (a, b) => b[0] - a[0]
+  )) {
+    result = result.slice(0, start) + output + result.slice(end);
+  }
+  return result;
 }
 
 /**
@@ -146,7 +308,7 @@ function pluginCreator() {
           return transformDecl(node);
         } else if (
           node.type === 'atrule' &&
-          node.name.toLowerCase() === 'namespace'
+          asciiLowerCase(node.name) === 'namespace'
         ) {
           return transformNamespace(node);
         }
