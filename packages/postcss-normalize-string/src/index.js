@@ -1,4 +1,4 @@
-import valueParser from 'postcss-value-parser';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
 /*
  * Constants (parser usage)
@@ -13,7 +13,7 @@ const FEED = '\f'.charCodeAt(0);
 const TAB = '\t'.charCodeAt(0);
 const CR = '\r'.charCodeAt(0);
 
-const WORD_END = /[ \n\t\r\f'"\\]/g;
+const WORD_END = /[ \n\t\r\f'"\\]/gv;
 
 /*
  * Constants (node type strings)
@@ -176,7 +176,7 @@ function parse(str) {
 }
 
 /**
- * @param {valueParser.StringNode} node
+ * @param {{quote: string, value: string}} node
  * @param {StringAst} ast
  * @return {void}
  */
@@ -232,6 +232,30 @@ function changeChildQuotes(childNodes, parentQuote) {
 
 /**
  * @param {string} value
+ * @return {boolean}
+ */
+function isClosedString(value) {
+  if (
+    value.length < 2 ||
+    (value[0] !== L_SINGLE_QUOTE && value[0] !== L_DOUBLE_QUOTE)
+  ) {
+    return false;
+  }
+
+  let backslashes = 0;
+  for (
+    let index = value.length - 2;
+    index >= 0 && value[index] === '\\';
+    index--
+  ) {
+    backslashes++;
+  }
+
+  return value.at(-1) === value[0] && backslashes % 2 === 0;
+}
+
+/**
+ * @param {string} value
  * @param {'single' | 'double'} preferredQuote
  * @return {string}
  */
@@ -240,25 +264,30 @@ function normalize(value, preferredQuote) {
     return value;
   }
 
-  return valueParser(value)
-    .walk((child) => {
-      if (child.type !== C_STRING) {
-        return;
-      }
-
-      const ast = parse(child.value);
-
-      if (ast.quotes) {
-        changeWrappingQuotes(child, ast);
-      } else if (preferredQuote === C_SINGLE) {
-        child.quote = L_SINGLE_QUOTE;
-      } else {
-        child.quote = L_DOUBLE_QUOTE;
-      }
-
-      child.value = stringify(ast);
-    })
-    .toString();
+  const chunks = [];
+  let cursor = 0;
+  for (const [type, raw, start, end] of tokenize({ css: value })) {
+    if (type !== TokenType.String) continue;
+    if (!isClosedString(raw)) continue;
+    const quote = raw[0];
+    const child = {
+      quote,
+      // The closure check makes removing both delimiters safe here. Keeping
+      // the raw interior preserves escapes for quote selection and output.
+      value: raw.slice(1, -1),
+    };
+    const ast = parse(child.value);
+    if (ast.quotes) changeWrappingQuotes(child, ast);
+    else
+      child.quote =
+        preferredQuote === C_SINGLE ? L_SINGLE_QUOTE : L_DOUBLE_QUOTE;
+    chunks.push(value.slice(cursor, start));
+    chunks.push(child.quote + stringify(ast) + child.quote);
+    cursor = end + 1;
+  }
+  if (cursor === 0) return value;
+  chunks.push(value.slice(cursor));
+  return chunks.join('');
 }
 
 /**
@@ -275,6 +304,12 @@ function minify(original, cache, preferredQuote) {
   const newValue = normalize(original, preferredQuote);
   cache.set(key, newValue);
   return newValue;
+}
+
+/** @param {import('postcss').Declaration} decl @param {string} value */
+function assignValue(decl, value) {
+  decl.value = value;
+  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
 }
 
 /** @typedef {{preferredQuote?: 'double' | 'single'}} Options */
@@ -306,7 +341,13 @@ function pluginCreator(opts) {
             node.selector = minify(node.selector, cache, preferredQuote);
             break;
           case 'decl':
-            node.value = minify(node.value, cache, preferredQuote);
+            {
+              const value =
+                node.raws.value?.value === node.value
+                  ? (node.raws.value.raw ?? node.value)
+                  : node.value;
+              assignValue(node, minify(value, cache, preferredQuote));
+            }
             break;
           case 'atrule':
             node.params = minify(node.params, cache, preferredQuote);
