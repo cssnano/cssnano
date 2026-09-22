@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "browserslist": "catalog:",
-    "postcss-value-parser": "^4.2.0"
+    "cssnano-utils": "workspace:^"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

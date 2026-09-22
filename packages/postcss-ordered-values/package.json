@@ -33,8 +33,7 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "cssnano-utils": "workspace:^",
-    "postcss-value-parser": "^4.2.0"
+    "cssnano-utils": "workspace:^"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"
@@ -43,6 +42,7 @@
     "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
+    "@csstools/css-tokenizer": "catalog:",
     "@webref/css": "catalog:",
     "postcss": "catalog:"
   },
@@ -51,7 +51,8 @@
   },
   "scripts": {
     "acquire": "node ./script/acquire.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "fuzz": "node ./script/fuzz.js"
   },
   "type": "module"
 }
