@@ -13,6 +13,7 @@ declare const pseudoElements: {
     ':active': string;
     ':after': string;
     ':any-link': string;
+    ':autofill': string;
     ':before': string;
     ':checked': string;
     ':default': string;
@@ -27,6 +28,7 @@ declare const pseudoElements: {
     ':focus': string;
     ':focus-within': string;
     ':focus-visible': string;
+    ':fullscreen': string;
     ':has': string;
     ':hover': string;
     ':in-range': string;
@@ -38,6 +40,7 @@ declare const pseudoElements: {
     ':last-of-type': string;
     ':link': string;
     ':matches': string;
+    ':modal': string;
     ':not': string;
     ':nth-child': string;
     ':nth-last-child': string;
@@ -48,12 +51,16 @@ declare const pseudoElements: {
     ':optional': string;
     ':out-of-range': string;
     ':placeholder-shown': string;
+    ':read-only': string;
+    ':read-write': string;
     ':required': string;
     ':root': string;
     ':target': string;
+    ':where': string;
     '::after': string;
     '::backdrop': string;
     '::before': string;
+    '::file-selector-button': string;
     '::first-letter': string;
     '::first-line': string;
     '::marker': string;

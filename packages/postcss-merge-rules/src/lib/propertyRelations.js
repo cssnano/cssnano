@@ -1,6 +1,8 @@
 import data from '../data/propertyGroups.json' with { type: 'json' };
+import cssnanoUtils from 'cssnano-utils';
 
-const vendorPrefixRegex = /^-\w+-/;
+const vendorPrefixRegex = /^-[A-Za-z0-9_]+-/v;
+const { asciiLowerCase } = cssnanoUtils;
 /**
  * @param {string} prop
  * @return {string}
@@ -136,8 +138,8 @@ function isConflictingProp(propA, propB) {
   if (propA.startsWith('--') || propB.startsWith('--')) {
     return false;
   }
-  const nameA = propA.toLowerCase();
-  const nameB = propB.toLowerCase();
+  const nameA = asciiLowerCase(propA);
+  const nameB = asciiLowerCase(propB);
   if (nameA === nameB) {
     return true;
   }

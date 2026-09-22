@@ -1,7 +1,6 @@
-import { intersect, indexOfDeclaration } from './declarations.js';
-import { flush, getMeta } from './rule-meta.js';
+import { getMeta } from './rule-meta.js';
 
-/** @import {Declaration, Rule} from 'postcss' */
+/** @import {Rule} from 'postcss' */
 
 /**
  * @param {Rule} first
@@ -17,21 +16,6 @@ export function mergeParents(first, second) {
   return true;
 }
 
-/** @param {Rule} second @return {Rule | null} */
-function getNextRule(second) {
-  let nextRule = second.next();
-  if (!nextRule) {
-    const parentSibling =
-      /** @type {import('postcss').Container | undefined} */ (
-        /** @type {import('postcss').Container<import('postcss').ChildNode>} */ (
-          second.parent
-        ).next()
-      );
-    nextRule = parentSibling && parentSibling.nodes && parentSibling.nodes[0];
-  }
-  return nextRule?.type === 'rule' ? nextRule : null;
-}
-
 /**
  * @param {...Rule} rules
  * @return {number}
@@ -43,63 +27,7 @@ function ruleLength(...rules) {
 /**
  * @param {Rule} first
  * @param {Rule} second
- * @param {Declaration[]} intersection
- * @param {string[]} browsers
- * @param {Map<string, boolean>} compatibilityCache
- * @param {WeakSet<Rule>} ruleCache
- * @param {WeakMap<Rule, import('./rule-meta.js').RuleMeta>} ruleMeta
- * @param {(a: Rule, b: Rule, browsers: string[], compatibilityCache: Map<string, boolean>, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, import('./rule-meta.js').RuleMeta>) => boolean} canMerge
- * @param {(rule: Rule, oldParent: import('postcss').Container, newParent: import('postcss').Container) => void} [onMove]
- * @return {{first: Rule, second: Rule, intersection: Declaration[], moved: boolean}}
- */
-export function mergeWithNextRule(
-  first,
-  second,
-  intersection,
-  browsers,
-  compatibilityCache,
-  ruleCache,
-  ruleMeta,
-  canMerge,
-  onMove
-) {
-  const nextRule = getNextRule(second);
-  if (
-    !nextRule ||
-    !canMerge(
-      second,
-      nextRule,
-      browsers,
-      compatibilityCache,
-      ruleCache,
-      ruleMeta
-    )
-  ) {
-    return { first, second, intersection, moved: false };
-  }
-  const nextIntersection = intersect(
-    getMeta(second, ruleMeta).declarations,
-    getMeta(nextRule, ruleMeta).declarations
-  );
-  if (nextIntersection.length <= intersection.length) {
-    return { first, second, intersection, moved: false };
-  }
-  const oldParent = nextRule.parent;
-  const newParent = second.parent;
-  const moved = mergeParents(second, nextRule);
-  if (moved && oldParent && newParent) onMove?.(nextRule, oldParent, newParent);
-  return {
-    first: second,
-    second: nextRule,
-    intersection: nextIntersection,
-    moved,
-  };
-}
-
-/**
- * @param {Rule} first
- * @param {Rule} second
- * @param {Declaration[]} intersection
+ * @param {Set<number>} claimedEarlierIndices
  * @param {Set<number>} claimedIndices
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, import('./rule-meta.js').RuleMeta>} ruleMeta
@@ -108,7 +36,7 @@ export function mergeWithNextRule(
 export function buildMergedRule(
   first,
   second,
-  intersection,
+  claimedEarlierIndices,
   claimedIndices,
   ruleCache,
   ruleMeta
@@ -123,8 +51,11 @@ export function buildMergedRule(
   ).insertBefore(second, receivingBlock);
   const firstClone = first.clone({ selectors: firstSelectors });
   const secondClone = second.clone({ selectors: secondSelectors });
+  // Index-based removal matches duplicates positionally, symmetric to how
+  // `claimedIndices` selects declarations in the later rule.
+  let earlierIndex = 0;
   firstClone.walkDecls((decl) => {
-    if (indexOfDeclaration(intersection, decl) !== -1) {
+    if (claimedEarlierIndices.has(earlierIndex++)) {
       decl.remove();
       receivingBlock.append(decl);
     }
@@ -135,8 +66,6 @@ export function buildMergedRule(
       decl.remove();
     }
   });
-  flush(first, ruleMeta);
-  flush(second, ruleMeta);
   const merged = ruleLength(firstClone, receivingBlock, secondClone);
   const original = ruleLength(first, second);
   if (merged < original) {
