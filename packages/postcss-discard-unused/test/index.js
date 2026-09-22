@@ -46,6 +46,21 @@ test(
 );
 
 test(
+  'should recognize ASCII case-insensitive at-rules and descriptors',
+  processCSS(
+    '@KEYFRAMES fadeIn{0%{opacity:0}to{opacity:1}}@COUNTER-STYLE custom{SYSTEM:extends decimal} @FONT-FACE{FONT-FAMILY:Used;SRC:url(font.woff)}a{ANIMATION:fadeIn 1s;LIST-STYLE:custom;FONT-FAMILY:Used}',
+    '@KEYFRAMES fadeIn{0%{opacity:0}to{opacity:1}}@COUNTER-STYLE custom{SYSTEM:extends decimal} @FONT-FACE{FONT-FAMILY:Used;SRC:url(font.woff)}a{ANIMATION:fadeIn 1s;LIST-STYLE:custom;FONT-FAMILY:Used}'
+  )
+);
+
+test(
+  'should not recognize Unicode lookalikes as discardable names',
+  passthroughCSS(
+    '@KEYFRAMES fade{0%{opacity:0}to{opacity:1}}@counter-ſtyle custom{system:extends decimal}@font-ſace{font-family:Used}a{animation:fade 1s}'
+  )
+);
+
+test(
   'should remove keyframes if they have no identifier',
   processCSS('@keyframes {0%{opacity:0}to{opacity:1}}', '')
 );

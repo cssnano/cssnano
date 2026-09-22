@@ -1,13 +1,23 @@
-import selectorParser from 'postcss-selector-parser';
+import {
+  isTokenComment,
+  isTokenComma,
+  isTokenDelim,
+  isTokenIdent,
+  isTokenWhitespace,
+  tokenize,
+} from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
 
 const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
-const animationRegex = /animation/;
-const listStyleRegex = /list-style|system/;
-const fontRegex = /font(|-family)/;
-const counterStyleRegex = /counter-style/;
-const keyframesRegex = /keyframes/;
+const { asciiLowerCase } = cssnanoUtils;
+const animationRegex = /animation/v;
+const listStyleRegex = /list-style|system/v;
+const fontRegex = /font(|-family)/v;
+const counterStyleRegex = /counter-style/v;
+const keyframesRegex = /keyframes/v;
+const wildcard = true;
 
 /**
  * @param {{value: string}} arg
@@ -40,19 +50,91 @@ function filterAtRule({ atRules, values }) {
 }
 
 /**
+ * @param {string} source
+ * @return {string | true | undefined}
+ */
+function namespacePrefix(source) {
+  for (const token of tokenize({ css: source })) {
+    if (isTokenWhitespace(token) || isTokenComment(token)) continue;
+    return namespacePrefixToken(token);
+  }
+}
+
+/**
+ * @param {import('@csstools/css-tokenizer').CSSToken | undefined} token
+ * @return {string | true | undefined}
+ */
+function namespacePrefixToken(token) {
+  if (token === undefined) return;
+  if (isTokenIdent(token)) return token[4].value;
+  if (isTokenDelim(token) && token[1] === '*') return wildcard;
+}
+
+/**
+ * Find namespace prefixes in each selector-list item. A comma resets the
+ * candidate prefix so a type selector in an earlier item cannot be mistaken
+ * for the prefix of a later qualified selector. Intervening whitespace or
+ * comments also reset the candidate prefix because CSS qualified names cannot
+ * contain whitespace between the prefix, '|', and the element/attribute name.
+ *
+ * @param {string} source
+ * @return {(string | true)[]}
+ */
+function namespacePrefixes(source) {
+  /** @type {(string | true)[]} */
+  const prefixes = [];
+  /** @type {import('@csstools/css-tokenizer').CSSToken | undefined} */
+  let previous;
+  /** @type {string | true | undefined} */
+  let pendingPrefix;
+
+  for (const token of tokenize({ css: source })) {
+    if (isTokenComma(token)) {
+      previous = undefined;
+      pendingPrefix = undefined;
+      continue;
+    }
+    if (isTokenWhitespace(token) || isTokenComment(token)) {
+      previous = undefined;
+      pendingPrefix = undefined;
+      continue;
+    }
+
+    if (pendingPrefix !== undefined) {
+      if (isTokenIdent(token) || (isTokenDelim(token) && token[1] === '*')) {
+        prefixes.push(pendingPrefix);
+      }
+      pendingPrefix = undefined;
+    }
+
+    if (isTokenDelim(token) && token[1] === '|') {
+      pendingPrefix = namespacePrefixToken(previous);
+      previous = undefined;
+      continue;
+    }
+
+    previous = token;
+  }
+
+  return prefixes;
+}
+
+/**
  * @param {{atRules: import('postcss').AtRule[], rules: (string | true)[]}} arg
  * @return {void}
  */
 function filterNamespace({ atRules, rules }) {
   const uniqueRules = new Set(rules);
   for (const atRule of atRules) {
-    const { 0: param, length: len } = atRule.params.split(' ').filter(Boolean);
+    const prefix = namespacePrefix(atRule.params);
 
-    if (len === 1) {
-      return;
+    if (prefix === undefined) {
+      if (atRule.params.trim()) continue;
+      atRule.remove();
+      continue;
     }
 
-    const hasRule = uniqueRules.has(param) || uniqueRules.has('*');
+    const hasRule = uniqueRules.has(prefix) || uniqueRules.has(wildcard);
 
     if (!hasRule) {
       atRule.remove();
@@ -84,7 +166,8 @@ function filterFont({ atRules, values }, comma) {
       /** @type {import('postcss').Declaration[]} */
       const families = /** @type {import('postcss').Declaration[]} */ (
         r.nodes.filter(
-          (node) => node.type === 'decl' && node.prop === 'font-family'
+          (node) =>
+            node.type === 'decl' && asciiLowerCase(node.prop) === 'font-family'
         )
       );
 
@@ -94,26 +177,12 @@ function filterFont({ atRules, values }, comma) {
       }
 
       for (const family of families) {
-        if (!hasFont(family.value.toLowerCase(), uniqueValues, comma)) {
+        if (!hasFont(asciiLowerCase(family.value), uniqueValues, comma)) {
           r.remove();
         }
       }
     }
   }
-}
-
-/**
- *
- * @param {{atRules: import('postcss').AtRule[], rules: (string | true)[]}} namespaceCache
- * @param {import('postcss').Rule} node
- * @return {void}
- */
-function processAttributeSelector(namespaceCache, node) {
-  selectorParser((ast) => {
-    ast.walkAttributes(({ namespace: ns }) => {
-      namespaceCache.rules = namespaceCache.rules.concat(ns);
-    });
-  }).process(node.selector);
 }
 
 /**@typedef {{fontFace?: boolean, counterStyle?: boolean, keyframes?: boolean, namespace?: boolean}} Options */
@@ -156,14 +225,8 @@ function processNode(node, context) {
  * @return {void}
  */
 function processRule(namespaceCache, node) {
-  if (node.selector.includes('[')) {
-    // Attribute selector, so we should parse further.
-    processAttributeSelector(namespaceCache, node);
-  } else {
-    // Use a simple split function for the namespace
-    namespaceCache.rules = namespaceCache.rules.concat(
-      node.selector.split('|')[0]
-    );
+  for (const prefix of namespacePrefixes(node.selector)) {
+    namespaceCache.rules.push(prefix);
   }
 }
 
@@ -185,7 +248,7 @@ function processRule(namespaceCache, node) {
  */
 function processDeclaration(node, context) {
   const { prop } = node;
-  if (context.counterStyle && listStyleRegex.test(prop)) {
+  if (context.counterStyle && listStyleRegex.test(asciiLowerCase(prop))) {
     context.counterStyleCache.values = context.counterStyleCache.values.concat(
       splitValues(node, context.comma, context.space)
     );
@@ -195,14 +258,14 @@ function processDeclaration(node, context) {
     context.fontFace &&
     node.parent !== undefined &&
     node.parent.type === rule &&
-    fontRegex.test(prop)
+    fontRegex.test(asciiLowerCase(prop))
   ) {
     context.fontCache.values = context.fontCache.values.concat(
-      context.comma(node.value.toLowerCase())
+      context.comma(asciiLowerCase(node.value))
     );
   }
 
-  if (context.keyframes && animationRegex.test(prop)) {
+  if (context.keyframes && animationRegex.test(asciiLowerCase(prop))) {
     context.keyframesCache.values = context.keyframesCache.values.concat(
       splitValues(node, context.comma, context.space)
     );
@@ -227,19 +290,19 @@ function processDeclaration(node, context) {
  */
 function processAtRule(node, context) {
   const { name } = node;
-  if (context.counterStyle && counterStyleRegex.test(name)) {
+  if (context.counterStyle && counterStyleRegex.test(asciiLowerCase(name))) {
     context.counterStyleCache.atRules.push(node);
   }
 
-  if (context.fontFace && name === 'font-face' && node.nodes) {
+  if (context.fontFace && asciiLowerCase(name) === 'font-face' && node.nodes) {
     context.fontCache.atRules.push(node);
   }
 
-  if (context.keyframes && keyframesRegex.test(name)) {
+  if (context.keyframes && keyframesRegex.test(asciiLowerCase(name))) {
     context.keyframesCache.atRules.push(node);
   }
 
-  if (context.namespace && name === 'namespace') {
+  if (context.namespace && asciiLowerCase(name) === 'namespace') {
     context.namespaceCache.atRules.push(node);
   }
 }

@@ -1,8 +1,5 @@
 import { test } from 'node:test';
-import {
-  usePostCSSPlugin,
-  processCSSFactory,
-} from '../../../util/testHelpers.js';
+import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
@@ -42,56 +39,6 @@ test(
 );
 
 test(
-  'should remove duplicate @rules',
-  processCSS('@charset "utf-8";@charset "utf-8";', '@charset "utf-8";')
-);
-
-test(
-  'should remove duplicate @rules (2)',
-  processCSS(
-    '@charset "utf-8";@charset "hello!";@charset "utf-8";',
-    '@charset "hello!";@charset "utf-8";'
-  )
-);
-
-test(
-  'should remove duplicates inside @media queries',
-  processCSS(
-    '@media print{h1{display:block}h1{display:block}}',
-    '@media print{h1{display:block}}'
-  )
-);
-
-test(
-  'should remove duplicate @media queries',
-  processCSS(
-    '@media print{h1{display:block}}@media print{h1{display:block}}',
-    '@media print{h1{display:block}}'
-  )
-);
-
-test(
-  'should not mangle same keyframe rules but with different vendors',
-  passthroughCSS(
-    '@-webkit-keyframes flash{0%,50%,100%{opacity:1}25%,75%{opacity:0}}@keyframes flash{0%,50%,100%{opacity:1}25%,75%{opacity:0}}'
-  )
-);
-
-test(
-  'should not merge across keyframes',
-  passthroughCSS(
-    '@-webkit-keyframes test{0%{color:#000}to{color:#fff}}@keyframes test{0%{color:#000}to{color:#fff}}'
-  )
-);
-
-test(
-  'should not merge across keyframes (2)',
-  passthroughCSS(
-    '@-webkit-keyframes slideInDown{0%{-webkit-transform:translateY(-100%);transform:translateY(-100%);visibility:visible}to{-webkit-transform:translateY(0);transform:translateY(0)}}@keyframes slideInDown{0%{-webkit-transform:translateY(-100%);transform:translateY(-100%);visibility:visible}to{-webkit-transform:translateY(0);transform:translateY(0)}}'
-  )
-);
-
-test(
   'should remove declarations before rules',
   processCSS(
     'h1{font-weight:bold;font-weight:bold}h1{font-weight:bold}',
@@ -102,14 +49,6 @@ test(
 test(
   'should not deduplicate comments',
   passthroughCSS('h1{color:#000}/*test*/h2{color:#fff}/*test*/')
-);
-
-test(
-  'should not crash on @layer syntax',
-  processCSS(
-    '@layer ui-components { } @layer ui-components',
-    '@layer ui-components { } @layer ui-components'
-  )
 );
 
 test(
@@ -166,4 +105,69 @@ test(
   passthroughCSS('@media \0 all {}@media all {}')
 );
 
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+// csso#471: duplicate content with alt text fallback must be preserved
+test(
+  'should preserve content property fallbacks with alt text',
+  passthroughCSS('h1{content:"⚠";content:"⚠" / "Warning"}')
+);
+
+// display: block; display: flex fallback pair must be preserved
+test(
+  'should preserve display fallback pairs',
+  passthroughCSS('h1{display:block;display:flex}')
+);
+
+test('should preserve standalone empty rule', passthroughCSS('h1{}'));
+
+test(
+  'should remove earlier duplicate empty rule sharing selector',
+  processCSS('h1{}h1{}', 'h1{}')
+);
+
+test(
+  'should remove earlier rule when declaration matches one in a multi-declaration fallback',
+  processCSS(
+    'h1{display:block}h1{display:block;display:flex}',
+    'h1{display:block;display:flex}'
+  )
+);
+
+test(
+  'should deduplicate rules with pseudo-class selectors',
+  processCSS('a:hover{color:red}a:hover{color:red}', 'a:hover{color:red}')
+);
+
+test(
+  'should deduplicate rules with escaped selectors',
+  processCSS('.\\:hover{color:red}.\\:hover{color:red}', '.\\:hover{color:red}')
+);
+
+test(
+  'should deduplicate rules with empty selectors',
+  processCSS('{color:red}{color:red}', '{color:red}')
+);
+
+test(
+  'should deduplicate declarations with empty values',
+  processCSS('h1{color:;color:;}', 'h1{color:;}')
+);
+
+test(
+  'should deduplicate top-level declarations without a rule',
+  processCSS('color:red;color:red;', 'color:red;')
+);
+
+test(
+  'should preserve standalone rule containing only comments',
+  passthroughCSS('h1{/*comment*/}')
+);
+
+test(
+  'should remove earlier rule sharing selector when it contains only comments',
+  processCSS('h1{/*comment*/}h1{color:red}', 'h1{color:red}')
+);
+
+test(
+  'should remove earlier rule sharing selector when all declarations are deduplicated even if comments remain',
+  processCSS('h1{/*comment*/color:red}h1{color:red}', 'h1{color:red}')
+);

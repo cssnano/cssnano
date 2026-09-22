@@ -1,15 +1,11 @@
+export type CSSToken = import('@csstools/css-tokenizer').CSSToken;
 export type Options = {
     removeAll?: boolean | undefined;
     removeAllButFirst?: boolean | undefined;
     remove?: ((s: string) => boolean) | undefined;
 };
-/** @typedef {object} Options
- *  @property {boolean=} removeAll
- *  @property {boolean=} removeAllButFirst
- *  @property {(s: string) => boolean=} remove
- */
 /**
- * @param {Options} opts
+ * @param {Options} [opts]
  * @return {import('postcss').Plugin}
  */
 declare function pluginCreator(opts?: Options): import('postcss').Plugin;
