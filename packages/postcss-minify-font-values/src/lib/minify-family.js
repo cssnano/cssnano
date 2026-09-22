@@ -58,26 +58,29 @@ function containsReservedComponent(value) {
   });
 }
 
+/** @param {string} part @param {boolean} stringContext */
+function escape(part, stringContext) {
+  let result = '';
+  for (const character of part) {
+    if (!stringContext && escapeCharacter.test(character)) {
+      result += `\\${character.codePointAt(0)?.toString(16)} `;
+    } else {
+      result +=
+        !stringContext && simpleEscape.test(character)
+          ? `\\${character}`
+          : character;
+    }
+  }
+  if (!stringContext && invalidIdentifier.test(result)) {
+    result = result.startsWith('-')
+      ? `\\-${result.slice(1)}`
+      : `\\3${result[0]} ${result.slice(1)}`;
+  }
+  return result;
+}
+
 /** @param {string} string */
 function escapeIdentifierSequence(string) {
-  /** @param {string} part @param {boolean} stringContext */
-  const escape = (part, stringContext) => {
-    let result = '';
-    for (const character of part) {
-      if (!stringContext && escapeCharacter.test(character))
-        result += `\\${character.codePointAt(0)?.toString(16)} `;
-      else
-        result +=
-          !stringContext && simpleEscape.test(character)
-            ? `\\${character}`
-            : character;
-    }
-    if (!stringContext && invalidIdentifier.test(result))
-      result = result.startsWith('-')
-        ? `\\-${result.slice(1)}`
-        : `\\3${result[0]} ${result.slice(1)}`;
-    return result;
-  };
   const parts = string.split(/[\t\n\f\r ]/gv);
   const escapedParts = [];
   for (const [index, part] of parts.entries()) {
