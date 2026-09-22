@@ -61,6 +61,16 @@ test(
   processCSS('h1{z-index:0}h2{z-index:10}', 'h1{z-index:0}h2{z-index:1}')
 );
 
+test(
+  'should not match a Unicode lookalike z-index property',
+  passthroughCSS('h1{z-indeſ:9999}')
+);
+
+test(
+  'should not match z-index as a property substring',
+  passthroughCSS('h1{--custom-z-index:100;my-z-index:200}')
+);
+
 describe('Mangle', () => {
   test('should not mangle inherit', passthroughCSS('h1{z-index:inherit}'));
 
