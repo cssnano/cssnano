@@ -38,8 +38,8 @@ function frameLabel(node) {
   // Prepend the package name so plugin OnceExit's are distinguishable, then
   // show the in-package path (lib/foo.js or src/index.js).
   const pkg = packageOf(node);
-  const inPkg = url.match(/\/(src|lib|dist|types)\/(.+)$/);
-  const tail = inPkg ? `${inPkg[1]}/${inPkg[2]}` : url.replace(/^.*\//, '');
+  const inPkg = url.match(/\/(src|lib|dist|types)\/(.+)$/v);
+  const tail = inPkg ? `${inPkg[1]}/${inPkg[2]}` : url.replace(/^.*\//v, '');
   return `${name} @ ${pkg}/${tail || '<?>'}`;
 }
 
@@ -52,17 +52,17 @@ function packageOf(node) {
     return '<internal>';
   }
   if (url.startsWith('node:')) return url;
-  const m = url.match(/packages\/([^/]+)\//);
+  const m = url.match(/packages\/([^\/]+)\//v);
   if (m) return m[1];
   // Name after the last node_modules/: independent of store layout (pnpm's
   // .pnpm key, npm/yarn flat, nesting), so pnpm upgrades can't break it.
   const lastNodeModules = url.lastIndexOf('node_modules/');
   if (lastNodeModules !== -1) {
     const after = url.slice(lastNodeModules + 'node_modules/'.length);
-    const m2 = after.match(/^(@[^/]+\/[^/]+|[^/]+)/);
+    const m2 = after.match(/^(@[^\/]+\/[^\/]+|[^\/]+)/v);
     if (m2 && m2[1] !== '.pnpm') return m2[1];
   }
-  return url.replace(/^.*\//, '');
+  return url.replace(/^.*\//v, '');
 }
 
 // Self time per node id.
