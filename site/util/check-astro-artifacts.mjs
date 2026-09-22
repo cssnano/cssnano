@@ -17,7 +17,7 @@ async function findUnprefixedInternalUrls(directory) {
       violations.push(...(await findUnprefixedInternalUrls(entryPath)));
     } else if (entry.name.endsWith('.html')) {
       const html = await readFile(entryPath, 'utf8');
-      if (/(?:href|src)="\/(?!cssnano\/)/.test(html)) {
+      if (/(?:href|src)="\/(?!cssnano\/)/v.test(html)) {
         violations.push(path.relative(outputDirectory, entryPath));
       }
     }
@@ -43,7 +43,7 @@ const worker = assets.find(
 
 if (!worker) throw new Error('Astro playground worker bundle is missing');
 const workerSource = await readFile(path.join(assetDirectory, worker), 'utf8');
-const imports = [...workerSource.matchAll(/import\(`([^`]+)`\)/g)].map(
+const imports = [...workerSource.matchAll(/import\(`([^`]+)`\)/gv)].map(
   ([, value]) => value
 );
 if (imports.length !== 3)

@@ -8,7 +8,7 @@ const siteDirectory = path.dirname(fileURLToPath(import.meta.url));
 const base = '/cssnano/';
 
 const prefix = (html) =>
-  html.replace(/(\s(?:src|data)=["'])\/(?!\/|cssnano\/)/g, `$1${base}`);
+  html.replace(/(\s(?:src|data)=["'])\/(?!\/|cssnano\/)/gv, `$1${base}`);
 
 async function prefixBuiltPublicAssetUrls(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -50,8 +50,8 @@ export default defineConfig({
         output: {
           codeSplitting: {
             groups: [
-              { name: 'svgo', test: /[\\/]node_modules[\\/]svgo[\\/]/ },
-              { name: 'vendor', test: /[\\/]node_modules[\\/]/ },
+              { name: 'svgo', test: /[\\\/]node_modules[\\\/]svgo[\\\/]/v },
+              { name: 'vendor', test: /[\\\/]node_modules[\\\/]/v },
             ],
           },
         },
@@ -63,8 +63,8 @@ export default defineConfig({
         output: {
           codeSplitting: {
             groups: [
-              { name: 'svgo', test: /[\\/]node_modules[\\/]svgo[\\/]/ },
-              { name: 'vendor', test: /[\\/]node_modules[\\/]/ },
+              { name: 'svgo', test: /[\\\/]node_modules[\\\/]svgo[\\\/]/v },
+              { name: 'vendor', test: /[\\\/]node_modules[\\\/]/v },
             ],
           },
         },
