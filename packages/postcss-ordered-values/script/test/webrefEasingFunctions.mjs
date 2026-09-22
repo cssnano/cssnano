@@ -44,7 +44,7 @@ test('buildEasingFunctions requires all referenced types', () => {
       buildEasingFunctions({
         types: [{ name: 'easing-function', syntax: '<missing>' }],
       }),
-    /does not define <missing>/
+    /does not define <missing>/v
   );
 });
 
@@ -53,7 +53,7 @@ test('validate requires essential easing terminals', () => {
   assert.doesNotThrow(() => validate(data));
   assert.throws(
     () => validate({ ...data, functions: ['cubic-bezier', 'steps'] }),
-    /easing functions to include linear/
+    /easing functions to include linear/v
   );
 });
 

@@ -1,35 +1,82 @@
-import postcssValueParser from 'postcss-value-parser';
+import cssnanoUtils from 'cssnano-utils';
+import { isDimension, isIdent, isNumber, name } from '../lib/tokenize.js';
 
-const { unit } = postcssValueParser;
+const { lengthUnits } = cssnanoUtils;
+
 /**
- * @param {string} value
+ * @param {import('../lib/tokenize.js').Term} term
  * @return {boolean}
  */
-function hasUnit(value) {
-  const parsedVal = unit(value);
-  return parsedVal && parsedVal.unit !== '';
+function isPositiveInteger(term) {
+  if (!isNumber(term)) {
+    return false;
+  }
+  const data =
+    /** @type {{ type?: string, value?: number, signCharacter?: string } | undefined} */ (
+      term.tokens[0][4]
+    );
+  return (
+    data?.type === 'integer' &&
+    data.signCharacter !== '-' &&
+    typeof data.value === 'number' &&
+    data.value > 0 &&
+    data.value <= Number.MAX_SAFE_INTEGER
+  );
 }
-/** @param {import('postcss-value-parser').ParsedValue} columns */
+
+/**
+ * @param {import('../lib/tokenize.js').Term} term
+ * @return {boolean}
+ */
+function isValidLength(term) {
+  if (!isDimension(term)) {
+    return false;
+  }
+  const { value, type, signCharacter, unit } =
+    /** @type {{ value?: number, type?: string, signCharacter?: string, unit?: string }} */ (
+      term.tokens[0][4] ?? {}
+    );
+  return (
+    typeof unit === 'string' &&
+    lengthUnits.has(unit.toLowerCase()) &&
+    (type === 'integer' || type === 'number') &&
+    typeof value === 'number' &&
+    value >= 0 &&
+    signCharacter !== '-'
+  );
+}
+
+/** @param {import('../lib/tokenize.js').Term[]} columns */
 export default (columns) => {
+  if (columns.length !== 2) {
+    return null;
+  }
+
   /** @type {string[]} */
   const widths = [];
   /** @type {string[]} */
   const other = [];
-  columns.walk((node) => {
-    const { type, value } = node;
-    if (type === 'word') {
-      if (hasUnit(value)) {
-        widths.push(value);
-      } else {
-        other.push(value);
-      }
+  for (const term of columns) {
+    // Multi-token terms (e.g. functions) cannot be classified safely.
+    if (term.tokens.length !== 1) {
+      return null;
     }
-  });
+    if (isValidLength(term)) {
+      widths.push(term.raw);
+    } else if (
+      isPositiveInteger(term) ||
+      (isIdent(term) && name(term) === 'auto')
+    ) {
+      other.push(term.raw);
+    } else {
+      return null;
+    }
+  }
 
   // only transform if declaration is not invalid or a single value
   if (other.length === 1 && widths.length === 1) {
     return `${widths[0].trimStart()} ${other[0].trimStart()}`;
   }
 
-  return columns;
+  return null;
 };

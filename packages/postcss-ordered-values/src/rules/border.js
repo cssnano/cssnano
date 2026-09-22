@@ -1,15 +1,23 @@
-import postcssValueParser from 'postcss-value-parser';
-import mathFunctions from '../lib/mathfunctions.js';
+import cssnanoUtils from 'cssnano-utils';
+import {
+  isDimension,
+  isFunction,
+  isHash,
+  isIdent,
+  isNumber,
+  isUrl,
+  name,
+  reservedIdentKeywords,
+} from '../lib/tokenize.js';
 
-const { unit, stringify } = postcssValueParser;
+const { lengthUnits, mathFunctions } = cssnanoUtils;
+
 // border: <line-width> || <line-style> || <color>
-// outline: <outline-color> || <outline-style> || <outline-width>
 
 const borderWidths = new Set(['thin', 'medium', 'thick']);
 
 const borderStyles = new Set([
   'none',
-  'auto', // only in outline-style
   'hidden',
   'dotted',
   'dashed',
@@ -21,42 +29,65 @@ const borderStyles = new Set([
   'outset',
 ]);
 
+/** @param {import('../lib/tokenize.js').Term} term @param {string} lower */
+const isWidth = (term, lower) => {
+  if (isFunction(term)) return mathFunctions.has(lower);
+  if (borderWidths.has(lower)) return true;
+  if (isDimension(term)) {
+    const unit = /** @type {{unit: string}} */ (term.tokens[0][4])?.unit;
+    return typeof unit === 'string' && lengthUnits.has(unit.toLowerCase());
+  }
+  if (isNumber(term)) {
+    const value = /** @type {{value: number}} */ (term.tokens[0][4])?.value;
+    return value === 0;
+  }
+  return false;
+};
+
+/** @param {import('../lib/tokenize.js').Term} term @param {string} lower @param {boolean} allowAuto */
+const isStyle = (term, lower, allowAuto) =>
+  !isFunction(term) &&
+  (borderStyles.has(lower) || (allowAuto && lower === 'auto'));
+
+/** @param {import('../lib/tokenize.js').Term} term @param {string} lower */
+const isColor = (term, lower) => {
+  if (isIdent(term)) {
+    return lower !== 'auto' && !reservedIdentKeywords.has(lower);
+  }
+  if (isFunction(term)) {
+    return !isUrl(term) && !mathFunctions.has(lower);
+  }
+  return isHash(term);
+};
+
 /**
- * @param {import('postcss-value-parser').ParsedValue} border
- * @return {string}
+ * @typedef {'width' | 'style' | 'color'} BorderSlotName
+ * @typedef {{ name: BorderSlotName, match: (term: import('../lib/tokenize.js').Term, lower: string) => boolean }} BorderSlot
  */
-function normalizeBorder(border) {
+
+/**
+ * @param {import('../lib/tokenize.js').Term[]} border
+ * @param {boolean} [allowAuto]
+ * @return {string | null}
+ */
+function normalizeBorder(border, allowAuto = false) {
+  /** @type {BorderSlot[]} */
+  const borderSlots = [
+    { name: 'style', match: (term, lower) => isStyle(term, lower, allowAuto) },
+    { name: 'width', match: isWidth },
+    { name: 'color', match: isColor },
+  ];
+  /** @type {Record<BorderSlotName, string>} */
   const order = { width: '', style: '', color: '' };
 
-  border.walk((node) => {
-    const { type, value } = node;
-    if (type === 'word') {
-      if (borderStyles.has(value.toLowerCase())) {
-        order.style = value;
-        return false;
-      }
-      if (borderWidths.has(value.toLowerCase()) || unit(value.toLowerCase())) {
-        if (order.width !== '') {
-          order.width = `${order.width} ${value}`;
-          return false;
-        }
-        order.width = value;
-        return false;
-      }
-      order.color = value;
-      return false;
-    }
-    if (type === 'function') {
-      if (mathFunctions.has(value.toLowerCase())) {
-        order.width = stringify(node);
-      } else {
-        order.color = stringify(node);
-      }
-      return false;
-    }
-    return false;
-  });
-  return `${order.width} ${order.style} ${order.color}`.trim();
+  for (const term of border) {
+    if (term.raw === '/' && term.tokens.length === 1) return null;
+    const lower = name(term);
+    const slot = borderSlots.find((s) => s.match(term, lower));
+    if (!slot || order[slot.name]) return null;
+    order[slot.name] = term.raw;
+  }
+  return [order.width, order.style, order.color].filter(Boolean).join(' ');
 }
 
 export default normalizeBorder;
