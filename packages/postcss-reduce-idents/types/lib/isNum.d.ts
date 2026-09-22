@@ -1,7 +1,12 @@
 /**
- * @param {import('postcss-value-parser').Node} node
- * @return {import('postcss-value-parser').Dimension | false}
+ * @param {{value: string}} node
+ * @return {{number: string, unit: string} | false}
  */
-declare function isNum(node: import('postcss-value-parser').Node): import('postcss-value-parser').Dimension | false;
+declare function isNum(node: {
+    value: string;
+}): {
+    number: string;
+    unit: string;
+} | false;
 export default isNum;
 //# sourceMappingURL=isNum.d.ts.map

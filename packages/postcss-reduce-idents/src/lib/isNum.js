@@ -1,12 +1,25 @@
-import postcssValueParser from 'postcss-value-parser';
+import cssnanoUtils from 'cssnano-utils';
 
-const { unit } = postcssValueParser;
+const { TokenType, numeric, tokens } = cssnanoUtils;
 /**
- * @param {import('postcss-value-parser').Node} node
- * @return {import('postcss-value-parser').Dimension | false}
+ * @param {{value: string}} node
+ * @return {{number: string, unit: string} | false}
  */
 function isNum(node) {
-  return unit(node.value);
+  const token = tokens(node.value)[0];
+  if (
+    !token ||
+    ![TokenType.Number, TokenType.Dimension, TokenType.Percentage].includes(
+      token[0]
+    )
+  )
+    return false;
+  const metadata = numeric(token);
+  if (!metadata) return false;
+  return {
+    number: String(metadata.number),
+    unit: metadata.unit,
+  };
 }
 
 export default isNum;

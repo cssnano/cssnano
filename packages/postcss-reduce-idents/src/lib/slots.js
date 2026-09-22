@@ -6,7 +6,7 @@ import data from '../data/identSlots.json' with { type: 'json' };
 // directly.
 const aliases = new Map(Object.entries(data.aliases));
 
-const VENDOR_PREFIX = /^-\w+-/;
+const VENDOR_PREFIX = /^-\w+-/v;
 
 /**
  * The name the generated data knows a property by: vendor prefixed spellings
@@ -48,7 +48,7 @@ function toFunctionMap(functions) {
   return new Map(
     Object.entries(functions).map(([name, args]) => [
       // Stylesheets spell a function without the trailing `()` webref names it
-      // by, and postcss-value-parser reports it that way too.
+      // by the tokenizer, preserving the historical compatibility behavior.
       name.slice(0, -2),
       args,
     ])
