@@ -12,6 +12,81 @@ test(
   passthroughCSS('background:space round')
 );
 
+test(
+  'should normalize keywords with comments and unusual whitespace',
+  processCSS(
+    'background-repeat:repeat/* between */\tno-repeat',
+    'background-repeat:repeat-x'
+  )
+);
+
+test(
+  'should normalize keywords separated by a comment containing markers',
+  processCSS(
+    `background-repeat:repeat/*${'*//*'.repeat(2000)}*/no-repeat`,
+    'background-repeat:repeat-x'
+  )
+);
+
+test(
+  'should preserve other component values between comment-wrapped keywords',
+  passthroughCSS('background:repeat/* a */red/* b */no-repeat')
+);
+
+test(
+  'should preserve other component values between keywords',
+  passthroughCSS('background:repeat red no-repeat')
+);
+
+test(
+  'should preserve lengths between keywords',
+  passthroughCSS('background:repeat 50% no-repeat')
+);
+
+test(
+  'should preserve keywords separated by a bare size separator',
+  passthroughCSS('background:repeat / no-repeat')
+);
+
+test(
+  'should preserve functions between keywords',
+  passthroughCSS('background:repeat image("cat.png") no-repeat')
+);
+
+test(
+  'should normalize only the layer without intervening component values',
+  processCSS(
+    'background:repeat red no-repeat, repeat no-repeat',
+    'background:repeat red no-repeat, repeat-x'
+  )
+);
+
+test(
+  'should drop important comments inside a normalized keyword gap',
+  processCSS(
+    'background-repeat:repeat /*! keep */ no-repeat',
+    'background-repeat:repeat-x'
+  )
+);
+
+test(
+  'should normalize keywords separated by multiple comments',
+  processCSS(
+    'background-repeat:repeat/* a *//* b */no-repeat',
+    'background-repeat:repeat-x'
+  )
+);
+
+test(
+  'should preserve repeat syntax after a size separator',
+  passthroughCSS('background:repeat no-repeat/cover')
+);
+
+test(
+  'should not inspect escaped variable functions',
+  passthroughCSS('background-repeat:v\\61r(--repeat, repeat no-repeat)')
+);
+
 function suite(fixture, expected) {
   return () =>
     Promise.all([
@@ -54,6 +129,21 @@ test(
     'BACKGROUND:#000 url(cat.jpg) REPEAT NO-REPEAT 50%',
     'BACKGROUND:#000 url(cat.jpg) repeat-x 50%'
   )
+);
+
+test(
+  'should normalize mixed-case ASCII repeat properties and values',
+  processCSS('MaSk-RePeAt:RePeAt No-RePeAt', 'MaSk-RePeAt:repeat-x')
+);
+
+test(
+  'should not match a Unicode lookalike repeat property',
+  passthroughCSS('maſk-repeat:repeat no-repeat')
+);
+
+test(
+  'should not treat non-CSS whitespace as a repeat separator',
+  passthroughCSS('background-repeat:repeat\u00a0no-repeat')
 );
 
 test(
@@ -138,6 +228,32 @@ test(
     'background: url("/media/examples/lizard.png") repeat var(--foo), url("/media/examples/lizard.png") repeat no-repeat',
     'background: url("/media/examples/lizard.png") repeat var(--foo), url("/media/examples/lizard.png") repeat-x'
   )
+);
+
+test(
+  'should normalize multiple layers around untouched layers',
+  processCSS(
+    'background: repeat no-repeat, repeat red no-repeat, no-repeat repeat',
+    'background: repeat-x, repeat red no-repeat, repeat-y'
+  )
+);
+
+test(
+  'should preserve comments outside the keyword boundaries',
+  processCSS(
+    'background: /*! start */ repeat no-repeat /*! end */',
+    'background: /*! start */ repeat-x /*! end */'
+  )
+);
+
+test(
+  'should pass through more than two repeat keywords',
+  passthroughCSS('background: repeat repeat repeat')
+);
+
+test(
+  'should normalize escaped repeat keywords',
+  processCSS('background: \\72 epeat no-repeat', 'background: repeat-x')
 );
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
