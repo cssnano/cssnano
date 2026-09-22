@@ -1,17 +1,13 @@
 /**
- * @param {import('postcss-value-parser').ParsedValue} gridAutoFlow
- * @return {import('postcss-value-parser').ParsedValue | string}
+ * @param {import('../lib/tokenize.js').Term[]} gridAutoFlow
+ * @return {string | null}
  */
-declare const normalizeGridAutoFlow: (gridAutoFlow: import('postcss-value-parser').ParsedValue) => import('postcss-value-parser').ParsedValue | string;
+declare const normalizeGridAutoFlow: (gridAutoFlow: import('../lib/tokenize.js').Term[]) => string | null;
 /**
- * @param {import('postcss-value-parser').ParsedValue} gridGap
- * @return {import('postcss-value-parser').ParsedValue | string}
+ * @param {import('../lib/tokenize.js').Term[]} grid
+ * @param {number} [maxLines=2] Maximum number of <grid-line>s the property accepts.
+ * @return {string | null}
  */
-declare const normalizeGridColumnRowGap: (gridGap: import('postcss-value-parser').ParsedValue) => import('postcss-value-parser').ParsedValue | string;
-/**
- * @param {import('postcss-value-parser').ParsedValue} grid
- * @return {string | string[]}
- */
-declare const normalizeGridColumnRow: (grid: import('postcss-value-parser').ParsedValue) => string | string[];
-export { normalizeGridAutoFlow, normalizeGridColumnRowGap, normalizeGridColumnRow, };
+declare const normalizeGridColumnRow: (grid: import('../lib/tokenize.js').Term[], maxLines?: number) => string | null;
+export { normalizeGridAutoFlow, normalizeGridColumnRow };
 //# sourceMappingURL=grid.d.ts.map

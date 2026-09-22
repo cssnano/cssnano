@@ -1,99 +1,164 @@
 import joinGridValue from '../lib/joinGridValue.js';
+import { isIdent, isNumber, name } from '../lib/tokenize.js';
 
 /**
- * @param {import('postcss-value-parser').ParsedValue} gridAutoFlow
- * @return {import('postcss-value-parser').ParsedValue | string}
+ * @param {import('../lib/tokenize.js').Term[]} gridAutoFlow
+ * @return {string | null}
  */
 const normalizeGridAutoFlow = (gridAutoFlow) => {
   const newValue = { front: '', back: '' };
   let shouldNormalize = false;
-  gridAutoFlow.walk((node) => {
-    if (node.value === 'dense') {
+  let hasDense = false;
+  let hasTrack = false;
+  for (const node of gridAutoFlow) {
+    const value = node.raw;
+    const keyword = isIdent(node) ? name(node) : '';
+    if (keyword === 'dense') {
+      if (hasDense) return null;
+      hasDense = true;
       shouldNormalize = true;
-      newValue.back = node.value;
-    } else if (['row', 'column'].includes(node.value.trim().toLowerCase())) {
+      newValue.back = value;
+    } else if (['row', 'column'].includes(keyword)) {
+      if (hasTrack) return null;
+      hasTrack = true;
       shouldNormalize = true;
-      newValue.front = node.value;
+      newValue.front = value;
     } else {
-      shouldNormalize = false;
+      return null;
     }
-  });
-  if (shouldNormalize) {
-    return `${newValue.front.trim()} ${newValue.back.trim()}`;
   }
-  return gridAutoFlow;
+  if (shouldNormalize) {
+    return [newValue.front.trim(), newValue.back.trim()]
+      .filter(Boolean)
+      .join(' ');
+  }
+  return null;
 };
+
+const gridLineExcludedIdents = new Set([
+  'initial',
+  'inherit',
+  'unset',
+  'revert',
+  'revert-layer',
+  'default',
+  'span',
+  'auto',
+]);
+
+/** @param {import('../lib/tokenize.js').Term} term */
+function isGridInteger(term) {
+  if (!isNumber(term)) return false;
+  const data = /** @type {{ type?: string, value?: number }} */ (
+    term.tokens[0][4]
+  );
+  return (
+    data.type === 'integer' &&
+    typeof data.value === 'number' &&
+    data.value !== 0 &&
+    Math.abs(data.value) <= Number.MAX_SAFE_INTEGER
+  );
+}
+
+/** @param {import('../lib/tokenize.js').Term} term */
+function isGridCustomIdent(term) {
+  return isIdent(term) && !gridLineExcludedIdents.has(name(term));
+}
+
+/** @param {import('../lib/tokenize.js').Term} term */
+function classifyGridTerm(term) {
+  if (isGridInteger(term)) return 'integer';
+  if (isGridCustomIdent(term)) return 'ident';
+  if (isIdent(term) && name(term) === 'span') return 'span';
+  if (isIdent(term) && name(term) === 'auto') return 'auto';
+  return null;
+}
+
+/** @param {import('../lib/tokenize.js').Term[]} line */
+function isGridLine(line) {
+  if (line.length === 0 || line.length > 3) return false;
+
+  const kinds = line.map(classifyGridTerm);
+  if (kinds.includes(null)) return false;
+
+  // `auto` is a complete grid-line on its own.
+  if (kinds.includes('auto')) return line.length === 1;
+
+  if (kinds.includes('span')) {
+    const integerCount = kinds.filter((kind) => kind === 'integer').length;
+    const identCount = kinds.filter((kind) => kind === 'ident').length;
+    if (
+      kinds.filter((kind) => kind === 'span').length !== 1 ||
+      integerCount > 1 ||
+      identCount > 1 ||
+      integerCount + identCount === 0 ||
+      line.length !== 1 + integerCount + identCount
+    ) {
+      return false;
+    }
+
+    const integerIndex = kinds.findIndex((kind) => kind === 'integer');
+    if (integerIndex === -1) return true;
+    const value = /** @type {{ value: number }} */ (
+      line[integerIndex].tokens[0][4]
+    ).value;
+    return value > 0;
+  }
+
+  // Standalone custom-ident line.
+  if (line.length === 1 && kinds[0] === 'ident') return true;
+
+  // integer && custom-ident?, where the ordinary integer may be negative.
+  return (
+    line.length <= 2 &&
+    kinds.filter((kind) => kind === 'integer').length === 1 &&
+    kinds.every((kind) => kind === 'integer' || kind === 'ident')
+  );
+}
 
 /**
- * @param {import('postcss-value-parser').ParsedValue} gridGap
- * @return {import('postcss-value-parser').ParsedValue | string}
+ * @param {import('../lib/tokenize.js').Term[]} grid
+ * @param {number} [maxLines=2] Maximum number of <grid-line>s the property accepts.
+ * @return {string | null}
  */
-const normalizeGridColumnRowGap = (gridGap) => {
-  const newValue = { front: '', back: '' };
-  let shouldNormalize = false;
-  gridGap.walk((node) => {
-    // console.log(node);
-    if (node.value === 'normal') {
-      shouldNormalize = true;
-      newValue.front = node.value;
+const normalizeGridColumnRow = (grid, maxLines = 2) => {
+  /** @type {import('../lib/tokenize.js').Term[][]} */
+  const lines = [[]];
+  for (const term of grid) {
+    if (term.raw === '/' && term.tokens.length === 1) {
+      lines.push([]);
     } else {
-      newValue.back = `${newValue.back} ${node.value}`;
+      lines[lines.length - 1].push(term);
     }
-  });
-  if (shouldNormalize) {
-    return `${newValue.front.trim()} ${newValue.back.trim()}`;
   }
-  return gridGap;
+
+  // grid-column / grid-row take at most two <grid-line>s; the longhand
+  // grid-*-start/end properties take only one.
+  if (lines.length > maxLines) return null;
+  if (lines.length > 1 && lines.some((line) => line.length === 0)) {
+    return null;
+  }
+  if (!lines.every(isGridLine)) return null;
+
+  const normalized = lines.map((line) => {
+    const span = line.find((term) => isIdent(term) && name(term) === 'span');
+    if (span) {
+      const operands = line.filter((term) => term !== span);
+      return [
+        span,
+        ...operands.filter(isGridInteger),
+        ...operands.filter(isGridCustomIdent),
+      ];
+    }
+
+    const integer = line.find(isGridInteger);
+    if (!integer) return line;
+    return [integer, ...line.filter((term) => term !== integer)];
+  });
+
+  return joinGridValue(
+    normalized.map((line) => line.map((term) => term.raw).join(' '))
+  );
 };
 
-/**
- * @param {import('postcss-value-parser').ParsedValue} grid
- * @return {string | string[]}
- */
-const normalizeGridColumnRow = (grid) => {
-  // cant do normalization here using node, so copy it as a string
-  const gridValue = grid.toString().split('/'); // node -> string value, split ->  " 2 / 3 span " ->  [' 2','3 span ']
-  if (gridValue.length > 1) {
-    return joinGridValue(
-      gridValue.map((gridLine) => {
-        const normalizeValue = {
-          front: '',
-          back: '',
-        };
-        const trimmedGridLine = gridLine.trim(); // '3 span ' -> '3 span'
-        for (const node of trimmedGridLine.split(' ')) {
-          // ['3','span']
-          if (node === 'span') {
-            normalizeValue.front = node; // span _
-          } else {
-            normalizeValue.back = `${normalizeValue.back} ${node}`; // _ 3
-          }
-        }
-        return `${normalizeValue.front.trim()} ${normalizeValue.back.trim()}`; // span 3
-      })
-      // returns "2 / span 3"
-    );
-  }
-  // doing this separating if `/` is not present as while joining('/') , it will add `/` at the end
-  return gridValue.map((gridLine) => {
-    const normalizeValue = {
-      front: '',
-      back: '',
-    };
-    const trimmedGridLine = gridLine.trim();
-    for (const node of trimmedGridLine.split(' ')) {
-      if (node === 'span') {
-        normalizeValue.front = node;
-      } else {
-        normalizeValue.back = `${normalizeValue.back} ${node}`;
-      }
-    }
-    return `${normalizeValue.front.trim()} ${normalizeValue.back.trim()}`;
-  });
-};
-
-export {
-  normalizeGridAutoFlow,
-  normalizeGridColumnRowGap,
-  normalizeGridColumnRow,
-};
+export { normalizeGridAutoFlow, normalizeGridColumnRow };

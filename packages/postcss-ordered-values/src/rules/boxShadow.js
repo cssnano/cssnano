@@ -1,71 +1,106 @@
-import postcssValueParser from 'postcss-value-parser';
 import cssnanoUtils from 'cssnano-utils';
-import addSpace from '../lib/addSpace.js';
-import getValue from '../lib/getValue.js';
-import mathFunctions from '../lib/mathfunctions.js';
 import vendorUnprefixed from '../lib/vendorUnprefixed.js';
+import {
+  isDimension,
+  isFunction,
+  isHash,
+  isIdent,
+  isNumber,
+  isUrl,
+  name,
+  reservedIdentKeywords,
+  serializeArguments,
+} from '../lib/tokenize.js';
 
-const { unit } = postcssValueParser;
-const { getArguments } = cssnanoUtils;
+const { lengthUnits, mathFunctions } = cssnanoUtils;
+
+/** @param {import('../lib/tokenize.js').Term} term @param {string} lower */
+const isColor = (term, lower) => {
+  if (isIdent(term)) {
+    return (
+      lower !== 'none' && lower !== 'auto' && !reservedIdentKeywords.has(lower)
+    );
+  }
+  if (isFunction(term)) {
+    return !isUrl(term);
+  }
+  return isHash(term);
+};
+
+/** @param {import('../lib/tokenize.js').Term} term */
+function isLength(term) {
+  if (isDimension(term)) {
+    const unit = /** @type {{unit: string}} */ (term.tokens[0][4])?.unit;
+    return typeof unit === 'string' && lengthUnits.has(unit.toLowerCase());
+  }
+  if (isNumber(term)) {
+    const value = /** @type {{value: number}} */ (term.tokens[0][4])?.value;
+    return value === 0;
+  }
+  return false;
+}
+
 /**
- * @param {import('postcss-value-parser').Node[][]} args
- * @return {false | import('postcss-value-parser').Node[][]}
+ * @param {import('../lib/tokenize.js').Term[][]} args
+ * @return {import('../lib/tokenize.js').Term[][] | null}
  */
 function normalize(args) {
   const list = [];
-  let abort = false;
+  let hasNone = false;
   for (const arg of args) {
-    /** @type {import('postcss-value-parser').Node[]} */
-    let val = [];
-    /** @type {Record<'inset'|'color', import('postcss-value-parser').Node[]>} */
+    if (arg.length === 1 && isIdent(arg[0]) && name(arg[0]) === 'none') {
+      hasNone = true;
+      list.push(arg);
+      continue;
+    }
+    /** @type {import('../lib/tokenize.js').Term[]} */
+    const val = [];
+    /** @type {Record<'inset'|'color', import('../lib/tokenize.js').Term[]>} */
     const state = {
       inset: [],
       color: [],
     };
 
     for (const node of arg) {
-      const { type, value } = node;
+      const value = name(node);
 
-      if (
-        type === 'function' &&
-        mathFunctions.has(vendorUnprefixed(value.toLowerCase()))
-      ) {
-        abort = true;
-        continue;
+      if (isFunction(node) && mathFunctions.has(vendorUnprefixed(value))) {
+        return null;
       }
 
-      if (type === 'space') {
-        continue;
+      if (isFunction(node) && vendorUnprefixed(value) === 'inset') {
+        return null;
       }
 
-      if (unit(value)) {
-        val = [...val, node, addSpace()];
-      } else if (value.toLowerCase() === 'inset') {
-        state.inset = [...state.inset, node, addSpace()];
+      if (isLength(node)) {
+        val.push(node);
+      } else if (isIdent(node) && value === 'inset') {
+        state.inset.push(node);
+      } else if (isColor(node, value)) {
+        state.color.push(node);
       } else {
-        state.color = [...state.color, node, addSpace()];
+        return null;
       }
     }
 
-    if (abort) {
-      return false;
+    if (val.length < 2 || val.length > 4 || state.color.length > 1) {
+      return null;
     }
 
     list.push([...state.inset, ...val, ...state.color]);
   }
+  if (args.length > 1 && hasNone) {
+    return null;
+  }
   return list;
 }
 /**
- * @param {import('postcss-value-parser').ParsedValue} parsed
- * @return {string}
+ * @param {{ arguments: import('../lib/tokenize.js').Term[][], value: string }} parsed
+ * @return {string | null}
  */
 function normalizeBoxShadow(parsed) {
-  const args = getArguments(parsed);
-  const normalized = normalize(args);
-  if (normalized === false) {
-    return parsed.toString();
-  }
-  return getValue(normalized);
+  const normalized = normalize(parsed.arguments);
+  return normalized === null ? null : serializeArguments(normalized);
 }
 
 export default normalizeBoxShadow;

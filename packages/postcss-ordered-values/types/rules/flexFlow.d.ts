@@ -1,7 +1,7 @@
 /**
- * @param {import('postcss-value-parser').ParsedValue} flexFlow
- * @return {string}
+ * @param {import('../lib/tokenize.js').Term[]} flexFlow
+ * @return {string | null}
  */
-declare function normalizeFlexFlow(flexFlow: import('postcss-value-parser').ParsedValue): string;
+declare function normalizeFlexFlow(flexFlow: import('../lib/tokenize.js').Term[]): string | null;
 export default normalizeFlexFlow;
 //# sourceMappingURL=flexFlow.d.ts.map

@@ -1,12 +1,16 @@
-import postcssValueParser from 'postcss-value-parser';
-import cssnanoUtils from 'cssnano-utils';
-import addSpace from '../lib/addSpace.js';
-import getValue from '../lib/getValue.js';
-import mathFunctions from '../lib/mathfunctions.js';
+import {
+  isFunction,
+  isIdent,
+  isNumber,
+  isString,
+  isUrl,
+  name,
+  reservedIdentKeywords,
+  serializeArguments,
+} from '../lib/tokenize.js';
+import classifyTime from '../lib/isTime.js';
 import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
-const { unit } = postcssValueParser;
-const { getArguments } = cssnanoUtils;
 // animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
 const timingFunctions = new Set([...easingFunctions.functions, 'frames']);
 const timingKeywords = new Set(easingFunctions.keywords);
@@ -19,100 +23,73 @@ const directions = new Set([
 ]);
 const fillModes = new Set(['none', 'forwards', 'backwards', 'both']);
 const playStates = new Set(['running', 'paused']);
-const timeUnits = new Set(['ms', 's']);
-
 /**
  * @param {string} value
- * @param {import('postcss-value-parser').Node} node
- * @return {false | import('postcss-value-parser').Dimension}
- */
-function unitFromNode(value, node) {
-  if (node.type !== 'function') {
-    return unit(value);
-  }
-  if (mathFunctions.has(value)) {
-    // If it is a math function, it checks the unit of the parameter and returns it.
-    for (const param of node.nodes) {
-      const paramUnit = unitFromNode(param.value.toLowerCase(), param);
-      if (paramUnit && paramUnit.unit && paramUnit.unit !== '%') {
-        return paramUnit;
-      }
-    }
-  }
-  return false;
-}
-
-/**
- * @param {string} value
- * @param {import('postcss-value-parser').Node} node
+ * @param {import('../lib/tokenize.js').Term} node
  * @return {boolean}
  */
-const isTimingFunction = (value, { type }) => {
+const isTimingFunction = (value, node) => {
   return (
-    (type === 'function' && timingFunctions.has(value)) ||
-    timingKeywords.has(value)
+    (isFunction(node) && timingFunctions.has(value)) ||
+    (isIdent(node) && timingKeywords.has(value))
   );
 };
-/**
- * @param {string} value
- * @return {boolean}
- */
-const isDirection = (value) => {
-  return directions.has(value);
+/** @param {string} value @param {import('../lib/tokenize.js').Term} node */
+const isDirection = (value, node) => {
+  return isIdent(node) && directions.has(value);
+};
+/** @param {string} value @param {import('../lib/tokenize.js').Term} node */
+const isFillMode = (value, node) => {
+  return isIdent(node) && fillModes.has(value);
+};
+/** @param {string} value @param {import('../lib/tokenize.js').Term} node */
+const isPlayState = (value, node) => {
+  return isIdent(node) && playStates.has(value);
 };
 /**
  * @param {string} value
- * @return {boolean}
- */
-const isFillMode = (value) => {
-  return fillModes.has(value);
-};
-/**
- * @param {string} value
- * @return {boolean}
- */
-const isPlayState = (value) => {
-  return playStates.has(value);
-};
-/**
- * @param {string} value
- * @param {import('postcss-value-parser').Node} node
- * @return {boolean}
- */
-const isTime = (value, node) => {
-  const quantity = unitFromNode(value, node);
-
-  return quantity && timeUnits.has(quantity.unit);
-};
-/**
- * @param {string} value
- * @param {import('postcss-value-parser').Node} node
+ * @param {import('../lib/tokenize.js').Term} node
  * @return {boolean}
  */
 const isIterationCount = (value, node) => {
-  const quantity = unitFromNode(value, node);
-
-  return value === 'infinite' || (quantity && !quantity.unit);
+  return (isIdent(node) && value === 'infinite') || isNumber(node);
 };
 
+/**
+ * @param {import('../lib/tokenize.js').Term} node
+ * @param {string} value
+ * @param {boolean} hasIdentOrStringName
+ * @return {boolean}
+ */
+function isInvalidAnimationName(node, value, hasIdentOrStringName) {
+  if (!isIdent(node) && !isString(node) && !isFunction(node)) {
+    return true;
+  }
+  if (isUrl(node)) {
+    return true;
+  }
+  if ((isIdent(node) || isString(node)) && hasIdentOrStringName) {
+    return true;
+  }
+  return isIdent(node) && reservedIdentKeywords.has(value);
+}
+
 const stateConditions = [
-  { property: 'duration', delegate: isTime },
   { property: 'timingFunction', delegate: isTimingFunction },
-  { property: 'delay', delegate: isTime },
   { property: 'iterationCount', delegate: isIterationCount },
   { property: 'direction', delegate: isDirection },
   { property: 'fillMode', delegate: isFillMode },
   { property: 'playState', delegate: isPlayState },
 ];
 /**
- * @param {import('postcss-value-parser').Node[][]} args
- * @return {import('postcss-value-parser').Node[][]}
+ * @param {import('../lib/tokenize.js').Term[][]} args
+ * @return {import('../lib/tokenize.js').Term[][] | null}
  */
 function normalize(args) {
   const list = [];
 
   for (const arg of args) {
-    /** @type {Record<string, import('postcss-value-parser').Node[]>} */
+    /** @type {Record<string, import('../lib/tokenize.js').Term[]>} */
     const state = {
       name: [],
       duration: [],
@@ -123,19 +100,27 @@ function normalize(args) {
       fillMode: [],
       playState: [],
     };
+    let hasIdentOrStringName = false;
 
     for (const node of arg) {
-      const type = node.type;
-      let value = node.value;
-      if (type === 'space') {
+      const value = name(node);
+      const time = classifyTime(node);
+      if (time.isMath && time.dimension !== 'time') return null;
+
+      if (time.dimension === 'time') {
+        if (!state.duration.length && time.isNonNegative) {
+          state.duration.push(node);
+        } else if (state.duration.length && !state.delay.length) {
+          state.delay.push(node);
+        } else {
+          return null;
+        }
         continue;
       }
 
-      value = value.toLowerCase();
-
       const hasMatch = stateConditions.some(({ property, delegate }) => {
         if (delegate(value, node) && !state[property].length) {
-          state[property] = [node, addSpace()];
+          state[property].push(node);
           return true;
         } else {
           return false;
@@ -143,7 +128,13 @@ function normalize(args) {
       });
 
       if (!hasMatch) {
-        state.name = [...state.name, node, addSpace()];
+        if (isInvalidAnimationName(node, value, hasIdentOrStringName)) {
+          return null;
+        }
+        if (isIdent(node) || isString(node)) {
+          hasIdentOrStringName = true;
+        }
+        state.name.push(node);
       }
     }
 
@@ -161,12 +152,12 @@ function normalize(args) {
   return list;
 }
 /**
- * @param {import('postcss-value-parser').ParsedValue} parsed
- * @return {string}
+ * @param {{ arguments: import('../lib/tokenize.js').Term[][] }} parsed
+ * @return {string | null}
  */
 function normalizeAnimation(parsed) {
-  const values = normalize(getArguments(parsed));
-  return getValue(values);
+  const normalized = normalize(parsed.arguments);
+  return normalized === null ? null : serializeArguments(normalized);
 }
 
 export default normalizeAnimation;
