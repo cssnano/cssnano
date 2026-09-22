@@ -12,7 +12,7 @@ test('playground minifier', async (t) => {
     const reply = await minimize('a { color: red', 'cssnano-preset-default');
     assert.strictEqual(reply.ok, false);
     assert.ok(reply.error.message.includes('CssSyntaxError:'));
-    assert.ok(reply.error.message.match(/\d+:\d+/), 'includes line:column');
+    assert.ok(reply.error.message.match(/\d+:\d+/v), 'includes line:column');
   });
 
   await t.test('return an error message for invalid CSS', async () => {

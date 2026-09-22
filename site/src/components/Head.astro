@@ -1,6 +1,6 @@
 ---
 const { title, pathname = '/' } = Astro.props;
-const canonicalPathValue = pathname.startsWith(import.meta.env.BASE_URL) ? pathname : `${import.meta.env.BASE_URL}${pathname.replace(/^\/+/, '')}`;
+const canonicalPathValue = pathname.startsWith(import.meta.env.BASE_URL) ? pathname : `${import.meta.env.BASE_URL}${pathname.replace(/^\/+/v, '')}`;
 const canonicalPath = canonicalPathValue.endsWith('/') ? canonicalPathValue : `${canonicalPathValue}/`;
 ---
 <meta charset="utf-8" />
