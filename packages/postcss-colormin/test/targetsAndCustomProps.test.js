@@ -145,7 +145,7 @@ describe('Modern CSS Color Level 4 syntax', () => {
   );
 
   test(
-    'should pass through hwb() values unchanged',
-    passthroughCSS('h1{color:hwb(120 0% 0%)}')
+    'should minify hwb() values',
+    processCSS('h1{color:hwb(120 0% 0%)}', 'h1{color:#0f0}')
   );
 });

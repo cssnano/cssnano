@@ -1,6 +1,8 @@
 import getBrowsersList from '#getBrowsersList';
 import caniuseApi from 'caniuse-api';
+import { colordx as colord } from '@colordx/core';
 import cssnanoUtils from 'cssnano-utils';
+import colorPropertiesData from './data/colorProperties.json' with { type: 'json' };
 import minifyColor from './minifyColor.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
@@ -8,19 +10,17 @@ const { isSupported } = caniuseApi;
 const {
   applyEdits,
   asciiLowerCase,
+  balancedTokens,
   decoded,
+  mathFunctions,
   TokenType,
   tokenEnd,
   tokenStart,
-  tokens,
 } = cssnanoUtils;
 /** @import browserslist from 'browserslist' */
 
-const rgbOrHslRegex = /^(?:rgb|hsl)a?$/v;
-/* These properties are case-insensitive CSS names. Lower the property before
- * matching so this list stays readable without Unicode /i case folding. */
-const notMinifiableRegex =
-  /^(?:composes|font|src$|filter|-webkit-tap-highlight-color)/v;
+const colorProperties = new Set(colorPropertiesData);
+const colorFunctionRegex = /^(?:rgb|hsl)a?$|^hwb$/v;
 /*
  * IE 8 & 9 do not properly handle clicks on elements
  * with a `transparent` `background-color`.
@@ -28,10 +28,6 @@ const notMinifiableRegex =
  * https://developer.mozilla.org/en-US/docs/Web/Events/click#Internet_Explorer
  */
 const browsersWithTransparentBug = new Set(['ie 8', 'ie 9']);
-/* The four widely-implemented math functions; cssnano-utils' mathFunctions
- * holds the full Values 4 table. Their arguments are colour components rather
- * than a colour, so their interior is never minified as a colour. */
-const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 const tokensRequiringSeparator = new Set([
   TokenType.Ident,
   TokenType.Function,
@@ -45,67 +41,82 @@ const tokensRequiringSeparator = new Set([
 
 /** @param {string} value @param {Options} options @return {string} */
 function transform(value, options) {
-  /** @type {CSSToken[]} */ const input = tokens(value);
-  /** @type {{start:number,end:number,text:string}[]} */ const replacements =
-    [];
-  /** @type {{token: CSSToken, name: string, skipChildren: boolean, isMath: boolean}[]} */
-  const stack = [];
-  let mathDepth = 0;
-  let skipDepth = 0;
+  const structure = balancedTokens(value);
+  if (!structure) {
+    return value;
+  }
+  const input = structure.tokens;
+  /** @type {{start:number,end:number,text:string}[]} */
+  const replacements = [];
+
   /** @param {number} end @param {number} index */
   function separator(end, index) {
     const next = input[index + 1];
     return next &&
       tokensRequiringSeparator.has(next[0]) &&
-      value.slice(end, tokenStart(next)) === ''
+      end === tokenStart(next)
       ? ' '
       : '';
   }
+
   for (let i = 0; i < input.length; i++) {
     const t = input[i];
     if (t[0] === TokenType.Function) {
       const name = asciiLowerCase(decoded(t));
-      const isMath = mathFunctions.has(name);
-      const isColor = rgbOrHslRegex.test(name);
-      stack.push({
-        token: t,
-        name,
-        skipChildren: isMath || isColor,
-        isMath,
-      });
-      if (isMath) mathDepth++;
-      if (isMath || isColor) skipDepth++;
-    } else if (t[0] === TokenType.CloseParen && stack.length) {
-      const entry = stack.pop();
-      if (!entry) continue;
-      if (entry.isMath) mathDepth--;
-      if (entry.skipChildren) skipDepth--;
-      if (mathDepth === 0) {
-        const { token: f, name } = entry;
-        if (!rgbOrHslRegex.test(name)) continue;
-        const raw = value.slice(tokenStart(f), tokenEnd(t));
-        const out = minifyColor(raw, options);
-        if (out !== raw) {
+      const closeIndex = structure.endForOpening(i);
+      if (closeIndex === undefined) {
+        continue;
+      }
+      if (name === 'url' || mathFunctions.has(name)) {
+        i = closeIndex;
+        continue;
+      }
+      if (colorFunctionRegex.test(name)) {
+        const closeToken = input[closeIndex];
+        const raw = value.slice(tokenStart(t), tokenEnd(closeToken));
+        const inputForMinify =
+          name + '(' + value.slice(tokenEnd(t), tokenEnd(closeToken));
+        if (colord(inputForMinify).isValid()) {
+          const out = minifyColor(inputForMinify, options);
+          if (out !== raw) {
+            replacements.push({
+              start: tokenStart(t),
+              end: tokenEnd(closeToken),
+              text: out + separator(tokenEnd(closeToken), closeIndex),
+            });
+          }
+        }
+        i = closeIndex;
+        continue;
+      }
+    } else if (t[0] === TokenType.Ident) {
+      const dec = decoded(t);
+      if (!dec.startsWith('#') && colord(dec).isValid()) {
+        const out = minifyColor(dec, options);
+        if (out !== t[1] && out.length <= t[1].length) {
           replacements.push({
-            start: tokenStart(f),
+            start: tokenStart(t),
             end: tokenEnd(t),
             text: out + separator(tokenEnd(t), i),
           });
         }
       }
-    } else if (
-      (t[0] === TokenType.Ident || t[0] === TokenType.Hash) &&
-      skipDepth === 0
-    ) {
-      const out = minifyColor(t[1], options);
-      if (out !== t[1])
-        replacements.push({
-          start: tokenStart(t),
-          end: tokenEnd(t),
-          text: out + separator(tokenEnd(t), i),
-        });
+    } else if (t[0] === TokenType.Hash) {
+      const dec = decoded(t);
+      const hexCandidate = '#' + dec;
+      if (colord(hexCandidate).isValid()) {
+        const out = minifyColor(hexCandidate, options);
+        if (out !== t[1] && out.length <= t[1].length) {
+          replacements.push({
+            start: tokenStart(t),
+            end: tokenEnd(t),
+            text: out + separator(tokenEnd(t), i),
+          });
+        }
+      }
     }
   }
+
   return applyEdits(value, replacements);
 }
 
@@ -116,9 +127,9 @@ function transform(value, options) {
  */
 function addPluginDefaults(options, browsers) {
   const defaults = {
-    // Does the browser support 4 & 8 character hex notation
-    transparent: new Set(browsers).isDisjointFrom(browsersWithTransparentBug),
     // Does the browser support "transparent" value properly
+    transparent: new Set(browsers).isDisjointFrom(browsersWithTransparentBug),
+    // Does the browser support 4 & 8 character hex notation
     alphaHex: isSupported('css-rrggbbaa', browsers),
     name: true,
   };
@@ -165,39 +176,50 @@ function pluginCreator(config = {}) {
          */
         OnceExit(css) {
           css.walkDecls((decl) => {
-            if (
-              !decl.prop ||
-              notMinifiableRegex.test(asciiLowerCase(decl.prop))
-            ) {
+            if (!decl.prop) {
               return;
             }
 
-            if (
-              /** @type Options */ (config).transformCustomProperties ===
-                false &&
-              decl.prop.startsWith('--')
-            ) {
+            const lowerProp = asciiLowerCase(decl.prop);
+            if (lowerProp.startsWith('--')) {
+              if (
+                /** @type Options */ (config).transformCustomProperties ===
+                false
+              ) {
+                return;
+              }
+            } else {
+              const unprefixed = lowerProp.replace(/^-\w+-/v, '');
+              if (
+                (!colorProperties.has(lowerProp) &&
+                  !colorProperties.has(unprefixed)) ||
+                lowerProp === '-webkit-tap-highlight-color'
+              ) {
+                return;
+              }
+            }
+
+            const rawValue =
+              decl.raws.value?.value === decl.value
+                ? (decl.raws.value.raw ?? decl.value)
+                : decl.value;
+
+            if (!rawValue) {
               return;
             }
 
-            const value = decl.value;
-
-            if (!value) {
-              return;
+            let newValue;
+            if (cache.has(rawValue)) {
+              newValue = cache.get(rawValue);
+            } else {
+              newValue = transform(rawValue, options);
+              cache.set(rawValue, newValue);
             }
-
-            const cacheKey = JSON.stringify({ value, options, browsers });
-
-            if (cache.has(cacheKey)) {
-              decl.value = cache.get(cacheKey);
-
-              return;
-            }
-
-            const newValue = transform(value, options);
 
             decl.value = newValue;
-            cache.set(cacheKey, newValue);
+            if (decl.raws.value?.raw) {
+              decl.raws.value = { raw: newValue, value: newValue };
+            }
           });
         },
       };
