@@ -8,7 +8,7 @@ catalog:
   browserslist: ^4.29.0
   '@csstools/css-tokenizer': ^4.0.1
   postcss: ^8.5.28
-  '@webref/css': 8.7.4
+  '@webref/css': 8.7.5
   mdn-data: 2.36.0
   '@colordx/core': ^6.7.0
 

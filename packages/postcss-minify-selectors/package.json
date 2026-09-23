@@ -55,7 +55,7 @@
   },
   "devDependencies": {
     "@types/cssesc": "^3.0.2",
-    "jsdom": "^30.1.0",
+    "jsdom": "^30.1.1",
     "postcss": "catalog:",
     "postcss-font-magician": "^4.0.0",
     "postcss-selector-parser": "^7.1.6"
