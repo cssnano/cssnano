@@ -1,10 +1,24 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 
 const { processCSS } = processCSSFactory(plugin);
+
+function assertStringValueInvariant(input, output) {
+  const inTokens = tokenize({ css: input }).filter(
+    ([type]) => type === TokenType.String
+  );
+  const outTokens = tokenize({ css: output }).filter(
+    ([type]) => type === TokenType.String
+  );
+  assert.equal(outTokens.length, inTokens.length);
+  for (let i = 0; i < inTokens.length; i++) {
+    assert.equal(outTokens[i][4].value, inTokens[i][4].value);
+  }
+}
 
 test('should preserve EOF-terminated strings byte-for-byte', async () => {
   const values = ["'abc", "'abc\\'", "'abc\\", "'abc\\27"];
@@ -102,4 +116,54 @@ test('should normalize declaration raw values with surrounding formatting', asyn
     raw: '  "value"  ',
     value: '  "value"  ',
   });
+});
+
+test(
+  'should preserve escaped backslash followed by a quote (single quotes)',
+  processCSS(String.raw`p{content:'\\"'}`, String.raw`p{content:'\\"'}`)
+);
+
+test(
+  'should preserve escaped backslash followed by a quote (double quotes)',
+  processCSS(String.raw`p{content:"\\'"}`, String.raw`p{content:"\\'"}`)
+);
+
+test(
+  'should preserve multiple escaped backslashes followed by a quote (single quotes)',
+  processCSS(String.raw`p{content:'\\\\"'}`, String.raw`p{content:'\\\\"'}`)
+);
+
+test(
+  'should preserve multiple escaped backslashes followed by a quote (double quotes)',
+  processCSS(String.raw`p{content:"\\\\\\'"}`, String.raw`p{content:"\\\\\\'"}`)
+);
+
+test(
+  'should normalize string with escaped backslash followed by an escaped single quote',
+  processCSS(String.raw`p{content:'a\\\'b'}`, String.raw`p{content:"a\\'b"}`)
+);
+
+test('should preserve semantic string value invariants', async () => {
+  const cases = [
+    String.raw`p{content:'\\"'}`,
+    String.raw`p{content:"\\'"}`,
+    String.raw`p{content:'\\\\"'}`,
+    String.raw`p{content:"\\\\\\'"}`,
+    String.raw`p{content:'a\\\'b'}`,
+    `p:after{content:"hello\\\n\\"world"}`,
+    `p:after{content:"hello\\\r\n\\\\world"}`,
+    `p:after{content:"hello\\\r\nworld"}`,
+    `p:after{content:"hello\\\rworld"}`,
+    `p:after{content:"hello\\\fworld"}`,
+    `p:after{content:"a\\\r\n\\\r\nb"}`,
+    `p:after{content:"hello\\\r\n"}`,
+    `p:after{content:'\\'a\\' \\'b\\' \\'c\\' "z"'}`,
+    `p:after{content:"'a' 'b' 'c' \\"1\\" \\"2\\" \\"3\\" \\"4\\""}`,
+  ];
+  for (const css of cases) {
+    const { css: out } = await postcss([plugin()]).process(css, {
+      from: undefined,
+    });
+    assertStringValueInvariant(css, out);
+  }
 });
