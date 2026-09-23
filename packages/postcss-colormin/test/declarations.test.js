@@ -149,11 +149,32 @@ describe('Font and tap-highlight exceptions', () => {
 
   test(
     'should not treat a Unicode lookalike as a skipped property',
-    processCSS('h1{compoſes:rgb(255,0,0)}', 'h1{compoſes:red}')
+    processCSS('h1{--compoſes:rgb(255,0,0)}', 'h1{--compoſes:red}')
   );
 });
 
 describe('Math and functions', () => {
+  test(
+    'should insert a separator after a replacement next to a URL token',
+    processCSS(
+      'h1{box-shadow:0 0 5px rgb(255,0,0)url(foo.png)}',
+      'h1{box-shadow:0 0 5px red url(foo.png)}'
+    )
+  );
+
+  test(
+    'should insert separators after multiple replacements next to URL tokens',
+    processCSS(
+      'h1{box-shadow:0 0 5px rgb(255,0,0)url(foo.png),0 0 10px rgb(0,255,0)url(bar.png)}',
+      'h1{box-shadow:0 0 5px red url(foo.png),0 0 10px #0f0 url(bar.png)}'
+    )
+  );
+
+  test(
+    'should not recognize the nonexistent hwba() function',
+    passthroughCSS('h1{color:hwba(120,0%,0%,.5)}')
+  );
+
   test(
     'should not minify in lowercase calc values',
     passthroughCSS('h1{width:calc(100vw / 2 - 6px + 0)}')
@@ -187,6 +208,75 @@ describe('Math and functions', () => {
     processCSS(
       'h1{color:color-mix(in srgb, rgb(255, 0, 0), #ffffff)}',
       'h1{color:color-mix(in srgb, red, #fff)}'
+    )
+  );
+
+  test(
+    'should minify colors inside color-mix() arguments',
+    processCSS(
+      'h1{color:color-mix(in srgb, white 20%, black)}',
+      'h1{color:color-mix(in srgb, #fff 20%, #000)}'
+    )
+  );
+
+  test(
+    'should minify nested color functions inside color-mix() arguments',
+    processCSS(
+      'h1{color:color-mix(in srgb, rgb(255,0,0) 20%, hsl(0,0%,0%))}',
+      'h1{color:color-mix(in srgb, red 20%, #000)}'
+    )
+  );
+
+  test(
+    'should minify colors inside light-dark() arguments',
+    processCSS(
+      'h1{color:light-dark(white, black)}',
+      'h1{color:light-dark(#fff, #000)}'
+    )
+  );
+
+  test(
+    'should minify nested color functions inside light-dark() arguments',
+    processCSS(
+      'h1{color:light-dark(rgb(255,255,255), hsl(0,0%,0%))}',
+      'h1{color:light-dark(#fff, #000)}'
+    )
+  );
+
+  test(
+    'should minify a color in a var() fallback',
+    processCSS('h1{color:var(--foo, white)}', 'h1{color:var(--foo, #fff)}')
+  );
+
+  test(
+    'should preserve relative color syntax',
+    passthroughCSS('h1{color:rgb(from green r g b)}')
+  );
+
+  test(
+    'should skip nested colors in every CSS math function',
+    passthroughCSS('h1{color:round(up, rgb(255,0,0), 1px)}')
+  );
+
+  test(
+    'should not minify color names inside url() on color-accepting properties',
+    passthroughCSS(
+      'h1{background:url("data:image/svg+xml;utf8,<svg><rect fill="white"/></svg>")}'
+    )
+  );
+
+  test(
+    'should not minify color names inside uppercase URL() on color-accepting properties',
+    passthroughCSS(
+      'h1{background:URL("data:image/svg+xml;utf8,<svg><rect fill="white"/></svg>")}'
+    )
+  );
+
+  test(
+    'should preserve colors inside url() while minifying colors outside url()',
+    processCSS(
+      'h1{background:white url("data:image/svg+xml;utf8,<svg><rect fill="white"/></svg>")}',
+      'h1{background:#fff url("data:image/svg+xml;utf8,<svg><rect fill="white"/></svg>")}'
     )
   );
 

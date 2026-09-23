@@ -403,6 +403,9 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
     devDependencies:
+      '@webref/css':
+        specifier: 'catalog:'
+        version: 8.7.4(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
