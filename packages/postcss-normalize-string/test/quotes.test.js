@@ -143,3 +143,61 @@ test('should normalize a value with many string spans', async () => {
   )();
   assert.equal(result.css, `a{content:${expected}}`);
 });
+
+describe('Line continuations', () => {
+  test(
+    'should collapse Windows CRLF line continuations',
+    processCSS(`p{content:"hello\\\r\nworld"}`, `p{content:"helloworld"}`)
+  );
+
+  test(
+    'should collapse legacy Mac CR line continuations',
+    processCSS(`p{content:"hello\\\rworld"}`, `p{content:"helloworld"}`)
+  );
+
+  test(
+    'should collapse form feed line continuations',
+    processCSS(`p{content:"hello\\\fworld"}`, `p{content:"helloworld"}`)
+  );
+
+  test(
+    'should collapse consecutive line continuations',
+    processCSS(`p{content:"a\\\r\n\\\r\nb"}`, `p{content:"ab"}`)
+  );
+
+  test(
+    'should collapse line continuation before an escaped quote',
+    processCSS(`p{content:"hello\\\n\\"world"}`, `p{content:'hello"world'}`)
+  );
+
+  test(
+    'should collapse line continuation before an escaped backslash',
+    processCSS(
+      `p{content:"hello\\\r\n\\\\world"}`,
+      `p{content:"hello\\\\world"}`
+    )
+  );
+
+  test(
+    'should collapse line continuation at the end of a string',
+    processCSS(`p{content:"hello\\\r\n"}`, `p{content:"hello"}`)
+  );
+});
+
+describe('Multi-quote minification', () => {
+  test(
+    'should choose double quotes when string contains more single quotes',
+    processCSS(
+      `p{content:'\\'a\\' \\'b\\' \\'c\\' "z"'}`,
+      `p{content:"'a' 'b' 'c' \\"z\\""}`
+    )
+  );
+
+  test(
+    'should choose single quotes when string contains more double quotes',
+    processCSS(
+      `p{content:"'a' 'b' 'c' \\"1\\" \\"2\\" \\"3\\" \\"4\\""}`,
+      `p{content:'\\'a\\' \\'b\\' \\'c\\' "1" "2" "3" "4"'}`
+    )
+  );
+});
