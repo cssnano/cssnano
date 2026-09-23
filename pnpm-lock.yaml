@@ -165,8 +165,8 @@ settings:
 catalogs:
   default:
     '@colordx/core':
-      specifier: ^6.5.0
-      version: 6.5.0
+      specifier: ^6.7.0
+      version: 6.7.0
     '@csstools/css-tokenizer':
       specifier: ^4.0.1
       version: 4.0.1
@@ -271,8 +271,8 @@ importers:
         specifier: workspace:^
         version: link:../cssnano-utils
       postcss-calc:
-        specifier: ^11.2.0
-        version: 11.2.0(postcss@8.5.28)
+        specifier: ^11.2.1
+        version: 11.2.1(postcss@8.5.28)
       postcss-colormin:
         specifier: workspace:^
         version: link:../postcss-colormin
@@ -389,7 +389,7 @@ importers:
     dependencies:
       '@colordx/core':
         specifier: 'catalog:'
-        version: 6.5.0
+        version: 6.7.0
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.1
@@ -553,7 +553,7 @@ importers:
     dependencies:
       '@colordx/core':
         specifier: 'catalog:'
-        version: 6.5.0
+        version: 6.7.0
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.1
@@ -839,8 +839,8 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
-  '@colordx/core@6.5.0':
-    resolution: {integrity: sha512-mhkTHXTERodsL6kMw2LRrXVlGaY+osu/YnxkcwO8c/JO+YOb+/f+F+gOxmeBWTP+nzG47Kz6gZCJq8tyESqrWg==}
+  '@colordx/core@6.7.0':
+    resolution: {integrity: sha512-qtXNzvBH+Bdw3x9ff2+ztv9uL5FQ0Jz+SamLsF9HFbdlrkKmNxrmGRYm64liu6AcPmNWBalSHaWFnlP6EyOy+Q==}
 
   '@csstools/color-helpers@6.1.1':
     resolution: {integrity: sha512-gLNsunvwf3mCi5u5o46/Z/JcJMnhbHSaZ69rkgPzNM3J4s8hWwpPUQB6/tt0EDFyCiWzxANlx+2LJwpYj4zS1w==}
@@ -1781,8 +1781,8 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  postcss-calc@11.2.0:
-    resolution: {integrity: sha512-GeWPgrs+s7W0b35ePAMvyNq0fP4fKsJXt9dLmO919TTiZ93aVUj+enI5t5eba7/YMkUJvWanNunMctyeuP+Dsg==}
+  postcss-calc@11.2.1:
+    resolution: {integrity: sha512-B5KZhrbeVyFznh7aj96O9oYvmipuobzWJVlPZ2NksjHdgSaqiVJ0UijuOuQTk/KVIzrKXp7399AiZGKtZF0jZA==}
     engines: {node: ^22.22.3 || ^24.15 || >=26.0}
     peerDependencies:
       postcss: ^8.5.28
@@ -1972,7 +1972,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@colordx/core@6.5.0': {}
+  '@colordx/core@6.7.0': {}
 
   '@csstools/color-helpers@6.1.1': {}
 
@@ -2668,7 +2668,7 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  postcss-calc@11.2.0(postcss@8.5.28):
+  postcss-calc@11.2.1(postcss@8.5.28):
     dependencies:
       '@csstools/css-tokenizer': 4.0.1
       postcss: 8.5.28
