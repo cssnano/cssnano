@@ -137,7 +137,31 @@ describe('Translate reductions', () => {
 
   test(
     'should not shorten translate(tx, ty) to translate(tx)',
-    processCSS('h1{transform:translate(5, 5)}', 'h1{transform:translate(5, 5)}')
+    passthroughCSS('h1{transform:translate(5, 5)}')
+  );
+
+  test(
+    'should shorten translate(0px, ty) to translateY(ty)',
+    processCSS(
+      'h1{transform:translate(0px, 5px)}',
+      'h1{transform:translateY(5px)}'
+    )
+  );
+
+  test(
+    'should shorten translate(0em, ty) to translateY(ty)',
+    processCSS(
+      'h1{transform:translate(0em, 5px)}',
+      'h1{transform:translateY(5px)}'
+    )
+  );
+
+  test(
+    'should shorten translate(0%, ty) to translateY(ty)',
+    processCSS(
+      'h1{transform:translate(0%, 5px)}',
+      'h1{transform:translateY(5px)}'
+    )
   );
 
   test(
