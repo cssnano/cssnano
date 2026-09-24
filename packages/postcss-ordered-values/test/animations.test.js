@@ -102,6 +102,25 @@ describe('Order', () => {
   );
 
   test(
+    'should pass through a negative animation iteration count',
+    passthroughCSS('a{animation:-1 1s bounce;animation:bounce 1s -1}')
+  );
+
+  test(
+    'should pass through url keyframe names',
+    passthroughCSS(
+      'a{animation:url(x.png) 1s bounce;animation:url("x.png") 1s bounce}'
+    )
+  );
+
+  test(
+    'should pass through animation math with unhandled tokens',
+    passthroughCSS(
+      'a{animation:calc(1s + 50%) 1s bounce;animation:calc(1s + #abc) 1s bounce}'
+    )
+  );
+
+  test(
     'should order animation consistently (5) (do not reorder times)',
     processCSS('animation: 1s 2s bounce', 'animation: bounce 1s 2s')
   );

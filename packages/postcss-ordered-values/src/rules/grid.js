@@ -1,5 +1,10 @@
 import joinGridValue from '../lib/joinGridValue.js';
-import { isIdent, isNumber, name } from '../lib/tokenize.js';
+import {
+  isIdent,
+  isNumber,
+  name,
+  reservedIdentKeywords,
+} from '../lib/tokenize.js';
 
 /**
  * @param {import('../lib/tokenize.js').Term[]} gridAutoFlow
@@ -36,12 +41,7 @@ const normalizeGridAutoFlow = (gridAutoFlow) => {
 };
 
 const gridLineExcludedIdents = new Set([
-  'initial',
-  'inherit',
-  'unset',
-  'revert',
-  'revert-layer',
-  'default',
+  ...reservedIdentKeywords,
   'span',
   'auto',
 ]);

@@ -13,6 +13,11 @@ describe('Flex-flow order', () => {
   );
 
   test(
+    'should pass through single-component flex-flow declarations',
+    passthroughCSS('h1{flex-flow:wrap;flex-flow:column}')
+  );
+
+  test(
     'should order flex-flow (uppercase property and value)',
     processCSS('h1{FLEX-FLOW: WRAP COLUMN}', 'h1{FLEX-FLOW: COLUMN WRAP}')
   );
