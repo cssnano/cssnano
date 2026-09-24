@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import normalizeUrl from '../src/normalize.js';
 
-test('should add the http prefix to unprefixed URLs', () => {
-  assert.strictEqual(normalizeUrl('example.com'), 'http://example.com');
+test('should preserve unprefixed URLs unchanged', () => {
+  assert.strictEqual(normalizeUrl('example.com'), 'example.com');
 });
 
 test('should not attempt to sort parameters', () => {
@@ -60,4 +60,85 @@ test('should preserve data URLs unchanged', () => {
 test('should preserve custom protocols unchanged', () => {
   const fixture = 'mailto:someone@example.com';
   assert.strictEqual(normalizeUrl(fixture), fixture);
+});
+
+test('should normalize file URLs without collapsing root to file://', () => {
+  assert.strictEqual(normalizeUrl('file:///'), 'file:///');
+});
+
+test('should normalize dot segments and duplicate slashes in file URLs', () => {
+  assert.strictEqual(
+    normalizeUrl('file:///foo//bar/../baz.txt'),
+    'file:///foo/baz.txt'
+  );
+});
+
+test('should strip trailing dot from hostname', () => {
+  assert.strictEqual(
+    normalizeUrl('http://example.com./foo.html'),
+    'http://example.com/foo.html'
+  );
+  assert.strictEqual(
+    normalizeUrl('http://example.com./'),
+    'http://example.com'
+  );
+});
+
+test('should preserve trailing slash in query string parameters', () => {
+  assert.strictEqual(
+    normalizeUrl('http://example.com/?dir=/'),
+    'http://example.com/?dir=/'
+  );
+  assert.strictEqual(
+    normalizeUrl('http://example.com/?redirect=https://foo.com/'),
+    'http://example.com/?redirect=https://foo.com/'
+  );
+});
+
+test('should not decode percent-encoded control characters in absolute URLs', () => {
+  assert.strictEqual(
+    normalizeUrl('https://example.com/foo%0Abar'),
+    'https://example.com/foo%0Abar'
+  );
+  assert.strictEqual(
+    normalizeUrl('https://example.com/foo%0Dbar'),
+    'https://example.com/foo%0Dbar'
+  );
+  assert.strictEqual(
+    normalizeUrl('https://example.com/foo%00bar'),
+    'https://example.com/foo%00bar'
+  );
+});
+
+test('should not decode percent-encoded dot in absolute URLs', () => {
+  assert.strictEqual(
+    normalizeUrl('http://example.com/foo%2ebar.png'),
+    'http://example.com/foo%2ebar.png'
+  );
+  assert.strictEqual(
+    normalizeUrl('http://example.com/foo%2Ebar.png'),
+    'http://example.com/foo%2Ebar.png'
+  );
+  assert.strictEqual(
+    normalizeUrl('http://example.com/foo%2e%2ebar.png'),
+    'http://example.com/foo%2e%2ebar.png'
+  );
+});
+
+test('should preserve explicit port 80 in protocol-relative URLs', () => {
+  assert.strictEqual(
+    normalizeUrl('//example.com:80/image.png'),
+    '//example.com:80/image.png'
+  );
+});
+
+test('should preserve explicit port 443 in protocol-relative URLs', () => {
+  assert.strictEqual(
+    normalizeUrl('//example.com:443/image.png'),
+    '//example.com:443/image.png'
+  );
+});
+
+test('should preserve explicit port 80 in protocol-relative root URLs', () => {
+  assert.strictEqual(normalizeUrl('//example.com:80/'), '//example.com:80');
 });

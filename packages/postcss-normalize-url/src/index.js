@@ -1,23 +1,25 @@
-import path from '#path';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from 'cssnano-utils';
-import normalize from './normalize.js';
+import {
+  convert,
+  dataUrlRegex,
+  escapeForString,
+  normalizeUrlTokenValue,
+} from './urls.js';
 
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {CSSToken, TokenString, TokenURL} from '@csstools/css-tokenizer' */
 
-const multiline = /\\(?:\r\n|[\r\n])/gv;
-const { asciiLowerCase } = cssnanoUtils;
-// eslint-disable-next-line no-useless-escape
-const urlTokenEscapeChars = /[\\ \t\n\r\f\(\)"']/gv;
-const singleQuoteStringEscapeChars = /[\\\n\r\f']/gv;
-const doubleQuoteStringEscapeChars = /[\\\n\r\f"]/gv;
+const { applyEdits, asciiLowerCase } = cssnanoUtils;
+const URL_CANDIDATE_REGEX = /url|src|\\/iv;
 
 /**
  * @param {string} value
  * @return {boolean}
  */
 function isClosedString(value) {
-  if (value.length < 2 || !['"', "'"].includes(value[0])) return false;
+  if (value.length < 2) return false;
+  const quote = value[0];
+  if (quote !== '"' && quote !== "'") return false;
 
   let backslashes = 0;
   for (
@@ -28,90 +30,256 @@ function isClosedString(value) {
     backslashes++;
   }
 
-  return value.at(-1) === value[0] && backslashes % 2 === 0;
+  return value[value.length - 1] === quote && backslashes % 2 === 0;
 }
 
-// Scheme: https://tools.ietf.org/html/rfc3986#section-3.1
-// Absolute URL: https://tools.ietf.org/html/rfc3986#section-4.3
-const ABSOLUTE_URL_REGEX = /^[a-zA-Z][a-zA-Z\d+\-.]*?:/v;
-// Windows paths like `c:\`
-const WINDOWS_PATH_REGEX = /^[a-zA-Z]:\\/v;
-const dataUrlRegex = /^[dD][aA][tT][aA]:/v;
+/**
+ * Find the close paren matching the function token at `index`. Tracks bare
+ * parentheses as well as functions, so a nested `(` does not close an outer
+ * function. Returns -1 when the function is unterminated.
+ * @param {CSSToken[]} tokens
+ * @param {number} index
+ * @return {number}
+ */
+function findFunctionEnd(tokens, index) {
+  let depth = 0;
+  for (let scan = index; scan < tokens.length; scan++) {
+    const type = tokens[scan][0];
+    if (type === TokenType.Function || type === TokenType.OpenParen) depth++;
+    else if (type === TokenType.CloseParen && --depth === 0) return scan;
+  }
+  return -1;
+}
 
 /**
- * Originally in sindresorhus/is-absolute-url
+ * Inspect contents of a url() or src() function token.
+ * @param {CSSToken[]} tokens
+ * @param {number} index
+ * @param {number} close
+ * @return {{ stringToken?: TokenString, hasModifiers: boolean, hasComment: boolean }}
+ */
+function scanFunction(tokens, index, close) {
+  /** @type {TokenString | undefined} */
+  let stringToken;
+  let hasModifiers = false;
+  let hasComment = false;
+  for (let i = index + 1; i < close; i++) {
+    const type = tokens[i][0];
+    if (type === TokenType.Whitespace) continue;
+    if (type === TokenType.Comment) {
+      hasComment = true;
+      break;
+    }
+    if (!stringToken) {
+      if (type === TokenType.String && isClosedString(tokens[i][1])) {
+        stringToken = /** @type {TokenString} */ (tokens[i]);
+      } else {
+        break;
+      }
+    } else {
+      hasModifiers = true;
+      break;
+    }
+  }
+  return { stringToken, hasModifiers, hasComment };
+}
+
+/**
+ * Forward an unquoted URL token to callback.
+ * @param {TokenURL} token
+ * @param {(start: number, end: number, decoded: string, quote: string, name: string, isTarget?: boolean) => void} callback
+ * @param {boolean} [isTarget]
+ * @return {void}
+ */
+function callbackUrlToken(token, callback, isTarget = false) {
+  callback(
+    token[2],
+    token[3] + 1,
+    token[4].value,
+    '',
+    token[1].slice(0, token[1].indexOf('(')),
+    isTarget
+  );
+}
+
+/**
+ * Extracts the target of an import declaration,
+ * returning the next token index and validity.
  *
- * @param {string} url
+ * @param {CSSToken[]} tokens
+ * @param {number} index
+ * @param {(start: number, end: number, decoded: string, quote: string, name: string, isTarget?: boolean) => void} callback
+ * @return {{ nextIndex: number, valid: boolean }}
  */
-function isAbsolute(url) {
-  if (WINDOWS_PATH_REGEX.test(url)) {
-    return false;
+function processImportTarget(tokens, index, callback) {
+  const token = tokens[index];
+  const type = token[0];
+  if (type === TokenType.String && isClosedString(token[1])) {
+    callback(token[2], token[3] + 1, token[4].value, token[1][0], '', true);
+    return { nextIndex: index, valid: true };
   }
-  return ABSOLUTE_URL_REGEX.test(url);
+  if (type === TokenType.URL) {
+    callbackUrlToken(/** @type {TokenURL} */ (token), callback, true);
+    return { nextIndex: index, valid: true };
+  }
+  if (type === TokenType.Function && asciiLowerCase(token[4].value) === 'url') {
+    const close = findFunctionEnd(tokens, index);
+    if (close !== -1) {
+      const { stringToken, hasModifiers, hasComment } = scanFunction(
+        tokens,
+        index,
+        close
+      );
+      if (stringToken && !hasModifiers && !hasComment) {
+        callback(
+          token[2],
+          tokens[close][3] + 1,
+          stringToken[4].value,
+          stringToken[1][0],
+          token[1].slice(0, -1),
+          true
+        );
+        return { nextIndex: close, valid: true };
+      }
+    }
+  }
+  return { nextIndex: index, valid: false };
 }
 
 /**
- * @param {string} url
- * @return {string}
+ * @param {CSSToken[]} tokens
+ * @param {number} index
+ * @param {(start: number, end: number, decoded: string, quote: string, name: string, isTarget?: boolean) => void} callback
+ * @return {number} close index or -1
  */
-function convert(url) {
-  if (isAbsolute(url) || url.startsWith('//')) {
-    let normalizedURL;
+function processFunctionToken(tokens, index, callback) {
+  const close = findFunctionEnd(tokens, index);
+  if (close === -1) return -1;
 
-    try {
-      normalizedURL = normalize(url);
-    } catch {
-      normalizedURL = url;
+  const { stringToken, hasModifiers, hasComment } = scanFunction(
+    tokens,
+    index,
+    close
+  );
+  if (stringToken && !hasComment) {
+    if (hasModifiers) {
+      callback(
+        stringToken[2],
+        stringToken[3] + 1,
+        stringToken[4].value,
+        stringToken[1][0],
+        ''
+      );
+    } else {
+      callback(
+        tokens[index][2],
+        tokens[close][3] + 1,
+        stringToken[4].value,
+        stringToken[1][0],
+        tokens[index][1].slice(0, -1)
+      );
     }
-
-    return normalizedURL;
   }
 
-  // Normalize against POSIX separators only: in a CSS url() a `\` is a literal
-  // character, not a path separator, so it must survive on every platform.
-  return path.posix.normalize(url);
+  return close;
 }
 
 /**
- * Escape characters that terminate or invalidate an unquoted CSS url() token.
+ * Visit complete url() and src() ranges, top-level strings, or modifier string tokens.
  * @param {string} value
- * @return {string}
+ * @param {(start: number, end: number, decoded: string, quote: string, name: string, isTarget?: boolean) => void} callback
+ * @param {{ includeStrings?: boolean, isImport?: boolean }} [options]
+ * @return {void}
  */
-function escapeForUrlToken(value) {
-  return value.replace(urlTokenEscapeChars, (match) => {
-    switch (match) {
-      case '\n':
-        return '\\a ';
-      case '\r':
-        return '\\d ';
-      case '\f':
-        return '\\c ';
-      default:
-        return '\\' + match;
+function forEachUrl(value, callback, options = {}) {
+  const { includeStrings = false, isImport = false } = options;
+  const tokens = [...tokenize({ css: value })];
+  let targetProcessed = false;
+
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const type = token[0];
+
+    if (isImport && !targetProcessed) {
+      if (type === TokenType.Whitespace || type === TokenType.Comment) {
+        continue;
+      }
+      const result = processImportTarget(tokens, index, callback);
+      if (!result.valid) return;
+      targetProcessed = true;
+      index = result.nextIndex;
+      continue;
     }
-  });
+
+    if (type === TokenType.URL) {
+      callbackUrlToken(/** @type {TokenURL} */ (token), callback);
+      continue;
+    }
+
+    if (
+      includeStrings &&
+      type === TokenType.String &&
+      isClosedString(token[1])
+    ) {
+      callback(token[2], token[3] + 1, token[4].value, token[1][0], '');
+      continue;
+    }
+
+    if (type !== TokenType.Function) continue;
+
+    const funcName = asciiLowerCase(token[4].value);
+    if (funcName !== 'url' && funcName !== 'src') continue;
+
+    const close = processFunctionToken(tokens, index, callback);
+    if (close === -1) break;
+    index = close;
+  }
 }
 
 /**
- * Escape characters for a CSS string token in the given quote context.
- * @param {string} value
- * @param {string} quote
- * @return {string}
+ * Synchronize node value or params with PostCSS raw metadata.
+ * @param {import('postcss').Declaration | import('postcss').AtRule} node
+ * @param {'value' | 'params'} prop
+ * @param {(currentValue: string) => string | undefined} updater
+ * @return {void}
  */
-function escapeForString(value, quote) {
-  const pattern =
-    quote === "'" ? singleQuoteStringEscapeChars : doubleQuoteStringEscapeChars;
-  return value.replace(pattern, (match) => {
-    switch (match) {
-      case '\n':
-        return '\\a ';
-      case '\r':
-        return '\\d ';
-      case '\f':
-        return '\\c ';
-      default:
-        return '\\' + match;
+function updateNodeValue(node, prop, updater) {
+  const target = /** @type {Record<string, any>} */ (
+    /** @type {unknown} */ (node)
+  );
+  const raws = target.raws?.[prop];
+  const value =
+    raws?.value === target[prop] ? (raws.raw ?? target[prop]) : target[prop];
+  const updated = updater(value);
+  if (updated !== undefined && updated !== value) {
+    target[prop] = updated;
+    if (raws?.raw) {
+      target.raws[prop] = { raw: updated, value: updated };
     }
+  }
+}
+
+/**
+ * @param {import('postcss').Declaration | import('postcss').AtRule} node
+ * @param {'value' | 'params'} prop
+ * @return {void}
+ */
+function transformNodeUrls(node, prop) {
+  const current = /** @type {Record<string, any>} */ (
+    /** @type {unknown} */ (node)
+  )[prop];
+  if (!URL_CANDIDATE_REGEX.test(current)) return;
+
+  updateNodeValue(node, prop, (value) => {
+    /** @type {{start: number, end: number, text: string}[]} */
+    const edits = [];
+    forEachUrl(value, (start, end, decoded, quote, name) => {
+      const text = normalizeUrlTokenValue(decoded, quote, name);
+      if (text !== undefined && text !== value.slice(start, end)) {
+        edits.push({ start, end, text });
+      }
+    });
+    return edits.length > 0 ? applyEdits(value, edits) : undefined;
   });
 }
 
@@ -120,177 +288,59 @@ function escapeForString(value, quote) {
  * @return {void}
  */
 function transformNamespace(rule) {
-  const value = rule.params;
-  /** @type {CSSToken[]} */ const tokens = [...tokenize({ css: value })];
-  /** @type {[number, number, string][]} */ const replacements = [];
-  /** @type {[number, number][]} */ const urlRanges = [];
-  forEachUrl(
-    value,
-    (start, end, decoded) => {
-      urlRanges.push([start, end]);
-      replacements.push([
-        start,
-        end,
-        `"${escapeForString(decoded.trim(), '"')}"`,
-      ]);
-    },
-    tokens
-  );
-  for (const token of tokens) {
-    if (token[0] !== TokenType.String) continue;
-    if (!isClosedString(token[1])) continue;
-    // Strings inside a url() were already rewritten by forEachUrl; overlapping
-    // replacements would be applied against shifted indices and corrupt output.
-    if (
-      urlRanges.some(([start, end]) => token[2] >= start && token[3] + 1 <= end)
-    )
-      continue;
-    const quote = token[1][0];
-    replacements.push([
-      token[2],
-      token[3] + 1,
-      `${quote}${token[1].slice(1, -1).trim()}${quote}`,
-    ]);
-  }
-  rule.params = replace(value, replacements);
+  updateNodeValue(rule, 'params', (value) => {
+    /** @type {{start: number, end: number, text: string}[]} */
+    const edits = [];
+    forEachUrl(
+      value,
+      (start, end, decoded, quote, name) => {
+        const trimmed = decoded.trim();
+        const text = name
+          ? `"${escapeForString(trimmed, '"')}"`
+          : `${quote}${escapeForString(trimmed, quote)}${quote}`;
+        if (text !== value.slice(start, end)) {
+          edits.push({ start, end, text });
+        }
+      },
+      { includeStrings: true }
+    );
+    return edits.length > 0 ? applyEdits(value, edits) : undefined;
+  });
 }
 
 /**
- * @param {import('postcss').Declaration} decl
+ * Normalize the first url or string import source in import at-rules (CSS Cascading 4 §2),
+ * and normalize any inner url() expressions inside conditions.
+ * @param {import('postcss').AtRule} rule
  * @return {void}
  */
-function transformDecl(decl) {
-  const value =
-    decl.raws.value?.value === decl.value
-      ? (decl.raws.value.raw ?? decl.value)
-      : decl.value;
-  /** @type {[number, number, string][]} */ const replacements = [];
-  forEachUrl(value, (start, end, decoded, quote, name) => {
-    let url = decoded.trim();
-    if (!url) {
-      replacements.push([start, end, `${name}()`]);
-      return;
-    }
-    if (dataUrlRegex.test(url)) return;
-    url = convert(url);
-
-    let outputQuote = quote;
-    if (quote) {
-      const unquoted = escapeForUrlToken(url);
-      const quoted = escapeForString(url, quote);
-      if (unquoted.length < quoted.length + 2) {
-        url = unquoted;
-        outputQuote = '';
-      } else {
-        url = quoted;
-      }
-    } else {
-      url = escapeForUrlToken(url);
-      outputQuote = '';
-    }
-    replacements.push([
-      start,
-      end,
-      `${name}(${outputQuote}${url}${outputQuote})`,
-    ]);
-  });
-  assignValue(decl, replace(value, replacements));
-}
-
-/** @param {import('postcss').Declaration} decl @param {string} value */
-function assignValue(decl, value) {
-  decl.value = value;
-  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
-}
-
-/**
- * Visit complete `url()` ranges with their decoded string or URL value.
- * @param {string} value
- * @param {(start: number, end: number, decoded: string, quote: string, name: string) => void} callback
- * @param {CSSToken[]} [tokens]
- */
-function forEachUrl(value, callback, tokens = [...tokenize({ css: value })]) {
-  /** @type {number[]} */ const stack = [];
-  /** @type {Map<number, number>} */ const functionEnds = new Map();
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (token[0] === TokenType.Function) stack.push(index);
-    else if (token[0] === TokenType.CloseParen) {
-      const start = stack.pop();
-      if (start !== undefined) functionEnds.set(start, index);
-    }
-  }
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (token[0] === TokenType.URL) {
-      const decoded = token[4].value;
-      callback(
-        token[2],
-        token[3] + 1,
-        decoded,
-        '',
-        token[1].slice(0, token[1].indexOf('('))
-      );
-      continue;
-    }
-    if (
-      token[0] !== TokenType.Function ||
-      asciiLowerCase(token[4].value) !== 'url'
-    )
-      continue;
-    const close = functionEnds.get(index);
-    if (close === undefined) continue;
-    const content = tokens.slice(index + 1, close);
-    const significant = content.filter(
-      (child) => child[0] !== TokenType.Whitespace
+function transformImport(rule) {
+  updateNodeValue(rule, 'params', (value) => {
+    /** @type {{start: number, end: number, text: string}[]} */
+    const edits = [];
+    forEachUrl(
+      value,
+      (start, end, decoded, quote, name, isTarget) => {
+        if (isTarget) {
+          const trimmed = decoded.trim();
+          if (!trimmed || dataUrlRegex.test(trimmed)) return;
+          const url = convert(trimmed);
+          const outputQuote = quote || '"';
+          const text = `${outputQuote}${escapeForString(url, outputQuote)}${outputQuote}`;
+          if (text !== value.slice(start, end)) {
+            edits.push({ start, end, text });
+          }
+        } else {
+          const text = normalizeUrlTokenValue(decoded, quote, name);
+          if (text !== undefined && text !== value.slice(start, end)) {
+            edits.push({ start, end, text });
+          }
+        }
+      },
+      { isImport: true }
     );
-    if (significant.length === 1 && significant[0][0] === TokenType.String) {
-      const string = significant[0];
-      if (!isClosedString(string[1])) {
-        index = close;
-        continue;
-      }
-      // Like unquoted url tokens, hand the caller the decoded string value so
-      // escaping operates on the URL's semantic value, not its raw spelling.
-      callback(
-        token[2],
-        tokens[close][3] + 1,
-        string[4].value,
-        string[1][0],
-        token[1].slice(0, -1)
-      );
-    } else if (
-      !significant.length ||
-      !significant.some(
-        (child) =>
-          child[0] === TokenType.Function ||
-          child[0] === TokenType.String ||
-          child[0] === TokenType.BadString
-      )
-    ) {
-      callback(
-        token[2],
-        tokens[close][3] + 1,
-        value
-          .slice(token[2] + token[1].length, tokens[close][2])
-          .replace(multiline, ''),
-        '',
-        token[1].slice(0, -1)
-      );
-    }
-    index = close;
-  }
-}
-
-/** @param {string} value @param {[number, number, string][]} replacements */
-function replace(value, replacements) {
-  let result = value;
-  for (const [start, end, output] of replacements.toSorted(
-    (a, b) => b[0] - a[0]
-  )) {
-    result = result.slice(0, start) + output + result.slice(end);
-  }
-  return result;
+    return edits.length > 0 ? applyEdits(value, edits) : undefined;
+  });
 }
 
 /**
@@ -305,17 +355,22 @@ function pluginCreator() {
     OnceExit(css) {
       css.walk((node) => {
         if (node.type === 'decl') {
-          return transformDecl(node);
-        } else if (
-          node.type === 'atrule' &&
-          asciiLowerCase(node.name) === 'namespace'
-        ) {
-          return transformNamespace(node);
+          transformNodeUrls(node, 'value');
+        } else if (node.type === 'atrule') {
+          const name = asciiLowerCase(node.name);
+          if (name === 'import') {
+            transformImport(node);
+          } else if (name === 'namespace') {
+            transformNamespace(node);
+          } else if (name === 'supports') {
+            transformNodeUrls(node, 'params');
+          }
         }
       });
     },
   };
 }
+
 /** @type {true} */
 pluginCreator.postcss = true;
 const moduleExports = pluginCreator;
