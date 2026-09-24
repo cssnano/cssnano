@@ -1,34 +1,178 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from 'cssnano-utils';
+import { LayerRegistry, compareAtRulePriority } from './lib/layerRegistry.js';
+import {
+  classifyDeclaration,
+  getBody,
+  getContainer,
+  parseAtRuleName,
+} from './lib/grammar.js';
+import { rewriteDeclaration } from './lib/valueRewriter.js';
 
-const { asciiLowerCase, sameParent } = cssnanoUtils;
-const keyframesRegex = /keyframes/v;
-const animationRegex = /animation/v;
-const counterStyleRegex = /counter-style/v;
-const listStyleSystemRegex = /(?:list-style|system)/v;
+const { asciiLowerCase } = cssnanoUtils;
+
 /**
- * @param {Record<string, string>} obj
- * @return {(key: string) => string}
+ * @typedef {{
+ *   rule: import('postcss').AtRule,
+ *   body?: string,
+ *   layerPriority: number[],
+ *   documentIndex: number,
+ *   parsed: { isString: boolean, isReservedName: boolean, key: string, tokenText: string }
+ * }} AtRuleEntry
+ *
+ * @typedef {{
+ *   entries: AtRuleEntry[],
+ *   resolver?: (key: string) => { text: string, key: string } | undefined,
+ *   definedNames?: Set<string>
+ * }} FamilyRecord
  */
-function canonical(obj) {
-  // Prevent potential infinite loops
-  let stack = 50;
 
-  /**
-   * @param {string} key
-   * @return {string}
-   */
-  return function recurse(key) {
-    if (Object.hasOwn(obj, key) && obj[key] !== key && stack) {
-      stack--;
+/**
+ * Collects the entries that may join a cross-name merge group: repeat
+ * definitions of one name collapse to their highest priority copy first, and
+ * only when all copies share a body. Reserved names never merge because a
+ * stylesheet that spells one is not free to take another spelling.
+ *
+ * @param {Map<string, AtRuleEntry[]>} byName
+ * @param {Set<import('postcss').AtRule>} removals
+ * @return {AtRuleEntry[]}
+ */
+function collectEligibleEntries(byName, removals) {
+  /** @type {AtRuleEntry[]} */
+  const eligible = [];
 
-      return recurse(obj[key]);
+  for (const list of byName.values()) {
+    if (list.length === 1) {
+      if (!list[0].parsed.isReservedName) {
+        eligible.push(list[0]);
+      }
+      continue;
     }
+    const firstBody = getBody(list[0]);
+    if (!list.every((item) => getBody(item) === firstBody)) {
+      continue;
+    }
+    let survivor = list[0];
+    for (let i = 1; i < list.length; i++) {
+      if (compareAtRulePriority(survivor, list[i]) < 0) {
+        survivor = list[i];
+      }
+    }
+    for (const item of list) {
+      if (item !== survivor) {
+        removals.add(item.rule);
+      }
+    }
+    if (!survivor.parsed.isReservedName) {
+      eligible.push(survivor);
+    }
+  }
 
-    stack = 50;
+  return eligible;
+}
 
-    return key;
+/**
+ * @param {AtRuleEntry[]} entries
+ * @param {Set<import('postcss').AtRule>} removals
+ * @return {{ resolver: (key: string) => { text: string, key: string } | undefined, definedNames: Set<string>, hasReplacements: boolean }}
+ */
+function processAtRuleEntries(entries, removals) {
+  const definedNames = new Set();
+  if (entries.length === 0) {
+    return {
+      resolver: () => undefined,
+      definedNames,
+      hasReplacements: false,
+    };
+  }
+
+  for (const entry of entries) {
+    definedNames.add(entry.parsed.key);
+  }
+
+  if (entries.length === 1) {
+    return {
+      resolver: () => undefined,
+      definedNames,
+      hasReplacements: false,
+    };
+  }
+
+  /** @type {Map<string, AtRuleEntry[]>} */
+  const byName = new Map();
+  for (const entry of entries) {
+    let nameList = byName.get(entry.parsed.key);
+    if (!nameList) {
+      nameList = [];
+      byName.set(entry.parsed.key, nameList);
+    }
+    nameList.push(entry);
+  }
+
+  const eligible = collectEligibleEntries(byName, removals);
+
+  /** @type {Map<string, AtRuleEntry[]>} */
+  const groupsByBody = new Map();
+
+  for (const item of eligible) {
+    const groupKey = (item.parsed.isString ? 's:' : 'i:') + getBody(item);
+    let group = groupsByBody.get(groupKey);
+    if (!group) {
+      group = [];
+      groupsByBody.set(groupKey, group);
+    }
+    group.push(item);
+  }
+
+  /** @type {Map<string, { text: string, key: string }>} */
+  const resolved = new Map();
+
+  for (const group of groupsByBody.values()) {
+    if (group.length > 1) {
+      let survivor = group[0];
+      for (let i = 1; i < group.length; i++) {
+        if (compareAtRulePriority(survivor, group[i]) < 0) {
+          survivor = group[i];
+        }
+      }
+      for (const item of group) {
+        if (item !== survivor) {
+          removals.add(item.rule);
+          resolved.set(item.parsed.key, {
+            text: survivor.parsed.tokenText,
+            key: survivor.parsed.key,
+          });
+        }
+      }
+    }
+  }
+
+  return {
+    resolver: (key) => resolved.get(key),
+    definedNames,
+    hasReplacements: resolved.size > 0,
   };
+}
+
+/**
+ * Finds or creates the family record of one at-rule name in one container.
+ *
+ * @param {Map<import('postcss').Container, Map<string, FamilyRecord>>} scopes
+ * @param {import('postcss').Container} container
+ * @param {string} name
+ * @return {FamilyRecord}
+ */
+function familyRecordFor(scopes, container, name) {
+  let containerScope = scopes.get(container);
+  if (!containerScope) {
+    containerScope = new Map();
+    scopes.set(container, containerScope);
+  }
+  let familyData = containerScope.get(name);
+  if (!familyData) {
+    familyData = { entries: [] };
+    containerScope.set(name, familyData);
+  }
+  return familyData;
 }
 
 /**
@@ -36,113 +180,84 @@ function canonical(obj) {
  * @return {void}
  */
 function mergeAtRules(css) {
-  /**
-   * @typedef {{
-   *   node: import('postcss').AtRule,
-   *   body: string,
-   * }} Candidate
-   *
-   * @typedef {{
-   *   atrule: RegExp,
-   *   decl: RegExp,
-   *   cache: Candidate[],
-   *   replacements: Record<string, string>,
-   *   decls: import('postcss').Declaration[],
-   *   removals: import('postcss').AtRule[],
-   * }} Pair
-   */
+  const layerRegistry = new LayerRegistry();
+  let keyframesCount = 0;
+  let counterStyleCount = 0;
+  let documentIndex = 0;
 
-  /** @type {Pair[]} */
-  const pairs = [
-    {
-      atrule: keyframesRegex,
-      decl: animationRegex,
-      cache: [],
-      replacements: {},
-      decls: [],
-      removals: [],
-    },
-    {
-      atrule: counterStyleRegex,
-      decl: listStyleSystemRegex,
-      cache: [],
-      replacements: {},
-      decls: [],
-      removals: [],
-    },
-  ];
+  /** @type {Map<import('postcss').Container, Map<string, FamilyRecord>>} */
+  const scopes = new Map();
 
-  /** @type {Pair | undefined} */
-  let relevant;
-
-  css.walk((node) => {
-    if (node.type === 'atrule') {
-      relevant = pairs.find((pair) =>
-        pair.atrule.test(asciiLowerCase(node.name))
-      );
-
-      if (!relevant) {
-        return;
-      }
-
-      const body = node.nodes ? node.nodes.toString() : '';
-
-      for (const cached of relevant.cache) {
-        if (
-          asciiLowerCase(cached.node.name) === asciiLowerCase(node.name) &&
-          sameParent(cached.node, node) &&
-          cached.body === body
-        ) {
-          relevant.removals.push(cached.node);
-          relevant.replacements[cached.node.params] = node.params;
-        }
-      }
-
-      relevant.cache.push({ node, body });
-
+  css.walkAtRules((atRule) => {
+    const name = asciiLowerCase(atRule.name);
+    if (name === 'layer') {
+      layerRegistry.declareLayerAtRule(atRule);
       return;
     }
 
-    if (node.type === 'decl') {
-      relevant = pairs.find((pair) =>
-        pair.decl.test(asciiLowerCase(node.prop))
-      );
+    const isKeyframes = name.endsWith('keyframes');
+    const isCounterStyle = name.endsWith('counter-style');
+    if (!isKeyframes && !isCounterStyle) {
+      return;
+    }
 
-      if (!relevant) {
-        return;
-      }
+    if (isKeyframes) {
+      keyframesCount++;
+    } else {
+      counterStyleCount++;
+    }
 
-      relevant.decls.push(node);
+    const container = getContainer(atRule);
+    const familyData = familyRecordFor(scopes, container, name);
+
+    const parsed = parseAtRuleName(atRule.params, name);
+    if (parsed) {
+      familyData.entries.push({
+        rule: atRule,
+        parsed,
+        layerPriority: layerRegistry.getPriority(atRule),
+        documentIndex: documentIndex++,
+      });
     }
   });
 
-  for (const pair of pairs) {
-    const canon = canonical(pair.replacements);
+  if (keyframesCount < 2 && counterStyleCount < 2) {
+    return;
+  }
 
-    for (const decl of pair.decls) {
-      const value = decl.value;
-      /** @type {[number, number, string, string][]} */ const replacements = [
-        ...tokenize({ css: value }),
-      ]
-        .filter((token) => token[0] === TokenType.Ident)
-        .map(
-          (token) =>
-            /** @type {[number, number, string, string]} */ ([
-              token[2],
-              token[3] + 1,
-              canon(token[1]),
-              token[1],
-            ])
-        )
-        .filter(([, , replacement, original]) => replacement !== original);
-      let result = value;
-      for (const [start, end, replacement] of replacements.toReversed())
-        result = result.slice(0, start) + replacement + result.slice(end);
-      decl.value = result;
+  /** @type {Set<import('postcss').AtRule>} */
+  const removals = new Set();
+  let hasReplacements = false;
+
+  for (const containerScope of scopes.values()) {
+    for (const familyData of containerScope.values()) {
+      const result = processAtRuleEntries(familyData.entries, removals);
+      familyData.resolver = result.resolver;
+      familyData.definedNames = result.definedNames;
+      if (result.hasReplacements) {
+        hasReplacements = true;
+      }
     }
-    for (const cached of pair.removals) {
-      cached.remove();
-    }
+  }
+
+  if (removals.size === 0) {
+    return;
+  }
+
+  if (hasReplacements) {
+    const singleScope =
+      scopes.size === 1 ? (scopes.values().next().value ?? null) : null;
+
+    css.walkDecls((decl) => {
+      const classification = classifyDeclaration(decl);
+      if (classification) {
+        rewriteDeclaration(decl, classification, scopes, singleScope);
+      }
+    });
+  }
+
+  for (const node of removals) {
+    node.remove();
   }
 }
 
