@@ -82,6 +82,11 @@ describe('Variables passthrough', () => {
       'h1{transform:translate3d(var(--foo), var(--bar), var(--baz))}'
     )
   );
+
+  test(
+    'should pass through uppercase VAR()',
+    passthroughCSS('h1{transform:scale(VAR(--foo), VAR(--foo))}')
+  );
 });
 
 describe('Variables reduction', () => {
@@ -197,6 +202,29 @@ describe('Variables reduction', () => {
     processCSS(
       'h1{transform:scale(env(--foo), env(--foo))}',
       'h1{transform:scale(env(--foo))}'
+    )
+  );
+
+  test(
+    'keeps var() references whose custom-property names differ only in case',
+    passthroughCSS('h1{transform:scale(var(--Foo), var(--foo))}')
+  );
+
+  test(
+    'keeps a var() reference beside an env() reference with a matching name',
+    passthroughCSS('h1{transform:scale(var(--foo), env(--foo))}')
+  );
+
+  test(
+    'keeps an env() reference beside a var() reference with a matching name',
+    passthroughCSS('h1{transform:scale(env(--foo), var(--foo))}')
+  );
+
+  test(
+    'reduces equal var() references with mixed-case custom-property names',
+    processCSS(
+      'h1{transform:scale(var(--Foo), var(--Foo))}',
+      'h1{transform:scale(var(--Foo))}'
     )
   );
 });

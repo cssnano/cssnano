@@ -63,7 +63,9 @@ function genMatrix(rng) {
 /** @param {ReturnType<typeof random>} rng @return {string} */
 function genMatrix3d(rng) {
   if (rng.chance(0.5)) {
-    // The affine pattern `reduce()` collapses to `matrix(a,b,c,d,tx,ty)`.
+    // An affine pattern — the shape `matrix()` expresses. The plugin does
+    // not rewrite `matrix3d()` to `matrix()`, so the oracle compares this
+    // cell by cell.
     const [a, b, c, d, tx, ty] = Array.from({ length: 6 }, () => factor(rng));
     return `matrix3d(${a},${b},0,0,${c},${d},0,0,0,0,1,0,${tx},${ty},0,1)`;
   }

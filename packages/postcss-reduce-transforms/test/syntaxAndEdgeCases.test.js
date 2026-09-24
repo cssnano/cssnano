@@ -43,6 +43,46 @@ describe('Invalid values and syntax edge cases', () => {
   );
 
   test(
+    'should pass through invalid values #7',
+    passthroughCSS('h1{transform:rotate3d(1px, 0, 0, 20deg)}')
+  );
+
+  test(
+    'should pass through invalid values #8',
+    passthroughCSS('h1{transform:rotate3d(1%, 0, 0, 20deg)}')
+  );
+
+  test(
+    'should pass through invalid values #9',
+    passthroughCSS('h1{transform:rotate3d(1, 0px, 0, 20deg)}')
+  );
+
+  test(
+    'should pass through invalid values #10',
+    passthroughCSS('h1{transform:scale(1.5, 1px)}')
+  );
+
+  test(
+    'should pass through invalid values #11',
+    passthroughCSS('h1{transform:scale(1.5px, 1.5px)}')
+  );
+
+  test(
+    'should pass through invalid values #12',
+    passthroughCSS('h1{transform:scale3d(1px, 1, 1.5)}')
+  );
+
+  test(
+    'should pass through invalid values #13',
+    passthroughCSS('h1{transform:translate(0deg, 5px)}')
+  );
+
+  test(
+    'should pass through invalid values #14',
+    passthroughCSS('h1{transform:translate3d(0deg, 0, 5px)}')
+  );
+
+  test(
     'should pass through invalid values #6',
     passthroughCSS('h1{transform:translate3d(0, 0, var(--foo), 4)}')
   );
