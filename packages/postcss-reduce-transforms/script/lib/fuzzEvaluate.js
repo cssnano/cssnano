@@ -64,16 +64,32 @@ function rotationMatrix([x, y, z], angleRad) {
 }
 
 /**
- * @param {number} [tx]
- * @param {number} [ty]
- * @param {number} [tz]
- * @return {number[]}
+ * A translation component's matrix entry. A unitless zero is zero in every
+ * unit; other components keep their unit as a tag, because `10px` and `10em`
+ * do not resolve alike and `x%`/`y%` resolve against different box
+ * dimensions.
+ *
+ * @param {{value: number, unit: string} | undefined} [component]
+ * @return {number | string}
  */
-function translationMatrix(tx = 0, ty = 0, tz = 0) {
+function translationComponent(component) {
+  if (!component || component.value === 0) return 0;
+  return component.unit
+    ? `${component.value}${component.unit}`
+    : component.value;
+}
+
+/**
+ * @param {{value: number, unit: string} | undefined} [tx]
+ * @param {{value: number, unit: string} | undefined} [ty]
+ * @param {{value: number, unit: string} | undefined} [tz]
+ * @return {(number | string)[]}
+ */
+function translationMatrix(tx, ty, tz) {
   const m = identity();
-  m[3] = tx;
-  m[7] = ty;
-  m[11] = tz;
+  m[3] = translationComponent(tx);
+  m[7] = translationComponent(ty);
+  m[11] = translationComponent(tz);
   return m;
 }
 
@@ -176,7 +192,7 @@ function rad(component) {
  * cased name — the same shape as `src/index.js`'s own `reducers` Map, kept
  * separate since this one computes a matrix rather than mutating an AST node.
  *
- * @type {Map<string, (nums: number[], parsed: {value: number, unit: string}[]) => number[]|undefined>}
+ * @type {Map<string, (nums: number[], parsed: {value: number, unit: string}[]) => (number | string)[]|undefined>}
  */
 const matrixFunctions = new Map([
   ['matrix', (nums) => (nums.length === 6 ? matrix2d(...nums) : undefined)],
@@ -186,31 +202,35 @@ const matrixFunctions = new Map([
   ],
   [
     'translate',
-    (nums) => {
-      if (nums.length === 1) return translationMatrix(nums[0]);
-      if (nums.length === 2) return translationMatrix(nums[0], nums[1]);
+    (nums, parsed) => {
+      if (nums.length === 1) return translationMatrix(parsed[0]);
+      if (nums.length === 2) return translationMatrix(parsed[0], parsed[1]);
       return undefined;
     },
   ],
   [
     'translate3d',
-    (nums) =>
+    (nums, parsed) =>
       nums.length === 3
-        ? translationMatrix(nums[0], nums[1], nums[2])
+        ? translationMatrix(parsed[0], parsed[1], parsed[2])
         : undefined,
   ],
   [
     'translatex',
-    (nums) => (nums.length === 1 ? translationMatrix(nums[0]) : undefined),
+    (nums, parsed) =>
+      nums.length === 1 ? translationMatrix(parsed[0]) : undefined,
   ],
   [
     'translatey',
-    (nums) => (nums.length === 1 ? translationMatrix(0, nums[0]) : undefined),
+    (nums, parsed) =>
+      nums.length === 1 ? translationMatrix(undefined, parsed[0]) : undefined,
   ],
   [
     'translatez',
-    (nums) =>
-      nums.length === 1 ? translationMatrix(0, 0, nums[0]) : undefined,
+    (nums, parsed) =>
+      nums.length === 1
+        ? translationMatrix(undefined, undefined, parsed[0])
+        : undefined,
   ],
   [
     'scale',
@@ -304,7 +324,7 @@ const matrixFunctions = new Map([
 /**
  * @param {string} name lower-cased function name
  * @param {import('@csstools/css-tokenizer').CSSToken[]} argNodes
- * @return {number[]|undefined} undefined for functions this evaluator
+ * @return {(number | string)[]|undefined} undefined for functions this evaluator
  * doesn't model (`perspective()`, `var()`, ...); those never get renamed by
  * the plugin, so callers fall back to comparing the argument text verbatim.
  */
@@ -329,8 +349,8 @@ function matrixOfFunction(name, argNodes) {
 /**
  * @typedef {object} TransformFunction
  * @property {string} name as written (case preserved for reporting)
- * @property {number[]} [matrix] present when this evaluator models the
- * function
+ * @property {(number | string)[]} [matrix] present when this evaluator models
+ * the function; translation entries may carry a unit-tagged string
  * @property {string} [raw] the argument text, present otherwise
  */
 
@@ -378,13 +398,23 @@ function evaluate(value) {
 
 const EPSILON = 1e-6;
 
+/** @param {number | string} cell @return {string} */
+function renderMatrixCell(cell) {
+  return typeof cell === 'string' ? cell : cell.toFixed(4);
+}
+
 /**
- * @param {number[]} a
- * @param {number[]} b
+ * @param {(number | string)[]} a
+ * @param {(number | string)[]} b
  * @return {boolean}
  */
 function matricesClose(a, b) {
-  return a.every((value, index) => Math.abs(value - b[index]) < EPSILON);
+  return a.every((value, index) => {
+    const other = b[index];
+    if (typeof value === 'string' || typeof other === 'string')
+      return value === other;
+    return Math.abs(value - other) < EPSILON;
+  });
 }
 
 /**
@@ -411,10 +441,11 @@ function differences(before, after) {
 
     if (prior.matrix && next.matrix) {
       if (!matricesClose(prior.matrix, next.matrix)) {
+        const render = (matrix) => matrix.map(renderMatrixCell).join(',');
         slots.push({
           slot,
-          expected: prior.matrix.map((n) => n.toFixed(4)).join(','),
-          actual: next.matrix.map((n) => n.toFixed(4)).join(','),
+          expected: render(prior.matrix),
+          actual: render(next.matrix),
         });
       }
       continue;
