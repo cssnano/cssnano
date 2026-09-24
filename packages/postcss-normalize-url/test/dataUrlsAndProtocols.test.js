@@ -14,6 +14,22 @@ describe('Remove', () => {
   );
 
   test(
+    'should remove the HTTPS default port',
+    processCSS(
+      'h1{background:url(https://website.com:443/image.png)}',
+      'h1{background:url(https://website.com/image.png)}'
+    )
+  );
+
+  test(
+    'should remove default port on IPv6 URLs and preserve non-default port',
+    processCSS(
+      'h1{background:url(http://[::1]:80/image.png)}h2{background:url(https://[::1]:443/image.png)}h3{background:url(http://[::1]:8080/image.png)}',
+      'h1{background:url(http://[::1]/image.png)}h2{background:url(https://[::1]/image.png)}h3{background:url(http://[::1]:8080/image.png)}'
+    )
+  );
+
+  test(
     'should not remove the fragment',
     passthroughCSS('h1{background:url(test.svg#icon)}')
   );
@@ -110,9 +126,61 @@ describe('Mangle', () => {
 });
 
 test(
-  'should handle protocol relative urls',
+  'should preserve explicit port 80 in protocol relative urls',
   processCSS(
     'h1{background:url(//website.com:80/image.png)}',
-    'h1{background:url(//website.com/image.png)}'
+    'h1{background:url(//website.com:80/image.png)}'
+  )
+);
+
+test(
+  'should preserve explicit port 443 in protocol relative urls',
+  processCSS(
+    'h1{background:url(//website.com:443/image.png)}',
+    'h1{background:url(//website.com:443/image.png)}'
+  )
+);
+
+test(
+  'should normalize file URLs without mangling root',
+  processCSS('h1{background:url("file:///")}', 'h1{background:url(file:///)}')
+);
+
+test(
+  'should normalize relative paths in file URLs',
+  processCSS(
+    'h1{background:url("file:///foo/../bar.png")}',
+    'h1{background:url(file:///bar.png)}'
+  )
+);
+
+test(
+  'should strip trailing dot from hostname in absolute URLs',
+  processCSS(
+    'h1{background:url("http://example.com./foo.png")}',
+    'h1{background:url(http://example.com/foo.png)}'
+  )
+);
+
+test(
+  'should preserve trailing slash in query string parameters in absolute URLs',
+  processCSS(
+    'h1{background:url("http://example.com/?dir=/")}',
+    'h1{background:url(http://example.com/?dir=/)}'
+  )
+);
+
+test(
+  'should preserve percent-encoded control characters in absolute URLs',
+  processCSS(
+    'h1{background:url("https://example.com/foo%0Abar")}',
+    'h1{background:url(https://example.com/foo%0Abar)}'
+  )
+);
+
+test(
+  'should preserve data URLs in CSS custom properties',
+  passthroughCSS(
+    ':root{--bg:url("data:image/png;base64,abc");--icon:url(data:image/svg+xml;utf8,<svg></svg>)}'
   )
 );

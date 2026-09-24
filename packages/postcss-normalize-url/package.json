@@ -11,12 +11,6 @@
   },
   "main": "./src/index.js",
   "types": "./types/index.d.ts",
-  "imports": {
-    "#path": {
-      "node": "./src/lib/path_normalizer.js",
-      "default": "./src/lib/path_shim.js"
-    }
-  },
   "files": [
     "src",
     "LICENSE-MIT",
@@ -59,7 +53,8 @@
     "postcss": "^8.5.28"
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "fuzz": "node ./script/fuzz.js"
   },
   "type": "module"
 }
