@@ -10,7 +10,9 @@ export type ParserState = {
     frames: Frame[];
     stack: import('@csstools/css-tokenizer').TokenType[];
 };
-export type Dimension = 'time' | 'angle' | 'number' | `dimension:${string}` | null;
+/** @param {import('@csstools/css-tokenizer').CSSToken[]} input @return {string | null} */
+export declare function parseMath(input: import('@csstools/css-tokenizer').CSSToken[]): string | null;
+export type Dimension = 'time' | 'angle' | 'length' | 'number' | `dimension:${string}` | null;
 export type TimeClassification = {
     isMath: boolean;
     dimension: Dimension;

@@ -128,6 +128,21 @@ test(
 );
 
 test(
+  'orders border with mixed-unit calc widths',
+  processCSS(
+    'a{border:solid red calc(1px + 1em)}',
+    'a{border:calc(1px + 1em) solid red}'
+  )
+);
+
+test(
+  'should pass through border math that does not resolve to a length',
+  passthroughCSS(
+    'a{border:solid red calc(1px + 1%);border:solid calc(1) red;border:solid calc(1px + 1s) red;border:solid cos(1) red}'
+  )
+);
+
+test(
   'should pass through important comments (border)',
   passthroughCSS('border: 1px /*!wow*/ red solid')
 );

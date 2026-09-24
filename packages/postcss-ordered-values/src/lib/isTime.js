@@ -1,8 +1,13 @@
 import cssnanoUtils from 'cssnano-utils';
 import { isDimension, isFunction, isNumber, name } from './tokenize.js';
 
-const { TokenType, decoded, mathFunctions, mathFunctionArgumentRanges } =
-  cssnanoUtils;
+const {
+  TokenType,
+  decoded,
+  lengthUnits,
+  mathFunctions,
+  mathFunctionArgumentRanges,
+} = cssnanoUtils;
 const timeUnits = new Set(['ms', 's']);
 const angleUnits = new Set(['deg', 'grad', 'rad', 'turn']);
 const trigFunctions = new Set(['sin', 'cos', 'tan']);
@@ -175,6 +180,9 @@ function consumeToken(state, index) {
     const unit = /** @type {{unit: string}} */ (token[4]).unit.toLowerCase();
     if (timeUnits.has(unit)) return addValue(state.frames, 'time');
     if (angleUnits.has(unit)) return addValue(state.frames, 'angle');
+    // Length units collapse to one kind before arithmetic so mixed-unit
+    // sums such as calc(1px + 1em) resolve to a length (CSS Values 4).
+    if (lengthUnits.has(unit)) return addValue(state.frames, 'length');
     return addValue(state.frames, `dimension:${unit}`);
   }
   if (type === TokenType.Function) return consumeFunction(state, frame, token);
@@ -193,7 +201,7 @@ function consumeToken(state, index) {
 }
 
 /** @param {import('@csstools/css-tokenizer').CSSToken[]} input @return {string | null} */
-function parseMath(input) {
+export function parseMath(input) {
   /** @type {ParserState} */
   const state = {
     input,
@@ -209,7 +217,7 @@ function parseMath(input) {
   return finish(state.frames[0]);
 }
 
-/** @typedef {'time' | 'angle' | 'number' | `dimension:${string}` | null} Dimension */
+/** @typedef {'time' | 'angle' | 'length' | 'number' | `dimension:${string}` | null} Dimension */
 /** @typedef {{isMath: boolean, dimension: Dimension, isNonNegative: boolean}} TimeClassification */
 
 /** @param {import('./tokenize.js').Term} node @return {Dimension} */

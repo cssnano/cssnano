@@ -189,7 +189,7 @@ test(
 test(
   'should pass through transition declarations with percentage or url property names',
   passthroughCSS(
-    'a{transition: 1s 50%;transition: 1s opacity 50%;transition: 1s url(prop.svg)}'
+    'a{transition: 1s 50%;transition: 1s opacity 50%;transition: 1s url(prop.svg);transition: 1s url("prop.svg")}'
   )
 );
 
