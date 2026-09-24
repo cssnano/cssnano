@@ -120,8 +120,8 @@ test('records which argument of a function names a counter and which a style', (
           name: 'counters()',
           syntax: 'counters( <counter-name>, <string>, <counter-style>? )',
         },
-        // The specification spells the counter `<custom-ident>` here, so the
-        // counter style argument is what marks this out as a counter function.
+        // Mark this as a counter function through its counter style argument,
+        // because the spec spells the counter `<custom-ident>` here.
         {
           name: 'target-counter()',
           syntax:

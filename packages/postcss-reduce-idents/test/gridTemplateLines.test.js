@@ -4,7 +4,7 @@ import postcss from 'postcss';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 
-const { processCSS } = processCSSFactory(plugin);
+const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 describe('Grid template lines', () => {
   test(
@@ -207,7 +207,7 @@ describe('Grid template lines', () => {
     'should rename a list of grid-template-rows',
     processCSS(
       '.grid {grid-template-rows: [linename1 linename2] 100px;} .a { grid-row: linename1;}',
-      '.grid {grid-template-rows: [a b] 100px;} .a { grid-row: a;}'
+      '.grid {grid-template-rows: [a linename2] 100px;} .a { grid-row: a;}'
     )
   );
 
@@ -250,18 +250,82 @@ describe('Grid template lines', () => {
   test(
     'should rename multiple line names within single brackets in grid-template-columns',
     processCSS(
-      'body{grid-template-columns:[col1 col2] 100px [col3];}div{grid-column:col1/col3}',
-      'body{grid-template-columns:[a b] 100px [c];}div{grid-column:a/c}'
+      'body{grid-template-columns:[col1 col2] 100px [col3] 200px [col4];}div{grid-column:col1/col3}aside{grid-column:col4}',
+      'body{grid-template-columns:[a col2] 100px [c] 200px [d];}div{grid-column:a/c}aside{grid-column:d}'
     )
   );
 
   test(
-    'should rename standalone placement properties',
+    'should not rename standalone placement properties without a template definition',
+    passthroughCSS('.item{grid-area:content;grid-column:col-start}')
+  );
+
+  test(
+    'should rename the implicit start and end lines of a renamed area',
     processCSS(
-      '.item{grid-area:content;grid-column:col-start}',
-      '.item{grid-area:a;grid-column:b}'
+      'body{grid-template-areas:"foo"}.a{grid-area:foo}.b{grid-column:foo-start/foo-end}',
+      'body{grid-template-areas:"a"}.a{grid-area:a}.b{grid-column:a-start/a-end}'
     )
   );
+
+  test(
+    'should rename an implicit line when only the line references the area',
+    processCSS(
+      'body{grid-template-areas:"foo"}.b{grid-column:foo-start/foo-end}',
+      'body{grid-template-areas:"a"}.b{grid-column:a-start/a-end}'
+    )
+  );
+
+  test(
+    'should not rename an implicit line of an area that is not renamed',
+    processCSS(
+      'body{grid-template-areas:"foo bar"}.b{grid-column:bar-start}',
+      'body{grid-template-areas:"foo b"}.b{grid-column:b-start}'
+    )
+  );
+
+  test(
+    'should prefer the explicit line name over the implicit area line',
+    processCSS(
+      'body{grid-template:[foo-start] "foo"}.b{grid-column:foo-start}',
+      'body{grid-template:[a] "foo"}.b{grid-column:a}'
+    )
+  );
+
+  test(
+    'should not rename a grid area whose name is spelled inside a custom property fallback',
+    passthroughCSS(
+      'body{grid-template-areas:"foo"}.a{grid-area:foo}.b{grid-column:var(--x, foo)}'
+    )
+  );
+
+  test(
+    'should not rename a line name referenced through a custom property',
+    passthroughCSS(
+      'body{grid-template-columns:[foo-start] 1fr}.a{grid-column:var(--line)}'
+    )
+  );
+
+  test(
+    'should not rename a bracketed line name defined inside env()',
+    passthroughCSS(
+      'body{grid-template-columns:env(--cols,[foo] 1fr)}.a{grid-column:foo}'
+    )
+  );
+
+  test('should not rename a grid line reference when its definition is in another document', async () => {
+    const instance = postcss(plugin);
+
+    const [defined, referenced] = await Promise.all([
+      instance.process('body{grid-template-columns:[head] 1fr}', {
+        from: undefined,
+      }),
+      instance.process('h1{grid-column-start:head}', { from: undefined }),
+    ]);
+
+    assert.strictEqual(defined.css, 'body{grid-template-columns:[head] 1fr}');
+    assert.strictEqual(referenced.css, 'h1{grid-column-start:head}');
+  });
 
   test('should not generate colliding grid-template idents when plugin instance is reused', async () => {
     const instance = postcss(plugin);

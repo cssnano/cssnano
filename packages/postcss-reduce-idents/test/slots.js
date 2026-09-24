@@ -9,18 +9,16 @@ import {
   resolveProperty,
 } from '../src/lib/slots.js';
 
-// The slots themselves are spot-checked in script/lib/webrefIdents.mjs's
-// validate(), which runs at data-acquire time rather than test time: that
-// catches a webref release dropping one, these catch a regression in how
-// slots.js reads the generated file.
+// Spot-check the slots here for regressions in how slots.js reads the
+// generated file; webrefIdents.mjs validates them at data-acquire time.
 
 /** @type {[string, string][]} */
 const properties = [
   ['color', 'color'],
   ['COLOR', 'color'],
-  // Prefixed spellings webref lists an alias for
+  // Cover prefixed spellings webref aliases
   ['-webkit-animation-name', 'animation-name'],
-  // and prefixed spellings it does not, which name keyframes all the same
+  // Cover prefixed spellings it does not alias, which still name keyframes
   ['-moz-animation-name', 'animation-name'],
   ['-ms-grid-row', 'grid-row'],
 ];
@@ -49,7 +47,7 @@ for (const [name, expected] of atRules) {
 test('knows the properties that name keyframes', () => {
   assert.ok(keyframes.properties.has('animation'));
   assert.ok(keyframes.properties.has('animation-name'));
-  // The rest of the animation family holds keywords of its own
+  // Exclude the rest of the family, which holds keywords
   assert.ok(!keyframes.properties.has('animation-timing-function'));
   assert.ok(!keyframes.properties.has('animation-timeline'));
 });
@@ -58,15 +56,15 @@ describe('Knows', () => {
   test('knows where a counter style can be named', () => {
     assert.ok(counterStyle.properties.has('list-style-type'));
     assert.ok(counterStyle.descriptors.has('fallback'));
-    // `content` names one inside a counter function rather than as a bare word
+    // Name a counter style inside a function, not as a bare word
     assert.ok(!counterStyle.properties.has('content'));
     assert.ok(counterStyle.functionProperties.has('content'));
   });
 
   test('knows where a counter can be named inside a function', () => {
     assert.ok(counter.functionProperties.has('content'));
-    // webref's `string-set` grammar never reaches `counter()`, so the slot is
-    // supplied by hand and a regression there is silent
+    // Supply this slot by hand: webref's `string-set` grammar never reaches
+    // `counter()`
     assert.ok(counter.functionProperties.has('string-set'));
   });
 
@@ -88,11 +86,11 @@ describe('Knows', () => {
 test('reserves the keywords a name would be ambiguous with', () => {
   assert.ok(keyframes.reservedKeywords.includes('linear'));
   assert.ok(counterStyle.reservedKeywords.includes('inside'));
-  // The descriptors reserve their own keywords too, not just `list-style`'s
+  // Reserve the descriptors' own keywords too
   assert.ok(counterStyle.reservedKeywords.includes('words'));
   assert.ok(counterStyle.reservedKeywords.includes('fixed'));
   assert.ok(grid.reservedKeywords.includes('span'));
-  // A function name is written with an argument list, so a name is free to be
-  // spelled that way
+  // Leave function names unreserved: a name can be spelled like a function
+  // call
   assert.ok(!grid.reservedKeywords.includes('minmax'));
 });
