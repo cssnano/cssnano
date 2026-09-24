@@ -1,17 +1,13 @@
 /**
+ *
  * @param {string} value
  * @param {(value: string, index: number) => string} encoder
- * @param {Map<string, {ident: string, count: number}>} cache
+ * @param {Map<string, string>} cache
  */
-const addToCache = function (value, encoder, cache) {
-  if (cache.has(value)) {
-    return;
+function addToCache(value, encoder, cache) {
+  if (!cache.has(value)) {
+    cache.set(value, encoder(value, cache.size));
   }
-
-  cache.set(value, {
-    ident: encoder(value, cache.size),
-    count: 0,
-  });
-};
+}
 
 export default addToCache;

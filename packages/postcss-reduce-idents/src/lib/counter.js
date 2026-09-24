@@ -1,8 +1,11 @@
-import registerSymbol from './cache.js';
-import isNum from './isNum.js';
-import { rewrite, TokenType, tokens } from './value.js';
+import addToCache from './cache.js';
+import { collectOpaqueIdents, rewrite, tokens, TokenType } from './value.js';
 import { counter, cssWideKeywords, resolveProperty } from './slots.js';
 
+/*
+ * page counter (CSS Paged Media 3) and the
+ * list-item counter (CSS Lists 3)
+ */
 const RESERVED = new Set([
   ...cssWideKeywords,
   ...counter.reservedKeywords,
@@ -10,81 +13,118 @@ const RESERVED = new Set([
   'page',
 ]);
 
-export default function counterReducer() {
-  /** @type {Map<string, { ident: string, count: number }>} */
+// reversed()` wraps the counter name it resets
+const REVERSED_FUNCTIONS = new Map([['reversed', [0]]]);
+
+/**
+ * @param {(value: string, index: number) => string} encoder
+ */
+export default function counterReducer(encoder) {
+  /** @type {Map<string, string>} */
   const symbolTable = new Map();
   /** @type {import('postcss').Declaration[]} */
-  let defSites = [];
+  let definitionSites = [];
   /** @type {import('postcss').Declaration[]} */
   let useSites = [];
-  /** @type {(value: string, index: number) => string} */
-  let encoderFn;
 
   return {
-    /** @param {import('postcss').AnyNode} node @param {(value:string,index:number)=>string} encoder */ collect(
-      node,
-      encoder
-    ) {
+    /** @param {import('postcss').AnyNode} node */ collect(node) {
       if (node.type !== 'decl') return;
-      encoderFn = encoder;
       const property = resolveProperty(node.prop);
       if (counter.properties.has(property)) {
-        defSites.push(node);
+        definitionSites.push(node);
       } else if (counter.functionProperties.has(property)) {
         useSites.push(node);
       }
     },
     transform() {
-      // Def-use analysis: renaming requires both definition and use sites
-      if (defSites.length === 0 || useSites.length === 0) {
-        defSites = [];
+      if (definitionSites.length === 0 || useSites.length === 0) {
+        definitionSites = [];
         useSites = [];
         return;
       }
 
-      // Symbol binding pass: collect symbols declared at definition sites
-      for (const decl of defSites) {
-        for (const token of tokens(decl.value)) {
-          if (
-            token[0] === TokenType.Ident &&
-            !RESERVED.has(token[4].value.toLowerCase()) &&
-            !isNum({ value: token[1] })
-          ) {
-            registerSymbol(token[4].value, encoderFn, symbolTable);
-          }
-        }
-      }
-
-      // Use-site rewrite pass: rewrite references and collect live symbols
-      const liveSymbols = new Set();
-      for (const decl of useSites) {
-        decl.value = rewrite(
+      // Symbol binding pass: only names defined in the document being
+      // transformed rename, since counter names are case-sensitive custom
+      // identifiers and the symbol table is reused across documents.
+      const defined = new Set();
+      /** @type {Map<import('postcss').Declaration, import('@csstools/css-tokenizer').CSSToken[]>} */
+      const defTokens = new Map();
+      for (const decl of definitionSites) {
+        const parsedTokens = tokens(decl.value);
+        defTokens.set(decl, parsedTokens);
+        rewrite(
           decl.value,
-          (token, isFunctionArgument) => {
-            if (token[0] === TokenType.Whitespace) return ' ';
+          (token, position) => {
             if (token[0] !== TokenType.Ident) return;
-            if (!isFunctionArgument) return;
-            const symbol = symbolTable.get(token[4].value);
-            if (!symbol) return;
-            liveSymbols.add(token[4].value);
-            return symbol.ident;
+            if (position === 'nested') return;
+            const name = token[4].value;
+            if (RESERVED.has(name.toLowerCase())) return;
+            defined.add(name);
+            addToCache(name, encoder, symbolTable);
           },
-          counter.functions
+          REVERSED_FUNCTIONS,
+          parsedTokens
         );
       }
 
-      // Def-site rewrite pass: only rewrite definitions for live symbols
-      if (liveSymbols.size > 0) {
-        for (const decl of defSites) {
-          decl.value = rewrite(decl.value, (token) => {
+      // Leave names such as var() fallbacks unrenamed
+      const opaque = new Set();
+      for (const decl of definitionSites) {
+        collectOpaqueIdents(decl.value, opaque, defTokens.get(decl));
+      }
+      /** @type {Map<import('postcss').Declaration, import('@csstools/css-tokenizer').CSSToken[]>} */
+      const useTokens = new Map();
+      for (const decl of useSites) {
+        const parsedTokens = tokens(decl.value);
+        useTokens.set(decl, parsedTokens);
+        collectOpaqueIdents(decl.value, opaque, parsedTokens);
+      }
+
+      // Rewrite references and collect live symbols.
+      const liveSymbols = new Set();
+      for (const decl of useSites) {
+        const rewritten = rewrite(
+          decl.value,
+          (token, position) => {
             if (token[0] !== TokenType.Ident) return;
-            const symbol = symbolTable.get(token[4].value);
-            return liveSymbols.has(token[4].value) ? symbol?.ident : undefined;
-          });
+            if (position !== 'argument') return;
+            const name = token[4].value;
+            if (!defined.has(name) || opaque.has(name)) return;
+            liveSymbols.add(name);
+            return symbolTable.get(name);
+          },
+          counter.functions,
+          useTokens.get(decl)
+        );
+        // Normalize whitespace between counter-function arguments only when
+        // the value is rewritten; leave untouched declarations as they are.
+        decl.value =
+          rewritten === decl.value
+            ? rewritten
+            : rewrite(rewritten, (token) =>
+                token[0] === TokenType.Whitespace ? ' ' : undefined
+              );
+      }
+
+      if (liveSymbols.size > 0) {
+        for (const decl of definitionSites) {
+          decl.value = rewrite(
+            decl.value,
+            (token, position) => {
+              if (token[0] !== TokenType.Ident) return;
+              if (position === 'nested') return;
+              return liveSymbols.has(token[4].value)
+                ? symbolTable.get(token[4].value)
+                : undefined;
+            },
+            REVERSED_FUNCTIONS,
+            defTokens.get(decl)
+          );
         }
       }
 
-      defSites = [];
+      definitionSites = [];
       useSites = [];
     },
   };

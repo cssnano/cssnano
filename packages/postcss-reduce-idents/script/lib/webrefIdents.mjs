@@ -233,8 +233,7 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
   /** @type {Map<string, Set<string>>} */
   const propertyReach = new Map();
   for (const property of properties) {
-    // Prefixed spellings resolve to the property they alias before anything is
-    // looked up, so listing them as slots of their own would be noise.
+    // Skip prefixed spellings: they resolve to their alias before any lookup.
     if (property.legacyAliasOf || property.name === '--*') {
       continue;
     }
@@ -259,9 +258,9 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
   const { counterFunctions, counterStyleFunctions } =
     counterFunctionSlots(functions);
 
-  // A grid name is defined either in a gridline name list, `[header]`, or in
-  // the strings of `grid-template-areas`, which the `grid` and `grid-template`
-  // shorthands write inline rather than through a reference webref records.
+  // Collect grid names from gridline name lists and from
+  // `grid-template-areas` strings, which shorthands write inline rather than
+  // through a webref reference.
   const gridTemplateProperties = new Set([
     ...propertiesWhere((reach) => reach.has('line-names')),
     ...shorthandsOf('grid-template-areas', properties),
@@ -278,9 +277,8 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
   const counterProperties = propertiesWhere((reach) =>
     reach.has('counter-name')
   );
-  // `speak-as: words` and `system: fixed 3` are keywords of the descriptor
-  // they are written in, not the name of a counter style, so the descriptors
-  // reserve their own keywords the way the properties do.
+  // Reserve the descriptors' own keywords like the properties: `speak-as:
+  // words` and `system: fixed 3` are not counter-style names.
   const counterStyleDescriptors = descriptorsWhere(
     atrules,
     '@counter-style',
@@ -315,9 +313,8 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
       functionProperties: [
         ...new Set([
           ...propertiesWhere(takesOneOf(counterFunctions)),
-          // webref spells `string-set` with a bare `<string>` rather than the
-          // `<content-list>` css-gcpm gives it, so the `counter()` it can hold
-          // is not reachable from the grammar and has to be named here.
+          // Name `string-set` here: webref spells it with a bare `<string>`,
+          // so its `counter()` is unreachable from the grammar.
           ...(propertyReach.has('string-set') ? ['string-set'] : []),
         ]),
       ].toSorted(),
@@ -336,12 +333,11 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
 }
 
 /**
- * The functions that name a counter, and where in their argument list the
- * counter and the style it is rendered with sit. webref spells the counter
- * `<counter-name>` in `counter()` but `<custom-ident>` in `target-counter()`,
- * so an identifier argument counts as a counter name whenever the function
- * also takes a counter style, which is what makes it a counter function in the
- * first place.
+ * Return the functions that name a counter and where the counter and its
+ * style sit in their arguments. webref spells the counter `<counter-name>`
+ * in `counter()` but `<custom-ident>` in `target-counter()`, so count an
+ * identifier argument as a counter name whenever the function also takes a
+ * counter style.
  *
  * @param {WebrefDefinition[]} functions
  * @return {{
@@ -482,8 +478,8 @@ export function validate(data) {
     'the grid line properties'
   );
 
-  // The argument a counter name or a counter style sits at, which decides
-  // which word in a `counter(x, y)` gets renamed and which is left alone.
+  // Pin the argument a counter name or style sits at, which decides the
+  // renames in `counter(x, y)`.
   for (const [name, expected] of /** @type {[string, number[]][]} */ ([
     ['counter()', [0]],
     ['counters()', [0]],
@@ -506,8 +502,8 @@ export function validate(data) {
     );
   }
 
-  // A property renamed as though it held a bare identifier, when the
-  // identifier really sits inside a function, would rename the wrong word.
+  // Reject a name listed as both a bare and a function property: renaming it
+  // bare would rename the wrong word.
   for (const name of data.counterStyle.functionProperties) {
     if (data.counterStyle.properties.includes(name)) {
       throw new Error(
@@ -516,9 +512,8 @@ export function validate(data) {
     }
   }
 
-  // Keywords a name written in the same declaration would be ambiguous with.
-  // A grammar that stopped resolving would leave these empty and every such
-  // name renameable again.
+  // Expect the keywords a name in the same declaration would be ambiguous
+  // with; empty lists would make every such name renameable.
   expectAll(
     data.keyframes.reservedKeywords,
     ['ease', 'infinite', 'linear', 'none', 'paused', 'reverse'],
@@ -539,8 +534,8 @@ export function validate(data) {
     ['auto', 'auto-flow', 'dense', 'none', 'span', 'subgrid'],
     'the keywords a grid value can hold'
   );
-  // Function names are written with an argument list, so a custom identifier
-  // is free to be called that.
+  // Expect function names to stay unreserved: they are written with an
+  // argument list.
   for (const keyword of ['minmax', 'repeat', 'fit-content']) {
     if (data.grid.reservedKeywords.includes(keyword)) {
       throw new Error(`Expected the function ${keyword}() not to be a keyword`);

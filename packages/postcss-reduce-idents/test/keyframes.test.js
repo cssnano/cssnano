@@ -94,6 +94,48 @@ describe('Keyframes', () => {
   );
 
   test(
+    'should not rename a keyframes name referenced through a custom property',
+    passthroughCSS(
+      '@keyframes fade{from{opacity:0}}.a{animation-name:var(--fade)}'
+    )
+  );
+
+  test(
+    'should not rename a keyframes name referenced through env()',
+    passthroughCSS(
+      '@keyframes fade{from{opacity:0}}.a{animation-name:env(--fade)}'
+    )
+  );
+
+  test(
+    'should not rename a keyframes name spelled inside a custom property fallback',
+    passthroughCSS(
+      '@keyframes fade{from{opacity:0}}.a{animation-name:fade}.b{animation-name:var(--x, fade)}'
+    )
+  );
+
+  test(
+    'should rename a keyframes name defined with an escaped at-rule name',
+    processCSS(
+      '@keyframes \\66 ade{from{opacity:0}}.a{animation-name:fade}',
+      '@keyframes a{from{opacity:0}}.a{animation-name:a}'
+    )
+  );
+
+  test(
+    'should not rename an escaped keyframes name that is not referenced',
+    passthroughCSS('@keyframes \\66 ade{from{opacity:0}}')
+  );
+
+  test(
+    'should rename a keyframes name defined with a comment before it',
+    processCSS(
+      '@keyframes /* c */ fade{from{opacity:0}}.a{animation-name:fade}',
+      '@keyframes /* c */ a{from{opacity:0}}.a{animation-name:a}'
+    )
+  );
+
+  test(
     'should not rename a keyframes name in a property that does not take one',
     processCSS(
       '@keyframes fade{from{opacity:0}}.a{animation-name:fade;animation-timing-function:fade}',
@@ -109,12 +151,60 @@ describe('Keyframes', () => {
   );
 
   test(
+    'should not merge keyframes whose names differ only in case',
+    processCSS(
+      '@keyframes Fade{from{opacity:0}to{opacity:1}}@keyframes fade{from{opacity:1}to{opacity:0}}.a{animation-name:Fade}.b{animation-name:fade}',
+      '@keyframes a{from{opacity:0}to{opacity:1}}@keyframes b{from{opacity:1}to{opacity:0}}.a{animation-name:a}.b{animation-name:b}'
+    )
+  );
+
+  test(
+    'should not rename an animation name that differs in case from the keyframes definition',
+    passthroughCSS(
+      '@keyframes Fade{from{opacity:0}to{opacity:1}}.a{animation-name:fade}'
+    )
+  );
+
+  test(
     'should rename keyframes with extra whitespace in at-rule params',
     processCSS(
       '@keyframes  whiteToBlack  {0%{color:#fff}to{color:#000}}.one{animation-name:whiteToBlack}',
       '@keyframes  a  {0%{color:#fff}to{color:#000}}.one{animation-name:a}'
     )
   );
+
+  test(
+    'should rename keyframes with non-ASCII names',
+    processCSS(
+      '@keyframes φade{from{opacity:0}}.a{animation-name:φade}',
+      '@keyframes a{from{opacity:0}}.a{animation-name:a}'
+    )
+  );
+
+  test(
+    'should rename keyframes when a comment precedes the name in the at-rule params',
+    processCSS(
+      '@keyframes /* c */ fade{from{opacity:0}}.a{animation-name:fade}',
+      '@keyframes /* c */ a{from{opacity:0}}.a{animation-name:a}'
+    )
+  );
+
+  test('should not rename a keyframes reference when its definition is in another document', async () => {
+    const instance = postcss(plugin);
+
+    const [defined, referenced] = await Promise.all([
+      instance.process('@keyframes fade{from{opacity:0}to{opacity:1}}', {
+        from: undefined,
+      }),
+      instance.process('.a{animation-name:fade}', { from: undefined }),
+    ]);
+
+    assert.strictEqual(
+      defined.css,
+      '@keyframes fade{from{opacity:0}to{opacity:1}}'
+    );
+    assert.strictEqual(referenced.css, '.a{animation-name:fade}');
+  });
 
   test('should not generate same ident when plugin instance is reused', async () => {
     const instance = postcss(plugin);
