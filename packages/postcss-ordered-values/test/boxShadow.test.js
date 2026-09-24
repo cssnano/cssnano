@@ -17,16 +17,43 @@ test(
 );
 
 test(
-  'preserves box-shadow unknown functions as color-like terms',
+  'fails closed on unknown functions in the color slot',
+  passthroughCSS(
+    'a{box-shadow:paint(foo) 2px 5px;box-shadow:foo(1) 2px 5px;box-shadow:rotate(2deg) 2px 5px}'
+  )
+);
+
+test(
+  'fails closed on image functions in the color slot',
+  passthroughCSS('a{box-shadow:linear-gradient(red, blue) 2px 5px}')
+);
+
+test(
+  'orders box-shadow with spec-defined color functions',
   processCSS(
-    'a{box-shadow:paint(foo) 2px 5px}',
-    'a{box-shadow:2px 5px paint(foo)}'
+    'a{box-shadow:rgb(0 0 0) 2px 5px;box-shadow:hsl(120deg 75% 25%) 2px 5px;box-shadow:color-mix(in srgb, red, blue) 2px 5px;box-shadow:lab(50% 40 20) 2px 5px;box-shadow:light-dark(red, blue) 2px 5px}',
+    'a{box-shadow:2px 5px rgb(0 0 0);box-shadow:2px 5px hsl(120deg 75% 25%);box-shadow:2px 5px color-mix(in srgb, red, blue);box-shadow:2px 5px lab(50% 40 20);box-shadow:2px 5px light-dark(red, blue)}'
   )
 );
 
 test(
   'should pass through multi-item box-shadow containing none',
   passthroughCSS('a{box-shadow:none, red 2px 5px;box-shadow:red 2px 5px, none}')
+);
+
+test(
+  'orders box-shadow with mixed-unit calc lengths',
+  processCSS(
+    'a{box-shadow:red calc(1px + 1em) 0 0}',
+    'a{box-shadow:calc(1px + 1em) 0 0 red}'
+  )
+);
+
+test(
+  'should pass through box-shadow math that does not resolve to a length',
+  passthroughCSS(
+    'a{box-shadow:red calc(1px + 1%) 0 0;box-shadow:red sign(10px) 0 0;box-shadow:red calc(1px + 1s) 0 0}'
+  )
 );
 
 describe('Order', () => {

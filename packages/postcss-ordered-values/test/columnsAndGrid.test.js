@@ -6,11 +6,16 @@ const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 describe('Columns', () => {
   test(
-    'should order columns only if unit is mentioned',
+    'should order columns with an auto column count last',
     processCSS(
       'h1 {columns: 2 auto;columns: auto 12em;columns: auto auto;}',
-      'h1 {columns: 2 auto;columns: 12em auto;columns: auto auto;}'
+      'h1 {columns: auto 2;columns: 12em auto;columns: auto auto;}'
     )
+  );
+
+  test(
+    'should pass through already ordered columns declaration',
+    passthroughCSS('h1 {columns: auto 2;}')
   );
 
   test(

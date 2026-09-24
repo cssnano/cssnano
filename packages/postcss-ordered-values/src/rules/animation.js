@@ -8,12 +8,12 @@ import {
   reservedIdentKeywords,
   serializeArguments,
 } from '../lib/tokenize.js';
+import { easingKeywords, easingFunctionNames } from '../lib/easingSets.js';
 import classifyTime from '../lib/isTime.js';
-import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
 // animation: [ none | <keyframes-name> ] || <time> || <single-timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state>
-const timingFunctions = new Set([...easingFunctions.functions, 'frames']);
-const timingKeywords = new Set(easingFunctions.keywords);
+const timingFunctions = new Set([...easingFunctionNames, 'frames']);
+const timingKeywords = easingKeywords;
 
 const directions = new Set([
   'normal',
@@ -47,12 +47,19 @@ const isPlayState = (value, node) => {
   return isIdent(node) && playStates.has(value);
 };
 /**
+ * A non-negative count per CSS Animations 1: <number [0,∞]> | infinite.
+ * Negative numbers are not iteration counts and fail closed via the name slot.
+ *
  * @param {string} value
  * @param {import('../lib/tokenize.js').Term} node
  * @return {boolean}
  */
 const isIterationCount = (value, node) => {
-  return (isIdent(node) && value === 'infinite') || isNumber(node);
+  if (isIdent(node) && value === 'infinite') return true;
+  if (!isNumber(node)) return false;
+  const { value: count, signCharacter } =
+    /** @type {{value: number, signCharacter?: string}} */ (node.tokens[0][4]);
+  return signCharacter !== '-' && count >= 0;
 };
 
 /**

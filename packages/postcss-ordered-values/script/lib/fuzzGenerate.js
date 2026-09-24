@@ -7,6 +7,7 @@ const properties = [
       'solid red 1px',
       'rgba(0, 50, 50, 0.4) dashed thick',
       'calc(1px) solid #abc',
+      'calc(1px + 1em) solid #abc',
       'foo(steps(2, jump-start)) red 1px',
     ],
   ],
@@ -44,6 +45,8 @@ const properties = [
       'red 1px,blue 2px 3px',
       '0 0 1px rgba(0,0,0,.2)',
       'inset -1px -2px 0 0 currentColor',
+      'red calc(1px + 1em) 0 0',
+      'red calc(1px + 1%) 0 0',
     ],
   ],
   [
@@ -294,6 +297,11 @@ const edgeCases = [
     name: 'math-functions',
     branch: 'border',
     css: 'a{border:red solid min(1px, calc(2px + 1px))}',
+  },
+  {
+    name: 'mixed-unit-math',
+    branch: 'box-shadow',
+    css: 'a{box-shadow:red calc(1px + 1em) 0 0}',
   },
   {
     name: 'bracket-block',

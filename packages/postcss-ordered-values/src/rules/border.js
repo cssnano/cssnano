@@ -1,16 +1,15 @@
 import cssnanoUtils from 'cssnano-utils';
+import { classifyMathLength, isLength } from '../lib/isLength.js';
 import {
-  isDimension,
   isFunction,
   isHash,
   isIdent,
-  isNumber,
   isUrl,
   name,
   reservedIdentKeywords,
 } from '../lib/tokenize.js';
 
-const { lengthUnits, mathFunctions } = cssnanoUtils;
+const { mathFunctions } = cssnanoUtils;
 
 // border: <line-width> || <line-style> || <color>
 
@@ -31,17 +30,9 @@ const borderStyles = new Set([
 
 /** @param {import('../lib/tokenize.js').Term} term @param {string} lower */
 const isWidth = (term, lower) => {
-  if (isFunction(term)) return mathFunctions.has(lower);
   if (borderWidths.has(lower)) return true;
-  if (isDimension(term)) {
-    const unit = /** @type {{unit: string}} */ (term.tokens[0][4])?.unit;
-    return typeof unit === 'string' && lengthUnits.has(unit.toLowerCase());
-  }
-  if (isNumber(term)) {
-    const value = /** @type {{value: number}} */ (term.tokens[0][4])?.value;
-    return value === 0;
-  }
-  return false;
+  if (isFunction(term)) return classifyMathLength(term) !== null;
+  return isLength(term);
 };
 
 /** @param {import('../lib/tokenize.js').Term} term @param {string} lower @param {boolean} allowAuto */

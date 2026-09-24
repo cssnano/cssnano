@@ -1,7 +1,5 @@
-import cssnanoUtils from 'cssnano-utils';
 import { isDimension, isIdent, isNumber, name } from '../lib/tokenize.js';
-
-const { lengthUnits } = cssnanoUtils;
+import { lengthUnit } from '../lib/isLength.js';
 
 /**
  * @param {import('../lib/tokenize.js').Term} term
@@ -25,25 +23,20 @@ function isPositiveInteger(term) {
 }
 
 /**
+ * A non-negative length per CSS Multi-column: <length [0,∞]> | auto.
+ *
  * @param {import('../lib/tokenize.js').Term} term
  * @return {boolean}
  */
-function isValidLength(term) {
-  if (!isDimension(term)) {
+function isNonNegativeLength(term) {
+  if (!isDimension(term) || lengthUnit(term) === null) {
     return false;
   }
-  const { value, type, signCharacter, unit } =
-    /** @type {{ value?: number, type?: string, signCharacter?: string, unit?: string }} */ (
-      term.tokens[0][4] ?? {}
+  const { value, signCharacter } =
+    /** @type {{ value: number, signCharacter?: string }} */ (
+      term.tokens[0][4]
     );
-  return (
-    typeof unit === 'string' &&
-    lengthUnits.has(unit.toLowerCase()) &&
-    (type === 'integer' || type === 'number') &&
-    typeof value === 'number' &&
-    value >= 0 &&
-    signCharacter !== '-'
-  );
+  return value >= 0 && signCharacter !== '-';
 }
 
 /** @param {import('../lib/tokenize.js').Term[]} columns */
@@ -55,28 +48,31 @@ export default (columns) => {
   /** @type {string[]} */
   const widths = [];
   /** @type {string[]} */
-  const other = [];
+  const counts = [];
+  /** @type {string[]} */
+  const autos = [];
   for (const term of columns) {
     // Multi-token terms (e.g. functions) cannot be classified safely.
     if (term.tokens.length !== 1) {
       return null;
     }
-    if (isValidLength(term)) {
+    if (isNonNegativeLength(term)) {
       widths.push(term.raw);
-    } else if (
-      isPositiveInteger(term) ||
-      (isIdent(term) && name(term) === 'auto')
-    ) {
-      other.push(term.raw);
+    } else if (isPositiveInteger(term)) {
+      counts.push(term.raw);
+    } else if (isIdent(term) && name(term) === 'auto') {
+      autos.push(term.raw);
     } else {
       return null;
     }
   }
 
-  // only transform if declaration is not invalid or a single value
-  if (other.length === 1 && widths.length === 1) {
-    return `${widths[0].trimStart()} ${other[0].trimStart()}`;
-  }
+  // Duplicate widths or counts leave the other slot empty, so the guard
+  // below rejects them.
+  // `auto` is accepted by both slot grammars; assign it to whichever of
+  // <'column-width'> and <'column-count'> no length or integer filled.
+  const width = widths[0] ?? autos.pop();
+  const count = counts[0] ?? autos.pop();
 
-  return null;
+  return width && count ? `${width} ${count}` : null;
 };
