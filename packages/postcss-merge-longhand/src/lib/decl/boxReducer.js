@@ -1,14 +1,18 @@
 import stylehacks from 'stylehacks';
 import canExplode from '../canExplode.js';
-import isCustomProp from '../isCustomProp.js';
-import insertCloned from '../insertCloned.js';
 import minifyTrbl from '../minifyTrbl.js';
 import parseTrbl from '../parseTrbl.js';
 import cssGlobalKeywords from '../cssGlobalKeywords.js';
 import { browserKeeps } from '../validateBox.js';
-import { isFallback, mergeBlockingSupport } from '../isFallback.js';
 import topRightBottomLeft from '../trbl.js';
 import cleanupDeclarations from '../cleanupDeclarations.js';
+import {
+  assignSlotValue,
+  commitShorthand,
+  shouldResetSlots,
+  slotVectorReady,
+  supportProvenanceMatches,
+} from './slotVector.js';
 import {
   cleanupLaneSegments,
   importanceLanes,
@@ -36,45 +40,24 @@ const isInvalid = (d) =>
 /** @param {Container} rule @param {string} prop @param {({ value: string, decl: Declaration } | null)[]} slots @param {Set<Declaration>} contributing @param {Set<Declaration>} fallbacks @param {boolean} lane */
 
 function flush(rule, prop, slots, contributing, fallbacks, lane) {
-  if (slots.some((s) => !s || isCustomProp(s.decl))) return;
-  const full = /** @type {{ value: string, decl: Declaration }[]} */ (slots);
-  const s0 = mergeBlockingSupport(full[0].decl);
+  const full = slotVectorReady(slots);
+  if (!full) return;
+
   const v0 = full[0].value.toLowerCase();
   const kw = cssGlobalKeywords.has(v0);
   for (const s of full) {
     const sv = s.value.toLowerCase();
     if (kw ? sv !== v0 : cssGlobalKeywords.has(sv)) return;
-    if (s0.symmetricDifference(mergeBlockingSupport(s.decl)).size) return;
   }
+  if (!supportProvenanceMatches(full)) return;
 
   const rawValues = full.map((s) => s.value).join(' ');
   const shorthandVal = kw ? full[0].value : minifyTrbl(rawValues);
-  const toRemove = Array.from(contributing).filter((d) => !fallbacks.has(d));
-  if (toRemove.length === 0) return;
-  if (toRemove.length === 1 && toRemove[0].prop.toLowerCase() === prop) {
-    toRemove[0].prop = prop;
-    toRemove[0].value = shorthandVal;
-    delete toRemove[0].raws?.value;
-    return;
-  }
-  let remSize = -(prop.length + shorthandVal.length + 2 + (lane ? 10 : 0));
-  for (const d of toRemove)
-    remSize += d.prop.length + d.value.length + (d.important ? 12 : 2);
-  if (remSize >= 0) {
-    const a = toRemove.at(-1);
-    if (!a) return;
-    insertCloned(rule, a, { prop, value: shorthandVal, important: lane });
-    for (const d of toRemove) d.remove();
-  }
-}
-
-/** @param {({ value: string, decl: Declaration } | null)[]} slots @param {number} idx @param {Declaration} decl */
-function shouldReset(slots, idx, decl) {
-  if (!slots.every(Boolean)) return false;
-  const isFb = (/** @type {{decl: Declaration} | null} */ s) =>
-    Boolean(s && isFallback(s.decl, decl));
-  if (idx === -1) return slots.some(isFb);
-  return cssGlobalKeywords.has(decl.value.toLowerCase()) || isFb(slots[idx]);
+  commitShorthand(rule, full, contributing, fallbacks, {
+    prop,
+    value: shorthandVal,
+    important: lane,
+  });
 }
 
 /** @param {Container} rule @param {string} prop @param {string[]} sideProps @param {Declaration[]} laneDecls @param {boolean} lane */
@@ -106,14 +89,12 @@ function processLane(rule, prop, sideProps, laneDecls, lane) {
       reset();
       continue;
     }
-    if (shouldReset(slots, idx, decl)) reset();
+    if (shouldResetSlots(slots, idx, decl)) reset();
 
     const vals = isShort ? parseTrbl(decl.value) : null;
     for (let i = 0; i < 4; i++) {
       if (isShort || i === idx) {
-        const s = slots[i];
-        if (s && isFallback(s.decl, decl)) fallbacks.add(s.decl);
-        slots[i] = { value: vals ? vals[i] : decl.value, decl };
+        assignSlotValue(slots, i, vals ? vals[i] : decl.value, decl, fallbacks);
       }
     }
     contributing.add(decl);

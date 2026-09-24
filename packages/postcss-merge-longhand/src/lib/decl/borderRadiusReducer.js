@@ -1,11 +1,15 @@
 import stylehacks from 'stylehacks';
 import canExplode from '../canExplode.js';
-import isCustomProp from '../isCustomProp.js';
-import insertCloned from '../insertCloned.js';
 import minifyTrbl from '../minifyTrbl.js';
-import { isFallback, mergeBlockingSupport } from '../isFallback.js';
+import { isFallback } from '../isFallback.js';
 import cleanupDeclarations from '../cleanupDeclarations.js';
 import { importanceLanes, isAll } from './importanceLanes.js';
+import {
+  assignSlotValue,
+  commitShorthand,
+  slotVectorReady,
+  supportProvenanceMatches,
+} from './slotVector.js';
 import {
   parseCornerRadius,
   parseRadiusShorthand,
@@ -37,23 +41,6 @@ import {
  */
 
 /**
- * Writes a component value to the target slot vector and registers fallback dependence edges.
- *
- * @param {({ value: string, decl: Declaration } | null)[]} slotVector
- * @param {number} idx
- * @param {string} value
- * @param {Declaration} decl
- * @param {Set<Declaration>} fallbackDefinitions
- */
-function assignSlot(slotVector, idx, value, decl, fallbackDefinitions) {
-  const existing = slotVector[idx];
-  if (existing && isFallback(existing.decl, decl)) {
-    fallbackDefinitions.add(existing.decl);
-  }
-  slotVector[idx] = { value, decl };
-}
-
-/**
  * Synthesizes and commits a merged shorthand declaration if cost-model benefit is non-negative.
  *
  * @param {Container} rule
@@ -69,18 +56,13 @@ function commitSlotVector(
   fallbackDefinitions,
   isImportant
 ) {
-  if (slotVector.some((s) => !s || isCustomProp(s.decl))) return;
-  const full = /** @type {{ value: string, decl: Declaration }[]} */ (
-    slotVector
-  );
-  const s0 = mergeBlockingSupport(full[0].decl);
+  const full = slotVectorReady(slotVector);
+  if (!full) return;
 
   /* Preserve CSS-wide keywords without merging to respect author inheritance contracts */
   if (full.some((s) => isGlobalKeyword(s.value))) return;
 
-  for (const s of full) {
-    if (s0.symmetricDifference(mergeBlockingSupport(s.decl)).size) return;
-  }
+  if (!supportProvenanceMatches(full)) return;
 
   const horizontal = minifyTrbl([
     full[0].value,
@@ -97,40 +79,11 @@ function commitSlotVector(
   const shorthandVal =
     horizontal === vertical ? horizontal : `${horizontal}/${vertical}`;
 
-  const toRemove = Array.from(liveDefinitions).filter(
-    (d) => !fallbackDefinitions.has(d)
-  );
-  if (toRemove.length === 0) return;
-  if (
-    toRemove.length === 1 &&
-    toRemove[0].prop.toLowerCase() === 'border-radius'
-  ) {
-    toRemove[0].prop = 'border-radius';
-    toRemove[0].value = shorthandVal;
-    if (toRemove[0].raws) delete toRemove[0].raws.value;
-    return;
-  }
-
-  let sizeBenefit = -(
-    'border-radius'.length +
-    shorthandVal.length +
-    2 +
-    (isImportant ? 10 : 0)
-  );
-  for (const d of toRemove) {
-    sizeBenefit += d.prop.length + d.value.length + (d.important ? 12 : 2);
-  }
-
-  if (sizeBenefit >= 0) {
-    const a = toRemove.at(-1);
-    if (!a) return;
-    insertCloned(rule, a, {
-      prop: 'border-radius',
-      value: shorthandVal,
-      important: isImportant,
-    });
-    for (const d of toRemove) d.remove();
-  }
+  commitShorthand(rule, full, liveDefinitions, fallbackDefinitions, {
+    prop: 'border-radius',
+    value: shorthandVal,
+    important: isImportant,
+  });
 }
 
 /**
@@ -174,14 +127,14 @@ function accumulateShorthand(
   if (!parsed) return false;
   const decl = desc.decl;
   for (let i = 0; i < 4; i++) {
-    assignSlot(
+    assignSlotValue(
       slotVector,
       i * 2,
       parsed.horizontal[i],
       decl,
       fallbackDefinitions
     );
-    assignSlot(
+    assignSlotValue(
       slotVector,
       i * 2 + 1,
       parsed.vertical[i],
@@ -212,8 +165,14 @@ function accumulateCorner(
 ) {
   const decl = desc.decl;
   if (desc.isGlobalKeyword) {
-    assignSlot(slotVector, idx * 2, decl.value, decl, fallbackDefinitions);
-    assignSlot(slotVector, idx * 2 + 1, decl.value, decl, fallbackDefinitions);
+    assignSlotValue(slotVector, idx * 2, decl.value, decl, fallbackDefinitions);
+    assignSlotValue(
+      slotVector,
+      idx * 2 + 1,
+      decl.value,
+      decl,
+      fallbackDefinitions
+    );
     liveDefinitions.add(decl);
     return true;
   }
@@ -222,8 +181,14 @@ function accumulateCorner(
   );
   if (!parsed) return false;
 
-  assignSlot(slotVector, idx * 2, parsed[0], decl, fallbackDefinitions);
-  assignSlot(slotVector, idx * 2 + 1, parsed[1], decl, fallbackDefinitions);
+  assignSlotValue(slotVector, idx * 2, parsed[0], decl, fallbackDefinitions);
+  assignSlotValue(
+    slotVector,
+    idx * 2 + 1,
+    parsed[1],
+    decl,
+    fallbackDefinitions
+  );
   liveDefinitions.add(decl);
   return true;
 }

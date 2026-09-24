@@ -5,12 +5,12 @@ export const test = new URL('./test/*.test.js', import.meta.url).href;
 export const mutations = [
   {
     name: 'drop arbitrary coordinate preservation fallback',
-    find: "outA ||\n          (first === 'center' ? center : value.slice(a[2], b[2]).trimEnd())",
+    find: "firstOutput ||\n      (first === 'center'\n        ? center\n        : value.slice(firstToken[2], secondToken[2]).trimEnd())",
     replace: 'outA',
   },
   {
     name: 'disable nested math-token handling',
-    find: 'isNumber(token) ||\n        isMathFunction(token)',
+    find: 'isNumber(token) ||\n    isMathFunction(token)',
     replace: 'isNumber(token) ||\n        false',
   },
 ];
