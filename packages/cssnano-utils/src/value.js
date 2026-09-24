@@ -146,6 +146,14 @@ const closeFor = new Map([
 ]);
 
 /**
+ * @param {TokenType} type
+ * @return {TokenType | undefined}
+ */
+function closeForOpening(type) {
+  return closeFor.get(type);
+}
+
+/**
  * Lexical CSS block index. This does not parse or validate any CSS grammar;
  * consumers must preserve raw spelling and define their own malformed-input policy.
  */
@@ -232,6 +240,7 @@ export {
   TokenType,
   applyEdits,
   balancedTokens,
+  closeForOpening,
   decoded,
   numeric,
   numericSource,

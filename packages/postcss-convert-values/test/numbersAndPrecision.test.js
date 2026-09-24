@@ -79,15 +79,86 @@ describe('Precision and rounding', () => {
   );
 
   test(
+    'should ignore negative precision and treat as default',
+    passthroughCSS('h1{right:6.66667px}', { precision: -1 })
+  );
+
+  test(
+    'should ignore negative precision and treat as default (case 2)',
+    passthroughCSS('h1{right:6.66667px}', { precision: -5 })
+  );
+
+  test(
     'should convert pixel values to shorter units correctly when precision is configured',
     processCSS('h1{width:96.0px}', 'h1{width:1in}', { precision: 2 })
+  );
+
+  test(
+    'should round non-px values with customisable precision',
+    processCSS(
+      'h1{width:1.2345rem;height:1.2345em;top:1.2345%;bottom:1.2345vh}',
+      'h1{width:1.23rem;height:1.23em;top:1.23%;bottom:1.23vh}',
+      { precision: 2 }
+    )
+  );
+
+  test(
+    'should round half values accurately without IEEE-754 precision loss',
+    processCSS(
+      'h1{width:1.005px;height:10.005px}',
+      'h1{width:1.01px;height:10.01px}',
+      { precision: 2 }
+    )
+  );
+
+  test(
+    'should round negative half values symmetrically away from zero',
+    processCSS(
+      'h1{margin:-1.005px;top:-10.005px;left:-6.6667px}',
+      'h1{margin:-1.01px;top:-10.01px;left:-6.67px}',
+      { precision: 2 }
+    )
+  );
+
+  test(
+    'should round scientific notation without decimal dot according to precision',
+    processCSS('h1{width:1e-2px}', 'h1{width:0}', { precision: 1 })
+  );
+
+  test(
+    'should round scientific notation without decimal dot when precision preserves fraction',
+    processCSS('h1{width:1e-2px}', 'h1{width:.01px}', { precision: 2 })
+  );
+
+  test(
+    'should eliminate floating-point noise during unit conversion',
+    processCSS(
+      'h1{transition-duration:100.00000000000002ms}',
+      'h1{transition-duration:.1s}'
+    )
   );
 });
 
 describe('Opacity clamping and stripping', () => {
   test(
-    'should preserve opacities defined as percentages',
-    passthroughCSS('h1{opacity:100%}')
+    'should convert opacity 100% to 1 and clamp percentages',
+    processCSS(
+      'h1{opacity:100%;opacity:150%;opacity:-50%}',
+      'h1{opacity:1;opacity:1;opacity:0}'
+    )
+  );
+
+  test(
+    'should simplify opacity percentages to shorter decimals',
+    processCSS(
+      'h1{opacity:50%;opacity:10%;opacity:20%}',
+      'h1{opacity:.5;opacity:.1;opacity:.2}'
+    )
+  );
+
+  test(
+    'should preserve percentage opacities when decimal is not strictly shorter',
+    passthroughCSS('h1{opacity:25%;opacity:75%;opacity:33%}')
   );
 
   test(
@@ -100,6 +171,14 @@ describe('Opacity clamping and stripping', () => {
     processCSS(
       'h1{opacity:150;opacity:15;opacity:1.5}',
       'h1{opacity:1;opacity:1;opacity:1}'
+    )
+  );
+
+  test(
+    'should clamp opacity for single-digit values greater than 1',
+    processCSS(
+      'h1{opacity:2;opacity:3;opacity:5;opacity:9;fill-opacity:2;-webkit-opacity:5;shape-image-threshold:2}',
+      'h1{opacity:1;opacity:1;opacity:1;opacity:1;fill-opacity:1;-webkit-opacity:1;shape-image-threshold:1}'
     )
   );
 
@@ -129,6 +208,39 @@ describe('Opacity clamping and stripping', () => {
   test(
     'should handle global values for opacity',
     passthroughCSS('h1{opacity:initial}')
+  );
+
+  test(
+    'should respect precision option when converting percentage opacity to decimal',
+    processCSS('h1{opacity:50.5%}', 'h1{opacity:.5}', { precision: 1 })
+  );
+
+  test(
+    'should respect precision option on fill-opacity percentage',
+    processCSS('h1{fill-opacity:25.5%}', 'h1{fill-opacity:.3}', {
+      precision: 1,
+    })
+  );
+
+  test(
+    'should respect precision option on shape-image-threshold percentage',
+    processCSS(
+      'h1{shape-image-threshold:33.33%}',
+      'h1{shape-image-threshold:.3}',
+      { precision: 1 }
+    )
+  );
+
+  test(
+    'should respect precision option with two decimal places on percentage opacity',
+    processCSS('h1{opacity:50.55%}', 'h1{opacity:.51}', { precision: 2 })
+  );
+
+  test(
+    'should respect precision option on vendor-prefixed opacity percentages',
+    processCSS('h1{-webkit-opacity:50.5%}', 'h1{-webkit-opacity:.5}', {
+      precision: 1,
+    })
   );
 });
 
@@ -215,6 +327,39 @@ describe('Shape-image-threshold and SVG opacity clamping', () => {
     processCSS(
       'stop{stop-opacity:-0.5;stop-opacity:-5;stop-opacity:-50}',
       'stop{stop-opacity:0;stop-opacity:0;stop-opacity:0}'
+    )
+  );
+
+  test(
+    'should clamp flood-opacity',
+    processCSS(
+      'filter{flood-opacity:150;flood-opacity:1.5;flood-opacity:150%;flood-opacity:-0.5;flood-opacity:-50%}',
+      'filter{flood-opacity:1;flood-opacity:1;flood-opacity:1;flood-opacity:0;flood-opacity:0}'
+    )
+  );
+
+  test(
+    'should clamp -webkit-opacity',
+    processCSS(
+      'h1{-webkit-opacity:150;-webkit-opacity:1.5;-webkit-opacity:150%;-webkit-opacity:-0.5;-webkit-opacity:-50%}',
+      'h1{-webkit-opacity:1;-webkit-opacity:1;-webkit-opacity:1;-webkit-opacity:0;-webkit-opacity:0}'
+    )
+  );
+
+  test(
+    'should simplify SVG and prefixed opacity percentages to shorter decimals',
+    processCSS(
+      'h1{fill-opacity:50%;stroke-opacity:10%;-webkit-opacity:50%;shape-image-threshold:20%}',
+      'h1{fill-opacity:.5;stroke-opacity:.1;-webkit-opacity:.5;shape-image-threshold:.2}'
+    )
+  );
+
+  test(
+    'should round scientific notation values according to precision option',
+    processCSS(
+      'h1{width:1.2345e2px;height:1.23456e2px}',
+      'h1{width:123.45px;height:123.46px}',
+      { precision: 2 }
     )
   );
 });

@@ -4,7 +4,7 @@ import mathFunctions from './mathFunctions.js';
 import mathFunctionArgumentRanges from './mathFunctionArgumentRanges.js';
 import rawCache from './rawCache.js';
 import sameParent from './sameParent.js';
-import { TokenType, applyEdits, balancedTokens, decoded, numeric, numericSource, tokenEnd, tokenStart, tokens } from './value.js';
+import { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, numeric, numericSource, tokenEnd, tokenStart, tokens } from './value.js';
 /** @param {string} value @return {string} */
 declare function asciiLowerCase(value: string): string;
 declare const moduleExports: {
@@ -15,6 +15,7 @@ declare const moduleExports: {
     asciiLowerCase: typeof asciiLowerCase;
     balancedTokens: typeof balancedTokens;
     calcSumFunctions: typeof calcSumFunctions;
+    closeForOpening: typeof closeForOpening;
     decoded: typeof decoded;
     lengthUnits: typeof lengthUnits;
     mathFunctions: typeof mathFunctions;
