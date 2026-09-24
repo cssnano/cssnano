@@ -94,21 +94,90 @@ describe('Options', () => {
 });
 
 describe('Encoder', () => {
-  test('encoder', async () => {
-    const arr = Array.from({ length: 1984 }, (value, index) => index);
-    const cache = [];
+  // Invert the encoder's bijective numeration here, so the contract below
+  // checks against an independent position.
+  const LETTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const REMAINDER = LETTERS + '0123456789-_';
 
-    for (const num of arr) {
-      const encoded = encode(null, num);
-      cache.push(encoded);
+  /**
+   * @param {string} word
+   * @return {number}
+   */
+  function position(word) {
+    let num = LETTERS.indexOf(word[0]);
+    let place = 1;
+    for (let i = 1; i < word.length; i++) {
+      num += (REMAINDER.indexOf(word[i]) + 1) * 52 * place;
+      place *= 64;
+    }
+    return num;
+  }
 
-      const indexes = cache.filter((c) => c === encoded);
-
-      assert.strictEqual(indexes.length, 1);
+  test('generates unique identifiers for consecutive indices', () => {
+    const seen = new Set();
+    for (let num = 0; num < 100000; num++) {
+      const encoded = encode(num);
+      assert.ok(!seen.has(encoded), `repeated ident for ${num}`);
+      seen.add(encoded);
     }
   });
 
-  test('encoder gen spec', async () => {
+  test('generates unique identifiers for strided samples up to ten million', () => {
+    const seen = new Set();
+    // Use a stride sharing no factor with the numeration bases, so the
+    // sample visits every window.
+    for (let num = 0; num < 10000000; num += 4999) {
+      const encoded = encode(num);
+      assert.ok(!seen.has(encoded), `repeated ident for ${num}`);
+      seen.add(encoded);
+    }
+  });
+
+  test('generates identifiers that read as custom idents', () => {
+    for (let num = 0; num < 100000; num++) {
+      assert.match(encode(num), /^[a-zA-Z][\-_a-zA-Z0-9]*$/v);
+    }
+  });
+
+  test('never generates an identifier a grammar reads as a keyword', () => {
+    for (const word of [
+      'auto',
+      'dense',
+      'disc',
+      'ease',
+      'inherit',
+      'initial',
+      'inline',
+      'lao',
+      'list-item',
+      'none',
+      'page',
+      'span',
+    ]) {
+      const num = position(word);
+      assert.notStrictEqual(encode(num), word);
+      // Require the stepped ident to differ from its neighbours' outputs.
+      const around = new Set();
+      for (let offset = -2; offset <= 2; offset++) {
+        around.add(encode(num + offset));
+      }
+      assert.strictEqual(around.size, 5);
+      assert.ok(!around.has(word));
+    }
+  });
+
+  test('steps over the numbering positions whose plain output is reserved', () => {
+    // Step from 'lao' on, the earliest reserved position: below it the
+    // mapping is plain, from it on every index lands one higher.
+    const lao = position('lao');
+    assert.strictEqual(position(encode(lao - 1)), lao - 1);
+    assert.notStrictEqual(encode(lao), 'lao');
+    assert.strictEqual(position(encode(lao)), lao + 1);
+  });
+
+  test('encoder spec', () => {
+    // Cover positions below the earliest reserved word, where the mapping is
+    // the plain numeration.
     const edgeCaseList = {
       0: 'a',
       1: 'b',
@@ -123,13 +192,9 @@ describe('Encoder', () => {
       2807: 'Z0',
       3380: 'aaa',
       3431: 'Zaa',
-      216372: 'aaaa',
-      216373: 'baaa',
-      216423: 'Zaaa',
-      13847860: 'aaaaa',
     };
-    for (const num of Object.keys(edgeCaseList)) {
-      assert.strictEqual(encode(null, num), edgeCaseList[num]);
+    for (const [num, ident] of Object.entries(edgeCaseList)) {
+      assert.strictEqual(encode(Number(num)), ident);
     }
   });
 });

@@ -9,7 +9,8 @@
 import { writeFileSync } from 'node:fs';
 import css from '@webref/css';
 
-import { buildIdentSlots, serialize, validate } from './lib/webrefIdents.mjs';
+import { buildIdentSlots, serialize } from './lib/webrefIdents.mjs';
+import { validate } from './lib/webrefIdentsValidate.mjs';
 
 const data = buildIdentSlots(await css.listAll());
 validate(data);

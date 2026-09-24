@@ -10,7 +10,7 @@ import gridTemplateReducer from './lib/grid-template.js';
     encoder?: (value: string, index: number) => string}} Options
 */
 /** @typedef {{
- *    collect: (node: import('postcss').AnyNode, encoder: (value: string, num: number) => string) => void,
+ *    collect: (node: import('postcss').AnyNode) => void,
  *    transform: () => void
  *  }} Reducer
  */
@@ -23,22 +23,22 @@ function pluginCreator({
   counterStyle = true,
   keyframes = true,
   gridTemplate = true,
-  encoder = encode,
+  encoder = (value, index) => encode(index),
 } = {}) {
   /** @type {Reducer[]} */
   const reducers = [];
 
   if (counter) {
-    reducers.push(counterReducer());
+    reducers.push(counterReducer(encoder));
   }
   if (counterStyle) {
-    reducers.push(counterStyleReducer());
+    reducers.push(counterStyleReducer(encoder));
   }
   if (keyframes) {
-    reducers.push(keyframesReducer());
+    reducers.push(keyframesReducer(encoder));
   }
   if (gridTemplate) {
-    reducers.push(gridTemplateReducer());
+    reducers.push(gridTemplateReducer(encoder));
   }
 
   return {
@@ -49,7 +49,7 @@ function pluginCreator({
     OnceExit(css) {
       css.walk((node) => {
         for (const reducer of reducers) {
-          reducer.collect(node, encoder);
+          reducer.collect(node);
         }
       });
 
