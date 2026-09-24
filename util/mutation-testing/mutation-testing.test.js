@@ -8,6 +8,9 @@ const catalogPromises = [
   import('../../packages/postcss-discard-empty/mutation-catalog.mjs'),
   import('../../packages/postcss-discard-comments/mutation-catalog.mjs'),
   import('../../packages/postcss-normalize-whitespace/mutation-catalog.mjs'),
+  import('../../packages/postcss-normalize-positions/mutation-catalog.mjs'),
+  import('../../packages/postcss-merge-longhand/mutation-catalog.mjs'),
+  import('../../packages/postcss-merge-longhand/mutation-catalog-validity.mjs'),
 ];
 
 test('applies a mutation exactly once', () => {

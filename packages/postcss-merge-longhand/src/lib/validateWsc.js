@@ -18,7 +18,7 @@ const lengthValueRegex =
 const hexColorRegex = /^#([\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/v;
 
 /**
- * @param {string} value
+ * @param {string | undefined} value
  * @return {boolean}
  */
 function isBorderStyle(value) {
@@ -39,7 +39,7 @@ function isTypedAsWidth(value) {
 }
 
 /**
- * @param {string} value
+ * @param {string | undefined} value
  * @return {boolean}
  */
 function isBorderWidth(value) {
@@ -98,7 +98,7 @@ function callsColorFunction(value) {
 }
 
 /**
- * @param {string} value
+ * @param {string | undefined} value
  * @return {boolean}
  */
 function isColor(value) {
@@ -129,13 +129,13 @@ function isColor(value) {
 }
 
 /**
- * @param {[string, string, string]} wscs
+ * @param {{width: (string|undefined), style: (string|undefined), color: (string|undefined)}} wscs
  * @return {boolean}
  */
 function isValidWidthStyleColor(wscs) {
-  const validWidth = isBorderWidth(wscs[0]);
-  const validStyle = isBorderStyle(wscs[1]);
-  const validColor = isColor(wscs[2]);
+  const validWidth = isBorderWidth(wscs.width);
+  const validStyle = isBorderStyle(wscs.style);
+  const validColor = isColor(wscs.color);
 
   return (
     (validWidth && validStyle) ||
@@ -190,9 +190,8 @@ function specifiesComponent(value, component) {
 
 /**
  * The grammar `<line-width> || <line-style> || <color>` requires each
- * component to appear at most once. `parseWsc` doesn't enforce this: it
- * overwrites repeated components and discards unrecognized tokens, so the
- * returned triple can differ from the input.
+ * component to appear at most once, and every token to specify one. This is
+ * the same judgment `parseWsc` makes while parsing; keep the two in step.
  *
  * @param {string} value
  * @return {boolean} whether every token specifies a distinct component
