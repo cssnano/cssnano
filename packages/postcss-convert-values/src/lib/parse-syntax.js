@@ -2,246 +2,221 @@ import cssnanoUtils from 'cssnano-utils';
 
 const { TokenType, decoded, tokens } = cssnanoUtils;
 
-const percentageSyntaxTypes = new Set(['percentage', 'length-percentage']);
-
-const closingTokens = new Map([
-  [TokenType.OpenParen, TokenType.CloseParen],
-  [TokenType.OpenSquare, TokenType.CloseSquare],
-  [TokenType.OpenCurly, TokenType.CloseCurly],
+const percentageSyntaxTypes = new Set([
+  'percentage',
+  'length-percentage',
+  'angle-percentage',
+  'time-percentage',
+  'frequency-percentage',
 ]);
 
 /**
- * @param {typeof TokenType.OpenParen | typeof TokenType.OpenSquare | typeof TokenType.OpenCurly} type
- * @return {typeof TokenType.CloseParen | typeof TokenType.CloseSquare | typeof TokenType.CloseCurly}
+ * @param {ReturnType<typeof tokens>} tokensList
+ * @param {number} i
+ * @return {number}
  */
-export function closeForOpening(type) {
-  const close = closingTokens.get(type);
-  if (close === undefined) throw new Error(`Unknown opening token: ${type}`);
-  return /** @type {typeof TokenType.CloseParen | typeof TokenType.CloseSquare | typeof TokenType.CloseCurly} */ (
-    close
-  );
-}
-
-/** @param {ReturnType<typeof tokens>[number] | undefined} token */
-function isTrivia(token) {
-  return (
-    token?.[0] === TokenType.Whitespace || token?.[0] === TokenType.Comment
-  );
-}
-
-/** @param {ReturnType<typeof tokens>[number] | undefined} token */
-function isClosing(token) {
-  return (
-    token?.[0] === TokenType.CloseParen ||
-    token?.[0] === TokenType.CloseSquare ||
-    token?.[0] === TokenType.CloseCurly
-  );
-}
-
-/** @param {ReturnType<typeof tokens>[number] | undefined} token */
-function isLiteral(token) {
-  return (
-    token?.[0] === TokenType.AtKeyword ||
-    token?.[0] === TokenType.Dimension ||
-    token?.[0] === TokenType.Hash ||
-    token?.[0] === TokenType.Ident ||
-    token?.[0] === TokenType.Number ||
-    token?.[0] === TokenType.Percentage ||
-    token?.[0] === TokenType.String ||
-    token?.[0] === TokenType.URL ||
-    token?.[0] === TokenType.UnicodeRange
-  );
+function skipTrivia(tokensList, i) {
+  let index = i;
+  while (index < tokensList.length) {
+    const type = tokensList[index][0];
+    if (type !== TokenType.Whitespace && type !== TokenType.Comment) {
+      break;
+    }
+    index++;
+  }
+  return index;
 }
 
 /**
- * @param {ReturnType<typeof tokens>} input
- * @return {{containsPercentage: boolean, valid: boolean}}
+ * @param {ReturnType<typeof tokens>} tokensList
+ * @param {number} startIndex
+ * @param {string} openType
+ * @param {string} closeType
+ * @return {number}
  */
-function parseSyntax(input) {
-  let index = 0;
-  let containsPercentage = false;
-  /** @type {string[]} */
-  const delimiters = [];
-
-  const skipTrivia = () => {
-    while (isTrivia(input[index])) index++;
-  };
-
-  /** @param {number} start @return {number} */
-  const nextSignificant = (start) => {
-    let cursor = start;
-    while (isTrivia(input[cursor])) cursor++;
-    return cursor;
-  };
-
-  /** Consume a boolean combinator. A single `|` is valid; `&` must be paired. */
-  const consumeOperator = () => {
-    const token = input[index];
-    if (token?.[0] !== TokenType.Delim) return false;
-    if (token[1] === '|') {
-      index++;
-      const next = nextSignificant(index);
-      if (input[next]?.[0] === TokenType.Delim && input[next][1] === '|')
-        index = next + 1;
-      return true;
+function skipMatching(tokensList, startIndex, openType, closeType) {
+  let depth = 1;
+  let index = startIndex + 1;
+  while (index < tokensList.length) {
+    const type = tokensList[index][0];
+    if (type === openType) {
+      depth++;
+    } else if (type === closeType) {
+      depth--;
+      if (depth === 0) return index + 1;
     }
-    if (token[1] !== '&') return false;
-    const next = nextSignificant(index + 1);
-    if (input[next]?.[0] !== TokenType.Delim || input[next][1] !== '&')
-      return false;
-    index = next + 1;
-    return true;
-  };
-
-  const consumeRange = () => {
     index++;
-    delimiters.push(TokenType.CloseSquare);
-    let side = 0;
-    let hasBound = false;
-    let hasComma = false;
-    while (index < input.length) {
-      skipTrivia();
-      const token = input[index];
-      if (!token) return false;
-      if (token[0] === TokenType.CloseSquare) {
-        if (!hasComma || !hasBound || side !== 1) return false;
-        delimiters.pop();
-        index++;
-        return true;
-      }
-      if (token[0] === TokenType.Comma) {
-        if (hasComma || !hasBound) return false;
-        hasComma = true;
-        side++;
-        hasBound = false;
-        index++;
-        continue;
-      }
-      if (
-        token[0] === TokenType.Number ||
-        token[0] === TokenType.Percentage ||
-        token[0] === TokenType.Dimension ||
-        token[0] === TokenType.Ident ||
-        (token[0] === TokenType.Delim && (token[1] === '+' || token[1] === '-'))
-      ) {
-        hasBound = true;
-        index++;
-        continue;
-      }
-      return false;
-    }
-    return false;
-  };
+  }
+  return -1;
+}
 
-  const consumeBoundedMultiplier = () => {
-    const start = nextSignificant(index);
-    if (input[start]?.[0] !== TokenType.OpenCurly) return false;
-    let cursor = nextSignificant(start + 1);
-    const minimum = input[cursor];
-    if (minimum?.[0] !== TokenType.Number) return false;
-    const minimumValue = /** @type {{value: number}} */ (minimum[4]);
-    if (!Number.isInteger(minimumValue.value)) return false;
-    cursor = nextSignificant(cursor + 1);
-    if (input[cursor]?.[0] !== TokenType.Comma) return false;
-    cursor = nextSignificant(cursor + 1);
-    const maximum = input[cursor];
-    if (maximum?.[0] !== TokenType.Number) return false;
-    const maximumValue = /** @type {{value: number}} */ (maximum[4]);
-    if (!Number.isInteger(maximumValue.value)) return false;
-    cursor = nextSignificant(cursor + 1);
-    if (input[cursor]?.[0] !== TokenType.CloseCurly) return false;
-    index = cursor + 1;
-    return true;
-  };
-
-  const consumeMultiplier = () => {
-    const start = nextSignificant(index);
-    const token = input[start];
+/**
+ * @param {ReturnType<typeof tokens>} innerTokens
+ * @param {number} i
+ * @return {number}
+ */
+function consumeMultipliers(innerTokens, i) {
+  let index = i;
+  while (index < innerTokens.length) {
+    const token = innerTokens[index];
+    const type = token[0];
     if (
-      token?.[0] === TokenType.Delim &&
-      ['?', '*', '+', '#'].includes(token[1])
+      type === TokenType.Delim &&
+      (token[1] === '+' ||
+        token[1] === '#' ||
+        token[1] === '?' ||
+        token[1] === '*' ||
+        token[1] === '!')
     ) {
-      index = start + 1;
-      return true;
+      index = skipTrivia(innerTokens, index + 1);
+    } else if (type === TokenType.OpenCurly) {
+      const next = skipMatching(
+        innerTokens,
+        index,
+        TokenType.OpenCurly,
+        TokenType.CloseCurly
+      );
+      if (next === -1) return -1;
+      index = skipTrivia(innerTokens, next);
+    } else {
+      break;
     }
-    return consumeBoundedMultiplier();
-  };
+  }
+  return index;
+}
 
-  const consumeComponent = () => {
-    index++;
-    skipTrivia();
-    const name = input[index];
-    if (name?.[0] !== TokenType.Ident) return false;
-    const decodedName = decoded(name).toLowerCase();
-    index++;
-    skipTrivia();
-    if (input[index]?.[0] === TokenType.OpenSquare && !consumeRange())
-      return false;
-    skipTrivia();
-    const close = input[index];
-    if (close?.[0] !== TokenType.Delim || close[1] !== '>') return false;
-    index++;
-    if (percentageSyntaxTypes.has(decodedName)) containsPercentage = true;
-    consumeMultiplier();
-    return true;
-  };
+/**
+ * @param {ReturnType<typeof tokens>} innerTokens
+ * @param {number} i
+ * @return {{nextIndex: number, hasPercentage: boolean} | undefined}
+ */
+function consumeComponent(innerTokens, i) {
+  const token = innerTokens[i];
+  if (!token) return undefined;
 
-  /** @param {string | undefined} expectedClose @return {boolean} */
-  const consumeSequence = (expectedClose) => {
-    let hasTerm = false;
-    let needsTerm = true;
-    while (index < input.length) {
-      skipTrivia();
-      const token = input[index];
-      if (!token) break;
-      if (token[0] === expectedClose) {
-        if (needsTerm || delimiters.at(-1) !== expectedClose) return false;
-        delimiters.pop();
-        index++;
-        return true;
-      }
-      if (isClosing(token)) return false;
-      if (needsTerm) {
-        if (consumeOperator()) return false;
-      } else if (consumeOperator()) {
-        needsTerm = true;
-        continue;
-      }
-      if (!consumeTerm()) return false;
-      hasTerm = true;
-      needsTerm = false;
-    }
-    return expectedClose === undefined && hasTerm && !needsTerm;
-  };
+  if (token[0] === TokenType.OpenSquare) {
+    const closeIndex = skipMatching(
+      innerTokens,
+      i,
+      TokenType.OpenSquare,
+      TokenType.CloseSquare
+    );
+    if (closeIndex === -1) return undefined;
+    const subTokens = innerTokens.slice(i + 1, closeIndex - 1);
+    const hasPercentage = scanSyntaxAllowsPercentage(subTokens);
+    let nextIndex = skipTrivia(innerTokens, closeIndex);
+    nextIndex = consumeMultipliers(innerTokens, nextIndex);
+    if (nextIndex === -1) return undefined;
+    return { nextIndex, hasPercentage };
+  }
 
-  const consumeTerm = () => {
-    const token = input[index];
-    if (!token) return false;
-    if (token[0] === TokenType.Delim && token[1] === '<')
-      return consumeComponent();
+  if (token[0] === TokenType.Ident) {
+    let nextIndex = skipTrivia(innerTokens, i + 1);
+    nextIndex = consumeMultipliers(innerTokens, nextIndex);
+    if (nextIndex === -1) return undefined;
+    return { nextIndex, hasPercentage: false };
+  }
+
+  if (token[0] !== TokenType.Delim || token[1] !== '<') {
+    return undefined;
+  }
+  const identIndex = skipTrivia(innerTokens, i + 1);
+  const ident = innerTokens[identIndex];
+  if (!ident || ident[0] !== TokenType.Ident) return undefined;
+
+  const hasPercentage = percentageSyntaxTypes.has(decoded(ident).toLowerCase());
+  let afterIdent = skipTrivia(innerTokens, identIndex + 1);
+
+  if (
+    afterIdent < innerTokens.length &&
+    innerTokens[afterIdent][0] === TokenType.OpenSquare
+  ) {
+    afterIdent = skipMatching(
+      innerTokens,
+      afterIdent,
+      TokenType.OpenSquare,
+      TokenType.CloseSquare
+    );
+    if (afterIdent === -1) return undefined;
+    afterIdent = skipTrivia(innerTokens, afterIdent);
+  }
+
+  const close = innerTokens[afterIdent];
+  if (!close || close[0] !== TokenType.Delim || close[1] !== '>') {
+    return undefined;
+  }
+
+  let nextIndex = skipTrivia(innerTokens, afterIdent + 1);
+  nextIndex = consumeMultipliers(innerTokens, nextIndex);
+  if (nextIndex === -1) return undefined;
+  return { nextIndex, hasPercentage };
+}
+
+/**
+ * @param {ReturnType<typeof tokens>} innerTokens
+ * @param {number} i
+ * @return {number} next index, or -1 if invalid combinator
+ */
+function consumeCombinator(innerTokens, i) {
+  const sep = innerTokens[i];
+  if (sep[0] === TokenType.Delim && sep[1] === '|') {
+    let next = skipTrivia(innerTokens, i + 1);
     if (
-      token[0] === TokenType.Function ||
-      token[0] === TokenType.OpenCurly ||
-      (token[0] === TokenType.Delim &&
-        ['?', '*', '+', '#', '&', '|'].includes(token[1]))
-    )
-      return false;
-    if (token[0] === TokenType.OpenParen || token[0] === TokenType.OpenSquare) {
-      const close = closeForOpening(token[0]);
-      delimiters.push(close);
-      index++;
-      if (!consumeSequence(close)) return false;
-      consumeMultiplier();
-      return true;
+      next < innerTokens.length &&
+      innerTokens[next][0] === TokenType.Delim &&
+      innerTokens[next][1] === '|'
+    ) {
+      next = skipTrivia(innerTokens, next + 1);
     }
-    if (!isLiteral(token)) return false;
-    index++;
-    consumeMultiplier();
-    return true;
-  };
+    return next >= innerTokens.length ? -1 : next;
+  }
+  if (sep[0] === TokenType.Delim && sep[1] === '&') {
+    let next = skipTrivia(innerTokens, i + 1);
+    if (
+      next < innerTokens.length &&
+      innerTokens[next][0] === TokenType.Delim &&
+      innerTokens[next][1] === '&'
+    ) {
+      next = skipTrivia(innerTokens, next + 1);
+      return next >= innerTokens.length ? -1 : next;
+    }
+    return -1;
+  }
+  return i;
+}
 
-  const valid = consumeSequence(undefined);
-  return { containsPercentage, valid };
+/**
+ * Parses an @property syntax string per CSS Properties and Values API Level 1 and CSS Values 4/5.
+ *
+ * @param {ReturnType<typeof tokens>} innerTokens
+ * @return {boolean}
+ */
+function scanSyntaxAllowsPercentage(innerTokens) {
+  let i = skipTrivia(innerTokens, 0);
+  if (i >= innerTokens.length) return true;
+
+  if (
+    innerTokens[i][0] === TokenType.Delim &&
+    innerTokens[i][1] === '*' &&
+    skipTrivia(innerTokens, i + 1) >= innerTokens.length
+  ) {
+    return true;
+  }
+
+  let allowsPercentage = false;
+  while (i < innerTokens.length) {
+    const comp = consumeComponent(innerTokens, i);
+    if (!comp) return true;
+    if (comp.hasPercentage) allowsPercentage = true;
+    i = comp.nextIndex;
+
+    if (i < innerTokens.length) {
+      const nextIndex = consumeCombinator(innerTokens, i);
+      if (nextIndex === -1) return true;
+      i = nextIndex;
+    }
+  }
+  return allowsPercentage;
 }
 
 /** @param {string} value @return {boolean} */
@@ -255,6 +230,5 @@ export function syntaxAllowsPercentage(value) {
     syntaxToken = token;
   }
   if (!syntaxToken) return true;
-  const result = parseSyntax(tokens(decoded(syntaxToken)));
-  return result.containsPercentage || !result.valid;
+  return scanSyntaxAllowsPercentage(tokens(decoded(syntaxToken)));
 }

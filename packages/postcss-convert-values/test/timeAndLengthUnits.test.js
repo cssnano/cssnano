@@ -40,8 +40,34 @@ describe('Time conversions', () => {
   );
 
   test(
-    'should not convert negative milliseconds to seconds',
+    'should convert uppercase scientific notation and combinations with metric units',
+    processCSS(
+      'h1{width:1E2PX;transition-duration:1E3MS;letter-spacing:1E-2PX;height:0E0PX;margin:10E1MM;padding:0E0MM}',
+      'h1{width:75pt;transition-duration:1s;letter-spacing:.01PX;height:0;margin:10cm;padding:0}'
+    )
+  );
+
+  test(
+    'should not expand compact scientific notation when replacement is longer',
+    passthroughCSS('h1{width:1e5px;margin:1e5;top:1e-5}')
+  );
+
+  test(
+    'should not convert negative milliseconds to seconds when replacement is not shorter',
     passthroughCSS('h1{animation-duration:-569ms}')
+  );
+
+  test(
+    'should convert negative milliseconds to seconds when shorter',
+    processCSS('h1{animation-delay:-500ms}', 'h1{animation-delay:-.5s}')
+  );
+
+  test(
+    'should convert negative time values for delays',
+    processCSS(
+      'h1{animation-delay:-1000ms;transition-delay:-2000ms}',
+      'h1{animation-delay:-1s;transition-delay:-2s}'
+    )
   );
 
   test(
@@ -127,6 +153,95 @@ describe('Length and viewport units', () => {
       'h1{margin:0 0;padding:0 0}'
     )
   );
+
+  test(
+    'should not convert length units when length option is false',
+    processCSS('h1{width:16px;margin:0em}', 'h1{width:16px;margin:0}', {
+      length: false,
+    })
+  );
+
+  test(
+    'should preserve zero units in vendor-prefixed line-height',
+    passthroughCSS('h1{-webkit-line-height:0px;-webkit-line-height:0%}')
+  );
+
+  test(
+    'should convert metric units (mm to cm)',
+    processCSS(
+      'h1{width:10mm;height:20mm;margin:100mm}',
+      'h1{width:1cm;height:2cm;margin:10cm}'
+    )
+  );
+
+  test(
+    'should convert metric units (q to cm)',
+    processCSS('h1{width:120q;height:1000q}', 'h1{width:3cm;height:25cm}')
+  );
+
+  test(
+    'should strip unit from zero metric lengths',
+    processCSS(
+      'h1{width:0mm;height:0cm;margin:0q}',
+      'h1{width:0;height:0;margin:0}'
+    )
+  );
+
+  test(
+    'should not convert metric units when length option is false',
+    processCSS('h1{width:10mm}', 'h1{width:10mm}', { length: false })
+  );
+
+  test(
+    'should preserve zero length in columns shorthand to prevent invalid CSS',
+    passthroughCSS(
+      'h1{columns:0px}h2{columns:0px 2}h3{columns:2 0px}h4{-webkit-columns:0px 2}'
+    )
+  );
+
+  test(
+    'should strip zero length in column-width property',
+    processCSS('h1{column-width:0px}', 'h1{column-width:0}')
+  );
+
+  test(
+    'should convert metric units inside columns shorthand while preserving zero lengths',
+    processCSS(
+      'h1{columns:100mm 2;column-count:2}',
+      'h1{columns:10cm 2;column-count:2}'
+    )
+  );
+
+  test(
+    'should preserve zero length line-height in font shorthand',
+    processCSS('h1{font:12px/0px sans-serif}', 'h1{font:9pt/0px sans-serif}')
+  );
+
+  test(
+    'should preserve zero percentage line-height in font shorthand',
+    processCSS('h1{font:12px/0% sans-serif}', 'h1{font:9pt/0% sans-serif}')
+  );
+
+  test(
+    'should preserve zero line-height with whitespace in font shorthand',
+    processCSS(
+      'h1{font:12px / 0px sans-serif}',
+      'h1{font:9pt / 0px sans-serif}'
+    )
+  );
+
+  test(
+    'should preserve zero line-height with comments in font shorthand',
+    processCSS(
+      'h1{font:12px/*c*///*c*/0px sans-serif}',
+      'h1{font:9pt/*c*///*c*/0px sans-serif}'
+    )
+  );
+
+  test(
+    'should strip unit from zero font-size in font shorthand',
+    processCSS('h1{font:0px/16px sans-serif}', 'h1{font:0/1pc sans-serif}')
+  );
 });
 
 describe('Angle units and options', () => {
@@ -171,8 +286,18 @@ describe('Angle units and options', () => {
   );
 
   test(
-    'should not remove units from angle values (2)',
-    passthroughCSS('h1{transform:rotate(0turn)}')
+    'should convert zero angle units to deg',
+    processCSS(
+      'h1{transform:rotate(0turn);transform:rotate(0grad)}',
+      'h1{transform:rotate(0deg);transform:rotate(0deg)}'
+    )
+  );
+
+  test(
+    'should not convert zero angle units when angle option is false',
+    passthroughCSS('h1{transform:rotate(0turn);transform:rotate(0grad)}', {
+      angle: false,
+    })
   );
 
   test(
@@ -191,5 +316,55 @@ describe('Angle units and options', () => {
       'h1{background:linear-gradient(-1e1deg,red,blue)}',
       'h1{background:linear-gradient(-10deg,red,blue)}'
     )
+  );
+
+  test(
+    'should not convert 0ms to 0s when time option is false',
+    passthroughCSS('h1{animation-duration:0ms}', { time: false })
+  );
+
+  test(
+    'should convert grad angle units',
+    processCSS(
+      'h1{transform:rotate(400grad);transform:rotate(200grad)}',
+      'h1{transform:rotate(1turn);transform:rotate(180deg)}'
+    )
+  );
+
+  test(
+    'should convert frequency units',
+    processCSS(
+      'h1{voice-pitch:1000Hz;voice-pitch:2000Hz}',
+      'h1{voice-pitch:1khz;voice-pitch:2khz}'
+    )
+  );
+
+  test(
+    'should convert 0khz to 0hz',
+    processCSS('h1{voice-pitch:0khz}', 'h1{voice-pitch:0hz}')
+  );
+
+  test(
+    'should not convert frequency units when frequency option is false',
+    passthroughCSS('h1{voice-pitch:1000Hz;voice-pitch:0khz}', {
+      frequency: false,
+    })
+  );
+
+  test('should preserve 0Hz unit', passthroughCSS('h1{voice-pitch:0Hz}'));
+
+  test(
+    'should convert zero radians to deg',
+    processCSS('h1{transform:rotate(0rad)}', 'h1{transform:rotate(0deg)}')
+  );
+
+  test(
+    'should not convert zero radians when angle option is false',
+    passthroughCSS('h1{transform:rotate(0rad)}', { angle: false })
+  );
+
+  test(
+    'should not convert non-zero radians',
+    passthroughCSS('h1{transform:rotate(1.5rad)}')
   );
 });

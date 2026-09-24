@@ -49,6 +49,11 @@ declare function numeric(token: CSSToken): {
  */
 declare function numericSource(input: CSSToken[], index: number): NumericSource | false;
 /**
+ * @param {TokenType} type
+ * @return {TokenType | undefined}
+ */
+declare function closeForOpening(type: TokenType): TokenType | undefined;
+/**
  * Lexical CSS block index. This does not parse or validate any CSS grammar;
  * consumers must preserve raw spelling and define their own malformed-input policy.
  */
@@ -76,5 +81,5 @@ declare class BalancedTokens {
 }
 /** @param {string} source @return {BalancedTokens | undefined} */
 declare function balancedTokens(source: string): BalancedTokens | undefined;
-export { TokenType, applyEdits, balancedTokens, decoded, numeric, numericSource, tokenEnd, tokenStart, tokens, };
+export { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, numeric, numericSource, tokenEnd, tokenStart, tokens, };
 //# sourceMappingURL=value.d.ts.map

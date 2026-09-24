@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
+import transform from '../src/lib/transform.js';
 
 const { passthroughCSS, processCSS, processor } = processCSSFactory(plugin);
 
@@ -68,7 +69,7 @@ describe('Calc values and nested delimiters', () => {
   );
 
   test(
-    'should convert dimensions with raw escaped units',
+    'should preserve dimensions with raw escaped units',
     passthroughCSS('a{width:192\\70 x}')
   );
 
@@ -123,9 +124,45 @@ describe('Escaped and case-insensitive function names', () => {
     const result = await processor('a{width:l\\69 near(0px)}');
     assert.equal(result.css, 'a{width:l\\69 near(0px)}');
   });
+
+  test('should preserve zero units in vendor-prefixed calc names', async () => {
+    const webkitResult = await processor('div{width:-webkit-calc(100% - 0px)}');
+    assert.equal(webkitResult.css, 'div{width:-webkit-calc(100% - 0px)}');
+
+    const mozResult = await processor('div{width:-moz-calc(100% - 0px)}');
+    assert.equal(mozResult.css, 'div{width:-moz-calc(100% - 0px)}');
+  });
+
+  test('should preserve zero units in vendor-prefixed conic-gradient names', async () => {
+    const result = await processor(
+      'div{background:-webkit-conic-gradient(red 0%, blue 100%)}'
+    );
+    assert.equal(
+      result.css,
+      'div{background:-webkit-conic-gradient(red 0%, blue 100%)}'
+    );
+  });
+
+  test('should preserve zero units in vendor-prefixed cross-fade names', async () => {
+    const result = await processor(
+      'div{background-image:-webkit-cross-fade(url(a.png) 0%, url(b.png) 100%)}'
+    );
+    assert.equal(
+      result.css,
+      'div{background-image:-webkit-cross-fade(url(a.png) 0%, url(b.png) 100%)}'
+    );
+  });
 });
 
 describe('Raw PostCSS metadata and preceding plugins', () => {
+  test('should delete raws.value when decl.raws.value has no raw property', () => {
+    const decl = postcss.decl({ prop: 'width', value: '96px' });
+    decl.raws.value = { value: '96px' };
+    transform({}, false, decl);
+    assert.equal(decl.value, '1in');
+    assert.equal(decl.raws.value, undefined);
+  });
+
   test('should synchronize raw PostCSS value metadata after conversion', async () => {
     const result = await processor('a{width:192px, /*x*/ 192px}');
     assert.equal(result.css, 'a{width:2in, /*x*/ 2in}');
@@ -133,6 +170,68 @@ describe('Raw PostCSS metadata and preceding plugins', () => {
       raw: '2in, /*x*/ 2in',
       value: '2in, /*x*/ 2in',
     });
+  });
+
+  test('should reuse declaration cache across identical declarations and synchronize raw metadata', async () => {
+    const result = await processor(
+      'a{width:192px} b{width:192px} c{width:10px} d{width:10px}'
+    );
+    assert.equal(
+      result.css,
+      'a{width:2in} b{width:2in} c{width:10px} d{width:10px}'
+    );
+
+    const root = postcss.parse(
+      'a{width:192px, /*x*/ 192px} b{width:192px, /*x*/ 192px}'
+    );
+    const cachedResult = await postcss([plugin()]).process(root, {
+      from: undefined,
+    });
+    assert.equal(
+      cachedResult.css,
+      'a{width:2in, /*x*/ 2in} b{width:2in, /*x*/ 2in}'
+    );
+    assert.deepEqual(cachedResult.root.nodes[1].nodes[0].raws.value, {
+      raw: '2in, /*x*/ 2in',
+      value: '2in, /*x*/ 2in',
+    });
+  });
+
+  test('should cache declarations inside non-keyframe at-rules (@media, @supports)', () => {
+    const cache = new Map();
+    const root = postcss.parse(
+      '@media (min-width: 0px){a{stroke-dasharray:192px}}'
+    );
+    let decl;
+    root.walkDecls((d) => {
+      decl = d;
+    });
+    transform({}, false, decl, cache);
+    assert.equal(decl.value, '2in');
+    assert.ok(cache.has('stroke-dasharray:192px'));
+
+    const keyframesRoot = postcss.parse(
+      '@keyframes spin{from{stroke-dasharray:192px}}'
+    );
+    let keyframeDecl;
+    keyframesRoot.walkDecls((d) => {
+      keyframeDecl = d;
+    });
+    const keyframesCache = new Map();
+    transform({}, false, keyframeDecl, keyframesCache);
+    assert.equal(keyframesCache.size, 0);
+  });
+
+  test('should not cache opacity declarations inside keyframes', () => {
+    const keyframesRoot = postcss.parse('@keyframes bounce{50%{opacity:1.2}}');
+    let keyframeDecl;
+    keyframesRoot.walkDecls((d) => {
+      keyframeDecl = d;
+    });
+    const keyframesCache = new Map();
+    transform({}, false, keyframeDecl, keyframesCache);
+    assert.equal(keyframeDecl.value, '1.2');
+    assert.equal(keyframesCache.size, 0);
   });
 
   test('should use a declaration value changed by a preceding plugin', async () => {
@@ -263,5 +362,81 @@ describe('Math functions and preserving units', () => {
   test(
     'should preserve 0% inside calc()',
     processCSS('h1{width:calc(0% + 100px)}', 'h1{width:calc(0% + 75pt)}')
+  );
+
+  test(
+    'should preserve zero units inside calc-size()',
+    processCSS(
+      'h1{width:calc-size(auto, 0px + 192px);height:calc-size(0px, 10px)}',
+      'h1{width:calc-size(auto, 0px + 2in);height:calc-size(0px, 10px)}'
+    )
+  );
+  test(
+    'should preserve zero percentage inside anchor()',
+    passthroughCSS('h1{top:anchor(--target 0%);left:anchor(top, 0%)}')
+  );
+
+  test(
+    'should preserve zero units inside anchor-size()',
+    passthroughCSS(
+      'h1{width:anchor-size(width, 0px);height:anchor-size(height, 0%)}'
+    )
+  );
+
+  test(
+    'should preserve zero percentage inside contrast-color()',
+    passthroughCSS('h1{color:contrast-color(0%)}')
+  );
+
+  test(
+    'should preserve zero units inside view() timeline insets',
+    passthroughCSS(
+      'h1{view-timeline-inset:view(0px 0px);animation-range:view(0%)}'
+    )
+  );
+});
+
+describe('CSS custom property fallbacks (var)', () => {
+  test(
+    'should convert zero length units in top-level var fallback',
+    processCSS('h1{width:var(--foo, 0px)}', 'h1{width:var(--foo, 0)}')
+  );
+
+  test(
+    'should preserve zero units in var fallback inside calc()',
+    passthroughCSS('h1{width:calc(var(--foo, 0px) + 10px)}')
+  );
+
+  test(
+    'should convert percentage to unitless zero in var fallback for opacity',
+    processCSS('h1{opacity:var(--foo, 0%)}', 'h1{opacity:var(--foo, 0)}')
+  );
+
+  test(
+    'should convert 0% to 0 in var fallback inside linear-gradient()',
+    processCSS(
+      'h1{background:linear-gradient(red, var(--foo, 0%))}',
+      'h1{background:linear-gradient(red, var(--foo, 0))}'
+    )
+  );
+
+  test(
+    'should preserve 0% in var fallback inside conic-gradient()',
+    passthroughCSS('h1{background:conic-gradient(red, var(--foo, 0%))}')
+  );
+
+  test(
+    'should preserve 0% in var fallback inside calc()',
+    passthroughCSS('h1{width:calc(var(--foo, 0%) + 10px)}')
+  );
+
+  test(
+    'should preserve zero units in var fallback for properties requiring zero length',
+    passthroughCSS('h1{line-height:var(--foo, 0px);columns:var(--foo, 0px)}')
+  );
+
+  test(
+    'should preserve zero percent in var fallback for SVG stroke properties',
+    passthroughCSS('.bar{stroke-dasharray:var(--foo, 0%)}')
   );
 });
