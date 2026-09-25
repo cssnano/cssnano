@@ -15,6 +15,7 @@
     "test:benchmark:simulation": "node util/benchmark/statistical-simulation.mjs",
     "test": "pnpm lint && pnpm test:unit && pnpm test:site && pnpm test:integration",
     "test:coverage": "cd packages && node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=../lcov.info",
+    "test:uncovered-branches": "node util/uncovered-branches.mjs",
     "test:unit": "pnpm --recursive --workspace-concurrency=1 exec node --test --test-reporter=dot --test-skip-pattern=\"framework tests\"",
     "test:site": "node --test site/test/*.js",
     "test:integration": "node --test packages/cssnano-preset-default/test/integrations.js packages/cssnano-preset-advanced/test/integrations.js packages/cssnano-preset-lite/test/integrations.js",
