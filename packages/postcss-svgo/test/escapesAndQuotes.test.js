@@ -4,14 +4,18 @@ import postcss from 'postcss';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 
-const { processCSS, passthroughCSS } = processCSSFactory(plugin);
+const { processCSS } = processCSSFactory(plugin);
 
-test(
-  'should not mangle filter effects',
-  passthroughCSS(
-    'h1{filter:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><filter id="filter"><feGaussianBlur stdDeviation="5" /></filter></svg>#filter\');filter:blur(5px)}'
-  )
-);
+test('should optimize filter effects with URL fragment without warning', async () => {
+  const css =
+    'h1{filter:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><filter id="filter"><feGaussianBlur stdDeviation="5" /></filter></svg>#filter\');filter:blur(5px)}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{filter:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"/>#filter\');filter:blur(5px)}'
+  );
+});
 
 test(
   'should not throw when decoding a svg',
@@ -217,5 +221,334 @@ test('should optimize unencoded SVG data URIs containing literal percent charact
   assert.strictEqual(
     result.css,
     'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><text>100% discount</text></svg>\')}'
+  );
+});
+
+test('should optimize base64 data URIs with charset parameter preceding base64', async () => {
+  const rawSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="yellow"/></svg>';
+  const base64 = Buffer.from(rawSvg).toString('base64');
+  const css = `h1{background:url("data:image/svg+xml;charset=utf-8;base64,${base64}")}`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.match(result.css, /data:image\/svg\+xml;base64,/v);
+  const outputBase64 = result.css.match(
+    /data:image\/svg\+xml;base64,([^"'\)]+)/v
+  )?.[1];
+  assert.ok(outputBase64);
+  const decodedOutput = Buffer.from(outputBase64, 'base64').toString('utf8');
+  assert.match(decodedOutput, /fill="#ff0"/v);
+});
+
+test('should optimize base64 data URIs with quoted charset parameter and whitespace', async () => {
+  const rawSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="yellow"/></svg>';
+  const base64 = Buffer.from(rawSvg).toString('base64');
+  const css = `h1{background:url('data:image/svg+xml ; charset = "utf-8" ; base64 ,${base64}')}`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.match(result.css, /data:image\/svg\+xml;base64,/v);
+  const outputBase64 = result.css.match(
+    /data:image\/svg\+xml;base64,([^"'\)]+)/v
+  )?.[1];
+  assert.ok(outputBase64);
+  const decodedOutput = Buffer.from(outputBase64, 'base64').toString('utf8');
+  assert.match(decodedOutput, /fill="#ff0"/v);
+});
+
+test('should optimize SVG data URIs with whitespace around parameters', async () => {
+  const css =
+    "h1{background:url(\"data:image/svg+xml ; charset = utf-8 , <svg xmlns='http://www.w3.org/2000/svg'><circle cx='50' cy='50' r='40' fill='yellow'/></svg>\")}";
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="%23ff0"/></svg>\')}'
+  );
+});
+
+test('should optimize non-base64 SVG data URIs with URL fragment identifiers', async () => {
+  const css =
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="yellow" /><!--comment--></svg>#my-circle\')}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="%23ff0"/></svg>#my-circle\')}'
+  );
+});
+
+test('should optimize uri-encoded SVG data URIs with URL fragment identifiers', async () => {
+  const css =
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2240%22%20fill%3D%22yellow%22%2F%3E%3C%2Fsvg%3E#icon")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2240%22%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E#icon")}'
+  );
+});
+
+test('should optimize unquoted SVG data URIs containing special characters in hash or parameters', async () => {
+  const css =
+    'h1{background:url(data:image/svg+xml;charset=utf-8,<svg%20xmlns=%27http://www.w3.org/2000/svg%27><circle%20cx=%2750%27%20cy=%2750%27%20r=%2740%27%20fill=%27yellow%27/></svg>#layer-1_sub.2)}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2240%22%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E#layer-1_sub.2")}'
+  );
+});
+
+test('should optimize multiple distinct SVG URLs in a single declaration', async () => {
+  const css =
+    "h1{background:url(\"data:image/svg+xml,<svg><circle cx='5' cy='5' r='5' fill='yellow'/></svg>\"), url(foo.png), url('data:image/svg+xml;utf-8,<svg><rect width=\"10\" height=\"10\" fill=\"yellow\"/></svg>')}";
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg><circle cx="5" cy="5" r="5" fill="%23ff0"/></svg>\'), url(foo.png), url(\'data:image/svg+xml;charset=utf-8,<svg><path fill="%23ff0" d="M0 0h10v10H0z"/></svg>\')}'
+  );
+});
+
+test('should advance past non-optimizable URLs without redundant traversal', async () => {
+  const css =
+    'h1{background:url("https://example.com/asset.png?a=1&b=2") url(\'data:image/svg+xml,<svg><circle cx="5" cy="5" r="5" fill="yellow"/></svg>\')}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url("https://example.com/asset.png?a=1&b=2") url(\'data:image/svg+xml;charset=utf-8,<svg><circle cx="5" cy="5" r="5" fill="%23ff0"/></svg>\')}'
+  );
+});
+
+test('should escape newlines in unencoded SVG string tokens', async () => {
+  const cssFromEscapes =
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><text>hello\\a world</text></svg>\')}';
+  const result1 = await postcss(plugin({ encode: false })).process(
+    cssFromEscapes,
+    { from: undefined }
+  );
+  assert.strictEqual(result1.messages.length, 0);
+  assert.doesNotMatch(result1.css, /[\r\n\f]/v);
+  assert.match(result1.css, /hello\\a world/v);
+
+  const cssFromEncoded =
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ctext%3Ehello%0Aworld%0D%0Afoo%0Dbar%0Cbaz%3C%2Ftext%3E%3C%2Fsvg%3E")}';
+  const result2 = await postcss(plugin({ encode: false })).process(
+    cssFromEncoded,
+    { from: undefined }
+  );
+  assert.strictEqual(result2.messages.length, 0);
+  assert.doesNotMatch(result2.css, /[\r\n\f]/v);
+  assert.match(result2.css, /hello\\a world\\a foo\\a bar\\c baz/v);
+
+  const cssPretty =
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5"/></svg>\')}';
+  const result3 = await postcss(
+    plugin({ encode: false, js2svg: { pretty: true } })
+  ).process(cssPretty, { from: undefined });
+  assert.strictEqual(result3.messages.length, 0);
+  assert.doesNotMatch(result3.css, /[\r\n\f]/v);
+  assert.match(result3.css, /\\a /v);
+});
+
+test('should quote unquoted base64 URLs containing parentheses or whitespace', async () => {
+  const rawSvg = '<svg xmlns="http://www.w3.org/2000/svg"><circle/></svg>';
+  const base64 = Buffer.from(rawSvg).toString('base64');
+  const css = `h1{background:url(data:image/svg+xml;base64,${base64}#view\\(0\\,0\\))}`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    `h1{background:url("data:image/svg+xml;base64,${base64}#view(0,0)")}`
+  );
+});
+
+test('should optimize data URIs with single-quoted charset parameter', async () => {
+  const css =
+    "h1{background:url(\"data:image/svg+xml;charset='utf-8',<svg><circle cx='5' cy='5' r='5' fill='yellow'/></svg>\")}";
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg><circle cx="5" cy="5" r="5" fill="%23ff0"/></svg>\')}'
+  );
+});
+
+test('should optimize base64 data URIs with single-quoted charset parameter', async () => {
+  const rawSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="yellow"/></svg>';
+  const base64 = Buffer.from(rawSvg).toString('base64');
+  const css = `h1{background:url("data:image/svg+xml;charset='utf-8';base64,${base64}")}`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.match(result.css, /data:image\/svg\+xml;base64,/v);
+  const outputBase64 = result.css.match(
+    /data:image\/svg\+xml;base64,([^"'\)]+)/v
+  )?.[1];
+  assert.ok(outputBase64);
+  const decodedOutput = Buffer.from(outputBase64, 'base64').toString('utf8');
+  assert.match(decodedOutput, /fill="#ff0"/v);
+});
+
+test('should optimize SVG data URIs containing CSS backslash escapes in delimiters', async () => {
+  const css =
+    "h1{background:url(\"data:image\\/svg\\+xml,<svg><circle cx='5' cy='5' r='5'/></svg>\")}";
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg><circle cx="5" cy="5" r="5"/></svg>\')}'
+  );
+});
+
+test('should optimize unquoted base64 SVG data URIs containing CSS backslash escapes in delimiters', async () => {
+  const css =
+    'h1{background:url(data:image\\/svg\\+xml;base64,PHN2Zz48L3N2Zz4=)}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url(data:image/svg+xml;base64,PHN2Zy8+)}'
+  );
+});
+
+test('should optimize SVG data URIs with fragment containing greater-than symbol', async () => {
+  const css = "h1{background:url('data:image/svg+xml,<svg/>#layer>1')}";
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    "h1{background:url('data:image/svg+xml;charset=utf-8,<svg/>#layer>1')}"
+  );
+});
+
+test('should optimize SVG data URIs with fragment containing parentheses inside quoted URLs', async () => {
+  const css = 'h1{background:url("data:image/svg+xml,<svg/>#view(0,0)")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    "h1{background:url('data:image/svg+xml;charset=utf-8,<svg/>#view(0,0)')}"
+  );
+});
+
+test('should quote unquoted base64 SVG with single quotes when hash contains double quotes', async () => {
+  const css =
+    'h1{background:url(data:image/svg+xml;base64,PHN2Zy8+#view\\"test)}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    "h1{background:url('data:image/svg+xml;base64,PHN2Zy8+#view\"test')}"
+  );
+});
+
+test('should optimize base64 SVG data URIs containing internal newlines or CRLF', async () => {
+  const css =
+    'h1{background:url("data:image/svg+xml;base64,PHN2\\a Zy8+");filter:url("data:image/svg+xml;base64,PHN2\\d \\a Zy8+")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url("data:image/svg+xml;base64,PHN2Zy8+");filter:url("data:image/svg+xml;base64,PHN2Zy8+")}'
+  );
+});
+
+test('should optimize data URIs whose letters are written as CSS hex escapes', async () => {
+  const result = await postcss(plugin()).process(
+    'h1{background:url("d\\61ta:image/svg+xml,<svg fill=\'red\'/>")}',
+    { from: undefined }
+  );
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg fill="red"/>\')}'
+  );
+});
+
+test('should escape special characters in double-quoted URLs', async () => {
+  const css =
+    'h1{background:url("data:image/svg+xml;base64,PHN2Zy8+#test\\a test\\c test\\\\test\\"test")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.match(result.css, /\\a /v);
+  assert.match(result.css, /\\c /v);
+  assert.match(result.css, /\\\\/v);
+  assert.match(result.css, /\\"/v);
+});
+
+test('should handle self-closing SVG without fragment', async () => {
+  const css = 'h1{background:url("data:image/svg+xml,<svg/>")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    "h1{background:url('data:image/svg+xml;charset=utf-8,<svg/>')}"
+  );
+});
+
+test('should handle SVG without closing tag or self-close', async () => {
+  const css = 'h1{background:url("data:image/svg+xml,<svg")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    "h1{background:url('data:image/svg+xml;charset=utf-8,')}"
+  );
+});
+
+test('should optimize percent-encoded SVG containing raw hash in attributes without warning', async () => {
+  const css =
+    'h1{background:url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle fill=%22#ff0%22/%3e%3c/svg%3e")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E")}'
+  );
+});
+
+test('should optimize percent-encoded SVG with internal hash and trailing URL fragment', async () => {
+  const css =
+    'h1{background:url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle fill=%22#ff0%22/%3e%3c/svg%3e#frag")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E#frag")}'
+  );
+});
+
+test('should optimize self-closing percent-encoded SVG with URL fragment', async () => {
+  const css =
+    'h1{background:url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27/%3e#icon")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%2F%3E#icon")}'
+  );
+});
+
+test('should disambiguate self-closing child element from closing root tag with URL fragment', async () => {
+  const css =
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5"/><path d="M0 0h1" fill="#123456"/></svg>#my-frag\')}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5"/><path fill="%23123456" d="M0 0h1"/></svg>#my-frag\')}'
+  );
+});
+
+test('should wrap unquoted URL containing backslash in quotes', async () => {
+  const css = String.raw`h1{background:url(data:image/svg+xml;base64,PHN2Zy8+#foo\\bar)}`;
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 0);
+  assert.strictEqual(
+    result.css,
+    String.raw`h1{background:url("data:image/svg+xml;base64,PHN2Zy8+#foo\\bar")}`
   );
 });
