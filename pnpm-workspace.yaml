@@ -10,10 +10,11 @@ catalog:
   postcss: ^8.5.28
   '@webref/css': 8.7.5
   mdn-data: 2.36.0
-  '@colordx/core': ^6.7.0
+  '@colordx/core': ^7.2.0
 
 minimumReleaseAgeExclude:
   - postcss-calc
+  - '@colordx/core@7.2.0'
 
 versioning:
   changelog:

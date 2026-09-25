@@ -27,7 +27,10 @@ test(
 
 test(
   'should minify color values (3)',
-  processCSS('h1{background:hsla(134, 50%, 50%, 1)}', 'h1{background:#40bf5e}')
+  processCSS(
+    'h1{background:hsla(134, 50%, 50%, 1)}',
+    'h1{background:hsl(134,50%,50%)}'
+  )
 );
 
 test(
@@ -56,7 +59,10 @@ test(
 
 test(
   'should minify color values (7)',
-  processCSS('h1{background:HSLA(134, 50%, 50%, 1)}', 'h1{background:#40bf5e}')
+  processCSS(
+    'h1{background:HSLA(134, 50%, 50%, 1)}',
+    'h1{background:hsl(134,50%,50%)}'
+  )
 );
 
 test(
