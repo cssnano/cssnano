@@ -13,19 +13,18 @@ const QUOTES = ['', '"', "'"];
 
 const SVG_SHAPES = [
   '<circle cx="50" cy="50" r="40" fill="yellow"/>',
-  '<circle cx="10" cy="10" r="8" fill="#ff0000"/>',
+  '<circle cx="10" cy="10" r="8" fill="%23ff0000"/>',
   '<rect width="100" height="80" fill="blue" stroke="black"/>',
   '<rect x="10" y="10" width="30" height="30" fill="none"/>',
   '<path d="M10 10 H 90 V 90 H 10 Z" fill="red"/>',
   '<line x1="0" y1="0" x2="100" y2="100" stroke="green" stroke-width="2"/>',
   '<text x="20" y="35" class="small">My SVG</text>',
   '<text font-size="12">hello world</text>',
-  '<g id="group1"><circle cx="5" cy="5" r="5" fill="#00ff00"/></g>',
+  '<g id="group1"><circle cx="5" cy="5" r="5" fill="%2300ff00"/></g>',
   '<polygon points="100,10 40,198 190,78 10,78 160,198" fill="lime"/>',
-  // Attribute values that hide markup delimiters from naive tag scanning.
-  '<circle data-info="a > b" fill="#ff0"/>',
-  '<circle aria-label="a/>b" fill="#ff0000"/>',
-  '<rect data-x="#anchor" width="4" height="4"/>',
+  '<circle data-info="a &gt; b" fill="%23ff0"/>',
+  '<circle aria-label="a/&gt;b" fill="%23ff0000"/>',
+  '<rect data-x="%23anchor" width="4" height="4"/>',
 ];
 
 const FRAGMENTS = [
@@ -82,7 +81,7 @@ function buildSvg(
   const xml = withXmlDecl ? '<?xml version="1.0" encoding="utf-8"?>' : '';
   const comment = withComment ? '<!--fuzz-comment-->' : '';
   const prolog = hostileProlog ? '<!-- </svg> -->' : '';
-  const hashAttr = hostileProlog ? ' data-x="#ff0"' : '';
+  const hashAttr = hostileProlog ? ' data-x="%23ff0"' : '';
   if (selfClosing) {
     return `${xml}${prolog}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"${hashAttr}/>`;
   }
@@ -167,17 +166,6 @@ function generateValidEncodedCase(rng) {
   const frag = rng.pick(FRAGMENTS);
 
   let encoded = encodeURIComponent(svg);
-  // Optionally unescape %23 to raw # in percent-encoded SVG payload to test raw # inside attributes
-  if (rng.chance(0.5)) {
-    encoded = encoded.replaceAll('%23', '#');
-  }
-  // Inject raw # if not already present
-  if (rng.chance(0.3) && !encoded.includes('#')) {
-    encoded = encoded.replace(
-      /(%3[ce]circle|%3[ce]rect|%3[ce]path)/iv,
-      '$1%20fill=%22#123456%22'
-    );
-  }
   // Optionally vary hex case (%3c vs %3C)
   if (rng.chance(0.5)) {
     encoded = encoded.replaceAll('%3C', '%3c').replaceAll('%3E', '%3e');
@@ -259,6 +247,8 @@ function generateInvalidOrMalformedCase(rng) {
     '%FF%FE%FD',
     '<svg><circle></svg>',
     '<svg xmlns="http://www.w3.org/2000/svg"><path d="invalid</svg>',
+    '<svg><circle fill="#ff0"/></svg>',
+    '<svg fill="#ff0"/>#frag',
   ];
   const payload = rng.pick(malformedPayloads);
   const quote = rng.pick(['"', "'"]);

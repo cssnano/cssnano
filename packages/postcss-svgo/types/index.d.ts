@@ -1,7 +1,3 @@
-export type TagEnd = {
-    end: number;
-    selfClosing: boolean;
-};
 export type Options = {
     encode?: boolean;
 } & import('svgo').Config;

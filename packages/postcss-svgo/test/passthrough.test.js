@@ -260,4 +260,37 @@ test(
   )
 );
 
+test(
+  'should pass through non-conforming payload with invalid XML percent escape',
+  passthroughCSS('h1{background:url("data:image/svg+xml,%zz")}')
+);
+
+test(
+  'should pass through non-conforming payload with truncated percent escape',
+  passthroughCSS('h1{background:url("data:image/svg+xml,%")}')
+);
+
+test(
+  'should pass through when unencoded hash in markup truncates XML per WHATWG URL standards',
+  passthroughCSS(
+    'h1{background:url("data:image/svg+xml,<svg fill=\'#ff0\'/>#frag")}'
+  )
+);
+
+test(
+  'should optimize clean unencoded SVG without hash per WHATWG URL standards',
+  processCSS(
+    'h1{background:url("data:image/svg+xml,<svg><circle fill=\'red\'/></svg>")}',
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg><circle fill="red"/></svg>\')}'
+  )
+);
+
+test(
+  'should optimize SVG with percent-encoded hash in markup and reattach fragment per WHATWG URL standards',
+  processCSS(
+    'h1{background:url("data:image/svg+xml,<svg><circle fill=\'%23ff0\'/></svg>#icon")}',
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg><circle fill="%23ff0"/></svg>#icon\')}'
+  )
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

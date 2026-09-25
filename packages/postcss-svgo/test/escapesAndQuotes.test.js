@@ -60,7 +60,7 @@ test(
 test(
   'should encode "unencoded-escaped-quotes" svgs',
   processCSS(
-    'h1{background:url("data:image/svg+xml;charset=utf-8,<svg xmlns=\\"http://www.w3.org/2000/svg\\"><circle cx=\\"50\\" cy=\\"50\\" r=\\"40\\" fill=\\"#ff0\\"/></svg>")}',
+    'h1{background:url("data:image/svg+xml;charset=utf-8,<svg xmlns=\\"http://www.w3.org/2000/svg\\"><circle cx=\\"50\\" cy=\\"50\\" r=\\"40\\" fill=\\"%23ff0\\"/></svg>")}',
     'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2240%22%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E")}',
     { encode: true }
   )
@@ -489,19 +489,24 @@ test('should handle self-closing SVG without fragment', async () => {
   );
 });
 
-test('should handle SVG without closing tag or self-close', async () => {
+test('should pass through SVG without closing tag or self-close', async () => {
   const css = 'h1{background:url("data:image/svg+xml,<svg")}';
   const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 0);
-  assert.strictEqual(
-    result.css,
-    "h1{background:url('data:image/svg+xml;charset=utf-8,')}"
-  );
+  assert.strictEqual(result.messages.length, 1);
+  assert.strictEqual(result.css, css);
 });
 
-test('should optimize percent-encoded SVG containing raw hash in attributes without warning', async () => {
+test('should pass through percent-encoded SVG containing raw hash in attributes', async () => {
   const css =
     'h1{background:url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle fill=%22#ff0%22/%3e%3c/svg%3e")}';
+  const result = await postcss(plugin()).process(css, { from: undefined });
+  assert.strictEqual(result.messages.length, 1);
+  assert.strictEqual(result.css, css);
+});
+
+test('should optimize percent-encoded SVG containing percent-encoded hash in attributes', async () => {
+  const css =
+    'h1{background:url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle fill=%22%23ff0%22/%3e%3c/svg%3e")}';
   const result = await postcss(plugin()).process(css, { from: undefined });
   assert.strictEqual(result.messages.length, 0);
   assert.strictEqual(
@@ -510,15 +515,12 @@ test('should optimize percent-encoded SVG containing raw hash in attributes with
   );
 });
 
-test('should optimize percent-encoded SVG with internal hash and trailing URL fragment', async () => {
+test('should pass through percent-encoded SVG with internal raw hash and trailing URL fragment', async () => {
   const css =
     'h1{background:url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle fill=%22#ff0%22/%3e%3c/svg%3e#frag")}';
   const result = await postcss(plugin()).process(css, { from: undefined });
-  assert.strictEqual(result.messages.length, 0);
-  assert.strictEqual(
-    result.css,
-    'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E#frag")}'
-  );
+  assert.strictEqual(result.messages.length, 1);
+  assert.strictEqual(result.css, css);
 });
 
 test('should optimize self-closing percent-encoded SVG with URL fragment', async () => {
@@ -534,7 +536,7 @@ test('should optimize self-closing percent-encoded SVG with URL fragment', async
 
 test('should disambiguate self-closing child element from closing root tag with URL fragment', async () => {
   const css =
-    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5"/><path d="M0 0h1" fill="#123456"/></svg>#my-frag\')}';
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5"/><path d="M0 0h1" fill="%23123456"/></svg>#my-frag\')}';
   const result = await postcss(plugin()).process(css, { from: undefined });
   assert.strictEqual(result.messages.length, 0);
   assert.strictEqual(
