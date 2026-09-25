@@ -71,39 +71,32 @@ describe('Fragment extraction', () => {
   );
 });
 
-describe('Markup delimiters hidden from tag scanning', () => {
-  // A greater-than sign inside an attribute value must not end the tag: the
-  // root close boundary is found quote-aware, so the '#' of fill='#ff0' stays
-  // inside the document instead of being mistaken for a URL fragment.
+describe('Unencoded hash inside markup treated as fragment delimiter per WHATWG', () => {
   test(
-    'should keep an SVG whose attribute value contains a greater-than sign',
-    processCSS(
-      "h1 { background: url(\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' data-info='a > b' fill='#ff0'/>\") }",
-      'h1 { background: url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23ff0" data-info="a &gt; b"/>\') }'
+    'should pass through when unencoded hash in attribute truncates payload',
+    passthroughCSS(
+      "h1 { background: url(\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' data-info='a > b' fill='#ff0'/>\") }"
     )
   );
 
   test(
-    'should keep an SVG whose attribute value contains a self-close sequence',
-    processCSS(
-      "h1 { background: url(\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' aria-label='a/>b' fill='#ff0'/>\") }",
-      'h1 { background: url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23ff0" aria-label="a/&gt;b"/>\') }'
+    'should pass through when unencoded hash in self-closing tag truncates payload',
+    passthroughCSS(
+      "h1 { background: url(\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' aria-label='a/>b' fill='#ff0'/>\") }"
     )
   );
 
   test(
-    'should not mistake a close tag inside a leading comment for the root close',
-    processCSS(
-      'h1 { background: url("data:image/svg+xml,<!-- </svg> --><svg fill=\'#ff0\'/>") }',
-      'h1 { background: url(\'data:image/svg+xml;charset=utf-8,<svg fill="%23ff0"/>\') }'
+    'should pass through when unencoded hash follows a leading comment',
+    passthroughCSS(
+      'h1 { background: url("data:image/svg+xml,%3C!-- </svg> --%3E<svg fill=\'#ff0\'/>") }'
     )
   );
 
   test(
-    'should keep an SVG whose hash attribute follows a leading comment',
-    processCSS(
-      "h1 { background: url(\"data:image/svg+xml,<!-- </svg> --><svg id='icon' fill='#ff0'/>\") }",
-      'h1 { background: url(\'data:image/svg+xml;charset=utf-8,<svg id="icon" fill="%23ff0"/>\') }'
+    'should pass through when unencoded hash in attribute follows a leading comment with fragment',
+    passthroughCSS(
+      "h1 { background: url(\"data:image/svg+xml,%3C!-- </svg> --%3E<svg id='icon' fill='#ff0'/>\") }"
     )
   );
 });
@@ -112,7 +105,7 @@ describe('Prolog handling before the root element', () => {
   test(
     'should reattach a fragment after an XML declaration and DOCTYPE',
     processCSS(
-      "h1{background:url(\"data:image/svg+xml,<?xml version='1.0'?><!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg fill='#ff0'/>#frag\")}",
+      "h1{background:url(\"data:image/svg+xml,<?xml version='1.0'?><!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg fill='%23ff0'/>#frag\")}",
       'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg fill="%23ff0"/>#frag\')}'
     )
   );
@@ -120,7 +113,7 @@ describe('Prolog handling before the root element', () => {
   test(
     'should reattach a fragment after a percent-encoded XML declaration',
     processCSS(
-      'h1{background:url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%3F%3E%3Csvg%3E%3Ccircle%20fill%3D%22#ff0%22%2F%3E%3C%2Fsvg%3E#frag")}',
+      'h1{background:url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%3F%3E%3Csvg%3E%3Ccircle%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E#frag")}',
       'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%3E%3Ccircle%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E#frag")}'
     )
   );
@@ -128,7 +121,7 @@ describe('Prolog handling before the root element', () => {
   test(
     'should reattach a fragment after a percent-encoded DOCTYPE',
     processCSS(
-      'h1{background:url("data:image/svg+xml,%3C%21DOCTYPE%20svg%20PUBLIC%20%22-//W3C//DTD%20SVG%201.1//EN%22%3E%3Csvg%3E%3Ccircle%20fill%3D%22#ff0%22%2F%3E%3C%2Fsvg%3E#frag")}',
+      'h1{background:url("data:image/svg+xml,%3C%21DOCTYPE%20svg%20PUBLIC%20%22-//W3C//DTD%20SVG%201.1//EN%22%3E%3Csvg%3E%3Ccircle%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E#frag")}',
       'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%3E%3Ccircle%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E#frag")}'
     )
   );
@@ -136,7 +129,7 @@ describe('Prolog handling before the root element', () => {
   test(
     'should skip whitespace and comments between prolog constructs',
     processCSS(
-      "h1{background:url(\"data:image/svg+xml, <!-- c --> <?xml version='1.0'?> <!-- d --> <svg fill='#ff0'/>#frag\")}",
+      "h1{background:url(\"data:image/svg+xml, <!-- c --> <?xml version='1.0'?> <!-- d --> <svg fill='%23ff0'/>#frag\")}",
       'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg fill="%23ff0"/>#frag\')}'
     )
   );
@@ -223,10 +216,9 @@ describe('Malformed and unterminated payload structure', () => {
   );
 
   test(
-    'should delegate a payload ending in an unterminated root open tag to svgo',
-    processCSS(
-      'h1{background:url("data:image/svg+xml,<svg fill=\'#ff0\'")}',
-      "h1{background:url('data:image/svg+xml;charset=utf-8,')}"
+    'should pass through a payload ending in an unterminated root open tag',
+    passthroughCSS(
+      'h1{background:url("data:image/svg+xml,<svg fill=\'#ff0\'")}'
     )
   );
 
@@ -269,23 +261,23 @@ describe('Malformed and unterminated payload structure', () => {
   );
 
   test(
-    'should keep scanning after a question mark inside a processing instruction',
+    'should preserve URL fragment when processing instruction contains a question mark',
     processCSS(
-      'h1{background:url("data:image/svg+xml,<?xml a?b?><svg fill=\'#ff0\'/>#frag")}',
+      'h1{background:url("data:image/svg+xml,<?xml a?b?><svg fill=\'%23ff0\'/>#frag")}',
       'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg fill="%23ff0"/>#frag\')}'
     )
   );
 
   test(
-    'should treat a DOCTYPE internal subset as prolog and reattach the fragment',
+    'should preserve URL fragment when prolog contains a DOCTYPE internal subset',
     processCSS(
-      "h1{background:url(\"data:image/svg+xml,<!DOCTYPE svg [ <!ENTITY x 'y'> ]><svg fill='#ff0'/>#frag\")}",
+      "h1{background:url(\"data:image/svg+xml,<!DOCTYPE svg [ <!ENTITY x 'y'> ]><svg fill='%23ff0'/>#frag\")}",
       'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg fill="%23ff0"/>#frag\')}'
     )
   );
 
   test(
-    'should track nested svg open tags when finding the root close',
+    'should preserve URL fragment when payload contains nested svg elements',
     processCSS(
       'h1{background:url("data:image/svg+xml,<svg><g><svg viewBox=\'0 0 1 1\'></svg></g></svg>#frag")}',
       'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg><svg viewBox="0 0 1 1"/></svg>#frag\')}'
@@ -295,7 +287,7 @@ describe('Malformed and unterminated payload structure', () => {
   test(
     'should handle uppercase percent-encoded tags with trailing URL fragment',
     processCSS(
-      'h1{background:url("data:image/svg+xml,%3c%53%56%47%3e%3ccircle fill=%22#ff0%22/%3e%3c%2f%53%56%47%3e#frag")}',
+      'h1{background:url("data:image/svg+xml,%3c%53%56%47%3e%3ccircle fill=%22%23ff0%22/%3e%3c%2f%53%56%47%3e#frag")}',
       'h1{background:url("data:image/svg+xml;charset=utf-8,%3CSVG%3E%3Ccircle%20fill%3D%22%23ff0%22%2F%3E%3C%2FSVG%3E#frag")}'
     )
   );
@@ -303,21 +295,21 @@ describe('Malformed and unterminated payload structure', () => {
   test(
     'should handle lowercase percent-encoded tags with trailing URL fragment',
     processCSS(
-      'h1{background:url("data:image/svg+xml,%3csvg%3e%3ccircle fill=%22#ff0%22/%3e%3c/svg%3e#frag")}',
+      'h1{background:url("data:image/svg+xml,%3csvg%3e%3ccircle fill=%22%23ff0%22/%3e%3c/svg%3e#frag")}',
       'h1{background:url("data:image/svg+xml;charset=utf-8,%3Csvg%3E%3Ccircle%20fill%3D%22%23ff0%22%2F%3E%3C%2Fsvg%3E#frag")}'
     )
   );
 
   test(
-    'should skip processing instructions inside root body and reattach fragment',
+    'should preserve URL fragment when root body contains processing instructions',
     processCSS(
-      "h1{background:url(\"data:image/svg+xml,<svg><?xml-stylesheet href='style.css'?><circle fill='#ff0'/></svg>#frag\")}",
+      "h1{background:url(\"data:image/svg+xml,<svg><?xml-stylesheet href='style.css'?><circle fill='%23ff0'/></svg>#frag\")}",
       "h1{background:url('data:image/svg+xml;charset=utf-8,<svg><?xml-stylesheet href=\\'style.css\\'?><circle fill=\"%23ff0\"/></svg>#frag')}"
     )
   );
 
   test(
-    'should handle comment containing double dashes followed by non-bracket character',
+    'should pass through a comment containing double dashes followed by non-bracket character',
     passthroughCSS(
       'h1{background:url("data:image/svg+xml,%3Csvg%3E%3C!-- --x --%3E%3Ccircle fill=\'%23ff0\'/%3E%3C/svg%3E#frag")}'
     )
@@ -338,18 +330,16 @@ describe('Malformed and unterminated payload structure', () => {
   );
 
   test(
-    'should delegate a payload with an unterminated DOCTYPE before a fragment to svgo',
-    processCSS(
-      'h1{background:url("data:image/svg+xml,<!DOCTYPE svg [ #frag")}',
-      "h1{background:url('data:image/svg+xml;charset=utf-8,')}"
+    'should pass through a payload with an unterminated DOCTYPE before a fragment',
+    passthroughCSS(
+      'h1{background:url("data:image/svg+xml,<!DOCTYPE svg [ #frag")}'
     )
   );
 
   test(
-    'should delegate a payload with an unterminated PI in prolog before a fragment to svgo',
-    processCSS(
-      'h1{background:url("data:image/svg+xml,<?xml unclosed #frag")}',
-      "h1{background:url('data:image/svg+xml;charset=utf-8,')}"
+    'should pass through a payload with an unterminated processing instruction before a fragment',
+    passthroughCSS(
+      'h1{background:url("data:image/svg+xml,<?xml unclosed #frag")}'
     )
   );
 
@@ -390,24 +380,18 @@ describe('Malformed and unterminated payload structure', () => {
   );
 
   test(
-    'should handle invalid lowercase hex character in percent escape',
+    'should pass through invalid percent escape sequences',
     passthroughCSS('h1{background:url("data:image/svg+xml,%3g%3C!-- # --%3E")}')
   );
 
   test(
-    'should delegate to svgo when prolog ends with whitespace at EOF',
-    processCSS(
-      'h1{background:url("data:image/svg+xml,%3C!-- # --%3E   ")}',
-      'h1{background:url("data:image/svg+xml;charset=utf-8,")}'
-    )
+    'should pass through when prolog ends with whitespace at EOF',
+    passthroughCSS('h1{background:url("data:image/svg+xml,%3C!-- # --%3E   ")}')
   );
 
   test(
-    'should delegate to svgo when prolog ends immediately after open bracket at EOF',
-    processCSS(
-      'h1{background:url("data:image/svg+xml,%3C!-- # --%3E<")}',
-      'h1{background:url("data:image/svg+xml;charset=utf-8,")}'
-    )
+    'should pass through when prolog ends immediately after open bracket at EOF',
+    passthroughCSS('h1{background:url("data:image/svg+xml,%3C!-- # --%3E<")}')
   );
 
   test(
@@ -418,50 +402,32 @@ describe('Malformed and unterminated payload structure', () => {
   );
 
   test(
-    'should delegate to svgo when payload ends with exclamation mark after open bracket',
-    processCSS(
-      'h1{background:url("data:image/svg+xml,<!#frag")}',
-      "h1{background:url('data:image/svg+xml;charset=utf-8,')}"
-    )
+    'should pass through when payload ends with exclamation mark after open bracket',
+    passthroughCSS('h1{background:url("data:image/svg+xml,<!#frag")}')
   );
 
   test(
-    'should delegate to svgo when comment delimiter has only one dash',
-    processCSS(
-      'h1{background:url("data:image/svg+xml,<!-x#frag")}',
-      "h1{background:url('data:image/svg+xml;charset=utf-8,')}"
-    )
+    'should pass through when comment delimiter has only one dash',
+    passthroughCSS('h1{background:url("data:image/svg+xml,<!-x#frag")}')
   );
 
   test(
-    'should delegate to svgo when cdata delimiter is malformed',
-    processCSS(
-      'h1{background:url("data:image/svg+xml,<![bad#frag")}',
-      "h1{background:url('data:image/svg+xml;charset=utf-8,')}"
-    )
+    'should pass through when cdata delimiter is malformed',
+    passthroughCSS('h1{background:url("data:image/svg+xml,<![bad#frag")}')
   );
 
   test(
-    'should delegate to svgo when doctype delimiter is malformed',
-    processCSS(
-      'h1{background:url("data:image/svg+xml,<!docbad#frag")}',
-      "h1{background:url('data:image/svg+xml;charset=utf-8,')}"
-    )
+    'should pass through when doctype delimiter is malformed',
+    passthroughCSS('h1{background:url("data:image/svg+xml,<!docbad#frag")}')
   );
 
   test(
-    'should delegate to svgo when exclamation mark is followed by unknown construct',
-    processCSS(
-      'h1{background:url("data:image/svg+xml,<!foo#frag")}',
-      "h1{background:url('data:image/svg+xml;charset=utf-8,')}"
-    )
+    'should pass through unknown exclamation constructs',
+    passthroughCSS('h1{background:url("data:image/svg+xml,<!foo#frag")}')
   );
 
   test(
-    'should delegate to svgo when payload ends immediately after exclamation mark at EOF',
-    processCSS(
-      'h1{background:url("data:image/svg+xml,%3C!-- # --%3E<!")}',
-      'h1{background:url("data:image/svg+xml;charset=utf-8,")}'
-    )
+    'should pass through when payload ends immediately after exclamation mark at EOF',
+    passthroughCSS('h1{background:url("data:image/svg+xml,%3C!-- # --%3E<!")}')
   );
 });
