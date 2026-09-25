@@ -169,3 +169,49 @@ test('should not crash on malformed urls when encoded', () => {
   const svg = encode(file(`${testDir}/border.svg`, 'utf-8'));
   assert.doesNotThrow(() => decode(svg));
 });
+
+test(
+  'should handle empty SVG data URI payloads',
+  processCSS(
+    'h1{background:url(data:image/svg+xml,);filter:url(data:image/svg+xml;base64,)}',
+    "h1{background:url('data:image/svg+xml;charset=utf-8,');filter:url(data:image/svg+xml;base64,)}"
+  )
+);
+
+test(
+  'should support floatPrecision option',
+  processCSS(
+    'h1{background:url("data:image/svg+xml,<svg><path d=\\"M0.123 0.456h1\\"/></svg>")}',
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg><path d="M.1.5h1"/></svg>\')}',
+    { floatPrecision: 1 }
+  )
+);
+
+test(
+  'should support multipass option',
+  processCSS(
+    'h1{background:url("data:image/svg+xml,<svg><g><g><circle cx=\\"5\\" cy=\\"5\\" r=\\"5\\"/></g></g></svg>")}',
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg><circle cx="5" cy="5" r="5"/></svg>\')}',
+    { multipass: true }
+  )
+);
+
+test(
+  'should support custom plugins list overrides',
+  processCSS(
+    'h1{background:url("data:image/svg+xml,<svg><circle id=\\"keep-me\\" cx=\\"5\\" cy=\\"5\\" r=\\"5\\"/></svg>")}',
+    'h1{background:url(\'data:image/svg+xml;charset=utf-8,<svg><circle id="keep-me" cx="5" cy="5" r="5"/></svg>\')}',
+    {
+      plugins: [
+        {
+          name: 'preset-default',
+          params: {
+            overrides: {
+              cleanupIds: false,
+            },
+          },
+        },
+      ],
+    }
+  )
+);
