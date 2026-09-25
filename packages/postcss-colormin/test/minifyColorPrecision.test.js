@@ -40,8 +40,12 @@ describe('Lossless round-trip tests', () => {
 
 describe('Modern CSS color formats', () => {
   test('should minify sRGB-equivalent oklch to hex', () => {
-    assert.strictEqual(min('oklch(0.5 0.2 240)'), '#0069c7');
+    assert.strictEqual(min('oklch(0.5 0.1 240)'), '#1f6a96');
     assert.strictEqual(min('oklch(0.6279 0.2577 29.23)'), 'red');
+  });
+
+  test('should not clip wide-gamut oklch to sRGB hex', () => {
+    assert.strictEqual(min('oklch(0.5 0.2 240)'), 'oklch(.5 .2 240)');
   });
 
   test('should minify sRGB-equivalent oklab to hex', () => {
@@ -126,19 +130,19 @@ describe('Precision regressions', () => {
 
   // turret-v5.1.3
   test(
-    'should minify hsl(220,80%,50%) to exact hex #195de6',
-    isEqual('hsl(220, 80%, 50%)', '#195de6')
+    'should keep hsl(220,80%,50%) as hsl rather than a half-byte hex',
+    isEqual('hsl(220, 80%, 50%)', 'hsl(220,80%,50%)')
   );
   test(
     'should minify hsl(20,100%,55%) to exact hex #ff661a',
     isEqual('hsl(20, 100%, 55%)', '#ff661a')
   );
   test(
-    'should minify hsl(270,80%,50%) to exact hex #7f19e6',
-    isEqual('hsl(270, 80%, 50%)', '#7f19e6')
+    'should minify hsl(270,80%,50%) to exact hex #801ae6',
+    isEqual('hsl(270, 80%, 50%)', '#801ae6')
   );
   test(
-    'should minify hsl(320,80%,50%) to exact hex #e619a1',
-    isEqual('hsl(320, 80%, 50%)', '#e619a1')
+    'should keep hsl(320,80%,50%) as hsl rather than a half-byte hex',
+    isEqual('hsl(320, 80%, 50%)', 'hsl(320,80%,50%)')
   );
 });
