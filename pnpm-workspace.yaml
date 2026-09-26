@@ -6,7 +6,7 @@ autoInstallPeers: true
 catalog:
   autoprefixer: ^10.6.1
   browserslist: ^4.29.0
-  '@csstools/css-tokenizer': ^4.0.1
+  '@csstools/css-tokenizer': ^4.0.2
   postcss: ^8.5.28
   '@webref/css': 8.7.5
   mdn-data: 2.36.0

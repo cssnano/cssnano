@@ -168,8 +168,8 @@ catalogs:
       specifier: ^7.2.0
       version: 7.2.0
     '@csstools/css-tokenizer':
-      specifier: ^4.0.1
-      version: 4.0.1
+      specifier: ^4.0.2
+      version: 4.0.2
     '@webref/css':
       specifier: 8.7.5
       version: 8.7.5
@@ -379,7 +379,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -392,7 +392,7 @@ importers:
         version: 7.2.0
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       browserslist:
         specifier: 'catalog:'
         version: 4.29.0
@@ -427,7 +427,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -464,7 +464,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -477,7 +477,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -500,7 +500,7 @@ importers:
     devDependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       '@webref/css':
         specifier: 'catalog:'
         version: 8.7.5(css-tree@3.2.1)
@@ -512,7 +512,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       browserslist:
         specifier: 'catalog:'
         version: 4.29.0
@@ -543,7 +543,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -559,7 +559,7 @@ importers:
         version: 7.2.0
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -622,7 +622,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -639,7 +639,7 @@ importers:
     devDependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
@@ -652,7 +652,7 @@ importers:
     devDependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
@@ -661,7 +661,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -671,7 +671,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -684,7 +684,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       browserslist:
         specifier: 'catalog:'
         version: 4.29.0
@@ -700,7 +700,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -713,7 +713,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -730,7 +730,7 @@ importers:
     devDependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       '@webref/css':
         specifier: 'catalog:'
         version: 8.7.5(css-tree@3.2.1)
@@ -746,7 +746,7 @@ importers:
     devDependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       '@webref/css':
         specifier: 'catalog:'
         version: 8.7.5(css-tree@3.2.1)
@@ -778,7 +778,7 @@ importers:
     devDependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       postcss:
         specifier: 'catalog:'
         version: 8.5.28
@@ -787,7 +787,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -803,7 +803,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -819,7 +819,7 @@ importers:
     dependencies:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.2
       browserslist:
         specifier: 'catalog:'
         version: 4.29.0
@@ -877,8 +877,8 @@ packages:
       css-tree:
         optional: true
 
-  '@csstools/css-tokenizer@4.0.1':
-    resolution: {integrity: sha512-bPlN9S9O1A0euCpEWE4qnvB5YDuyYVsUTrxSgmAM1Is0j4tICHoVyOVAXfWMP/kS9ZrjvyIXWV2PmomiAXXqOw==}
+  '@csstools/css-tokenizer@4.0.2':
+    resolution: {integrity: sha512-OoKoR0f76dCY666JlcbhmVTs2drYj1GUXZTYTcbUgJjh9Nv41aFfZ21bPQTERm5+L5cBDo466NltB2lplS5GBw==}
     engines: {node: '>=20.19.0'}
 
   '@emnapi/core@1.11.2':
@@ -1958,10 +1958,10 @@ snapshots:
 
   '@asamuzakjp/css-color@7.0.0':
     dependencies:
-      '@csstools/css-calc': 3.4.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1))(@csstools/css-tokenizer@4.0.1)
-      '@csstools/css-color-parser': 4.2.3(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1))(@csstools/css-tokenizer@4.0.1)
-      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.1)
-      '@csstools/css-tokenizer': 4.0.1
+      '@csstools/css-calc': 3.4.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.2))(@csstools/css-tokenizer@4.0.2)
+      '@csstools/css-color-parser': 4.2.3(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.2))(@csstools/css-tokenizer@4.0.2)
+      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.2)
+      '@csstools/css-tokenizer': 4.0.2
       lru-cache: 11.5.3
 
   '@asamuzakjp/dom-selector@9.2.1':
@@ -1979,27 +1979,27 @@ snapshots:
 
   '@csstools/color-helpers@6.1.1': {}
 
-  '@csstools/css-calc@3.4.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1))(@csstools/css-tokenizer@4.0.1)':
+  '@csstools/css-calc@3.4.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.2))(@csstools/css-tokenizer@4.0.2)':
     dependencies:
-      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.1)
-      '@csstools/css-tokenizer': 4.0.1
+      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.2)
+      '@csstools/css-tokenizer': 4.0.2
 
-  '@csstools/css-color-parser@4.2.3(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1))(@csstools/css-tokenizer@4.0.1)':
+  '@csstools/css-color-parser@4.2.3(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.2))(@csstools/css-tokenizer@4.0.2)':
     dependencies:
       '@csstools/color-helpers': 6.1.1
-      '@csstools/css-calc': 3.4.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1))(@csstools/css-tokenizer@4.0.1)
-      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.1)
-      '@csstools/css-tokenizer': 4.0.1
+      '@csstools/css-calc': 3.4.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.2))(@csstools/css-tokenizer@4.0.2)
+      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.2)
+      '@csstools/css-tokenizer': 4.0.2
 
-  '@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1)':
+  '@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.2)':
     dependencies:
-      '@csstools/css-tokenizer': 4.0.1
+      '@csstools/css-tokenizer': 4.0.2
 
   '@csstools/css-syntax-patches-for-csstree@1.1.14(css-tree@3.2.1)':
     optionalDependencies:
       css-tree: 3.2.1
 
-  '@csstools/css-tokenizer@4.0.1': {}
+  '@csstools/css-tokenizer@4.0.2': {}
 
   '@emnapi/core@1.11.2':
     dependencies:
@@ -2673,7 +2673,7 @@ snapshots:
 
   postcss-calc@11.2.1(postcss@8.5.28):
     dependencies:
-      '@csstools/css-tokenizer': 4.0.1
+      '@csstools/css-tokenizer': 4.0.2
       postcss: 8.5.28
 
   postcss-font-magician@4.0.0(postcss@8.5.28):
