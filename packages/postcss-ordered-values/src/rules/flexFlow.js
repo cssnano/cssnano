@@ -34,7 +34,7 @@ function normalizeFlexFlow(flexFlow) {
     if (!slot || order[slot.name]) return null;
     order[slot.name] = term.raw;
   }
-  return `${order.direction} ${order.wrap}`.trim();
+  return [order.direction, order.wrap].filter(Boolean).join(' ');
 }
 
 export default normalizeFlexFlow;

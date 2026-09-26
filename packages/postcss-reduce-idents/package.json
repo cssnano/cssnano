@@ -51,6 +51,7 @@
   },
   "scripts": {
     "acquire": "node ./script/acquire.mjs",
+    "fuzz": "node ./script/fuzz.js",
     "test": "node --test"
   },
   "type": "module"

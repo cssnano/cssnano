@@ -1,6 +1,7 @@
 import { list } from 'postcss';
 import cssnanoUtils from 'cssnano-utils';
 import { isBorderWidth, isBorderStyle, isColor } from './validateWsc.js';
+import { isSubstitution } from './unresolved.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 const none =
@@ -32,67 +33,72 @@ const toLower = (v) => {
 };
 
 /**
+ * Parse a `<line-width> || <line-style> || <color>` value in one pass.
+ *
+ * The grammar requires each component at most once, and every token must
+ * specify one: the browser ignores the declaration whole otherwise. Parsing
+ * therefore validates — a value it rejects comes back as `null`, and callers
+ * must never name a component from a rejected value.
+ *
+ * A substitution token may stand in for any component, so it is assigned only
+ * when the value leaves exactly one slot open; where the slot is ambiguous the
+ * token is left unassigned (the declaration still keeps its substitution
+ * semantics for callers that track them).
+ *
  * @param {string} value
- * @return {[string, string, string]}
+ * @return {{width: (string|undefined), style: (string|undefined), color: (string|undefined)} | null}
  */
-function parseWsc(value) {
+function parseWidthStyleColor(value) {
   if (none.test(asciiLowerCase(value))) {
-    return ['medium', 'none', 'currentcolor'];
+    return { width: 'medium', style: 'none', color: 'currentcolor' };
   }
 
   let width, style, color;
-
-  const values = list.space(value);
-
   /** @type {string[]} */
-  const unknown = [];
+  const substitutions = [];
+  let tokens = 0;
+  let specified = 0;
+  let substituted = false;
 
-  /** @type {{ match: (v: string) => boolean, set: (v: string) => void }[]} */
-  const classifiers = [
-    {
-      match: isBorderStyle,
-      set: (v) => {
-        style = toLower(v);
-      },
-    },
-    {
-      match: isBorderWidth,
-      set: (v) => {
-        width = toLower(v);
-      },
-    },
-    {
-      match: isColor,
-      set: (v) => {
-        color = toLower(v);
-      },
-    },
-  ];
-
-  for (const v of values) {
-    const classifier = classifiers.find((c) => c.match(v));
-    if (classifier) {
-      classifier.set(v);
+  for (const v of list.space(value)) {
+    tokens++;
+    if (isBorderStyle(v)) {
+      if (style !== undefined) return null;
+      specified++;
+      style = toLower(v);
+    } else if (isBorderWidth(v)) {
+      if (width !== undefined) return null;
+      specified++;
+      width = toLower(v);
+    } else if (isColor(v)) {
+      if (color !== undefined) return null;
+      specified++;
+      color = toLower(v);
+    } else if (isSubstitution(v)) {
+      substituted = true;
+      substitutions.push(v);
     } else {
-      unknown.push(v);
+      return null;
     }
   }
 
-  if (unknown.length) {
-    if (!width && style && color) {
-      width = unknown.pop();
-    }
+  if (tokens > 3) return null;
 
-    if (width && !style && color) {
-      style = unknown.pop();
-    }
-
-    if (width && style && !color) {
-      color = unknown.pop();
+  // A substitution fills whichever component is still open only when that
+  // component is unambiguous; its spelling is kept as written.
+  if (substituted && specified === 2) {
+    const substitution = substitutions[0];
+    if (width === undefined) {
+      width = substitution;
+    } else if (style === undefined) {
+      style = substitution;
+    } else {
+      color = substitution;
     }
   }
-  return /** @type {[string, string, string]} */ ([width, style, color]);
+
+  return { width, style, color };
 }
 
 export { toLower };
-export default parseWsc;
+export default parseWidthStyleColor;

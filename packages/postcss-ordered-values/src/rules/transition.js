@@ -8,13 +8,13 @@ import {
   reservedIdentKeywords,
   serializeArguments,
 } from '../lib/tokenize.js';
+import { easingKeywords, easingFunctionNames } from '../lib/easingSets.js';
 import classifyTime from '../lib/isTime.js';
-import easingFunctions from './easingFunctions.json' with { type: 'json' };
 
 // transition: [ none | <single-transition-property> ] || <time> || <single-transition-timing-function> || <time>
 
-const timingFunctions = new Set(easingFunctions.keywords);
-const timingFunctionNames = new Set(easingFunctions.functions);
+const timingFunctions = easingKeywords;
+const timingFunctionNames = easingFunctionNames;
 
 /**
  * @param {string} value

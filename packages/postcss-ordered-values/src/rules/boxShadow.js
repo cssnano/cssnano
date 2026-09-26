@@ -1,18 +1,35 @@
 import cssnanoUtils from 'cssnano-utils';
 import vendorUnprefixed from '../lib/vendorUnprefixed.js';
+import { classifyMathLength, isLength } from '../lib/isLength.js';
 import {
-  isDimension,
   isFunction,
   isHash,
   isIdent,
-  isNumber,
   isUrl,
   name,
   reservedIdentKeywords,
   serializeArguments,
 } from '../lib/tokenize.js';
 
-const { lengthUnits, mathFunctions } = cssnanoUtils;
+const { mathFunctions } = cssnanoUtils;
+
+// Color-producing functions per CSS Color 4/5. Anything else is not a
+// <color> value and must not be reordered as one.
+const colorFunctions = new Set([
+  'color',
+  'color-mix',
+  'device-cmyk',
+  'hsl',
+  'hsla',
+  'hwb',
+  'lab',
+  'lch',
+  'light-dark',
+  'oklab',
+  'oklch',
+  'rgb',
+  'rgba',
+]);
 
 /** @param {import('../lib/tokenize.js').Term} term @param {string} lower */
 const isColor = (term, lower) => {
@@ -22,23 +39,10 @@ const isColor = (term, lower) => {
     );
   }
   if (isFunction(term)) {
-    return !isUrl(term);
+    return !isUrl(term) && colorFunctions.has(vendorUnprefixed(lower));
   }
   return isHash(term);
 };
-
-/** @param {import('../lib/tokenize.js').Term} term */
-function isLength(term) {
-  if (isDimension(term)) {
-    const unit = /** @type {{unit: string}} */ (term.tokens[0][4])?.unit;
-    return typeof unit === 'string' && lengthUnits.has(unit.toLowerCase());
-  }
-  if (isNumber(term)) {
-    const value = /** @type {{value: number}} */ (term.tokens[0][4])?.value;
-    return value === 0;
-  }
-  return false;
-}
 
 /**
  * @param {import('../lib/tokenize.js').Term[][]} args
@@ -64,15 +68,19 @@ function normalize(args) {
     for (const node of arg) {
       const value = name(node);
 
-      if (isFunction(node) && mathFunctions.has(vendorUnprefixed(value))) {
-        return null;
-      }
-
       if (isFunction(node) && vendorUnprefixed(value) === 'inset') {
         return null;
       }
 
       if (isLength(node)) {
+        val.push(node);
+      } else if (
+        isFunction(node) &&
+        mathFunctions.has(vendorUnprefixed(value))
+      ) {
+        // Math is only usable as a length here; anything else fails closed
+        // rather than being reclassified as a color.
+        if (classifyMathLength(node) === null) return null;
         val.push(node);
       } else if (isIdent(node) && value === 'inset') {
         state.inset.push(node);

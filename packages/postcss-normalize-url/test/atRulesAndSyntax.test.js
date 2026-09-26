@@ -170,3 +170,215 @@ test('should pass through malformed and unclosed url strings byte-for-byte', asy
     assert.equal(decls[index].value, value);
   }
 });
+
+test('should not override rule.params when rule.raws.params has stale raw representation', async () => {
+  const atRule = (
+    await postcss([plugin()]).process(
+      '@namespace islands url("http://bar.yandex.ru/ui/islands");',
+      { from: undefined }
+    )
+  ).root.first;
+  atRule.params = 'islands url("http://example.com/fresh")';
+  atRule.raws = {
+    params: {
+      raw: 'islands url("http://stale.com/old")',
+      value: 'islands url("http://stale.com/old")',
+    },
+  };
+  await postcss([plugin()]).process(atRule.root(), { from: undefined });
+  assert.strictEqual(atRule.params, 'islands "http://example.com/fresh"');
+  assert.strictEqual(
+    atRule.raws.params.raw,
+    'islands "http://example.com/fresh"'
+  );
+  assert.strictEqual(
+    atRule.raws.params.value,
+    'islands "http://example.com/fresh"'
+  );
+});
+
+test('should bypass declarations without URLs without mutating them', async () => {
+  const decl = postcss.decl({ prop: 'color', value: 'red' });
+  const root = postcss.root({
+    nodes: [postcss.rule({ selector: 'h1', nodes: [decl] })],
+  });
+  const originalRaws = decl.raws;
+  await postcss([plugin()]).process(root, { from: undefined });
+  assert.strictEqual(decl.value, 'red');
+  assert.strictEqual(decl.raws, originalRaws);
+});
+
+describe('@import', () => {
+  test(
+    'should normalize @import url() to string',
+    processCSS('@import url("style.css");', '@import "style.css";')
+  );
+
+  test(
+    'should normalize single-quoted @import url() to string',
+    processCSS("@import url('style.css');", "@import 'style.css';")
+  );
+
+  test(
+    'should normalize unquoted @import url() to string',
+    processCSS('@import url(style.css);', '@import "style.css";')
+  );
+
+  test(
+    'should normalize relative path with dot segments in @import string',
+    processCSS('@import "sub/../main.css";', '@import "main.css";')
+  );
+
+  test(
+    'should normalize absolute URL and preserve trailing conditions in @import',
+    processCSS(
+      '@import url("https://example.com:443/font.css") layer(base);',
+      '@import "https://example.com/font.css" layer(base);'
+    )
+  );
+
+  test(
+    'should preserve ./ for relative URL with colon in first segment in @import',
+    processCSS('@import url("./foo:bar.css");', '@import "./foo:bar.css";')
+  );
+
+  test(
+    'should preserve data urls in @import untouched',
+    passthroughCSS('@import url("data:text/css;base64,abc");')
+  );
+
+  test(
+    'should preserve comments preceding url in @import',
+    processCSS(
+      '@import /* comment */ url("style.css");',
+      '@import /* comment */ "style.css";'
+    )
+  );
+
+  test(
+    'should handle uppercase @IMPORT at-rules',
+    processCSS('@IMPORT url("style.css");', '@IMPORT "style.css";')
+  );
+
+  test(
+    'should not transform conditions containing url() into string',
+    processCSS(
+      '@import url("main.css") supports(background: url("sub/../bg.png"));',
+      '@import "main.css" supports(background: url(bg.png));'
+    )
+  );
+
+  test(
+    'should normalize multiple url expressions across conditions in @import',
+    processCSS(
+      '@import url("main.css") layer(layer1) supports(background: url("sub/../bg.png")) and supports(border-image: url("other/../icon.png"));',
+      '@import "main.css" layer(layer1) supports(background: url(bg.png)) and supports(border-image: url(icon.png));'
+    )
+  );
+
+  test(
+    'should pass through empty @import string',
+    passthroughCSS('@import "";')
+  );
+
+  test(
+    'should pass through empty @import url',
+    passthroughCSS('@import url();')
+  );
+
+  test(
+    'should pass through whitespace-only @import string',
+    passthroughCSS('@import " ";')
+  );
+
+  test(
+    'should pass through @import with extra tokens inside url()',
+    passthroughCSS('@import url("style.css" extra);')
+  );
+
+  test(
+    'should pass through @import with non-url identifier parameter',
+    passthroughCSS('@import not_a_url;')
+  );
+
+  test('should not override @import rule.params when rule.raws.params has stale raw representation', async () => {
+    const atRule = (
+      await postcss([plugin()]).process(
+        '@import url("http://bar.yandex.ru/ui/islands.css");',
+        { from: undefined }
+      )
+    ).root.first;
+    atRule.params = 'url("http://example.com/fresh.css")';
+    atRule.raws = {
+      params: {
+        raw: 'url("http://stale.com/old.css")',
+        value: 'url("http://stale.com/old.css")',
+      },
+    };
+    await postcss([plugin()]).process(atRule.root(), { from: undefined });
+    assert.strictEqual(atRule.params, '"http://example.com/fresh.css"');
+    assert.strictEqual(
+      atRule.raws.params.raw,
+      '"http://example.com/fresh.css"'
+    );
+    assert.strictEqual(
+      atRule.raws.params.value,
+      '"http://example.com/fresh.css"'
+    );
+  });
+});
+
+test(
+  'should normalize URLs nested within image-set()',
+  processCSS(
+    'h1{background-image:image-set(url("sub/../cat.png") 1x, url("sub/../cat-2x.png") 2x)}',
+    'h1{background-image:image-set(url(cat.png) 1x, url(cat-2x.png) 2x)}'
+  )
+);
+
+describe('@supports', () => {
+  test(
+    'should normalize url() inside @supports condition parameters',
+    processCSS(
+      '@supports (background: url("sub/../bg.png")) { h1 { color: red; } }',
+      '@supports (background: url(bg.png)) { h1 { color: red; } }'
+    )
+  );
+
+  test(
+    'should normalize src() inside @supports condition parameters',
+    processCSS(
+      '@supports (src: src("fonts/../font.woff2")) { h1 { color: blue; } }',
+      '@supports (src: src("font.woff2")) { h1 { color: blue; } }'
+    )
+  );
+
+  test('should not override @supports rule.params when rule.raws.params has stale raw representation', async () => {
+    const atRule = (
+      await postcss([plugin()]).process(
+        '@supports (background: url("http://bar.yandex.ru/ui/islands.png")) {}',
+        { from: undefined }
+      )
+    ).root.first;
+    atRule.params = '(background: url("http://example.com/dir/../fresh.png"))';
+    atRule.raws = {
+      params: {
+        raw: '(background: url("http://stale.com/old.png"))',
+        value: '(background: url("http://stale.com/old.png"))',
+      },
+    };
+    await postcss([plugin()]).process(atRule.root(), { from: undefined });
+    assert.strictEqual(
+      atRule.params,
+      '(background: url(http://example.com/fresh.png))'
+    );
+    assert.strictEqual(
+      atRule.raws.params.raw,
+      '(background: url(http://example.com/fresh.png))'
+    );
+    assert.strictEqual(
+      atRule.raws.params.value,
+      '(background: url(http://example.com/fresh.png))'
+    );
+  });
+});

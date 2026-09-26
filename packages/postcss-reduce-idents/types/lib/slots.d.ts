@@ -1,8 +1,7 @@
 /**
- * The name the generated data knows a property by: vendor prefixed spellings
- * collapse onto the property they alias, and a prefix webref has no alias for
- * is dropped, since `-moz-animation-name` names keyframes just as
- * `animation-name` does.
+ * Return the name the generated data knows a property by: collapse prefixed
+ * spellings onto the property they alias, and drop a prefix webref has no
+ * alias for.
  *
  * @param {string} prop
  * @return {string}
@@ -16,6 +15,7 @@ export declare function resolveProperty(prop: string): string;
  */
 export declare function resolveAtRule(name: string): string;
 export declare const cssWideKeywords: string[];
+export declare const predefinedCounterStyles: string[];
 export declare const keyframes: {
     atRule: string;
     properties: Set<string>;
@@ -53,4 +53,11 @@ export declare const grid: {
     /** Keywords a grid value holds that are not a line or area name. */
     reservedKeywords: string[];
 };
+/**
+ * Union every function slot a reducer can rename a name in: a name written
+ * there is defined by some grammar, so a reducer may rewrite it and it is
+ * not opaque. Merge argument lists instead of overwriting entries, since the
+ * maps disagree about which slots a function names.
+ */
+export declare const knownFunctions: Map<any, any>;
 //# sourceMappingURL=slots.d.ts.map

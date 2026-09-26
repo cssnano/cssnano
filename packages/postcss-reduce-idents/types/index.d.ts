@@ -6,7 +6,7 @@ export type Options = {
     encoder?: (value: string, index: number) => string;
 };
 export type Reducer = {
-    collect: (node: import('postcss').AnyNode, encoder: (value: string, num: number) => string) => void;
+    collect: (node: import('postcss').AnyNode) => void;
     transform: () => void;
 };
 /** @typedef {{
@@ -15,7 +15,7 @@ export type Reducer = {
     encoder?: (value: string, index: number) => string}} Options
 */
 /** @typedef {{
- *    collect: (node: import('postcss').AnyNode, encoder: (value: string, num: number) => string) => void,
+ *    collect: (node: import('postcss').AnyNode) => void,
  *    transform: () => void
  *  }} Reducer
  */

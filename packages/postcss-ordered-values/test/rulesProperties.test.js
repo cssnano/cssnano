@@ -35,10 +35,17 @@ describe('Border', () => {
 });
 
 describe('Box shadow', () => {
-  test('box-shadow aborts on functions it cannot classify', () => {
+  test('box-shadow aborts on math that does not resolve to a length', () => {
     assert.strictEqual(
-      normalizeBoxShadow(tokenizeValue('inset 0 min(1em, 1px) 0 1px red')),
+      normalizeBoxShadow(tokenizeValue('inset 0 sign(1em) 0 1px red')),
       null
+    );
+  });
+
+  test('box-shadow classifies mixed-unit math lengths', () => {
+    assert.strictEqual(
+      normalizeBoxShadow(tokenizeValue('red min(1em, 1px) 0 1px')),
+      'min(1em, 1px) 0 1px red'
     );
   });
 
@@ -157,7 +164,7 @@ describe('Columns', () => {
     }
   });
 
-  test('rejects non-binary arities and ambiguous auto combinations', () => {
+  test('rejects non-binary arities', () => {
     assert.strictEqual(normalizeColumns(tokenizeValue('20px').terms), null);
     assert.strictEqual(normalizeColumns(tokenizeValue('2').terms), null);
     assert.strictEqual(normalizeColumns(tokenizeValue('auto').terms), null);
@@ -165,15 +172,24 @@ describe('Columns', () => {
       normalizeColumns(tokenizeValue('3rem 2 12em').terms),
       null
     );
-    assert.strictEqual(normalizeColumns(tokenizeValue('2 auto').terms), null);
-    assert.strictEqual(normalizeColumns(tokenizeValue('auto 2').terms), null);
-    assert.strictEqual(
-      normalizeColumns(tokenizeValue('auto auto').terms),
-      null
-    );
     assert.strictEqual(
       normalizeColumns(tokenizeValue('20px 20px').terms),
       null
+    );
+  });
+
+  test('resolves auto into whichever column slot remains vacant', () => {
+    assert.strictEqual(
+      normalizeColumns(tokenizeValue('2 auto').terms),
+      'auto 2'
+    );
+    assert.strictEqual(
+      normalizeColumns(tokenizeValue('auto 2').terms),
+      'auto 2'
+    );
+    assert.strictEqual(
+      normalizeColumns(tokenizeValue('auto auto').terms),
+      'auto auto'
     );
   });
 });

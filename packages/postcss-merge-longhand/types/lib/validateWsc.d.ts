@@ -1,23 +1,27 @@
 /**
- * @param {string} value
+ * @param {string | undefined} value
  * @return {boolean}
  */
-declare function isBorderStyle(value: string): boolean;
+declare function isBorderStyle(value: string | undefined): boolean;
 /**
- * @param {string} value
+ * @param {string | undefined} value
  * @return {boolean}
  */
-declare function isBorderWidth(value: string): boolean;
+declare function isBorderWidth(value: string | undefined): boolean;
 /**
- * @param {string} value
+ * @param {string | undefined} value
  * @return {boolean}
  */
-declare function isColor(value: string): boolean;
+declare function isColor(value: string | undefined): boolean;
 /**
- * @param {[string, string, string]} wscs
+ * @param {{width: (string|undefined), style: (string|undefined), color: (string|undefined)}} wscs
  * @return {boolean}
  */
-declare function isValidWidthStyleColor(wscs: [string, string, string]): boolean;
+declare function isValidWidthStyleColor(wscs: {
+    width: (string | undefined);
+    style: (string | undefined);
+    color: (string | undefined);
+}): boolean;
 /**
  * A property that names one component takes one token, so a value of several
  * specifies nothing however well each token reads on its own: the browser
@@ -30,9 +34,8 @@ declare function isValidWidthStyleColor(wscs: [string, string, string]): boolean
 declare function specifiesComponent(value: string, component: string): boolean;
 /**
  * The grammar `<line-width> || <line-style> || <color>` requires each
- * component to appear at most once. `parseWsc` doesn't enforce this: it
- * overwrites repeated components and discards unrecognized tokens, so the
- * returned triple can differ from the input.
+ * component to appear at most once, and every token to specify one. This is
+ * the same judgment `parseWsc` makes while parsing; keep the two in step.
  *
  * @param {string} value
  * @return {boolean} whether every token specifies a distinct component

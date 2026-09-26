@@ -1,18 +1,16 @@
 import data from '../data/identSlots.json' with { type: 'json' };
 
-// The generated file is JSON, so its maps arrive as plain objects. Property
-// and function names come from the stylesheet, and `constructor` or `toString`
-// are things a declaration can be called, so never index those objects
+// Convert the generated JSON maps to `Map`s first: property and function
+// names come from the stylesheet, so never index those plain objects
 // directly.
 const aliases = new Map(Object.entries(data.aliases));
 
 const VENDOR_PREFIX = /^-\w+-/v;
 
 /**
- * The name the generated data knows a property by: vendor prefixed spellings
- * collapse onto the property they alias, and a prefix webref has no alias for
- * is dropped, since `-moz-animation-name` names keyframes just as
- * `animation-name` does.
+ * Return the name the generated data knows a property by: collapse prefixed
+ * spellings onto the property they alias, and drop a prefix webref has no
+ * alias for.
  *
  * @param {string} prop
  * @return {string}
@@ -47,14 +45,73 @@ export function resolveAtRule(name) {
 function toFunctionMap(functions) {
   return new Map(
     Object.entries(functions).map(([name, args]) => [
-      // Stylesheets spell a function without the trailing `()` webref names it
-      // by the tokenizer, preserving the historical compatibility behavior.
+      // Strip the trailing `()` webref adds; stylesheets spell the function
+      // without it.
       name.slice(0, -2),
       args,
     ])
   );
 }
 export const cssWideKeywords = data.cssWideKeywords;
+
+// Reserve the predefined counter styles: CSS Counter Styles 3 specifies
+// them in an appendix, so webref has no data. Leave a shared name unchanged.
+export const predefinedCounterStyles = [
+  'arabic-indic',
+  'armenian',
+  'bengali',
+  'cambodian',
+  'circle',
+  'cjk-decimal',
+  'cjk-earthly-branch',
+  'cjk-heavenly-stem',
+  'decimal',
+  'decimal-leading-zero',
+  'devanagari',
+  'disc',
+  'disclosure-closed',
+  'disclosure-open',
+  'ethiopic-numeric',
+  'georgian',
+  'gujarati',
+  'gurmukhi',
+  'hebrew',
+  'hiragana',
+  'hiragana-iroha',
+  'japanese-formal',
+  'japanese-informal',
+  'kannada',
+  'katakana',
+  'katakana-iroha',
+  'khmer',
+  'korean-hangul-formal',
+  'korean-hanja-formal',
+  'korean-hanja-informal',
+  'lao',
+  'lower-alpha',
+  'lower-armenian',
+  'lower-greek',
+  'lower-latin',
+  'lower-roman',
+  'malayalam',
+  'mongolian',
+  'myanmar',
+  'oriya',
+  'persian',
+  'simp-chinese-formal',
+  'simp-chinese-informal',
+  'square',
+  'tamil',
+  'telugu',
+  'thai',
+  'tibetan',
+  'trad-chinese-formal',
+  'trad-chinese-informal',
+  'upper-alpha',
+  'upper-armenian',
+  'upper-latin',
+  'upper-roman',
+];
 export const keyframes = {
   atRule: data.atRules.keyframes,
   properties: new Set(data.keyframes.properties),
@@ -92,3 +149,24 @@ export const grid = {
   /** Keywords a grid value holds that are not a line or area name. */
   reservedKeywords: data.grid.reservedKeywords,
 };
+
+// Treat the single `reversed()` argument as a counter name per the
+// counter-reset grammar; webref has no grammar for it as a function-bearing
+// property.
+const reversedFunctions = new Map([['reversed', [0]]]);
+
+/**
+ * Union every function slot a reducer can rename a name in: a name written
+ * there is defined by some grammar, so a reducer may rewrite it and it is
+ * not opaque. Merge argument lists instead of overwriting entries, since the
+ * maps disagree about which slots a function names.
+ */
+export const knownFunctions = new Map();
+for (const [name, args] of [
+  ...counter.functions,
+  ...counterStyle.functions,
+  ...reversedFunctions,
+]) {
+  const slots = knownFunctions.get(name);
+  knownFunctions.set(name, slots ? [...new Set([...slots, ...args])] : args);
+}

@@ -101,7 +101,15 @@ describe('Grid template areas', () => {
     'should rename referenced escaped grid area names',
     processCSS(
       'body{grid-template-areas:"header \\." "footer unused"}header{grid-area:header}footer{grid-area:footer}',
-      'body{grid-template-areas:"a ." "b c"}header{grid-area:a}footer{grid-area:b}'
+      'body{grid-template-areas:"a ." "b unused"}header{grid-area:a}footer{grid-area:b}'
+    )
+  );
+
+  test(
+    'should not rename an area of a template that is not referenced',
+    processCSS(
+      'body{grid-template-areas:"head foot"}header{grid-area:head}',
+      'body{grid-template-areas:"a foot"}header{grid-area:a}'
     )
   );
 
@@ -158,5 +166,18 @@ describe('Grid template areas', () => {
     passthroughCSS(
       '.grid{grid-template-areas:"dense"}.a{grid-area:dense}.b{grid:auto-flow dense / 1fr}'
     )
+  );
+
+  test(
+    'should not merge grid areas whose names differ only in case',
+    processCSS(
+      'body{grid-template-areas:"Head head"}header{grid-area:Head}footer{grid-area:head}',
+      'body{grid-template-areas:"a b"}header{grid-area:a}footer{grid-area:b}'
+    )
+  );
+
+  test(
+    'should not rename a grid area referenced with different case than its definition',
+    passthroughCSS('body{grid-template-areas:"Head"}header{grid-area:head}')
   );
 });

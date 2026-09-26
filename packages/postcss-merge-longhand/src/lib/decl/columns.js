@@ -1,13 +1,18 @@
 import cssnanoUtils from 'cssnano-utils';
 import stylehacks from 'stylehacks';
 import canExplode from '../canExplode.js';
-import isCustomProp from '../isCustomProp.js';
-import insertCloned from '../insertCloned.js';
 import cleanupDeclarations from '../cleanupDeclarations.js';
-import { isFallback, mergeBlockingSupport } from '../isFallback.js';
+import { isFallback } from '../isFallback.js';
 import cssGlobalKeywords from '../cssGlobalKeywords.js';
 import { shorthand, initialValues, cssWideKeywords } from '../spec.js';
 import { isUnresolved } from '../unresolved.js';
+import {
+  assignSlotValue,
+  commitShorthand,
+  shouldResetSlots,
+  slotVectorReady,
+  supportProvenanceMatches,
+} from './slotVector.js';
 import {
   cleanupLaneSegments,
   importanceLanes,
@@ -291,18 +296,6 @@ const isInvalid = (d) =>
     : !isValidColumnProperty(d));
 
 /**
- * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @param {number} i
- * @param {string} value
- * @param {Declaration} decl
- * @param {Set<Declaration>} fallbacks
- */
-function setSlot(slots, i, value, decl, fallbacks) {
-  if (slots[i] && isFallback(slots[i].decl, decl)) fallbacks.add(slots[i].decl);
-  slots[i] = { value, decl };
-}
-
-/**
  * @param {Container} rule
  * @param {({ value: string, decl: Declaration } | null)[]} slots
  * @param {Set<Declaration>} contributing
@@ -311,57 +304,24 @@ function setSlot(slots, i, value, decl, fallbacks) {
  * @param {Map<Declaration, Declaration>} [inserted]
  */
 function flush(rule, slots, contributing, fallbacks, lane, inserted) {
-  if (slots.some((s) => !s || isCustomProp(s.decl))) return;
-  const full = /** @type {{ value: string, decl: Declaration }[]} */ (slots);
-  const s0 = mergeBlockingSupport(full[0].decl);
+  const full = slotVectorReady(slots);
+  if (!full) return;
+
   const v0 = full[0].value.toLowerCase();
   const kw = cssGlobalKeywords.has(v0);
   for (const s of full) {
     const sv = s.value.toLowerCase();
     if (kw ? sv !== v0 : cssGlobalKeywords.has(sv)) return;
-    if (s0.symmetricDifference(mergeBlockingSupport(s.decl)).size) return;
   }
+  if (!supportProvenanceMatches(full)) return;
 
-  const shorthandVal = normalize([full[0].value, full[1].value]);
-  const toRemove = Array.from(contributing).filter((d) => !fallbacks.has(d));
-  if (toRemove.length === 0) return;
-
-  if (toRemove.length === 1 && toRemove[0].prop.toLowerCase() === columns) {
-    toRemove[0].prop = columns;
-    toRemove[0].value = shorthandVal;
-    delete toRemove[0].raws?.value;
-    return;
-  }
-
-  let remSize = -(columns.length + shorthandVal.length + (lane ? 12 : 2));
-  for (const d of toRemove) {
-    remSize += d.prop.length + d.value.length + (d.important ? 12 : 2);
-  }
-
-  if (remSize >= 0) {
-    const a = toRemove[toRemove.length - 1];
-    const newNode = insertCloned(rule, a, {
-      prop: columns,
-      value: shorthandVal,
-      important: a.important,
-    });
-    if (inserted) inserted.set(a, newNode);
-    for (const d of toRemove) d.remove();
-  }
+  commitShorthand(rule, full, contributing, fallbacks, {
+    prop: columns,
+    value: normalize([full[0].value, full[1].value]),
+    important: lane,
+    inserted,
+  });
 }
-
-/**
- * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @param {number} idx
- * @param {Declaration} decl
- * @return {boolean}
- */
-const shouldReset = (slots, idx, decl) =>
-  slots.every(Boolean) &&
-  (idx === -1
-    ? slots.some((s) => Boolean(s && isFallback(s.decl, decl)))
-    : cssGlobalKeywords.has(decl.value.toLowerCase()) ||
-      Boolean(slots[idx] && isFallback(slots[idx].decl, decl)));
 
 /**
  * @param {Container} rule
@@ -399,7 +359,7 @@ function processLane(rule, laneDecls, lane) {
     }
 
     const idx = isShort ? -1 : columnProperties.indexOf(p);
-    if (shouldReset(slots, idx, decl)) reset();
+    if (shouldResetSlots(slots, idx, decl)) reset();
 
     if (isShort) {
       const parsed = parseColumns(parsedValue(decl));
@@ -407,10 +367,10 @@ function processLane(rule, laneDecls, lane) {
         reset();
         continue;
       }
-      setSlot(slots, 0, parsed[0], decl, fallbacks);
-      setSlot(slots, 1, parsed[1], decl, fallbacks);
+      assignSlotValue(slots, 0, parsed[0], decl, fallbacks);
+      assignSlotValue(slots, 1, parsed[1], decl, fallbacks);
     } else {
-      setSlot(slots, idx, decl.value, decl, fallbacks);
+      assignSlotValue(slots, idx, decl.value, decl, fallbacks);
     }
     contributing.add(decl);
   }
