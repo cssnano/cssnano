@@ -1,6 +1,6 @@
 {
   "name": "postcss-discard-empty",
-  "version": "9.0.3",
+  "version": "9.0.4",
   "description": "Discard empty rules and values with PostCSS.",
   "exports": {
     ".": {

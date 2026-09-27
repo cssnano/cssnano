@@ -1,5 +1,24 @@
 # Change Log
 
+## 9.0.4
+
+### Patch Changes
+
+- Improve conformance for modern CSS math functions, grid-line values, and case-sensitive attribute selector modifiers while preserving ambiguous or invalid declarations. The affected transforms now use bounded, linear scans for these forms.
+
+- Value transforms now read the CSS Values 4 math function names from one `mathFunctions` table in `cssnano-utils`, so unit retention, box and shorthand merging, parameter and whitespace handling, and time classification agree on which functions count as math functions. Serialized output is unchanged.
+
+- perf: median 15% speed increase on test fixtures
+
+- Orders `columns: 2 auto` as `columns: auto 2`. Leaves animation declarations with negative iteration counts unchanged. Reorders border and box-shadow math functions that resolve to a length, such as `calc(1px + 1em)`, and leaves other math unchanged. Passes through unknown box-shadow color functions instead of reordering them.
+
+- Use ASCII case-insensitive matching for CSS names and grammar keywords so Unicode lookalikes are preserved, and restrict CSS whitespace normalization to the CSS whitespace set.
+
+- fix(postcss-ordered-values): improve performance and correctness
+
+- Updated dependencies:
+  - cssnano-utils@8.0.0
+
 ## 9.0.3
 
 ### Patch Changes

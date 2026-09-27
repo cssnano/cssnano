@@ -1,5 +1,24 @@
 # Change Log
 
+## 9.0.4
+
+### Patch Changes
+
+- Preserves percentage units in registered custom-property initial values with composite syntax, ranges, groups, and multipliers, and avoids clamping numeric operands nested inside alpha-value functions.
+
+- Preserves zero percentage units in rgb(), rgba(), and modern CSS Color 4 functions to avoid invalid syntax, respects disabled time conversions for 0ms, clamps percentage opacity values adhering to CSS Color 4 alpha semantics, and improves compatibility with uppercase at-rules and vendor-prefixed keyframes.
+
+- Preserves zero length in `columns` shorthands and zero units inside `@property` with `<angle-percentage>` syntax, retaining keyframe percentage units under nested rules. Symmetrically rounds negative numbers when precision is configured, converts between metric units (`mm`, `cm`, `q`), preserves zero percentages on SVG stroke properties to retain transition interpolation, and caches Browserslist lookups across runs. Also preserves units inside CSS Fonts 5 override descriptors, `anchor()` functions, `flex-basis`, and IE-targeted sizing properties.
+
+- Value transforms now read the CSS Values 4 math function names from one `mathFunctions` table in `cssnano-utils`, so unit retention, box and shorthand merging, parameter and whitespace handling, and time classification agree on which functions count as math functions. Serialized output is unchanged.
+
+- perf: median 15% speed increase on test fixtures
+
+- update browserslist
+
+- Updated dependencies:
+  - cssnano-utils@8.0.0
+
 ## 9.0.3
 
 ### Patch Changes

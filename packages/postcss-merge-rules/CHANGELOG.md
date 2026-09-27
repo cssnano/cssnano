@@ -1,5 +1,28 @@
 # Change Log
 
+## 9.0.5
+
+### Patch Changes
+
+- Rules with identical selectors now merge without changing which declaration wins the cascade. A rule that repeats a value already overridden inside the earlier rule, or that overrides a later shorthand with a longhand, keeps its declaration instead of being dropped as a duplicate, so the computed styles of merged rules match the original stylesheet.
+
+- Declarations whose standard property names differ only in case, such as `COLOR` and `color`, now merge like identically spelled properties. Custom property names stay case-sensitive, so `--FOO` and `--foo` remain distinct declarations.
+
+- Improve conformance for modern CSS math functions, grid-line values, and case-sensitive attribute selector modifiers while preserving ambiguous or invalid declarations. The affected transforms now use bounded, linear scans for these forms.
+
+- Merge rules that use modern pseudo-classes and pseudo-elements — `:modal`, `::file-selector-button`, `:read-only`, `:read-write`, `:autofill`, and `:fullscreen` — when every browser in the target list supports the corresponding feature. Support is still checked per browser, so these selectors remain unmerged under older targets, and pseudos without verified support data such as `:popover-open` and `:user-invalid` continue to block merging.
+
+- perf: median 15% speed increase on test fixtures
+
+- Profitable adjacent rule merges are no longer skipped by the legacy look-ahead, and important comments are preserved when equal-declaration rules are merged.
+
+- Use ASCII case-insensitive matching for CSS names and grammar keywords so Unicode lookalikes are preserved, and restrict CSS whitespace normalization to the CSS whitespace set.
+
+- update browserslist
+
+- Updated dependencies:
+  - cssnano-utils@8.0.0
+
 ## 9.0.4
 
 ### Patch Changes
