@@ -392,6 +392,7 @@
   "widows": "2",
   "width": "auto",
   "will-change": "auto",
+  "window-drag": "none",
   "word-break": "normal",
   "word-spacing": "normal",
   "word-wrap": "normal",
