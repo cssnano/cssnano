@@ -79,6 +79,36 @@ cssnano-preset-advanced@9.0.5:
     - proud-melons-scream
     - tidy-rabbits-fry
     - wild-hairs-bow
+cssnano-preset-advanced@9.1.0:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - at-rule-container-merging
+    - bright-values-clamp
+    - colormin-spec-conformance
+    - convert-values-rgb-zero-and-scientific
+    - convert-values-spec-compliance
+    - linear-conformance-fixes
+    - lucky-tables-share
+    - merge-border-radius
+    - merge-longhand-canonicalization
+    - neat-beans-lie
+    - normalize-url-multiline-namespaces
+    - normalize-variable-whitespace
+    - normalize-whitespace-math-context
+    - ordered-values-columns-auto-and-iteration-count
+    - proud-maps-reserve
+    - rare-books-repair
+    - reduce-idents-counter-whitespace
+    - reduce-idents-safe-renames
+    - shiny-mugs-normalize
+    - shorthand-identities-minify
+    - soft-mugs-count
+    - spotty-buttons-draw
+    - strict-lamps-laugh
+    - strong-eels-decide
+    - unify-border-reduction
+    - validate-columns-counts-and-units
+    - wide-zebras-ask
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -160,6 +190,45 @@ cssnano-preset-default@9.0.5:
     - proud-melons-scream
     - tidy-rabbits-fry
     - wild-hairs-bow
+cssnano-preset-default@9.1.0:
+  dir: packages/cssnano-preset-default
+  intents:
+    - at-rule-container-merging
+    - bright-values-clamp
+    - cascade-reviving-merges
+    - case-fold-property-names
+    - colormin-spec-conformance
+    - convert-values-rgb-zero-and-scientific
+    - convert-values-spec-compliance
+    - discard-comments-token-accurate
+    - fuzzy-selectors-fold
+    - gradient-stops-clamp
+    - humble-garlics-agree
+    - linear-conformance-fixes
+    - lucky-tables-share
+    - merge-border-radius
+    - merge-longhand-canonicalization
+    - modern-pseudo-merging
+    - neat-beans-lie
+    - normalize-url-decode-quoted
+    - normalize-url-multiline-namespaces
+    - normalize-variable-whitespace
+    - normalize-whitespace-math-context
+    - ordered-values-columns-auto-and-iteration-count
+    - partial-merge-comments
+    - quiet-strings-normalize
+    - rare-books-repair
+    - reduce-transforms-spec-compliance
+    - shiny-mugs-normalize
+    - shorthand-identities-minify
+    - spotty-buttons-draw
+    - strict-lamps-laugh
+    - strong-eels-decide
+    - svgo-fragment-scanner
+    - unify-border-reduction
+    - validate-columns-counts-and-units
+    - warm-jars-own
+    - wide-zebras-ask
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -202,6 +271,15 @@ cssnano-preset-lite@6.0.3:
   dir: packages/cssnano-preset-lite
   intents:
     - honest-doors-call
+cssnano-preset-lite@6.0.4:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - discard-comments-token-accurate
+    - lucky-tables-share
+    - neat-beans-lie
+    - normalize-variable-whitespace
+    - normalize-whitespace-math-context
+    - rare-books-repair
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -235,6 +313,16 @@ cssnano-utils@7.0.3:
   dir: packages/cssnano-utils
   intents:
     - honest-doors-call
+cssnano-utils@8.0.0:
+  dir: packages/cssnano-utils
+  intents:
+    - fuzzy-edits-nest
+    - humble-garlics-agree
+    - lucky-tables-share
+    - neat-beans-lie
+    - normalize-variable-whitespace
+    - rare-books-repair
+    - remove-cssnano-utils-apis
 cssnano@8.0.10:
   dir: packages/cssnano
   intents:
@@ -319,6 +407,39 @@ cssnano@9.0.5:
     - proud-melons-scream
     - tidy-rabbits-fry
     - wild-hairs-bow
+cssnano@9.1.0:
+  dir: packages/cssnano
+  intents:
+    - at-rule-container-merging
+    - bright-values-clamp
+    - colormin-spec-conformance
+    - convert-values-rgb-zero-and-scientific
+    - convert-values-spec-compliance
+    - discard-comments-token-accurate
+    - humble-garlics-agree
+    - linear-conformance-fixes
+    - lucky-tables-share
+    - merge-border-radius
+    - merge-longhand-canonicalization
+    - neat-beans-lie
+    - normalize-url-decode-quoted
+    - normalize-url-multiline-namespaces
+    - normalize-variable-whitespace
+    - normalize-whitespace-math-context
+    - ordered-values-columns-auto-and-iteration-count
+    - proud-maps-reserve
+    - rare-books-repair
+    - reduce-idents-safe-renames
+    - shiny-mugs-normalize
+    - shorthand-identities-minify
+    - spotty-buttons-draw
+    - strict-lamps-laugh
+    - strong-eels-decide
+    - svgo-fragment-scanner
+    - unify-border-reduction
+    - validate-columns-counts-and-units
+    - warm-jars-own
+    - wide-zebras-ask
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -360,6 +481,13 @@ postcss-colormin@9.0.3:
   intents:
     - honest-doors-call
     - wild-hairs-bow
+postcss-colormin@9.0.4:
+  dir: packages/postcss-colormin
+  intents:
+    - colormin-spec-conformance
+    - neat-beans-lie
+    - rare-books-repair
+    - warm-jars-own
 postcss-convert-values@8.0.2:
   dir: packages/postcss-convert-values
   intents:
@@ -394,6 +522,15 @@ postcss-convert-values@9.0.3:
   dir: packages/postcss-convert-values
   intents:
     - honest-doors-call
+postcss-convert-values@9.0.4:
+  dir: packages/postcss-convert-values
+  intents:
+    - bright-values-clamp
+    - convert-values-rgb-zero-and-scientific
+    - convert-values-spec-compliance
+    - lucky-tables-share
+    - neat-beans-lie
+    - warm-jars-own
 postcss-discard-comments@8.0.2:
   dir: packages/postcss-discard-comments
   intents:
@@ -427,6 +564,13 @@ postcss-discard-comments@9.0.3:
   dir: packages/postcss-discard-comments
   intents:
     - honest-doors-call
+postcss-discard-comments@9.0.4:
+  dir: packages/postcss-discard-comments
+  intents:
+    - discard-comments-token-accurate
+    - neat-beans-lie
+    - normalize-variable-whitespace
+    - quiet-custom-whitespace
 postcss-discard-duplicates@8.0.2:
   dir: packages/postcss-discard-duplicates
   intents:
@@ -460,6 +604,10 @@ postcss-discard-duplicates@9.0.3:
   dir: packages/postcss-discard-duplicates
   intents:
     - honest-doors-call
+postcss-discard-duplicates@9.0.4:
+  dir: packages/postcss-discard-duplicates
+  intents:
+    - neat-beans-lie
 postcss-discard-empty@8.0.2:
   dir: packages/postcss-discard-empty
   intents:
@@ -498,6 +646,10 @@ postcss-discard-empty@9.0.3:
   dir: packages/postcss-discard-empty
   intents:
     - honest-doors-call
+postcss-discard-empty@9.0.4:
+  dir: packages/postcss-discard-empty
+  intents:
+    - neat-beans-lie
 postcss-discard-overridden@8.0.2:
   dir: packages/postcss-discard-overridden
   intents:
@@ -531,6 +683,10 @@ postcss-discard-overridden@9.0.3:
   dir: packages/postcss-discard-overridden
   intents:
     - honest-doors-call
+postcss-discard-overridden@9.0.4:
+  dir: packages/postcss-discard-overridden
+  intents:
+    - neat-beans-lie
 postcss-discard-unused@8.0.2:
   dir: packages/postcss-discard-unused
   intents:
@@ -565,6 +721,12 @@ postcss-discard-unused@9.0.3:
   dir: packages/postcss-discard-unused
   intents:
     - honest-doors-call
+postcss-discard-unused@9.0.4:
+  dir: packages/postcss-discard-unused
+  intents:
+    - neat-beans-lie
+    - rare-books-repair
+    - soft-mugs-count
 postcss-merge-idents@8.0.2:
   dir: packages/postcss-merge-idents
   intents:
@@ -598,6 +760,12 @@ postcss-merge-idents@9.0.3:
   dir: packages/postcss-merge-idents
   intents:
     - honest-doors-call
+postcss-merge-idents@9.0.4:
+  dir: packages/postcss-merge-idents
+  intents:
+    - neat-beans-lie
+    - proud-maps-reserve
+    - rare-books-repair
 postcss-merge-longhand@8.0.2:
   dir: packages/postcss-merge-longhand
   intents:
@@ -638,6 +806,19 @@ postcss-merge-longhand@9.0.4:
   dir: packages/postcss-merge-longhand
   intents:
     - honest-doors-call
+postcss-merge-longhand@9.1.0:
+  dir: packages/postcss-merge-longhand
+  intents:
+    - at-rule-container-merging
+    - lucky-tables-share
+    - merge-border-radius
+    - merge-longhand-canonicalization
+    - neat-beans-lie
+    - rare-books-repair
+    - shorthand-identities-minify
+    - unify-border-reduction
+    - validate-columns-counts-and-units
+    - wide-zebras-ask
 postcss-merge-rules@8.0.2:
   dir: packages/postcss-merge-rules
   intents:
@@ -685,6 +866,17 @@ postcss-merge-rules@9.0.4:
   dir: packages/postcss-merge-rules
   intents:
     - honest-doors-call
+postcss-merge-rules@9.0.5:
+  dir: packages/postcss-merge-rules
+  intents:
+    - cascade-reviving-merges
+    - case-fold-property-names
+    - linear-conformance-fixes
+    - modern-pseudo-merging
+    - neat-beans-lie
+    - partial-merge-comments
+    - rare-books-repair
+    - warm-jars-own
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -719,6 +911,13 @@ postcss-minify-font-values@9.0.3:
   dir: packages/postcss-minify-font-values
   intents:
     - honest-doors-call
+postcss-minify-font-values@9.0.4:
+  dir: packages/postcss-minify-font-values
+  intents:
+    - early-seas-help
+    - neat-beans-lie
+    - rare-books-repair
+    - validate-columns-counts-and-units
 postcss-minify-gradients@8.0.2:
   dir: packages/postcss-minify-gradients
   intents:
@@ -763,6 +962,13 @@ postcss-minify-gradients@9.0.3:
   intents:
     - honest-doors-call
     - wild-hairs-bow
+postcss-minify-gradients@9.0.4:
+  dir: packages/postcss-minify-gradients
+  intents:
+    - gradient-stops-clamp
+    - humble-garlics-agree
+    - neat-beans-lie
+    - rare-books-repair
 postcss-minify-params@8.0.2:
   dir: packages/postcss-minify-params
   intents:
@@ -798,6 +1004,14 @@ postcss-minify-params@9.0.3:
   dir: packages/postcss-minify-params
   intents:
     - honest-doors-call
+postcss-minify-params@9.0.4:
+  dir: packages/postcss-minify-params
+  intents:
+    - humble-garlics-agree
+    - lucky-tables-share
+    - neat-beans-lie
+    - spotty-buttons-draw
+    - warm-jars-own
 postcss-minify-selectors@8.0.3:
   dir: packages/postcss-minify-selectors
   intents:
@@ -837,6 +1051,16 @@ postcss-minify-selectors@9.0.4:
   dir: packages/postcss-minify-selectors
   intents:
     - honest-doors-call
+postcss-minify-selectors@9.0.5:
+  dir: packages/postcss-minify-selectors
+  intents:
+    - fail-closed-attributes
+    - fuzzy-selectors-fold
+    - humble-garlics-agree
+    - neat-beans-lie
+    - rare-books-repair
+    - strict-lamps-laugh
+    - warm-jars-own
 postcss-normalize-charset@8.0.2:
   dir: packages/postcss-normalize-charset
   intents:
@@ -874,6 +1098,10 @@ postcss-normalize-charset@9.0.3:
   dir: packages/postcss-normalize-charset
   intents:
     - honest-doors-call
+postcss-normalize-charset@9.0.4:
+  dir: packages/postcss-normalize-charset
+  intents:
+    - neat-beans-lie
 postcss-normalize-display-values@8.0.2:
   dir: packages/postcss-normalize-display-values
   intents:
@@ -907,6 +1135,12 @@ postcss-normalize-display-values@9.0.3:
   dir: packages/postcss-normalize-display-values
   intents:
     - honest-doors-call
+postcss-normalize-display-values@9.0.4:
+  dir: packages/postcss-normalize-display-values
+  intents:
+    - neat-beans-lie
+    - rare-books-repair
+    - thick-cities-yell
 postcss-normalize-positions@8.0.2:
   dir: packages/postcss-normalize-positions
   intents:
@@ -940,6 +1174,11 @@ postcss-normalize-positions@9.0.3:
   dir: packages/postcss-normalize-positions
   intents:
     - honest-doors-call
+postcss-normalize-positions@9.0.4:
+  dir: packages/postcss-normalize-positions
+  intents:
+    - neat-beans-lie
+    - rare-books-repair
 postcss-normalize-repeat-style@8.0.2:
   dir: packages/postcss-normalize-repeat-style
   intents:
@@ -973,6 +1212,11 @@ postcss-normalize-repeat-style@9.0.3:
   dir: packages/postcss-normalize-repeat-style
   intents:
     - honest-doors-call
+postcss-normalize-repeat-style@9.0.4:
+  dir: packages/postcss-normalize-repeat-style
+  intents:
+    - neat-beans-lie
+    - rare-books-repair
 postcss-normalize-string@8.0.2:
   dir: packages/postcss-normalize-string
   intents:
@@ -1006,6 +1250,11 @@ postcss-normalize-string@9.0.3:
   dir: packages/postcss-normalize-string
   intents:
     - honest-doors-call
+postcss-normalize-string@9.0.4:
+  dir: packages/postcss-normalize-string
+  intents:
+    - neat-beans-lie
+    - quiet-strings-normalize
 postcss-normalize-timing-functions@8.0.2:
   dir: packages/postcss-normalize-timing-functions
   intents:
@@ -1039,6 +1288,11 @@ postcss-normalize-timing-functions@9.0.3:
   dir: packages/postcss-normalize-timing-functions
   intents:
     - honest-doors-call
+postcss-normalize-timing-functions@9.0.4:
+  dir: packages/postcss-normalize-timing-functions
+  intents:
+    - neat-beans-lie
+    - rare-books-repair
 postcss-normalize-unicode@8.0.2:
   dir: packages/postcss-normalize-unicode
   intents:
@@ -1073,6 +1327,12 @@ postcss-normalize-unicode@9.0.3:
   dir: packages/postcss-normalize-unicode
   intents:
     - honest-doors-call
+postcss-normalize-unicode@9.0.4:
+  dir: packages/postcss-normalize-unicode
+  intents:
+    - neat-beans-lie
+    - rare-books-repair
+    - warm-jars-own
 postcss-normalize-url@8.0.2:
   dir: packages/postcss-normalize-url
   intents:
@@ -1109,6 +1369,15 @@ postcss-normalize-url@9.0.3:
   dir: packages/postcss-normalize-url
   intents:
     - honest-doors-call
+postcss-normalize-url@9.0.4:
+  dir: packages/postcss-normalize-url
+  intents:
+    - neat-beans-lie
+    - normalize-url-decode-quoted
+    - normalize-url-multiline-namespaces
+    - rare-books-repair
+    - shiny-mugs-normalize
+    - swift-bikes-study
 postcss-normalize-whitespace@8.0.2:
   dir: packages/postcss-normalize-whitespace
   intents:
@@ -1147,6 +1416,14 @@ postcss-normalize-whitespace@9.0.3:
   dir: packages/postcss-normalize-whitespace
   intents:
     - honest-doors-call
+postcss-normalize-whitespace@9.0.4:
+  dir: packages/postcss-normalize-whitespace
+  intents:
+    - lucky-tables-share
+    - neat-beans-lie
+    - normalize-variable-whitespace
+    - normalize-whitespace-math-context
+    - rare-books-repair
 postcss-ordered-values@8.0.2:
   dir: packages/postcss-ordered-values
   intents:
@@ -1185,6 +1462,15 @@ postcss-ordered-values@9.0.3:
   dir: packages/postcss-ordered-values
   intents:
     - honest-doors-call
+postcss-ordered-values@9.0.4:
+  dir: packages/postcss-ordered-values
+  intents:
+    - linear-conformance-fixes
+    - lucky-tables-share
+    - neat-beans-lie
+    - ordered-values-columns-auto-and-iteration-count
+    - rare-books-repair
+    - strong-eels-decide
 postcss-reduce-idents@8.0.2:
   dir: packages/postcss-reduce-idents
   intents:
@@ -1221,6 +1507,13 @@ postcss-reduce-idents@9.0.3:
   dir: packages/postcss-reduce-idents
   intents:
     - honest-doors-call
+postcss-reduce-idents@9.0.4:
+  dir: packages/postcss-reduce-idents
+  intents:
+    - flat-ghosts-sip
+    - neat-beans-lie
+    - reduce-idents-counter-whitespace
+    - reduce-idents-safe-renames
 postcss-reduce-initial@8.0.2:
   dir: packages/postcss-reduce-initial
   intents:
@@ -1262,6 +1555,12 @@ postcss-reduce-initial@9.0.3:
   dir: packages/postcss-reduce-initial
   intents:
     - honest-doors-call
+postcss-reduce-initial@9.0.4:
+  dir: packages/postcss-reduce-initial
+  intents:
+    - neat-beans-lie
+    - strong-bears-lie
+    - warm-jars-own
 postcss-reduce-transforms@8.0.2:
   dir: packages/postcss-reduce-transforms
   intents:
@@ -1296,6 +1595,12 @@ postcss-reduce-transforms@9.0.3:
   dir: packages/postcss-reduce-transforms
   intents:
     - honest-doors-call
+postcss-reduce-transforms@9.0.4:
+  dir: packages/postcss-reduce-transforms
+  intents:
+    - neat-beans-lie
+    - rare-books-repair
+    - reduce-transforms-spec-compliance
 postcss-svgo@8.0.2:
   dir: packages/postcss-svgo
   intents:
@@ -1339,6 +1644,12 @@ postcss-svgo@9.0.3:
   intents:
     - honest-doors-call
     - proud-melons-scream
+postcss-svgo@9.0.4:
+  dir: packages/postcss-svgo
+  intents:
+    - neat-beans-lie
+    - rare-books-repair
+    - svgo-fragment-scanner
 postcss-unique-selectors@8.0.2:
   dir: packages/postcss-unique-selectors
   intents:
@@ -1372,6 +1683,10 @@ postcss-unique-selectors@9.0.3:
   dir: packages/postcss-unique-selectors
   intents:
     - honest-doors-call
+postcss-unique-selectors@9.0.4:
+  dir: packages/postcss-unique-selectors
+  intents:
+    - neat-beans-lie
 postcss-zindex@8.0.2:
   dir: packages/postcss-zindex
   intents:
@@ -1405,6 +1720,11 @@ postcss-zindex@9.0.3:
   dir: packages/postcss-zindex
   intents:
     - honest-doors-call
+postcss-zindex@9.0.4:
+  dir: packages/postcss-zindex
+  intents:
+    - neat-beans-lie
+    - rare-books-repair
 stylehacks@8.0.2:
   dir: packages/stylehacks
   intents:
@@ -1443,3 +1763,8 @@ stylehacks@9.0.4:
   dir: packages/stylehacks
   intents:
     - honest-doors-call
+stylehacks@9.0.5:
+  dir: packages/stylehacks
+  intents:
+    - neat-beans-lie
+    - warm-jars-own
