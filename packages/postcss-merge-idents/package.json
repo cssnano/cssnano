@@ -1,6 +1,6 @@
 {
   "name": "postcss-merge-idents",
-  "version": "9.0.3",
+  "version": "9.0.4",
   "description": "Merge keyframe and counter style identifiers.",
   "exports": {
     ".": {
@@ -34,8 +34,8 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
-    "cssnano-utils": "workspace:^",
-    "@csstools/css-tokenizer": "catalog:"
+    "@csstools/css-tokenizer": "catalog:",
+    "cssnano-utils": "workspace:^"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

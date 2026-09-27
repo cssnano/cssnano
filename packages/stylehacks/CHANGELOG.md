@@ -1,5 +1,13 @@
 # Change Log
 
+## 9.0.5
+
+### Patch Changes
+
+- perf: median 15% speed increase on test fixtures
+
+- update browserslist
+
 ## 9.0.4
 
 ### Patch Changes

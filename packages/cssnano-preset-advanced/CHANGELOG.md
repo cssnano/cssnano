@@ -1,5 +1,65 @@
 # Change Log
 
+## 9.1.0
+
+### Minor Changes
+
+- Merge corner `border-*-radius` longhands into `border-radius` shorthands. Four complete corner declarations in the same importance lane now collapse into one shorthand, with horizontal and vertical axes minified independently and separated by a slash when distinct. Declarations in the radius family are decoupled from physical border fast-path eligibility, allowing rules containing both physical borders and border radii to optimize both families.
+
+### Patch Changes
+
+- Merge margin, padding, border, border-radius, columns, and border-spacing declarations inside at-rule containers such as `@page`, `@position-try`, and nested at-rules. Fold identical horizontal and vertical `border-spacing` components to a single value. Recognize `columns` shorthands combining a count and a math function in either order, and preserve invalid declarations as written: border shorthands with multiple styles and `columns` values combining CSS-wide keywords with widths or counts no longer discard preceding valid longhands.
+
+- Preserves percentage units in registered custom-property initial values with composite syntax, ranges, groups, and multipliers, and avoids clamping numeric operands nested inside alpha-value functions.
+
+- Restricts color minification to CSS properties that accept `<color>` and custom properties, preserving custom identifiers in properties like `animation-name`, `grid-area`, and `counter-reset`. Adds support for `hwb()` color values and minification inside `color-mix()`, `light-dark()`, and `var()` fallbacks, while preserving relative color syntax, math functions, and token boundary separators.
+
+- Preserves zero percentage units in rgb(), rgba(), and modern CSS Color 4 functions to avoid invalid syntax, respects disabled time conversions for 0ms, clamps percentage opacity values adhering to CSS Color 4 alpha semantics, and improves compatibility with uppercase at-rules and vendor-prefixed keyframes.
+
+- Preserves zero length in `columns` shorthands and zero units inside `@property` with `<angle-percentage>` syntax, retaining keyframe percentage units under nested rules. Symmetrically rounds negative numbers when precision is configured, converts between metric units (`mm`, `cm`, `q`), preserves zero percentages on SVG stroke properties to retain transition interpolation, and caches Browserslist lookups across runs. Also preserves units inside CSS Fonts 5 override descriptors, `anchor()` functions, `flex-basis`, and IE-targeted sizing properties.
+
+- Improve conformance for modern CSS math functions, grid-line values, and case-sensitive attribute selector modifiers while preserving ambiguous or invalid declarations. The affected transforms now use bounded, linear scans for these forms.
+
+- Value transforms now read the CSS Values 4 math function names from one `mathFunctions` table in `cssnano-utils`, so unit retention, box and shorthand merging, parameter and whitespace handling, and time classification agree on which functions count as math functions. Serialized output is unchanged.
+
+- Standardize output normalization for margin, padding, and physical border properties. Property names and case-insensitive keywords in generated shorthands and normalized standalone shorthand declarations are canonicalized to lowercase, while preserving author casing for unmerged longhands, custom properties, hack prefixes, and unresolved values.
+
+- perf: median 15% speed increase on test fixtures
+
+- Join every escaped line continuation in a multiline `url()` value into one line, including `\r\n` continuations that previously survived and left an invalid string behind. Rewriting a `@namespace` URL no longer overwrites the tokens that follow it, so trailing text is preserved and multiple URLs in one namespace declaration are each normalized.
+
+- Remove insignificant whitespace around custom-property names and, in standard declarations, around `env()` custom-ident arguments and around comma delimiters in `var()`, `env()`, and `constant()`. Between a custom-property name and its value, only the parser-consumed leading whitespace run is dropped; authored whitespace elsewhere in the value, such as after a preserved comment, is preserved per CSS Variables 1. Required whitespace between distinct tokens and the single whitespace token in an empty fallback remain preserved, and a preserved comment kept between a declaration name and value now survives minification, for custom properties and standard declarations alike. Comment removal in selectors and values no longer fuses the tokens the comment sat between: an attribute case-insensitivity flag or any other name-like token keeps its boundary, and math-operator spacing is restored for every function whose value productions accept `<calc-sum>` arguments (including `calc-size()`, `calc-mix()`, and `random()`). Values without comments are now left byte-for-byte untouched rather than re-spaced.
+
+- Preserve whitespace around division operators across all modern CSS math functions such as `min()`, `max()`, and `clamp()`, and ensure commas in nested calculations have extraneous whitespace trimmed.
+
+- Orders `columns: 2 auto` as `columns: auto 2`. Leaves animation declarations with negative iteration counts unchanged. Reorders border and box-shadow math functions that resolve to a length, such as `calc(1px + 1em)`, and leaves other math unchanged. Passes through unknown box-shadow color functions instead of reordering them.
+
+- Merge duplicate `@keyframes` and `@counter-style` definitions more conservatively.
+
+- Use ASCII case-insensitive matching for CSS names and grammar keywords so Unicode lookalikes are preserved, and restrict CSS whitespace normalization to the CSS whitespace set.
+
+- `postcss-reduce-idents` no longer rewrites whitespace inside `counter()`, `counters()` and the other counter functions of a declaration it passes through unchanged. Extra spacing between the arguments now only normalizes when a counter in the same declaration renames, so undefined counters keep the value exactly as written.
+
+- Rename identifiers only when their definition and a reference share a stylesheet; leave alone names inside `var()`, `env()`, `attr()`, or a custom property fallback; skip reserved words in the encoder; rename `reversed()` counters and implicit `<area>-start`/`-end` lines with their area.
+
+- Preserve Windows drive roots, directory dot references, and leading `./` prefixes when the first relative segment contains a colon. Decode unreserved percent-encoded octets while preserving percent-encoded dots, normalize `@import` at-rules including nested condition URLs, retain quotes for URLs containing non-printable control characters, avoid unnecessary declaration tokenization, and synchronize raw parameters.
+
+- Minify equal shorthand components for two-axis, four-side, alignment, aspect-ratio, and transition declarations while preserving grammar-sensitive and invalid values.
+
+- fix: preserve namespaces that contain escaped characters or *
+
+- fix(postcss-minify-params): support CSS values level 4 and Media Queries level 5
+
+- Preserves invalid selector syntax and namespace-sensitive universal selectors while safely normalizing pseudo-element, View Transition, and keyframe forms. Recognizes the full token grammar for An+B formulas, including escaped forms and exact large integers.
+
+- fix(postcss-ordered-values): improve performance and correctness
+
+- Unify physical-border optimization under a single reducer that chooses deterministic shortest non-crossing canonical shorthands from complete side and component groups, partitioned by importance lane. Partial grids no longer require a full border reset. Dynamic declarations, style hacks, CSS-wide keywords, support fallbacks, unresolved substitutions, and other cascade barriers remain in their original positions, while valid fallback and border-image behavior is preserved.
+
+- Parse font weights and column units from tokenizer metadata. This safely minifies escaped `bold` weights, recognizes escaped length units, and prevents partial rewrites of invalid font shorthands while preserving original source spelling.
+
+- Preserve matching-importance all reset boundaries when merging margin, padding, physical border-radius, and columns declarations, so minification does not restore values cleared by the reset.
+
 ## 9.0.5
 
 ### Patch Changes

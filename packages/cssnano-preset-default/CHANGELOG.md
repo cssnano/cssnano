@@ -1,5 +1,87 @@
 # Change Log
 
+## 9.1.0
+
+### Minor Changes
+
+- Merge corner `border-*-radius` longhands into `border-radius` shorthands. Four complete corner declarations in the same importance lane now collapse into one shorthand, with horizontal and vertical axes minified independently and separated by a slash when distinct. Declarations in the radius family are decoupled from physical border fast-path eligibility, allowing rules containing both physical borders and border radii to optimize both families.
+
+### Patch Changes
+
+- Merge margin, padding, border, border-radius, columns, and border-spacing declarations inside at-rule containers such as `@page`, `@position-try`, and nested at-rules. Fold identical horizontal and vertical `border-spacing` components to a single value. Recognize `columns` shorthands combining a count and a math function in either order, and preserve invalid declarations as written: border shorthands with multiple styles and `columns` values combining CSS-wide keywords with widths or counts no longer discard preceding valid longhands.
+
+- Preserves percentage units in registered custom-property initial values with composite syntax, ranges, groups, and multipliers, and avoids clamping numeric operands nested inside alpha-value functions.
+
+- Rules with identical selectors now merge without changing which declaration wins the cascade. A rule that repeats a value already overridden inside the earlier rule, or that overrides a later shorthand with a longhand, keeps its declaration instead of being dropped as a duplicate, so the computed styles of merged rules match the original stylesheet.
+
+- Declarations whose standard property names differ only in case, such as `COLOR` and `color`, now merge like identically spelled properties. Custom property names stay case-sensitive, so `--FOO` and `--foo` remain distinct declarations.
+
+- Restricts color minification to CSS properties that accept `<color>` and custom properties, preserving custom identifiers in properties like `animation-name`, `grid-area`, and `counter-reset`. Adds support for `hwb()` color values and minification inside `color-mix()`, `light-dark()`, and `var()` fallbacks, while preserving relative color syntax, math functions, and token boundary separators.
+
+- Preserves zero percentage units in rgb(), rgba(), and modern CSS Color 4 functions to avoid invalid syntax, respects disabled time conversions for 0ms, clamps percentage opacity values adhering to CSS Color 4 alpha semantics, and improves compatibility with uppercase at-rules and vendor-prefixed keyframes.
+
+- Preserves zero length in `columns` shorthands and zero units inside `@property` with `<angle-percentage>` syntax, retaining keyframe percentage units under nested rules. Symmetrically rounds negative numbers when precision is configured, converts between metric units (`mm`, `cm`, `q`), preserves zero percentages on SVG stroke properties to retain transition interpolation, and caches Browserslist lookups across runs. Also preserves units inside CSS Fonts 5 override descriptors, `anchor()` functions, `flex-basis`, and IE-targeted sizing properties.
+
+- Remove comments more reliably and preserve the ones you keep exactly. Comments are now removed from declaration values that carry `!important`, and comment detection respects CSS token boundaries: text inside unquoted `url()` values and behind escape sequences in strings and identifiers is no longer mistaken for a comment. Kept comments are emitted byte-for-byte, including an unclosed comment at the end of a value, and whitespace inside kept comments is left untouched. Removal state is scoped to each document, so a shared processor no longer carries `removeAllButFirst` first-comment state between runs, and the `remove` callback runs once per comment occurrence. A non-function `remove` option now fails with a `TypeError`.
+
+- Folds more selector lists into safe `:is()` expressions when their selectors contain nested comma-separated functions, while preserving selector order and conservative specificity and namespace checks.
+
+- Recognizes `currentColor` and system colours such as `canvas` as colour stops, so their positions are clamped or dropped like any other stop. A stop position at or below the running non-negative maximum is now written as zero even when the two positions use different units, and minifying an already minified gradient no longer changes it again. Single-stop gradients lose positions that spell the default boundaries. Positions are no longer replaced with zero when the largest position is negative.
+
+- Adds the balanced token index used by selector, parameter, and gradient minification while preserving their serialized CSS output.
+
+- Improve conformance for modern CSS math functions, grid-line values, and case-sensitive attribute selector modifiers while preserving ambiguous or invalid declarations. The affected transforms now use bounded, linear scans for these forms.
+
+- Value transforms now read the CSS Values 4 math function names from one `mathFunctions` table in `cssnano-utils`, so unit retention, box and shorthand merging, parameter and whitespace handling, and time classification agree on which functions count as math functions. Serialized output is unchanged.
+
+- Standardize output normalization for margin, padding, and physical border properties. Property names and case-insensitive keywords in generated shorthands and normalized standalone shorthand declarations are canonicalized to lowercase, while preserving author casing for unmerged longhands, custom properties, hack prefixes, and unresolved values.
+
+- Merge rules that use modern pseudo-classes and pseudo-elements — `:modal`, `::file-selector-button`, `:read-only`, `:read-write`, `:autofill`, and `:fullscreen` — when every browser in the target list supports the corresponding feature. Support is still checked per browser, so these selectors remain unmerged under older targets, and pseudos without verified support data such as `:popover-open` and `:user-invalid` continue to block merging.
+
+- perf: median 15% speed increase on test fixtures
+
+- `postcss-normalize-url` now decodes quoted `url(...)` values, preserving literal backslashes and escape sequences whether quotes are stripped or kept.
+  Relative URLs now normalize using POSIX path semantics across all platforms, and converted `@namespace` URLs escape double quotes.
+
+- Join every escaped line continuation in a multiline `url()` value into one line, including `\r\n` continuations that previously survived and left an invalid string behind. Rewriting a `@namespace` URL no longer overwrites the tokens that follow it, so trailing text is preserved and multiple URLs in one namespace declaration are each normalized.
+
+- Remove insignificant whitespace around custom-property names and, in standard declarations, around `env()` custom-ident arguments and around comma delimiters in `var()`, `env()`, and `constant()`. Between a custom-property name and its value, only the parser-consumed leading whitespace run is dropped; authored whitespace elsewhere in the value, such as after a preserved comment, is preserved per CSS Variables 1. Required whitespace between distinct tokens and the single whitespace token in an empty fallback remain preserved, and a preserved comment kept between a declaration name and value now survives minification, for custom properties and standard declarations alike. Comment removal in selectors and values no longer fuses the tokens the comment sat between: an attribute case-insensitivity flag or any other name-like token keeps its boundary, and math-operator spacing is restored for every function whose value productions accept `<calc-sum>` arguments (including `calc-size()`, `calc-mix()`, and `random()`). Values without comments are now left byte-for-byte untouched rather than re-spaced.
+
+- Preserve whitespace around division operators across all modern CSS math functions such as `min()`, `max()`, and `clamp()`, and ensure commas in nested calculations have extraneous whitespace trimmed.
+
+- Orders `columns: 2 auto` as `columns: auto 2`. Leaves animation declarations with negative iteration counts unchanged. Reorders border and box-shadow math functions that resolve to a length, such as `calc(1px + 1em)`, and leaves other math unchanged. Passes through unknown box-shadow color functions instead of reordering them.
+
+- Profitable adjacent rule merges are no longer skipped by the legacy look-ahead, and important comments are preserved when equal-declaration rules are merged.
+
+- Normalize CSS string quotes and collapse escaped line continuations.
+
+- Use ASCII case-insensitive matching for CSS names and grammar keywords so Unicode lookalikes are preserved, and restrict CSS whitespace normalization to the CSS whitespace set.
+
+- Only reduce transform functions whose component types match the spec; keep invalid values unchanged. Never merge a `var()` reference with an `env()` reference of the same name.
+
+- Preserve Windows drive roots, directory dot references, and leading `./` prefixes when the first relative segment contains a colon. Decode unreserved percent-encoded octets while preserving percent-encoded dots, normalize `@import` at-rules including nested condition URLs, retain quotes for URLs containing non-printable control characters, avoid unnecessary declaration tokenization, and synchronize raw parameters.
+
+- Minify equal shorthand components for two-axis, four-side, alignment, aspect-ratio, and transition declarations while preserving grammar-sensitive and invalid values.
+
+- fix(postcss-minify-params): support CSS values level 4 and Media Queries level 5
+
+- Preserves invalid selector syntax and namespace-sensitive universal selectors while safely normalizing pseudo-element, View Transition, and keyframe forms. Recognizes the full token grammar for An+B formulas, including escaped forms and exact large integers.
+
+- fix(postcss-ordered-values): improve performance and correctness
+
+- Aligns SVG data URI processing with WHATWG URL standards by treating the first `#` as the fragment delimiter. Non-conforming data URLs (such as those with malformed percent-encoding or where an unencoded `#` in markup truncates the SVG payload) are left untouched rather than parsed with an internal XML recovery scanner. CSS hex escapes in the URI scheme (for example `d\61ta:image/svg+xml`) reach the optimizer. SVG data URIs inside CSS Values 4 `src(...)` functions or `url(...)` declarations with url-modifiers are optimized while preserving modifiers and comments. Minified declarations also keep their raw value metadata in sync.
+
+- Unify physical-border optimization under a single reducer that chooses deterministic shortest non-crossing canonical shorthands from complete side and component groups, partitioned by importance lane. Partial grids no longer require a full border reset. Dynamic declarations, style hacks, CSS-wide keywords, support fallbacks, unresolved substitutions, and other cascade barriers remain in their original positions, while valid fallback and border-image behavior is preserved.
+
+- Parse font weights and column units from tokenizer metadata. This safely minifies escaped `bold` weights, recognizes escaped length units, and prevents partial rewrites of invalid font shorthands while preserving original source spelling.
+
+- update browserslist
+
+- Preserve matching-importance all reset boundaries when merging margin, padding, physical border-radius, and columns declarations, so minification does not restore values cleared by the reset.
+
+- Updated dependencies:
+  - cssnano-utils@8.0.0
+
 ## 9.0.5
 
 ### Patch Changes

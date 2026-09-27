@@ -1,5 +1,18 @@
 # Change Log
 
+## 9.0.4
+
+### Patch Changes
+
+- perf: median 15% speed increase on test fixtures
+
+- Use ASCII case-insensitive matching for CSS names and grammar keywords so Unicode lookalikes are preserved, and restrict CSS whitespace normalization to the CSS whitespace set.
+
+- Aligns SVG data URI processing with WHATWG URL standards by treating the first `#` as the fragment delimiter. Non-conforming data URLs (such as those with malformed percent-encoding or where an unencoded `#` in markup truncates the SVG payload) are left untouched rather than parsed with an internal XML recovery scanner. CSS hex escapes in the URI scheme (for example `d\61ta:image/svg+xml`) reach the optimizer. SVG data URIs inside CSS Values 4 `src(...)` functions or `url(...)` declarations with url-modifiers are optimized while preserving modifiers and comments. Minified declarations also keep their raw value metadata in sync.
+
+- Updated dependencies:
+  - cssnano-utils@8.0.0
+
 ## 9.0.3
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # Change Log
 
+## 9.0.4
+
+### Patch Changes
+
+- perf: median 15% speed increase on test fixtures
+
+- Use ASCII case-insensitive matching for CSS names and grammar keywords so Unicode lookalikes are preserved, and restrict CSS whitespace normalization to the CSS whitespace set.
+
+- Updated dependencies:
+  - cssnano-utils@8.0.0
+
 ## 9.0.3
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "postcss-svgo",
-  "version": "9.0.3",
+  "version": "9.0.4",
   "description": "Optimise inline SVG with PostCSS.",
   "exports": {
     ".": {

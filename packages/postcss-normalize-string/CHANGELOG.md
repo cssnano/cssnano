@@ -1,5 +1,13 @@
 # Change Log
 
+## 9.0.4
+
+### Patch Changes
+
+- perf: median 15% speed increase on test fixtures
+
+- Normalize CSS string quotes and collapse escaped line continuations.
+
 ## 9.0.3
 
 ### Patch Changes

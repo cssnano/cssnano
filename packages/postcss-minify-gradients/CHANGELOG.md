@@ -1,5 +1,20 @@
 # Change Log
 
+## 9.0.4
+
+### Patch Changes
+
+- Recognizes `currentColor` and system colours such as `canvas` as colour stops, so their positions are clamped or dropped like any other stop. A stop position at or below the running non-negative maximum is now written as zero even when the two positions use different units, and minifying an already minified gradient no longer changes it again. Single-stop gradients lose positions that spell the default boundaries. Positions are no longer replaced with zero when the largest position is negative.
+
+- Adds the balanced token index used by selector, parameter, and gradient minification while preserving their serialized CSS output.
+
+- perf: median 15% speed increase on test fixtures
+
+- Use ASCII case-insensitive matching for CSS names and grammar keywords so Unicode lookalikes are preserved, and restrict CSS whitespace normalization to the CSS whitespace set.
+
+- Updated dependencies:
+  - cssnano-utils@8.0.0
+
 ## 9.0.3
 
 ### Patch Changes

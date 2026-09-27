@@ -1,5 +1,25 @@
 # Change Log
 
+## 9.0.4
+
+### Patch Changes
+
+- perf: median 15% speed increase on test fixtures
+
+- `postcss-normalize-url` now decodes quoted `url(...)` values, preserving literal backslashes and escape sequences whether quotes are stripped or kept.
+  Relative URLs now normalize using POSIX path semantics across all platforms, and converted `@namespace` URLs escape double quotes.
+
+- Join every escaped line continuation in a multiline `url()` value into one line, including `\r\n` continuations that previously survived and left an invalid string behind. Rewriting a `@namespace` URL no longer overwrites the tokens that follow it, so trailing text is preserved and multiple URLs in one namespace declaration are each normalized.
+
+- Use ASCII case-insensitive matching for CSS names and grammar keywords so Unicode lookalikes are preserved, and restrict CSS whitespace normalization to the CSS whitespace set.
+
+- Preserve Windows drive roots, directory dot references, and leading `./` prefixes when the first relative segment contains a colon. Decode unreserved percent-encoded octets while preserving percent-encoded dots, normalize `@import` at-rules including nested condition URLs, retain quotes for URLs containing non-printable control characters, avoid unnecessary declaration tokenization, and synchronize raw parameters.
+
+- Preserve malformed @namespace strings without changing their raw bytes.
+
+- Updated dependencies:
+  - cssnano-utils@8.0.0
+
 ## 9.0.3
 
 ### Patch Changes

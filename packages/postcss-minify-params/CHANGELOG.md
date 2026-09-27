@@ -1,5 +1,22 @@
 # Change Log
 
+## 9.0.4
+
+### Patch Changes
+
+- Adds the balanced token index used by selector, parameter, and gradient minification while preserving their serialized CSS output.
+
+- Value transforms now read the CSS Values 4 math function names from one `mathFunctions` table in `cssnano-utils`, so unit retention, box and shorthand merging, parameter and whitespace handling, and time classification agree on which functions count as math functions. Serialized output is unchanged.
+
+- perf: median 15% speed increase on test fixtures
+
+- fix(postcss-minify-params): support CSS values level 4 and Media Queries level 5
+
+- update browserslist
+
+- Updated dependencies:
+  - cssnano-utils@8.0.0
+
 ## 9.0.3
 
 ### Patch Changes

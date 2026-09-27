@@ -1,5 +1,26 @@
 # Change Log
 
+## 9.0.5
+
+### Patch Changes
+
+- Preserve malformed attribute selectors instead of minifying them into selectors that can match a different set of elements.
+
+- Folds more selector lists into safe `:is()` expressions when their selectors contain nested comma-separated functions, while preserving selector order and conservative specificity and namespace checks.
+
+- Adds the balanced token index used by selector, parameter, and gradient minification while preserving their serialized CSS output.
+
+- perf: median 15% speed increase on test fixtures
+
+- Use ASCII case-insensitive matching for CSS names and grammar keywords so Unicode lookalikes are preserved, and restrict CSS whitespace normalization to the CSS whitespace set.
+
+- Preserves invalid selector syntax and namespace-sensitive universal selectors while safely normalizing pseudo-element, View Transition, and keyframe forms. Recognizes the full token grammar for An+B formulas, including escaped forms and exact large integers.
+
+- update browserslist
+
+- Updated dependencies:
+  - cssnano-utils@8.0.0
+
 ## 9.0.4
 
 ### Patch Changes

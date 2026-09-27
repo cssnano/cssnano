@@ -1,6 +1,6 @@
 {
   "name": "postcss-minify-font-values",
-  "version": "9.0.3",
+  "version": "9.0.4",
   "description": "Minify font declarations with PostCSS",
   "exports": {
     ".": {
@@ -19,8 +19,8 @@
   "author": "Bogdan Chadkin <trysound@yandex.ru>",
   "license": "MIT",
   "dependencies": {
-    "cssnano-utils": "workspace:^",
-    "@csstools/css-tokenizer": "catalog:"
+    "@csstools/css-tokenizer": "catalog:",
+    "cssnano-utils": "workspace:^"
   },
   "keywords": [
     "css",

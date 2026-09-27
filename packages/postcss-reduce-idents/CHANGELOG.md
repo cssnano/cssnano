@@ -1,5 +1,20 @@
 # Change Log
 
+## 9.0.4
+
+### Patch Changes
+
+- fix(postcss-reduce-idents): correctly minify counter names
+
+- perf: median 15% speed increase on test fixtures
+
+- `postcss-reduce-idents` no longer rewrites whitespace inside `counter()`, `counters()` and the other counter functions of a declaration it passes through unchanged. Extra spacing between the arguments now only normalizes when a counter in the same declaration renames, so undefined counters keep the value exactly as written.
+
+- Rename identifiers only when their definition and a reference share a stylesheet; leave alone names inside `var()`, `env()`, `attr()`, or a custom property fallback; skip reserved words in the encoder; rename `reversed()` counters and implicit `<area>-start`/`-end` lines with their area.
+
+- Updated dependencies:
+  - cssnano-utils@8.0.0
+
 ## 9.0.3
 
 ### Patch Changes
