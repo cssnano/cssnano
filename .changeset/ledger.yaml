@@ -109,6 +109,10 @@ cssnano-preset-advanced@9.1.0:
     - unify-border-reduction
     - validate-columns-counts-and-units
     - wide-zebras-ask
+cssnano-preset-advanced@9.1.1:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - preserve-unicode-range-convert-values
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -229,6 +233,10 @@ cssnano-preset-default@9.1.0:
     - validate-columns-counts-and-units
     - warm-jars-own
     - wide-zebras-ask
+cssnano-preset-default@9.1.1:
+  dir: packages/cssnano-preset-default
+  intents:
+    - preserve-unicode-range-convert-values
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -323,6 +331,10 @@ cssnano-utils@8.0.0:
     - normalize-variable-whitespace
     - rare-books-repair
     - remove-cssnano-utils-apis
+cssnano-utils@8.0.1:
+  dir: packages/cssnano-utils
+  intents:
+    - preserve-unicode-range-convert-values
 cssnano@8.0.10:
   dir: packages/cssnano
   intents:
@@ -440,6 +452,10 @@ cssnano@9.1.0:
     - validate-columns-counts-and-units
     - warm-jars-own
     - wide-zebras-ask
+cssnano@9.1.1:
+  dir: packages/cssnano
+  intents:
+    - preserve-unicode-range-convert-values
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -531,6 +547,10 @@ postcss-convert-values@9.0.4:
     - lucky-tables-share
     - neat-beans-lie
     - warm-jars-own
+postcss-convert-values@9.0.5:
+  dir: packages/postcss-convert-values
+  intents:
+    - preserve-unicode-range-convert-values
 postcss-discard-comments@8.0.2:
   dir: packages/postcss-discard-comments
   intents:

@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.1
+
+### Patch Changes
+
+- Preserves Unicode range tokens (`unicode-range`) in font descriptors and custom properties, preventing code point ranges from being corrupted into invalid numbers or dimensions.
+
 ## 8.0.0
 
 ### Major Changes
