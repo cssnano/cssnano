@@ -42,4 +42,8 @@ describe('Extraneous whitespace suppression around punctuation with comments', (
       'a{font-family:Helvetica, Arial}'
     )
   );
+  test(
+    'should preserve whitespace when no comments are present',
+    processCSS(`a { display: block }`, `a { display: block }`)
+  );
 });
