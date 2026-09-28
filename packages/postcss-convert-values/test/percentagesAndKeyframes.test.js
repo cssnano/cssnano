@@ -269,6 +269,41 @@ describe('Animations and font-face', () => {
   );
 
   test(
+    'should not convert unicode-range descriptor in @font-face',
+    passthroughCSS(
+      '@font-face{font-family:test;src:url(test.woff2);unicode-range:U+0100-017F}'
+    )
+  );
+
+  test(
+    'should not convert unicode-range descriptor with wildcards in @font-face',
+    passthroughCSS(
+      '@font-face{font-family:test;src:url(test.woff2);unicode-range:U+4??}'
+    )
+  );
+
+  test(
+    'should not convert comma-separated unicode ranges in @font-face',
+    passthroughCSS(
+      '@font-face{font-family:test;unicode-range:U+0025-00FF,U+4??}'
+    )
+  );
+
+  test(
+    'should not convert vendor-prefixed unicode-range descriptor in @font-face',
+    passthroughCSS(
+      '@font-face{font-family:test;-webkit-unicode-range:U+0100-017F}'
+    )
+  );
+
+  test(
+    'should preserve unicode-range in custom properties when transformCustomProperties is true',
+    passthroughCSS(':root{--my-range:U+0100-017F,U+4??}', {
+      transformCustomProperties: true,
+    })
+  );
+
+  test(
     'should strip length zero from border-image-width inside keyframes',
     processCSS(
       '@keyframes test {0% {border-image-width: 0px 0px 100% 0%;}}',

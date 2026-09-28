@@ -213,3 +213,30 @@ test('omits EOF and fails closed for malformed token streams', () => {
   );
   assert.equal(tokens('/* comment */')[0][0], TokenType.Comment);
 });
+
+test('preserves CSS Syntax 3 default tokenization for unicode range spellings', () => {
+  const defaultTokens = tokens('U+0100-017F');
+  assert.ok(
+    defaultTokens.every((token) => token[0] !== TokenType.UnicodeRange)
+  );
+  assert.equal(defaultTokens[0][0], TokenType.Ident);
+
+  const siblingSelectorTokens = tokens('u+a', { unicodeRangesAllowed: false });
+  assert.equal(siblingSelectorTokens[0][0], TokenType.Ident);
+  assert.equal(siblingSelectorTokens[1][0], TokenType.Delim);
+  assert.equal(siblingSelectorTokens[2][0], TokenType.Ident);
+});
+
+test('emits UnicodeRange token when unicodeRangesAllowed is explicitly enabled', () => {
+  const rangeTokens = tokens('U+0100-017F', { unicodeRangesAllowed: true });
+  assert.equal(rangeTokens.length, 1);
+  assert.equal(rangeTokens[0][0], TokenType.UnicodeRange);
+  assert.equal(rangeTokens[0][1], 'U+0100-017F');
+
+  const balanced = balancedTokens('U+0100-017F', {
+    unicodeRangesAllowed: true,
+  });
+  assert.ok(balanced);
+  assert.equal(balanced.tokens.length, 1);
+  assert.equal(balanced.tokens[0][0], TokenType.UnicodeRange);
+});

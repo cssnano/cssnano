@@ -84,6 +84,14 @@ describe('CSS processing', () => {
     )
   );
 
+  test(
+    'should preserve unicode-range descriptors after preset composition',
+    withDefaults.processCSS(
+      '@font-face{font-family:Example;src:url(example.woff2);unicode-range:U+0100-017F}',
+      '@font-face{font-family:Example;src:url(example.woff2);unicode-range:U+0100-017f}'
+    )
+  );
+
   test('should preserve whitespace-only custom properties', async () => {
     const input = ':root{--x: ;--empty:}';
     const processor = createCssnanoProcessor(preset);
@@ -114,6 +122,14 @@ describe('CSS processing', () => {
     withBrowserslist.processCSS(
       'button { color: hsla(0 100% 50% / 40%); appearance: none }',
       'button{color:#f006;appearance:none}'
+    )
+  );
+
+  test(
+    'should lowercase unicode-range prefix for modern browsers after preset composition',
+    withBrowserslist.processCSS(
+      '@font-face{font-family:Example;src:url(example.woff2);unicode-range:U+0100-017F}',
+      '@font-face{font-family:Example;src:url(example.woff2);unicode-range:u+0100-017f}'
     )
   );
 
