@@ -167,6 +167,11 @@ describe('Length and viewport units', () => {
   );
 
   test(
+    'should preserve zero units in -o- prefixed line-height',
+    passthroughCSS('h1{-o-line-height:0px;-o-line-height:0%}')
+  );
+
+  test(
     'should convert metric units (mm to cm)',
     processCSS(
       'h1{width:10mm;height:20mm;margin:100mm}',

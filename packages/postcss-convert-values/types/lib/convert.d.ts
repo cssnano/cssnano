@@ -1,5 +1,3 @@
-export declare const lengthConv: Map<string, number>;
-export declare const metricConv: Map<string, number>;
 export declare const timeConv: Map<string, number>;
 export declare const angleConv: Map<string, number>;
 export declare const freqConv: Map<string, number>;
