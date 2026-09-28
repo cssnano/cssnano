@@ -1,11 +1,11 @@
-export const lengthConv = new Map([
+const lengthConv = new Map([
   ['in', 288],
   ['px', 3],
   ['pt', 4],
   ['pc', 48],
 ]);
 
-export const metricConv = new Map([
+const metricConv = new Map([
   ['cm', 40],
   ['mm', 4],
   ['q', 1],

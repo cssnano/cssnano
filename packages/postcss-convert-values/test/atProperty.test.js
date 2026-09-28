@@ -500,4 +500,12 @@ describe('@property initial-value', () => {
       `@property --test{syntax:/* a */ '<length>' /* b */;inherits:false;initial-value:0;}`
     )
   );
+
+  test(
+    'should reuse cached syntax evaluation for multiple initial-value declarations in @property',
+    processCSS(
+      `@property --percent{syntax:'<percentage>';inherits:false;initial-value:0%;initial-value:0%;}`,
+      `@property --percent{syntax:'<percentage>';inherits:false;initial-value:0%;initial-value:0%;}`
+    )
+  );
 });

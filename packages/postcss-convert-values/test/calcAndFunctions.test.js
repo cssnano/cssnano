@@ -131,6 +131,9 @@ describe('Escaped and case-insensitive function names', () => {
 
     const mozResult = await processor('div{width:-moz-calc(100% - 0px)}');
     assert.equal(mozResult.css, 'div{width:-moz-calc(100% - 0px)}');
+
+    const oResult = await processor('div{width:-o-calc(100% - 0px)}');
+    assert.equal(oResult.css, 'div{width:-o-calc(100% - 0px)}');
   });
 
   test('should preserve zero units in vendor-prefixed conic-gradient names', async () => {
@@ -384,6 +387,13 @@ describe('Math functions and preserving units', () => {
   );
 
   test(
+    'should preserve zero length and percentage units in anchor-size() fallbacks',
+    passthroughCSS(
+      'h1{width:anchor-size(--target width, 0px);height:anchor-size(--target height, 0%);top:anchor-size(self-inline, 0rem)}'
+    )
+  );
+
+  test(
     'should preserve zero percentage inside contrast-color()',
     passthroughCSS('h1{color:contrast-color(0%)}')
   );
@@ -393,6 +403,21 @@ describe('Math functions and preserving units', () => {
     passthroughCSS(
       'h1{view-timeline-inset:view(0px 0px);animation-range:view(0%)}'
     )
+  );
+
+  test(
+    'should preserve zero percentage in animation-timeline view() inset',
+    passthroughCSS('h1{animation-timeline:view(0% 0%)}')
+  );
+
+  test(
+    'should convert percentage to unitless zero in view-timeline-inset',
+    processCSS('h1{view-timeline-inset:0%}', 'h1{view-timeline-inset:0}')
+  );
+
+  test(
+    'should convert multiple percentages to unitless zeros in view-timeline-inset',
+    processCSS('h1{view-timeline-inset:0% 0%}', 'h1{view-timeline-inset:0 0}')
   );
 });
 

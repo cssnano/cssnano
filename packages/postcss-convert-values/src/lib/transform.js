@@ -1,5 +1,5 @@
 import cssnanoUtils from 'cssnano-utils';
-import { syntaxAllowsPercentage } from './parse-syntax.js';
+import { syntaxAllowsPercentage } from './parseSyntax.js';
 import { findReplacements, stripVendorPrefix } from './findReplacements.js';
 
 const { applyEdits } = cssnanoUtils;
