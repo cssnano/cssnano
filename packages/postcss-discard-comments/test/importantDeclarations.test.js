@@ -17,7 +17,7 @@ const staleRawPlugin = {
 
 describe('Declaration values with !important', () => {
   test(
-    'should remove comments from a declaration value that carries !important',
+    'should remove comments from a declaration value with !important',
     processCSS('a{color:re/*x*/d!important}', 'a{color:re d!important}')
   );
 
