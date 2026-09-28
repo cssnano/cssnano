@@ -19,8 +19,14 @@ export type NumericSource = {
 /** @typedef {{index: number, start: number, end: number, raw: string, number: number, unit: string, hasDecimal: boolean}} NumericSource */
 /** @param {CSSToken} token @return {string} */
 declare function decoded(token: CSSToken): string;
-/** @param {string} value @return {CSSToken[]} */
-declare function tokens(value: string): CSSToken[];
+/**
+ * @param {string} value
+ * @param {{ unicodeRangesAllowed?: boolean }} [options]
+ * @return {CSSToken[]}
+ */
+declare function tokens(value: string, options?: {
+    unicodeRangesAllowed?: boolean;
+}): CSSToken[];
 /** @param {CSSToken} token @return {number} */
 declare function tokenStart(token: CSSToken): number;
 /** @param {CSSToken} token @return {number} */
@@ -79,7 +85,13 @@ declare class BalancedTokens {
         endIndex: number;
     }[];
 }
-/** @param {string} source @return {BalancedTokens | undefined} */
-declare function balancedTokens(source: string): BalancedTokens | undefined;
+/**
+ * @param {string} source
+ * @param {{ unicodeRangesAllowed?: boolean }} [options]
+ * @return {BalancedTokens | undefined}
+ */
+declare function balancedTokens(source: string, options?: {
+    unicodeRangesAllowed?: boolean;
+}): BalancedTokens | undefined;
 export { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, numeric, numericSource, tokenEnd, tokenStart, tokens, };
 //# sourceMappingURL=value.d.ts.map

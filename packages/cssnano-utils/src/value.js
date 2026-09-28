@@ -9,9 +9,13 @@ function decoded(token) {
   return /** @type {{value?: string}} */ (token[4])?.value ?? token[1];
 }
 
-/** @param {string} value @return {CSSToken[]} */
-function tokens(value) {
-  return [...tokenize({ css: value })].filter(
+/**
+ * @param {string} value
+ * @param {{ unicodeRangesAllowed?: boolean }} [options]
+ * @return {CSSToken[]}
+ */
+function tokens(value, options) {
+  return [...tokenize({ css: value, ...options })].filter(
     (token) => token[0] !== TokenType.EOF
   );
 }
@@ -207,14 +211,18 @@ class BalancedTokens {
   }
 }
 
-/** @param {string} source @return {BalancedTokens | undefined} */
-function balancedTokens(source) {
+/**
+ * @param {string} source
+ * @param {{ unicodeRangesAllowed?: boolean }} [options]
+ * @return {BalancedTokens | undefined}
+ */
+function balancedTokens(source, options) {
   try {
     const input = [];
     /** @type {[number, TokenType][]} */
     const stack = [];
     const ends = new Map();
-    for (const token of tokenize({ css: source })) {
+    for (const token of tokenize({ css: source, ...options })) {
       if (token[0] === TokenType.EOF) continue;
       const index = input.length;
       input.push(token);
