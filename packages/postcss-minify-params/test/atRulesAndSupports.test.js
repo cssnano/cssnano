@@ -1,4 +1,6 @@
 import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+import postcss from 'postcss';
 import {
   usePostCSSPlugin,
   processCSSFactory,
@@ -85,6 +87,55 @@ describe('Normalise @supports queries', () => {
   test(
     'should remove selector combinator whitespace in supports queries',
     processCSS('@supports selector(a + b){}', '@supports selector(a+b){}')
+  );
+
+  test(
+    'should preserve banner comment in afterName when stripping whitespace',
+    processCSS(
+      '@supports /*! banner */ (display: grid) {}',
+      '@supports/*! banner */(display:grid) {}'
+    )
+  );
+
+  test(
+    'should preserve multiple comments in afterName when stripping whitespace',
+    processCSS(
+      '@supports /* a */ /* b */ (display: grid) {}',
+      '@supports/* a *//* b */(display:grid) {}'
+    )
+  );
+
+  test(
+    'should preserve whitespace after @supports when name ends in a dangling backslash',
+    processCSS(
+      '@supports\\ (display: grid) {}',
+      '@supports\\ (display:grid) {}'
+    )
+  );
+
+  test(
+    'should preserve whitespace after @supports when prelude does not begin with parenthesis',
+    processCSS(
+      '@supports not (display: grid) {}',
+      '@supports not (display:grid) {}'
+    )
+  );
+
+  test('should handle @supports at-rule with missing raws.afterName', async () => {
+    const root = postcss.parse('@supports (display: grid){}');
+    delete root.first.raws.afterName;
+    await postcss([plugin()]).process(root, { from: undefined });
+    assert.strictEqual(root.first.raws.afterName, '');
+  });
+
+  test(
+    'should strip whitespace after mixed-case @Supports when prelude begins with parenthesis',
+    processCSS('@Supports (display: flex) {}', '@Supports(display:flex) {}')
+  );
+
+  test(
+    'should strip whitespace after uppercase @SUPPORTS when prelude begins with parenthesis',
+    processCSS('@SUPPORTS (display: flex) {}', '@SUPPORTS(display:flex) {}')
   );
 });
 
@@ -183,6 +234,26 @@ describe('Other at-rules handling', () => {
   test(
     'should not mangle @font-feature-values (uppercase)',
     passthroughCSS('@FONT-FEATURE-VALUES Font One {}')
+  );
+
+  test(
+    'should not strip whitespace before parenthesis on unknown @idEnt at-rules',
+    passthroughCSS('@idEnt (foo) {}')
+  );
+
+  test(
+    'should not strip whitespace before parenthesis on @container at-rules',
+    passthroughCSS('@container (width > 500px) {}')
+  );
+
+  test(
+    'should not strip whitespace before parenthesis on custom at-rules',
+    passthroughCSS('@custom-rule (param: 1) {}')
+  );
+
+  test(
+    'should not strip whitespace before parenthesis on uppercase unknown at-rules',
+    passthroughCSS('@FOO (bar) {}')
   );
 });
 

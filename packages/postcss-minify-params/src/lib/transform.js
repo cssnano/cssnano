@@ -44,7 +44,7 @@ export default function transform(legacy, rule) {
   if (mediaIsUnconditional) {
     rule.params = '';
     if (rule.raws.params?.raw) rule.raws.params = { raw: '', value: '' };
-    rule.raws.afterName = '';
+    updateAfterName(rule);
     return;
   }
   minifyWhitespace(structure, parents, changes);

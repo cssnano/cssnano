@@ -61,3 +61,27 @@ test(
     ''
   )
 );
+
+test(
+  'should collapse multi-character whitespace after @media to a single space without stripping it',
+  processCSS(
+    '@media   (min-width: 1px) { h1 { color: red } }',
+    '@media (min-width: 1px){h1{color:red}}'
+  )
+);
+
+test(
+  'should retain single space before parenthesis after @media under lite preset',
+  processCSS(
+    '@media (min-width: 1px) { h1 { color: red } }',
+    '@media (min-width: 1px){h1{color:red}}'
+  )
+);
+
+test(
+  'should retain single space before parenthesis after @supports under lite preset',
+  processCSS(
+    '@supports (display: grid) { h1 { color: red } }',
+    '@supports (display: grid){h1{color:red}}'
+  )
+);
