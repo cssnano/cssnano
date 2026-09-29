@@ -5,9 +5,14 @@ import {
   minifyWhitespace,
   parentIndexes,
 } from './whitespace.js';
-import { serializeSegments, tokenEnd } from './token-utils.js';
+import {
+  endsWithEscapingBackslash,
+  serializeSegments,
+  tokenEnd,
+  TokenType,
+} from './tokenUtils.js';
 
-const { balancedTokens } = cssnanoUtils;
+const { balancedTokens, tokens: tokenizeValue } = cssnanoUtils;
 
 /**
  * @param {boolean} legacy
@@ -59,5 +64,39 @@ export default function transform(legacy, rule) {
     rule.raws.params = { raw: rule.params, value: rule.params };
   }
 
-  if (!rule.params.length) rule.raws.afterName = '';
+  updateAfterName(rule);
+}
+
+/**
+ * Strip whitespace after @media or @supports when parameters begin with (.
+ *
+ * @param {import('postcss').AtRule} rule
+ * @return {void}
+ */
+function updateAfterName(rule) {
+  if (!rule.params.length) {
+    rule.raws.afterName = '';
+  } else if (
+    rule.params.startsWith('(') &&
+    !endsWithEscapingBackslash(rule.name)
+  ) {
+    rule.raws.afterName = stripWhitespacePreservingComments(
+      rule.raws.afterName
+    );
+  }
+}
+
+/**
+ * @param {string | undefined} raw
+ * @return {string}
+ */
+function stripWhitespacePreservingComments(raw) {
+  if (!raw?.includes('/*')) return '';
+  let result = '';
+  for (const [type, tokenRaw] of tokenizeValue(raw)) {
+    if (type !== TokenType.Whitespace) {
+      result += tokenRaw;
+    }
+  }
+  return result;
 }

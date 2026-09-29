@@ -12,7 +12,7 @@ import {
   TokenType,
   tokenEnd,
   whitespaceInsensitiveFunctions,
-} from './token-utils.js';
+} from './tokenUtils.js';
 
 const { numeric } = cssnanoUtils;
 /** @typedef {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>['tokens']} Tokens */

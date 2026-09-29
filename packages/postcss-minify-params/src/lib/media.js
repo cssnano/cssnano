@@ -3,7 +3,7 @@ import {
   significantIndex,
   TokenType,
   tokenEnd,
-} from './token-utils.js';
+} from './tokenUtils.js';
 
 /** @import cssnanoUtils from 'cssnano-utils' */
 /** @typedef {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>['tokens']} Tokens */

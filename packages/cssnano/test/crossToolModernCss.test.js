@@ -30,7 +30,7 @@ describe('Cross-tool edge cases and modern CSS specifications', () => {
     'media query range context (Media Queries 4) does not crash or corrupt bounds',
     processCss(
       '@media (400px <= width <= 800px) { h1 { color: red; } }',
-      '@media (400px<=width<=800px){h1{color:red}}'
+      '@media(400px<=width<=800px){h1{color:red}}'
     )
   );
 

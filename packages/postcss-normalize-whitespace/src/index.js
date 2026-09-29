@@ -25,6 +25,8 @@ const plainSeparatorRegex = /^[ \t\n\r\f]*:[ \t\n\r\f]*$/v;
  * @return {boolean}
  */
 function endsWithEscapingBackslash(value) {
+  if (!value.endsWith('\\')) return false;
+
   let backslashes = 0;
 
   for (let i = value.length - 1; i >= 0 && value[i] === '\\'; i--) {
@@ -214,6 +216,22 @@ function trimCustomPropertySeparator(between) {
 }
 
 /**
+ * Collapses multi-character whitespace runs in at-rule afterName to a single
+ * space while preserving comments.
+ * @param {string} afterName
+ * @return {string}
+ */
+function normalizeAfterName(afterName) {
+  if (!afterName || afterName === ' ') return afterName;
+  if (!afterName.includes('/*')) return ' ';
+  let result = '';
+  for (const [type, raw] of tokenizeValue(afterName)) {
+    result += type === TokenType.Whitespace ? ' ' : raw;
+  }
+  return result;
+}
+
+/**
  *
  * @param {import('postcss').Declaration} node
  * @param {Map<string, string>} cache
@@ -317,6 +335,10 @@ function pluginCreator() {
 
           node.raws.between = node.raws.after = '';
           node.raws.semicolon = false;
+
+          if (type === atrule && node.raws.afterName !== undefined) {
+            node.raws.afterName = normalizeAfterName(node.raws.afterName);
+          }
         }
       });
 

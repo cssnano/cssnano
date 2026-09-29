@@ -115,7 +115,7 @@ describe('Cross-tool compatibility edge cases', () => {
     'does not wrap mixed-specificity selector lists in :is()',
     processCss(
       '.flex-col,[flex-col=""]{flex-direction:column}.has-\\[\\>svg\\]\\:flex-col:has(>svg){flex-direction:column}@media (min-width:640px){.sm\\:flex-row{flex-direction:row}}',
-      '.flex-col,[flex-col=""]{flex-direction:column}.has-\\[\\>svg\\]\\:flex-col:has(>svg){flex-direction:column}@media (min-width:640px){.sm\\:flex-row{flex-direction:row}}'
+      '.flex-col,[flex-col=""]{flex-direction:column}.has-\\[\\>svg\\]\\:flex-col:has(>svg){flex-direction:column}@media(min-width:640px){.sm\\:flex-row{flex-direction:row}}'
     )
   );
 

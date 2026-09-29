@@ -10,7 +10,7 @@ const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 describe('Normalise @supports queries', () => {
   test(
     'should normalise @supports queries',
-    processCSS('@supports (display: grid) {}', '@supports (display:grid) {}')
+    processCSS('@supports (display: grid) {}', '@supports(display:grid) {}')
   );
 
   test(
@@ -25,13 +25,13 @@ describe('Normalise @supports queries', () => {
     'should normalise @supports with multiple conditions',
     processCSS(
       '@supports ((text-align-last: justify) or (-moz-text-align-last: justify)) {}',
-      '@supports ((text-align-last:justify) or (-moz-text-align-last:justify)) {}'
+      '@supports((text-align-last:justify) or (-moz-text-align-last:justify)) {}'
     )
   );
 
   test(
     'should normalise @supports with var',
-    processCSS('@supports (--foo: green) {}', '@supports (--foo:green) {}')
+    processCSS('@supports (--foo: green) {}', '@supports(--foo:green) {}')
   );
 
   test(
@@ -46,7 +46,7 @@ describe('Normalise @supports queries', () => {
     'should normalize space in custom property values',
     processCSS(
       '@supports (--foo:  ){html{background:green}}',
-      '@supports (--foo: ){html{background:green}}'
+      '@supports(--foo: ){html{background:green}}'
     )
   );
 
@@ -54,7 +54,7 @@ describe('Normalise @supports queries', () => {
     'should minimize custom properties with multiple conditions',
     processCSS(
       '@supports ((--foo:  ) or (--bar: green )){html{background:green}}',
-      '@supports ((--foo: ) or (--bar:green)){html{background:green}}'
+      '@supports((--foo: ) or (--bar:green)){html{background:green}}'
     )
   );
 
@@ -62,7 +62,7 @@ describe('Normalise @supports queries', () => {
     'should preserve the empty custom-property fallback space only',
     processCSS(
       '@supports ((--empty:  ) or (--value: green )) {}',
-      '@supports ((--empty: ) or (--value:green)) {}'
+      '@supports((--empty: ) or (--value:green)) {}'
     )
   );
 
@@ -70,13 +70,16 @@ describe('Normalise @supports queries', () => {
     'should preserve whitespace around binary plus in non-math functions',
     processCSS(
       '@supports (width:calc-size(auto + 1px, size)){h1{color:red}}',
-      '@supports (width:calc-size(auto + 1px,size)){h1{color:red}}'
+      '@supports(width:calc-size(auto + 1px,size)){h1{color:red}}'
     )
   );
 
   test(
     'should preserve whitespace around binary plus in unknown functions',
-    passthroughCSS('@supports (width:future(auto + 1px)){h1{color:red}}')
+    processCSS(
+      '@supports (width:future(auto + 1px)){h1{color:red}}',
+      '@supports(width:future(auto + 1px)){h1{color:red}}'
+    )
   );
 
   test(
