@@ -1,9 +1,11 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const require = createRequire(import.meta.url);
 const siteDirectory = path.dirname(fileURLToPath(import.meta.url));
 const base = '/cssnano/';
 
@@ -42,6 +44,11 @@ export default defineConfig({
           siteDirectory,
           'node_modules/svgo/dist/svgo.browser.js'
         ),
+        'css-declaration-sorter': require.resolve('css-declaration-sorter', {
+          paths: [
+            path.resolve(siteDirectory, '../packages/cssnano-preset-advanced'),
+          ],
+        }),
       },
     },
     build: {
@@ -51,6 +58,10 @@ export default defineConfig({
           codeSplitting: {
             groups: [
               { name: 'svgo', test: /[\\\/]node_modules[\\\/]svgo[\\\/]/v },
+              {
+                name: 'css-declaration-sorter',
+                test: /[\\\/]node_modules[\\\/]css-declaration-sorter[\\\/]/v,
+              },
               { name: 'vendor', test: /[\\\/]node_modules[\\\/]/v },
             ],
           },
@@ -64,6 +75,10 @@ export default defineConfig({
           codeSplitting: {
             groups: [
               { name: 'svgo', test: /[\\\/]node_modules[\\\/]svgo[\\\/]/v },
+              {
+                name: 'css-declaration-sorter',
+                test: /[\\\/]node_modules[\\\/]css-declaration-sorter[\\\/]/v,
+              },
               { name: 'vendor', test: /[\\\/]node_modules[\\\/]/v },
             ],
           },

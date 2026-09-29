@@ -65,6 +65,32 @@ for (const importedAsset of imports) {
     throw new Error(`Missing lazy preset chunk ${importedAsset}`);
 }
 
+const workerPath = path.join(assetDirectory, worker);
+const results = [];
+globalThis.postMessage = (message) => {
+  results.push(message);
+};
+await import(workerPath);
+
+for (const preset of [
+  'cssnano-preset-default',
+  'cssnano-preset-lite',
+  'cssnano-preset-advanced',
+]) {
+  await globalThis.onmessage({
+    data: {
+      input: 'a { z-index: 10; color: red; }',
+      config: preset,
+    },
+  });
+  const result = results.pop();
+  if (!result || !result.ok) {
+    throw new Error(
+      `Built worker failed to minify with ${preset}: ${result?.error?.message ?? 'unknown error'}`
+    );
+  }
+}
+
 console.log(
   JSON.stringify(
     { worker, presetChunks: imports.map((file) => path.basename(file)) },
