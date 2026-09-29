@@ -2,7 +2,7 @@ import data from '../data/longhands.json' with { type: 'json' };
 
 /**
  * The shorthand structure and keyword sets the transforms rely on, derived from
- * the specifications by `script/acquire.mjs`. The generated file is JSON, so
+ * the specifications by `script/acquire.js`. The generated file is JSON, so
  * shorthands and initialValues deserialize as plain objects; wrap entries in
  * Map() to enable safe .get() lookup of property names from the stylesheet.
  */

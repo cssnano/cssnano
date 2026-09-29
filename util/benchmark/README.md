@@ -83,11 +83,11 @@ no observation, and the analyzer reports a structural failure.
 
 ## Running a comparison
 
-`compare-revisions.mjs` drives the whole flow: preflight, smoke, matched
+`compare-revisions.js` drives the whole flow: preflight, smoke, matched
 benchmarking, analysis, report writing, and cleanup.
 
 ```sh
-node util/benchmark/compare-revisions.mjs \
+node util/benchmark/compare-revisions.js \
   --base-revision=<sha> --candidate-revision=<sha> \
   --base-dir=<worktree> --candidate-dir=<worktree>
 ```
@@ -124,13 +124,13 @@ Phases and flags:
 - **Cleanup** removes worktrees created for the comparison when possible. If
   removal fails (for example, read-only Git metadata), the coordinator prints
   the exact recovery command instead of claiming success, and
-  `prepare-worktree.mjs --cleanup --destination=<path>` reports the
+  `prepare-worktree.js --cleanup --destination=<path>` reports the
   same recovery command.
 
-Corpus selection is shared with `bench.mjs`: `--only=<selector>` may be
+Corpus selection is shared with `bench.js`: `--only=<selector>` may be
 repeated (each selector broadens the selection), and `--corpus-manifest=<path>`
 pins an exact fixture list, which is how a preflight-detected corpus mismatch
-is resolved. `bench.mjs` supports `--help` and `--list-cases`, and `--quiet`
+is resolved. `bench.js` supports `--help` and `--list-cases`, and `--quiet`
 suppresses its own progress output for coordinator-invoked runs.
 
 The harness provenance hash covers only the injected benchmark harness files
@@ -160,7 +160,7 @@ exits nonzero for an invalid artifact, execution failure, or correctness
 mismatch. Performance conclusions never cause a nonzero exit; a future
 `--policy=gate` mode must be explicitly introduced before changing that rule.
 
-`statistical-simulation.mjs` reports both fixed-sample and adaptive-stopping
+`statistical-simulation.js` reports both fixed-sample and adaptive-stopping
 coverage. The adaptive result is a calibration diagnostic rather than an
 assumption that optional stopping is harmless: skewed stress cases can show
 under-coverage even when the fixed-sample t interval is well calibrated.

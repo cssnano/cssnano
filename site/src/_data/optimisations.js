@@ -3,7 +3,7 @@
 import advancedPreset from 'cssnano-preset-advanced';
 import defaultPreset from 'cssnano-preset-default';
 import litePreset from 'cssnano-preset-lite';
-import pluginName from '../../util/pluginName.mjs';
+import pluginName from '../../util/pluginName.js';
 
 /**
  * @typedef {object} Optimisation

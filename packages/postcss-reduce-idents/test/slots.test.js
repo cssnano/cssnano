@@ -10,7 +10,7 @@ import {
 } from '../src/lib/slots.js';
 
 // Spot-check the slots here for regressions in how slots.js reads the
-// generated file; webrefIdents.mjs validates them at data-acquire time.
+// generated file; webrefIdents.js validates them at data-acquire time.
 
 /** @type {[string, string][]} */
 const properties = [

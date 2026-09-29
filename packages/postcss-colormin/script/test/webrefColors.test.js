@@ -5,7 +5,7 @@ import {
   directReferences,
   serialize,
   validate,
-} from '../lib/webrefColors.mjs';
+} from '../lib/webrefColors.js';
 
 test('directReferences extracts property and type references', () => {
   assert.deepStrictEqual(

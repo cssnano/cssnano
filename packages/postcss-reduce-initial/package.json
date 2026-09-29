@@ -23,7 +23,7 @@
     "types"
   ],
   "scripts": {
-    "acquire": "node ./script/acquire.mjs",
+    "acquire": "node ./script/acquire.js",
     "test": "node --test"
   },
   "keywords": [

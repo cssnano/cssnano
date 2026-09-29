@@ -50,7 +50,7 @@
   },
   "scripts": {
     "test": "node --test",
-    "test:mutation": "node ../../util/mutation-testing/mutation-runner.mjs --catalog mutation-catalog.mjs",
+    "test:mutation": "node ../../util/mutation-testing/mutation-runner.js --catalog mutation-catalog.js",
     "fuzz": "node ./script/fuzz.js"
   },
   "type": "module"

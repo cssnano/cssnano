@@ -1,6 +1,5 @@
-'use strict';
-const postcss = require('postcss');
-const assert = require('node:assert/strict');
+import postcss from 'postcss';
+import assert from 'node:assert/strict';
 
 function usePostCSSPlugin(plugin) {
   return () => {
@@ -41,4 +40,4 @@ function processCSSFactory(plugin) {
   return { processor, processCSS, passthroughCSS };
 }
 
-module.exports = { usePostCSSPlugin, processCSSFactory };
+export { usePostCSSPlugin, processCSSFactory };

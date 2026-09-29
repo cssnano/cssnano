@@ -7,7 +7,7 @@
     "typecheck": "astro sync && tsc --project tsconfig.json",
     "start": "astro dev",
     "build": "astro build",
-    "check:astro": "pnpm build && node util/check-astro-artifacts.mjs"
+    "check:astro": "pnpm build && node util/checkAstroArtifacts.js"
   },
   "dependencies": {
     "cssnano-preset-advanced": "link:../packages/cssnano-preset-advanced",

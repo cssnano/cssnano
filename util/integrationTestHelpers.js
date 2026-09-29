@@ -1,16 +1,15 @@
-'use strict';
-const path = require('node:path');
-const fs = require('node:fs');
-const postcss = require('postcss');
-const assert = require('node:assert/strict');
-const cssnano = require('../packages/cssnano/src/index.js');
-const { processCSSFactory } = require('./testHelpers.js');
+import path from 'node:path';
+import fs from 'node:fs';
+import postcss from 'postcss';
+import assert from 'node:assert/strict';
+import cssnano from '../packages/cssnano/src/index.js';
+import { processCSSFactory } from './testHelpers.js';
 
-function processCSSWithPresetFactory(preset) {
+export function processCSSWithPresetFactory(preset) {
   return processCSSFactory([cssnano({ preset })]);
 }
 
-function createCssnanoProcessor(preset) {
+export function createCssnanoProcessor(preset) {
   return postcss(cssnano({ preset }));
 }
 
@@ -38,15 +37,18 @@ function mismatchMessage(framework, actual, expected) {
   ].join('\n');
 }
 
-function integrationTests(preset, integrations) {
+export function integrationTests(preset, integrations) {
   const presetName = path.basename(path.resolve(integrations, '../..'));
   const frameworks = new Map();
   for (const framework of fs.readdirSync(
-    path.join(__dirname, '../frameworks')
+    path.join(import.meta.dirname, '../frameworks')
   )) {
     frameworks.set(
       path.basename(framework, '.css'),
-      fs.readFileSync(path.join(__dirname, '../frameworks', framework), 'utf8')
+      fs.readFileSync(
+        path.join(import.meta.dirname, '../frameworks', framework),
+        'utf8'
+      )
     );
   }
 
@@ -69,7 +71,7 @@ function integrationTests(preset, integrations) {
     );
 }
 
-function idempotencyTests(preset, integrations) {
+export function idempotencyTests(preset, integrations) {
   const presetName = path.basename(path.resolve(integrations, '../..'));
   const integrationsByFramework = new Map();
   for (const integration of fs.readdirSync(integrations)) {
@@ -96,7 +98,11 @@ function idempotencyTests(preset, integrations) {
     );
 }
 
-function pluginIdempotencyTests(preset, integrations, excludedPlugins = []) {
+export function pluginIdempotencyTests(
+  preset,
+  integrations,
+  excludedPlugins = []
+) {
   const presetName = path.basename(path.resolve(integrations, '../..'));
   const frameworks = [];
   for (const file of fs.readdirSync(integrations)) {
@@ -141,11 +147,3 @@ function pluginIdempotencyTests(preset, integrations, excludedPlugins = []) {
     return Promise.allSettled(tests);
   };
 }
-
-module.exports = {
-  processCSSWithPresetFactory,
-  createCssnanoProcessor,
-  integrationTests,
-  idempotencyTests,
-  pluginIdempotencyTests,
-};
