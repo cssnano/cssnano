@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import advancedPreset from 'cssnano-preset-advanced';
 import defaultPreset from 'cssnano-preset-default';
+import litePreset from 'cssnano-preset-lite';
 import cssnano from '../src/index.js';
 
 describe('preset resolution', () => {
@@ -118,6 +119,27 @@ describe('plugin selection', () => {
       ],
     }).process('.selector { pointer-events: initial; }', { from: undefined });
     assert.strictEqual(result.css, '.selector{pointer-events:initial}');
+  });
+
+  test('should distinguish at-rule whitespace handling between lite and default presets', async () => {
+    const input = '@media   (min-width: 1px) { h1 { color: red } }';
+
+    const defaultResult = await postcss([
+      cssnano({ preset: defaultPreset }),
+    ]).process(input, { from: undefined });
+    assert.strictEqual(
+      defaultResult.css,
+      '@media(min-width:1px){h1{color:red}}'
+    );
+
+    const liteResult = await postcss([cssnano({ preset: litePreset })]).process(
+      input,
+      { from: undefined }
+    );
+    assert.strictEqual(
+      liteResult.css,
+      '@media (min-width: 1px){h1{color:red}}'
+    );
   });
 });
 
