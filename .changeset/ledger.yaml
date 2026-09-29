@@ -113,6 +113,11 @@ cssnano-preset-advanced@9.1.1:
   dir: packages/cssnano-preset-advanced
   intents:
     - preserve-unicode-range-convert-values
+cssnano-preset-advanced@9.1.2:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - atrule-whitespace-handling
+    - mighty-squids-cross
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -237,6 +242,11 @@ cssnano-preset-default@9.1.1:
   dir: packages/cssnano-preset-default
   intents:
     - preserve-unicode-range-convert-values
+cssnano-preset-default@9.1.2:
+  dir: packages/cssnano-preset-default
+  intents:
+    - atrule-whitespace-handling
+    - mighty-squids-cross
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -288,6 +298,11 @@ cssnano-preset-lite@6.0.4:
     - normalize-variable-whitespace
     - normalize-whitespace-math-context
     - rare-books-repair
+cssnano-preset-lite@6.0.5:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - atrule-whitespace-handling
+    - mighty-squids-cross
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -456,6 +471,11 @@ cssnano@9.1.1:
   dir: packages/cssnano
   intents:
     - preserve-unicode-range-convert-values
+cssnano@9.1.2:
+  dir: packages/cssnano
+  intents:
+    - atrule-whitespace-handling
+    - mighty-squids-cross
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -504,6 +524,10 @@ postcss-colormin@9.0.4:
     - neat-beans-lie
     - rare-books-repair
     - warm-jars-own
+postcss-colormin@9.0.5:
+  dir: packages/postcss-colormin
+  intents:
+    - mighty-squids-cross
 postcss-convert-values@8.0.2:
   dir: packages/postcss-convert-values
   intents:
@@ -551,6 +575,10 @@ postcss-convert-values@9.0.5:
   dir: packages/postcss-convert-values
   intents:
     - preserve-unicode-range-convert-values
+postcss-convert-values@9.0.6:
+  dir: packages/postcss-convert-values
+  intents:
+    - mighty-squids-cross
 postcss-discard-comments@8.0.2:
   dir: packages/postcss-discard-comments
   intents:
@@ -591,6 +619,10 @@ postcss-discard-comments@9.0.4:
     - neat-beans-lie
     - normalize-variable-whitespace
     - quiet-custom-whitespace
+postcss-discard-comments@9.0.5:
+  dir: packages/postcss-discard-comments
+  intents:
+    - mighty-squids-cross
 postcss-discard-duplicates@8.0.2:
   dir: packages/postcss-discard-duplicates
   intents:
@@ -670,6 +702,10 @@ postcss-discard-empty@9.0.4:
   dir: packages/postcss-discard-empty
   intents:
     - neat-beans-lie
+postcss-discard-empty@9.0.5:
+  dir: packages/postcss-discard-empty
+  intents:
+    - mighty-squids-cross
 postcss-discard-overridden@8.0.2:
   dir: packages/postcss-discard-overridden
   intents:
@@ -707,6 +743,10 @@ postcss-discard-overridden@9.0.4:
   dir: packages/postcss-discard-overridden
   intents:
     - neat-beans-lie
+postcss-discard-overridden@9.0.5:
+  dir: packages/postcss-discard-overridden
+  intents:
+    - mighty-squids-cross
 postcss-discard-unused@8.0.2:
   dir: packages/postcss-discard-unused
   intents:
@@ -747,6 +787,10 @@ postcss-discard-unused@9.0.4:
     - neat-beans-lie
     - rare-books-repair
     - soft-mugs-count
+postcss-discard-unused@9.0.5:
+  dir: packages/postcss-discard-unused
+  intents:
+    - mighty-squids-cross
 postcss-merge-idents@8.0.2:
   dir: packages/postcss-merge-idents
   intents:
@@ -786,6 +830,10 @@ postcss-merge-idents@9.0.4:
     - neat-beans-lie
     - proud-maps-reserve
     - rare-books-repair
+postcss-merge-idents@9.0.5:
+  dir: packages/postcss-merge-idents
+  intents:
+    - mighty-squids-cross
 postcss-merge-longhand@8.0.2:
   dir: packages/postcss-merge-longhand
   intents:
@@ -839,6 +887,10 @@ postcss-merge-longhand@9.1.0:
     - unify-border-reduction
     - validate-columns-counts-and-units
     - wide-zebras-ask
+postcss-merge-longhand@9.1.1:
+  dir: packages/postcss-merge-longhand
+  intents:
+    - mighty-squids-cross
 postcss-merge-rules@8.0.2:
   dir: packages/postcss-merge-rules
   intents:
@@ -897,6 +949,10 @@ postcss-merge-rules@9.0.5:
     - partial-merge-comments
     - rare-books-repair
     - warm-jars-own
+postcss-merge-rules@9.0.6:
+  dir: packages/postcss-merge-rules
+  intents:
+    - mighty-squids-cross
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -938,6 +994,10 @@ postcss-minify-font-values@9.0.4:
     - neat-beans-lie
     - rare-books-repair
     - validate-columns-counts-and-units
+postcss-minify-font-values@9.0.5:
+  dir: packages/postcss-minify-font-values
+  intents:
+    - mighty-squids-cross
 postcss-minify-gradients@8.0.2:
   dir: packages/postcss-minify-gradients
   intents:
@@ -989,6 +1049,10 @@ postcss-minify-gradients@9.0.4:
     - humble-garlics-agree
     - neat-beans-lie
     - rare-books-repair
+postcss-minify-gradients@9.0.5:
+  dir: packages/postcss-minify-gradients
+  intents:
+    - mighty-squids-cross
 postcss-minify-params@8.0.2:
   dir: packages/postcss-minify-params
   intents:
@@ -1032,6 +1096,10 @@ postcss-minify-params@9.0.4:
     - neat-beans-lie
     - spotty-buttons-draw
     - warm-jars-own
+postcss-minify-params@9.0.5:
+  dir: packages/postcss-minify-params
+  intents:
+    - atrule-whitespace-handling
 postcss-minify-selectors@8.0.3:
   dir: packages/postcss-minify-selectors
   intents:
@@ -1122,6 +1190,10 @@ postcss-normalize-charset@9.0.4:
   dir: packages/postcss-normalize-charset
   intents:
     - neat-beans-lie
+postcss-normalize-charset@9.0.5:
+  dir: packages/postcss-normalize-charset
+  intents:
+    - mighty-squids-cross
 postcss-normalize-display-values@8.0.2:
   dir: packages/postcss-normalize-display-values
   intents:
@@ -1161,6 +1233,10 @@ postcss-normalize-display-values@9.0.4:
     - neat-beans-lie
     - rare-books-repair
     - thick-cities-yell
+postcss-normalize-display-values@9.0.5:
+  dir: packages/postcss-normalize-display-values
+  intents:
+    - mighty-squids-cross
 postcss-normalize-positions@8.0.2:
   dir: packages/postcss-normalize-positions
   intents:
@@ -1199,6 +1275,10 @@ postcss-normalize-positions@9.0.4:
   intents:
     - neat-beans-lie
     - rare-books-repair
+postcss-normalize-positions@9.0.5:
+  dir: packages/postcss-normalize-positions
+  intents:
+    - mighty-squids-cross
 postcss-normalize-repeat-style@8.0.2:
   dir: packages/postcss-normalize-repeat-style
   intents:
@@ -1237,6 +1317,10 @@ postcss-normalize-repeat-style@9.0.4:
   intents:
     - neat-beans-lie
     - rare-books-repair
+postcss-normalize-repeat-style@9.0.5:
+  dir: packages/postcss-normalize-repeat-style
+  intents:
+    - mighty-squids-cross
 postcss-normalize-string@8.0.2:
   dir: packages/postcss-normalize-string
   intents:
@@ -1313,6 +1397,10 @@ postcss-normalize-timing-functions@9.0.4:
   intents:
     - neat-beans-lie
     - rare-books-repair
+postcss-normalize-timing-functions@9.0.5:
+  dir: packages/postcss-normalize-timing-functions
+  intents:
+    - mighty-squids-cross
 postcss-normalize-unicode@8.0.2:
   dir: packages/postcss-normalize-unicode
   intents:
@@ -1398,6 +1486,10 @@ postcss-normalize-url@9.0.4:
     - rare-books-repair
     - shiny-mugs-normalize
     - swift-bikes-study
+postcss-normalize-url@9.0.5:
+  dir: packages/postcss-normalize-url
+  intents:
+    - mighty-squids-cross
 postcss-normalize-whitespace@8.0.2:
   dir: packages/postcss-normalize-whitespace
   intents:
@@ -1444,6 +1536,11 @@ postcss-normalize-whitespace@9.0.4:
     - normalize-variable-whitespace
     - normalize-whitespace-math-context
     - rare-books-repair
+postcss-normalize-whitespace@9.0.5:
+  dir: packages/postcss-normalize-whitespace
+  intents:
+    - atrule-whitespace-handling
+    - mighty-squids-cross
 postcss-ordered-values@8.0.2:
   dir: packages/postcss-ordered-values
   intents:
@@ -1491,6 +1588,10 @@ postcss-ordered-values@9.0.4:
     - ordered-values-columns-auto-and-iteration-count
     - rare-books-repair
     - strong-eels-decide
+postcss-ordered-values@9.0.5:
+  dir: packages/postcss-ordered-values
+  intents:
+    - mighty-squids-cross
 postcss-reduce-idents@8.0.2:
   dir: packages/postcss-reduce-idents
   intents:
@@ -1534,6 +1635,10 @@ postcss-reduce-idents@9.0.4:
     - neat-beans-lie
     - reduce-idents-counter-whitespace
     - reduce-idents-safe-renames
+postcss-reduce-idents@9.0.5:
+  dir: packages/postcss-reduce-idents
+  intents:
+    - mighty-squids-cross
 postcss-reduce-initial@8.0.2:
   dir: packages/postcss-reduce-initial
   intents:
@@ -1581,6 +1686,10 @@ postcss-reduce-initial@9.0.4:
     - neat-beans-lie
     - strong-bears-lie
     - warm-jars-own
+postcss-reduce-initial@9.0.5:
+  dir: packages/postcss-reduce-initial
+  intents:
+    - mighty-squids-cross
 postcss-reduce-transforms@8.0.2:
   dir: packages/postcss-reduce-transforms
   intents:
@@ -1707,6 +1816,10 @@ postcss-unique-selectors@9.0.4:
   dir: packages/postcss-unique-selectors
   intents:
     - neat-beans-lie
+postcss-unique-selectors@9.0.5:
+  dir: packages/postcss-unique-selectors
+  intents:
+    - mighty-squids-cross
 postcss-zindex@8.0.2:
   dir: packages/postcss-zindex
   intents:
@@ -1745,6 +1858,10 @@ postcss-zindex@9.0.4:
   intents:
     - neat-beans-lie
     - rare-books-repair
+postcss-zindex@9.0.5:
+  dir: packages/postcss-zindex
+  intents:
+    - mighty-squids-cross
 stylehacks@8.0.2:
   dir: packages/stylehacks
   intents:
@@ -1788,3 +1905,7 @@ stylehacks@9.0.5:
   intents:
     - neat-beans-lie
     - warm-jars-own
+stylehacks@9.0.6:
+  dir: packages/stylehacks
+  intents:
+    - mighty-squids-cross

@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.0.5
+
+### Patch Changes
+
+- fix: update browserslist
+
 ## 9.0.4
 
 ### Patch Changes
