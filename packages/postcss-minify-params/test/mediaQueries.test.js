@@ -1,11 +1,12 @@
-import nodepath from 'node:path';
+import assert from 'node:assert';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, test } from 'node:test';
+import postcss from 'postcss';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 
-const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
-const { join } = nodepath;
+const testDir = dirname(fileURLToPath(import.meta.url));
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 describe('Normalise @media queries', () => {
@@ -37,15 +38,56 @@ describe('Normalise @media queries', () => {
     'should normalise @media queries (3)',
     processCSS(
       '@media (min-height: 680px),(min-height: 680px){h1{color:red}}',
-      '@media (min-height:680px){h1{color:red}}'
+      '@media(min-height:680px){h1{color:red}}'
     )
   );
+
+  test(
+    'should strip whitespace after @media when prelude begins with parenthesis',
+    processCSS('@media (min-width: 1px){}', '@media(min-width:1px){}')
+  );
+
+  test(
+    'should preserve banner comment in afterName when stripping whitespace',
+    processCSS(
+      '@media /*! banner */ (min-width: 1px){}',
+      '@media/*! banner */(min-width:1px){}'
+    )
+  );
+
+  test(
+    'should preserve multiple comments in afterName when stripping whitespace',
+    processCSS(
+      '@media /* a */ /* b */ (min-width: 1px){}',
+      '@media/* a *//* b */(min-width:1px){}'
+    )
+  );
+
+  test(
+    'should preserve whitespace after @media when name ends in a dangling backslash',
+    processCSS('@media\\ (min-width: 1px){}', '@media\\ (min-width:1px){}')
+  );
+
+  test(
+    'should preserve whitespace after @media when prelude does not begin with parenthesis',
+    processCSS(
+      '@media screen and (min-width: 1px){}',
+      '@media screen and (min-width:1px){}'
+    )
+  );
+
+  test('should handle at-rule with missing raws.afterName', async () => {
+    const root = postcss.parse('@media (min-width: 100px){}');
+    delete root.first.raws.afterName;
+    await postcss([plugin()]).process(root, { from: undefined });
+    assert.strictEqual(root.first.raws.afterName, '');
+  });
 
   test.skip(
     'should normalise @media queries (3) (lowercase and uppercase)',
     processCSS(
       '@media (min-height: 680px),(MIN-HEIGHT: 680PX){h1{color:red}}',
-      '@media (min-height:680px){h1{color:red}}'
+      '@media(min-height:680px){h1{color:red}}'
     )
   );
 });
@@ -124,7 +166,7 @@ describe('Normalise "all" in @media queries', () => {
     'should normalise "all and" in @media queries',
     processCSS(
       '@media all and (min-width:500px){h1{color:blue}}',
-      '@media (min-width:500px){h1{color:blue}}'
+      '@media(min-width:500px){h1{color:blue}}'
     )
   );
 
@@ -166,7 +208,7 @@ describe('Normalise "all" in @media queries', () => {
     'should normalise "all and" in @media queries (uppercase)',
     processCSS(
       '@media ALL AND (min-width:500px){h1{color:blue}}',
-      '@media (min-width:500px){h1{color:blue}}'
+      '@media(min-width:500px){h1{color:blue}}'
     )
   );
 
@@ -207,7 +249,7 @@ describe('Normalise "all" in @media queries', () => {
 describe('Media Queries Level 4 and whitespace', () => {
   test(
     'should not throw on empty parentheses',
-    passthroughCSS('@media (){h1{color:blue}}')
+    processCSS('@media (){h1{color:blue}}', '@media(){h1{color:blue}}')
   );
 
   test(
@@ -225,7 +267,7 @@ describe('Media Queries Level 4 and whitespace', () => {
         ' '
       );
       const expected = input.replaceAll(': ', ':');
-      return processCSS(`@media ${input}{}`, `@media ${expected}{}`);
+      return processCSS(`@media ${input}{}`, `@media${expected}{}`);
     })()
   );
 
@@ -233,7 +275,7 @@ describe('Media Queries Level 4 and whitespace', () => {
     'should normalize range context with dimension on the left',
     processCSS(
       '@media (400px <= width <= 800px){h1{color:blue}}',
-      '@media (400px<=width<=800px){h1{color:blue}}'
+      '@media(400px<=width<=800px){h1{color:blue}}'
     )
   );
 
@@ -241,7 +283,7 @@ describe('Media Queries Level 4 and whitespace', () => {
     'should normalize range context with spaces',
     processCSS(
       '@media ( 400px <= width <= 800px ){h1{color:blue}}',
-      '@media (400px<=width<=800px){h1{color:blue}}'
+      '@media(400px<=width<=800px){h1{color:blue}}'
     )
   );
 
@@ -249,18 +291,24 @@ describe('Media Queries Level 4 and whitespace', () => {
     'should normalize range context with unitless zero',
     processCSS(
       '@media (0 < width < 1000px){h1{color:blue}}',
-      '@media (0<width<1000px){h1{color:blue}}'
+      '@media(0<width<1000px){h1{color:blue}}'
     )
   );
 
   test(
     'should preserve calc() in media query conditions',
-    passthroughCSS('@media (min-width:calc(100vw - 2rem)){h1{color:red}}')
+    processCSS(
+      '@media (min-width:calc(100vw - 2rem)){h1{color:red}}',
+      '@media(min-width:calc(100vw - 2rem)){h1{color:red}}'
+    )
   );
 
   test(
     'should preserve whitespace around binary plus in calc()',
-    passthroughCSS('@media (min-width:calc(100vw + 2rem)){h1{color:red}}')
+    processCSS(
+      '@media (min-width:calc(100vw + 2rem)){h1{color:red}}',
+      '@media(min-width:calc(100vw + 2rem)){h1{color:red}}'
+    )
   );
 
   test(

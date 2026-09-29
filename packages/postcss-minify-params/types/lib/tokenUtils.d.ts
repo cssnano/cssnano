@@ -41,4 +41,4 @@ export declare function serializeSegments(source: string, segments: {
     end: number;
     text: string;
 }[]): string[];
-//# sourceMappingURL=token-utils.d.ts.map
+//# sourceMappingURL=tokenUtils.d.ts.map
