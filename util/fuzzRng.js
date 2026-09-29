@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * A Lehmer (multiplicative-congruential) generator.
  *
@@ -9,7 +7,7 @@
  * @param {number} seed
  * @return {{int: (bound: number) => number, pick: <T>(items: readonly T[]) => T, chance: (probability: number) => boolean}}
  */
-function random(seed) {
+export function random(seed) {
   const modulus = 2147483647;
   let state = (Math.trunc(Math.abs(seed)) % (modulus - 1)) + 1;
 
@@ -24,5 +22,3 @@ function random(seed) {
     chance: (probability) => next() < probability,
   };
 }
-
-module.exports = { random };

@@ -64,7 +64,7 @@
   },
   "scripts": {
     "test": "node --test",
-    "acquire": "node ./script/acquire.mjs"
+    "acquire": "node ./script/acquire.js"
   },
   "type": "module"
 }

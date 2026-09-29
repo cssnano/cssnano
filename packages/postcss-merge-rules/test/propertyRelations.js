@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { isConflictingProp } from '../src/lib/propertyRelations.js';
 
 // A subset of these shorthand/longhand relations is also spot-checked in
-// script/lib/webrefProperties.mjs's validate(), which runs at data-acquire
+// script/lib/webrefProperties.js's validate(), which runs at data-acquire
 // time rather than test time. Keep both in sync.
 /** @type {[string, string, boolean][]} */
 const cases = [

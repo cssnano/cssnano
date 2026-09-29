@@ -1,16 +1,15 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const { readFileSync } = require('node:fs');
-const { fileURLToPath } = require('node:url');
-const { applyMutation } = require('./mutation-testing.mjs');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { applyMutation } from './mutation-testing.js';
 const catalogPromises = [
-  import('../../packages/postcss-discard-empty/mutation-catalog.mjs'),
-  import('../../packages/postcss-discard-comments/mutation-catalog.mjs'),
-  import('../../packages/postcss-normalize-whitespace/mutation-catalog.mjs'),
-  import('../../packages/postcss-normalize-positions/mutation-catalog.mjs'),
-  import('../../packages/postcss-merge-longhand/mutation-catalog.mjs'),
-  import('../../packages/postcss-merge-longhand/mutation-catalog-validity.mjs'),
+  import('../../packages/postcss-discard-empty/mutation-catalog.js'),
+  import('../../packages/postcss-discard-comments/mutation-catalog.js'),
+  import('../../packages/postcss-normalize-whitespace/mutation-catalog.js'),
+  import('../../packages/postcss-normalize-positions/mutation-catalog.js'),
+  import('../../packages/postcss-merge-longhand/mutation-catalog.js'),
+  import('../../packages/postcss-merge-longhand/mutation-catalog-validity.js'),
 ];
 
 test('applies a mutation exactly once', () => {

@@ -50,7 +50,7 @@
     "postcss": "^8.5.28"
   },
   "scripts": {
-    "acquire": "node ./script/acquire.mjs",
+    "acquire": "node ./script/acquire.js",
     "test": "node --test",
     "fuzz": "node ./script/fuzz.js"
   },
