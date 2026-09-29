@@ -10,6 +10,8 @@ const catalogPromises = [
   import('../../packages/postcss-normalize-positions/mutation-catalog.js'),
   import('../../packages/postcss-merge-longhand/mutation-catalog.js'),
   import('../../packages/postcss-merge-longhand/mutation-catalog-validity.js'),
+  import('../../packages/postcss-merge-longhand/mutation-catalog-candidates.js'),
+  import('../../packages/postcss-merge-longhand/mutation-catalog-reset-gates.js'),
 ];
 
 test('applies a mutation exactly once', () => {

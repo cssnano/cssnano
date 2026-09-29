@@ -1,6 +1,6 @@
 export const name = 'postcss-merge-longhand: reset candidate gates';
 export const target = new URL(
-  './src/lib/decl/borderReducer.js',
+  './src/lib/decl/borderCandidates.js',
   import.meta.url
 ).href;
 // node --test expands this glob; a directory path would resolve to a single
