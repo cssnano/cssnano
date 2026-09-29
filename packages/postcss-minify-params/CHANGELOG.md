@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.0.5
+
+### Patch Changes
+
+- Omit redundant whitespace after @media and @supports when parameters begin with parentheses, and normalize multi-character whitespace after at-rule keywords.
+
 ## 9.0.4
 
 ### Patch Changes
