@@ -197,3 +197,69 @@ test(
     overrideBrowserslist: ['ie 11'],
   })
 );
+
+test(
+  'should not merge a pseudo-class selector with whitespace after the colon',
+  passthroughCSS('a{color:red}b: hover{color:red}')
+);
+
+test(
+  'should not merge a selector with three colons before a pseudo-element',
+  passthroughCSS('a{color:red}b:::before{color:red}')
+);
+
+test(
+  'should not merge an attribute selector with whitespace inside its matcher',
+  passthroughCSS('a{color:red}[x~ =y]{color:red}')
+);
+
+test(
+  'should merge an attribute selector with whitespace after its matcher',
+  processCSS('a{color:red}[x~= y]{color:red}', 'a,[x~= y]{color:red}', {
+    overrideBrowserslist: 'Chrome 100',
+  })
+);
+
+test(
+  'should not merge an attribute selector with a non-modifier identifier after its value',
+  passthroughCSS('a{color:red}[x=y z]{color:red}')
+);
+
+test(
+  'should not merge an attribute selector with two names',
+  passthroughCSS('a{color:red}[a b]{color:red}')
+);
+
+test(
+  'should not merge an attribute selector with a repeated modifier',
+  passthroughCSS('a{color:red}[x="y" i i]{color:red}')
+);
+
+for (const attribute of [
+  '[*|x]',
+  '[|x=y]',
+  '[ns|x=y]',
+  '[x|=y]',
+  '[x="y" i]',
+]) {
+  test(
+    `should merge the valid attribute selector ${attribute}`,
+    processCSS(
+      `a{color:red}${attribute}{color:red}`,
+      `a,${attribute}{color:red}`,
+      {
+        overrideBrowserslist: 'Chrome 100',
+      }
+    )
+  );
+}
+
+test(
+  'should not merge an attribute selector with a second matcher after the modifier',
+  passthroughCSS('a{color:red}[x="y" i =z]{color:red}')
+);
+
+test(
+  'should not merge an attribute selector with an unknown operator character',
+  passthroughCSS('a{color:red}[x&=y]{color:red}')
+);

@@ -1,13 +1,11 @@
-import caniuseApi from 'caniuse-api';
 import { tokenizer, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from 'cssnano-utils';
+import { advanceAttribute } from './attributeSelector.js';
+import { cssSel2, cssSel3, isSupportedCached } from './supportCache.js';
 
-const { isSupported } = caniuseApi;
 const { asciiLowerCase } = cssnanoUtils;
 const simpleSelectorRe = /^#?[\-._A-Za-z0-9 ]+$/v;
 
-const cssSel2 = 'css-sel2';
-const cssSel3 = 'css-sel3';
 const cssGencontent = 'css-gencontent';
 const cssFirstLetter = 'css-first-letter';
 const cssFirstLine = 'css-first-line';
@@ -17,13 +15,11 @@ const formValidation = 'form-validation';
 const vendorPrefix =
   /-(ah|apple|atsc|epub|hp|khtml|moz|ms|o|rim|ro|tc|wap|webkit|xv)-/v;
 
-const level2Sel = new Set(['=', '~=', '|=']);
 const combinatorFeatures = new Map([
   ['~', cssSel3],
   ['>', cssSel2],
   ['+', cssSel2],
 ]);
-const attributeOperatorCharacters = new Set(['~', '|', '^', '$', '*']);
 
 /**
  * The one vendor prefix shared by every selector in the list: `''` when no
@@ -165,40 +161,79 @@ function isHostPseudoClass(selector) {
   return selector.includes(':host');
 }
 
-/** @type {WeakMap<string[], Map<string, boolean>>} */
-const isSupportedCache = new WeakMap();
-// Stable stand-in key when `browsers` is undefined, since a fresh `[]` on
-// every call would never hit the WeakMap.
-/** @type {string[]} */
-const noBrowsers = [];
+/** @import {AttributeScanState} from './attributeSelector.js' */
 
-// Move to util in future
 /**
- * `browsers` is the same array reference for an entire file's processing, so
- * keying on it directly (rather than re-serializing it per call) avoids
- * rebuilding a JSON string on every lookup, including cache hits.
+ * Track bracket nesting outside attribute selectors. Returns false for
+ * unbalanced brackets and for a stray `]`.
  *
- * @param {string} feature
+ * @param {AttributeScanState & {pseudoPrefix: string | undefined}} state
+ * @param {TokenType} type
+ * @return {boolean}
+ */
+function trackDelimiters(state, type) {
+  const { delimiters } = state;
+  if (type === TokenType.OpenSquare) {
+    delimiters.push(type);
+    state.attributeStage = 'name';
+  } else if (type === TokenType.CloseSquare) {
+    return false;
+  } else if (type === TokenType.Function || type === TokenType.OpenParen) {
+    delimiters.push(TokenType.OpenParen);
+  } else if (type === TokenType.CloseParen) {
+    if (delimiters.at(-1) !== TokenType.OpenParen) return false;
+    delimiters.pop();
+  }
+  return true;
+}
+
+/**
+ * @param {AttributeScanState & {pseudoPrefix: string | undefined}} state
+ * @param {TokenType} type
+ * @param {string} value
  * @param {string[] | undefined} browsers
  * @return {boolean}
  */
-function isSupportedCached(feature, browsers) {
-  const key = browsers ?? noBrowsers;
-  let byFeature = isSupportedCache.get(key);
-  if (!byFeature) {
-    byFeature = new Map();
-    isSupportedCache.set(key, byFeature);
+function isPseudoSupported(state, type, value, browsers) {
+  if (type === TokenType.Colon) {
+    // `:::` is not a valid pseudo-class or pseudo-element.
+    if (state.pseudoPrefix === '::') return false;
+    state.pseudoPrefix = state.pseudoPrefix ? '::' : ':';
+    return true;
   }
-
-  const cached = byFeature.get(feature);
-  if (cached !== undefined) {
-    return cached;
+  const { pseudoPrefix } = state;
+  state.pseudoPrefix = undefined;
+  if (!pseudoPrefix) return true;
+  let rawName = '';
+  if (type === TokenType.Function) {
+    rawName = value.slice(0, -1);
+  } else if (type === TokenType.Ident) {
+    rawName = value;
   }
+  // A colon must be followed directly by an identifier or function name.
+  if (!rawName) return false;
+  const pseudo = `${pseudoPrefix}${rawName}`;
+  const entry =
+    pseudoElements[/** @type {keyof typeof pseudoElements} */ (pseudo)];
+  if (!entry) return !noVendor(pseudo);
+  return isSupportedCached(entry, browsers);
+}
 
-  const result = isSupported(feature, /** @type {string[]} */ (browsers));
-  byFeature.set(feature, result);
-
-  return result;
+/**
+ * Check a token outside of attribute selectors: combinators and pseudos.
+ *
+ * @param {AttributeScanState & {pseudoPrefix: string | undefined}} state
+ * @param {TokenType} type
+ * @param {string} value
+ * @param {string[] | undefined} browsers
+ * @return {boolean}
+ */
+function isSelectorTokenSupported(state, type, value, browsers) {
+  if (type === TokenType.Delim) {
+    const feature = combinatorFeatures.get(value);
+    if (feature && !isSupportedCached(feature, browsers)) return false;
+  }
+  return isPseudoSupported(state, type, value, browsers);
 }
 
 /**
@@ -210,17 +245,13 @@ function isSupportedCached(feature, browsers) {
  * @param {string[] | undefined} browsers
  * @return {boolean}
  */
-// The scanner intentionally handles several independent token classes in one pass.
-// eslint-disable-next-line complexity
 function scanCompatibility(selector, browsers) {
-  let pseudoPrefix;
-  let attributePrevious;
-  let attributeDepth = 0;
-  let attributeHasValue = false;
-  let attributeValuePending = false;
-  let attributeOperator;
-  /** @type {TokenType[]} */
-  const delimiters = [];
+  /** @type {AttributeScanState & {pseudoPrefix: string | undefined}} */
+  const state = {
+    pseudoPrefix: undefined,
+    attributeStage: 'none',
+    delimiters: [],
+  };
 
   try {
     const tokenStream = tokenizer({ css: selector });
@@ -230,94 +261,19 @@ function scanCompatibility(selector, browsers) {
       const value = token[1];
 
       if (type === TokenType.EOF) break;
-
-      if (type === TokenType.OpenSquare) {
-        delimiters.push(type);
-        attributeDepth++;
-        attributeHasValue = false;
-        attributeValuePending = false;
-        attributeOperator = undefined;
-        attributePrevious = undefined;
-      } else if (type === TokenType.Function || type === TokenType.OpenParen) {
-        delimiters.push(TokenType.OpenParen);
-      } else if (type === TokenType.CloseSquare) {
-        if (delimiters.at(-1) !== TokenType.OpenSquare) return false;
-        if (!attributeOperator && !isSupportedCached(cssSel2, browsers)) {
-          return false;
-        }
-        delimiters.pop();
-        attributeDepth--;
-      } else if (type === TokenType.CloseParen) {
-        if (delimiters.at(-1) !== TokenType.OpenParen) return false;
-        delimiters.pop();
-      }
-
-      if (attributeDepth === 0) {
-        if (type === TokenType.Delim) {
-          const feature = combinatorFeatures.get(value);
-          if (feature && !isSupportedCached(feature, browsers)) {
-            return false;
-          }
-        }
-
-        if (type === TokenType.Colon) {
-          pseudoPrefix = pseudoPrefix ? '::' : ':';
-        } else if (pseudoPrefix) {
-          let rawName = '';
-          if (type === TokenType.Function) {
-            rawName = value.slice(0, -1);
-          } else if (type === TokenType.Ident) {
-            rawName = value;
-          }
-          if (rawName) {
-            const pseudo = `${pseudoPrefix}${rawName}`;
-            const entry =
-              pseudoElements[
-                /** @type {keyof typeof pseudoElements} */ (pseudo)
-              ];
-            if (!entry && noVendor(pseudo)) return false;
-            if (entry && !isSupportedCached(entry, browsers)) return false;
-          }
-          pseudoPrefix = undefined;
-        } else {
-          pseudoPrefix = undefined;
-        }
-      } else {
-        if (type === TokenType.Delim && value === '=') {
-          attributeHasValue = true;
-          attributeValuePending = true;
-          const operator = attributePrevious ? `${attributePrevious}=` : '=';
-          attributeOperator = operator;
-          const feature = level2Sel.has(operator) ? cssSel2 : cssSel3;
-          if (!isSupportedCached(feature, browsers)) return false;
-        } else if (
-          type === TokenType.Delim &&
-          attributeOperatorCharacters.has(value)
-        ) {
-          attributePrevious = value;
-        }
-        if (attributeHasValue) {
-          if (
-            attributeValuePending &&
-            (type === TokenType.Ident || type === TokenType.String)
-          ) {
-            attributeValuePending = false;
-          } else if (type === TokenType.Ident) {
-            const modifier = asciiLowerCase(value);
-            if (modifier === 's') return false;
-            if (
-              modifier === 'i' &&
-              !isSupportedCached('css-case-insensitive', browsers)
-            )
-              return false;
-          }
-        }
+      if (state.attributeStage !== 'none') {
+        if (!advanceAttribute(state, type, value, browsers)) return false;
+      } else if (
+        !trackDelimiters(state, type) ||
+        !isSelectorTokenSupported(state, type, value, browsers)
+      ) {
+        return false;
       }
     }
   } catch {
     return false;
   }
-  return !pseudoPrefix && delimiters.length === 0;
+  return !state.pseudoPrefix && state.delimiters.length === 0;
 }
 
 /**

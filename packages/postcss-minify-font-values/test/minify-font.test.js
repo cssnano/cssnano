@@ -164,3 +164,47 @@ test('passes through an unbalanced functional value', () => {
   const value = 'calc(1em + 2px "A", serif';
   assert.equal(minifyFont(value, { removeQuotes: true }), value);
 });
+
+for (const substitution of [
+  'attr(data-x)',
+  'if(media(width > 1): 1; else: 2)',
+  'inherit(--x)',
+  '--custom(16px)',
+]) {
+  const name = substitution.slice(0, substitution.indexOf('('));
+
+  test(`passes through ${name}() before the size`, () => {
+    const value = `italic ${substitution} bold 16px "Helvetica Neue", serif`;
+    assert.equal(minifyFont(value, { removeQuotes: true }), value);
+  });
+
+  test(`passes through ${name}() in the family`, () => {
+    const value = `italic 16px "Helvetica Neue", ${substitution}`;
+    assert.equal(minifyFont(value, { removeQuotes: true }), value);
+  });
+}
+
+test('keeps the family-list comma after a custom function', () => {
+  const value = 'bold --family(), serif';
+  assert.equal(minifyFont(value, { removeQuotes: true }), value);
+});
+
+for (const value of ['bold 1s "Arial Black"', 'bold 2x "Arial"']) {
+  test(`passes through ${value}, whose dimension is not a length`, () => {
+    assert.equal(minifyFont(value, { removeQuotes: true }), value);
+  });
+}
+
+test('minifies a font size with the quarter-millimetre unit', () => {
+  assert.equal(
+    minifyFont('bold 12Q "Arial"', { removeQuotes: true }),
+    '700 12Q Arial'
+  );
+});
+
+test('minifies a font size with an uppercase container query unit', () => {
+  assert.equal(
+    minifyFont('bold 1CQW "Arial"', { removeQuotes: true }),
+    '700 1CQW Arial'
+  );
+});
