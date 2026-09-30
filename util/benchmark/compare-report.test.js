@@ -71,6 +71,18 @@ function createMockResult({
   return result;
 }
 
+function captureOutput(fn) {
+  const logged = [];
+  const originalLog = console.log;
+  console.log = (...args) => logged.push(args.join(' '));
+  try {
+    fn();
+  } finally {
+    console.log = originalLog;
+  }
+  return logged.join('\n');
+}
+
 test('verdict basis separates direction, precision, order, and block readiness', () => {
   const lines = verdictBasisLines(
     createMockResult({
@@ -104,15 +116,7 @@ test('a faster direction with unmet precision is reported as inconclusive-with-s
     },
     inconclusiveReason: 'requested precision was not achieved',
   });
-  const logged = [];
-  const originalLog = console.log;
-  console.log = (...args) => logged.push(args.join(' '));
-  try {
-    printComparison(result);
-  } finally {
-    console.log = originalLog;
-  }
-  const output = logged.join('\n');
+  const output = captureOutput(() => printComparison(result));
   assert.match(output, /Statistical Direction: faster/v);
   assert.match(output, /Actionable Verdict: inconclusive/v);
   assert.match(output, /direction: faster/v);
@@ -165,15 +169,7 @@ test('printComparison prints direction, tolerance, actionable verdict and footno
     practical: 'within-margin',
     verdict: 'inconclusive',
   });
-  const logged = [];
-  const originalLog = console.log;
-  console.log = (...args) => logged.push(args.join(' '));
-  try {
-    printComparison(result);
-  } finally {
-    console.log = originalLog;
-  }
-  const output = logged.join('\n');
+  const output = captureOutput(() => printComparison(result));
   assert.match(output, /Statistical Direction: slower/v);
   assert.match(output, /Practical Tolerance \(10% margin\): within-margin/v);
   assert.match(output, /Actionable Verdict: inconclusive/v);

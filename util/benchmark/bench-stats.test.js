@@ -1,14 +1,20 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  bootstrapConfidenceInterval,
+  clusteredTwoSampleBootstrapConfidenceInterval,
   fitCrossoverModel,
   mean,
   median,
   normalQuantile,
+  pairedPercentChange,
+  quantile,
   randomFor,
   seedNumber,
   standardDeviation,
   studentTQuantile,
+  summaryStatistics,
+  twoSampleBootstrapConfidenceInterval,
 } from './bench-stats.js';
 
 test('mean, median, and standardDeviation calculate standard sample statistics', () => {
@@ -99,4 +105,150 @@ test('fitCrossoverModel rejects large order interaction', () => {
     orderInteractionThreshold: 0.05,
   });
   assert.equal(result.orderIsStable, false);
+});
+
+test('summary statistics and quantiles are deterministic', () => {
+  assert.deepEqual(summaryStatistics([4, 1, 3, 2]), {
+    n: 4,
+    minMs: 1,
+    medianMs: 2.5,
+    meanMs: 2.5,
+    p95Ms: 3.8499999999999996,
+    maxMs: 4,
+  });
+});
+
+test('summary statistics and quantiles reject nonsensical values (negative, NaN, out-of-bounds q)', () => {
+  assert.throws(() => quantile([1, 2, 3], -0.1), /between 0 and 1/v);
+  assert.throws(() => quantile([1, 2, 3], 1.1), /between 0 and 1/v);
+  assert.throws(() => quantile([1, 2, 3], Number.NaN), /between 0 and 1/v);
+  assert.throws(
+    () => quantile([], 0.5),
+    /cannot calculate a quantile of no samples/v
+  );
+  assert.throws(
+    () => quantile([1, Number.NaN, 3], 0.5),
+    /must be finite numbers/v
+  );
+  assert.throws(() => summaryStatistics([]), /cannot be empty/v);
+  assert.throws(
+    () => summaryStatistics([-1, 2, 3]),
+    /must be non-negative finite numbers/v
+  );
+  assert.throws(
+    () => summaryStatistics([1, Number.NaN, 3]),
+    /must be non-negative finite numbers/v
+  );
+  assert.throws(
+    () => summaryStatistics([1, Infinity, 3]),
+    /must be non-negative finite numbers/v
+  );
+});
+
+test('paired percent change rejects negative and non-finite timings', () => {
+  assert.throws(
+    () => pairedPercentChange(-1, 2),
+    /must be non-negative finite numbers/v
+  );
+  assert.throws(
+    () => pairedPercentChange(2, -1),
+    /must be non-negative finite numbers/v
+  );
+  assert.throws(
+    () => pairedPercentChange(Number.NaN, 2),
+    /must be non-negative finite numbers/v
+  );
+  assert.throws(
+    () => pairedPercentChange(2, Infinity),
+    /must be non-negative finite numbers/v
+  );
+  assert.equal(pairedPercentChange(0, 0), 0);
+  assert.equal(pairedPercentChange(0, 5), Infinity);
+  assert.equal(pairedPercentChange(100, 90), -10);
+});
+
+test('bootstrap intervals are deterministic', () => {
+  const first = bootstrapConfidenceInterval([-12, -10, -8], 1000);
+  assert.deepEqual(bootstrapConfidenceInterval([-12, -10, -8], 1000), first);
+  assert.ok(first.low <= -10 && first.high >= -10);
+});
+
+test('confidence intervals reject non-finite values and non-positive resamples', () => {
+  assert.throws(() => bootstrapConfidenceInterval([]), /cannot be empty/v);
+  assert.throws(
+    () => bootstrapConfidenceInterval([1, Number.NaN, 3]),
+    /must be finite numbers/v
+  );
+  assert.throws(
+    () => bootstrapConfidenceInterval([1, 2, 3], 0),
+    /must be a positive integer/v
+  );
+  assert.throws(
+    () => bootstrapConfidenceInterval([1, 2, 3], -5),
+    /must be a positive integer/v
+  );
+});
+
+test('two-sample bootstrap intervals are deterministic and reject invalid inputs', () => {
+  const first = twoSampleBootstrapConfidenceInterval(
+    [100, 102, 98, 101, 99],
+    [90, 92, 88, 91, 89],
+    1000
+  );
+  assert.deepEqual(
+    twoSampleBootstrapConfidenceInterval(
+      [100, 102, 98, 101, 99],
+      [90, 92, 88, 91, 89],
+      1000
+    ),
+    first
+  );
+  assert.ok(first.high < 0);
+  assert.throws(
+    () => twoSampleBootstrapConfidenceInterval([], [1, 2, 3]),
+    /cannot be empty/v
+  );
+  assert.throws(
+    () => twoSampleBootstrapConfidenceInterval([1, 2, 3], []),
+    /cannot be empty/v
+  );
+  assert.throws(
+    () => twoSampleBootstrapConfidenceInterval([-1, 2, 3], [1, 2, 3]),
+    /non-negative finite numbers/v
+  );
+  assert.throws(
+    () => twoSampleBootstrapConfidenceInterval([1, 2, 3], [1, Number.NaN, 3]),
+    /non-negative finite numbers/v
+  );
+  assert.throws(
+    () => twoSampleBootstrapConfidenceInterval([1, 2, 3], [1, 2, 3], 0),
+    /must be a positive integer/v
+  );
+  const sampleGroupsA = [
+    [100, 101, 99],
+    [102, 100, 101],
+    [99, 100, 98],
+  ];
+  const sampleGroupsB = [
+    [90, 91, 89],
+    [92, 90, 91],
+    [89, 90, 88],
+  ];
+  const clustered = clusteredTwoSampleBootstrapConfidenceInterval(
+    sampleGroupsA,
+    sampleGroupsB,
+    1000
+  );
+  assert.deepEqual(
+    clusteredTwoSampleBootstrapConfidenceInterval(
+      sampleGroupsA,
+      sampleGroupsB,
+      1000
+    ),
+    clustered
+  );
+  assert.throws(
+    () => clusteredTwoSampleBootstrapConfidenceInterval([[]], [[1, 2, 3]]),
+    /sample groups cannot be empty/v
+  );
 });

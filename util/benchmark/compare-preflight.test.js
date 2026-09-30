@@ -28,6 +28,22 @@ function writeCorpus(dir, names) {
   }
 }
 
+function chmodRecursive(dir) {
+  // Git objects are read-only; recursive removal needs write bits restored.
+  try {
+    execFileSync('chmod', ['-R', 'u+w', dir]);
+  } catch {
+    // best effort
+  }
+}
+
+function cleanupConfig(config) {
+  for (const dir of [config.baseDir, config.candidateDir, config.resultsDir]) {
+    chmodRecursive(dir);
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 function baseConfig(overrides = {}) {
   const resultsDir = temporaryDirectory('cssnano-preflight-results-');
   return {
@@ -47,8 +63,11 @@ function baseConfig(overrides = {}) {
   };
 }
 
-function prepareCheckout(dir) {
+function prepareCheckout(dir, fixtureFile = null) {
   mkdirSync(join(dir, 'frameworks'), { recursive: true });
+  if (fixtureFile) {
+    writeFileSync(join(dir, 'frameworks', fixtureFile), '.fixture{}\n');
+  }
   mkdirSync(join(dir, 'node_modules'), { recursive: true });
   execFileSync('git', ['init', '-q'], { cwd: dir });
   execFileSync('git', ['config', 'user.email', 'test@example.com'], {
@@ -63,6 +82,57 @@ function prepareCheckout(dir) {
     cwd: dir,
     encoding: 'utf8',
   }).trim();
+}
+
+function smokeSnapshot(side, outputHash, overrides = {}) {
+  return JSON.stringify({
+    schemaVersion: 3,
+    preset: 'default',
+    target: 'cssnano',
+    node: process.version,
+    platform: process.platform,
+    arch: process.arch,
+    mode: 'quick',
+    warmup: 0,
+    iters: 1,
+    seed: 'test-seed',
+    finalizationMode: 'production',
+    corpusHash: 'c'.repeat(64),
+    outputHashes: { fixture: outputHash },
+    environment: { nodeFlags: [], nodeEnv: 'production' },
+    ...overrides,
+  });
+}
+
+function mockSmokeSpawn(config, smokeArguments, overrides = {}) {
+  return (args) => {
+    smokeArguments.push(args);
+    const label = args
+      .find((argument) => argument.startsWith('--label='))
+      .slice('--label='.length);
+    const side = label.replace('preflight-', '');
+    writeFileSync(
+      join(config.resultsDir, `${label}.json`),
+      smokeSnapshot(side, 'a'.repeat(64), overrides)
+    );
+    return 0;
+  };
+}
+
+function mockSmokeWriter(config, getSnapshotData) {
+  return (args) => {
+    const label = args
+      .find((argument) => argument.startsWith('--label='))
+      .slice('--label='.length);
+    const side = label.replace('preflight-', '');
+    const { outputHash = 'a'.repeat(64), overrides = {} } =
+      getSnapshotData(side);
+    writeFileSync(
+      join(config.resultsDir, `${label}.json`),
+      smokeSnapshot(side, outputHash, overrides)
+    );
+    return 0;
+  };
 }
 
 test('compareCorpora reports the common fixtures and each side-only fixtures', () => {
@@ -84,6 +154,20 @@ test('compareCorpora reports the common fixtures and each side-only fixtures', (
   }
 });
 
+async function runFailingPreflight(config, failureKeyword) {
+  let spawned = 0;
+  const result = await runPreflight(config, {
+    spawn: () => {
+      spawned++;
+      return 0;
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(spawned, 0);
+  const failure = result.failures.find((item) => item.includes(failureKeyword));
+  return { result, failure };
+}
+
 test('runPreflight fails with a clear corpora-differ message and a common-corpus manifest', async () => {
   const config = baseConfig();
   writeCorpus(join(config.baseDir, 'frameworks'), [
@@ -98,18 +182,10 @@ test('runPreflight fails with a clear corpora-differ message and a common-corpus
     'beta',
     'gamma',
   ]);
-  let spawned = 0;
   try {
-    const result = await runPreflight(config, {
-      spawn: () => {
-        spawned++;
-        return 0;
-      },
-    });
-    assert.equal(result.ok, false);
-    assert.equal(spawned, 0);
-    const corpusFailure = result.failures.find((failure) =>
-      failure.includes('corpora differ')
+    const { failure: corpusFailure } = await runFailingPreflight(
+      config,
+      'corpora differ'
     );
     assert.match(corpusFailure, /baseline has 5 fixtures/v);
     assert.match(corpusFailure, /candidate has 3 fixtures/v);
@@ -123,23 +199,13 @@ test('runPreflight fails with a clear corpora-differ message and a common-corpus
       'gamma',
     ]);
   } finally {
-    rmSync(config.baseDir, { recursive: true, force: true });
-    rmSync(config.candidateDir, { recursive: true, force: true });
-    rmSync(config.resultsDir, { recursive: true, force: true });
+    cleanupConfig(config);
   }
 });
 
 test('runPreflight rejects revisions before any expensive work', async () => {
   const config = baseConfig();
-  let spawned = 0;
-  const result = await runPreflight(config, {
-    spawn: () => {
-      spawned++;
-      return 0;
-    },
-  });
-  assert.equal(result.ok, false);
-  assert.equal(spawned, 0);
+  const { result } = await runFailingPreflight(config, 'revision');
   assert.ok(
     result.failures.some(
       (failure) =>
@@ -180,23 +246,14 @@ test('runPreflight fails when fixture names match but contents differ', async ()
     join(config.candidateDir, 'frameworks', 'beta.css'),
     '.changed{}\n'
   );
-  let spawned = 0;
   try {
-    const result = await runPreflight(config, {
-      spawn: () => {
-        spawned++;
-        return 0;
-      },
-    });
-    assert.equal(result.ok, false);
-    assert.equal(spawned, 0);
-    const corpusFailure = result.failures.find((failure) =>
-      failure.includes('corpus contents differ')
+    const { failure: corpusFailure } = await runFailingPreflight(
+      config,
+      'corpus contents differ'
     );
     assert.match(corpusFailure, /\bbeta\b/v);
   } finally {
-    for (const dir of [config.baseDir, config.candidateDir, config.resultsDir])
-      rmSync(dir, { recursive: true, force: true });
+    cleanupConfig(config);
   }
 });
 
@@ -209,17 +266,7 @@ test('runPreflight forwards the corpus selection to both smoke runs', async () =
   const smokeArguments = [];
   try {
     const result = await runPreflight(config, {
-      spawn: (args) => {
-        smokeArguments.push(args);
-        const label = args
-          .find((argument) => argument.startsWith('--label='))
-          .slice('--label='.length);
-        writeFileSync(
-          join(config.resultsDir, `${label}.json`),
-          smokeSnapshot(label.replace('preflight-', ''), 'a'.repeat(64))
-        );
-        return 0;
-      },
+      spawn: mockSmokeSpawn(config, smokeArguments),
     });
     assert.equal(result.ok, true);
     assert.equal(smokeArguments.length, 2);
@@ -228,14 +275,7 @@ test('runPreflight forwards the corpus selection to both smoke runs', async () =
       assert.ok(!args.includes('--corpus-manifest='));
     }
   } finally {
-    for (const dir of [
-      config.baseDir,
-      config.candidateDir,
-      config.resultsDir,
-    ]) {
-      chmodRecursive(dir);
-      rmSync(dir, { recursive: true, force: true });
-    }
+    cleanupConfig(config);
   }
 });
 
@@ -246,19 +286,9 @@ test('runPreflight forwards a focused case to both smoke runs', async () => {
   const smokeArguments = [];
   try {
     const result = await runPreflight(config, {
-      spawn: (args) => {
-        smokeArguments.push(args);
-        const label = args
-          .find((argument) => argument.startsWith('--label='))
-          .slice('--label='.length);
-        writeFileSync(
-          join(config.resultsDir, `${label}.json`),
-          smokeSnapshot(label.replace('preflight-', ''), 'a'.repeat(64), {
-            target: 'postcss-minify-selectors',
-          })
-        );
-        return 0;
-      },
+      spawn: mockSmokeSpawn(config, smokeArguments, {
+        target: 'postcss-minify-selectors',
+      }),
     });
     assert.equal(result.ok, true);
     for (const args of smokeArguments) {
@@ -266,14 +296,7 @@ test('runPreflight forwards a focused case to both smoke runs', async () => {
       assert.ok(!args.some((argument) => argument.startsWith('--only=')));
     }
   } finally {
-    for (const dir of [
-      config.baseDir,
-      config.candidateDir,
-      config.resultsDir,
-    ]) {
-      chmodRecursive(dir);
-      rmSync(dir, { recursive: true, force: true });
-    }
+    cleanupConfig(config);
   }
 });
 
@@ -289,29 +312,14 @@ test('runPreflight rejects smoke runs with different corpus hashes', async () =>
   };
   try {
     const result = await runPreflight(config, {
-      spawn: (args) => {
-        const label = args
-          .find((argument) => argument.startsWith('--label='))
-          .slice('--label='.length);
-        const side = label.replace('preflight-', '');
-        writeFileSync(
-          join(config.resultsDir, `${label}.json`),
-          smokeSnapshot(side, 'a'.repeat(64), { corpusHash: hashes[side] })
-        );
-        return 0;
-      },
+      spawn: mockSmokeWriter(config, (side) => ({
+        overrides: { corpusHash: hashes[side] },
+      })),
     });
     assert.equal(result.ok, false);
     assert.match(result.failures.join('\n'), /corpusHash: a{64} vs b{64}/v);
   } finally {
-    for (const dir of [
-      config.baseDir,
-      config.candidateDir,
-      config.resultsDir,
-    ]) {
-      chmodRecursive(dir);
-      rmSync(dir, { recursive: true, force: true });
-    }
+    cleanupConfig(config);
   }
 });
 
@@ -358,51 +366,14 @@ test('approvalCommand reproduces every configurable benchmark setting', () => {
   }
 });
 
-function smokeSnapshot(side, outputHash, overrides = {}) {
-  return JSON.stringify({
-    schemaVersion: 3,
-    preset: 'default',
-    target: 'cssnano',
-    node: process.version,
-    platform: process.platform,
-    arch: process.arch,
-    mode: 'quick',
-    warmup: 0,
-    iters: 1,
-    seed: 'test-seed',
-    finalizationMode: 'production',
-    corpusHash: 'c'.repeat(64),
-    outputHashes: { fixture: outputHash },
-    environment: { nodeFlags: [], nodeEnv: 'production' },
-    ...overrides,
-  });
-}
-
 test('runPreflight compares smoke output hashes and prints the approval command', async () => {
   const config = baseConfig();
 
-  const gitPrepared = [];
-  for (const dir of [config.baseDir, config.candidateDir]) {
-    mkdirSync(join(dir, 'frameworks'), { recursive: true });
-    writeFileSync(join(dir, 'frameworks', 'fixture.css'), '.fixture{}\n');
-    mkdirSync(join(dir, 'node_modules'), { recursive: true });
-    execFileSync('git', ['init', '-q'], { cwd: dir });
-    execFileSync('git', ['config', 'user.email', 'test@example.com'], {
-      cwd: dir,
-    });
-    execFileSync('git', ['config', 'user.name', 'Test'], { cwd: dir });
-    execFileSync('git', ['add', '.'], { cwd: dir });
-    execFileSync('git', ['commit', '-qm', 'initial'], { cwd: dir });
-    gitPrepared.push(dir);
-  }
-  config.baseRevision = execFileSync('git', ['rev-parse', 'HEAD'], {
-    cwd: config.baseDir,
-    encoding: 'utf8',
-  }).trim();
-  config.candidateRevision = execFileSync('git', ['rev-parse', 'HEAD'], {
-    cwd: config.candidateDir,
-    encoding: 'utf8',
-  }).trim();
+  config.baseRevision = prepareCheckout(config.baseDir, 'fixture.css');
+  config.candidateRevision = prepareCheckout(
+    config.candidateDir,
+    'fixture.css'
+  );
 
   const smokeHashes = {
     baseline: 'a'.repeat(64),
@@ -410,17 +381,9 @@ test('runPreflight compares smoke output hashes and prints the approval command'
   };
   try {
     const result = await runPreflight(config, {
-      spawn: (args) => {
-        const label = args
-          .find((argument) => argument.startsWith('--label='))
-          .slice('--label='.length);
-        const side = label.replace('preflight-', '');
-        writeFileSync(
-          join(config.resultsDir, `${label}.json`),
-          smokeSnapshot(side, smokeHashes[side])
-        );
-        return 0;
-      },
+      spawn: mockSmokeWriter(config, (side) => ({
+        outputHash: smokeHashes[side],
+      })),
     });
     assert.equal(result.ok, false);
     assert.match(
@@ -432,22 +395,6 @@ test('runPreflight compares smoke output hashes and prints the approval command'
     );
     assert.match(suggestion, /--allow-output-hash=fixture,a{64},b{64}/v);
   } finally {
-    for (const dir of [
-      config.baseDir,
-      config.candidateDir,
-      config.resultsDir,
-    ]) {
-      chmodRecursive(dir);
-      rmSync(dir, { recursive: true, force: true });
-    }
+    cleanupConfig(config);
   }
 });
-
-function chmodRecursive(dir) {
-  // Git objects are read-only; recursive removal needs write bits restored.
-  try {
-    execFileSync('chmod', ['-R', 'u+w', dir]);
-  } catch {
-    // best effort
-  }
-}
