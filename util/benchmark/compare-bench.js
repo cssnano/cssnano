@@ -20,6 +20,7 @@ import {
   analyzeIndependentSnapshots,
   compareSnapshots,
 } from './compare-snapshots.js';
+import { parseAllowOutputHash } from './compare-validation.js';
 import { markdownComparison, printComparison } from './compare-report.js';
 
 export {
@@ -48,17 +49,10 @@ function cliArgs(argv) {
     if (arg.startsWith('--markdown='))
       markdown = arg.slice('--markdown='.length);
     else if (arg.startsWith('--allow-output-hash=')) {
-      const value = arg.slice('--allow-output-hash='.length);
-      const [name, base, candidate, extra] = value.split(',');
-      if (!name || !base || !candidate || extra !== undefined) {
-        throw new Error(
-          '--allow-output-hash must be fixture,base-hash,candidate-hash'
-        );
-      }
-      if (outputHashAllowlist.has(name)) {
-        throw new Error(`duplicate output hash allowlist entry for "${name}"`);
-      }
-      outputHashAllowlist.set(name, { base, candidate });
+      parseAllowOutputHash(
+        arg.slice('--allow-output-hash='.length),
+        outputHashAllowlist
+      );
     } else positional.push(arg);
   }
   return {
