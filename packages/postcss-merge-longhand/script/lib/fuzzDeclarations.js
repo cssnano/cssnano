@@ -94,6 +94,19 @@ function trblValue(rng, tokens) {
 }
 
 /**
+ * One value too many for the sides the property spreads across.
+ *
+ * @param {import('../../../../util/fuzzRng.js').PRNG} rng
+ * @param {readonly string[]} tokens
+ * @return {string}
+ */
+function excessiveTrblValue(rng, tokens) {
+  const count = sides.length + 1;
+
+  return Array.from({ length: count }, () => rng.pick(tokens)).join(' ');
+}
+
+/**
  * A `margin` or `padding` value the browser ignores: one value too many, a token
  * that is no length at all, or — for a padding alone — one of the two things
  * only a margin takes.
@@ -106,10 +119,8 @@ function malformedBoxValue(rng, family) {
   const tokens = family === 'margin' ? marginTokens : paddingTokens;
 
   switch (rng.int(3)) {
-    case 0: {
-      const count = sides.length + 1;
-      return Array.from({ length: count }, () => rng.pick(tokens)).join(' ');
-    }
+    case 0:
+      return excessiveTrblValue(rng, tokens);
 
     /* A border token, which specifies no length. */
     case 1:
@@ -162,10 +173,8 @@ function malformedValue(rng, prop) {
 
   switch (rng.int(3)) {
     /* One value too many for the sides the property spreads across. */
-    case 0: {
-      const count = sides.length + 1;
-      return Array.from({ length: count }, () => rng.pick(tokens)).join(' ');
-    }
+    case 0:
+      return excessiveTrblValue(rng, tokens);
 
     /* A token from a component the property does not take. */
     case 1: {
