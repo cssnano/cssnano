@@ -1,13 +1,7 @@
 import cssnanoUtils from 'cssnano-utils';
 
-const { TokenType, decoded, tokenEnd, tokenStart, tokens } = cssnanoUtils;
-
-const closeFor = new Map([
-  [TokenType.Function, TokenType.CloseParen],
-  [TokenType.OpenParen, TokenType.CloseParen],
-  [TokenType.OpenSquare, TokenType.CloseSquare],
-  [TokenType.OpenCurly, TokenType.CloseCurly],
-]);
+const { TokenType, closeForOpening, decoded, tokenEnd, tokenStart, tokens } =
+  cssnanoUtils;
 
 /**
  * A raw top-level component. Its source is intentionally never reserialized:
@@ -168,7 +162,7 @@ function tokenizeValue(value) {
     }
 
     current.push(token);
-    const expected = closeFor.get(type);
+    const expected = closeForOpening(type);
     if (expected !== undefined) {
       stack.push(expected);
     } else if (

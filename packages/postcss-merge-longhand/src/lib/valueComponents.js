@@ -1,15 +1,9 @@
 import cssnanoUtils from 'cssnano-utils';
 
-const { TokenType, tokenEnd, tokenStart, tokens } = cssnanoUtils;
+const { TokenType, closeForOpening, tokenEnd, tokenStart, tokens } =
+  cssnanoUtils;
 
-const openingTokens = new Map([
-  [TokenType.Function, TokenType.CloseParen],
-  [TokenType.OpenParen, TokenType.CloseParen],
-  [TokenType.OpenSquare, TokenType.CloseSquare],
-  [TokenType.OpenCurly, TokenType.CloseCurly],
-]);
-
-const closingTokens = new Set([
+export const closingTokens = new Set([
   TokenType.CloseParen,
   TokenType.CloseSquare,
   TokenType.CloseCurly,
@@ -69,7 +63,7 @@ export function splitValue(value, allowCommas) {
     }
 
     current.push(token);
-    const expected = openingTokens.get(type);
+    const expected = closeForOpening(type);
     if (expected !== undefined) {
       stack.push(expected);
     } else if (closingTokens.has(type) && stack.pop() !== type) {

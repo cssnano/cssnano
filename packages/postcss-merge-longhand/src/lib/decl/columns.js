@@ -6,6 +6,7 @@ import { isFallback } from '../isFallback.js';
 import cssGlobalKeywords from '../cssGlobalKeywords.js';
 import { shorthand, initialValues, cssWideKeywords } from '../spec.js';
 import { isUnresolved } from '../unresolved.js';
+import { closingTokens } from '../valueComponents.js';
 import {
   assignSlotValue,
   commitShorthand,
@@ -20,7 +21,7 @@ import {
 
 /** @import {Container, Declaration} from 'postcss'; */
 
-const { TokenType, lengthUnits, tokens } = cssnanoUtils;
+const { TokenType, closeForOpening, lengthUnits, tokens } = cssnanoUtils;
 
 const columns = 'columns';
 const columnProperties = ['column-width', 'column-count'];
@@ -29,18 +30,6 @@ const otherColumnProperties = new Set(
   shorthand(columns).longhands.filter((p) => !allColumnProps.has(p))
 );
 const auto = /** @type {string} */ (initialValues.get(columnProperties[0]));
-
-const openingTokens = new Set([
-  TokenType.Function,
-  TokenType.OpenParen,
-  TokenType.OpenSquare,
-  TokenType.OpenCurly,
-]);
-const closingTokens = new Set([
-  TokenType.CloseParen,
-  TokenType.CloseSquare,
-  TokenType.CloseCurly,
-]);
 
 /**
  * @param {string} value
@@ -86,8 +75,11 @@ function tokenizeColumns(value) {
     }
     tokenCount++;
     end = token[3] + 1;
-    if (openingTokens.has(tokenType)) depth++;
-    if (closingTokens.has(tokenType) && depth) depth--;
+    if (closeForOpening(tokenType) !== undefined) {
+      depth++;
+    } else if (depth > 0 && closingTokens.has(tokenType)) {
+      depth--;
+    }
   }
   push();
 

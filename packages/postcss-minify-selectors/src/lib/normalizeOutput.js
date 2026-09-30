@@ -1,11 +1,10 @@
-import { legacyPseudoElements } from './grammar.js';
 import {
-  compactIdent,
   compactTerminalIdent,
   normalizedAt,
   offset,
   sourceText,
 } from './normalizePool.js';
+import { formatPseudoPrefixAndName } from './normalizePseudo.js';
 
 /** @typedef {import('./normalizePool.js').Output} Output */
 /** @typedef {import('./normalizePool.js').OutputPool} OutputPool */
@@ -76,14 +75,7 @@ function unchangedPseudoOutput(arena, pool, nodeIndex, normalized) {
   const node = arena.nodes[nodeIndex];
   const payload = arena.payloads.pseudos[node.payload];
   const argument = payload.argumentNode;
-  const name = compactIdent(arena.tokens[payload.nameToken]).replace(
-    /\($/v,
-    ''
-  );
-  const prefix =
-    payload.colonCount === 2 && legacyPseudoElements.has(payload.name)
-      ? ':'
-      : ':'.repeat(payload.colonCount);
+  const { name, prefix } = formatPseudoPrefixAndName(arena, payload);
   if (argument === undefined) {
     const text = `${prefix}${name}`;
     if (text === sourceText(arena, node.startToken, node.endToken))

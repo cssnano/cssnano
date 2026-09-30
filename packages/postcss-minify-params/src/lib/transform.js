@@ -5,14 +5,15 @@ import {
   minifyWhitespace,
   parentIndexes,
 } from './whitespace.js';
-import {
-  endsWithEscapingBackslash,
-  serializeSegments,
-  tokenEnd,
-  TokenType,
-} from './tokenUtils.js';
+import { serializeSegments } from './tokenUtils.js';
 
-const { balancedTokens, tokens: tokenizeValue } = cssnanoUtils;
+const {
+  TokenType,
+  balancedTokens,
+  endsWithEscapingBackslash,
+  tokenEnd,
+  tokens: tokenizeValue,
+} = cssnanoUtils;
 
 /**
  * @param {boolean} legacy

@@ -1,3 +1,4 @@
+export declare const closingTokens: Set<import("@csstools/css-tokenizer").TokenType>;
 export type Component = {
     raw: string;
     tokens: import('@csstools/css-tokenizer').CSSToken[];

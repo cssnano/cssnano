@@ -6,13 +6,13 @@ import minifierPlugin from '@colordx/core/plugins/minify';
 extend(/** @type {any[]} */ ([hwbPlugin, namesPlugin, minifierPlugin]));
 
 /**
- * Performs color value minification
+ * Performs color value minification if input is a valid CSS color
  *
  * @param {string} input - CSS value
- * @param {import('./index.js').MinifyColorOptions} options - object with colordx.minify() options
- * @return {string}
+ * @param {import('./index.js').MinifyColorOptions} [options] - object with colordx.minify() options
+ * @return {string | undefined}
  */
-function minifyColor(input, options = {}) {
+export function tryMinifyColor(input, options = {}) {
   const instance = colord(input);
 
   if (instance.isValid()) {
@@ -21,10 +21,18 @@ function minifyColor(input, options = {}) {
 
     // Fall back to the original input if it's smaller or has equal length
     return minified.length < input.length ? minified : input.toLowerCase();
-  } else {
-    // Possibly malformed, so pass through
-    return input;
   }
+}
+
+/**
+ * Performs color value minification
+ *
+ * @param {string} input - CSS value
+ * @param {import('./index.js').MinifyColorOptions} [options] - object with colordx.minify() options
+ * @return {string}
+ */
+function minifyColor(input, options = {}) {
+  return tryMinifyColor(input, options) ?? input;
 }
 
 export default minifyColor;

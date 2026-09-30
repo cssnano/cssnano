@@ -5,7 +5,6 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
-import { endsWithEscapingBackslash } from '../src/lib/tokenUtils.js';
 
 const testDir = dirname(fileURLToPath(import.meta.url));
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -93,17 +92,6 @@ describe('Normalise @media queries', () => {
     'should strip whitespace after mixed-case @Media when prelude begins with parenthesis',
     processCSS('@Media (min-width: 1px){}', '@Media(min-width:1px){}')
   );
-
-  test('endsWithEscapingBackslash should distinguish odd and even trailing backslashes', () => {
-    assert.strictEqual(endsWithEscapingBackslash('media'), false);
-    assert.strictEqual(endsWithEscapingBackslash('media\\'), true);
-    assert.strictEqual(endsWithEscapingBackslash('media\\\\'), false);
-    assert.strictEqual(endsWithEscapingBackslash('media\\\\\\'), true);
-    assert.strictEqual(endsWithEscapingBackslash('media\\\\\\\\'), false);
-    assert.strictEqual(endsWithEscapingBackslash(''), false);
-    assert.strictEqual(endsWithEscapingBackslash('\\'), true);
-    assert.strictEqual(endsWithEscapingBackslash('\\\\'), false);
-  });
 
   test.skip(
     'should normalise @media queries (3) (lowercase and uppercase)',

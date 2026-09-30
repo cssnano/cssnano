@@ -1,27 +1,16 @@
 import cssnanoUtils from 'cssnano-utils';
 import cssGlobalKeywords from './cssGlobalKeywords.js';
+import { closingTokens } from './valueComponents.js';
 
 const {
   TokenType,
+  closeForOpening,
   decoded,
   lengthUnits,
   mathFunctions,
   mathFunctionArgumentRanges,
   numeric,
 } = cssnanoUtils;
-
-const openingTokens = new Map([
-  [TokenType.Function, TokenType.CloseParen],
-  [TokenType.OpenParen, TokenType.CloseParen],
-  [TokenType.OpenSquare, TokenType.CloseSquare],
-  [TokenType.OpenCurly, TokenType.CloseCurly],
-]);
-
-const closingTokens = new Set([
-  TokenType.CloseParen,
-  TokenType.CloseSquare,
-  TokenType.CloseCurly,
-]);
 
 const substitutionFunctions = new Set(['var', 'env', 'constant', 'attr']);
 /* Math functions resolve to a value the grammar can accept positionally, and
@@ -113,8 +102,6 @@ export function hasAllowedFunctions(component, allowed) {
     if (token[0] === TokenType.Function) {
       const name = tokenName(token);
       if (!pushFunctionFrame(stack, name, allowed)) return false;
-    } else if (openingTokens.has(token[0])) {
-      if (!pushBlockFrame(stack, token[0])) return false;
     } else if (token[0] === TokenType.Whitespace) {
       continue;
     } else if (token[0] === TokenType.Comma) {
@@ -122,9 +109,14 @@ export function hasAllowedFunctions(component, allowed) {
     } else if (closingTokens.has(token[0])) {
       if (!consumeFunctionCloser(stack, token[0])) return false;
     } else {
-      const frame = stack.at(-1);
-      if (!frame) return false;
-      frame.hasValue = true;
+      const expected = closeForOpening(token[0]);
+      if (expected !== undefined) {
+        stack.push({ name: null, expected, commas: 0, hasValue: false });
+      } else {
+        const frame = stack.at(-1);
+        if (!frame) return false;
+        frame.hasValue = true;
+      }
     }
   }
   if (stack.length) return false;
@@ -140,14 +132,6 @@ function pushFunctionFrame(stack, name, allowed) {
     commas: 0,
     hasValue: false,
   });
-  return true;
-}
-
-/** @param {FunctionFrame[]} stack @param {import('@csstools/css-tokenizer').TokenType} type @return {boolean} */
-function pushBlockFrame(stack, type) {
-  const expected = openingTokens.get(type);
-  if (expected === undefined) return false;
-  stack.push({ name: null, expected, commas: 0, hasValue: false });
   return true;
 }
 

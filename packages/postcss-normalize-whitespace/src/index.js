@@ -4,6 +4,7 @@ import { tokenize, TokenType } from '@csstools/css-tokenizer';
 const {
   asciiLowerCase,
   decoded,
+  endsWithEscapingBackslash,
   mathFunctions,
   tokens: tokenizeValue,
 } = cssnanoUtils;
@@ -16,25 +17,6 @@ const ieHackRegex = /[ \t\n\r\f]*(\\9)[ \t\n\r\f]*/v;
 const whitespaceRegex = /[ \t\n\r\f]/gv;
 
 const plainSeparatorRegex = /^[ \t\n\r\f]*:[ \t\n\r\f]*$/v;
-
-/**
- * Reports whether a value ends in a backslash that begins an escape
- * sequence, as opposed to a backslash that is itself escaped by a
- * preceding backslash.
- * @param {string} value
- * @return {boolean}
- */
-function endsWithEscapingBackslash(value) {
-  if (!value.endsWith('\\')) return false;
-
-  let backslashes = 0;
-
-  for (let i = value.length - 1; i >= 0 && value[i] === '\\'; i--) {
-    backslashes++;
-  }
-
-  return backslashes % 2 === 1;
-}
 
 /** @param {import('@csstools/css-tokenizer').TokenType} type */
 function isOpeningToken(type) {
@@ -82,7 +64,7 @@ function removesWhitespace(previous, next) {
 function whitespaceReplacement(tokens, index, stack) {
   const previous = tokens[index - 1];
   const next = tokens[index + 1];
-  const context = stack.at(-1);
+  const context = stack[stack.length - 1];
   if (previous && endsWithEscapingBackslash(previous[1]))
     return tokens[index][1];
   const besideFunctionBoundary = removesWhitespace(previous, next);
@@ -142,16 +124,18 @@ function reduceWhitespaces(value) {
     if (type === TokenType.Function) {
       const name = asciiLowerCase(decoded(token));
       const isVariable = variableFunctions.has(name);
+      const parentContext = stack[stack.length - 1];
       stack.push({
-        math: Boolean(stack.at(-1)?.math || mathFunctions.has(name)),
+        math: Boolean(parentContext?.math || mathFunctions.has(name)),
         variable: isVariable,
       });
       continue;
     }
     if (isOpeningToken(type)) {
+      const parentContext = stack[stack.length - 1];
       stack.push({
-        math: Boolean(stack.at(-1)?.math),
-        variable: Boolean(stack.at(-1)?.variable),
+        math: Boolean(parentContext?.math),
+        variable: Boolean(parentContext?.variable),
       });
       continue;
     }
