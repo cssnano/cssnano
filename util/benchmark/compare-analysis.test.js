@@ -7,32 +7,14 @@ import {
 } from './compare-analysis.js';
 import { createComparisonSchedule } from './comparison-schedule.js';
 
-const HASH = 'a'.repeat(64);
+import {
+  HASH,
+  comparisonProvenance,
+  mockProvenance as provenance,
+} from './benchTestHelpers.js';
+
 const BASE_REVISION = '1'.repeat(40);
 const CANDIDATE_REVISION = '2'.repeat(40);
-function provenance(revision) {
-  return {
-    createdAt: new Date(0).toISOString(),
-    command: ['node'],
-    gitRevision: revision,
-    benchmarkHarnessHash: HASH,
-    benchmarkConfigHash: HASH,
-    sourceTreeHash: HASH,
-    lockfileHash: HASH,
-    corpusHash: HASH,
-    dirty: false,
-    dirtyPaths: [],
-    node: 'v24.0.0',
-    v8: '1',
-    platform: 'linux',
-    arch: 'x64',
-    osRelease: 'test',
-    cpu: 'test',
-    cpuCount: 1,
-    governor: null,
-    pinnedCore: null,
-  };
-}
 
 function observation(value) {
   const samples = [value, value, value];
@@ -92,18 +74,7 @@ function artifact(ratios, overrides = {}) {
   return {
     schemaVersion: 3,
     artifactType: 'comparison',
-    createdAt: new Date().toISOString(),
-    command: ['node'],
-    gitRevision: { baseline: BASE_REVISION, candidate: CANDIDATE_REVISION },
-    benchmarkHarnessHash: HASH,
-    corpusHash: HASH,
-    sourceTreeHash: { baseline: HASH, candidate: HASH },
-    lockfileHash: { baseline: HASH, candidate: HASH },
-    dirty: { baseline: false, candidate: false },
-    provenance: {
-      baseline: provenance(BASE_REVISION),
-      candidate: provenance(CANDIDATE_REVISION),
-    },
+    ...comparisonProvenance(),
     configuration,
     schedule: createComparisonSchedule(ratios.length, configuration.seed),
     blocks: ratios.map((ratio, index) => {

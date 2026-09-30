@@ -13,30 +13,7 @@ import {
   executeComparison,
 } from './compare-revisions.js';
 
-const HASH = 'a'.repeat(64);
-function provenance(revision) {
-  return {
-    createdAt: new Date(0).toISOString(),
-    command: ['node'],
-    gitRevision: revision,
-    benchmarkHarnessHash: HASH,
-    benchmarkConfigHash: HASH,
-    sourceTreeHash: HASH,
-    lockfileHash: HASH,
-    corpusHash: HASH,
-    dirty: false,
-    dirtyPaths: [],
-    node: 'v24.0.0',
-    v8: '1',
-    platform: 'linux',
-    arch: 'x64',
-    osRelease: 'test',
-    cpu: 'test',
-    cpuCount: 1,
-    governor: null,
-    pinnedCore: null,
-  };
-}
+import { HASH, mockProvenance as provenance } from './benchTestHelpers.js';
 
 function config(overrides = {}) {
   return {
@@ -290,6 +267,20 @@ test('quiet children receive --quiet and the coordinator summarizes each block',
   assert.equal(blockSummary({ blockId: 3, observations: {} }, 2), null);
 });
 
+function runMockComparison(values, getTiming = () => 100) {
+  const timingFn =
+    typeof getTiming === 'function' ? getTiming : () => getTiming;
+  return executeComparison(values, (cfg, side) => ({
+    exitStatus: 0,
+    structuralValidity: true,
+    provenance: provenance(
+      side === 'baseline' ? values.baseRevision : values.candidateRevision
+    ),
+    configuration: childConfiguration(cfg),
+    run: observation(timingFn(side)),
+  }));
+}
+
 test('adaptive comparisons stop once the requested precision is reached', () => {
   const values = config({
     adaptive: true,
@@ -298,15 +289,9 @@ test('adaptive comparisons stop once the requested precision is reached', () => 
     pilotBlocks: 2,
     blocks: 10,
   });
-  const artifact = executeComparison(values, (cfg, side) => ({
-    exitStatus: 0,
-    structuralValidity: true,
-    provenance: provenance(
-      side === 'baseline' ? values.baseRevision : values.candidateRevision
-    ),
-    configuration: childConfiguration(cfg),
-    run: observation(side === 'baseline' ? 100 : 80),
-  }));
+  const artifact = runMockComparison(values, (side) =>
+    side === 'baseline' ? 100 : 80
+  );
   assert.ok(artifact.blocks.length < 10);
   assert.ok(artifact.blocks.length >= 2);
   assert.equal(artifact.adaptiveStop.reason, 'requested precision reached');
@@ -323,15 +308,7 @@ test('comparison metadata records repeated corpus selectors as an array', () => 
     requestedBlocks: 2,
     only: ['framework-a', 'framework-b'],
   });
-  const artifact = executeComparison(values, (cfg, side) => ({
-    exitStatus: 0,
-    structuralValidity: true,
-    provenance: provenance(
-      side === 'baseline' ? values.baseRevision : values.candidateRevision
-    ),
-    configuration: childConfiguration(cfg),
-    run: observation(100),
-  }));
+  const artifact = runMockComparison(values, 100);
   assert.deepEqual(artifact.configuration.corpusSelector, [
     'framework-a',
     'framework-b',

@@ -12,6 +12,7 @@ import {
   repositoryHashes,
 } from './bench-provenance.js';
 import { loadSnapshot } from './compare-snapshot-io.js';
+import { mockConfiguration } from './benchTestHelpers.js';
 
 test('repository provenance exposes separate harness, source, and lockfile hashes', () => {
   const hashes = repositoryHashes();
@@ -189,28 +190,11 @@ test('schema-v3 snapshots reject missing decision configuration', () => {
     invalidPath,
     JSON.stringify({
       schemaVersion: 3,
-      configuration: {
-        superiorityConfidenceLevel: 0.95,
-        equivalenceConfidenceLevel: 0.9,
-        runtimeNonRegressionMargin: 1.1,
-        practicalEquivalenceMargin: 1.1,
+      configuration: mockConfiguration(20, {
         bootstrapResamples: 0,
         bootstrapSeed: 'seed',
         minimumBlocks: 5,
-        requestedBlocks: 20,
-        precisionTarget: 0.05,
-        orderInteractionThreshold: 0.05,
-        intervalMethod: 'stratified-percentile-bootstrap',
-        analyzerVersion: '3.0.0',
-        mode: 'stable',
-        warmup: 20,
-        iters: 100,
-        preset: 'default',
-        target: 'cssnano',
-        case: null,
-        corpusSelector: null,
-        nodeEnv: 'production',
-      },
+      }),
     })
   );
   assert.throws(() => loadSnapshot(invalidPath), /bootstrapResamples/v);
