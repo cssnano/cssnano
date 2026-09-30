@@ -9,9 +9,8 @@ import { isUnresolved } from '../unresolved.js';
 import {
   assignSlotValue,
   commitShorthand,
+  flushableSlots,
   shouldResetSlots,
-  slotVectorReady,
-  supportProvenanceMatches,
 } from './slotVector.js';
 import {
   cleanupLaneSegments,
@@ -304,16 +303,8 @@ const isInvalid = (d) =>
  * @param {Map<Declaration, Declaration>} [inserted]
  */
 function flush(rule, slots, contributing, fallbacks, lane, inserted) {
-  const full = slotVectorReady(slots);
+  const full = flushableSlots(slots);
   if (!full) return;
-
-  const v0 = full[0].value.toLowerCase();
-  const kw = cssGlobalKeywords.has(v0);
-  for (const s of full) {
-    const sv = s.value.toLowerCase();
-    if (kw ? sv !== v0 : cssGlobalKeywords.has(sv)) return;
-  }
-  if (!supportProvenanceMatches(full)) return;
 
   commitShorthand(rule, full, contributing, fallbacks, {
     prop: columns,

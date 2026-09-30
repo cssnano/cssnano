@@ -65,6 +65,27 @@ export function supportProvenanceMatches(full) {
 
 /**
  * @param {({ value: string, decl: Declaration } | null)[]} slots
+ * @return {{ value: string, decl: Declaration }[] | null} the fully-filled
+ * vector ready to be merged, or `null` if any slot is missing, custom,
+ * conflicting on CSS-wide keywords, or has mismatched support provenance
+ */
+export function flushableSlots(slots) {
+  const full = slotVectorReady(slots);
+  if (!full) return null;
+
+  const v0 = full[0].value.toLowerCase();
+  const kw = cssGlobalKeywords.has(v0);
+  for (const s of full) {
+    const sv = s.value.toLowerCase();
+    if (kw ? sv !== v0 : cssGlobalKeywords.has(sv)) return null;
+  }
+  if (!supportProvenanceMatches(full)) return null;
+
+  return full;
+}
+
+/**
+ * @param {({ value: string, decl: Declaration } | null)[]} slots
  * @param {number} idx
  * @param {string} value
  * @param {Declaration} decl

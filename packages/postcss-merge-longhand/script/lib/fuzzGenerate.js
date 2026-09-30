@@ -10,6 +10,23 @@ const families = /** @type {const} */ ([
 ]);
 
 /**
+ * @param {ReturnType<typeof random>} rng
+ * @param {number} count
+ * @param {number} importanceMode
+ * @param {string[]} declarations
+ * @param {string[]} used
+ */
+function pushExtraDeclarations(rng, count, importanceMode, declarations, used) {
+  for (let i = 0; i < count; i++) {
+    const important =
+      importanceMode === 1 || (importanceMode > 1 && rng.chance(0.3));
+    const written = declaration(rng, 'border', used, important);
+    declarations.push(written);
+    used.push(/** @type {string} */ (written.split(':')[0]));
+  }
+}
+
+/**
  * Generates a rule explicitly containing a complete side group or component group,
  * with optional surrounding declarations and mixed importance lanes.
  *
@@ -35,13 +52,7 @@ function groupRule(rng) {
   const used = [];
 
   const extraBefore = rng.int(2);
-  for (let i = 0; i < extraBefore; i++) {
-    const important =
-      importanceMode === 1 || (importanceMode > 1 && rng.chance(0.3));
-    const written = declaration(rng, 'border', used, important);
-    declarations.push(written);
-    used.push(/** @type {string} */ (written.split(':')[0]));
-  }
+  pushExtraDeclarations(rng, extraBefore, importanceMode, declarations, used);
 
   for (let i = 0; i < groupProps.length; i++) {
     const prop = groupProps[i];
@@ -62,13 +73,7 @@ function groupRule(rng) {
   }
 
   const extraAfter = rng.int(2);
-  for (let i = 0; i < extraAfter; i++) {
-    const important =
-      importanceMode === 1 || (importanceMode > 1 && rng.chance(0.3));
-    const written = declaration(rng, 'border', used, important);
-    declarations.push(written);
-    used.push(/** @type {string} */ (written.split(':')[0]));
-  }
+  pushExtraDeclarations(rng, extraAfter, importanceMode, declarations, used);
 
   return `a{${declarations.join(';')}}`;
 }

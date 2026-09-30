@@ -47,6 +47,19 @@ export declare function supportProvenanceMatches(full: {
 }[]): boolean;
 /**
  * @param {({ value: string, decl: Declaration } | null)[]} slots
+ * @return {{ value: string, decl: Declaration }[] | null} the fully-filled
+ * vector ready to be merged, or `null` if any slot is missing, custom,
+ * conflicting on CSS-wide keywords, or has mismatched support provenance
+ */
+export declare function flushableSlots(slots: ({
+    value: string;
+    decl: Declaration;
+} | null)[]): {
+    value: string;
+    decl: Declaration;
+}[] | null;
+/**
+ * @param {({ value: string, decl: Declaration } | null)[]} slots
  * @param {number} idx
  * @param {string} value
  * @param {Declaration} decl

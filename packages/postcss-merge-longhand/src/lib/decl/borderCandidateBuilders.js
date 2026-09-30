@@ -134,6 +134,18 @@ function isSynthesizableSide(cellHistory, fallbacks, s) {
   return !decls.some((d) => fallbacks.has(d));
 }
 /**
+ * @param {Declaration[]} decls
+ * @return {boolean}
+ */
+function hasConsistentSupport(decls) {
+  if (decls.length === 0) return true;
+  const s0 = mergeBlockingSupport(decls[0]);
+  return decls.every(
+    (d) => s0.symmetricDifference(mergeBlockingSupport(d)).size === 0
+  );
+}
+
+/**
  * @param {Set<Declaration>[]} cellHistory
  * @param {Set<number>} touched
  * @param {Set<number>} barrierCells
@@ -148,14 +160,11 @@ function getAvailableSides(cellHistory, touched, barrierCells, fallbacks) {
           (c) => touched.has(s * 3 + c) && !barrierCells.has(s * 3 + c)
         ) && isSynthesizableSide(cellHistory, fallbacks, s)
     )
-    .filter((s) => {
-      const decls = [0, 1, 2].flatMap((c) => [...cellHistory[s * 3 + c]]);
-      if (decls.length === 0) return true;
-      const s0 = mergeBlockingSupport(decls[0]);
-      return decls.every(
-        (d) => s0.symmetricDifference(mergeBlockingSupport(d)).size === 0
-      );
-    });
+    .filter((s) =>
+      hasConsistentSupport(
+        [0, 1, 2].flatMap((c) => [...cellHistory[s * 3 + c]])
+      )
+    );
 }
 /**
  * @param {Set<Declaration>[]} cellHistory
@@ -170,14 +179,11 @@ function getAvailableComponents(cellHistory, touched, barrierCells) {
         (s) => touched.has(s * 3 + c) && !barrierCells.has(s * 3 + c)
       )
     )
-    .filter((c) => {
-      const decls = [0, 1, 2, 3].flatMap((s) => [...cellHistory[s * 3 + c]]);
-      if (decls.length === 0) return true;
-      const s0 = mergeBlockingSupport(decls[0]);
-      return decls.every(
-        (d) => s0.symmetricDifference(mergeBlockingSupport(d)).size === 0
-      );
-    });
+    .filter((c) =>
+      hasConsistentSupport(
+        [0, 1, 2, 3].flatMap((s) => [...cellHistory[s * 3 + c]])
+      )
+    );
 }
 
 /**
