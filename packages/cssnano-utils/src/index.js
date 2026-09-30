@@ -10,6 +10,7 @@ import {
   balancedTokens,
   closeForOpening,
   decoded,
+  endsWithEscapingBackslash,
   numeric,
   numericSource,
   tokenEnd,
@@ -27,7 +28,7 @@ function asciiLowerCase(value) {
   return value.replace(/[A-Z]/gv, (character) => character.toLowerCase());
 }
 
-/** @type {{rawCache: typeof rawCache, sameParent: typeof sameParent, TokenType: typeof TokenType, applyEdits: typeof applyEdits, asciiLowerCase: typeof asciiLowerCase, balancedTokens: typeof balancedTokens, calcSumFunctions: typeof calcSumFunctions, closeForOpening: typeof closeForOpening, decoded: typeof decoded, lengthUnits: typeof lengthUnits, mathFunctions: typeof mathFunctions, mathFunctionArgumentRanges: typeof mathFunctionArgumentRanges, numeric: typeof numeric, numericSource: typeof numericSource, tokenEnd: typeof tokenEnd, tokenStart: typeof tokenStart, tokens: typeof tokens}} */
+/** @type {{rawCache: typeof rawCache, sameParent: typeof sameParent, TokenType: typeof TokenType, applyEdits: typeof applyEdits, asciiLowerCase: typeof asciiLowerCase, balancedTokens: typeof balancedTokens, calcSumFunctions: typeof calcSumFunctions, closeForOpening: typeof closeForOpening, decoded: typeof decoded, endsWithEscapingBackslash: typeof endsWithEscapingBackslash, lengthUnits: typeof lengthUnits, mathFunctions: typeof mathFunctions, mathFunctionArgumentRanges: typeof mathFunctionArgumentRanges, numeric: typeof numeric, numericSource: typeof numericSource, tokenEnd: typeof tokenEnd, tokenStart: typeof tokenStart, tokens: typeof tokens}} */
 const cssnanoUtils = {
   rawCache,
   sameParent,
@@ -36,6 +37,7 @@ const cssnanoUtils = {
   calcSumFunctions,
   closeForOpening,
   decoded,
+  endsWithEscapingBackslash,
   lengthUnits,
   mathFunctions,
   mathFunctionArgumentRanges,

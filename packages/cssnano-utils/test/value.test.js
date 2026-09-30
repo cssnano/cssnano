@@ -12,6 +12,7 @@ import {
   applyEdits,
   balancedTokens,
   decoded,
+  endsWithEscapingBackslash,
   numeric,
   numericSource,
   tokenEnd,
@@ -239,4 +240,16 @@ test('emits UnicodeRange token when unicodeRangesAllowed is explicitly enabled',
   assert.ok(balanced);
   assert.equal(balanced.tokens.length, 1);
   assert.equal(balanced.tokens[0][0], TokenType.UnicodeRange);
+});
+
+test('distinguishes odd and even trailing backslashes', () => {
+  assert.equal(endsWithEscapingBackslash('media'), false);
+  assert.equal(endsWithEscapingBackslash('media\\'), true);
+  assert.equal(endsWithEscapingBackslash('media\\\\'), false);
+  assert.equal(endsWithEscapingBackslash('media\\\\\\'), true);
+  assert.equal(endsWithEscapingBackslash('media\\\\\\\\'), false);
+  assert.equal(endsWithEscapingBackslash(''), false);
+  assert.equal(endsWithEscapingBackslash('\\'), true);
+  assert.equal(endsWithEscapingBackslash('\\\\'), false);
+  assert.equal(cssnanoUtils.endsWithEscapingBackslash('media\\'), true);
 });

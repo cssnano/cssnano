@@ -1,21 +1,9 @@
 import cssnanoUtils from 'cssnano-utils';
 import cssGlobalKeywords from './cssGlobalKeywords.js';
 import { isUnresolved } from './unresolved.js';
+import { closingTokens } from './valueComponents.js';
 
-const { TokenType, lengthUnits, tokens } = cssnanoUtils;
-
-const openingPairs = new Map([
-  [TokenType.Function, TokenType.CloseParen],
-  [TokenType.OpenParen, TokenType.CloseParen],
-  [TokenType.OpenSquare, TokenType.CloseSquare],
-  [TokenType.OpenCurly, TokenType.CloseCurly],
-]);
-
-const closingTokens = new Set([
-  TokenType.CloseParen,
-  TokenType.CloseSquare,
-  TokenType.CloseCurly,
-]);
+const { TokenType, closeForOpening, lengthUnits, tokens } = cssnanoUtils;
 
 /**
  * Checks whether termTokens form a single structurally complete function token/block.
@@ -33,7 +21,7 @@ function isCompleteFunction(termTokens) {
 
   for (let i = 0; i < termTokens.length; i++) {
     const type = termTokens[i][0];
-    const expected = openingPairs.get(type);
+    const expected = closeForOpening(type);
 
     if (expected !== undefined) {
       stack.push(expected);
@@ -152,7 +140,7 @@ function splitRadiusTerms(value) {
 
     currentTermTokens.push(token);
 
-    const expected = openingPairs.get(type);
+    const expected = closeForOpening(type);
     if (expected !== undefined) {
       stack.push(expected);
     } else if (closingTokens.has(type) && stack.pop() !== type) {

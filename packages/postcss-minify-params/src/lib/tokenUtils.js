@@ -12,22 +12,6 @@ const tokenEnd = /** @type {typeof cssnanoUtils.tokenEnd} */ (
 
 export { TokenType, decoded, tokenEnd };
 
-/**
- * Reports whether a value ends in a backslash that begins an escape
- * sequence, as opposed to a backslash that is itself escaped.
- * @param {string} value
- * @return {boolean}
- */
-export function endsWithEscapingBackslash(value) {
-  if (!value.endsWith('\\')) return false;
-
-  let backslashes = 0;
-  for (let i = value.length - 1; i >= 0 && value[i] === '\\'; i--) {
-    backslashes++;
-  }
-  return backslashes % 2 === 1;
-}
-
 export const openingTypes = new Set([
   TokenType.Function,
   TokenType.OpenParen,

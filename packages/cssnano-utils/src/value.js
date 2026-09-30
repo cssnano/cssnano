@@ -142,19 +142,36 @@ function numericSource(input, index) {
   };
 }
 
-const closeFor = new Map([
-  [TokenType.Function, TokenType.CloseParen],
-  [TokenType.OpenParen, TokenType.CloseParen],
-  [TokenType.OpenSquare, TokenType.CloseSquare],
-  [TokenType.OpenCurly, TokenType.CloseCurly],
-]);
-
 /**
  * @param {TokenType} type
  * @return {TokenType | undefined}
  */
 function closeForOpening(type) {
-  return closeFor.get(type);
+  switch (type) {
+    case TokenType.Function:
+    case TokenType.OpenParen:
+      return TokenType.CloseParen;
+    case TokenType.OpenSquare:
+      return TokenType.CloseSquare;
+    case TokenType.OpenCurly:
+      return TokenType.CloseCurly;
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Reports whether a value ends in a backslash that begins an escape
+ * sequence, as opposed to a backslash that is itself escaped.
+ * @param {string} value
+ * @return {boolean}
+ */
+function endsWithEscapingBackslash(value) {
+  let i = value.length - 1;
+  while (i >= 0 && value.charCodeAt(i) === 92) {
+    i--;
+  }
+  return (value.length - 1 - i) % 2 === 1;
 }
 
 /**
@@ -226,7 +243,7 @@ function balancedTokens(source, options) {
       if (token[0] === TokenType.EOF) continue;
       const index = input.length;
       input.push(token);
-      const expected = closeFor.get(token[0]);
+      const expected = closeForOpening(token[0]);
       if (expected !== undefined) stack.push([index, expected]);
       else if (
         token[0] === TokenType.CloseParen ||
@@ -250,6 +267,7 @@ export {
   balancedTokens,
   closeForOpening,
   decoded,
+  endsWithEscapingBackslash,
   numeric,
   numericSource,
   tokenEnd,

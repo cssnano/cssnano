@@ -5,13 +5,6 @@ declare const tokenEnd: typeof cssnanoUtils.tokenEnd;
 export type Tokens = Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>['tokens'];
 /** @typedef {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>['tokens']} Tokens */
 export { TokenType, decoded, tokenEnd };
-/**
- * Reports whether a value ends in a backslash that begins an escape
- * sequence, as opposed to a backslash that is itself escaped.
- * @param {string} value
- * @return {boolean}
- */
-export declare function endsWithEscapingBackslash(value: string): boolean;
 export declare const openingTypes: Set<import("@csstools/css-tokenizer").TokenType>;
 export declare const closingTypes: Set<import("@csstools/css-tokenizer").TokenType>;
 export declare const calcProductEndTypes: Set<import("@csstools/css-tokenizer").TokenType>;

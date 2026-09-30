@@ -12,6 +12,11 @@ export type Part = import('./normalizeOutput.js').Part;
 /** @typedef {import('./normalizeOutput.js').Part} Part */
 /** @param {OutputPool} pool @param {Output} left @param {Output} right */
 export declare function compareOutputs(pool: OutputPool, left: Output, right: Output): -1 | 0 | 1;
+/** @param {SelectorArena} arena @param {import('./arena.js').PseudoPayload} payload */
+export declare function formatPseudoPrefixAndName(arena: SelectorArena, payload: import('./arena.js').PseudoPayload): {
+    name: string;
+    prefix: string;
+};
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {ArenaNode} node @param {(Normalized | undefined)[]} normalized */
 export declare function pseudoOutput(arena: SelectorArena, pool: OutputPool, node: ArenaNode, normalized: (Normalized | undefined)[]): import("./normalizePool.js").Output;
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {number} nodeIndex @param {(Normalized | undefined)[]} normalized @param {readonly number[]} children */

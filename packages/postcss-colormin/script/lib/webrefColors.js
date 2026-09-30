@@ -1,4 +1,6 @@
-import { REFERENCE } from '../../../../util/webref.js';
+import { directReferences } from '../../../../util/webref.js';
+
+export { directReferences };
 
 /**
  * Derives the CSS properties whose grammar transitively accepts <color>.
@@ -32,22 +34,6 @@ const COMPAT_COLOR_PROPERTIES = [
   '-webkit-text-stroke-color',
   'tap-highlight-color',
 ];
-
-/**
- * Extracts direct references from a CSS grammar production.
- * Property references are quoted (<'foo'> -> "'foo'").
- *
- * @param {string} syntax
- * @return {string[]}
- */
-export function directReferences(syntax) {
-  /** @type {string[]} */
-  const references = [];
-  for (const [, property, type] of syntax.matchAll(REFERENCE)) {
-    references.push(property === undefined ? type : `'${property}'`);
-  }
-  return references;
-}
 
 /**
  * @param {WebrefData} data

@@ -162,14 +162,7 @@ export default function selectorMerger(
         boundary.last =
           previous && isDescendant(previous, container) ? previous : null;
     }
-    if (previous) {
-      const previousMeta = active.get(previous);
-      if (previousMeta) previousMeta.next = next;
-    }
-    if (next) {
-      const nextMeta = active.get(next);
-      if (nextMeta) nextMeta.previous = previous;
-    }
+    unlink(previous, next);
     meta.active = false;
   }
 

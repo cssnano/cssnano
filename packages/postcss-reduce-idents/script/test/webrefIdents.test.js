@@ -44,6 +44,14 @@ test('splits a function grammar at its own commas only', () => {
     ),
     ['[ <string> | <url> ]', '<custom-ident>']
   );
+  assert.deepStrictEqual(
+    functionArguments(
+      'repeat( [ <integer [1,∞]> , <line-names> ]{1,2} , <track-size> )'
+    ),
+    ['[ <integer [1,∞]> , <line-names> ]{1,2}', '<track-size>']
+  );
+  assert.deepStrictEqual(functionArguments('empty()'), []);
+  assert.deepStrictEqual(functionArguments(''), []);
 });
 
 test('follows a grammar to the identifier it can hold', () => {

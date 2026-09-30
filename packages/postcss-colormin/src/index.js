@@ -1,9 +1,8 @@
 import getBrowsersList from '#getBrowsersList';
 import caniuseApi from 'caniuse-api';
-import { colordx as colord } from '@colordx/core';
+import { tryMinifyColor } from './minifyColor.js';
 import cssnanoUtils from 'cssnano-utils';
 import colorPropertiesData from './data/colorProperties.json' with { type: 'json' };
-import minifyColor from './minifyColor.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 const { isSupported } = caniuseApi;
@@ -38,6 +37,28 @@ const tokensRequiringSeparator = new Set([
   TokenType.Dimension,
   TokenType.Percentage,
 ]);
+
+/**
+ * Fast-path check for valid CSS hex colors (CSS Color 4 § 5.2):
+ * Must be 3, 4, 6, or 8 hexadecimal digits.
+ * @param {string} value
+ * @return {boolean}
+ */
+function isHexColor(value) {
+  const len = value.length;
+  if (len !== 3 && len !== 4 && len !== 6 && len !== 8) return false;
+  for (let i = 0; i < len; i++) {
+    const code = value.charCodeAt(i);
+    if (
+      !(code >= 48 && code <= 57) &&
+      !(code >= 65 && code <= 70) &&
+      !(code >= 97 && code <= 102)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
 
 /** @param {string} value @param {Options} options @return {string} */
 function transform(value, options) {
@@ -76,43 +97,29 @@ function transform(value, options) {
         const raw = value.slice(tokenStart(t), tokenEnd(closeToken));
         const inputForMinify =
           name + '(' + value.slice(tokenEnd(t), tokenEnd(closeToken));
-        if (colord(inputForMinify).isValid()) {
-          const out = minifyColor(inputForMinify, options);
-          if (out !== raw) {
-            replacements.push({
-              start: tokenStart(t),
-              end: tokenEnd(closeToken),
-              text: out + separator(tokenEnd(closeToken), closeIndex),
-            });
-          }
+        const out = tryMinifyColor(inputForMinify, options);
+        if (out !== undefined && out !== raw) {
+          replacements.push({
+            start: tokenStart(t),
+            end: tokenEnd(closeToken),
+            text: out + separator(tokenEnd(closeToken), closeIndex),
+          });
         }
         i = closeIndex;
         continue;
       }
-    } else if (t[0] === TokenType.Ident) {
+    } else if (t[0] === TokenType.Ident || t[0] === TokenType.Hash) {
       const dec = decoded(t);
-      if (!dec.startsWith('#') && colord(dec).isValid()) {
-        const out = minifyColor(dec, options);
-        if (out !== t[1] && out.length <= t[1].length) {
-          replacements.push({
-            start: tokenStart(t),
-            end: tokenEnd(t),
-            text: out + separator(tokenEnd(t), i),
-          });
-        }
-      }
-    } else if (t[0] === TokenType.Hash) {
-      const dec = decoded(t);
-      const hexCandidate = '#' + dec;
-      if (colord(hexCandidate).isValid()) {
-        const out = minifyColor(hexCandidate, options);
-        if (out !== t[1] && out.length <= t[1].length) {
-          replacements.push({
-            start: tokenStart(t),
-            end: tokenEnd(t),
-            text: out + separator(tokenEnd(t), i),
-          });
-        }
+      const isHash = t[0] === TokenType.Hash;
+      if (isHash ? !isHexColor(dec) : dec.startsWith('#')) continue;
+      const candidate = isHash ? '#' + dec : dec;
+      const out = tryMinifyColor(candidate, options);
+      if (out !== undefined && out !== t[1] && out.length <= t[1].length) {
+        replacements.push({
+          start: tokenStart(t),
+          end: tokenEnd(t),
+          text: out + separator(tokenEnd(t), i),
+        });
       }
     }
   }

@@ -96,18 +96,22 @@ function structuralPseudoOutput(arena, pool, node, normalized, prefix, name) {
   );
 }
 
+/** @param {SelectorArena} arena @param {import('./arena.js').PseudoPayload} payload */
+export function formatPseudoPrefixAndName(arena, payload) {
+  const raw = compactIdent(arena.tokens[payload.nameToken]);
+  const name = raw.endsWith('(') ? raw.slice(0, -1) : raw;
+  const prefix =
+    payload.colonCount === 2 && !legacyPseudoElements.has(payload.name)
+      ? '::'
+      : ':';
+  return { name, prefix };
+}
+
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {ArenaNode} node @param {(Normalized | undefined)[]} normalized */
 export function pseudoOutput(arena, pool, node, normalized) {
   if (node.status === 'invalid') return rawOutput(arena, pool, node);
   const payload = arena.payloads.pseudos[node.payload];
-  const name = compactIdent(arena.tokens[payload.nameToken]).replace(
-    /\($/v,
-    ''
-  );
-  const prefix =
-    payload.colonCount === 2 && legacyPseudoElements.has(payload.name)
-      ? ':'
-      : ':'.repeat(payload.colonCount);
+  const { name, prefix } = formatPseudoPrefixAndName(arena, payload);
   if (!payload.argumentGrammar) return pool.text(`${prefix}${name}`);
   let output;
   if (payload.argumentNode !== undefined)

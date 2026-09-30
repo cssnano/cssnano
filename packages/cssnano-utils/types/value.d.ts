@@ -60,6 +60,13 @@ declare function numericSource(input: CSSToken[], index: number): NumericSource 
  */
 declare function closeForOpening(type: TokenType): TokenType | undefined;
 /**
+ * Reports whether a value ends in a backslash that begins an escape
+ * sequence, as opposed to a backslash that is itself escaped.
+ * @param {string} value
+ * @return {boolean}
+ */
+declare function endsWithEscapingBackslash(value: string): boolean;
+/**
  * Lexical CSS block index. This does not parse or validate any CSS grammar;
  * consumers must preserve raw spelling and define their own malformed-input policy.
  */
@@ -93,5 +100,5 @@ declare class BalancedTokens {
 declare function balancedTokens(source: string, options?: {
     unicodeRangesAllowed?: boolean;
 }): BalancedTokens | undefined;
-export { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, numeric, numericSource, tokenEnd, tokenStart, tokens, };
+export { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, numericSource, tokenEnd, tokenStart, tokens, };
 //# sourceMappingURL=value.d.ts.map

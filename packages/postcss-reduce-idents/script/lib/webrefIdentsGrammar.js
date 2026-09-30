@@ -1,4 +1,8 @@
-import { REFERENCE, keywordTerminals } from '../../../../util/webref.js';
+import {
+  directReferences,
+  functionArguments,
+  keywordTerminals,
+} from '../../../../util/webref.js';
 
 /**
  * @typedef {object} WebrefDefinition
@@ -25,60 +29,7 @@ import { REFERENCE, keywordTerminals } from '../../../../util/webref.js';
 
 const VENDOR_PREFIX = /^-\w+-/v;
 
-export { keywordTerminals };
-
-/**
- * The productions a grammar names directly, without following them any
- * further. Property references are returned quoted, the way they are spelled,
- * so that `<'color'>` cannot be mistaken for `<color>`.
- *
- * @param {string} syntax
- * @return {string[]}
- */
-export function directReferences(syntax) {
-  /** @type {string[]} */
-  const references = [];
-  for (const [, property, type] of syntax.matchAll(REFERENCE)) {
-    references.push(property === undefined ? type : `'${property}'`);
-  }
-  return references;
-}
-
-/**
- * Splits a function's grammar into its comma separated arguments, e.g.
- * `counters( <counter-name>, <string>, <counter-style>? )` into three. Commas
- * nested in a group belong to that group rather than to the argument list.
- *
- * @param {string} syntax
- * @return {string[]}
- */
-export function functionArguments(syntax) {
-  const open = syntax.indexOf('(');
-  const close = syntax.lastIndexOf(')');
-  if (open === -1 || close < open) {
-    return [];
-  }
-  const body = syntax.slice(open + 1, close);
-  /** @type {string[]} */
-  const args = [];
-  let depth = 0;
-  let current = '';
-  for (const character of body) {
-    if (character === '[' || character === '(') {
-      depth++;
-    } else if (character === ']' || character === ')') {
-      depth--;
-    }
-    if (character === ',' && depth === 0) {
-      args.push(current);
-      current = '';
-      continue;
-    }
-    current += character;
-  }
-  args.push(current);
-  return args.map((argument) => argument.trim());
-}
+export { directReferences, functionArguments, keywordTerminals };
 
 /**
  * Return the functions that name a counter and where the counter and its
