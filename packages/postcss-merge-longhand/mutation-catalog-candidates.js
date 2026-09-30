@@ -3,6 +3,10 @@ export const target = new URL(
   './src/lib/decl/borderCandidates.js',
   import.meta.url
 ).href;
+const builders = new URL(
+  './src/lib/decl/borderCandidateBuilders.js',
+  import.meta.url
+).href;
 // node --test expands this glob; a directory path would resolve to a single
 // entry module instead of running every split test file.
 export const test = new URL('./test/*.js', import.meta.url).href;
@@ -25,6 +29,7 @@ export const mutations = [
   },
   {
     name: 'ignore !important when comparing declaration byte cost',
+    target: builders,
     find: '  for (const d of decls) sum += declCost(d.prop, d.value, important);',
     replace:
       '  for (const d of decls) sum += declCost(d.prop, d.value, false);',
@@ -36,6 +41,7 @@ export const mutations = [
   },
   {
     name: 'synthesize border resets from segments without a reset',
+    target: builders,
     find: '  if (!hasReset || touched.size !== 12 || barrierCells.size !== 0) return [];',
     replace: '  if (touched.size !== 12 || barrierCells.size !== 0) return [];',
   },

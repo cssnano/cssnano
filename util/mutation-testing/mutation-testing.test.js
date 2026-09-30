@@ -40,15 +40,12 @@ test('rejects a mutation that matches more than once', () => {
 
 test('every catalog mutation matches its source once', async () => {
   for (const catalog of await Promise.all(catalogPromises)) {
-    const source = readFileSync(fileURLToPath(catalog.target), 'utf8');
-
     for (const mutation of catalog.mutations) {
+      const target = fileURLToPath(mutation.target ?? catalog.target);
+      const source = readFileSync(target, 'utf8');
       const mutated = applyMutation(source, mutation);
       assert.notStrictEqual(mutated, source, mutation.name);
+      assert.strictEqual(readFileSync(target, 'utf8'), source);
     }
-    assert.strictEqual(
-      readFileSync(fileURLToPath(catalog.target), 'utf8'),
-      source
-    );
   }
 });
