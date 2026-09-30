@@ -198,16 +198,12 @@ function report(failure, seed) {
  *
  * @param {string} rule
  * @param {{html: string, css: string}} tree
- * @return {{failure: Mismatch | undefined, seed: number}}
+ * @return {Mismatch | undefined}
  */
-function checkMinimised(rule, tree, seed) {
+function checkMinimised(rule, tree) {
   const failure = check(rule, tree);
 
-  if (failure === undefined) {
-    return { failure: undefined, seed };
-  }
-
-  return { failure: minimize(failure, tree), seed };
+  return failure === undefined ? undefined : minimize(failure, tree);
 }
 
 export { checkMinimised, report };

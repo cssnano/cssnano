@@ -7,6 +7,7 @@ import {
   noVendor,
 } from '../src/lib/ensureCompatibility.js';
 import { ensureCompatibility as legacyCompatibility } from './legacy/ensureCompatibility.js';
+import { parseFuzzArgs } from '../../../util/fuzzRunner.js';
 
 const modes = ['IE 6', 'IE 7', 'IE 11', 'Chrome 60', 'Chrome 120', 'defaults'];
 const explicit = [
@@ -177,138 +178,149 @@ function report(caseData, legacy, current, expected, actual) {
   ].join('\n');
 }
 
-// eslint-disable-next-line complexity
-export async function runFuzz({ seed = 0x5eed, count = 400 } = {}) {
-  const cases = generateCases(seed, count);
-  const branches = new Set();
-  const features = new Set();
-  const shapes = new Set();
-  const combinators = new Set();
-  const attributeOperators = new Set();
-  const nestingDepths = new Set();
-  const namespaces = new Set();
-  for (let index = 0; index < cases.length; index++) {
-    const item = cases[index];
-    const caseData = { ...item, seed, index };
-    branches.add(item.branch);
-    for (const feature of item.features ?? featureMetadata(item.selector))
-      features.add(feature);
-    const shape = structuralShape(item.selector);
-    shapes.add(shape.key);
-    for (const value of shape.combinators) combinators.add(value);
-    for (const value of shape.attributes) attributeOperators.add(value);
-    nestingDepths.add(Math.min(shape.maxDepth, 3));
-    namespaces.add(shape.namespace);
-    const browsers = browserslist(item.browsers);
-    let legacy;
-    try {
-      legacy = legacyCompatibility([item.selector], browsers);
-    } catch {
-      legacy = null;
-    }
-    const current = currentCompatibility([item.selector], browsers);
-    if (legacy !== null && legacy !== current && !malformed(item.selector)) {
-      const minimized = shrinkSelector(item.selector, (selector) => {
-        try {
-          return (
-            legacyCompatibility([selector], browsers) !==
-            currentCompatibility([selector], browsers)
-          );
-        } catch {
-          return false;
-        }
-      });
-      throw new Error(
-        report(
-          { ...caseData, selector: minimized },
-          legacy,
-          current,
-          'n/a',
-          'n/a'
-        )
-      );
-    }
-    let parsed;
-    try {
-      parsed = postcss.parse(`${item.selector}{color:red}b{color:red}`);
-    } catch {
-      continue;
-    }
-    if (legacy === null) continue;
-    const legacyMerge = legacy && noVendor(item.selector);
-    const normalizedSelector = legacyMerge
-      ? item.selector.trimEnd()
-      : item.selector;
-    const expected = legacyMerge
-      ? `${normalizedSelector},b{color:red}`
-      : `${normalizedSelector}{color:red}b{color:red}`;
-    const actual = (
-      await postcss([plugin({ overrideBrowserslist: item.browsers })]).process(
-        parsed,
-        { from: undefined }
-      )
-    ).css;
-    if (legacy !== current && malformed(item.selector)) continue;
-    if (actual !== expected)
-      throw new Error(report(caseData, legacy, current, expected, actual));
+function recordCoverage(item, coverage) {
+  coverage.branches.add(item.branch);
+  for (const feature of item.features ?? featureMetadata(item.selector))
+    coverage.features.add(feature);
+  const shape = structuralShape(item.selector);
+  coverage.shapes.add(shape.key);
+  for (const value of shape.combinators) coverage.combinators.add(value);
+  for (const value of shape.attributes) coverage.attributeOperators.add(value);
+  coverage.nestingDepths.add(Math.min(shape.maxDepth, 3));
+  coverage.namespaces.add(shape.namespace);
+}
+
+function checkCompatibility(item, caseData, browsers) {
+  let legacy;
+  try {
+    legacy = legacyCompatibility([item.selector], browsers);
+  } catch {
+    legacy = null;
   }
+  const current = currentCompatibility([item.selector], browsers);
+  if (legacy !== null && legacy !== current && !malformed(item.selector)) {
+    const minimized = shrinkSelector(item.selector, (selector) => {
+      try {
+        return (
+          legacyCompatibility([selector], browsers) !==
+          currentCompatibility([selector], browsers)
+        );
+      } catch {
+        return false;
+      }
+    });
+    throw new Error(
+      report(
+        { ...caseData, selector: minimized },
+        legacy,
+        current,
+        'n/a',
+        'n/a'
+      )
+    );
+  }
+  return { legacy, current };
+}
+
+async function verifyTransform(item, caseData, legacy, current) {
+  let parsed;
+  try {
+    parsed = postcss.parse(`${item.selector}{color:red}b{color:red}`);
+  } catch {
+    return;
+  }
+  if (legacy === null) return;
+  const legacyMerge = legacy && noVendor(item.selector);
+  const normalizedSelector = legacyMerge
+    ? item.selector.trimEnd()
+    : item.selector;
+  const expected = legacyMerge
+    ? `${normalizedSelector},b{color:red}`
+    : `${normalizedSelector}{color:red}b{color:red}`;
+  const actual = (
+    await postcss([plugin({ overrideBrowserslist: item.browsers })]).process(
+      parsed,
+      { from: undefined }
+    )
+  ).css;
+  if (legacy !== current && malformed(item.selector)) return;
+  if (actual !== expected)
+    throw new Error(report(caseData, legacy, current, expected, actual));
+}
+
+function assertCoverage(coverage, count) {
   assert.ok(
-    branches.size >= 3,
-    `insufficient grammar branch coverage: ${branches.size}`
+    coverage.branches.size >= 3,
+    `insufficient grammar branch coverage: ${coverage.branches.size}`
   );
   assert.ok(
-    features.size >= 5,
-    `insufficient feature coverage: ${features.size}`
+    coverage.features.size >= 5,
+    `insufficient feature coverage: ${coverage.features.size}`
   );
   for (const required of ['>', '+', '~', 'descendant'])
     assert.ok(
-      combinators.has(required),
+      coverage.combinators.has(required),
       `missing combinator shape: ${required}`
     );
   for (const required of ['presence', '=', '~=', '|=', '^=', '$=', '*='])
     assert.ok(
-      attributeOperators.has(required),
+      coverage.attributeOperators.has(required),
       `missing attribute shape: ${required}`
     );
   assert.ok(
-    nestingDepths.has(2) || nestingDepths.has(3),
+    coverage.nestingDepths.has(2) || coverage.nestingDepths.has(3),
     'missing nested function shape'
   );
   assert.deepEqual(
-    namespaces,
+    coverage.namespaces,
     new Set(['present', 'absent']),
     'missing namespace shape'
   );
   assert.ok(
-    shapes.size >= Math.min(30, count),
-    `insufficient semantic shape coverage: ${shapes.size}`
+    coverage.shapes.size >= Math.min(30, count),
+    `insufficient semantic shape coverage: ${coverage.shapes.size}`
   );
+}
+
+export async function runFuzz({ seed = 0x5eed, count = 400 } = {}) {
+  const cases = generateCases(seed, count);
+  const coverage = {
+    branches: new Set(),
+    features: new Set(),
+    shapes: new Set(),
+    combinators: new Set(),
+    attributeOperators: new Set(),
+    nestingDepths: new Set(),
+    namespaces: new Set(),
+  };
+  for (let index = 0; index < cases.length; index++) {
+    const item = cases[index];
+    const caseData = { ...item, seed, index };
+    recordCoverage(item, coverage);
+    const browsers = browserslist(item.browsers);
+    const { legacy, current } = checkCompatibility(item, caseData, browsers);
+    await verifyTransform(item, caseData, legacy, current);
+  }
+  assertCoverage(coverage, count);
   return {
     cases: cases.length,
-    branches: [...branches],
-    features: [...features],
-    shapes: shapes.size,
+    branches: [...coverage.branches],
+    features: [...coverage.features],
+    shapes: coverage.shapes.size,
     shapeDimensions: {
-      combinators: [...combinators],
-      attributeOperators: [...attributeOperators],
-      nestingDepths: [...nestingDepths],
-      namespaces: [...namespaces],
+      combinators: [...coverage.combinators],
+      attributeOperators: [...coverage.attributeOperators],
+      nestingDepths: [...coverage.nestingDepths],
+      namespaces: [...coverage.namespaces],
     },
   };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const args = process.argv.slice(2);
-  const value = (name, fallback) => {
-    const argument = args.findIndex(
-      (arg) => arg === name || arg.startsWith(`${name}=`)
-    );
-    if (argument === -1) return fallback;
-    const inline = args[argument].slice(name.length + 1);
-    return Number(inline || args[argument + 1]);
-  };
-  const seed = value('--seed', 0x5eed);
-  const count = value('--count', 1000);
+  const { seed, count } = parseFuzzArgs({
+    defaultCount: 1000,
+    defaultSeed: 0x5eed,
+  });
   try {
     console.log(JSON.stringify(await runFuzz({ seed, count })));
   } catch (error) {

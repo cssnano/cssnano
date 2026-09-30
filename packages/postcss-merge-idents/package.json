@@ -52,6 +52,7 @@
   },
   "scripts": {
     "acquire": "node ./script/acquire.js",
+    "fuzz": "node ./script/fuzz.js",
     "test": "node --test"
   },
   "type": "module"

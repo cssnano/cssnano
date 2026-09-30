@@ -35,8 +35,7 @@ const BARE_FLAGS = new Set([
   '--no-report',
 ]);
 
-// eslint-disable-next-line complexity
-function options(argv) {
+function parseRawArgs(argv) {
   const values = {};
   const outputHashAllowlist = new Map();
   const cleanupDirs = [];
@@ -69,6 +68,75 @@ function options(argv) {
     if (!match) throw new Error(`expected --name=value, received ${argument}`);
     values[match[1]] = match[2];
   }
+  return { values, outputHashAllowlist, cleanupDirs, bare };
+}
+
+function validateComparisonBlockOptions(result) {
+  if (!result.baseRevision || !result.candidateRevision) {
+    throw new Error('--base-revision and --candidate-revision are required');
+  }
+  if (result.requestedBlocks < result.minimumBlocks) {
+    throw new Error('--requested-blocks must be at least --minimum-blocks');
+  }
+  if (!result.adaptive && result.blocks > result.requestedBlocks) {
+    throw new Error('--blocks must not exceed --requested-blocks');
+  }
+  if (result.pilotBlocks < result.minimumBlocks) {
+    throw new Error('--pilot-blocks must be at least --minimum-blocks');
+  }
+  for (const [name, value] of [
+    ['blocks', result.blocks],
+    ['minimum-blocks', result.minimumBlocks],
+    ['requested-blocks', result.requestedBlocks],
+    ['pilot-blocks', result.pilotBlocks],
+  ]) {
+    if (value % 2 !== 0)
+      throw new Error(`--${name} must be an even number of blocks`);
+  }
+}
+
+function validateComparisonThresholdOptions(result) {
+  if (!MODES[result.mode]) throw new Error(`--mode must be quick or stable`);
+  for (const [name, value] of [
+    ['warmup', result.warmup],
+    ['iters', result.iters],
+  ]) {
+    if (!Number.isInteger(value) || value < (name === 'warmup' ? 0 : 1))
+      throw new Error(
+        `--${name} must be a ${name === 'warmup' ? 'non-negative' : 'positive'} integer`
+      );
+  }
+  for (const [name, value] of [
+    ['precision-target', result.precisionTarget],
+    ['order-interaction-threshold', result.orderInteractionThreshold],
+    ['superiority-confidence-level', result.superiorityConfidenceLevel],
+    ['equivalence-confidence-level', result.equivalenceConfidenceLevel],
+  ]) {
+    if (!Number.isFinite(value) || value <= 0 || value >= 1)
+      throw new Error(`--${name} must be between 0 and 1`);
+  }
+  for (const [name, value] of [
+    ['runtime-non-regression-margin', result.runtimeNonRegressionMargin],
+    ['practical-equivalence-margin', result.practicalEquivalenceMargin],
+  ]) {
+    if (!Number.isFinite(value) || value < 1)
+      throw new Error(`--${name} must be at least 1`);
+  }
+  if (
+    result.pinCore !== null &&
+    (!Number.isInteger(result.pinCore) || result.pinCore < 0)
+  ) {
+    throw new Error('--pin-core must be a non-negative integer');
+  }
+}
+
+function validateComparisonOptions(result) {
+  validateComparisonBlockOptions(result);
+  validateComparisonThresholdOptions(result);
+}
+
+function options(argv) {
+  const { values, outputHashAllowlist, cleanupDirs, bare } = parseRawArgs(argv);
   const positive = (name, fallback) => {
     const value = Number(values[name] ?? fallback);
     if (!Number.isInteger(value) || value < 1) {
@@ -149,59 +217,7 @@ function options(argv) {
     markdown: values.markdown ?? null,
     cleanupDirs,
   };
-  if (!result.baseRevision || !result.candidateRevision) {
-    throw new Error('--base-revision and --candidate-revision are required');
-  }
-  if (result.requestedBlocks < result.minimumBlocks) {
-    throw new Error('--requested-blocks must be at least --minimum-blocks');
-  }
-  if (!result.adaptive && result.blocks > result.requestedBlocks) {
-    throw new Error('--blocks must not exceed --requested-blocks');
-  }
-  if (result.pilotBlocks < result.minimumBlocks) {
-    throw new Error('--pilot-blocks must be at least --minimum-blocks');
-  }
-  for (const [name, value] of [
-    ['blocks', result.blocks],
-    ['minimum-blocks', result.minimumBlocks],
-    ['requested-blocks', result.requestedBlocks],
-    ['pilot-blocks', result.pilotBlocks],
-  ]) {
-    if (value % 2 !== 0)
-      throw new Error(`--${name} must be an even number of blocks`);
-  }
-  if (!MODES[result.mode]) throw new Error(`--mode must be quick or stable`);
-  for (const [name, value] of [
-    ['warmup', result.warmup],
-    ['iters', result.iters],
-  ]) {
-    if (!Number.isInteger(value) || value < (name === 'warmup' ? 0 : 1))
-      throw new Error(
-        `--${name} must be a ${name === 'warmup' ? 'non-negative' : 'positive'} integer`
-      );
-  }
-  for (const [name, value] of [
-    ['precision-target', result.precisionTarget],
-    ['order-interaction-threshold', result.orderInteractionThreshold],
-    ['superiority-confidence-level', result.superiorityConfidenceLevel],
-    ['equivalence-confidence-level', result.equivalenceConfidenceLevel],
-  ]) {
-    if (!Number.isFinite(value) || value <= 0 || value >= 1)
-      throw new Error(`--${name} must be between 0 and 1`);
-  }
-  for (const [name, value] of [
-    ['runtime-non-regression-margin', result.runtimeNonRegressionMargin],
-    ['practical-equivalence-margin', result.practicalEquivalenceMargin],
-  ]) {
-    if (!Number.isFinite(value) || value < 1)
-      throw new Error(`--${name} must be at least 1`);
-  }
-  if (
-    result.pinCore !== null &&
-    (!Number.isInteger(result.pinCore) || result.pinCore < 0)
-  ) {
-    throw new Error('--pin-core must be a non-negative integer');
-  }
+  validateComparisonOptions(result);
   return result;
 }
 

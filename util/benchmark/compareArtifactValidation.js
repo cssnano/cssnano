@@ -135,10 +135,7 @@ function assertConfigurationInvariant(wrapper, configuration, label) {
   }
 }
 
-// The only v3 validation entry point. It validates raw evidence before any
-// derived statistic can be calculated.
-// eslint-disable-next-line complexity
-export function validateComparisonArtifact(artifact, options = {}) {
+function validateArtifactBasicMetadata(artifact, configuration) {
   if (
     !artifact ||
     artifact.schemaVersion !== 3 ||
@@ -156,9 +153,6 @@ export function validateComparisonArtifact(artifact, options = {}) {
     !Array.isArray(artifact.command)
   )
     throw new TypeError('comparison artifact metadata is incomplete');
-  const configuration = validateConfiguration(artifact.configuration);
-  const expectedSchedule = validateSchedule(artifact);
-  const approvedOutputChanges = new Map();
   if (
     !Array.isArray(artifact.blocks) ||
     !artifact.blocks.length ||
@@ -171,98 +165,51 @@ export function validateComparisonArtifact(artifact, options = {}) {
     SIDES.some((side) => !/^[\da-f]{40}$/v.test(artifact.gitRevision[side]))
   )
     throw new TypeError('comparison artifact revisions must be full SHAs');
-  const observed = Object.fromEntries(SIDES.map((side) => [side, false]));
-  const corpusNames = new Set();
-  let structuralFailure = false;
-  for (const [index, block] of artifact.blocks.entries()) {
-    validateBlockMetadata(block);
-    if (block.blockId !== index + 1)
-      throw new Error('comparison blocks must be ordered');
-    if (![true, false].includes(block.structuralValidity))
-      throw new TypeError(
-        `comparison block ${block.blockId} validity metadata is invalid`
-      );
-    if (
-      JSON.stringify(block.processOrder) !==
-      JSON.stringify(expectedSchedule[index].processOrder)
-    )
-      throw new Error(
-        `comparison block ${block.blockId} process order differs from schedule`
-      );
-    const validatedObservations = {};
-    for (const side of SIDES) {
-      const wrapper = block.observations?.[side];
-      if (block.exitStatus[side] !== 0 && wrapper === undefined) continue;
+}
+
+function getApprovedChange(options, artifact, name) {
+  const allowlist = options?.outputHashAllowlist;
+  const fromOptions = allowlist?.get ? allowlist.get(name) : allowlist?.[name];
+  if (fromOptions) return fromOptions;
+  const found = artifact.approvedOutputChanges?.find?.(
+    (entry) => (entry.name ?? entry[0]) === name
+  );
+  if (!found) return null;
+  return found.base ? found : found[1];
+}
+
+function checkBlockOutputHashes(
+  validatedObservations,
+  corpusNames,
+  options,
+  artifact,
+  approvedOutputChanges
+) {
+  const baseHashes = validatedObservations.baseline?.outputHashes;
+  const candidateHashes = validatedObservations.candidate?.outputHashes;
+  if (!baseHashes || !candidateHashes) return false;
+  let failure = false;
+  for (const name of corpusNames) {
+    if (baseHashes[name] !== candidateHashes[name]) {
+      const approved = getApprovedChange(options, artifact, name);
       if (
-        block.exitStatus[side] !== 0 &&
-        wrapper &&
-        !wrapper.provenance &&
-        !wrapper.run
-      )
-        continue;
-      if (wrapper === undefined)
-        throw new TypeError(
-          `comparison block ${block.blockId} ${side} observation is required`
-        );
-      const observation = validateObservation(wrapper, block, side);
-      assertConfigurationInvariant(
-        wrapper,
-        configuration,
-        `${side} observation`
-      );
-      if (observation) {
-        observed[side] = observed[side] || block.exitStatus[side] === 0;
-        validatedObservations[side] = observation;
-        const names = Object.keys(observation.perFileSamples).toSorted();
-        if (!corpusNames.size) for (const name of names) corpusNames.add(name);
-        else if (
-          JSON.stringify(names) !== JSON.stringify([...corpusNames].toSorted())
-        )
-          throw new Error(
-            `comparison ${side} observation corpus differs between blocks`
-          );
-        if (wrapper.provenance.gitRevision !== artifact.gitRevision[side])
-          throw new Error(
-            `block ${block.blockId} ${side} revision disagrees with artifact`
-          );
+        approved &&
+        approved.base === baseHashes[name] &&
+        approved.candidate === candidateHashes[name]
+      ) {
+        approvedOutputChanges.set(name, {
+          base: baseHashes[name],
+          candidate: candidateHashes[name],
+        });
+      } else {
+        failure = true;
       }
     }
-    if (
-      block.structuralValidity === false ||
-      SIDES.some((side) => block.exitStatus[side] !== 0)
-    ) {
-      structuralFailure = true;
-    }
-    const baseHashes = validatedObservations.baseline?.outputHashes;
-    const candidateHashes = validatedObservations.candidate?.outputHashes;
-    if (baseHashes && candidateHashes)
-      for (const name of corpusNames) {
-        if (baseHashes[name] !== candidateHashes[name]) {
-          const approved =
-            options?.outputHashAllowlist?.get?.(name) ??
-            options?.outputHashAllowlist?.[name] ??
-            artifact.approvedOutputChanges?.find?.(
-              (entry) => (entry.name ?? entry[0]) === name
-            );
-          const approvedBase = approved?.base ?? approved?.[1]?.base;
-          const approvedCandidate =
-            approved?.candidate ?? approved?.[1]?.candidate;
-          if (
-            approved &&
-            approvedBase === baseHashes[name] &&
-            approvedCandidate === candidateHashes[name]
-          ) {
-            approvedOutputChanges.set(name, {
-              base: baseHashes[name],
-              candidate: candidateHashes[name],
-            });
-          } else {
-            structuralFailure = true;
-          }
-        }
-      }
   }
-  const hasObservations = SIDES.some((side) => observed[side]);
+  return failure;
+}
+
+function validateArtifactHashes(artifact, observed, hasObservations) {
   if (
     hasObservations
       ? !SHA256.test(artifact.corpusHash)
@@ -293,6 +240,17 @@ export function validateComparisonArtifact(artifact, options = {}) {
     )
   )
     throw new TypeError('comparison artifact dirty metadata is incomplete');
+  if (
+    hasObservations
+      ? !SHA256.test(artifact.benchmarkHarnessHash)
+      : artifact.benchmarkHarnessHash !== null
+  )
+    throw new TypeError(
+      `comparison benchmarkHarnessHash must be ${hasObservations ? 'SHA-256' : 'null without observations'}`
+    );
+}
+
+function validateSideProvenances(artifact, observed) {
   if (!artifact.provenance || typeof artifact.provenance !== 'object')
     throw new TypeError('comparison artifact provenance is required');
   for (const side of SIDES) {
@@ -318,32 +276,121 @@ export function validateComparisonArtifact(artifact, options = {}) {
           `${side} observation in block ${block.blockId}`
         );
     }
-  }
-  for (const side of SIDES)
-    if (observed[side]) {
-      const provenance = artifact.provenance[side];
-      if (
-        artifact.sourceTreeHash[side] !== provenance.sourceTreeHash ||
-        artifact.lockfileHash[side] !== provenance.lockfileHash ||
-        artifact.dirty[side] !== provenance.dirty
-      )
-        throw new Error(`comparison ${side} top-level provenance disagrees`);
-    }
-  if (
-    hasObservations
-      ? !SHA256.test(artifact.benchmarkHarnessHash)
-      : artifact.benchmarkHarnessHash !== null
-  )
-    throw new TypeError(
-      `comparison benchmarkHarnessHash must be ${hasObservations ? 'SHA-256' : 'null without observations'}`
-    );
-  for (const side of SIDES)
     if (
-      observed[side] &&
-      artifact.benchmarkHarnessHash !==
-        artifact.provenance[side].benchmarkHarnessHash
+      artifact.sourceTreeHash[side] !== provenance.sourceTreeHash ||
+      artifact.lockfileHash[side] !== provenance.lockfileHash ||
+      artifact.dirty[side] !== provenance.dirty
     )
+      throw new Error(`comparison ${side} top-level provenance disagrees`);
+    if (artifact.benchmarkHarnessHash !== provenance.benchmarkHarnessHash)
       throw new Error('comparison harness hash disagrees with provenance');
+  }
+}
+
+function validateBlock(block, index, expectedScheduled) {
+  validateBlockMetadata(block);
+  if (block.blockId !== index + 1)
+    throw new Error('comparison blocks must be ordered');
+  if (![true, false].includes(block.structuralValidity))
+    throw new TypeError(
+      `comparison block ${block.blockId} validity metadata is invalid`
+    );
+  if (
+    JSON.stringify(block.processOrder) !==
+    JSON.stringify(expectedScheduled.processOrder)
+  )
+    throw new Error(
+      `comparison block ${block.blockId} process order differs from schedule`
+    );
+}
+
+function validateBlockSideObservation(
+  block,
+  side,
+  artifact,
+  configuration,
+  corpusNames,
+  observed
+) {
+  const wrapper = block.observations?.[side];
+  if (block.exitStatus[side] !== 0 && wrapper === undefined) return null;
+  if (
+    block.exitStatus[side] !== 0 &&
+    wrapper &&
+    !wrapper.provenance &&
+    !wrapper.run
+  ) {
+    return null;
+  }
+  if (wrapper === undefined) {
+    throw new TypeError(
+      `comparison block ${block.blockId} ${side} observation is required`
+    );
+  }
+  const observation = validateObservation(wrapper, block, side);
+  assertConfigurationInvariant(wrapper, configuration, `${side} observation`);
+  if (observation) {
+    observed[side] = observed[side] || block.exitStatus[side] === 0;
+    const names = Object.keys(observation.perFileSamples).toSorted();
+    if (!corpusNames.size) {
+      for (const name of names) corpusNames.add(name);
+    } else if (
+      JSON.stringify(names) !== JSON.stringify([...corpusNames].toSorted())
+    ) {
+      throw new Error(
+        `comparison ${side} observation corpus differs between blocks`
+      );
+    }
+    if (wrapper.provenance.gitRevision !== artifact.gitRevision[side]) {
+      throw new Error(
+        `block ${block.blockId} ${side} revision disagrees with artifact`
+      );
+    }
+  }
+  return observation;
+}
+
+// The only v3 validation entry point. It validates raw evidence before any
+// derived statistic can be calculated.
+export function validateComparisonArtifact(artifact, options = {}) {
+  const configuration = validateConfiguration(artifact?.configuration);
+  validateArtifactBasicMetadata(artifact, configuration);
+  const expectedSchedule = validateSchedule(artifact);
+  const approvedOutputChanges = new Map();
+  const observed = Object.fromEntries(SIDES.map((side) => [side, false]));
+  const corpusNames = new Set();
+  let structuralFailure = false;
+  for (const [index, block] of artifact.blocks.entries()) {
+    validateBlock(block, index, expectedSchedule[index]);
+    const validatedObservations = {};
+    for (const side of SIDES) {
+      const observation = validateBlockSideObservation(
+        block,
+        side,
+        artifact,
+        configuration,
+        corpusNames,
+        observed
+      );
+      if (observation) validatedObservations[side] = observation;
+    }
+    if (
+      block.structuralValidity === false ||
+      SIDES.some((side) => block.exitStatus[side] !== 0) ||
+      checkBlockOutputHashes(
+        validatedObservations,
+        corpusNames,
+        options,
+        artifact,
+        approvedOutputChanges
+      )
+    ) {
+      structuralFailure = true;
+    }
+  }
+  const hasObservations = SIDES.some((side) => observed[side]);
+  validateArtifactHashes(artifact, observed, hasObservations);
+  validateSideProvenances(artifact, observed);
   return {
     configuration,
     structuralFailure,

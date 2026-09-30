@@ -1,52 +1,15 @@
 #!/usr/bin/env node
-import nodeutil from 'node:util';
-import { generate } from './lib/fuzzGenerate.js';
+import { parseFuzzArgs, runFuzz } from '../../../util/fuzzRunner.js';
 import { checkMinimised, report } from './lib/fuzzCheck.js';
+import { generate } from './lib/fuzzGenerate.js';
 
-const { parseArgs } = nodeutil;
-const { values } = parseArgs({
-  options: {
-    seed: { type: 'string', default: '1' },
-    count: { type: 'string', default: '10000' },
-  },
+const { seed, count, interval } = parseFuzzArgs({ defaultCount: 10000 });
+
+runFuzz({
+  cases: generate(seed, count),
+  check: ({ rule, tree }) => checkMinimised(rule, tree),
+  report,
+  count,
+  seed,
+  interval,
 });
-
-const seed = Number(values.seed);
-const count = Number(values.count);
-
-if (!Number.isInteger(seed) || !Number.isInteger(count)) {
-  console.error('--seed and --count must be integers');
-  process.exit(1);
-}
-
-const started = Date.now();
-let passed = 0;
-let failed = 0;
-
-const corpus = generate(seed, count);
-
-console.log(`Fuzzing with seed ${seed}, ${count} cases...`);
-
-for (let i = 0; i < corpus.length; i++) {
-  if (i % 10000 === 0 && i > 0) {
-    console.log(`  ${i}/${count} cases checked...`);
-  }
-
-  const { rule, tree } = corpus[i];
-  const { failure, seed: failSeed } = checkMinimised(rule, tree, seed);
-
-  if (failure) {
-    failed++;
-    console.error('');
-    console.error('FAILURE FOUND:');
-    console.error(report(failure, failSeed));
-    process.exit(1);
-  }
-
-  passed++;
-}
-
-console.log(
-  `✓ All ${passed} cases passed in ${((Date.now() - started) / 1000).toFixed(1)}s`
-);
-process.exit(0);
