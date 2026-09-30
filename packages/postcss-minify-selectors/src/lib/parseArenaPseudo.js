@@ -128,41 +128,59 @@ function attributeValue(input, index, end) {
   };
 }
 
-/** @param {Builder} builder @param {Structure} structure @param {number} index */
-// eslint-disable-next-line complexity
-export function addAttribute(builder, structure, index) {
-  const input = structure.tokens;
-  const close = structure.endForOpening(index);
-  if (close === undefined) return index + 1;
-  let cursor = skipTrivia(input, index + 1, close);
+/**
+ * Parse the optional namespace prefix and attribute name of `[ns|name...]`.
+ *
+ * @param {Structure['tokens']} input @param {number} start @param {number} close
+ */
+function attributeName(input, start, close) {
   const name =
-    input[cursor]?.[0] === TokenType.Ident &&
-    input[cursor + 1]?.[1] === '|' &&
-    input[cursor + 2]?.[1] === '='
+    input[start]?.[0] === TokenType.Ident &&
+    input[start + 1]?.[1] === '|' &&
+    input[start + 2]?.[1] === '='
       ? {
-          end: cursor + 1,
+          end: start + 1,
           payload: {
             namespace: { kind: /** @type {const} */ ('absent') },
             subject: {
               kind: /** @type {const} */ ('type'),
-              token: cursor,
+              token: start,
             },
           },
         }
-      : qualifiedNameAt(input, cursor, close);
-  let status = /** @type {ParseStatus} */ ('valid');
-  if (
-    !name?.end ||
-    /** @type {QualifiedNamePayload} */ (name.payload).subject.kind !== 'type'
-  )
-    status = 'invalid';
-  const namespace = name?.end
-    ? /** @type {QualifiedNamePayload} */ (name.payload).namespace
-    : { kind: /** @type {const} */ ('absent') };
-  const nameToken = name?.end
-    ? /** @type {QualifiedNamePayload} */ (name.payload).subject.token
-    : cursor;
-  cursor = name?.end ? skipTrivia(input, name.end, close) : close;
+      : qualifiedNameAt(input, start, close);
+  if (!name?.end) {
+    return {
+      status: /** @type {ParseStatus} */ ('invalid'),
+      namespace: { kind: /** @type {const} */ ('absent') },
+      nameToken: start,
+      cursor: close,
+    };
+  }
+  const payload = /** @type {QualifiedNamePayload} */ (name.payload);
+  return {
+    status: /** @type {ParseStatus} */ (
+      payload.subject.kind === 'type' ? 'valid' : 'invalid'
+    ),
+    namespace: payload.namespace,
+    nameToken: payload.subject.token,
+    cursor: skipTrivia(input, name.end, close),
+  };
+}
+
+/** @param {Builder} builder @param {Structure} structure @param {number} index */
+export function addAttribute(builder, structure, index) {
+  const input = structure.tokens;
+  const close = structure.endForOpening(index);
+  if (close === undefined) return index + 1;
+  const parsedName = attributeName(
+    input,
+    skipTrivia(input, index + 1, close),
+    close
+  );
+  let status = parsedName.status;
+  const { namespace, nameToken } = parsedName;
+  let cursor = parsedName.cursor;
   const parsedMatcher = attributeMatcher(input, cursor);
   const matcher = parsedMatcher.matcher;
   cursor = parsedMatcher.end;

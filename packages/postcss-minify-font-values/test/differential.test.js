@@ -77,7 +77,7 @@ test('matches the frozen legacy scanner across a deterministic corpus', () => {
     for (const size of sizes) {
       for (const lineHeight of lineHeights) {
         for (const family of families) {
-          const value = `${style}${size}${lineHeight}${family}`;
+          const value = `${style}${size}${lineHeight || ' '}${family}`;
           assert.equal(
             minifyFont(value, { removeQuotes: true }),
             legacyMinifyFont(value, { removeQuotes: true }),
