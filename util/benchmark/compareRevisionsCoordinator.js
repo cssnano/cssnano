@@ -118,8 +118,7 @@ function runProcess(config, side, blockId, directory, revision, resultsDir) {
   }
 }
 
-// eslint-disable-next-line complexity
-export function executeComparison(config, run = runProcess) {
+function validateComparisonBlockCounts(config) {
   if (!config.adaptive && config.blocks > config.requestedBlocks)
     throw new RangeError('--blocks must not exceed requested blocks');
   for (const [name, value] of [
@@ -130,118 +129,56 @@ export function executeComparison(config, run = runProcess) {
     if (value % 2 !== 0)
       throw new RangeError(`${name} must be an even number of blocks`);
   }
-  mkdirSync(config.resultsDir, { recursive: true });
-  const adaptive = Boolean(config.adaptive);
-  const plannedBlocks = adaptive ? config.requestedBlocks : config.blocks;
-  const cooldown = config.cooldown ?? 0;
-  const schedule = createComparisonSchedule(plannedBlocks, config.seed);
-  const stopAfter = Math.max(config.pilotBlocks ?? 0, config.minimumBlocks);
-  const blocks = [];
-  const approvedOutputChanges = new Map();
-  let adaptiveStop = null;
-  for (const scheduled of schedule) {
-    if (cooldown > 0 && blocks.length > 0) {
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, cooldown);
-    }
-    const startedAt = new Date().toISOString();
-    const blockStarted = performance.now();
-    const observations = {};
-    for (const side of scheduled.processOrder) {
-      const directory =
-        side === 'baseline' ? config.baseDir : config.candidateDir;
-      const revision =
-        side === 'baseline' ? config.baseRevision : config.candidateRevision;
-      observations[side] = run(
-        config,
-        side,
-        scheduled.blockId,
-        directory,
-        revision,
-        config.resultsDir
-      );
-    }
-    let blockFailure = Object.values(observations).some(
-      (observation) => !observation.structuralValidity
-    );
-    if (!blockFailure && observations.baseline && observations.candidate) {
-      const baseHashes = observations.baseline.run.outputHashes ?? {};
-      const candidateHashes = observations.candidate.run.outputHashes ?? {};
-      const names = new Set([
-        ...Object.keys(baseHashes),
-        ...Object.keys(candidateHashes),
-      ]);
-      for (const name of names) {
-        if (baseHashes[name] !== candidateHashes[name]) {
-          const approved =
-            config.outputHashAllowlist?.get?.(name) ??
-            config.outputHashAllowlist?.[name];
-          if (
-            approved &&
-            approved.base === baseHashes[name] &&
-            approved.candidate === candidateHashes[name]
-          ) {
-            approvedOutputChanges.set(name, {
-              base: baseHashes[name],
-              candidate: candidateHashes[name],
-            });
-          } else {
-            blockFailure = true;
-          }
-        }
-      }
-    }
-    const block = {
-      blockId: scheduled.blockId,
-      processOrder: scheduled.processOrder,
-      startedAt,
-      durationMs: performance.now() - blockStarted,
-      exitStatus: Object.fromEntries(
-        Object.entries(observations).map(([side, value]) => [
-          side,
-          value.exitStatus,
-        ])
-      ),
-      structuralValidity:
-        !blockFailure &&
-        Object.values(observations).every((value) => value.structuralValidity),
-      observations,
-    };
-    blocks.push(block);
-    if (config.quietChild) {
-      const summary = blockSummary(block, plannedBlocks);
-      if (summary) console.log(summary);
-      else
-        console.error(
-          `block ${block.blockId}/${plannedBlocks}: failed (baseline exit ${block.exitStatus.baseline}, candidate exit ${block.exitStatus.candidate})`
-        );
-    }
-    if (blockFailure) break;
-    if (
-      adaptive &&
-      blocks.length >= stopAfter &&
-      blocks.length % 2 === 0 &&
-      blocks.length < plannedBlocks
-    ) {
-      const interim = interimTotalAnalysis(blocks, config);
+}
+
+function checkOutputHashes(observations, config, approvedOutputChanges) {
+  if (!observations.baseline || !observations.candidate) return false;
+  const baseHashes = observations.baseline.run.outputHashes ?? {};
+  const candidateHashes = observations.candidate.run.outputHashes ?? {};
+  const names = new Set([
+    ...Object.keys(baseHashes),
+    ...Object.keys(candidateHashes),
+  ]);
+  for (const name of names) {
+    if (baseHashes[name] !== candidateHashes[name]) {
+      const approved =
+        config.outputHashAllowlist?.get?.(name) ??
+        config.outputHashAllowlist?.[name];
       if (
-        interim &&
-        interim.confidenceIntervalWidth <= config.precisionTarget
+        approved &&
+        approved.base === baseHashes[name] &&
+        approved.candidate === candidateHashes[name]
       ) {
-        adaptiveStop = {
-          atBlock: blocks.length,
-          confidenceIntervalWidth: interim.confidenceIntervalWidth,
-          reason: 'requested precision reached',
-        };
-        break;
+        approvedOutputChanges.set(name, {
+          base: baseHashes[name],
+          candidate: candidateHashes[name],
+        });
+      } else {
+        return true;
       }
     }
   }
+  return false;
+}
+
+function buildComparisonArtifact(
+  config,
+  blocks,
+  schedule,
+  approvedOutputChanges,
+  adaptiveStop,
+  cooldown
+) {
   const provenanceFor = (side) =>
     blocks.find((block) => block.observations?.[side]?.provenance)
       ?.observations[side].provenance;
   const baselineProvenance = provenanceFor('baseline');
   const candidateProvenance = provenanceFor('candidate');
-  const artifact = {
+  const getHash = (key) => ({
+    baseline: baselineProvenance?.[key] ?? null,
+    candidate: candidateProvenance?.[key] ?? null,
+  });
+  return {
     schemaVersion: 3,
     artifactType: 'comparison',
     createdAt: new Date().toISOString(),
@@ -251,20 +188,11 @@ export function executeComparison(config, run = runProcess) {
       candidate: config.candidateRevision,
     },
     benchmarkHarnessHash: baselineProvenance?.benchmarkHarnessHash ?? null,
-    sourceTreeHash: {
-      baseline: baselineProvenance?.sourceTreeHash ?? null,
-      candidate: candidateProvenance?.sourceTreeHash ?? null,
-    },
-    lockfileHash: {
-      baseline: baselineProvenance?.lockfileHash ?? null,
-      candidate: candidateProvenance?.lockfileHash ?? null,
-    },
+    sourceTreeHash: getHash('sourceTreeHash'),
+    lockfileHash: getHash('lockfileHash'),
     corpusHash:
       baselineProvenance?.corpusHash ?? candidateProvenance?.corpusHash ?? null,
-    dirty: {
-      baseline: baselineProvenance?.dirty ?? null,
-      candidate: candidateProvenance?.dirty ?? null,
-    },
+    dirty: getHash('dirty'),
     provenance: {
       baseline: baselineProvenance ?? null,
       candidate: candidateProvenance ?? null,
@@ -297,6 +225,107 @@ export function executeComparison(config, run = runProcess) {
     schedule: schedule.slice(0, blocks.length),
     blocks,
   };
+}
+
+function checkAdaptiveStop(blocks, config, stopAfter, plannedBlocks) {
+  if (
+    !config.adaptive ||
+    blocks.length < stopAfter ||
+    blocks.length % 2 !== 0 ||
+    blocks.length >= plannedBlocks
+  ) {
+    return null;
+  }
+  const interim = interimTotalAnalysis(blocks, config);
+  if (interim && interim.confidenceIntervalWidth <= config.precisionTarget) {
+    return {
+      atBlock: blocks.length,
+      confidenceIntervalWidth: interim.confidenceIntervalWidth,
+      reason: 'requested precision reached',
+    };
+  }
+  return null;
+}
+
+export function executeComparison(config, run = runProcess) {
+  validateComparisonBlockCounts(config);
+  mkdirSync(config.resultsDir, { recursive: true });
+  const plannedBlocks = config.adaptive
+    ? config.requestedBlocks
+    : config.blocks;
+  const cooldown = config.cooldown ?? 0;
+  const schedule = createComparisonSchedule(plannedBlocks, config.seed);
+  const stopAfter = Math.max(config.pilotBlocks ?? 0, config.minimumBlocks);
+  const blocks = [];
+  const approvedOutputChanges = new Map();
+  let adaptiveStop = null;
+  for (const scheduled of schedule) {
+    if (cooldown > 0 && blocks.length > 0) {
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, cooldown);
+    }
+    const startedAt = new Date().toISOString();
+    const blockStarted = performance.now();
+    const observations = {};
+    for (const side of scheduled.processOrder) {
+      const isBase = side === 'baseline';
+      const directory = isBase ? config.baseDir : config.candidateDir;
+      const revision = isBase ? config.baseRevision : config.candidateRevision;
+      observations[side] = run(
+        config,
+        side,
+        scheduled.blockId,
+        directory,
+        revision,
+        config.resultsDir
+      );
+    }
+    let blockFailure = Object.values(observations).some(
+      (observation) => !observation.structuralValidity
+    );
+    if (!blockFailure) {
+      blockFailure = checkOutputHashes(
+        observations,
+        config,
+        approvedOutputChanges
+      );
+    }
+    const block = {
+      blockId: scheduled.blockId,
+      processOrder: scheduled.processOrder,
+      startedAt,
+      durationMs: performance.now() - blockStarted,
+      exitStatus: Object.fromEntries(
+        Object.entries(observations).map(([side, value]) => [
+          side,
+          value.exitStatus,
+        ])
+      ),
+      structuralValidity:
+        !blockFailure &&
+        Object.values(observations).every((value) => value.structuralValidity),
+      observations,
+    };
+    blocks.push(block);
+    if (config.quietChild) {
+      const summary = blockSummary(block, plannedBlocks);
+      if (summary) console.log(summary);
+      else
+        console.error(
+          `block ${block.blockId}/${plannedBlocks}: failed (baseline exit ${block.exitStatus.baseline}, candidate exit ${block.exitStatus.candidate})`
+        );
+    }
+    if (blockFailure) break;
+    adaptiveStop = checkAdaptiveStop(blocks, config, stopAfter, plannedBlocks);
+    if (adaptiveStop) break;
+  }
+  const artifact = buildComparisonArtifact(
+    config,
+    blocks,
+    schedule,
+    approvedOutputChanges,
+    adaptiveStop,
+    cooldown
+  );
   writeFileSync(
     join(config.resultsDir, 'comparison-v3.json'),
     JSON.stringify(artifact, null, 2)

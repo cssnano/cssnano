@@ -233,81 +233,86 @@ function adaptiveArtifact(scenario, seed, resamples) {
   return full;
 }
 
-// eslint-disable-next-line complexity
-export function runCalibration({ replicates = 2_000, resamples = 100 } = {}) {
-  const results = [];
-  for (const scenario of SCENARIOS) {
-    let regressions = 0;
-    let withinMargin = 0;
-    let inconclusive = 0;
-    let covered = 0;
-    let interactionDetected = 0;
-    let adaptiveCovered = 0;
-    let adaptiveRuns = 0;
-    let adaptiveBlocks = 0;
-    for (let replicate = 0; replicate < replicates; replicate++) {
-      const seed = 0x9e3779b9 + replicate;
-      const analysis = analyzeComparison(
-        simulatedArtifact(scenario, seed, resamples)
-      );
-      if (analysis.overallVerdict === 'regression') regressions++;
-      if (analysis.total?.practicalConclusion === 'within-margin')
-        withinMargin++;
-      if (analysis.overallVerdict === 'inconclusive') inconclusive++;
-      if (
-        analysis.total &&
-        analysis.total.confidenceInterval.low <= Math.exp(scenario.effect) &&
-        analysis.total.confidenceInterval.high >= Math.exp(scenario.effect)
-      ) {
-        covered++;
-      }
-      if (
-        analysis.total &&
-        (!analysis.total.orderIsStable ||
-          Math.abs(analysis.total.orderInteraction) >
-            configuration().orderInteractionThreshold)
-      )
-        interactionDetected++;
-      if (scenario.drift === undefined && scenario.orderEffect === undefined) {
-        const adaptive = adaptiveArtifact(scenario, seed, resamples);
-        const adaptiveAnalysis = analyzeComparison(adaptive);
-        adaptiveRuns++;
-        adaptiveBlocks += adaptive.blocks.length;
-        if (
-          adaptiveAnalysis.total &&
-          adaptiveAnalysis.total.confidenceInterval.low <=
-            Math.exp(scenario.effect) &&
-          adaptiveAnalysis.total.confidenceInterval.high >=
-            Math.exp(scenario.effect)
-        )
-          adaptiveCovered++;
-      }
-    }
-    results.push({
-      scenario: scenario.name,
-      falseRegressionRate:
-        scenario.effect === 0 ? regressions / replicates : null,
-      falseWithinMarginRate:
-        scenario.effect > Math.log(1.1) ? withinMargin / replicates : null,
-      inconclusiveRate: inconclusive / replicates,
-      primaryIntervalCoverage:
-        scenario.drift === undefined && scenario.orderEffect === undefined
-          ? covered / replicates
-          : null,
-      adaptiveIntervalCoverage:
-        scenario.drift === undefined && scenario.orderEffect === undefined
-          ? adaptiveCovered / adaptiveRuns
-          : null,
-      adaptiveMeanBlocks:
-        scenario.drift === undefined && scenario.orderEffect === undefined
-          ? adaptiveBlocks / adaptiveRuns
-          : null,
-      orderInteractionDetection:
-        scenario.orderEffect === undefined
-          ? null
-          : interactionDetected / replicates,
-    });
+function evaluateReplicate(scenario, seed, resamples, counts) {
+  const analysis = analyzeComparison(
+    simulatedArtifact(scenario, seed, resamples)
+  );
+  if (analysis.overallVerdict === 'regression') counts.regressions++;
+  if (analysis.total?.practicalConclusion === 'within-margin')
+    counts.withinMargin++;
+  if (analysis.overallVerdict === 'inconclusive') counts.inconclusive++;
+  if (
+    analysis.total &&
+    analysis.total.confidenceInterval.low <= Math.exp(scenario.effect) &&
+    analysis.total.confidenceInterval.high >= Math.exp(scenario.effect)
+  ) {
+    counts.covered++;
   }
+  if (
+    analysis.total &&
+    (!analysis.total.orderIsStable ||
+      Math.abs(analysis.total.orderInteraction) >
+        configuration().orderInteractionThreshold)
+  )
+    counts.interactionDetected++;
+  if (scenario.drift === undefined && scenario.orderEffect === undefined) {
+    const adaptive = adaptiveArtifact(scenario, seed, resamples);
+    const adaptiveAnalysis = analyzeComparison(adaptive);
+    counts.adaptiveRuns++;
+    counts.adaptiveBlocks += adaptive.blocks.length;
+    if (
+      adaptiveAnalysis.total &&
+      adaptiveAnalysis.total.confidenceInterval.low <=
+        Math.exp(scenario.effect) &&
+      adaptiveAnalysis.total.confidenceInterval.high >=
+        Math.exp(scenario.effect)
+    )
+      counts.adaptiveCovered++;
+  }
+}
+
+function evaluateScenario(scenario, replicates, resamples) {
+  const counts = {
+    regressions: 0,
+    withinMargin: 0,
+    inconclusive: 0,
+    covered: 0,
+    interactionDetected: 0,
+    adaptiveCovered: 0,
+    adaptiveRuns: 0,
+    adaptiveBlocks: 0,
+  };
+  for (let replicate = 0; replicate < replicates; replicate++) {
+    const seed = 0x9e3779b9 + replicate;
+    evaluateReplicate(scenario, seed, resamples, counts);
+  }
+  const isStandard =
+    scenario.drift === undefined && scenario.orderEffect === undefined;
+  return {
+    scenario: scenario.name,
+    falseRegressionRate:
+      scenario.effect === 0 ? counts.regressions / replicates : null,
+    falseWithinMarginRate:
+      scenario.effect > Math.log(1.1) ? counts.withinMargin / replicates : null,
+    inconclusiveRate: counts.inconclusive / replicates,
+    primaryIntervalCoverage: isStandard ? counts.covered / replicates : null,
+    adaptiveIntervalCoverage: isStandard
+      ? counts.adaptiveCovered / counts.adaptiveRuns
+      : null,
+    adaptiveMeanBlocks: isStandard
+      ? counts.adaptiveBlocks / counts.adaptiveRuns
+      : null,
+    orderInteractionDetection:
+      scenario.orderEffect === undefined
+        ? null
+        : counts.interactionDetected / replicates,
+  };
+}
+
+export function runCalibration({ replicates = 2_000, resamples = 100 } = {}) {
+  const results = SCENARIOS.map((scenario) =>
+    evaluateScenario(scenario, replicates, resamples)
+  );
   return { seed: 0x9e3779b9, replicates, resamples, results };
 }
 

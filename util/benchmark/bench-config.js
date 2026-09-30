@@ -92,7 +92,30 @@ export function createBenchmarkProcessor(args) {
     : () => cssnano({ preset: args.preset });
 }
 
-// eslint-disable-next-line complexity
+function validateBounds(args) {
+  for (const [name, value] of [
+    ['--precision-target', args.precisionTarget],
+    ['--order-interaction-threshold', args.orderInteractionThreshold],
+    ['--superiority-confidence-level', args.superiorityConfidenceLevel],
+    ['--equivalence-confidence-level', args.equivalenceConfidenceLevel],
+  ]) {
+    if (!Number.isFinite(value) || value <= 0 || value >= 1) {
+      throw new Error(`${name} must be a number between 0 and 1`);
+    }
+  }
+  for (const [name, value] of [
+    ['--runtime-non-regression-margin', args.runtimeNonRegressionMargin],
+    ['--practical-equivalence-margin', args.practicalEquivalenceMargin],
+  ]) {
+    if (!Number.isFinite(value) || value < 1) {
+      throw new Error(`${name} must be a finite number of at least 1`);
+    }
+  }
+  if (args.requestedBlocks < args.minimumBlocks) {
+    throw new Error('--requested-blocks must be at least --minimum-blocks');
+  }
+}
+
 export function resolveBenchmarkArgs(argv = process.argv.slice(2)) {
   const { values } = parseArgs({
     args: argv.filter((arg) => arg !== '--'),
@@ -208,27 +231,7 @@ export function resolveBenchmarkArgs(argv = process.argv.slice(2)) {
         ? positiveInteger(values['pin-core'], '--pin-core', true)
         : null,
   };
-  for (const [name, value] of [
-    ['--precision-target', args.precisionTarget],
-    ['--order-interaction-threshold', args.orderInteractionThreshold],
-    ['--superiority-confidence-level', args.superiorityConfidenceLevel],
-    ['--equivalence-confidence-level', args.equivalenceConfidenceLevel],
-  ]) {
-    if (!Number.isFinite(value) || value <= 0 || value >= 1) {
-      throw new Error(`${name} must be a number between 0 and 1`);
-    }
-  }
-  for (const [name, value] of [
-    ['--runtime-non-regression-margin', args.runtimeNonRegressionMargin],
-    ['--practical-equivalence-margin', args.practicalEquivalenceMargin],
-  ]) {
-    if (!Number.isFinite(value) || value < 1) {
-      throw new Error(`${name} must be a finite number of at least 1`);
-    }
-  }
-  if (args.requestedBlocks < args.minimumBlocks) {
-    throw new Error('--requested-blocks must be at least --minimum-blocks');
-  }
+  validateBounds(args);
   validateArgs(args);
   return args;
 }

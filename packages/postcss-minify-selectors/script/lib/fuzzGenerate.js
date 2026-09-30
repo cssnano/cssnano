@@ -287,18 +287,15 @@ function domTree(rng) {
 /**
  * @param {number} seed
  * @param {number} count
- * @return {{rule: string, tree: {html: string, css: string}}[]}
+ * @return {Generator<{rule: string, tree: {html: string, css: string}}>}
  */
-function generate(seed, count) {
+function* generate(seed, count) {
   const rng = random(seed);
 
-  return Array.from({ length: count }, () => {
+  for (let i = 0; i < count; i++) {
     const tree = domTree(rng);
-    return {
-      rule: rule(rng),
-      tree,
-    };
-  });
+    yield { rule: rule(rng), tree };
+  }
 }
 
 /**

@@ -57,43 +57,8 @@ function reliabilityFor(summary, args) {
     : 'insufficient-signal';
 }
 
-// eslint-disable-next-line complexity
-export async function runOnce(
-  args,
-  corpus,
-  processor,
-  snapshotLabel,
-  replicateIndex
-) {
-  const orderedCorpus = shuffleCorpus(corpus, args.seed, replicateIndex);
-  const target = resolveBenchmarkTarget(args.case);
-  const profilePath = args.profile
-    ? join(args.resultsDir, `${snapshotLabel}.cpuprofile`)
-    : null;
-  mkdirSync(args.resultsDir, { recursive: true });
-
-  const measured = await runMeasuredCorpus(
-    orderedCorpus,
-    processor,
-    args,
-    profilePath
-  );
-  const summary = runSummary(corpus, measured);
-  const reliability = reliabilityFor(summary, args);
-  const run = {
-    index: replicateIndex,
-    seed: args.seed,
-    executionOrder: orderedCorpus.map(({ name }) => name),
-    totalSamples: measured.totalSamples,
-    perFileSamples: measured.perFileSamples,
-    outputHashes: measured.outputHashes,
-    summary,
-    reliability,
-    resourceUsage: resourceMetadata(),
-  };
-
-  const corpusHash = corpusManifest(corpus);
-  const provenance = createProvenance({
+function createSnapshotProvenance(args, target, corpusHash) {
+  return createProvenance({
     command: process.argv,
     corpusHash,
     gitRevision: args.revision,
@@ -121,8 +86,19 @@ export async function runOnce(
     },
     pinnedCore: args.pinCore ?? null,
   });
+}
 
-  if (!args.summary && !args.quiet) {
+function logRunResults(
+  args,
+  target,
+  reliability,
+  replicateIndex,
+  corpus,
+  summary,
+  profilePath
+) {
+  if (args.quiet) return;
+  if (!args.summary) {
     console.log(
       `cssnano ${target} benchmark — preset=${args.preset}, ` +
         `NODE_ENV=${process.env.NODE_ENV}, node ${process.version}`
@@ -165,20 +141,68 @@ export async function runOnce(
         fmtMs(summary.total.minMs).padStart(12) +
         fmtMs(summary.total.p95Ms).padStart(12)
     );
-  } else if (!args.quiet) {
+  } else {
     console.log(
       `run ${replicateIndex}: total ${fmtMs(summary.total.medianMs).trim()}`
     );
   }
   // Quiet coordinator children must stay quiet; the aggregate reliability is
   // still recorded in the snapshot and reported by the comparison analysis.
-  if (reliability === 'insufficient-signal' && !args.quiet) {
+  if (reliability === 'insufficient-signal') {
     console.warn(
       `warning: measured corpus pass is only ${summary.total.medianMs.toFixed(2)} ms; ` +
         'comparisons will be treated as inconclusive'
     );
   }
   if (profilePath) console.log(`wrote ${profilePath}`);
+}
+
+export async function runOnce(
+  args,
+  corpus,
+  processor,
+  snapshotLabel,
+  replicateIndex
+) {
+  const orderedCorpus = shuffleCorpus(corpus, args.seed, replicateIndex);
+  const target = resolveBenchmarkTarget(args.case);
+  const profilePath = args.profile
+    ? join(args.resultsDir, `${snapshotLabel}.cpuprofile`)
+    : null;
+  mkdirSync(args.resultsDir, { recursive: true });
+
+  const measured = await runMeasuredCorpus(
+    orderedCorpus,
+    processor,
+    args,
+    profilePath
+  );
+  const summary = runSummary(corpus, measured);
+  const reliability = reliabilityFor(summary, args);
+  const run = {
+    index: replicateIndex,
+    seed: args.seed,
+    executionOrder: orderedCorpus.map(({ name }) => name),
+    totalSamples: measured.totalSamples,
+    perFileSamples: measured.perFileSamples,
+    outputHashes: measured.outputHashes,
+    summary,
+    reliability,
+    resourceUsage: resourceMetadata(),
+  };
+
+  const corpusHash = corpusManifest(corpus);
+  const provenance = createSnapshotProvenance(args, target, corpusHash);
+
+  logRunResults(
+    args,
+    target,
+    reliability,
+    replicateIndex,
+    corpus,
+    summary,
+    profilePath
+  );
   const environment = environmentMetadata();
   return {
     schemaVersion: SNAPSHOT_VERSION,

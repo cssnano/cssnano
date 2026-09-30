@@ -49,21 +49,7 @@ export function exactSummary(summary, samples, description) {
   }
 }
 
-// eslint-disable-next-line complexity
-export function validateObservation(wrapper, block, side) {
-  if (!wrapper || typeof wrapper !== 'object')
-    throw new TypeError(
-      `block ${block.blockId} ${side} observation metadata is required`
-    );
-  validateProvenance(wrapper.provenance, {
-    corpusHash: wrapper.provenance?.corpusHash,
-  });
-  const observation = observationFor(block, side);
-  exactSummary(
-    observation.summary?.total,
-    observation.totalSamples,
-    `block ${block.blockId} ${side} total`
-  );
+function getObservationSummaries(observation, block, side) {
   if (
     !observation.perFileSamples ||
     typeof observation.perFileSamples !== 'object' ||
@@ -89,6 +75,10 @@ export function validateObservation(wrapper, block, side) {
       );
     summaries.set(entry.name, entry);
   }
+  return summaries;
+}
+
+function validatePerFileSamples(observation, block, side, summaries) {
   for (const [name, samples] of Object.entries(observation.perFileSamples)) {
     if (
       !Array.isArray(samples) ||
@@ -111,6 +101,9 @@ export function validateObservation(wrapper, block, side) {
     throw new TypeError(
       `block ${block.blockId} ${side} per-file samples do not match selected corpus`
     );
+}
+
+function validateObservationHashes(observation, block, side, summaries) {
   if (
     !observation.outputHashes ||
     typeof observation.outputHashes !== 'object' ||
@@ -148,39 +141,29 @@ export function validateObservation(wrapper, block, side) {
       throw new TypeError(
         `block ${block.blockId} ${side} output hash for ${name} must be SHA-256`
       );
+}
+
+export function validateObservation(wrapper, block, side) {
+  if (!wrapper || typeof wrapper !== 'object')
+    throw new TypeError(
+      `block ${block.blockId} ${side} observation metadata is required`
+    );
+  validateProvenance(wrapper.provenance, {
+    corpusHash: wrapper.provenance?.corpusHash,
+  });
+  const observation = observationFor(block, side);
+  exactSummary(
+    observation.summary?.total,
+    observation.totalSamples,
+    `block ${block.blockId} ${side} total`
+  );
+  const summaries = getObservationSummaries(observation, block, side);
+  validatePerFileSamples(observation, block, side, summaries);
+  validateObservationHashes(observation, block, side, summaries);
   return observation;
 }
 
-// eslint-disable-next-line complexity
-export function validateConfiguration(configuration) {
-  if (!configuration || typeof configuration !== 'object')
-    throw new TypeError('comparison configuration is required');
-  const required = [
-    'mode',
-    'warmup',
-    'iters',
-    'minimumBlocks',
-    'requestedBlocks',
-    'actualBlocks',
-    'interBlockCooldownMs',
-    'preset',
-    'target',
-    'case',
-    'corpusSelector',
-    'seed',
-    'nodeEnv',
-    'superiorityConfidenceLevel',
-    'equivalenceConfidenceLevel',
-    'runtimeNonRegressionMargin',
-    'practicalEquivalenceMargin',
-    'precisionTarget',
-    'orderInteractionThreshold',
-    'intervalMethod',
-    'analyzerVersion',
-  ];
-  for (const field of required)
-    if (!(field in configuration))
-      throw new TypeError(`comparison configuration.${field} is required`);
+function validateConfigurationBlockCounts(configuration) {
   if (!['quick', 'stable'].includes(configuration.mode))
     throw new RangeError('comparison configuration.mode is invalid');
   if (!Number.isInteger(configuration.warmup) || configuration.warmup < 0)
@@ -214,6 +197,9 @@ export function validateConfiguration(configuration) {
     configuration.requestedBlocks % 2 !== 0
   )
     throw new RangeError('comparison block counts must be even');
+}
+
+function validateConfigurationThresholds(configuration) {
   for (const field of [
     'superiorityConfidenceLevel',
     'equivalenceConfidenceLevel',
@@ -236,6 +222,9 @@ export function validateConfiguration(configuration) {
       throw new RangeError(
         `comparison configuration.${field} must be at least 1`
       );
+}
+
+function validateConfigurationStrings(configuration) {
   for (const field of [
     'preset',
     'target',
@@ -263,5 +252,39 @@ export function validateConfiguration(configuration) {
     configuration.analyzerVersion !== ANALYZER_VERSION
   )
     throw new Error('comparison analyzer or interval method is unsupported');
+}
+
+export function validateConfiguration(configuration) {
+  if (!configuration || typeof configuration !== 'object')
+    throw new TypeError('comparison configuration is required');
+  const required = [
+    'mode',
+    'warmup',
+    'iters',
+    'minimumBlocks',
+    'requestedBlocks',
+    'actualBlocks',
+    'interBlockCooldownMs',
+    'preset',
+    'target',
+    'case',
+    'corpusSelector',
+    'seed',
+    'nodeEnv',
+    'superiorityConfidenceLevel',
+    'equivalenceConfidenceLevel',
+    'runtimeNonRegressionMargin',
+    'practicalEquivalenceMargin',
+    'precisionTarget',
+    'orderInteractionThreshold',
+    'intervalMethod',
+    'analyzerVersion',
+  ];
+  for (const field of required)
+    if (!(field in configuration))
+      throw new TypeError(`comparison configuration.${field} is required`);
+  validateConfigurationBlockCounts(configuration);
+  validateConfigurationThresholds(configuration);
+  validateConfigurationStrings(configuration);
   return configuration;
 }

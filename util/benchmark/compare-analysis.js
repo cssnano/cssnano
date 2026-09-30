@@ -116,42 +116,31 @@ function overallVerdictFor(total, substantive) {
   return 'inconclusive';
 }
 
-// eslint-disable-next-line complexity
-export function analyzePairedComparison(artifact, options = {}) {
-  const { configuration, structuralFailure, approvedOutputChanges } =
-    validateComparisonArtifact(artifact, options);
-  if (structuralFailure)
-    return {
-      schemaVersion: 3,
-      analyzerVersion: ANALYZER_VERSION,
-      analysisClass: 'v3-analysis',
-      intervalMethod: configuration.intervalMethod ?? INTERVAL_METHOD,
-      configuration,
-      total: null,
-      rows: [],
-      precision: null,
-      precisionConclusion: 'not-achieved',
-      verdictBasis: {
-        direction: 'inconclusive',
-        precision: 'not-achieved',
-        order: 'unknown',
-        blocks: 'unknown',
-      },
-      overallVerdict: 'inconclusive',
-      structuralFailure: true,
-      inconclusiveReason: 'correctness or process failure',
-      approvedOutputChanges,
-    };
-  const blocks = artifact.blocks;
-  const firstOrders = blocks.map((block) => block.processOrder[0]);
-  if (
-    Math.abs(
-      firstOrders.filter((side) => side === 'baseline').length -
-        firstOrders.filter((side) => side === 'candidate').length
-    ) > 1
-  )
-    throw new Error('comparison process order is not balanced');
-  const total = endpointAnalysis(blocks, configuration);
+function structuralFailureResult(configuration, approvedOutputChanges) {
+  return {
+    schemaVersion: 3,
+    analyzerVersion: ANALYZER_VERSION,
+    analysisClass: 'v3-analysis',
+    intervalMethod: configuration.intervalMethod ?? INTERVAL_METHOD,
+    configuration,
+    total: null,
+    rows: [],
+    precision: null,
+    precisionConclusion: 'not-achieved',
+    verdictBasis: {
+      direction: 'inconclusive',
+      precision: 'not-achieved',
+      order: 'unknown',
+      blocks: 'unknown',
+    },
+    overallVerdict: 'inconclusive',
+    structuralFailure: true,
+    inconclusiveReason: 'correctness or process failure',
+    approvedOutputChanges,
+  };
+}
+
+function calculatePrecision(total, blocks, configuration) {
   const totalLogRatios = blocks.map((block) =>
     Math.log(
       valuesFor([block], 'candidate')[0] / valuesFor([block], 'baseline')[0]
@@ -176,7 +165,7 @@ export function analyzePairedComparison(artifact, options = {}) {
           )
         )
       : 1;
-  const precision = {
+  return {
     observedLogRatioSd,
     residualStandardDeviation: total.residualStandardDeviation,
     confidenceIntervalWidth: total.confidenceIntervalWidth,
@@ -186,18 +175,9 @@ export function analyzePairedComparison(artifact, options = {}) {
     precisionTarget: configuration.precisionTarget,
     precisionAchieved: precisionAchievedFor(total, configuration),
   };
-  const enoughBlocks = blocks.length >= configuration.minimumBlocks;
-  const orderIsStable = total.orderIsStable;
-  const substantive =
-    enoughBlocks && precision.precisionAchieved && orderIsStable;
-  // The verdict taxonomy separates signal (direction) from readiness
-  // (precision, blocks, order) so a precise "faster" is never called noise.
-  const verdictBasis = {
-    direction: total.statisticalDirection,
-    precision: precision.precisionAchieved ? 'achieved' : 'not-achieved',
-    order: orderIsStable ? 'stable' : 'interaction',
-    blocks: enoughBlocks ? 'sufficient' : 'insufficient',
-  };
+}
+
+function analyzePerFileRows(blocks, configuration) {
   const names = new Set();
   for (const block of blocks)
     for (const side of SIDES)
@@ -217,6 +197,38 @@ export function analyzePairedComparison(artifact, options = {}) {
       )
     )
       rows.push(endpointAnalysis(blocks, configuration, name));
+  return rows;
+}
+
+export function analyzePairedComparison(artifact, options = {}) {
+  const { configuration, structuralFailure, approvedOutputChanges } =
+    validateComparisonArtifact(artifact, options);
+  if (structuralFailure)
+    return structuralFailureResult(configuration, approvedOutputChanges);
+  const blocks = artifact.blocks;
+  const firstOrders = blocks.map((block) => block.processOrder[0]);
+  if (
+    Math.abs(
+      firstOrders.filter((side) => side === 'baseline').length -
+        firstOrders.filter((side) => side === 'candidate').length
+    ) > 1
+  )
+    throw new Error('comparison process order is not balanced');
+  const total = endpointAnalysis(blocks, configuration);
+  const precision = calculatePrecision(total, blocks, configuration);
+  const enoughBlocks = blocks.length >= configuration.minimumBlocks;
+  const orderIsStable = total.orderIsStable;
+  const substantive =
+    enoughBlocks && precision.precisionAchieved && orderIsStable;
+  // The verdict taxonomy separates signal (direction) from readiness
+  // (precision, blocks, order) so a precise "faster" is never called noise.
+  const verdictBasis = {
+    direction: total.statisticalDirection,
+    precision: precision.precisionAchieved ? 'achieved' : 'not-achieved',
+    order: orderIsStable ? 'stable' : 'interaction',
+    blocks: enoughBlocks ? 'sufficient' : 'insufficient',
+  };
+  const rows = analyzePerFileRows(blocks, configuration);
   const result = {
     schemaVersion: 3,
     analyzerVersion: ANALYZER_VERSION,

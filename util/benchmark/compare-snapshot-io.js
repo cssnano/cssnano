@@ -97,40 +97,7 @@ function exactStatistics(actual, samples, description) {
   }
 }
 
-// eslint-disable-next-line complexity
-function validateV3Configuration(configuration, arg) {
-  if (!configuration || typeof configuration !== 'object') {
-    throw new TypeError(`invalid v3 benchmark configuration: "${arg}"`);
-  }
-  const required = {
-    superiorityConfidenceLevel: SUPERIORITY_CONFIDENCE_LEVEL,
-    equivalenceConfidenceLevel: EQUIVALENCE_CONFIDENCE_LEVEL,
-    runtimeNonRegressionMargin: RUNTIME_NON_REGRESSION_MARGIN,
-    practicalEquivalenceMargin: PRACTICAL_EQUIVALENCE_MARGIN,
-    bootstrapResamples: BOOTSTRAP_RESAMPLES,
-    bootstrapSeed: BOOTSTRAP_SEED,
-    minimumBlocks: MINIMUM_BLOCKS,
-    requestedBlocks: REQUESTED_BLOCKS,
-    precisionTarget: PRECISION_TARGET,
-    orderInteractionThreshold: ORDER_INTERACTION_THRESHOLD,
-    intervalMethod: 'stratified-percentile-bootstrap',
-    analyzerVersion: '3.0.0',
-    mode: null,
-    warmup: null,
-    iters: null,
-    preset: null,
-    target: null,
-    case: null,
-    corpusSelector: null,
-    nodeEnv: null,
-  };
-  for (const field of Object.keys(required)) {
-    if (!(field in configuration)) {
-      throw new TypeError(
-        `invalid v3 benchmark configuration.${field}: "${arg}"`
-      );
-    }
-  }
+function validateV3ConfigurationMetrics(configuration, arg) {
   if (configuration.requestedBlocks < configuration.minimumBlocks) {
     throw new RangeError(
       `invalid v3 benchmark configuration block counts: "${arg}"`
@@ -166,6 +133,7 @@ function validateV3Configuration(configuration, arg) {
     'bootstrapResamples',
     'minimumBlocks',
     'requestedBlocks',
+    'iters',
   ]) {
     if (!Number.isInteger(configuration[field]) || configuration[field] < 1) {
       throw new RangeError(
@@ -173,6 +141,12 @@ function validateV3Configuration(configuration, arg) {
       );
     }
   }
+  if (!Number.isInteger(configuration.warmup) || configuration.warmup < 0) {
+    throw new RangeError(`invalid v3 benchmark configuration.warmup: "${arg}"`);
+  }
+}
+
+function validateV3ConfigurationStrings(configuration, arg) {
   if (
     typeof configuration.bootstrapSeed !== 'string' ||
     !configuration.bootstrapSeed
@@ -183,12 +157,6 @@ function validateV3Configuration(configuration, arg) {
   }
   if (!['quick', 'stable'].includes(configuration.mode)) {
     throw new RangeError(`invalid v3 benchmark configuration.mode: "${arg}"`);
-  }
-  if (!Number.isInteger(configuration.warmup) || configuration.warmup < 0) {
-    throw new RangeError(`invalid v3 benchmark configuration.warmup: "${arg}"`);
-  }
-  if (!Number.isInteger(configuration.iters) || configuration.iters < 1) {
-    throw new RangeError(`invalid v3 benchmark configuration.iters: "${arg}"`);
   }
   for (const field of ['preset', 'target', 'nodeEnv']) {
     if (typeof configuration[field] !== 'string' || !configuration[field]) {
@@ -203,6 +171,43 @@ function validateV3Configuration(configuration, arg) {
       `invalid v3 benchmark configuration.${field}: "${arg}"`
     );
   }
+}
+
+function validateV3Configuration(configuration, arg) {
+  if (!configuration || typeof configuration !== 'object') {
+    throw new TypeError(`invalid v3 benchmark configuration: "${arg}"`);
+  }
+  const required = {
+    superiorityConfidenceLevel: SUPERIORITY_CONFIDENCE_LEVEL,
+    equivalenceConfidenceLevel: EQUIVALENCE_CONFIDENCE_LEVEL,
+    runtimeNonRegressionMargin: RUNTIME_NON_REGRESSION_MARGIN,
+    practicalEquivalenceMargin: PRACTICAL_EQUIVALENCE_MARGIN,
+    bootstrapResamples: BOOTSTRAP_RESAMPLES,
+    bootstrapSeed: BOOTSTRAP_SEED,
+    minimumBlocks: MINIMUM_BLOCKS,
+    requestedBlocks: REQUESTED_BLOCKS,
+    precisionTarget: PRECISION_TARGET,
+    orderInteractionThreshold: ORDER_INTERACTION_THRESHOLD,
+    intervalMethod: 'stratified-percentile-bootstrap',
+    analyzerVersion: '3.0.0',
+    mode: null,
+    warmup: null,
+    iters: null,
+    preset: null,
+    target: null,
+    case: null,
+    corpusSelector: null,
+    nodeEnv: null,
+  };
+  for (const field of Object.keys(required)) {
+    if (!(field in configuration)) {
+      throw new TypeError(
+        `invalid v3 benchmark configuration.${field}: "${arg}"`
+      );
+    }
+  }
+  validateV3ConfigurationMetrics(configuration, arg);
+  validateV3ConfigurationStrings(configuration, arg);
   return configuration;
 }
 
@@ -250,30 +255,10 @@ function quantile(values, q) {
     : values[lower] + (values[upper] - values[lower]) * (index - lower);
 }
 
-// eslint-disable-next-line complexity
-export function loadSnapshot(arg) {
-  const path = resolveSnapshot(arg);
-  const snapshot = JSON.parse(readFileSync(path, 'utf8'));
-  if (!snapshot || typeof snapshot !== 'object') {
-    throw new TypeError(`invalid benchmark snapshot: "${arg}"`);
-  }
-
-  if (snapshot.schemaVersion !== 3) {
-    throw new TypeError(`benchmark snapshot must use schema v3: "${arg}"`);
-  }
-
-  validateV3Configuration(snapshot.configuration, arg);
-  validateProvenance(snapshot.provenance, {
-    corpusHash: snapshot.corpusHash ?? snapshot.corpusManifest,
-  });
-  if (snapshot.corpusHash !== snapshot.corpusManifest) {
-    throw new Error(`v3 corpusHash must equal corpusManifest: "${arg}"`);
-  }
-  validateFrameworks(snapshot, arg);
+function validateSnapshotRuns(snapshot, names, arg) {
   if (!Array.isArray(snapshot.runs) || !snapshot.runs.length) {
     throw new TypeError(`invalid v3 benchmark runs in snapshot: "${arg}"`);
   }
-  const names = snapshot.frameworks.map((framework) => framework.name);
   const hashes = new Map();
   for (const run of snapshot.runs) {
     if (
@@ -300,6 +285,9 @@ export function loadSnapshot(arg) {
       throw new Error(`v3 aggregate output hash disagrees with runs: "${arg}"`);
     }
   }
+}
+
+function validateSnapshotMedians(snapshot) {
   exactNumber(
     snapshot.total.medianMs,
     quantile(
@@ -327,6 +315,30 @@ export function loadSnapshot(arg) {
       `aggregate ${framework.name}`
     );
   }
+}
+
+export function loadSnapshot(arg) {
+  const path = resolveSnapshot(arg);
+  const snapshot = JSON.parse(readFileSync(path, 'utf8'));
+  if (!snapshot || typeof snapshot !== 'object') {
+    throw new TypeError(`invalid benchmark snapshot: "${arg}"`);
+  }
+
+  if (snapshot.schemaVersion !== 3) {
+    throw new TypeError(`benchmark snapshot must use schema v3: "${arg}"`);
+  }
+
+  validateV3Configuration(snapshot.configuration, arg);
+  validateProvenance(snapshot.provenance, {
+    corpusHash: snapshot.corpusHash ?? snapshot.corpusManifest,
+  });
+  if (snapshot.corpusHash !== snapshot.corpusManifest) {
+    throw new Error(`v3 corpusHash must equal corpusManifest: "${arg}"`);
+  }
+  validateFrameworks(snapshot, arg);
+  const names = snapshot.frameworks.map((framework) => framework.name);
+  validateSnapshotRuns(snapshot, names, arg);
+  validateSnapshotMedians(snapshot);
   if (snapshot.gitRevision !== snapshot.provenance.gitRevision) {
     throw new Error(`v3 gitRevision disagrees with provenance: "${arg}"`);
   }

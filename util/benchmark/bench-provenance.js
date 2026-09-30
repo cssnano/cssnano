@@ -232,30 +232,7 @@ export function createProvenance({
   };
 }
 
-// eslint-disable-next-line complexity
-export function validateProvenance(provenance, { root, corpusHash } = {}) {
-  if (!provenance || typeof provenance !== 'object') {
-    throw new TypeError('benchmark provenance is required');
-  }
-  for (const field of PROVENANCE_FIELDS) {
-    if (!(field in provenance)) {
-      throw new TypeError(`benchmark provenance.${field} is required`);
-    }
-  }
-  if (
-    typeof provenance.createdAt !== 'string' ||
-    !Number.isFinite(Date.parse(provenance.createdAt))
-  ) {
-    throw new TypeError('benchmark provenance.createdAt must be an ISO date');
-  }
-  if (
-    !Array.isArray(provenance.command) ||
-    provenance.command.some((value) => typeof value !== 'string')
-  ) {
-    throw new TypeError(
-      'benchmark provenance.command must be an array of strings'
-    );
-  }
+function validateProvenanceHashes(provenance) {
   if (!/^[\da-f]{40}$/v.test(provenance.gitRevision)) {
     throw new TypeError('benchmark provenance.gitRevision must be a full SHA');
   }
@@ -272,10 +249,9 @@ export function validateProvenance(provenance, { root, corpusHash } = {}) {
       );
     }
   }
-  if (root) assertRevision(provenance.gitRevision, root);
-  if (corpusHash !== undefined && provenance.corpusHash !== corpusHash) {
-    throw new Error('benchmark provenance.corpusHash differs from corpus');
-  }
+}
+
+function validateDirtyPaths(provenance) {
   if (typeof provenance.dirty !== 'boolean') {
     throw new TypeError('benchmark provenance.dirty must be boolean');
   }
@@ -292,6 +268,9 @@ export function validateProvenance(provenance, { root, corpusHash } = {}) {
   if (provenance.dirty !== provenance.dirtyPaths.length > 0) {
     throw new Error('benchmark provenance.dirty disagrees with dirtyPaths');
   }
+}
+
+function validateProvenanceEnvironment(provenance) {
   for (const field of ['node', 'v8', 'platform', 'arch', 'osRelease']) {
     if (typeof provenance[field] !== 'string' || !provenance[field]) {
       throw new TypeError(`benchmark provenance.${field} must be a string`);
@@ -318,5 +297,37 @@ export function validateProvenance(provenance, { root, corpusHash } = {}) {
       'benchmark provenance.pinnedCore must be a non-negative integer or null'
     );
   }
+}
+
+export function validateProvenance(provenance, { root, corpusHash } = {}) {
+  if (!provenance || typeof provenance !== 'object') {
+    throw new TypeError('benchmark provenance is required');
+  }
+  for (const field of PROVENANCE_FIELDS) {
+    if (!(field in provenance)) {
+      throw new TypeError(`benchmark provenance.${field} is required`);
+    }
+  }
+  if (
+    typeof provenance.createdAt !== 'string' ||
+    !Number.isFinite(Date.parse(provenance.createdAt))
+  ) {
+    throw new TypeError('benchmark provenance.createdAt must be an ISO date');
+  }
+  if (
+    !Array.isArray(provenance.command) ||
+    provenance.command.some((value) => typeof value !== 'string')
+  ) {
+    throw new TypeError(
+      'benchmark provenance.command must be an array of strings'
+    );
+  }
+  validateProvenanceHashes(provenance);
+  if (root) assertRevision(provenance.gitRevision, root);
+  if (corpusHash !== undefined && provenance.corpusHash !== corpusHash) {
+    throw new Error('benchmark provenance.corpusHash differs from corpus');
+  }
+  validateDirtyPaths(provenance);
+  validateProvenanceEnvironment(provenance);
   return provenance;
 }
