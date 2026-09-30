@@ -1,7 +1,15 @@
 import {
-  REFERENCE,
-  keywordTerminals as readKeywordTerminals,
-} from '../../../../util/webref.js';
+  isFlowRelative,
+  keywordTerminals,
+  reachableFunctions,
+} from './webrefGrammar.js';
+import {
+  BORDER,
+  BOX_SHORTHANDS,
+  COLUMNS,
+  implemented,
+  validate,
+} from './webrefValidate.js';
 
 /**
  * Derives, from the raw `@webref/css` data, the shorthand structure and the
@@ -10,8 +18,8 @@ import {
  *
  * The families are derived from `border`, `margin`, `padding` and `columns`
  * rather than listed: everything else follows from the longhands webref says
- * those set, and `validate` checks that what comes out still has the shape the
- * plugin's transforms assume.
+ * those set. Grammar walking lives in webrefGrammar.js and the browser-keep
+ * policy in webrefValidate.js.
  *
  * @typedef {object} WebrefDefinition
  * @property {string} name
@@ -54,205 +62,6 @@ import {
  * @property {string[]} colorFunctions Names of the functions that produce a
  * colour, without their parentheses.
  */
-
-const BORDER = 'border';
-const COLUMNS = 'columns';
-const BOX_SHORTHANDS = ['margin', 'padding'];
-
-/**
- * What the specifications spell out and no engine implements, plus what a walk
- * of the grammar takes for something it is not.
- *
- * These sets say what a browser keeps, so a name here would let a declaration
- * every browser drops read as a value that applies: `border-width: hairline`
- * would specify a width, and merging the sides around it writes a shorthand
- * no side ever had. Rather than a keyword, the whole declaration is what the
- * browser is left without, which is why the plugin cannot treat these the way
- * it treats a colour notation an old browser misses — there a required-support
- * check holds the merge back, and there is nothing to hold back here.
- */
-const unimplemented = new Set([
-  /* css-backgrounds spells `hairline` out in `<line-width>`. */
-  'hairline',
-  /* css-cascade-6 adds `revert-rule` to `all`. */
-  'revert-rule',
-  /* css-color-hdr lists `alpha()` among the colour functions, though what it
-   * specifies is the alpha of a colour rather than a colour. */
-  'alpha',
-]);
-
-/**
- * @param {string[]} names
- * @return {string[]}
- */
-const implemented = (names) => names.filter((name) => !unimplemented.has(name));
-
-/**
- * @param {string[]} actual
- * @param {string[]} expected
- * @param {string} what
- */
-const expectExactly = (actual, expected, what) => {
-  if (actual.join(' ') !== expected.join(' ')) {
-    throw new Error(
-      `Expected ${what} to be ${expected.join(' ')}, got ${actual.join(' ')}`
-    );
-  }
-};
-
-/**
- * @param {string[]} actual
- * @param {string[]} expected
- * @param {string} what
- */
-const expectAll = (actual, expected, what) => {
-  for (const name of expected) {
-    if (!actual.includes(name)) {
-      throw new Error(`Expected ${what} to include ${name}`);
-    }
-  }
-};
-
-/**
- * @param {string[]} actual
- * @param {string[]} rejected
- * @param {string} what
- */
-const expectNone = (actual, rejected, what) => {
-  for (const name of rejected) {
-    if (actual.includes(name)) {
-      throw new Error(`Expected ${what} to exclude ${name}`);
-    }
-  }
-};
-
-/**
- * The keywords a grammar offers as literal alternatives, such as the line
- * styles of `<line-style>`. A name spelled out with an argument list is a
- * function rather than a keyword.
- *
- * @param {string} [syntax]
- * @return {string[]}
- */
-export const keywordTerminals = (syntax) =>
-  readKeywordTerminals(syntax).map((keyword) => keyword.toLowerCase());
-
-/**
- * A grammar may spell a function out as a call instead of naming it through a
- * `<name()>` reference: the syntax of `<light-dark-color>` is
- * `light-dark(<color>, <color>)`, so following references alone never reaches
- * `light-dark()`. This reads the functions spelled out that way.
- *
- * @param {string} [syntax]
- * @return {string[]}
- */
-function functionTerminals(syntax) {
-  if (!syntax) {
-    return [];
-  }
-
-  const literals = syntax.replace(REFERENCE, ' ');
-  /** @type {string[]} */
-  const names = [];
-
-  for (const [, name] of literals.matchAll(/([a-zA-Z][a-zA-Z0-9\-]*)\s*\(/gv)) {
-    names.push(name.toLowerCase());
-  }
-
-  return names;
-}
-
-/**
- * Follows a grammar through the productions it names, collecting the functions
- * it can reach. `<color>` reaches `rgb()` through `<color-base>` and
- * `<color-function>`, so a value is a colour if it calls any of them.
- *
- * The walk stops at each function it reaches, because what a function takes is
- * not what it produces: `<color>` names `<contrast-color()>`, whose arguments
- * name `<wcag2>`, and a contrast ratio is no colour. Only the alternatives a
- * production offers stand in its own place.
- *
- * @param {WebrefData} data
- * @param {string} root Name of the type to start from, without its brackets.
- * @return {string[]}
- */
-export function reachableFunctions(data, root) {
-  /** @type {Map<string, WebrefDefinition>} */
-  const definitions = new Map();
-  for (const definition of [...data.types, ...data.functions]) {
-    definitions.set(definition.name, definition);
-  }
-
-  /** @type {Set<string>} */
-  const seen = new Set();
-  /** @type {Set<string>} */
-  const functions = new Set();
-  /** @type {string[]} */
-  const queue = [root];
-
-  while (queue.length) {
-    const name = /** @type {string} */ (queue.pop());
-
-    if (seen.has(name)) {
-      continue;
-    }
-
-    seen.add(name);
-
-    const syntax = definitions.get(name)?.syntax;
-
-    if (name.endsWith('()')) {
-      functions.add(name.slice(0, -2).toLowerCase());
-
-      /* A function's own grammar is the call, and the name it spells is not
-       * always the name the definition carries: css-color-hdr defines
-       * `hdr-color()` as `color-hdr(…)`, and the stylesheet writes the
-       * latter. Nothing deeper counts, since arguments are not results. */
-      const [, call] = /^\s*([\w\-]+)\(/v.exec(syntax ?? '') ?? [];
-
-      if (call) {
-        functions.add(call.toLowerCase());
-      }
-
-      continue;
-    }
-
-    if (!syntax) {
-      continue;
-    }
-
-    for (const called of functionTerminals(syntax)) {
-      functions.add(called);
-    }
-
-    for (const [, property, type] of syntax.matchAll(REFERENCE)) {
-      // A property's own grammar leads back into properties rather than types.
-      if (property === undefined) {
-        queue.push(type);
-      }
-    }
-  }
-
-  return [...functions].toSorted();
-}
-
-/**
- * Flow-relative properties are named after the block and inline axes rather
- * than after the sides of the box, e.g. `border-inline-start-width`. webref
- * does not flag them, but the naming is consistent throughout.
- *
- * @param {string} name
- * @return {boolean}
- */
-export function isFlowRelative(name) {
-  const segments = new Set(name.split('-'));
-  return (
-    segments.has('block') ||
-    segments.has('inline') ||
-    segments.has('start') ||
-    segments.has('end')
-  );
-}
 
 /**
  * @param {WebrefData} data
@@ -420,192 +229,6 @@ export function buildLonghands(data) {
 }
 
 /**
- * Guards against publishing data a webref release has changed out from under
- * the plugin: the transforms assume a border is a side crossed with a
- * component, that margin and padding take the same four sides in the same
- * order, and that every property they take apart has an initial value to fill
- * in for a component left out.
- *
- * @param {Longhands} data
- * @return {void}
- */
-export function validate(data) {
-  const {
-    sides,
-    borderComponents,
-    shorthands,
-    initialValues,
-    borderProperties,
-    flowRelativeBorderProperties,
-  } = data;
-
-  expectExactly(sides, ['top', 'right', 'bottom', 'left'], 'the sides');
-  expectExactly(
-    borderComponents,
-    ['width', 'style', 'color'],
-    'the border components'
-  );
-
-  /* Every side crossed with every component, spelled both ways round. */
-  for (const side of sides) {
-    expectExactly(
-      /** @type {Shorthand} */ (shorthands.get(`border-${side}`)).longhands,
-      borderComponents.map((component) => `border-${side}-${component}`),
-      `the longhands of border-${side}`
-    );
-  }
-
-  for (const component of borderComponents) {
-    expectExactly(
-      /** @type {Shorthand} */ (shorthands.get(`border-${component}`))
-        .longhands,
-      sides.map((side) => `border-${side}-${component}`),
-      `the longhands of border-${component}`
-    );
-  }
-
-  for (const name of BOX_SHORTHANDS) {
-    expectExactly(
-      /** @type {Shorthand} */ (shorthands.get(name)).longhands,
-      sides.map((side) => `${name}-${side}`),
-      `the longhands of ${name}`
-    );
-  }
-
-  /* The plugin builds `columns` out of a width and a count, and refuses the
-   * family when a stylesheet sets anything else the shorthand also sets. */
-  const columns = /** @type {Shorthand} */ (shorthands.get(COLUMNS)).longhands;
-
-  for (const name of ['column-width', 'column-count']) {
-    if (!columns.includes(name)) {
-      throw new Error(`Expected ${COLUMNS} to set ${name}`);
-    }
-  }
-
-  const borderResets = /** @type {Shorthand} */ (shorthands.get(BORDER)).resets;
-
-  if (!borderResets.includes('border-image')) {
-    throw new Error('Expected border to reset border-image');
-  }
-
-  for (const [name, { longhands }] of shorthands) {
-    for (const longhand of longhands) {
-      if (!initialValues.has(longhand)) {
-        throw new Error(`No initial value for ${longhand}, set by ${name}`);
-      }
-    }
-  }
-
-  for (const [name, initial] of initialValues) {
-    if (initial.includes(' ')) {
-      throw new Error(`Initial value of ${name} is not a single value`);
-    }
-  }
-
-  for (const [name, expected] of [
-    ['border-top-width', 'medium'],
-    ['border-top-style', 'none'],
-    ['border-top-color', 'currentcolor'],
-    ['margin-top', '0'],
-    ['padding-top', '0'],
-    ['column-width', 'auto'],
-    ['column-count', 'auto'],
-  ]) {
-    if (initialValues.get(name) !== expected) {
-      throw new Error(
-        `Expected the initial value of ${name} to be ${expected}, got ${initialValues.get(name)}`
-      );
-    }
-  }
-
-  const border = new Set(borderProperties);
-
-  for (const name of [...shorthands.keys()].filter((shortHandName) =>
-    shortHandName.startsWith(BORDER)
-  )) {
-    if (!border.has(name)) {
-      throw new Error(`${name} is missing from the border family`);
-    }
-  }
-
-  for (const name of ['border-inline-start-width', 'border-start-start-radius'])
-    if (!flowRelativeBorderProperties.includes(name)) {
-      throw new Error(`Expected ${name} to be flow-relative`);
-    }
-
-  for (const name of ['border-left-width', 'border-top-left-radius']) {
-    if (flowRelativeBorderProperties.includes(name)) {
-      throw new Error(`Expected ${name} to be physical`);
-    }
-  }
-
-  validateKeywords(data);
-}
-
-/**
- * The keyword sets a border value is taken apart against. A spec that stopped
- * spelling one of these out in its grammar would leave the plugin unable to
- * tell a width from a style from a colour.
- *
- * @param {Longhands} data
- * @return {void}
- */
-function validateKeywords(data) {
-  expectAll(
-    data.cssWideKeywords,
-    ['inherit', 'initial', 'unset', 'revert', 'revert-layer'],
-    'the CSS-wide keywords'
-  );
-  expectAll(data.lineStyles, ['none', 'solid', 'dashed'], 'the line styles');
-  expectAll(
-    data.lineWidthKeywords,
-    ['thin', 'medium', 'thick'],
-    'the line width keywords'
-  );
-  expectAll(
-    data.namedColors,
-    ['red', 'rebeccapurple', 'transparent'],
-    'the named colours'
-  );
-  expectAll(
-    data.colorFunctions,
-    [
-      'rgb',
-      'rgba',
-      'hsl',
-      'hwb',
-      'lab',
-      'lch',
-      'oklab',
-      'oklch',
-      'color',
-      /* Spelled out as a literal call rather than named as a type. */
-      'color-mix',
-      'light-dark',
-      /* Named one thing and called another. */
-      'color-hdr',
-    ],
-    'the colour functions'
-  );
-  /* `wcag2()` specifies a contrast ratio, and stands in `<color>` only as an
-   * argument of `contrast-color()`, so a walk that reaches it has followed a
-   * function into what it takes rather than what it gives. */
-  expectNone(data.colorFunctions, ['wcag2'], 'the colour functions');
-
-  /* Whatever no engine implements has to stay out of every set, since these
-   * decide whether the browser keeps a declaration. */
-  expectNone(data.lineWidthKeywords, ['hairline'], 'the line width keywords');
-  expectNone(data.cssWideKeywords, ['revert-rule'], 'the CSS-wide keywords');
-  expectNone(data.colorFunctions, ['alpha'], 'the colour functions');
-
-  if (data.namedColors.length < 140) {
-    throw new Error(
-      `Expected at least 140 named colours, got ${data.namedColors.length}`
-    );
-  }
-}
-
-/**
  * Maps only exist in memory; the generated file is JSON.
  *
  * @param {Longhands} data
@@ -630,3 +253,5 @@ export function serialize(data) {
     2
   )}\n`;
 }
+
+export { isFlowRelative, keywordTerminals, reachableFunctions, validate };

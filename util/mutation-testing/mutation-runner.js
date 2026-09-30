@@ -100,7 +100,7 @@ try {
     for (const mutation of mutations) {
       const environment = {
         ...process.env,
-        CSSNANO_MUTATION_TARGET: target,
+        CSSNANO_MUTATION_TARGET: mutation.target ?? target,
         CSSNANO_MUTATION: JSON.stringify(mutation),
       };
       const result = await runNode(
