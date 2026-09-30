@@ -170,6 +170,36 @@ export function bootstrapConfidenceInterval(
   };
 }
 
+function bootstrapMedianPercentChangeInterval(
+  baseInput,
+  candidateInput,
+  resampleMedianFn,
+  resamples
+) {
+  if (!Number.isInteger(resamples) || resamples < 1) {
+    throw new RangeError('bootstrap resamples must be a positive integer');
+  }
+
+  const random = deterministicRandom(1729);
+  const changes = [];
+  for (let sample = 0; sample < resamples; sample++) {
+    const baseMedian = resampleMedianFn(baseInput, random);
+    const candidateMedian = resampleMedianFn(candidateInput, random);
+    const change = percentChange(baseMedian, candidateMedian);
+    if (!Number.isFinite(change)) {
+      throw new RangeError(
+        'bootstrap samples must have a positive baseline median'
+      );
+    }
+    changes.push(change);
+  }
+  const sorted = changes.toSorted((a, b) => a - b);
+  return {
+    low: quantile(sorted, 0.025),
+    high: quantile(sorted, 0.975),
+  };
+}
+
 /**
  * @deprecated Legacy two-sample bootstrap interval. Retained for independent
  * snapshot comparisons.
@@ -189,28 +219,12 @@ export function twoSampleBootstrapConfidenceInterval(
       );
     }
   }
-  if (!Number.isInteger(resamples) || resamples < 1) {
-    throw new RangeError('bootstrap resamples must be a positive integer');
-  }
-
-  const random = deterministicRandom(1729);
-  const changes = [];
-  for (let sample = 0; sample < resamples; sample++) {
-    const baseMedian = resampledMedian(baseValues, random);
-    const candidateMedian = resampledMedian(candidateValues, random);
-    const change = percentChange(baseMedian, candidateMedian);
-    if (!Number.isFinite(change)) {
-      throw new RangeError(
-        'bootstrap samples must have a positive baseline median'
-      );
-    }
-    changes.push(change);
-  }
-  const sorted = changes.toSorted((a, b) => a - b);
-  return {
-    low: quantile(sorted, 0.025),
-    high: quantile(sorted, 0.975),
-  };
+  return bootstrapMedianPercentChangeInterval(
+    baseValues,
+    candidateValues,
+    resampledMedian,
+    resamples
+  );
 }
 
 /**
@@ -226,28 +240,12 @@ export function clusteredTwoSampleBootstrapConfidenceInterval(
   // timings do not masquerade as independent process replicates.
   validateSampleGroups(baseGroups);
   validateSampleGroups(candidateGroups);
-  if (!Number.isInteger(resamples) || resamples < 1) {
-    throw new RangeError('bootstrap resamples must be a positive integer');
-  }
-
-  const random = deterministicRandom(1729);
-  const changes = [];
-  for (let sample = 0; sample < resamples; sample++) {
-    const baseMedian = resampledGroupedMedian(baseGroups, random);
-    const candidateMedian = resampledGroupedMedian(candidateGroups, random);
-    const change = percentChange(baseMedian, candidateMedian);
-    if (!Number.isFinite(change)) {
-      throw new RangeError(
-        'bootstrap samples must have a positive baseline median'
-      );
-    }
-    changes.push(change);
-  }
-  const sorted = changes.toSorted((a, b) => a - b);
-  return {
-    low: quantile(sorted, 0.025),
-    high: quantile(sorted, 0.975),
-  };
+  return bootstrapMedianPercentChangeInterval(
+    baseGroups,
+    candidateGroups,
+    resampledGroupedMedian,
+    resamples
+  );
 }
 
 export function mean(values) {
@@ -310,20 +308,19 @@ export function normalQuantile(probability) {
   const pLow = 0.02425;
   const pHigh = 1 - pLow;
 
-  let q;
-  let r;
+  const rationalTail = (val) =>
+    (((((c[0] * val + c[1]) * val + c[2]) * val + c[3]) * val + c[4]) * val +
+      c[5]) /
+    ((((d[0] * val + d[1]) * val + d[2]) * val + d[3]) * val + 1);
 
   if (probability < pLow) {
-    q = Math.sqrt(-2 * Math.log(probability));
-    return (
-      (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
-      ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1)
-    );
+    const q = Math.sqrt(-2 * Math.log(probability));
+    return rationalTail(q);
   }
 
   if (probability <= pHigh) {
-    q = probability - 0.5;
-    r = q * q;
+    const q = probability - 0.5;
+    const r = q * q;
     return (
       ((((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) *
         q) /
@@ -331,11 +328,8 @@ export function normalQuantile(probability) {
     );
   }
 
-  q = Math.sqrt(-2 * Math.log(1 - probability));
-  return (
-    -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
-    ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1)
-  );
+  const q = Math.sqrt(-2 * Math.log(1 - probability));
+  return -rationalTail(q);
 }
 
 export function studentTQuantile(probability, degreesOfFreedom) {

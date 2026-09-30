@@ -23,6 +23,19 @@ export const BOOTSTRAP_RESAMPLES = 10_000;
 
 // One canonical view of the defaults so provenance records which statistical
 // configuration produced measurements, independent of file layout or comments.
+// Optional selection fields such as `case` and `corpusSelector` may be null,
+// a single non-empty string, or a non-empty list of non-empty strings.
+export function isOptionalStringOrStringList(value) {
+  if (value === null) return true;
+  if (Array.isArray(value)) {
+    return (
+      value.length > 0 &&
+      value.every((entry) => typeof entry === 'string' && entry.length > 0)
+    );
+  }
+  return typeof value === 'string';
+}
+
 export function benchmarkConfigurationDefaults() {
   return {
     equivalenceConfidenceLevel: EQUIVALENCE_CONFIDENCE_LEVEL,

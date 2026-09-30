@@ -16,7 +16,7 @@ import {
 import { join } from 'node:path';
 import { assertRevision } from './bench-provenance.js';
 import { resolveBenchmarkTarget } from './bench-cases.js';
-import { corpusManifest } from './bench-corpus.js';
+import { corpusManifest, corpusSelectionArgs } from './bench-corpus.js';
 
 const METADATA_FIELDS = [
   'schemaVersion',
@@ -140,13 +140,10 @@ function smokeArguments(config, side, directory, revision) {
     `--revision=${revision}`,
     `--preset=${config.preset}`,
     '--summary',
+    // The smoke run must exercise the same selection as the comparison, or its
+    // metadata and output hashes describe a different benchmark.
+    ...corpusSelectionArgs(config),
   ];
-  // The smoke run must exercise the same selection as the comparison, or its
-  // metadata and output hashes describe a different benchmark.
-  if (config.case) args.push(`--case=${config.case}`);
-  for (const selector of config.only ?? []) args.push(`--only=${selector}`);
-  if (config.corpusManifest)
-    args.push(`--corpus-manifest=${config.corpusManifest}`);
   return args;
 }
 

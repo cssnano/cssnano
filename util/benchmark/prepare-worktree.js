@@ -111,21 +111,8 @@ export function cleanupWorktree(targetPath, options = {}) {
       cwd: repoRoot,
     });
   } catch {
-    if (!existsSync(resolvedPath)) {
-      // The directory is already gone; only stale administrative metadata
-      // may remain, which the prune below removes.
-    } else {
-      try {
-        rmSync(resolvedPath, { recursive: true, force: true });
-      } catch (removeError) {
-        return {
-          removed: false,
-          path: resolvedPath,
-          recoveryCommand,
-          error: String(removeError.message ?? removeError),
-        };
-      }
-    }
+    // If git worktree remove failed, fallback directory removal below cleans up
+    // the directory before administrative metadata is pruned.
   }
 
   if (existsSync(resolvedPath)) {

@@ -121,3 +121,12 @@ export async function processCorpus(
   for (const { name, css } of processedOutputs) outputs[name] = hash(css);
   return { elapsed, samples, outputs };
 }
+
+export function corpusSelectionArgs(config) {
+  const args = [];
+  if (config.case) args.push(`--case=${config.case}`);
+  for (const selector of config.only ?? []) args.push(`--only=${selector}`);
+  if (config.corpusManifest)
+    args.push(`--corpus-manifest=${config.corpusManifest}`);
+  return args;
+}

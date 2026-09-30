@@ -74,12 +74,13 @@ function filesBelow(root, directory) {
   return result;
 }
 
-function hashFiles(root, paths) {
+function hashFiles(root, paths, transform = null) {
   const hash = createHash('sha256');
   for (const file of [...new Set(paths)].toSorted()) {
     const path = join(root, file);
     if (!existsSync(path) || !lstatSync(path).isFile()) continue;
-    const contents = readFileSync(path);
+    let contents = readFileSync(path);
+    if (transform) contents = transform(file, contents);
     hash.update(file);
     hash.update('\0');
     hash.update(sha256(contents));
@@ -88,23 +89,17 @@ function hashFiles(root, paths) {
   return hash.digest('hex');
 }
 
-function hashSourceFiles(root, paths) {
-  const hash = createHash('sha256');
-  for (const file of [...new Set(paths)].toSorted()) {
-    const path = join(root, file);
-    if (!existsSync(path) || !lstatSync(path).isFile()) continue;
-    let contents = readFileSync(path);
-    if (file.endsWith('package.json')) {
-      const manifest = JSON.parse(contents);
-      delete manifest.scripts;
-      contents = JSON.stringify(manifest);
-    }
-    hash.update(file);
-    hash.update('\0');
-    hash.update(sha256(contents));
-    hash.update('\n');
+function normalizeSourceFile(file, contents) {
+  if (file.endsWith('package.json')) {
+    const manifest = JSON.parse(contents);
+    delete manifest.scripts;
+    return JSON.stringify(manifest);
   }
-  return hash.digest('hex');
+  return contents;
+}
+
+function hashSourceFiles(root, paths) {
+  return hashFiles(root, paths, normalizeSourceFile);
 }
 
 function isHarnessFile(file) {

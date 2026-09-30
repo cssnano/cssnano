@@ -14,6 +14,7 @@ import {
   SUPERIORITY_CONFIDENCE_LEVEL,
 } from './bench-config.js';
 import { summaryStatistics } from './bench-stats.js';
+import { isOptionalStringOrStringList } from './bench-defaults.js';
 
 const RESULTS_DIR = join(import.meta.dirname, '..', '..', 'bench-results');
 
@@ -197,22 +198,10 @@ function validateV3Configuration(configuration, arg) {
     }
   }
   for (const field of ['case', 'corpusSelector']) {
-    const value = configuration[field];
-    if (value === null) continue;
-    if (Array.isArray(value)) {
-      if (
-        !value.length ||
-        value.some((entry) => typeof entry !== 'string' || !entry)
-      )
-        throw new TypeError(
-          `invalid v3 benchmark configuration.${field}: "${arg}"`
-        );
-      continue;
-    }
-    if (typeof value !== 'string')
-      throw new TypeError(
-        `invalid v3 benchmark configuration.${field}: "${arg}"`
-      );
+    if (isOptionalStringOrStringList(configuration[field])) continue;
+    throw new TypeError(
+      `invalid v3 benchmark configuration.${field}: "${arg}"`
+    );
   }
   return configuration;
 }
