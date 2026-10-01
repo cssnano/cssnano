@@ -10,6 +10,7 @@
     "array-callback-return": "error",
     "complexity": "error",
     "guard-for-in": "error",
+    "max-lines": ["error", { "max": 400 }],
     "no-bitwise": "error",
     "no-case-declarations": "error",
     "no-duplicate-imports": "error",
