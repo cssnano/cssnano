@@ -25,5 +25,12 @@ $ pnpm build
 
 This command generates static content into `_astro-site/` and can be served using any static content hosting service.
 
+### Check
+
+```
+$ pnpm check:astro
+```
+
+This command builds the site and verifies the generated artifacts. Run `pnpm test` for the unit tests and type checking.
 
 Pages and components live in `src/pages`, `src/components`, and `src/layouts`. Markdown content is loaded through Astro content collections, including documentation sourced from the repository.
