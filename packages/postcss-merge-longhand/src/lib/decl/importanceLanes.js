@@ -1,27 +1,34 @@
 import cssnanoUtils from 'cssnano-utils';
+import { declarationRuns } from './declarationRuns.js';
 
 /** @import {Container, Declaration} from 'postcss'; */
 
 const { TokenType, decoded, tokens } = cssnanoUtils;
 
 /**
- * Property names are CSS identifiers, so match their decoded spelling. A
- * malformed property fails closed and cannot become a segment boundary.
+ * Property names are CSS identifiers, so engines match their decoded
+ * spelling: `\61 ll` is `all`. A malformed name matches no property.
  *
+ * @param {string} prop - a name containing an escape
+ * @return {string | undefined}
+ */
+export function decodedPropertyName(prop) {
+  const propertyTokens = tokens(prop);
+  const [property] = propertyTokens;
+  if (propertyTokens.length !== 1 || property?.[0] !== TokenType.Ident) {
+    return undefined;
+  }
+  return decoded(property).toLowerCase();
+}
+
+/**
  * @param {Declaration} declaration
  * @return {boolean}
  */
 export function isAll(declaration) {
   const prop = declaration.prop;
   if (prop.length === 3 && prop.toLowerCase() === 'all') return true;
-  if (!prop.includes('\\')) return false;
-  const propertyTokens = tokens(prop);
-  const [property] = propertyTokens;
-  return (
-    propertyTokens.length === 1 &&
-    property?.[0] === TokenType.Ident &&
-    decoded(property).toLowerCase() === 'all'
-  );
+  return prop.includes('\\') && decodedPropertyName(prop) === 'all';
 }
 
 /**
@@ -37,26 +44,22 @@ export function importanceLanes(rule, declarations) {
   /** @type {[Declaration[], Declaration[]]} */
   const lanes = [[], []];
 
-  const containsAll = Boolean(
-    rule.nodes?.some((n) => n.type === 'decl' && isAll(n))
-  );
-
-  if (!containsAll) {
+  if (!rule.nodes?.some((n) => n.type === 'decl' && isAll(n))) {
     for (const node of live) {
       lanes[node.important ? 1 : 0].push(node);
     }
     return lanes;
   }
 
+  // Another run of the same rule cannot be overridden by or override these.
   const liveSet = new Set(live);
+  const scope = declarationRuns(rule)
+    .filter((run) => run.some((d) => liveSet.has(d)))
+    .flat();
 
-  for (const node of rule.nodes ?? []) {
-    if (node.type === 'decl') {
-      if (liveSet.has(node)) {
-        lanes[node.important ? 1 : 0].push(node);
-      } else if (isAll(node)) {
-        lanes[node.important ? 1 : 0].push(node);
-      }
+  for (const node of scope) {
+    if (liveSet.has(node) || isAll(node)) {
+      lanes[node.important ? 1 : 0].push(node);
     }
   }
 

@@ -170,6 +170,9 @@ catalogs:
     '@csstools/css-tokenizer':
       specifier: ^4.0.2
       version: 4.0.2
+    '@mdn/browser-compat-data':
+      specifier: ^8.1.3
+      version: 8.1.3
     '@webref/css':
       specifier: 8.7.5
       version: 8.7.5
@@ -491,6 +494,9 @@ importers:
 
   packages/postcss-merge-longhand:
     dependencies:
+      browserslist:
+        specifier: 'catalog:'
+        version: 4.29.3
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -501,6 +507,9 @@ importers:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.2
+      '@mdn/browser-compat-data':
+        specifier: 'catalog:'
+        version: 8.1.3
       '@webref/css':
         specifier: 'catalog:'
         version: 8.7.5(css-tree@3.2.1)
@@ -901,6 +910,9 @@ packages:
     peerDependenciesMeta:
       '@noble/hashes':
         optional: true
+
+  '@mdn/browser-compat-data@8.1.3':
+    resolution: {integrity: sha512-CMVFbWe6y0EEc4qXtcoIc9WnFiLzk8Xd/0CTGUZZI0xC/7fhZOPIFbgCesG2wGhPBMzwEpD9VuKcPqy0r6LNKQ==}
 
   '@napi-rs/wasm-runtime@1.2.4':
     resolution: {integrity: sha512-AJxoUD2/15ESHbvpcyjU274nsAPLuOtPHCk0vKJM5pj//Fg/B1FXNWjPnXTT9PymCYYiHo4zPj0ZomXBKhoy7g==}
@@ -2021,6 +2033,8 @@ snapshots:
     optional: true
 
   '@exodus/bytes@1.15.1': {}
+
+  '@mdn/browser-compat-data@8.1.3': {}
 
   '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)':
     dependencies:

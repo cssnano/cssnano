@@ -1,3 +1,4 @@
+import { reduceEachRun } from './declarationRuns.js';
 import { list } from 'postcss';
 import minifyTrbl from '../minifyTrbl.js';
 import minifyWidthStyleColor from '../minifyWsc.js';
@@ -292,15 +293,15 @@ export function reduceBorder(rule, declarations, hasForeignBorder) {
   if (hasForeignBorder === true) return;
   if (hasForeignBorder === undefined && hasForeignBorderNodes(rule)) return;
 
-  const decls =
-    declarations ??
-    /** @type {Declaration[]} */ (
-      rule.nodes.filter(
-        (n) =>
-          n.type === 'decl' &&
-          allPhysicalBorderProperties.has(n.prop.toLowerCase())
-      )
+  if (!declarations) {
+    reduceEachRun(
+      rule,
+      (d) => allPhysicalBorderProperties.has(d.prop.toLowerCase()),
+      (runDecls) => reduceBorder(rule, runDecls, hasForeignBorder)
     );
+    return;
+  }
+  const decls = declarations;
 
   if (
     decls.length === 0 ||

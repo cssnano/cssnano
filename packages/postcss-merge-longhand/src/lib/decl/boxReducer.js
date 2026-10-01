@@ -6,6 +6,7 @@ import cssGlobalKeywords from '../cssGlobalKeywords.js';
 import { browserKeeps } from '../validateBox.js';
 import topRightBottomLeft from '../trbl.js';
 import cleanupDeclarations from '../cleanupDeclarations.js';
+import { declarationRuns, reduceEachRun } from './declarationRuns.js';
 import {
   assignSlotValue,
   commitShorthand,
@@ -99,29 +100,31 @@ export function reduceBox(rule, prop, declarations, lanes) {
   if (!rule.nodes) return;
   const sideProps = topRightBottomLeft.map((d) => `${prop}-${d}`);
   const family = new Set([prop, ...sideProps]);
-  const decls =
-    declarations &&
-    declarations.every(
+  if (
+    !declarations?.every(
       (d) => d.parent === rule && family.has(d.prop.toLowerCase())
     )
-      ? declarations
-      : /** @type {Declaration[]} */ (
-          rule.nodes.filter(
-            (n) => n.type === 'decl' && family.has(n.prop.toLowerCase())
-          )
-        );
+  ) {
+    reduceEachRun(
+      rule,
+      (d) => family.has(d.prop.toLowerCase()),
+      (runDecls) => reduceBox(rule, prop, runDecls)
+    );
+    return;
+  }
+  const decls = declarations;
 
   if (decls.length === 0 || decls.some(isInvalid)) return;
 
+  const declSet = new Set(decls);
   const familyLanes =
     lanes ??
     importanceLanes(
       rule,
-      /** @type {Declaration[]} */ (
-        rule.nodes.filter(
-          (n) => n.type === 'decl' && n.prop.toLowerCase().startsWith(prop)
-        )
-      )
+      declarationRuns(rule)
+        .filter((run) => run.some((d) => declSet.has(d)))
+        .flat()
+        .filter((d) => d.prop.toLowerCase().startsWith(prop))
     );
   cleanupLaneSegments(familyLanes, (segment) => cleanupDeclarations(segment));
 
