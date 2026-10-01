@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { tokenizer, TokenType } from '@csstools/css-tokenizer';
 import browserslist from 'browserslist';
+import { isInvalidSelector } from 'postcss-minify-selectors';
 import plugin from '../src/index.js';
 import {
   ensureCompatibility as currentCompatibility,
@@ -188,10 +189,13 @@ function hasSeparatorComment(selector) {
   return false;
 }
 
+// The legacy oracle also accepted selectors that the selector parser reports
+// as invalid, which merging would turn into an invalid selector list.
 function malformed(selector) {
   return (
     ['a]', 'a)', 'a::', '[(])'].includes(selector) ||
-    hasSeparatorComment(selector)
+    hasSeparatorComment(selector) ||
+    isInvalidSelector(selector)
   );
 }
 

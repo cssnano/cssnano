@@ -176,3 +176,30 @@ test('literal non-ASCII identifier continuations remain one qualified name', () 
   );
   assert.deepEqual(arena.nodes[0].specificity, [0, 0, 1]);
 });
+
+test('parser rejects an ID selector whose hash is not an identifier', () => {
+  assert.equal(parseSelectorArena('#1a').nodes[0].status, 'invalid');
+});
+
+test('parser accepts an ID selector whose hash is an identifier', () => {
+  assert.equal(parseSelectorArena('#a1').nodes[0].status, 'valid');
+});
+
+test('parser rejects a pseudo-element followed by a combinator', () => {
+  for (const source of ['a::before b', 'a::before > b', ':before + b']) {
+    assert.equal(parseSelectorArena(source).nodes[0].status, 'invalid', source);
+  }
+});
+
+test('parser accepts a pseudo-element at the end of a complex selector', () => {
+  for (const source of ['a b::before', 'a::before:hover', 'a > b::after']) {
+    assert.equal(parseSelectorArena(source).nodes[0].status, 'valid', source);
+  }
+});
+
+test('parser accepts a pseudo-element inside a forgiving argument before a combinator', () => {
+  assert.equal(
+    parseSelectorArena(':is(a::before, b) c').nodes[0].status,
+    'valid'
+  );
+});

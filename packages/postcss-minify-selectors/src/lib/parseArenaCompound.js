@@ -9,6 +9,7 @@ import { openPseudo, pseudoDetails, pseudoEndAt } from './parseArenaPseudo.js';
 const { TokenType } = cssnanoUtils;
 /** @typedef {import('./arena.js').ListMode} ListMode */
 /** @typedef {import('./arena.js').ParseStatus} ParseStatus */
+/** @typedef {{work: ParseWork, end: number, status?: ParseStatus, hasQualifiedName?: boolean}} CompoundChild */
 /** @typedef {NonNullable<ReturnType<typeof cssnanoUtils.balancedTokens>>} Structure */
 /** @typedef {import('./arena.js').QualifiedNamePayload} QualifiedNamePayload */
 /** @typedef {Parameters<Parameters<typeof import('./arena.js').buildSelectorArena>[2]>[0]} Builder */
@@ -29,7 +30,36 @@ function opaqueNumericClass(input, index) {
     return index + 1;
 }
 
-/** @param {Structure} structure @param {number} index @param {number} end @param {boolean} hasQualifiedName */
+/**
+ * A hash that is not a valid <ident-token> (`#1a`) is no ID selector.
+ *
+ * @param {import('./tokenUtils.js').CSSToken} token
+ * @param {number} index
+ * @return {CompoundChild}
+ */
+function hashChildAt(token, index) {
+  if (/** @type {{type?: string}} */ (token[4])?.type === 'id')
+    return {
+      work: /** @type {ParseWork} */ ({
+        kind: 'id',
+        start: index,
+        end: index + 1,
+      }),
+      end: index + 1,
+    };
+  return {
+    work: /** @type {ParseWork} */ ({
+      kind: 'raw',
+      start: index,
+      end: index + 1,
+      status: 'invalid',
+    }),
+    end: index + 1,
+    status: /** @type {ParseStatus} */ ('invalid'),
+  };
+}
+
+/** @param {Structure} structure @param {number} index @param {number} end @param {boolean} hasQualifiedName @return {CompoundChild} */
 function compoundChildAt(
   structure,
   index,
@@ -80,15 +110,7 @@ function compoundChildAt(
       end: opaqueClassEnd,
       status: /** @type {ParseStatus} */ ('opaque'),
     };
-  if (token[0] === TokenType.Hash)
-    return {
-      work: /** @type {ParseWork} */ ({
-        kind: 'id',
-        start: index,
-        end: index + 1,
-      }),
-      end: index + 1,
-    };
+  if (token[0] === TokenType.Hash) return hashChildAt(token, index);
   if (keyframe && token[0] === TokenType.Percentage)
     return {
       work: /** @type {ParseWork} */ ({

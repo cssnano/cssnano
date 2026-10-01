@@ -43,7 +43,8 @@
     "@csstools/css-tokenizer": "catalog:",
     "browserslist": "catalog:",
     "caniuse-api": "^4.0.0",
-    "cssnano-utils": "workspace:^"
+    "cssnano-utils": "workspace:^",
+    "postcss-minify-selectors": "workspace:^"
   },
   "bugs": {
     "url": "https://github.com/cssnano/cssnano/issues"

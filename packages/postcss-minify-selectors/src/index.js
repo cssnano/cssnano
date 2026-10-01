@@ -1,6 +1,7 @@
 import getBrowsersList from '#getBrowsersList';
 import caniuseApi from 'caniuse-api';
 import { isFixedPointSelector } from './lib/fixedPointSelector.js';
+import { isInvalidSelector } from './lib/isInvalidSelector.js';
 import { isDefaultNamespace } from './lib/isDefaultNamespace.js';
 import { normalizeList } from './lib/selectorScanner.js';
 
@@ -123,4 +124,8 @@ function pluginCreator(opts = {}) {
 /** @type {true} */
 pluginCreator.postcss = true;
 const moduleExports = pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+export {
+  moduleExports as default,
+  moduleExports as 'module.exports',
+  isInvalidSelector,
+};

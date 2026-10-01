@@ -1,10 +1,15 @@
 import { tokenizer, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from 'cssnano-utils';
+import { isInvalidSelector } from 'postcss-minify-selectors';
 import { advanceAttribute } from './attributeSelector.js';
 import { cssSel2, cssSel3, isSupportedCached } from './supportCache.js';
 
 const { asciiLowerCase } = cssnanoUtils;
-const simpleSelectorRe = /^#?[\-._A-Za-z0-9 ]+$/v;
+// Type, class and ID selectors joined by descendant combinators. Every name
+// must be a valid <ident-token>, so `#1a` and `.1a` take the full check.
+const ident = String.raw`(?:-?[_A-Za-z]|--)[\-\w]*`;
+const compound = String.raw`[#.]?${ident}(?:[#.]${ident})*`;
+const simpleSelectorRe = new RegExp(`^${compound}(?: +${compound})*$`, 'v');
 
 const cssGencontent = 'css-gencontent';
 const cssFirstLetter = 'css-first-letter';
@@ -167,7 +172,7 @@ function isHostPseudoClass(selector) {
  * Track bracket nesting outside attribute selectors. Returns false for
  * unbalanced brackets and for a stray `]`.
  *
- * @param {AttributeScanState & {pseudoPrefix: string | undefined}} state
+ * @param {AttributeScanState & {pseudoPrefix: string | undefined, previousDelim: string | undefined}} state
  * @param {TokenType} type
  * @return {boolean}
  */
@@ -188,7 +193,7 @@ function trackDelimiters(state, type) {
 }
 
 /**
- * @param {AttributeScanState & {pseudoPrefix: string | undefined}} state
+ * @param {AttributeScanState & {pseudoPrefix: string | undefined, previousDelim: string | undefined}} state
  * @param {TokenType} type
  * @param {string} value
  * @param {string[] | undefined} browsers
@@ -222,13 +227,19 @@ function isPseudoSupported(state, type, value, browsers) {
 /**
  * Check a token outside of attribute selectors: combinators and pseudos.
  *
- * @param {AttributeScanState & {pseudoPrefix: string | undefined}} state
+ * @param {AttributeScanState & {pseudoPrefix: string | undefined, previousDelim: string | undefined}} state
  * @param {TokenType} type
  * @param {string} value
  * @param {string[] | undefined} browsers
  * @return {boolean}
  */
 function isSelectorTokenSupported(state, type, value, browsers) {
+  // No browser implements the column combinator `||` or `/deep/`, so a
+  // selector using either is dropped as invalid.
+  const previousDelim = state.previousDelim;
+  state.previousDelim = type === TokenType.Delim ? value : undefined;
+  if (value === '/' && type === TokenType.Delim) return false;
+  if (value === '|' && previousDelim === '|') return false;
   if (type === TokenType.Delim) {
     const feature = combinatorFeatures.get(value);
     if (feature && !isSupportedCached(feature, browsers)) return false;
@@ -246,9 +257,10 @@ function isSelectorTokenSupported(state, type, value, browsers) {
  * @return {boolean}
  */
 function scanCompatibility(selector, browsers) {
-  /** @type {AttributeScanState & {pseudoPrefix: string | undefined}} */
+  /** @type {AttributeScanState & {pseudoPrefix: string | undefined, previousDelim: string | undefined}} */
   const state = {
     pseudoPrefix: undefined,
+    previousDelim: undefined,
     attributeStage: 'none',
     delimiters: [],
   };
@@ -316,7 +328,9 @@ function ensureCompatibility(selectors, browsers, compatibilityCache) {
     if (compatibilityCache && compatibilityCache.has(selector)) {
       return compatibilityCache.get(selector);
     }
-    const compatible = scanCompatibility(selector, browsers);
+    // The token scan is far cheaper than a full parse, so it runs first.
+    const compatible =
+      scanCompatibility(selector, browsers) && !isInvalidSelector(selector);
     if (compatibilityCache) {
       compatibilityCache.set(selector, compatible);
     }

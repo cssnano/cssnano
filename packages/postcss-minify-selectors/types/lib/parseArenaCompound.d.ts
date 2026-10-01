@@ -1,6 +1,12 @@
 import cssnanoUtils from 'cssnano-utils';
 export type ListMode = import('./arena.js').ListMode;
 export type ParseStatus = import('./arena.js').ParseStatus;
+export type CompoundChild = {
+    work: ParseWork;
+    end: number;
+    status?: ParseStatus;
+    hasQualifiedName?: boolean;
+};
 export type Structure = NonNullable<ReturnType<typeof cssnanoUtils.balancedTokens>>;
 export type QualifiedNamePayload = import('./arena.js').QualifiedNamePayload;
 export type Builder = Parameters<Parameters<typeof import('./arena.js').buildSelectorArena>[2]>[0];
