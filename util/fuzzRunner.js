@@ -1,5 +1,12 @@
 import { parseArgs } from 'node:util';
 
+/**
+ * Exit code for a run that found a counterexample. It differs from 1, which
+ * Node uses for an uncaught exception, and 2, an invalid option, so a crashed
+ * fuzzer is never mistaken for one that caught a bug.
+ */
+export const FAILURE_EXIT_CODE = 3;
+
 const usage =
   '--seed takes a non-negative integer, --count a positive integer, and --interval a non-negative integer';
 
@@ -93,7 +100,7 @@ export function parseFuzzArgs({
  * @param {number} [options.seed] PRNG seed
  * @param {number} [options.interval=10000] Progress reporting interval
  * @param {string} [options.unit='cases'] Units label ('cases', 'rules', etc.)
- * @param {boolean} [options.exitOnFailure=true] Whether to exit with code 1 on failure
+ * @param {boolean} [options.exitOnFailure=true] Whether to exit with `FAILURE_EXIT_CODE` on failure
  * @return {{ passed: number, elapsed: string }}
  */
 export function runFuzz({
@@ -117,7 +124,7 @@ export function runFuzz({
       console.error(report(failure, seed, checked - 1));
       console.error(`\nfound after ${checked} of ${count} ${unit}`);
       if (exitOnFailure) {
-        process.exit(1);
+        process.exit(FAILURE_EXIT_CODE);
       }
       throw new Error(`Fuzzing failure after ${checked} ${unit}`);
     }
