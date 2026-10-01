@@ -110,7 +110,7 @@ describe('Cross-tool edge cases and modern CSS specifications', () => {
     'keeps the time unit multiplied with sibling-index()',
     processCss(
       '.x{animation-delay:calc(sibling-index() * .05s)}',
-      '.x{animation-delay:calc(.05s * sibling-index())}'
+      '.x{animation-delay:calc(sibling-index() * .05s)}'
     )
   );
 

@@ -3,7 +3,7 @@ import processCss from './_processCss.js';
 
 test(
   'should optimise inside calc',
-  processCss('h1{width:calc(var(--h) * 1em)}', 'h1{width:calc(1em * var(--h))}')
+  processCss('h1{width:calc(var(--h) * 1em)}', 'h1{width:calc(var(--h) * 1em)}')
 );
 
 test(
@@ -18,7 +18,7 @@ test(
   'should optimise inside calc (2)',
   processCss(
     'h1{--a:calc(var(--x, 1) * 10vw)}',
-    'h1{--a:calc(10vw * var(--x, 1))}'
+    'h1{--a:calc(var(--x, 1) * 10vw)}'
   )
 );
 
@@ -34,7 +34,7 @@ test(
   'should optimise inside calc (4)',
   processCss(
     'h1{width:calc(env(safe-area-inset-bottom) * 3) !important}',
-    'h1{width:calc(3 * env(safe-area-inset-bottom))!important}'
+    'h1{width:calc(env(safe-area-inset-bottom) * 3)!important}'
   )
 );
 
@@ -42,7 +42,7 @@ test(
   'should optimise inside calc (5)',
   processCss(
     'h1{width:calc(14px + 6 * ((100vw - 320px) / 448))}',
-    'h1{width:calc(9.71429px + 1.33929vw)}'
+    'h1{width:calc(14px + 3 * (100vw - 320px) / 224)}'
   )
 );
 

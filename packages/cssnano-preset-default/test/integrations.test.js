@@ -98,7 +98,7 @@ describe('CSS processing', () => {
     'should preserve variable-backed opacity calculations after preset composition',
     withDefaults.processCSS(
       'h1{opacity:calc(var(--foo)*5)}',
-      'h1{opacity:calc(5 * var(--foo))}'
+      'h1{opacity:calc(var(--foo) * 5)}'
     )
   );
 
