@@ -1,8 +1,13 @@
 import type { Container, Declaration } from 'postcss';
 /**
- * Property names are CSS identifiers, so match their decoded spelling. A
- * malformed property fails closed and cannot become a segment boundary.
+ * Property names are CSS identifiers, so engines match their decoded
+ * spelling: `\61 ll` is `all`. A malformed name matches no property.
  *
+ * @param {string} prop - a name containing an escape
+ * @return {string | undefined}
+ */
+export declare function decodedPropertyName(prop: string): string | undefined;
+/**
  * @param {Declaration} declaration
  * @return {boolean}
  */

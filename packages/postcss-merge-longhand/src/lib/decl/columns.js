@@ -1,3 +1,4 @@
+import { reduceEachRun } from './declarationRuns.js';
 import stylehacks from 'stylehacks';
 import canExplode from '../canExplode.js';
 import cleanupDeclarations from '../cleanupDeclarations.js';
@@ -154,21 +155,20 @@ function normalizeSingleton(s) {
  * @param {[Declaration[], Declaration[]]} [lanes]
  */
 export function reduceColumns(rule, declarations, lanes) {
-  const nodes = rule.nodes;
-  if (!nodes) return;
-  const getColDecls = () =>
-    /** @type {Declaration[]} */ (
-      nodes.filter(
-        (n) => n.type === 'decl' && allColumnProps.has(n.prop.toLowerCase())
-      )
-    );
-  const decls =
-    declarations &&
-    declarations.every(
+  if (!rule.nodes) return;
+  if (
+    !declarations?.every(
       (d) => d.parent === rule && allColumnProps.has(d.prop.toLowerCase())
     )
-      ? declarations
-      : getColDecls();
+  ) {
+    reduceEachRun(
+      rule,
+      (d) => allColumnProps.has(d.prop.toLowerCase()),
+      (runDecls) => reduceColumns(rule, runDecls)
+    );
+    return;
+  }
+  const decls = declarations;
 
   if (decls.length === 0 || decls.some(isInvalid)) return;
 

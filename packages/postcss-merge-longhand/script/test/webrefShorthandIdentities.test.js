@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import committed from '../../src/data/shorthandIdentities.json' with { type: 'json' };
 import {
   buildShorthandIdentities,
   serializeShorthandIdentities,
@@ -33,7 +34,7 @@ function webref() {
       {
         name: 'justify-items',
         syntax:
-          'normal | stretch | <baseline-position> | <overflow-position>? [ <self-position> | left | right ] | legacy',
+          'normal | stretch | <baseline-position> | <overflow-position>? [ <self-position> | left | right ] | legacy | legacy && [ left | right | center ]',
       },
       {
         name: 'align-self',
@@ -92,6 +93,55 @@ describe('buildShorthandIdentities', () => {
     assert.ok(data.alignment.get('place-self')?.includes('auto'));
     assert.ok(!data.alignment.get('place-content')?.includes('baseline'));
     assert.ok(!data.alignment.get('place-items')?.includes('auto'));
+  });
+
+  test('derives each alignment longhand with first|last baseline as the only order', () => {
+    const { alignmentLonghands } = buildShorthandIdentities(webref());
+    const forms = alignmentLonghands.get('align-items');
+    assert.ok(forms.includes('last baseline'));
+    assert.ok(!forms.includes('baseline last'));
+  });
+
+  test('derives justify-self keywords that the place-self shorthand cannot share', () => {
+    const { alignmentLonghands } = buildShorthandIdentities(webref());
+    assert.ok(alignmentLonghands.get('justify-self').includes('safe left'));
+    assert.ok(!alignmentLonghands.get('align-self').includes('safe left'));
+  });
+
+  test('derives legacy && [ left | right | center ] in both orders, for justify-items only', () => {
+    const { alignmentLonghands } = buildShorthandIdentities(webref());
+    const legacyForms = (name) =>
+      new Set(
+        alignmentLonghands
+          .get(name)
+          .filter((form) => form.split(' ').includes('legacy'))
+      );
+    assert.deepStrictEqual(
+      legacyForms('justify-items'),
+      new Set([
+        'legacy',
+        ...['left', 'right', 'center'].flatMap((position) => [
+          `legacy ${position}`,
+          `${position} legacy`,
+        ]),
+      ])
+    );
+    for (const name of alignmentLonghands.keys()) {
+      if (name !== 'justify-items') assert.equal(legacyForms(name).size, 0);
+    }
+  });
+
+  test('commits each place-* form list as the forms both of its longhands accept', () => {
+    for (const [shorthand, forms] of Object.entries(committed.alignment)) {
+      const axis = shorthand.slice('place-'.length);
+      const justify = new Set(committed.alignmentLonghands[`justify-${axis}`]);
+      assert.deepStrictEqual(
+        new Set(forms),
+        new Set(committed.alignmentLonghands[`align-${axis}`]).intersection(
+          justify
+        )
+      );
+    }
   });
 
   test('derives easing keywords and functions through referenced types', () => {

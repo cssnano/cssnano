@@ -49,7 +49,7 @@ const { rawCache } = cssnanoUtils;
  * @property {SimpleOptions<import('postcss-normalize-charset').Options>} [normalizeCharset]
  * @property {SimpleOptions<import('postcss-minify-font-values').Options>} [minifyFontValues]
  * @property {SimpleOptions} [normalizeUrl]
- * @property {SimpleOptions} [mergeLonghand]
+ * @property {SimpleOptions<import('postcss-merge-longhand').Options>} [mergeLonghand]
  * @property {SimpleOptions} [discardDuplicates]
  * @property {SimpleOptions} [discardOverridden]
  * @property {SimpleOptions} [normalizeRepeatStyle]
@@ -95,6 +95,9 @@ function configurePlugins(plugins, opts = {}) {
     },
     convertValues: {
       length: false,
+      ...sharedProps,
+    },
+    mergeLonghand: {
       ...sharedProps,
     },
     mergeRules: {

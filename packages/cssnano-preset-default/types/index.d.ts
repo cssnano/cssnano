@@ -16,7 +16,7 @@ export type Options = {
     normalizeCharset?: SimpleOptions<import('postcss-normalize-charset').Options>;
     minifyFontValues?: SimpleOptions<import('postcss-minify-font-values').Options>;
     normalizeUrl?: SimpleOptions;
-    mergeLonghand?: SimpleOptions;
+    mergeLonghand?: SimpleOptions<import('postcss-merge-longhand').Options>;
     discardDuplicates?: SimpleOptions;
     discardOverridden?: SimpleOptions;
     normalizeRepeatStyle?: SimpleOptions;

@@ -1,12 +1,16 @@
 import { REFERENCE, keywordTerminals } from '../../../../util/webref.js';
 
 const PLACE_SHORTHANDS = ['place-content', 'place-items', 'place-self'];
+const ALIGNMENT_LONGHANDS = PLACE_SHORTHANDS.flatMap((name) => {
+  const axis = name.slice('place-'.length);
+  return [`align-${axis}`, `justify-${axis}`];
+});
 const MODIFIERS = new Set(['first', 'last', 'safe', 'unsafe']);
 
 /**
  * @typedef {{name: string, syntax?: string, longhands?: string[]}} Definition
  * @typedef {{properties: Definition[], types: Definition[], functions: Definition[]}} WebrefData
- * @typedef {{alignment: Map<string, string[]>, easing: {keywords: string[], functions: string[]}}} ShorthandIdentities
+ * @typedef {{alignment: Map<string, string[]>, alignmentLonghands: Map<string, string[]>, easing: {keywords: string[], functions: string[]}}} ShorthandIdentities
  */
 
 /** @param {string | undefined} syntax @return {string[]} */
@@ -25,6 +29,20 @@ function definitionsByName(data) {
       definition,
     ])
   );
+}
+
+/**
+ * `legacy && [ left | right | center ]` accepts either order.
+ *
+ * @param {string} syntax
+ * @return {string[]}
+ */
+function legacyForms(syntax) {
+  const [, targets = ''] = /legacy\s*&&\s*\[([^\]]+)\]/v.exec(syntax) ?? [];
+  return keywordTerminals(targets).flatMap((keyword) => [
+    `legacy ${keyword.toLowerCase()}`,
+    `${keyword.toLowerCase()} legacy`,
+  ]);
 }
 
 /**
@@ -55,6 +73,7 @@ function alignmentLonghandForms(property, definitions) {
     }
   }
 
+  const positions = new Set();
   for (const name of [
     'content-distribution',
     'content-position',
@@ -63,6 +82,7 @@ function alignmentLonghandForms(property, definitions) {
     if (!referenced.has(name)) continue;
     for (const keyword of keywordTerminals(definitions.get(name)?.syntax)) {
       forms.add(keyword.toLowerCase());
+      if (name !== 'content-distribution') positions.add(keyword.toLowerCase());
     }
   }
 
@@ -70,22 +90,17 @@ function alignmentLonghandForms(property, definitions) {
     const prefixes = keywordTerminals(
       definitions.get('overflow-position')?.syntax
     ).map((name) => name.toLowerCase());
-    const targets = new Set();
-    for (const name of ['content-position', 'self-position']) {
-      if (!referenced.has(name)) continue;
-      for (const keyword of keywordTerminals(definitions.get(name)?.syntax)) {
-        targets.add(keyword.toLowerCase());
-      }
-    }
     const [, grouped = ''] =
       /<overflow-position>\?\s*\[([^\]]+)\]/v.exec(syntax) ?? [];
     for (const keyword of keywordTerminals(grouped)) {
-      targets.add(keyword.toLowerCase());
+      positions.add(keyword.toLowerCase());
     }
     for (const prefix of prefixes) {
-      for (const target of targets) forms.add(`${prefix} ${target}`);
+      for (const target of positions) forms.add(`${prefix} ${target}`);
     }
   }
+
+  for (const form of legacyForms(syntax)) forms.add(form);
 
   return forms;
 }
@@ -126,6 +141,15 @@ function reachableTerminals(definitions, root) {
 /** @param {WebrefData} data @return {ShorthandIdentities} */
 export function buildShorthandIdentities(data) {
   const definitions = definitionsByName(data);
+  const alignmentLonghands = new Map();
+  for (const name of ALIGNMENT_LONGHANDS) {
+    const property = definitions.get(name);
+    if (!property) throw new Error(`webref does not define ${name}`);
+    alignmentLonghands.set(
+      name,
+      [...alignmentLonghandForms(property, definitions)].toSorted()
+    );
+  }
   const alignment = new Map();
   for (const shorthandName of PLACE_SHORTHANDS) {
     const shorthand = definitions.get(shorthandName);
@@ -134,11 +158,9 @@ export function buildShorthandIdentities(data) {
     if (longhands.length !== 2) {
       throw new Error(`Expected ${shorthandName} to have two longhands`);
     }
-    const [first, second] = longhands.map((name) => {
-      const property = definitions.get(name);
-      if (!property) throw new Error(`webref does not define ${name}`);
-      return alignmentLonghandForms(property, definitions);
-    });
+    const [first, second] = longhands.map(
+      (name) => new Set(alignmentLonghands.get(name))
+    );
     alignment.set(
       shorthandName,
       [...first].filter((form) => second.has(form)).toSorted()
@@ -146,6 +168,7 @@ export function buildShorthandIdentities(data) {
   }
   return {
     alignment,
+    alignmentLonghands,
     easing: reachableTerminals(definitions, 'easing-function'),
   };
 }
@@ -203,6 +226,7 @@ export function serializeShorthandIdentities(data) {
   return `${JSON.stringify(
     {
       alignment: Object.fromEntries(data.alignment),
+      alignmentLonghands: Object.fromEntries(data.alignmentLonghands),
       easing: data.easing,
     },
     null,

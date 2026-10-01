@@ -31,6 +31,23 @@ describe('CSS processing', () => {
   );
 
   test(
+    'should merge alignment longhands into place-content when every target supports place-*',
+    processCSSWithPresetFactory(
+      preset({ overrideBrowserslist: 'chrome 120, firefox 120, safari 17' })
+    ).processCSS(
+      '.a{justify-content:center;align-items:center;align-content:center}',
+      '.a{align-items:center;place-content:center}'
+    )
+  );
+
+  test(
+    'should keep alignment longhands for default targets because Opera Mini lacks place-*',
+    withDefaults.passthroughCSS(
+      '.a{justify-content:center;align-items:center;align-content:center}'
+    )
+  );
+
+  test(
     'should process CSS with default options',
     withDefaults.processCSS(
       'button { color: hsla(0 100% 50% / 40%); appearance: none }',

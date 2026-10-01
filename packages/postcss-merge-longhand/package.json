@@ -11,6 +11,12 @@
   },
   "main": "./src/index.js",
   "types": "./types/index.d.ts",
+  "imports": {
+    "#getBrowsersList": {
+      "node": "./src/lib/computeBrowsersToSupport.js",
+      "default": "./src/lib/getBrowsersForWebBuild.js"
+    }
+  },
   "files": [
     "LICENSE-MIT",
     "src",
@@ -35,6 +41,7 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
+    "browserslist": "catalog:",
     "cssnano-utils": "workspace:^",
     "stylehacks": "workspace:^"
   },
@@ -46,6 +53,7 @@
   },
   "devDependencies": {
     "@csstools/css-tokenizer": "catalog:",
+    "@mdn/browser-compat-data": "catalog:",
     "@webref/css": "catalog:",
     "postcss": "catalog:"
   },

@@ -1,3 +1,4 @@
+import { reduceEachRun } from './declarationRuns.js';
 import minifyTrbl from '../minifyTrbl.js';
 import { isFallback } from '../isFallback.js';
 import cleanupDeclarations from '../cleanupDeclarations.js';
@@ -307,23 +308,31 @@ function eliminateRedundantDeclarations(lanes) {
 
 /**
  * @param {Container} rule
+ * @param {Declaration[]} declarations
+ * @return {boolean}
+ */
+function isRadiusFamily(rule, declarations) {
+  return declarations.every(
+    (d) => d.parent === rule && allRadiusProperties.has(d.prop.toLowerCase())
+  );
+}
+
+/**
+ * @param {Container} rule
  * @param {Declaration[]} [declarations]
  * @param {[Declaration[], Declaration[]]} [lanes]
  */
 export function reduceBorderRadius(rule, declarations, lanes) {
   if (!rule.nodes || rule.nodes.length === 0) return;
-  const decls =
-    declarations &&
-    declarations.every(
-      (d) => d.parent === rule && allRadiusProperties.has(d.prop.toLowerCase())
-    )
-      ? declarations
-      : /** @type {Declaration[]} */ (
-          rule.nodes.filter(
-            (n) =>
-              n.type === 'decl' && allRadiusProperties.has(n.prop.toLowerCase())
-          )
-        );
+  if (!declarations || !isRadiusFamily(rule, declarations)) {
+    reduceEachRun(
+      rule,
+      (d) => allRadiusProperties.has(d.prop.toLowerCase()),
+      (runDecls) => reduceBorderRadius(rule, runDecls, lanes)
+    );
+    return;
+  }
+  const decls = declarations;
   if (decls.length === 0) return;
 
   if (!lanes && declarations) {
