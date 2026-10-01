@@ -1,21 +1,25 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  bootstrapConfidenceInterval,
-  clusteredTwoSampleBootstrapConfidenceInterval,
-  fitCrossoverModel,
   mean,
   median,
-  normalQuantile,
   pairedPercentChange,
   quantile,
   randomFor,
   seedNumber,
   standardDeviation,
-  studentTQuantile,
   summaryStatistics,
-  twoSampleBootstrapConfidenceInterval,
 } from './bench-stats.js';
+import {
+  bootstrapConfidenceInterval,
+  clusteredTwoSampleBootstrapConfidenceInterval,
+  twoSampleBootstrapConfidenceInterval,
+} from './bench-bootstrap.js';
+import {
+  fitCrossoverModel,
+  normalQuantile,
+  studentTQuantile,
+} from './bench-distributions.js';
 
 test('mean, median, and standardDeviation calculate standard sample statistics', () => {
   const values = [2, 4, 4, 4, 5, 5, 7, 9];

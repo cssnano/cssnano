@@ -26,18 +26,46 @@ describe('Selectors', () => {
     )
   );
 
-  // A comment separates tokens like whitespace; removal must not fuse its
-  // neighbors.
+  // A comment is not whitespace (CSS Syntax 3): `div/**/span` is two type
+  // selectors without a combinator, whereas `div span` is a descendant
+  // combinator.
   test(
-    'should keep adjacent type selectors separated when the comment between them is removed',
-    processCSS('div/*c*/span{color:red}', 'div span{color:red}')
+    'should keep adjacent type selectors without a combinator when the comment between them is removed',
+    processCSS('div/*c*/span{color:red}', 'div/**/span{color:red}')
   );
 
   test(
-    'should keep the attribute modifier separated from the value when the comment between them is removed',
-    // Selector engines resolve `[attr=val/*c*/i]` as case-insensitive on
-    // `val`.
-    processCSS('[attr=val/*c*/i]{color:red}', '[attr=val i]{color:red}')
+    'should keep selector arguments without a combinator when the comment between them is removed',
+    processCSS(':not(div/*c*/span){color:red}', ':not(div/**/span){color:red}')
+  );
+
+  test(
+    'should keep An+B operands apart with an empty comment when removing the comment would fuse them',
+    processCSS(
+      ':nth-child(2n/*c*/-1){color:red}',
+      ':nth-child(2n/**/-1){color:red}'
+    )
+  );
+
+  test(
+    'should keep the of keyword apart from an An+B formula with an empty comment when removing the comment would fuse them',
+    processCSS(
+      ':nth-child(2n/*c*/of .a){color:red}',
+      ':nth-child(2n/**/of .a){color:red}'
+    )
+  );
+
+  test(
+    'should keep type selectors after an escaped of keyword without a combinator when the comment between them is removed',
+    processCSS(
+      ':nth-child(2n \\6f f div/*c*/span){color:red}',
+      ':nth-child(2n \\6f f div/**/span){color:red}'
+    )
+  );
+
+  test(
+    'should keep the attribute modifier apart from the value with an empty comment when the comment between them is removed',
+    processCSS('[attr=val/*c*/i]{color:red}', '[attr=val/**/i]{color:red}')
   );
 
   test(

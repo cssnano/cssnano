@@ -3,13 +3,8 @@ import {
   isIdentifierContinuationToken,
   mergeStatus,
 } from './parseArenaStructure.js';
-import {
-  addAttribute,
-  openPseudo,
-  pseudoDetails,
-  pseudoEndAt,
-  qualifiedNameAt,
-} from './parseArenaPseudo.js';
+import { addAttribute, qualifiedNameAt } from './parseArenaAttribute.js';
+import { openPseudo, pseudoDetails, pseudoEndAt } from './parseArenaPseudo.js';
 
 const { TokenType } = cssnanoUtils;
 /** @typedef {import('./arena.js').ListMode} ListMode */

@@ -253,6 +253,13 @@ function scanCompatibility(selector, browsers) {
     delimiters: [],
   };
 
+  // A comment between two non-whitespace tokens may be the `/**/` separator
+  // that keeps them from fusing (`div/**/span`); such a selector may be
+  // invalid, and merging it into a list would make browsers drop the list.
+  /** @type {TokenType | undefined} */
+  let previousType;
+  let separatorComment = false;
+
   try {
     const tokenStream = tokenizer({ css: selector });
     while (!tokenStream.endOfFile()) {
@@ -261,6 +268,16 @@ function scanCompatibility(selector, browsers) {
       const value = token[1];
 
       if (type === TokenType.EOF) break;
+      if (state.attributeStage === 'none') {
+        if (type === TokenType.Comment) {
+          separatorComment ||=
+            previousType !== undefined && previousType !== TokenType.Whitespace;
+          continue;
+        }
+        if (separatorComment && type !== TokenType.Whitespace) return false;
+        separatorComment = false;
+      }
+      if (type !== TokenType.Comment) previousType = type;
       if (state.attributeStage !== 'none') {
         if (!advanceAttribute(state, type, value, browsers)) return false;
       } else if (

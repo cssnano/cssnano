@@ -263,3 +263,18 @@ test(
   'should not merge an attribute selector with an unknown operator character',
   passthroughCSS('a{color:red}[x&=y]{color:red}')
 );
+
+test(
+  'should not merge a selector whose comment separates two compound selectors',
+  passthroughCSS('div/**/span{color:red}.x{color:red}')
+);
+
+test(
+  'should not merge a selector whose comment separates an id from a type',
+  passthroughCSS('#a/**/b{color:red}.x{color:red}')
+);
+
+test(
+  'should merge selectors with a comment next to a combinator',
+  processCSS('a/* c */ > b{color:red}.x{color:red}', 'a > b,.x{color:red}')
+);

@@ -5,19 +5,23 @@ import plugin from '../../src/index.js';
 // Reuse the shared CSS Values 4 length set instead of a local copy so the
 // oracle cannot silently drift from the units the implementation accepts.
 const { lengthUnits } = cssnanoUtils;
+// CSS Values 4 <angle> units, the dimension of conic gradient positions.
+const angleUnits = new Set(['deg', 'grad', 'rad', 'turn']);
 
-/** @param {string} unit @return {boolean} */
-function isZeroUnit(unit) {
-  return unit === '' || unit === '%' || lengthUnits.has(unit);
+/** @param {string} unit @param {boolean} conic @return {boolean} */
+function isZeroUnit(unit, conic) {
+  return (
+    unit === '' || unit === '%' || (conic ? angleUnits : lengthUnits).has(unit)
+  );
 }
 
-/** @param {{number: number, unit: string}} current @param {{number: number, unit: string}} largest @return {boolean} */
-function comparable(current, largest) {
+/** @param {{number: number, unit: string}} current @param {{number: number, unit: string}} largest @param {boolean} conic @return {boolean} */
+function comparable(current, largest, conic) {
   if (current.unit === largest.unit) return true;
   return (
     (current.number === 0 || largest.number === 0) &&
-    isZeroUnit(current.unit) &&
-    isZeroUnit(largest.unit)
+    isZeroUnit(current.unit, conic) &&
+    isZeroUnit(largest.unit, conic)
   );
 }
 
@@ -44,9 +48,10 @@ function leadingLineSpecifications(args) {
  * specifications never carry stop positions.
  *
  * @param {import('./fuzzGenerate.js').Argument[]} args
+ * @param {boolean} conic
  * @return {Set<string>} `argIndex:positionIndex` keys with zero replacements.
  */
-function clampZeroEdits(args) {
+function clampZeroEdits(args, conic) {
   /** @type {Set<string>} */
   const zeroEdits = new Set();
   let largest;
@@ -70,12 +75,12 @@ function clampZeroEdits(args) {
         largest &&
         largest.number >= 0 &&
         current.number === 0 &&
-        isZeroUnit(current.unit)
+        isZeroUnit(current.unit, conic)
       ) {
         zeroEdits.add(`${argIndex}:${positionIndex}`);
         continue;
       }
-      if (largest && !comparable(current, largest)) {
+      if (largest && !comparable(current, largest, conic)) {
         largest = undefined;
         continue;
       }
@@ -96,9 +101,10 @@ function clampZeroEdits(args) {
  * @param {import('./fuzzGenerate.js').Argument[]} args
  * @param {number} lineSpecifications
  * @param {Set<string>} zeroEdits
+ * @param {boolean} conic
  * @return {Map<number, 'first' | 'last'>}
  */
-function boundaryRemovals(args, lineSpecifications, zeroEdits) {
+function boundaryRemovals(args, lineSpecifications, zeroEdits, conic) {
   /** @type {number[]} */
   const stopIndexes = [];
   for (const [index, arg] of args.entries())
@@ -116,7 +122,7 @@ function boundaryRemovals(args, lineSpecifications, zeroEdits) {
       slot === 0 &&
       argIndex === lineSpecifications &&
       only.number === 0 &&
-      isZeroUnit(only.unit);
+      isZeroUnit(only.unit, conic);
     const last =
       slot === stopCount - 1 &&
       argIndex === args.length - 1 &&
@@ -206,11 +212,13 @@ function evaluate(model) {
   };
   if (model.aborts) return { value: model.value, kinds };
 
-  const zeroEdits = clampZeroEdits(model.args);
+  const conic = model.fnName.includes('conic');
+  const zeroEdits = clampZeroEdits(model.args, conic);
   const removals = boundaryRemovals(
     model.args,
     leadingLineSpecifications(model.args),
-    zeroEdits
+    zeroEdits,
+    conic
   );
   const gradient = rebuild(model, zeroEdits, removals, kinds);
   // A nesting wrapper is not itself scanned for stop positions: for the

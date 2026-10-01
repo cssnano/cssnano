@@ -98,7 +98,7 @@ test('parser applies keyframe and default-namespace context', () => {
 });
 
 test('parser records descendant and explicit combinators with exact spans', () => {
-  const arena = parseSelectorArena('a/**/b || c > d');
+  const arena = parseSelectorArena('a /**/ b || c > d');
   const combinators = arena.nodes.filter(({ kind }) => kind === 'combinator');
   assert.deepEqual(
     combinators.map(({ payload }) => arena.payloads.combinators[payload].value),
@@ -111,7 +111,7 @@ test('parser records descendant and explicit combinators with exact spans', () =
         .map((token) => token[1])
         .join('')
     ),
-    ['/**/', '||', '>']
+    [' /**/ ', '||', '>']
   );
   assert.equal(
     hasSemanticFact(arena.nodes[0].facts, semanticFacts.commentDescendant),
