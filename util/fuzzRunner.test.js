@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { parseFuzzArgs, runFuzz } from './fuzzRunner.js';
+import { FAILURE_EXIT_CODE, parseFuzzArgs, runFuzz } from './fuzzRunner.js';
 
 /**
  * @param {string[]} args
@@ -150,13 +150,15 @@ describe('runFuzz', () => {
     );
   });
 
-  test('exits with code 1 on failure by default', (t) => {
+  test('exits with a code no crash or usage error shares when it finds a counterexample', (t) => {
     t.mock.method(console, 'error', () => {});
     const exit = mockExit(t);
     assert.throws(() =>
       runFuzz({ cases: [1], check: () => 'failure', count: 1 })
     );
-    assert.deepEqual(exit.mock.calls[0].arguments, [1]);
+    const [code] = exit.mock.calls[0].arguments;
+    // Node exits 1 on an uncaught exception; parseFuzzArgs exits 2.
+    assert.ok(code === FAILURE_EXIT_CODE && code !== 1 && code !== 2);
   });
 
   test('stringifies the failure when no report is given', (t) => {

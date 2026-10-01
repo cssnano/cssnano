@@ -2,96 +2,14 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { tokenizer, TokenType } from '@csstools/css-tokenizer';
 import browserslist from 'browserslist';
-import { isInvalidSelector } from 'postcss-minify-selectors';
 import plugin from '../src/index.js';
 import {
   ensureCompatibility as currentCompatibility,
   noVendor,
 } from '../src/lib/ensureCompatibility.js';
 import { ensureCompatibility as legacyCompatibility } from './legacy/ensureCompatibility.js';
-import { parseFuzzArgs } from '../../../util/fuzzRunner.js';
-
-const modes = ['IE 6', 'IE 7', 'IE 11', 'Chrome 60', 'Chrome 120', 'defaults'];
-const explicit = [
-  ['a]', 'malformed-delimiter'],
-  ['a)', 'malformed-delimiter'],
-  ['a::', 'malformed-pseudo'],
-  ['[(])', 'mismatched-nesting'],
-  ['[data-x="a]b)c"]', 'string-delimiters'],
-  ['[data-x="a\\]b\\)\\[\\("]', 'escaped-delimiters'],
-  ['a/* ] ) [ ( */:not([x="("])', 'comments-and-functions'],
-  ['svg|a > :is(.x, [data-y~="z"]):not(:has(+ b))', 'nested-selector-list'],
-];
-
-function random(seed) {
-  let state = Number(seed) % 4294967296;
-  return () => {
-    state = (state * 1664525 + 1013904223) % 4294967296;
-    return state / 4294967296;
-  };
-}
-
-const pick = (rand, values) => values[Math.floor(rand() * values.length)];
-
-function generatedSelector(rand, index) {
-  const atoms = [
-    `.${pick(rand, ['a', 'b', 'item', `x${index}`])}`,
-    `#x${index}`,
-    pick(rand, ['a', 'button', '*', 'svg|a', '|a', 'ns|*']),
-    `[data-${index}]`,
-    `[href${pick(rand, ['=', '~=', '|=', '^=', '$=', '*='])}"v${index}"]`,
-    `[data-x="v${index}" i]`,
-    pick(rand, [
-      ':hover',
-      ':not(.x)',
-      ':is(a, b)',
-      ':nth-child(2n + 1)',
-      ':nonsense',
-      '::-webkit-thing',
-    ]),
-  ];
-  let selector = pick(rand, atoms);
-  if (rand() < 0.65) {
-    selector +=
-      pick(rand, [' > ', ' + ', ' ~ ', ' ', '/*c*/>']) + pick(rand, atoms);
-  }
-  if (rand() < 0.28) selector = `:is(${selector}, :not(${pick(rand, atoms)}))`;
-  if (rand() < 0.2) selector = `  ${selector}  `;
-  return selector;
-}
-
-/** Return deterministic inputs and coverage metadata for a seed. */
-export function generateCases(seed = 0x5eed, count = 400) {
-  const rand = random(seed);
-  const cases = explicit.map(([selector, branch], index) => ({
-    selector,
-    branch,
-    browsers: modes[index % modes.length],
-    features: featureMetadata(selector),
-  }));
-  while (cases.length < count) {
-    const selector = generatedSelector(rand, cases.length);
-    cases.push({
-      selector,
-      branch: 'compositional',
-      browsers: pick(rand, modes),
-      features: featureMetadata(selector),
-    });
-  }
-  return cases.slice(0, count);
-}
-
-function featureMetadata(selector) {
-  const features = [];
-  if (/[>+~]/v.test(selector)) features.push('combinator');
-  if (selector.includes('[')) features.push('attribute');
-  if (/\bi\]/iv.test(selector)) features.push('attribute-flag');
-  if (selector.includes(':')) features.push('pseudo');
-  if (selector.includes('\\')) features.push('escape');
-  if (selector.includes('/*')) features.push('comment');
-  if (/["']/v.test(selector)) features.push('string');
-  return features;
-}
+import { featureMetadata, generateCases } from './lib/fuzzGenerate.js';
+import { parseFuzzArgs, runFuzz } from '../../../util/fuzzRunner.js';
 
 /** Return a canonical structural description, independent of generated names. */
 export function structuralShape(selector) {
@@ -189,26 +107,19 @@ function hasSeparatorComment(selector) {
   return false;
 }
 
-// The legacy oracle also accepted selectors that the selector parser reports
-// as invalid, which merging would turn into an invalid selector list.
-function malformed(selector) {
-  return (
-    ['a]', 'a)', 'a::', '[(])'].includes(selector) ||
-    hasSeparatorComment(selector) ||
-    isInvalidSelector(selector)
-  );
-}
-
-function report(caseData, legacy, current, expected, actual) {
-  const index = firstDifference(expected, actual);
+/** Format a failure from `check` for the shared runner. */
+export function report(failure, seed, index) {
+  const { item, legacy, current, expected, actual } = failure;
   return [
-    `seed=${caseData.seed} case=${caseData.index} branch=${caseData.branch} browsers=${caseData.browsers}`,
-    `selector=${JSON.stringify(caseData.selector)}`,
+    `seed=${seed} case=${index} branch=${item.branch} browsers=${item.browsers}`,
+    `selector=${JSON.stringify(item.selector)}`,
     `legacy=${legacy} current=${current}`,
     `legacy-expected=${JSON.stringify(expected)}`,
-    `actual=${JSON.stringify(actual)} first-differing-byte=${index}`,
+    `actual=${JSON.stringify(actual)} first-differing-byte=${firstDifference(expected, actual)}`,
   ].join('\n');
 }
+
+export { generateCases };
 
 function recordCoverage(item, coverage) {
   coverage.branches.add(item.branch);
@@ -222,7 +133,7 @@ function recordCoverage(item, coverage) {
   coverage.namespaces.add(shape.namespace);
 }
 
-function checkCompatibility(item, caseData, browsers) {
+function checkCompatibility(item, browsers) {
   let legacy;
   try {
     legacy = legacyCompatibility([item.selector], browsers);
@@ -230,31 +141,37 @@ function checkCompatibility(item, caseData, browsers) {
     legacy = null;
   }
   const current = currentCompatibility([item.selector], browsers);
-  if (legacy !== null && legacy !== current && !malformed(item.selector)) {
-    const minimized = shrinkSelector(item.selector, (selector) => {
+  if (
+    legacy !== null &&
+    legacy !== current &&
+    !hasSeparatorComment(item.selector)
+  ) {
+    const selector = shrinkSelector(item.selector, (candidate) => {
       try {
         return (
-          legacyCompatibility([selector], browsers) !==
-          currentCompatibility([selector], browsers)
+          legacyCompatibility([candidate], browsers) !==
+          currentCompatibility([candidate], browsers)
         );
       } catch {
         return false;
       }
     });
-    throw new Error(
-      report(
-        { ...caseData, selector: minimized },
+    return {
+      legacy,
+      current,
+      failure: {
+        item: { ...item, selector },
         legacy,
         current,
-        'n/a',
-        'n/a'
-      )
-    );
+        expected: 'n/a',
+        actual: 'n/a',
+      },
+    };
   }
   return { legacy, current };
 }
 
-async function verifyTransform(item, caseData, legacy, current) {
+function verifyTransform(item, legacy, current) {
   let parsed;
   try {
     parsed = postcss.parse(`${item.selector}{color:red}b{color:red}`);
@@ -269,18 +186,65 @@ async function verifyTransform(item, caseData, legacy, current) {
   const expected = legacyMerge
     ? `${normalizedSelector},b{color:red}`
     : `${normalizedSelector}{color:red}b{color:red}`;
-  const actual = (
-    await postcss([plugin({ overrideBrowserslist: item.browsers })]).process(
-      parsed,
-      { from: undefined }
-    )
-  ).css;
-  if (legacy !== current && malformed(item.selector)) return;
-  if (actual !== expected)
-    throw new Error(report(caseData, legacy, current, expected, actual));
+  // The plugin is synchronous, so `.css` is available without awaiting.
+  const actual = postcss([
+    plugin({ overrideBrowserslist: item.browsers }),
+  ]).process(parsed, { from: undefined }).css;
+  if (legacy !== current && hasSeparatorComment(item.selector)) return;
+  if (actual !== expected) return { item, legacy, current, expected, actual };
 }
 
-function assertCoverage(coverage, count) {
+/** An invalid selector must survive byte-identical, whatever the browsers. */
+function verifyInvalid(item) {
+  const input = `${item.selector}{color:red}b{color:red}`;
+  let parsed;
+  try {
+    parsed = postcss.parse(input);
+  } catch {
+    return;
+  }
+  const actual = postcss([
+    plugin({ overrideBrowserslist: item.browsers }),
+  ]).process(parsed, { from: undefined }).css;
+  if (actual !== input) {
+    return {
+      item,
+      legacy: 'n/a',
+      current: 'n/a',
+      expected: input,
+      actual,
+    };
+  }
+}
+
+/** Return a failure report if the plugin disagrees with the oracle. */
+export function check(item) {
+  if (item.invalid) return verifyInvalid(item);
+  const { legacy, current, failure } = checkCompatibility(
+    item,
+    browserslist(item.browsers)
+  );
+  return failure ?? verifyTransform(item, legacy, current);
+}
+
+/** Assert that the generated cases exercise the selector grammar broadly. */
+export function assertCoverage(cases) {
+  const coverage = {
+    branches: new Set(),
+    features: new Set(),
+    shapes: new Set(),
+    combinators: new Set(),
+    attributeOperators: new Set(),
+    nestingDepths: new Set(),
+    namespaces: new Set(),
+  };
+  for (const item of cases) {
+    if (!item.invalid) recordCoverage(item, coverage);
+  }
+  assert.ok(
+    cases.some((item) => item.invalid),
+    'missing invalid selectors'
+  );
   assert.ok(
     coverage.branches.size >= 3,
     `insufficient grammar branch coverage: ${coverage.branches.size}`
@@ -309,54 +273,24 @@ function assertCoverage(coverage, count) {
     'missing namespace shape'
   );
   assert.ok(
-    coverage.shapes.size >= Math.min(30, count),
+    coverage.shapes.size >= Math.min(30, cases.length),
     `insufficient semantic shape coverage: ${coverage.shapes.size}`
   );
 }
 
-export async function runFuzz({ seed = 0x5eed, count = 400 } = {}) {
-  const cases = generateCases(seed, count);
-  const coverage = {
-    branches: new Set(),
-    features: new Set(),
-    shapes: new Set(),
-    combinators: new Set(),
-    attributeOperators: new Set(),
-    nestingDepths: new Set(),
-    namespaces: new Set(),
-  };
-  for (let index = 0; index < cases.length; index++) {
-    const item = cases[index];
-    const caseData = { ...item, seed, index };
-    recordCoverage(item, coverage);
-    const browsers = browserslist(item.browsers);
-    const { legacy, current } = checkCompatibility(item, caseData, browsers);
-    await verifyTransform(item, caseData, legacy, current);
-  }
-  assertCoverage(coverage, count);
-  return {
-    cases: cases.length,
-    branches: [...coverage.branches],
-    features: [...coverage.features],
-    shapes: coverage.shapes.size,
-    shapeDimensions: {
-      combinators: [...coverage.combinators],
-      attributeOperators: [...coverage.attributeOperators],
-      nestingDepths: [...coverage.nestingDepths],
-      namespaces: [...coverage.namespaces],
-    },
-  };
-}
-
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const { seed, count } = parseFuzzArgs({
+  const { seed, count, interval } = parseFuzzArgs({
     defaultCount: 1000,
     defaultSeed: 0x5eed,
   });
-  try {
-    console.log(JSON.stringify(await runFuzz({ seed, count })));
-  } catch (error) {
-    console.error(error.message);
-    process.exitCode = 1;
-  }
+  const cases = generateCases(seed, count);
+  assertCoverage(cases);
+  runFuzz({
+    cases,
+    check,
+    report: (failure, _seed, index) => report(failure, seed, index),
+    count,
+    seed,
+    interval,
+  });
 }
