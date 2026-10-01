@@ -13,8 +13,7 @@
     "cssnano-preset-advanced": "link:../packages/cssnano-preset-advanced",
     "cssnano-preset-default": "link:../packages/cssnano-preset-default",
     "cssnano-preset-lite": "link:../packages/cssnano-preset-lite",
-    "postcss": "^8.5.28",
-    "svgo": "^4.1.0"
+    "postcss": "^8.5.28"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.4",
