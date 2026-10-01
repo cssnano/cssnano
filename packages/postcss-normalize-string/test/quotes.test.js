@@ -201,3 +201,10 @@ describe('Multi-quote minification', () => {
     )
   );
 });
+
+test(
+  'should preserve @charset double quotes when preferredQuote is single',
+  processCSS(`@charset "UTF-8";`, `@charset "UTF-8";`, {
+    preferredQuote: 'single',
+  })
+);
