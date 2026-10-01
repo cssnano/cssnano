@@ -177,8 +177,8 @@ catalogs:
       specifier: ^10.6.1
       version: 10.6.1
     browserslist:
-      specifier: ^4.29.2
-      version: 4.29.2
+      specifier: ^4.29.3
+      version: 4.29.3
     mdn-data:
       specifier: 2.37.0
       version: 2.37.0
@@ -266,7 +266,7 @@ importers:
     dependencies:
       browserslist:
         specifier: 'catalog:'
-        version: 4.29.2
+        version: 4.29.3
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -395,7 +395,7 @@ importers:
         version: 4.0.2
       browserslist:
         specifier: 'catalog:'
-        version: 4.29.2
+        version: 4.29.3
       caniuse-api:
         specifier: ^4.0.0
         version: 4.0.0
@@ -414,7 +414,7 @@ importers:
     dependencies:
       browserslist:
         specifier: 'catalog:'
-        version: 4.29.2
+        version: 4.29.3
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -515,7 +515,7 @@ importers:
         version: 4.0.2
       browserslist:
         specifier: 'catalog:'
-        version: 4.29.2
+        version: 4.29.3
       caniuse-api:
         specifier: ^4.0.0
         version: 4.0.0
@@ -572,7 +572,7 @@ importers:
     dependencies:
       browserslist:
         specifier: 'catalog:'
-        version: 4.29.2
+        version: 4.29.3
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -585,7 +585,7 @@ importers:
     dependencies:
       browserslist:
         specifier: 'catalog:'
-        version: 4.29.2
+        version: 4.29.3
       caniuse-api:
         specifier: ^4.0.0
         version: 4.0.0
@@ -687,7 +687,7 @@ importers:
         version: 4.0.2
       browserslist:
         specifier: 'catalog:'
-        version: 4.29.2
+        version: 4.29.3
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
@@ -758,7 +758,7 @@ importers:
     dependencies:
       browserslist:
         specifier: 'catalog:'
-        version: 4.29.2
+        version: 4.29.3
       caniuse-api:
         specifier: ^4.0.0
         version: 4.0.0
@@ -822,7 +822,7 @@ importers:
         version: 4.0.2
       browserslist:
         specifier: 'catalog:'
-        version: 4.29.2
+        version: 4.29.3
     devDependencies:
       postcss:
         specifier: 'catalog:'
@@ -1539,16 +1539,16 @@ packages:
   brotli@1.3.3:
     resolution: {integrity: sha512-oTKjJdShmDuGW94SyyaoQvAjf30dZaHnjJ8uAF+u2/vGJkJbJPJAT1gDiOJP5v1Zb6f9KEyW/1HpuaWIXtGHPg==}
 
-  browserslist@4.29.2:
-    resolution: {integrity: sha512-/u9r8k8ue4ZhHCw9ovDtltpWdXeXzjhdxCGj6vm1RGLPXb8lu33EMdoCHF5Sx8oYBS+Q/FYYNmAqlHncxR3RmA==}
+  browserslist@4.29.3:
+    resolution: {integrity: sha512-1R4kiYKXGViqEN0CnoDrXc1StD9niAwu+j2dukWzrD4bJgsD4lDmEp0CRbc6E/vYJIfTHwPmwyaKtVSudICdPA==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
   caniuse-api@4.0.0:
     resolution: {integrity: sha512-B0hQ1OLyJuHTQSOWXvwibWqM6DCoqJdvBA6X1S/53bd4XU7LJ1yurIPlrsouol3mw1jh9pGI4ivubSpmJeIqCA==}
 
-  caniuse-lite@1.0.30001812:
-    resolution: {integrity: sha512-qN+QNNBr93TCmFrmte0bBCjSDMuRvt78VlHT99qIGPszm4QsqCX8lnyWUFkHi8B7ZBAPq8SH+UqyXNy/odMdng==}
+  caniuse-lite@1.0.30001813:
+    resolution: {integrity: sha512-zfjJo4rM0+fUomGDBW/xcDjhIwz/210DGvip2MAMDZ8KHcRPnOHmEgHPZP0UHlZoxr8fYKVJOqcORhYQcG4FKQ==}
 
   commander@11.1.0:
     resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
@@ -2337,8 +2337,8 @@ snapshots:
 
   autoprefixer@10.6.1(postcss@8.5.28):
     dependencies:
-      browserslist: 4.29.2
-      caniuse-lite: 1.0.30001812
+      browserslist: 4.29.3
+      caniuse-lite: 1.0.30001813
       fraction.js: 5.3.4
       picocolors: 1.1.1
       postcss: 8.5.28
@@ -2360,20 +2360,20 @@ snapshots:
     dependencies:
       base64-js: 1.5.1
 
-  browserslist@4.29.2:
+  browserslist@4.29.3:
     dependencies:
       baseline-browser-mapping: 2.11.26
-      caniuse-lite: 1.0.30001812
+      caniuse-lite: 1.0.30001813
       electron-to-chromium: 1.5.439
       node-releases: 2.0.57
-      update-browserslist-db: 1.3.3(browserslist@4.29.2)
+      update-browserslist-db: 1.3.3(browserslist@4.29.3)
 
   caniuse-api@4.0.0:
     dependencies:
-      browserslist: 4.29.2
-      caniuse-lite: 1.0.30001812
+      browserslist: 4.29.3
+      caniuse-lite: 1.0.30001813
 
-  caniuse-lite@1.0.30001812: {}
+  caniuse-lite@1.0.30001813: {}
 
   commander@11.1.0: {}
 
@@ -2793,9 +2793,9 @@ snapshots:
 
   undici@8.10.2: {}
 
-  update-browserslist-db@1.3.3(browserslist@4.29.2):
+  update-browserslist-db@1.3.3(browserslist@4.29.3):
     dependencies:
-      browserslist: 4.29.2
+      browserslist: 4.29.3
       escalade: 3.2.0
       picocolors: 1.1.1
 
