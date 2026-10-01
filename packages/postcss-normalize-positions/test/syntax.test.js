@@ -82,6 +82,39 @@ test(
   passthroughCSS('background-position: constant(--foo)')
 );
 
+/* An arbitrary substitution function may supply any position term, so
+ * `center` beside it cannot be reinterpreted: if attr() yields `left`, then
+ * `center left` is valid but `50% left` is not. */
+test(
+  'should preserve center beside attr() because it may substitute a keyword',
+  passthroughCSS('background-position:center attr(data-y type(<length>))')
+);
+
+test(
+  'should preserve center beside if() because it may substitute a keyword',
+  passthroughCSS('background-position:center if(media(print): left; else: 0)')
+);
+
+test(
+  'should preserve center beside inherit() because it may substitute a keyword',
+  passthroughCSS('background-position:center inherit(--x)')
+);
+
+/* The slash ends the position, so a substitution in the background size
+ * cannot change which terms form it. */
+test(
+  'should normalize a position followed by a substituted background size',
+  processCSS(
+    'background:center center / var(--size)',
+    'background:50% / var(--size)'
+  )
+);
+
+test(
+  'should preserve center beside a custom function because it may substitute a keyword',
+  passthroughCSS('background-position:center --side()')
+);
+
 test(
   'should preserve comments in an unnormalized position range',
   passthroughCSS('background-position:95% /* source comment */ 60%')

@@ -1,3 +1,17 @@
+import type { CSSToken } from '@csstools/css-tokenizer';
+export type BalancedIndex = {
+    tokens: readonly CSSToken[];
+    endForOpening(index: number): number | undefined;
+};
+export type Side = {
+    axis: 'x' | 'y' | 'center';
+    offset: string;
+};
+export type PositionTerm = {
+    start: number;
+    end: number;
+    side: Side | undefined;
+};
 /**
  * @return {import('postcss').Plugin}
  */
