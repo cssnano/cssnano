@@ -1,3 +1,4 @@
+import { isInvalidSelector } from './lib/isInvalidSelector.js';
 export type AutoprefixerOptions = {
     overrideBrowserslist?: string | string[];
 };
@@ -17,5 +18,5 @@ declare namespace pluginCreator {
     var postcss: true;
 }
 declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+export { moduleExports as default, moduleExports as 'module.exports', isInvalidSelector, };
 //# sourceMappingURL=index.d.ts.map

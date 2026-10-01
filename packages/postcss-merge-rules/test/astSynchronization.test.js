@@ -3,6 +3,17 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import plugin from '../src/index.js';
 
+/**
+ * Runs the plugin on `root` in place so tests can observe the original nodes.
+ *
+ * @param {import('postcss').Root} root
+ * @return {Promise<import('postcss').Root>}
+ */
+async function mergeRules(root) {
+  await postcss([plugin()]).process(root, { from: undefined });
+  return root;
+}
+
 test('should not perform a trailing walkRules traversal to flush rule selectors', async () => {
   const root = postcss.parse('h1{display:block}h2{display:block}');
   let walkRulesCalled = false;
@@ -11,7 +22,7 @@ test('should not perform a trailing walkRules traversal to flush rule selectors'
     walkRulesCalled = true;
     return originalWalkRules(...args);
   };
-  await postcss([plugin()]).process(root, { from: undefined });
+  await mergeRules(root);
   assert.strictEqual(walkRulesCalled, false);
   assert.strictEqual(root.toString(), 'h1,h2{display:block}');
 });
@@ -26,7 +37,7 @@ test('should synchronously update rule.selector on the AST during mergeMatchingD
     intermediateSelector = root.nodes[1]?.selector;
     return originalRemove();
   };
-  await postcss([plugin()]).process(root, { from: undefined });
+  await mergeRules(root);
   assert.strictEqual(intermediateSelector, 'h1,h2');
   assert.strictEqual(root.toString(), 'h1,h2{color:red}');
 });
@@ -34,8 +45,7 @@ test('should synchronously update rule.selector on the AST during mergeMatchingD
 test('should preserve selector synchronization across chained sequential merges', async () => {
   const input = '.a{color:red}.b{color:red}.c{color:red}.d{color:red}';
   const expected = '.a,.b,.c,.d{color:red}';
-  const root = postcss.parse(input);
-  await postcss([plugin()]).process(root, { from: undefined });
+  const root = await mergeRules(postcss.parse(input));
   assert.strictEqual(root.toString(), expected);
   assert.strictEqual(root.first.selector, '.a,.b,.c,.d');
   assert.deepStrictEqual(root.first.selectors, ['.a', '.b', '.c', '.d']);
@@ -44,8 +54,7 @@ test('should preserve selector synchronization across chained sequential merges'
 test('should maintain correct selector state across interleaved merge passes', async () => {
   const input =
     '.a{color:red}.b{color:red}.a,.b{font-weight:700}.a,.b{margin:0;padding:0}.c{padding:0}';
-  const root = postcss.parse(input);
-  await postcss([plugin()]).process(root, { from: undefined });
+  const root = await mergeRules(postcss.parse(input));
   assert.strictEqual(
     root.toString(),
     '.a,.b{color:red;font-weight:700;margin:0}.a,.b,.c{padding:0}'
@@ -59,8 +68,7 @@ test('should correctly merge rules in nested containers without trailing contain
   const expected =
     '@media (min-width: 768px){.a,.b{color:red}}' +
     '@supports (display: grid){@layer utils{.x,.y{margin:0}}}';
-  const root = postcss.parse(input);
-  await postcss([plugin()]).process(root, { from: undefined });
+  const root = await mergeRules(postcss.parse(input));
   assert.strictEqual(root.toString(), expected);
 });
 
@@ -71,8 +79,7 @@ test('should preserve complex selector microsyntaxes with commas and escapes', a
   const expected =
     'a[href="https://example.com,test"],b[href="https://example.com,test"]{color:blue}' +
     '.\\:hover,.\\#id{display:inline}';
-  const root = postcss.parse(input);
-  await postcss([plugin()]).process(root, { from: undefined });
+  const root = await mergeRules(postcss.parse(input));
   assert.strictEqual(root.toString(), expected);
 });
 
@@ -85,7 +92,7 @@ test('should leave unmergeable rules untouched without performing selector modif
     walkRulesCalled = true;
     return originalWalkRules(...args);
   };
-  await postcss([plugin()]).process(root, { from: undefined });
+  await mergeRules(root);
   assert.strictEqual(walkRulesCalled, false);
   assert.strictEqual(root.toString(), input);
   assert.strictEqual(root.first.selector, 'h1');
@@ -101,8 +108,7 @@ test('should correctly synchronize selectors when a declaration merge is followe
     '.a,.b{top:0}' +
     '.a,.b,.c{background-color:rgba(255,255,255,0.8);font-family:Helvetica,Arial,sans-serif}' +
     '.c{bottom:0}';
-  const root = postcss.parse(input);
-  await postcss([plugin()]).process(root, { from: undefined });
+  const root = await mergeRules(postcss.parse(input));
   assert.strictEqual(root.toString(), expected);
   assert.strictEqual(root.nodes[0].selector, '.a,.b');
   assert.deepStrictEqual(root.nodes[0].selectors, ['.a', '.b']);

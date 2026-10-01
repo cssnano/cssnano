@@ -96,10 +96,10 @@ suite('fold that do not fire', () => {
   );
 
   test(
-    'no-fold: pseudo-element in common part stays put (not pulled into `:is()`)',
+    'no-fold: invalid pseudo-element before a combinator is left untouched (not pulled into `:is()`)',
     processCSS(
       'a::before h1,b::before h1,c::before h1{content:"x"}',
-      'a:before h1,b:before h1,c:before h1{content:"x"}',
+      'a::before h1,b::before h1,c::before h1{content:"x"}',
       modernBl
     )
   );

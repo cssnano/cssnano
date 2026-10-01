@@ -209,6 +209,93 @@ test(
 );
 
 test(
+  'should not merge a selector that starts with a combinator',
+  passthroughCSS('+n{color:red}x{color:red}')
+);
+
+test(
+  'should not merge a selector that ends with a combinator',
+  passthroughCSS('a>{color:red}x{color:red}')
+);
+
+test(
+  'should not merge a selector with two adjacent combinators',
+  passthroughCSS('a>>b{color:red}x{color:red}')
+);
+
+test(
+  'should not merge a :lang() selector whose languages are not comma-separated',
+  passthroughCSS(':lang(en fr){color:red}x{color:red}')
+);
+
+test(
+  'should merge a :lang() selector with comma-separated languages',
+  processCSS(
+    ':lang(en,fr){color:red}x{color:red}',
+    ':lang(en,fr),x{color:red}',
+    { overrideBrowserslist: 'Chrome 100' }
+  )
+);
+
+test(
+  'should merge a relative selector that starts with a combinator inside :has()',
+  processCSS('a:has(> b){color:red}x{color:red}', 'a:has(> b),x{color:red}', {
+    overrideBrowserslist: 'Chrome 120',
+  })
+);
+
+test(
+  'should not merge a selector with a universal selector after a type selector',
+  passthroughCSS('a*{color:red}x{color:red}')
+);
+
+test(
+  'should not merge a selector with an invalid An+B argument',
+  passthroughCSS(':nth-child(foo){color:red}x{color:red}')
+);
+
+test(
+  'should not merge a selector with an empty :not() argument',
+  passthroughCSS(':not(){color:red}x{color:red}')
+);
+
+test(
+  'should not merge a selector with an invalid :dir() argument',
+  passthroughCSS(':dir(x y){color:red}x{color:red}')
+);
+
+test(
+  'should not merge a selector with a column combinator',
+  passthroughCSS('a||b{color:red}x{color:red}')
+);
+
+test(
+  'should not merge a selector with a /deep/ combinator',
+  passthroughCSS('a /deep/ b{color:red}x{color:red}')
+);
+
+test(
+  'should not merge a selector with an identifier-less hash',
+  passthroughCSS('#1a{color:red}x{color:red}')
+);
+
+test(
+  'should not merge a selector with a pseudo-element before a combinator',
+  passthroughCSS('a::before b{color:red}x{color:red}')
+);
+
+test(
+  'should merge a selector whose forgiving :is() argument drops a pseudo-element',
+  processCSS(
+    ':is(a::before,b) c{color:red}x{color:red}',
+    ':is(a::before,b) c,x{color:red}',
+    {
+      overrideBrowserslist: 'Chrome 120',
+    }
+  )
+);
+
+test(
   'should not merge an attribute selector with whitespace inside its matcher',
   passthroughCSS('a{color:red}[x~ =y]{color:red}')
 );

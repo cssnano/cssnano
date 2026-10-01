@@ -8,7 +8,11 @@ import {
   semanticFacts,
   zeroSpecificity,
 } from './arena.js';
-import { decodedIdent } from './tokenUtils.js';
+import {
+  allowsLeadingCombinator,
+  explicitCombinator,
+  violatesComplexMode,
+} from './parseArenaCombinators.js';
 
 const { TokenType } = cssnanoUtils;
 /** @typedef {import('./arena.js').ListMode} ListMode */
@@ -44,41 +48,6 @@ function trimTrivia(input, start, end) {
 export function hasContent(input, start, end) {
   const trimmed = trimTrivia(input, start, end);
   return trimmed.start < trimmed.end;
-}
-
-/** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} index */
-function explicitCombinator(input, index) {
-  const token = input[index];
-  if (token?.[0] !== TokenType.Delim) return;
-  if (token[1] === '>' || token[1] === '+' || token[1] === '~')
-    return { value: token[1], end: index + 1 };
-  if (
-    token[1] === '|' &&
-    input[index + 1]?.[0] === TokenType.Delim &&
-    input[index + 1][1] === '|'
-  )
-    return { value: '||', end: index + 2 };
-  if (
-    token[1] === '/' &&
-    decodedIdent(input[index + 1]) === 'deep' &&
-    input[index + 2]?.[0] === TokenType.Delim &&
-    input[index + 2][1] === '/'
-  )
-    return { value: '/deep/', end: index + 3 };
-}
-
-/** @param {ListMode} mode @param {readonly object[]} parts */
-function allowsLeadingCombinator(mode, parts) {
-  return mode === 'relative' && parts.length === 0;
-}
-
-/** @param {ListMode} mode @param {readonly {kind:string}[]} parts */
-function violatesComplexMode(mode, parts) {
-  return (
-    parts.at(-1)?.kind === 'combinator' ||
-    (mode === 'compound-only' &&
-      parts.some(({ kind }) => kind === 'combinator'))
-  );
 }
 
 /** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} start @param {number} end */
@@ -243,6 +212,27 @@ function accumulateSummary(status, specificity, addition) {
   return { status, specificity: result.specificity };
 }
 
+/**
+ * Whether a compound selector itself has a pseudo-element. Its facts also
+ * count pseudo-elements inside arguments, which a forgiving `:is()` drops.
+ *
+ * @param {Builder} builder
+ * @param {number} nodeIndex
+ */
+function hasOwnPseudoElement(builder, nodeIndex) {
+  const end = builder.nodes[nodeIndex].subtreeEnd;
+  for (let index = nodeIndex + 1; index < end;) {
+    const node = builder.nodes[index];
+    if (
+      node.kind === 'pseudo' &&
+      builder.payloads.pseudos[node.payload].pseudoKind === 'element'
+    )
+      return true;
+    index = node.subtreeEnd;
+  }
+  return false;
+}
+
 /** @param {Builder} builder @param {number} nodeIndex @param {ParseStatus} initialStatus @param {Specificity} initialSpecificity @param {SemanticFacts} initialFacts */
 function summarizeComplex(
   builder,
@@ -254,6 +244,7 @@ function summarizeComplex(
   let status = initialStatus;
   let specificity = initialSpecificity;
   let facts = initialFacts;
+  let afterPseudoElement = false;
   for (
     let childIndex = nodeIndex + 1;
     childIndex < builder.nodes.length;
@@ -262,7 +253,12 @@ function summarizeComplex(
     const child = builder.nodes[childIndex];
     facts = mergeSemanticFacts(facts, child.facts ?? 0);
     status = mergeStatus(status, child.status);
-    if (child.kind === 'combinator') continue;
+    if (child.kind === 'combinator') {
+      // A pseudo-element must be the last compound selector (Selectors 4 §3.6).
+      if (afterPseudoElement) status = 'invalid';
+      continue;
+    }
+    afterPseudoElement = hasOwnPseudoElement(builder, childIndex);
     ({ status, specificity } = accumulateSummary(
       status,
       specificity,

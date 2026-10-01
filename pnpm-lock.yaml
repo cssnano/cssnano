@@ -522,6 +522,9 @@ importers:
       cssnano-utils:
         specifier: workspace:^
         version: link:../cssnano-utils
+      postcss-minify-selectors:
+        specifier: workspace:^
+        version: link:../postcss-minify-selectors
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
