@@ -42,7 +42,7 @@ describe('CSS processing', () => {
   );
 });
 
-describe('framework integrations', () => {
+describe('framework tests', () => {
   test(
     'should correctly handle the framework tests',
     { concurrency: true },

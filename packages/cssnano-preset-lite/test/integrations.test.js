@@ -8,7 +8,7 @@ import {
 } from '../../../util/integrationTestHelpers.js';
 import preset from '../src/index.js';
 
-describe('lite preset framework integrations', () => {
+describe('framework tests', () => {
   test(
     'should correctly handle the framework tests',
     { concurrency: true },
