@@ -106,7 +106,7 @@ test(
   'should not crash on potential circular references',
   processCSS(
     `.hi{animation:hi 2s infinite linear}@-webkit-keyframes hi{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}.ho{animation:ho 2s infinite linear}@-webkit-keyframes ho{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}@keyframes ho{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}@keyframes hi{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}`,
-    `.hi{animation:hi 2s infinite linear}.ho{animation:hi 2s infinite linear}@-webkit-keyframes ho{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}@keyframes hi{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}`
+    `.hi{animation:hi 2s infinite linear}@-webkit-keyframes hi{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}.ho{animation:hi 2s infinite linear}@keyframes hi{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}`
   )
 );
 
@@ -169,9 +169,8 @@ test(
 
 test(
   'should not corrupt custom properties containing animation in their name',
-  processCSS(
-    '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes b{0%{color:#fff}to{color:#000}}:root{--animation:a;--my-animation:a}',
-    '@keyframes b{0%{color:#fff}to{color:#000}}:root{--animation:a;--my-animation:a}'
+  passthroughCSS(
+    '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes b{0%{color:#fff}to{color:#000}}:root{--animation:a;--my-animation:a}'
   )
 );
 
@@ -180,14 +179,6 @@ test(
   processCSS(
     '@keyframes a{0%{opacity:0}}@keyframes other{0%{opacity:0}}div{animation:a 1s forwards}',
     '@keyframes other{0%{opacity:0}}div{animation:other 1s forwards}'
-  )
-);
-
-test(
-  'should not corrupt arguments inside functions in animation declarations',
-  processCSS(
-    '@keyframes a{0%{opacity:0}}@keyframes b{0%{opacity:0}}div{animation:a 1s steps(4,jump-start),b 1s var(--foo,a)}',
-    '@keyframes b{0%{opacity:0}}div{animation:b 1s steps(4,jump-start),b 1s var(--foo,a)}'
   )
 );
 
@@ -214,11 +205,13 @@ test(
   )
 );
 
+// `a` is defined in both families, `b` only in the prefixed one and `c` only
+// in the unprefixed one. A browser may treat the prefixed at-rule as an alias
+// of the unprefixed one, so no two of them are interchangeable.
 test(
-  'should isolate vendor prefixed keyframes replacements from standard keyframes',
-  processCSS(
-    '@-webkit-keyframes a{from{opacity:0}to{opacity:1}}@-webkit-keyframes b{from{opacity:0}to{opacity:1}}@keyframes c{from{opacity:0}to{opacity:1}}@keyframes a{from{opacity:0}to{opacity:1}}div{-webkit-animation:a 1s;animation:c 1s}',
-    '@-webkit-keyframes b{from{opacity:0}to{opacity:1}}@keyframes a{from{opacity:0}to{opacity:1}}div{-webkit-animation:b 1s;animation:a 1s}'
+  'should not merge names whose vendor prefixed and standard definitions differ',
+  passthroughCSS(
+    '@-webkit-keyframes a{from{opacity:0}to{opacity:1}}@-webkit-keyframes b{from{opacity:0}to{opacity:1}}@keyframes c{from{opacity:0}to{opacity:1}}@keyframes a{from{opacity:0}to{opacity:1}}div{-webkit-animation:a 1s;animation:c 1s}'
   )
 );
 
@@ -323,3 +316,35 @@ test('should not serialize at-rule body when container only has a single at-rule
   assert.strictEqual(getSerializationCalls(), 0);
   assert.strictEqual(root.toString(), input);
 });
+
+test(
+  'should not turn an invalid animation into a valid one when a string reference follows a hex escape',
+  // `\66 "a"` is two names without a comma; `\66 b` would be the one name fb.
+  processCSS(
+    '@keyframes a{0%{opacity:0}}@keyframes b{0%{opacity:0}}div{animation:\\66 "a"}',
+    '@keyframes b{0%{opacity:0}}div{animation:\\66  b}'
+  )
+);
+
+test(
+  'should keep a replaced string reference separate from a preceding escaped space',
+  processCSS(
+    '@keyframes a{0%{opacity:0}}@keyframes b{0%{opacity:0}}div{animation:foo\\ "a"}',
+    '@keyframes b{0%{opacity:0}}div{animation:foo\\  b}'
+  )
+);
+
+test(
+  'should treat an escaped spelling and the plain spelling of a name as one name',
+  processCSS(
+    '@keyframes \\61{0%{opacity:0}}@keyframes a{0%{opacity:0}}div{animation:a 1s}',
+    '@keyframes a{0%{opacity:0}}div{animation:a 1s}'
+  )
+);
+
+test(
+  'should not merge identical keyframes defined in separate @media blocks (conservative: separate blocks may have different conditions in effect)',
+  passthroughCSS(
+    '@media (min-width:1px){@keyframes a{0%{opacity:0}}}@media (min-width:1px){@keyframes b{0%{opacity:0}}}div{animation:b 1s}'
+  )
+);

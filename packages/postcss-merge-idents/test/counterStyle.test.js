@@ -145,9 +145,8 @@ test(
 
 test(
   'should not corrupt custom properties containing system or list-style in their name',
-  processCSS(
-    '@counter-style a{system:cyclic;symbols:"A"}@counter-style b{system:cyclic;symbols:"A"}:root{--design-system:a;--system:a}',
-    '@counter-style b{system:cyclic;symbols:"A"}:root{--design-system:a;--system:a}'
+  passthroughCSS(
+    '@counter-style a{system:cyclic;symbols:"A"}@counter-style b{system:cyclic;symbols:"A"}:root{--design-system:a;--system:a}'
   )
 );
 
@@ -353,3 +352,38 @@ test('should not serialize counter-style body when container only has a single a
   assert.strictEqual(getSerializationCalls(), 0);
   assert.strictEqual(root.toString(), input);
 });
+
+const S = 'system:cyclic;symbols:"A"';
+const T = 'system:cyclic;symbols:"B"';
+const U = 'system:cyclic;symbols:"C"';
+const M = '(min-width:600px)';
+
+test(
+  'should not rename to a counter style that a conditional rule redefines elsewhere in the document',
+  passthroughCSS(
+    `@counter-style a{${S}}@counter-style b{${S}}@media ${M}{@counter-style b{${T}}}ol{list-style:a}`
+  )
+);
+
+test(
+  'should merge counter styles defined together in one conditional rule and rewrite references outside it',
+  processCSS(
+    `@counter-style c{${U}}@media ${M}{@counter-style a{${S}}@counter-style b{${S}}}ol{list-style:a}`,
+    `@counter-style c{${U}}@media ${M}{@counter-style b{${S}}}ol{list-style:b}`
+  )
+);
+
+// A counter-style rule inside a style rule is invalid and defines nothing.
+test(
+  'should not merge a counter style defined inside a style rule with a root counter style',
+  passthroughCSS(
+    `div{@counter-style a{${S}}}@counter-style b{${S}}ol{list-style:a}`
+  )
+);
+
+test(
+  'should not merge counter styles defined by different vendor prefixed at-rule families',
+  passthroughCSS(
+    '@-moz-counter-style a{system:extends decimal;suffix:"> "}@counter-style b{system:extends decimal;suffix:"> "}ol{list-style:a}'
+  )
+);
