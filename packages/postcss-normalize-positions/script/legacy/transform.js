@@ -37,18 +37,22 @@ function terms(value) {
   return result;
 }
 
-/** @param {string} first @param {string | undefined} second @param {string} firstRaw @param {string} separator @param {string} fallback */
-function normalizedPosition(first, second, firstRaw, separator, fallback) {
+/** @param {string} first @param {string | undefined} second @param {string} firstRaw @param {string | undefined} secondRaw @param {string} separator @param {string} fallback */
+function normalizedPosition(
+  first,
+  second,
+  firstRaw,
+  secondRaw,
+  separator,
+  fallback
+) {
   if (!second && first === 'center') return '50%';
   if (!second && horizontal.has(first)) return horizontal.get(first);
   if (second === 'center')
-    return (
-      horizontal.get(first) ??
-      vertical.get(first) ??
-      (first === 'center' ? '50%' : firstRaw)
-    );
+    return horizontal.get(first) ?? (first === 'center' ? '50%' : firstRaw);
   if (first === 'center' && horizontal.has(second))
     return horizontal.get(second);
+  if (first === 'center' && vertical.has(second)) return secondRaw;
   if (horizontal.has(first) && vertical.has(second))
     return horizontal.get(first) + separator + vertical.get(second);
   if (vertical.has(first) && horizontal.has(second))
@@ -78,6 +82,7 @@ function normalizeLayer(layer) {
     first,
     second,
     firstRaw,
+    secondRaw,
     separator,
     firstRaw + (secondRaw ? separator + secondRaw : '')
   );
