@@ -27,7 +27,7 @@ export const freqConv = new Map([
   ['hz', 1],
 ]);
 
-/** @typedef {{time?: boolean, length?: boolean, angle?: boolean, frequency?: boolean}} ConvertOptions */
+/** @typedef {{time?: boolean, length?: boolean, angle?: boolean, frequency?: boolean, allowExponent?: boolean}} ConvertOptions */
 
 /**
  * Accurately round a number to a fixed decimal precision without IEEE-754 binary
@@ -54,6 +54,49 @@ export function roundToPrecision(value, precision) {
 }
 
 /**
+ * Compute the shortest exact scientific notation for a number if one exists.
+ *
+ * @param {number} num
+ * @return {string | undefined}
+ */
+export function toCompactExponent(num) {
+  if (num === 0 || !Number.isFinite(num)) {
+    return undefined;
+  }
+  const abs = Math.abs(num);
+  if (Number.isInteger(num) && abs > Number.MAX_SAFE_INTEGER) {
+    return undefined;
+  }
+
+  const sign = num < 0 ? '-' : '';
+  const expStr = abs.toExponential();
+  const eIndex = expStr.indexOf('e');
+  const mantissaStr = expStr.slice(0, eIndex);
+  const baseExp = Number(expStr.slice(eIndex + 1));
+  const dotIndex = mantissaStr.indexOf('.');
+
+  if (dotIndex === -1) {
+    const candidate = sign + mantissaStr + 'e' + baseExp;
+    return Number(candidate) === num ? candidate : undefined;
+  }
+
+  const digits =
+    mantissaStr.slice(0, dotIndex) + mantissaStr.slice(dotIndex + 1);
+  const decPlaces = mantissaStr.length - dotIndex - 1;
+  const candidate1 = sign + digits + 'e' + (baseExp - decPlaces);
+  if (Number(candidate1) === num) {
+    return candidate1;
+  }
+
+  const candidate2 = sign + mantissaStr + 'e' + baseExp;
+  if (Number(candidate2) === num) {
+    return candidate2;
+  }
+
+  return undefined;
+}
+
+/**
  * @param {number} number
  * @return {string}
  */
@@ -74,12 +117,44 @@ export function dropLeadingZero(number) {
 }
 
 /**
+ * Format a number using standard decimal or compact exponent notation.
+ *
+ * @param {number} number
+ * @param {boolean} [allowExponent=true]
+ * @return {string}
+ */
+export function formatNumber(number, allowExponent = true) {
+  const decimal = dropLeadingZero(number);
+  if (!allowExponent) {
+    return decimal;
+  }
+  const abs = Math.abs(number);
+  if (abs >= 0.001 && abs < 1000) {
+    return decimal;
+  }
+  if (Number.isInteger(number) && number % 1000 !== 0) {
+    return decimal;
+  }
+  const exp = toCompactExponent(number);
+  if (exp && exp.length < decimal.length) {
+    return exp;
+  }
+  return decimal;
+}
+
+/**
  * @param {number} number
  * @param {string} originalUnit
  * @param {typeof lengthConv | typeof timeConv | typeof angleConv | typeof freqConv | typeof metricConv} conversions
+ * @param {boolean} [allowExponent=true]
  * @return {string}
  */
-function findShortestConversion(number, originalUnit, conversions) {
+function findShortestConversion(
+  number,
+  originalUnit,
+  conversions,
+  allowExponent = true
+) {
   const base = number * /** @type {number} */ (conversions.get(originalUnit));
 
   let shortest = '';
@@ -88,7 +163,7 @@ function findShortestConversion(number, originalUnit, conversions) {
       continue;
     }
     const convertedNumber = Number((base / factor).toPrecision(15));
-    const value = dropLeadingZero(convertedNumber) + u;
+    const value = formatNumber(convertedNumber, allowExponent) + u;
 
     if (!shortest || value.length < shortest.length) {
       shortest = value;
@@ -114,38 +189,121 @@ function convertAngle(number, unit) {
 }
 
 /**
- * @param {number} number
  * @param {string} unit
  * @param {ConvertOptions} options
+ * @return {boolean}
+ */
+function isConversionDisabled(unit, options) {
+  const { time, length, angle, frequency } = options;
+  if (length === false && (lengthConv.has(unit) || metricConv.has(unit))) {
+    return true;
+  }
+  if (time === false && timeConv.has(unit)) {
+    return true;
+  }
+  if (angle === false && (angleConv.has(unit) || unit === 'rad')) {
+    return true;
+  }
+  if (frequency === false && freqConv.has(unit)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @param {number} number
+ * @param {string} lowerCaseUnit
+ * @param {ConvertOptions} options
+ * @return {string | undefined}
+ */
+function findConverted(number, lowerCaseUnit, options) {
+  const { time, length, angle, frequency } = options;
+  const allowExponent = options.allowExponent ?? true;
+  if (length !== false) {
+    if (lengthConv.has(lowerCaseUnit)) {
+      return findShortestConversion(
+        number,
+        lowerCaseUnit,
+        lengthConv,
+        allowExponent
+      );
+    }
+    if (metricConv.has(lowerCaseUnit)) {
+      return findShortestConversion(
+        number,
+        lowerCaseUnit,
+        metricConv,
+        allowExponent
+      );
+    }
+  }
+  if (time !== false && timeConv.has(lowerCaseUnit)) {
+    return findShortestConversion(
+      number,
+      lowerCaseUnit,
+      timeConv,
+      allowExponent
+    );
+  }
+  if (angle !== false) {
+    const convertedAngle = convertAngle(number, lowerCaseUnit);
+    if (convertedAngle) {
+      return convertedAngle;
+    }
+  }
+  if (frequency !== false && freqConv.has(lowerCaseUnit)) {
+    return findShortestConversion(
+      number,
+      lowerCaseUnit,
+      freqConv,
+      allowExponent
+    );
+  }
+  return undefined;
+}
+
+/**
+ * @param {string} converted
+ * @param {string} value
+ * @param {string} decimalValue
+ * @param {string} lowerCaseUnit
+ * @return {boolean}
+ */
+function shouldUseConverted(converted, value, decimalValue, lowerCaseUnit) {
+  if (converted.length < value.length) {
+    return true;
+  }
+  if (lowerCaseUnit === 'rad' && converted.length <= value.length) {
+    return true;
+  }
+  return (
+    converted.length === value.length &&
+    !converted.includes('e') &&
+    value.includes('e') &&
+    converted.length < decimalValue.length
+  );
+}
+
+/**
+ * @param {number} number
+ * @param {string} unit
+ * @param {ConvertOptions} [options]
  * @return {string}
  */
-const convert = function (number, unit, options) {
-  const { time, length, angle, frequency } = options;
+const convert = function (number, unit, options = {}) {
   const lowerCaseUnit = unit.toLowerCase();
-  let converted;
-  if (length !== false && lengthConv.has(lowerCaseUnit)) {
-    converted = findShortestConversion(number, lowerCaseUnit, lengthConv);
-  } else if (length !== false && metricConv.has(lowerCaseUnit)) {
-    converted = findShortestConversion(number, lowerCaseUnit, metricConv);
-  } else if (time !== false && timeConv.has(lowerCaseUnit)) {
-    converted = findShortestConversion(number, lowerCaseUnit, timeConv);
+  if (isConversionDisabled(lowerCaseUnit, options)) {
+    return dropLeadingZero(number) + (unit ? unit : '');
   }
 
-  if (!converted && angle !== false) {
-    converted = convertAngle(number, lowerCaseUnit);
-  }
-  if (!converted && frequency !== false && freqConv.has(lowerCaseUnit)) {
-    converted = findShortestConversion(number, lowerCaseUnit, freqConv);
-  }
-
-  const value = dropLeadingZero(number) + (unit ? unit : '');
-  if (!converted) {
-    return value;
-  }
+  const converted = findConverted(number, lowerCaseUnit, options);
+  const decimalValue = dropLeadingZero(number) + (unit ? unit : '');
+  const value =
+    formatNumber(number, options.allowExponent ?? true) + (unit ? unit : '');
 
   if (
-    converted.length < value.length ||
-    (lowerCaseUnit === 'rad' && converted.length <= value.length)
+    converted &&
+    shouldUseConverted(converted, value, decimalValue, lowerCaseUnit)
   ) {
     return converted;
   }
