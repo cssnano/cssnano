@@ -92,6 +92,78 @@ function skipsTransformation(property, opts) {
   );
 }
 
+/** @param {boolean | string[]} supportsIE @return {boolean} */
+function hasIESupportTarget(supportsIE) {
+  if (typeof supportsIE === 'boolean') {
+    return supportsIE;
+  }
+  return supportsIE.some((b) => b.startsWith('ie '));
+}
+
+/** @param {import('postcss').Declaration} decl @param {string} lowerCasedProp @return {boolean} */
+function isAtPropertyInitialValue(decl, lowerCasedProp) {
+  if (lowerCasedProp !== 'initial-value') return false;
+  const parent = decl.parent;
+  return (
+    parent?.type === 'atrule' &&
+    /** @type {import('postcss').AtRule} */ (parent).name.toLowerCase() ===
+      'property'
+  );
+}
+
+/**
+ * @param {string} strippedProp
+ * @param {boolean} isLineHeight
+ * @param {boolean} isFlexBasis
+ * @param {boolean} hasIESupport
+ * @param {boolean} inKeyframes
+ * @param {boolean} isKeyframeProp
+ * @param {boolean} allowsAtPropertyPercentage
+ * @return {boolean}
+ */
+function shouldKeepZeroPercent(
+  strippedProp,
+  isLineHeight,
+  isFlexBasis,
+  hasIESupport,
+  inKeyframes,
+  isKeyframeProp,
+  allowsAtPropertyPercentage
+) {
+  if (isLineHeight || isFlexBasis || zeroPercentRetention.has(strippedProp)) {
+    return true;
+  }
+  if (hasIESupport && zeroUnitRetention.ie11Percent.has(strippedProp)) {
+    return true;
+  }
+  if (inKeyframes && isKeyframeProp) {
+    return true;
+  }
+  return allowsAtPropertyPercentage;
+}
+
+/**
+ * @param {string} strippedProp
+ * @param {boolean} isLineHeight
+ * @param {boolean} isFlexBasis
+ * @param {boolean} isAtProperty
+ * @return {boolean}
+ */
+function shouldKeepZeroLength(
+  strippedProp,
+  isLineHeight,
+  isFlexBasis,
+  isAtProperty
+) {
+  return (
+    isLineHeight ||
+    isFlexBasis ||
+    strippedProp === 'columns' ||
+    strippedProp === 'flex-order' ||
+    isAtProperty
+  );
+}
+
 /**
  * @param {import('postcss').Declaration} decl
  * @param {string} lowerCasedProp
@@ -102,38 +174,34 @@ function skipsTransformation(property, opts) {
 function getDeclarationFlags(decl, lowerCasedProp, strippedProp, supportsIE) {
   const isLineHeight = strippedProp === 'line-height';
   const isFlexBasis = flexBasisProperties.has(strippedProp);
-  const isAtProperty =
-    lowerCasedProp === 'initial-value' &&
-    decl.parent?.type === 'atrule' &&
-    /** @type {import('postcss').AtRule} */ (decl.parent).name.toLowerCase() ===
-      'property';
+  const isAtProperty = isAtPropertyInitialValue(decl, lowerCasedProp);
   const isAlpha = alphaProperties.has(strippedProp);
   const isKeyframeProp = zeroUnitRetention.keyframePercent.has(strippedProp);
   const inKeyframes = (isKeyframeProp || isAlpha) && isInsideKeyframes(decl);
   const hasParentContext = lowerCasedProp === 'initial-value' || inKeyframes;
 
-  const hasIESupport =
-    typeof supportsIE === 'boolean'
-      ? supportsIE
-      : supportsIE.some((b) => b.startsWith('ie '));
+  const allowsAtPropertyPercentage =
+    isAtProperty &&
+    atPropertyAllowsPercentage(
+      /** @type {import('postcss').AtRule} */ (decl.parent)
+    );
 
-  const keepZeroPercent =
-    isLineHeight ||
-    isFlexBasis ||
-    zeroPercentRetention.has(strippedProp) ||
-    (hasIESupport && zeroUnitRetention.ie11Percent.has(strippedProp)) ||
-    (inKeyframes && isKeyframeProp) ||
-    (isAtProperty &&
-      atPropertyAllowsPercentage(
-        /** @type {import('postcss').AtRule} */ (decl.parent)
-      ));
-
-  const keepZeroLength =
-    isLineHeight ||
-    isFlexBasis ||
-    strippedProp === 'columns' ||
-    strippedProp === 'flex-order' ||
-    isAtProperty;
+  const hasIESupport = hasIESupportTarget(supportsIE);
+  const keepZeroPercent = shouldKeepZeroPercent(
+    strippedProp,
+    isLineHeight,
+    isFlexBasis,
+    hasIESupport,
+    inKeyframes,
+    isKeyframeProp,
+    allowsAtPropertyPercentage
+  );
+  const keepZeroLength = shouldKeepZeroLength(
+    strippedProp,
+    isLineHeight,
+    isFlexBasis,
+    isAtProperty
+  );
 
   const clampAlpha = !inKeyframes;
   const isFont = strippedProp === 'font';

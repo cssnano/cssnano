@@ -1,6 +1,11 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import convert, { roundToPrecision } from '../src/lib/convert.js';
+import convert, {
+  dropLeadingZero,
+  formatNumber,
+  roundToPrecision,
+  toCompactExponent,
+} from '../src/lib/convert.js';
 
 describe('Standalone convert() contracts', () => {
   test('should not convert 0px to 0in', () => {
@@ -80,5 +85,31 @@ describe('Standalone convert() contracts', () => {
     assert.equal(roundToPrecision(1.2345e2, 2), 123.45);
     assert.equal(roundToPrecision(1.23456e2, 2), 123.46);
     assert.equal(roundToPrecision(9.8765e-2, 3), 0.099);
+  });
+
+  test('should compute shortest exact scientific notation with toCompactExponent', () => {
+    assert.equal(toCompactExponent(0), undefined);
+    assert.equal(toCompactExponent(Number.NaN), undefined);
+    assert.equal(toCompactExponent(Infinity), undefined);
+    assert.equal(toCompactExponent(-Infinity), undefined);
+    assert.equal(toCompactExponent(Number.MAX_SAFE_INTEGER + 100), undefined);
+    assert.equal(toCompactExponent(1000), '1e3');
+    assert.equal(toCompactExponent(10000), '1e4');
+    assert.equal(toCompactExponent(120000), '12e4');
+    assert.equal(toCompactExponent(0.0001), '1e-4');
+    assert.equal(toCompactExponent(0.000012), '12e-6');
+    assert.equal(toCompactExponent(-1000), '-1e3');
+    assert.equal(toCompactExponent(-0.0001), '-1e-4');
+  });
+
+  test('should format numbers with formatNumber respecting allowExponent', () => {
+    assert.equal(formatNumber(1000, true), '1e3');
+    assert.equal(formatNumber(1000, false), '1000');
+    assert.equal(formatNumber(100, true), '100');
+    assert.equal(formatNumber(0.0001, true), '1e-4');
+    assert.equal(formatNumber(0.5, true), '.5');
+    assert.equal(formatNumber(-0.5, true), '-.5');
+    assert.equal(dropLeadingZero(0.5), '.5');
+    assert.equal(dropLeadingZero(-0.5), '-.5');
   });
 });

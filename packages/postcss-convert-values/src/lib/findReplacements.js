@@ -1,6 +1,6 @@
 import cssnanoUtils from 'cssnano-utils';
 import convert, {
-  dropLeadingZero,
+  formatNumber,
   roundToPrecision,
   timeConv,
   angleConv,
@@ -59,6 +59,33 @@ const convertibleUnits = new Set([
 /** @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions & { overrideBrowserslist?: string | string[] } & import('browserslist').Options} Options */
 /** @typedef {{keepZeroPercent: boolean, keepZeroLength: boolean, clampAlpha: boolean, isAlpha: boolean, isFont: boolean}} ReplacementFlags */
 
+/**
+ * @param {string} unit
+ * @param {string} lowerCasedUnit
+ * @param {Options} opts
+ * @param {boolean} keepZeroPercent
+ * @param {boolean} keepZeroLength
+ * @return {string}
+ */
+function formatZero(
+  unit,
+  lowerCasedUnit,
+  opts,
+  keepZeroPercent,
+  keepZeroLength
+) {
+  if (convertibleUnits.has(lowerCasedUnit)) {
+    return convert(0, unit, opts);
+  }
+  if (unit === '%') {
+    return keepZeroPercent ? '0%' : '0';
+  }
+  if (lengthUnits.has(lowerCasedUnit)) {
+    return keepZeroLength ? '0' + unit : '0';
+  }
+  return '0';
+}
+
 /** @param {number} number @param {string} unit @param {string} raw @param {Options} opts @param {boolean} keepZeroPercent @param {boolean} keepZeroLength @param {boolean} hasDecimal @return {string} */
 function parseNumber(
   number,
@@ -87,18 +114,21 @@ function parseNumber(
     num = roundToPrecision(num, opts.precision);
   }
   if (num === 0) {
-    if (convertibleUnits.has(lowerCasedUnit)) {
-      return convert(0, unit, opts);
-    }
-    if (unit === '%') {
-      return keepZeroPercent ? '0%' : '0';
-    }
-    if (lengthUnits.has(lowerCasedUnit)) {
-      return keepZeroLength ? '0' + unit : '0';
-    }
-    return '0';
+    return formatZero(
+      unit,
+      lowerCasedUnit,
+      opts,
+      keepZeroPercent,
+      keepZeroLength
+    );
   }
-  return convert(num, unit, opts);
+  // An exponent is never a valid <integer>, so a bare number written as an
+  // integer may sit where only <integer> is allowed. Dimensions and numbers
+  // already written as non-integers cannot.
+  const writtenAsInteger =
+    unit === '' && !raw.includes('.') && !raw.toLowerCase().includes('e');
+  const allowExponent = (opts.allowExponent ?? true) && !writtenAsInteger;
+  return convert(num, unit, { ...opts, allowExponent });
 }
 
 /** @param {string} value @param {number} number @param {string} unit @param {Options} opts @param {boolean} [clamp] @return {string} */
@@ -112,7 +142,7 @@ function clampOpacity(value, number, unit, opts, clamp = true) {
     if (typeof opts.precision === 'number' && opts.precision >= 0) {
       decimalNumber = roundToPrecision(decimalNumber, opts.precision);
     }
-    const decimal = dropLeadingZero(decimalNumber);
+    const decimal = formatNumber(decimalNumber, opts.allowExponent ?? true);
     return decimal.length < value.length ? decimal : value;
   }
   if (clamp) {
