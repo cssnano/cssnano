@@ -203,41 +203,42 @@ describe('committed place-* support data', () => {
   });
 
   test('postdates every allowlisted keyword the compatibility data covers, so the allowlist stays true', () => {
-    const alignmentProperties = [
+    const contexts = [
       'align-content',
       'justify-content',
       'align-items',
       'justify-items',
       'align-self',
       'justify-self',
-    ];
+    ].flatMap((property) => [
+      { property, context: 'flex_context' },
+      { property, context: 'grid_context' },
+    ]);
     let checked = 0;
-    for (const property of alignmentProperties) {
-      for (const context of ['flex_context', 'grid_context']) {
-        const subfeatures = bcdData.css.properties[property][context] ?? {};
-        for (const [name, entry] of Object.entries(subfeatures)) {
-          if (
-            !name.split('_').every((word) => widelySupported.has(word)) ||
-            layoutOnlySubfeatures.has(name)
-          ) {
+    for (const { property, context } of contexts) {
+      const subfeatures = bcdData.css.properties[property][context] ?? {};
+      for (const [name, entry] of Object.entries(subfeatures)) {
+        if (
+          !name.split('_').every((word) => widelySupported.has(word)) ||
+          layoutOnlySubfeatures.has(name)
+        ) {
+          continue;
+        }
+        for (const [bcdName, browserslistName] of browserslistNames) {
+          // BCD names its compatibility record __compat.
+          // eslint-disable-next-line no-underscore-dangle
+          const added = entry.__compat.support[bcdName].version_added;
+          if (typeof added !== 'string' || !committed[browserslistName]) {
             continue;
           }
-          for (const [bcdName, browserslistName] of browserslistNames) {
-            // BCD names its compatibility record __compat.
-            // eslint-disable-next-line no-underscore-dangle
-            const added = entry.__compat.support[bcdName].version_added;
-            if (typeof added !== 'string' || !committed[browserslistName]) {
-              continue;
-            }
-            checked++;
-            assert.ok(
-              compareVersions(
-                committed[browserslistName],
-                added.replace(/^≤/v, '')
-              ) >= 0,
-              `${browserslistName} ${property} ${name}`
-            );
-          }
+          checked++;
+          assert.ok(
+            compareVersions(
+              committed[browserslistName],
+              added.replace(/^≤/v, '')
+            ) >= 0,
+            `${browserslistName} ${property} ${name}`
+          );
         }
       }
     }
