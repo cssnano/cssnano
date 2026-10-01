@@ -116,6 +116,9 @@ export function pluginIdempotencyTests(
   const aggregateCSS = frameworks
     .map(({ name, css: frameworkCSS }) => `/* ${name} */\n${frameworkCSS}`)
     .join('\n');
+  // Parsing the corpus dominates each run; plugins mutate their input, so
+  // each one gets a clone of a single parse.
+  const aggregateRoot = postcss.parse(aggregateCSS);
 
   const plugins = [];
   for (const [creator, options] of preset().plugins) {
@@ -132,7 +135,7 @@ export function pluginIdempotencyTests(
         t.test(`${presetName} - ${plugin.name}`, async () => {
           const firstPass = await postcss([
             plugin.creator(plugin.options),
-          ]).process(aggregateCSS, { from: undefined });
+          ]).process(aggregateRoot.clone(), { from: undefined });
           const secondPass = await postcss([
             plugin.creator(plugin.options),
           ]).process(firstPass.css, { from: undefined });

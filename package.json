@@ -19,7 +19,7 @@
     "test:uncovered-branches": "node util/uncoveredBranches.js",
     "test:unit": "pnpm --recursive --workspace-concurrency=1 exec node --test --test-reporter=dot --test-skip-pattern=\"framework tests\"",
     "test:site": "node --test site/test/*.js",
-    "test:integration": "node --test packages/cssnano-preset-default/test/integrations.test.js packages/cssnano-preset-advanced/test/integrations.test.js packages/cssnano-preset-lite/test/integrations.test.js",
+    "test:integration": "node --test packages/cssnano-preset-default/test/integrations.test.js packages/cssnano-preset-default/test/pluginIdempotency.test.js packages/cssnano-preset-advanced/test/integrations.test.js packages/cssnano-preset-lite/test/integrations.test.js",
     "test:packaging": "node util/checkPackaging.js",
     "test:watch": "node --test --watch",
     "test:failed": "node --test --test-rerun-failures=.test-failures.json",

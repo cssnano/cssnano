@@ -5,7 +5,6 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import {
   integrationTests,
-  pluginIdempotencyTests,
   createCssnanoProcessor,
   processCSSWithPresetFactory,
 } from '../../../util/integrationTestHelpers.js';
@@ -188,18 +187,11 @@ describe('CSS processing', () => {
   );
 });
 
-describe('framework integrations', () => {
+describe('framework tests', () => {
   test(
     'should correctly handle the framework tests',
     { concurrency: true },
     integrationTests(preset, `${testDir}/integrations`)
-  );
-  test(
-    'should be idempotent for each default plugin except merge rules and svgo',
-    pluginIdempotencyTests(preset, `${testDir}/integrations`, [
-      'postcss-merge-rules',
-      'postcss-svgo',
-    ])
   );
 });
 
