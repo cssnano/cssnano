@@ -97,31 +97,7 @@ export type PayloadTables = {
     attributes: readonly Readonly<AttributePayload>[];
 };
 export type CSSToken = import('./tokenUtils.js').CSSToken;
-export declare const semanticFacts: Readonly<{
-    namespace: 1;
-    pseudoElement: 2;
-    vendorPseudo: 4;
-    nesting: 8;
-    attributeModifier: 16;
-    commentDescendant: 32;
-    nestedHas: 64;
-    function: 128;
-    unsafePseudo: 256;
-}>;
-/** @return {SemanticFacts} */
-export declare function createSemanticFacts(): SemanticFacts;
-/** @param {SemanticFacts | undefined} facts @param {number} fact */
-export declare function hasSemanticFact(facts: SemanticFacts | undefined, fact: number): boolean;
-/** @param {SemanticFacts} facts @param {number} fact */
-export declare function addSemanticFact(facts: SemanticFacts, fact: number): number;
-/** @param {SemanticFacts} left @param {SemanticFacts} right */
-export declare function mergeSemanticFacts(left: SemanticFacts, right: SemanticFacts): number;
-/** @param {ArenaNode} compound @return {boolean} */
-export declare function isFoldEligible(compound: ArenaNode): boolean;
-/** @return {Specificity} */
-export declare function zeroSpecificity(): Specificity;
-/** @param {Specificity} a @param {Specificity} b @return {SpecificityResult} */
-export declare function addSpecificity(a: Specificity, b: Specificity): SpecificityResult;
+export { semanticFacts, createSemanticFacts, hasSemanticFact, addSemanticFact, mergeSemanticFacts, isFoldEligible, zeroSpecificity, addSpecificity, } from './arenaSemantics.js';
 declare class SelectorArenaBuilder {
     #private;
     source: string;
@@ -191,5 +167,4 @@ export declare class SelectorArena {
 }
 /** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @param {boolean} [verifyArena] @return {SelectorArena} */
 export declare function buildSelectorArena(source: string, tokens: readonly CSSToken[], build: (builder: SelectorArenaBuilder) => void, verifyArena?: boolean): SelectorArena;
-export {};
 //# sourceMappingURL=arena.d.ts.map

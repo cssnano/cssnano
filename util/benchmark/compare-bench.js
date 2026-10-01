@@ -1,15 +1,13 @@
 // Compare versioned benchmark snapshots using independent process samples.
 
 import { readFileSync, writeFileSync } from 'node:fs';
+import { percentChange, pairedPercentChange, quantile } from './bench-stats.js';
 import {
   BOOTSTRAP_RESAMPLES,
   bootstrapConfidenceInterval,
   clusteredTwoSampleBootstrapConfidenceInterval,
-  percentChange,
-  pairedPercentChange,
-  quantile,
   twoSampleBootstrapConfidenceInterval,
-} from './bench-stats.js';
+} from './bench-bootstrap.js';
 import { loadSnapshot } from './compare-snapshot-io.js';
 import {
   analyzeComparison,

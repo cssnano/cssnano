@@ -185,8 +185,8 @@ test('removes ordinary comment and whitespace runs around combinators', () => {
   }
 });
 
-test('does not fold comment-derived descendant boundaries into is', () => {
-  const input = '.scope .a/**/.x .tail,.scope .b/**/.x .tail';
+test('does not fold whitespace-and-comment descendant boundaries into is', () => {
+  const input = '.scope .a /**/ .x .tail,.scope .b /**/ .x .tail';
   assert.equal(
     normalizeList(input, false, true),
     '.scope .a .x .tail,.scope .b .x .tail'

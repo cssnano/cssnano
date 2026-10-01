@@ -52,3 +52,42 @@ test('should keep a zero position whose unit is neither a length nor a percentag
       position
     );
 });
+
+test('should keep a zero conic position spelled as a length', () => {
+  for (const unit of lengthUnits)
+    assert.equal(
+      outputFor(`a{background-image:conic-gradient(red 10deg, blue 0${unit})}`),
+      `conic-gradient(red 10deg, blue 0${unit})`,
+      `0${unit}`
+    );
+});
+
+test('should keep a zero first conic position spelled as a length', () => {
+  assert.equal(
+    outputFor('a{background-image:conic-gradient(red 0px, blue)}'),
+    'conic-gradient(red 0px, blue)'
+  );
+});
+
+test('should drop a zero first conic position spelled as an angle', () => {
+  for (const unit of ['deg', 'grad', 'rad', 'turn', 'DEG'])
+    assert.equal(
+      outputFor(`a{background-image:conic-gradient(red 0${unit}, blue)}`),
+      'conic-gradient(red, blue)',
+      `0${unit}`
+    );
+});
+
+test('should clamp a zero conic position spelled as an angle', () => {
+  assert.equal(
+    outputFor('a{background-image:conic-gradient(red 10deg, blue 0turn)}'),
+    'conic-gradient(red 10deg, blue 0)'
+  );
+});
+
+test('should keep a zero linear position spelled as an angle', () => {
+  assert.equal(
+    outputFor('a{background-image:linear-gradient(red, blue 0deg)}'),
+    'linear-gradient(red, blue 0deg)'
+  );
+});

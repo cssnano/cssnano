@@ -7,6 +7,10 @@ export type MutationOutcome = {
     movedAcrossParents: boolean;
     kind: 'equal-declaration' | 'equal-selector' | 'partial';
 };
+/** @import {Rule} from 'postcss' */
+/** @import {RuleMeta} from './rule-meta.js' */
+/** @typedef {{previous: Rule | null, replacements: Rule[], next: Rule | null, movedAcrossParents: boolean, kind: 'equal-declaration' | 'equal-selector' | 'partial'}} MutationOutcome */
+/** @import {Boundary} from './rule-index.js' */
 /**
  * @param {string[]} browsers
  * @param {Map<string, boolean>} compatibilityCache

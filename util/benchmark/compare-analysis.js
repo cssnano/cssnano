@@ -1,10 +1,9 @@
+import { median, standardDeviation } from './bench-stats.js';
 import {
   fitCrossoverModel,
-  median,
   normalQuantile,
-  standardDeviation,
   studentTQuantile,
-} from './bench-stats.js';
+} from './bench-distributions.js';
 import {
   ANALYZER_VERSION,
   INTERVAL_METHOD,

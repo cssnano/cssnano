@@ -6,11 +6,26 @@ const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 suite('comments and pseudo-elements', () => {
   test(
-    'should preserve ordinary comments as selector whitespace',
+    'should treat whitespace around ordinary comments as a descendant combinator',
     processCSS(
-      'h1/**/p,.a/* comment */.b{color:blue}',
+      'h1 /**/ p,.a /* comment */ .b{color:blue}',
       '.a .b,h1 p{color:blue}'
     )
+  );
+
+  test(
+    'should not turn a comment between compounds into a descendant combinator',
+    passthroughCSS('div/**/span{color:blue}')
+  );
+
+  test(
+    'should leave an ordinary comment inside a compound selector',
+    passthroughCSS('.a/**/.b{color:blue}')
+  );
+
+  test(
+    'should keep an important comment inside a compound selector',
+    passthroughCSS('.a/*!k*/.b{color:blue}')
   );
 
   test(

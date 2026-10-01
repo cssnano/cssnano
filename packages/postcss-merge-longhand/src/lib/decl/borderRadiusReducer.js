@@ -1,44 +1,20 @@
-import stylehacks from 'stylehacks';
-import canExplode from '../canExplode.js';
 import minifyTrbl from '../minifyTrbl.js';
 import { isFallback } from '../isFallback.js';
 import cleanupDeclarations from '../cleanupDeclarations.js';
-import { importanceLanes, isAll } from './importanceLanes.js';
+import { importanceLanes } from './importanceLanes.js';
 import {
   assignSlotValue,
   commitShorthand,
   slotVectorReady,
   supportProvenanceMatches,
 } from './slotVector.js';
-import {
-  parseCornerRadius,
-  parseRadiusShorthand,
-  isGlobalKeyword,
-} from '../validateRadius.js';
-import {
-  allRadiusProperties,
-  physicalRadiusLonghands,
-  physicalRadiusProperties,
-  logicalRadiusProperties,
-} from './borderData.js';
+import { isGlobalKeyword } from '../validateRadius.js';
+import { allRadiusProperties } from './borderData.js';
+import { partitionLanes } from './radiusDescriptors.js';
 
 /** @import {Container, Declaration} from 'postcss'; */
-
-/**
- * Intermediate Representation (IR) descriptor for a declaration in the border-radius family.
- *
- * @typedef {object} RadiusDeclarationDescriptor
- * @property {Declaration} decl
- * @property {string} [prop]
- * @property {string} [val]
- * @property {boolean} isBarrier
- * @property {boolean} [isHacked]
- * @property {boolean} [isGlobalKeyword]
- * @property {boolean} [isShorthand]
- * @property {number} [longhandIndex]
- * @property {boolean} [canExplode]
- * @property {ReturnType<typeof parseRadiusShorthand> | ReturnType<typeof parseCornerRadius> | null} [parsed]
- */
+/** @import {RadiusDeclarationDescriptor} from './radiusDescriptors.js'; */
+/** @import {parseCornerRadius, parseRadiusShorthand} from '../validateRadius.js'; */
 
 /**
  * Synthesizes and commits a merged shorthand declaration if cost-model benefit is non-negative.
@@ -327,113 +303,6 @@ function eliminateRedundantDeclarations(lanes) {
       cleanupDeclarations(new Set(segmentDecls));
     }
   }
-}
-
-/**
- * Creates an IR descriptor for a radius declaration.
- * Returns null if the declaration violates syntax or domain grammar.
- *
- * @param {Declaration} node
- * @param {string} prop
- * @param {boolean} isHacked
- * @return {RadiusDeclarationDescriptor | null}
- */
-function createRadiusDescriptor(node, prop, isHacked) {
-  const isShorthand = prop === 'border-radius';
-  const longhandIndex = isShorthand
-    ? -1
-    : physicalRadiusLonghands.indexOf(prop);
-
-  if (isHacked) {
-    return {
-      decl: node,
-      prop,
-      val: node.raws?.value?.raw ?? node.value,
-      isBarrier: false,
-      isHacked: true,
-      isGlobalKeyword: false,
-      isShorthand,
-      longhandIndex,
-      canExplode: false,
-      parsed: null,
-    };
-  }
-
-  if (
-    logicalRadiusProperties.has(prop) ||
-    !physicalRadiusProperties.has(prop)
-  ) {
-    return null;
-  }
-
-  const val = node.raws?.value?.raw ?? node.value;
-  const isGlobal = isGlobalKeyword(val);
-
-  let parsed = null;
-  if (!isGlobal) {
-    parsed = isShorthand ? parseRadiusShorthand(val) : parseCornerRadius(val);
-    if (parsed === null) return null;
-  }
-
-  return {
-    decl: node,
-    prop,
-    val,
-    isBarrier: false,
-    isHacked: false,
-    isGlobalKeyword: isGlobal,
-    isShorthand,
-    longhandIndex,
-    canExplode: isShorthand ? canExplode(node) : false,
-    parsed,
-  };
-}
-
-/**
- * Appends a node descriptor to lanes or returns false on invalid syntax.
- * @param {Declaration} node
- * @param {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} lanes
- * @param {RadiusDeclarationDescriptor[]} radiusDescriptors
- * @return {boolean}
- */
-function appendRadiusNode(node, lanes, radiusDescriptors) {
-  const laneIndex = node.important ? 1 : 0;
-  if (isAll(node)) {
-    lanes[laneIndex].push({ decl: node, isBarrier: true });
-    return true;
-  }
-  const prop = node.prop.toLowerCase();
-  const isHacked = Boolean(stylehacks.detect(node));
-  const desc = createRadiusDescriptor(node, prop, isHacked);
-  if (!desc) return false;
-  lanes[laneIndex].push(desc);
-  radiusDescriptors.push(desc);
-  return true;
-}
-
-/**
- * Partitions family lanes into descriptor lanes.
- * @param {Container} rule
- * @param {[Declaration[], Declaration[]]} familyLanes
- * @return {{ lanes: [RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]], radiusDescriptors: RadiusDeclarationDescriptor[] } | null}
- */
-function partitionLanes(rule, familyLanes) {
-  /** @type {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} */
-  const lanes = [[], []];
-  /** @type {RadiusDeclarationDescriptor[]} */
-  const radiusDescriptors = [];
-
-  for (const lane of familyLanes) {
-    for (const node of lane) {
-      if (
-        node.parent === rule &&
-        !appendRadiusNode(node, lanes, radiusDescriptors)
-      ) {
-        return null;
-      }
-    }
-  }
-  return radiusDescriptors.length ? { lanes, radiusDescriptors } : null;
 }
 
 /**

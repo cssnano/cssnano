@@ -1,9 +1,8 @@
+import { percentChange, quantile } from './bench-stats.js';
 import {
   clusteredTwoSampleBootstrapConfidenceInterval,
   twoSampleBootstrapConfidenceInterval,
-  percentChange,
-  quantile,
-} from './bench-stats.js';
+} from './bench-bootstrap.js';
 import { MIN_USEFUL_SAMPLE_MS } from './bench-snapshots.js';
 import {
   frameworkByName,

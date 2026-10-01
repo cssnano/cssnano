@@ -1,16 +1,11 @@
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {SourceEdit, PositionValue} from './lib/positions.js' */
 import cssnanoUtils from 'cssnano-utils';
 import isKnownColor from './isKnownColor.js';
+import { isPositionZeroUnit, zeroPositionEdits } from './lib/positions.js';
 
-const {
-  TokenType,
-  applyEdits,
-  asciiLowerCase,
-  decoded,
-  lengthUnits,
-  numeric,
-  tokenEnd,
-} = cssnanoUtils;
+const { TokenType, applyEdits, asciiLowerCase, decoded, numeric, tokenEnd } =
+  cssnanoUtils;
 /** @type {typeof cssnanoUtils.balancedTokens} */
 const balancedTokens = cssnanoUtils.balancedTokens;
 
@@ -57,7 +52,6 @@ const lineKeywords = new Set([
   'top',
 ]);
 
-/** @typedef {{start: number, end: number, text: string}} SourceEdit */
 /**
  * A gradient stop before fixup: the argument it came from, the extent of its
  * colour, and the position tokens following that colour.
@@ -66,11 +60,6 @@ const lineKeywords = new Set([
  * @property {number} argIndex Comma-separated argument the stop came from.
  * @property {number} colorEnd Offset just past the colour in the declaration value.
  * @property {readonly number[]} position Positions following the colour.
- */
-/**
- * A position as a number and its unit, as reported by `numeric()`.
- *
- * @typedef {{number: number, unit: string}} PositionValue
  */
 
 /**
@@ -121,38 +110,6 @@ function startsLineSpecification(input, parts) {
 }
 
 /**
- * A zero length and a zero percentage name the same gradient position, which is
- * also what the unitless zero this plugin emits denotes. Angles and other
- * dimensions only share a spelling with it.
- *
- * @param {string} unit
- * @return {boolean}
- */
-function isPositionZeroUnit(unit) {
-  const lowered = asciiLowerCase(unit);
-  return lowered === '' || lowered === '%' || lengthUnits.has(lowered);
-}
-
-/**
- * Whether two positions are on the same scale, so their numbers can be ordered.
- * Only a length and a percentage naming zero are interchangeable.
- *
- * @param {PositionValue} current
- * @param {PositionValue} largest
- * @return {boolean}
- */
-function positionsComparable(current, largest) {
-  const unit = asciiLowerCase(current.unit);
-  const largestUnit = asciiLowerCase(largest.unit);
-  if (unit === largestUnit) return true;
-  return (
-    (current.number === 0 || largest.number === 0) &&
-    isPositionZeroUnit(unit) &&
-    isPositionZeroUnit(largestUnit)
-  );
-}
-
-/**
  * Offset just past the leading colour of an argument, so a functional colour
  * such as `rgb(0 0 0 / 50%)` ends at its closing parenthesis.
  *
@@ -192,50 +149,6 @@ function lineDirectionEdit(input, parts) {
 }
 
 /**
- * Colour stop fixup raises a position to the largest position before it, so a
- * position at or below that non-negative maximum can be written as a zero.
- *
- * @param {readonly CSSToken[]} input
- * @param {readonly number[]} position Offsets of the position tokens.
- * @param {PositionValue | undefined} maximum Running maximum of the preceding positions.
- * @param {Map<number, SourceEdit>} edits Collects the positions reduced to a zero.
- * @return {PositionValue | undefined} The maximum the following stops clamp to.
- */
-function zeroPositionEdits(input, position, maximum, edits) {
-  let largest = maximum;
-  for (const index of position) {
-    const token = input[index];
-    const current = numeric(token);
-    if (!current) {
-      largest = undefined;
-      continue;
-    }
-    // A zero clamps to any non-negative maximum whatever units name them, so
-    // the maximum survives the rewritten spelling instead of resetting on the
-    // next pass.
-    if (
-      largest &&
-      largest.number >= 0 &&
-      current.number === 0 &&
-      isPositionZeroUnit(current.unit)
-    ) {
-      edits.set(index, { start: token[2], end: tokenEnd(token), text: '0' });
-      continue;
-    }
-    if (largest && !positionsComparable(current, largest)) {
-      largest = undefined;
-      continue;
-    }
-    if (largest && largest.number >= 0 && largest.number >= current.number) {
-      edits.set(index, { start: token[2], end: tokenEnd(token), text: '0' });
-    } else {
-      largest = current;
-    }
-  }
-  return largest;
-}
-
-/**
  * Collect the colour stops of one gradient argument list, the count of leading
  * arguments naming the line or shape instead of a stop, and the positions that
  * colour stop fixup clamps to a zero.
@@ -245,9 +158,10 @@ function zeroPositionEdits(input, position, maximum, edits) {
  * @param {NonNullable<ReturnType<typeof balancedTokens>>} structure
  * @param {{startIndex: number, endIndex: number}[]} args
  * @param {boolean} linear Whether the line specification may hold an angle.
+ * @param {boolean} conic Whether the stop positions are angles.
  * @return {{stops: ColorStop[], lineSpecifications: number, zeroEdits: Map<number, SourceEdit>, directionEdit: SourceEdit | undefined}}
  */
-function collectColorStops(source, input, structure, args, linear) {
+function collectColorStops(source, input, structure, args, linear, conic) {
   /** @type {ColorStop[]} */
   const stops = [];
   /** @type {Map<number, SourceEdit>} */
@@ -285,7 +199,7 @@ function collectColorStops(source, input, structure, args, linear) {
     }
     // Positions before the first stop belong to the line specification.
     if (!stops.length) continue;
-    largest = zeroPositionEdits(input, position, largest, zeroEdits);
+    largest = zeroPositionEdits(input, position, largest, zeroEdits, conic);
   }
   return { stops, lineSpecifications, zeroEdits, directionEdit };
 }
@@ -301,9 +215,17 @@ function collectColorStops(source, input, structure, args, linear) {
  * @param {number} lineSpecifications
  * @param {number} args
  * @param {Map<number, SourceEdit>} zeroEdits
+ * @param {boolean} conic
  * @return {SourceEdit[]}
  */
-function boundaryStopEdits(input, stops, lineSpecifications, args, zeroEdits) {
+function boundaryStopEdits(
+  input,
+  stops,
+  lineSpecifications,
+  args,
+  zeroEdits,
+  conic
+) {
   /** @type {SourceEdit[]} */
   const edits = [];
   for (const slot of new Set([0, stops.length - 1])) {
@@ -315,7 +237,7 @@ function boundaryStopEdits(input, stops, lineSpecifications, args, zeroEdits) {
     if (!value) continue;
     let removable = false;
     if (slot === 0 && stop.argIndex === lineSpecifications) {
-      removable = value.number === 0 && isPositionZeroUnit(value.unit);
+      removable = value.number === 0 && isPositionZeroUnit(value.unit, conic);
     }
     if (
       slot === stops.length - 1 &&
@@ -367,14 +289,12 @@ function optimise(decl) {
     const end = structure.endForOpening(index);
     if (end === undefined) continue;
     const args = structure.topLevelSegments(index + 1, end);
+    // The legacy prefixed syntax has no `to <side>` form, where an angle
+    // would also point in the opposite sense.
+    const linear = name.includes('linear') && !name.startsWith('-webkit-');
+    const conic = name.includes('conic');
     const { stops, lineSpecifications, zeroEdits, directionEdit } =
-      collectColorStops(
-        source,
-        input,
-        structure,
-        args,
-        name.includes('linear')
-      );
+      collectColorStops(source, input, structure, args, linear, conic);
     if (directionEdit) replacements.push(directionEdit);
     replacements.push(
       ...boundaryStopEdits(
@@ -382,7 +302,8 @@ function optimise(decl) {
         stops,
         lineSpecifications,
         args.length,
-        zeroEdits
+        zeroEdits,
+        conic
       ),
       ...zeroEdits.values()
     );

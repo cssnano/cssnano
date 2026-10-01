@@ -85,13 +85,15 @@ function violatesComplexMode(mode, parts) {
 function scanComplexTrivia(input, start, end) {
   let index = start;
   let hasOrdinaryComment = false;
+  let hasWhitespace = false;
   while (index < end && isTrivia(input[index])) {
     const token = input[index];
+    if (token[0] === TokenType.Whitespace) hasWhitespace = true;
     if (token[0] === TokenType.Comment && !token[1].startsWith('/*!'))
       hasOrdinaryComment = true;
     index++;
   }
-  return { index, hasOrdinaryComment };
+  return { index, hasOrdinaryComment, hasWhitespace };
 }
 
 /** @param {Structure} structure @param {number} start @param {number} end @param {ListMode} mode */
@@ -117,6 +119,9 @@ export function complexParts(structure, start, end, mode) {
       const trivia = scanComplexTrivia(input, index, trimmed.end);
       index = trivia.index;
       if (explicitCombinator(input, index)) continue;
+      // A comment separates tokens but is not whitespace, so only a run
+      // containing whitespace is a descendant combinator.
+      if (!trivia.hasWhitespace) continue;
       if (compoundStart < triviaStart && index < trimmed.end) {
         parts.push({
           kind: 'compound',

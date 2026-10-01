@@ -16,7 +16,7 @@ const corpus = [
     '.a\\,b, .a\\,b, .x[attr="(deep, value)"]',
     '.a\\,b,.x[attr="(deep, value)"]',
   ],
-  ['h1/**/p, .a/* comment */.b', '.a .b,h1 p'],
+  ['h1 /**/ p, .a /* comment */ .b', '.a .b,h1 p'],
   [
     'a\\E0000\\E001, a\\E0000\\E001[attr="x,y"]',
     'a\\E0000\\E001,a\\E0000\\E001[attr="x,y"]',

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
+import { tokenizer, TokenType } from '@csstools/css-tokenizer';
 import browserslist from 'browserslist';
 import plugin from '../src/index.js';
 import {
@@ -163,8 +164,35 @@ function firstDifference(a, b) {
   return length;
 }
 
+// The legacy oracle predates comment-aware merging: a comment between two
+// non-whitespace tokens outside `[...]` makes the selector invalid.
+function hasSeparatorComment(selector) {
+  const stream = tokenizer({ css: selector });
+  let previous;
+  let pending = false;
+  let depth = 0;
+  while (!stream.endOfFile()) {
+    const [type] = stream.nextToken();
+    if (type === TokenType.EOF) break;
+    if (type === TokenType.OpenSquare) depth++;
+    if (type === TokenType.CloseSquare && depth > 0) depth--;
+    if (depth > 0 && type !== TokenType.OpenSquare) continue;
+    if (type === TokenType.Comment) {
+      pending ||= previous !== undefined && previous !== TokenType.Whitespace;
+      continue;
+    }
+    if (pending && type !== TokenType.Whitespace) return true;
+    pending = false;
+    previous = type;
+  }
+  return false;
+}
+
 function malformed(selector) {
-  return ['a]', 'a)', 'a::', '[(])'].includes(selector);
+  return (
+    ['a]', 'a)', 'a::', '[(])'].includes(selector) ||
+    hasSeparatorComment(selector)
+  );
 }
 
 function report(caseData, legacy, current, expected, actual) {

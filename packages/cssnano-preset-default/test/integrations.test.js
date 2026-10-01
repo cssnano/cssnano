@@ -21,6 +21,16 @@ const withBrowserslist = processCSSWithPresetFactory(
 
 describe('CSS processing', () => {
   test(
+    'should not merge a selector with a comment-separated compound into a list [type selectors]',
+    withDefaults.passthroughCSS('div/**/span{color:red}.x{color:red}')
+  );
+
+  test(
+    'should not merge a selector with a comment-separated compound into a list [id and type]',
+    withDefaults.passthroughCSS('#a/**/b{color:red}.x{color:red}')
+  );
+
+  test(
     'should process CSS with default options',
     withDefaults.processCSS(
       'button { color: hsla(0 100% 50% / 40%); appearance: none }',
