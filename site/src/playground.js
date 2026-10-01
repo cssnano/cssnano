@@ -19,12 +19,10 @@ function setOutput(message, isError) {
 const presetSelector = /** @type {HTMLSelectElement} */ (
   document.getElementById('presetSelector')
 );
-presetSelector.value = 'cssnano-preset-default';
 
 const runButton = /** @type {HTMLButtonElement} */ (
   document.getElementById('runButton')
 );
-runButton.innerText = 'Minimize';
 
 /** @type {PlaygroundRunner | undefined} */
 let cssMinifier;
