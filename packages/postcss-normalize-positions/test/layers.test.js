@@ -26,6 +26,47 @@ test(
 );
 
 test(
+  'should keep a math function with a nested function whole before center',
+  processCSS(
+    'background-position:calc(100% - max(1px, 2px)) center',
+    'background-position:calc(100% - max(1px, 2px))'
+  )
+);
+
+test(
+  'should keep a math function whole before a background size separator',
+  processCSS(
+    'background:CALC(1px) CENTER / cover',
+    'background:CALC(1px) / cover'
+  )
+);
+
+test(
+  'should not drop center from an invalid three-term position that starts with a math function',
+  passthroughCSS('background-position:round(10px, 1px) center top')
+);
+
+test(
+  'should compact whitespace before the background size separator after a keyword',
+  processCSS('background:left center  / cover', 'background:0 / cover')
+);
+
+test(
+  'should preserve center before a math function because it fixes the horizontal axis',
+  passthroughCSS('background-position:center calc(1px)')
+);
+
+test(
+  'should not treat a keyword inside parentheses as a position term',
+  passthroughCSS('background-position:center (center) center')
+);
+
+test(
+  'should leave a value with an unmatched closing parenthesis unchanged',
+  passthroughCSS('background-position:center center )')
+);
+
+test(
   'should compact whitespace before the background size separator',
   processCSS(
     'background:calc(100% - 5px) center  / cover',
