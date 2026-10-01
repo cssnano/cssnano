@@ -5,7 +5,7 @@ import {
 } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 
-const { processCSS } = processCSSFactory(plugin);
+const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 test(
   'should preserve an arbitrary coordinate before center',
@@ -99,6 +99,44 @@ test(
   processCSS(
     'background: url("/media/examples/lizard.png") center var(--foo), url("/media/examples/lizard.png") center center no-repeat',
     'background: url("/media/examples/lizard.png") center var(--foo), url("/media/examples/lizard.png") 50% no-repeat'
+  )
+);
+
+test(
+  'should preserve a vertical keyword and center split by a repeat style',
+  passthroughCSS('background:top no-repeat center')
+);
+
+test(
+  'should preserve a horizontal keyword and center split by a repeat style',
+  passthroughCSS('background:left no-repeat center')
+);
+
+test(
+  'should preserve center and a horizontal keyword split by a repeat style',
+  passthroughCSS('background:center repeat-x left')
+);
+
+test(
+  'should preserve a keyword pair split by a repeat style',
+  passthroughCSS('background:left no-repeat top')
+);
+
+test(
+  'should preserve a coordinate and center split by a repeat style',
+  passthroughCSS('background:10px no-repeat center')
+);
+
+test(
+  'should keep the vertical keyword spelling when dropping center',
+  processCSS('background-position:CENTER TOP', 'background-position:TOP')
+);
+
+test(
+  'should drop center before a vertical keyword followed by a background size',
+  processCSS(
+    'background:url(a.png) center bottom/cover',
+    'background:url(a.png) bottom/cover'
   )
 );
 

@@ -47,22 +47,19 @@ test(
 );
 test(
   'background-position: top center',
-  processCSS('background-position:top center', 'background-position:0')
+  processCSS('background-position:top center', 'background-position:top')
 );
 test(
   'background-position: center top',
-  processCSS('background-position:center top', 'background-position:center top')
+  processCSS('background-position:center top', 'background-position:top')
 );
 test(
   'background-position: bottom center',
-  processCSS('background-position:bottom center', 'background-position:100%')
+  processCSS('background-position:bottom center', 'background-position:bottom')
 );
 test(
   'background-position: center bottom',
-  processCSS(
-    'background-position:center bottom',
-    'background-position:center bottom'
-  )
+  processCSS('background-position:center bottom', 'background-position:bottom')
 );
 
 test(

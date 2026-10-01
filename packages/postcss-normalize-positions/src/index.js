@@ -20,6 +20,7 @@ const verticalValue = new Map([
  * cssnano-utils' mathFunctions for the full Values 4 table. */
 const mathFunctions = new Set(['calc', 'min', 'max', 'clamp']);
 const variableFunctions = new Set(['var', 'env', 'constant']);
+const leadingWhitespace = /[ \t\n\r\f]*/vy;
 const propFilterRegex =
   /^(?:[bB][aA][cC][kK][gG][rR][oO][uU][nN][dD](?:-[pP][oO][sS][iI][tT][iI][oO][nN])?|(?:-[A-Za-z0-9_]+-)?[pP][eE][rR][sS][pP][eE][cC][tT][iI][vV][eE]-[oO][rR][iI][gG][iI][nN])$/v;
 
@@ -62,16 +63,25 @@ function isPositionTerm(token) {
   );
 }
 
+/** @param {CSSToken} token */ const isTrivia = (token) =>
+  token[0] === TokenType.Whitespace || token[0] === TokenType.Comment;
+
 /** @param {CSSToken[]} input */
 function positionLayers(input) {
   /** @type {CSSToken[][]} */ const layers = [];
   /** @type {CSSToken[]} */ let terms = [];
   let depth = 0;
   let stopped = false;
+  let separated = false;
   const flush = () => {
     if (terms.length) layers.push(terms);
     terms = [];
     stopped = false;
+    separated = false;
+  };
+  const abandon = () => {
+    stopped = true;
+    terms = [];
   };
   for (const token of input) {
     if (token[0] === TokenType.EOF) break;
@@ -81,11 +91,15 @@ function positionLayers(input) {
     }
     if (depth === 0 && token[0] === TokenType.Delim && token[1] === '/')
       stopped = true;
-    if (depth === 0 && isVariableFunction(token)) {
-      stopped = true;
-      terms = [];
+    if (depth === 0 && isVariableFunction(token)) abandon();
+    if (depth === 0 && !stopped) {
+      /* A <position> is one contiguous run of terms; terms split by another
+       * component make the layer invalid, so leave it for the browser to drop. */
+      if (!isPositionTerm(token))
+        separated ||= terms.length > 0 && !isTrivia(token);
+      else if (separated) abandon();
+      else terms.push(token);
     }
-    if (depth === 0 && !stopped && isPositionTerm(token)) terms.push(token);
     depth += depthChange(token[0]);
   }
   flush();
@@ -101,10 +115,12 @@ function transform(value) {
   return applyPositionReplacements(value, positionLayers(input));
 }
 
+/** @param {string} keyword */ const horizontalOffset = (keyword) =>
+  keyword === 'center' ? center : horizontal.get(keyword);
+
 /** @param {CSSToken} token @return {[number, number, string] | undefined} */
 function singlePositionReplacement(token) {
-  const keyword = asciiLowerCase(String(decoded(token)));
-  const output = keyword === 'center' ? center : horizontal.get(keyword);
+  const output = horizontalOffset(asciiLowerCase(String(decoded(token))));
   return output ? [tokenStart(token), tokenEnd(token), output] : undefined;
 }
 
@@ -139,28 +155,30 @@ function twoPositionReplacement(value, firstToken, secondToken) {
   const secondOutput = horizontal.get(second) || verticalValue.get(second);
   if (second === 'center') {
     const afterSecond = secondToken[3] + 1;
-    const whitespace =
-      value.slice(afterSecond).match(/^[ \t\n\r\f]*/v)?.[0] || '';
+    leadingWhitespace.lastIndex = afterSecond;
+    const whitespace = leadingWhitespace.exec(value)?.[0] ?? '';
     const slashFollows =
-      !firstOutput &&
-      first !== 'center' &&
+      !directionKeywords.has(first) &&
       value[afterSecond + whitespace.length] === '/';
+    /* A one-value position implies center on the other axis, so `X center`
+     * becomes `X`; only left, right and center need converting. */
     const output =
-      firstOutput ||
-      (first === 'center'
-        ? center
-        : value.slice(firstToken[2], secondToken[2]).trimEnd());
+      horizontalOffset(first) ??
+      value.slice(tokenStart(firstToken), tokenStart(secondToken)).trimEnd();
     return [
       tokenStart(firstToken),
       afterSecond + (slashFollows ? whitespace.length : 0),
       output + (slashFollows ? whitespace[0] || '' : ''),
     ];
   }
-  if (first === 'center' && horizontal.has(second))
+  /* `center` beside a side keyword is the implied one-value default, so
+   * `center top` becomes `top` and `center left` becomes `0`. */
+  if (first === 'center' && secondOutput)
     return [
       tokenStart(firstToken),
       tokenEnd(secondToken),
-      /** @type {string} */ (secondOutput),
+      horizontal.get(second) ??
+        value.slice(tokenStart(secondToken), tokenEnd(secondToken)),
     ];
   return axisSwapReplacement(
     value,
