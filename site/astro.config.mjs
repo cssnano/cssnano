@@ -1,6 +1,5 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
-import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,34 +8,12 @@ const require = createRequire(import.meta.url);
 const siteDirectory = path.dirname(fileURLToPath(import.meta.url));
 const base = '/cssnano/';
 
-const prefix = (html) =>
-  html.replace(/(\s(?:src|data)=["'])\/(?!\/|cssnano\/)/gv, `$1${base}`);
-
-async function prefixBuiltPublicAssetUrls(directory) {
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    const entryPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) await prefixBuiltPublicAssetUrls(entryPath);
-    else if (entry.name.endsWith('.html'))
-      await writeFile(entryPath, prefix(await readFile(entryPath, 'utf8')));
-  }
-}
-
-function prefixPublicAssetUrls() {
-  return {
-    name: 'prefix-public-asset-urls',
-    hooks: {
-      'astro:build:done': ({ dir }) =>
-        prefixBuiltPublicAssetUrls(fileURLToPath(dir)),
-    },
-  };
-}
-
 export default defineConfig({
   site: 'https://cssnano.github.io/cssnano',
   base,
   trailingSlash: 'always',
   outDir: path.resolve(siteDirectory, '_astro-site/'),
-  integrations: [sitemap(), prefixPublicAssetUrls()],
+  integrations: [sitemap()],
   vite: {
     resolve: {
       alias: {
@@ -53,37 +30,9 @@ export default defineConfig({
     },
     build: {
       reportCompressedSize: false,
-      rolldownOptions: {
-        output: {
-          codeSplitting: {
-            groups: [
-              { name: 'svgo', test: /[\\\/]node_modules[\\\/]svgo[\\\/]/v },
-              {
-                name: 'css-declaration-sorter',
-                test: /[\\\/]node_modules[\\\/]css-declaration-sorter[\\\/]/v,
-              },
-              { name: 'vendor', test: /[\\\/]node_modules[\\\/]/v },
-            ],
-          },
-        },
-      },
     },
     worker: {
       format: 'es',
-      rolldownOptions: {
-        output: {
-          codeSplitting: {
-            groups: [
-              { name: 'svgo', test: /[\\\/]node_modules[\\\/]svgo[\\\/]/v },
-              {
-                name: 'css-declaration-sorter',
-                test: /[\\\/]node_modules[\\\/]css-declaration-sorter[\\\/]/v,
-              },
-              { name: 'vendor', test: /[\\\/]node_modules[\\\/]/v },
-            ],
-          },
-        },
-      },
     },
   },
 });

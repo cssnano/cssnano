@@ -14,7 +14,7 @@ ongoing commitment, or one-time through [PayPal](https://www.paypal.me/benebinfo
 ## Support the team
 
 <a href="https://opencollective.com/cssnano">
-<img src="/img/opencollective-button@2x.png" alt="Donate to our collective" width="300"/>
+<img src="/cssnano/img/opencollective-button@2x.png" alt="Donate to our collective" width="300"/>
 </a>
 
 ## Backers
