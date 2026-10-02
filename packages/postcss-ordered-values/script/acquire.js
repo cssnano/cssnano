@@ -9,6 +9,11 @@ import { writeFileSync } from 'node:fs';
 import css from '@webref/css';
 
 import {
+  buildCssWideKeywords,
+  serialize as serializeCssWideKeywords,
+  validate as validateCssWideKeywords,
+} from './lib/webrefCssWideKeywords.js';
+import {
   buildEasingFunctions,
   serialize as serializeEasingFunctions,
   validate as validateEasingFunctions,
@@ -23,4 +28,15 @@ writeFileSync(
   serializeEasingFunctions(easing)
 );
 
-console.log(`Wrote ${easing.functions.length} easing functions.`);
+const cssWide = buildCssWideKeywords(webref);
+validateCssWideKeywords(cssWide);
+
+writeFileSync(
+  new URL('../src/rules/cssWideKeywords.json', import.meta.url),
+  serializeCssWideKeywords(cssWide)
+);
+
+console.log(
+  `Wrote ${easing.functions.length} easing functions and ` +
+    `${cssWide.keywords.length} CSS-wide keywords.`
+);
