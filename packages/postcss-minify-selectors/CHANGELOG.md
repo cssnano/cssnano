@@ -1,5 +1,15 @@
 # Change Log
 
+## 9.0.6
+
+### Patch Changes
+
+- Stop turning a comment inside a selector into a descendant combinator. A comment is not whitespace, so `.a/**/.b` selects elements with both classes, including inside `:is()`, and is no longer rewritten as `.a .b`. Invalid selectors such as `div/**/span` are left as written instead of becoming valid.
+
+- Leave rules with an invalid selector unchanged, including an ID selector that starts with a digit, such as `#1a`, and a combinator after a pseudo-element, such as `a::before b`.
+
+- Require Browserslist 4.29.3 or later.
+
 ## 9.0.5
 
 ### Patch Changes

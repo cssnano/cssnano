@@ -118,6 +118,14 @@ cssnano-preset-advanced@9.1.2:
   intents:
     - atrule-whitespace-handling
     - mighty-squids-cross
+cssnano-preset-advanced@9.1.3:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - convert-values-exponent-notation
+    - merge-idents-interchangeable-names
+    - merge-longhand-nested-rules
+    - minify-selectors-comment-compounds
+    - thick-ravens-whisper
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -247,6 +255,23 @@ cssnano-preset-default@9.1.2:
   intents:
     - atrule-whitespace-handling
     - mighty-squids-cross
+cssnano-preset-default@9.2.0:
+  dir: packages/cssnano-preset-default
+  intents:
+    - convert-values-exponent-notation
+    - discard-comments-selector-boundaries
+    - merge-longhand-nested-rules
+    - merge-longhand-place-shorthands
+    - merge-rules-invalid-selectors
+    - minify-font-values-font-size-units
+    - minify-font-values-substitution-functions
+    - minify-gradients-dimension-and-prefix
+    - minify-selectors-comment-compounds
+    - minify-selectors-invalid-selector-status
+    - normalize-positions-vertical-center
+    - normalize-string-hex-escape-continuations
+    - old-kids-compete
+    - thick-ravens-whisper
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -303,6 +328,10 @@ cssnano-preset-lite@6.0.5:
   intents:
     - atrule-whitespace-handling
     - mighty-squids-cross
+cssnano-preset-lite@6.0.6:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - discard-comments-selector-boundaries
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -350,6 +379,10 @@ cssnano-utils@8.0.1:
   dir: packages/cssnano-utils
   intents:
     - preserve-unicode-range-convert-values
+cssnano-utils@8.0.2:
+  dir: packages/cssnano-utils
+  intents:
+    - cssnano-utils-escaping-backslash
 cssnano@8.0.10:
   dir: packages/cssnano
   intents:
@@ -476,6 +509,21 @@ cssnano@9.1.2:
   intents:
     - atrule-whitespace-handling
     - mighty-squids-cross
+cssnano@9.2.0:
+  dir: packages/cssnano
+  intents:
+    - convert-values-exponent-notation
+    - merge-longhand-nested-rules
+    - merge-longhand-place-shorthands
+    - merge-rules-invalid-selectors
+    - minify-font-values-font-size-units
+    - minify-font-values-substitution-functions
+    - minify-gradients-dimension-and-prefix
+    - minify-selectors-comment-compounds
+    - minify-selectors-invalid-selector-status
+    - normalize-positions-vertical-center
+    - normalize-string-hex-escape-continuations
+    - thick-ravens-whisper
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -528,6 +576,10 @@ postcss-colormin@9.0.5:
   dir: packages/postcss-colormin
   intents:
     - mighty-squids-cross
+postcss-colormin@9.0.6:
+  dir: packages/postcss-colormin
+  intents:
+    - old-kids-compete
 postcss-convert-values@8.0.2:
   dir: packages/postcss-convert-values
   intents:
@@ -579,6 +631,11 @@ postcss-convert-values@9.0.6:
   dir: packages/postcss-convert-values
   intents:
     - mighty-squids-cross
+postcss-convert-values@9.0.7:
+  dir: packages/postcss-convert-values
+  intents:
+    - convert-values-exponent-notation
+    - old-kids-compete
 postcss-discard-comments@8.0.2:
   dir: packages/postcss-discard-comments
   intents:
@@ -623,6 +680,10 @@ postcss-discard-comments@9.0.5:
   dir: packages/postcss-discard-comments
   intents:
     - mighty-squids-cross
+postcss-discard-comments@9.0.6:
+  dir: packages/postcss-discard-comments
+  intents:
+    - discard-comments-selector-boundaries
 postcss-discard-duplicates@8.0.2:
   dir: packages/postcss-discard-duplicates
   intents:
@@ -834,6 +895,10 @@ postcss-merge-idents@9.0.5:
   dir: packages/postcss-merge-idents
   intents:
     - mighty-squids-cross
+postcss-merge-idents@9.0.6:
+  dir: packages/postcss-merge-idents
+  intents:
+    - merge-idents-interchangeable-names
 postcss-merge-longhand@8.0.2:
   dir: packages/postcss-merge-longhand
   intents:
@@ -891,6 +956,12 @@ postcss-merge-longhand@9.1.1:
   dir: packages/postcss-merge-longhand
   intents:
     - mighty-squids-cross
+postcss-merge-longhand@9.2.0:
+  dir: packages/postcss-merge-longhand
+  intents:
+    - merge-longhand-nested-rules
+    - merge-longhand-place-shorthands
+    - old-kids-compete
 postcss-merge-rules@8.0.2:
   dir: packages/postcss-merge-rules
   intents:
@@ -953,6 +1024,12 @@ postcss-merge-rules@9.0.6:
   dir: packages/postcss-merge-rules
   intents:
     - mighty-squids-cross
+postcss-merge-rules@9.0.7:
+  dir: packages/postcss-merge-rules
+  intents:
+    - merge-rules-invalid-selectors
+    - minify-selectors-comment-compounds
+    - old-kids-compete
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -998,6 +1075,11 @@ postcss-minify-font-values@9.0.5:
   dir: packages/postcss-minify-font-values
   intents:
     - mighty-squids-cross
+postcss-minify-font-values@9.0.6:
+  dir: packages/postcss-minify-font-values
+  intents:
+    - minify-font-values-font-size-units
+    - minify-font-values-substitution-functions
 postcss-minify-gradients@8.0.2:
   dir: packages/postcss-minify-gradients
   intents:
@@ -1053,6 +1135,10 @@ postcss-minify-gradients@9.0.5:
   dir: packages/postcss-minify-gradients
   intents:
     - mighty-squids-cross
+postcss-minify-gradients@9.0.6:
+  dir: packages/postcss-minify-gradients
+  intents:
+    - minify-gradients-dimension-and-prefix
 postcss-minify-params@8.0.2:
   dir: packages/postcss-minify-params
   intents:
@@ -1100,6 +1186,10 @@ postcss-minify-params@9.0.5:
   dir: packages/postcss-minify-params
   intents:
     - atrule-whitespace-handling
+postcss-minify-params@9.0.6:
+  dir: packages/postcss-minify-params
+  intents:
+    - old-kids-compete
 postcss-minify-selectors@8.0.3:
   dir: packages/postcss-minify-selectors
   intents:
@@ -1149,6 +1239,12 @@ postcss-minify-selectors@9.0.5:
     - rare-books-repair
     - strict-lamps-laugh
     - warm-jars-own
+postcss-minify-selectors@9.0.6:
+  dir: packages/postcss-minify-selectors
+  intents:
+    - minify-selectors-comment-compounds
+    - minify-selectors-invalid-selector-status
+    - old-kids-compete
 postcss-normalize-charset@8.0.2:
   dir: packages/postcss-normalize-charset
   intents:
@@ -1279,6 +1375,10 @@ postcss-normalize-positions@9.0.5:
   dir: packages/postcss-normalize-positions
   intents:
     - mighty-squids-cross
+postcss-normalize-positions@9.0.6:
+  dir: packages/postcss-normalize-positions
+  intents:
+    - normalize-positions-vertical-center
 postcss-normalize-repeat-style@8.0.2:
   dir: packages/postcss-normalize-repeat-style
   intents:
@@ -1359,6 +1459,10 @@ postcss-normalize-string@9.0.4:
   intents:
     - neat-beans-lie
     - quiet-strings-normalize
+postcss-normalize-string@9.0.5:
+  dir: packages/postcss-normalize-string
+  intents:
+    - normalize-string-hex-escape-continuations
 postcss-normalize-timing-functions@8.0.2:
   dir: packages/postcss-normalize-timing-functions
   intents:
@@ -1441,6 +1545,10 @@ postcss-normalize-unicode@9.0.4:
     - neat-beans-lie
     - rare-books-repair
     - warm-jars-own
+postcss-normalize-unicode@9.0.5:
+  dir: packages/postcss-normalize-unicode
+  intents:
+    - old-kids-compete
 postcss-normalize-url@8.0.2:
   dir: packages/postcss-normalize-url
   intents:
@@ -1690,6 +1798,10 @@ postcss-reduce-initial@9.0.5:
   dir: packages/postcss-reduce-initial
   intents:
     - mighty-squids-cross
+postcss-reduce-initial@9.0.6:
+  dir: packages/postcss-reduce-initial
+  intents:
+    - old-kids-compete
 postcss-reduce-transforms@8.0.2:
   dir: packages/postcss-reduce-transforms
   intents:
@@ -1909,3 +2021,7 @@ stylehacks@9.0.6:
   dir: packages/stylehacks
   intents:
     - mighty-squids-cross
+stylehacks@9.0.7:
+  dir: packages/stylehacks
+  intents:
+    - old-kids-compete

@@ -1,5 +1,15 @@
 # Change Log
 
+## 9.0.7
+
+### Patch Changes
+
+- Stop merging rules that have an invalid selector, such as `b: hover`, `[a b]`, `:lang(en fr)` or `a||b`. An invalid selector makes the whole selector list invalid, so the browser also dropped the valid rule it was merged with.
+
+- Stop turning a comment inside a selector into a descendant combinator. A comment is not whitespace, so `.a/**/.b` selects elements with both classes, including inside `:is()`, and is no longer rewritten as `.a .b`. Invalid selectors such as `div/**/span` are left as written instead of becoming valid.
+
+- Require Browserslist 4.29.3 or later.
+
 ## 9.0.6
 
 ### Patch Changes

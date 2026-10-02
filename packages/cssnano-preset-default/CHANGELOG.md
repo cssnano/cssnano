@@ -1,5 +1,47 @@
 # Change Log
 
+## 9.2.0
+
+### Minor Changes
+
+- Merge box alignment properties into the `place-content`, `place-items` and `place-self` shorthands, such as `align-items:center;justify-items:start` into `place-items:center start`. This only happens when every browser in your Browserslist targets supports the shorthands, because a browser that does not would ignore both alignments. The `defaults` query includes browsers with unknown support, such as Opera Mini and UC Browser, so it keeps the longhands. Values that use `safe`, `unsafe` or `last baseline` merge only when both values use the same keywords. `postcss-merge-longhand` now accepts the Browserslist options `overrideBrowserslist`, `stats`, `path` and `env`.
+
+### Patch Changes
+
+- Write numbers in scientific notation when it is shorter, such as `1e-6px` for `0.000001px` and `1e6px` for `1000000px`. This also applies when `length` unit conversion is disabled. Numbers written without a decimal point, such as `z-index:1000000`, keep their form, because an `<integer>` cannot use scientific notation.
+
+- Stop turning a comment inside a selector into a descendant combinator. A comment is not whitespace, so `div/*c*/span` is not the same selector as `div span`. It now becomes `div/**/span` instead. Comments that can be removed without joining two tokens are still removed, so `.a/*c*/.b` becomes `.a.b`.
+
+- Stop merging longhands across a nested rule or at-rule. The shorthand ended up after the nested rule and overrode it, so in `a{margin-top:1px;&{margin-top:2px}…}` the nested `margin-top` was lost. This applies to `margin`, `padding`, `border`, `border-radius` and `columns`. Declarations on each side of a nested rule are now merged separately. An at-rule without a block, such as `@apply x;`, also separates them, since it may add declarations. An empty rule such as `&{}` does not. A `border-image` or `all` declaration before a nested rule no longer prevents merging the `border` longhands after it.
+
+- Stop merging rules that have an invalid selector, such as `b: hover`, `[a b]`, `:lang(en fr)` or `a||b`. An invalid selector makes the whole selector list invalid, so the browser also dropped the valid rule it was merged with.
+
+- Only treat a dimension as the font size in the `font` shorthand when it has a length unit. An invalid value such as `font:bold 1s "Arial Black"` is now left unchanged.
+
+- Leave the `font` shorthand unchanged when it contains `attr()`, `if()`, `inherit()` or a custom function such as `--name()`, as already done for `var()` and `env()`. Their result is only known when the browser computes the value.
+
+- Remove a zero color stop position only when it has the right type for the gradient. `conic-gradient()` now drops `0deg` and keeps an invalid `0px`, while linear and radial gradients still drop `0px`. `-webkit-linear-gradient()` keeps `to bottom` and other `to` directions as written, since the prefixed syntax measures angles differently.
+
+- Stop turning a comment inside a selector into a descendant combinator. A comment is not whitespace, so `.a/**/.b` selects elements with both classes, including inside `:is()`, and is no longer rewritten as `.a .b`. Invalid selectors such as `div/**/span` are left as written instead of becoming valid.
+
+- Leave rules with an invalid selector unchanged, including an ID selector that starts with a digit, such as `#1a`, and a combinator after a pseudo-element, such as `a::before b`.
+
+- Shorten `top center` and `bottom center` to `top` and `bottom`, instead of `0` and `100%`, which the browser reads as horizontal positions. `center top` and `center bottom` are now shortened the same way.
+
+  Leave a position unchanged when it cannot be safely rewritten:
+
+  - in a `background` layer where another value splits the position, as in `left no-repeat center`, which is invalid;
+  - when it contains a function such as `attr()`, `if()` or a custom `--function()`, which may return a keyword, as `var()` already did;
+  - when an invalid three-value position contains a math function, such as `left abs(1px) top`, as `calc()` already did.
+
+- Keep strings unchanged when removing a line continuation (a backslash before a newline) right after an escape. In `"\31` followed by a line continuation and `2"`, joining the lines would turn `\31` into `\312`, so the result is now `"\31 2"`.
+
+  Leave `@charset` unchanged. Browsers only recognize it with double quotes, so rewriting single quotes would make an ignored `@charset` take effect.
+
+- Require Browserslist 4.29.3 or later.
+
+- Update `postcss-calc` to 11.2.2. Multiplications inside `calc()` now keep their original operand order, so `calc(var(--x) * 5)` is no longer rewritten as `calc(5 * var(--x))`.
+
 ## 9.1.2
 
 ### Patch Changes

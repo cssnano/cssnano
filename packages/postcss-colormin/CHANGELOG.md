@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.0.6
+
+### Patch Changes
+
+- Require Browserslist 4.29.3 or later.
+
 ## 9.0.5
 
 ### Patch Changes
