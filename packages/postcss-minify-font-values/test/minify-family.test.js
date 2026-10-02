@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import minifyFamily from '../src/lib/minify-family.js';
+import cssWideKeywords from '../src/data/cssWideKeywords.json' with { type: 'json' };
 
 const tests = [
   {
@@ -124,6 +125,20 @@ test('keeps a family named revert-rule quoted because unquoted it is the CSS-wid
   assert.equal(
     minifyFamily('"revert-rule"', { removeQuotes: true }),
     '"revert-rule"'
+  );
+});
+
+test('keeps every CSS-wide keyword webref lists quoted, since unquoted it is not a family name', () => {
+  const value = cssWideKeywords.keywords
+    .map((keyword) => `"${keyword}"`)
+    .join(',');
+  assert.equal(minifyFamily(value, { removeQuotes: true }), value);
+});
+
+test('keeps default and none quoted, which font-family reserves though they are not CSS-wide', () => {
+  assert.equal(
+    minifyFamily('"default","none"', { removeQuotes: true }),
+    '"default","none"'
   );
 });
 
