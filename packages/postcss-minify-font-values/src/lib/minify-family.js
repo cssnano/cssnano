@@ -1,16 +1,12 @@
 import cssnanoUtils from 'cssnano-utils';
+import cssWideKeywords from '../data/cssWideKeywords.json' with { type: 'json' };
 
 const { TokenType, asciiLowerCase, balancedTokens, decoded } = cssnanoUtils;
 
-/* The CSS-wide keywords of the `all` grammar in webref, including the draft
- * `revert-rule`, plus the other words a family name must not spell unquoted. */
+/* `default` and `none` are reserved for font family names although they are
+ * not CSS-wide. */
 const globalKeywords = new Set([
-  'inherit',
-  'initial',
-  'unset',
-  'revert',
-  'revert-layer',
-  'revert-rule',
+  ...cssWideKeywords.keywords,
   'default',
   'none',
 ]);
