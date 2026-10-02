@@ -4,7 +4,7 @@ import {
   keywordTerminals,
 } from '../../../../util/webref/webref.js';
 
-/** @import {WebrefAtRule, WebrefDefinition, WebrefProperty} from '../../../../util/webref.js'; */
+/** @import {WebrefAtRule, WebrefDefinition, WebrefProperty} from '../../../../util/webref/webref.js'; */
 
 const VENDOR_PREFIX = /^-\w+-/v;
 
