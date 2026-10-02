@@ -1,5 +1,24 @@
 # Change Log
 
+## 9.1.3
+
+### Patch Changes
+
+- Write numbers in scientific notation when it is shorter, such as `1e-6px` for `0.000001px` and `1e6px` for `1000000px`. This also applies when `length` unit conversion is disabled. Numbers written without a decimal point, such as `z-index:1000000`, keep their form, because an `<integer>` cannot use scientific notation.
+
+- Merge identical `@keyframes` and `@counter-style` rules only when every reference keeps pointing at the same definition:
+
+  - Names are global, so a rule inside `@media`, `@supports` or `@container` is merged only with a rule inside the same conditions. Rules inside `@scope` are not merged with top-level rules.
+  - A string name such as `"a"` matches the identifier `a`, and the identifier is kept. References in `-webkit-animation` are updated too.
+  - A name defined by both `@keyframes` and `@-webkit-keyframes` is not merged with a name defined by only one of them.
+  - A name used in a custom property or inside a function such as `var()` is never removed, since it may be referenced once the value is substituted.
+
+- Stop merging longhands across a nested rule or at-rule. The shorthand ended up after the nested rule and overrode it, so in `a{margin-top:1px;&{margin-top:2px}…}` the nested `margin-top` was lost. This applies to `margin`, `padding`, `border`, `border-radius` and `columns`. Declarations on each side of a nested rule are now merged separately. An at-rule without a block, such as `@apply x;`, also separates them, since it may add declarations. An empty rule such as `&{}` does not. A `border-image` or `all` declaration before a nested rule no longer prevents merging the `border` longhands after it.
+
+- Stop turning a comment inside a selector into a descendant combinator. A comment is not whitespace, so `.a/**/.b` selects elements with both classes, including inside `:is()`, and is no longer rewritten as `.a .b`. Invalid selectors such as `div/**/span` are left as written instead of becoming valid.
+
+- Update `postcss-calc` to 11.2.2. Multiplications inside `calc()` now keep their original operand order, so `calc(var(--x) * 5)` is no longer rewritten as `calc(5 * var(--x))`.
+
 ## 9.1.2
 
 ### Patch Changes

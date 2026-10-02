@@ -1,5 +1,13 @@
 # Change Log
 
+## 9.0.6
+
+### Patch Changes
+
+- Only treat a dimension as the font size in the `font` shorthand when it has a length unit. An invalid value such as `font:bold 1s "Arial Black"` is now left unchanged.
+
+- Leave the `font` shorthand unchanged when it contains `attr()`, `if()`, `inherit()` or a custom function such as `--name()`, as already done for `var()` and `env()`. Their result is only known when the browser computes the value.
+
 ## 9.0.5
 
 ### Patch Changes

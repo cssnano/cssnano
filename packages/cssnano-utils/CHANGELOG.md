@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.2
+
+### Patch Changes
+
+- Add `endsWithEscapingBackslash()`, which tells whether a string ends in a backslash that starts a CSS escape rather than an escaped backslash.
+
 ## 8.0.1
 
 ### Patch Changes

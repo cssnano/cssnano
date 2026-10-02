@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.0.6
+
+### Patch Changes
+
+- Stop turning a comment inside a selector into a descendant combinator. A comment is not whitespace, so `div/*c*/span` is not the same selector as `div span`. It now becomes `div/**/span` instead. Comments that can be removed without joining two tokens are still removed, so `.a/*c*/.b` becomes `.a.b`.
+
 ## 9.0.5
 
 ### Patch Changes
