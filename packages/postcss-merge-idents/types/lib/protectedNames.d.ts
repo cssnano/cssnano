@@ -2,11 +2,13 @@ import { classifyDeclaration } from './grammar.js';
 export type Reference = {
     decl: import('postcss').Declaration;
     classification: NonNullable<ReturnType<typeof classifyDeclaration>>;
+    value: string;
 };
 /**
  * @typedef {{
  *   decl: import('postcss').Declaration,
- *   classification: NonNullable<ReturnType<typeof classifyDeclaration>>
+ *   classification: NonNullable<ReturnType<typeof classifyDeclaration>>,
+ *   value: string
  * }} Reference
  */
 /**

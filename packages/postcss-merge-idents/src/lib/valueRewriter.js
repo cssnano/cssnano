@@ -206,10 +206,11 @@ function createCounterFuncVisitor(tokenList, renames) {
  * @param {import('postcss').Declaration} decl
  * @param {NonNullable<ReturnType<typeof import('./grammar.js').classifyDeclaration>>['kind']} kind
  * @param {Map<string, Replacement>} renames old name → replacement
+ * @param {string} value the declaration value, with the whitespace that a
+ *   trailing escape consumed restored
  * @return {void}
  */
-function rewriteDeclaration(decl, kind, renames) {
-  const value = decl.value;
+function rewriteDeclaration(decl, kind, renames, value) {
   const tokenList = tokens(value);
 
   /** @type {Visitor} */

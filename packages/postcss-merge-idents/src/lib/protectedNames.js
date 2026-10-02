@@ -1,6 +1,7 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from 'cssnano-utils';
 import { classifyDeclaration } from './grammar.js';
+import { trailingEscape } from './trailingEscape.js';
 import { walkValue } from './valueWalk.js';
 
 const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
@@ -73,9 +74,21 @@ function collectNames(
 }
 
 /**
+ * @param {import('postcss').Declaration} decl
+ * @param {string | undefined} restored the result of `trailingEscape(decl)`
+ * @return {string[]} every text the declaration value may be read as; an
+ *   unknown code point after a trailing backslash is read both as the end of
+ *   the value and as an escaped space
+ */
+function spellingsOf(decl, restored) {
+  return restored === undefined ? [decl.value, `${decl.value} `] : [restored];
+}
+
+/**
  * @typedef {{
  *   decl: import('postcss').Declaration,
- *   classification: NonNullable<ReturnType<typeof classifyDeclaration>>
+ *   classification: NonNullable<ReturnType<typeof classifyDeclaration>>,
+ *   value: string
  * }} Reference
  */
 
@@ -115,7 +128,9 @@ function scanDeclarations(
   for (const rule of functionRules) {
     collectNames(rule.params, candidates, protectedNames, true, false);
     rule.walkDecls((decl) => {
-      collectNames(decl.value, candidates, protectedNames, true, false);
+      for (const spelling of spellingsOf(decl, trailingEscape(decl))) {
+        collectNames(spelling, candidates, protectedNames, true, false);
+      }
     });
   }
   for (const rule of parameterRules) {
@@ -127,8 +142,12 @@ function scanDeclarations(
   css.walkDecls((decl) => {
     const prop = asciiLowerCase(decl.prop);
     const classification = classifyDeclaration(decl, prop);
-    if (classification) {
-      references.push({ decl, classification });
+    const restored = trailingEscape(decl);
+    // A reference that cannot be rewritten is skipped, so it must protect
+    // every name it may spell.
+    const isUnrewritable = restored === undefined;
+    if (classification && !isUnrewritable) {
+      references.push({ decl, classification, value: restored });
     }
     const isInitialValue =
       prop === 'initial-value' &&
@@ -136,15 +155,20 @@ function scanDeclarations(
       asciiLowerCase(
         /** @type {import('postcss').AtRule} */ (decl.parent).name
       ) === 'property';
-    const everywhere = prop.startsWith('--') || isInitialValue;
+    const everywhere =
+      prop.startsWith('--') ||
+      isInitialValue ||
+      (classification !== null && isUnrewritable);
     if (everywhere || decl.value.includes('(')) {
-      collectNames(
-        decl.value,
-        candidates,
-        protectedNames,
-        everywhere,
-        classification?.kind === 'counter-style-func'
-      );
+      for (const spelling of spellingsOf(decl, restored)) {
+        collectNames(
+          spelling,
+          candidates,
+          protectedNames,
+          everywhere,
+          classification?.kind === 'counter-style-func'
+        );
+      }
     }
   });
   return { protectedNames, references };
