@@ -9,7 +9,7 @@ catalog:
   '@csstools/css-tokenizer': ^4.0.2
   postcss: ^8.5.28
   '@webref/css': 8.7.5
-  mdn-data: 2.37.0
+  mdn-data: 2.37.1
   '@colordx/core': ^7.2.0
   '@mdn/browser-compat-data': ^8.1.3
 
