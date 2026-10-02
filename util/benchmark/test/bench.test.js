@@ -19,11 +19,11 @@ import {
   resolveBenchmarkArgs,
   shuffleCorpus,
   usageText,
-} from './bench.js';
-import { resolveBenchmarkTarget } from './bench-cases.js';
-import { selectCorpus } from './bench-corpus.js';
-import { currentGitRevision } from './bench-provenance.js';
-import { compareSnapshots } from './compare-snapshots.js';
+} from '../bench.js';
+import { resolveBenchmarkTarget } from '../bench-cases.js';
+import { selectCorpus } from '../bench-corpus.js';
+import { currentGitRevision } from '../bench-provenance.js';
+import { compareSnapshots } from '../compare-snapshots.js';
 
 test('corpus ordering is deterministic for a seed and replicate', () => {
   const corpus = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((name) => ({

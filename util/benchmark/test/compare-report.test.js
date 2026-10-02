@@ -4,7 +4,7 @@ import {
   markdownComparison,
   printComparison,
   verdictBasisLines,
-} from './compare-report.js';
+} from '../compare-report.js';
 
 function createMockResult({
   direction = 'slower',

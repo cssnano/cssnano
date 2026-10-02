@@ -4,15 +4,15 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { corpusManifest } from './bench-corpus.js';
+import { corpusManifest } from '../bench-corpus.js';
 import {
   assertRevision,
   createProvenance,
   currentGitRevision,
   repositoryHashes,
-} from './bench-provenance.js';
-import { loadSnapshot } from './compare-snapshot-io.js';
-import { mockConfiguration } from './benchTestHelpers.js';
+} from '../bench-provenance.js';
+import { loadSnapshot } from '../compare-snapshot-io.js';
+import { mockConfiguration } from '../benchTestHelpers.js';
 
 test('repository provenance exposes separate harness, source, and lockfile hashes', () => {
   const hashes = repositoryHashes();

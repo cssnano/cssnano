@@ -11,7 +11,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { cleanupWorktree, prepareWorktree } from './prepare-worktree.js';
+import { cleanupWorktree, prepareWorktree } from '../prepare-worktree.js';
 
 test('prepareWorktree validates options', () => {
   assert.throws(() => prepareWorktree(null), /options must be an object/v);

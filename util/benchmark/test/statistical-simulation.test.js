@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { analyzeComparison } from './compare-analysis.js';
-import { runCalibration, simulatedArtifact } from './statistical-simulation.js';
+import { analyzeComparison } from '../compare-analysis.js';
+import {
+  runCalibration,
+  simulatedArtifact,
+} from '../statistical-simulation.js';
 
 test('statistical simulation is deterministic and exercises the primary contract', () => {
   const first = analyzeComparison(

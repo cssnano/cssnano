@@ -4,14 +4,14 @@ import {
   analyzeComparison,
   analyzeIndependentSnapshots,
   analyzePairedComparison,
-} from './compare-analysis.js';
-import { createComparisonSchedule } from './comparison-schedule.js';
+} from '../compare-analysis.js';
+import { createComparisonSchedule } from '../comparison-schedule.js';
 
 import {
   HASH,
   comparisonProvenance,
   mockProvenance as provenance,
-} from './benchTestHelpers.js';
+} from '../benchTestHelpers.js';
 
 const BASE_REVISION = '1'.repeat(40);
 const CANDIDATE_REVISION = '2'.repeat(40);

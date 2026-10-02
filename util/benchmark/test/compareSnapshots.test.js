@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { snapshot } from './benchTestHelpers.js';
-import { compareSnapshots } from './compare-snapshots.js';
+import { snapshot } from '../benchTestHelpers.js';
+import { compareSnapshots } from '../compare-snapshots.js';
 
 test('comparison verdicts distinguish improvement, regression, and noise', () => {
   assert.equal(

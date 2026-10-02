@@ -15,7 +15,7 @@ import {
   approvalCommand,
   compareCorpora,
   runPreflight,
-} from './compare-preflight.js';
+} from '../compare-preflight.js';
 
 function temporaryDirectory(prefix) {
   return mkdtempSync(join(tmpdir(), prefix));

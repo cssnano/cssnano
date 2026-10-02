@@ -4,16 +4,16 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { analyzeComparison } from './compare-analysis.js';
-import { resolveBenchmarkTarget } from './bench-cases.js';
+import { analyzeComparison } from '../compare-analysis.js';
+import { resolveBenchmarkTarget } from '../bench-cases.js';
 import {
   blockSummary,
   commandFor,
   comparisonResultFor,
   executeComparison,
-} from './compare-revisions.js';
+} from '../compare-revisions.js';
 
-import { HASH, mockProvenance as provenance } from './benchTestHelpers.js';
+import { HASH, mockProvenance as provenance } from '../benchTestHelpers.js';
 
 function config(overrides = {}) {
   return {
