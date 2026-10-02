@@ -3,9 +3,9 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { snapshot } from './benchTestHelpers.js';
-import { loadSnapshot } from './compare-snapshot-io.js';
-import { compareSnapshots } from './compare-snapshots.js';
+import { snapshot } from '../benchTestHelpers.js';
+import { loadSnapshot } from '../compare-snapshot-io.js';
+import { compareSnapshots } from '../compare-snapshots.js';
 
 test('comparison rejects mismatched metadata and corpus', () => {
   const base = snapshot([100, 100, 100, 100, 100]);

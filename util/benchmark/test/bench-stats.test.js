@@ -9,17 +9,17 @@ import {
   seedNumber,
   standardDeviation,
   summaryStatistics,
-} from './bench-stats.js';
+} from '../bench-stats.js';
 import {
   bootstrapConfidenceInterval,
   clusteredTwoSampleBootstrapConfidenceInterval,
   twoSampleBootstrapConfidenceInterval,
-} from './bench-bootstrap.js';
+} from '../bench-bootstrap.js';
 import {
   fitCrossoverModel,
   normalQuantile,
   studentTQuantile,
-} from './bench-distributions.js';
+} from '../bench-distributions.js';
 
 test('mean, median, and standardDeviation calculate standard sample statistics', () => {
   const values = [2, 4, 4, 4, 5, 5, 7, 9];

@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import {
   createComparisonSchedule,
   scheduleBalance,
-} from './comparison-schedule.js';
+} from '../comparison-schedule.js';
 
 test('comparison schedules balance odd and even block counts', () => {
   for (const count of [4, 5, 20]) {
