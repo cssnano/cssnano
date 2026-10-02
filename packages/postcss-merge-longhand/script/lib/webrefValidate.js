@@ -1,3 +1,5 @@
+import { expectAll, expectNone } from '../../../../util/webref/webref.js';
+
 /** @import {Longhands} from './webrefLonghands.js'; */
 
 /**
@@ -50,32 +52,6 @@ const expectExactly = (actual, expected, what) => {
     throw new Error(
       `Expected ${what} to be ${expected.join(' ')}, got ${actual.join(' ')}`
     );
-  }
-};
-
-/**
- * @param {string[]} actual
- * @param {string[]} expected
- * @param {string} what
- */
-const expectAll = (actual, expected, what) => {
-  for (const name of expected) {
-    if (!actual.includes(name)) {
-      throw new Error(`Expected ${what} to include ${name}`);
-    }
-  }
-};
-
-/**
- * @param {string[]} actual
- * @param {string[]} rejected
- * @param {string} what
- */
-const expectNone = (actual, rejected, what) => {
-  for (const name of rejected) {
-    if (actual.includes(name)) {
-      throw new Error(`Expected ${what} to exclude ${name}`);
-    }
   }
 };
 

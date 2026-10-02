@@ -15,7 +15,7 @@ import { validate } from '../lib/webrefMergeIdentsValidate.js';
 function webref({ properties = [], atrules = [], types = [], functions = [] }) {
   return {
     properties,
-    atrules: [{ name: '@counter-style' }, ...atrules],
+    atrules: atrules.length > 0 ? atrules : [{ name: '@counter-style' }],
     types,
     functions,
   };

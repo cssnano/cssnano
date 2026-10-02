@@ -48,17 +48,29 @@ export const requiredKeywordSubfeatures = new Set([
 ]);
 
 /**
+ * The keyword subfeatures BCD records for the alignment longhands in each
+ * layout context, by subfeature name.
+ *
+ * @param {CompatData} bcd
+ * @return {Generator<[string, CompatEntry]>}
+ */
+export function* alignmentKeywordSubfeatures(bcd) {
+  for (const longhand of alignmentLonghands) {
+    for (const context of layoutContexts) {
+      yield* Object.entries(bcd.css.properties[longhand]?.[context] ?? {});
+    }
+  }
+}
+
+/**
  * @param {CompatData} bcd
  * @return {CompatEntry[]}
  */
 function keywordEntries(bcd) {
-  return alignmentLonghands.flatMap((longhand) =>
-    layoutContexts.flatMap((context) =>
-      Object.entries(bcd.css.properties[longhand]?.[context] ?? {})
-        .filter(([name]) => requiredKeywordSubfeatures.has(name))
-        .map(([, entry]) => entry)
-    )
-  );
+  return alignmentKeywordSubfeatures(bcd)
+    .filter(([name]) => requiredKeywordSubfeatures.has(name))
+    .map(([, entry]) => entry)
+    .toArray();
 }
 
 /** BCD browser identifiers keyed to the browserslist names of the same engines. */

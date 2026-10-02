@@ -24,7 +24,7 @@ const types = [
 ];
 
 test('buildEasingFunctions follows type references', () => {
-  assert.deepStrictEqual(buildEasingFunctions({ types }), {
+  assert.deepStrictEqual(buildEasingFunctions({ properties: [], types }), {
     keywords: [
       'ease',
       'ease-in',
@@ -42,6 +42,7 @@ test('buildEasingFunctions requires all referenced types', () => {
   assert.throws(
     () =>
       buildEasingFunctions({
+        properties: [],
         types: [{ name: 'easing-function', syntax: '<missing>' }],
       }),
     /does not define <missing>/v
@@ -49,17 +50,17 @@ test('buildEasingFunctions requires all referenced types', () => {
 });
 
 test('validate requires essential easing terminals', () => {
-  const data = buildEasingFunctions({ types });
+  const data = buildEasingFunctions({ properties: [], types });
   assert.doesNotThrow(() => validate(data));
   assert.throws(
     () => validate({ ...data, functions: ['cubic-bezier', 'steps'] }),
-    /easing functions to include linear/v
+    /Unexpected easing functions/v
   );
 });
 
 test('serialize produces generated JSON', () => {
   assert.deepStrictEqual(
-    JSON.parse(serialize(buildEasingFunctions({ types }))),
+    JSON.parse(serialize(buildEasingFunctions({ properties: [], types }))),
     {
       keywords: [
         'ease',

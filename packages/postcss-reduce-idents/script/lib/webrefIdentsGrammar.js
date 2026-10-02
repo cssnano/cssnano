@@ -2,89 +2,13 @@ import {
   directReferences,
   functionArguments,
   keywordTerminals,
-} from '../../../../util/webref.js';
+} from '../../../../util/webref/webref.js';
 
-/**
- * @typedef {object} WebrefDefinition
- * @property {string} name
- * @property {string} [syntax] Value grammar, absent when a spec only defines
- * the term in prose.
- *
- * @typedef {WebrefDefinition & {
- *   legacyAliasOf?: string,
- *   longhands?: string[],
- *   resetLonghands?: string[]
- * }} WebrefProperty
- *
- * @typedef {WebrefDefinition & {
- *   descriptors?: WebrefDefinition[]
- * }} WebrefAtRule
- *
- * @typedef {object} WebrefData
- * @property {WebrefProperty[]} properties
- * @property {WebrefAtRule[]} atrules
- * @property {WebrefDefinition[]} types
- * @property {WebrefDefinition[]} functions
- */
+/** @import {WebrefAtRule, WebrefDefinition, WebrefProperty} from '../../../../util/webref.js'; */
 
 const VENDOR_PREFIX = /^-\w+-/v;
 
 export { directReferences, functionArguments, keywordTerminals };
-
-/**
- * Return the functions that name a counter and where the counter and its
- * style sit in their arguments. webref spells the counter `<counter-name>`
- * in `counter()` but `<custom-ident>` in `target-counter()`, so count an
- * identifier argument as a counter name whenever the function also takes a
- * counter style.
- *
- * @param {WebrefDefinition[]} functions
- * @return {{
- *   counterFunctions: Map<string, number[]>,
- *   counterStyleFunctions: Map<string, number[]>
- * }}
- */
-export function counterFunctionSlots(functions) {
-  /** @type {Map<string, number[]>} */
-  const counterFunctions = new Map();
-  /** @type {Map<string, number[]>} */
-  const counterStyleFunctions = new Map();
-
-  for (const { name, syntax } of functions) {
-    if (!syntax) {
-      continue;
-    }
-    /** @type {number[]} */
-    const styleArguments = [];
-    /** @type {number[]} */
-    const nameArguments = [];
-
-    for (const [index, argument] of functionArguments(syntax).entries()) {
-      const references = directReferences(argument);
-      if (
-        references.includes('counter-style') ||
-        references.includes('counter-style-name')
-      ) {
-        styleArguments.push(index);
-      } else if (
-        references.includes('counter-name') ||
-        references.includes('custom-ident')
-      ) {
-        nameArguments.push(index);
-      }
-    }
-
-    if (styleArguments.length === 0) {
-      continue;
-    }
-    counterStyleFunctions.set(name, styleArguments);
-    if (nameArguments.length > 0) {
-      counterFunctions.set(name, nameArguments);
-    }
-  }
-
-  return { counterFunctions, counterStyleFunctions };
-}
 
 /**
  * @param {Map<string, number[]>} functionSlots
@@ -92,24 +16,6 @@ export function counterFunctionSlots(functions) {
  */
 export function takesOneOf(functionSlots) {
   return (reach) => [...functionSlots.keys()].some((name) => reach.has(name));
-}
-
-/**
- * The keyword alternatives a grammar offers, ignoring anything that is a
- * reference to another production.
- *
- * @param {string | undefined} syntax
- * @return {string[]}
- */
-export function keywordsOf(syntax) {
-  if (!syntax) {
-    return [];
-  }
-  return syntax
-    .split('|')
-    .map((alternative) => alternative.trim())
-    .filter((alternative) => /^[a-z][a-z\-]*$/v.test(alternative))
-    .toSorted();
 }
 
 /**
@@ -129,24 +35,6 @@ export function unprefixedAtRule(atrules, name) {
     throw new Error(`webref does not define the @${name} rule`);
   }
   return name;
-}
-
-/**
- * @param {WebrefAtRule[]} atrules
- * @param {string} atRuleName
- * @param {(syntax: string) => boolean} predicate
- * @return {WebrefDefinition[]}
- */
-export function descriptorsWhere(atrules, atRuleName, predicate) {
-  const atrule = atrules.find((candidate) => candidate.name === atRuleName);
-  /** @type {WebrefDefinition[]} */
-  const found = [];
-  for (const descriptor of atrule?.descriptors ?? []) {
-    if (descriptor.syntax && predicate(descriptor.syntax)) {
-      found.push(descriptor);
-    }
-  }
-  return found.toSorted((a, b) => (a.name < b.name ? -1 : 1));
 }
 
 /**

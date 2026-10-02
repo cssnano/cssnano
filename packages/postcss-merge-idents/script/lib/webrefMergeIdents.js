@@ -1,8 +1,15 @@
 import {
   directReferences,
   functionArguments,
-  keywordTerminals,
-} from '../../../../util/webref.js';
+  grammarsByName,
+  keywordsOf,
+} from '../../../../util/webref/webref.js';
+import {
+  counterFunctionSlots,
+  descriptorsWhere,
+  propertyReach,
+  reachableProductions,
+} from '../../../../util/webref/webrefWalk.js';
 
 export { directReferences, functionArguments };
 
@@ -15,26 +22,10 @@ export { directReferences, functionArguments };
  * specified in prose rather than in any grammar, so they cannot come from
  * here and stay hand-written in the plugin.
  *
- * @typedef {object} WebrefDefinition
- * @property {string} name
- * @property {string} [syntax] Value grammar, absent when a spec only defines
- * the term in prose.
- *
- * @typedef {WebrefDefinition & {
- *   legacyAliasOf?: string,
- *   longhands?: string[],
- *   resetLonghands?: string[]
- * }} WebrefProperty
- *
- * @typedef {WebrefDefinition & {
- *   descriptors?: WebrefDefinition[]
- * }} WebrefAtRule
- *
- * @typedef {object} WebrefData
- * @property {WebrefProperty[]} properties
- * @property {WebrefAtRule[]} atrules
- * @property {WebrefDefinition[]} types
- * @property {WebrefDefinition[]} functions
+ * @typedef {import('../../../../util/webref/webref.js').WebrefDefinition} WebrefDefinition
+ * @typedef {import('../../../../util/webref/webref.js').WebrefProperty} WebrefProperty
+ * @typedef {import('../../../../util/webref/webref.js').WebrefAtRule} WebrefAtRule
+ * @typedef {import('../../../../util/webref/webref.js').WebrefData} WebrefData
  *
  * @typedef {object} MergeIdents
  * @property {string[]} cssWideKeywords Keywords no custom identifier can be,
@@ -49,139 +40,48 @@ export { directReferences, functionArguments };
  */
 
 /**
- * The keyword alternatives a grammar offers at its own level, ignoring
- * anything that is a reference to another production.
- *
- * @param {string | undefined} syntax
- * @return {string[]}
- */
-function keywordsOf(syntax) {
-  if (!syntax) {
-    return [];
-  }
-  return syntax
-    .split('|')
-    .map((alternative) => alternative.trim())
-    .filter((alternative) => /^[a-z][a-z\-]*$/v.test(alternative))
-    .toSorted();
-}
-
-/**
  * @param {WebrefData} data
  * @return {MergeIdents}
  */
 export function buildMergeIdents({ properties, atrules, types, functions }) {
-  /**
-   * A production can be defined by more than one spec, so the alternatives
-   * are pooled the same way `postcss-reduce-idents` pools them.
-   *
-   * @type {Map<string, string>}
-   */
-  const grammars = new Map();
-  for (const definition of [...types, ...functions]) {
-    if (!definition.syntax) {
-      continue;
-    }
-    const existing = grammars.get(definition.name);
-    grammars.set(
-      definition.name,
-      existing === undefined
-        ? definition.syntax
-        : `${existing} | ${definition.syntax}`
-    );
-  }
-  for (const property of properties) {
-    if (property.syntax) {
-      grammars.set(`'${property.name}'`, property.syntax);
-    }
-  }
+  const grammars = grammarsByName({ properties, types, functions });
 
   /**
-   * Every keyword a grammar can hold, following it to the productions it
-   * names but not descending into function arguments: a keyword inside
-   * `counter()` is written where the function is, not where the property
-   * that takes the function is.
+   * The keywords of the productions a declaration of these properties, or
+   * these grammars, can hold. A keyframes name or counter style name that
+   * reads as one of them is ambiguous with it.
    *
-   * @param {string | undefined} syntax
-   * @return {Set<string>}
-   */
-  function expand(syntax) {
-    /** @type {Set<string>} */
-    const keywords = new Set();
-    /** @type {string[]} */
-    const queue = syntax === undefined ? [] : [syntax];
-    /** @type {Set<string>} */
-    const seen = new Set();
-    while (queue.length > 0) {
-      const current = /** @type {string} */ (queue.pop());
-      if (seen.has(current)) {
-        continue;
-      }
-      seen.add(current);
-      for (const keyword of keywordTerminals(current)) {
-        keywords.add(keyword);
-      }
-      for (const reference of directReferences(current)) {
-        if (reference.endsWith('()') || seen.has(reference)) {
-          continue;
-        }
-        const grammar = grammars.get(reference);
-        if (grammar !== undefined) {
-          queue.push(grammar);
-        }
-      }
-    }
-    return keywords;
-  }
-
-  /**
-   * @param {string[]} names
+   * @param {(string | undefined)[]} syntaxes
    * @return {string[]}
    */
-  function keywordsOfProperties(names) {
+  function keywordsOfSyntaxes(syntaxes) {
     /** @type {Set<string>} */
     const keywords = new Set();
-    for (const name of names) {
-      for (const keyword of expand(grammars.get(`'${name}'`))) {
+    for (const syntax of syntaxes) {
+      for (const keyword of reachableProductions(grammars, syntax).keywords) {
         keywords.add(keyword);
       }
     }
     return [...keywords].toSorted();
   }
 
-  /**
-   * The descriptors of an at-rule that can hold a counter style name, whose
-   * own keywords would be ambiguous with one: `speak-as: bullets` is a
-   * keyword, not the name of a counter style.
-   *
-   * @param {string} atRuleName
-   * @return {string[]}
-   */
-  function keywordsOfCounterStyleDescriptors(atRuleName) {
-    /** @type {Set<string>} */
-    const keywords = new Set();
-    for (const atrule of atrules) {
-      if (atrule.name !== `@${atRuleName}`) {
-        continue;
-      }
-      for (const descriptor of atrule.descriptors ?? []) {
-        const holdsStyleName =
-          descriptor.syntax &&
-          directReferences(descriptor.syntax).some(
-            (reference) =>
-              reference === 'counter-style' ||
-              reference === 'counter-style-name'
-          );
-        if (!holdsStyleName) {
-          continue;
-        }
-        for (const keyword of expand(descriptor.syntax)) {
-          keywords.add(keyword);
-        }
-      }
-    }
-    return [...keywords].toSorted();
-  }
+  /** @param {string[]} names */
+  const keywordsOfProperties = (names) =>
+    keywordsOfSyntaxes(names.map((name) => grammars.get(`'${name}'`)));
+
+  const counterStyleProperties = [...propertyReach(properties, grammars)]
+    .filter(([, reach]) => reach.has('counter-style-name'))
+    .map(([name]) => name)
+    .toSorted();
+  // `speak-as: bullets` is a keyword, not the name of a counter style.
+  const counterStyleDescriptors = descriptorsWhere(
+    atrules,
+    '@counter-style',
+    (syntax) =>
+      reachableProductions(grammars, syntax).references.has(
+        'counter-style-name'
+      )
+  );
 
   return {
     cssWideKeywords: keywordsOf(
@@ -191,47 +91,13 @@ export function buildMergeIdents({ properties, atrules, types, functions }) {
       shorthandKeywords: keywordsOfProperties(['animation', 'animation-name']),
     },
     counterStyle: {
-      keywords: [
-        ...new Set([
-          ...keywordsOfProperties(['list-style', 'list-style-type']),
-          ...keywordsOfCounterStyleDescriptors('counter-style'),
-        ]),
-      ].toSorted(),
-      functions: counterStyleFunctionSlots(functions),
+      keywords: keywordsOfSyntaxes([
+        ...counterStyleProperties.map((name) => grammars.get(`'${name}'`)),
+        ...counterStyleDescriptors.map((descriptor) => descriptor.syntax),
+      ]),
+      functions: counterFunctionSlots(functions).counterStyleFunctions,
     },
   };
-}
-
-/**
- * The argument positions at which the counter functions take the counter
- * style they render the counter with.
- *
- * @param {WebrefDefinition[]} functions
- * @return {Map<string, number[]>}
- */
-function counterStyleFunctionSlots(functions) {
-  /** @type {Map<string, number[]>} */
-  const slots = new Map();
-  for (const { name, syntax } of functions) {
-    if (!syntax) {
-      continue;
-    }
-    /** @type {number[]} */
-    const styleArguments = [];
-    for (const [index, argument] of functionArguments(syntax).entries()) {
-      const references = directReferences(argument);
-      if (
-        references.includes('counter-style') ||
-        references.includes('counter-style-name')
-      ) {
-        styleArguments.push(index);
-      }
-    }
-    if (styleArguments.length > 0) {
-      slots.set(name, styleArguments);
-    }
-  }
-  return slots;
 }
 
 /**

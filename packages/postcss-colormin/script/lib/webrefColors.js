@@ -1,4 +1,9 @@
-import { directReferences } from '../../../../util/webref.js';
+import {
+  directReferences,
+  expectAll,
+  expectNone,
+  grammarsByName,
+} from '../../../../util/webref/webref.js';
 
 export { directReferences };
 
@@ -6,15 +11,8 @@ export { directReferences };
  * Derives the CSS properties whose grammar transitively accepts <color>.
  * Kept free of I/O so that it can be unit tested.
  *
- * @typedef {object} WebrefDefinition
- * @property {string} name
- * @property {string} [syntax]
- *
- * @typedef {WebrefDefinition & {
- *   legacyAliasOf?: string,
- *   longhands?: string[],
- *   resetLonghands?: string[]
- * }} WebrefProperty
+ * @typedef {import('../../../../util/webref/webref.js').WebrefProperty} WebrefProperty
+ * @typedef {import('../../../../util/webref/webref.js').WebrefDefinition} WebrefDefinition
  *
  * @typedef {object} WebrefData
  * @property {WebrefProperty[]} properties
@@ -44,24 +42,7 @@ export function buildColorProperties({
   types = [],
   functions = [],
 }) {
-  /** @type {Map<string, string>} */
-  const grammars = new Map();
-  for (const def of [...types, ...functions]) {
-    if (!def.syntax) {
-      continue;
-    }
-    const key = def.name;
-    const existing = grammars.get(key);
-    grammars.set(
-      key,
-      existing === undefined ? def.syntax : `${existing} | ${def.syntax}`
-    );
-  }
-  for (const prop of properties) {
-    if (prop.syntax) {
-      grammars.set(`'${prop.name}'`, prop.syntax);
-    }
-  }
+  const grammars = grammarsByName({ properties, types, functions });
 
   /**
    * @param {string | undefined} syntax
@@ -116,32 +97,6 @@ export function buildColorProperties({
   );
 
   return [...new Set(colorProperties)].toSorted();
-}
-
-/**
- * @param {string[]} actual
- * @param {string[]} expected
- * @param {string} what
- */
-function expectAll(actual, expected, what) {
-  for (const name of expected) {
-    if (!actual.includes(name)) {
-      throw new Error(`Expected ${what} to include ${name}`);
-    }
-  }
-}
-
-/**
- * @param {string[]} actual
- * @param {string[]} forbidden
- * @param {string} what
- */
-function expectNone(actual, forbidden, what) {
-  for (const name of forbidden) {
-    if (actual.includes(name)) {
-      throw new Error(`Expected ${what} not to include ${name}`);
-    }
-  }
 }
 
 /**

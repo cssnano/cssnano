@@ -1,14 +1,13 @@
 import {
   REFERENCE,
   keywordTerminals as readKeywordTerminals,
-} from '../../../../util/webref.js';
+} from '../../../../util/webref/webref.js';
 /** @import {WebrefData, WebrefDefinition} from './webrefLonghands.js'; */
 
 /**
  * Reads a webref grammar for the terminals the plugin classifies values by:
- * the literal keywords a production offers, the functions it can reach, and
- * whether a border property is named after the box or the flow axes. Kept free
- * of I/O so that it can be unit tested.
+ * the literal keywords a production offers and the functions it can reach.
+ * Kept free of I/O so that it can be unit tested.
  */
 
 /**
@@ -119,22 +118,4 @@ export function reachableFunctions(data, root) {
   }
 
   return [...functions].toSorted();
-}
-
-/**
- * Flow-relative properties are named after the block and inline axes rather
- * than after the sides of the box, e.g. `border-inline-start-width`. webref
- * does not flag them, but the naming is consistent throughout.
- *
- * @param {string} name
- * @return {boolean}
- */
-export function isFlowRelative(name) {
-  const segments = new Set(name.split('-'));
-  return (
-    segments.has('block') ||
-    segments.has('inline') ||
-    segments.has('start') ||
-    segments.has('end')
-  );
 }

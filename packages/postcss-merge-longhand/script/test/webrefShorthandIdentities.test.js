@@ -161,6 +161,27 @@ describe('buildShorthandIdentities', () => {
       'steps',
     ]);
   });
+
+  test("resolves a <'name'> reference to the property rather than to a type of the same name", () => {
+    const data = webref();
+    data.properties.push({ name: 'shared-name', syntax: 'ease' });
+    data.types.push({ name: 'shared-name', syntax: 'step-end' });
+    data.types.find(({ name }) => name === 'easing-function').syntax =
+      "<'shared-name'>";
+    assert.deepStrictEqual(buildShorthandIdentities(data).easing.keywords, [
+      'ease',
+    ]);
+  });
+
+  test('pools the alternatives of a type that several specs define', () => {
+    const data = webref();
+    data.types.push({ name: 'step-easing-function', syntax: 'step-middle' });
+    const { keywords } = buildShorthandIdentities(data).easing;
+    assert.deepStrictEqual(
+      keywords.filter((keyword) => keyword.startsWith('step-')),
+      ['step-end', 'step-middle', 'step-start']
+    );
+  });
 });
 
 describe('validateShorthandIdentities', () => {

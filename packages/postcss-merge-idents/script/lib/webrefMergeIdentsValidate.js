@@ -1,3 +1,5 @@
+import { expectAll } from '../../../../util/webref/webref.js';
+
 /**
  * @typedef {import('./webrefMergeIdents.js').MergeIdents} MergeIdents
  */
@@ -61,17 +63,21 @@ const COUNTER_STYLE_KEYWORD_EXPECTATIONS = [
  * @return {void}
  */
 export function validate(data) {
-  expectAll(data.cssWideKeywords, CSS_WIDE_KEYWORD_EXPECTATIONS, [
-    'the CSS-wide keywords',
-  ]);
+  expectAll(
+    data.cssWideKeywords,
+    CSS_WIDE_KEYWORD_EXPECTATIONS,
+    'the CSS-wide keywords'
+  );
   expectAll(
     data.keyframes.shorthandKeywords,
     KEYFRAMES_SHORTHAND_KEYWORD_EXPECTATIONS,
-    ['the keywords an animation value can hold']
+    'the keywords an animation value can hold'
   );
-  expectAll(data.counterStyle.keywords, COUNTER_STYLE_KEYWORD_EXPECTATIONS, [
-    'the keywords a list style value or counter style descriptor can hold',
-  ]);
+  expectAll(
+    data.counterStyle.keywords,
+    COUNTER_STYLE_KEYWORD_EXPECTATIONS,
+    'the keywords a list style value or counter style descriptor can hold'
+  );
   for (const [name, expected] of /** @type {[string, number[]][]} */ ([
     ['counter()', [1]],
     ['counters()', [2]],
@@ -83,20 +89,6 @@ export function validate(data) {
       throw new Error(
         `Expected ${name} to take a counter style at argument ${expected.join()}, got ${actual?.join() ?? 'nothing'}`
       );
-    }
-  }
-}
-
-/**
- * @param {string[]} actual
- * @param {string[]} expected
- * @param {string[]} what
- * @return {void}
- */
-function expectAll(actual, expected, what) {
-  for (const name of expected) {
-    if (!actual.includes(name)) {
-      throw new Error(`Expected ${what.join(' ')} to include ${name}`);
     }
   }
 }

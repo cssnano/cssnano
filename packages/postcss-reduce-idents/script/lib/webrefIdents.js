@@ -1,14 +1,22 @@
 import {
-  counterFunctionSlots,
-  descriptorsWhere,
   directReferences,
   functionArguments,
   keywordTerminals,
-  keywordsOf,
   shorthandsOf,
   takesOneOf,
   unprefixedAtRule,
 } from './webrefIdentsGrammar.js';
+import {
+  grammarsByName,
+  keywordsOf,
+  sortedByName,
+} from '../../../../util/webref/webref.js';
+import {
+  counterFunctionSlots,
+  descriptorsWhere,
+  propertyReach,
+  reachableProductions,
+} from '../../../../util/webref/webrefWalk.js';
 import { validate } from './webrefIdentsValidate.js';
 
 /**
@@ -16,10 +24,10 @@ import { validate } from './webrefIdentsValidate.js';
  * each kind the plugin renames can appear. Kept free of I/O so that it can be
  * unit tested.
  *
- * @typedef {import('./webrefIdentsGrammar.js').WebrefDefinition} WebrefDefinition
- * @typedef {import('./webrefIdentsGrammar.js').WebrefProperty} WebrefProperty
- * @typedef {import('./webrefIdentsGrammar.js').WebrefAtRule} WebrefAtRule
- * @typedef {import('./webrefIdentsGrammar.js').WebrefData} WebrefData
+ * @typedef {import('../../../../util/webref/webref.js').WebrefDefinition} WebrefDefinition
+ * @typedef {import('../../../../util/webref/webref.js').WebrefProperty} WebrefProperty
+ * @typedef {import('../../../../util/webref/webref.js').WebrefAtRule} WebrefAtRule
+ * @typedef {import('../../../../util/webref/webref.js').WebrefData} WebrefData
  *
  * @typedef {object} IdentSlots
  * @property {string[]} cssWideKeywords Keywords no custom identifier can be,
@@ -64,76 +72,14 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
     }
   }
 
-  /**
-   * A production can be defined by more than one spec, e.g. `<content-list>`
-   * by both css-content and css-gcpm.
-   *
-   * @type {Map<string, string>}
-   */
-  const grammars = new Map();
-  for (const definition of [...types, ...functions]) {
-    if (!definition.syntax) {
-      continue;
-    }
-    const existing = grammars.get(definition.name);
-    grammars.set(
-      definition.name,
-      existing === undefined
-        ? definition.syntax
-        : `${existing} | ${definition.syntax}`
-    );
-  }
-  for (const property of properties) {
-    if (property.syntax) {
-      grammars.set(`'${property.name}'`, property.syntax);
-    }
-  }
-
-  /**
-   * Every production a grammar can expand to and every keyword it can hold,
-   * functions included as productions but without descending into their
-   * arguments: an identifier inside `counter()` is not written where the
-   * property that takes the function is written, so the two are collected
-   * separately.
-   *
-   * @param {string | undefined} syntax
-   * @return {{references: Set<string>, keywords: Set<string>}}
-   */
-  function expand(syntax) {
-    /** @type {Set<string>} */
-    const references = new Set();
-    /** @type {Set<string>} */
-    const keywords = new Set();
-    /** @type {string[]} */
-    const queue = syntax === undefined ? [] : [syntax];
-    while (queue.length > 0) {
-      const current = /** @type {string} */ (queue.pop());
-      for (const keyword of keywordTerminals(current)) {
-        keywords.add(keyword);
-      }
-      for (const reference of directReferences(current)) {
-        if (references.has(reference)) {
-          continue;
-        }
-        references.add(reference);
-        if (reference.endsWith('()')) {
-          continue;
-        }
-        const grammar = grammars.get(reference);
-        if (grammar !== undefined) {
-          queue.push(grammar);
-        }
-      }
-    }
-    return { references, keywords };
-  }
+  const grammars = grammarsByName({ properties, types, functions });
 
   /**
    * @param {string | undefined} syntax
    * @return {Set<string>}
    */
   function reachable(syntax) {
-    return expand(syntax).references;
+    return reachableProductions(grammars, syntax).references;
   }
 
   /**
@@ -161,22 +107,14 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
     /** @type {Set<string>} */
     const keywords = new Set();
     for (const syntax of syntaxes) {
-      for (const keyword of expand(syntax).keywords) {
+      for (const keyword of reachableProductions(grammars, syntax).keywords) {
         keywords.add(keyword);
       }
     }
     return [...keywords].toSorted();
   }
 
-  /** @type {Map<string, Set<string>>} */
-  const propertyReach = new Map();
-  for (const property of properties) {
-    // Skip prefixed spellings: they resolve to their alias before any lookup.
-    if (property.legacyAliasOf || property.name === '--*') {
-      continue;
-    }
-    propertyReach.set(property.name, reachable(property.syntax));
-  }
+  const reachByProperty = propertyReach(properties, grammars);
 
   /**
    * @param {(reach: Set<string>) => boolean} predicate
@@ -185,7 +123,7 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
   function propertiesWhere(predicate) {
     /** @type {string[]} */
     const names = [];
-    for (const [name, reach] of propertyReach) {
+    for (const [name, reach] of reachByProperty) {
       if (predicate(reach)) {
         names.push(name);
       }
@@ -226,7 +164,7 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
     cssWideKeywords: keywordsOf(
       properties.find((property) => property.name === 'all')?.syntax
     ),
-    aliases: new Map([...aliases].toSorted(([a], [b]) => (a < b ? -1 : 1))),
+    aliases: new Map(sortedByName(aliases)),
     atRules: {
       keyframes: unprefixedAtRule(atrules, 'keyframes'),
       counterStyle: unprefixedAtRule(atrules, 'counter-style'),
@@ -252,7 +190,7 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
           ...propertiesWhere(takesOneOf(counterFunctions)),
           // Name `string-set` here: webref spells it with a bare `<string>`,
           // so its `counter()` is unreachable from the grammar.
-          ...(propertyReach.has('string-set') ? ['string-set'] : []),
+          ...(reachByProperty.has('string-set') ? ['string-set'] : []),
         ]),
       ].toSorted(),
       functions: counterFunctions,
