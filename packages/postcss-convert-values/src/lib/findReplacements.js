@@ -127,8 +127,7 @@ function parseNumber(
   // already written as non-integers cannot.
   const writtenAsInteger =
     unit === '' && !raw.includes('.') && !raw.toLowerCase().includes('e');
-  const allowExponent = (opts.allowExponent ?? true) && !writtenAsInteger;
-  return convert(num, unit, { ...opts, allowExponent });
+  return convert(num, unit, opts, !writtenAsInteger);
 }
 
 /** @param {string} value @param {number} number @param {string} unit @param {Options} opts @param {boolean} [clamp] @return {string} */
@@ -142,7 +141,7 @@ function clampOpacity(value, number, unit, opts, clamp = true) {
     if (typeof opts.precision === 'number' && opts.precision >= 0) {
       decimalNumber = roundToPrecision(decimalNumber, opts.precision);
     }
-    const decimal = formatNumber(decimalNumber, opts.allowExponent ?? true);
+    const decimal = formatNumber(decimalNumber);
     return decimal.length < value.length ? decimal : value;
   }
   if (clamp) {

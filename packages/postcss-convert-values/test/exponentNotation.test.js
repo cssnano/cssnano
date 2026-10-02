@@ -80,15 +80,6 @@ describe('Exponent notation for numbers and dimensions', () => {
   );
 
   test(
-    'should disable exponent notation when allowExponent option is false',
-    processCSS(
-      'h1{width:100000px;margin:100000rem;opacity:0.0001;transition-duration:100000000ms}',
-      'h1{width:6250pc;margin:100000rem;opacity:.0001;transition-duration:100000s}',
-      { allowExponent: false }
-    )
-  );
-
-  test(
     'should still use exponent notation for lengths when length conversion is disabled',
     processCSS('h1{width:0.000001px}', 'h1{width:1e-6px}', { length: false })
   );
@@ -96,13 +87,5 @@ describe('Exponent notation for numbers and dimensions', () => {
   test(
     'should leave a length unchanged when length conversion is disabled and exponent notation is not shorter',
     passthroughCSS('h1{width:10px}', { length: false })
-  );
-
-  test(
-    'should not use exponent notation for lengths when length conversion and allowExponent are disabled',
-    processCSS('h1{width:0.000001px}', 'h1{width:.000001px}', {
-      length: false,
-      allowExponent: false,
-    })
   );
 });
