@@ -4,4 +4,4 @@
 "cssnano": patch
 ---
 
-Report an ID selector whose hash is not an identifier (`#1a`) and a pseudo-element followed by a combinator (`a::before b`) as invalid. They are left as written instead of being normalized.
+Leave rules with an invalid selector unchanged, including an ID selector that starts with a digit, such as `#1a`, and a combinator after a pseudo-element, such as `a::before b`.

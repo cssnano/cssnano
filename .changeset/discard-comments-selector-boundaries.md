@@ -4,4 +4,4 @@
 "cssnano-preset-lite": patch
 ---
 
-Keep the meaning of selectors when removing a comment between two selector parts. A comment is not whitespace, so a selector such as `.a/*c*/.b` now becomes `.a.b` rather than the descendant selector `.a .b`. Where joining the neighbours would change their tokens, such as `div/*c*/span`, an empty comment stays in place instead of a space.
+Stop turning a comment inside a selector into a descendant combinator. A comment is not whitespace, so `div/*c*/span` is not the same selector as `div span`. It now becomes `div/**/span` instead. Comments that can be removed without joining two tokens are still removed, so `.a/*c*/.b` becomes `.a.b`.
