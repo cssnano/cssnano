@@ -1,4 +1,8 @@
-import { isFlowRelative, sortedByName } from '../../../../util/webref/webref.js';
+import {
+  cssWideKeywords,
+  isFlowRelative,
+  sortedByName,
+} from '../../../../util/webref/webref.js';
 import { keywordTerminals, reachableFunctions } from './webrefGrammar.js';
 import {
   BORDER,
@@ -190,7 +194,7 @@ export function buildLonghands(data) {
     initialValues: new Map(sortedByName(initialValues)),
     borderProperties: borderProperties.toSorted(),
     flowRelativeBorderProperties: flowRelativeBorderProperties.toSorted(),
-    cssWideKeywords: implemented(keywordTerminals(byName.get('all')?.syntax)),
+    cssWideKeywords: implemented(cssWideKeywords(data)),
     lineStyles: implemented(
       keywordTerminals(
         data.types.find((type) => type.name === 'line-style')?.syntax

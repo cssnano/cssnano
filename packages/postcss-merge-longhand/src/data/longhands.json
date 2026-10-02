@@ -244,7 +244,7 @@
     "border-start-end-radius",
     "border-start-start-radius"
   ],
-  "cssWideKeywords": ["initial", "inherit", "unset", "revert", "revert-layer"],
+  "cssWideKeywords": ["inherit", "initial", "revert", "revert-layer", "unset"],
   "lineStyles": [
     "none",
     "hidden",
