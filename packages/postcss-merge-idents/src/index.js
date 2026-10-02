@@ -318,10 +318,10 @@ function mergeAtRules(css) {
  * @return {void}
  */
 function rewriteReferences(references, renames) {
-  for (const { decl, classification } of references) {
+  for (const { decl, classification, value } of references) {
     const namespaceRenames = renames.get(classification.namespace);
     if (namespaceRenames?.size) {
-      rewriteDeclaration(decl, classification.kind, namespaceRenames);
+      rewriteDeclaration(decl, classification.kind, namespaceRenames, value);
     }
   }
 }

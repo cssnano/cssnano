@@ -39,8 +39,10 @@ declare function createReplacement({ isString, tokenText }: {
  * @param {import('postcss').Declaration} decl
  * @param {NonNullable<ReturnType<typeof import('./grammar.js').classifyDeclaration>>['kind']} kind
  * @param {Map<string, Replacement>} renames old name → replacement
+ * @param {string} value the declaration value, with the whitespace that a
+ *   trailing escape consumed restored
  * @return {void}
  */
-declare function rewriteDeclaration(decl: import('postcss').Declaration, kind: NonNullable<ReturnType<typeof import('./grammar.js').classifyDeclaration>>['kind'], renames: Map<string, Replacement>): void;
+declare function rewriteDeclaration(decl: import('postcss').Declaration, kind: NonNullable<ReturnType<typeof import('./grammar.js').classifyDeclaration>>['kind'], renames: Map<string, Replacement>, value: string): void;
 export { createReplacement, rewriteDeclaration };
 //# sourceMappingURL=valueRewriter.d.ts.map
