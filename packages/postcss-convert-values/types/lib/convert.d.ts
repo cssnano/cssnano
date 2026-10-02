@@ -6,9 +6,8 @@ export type ConvertOptions = {
     length?: boolean;
     angle?: boolean;
     frequency?: boolean;
-    allowExponent?: boolean;
 };
-/** @typedef {{time?: boolean, length?: boolean, angle?: boolean, frequency?: boolean, allowExponent?: boolean}} ConvertOptions */
+/** @typedef {{time?: boolean, length?: boolean, angle?: boolean, frequency?: boolean}} ConvertOptions */
 /**
  * Accurately round a number to a fixed decimal precision without IEEE-754 binary
  * floating point multiplication errors.
@@ -42,8 +41,9 @@ export declare function formatNumber(number: number, allowExponent?: boolean): s
  * @param {number} number
  * @param {string} unit
  * @param {ConvertOptions} [options]
+ * @param {boolean} [allowExponent=true] false where only an `<integer>` is valid
  * @return {string}
  */
-declare const convert: (number: number, unit: string, options?: ConvertOptions) => string;
+declare const convert: (number: number, unit: string, options?: ConvertOptions, allowExponent?: boolean) => string;
 export default convert;
 //# sourceMappingURL=convert.d.ts.map

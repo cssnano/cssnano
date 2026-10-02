@@ -27,7 +27,7 @@ export const freqConv = new Map([
   ['hz', 1],
 ]);
 
-/** @typedef {{time?: boolean, length?: boolean, angle?: boolean, frequency?: boolean, allowExponent?: boolean}} ConvertOptions */
+/** @typedef {{time?: boolean, length?: boolean, angle?: boolean, frequency?: boolean}} ConvertOptions */
 
 /**
  * Accurately round a number to a fixed decimal precision without IEEE-754 binary
@@ -214,11 +214,11 @@ function isConversionDisabled(unit, options) {
  * @param {number} number
  * @param {string} lowerCaseUnit
  * @param {ConvertOptions} options
+ * @param {boolean} allowExponent
  * @return {string | undefined}
  */
-function findConverted(number, lowerCaseUnit, options) {
+function findConverted(number, lowerCaseUnit, options, allowExponent) {
   const { time, length, angle, frequency } = options;
-  const allowExponent = options.allowExponent ?? true;
   if (length !== false) {
     if (lengthConv.has(lowerCaseUnit)) {
       return findShortestConversion(
@@ -288,9 +288,10 @@ function shouldUseConverted(converted, value, decimalValue, lowerCaseUnit) {
  * @param {number} number
  * @param {string} unit
  * @param {ConvertOptions} [options]
+ * @param {boolean} [allowExponent=true] false where only an `<integer>` is valid
  * @return {string}
  */
-const convert = function (number, unit, options = {}) {
+const convert = function (number, unit, options = {}, allowExponent = true) {
   const lowerCaseUnit = unit.toLowerCase();
   if (isConversionDisabled(lowerCaseUnit, options)) {
     // Disabling unit conversion must not disable number formatting of
@@ -299,15 +300,19 @@ const convert = function (number, unit, options = {}) {
       lengthConv.has(lowerCaseUnit) || metricConv.has(lowerCaseUnit);
     return (
       (isLength
-        ? formatNumber(number, options.allowExponent ?? true)
+        ? formatNumber(number, allowExponent)
         : dropLeadingZero(number)) + (unit ? unit : '')
     );
   }
 
-  const converted = findConverted(number, lowerCaseUnit, options);
+  const converted = findConverted(
+    number,
+    lowerCaseUnit,
+    options,
+    allowExponent
+  );
   const decimalValue = dropLeadingZero(number) + (unit ? unit : '');
-  const value =
-    formatNumber(number, options.allowExponent ?? true) + (unit ? unit : '');
+  const value = formatNumber(number, allowExponent) + (unit ? unit : '');
 
   if (
     converted &&
