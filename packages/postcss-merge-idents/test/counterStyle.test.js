@@ -122,7 +122,8 @@ test('should handle empty at-rule bodies and statement at-rules', async () => {
     '@counter-style a;@counter-style b;',
     { from: undefined }
   );
-  assert.strictEqual(stmtResult.css, '@counter-style b;');
+  // A statement without a block defines no counter style, so it is left as is.
+  assert.strictEqual(stmtResult.css, '@counter-style a;@counter-style b;');
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
@@ -145,8 +146,9 @@ test(
 
 test(
   'should not corrupt custom properties containing system or list-style in their name',
-  passthroughCSS(
-    '@counter-style a{system:cyclic;symbols:"A"}@counter-style b{system:cyclic;symbols:"A"}:root{--design-system:a;--system:a}'
+  processCSS(
+    '@counter-style a{system:cyclic;symbols:"A"}@counter-style b{system:cyclic;symbols:"A"}:root{--design-system:a;--system:a}',
+    '@counter-style a{system:cyclic;symbols:"A"}:root{--design-system:a;--system:a}'
   )
 );
 
@@ -178,7 +180,7 @@ test(
   'should not corrupt counter name in single-argument counter()',
   processCSS(
     '@counter-style a{system:cyclic;symbols:"A"}@counter-style b{system:cyclic;symbols:"A"}div{content:counter(a)}',
-    '@counter-style b{system:cyclic;symbols:"A"}div{content:counter(a)}'
+    '@counter-style a{system:cyclic;symbols:"A"}div{content:counter(a)}'
   )
 );
 
@@ -385,5 +387,13 @@ test(
   'should not merge counter styles defined by different vendor prefixed at-rule families',
   passthroughCSS(
     '@-moz-counter-style a{system:extends decimal;suffix:"> "}@counter-style b{system:extends decimal;suffix:"> "}ol{list-style:a}'
+  )
+);
+
+test(
+  'should rename a merged counter style referenced by the fallback of another counter style',
+  processCSS(
+    '@counter-style a{system:cyclic;symbols:"A"}@counter-style b{system:cyclic;symbols:"A"}@counter-style c{system:fixed;symbols:"X";fallback:a}ul{list-style:c}',
+    '@counter-style b{system:cyclic;symbols:"A"}@counter-style c{system:fixed;symbols:"X";fallback:b}ul{list-style:c}'
   )
 );
