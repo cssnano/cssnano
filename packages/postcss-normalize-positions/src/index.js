@@ -95,8 +95,8 @@ function positionTerm(index, position) {
 
 /**
  * Splits a value into the position term runs of its comma-separated layers.
- * A layer is skipped when a substitution function makes its shape unknown,
- * or when its terms are split by another component, which makes it invalid.
+ * A layer is skipped when it contains a CSS function
+ * or when its terms are split by another component.
  * @param {BalancedIndex} index
  * @return {PositionTerm[][]}
  */
