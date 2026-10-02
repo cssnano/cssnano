@@ -226,6 +226,18 @@ export function compoundChildren(
       index = rawWork.end;
       continue;
     }
+    // A comment is not a combinator, so it neither splits nor invalidates the
+    // compound; its bytes are kept as written.
+    if (input[index]?.[0] === TokenType.Comment) {
+      children.push({
+        kind: 'raw',
+        start: index,
+        end: index + 1,
+        status: 'valid',
+      });
+      index++;
+      continue;
+    }
     const child = compoundChildAt(
       structure,
       index,

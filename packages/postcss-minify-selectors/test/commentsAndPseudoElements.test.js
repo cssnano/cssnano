@@ -1,6 +1,8 @@
+import assert from 'node:assert/strict';
 import { test, suite } from 'node:test';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
+import { isInvalidSelector } from '../src/lib/isInvalidSelector.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -218,5 +220,36 @@ suite('edge cases', () => {
   test(
     'should not remove quotes around an empty attribute selector',
     passthroughCSS('[title=""]{color:blue}')
+  );
+
+  // A comment is not a descendant combinator, so it must not invalidate the
+  // compound it sits in.
+  test(
+    'should keep a compound with a comment between class selectors inside :is()',
+    passthroughCSS(':is(.a/**/.b,.c){color:blue}')
+  );
+
+  test(
+    'should keep a compound with a comment before a class selector inside :where()',
+    passthroughCSS(':where(a/**/.b,.c){color:blue}')
+  );
+
+  test(
+    'should keep a compound with a comment before a pseudo-class inside :is()',
+    passthroughCSS(':is(.a/**/:hover,.c){color:blue}')
+  );
+
+  test(
+    'should keep a /*! preserved comment inside a compound in :is()',
+    passthroughCSS(':is(.a/*!k*/.b,.c){color:blue}')
+  );
+
+  test('should not report a compound with a comment between class selectors as invalid', () => {
+    assert.equal(isInvalidSelector('.a/**/.b'), false);
+  });
+
+  test(
+    'should still drop an invalid type selector after a comment-separated compound inside :is()',
+    processCSS(':is(a/**/b,.c){color:blue}', ':is(.c){color:blue}')
   );
 });
