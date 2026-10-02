@@ -13,6 +13,13 @@ import {
 } from './webrefValidate.js';
 
 /**
+ * Initial values webref omits. css-sizing-4 redefines `column-width` without
+ * one and webref keeps only that definition, but its initial value is still
+ * `auto` as css-multicol-1 specifies.
+ */
+const MISSING_INITIAL_VALUES = new Map([['column-width', 'auto']]);
+
+/**
  * Derives, from the raw `@webref/css` data, the shorthand structure and the
  * keyword sets postcss-merge-longhand takes apart and puts back together.
  * Kept free of I/O so that it can be unit tested.
@@ -147,7 +154,9 @@ export function buildLonghands(data) {
    * @return {string | undefined}
    */
   function initialValueOf(name) {
-    const initial = byName.get(name)?.initial?.toLowerCase();
+    const initial = (
+      byName.get(name)?.initial ?? MISSING_INITIAL_VALUES.get(name)
+    )?.toLowerCase();
 
     if (initial !== undefined && !initial.includes(' ')) {
       return initial;
