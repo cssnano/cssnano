@@ -55,3 +55,37 @@ test('should not report a name held by a custom property but not defined', () =>
     []
   );
 });
+
+const counterStyle = '@counter-style a{system:cyclic;symbols:"A"}';
+
+test('should not report a counter style named in the style argument of counter()', () => {
+  assert.deepEqual(
+    collectProtectedNameDefinitions(`${counterStyle}div{content:counter(x,a)}`),
+    []
+  );
+});
+
+test('should report a counter style named in the counter-name argument of counter()', () => {
+  assert.deepEqual(
+    collectProtectedNameDefinitions(`${counterStyle}div{content:counter(a)}`),
+    ['counter-style:a']
+  );
+});
+
+test('should report a name spelled in the body of an @function rule', () => {
+  assert.deepEqual(
+    collectProtectedNameDefinitions(
+      `@function --f(){result:a}@keyframes a{${body}}`
+    ),
+    ['keyframes:a']
+  );
+});
+
+test('should report a name spelled in an argument of an unknown function', () => {
+  assert.deepEqual(
+    collectProtectedNameDefinitions(
+      `@keyframes a{${body}}div{animation-name:foo(a)}`
+    ),
+    ['keyframes:a']
+  );
+});

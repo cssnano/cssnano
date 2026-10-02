@@ -1,6 +1,10 @@
 import postcss from 'postcss';
 import cssnanoUtils from 'cssnano-utils';
 import plugin from '../../src/index.js';
+import {
+  collectProtectedNameDefinitions,
+  resolveReferences,
+} from './fuzzResolution.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -69,8 +73,9 @@ export function check(testCase) {
 }
 
 /**
- * Collects the bodies defined per normalized at-rule name. Vendor prefixed
- * spellings are their own families, exactly as the plugin treats them.
+ * Collects the bodies defined per lowercase at-rule name, whatever the
+ * condition container. Vendor prefixed spellings are their own families: the
+ * plugin only merges names whose families and containers match exactly.
  *
  * @param {import('postcss').Root} root
  * @return {Map<string, Map<string, number>>} name → body → count
@@ -143,6 +148,80 @@ function checkConflictingDefinitions(css, output) {
     }
   }
   return undefined;
+}
+
+/**
+ * The plugin promises that every reference still resolves to the same
+ * definitions after names are merged, so a merge never changes what an
+ * animation or counter style reference binds to.
+ *
+ * @param {string} css
+ * @param {string} output
+ * @return {FuzzFailure | undefined}
+ */
+function checkReferencesResolve(css, output) {
+  const before = resolveReferences(css);
+  const after = resolveReferences(output);
+  if (!before || !after) {
+    return undefined;
+  }
+  if (before.length !== after.length) {
+    return {
+      type: 'reference-count-changed',
+      css,
+      output,
+      message: `The number of name tokens changed from ${before.length} to ${after.length}`,
+    };
+  }
+  const index = before.findIndex(
+    (definitions, i) => definitions.join('\n') !== after[i].join('\n')
+  );
+  return index === -1
+    ? undefined
+    : {
+        type: 'reference-resolution-changed',
+        css,
+        output,
+        message: `Name token ${index} resolved to ${JSON.stringify(before[index])} before and ${JSON.stringify(after[index])} after`,
+      };
+}
+
+/**
+ * A name that a custom property value or a var() fallback spells may be
+ * referenced once var() is substituted, so its definition must survive.
+ *
+ * @param {string} css
+ * @param {string} output
+ * @return {FuzzFailure | undefined}
+ */
+function checkSubstitutedNamesStayDefined(css, output) {
+  const before = collectProtectedNameDefinitions(css);
+  if (!before) {
+    return undefined;
+  }
+  const after = collectProtectedNameDefinitions(output) ?? [];
+  const lost = before.find((key) => !after.includes(key));
+  return lost === undefined
+    ? undefined
+    : {
+        type: 'substituted-name-removed',
+        css,
+        output,
+        message: `The definition ${lost} was removed though substituted text spells it`,
+      };
+}
+
+/**
+ * @param {string} css
+ * @param {string} output
+ * @return {FuzzFailure | undefined}
+ */
+function checkDefinitionsAndReferences(css, output) {
+  return (
+    checkConflictingDefinitions(css, output) ??
+    checkReferencesResolve(css, output) ??
+    checkSubstitutedNamesStayDefined(css, output)
+  );
 }
 
 /**
@@ -242,7 +321,7 @@ function checkInvariants(testCase, output) {
     }
   }
 
-  return checkConflictingDefinitions(testCase.css, output);
+  return checkDefinitionsAndReferences(testCase.css, output);
 }
 
 /**

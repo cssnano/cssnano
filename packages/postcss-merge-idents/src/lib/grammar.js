@@ -111,33 +111,13 @@ const COUNTER_STYLE_FUNCTIONS = new Map(
   ])
 );
 
-const CONDITIONAL_GROUP_RULES = new Set([
-  'media',
-  'supports',
-  'container',
-  'document',
-]);
-
-/**
- * @param {string} name
- * @return {boolean}
- */
-function isConditionalGroupRule(name) {
-  const lower = asciiLowerCase(name);
-  return CONDITIONAL_GROUP_RULES.has(lower) || lower.endsWith('document');
-}
-
 /**
  * @param {string} params
  * @param {string} atRuleName
  * @return {{ isString: boolean, isReservedName: boolean, key: string, tokenText: string } | null}
  */
 function parseAtRuleName(params, atRuleName) {
-  const trimmed = params.trim();
-  if (!trimmed) {
-    return null;
-  }
-  const tokenList = tokens(trimmed).filter(
+  const tokenList = tokens(params).filter(
     (t) => t[0] !== TokenType.Whitespace && t[0] !== TokenType.Comment
   );
   if (tokenList.length !== 1) {
@@ -160,7 +140,7 @@ function parseAtRuleName(params, atRuleName) {
     return {
       isString: false,
       isReservedName,
-      key: `ident:${val}`,
+      key: val,
       tokenText: first[1],
     };
   }
@@ -168,8 +148,11 @@ function parseAtRuleName(params, atRuleName) {
     const val = /** @type {{value: string}} */ (first[4]).value;
     return {
       isString: true,
-      isReservedName: false,
-      key: `str:${val}`,
+      // In the animation shorthand a `--x` ident is a timeline name, not a
+      // keyframes name, so a string spelling one is never rewritten and its
+      // definition must stay.
+      isReservedName: val.startsWith('--'),
+      key: val,
       tokenText: first[1],
     };
   }
@@ -178,29 +161,24 @@ function parseAtRuleName(params, atRuleName) {
 
 /**
  * @param {import('postcss').Declaration} decl
- * @return {{ targetAtRuleName: string, kind: 'animation-shorthand' | 'animation-name' | 'counter-style' | 'counter-style-func' } | null}
+ * @param {string} [prop] the lowercase property name, when already known
+ * @return {{ namespace: 'keyframes' | 'counter-style', kind: 'animation-shorthand' | 'animation-name' | 'counter-style' | 'counter-style-func' } | null}
  */
-function classifyDeclaration(decl) {
-  const prop = asciiLowerCase(decl.prop);
+function classifyDeclaration(decl, prop = asciiLowerCase(decl.prop)) {
   if (prop.startsWith('--')) {
     return null;
   }
 
-  const prefixMatch = prop.match(VENDOR_PREFIX);
-  const prefix = prefixMatch ? prefixMatch[0] : '';
-  const unprefixed = prefix ? prop.slice(prefix.length) : prop;
+  const unprefixed = prop.replace(VENDOR_PREFIX, '');
 
   if (unprefixed === 'animation') {
-    return {
-      targetAtRuleName: `${prefix}keyframes`,
-      kind: 'animation-shorthand',
-    };
+    return { namespace: 'keyframes', kind: 'animation-shorthand' };
   }
   if (unprefixed === 'animation-name') {
-    return { targetAtRuleName: `${prefix}keyframes`, kind: 'animation-name' };
+    return { namespace: 'keyframes', kind: 'animation-name' };
   }
   if (unprefixed === 'list-style' || unprefixed === 'list-style-type') {
-    return { targetAtRuleName: 'counter-style', kind: 'counter-style' };
+    return { namespace: 'counter-style', kind: 'counter-style' };
   }
 
   if (
@@ -208,10 +186,7 @@ function classifyDeclaration(decl) {
     asciiLowerCase(decl.parent.name).endsWith('counter-style')
   ) {
     if (prop === 'system' || prop === 'fallback' || prop === 'speak-as') {
-      return {
-        targetAtRuleName: asciiLowerCase(decl.parent.name),
-        kind: 'counter-style',
-      };
+      return { namespace: 'counter-style', kind: 'counter-style' };
     }
   }
 
@@ -221,51 +196,53 @@ function classifyDeclaration(decl) {
     unprefixed === 'copy-into' ||
     unprefixed === 'string-set'
   ) {
-    return { targetAtRuleName: 'counter-style', kind: 'counter-style-func' };
+    return { namespace: 'counter-style', kind: 'counter-style-func' };
   }
 
   return null;
 }
 
 /**
+ * The nearest ancestor that decides whether a definition applies at all.
+ * Cascade layers only order definitions, so they are looked through.
+ *
  * @param {import('postcss').Node} node
  * @return {import('postcss').Container}
  */
-function getContainer(node) {
+function getConditionContainer(node) {
   let curr = node.parent;
-  while (curr && curr.type !== 'root') {
-    if (
-      curr.type === 'atrule' &&
-      isConditionalGroupRule(
-        /** @type {import('postcss').AtRule} */ (curr).name
-      )
-    ) {
-      return curr;
-    }
+  while (
+    curr?.type === 'atrule' &&
+    asciiLowerCase(/** @type {import('postcss').AtRule} */ (curr).name) ===
+      'layer'
+  ) {
     curr = curr.parent;
   }
-  return curr ?? node.root();
+  return /** @type {import('postcss').Container} */ (curr);
 }
 
 /**
- * @param {{ rule: import('postcss').AtRule, body?: string }} entry
+ * @param {{ rule: import('postcss').AtRule, body?: string }} entry an at-rule
+ *   with a block
  * @return {string}
  */
 function getBody(entry) {
   if (entry.body === undefined) {
-    entry.body = entry.rule.nodes ? entry.rule.nodes.toString() : '';
+    entry.body = /** @type {import('postcss').ChildNode[]} */ (
+      entry.rule.nodes
+    ).toString();
   }
   return entry.body;
 }
 
 export {
+  VENDOR_PREFIX,
   CSS_WIDE_KEYWORDS,
   KEYFRAMES_SHORTHAND_KEYWORDS,
   COUNTER_STYLE_RESERVED,
   COUNTER_STYLE_FUNCTIONS,
-  isConditionalGroupRule,
   parseAtRuleName,
   classifyDeclaration,
-  getContainer,
+  getConditionContainer,
   getBody,
 };

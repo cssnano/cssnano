@@ -1,178 +1,192 @@
 import cssnanoUtils from 'cssnano-utils';
 import { LayerRegistry, compareAtRulePriority } from './lib/layerRegistry.js';
 import {
-  classifyDeclaration,
   getBody,
-  getContainer,
+  getConditionContainer,
   parseAtRuleName,
+  VENDOR_PREFIX,
 } from './lib/grammar.js';
-import { rewriteDeclaration } from './lib/valueRewriter.js';
+import { scanDeclarations } from './lib/protectedNames.js';
+import { createReplacement, rewriteDeclaration } from './lib/valueRewriter.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
 /**
+ * @typedef {Array<{ name: string, copies: AtRuleEntry[] }>} Group names that
+ *   are defined in the same at-rules and containers with the same body
+ *
  * @typedef {{
  *   rule: import('postcss').AtRule,
  *   body?: string,
  *   layerPriority: number[],
  *   documentIndex: number,
+ *   family: string,
+ *   containerId: number,
  *   parsed: { isString: boolean, isReservedName: boolean, key: string, tokenText: string }
  * }} AtRuleEntry
- *
- * @typedef {{
- *   entries: AtRuleEntry[],
- *   resolver?: (key: string) => { text: string, key: string } | undefined,
- *   definedNames?: Set<string>
- * }} FamilyRecord
  */
-
-/**
- * Collects the entries that may join a cross-name merge group: repeat
- * definitions of one name collapse to their highest priority copy first, and
- * only when all copies share a body. Reserved names never merge because a
- * stylesheet that spells one is not free to take another spelling.
- *
- * @param {Map<string, AtRuleEntry[]>} byName
- * @param {Set<import('postcss').AtRule>} removals
- * @return {AtRuleEntry[]}
- */
-function collectEligibleEntries(byName, removals) {
-  /** @type {AtRuleEntry[]} */
-  const eligible = [];
-
-  for (const list of byName.values()) {
-    if (list.length === 1) {
-      if (!list[0].parsed.isReservedName) {
-        eligible.push(list[0]);
-      }
-      continue;
-    }
-    const firstBody = getBody(list[0]);
-    if (!list.every((item) => getBody(item) === firstBody)) {
-      continue;
-    }
-    let survivor = list[0];
-    for (let i = 1; i < list.length; i++) {
-      if (compareAtRulePriority(survivor, list[i]) < 0) {
-        survivor = list[i];
-      }
-    }
-    for (const item of list) {
-      if (item !== survivor) {
-        removals.add(item.rule);
-      }
-    }
-    if (!survivor.parsed.isReservedName) {
-      eligible.push(survivor);
-    }
-  }
-
-  return eligible;
-}
 
 /**
  * @param {AtRuleEntry[]} entries
- * @param {Set<import('postcss').AtRule>} removals
- * @return {{ resolver: (key: string) => { text: string, key: string } | undefined, definedNames: Set<string>, hasReplacements: boolean }}
+ * @return {AtRuleEntry}
  */
-function processAtRuleEntries(entries, removals) {
-  const definedNames = new Set();
-  if (entries.length === 0) {
-    return {
-      resolver: () => undefined,
-      definedNames,
-      hasReplacements: false,
-    };
-  }
-
+function highestPriority(entries) {
+  let best = entries[0];
   for (const entry of entries) {
-    definedNames.add(entry.parsed.key);
-  }
-
-  if (entries.length === 1) {
-    return {
-      resolver: () => undefined,
-      definedNames,
-      hasReplacements: false,
-    };
-  }
-
-  /** @type {Map<string, AtRuleEntry[]>} */
-  const byName = new Map();
-  for (const entry of entries) {
-    let nameList = byName.get(entry.parsed.key);
-    if (!nameList) {
-      nameList = [];
-      byName.set(entry.parsed.key, nameList);
-    }
-    nameList.push(entry);
-  }
-
-  const eligible = collectEligibleEntries(byName, removals);
-
-  /** @type {Map<string, AtRuleEntry[]>} */
-  const groupsByBody = new Map();
-
-  for (const item of eligible) {
-    const groupKey = (item.parsed.isString ? 's:' : 'i:') + getBody(item);
-    let group = groupsByBody.get(groupKey);
-    if (!group) {
-      group = [];
-      groupsByBody.set(groupKey, group);
-    }
-    group.push(item);
-  }
-
-  /** @type {Map<string, { text: string, key: string }>} */
-  const resolved = new Map();
-
-  for (const group of groupsByBody.values()) {
-    if (group.length > 1) {
-      let survivor = group[0];
-      for (let i = 1; i < group.length; i++) {
-        if (compareAtRulePriority(survivor, group[i]) < 0) {
-          survivor = group[i];
-        }
-      }
-      for (const item of group) {
-        if (item !== survivor) {
-          removals.add(item.rule);
-          resolved.set(item.parsed.key, {
-            text: survivor.parsed.tokenText,
-            key: survivor.parsed.key,
-          });
-        }
-      }
+    if (compareAtRulePriority(best, entry) < 0) {
+      best = entry;
     }
   }
-
-  return {
-    resolver: (key) => resolved.get(key),
-    definedNames,
-    hasReplacements: resolved.size > 0,
-  };
+  return best;
 }
 
 /**
- * Finds or creates the family record of one at-rule name in one container.
+ * Every name of a group behaves alike, so the cascade priority does not
+ * matter for correctness; the shortest spelling minimizes output size and
+ * priority breaks ties.
  *
- * @param {Map<import('postcss').Container, Map<string, FamilyRecord>>} scopes
- * @param {import('postcss').Container} container
- * @param {string} name
- * @return {FamilyRecord}
+ * @param {AtRuleEntry[]} entries
+ * @return {AtRuleEntry}
  */
-function familyRecordFor(scopes, container, name) {
-  let containerScope = scopes.get(container);
-  if (!containerScope) {
-    containerScope = new Map();
-    scopes.set(container, containerScope);
+function shortestSpelling(entries) {
+  const shortest = Math.min(
+    ...entries.map(({ parsed }) => parsed.tokenText.length)
+  );
+  return highestPriority(
+    entries.filter(({ parsed }) => parsed.tokenText.length === shortest)
+  );
+}
+
+/**
+ * Removes repeat definitions of one name that share a body and a condition
+ * container, keeping the one that wins the cascade: the kept definition is
+ * present whenever a removed one is.
+ *
+ * @param {AtRuleEntry[]} copies definitions of one name
+ * @param {Set<import('postcss').AtRule>} removals
+ * @return {AtRuleEntry[]} the definitions that remain
+ */
+function collapseSameNameCopies(copies, removals) {
+  if (copies.length < 2) {
+    return copies;
   }
-  let familyData = containerScope.get(name);
-  if (!familyData) {
-    familyData = { entries: [] };
-    containerScope.set(name, familyData);
+  for (const group of Map.groupBy(copies, placementOf).values()) {
+    const body = getBody(group[0]);
+    if (group.length < 2 || !group.every((copy) => getBody(copy) === body)) {
+      continue;
+    }
+    const survivor = highestPriority(group);
+    for (const copy of group) {
+      if (copy !== survivor) {
+        removals.add(copy.rule);
+      }
+    }
   }
-  return familyData;
+  return copies.filter((copy) => !removals.has(copy.rule));
+}
+
+/**
+ * @param {AtRuleEntry} entry
+ * @return {string} the at-rule family and condition container defining it
+ */
+function placementOf(entry) {
+  return `${entry.family}@${entry.containerId}`;
+}
+
+/**
+ * Makes each name of a group of interchangeable names, except the one that
+ * wins the cascade, refer to the winner. A name that substituted text may
+ * spell keeps its definition and is preferred as the merge target.
+ *
+ * @param {Group} group
+ * @param {Set<string>} protectedNames
+ * @param {Map<string, import('./lib/valueRewriter.js').Replacement>} renames
+ * @param {Set<import('postcss').AtRule>} removals
+ * @return {void}
+ */
+function mergeInterchangeable(group, protectedNames, renames, removals) {
+  const protectedMembers = group.filter(({ name }) => protectedNames.has(name));
+  const targetCandidates = (
+    protectedMembers.length > 0 ? protectedMembers : group
+  ).flatMap(({ copies }) => copies);
+  // An identifier reference is shorter than a string and more widely
+  // supported as a keyframes name.
+  const identifiers = targetCandidates.filter(({ parsed }) => !parsed.isString);
+  const target = shortestSpelling(
+    identifiers.length > 0 ? identifiers : targetCandidates
+  );
+  const replacement = createReplacement(target.parsed);
+  for (const { name, copies } of group) {
+    if (name === target.parsed.key || protectedNames.has(name)) {
+      continue;
+    }
+    renames.set(name, replacement);
+    for (const copy of copies) {
+      removals.add(copy.rule);
+    }
+  }
+}
+
+/**
+ * Finds the groups of interchangeable names of one namespace and removes
+ * repeat definitions of a single name. Two names are interchangeable when
+ * their definitions, in cascade order, sit in the same at-rule families and
+ * condition containers with the same bodies: whichever definition a browser
+ * picks for one name, it picks the same body for the other. This lets
+ * `@-webkit-keyframes` and `@keyframes` pairs merge although their bodies
+ * differ. A string and an ident of one value are one name. Bodies are
+ * serialized only for names that share where they are defined.
+ *
+ * @param {AtRuleEntry[]} entries
+ * @param {Set<import('postcss').AtRule>} removals
+ * @return {Group[]} groups of two or more names
+ */
+function findInterchangeableGroups(entries, removals) {
+  if (entries.length < 2) {
+    return [];
+  }
+
+  /** @type {Group} */
+  const candidates = [];
+  for (const [name, all] of Map.groupBy(entries, ({ parsed }) => parsed.key)) {
+    const copies = collapseSameNameCopies(all, removals);
+    if (!copies.some(({ parsed }) => parsed.isReservedName)) {
+      candidates.push({ name, copies: copies.toSorted(compareAtRulePriority) });
+    }
+  }
+
+  /** @type {Group[]} */
+  const groups = [];
+  const bySites = Map.groupBy(candidates, ({ copies }) =>
+    copies.map(placementOf).join(' ')
+  );
+  for (const sameSites of bySites.values()) {
+    if (sameSites.length < 2) {
+      continue;
+    }
+    const byBodies = Map.groupBy(sameSites, ({ copies }) =>
+      JSON.stringify(copies.map(getBody))
+    );
+    for (const sameBodies of byBodies.values()) {
+      if (sameBodies.length > 1) {
+        groups.push(sameBodies);
+      }
+    }
+  }
+  return groups;
+}
+
+/**
+ * @param {string} family lowercase at-rule name
+ * @return {'keyframes' | 'counter-style' | undefined}
+ */
+function namespaceOf(family) {
+  // Only the prefixes whose animation properties the rewriter recognizes
+  // qualify; a reference to any other family would be left dangling.
+  const unprefixed = family.replace(VENDOR_PREFIX, '');
+  return unprefixed === 'keyframes' || unprefixed === 'counter-style'
+    ? unprefixed
+    : undefined;
 }
 
 /**
@@ -181,83 +195,134 @@ function familyRecordFor(scopes, container, name) {
  */
 function mergeAtRules(css) {
   const layerRegistry = new LayerRegistry();
-  let keyframesCount = 0;
-  let counterStyleCount = 0;
+  /** @type {Map<'keyframes' | 'counter-style', AtRuleEntry[]>} */
+  const namespaces = new Map([
+    ['keyframes', []],
+    ['counter-style', []],
+  ]);
+  /** @type {Map<import('postcss').Container, number>} */
+  const containerIds = new Map();
+  /** @type {import('postcss').AtRule[]} */
+  const functionRules = [];
+  /** @type {import('postcss').AtRule[]} */
+  const parameterRules = [];
+  /** @type {import('postcss').AtRule[]} */
+  const conditionRules = [];
   let documentIndex = 0;
 
-  /** @type {Map<import('postcss').Container, Map<string, FamilyRecord>>} */
-  const scopes = new Map();
-
   css.walkAtRules((atRule) => {
-    const name = asciiLowerCase(atRule.name);
-    if (name === 'layer') {
+    const family = asciiLowerCase(atRule.name);
+    if (family === 'layer') {
       layerRegistry.declareLayerAtRule(atRule);
       return;
     }
-
-    const isKeyframes = name.endsWith('keyframes');
-    const isCounterStyle = name.endsWith('counter-style');
-    if (!isKeyframes && !isCounterStyle) {
+    if (family === 'function') {
+      functionRules.push(atRule);
+      return;
+    }
+    // Mixin parameter defaults and @apply arguments are substituted text.
+    if (family === 'mixin' || family === 'apply') {
+      parameterRules.push(atRule);
       return;
     }
 
-    if (isKeyframes) {
-      keyframesCount++;
-    } else {
-      counterStyleCount++;
+    if (family === 'container' || family === 'when' || family === 'else') {
+      conditionRules.push(atRule);
+      return;
     }
 
-    const container = getContainer(atRule);
-    const familyData = familyRecordFor(scopes, container, name);
-
-    const parsed = parseAtRuleName(atRule.params, name);
-    if (parsed) {
-      familyData.entries.push({
-        rule: atRule,
-        parsed,
-        layerPriority: layerRegistry.getPriority(atRule),
-        documentIndex: documentIndex++,
-      });
+    const namespace = namespaceOf(family);
+    const params = atRule.raws?.between
+      ? atRule.params + atRule.raws.between
+      : atRule.params;
+    const parsed = namespace && parseAtRuleName(params, family);
+    // A statement without a block defines nothing.
+    if (!namespace || !atRule.nodes || !parsed) {
+      return;
     }
+    const entries = /** @type {AtRuleEntry[]} */ (namespaces.get(namespace));
+
+    const container = getConditionContainer(atRule);
+    let containerId = containerIds.get(container);
+    if (containerId === undefined) {
+      containerId = containerIds.size;
+      containerIds.set(container, containerId);
+    }
+    entries.push({
+      rule: atRule,
+      parsed,
+      family,
+      containerId,
+      layerPriority: layerRegistry.getPriority(atRule),
+      documentIndex: documentIndex++,
+    });
   });
 
-  if (keyframesCount < 2 && counterStyleCount < 2) {
+  if ([...namespaces.values()].every((entries) => entries.length < 2)) {
     return;
   }
 
   /** @type {Set<import('postcss').AtRule>} */
   const removals = new Set();
-  let hasReplacements = false;
-
-  for (const containerScope of scopes.values()) {
-    for (const familyData of containerScope.values()) {
-      const result = processAtRuleEntries(familyData.entries, removals);
-      familyData.resolver = result.resolver;
-      familyData.definedNames = result.definedNames;
-      if (result.hasReplacements) {
-        hasReplacements = true;
-      }
+  const groupsByNamespace = new Map(
+    [...namespaces].map(([namespace, entries]) => [
+      namespace,
+      findInterchangeableGroups(entries, removals),
+    ])
+  );
+  const groupedNames = new Set(
+    [...groupsByNamespace.values()].flatMap((groups) =>
+      groups.flatMap((group) => group.map(({ name }) => name))
+    )
+  );
+  // The protection scan is needed only to merge names, never to remove
+  // repeat definitions of one name.
+  const { protectedNames, references } =
+    groupedNames.size > 0
+      ? scanDeclarations(
+          css,
+          groupedNames,
+          functionRules,
+          parameterRules,
+          conditionRules
+        )
+      : { protectedNames: new Set(), references: [] };
+  /** @type {Map<string, Map<string, import('./lib/valueRewriter.js').Replacement>>} */
+  const renames = new Map();
+  for (const [namespace, groups] of groupsByNamespace) {
+    /** @type {Map<string, import('./lib/valueRewriter.js').Replacement>} */
+    const namespaceRenames = new Map();
+    for (const group of groups) {
+      mergeInterchangeable(group, protectedNames, namespaceRenames, removals);
     }
+    renames.set(namespace, namespaceRenames);
   }
 
   if (removals.size === 0) {
     return;
   }
 
-  if (hasReplacements) {
-    const singleScope =
-      scopes.size === 1 ? (scopes.values().next().value ?? null) : null;
-
-    css.walkDecls((decl) => {
-      const classification = classifyDeclaration(decl);
-      if (classification) {
-        rewriteDeclaration(decl, classification, scopes, singleScope);
-      }
-    });
+  // Removing a repeat definition of one name leaves no reference to respell.
+  if ([...renames.values()].some((namespaceRenames) => namespaceRenames.size)) {
+    rewriteReferences(references, renames);
   }
 
   for (const node of removals) {
     node.remove();
+  }
+}
+
+/**
+ * @param {import('./lib/protectedNames.js').Reference[]} references
+ * @param {Map<string, Map<string, import('./lib/valueRewriter.js').Replacement>>} renames
+ * @return {void}
+ */
+function rewriteReferences(references, renames) {
+  for (const { decl, classification } of references) {
+    const namespaceRenames = renames.get(classification.namespace);
+    if (namespaceRenames?.size) {
+      rewriteDeclaration(decl, classification.kind, namespaceRenames);
+    }
   }
 }
 

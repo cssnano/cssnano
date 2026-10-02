@@ -93,11 +93,11 @@ test(
       '@keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
     ].join(''),
     [
-      '.checkbox input[type=checkbox]:checked + .checkbox-material:before{-webkit-animation:rippleOff 500ms;-o-animation:rippleOff 500ms;animation:rippleOff 500ms}',
-      '.checkbox input[type=checkbox]:checked + .checkbox-material .check:after{-webkit-animation:rippleOff 500ms forwards;-o-animation:rippleOff 500ms forwards;animation:rippleOff 500ms forwards}',
-      '@-webkit-keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
-      '@-o-keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
-      '@keyframes rippleOff{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
+      '.checkbox input[type=checkbox]:checked + .checkbox-material:before{-webkit-animation:rippleOn 500ms;-o-animation:rippleOn 500ms;animation:rippleOn 500ms}',
+      '.checkbox input[type=checkbox]:checked + .checkbox-material .check:after{-webkit-animation:rippleOn 500ms forwards;-o-animation:rippleOn 500ms forwards;animation:rippleOn 500ms forwards}',
+      '@-webkit-keyframes rippleOn{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
+      '@-o-keyframes rippleOn{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
+      '@keyframes rippleOn{0%{opacity:0}50%{opacity:0.2}100%{opacity:0}}',
     ].join('')
   )
 );
@@ -162,23 +162,32 @@ test(
 test(
   'should not corrupt non-name animation properties',
   processCSS(
-    '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes other{0%{color:#fff}to{color:#000}}div{animation-fill-mode:forwards;animation-timing-function:ease;animation-direction:normal;animation-duration:1s;animation-iteration-count:infinite;animation-play-state:running}',
-    '@keyframes other{0%{color:#fff}to{color:#000}}div{animation-fill-mode:forwards;animation-timing-function:ease;animation-direction:normal;animation-duration:1s;animation-iteration-count:infinite;animation-play-state:running}'
+    '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes o{0%{color:#fff}to{color:#000}}div{animation-fill-mode:forwards;animation-timing-function:ease;animation-direction:normal;animation-duration:1s;animation-iteration-count:infinite;animation-play-state:running}',
+    '@keyframes o{0%{color:#fff}to{color:#000}}div{animation-fill-mode:forwards;animation-timing-function:ease;animation-direction:normal;animation-duration:1s;animation-iteration-count:infinite;animation-play-state:running}'
   )
 );
 
 test(
-  'should not corrupt custom properties containing animation in their name',
-  passthroughCSS(
-    '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes b{0%{color:#fff}to{color:#000}}:root{--animation:a;--my-animation:a}'
+  'should merge into a keyframe name spelled in a custom property',
+  processCSS(
+    '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes b{0%{color:#fff}to{color:#000}}:root{--animation:a;--my-animation:a}',
+    '@keyframes a{0%{color:#fff}to{color:#000}}:root{--animation:a;--my-animation:a}'
+  )
+);
+
+test(
+  'should rewrite references to a keyframe name merged into one spelled in a custom property',
+  processCSS(
+    '@keyframes a{0%{color:#fff}to{color:#000}}@keyframes b{0%{color:#fff}to{color:#000}}:root{--animation:a}div{animation:b 1s}',
+    '@keyframes a{0%{color:#fff}to{color:#000}}:root{--animation:a}div{animation:a 1s}'
   )
 );
 
 test(
   'should not overwrite keywords colliding with animation shorthand components',
   processCSS(
-    '@keyframes a{0%{opacity:0}}@keyframes other{0%{opacity:0}}div{animation:a 1s forwards}',
-    '@keyframes other{0%{opacity:0}}div{animation:other 1s forwards}'
+    '@keyframes a{0%{opacity:0}}@keyframes o{0%{opacity:0}}div{animation:a 1s forwards}',
+    '@keyframes o{0%{opacity:0}}div{animation:o 1s forwards}'
   )
 );
 
@@ -218,16 +227,16 @@ test(
 test(
   'should not corrupt modern animation-composition keywords in animation shorthand',
   processCSS(
-    '@keyframes a{0%{opacity:0}}@keyframes other{0%{opacity:0}}div{animation:a 1s add}',
-    '@keyframes other{0%{opacity:0}}div{animation:other 1s add}'
+    '@keyframes a{0%{opacity:0}}@keyframes o{0%{opacity:0}}div{animation:a 1s add}',
+    '@keyframes o{0%{opacity:0}}div{animation:o 1s add}'
   )
 );
 
 test(
   'should not corrupt replace and accumulate in animation shorthand',
   processCSS(
-    '@keyframes a{0%{opacity:0}}@keyframes other{0%{opacity:0}}div{animation:a 1s replace, a 1s accumulate}',
-    '@keyframes other{0%{opacity:0}}div{animation:other 1s replace, other 1s accumulate}'
+    '@keyframes a{0%{opacity:0}}@keyframes o{0%{opacity:0}}div{animation:a 1s replace, a 1s accumulate}',
+    '@keyframes o{0%{opacity:0}}div{animation:o 1s replace, o 1s accumulate}'
   )
 );
 
@@ -346,5 +355,46 @@ test(
   'should not merge identical keyframes defined in separate @media blocks (conservative: separate blocks may have different conditions in effect)',
   passthroughCSS(
     '@media (min-width:1px){@keyframes a{0%{opacity:0}}}@media (min-width:1px){@keyframes b{0%{opacity:0}}}div{animation:b 1s}'
+  )
+);
+
+test(
+  'should keep two spaces when an escape-ending name replaces a string reference followed by a dimension',
+  processCSS(
+    '@keyframes "x"{0%{opacity:0}}@keyframes \\61{0%{opacity:0}}div{animation:"x"1s}',
+    '@keyframes \\61{0%{opacity:0}}div{animation:\\61  1s}'
+  )
+);
+
+test(
+  'should keep two spaces when an escape-ending name replaces a string reference followed by an ident',
+  processCSS(
+    '@keyframes "x"{0%{opacity:0}}@keyframes \\61{0%{opacity:0}}div{animation:"x"-a}',
+    '@keyframes \\61{0%{opacity:0}}div{animation:\\61  -a}'
+  )
+);
+
+test(
+  'should separate an escape-ending name from a dimension after a CRLF',
+  // A hex escape absorbs a CRLF as one newline, so `\61\r\n1s` is the name a1s.
+  processCSS(
+    '@keyframes longer{0%{opacity:0}}@keyframes \\61{0%{opacity:0}}div{animation:longer\r\n1s}',
+    '@keyframes \\61{0%{opacity:0}}div{animation:\\61 \r\n1s}'
+  )
+);
+
+test(
+  'should support merging keyframes whose name ends in an escaped space',
+  processCSS(
+    '@keyframes a\\ {0%{opacity:0}}@keyframes b{0%{opacity:0}}div{animation:a\\  1s}',
+    '@keyframes b{0%{opacity:0}}div{animation:b 1s}'
+  )
+);
+
+test(
+  'should deduplicate identical keyframes whose name ends in an escaped space',
+  processCSS(
+    '@keyframes a\\ {0%{opacity:0}}@keyframes a\\ {0%{opacity:0}}div{animation:a\\  1s}',
+    '@keyframes a\\ {0%{opacity:0}}div{animation:a\\  1s}'
   )
 );

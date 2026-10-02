@@ -71,6 +71,10 @@ export function createCounterDecl(rng, name, features, allowedTypes) {
       'target-counter',
       'nested-func',
       'custom-prop',
+      'var-fallback',
+      'env-fallback',
+      'attr-fallback',
+      'if-fallback',
       'protected',
     ]
   );
@@ -93,6 +97,18 @@ export function createCounterDecl(rng, name, features, allowedTypes) {
   if (declType === 'custom-prop') {
     return `:root{--design-system:${name}}`;
   }
+  if (declType === 'var-fallback') {
+    return `ol{list-style-type:var(--x,${name})}`;
+  }
+  if (declType === 'env-fallback') {
+    return `ol{list-style-type:env(--x,${name})}`;
+  }
+  if (declType === 'attr-fallback') {
+    return `ol{list-style-type:attr(data-a type(<custom-ident>),${name})}`;
+  }
+  if (declType === 'if-fallback') {
+    return `ol{list-style-type:if(media(width>1px):${name};else:none)}`;
+  }
   return `ol{list-style-position:inside;list-style-image:none}`;
 }
 
@@ -110,6 +126,11 @@ export function createKeyframeDecl(rng, name, features, allowedTypes) {
       'longhand',
       'protected',
       'custom-prop',
+      'var-fallback',
+      'env-fallback',
+      'attr-fallback',
+      'if-fallback',
+      'custom-func',
       'function',
     ]
   );
@@ -117,6 +138,10 @@ export function createKeyframeDecl(rng, name, features, allowedTypes) {
   if (declType === 'shorthand') {
     const composition = rng.pick(['', ' replace', ' add', ' accumulate']);
     const timeline = rng.pick(['', ' --timeline']);
+    if (name.startsWith('"') && rng.chance(0.5)) {
+      const nextToken = rng.pick(['1s', '-a']);
+      return `div{animation:${name}${nextToken}}`;
+    }
     return `div{animation:${name} 1s forwards${composition}${timeline}}`;
   }
   if (declType === 'longhand') {
@@ -124,6 +149,21 @@ export function createKeyframeDecl(rng, name, features, allowedTypes) {
   }
   if (declType === 'protected') {
     return `div{animation-fill-mode:${name}}`;
+  }
+  if (declType === 'var-fallback') {
+    return `div{animation:1s var(--x,${name})}`;
+  }
+  if (declType === 'env-fallback') {
+    return `div{animation-name:env(--x,${name})}`;
+  }
+  if (declType === 'attr-fallback') {
+    return `div{animation-name:attr(data-a type(<custom-ident>),${name})}`;
+  }
+  if (declType === 'if-fallback') {
+    return `div{animation-name:if(media(width>1px):${name};else:none)}`;
+  }
+  if (declType === 'custom-func') {
+    return `@function --f(){result:${name}}div{animation-name:--f()}`;
   }
   if (declType === 'custom-prop') {
     return `:root{--animation:${name};--my-animation:${name}}`;
