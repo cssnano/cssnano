@@ -1,8 +1,5 @@
-import {
-  isFlowRelative,
-  keywordTerminals,
-  reachableFunctions,
-} from './webrefGrammar.js';
+import { isFlowRelative, sortedByName } from '../../../../util/webref/webref.js';
+import { keywordTerminals, reachableFunctions } from './webrefGrammar.js';
 import {
   BORDER,
   BOX_SHORTHANDS,
@@ -21,22 +18,9 @@ import {
  * those set. Grammar walking lives in webrefGrammar.js and the browser-keep
  * policy in webrefValidate.js.
  *
- * @typedef {object} WebrefDefinition
- * @property {string} name
- * @property {string} [syntax] Value grammar, absent when a spec only defines
- * the term in prose.
- *
- * @typedef {WebrefDefinition & {
- *   initial?: string,
- *   longhands?: string[],
- *   resetLonghands?: string[],
- *   logicalPropertyGroup?: string
- * }} WebrefProperty
- *
- * @typedef {object} WebrefData
- * @property {WebrefProperty[]} properties
- * @property {WebrefDefinition[]} types
- * @property {WebrefDefinition[]} functions
+ * @typedef {import('../../../../util/webref/webref.js').WebrefDefinition} WebrefDefinition
+ * @typedef {import('../../../../util/webref/webref.js').WebrefProperty} WebrefProperty
+ * @typedef {Pick<import('../../../../util/webref/webref.js').WebrefData, 'properties' | 'types' | 'functions'>} WebrefData
  *
  * @typedef {object} Shorthand
  * @property {string[]} longhands The properties the shorthand sets, in the
@@ -203,9 +187,7 @@ export function buildLonghands(data) {
     sides,
     borderComponents,
     shorthands,
-    initialValues: new Map(
-      [...initialValues].toSorted(([a], [b]) => (a < b ? -1 : 1))
-    ),
+    initialValues: new Map(sortedByName(initialValues)),
     borderProperties: borderProperties.toSorted(),
     flowRelativeBorderProperties: flowRelativeBorderProperties.toSorted(),
     cssWideKeywords: implemented(keywordTerminals(byName.get('all')?.syntax)),
@@ -254,4 +236,4 @@ export function serialize(data) {
   )}\n`;
 }
 
-export { isFlowRelative, keywordTerminals, reachableFunctions, validate };
+export { keywordTerminals, reachableFunctions, validate };

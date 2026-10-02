@@ -2,7 +2,6 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildLonghands,
-  isFlowRelative,
   keywordTerminals,
   reachableFunctions,
   validate,
@@ -237,19 +236,6 @@ describe('reachableFunctions', () => {
   });
 });
 
-describe('isFlowRelative', () => {
-  for (const [name, expected] of [
-    ['border-inline-start-width', true],
-    ['border-start-start-radius', true],
-    ['border-left-width', false],
-    ['border-top-left-radius', false],
-  ]) {
-    test(`isFlowRelative(${name}) is ${expected}`, () => {
-      assert.strictEqual(isFlowRelative(name), expected);
-    });
-  }
-});
-
 describe('buildLonghands', () => {
   test('leaves out a line width keyword no browser implements', () => {
     const data = buildLonghands(webref());
@@ -341,14 +327,14 @@ describe('validate', () => {
     const data = buildLonghands(webref());
     data.lineWidthKeywords = ['hairline', ...data.lineWidthKeywords];
 
-    assert.throws(() => validate(data), /exclude hairline/v);
+    assert.throws(() => validate(data), /not to include hairline/v);
   });
 
   test('rejects colour data that took in a function naming no colour', () => {
     const data = buildLonghands(webref());
     data.colorFunctions = [...data.colorFunctions, 'wcag2'];
 
-    assert.throws(() => validate(data), /exclude wcag2/v);
+    assert.throws(() => validate(data), /not to include wcag2/v);
   });
 
   test('rejects colour data that lost a function spelled out as a call', () => {

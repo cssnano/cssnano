@@ -1,3 +1,8 @@
+import {
+  isFlowRelative,
+  sortedByName,
+} from '../../../../util/webref/webref.js';
+
 /**
  * Derives the property relations postcss-merge-rules needs from the raw
  * `@webref/css` property list.
@@ -23,25 +28,6 @@
  * @property {string[]} flowRelative The flow-relative members of those groups;
  * the remaining members are physical.
  */
-
-/**
- * Flow-relative properties are named after the block/inline axes rather than
- * after the sides of the box, e.g. `margin-inline-start` or `inline-size`.
- * webref does not flag them, but the naming is consistent throughout, and
- * `validate` checks that every group ends up split in two.
- *
- * @param {string} name
- * @return {boolean}
- */
-export function isFlowRelative(name) {
-  const segments = new Set(name.split('-'));
-  return (
-    segments.has('block') ||
-    segments.has('inline') ||
-    segments.has('start') ||
-    segments.has('end')
-  );
-}
 
 /**
  * @param {WebrefProperty[]} properties
@@ -149,7 +135,7 @@ export function buildPropertyGroups(properties) {
  * @return {Map<string, T>}
  */
 function sortEntries(map) {
-  return new Map([...map].toSorted(([a], [b]) => (a < b ? -1 : 1)));
+  return new Map(sortedByName(map));
 }
 
 /**

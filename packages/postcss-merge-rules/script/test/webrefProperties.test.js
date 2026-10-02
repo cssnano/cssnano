@@ -1,25 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  buildPropertyGroups,
-  isFlowRelative,
-  validate,
-} from '../lib/webrefProperties.js';
-
-for (const [name, expected] of [
-  ['margin-inline-start', true],
-  ['margin-top', false],
-  ['inline-size', true],
-  ['width', false],
-  ['border-start-start-radius', true],
-  ['border-top-left-radius', false],
-  // `inline` and `block` only count as whole segments
-  ['baseline-source', false],
-]) {
-  test(`isFlowRelative(${name}) is ${expected}`, () => {
-    assert.strictEqual(isFlowRelative(name), expected);
-  });
-}
+import { buildPropertyGroups, validate } from '../lib/webrefProperties.js';
 
 test('expands shorthands transitively', () => {
   const { shorthands } = buildPropertyGroups([

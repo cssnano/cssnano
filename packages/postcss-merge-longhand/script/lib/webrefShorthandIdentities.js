@@ -1,4 +1,12 @@
-import { REFERENCE, keywordTerminals } from '../../../../util/webref.js';
+import {
+  directReferences,
+  grammarsByName,
+  keywordTerminals,
+} from '../../../../util/webref/webref.js';
+import {
+  easingFunction,
+  validateEasingFunction,
+} from '../../../../util/webref/webrefWalk.js';
 
 const PLACE_SHORTHANDS = ['place-content', 'place-items', 'place-self'];
 const ALIGNMENT_LONGHANDS = PLACE_SHORTHANDS.flatMap((name) => {
@@ -8,28 +16,9 @@ const ALIGNMENT_LONGHANDS = PLACE_SHORTHANDS.flatMap((name) => {
 const MODIFIERS = new Set(['first', 'last', 'safe', 'unsafe']);
 
 /**
- * @typedef {{name: string, syntax?: string, longhands?: string[]}} Definition
- * @typedef {{properties: Definition[], types: Definition[], functions: Definition[]}} WebrefData
+ * @typedef {Pick<import('../../../../util/webref/webref.js').WebrefData, 'properties' | 'types' | 'functions'>} WebrefData
  * @typedef {{alignment: Map<string, string[]>, alignmentLonghands: Map<string, string[]>, easing: {keywords: string[], functions: string[]}}} ShorthandIdentities
  */
-
-/** @param {string | undefined} syntax @return {string[]} */
-function references(syntax) {
-  if (!syntax) return [];
-  return [...syntax.matchAll(REFERENCE)].map(([, property, type]) =>
-    String(property ?? type)
-  );
-}
-
-/** @param {WebrefData} data @return {Map<string, Definition>} */
-function definitionsByName(data) {
-  return new Map(
-    [...data.properties, ...data.types, ...data.functions].map((definition) => [
-      definition.name,
-      definition,
-    ])
-  );
-}
 
 /**
  * `legacy && [ left | right | center ]` accepts either order.
@@ -50,13 +39,12 @@ function legacyForms(syntax) {
  * longhand. This knows only the small composition vocabulary used by CSS
  * Alignment; it does not attempt to parse arbitrary CSS value grammars.
  *
- * @param {Definition} property
- * @param {Map<string, Definition>} definitions
+ * @param {string} syntax
+ * @param {Map<string, string>} grammars
  * @return {Set<string>}
  */
-function alignmentLonghandForms(property, definitions) {
-  const syntax = property.syntax ?? '';
-  const referenced = new Set(references(syntax));
+function alignmentLonghandForms(syntax, grammars) {
+  const referenced = new Set(directReferences(syntax));
   const forms = new Set(
     keywordTerminals(syntax)
       .map((name) => name.toLowerCase())
@@ -64,9 +52,9 @@ function alignmentLonghandForms(property, definitions) {
   );
 
   if (referenced.has('baseline-position')) {
-    const keywords = keywordTerminals(
-      definitions.get('baseline-position')?.syntax
-    ).map((name) => name.toLowerCase());
+    const keywords = keywordTerminals(grammars.get('baseline-position')).map(
+      (name) => name.toLowerCase()
+    );
     forms.add('baseline');
     for (const modifier of keywords.filter((name) => name !== 'baseline')) {
       forms.add(`${modifier} baseline`);
@@ -80,16 +68,16 @@ function alignmentLonghandForms(property, definitions) {
     'self-position',
   ]) {
     if (!referenced.has(name)) continue;
-    for (const keyword of keywordTerminals(definitions.get(name)?.syntax)) {
+    for (const keyword of keywordTerminals(grammars.get(name))) {
       forms.add(keyword.toLowerCase());
       if (name !== 'content-distribution') positions.add(keyword.toLowerCase());
     }
   }
 
   if (referenced.has('overflow-position')) {
-    const prefixes = keywordTerminals(
-      definitions.get('overflow-position')?.syntax
-    ).map((name) => name.toLowerCase());
+    const prefixes = keywordTerminals(grammars.get('overflow-position')).map(
+      (name) => name.toLowerCase()
+    );
     const [, grouped = ''] =
       /<overflow-position>\?\s*\[([^\]]+)\]/v.exec(syntax) ?? [];
     for (const keyword of keywordTerminals(grouped)) {
@@ -105,54 +93,24 @@ function alignmentLonghandForms(property, definitions) {
   return forms;
 }
 
-/**
- * Walk a result type, collecting its literal keywords and function names.
- * Function arguments are outside the result grammar and are not followed.
- *
- * @param {Map<string, Definition>} definitions
- * @param {string} root
- * @return {{keywords: string[], functions: string[]}}
- */
-function reachableTerminals(definitions, root) {
-  const seen = new Set();
-  const keywords = new Set();
-  const functions = new Set();
-  const queue = [root];
-  while (queue.length) {
-    const name = /** @type {string} */ (queue.pop());
-    if (seen.has(name)) continue;
-    seen.add(name);
-    if (name.endsWith('()')) {
-      functions.add(name.slice(0, -2).toLowerCase());
-      continue;
-    }
-    const syntax = definitions.get(name)?.syntax;
-    for (const keyword of keywordTerminals(syntax)) {
-      keywords.add(keyword.toLowerCase());
-    }
-    for (const reference of references(syntax)) queue.push(reference);
-  }
-  return {
-    keywords: [...keywords].toSorted(),
-    functions: [...functions].toSorted(),
-  };
-}
-
 /** @param {WebrefData} data @return {ShorthandIdentities} */
 export function buildShorthandIdentities(data) {
-  const definitions = definitionsByName(data);
+  const grammars = grammarsByName(data);
+  const properties = new Map(
+    data.properties.map((property) => [property.name, property])
+  );
   const alignmentLonghands = new Map();
   for (const name of ALIGNMENT_LONGHANDS) {
-    const property = definitions.get(name);
+    const property = properties.get(name);
     if (!property) throw new Error(`webref does not define ${name}`);
     alignmentLonghands.set(
       name,
-      [...alignmentLonghandForms(property, definitions)].toSorted()
+      [...alignmentLonghandForms(property.syntax ?? '', grammars)].toSorted()
     );
   }
   const alignment = new Map();
   for (const shorthandName of PLACE_SHORTHANDS) {
-    const shorthand = definitions.get(shorthandName);
+    const shorthand = properties.get(shorthandName);
     if (!shorthand) throw new Error(`webref does not define ${shorthandName}`);
     const longhands = shorthand.longhands ?? [];
     if (longhands.length !== 2) {
@@ -169,7 +127,7 @@ export function buildShorthandIdentities(data) {
   return {
     alignment,
     alignmentLonghands,
-    easing: reachableTerminals(definitions, 'easing-function'),
+    easing: easingFunction(data),
   };
 }
 
@@ -199,26 +157,7 @@ export function validateShorthandIdentities(data) {
       throw new Error(`Expected ${property} forms to exclude auto`);
     }
   }
-  for (const [kind, required] of [
-    [
-      'keywords',
-      [
-        'ease',
-        'ease-in',
-        'ease-in-out',
-        'ease-out',
-        'linear',
-        'step-end',
-        'step-start',
-      ],
-    ],
-    ['functions', ['cubic-bezier', 'linear', 'steps']],
-  ]) {
-    const actual = data.easing[kind];
-    if (actual.join(' ') !== required.toSorted().join(' ')) {
-      throw new Error(`Unexpected easing ${kind}: ${actual.join(' ')}`);
-    }
-  }
+  validateEasingFunction(data.easing);
 }
 
 /** @param {ShorthandIdentities} data @return {string} */

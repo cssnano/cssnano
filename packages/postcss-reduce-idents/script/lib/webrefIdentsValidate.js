@@ -1,3 +1,5 @@
+import { expectAll } from '../../../../util/webref/webref.js';
+
 /**
  * @typedef {import('./webrefIdents.js').IdentSlots} IdentSlots
  */
@@ -130,19 +132,6 @@ export function validate(data) {
   for (const keyword of ['minmax', 'repeat', 'fit-content']) {
     if (data.grid.reservedKeywords.includes(keyword)) {
       throw new Error(`Expected the function ${keyword}() not to be a keyword`);
-    }
-  }
-}
-
-/**
- * @param {string[]} actual
- * @param {string[]} expected
- * @param {string} what
- */
-function expectAll(actual, expected, what) {
-  for (const name of expected) {
-    if (!actual.includes(name)) {
-      throw new Error(`Expected ${what} to include ${name}`);
     }
   }
 }
