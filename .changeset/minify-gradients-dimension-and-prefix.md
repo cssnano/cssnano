@@ -4,4 +4,4 @@
 "cssnano": patch
 ---
 
-Only shorten zero colour stop positions that are valid for the gradient. Conic gradients now shorten zero angles such as `0deg` and no longer rewrite invalid zero lengths such as `0px`, while linear and radial gradients keep rewriting zero lengths. Prefixed `-webkit-` linear gradients keep `to <side>` as written, since the legacy syntax would read the replacement angle differently.
+Remove a zero color stop position only when it has the right type for the gradient. `conic-gradient()` now drops `0deg` and keeps an invalid `0px`, while linear and radial gradients still drop `0px`. `-webkit-linear-gradient()` keeps `to bottom` and other `to` directions as written, since the prefixed syntax measures angles differently.

@@ -1,7 +1,9 @@
 ---
 "postcss-minify-selectors": patch
+"postcss-merge-rules": patch
 "cssnano-preset-default": patch
+"cssnano-preset-advanced": patch
 "cssnano": patch
 ---
 
-Treat a comment between two selector parts as part of the same compound selector instead of a descendant combinator. Only whitespace separates descendants, so valid selectors like `.a/*!k*/.b` keep their meaning, and invalid ones like `div/**/span` are left as written instead of becoming valid.
+Stop turning a comment inside a selector into a descendant combinator. A comment is not whitespace, so `.a/**/.b` selects elements with both classes, including inside `:is()`, and is no longer rewritten as `.a .b`. Invalid selectors such as `div/**/span` are left as written instead of becoming valid.
