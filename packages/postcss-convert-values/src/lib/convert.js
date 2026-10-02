@@ -293,7 +293,15 @@ function shouldUseConverted(converted, value, decimalValue, lowerCaseUnit) {
 const convert = function (number, unit, options = {}) {
   const lowerCaseUnit = unit.toLowerCase();
   if (isConversionDisabled(lowerCaseUnit, options)) {
-    return dropLeadingZero(number) + (unit ? unit : '');
+    // Disabling unit conversion must not disable number formatting of
+    // <length> dimensions such as 1e-6px.
+    const isLength =
+      lengthConv.has(lowerCaseUnit) || metricConv.has(lowerCaseUnit);
+    return (
+      (isLength
+        ? formatNumber(number, options.allowExponent ?? true)
+        : dropLeadingZero(number)) + (unit ? unit : '')
+    );
   }
 
   const converted = findConverted(number, lowerCaseUnit, options);

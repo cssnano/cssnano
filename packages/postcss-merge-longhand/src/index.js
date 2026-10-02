@@ -236,12 +236,14 @@ function createContainerState() {
 function processContainer(container, context) {
   if (!container.nodes) return;
 
+  // Reducers remove nodes, so reduce only after the loop has read them all.
+  const runs = [];
   let state = createContainerState();
   for (const child of container.nodes) {
     // Declarations after a nested rule cascade after its declarations, so a
     // shorthand merged across it would override them.
     if (endsDeclarationRun(child)) {
-      reduceClassifiedContainer(container, state, context);
+      runs.push(state);
       state = createContainerState();
       continue;
     }
@@ -268,7 +270,8 @@ function processContainer(container, context) {
     );
   }
 
-  reduceClassifiedContainer(container, state, context);
+  runs.push(state);
+  for (const run of runs) reduceClassifiedContainer(container, run, context);
 }
 
 /**

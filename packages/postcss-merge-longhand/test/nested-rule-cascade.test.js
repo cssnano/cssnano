@@ -146,4 +146,17 @@ describe('longhand merging across a nested rule', () => {
       'a{&{}margin:1px}'
     )
   );
+
+  test(
+    'merges padding longhands on both sides of a nested rule',
+    processCSS(
+      'a{padding-top:1px;padding-right:1px;padding-bottom:1px;padding-left:1px;&{x:y}padding-top:2px;padding-right:2px;padding-bottom:2px;padding-left:2px;color:blue;margin-top:2px}',
+      'a{padding:1px;&{x:y}padding:2px;color:blue;margin-top:2px}'
+    )
+  );
+
+  test(
+    'does not change an already merged container when processed again',
+    passthroughCSS('a{padding:1px;&{x:y}padding:2px;color:blue;margin-top:2px}')
+  );
 });
