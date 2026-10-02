@@ -1,6 +1,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  cssWideKeywords,
   expectAll,
   expectNone,
   grammarsByName,
@@ -88,6 +89,32 @@ describe('keywordsOf', () => {
 
   test('returns nothing for a missing grammar', () => {
     assert.deepStrictEqual(keywordsOf(undefined), []);
+  });
+});
+
+describe('cssWideKeywords', () => {
+  test('reads the keywords from the grammar of the all property', () => {
+    const properties = [
+      { name: 'color', syntax: '<color> | transparent' },
+      { name: 'all', syntax: 'initial | inherit | unset | revert-rule' },
+    ];
+
+    assert.deepStrictEqual(cssWideKeywords({ properties }), [
+      'inherit',
+      'initial',
+      'revert-rule',
+      'unset',
+    ]);
+  });
+
+  test('leaves out references to other productions', () => {
+    const properties = [{ name: 'all', syntax: 'initial | <custom>' }];
+
+    assert.deepStrictEqual(cssWideKeywords({ properties }), ['initial']);
+  });
+
+  test('returns nothing when the data has no all property', () => {
+    assert.deepStrictEqual(cssWideKeywords({ properties: [] }), []);
   });
 });
 

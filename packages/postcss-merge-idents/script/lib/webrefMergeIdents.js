@@ -2,7 +2,7 @@ import {
   directReferences,
   functionArguments,
   grammarsByName,
-  keywordsOf,
+  cssWideKeywords,
 } from '../../../../util/webref/webref.js';
 import {
   counterFunctionSlots,
@@ -84,9 +84,7 @@ export function buildMergeIdents({ properties, atrules, types, functions }) {
   );
 
   return {
-    cssWideKeywords: keywordsOf(
-      properties.find((property) => property.name === 'all')?.syntax
-    ),
+    cssWideKeywords: cssWideKeywords({ properties }),
     keyframes: {
       shorthandKeywords: keywordsOfProperties(['animation', 'animation-name']),
     },

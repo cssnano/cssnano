@@ -85,6 +85,20 @@ export function keywordsOf(syntax) {
 }
 
 /**
+ * The CSS-wide keywords, which every property accepts and which therefore
+ * cannot be used as a custom identifier. The grammar of `all` is their
+ * authoritative list, including keywords still in draft specifications.
+ *
+ * @param {{ properties: {name: string, syntax?: string}[] }} data
+ * @return {string[]}
+ */
+export function cssWideKeywords({ properties }) {
+  return keywordsOf(
+    properties.find((property) => property.name === 'all')?.syntax
+  );
+}
+
+/**
  * Flow-relative properties are named after the block and inline axes rather
  * than after the sides of the box, e.g. `margin-inline-start` or
  * `inline-size`. webref does not flag them, but the naming is consistent
