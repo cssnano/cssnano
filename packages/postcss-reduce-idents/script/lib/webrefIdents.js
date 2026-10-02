@@ -8,7 +8,7 @@ import {
 } from './webrefIdentsGrammar.js';
 import {
   grammarsByName,
-  keywordsOf,
+  cssWideKeywords,
   sortedByName,
 } from '../../../../util/webref/webref.js';
 import {
@@ -161,9 +161,7 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
   );
 
   return {
-    cssWideKeywords: keywordsOf(
-      properties.find((property) => property.name === 'all')?.syntax
-    ),
+    cssWideKeywords: cssWideKeywords({ properties }),
     aliases: new Map(sortedByName(aliases)),
     atRules: {
       keyframes: unprefixedAtRule(atrules, 'keyframes'),
