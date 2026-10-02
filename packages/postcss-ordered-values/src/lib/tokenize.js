@@ -1,4 +1,5 @@
 import cssnanoUtils from 'cssnano-utils';
+import cssWideKeywords from '../rules/cssWideKeywords.json' with { type: 'json' };
 
 const { TokenType, closeForOpening, decoded, tokenEnd, tokenStart, tokens } =
   cssnanoUtils;
@@ -186,15 +187,8 @@ function serializeArguments(arguments_) {
     .join(',');
 }
 
-const cssWideKeywords = new Set([
-  'initial',
-  'inherit',
-  'unset',
-  'revert',
-  'revert-layer',
-]);
-
-const reservedIdentKeywords = new Set([...cssWideKeywords, 'default']);
+/* `default` is reserved for custom identifiers although it is not CSS-wide. */
+const reservedIdentKeywords = new Set([...cssWideKeywords.keywords, 'default']);
 
 export {
   reservedIdentKeywords,
