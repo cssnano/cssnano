@@ -120,6 +120,13 @@ test('keeps reserved family names quoted', () => {
   assert.equal(minifyFamily(value, { removeQuotes: true }), value);
 });
 
+test('keeps a family named revert-rule quoted because unquoted it is the CSS-wide keyword of css-cascade-6', () => {
+  assert.equal(
+    minifyFamily('"revert-rule"', { removeQuotes: true }),
+    '"revert-rule"'
+  );
+});
+
 test('keeps quoted script generic syntax and later fallbacks', () => {
   assert.equal(
     minifyFamily('"generic(fangsong)",serif', {

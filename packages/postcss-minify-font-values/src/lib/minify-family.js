@@ -2,12 +2,15 @@ import cssnanoUtils from 'cssnano-utils';
 
 const { TokenType, asciiLowerCase, balancedTokens, decoded } = cssnanoUtils;
 
+/* The CSS-wide keywords of the `all` grammar in webref, including the draft
+ * `revert-rule`, plus the other words a family name must not spell unquoted. */
 const globalKeywords = new Set([
   'inherit',
   'initial',
   'unset',
   'revert',
   'revert-layer',
+  'revert-rule',
   'default',
   'none',
 ]);
