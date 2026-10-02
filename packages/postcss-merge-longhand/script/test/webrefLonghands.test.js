@@ -247,11 +247,11 @@ describe('buildLonghands', () => {
     const data = buildLonghands(webref());
 
     assert.deepStrictEqual(data.cssWideKeywords, [
-      'initial',
       'inherit',
-      'unset',
+      'initial',
       'revert',
       'revert-layer',
+      'unset',
     ]);
   });
 

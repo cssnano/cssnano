@@ -25,6 +25,10 @@ const BOX_SHORTHANDS = ['margin', 'padding'];
  * browser is left without, which is why the plugin cannot treat these the way
  * it treats a colour notation an old browser misses — there a required-support
  * check holds the merge back, and there is nothing to hold back here.
+ *
+ * Only this plugin filters the CSS-wide keywords: it treats one as permission
+ * to merge, so counting a draft keyword would merge where no browser agrees,
+ * whereas the identifier plugins gain safety from reserving more words.
  */
 const unimplemented = new Set([
   /* css-backgrounds spells `hairline` out in `<line-width>`. */
