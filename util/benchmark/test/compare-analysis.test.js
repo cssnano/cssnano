@@ -1,10 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import {
-  analyzeComparison,
-  analyzeIndependentSnapshots,
-  analyzePairedComparison,
-} from '../compare-analysis.js';
+import { analyzeComparison } from '../compare-analysis.js';
 import { createComparisonSchedule } from '../comparison-schedule.js';
 
 import {
@@ -290,12 +286,6 @@ test('a structural failure prevents a performance verdict', () => {
   assert.equal(result.overallVerdict, 'inconclusive');
 });
 
-test('analyzePairedComparison and analyzeIndependentSnapshots are separate public wrappers', () => {
-  assert.equal(typeof analyzePairedComparison, 'function');
-  assert.equal(typeof analyzeIndependentSnapshots, 'function');
-  assert.equal(analyzeComparison, analyzePairedComparison);
-});
-
 test('exact output-hash approvals allow intentional changes in paired comparisons', () => {
   const source = artifact(Array(20).fill(1.0));
   const newHash = 'b'.repeat(64);
@@ -304,19 +294,19 @@ test('exact output-hash approvals allow intentional changes in paired comparison
     block.observations.candidate.run.summary.frameworks[0].outputHash = newHash;
   }
   const allowlist = new Map([['fixture', { base: HASH, candidate: newHash }]]);
-  const approved = analyzePairedComparison(source, {
+  const approved = analyzeComparison(source, {
     outputHashAllowlist: allowlist,
   });
   assert.equal(approved.structuralFailure, false);
   assert.equal(approved.approvedOutputChanges?.length, 1);
 
-  const unapproved = analyzePairedComparison(source);
+  const unapproved = analyzeComparison(source);
   assert.equal(unapproved.structuralFailure, true);
 });
 
 test('estimatedBlocksNeeded targets precisionTarget using residual standard deviation', () => {
   const source = artifact(Array(20).fill(1.01));
-  const result = analyzePairedComparison(source);
+  const result = analyzeComparison(source);
   assert.ok(result.precision.estimatedBlocksNeeded >= 1);
   assert.ok(Number.isInteger(result.precision.estimatedBlocksNeeded));
   assert.equal(
@@ -330,7 +320,7 @@ test('order equivalence interval check conservatively flags carryover noise', ()
   const source = artifact(
     schedule.map((block) => (block.processOrder[0] === 'baseline' ? 1.2 : 1))
   );
-  const result = analyzePairedComparison(source);
+  const result = analyzeComparison(source);
   assert.equal(result.total.orderIsStable, false);
   assert.equal(
     result.inconclusiveReason,

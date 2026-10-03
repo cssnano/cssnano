@@ -1,5 +1,6 @@
 import { resolve, join } from 'node:path';
 import { writeFileSync } from 'node:fs';
+import { MINIMUM_CROSSOVER_BLOCKS } from './bench-defaults.js';
 import {
   EQUIVALENCE_CONFIDENCE_LEVEL,
   INTER_BLOCK_COOLDOWN_MS,
@@ -80,6 +81,14 @@ function validateComparisonBlockOptions(result) {
   }
   if (!result.adaptive && result.blocks > result.requestedBlocks) {
     throw new Error('--blocks must not exceed --requested-blocks');
+  }
+  const [plannedFlag, plannedBlocks] = result.adaptive
+    ? ['--requested-blocks', result.requestedBlocks]
+    : ['--blocks', result.blocks];
+  if (plannedBlocks < MINIMUM_CROSSOVER_BLOCKS) {
+    throw new Error(
+      `${plannedFlag} must be at least ${MINIMUM_CROSSOVER_BLOCKS} to estimate variance`
+    );
   }
   if (result.pilotBlocks < result.minimumBlocks) {
     throw new Error('--pilot-blocks must be at least --minimum-blocks');

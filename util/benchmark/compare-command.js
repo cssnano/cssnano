@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { corpusSelectionArgs } from './bench-corpus.js';
 
-export function quote(value) {
+function quote(value) {
   const string = String(value);
   const shellSafe = [...string].every(
     (character) =>

@@ -1,11 +1,12 @@
 // cssnano benchmark harness.
 //
 // A measured sample is one complete pass over the selected corpus. Independent
-// process runs are retained in the snapshot so compare-bench can estimate the
-// uncertainty of a change instead of treating in-process samples as replicas.
+// process runs are retained in the snapshot so the comparison analysis can
+// estimate the uncertainty of a change instead of treating in-process samples
+// as replicas.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import {
   createBenchmarkProcessor,
@@ -42,26 +43,12 @@ export {
   summaryStatistics,
 };
 
-function runComparison(label, compare, markdown, resultsDir) {
-  const compareScript = join(import.meta.dirname, 'compare-bench.js');
-  const localBaseline = join(resultsDir, `${compare}.json`);
-  const compareArgs = [
-    compareScript,
-    existsSync(localBaseline) ? localBaseline : compare,
-    join(resultsDir, `${label}.json`),
-  ];
-  if (markdown) compareArgs.push(`--markdown=${markdown}`);
-  execFileSync(process.execPath, compareArgs, { stdio: 'inherit' });
-}
-
 export function childRunArguments(argv) {
   return argv.filter(
     (argument) =>
       argument !== '--' &&
       !argument.startsWith('--runs=') &&
       !argument.startsWith('--label=') &&
-      !argument.startsWith('--compare=') &&
-      !argument.startsWith('--markdown=') &&
       !argument.startsWith('--childRun') &&
       !argument.startsWith('--child-run') &&
       !argument.startsWith('--runIndex=') &&
@@ -156,9 +143,6 @@ export async function main(argv = process.argv.slice(2)) {
       );
     }
     const aggregate = aggregateSnapshots(snapshots, args.label, args);
-    if (args.compare) {
-      runComparison(args.label, args.compare, args.markdown, args.resultsDir);
-    }
     return aggregate;
   }
 
@@ -175,8 +159,6 @@ export async function main(argv = process.argv.slice(2)) {
   );
   if (!args.quiet)
     console.log(`wrote ${join(args.resultsDir, `${args.label}.json`)}`);
-  if (args.compare)
-    runComparison(args.label, args.compare, args.markdown, args.resultsDir);
   return snapshot;
 }
 

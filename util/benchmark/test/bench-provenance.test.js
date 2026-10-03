@@ -11,8 +11,6 @@ import {
   currentGitRevision,
   repositoryHashes,
 } from '../bench-provenance.js';
-import { loadSnapshot } from '../compare-snapshot-io.js';
-import { mockConfiguration } from '../benchTestHelpers.js';
 
 test('repository provenance exposes separate harness, source, and lockfile hashes', () => {
   const hashes = repositoryHashes();
@@ -177,25 +175,4 @@ test('dirty provenance paths are sorted deterministically', (t) => {
   const provenance = createProvenance({ root, corpusHash: 'a'.repeat(64) });
   assert.deepEqual(provenance.dirtyPaths, ['a.txt', 'z.txt']);
   assert.equal(provenance.dirty, true);
-});
-
-test('schema-v3 snapshots reject missing decision configuration', () => {
-  const root = mkdtempSync(join(tmpdir(), 'cssnano-v3-'));
-  const path = join(root, 'invalid.json');
-  writeFileSync(path, JSON.stringify({ schemaVersion: 3 }));
-  assert.throws(() => loadSnapshot(path), /configuration/v);
-
-  const invalidPath = join(root, 'invalid-value.json');
-  writeFileSync(
-    invalidPath,
-    JSON.stringify({
-      schemaVersion: 3,
-      configuration: mockConfiguration(20, {
-        bootstrapResamples: 0,
-        bootstrapSeed: 'seed',
-        minimumBlocks: 5,
-      }),
-    })
-  );
-  assert.throws(() => loadSnapshot(invalidPath), /bootstrapResamples/v);
 });

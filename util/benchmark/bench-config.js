@@ -132,8 +132,6 @@ export function resolveBenchmarkArgs(argv = process.argv.slice(2)) {
       preset: { type: 'string', default: 'default' },
       case: { type: 'string' },
       mode: { type: 'string' },
-      compare: { type: 'string' },
-      markdown: { type: 'string' },
       seed: { type: 'string', default: 'cssnano-benchmark-v3' },
       'bootstrap-seed': { type: 'string', default: BOOTSTRAP_SEED },
       'bootstrap-resamples': {
@@ -198,8 +196,6 @@ export function resolveBenchmarkArgs(argv = process.argv.slice(2)) {
     preset: values.preset,
     case: values.case ?? null,
     mode,
-    compare: values.compare ?? null,
-    markdown: values.markdown ?? null,
     seed: values.seed,
     bootstrapSeed: values['bootstrap-seed'],
     bootstrapResamples: positiveInteger(

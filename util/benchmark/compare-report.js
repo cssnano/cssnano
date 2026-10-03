@@ -44,6 +44,22 @@ export function verdictBasisLines(result) {
   return lines;
 }
 
+// One line an agent can quote verbatim; the detail below it supports it.
+function verdictSummaryLine(result) {
+  if (!result.total)
+    return `VERDICT: unavailable (${result.inconclusiveReason ?? 'no performance analysis is available'})`;
+  const { precision, verdictBasis: basis } = result;
+  const parts = [`direction ${directionFor(result.total)}`];
+  if (precision)
+    parts.push(
+      `precision ${precision.precisionAchieved ? 'achieved' : 'not achieved'}`
+    );
+  if (basis) parts.push(`order ${basis.order}`);
+  if (precision && result.blocks)
+    parts.push(`${result.blocks.length}/${precision.requestedBlocks} blocks`);
+  return `VERDICT: ${overallFor(result)} (${parts.join('; ')})`;
+}
+
 export function printComparison(result) {
   const {
     base,
@@ -54,6 +70,7 @@ export function printComparison(result) {
     warning,
     approvedOutputChanges,
   } = result;
+  console.log(verdictSummaryLine(result));
   console.log(`baseline:  ${base.label} (${base.path})`);
   console.log(`candidate: ${candidate.label} (${candidate.path})`);
   console.log();

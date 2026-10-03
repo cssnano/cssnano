@@ -162,7 +162,7 @@ test('output mismatch is a structural failure before performance analysis', () =
 });
 
 test('coordinator records both exit statuses when the first process fails', () => {
-  const values = config({ blocks: 2, requestedBlocks: 6 });
+  const values = config({ blocks: 4, requestedBlocks: 6 });
   const artifact = executeComparison(values, (_config, side) => {
     if (side === 'candidate') {
       return {
@@ -205,6 +205,32 @@ test('coordinator requires complete order-balanced block pairs', () => {
   );
 });
 
+test('coordinator rejects two blocks, which leave no residual degree of freedom', () => {
+  assert.throws(
+    () =>
+      executeComparison(
+        config({ blocks: 2, requestedBlocks: 2, minimumBlocks: 2 })
+      ),
+    /blocks must be at least 4/v
+  );
+});
+
+test('coordinator rejects an adaptive plan of two requested blocks', () => {
+  // Adaptive runs plan --requested-blocks and ignore --blocks.
+  assert.throws(
+    () =>
+      executeComparison(
+        config({
+          adaptive: true,
+          blocks: 20,
+          requestedBlocks: 2,
+          minimumBlocks: 2,
+        })
+      ),
+    /requested blocks must be at least 4/v
+  );
+});
+
 test('snapshot and comparison metadata share one benchmark target resolver', () => {
   assert.equal(
     resolveBenchmarkTarget('selector-fixed-point'),
@@ -217,7 +243,7 @@ test('snapshot and comparison metadata share one benchmark target resolver', () 
   );
 
   const artifact = executeComparison(
-    config({ case: 'selector-fixed-point', blocks: 2, requestedBlocks: 2 }),
+    config({ case: 'selector-fixed-point', blocks: 4, requestedBlocks: 4 }),
     (values, side) => ({
       exitStatus: 0,
       structuralValidity: true,
@@ -235,7 +261,7 @@ test('snapshot and comparison metadata share one benchmark target resolver', () 
 });
 
 test('quiet children receive --quiet and the coordinator summarizes each block', () => {
-  const values = config({ blocks: 2, requestedBlocks: 2, quietChild: true });
+  const values = config({ blocks: 4, requestedBlocks: 4, quietChild: true });
   const args = commandFor(
     values,
     'baseline',
@@ -304,8 +330,8 @@ test('adaptive comparisons stop once the requested precision is reached', () => 
 
 test('comparison metadata records repeated corpus selectors as an array', () => {
   const values = config({
-    blocks: 2,
-    requestedBlocks: 2,
+    blocks: 4,
+    requestedBlocks: 4,
     only: ['framework-a', 'framework-b'],
   });
   const artifact = runMockComparison(values, 100);

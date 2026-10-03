@@ -59,9 +59,6 @@ export function percentChange(base, candidate) {
   return ((candidate - base) / base) * 100;
 }
 
-// Preserve the old helper name for consumers of the benchmark utilities.
-export const pairedPercentChange = percentChange;
-
 export function mean(values) {
   if (!values.length) return 0;
   return values.reduce((sum, value) => sum + value, 0) / values.length;

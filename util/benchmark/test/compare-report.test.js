@@ -178,3 +178,40 @@ test('printComparison prints direction, tolerance, actionable verdict and footno
     /Note: Slowdown observed but confirmed within the accepted 10% non-regression margin; no gating action required\./v
   );
 });
+
+test('printComparison starts with a single VERDICT line that summarizes direction, precision, order, and blocks', () => {
+  const result = {
+    ...createMockResult({
+      direction: 'inconclusive',
+      verdict: 'inconclusive',
+      verdictBasis: {
+        direction: 'inconclusive',
+        precision: 'achieved',
+        order: 'stable',
+        blocks: 'sufficient',
+      },
+    }),
+    blocks: Array.from({ length: 6 }, () => ({})),
+  };
+  const [first] = captureOutput(() => printComparison(result)).split('\n');
+  assert.equal(
+    first,
+    'VERDICT: inconclusive (direction inconclusive; precision achieved; order stable; 6/10 blocks)'
+  );
+});
+
+test('printComparison starts with a VERDICT line when no performance analysis is available', () => {
+  const original = console.error;
+  console.error = () => {};
+  try {
+    const result = {
+      ...createMockResult(),
+      total: null,
+      inconclusiveReason: 'output hashes differ',
+    };
+    const [first] = captureOutput(() => printComparison(result)).split('\n');
+    assert.equal(first, 'VERDICT: unavailable (output hashes differ)');
+  } finally {
+    console.error = original;
+  }
+});

@@ -32,7 +32,7 @@ const METADATA_FIELDS = [
 
 function defaultSpawn(args, options) {
   try {
-    execFileSync(args[0], args.slice(1), {
+    execFileSync(process.execPath, args, {
       stdio: ['ignore', 'ignore', 'inherit'],
       ...options,
     });

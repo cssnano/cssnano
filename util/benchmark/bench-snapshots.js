@@ -10,6 +10,10 @@ import { fmtMs, quantile, summaryStatistics } from './bench-stats.js';
 import { resolveBenchmarkTarget } from './bench-cases.js';
 import { createProvenance } from './bench-provenance.js';
 import {
+  ANALYZER_VERSION,
+  INTERVAL_METHOD,
+} from './compareObservationValidation.js';
+import {
   BOOTSTRAP_RESAMPLES,
   BOOTSTRAP_SEED,
   EQUIVALENCE_CONFIDENCE_LEVEL,
@@ -241,8 +245,8 @@ export async function runOnce(
       precisionTarget: args.precisionTarget ?? PRECISION_TARGET,
       orderInteractionThreshold:
         args.orderInteractionThreshold ?? ORDER_INTERACTION_THRESHOLD,
-      intervalMethod: 'stratified-percentile-bootstrap',
-      analyzerVersion: '3.0.0',
+      intervalMethod: INTERVAL_METHOD,
+      analyzerVersion: ANALYZER_VERSION,
       mode: args.mode,
       warmup: args.warmup,
       iters: args.iters,
