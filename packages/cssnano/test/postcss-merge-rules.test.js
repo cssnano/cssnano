@@ -170,7 +170,7 @@ test(
   'should deterministically prefer the smaller opposite-direction partial merge',
   processCss(
     'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
-    // The greedy worklist chooses the one-byte-smaller merge before value
+    // The greedy scan chooses the one-byte-smaller merge before value
     // minification, which makes the final output five bytes smaller.
     'h1,h2,h3{color:#000}h2,h3{font-weight:700}'
   )

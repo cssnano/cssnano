@@ -8,7 +8,7 @@ import { filterRuleIntersections, intersect } from './declarations.js';
 import { getMeta } from './rule-meta.js';
 import { buildMergedRule } from './rule-rewrite.js';
 
-const { sameParent } = cssnanoUtils;
+const { asciiLowerCase, sameParent } = cssnanoUtils;
 
 /** @import {Rule} from 'postcss' */
 /** @import {RuleMeta} from './rule-meta.js' */
@@ -55,9 +55,9 @@ export function canMerge(
   if (
     parent &&
     ruleA.parent?.type === 'atrule' &&
-    /** @type {import('postcss').AtRule} */ (ruleA.parent).name.includes(
-      'keyframes'
-    )
+    asciiLowerCase(
+      /** @type {import('postcss').AtRule} */ (ruleA.parent).name
+    ).includes('keyframes')
   )
     return false;
   if (ruleA.some(isRuleOrAtRule) || ruleB.some(isRuleOrAtRule)) return false;

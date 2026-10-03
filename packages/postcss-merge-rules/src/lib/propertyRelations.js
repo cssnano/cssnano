@@ -72,6 +72,20 @@ function longhandsOf(name) {
 }
 
 /**
+ * The logical property group a longhand belongs to, and which side of it the
+ * longhand is on: flow-relative or physical.
+ *
+ * @param {string} longhand
+ * @return {{group: string, flowRelative: boolean} | undefined}
+ */
+function logicalSideOf(longhand) {
+  const group = logicalGroups.get(longhand);
+  return group === undefined
+    ? undefined
+    : { group, flowRelative: flowRelative.has(longhand) };
+}
+
+/**
  * True if two longhands can be the same physical property. Beyond being the
  * same property, that happens between the flow-relative and the physical
  * members of a logical property group, since `margin-inline-start` is
@@ -167,4 +181,10 @@ function isConflictingProp(propA, propB) {
   }
   return false;
 }
-export { isConflictingProp };
+export {
+  isConflictingProp,
+  resolveProperty,
+  longhandsOf,
+  logicalSideOf,
+  vendorUnprefixed,
+};

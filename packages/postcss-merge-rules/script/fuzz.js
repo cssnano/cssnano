@@ -9,7 +9,15 @@ import {
 } from '../src/lib/ensureCompatibility.js';
 import { ensureCompatibility as legacyCompatibility } from './legacy/ensureCompatibility.js';
 import { featureMetadata, generateCases } from './lib/fuzzGenerate.js';
-import { parseFuzzArgs, runFuzz } from '../../../util/fuzzRunner.js';
+import {
+  firstCrossBlockFailure,
+  generateCrossBlockCases,
+} from './lib/fuzzCrossBlock.js';
+import {
+  FAILURE_EXIT_CODE,
+  parseFuzzArgs,
+  runFuzz,
+} from '../../../util/fuzzRunner.js';
 
 /** Return a canonical structural description, independent of generated names. */
 export function structuralShape(selector) {
@@ -293,4 +301,19 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     seed,
     interval,
   });
+
+  // Stylesheets are checked in child processes because a merge loop is
+  // synchronous and would otherwise hang the fuzzer.
+  const stylesheets = generateCrossBlockCases(seed, Math.min(count, 500));
+  const failure = firstCrossBlockFailure(stylesheets);
+  if (failure) {
+    console.error(
+      `seed=${seed} cross-block ${failure.reason}\n` +
+        `input=${failure.input}\noutput=${failure.output}`
+    );
+    process.exit(FAILURE_EXIT_CODE);
+  }
+  console.log(
+    `${stylesheets.length} cross-block stylesheets, seed ${seed}, clean`
+  );
 }
