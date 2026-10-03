@@ -1,6 +1,6 @@
 {
   "name": "postcss-ordered-values",
-  "version": "9.0.5",
+  "version": "9.0.6",
   "description": "Ensure values are ordered consistently in your CSS.",
   "exports": {
     ".": {

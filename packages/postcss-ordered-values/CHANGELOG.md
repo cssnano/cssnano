@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.0.6
+
+### Patch Changes
+
+- Recognise `revert-rule` as a CSS-wide keyword. `postcss-ordered-values` no longer reorders a `border`, `animation`, `transition`, `list-style`, `box-shadow` or `grid-row` value as if `revert-rule` were a color, name or type. The reserved keywords are now generated from `@webref/css`.
+
 ## 9.0.5
 
 ### Patch Changes
