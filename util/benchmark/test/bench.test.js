@@ -23,7 +23,10 @@ import {
 import { resolveBenchmarkTarget } from '../bench-cases.js';
 import { selectCorpus } from '../bench-corpus.js';
 import { currentGitRevision } from '../bench-provenance.js';
-import { compareSnapshots } from '../compare-snapshots.js';
+import {
+  ANALYZER_VERSION,
+  INTERVAL_METHOD,
+} from '../compareObservationValidation.js';
 
 test('corpus ordering is deterministic for a seed and replicate', () => {
   const corpus = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((name) => ({
@@ -229,22 +232,6 @@ test('aggregate snapshots reject revision provenance changes', () => {
   );
 });
 
-function pairedSnapshot(benchmarkSnapshot) {
-  return {
-    ...benchmarkSnapshot,
-    configuration: {
-      ...benchmarkSnapshot.configuration,
-      bootstrapResamples: 10,
-      minimumBlocks: 2,
-      requestedBlocks: 2,
-    },
-    runs: [
-      benchmarkSnapshot.runs[0],
-      { ...benchmarkSnapshot.runs[0], index: 2 },
-    ],
-  };
-}
-
 test('smoke benchmark writes a versioned snapshot with stable output hashes', async () => {
   const directory = mkdtempSync(join(tmpdir(), 'cssnano-benchmark-'));
   const corpusDirectory = join(directory, 'corpus');
@@ -278,13 +265,6 @@ test('smoke benchmark writes a versioned snapshot with stable output hashes', as
   assert.match(result.gitRevision, /^[\da-f]{40}$/v);
   assert.equal(result.runs.length, 1);
   assert.equal(result.outputHashes.fixture, repeat.outputHashes.fixture);
-  assert.doesNotThrow(() => compareSnapshots(result, repeat));
-
-  const analyzed = compareSnapshots(
-    pairedSnapshot(result),
-    pairedSnapshot(repeat)
-  );
-  assert.equal(analyzed.total.endpoint, 'TOTAL');
 });
 
 test('processCorpus rejects negative elapsed timings', async () => {
@@ -304,4 +284,24 @@ test('processCorpus rejects negative elapsed timings', async () => {
       ),
     /elapsed timing must be a non-negative finite number/v
   );
+});
+
+test('block snapshots declare the interval method and analyzer version the comparison validator accepts', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'cssnano-benchmark-'));
+  const corpusDirectory = join(directory, 'corpus');
+  mkdirSync(corpusDirectory);
+  writeFileSync(join(corpusDirectory, 'fixture.css'), '.a { color: red }');
+  await main([
+    '--mode=quick',
+    '--runs=1',
+    '--dir=' + corpusDirectory,
+    '--results-dir=' + directory,
+    '--label=block',
+    '--summary',
+  ]);
+  const { configuration } = JSON.parse(
+    readFileSync(join(directory, 'block.json'), 'utf8')
+  );
+  assert.equal(configuration.intervalMethod, INTERVAL_METHOD);
+  assert.equal(configuration.analyzerVersion, ANALYZER_VERSION);
 });

@@ -51,7 +51,8 @@ pnpm bench
 pnpm bench -- --case=selector-reduction
 pnpm bench:smoke -- --case=selector-reduction
 pnpm bench:profile -- --case=selector-reduction
-pnpm bench:compare -- before after
+pnpm bench:compare -- --base-revision=<sha> --candidate-revision=<sha> \
+  --base-dir=<worktree> --candidate-dir=<worktree> --results-dir=<path>
 ```
 
 Smoke output only verifies that the harness and fixture work. Use the balanced

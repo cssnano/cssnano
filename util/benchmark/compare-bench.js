@@ -1,46 +1,15 @@
-// Compare versioned benchmark snapshots using independent process samples.
+// Reanalyze a saved paired-comparison artifact and print its report.
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { percentChange, pairedPercentChange, quantile } from './bench-stats.js';
-import {
-  BOOTSTRAP_RESAMPLES,
-  bootstrapConfidenceInterval,
-  clusteredTwoSampleBootstrapConfidenceInterval,
-  twoSampleBootstrapConfidenceInterval,
-} from './bench-bootstrap.js';
-import { loadSnapshot } from './compare-snapshot-io.js';
 import {
   analyzeComparison,
-  analyzePairedComparison,
   validateComparisonArtifact,
 } from './compare-analysis.js';
-import {
-  analyzeIndependentSnapshots,
-  compareSnapshots,
-} from './compare-snapshots.js';
 import { parseAllowOutputHash } from './compare-validation.js';
 import { markdownComparison, printComparison } from './compare-report.js';
 
-export {
-  BOOTSTRAP_RESAMPLES,
-  bootstrapConfidenceInterval,
-  clusteredTwoSampleBootstrapConfidenceInterval,
-  compareSnapshots,
-  analyzeComparison,
-  analyzePairedComparison,
-  analyzeIndependentSnapshots,
-  loadComparison,
-  loadSnapshot,
-  markdownComparison,
-  percentChange,
-  pairedPercentChange,
-  printComparison,
-  quantile,
-  twoSampleBootstrapConfidenceInterval,
-};
-
 function cliArgs(argv) {
-  const positional = [];
+  let artifact;
   let markdown;
   const outputHashAllowlist = new Map();
   for (const arg of argv.filter((value) => value !== '--')) {
@@ -51,14 +20,10 @@ function cliArgs(argv) {
         arg.slice('--allow-output-hash='.length),
         outputHashAllowlist
       );
-    } else positional.push(arg);
+    } else if (artifact === undefined) artifact = arg;
+    else throw new Error(`unexpected argument: ${arg}`);
   }
-  return {
-    base: positional[0],
-    candidate: positional[1],
-    markdown,
-    outputHashAllowlist,
-  };
+  return { artifact, markdown, outputHashAllowlist };
 }
 
 function loadComparison(path, options = {}) {
@@ -105,18 +70,14 @@ function loadComparison(path, options = {}) {
 
 async function main() {
   const args = cliArgs(process.argv.slice(2));
-  if (!args.base) {
+  if (!args.artifact) {
     throw new Error(
-      'usage: node util/benchmark/compare-bench.js <comparison-artifact> [--markdown=path] or <baseline> <candidate>'
+      'usage: node util/benchmark/compare-bench.js <comparison-artifact> [--markdown=path]'
     );
   }
-  const result = args.candidate
-    ? compareSnapshots(loadSnapshot(args.base), loadSnapshot(args.candidate), {
-        outputHashAllowlist: args.outputHashAllowlist,
-      })
-    : loadComparison(args.base, {
-        outputHashAllowlist: args.outputHashAllowlist,
-      });
+  const result = loadComparison(args.artifact, {
+    outputHashAllowlist: args.outputHashAllowlist,
+  });
   printComparison(result);
   if (args.markdown) writeFileSync(args.markdown, markdownComparison(result));
 }

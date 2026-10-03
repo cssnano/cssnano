@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 import { join } from 'node:path';
+import { MINIMUM_CROSSOVER_BLOCKS } from './bench-defaults.js';
 import { resolveBenchmarkTarget } from './bench-cases.js';
 import { corpusSelectionArgs } from './bench-corpus.js';
 import { median } from './bench-stats.js';
@@ -121,6 +122,13 @@ function runProcess(config, side, blockId, directory, revision, resultsDir) {
 function validateComparisonBlockCounts(config) {
   if (!config.adaptive && config.blocks > config.requestedBlocks)
     throw new RangeError('--blocks must not exceed requested blocks');
+  const [plannedName, plannedBlocks] = config.adaptive
+    ? ['requested blocks', config.requestedBlocks]
+    : ['blocks', config.blocks];
+  if (plannedBlocks < MINIMUM_CROSSOVER_BLOCKS)
+    throw new RangeError(
+      `${plannedName} must be at least ${MINIMUM_CROSSOVER_BLOCKS} to estimate variance`
+    );
   for (const [name, value] of [
     ['blocks', config.blocks],
     ['minimumBlocks', config.minimumBlocks],

@@ -13,6 +13,9 @@ export const RUNTIME_NON_REGRESSION_MARGIN = 1.1;
 export const PRACTICAL_EQUIVALENCE_MARGIN = 1.1;
 export const MINIMUM_BLOCKS = 6;
 export const REQUESTED_BLOCKS = 20;
+// Two blocks put one in each order stratum, leaving the 2x2 crossover model
+// without a residual degree of freedom to estimate variance.
+export const MINIMUM_CROSSOVER_BLOCKS = 4;
 export const PRECISION_TARGET = 0.05;
 export const ORDER_INTERACTION_THRESHOLD = 0.05;
 export const INTER_BLOCK_COOLDOWN_MS = 100;

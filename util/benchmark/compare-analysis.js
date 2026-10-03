@@ -1,9 +1,5 @@
 import { median, standardDeviation } from './bench-stats.js';
-import {
-  fitCrossoverModel,
-  normalQuantile,
-  studentTQuantile,
-} from './bench-distributions.js';
+import { fitCrossoverModel, studentTQuantile } from './bench-distributions.js';
 import {
   ANALYZER_VERSION,
   INTERVAL_METHOD,
@@ -148,13 +144,10 @@ function calculatePrecision(total, blocks, configuration) {
   const observedLogRatioSd = standardDeviation(totalLogRatios);
   const ratioHat = total.ratio;
   const deltaLog = 0.5 * Math.log(1 + configuration.precisionTarget / ratioHat);
-  const tAlpha =
-    total.degreesOfFreedom > 0
-      ? studentTQuantile(
-          1 - (1 - configuration.superiorityConfidenceLevel) / 2,
-          total.degreesOfFreedom
-        )
-      : normalQuantile((1 + configuration.superiorityConfidenceLevel) / 2);
+  const tAlpha = studentTQuantile(
+    1 - (1 - configuration.superiorityConfidenceLevel) / 2,
+    total.degreesOfFreedom
+  );
   const estimatedBlocksNeeded =
     deltaLog > 0 && total.residualStandardDeviation > 0
       ? Math.max(
@@ -199,7 +192,7 @@ function analyzePerFileRows(blocks, configuration) {
   return rows;
 }
 
-export function analyzePairedComparison(artifact, options = {}) {
+export function analyzeComparison(artifact, options = {}) {
   const { configuration, structuralFailure, approvedOutputChanges } =
     validateComparisonArtifact(artifact, options);
   if (structuralFailure)
@@ -279,6 +272,4 @@ export function interimTotalAnalysis(blocks, configuration) {
   }
 }
 
-export const analyzeComparison = analyzePairedComparison;
-export { analyzeIndependentSnapshots } from './compare-snapshots.js';
 export { validateComparisonArtifact } from './compareArtifactValidation.js';

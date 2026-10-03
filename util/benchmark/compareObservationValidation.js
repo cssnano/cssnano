@@ -39,7 +39,7 @@ export function observationFor(block, side) {
   return observation;
 }
 
-export function exactSummary(summary, samples, description) {
+function exactSummary(summary, samples, description) {
   if (!summary || typeof summary !== 'object')
     throw new TypeError(`${description} summary is required`);
   const expected = summaryStatistics(samples);

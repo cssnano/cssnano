@@ -1,14 +1,11 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
-  mkdtempSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import {
@@ -16,92 +13,19 @@ import {
   compareCorpora,
   runPreflight,
 } from '../compare-preflight.js';
-
-function temporaryDirectory(prefix) {
-  return mkdtempSync(join(tmpdir(), prefix));
-}
+import {
+  baseConfig,
+  cleanupConfig,
+  prepareCheckout,
+  smokeSnapshot,
+  temporaryDirectory,
+} from '../preflightTestHelpers.js';
 
 function writeCorpus(dir, names) {
   mkdirSync(dir, { recursive: true });
   for (const name of names) {
     writeFileSync(join(dir, `${name}.css`), `.${name}{}\n`);
   }
-}
-
-function chmodRecursive(dir) {
-  // Git objects are read-only; recursive removal needs write bits restored.
-  try {
-    execFileSync('chmod', ['-R', 'u+w', dir]);
-  } catch {
-    // best effort
-  }
-}
-
-function cleanupConfig(config) {
-  for (const dir of [config.baseDir, config.candidateDir, config.resultsDir]) {
-    chmodRecursive(dir);
-    rmSync(dir, { recursive: true, force: true });
-  }
-}
-
-function baseConfig(overrides = {}) {
-  const resultsDir = temporaryDirectory('cssnano-preflight-results-');
-  return {
-    baseDir: temporaryDirectory('cssnano-preflight-base-'),
-    candidateDir: temporaryDirectory('cssnano-preflight-candidate-'),
-    resultsDir,
-    baseRevision: '1'.repeat(40),
-    candidateRevision: '2'.repeat(40),
-    mode: 'stable',
-    preset: 'default',
-    seed: 'test-seed',
-    case: null,
-    only: null,
-    corpusManifest: null,
-    outputHashAllowlist: new Map(),
-    ...overrides,
-  };
-}
-
-function prepareCheckout(dir, fixtureFile = null) {
-  mkdirSync(join(dir, 'frameworks'), { recursive: true });
-  if (fixtureFile) {
-    writeFileSync(join(dir, 'frameworks', fixtureFile), '.fixture{}\n');
-  }
-  mkdirSync(join(dir, 'node_modules'), { recursive: true });
-  execFileSync('git', ['init', '-q'], { cwd: dir });
-  execFileSync('git', ['config', 'user.email', 'test@example.com'], {
-    cwd: dir,
-  });
-  execFileSync('git', ['config', 'user.name', 'Test'], { cwd: dir });
-  execFileSync('git', ['add', '.'], { cwd: dir });
-  execFileSync('git', ['commit', '-qm', 'initial', '--allow-empty'], {
-    cwd: dir,
-  });
-  return execFileSync('git', ['rev-parse', 'HEAD'], {
-    cwd: dir,
-    encoding: 'utf8',
-  }).trim();
-}
-
-function smokeSnapshot(side, outputHash, overrides = {}) {
-  return JSON.stringify({
-    schemaVersion: 3,
-    preset: 'default',
-    target: 'cssnano',
-    node: process.version,
-    platform: process.platform,
-    arch: process.arch,
-    mode: 'quick',
-    warmup: 0,
-    iters: 1,
-    seed: 'test-seed',
-    finalizationMode: 'production',
-    corpusHash: 'c'.repeat(64),
-    outputHashes: { fixture: outputHash },
-    environment: { nodeFlags: [], nodeEnv: 'production' },
-    ...overrides,
-  });
 }
 
 function mockSmokeSpawn(config, smokeArguments, overrides = {}) {

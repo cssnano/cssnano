@@ -71,8 +71,8 @@ The reported order interaction is the estimated per-process period effect
 The v3 artifact also records raw samples, the complete balanced schedule,
 decision parameters, analyzer version, source and harness hashes, lockfile and
 corpus hashes, runtime details, and dirty paths. The paired analyzer does not
-resample blocks; legacy bootstrap options are retained only for the independent
-snapshot comparison path. All snapshots and comparisons must use schema v3;
+resample blocks; the saved `bootstrapResamples` and `bootstrapSeed` fields are
+kept so the snapshot file format does not change. All snapshots and comparisons must use schema v3;
 legacy v1 and v2 formats are not supported.
 
 Every successful block observation must include the declared acquisition

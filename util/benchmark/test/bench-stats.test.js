@@ -3,18 +3,13 @@ import { test } from 'node:test';
 import {
   mean,
   median,
-  pairedPercentChange,
+  percentChange,
   quantile,
   randomFor,
   seedNumber,
   standardDeviation,
   summaryStatistics,
 } from '../bench-stats.js';
-import {
-  bootstrapConfidenceInterval,
-  clusteredTwoSampleBootstrapConfidenceInterval,
-  twoSampleBootstrapConfidenceInterval,
-} from '../bench-bootstrap.js';
 import {
   fitCrossoverModel,
   normalQuantile,
@@ -69,6 +64,38 @@ test('studentTQuantile matches exact Student t critical values', () => {
   assert.throws(() => studentTQuantile(0, 10), RangeError);
   assert.throws(() => studentTQuantile(1, 10), RangeError);
   assert.throws(() => studentTQuantile(0.95, 0), RangeError);
+});
+
+test('studentTQuantile is exact for the Cauchy distribution at df = 1', () => {
+  // Reference t-table values; the series expansion is off by 11% here.
+  assert.ok(Math.abs(studentTQuantile(0.975, 1) - 12.7062) < 1e-3);
+  assert.ok(Math.abs(studentTQuantile(0.95, 1) - 6.3138) < 1e-3);
+  assert.equal(studentTQuantile(0.5, 1), 0);
+});
+
+test('studentTQuantile is exact at df = 2', () => {
+  assert.ok(Math.abs(studentTQuantile(0.975, 2) - 4.3027) < 1e-3);
+  assert.ok(Math.abs(studentTQuantile(0.95, 2) - 2.92) < 1e-3);
+  assert.ok(Math.abs(studentTQuantile(0.025, 2) + 4.3027) < 1e-3);
+  assert.equal(studentTQuantile(0.5, 2), 0);
+});
+
+test('studentTQuantile at df = 4 stays within 0.05% of the t table', () => {
+  assert.ok(Math.abs(studentTQuantile(0.975, 4) / 2.7764 - 1) < 5e-4);
+  assert.ok(Math.abs(studentTQuantile(0.95, 4) / 2.1318 - 1) < 5e-4);
+});
+
+test('fitCrossoverModel rejects a design with no residual degrees of freedom', () => {
+  // One block per sequence leaves df = 0; a zero residual variance would
+  // otherwise report a zero-width interval, i.e. perfect precision.
+  assert.throws(
+    () =>
+      fitCrossoverModel({
+        baselineFirstLogs: [0.1],
+        candidateFirstLogs: [0.2],
+      }),
+    RangeError
+  );
 });
 
 test('fitCrossoverModel computes 2x2 crossover treatment and order effects accurately', () => {
@@ -149,110 +176,24 @@ test('summary statistics and quantiles reject nonsensical values (negative, NaN,
   );
 });
 
-test('paired percent change rejects negative and non-finite timings', () => {
+test('percent change rejects negative and non-finite timings', () => {
   assert.throws(
-    () => pairedPercentChange(-1, 2),
+    () => percentChange(-1, 2),
     /must be non-negative finite numbers/v
   );
   assert.throws(
-    () => pairedPercentChange(2, -1),
+    () => percentChange(2, -1),
     /must be non-negative finite numbers/v
   );
   assert.throws(
-    () => pairedPercentChange(Number.NaN, 2),
+    () => percentChange(Number.NaN, 2),
     /must be non-negative finite numbers/v
   );
   assert.throws(
-    () => pairedPercentChange(2, Infinity),
+    () => percentChange(2, Infinity),
     /must be non-negative finite numbers/v
   );
-  assert.equal(pairedPercentChange(0, 0), 0);
-  assert.equal(pairedPercentChange(0, 5), Infinity);
-  assert.equal(pairedPercentChange(100, 90), -10);
-});
-
-test('bootstrap intervals are deterministic', () => {
-  const first = bootstrapConfidenceInterval([-12, -10, -8], 1000);
-  assert.deepEqual(bootstrapConfidenceInterval([-12, -10, -8], 1000), first);
-  assert.ok(first.low <= -10 && first.high >= -10);
-});
-
-test('confidence intervals reject non-finite values and non-positive resamples', () => {
-  assert.throws(() => bootstrapConfidenceInterval([]), /cannot be empty/v);
-  assert.throws(
-    () => bootstrapConfidenceInterval([1, Number.NaN, 3]),
-    /must be finite numbers/v
-  );
-  assert.throws(
-    () => bootstrapConfidenceInterval([1, 2, 3], 0),
-    /must be a positive integer/v
-  );
-  assert.throws(
-    () => bootstrapConfidenceInterval([1, 2, 3], -5),
-    /must be a positive integer/v
-  );
-});
-
-test('two-sample bootstrap intervals are deterministic and reject invalid inputs', () => {
-  const first = twoSampleBootstrapConfidenceInterval(
-    [100, 102, 98, 101, 99],
-    [90, 92, 88, 91, 89],
-    1000
-  );
-  assert.deepEqual(
-    twoSampleBootstrapConfidenceInterval(
-      [100, 102, 98, 101, 99],
-      [90, 92, 88, 91, 89],
-      1000
-    ),
-    first
-  );
-  assert.ok(first.high < 0);
-  assert.throws(
-    () => twoSampleBootstrapConfidenceInterval([], [1, 2, 3]),
-    /cannot be empty/v
-  );
-  assert.throws(
-    () => twoSampleBootstrapConfidenceInterval([1, 2, 3], []),
-    /cannot be empty/v
-  );
-  assert.throws(
-    () => twoSampleBootstrapConfidenceInterval([-1, 2, 3], [1, 2, 3]),
-    /non-negative finite numbers/v
-  );
-  assert.throws(
-    () => twoSampleBootstrapConfidenceInterval([1, 2, 3], [1, Number.NaN, 3]),
-    /non-negative finite numbers/v
-  );
-  assert.throws(
-    () => twoSampleBootstrapConfidenceInterval([1, 2, 3], [1, 2, 3], 0),
-    /must be a positive integer/v
-  );
-  const sampleGroupsA = [
-    [100, 101, 99],
-    [102, 100, 101],
-    [99, 100, 98],
-  ];
-  const sampleGroupsB = [
-    [90, 91, 89],
-    [92, 90, 91],
-    [89, 90, 88],
-  ];
-  const clustered = clusteredTwoSampleBootstrapConfidenceInterval(
-    sampleGroupsA,
-    sampleGroupsB,
-    1000
-  );
-  assert.deepEqual(
-    clusteredTwoSampleBootstrapConfidenceInterval(
-      sampleGroupsA,
-      sampleGroupsB,
-      1000
-    ),
-    clustered
-  );
-  assert.throws(
-    () => clusteredTwoSampleBootstrapConfidenceInterval([[]], [[1, 2, 3]]),
-    /sample groups cannot be empty/v
-  );
+  assert.equal(percentChange(0, 0), 0);
+  assert.equal(percentChange(0, 5), Infinity);
+  assert.equal(percentChange(100, 90), -10);
 });

@@ -56,6 +56,14 @@ export function studentTQuantile(probability, degreesOfFreedom) {
     throw new RangeError('degreesOfFreedom must be a positive integer');
   }
 
+  // The series below diverges at tiny df, but df 1 and 2 have closed forms.
+  if (degreesOfFreedom === 1) return Math.tan(Math.PI * (probability - 0.5));
+  if (degreesOfFreedom === 2) {
+    return (
+      (2 * probability - 1) / Math.sqrt(2 * probability * (1 - probability))
+    );
+  }
+
   const z = normalQuantile(probability);
   const v = degreesOfFreedom;
 
@@ -92,6 +100,11 @@ export function fitCrossoverModel({
   }
   const totalBlocks = n1 + n2;
   const degreesOfFreedom = totalBlocks - 2;
+  // Without residual degrees of freedom the variance is unidentifiable, and
+  // reporting zero would claim perfect precision.
+  if (degreesOfFreedom < 1) {
+    throw new RangeError('crossover model needs at least three blocks');
+  }
 
   const meanBaselineFirst = mean(baselineFirstLogs);
   const meanCandidateFirst = mean(candidateFirstLogs);
@@ -107,7 +120,7 @@ export function fitCrossoverModel({
   for (const y of baselineFirstLogs) rss += (y - meanBaselineFirst) ** 2;
   for (const y of candidateFirstLogs) rss += (y - meanCandidateFirst) ** 2;
 
-  const residualVariance = degreesOfFreedom > 0 ? rss / degreesOfFreedom : 0;
+  const residualVariance = rss / degreesOfFreedom;
   const residualStandardDeviation = Math.sqrt(residualVariance);
 
   const seTreatment =
@@ -116,26 +129,17 @@ export function fitCrossoverModel({
   const seOrder =
     residualStandardDeviation * Math.sqrt(1 / (4 * n1) + 1 / (4 * n2));
 
-  const tSuperiority =
-    degreesOfFreedom > 0
-      ? studentTQuantile(
-          1 - (1 - superiorityConfidenceLevel) / 2,
-          degreesOfFreedom
-        )
-      : normalQuantile(1 - (1 - superiorityConfidenceLevel) / 2);
+  const tSuperiority = studentTQuantile(
+    1 - (1 - superiorityConfidenceLevel) / 2,
+    degreesOfFreedom
+  );
 
-  const tEquivalence =
-    degreesOfFreedom > 0
-      ? studentTQuantile(
-          1 - (1 - equivalenceConfidenceLevel) / 2,
-          degreesOfFreedom
-        )
-      : normalQuantile(1 - (1 - equivalenceConfidenceLevel) / 2);
+  const tEquivalence = studentTQuantile(
+    1 - (1 - equivalenceConfidenceLevel) / 2,
+    degreesOfFreedom
+  );
 
-  const tOrder =
-    degreesOfFreedom > 0
-      ? studentTQuantile(orderConfidenceLevel, degreesOfFreedom)
-      : normalQuantile(orderConfidenceLevel);
+  const tOrder = studentTQuantile(orderConfidenceLevel, degreesOfFreedom);
 
   const halfWidthSuperiority = tSuperiority * seTreatment;
   const halfWidthEquivalence = tEquivalence * seTreatment;
