@@ -1,3 +1,11 @@
+import cssnanoUtils from 'cssnano-utils';
+
+const { isAnonymousLayer, isImportantComment } = cssnanoUtils;
+
+// Identical preludes apply their contents under the same condition; other
+// at-rules have semantics this plugin does not model.
+const conditionalAtRules = new Set(['media', 'supports', 'container']);
+
 /**
  * Structural view over the postcss node kinds compared by `equals` and its
  * helpers.
@@ -13,6 +21,35 @@
  *   nodes?: import('postcss').ChildNode[],
  * }} ComparableNode
  */
+
+/**
+ * @typedef {Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]>} SeenNodes
+ */
+
+/**
+ * Declarations already kept in a container, shared by every sibling at-rule
+ * whose conditions are identical.
+ * @typedef {{
+ *   decls?: SeenNodes,
+ *   ruleDecls?: Map<string, SeenNodes>,
+ *   children?: Map<string, Scope>,
+ * }} Scope
+ */
+
+/**
+ * @param {Scope} scope
+ * @param {string} key
+ * @return {Scope}
+ */
+function childScope(scope, key) {
+  const children = (scope.children ??= new Map());
+  let child = children.get(key);
+  if (!child) {
+    child = {};
+    children.set(key, child);
+  }
+  return child;
+}
 
 /**
  * @param {string | undefined} value
@@ -155,7 +192,7 @@ function addToSeen(map, key, node) {
 
 /**
  * @param {import('postcss').Rule} rule
- * @param {Map<string, Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]>>} seenRuleDecls
+ * @param {Map<string, SeenNodes>} seenRuleDecls
  * @return {void}
  */
 function dedupeRule(rule, seenRuleDecls) {
@@ -168,7 +205,6 @@ function dedupeRule(rule, seenRuleDecls) {
   }
 
   let hasContainers = false;
-  let hasNonComment = false;
 
   const { nodes } = rule;
   if (nodes) {
@@ -180,18 +216,14 @@ function dedupeRule(rule, seenRuleDecls) {
           child.remove();
         } else {
           addToSeen(declMap, child.prop, child);
-          hasNonComment = true;
         }
       } else if (child.type === 'rule' || child.type === 'atrule') {
         hasContainers = true;
-        hasNonComment = true;
-      } else if (child.type !== 'comment') {
-        hasNonComment = true;
       }
     }
   }
 
-  if (isSubsequent && !hasNonComment) {
+  if (isSubsequent && !hasContent(rule)) {
     rule.remove();
   } else if (hasContainers) {
     dedupe(rule);
@@ -200,7 +232,7 @@ function dedupeRule(rule, seenRuleDecls) {
 
 /**
  * @param {import('postcss').Declaration} decl
- * @param {Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]>} seenDecls
+ * @param {SeenNodes} seenDecls
  * @return {void}
  */
 function dedupeDecl(decl, seenDecls) {
@@ -213,32 +245,89 @@ function dedupeDecl(decl, seenDecls) {
 }
 
 /**
+ * Comments starting with `/*!` are preserved by minifiers, so a container
+ * that holds one is not discarded with its emptied contents.
+ * @param {import('postcss').Rule | import('postcss').AtRule} container
+ * @return {boolean} whether the block holds anything but ordinary comments
+ */
+function hasContent(container) {
+  return Boolean(
+    container.nodes?.some(
+      (node) => node.type !== 'comment' || isImportantComment(node.text)
+    )
+  );
+}
+
+/**
+ * The first appearance of a named layer fixes its place in the layer order,
+ * so a block declaring one cannot be dropped in favor of a later copy.
  * @param {import('postcss').AtRule} atrule
- * @param {Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]>} seenAtRules
+ * @return {boolean}
+ */
+function declaresLayer(atrule) {
+  let found = false;
+  atrule.walkAtRules(/^layer$/iv, () => {
+    found = true;
+    return false;
+  });
+  return found;
+}
+
+/**
+ * @param {import('postcss').AtRule} atrule
+ * @param {SeenNodes} seenAtRules
+ * @param {Scope} scope
  * @return {void}
  */
-function dedupeAtRule(atrule, seenAtRules) {
-  if (atrule.nodes) {
-    dedupe(atrule);
-  }
-
-  if (atrule.name === 'layer') {
+function dedupeAtRule(atrule, seenAtRules, scope) {
+  const name = atrule.name.toLowerCase();
+  // Blocks of one named layer form a single layer; anonymous ones are distinct.
+  if (name === 'layer') {
+    if (atrule.nodes) {
+      dedupe(
+        atrule,
+        isAnonymousLayer(atrule)
+          ? undefined
+          : childScope(scope, `layer\0${atrule.params}`)
+      );
+    }
     return;
   }
 
-  const existing = seenAtRules.get(atrule.name);
-  if (existing && hasEqual(existing, atrule)) {
+  if (atrule.nodes) {
+    if (conditionalAtRules.has(name)) {
+      // An emptied conditional group has no effect.
+      const hadContent = hasContent(atrule);
+      dedupe(atrule, childScope(scope, `${name}\0${atrule.params}`));
+      if (hadContent && !hasContent(atrule)) {
+        atrule.remove();
+        return;
+      }
+    } else {
+      dedupe(atrule);
+    }
+  }
+
+  // An imported style sheet may declare layers, so even an identical earlier
+  // @import can fix a layer's place in the layer order.
+  if (name === 'import') {
+    return;
+  }
+
+  const existing = seenAtRules.get(name);
+  if (existing && hasEqual(existing, atrule) && !declaresLayer(atrule)) {
     atrule.remove();
   } else {
-    addToSeen(seenAtRules, atrule.name, atrule);
+    addToSeen(seenAtRules, name, atrule);
   }
 }
 
 /**
  * @param {import('postcss').AnyNode} container
+ * @param {Scope} [scope]
  * @return {void}
  */
-function dedupe(container) {
+function dedupe(container, scope = {}) {
   const { nodes } =
     /** @type {import('postcss').Container<import('postcss').ChildNode>} */ (
       container
@@ -249,11 +338,7 @@ function dedupe(container) {
   }
 
   const children = nodes.slice();
-  /** @type {Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]> | undefined} */
-  let seenDecls;
-  /** @type {Map<string, Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]>> | undefined} */
-  let seenRuleDecls;
-  /** @type {Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]> | undefined} */
+  /** @type {SeenNodes | undefined} */
   let seenAtRules;
 
   for (let i = children.length - 1; i >= 0; i--) {
@@ -264,22 +349,13 @@ function dedupe(container) {
 
     switch (node.type) {
       case 'decl':
-        if (!seenDecls) {
-          seenDecls = new Map();
-        }
-        dedupeDecl(node, seenDecls);
+        dedupeDecl(node, (scope.decls ??= new Map()));
         break;
       case 'rule':
-        if (!seenRuleDecls) {
-          seenRuleDecls = new Map();
-        }
-        dedupeRule(node, seenRuleDecls);
+        dedupeRule(node, (scope.ruleDecls ??= new Map()));
         break;
       case 'atrule':
-        if (!seenAtRules) {
-          seenAtRules = new Map();
-        }
-        dedupeAtRule(node, seenAtRules);
+        dedupeAtRule(node, (seenAtRules ??= new Map()), scope);
         break;
     }
   }

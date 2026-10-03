@@ -3,6 +3,8 @@ import lengthUnits from './lengthUnits.js';
 import mathFunctions from './mathFunctions.js';
 import mathFunctionArgumentRanges from './mathFunctionArgumentRanges.js';
 import rawCache from './rawCache.js';
+import isAnonymousLayer from './isAnonymousLayer.js';
+import isImportantComment from './isImportantComment.js';
 import sameParent from './sameParent.js';
 import {
   TokenType,
@@ -28,10 +30,12 @@ function asciiLowerCase(value) {
   return value.replace(/[A-Z]/gv, (character) => character.toLowerCase());
 }
 
-/** @type {{rawCache: typeof rawCache, sameParent: typeof sameParent, TokenType: typeof TokenType, applyEdits: typeof applyEdits, asciiLowerCase: typeof asciiLowerCase, balancedTokens: typeof balancedTokens, calcSumFunctions: typeof calcSumFunctions, closeForOpening: typeof closeForOpening, decoded: typeof decoded, endsWithEscapingBackslash: typeof endsWithEscapingBackslash, lengthUnits: typeof lengthUnits, mathFunctions: typeof mathFunctions, mathFunctionArgumentRanges: typeof mathFunctionArgumentRanges, numeric: typeof numeric, numericSource: typeof numericSource, tokenEnd: typeof tokenEnd, tokenStart: typeof tokenStart, tokens: typeof tokens}} */
+/** @type {{rawCache: typeof rawCache, sameParent: typeof sameParent, isAnonymousLayer: typeof isAnonymousLayer, isImportantComment: typeof isImportantComment, TokenType: typeof TokenType, applyEdits: typeof applyEdits, asciiLowerCase: typeof asciiLowerCase, balancedTokens: typeof balancedTokens, calcSumFunctions: typeof calcSumFunctions, closeForOpening: typeof closeForOpening, decoded: typeof decoded, endsWithEscapingBackslash: typeof endsWithEscapingBackslash, lengthUnits: typeof lengthUnits, mathFunctions: typeof mathFunctions, mathFunctionArgumentRanges: typeof mathFunctionArgumentRanges, numeric: typeof numeric, numericSource: typeof numericSource, tokenEnd: typeof tokenEnd, tokenStart: typeof tokenStart, tokens: typeof tokens}} */
 const cssnanoUtils = {
   rawCache,
   sameParent,
+  isAnonymousLayer,
+  isImportantComment,
   TokenType,
   asciiLowerCase,
   calcSumFunctions,

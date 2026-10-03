@@ -252,3 +252,16 @@ test('should preserve important comments while merging equal declarations', asyn
 
   assert.equal(css, '.a{/*!keep*/}.a,.b{color:red}');
 });
+
+test('should drop a declaration repeated in a sibling @media block with identical conditions before the blocks merge', async () => {
+  const input =
+    '@media (max-width:767px){#header{position:fixed}.a{display:none}}@media (max-width:767px){#header{position:fixed}.b{color:red}}';
+  const { css } = await createCssnanoProcessor(preset()).process(input, {
+    from: undefined,
+  });
+
+  assert.equal(
+    css,
+    '@media(max-width:767px){.a{display:none}#header{position:fixed}.b{color:red}}'
+  );
+});
