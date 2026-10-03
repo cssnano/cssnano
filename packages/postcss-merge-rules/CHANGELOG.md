@@ -1,5 +1,13 @@
 # Change Log
 
+## 9.0.8
+
+### Patch Changes
+
+- Fix an infinite loop: when equal `@media` blocks were separated by an  at-rule such as `@layer x;`, `@font-face` or `@page`, the plugin would keep merging a rule into itself until memory ran out.
+
+  Fix a bug when the plugin moved a rule into a block nested inside another block: a later merge could combine two rules in reverse order and change which declaration wins.
+
 ## 9.0.7
 
 ### Patch Changes

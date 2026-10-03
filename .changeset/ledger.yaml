@@ -284,6 +284,10 @@ cssnano-preset-default@9.2.1:
     - discard-duplicates-sibling-conditionals
     - minify-font-values-revert-rule
     - ordered-values-revert-rule
+cssnano-preset-default@9.2.2:
+  dir: packages/cssnano-preset-default
+  intents:
+    - merge-rules-stale-boundary-hang
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -546,6 +550,10 @@ cssnano@9.2.1:
     - discard-duplicates-sibling-conditionals
     - minify-font-values-revert-rule
     - ordered-values-revert-rule
+cssnano@9.2.2:
+  dir: packages/cssnano
+  intents:
+    - merge-rules-stale-boundary-hang
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -1056,6 +1064,10 @@ postcss-merge-rules@9.0.7:
     - merge-rules-invalid-selectors
     - minify-selectors-comment-compounds
     - old-kids-compete
+postcss-merge-rules@9.0.8:
+  dir: packages/postcss-merge-rules
+  intents:
+    - merge-rules-stale-boundary-hang
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
