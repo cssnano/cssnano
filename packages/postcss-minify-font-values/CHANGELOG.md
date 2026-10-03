@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- Keep `"revert-rule"` quoted in `font-family`because `revert-rule` is a CSS-wide keyword.
+- Keep `"revert-rule"` quoted in `font-family` because `revert-rule` is a CSS-wide keyword.
 
 ## 9.0.6
 
