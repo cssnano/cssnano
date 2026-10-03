@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import plugin from '../src/index.js';
@@ -73,7 +74,8 @@ function runThreeRuleRewrite({ movedAcrossParents }) {
       seed: () => first,
       isCurrentCandidate: () => true,
       canMerge: () => true,
-      mergeParents: () => false,
+      // Only the first merge moves a rule, as a real cross-parent merge does.
+      mergeParents: () => movedAcrossParents && declarationMerges === 0,
       repairMove: () => {},
       mergeMatchingDeclarations: () => {
         declarationMerges++;
@@ -82,13 +84,11 @@ function runThreeRuleRewrite({ movedAcrossParents }) {
               previous: null,
               replacements: [second],
               next: third,
-              movedAcrossParents,
               kind: 'equal-declaration',
             }
           : null;
       },
       mergeMatchingSelectors: () => null,
-      captureBoundaries: () => new Map(),
       partialMerge: () => ({ rule: second, replacements: [], replaced: [] }),
       installPartialMerge: () => null,
       refresh: (rule) => active.get(rule),
@@ -193,4 +193,125 @@ test('should converge on a bounded deterministic rewrite corpus', () => {
 
   assert.equal(diagnostics.length, inputs.length * 2);
   assert.ok(diagnostics.every((stats) => stats.candidatePops < 1000));
+});
+
+const pluginUrl = new URL('../src/index.js', import.meta.url).href;
+
+/**
+ * Runs the plugin on every input in one child process under a time and heap
+ * limit. The worklist loop is synchronous, so a `node:test` timeout cannot
+ * interrupt a runaway merge and an out-of-memory crash would take down the
+ * whole test runner. The child prints each input's index before processing it,
+ * so a hang or crash is attributed to the last input started.
+ *
+ * @param {string[]} inputs
+ * @return {{css: string[], terminated: boolean, stuckOn: string | undefined}}
+ */
+function processAllWithLimits(inputs) {
+  const script = `
+    import postcss from 'postcss';
+    import plugin from ${JSON.stringify(pluginUrl)};
+    const inputs = ${JSON.stringify(inputs)};
+    inputs.forEach((css, index) => {
+      process.stdout.write(index + '\\n');
+      process.stdout.write(JSON.stringify(postcss([plugin]).process(css, {from: undefined}).css) + '\\n');
+    });
+  `;
+  const result = spawnSync(
+    process.execPath,
+    ['--max-old-space-size=256', '--input-type=module', '-e', script],
+    { timeout: 30_000, encoding: 'utf8', cwd: new URL('..', import.meta.url) }
+  );
+  const lines = (result.stdout ?? '').split('\n').filter(Boolean);
+  const css = lines
+    .filter((_, index) => index % 2 === 1)
+    .map((line) => JSON.parse(line));
+  const terminated = result.status !== 0;
+  return {
+    css,
+    terminated,
+    stuckOn: terminated ? inputs[css.length] : undefined,
+  };
+}
+
+/** @param {string} css */
+function processWithLimits(css) {
+  const { css: outputs, terminated } = processAllWithLimits([css]);
+  return { css: outputs[0], terminated };
+}
+
+const crossParentMoveThenAnotherMove = [
+  [
+    'an @layer statement',
+    '@media print{.c{top:0;color:red}}@layer x;@media print{.a{color:red}.b{}}',
+  ],
+  [
+    'an @font-face rule',
+    '@media print{.c{top:0;color:red}}@font-face{font-family:x}@media print{.a{color:red}.b{}}',
+  ],
+  [
+    'two @page rules',
+    '@media print{.c{top:0;color:red}}@page{margin:0}@page :first{margin:1px}@media print{.a{color:red}.b{}}',
+  ],
+];
+
+for (const [separator, css] of crossParentMoveThenAnotherMove) {
+  test(`should terminate on a merge after a cross-parent move followed by another move into the same block, separated by ${separator}`, () => {
+    const result = processWithLimits(css);
+    assert.equal(result.terminated, false);
+  });
+}
+
+test('should merge the shared declaration after a cross-parent move followed by another move into the same block', () => {
+  assert.equal(
+    processWithLimits(crossParentMoveThenAnotherMove[0][1]).css,
+    '@media print{.c{top:0}.c,.a{color:red}.b{}}@layer x;@media print{}'
+  );
+});
+
+/** Park–Miller generator; the products stay below Number.MAX_SAFE_INTEGER. @param {number} seed */
+function randomSource(seed) {
+  let state = seed % 2_147_483_647 || 1;
+  return () => {
+    state = (state * 48_271) % 2_147_483_647;
+    return state / 2_147_483_647;
+  };
+}
+
+/** Generates equal @media blocks split by non-rule at-rules, sharing a declaration. */
+function generateSplitMediaCase(random) {
+  const pick = (items) => items[Math.floor(random() * items.length)];
+  const separators = [
+    '',
+    '@layer x;',
+    '@font-face{font-family:x}',
+    '@page{margin:0}',
+  ];
+  const rules = [
+    () => '.c{top:0;color:red}',
+    () => '.a{color:red}',
+    () => '.b{}',
+    () => '.d{color:red;left:0}',
+    () => '.e{top:0}',
+  ];
+  // Equal conditional blocks are the only ones the plugin joins, so each
+  // case repeats one wrapper.
+  const wrapper = pick(['@media print', '@supports (color:red)']);
+  const blocks = 2 + Math.floor(random() * 3);
+  let css = '';
+  for (let block = 0; block < blocks; block++) {
+    const body = Array.from({ length: 1 + Math.floor(random() * 3) }, () =>
+      pick(rules)()
+    ).join('');
+    css += `${wrapper}{${body}}${pick(separators)}`;
+  }
+  return css;
+}
+
+test('should terminate on generated equal @media blocks separated by non-rule at-rules', () => {
+  const random = randomSource(0x5eed);
+  const inputs = Array.from({ length: 12 }, () =>
+    generateSplitMediaCase(random)
+  );
+  assert.equal(processAllWithLimits(inputs).stuckOn, undefined);
 });

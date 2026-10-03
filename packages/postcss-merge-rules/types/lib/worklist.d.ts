@@ -9,12 +9,11 @@
  * @property {(candidate: Candidate) => boolean} isCurrentCandidate
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => boolean} canMerge
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => boolean} mergeParents
- * @property {(rule: import('postcss').Rule, oldParent: import('postcss').Container, newParent: import('postcss').Container) => void} repairMove
+ * @property {(rule: import('postcss').Rule) => void} repairMove
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => MutationOutcome | null} mergeMatchingDeclarations
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => MutationOutcome | null} mergeMatchingSelectors
- * @property {(rules: import('postcss').Rule[]) => Map<import('postcss').Container, {first: import('postcss').Rule | null, last: import('postcss').Rule | null}>} captureBoundaries
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => MergeOutcome} partialMerge
- * @property {(outcome: MergeOutcome, captured: Map<import('postcss').Container, {first: import('postcss').Rule | null, last: import('postcss').Rule | null}>, movedAcrossParents: boolean) => MutationOutcome | null} installPartialMerge
+ * @property {(outcome: MergeOutcome) => MutationOutcome | null} installPartialMerge
  * @property {(rule: import('postcss').Rule) => ActiveMeta} refresh
  */
 export type Candidate = {
@@ -49,28 +48,20 @@ export type WorklistApi = {
     isCurrentCandidate: (candidate: Candidate) => boolean;
     canMerge: (first: import('postcss').Rule, second: import('postcss').Rule) => boolean;
     mergeParents: (first: import('postcss').Rule, second: import('postcss').Rule) => boolean;
-    repairMove: (rule: import('postcss').Rule, oldParent: import('postcss').Container, newParent: import('postcss').Container) => void;
+    repairMove: (rule: import('postcss').Rule) => void;
     mergeMatchingDeclarations: (first: import('postcss').Rule, second: import('postcss').Rule) => MutationOutcome | null;
     mergeMatchingSelectors: (first: import('postcss').Rule, second: import('postcss').Rule) => MutationOutcome | null;
-    captureBoundaries: (rules: import('postcss').Rule[]) => Map<import('postcss').Container, {
-        first: import('postcss').Rule | null;
-        last: import('postcss').Rule | null;
-    }>;
     partialMerge: (first: import('postcss').Rule, second: import('postcss').Rule) => MergeOutcome;
-    installPartialMerge: (outcome: MergeOutcome, captured: Map<import('postcss').Container, {
-        first: import('postcss').Rule | null;
-        last: import('postcss').Rule | null;
-    }>, movedAcrossParents: boolean) => MutationOutcome | null;
+    installPartialMerge: (outcome: MergeOutcome) => MutationOutcome | null;
     refresh: (rule: import('postcss').Rule) => ActiveMeta;
 };
 export type MutationOutcome = {
     previous: import('postcss').Rule | null;
     replacements: import('postcss').Rule[];
     next: import('postcss').Rule | null;
-    movedAcrossParents: boolean;
     kind: 'equal-declaration' | 'equal-selector' | 'partial';
 };
-/** @typedef {{previous: import('postcss').Rule | null, replacements: import('postcss').Rule[], next: import('postcss').Rule | null, movedAcrossParents: boolean, kind: 'equal-declaration' | 'equal-selector' | 'partial'}} MutationOutcome */
+/** @typedef {{previous: import('postcss').Rule | null, replacements: import('postcss').Rule[], next: import('postcss').Rule | null, kind: 'equal-declaration' | 'equal-selector' | 'partial'}} MutationOutcome */
 /** @param {Candidate} a @param {Candidate} b */
 export declare function comesBefore(a: Candidate, b: Candidate): boolean;
 /**

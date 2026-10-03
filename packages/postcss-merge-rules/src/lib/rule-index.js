@@ -5,23 +5,6 @@ import { getMeta } from './rule-meta.js';
 /** @import {RuleMeta} from './rule-meta.js' */
 /** @typedef {{first: Rule | null, last: Rule | null}} Boundary */
 
-/** @param {Rule | null} rule @param {import('postcss').Container<import('postcss').ChildNode>} container */
-function isDescendant(rule, container) {
-  /** @type {import('postcss').Container<import('postcss').ChildNode> | undefined} */
-  let parent = rule ? getParent(rule) : undefined;
-  for (
-    ;
-    parent;
-    parent =
-      /** @type {import('postcss').Container<import('postcss').ChildNode> | undefined} */ (
-        parent.parent
-      )
-  ) {
-    if (parent === container) return true;
-  }
-  return false;
-}
-
 /** @param {Rule | import('postcss').Container<import('postcss').ChildNode>} node @return {import('postcss').Container<import('postcss').ChildNode> | undefined} */
 function getParent(node) {
   return /** @type {import('postcss').Container<import('postcss').ChildNode> | undefined} */ (
@@ -29,14 +12,6 @@ function getParent(node) {
   );
 }
 
-/** @param {Map<import('postcss').Container, {first: Rule | null, last: Rule | null}>} captured @param {Rule[]} replaced @param {'first'|'last'} edge */
-export function replacedBoundary(captured, replaced, edge) {
-  for (const boundary of captured.values()) {
-    const rule = boundary[edge];
-    if (rule && replaced.includes(rule)) return true;
-  }
-  return false;
-}
 /**
  * Doubly linked list of the rules in source order, plus the first and last
  * rule of every container, so the worklist can find adjacent merge candidates
@@ -45,7 +20,7 @@ export function replacedBoundary(captured, replaced, edge) {
  * @param {WeakMap<Rule, RuleMeta>} ruleMeta
  */
 export default function createRuleIndex(ruleMeta) {
-  /** @typedef {RuleMeta & {selectorKey: string, contentKey: string, declarationIds: number[], declarationIdSet: Set<number>, previous: Rule | null, next: Rule | null, active: boolean, version: number, sourceOrder: number}} ActiveMeta */
+  /** @typedef {RuleMeta & {selectorKey: string, contentKey: string, declarationIds: number[], declarationIdSet: Set<number>, parent: import('postcss').Container | undefined, previous: Rule | null, next: Rule | null, active: boolean, version: number, sourceOrder: number}} ActiveMeta */
   /** @type {WeakMap<Rule, ActiveMeta>} */
   const active = new WeakMap();
 
@@ -70,6 +45,34 @@ export default function createRuleIndex(ruleMeta) {
     return id;
   }
 
+  /**
+   * The container a rule occupied when the index last saw it. A rewrite can
+   * remove a rule from the tree before the index is told, so the live
+   * `parent` is not enough to find the boundaries it anchored.
+   *
+   * @param {Rule | null} rule
+   * @return {import('postcss').Container<import('postcss').ChildNode> | undefined}
+   */
+  function containerOf(rule) {
+    if (!rule) return undefined;
+    return active.get(rule)?.parent ?? getParent(rule);
+  }
+
+  /** @param {Rule | null} rule @param {import('postcss').Container<import('postcss').ChildNode>} container */
+  function isDescendant(rule, container) {
+    for (
+      let parent = containerOf(rule);
+      parent;
+      parent =
+        /** @type {import('postcss').Container<import('postcss').ChildNode> | undefined} */ (
+          parent.parent
+        )
+    ) {
+      if (parent === container) return true;
+    }
+    return false;
+  }
+
   /** @param {Rule} rule @param {number} [sourceOrder] */
   function refresh(rule, sourceOrder) {
     const previous = active.get(rule);
@@ -77,6 +80,7 @@ export default function createRuleIndex(ruleMeta) {
     const ids = base.declarations.map(getDeclarationId);
     /** @type {ActiveMeta} */
     const meta = Object.assign(base, {
+      parent: getParent(rule) ?? previous?.parent,
       selectorKey: base.selectors.join(','),
       contentKey: `${base.selectors.join(',')}|${ids.join(',')}`,
       declarationIds: ids,
@@ -117,29 +121,9 @@ export default function createRuleIndex(ruleMeta) {
     const meta = active.get(rule);
     if (!meta?.active) return;
     const { previous, next } = meta;
-    resetBoundaries(getParent(rule), rule, previous, next);
+    resetBoundaries(containerOf(rule), rule, previous, next);
     unlink(previous, next);
     meta.active = false;
-  }
-
-  /** @param {Rule[]} rules */
-  function captureBoundaries(rules) {
-    const captured = new Map();
-    for (const rule of rules) {
-      for (
-        let container = getParent(rule);
-        container;
-        container = getParent(container)
-      ) {
-        const boundary = boundaries.get(container);
-        if (boundary && !captured.has(container))
-          captured.set(container, {
-            first: boundary.first,
-            last: boundary.last,
-          });
-      }
-    }
-    return captured;
   }
 
   /** @param {Rule | null} previous @param {Rule | null} next */
@@ -154,13 +138,15 @@ export default function createRuleIndex(ruleMeta) {
     }
   }
 
-  /** @param {Rule} rule @param {import('postcss').Container} oldParent @param {import('postcss').Container} newParent */
-  function repairMove(rule, oldParent, newParent) {
+  /** @param {Rule} rule */
+  function repairMove(rule) {
     const meta = active.get(rule);
-    if (!meta?.active) return;
+    const newParent = getParent(rule);
+    if (!meta?.active || !newParent) return;
     const { previous, next } = meta;
     unlink(previous, next);
-    resetBoundaries(oldParent, rule, previous, next);
+    resetBoundaries(meta.parent, rule, previous, next);
+    meta.parent = newParent;
     linkMovedRule(rule, meta, newParent);
   }
 
@@ -179,14 +165,7 @@ export default function createRuleIndex(ruleMeta) {
       const nextMeta = active.get(meta.next);
       if (nextMeta) nextMeta.previous = rule;
     }
-    /** @type {import('postcss').Container<import('postcss').ChildNode> | undefined} */
-    let container = newParent;
-    for (; container; container = getParent(container)) {
-      const boundary = boundaries.get(container);
-      if (!boundary) continue;
-      boundary.first ??= rule;
-      boundary.last = rule;
-    }
+    anchorBoundaries(rule);
   }
 
   /** @param {import('postcss').Container<import('postcss').ChildNode>} container @param {{previous: Rule | null}} state */
@@ -241,17 +220,33 @@ export default function createRuleIndex(ruleMeta) {
     }
     if (prior) /** @type {ActiveMeta} */ (active.get(prior)).next = next;
     if (next) /** @type {ActiveMeta} */ (active.get(next)).previous = prior;
+    for (const replacement of replacements) anchorBoundaries(replacement);
   }
 
-  /** @param {Rule} replacement @param {'first'|'last'} edge */
-  function updateAncestorBoundaries(replacement, edge) {
+  /**
+   * A container's first and last rule are the ones whose list neighbours lie
+   * outside it, so a linked replacement claims every edge it now sits on.
+   *
+   * @param {Rule} rule
+   */
+  function anchorBoundaries(rule) {
+    const { previous, next } = /** @type {ActiveMeta} */ (active.get(rule));
+    let startsContainer = true;
+    let endsContainer = true;
     for (
-      let container = getParent(replacement);
-      container;
+      let container = getParent(rule);
+      container && (startsContainer || endsContainer);
       container = getParent(container)
     ) {
+      // A neighbour inside this container is inside every enclosing one.
+      if (startsContainer && previous && isDescendant(previous, container))
+        startsContainer = false;
+      if (endsContainer && next && isDescendant(next, container))
+        endsContainer = false;
       const boundary = boundaries.get(container);
-      if (boundary) boundary[edge] = replacement;
+      if (!boundary) continue;
+      if (startsContainer) boundary.first = rule;
+      if (endsContainer) boundary.last = rule;
     }
   }
 
@@ -259,10 +254,8 @@ export default function createRuleIndex(ruleMeta) {
     active,
     refresh,
     detach,
-    captureBoundaries,
     repairMove,
     seed,
     linkReplacements,
-    updateAncestorBoundaries,
   };
 }

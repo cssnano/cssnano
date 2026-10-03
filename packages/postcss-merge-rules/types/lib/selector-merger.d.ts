@@ -4,13 +4,11 @@ export type MutationOutcome = {
     previous: Rule | null;
     replacements: Rule[];
     next: Rule | null;
-    movedAcrossParents: boolean;
     kind: 'equal-declaration' | 'equal-selector' | 'partial';
 };
 /** @import {Rule} from 'postcss' */
 /** @import {RuleMeta} from './rule-meta.js' */
-/** @typedef {{previous: Rule | null, replacements: Rule[], next: Rule | null, movedAcrossParents: boolean, kind: 'equal-declaration' | 'equal-selector' | 'partial'}} MutationOutcome */
-/** @import {Boundary} from './rule-index.js' */
+/** @typedef {{previous: Rule | null, replacements: Rule[], next: Rule | null, kind: 'equal-declaration' | 'equal-selector' | 'partial'}} MutationOutcome */
 /**
  * @param {string[]} browsers
  * @param {Map<string, boolean>} compatibilityCache

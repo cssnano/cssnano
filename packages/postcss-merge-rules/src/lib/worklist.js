@@ -9,16 +9,15 @@
  * @property {(candidate: Candidate) => boolean} isCurrentCandidate
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => boolean} canMerge
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => boolean} mergeParents
- * @property {(rule: import('postcss').Rule, oldParent: import('postcss').Container, newParent: import('postcss').Container) => void} repairMove
+ * @property {(rule: import('postcss').Rule) => void} repairMove
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => MutationOutcome | null} mergeMatchingDeclarations
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => MutationOutcome | null} mergeMatchingSelectors
- * @property {(rules: import('postcss').Rule[]) => Map<import('postcss').Container, {first: import('postcss').Rule | null, last: import('postcss').Rule | null}>} captureBoundaries
  * @property {(first: import('postcss').Rule, second: import('postcss').Rule) => MergeOutcome} partialMerge
- * @property {(outcome: MergeOutcome, captured: Map<import('postcss').Container, {first: import('postcss').Rule | null, last: import('postcss').Rule | null}>, movedAcrossParents: boolean) => MutationOutcome | null} installPartialMerge
+ * @property {(outcome: MergeOutcome) => MutationOutcome | null} installPartialMerge
  * @property {(rule: import('postcss').Rule) => ActiveMeta} refresh
  */
 
-/** @typedef {{previous: import('postcss').Rule | null, replacements: import('postcss').Rule[], next: import('postcss').Rule | null, movedAcrossParents: boolean, kind: 'equal-declaration' | 'equal-selector' | 'partial'}} MutationOutcome */
+/** @typedef {{previous: import('postcss').Rule | null, replacements: import('postcss').Rule[], next: import('postcss').Rule | null, kind: 'equal-declaration' | 'equal-selector' | 'partial'}} MutationOutcome */
 
 /** @param {Candidate} a @param {Candidate} b */
 export function comesBefore(a, b) {
@@ -182,12 +181,9 @@ export default function runWorklist(root, api) {
     if (!api.canMerge(first, second)) return false;
 
     // Equivalent at-rule moves preserve depth-first leaf-rule order.
-    const oldParent = second.parent;
-    const newParent = first.parent;
     const moved = api.mergeParents(first, second);
     if (moved) stats.crossParentMoves++;
-    if (moved && oldParent && newParent)
-      api.repairMove(second, oldParent, newParent);
+    if (moved) api.repairMove(second);
 
     const declarationMutation = api.mergeMatchingDeclarations(first, second);
     if (declarationMutation) {
@@ -197,7 +193,7 @@ export default function runWorklist(root, api) {
         declarationMutation.next
       );
       stats.successfulEqualDeclarationRewrites++;
-      return declarationMutation.movedAcrossParents || moved;
+      return moved;
     }
 
     const selectorMutation = api.mergeMatchingSelectors(first, second);
@@ -208,22 +204,16 @@ export default function runWorklist(root, api) {
         selectorMutation.next
       );
       stats.successfulEqualSelectorRewrites++;
-      return selectorMutation.movedAcrossParents || moved;
+      return moved;
     }
 
-    const replacedRules = [first, second];
-    const capturedBoundaries = api.captureBoundaries(replacedRules);
     const outcome = api.partialMerge(first, second);
     if (outcome.replacements.length) {
-      const mutation = api.installPartialMerge(
-        outcome,
-        capturedBoundaries,
-        moved
-      );
+      const mutation = api.installPartialMerge(outcome);
       if (mutation) {
         enqueueSegment(mutation.previous, mutation.replacements, mutation.next);
         if (mutation.kind === 'partial') stats.successfulPartialRewrites++;
-        return mutation.movedAcrossParents || moved;
+        return moved;
       }
     } else if (moved) {
       for (const changed of [first, second]) {
