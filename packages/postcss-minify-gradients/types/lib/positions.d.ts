@@ -21,16 +21,6 @@ export type PositionValue = {
  */
 export declare function isPositionZeroUnit(unit: string, conic: boolean): boolean;
 /**
- * Whether two positions are on the same scale, so their numbers can be ordered.
- * Only a length and a percentage naming zero are interchangeable.
- *
- * @param {PositionValue} current
- * @param {PositionValue} largest
- * @param {boolean} conic
- * @return {boolean}
- */
-export declare function positionsComparable(current: PositionValue, largest: PositionValue, conic: boolean): boolean;
-/**
  * Colour stop fixup raises a position to the largest position before it, so a
  * position at or below that non-negative maximum can be written as a zero.
  *

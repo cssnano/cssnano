@@ -153,7 +153,7 @@ function replaceEscapeChar(match) {
  * @param {string} value
  * @return {string}
  */
-export function escapeForUrlToken(value) {
+function escapeForUrlToken(value) {
   return value.replace(urlTokenEscapeChars, replaceEscapeChar);
 }
 

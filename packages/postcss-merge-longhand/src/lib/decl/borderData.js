@@ -38,7 +38,7 @@ export const physicalRadiusProperties = new Set([
   'border-radius',
   ...physicalRadiusLonghands,
 ]);
-export const logicalRadiusProperties = new Set([
+const logicalRadiusProperties = new Set([
   'border-start-start-radius',
   'border-start-end-radius',
   'border-end-start-radius',

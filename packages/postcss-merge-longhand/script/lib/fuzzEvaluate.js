@@ -4,22 +4,7 @@ import {
   tokenize as tokenizeProperty,
 } from '@csstools/css-tokenizer';
 import { expand } from './fuzzExpand.js';
-import {
-  boxLengths,
-  colors,
-  components,
-  corners,
-  globalKeywords,
-  initialState,
-  marginOnly,
-  radiusLengths,
-  sides,
-  styles,
-  substitutionTokens,
-  unresolvedTokens,
-  widthTypedTokens,
-  widths,
-} from './fuzzModel.js';
+import { initialState } from './fuzzModel.js';
 
 /**
  * An independent evaluator for what a rule means to the browser, against which
@@ -125,21 +110,4 @@ function differences(expected, actual) {
   return found;
 }
 
-export {
-  boxLengths,
-  colors,
-  components,
-  corners,
-  differences,
-  evaluate,
-  globalKeywords,
-  initialState,
-  marginOnly,
-  radiusLengths,
-  sides,
-  styles,
-  substitutionTokens,
-  unresolvedTokens,
-  widthTypedTokens,
-  widths,
-};
+export { differences, evaluate, initialState };

@@ -19,7 +19,7 @@ import { compareVersions } from '../../src/lib/compareVersions.js';
  * @typedef {{ css: { properties: Record<string, CompatEntry & Record<string, CompatEntry>> } }} CompatData
  */
 
-export const placeShorthands = ['place-content', 'place-items', 'place-self'];
+const placeShorthands = ['place-content', 'place-items', 'place-self'];
 
 /* Layout modes in which the longhands have long applied, so a shorthand that
  * lags behind them there would drop alignment the longhands kept. Keyword
@@ -42,10 +42,7 @@ const alignmentLonghands = [
  * with underscores for spaces. Subfeatures such as `start_end` describe flex
  * layout behavior, not parsing, and are deliberately left out.
  */
-export const requiredKeywordSubfeatures = new Set([
-  'space-evenly',
-  'first_baseline',
-]);
+const requiredKeywordSubfeatures = new Set(['space-evenly', 'first_baseline']);
 
 /**
  * The keyword subfeatures BCD records for the alignment longhands in each

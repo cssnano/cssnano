@@ -42,7 +42,7 @@ export function isPositionZeroUnit(unit, conic) {
  * @param {boolean} conic
  * @return {boolean}
  */
-export function positionsComparable(current, largest, conic) {
+function positionsComparable(current, largest, conic) {
   const unit = asciiLowerCase(current.unit);
   const largestUnit = asciiLowerCase(largest.unit);
   if (unit === largestUnit) return true;

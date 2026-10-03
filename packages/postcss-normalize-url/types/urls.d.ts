@@ -5,12 +5,6 @@ export declare const dataUrlRegex: RegExp;
  */
 export declare function convert(url: string): string;
 /**
- * Escape characters that terminate or invalidate an unquoted CSS url() token.
- * @param {string} value
- * @return {string}
- */
-export declare function escapeForUrlToken(value: string): string;
-/**
  * Escape characters for a CSS string token in the given quote context.
  * @param {string} value
  * @param {string} quote
