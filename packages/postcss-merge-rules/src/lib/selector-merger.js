@@ -6,7 +6,7 @@ import {
 } from './declarations.js';
 import { isConflictingProp } from './propertyRelations.js';
 import { getDecls, getMeta } from './rule-meta.js';
-import createRuleIndex, { replacedBoundary } from './rule-index.js';
+import createRuleIndex from './rule-index.js';
 import { mergeParents } from './rule-rewrite.js';
 import runWorklist from './worklist.js';
 
@@ -14,8 +14,7 @@ const { sameParent } = cssnanoUtils;
 
 /** @import {Rule} from 'postcss' */
 /** @import {RuleMeta} from './rule-meta.js' */
-/** @typedef {{previous: Rule | null, replacements: Rule[], next: Rule | null, movedAcrossParents: boolean, kind: 'equal-declaration' | 'equal-selector' | 'partial'}} MutationOutcome */
-/** @import {Boundary} from './rule-index.js' */
+/** @typedef {{previous: Rule | null, replacements: Rule[], next: Rule | null, kind: 'equal-declaration' | 'equal-selector' | 'partial'}} MutationOutcome */
 
 /**
  * @param {string[]} browsers
@@ -30,16 +29,8 @@ export default function selectorMerger(
   ruleCache,
   ruleMeta
 ) {
-  const {
-    active,
-    refresh,
-    detach,
-    captureBoundaries,
-    repairMove,
-    seed,
-    linkReplacements,
-    updateAncestorBoundaries,
-  } = createRuleIndex(ruleMeta);
+  const { active, refresh, detach, repairMove, seed, linkReplacements } =
+    createRuleIndex(ruleMeta);
 
   /** @param {Rule} first @param {Rule} second */
   function hasPossibleSharedDeclaration(first, second) {
@@ -102,7 +93,6 @@ export default function selectorMerger(
       previous,
       replacements: [second],
       next,
-      movedAcrossParents: false,
       kind: 'equal-declaration',
     };
   }
@@ -144,20 +134,13 @@ export default function selectorMerger(
       previous,
       replacements: [first],
       next,
-      movedAcrossParents: false,
       kind: 'equal-selector',
     };
   }
 
-  /** @param {ReturnType<typeof partialMerge>} outcome @param {Map<import('postcss').Container, Boundary>} captured @param {boolean} movedAcrossParents @return {MutationOutcome | null} */
-  function installPartialMerge(outcome, captured, movedAcrossParents) {
+  /** @param {ReturnType<typeof partialMerge>} outcome @return {MutationOutcome | null} */
+  function installPartialMerge(outcome) {
     if (!outcome.replacements.length) return null;
-    const firstWasBoundary =
-      !movedAcrossParents &&
-      replacedBoundary(captured, outcome.replaced, 'first');
-    const lastWasBoundary =
-      !movedAcrossParents &&
-      replacedBoundary(captured, outcome.replaced, 'last');
     const previous = active.get(outcome.replaced[0])?.previous ?? null;
     const lastReplaced = /** @type {Rule} */ (outcome.replaced.at(-1));
     const next = active.get(lastReplaced)?.next ?? null;
@@ -167,17 +150,10 @@ export default function selectorMerger(
       ruleMeta?.delete(rule);
     }
     linkReplacements(outcome.replacements, previous, next, sourceOrder);
-    const firstReplacement = outcome.replacements[0];
-    const lastReplacement = /** @type {Rule} */ (outcome.replacements.at(-1));
-    if (firstWasBoundary && firstReplacement.parent)
-      updateAncestorBoundaries(firstReplacement, 'first');
-    if (lastWasBoundary && lastReplacement.parent)
-      updateAncestorBoundaries(lastReplacement, 'last');
     return {
       previous,
       replacements: outcome.replacements,
       next,
-      movedAcrossParents,
       kind: 'partial',
     };
   }
@@ -186,7 +162,11 @@ export default function selectorMerger(
   function isCurrentCandidate(candidate) {
     const firstMeta = active.get(candidate.first);
     const secondMeta = active.get(candidate.second);
+    // Merging a rule with itself doubles its selector list and reactivates
+    // it, so a self-link must never be processed. This guards only that
+    // direct case; it does not detect longer cycles in the index.
     return Boolean(
+      candidate.first !== candidate.second &&
       firstMeta?.active &&
       secondMeta?.active &&
       firstMeta.next === candidate.second &&
@@ -216,7 +196,6 @@ export default function selectorMerger(
         repairMove,
         mergeMatchingDeclarations,
         mergeMatchingSelectors,
-        captureBoundaries,
         partialMerge: (first, second) =>
           partialMerge(first, second, ruleCache, ruleMeta),
         installPartialMerge,
