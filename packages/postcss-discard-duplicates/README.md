@@ -51,6 +51,39 @@ h1 {
 }
 ```
 
+### Sibling conditional blocks
+
+The module removes a declaration from an earlier `@media`, `@supports`,
+`@container` or named `@layer` block when a later sibling block with
+the same name and parameters repeats it.
+The module keeps a `@layer` block, even if it is empty,
+because the first appearance of a layer determines the layer order.
+For the same reason it keeps every `@import`, since the imported style sheet
+may declare layers.
+
+```css
+@media (min-width: 768px) {
+    .a { top: 0 }
+    .b { color: red }
+}
+
+@media (min-width: 768px) {
+    .a { top: 0 }
+}
+```
+
+becomes
+
+```css
+@media (min-width: 768px) {
+    .b { color: red }
+}
+
+@media (min-width: 768px) {
+    .a { top: 0 }
+}
+```
+
 ## Usage
 
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for

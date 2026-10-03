@@ -1,3 +1,7 @@
+import cssnanoUtils from 'cssnano-utils';
+
+const { isImportantComment } = cssnanoUtils;
+
 class CommentRemover {
   /** @type {boolean} */
   #hasFirst;
@@ -21,7 +25,7 @@ class CommentRemover {
     if (remove) {
       return remove(comment);
     } else {
-      const isImportant = comment.indexOf('!') === 0;
+      const isImportant = isImportantComment(comment);
 
       if (!isImportant) {
         return true;

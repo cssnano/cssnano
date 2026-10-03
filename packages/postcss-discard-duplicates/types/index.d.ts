@@ -1,18 +1,3 @@
-/**
- * Structural view over the postcss node kinds compared by `equals` and its
- * helpers.
- * @typedef {{
- *   type: string,
- *   important?: boolean,
- *   raws: { before?: string, afterName?: string },
- *   selector?: string,
- *   name?: string,
- *   params?: string,
- *   prop?: string,
- *   value?: string,
- *   nodes?: import('postcss').ChildNode[],
- * }} ComparableNode
- */
 export type ComparableNode = {
     type: string;
     important?: boolean;
@@ -26,6 +11,12 @@ export type ComparableNode = {
     prop?: string;
     value?: string;
     nodes?: import('postcss').ChildNode[];
+};
+export type SeenNodes = Map<string, import('postcss').AnyNode | import('postcss').AnyNode[]>;
+export type Scope = {
+    decls?: SeenNodes;
+    ruleDecls?: Map<string, SeenNodes>;
+    children?: Map<string, Scope>;
 };
 /**
  * @return {import('postcss').Plugin}

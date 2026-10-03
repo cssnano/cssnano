@@ -446,6 +446,10 @@ importers:
         version: 7.0.1(postcss@8.5.28)
 
   packages/postcss-discard-duplicates:
+    dependencies:
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
     devDependencies:
       postcss:
         specifier: 'catalog:'

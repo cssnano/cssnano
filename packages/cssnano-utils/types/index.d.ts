@@ -3,6 +3,8 @@ import lengthUnits from './lengthUnits.js';
 import mathFunctions from './mathFunctions.js';
 import mathFunctionArgumentRanges from './mathFunctionArgumentRanges.js';
 import rawCache from './rawCache.js';
+import isAnonymousLayer from './isAnonymousLayer.js';
+import isImportantComment from './isImportantComment.js';
 import sameParent from './sameParent.js';
 import { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, numericSource, tokenEnd, tokenStart, tokens } from './value.js';
 /** @param {string} value @return {string} */
@@ -10,6 +12,8 @@ declare function asciiLowerCase(value: string): string;
 declare const moduleExports: {
     rawCache: typeof rawCache;
     sameParent: typeof sameParent;
+    isAnonymousLayer: typeof isAnonymousLayer;
+    isImportantComment: typeof isImportantComment;
     TokenType: typeof TokenType;
     applyEdits: typeof applyEdits;
     asciiLowerCase: typeof asciiLowerCase;
