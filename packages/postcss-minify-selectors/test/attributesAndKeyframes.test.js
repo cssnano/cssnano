@@ -206,6 +206,14 @@ suite('@keyframe normalization', () => {
   );
 
   test(
+    'should convert only the bare 100% in a list mixing timeline range percentages',
+    processCSS(
+      '@keyframes test{100%,exit 100%,exit 50%{color:red}}',
+      '@keyframes test{to,exit 100%,exit 50%{color:red}}'
+    )
+  );
+
+  test(
     'should not treat suffixed at-rules as keyframes',
     passthroughCSS('@foo-keyframes x{from{color:red}}')
   );
