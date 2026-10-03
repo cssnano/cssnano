@@ -1,6 +1,5 @@
 import type { Declaration } from 'postcss';
 export declare const columns = "columns";
-export declare const columnProperties: string[];
 /** Slot of each longhand in the parsed `columns` value. */
 export declare const columnSlots: Map<string, number>;
 export declare const allColumnProps: Set<string>;
@@ -31,11 +30,6 @@ export declare function parsedValue(d: Declaration): ReturnType<typeof tokenizeC
  * @return {string}
  */
 export declare function normalize([w, c]: [string, string]): string;
-/**
- * @param {ReturnType<typeof tokenizeColumns>} parsed
- * @return {('width' | 'count' | 'initial' | undefined)[]}
- */
-export declare function termRoles(parsed: ReturnType<typeof tokenizeColumns>): ('width' | 'count' | 'initial' | undefined)[];
 /**
  * Takes the shorthand apart into column-width and column-count.
  * Combined with `||`, so components may appear in either order.

@@ -17,7 +17,6 @@ import {
   propertyReach,
   reachableProductions,
 } from '../../../../util/webref/webrefWalk.js';
-import { validate } from './webrefIdentsValidate.js';
 
 /**
  * Derives, from the raw `@webref/css` data, the places a custom identifier of
@@ -57,7 +56,7 @@ import { validate } from './webrefIdentsValidate.js';
  * }} grid
  */
 
-export { directReferences, functionArguments, keywordTerminals, validate };
+export { directReferences, functionArguments, keywordTerminals };
 
 /**
  * @param {WebrefData} data

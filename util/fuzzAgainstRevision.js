@@ -37,7 +37,7 @@ export function describeOutcome({ status, signal }) {
  * @param {string[]} fuzzArgs Forwarded to the package's `script/fuzz.js`
  * @return {{ status: number | null, signal: NodeJS.Signals | null }}
  */
-export function fuzzAgainstRevision(pkg, rev, fuzzArgs = []) {
+function fuzzAgainstRevision(pkg, rev, fuzzArgs = []) {
   const packageDir = join(root, 'packages', pkg);
   if (!existsSync(join(packageDir, 'script', 'fuzz.js'))) {
     throw new Error(`packages/${pkg} has no script/fuzz.js`);

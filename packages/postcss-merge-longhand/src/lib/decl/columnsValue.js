@@ -10,7 +10,7 @@ import { closingTokens } from '../valueComponents.js';
 const { TokenType, closeForOpening, lengthUnits, tokens } = cssnanoUtils;
 
 export const columns = 'columns';
-export const columnProperties = ['column-width', 'column-count'];
+const columnProperties = ['column-width', 'column-count'];
 /** Slot of each longhand in the parsed `columns` value. */
 export const columnSlots = new Map(
   columnProperties.map((name, slot) => [name, slot])
@@ -160,7 +160,7 @@ function componentRole(term) {
  * @param {ReturnType<typeof tokenizeColumns>} parsed
  * @return {('width' | 'count' | 'initial' | undefined)[]}
  */
-export function termRoles(parsed) {
+function termRoles(parsed) {
   return parsed.terms.map(componentRole);
 }
 

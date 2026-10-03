@@ -6,7 +6,6 @@ export declare const borderImageProperties: Set<string>;
 export declare const allPhysicalBorderProperties: Set<string>;
 export declare const physicalRadiusLonghands: string[];
 export declare const physicalRadiusProperties: Set<string>;
-export declare const logicalRadiusProperties: Set<string>;
 export declare const allRadiusProperties: Set<string>;
 /**
  * @param {string} prop
