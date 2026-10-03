@@ -1,20 +1,12 @@
-import cssnanoUtils from 'cssnano-utils';
 import { canMerge, partialMerge } from './merge.js';
-import {
-  declarationIsEqual,
-  sameDeclarationsAndOrder,
-} from './declarations.js';
-import { isConflictingProp } from './propertyRelations.js';
+import { sameDeclarationsAndOrder } from './declarations.js';
 import { getDecls, getMeta } from './rule-meta.js';
-import createRuleIndex from './rule-index.js';
-import { mergeParents } from './rule-rewrite.js';
-import runWorklist from './worklist.js';
-
-const { sameParent } = cssnanoUtils;
+import { appendDeclarations, mergeParents } from './rule-rewrite.js';
+import { joinNonAdjacent } from './non-adjacent-merge.js';
+import runScan, { createProfileCache } from './scan.js';
 
 /** @import {Rule} from 'postcss' */
 /** @import {RuleMeta} from './rule-meta.js' */
-/** @typedef {{previous: Rule | null, replacements: Rule[], next: Rule | null, kind: 'equal-declaration' | 'equal-selector' | 'partial'}} MutationOutcome */
 
 /**
  * @param {string[]} browsers
@@ -29,43 +21,14 @@ export default function selectorMerger(
   ruleCache,
   ruleMeta
 ) {
-  const { active, refresh, detach, repairMove, seed, linkReplacements } =
-    createRuleIndex(ruleMeta);
-
-  /** @param {Rule} first @param {Rule} second */
-  function hasPossibleSharedDeclaration(first, second) {
-    const a = active.get(first);
-    const b = active.get(second);
-    if (!a?.active || !b?.active) return false;
-    const structuralRewrite =
-      (a.declarations.length === 0 && b.declarations.length === 0) ||
-      (first.parent !== second.parent && sameParent(first, second));
-    if (a.selectorKey === b.selectorKey || structuralRewrite) return true;
-    const smaller = a.declarationIds.length <= b.declarationIds.length ? a : b;
-    const larger = smaller === a ? b.declarationIdSet : a.declarationIdSet;
-    for (const id of smaller.declarationIds) {
-      if (larger.has(id)) return true;
-    }
-    return false;
-  }
-
-  /** @param {Rule} first @param {Rule} second */
-  function estimatedBenefit(first, second) {
-    const a = active.get(first);
-    const b = active.get(second);
-    if (!a || !b) return 0;
-    if (a.selectorKey === b.selectorKey)
-      return a.declarationIds.length + b.declarationIds.length;
-    let benefit = 0;
-    const smaller = a.declarationIds.length <= b.declarationIds.length ? a : b;
-    const larger = smaller === a ? b.declarationIdSet : a.declarationIdSet;
-    for (const id of smaller.declarationIdSet) {
-      if (larger.has(id)) benefit++;
-    }
-    return benefit;
-  }
-
-  /** @param {Rule} first @param {Rule} second @return {MutationOutcome | null} */
+  /**
+   * Rules with the same declarations in the same order become one rule with
+   * both selectors.
+   *
+   * @param {Rule} first
+   * @param {Rule} second
+   * @return {Rule[] | null} the surviving rule
+   */
   function mergeMatchingDeclarations(first, second) {
     if (
       !first.nodes.every((node) => node.type === 'decl') ||
@@ -76,131 +39,91 @@ export default function selectorMerger(
       )
     )
       return null;
-    const previous = active.get(first)?.previous ?? null;
-    const next = active.get(second)?.next ?? null;
+    // Repeating the same declarations under the same selector changes nothing,
+    // and a selector list that repeats the selector is longer than one rule.
+    if (
+      getMeta(first, ruleMeta).selectors.join(',') ===
+      getMeta(second, ruleMeta).selectors.join(',')
+    ) {
+      second.remove();
+      ruleMeta.delete(second);
+      return [first];
+    }
     const metaSecond = getMeta(second, ruleMeta);
     metaSecond.selectors = [
       ...getMeta(first, ruleMeta).selectors,
       ...metaSecond.selectors,
     ];
     second.selector = metaSecond.selectors.join(',');
-    detach(first);
     first.remove();
-    ruleMeta?.delete(first);
-    refresh(second);
+    ruleMeta.delete(first);
     ruleCache?.add(second);
-    return {
-      previous,
-      replacements: [second],
-      next,
-      kind: 'equal-declaration',
-    };
+    return [second];
   }
 
-  /** @param {Rule} first @param {Rule} second @return {MutationOutcome | null} */
+  /**
+   * Rules with the same selector become one rule with both declaration lists.
+   *
+   * @param {Rule} first
+   * @param {Rule} second
+   * @return {Rule[] | null} the surviving rule
+   */
   function mergeMatchingSelectors(first, second) {
     if (
       getMeta(first, ruleMeta).selectors.join(',') !==
       getMeta(second, ruleMeta).selectors.join(',')
     )
       return null;
-    const previous = active.get(first)?.previous ?? null;
-    const next = active.get(second)?.next ?? null;
-    const cachedDecls = getMeta(first, ruleMeta).declarations;
-    second.walk((node) => {
-      if (node.type === 'decl') {
-        // A declaration from `second` is redundant only when the last
-        // declaration of `first` that can set the same property already has
-        // an identical value. Otherwise it revives an overridden value or
-        // overrides intermediate declarations, so appending it is required
-        // to preserve the cascade result.
-        const lastConflicting = cachedDecls.findLast((decl) =>
-          isConflictingProp(decl.prop, node.prop)
-        );
-        if (lastConflicting && declarationIsEqual(lastConflicting, node)) {
-          node.remove();
-          return;
-        }
-        cachedDecls.push(node);
-      }
-      first.append(node);
-    });
+    appendDeclarations(first, second);
     getMeta(first, ruleMeta).declarations = getDecls(first);
-    detach(second);
     second.remove();
-    ruleMeta?.delete(second);
-    refresh(first);
-    return {
-      previous,
-      replacements: [first],
-      next,
-      kind: 'equal-selector',
-    };
+    ruleMeta.delete(second);
+    return [first];
   }
 
-  /** @param {ReturnType<typeof partialMerge>} outcome @return {MutationOutcome | null} */
-  function installPartialMerge(outcome) {
-    if (!outcome.replacements.length) return null;
-    const previous = active.get(outcome.replaced[0])?.previous ?? null;
-    const lastReplaced = /** @type {Rule} */ (outcome.replaced.at(-1));
-    const next = active.get(lastReplaced)?.next ?? null;
-    const sourceOrder = active.get(outcome.replaced[0])?.sourceOrder;
-    for (const rule of outcome.replaced) {
-      detach(rule);
-      ruleMeta?.delete(rule);
-    }
-    linkReplacements(outcome.replacements, previous, next, sourceOrder);
-    return {
-      previous,
-      replacements: outcome.replacements,
-      next,
-      kind: 'partial',
-    };
-  }
-
-  /** @param {{first: Rule, second: Rule, firstVersion: number, secondVersion: number}} candidate */
-  function isCurrentCandidate(candidate) {
-    const firstMeta = active.get(candidate.first);
-    const secondMeta = active.get(candidate.second);
-    // Merging a rule with itself doubles its selector list and reactivates
-    // it, so a self-link must never be processed. This guards only that
-    // direct case; it does not detect longer cycles in the index.
-    return Boolean(
-      candidate.first !== candidate.second &&
-      firstMeta?.active &&
-      secondMeta?.active &&
-      firstMeta.next === candidate.second &&
-      firstMeta.version === candidate.firstVersion &&
-      secondMeta.version === candidate.secondVersion
+  /**
+   * @param {Rule} first
+   * @param {Rule} second
+   * @return {Rule[]} the rules that replace the pair, or none when sharing the
+   * declarations would not make the output shorter
+   */
+  function mergeSharedDeclarations(first, second) {
+    const { replacements, replaced } = partialMerge(
+      first,
+      second,
+      ruleCache,
+      ruleMeta
     );
+    for (const rule of replaced) ruleMeta.delete(rule);
+    return replacements;
   }
+
+  const canMergeRules = (
+    /** @type {Rule} */ first,
+    /** @type {Rule} */ second
+  ) =>
+    canMerge(first, second, browsers, compatibilityCache, ruleCache, ruleMeta);
 
   return {
     run(root) {
-      runWorklist(root, {
-        active,
-        hasPossibleSharedDeclaration,
-        estimatedBenefit,
-        seed,
-        isCurrentCandidate,
-        canMerge: (first, second) =>
-          canMerge(
-            first,
-            second,
-            browsers,
-            compatibilityCache,
-            ruleCache,
-            ruleMeta
-          ),
-        mergeParents,
-        repairMove,
-        mergeMatchingDeclarations,
-        mergeMatchingSelectors,
-        partialMerge: (first, second) =>
-          partialMerge(first, second, ruleCache, ruleMeta),
-        installPartialMerge,
-        refresh,
-      });
+      // The scan runs first because a join by selector can remove a
+      // shared declaration that would have merged more selectors. Its merges
+      // can leave same-selector rules apart, so the joins repeat until none apply.
+      const profileCache = createProfileCache();
+      do {
+        runScan(
+          root,
+          {
+            canMerge: canMergeRules,
+            mergeParents,
+            mergeMatchingDeclarations,
+            mergeMatchingSelectors,
+            partialMerge: mergeSharedDeclarations,
+            ruleMeta,
+          },
+          profileCache
+        );
+      } while (joinNonAdjacent(root, canMergeRules, ruleMeta));
     },
   };
 }

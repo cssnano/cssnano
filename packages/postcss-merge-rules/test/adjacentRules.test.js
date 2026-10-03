@@ -148,9 +148,11 @@ test(
   processCSS('.foo{color:red}.bar{COLOR:red}', '.foo,.bar{COLOR:red}')
 );
 
+// Rules with an identical selector are joined into one rule, not into a
+// selector list that repeats the selector.
 test(
   'should drop a case-differing duplicate declaration when merging identical selectors',
-  processCSS('.foo{color:red}.foo{COLOR:red}', '.foo,.foo{COLOR:red}')
+  processCSS('.foo{color:red}.foo{COLOR:red}', '.foo{color:red}')
 );
 
 test(
@@ -174,11 +176,13 @@ test(
   )
 );
 
+// The important declaration is kept once: the rules have the same selector,
+// so the second declaration repeats the first.
 test(
-  'should merge rules containing identical important declarations without dropping either',
+  'should merge rules containing identical important declarations into one rule',
   processCSS(
     '.foo{color:red!important}.foo{color:red!important}',
-    '.foo,.foo{color:red!important}'
+    '.foo{color:red!important}'
   )
 );
 

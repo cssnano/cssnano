@@ -1,8 +1,16 @@
-import { getMeta } from './rule-meta.js';
+import { declarationIsEqual } from './declarations.js';
+import createLastWriteIndex from './lastWriteIndex.js';
+import { getDecls, getMeta } from './rule-meta.js';
 
 /** @import {Rule} from 'postcss' */
 
+const CONDITIONAL_GROUP_RULES = new Set(['media', 'supports', 'container']);
+
 /**
+ * Moves `second` into the parent of `first`. A conditional group rule it
+ * leaves empty applies nothing, so it is removed; keeping it would make every
+ * later pair walk across it.
+ *
  * @param {Rule} first
  * @param {Rule} second
  * @return {boolean}
@@ -11,9 +19,48 @@ export function mergeParents(first, second) {
   if (!first.parent || !second.parent || first.parent === second.parent) {
     return false;
   }
+  const previousParent = second.parent;
   second.remove();
   first.parent.append(second);
+  if (
+    previousParent.type === 'atrule' &&
+    CONDITIONAL_GROUP_RULES.has(previousParent.name.toLowerCase()) &&
+    !previousParent.nodes.length
+  ) {
+    previousParent.remove();
+  }
   return true;
+}
+
+/**
+ * Appends the content of `incoming` to `receiving`. A declaration of
+ * `incoming` is redundant only when the last declaration of `receiving` that
+ * can set the same property already has an identical value. Otherwise it
+ * revives an overridden value or overrides intermediate declarations, so
+ * appending it is required to preserve the cascade result.
+ *
+ * @param {Rule} receiving
+ * @param {Rule} incoming
+ * @return {void}
+ */
+export function appendDeclarations(receiving, incoming) {
+  const kept = getDecls(receiving);
+  const index = createLastWriteIndex();
+  for (const [position, declaration] of kept.entries()) {
+    index.record(declaration, position);
+  }
+  for (const node of incoming.nodes.slice()) {
+    if (node.type === 'decl') {
+      const last = index.lastConflict(node);
+      if (last !== -1 && declarationIsEqual(kept[last], node)) {
+        node.remove();
+        continue;
+      }
+      index.record(node, kept.length);
+      kept.push(node);
+    }
+    receiving.append(node);
+  }
 }
 
 /**
@@ -85,8 +132,8 @@ export function buildMergedRule(
     }
     ruleCache?.add(receivingBlock);
     ruleCache?.add(secondClone);
-    ruleMeta?.delete(first);
-    ruleMeta?.delete(second);
+    ruleMeta.delete(first);
+    ruleMeta.delete(second);
     return {
       rule: secondClone,
       replacements: [firstClone, receivingBlock, secondClone].filter((rule) =>
