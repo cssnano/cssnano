@@ -17,6 +17,7 @@ import { normalizeList } from '../../src/lib/selectorScanner.js';
  * @property {number} [iterations] - Optional explicit iteration count per sample block.
  * @property {string} [label] - Optional label for reporting in assertion messages.
  * @property {(item: ScalingCase) => string} [execute] - Optional custom execution callback.
+ * @property {() => bigint} [now] - Monotonic nanosecond clock; tests of the helper itself can supply a virtual one.
  */
 
 /**
@@ -25,7 +26,7 @@ import { normalizeList } from '../../src/lib/selectorScanner.js';
  * @param {readonly number[]} durations
  * @returns {number}
  */
-export function computeMedian(durations) {
+function computeMedian(durations) {
   if (durations.length === 0) return 0;
   const sorted = durations.toSorted((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
@@ -96,7 +97,7 @@ function validateOutputs(prepared, outputs) {
  * @param {number} doublingLimit
  * @returns {{ pass: boolean, ratios: number[], failedIndex?: number, failedRatio?: number }}
  */
-export function checkDoublingRatios(times, doublingLimit) {
+function checkDoublingRatios(times, doublingLimit) {
   const ratios = [];
   let firstFailedIndex;
   let firstFailedRatio;
@@ -133,6 +134,7 @@ export function checkDoublingRatios(times, doublingLimit) {
  * @param {number} iterations
  * @param {number} samples
  * @param {(item: ScalingCase) => string} execute
+ * @param {() => bigint} now
  * @param {number[][]} [existingDurations]
  * @returns {{ allDurations: number[][], outputs: string[] }}
  */
@@ -141,6 +143,7 @@ function collectSamples(
   iterations,
   samples,
   execute,
+  now,
   existingDurations
 ) {
   /** @type {number[][]} */
@@ -155,11 +158,11 @@ function collectSamples(
       const item = prepared[i];
 
       let output = '';
-      const start = process.hrtime.bigint();
+      const start = now();
       for (let iter = 0; iter < iterations; iter++) {
         output = execute(item);
       }
-      const duration = Number(process.hrtime.bigint() - start);
+      const duration = Number(now() - start);
 
       if (duration <= 0) {
         throw new Error(
@@ -252,6 +255,7 @@ export function assertScaling(sizes, generateCase, options = {}) {
     label = '',
     execute,
     iterations: customIterations,
+    now = process.hrtime.bigint,
   } = options;
 
   const run =
@@ -273,7 +277,8 @@ export function assertScaling(sizes, generateCase, options = {}) {
     prepared,
     iterations,
     samples,
-    run
+    run,
+    now
   );
 
   // 4. Validate output after timing.
@@ -289,6 +294,7 @@ export function assertScaling(sizes, generateCase, options = {}) {
       iterations,
       samples,
       run,
+      now,
       allDurations
     );
     allDurations = retry.allDurations;
