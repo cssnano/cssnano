@@ -126,6 +126,12 @@ cssnano-preset-advanced@9.1.3:
     - merge-longhand-nested-rules
     - minify-selectors-comment-compounds
     - thick-ravens-whisper
+cssnano-preset-advanced@9.1.4:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - discard-duplicates-sibling-conditionals
+    - minify-font-values-revert-rule
+    - ordered-values-revert-rule
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -272,6 +278,12 @@ cssnano-preset-default@9.2.0:
     - normalize-string-hex-escape-continuations
     - old-kids-compete
     - thick-ravens-whisper
+cssnano-preset-default@9.2.1:
+  dir: packages/cssnano-preset-default
+  intents:
+    - discard-duplicates-sibling-conditionals
+    - minify-font-values-revert-rule
+    - ordered-values-revert-rule
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -383,6 +395,10 @@ cssnano-utils@8.0.2:
   dir: packages/cssnano-utils
   intents:
     - cssnano-utils-escaping-backslash
+cssnano-utils@8.1.0:
+  dir: packages/cssnano-utils
+  intents:
+    - utils-export-is-anonymous-layer
 cssnano@8.0.10:
   dir: packages/cssnano
   intents:
@@ -524,6 +540,12 @@ cssnano@9.2.0:
     - normalize-positions-vertical-center
     - normalize-string-hex-escape-continuations
     - thick-ravens-whisper
+cssnano@9.2.1:
+  dir: packages/cssnano
+  intents:
+    - discard-duplicates-sibling-conditionals
+    - minify-font-values-revert-rule
+    - ordered-values-revert-rule
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -721,6 +743,10 @@ postcss-discard-duplicates@9.0.4:
   dir: packages/postcss-discard-duplicates
   intents:
     - neat-beans-lie
+postcss-discard-duplicates@9.0.5:
+  dir: packages/postcss-discard-duplicates
+  intents:
+    - discard-duplicates-sibling-conditionals
 postcss-discard-empty@8.0.2:
   dir: packages/postcss-discard-empty
   intents:
@@ -1080,6 +1106,10 @@ postcss-minify-font-values@9.0.6:
   intents:
     - minify-font-values-font-size-units
     - minify-font-values-substitution-functions
+postcss-minify-font-values@9.0.7:
+  dir: packages/postcss-minify-font-values
+  intents:
+    - minify-font-values-revert-rule
 postcss-minify-gradients@8.0.2:
   dir: packages/postcss-minify-gradients
   intents:
@@ -1700,6 +1730,10 @@ postcss-ordered-values@9.0.5:
   dir: packages/postcss-ordered-values
   intents:
     - mighty-squids-cross
+postcss-ordered-values@9.0.6:
+  dir: packages/postcss-ordered-values
+  intents:
+    - ordered-values-revert-rule
 postcss-reduce-idents@8.0.2:
   dir: packages/postcss-reduce-idents
   intents:

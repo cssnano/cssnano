@@ -1,10 +1,16 @@
 # Change Log
 
+## 8.1.0
+
+### Minor Changes
+
+- Export `isAnonymousLayer`, which distinguishes an anonymous `@layer` block from a named one, and `isImportantComment`, which recognizes a `/*!` comment.
+
 ## 8.0.2
 
 ### Patch Changes
 
-- Add `endsWithEscapingBackslash()`, which tells whether a string ends in a backslash that starts a CSS escape rather than an escaped backslash.
+- Add `endsWithEscapingBackslash()`, which distinguishes a string that ends in a backslash that starts a CSS escape from an escaped backslash.
 
 ## 8.0.1
 
