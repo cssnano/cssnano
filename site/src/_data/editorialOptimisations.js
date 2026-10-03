@@ -133,7 +133,7 @@ export const editorialOptimisations =
       shortName: 'mergeRules',
       shortDescription: 'Merge CSS rules with PostCSS.',
       longDescription:
-        'Merges adjacent rules by selectors & overlapping property/value pairs.\n',
+        'Merges rules by selectors & overlapping property/value pairs. Rules with the same selector, and `@media`, `@supports` or `@container` blocks with the same condition, also merge across rules in between that set none of the same properties.\n',
       inputExample:
         '.box {\n    color: blue;\n}\n.box {\n    font-weight: 700;\n}\n',
       outputExample: '.box {\n    color: blue;\n    font-weight: 700;\n}\n',

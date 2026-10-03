@@ -40,6 +40,16 @@ test(
   )
 );
 
+// At-rule names are ASCII case-insensitive, and splitting keyframes would
+// repeat a keyframe selector, whose declarations are not merged the same way
+// by every browser.
+test(
+  'should not split keyframes of an uppercase @KEYFRAMES rule',
+  passthroughCSS(
+    '@KEYFRAMES k{from{opacity:0;color:red}to{opacity:0;color:blue}}'
+  )
+);
+
 test(
   'should not merge across container queries',
   passthroughCSS(`@container (min-width: 200px) {
@@ -94,10 +104,7 @@ test(
       '@media print{h1{display:block}}',
       '@media print{h1{color:red}h2{padding:10px}}',
     ].join(''),
-    [
-      '@media print{h1{display:block;color:red}h2{padding:10px}}',
-      '@media print{}',
-    ].join('')
+    ['@media print{h1{display:block;color:red}h2{padding:10px}}'].join('')
   )
 );
 
@@ -113,10 +120,7 @@ test(
     ].join(''),
     [
       '@media (width:40px){.red{color:red}.green{color:green}.blue{color:blue}}',
-      '@media (width:40px){}',
-      '@media (width:40px){}',
       '@supports (--var:var){.white{color:white}.black{color:black}}',
-      '@supports (--var:var){}',
     ].join('')
   )
 );
@@ -133,10 +137,7 @@ test(
     ].join(''),
     [
       '@media (width:40px){.red{color:red}.green{color:green}.blue{color:blue}}',
-      '@media (width:40px){}',
-      '@media (width:40px){}',
       '@supports (--var:var){@media (width:40px){.white{color:white}.black{color:black}}}',
-      '@supports (--var:var){@media (width:40px){}}',
     ].join('')
   )
 );
@@ -180,6 +181,62 @@ test(
   'should preserve nested rules when their parent also has matching declarations',
   passthroughCSS(
     '.a { & .child { color: blue; } color: red; } .b { color: red; }'
+  )
+);
+
+// CSS Nesting keeps a declaration that follows nested rules in source order,
+// so `&{color:red}color:blue;&{color:red}` ends red. Joining or moving either
+// `&` rule across `color:blue` would make blue win.
+test(
+  'should keep equal nested rules apart across a declaration of the enclosing rule',
+  passthroughCSS('.p{&{color:red}color:blue;&{color:red}}')
+);
+
+test(
+  'should keep same-selector nested rules apart across a declaration of the enclosing rule',
+  passthroughCSS('.p{&{color:red}color:blue;&{color:red;margin:0}}')
+);
+
+test(
+  'should keep nested rules in equal @media blocks apart across a declaration of the enclosing rule',
+  passthroughCSS(
+    '.p{@media print{&{color:red}}color:blue;@media print{&{color:red;margin:0}}}'
+  )
+);
+
+test(
+  'should keep nested rules apart across a declaration in a nested @media block',
+  passthroughCSS('.p{&{color:red}@media print{color:blue}&{color:red}}')
+);
+
+test(
+  'should merge adjacent nested rules that no declaration of the enclosing rule separates',
+  processCSS(
+    '.p{.a{color:red}.b{color:red}color:blue}',
+    '.p{.a,.b{color:red}color:blue}'
+  )
+);
+
+test(
+  'should merge nested rules in equal @media blocks that no declaration of the enclosing rule separates',
+  processCSS(
+    '.p{@media print{.a{color:red}}@media print{.b{color:red}}color:blue}',
+    '.p{@media print{.a,.b{color:red}}color:blue}'
+  )
+);
+
+test(
+  'should merge nested rules in equal @media blocks when the enclosing rule declares only before the first block',
+  processCSS(
+    '.p{color:blue;@media print{.a{color:red}}@media print{.b{color:red}}}',
+    '.p{color:blue;@media print{.a,.b{color:red}}}'
+  )
+);
+
+test(
+  'should keep nested rules in equal @media blocks apart across a declaration in a different @media block',
+  passthroughCSS(
+    '.p{@media print{.a{color:red}}@media screen{color:blue}@media print{.b{color:red}}}'
   )
 );
 

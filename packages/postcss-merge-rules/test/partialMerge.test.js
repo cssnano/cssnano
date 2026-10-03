@@ -97,7 +97,7 @@ test(
   'should expose partial-merge edges after equivalent at-rule parents are combined',
   processCSS(
     '@media x{.a{color:red}}@media x{.b{color:red;font-weight:bold}}@media x{.c{font-weight:bold;background:blue}}',
-    '@media x{.a,.b{color:red}.b,.c{font-weight:bold}.c{background:blue}}@media x{}@media x{}'
+    '@media x{.a,.b{color:red}.b,.c{font-weight:bold}.c{background:blue}}'
   )
 );
 
@@ -132,7 +132,7 @@ test(
   )
 );
 
-test('should converge after a greedy worklist pass', async () => {
+test('should converge after a greedy merge pass', async () => {
   const first = await postcss([plugin]).process(
     'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
     { from: undefined }
