@@ -10,7 +10,7 @@
 
   Keep a duplicate `@import`, so removing the earlier copy no longer changes the layer order.
 
-- Keep `"revert-rule"` quoted in `font-family`because `revert-rule` is a CSS-wide keyword.
+- Keep `"revert-rule"` quoted in `font-family` because `revert-rule` is a CSS-wide keyword.
 
 - Recognise `revert-rule` as a CSS-wide keyword. `postcss-ordered-values` no longer reorders a `border`, `animation`, `transition`, `list-style`, `box-shadow` or `grid-row` value as if `revert-rule` were a color, name or type. The reserved keywords are now generated from `@webref/css`.
 
