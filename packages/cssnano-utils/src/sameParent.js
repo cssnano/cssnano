@@ -36,28 +36,40 @@ function checkMatch(nodeA, nodeB) {
 }
 
 /** @typedef {import('postcss').AnyNode & {parent?: Child}} Child */
+
+/**
+ * True if two containers apply their content the same way: they are equal
+ * blocks, and so are their enclosing blocks up to the stylesheet. Either may
+ * be missing, for a node that is detached.
+ *
+ * @param {import('postcss').Container | undefined} containerA
+ * @param {import('postcss').Container | undefined} containerB
+ * @return {boolean}
+ */
+export function sameContainer(containerA, containerB) {
+  if (!containerA || !containerB) {
+    return !containerA && !containerB;
+  }
+  const a = /** @type {Child} */ (/** @type {unknown} */ (containerA));
+  const b = /** @type {Child} */ (/** @type {unknown} */ (containerB));
+  return (
+    checkMatch(a, b) &&
+    sameContainer(
+      /** @type {import('postcss').Container | undefined} */ (a.parent),
+      /** @type {import('postcss').Container | undefined} */ (b.parent)
+    )
+  );
+}
+
 /**
  * @param {Child} nodeA
  * @param {Child} nodeB
  * @return {boolean}
  */
 function sameParent(nodeA, nodeB) {
-  if (!nodeA.parent) {
-    // A is orphaned, return if B is orphaned as well
-    return !nodeB.parent;
-  }
-
-  if (!nodeB.parent) {
-    // B is orphaned and A is not
-    return false;
-  }
-
-  // Check if parents match
-  if (!checkMatch(nodeA.parent, nodeB.parent)) {
-    return false;
-  }
-
-  // Check parents' parents
-  return sameParent(nodeA.parent, nodeB.parent);
+  return sameContainer(
+    /** @type {import('postcss').Container | undefined} */ (nodeA.parent),
+    /** @type {import('postcss').Container | undefined} */ (nodeB.parent)
+  );
 }
 export default sameParent;

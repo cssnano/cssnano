@@ -1,24 +1,33 @@
 import type { Rule } from 'postcss';
-import type { RuleMeta } from './rule-meta.js';
+import type { Placement } from './ruleSequence.js';
+import type MergeState from './mergeState.js';
 /**
- * @param {Rule} ruleA
- * @param {Rule} ruleB
- * @param {import('./rule-meta.js').SelectorLookup} lookup
- * @param {WeakSet<Rule>} ruleCache
- * @param {WeakMap<Rule, RuleMeta>} ruleMeta
- * @return {boolean}
- */
-export declare function canMerge(ruleA: Rule, ruleB: Rule, lookup: import('./rule-meta.js').SelectorLookup, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, RuleMeta>): boolean;
-/**
+ * Rules with the same declarations in the same order become one rule with
+ * both selectors.
+ *
  * @param {Rule} first
  * @param {Rule} second
- * @param {WeakSet<Rule>} ruleCache
- * @param {WeakMap<Rule, RuleMeta>} ruleMeta
- * @return {{rule: Rule, replacements: Rule[], replaced: Rule[]}}
+ * @param {MergeState} mergeState
+ * @return {Placement | null}
  */
-export declare function partialMerge(first: Rule, second: Rule, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, RuleMeta>): {
-    rule: Rule;
-    replacements: Rule[];
-    replaced: Rule[];
-};
+export declare function mergeMatchingDeclarations(first: Rule, second: Rule, mergeState: MergeState): Placement | null;
+/**
+ * Rules with the same selector become one rule with both declaration lists.
+ *
+ * @param {Rule} first
+ * @param {Rule} second
+ * @param {MergeState} mergeState
+ * @return {Placement | null}
+ */
+export declare function mergeMatchingSelectors(first: Rule, second: Rule, mergeState: MergeState): Placement | null;
+/**
+ * Rules that share declarations hand them to a rule of their own.
+ *
+ * @param {Rule} first
+ * @param {Rule} second
+ * @param {MergeState} mergeState
+ * @return {Placement | null} null when sharing the declarations would not
+ * make the output shorter
+ */
+export declare function mergeSharedDeclarations(first: Rule, second: Rule, mergeState: MergeState): Placement | null;
 //# sourceMappingURL=merge.d.ts.map

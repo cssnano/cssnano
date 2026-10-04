@@ -1,4 +1,4 @@
-declare const pseudoElements: {
+export declare const pseudoElements: {
     ':active': string;
     ':after': string;
     ':any-link': string;
@@ -58,6 +58,23 @@ declare const pseudoElements: {
     ':valid': string;
     ':visited': string;
 };
+/**
+ * The vendor prefix of a pseudo-class or pseudo-element name, such as
+ * `-moz-` for `-moz-selection`; a prefix is meaningful only at the start of
+ * an identifier, so `x-moz-y` has none.
+ *
+ * @param {string} name unescaped and in ASCII lower case
+ * @return {string} the prefix, or the empty string when there is none
+ */
+export declare function vendorPrefixOf(name: string): string;
+/**
+ * Internet Explorer uses :-ms-input-placeholder.
+ * Microsoft Edge uses ::-ms-input-placeholder.
+ *
+ * @param {string} name unescaped and in ASCII lower case
+ * @return {boolean}
+ */
+export declare function isMsInputPlaceholder(name: string): boolean;
 import type { AttributeScanState } from './attributeSelector.js';
 export type ScanState = AttributeScanState & {
     pseudoPrefix: string | undefined;
@@ -78,19 +95,11 @@ export type SelectorInfo = {
  * @param {Map<string, SelectorInfo>} [cache]
  * @return {(selector: string) => SelectorInfo}
  */
-declare function createSelectorLookup(browsers: string[] | undefined, cache?: Map<string, SelectorInfo>): (selector: string) => SelectorInfo;
+export declare function createSelectorLookup(browsers: string[] | undefined, cache?: Map<string, SelectorInfo>): (selector: string) => SelectorInfo;
 /**
  * @param {string[]} selectors
  * @param {(selector: string) => SelectorInfo} lookup
  * @return {boolean}
  */
-declare function selectorsCompatible(selectors: string[], lookup: (selector: string) => SelectorInfo): boolean;
-/**
- * @param {string[]} selectors
- * @param {string[]=} browsers
- * @param {Map<string, SelectorInfo>=} cache
- * @return {boolean}
- */
-declare function ensureCompatibility(selectors: string[], browsers?: string[] | undefined, cache?: Map<string, SelectorInfo> | undefined): boolean;
-export { pseudoElements, ensureCompatibility, createSelectorLookup, selectorsCompatible, };
+export declare function selectorsCompatible(selectors: string[], lookup: (selector: string) => SelectorInfo): boolean;
 //# sourceMappingURL=ensureCompatibility.d.ts.map

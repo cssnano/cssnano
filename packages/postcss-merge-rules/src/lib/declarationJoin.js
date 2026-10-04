@@ -1,12 +1,11 @@
 import cssnanoUtils from 'cssnano-utils';
-import createLastWriteIndex from './lastWriteIndex.js';
+import LastWriteIndex from './lastWriteIndex.js';
 import { filterRuleIntersections, propertyNameKey } from './declarations.js';
-import { addSelectors, getMeta, getSelectorText } from './rule-meta.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {AtRule, ChildNode, Container, Declaration, Rule} from 'postcss' */
-/** @import {RuleMeta} from './rule-meta.js' */
+/** @import MergeState from './mergeState.js' */
 
 /**
  * Identifies a declaration by what it sets, so equal declarations share an id.
@@ -69,10 +68,10 @@ function detach(parent, rules) {
  *
  * @param {Group} group
  * @param {Rule} later
- * @param {WeakMap<Rule, RuleMeta>} ruleMeta
+ * @param {MergeState} mergeState
  * @return {{added: string[], gain: number}}
  */
-function joinGain(group, later, ruleMeta) {
+function joinGain(group, later, mergeState) {
   if (group.bytes < 0) {
     group.bytes = group.declarations.reduce(
       (total, declaration) => total + String(declaration).length + 1,
@@ -80,9 +79,9 @@ function joinGain(group, later, ruleMeta) {
     );
   }
   const listed = (group.selectors ??= new Set(
-    getMeta(group.rule, ruleMeta).selectors
+    mergeState.meta(group.rule).selectors
   ));
-  const laterSelectors = getMeta(later, ruleMeta).selectors;
+  const laterSelectors = mergeState.meta(later).selectors;
   const added = [...new Set(laterSelectors)].filter(
     (selector) => !listed.has(selector)
   );
@@ -102,19 +101,10 @@ function joinGain(group, later, ruleMeta) {
  * further rules.
  *
  * @param {Container} parent
- * @param {(first: Rule, second: Rule) => boolean} canMerge
- * @param {WeakMap<Rule, RuleMeta>} ruleMeta
- * @param {WeakSet<Rule>} ruleCache
- * @param {import('./rule-meta.js').SelectorLookup} lookup
+ * @param {MergeState} mergeState
  * @return {boolean}
  */
-export default function joinByDeclarations(
-  parent,
-  canMerge,
-  ruleMeta,
-  ruleCache,
-  lookup
-) {
+export default function joinByDeclarations(parent, mergeState) {
   // Keyframe selectors are cascaded by position.
   if (
     parent.type === 'atrule' &&
@@ -142,7 +132,7 @@ export default function joinByDeclarations(
   }
   if (start === nodes.length) return false;
 
-  const index = createLastWriteIndex();
+  const index = new LastWriteIndex();
   // Groups by their first declaration, in document order: a rule that
   // repeats a group's declarations repeats that one too.
   /** @type {Map<string, Group[]>} */
@@ -175,7 +165,7 @@ export default function joinByDeclarations(
     index.recordNode(node, position);
   }
   for (const rule of grown) {
-    rule.selector = getSelectorText(getMeta(rule, ruleMeta));
+    rule.selector = mergeState.meta(rule).selectorText();
   }
   detach(parent, emptied);
   return grown.size > 0;
@@ -227,7 +217,7 @@ export default function joinByDeclarations(
         ) {
           continue;
         }
-        const { added, gain } = joinGain(group, later, ruleMeta);
+        const { added, gain } = joinGain(group, later, mergeState);
         // On a tie, the nearest group has the least to cross.
         if (
           gain <= 0 ||
@@ -247,19 +237,18 @@ export default function joinByDeclarations(
         if (intersection.length !== group.declarations.length) continue;
         const claimed = [...claimedIndices].map((j) => laterDeclarations[j]);
         if (index.conflictsSince(claimed, group.position)) continue;
-        if (!canMerge(group.rule, later)) continue;
+        if (!mergeState.canMerge(group.rule, later)) continue;
         best = { group, claimed: claimedIndices, added, gain };
       }
     }
     if (!best) return null;
     const { group, claimed, added } = best;
-    const meta = getMeta(group.rule, ruleMeta);
-    addSelectors(meta, added, lookup);
+    mergeState.addSelectors(group.rule, added);
     for (const selector of added) group.selectors?.add(selector);
     grown.add(group.rule);
     const outcome = withdraw(later, laterDeclarations, claimed);
-    ruleMeta.delete(later);
-    ruleCache.add(group.rule);
+    mergeState.forget(later);
+    mergeState.markCompatible(group.rule);
     return outcome;
   }
 

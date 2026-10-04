@@ -1,5 +1,5 @@
 import getBrowsersList from '#getBrowsersList';
-import selectorMerger from './lib/selector-merger.js';
+import runMerge from './lib/selectorMerger.js';
 
 /** @import browserslist from 'browserslist' */
 
@@ -31,9 +31,7 @@ function pluginCreator(opts = {}) {
       return {
         /** @param {import('postcss').Root} css */
         OnceExit(css) {
-          selectorMerger(browsers, compatibilityCache, ruleCache, ruleMeta).run(
-            css
-          );
+          runMerge(css, browsers, compatibilityCache, ruleCache, ruleMeta);
         },
       };
     },

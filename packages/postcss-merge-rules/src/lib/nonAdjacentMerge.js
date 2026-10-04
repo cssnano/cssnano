@@ -1,17 +1,17 @@
 import cssnanoUtils from 'cssnano-utils';
-import createLastWriteIndex, {
+import LastWriteIndex, {
   collectDeclarations,
   isConditionalGroupRule,
   isOpaque,
 } from './lastWriteIndex.js';
-import joinByDeclarations from './declaration-join.js';
-import { appendDeclarations } from './rule-rewrite.js';
-import { getDecls, getMeta, getSelectorText } from './rule-meta.js';
+import joinByDeclarations from './declarationJoin.js';
+import { appendDeclarations } from './ruleRewrite.js';
+import { getDecls } from './ruleMeta.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {AtRule, Container, ChildNode, Rule} from 'postcss' */
-/** @import {RuleMeta} from './rule-meta.js' */
+/** @import MergeState from './mergeState.js' */
 
 /**
  * The key under which a child can join an earlier sibling, or null if it
@@ -19,12 +19,12 @@ const { asciiLowerCase } = cssnanoUtils;
  *
  * @param {ChildNode} node
  * @param {boolean} joinRules
- * @param {WeakMap<Rule, RuleMeta>} ruleMeta
+ * @param {MergeState} mergeState
  * @return {string | null}
  */
-function joinKey(node, joinRules, ruleMeta) {
+function joinKey(node, joinRules, mergeState) {
   if (node.type === 'rule') {
-    return joinRules ? `{${getSelectorText(getMeta(node, ruleMeta))}` : null;
+    return joinRules ? `{${mergeState.meta(node).selectorText()}` : null;
   }
   return isConditionalGroupRule(node) && node.nodes
     ? `@${asciiLowerCase(node.name)} ${node.params}`
@@ -52,20 +52,15 @@ function joinKey(node, joinRules, ruleMeta) {
  * when no node between them sets a property its declarations also set.
  *
  * @param {Container} root
- * @param {(first: Rule, second: Rule) => boolean} canMerge
- * @param {WeakMap<Rule, RuleMeta>} ruleMeta
- * @param {WeakSet<Rule>} ruleCache rules whose selectors are known to be compatible
- * @param {import('./rule-meta.js').SelectorLookup} lookup
+ * @param {MergeState} mergeState
  * @return {boolean} whether anything was joined
  */
-export function joinNonAdjacent(root, canMerge, ruleMeta, ruleCache, lookup) {
-  let joined = joinInParent(root, canMerge, ruleMeta);
-  joined =
-    joinByDeclarations(root, canMerge, ruleMeta, ruleCache, lookup) || joined;
+export function joinNonAdjacent(root, mergeState) {
+  let joined = joinInParent(root, mergeState);
+  joined = joinByDeclarations(root, mergeState) || joined;
   for (const child of /** @type {ChildNode[]} */ (root.nodes)) {
     if (child.type === 'atrule' && child.nodes) {
-      joined =
-        joinNonAdjacent(child, canMerge, ruleMeta, ruleCache, lookup) || joined;
+      joined = joinNonAdjacent(child, mergeState) || joined;
     }
   }
   return joined;
@@ -73,11 +68,10 @@ export function joinNonAdjacent(root, canMerge, ruleMeta, ruleCache, lookup) {
 
 /**
  * @param {Container} parent
- * @param {(first: Rule, second: Rule) => boolean} canMerge
- * @param {WeakMap<Rule, RuleMeta>} ruleMeta
+ * @param {MergeState} mergeState
  * @return {boolean}
  */
-function joinInParent(parent, canMerge, ruleMeta) {
+function joinInParent(parent, mergeState) {
   // Keyframe selectors are cascaded by position.
   const joinRules = !(
     parent.type === 'atrule' &&
@@ -85,7 +79,7 @@ function joinInParent(parent, canMerge, ruleMeta) {
   );
   // A snapshot, since joining removes nodes from the parent.
   const nodes = /** @type {ChildNode[]} */ (parent.nodes).slice();
-  const keys = nodes.map((node) => joinKey(node, joinRules, ruleMeta));
+  const keys = nodes.map((node) => joinKey(node, joinRules, mergeState));
   // Recording writes is the costly part, so it starts at the first node whose
   // key repeats, and is skipped where no key does.
   /** @type {Map<string, number>} */
@@ -99,7 +93,7 @@ function joinInParent(parent, canMerge, ruleMeta) {
   }
   if (start === nodes.length) return false;
 
-  const index = createLastWriteIndex();
+  const index = new LastWriteIndex();
   /** @type {Map<string, {node: Rule | AtRule, position: number}>} */
   const latest = new Map();
   let joined = false;
@@ -147,14 +141,14 @@ function joinInParent(parent, canMerge, ruleMeta) {
    * @return {'up' | 'down' | null} where the joined rule stands
    */
   function joinRule(earlier, later, earlierPosition, laterPosition) {
-    if (!canMerge(earlier, later)) return null;
+    if (!mergeState.canMerge(earlier, later)) return null;
     const earlierDeclarations = getDecls(earlier);
     const laterDeclarations = getDecls(later);
     if (!index.conflictsSince(laterDeclarations, earlierPosition)) {
       appendDeclarations(earlier, later);
       later.remove();
-      ruleMeta.delete(earlier);
-      ruleMeta.delete(later);
+      mergeState.forget(earlier);
+      mergeState.forget(later);
       index.moveWrites(laterDeclarations, earlierPosition);
       return 'up';
     }
@@ -163,8 +157,8 @@ function joinInParent(parent, canMerge, ruleMeta) {
       earlier.raws.before = later.raws.before;
       earlier.remove();
       later.replaceWith(earlier);
-      ruleMeta.delete(earlier);
-      ruleMeta.delete(later);
+      mergeState.forget(earlier);
+      mergeState.forget(later);
       index.moveWrites(
         [...earlierDeclarations, ...laterDeclarations],
         laterPosition
