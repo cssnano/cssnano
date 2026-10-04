@@ -10,18 +10,11 @@ export type SelectorVendor = {
 };
 /**
  * What a selector list contributes to the vendor-prefix merge check.
- * `prefix` is the one vendor prefix shared by every selector: `null` for an
- * empty list, `''` when none is prefixed, and `undefined` when the list mixes
- * prefixed and unprefixed selectors or different prefixes. Merging a mixed
- * list would drop its unprefixed selectors from engines matching the prefixed
- * ones, and merging different prefixes drops rules from other engines.
+ * Merging a rule for into a rule for the same selector but with different prefixes
+ * would change where the rule applies.
  */
 export declare class VendorPrefixSummary {
     #private;
-    /** @type {string | null | undefined} */
-    prefix: string | null | undefined;
-    /** @type {boolean} */
-    msPlaceholder: boolean;
     /**
      * @param {string | null | undefined} prefix
      * @param {boolean} msPlaceholder

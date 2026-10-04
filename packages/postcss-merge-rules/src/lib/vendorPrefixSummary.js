@@ -7,25 +7,28 @@
 
 /**
  * What a selector list contributes to the vendor-prefix merge check.
- * `prefix` is the one vendor prefix shared by every selector: `null` for an
- * empty list, `''` when none is prefixed, and `undefined` when the list mixes
- * prefixed and unprefixed selectors or different prefixes. Merging a mixed
- * list would drop its unprefixed selectors from engines matching the prefixed
- * ones, and merging different prefixes drops rules from other engines.
+ * Merging a rule for into a rule for the same selector but with different prefixes
+ * would change where the rule applies.
  */
 export class VendorPrefixSummary {
-  /** @type {string | null | undefined} */
-  prefix;
+  /**
+   * `prefix` is the one vendor prefix shared by every selector: `null` for an
+   * empty list, `''` when none is prefixed, and `undefined` when the list mixes
+   * prefixed and unprefixed selectors or different prefixes.
+   *
+   * @type {string | null | undefined}
+   * */
+  #prefix;
   /** @type {boolean} */
-  msPlaceholder;
+  #msPlaceholder;
 
   /**
    * @param {string | null | undefined} prefix
    * @param {boolean} msPlaceholder
    */
   constructor(prefix, msPlaceholder) {
-    this.prefix = prefix;
-    this.msPlaceholder = msPlaceholder;
+    this.#prefix = prefix;
+    this.#msPlaceholder = msPlaceholder;
   }
 
   /**
@@ -46,12 +49,12 @@ export class VendorPrefixSummary {
    */
   add(selector) {
     const own = selector.prefix;
-    if (this.prefix === null) {
-      this.prefix = own;
-    } else if (this.prefix !== own) {
-      this.prefix = undefined;
+    if (this.#prefix === null) {
+      this.#prefix = own;
+    } else if (this.#prefix !== own) {
+      this.#prefix = undefined;
     }
-    this.msPlaceholder ||= selector.msPlaceholder;
+    this.#msPlaceholder ||= selector.msPlaceholder;
   }
 
   /**
@@ -62,21 +65,21 @@ export class VendorPrefixSummary {
    * @return {VendorPrefixSummary}
    */
   concat(other) {
-    let prefix = this.prefix;
-    if (this.prefix === null) {
-      prefix = other.prefix;
-    } else if (other.prefix !== null && this.prefix !== other.prefix) {
+    let prefix = this.#prefix;
+    if (this.#prefix === null) {
+      prefix = other.#prefix;
+    } else if (other.#prefix !== null && this.#prefix !== other.#prefix) {
       prefix = undefined;
     }
     return new VendorPrefixSummary(
       prefix,
-      this.msPlaceholder || other.msPlaceholder
+      this.#msPlaceholder || other.#msPlaceholder
     );
   }
 
   /** @return {boolean} */
   #isUnprefixed() {
-    return this.prefix === null || this.prefix === '';
+    return this.#prefix === null || this.#prefix === '';
   }
 
   /**
@@ -90,10 +93,10 @@ export class VendorPrefixSummary {
    */
   allowsMerge(other) {
     if (this.#isUnprefixed() && other.#isUnprefixed()) return true;
-    if (this.prefix === undefined || other.prefix === undefined) return false;
+    if (this.#prefix === undefined || other.#prefix === undefined) return false;
     return (
-      this.prefix === other.prefix &&
-      !(this.msPlaceholder && other.msPlaceholder)
+      this.#prefix === other.#prefix &&
+      !(this.#msPlaceholder && other.#msPlaceholder)
     );
   }
 }
