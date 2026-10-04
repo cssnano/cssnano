@@ -365,3 +365,17 @@ test(
   'should merge selectors with a comment next to a combinator',
   processCSS('a/* c */ > b{color:red}.x{color:red}', 'a > b,.x{color:red}')
 );
+
+test(
+  'should drop a repeated rule whose selector is :is() with a comma, because the comma is nested and the lists are equal',
+  processCSS(':is(a,b){color:red}:is(a,b){color:red}', ':is(a,b){color:red}', {
+    overrideBrowserslist: 'Chrome 120',
+  })
+);
+
+test(
+  'should list both selectors when one list is :is(a,b) and the other is a,b, because a nested comma does not make the lists equal',
+  processCSS(':is(a,b){color:red}a,b{color:red}', ':is(a,b),a,b{color:red}', {
+    overrideBrowserslist: 'Chrome 120',
+  })
+);

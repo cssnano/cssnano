@@ -144,6 +144,15 @@ test('cross-block check reports a changed cascade', () => {
   assert.equal(failure.reason, 'cascade changed');
 });
 
+test('cross-block check reports a declaration that the output applies to another selector', () => {
+  const css = '.a{color:red}.b{top:0}';
+  const failure = checkCrossBlock(css, () => ({
+    css: '.a,.b{color:red}.b{top:0}',
+    terminated: false,
+  }));
+  assert.equal(failure.reason, 'cascade changed');
+});
+
 test('cross-block check reports output that grows', () => {
   const failure = checkCrossBlock('.a{color:red}', () => ({
     css: '.a{color:red}.a{color:red}',

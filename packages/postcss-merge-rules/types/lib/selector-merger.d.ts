@@ -4,12 +4,12 @@ import type { RuleMeta } from './rule-meta.js';
 /** @import {RuleMeta} from './rule-meta.js' */
 /**
  * @param {string[]} browsers
- * @param {Map<string, boolean>} compatibilityCache
+ * @param {Map<string, import('./ensureCompatibility.js').SelectorInfo>} compatibilityCache
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, RuleMeta>} ruleMeta
  * @return {{ run: (root: import('postcss').Root) => void }}
  */
-export default function selectorMerger(browsers: string[], compatibilityCache: Map<string, boolean>, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, RuleMeta>): {
+export default function selectorMerger(browsers: string[], compatibilityCache: Map<string, import('./ensureCompatibility.js').SelectorInfo>, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, RuleMeta>): {
     run: (root: import('postcss').Root) => void;
 };
 //# sourceMappingURL=selector-merger.d.ts.map

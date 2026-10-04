@@ -1,6 +1,6 @@
 import caniuseApi from 'caniuse-api';
 import selectorParser from 'postcss-selector-parser';
-import { noVendor, pseudoElements } from '../../src/lib/ensureCompatibility.js';
+import { pseudoElements } from '../../src/lib/ensureCompatibility.js';
 
 const { isSupported } = caniuseApi;
 const simpleSelectorRe = /^#?[\-._a-z0-9 ]+$/iv;
@@ -8,6 +8,11 @@ const cssSel2 = 'css-sel2';
 const cssSel3 = 'css-sel3';
 const level2Sel = new Set(['=', '~=', '|=']);
 const level3Sel = new Set(['^=', '$=', '*=']);
+
+const vendorPrefix =
+  /-(ah|apple|atsc|epub|hp|khtml|moz|ms|o|rim|ro|tc|wap|webkit|xv)-/v;
+/** The retained substring test, which also matched class names and strings. */
+export const noVendor = (selector) => !vendorPrefix.test(selector);
 
 const isCssMixin = (selector) => selector.at(-1) === ':';
 const isHostPseudoClass = (selector) => selector.includes(':host');

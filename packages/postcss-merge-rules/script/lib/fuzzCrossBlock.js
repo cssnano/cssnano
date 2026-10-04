@@ -187,8 +187,10 @@ export function checkCrossBlock(css, run) {
 
   const before = cascadeWinners(css);
   const after = cascadeWinners(output);
-  for (const [key, value] of before)
-    if (after.get(key) !== value) return failure('cascade changed');
+  // Compared both ways: a declaration the output applies to another selector
+  // changes the cascade as much as one it loses.
+  for (const key of new Set([...before.keys(), ...after.keys()]))
+    if (after.get(key) !== before.get(key)) return failure('cascade changed');
   if (output.length > css.length) return failure('output grew');
   // Merging inside @keyframes is never valid, whatever its case.
   if (keyframesRulesOf(css).join('\n') !== keyframesRulesOf(output).join('\n'))

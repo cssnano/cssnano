@@ -66,7 +66,7 @@ test(
   'should perform partial merging of selectors (8)',
   processCSS(
     '.foo{margin:0;display:block}.barim{display:block;line-height:1}.bazaz{font-size:3em;margin:0}',
-    '.foo{margin:0}.foo,.barim{display:block}.barim{line-height:1}.bazaz{font-size:3em;margin:0}'
+    '.foo,.bazaz{margin:0}.foo,.barim{display:block}.barim{line-height:1}.bazaz{font-size:3em}'
   )
 );
 
@@ -109,10 +109,10 @@ test(
 );
 
 test(
-  'should not merge over-eagerly (cssnano#36 [case 4])',
+  'should split shared declarations into one rule per selector set without duplicating any (cssnano#36 [case 4])',
   processCSS(
     '.foo{font-family:serif;display:block}.barim{display:block;line-height:1}.bazaz{font-size:3em;font-family:serif}',
-    '.foo{font-family:serif}.foo,.barim{display:block}.barim{line-height:1}.bazaz{font-size:3em;font-family:serif}'
+    '.foo,.bazaz{font-family:serif}.foo,.barim{display:block}.barim{line-height:1}.bazaz{font-size:3em}'
   )
 );
 
