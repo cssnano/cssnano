@@ -1,5 +1,36 @@
 # Benchmark comparisons
 
+## Quick check of a change (a minute or two)
+
+To benchmark uncommitted work against `HEAD` for one plugin:
+
+```sh
+pnpm run bench:check --package=postcss-merge-rules   # or --case=<name>
+pnpm run bench:check --package=postcss-merge-rules --budget=90s
+```
+
+It snapshots the working tree (untracked files included, your index and branch
+untouched), prepares two temporary worktrees, runs each focused case of the
+package, prints one JSON line per case (`verdict`, `direction`, `practical`,
+`ratio`, `intervalPct`, `blocks`), and removes the worktrees.
+
+- `--budget=<90s|5m>` is the total time for all cases (default `2m`), shared
+  equally between them. Each case runs the minimum 4 blocks, then adds balanced
+  pairs while another pair is predicted to fit in its share. Precision reached
+  earlier also stops a case. The budget is a ceiling on starting another pair:
+  the minimum is always run, so a tiny budget is exceeded rather than giving
+  an invalid analysis.
+- `--base=<ref>` and `--candidate=<ref>` compare two commits instead of `HEAD`
+  and the working tree; any ref is accepted.
+- `--pin-core=<n>` reduces scheduler noise, and `--keep` leaves the worktrees
+  for inspection.
+
+More budget means more blocks and a narrower interval, but this is still
+directional evidence: a verdict of `inconclusive` with a ratio near 1 means no
+large change, not "the same". Use `compare-revisions.js` below for the full
+statistical comparison, which takes much longer (one block over the whole
+corpus can take minutes).
+
 cssnano benchmark comparisons are comparative-reporting evidence. They are
 advisory and are not regression gates. The primary estimand is the
 candidate/base runtime ratio for one complete pass over the fixed selected
@@ -88,9 +119,19 @@ benchmarking, analysis, report writing, and cleanup.
 
 ```sh
 node util/benchmark/compare-revisions.js \
-  --base-revision=<sha> --candidate-revision=<sha> \
-  --base-dir=<worktree> --candidate-dir=<worktree>
+  --base-revision=<ref> --candidate-revision=<ref> \
+  --base-dir=<worktree> --candidate-dir=<worktree> --results-dir=<path>
 ```
+
+Revisions may be any ref (`HEAD`, a branch, a tag); they are resolved to full
+hashes inside each checkout, and artifacts record the hashes. The directory
+options are required. `--case=<name>` benchmarks one focused case (see
+`--list-cases`) instead of the framework corpus; `--only=<substring>` selects
+corpus fixtures only, and a selector that matches none fails preflight.
+`--time-budget=<90s|5m>` ends the run after the last balanced pair that is
+predicted to fit, never below `--minimum-blocks`; the artifact records the stop
+as `time budget reached`. Each block line also shows the time left at the pace
+so far.
 
 The coordinator defaults to a quiet child mode: each side's bench process is
 suppressed to a single line per block, such as

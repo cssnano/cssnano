@@ -109,6 +109,16 @@ function validateCorpusIdentity(config, log, failures, manifestNames) {
     failures.push(
       'corpus: a frameworks directory is missing; corpus identity cannot be verified'
     );
+  } else if (
+    corpus.common.length === 0 &&
+    !corpus.baseOnly.length &&
+    !corpus.candidateOnly.length
+  ) {
+    const selector = (config.only ?? []).join(', ') || 'the manifest';
+    failures.push(
+      `corpus: ${selector} matches no corpus fixture (available: ${corpus.available.join(', ')}); ` +
+        'names such as merge-rules-dense are focused cases, so use --case=<name> (see --list-cases)'
+    );
   } else if (corpus.baseOnly.length || corpus.candidateOnly.length) {
     const manifestPath = join(config.resultsDir, 'common-corpus.txt');
     if (!config.corpusManifest) {

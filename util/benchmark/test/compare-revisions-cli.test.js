@@ -54,3 +54,35 @@ test('CLI ignores --blocks below 4 for an adaptive run, which plans --requested-
   assert.match(result.stderr, /preflight:/v);
   assert.doesNotMatch(result.stderr, /must be at least 4/v);
 });
+
+test('CLI names the missing --base-dir instead of crashing', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      new URL('../compare-revisions.js', import.meta.url).pathname,
+      '--candidate-dir=/nonexistent/candidate',
+      '--results-dir=/nonexistent/results',
+      `--base-revision=${'1'.repeat(40)}`,
+      `--candidate-revision=${'2'.repeat(40)}`,
+    ],
+    { encoding: 'utf8' }
+  );
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /--base-dir is required/v);
+  assert.doesNotMatch(result.stderr, /TypeError/v);
+});
+
+test('CLI reports a revision that does not resolve in its checkout', (t) => {
+  const result = runCli(t, '--base-revision=no-such-ref');
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /cannot resolve "no-such-ref"/v);
+});
+
+test('CLI rejects a time budget that is not a duration', (t) => {
+  const result = runCli(t, '--time-budget=soon');
+  assert.equal(result.status, 1);
+  assert.match(
+    result.stderr,
+    /--time-budget must be a duration such as 90s or 5m/v
+  );
+});

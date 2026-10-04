@@ -1,6 +1,6 @@
 import { resolve, join } from 'node:path';
 import { writeFileSync } from 'node:fs';
-import { MINIMUM_CROSSOVER_BLOCKS } from './bench-defaults.js';
+import { MINIMUM_CROSSOVER_BLOCKS, parseDuration } from './bench-defaults.js';
 import {
   EQUIVALENCE_CONFIDENCE_LEVEL,
   INTER_BLOCK_COOLDOWN_MS,
@@ -13,9 +13,14 @@ import {
   SUPERIORITY_CONFIDENCE_LEVEL,
   MODES,
 } from './bench-config.js';
-import { readCpuGovernor, warnUnstableGovernor } from './bench-provenance.js';
+import {
+  readCpuGovernor,
+  resolveRevision,
+  warnUnstableGovernor,
+} from './bench-provenance.js';
 import { markdownComparison, printComparison } from './compare-report.js';
 import { cleanupWorktree } from './prepare-worktree.js';
+import { usageText } from './compare-usage.js';
 import { runPreflight } from './compare-preflight.js';
 import { parseAllowOutputHash } from './compare-validation.js';
 import {
@@ -144,6 +149,21 @@ function validateComparisonOptions(result) {
   validateComparisonThresholdOptions(result);
 }
 
+function requireDirectories(values) {
+  for (const name of ['base-dir', 'candidate-dir', 'results-dir']) {
+    if (!values[name]) throw new Error(`--${name} is required`);
+  }
+}
+
+function timeBudget(text) {
+  if (text === undefined) return null;
+  const ms = parseDuration(text);
+  if (ms === null) {
+    throw new Error('--time-budget must be a duration such as 90s or 5m');
+  }
+  return ms;
+}
+
 function options(argv) {
   const { values, outputHashAllowlist, cleanupDirs, bare } = parseRawArgs(argv);
   const positive = (name, fallback) => {
@@ -161,6 +181,7 @@ function options(argv) {
     return value;
   };
   const number = (name, fallback) => Number(values[name] ?? fallback);
+  requireDirectories(values);
   const mode = values.mode ?? 'stable';
   const cooldownRaw =
     values['cooldown-ms'] ?? values.cooldown ?? values['inter-block-cooldown'];
@@ -213,6 +234,7 @@ function options(argv) {
     pinCore:
       values['pin-core'] !== undefined ? Number(values['pin-core']) : null,
     outputHashAllowlist,
+    timeBudgetMs: timeBudget(values['time-budget']),
     adaptive:
       bare.has('--adaptive') ||
       (!bare.has('--no-adaptive') && mode === 'stable'),
@@ -228,47 +250,6 @@ function options(argv) {
   };
   validateComparisonOptions(result);
   return result;
-}
-
-function usageText() {
-  return [
-    'cssnano revision comparison harness',
-    '',
-    'usage:',
-    '  node util/benchmark/compare-revisions.js --base-revision=<sha> \\',
-    '      --candidate-revision=<sha> [options]',
-    '',
-    'phases (all run by default for stable mode):',
-    '  preflight   verify revisions, corpora, metadata, and one smoke run per side',
-    '  benchmark   paired fresh-process blocks with a balanced schedule',
-    '  report      analyze the artifact and print the verdict',
-    '',
-    'key options:',
-    '  --base-dir=<path>          worktree of the baseline revision',
-    '  --candidate-dir=<path>     worktree of the candidate revision',
-    '  --results-dir=<path>       where artifacts are written',
-    '  --mode=<quick|stable>      benchmark mode (default: stable)',
-    '  --adaptive                 stop once the requested precision is reached',
-    '  --no-adaptive              run exactly --blocks balanced blocks',
-    '  --pilot-blocks=<n>         minimum blocks before adaptive stopping (default: 6)',
-    '  --cooldown-ms=<n>          idle time between blocks (default: 100)',
-    '  --only=<substring>         select corpus fixtures; repeatable',
-    '  --corpus-manifest=<path>   select corpus fixtures by exact name, one per line',
-    '  --allow-output-hash=<fixture,base,candidate>   approve an output change',
-    '  --markdown=<path>          also write the report as Markdown',
-    '  --no-preflight             skip the preflight phase',
-    '  --verbose-child            show child benchmark output',
-    '  --no-report                skip analysis and verdict printing',
-    '  --cleanup=<path>           remove a worktree after the run; repeatable',
-    '  --pin-core=<n>             pin both sides to one CPU core',
-    '  --list-cases               list the focused benchmark cases',
-    '  --help                     show this message',
-    '',
-    'examples:',
-    '  node util/benchmark/compare-revisions.js --base-revision=main --candidate-revision=HEAD \\',
-    '      --base-dir=.worktrees/main --candidate-dir=.worktrees/HEAD',
-    '  node util/benchmark/compare-revisions.js ... --adaptive --report',
-  ].join('\n');
 }
 
 function cleanupDirectories(config) {
@@ -307,6 +288,19 @@ async function main() {
     return;
   }
   const config = options(argv);
+  // Refs such as HEAD or a branch name are accepted; artifacts record hashes.
+  for (const [revision, dir] of [
+    ['baseRevision', 'baseDir'],
+    ['candidateRevision', 'candidateDir'],
+  ]) {
+    if (!/^[0-9a-f]{40}$/v.test(config[revision])) {
+      config[revision] = resolveRevision(
+        config[revision],
+        undefined,
+        config[dir]
+      );
+    }
+  }
 
   try {
     // CPU environment setup is a coordinator concern: detect once, warn once,

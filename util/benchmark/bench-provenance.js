@@ -160,6 +160,37 @@ export function currentGitRevision(root = process.cwd()) {
   return gitOutput(['rev-parse', 'HEAD'], root).toString().trim();
 }
 
+/**
+ * Turns a ref such as HEAD or a branch name into the full commit hash, so
+ * callers need not spell out 40 hexadecimal digits.
+ *
+ * @param {string} ref
+ * @param {(command: string, args: string[], options?: object) => string} [runner]
+ * @param {string} [cwd] checkout the ref is resolved in
+ * @return {string}
+ */
+export function resolveRevision(ref, runner = defaultGit, cwd = process.cwd()) {
+  try {
+    const sha = runner(
+      'git',
+      ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`],
+      { cwd }
+    ).trim();
+    if (sha) return sha;
+  } catch {
+    // reported below
+  }
+  throw new Error(`cannot resolve "${ref}" to a commit in ${cwd}`);
+}
+
+function defaultGit(command, args, options) {
+  return execFileSync(command, args, {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+    ...options,
+  });
+}
+
 export function assertRevision(revision, root = process.cwd()) {
   const actual = currentGitRevision(root);
   if (revision !== actual) {
