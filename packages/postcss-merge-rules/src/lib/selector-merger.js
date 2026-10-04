@@ -1,6 +1,15 @@
 import { canMerge, partialMerge } from './merge.js';
 import { sameDeclarationsAndOrder } from './declarations.js';
-import { getDecls, getMeta } from './rule-meta.js';
+import {
+  getDecls,
+  getMeta,
+  getSelectorText,
+  getVendorProfile,
+  hasSameSelectors,
+  setSelectors,
+} from './rule-meta.js';
+import { combineVendorProfiles } from './vendor-profile.js';
+import { createSelectorLookup } from './ensureCompatibility.js';
 import { appendDeclarations, mergeParents } from './rule-rewrite.js';
 import { joinNonAdjacent } from './non-adjacent-merge.js';
 import runScan, { createProfileCache } from './scan.js';
@@ -10,7 +19,7 @@ import runScan, { createProfileCache } from './scan.js';
 
 /**
  * @param {string[]} browsers
- * @param {Map<string, boolean>} compatibilityCache
+ * @param {Map<string, import('./ensureCompatibility.js').SelectorInfo>} compatibilityCache
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, RuleMeta>} ruleMeta
  * @return {{ run: (root: import('postcss').Root) => void }}
@@ -21,6 +30,8 @@ export default function selectorMerger(
   ruleCache,
   ruleMeta
 ) {
+  const lookup = createSelectorLookup(browsers, compatibilityCache);
+
   /**
    * Rules with the same declarations in the same order become one rule with
    * both selectors.
@@ -41,20 +52,26 @@ export default function selectorMerger(
       return null;
     // Repeating the same declarations under the same selector changes nothing,
     // and a selector list that repeats the selector is longer than one rule.
-    if (
-      getMeta(first, ruleMeta).selectors.join(',') ===
-      getMeta(second, ruleMeta).selectors.join(',')
-    ) {
+    if (hasSameSelectors(getMeta(first, ruleMeta), getMeta(second, ruleMeta))) {
       second.remove();
       ruleMeta.delete(second);
       return [first];
     }
     const metaSecond = getMeta(second, ruleMeta);
-    metaSecond.selectors = [
-      ...getMeta(first, ruleMeta).selectors,
-      ...metaSecond.selectors,
-    ];
-    second.selector = metaSecond.selectors.join(',');
+    const metaFirst = getMeta(first, ruleMeta);
+    // Concatenating strings builds a rope in constant time, whereas joining
+    // the grown list on every merge would take quadratic time.
+    const selectorText = `${getSelectorText(metaFirst)},${getSelectorText(metaSecond)}`;
+    const vendor = combineVendorProfiles(
+      getVendorProfile(metaFirst, lookup),
+      getVendorProfile(metaSecond, lookup)
+    );
+    // `first` is removed, so its list grows in place and passes to `second`;
+    // copying a long absorbed list on every merge would take quadratic time.
+    const selectors = metaFirst.selectors;
+    for (const selector of metaSecond.selectors) selectors.push(selector);
+    setSelectors(metaSecond, selectors, vendor);
+    second.selector = metaSecond.selectorText = selectorText;
     first.remove();
     ruleMeta.delete(first);
     ruleCache?.add(second);
@@ -69,10 +86,7 @@ export default function selectorMerger(
    * @return {Rule[] | null} the surviving rule
    */
   function mergeMatchingSelectors(first, second) {
-    if (
-      getMeta(first, ruleMeta).selectors.join(',') !==
-      getMeta(second, ruleMeta).selectors.join(',')
-    )
+    if (!hasSameSelectors(getMeta(first, ruleMeta), getMeta(second, ruleMeta)))
       return null;
     appendDeclarations(first, second);
     getMeta(first, ruleMeta).declarations = getDecls(first);
@@ -101,8 +115,7 @@ export default function selectorMerger(
   const canMergeRules = (
     /** @type {Rule} */ first,
     /** @type {Rule} */ second
-  ) =>
-    canMerge(first, second, browsers, compatibilityCache, ruleCache, ruleMeta);
+  ) => canMerge(first, second, lookup, ruleCache, ruleMeta);
 
   return {
     run(root) {
@@ -123,7 +136,9 @@ export default function selectorMerger(
           },
           profileCache
         );
-      } while (joinNonAdjacent(root, canMergeRules, ruleMeta));
+      } while (
+        joinNonAdjacent(root, canMergeRules, ruleMeta, ruleCache, lookup)
+      );
     },
   };
 }

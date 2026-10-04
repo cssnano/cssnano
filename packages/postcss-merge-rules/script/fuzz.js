@@ -3,16 +3,21 @@ import postcss from 'postcss';
 import { tokenizer, TokenType } from '@csstools/css-tokenizer';
 import browserslist from 'browserslist';
 import plugin from '../src/index.js';
+import { ensureCompatibility as currentCompatibility } from '../src/lib/ensureCompatibility.js';
 import {
-  ensureCompatibility as currentCompatibility,
+  ensureCompatibility as legacyCompatibility,
   noVendor,
-} from '../src/lib/ensureCompatibility.js';
-import { ensureCompatibility as legacyCompatibility } from './legacy/ensureCompatibility.js';
+} from './legacy/ensureCompatibility.js';
 import { featureMetadata, generateCases } from './lib/fuzzGenerate.js';
 import {
   firstCrossBlockFailure,
   generateCrossBlockCases,
 } from './lib/fuzzCrossBlock.js';
+import {
+  assertCascadeCoverage,
+  firstCascadeFailure,
+  generateCascadeCases,
+} from './lib/fuzzCascade.js';
 import {
   FAILURE_EXIT_CODE,
   parseFuzzArgs,
@@ -315,5 +320,21 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   console.log(
     `${stylesheets.length} cross-block stylesheets, seed ${seed}, clean`
+  );
+
+  // Rules whose selectors match overlapping elements, checked per element.
+  const cascadeCases = generateCascadeCases(seed, Math.min(count, 2000));
+  assertCascadeCoverage(cascadeCases);
+  const cascadeFailure = firstCascadeFailure(cascadeCases);
+  if (cascadeFailure) {
+    console.error(
+      `seed=${seed} case=${cascadeFailure.index} cascade ${cascadeFailure.reason}\n` +
+        `input=${cascadeFailure.input}\noutput=${cascadeFailure.output}\n` +
+        `detail=${cascadeFailure.detail}`
+    );
+    process.exit(FAILURE_EXIT_CODE);
+  }
+  console.log(
+    `${cascadeCases.length} cascade stylesheets, seed ${seed}, clean`
   );
 }

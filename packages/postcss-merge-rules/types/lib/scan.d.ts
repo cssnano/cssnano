@@ -9,7 +9,7 @@ export type ScanOperations = {
     ruleMeta: WeakMap<Rule, RuleMeta>;
 };
 export type RuleProfile = {
-    selectorKey: string;
+    meta: RuleMeta;
     ids: number[];
     idSet: Set<number>;
 };
@@ -24,17 +24,28 @@ export type RuleProfile = {
  * @property {(first: Rule, second: Rule) => Rule[]} partialMerge
  * @property {WeakMap<Rule, RuleMeta>} ruleMeta
  */
-/** @typedef {{selectorKey: string, ids: number[], idSet: Set<number>}} RuleProfile */
+/**
+ * @typedef {object} RuleProfile
+ * @property {RuleMeta} meta
+ * @property {number[]} ids
+ * @property {Set<number>} idSet
+ */
 /**
  * Rule profiles for every run of the scan over one stylesheet. A profile is
- * keyed by the rule's metadata, which the joins between runs delete for every
- * rule they edit, so profiles of untouched rules carry over.
+ * keyed by the rule's metadata. Joins delete it for a rule whose declarations
+ * they edit; a rule that only gains selectors keeps it, and the profile reads
+ * the selectors through the metadata, so it stays current.
  *
  * @return {{profiles: WeakMap<RuleMeta, RuleProfile>, declarationIds: Map<string, number>}}
  */
 export declare function createProfileCache(): {
     profiles: WeakMap<RuleMeta, RuleProfile>;
     declarationIds: Map<string, number>;
+};
+export type RuleLink = {
+    rule: Rule;
+    prev: RuleLink | null;
+    next: RuleLink | null;
 };
 /**
  * Merges neighboring rules in left-to-right sweeps, trying the pair that

@@ -3,13 +3,12 @@ import type { RuleMeta } from './rule-meta.js';
 /**
  * @param {Rule} ruleA
  * @param {Rule} ruleB
- * @param {string[]} browsers
- * @param {Map<string, boolean>} compatibilityCache
+ * @param {import('./rule-meta.js').SelectorLookup} lookup
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, RuleMeta>} ruleMeta
  * @return {boolean}
  */
-export declare function canMerge(ruleA: Rule, ruleB: Rule, browsers: string[], compatibilityCache: Map<string, boolean>, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, RuleMeta>): boolean;
+export declare function canMerge(ruleA: Rule, ruleB: Rule, lookup: import('./rule-meta.js').SelectorLookup, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, RuleMeta>): boolean;
 /**
  * @param {Rule} first
  * @param {Rule} second

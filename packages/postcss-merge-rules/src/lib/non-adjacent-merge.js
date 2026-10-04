@@ -4,8 +4,9 @@ import createLastWriteIndex, {
   isConditionalGroupRule,
   isOpaque,
 } from './lastWriteIndex.js';
+import joinByDeclarations from './declaration-join.js';
 import { appendDeclarations } from './rule-rewrite.js';
-import { getDecls, getMeta } from './rule-meta.js';
+import { getDecls, getMeta, getSelectorText } from './rule-meta.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -23,7 +24,7 @@ const { asciiLowerCase } = cssnanoUtils;
  */
 function joinKey(node, joinRules, ruleMeta) {
   if (node.type === 'rule') {
-    return joinRules ? `{${getMeta(node, ruleMeta).selectors.join(',')}` : null;
+    return joinRules ? `{${getSelectorText(getMeta(node, ruleMeta))}` : null;
   }
   return isConditionalGroupRule(node) && node.nodes
     ? `@${asciiLowerCase(node.name)} ${node.params}`
@@ -46,16 +47,25 @@ function joinKey(node, joinRules, ruleMeta) {
  * property that its declarations also set. Named `@layer` blocks are left
  * out: their order comes from where each layer first appears.
  *
+ * Rules that set the same declarations in the same order also share one
+ * rule: a later rule adds its selectors to the earlier one, and is removed,
+ * when no node between them sets a property its declarations also set.
+ *
  * @param {Container} root
  * @param {(first: Rule, second: Rule) => boolean} canMerge
  * @param {WeakMap<Rule, RuleMeta>} ruleMeta
+ * @param {WeakSet<Rule>} ruleCache rules whose selectors are known to be compatible
+ * @param {import('./rule-meta.js').SelectorLookup} lookup
  * @return {boolean} whether anything was joined
  */
-export function joinNonAdjacent(root, canMerge, ruleMeta) {
+export function joinNonAdjacent(root, canMerge, ruleMeta, ruleCache, lookup) {
   let joined = joinInParent(root, canMerge, ruleMeta);
+  joined =
+    joinByDeclarations(root, canMerge, ruleMeta, ruleCache, lookup) || joined;
   for (const child of /** @type {ChildNode[]} */ (root.nodes)) {
     if (child.type === 'atrule' && child.nodes) {
-      joined = joinNonAdjacent(child, canMerge, ruleMeta) || joined;
+      joined =
+        joinNonAdjacent(child, canMerge, ruleMeta, ruleCache, lookup) || joined;
     }
   }
   return joined;

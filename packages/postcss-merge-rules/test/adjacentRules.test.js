@@ -83,7 +83,7 @@ test(
   'should preserve repeated declaration merge output',
   processCSS(
     '.one{color:red;display:grid;gap:1rem}.two{color:red;display:grid;gap:1rem;font-weight:700}.three{color:red;display:grid;gap:1rem}',
-    '.one,.two{color:red;display:grid;gap:1rem}.two{font-weight:700}.three{color:red;display:grid;gap:1rem}'
+    '.one,.two,.three{color:red;display:grid;gap:1rem}.two{font-weight:700}'
   )
 );
 

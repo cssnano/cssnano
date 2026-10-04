@@ -180,3 +180,67 @@ test(
     'h1{color:#001;color:#002;color:#003}h2{color:#001;color:#002}'
   )
 );
+
+test(
+  'should keep a merged rule from joining a later ::-ms-input-placeholder rule when the rule absorbed the earlier :-ms-input-placeholder selector, because Edge and Internet Explorer spell the pseudo differently',
+  processCSS(
+    ':-ms-input-placeholder{color:red}::-ms-x{color:red}.y{height:1px}::-ms-input-placeholder{color:red}',
+    ':-ms-input-placeholder,::-ms-x{color:red}.y{height:1px}::-ms-input-placeholder{color:red}'
+  )
+);
+
+test(
+  'should not merge a class whose name contains -moz- with a ::-moz-selection rule, because only a pseudo name carries a vendor prefix',
+  passthroughCSS('.x-moz-y{color:red}::-moz-selection{color:red}')
+);
+
+test(
+  'should not join a class whose name contains -moz- to a non-adjacent ::-moz-selection rule, because only a pseudo name carries a vendor prefix',
+  passthroughCSS('.x-moz-y{color:red}.z{height:1px}::-moz-selection{color:red}')
+);
+
+test(
+  'should merge a class whose name contains -moz- with an unprefixed rule, because the class name is not a vendor prefix',
+  processCSS('.x-moz-y{color:red}.z{color:red}', '.x-moz-y,.z{color:red}')
+);
+
+test(
+  'should merge an attribute selector whose value contains :-moz- with an unprefixed rule, because a string is not a pseudo name',
+  processCSS(
+    'a[title=":-moz-x"]{color:red}b{color:red}',
+    'a[title=":-moz-x"],b{color:red}'
+  )
+);
+
+test(
+  'should merge rules with the same vendor prefix spelled in different letter case, because pseudo names are ASCII case-insensitive',
+  processCSS(
+    'a::-WEBKIT-scrollbar{color:red}b::-webkit-scrollbar{color:red}',
+    'a::-WEBKIT-scrollbar,b::-webkit-scrollbar{color:red}'
+  )
+);
+
+test(
+  'should not merge an uppercase vendor prefixed pseudo-element with an unprefixed rule, because other engines would drop the list',
+  passthroughCSS('a{color:red}b::-WEBKIT-scrollbar{color:red}')
+);
+
+test(
+  'should merge rules whose vendor prefix is written with a hex escape, because an escape does not change the pseudo name',
+  processCSS(
+    'a::\\2d moz-x{color:red}b::-moz-x{color:red}',
+    'a::\\2d moz-x,b::-moz-x{color:red}'
+  )
+);
+
+test(
+  'should not merge an escaped vendor prefixed pseudo-element with an unprefixed rule, because an escape does not hide the prefix',
+  passthroughCSS('a{color:red}b::\\2d moz-x{color:red}')
+);
+
+test(
+  'should not merge two lists that both contain :-ms-input-placeholder when the name is uppercase, because pseudo names are ASCII case-insensitive',
+  passthroughCSS(
+    'a:-MS-INPUT-PLACEHOLDER{color:red}b::-ms-input-placeholder{color:red}'
+  )
+);

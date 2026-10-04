@@ -1,6 +1,6 @@
 import cssnanoUtils from 'cssnano-utils';
 import { propertyNameKey } from './declarations.js';
-import { getMeta } from './rule-meta.js';
+import { getMeta, hasSameSelectors } from './rule-meta.js';
 
 const { sameParent } = cssnanoUtils;
 
@@ -19,12 +19,18 @@ const NO_BENEFIT = -1;
  * @property {WeakMap<Rule, RuleMeta>} ruleMeta
  */
 
-/** @typedef {{selectorKey: string, ids: number[], idSet: Set<number>}} RuleProfile */
+/**
+ * @typedef {object} RuleProfile
+ * @property {RuleMeta} meta
+ * @property {number[]} ids
+ * @property {Set<number>} idSet
+ */
 
 /**
  * Rule profiles for every run of the scan over one stylesheet. A profile is
- * keyed by the rule's metadata, which the joins between runs delete for every
- * rule they edit, so profiles of untouched rules carry over.
+ * keyed by the rule's metadata. Joins delete it for a rule whose declarations
+ * they edit; a rule that only gains selectors keeps it, and the profile reads
+ * the selectors through the metadata, so it stays current.
  *
  * @return {{profiles: WeakMap<RuleMeta, RuleProfile>, declarationIds: Map<string, number>}}
  */
@@ -45,6 +51,57 @@ function collectRules(nodes, rules = []) {
     if ('nodes' in node && node.nodes) collectRules(node.nodes, rules);
   }
   return rules;
+}
+
+/**
+ * A doubly linked list lets the scan replace a merged pair in constant time,
+ * where splicing an array of thousands of rules would take quadratic time.
+ *
+ * @typedef {{rule: Rule, prev: RuleLink | null, next: RuleLink | null}} RuleLink
+ */
+
+/**
+ * @param {Rule[]} rules
+ * @return {RuleLink} a sentinel that precedes the first rule
+ */
+function linkRules(rules) {
+  /** @type {RuleLink} */
+  const head = {
+    rule: /** @type {Rule} */ (/** @type {unknown} */ (null)),
+    prev: null,
+    next: null,
+  };
+  let tail = head;
+  for (const rule of rules) {
+    /** @type {RuleLink} */
+    const link = { rule, prev: tail, next: null };
+    tail.next = link;
+    tail = link;
+  }
+  return head;
+}
+
+/**
+ * Replaces `first` and the link after it with the rules that now stand in
+ * their place, which are never none.
+ *
+ * @param {RuleLink} first
+ * @param {Rule[]} rules
+ * @return {RuleLink} the link of the first replacement
+ */
+function replacePair(first, rules) {
+  const before = /** @type {RuleLink} */ (first.prev);
+  let tail = before;
+  for (const rule of rules) {
+    /** @type {RuleLink} */
+    const link = { rule, prev: tail, next: null };
+    tail.next = link;
+    tail = link;
+  }
+  const after = /** @type {RuleLink} */ (first.next).next;
+  tail.next = after;
+  if (after) after.prev = tail;
+  return /** @type {RuleLink} */ (before.next);
 }
 
 /**
@@ -177,7 +234,7 @@ export default function runScan(
     if (!profile) {
       const ids = meta.declarations.map(declarationId);
       profile = {
-        selectorKey: meta.selectors.join(','),
+        meta,
         ids,
         idSet: new Set(ids),
       };
@@ -199,7 +256,7 @@ export default function runScan(
   const mergeBenefit = (first, second) => {
     const a = profileOf(first);
     const b = profileOf(second);
-    if (a.selectorKey === b.selectorKey) return a.ids.length + b.ids.length;
+    if (hasSameSelectors(a.meta, b.meta)) return a.ids.length + b.ids.length;
     const [smaller, larger] =
       a.ids.length <= b.ids.length ? [a, b.idSet] : [b, a.idSet];
     let shared = 0;
@@ -261,39 +318,44 @@ export default function runScan(
   let moved;
   do {
     moved = false;
-    const rules = collectRules(root.nodes);
-    let index = 0;
-    let lookaheadStart = -1;
-    while (index + 1 < rules.length) {
-      let benefit = pairBenefit(rules[index], rules[index + 1]);
+    const list = linkRules(collectRules(root.nodes));
+    let current = list.next ?? list;
+    /** @type {RuleLink | null} */
+    let lookaheadStart = null;
+    for (let second = current.next; second; second = current.next) {
+      let benefit = pairBenefit(current.rule, second.rule);
       // Move on to the next pair while it shares strictly more declarations,
       // then come back to `lookaheadStart` so the skipped pairs are tried.
-      while (index + 2 < rules.length) {
-        const ahead = pairBenefit(rules[index + 1], rules[index + 2]);
+      for (let third = second.next; third; third = second.next) {
+        const ahead = pairBenefit(second.rule, third.rule);
         if (ahead <= benefit) break;
-        if (lookaheadStart < 0) lookaheadStart = index;
-        index++;
+        lookaheadStart ??= current;
+        current = second;
+        second = third;
         benefit = ahead;
       }
       const merged =
-        benefit === NO_BENEFIT
-          ? null
-          : mergePair(rules[index], rules[index + 1]);
+        benefit === NO_BENEFIT ? null : mergePair(current.rule, second.rule);
       if (!merged) {
-        if (lookaheadStart >= 0 && benefit !== NO_BENEFIT) {
-          unmergeablePairs.set(rules[index], rules[index + 1]);
-          index = lookaheadStart;
+        if (lookaheadStart && benefit !== NO_BENEFIT) {
+          unmergeablePairs.set(current.rule, second.rule);
+          current = lookaheadStart;
         } else {
-          index++;
+          current = second;
         }
-        lookaheadStart = -1;
+        lookaheadStart = null;
         continue;
       }
       moved ||= merged.moved;
       unmergeablePairs.clear();
-      rules.splice(index, 2, ...merged.rules);
-      index = lookaheadStart >= 0 ? lookaheadStart : Math.max(index - 1, 0);
-      lookaheadStart = -1;
+      const replacement = replacePair(current, merged.rules);
+      const before = /** @type {RuleLink} */ (replacement.prev);
+      if (lookaheadStart) {
+        current = lookaheadStart === current ? replacement : lookaheadStart;
+      } else {
+        current = before.rule ? before : replacement;
+      }
+      lookaheadStart = null;
     }
     // A move changes which rules share a parent, so rules the sweep already
     // passed may now merge.

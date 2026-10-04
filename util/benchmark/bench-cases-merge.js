@@ -125,4 +125,12 @@ export const mergeCases = {
       return `@media ${query}{${previousBoundary}${noise}.shared-${index}{color:red;display:block}}`;
     }).join('')
   ),
+  'merge-rules-join-absorbing': pluginCase(
+    'postcss-merge-rules',
+    Array.from(
+      { length: 2000 },
+      (_, index) =>
+        `.join-${index}{color:red;width:1px}.noise-${index}{--v:${index}}`
+    ).join('')
+  ),
 };

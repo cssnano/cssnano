@@ -1,14 +1,3 @@
-/**
- * @param {string[]} selectorsA
- * @param {string[]} selectorsB
- * @return {boolean}
- */
-declare function sameVendor(selectorsA: string[], selectorsB: string[]): boolean;
-/**
- * @param {string} selector
- * @return {boolean}
- */
-declare function noVendor(selector: string): boolean;
 declare const pseudoElements: {
     ':active': string;
     ':after': string;
@@ -69,12 +58,39 @@ declare const pseudoElements: {
     ':valid': string;
     ':visited': string;
 };
+import type { AttributeScanState } from './attributeSelector.js';
+export type ScanState = AttributeScanState & {
+    pseudoPrefix: string | undefined;
+    previousDelim: string | undefined;
+    vendorPrefix: string | undefined;
+    msPlaceholder: boolean;
+};
+export type SelectorInfo = {
+    compatible: boolean;
+    prefix: string | undefined;
+    msPlaceholder: boolean;
+};
+/**
+ * Looks up selectors in a cache that is shared by every check, so each
+ * distinct selector is scanned once per stylesheet.
+ *
+ * @param {string[] | undefined} browsers
+ * @param {Map<string, SelectorInfo>} [cache]
+ * @return {(selector: string) => SelectorInfo}
+ */
+declare function createSelectorLookup(browsers: string[] | undefined, cache?: Map<string, SelectorInfo>): (selector: string) => SelectorInfo;
 /**
  * @param {string[]} selectors
- * @param{string[]=} browsers
- * @param{Map<string,boolean>=} compatibilityCache
+ * @param {(selector: string) => SelectorInfo} lookup
  * @return {boolean}
  */
-declare function ensureCompatibility(selectors: string[], browsers?: string[] | undefined, compatibilityCache?: Map<string, boolean> | undefined): boolean;
-export { sameVendor, noVendor, pseudoElements, ensureCompatibility };
+declare function selectorsCompatible(selectors: string[], lookup: (selector: string) => SelectorInfo): boolean;
+/**
+ * @param {string[]} selectors
+ * @param {string[]=} browsers
+ * @param {Map<string, SelectorInfo>=} cache
+ * @return {boolean}
+ */
+declare function ensureCompatibility(selectors: string[], browsers?: string[] | undefined, cache?: Map<string, SelectorInfo> | undefined): boolean;
+export { pseudoElements, ensureCompatibility, createSelectorLookup, selectorsCompatible, };
 //# sourceMappingURL=ensureCompatibility.d.ts.map

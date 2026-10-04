@@ -1,11 +1,8 @@
 import cssnanoUtils from 'cssnano-utils';
-import {
-  ensureCompatibility,
-  sameVendor,
-  noVendor,
-} from './ensureCompatibility.js';
+import { selectorsCompatible } from './ensureCompatibility.js';
+import { vendorsAllowMerge } from './vendor-profile.js';
 import { filterRuleIntersections, intersect } from './declarations.js';
-import { getMeta } from './rule-meta.js';
+import { getMeta, getVendorProfile } from './rule-meta.js';
 import { buildMergedRule } from './rule-rewrite.js';
 
 const { asciiLowerCase, sameParent } = cssnanoUtils;
@@ -21,39 +18,16 @@ function isRuleOrAtRule(node) {
 /**
  * @param {Rule} ruleA
  * @param {Rule} ruleB
- * @param {string[]} browsers
- * @param {Map<string, boolean>} compatibilityCache
+ * @param {import('./rule-meta.js').SelectorLookup} lookup
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, RuleMeta>} ruleMeta
  * @return {boolean}
  */
-export function canMerge(
-  ruleA,
-  ruleB,
-  browsers,
-  compatibilityCache,
-  ruleCache,
-  ruleMeta
-) {
-  const metaA = getMeta(ruleA, ruleMeta);
-  const metaB = getMeta(ruleB, ruleMeta);
-  const a = metaA.selectors;
-  const b = metaB.selectors;
-  const selectors = a.concat(b);
-
-  if (ruleCache.has(ruleA) && ruleCache.has(ruleB)) {
-    // Both already validated
-  } else if (ruleCache.has(ruleA)) {
-    if (!ensureCompatibility(b, browsers, compatibilityCache)) return false;
-  } else if (ruleCache.has(ruleB)) {
-    if (!ensureCompatibility(a, browsers, compatibilityCache)) return false;
-  } else if (!ensureCompatibility(selectors, browsers, compatibilityCache)) {
-    return false;
-  }
-
+export function canMerge(ruleA, ruleB, lookup, ruleCache, ruleMeta) {
   const parent = sameParent(ruleA, ruleB);
+  if (!parent) return false;
+  // Keyframe selectors are cascaded by position.
   if (
-    parent &&
     ruleA.parent?.type === 'atrule' &&
     asciiLowerCase(
       /** @type {import('postcss').AtRule} */ (ruleA.parent).name
@@ -61,7 +35,20 @@ export function canMerge(
   )
     return false;
   if (ruleA.some(isRuleOrAtRule) || ruleB.some(isRuleOrAtRule)) return false;
-  return parent && (selectors.every(noVendor) || sameVendor(a, b));
+
+  const metaA = getMeta(ruleA, ruleMeta);
+  const metaB = getMeta(ruleB, ruleMeta);
+  // Compatibility holds for a concatenated list exactly when it holds for
+  // each side, so a long absorbing list is never rescanned. The vendor check
+  // follows it, because an incompatible selector has no known prefix.
+  return (
+    (ruleCache.has(ruleA) || selectorsCompatible(metaA.selectors, lookup)) &&
+    (ruleCache.has(ruleB) || selectorsCompatible(metaB.selectors, lookup)) &&
+    vendorsAllowMerge(
+      getVendorProfile(metaA, lookup),
+      getVendorProfile(metaB, lookup)
+    )
+  );
 }
 
 /**
