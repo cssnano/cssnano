@@ -456,6 +456,10 @@ importers:
         version: 8.5.28
 
   packages/postcss-discard-empty:
+    dependencies:
+      cssnano-utils:
+        specifier: workspace:^
+        version: link:../cssnano-utils
     devDependencies:
       postcss:
         specifier: 'catalog:'
