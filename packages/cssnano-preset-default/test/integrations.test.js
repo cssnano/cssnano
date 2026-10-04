@@ -31,6 +31,14 @@ describe('CSS processing', () => {
   );
 
   test(
+    'should keep the first @layer block emptied by duplicate removal, because it fixes the layer order',
+    withDefaults.processCSS(
+      '@layer x{.a{color:red}}@layer y{.b{color:blue}}@layer x{.a{color:red}}',
+      '@layer x{}@layer y{.b{color:blue}}@layer x{.a{color:red}}'
+    )
+  );
+
+  test(
     'should merge alignment longhands into place-content when every target supports place-*',
     processCSSWithPresetFactory(
       preset({ overrideBrowserslist: 'chrome 120, firefox 120, safari 17' })
