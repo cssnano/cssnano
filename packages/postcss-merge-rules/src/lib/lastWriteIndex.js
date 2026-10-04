@@ -69,34 +69,47 @@ function raise(map, key, position) {
 }
 
 /**
- * Newest write per leading name segment, for the name-based fallback that
- * relates vendor extensions the property data does not describe. Properties
- * interact when their leading segment matches and their segment counts differ
- * or their unprefixed names are equal.
+ * A table of the latest position of each property, grouped by the first word
+ * of its name, for relating properties the property data does not describe,
+ * such as unknown vendor-prefixed properties. Ignoring vendor prefixes, two
+ * property names are related when they start with the same hyphen-separated
+ * word and are either equal or differ in word count: `mask` and `mask-image`
+ * are related, `mask-image` and `mask-size` are not.
  */
 class SegmentIndex {
+  #byLead;
+  #everything;
   constructor() {
     /** @type {Map<string, {lengths: Map<string | number, number>, names: Map<string | number, number>}>} */
-    this.byLead = new Map();
-    this.everything = { lengths: new Map(), names: new Map() };
+    this.#byLead = new Map();
+    this.#everything = { lengths: new Map(), names: new Map() };
   }
 
-  /** @param {{lead: string, length: number, bare: string}} keys @param {number} position */
+  /**
+   * Stores `position` as the latest position for the property's word count
+   * and for its unprefixed name, both in the hash table for its first word
+   * and in the table covering all properties.
+   *
+   * @param {{lead: string, length: number, bare: string}} keys
+   * @param {number} position
+   */
   record({ lead, length, bare }, position) {
-    let leading = this.byLead.get(lead);
+    let leading = this.#byLead.get(lead);
     if (!leading) {
       leading = { lengths: new Map(), names: new Map() };
-      this.byLead.set(lead, leading);
+      this.#byLead.set(lead, leading);
     }
-    for (const group of [leading, this.everything]) {
+    for (const group of [leading, this.#everything]) {
       raise(group.lengths, length, position);
       raise(group.names, bare, position);
     }
   }
 
   /**
-   * `place` is a wildcard leading segment, since `place-content` expands to
-   * several properties with other leading segments.
+   * Latest position of a related property, or -1 if there is none. The first
+   * word `place` matches any first word, because shorthands such as
+   * `place-content` set longhands named with other words (`align-content`).
+   * Time is linear in the number of distinct word counts recorded.
    *
    * @param {{lead: string, length: number, bare: string}} keys
    * @return {number}
@@ -104,8 +117,8 @@ class SegmentIndex {
   newest({ lead, length, bare }) {
     const groups =
       lead === 'place'
-        ? [this.everything]
-        : [this.byLead.get(lead), this.byLead.get('place')];
+        ? [this.#everything]
+        : [this.#byLead.get(lead), this.#byLead.get('place')];
     let newest = -1;
     for (const group of groups) {
       if (!group) continue;
@@ -163,81 +176,59 @@ function keysOf(prop) {
 }
 
 /**
- * Answers "has a declaration that conflicts with this one been written since
- * position p?" for the children of one parent, visited in document order, in
- * time proportional to the largest longhand expansion. `isConflictingProp`
- * defines the relation; the index only has to give the same answers faster.
+ * A table of the latest position at which each property was declared among
+ * the children of one parent, visited in document order. It tells whether a
+ * conflicting declaration appears after a given position, in time linear in
+ * the number of longhands the property expands to. The answers match
+ * `isConflictingProp`; the table only computes them faster.
  *
- * Positions are caller-defined, increase in document order, and a write at
- * position p is not "since" p.
+ * Positions are chosen by the caller and increase in document order. A
+ * declaration at position p does not count as appearing after p.
  */
-export default function createLastWriteIndex() {
+export default class LastWriteIndex {
   /** @type {Map<string | number, number>} */
-  const lastCustom = new Map();
+  #lastCustom = new Map();
   /** @type {Map<string | number, number>} */
-  const lastName = new Map();
+  #lastName = new Map();
   /** @type {Map<string | number, number>} */
-  const lastLonghand = new Map();
+  #lastLonghand = new Map();
   // Per logical property group, one position for physical writes and one for
   // flow-relative writes: only members on opposite sides can address the same
   // side of the box.
   /** @type {Map<string | number, number>} */
-  const lastSide = new Map();
-  const anySegments = new SegmentIndex();
-  const unknownSegments = new SegmentIndex();
-  let lastAll = -1;
-  // Newest write that `all` resets: everything except `direction`,
+  #lastSide = new Map();
+  #anySegments = new SegmentIndex();
+  #unknownSegments = new SegmentIndex();
+  #lastAll = -1;
+  // Newest write that `all` resets: #everything except `direction`,
   // `unicode-bidi` and custom properties.
-  let lastResettable = -1;
-  let lastBarrier = -1;
-
+  #lastResettable = -1;
+  #lastBarrier = -1;
   /**
    * @param {{prop: string}} declaration
    * @param {number} position
    */
-  function record(declaration, position) {
+  record(declaration, position) {
     const keys = keysOf(declaration.prop);
     if (keys.custom) {
-      raise(lastCustom, keys.key, position);
+      raise(this.#lastCustom, keys.key, position);
       return;
     }
     if (keys.all) {
-      lastAll = Math.max(lastAll, position);
-      lastResettable = Math.max(lastResettable, position);
+      this.#lastAll = Math.max(this.#lastAll, position);
+      this.#lastResettable = Math.max(this.#lastResettable, position);
       return;
     }
     if (keys.subjectToAll) {
-      lastResettable = Math.max(lastResettable, position);
+      this.#lastResettable = Math.max(this.#lastResettable, position);
     }
-    raise(lastName, keys.name, position);
+    raise(this.#lastName, keys.name, position);
     for (const { name, side } of keys.longhands) {
-      raise(lastLonghand, name, position);
-      if (side) raise(lastSide, side, position);
+      raise(this.#lastLonghand, name, position);
+      if (side) raise(this.#lastSide, side, position);
     }
-    anySegments.record(keys, position);
-    if (!keys.known) unknownSegments.record(keys, position);
-  }
-
-  /**
-   * Position of the newest write that conflicts with `declaration`, or -1.
-   *
-   * @param {{prop: string}} declaration
-   * @return {number}
-   */
-  function lastConflict(declaration) {
-    const keys = keysOf(declaration.prop);
-    if (keys.custom) return lastCustom.get(keys.key) ?? -1;
-    if (keys.all) return lastResettable;
-    let newest = Math.max(
-      lastName.get(keys.name) ?? -1,
-      keys.subjectToAll ? lastAll : -1
-    );
-    if (!keys.known) return Math.max(newest, anySegments.newest(keys));
-    for (const { name, opposite } of keys.longhands) {
-      newest = Math.max(newest, lastLonghand.get(name) ?? -1);
-      if (opposite) newest = Math.max(newest, lastSide.get(opposite) ?? -1);
-    }
-    return Math.max(newest, unknownSegments.newest(keys));
+    this.#anySegments.record(keys, position);
+    if (!keys.known) this.#unknownSegments.record(keys, position);
   }
 
   /**
@@ -249,44 +240,61 @@ export default function createLastWriteIndex() {
    * @param {number} position
    * @return {void}
    */
-  function recordNode(node, position) {
+  recordNode(node, position) {
     if (node.type === 'decl') {
-      record(node, position);
+      this.record(node, position);
     } else if (node.type === 'atrule' && !isConditionalGroupRule(node)) {
-      lastBarrier = Math.max(lastBarrier, position);
+      this.#lastBarrier = Math.max(this.#lastBarrier, position);
     } else if ('nodes' in node && node.nodes) {
-      for (const child of node.nodes) recordNode(child, position);
+      for (const child of node.nodes) this.recordNode(child, position);
     }
   }
+  /**
+   * Position of the newest write that conflicts with `declaration`, or -1.
+   *
+   * @param {{prop: string}} declaration
+   * @return {number}
+   */
+  lastConflict(declaration) {
+    const keys = keysOf(declaration.prop);
+    if (keys.custom) return this.#lastCustom.get(keys.key) ?? -1;
+    if (keys.all) return this.#lastResettable;
+    let newest = Math.max(
+      this.#lastName.get(keys.name) ?? -1,
+      keys.subjectToAll ? this.#lastAll : -1
+    );
+    if (!keys.known) return Math.max(newest, this.#anySegments.newest(keys));
+    for (const { name, opposite } of keys.longhands) {
+      newest = Math.max(newest, this.#lastLonghand.get(name) ?? -1);
+      if (opposite)
+        newest = Math.max(newest, this.#lastSide.get(opposite) ?? -1);
+    }
+    return Math.max(newest, this.#unknownSegments.newest(keys));
+  }
 
-  return {
-    record,
-    lastConflict,
+  /**
+   * @param {{prop: string}[]} declarations
+   * @param {number} position
+   * @return {boolean}
+   */
+  conflictsSince(declarations, position) {
+    return (
+      this.#lastBarrier > position ||
+      declarations.some(
+        (declaration) => this.lastConflict(declaration) > position
+      )
+    );
+  }
 
-    recordNode,
-
-    /**
-     * @param {{prop: string}[]} declarations
-     * @param {number} position
-     * @return {boolean}
-     */
-    conflictsSince(declarations, position) {
-      return (
-        lastBarrier > position ||
-        declarations.some((declaration) => lastConflict(declaration) > position)
-      );
-    },
-
-    /**
-     * Declarations that moved to `position` are written there now. Every
-     * entry only ever moves forward, so a later write to the same property
-     * is kept.
-     *
-     * @param {{prop: string}[]} declarations
-     * @param {number} position
-     */
-    moveWrites(declarations, position) {
-      for (const declaration of declarations) record(declaration, position);
-    },
-  };
+  /**
+   * Declarations that moved to `position` are written there now. Every
+   * entry only ever moves forward, so a later write to the same property
+   * is kept.
+   *
+   * @param {{prop: string}[]} declarations
+   * @param {number} position
+   */
+  moveWrites(declarations, position) {
+    for (const declaration of declarations) this.record(declaration, position);
+  }
 }

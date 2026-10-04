@@ -27,19 +27,13 @@ test('should not perform a trailing walkRules traversal to flush rule selectors'
   assert.strictEqual(root.toString(), 'h1,h2{display:block}');
 });
 
-test('should synchronously update rule.selector on the AST during mergeMatchingDeclarations', async () => {
+test('should leave the merged selector list on the surviving rule of the AST after merging equal declarations', async () => {
   const root = postcss.parse('h1{color:red}h2{color:red}');
-  let intermediateSelector = null;
-  const originalRemove = root.first.remove.bind(root.first);
-  root.first.remove = function () {
-    // When the first rule is being removed, the remaining second rule
-    // should already have its selector updated.
-    intermediateSelector = root.nodes[1]?.selector;
-    return originalRemove();
-  };
+  const survivor = root.last;
   await mergeRules(root);
-  assert.strictEqual(intermediateSelector, 'h1,h2');
-  assert.strictEqual(root.toString(), 'h1,h2{color:red}');
+  assert.strictEqual(root.nodes.length, 1);
+  assert.strictEqual(root.first, survivor);
+  assert.strictEqual(survivor.selector, 'h1,h2');
 });
 
 test('should preserve selector synchronization across chained sequential merges', async () => {

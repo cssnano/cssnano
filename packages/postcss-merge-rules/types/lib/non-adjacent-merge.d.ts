@@ -1,5 +1,5 @@
-import type { Container, Rule } from 'postcss';
-import type { RuleMeta } from './rule-meta.js';
+import type { Container } from 'postcss';
+import type MergeState from './mergeState.js';
 /**
  * Joins siblings that apply under the same circumstances across any nodes
  * between them that set no conflicting property, in every container except
@@ -21,11 +21,8 @@ import type { RuleMeta } from './rule-meta.js';
  * when no node between them sets a property its declarations also set.
  *
  * @param {Container} root
- * @param {(first: Rule, second: Rule) => boolean} canMerge
- * @param {WeakMap<Rule, RuleMeta>} ruleMeta
- * @param {WeakSet<Rule>} ruleCache rules whose selectors are known to be compatible
- * @param {import('./rule-meta.js').SelectorLookup} lookup
+ * @param {MergeState} mergeState
  * @return {boolean} whether anything was joined
  */
-export declare function joinNonAdjacent(root: Container, canMerge: (first: Rule, second: Rule) => boolean, ruleMeta: WeakMap<Rule, RuleMeta>, ruleCache: WeakSet<Rule>, lookup: import('./rule-meta.js').SelectorLookup): boolean;
+export declare function joinNonAdjacent(root: Container, mergeState: MergeState): boolean;
 //# sourceMappingURL=non-adjacent-merge.d.ts.map

@@ -1,52 +1,8 @@
-import type { Root, Rule } from 'postcss';
-import type { RuleMeta } from './rule-meta.js';
-export type ScanOperations = {
-    canMerge: (first: Rule, second: Rule) => boolean;
-    mergeParents: (first: Rule, second: Rule) => boolean;
-    mergeMatchingDeclarations: (first: Rule, second: Rule) => Rule[] | null;
-    mergeMatchingSelectors: (first: Rule, second: Rule) => Rule[] | null;
-    partialMerge: (first: Rule, second: Rule) => Rule[];
-    ruleMeta: WeakMap<Rule, RuleMeta>;
-};
-export type RuleProfile = {
-    meta: RuleMeta;
-    ids: number[];
-    idSet: Set<number>;
-};
-/** @import {ChildNode, Container, Declaration, Node, Root, Rule} from 'postcss' */
-/** @import {RuleMeta} from './rule-meta.js' */
-/**
- * @typedef {Object} ScanOperations
- * @property {(first: Rule, second: Rule) => boolean} canMerge
- * @property {(first: Rule, second: Rule) => boolean} mergeParents
- * @property {(first: Rule, second: Rule) => Rule[] | null} mergeMatchingDeclarations
- * @property {(first: Rule, second: Rule) => Rule[] | null} mergeMatchingSelectors
- * @property {(first: Rule, second: Rule) => Rule[]} partialMerge
- * @property {WeakMap<Rule, RuleMeta>} ruleMeta
- */
-/**
- * @typedef {object} RuleProfile
- * @property {RuleMeta} meta
- * @property {number[]} ids
- * @property {Set<number>} idSet
- */
-/**
- * Rule profiles for every run of the scan over one stylesheet. A profile is
- * keyed by the rule's metadata. Joins delete it for a rule whose declarations
- * they edit; a rule that only gains selectors keeps it, and the profile reads
- * the selectors through the metadata, so it stays current.
- *
- * @return {{profiles: WeakMap<RuleMeta, RuleProfile>, declarationIds: Map<string, number>}}
- */
-export declare function createProfileCache(): {
-    profiles: WeakMap<RuleMeta, RuleProfile>;
-    declarationIds: Map<string, number>;
-};
-export type RuleLink = {
-    rule: Rule;
-    prev: RuleLink | null;
-    next: RuleLink | null;
-};
+import type { Root } from 'postcss';
+import type MergeState from './mergeState.js';
+/** @import {Container, Root, Rule} from 'postcss' */
+/** @import MergeState from './mergeState.js' */
+/** @import {Placement, RuleLink} from './ruleSequence.js' */
 /**
  * Merges neighboring rules in left-to-right sweeps, trying the pair that
  * shares the most declarations first and the earlier pair on a tie. That
@@ -59,9 +15,8 @@ export type RuleLink = {
  * sweeps stop once one moves no rule.
  *
  * @param {Root} root
- * @param {ScanOperations} operations
- * @param {ReturnType<typeof createProfileCache>} [cache]
+ * @param {MergeState} mergeState
  * @return {void}
  */
-export default function runScan(root: Root, operations: ScanOperations, cache?: ReturnType<typeof createProfileCache>): void;
+export default function runScan(root: Root, mergeState: MergeState): void;
 //# sourceMappingURL=scan.d.ts.map

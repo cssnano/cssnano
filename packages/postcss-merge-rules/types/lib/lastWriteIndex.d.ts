@@ -41,22 +41,43 @@ export declare function isOpaque(node: ChildNode): boolean;
  */
 export declare function collectDeclarations(node: ChildNode): Declaration[];
 /**
- * Answers "has a declaration that conflicts with this one been written since
- * position p?" for the children of one parent, visited in document order, in
- * time proportional to the largest longhand expansion. `isConflictingProp`
- * defines the relation; the index only has to give the same answers faster.
+ * A table of the latest position at which each property was declared among
+ * the children of one parent, visited in document order. It tells whether a
+ * conflicting declaration appears after a given position, in time linear in
+ * the number of longhands the property expands to. The answers match
+ * `isConflictingProp`; the table only computes them faster.
  *
- * Positions are caller-defined, increase in document order, and a write at
- * position p is not "since" p.
+ * Positions are chosen by the caller and increase in document order. A
+ * declaration at position p does not count as appearing after p.
  */
-export default function createLastWriteIndex(): {
-    record: (declaration: {
+export default class LastWriteIndex {
+    #private;
+    /**
+     * @param {{prop: string}} declaration
+     * @param {number} position
+     */
+    record(declaration: {
         prop: string;
-    }, position: number) => void;
-    lastConflict: (declaration: {
+    }, position: number): void;
+    /**
+     * Record every write a child of the parent makes. An at-rule that is not a
+     * conditional group rule is a barrier, since moving anything across it is
+     * not known to preserve the cascade.
+     *
+     * @param {ChildNode} node
+     * @param {number} position
+     * @return {void}
+     */
+    recordNode(node: ChildNode, position: number): void;
+    /**
+     * Position of the newest write that conflicts with `declaration`, or -1.
+     *
+     * @param {{prop: string}} declaration
+     * @return {number}
+     */
+    lastConflict(declaration: {
         prop: string;
-    }) => number;
-    recordNode: (node: ChildNode, position: number) => void;
+    }): number;
     /**
      * @param {{prop: string}[]} declarations
      * @param {number} position
@@ -76,5 +97,5 @@ export default function createLastWriteIndex(): {
     moveWrites(declarations: {
         prop: string;
     }[], position: number): void;
-};
+}
 //# sourceMappingURL=lastWriteIndex.d.ts.map

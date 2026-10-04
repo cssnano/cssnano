@@ -1,14 +1,7 @@
 import type { Rule } from 'postcss';
-/**
- * Moves `second` into the parent of `first`. A conditional group rule it
- * leaves empty applies nothing, so it is removed; keeping it would make every
- * later pair walk across it.
- *
- * @param {Rule} first
- * @param {Rule} second
- * @return {boolean}
- */
-export declare function mergeParents(first: Rule, second: Rule): boolean;
+import type { Placement } from './rule-sequence.js';
+/** @import {Rule} from 'postcss' */
+/** @import {Placement} from './ruleSequence.js' */
 /**
  * Appends the content of `incoming` to `receiving`. A declaration of
  * `incoming` is redundant only when the last declaration of `receiving` that
@@ -22,16 +15,17 @@ export declare function mergeParents(first: Rule, second: Rule): boolean;
  */
 export declare function appendDeclarations(receiving: Rule, incoming: Rule): void;
 /**
+ * Splits the declarations both rules set out of them into a rule with both
+ * selectors, which takes the place of the later rule, between a leftover of
+ * each. A rule left without declarations is dropped.
+ *
  * @param {Rule} first
  * @param {Rule} second
  * @param {Set<number>} claimedEarlierIndices
  * @param {Set<number>} claimedIndices
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, import('./rule-meta.js').RuleMeta>} ruleMeta
- * @return {{rule: Rule, replacements: Rule[]}}
+ * @return {Placement | null} null when the output would not get shorter
  */
-export declare function buildMergedRule(first: Rule, second: Rule, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, import('./rule-meta.js').RuleMeta>): {
-    rule: Rule;
-    replacements: Rule[];
-};
+export declare function buildMergedRule(first: Rule, second: Rule, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, import('./rule-meta.js').RuleMeta>): Placement | null;
 //# sourceMappingURL=rule-rewrite.d.ts.map

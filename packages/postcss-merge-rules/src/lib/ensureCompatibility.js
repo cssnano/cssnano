@@ -3,7 +3,6 @@ import { isInvalidSelector } from 'postcss-minify-selectors';
 import { advanceAttribute } from './attributeSelector.js';
 import { cssSel2, cssSel3, isSupportedCached } from './supportCache.js';
 import cssnanoUtils from 'cssnano-utils';
-import { isMsInputPlaceholder, vendorPrefixOf } from './vendor-profile.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -27,7 +26,7 @@ const combinatorFeatures = new Map([
 
 // Each value is a caniuse feature key verified to describe exactly that
 // pseudo; pseudos without a verified key stay gated below.
-const pseudoElements = {
+export const pseudoElements = {
   ':active': cssSel2,
   ':after': cssGencontent,
   ':any-link': 'css-any-link',
@@ -87,6 +86,49 @@ const pseudoElements = {
   ':valid': formValidation,
   ':visited': cssSel2,
 };
+
+const vendorPrefixes = new Set([
+  '-ah-',
+  '-apple-',
+  '-atsc-',
+  '-epub-',
+  '-hp-',
+  '-khtml-',
+  '-moz-',
+  '-ms-',
+  '-o-',
+  '-rim',
+  '-ro-',
+  '-tc-',
+  '-wap-',
+  '-webkit-',
+  '-xv-',
+]);
+
+/**
+ * The vendor prefix of a pseudo-class or pseudo-element name, such as
+ * `-moz-` for `-moz-selection`; a prefix is meaningful only at the start of
+ * an identifier, so `x-moz-y` has none.
+ *
+ * @param {string} name unescaped and in ASCII lower case
+ * @return {string} the prefix, or the empty string when there is none
+ */
+export function vendorPrefixOf(name) {
+  if (name[0] !== '-') return '';
+  const prefix = name.slice(0, name.indexOf('-', 1) + 1);
+  return vendorPrefixes.has(prefix) ? prefix : '';
+}
+
+/**
+ * Internet Explorer uses :-ms-input-placeholder.
+ * Microsoft Edge uses ::-ms-input-placeholder.
+ *
+ * @param {string} name unescaped and in ASCII lower case
+ * @return {boolean}
+ */
+export function isMsInputPlaceholder(name) {
+  return name === '-ms-input-placeholder';
+}
 
 /**
  * @param {string} selector
@@ -325,7 +367,7 @@ function computeSelectorInfo(selector, browsers) {
  * @param {Map<string, SelectorInfo>} [cache]
  * @return {(selector: string) => SelectorInfo}
  */
-function createSelectorLookup(browsers, cache = new Map()) {
+export function createSelectorLookup(browsers, cache = new Map()) {
   return (selector) => {
     let info = cache.get(selector);
     if (info === undefined) {
@@ -341,7 +383,7 @@ function createSelectorLookup(browsers, cache = new Map()) {
  * @param {(selector: string) => SelectorInfo} lookup
  * @return {boolean}
  */
-function selectorsCompatible(selectors, lookup) {
+export function selectorsCompatible(selectors, lookup) {
   // Should not merge mixins
   if (selectors.some(isCssMixin)) {
     return false;
@@ -353,20 +395,3 @@ function selectorsCompatible(selectors, lookup) {
   }
   return selectors.every((selector) => lookup(selector).compatible);
 }
-
-/**
- * @param {string[]} selectors
- * @param {string[]=} browsers
- * @param {Map<string, SelectorInfo>=} cache
- * @return {boolean}
- */
-function ensureCompatibility(selectors, browsers, cache) {
-  return selectorsCompatible(selectors, createSelectorLookup(browsers, cache));
-}
-
-export {
-  pseudoElements,
-  ensureCompatibility,
-  createSelectorLookup,
-  selectorsCompatible,
-};

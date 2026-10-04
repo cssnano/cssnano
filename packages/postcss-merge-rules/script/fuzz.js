@@ -3,7 +3,10 @@ import postcss from 'postcss';
 import { tokenizer, TokenType } from '@csstools/css-tokenizer';
 import browserslist from 'browserslist';
 import plugin from '../src/index.js';
-import { ensureCompatibility as currentCompatibility } from '../src/lib/ensureCompatibility.js';
+import {
+  createSelectorLookup,
+  selectorsCompatible,
+} from '../src/lib/ensureCompatibility.js';
 import {
   ensureCompatibility as legacyCompatibility,
   noVendor,
@@ -23,6 +26,16 @@ import {
   parseFuzzArgs,
   runFuzz,
 } from '../../../util/fuzzRunner.js';
+
+/**
+ * @param {string[]} selectors
+ * @param {string[]=} browsers
+ * @param {Map<string, SelectorInfo>=} cache
+ * @return {boolean}
+ */
+export function currentCompatibility(selectors, browsers, cache) {
+  return selectorsCompatible(selectors, createSelectorLookup(browsers, cache));
+}
 
 /** Return a canonical structural description, independent of generated names. */
 export function structuralShape(selector) {
