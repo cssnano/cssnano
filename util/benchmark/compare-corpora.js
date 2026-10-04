@@ -74,6 +74,7 @@ export function compareCorpora(
   });
   return {
     base,
+    available: baseAll ?? [],
     candidate,
     common,
     baseHash: base ? digestCorpus(baseDir, base) : null,

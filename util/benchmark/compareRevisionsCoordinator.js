@@ -15,7 +15,15 @@ export function blockSummary(block, totalBlocks) {
   const baseline = sampleFor('baseline');
   const candidate = sampleFor('candidate');
   if (!baseline?.length || !candidate?.length) return null;
-  return `block ${block.blockId}/${totalBlocks}: baseline ${Math.round(median(baseline))} ms, candidate ${Math.round(median(candidate))} ms`;
+  const summary = `block ${block.blockId}/${totalBlocks}: baseline ${Math.round(median(baseline))} ms, candidate ${Math.round(median(candidate))} ms`;
+  const remaining = totalBlocks - block.blockId;
+  if (!block.durationMs || remaining <= 0) return summary;
+  // An adaptive run may stop earlier, so this is an upper estimate.
+  const minutes = Math.max(
+    1,
+    Math.round((block.durationMs * remaining) / 60_000)
+  );
+  return `${summary}; about ${minutes} min left at this pace`;
 }
 
 export function commandFor(
@@ -255,7 +263,31 @@ function checkAdaptiveStop(blocks, config, stopAfter, plannedBlocks) {
   return null;
 }
 
-export function executeComparison(config, run = runProcess) {
+// A budget is a ceiling on starting another balanced pair, never a reason to
+// run fewer than the minimum blocks: stopping on elapsed time alone keeps the
+// analysis valid, since pairs are complete and order-balanced.
+function checkTimeBudget(blocks, config, stopAfter, elapsedMs) {
+  if (
+    !config.timeBudgetMs ||
+    blocks.length < stopAfter ||
+    blocks.length % 2 !== 0
+  ) {
+    return null;
+  }
+  const pairMs = (elapsedMs / blocks.length) * 2;
+  if (elapsedMs + pairMs <= config.timeBudgetMs) return null;
+  return {
+    atBlock: blocks.length,
+    elapsedMs,
+    reason: 'time budget reached',
+  };
+}
+
+export function executeComparison(
+  config,
+  run = runProcess,
+  now = () => performance.now()
+) {
   validateComparisonBlockCounts(config);
   mkdirSync(config.resultsDir, { recursive: true });
   const plannedBlocks = config.adaptive
@@ -267,6 +299,7 @@ export function executeComparison(config, run = runProcess) {
   const blocks = [];
   const approvedOutputChanges = new Map();
   let adaptiveStop = null;
+  const comparisonStarted = now();
   for (const scheduled of schedule) {
     if (cooldown > 0 && blocks.length > 0) {
       Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, cooldown);
@@ -323,7 +356,9 @@ export function executeComparison(config, run = runProcess) {
         );
     }
     if (blockFailure) break;
-    adaptiveStop = checkAdaptiveStop(blocks, config, stopAfter, plannedBlocks);
+    adaptiveStop =
+      checkAdaptiveStop(blocks, config, stopAfter, plannedBlocks) ??
+      checkTimeBudget(blocks, config, stopAfter, now() - comparisonStarted);
     if (adaptiveStop) break;
   }
   const artifact = buildComparisonArtifact(

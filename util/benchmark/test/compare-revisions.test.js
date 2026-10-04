@@ -1,8 +1,5 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import { test } from 'node:test';
 import { analyzeComparison } from '../compare-analysis.js';
 import { resolveBenchmarkTarget } from '../bench-cases.js';
@@ -13,92 +10,12 @@ import {
   executeComparison,
 } from '../compare-revisions.js';
 
-import { HASH, mockProvenance as provenance } from '../benchTestHelpers.js';
-
-function config(overrides = {}) {
-  return {
-    baseDir: process.cwd(),
-    candidateDir: process.cwd(),
-    resultsDir: mkdtempSync(join(tmpdir(), 'cssnano-coordinator-')),
-    baseRevision: '1'.repeat(40),
-    candidateRevision: '2'.repeat(40),
-    blocks: 6,
-    minimumBlocks: 4,
-    requestedBlocks: 6,
-    seed: 'test-seed',
-    bootstrapSeed: 'test-bootstrap',
-    preset: 'default',
-    mode: 'quick',
-    warmup: 0,
-    iters: 2,
-    bootstrapResamples: 50,
-    precisionTarget: 0.05,
-    orderInteractionThreshold: 0.05,
-    superiorityConfidenceLevel: 0.95,
-    equivalenceConfidenceLevel: 0.9,
-    runtimeNonRegressionMargin: 1.1,
-    practicalEquivalenceMargin: 1.1,
-    ...overrides,
-  };
-}
-
-function observation(value, hash = 'same') {
-  const outputHash = hash === 'same' ? HASH : 'b'.repeat(64);
-  return {
-    totalSamples: [value, value],
-    perFileSamples: { fixture: [value, value] },
-    outputHashes: { fixture: outputHash },
-    summary: {
-      total: {
-        n: 2,
-        minMs: value,
-        medianMs: value,
-        meanMs: value,
-        p95Ms: value,
-        maxMs: value,
-      },
-      frameworks: [
-        {
-          name: 'fixture',
-          n: 2,
-          minMs: value,
-          medianMs: value,
-          meanMs: value,
-          p95Ms: value,
-          maxMs: value,
-        },
-      ],
-    },
-  };
-}
-
-function childConfiguration(values) {
-  return {
-    runs: 1,
-    seed: values.seed,
-    target: resolveBenchmarkTarget(values.case),
-    reliability: 'smoke',
-    superiorityConfidenceLevel: values.superiorityConfidenceLevel,
-    equivalenceConfidenceLevel: values.equivalenceConfidenceLevel,
-    runtimeNonRegressionMargin: values.runtimeNonRegressionMargin,
-    practicalEquivalenceMargin: values.practicalEquivalenceMargin,
-    bootstrapResamples: values.bootstrapResamples,
-    bootstrapSeed: values.bootstrapSeed,
-    minimumBlocks: values.minimumBlocks,
-    requestedBlocks: values.requestedBlocks,
-    precisionTarget: values.precisionTarget,
-    orderInteractionThreshold: values.orderInteractionThreshold,
-    intervalMethod: 'crossover-t-interval',
-    analyzerVersion: '3.0.0',
-    mode: values.mode,
-    warmup: values.warmup,
-    iters: values.iters,
-    preset: values.preset,
-    case: values.case ?? null,
-    corpusSelector: values.only ?? null,
-    nodeEnv: 'production',
-  };
-}
+import { mockProvenance as provenance } from '../benchTestHelpers.js';
+import {
+  childConfiguration,
+  config,
+  observation,
+} from '../comparisonTestHelpers.js';
 
 test('coordinator starts a fresh observation for each side of each block', () => {
   let calls = 0;
@@ -286,11 +203,41 @@ test('quiet children receive --quiet and the coordinator summarizes each block',
       run: observation(value),
     };
   });
-  assert.equal(
+  assert.match(
     blockSummary(artifact.blocks[0], 2),
-    'block 1/2: baseline 100 ms, candidate 100 ms'
+    /^block 1\/2: baseline 100 ms, candidate 100 ms/v
   );
   assert.equal(blockSummary({ blockId: 3, observations: {} }, 2), null);
+});
+
+test('blockSummary appends the time left at the pace of the finished blocks', () => {
+  const block = {
+    blockId: 2,
+    durationMs: 90_000,
+    observations: {
+      baseline: { run: { totalSamples: [10] } },
+      candidate: { run: { totalSamples: [12] } },
+    },
+  };
+  assert.equal(
+    blockSummary(block, 6),
+    'block 2/6: baseline 10 ms, candidate 12 ms; about 6 min left at this pace'
+  );
+});
+
+test('blockSummary omits the time left after the last block', () => {
+  const block = {
+    blockId: 4,
+    durationMs: 90_000,
+    observations: {
+      baseline: { run: { totalSamples: [10] } },
+      candidate: { run: { totalSamples: [12] } },
+    },
+  };
+  assert.equal(
+    blockSummary(block, 4),
+    'block 4/4: baseline 10 ms, candidate 12 ms'
+  );
 });
 
 function runMockComparison(values, getTiming = () => 100) {

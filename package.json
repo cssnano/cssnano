@@ -10,6 +10,7 @@
     "bench:smoke": "node ./util/benchmark/bench.js --mode=quick --runs=1",
     "bench:profile": "node ./util/benchmark/bench.js --profile --runs=1",
     "bench:compare": "node ./util/benchmark/compare-revisions.js",
+    "bench:check": "node ./util/benchmark/bench-check.js",
     "bench:reanalyze": "node ./util/benchmark/compare-bench.js",
     "bench:analyze": "node ./util/benchmark/analyze-cpuprofile.js",
     "test:benchmark": "node --test util/benchmark/test/*.js",

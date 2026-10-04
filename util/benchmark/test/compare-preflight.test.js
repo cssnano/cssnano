@@ -127,6 +127,20 @@ test('runPreflight fails with a clear corpora-differ message and a common-corpus
   }
 });
 
+test('runPreflight fails when the fixture selector matches no corpus fixture', async () => {
+  const config = baseConfig({ only: ['merge-rules'] });
+  writeCorpus(join(config.baseDir, 'frameworks'), ['alpha', 'beta']);
+  writeCorpus(join(config.candidateDir, 'frameworks'), ['alpha', 'beta']);
+  try {
+    const { failure } = await runFailingPreflight(config, 'no corpus fixture');
+    assert.match(failure, /merge-rules/v);
+    assert.match(failure, /alpha, beta/v);
+    assert.match(failure, /--case=<name>/v);
+  } finally {
+    cleanupConfig(config);
+  }
+});
+
 test('runPreflight rejects revisions before any expensive work', async () => {
   const config = baseConfig();
   const { result } = await runFailingPreflight(config, 'revision');

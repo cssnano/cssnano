@@ -51,9 +51,15 @@ pnpm bench
 pnpm bench -- --case=selector-reduction
 pnpm bench:smoke -- --case=selector-reduction
 pnpm bench:profile -- --case=selector-reduction
-pnpm bench:compare -- --base-revision=<sha> --candidate-revision=<sha> \
+pnpm bench:check -- --package=<plugin> --budget=90s
+pnpm bench:compare -- --base-revision=<ref> --candidate-revision=<ref> \
   --base-dir=<worktree> --candidate-dir=<worktree> --results-dir=<path>
 ```
+
+`bench:check` benchmarks the working tree against `HEAD` for a plugin's focused
+cases within a time budget and prints one JSON line per case. It gives
+directional evidence in a minute or two; `bench:compare` is the full
+comparison.
 
 Smoke output only verifies that the harness and fixture work. Use the balanced
 comparison workflow for performance reports. It retains every measured

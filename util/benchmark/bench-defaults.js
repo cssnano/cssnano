@@ -97,3 +97,20 @@ export function normalizeBenchmarkConfiguration(configuration = {}) {
     corpusSelector,
   };
 }
+
+const DURATION_UNITS = { s: 1000, m: 60_000 };
+
+/**
+ * @param {string} text a duration such as `90s` or `5m`
+ * @return {number | null} milliseconds, or null when the text is not a duration
+ */
+export function parseDuration(text) {
+  const match = /^(\d+(?:\.\d+)?)([sm])$/v.exec(text ?? '');
+  const ms = match ? Number(match[1]) * DURATION_UNITS[match[2]] : 0;
+  return ms > 0 ? ms : null;
+}
+
+/** @param {number} ms @return {string} whole seconds, such as `30s` */
+export function formatSeconds(ms) {
+  return `${Math.max(1, Math.round(ms / 1000))}s`;
+}
