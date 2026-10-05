@@ -89,6 +89,22 @@ const stateConditions = [
   { property: 'playState', delegate: isPlayState },
 ];
 /**
+ * A name `none` swaps harmlessly only with a fill mode that is also `none`.
+ *
+ * @param {import('../lib/tokenize.js').Term | undefined} term
+ * @param {import('../lib/tokenize.js').Term | undefined} fillMode
+ * @return {boolean}
+ */
+function isShadowedName(term, fillMode) {
+  if (!term || !isIdent(term)) return false;
+  const value = name(term);
+  if (value === 'none') {
+    return fillMode !== undefined && name(fillMode) !== 'none';
+  }
+  return stateConditions.some(({ delegate }) => delegate(value, term));
+}
+
+/**
  * @param {import('../lib/tokenize.js').Term[][]} args
  * @return {import('../lib/tokenize.js').Term[][] | null}
  */
@@ -144,6 +160,8 @@ function normalize(args) {
         state.name.push(node);
       }
     }
+
+    if (isShadowedName(state.name[0], state.fillMode[0])) return null;
 
     list.push([
       ...state.name,

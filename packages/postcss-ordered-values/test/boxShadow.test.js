@@ -10,9 +10,10 @@ test(
 );
 
 test(
-  'preserves box-shadow with modern math functions',
-  passthroughCSS(
-    'a{box-shadow:round(2px, 1px) 0 0 #000;box-shadow:hypot(3px, 4px) 0 0 #000;box-shadow:0 0 abs(-5px) red;box-shadow:sign(10px) 0 0 blue;box-shadow:0 0 mod(10px, 3px) green}'
+  'keeps modern math functions intact, dropping only the literal zero blur',
+  processCSS(
+    'a{box-shadow:round(2px, 1px) 0 0 #000;box-shadow:hypot(3px, 4px) 0 0 #000;box-shadow:0 0 abs(-5px) red;box-shadow:sign(10px) 0 0 blue;box-shadow:0 0 mod(10px, 3px) green}',
+    'a{box-shadow:round(2px, 1px) 0 #000;box-shadow:hypot(3px, 4px) 0 #000;box-shadow:0 0 abs(-5px) red;box-shadow:sign(10px) 0 0 blue;box-shadow:0 0 mod(10px, 3px) green}'
   )
 );
 
@@ -45,7 +46,7 @@ test(
   'orders box-shadow with mixed-unit calc lengths',
   processCSS(
     'a{box-shadow:red calc(1px + 1em) 0 0}',
-    'a{box-shadow:calc(1px + 1em) 0 0 red}'
+    'a{box-shadow:calc(1px + 1em) 0 red}'
   )
 );
 
@@ -155,6 +156,99 @@ describe('Order', () => {
   test(
     'should order box-shadow consistently (12)',
     passthroughCSS('h1{box-shadow:0 0 3px}')
+  );
+});
+
+describe('Trailing zero lengths', () => {
+  test(
+    'drops a zero blur and zero spread, which default to 0',
+    processCSS('h1{box-shadow:0 50px 0 0 #fff}', 'h1{box-shadow:0 50px #fff}')
+  );
+
+  test(
+    'drops only the zero spread when the blur is non-zero',
+    processCSS(
+      'h1{box-shadow:1px 2px 3px 0 red}',
+      'h1{box-shadow:1px 2px 3px red}'
+    )
+  );
+
+  test(
+    'drops a zero blur when no spread follows',
+    processCSS('h1{box-shadow:1px 2px 0 red}', 'h1{box-shadow:1px 2px red}')
+  );
+
+  test(
+    'drops a zero blur and spread written with units',
+    processCSS(
+      'h1{box-shadow:1px 2px 0px 0em red}',
+      'h1{box-shadow:1px 2px red}'
+    )
+  );
+
+  test(
+    'keeps zero offsets, which are required',
+    processCSS('h1{box-shadow:0 0 0 0 #fff}', 'h1{box-shadow:0 0 #fff}')
+  );
+
+  test(
+    'trims each shadow in a list and keeps inset',
+    processCSS(
+      'h1{box-shadow:red 1px 2px 0 0 inset,0 0 0 0 blue}',
+      'h1{box-shadow:inset 1px 2px red,0 0 blue}'
+    )
+  );
+
+  test(
+    'keeps a zero blur before a non-zero spread, since the spread cannot be given without the blur',
+    passthroughCSS('h1{box-shadow:0 0 0 5px red}')
+  );
+
+  test(
+    'drops a zero written in uppercase units and with a sign',
+    processCSS(
+      'h1{box-shadow:1px 2px 0PX -0px red;box-shadow:1px 2px +0.0em 0 red}',
+      'h1{box-shadow:1px 2px red;box-shadow:1px 2px red}'
+    )
+  );
+
+  test(
+    'drops trailing zeros in prefixed box-shadow and keeps !important',
+    processCSS(
+      'h1{-webkit-box-shadow:1px 2px 0 0 red!important}',
+      'h1{-webkit-box-shadow:1px 2px red!important}'
+    )
+  );
+
+  test(
+    'drops a literal zero spread but keeps the calc() blur before it',
+    processCSS(
+      'h1{box-shadow:1px 2px calc(0px) 0 red}',
+      'h1{box-shadow:1px 2px calc(0px) red}'
+    )
+  );
+
+  test(
+    'trims each shadow independently, keeping a zero blur before a non-zero spread',
+    processCSS(
+      'h1{box-shadow:0 0 0 5px red,1px 1px 0 0 blue}',
+      'h1{box-shadow:0 0 0 5px red,1px 1px blue}'
+    )
+  );
+
+  test(
+    'leaves the whole list untouched when one shadow is invalid, so a valid sibling is not trimmed',
+    passthroughCSS('h1{box-shadow:0 0 0 0 red,var(--x)}')
+  );
+
+  test(
+    'leaves the list untouched when none is combined with a shadow, which is invalid',
+    passthroughCSS('h1{box-shadow:none,0 0 0 0 red}')
+  );
+
+  test(
+    'keeps a zero-valued calc() blur, which is not a literal zero',
+    passthroughCSS('h1{box-shadow:1px 2px calc(0px) red}')
   );
 });
 

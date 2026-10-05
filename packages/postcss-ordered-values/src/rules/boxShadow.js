@@ -45,6 +45,27 @@ const isColor = (term, lower) => {
 };
 
 /**
+ * A literal zero <length>.
+ *
+ * @param {import('../lib/tokenize.js').Term} term
+ */
+const isZeroLength = (term) =>
+  isLength(term) &&
+  /** @type {{value: number}} */ (term.tokens[0][4])?.value === 0;
+
+/**
+ * Blur radius and spread distance default to 0, and the spread cannot be
+ * written without the blur, so only trailing zeros are omissible.
+ *
+ * @param {import('../lib/tokenize.js').Term[]} lengths
+ */
+function omitTrailingZeros(lengths) {
+  while (lengths.length > 2 && isZeroLength(lengths[lengths.length - 1])) {
+    lengths.pop();
+  }
+}
+
+/**
  * @param {import('../lib/tokenize.js').Term[][]} args
  * @return {import('../lib/tokenize.js').Term[][] | null}
  */
@@ -94,6 +115,8 @@ function normalize(args) {
     if (val.length < 2 || val.length > 4 || state.color.length > 1) {
       return null;
     }
+
+    omitTrailingZeros(val);
 
     list.push([...state.inset, ...val, ...state.color]);
   }
