@@ -37,6 +37,25 @@ export function standInContainer(rule, container) {
 }
 
 /**
+ * Chains a link for each rule, in order, after `previous`.
+ *
+ * @param {RuleLink} previous
+ * @param {Rule[]} rules
+ * @param {Slot} slot
+ * @return {RuleLink} the last link, or `previous` when there are no rules
+ */
+function linkAfter(previous, rules, slot) {
+  let tail = previous;
+  for (const rule of rules) {
+    /** @type {RuleLink} */
+    const link = { rule, slot, prev: tail, next: null };
+    tail.next = link;
+    tail = link;
+  }
+  return tail;
+}
+
+/**
  * Every rule of a stylesheet in stylesheet order, including rules nested in
  * other rules, rewritten in place and written back once.
  */
@@ -113,8 +132,7 @@ export default class RuleSequence {
   }
 
   /**
-   * Replaces the pair `first` and the link after it with the rules of
-   * `placement`, which are never none.
+   * Replaces the pair `first` and the link after it with the `placement` rules.
    *
    * @param {RuleLink} first
    * @param {Placement} placement
@@ -139,18 +157,11 @@ export default class RuleSequence {
     }
     this.#changed.add(firstSlot.parent).add(secondSlot.parent);
 
-    let tail = before;
-    /** @param {Rule[]} rules @param {Slot} slot */
-    const append = (rules, slot) => {
-      for (const rule of rules) {
-        /** @type {RuleLink} */
-        const link = { rule, slot, prev: tail, next: null };
-        tail.next = link;
-        tail = link;
-      }
-    };
-    append(placement.first, firstSlot);
-    append(placement.second, secondSlot);
+    const tail = linkAfter(
+      linkAfter(before, placement.first, firstSlot),
+      placement.second,
+      secondSlot
+    );
     tail.next = after;
     if (after) after.prev = tail;
     return /** @type {RuleLink} */ (before.next);
@@ -163,20 +174,20 @@ export default class RuleSequence {
    * @return {void}
    */
   write() {
-    // A block that a move left empty applies nothing, and keeping it would
-    // make every later pair walk across it. Its parent is rebuilt without it,
+    // A block which has become empty can be safely ignored, but keeping it would
+    // make every later pair walk across it. Rebuild its parent without it,
     // which avoids searching the children of the parent once per removed
     // block.
-    const emptied = new Set(this.#blocks.emptiedBlocks());
+    const emptied = this.#blocks.emptiedBlocks();
     const changed = new Set(this.#changed);
     for (const container of emptied) {
-      changed.add(/** @type {Container} */ (container.parent));
+      const parent = /** @type {Container} */ (container.parent);
+      if (!emptied.has(parent)) changed.add(parent);
+      changed.delete(container);
     }
-    // A dropped block has no children to write.
-    for (const container of emptied) changed.delete(container);
     // Every container is emptied before any is refilled, so a rule that moves
     // between two of them keeps the parent the refill gives it.
-    const rebuilt = [...changed].map((container) => ({
+    const rebuilt = Array.from(changed, (container) => ({
       container,
       children: this.#slots.childrenOf(
         container,

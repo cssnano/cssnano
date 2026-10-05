@@ -72,11 +72,15 @@ export default class DroppableBlocks {
     return this.#remaining.get(/** @type {Container} */ (node)) === 0;
   }
 
-  /** @return {Container[]} the blocks to remove when the stylesheet is written */
+  /** @return {Set<Container>} the blocks to remove when the stylesheet is written */
   emptiedBlocks() {
-    return [...this.#remaining]
-      .filter(([, count]) => count === 0)
-      .map(([block]) => block);
+    const emptied = new Set();
+    for (const [block, count] of this.#remaining.entries()) {
+      if (count === 0) {
+        emptied.add(block);
+      }
+    }
+    return emptied;
   }
 
   /**

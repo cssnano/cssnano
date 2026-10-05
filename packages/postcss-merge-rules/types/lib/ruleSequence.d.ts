@@ -73,8 +73,7 @@ export default class RuleSequence {
      */
     moveIntoParent(first: RuleLink, second: RuleLink): boolean;
     /**
-     * Replaces the pair `first` and the link after it with the rules of
-     * `placement`, which are never none.
+     * Replaces the pair `first` and the link after it with the `placement` rules.
      *
      * @param {RuleLink} first
      * @param {Placement} placement
