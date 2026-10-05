@@ -2,6 +2,8 @@ packages:
   - 'packages/**'
   - '!site/**'
 autoInstallPeers: true
+hoist: false
+hoistWorkspacePackages: false
 
 catalog:
   autoprefixer: ^10.6.1
