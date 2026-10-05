@@ -132,6 +132,14 @@ cssnano-preset-advanced@9.1.4:
     - discard-duplicates-sibling-conditionals
     - minify-font-values-revert-rule
     - ordered-values-revert-rule
+cssnano-preset-advanced@9.2.0:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - discard-empty-layer-order
+    - merge-rules-drop-emptied-ancestors
+    - merge-rules-nesting-declarations
+    - merge-rules-non-adjacent
+    - merge-rules-vendor-prefix-pseudos
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -288,6 +296,14 @@ cssnano-preset-default@9.2.2:
   dir: packages/cssnano-preset-default
   intents:
     - merge-rules-stale-boundary-hang
+cssnano-preset-default@9.3.0:
+  dir: packages/cssnano-preset-default
+  intents:
+    - discard-empty-layer-order
+    - merge-rules-drop-emptied-ancestors
+    - merge-rules-nesting-declarations
+    - merge-rules-non-adjacent
+    - merge-rules-vendor-prefix-pseudos
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -348,6 +364,10 @@ cssnano-preset-lite@6.0.6:
   dir: packages/cssnano-preset-lite
   intents:
     - discard-comments-selector-boundaries
+cssnano-preset-lite@6.0.7:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - discard-empty-layer-order
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -554,6 +574,14 @@ cssnano@9.2.2:
   dir: packages/cssnano
   intents:
     - merge-rules-stale-boundary-hang
+cssnano@9.3.0:
+  dir: packages/cssnano
+  intents:
+    - discard-empty-layer-order
+    - merge-rules-drop-emptied-ancestors
+    - merge-rules-nesting-declarations
+    - merge-rules-non-adjacent
+    - merge-rules-vendor-prefix-pseudos
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -801,6 +829,10 @@ postcss-discard-empty@9.0.5:
   dir: packages/postcss-discard-empty
   intents:
     - mighty-squids-cross
+postcss-discard-empty@9.0.6:
+  dir: packages/postcss-discard-empty
+  intents:
+    - discard-empty-layer-order
 postcss-discard-overridden@8.0.2:
   dir: packages/postcss-discard-overridden
   intents:
@@ -1068,6 +1100,14 @@ postcss-merge-rules@9.0.8:
   dir: packages/postcss-merge-rules
   intents:
     - merge-rules-stale-boundary-hang
+postcss-merge-rules@9.1.0:
+  dir: packages/postcss-merge-rules
+  intents:
+    - merge-rules-drop-emptied-ancestors
+    - merge-rules-nesting-declarations
+    - merge-rules-non-adjacent
+    - merge-rules-uppercase-keyframes
+    - merge-rules-vendor-prefix-pseudos
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:

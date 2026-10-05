@@ -1,5 +1,21 @@
 # Change Log
 
+## 9.1.0
+
+### Minor Changes
+
+- Merge rules with the same selector and sibling `@media`, `@supports` and `@container` blocks with identical conditions even when other rules sit between them, when none of those rules sets a conflicting property.Do not merge rules across `all`, shorthands that reset their longhands, logical properties that can address the same side, and at-rules whose order matters, such as `@layer` and `@import`. Adjacent rules with the same selector now become one rule. Add the selectors of a later rule to an earlier rule with the identical declaration.
+
+### Patch Changes
+
+- Remove the enclosing named `@layer` and conditional blocks that moving a rule out of a nested conditional group rule left empty.
+
+- Do not merge nested rules when a conflicting declaration from the enclosing rule lies between them, so `.p{&{color:red}color:blue;&{color:red}}` stays red instead of blue.
+
+- Leave the keyframes of an uppercase `@KEYFRAMES` rule unmerged, as for `@keyframes`. At-rule names are case-insensitive, and merging keyframes repeats a keyframe selector.
+
+- Determine the vendor prefix of a selector only from its pseudo-class and pseudo-element names. A class name or attribute value such as `.x-moz-y` or `[title=":-moz-x"]` no longer blocks merging with a `::-moz-selection` rule, and a selector that mixes two vendor prefixes is never merged. Compare pseudo-element names case-insensitively, so `::-WEBKIT-scrollbar` now counts as WebKit-prefixed and stays apart from unprefixed rules.
+
 ## 9.0.8
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.7
+
+### Patch Changes
+
+- Keep an empty `@layer` block when it may fix the layer order. Decode CSS escapes before comparing `@layer` names.
+
 ## 6.0.6
 
 ### Patch Changes
