@@ -14,7 +14,15 @@ import {
  * @return {string}
  */
 function generateRandomRule(rng) {
-  const widths = ['10px', '12em', '15rem', '20vw', 'calc(5px + 5px)', 'auto'];
+  const widths = [
+    '0px',
+    '10px',
+    '12em',
+    '15rem',
+    '20vw',
+    'calc(5px + 5px)',
+    'auto',
+  ];
   const counts = ['1', '2', '3', '4', 'auto'];
   const cssWide = ['inherit', 'initial', 'unset', 'revert', 'revert-layer'];
   const supportWidths = ['env(col-w)', 'var(--w)'];

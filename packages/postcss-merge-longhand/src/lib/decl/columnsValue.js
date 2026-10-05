@@ -93,7 +93,8 @@ export function parsedValue(d) {
  * Normalize a columns shorthand definition. Both longhand initial values
  * are 'auto', and omitted values reset to initial, so 'auto' can be dropped.
  *
- * Specification link: https://www.w3.org/TR/css3-multicol/
+ * Specification links: https://www.w3.org/TR/css-multicol-2/#columns
+ * and https://www.w3.org/TR/css-sizing-4/#column-sizing
  *
  * @param {[string, string]} values
  * @return {string}
@@ -106,7 +107,11 @@ export function normalize([w, c]) {
   return lw === lc && cssGlobalKeywords.has(lw) ? lw : `${w} ${c}`;
 }
 
-/** @param {ReturnType<typeof tokenizeColumns>['terms'][number]} term */
+/**
+ * A `<length [0,∞]>`: CSS Sizing 4 allows a zero `column-width`.
+ *
+ * @param {ReturnType<typeof tokenizeColumns>['terms'][number]} term
+ */
 function isValidLength(term) {
   const d =
     /** @type {{ value?: number, type?: string, signCharacter?: string, unit?: string } | undefined} */ (
@@ -118,7 +123,7 @@ function isValidLength(term) {
     lengthUnits.has(d.unit.toLowerCase()) &&
     (d.type === 'integer' || d.type === 'number') &&
     typeof d.value === 'number' &&
-    d.value > 0 &&
+    d.value >= 0 &&
     d.signCharacter !== '-'
   );
 }
