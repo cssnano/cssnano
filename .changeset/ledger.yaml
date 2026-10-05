@@ -144,6 +144,13 @@ cssnano-preset-advanced@9.2.1:
   dir: packages/cssnano-preset-advanced
   intents:
     - khaki-taxis-flow
+cssnano-preset-advanced@9.2.2:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - animation-keyword-keyframes-name
+    - box-shadow-trailing-zeros
+    - merge-longhand-zero-column-width
+    - merge-rules-share-among-long-selectors
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -312,6 +319,13 @@ cssnano-preset-default@9.3.1:
   dir: packages/cssnano-preset-default
   intents:
     - khaki-taxis-flow
+cssnano-preset-default@9.3.2:
+  dir: packages/cssnano-preset-default
+  intents:
+    - animation-keyword-keyframes-name
+    - box-shadow-trailing-zeros
+    - merge-longhand-zero-column-width
+    - merge-rules-share-among-long-selectors
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -602,6 +616,13 @@ cssnano@9.3.1:
   dir: packages/cssnano
   intents:
     - khaki-taxis-flow
+cssnano@9.3.2:
+  dir: packages/cssnano
+  intents:
+    - animation-keyword-keyframes-name
+    - box-shadow-trailing-zeros
+    - merge-longhand-zero-column-width
+    - merge-rules-share-among-long-selectors
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -1048,6 +1069,10 @@ postcss-merge-longhand@9.2.0:
     - merge-longhand-nested-rules
     - merge-longhand-place-shorthands
     - old-kids-compete
+postcss-merge-longhand@9.2.1:
+  dir: packages/postcss-merge-longhand
+  intents:
+    - merge-longhand-zero-column-width
 postcss-merge-rules@8.0.2:
   dir: packages/postcss-merge-rules
   intents:
@@ -1132,6 +1157,10 @@ postcss-merge-rules@9.1.1:
   dir: packages/postcss-merge-rules
   intents:
     - khaki-taxis-flow
+postcss-merge-rules@9.1.2:
+  dir: packages/postcss-merge-rules
+  intents:
+    - merge-rules-share-among-long-selectors
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -1810,6 +1839,11 @@ postcss-ordered-values@9.0.6:
   dir: packages/postcss-ordered-values
   intents:
     - ordered-values-revert-rule
+postcss-ordered-values@9.0.7:
+  dir: packages/postcss-ordered-values
+  intents:
+    - animation-keyword-keyframes-name
+    - box-shadow-trailing-zeros
 postcss-reduce-idents@8.0.2:
   dir: packages/postcss-reduce-idents
   intents:

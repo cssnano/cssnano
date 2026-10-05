@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.2.1
+
+### Patch Changes
+
+- Merge `column-width` and `column-count` into `columns` when the width is zero, for example `column-width:0px;column-count:2` becomes `columns:0px 2`. CSS Sizing 4 allows a zero `column-width`; a zero `column-count` stays invalid and is left untouched.
+
 ## 9.2.0
 
 ### Minor Changes
