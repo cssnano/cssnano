@@ -28,8 +28,8 @@ export default class DroppableBlocks {
      * @return {boolean} whether a rule moved out of `node` and left it no child
      */
     isEmptied(node: ChildNode | Container): boolean;
-    /** @return {Container[]} the blocks to remove when the stylesheet is written */
-    emptiedBlocks(): Container[];
+    /** @return {Set<Container>} the blocks to remove when the stylesheet is written */
+    emptiedBlocks(): Set<Container>;
     /**
      * Accounts for the move of a rule from `source` into `target`.
      *
