@@ -75,3 +75,4 @@ Thanks goes to these wonderful people:
 - Aleksandr Kondrashov
 - Jens Fosgerau
 - Nirvana-Jie
+- Rob Misasi
