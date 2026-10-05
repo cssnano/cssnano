@@ -15,35 +15,12 @@ export type Placement = {
      * replaces the later rule, in its slot
      */
     second: Rule[];
+    /**
+     * replaces each rule after the later one that
+     * joined the merge, in its slot
+     */
+    following?: Rule[][];
 };
-/** @import {ChildNode, Container, Root, Rule} from 'postcss' */
-/** @import {Slot} from './slotIndex.js' */
-/**
- * A doubly linked list lets the scan replace a merged pair in constant time.
- *
- * @typedef {{rule: Rule, slot: Slot, prev: RuleLink | null, next: RuleLink | null}} RuleLink
- */
-/**
- * The rules that stand in the slots of a pair after it is merged.
- *
- * @typedef {object} Placement
- * @property {Rule[]} first replaces the earlier rule, in its slot
- * @property {Rule[]} second replaces the later rule, in its slot
- */
-/**
- * Gives a rule that is not in the stylesheet yet the parent it will have, so
- * that stringifying it infers missing raws, such as the last semicolon, from
- * the stylesheet. PostCSS infers them only for a rule that has a parent.
- *
- * The parent does not list the rule among its children. Until the sequence is
- * written, such a rule may only be stringified: `remove()`, `next()` and
- * `parent.index()` would misbehave on it.
- *
- * @param {Rule} rule
- * @param {Container | undefined} container
- * @return {void}
- */
-export declare function standInContainer(rule: Rule, container: Container | undefined): void;
 /**
  * Every rule of a stylesheet in stylesheet order, including rules nested in
  * other rules, rewritten in place and written back once.
@@ -73,7 +50,8 @@ export default class RuleSequence {
      */
     moveIntoParent(first: RuleLink, second: RuleLink): boolean;
     /**
-     * Replaces the pair `first` and the link after it with the `placement` rules.
+     * Replaces the pair `first` and the link after it, and the links after
+     * those that joined, with the `placement` rules.
      *
      * @param {RuleLink} first
      * @param {Placement} placement

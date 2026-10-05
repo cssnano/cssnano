@@ -23,10 +23,28 @@ const declarationId = (declaration) =>
  * @param {ChildNode} node
  * @return {node is Rule}
  */
-const isDeclarationRule = (node) =>
+export const isDeclarationRule = (node) =>
   node.type === 'rule' &&
   node.nodes.length > 0 &&
   node.nodes.every((child) => child.type === 'decl');
+
+/**
+ * The positions in `later` of declarations that repeat every one of
+ * `declarations`, or null when a repeat does not stand first for its
+ * property, since removing it would then change what `later` sets.
+ *
+ * @param {Declaration[]} declarations
+ * @param {Declaration[]} later
+ * @return {Set<number> | null}
+ */
+export function claimRepeats(declarations, later) {
+  const { intersection, claimedIndices } = filterRuleIntersections(
+    declarations,
+    declarations,
+    later
+  );
+  return intersection.length === declarations.length ? claimedIndices : null;
+}
 
 /** @param {Iterable<string>} selectors */
 function listLength(selectors) {
@@ -227,14 +245,11 @@ export default function joinByDeclarations(parent, mergeState) {
         ) {
           continue;
         }
-        // The group's declarations must all stand first in the later rule
-        // for their property, or removing them changes what it sets.
-        const { intersection, claimedIndices } = filterRuleIntersections(
-          group.declarations,
+        const claimedIndices = claimRepeats(
           group.declarations,
           laterDeclarations
         );
-        if (intersection.length !== group.declarations.length) continue;
+        if (!claimedIndices) continue;
         const claimed = [...claimedIndices].map((j) => laterDeclarations[j]);
         if (index.conflictsSince(claimed, group.position)) continue;
         if (!mergeState.canMerge(group.rule, later)) continue;

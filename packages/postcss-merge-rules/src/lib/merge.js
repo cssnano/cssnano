@@ -6,18 +6,28 @@ import {
 import { getDecls } from './ruleMeta.js';
 import { appendDeclarations, buildMergedRule } from './ruleRewrite.js';
 
-/** @import {Rule} from 'postcss' */
-/** @import {Placement} from './ruleSequence.js' */
+/** @import {Container, Rule} from 'postcss' */
+/** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 /** @import MergeState from './mergeState.js' */
 
 /**
  * @param {Rule} first
  * @param {Rule} second
  * @param {MergeState} mergeState
+ * @param {RuleLink} secondLink
+ * @param {RuleSequence} sequence
+ * @param {WeakMap<Container, boolean>} outsideDeclarations
  * @return {Placement | null} the rules that replace the pair, or null when
  * sharing the declarations would not make the output shorter
  */
-function partialMerge(first, second, mergeState) {
+function partialMerge(
+  first,
+  second,
+  mergeState,
+  secondLink,
+  sequence,
+  outsideDeclarations
+) {
   const metaFirst = mergeState.meta(first);
   const metaSecond = mergeState.meta(second);
   let intersection = intersect(metaFirst.declarations, metaSecond.declarations);
@@ -34,7 +44,10 @@ function partialMerge(first, second, mergeState) {
     second,
     filtered.claimedEarlierIndices,
     filtered.claimedIndices,
-    mergeState
+    mergeState,
+    secondLink,
+    sequence,
+    outsideDeclarations
   );
 }
 
@@ -93,11 +106,28 @@ export function mergeMatchingSelectors(first, second, mergeState) {
  * @param {Rule} first
  * @param {Rule} second
  * @param {MergeState} mergeState
+ * @param {RuleLink} secondLink
+ * @param {RuleSequence} sequence
+ * @param {WeakMap<Container, boolean>} outsideDeclarations
  * @return {Placement | null} null when sharing the declarations would not
  * make the output shorter
  */
-export function mergeSharedDeclarations(first, second, mergeState) {
-  const placement = partialMerge(first, second, mergeState);
+export function mergeSharedDeclarations(
+  first,
+  second,
+  mergeState,
+  secondLink,
+  sequence,
+  outsideDeclarations
+) {
+  const placement = partialMerge(
+    first,
+    second,
+    mergeState,
+    secondLink,
+    sequence,
+    outsideDeclarations
+  );
   if (!placement) return null;
   // The rules that replace the pair are described afresh when needed.
   mergeState.forget(first);

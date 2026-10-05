@@ -20,10 +20,12 @@ const NO_BENEFIT = -1;
  * approximates merging the best pair of the whole stylesheet first. The two
  * orders give the same output on the framework corpus but not on every input.
  *
- * Termination: a rewrite either shortens the output or moves a rule into the
- * parent of an earlier rule with an equivalent parent, and replacements stay
- * where they are. Neither the length nor the positions can recur, so the
- * sweeps stop once one moves no rule.
+ * Termination: a rewrite either writes fewer declarations, writes as many in
+ * fewer rules, or moves a rule into the parent of an earlier rule with an
+ * equivalent parent, and replacements stay where they are. Neither the
+ * counts nor the positions can recur, so the sweeps stop once one moves no
+ * rule. The length is no measure: sharing declarations is judged by the
+ * minified length, which source whitespace can contradict.
  *
  * @param {Root} root
  * @param {MergeState} mergeState
@@ -98,7 +100,14 @@ export default function runScan(root, mergeState) {
     const placement =
       mergeMatchingDeclarations(first.rule, second.rule, mergeState) ??
       mergeMatchingSelectors(first.rule, second.rule, mergeState) ??
-      mergeSharedDeclarations(first.rule, second.rule, mergeState);
+      mergeSharedDeclarations(
+        first.rule,
+        second.rule,
+        mergeState,
+        second,
+        sequence,
+        outsideDeclarations
+      );
     if (placement) return { placement, moved };
     return moved
       ? { placement: { first: [first.rule], second: [second.rule] }, moved }

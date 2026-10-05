@@ -265,9 +265,11 @@ function firstStyleDifference(before, after) {
  *
  * @param {string} css
  * @param {(css: string) => {css: string | undefined, terminated: boolean}} run
+ * @param {(css: string) => number} [measure] the length of a stylesheet as the
+ * plugin processed it
  * @return {{reason: string, input: string, output?: string, detail?: string} | undefined}
  */
-export function checkCascade(css, run) {
+export function checkCascade(css, run, measure = (text) => text.length) {
   const first = run(css);
   if (first.terminated || first.css === undefined) {
     return { reason: 'did not terminate', input: css };
@@ -277,7 +279,7 @@ export function checkCascade(css, run) {
   if (detail) {
     return { reason: 'computed style changed', input: css, output, detail };
   }
-  if (output.length > css.length) {
+  if (measure(output) > measure(css)) {
     return { reason: 'output grew', input: css, output };
   }
   const second = run(output);
@@ -288,25 +290,58 @@ export function checkCascade(css, run) {
 }
 
 /**
+ * Lengthens every generated class name by `suffix`. The generated
+ * stylesheets use the classes `a`, `b` and `c` and no other dot, so a plain
+ * replacement reaches exactly the class selectors.
+ *
+ * @param {string} css
+ * @param {string} suffix
+ * @return {string}
+ */
+function lengthenClasses(css, suffix) {
+  if (!suffix) return css;
+  let text = css;
+  for (const name of ['a', 'b', 'c']) {
+    text = text.replaceAll(`.${name}`, `.${name}${suffix}`);
+  }
+  return text;
+}
+
+/**
  * Checks `cases` in child processes, a chunk at a time, and returns the
  * first failure with the index of its case.
  *
+ * A `classSuffix` lengthens the class names the plugin sees, so that sharing
+ * declarations between two rules rarely pays and rules join in larger
+ * groups. The oracle reads the outputs with the suffix removed.
+ *
  * @param {CascadeCase[]} cases
  * @param {number} [chunkSize]
+ * @param {string} [classSuffix] lowercase letters that no generated name contains
  * @return {(NonNullable<ReturnType<typeof checkCascade>> & {index: number}) | undefined}
  */
-export function firstCascadeFailure(cases, chunkSize = 100) {
+export function firstCascadeFailure(cases, chunkSize = 100, classSuffix = '') {
+  const lengthen = (/** @type {string} */ css) =>
+    lengthenClasses(css, classSuffix);
+  const shorten = (/** @type {string} */ css) =>
+    classSuffix ? css.replaceAll(classSuffix, '') : css;
+  const measure = (/** @type {string} */ css) => lengthen(css).length;
   for (let start = 0; start < cases.length; start += chunkSize) {
     const chunk = cases.slice(start, start + chunkSize).map((item) => item.css);
-    const first = processBatched(chunk);
+    const first = processBatched(chunk.map(lengthen));
     const outputs = [...first.values()].flatMap(({ css }) =>
       css ? [css] : []
     );
     const second = processBatched(outputs);
-    const run = (/** @type {string} */ css) =>
-      first.get(css) ?? second.get(css) ?? { css: undefined, terminated: true };
+    const run = (/** @type {string} */ css) => {
+      const result = first.get(lengthen(css)) ??
+        second.get(lengthen(css)) ?? { css: undefined, terminated: true };
+      return result.css === undefined
+        ? result
+        : { ...result, css: shorten(result.css) };
+    };
     for (const [offset, css] of chunk.entries()) {
-      const failure = checkCascade(css, run);
+      const failure = checkCascade(css, run, measure);
       if (failure) return { ...failure, index: start + offset };
     }
   }

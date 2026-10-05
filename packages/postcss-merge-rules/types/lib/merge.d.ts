@@ -1,5 +1,5 @@
-import type { Rule } from 'postcss';
-import type { Placement } from './ruleSequence.js';
+import type { Container, Rule } from 'postcss';
+import type RuleSequence, { Placement, RuleLink } from './ruleSequence.js';
 import type MergeState from './mergeState.js';
 /**
  * Rules with the same declarations in the same order become one rule with
@@ -26,8 +26,11 @@ export declare function mergeMatchingSelectors(first: Rule, second: Rule, mergeS
  * @param {Rule} first
  * @param {Rule} second
  * @param {MergeState} mergeState
+ * @param {RuleLink} secondLink
+ * @param {RuleSequence} sequence
+ * @param {WeakMap<Container, boolean>} outsideDeclarations
  * @return {Placement | null} null when sharing the declarations would not
  * make the output shorter
  */
-export declare function mergeSharedDeclarations(first: Rule, second: Rule, mergeState: MergeState): Placement | null;
+export declare function mergeSharedDeclarations(first: Rule, second: Rule, mergeState: MergeState, secondLink: RuleLink, sequence: RuleSequence, outsideDeclarations: WeakMap<Container, boolean>): Placement | null;
 //# sourceMappingURL=merge.d.ts.map

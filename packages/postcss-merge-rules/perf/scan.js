@@ -96,3 +96,22 @@ test('should merge many equal @media blocks each separated by a declaration of t
   );
   assert.equal(result.status, 0);
 });
+
+test('should try many pairs of rules with long selectors whose shared declaration is too short to pay without quadratic slowdown', () => {
+  // Every pair looks at the rules after it for a group that would pay, so
+  // that search must stay bounded.
+  const script = `
+    import postcss from 'postcss';
+    import plugin from ${JSON.stringify(pluginUrl)};
+    const rules = Array.from({ length: 64000 }, (_, index) =>
+      '.${'x'.repeat(40)}_' + index + '{top:0;height:' + index + 'px}'
+    ).join('');
+    postcss([plugin]).process(rules, { from: undefined }).css;
+  `;
+  const result = spawnSync(
+    process.execPath,
+    ['--input-type=module', '-e', script],
+    { timeout: 20_000, cwd: new URL('..', import.meta.url) }
+  );
+  assert.equal(result.status, 0);
+});
