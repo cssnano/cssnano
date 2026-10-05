@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.8
+
+### Patch Changes
+
+- feat(cssnano-utils): add sameContainer export
+
 ## 6.0.7
 
 ### Patch Changes

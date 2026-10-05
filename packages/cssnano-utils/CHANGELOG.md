@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.2.0
+
+### Minor Changes
+
+- feat(cssnano-utils): add sameContainer export
+
 ## 8.1.0
 
 ### Minor Changes
