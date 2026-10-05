@@ -41,6 +41,7 @@
     "url": "git+https://github.com/cssnano/cssnano.git"
   },
   "dependencies": {
+    "@csstools/css-tokenizer": "catalog:",
     "browserslist": "catalog:",
     "cssnano-utils": "workspace:^",
     "stylehacks": "workspace:^"
@@ -52,7 +53,6 @@
     "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
-    "@csstools/css-tokenizer": "catalog:",
     "@mdn/browser-compat-data": "catalog:",
     "@webref/css": "catalog:",
     "postcss": "catalog:"
