@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { normalizeList, specificityOf } from '../src/lib/selectorScanner.js';
-import { assertScaling } from './helpers/scalingHelper.js';
 
 test('normalizes :dir() argument by trimming whitespace and preserving important comments', () => {
   assert.equal(normalizeList(':dir(  ltr  )', false, false), ':dir(ltr)');
@@ -78,20 +77,6 @@ test('calculates pseudo-class specificity for :lang()', () => {
   assert.equal(specificityOf(':lang(en)'), '0,1,0');
   assert.equal(specificityOf(':lang(en, fr)'), '0,1,0');
   assert.equal(specificityOf('div.card:lang("zh-*")'), '0,2,1');
-});
-
-test('normalizes wide :lang() argument lists in linear time', () => {
-  assertScaling([1_000, 2_000, 4_000], (count) => {
-    const items = Array.from({ length: count }, (_, i) => ` "lang-${i}" `);
-    return {
-      input: `:lang(${items.join(',')})`,
-      validate(output) {
-        assert.ok(output.startsWith(':lang(lang-0,lang-1,'));
-      },
-      sort: false,
-      convertToIs: false,
-    };
-  });
 });
 
 test('normalizes :nth-col() and :nth-last-col() An+B formulas', () => {

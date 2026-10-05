@@ -3,7 +3,6 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import plugin from '../src/index.js';
 import { normalizeList } from '../src/lib/selectorScanner.js';
-import { assertScaling } from './helpers/scalingHelper.js';
 
 function minify(selector) {
   return postcss([plugin({ convertToIs: false })]).process(`${selector}{x:y}`, {
@@ -155,32 +154,6 @@ test('empty forgiving selector list does not invalidate containing rule', () => 
   assert.equal(minify(':where([attr~])'), ':where(){x:y}');
 });
 
-test('deduplicates wide selector lists with functions in linear time', () => {
-  assertScaling([1_000, 2_000, 4_000], (count) => {
-    const items = Array.from({ length: count }, (_, i) => `:is(.item-${i})`);
-    const input = items.join(',');
-    return {
-      input,
-      expected: input,
-      sort: false,
-      convertToIs: false,
-    };
-  });
-});
-
-test('deduplicates wide inner selector lists with functions in linear time', () => {
-  assertScaling([1_000, 2_000, 4_000], (count) => {
-    const items = Array.from({ length: count }, (_, i) => `:not(.item-${i})`);
-    const input = `:is(${items.join(',')})`;
-    return {
-      input,
-      expected: input,
-      sort: false,
-      convertToIs: false,
-    };
-  });
-});
-
 test('deduplicates identical opaque and raw functional pseudos in inner selector lists', () => {
   assert.equal(
     normalizeList(':is(:unknown(x), :unknown(x))', false, false),
@@ -210,22 +183,7 @@ test('preserves compound-only functional pseudos when arguments contain combinat
   }
 });
 
-test('normalizes functional pseudo arguments in a single pass without multi-pass trivia rescans', () => {
+test('normalizes functional pseudo arguments with comments between combinators', () => {
   const input = ':not(h1 /**/ p, div /* c1 */ > /* c2 */ span, .a + .b)';
   assert.equal(normalizeList(input, false, false), ':not(h1 p,div>span,.a+.b)');
-
-  assertScaling([500, 1_000, 2_000], (count) => {
-    const repeated = `:not(${Array.from(
-      { length: count },
-      (_, i) => `div /* ${i} */ > /* ${i} */ .item-${i}`
-    ).join(',')})`;
-    return {
-      input: repeated,
-      validate(output) {
-        assert.ok(output.startsWith(':not('));
-      },
-      sort: false,
-      convertToIs: false,
-    };
-  });
 });

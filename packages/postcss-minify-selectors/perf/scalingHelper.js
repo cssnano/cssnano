@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { normalizeList } from '../../src/lib/selectorScanner.js';
+import { normalizeList } from '../src/lib/selectorScanner.js';
 
 /**
  * @typedef {object} ScalingCase

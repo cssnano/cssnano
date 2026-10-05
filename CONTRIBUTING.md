@@ -18,6 +18,11 @@ cd cssnano
 pnpm install
 ```
 
+Tests that assert running time or scaling, and slow fuzz sweeps, live in each package's `perf/`
+directory, outside `test/`, so the OS and Node matrix and the coverage run skip
+them. Run them with `pnpm test:performance`; CI runs them once on Linux and the
+result does not gate pull requests.
+
 You can run the tests with:
 
 ```shell

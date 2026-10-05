@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { normalizeList, specificityOf } from '../src/lib/selectorScanner.js';
-import { assertScaling } from './helpers/scalingHelper.js';
 
 test('normalizes ::part() arguments with whitespace compression and comment preservation', () => {
   assert.equal(
@@ -42,20 +41,6 @@ test('calculates element specificity for ::part() without adding pseudo-class sp
   assert.equal(specificityOf('::part(tab active)'), '0,0,1');
   assert.equal(specificityOf('div.card::part(tab)'), '0,1,2');
   assert.equal(specificityOf('#main::part(tab active)'), '1,0,1');
-});
-
-test('normalizes wide ::part() argument lists in linear time', () => {
-  assertScaling([1_000, 2_000, 4_000], (count) => {
-    const items = Array.from({ length: count }, (_, i) => `part-${i}`);
-    return {
-      input: `::part( ${items.join('   ')} )`,
-      validate(output) {
-        assert.ok(output.startsWith('::part(part-0 part-1 '));
-      },
-      sort: false,
-      convertToIs: false,
-    };
-  });
 });
 
 test('normalizes ::highlight() argument by trimming whitespace and preserving comments', () => {

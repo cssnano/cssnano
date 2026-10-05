@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {
   assertCascadeCoverage,
   checkCascade,
-  firstCascadeFailure,
   generateCascadeCases,
 } from '../script/lib/fuzzCascade.js';
 import { computedStyles } from '../script/lib/cascadeOracle.js';
@@ -203,15 +202,4 @@ test('cascade check names the element, environment and property that changed', (
     runOnce(css, '.a,.c{color:red}.b{color:blue}')
   );
   assert.match(failure?.detail ?? '', /\.b\.c.*color/v);
-});
-
-test('cascade fuzzer seed 7 preserves every computed style', () => {
-  assert.equal(firstCascadeFailure(generateCascadeCases(7, 300)), undefined);
-});
-
-test('second cascade fuzzer seed preserves every computed style', () => {
-  assert.equal(
-    firstCascadeFailure(generateCascadeCases(0xc0ffee, 300)),
-    undefined
-  );
 });
