@@ -24,7 +24,8 @@ export declare function parsedValue(d: Declaration): ReturnType<typeof tokenizeC
  * Normalize a columns shorthand definition. Both longhand initial values
  * are 'auto', and omitted values reset to initial, so 'auto' can be dropped.
  *
- * Specification link: https://www.w3.org/TR/css3-multicol/
+ * Specification links: https://www.w3.org/TR/css-multicol-2/#columns
+ * and https://www.w3.org/TR/css-sizing-4/#column-sizing
  *
  * @param {[string, string]} values
  * @return {string}

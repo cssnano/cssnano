@@ -21,7 +21,7 @@ describe('invalid-value handling', () => {
   );
 
   test(
-    'should pass through a width that is not a length',
+    'should pass through a percentage width, which the supported engines do not accept for column-width',
     passthroughCSS('h1{columns:50%}')
   );
 
@@ -125,13 +125,33 @@ describe('invalid-value handling', () => {
   );
 
   test(
-    'should not merge longhands when column-width is zero',
-    passthroughCSS('a{column-width:0px;column-count:2}')
+    'should merge a zero column-width, which <length [0,∞]> allows',
+    processCSS('a{column-width:0px;column-count:2}', 'a{columns:0px 2}')
   );
 
   test(
-    'should pass through zero column width in shorthand',
-    passthroughCSS('a{columns:0px 2}')
+    'should reorder a zero width written after the count in the shorthand',
+    processCSS('a{columns:2 0px}', 'a{columns:0px 2}')
+  );
+
+  test(
+    'should drop an auto count next to a zero width',
+    processCSS('a{column-width:0px;column-count:auto}', 'a{columns:0px}')
+  );
+
+  test(
+    'should pass through a zero width with a zero count, which is an invalid count',
+    passthroughCSS('a{columns:0px 0}')
+  );
+
+  test(
+    'should not merge a negative zero width, to stay clear of the sign check',
+    passthroughCSS('a{column-width:-0px;column-count:2}')
+  );
+
+  test(
+    'should not merge a unitless zero width, which is a Number token rather than a Dimension',
+    passthroughCSS('a{column-width:0;column-count:2}')
   );
 
   test(
