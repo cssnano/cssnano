@@ -1,10 +1,10 @@
 import { declarationIsEqual } from './declarations.js';
 import LastWriteIndex from './lastWriteIndex.js';
 import { getDecls } from './ruleMeta.js';
-import { standInContainer } from './ruleSequence.js';
+import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 
-/** @import {Rule} from 'postcss' */
-/** @import {Placement} from './ruleSequence.js' */
+/** @import {Container, Declaration, Rule} from 'postcss' */
+/** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 
 /**
  * Appends the content of `incoming` to `receiving`. A declaration of
@@ -38,23 +38,41 @@ export function appendDeclarations(receiving, incoming) {
 }
 
 /**
- * @param {...Rule} rules
+ * The bytes a declaration takes in minified output, with the separator after
+ * it. A rule adds its braces and drops the last separator, so it takes the
+ * length of its selector list, one byte, and its declarations.
+ *
+ * @param {Declaration} declaration
  * @return {number}
  */
-function ruleLength(...rules) {
-  return rules.map((r) => (r.nodes.length ? String(r) : '')).join('').length;
+function declarationLength(declaration) {
+  return (
+    declaration.prop.length +
+    declaration.value.length +
+    (declaration.important ? 10 : 0) +
+    2
+  );
 }
 
 /**
- * Splits the declarations both rules set out of them into a rule with both
- * selectors, which takes the place of the later rule, between a leftover of
- * each. A rule left without declarations is dropped.
+ * Splits the declarations the rules set out of them into a rule with all
+ * their selectors, which takes the place of the later rule of the pair,
+ * between a leftover of each rule. A rule left without declarations is
+ * dropped. Rules after the pair that repeat the shared declarations join
+ * when that makes the output shorter.
+ *
+ * The lengths are those of minified output: raws would count the whitespace
+ * of the source, which a minifier removes, so a merge that pays only in
+ * source bytes would grow the output.
  *
  * @param {Rule} first
  * @param {Rule} second
  * @param {Set<number>} claimedEarlierIndices
  * @param {Set<number>} claimedIndices
  * @param {import('./mergeState.js').default} mergeState
+ * @param {RuleLink} secondLink where `second` stands in the sweep
+ * @param {RuleSequence} sequence
+ * @param {WeakMap<Container, boolean>} outsideDeclarations
  * @return {Placement | null} null when the output would not get shorter
  */
 export function buildMergedRule(
@@ -62,14 +80,64 @@ export function buildMergedRule(
   second,
   claimedEarlierIndices,
   claimedIndices,
-  mergeState
+  mergeState,
+  secondLink,
+  sequence,
+  outsideDeclarations
 ) {
-  const receivingBlock = second.clone();
-  // It stands before `second`, which is where its raws are inferred from.
-  standInContainer(receivingBlock, second.parent);
   const firstSelectors = mergeState.meta(first).selectors;
   const secondSelectors = mergeState.meta(second).selectors;
-  receivingBlock.selector = [...firstSelectors, ...secondSelectors].join();
+  const firstDeclarations = mergeState.meta(first).declarations;
+  let sharedBytes = 0;
+  // A later plugin, such as Autoprefixer, removes an outdated prefixed
+  // declaration from the rule that sets it, which a shared rule leaves alone.
+  let prefixed = 0;
+  for (const index of claimedEarlierIndices) {
+    const declaration = firstDeclarations[index];
+    const length = declarationLength(declaration);
+    sharedBytes += length;
+    const { prop } = declaration;
+    if (prop.charCodeAt(0) === 45 && prop.charCodeAt(1) !== 45) {
+      prefixed += length;
+    }
+  }
+  // The shared rule repeats both selector lists; a rule left empty is dropped.
+  let delta =
+    selectorsLength(firstSelectors) +
+    selectorsLength(secondSelectors) +
+    2 -
+    sharedBytes;
+  if (first.nodes.length === claimedEarlierIndices.size) {
+    delta -= selectorsLength(firstSelectors) + 1;
+  }
+  if (second.nodes.length === claimedIndices.size) {
+    delta -= selectorsLength(secondSelectors) + 1;
+  }
+  // A pair that shortens the output merges alone: the rules after it may
+  // join the shared rule later, when it is known which rule it can join.
+  const group =
+    delta < 0
+      ? null
+      : findGroup(
+          first,
+          secondLink,
+          claimedEarlierIndices,
+          claimedIndices,
+          sharedBytes,
+          prefixed,
+          delta,
+          mergeState,
+          sequence,
+          outsideDeclarations
+        );
+  if (delta >= 0 && !group) return null;
+
+  const receivingBlock = second.clone();
+  receivingBlock.selector = [
+    ...firstSelectors,
+    ...secondSelectors,
+    ...(group?.added ?? []),
+  ].join();
   receivingBlock.nodes = [];
   const firstClone = first.clone({ selectors: firstSelectors });
   const secondClone = second.clone({ selectors: secondSelectors });
@@ -88,16 +156,27 @@ export function buildMergedRule(
       decl.remove();
     }
   });
-  if (
-    ruleLength(firstClone, receivingBlock, secondClone) >=
-    ruleLength(first, second)
-  ) {
-    return null;
-  }
   mergeState.markCompatible(receivingBlock);
   if (secondClone.nodes.length) mergeState.markCompatible(secondClone);
-  return {
+  /** @type {Placement} */
+  const placement = {
     first: [firstClone].filter((rule) => rule.nodes.length),
     second: [receivingBlock, secondClone].filter((rule) => rule.nodes.length),
   };
+  if (group) {
+    placement.following = group.followers.map(({ rule, claimed }) => {
+      const leftover = rule.clone({
+        selectors: mergeState.meta(rule).selectors,
+      });
+      mergeState.forget(rule);
+      let index = 0;
+      leftover.walkDecls((decl) => {
+        if (claimed.has(index++)) decl.remove();
+      });
+      if (!leftover.nodes.length) return [];
+      mergeState.markCompatible(leftover);
+      return [leftover];
+    });
+  }
+  return placement;
 }

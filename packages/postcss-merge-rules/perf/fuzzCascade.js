@@ -15,3 +15,10 @@ test('second cascade fuzzer seed preserves every computed style', () => {
     undefined
   );
 });
+
+test('cascade fuzzer with long class names, which make rules share declarations in groups, preserves every computed style', () => {
+  assert.equal(
+    firstCascadeFailure(generateCascadeCases(31, 1000), 100, 'q'.repeat(40)),
+    undefined
+  );
+});

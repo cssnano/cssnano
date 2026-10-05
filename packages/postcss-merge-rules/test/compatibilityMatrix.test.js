@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { processCSSFactory } from '../../../util/testHelpers.js';
-import { pseudoElements } from '../src/lib/ensureCompatibility.js';
+import { pseudoElements } from '../src/lib/pseudoSupport.js';
 import plugin from '../src/index.js';
 
 const { processCSS } = processCSSFactory(plugin);

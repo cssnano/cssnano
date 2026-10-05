@@ -17,24 +17,9 @@ import SlotIndex from './slotIndex.js';
  * @typedef {object} Placement
  * @property {Rule[]} first replaces the earlier rule, in its slot
  * @property {Rule[]} second replaces the later rule, in its slot
+ * @property {Rule[][]} [following] replaces each rule after the later one that
+ * joined the merge, in its slot
  */
-
-/**
- * Gives a rule that is not in the stylesheet yet the parent it will have, so
- * that stringifying it infers missing raws, such as the last semicolon, from
- * the stylesheet. PostCSS infers them only for a rule that has a parent.
- *
- * The parent does not list the rule among its children. Until the sequence is
- * written, such a rule may only be stringified: `remove()`, `next()` and
- * `parent.index()` would misbehave on it.
- *
- * @param {Rule} rule
- * @param {Container | undefined} container
- * @return {void}
- */
-export function standInContainer(rule, container) {
-  rule.parent ??= /** @type {NonNullable<Rule['parent']>} */ (container);
-}
 
 /**
  * Chains a link for each rule, in order, after `previous`.
@@ -132,7 +117,8 @@ export default class RuleSequence {
   }
 
   /**
-   * Replaces the pair `first` and the link after it with the `placement` rules.
+   * Replaces the pair `first` and the link after it, and the links after
+   * those that joined, with the `placement` rules.
    *
    * @param {RuleLink} first
    * @param {Placement} placement
@@ -150,20 +136,23 @@ export default class RuleSequence {
     this.#blocks.changed(secondSlot.parent, placement.second.length - 1);
     this.#slots.substitute(firstSlot, first.rule, placement.first);
     this.#slots.substitute(secondSlot, second.rule, placement.second);
-    for (const rule of placement.first)
-      standInContainer(rule, firstSlot.parent);
-    for (const rule of placement.second) {
-      standInContainer(rule, secondSlot.parent);
-    }
     this.#changed.add(firstSlot.parent).add(secondSlot.parent);
 
-    const tail = linkAfter(
+    let tail = linkAfter(
       linkAfter(before, placement.first, firstSlot),
       placement.second,
       secondSlot
     );
-    tail.next = after;
-    if (after) after.prev = tail;
+    let following = after;
+    for (const rules of placement.following ?? []) {
+      const link = /** @type {RuleLink} */ (following);
+      following = link.next;
+      this.#blocks.changed(link.slot.parent, rules.length - 1);
+      this.#slots.substitute(link.slot, link.rule, rules);
+      tail = linkAfter(tail, rules, link.slot);
+    }
+    tail.next = following;
+    if (following) following.prev = tail;
     return /** @type {RuleLink} */ (before.next);
   }
 
@@ -197,7 +186,7 @@ export default class RuleSequence {
     }));
     for (const { container } of rebuilt) container.removeAll();
     for (const { container, children, head } of rebuilt) {
-      // A rule made by a rewrite has the parent it was stringified with.
+      // A rule kept from the source still points at its former container.
       for (const node of children) node.parent = undefined;
       container.append(children);
       // Removing the first child of a root hands its whitespace to the next.

@@ -230,3 +230,32 @@ test('should leave every node pointing at the container that holds it after a pa
   postcss([plugin]).process(root, { from: undefined }).sync();
   assert.deepEqual(misparented(root), []);
 });
+
+// Rules after a pair may join its shared rule; each keeps its own slot.
+const longSelector = (/** @type {string} */ suffix) =>
+  `.${'x'.repeat(41)}_${suffix}`;
+const shared =
+  'background-position:50%;background-repeat:no-repeat;background-size:contain';
+
+test('should keep the leftover of each rule that joins the shared rule after the comment before it, and drop a rule the shared rule claims entirely', () => {
+  assert.equal(
+    merge(
+      `${longSelector('a')}{${shared};height:2vw}${longSelector('b')}{${shared};height:3vw}` +
+        `/*x*/${longSelector('c')}{${shared};height:4vw}/*y*/${longSelector('d')}{${shared}}`
+    ),
+    `${longSelector('a')}{height:2vw}` +
+      ['a', 'b', 'c', 'd'].map(longSelector).join() +
+      `{${shared}}${longSelector('b')}{height:3vw}` +
+      `/*x*/${longSelector('c')}{height:4vw}/*y*/`
+  );
+});
+
+test('should leave every node pointing at the container that holds it after rules join a shared rule in a nested block', () => {
+  const root = postcss.parse(
+    `.r{@media print{${['a', 'b', 'c', 'd']
+      .map((s, i) => `${longSelector(s)}{${shared};height:${i}vw}`)
+      .join('')}}}`
+  );
+  postcss([plugin]).process(root, { from: undefined }).sync();
+  assert.deepEqual(misparented(root), []);
+});
