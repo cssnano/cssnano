@@ -502,6 +502,9 @@ importers:
 
   packages/postcss-merge-longhand:
     dependencies:
+      '@csstools/css-tokenizer':
+        specifier: 'catalog:'
+        version: 4.0.2
       browserslist:
         specifier: 'catalog:'
         version: 4.29.3
@@ -512,9 +515,6 @@ importers:
         specifier: workspace:^
         version: link:../stylehacks
     devDependencies:
-      '@csstools/css-tokenizer':
-        specifier: 'catalog:'
-        version: 4.0.2
       '@mdn/browser-compat-data':
         specifier: 'catalog:'
         version: 8.1.4
