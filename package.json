@@ -17,6 +17,7 @@
     "test:benchmark:simulation": "node util/benchmark/statistical-simulation.js",
     "test:benchmark:e2e": "node --test util/benchmark/e2e/*.e2e.js",
     "test": "pnpm lint && pnpm test:unit && pnpm test:util && pnpm test:site && pnpm test:integration",
+    "test:performance": "node --test --test-concurrency=1 --test-reporter=spec \"packages/*/perf/*.js\"",
     "test:coverage": "cd packages && node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=../lcov.info",
     "test:uncovered-branches": "node util/uncoveredBranches.js",
     "test:unit": "pnpm --recursive --workspace-concurrency=1 exec node --test --test-reporter=dot --test-skip-pattern=\"framework tests\"",
@@ -24,8 +25,6 @@
     "test:site": "node --test site/test/*.js",
     "test:integration": "node --test packages/cssnano-preset-default/test/integrations.test.js packages/cssnano-preset-default/test/pluginIdempotency.test.js packages/cssnano-preset-advanced/test/integrations.test.js packages/cssnano-preset-lite/test/integrations.test.js",
     "test:packaging": "node util/checkPackaging.js",
-    "test:watch": "node --test --watch",
-    "test:failed": "node --test --test-rerun-failures=.test-failures.json",
     "test:mutation": "node util/mutation-testing/mutation-runner.js --catalog packages/postcss-discard-empty/mutation-catalog.js --catalog packages/postcss-discard-comments/mutation-catalog.js --catalog packages/postcss-normalize-whitespace/mutation-catalog.js --catalog packages/postcss-normalize-positions/mutation-catalog.js --catalog packages/postcss-merge-longhand/mutation-catalog.js --catalog packages/postcss-merge-longhand/mutation-catalog-validity.js --catalog packages/postcss-merge-longhand/mutation-catalog-candidates.js --catalog packages/postcss-merge-longhand/mutation-catalog-reset-gates.js",
     "types": "tsc -b",
     "all-publish": "pnpm publish -r"

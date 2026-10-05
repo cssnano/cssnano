@@ -5,7 +5,7 @@ import { shrink } from './fuzzGenerate.js';
 
 /**
  * Runs one rule through the plugin and compares what it meant before with what
- * it means after. Shared by the seeded sweep in `test/fuzz.js` and the soak
+ * it means after. Shared by the seeded sweep in `perf/fuzz.js` and the soak
  * run in `script/fuzz.js`.
  */
 

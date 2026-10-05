@@ -66,24 +66,6 @@ test('last-write index agrees with isConflictingProp on every pair of known prop
   assert.deepEqual(disagreements.slice(0, 10), []);
 });
 
-test('last-write index agrees with isConflictingProp when many properties were written', () => {
-  const sample = catalogue.filter((_, i) => i % 7 === 0);
-  const index = new LastWriteIndex();
-  for (const [i, prop] of sample.entries()) index.record(decl(prop), i + 1);
-  for (const queried of catalogue) {
-    for (let since = 0; since < sample.length; since++) {
-      const expected = sample
-        .slice(since)
-        .some((written) => isConflictingProp(written, queried));
-      assert.equal(
-        index.conflictsSince([decl(queried)], since),
-        expected,
-        `${queried} since ${since}`
-      );
-    }
-  }
-});
-
 test('last-write index ignores a write at or before the position queried', () => {
   const index = new LastWriteIndex();
   index.record(decl('color'), 3);

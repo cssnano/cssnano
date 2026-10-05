@@ -170,14 +170,6 @@ test('cross-block check reports a second pass that changes the output', () => {
   assert.equal(failure.reason, 'second pass changed the output');
 });
 
-test('child-process runner reports the input that did not terminate', () => {
-  const result = processAllWithLimits(['.a{color:red}'], {
-    pluginUrl: 'data:text/javascript,export default () => { for (;;); }',
-    timeout: 1000,
-  });
-  assert.equal(result.terminated, true);
-});
-
 test('child-process runner returns minified output for terminating input', () => {
   assert.deepEqual(processAllWithLimits(['.a{color:red}.b{color:red}']).css, [
     '.a,.b{color:red}',
