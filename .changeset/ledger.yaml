@@ -140,6 +140,10 @@ cssnano-preset-advanced@9.2.0:
     - merge-rules-nesting-declarations
     - merge-rules-non-adjacent
     - merge-rules-vendor-prefix-pseudos
+cssnano-preset-advanced@9.2.1:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - khaki-taxis-flow
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -304,6 +308,10 @@ cssnano-preset-default@9.3.0:
     - merge-rules-nesting-declarations
     - merge-rules-non-adjacent
     - merge-rules-vendor-prefix-pseudos
+cssnano-preset-default@9.3.1:
+  dir: packages/cssnano-preset-default
+  intents:
+    - khaki-taxis-flow
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -368,6 +376,10 @@ cssnano-preset-lite@6.0.7:
   dir: packages/cssnano-preset-lite
   intents:
     - discard-empty-layer-order
+cssnano-preset-lite@6.0.8:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - khaki-taxis-flow
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -423,6 +435,10 @@ cssnano-utils@8.1.0:
   dir: packages/cssnano-utils
   intents:
     - utils-export-is-anonymous-layer
+cssnano-utils@8.2.0:
+  dir: packages/cssnano-utils
+  intents:
+    - khaki-taxis-flow
 cssnano@8.0.10:
   dir: packages/cssnano
   intents:
@@ -582,6 +598,10 @@ cssnano@9.3.0:
     - merge-rules-nesting-declarations
     - merge-rules-non-adjacent
     - merge-rules-vendor-prefix-pseudos
+cssnano@9.3.1:
+  dir: packages/cssnano
+  intents:
+    - khaki-taxis-flow
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -1108,6 +1128,10 @@ postcss-merge-rules@9.1.0:
     - merge-rules-non-adjacent
     - merge-rules-uppercase-keyframes
     - merge-rules-vendor-prefix-pseudos
+postcss-merge-rules@9.1.1:
+  dir: packages/postcss-merge-rules
+  intents:
+    - khaki-taxis-flow
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:

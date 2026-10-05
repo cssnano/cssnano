@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.2.1
+
+### Patch Changes
+
+- feat(cssnano-utils): add sameContainer export
+
 ## 9.2.0
 
 ### Minor Changes
