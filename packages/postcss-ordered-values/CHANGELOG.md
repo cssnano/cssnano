@@ -1,5 +1,13 @@
 # Change Log
 
+## 9.0.7
+
+### Patch Changes
+
+- Leave `animation` untouched when the keyframes name is a keyword another longhand would claim, such as `animation: ease 1s linear`. Reordering the name first made browsers read it as the timing function, direction, fill mode or play state.
+
+- Omit trailing zero blur radius and spread distance in `box-shadow`, e.g. `0 50px 0 0 #fff` becomes `0 50px #fff`.
+
 ## 9.0.6
 
 ### Patch Changes

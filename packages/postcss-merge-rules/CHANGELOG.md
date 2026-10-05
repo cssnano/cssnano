@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.1.2
+
+### Patch Changes
+
+- Share declarations among several adjacent rules also if the file size can be reduced by merging more than two rules. Previously rules were only merged when the first merge immediately yielded a saving, without checking if further merging was possible.
+
 ## 9.1.1
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # Change Log
 
+## 9.2.2
+
+### Patch Changes
+
+- Leave `animation` untouched when the keyframes name is a keyword another longhand would claim, such as `animation: ease 1s linear`. Reordering the name first made browsers read it as the timing function, direction, fill mode or play state.
+
+- Omit trailing zero blur radius and spread distance in `box-shadow`, e.g. `0 50px 0 0 #fff` becomes `0 50px #fff`.
+
+- Merge `column-width` and `column-count` into `columns` when the width is zero, for example `column-width:0px;column-count:2` becomes `columns:0px 2`. CSS Sizing 4 allows a zero `column-width`; a zero `column-count` stays invalid and is left untouched.
+
+- Share declarations among several adjacent rules also if the file size can be reduced by merging more than two rules. Previously rules were only merged when the first merge immediately yielded a saving, without checking if further merging was possible.
+
 ## 9.2.1
 
 ### Patch Changes
