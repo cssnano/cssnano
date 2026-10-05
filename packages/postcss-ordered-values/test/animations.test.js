@@ -190,16 +190,13 @@ describe('Order', () => {
   );
 
   test(
-    'should order animation consistently (9) (assigns keyframe name last when it matches a keyword)',
-    processCSS(
-      'animation: none 1s linear 2s both',
-      'animation: both 1s linear 2s none'
-    )
+    'keeps a keyframes name that matches a keyword once its own slot is taken (fill mode), since reordering would swap name and fill mode',
+    passthroughCSS('animation: none 1s linear 2s both')
   );
 
   test(
-    'should order animation consistently (9.1) (assigns keyframe name last when it matches a keyword)',
-    processCSS('animation: ease 1s linear', 'animation: linear 1s ease')
+    'keeps a keyframes name that matches a keyword once its own slot is taken (timing function), since reordering would swap name and timing function',
+    passthroughCSS('animation: ease 1s linear')
   );
 
   test(
@@ -282,5 +279,44 @@ describe('Pass through', () => {
     passthroughCSS(
       'animation: bounce /*!wow*/ 1s VAR(--linear) 2s 5 normal none running'
     )
+  );
+});
+
+describe('Keyframes name that is also a longhand keyword', () => {
+  // A keyword is read as its longhand before it can be a <keyframes-name>, so
+  // moving the name ahead of the keyword that took the slot swaps their roles.
+  test(
+    'keeps `ease ease-in 1s`, where moving ease-in first would make it the timing function',
+    passthroughCSS('a{animation:ease ease-in 1s}')
+  );
+
+  test(
+    'keeps `normal alternate 1s`, where moving alternate first would make it the direction',
+    passthroughCSS('a{animation:normal alternate 1s}')
+  );
+
+  test(
+    'keeps `1s paused running`, where moving running first would make it the play state',
+    passthroughCSS('a{animation:1s paused running}')
+  );
+
+  test(
+    'keeps `forwards 1s backwards`, where moving backwards first would make it the fill mode',
+    passthroughCSS('a{animation:forwards 1s backwards}')
+  );
+
+  test(
+    'keeps `3 infinite 1s`, where moving infinite first would make it the iteration count',
+    passthroughCSS('a{animation:3 infinite 1s}')
+  );
+
+  test(
+    'keeps `both none`, where moving none first would make it the fill mode and both the name',
+    passthroughCSS('a{animation:both none}')
+  );
+
+  test(
+    'still orders a second `none`, which equals the fill mode it competes with',
+    processCSS('a{animation:none 1s none}', 'a{animation:none 1s none}')
   );
 });
