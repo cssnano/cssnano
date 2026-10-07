@@ -220,6 +220,16 @@ export function sortedByName(entries) {
 }
 
 /**
+ * The text of a generated data file: two-space indented, newline-terminated.
+ *
+ * @param {unknown} data
+ * @return {string}
+ */
+export function serializeJson(data) {
+  return `${JSON.stringify(data, null, 2)}\n`;
+}
+
+/**
  * Fails the data refresh when a webref release no longer lists something the
  * plugin's transforms rely on.
  *

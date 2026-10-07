@@ -1,5 +1,5 @@
 import { test } from 'node:test';
-import topRightBottomLeft from '../src/lib/trbl.js';
+import { sides as topRightBottomLeft } from '../src/lib/spec.js';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 

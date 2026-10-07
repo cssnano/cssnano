@@ -15,18 +15,17 @@ function trackIndexCalls(rule) {
 
 describe('box and border-radius candidate scan avoidance and anchor placement', () => {
   test('reduceBox avoids rule.index scans when selecting the latest candidate', async () => {
-    const { reduceBox } = await import('../src/lib/decl/boxReducer.js');
+    const { reduceBoxRuns } = await import('./helpers/reduceRuns.js');
     const root = postcss.parse(
       'a{margin-left:10px;color:red;margin-bottom:20px;font-size:14px;margin-right:30px;margin-top:40px}'
     );
     const rule = /** @type {import('postcss').Rule} */ (root.first);
     const getIndexCalls = trackIndexCalls(rule);
 
-    reduceBox(rule, 'margin');
+    reduceBoxRuns(rule, 'margin');
 
-    // PostCSS insertAfter calls rule.index twice (2), and removing 4 declarations calls it 4 times (4).
-    // The candidate selection loop should NOT call rule.index (0 calls instead of 8).
-    assert.strictEqual(getIndexCalls(), 6);
+    // Neither candidate selection nor the deferred edits scan the rule.
+    assert.strictEqual(getIndexCalls(), 0);
     assert.strictEqual(
       root.toString(),
       'a{color:red;font-size:14px;margin:40px 30px 20px 10px}'
@@ -34,19 +33,17 @@ describe('box and border-radius candidate scan avoidance and anchor placement', 
   });
 
   test('reduceBorderRadius avoids rule.index scans when selecting the latest candidate', async () => {
-    const { reduceBorderRadius } =
-      await import('../src/lib/decl/borderRadiusReducer.js');
+    const { reduceBorderRadiusRuns } = await import('./helpers/reduceRuns.js');
     const root = postcss.parse(
       'a{border-bottom-left-radius:40px;color:red;border-bottom-right-radius:30px;border-top-right-radius:20px;border-top-left-radius:10px}'
     );
     const rule = /** @type {import('postcss').Rule} */ (root.first);
     const getIndexCalls = trackIndexCalls(rule);
 
-    reduceBorderRadius(rule);
+    reduceBorderRadiusRuns(rule);
 
-    // PostCSS insertAfter calls rule.index twice (2), and removing 4 declarations calls it 4 times (4).
-    // The candidate selection loop should NOT call rule.index (0 calls instead of 8).
-    assert.strictEqual(getIndexCalls(), 6);
+    // Neither candidate selection nor the deferred edits scan the rule.
+    assert.strictEqual(getIndexCalls(), 0);
     assert.strictEqual(
       root.toString(),
       'a{color:red;border-radius:10px 20px 30px 40px}'
@@ -54,41 +51,40 @@ describe('box and border-radius candidate scan avoidance and anchor placement', 
   });
 
   test('reduceBox avoids rule.index scans when fallback candidates are present', async () => {
-    const { reduceBox } = await import('../src/lib/decl/boxReducer.js');
+    const { reduceBoxRuns } = await import('./helpers/reduceRuns.js');
     const root = postcss.parse(
       'a{margin-left:10px;margin-left:calc(10px + 1em);margin-bottom:20px;color:red;margin-right:30px;margin-top:40px}'
     );
     const rule = /** @type {import('postcss').Rule} */ (root.first);
     const getIndexCalls = trackIndexCalls(rule);
 
-    reduceBox(rule, 'margin');
+    reduceBoxRuns(rule, 'margin');
 
-    // PostCSS insertAfter calls rule.index twice (2), and removing 4 declarations calls it 4 times (4).
-    // The candidate selection loop should NOT call rule.index (0 calls instead of 8).
-    assert.strictEqual(getIndexCalls(), 6);
+    // Neither candidate selection nor the deferred edits scan the rule. The
+    // calc() fallback stays unmerged: the default targets lack calc().
+    assert.strictEqual(getIndexCalls(), 0);
     assert.strictEqual(
       root.toString(),
-      'a{margin-left:10px;color:red;margin:40px 30px 20px calc(10px + 1em)}'
+      'a{margin-left:10px;margin-left:calc(10px + 1em);margin-bottom:20px;color:red;margin-right:30px;margin-top:40px}'
     );
   });
 
   test('reduceBorderRadius avoids rule.index scans when fallback candidates are present', async () => {
-    const { reduceBorderRadius } =
-      await import('../src/lib/decl/borderRadiusReducer.js');
+    const { reduceBorderRadiusRuns } = await import('./helpers/reduceRuns.js');
     const root = postcss.parse(
       'a{border-top-left-radius:10px;border-top-left-radius:calc(10px + 1em);border-top-right-radius:20px;border-bottom-right-radius:30px;color:red;border-bottom-left-radius:40px}'
     );
     const rule = /** @type {import('postcss').Rule} */ (root.first);
     const getIndexCalls = trackIndexCalls(rule);
 
-    reduceBorderRadius(rule);
+    reduceBorderRadiusRuns(rule);
 
-    // PostCSS insertAfter calls rule.index twice (2), and removing 4 declarations calls it 4 times (4).
-    // The candidate selection loop should NOT call rule.index (0 calls instead of 8).
-    assert.strictEqual(getIndexCalls(), 6);
+    // Neither candidate selection nor the deferred edits scan the rule. The
+    // calc() fallback stays unmerged: the default targets lack calc().
+    assert.strictEqual(getIndexCalls(), 0);
     assert.strictEqual(
       root.toString(),
-      'a{border-top-left-radius:10px;color:red;border-radius:calc(10px + 1em) 20px 30px 40px}'
+      'a{border-top-left-radius:10px;border-top-left-radius:calc(10px + 1em);border-top-right-radius:20px;border-bottom-right-radius:30px;color:red;border-bottom-left-radius:40px}'
     );
   });
 });

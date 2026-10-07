@@ -1,12 +1,14 @@
+import { expandFourSides } from './parseTrbl.js';
+import { isCssWideKeyword } from './isCssWideKeyword.js';
 import cssnanoUtils from 'cssnano-utils';
-import cssGlobalKeywords from './cssGlobalKeywords.js';
+import { isLengthValue } from './lengthGrammar.js';
 import { isUnresolved } from './unresolved.js';
-import { closingTokens } from './valueComponents.js';
+import { closingTokens, splitValue } from './valueComponents.js';
 
-const { TokenType, closeForOpening, lengthUnits, tokens } = cssnanoUtils;
+const { TokenType, closeForOpening, numeric } = cssnanoUtils;
 
 /**
- * Checks whether termTokens form a single structurally complete function token/block.
+ * Whether the tokens of a balanced term are one function with its arguments.
  *
  * @param {import('@csstools/css-tokenizer').CSSToken[]} termTokens
  * @return {boolean}
@@ -15,27 +17,14 @@ function isCompleteFunction(termTokens) {
   if (termTokens.length < 2 || termTokens[0][0] !== TokenType.Function) {
     return false;
   }
-
-  /** @type {import('@csstools/css-tokenizer').TokenType[]} */
-  const stack = [];
-
-  for (let i = 0; i < termTokens.length; i++) {
-    const type = termTokens[i][0];
-    const expected = closeForOpening(type);
-
-    if (expected !== undefined) {
-      stack.push(expected);
-    } else if (closingTokens.has(type)) {
-      if (stack.pop() !== type) {
-        return false;
-      }
-      if (stack.length === 0 && i < termTokens.length - 1) {
-        return false;
-      }
+  let depth = 0;
+  for (const [index, token] of termTokens.entries()) {
+    if (closeForOpening(token[0]) !== undefined) depth++;
+    else if (closingTokens.has(token[0]) && --depth === 0) {
+      return index === termTokens.length - 1;
     }
   }
-
-  return stack.length === 0;
+  return false;
 }
 
 /**
@@ -54,135 +43,24 @@ export function isValidLengthPercentage(term, termTokens) {
     return false;
   }
 
-  const token = termTokens[0];
-  const type = token[0];
-
-  if (type === TokenType.Dimension) {
-    const detail =
-      /** @type {{value: number, signCharacter?: string, unit: string}} */ (
-        token[4]
-      );
-    if (detail.signCharacter === '-' || detail.value < 0) {
-      return false;
-    }
-    return lengthUnits.has(detail.unit.toLowerCase());
-  }
-
-  if (type === TokenType.Percentage) {
-    const detail = /** @type {{value: number, signCharacter?: string}} */ (
-      token[4]
-    );
-    return detail.signCharacter !== '-' && detail.value >= 0;
-  }
-
-  if (type === TokenType.Number) {
-    const detail = /** @type {{value: number}} */ (token[4]);
-    /* Only 0 is a valid length without unit in CSS; e.g. `border-radius: 5` is invalid */
-    return detail.value === 0;
-  }
-
-  return false;
+  const value = numeric(termTokens[0]);
+  return value !== false && isLengthValue(value.number, value.unit, true, true);
 }
 
 /**
- * Tokenizes a CSS value into terms separated by top-level whitespace and splits at top-level slash.
+ * Splits a value into terms at top-level whitespace and at most one top-level
+ * slash.
  *
  * @param {string} value
- * @return {{horizontal: {term: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}[], vertical: {term: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}[] | null} | null}
+ * @return {{horizontal: import('./valueComponents.js').Component[], vertical: import('./valueComponents.js').Component[] | null} | null}
  */
 function splitRadiusTerms(value) {
-  const allTokens = tokens(value);
-  if (allTokens.length === 0) return null;
-
-  /** @type {{term: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}[]} */
-  const horizontal = [];
-  /** @type {{term: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}[]} */
-  const vertical = [];
-
-  let currentSide = horizontal;
-  /** @type {import('@csstools/css-tokenizer').CSSToken[]} */
-  let currentTermTokens = [];
-  /** @type {import('@csstools/css-tokenizer').TokenType[]} */
-  const stack = [];
-  let hasSlash = false;
-
-  const pushTerm = () => {
-    if (currentTermTokens.length === 0) return;
-    const termStr = currentTermTokens.map((t) => t[1]).join('');
-    currentSide.push({ term: termStr, tokens: currentTermTokens });
-    currentTermTokens = [];
-  };
-
-  for (const token of allTokens) {
-    const type = token[0];
-
-    if (type === TokenType.Comment) {
-      /* Comments inside values fail closed */
-      return null;
-    }
-
-    if (stack.length === 0) {
-      if (type === TokenType.Whitespace) {
-        pushTerm();
-        continue;
-      }
-      if (type === TokenType.Delim && token[1] === '/') {
-        if (hasSlash) {
-          /* At most one slash permitted in border-radius */
-          return null;
-        }
-        pushTerm();
-        hasSlash = true;
-        currentSide = vertical;
-        continue;
-      }
-    }
-
-    currentTermTokens.push(token);
-
-    const expected = closeForOpening(type);
-    if (expected !== undefined) {
-      stack.push(expected);
-    } else if (closingTokens.has(type) && stack.pop() !== type) {
-      return null;
-    }
-  }
-
-  pushTerm();
-
-  if (stack.length !== 0) {
-    /* Unbalanced parentheses / brackets */
-    return null;
-  }
-
-  if (hasSlash && vertical.length === 0) {
-    /* Trailing slash with no vertical terms */
-    return null;
-  }
-
+  const parts = splitValue(value, '/');
+  if (!parts || parts.length > 2) return null;
   return {
-    horizontal,
-    vertical: hasSlash ? vertical : null,
+    horizontal: parts[0].components,
+    vertical: parts[1]?.components ?? null,
   };
-}
-
-/**
- * Expands 1 to 4 terms to a 4-corner tuple [TL, TR, BR, BL] per CSS TRBL symmetry.
- *
- * @param {string[]} terms
- * @return {[string, string, string, string]}
- */
-function expandTo4(terms) {
-  if (terms.length === 1) {
-    return [terms[0], terms[0], terms[0], terms[0]];
-  }
-  if (terms.length === 2) {
-    return [terms[0], terms[1], terms[0], terms[1]];
-  }
-  if (terms.length === 3) {
-    return [terms[0], terms[1], terms[2], terms[1]];
-  }
-  return [terms[0], terms[1], terms[2], terms[3]];
 }
 
 /**
@@ -208,15 +86,15 @@ export function parseCornerRadius(value) {
   }
 
   for (const item of horizontal) {
-    if (!isValidLengthPercentage(item.term, item.tokens)) {
+    if (!isValidLengthPercentage(item.raw, item.tokens)) {
       return null;
     }
   }
 
   if (horizontal.length === 1) {
-    return [horizontal[0].term, horizontal[0].term];
+    return [horizontal[0].raw, horizontal[0].raw];
   }
-  return [horizontal[0].term, horizontal[1].term];
+  return [horizontal[0].raw, horizontal[1].raw];
 }
 
 /**
@@ -239,12 +117,12 @@ export function parseRadiusShorthand(value) {
   }
 
   for (const item of horizontal) {
-    if (!isValidLengthPercentage(item.term, item.tokens)) {
+    if (!isValidLengthPercentage(item.raw, item.tokens)) {
       return null;
     }
   }
 
-  const h4 = expandTo4(horizontal.map((item) => item.term));
+  const h4 = expandFourSides(horizontal.map((item) => item.raw));
 
   if (vertical === null) {
     return {
@@ -258,12 +136,12 @@ export function parseRadiusShorthand(value) {
   }
 
   for (const item of vertical) {
-    if (!isValidLengthPercentage(item.term, item.tokens)) {
+    if (!isValidLengthPercentage(item.raw, item.tokens)) {
       return null;
     }
   }
 
-  const v4 = expandTo4(vertical.map((item) => item.term));
+  const v4 = expandFourSides(vertical.map((item) => item.raw));
   return {
     horizontal: h4,
     vertical: v4,
@@ -277,5 +155,5 @@ export function parseRadiusShorthand(value) {
  * @return {boolean}
  */
 export function isGlobalKeyword(value) {
-  return cssGlobalKeywords.has(value.trim().toLowerCase());
+  return isCssWideKeyword(value.trim());
 }

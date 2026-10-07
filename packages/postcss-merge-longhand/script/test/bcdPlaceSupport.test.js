@@ -5,10 +5,10 @@ import bcdData from '@mdn/browser-compat-data' with { type: 'json' };
 import committed from '../../src/data/placeSupport.json' with { type: 'json' };
 import {
   alignmentKeywordSubfeatures,
-  browserslistNames,
   buildPlaceSupport,
   serializePlaceSupport,
 } from '../lib/bcdPlaceSupport.js';
+import { browserslistNames } from '../lib/bcdSupport.js';
 import { compareVersions } from '../../src/lib/compareVersions.js';
 import { widelySupported } from '../../src/lib/decl/alignmentForms.js';
 

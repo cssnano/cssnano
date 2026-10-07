@@ -1,5 +1,5 @@
 import { test, describe } from 'node:test';
-import { assertCascadePreserved } from '../script/lib/columnsCascadeOracle.js';
+import { assertCascadePreserved } from './helpers/columnsCascadeOracle.js';
 
 describe('computed-state oracle: structured interleavings and importance lanes', () => {
   test('preserves computed state across width-first and count-first longhand pairs', () => {

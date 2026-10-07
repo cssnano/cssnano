@@ -1,4 +1,4 @@
-import parseTrbl from './parseTrbl.js';
+import parseTrbl, { fourSideCount } from './parseTrbl.js';
 
 /**
  * @param {string | string[]} v
@@ -6,18 +6,5 @@ import parseTrbl from './parseTrbl.js';
  */
 export default (v) => {
   const value = parseTrbl(v);
-
-  if (value[3] === value[1]) {
-    value.pop();
-
-    if (value[2] === value[0]) {
-      value.pop();
-
-      if (value[0] === value[1]) {
-        value.pop();
-      }
-    }
-  }
-
-  return value.join(' ');
+  return value.slice(0, fourSideCount(value)).join(' ');
 };

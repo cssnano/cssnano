@@ -65,6 +65,14 @@ describe('longhand merging across a nested rule', () => {
     )
   );
 
+  test(
+    'merges the margin longhands before and after a nested rule separately',
+    processCSS(
+      'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px;&{x:y}padding:0;margin-top:2px;margin-right:2px;margin-bottom:2px;margin-left:2px}',
+      'a{margin:1px;&{x:y}padding:0;margin:2px}'
+    )
+  );
+
   // The merged border-color, border-style and border-width set only the
   // longhands the side shorthands already set, so border-image keeps its value.
   test(

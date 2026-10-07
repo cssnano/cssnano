@@ -81,6 +81,16 @@ function borderShorthandValue(rng) {
 }
 
 /**
+ * @param {import('../../../../util/fuzzRng.js').PRNG} rng
+ * @param {readonly string[]} tokens
+ * @param {number} count
+ * @return {string} `count` tokens, drawn with replacement.
+ */
+function pickTokens(rng, tokens, count) {
+  return Array.from({ length: count }, () => rng.pick(tokens)).join(' ');
+}
+
+/**
  * One to four values of the same component, the way a trbl shorthand takes them.
  *
  * @param {import('../../../../util/fuzzRng.js').PRNG} rng
@@ -88,9 +98,7 @@ function borderShorthandValue(rng) {
  * @return {string}
  */
 function trblValue(rng, tokens) {
-  const count = rng.int(sides.length) + 1;
-
-  return Array.from({ length: count }, () => rng.pick(tokens)).join(' ');
+  return pickTokens(rng, tokens, rng.int(sides.length) + 1);
 }
 
 /**
@@ -101,9 +109,7 @@ function trblValue(rng, tokens) {
  * @return {string}
  */
 function excessiveTrblValue(rng, tokens) {
-  const count = sides.length + 1;
-
-  return Array.from({ length: count }, () => rng.pick(tokens)).join(' ');
+  return pickTokens(rng, tokens, sides.length + 1);
 }
 
 /**
@@ -246,21 +252,12 @@ function radiusDeclaration(rng) {
  */
 function radiusValue(rng, prop) {
   if (prop === 'border-radius') {
-    const hCount = rng.int(4) + 1;
-    const h = Array.from({ length: hCount }, () => rng.pick(radiusTokens)).join(
-      ' '
-    );
-    if (rng.chance(0.35)) {
-      const vCount = rng.int(4) + 1;
-      const v = Array.from({ length: vCount }, () =>
-        rng.pick(radiusTokens)
-      ).join(' ');
-      return `${h} / ${v}`;
-    }
-    return h;
+    const h = pickTokens(rng, radiusTokens, rng.int(4) + 1);
+    return rng.chance(0.35)
+      ? `${h} / ${pickTokens(rng, radiusTokens, rng.int(4) + 1)}`
+      : h;
   }
-  const count = rng.chance(0.3) ? 2 : 1;
-  return Array.from({ length: count }, () => rng.pick(radiusTokens)).join(' ');
+  return pickTokens(rng, radiusTokens, rng.chance(0.3) ? 2 : 1);
 }
 
 /**

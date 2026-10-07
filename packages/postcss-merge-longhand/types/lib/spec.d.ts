@@ -22,7 +22,23 @@ declare function shorthand(name: string): {
  */
 declare function setsLonghands(name: string): Set<string>;
 export declare const sides: string[];
-export declare const borderComponents: string[];
+/**
+ * The groups of box properties: a physical shorthand and two axis shorthands
+ * that set a flow-relative start and end.
+ *
+ * @type {Map<string, {
+ *   axisShorthands: string[],
+ *   grammar: {auto: boolean, percentage: boolean, negative: boolean}
+ * }>}
+ */
+export declare const boxGroups: Map<string, {
+    axisShorthands: string[];
+    grammar: {
+        auto: boolean;
+        percentage: boolean;
+        negative: boolean;
+    };
+}>;
 export declare const cssWideKeywords: Set<string>;
 export declare const lineStyles: Set<string>;
 export declare const lineWidthKeywords: Set<string>;
@@ -33,6 +49,14 @@ export { shorthand };
 export { initialValues };
 declare const _default: {
     sides: string[];
+    boxGroups: Map<string, {
+        axisShorthands: string[];
+        grammar: {
+            auto: boolean;
+            percentage: boolean;
+            negative: boolean;
+        };
+    }>;
     setsLonghands: typeof setsLonghands;
     borderComponents: string[];
     shorthand: typeof shorthand;

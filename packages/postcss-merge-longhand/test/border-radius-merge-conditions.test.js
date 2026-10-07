@@ -149,3 +149,73 @@ test(
     'a{border-top-left-radius:10px;border-top-right-radius:10px;border-radius:10px \\9;border-bottom-right-radius:10px;border-bottom-left-radius:10px}'
   )
 );
+
+describe('newer syntax a browser may reject', () => {
+  test(
+    'should keep border-radius:1px before border-radius:5dvh because browsers without dynamic viewport units fall back to 1px',
+    passthroughCSS('a{border-radius:1px;border-radius:5dvh}')
+  );
+
+  test(
+    'should keep a corner before a border-radius using dvh because the shorthand is dropped where dvh is unsupported',
+    passthroughCSS('a{border-top-left-radius:1px;border-radius:5dvh}')
+  );
+});
+
+describe('full vector reset', () => {
+  test(
+    'should commit the merged radius before a top-left corner needing newer support',
+    processCSS(
+      'a{border-top-left-radius:1px;border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px;border-top-left-radius:max(10px,2vw)}',
+      'a{border-radius:1px;border-top-left-radius:max(10px,2vw)}'
+    )
+  );
+
+  test(
+    'should commit the merged radius before a top-right corner needing newer support',
+    processCSS(
+      'a{border-top-left-radius:1px;border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px;border-top-right-radius:max(10px,2vw)}',
+      'a{border-radius:1px;border-top-right-radius:max(10px,2vw)}'
+    )
+  );
+
+  test(
+    'should commit the merged radius before a bottom-right corner needing newer support',
+    processCSS(
+      'a{border-top-left-radius:1px;border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px;border-bottom-right-radius:max(10px,2vw)}',
+      'a{border-radius:1px;border-bottom-right-radius:max(10px,2vw)}'
+    )
+  );
+
+  test(
+    'should commit the merged radius before a bottom-left corner needing newer support',
+    processCSS(
+      'a{border-top-left-radius:1px;border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px;border-bottom-left-radius:max(10px,2vw)}',
+      'a{border-radius:1px;border-bottom-left-radius:max(10px,2vw)}'
+    )
+  );
+
+  test(
+    'should commit the merged radius before a shorthand needing newer support',
+    processCSS(
+      'a{border-top-left-radius:1px;border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px;border-radius:max(10px,2vw)}',
+      'a{border-radius:1px;border-radius:max(10px,2vw)}'
+    )
+  );
+
+  test(
+    'should not merge a full vector across a shorthand CSS-wide keyword',
+    processCSS(
+      'a{border-top-left-radius:1px;border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px;border-radius:inherit}',
+      'a{border-radius:1px;border-radius:inherit}'
+    )
+  );
+
+  test(
+    'should drop the overridden corner when a CSS-wide keyword replaces it',
+    processCSS(
+      'a{border-top-left-radius:1px;border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px;border-top-left-radius:inherit}',
+      'a{border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px;border-top-left-radius:inherit}'
+    )
+  );
+});

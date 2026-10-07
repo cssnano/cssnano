@@ -1,14 +1,18 @@
 import {
   cssWideKeywords,
   isFlowRelative,
+  serializeJson,
   sortedByName,
 } from '../../../../util/webref/webref.js';
 import { keywordTerminals, reachableFunctions } from './webrefGrammar.js';
 import {
   BORDER,
-  BOX_SHORTHANDS,
+  BOX_AXES,
+  BOX_GROUPS,
+  boxShorthandsOf,
   COLUMNS,
   implemented,
+  physicalLonghand,
   validate,
 } from './webrefValidate.js';
 
@@ -39,12 +43,25 @@ const MISSING_INITIAL_VALUES = new Map([['column-width', 'auto']]);
  * @property {string[]} resets The properties it resets without being able to
  * set, expanded through their own longhands.
  *
+ * @typedef {object} BoxGrammar What a value of the group's physical longhands
+ * may be. The group's flow-relative longhands take the same values.
+ * @property {boolean} auto Whether the keyword `auto` is a value.
+ * @property {boolean} percentage Whether a percentage is a value.
+ * @property {boolean} negative Whether a negative length is a value.
+ *
+ * @typedef {object} BoxGroup
+ * @property {string[]} axisShorthands The shorthands setting a start and an
+ * end along the block and inline axis.
+ * @property {BoxGrammar} grammar
+ *
  * @typedef {object} Longhands
  * @property {string[]} sides The sides of the box, in the order a shorthand
  * lists them.
  * @property {string[]} borderComponents The parts of a border, in the order
  * `border` lists them.
  * @property {Map<string, Shorthand>} shorthands
+ * @property {Map<string, BoxGroup>} boxGroups The box properties that have a
+ * physical shorthand and two flow-relative axis shorthands, by group name.
  * @property {Map<string, string>} initialValues Initial value of every property
  * a shorthand here sets.
  * @property {string[]} borderProperties Every property in the border family.
@@ -57,6 +74,28 @@ const MISSING_INITIAL_VALUES = new Map([['column-width', 'auto']]);
  * @property {string[]} colorFunctions Names of the functions that produce a
  * colour, without their parentheses.
  */
+
+/**
+ * Reads what a box longhand accepts off its grammar. Anchor functions are
+ * left out on purpose: the plugin cannot evaluate them and leaves a value that
+ * uses one as written.
+ *
+ * @param {WebrefProperty | undefined} property
+ * @return {BoxGrammar}
+ */
+function boxGrammar(property) {
+  const syntax = property?.syntax;
+
+  if (syntax === undefined) {
+    throw new Error('webref gives no grammar for a box longhand');
+  }
+
+  return {
+    auto: keywordTerminals(syntax).includes('auto'),
+    percentage: syntax.includes('<length-percentage'),
+    negative: !syntax.includes('[0,∞]'),
+  };
+}
 
 /**
  * @param {WebrefData} data
@@ -139,8 +178,18 @@ export function buildLonghands(data) {
     addShorthand(`${BORDER}-${side}`);
   }
 
-  for (const name of [...BOX_SHORTHANDS, COLUMNS]) {
+  for (const name of [...BOX_GROUPS.flatMap(boxShorthandsOf), COLUMNS]) {
     addShorthand(name);
+  }
+
+  /** @type {Map<string, BoxGroup>} */
+  const boxGroups = new Map();
+
+  for (const group of BOX_GROUPS) {
+    boxGroups.set(group, {
+      axisShorthands: BOX_AXES.map((axis) => `${group}-${axis}`),
+      grammar: boxGrammar(byName.get(physicalLonghand(group, sides[0]))),
+    });
   }
 
   /** @type {Map<string, string>} */
@@ -200,6 +249,7 @@ export function buildLonghands(data) {
     sides,
     borderComponents,
     shorthands,
+    boxGroups,
     initialValues: new Map(sortedByName(initialValues)),
     borderProperties: borderProperties.toSorted(),
     flowRelativeBorderProperties: flowRelativeBorderProperties.toSorted(),
@@ -230,23 +280,20 @@ export function buildLonghands(data) {
  * @return {string}
  */
 export function serialize(data) {
-  return `${JSON.stringify(
-    {
-      sides: data.sides,
-      borderComponents: data.borderComponents,
-      shorthands: Object.fromEntries(data.shorthands),
-      initialValues: Object.fromEntries(data.initialValues),
-      borderProperties: data.borderProperties,
-      flowRelativeBorderProperties: data.flowRelativeBorderProperties,
-      cssWideKeywords: data.cssWideKeywords,
-      lineStyles: data.lineStyles,
-      lineWidthKeywords: data.lineWidthKeywords,
-      namedColors: data.namedColors,
-      colorFunctions: data.colorFunctions,
-    },
-    null,
-    2
-  )}\n`;
+  return serializeJson({
+    sides: data.sides,
+    borderComponents: data.borderComponents,
+    shorthands: Object.fromEntries(data.shorthands),
+    boxGroups: Object.fromEntries(data.boxGroups),
+    initialValues: Object.fromEntries(data.initialValues),
+    borderProperties: data.borderProperties,
+    flowRelativeBorderProperties: data.flowRelativeBorderProperties,
+    cssWideKeywords: data.cssWideKeywords,
+    lineStyles: data.lineStyles,
+    lineWidthKeywords: data.lineWidthKeywords,
+    namedColors: data.namedColors,
+    colorFunctions: data.colorFunctions,
+  });
 }
 
 export { keywordTerminals, reachableFunctions, validate };

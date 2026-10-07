@@ -67,6 +67,20 @@ function leafFor(i, important) {
 }
 
 /**
+ * Serializes, in cell order, each touched cell that no row or column covers.
+ *
+ * @param {Set<number>} touched
+ * @param {Set<number>} covered
+ * @param {boolean} important
+ */
+function uncoveredLeaves(touched, covered, important) {
+  return [...touched]
+    .toSorted((a, b) => a - b)
+    .filter((i) => !covered.has(i))
+    .map((i) => leafFor(i, important));
+}
+
+/**
  * Enumerates the legal covers without importing the reducer's candidate
  * generator. A candidate is either a non-empty subset of rows, a non-empty
  * subset of columns, or the leaf cover. Every remaining touched cell is an
@@ -96,12 +110,7 @@ function oracle(mode, inputMask, important) {
           important
         )
       );
-    for (const i of [...touched].toSorted((a, b) => a - b)) {
-      if (!covered.has(i)) {
-        covered.add(i);
-        decls.push(leafFor(i, important));
-      }
-    }
+    decls.push(...uncoveredLeaves(touched, covered, important));
     candidates.push({ decls, rank: 2, mask });
   }
 
@@ -116,12 +125,7 @@ function oracle(mode, inputMask, important) {
         important
       )
     );
-    for (const i of [...touched].toSorted((a, b) => a - b)) {
-      if (!covered.has(i)) {
-        covered.add(i);
-        decls.push(leafFor(i, important));
-      }
-    }
+    decls.push(...uncoveredLeaves(touched, covered, important));
     candidates.push({ decls, rank: 3, mask });
   }
 

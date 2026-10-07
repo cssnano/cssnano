@@ -6,7 +6,7 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import computeBrowsersToSupport from '../src/lib/computeBrowsersToSupport.js';
 import getBrowsersForWebBuild from '../src/lib/getBrowsersForWebBuild.js';
-import { supportsPlaceShorthands } from '../src/lib/decl/placeSupport.js';
+import { supportsPlaceShorthands } from '../src/lib/targetSupport.js';
 import plugin from '../src/index.js';
 
 const longhands = 'a{align-items:center;justify-items:start}';

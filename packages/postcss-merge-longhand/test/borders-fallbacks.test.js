@@ -224,3 +224,20 @@ describe('border-color', () => {
     )
   );
 });
+
+describe('newer syntax a browser may reject', () => {
+  test(
+    'should keep border-top-width before a border-top using dvh because browsers without dynamic viewport units drop the shorthand',
+    passthroughCSS('a{border-top-width:1px;border-top:5dvh solid red}')
+  );
+
+  test(
+    'should keep border-top-color before a border-top with an alpha hex colour because older browsers drop the shorthand',
+    passthroughCSS('a{border-top-color:red;border-top:1px solid #ff00ff80}')
+  );
+
+  test(
+    'should keep a six-digit hex before an alpha hex duplicate because older browsers reject the later one',
+    passthroughCSS('a{border-top-color:#fff;border-top-color:#ffff}')
+  );
+});

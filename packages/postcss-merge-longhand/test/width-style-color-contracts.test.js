@@ -37,6 +37,20 @@ describe('parseWsc component classification', () => {
   });
 });
 
+describe('parseWsc repeated components', () => {
+  for (const value of [
+    'none none',
+    'medium none none',
+    'none none none',
+    'none none currentcolor',
+    'medium medium',
+  ]) {
+    test(`rejects ${value}, because a component may appear only once`, () => {
+      assert.equal(parseWidthStyleColor(value), null);
+    });
+  }
+});
+
 describe('parseWsc substitution slots', () => {
   test('reserves the open component for a lone substitution between specified components', () => {
     assert.deepEqual(parseWidthStyleColor('var(--w) solid red'), {

@@ -3,15 +3,16 @@ import postcss from 'postcss';
 
 const require = createRequire(import.meta.url);
 
-function pluginProcessor(packageName) {
-  return postcss([require(`../../packages/${packageName}/src/index.js`)]);
+function pluginProcessor(packageName, options) {
+  const plugin = require(`../../packages/${packageName}/src/index.js`);
+  return postcss([options === undefined ? plugin : plugin(options)]);
 }
 
-export function pluginCase(packageName, css) {
+export function pluginCase(packageName, css, options) {
   return {
     plugin: packageName,
     createProcessor() {
-      return pluginProcessor(packageName);
+      return pluginProcessor(packageName, options);
     },
     css,
   };

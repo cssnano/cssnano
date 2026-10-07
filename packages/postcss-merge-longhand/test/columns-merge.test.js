@@ -249,3 +249,19 @@ describe('count-only shorthand', () => {
     processCSS('h1{columns:auto 2}', 'h1{columns:2}')
   );
 });
+
+test(
+  'should keep the merged columns before column-width:10dvh because browsers without dvh fall back to the shorthand',
+  processCSS(
+    'a{column-count:2;column-width:100px;column-width:10dvh}',
+    'a{columns:100px 2;column-width:10dvh}'
+  )
+);
+
+test(
+  'should drop a column-width that a later columns shorthand overrides even when no longhands merge into a shorthand',
+  processCSS(
+    'a{column-width:var(--a);columns:var(--a);column-count:3!important}',
+    'a{columns:var(--a);column-count:3!important}'
+  )
+);

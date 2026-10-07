@@ -1,10 +1,18 @@
-import type { Declaration } from 'postcss';
+import { BoxSupport } from './lib/targetSupport.js';
+import type { Container, Declaration } from 'postcss';
 import type browserslist from 'browserslist';
 export type AutoprefixerOptions = {
     overrideBrowserslist?: string | string[];
 };
 export type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
 export type Options = AutoprefixerOptions & BrowserslistOptions;
+export type MergeContext = {
+    columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][];
+    setsOtherColumn: boolean;
+    shorthandMemoTable: Map<string, string | null>;
+    placeShorthands: boolean;
+    boxSupport: BoxSupport;
+};
 export type AlignmentDeclarations = {
     decls: Declaration[];
     lanes: [Declaration[], Declaration[]];

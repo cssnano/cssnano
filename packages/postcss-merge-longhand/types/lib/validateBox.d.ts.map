@@ -1,1 +1,1 @@
-{"version":3,"file":"validateBox.d.ts","sourceRoot":"","sources":["../../src/lib/validateBox.js"],"names":[],"mappings":"AA0DA;;;;GAIG;AACH,iBAAS,YAAY,CAAC,IAAI,EAJf,MAIe,EAAE,KAAK,EAHtB,MAGsB,GAFrB,OAAO,CAqBlB;AACD,OAAO,EAAE,YAAY,EAAE,CAAC"}
+{"version":3,"file":"validateBox.d.ts","sourceRoot":"","sources":["../../src/lib/validateBox.js"],"names":[],"mappings":"AA4FA;;;;;GAKG;AACH,iBAAS,eAAe,CAAC,IAAI,EALlB,MAKkB,EAAE,KAAK,EAJzB,MAIyB,GAHxB,OAAO,CAsBlB;AACD,OAAO,EAAE,eAAe,EAAE,CAAC"}

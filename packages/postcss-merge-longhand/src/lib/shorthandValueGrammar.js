@@ -1,18 +1,17 @@
+import { cssWideKeywords } from './spec.js';
 import cssnanoUtils from 'cssnano-utils';
-import cssGlobalKeywords from './cssGlobalKeywords.js';
+import { isLengthValue } from './lengthGrammar.js';
 import { closingTokens } from './valueComponents.js';
 
 const {
   TokenType,
   closeForOpening,
   decoded,
-  lengthUnits,
   mathFunctions,
   mathFunctionArgumentRanges,
   numeric,
 } = cssnanoUtils;
 
-const substitutionFunctions = new Set(['var', 'env', 'constant', 'attr']);
 /* Math functions resolve to a value the grammar can accept positionally, and
  * anchor-size() always resolves to a length. */
 const valueFunctions = new Set([...mathFunctions, 'anchor-size']);
@@ -82,7 +81,7 @@ export function componentKey(component) {
 export function hasCssWideKeyword(component) {
   return component.tokens.some(
     (token) =>
-      token[0] === TokenType.Ident && cssGlobalKeywords.has(tokenName(token))
+      token[0] === TokenType.Ident && cssWideKeywords.has(tokenName(token))
   );
 }
 
@@ -125,7 +124,7 @@ export function hasAllowedFunctions(component, allowed) {
 
 /** @param {FunctionFrame[]} stack @param {string} name @param {Set<string>} allowed @return {boolean} */
 function pushFunctionFrame(stack, name, allowed) {
-  if (substitutionFunctions.has(name) || !allowed.has(name)) return false;
+  if (!allowed.has(name)) return false;
   stack.push({
     name,
     expected: TokenType.CloseParen,
@@ -204,8 +203,6 @@ function functionArityIsValid(name, argumentCount) {
   if (range) {
     return argumentCount >= range[0] && argumentCount <= range[1];
   }
-  if (name === 'calc') return argumentCount === 1;
-  if (name === 'clamp') return argumentCount === 3;
   if (name === 'anchor-size') return argumentCount === 1 || argumentCount === 2;
   if (name === 'cubic-bezier') return argumentCount === 4;
   if (name === 'steps') return argumentCount === 1 || argumentCount === 2;
@@ -235,15 +232,11 @@ export function isLengthComponent(component, grammar) {
   }
   const value = directNumeric(component);
   if (value) {
-    if (value.unit === '') {
-      return value.number === 0;
-    }
-    if (value.unit === '%') {
-      return grammar.percentage && (!grammar.nonNegative || value.number >= 0);
-    }
-    return (
-      lengthUnits.has(value.unit.toLowerCase()) &&
-      (!grammar.nonNegative || value.number >= 0)
+    return isLengthValue(
+      value.number,
+      value.unit,
+      grammar.percentage,
+      grammar.nonNegative === true
     );
   }
   return (

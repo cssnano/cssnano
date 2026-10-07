@@ -8,9 +8,9 @@ export type ParsedDeclarations = Map<Declaration, [string | null, string | null]
  * @param {Container} rule
  * @param {AlignmentFamilyConfig} family
  * @param {Declaration[]} declarations
- * @param {[Declaration[], Declaration[]]} [lanes] - the declarations and `all`
- *   split by importance, when the caller already collected them
+ * @param {[Declaration[], Declaration[]]} lanes - the declarations and `all`
+ *   split by importance
  * @return {void}
  */
-export declare function reduceAlignmentFamily(rule: Container, family: AlignmentFamilyConfig, declarations: Declaration[], lanes?: [Declaration[], Declaration[]]): void;
+export declare function reduceAlignmentFamily(rule: Container, family: AlignmentFamilyConfig, declarations: Declaration[], lanes: [Declaration[], Declaration[]]): void;
 //# sourceMappingURL=alignmentReducer.d.ts.map

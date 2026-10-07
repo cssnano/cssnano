@@ -1,51 +1,9 @@
 import { test, describe } from 'node:test';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
+import { addTests } from './helpers/boxTests.js';
 
 const { processCSS } = processCSSFactory(plugin);
-
-function addTests(...tests) {
-  for (const { message, fixture, expected } of tests) {
-    const isExpectedFunc = typeof expected === 'function';
-
-    test(
-      message.replaceAll(/box/giv, 'margin'),
-      processCSS(
-        fixture.replaceAll(/box/giv, 'margin'),
-        isExpectedFunc
-          ? expected('margin')
-          : expected.replaceAll(/box/giv, 'margin')
-      )
-    );
-    test(
-      message.replaceAll(/box/giv, 'MARGIN'),
-      processCSS(
-        fixture.replaceAll(/box/giv, 'MARGIN'),
-        isExpectedFunc
-          ? expected('MARGIN')
-          : expected.replaceAll(/box/giv, 'margin')
-      )
-    );
-    test(
-      message.replaceAll(/box/giv, 'padding'),
-      processCSS(
-        fixture.replaceAll(/box/giv, 'padding'),
-        isExpectedFunc
-          ? expected('padding')
-          : expected.replaceAll(/box/giv, 'padding')
-      )
-    );
-    test(
-      message.replaceAll(/box/giv, 'PADDING'),
-      processCSS(
-        fixture.replaceAll(/box/giv, 'PADDING'),
-        isExpectedFunc
-          ? expected('PADDING')
-          : expected.replaceAll(/box/giv, 'padding')
-      )
-    );
-  }
-}
 
 addTests(
   {

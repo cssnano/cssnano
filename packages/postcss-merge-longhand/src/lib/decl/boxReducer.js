@@ -1,151 +1,128 @@
+import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import stylehacks from 'stylehacks';
-import canExplode from '../canExplode.js';
-import minifyTrbl from '../minifyTrbl.js';
-import parseTrbl from '../parseTrbl.js';
-import cssGlobalKeywords from '../cssGlobalKeywords.js';
-import { browserKeeps } from '../validateBox.js';
-import topRightBottomLeft from '../trbl.js';
-import cleanupDeclarations from '../cleanupDeclarations.js';
-import { declarationRuns, reduceEachRun } from './declarationRuns.js';
-import {
-  assignSlotValue,
-  commitShorthand,
-  flushableSlots,
-  shouldResetSlots,
-} from './slotVector.js';
-import {
-  cleanupLaneSegments,
-  importanceLanes,
-  isAll,
-} from './importanceLanes.js';
-
-export const physicalMarginProperties = new Set([
-  'margin',
-  ...topRightBottomLeft.map((d) => `margin-${d}`),
-]);
-
-export const physicalPaddingProperties = new Set([
-  'padding',
-  ...topRightBottomLeft.map((d) => `padding-${d}`),
-]);
+import { boxBrowserKeeps } from '../validateBox.js';
+import { boxProperties, shorthandSlot } from './boxGroups.js';
+import { discardDeadDeclarations } from './crossKindCoverage.js';
+import { discardOverriddenInLanes } from './overriddenDeclarations.js';
+import { formsOf, isExplodable, reduceFamilyLane } from './slotSolver.js';
+import { hasNonAll } from './importanceLanes.js';
 
 /** @import {Container, Declaration} from 'postcss'; */
+/** @import {BoxFamily} from './boxGroups.js'; */
+/** @import {BoxGroup, BoxProperty} from './boxGroups.js'; */
+
+/**
+ * @typedef {object} BoxDeclarations What one run of a rule declares of a group.
+ * @property {BoxGroup} group
+ * @property {Declaration[]} decls - the properties of the group
+ * @property {[Declaration[], Declaration[]]} lanes - the normal and the
+ * important lane, which also hold what may alias a property of the group
+ * @property {boolean} physical - whether a physical property appears
+ * @property {Set<BoxFamily> | null} flow - the flow-relative families that
+ * appear
+ */
+
+/**
+ * A property of a group joins its lanes and its list of members; one that may
+ * alias a member joins the lanes only, where it stops values moving across it.
+ *
+ * @param {{ boxes: Map<BoxGroup, BoxDeclarations> | null }} state
+ * @param {Declaration} child
+ * @param {BoxProperty | undefined} boxProperty
+ * @param {BoxGroup} boxGroup
+ * @param {number} laneIndex
+ * @return {void}
+ */
+export function addBoxDeclaration(
+  state,
+  child,
+  boxProperty,
+  boxGroup,
+  laneIndex
+) {
+  state.boxes ??= new Map();
+  let box = state.boxes.get(boxGroup);
+  if (!box) {
+    box = {
+      group: boxGroup,
+      decls: [],
+      lanes: [[], []],
+      physical: false,
+      flow: null,
+    };
+    state.boxes.set(boxGroup, box);
+  }
+  box.lanes[laneIndex].push(child);
+  if (!boxProperty) return;
+  box.decls.push(child);
+  if (boxProperty.family.kind === 'physical') {
+    box.physical = true;
+  } else {
+    (box.flow ??= new Set()).add(boxProperty.family);
+  }
+}
 
 /** @param {Declaration} d */
 const isInvalid = (d) =>
   !stylehacks.detect(d) &&
-  !cssGlobalKeywords.has(d.value.toLowerCase()) &&
-  !browserKeeps(d.prop.toLowerCase(), d.value);
+  !isCssWideKeyword(d.value) &&
+  !boxBrowserKeeps(d.prop.toLowerCase(), d.value);
 
-/** @param {Container} rule @param {string} prop @param {({ value: string, decl: Declaration } | null)[]} slots @param {Set<Declaration>} contributing @param {Set<Declaration>} fallbacks @param {boolean} lane */
-
-function flush(rule, prop, slots, contributing, fallbacks, lane) {
-  const full = flushableSlots(slots);
-  if (!full) return;
-
-  const kw = cssGlobalKeywords.has(full[0].value.toLowerCase());
-  const rawValues = full.map((s) => s.value).join(' ');
-  const shorthandVal = kw ? full[0].value : minifyTrbl(rawValues);
-  commitShorthand(rule, full, contributing, fallbacks, {
-    prop,
-    value: shorthandVal,
-    important: lane,
-  });
-}
-
-/** @param {Container} rule @param {string} prop @param {string[]} sideProps @param {Declaration[]} laneDecls @param {boolean} lane */
-function processLane(rule, prop, sideProps, laneDecls, lane) {
-  /** @type {({ value: string, decl: Declaration } | null)[]} */
-  let slots = [null, null, null, null];
-  const contributing = new Set(),
-    fallbacks = new Set();
-  const reset = () => {
-    flush(rule, prop, slots, contributing, fallbacks, lane);
-    slots = [null, null, null, null];
-    contributing.clear();
-    fallbacks.clear();
-  };
-
-  for (const decl of laneDecls) {
-    const p = decl.prop.toLowerCase();
-    if (isAll(decl)) {
-      reset();
-      continue;
-    }
-    const isShort = p === prop;
-    const idx = isShort ? -1 : sideProps.indexOf(p);
-    if (!isShort && idx === -1) {
-      reset();
-      continue;
-    }
-    if (stylehacks.detect(decl) || (isShort && !canExplode(decl))) {
-      reset();
-      continue;
-    }
-    if (shouldResetSlots(slots, idx, decl)) reset();
-
-    const vals = isShort ? parseTrbl(decl.value) : null;
-    for (let i = 0; i < 4; i++) {
-      if (isShort || i === idx) {
-        assignSlotValue(slots, i, vals ? vals[i] : decl.value, decl, fallbacks);
-      }
-    }
-    contributing.add(decl);
-  }
-  flush(rule, prop, slots, contributing, fallbacks, lane);
-}
-
-/** @param {Container} rule @param {string} prop @param {Declaration[]} [declarations] @param {[Declaration[], Declaration[]]} [lanes] */
-export function reduceBox(rule, prop, declarations, lanes) {
+/**
+ * @param {Container} rule
+ * @param {BoxDeclarations} box
+ * @param {import('../targetSupport.js').BoxSupport} support
+ * @return {void}
+ */
+export function reduceBox(rule, box, support) {
+  const { group, decls, lanes } = box;
   if (!rule.nodes) return;
-  const sideProps = topRightBottomLeft.map((d) => `${prop}-${d}`);
-  const family = new Set([prop, ...sideProps]);
-  if (
-    !declarations?.every(
-      (d) => d.parent === rule && family.has(d.prop.toLowerCase())
-    )
-  ) {
-    reduceEachRun(
-      rule,
-      (d) => family.has(d.prop.toLowerCase()),
-      (runDecls) => reduceBox(rule, prop, runDecls)
-    );
-    return;
-  }
-  const decls = declarations;
 
   if (decls.length === 0 || decls.some(isInvalid)) return;
 
-  const declSet = new Set(decls);
-  const familyLanes =
-    lanes ??
-    importanceLanes(
-      rule,
-      declarationRuns(rule)
-        .filter((run) => run.some((d) => declSet.has(d)))
-        .flat()
-        .filter((d) => d.prop.toLowerCase().startsWith(prop))
-    );
-  cleanupLaneSegments(familyLanes, (segment) => cleanupDeclarations(segment));
+  discardOverriddenInLanes(lanes, group.properties);
+  if (box.flow) {
+    for (const lane of lanes) discardDeadDeclarations(lane, support);
+  }
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
     const s = live[0];
-    const isTarget = s?.prop.toLowerCase() === prop;
-    if (isTarget && !stylehacks.detect(s) && canExplode(s)) {
-      s.prop = prop;
-      s.value = minifyTrbl(s.value);
+    const property = s && boxProperties.get(s.prop.toLowerCase());
+    if (
+      property?.slot === shorthandSlot &&
+      !stylehacks.detect(s) &&
+      isExplodable(s)
+    ) {
+      const { family } = property;
+      s.prop = family.shorthand;
+      s.value = formsOf(family).minify(s.value);
       delete s.raws?.value;
     }
     return;
   }
 
   for (const lane of [false, true]) {
-    const laneDecls = familyLanes[lane ? 1 : 0].filter(
-      (d) => d.parent === rule
-    );
-    if (laneDecls.some((d) => !isAll(d))) {
-      processLane(rule, prop, sideProps, laneDecls, lane);
+    const laneDecls = lanes[lane ? 1 : 0].filter((d) => d.parent === rule);
+    if (!hasNonAll(laneDecls)) continue;
+    if (box.physical) {
+      reduceFamilyLane(
+        rule,
+        group.physical,
+        laneDecls,
+        lane,
+        support.supportsAll(group.physical.shorthand)
+      );
+    }
+    if (!box.flow) continue;
+    for (const family of box.flow) {
+      reduceFamilyLane(
+        rule,
+        family,
+        laneDecls,
+        lane,
+        support.supportsAll(family.shorthand)
+      );
     }
   }
 }

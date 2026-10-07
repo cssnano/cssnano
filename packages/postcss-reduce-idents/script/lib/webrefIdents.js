@@ -9,6 +9,7 @@ import {
 import {
   grammarsByName,
   cssWideKeywords,
+  serializeJson,
   sortedByName,
 } from '../../../../util/webref/webref.js';
 import {
@@ -211,23 +212,19 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
  * @return {string}
  */
 export function serialize(data) {
-  return `${JSON.stringify(
-    {
-      cssWideKeywords: data.cssWideKeywords,
-      aliases: Object.fromEntries(data.aliases),
-      atRules: data.atRules,
-      keyframes: data.keyframes,
-      counterStyle: {
-        ...data.counterStyle,
-        functions: Object.fromEntries(data.counterStyle.functions),
-      },
-      counter: {
-        ...data.counter,
-        functions: Object.fromEntries(data.counter.functions),
-      },
-      grid: data.grid,
+  return serializeJson({
+    cssWideKeywords: data.cssWideKeywords,
+    aliases: Object.fromEntries(data.aliases),
+    atRules: data.atRules,
+    keyframes: data.keyframes,
+    counterStyle: {
+      ...data.counterStyle,
+      functions: Object.fromEntries(data.counterStyle.functions),
     },
-    null,
-    2
-  )}\n`;
+    counter: {
+      ...data.counter,
+      functions: Object.fromEntries(data.counter.functions),
+    },
+    grid: data.grid,
+  });
 }

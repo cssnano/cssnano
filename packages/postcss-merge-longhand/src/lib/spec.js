@@ -68,7 +68,17 @@ function setsLonghands(name) {
   return reached;
 }
 export const sides = data.sides;
-export const borderComponents = data.borderComponents;
+/**
+ * The groups of box properties: a physical shorthand and two axis shorthands
+ * that set a flow-relative start and end.
+ *
+ * @type {Map<string, {
+ *   axisShorthands: string[],
+ *   grammar: {auto: boolean, percentage: boolean, negative: boolean}
+ * }>}
+ */
+export const boxGroups = new Map(Object.entries(data.boxGroups));
+const borderComponents = data.borderComponents;
 const borderProperties = new Set(data.borderProperties);
 const flowRelativeBorderProperties = new Set(data.flowRelativeBorderProperties);
 export const cssWideKeywords = new Set(data.cssWideKeywords);
@@ -81,6 +91,7 @@ export { shorthand };
 export { initialValues };
 export default {
   sides,
+  boxGroups,
   setsLonghands,
   borderComponents,
   shorthand,

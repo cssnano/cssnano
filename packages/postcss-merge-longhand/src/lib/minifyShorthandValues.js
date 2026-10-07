@@ -1,6 +1,8 @@
+import { expandFourSides, fourSideCount } from './parseTrbl.js';
+import { cssWideKeywords } from './spec.js';
 import cssnanoUtils from 'cssnano-utils';
 import shorthandData from '../data/shorthandIdentities.json' with { type: 'json' };
-import cssGlobalKeywords from './cssGlobalKeywords.js';
+import { shorthandForms } from './decl/alignmentForms.js';
 import { splitValue } from './valueComponents.js';
 import {
   componentKey,
@@ -22,13 +24,11 @@ const overflowKeywords = new Set([
   'auto',
 ]);
 const overscrollKeywords = new Set(['auto', 'contain', 'none']);
+const axisKeywords = new Map([
+  ['overflow', overflowKeywords],
+  ['overscroll-behavior', overscrollKeywords],
+]);
 const gapKeywords = new Set(['normal']);
-const alignmentForms = new Map(
-  Object.entries(shorthandData.alignment).map(([property, forms]) => [
-    property,
-    new Set(forms),
-  ])
-);
 const timingKeywords = new Set(shorthandData.easing.keywords);
 const timingFunctions = new Set(shorthandData.easing.functions);
 const transitionTimeUnits = new Set(['ms', 's']);
@@ -40,8 +40,7 @@ const transitionTimeUnits = new Set(['ms', 's']);
 
 /** @param {Component[]} components @return {string | null} */
 function reduceTwoAxis(components) {
-  if (components.length < 1 || components.length > 2) return null;
-  if (components.length === 1) return null;
+  if (components.length !== 2) return null;
   if (componentKey(components[0]) !== componentKey(components[1])) return null;
   return components[0].raw;
 }
@@ -67,23 +66,14 @@ function reduceTwoAxisProperty(property, components) {
       )
     )
       return null;
-  } else if (property === 'overflow') {
+  } else if (axisKeywords.has(property)) {
+    const keywords = /** @type {Set<string>} */ (axisKeywords.get(property));
     if (
       !components.every(
         (component) =>
           component.tokens.length === 1 &&
           component.tokens[0][0] === TokenType.Ident &&
-          overflowKeywords.has(tokenName(component.tokens[0]))
-      )
-    )
-      return null;
-  } else if (property === 'overscroll-behavior') {
-    if (
-      !components.every(
-        (component) =>
-          component.tokens.length === 1 &&
-          component.tokens[0][0] === TokenType.Ident &&
-          overscrollKeywords.has(tokenName(component.tokens[0]))
+          keywords.has(tokenName(component.tokens[0]))
       )
     )
       return null;
@@ -112,20 +102,14 @@ function reduceFourSide(property, components) {
     return null;
   }
 
-  const values = propagateFourSide(components);
-  const keys = values.map(componentKey);
-  if (keys[0] === keys[1] && keys[0] === keys[2] && keys[0] === keys[3]) {
-    return values[0].raw;
-  }
-  if (keys[0] === keys[2] && keys[1] === keys[3]) {
-    return `${values[0].raw} ${values[1].raw}`;
-  }
-  if (keys[1] === keys[3]) {
-    return `${values[0].raw} ${values[1].raw} ${values[2].raw}`;
-  }
-  return components.length === 4
+  const values = expandFourSides(components);
+  const count = fourSideCount(values.map(componentKey));
+  return count === 4
     ? null
-    : components.map(({ raw }) => raw).join(' ');
+    : values
+        .slice(0, count)
+        .map(({ raw }) => raw)
+        .join(' ');
 }
 
 /** @param {string} property @return {{percentage: boolean, auto: boolean, nonNegative?: boolean}} */
@@ -135,23 +119,9 @@ function fourSideGrammar(property) {
   return { percentage: true, auto: true, nonNegative: true };
 }
 
-/** @param {Component[]} components @return {Component[]} */
-function propagateFourSide(components) {
-  if (components.length === 1) {
-    return [components[0], components[0], components[0], components[0]];
-  }
-  if (components.length === 2) {
-    return [components[0], components[1], components[0], components[1]];
-  }
-  if (components.length === 3) {
-    return [components[0], components[1], components[2], components[1]];
-  }
-  return components;
-}
-
 /** @param {string} property @param {Component[]} components @return {string | null} */
 function reduceAlignment(property, components) {
-  const forms = alignmentForms.get(property);
+  const forms = shorthandForms.get(property);
   if (!forms || components.some((component) => !isSingleIdent(component))) {
     return null;
   }
@@ -176,13 +146,13 @@ function isSingleIdent(component) {
   return (
     component.tokens.length === 1 &&
     component.tokens[0][0] === TokenType.Ident &&
-    !cssGlobalKeywords.has(componentName(component))
+    !cssWideKeywords.has(componentName(component))
   );
 }
 
 /** @param {string} value @return {string | null} */
 function reduceAspectRatio(value) {
-  const parsed = splitValue(value, false);
+  const parsed = splitValue(value);
   if (!parsed) return null;
   const input = parsed.flatMap((part) =>
     part.components.flatMap((component) => component.tokens)
@@ -324,14 +294,12 @@ function consumeTransitionComponent(component, state) {
 
 /** @param {string} value @return {string | null} */
 function reduceTransition(value) {
-  const parsed = splitValue(value, true);
+  const parsed = splitValue(value, ',');
   if (!parsed) return null;
   const reduced = parsed.map(reduceTransitionPart);
   if (reduced.some((part) => part === null)) return null;
   if (reduced.every((part) => part === false)) return null;
-  return reduced.some((part) => part !== false)
-    ? reduced.map((part, index) => part || parsed[index].raw).join(',')
-    : null;
+  return reduced.map((part, index) => part || parsed[index].raw).join(',');
 }
 
 /** @param {string} property @param {string} value @return {string | null} */
@@ -340,7 +308,7 @@ export function normalizeValue(property, value) {
   if (property === 'transition' || property === '-webkit-transition') {
     return reduceTransition(value);
   }
-  const parsed = splitValue(value, false);
+  const parsed = splitValue(value);
   if (!parsed || parsed.length !== 1) return null;
   const components = parsed[0].components;
   if (

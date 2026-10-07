@@ -216,9 +216,8 @@ test(
 );
 
 test(
-  'should merge corner longhands with an earlier fallback and anchor shorthand to latest candidate',
-  processCSS(
-    'a{border-top-left-radius:10px;border-top-left-radius:calc(10px + 1em);border-top-right-radius:20px;border-bottom-right-radius:30px;color:red;border-bottom-left-radius:40px}',
-    'a{border-top-left-radius:10px;color:red;border-radius:calc(10px + 1em) 20px 30px 40px}'
+  'should keep corner longhands with a calc() fallback unmerged, as IE 11 parses calc() only partially and would drop the shorthand',
+  passthroughCSS(
+    'a{border-top-left-radius:10px;border-top-left-radius:calc(10px + 1em);border-top-right-radius:20px;border-bottom-right-radius:30px;color:red;border-bottom-left-radius:40px}'
   )
 );

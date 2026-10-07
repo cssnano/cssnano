@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
-import { supportsPlaceShorthands } from '../src/lib/decl/placeSupport.js';
+import { supportsPlaceShorthands } from '../src/lib/targetSupport.js';
 
 /**
  * @param {string} overrideBrowserslist

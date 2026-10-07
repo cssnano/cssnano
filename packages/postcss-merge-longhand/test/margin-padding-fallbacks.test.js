@@ -1,51 +1,9 @@
 import { test, describe } from 'node:test';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
+import { addTests } from './helpers/boxTests.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
-
-function addTests(...tests) {
-  for (const { message, fixture, expected } of tests) {
-    const isExpectedFunc = typeof expected === 'function';
-
-    test(
-      message.replaceAll(/box/giv, 'margin'),
-      processCSS(
-        fixture.replaceAll(/box/giv, 'margin'),
-        isExpectedFunc
-          ? expected('margin')
-          : expected.replaceAll(/box/giv, 'margin')
-      )
-    );
-    test(
-      message.replaceAll(/box/giv, 'MARGIN'),
-      processCSS(
-        fixture.replaceAll(/box/giv, 'MARGIN'),
-        isExpectedFunc
-          ? expected('MARGIN')
-          : expected.replaceAll(/box/giv, 'margin')
-      )
-    );
-    test(
-      message.replaceAll(/box/giv, 'padding'),
-      processCSS(
-        fixture.replaceAll(/box/giv, 'padding'),
-        isExpectedFunc
-          ? expected('padding')
-          : expected.replaceAll(/box/giv, 'padding')
-      )
-    );
-    test(
-      message.replaceAll(/box/giv, 'PADDING'),
-      processCSS(
-        fixture.replaceAll(/box/giv, 'PADDING'),
-        isExpectedFunc
-          ? expected('PADDING')
-          : expected.replaceAll(/box/giv, 'padding')
-      )
-    );
-  }
-}
 
 describe('fallbacks', () => {
   addTests(
@@ -145,6 +103,81 @@ describe('support-dependent env() merge blocking', () => {
     processCSS(
       'a{padding-top:1px;padding-right:1px;padding-bottom:1px;padding-left:1px;padding-top:env(a);padding-right:env(a);padding-bottom:env(a);padding-left:env(a)}',
       'a{padding:1px;padding:env(a)}'
+    )
+  );
+});
+
+describe('newer syntax a browser may reject', () => {
+  test(
+    'should keep margin:1px before margin:5dvh because browsers without dynamic viewport units fall back to 1px',
+    passthroughCSS('a{margin:1px;margin:5dvh}')
+  );
+
+  test(
+    'should keep margin:1px before margin-top:5dvh because a merged shorthand would be dropped whole where dvh is unsupported',
+    passthroughCSS('a{margin:1px;margin-top:5dvh}')
+  );
+
+  test(
+    'should keep the merged margin before margin-top:5dvh when four longhands filled it because browsers without dvh fall back to the shorthand',
+    processCSS(
+      'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px;margin-top:5dvh}',
+      'a{margin:1px;margin-top:5dvh}'
+    )
+  );
+
+  test(
+    'should not merge four margin longhands when one side uses dvh because browsers without it would lose all four sides',
+    passthroughCSS(
+      'a{margin-top:1px;margin-right:5dvh;margin-bottom:1px;margin-left:1px}'
+    )
+  );
+
+  test(
+    'should keep a margin before its -webkit-calc() duplicate because engines without the prefix fall back to it',
+    passthroughCSS('a{margin-top:1px;margin-top:-webkit-calc(2px)}')
+  );
+
+  test(
+    'should still drop margin:1px before margin:2em because every browser parses both',
+    processCSS('a{margin:1px;margin:2em}', 'a{margin:2em}')
+  );
+});
+
+describe('repeated box property', () => {
+  const legacy = { overrideBrowserslist: ['ie 11'] };
+
+  test(
+    'keeps the earlier physical longhand because a browser without the cap unit drops the later one',
+    passthroughCSS('a{margin-top:1px;margin-top:1cap}', legacy)
+  );
+
+  test(
+    'keeps the earlier flow-relative longhand because a browser without the cap unit drops the later one',
+    passthroughCSS('a{margin-block-start:1px;margin-block-start:1cap}', legacy)
+  );
+
+  test(
+    'keeps the earlier shorthand in an at-rule because a browser without the cap unit drops the later one',
+    passthroughCSS('@page{margin:1px;margin:1cap}', legacy)
+  );
+
+  test(
+    'discards the earlier physical longhand when the later one needs no support',
+    processCSS('a{margin-top:1px;margin-top:2px}', 'a{margin-top:2px}', legacy)
+  );
+
+  test(
+    'discards the earlier shorthand in an at-rule when the later one needs no support',
+    processCSS('@page{margin:1px;margin:2px}', '@page{margin:2px}', legacy)
+  );
+
+  test(
+    'discards the earlier flow-relative longhand when the later one needs no support',
+    processCSS(
+      'a{margin-block-start:1px;margin-block-start:2px}',
+      'a{margin-block-start:2px}',
+      legacy
     )
   );
 });

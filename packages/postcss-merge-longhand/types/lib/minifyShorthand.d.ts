@@ -9,9 +9,10 @@ export declare const foldableShorthands: Set<string>;
  *
  * @param {import('postcss').Declaration} decl
  * @param {Map<string, string | null>} [memoTable]
+ * @param {string} [property] - the lowercased property name, when known
  * @return {void}
  */
-export declare function foldShorthandDeclaration(decl: import('postcss').Declaration, memoTable?: Map<string, string | null>): void;
+export declare function foldShorthandDeclaration(decl: import('postcss').Declaration, memoTable?: Map<string, string | null>, property?: string): void;
 /**
  * Full AST traversal fallback for standalone shorthand identity canonicalization.
  *

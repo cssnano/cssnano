@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 import postcss from 'postcss';
-import { reduceColumns } from '../src/lib/decl/columns.js';
+import { reduceColumnsRuns } from './helpers/reduceRuns.js';
 import { random } from '../../../util/fuzzRng.js';
 import {
   evaluateColumns,
   environments,
-} from '../script/lib/columnsCascadeOracle.js';
+} from './helpers/columnsCascadeOracle.js';
 
 /**
  * Deterministic generator for random column declaration rules.
@@ -174,7 +174,7 @@ describe('randomized seeded differential cascade sweep', () => {
 
         const root = postcss.parse(css);
         const rule = /** @type {import('postcss').Rule} */ (root.first);
-        reduceColumns(rule);
+        reduceColumnsRuns(rule);
         const outCss = root.toString();
         if (outCss !== css) reducedCount++;
 

@@ -1,36 +1,29 @@
-import { reduceEachRun } from './declarationRuns.js';
+import { isCssWideKeyword } from '../isCssWideKeyword.js';
+import { discardOverriddenInList } from './overriddenDeclarations.js';
 import { list } from 'postcss';
 import minifyTrbl from '../minifyTrbl.js';
 import minifyWidthStyleColor from '../minifyWsc.js';
 import parseTrbl from '../parseTrbl.js';
 import parseWidthStyleColor from '../parseWsc.js';
-import spec, { setsLonghands } from '../spec.js';
+import { setsLonghands } from '../spec.js';
 import stylehacks from 'stylehacks';
-import cssGlobalKeywords from '../cssGlobalKeywords.js';
-import isCustomProp from '../isCustomProp.js';
-import { isSubstitution } from '../unresolved.js';
+import hasSubstitution from '../hasSubstitution.js';
 import canExplode from '../canExplode.js';
 import {
   isFallback,
   mergeBlockingSupport,
   strandsFallback,
 } from '../isFallback.js';
-import cleanupDeclarations from '../cleanupDeclarations.js';
-import {
-  isValidWidthStyleColor,
-  specifiesComponent,
-  specifiesDistinctComponents,
-} from '../validateWsc.js';
+import { isValidWidthStyleColor, specifiesComponent } from '../validateWsc.js';
 import {
   allPhysicalBorderProperties,
-  allRadiusProperties,
   allSidesBorderShorthands,
   borderAndSideShorthands,
   getLevel,
-  physicalBorderShorthands,
-  widthStyleColor,
+  allBorderShorthands,
+  sides,
+  widthStyleColor as components,
 } from './borderData.js';
-import { isAll } from './importanceLanes.js';
 import {
   applyBestCandidate,
   generateCandidates,
@@ -38,77 +31,33 @@ import {
 } from './borderCandidates.js';
 /** @import {Container, Declaration} from 'postcss'; */
 
-const sides = spec.sides,
-  components = widthStyleColor;
-
-/**
- * @param {string} value
- * @return {boolean}
- */
-function hasSubstitution(value) {
-  return (
-    isCustomProp(/** @type {Declaration} */ ({ value })) ||
-    list.space(value).some(isSubstitution)
-  );
-}
 /**
  * @param {Declaration} declaration
  * @return {boolean}
  */
-function browserKeeps(declaration) {
-  if (cssGlobalKeywords.has(declaration.value.toLowerCase())) {
+function borderBrowserKeeps(declaration) {
+  if (isCssWideKeyword(declaration.value)) {
     return true;
   }
   const prop = declaration.prop.toLowerCase();
   if (borderAndSideShorthands.has(prop)) {
-    return specifiesDistinctComponents(declaration.value);
+    return parseWidthStyleColor(declaration.value) !== null;
   }
   const component = /** @type {string} */ (prop.split('-').at(-1));
   if (!allSidesBorderShorthands.includes(prop)) {
     return specifiesComponent(declaration.value, component);
   }
-  if (list.space(declaration.value).length > spec.sides.length) return false;
+  if (list.space(declaration.value).length > sides.length) return false;
   return parseTrbl(declaration.value).every((v) =>
     specifiesComponent(v, component)
   );
 }
-/**
- * @param {import('postcss').Node} node
- * @param {boolean} [lane]
- * @return {boolean}
- */
-function establishesBorderReset(node, lane) {
-  if (node.type !== 'decl') return false;
-  const d = /** @type {Declaration} */ (node);
-  if (
-    (lane !== undefined && Boolean(d.important) !== lane) ||
-    d.prop.toLowerCase() !== 'border' ||
-    !canExplode(d) ||
-    stylehacks.detect(d)
-  )
-    return false;
-  const triple = parseWidthStyleColor(d.value);
-  return triple !== null && isValidWidthStyleColor(triple);
-}
-/** @param {Container} rule */
-function hasForeignBorderNodes(rule) {
-  if (!rule.nodes) return false;
-  for (const node of rule.nodes) {
-    if (node.type !== 'decl') continue;
-    if (isAll(/** @type {Declaration} */ (node))) return true;
-    const p = node.prop.toLowerCase();
-    if (allRadiusProperties.has(p) || p === 'border-spacing') continue;
-    if (p.startsWith('border-') && !allPhysicalBorderProperties.has(p)) {
-      return true;
-    }
-  }
-  return false;
-}
+
 /** @param {Declaration} d */
 function normalizeBorderSingleton(d) {
-  if (stylehacks.detect(d) || !browserKeeps(d) || !canExplode(d)) return;
+  if (stylehacks.detect(d) || !canExplode(d)) return;
   const p = d.prop.toLowerCase();
-  if (p === 'border' || physicalBorderShorthands.includes(p)) {
+  if (borderAndSideShorthands.has(p)) {
     d.prop = p;
     d.value = minifyWidthStyleColor(d.value);
     delete d.raws?.value;
@@ -155,16 +104,14 @@ function updateCell(idx, d, value, isBarrier, state) {
  */
 function applySegmentDeclaration(d, state) {
   const prop = d.prop.toLowerCase();
-  const isBarrier =
-    hasSubstitution(d.value) ||
-    cssGlobalKeywords.has(d.value.toLowerCase()) ||
-    !canExplode(d);
+  // Segment members passed the family guard: no global keyword, explodable.
+  const isBarrier = hasSubstitution(d.value);
 
-  if (prop === 'border' || physicalBorderShorthands.includes(prop)) {
+  if (borderAndSideShorthands.has(prop)) {
     const isB = prop === 'border';
     const sList = isB ? [0, 1, 2, 3] : [sides.indexOf(prop.slice(7))];
     const parsed = parseWidthStyleColor(d.value);
-    // browserKeeps gated this declaration; a null here would mean an ignored
+    // borderBrowserKeeps gated this declaration; a null here would mean an ignored
     // value flowing into cell state, so never name components from it.
     if (!parsed) return;
     const { width: w, style: st, color: clr } = parsed;
@@ -174,7 +121,7 @@ function applySegmentDeclaration(d, state) {
         updateCell(s * 3 + c, d, triple[c], isBarrier, state);
       }
     }
-    if (isB && !isBarrier && establishesBorderReset(d, Boolean(d.important)))
+    if (isB && !isBarrier && isValidWidthStyleColor(parsed))
       state.resetFound = true;
   } else if (allSidesBorderShorthands.includes(prop)) {
     const c = components.indexOf(prop.slice(7));
@@ -206,7 +153,7 @@ function analyzeSegment(segment) {
     resetFound: false,
   };
   for (const d of segment) {
-    if (browserKeeps(d)) applySegmentDeclaration(d, state);
+    applySegmentDeclaration(d, state);
   }
   return state;
 }
@@ -220,11 +167,8 @@ function reduceSegment(rule, segment, lane) {
   if (segment.length === 0) return;
   if (segment.length === 1) {
     const d = segment[0];
-    if (browserKeeps(d) && canExplode(d) && !stylehacks.detect(d)) {
-      const p = d.prop.toLowerCase();
-      if (allSidesBorderShorthands.includes(p)) {
-        d.value = minifyTrbl(d.value);
-      }
+    if (allSidesBorderShorthands.includes(d.prop.toLowerCase())) {
+      d.value = minifyTrbl(d.value);
     }
     return;
   }
@@ -283,60 +227,56 @@ function processLane(rule, laneDecls, lane) {
 }
 
 /**
+ * A later border shorthand of a higher level resets the earlier declaration's
+ * longhands, unless it requires support the earlier does not. The caller only
+ * compares declarations whose longhands overlap, and a broader shorthand
+ * covers every longhand of a narrower one it overlaps. `reduceBorder` already
+ * rejected substitutions and ignored values in the family, and style hacks
+ * never win, so the later declaration is a valid, substitution-free shorthand.
+ *
+ * @param {Declaration} node
+ * @param {Declaration} lastNode
+ * @return {boolean}
+ */
+function isOverriddenByShorthand(node, lastNode) {
+  return (
+    /** @type {number} */ (getLevel(node.prop)) >
+      /** @type {number} */ (getLevel(lastNode.prop)) &&
+    !strandsFallback(node, lastNode)
+  );
+}
+
+/** @type {import('./overriddenDeclarations.js').CrossPropertyRule} */
+const borderPrecedence = {
+  overrides: isOverriddenByShorthand,
+  footprint: (node) => setsLonghands(node.prop.toLowerCase()),
+};
+
+/**
  * @param {Container} rule
- * @param {Declaration[]} [declarations]
- * @param {boolean} [hasForeignBorder]
+ * @param {Declaration[]} decls
+ * @param {boolean} hasForeignBorder
  * @return {void}
  */
-export function reduceBorder(rule, declarations, hasForeignBorder) {
-  if (!rule.nodes) return;
-  if (hasForeignBorder === true) return;
-  if (hasForeignBorder === undefined && hasForeignBorderNodes(rule)) return;
-
-  if (!declarations) {
-    reduceEachRun(
-      rule,
-      (d) => allPhysicalBorderProperties.has(d.prop.toLowerCase()),
-      (runDecls) => reduceBorder(rule, runDecls, hasForeignBorder)
-    );
-    return;
-  }
-  const decls = declarations;
+export function reduceBorder(rule, decls, hasForeignBorder) {
+  if (!rule.nodes || hasForeignBorder) return;
 
   if (
     decls.length === 0 ||
     decls.some((d) => {
       const p = d.prop.toLowerCase();
       const isCustomShorthand =
-        (borderAndSideShorthands.has(p) ||
-          allSidesBorderShorthands.includes(p)) &&
-        hasSubstitution(d.value);
+        allBorderShorthands.has(p) && hasSubstitution(d.value);
       return (
-        cssGlobalKeywords.has(d.value.toLowerCase()) ||
+        isCssWideKeyword(d.value) ||
         isCustomShorthand ||
-        (!stylehacks.detect(d) && !browserKeeps(d))
+        (!stylehacks.detect(d) && !borderBrowserKeeps(d))
       );
     })
   )
     return;
 
-  cleanupDeclarations(
-    new Set(decls),
-    (node, lastNode) => {
-      if (!browserKeeps(lastNode)) return false;
-      const lastPart = lastNode.prop.split('-').pop();
-
-      return (
-        !hasSubstitution(lastNode.value) &&
-        !strandsFallback(node, lastNode) &&
-        /** @type {number} */ (getLevel(node.prop)) >
-          /** @type {number} */ (getLevel(lastNode.prop)) &&
-        (node.prop.toLowerCase().includes(lastNode.prop.toLowerCase()) ||
-          node.prop.toLowerCase().endsWith(/** @type {string} */ (lastPart)))
-      );
-    },
-    (node) => setsLonghands(node.prop.toLowerCase())
-  );
+  discardOverriddenInList(decls, allPhysicalBorderProperties, borderPrecedence);
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {

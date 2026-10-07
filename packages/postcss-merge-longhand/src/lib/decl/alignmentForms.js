@@ -1,4 +1,5 @@
-import cssGlobalKeywords from '../cssGlobalKeywords.js';
+import { isCssWideKeyword } from '../isCssWideKeyword.js';
+import { cssWideKeywords } from '../spec.js';
 import isCustomProp from '../isCustomProp.js';
 import { splitValue } from '../valueComponents.js';
 import shorthandData from '../../data/shorthandIdentities.json' with { type: 'json' };
@@ -29,7 +30,7 @@ function formSets(forms) {
   );
 }
 
-const shorthandForms = formSets(shorthandData.alignment);
+export const shorthandForms = formSets(shorthandData.alignment);
 const longhandForms = formSets(shorthandData.alignmentLonghands);
 
 /**
@@ -83,22 +84,19 @@ function parseAlignmentShorthand(family, value) {
   const trimmed = value.trim();
   const lower = trimmed.toLowerCase();
   if (!/[\s\\]/v.test(lower)) {
-    if (cssGlobalKeywords.has(lower) || family.symmetricForms.has(lower)) {
+    if (cssWideKeywords.has(lower) || family.symmetricForms.has(lower)) {
       return [trimmed, trimmed];
     }
   }
 
-  const parsed = splitValue(trimmed, false);
+  const parsed = splitValue(trimmed);
   if (!parsed || parsed.length !== 1) return null;
   const components = parsed[0].components;
   if (components.length < 1 || components.length > 4) return null;
 
   if (components.length <= 2) {
     const fullNorm = components.map((c) => c.raw.toLowerCase()).join(' ');
-    if (
-      cssGlobalKeywords.has(fullNorm) ||
-      family.symmetricForms.has(fullNorm)
-    ) {
+    if (cssWideKeywords.has(fullNorm) || family.symmetricForms.has(fullNorm)) {
       const fullRaw = components.map((c) => c.raw).join(' ');
       return [fullRaw, fullRaw];
     }
@@ -139,9 +137,9 @@ export function parseAlignmentDeclaration(family, decl) {
   if (slot === undefined) return null;
 
   let normalized = value;
-  if (!cssGlobalKeywords.has(value.toLowerCase()) && !isCustomProp(decl)) {
+  if (!isCssWideKeyword(value) && !isCustomProp(decl)) {
     if (/[\s\\]/v.test(value)) {
-      const parsed = splitValue(value, false);
+      const parsed = splitValue(value);
       if (!parsed || parsed.length !== 1) return null;
       const components = parsed[0].components;
       if (components.length > 2) return null;
@@ -188,7 +186,7 @@ function supportFeatures(value) {
   /** @type {Set<string>} */
   const features = new Set();
   for (const [index, keyword] of keywords.entries()) {
-    if (cssGlobalKeywords.has(keyword) || widelySupported.has(keyword)) {
+    if (cssWideKeywords.has(keyword) || widelySupported.has(keyword)) {
       continue;
     }
     features.add(keyword);
@@ -222,10 +220,7 @@ export function sharesKeywordSupport(values) {
 export function normalizeAlignment(family, [val0, val1]) {
   const v0 = val0.toLowerCase();
   const v1 = val1.toLowerCase();
-  if (
-    v0 === v1 &&
-    (family.symmetricForms.has(v0) || cssGlobalKeywords.has(v0))
-  ) {
+  if (v0 === v1 && (family.symmetricForms.has(v0) || cssWideKeywords.has(v0))) {
     return val0;
   }
   return `${val0} ${val1}`;

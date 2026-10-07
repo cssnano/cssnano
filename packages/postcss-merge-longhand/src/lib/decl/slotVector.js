@@ -1,9 +1,12 @@
+import { isCssWideKeyword } from '../isCssWideKeyword.js';
+import { cssWideKeywords } from '../spec.js';
+import { detach } from '../deferredChildEdits.js';
 import insertCloned from '../insertCloned.js';
 import isCustomProp from '../isCustomProp.js';
-import cssGlobalKeywords from '../cssGlobalKeywords.js';
 import { isFallback, mergeBlockingSupport } from '../isFallback.js';
 
 /** @import {Container, Declaration} from 'postcss'; */
+/** @typedef {({ value: string, decl: Declaration } | null)[]} SlotVector */
 
 /* An emitted `!important` costs ten bytes more than the `:`/`;` separators
  * already counted for a normal declaration. */
@@ -40,7 +43,7 @@ export function declCost(prop, value, important) {
  * @return {{ value: string, decl: Declaration }[] | null} the fully-filled
  * vector, or `null` while any slot is empty or holds a custom property
  */
-export function slotVectorReady(slots) {
+function slotVectorReady(slots) {
   if (slots.some((s) => !s || isCustomProp(s.decl))) return null;
   return /** @type {{ value: string, decl: Declaration }[]} */ (slots);
 }
@@ -53,10 +56,15 @@ export function slotVectorReady(slots) {
  * @param {{ value: string, decl: Declaration }[]} full
  * @return {boolean}
  */
-export function supportProvenanceMatches(full) {
+function supportProvenanceMatches(full) {
   const s0 = mergeBlockingSupport(full[0].decl);
-  for (const s of full) {
-    if (s0.symmetricDifference(mergeBlockingSupport(s.decl)).size) {
+  // A shorthand fills adjacent slots with one declaration; compare it once.
+  let previous = full[0].decl;
+  for (let i = 1; i < full.length; i++) {
+    const decl = full[i].decl;
+    if (decl === previous) continue;
+    previous = decl;
+    if (s0.symmetricDifference(mergeBlockingSupport(decl)).size) {
       return false;
     }
   }
@@ -74,10 +82,10 @@ export function flushableSlots(slots) {
   if (!full) return null;
 
   const v0 = full[0].value.toLowerCase();
-  const kw = cssGlobalKeywords.has(v0);
+  const kw = cssWideKeywords.has(v0);
   for (const s of full) {
     const sv = s.value.toLowerCase();
-    if (kw ? sv !== v0 : cssGlobalKeywords.has(sv)) return null;
+    if (kw ? sv !== v0 : cssWideKeywords.has(sv)) return null;
   }
   if (!supportProvenanceMatches(full)) return null;
 
@@ -90,10 +98,19 @@ export function flushableSlots(slots) {
  * @param {string} value
  * @param {Declaration} decl
  * @param {Set<Declaration>} fallbacks
+ * @param {boolean} [fallbackSettled] the caller already found, through
+ * `shouldResetSlots`, that the slot's declaration is no fallback for `decl`
  */
-export function assignSlotValue(slots, idx, value, decl, fallbacks) {
+function assignSlotValue(
+  slots,
+  idx,
+  value,
+  decl,
+  fallbacks,
+  fallbackSettled = false
+) {
   const existing = slots[idx];
-  if (existing && isFallback(existing.decl, decl)) {
+  if (!fallbackSettled && existing && isFallback(existing.decl, decl)) {
     fallbacks.add(existing.decl);
   }
   slots[idx] = { value, decl };
@@ -102,19 +119,87 @@ export function assignSlotValue(slots, idx, value, decl, fallbacks) {
 /**
  * A new declaration flushes the vector when it would overwrite a slot whose
  * declaration a later declaration may need as a fallback, or when a CSS-wide
- * keyword resets every slot it touches.
+ * keyword resets every slot it touches. Only a fully-filled vector can need
+ * this; callers check that first.
  *
  * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @param {number} idx - the slot the declaration writes, or -1 for a shorthand
+ * @param {number} first - the first slot the declaration writes
+ * @param {number} count - how many consecutive slots it writes; all slots for
+ * a shorthand
  * @param {Declaration} decl
  * @return {boolean}
  */
-export function shouldResetSlots(slots, idx, decl) {
-  if (!slots.every(Boolean)) return false;
-  const isFb = (/** @type {{decl: Declaration} | null} */ s) =>
-    Boolean(s && isFallback(s.decl, decl));
-  if (idx === -1) return slots.some(isFb);
-  return cssGlobalKeywords.has(decl.value.toLowerCase()) || isFb(slots[idx]);
+function shouldResetSlots(slots, first, count, decl) {
+  if (count < slots.length && isCssWideKeyword(decl.value)) {
+    return true;
+  }
+  for (let i = first; i < first + count; i++) {
+    if (
+      isFallback(/** @type {{ decl: Declaration }} */ (slots[i]).decl, decl)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * The state of one importance lane of a slot-lane reducer: the slot vector, the
+ * declarations that contribute to it and the ones kept as fallbacks. A reducer
+ * walks its declarations, calls `begin` before writing slots, `assign` for each
+ * slot and `reset` wherever a declaration ends the run.
+ */
+export class SlotLane {
+  /**
+   * @param {number} size - how many slots the family has
+   * @param {(slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void} commit
+   * called with the state whenever the run ends, before it is cleared
+   */
+  constructor(size, commit) {
+    /** @type {SlotVector} */
+    this.slots = Array.from({ length: size }, () => null);
+    /** @type {Set<Declaration>} */
+    this.contributing = new Set();
+    /** @type {Set<Declaration>} */
+    this.fallbacks = new Set();
+    this.commit = commit;
+  }
+
+  /** Commits the run, then starts an empty one. */
+  reset() {
+    this.commit(this.slots, this.contributing, this.fallbacks);
+    this.slots.fill(null);
+    this.contributing.clear();
+    this.fallbacks.clear();
+  }
+
+  /**
+   * Flushes the run if `decl` would invalidate it, before it writes `count`
+   * slots from `first` on.
+   *
+   * @param {number} first
+   * @param {number} count
+   * @param {Declaration} decl
+   * @return {boolean} whether the vector was full beforehand, to pass to `assign`
+   */
+  begin(first, count, decl) {
+    const wasFull = this.slots.every(Boolean);
+    if (wasFull && shouldResetSlots(this.slots, first, count, decl)) {
+      this.reset();
+    }
+    return wasFull;
+  }
+
+  /**
+   * @param {number} idx
+   * @param {string} value
+   * @param {Declaration} decl
+   * @param {boolean} wasFull - as returned by `begin`
+   */
+  assign(idx, value, decl, wasFull) {
+    assignSlotValue(this.slots, idx, value, decl, this.fallbacks, wasFull);
+    this.contributing.add(decl);
+  }
 }
 
 /**
@@ -127,7 +212,9 @@ export function shouldResetSlots(slots, idx, decl) {
  * @param {{ value: string, decl: Declaration }[]} full
  * @param {Set<Declaration>} contributing
  * @param {Set<Declaration>} fallbacks
- * @param {{ prop: string, value: string, important: boolean, inserted?: Map<Declaration, Declaration> }} target
+ * @param {{ prop: string, value: string, important: boolean, inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
+ * `mayInsert: false` limits the commit to the in-place rewrite, for a
+ * shorthand that some target does not support.
  */
 export function commitShorthand(rule, full, contributing, fallbacks, target) {
   const { prop, value: shorthandVal, important } = target;
@@ -140,6 +227,7 @@ export function commitShorthand(rule, full, contributing, fallbacks, target) {
     delete toRemove[0].raws?.value;
     return;
   }
+  if (target.mayInsert === false) return;
 
   let remSize = -declCost(prop, shorthandVal, important);
   for (const d of toRemove) {
@@ -155,6 +243,6 @@ export function commitShorthand(rule, full, contributing, fallbacks, target) {
       important,
     });
     if (target.inserted) target.inserted.set(a, inserted);
-    for (const d of toRemove) d.remove();
+    for (const d of toRemove) detach(d);
   }
 }

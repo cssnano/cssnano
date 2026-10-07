@@ -1,91 +1,35 @@
-import cssnanoUtils from 'cssnano-utils';
-import { colorFunctions } from './spec.js';
 import {
-  substitutionFunctions,
-  trustedSupportFunctions,
-} from './unresolved.js';
-
-const { TokenType, decoded, tokens } = cssnanoUtils;
-
-/* Substitution functions prevent fallback detection because their values
- * are resolved at runtime, not statically analyzable. */
-const unresolvableFunctions = substitutionFunctions;
-
-/* rgb() and hsl() are so old that all user agents support them; an author
- * would not write a fallback for them. */
-const originalColorFunctions = new Set(['rgb', 'hsl']);
-
-/* CSS Color 3 introduced rgba() and hsla(). */
-const colorLevel3Functions = new Set(['rgb', 'rgba', 'hsl', 'hsla']);
-
-/* Ubiquitous functions like rgba() and calc() are so widely supported that
- * authors rarely write fallbacks for them. Blocking merges for these would
- * refuse most stylesheets. */
-const ubiquitousFunctions = new Set([...colorLevel3Functions, 'calc']);
-
-/**
- * Functions whose support determines whether a user agent accepts or rejects
- * the declaration; authors write fallbacks for these because browserlist
- * cannot determine support automatically.
- */
-const conditionalSupportFunctions = colorFunctions
-  .difference(originalColorFunctions)
-  .union(trustedSupportFunctions);
-
-/**
- * All functions that block a merge or clone: unresolvable functions and
- * conditionally-supported functions.
- */
-const supportDependentFunctions = new Set([
-  ...unresolvableFunctions,
-  ...conditionalSupportFunctions,
-]);
-
-/**
- * The support-dependent functions that block a merge. This excludes
- * ubiquitous functions like `rgba()` and `calc()` that stylesheets use
- * without fallbacks.
- */
-const mergeSensitiveFunctions = new Set([
-  ...unresolvableFunctions,
-  ...conditionalSupportFunctions.difference(ubiquitousFunctions),
-]);
+  blocksMerge,
+  longstandingFeatures,
+  supportDependenciesIn,
+} from './syntaxFeatures.js';
 
 const EMPTY_SET = new Set();
-/** @type {Map<string, Set<string>>} */
-const supportDepsCache = new Map();
 
 /**
- * @param {string} value
- * @return {Set<string>} the support-dependent functions the value calls
+ * The newer syntax every browserslist target parses. OnceExit is synchronous,
+ * so the file being processed is the only one that can observe this binding.
+ * The default assumes targets at the support floor and nothing newer, which
+ * keeps direct callers strict.
+ *
+ * @type {ReadonlySet<string>}
  */
-function supportDependenciesIn(value) {
-  if (!value.includes('(')) {
-    return EMPTY_SET;
+let targetSupport = longstandingFeatures;
+
+/**
+ * @template T
+ * @param {ReadonlySet<string>} supported - features every target supports
+ * @param {() => T} run
+ * @return {T}
+ */
+function withTargetSupport(supported, run) {
+  const previous = targetSupport;
+  targetSupport = supported;
+  try {
+    return run();
+  } finally {
+    targetSupport = previous;
   }
-
-  const cached = supportDepsCache.get(value);
-  if (cached !== undefined) {
-    return cached;
-  }
-
-  /** @type {Set<string>} */
-  const names = new Set();
-
-  for (const token of tokens(value)) {
-    if (token[0] !== TokenType.Function) {
-      continue;
-    }
-
-    const name = decoded(token).toLowerCase();
-
-    if (supportDependentFunctions.has(name)) {
-      names.add(name);
-    }
-  }
-
-  supportDepsCache.set(value, names);
-  return names;
 }
 
 /**
@@ -98,8 +42,8 @@ const inheritedSupport = new WeakMap();
 
 /**
  * @param {import('postcss').Declaration} declaration
- * @return {Set<string>} every function a browser had to support for the
- * declaration to apply: the ones its value calls, and the ones the declaration
+ * @return {Set<string>} every feature a browser had to support for the
+ * declaration to apply: the ones its value uses, and the ones the declaration
  * it was cloned from needed
  */
 function requiredSupport(declaration) {
@@ -132,11 +76,31 @@ function isDerived(declaration) {
 
 /**
  * @param {import('postcss').Declaration} declaration
+ * @return {boolean} whether some target may drop the declaration because it
+ * lacks syntax the declaration needs
+ */
+function needsUnmetSupport(declaration) {
+  for (const feature of requiredSupport(declaration)) {
+    if (!targetSupport.has(feature)) return true;
+  }
+  return false;
+}
+
+/**
+ * @param {import('postcss').Declaration} declaration
  * @return {Set<string>} the support out of `requiredSupport` that stops a
  * merge
  */
 function mergeBlockingSupport(declaration) {
-  return requiredSupport(declaration).intersection(mergeSensitiveFunctions);
+  /** @type {Set<string> | undefined} */
+  let blocking;
+  for (const feature of requiredSupport(declaration)) {
+    if (blocksMerge(feature) && !targetSupport.has(feature)) {
+      blocking ??= new Set();
+      blocking.add(feature);
+    }
+  }
+  return blocking ?? EMPTY_SET;
 }
 
 /**
@@ -148,13 +112,18 @@ function mergeBlockingSupport(declaration) {
  * @return {boolean} whether earlier is a fallback for later
  */
 function isFallback(earlier, later) {
-  return !requiredSupport(later).isSubsetOf(requiredSupport(earlier));
+  const needed = requiredSupport(later);
+  if (needed.size === 0) return false;
+  const available = requiredSupport(earlier);
+  for (const feature of needed) {
+    if (!available.has(feature) && !targetSupport.has(feature)) return true;
+  }
+  return false;
 }
 
 /**
- * Author-written declarations are checked against all support-dependent
- * functions; plugin-created declarations only against the merge-sensitive
- * ones.
+ * Author-written declarations are checked against all required support;
+ * plugin-created declarations only against the features that block a merge.
  *
  * @param {import('postcss').Declaration} earlier
  * @param {import('postcss').Declaration} later
@@ -171,7 +140,9 @@ function strandsFallback(earlier, later) {
 export {
   requiredSupport,
   mergeBlockingSupport,
+  needsUnmetSupport,
   inheritSupport,
   isFallback,
   strandsFallback,
+  withTargetSupport,
 };

@@ -1,8 +1,9 @@
 /**
- * @param {string} prop lower-cased, a property of one of the two families
+ * @param {string} prop lower-cased
  * @param {string} value
- * @return {boolean} whether the browser keeps the declaration
+ * @return {boolean} whether the browser keeps the declaration; a property
+ * outside the box groups is never kept
  */
-declare function browserKeeps(prop: string, value: string): boolean;
-export { browserKeeps };
+declare function boxBrowserKeeps(prop: string, value: string): boolean;
+export { boxBrowserKeeps };
 //# sourceMappingURL=validateBox.d.ts.map

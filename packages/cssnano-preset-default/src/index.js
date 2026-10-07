@@ -185,6 +185,8 @@ function defaultPreset(opts = {}) {
         [postcssMergeLonghand, 'mergeLonghand'],
         [postcssDiscardDuplicates, 'discardDuplicates'],
         [postcssMergeRules, 'mergeRules'],
+        // Merging rules can bring a declaration and its override into one rule
+        [postcssMergeLonghand, 'mergeLonghand'],
         [postcssDiscardEmpty, 'discardEmpty'],
         [postcssUniqueSelectors, 'uniqueSelectors'],
         [rawCache, 'rawCache'],

@@ -3,7 +3,7 @@ import { test, describe } from 'node:test';
 import postcss from 'postcss';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
-import { reduceColumns } from '../src/lib/decl/columns.js';
+import { reduceColumnsRuns } from './helpers/reduceRuns.js';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -109,11 +109,11 @@ describe('column-height merge blocking', () => {
   );
 });
 
-describe('direct reduceColumns contract', () => {
+describe('direct columns reducer contract', () => {
   test('merges longhands into shorthand when called directly on a rule', () => {
     const root = postcss.parse('h1{column-width:12em;column-count:3}');
     const rule = /** @type {import('postcss').Rule} */ (root.first);
-    reduceColumns(rule);
+    reduceColumnsRuns(rule);
     assert.strictEqual(rule.toString(), 'h1{columns:12em 3}');
   });
 
@@ -122,7 +122,7 @@ describe('direct reduceColumns contract', () => {
       'h1{column-width:12em;column-width:var(--w);column-count:3}'
     );
     const rule = /** @type {import('postcss').Rule} */ (root.first);
-    reduceColumns(rule);
+    reduceColumnsRuns(rule);
     assert.strictEqual(
       rule.toString(),
       'h1{column-width:12em;column-width:var(--w);column-count:3}'
@@ -132,7 +132,7 @@ describe('direct reduceColumns contract', () => {
   test('normalizes a singleton columns shorthand directly on a rule', () => {
     const root = postcss.parse('h1{columns:3 auto}');
     const rule = /** @type {import('postcss').Rule} */ (root.first);
-    reduceColumns(rule);
+    reduceColumnsRuns(rule);
     assert.strictEqual(rule.toString(), 'h1{columns:3}');
   });
 });
@@ -221,10 +221,9 @@ describe('fallback-sensitive var(), env(), and calc() cases', () => {
   );
 
   test(
-    'preserves earlier fallback when subsequent longhand uses calc()',
-    processCSS(
-      'h1{column-width:12em;column-width:calc(10em + 2em);column-count:3}',
-      'h1{column-width:12em;columns:calc(10em + 2em) 3}'
+    'preserves earlier fallback and refuses merge when subsequent longhand uses calc(), which IE 11 parses only partially',
+    passthroughCSS(
+      'h1{column-width:12em;column-width:calc(10em + 2em);column-count:3}'
     )
   );
 
@@ -266,5 +265,25 @@ describe('equal-size versus larger replacement decisions', () => {
   test(
     'normalizes both initial values in shorthand to single auto',
     processCSS('h1{columns:auto auto}', 'h1{columns:auto}')
+  );
+});
+
+describe('newer syntax a browser may reject', () => {
+  test(
+    'should keep column-width before columns using dvw because browsers without dynamic viewport units drop the shorthand',
+    processCSS(
+      'a{column-width:10px;columns:2 10dvw}',
+      'a{column-width:10px;columns:10dvw 2}'
+    )
+  );
+
+  test(
+    'should keep column-count before columns:revert-layer because browsers without it drop the shorthand',
+    passthroughCSS('a{column-count:2;columns:revert-layer}')
+  );
+
+  test(
+    'should still merge column-width and columns with the same longstanding units',
+    processCSS('a{column-width:10px;columns:2 10px}', 'a{columns:10px 2}')
   );
 });

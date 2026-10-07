@@ -1,5 +1,6 @@
 import {
   isFlowRelative,
+  serializeJson,
   sortedByName,
 } from '../../../../util/webref/webref.js';
 
@@ -217,15 +218,11 @@ export function validate(data) {
  * @return {string}
  */
 export function serialize(data) {
-  return `${JSON.stringify(
-    {
-      properties: data.properties,
-      aliases: Object.fromEntries(data.aliases),
-      shorthands: Object.fromEntries(data.shorthands),
-      logicalGroups: Object.fromEntries(data.logicalGroups),
-      flowRelative: data.flowRelative,
-    },
-    null,
-    2
-  )}\n`;
+  return serializeJson({
+    properties: data.properties,
+    aliases: Object.fromEntries(data.aliases),
+    shorthands: Object.fromEntries(data.shorthands),
+    logicalGroups: Object.fromEntries(data.logicalGroups),
+    flowRelative: data.flowRelative,
+  });
 }

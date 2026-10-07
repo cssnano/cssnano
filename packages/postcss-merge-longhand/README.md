@@ -13,7 +13,8 @@ npm install postcss-merge-longhand --save
 ## Example
 
 Merge longhand properties into shorthand; works with `margin`, `padding`,
-`border`, `columns` and the box alignment `place-*` shorthands. For more examples see the [tests](test).
+`inset`, `scroll-margin`, `scroll-padding`, `border`, `columns` and the box
+alignment `place-*` shorthands. For more examples see the [tests](test).
 
 ### Input
 
@@ -66,6 +67,23 @@ Values that a target may not parse, such as `safe`, `unsafe`, `last baseline`,
 `left`, `right`, `legacy`, `anchor-center` and `safe normal`, merge only with a
 value that depends on the same keywords. A browser that lacks one of them
 drops the whole shorthand, where it would drop only one longhand.
+
+The same holds for `inset`, the `-block` and `-inline` shorthands of `margin`,
+`padding`, `inset`, `scroll-margin` and `scroll-padding`, and the `scroll-margin`
+and `scroll-padding` shorthands, which arrived long after their longhands.
+The plugin creates or grows one only when every target supports it, and
+otherwise keeps the longhands. It still shortens a shorthand that is already
+there.
+
+## Writing modes
+
+A flow-relative property such as `margin-block-start` sets a different physical
+side depending on the `writing-mode` and `direction` of the element, which any
+other rule may set. The plugin therefore never assumes either. It moves a
+declaration, or drops one that a later declaration overrides, only when the
+result is the same for every combination of the two. A physical declaration
+(`margin-top`) between a flow-relative one and its shorthand stops the move,
+and so does the legacy `scroll-snap-margin-*` spelling.
 
 ## Contributors
 

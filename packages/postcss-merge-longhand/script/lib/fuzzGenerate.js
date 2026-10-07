@@ -1,3 +1,4 @@
+import { shrinkList } from '../../../../util/fuzzCheck.js';
 import { random } from '../../../../util/fuzzRng.js';
 import { declaration, globalTokens, valueFor } from './fuzzDeclarations.js';
 import { components, sides } from './fuzzModel.js';
@@ -10,6 +11,47 @@ const families = /** @type {const} */ ([
 ]);
 
 /**
+ * Whether the declaration at `index` of `total` is important. Modes: 0 none,
+ * 1 all, 2 the first half, 3 every other one, 4 each with `probability`.
+ *
+ * @param {ReturnType<typeof random>} rng
+ * @param {number} importanceMode
+ * @param {number} index
+ * @param {number} total
+ * @param {number} probability
+ * @return {boolean}
+ */
+function isImportant(rng, importanceMode, index, total, probability) {
+  switch (importanceMode) {
+    case 1:
+      return true;
+    case 2:
+      return index < Math.floor(total / 2);
+    case 3:
+      return index % 2 === 0;
+    case 4:
+      return rng.chance(probability);
+    default:
+      return false;
+  }
+}
+
+/**
+ * Writes one declaration and records its property, so a later draw can repeat it.
+ *
+ * @param {ReturnType<typeof random>} rng
+ * @param {Parameters<typeof declaration>[1]} family
+ * @param {string[]} declarations
+ * @param {string[]} used
+ * @param {boolean} important
+ */
+function writeDeclaration(rng, family, declarations, used, important) {
+  const written = declaration(rng, family, used, important);
+  declarations.push(written);
+  used.push(/** @type {string} */ (written.split(':')[0]));
+}
+
+/**
  * @param {ReturnType<typeof random>} rng
  * @param {number} count
  * @param {number} importanceMode
@@ -20,9 +62,7 @@ function pushExtraDeclarations(rng, count, importanceMode, declarations, used) {
   for (let i = 0; i < count; i++) {
     const important =
       importanceMode === 1 || (importanceMode > 1 && rng.chance(0.3));
-    const written = declaration(rng, 'border', used, important);
-    declarations.push(written);
-    used.push(/** @type {string} */ (written.split(':')[0]));
+    writeDeclaration(rng, 'border', declarations, used, important);
   }
 }
 
@@ -56,16 +96,13 @@ function groupRule(rng) {
 
   for (let i = 0; i < groupProps.length; i++) {
     const prop = groupProps[i];
-    let important = false;
-    if (importanceMode === 1) {
-      important = true;
-    } else if (importanceMode === 2) {
-      important = i < Math.floor(groupProps.length / 2);
-    } else if (importanceMode === 3) {
-      important = i % 2 === 0;
-    } else if (importanceMode === 4) {
-      important = rng.chance(0.3);
-    }
+    const important = isImportant(
+      rng,
+      importanceMode,
+      i,
+      groupProps.length,
+      0.3
+    );
     const val = valueFor(rng, prop);
     const written = `${prop}:${val}${important ? ' !important' : ''}`;
     declarations.push(written);
@@ -99,9 +136,7 @@ function resetRule(rng) {
       let important = i === 0 ? allImportant : !allImportant;
       if (mode === 0) important = allImportant;
       if (mode === 1) important = !allImportant;
-      const written = declaration(rng, family, used, important);
-      declarations.push(written);
-      used.push(/** @type {string} */ (written.split(':')[0]));
+      writeDeclaration(rng, family, declarations, used, important);
     }
     if (side === 0) {
       declarations.push(
@@ -137,26 +172,9 @@ function rule(rng) {
   const used = [];
 
   for (let i = 0; i < count; i++) {
-    let important = false;
-    if (importanceMode === 1) {
-      important = true;
-    } else if (importanceMode === 2) {
-      important = i < Math.floor(count / 2);
-    } else if (importanceMode === 3) {
-      important = i % 2 === 0;
-    } else if (importanceMode === 4) {
-      important = rng.chance(0.2);
-    }
-
-    const written = declaration(
-      rng,
-      mixed ? rng.pick(families) : family,
-      used,
-      important
-    );
-
-    declarations.push(written);
-    used.push(/** @type {string} */ (written.split(':')[0]));
+    const important = isImportant(rng, importanceMode, i, count, 0.2);
+    const drawn = mixed ? rng.pick(families) : family;
+    writeDeclaration(rng, drawn, declarations, used, important);
   }
 
   return `a{${declarations.join(';')}}`;
@@ -189,15 +207,9 @@ function shrink(css, fails) {
     return css;
   }
 
-  let declarations = body.split(';');
-
-  for (let i = declarations.length - 1; i >= 0; i--) {
-    const candidate = declarations.filter((_, index) => index !== i);
-
-    if (candidate.length > 0 && fails(`${head}${candidate.join(';')}}`)) {
-      declarations = candidate;
-    }
-  }
+  const declarations = shrinkList(body.split(';'), (candidate) =>
+    fails(`${head}${candidate.join(';')}}`)
+  );
 
   return `${head}${declarations.join(';')}}`;
 }

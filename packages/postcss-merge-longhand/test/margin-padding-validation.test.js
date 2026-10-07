@@ -1,6 +1,8 @@
 import { test, describe } from 'node:test';
 import { processCSSFactory } from '../../../util/testHelpers.js';
+import assert from 'node:assert/strict';
 import plugin from '../src/index.js';
+import { boxBrowserKeeps } from '../src/lib/validateBox.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -189,5 +191,159 @@ describe('valid values merge', () => {
       'h1{margin-top:1px\\9;margin:4px 0 0 0}',
       'h1{margin-top:1px\\9;margin:4px 0 0}'
     )
+  );
+});
+
+describe('boxBrowserKeeps arity', () => {
+  test('keeps one or two values for an axis shorthand', () => {
+    assert.equal(boxBrowserKeeps('margin-block', '1px'), true);
+    assert.equal(boxBrowserKeeps('margin-block', '1px 2px'), true);
+  });
+
+  test('drops three values for an axis shorthand because it takes at most a start and an end', () => {
+    assert.equal(boxBrowserKeeps('padding-inline', '1px 2px 3px'), false);
+  });
+
+  test('drops two values for a flow-relative longhand because it takes exactly one', () => {
+    assert.equal(boxBrowserKeeps('margin-block-start', '1px 2px'), false);
+  });
+
+  test('keeps one to four values for a physical shorthand of every group', () => {
+    for (const prop of ['inset', 'scroll-margin', 'scroll-padding']) {
+      assert.equal(boxBrowserKeeps(prop, '0 1px 2px 3px'), true, prop);
+      assert.equal(boxBrowserKeeps(prop, '0 1px 2px 3px 4px'), false, prop);
+    }
+  });
+
+  test('drops an empty value', () => {
+    assert.equal(boxBrowserKeeps('inset-block', ''), false);
+  });
+
+  test('drops a property that is no member of the box groups', () => {
+    assert.equal(boxBrowserKeeps('margin-trim', '1px'), false);
+    assert.equal(boxBrowserKeeps('scroll-snap-margin-top', '1px'), false);
+  });
+});
+
+describe('boxBrowserKeeps value grammars', () => {
+  test('keeps auto and negative lengths for margin and inset because both take <length-percentage> | auto', () => {
+    for (const prop of ['margin-inline', 'inset', 'top', 'inset-block-end']) {
+      assert.equal(boxBrowserKeeps(prop, 'auto'), true, prop);
+      assert.equal(boxBrowserKeeps(prop, '-1px'), true, prop);
+      assert.equal(boxBrowserKeeps(prop, '5%'), true, prop);
+    }
+  });
+
+  test('drops auto and negative lengths for padding because it takes <length-percentage [0,∞]>', () => {
+    assert.equal(boxBrowserKeeps('padding-block', 'auto'), false);
+    assert.equal(boxBrowserKeeps('padding-inline-start', '-1px'), false);
+    assert.equal(boxBrowserKeeps('padding-block', '5%'), true);
+  });
+
+  test('drops percentages and auto for scroll-margin because it takes <length> only', () => {
+    assert.equal(boxBrowserKeeps('scroll-margin', '10%'), false);
+    assert.equal(boxBrowserKeeps('scroll-margin-block', 'auto'), false);
+    assert.equal(boxBrowserKeeps('scroll-margin-top', '-1px'), true);
+    assert.equal(boxBrowserKeeps('scroll-margin-top', '0'), true);
+  });
+
+  test('keeps auto and percentages but drops negative lengths for scroll-padding', () => {
+    assert.equal(boxBrowserKeeps('scroll-padding', 'auto 10%'), true);
+    assert.equal(boxBrowserKeeps('scroll-padding-inline', '-1px'), false);
+  });
+
+  test('drops a unitless non-zero number for every group because only zero may omit the unit', () => {
+    for (const prop of ['inset', 'scroll-margin', 'margin-block']) {
+      assert.equal(boxBrowserKeeps(prop, '5'), false, prop);
+    }
+  });
+
+  test('keeps a value it cannot resolve statically, such as calc() or var()', () => {
+    assert.equal(boxBrowserKeeps('scroll-margin', 'calc(1px + 2px)'), true);
+    assert.equal(boxBrowserKeeps('inset-inline', 'var(--x) 1px'), true);
+  });
+
+  test('drops a math function that adds a length and an angle because the sum has no type', () => {
+    assert.equal(boxBrowserKeeps('margin-left', 'calc(1px + 2deg)'), false);
+  });
+
+  test('drops a math function that adds a length and a bare number because the sum has no type', () => {
+    assert.equal(boxBrowserKeeps('margin', 'calc(1px + 2)'), false);
+  });
+
+  test('drops a math function that holds an unknown identifier', () => {
+    assert.equal(boxBrowserKeeps('margin', 'calc(foo)'), false);
+  });
+
+  test('drops an empty math function', () => {
+    assert.equal(boxBrowserKeeps('margin', 'calc()'), false);
+  });
+
+  test('drops a math function that lacks an operand', () => {
+    assert.equal(boxBrowserKeeps('margin', 'calc(1px +)'), false);
+  });
+
+  test('drops a math function that lacks whitespace around a plus sign, which CSS Values 4 requires', () => {
+    assert.equal(boxBrowserKeeps('margin', 'calc(1px +2px)'), false);
+  });
+
+  test('drops a math function that multiplies two lengths because the product is no length', () => {
+    assert.equal(boxBrowserKeeps('margin', 'calc(1px * 2px)'), false);
+  });
+
+  test('drops a math function that resolves to a bare number', () => {
+    assert.equal(boxBrowserKeeps('margin', 'calc(1 + 2)'), false);
+  });
+
+  test('drops a min() whose arguments differ in type', () => {
+    assert.equal(boxBrowserKeeps('margin', 'min(1px, 2deg)'), false);
+  });
+
+  test('drops a clamp() that lacks its third argument', () => {
+    assert.equal(boxBrowserKeeps('margin', 'clamp(1px, 2px)'), false);
+  });
+
+  test('keeps a math function that scales a length by a number', () => {
+    assert.equal(boxBrowserKeeps('margin', 'calc(2 * (1px + 3em) / 4)'), true);
+  });
+
+  test('keeps a clamp() of lengths and a percentage where the group takes percentages', () => {
+    assert.equal(boxBrowserKeeps('margin', 'clamp(1px, 2%, 3em)'), true);
+  });
+
+  test('keeps a nested vendor-prefixed math function of lengths', () => {
+    assert.equal(
+      boxBrowserKeeps('padding', '-webkit-calc(1px + min(2px, 3em))'),
+      true
+    );
+  });
+
+  test('drops anchor() and anchor-size() because the plugin cannot evaluate them and leaves the family untouched', () => {
+    assert.equal(boxBrowserKeeps('top', 'anchor(bottom)'), false);
+    assert.equal(boxBrowserKeeps('inset', 'anchor-size(width)'), false);
+  });
+});
+
+describe('invalid math function handling', () => {
+  /* The browser ignores a declaration whose math function has no valid type,
+   * so the earlier declaration stays in force. */
+  test(
+    'should not let an ill-typed calc() override the longhand before it',
+    passthroughCSS('a{margin-left:1px;margin-left:calc(1px + 2deg)}')
+  );
+
+  test(
+    'should not let an unparseable calc() override the shorthand before it',
+    passthroughCSS('a{margin:1px;margin:calc(foo)}')
+  );
+
+  test(
+    'should not let an ill-typed calc() shorthand discard the longhand before it',
+    passthroughCSS('a{margin-left:1px;margin:calc(1px + 2)}')
+  );
+
+  test(
+    'should not let an ill-typed calc() inset discard the physical longhands before it',
+    passthroughCSS('a{top:1px;bottom:1px;inset:calc(1px + 2deg)}')
   );
 });

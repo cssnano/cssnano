@@ -1,3 +1,4 @@
+import { insertAfter } from './deferredChildEdits.js';
 import { inheritSupport } from './isFallback.js';
 
 /**
@@ -13,7 +14,7 @@ function insertCloned(rule, decl, props) {
     delete newNode.raws.value;
   }
 
-  rule.insertAfter(decl, newNode);
+  insertAfter(rule, decl, newNode);
   // Propagate support context so cloned longhands preserve the
   // original declaration's applicability constraints.
   inheritSupport(decl, newNode);

@@ -12,7 +12,36 @@ import { expectAll, expectNone } from '../../../../util/webref/webref.js';
 
 const BORDER = 'border';
 const COLUMNS = 'columns';
-const BOX_SHORTHANDS = ['margin', 'padding'];
+/* Each group has a physical shorthand named after it and two axis shorthands
+ * that set a flow-relative start and end. */
+const BOX_GROUPS = [
+  'margin',
+  'padding',
+  'inset',
+  'scroll-margin',
+  'scroll-padding',
+];
+const BOX_AXES = ['block', 'inline'];
+const BOX_EDGES = ['start', 'end'];
+
+/**
+ * @param {string} group
+ * @param {string} side
+ * @return {string} the physical longhand; `inset` names its sides bare
+ */
+const physicalLonghand = (group, side) =>
+  group === 'inset' ? side : `${group}-${side}`;
+
+/**
+ * Every shorthand of the box groups: the physical one first, then the axes.
+ *
+ * @param {string} group
+ * @return {string[]}
+ */
+const boxShorthandsOf = (group) => [
+  group,
+  ...BOX_AXES.map((axis) => `${group}-${axis}`),
+];
 
 /**
  * What the specifications spell out and no engine implements, plus what a walk
@@ -60,11 +89,7 @@ const expectExactly = (actual, expected, what) => {
 };
 
 /**
- * Guards against publishing data a webref release has changed out from under
- * the plugin: the transforms assume a border is a side crossed with a
- * component, that margin and padding take the same four sides in the same
- * order, and that every property they take apart has an initial value to fill
- * in for a component left out.
+ * Throws when the data breaks one of the assumptions in the module header.
  *
  * @param {Longhands} data
  * @return {void}
@@ -104,13 +129,7 @@ export function validate(data) {
     );
   }
 
-  for (const name of BOX_SHORTHANDS) {
-    expectExactly(
-      /** @type {Shorthand} */ (shorthands.get(name)).longhands,
-      sides.map((side) => `${name}-${side}`),
-      `the longhands of ${name}`
-    );
-  }
+  validateBoxGroups(data);
 
   /* The plugin builds `columns` out of a width and a count, and refuses the
    * family when a stylesheet sets anything else the shorthand also sets. */
@@ -183,6 +202,47 @@ export function validate(data) {
 }
 
 /**
+ * Every box group is a physical shorthand over the four sides and two axis
+ * shorthands over a start and an end.
+ *
+ * @param {Longhands} data
+ * @return {void}
+ */
+function validateBoxGroups(data) {
+  const { sides, shorthands } = data;
+
+  for (const group of BOX_GROUPS) {
+    expectExactly(
+      /** @type {Shorthand} */ (shorthands.get(group)).longhands,
+      sides.map((side) => physicalLonghand(group, side)),
+      `the longhands of ${group}`
+    );
+
+    for (const axis of BOX_AXES) {
+      const name = `${group}-${axis}`;
+
+      expectExactly(
+        /** @type {Shorthand} */ (shorthands.get(name)).longhands,
+        BOX_EDGES.map((edge) => `${name}-${edge}`),
+        `the longhands of ${name}`
+      );
+    }
+
+    /* Flow-relative longhands alias the physical ones; listing them as members
+     * would hide that the mapping depends on the writing mode. */
+    const { longhands, resets } = /** @type {Shorthand} */ (
+      shorthands.get(group)
+    );
+
+    for (const property of [...longhands, ...resets]) {
+      if (BOX_AXES.some((axis) => property.includes(`-${axis}`))) {
+        throw new Error(`Expected ${group} not to set ${property}`);
+      }
+    }
+  }
+}
+
+/**
  * The keyword sets a border value is taken apart against. A spec that stopped
  * spelling one of these out in its grammar would leave the plugin unable to
  * tell a width from a style from a colour.
@@ -245,4 +305,12 @@ function validateKeywords(data) {
   }
 }
 
-export { BORDER, BOX_SHORTHANDS, COLUMNS, implemented };
+export {
+  BORDER,
+  BOX_AXES,
+  BOX_GROUPS,
+  boxShorthandsOf,
+  COLUMNS,
+  implemented,
+  physicalLonghand,
+};
