@@ -57,7 +57,7 @@
     "postcss": "catalog:"
   },
   "peerDependencies": {
-    "postcss": "^8.5.28"
+    "postcss": "^8.5.29"
   },
   "type": "module"
 }
