@@ -9,7 +9,7 @@ catalog:
   autoprefixer: ^10.6.1
   browserslist: ^4.29.3
   '@csstools/css-tokenizer': ^4.0.2
-  postcss: ^8.5.28
+  postcss: ^8.5.29
   '@webref/css': 8.7.5
   mdn-data: 2.37.1
   '@colordx/core': ^7.2.0

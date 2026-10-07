@@ -186,8 +186,8 @@ catalogs:
       specifier: 2.37.1
       version: 2.37.1
     postcss:
-      specifier: ^8.5.28
-      version: 8.5.28
+      specifier: ^8.5.29
+      version: 8.5.29
 
 importers:
 
@@ -207,7 +207,7 @@ importers:
         version: 1.87.0
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
       resolve:
         specifier: ^1.22.12
         version: 1.22.12
@@ -223,7 +223,7 @@ importers:
     devDependencies:
       autoprefixer:
         specifier: 'catalog:'
-        version: 10.6.1(postcss@8.5.28)
+        version: 10.6.1(postcss@8.5.29)
       cssnano-preset-advanced:
         specifier: workspace:^
         version: link:../cssnano-preset-advanced
@@ -232,19 +232,19 @@ importers:
         version: link:../cssnano-preset-lite
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
       postcss-font-magician:
         specifier: ^4.0.0
-        version: 4.0.0(postcss@8.5.28)
+        version: 4.0.0(postcss@8.5.29)
 
   packages/cssnano-preset-advanced:
     dependencies:
       autoprefixer:
         specifier: 'catalog:'
-        version: 10.6.1(postcss@8.5.28)
+        version: 10.6.1(postcss@8.5.29)
       css-declaration-sorter:
         specifier: ^7.4.0
-        version: 7.4.0(postcss@8.5.28)
+        version: 7.4.0(postcss@8.5.29)
       cssnano-preset-default:
         specifier: workspace:^
         version: link:../cssnano-preset-default
@@ -263,7 +263,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/cssnano-preset-default:
     dependencies:
@@ -275,7 +275,7 @@ importers:
         version: link:../cssnano-utils
       postcss-calc:
         specifier: ^11.2.2
-        version: 11.2.2(postcss@8.5.28)
+        version: 11.2.2(postcss@8.5.29)
       postcss-colormin:
         specifier: workspace:^
         version: link:../postcss-colormin
@@ -357,7 +357,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/cssnano-preset-lite:
     dependencies:
@@ -376,7 +376,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/cssnano-utils:
     dependencies:
@@ -386,7 +386,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-colormin:
     dependencies:
@@ -411,7 +411,7 @@ importers:
         version: 8.7.5(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-convert-values:
     dependencies:
@@ -424,7 +424,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-discard-comments:
     dependencies:
@@ -437,13 +437,13 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
       postcss-scss:
         specifier: ^4.0.9
-        version: 4.0.9(postcss@8.5.28)
+        version: 4.0.9(postcss@8.5.29)
       postcss-simple-vars:
         specifier: ^7.0.1
-        version: 7.0.1(postcss@8.5.28)
+        version: 7.0.1(postcss@8.5.29)
 
   packages/postcss-discard-duplicates:
     dependencies:
@@ -453,7 +453,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-discard-empty:
     dependencies:
@@ -463,13 +463,13 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-discard-overridden:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-discard-unused:
     dependencies:
@@ -482,7 +482,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-merge-idents:
     dependencies:
@@ -498,7 +498,7 @@ importers:
         version: 8.7.5(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-merge-longhand:
     dependencies:
@@ -523,7 +523,7 @@ importers:
         version: 8.7.5(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-merge-rules:
     dependencies:
@@ -548,7 +548,7 @@ importers:
         version: 8.7.5(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
       postcss-discard-comments:
         specifier: workspace:^
         version: link:../postcss-discard-comments
@@ -557,7 +557,7 @@ importers:
         version: 7.1.6
       postcss-simple-vars:
         specifier: ^7.0.1
-        version: 7.0.1(postcss@8.5.28)
+        version: 7.0.1(postcss@8.5.29)
 
   packages/postcss-minify-font-values:
     dependencies:
@@ -573,7 +573,7 @@ importers:
         version: 8.7.5(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-minify-gradients:
     dependencies:
@@ -589,7 +589,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-minify-params:
     dependencies:
@@ -602,7 +602,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-minify-selectors:
     dependencies:
@@ -627,10 +627,10 @@ importers:
         version: 30.1.1
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
       postcss-font-magician:
         specifier: ^4.0.0
-        version: 4.0.0(postcss@8.5.28)
+        version: 4.0.0(postcss@8.5.29)
       postcss-selector-parser:
         specifier: ^7.1.6
         version: 7.1.6
@@ -639,7 +639,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-normalize-display-values:
     dependencies:
@@ -652,7 +652,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-normalize-positions:
     dependencies:
@@ -665,7 +665,7 @@ importers:
         version: 4.0.2
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-normalize-repeat-style:
     dependencies:
@@ -678,7 +678,7 @@ importers:
         version: 4.0.2
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-normalize-string:
     dependencies:
@@ -688,7 +688,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-normalize-timing-functions:
     dependencies:
@@ -701,7 +701,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-normalize-unicode:
     dependencies:
@@ -717,7 +717,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-normalize-url:
     dependencies:
@@ -730,7 +730,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-normalize-whitespace:
     dependencies:
@@ -743,7 +743,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-ordered-values:
     dependencies:
@@ -759,7 +759,7 @@ importers:
         version: 8.7.5(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-reduce-idents:
     dependencies:
@@ -775,7 +775,7 @@ importers:
         version: 8.7.5(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-reduce-initial:
     dependencies:
@@ -791,7 +791,7 @@ importers:
         version: 2.37.1
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-reduce-transforms:
     dependencies:
@@ -804,7 +804,7 @@ importers:
         version: 4.0.2
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-svgo:
     dependencies:
@@ -820,7 +820,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-unique-selectors:
     dependencies:
@@ -830,13 +830,13 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/postcss-zindex:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
   packages/stylehacks:
     dependencies:
@@ -849,7 +849,7 @@ importers:
     devDependencies:
       postcss:
         specifier: 'catalog:'
-        version: 8.5.28
+        version: 8.5.29
 
 packages:
 
@@ -1841,8 +1841,8 @@ packages:
   postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
 
-  postcss@8.5.28:
-    resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
+  postcss@8.5.29:
+    resolution: {integrity: sha512-49cGhUbXj8Qenv0iTMxA1cFBzxXoctpC9Ujd77t1WcbJIr6nF/eI7g/8MgxrYldFRuAXvja7xQRwavoW7kgrxQ==}
     engines: {node: ^10 || ^12 || >=14}
 
   punycode@2.3.1:
@@ -2363,13 +2363,13 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  autoprefixer@10.6.1(postcss@8.5.28):
+  autoprefixer@10.6.1(postcss@8.5.29):
     dependencies:
       browserslist: 4.29.3
       caniuse-lite: 1.0.30001814
       fraction.js: 5.3.4
       picocolors: 1.1.1
-      postcss: 8.5.28
+      postcss: 8.5.29
       postcss-value-parser: 4.2.0
 
   b3b@0.0.1: {}
@@ -2405,9 +2405,9 @@ snapshots:
 
   commander@11.1.0: {}
 
-  css-declaration-sorter@7.4.0(postcss@8.5.28):
+  css-declaration-sorter@7.4.0(postcss@8.5.29):
     dependencies:
-      postcss: 8.5.28
+      postcss: 8.5.29
 
   css-select@6.0.0:
     dependencies:
@@ -2502,9 +2502,9 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
-  google-fonts-complete@2.2.3(postcss@8.5.28):
+  google-fonts-complete@2.2.3(postcss@8.5.29):
     dependencies:
-      postcss: 8.5.28
+      postcss: 8.5.29
 
   hasown@2.0.4:
     dependencies:
@@ -2699,33 +2699,33 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  postcss-calc@11.2.2(postcss@8.5.28):
+  postcss-calc@11.2.2(postcss@8.5.29):
     dependencies:
       '@csstools/css-tokenizer': 4.0.2
-      postcss: 8.5.28
+      postcss: 8.5.29
 
-  postcss-font-magician@4.0.0(postcss@8.5.28):
+  postcss-font-magician@4.0.0(postcss@8.5.29):
     dependencies:
       directory-fonts-complete: 1.2.0
-      google-fonts-complete: 2.2.3(postcss@8.5.28)
-      postcss: 8.5.28
+      google-fonts-complete: 2.2.3(postcss@8.5.29)
+      postcss: 8.5.29
 
-  postcss-scss@4.0.9(postcss@8.5.28):
+  postcss-scss@4.0.9(postcss@8.5.29):
     dependencies:
-      postcss: 8.5.28
+      postcss: 8.5.29
 
   postcss-selector-parser@7.1.6:
     dependencies:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
 
-  postcss-simple-vars@7.0.1(postcss@8.5.28):
+  postcss-simple-vars@7.0.1(postcss@8.5.29):
     dependencies:
-      postcss: 8.5.28
+      postcss: 8.5.29
 
   postcss-value-parser@4.2.0: {}
 
-  postcss@8.5.28:
+  postcss@8.5.29:
     dependencies:
       nanoid: 3.3.19
       picocolors: 1.1.1
