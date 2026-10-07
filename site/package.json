@@ -13,11 +13,11 @@
     "cssnano-preset-advanced": "link:../packages/cssnano-preset-advanced",
     "cssnano-preset-default": "link:../packages/cssnano-preset-default",
     "cssnano-preset-lite": "link:../packages/cssnano-preset-lite",
-    "postcss": "^8.5.28"
+    "postcss": "^8.5.29"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.4",
-    "astro": "^7.3.5",
+    "astro": "^7.3.6",
     "cssnano": "link:../packages/cssnano",
     "typescript": "~7.0.2"
   },
