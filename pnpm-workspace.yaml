@@ -12,7 +12,7 @@ catalog:
   postcss: ^8.5.29
   '@webref/css': 8.7.5
   mdn-data: 2.37.2
-  '@colordx/core': ^7.2.0
+  '@colordx/core': ^7.3.0
   '@mdn/browser-compat-data': ^8.1.4
 
 minimumReleaseAgeExclude:
