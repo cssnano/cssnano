@@ -32,20 +32,18 @@ Every change should make the intended CSS transformation clearer while preservin
 - A transform must never turn an invalid declaration into a valid one, or drop a component it does not understand. Browsers ignore invalid declarations, so making one valid changes how the page renders. When unsure, leave the value byte-identical.
 - Before collapsing a multi-value form to a shorter one, check what the grammar fills in for each omitted part (positions, margin/padding shorthands, `border-radius`, and so on). For example, a single `<position>` value implies `center` on the other axis, and a single number is always horizontal.
 - A test that expects unchanged output must say in its name or a comment why the value cannot be shortened.
-- Validate the applicable repository contract before declaring a change complete: run focused tests, type checking (`./node_modules/.bin/tsc -b` or `pnpm run types`), and lint/format checks for every change. Add full tests, integration tests, or regenerated artifacts when the change affects them. Use the current package scripts and runbooks to choose commands; do not duplicate command recipes here. If a required check cannot be run, report that explicitly and do not claim full verification.
-- Before handoff, always run the applicable lint and format checks and the focused tests for changed packages. For generated-data changes, regenerate first, then lint/format and test the consuming package; do not rely on inspection alone.
-- Avoid quadratic time complexity in tests and scripts, search for linear time complexity in algorithms.
+- Before handoff, validate the applicable repository contract: run the focused tests for changed packages, type checking (`./node_modules/.bin/tsc -b` or `pnpm run types`), and lint/format checks for every change. Add full tests or regenerated artifacts when the change affects them. For generated-data changes, regenerate first, then lint/format and test the consuming package; do not rely on inspection alone. Use the commands under Durable conventions and the current package scripts and runbooks. If a required check cannot be run, report that explicitly and do not claim full verification.
+- A change should preserve or improve performance and asymptotic complexity. Avoid quadratic time in tests, scripts and algorithms; look for linear time. Performance refactors must preserve byte output unless an intentional output change is documented. Compare matched production benchmarks and measure independent hypotheses separately; use the performance runbook for commands and evidence requirements.
+
 ## Durable conventions
 
 - Use Node’s built-in `test` module for repository package tests and the shared helpers. Plugin tests use `processCSSFactory()` from `util/testHelpers.js`; preset tests use `processCSSWithPresetFactory()` or `createCssnanoProcessor()` from `util/integrationTestHelpers.js`.
-- Use the current unit-test script from the root `package.json`; serialized recursive execution keeps package output grouped when the script supports it.
 - Tests that assert wall-clock time or asymptotic scaling, and fuzz or exhaustive sweeps that take about a second or more, go in `packages/<pkg>/perf/` (plain `.js`, not `*.test.js`), so `node --test` and the coverage run skip them; run them with the `test:performance` script. Keep correctness assertions in `test/`.
 - Keep package tests under `test/` and follow the existing filename convention for the package or subsystem (`*.js` and `*.test.js` are both present). Use `describe()` when it improves source readability without disturbing unrelated test order.
-- Keep test-suite nesting shallow when practical; avoid wrapping descriptive suites in redundant package- or preset-level suites.
+- Keep test-suite nesting shallow; avoid wrapping descriptive suites in redundant package- or preset-level suites.
 - Apply the rule of three before extracting test helpers: tolerate small duplication until a third consumer needs the same setup or assertion contract.
 - Keep generated declarations and generated integration fixtures synchronized with their sources. Do not hand-edit generated site data.
-- Use pnpm for dependency and lockfile changes; never edit lockfiles by hand.
-- If dependencies or workspace links  are missing, use an approved `pnpm install` to repair them; never manually
+- Use pnpm for dependency and lockfile changes; never edit lockfiles by hand. If dependencies or workspace links are missing, use an approved `pnpm install` to repair them; never manually
   create, remove, move, or retarget files or symlinks under `node_modules`.
   To validate changes directly without requiring elevated permissions or invoking pnpm:
   - Focused package unit tests: `node --test packages/<pkg>/test/*.js`
@@ -66,25 +64,18 @@ Every change should make the intended CSS transformation clearer while preservin
   modifiers, and namespace qualifiers), never use regex or broad string replacements.
   Always respect token-boundary microsyntax specifications (CSS Syntax 3 and Selectors 4).
 - Every dependency on an unpublished package that is present in this workspace
-  must use the pnpm `workspace:^` protocol in package manifests. Keep the
-  corresponding importer specifiers in `pnpm-lock.yaml` synchronized, and
-  search all package manifests when changing a workspace package dependency;
+  must use the pnpm `workspace:^` protocol in package manifests. Search all
+  package manifests when changing a workspace package dependency;
   a registry semver such as `^8.0.0` is invalid when only the local workspace
   version exists.
 - Keep runtime behavior unchanged during types-only cleanup.
-- Use modern JavaScript and Node built-ins. Source is normally `.js` with JSDoc or `.ts`.
--  Write code comments so they state the goal or the leading idea; do not add lines of implementation details      Comments explain why, stay under 60 words when practical, and match the behavior.
-- Comments use vocabulary that a CSS expert, designer or programmer would use. Do not invent an               
-idiosyncratic project-specific language
+- Use modern JavaScript and Node built-ins.
+- Write code comments so they state the goal or the leading idea; do not add lines of implementation details. Comments explain why, stay under 60 words when practical, and match the behavior. Use vocabulary that a CSS expert, designer or programmer would use; do not invent an idiosyncratic project-specific language.
 - Documentation describes stable public contracts and security boundaries, not incidental implementation details.
 - Keep runbook current-state claims aligned with the checked-out branch. Put
   unmerged or branch-specific architecture in an explicitly branch-scoped
   skill rather than describing it as repository-wide reality.
-- Performance refactors must preserve byte output unless an intentional output
-  change is documented. Compare matched production benchmarks and measure
-  independent hypotheses separately; use the performance runbook for commands
-  and evidence requirements.
-- Use precise CSS/W3C terminology. Prefer names such as `specifiesComponent` and `requiredSupport` over metaphorical alternatives.
+- Use precise W3C and MDN terminology and standard algorithm textbook terminology when naming functions and variables.
 - Follow the repository’s lint rules, including the configured complexity and syntax restrictions, and use Conventional Commits.
 - Distinguish integers from floating-point numbers in both JavaScript runtime arithmetic and CSS domain semantics:
   - In JavaScript, numbers are IEEE-754 double-precision floats. Keep integer math (such as hashes, indices, and offsets) strictly within `Number.MAX_SAFE_INTEGER` ($2^{53} - 1$), avoid accidental float division/modulo precision loss, and respect the repository's `no-bitwise` lint rule without producing fractional values.
