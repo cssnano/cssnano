@@ -17,7 +17,7 @@ const vendorNames = new Set(
   'ah apple atsc epub hp khtml moz ms o rim ro tc wap webkit xv'.split(' ')
 );
 const unescapeIdent = (raw) =>
-  raw.replace(/\\([0-9a-f]{1,6})\s?|\\(.)/giv, (_, hex, char) =>
+  raw.replaceAll(/\\([0-9a-f]{1,6})\s?|\\(.)/giv, (_, hex, char) =>
     hex === undefined ? char : String.fromCodePoint(Number.parseInt(hex, 16))
   );
 const pseudoNames = (selector) => {

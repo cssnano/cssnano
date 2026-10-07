@@ -63,8 +63,8 @@ export function structuralShape(selector) {
     if (character === ')') depth--;
   }
   const canonical = selector
-    .replace(/(?:data-)?\d+/giv, 'N')
-    .replace(/\s+/gv, ' ')
+    .replaceAll(/(?:data-)?\d+/giv, 'N')
+    .replaceAll(/\s+/gv, ' ')
     .trim();
   return {
     key: JSON.stringify([

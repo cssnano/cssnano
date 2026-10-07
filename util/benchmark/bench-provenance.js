@@ -124,7 +124,7 @@ function dirtyPaths(root) {
     .toString()
     .split('\0')
     .filter(Boolean)
-    .map((entry) => entry.slice(3).trim().replace(/^"|"$/gv, ''))
+    .map((entry) => entry.slice(3).trim().replaceAll(/^"|"$/gv, ''))
     .map((file) => file.split(sep).join('/'))
     .toSorted();
 }

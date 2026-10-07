@@ -13,16 +13,13 @@ function processCSSFactory(plugin) {
   if (Array.isArray(plugin)) {
     const postcssProcessor = postcss(plugin);
     processor = (fixture, options) =>
-      postcssProcessor.process(
-        fixture,
-        Object.assign({}, { from: undefined }, options)
-      );
+      postcssProcessor.process(fixture, { from: undefined, ...options });
   } else {
     processor = (fixture, options) =>
-      postcss(plugin(options)).process(
-        fixture,
-        Object.assign({}, { from: undefined }, options)
-      );
+      postcss(plugin(options)).process(fixture, {
+        from: undefined,
+        ...options,
+      });
   }
 
   const processCSS = (fixture, expected, options) => {

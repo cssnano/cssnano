@@ -58,7 +58,7 @@ function legacyMinifyFont(value, opts) {
   if (familyStart < 0) return value;
   let prefix = value
     .slice(0, familyStart)
-    .replace(/\bbold\b/giv, (word) => minifyWeight(word.toLowerCase()));
+    .replaceAll(/\bbold\b/giv, (word) => minifyWeight(word.toLowerCase()));
   if (!prefix.endsWith(' ') && prefix) prefix += ' ';
   return prefix + minifyFamily(value.slice(familyStart), opts);
 }

@@ -312,16 +312,13 @@ function processAtRule(node, context) {
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(opts) {
-  const { fontFace, counterStyle, keyframes, namespace } = Object.assign(
-    {},
-    {
-      fontFace: true,
-      counterStyle: true,
-      keyframes: true,
-      namespace: true,
-    },
-    opts
-  );
+  const { fontFace, counterStyle, keyframes, namespace } = {
+    fontFace: true,
+    counterStyle: true,
+    keyframes: true,
+    namespace: true,
+    ...opts,
+  };
 
   return {
     postcssPlugin: 'postcss-discard-unused',

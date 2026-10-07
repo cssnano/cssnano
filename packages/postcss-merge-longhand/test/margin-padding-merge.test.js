@@ -9,39 +9,39 @@ function addTests(...tests) {
     const isExpectedFunc = typeof expected === 'function';
 
     test(
-      message.replace(/box/giv, 'margin'),
+      message.replaceAll(/box/giv, 'margin'),
       processCSS(
-        fixture.replace(/box/giv, 'margin'),
+        fixture.replaceAll(/box/giv, 'margin'),
         isExpectedFunc
           ? expected('margin')
-          : expected.replace(/box/giv, 'margin')
+          : expected.replaceAll(/box/giv, 'margin')
       )
     );
     test(
-      message.replace(/box/giv, 'MARGIN'),
+      message.replaceAll(/box/giv, 'MARGIN'),
       processCSS(
-        fixture.replace(/box/giv, 'MARGIN'),
+        fixture.replaceAll(/box/giv, 'MARGIN'),
         isExpectedFunc
           ? expected('MARGIN')
-          : expected.replace(/box/giv, 'margin')
+          : expected.replaceAll(/box/giv, 'margin')
       )
     );
     test(
-      message.replace(/box/giv, 'padding'),
+      message.replaceAll(/box/giv, 'padding'),
       processCSS(
-        fixture.replace(/box/giv, 'padding'),
+        fixture.replaceAll(/box/giv, 'padding'),
         isExpectedFunc
           ? expected('padding')
-          : expected.replace(/box/giv, 'padding')
+          : expected.replaceAll(/box/giv, 'padding')
       )
     );
     test(
-      message.replace(/box/giv, 'PADDING'),
+      message.replaceAll(/box/giv, 'PADDING'),
       processCSS(
-        fixture.replace(/box/giv, 'PADDING'),
+        fixture.replaceAll(/box/giv, 'PADDING'),
         isExpectedFunc
           ? expected('PADDING')
-          : expected.replace(/box/giv, 'padding')
+          : expected.replaceAll(/box/giv, 'padding')
       )
     );
   }

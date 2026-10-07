@@ -58,7 +58,7 @@ function matchElements(selector, tree) {
       }
     }
   }
-  const querySelector = selector.replace(
+  const querySelector = selector.replaceAll(
     /\b(svg|math)\|(?=[\w*\-])/gv,
     '[data-fz-namespace="$1"]'
   );

@@ -18,7 +18,7 @@ export function unquote(value) {
   const raw = value.slice(1, -1);
   if (!raw || raw === '-' || /[ \t\n\r\f"'\(\)\[\]\{\}=~\|^$*]/v.test(raw))
     return value;
-  const unescaped = raw.replace(/\\([\\"'])/gv, '$1');
+  const unescaped = raw.replaceAll(/\\([\\"'])/gv, '$1');
   return cssesc(unescaped, { isIdentifier: true }) === unescaped
     ? unescaped
     : value;

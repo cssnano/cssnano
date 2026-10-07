@@ -95,7 +95,7 @@ function escapeIdentifierSequence(string) {
     escapedParts.push(escape(part, false));
   }
   let result = escapedParts.join(' ');
-  result = result.replace(
+  result = result.replaceAll(
     /(\\(?:[a-fA-F0-9]{1,6} | ))?( {2,})/gv,
     (_, prefix, spaces) => {
       const escaped = Array.from(
@@ -132,8 +132,8 @@ function minifyFamily(value, opts, removeQuotes = opts.removeQuotes) {
     let family = familyTokens
       .map((item) => (item[0] === TokenType.Whitespace ? '\0' : item[1]))
       .join('')
-      .replace(/^\0+|\0+$/gv, '')
-      .replace(/\0+/gv, ' ');
+      .replaceAll(/^\0+|\0+$/gv, '')
+      .replaceAll(/\0+/gv, ' ');
     const raw = token && decoded(token);
     const isReservedString =
       typeof raw === 'string' && containsReservedComponent(raw);
