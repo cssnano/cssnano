@@ -255,7 +255,7 @@ function trimDeclaration(node, cache) {
     const prev = node.prev();
 
     if (prev && prev.type !== rule) {
-      node.raws.before = node.raws.before.replace(/;/gv, '');
+      node.raws.before = node.raws.before.replaceAll(';', '');
     }
   }
 

@@ -65,15 +65,12 @@ function transform(prop, value, opts) {
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(opts) {
-  const normalizedOpts = Object.assign(
-    {},
-    {
-      removeAfterKeyword: false,
-      removeDuplicates: true,
-      removeQuotes: true,
-    },
-    opts
-  );
+  const normalizedOpts = {
+    removeAfterKeyword: false,
+    removeDuplicates: true,
+    removeQuotes: true,
+    ...opts,
+  };
 
   return {
     postcssPlugin: 'postcss-minify-font-values',

@@ -139,7 +139,7 @@ function checkSvgRootPreserved(css, branch, output) {
   const payload = output.slice(dataUri.index + dataUri[0].length);
   // Percent-decode first so encoded and raw payloads share one probe;
   // the SVG root element must survive minification.
-  const decodedPayload = payload.replace(/%([0-9a-f]{2})/giv, (_, hex) =>
+  const decodedPayload = payload.replaceAll(/%([0-9a-f]{2})/giv, (_, hex) =>
     String.fromCharCode(Number.parseInt(hex, 16))
   );
   if (/<svg(?![\w_.:\-])/iv.test(decodedPayload)) {

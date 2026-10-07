@@ -97,7 +97,7 @@ function isGridLine(line) {
       return false;
     }
 
-    const integerIndex = kinds.findIndex((kind) => kind === 'integer');
+    const integerIndex = kinds.indexOf('integer');
     if (integerIndex === -1) return true;
     const value = /** @type {{ value: number }} */ (
       line[integerIndex].tokens[0][4]

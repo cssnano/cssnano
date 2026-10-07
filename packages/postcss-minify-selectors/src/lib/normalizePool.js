@@ -267,7 +267,7 @@ export function attributeOutput(arena, pool, node) {
     importantTrivia(arena, pool, matcherEnd, payload.valueToken),
     pool.text(
       arena.tokens[payload.valueToken][0] === TokenType.String
-        ? unquote(arena.tokens[payload.valueToken][1]).replace(/\\\n/gv, '')
+        ? unquote(arena.tokens[payload.valueToken][1]).replaceAll('\\\n', '')
         : compactIdent(arena.tokens[payload.valueToken])
     )
   );

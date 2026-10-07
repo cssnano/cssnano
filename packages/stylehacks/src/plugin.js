@@ -36,14 +36,11 @@ export default (class BasePlugin {
    * @return {void}
    */
   push(node, metadata) {
-    /** @type {NodeWithInfo} */ (node)._stylehacks = Object.assign(
-      {},
-      metadata,
-      {
-        message: `Bad ${metadata.identifier}: ${metadata.hack}`,
-        browsers: this.targets,
-      }
-    );
+    /** @type {NodeWithInfo} */ (node)._stylehacks = {
+      ...metadata,
+      message: `Bad ${metadata.identifier}: ${metadata.hack}`,
+      browsers: this.targets,
+    };
 
     this.nodes.push(/** @type {NodeWithInfo} */ (node));
   }
