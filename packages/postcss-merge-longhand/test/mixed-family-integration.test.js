@@ -33,8 +33,15 @@ describe('mixed-family rules', () => {
   test(
     'preserves lane isolation and cleans up overridden columns with mixed importance across all boundary',
     processCSS(
-      'a{column-width:100px !important;column-count:2;all:unset !important;column-width:200px !important;columns:initial !important}',
-      'a{column-width:100px !important;column-count:2;all:unset !important;columns:initial !important}'
+      'a{column-width:100px !important;column-count:2;all:unset !important;column-width:200px !important;columns:auto !important}',
+      'a{column-width:100px !important;column-count:2;all:unset !important;columns:auto !important}'
+    )
+  );
+
+  test(
+    'keeps column-width before columns:initial because default targets such as IE 11 reject initial',
+    passthroughCSS(
+      'a{column-width:200px !important;columns:initial !important}'
     )
   );
 
@@ -63,10 +70,10 @@ describe('mixed-family rules', () => {
   );
 
   test(
-    'preserves interleaved margin-inline-start with physical margins',
+    'drops margin-inline-start before physical margins because they set every side it can set in any writing mode',
     processCSS(
       'a{margin-inline-start:5px;margin-top:10px;margin-right:10px;margin-bottom:10px;margin-left:10px}',
-      'a{margin-inline-start:5px;margin:10px}'
+      'a{margin:10px}'
     )
   );
 
@@ -124,10 +131,10 @@ describe('mixed-family rules', () => {
   );
 
   test(
-    'merges independent physical margin segments before and after flow-relative margin',
+    'merges physical margins around a flow-relative margin that later physical margins override on every side',
     processCSS(
       'a{margin-top:10px;margin-right:10px;margin-bottom:10px;margin-left:10px;margin-inline:20px;margin-top:30px;margin-right:30px;margin-bottom:30px;margin-left:30px}',
-      'a{margin-inline:20px;margin:30px}'
+      'a{margin:30px}'
     )
   );
 
@@ -144,10 +151,10 @@ describe('mixed-family rules', () => {
   );
 
   test(
-    'merges independent physical padding segments before and after flow-relative padding',
+    'merges physical paddings around a flow-relative padding that later physical paddings override on every side',
     processCSS(
       'a{padding-top:10px;padding-right:10px;padding-bottom:10px;padding-left:10px;padding-inline:20px;padding-top:30px;padding-right:30px;padding-bottom:30px;padding-left:30px}',
-      'a{padding-inline:20px;padding:30px}'
+      'a{padding:30px}'
     )
   );
 
@@ -188,50 +195,54 @@ describe('mixed-family rules', () => {
   );
 });
 
+/**
+ * Minifies a declaration that already carries a source `raws.value` and
+ * returns it, so each test can assert the stale raw text was dropped.
+ *
+ * @param {string} css
+ * @param {{ raw: string, value: string }} raws
+ */
+async function minifyWithStaleRaws(css, raws) {
+  const root = postcss.parse(css);
+  const decl = /** @type {import('postcss').Declaration} */ (
+    root.first?.nodes?.[0]
+  );
+  decl.raws.value = raws;
+
+  await postcss([plugin()]).process(root, { from: undefined });
+
+  return decl;
+}
+
 describe('stale raws.value clearing during in-place mutation', () => {
   test('clears raws.value when minifying a box singleton in-place', async () => {
-    const root = postcss.parse('a{margin:10px 10px 10px 10px}');
-    const decl = /** @type {import('postcss').Declaration} */ (
-      root.first?.nodes?.[0]
-    );
-    decl.raws.value = {
+    const decl = await minifyWithStaleRaws('a{margin:10px 10px 10px 10px}', {
       raw: '10px 10px 10px 10px /*keep*/',
       value: '10px 10px 10px 10px',
-    };
-
-    await postcss([plugin()]).process(root, { from: undefined });
+    });
 
     assert.strictEqual(decl.value, '10px');
     assert.strictEqual(decl.raws.value, undefined);
   });
 
   test('clears raws.value when normalizing a columns singleton in-place', async () => {
-    const root = postcss.parse('a{columns:100px auto}');
-    const decl = /** @type {import('postcss').Declaration} */ (
-      root.first?.nodes?.[0]
-    );
-    decl.raws.value = {
+    const decl = await minifyWithStaleRaws('a{columns:100px auto}', {
       raw: '100px auto /*raw*/',
       value: '100px auto',
-    };
-
-    await postcss([plugin()]).process(root, { from: undefined });
+    });
 
     assert.strictEqual(decl.value, '100px');
     assert.strictEqual(decl.raws.value, undefined);
   });
 
   test('clears raws.value when minifying a border singleton in-place', async () => {
-    const root = postcss.parse('a{border-width:10px 10px 10px 10px}');
-    const decl = /** @type {import('postcss').Declaration} */ (
-      root.first?.nodes?.[0]
+    const decl = await minifyWithStaleRaws(
+      'a{border-width:10px 10px 10px 10px}',
+      {
+        raw: '10px 10px 10px 10px /*raw*/',
+        value: '10px 10px 10px 10px',
+      }
     );
-    decl.raws.value = {
-      raw: '10px 10px 10px 10px /*raw*/',
-      value: '10px 10px 10px 10px',
-    };
-
-    await postcss([plugin()]).process(root, { from: undefined });
 
     assert.strictEqual(decl.value, '10px');
     assert.strictEqual(decl.raws.value, undefined);

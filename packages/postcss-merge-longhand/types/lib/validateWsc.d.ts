@@ -32,14 +32,5 @@ declare function isValidWidthStyleColor(wscs: {
  * @return {boolean} whether the value can be what that component is set to
  */
 declare function specifiesComponent(value: string, component: string): boolean;
-/**
- * The grammar `<line-width> || <line-style> || <color>` requires each
- * component to appear at most once, and every token to specify one. This is
- * the same judgment `parseWsc` makes while parsing; keep the two in step.
- *
- * @param {string} value
- * @return {boolean} whether every token specifies a distinct component
- */
-declare function specifiesDistinctComponents(value: string): boolean;
-export { isBorderStyle, isBorderWidth, isColor, isValidWidthStyleColor, specifiesComponent, specifiesDistinctComponents, };
+export { isBorderStyle, isBorderWidth, isColor, isValidWidthStyleColor, specifiesComponent, };
 //# sourceMappingURL=validateWsc.d.ts.map

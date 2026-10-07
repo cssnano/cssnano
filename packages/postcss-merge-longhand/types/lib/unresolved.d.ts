@@ -15,6 +15,11 @@ declare const trustedSupportFunctions: Set<string>;
  */
 declare function isUnresolved(token: string): boolean;
 /**
+ * @param {string} name - a function name as written, possibly vendor-prefixed
+ * @return {boolean} whether the function is one this plugin trusts
+ */
+declare function isTrustedFunction(name: string): boolean;
+/**
  * Whether a token is a substitution function specifically — the one class of
  * trusted function whose type stays unknowable after substitution, so it can
  * fill any border component rather than only the ones its own type matches.
@@ -23,5 +28,5 @@ declare function isUnresolved(token: string): boolean;
  * @return {boolean}
  */
 declare function isSubstitution(token: string): boolean;
-export { isSubstitution, isUnresolved, substitutionFunctions, trustedSupportFunctions, };
+export { isSubstitution, isTrustedFunction, isUnresolved, substitutionFunctions, trustedSupportFunctions, };
 //# sourceMappingURL=unresolved.d.ts.map

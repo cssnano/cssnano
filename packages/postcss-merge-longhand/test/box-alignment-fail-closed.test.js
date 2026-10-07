@@ -49,6 +49,13 @@ describe('box alignment merging fail-closed contracts', () => {
     );
 
     test(
+      'does not merge when an -o- prefixed alias sits between the two longhands, because any vendor prefix may name the same property',
+      passthroughCSS(
+        'a{align-items:center;-o-align-items:flex-end;justify-items:center}'
+      )
+    );
+
+    test(
       'does not merge when a vendor-prefixed alias sits between the two longhands',
       passthroughCSS(
         'a{align-items:center;-webkit-align-items:flex-end;justify-items:center}'

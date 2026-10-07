@@ -1,9 +1,9 @@
+import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import stylehacks from 'stylehacks';
 import canExplode from '../canExplode.js';
-import cssGlobalKeywords from '../cssGlobalKeywords.js';
 import isCustomProp from '../isCustomProp.js';
 import { commitShorthand } from './slotVector.js';
-import { importanceLanes, isAll } from './importanceLanes.js';
+import { hasNonAll, isAll } from './importanceLanes.js';
 import {
   normalizeAlignment,
   parseAlignmentDeclaration,
@@ -44,8 +44,8 @@ function mergeSegment(rule, family, segment, important, parsedDecls) {
   if (segment.some(isCustomProp)) return;
 
   // A CSS-wide keyword cannot share a shorthand with another value.
-  const isGlobal = cssGlobalKeywords.has(align.toLowerCase());
-  if (isGlobal !== cssGlobalKeywords.has(justify.toLowerCase())) return;
+  const isGlobal = isCssWideKeyword(align);
+  if (isGlobal !== isCssWideKeyword(justify)) return;
   if (isGlobal && align.toLowerCase() !== justify.toLowerCase()) return;
 
   const values = segment.map((decl) =>
@@ -125,8 +125,8 @@ function hasMergeableProperties(declarations) {
  * @param {Container} rule
  * @param {AlignmentFamilyConfig} family
  * @param {Declaration[]} declarations
- * @param {[Declaration[], Declaration[]]} [lanes] - the declarations and `all`
- *   split by importance, when the caller already collected them
+ * @param {[Declaration[], Declaration[]]} lanes - the declarations and `all`
+ *   split by importance
  * @return {void}
  */
 export function reduceAlignmentFamily(rule, family, declarations, lanes) {
@@ -137,10 +137,9 @@ export function reduceAlignmentFamily(rule, family, declarations, lanes) {
     return;
   }
 
-  const familyLanes = lanes ?? importanceLanes(rule, declarations);
   /* A repeated property is usually a fallback for browsers that reject the
    * later value; merging would leave those browsers with neither. */
-  if (familyLanes.some(repeatsProperty)) return;
+  if (lanes.some(repeatsProperty)) return;
 
   /** @type {ParsedDeclarations} */
   const parsedDecls = new Map();
@@ -154,8 +153,8 @@ export function reduceAlignmentFamily(rule, family, declarations, lanes) {
   }
 
   for (const lane of [false, true]) {
-    const laneDecls = familyLanes[lane ? 1 : 0];
-    if (laneDecls.some((d) => !isAll(d))) {
+    const laneDecls = lanes[lane ? 1 : 0];
+    if (hasNonAll(laneDecls)) {
       processLane(rule, family, laneDecls, lane, parsedDecls);
     }
   }

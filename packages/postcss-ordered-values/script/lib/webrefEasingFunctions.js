@@ -1,3 +1,4 @@
+import { serializeJson } from '../../../../util/webref/webref.js';
 import {
   easingFunction,
   validateEasingFunction,
@@ -20,5 +21,5 @@ export const validate = validateEasingFunction;
  * @return {string}
  */
 export function serialize(data) {
-  return `${JSON.stringify(data, null, 2)}\n`;
+  return serializeJson(data);
 }

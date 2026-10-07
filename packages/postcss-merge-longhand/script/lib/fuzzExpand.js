@@ -20,7 +20,7 @@ import {
 
 /**
  * Expands CSS declarations in the modelled border, box, and radius families
- * into their affected slot-value mappings.
+ * into theirslot-value mappings.
  */
 
 /**
@@ -42,7 +42,7 @@ function expandRadiusCorner(corner, value) {
   if (tokens.length !== 1 && tokens.length !== 2) {
     return undefined;
   }
-  if (tokens.some((t) => !radiusLengths.has(t) && !unresolvedTokens.has(t))) {
+  if (!tokens.every(isRadiusToken)) {
     return undefined;
   }
   const h = tokens[0];
@@ -54,20 +54,22 @@ function expandRadiusCorner(corner, value) {
 }
 
 /**
- * @param {string[]} t
- * @return {[string, string, string, string]}
+ * @param {string} token
+ * @return {boolean}
  */
-const expand4 = (t) => {
-  if (t.length === 1) return [t[0], t[0], t[0], t[0]];
-  if (t.length === 2) return [t[0], t[1], t[0], t[1]];
-  if (t.length === 3) return [t[0], t[1], t[2], t[1]];
-  return [
-    /** @type {string} */ (t[0]),
-    /** @type {string} */ (t[1]),
-    /** @type {string} */ (t[2]),
-    /** @type {string} */ (t[3]),
-  ];
-};
+function isRadiusToken(token) {
+  return radiusLengths.has(token) || unresolvedTokens.has(token);
+}
+
+/**
+ * @param {string} axis the lengths before or after the `/`
+ * @return {string[]|undefined} the four corner values, in `corners` order.
+ */
+function radiusCorners(axis) {
+  const tokens = tokenize(axis);
+  const perSide = tokens.every(isRadiusToken) ? parseSides(tokens) : undefined;
+  return perSide && [...perSide.values()];
+}
 
 /**
  * @param {string} value
@@ -88,29 +90,14 @@ function expandRadiusShorthand(value) {
   const slashParts = trimmed.split('/');
   if (slashParts.length > 2) return undefined;
 
-  const hTokens = slashParts[0].trim().split(/\s+/v).filter(Boolean);
-  if (hTokens.length === 0 || hTokens.length > 4) return undefined;
-  if (hTokens.some((t) => !radiusLengths.has(t) && !unresolvedTokens.has(t))) {
-    return undefined;
-  }
-
-  const vTokens =
-    slashParts.length === 2
-      ? slashParts[1].trim().split(/\s+/v).filter(Boolean)
-      : hTokens;
-
-  if (vTokens.length === 0 || vTokens.length > 4) return undefined;
-  if (vTokens.some((t) => !radiusLengths.has(t) && !unresolvedTokens.has(t))) {
-    return undefined;
-  }
-
-  const h4 = expand4(hTokens);
-  const v4 = expand4(vTokens);
+  const h = radiusCorners(slashParts[0]);
+  const v = slashParts.length === 2 ? radiusCorners(slashParts[1]) : h;
+  if (h === undefined || v === undefined) return undefined;
 
   const slots = new Map();
-  for (let i = 0; i < 4; i++) {
-    slots.set(`border-${corners[i]}-radius-h`, h4[i]);
-    slots.set(`border-${corners[i]}-radius-v`, v4[i]);
+  for (const [i, corner] of corners.entries()) {
+    slots.set(`border-${corner}-radius-h`, h[i]);
+    slots.set(`border-${corner}-radius-v`, v[i]);
   }
   return slots;
 }

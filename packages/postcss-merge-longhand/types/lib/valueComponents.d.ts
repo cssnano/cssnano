@@ -13,10 +13,11 @@ export type Component = {
  * brackets and source ranges have been preserved.
  *
  * @param {string} value
- * @param {boolean} allowCommas
+ * @param {',' | '/'} [separator] - the top-level token that divides the value
+ * into parts; a comma is otherwise a failure, and a slash an ordinary token
  * @return {{components: Component[], raw: string}[] | null}
  */
-export declare function splitValue(value: string, allowCommas: boolean): {
+export declare function splitValue(value: string, separator?: ',' | '/'): {
     components: Component[];
     raw: string;
 }[] | null;

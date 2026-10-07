@@ -3,6 +3,14 @@ import { pluginCase } from './bench-case-utils.js';
 /* Focused merge-longhand cases: the no-op negative path (single standalone
  * shorthands, and multi-declaration rules that revert), and the concrete
  * leaf-to-side and leaf-to-component merges the refactor must not slow down. */
+/* Physical and flow-relative declarations across the box groups. The default
+ * targets block creating the newer shorthands; modern targets allow them. */
+const flowRelativeBoxCSS = Array.from(
+  { length: 500 },
+  (_, index) =>
+    `.flow-${index}{margin:1px;margin-block:2px;margin-inline:${index}px;padding-inline-start:1cap;padding-left:2px;padding-right:2px;inset-block:0 1px;inset-block-start:2px;top:0;scroll-margin-top:1px;scroll-margin-block-start:2px;scroll-margin-block-end:2px}`
+).join('');
+
 export const mergeCases = {
   'longhand-rule-merging': pluginCase(
     'postcss-merge-longhand',
@@ -83,6 +91,15 @@ export const mergeCases = {
       (_, index) =>
         `.column-height-${index}{columns:30em/**//10em;column-width:${index + 1}px;column-count:2}`
     ).join('')
+  ),
+  'merge-longhand-flow-relative': pluginCase(
+    'postcss-merge-longhand',
+    flowRelativeBoxCSS
+  ),
+  'merge-longhand-flow-relative-modern': pluginCase(
+    'postcss-merge-longhand',
+    flowRelativeBoxCSS,
+    { overrideBrowserslist: ['chrome 120'] }
   ),
   'merge-rules-dense': pluginCase(
     'postcss-merge-rules',

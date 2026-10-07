@@ -27,10 +27,14 @@ export const foldableShorthands = new Set([
  *
  * @param {import('postcss').Declaration} decl
  * @param {Map<string, string | null>} [memoTable]
+ * @param {string} [property] - the lowercased property name, when known
  * @return {void}
  */
-export function foldShorthandDeclaration(decl, memoTable) {
-  const property = decl.prop.toLowerCase();
+export function foldShorthandDeclaration(
+  decl,
+  memoTable,
+  property = decl.prop.toLowerCase()
+) {
   if (!foldableShorthands.has(property) || stylehacks.detect(decl)) return;
   const sourceValue =
     decl.raws.value?.value === decl.value
@@ -70,9 +74,5 @@ export function foldShorthandDeclaration(decl, memoTable) {
 export default function minifyShorthandIdentities(root) {
   /** @type {Map<string, string | null>} */
   const memoTable = new Map();
-  root.walkDecls((decl) => {
-    if (foldableShorthands.has(decl.prop.toLowerCase())) {
-      foldShorthandDeclaration(decl, memoTable);
-    }
-  });
+  root.walkDecls((decl) => foldShorthandDeclaration(decl, memoTable));
 }

@@ -7,19 +7,15 @@ import { expand } from './fuzzExpand.js';
 import { initialState } from './fuzzModel.js';
 
 /**
- * An independent evaluator for what a rule means to the browser, against which
- * postcss-merge-longhand's output can be compared.
+ * An independent evaluator for what a rule means to the browser.
  *
  * Deliberately shares nothing with the plugin: not `src/lib/spec.js`, not the
  * generated `longhands.json`, not `parseWsc` or `parseTrbl`.
  *
- * Model alphabets and initial states live in fuzzModel.js, and declaration
- * expansion lives in fuzzExpand.js.
  */
 
 /**
- * Decode a property identifier without sharing the production predicate: the
- * evaluator must recognize escaped `all` even if the reducer does not.
+ * Decodes a property identifier
  *
  * @param {string} property
  * @return {string}
@@ -39,14 +35,7 @@ function propertyName(property) {
 }
 
 /**
- * Folds a rule's declarations into the state they leave behind. Within one rule
- * the important declarations all win over the ordinary ones however they are
- * ordered, so they go in a second pass; among themselves each pass is simply
- * last-one-wins.
- *
- * A declaration this cannot expand — a property outside the families, or a
- * value the browser ignores — leaves the state alone, which is exactly what the
- * browser does with it.
+ * Folds a rule's declarations into the state they leave behind.
  *
  * @param {import('postcss').Rule} rule
  * @return {Map<string, string>}

@@ -1,12 +1,14 @@
 import minifyTrbl from '../minifyTrbl.js';
 import minifyWidthStyleColor from '../minifyWsc.js';
 import { toLower } from '../parseWsc.js';
-import spec from '../spec.js';
-import { mergeBlockingSupport, requiredSupport } from '../isFallback.js';
+import { mergeBlockingSupport, needsUnmetSupport } from '../isFallback.js';
 import {
-  allSidesBorderShorthands,
-  physicalBorderShorthands,
-  widthStyleColor,
+  allBorderShorthands,
+  cellProperties,
+  componentCells,
+  sideCells,
+  sides,
+  widthStyleColor as components,
 } from './borderData.js';
 import { declCost } from './slotVector.js';
 /** @import {Declaration} from 'postcss'; */
@@ -15,9 +17,6 @@ import { declCost } from './slotVector.js';
  * leaves a border cover can choose from, together with the availability and
  * support analysis those shapes depend on. Selection and application live in
  * borderCandidates.js. */
-
-const sides = spec.sides,
-  components = widthStyleColor;
 
 /** @param {{prop: string, value: string}[]} decls @param {boolean} [important] */
 function declSize(decls, important) {
@@ -28,10 +27,7 @@ function declSize(decls, important) {
 /** @param {string} prop @param {string} value */
 const decl = (prop, value) => ({ prop, value });
 /** @param {number} s @param {number} c @param {string} value */
-const leaf = (s, c, value) => ({
-  prop: `border-${sides[s]}-${components[c]}`,
-  value,
-});
+const leaf = (s, c, value) => ({ prop: cellProperties[s * 3 + c], value });
 /** @param {number} s @param {string} value */
 const side = (s, value) => ({ prop: `border-${sides[s]}`, value });
 /** @param {number} c @param {string} value */
@@ -110,39 +106,53 @@ function addResetCandidates(cells, lane, rawCandidates) {
   }
 }
 /**
- * A side cannot be synthesized from partial declarations if any contributing
- * declaration requires conditional syntax support (such as rgba() or calc())
- * or acts as a fallback, because user agents lacking that support would reject
- * the entire synthesized shorthand and drop the surviving components.
+ * A shorthand fills several cells, so a declaration appears once per cell it
+ * set; collecting into a Set makes each one count once.
  *
+ * @param {Set<Declaration>[]} cellHistory
+ * @param {Iterable<number>} cellIndexes
+ * @return {Set<Declaration>}
+ */
+function declarationsOfCells(cellHistory, cellIndexes) {
+  /** @type {Set<Declaration>} */
+  const decls = new Set();
+  for (const index of cellIndexes) {
+    for (const d of cellHistory[index]) decls.add(d);
+  }
+  return decls;
+}
+/**
  * @param {Set<Declaration>[]} cellHistory
  * @param {Set<Declaration>} fallbacks
  * @param {number} s
  * @return {boolean}
  */
 function isSynthesizableSide(cellHistory, fallbacks, s) {
-  const decls = [0, 1, 2].flatMap((c) => [...cellHistory[s * 3 + c]]);
-  if (decls.length === 0) return true;
-  const uniqueDecls = new Set(decls);
-  if (
-    uniqueDecls.size === 1 &&
-    ([...uniqueDecls][0].prop.toLowerCase() === `border-${sides[s]}` ||
-      [...uniqueDecls][0].prop.toLowerCase() === 'border')
-  ) {
-    return true;
+  const decls = declarationsOfCells(cellHistory, sideCells[s]);
+  if (decls.size === 1) {
+    const [only] = decls;
+    const p = only.prop.toLowerCase();
+    if (p === `border-${sides[s]}` || p === 'border') return true;
   }
-  return !decls.some((d) => fallbacks.has(d));
+  for (const d of decls) {
+    if (fallbacks.has(d)) return false;
+  }
+  return true;
 }
 /**
- * @param {Declaration[]} decls
+ * @param {Set<Declaration>} decls
  * @return {boolean}
  */
 function hasConsistentSupport(decls) {
-  if (decls.length === 0) return true;
-  const s0 = mergeBlockingSupport(decls[0]);
-  return decls.every(
-    (d) => s0.symmetricDifference(mergeBlockingSupport(d)).size === 0
-  );
+  let s0;
+  for (const d of decls) {
+    const support = mergeBlockingSupport(d);
+    s0 ??= support;
+    if (support !== s0 && s0.symmetricDifference(support).size !== 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -156,14 +166,11 @@ function getAvailableSides(cellHistory, touched, barrierCells, fallbacks) {
   return [0, 1, 2, 3]
     .filter(
       (s) =>
-        [0, 1, 2].every(
-          (c) => touched.has(s * 3 + c) && !barrierCells.has(s * 3 + c)
-        ) && isSynthesizableSide(cellHistory, fallbacks, s)
+        sideCells[s].every((i) => touched.has(i) && !barrierCells.has(i)) &&
+        isSynthesizableSide(cellHistory, fallbacks, s)
     )
     .filter((s) =>
-      hasConsistentSupport(
-        [0, 1, 2].flatMap((c) => [...cellHistory[s * 3 + c]])
-      )
+      hasConsistentSupport(declarationsOfCells(cellHistory, sideCells[s]))
     );
 }
 /**
@@ -175,15 +182,33 @@ function getAvailableSides(cellHistory, touched, barrierCells, fallbacks) {
 function getAvailableComponents(cellHistory, touched, barrierCells) {
   return [2, 1, 0]
     .filter((c) =>
-      [0, 1, 2, 3].every(
-        (s) => touched.has(s * 3 + c) && !barrierCells.has(s * 3 + c)
-      )
+      componentCells[c].every((i) => touched.has(i) && !barrierCells.has(i))
     )
     .filter((c) =>
-      hasConsistentSupport(
-        [0, 1, 2, 3].flatMap((s) => [...cellHistory[s * 3 + c]])
-      )
+      hasConsistentSupport(declarationsOfCells(cellHistory, componentCells[c]))
     );
+}
+
+/**
+ * Gives every touched cell that is neither blocked nor covered its own leaf,
+ * and marks it covered.
+ *
+ * @param {string[]} cells
+ * @param {Set<number>} touched
+ * @param {Set<number>} blockedCells
+ * @param {Set<number>} coveredCells
+ * @return {{ prop: string, value: string }[]}
+ */
+function leavesOfFreeCells(cells, touched, blockedCells, coveredCells) {
+  /** @type {{ prop: string, value: string }[]} */
+  const leafDecls = [];
+  for (let i = 0; i < 12; i++) {
+    if (touched.has(i) && !blockedCells.has(i) && !coveredCells.has(i)) {
+      coveredCells.add(i);
+      leafDecls.push(leaf(Math.floor(i / 3), i % 3, cells[i]));
+    }
+  }
+  return leafDecls;
 }
 
 /**
@@ -222,13 +247,12 @@ function createGroupCandidate(
     );
   });
   /** @type {{ prop: string, value: string }[]} */
-  const leafDecls = [];
-  for (let i = 0; i < 12; i++) {
-    if (touched.has(i) && !blockedCells.has(i) && !coveredCells.has(i)) {
-      coveredCells.add(i);
-      leafDecls.push(leaf(Math.floor(i / 3), i % 3, cells[i]));
-    }
-  }
+  const leafDecls = leavesOfFreeCells(
+    cells,
+    touched,
+    blockedCells,
+    coveredCells
+  );
   const mask = sortedGroups.reduce(
     (acc, group) =>
       acc +
@@ -254,17 +278,10 @@ function createGroupCandidate(
  * @return {{ decls: { prop: string, value: string }[], rank: number, mask: number, coveredCells: Set<number> }}
  */
 function createLeafCandidate(cells, touched, blockedCells) {
-  /** @type {{ prop: string, value: string }[]} */
-  const leafDecls = [];
+  /** @type {Set<number>} */
   const coveredCells = new Set();
-  for (let i = 0; i < 12; i++) {
-    if (touched.has(i) && !blockedCells.has(i)) {
-      coveredCells.add(i);
-      leafDecls.push(leaf(Math.floor(i / 3), i % 3, cells[i]));
-    }
-  }
   return {
-    decls: leafDecls,
+    decls: leavesOfFreeCells(cells, touched, blockedCells, coveredCells),
     rank: LEAF_CANDIDATE,
     mask: 0,
     coveredCells,
@@ -290,24 +307,20 @@ function createResetCandidates(
   fallbacks
 ) {
   if (!hasReset || touched.size !== 12 || barrierCells.size !== 0) return [];
-  const allDecls = Array.from(touched).flatMap((idx) => [...cellHistory[idx]]);
-  const hasPartialSupportOrFallback =
-    allDecls.some(
-      (d) =>
-        !physicalBorderShorthands.includes(d.prop.toLowerCase()) &&
-        d.prop.toLowerCase() !== 'border' &&
-        !allSidesBorderShorthands.includes(d.prop.toLowerCase()) &&
-        requiredSupport(d).size > 0
-    ) || [...fallbacks].some((d) => d.prop.toLowerCase() !== 'border');
-  if (hasPartialSupportOrFallback) return [];
+  const allDecls = declarationsOfCells(cellHistory, touched);
+  for (const d of allDecls) {
+    if (
+      !allBorderShorthands.has(d.prop.toLowerCase()) &&
+      needsUnmetSupport(d)
+    ) {
+      return [];
+    }
+  }
+  for (const d of fallbacks) {
+    if (d.prop.toLowerCase() !== 'border') return [];
+  }
 
-  const s0 = allDecls.length ? mergeBlockingSupport(allDecls[0]) : null;
-  const uniformSupport =
-    !s0 ||
-    allDecls.every(
-      (d) => s0.symmetricDifference(mergeBlockingSupport(d)).size === 0
-    );
-  if (!uniformSupport) return [];
+  if (!hasConsistentSupport(allDecls)) return [];
   /** @type {{decls: {prop: string, value: string}[], rank: number}[]} */
   const rawReset = [];
   addResetCandidates(cells, lane, rawReset);
@@ -330,6 +343,7 @@ export {
   createLeafCandidate,
   createResetCandidates,
   declSize,
+  declarationsOfCells,
   getAvailableComponents,
   getAvailableSides,
 };

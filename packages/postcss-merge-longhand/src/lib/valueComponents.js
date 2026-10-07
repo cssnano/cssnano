@@ -20,10 +20,11 @@ export const closingTokens = new Set([
  * brackets and source ranges have been preserved.
  *
  * @param {string} value
- * @param {boolean} allowCommas
+ * @param {',' | '/'} [separator] - the top-level token that divides the value
+ * into parts; a comma is otherwise a failure, and a slash an ordinary token
  * @return {{components: Component[], raw: string}[] | null}
  */
-export function splitValue(value, allowCommas) {
+export function splitValue(value, separator) {
   /** @type {{components: Component[], start: number, end: number}[]} */
   const parts = [{ components: [], start: 0, end: value.length }];
   /** @type {import('@csstools/css-tokenizer').CSSToken[]} */
@@ -52,8 +53,14 @@ export function splitValue(value, allowCommas) {
       push();
       continue;
     }
-    if (!stack.length && type === TokenType.Comma) {
-      if (!allowCommas) return null;
+    if (!stack.length && type === TokenType.Comma && separator !== ',') {
+      return null;
+    }
+    if (
+      !stack.length &&
+      (type === TokenType.Comma ||
+        (separator === '/' && type === TokenType.Delim && token[1] === '/'))
+    ) {
       push();
       const part = parts.at(-1);
       if (!part) return null;

@@ -1,51 +1,4 @@
-import { test } from 'node:test';
-import { processCSSFactory } from '../../../util/testHelpers.js';
-import plugin from '../src/index.js';
-
-const { processCSS } = processCSSFactory(plugin);
-
-function addTests(...tests) {
-  for (const { message, fixture, expected } of tests) {
-    const isExpectedFunc = typeof expected === 'function';
-
-    test(
-      message.replaceAll(/box/giv, 'margin'),
-      processCSS(
-        fixture.replaceAll(/box/giv, 'margin'),
-        isExpectedFunc
-          ? expected('margin')
-          : expected.replaceAll(/box/giv, 'margin')
-      )
-    );
-    test(
-      message.replaceAll(/box/giv, 'MARGIN'),
-      processCSS(
-        fixture.replaceAll(/box/giv, 'MARGIN'),
-        isExpectedFunc
-          ? expected('MARGIN')
-          : expected.replaceAll(/box/giv, 'margin')
-      )
-    );
-    test(
-      message.replaceAll(/box/giv, 'padding'),
-      processCSS(
-        fixture.replaceAll(/box/giv, 'padding'),
-        isExpectedFunc
-          ? expected('padding')
-          : expected.replaceAll(/box/giv, 'padding')
-      )
-    );
-    test(
-      message.replaceAll(/box/giv, 'PADDING'),
-      processCSS(
-        fixture.replaceAll(/box/giv, 'PADDING'),
-        isExpectedFunc
-          ? expected('PADDING')
-          : expected.replaceAll(/box/giv, 'padding')
-      )
-    );
-  }
-}
+import { addTests } from './helpers/boxTests.js';
 
 addTests(
   {
@@ -229,10 +182,10 @@ addTests(
   },
   {
     message:
-      'should merge box longhands with an earlier fallback and anchor shorthand to latest candidate',
+      'should keep box longhands with a calc() fallback unmerged, as IE 11 parses calc() only partially and would drop the shorthand',
     fixture:
       'h1{box-left:10px;box-left:calc(10px + 1em);box-bottom:20px;color:red;box-right:30px;box-top:40px}',
     expected: (prop) =>
-      `h1{${prop}-left:10px;color:red;${prop.toLowerCase()}:40px 30px 20px calc(10px + 1em)}`,
+      `h1{${prop}-left:10px;${prop}-left:calc(10px + 1em);${prop}-bottom:20px;color:red;${prop}-right:30px;${prop}-top:40px}`,
   }
 );

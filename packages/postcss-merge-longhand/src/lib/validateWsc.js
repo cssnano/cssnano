@@ -1,21 +1,18 @@
 import cssnanoUtils from 'cssnano-utils';
 import { list } from 'postcss';
-import colors from './colornames.js';
+import { isLengthValue, parseDimension } from './lengthGrammar.js';
+import { isHexColorDigits } from './asciiCharacters.js';
 import { systemColors } from './systemColors.js';
 
 import {
   lineStyles,
   lineWidthKeywords,
   colorFunctions,
-  borderComponents,
+  namedColors,
 } from './spec.js';
 import { isSubstitution, isUnresolved } from './unresolved.js';
 
-const { TokenType, asciiLowerCase, decoded, lengthUnits, tokens } =
-  cssnanoUtils;
-const lengthValueRegex =
-  /^([+\-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+\-]?\d+)?)([a-z]+)?$/v;
-const hexColorRegex = /^#([\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/v;
+const { TokenType, asciiLowerCase, decoded, tokens } = cssnanoUtils;
 
 /**
  * @param {string | undefined} value
@@ -57,23 +54,12 @@ function isBorderWidth(value) {
     return true;
   }
 
-  const match = lengthValueRegex.exec(lowered);
+  const dimension = parseDimension(lowered);
 
-  if (!match) {
-    return false;
-  }
-
-  const [, number, unit] = match;
-
-  if (number.startsWith('-')) {
-    return false;
-  }
-
-  if (unit === undefined) {
-    return Number(number) === 0;
-  }
-
-  return lengthUnits.has(unit);
+  return (
+    dimension !== undefined &&
+    isLengthValue(dimension.number, dimension.unit, false, true)
+  );
 }
 
 /**
@@ -108,7 +94,7 @@ function isColor(value) {
 
   const lowered = asciiLowerCase(value);
 
-  if (hexColorRegex.test(lowered)) {
+  if (lowered.startsWith('#') && isHexColorDigits(lowered.slice(1))) {
     return true;
   }
 
@@ -117,7 +103,7 @@ function isColor(value) {
     return true;
   }
 
-  if (colors.has(lowered)) {
+  if (namedColors.has(lowered)) {
     return true;
   }
 
@@ -188,46 +174,10 @@ function specifiesComponent(value, component) {
   return componentOf(token) === component || isSubstitution(token);
 }
 
-/**
- * The grammar `<line-width> || <line-style> || <color>` requires each
- * component to appear at most once, and every token to specify one. This is
- * the same judgment `parseWsc` makes while parsing; keep the two in step.
- *
- * @param {string} value
- * @return {boolean} whether every token specifies a distinct component
- */
-function specifiesDistinctComponents(value) {
-  /** @type {Set<string>} */
-  const specified = new Set();
-  let unresolved = 0;
-
-  for (const token of list.space(value)) {
-    const component = componentOf(token);
-
-    if (component === undefined) {
-      if (!isSubstitution(token)) {
-        return false;
-      }
-
-      unresolved++;
-      continue;
-    }
-
-    if (specified.has(component)) {
-      return false;
-    }
-
-    specified.add(component);
-  }
-
-  return specified.size + unresolved <= borderComponents.length;
-}
-
 export {
   isBorderStyle,
   isBorderWidth,
   isColor,
   isValidWidthStyleColor,
   specifiesComponent,
-  specifiesDistinctComponents,
 };

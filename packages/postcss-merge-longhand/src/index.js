@@ -1,13 +1,11 @@
+import { withoutVendorPrefix } from './lib/vendorPrefix.js';
 import {
   allColumnProps,
   reduceColumns,
   setsOtherColumnProperty,
 } from './lib/decl/columns.js';
-import {
-  physicalMarginProperties,
-  physicalPaddingProperties,
-  reduceBox,
-} from './lib/decl/boxReducer.js';
+import { addBoxDeclaration, reduceBox } from './lib/decl/boxReducer.js';
+import { aliasedGroup, boxProperties } from './lib/decl/boxGroups.js';
 import { reduceBorder } from './lib/decl/borderReducer.js';
 import { reduceBorderRadius } from './lib/decl/borderRadiusReducer.js';
 import {
@@ -20,8 +18,16 @@ import {
   alignmentProperties,
 } from './lib/decl/alignmentForms.js';
 import { reduceAlignmentFamily } from './lib/decl/alignmentReducer.js';
-import { supportsPlaceShorthands } from './lib/decl/placeSupport.js';
+import { withTargetSupport } from './lib/isFallback.js';
+import { clearSupportCache } from './lib/syntaxFeatures.js';
+import {
+  featuresSupportedByAll,
+  BoxSupport,
+  supportsPlaceShorthands,
+} from './lib/targetSupport.js';
 import { endsDeclarationRun } from './lib/decl/declarationRuns.js';
+import { applyChildEdits } from './lib/deferredChildEdits.js';
+import { discardOverriddenDeclarations } from './lib/decl/overriddenDeclarations.js';
 import { decodedPropertyName, isAll } from './lib/decl/importanceLanes.js';
 import {
   foldableShorthands,
@@ -30,14 +36,14 @@ import {
 
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import browserslist from 'browserslist' */
+/** @import {BoxDeclarations} from './lib/decl/boxReducer.js'; */
+/** @import {BoxGroup} from './lib/decl/boxGroups.js'; */
 
 /**
  * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
  * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
  * @typedef {AutoprefixerOptions & BrowserslistOptions} Options
  */
-
-const vendorPrefix = /^-(?:webkit|moz|ms)-/v;
 
 /**
  * Prefixed aliases such as -webkit-justify-content and escaped spellings
@@ -55,8 +61,18 @@ function alignmentFamilyOf(prop) {
   const name = escaped ? decodedPropertyName(prop) : prop;
   return name === undefined
     ? undefined
-    : alignmentProperties.get(name.replace(vendorPrefix, ''));
+    : alignmentProperties.get(withoutVendorPrefix(name));
 }
+
+/**
+ * @typedef {{
+ *   columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][],
+ *   setsOtherColumn: boolean,
+ *   shorthandMemoTable: Map<string, string | null>,
+ *   placeShorthands: boolean,
+ *   boxSupport: BoxSupport
+ * }} MergeContext
+ */
 
 /** @typedef {{ decls: Declaration[], lanes: [Declaration[], Declaration[]] }} AlignmentDeclarations */
 
@@ -69,10 +85,7 @@ function alignmentFamilyOf(prop) {
 function foldContainerDeclarations(container, shorthandMemoTable) {
   if (!container.nodes) return;
   for (const node of container.nodes) {
-    if (
-      node.type === 'decl' &&
-      foldableShorthands.has(node.prop.toLowerCase())
-    ) {
+    if (node.type === 'decl') {
       foldShorthandDeclaration(node, shorthandMemoTable);
     }
   }
@@ -82,10 +95,7 @@ function foldContainerDeclarations(container, shorthandMemoTable) {
  * Runs property-family reducers on classified declarations for a container.
  * @param {Container} container
  * @param {{
- *   marginDecls: Declaration[],
- *   marginLanes: [Declaration[], Declaration[]],
- *   paddingDecls: Declaration[],
- *   paddingLanes: [Declaration[], Declaration[]],
+ *   boxes: Map<BoxGroup, BoxDeclarations> | null,
  *   borderRadiusDecls: Declaration[],
  *   borderRadiusLanes: [Declaration[], Declaration[]],
  *   columnDecls: Declaration[],
@@ -94,20 +104,14 @@ function foldContainerDeclarations(container, shorthandMemoTable) {
  *   hasForeignBorder: boolean,
  *   alignmentFamilies: Map<string, AlignmentDeclarations> | null,
  * }} state
- * @param {{
- *   columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][],
- *   setsOtherColumn: boolean,
- *   shorthandMemoTable: Map<string, string | null>,
- *   placeShorthands: boolean
- * }} context
+ * @param {MergeContext} context
  * @return {void}
  */
 function reduceClassifiedContainer(container, state, context) {
-  if (state.marginDecls.length) {
-    reduceBox(container, 'margin', state.marginDecls, state.marginLanes);
-  }
-  if (state.paddingDecls.length) {
-    reduceBox(container, 'padding', state.paddingDecls, state.paddingLanes);
+  if (state.boxes) {
+    for (const box of state.boxes.values()) {
+      reduceBox(container, box, context.boxSupport);
+    }
   }
   if (state.borderRadiusDecls.length) {
     reduceBorderRadius(
@@ -141,11 +145,7 @@ function reduceClassifiedContainer(container, state, context) {
  * @param {string} prop
  * @param {number} laneIndex
  * @param {Parameters<typeof reduceClassifiedContainer>[1]} state
- * @param {{
- *   setsOtherColumn: boolean,
- *   shorthandMemoTable: Map<string, string | null>,
- *   placeShorthands: boolean
- * }} context
+ * @param {Omit<MergeContext, 'columnRules'>} context
  * @return {void}
  */
 function classifyDeclaration(child, prop, laneIndex, state, context) {
@@ -156,7 +156,7 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
     } else if (allPhysicalBorderProperties.has(prop)) {
       state.borderDeclarations.push(child);
     } else if (foldableShorthands.has(prop)) {
-      foldShorthandDeclaration(child, context.shorthandMemoTable);
+      foldShorthandDeclaration(child, context.shorthandMemoTable, prop);
     } else {
       state.hasForeignBorder = true;
     }
@@ -170,27 +170,18 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
     }
     return;
   }
-  if (prop.startsWith('margin')) {
-    if (physicalMarginProperties.has(prop)) {
-      state.marginDecls.push(child);
-    }
-    state.marginLanes[laneIndex].push(child);
-    return;
-  }
-  if (prop.startsWith('padding')) {
-    if (physicalPaddingProperties.has(prop)) {
-      state.paddingDecls.push(child);
-    }
-    state.paddingLanes[laneIndex].push(child);
+  const boxProperty = boxProperties.get(prop);
+  const boxGroup = boxProperty?.family.group ?? aliasedGroup(prop);
+  if (boxGroup) {
+    addBoxDeclaration(state, child, boxProperty, boxGroup, laneIndex);
+    foldShorthandDeclaration(child, context.shorthandMemoTable, prop);
     return;
   }
   // Only when every target supports place-* may one be synthesized.
   const alignmentFamily = context.placeShorthands
     ? alignmentFamilyOf(prop)
     : undefined;
-  if (foldableShorthands.has(prop)) {
-    foldShorthandDeclaration(child, context.shorthandMemoTable);
-  }
+  foldShorthandDeclaration(child, context.shorthandMemoTable, prop);
   if (alignmentFamily) {
     state.alignmentFamilies ??= new Map();
     let family = state.alignmentFamilies.get(alignmentFamily.shorthand);
@@ -208,10 +199,7 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
  */
 function createContainerState() {
   return {
-    marginDecls: [],
-    marginLanes: [[], []],
-    paddingDecls: [],
-    paddingLanes: [[], []],
+    boxes: null,
     borderRadiusDecls: [],
     borderRadiusLanes: [[], []],
     columnDecls: [],
@@ -225,16 +213,17 @@ function createContainerState() {
 /**
  * Classifies declarations within a container, runs reducers, and tracks column candidates.
  * @param {Container} container
- * @param {{
- *   columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][],
- *   setsOtherColumn: boolean,
- *   shorthandMemoTable: Map<string, string | null>,
- *   placeShorthands: boolean
- * }} context
+ * @param {MergeContext} context
  * @return {void}
  */
 function processContainer(container, context) {
   if (!container.nodes) return;
+  // Before classification, so the family reducers never see detached nodes.
+  // Style rules only: at-rule descriptors follow their own validity rules.
+  if (container.type === 'rule') {
+    discardOverriddenDeclarations(container);
+    applyChildEdits(container);
+  }
 
   // Reducers remove nodes, so reduce only after the loop has read them all.
   const runs = [];
@@ -251,8 +240,10 @@ function processContainer(container, context) {
     const laneIndex = child.important ? 1 : 0;
     if (isAll(child)) {
       state.hasForeignBorder = true;
-      state.marginLanes[laneIndex].push(child);
-      state.paddingLanes[laneIndex].push(child);
+      if (state.boxes) {
+        for (const box of state.boxes.values())
+          box.lanes[laneIndex].push(child);
+      }
       state.borderRadiusLanes[laneIndex].push(child);
       state.columnLanes[laneIndex].push(child);
       for (const family of state.alignmentFamilies?.values() ?? []) {
@@ -272,14 +263,16 @@ function processContainer(container, context) {
 
   runs.push(state);
   for (const run of runs) reduceClassifiedContainer(container, run, context);
+  applyChildEdits(container);
 }
 
 /**
  * @param {import('postcss').Root} css
  * @param {boolean} placeShorthands
+ * @param {BoxSupport} boxSupport
  * @return {void}
  */
-function mergeLonghands(css, placeShorthands) {
+function mergeLonghands(css, placeShorthands, boxSupport) {
   const context = {
     /** @type {[Container, Declaration[], [Declaration[], Declaration[]]][]} */
     columnRules: [],
@@ -287,6 +280,7 @@ function mergeLonghands(css, placeShorthands) {
     /** @type {Map<string, string | null>} */
     shorthandMemoTable: new Map(),
     placeShorthands,
+    boxSupport,
   };
 
   foldContainerDeclarations(css, context.shorthandMemoTable);
@@ -302,6 +296,8 @@ function mergeLonghands(css, placeShorthands) {
     for (const [rule, decls, lanes] of context.columnRules) {
       reduceColumns(rule, decls, lanes);
     }
+    // A rule may hold several runs; rebuild it once, after all of them.
+    for (const [rule] of context.columnRules) applyChildEdits(rule);
   }
 }
 
@@ -318,15 +314,22 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
      */
     prepare(result) {
       const { stats, env, from, file } = result.opts || {};
-      const placeShorthands = supportsPlaceShorthands(
-        getBrowsersList(opts, stats, from, file, env)
-      );
+      const browsers = getBrowsersList(opts, stats, from, file, env);
+      const placeShorthands = supportsPlaceShorthands(browsers);
+      const boxSupport = new BoxSupport(browsers);
+      const supportedFeatures = featuresSupportedByAll(browsers);
       return {
         /**
          * @param {import('postcss').Root} css
          */
         OnceExit(css) {
-          mergeLonghands(css, placeShorthands);
+          try {
+            withTargetSupport(supportedFeatures, () =>
+              mergeLonghands(css, placeShorthands, boxSupport)
+            );
+          } finally {
+            clearSupportCache();
+          }
         },
       };
     },

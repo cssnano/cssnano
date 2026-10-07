@@ -1,4 +1,8 @@
 import type { Container, Declaration } from 'postcss';
+export type SlotVector = ({
+    value: string;
+    decl: Declaration;
+} | null)[];
 /**
  * Byte cost of one emitted declaration: the property and value text, the `:`
  * separator and terminating `;`, and the `!important` annotation.
@@ -9,42 +13,6 @@ import type { Container, Declaration } from 'postcss';
  * @return {number}
  */
 export declare function declCost(prop: string, value: string, important?: boolean): number;
-/**
- * The slot-lane reducers (border-radius, columns, margin/padding) all keep a
- * vector of `{ value, decl }` slots, a set of contributing declarations and a
- * set of declarations preserved as fallbacks. This module carries the parts of
- * that bookkeeping that are identical across the families: slot assignment
- * with fallback registration, the reset predicate, the support-provenance
- * check, and the commit step that rewrites or emits the merged shorthand.
- *
- * Family-specific judgment stays with each reducer: how a value is parsed and
- * minified, which values are CSS-wide keywords, and which properties a
- * shorthand names.
- */
-/**
- * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @return {{ value: string, decl: Declaration }[] | null} the fully-filled
- * vector, or `null` while any slot is empty or holds a custom property
- */
-export declare function slotVectorReady(slots: ({
-    value: string;
-    decl: Declaration;
-} | null)[]): {
-    value: string;
-    decl: Declaration;
-}[] | null;
-/**
- * A merged shorthand must not outlive the support requirements of any
- * declaration it represents: when one slot's support provenance differs from
- * the first, the values are not interchangeable.
- *
- * @param {{ value: string, decl: Declaration }[]} full
- * @return {boolean}
- */
-export declare function supportProvenanceMatches(full: {
-    value: string;
-    decl: Declaration;
-}[]): boolean;
 /**
  * @param {({ value: string, decl: Declaration } | null)[]} slots
  * @return {{ value: string, decl: Declaration }[] | null} the fully-filled
@@ -59,30 +27,45 @@ export declare function flushableSlots(slots: ({
     decl: Declaration;
 }[] | null;
 /**
- * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @param {number} idx
- * @param {string} value
- * @param {Declaration} decl
- * @param {Set<Declaration>} fallbacks
+ * The state of one importance lane of a slot-lane reducer: the slot vector, the
+ * declarations that contribute to it and the ones kept as fallbacks. A reducer
+ * walks its declarations, calls `begin` before writing slots, `assign` for each
+ * slot and `reset` wherever a declaration ends the run.
  */
-export declare function assignSlotValue(slots: ({
-    value: string;
-    decl: Declaration;
-} | null)[], idx: number, value: string, decl: Declaration, fallbacks: Set<Declaration>): void;
-/**
- * A new declaration flushes the vector when it would overwrite a slot whose
- * declaration a later declaration may need as a fallback, or when a CSS-wide
- * keyword resets every slot it touches.
- *
- * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @param {number} idx - the slot the declaration writes, or -1 for a shorthand
- * @param {Declaration} decl
- * @return {boolean}
- */
-export declare function shouldResetSlots(slots: ({
-    value: string;
-    decl: Declaration;
-} | null)[], idx: number, decl: Declaration): boolean;
+export declare class SlotLane {
+    /** @type {SlotVector} */
+    slots: SlotVector;
+    /** @type {Set<Declaration>} */
+    contributing: Set<Declaration>;
+    /** @type {Set<Declaration>} */
+    fallbacks: Set<Declaration>;
+    commit: (slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void;
+    /**
+     * @param {number} size - how many slots the family has
+     * @param {(slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void} commit
+     * called with the state whenever the run ends, before it is cleared
+     */
+    constructor(size: number, commit: (slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void);
+    /** Commits the run, then starts an empty one. */
+    reset(): void;
+    /**
+     * Flushes the run if `decl` would invalidate it, before it writes `count`
+     * slots from `first` on.
+     *
+     * @param {number} first
+     * @param {number} count
+     * @param {Declaration} decl
+     * @return {boolean} whether the vector was full beforehand, to pass to `assign`
+     */
+    begin(first: number, count: number, decl: Declaration): boolean;
+    /**
+     * @param {number} idx
+     * @param {string} value
+     * @param {Declaration} decl
+     * @param {boolean} wasFull - as returned by `begin`
+     */
+    assign(idx: number, value: string, decl: Declaration, wasFull: boolean): void;
+}
 /**
  * Commits a fully-filled slot vector when its shorthand wins the byte-cost
  * comparison: a lone same-property declaration is rewritten in place, and a
@@ -93,7 +76,9 @@ export declare function shouldResetSlots(slots: ({
  * @param {{ value: string, decl: Declaration }[]} full
  * @param {Set<Declaration>} contributing
  * @param {Set<Declaration>} fallbacks
- * @param {{ prop: string, value: string, important: boolean, inserted?: Map<Declaration, Declaration> }} target
+ * @param {{ prop: string, value: string, important: boolean, inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
+ * `mayInsert: false` limits the commit to the in-place rewrite, for a
+ * shorthand that some target does not support.
  */
 export declare function commitShorthand(rule: Container, full: {
     value: string;
@@ -103,5 +88,6 @@ export declare function commitShorthand(rule: Container, full: {
     value: string;
     important: boolean;
     inserted?: Map<Declaration, Declaration>;
+    mayInsert?: boolean;
 }): void;
 //# sourceMappingURL=slotVector.d.ts.map

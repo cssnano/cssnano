@@ -4,8 +4,11 @@ import { isBorderWidth, isBorderStyle, isColor } from './validateWsc.js';
 import { isSubstitution } from './unresolved.js';
 
 const { asciiLowerCase } = cssnanoUtils;
+/* The values that spell only initial components: a style `none` alone, or the
+ * initial width, optionally followed by the initial style and color. A repeated
+ * component such as `none none` is no such value. */
 const none =
-  /^[ \t\n\r\f]*(none|medium)([ \t\n\r\f]+none([ \t\n\r\f]+(none|currentcolor))?)?[ \t\n\r\f]*$/v;
+  /^[ \t\n\r\f]*(none|medium([ \t\n\r\f]+none([ \t\n\r\f]+currentcolor)?)?)[ \t\n\r\f]*$/v;
 
 /* Approximate https://drafts.csswg.org/css-values-4/#typedef-dashed-ident */
 // eslint-disable-next-line no-control-regex

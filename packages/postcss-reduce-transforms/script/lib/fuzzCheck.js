@@ -2,6 +2,14 @@ import postcss from 'postcss';
 import plugin from '../../src/index.js';
 import { differences, evaluate } from './fuzzEvaluate.js';
 import { shrink } from './fuzzGenerate.js';
+import {
+  minimise,
+  report,
+  runPlugin,
+  threwMismatch,
+} from '../../../../util/fuzzCheck.js';
+
+/** @typedef {import('../../../../util/fuzzCheck.js').Mismatch} Mismatch */
 
 /**
  * Runs one `transform` declaration through the plugin and compares the
@@ -14,22 +22,6 @@ const processor = postcss([plugin()]);
 
 /**
  * @param {string} css
- * @return {string} the plugin's output.
- */
-function process(css) {
-  return processor.process(css, { from: undefined }).css;
-}
-
-/**
- * @typedef {object} Mismatch
- * @property {string} input
- * @property {string} output the plugin's output, or the message it threw with.
- * @property {string} reason
- * @property {{slot: string, expected: string, actual: string}[]} slots
- */
-
-/**
- * @param {string} css
  * @return {Mismatch|undefined} undefined when the plugin preserved the meaning.
  */
 function check(css) {
@@ -37,14 +29,9 @@ function check(css) {
   let output;
 
   try {
-    output = process(css);
+    output = runPlugin(processor, css);
   } catch (error) {
-    return {
-      input: css,
-      output: error instanceof Error ? error.message : String(error),
-      reason: 'the plugin threw',
-      slots: [],
-    };
+    return threwMismatch(css, error);
   }
 
   const match = /^a\{(?:-webkit-)?transform:(.*)\}$/v.exec(css);
@@ -81,32 +68,7 @@ function check(css) {
  * still cause it.
  */
 function checkMinimised(css) {
-  const failure = check(css);
-
-  if (failure === undefined) {
-    return undefined;
-  }
-
-  return check(shrink(css, (candidate) => check(candidate) !== undefined));
-}
-
-/**
- * @param {Mismatch} failure
- * @param {number} seed
- * @return {string}
- */
-function report(failure, seed) {
-  const lines = [
-    `seed ${seed}: ${failure.reason}`,
-    `  in:  ${failure.input}`,
-    `  out: ${failure.output}`,
-  ];
-
-  for (const { slot, expected, actual } of failure.slots) {
-    lines.push(`  ${slot}: expected ${expected}, got ${actual}`);
-  }
-
-  return lines.join('\n');
+  return minimise(css, check, shrink);
 }
 
 export { checkMinimised, report };

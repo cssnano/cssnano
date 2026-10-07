@@ -1,11 +1,10 @@
 import spec from '../spec.js';
 
 export const widthStyleColor = spec.borderComponents;
+export const sides = spec.sides;
 /** @param {string[]} parts */
 const borderProperty = (...parts) => `border-${parts.join('-')}`;
-export const physicalBorderShorthands = spec.sides.map((side) =>
-  borderProperty(side)
-);
+const physicalBorderShorthands = spec.sides.map((side) => borderProperty(side));
 export const allSidesBorderShorthands = spec.shorthand('border').longhands;
 
 /** @type {string[]} */
@@ -18,6 +17,29 @@ for (const direction of physicalBorderShorthands) {
 export const borderAndSideShorthands = new Set([
   'border',
   ...physicalBorderShorthands,
+]);
+/* `border`, the side shorthands and the component shorthands. */
+export const allBorderShorthands = new Set([
+  ...borderAndSideShorthands,
+  ...allSidesBorderShorthands,
+]);
+
+/* The twelve longhands in cell order: the cell of side `s` and component `c`
+ * is `s * 3 + c`. */
+export const cellProperties = sides.flatMap((side) =>
+  widthStyleColor.map((component) => `border-${side}-${component}`)
+);
+/** @type {Map<string, number>} */
+export const borderPropertyToCellIndex = new Map(
+  cellProperties.map((prop, index) => [prop, index])
+);
+/* The cells one side shorthand, or one component shorthand, sets. */
+export const sideCells = sides.map((_, s) => [s * 3, s * 3 + 1, s * 3 + 2]);
+export const componentCells = widthStyleColor.map((_, c) => [
+  c,
+  c + 3,
+  c + 6,
+  c + 9,
 ]);
 export const borderImageProperties = new Set(spec.shorthand('border').resets);
 

@@ -3,6 +3,7 @@ import {
   expectAll,
   expectNone,
   grammarsByName,
+  serializeJson,
 } from '../../../../util/webref/webref.js';
 
 export { directReferences };
@@ -162,5 +163,5 @@ export function validate(data) {
  * @return {string}
  */
 export function serialize(data) {
-  return `${JSON.stringify(data, null, 2)}\n`;
+  return serializeJson(data);
 }

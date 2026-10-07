@@ -21,6 +21,22 @@ const withBrowserslist = processCSSWithPresetFactory(
 
 describe('CSS processing', () => {
   test(
+    'should discard a declaration overridden in a later rule with the same selector',
+    withDefaults.processCSS(
+      'body{padding:50px}body{padding:0}',
+      'body{padding:0}'
+    )
+  );
+
+  test(
+    'should keep a declaration overridden in a later rule when mergeLonghand is disabled, because both passes share the option',
+    processCSSWithPresetFactory(preset({ mergeLonghand: false })).processCSS(
+      'body{padding:50px}body{padding:0}',
+      'body{padding:50px;padding:0}'
+    )
+  );
+
+  test(
     'should not merge a selector with a comment-separated compound into a list [type selectors]',
     withDefaults.passthroughCSS('div/**/span{color:red}.x{color:red}')
   );

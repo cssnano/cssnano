@@ -83,8 +83,8 @@ describe('shorthand identity rule integration contracts', () => {
   );
 
   test(
-    'normalizes repeated shorthand declarations within the same rule',
-    processCSS('a{gap:2rem 2rem;gap:1rem 1rem}', 'a{gap:2rem;gap:1rem}')
+    'normalizes the surviving repeated shorthand declaration after discarding the overridden one',
+    processCSS('a{gap:2rem 2rem;gap:1rem 1rem}', 'a{gap:1rem}')
   );
 
   test(

@@ -1,13 +1,13 @@
 import cssnanoUtils from 'cssnano-utils';
 import stylehacks from 'stylehacks';
-import cssGlobalKeywords from '../cssGlobalKeywords.js';
 import { shorthand, initialValues, cssWideKeywords } from '../spec.js';
+import { isLengthValue } from '../lengthGrammar.js';
 import { isUnresolved } from '../unresolved.js';
 import { closingTokens } from '../valueComponents.js';
 
 /** @import {Declaration} from 'postcss'; */
 
-const { TokenType, closeForOpening, lengthUnits, tokens } = cssnanoUtils;
+const { TokenType, closeForOpening, tokens } = cssnanoUtils;
 
 export const columns = 'columns';
 const columnProperties = ['column-width', 'column-count'];
@@ -104,7 +104,7 @@ export function normalize([w, c]) {
   const lc = c.toLowerCase();
   if (lw === auto) return c;
   if (lc === auto) return w;
-  return lw === lc && cssGlobalKeywords.has(lw) ? lw : `${w} ${c}`;
+  return lw === lc && cssWideKeywords.has(lw) ? lw : `${w} ${c}`;
 }
 
 /**
@@ -120,11 +120,8 @@ function isValidLength(term) {
   return (
     term.type === TokenType.Dimension &&
     typeof d?.unit === 'string' &&
-    lengthUnits.has(d.unit.toLowerCase()) &&
-    (d.type === 'integer' || d.type === 'number') &&
     typeof d.value === 'number' &&
-    d.value >= 0 &&
-    d.signCharacter !== '-'
+    isLengthValue(d.value, d.unit, false, true)
   );
 }
 

@@ -1,3 +1,4 @@
+import { withoutVendorPrefix } from './vendorPrefix.js';
 import cssnanoUtils from 'cssnano-utils';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
@@ -41,8 +42,6 @@ const trustedSupportFunctions = trustedFunctions.difference(
   new Set(substitutionFunctions)
 );
 
-const vendorPrefix = /^-[a-z]+-/v;
-
 /**
  * @param {string} token
  * @return {string|undefined} the function name a token opens with, unprefixed
@@ -62,7 +61,7 @@ function leadingFunctionName(token) {
   }
   if (!firstToken || firstToken[0] !== TokenType.Function) return undefined;
 
-  return asciiLowerCase(decoded(firstToken)).replace(vendorPrefix, '');
+  return withoutVendorPrefix(asciiLowerCase(decoded(firstToken)));
 }
 
 /**
@@ -85,6 +84,14 @@ function isUnresolved(token) {
 }
 
 /**
+ * @param {string} name - a function name as written, possibly vendor-prefixed
+ * @return {boolean} whether the function is one this plugin trusts
+ */
+function isTrustedFunction(name) {
+  return trustedFunctions.has(withoutVendorPrefix(asciiLowerCase(name)));
+}
+
+/**
  * Whether a token is a substitution function specifically — the one class of
  * trusted function whose type stays unknowable after substitution, so it can
  * fill any border component rather than only the ones its own type matches.
@@ -100,6 +107,7 @@ function isSubstitution(token) {
 
 export {
   isSubstitution,
+  isTrustedFunction,
   isUnresolved,
   substitutionFunctions,
   trustedSupportFunctions,

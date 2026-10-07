@@ -1,10 +1,10 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import { reduceBorder } from '../src/lib/decl/borderReducer.js';
+import { reduceBorderRuns } from './helpers/reduceRuns.js';
 
 /**
- * Tests `reduceBorder()` merge correctness directly, without `index.js`'s
+ * Tests the border reducer merge correctness directly, without `index.js`'s
  * size guard. Unlike the plugin-level `borders-*.js` tests, these assert the
  * merge result—even if a wrong answer is shorter.
  *
@@ -15,7 +15,7 @@ function mergeBorders(css) {
   const root = postcss.parse(css);
   const rule = /** @type {import('postcss').Rule} */ (root.first);
 
-  reduceBorder(rule);
+  reduceBorderRuns(rule);
 
   return root.toString();
 }
@@ -76,7 +76,7 @@ describe('crossing property merge blocking', () => {
 function processBorderMatrix(css) {
   const root = postcss.parse(css);
 
-  reduceBorder(/** @type {import('postcss').Rule} */ (root.first));
+  reduceBorderRuns(/** @type {import('postcss').Rule} */ (root.first));
 
   return root.toString();
 }

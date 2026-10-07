@@ -1,19 +1,12 @@
-import { reduceEachRun } from './declarationRuns.js';
+import {
+  discardOverriddenInLanes,
+  discardOverriddenInList,
+} from './overriddenDeclarations.js';
 import stylehacks from 'stylehacks';
 import canExplode from '../canExplode.js';
-import cleanupDeclarations from '../cleanupDeclarations.js';
 import { isFallback } from '../isFallback.js';
-import {
-  assignSlotValue,
-  commitShorthand,
-  flushableSlots,
-  shouldResetSlots,
-} from './slotVector.js';
-import {
-  cleanupLaneSegments,
-  importanceLanes,
-  isAll,
-} from './importanceLanes.js';
+import { SlotLane, commitShorthand, flushableSlots } from './slotVector.js';
+import { hasNonAll, isAll } from './importanceLanes.js';
 
 import {
   allColumnProps,
@@ -32,77 +25,54 @@ export { allColumnProps, setsOtherColumnProperty } from './columnsValue.js';
 
 /**
  * @param {Container} rule
- * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @param {Set<Declaration>} contributing
- * @param {Set<Declaration>} fallbacks
- * @param {boolean} lane
- * @param {Map<Declaration, Declaration>} [inserted]
- */
-function flush(rule, slots, contributing, fallbacks, lane, inserted) {
-  const full = flushableSlots(slots);
-  if (!full) return;
-
-  commitShorthand(rule, full, contributing, fallbacks, {
-    prop: columns,
-    value: normalize([full[0].value, full[1].value]),
-    important: lane,
-    inserted,
-  });
-}
-
-/**
- * @param {Container} rule
  * @param {Declaration[]} laneDecls
- * @param {boolean} lane
+ * @param {boolean} important
  */
-function processLane(rule, laneDecls, lane) {
-  /** @type {({ value: string, decl: Declaration } | null)[]} */
-  let slots = [null, null];
-  /** @type {Set<Declaration>} */
-  const contributing = new Set();
-  /** @type {Set<Declaration>} */
-  const fallbacks = new Set();
+function processLane(rule, laneDecls, important) {
   /** @type {Map<Declaration, Declaration>} */
   const inserted = new Map();
+  const lane = new SlotLane(2, (slots, contributing, fallbacks) => {
+    const full = flushableSlots(slots);
+    if (!full) return;
 
-  const reset = () => {
-    flush(rule, slots, contributing, fallbacks, lane, inserted);
-    slots = [null, null];
-    contributing.clear();
-    fallbacks.clear();
-  };
+    commitShorthand(rule, full, contributing, fallbacks, {
+      prop: columns,
+      value: normalize([full[0].value, full[1].value]),
+      important,
+      inserted,
+    });
+  });
 
   for (const decl of laneDecls) {
     const p = decl.prop.toLowerCase();
-    if (isAll(decl)) {
-      reset();
-      continue;
-    }
     const isShort = p === columns;
 
-    if (stylehacks.detect(decl) || (isShort && !canExplode(decl))) {
-      reset();
+    if (
+      isAll(decl) ||
+      stylehacks.detect(decl) ||
+      (isShort && !canExplode(decl))
+    ) {
+      lane.reset();
       continue;
     }
 
     const idx = isShort ? -1 : (columnSlots.get(p) ?? -1);
-    if (shouldResetSlots(slots, idx, decl)) reset();
+    const wasFull = lane.begin(Math.max(idx, 0), idx === -1 ? 2 : 1, decl);
 
     if (isShort) {
       const parsed = parseColumns(parsedValue(decl));
       if (!parsed) {
-        reset();
+        lane.reset();
         continue;
       }
-      assignSlotValue(slots, 0, parsed[0], decl, fallbacks);
-      assignSlotValue(slots, 1, parsed[1], decl, fallbacks);
+      lane.assign(0, parsed[0], decl, wasFull);
+      lane.assign(1, parsed[1], decl, wasFull);
     } else {
-      assignSlotValue(slots, idx, decl.value, decl, fallbacks);
+      lane.assign(idx, decl.value, decl, wasFull);
     }
-    contributing.add(decl);
   }
 
-  flush(rule, slots, contributing, fallbacks, lane, inserted);
+  lane.reset();
 
   /** @type {Declaration[]} */
   const remaining = [];
@@ -116,18 +86,22 @@ function processLane(rule, laneDecls, lane) {
   }
 
   if (remaining.length > 1) {
-    cleanupLaneSegments([remaining], (segment) =>
-      cleanupDeclarations(
-        segment,
-        (node, lastNode) =>
-          lastNode.prop.toLowerCase() === columns &&
-          node.prop.toLowerCase() !== columns &&
-          !isFallback(node, lastNode) &&
-          isValidColumns(lastNode)
-      )
-    );
+    discardOverriddenInList(remaining, allColumnProps, columnsPrecedence);
   }
 }
+
+/**
+ * A later valid `columns` shorthand resets both longhands.
+ *
+ * @type {import('./overriddenDeclarations.js').CrossPropertyRule}
+ */
+const columnsPrecedence = {
+  overrides: (node, lastNode) =>
+    lastNode.prop.toLowerCase() === columns &&
+    node.prop.toLowerCase() !== columns &&
+    isValidColumns(lastNode) &&
+    !isFallback(node, lastNode),
+};
 
 /** @param {Declaration | undefined} s */
 function normalizeSingleton(s) {
@@ -151,29 +125,14 @@ function normalizeSingleton(s) {
 
 /**
  * @param {Container} rule
- * @param {Declaration[]} [declarations]
- * @param {[Declaration[], Declaration[]]} [lanes]
+ * @param {Declaration[]} decls
+ * @param {[Declaration[], Declaration[]]} familyLanes
  */
-export function reduceColumns(rule, declarations, lanes) {
+export function reduceColumns(rule, decls, familyLanes) {
   if (!rule.nodes) return;
-  if (
-    !declarations?.every(
-      (d) => d.parent === rule && allColumnProps.has(d.prop.toLowerCase())
-    )
-  ) {
-    reduceEachRun(
-      rule,
-      (d) => allColumnProps.has(d.prop.toLowerCase()),
-      (runDecls) => reduceColumns(rule, runDecls)
-    );
-    return;
-  }
-  const decls = declarations;
-
   if (decls.length === 0 || decls.some(isInvalid)) return;
 
-  const familyLanes = lanes ?? importanceLanes(rule, decls);
-  cleanupLaneSegments(familyLanes, (segment) => cleanupDeclarations(segment));
+  discardOverriddenInLanes(familyLanes, allColumnProps);
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
@@ -185,7 +144,7 @@ export function reduceColumns(rule, declarations, lanes) {
     const laneDecls = familyLanes[lane ? 1 : 0].filter(
       (d) => d.parent === rule
     );
-    if (laneDecls.some((d) => !isAll(d))) {
+    if (hasNonAll(laneDecls)) {
       processLane(rule, laneDecls, lane);
     }
   }

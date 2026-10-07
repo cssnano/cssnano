@@ -1,8 +1,9 @@
 import {
+  cssWideKeywords,
   directReferences,
   functionArguments,
   grammarsByName,
-  cssWideKeywords,
+  serializeJson,
 } from '../../../../util/webref/webref.js';
 import {
   counterFunctionSlots,
@@ -105,16 +106,12 @@ export function buildMergeIdents({ properties, atrules, types, functions }) {
  * @return {string}
  */
 export function serialize(data) {
-  return `${JSON.stringify(
-    {
-      cssWideKeywords: data.cssWideKeywords,
-      keyframes: data.keyframes,
-      counterStyle: {
-        ...data.counterStyle,
-        functions: Object.fromEntries(data.counterStyle.functions),
-      },
+  return serializeJson({
+    cssWideKeywords: data.cssWideKeywords,
+    keyframes: data.keyframes,
+    counterStyle: {
+      ...data.counterStyle,
+      functions: Object.fromEntries(data.counterStyle.functions),
     },
-    null,
-    2
-  )}\n`;
+  });
 }

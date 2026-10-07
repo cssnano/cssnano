@@ -7,6 +7,7 @@ import {
   grammarsByName,
   isFlowRelative,
   keywordsOf,
+  serializeJson,
   sortedByName,
 } from './webref.js';
 
@@ -164,5 +165,16 @@ describe('expectAll and expectNone', () => {
       () => expectNone(['a'], ['a'], 'the set'),
       /the set not to include a/v
     );
+  });
+});
+
+describe('serializeJson', () => {
+  test('indents with two spaces and ends with a newline', () => {
+    assert.equal(serializeJson({ a: [1] }), '{\n  "a": [\n    1\n  ]\n}\n');
+  });
+
+  test('round-trips the data', () => {
+    const data = { a: ['x', 'y'], b: { c: 1 } };
+    assert.deepEqual(JSON.parse(serializeJson(data)), data);
   });
 });

@@ -1,6 +1,11 @@
 import postcss from 'postcss';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import plugin from '../../src/index.js';
+import {
+  report,
+  runPlugin,
+  threwMismatch,
+} from '../../../../util/fuzzCheck.js';
 
 /**
  * Runs one generated declaration through the plugin and checks that the
@@ -10,14 +15,6 @@ import plugin from '../../src/index.js';
  */
 
 const processor = postcss([plugin()]);
-
-/**
- * @param {string} css
- * @return {string}
- */
-function process(css) {
-  return processor.process(css, { from: undefined }).css;
-}
 
 /** @param {string} value */
 function getURLValue(value) {
@@ -49,12 +46,7 @@ function checkURLValue(css, outputDeclaration) {
 
 const hexDigitRegex = /[0-9a-fA-F]/v;
 
-/**
- * @typedef {object} Mismatch
- * @property {string} input
- * @property {string} output the plugin's output, or the message it threw with.
- * @property {string} reason
- */
+/** @typedef {import('../../../../util/fuzzCheck.js').Mismatch} Mismatch */
 
 /**
  * @param {import('./fuzzGenerate.js').Case} testCase
@@ -73,13 +65,9 @@ function check({
   let output;
 
   try {
-    output = process(css);
+    output = runPlugin(processor, css);
   } catch (error) {
-    return {
-      input: css,
-      output: error instanceof Error ? error.message : String(error),
-      reason: 'the plugin threw',
-    };
+    return threwMismatch(css, error);
   }
 
   /** @type {import('postcss').Root} */
@@ -170,17 +158,4 @@ function check({
   return undefined;
 }
 
-/**
- * @param {Mismatch} failure
- * @param {number} seed
- * @return {string}
- */
-function report(failure, seed) {
-  return [
-    `seed ${seed}: ${failure.reason}`,
-    `  in:  ${failure.input}`,
-    `  out: ${failure.output}`,
-  ].join('\n');
-}
-export { check };
-export { report };
+export { check, report };

@@ -1,0 +1,104 @@
+{
+  "modes": [
+    {
+      "writingMode": "horizontal-tb",
+      "direction": "ltr",
+      "sides": {
+        "block-start": "top",
+        "block-end": "bottom",
+        "inline-start": "left",
+        "inline-end": "right"
+      }
+    },
+    {
+      "writingMode": "horizontal-tb",
+      "direction": "rtl",
+      "sides": {
+        "block-start": "top",
+        "block-end": "bottom",
+        "inline-start": "right",
+        "inline-end": "left"
+      }
+    },
+    {
+      "writingMode": "vertical-rl",
+      "direction": "ltr",
+      "sides": {
+        "block-start": "right",
+        "block-end": "left",
+        "inline-start": "top",
+        "inline-end": "bottom"
+      }
+    },
+    {
+      "writingMode": "vertical-rl",
+      "direction": "rtl",
+      "sides": {
+        "block-start": "right",
+        "block-end": "left",
+        "inline-start": "bottom",
+        "inline-end": "top"
+      }
+    },
+    {
+      "writingMode": "vertical-lr",
+      "direction": "ltr",
+      "sides": {
+        "block-start": "left",
+        "block-end": "right",
+        "inline-start": "top",
+        "inline-end": "bottom"
+      }
+    },
+    {
+      "writingMode": "vertical-lr",
+      "direction": "rtl",
+      "sides": {
+        "block-start": "left",
+        "block-end": "right",
+        "inline-start": "bottom",
+        "inline-end": "top"
+      }
+    },
+    {
+      "writingMode": "sideways-rl",
+      "direction": "ltr",
+      "sides": {
+        "block-start": "right",
+        "block-end": "left",
+        "inline-start": "top",
+        "inline-end": "bottom"
+      }
+    },
+    {
+      "writingMode": "sideways-rl",
+      "direction": "rtl",
+      "sides": {
+        "block-start": "right",
+        "block-end": "left",
+        "inline-start": "bottom",
+        "inline-end": "top"
+      }
+    },
+    {
+      "writingMode": "sideways-lr",
+      "direction": "ltr",
+      "sides": {
+        "block-start": "left",
+        "block-end": "right",
+        "inline-start": "bottom",
+        "inline-end": "top"
+      }
+    },
+    {
+      "writingMode": "sideways-lr",
+      "direction": "rtl",
+      "sides": {
+        "block-start": "left",
+        "block-end": "right",
+        "inline-start": "top",
+        "inline-end": "bottom"
+      }
+    }
+  ]
+}

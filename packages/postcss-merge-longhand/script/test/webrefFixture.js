@@ -59,17 +59,53 @@ export function webref(overrides = {}) {
     });
   }
 
-  for (const name of ['margin', 'padding']) {
+  /* The five groups of box properties, with the value grammar webref gives
+   * their physical longhands. */
+  const boxGroups = [
+    ['margin', '0', '<length-percentage> | auto | <anchor-size()>'],
+    ['padding', '0', '<length-percentage [0,∞]>'],
+    [
+      'inset',
+      'auto',
+      'auto | <length-percentage> | <anchor()> | <anchor-size()>',
+    ],
+    ['scroll-margin', '0', '<length>'],
+    ['scroll-padding', 'auto', 'auto | <length-percentage [0,∞]>'],
+  ];
+
+  for (const [name, initial, syntax] of boxGroups) {
+    const physical = (side) => (name === 'inset' ? side : `${name}-${side}`);
+
     properties.push({
       name,
-      longhands: ['top', 'right', 'bottom', 'left'].map(
-        (side) => `${name}-${side}`
-      ),
-      initial: '0',
+      longhands: ['top', 'right', 'bottom', 'left'].map(physical),
+      initial,
     });
 
     for (const side of ['top', 'right', 'bottom', 'left']) {
-      properties.push({ name: `${name}-${side}`, initial: '0' });
+      properties.push({
+        name: physical(side),
+        initial,
+        syntax,
+        logicalPropertyGroup: name,
+      });
+    }
+
+    for (const axis of ['block', 'inline']) {
+      properties.push({
+        name: `${name}-${axis}`,
+        longhands: ['start', 'end'].map((edge) => `${name}-${axis}-${edge}`),
+        initial: 'see individual properties',
+      });
+
+      for (const edge of ['start', 'end']) {
+        properties.push({
+          name: `${name}-${axis}-${edge}`,
+          initial,
+          syntax: `<'${physical('top')}'>`,
+          logicalPropertyGroup: name,
+        });
+      }
     }
   }
 

@@ -37,3 +37,30 @@ test('a property the data does not describe as a shorthand sets itself', () => {
   );
   assert.deepEqual(setsLonghands('color'), new Set(['color']));
 });
+
+test('a physical box shorthand sets the four physical longhands and no flow-relative one because flow-relative properties only alias them', () => {
+  assert.deepEqual(
+    setsLonghands('inset'),
+    new Set(['top', 'right', 'bottom', 'left'])
+  );
+  assert.deepEqual(
+    setsLonghands('scroll-padding'),
+    new Set([
+      'scroll-padding-top',
+      'scroll-padding-right',
+      'scroll-padding-bottom',
+      'scroll-padding-left',
+    ])
+  );
+});
+
+test('an axis shorthand sets its start and end longhands', () => {
+  assert.deepEqual(
+    setsLonghands('margin-block'),
+    new Set(['margin-block-start', 'margin-block-end'])
+  );
+  assert.deepEqual(
+    setsLonghands('inset-inline'),
+    new Set(['inset-inline-start', 'inset-inline-end'])
+  );
+});

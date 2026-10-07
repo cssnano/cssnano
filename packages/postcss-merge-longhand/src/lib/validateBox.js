@@ -1,33 +1,73 @@
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from 'cssnano-utils';
 import { list } from 'postcss';
-import { sides } from './spec.js';
-import { isUnresolved } from './unresolved.js';
+import { boxProperties, shorthandSlot } from './decl/boxGroups.js';
+import { isLengthValue, parseDimension } from './lengthGrammar.js';
+import { mathType } from './mathType.js';
+import { isTrustedFunction, substitutionFunctions } from './unresolved.js';
+import { withoutVendorPrefix } from './vendorPrefix.js';
 
-const { asciiLowerCase, lengthUnits } = cssnanoUtils;
+const { asciiLowerCase, decoded } = cssnanoUtils;
 
-/* CSS user agents ignore margin and padding declarations that violate the
- * property's grammar: margin rejects negative values and auto,
- * padding rejects both and bounds values at zero. */
+/* CSS user agents ignore box declarations that violate the property's
+ * grammar. Each group of box properties has one grammar, which the generated
+ * data derives from the specifications: margin and inset take lengths,
+ * percentages and auto; padding takes non-negative lengths and percentages;
+ * scroll-margin takes lengths only; scroll-padding adds auto to padding. */
 
-/* Parse CSS dimension format: a number with optional exponent and unit
- * (percentage or keyword). Only zero can omit a unit. */
-const dimensionRegex =
-  /^([+\-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+\-]?\d+)?)(%|[a-z]+)?$/v;
+/**
+ * A browser drops a math function that does not type as a length, such as
+ * `calc(1px + 2deg)`, that holds a function it may lack, such as `anchor()`,
+ * or whose percentage the property does not take. A substitution function
+ * (`var()`) defers the check to computed-value time, so the declaration still
+ * overrides. Anything the plugin cannot type fails closed.
+ *
+ * @param {string} token
+ * @param {{auto: boolean, percentage: boolean, negative: boolean}} grammar
+ * @return {boolean}
+ */
+function keepsFunction(token, grammar) {
+  let opened = false;
+  let substituted = false;
+  for (const part of tokenize({ css: token })) {
+    switch (part[0]) {
+      case TokenType.Function: {
+        const name = decoded(part);
+        if (!isTrustedFunction(name)) return false;
+        substituted ||= substitutionFunctions.includes(
+          withoutVendorPrefix(asciiLowerCase(name))
+        );
+        opened = true;
+        break;
+      }
+      case TokenType.Percentage:
+        if (!grammar.percentage) return false;
+        break;
+      case TokenType.Whitespace:
+      case TokenType.EOF:
+        break;
+      default:
+        if (!opened) return false;
+    }
+  }
+  if (!opened) return false;
+  if (substituted) return true;
 
-/* Padding forbids auto and negative values; margin allows both. */
-const grammars = new Map([
-  ['margin', { auto: true, negative: true }],
-  ['padding', { auto: false, negative: false }],
-]);
+  const type = mathType(token);
+  return (
+    type === 'length' ||
+    (type !== undefined && type !== 'number' && grammar.percentage)
+  );
+}
 
 /**
  * @param {string} token
- * @param {{auto: boolean, negative: boolean}} grammar
+ * @param {{auto: boolean, percentage: boolean, negative: boolean}} grammar
  * @return {boolean}
  */
 function specifiesSide(token, grammar) {
-  if (isUnresolved(token)) {
-    return true;
+  if (token.includes('(')) {
+    return keepsFunction(token, grammar);
   }
 
   const lowered = asciiLowerCase(token);
@@ -36,49 +76,44 @@ function specifiesSide(token, grammar) {
     return grammar.auto;
   }
 
-  const match = dimensionRegex.exec(lowered);
-
-  if (!match) {
-    return false;
-  }
-
-  const [, number, unit] = match;
+  const dimension = parseDimension(lowered);
 
   /* Only zero may go without a unit; `margin: 5` is no length. */
-  if (unit === undefined && Number(number) !== 0) {
-    return false;
-  }
-
-  if (unit !== undefined && unit !== '%' && !lengthUnits.has(unit)) {
-    return false;
-  }
-
-  return grammar.negative || !number.startsWith('-');
+  return (
+    dimension !== undefined &&
+    isLengthValue(
+      dimension.number,
+      dimension.unit,
+      grammar.percentage,
+      !grammar.negative
+    )
+  );
 }
 
 /**
- * @param {string} prop lower-cased, a property of one of the two families
+ * @param {string} prop lower-cased
  * @param {string} value
- * @return {boolean} whether the browser keeps the declaration
+ * @return {boolean} whether the browser keeps the declaration; a property
+ * outside the box groups is never kept
  */
-function browserKeeps(prop, value) {
-  const [family] = prop.split('-');
-  const grammar = grammars.get(family);
+function boxBrowserKeeps(prop, value) {
+  const property = boxProperties.get(prop);
 
-  if (grammar === undefined) {
+  if (property === undefined) {
     return false;
   }
 
+  const { family, slot } = property;
   const tokens = list.space(value);
 
-  /* The shorthand spreads one to four values across the sides; a property
-   * naming a side takes exactly the one. */
-  const most = prop === family ? sides.length : 1;
+  /* A shorthand spreads one value per slot, or fewer; a longhand names its
+   * slot and takes exactly the one. */
+  const most = slot === shorthandSlot ? family.longhands.length : 1;
 
   if (tokens.length === 0 || tokens.length > most) {
     return false;
   }
 
-  return tokens.every((token) => specifiesSide(token, grammar));
+  return tokens.every((token) => specifiesSide(token, family.group.grammar));
 }
-export { browserKeeps };
+export { boxBrowserKeeps };

@@ -3,6 +3,24 @@
   "tags": ["-lintignore"],
   "ignore": ["**/types/**", "example-cli-usage/**"],
   "workspaces": {
-    ".": {}
+    ".": {},
+    "packages/postcss-merge-idents": {
+      "entry": ["perf/*.js"]
+    },
+    "packages/postcss-merge-longhand": {
+      "entry": ["perf/*.js"]
+    },
+    "packages/postcss-merge-rules": {
+      "entry": ["perf/*.js"]
+    },
+    "packages/postcss-minify-selectors": {
+      "entry": ["perf/*.js"]
+    },
+    "packages/postcss-normalize-string": {
+      "entry": ["perf/*.js"]
+    },
+    "packages/postcss-svgo": {
+      "entry": ["perf/*.js"]
+    }
   }
 }

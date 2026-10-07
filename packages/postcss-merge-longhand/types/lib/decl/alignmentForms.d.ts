@@ -7,6 +7,7 @@ export type AlignmentFamilyConfig = {
     alignForms: Set<string>;
     justifyForms: Set<string>;
 };
+export declare const shorthandForms: Map<string, Set<string>>;
 /** @type {Record<string, AlignmentFamilyConfig>} */
 export declare const alignmentFamilies: Record<string, AlignmentFamilyConfig>;
 /** @type {Map<string, AlignmentFamilyConfig>} */

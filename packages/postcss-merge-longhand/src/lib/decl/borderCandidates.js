@@ -1,10 +1,13 @@
+import { detach } from '../deferredChildEdits.js';
 import insertCloned from '../insertCloned.js';
-import spec, { setsLonghands } from '../spec.js';
+import { setsLonghands } from '../spec.js';
 import {
-  allSidesBorderShorthands,
+  allBorderShorthands,
   borderImageProperties,
-  physicalBorderShorthands,
-  widthStyleColor,
+  borderPropertyToCellIndex,
+  cellProperties,
+  componentCells,
+  sideCells,
 } from './borderData.js';
 import {
   COMPONENT_SHORTHAND_CANDIDATE,
@@ -14,6 +17,7 @@ import {
   createLeafCandidate,
   createResetCandidates,
   declSize,
+  declarationsOfCells,
   getAvailableComponents,
   getAvailableSides,
 } from './borderCandidateBuilders.js';
@@ -23,20 +27,6 @@ import {
  * builders produce and the segment analysis state (final cell values, cell
  * history, barriers, fallbacks), score the non-overlapping covers and rewrite
  * the rule. Candidate construction lives in borderCandidateBuilders.js. */
-
-const sides = spec.sides,
-  components = widthStyleColor;
-
-/** @type {Map<string, number>} */
-const borderPropertyToCellIndex = new Map();
-for (let s = 0; s < sides.length; s++) {
-  for (let c = 0; c < components.length; c++) {
-    borderPropertyToCellIndex.set(
-      `border-${sides[s]}-${components[c]}`,
-      s * 3 + c
-    );
-  }
-}
 
 /** @param {{prop: string, value: string}[]} candDecls @param {Set<number>} touched @param {boolean} hasReset */
 function footprintValid(candDecls, touched, hasReset) {
@@ -124,10 +114,9 @@ export function generateCandidates(
   );
   const existingLeafCells = new Set(
     [...touched].filter((idx) => {
-      const prop = `border-${sides[Math.floor(idx / 3)]}-${components[idx % 3]}`;
       return [...cellHistory[idx]].some(
         (d) =>
-          d.prop.toLowerCase() === prop &&
+          d.prop.toLowerCase() === cellProperties[idx] &&
           d.value.toLowerCase() === cells[idx].toLowerCase()
       );
     })
@@ -151,7 +140,7 @@ export function generateCandidates(
   const compCands = getSubsets(availComps)
     .map((sub) =>
       createGroupCandidate(
-        sub.map((c) => [c, c + 3, c + 6, c + 9]),
+        sub.map((c) => componentCells[c]),
         cells,
         touched,
         blockedCells,
@@ -163,7 +152,7 @@ export function generateCandidates(
   const sideCands = getSubsets(availSides)
     .map((sub) =>
       createGroupCandidate(
-        sub.map((s) => [s * 3, s * 3 + 1, s * 3 + 2]),
+        sub.map((s) => sideCells[s]),
         cells,
         touched,
         blockedCells,
@@ -195,12 +184,7 @@ export function selectBestCandidate(
   lane,
   segment
 ) {
-  const allTouchedDecls = new Set();
-  for (const idx of touched) {
-    for (const d of cellHistory[idx]) {
-      allTouchedDecls.add(d);
-    }
-  }
+  const allTouchedDecls = declarationsOfCells(cellHistory, touched);
   const allRemovable = [...allTouchedDecls].filter((d) => !fallbacks.has(d));
   const originalSize = declSize(allRemovable, lane);
 
@@ -212,12 +196,7 @@ export function selectBestCandidate(
     const candSize = declSize(cand.decls, lane);
     if (candSize > originalSize) continue;
 
-    const rep = new Set();
-    for (const idx of cand.coveredCells) {
-      for (const d of cellHistory[idx]) {
-        rep.add(d);
-      }
-    }
+    const rep = declarationsOfCells(cellHistory, cand.coveredCells);
     if (rep.size === 0) continue;
     const repList = segment.filter((d) => rep.has(d));
     const removable = repList.filter((d) => !fallbacks.has(d));
@@ -293,11 +272,7 @@ export function applyBestCandidate(rule, best, segment, lane) {
   const toInsert = [];
   for (const candDecl of bestCand.decls) {
     const p = candDecl.prop.toLowerCase();
-    const isShorthand =
-      p === 'border' ||
-      physicalBorderShorthands.includes(p) ||
-      allSidesBorderShorthands.includes(p);
-    if (isShorthand) {
+    if (allBorderShorthands.has(p)) {
       toInsert.push(candDecl);
     } else {
       const alreadyPresent = segment.find(
@@ -319,7 +294,7 @@ export function applyBestCandidate(rule, best, segment, lane) {
 
   for (const d of representedDecls) {
     if (!fallbacks.has(d)) {
-      d.remove();
+      detach(d);
     }
   }
 }

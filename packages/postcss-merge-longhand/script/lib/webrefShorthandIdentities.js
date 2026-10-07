@@ -2,6 +2,7 @@ import {
   directReferences,
   grammarsByName,
   keywordTerminals,
+  serializeJson,
 } from '../../../../util/webref/webref.js';
 import {
   easingFunction,
@@ -162,13 +163,9 @@ export function validateShorthandIdentities(data) {
 
 /** @param {ShorthandIdentities} data @return {string} */
 export function serializeShorthandIdentities(data) {
-  return `${JSON.stringify(
-    {
-      alignment: Object.fromEntries(data.alignment),
-      alignmentLonghands: Object.fromEntries(data.alignmentLonghands),
-      easing: data.easing,
-    },
-    null,
-    2
-  )}\n`;
+  return serializeJson({
+    alignment: Object.fromEntries(data.alignment),
+    alignmentLonghands: Object.fromEntries(data.alignmentLonghands),
+    easing: data.easing,
+  });
 }

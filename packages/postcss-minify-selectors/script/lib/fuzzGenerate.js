@@ -1,3 +1,4 @@
+import { shrinkList } from '../../../../util/fuzzCheck.js';
 import { random } from '../../../../util/fuzzRng.js';
 
 const tagNames = [
@@ -340,16 +341,14 @@ function shrink(css, fails) {
   const match = /^([^\{]+)\{/v.exec(css);
   if (!match) return css;
 
-  let selectors = match[1].split(',').map((s) => s.trim());
   const body = css.substring(match[0].length - 1);
-
-  for (let i = selectors.length - 1; i >= 0; i--) {
-    const candidate = selectors.filter((_, idx) => idx !== i).join(',');
-
-    if (candidate && fails(`${candidate}${body}`)) {
-      selectors = candidate.split(',').map((s) => s.trim());
+  const selectors = shrinkList(
+    match[1].split(',').map((s) => s.trim()),
+    (candidate) => {
+      const list = candidate.join(',');
+      return list !== '' && fails(`${list}${body}`);
     }
-  }
+  );
 
   return `${selectors.join(',')}${body}`;
 }

@@ -1,3 +1,4 @@
+import { shrinkList } from '../../../../util/fuzzCheck.js';
 import { random } from '../../../../util/fuzzRng.js';
 
 const lengthUnits = ['px', '%', 'em', 'vw'];
@@ -233,15 +234,9 @@ function shrink(css, fails) {
   }
 
   const [, head, body, tail] = match;
-  let functions = body.split(' ');
-
-  for (let i = functions.length - 1; i >= 0; i--) {
-    const candidate = functions.filter((_, index) => index !== i);
-
-    if (candidate.length > 0 && fails(`${head}${candidate.join(' ')}${tail}`)) {
-      functions = candidate;
-    }
-  }
+  const functions = shrinkList(body.split(' '), (candidate) =>
+    fails(`${head}${candidate.join(' ')}${tail}`)
+  );
 
   return `${head}${functions.join(' ')}${tail}`;
 }
