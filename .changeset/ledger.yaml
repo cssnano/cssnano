@@ -151,6 +151,16 @@ cssnano-preset-advanced@9.2.2:
     - box-shadow-trailing-zeros
     - merge-longhand-zero-column-width
     - merge-rules-share-among-long-selectors
+cssnano-preset-advanced@9.3.0:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - brave-rules-follow
+    - calm-sides-align
+    - lazy-wasps-travel
+    - old-floors-hold
+    - proud-pigs-shop
+    - quiet-tops-yield
+    - wise-pigs-brake
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -326,6 +336,16 @@ cssnano-preset-default@9.3.2:
     - box-shadow-trailing-zeros
     - merge-longhand-zero-column-width
     - merge-rules-share-among-long-selectors
+cssnano-preset-default@9.4.0:
+  dir: packages/cssnano-preset-default
+  intents:
+    - brave-rules-follow
+    - calm-sides-align
+    - lazy-wasps-travel
+    - old-floors-hold
+    - proud-pigs-shop
+    - quiet-tops-yield
+    - wise-pigs-brake
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -394,6 +414,10 @@ cssnano-preset-lite@6.0.8:
   dir: packages/cssnano-preset-lite
   intents:
     - khaki-taxis-flow
+cssnano-preset-lite@6.0.9:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - lazy-wasps-travel
 cssnano-utils@6.0.2:
   dir: packages/cssnano-utils
   intents:
@@ -453,6 +477,10 @@ cssnano-utils@8.2.0:
   dir: packages/cssnano-utils
   intents:
     - khaki-taxis-flow
+cssnano-utils@8.2.1:
+  dir: packages/cssnano-utils
+  intents:
+    - lazy-wasps-travel
 cssnano@8.0.10:
   dir: packages/cssnano
   intents:
@@ -623,6 +651,16 @@ cssnano@9.3.2:
     - box-shadow-trailing-zeros
     - merge-longhand-zero-column-width
     - merge-rules-share-among-long-selectors
+cssnano@9.4.0:
+  dir: packages/cssnano
+  intents:
+    - brave-rules-follow
+    - calm-sides-align
+    - lazy-wasps-travel
+    - old-floors-hold
+    - proud-pigs-shop
+    - quiet-tops-yield
+    - wise-pigs-brake
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -679,6 +717,11 @@ postcss-colormin@9.0.6:
   dir: packages/postcss-colormin
   intents:
     - old-kids-compete
+postcss-colormin@9.0.7:
+  dir: packages/postcss-colormin
+  intents:
+    - lazy-wasps-travel
+    - proud-pigs-shop
 postcss-convert-values@8.0.2:
   dir: packages/postcss-convert-values
   intents:
@@ -735,6 +778,10 @@ postcss-convert-values@9.0.7:
   intents:
     - convert-values-exponent-notation
     - old-kids-compete
+postcss-convert-values@9.0.8:
+  dir: packages/postcss-convert-values
+  intents:
+    - lazy-wasps-travel
 postcss-discard-comments@8.0.2:
   dir: packages/postcss-discard-comments
   intents:
@@ -783,6 +830,10 @@ postcss-discard-comments@9.0.6:
   dir: packages/postcss-discard-comments
   intents:
     - discard-comments-selector-boundaries
+postcss-discard-comments@9.0.7:
+  dir: packages/postcss-discard-comments
+  intents:
+    - lazy-wasps-travel
 postcss-discard-duplicates@8.0.2:
   dir: packages/postcss-discard-duplicates
   intents:
@@ -824,6 +875,10 @@ postcss-discard-duplicates@9.0.5:
   dir: packages/postcss-discard-duplicates
   intents:
     - discard-duplicates-sibling-conditionals
+postcss-discard-duplicates@9.0.6:
+  dir: packages/postcss-discard-duplicates
+  intents:
+    - lazy-wasps-travel
 postcss-discard-empty@8.0.2:
   dir: packages/postcss-discard-empty
   intents:
@@ -874,6 +929,10 @@ postcss-discard-empty@9.0.6:
   dir: packages/postcss-discard-empty
   intents:
     - discard-empty-layer-order
+postcss-discard-empty@9.0.7:
+  dir: packages/postcss-discard-empty
+  intents:
+    - lazy-wasps-travel
 postcss-discard-overridden@8.0.2:
   dir: packages/postcss-discard-overridden
   intents:
@@ -915,6 +974,10 @@ postcss-discard-overridden@9.0.5:
   dir: packages/postcss-discard-overridden
   intents:
     - mighty-squids-cross
+postcss-discard-overridden@9.0.6:
+  dir: packages/postcss-discard-overridden
+  intents:
+    - lazy-wasps-travel
 postcss-discard-unused@8.0.2:
   dir: packages/postcss-discard-unused
   intents:
@@ -959,6 +1022,10 @@ postcss-discard-unused@9.0.5:
   dir: packages/postcss-discard-unused
   intents:
     - mighty-squids-cross
+postcss-discard-unused@9.0.6:
+  dir: packages/postcss-discard-unused
+  intents:
+    - lazy-wasps-travel
 postcss-merge-idents@8.0.2:
   dir: packages/postcss-merge-idents
   intents:
@@ -1006,6 +1073,10 @@ postcss-merge-idents@9.0.6:
   dir: packages/postcss-merge-idents
   intents:
     - merge-idents-interchangeable-names
+postcss-merge-idents@9.0.7:
+  dir: packages/postcss-merge-idents
+  intents:
+    - lazy-wasps-travel
 postcss-merge-longhand@8.0.2:
   dir: packages/postcss-merge-longhand
   intents:
@@ -1073,6 +1144,15 @@ postcss-merge-longhand@9.2.1:
   dir: packages/postcss-merge-longhand
   intents:
     - merge-longhand-zero-column-width
+postcss-merge-longhand@9.3.0:
+  dir: packages/postcss-merge-longhand
+  intents:
+    - calm-sides-align
+    - lazy-wasps-travel
+    - old-floors-hold
+    - quiet-tops-yield
+    - shy-calcs-wait
+    - wise-pigs-brake
 postcss-merge-rules@8.0.2:
   dir: packages/postcss-merge-rules
   intents:
@@ -1161,6 +1241,10 @@ postcss-merge-rules@9.1.2:
   dir: packages/postcss-merge-rules
   intents:
     - merge-rules-share-among-long-selectors
+postcss-merge-rules@9.1.3:
+  dir: packages/postcss-merge-rules
+  intents:
+    - lazy-wasps-travel
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -1215,6 +1299,10 @@ postcss-minify-font-values@9.0.7:
   dir: packages/postcss-minify-font-values
   intents:
     - minify-font-values-revert-rule
+postcss-minify-font-values@9.0.8:
+  dir: packages/postcss-minify-font-values
+  intents:
+    - lazy-wasps-travel
 postcss-minify-gradients@8.0.2:
   dir: packages/postcss-minify-gradients
   intents:
@@ -1274,6 +1362,11 @@ postcss-minify-gradients@9.0.6:
   dir: packages/postcss-minify-gradients
   intents:
     - minify-gradients-dimension-and-prefix
+postcss-minify-gradients@9.0.7:
+  dir: packages/postcss-minify-gradients
+  intents:
+    - lazy-wasps-travel
+    - proud-pigs-shop
 postcss-minify-params@8.0.2:
   dir: packages/postcss-minify-params
   intents:
@@ -1325,6 +1418,10 @@ postcss-minify-params@9.0.6:
   dir: packages/postcss-minify-params
   intents:
     - old-kids-compete
+postcss-minify-params@9.0.7:
+  dir: packages/postcss-minify-params
+  intents:
+    - lazy-wasps-travel
 postcss-minify-selectors@8.0.3:
   dir: packages/postcss-minify-selectors
   intents:
@@ -1380,6 +1477,10 @@ postcss-minify-selectors@9.0.6:
     - minify-selectors-comment-compounds
     - minify-selectors-invalid-selector-status
     - old-kids-compete
+postcss-minify-selectors@9.0.7:
+  dir: packages/postcss-minify-selectors
+  intents:
+    - lazy-wasps-travel
 postcss-normalize-charset@8.0.2:
   dir: packages/postcss-normalize-charset
   intents:
@@ -1425,6 +1526,10 @@ postcss-normalize-charset@9.0.5:
   dir: packages/postcss-normalize-charset
   intents:
     - mighty-squids-cross
+postcss-normalize-charset@9.0.6:
+  dir: packages/postcss-normalize-charset
+  intents:
+    - lazy-wasps-travel
 postcss-normalize-display-values@8.0.2:
   dir: packages/postcss-normalize-display-values
   intents:
@@ -1468,6 +1573,10 @@ postcss-normalize-display-values@9.0.5:
   dir: packages/postcss-normalize-display-values
   intents:
     - mighty-squids-cross
+postcss-normalize-display-values@9.0.6:
+  dir: packages/postcss-normalize-display-values
+  intents:
+    - lazy-wasps-travel
 postcss-normalize-positions@8.0.2:
   dir: packages/postcss-normalize-positions
   intents:
@@ -1514,6 +1623,10 @@ postcss-normalize-positions@9.0.6:
   dir: packages/postcss-normalize-positions
   intents:
     - normalize-positions-vertical-center
+postcss-normalize-positions@9.0.7:
+  dir: packages/postcss-normalize-positions
+  intents:
+    - lazy-wasps-travel
 postcss-normalize-repeat-style@8.0.2:
   dir: packages/postcss-normalize-repeat-style
   intents:
@@ -1556,6 +1669,10 @@ postcss-normalize-repeat-style@9.0.5:
   dir: packages/postcss-normalize-repeat-style
   intents:
     - mighty-squids-cross
+postcss-normalize-repeat-style@9.0.6:
+  dir: packages/postcss-normalize-repeat-style
+  intents:
+    - lazy-wasps-travel
 postcss-normalize-string@8.0.2:
   dir: packages/postcss-normalize-string
   intents:
@@ -1598,6 +1715,10 @@ postcss-normalize-string@9.0.5:
   dir: packages/postcss-normalize-string
   intents:
     - normalize-string-hex-escape-continuations
+postcss-normalize-string@9.0.6:
+  dir: packages/postcss-normalize-string
+  intents:
+    - lazy-wasps-travel
 postcss-normalize-timing-functions@8.0.2:
   dir: packages/postcss-normalize-timing-functions
   intents:
@@ -1640,6 +1761,10 @@ postcss-normalize-timing-functions@9.0.5:
   dir: packages/postcss-normalize-timing-functions
   intents:
     - mighty-squids-cross
+postcss-normalize-timing-functions@9.0.6:
+  dir: packages/postcss-normalize-timing-functions
+  intents:
+    - lazy-wasps-travel
 postcss-normalize-unicode@8.0.2:
   dir: packages/postcss-normalize-unicode
   intents:
@@ -1684,6 +1809,10 @@ postcss-normalize-unicode@9.0.5:
   dir: packages/postcss-normalize-unicode
   intents:
     - old-kids-compete
+postcss-normalize-unicode@9.0.6:
+  dir: packages/postcss-normalize-unicode
+  intents:
+    - lazy-wasps-travel
 postcss-normalize-url@8.0.2:
   dir: packages/postcss-normalize-url
   intents:
@@ -1733,6 +1862,10 @@ postcss-normalize-url@9.0.5:
   dir: packages/postcss-normalize-url
   intents:
     - mighty-squids-cross
+postcss-normalize-url@9.0.6:
+  dir: packages/postcss-normalize-url
+  intents:
+    - lazy-wasps-travel
 postcss-normalize-whitespace@8.0.2:
   dir: packages/postcss-normalize-whitespace
   intents:
@@ -1784,6 +1917,10 @@ postcss-normalize-whitespace@9.0.5:
   intents:
     - atrule-whitespace-handling
     - mighty-squids-cross
+postcss-normalize-whitespace@9.0.6:
+  dir: packages/postcss-normalize-whitespace
+  intents:
+    - lazy-wasps-travel
 postcss-ordered-values@8.0.2:
   dir: packages/postcss-ordered-values
   intents:
@@ -1844,6 +1981,10 @@ postcss-ordered-values@9.0.7:
   intents:
     - animation-keyword-keyframes-name
     - box-shadow-trailing-zeros
+postcss-ordered-values@9.0.8:
+  dir: packages/postcss-ordered-values
+  intents:
+    - lazy-wasps-travel
 postcss-reduce-idents@8.0.2:
   dir: packages/postcss-reduce-idents
   intents:
@@ -1891,6 +2032,10 @@ postcss-reduce-idents@9.0.5:
   dir: packages/postcss-reduce-idents
   intents:
     - mighty-squids-cross
+postcss-reduce-idents@9.0.6:
+  dir: packages/postcss-reduce-idents
+  intents:
+    - lazy-wasps-travel
 postcss-reduce-initial@8.0.2:
   dir: packages/postcss-reduce-initial
   intents:
@@ -1946,6 +2091,10 @@ postcss-reduce-initial@9.0.6:
   dir: packages/postcss-reduce-initial
   intents:
     - old-kids-compete
+postcss-reduce-initial@9.0.7:
+  dir: packages/postcss-reduce-initial
+  intents:
+    - lazy-wasps-travel
 postcss-reduce-transforms@8.0.2:
   dir: packages/postcss-reduce-transforms
   intents:
@@ -1986,6 +2135,10 @@ postcss-reduce-transforms@9.0.4:
     - neat-beans-lie
     - rare-books-repair
     - reduce-transforms-spec-compliance
+postcss-reduce-transforms@9.0.5:
+  dir: packages/postcss-reduce-transforms
+  intents:
+    - lazy-wasps-travel
 postcss-svgo@8.0.2:
   dir: packages/postcss-svgo
   intents:
@@ -2035,6 +2188,10 @@ postcss-svgo@9.0.4:
     - neat-beans-lie
     - rare-books-repair
     - svgo-fragment-scanner
+postcss-svgo@9.0.5:
+  dir: packages/postcss-svgo
+  intents:
+    - lazy-wasps-travel
 postcss-unique-selectors@8.0.2:
   dir: packages/postcss-unique-selectors
   intents:
@@ -2076,6 +2233,10 @@ postcss-unique-selectors@9.0.5:
   dir: packages/postcss-unique-selectors
   intents:
     - mighty-squids-cross
+postcss-unique-selectors@9.0.6:
+  dir: packages/postcss-unique-selectors
+  intents:
+    - lazy-wasps-travel
 postcss-zindex@8.0.2:
   dir: packages/postcss-zindex
   intents:
@@ -2118,6 +2279,10 @@ postcss-zindex@9.0.5:
   dir: packages/postcss-zindex
   intents:
     - mighty-squids-cross
+postcss-zindex@9.0.6:
+  dir: packages/postcss-zindex
+  intents:
+    - lazy-wasps-travel
 stylehacks@8.0.2:
   dir: packages/stylehacks
   intents:
@@ -2169,3 +2334,7 @@ stylehacks@9.0.7:
   dir: packages/stylehacks
   intents:
     - old-kids-compete
+stylehacks@9.0.8:
+  dir: packages/stylehacks
+  intents:
+    - lazy-wasps-travel

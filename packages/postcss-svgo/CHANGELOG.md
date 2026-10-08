@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.0.5
+
+### Patch Changes
+
+- fix: update postcss to 8.5.29
+
 ## 9.0.4
 
 ### Patch Changes

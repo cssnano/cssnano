@@ -1,5 +1,13 @@
 # Change Log
 
+## 9.0.7
+
+### Patch Changes
+
+- fix: update postcss to 8.5.29
+
+- fix: update color processing library
+
 ## 9.0.6
 
 ### Patch Changes

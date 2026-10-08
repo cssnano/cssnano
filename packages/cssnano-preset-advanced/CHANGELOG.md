@@ -1,5 +1,29 @@
 # Change Log
 
+## 9.3.0
+
+### Minor Changes
+
+- feat(cssnano-preset-default): run postcss-merge-longhand again after postcss-merge-rules, so declarations overridden in a later rule with the same selector are discarded
+
+- feat(postcss-merge-longhand): merge flow-relative and physical box properties safely
+
+  The plugin now merges and shortens `margin-block`, `margin-inline`, their `padding`, `inset`, `scroll-margin` and `scroll-padding` counterparts, and the physical `inset`, `scroll-margin` and `scroll-padding` longhands. It never assumes a writing mode or direction, so a flow-relative declaration moves only where no physical declaration of the same group. It creates a shorthand only when every browserslist target supports it.
+
+- feat(postcss-merge-longhand): discard overridden same-property declarations
+
+  Within a rule, a declaration is dropped when a later declaration of the same property and the same `!important` overrides it, and every browser that accepts the earlier value accepts the later one.
+
+### Patch Changes
+
+- fix: update postcss to 8.5.29
+
+- fix(postcss-merge-longhand): keep fallbacks for older browsers in more cases. Longhands that use `calc()` merge into a shorthand only when every target parses `calc()`, which Opera Mini, and so the default targets, do not. When a browserslist target predates the support floor (such as IE 8 or Opera 12), the plugin keeps fallbacks for `rem`, angle and time units and `hsl()`, so `font-size:16px` before `font-size:1rem` survives.
+
+- fix: update color processing library
+
+- fix(postcss-merge-longhand): add missing tokenizer runtime dependency
+
 ## 9.2.2
 
 ### Patch Changes
