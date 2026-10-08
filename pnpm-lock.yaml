@@ -174,8 +174,8 @@ catalogs:
       specifier: ^8.1.4
       version: 8.1.4
     '@webref/css':
-      specifier: 8.7.5
-      version: 8.7.5
+      specifier: 8.7.6
+      version: 8.7.6
     autoprefixer:
       specifier: ^10.6.1
       version: 10.6.1
@@ -408,7 +408,7 @@ importers:
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
-        version: 8.7.5(css-tree@3.2.1)
+        version: 8.7.6(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
         version: 8.5.29
@@ -495,7 +495,7 @@ importers:
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
-        version: 8.7.5(css-tree@3.2.1)
+        version: 8.7.6(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
         version: 8.5.29
@@ -520,7 +520,7 @@ importers:
         version: 8.1.4
       '@webref/css':
         specifier: 'catalog:'
-        version: 8.7.5(css-tree@3.2.1)
+        version: 8.7.6(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
         version: 8.5.29
@@ -545,7 +545,7 @@ importers:
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
-        version: 8.7.5(css-tree@3.2.1)
+        version: 8.7.6(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
         version: 8.5.29
@@ -570,7 +570,7 @@ importers:
     devDependencies:
       '@webref/css':
         specifier: 'catalog:'
-        version: 8.7.5(css-tree@3.2.1)
+        version: 8.7.6(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
         version: 8.5.29
@@ -756,7 +756,7 @@ importers:
         version: 4.0.2
       '@webref/css':
         specifier: 'catalog:'
-        version: 8.7.5(css-tree@3.2.1)
+        version: 8.7.6(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
         version: 8.5.29
@@ -772,7 +772,7 @@ importers:
         version: 4.0.2
       '@webref/css':
         specifier: 'catalog:'
-        version: 8.7.5(css-tree@3.2.1)
+        version: 8.7.6(css-tree@3.2.1)
       postcss:
         specifier: 'catalog:'
         version: 8.5.29
@@ -1533,8 +1533,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@webref/css@8.7.5':
-    resolution: {integrity: sha512-VQygoDH6OptDhYib3Uxo2e1uftOv2Tx9yddzUyAXOmsLquyrV46w5VzXla2kPAIK70+Lo56NzzrltKMqiBrrLg==}
+  '@webref/css@8.7.6':
+    resolution: {integrity: sha512-4WOCmMwo5f0B0M7aXjI0A5RS/ggf+ojRBNZzptwE9RgRcsH7YCnAiVqBYqmYaOTpiSuOsKQbQVNUTIn7PpldAQ==}
     peerDependencies:
       css-tree: ^3.2.1
 
@@ -2355,7 +2355,7 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  '@webref/css@8.7.5(css-tree@3.2.1)':
+  '@webref/css@8.7.6(css-tree@3.2.1)':
     dependencies:
       css-tree: 3.2.1
 
