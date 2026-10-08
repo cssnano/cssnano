@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.9
+
+### Patch Changes
+
+- fix: update postcss to 8.5.29
+
 ## 6.0.8
 
 ### Patch Changes
