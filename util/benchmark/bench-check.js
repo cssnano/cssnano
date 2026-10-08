@@ -3,24 +3,109 @@
 // compare-revisions.js for the full statistical comparison.
 
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  closeSync,
+  mkdirSync,
+  mkdtempSync,
+  openSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { formatSeconds, parseDuration } from './bench-defaults.js';
-import { resolveRevision } from './bench-provenance.js';
+import { resolveRevision, warnUnstableGovernor } from './bench-provenance.js';
+import {
+  classifyOverall,
+  followUpCommands,
+  formatHeader,
+  formatTable,
+  progressLine,
+  summaryFor,
+} from './bench-check-report.js';
 import { cleanupWorktree, prepareWorktree } from './prepare-worktree.js';
 
+export {
+  classifyOverall,
+  followUpCommands,
+  formatHeader,
+  formatTable,
+  progressLine,
+  summaryFor,
+} from './bench-check-report.js';
 export { resolveRevision };
 
-const OPTIONS = new Set([
-  'package',
-  'case',
-  'base',
-  'candidate',
-  'pin-core',
-  'keep',
-  'budget',
+// Single source of truth for parsing and --help, so a new flag cannot go
+// undocumented.
+export const OPTIONS = new Map([
+  [
+    'package',
+    {
+      value: '<name>',
+      help: 'benchmark every focused case of a plugin package',
+    },
+  ],
+  [
+    'case',
+    { value: '<a,b>', help: 'benchmark these focused cases (comma-separated)' },
+  ],
+  ['base', { value: '<ref>', help: 'base revision', fallback: 'HEAD' }],
+  [
+    'candidate',
+    {
+      value: '<ref>',
+      help: 'candidate revision; "worktree" snapshots uncommitted work',
+      fallback: 'worktree',
+    },
+  ],
+  [
+    'budget',
+    {
+      value: '<90s|5m>',
+      help: 'total time for all cases, shared equally',
+      fallback: '2m',
+    },
+  ],
+  [
+    'pin-core',
+    {
+      value: '<n>',
+      help: 'pin both sides to one CPU core to reduce scheduler noise',
+    },
+  ],
+  ['keep', { bare: true, help: 'keep the temporary worktrees for inspection' }],
+  ['json', { bare: true, help: 'print only one JSON line per case on stdout' }],
+  ['help', { bare: true, help: 'show this message (also -h)' }],
 ]);
+
+class UsageError extends Error {}
+
+function optionsText() {
+  const rows = [...OPTIONS].map(([name, { value, help, fallback }]) => [
+    value ? `--${name}=${value}` : `--${name}`,
+    fallback ? `${help} (default: ${fallback})` : help,
+  ]);
+  const width = Math.max(...rows.map(([flag]) => flag.length));
+  return rows
+    .map(([flag, text]) => `  ${flag.padEnd(width)}  ${text}`)
+    .join('\n');
+}
+
+export function helpText() {
+  return [
+    'bench-check: quick benchmark of the working tree against a base revision',
+    '',
+    'usage:',
+    '  node util/benchmark/bench-check.js --package=<name> | --case=<a,b> [options]',
+    '',
+    'options:',
+    optionsText(),
+    '',
+    'examples:',
+    '  node util/benchmark/bench-check.js --package=postcss-merge-rules --budget=90s',
+    '  node util/benchmark/bench-check.js --case=columns-height-guard --budget=1m',
+  ].join('\n');
+}
 
 /** @return {string} */
 function gitRunner(command, args, options) {
@@ -44,6 +129,17 @@ export function casesForPackage(packageName, cases) {
   );
 }
 
+export function casesForNames(names, cases) {
+  for (const name of names) {
+    if (!Object.hasOwn(cases, name)) {
+      throw new Error(
+        `unknown case "${name}"; known cases: ${Object.keys(cases).toSorted().join(', ')}`
+      );
+    }
+  }
+  return names;
+}
+
 // Four blocks are the fewest that leave the crossover model a degree of
 // freedom to estimate variance; the time budget then decides how many more
 // balanced pairs fit, and precision may stop the run sooner.
@@ -63,19 +159,33 @@ export function fastProfileFlags(budgetMs) {
 export function parseCheckArgs(argv) {
   const values = { base: 'HEAD', candidate: 'worktree' };
   for (const argument of argv.filter((value) => value !== '--')) {
-    const match = argument.match(/^--([^=]+)=(.*)$/v);
-    if (!match) throw new Error(`expected --name=value, received ${argument}`);
-    if (!OPTIONS.has(match[1])) throw new Error(`unknown option --${match[1]}`);
-    values[match[1]] = match[2];
+    if (argument === '-h') {
+      values.help = true;
+      continue;
+    }
+    const match = argument.match(/^--([^=]+)(?:=(.*))?$/v);
+    if (!match) {
+      throw new UsageError(`expected --name=value, received ${argument}`);
+    }
+    const [, name, value] = match;
+    if (!OPTIONS.has(name)) throw new UsageError(`unknown option --${name}`);
+    if (value === undefined && !OPTIONS.get(name).bare) {
+      throw new UsageError(`expected --name=value, received ${argument}`);
+    }
+    values[name] = value ?? true;
   }
+  if (values.help) return values;
   values.budgetMs = parseDuration(values.budget ?? '2m');
   if (values.budgetMs === null) {
-    throw new Error('--budget must be a duration such as 90s or 5m');
+    throw new UsageError('--budget must be a duration such as 90s or 5m');
   }
   if (!values.package && !values.case) {
-    throw new Error(
+    throw new UsageError(
       'name what to benchmark: --package=<name> or --case=<name>'
     );
+  }
+  if (values.case) {
+    values.caseNames = values.case.split(',').filter(Boolean);
   }
   return values;
 }
@@ -104,28 +214,14 @@ function snapshotWorkingTree(repoRoot) {
   }
 }
 
-export function summaryFor(caseName, result) {
-  const { total } = result;
-  if (!total) {
-    return {
-      case: caseName,
-      verdict: 'unavailable',
-      blocks: result.blocks?.length ?? 0,
-    };
-  }
-  const { low, high } = total.confidenceIntervalPct;
-  return {
-    case: caseName,
-    verdict: result.overallVerdict,
-    direction: total.statisticalDirection,
-    practical: total.practicalConclusion,
-    ratio: total.ratio,
-    intervalPct: [low, high],
-    blocks: result.blocks.length,
-  };
-}
-
-function compareArgs(args, caseName, dirs, revisions, resultsDir, budgetMs) {
+export function compareArgs(
+  args,
+  caseName,
+  dirs,
+  revisions,
+  resultsDir,
+  budgetMs
+) {
   const out = [
     join(import.meta.dirname, 'compare-revisions.js'),
     `--base-dir=${dirs.base}`,
@@ -135,17 +231,67 @@ function compareArgs(args, caseName, dirs, revisions, resultsDir, budgetMs) {
     `--results-dir=${resultsDir}`,
     `--case=${caseName}`,
     ...fastProfileFlags(budgetMs),
+    // bench-check prints the CPU governor warning once for the whole run.
+    '--no-environment-warning',
   ];
   if (args['pin-core'] !== undefined)
     out.push(`--pin-core=${args['pin-core']}`);
   return out;
 }
 
+// Install output is long and rarely useful; it goes to a log whose path is
+// shown only when preparation fails.
+function loggedRunner(logPath) {
+  const log = openSync(logPath, 'a');
+  const runner = (command, args, options = {}) =>
+    execFileSync(command, args, { stdio: ['ignore', log, log], ...options });
+  return { runner, close: () => closeSync(log) };
+}
+
+function warnOnceAboutEnvironment(args) {
+  if (warnUnstableGovernor('stable') && args['pin-core'] === undefined) {
+    console.warn(
+      'Recommendation: rerun with --pin-core=<idle-core> to reduce scheduler noise, or set the governor to "performance".'
+    );
+  }
+}
+
+function readSummary(name, resultsDir, run) {
+  try {
+    return summaryFor(
+      name,
+      JSON.parse(
+        readFileSync(join(resultsDir, 'comparison-report.json'), 'utf8')
+      )
+    );
+  } catch {
+    return { case: name, verdict: 'failed', exitStatus: run.status };
+  }
+}
+
+function reportSummaries(summaries, args) {
+  if (args.json) {
+    for (const summary of summaries) console.log(JSON.stringify(summary));
+    return;
+  }
+  console.log(formatTable(summaries));
+  console.log(`\n${classifyOverall(summaries).line}`);
+  const commands = followUpCommands(summaries, args);
+  if (commands.length) {
+    console.log('\nTo confirm, run:');
+    for (const command of commands) console.log(`  ${command}`);
+  }
+}
+
 async function main() {
   const args = parseCheckArgs(process.argv.slice(2));
+  if (args.help) {
+    console.log(helpText());
+    return;
+  }
   const { benchmarkCases } = await import('./bench-cases.js');
-  const names = args.case
-    ? [args.case]
+  const names = args.caseNames
+    ? casesForNames(args.caseNames, benchmarkCases)
     : casesForPackage(args.package, benchmarkCases);
   const repoRoot = gitRunner('git', ['rev-parse', '--show-toplevel']).trim();
   const revisions = {
@@ -157,19 +303,33 @@ async function main() {
   };
   const root = mkdtempSync(join(tmpdir(), 'cssnano-bench-check-'));
   const dirs = { base: join(root, 'base'), candidate: join(root, 'candidate') };
+  let installFailed = false;
   try {
     console.error(
-      `bench-check: ${names.length} case(s), ${formatSeconds(args.budgetMs)} budget in total; preparing worktrees`
+      `bench-check: ${formatHeader(names.length, args.budgetMs)}; preparing worktrees`
     );
-    for (const side of ['base', 'candidate']) {
-      prepareWorktree({
-        revision: revisions[side],
-        destination: dirs[side],
-        repoRoot,
-      });
+    const installLog = join(root, 'install.log');
+    const install = loggedRunner(installLog);
+    try {
+      for (const side of ['base', 'candidate']) {
+        prepareWorktree({
+          revision: revisions[side],
+          destination: dirs[side],
+          repoRoot,
+          runner: install.runner,
+        });
+      }
+    } catch (error) {
+      installFailed = true;
+      error.message += `\nsee ${installLog}`;
+      throw error;
+    } finally {
+      install.close();
     }
-    let failed = false;
-    for (const name of names) {
+    warnOnceAboutEnvironment(args);
+    const summaries = [];
+    const started = performance.now();
+    for (const [index, name] of names.entries()) {
       const resultsDir = join(root, 'results', name);
       mkdirSync(resultsDir, { recursive: true });
       const run = spawnSync(
@@ -184,25 +344,28 @@ async function main() {
         ),
         { stdio: ['ignore', 'ignore', 'inherit'] }
       );
-      let summary;
-      try {
-        const report = JSON.parse(
-          readFileSync(join(resultsDir, 'comparison-report.json'), 'utf8')
-        );
-        summary = summaryFor(name, report);
-      } catch {
-        summary = { case: name, verdict: 'failed', exitStatus: run.status };
-        failed = true;
-      }
-      console.log(JSON.stringify(summary));
+      summaries.push(readSummary(name, resultsDir, run));
+      console.error(
+        progressLine(
+          index + 1,
+          names.length,
+          name,
+          performance.now() - started,
+          args.budgetMs
+        )
+      );
     }
-    if (failed) process.exitCode = 1;
+    reportSummaries(summaries, args);
+    if (summaries.some((summary) => summary.verdict === 'failed')) {
+      process.exitCode = 1;
+    }
   } finally {
     if (args.keep === undefined) {
       for (const directory of Object.values(dirs)) {
         cleanupWorktree(directory, { repoRoot });
       }
-      rmSync(root, { recursive: true, force: true });
+      // The install log is the only evidence of a failed preparation.
+      if (!installFailed) rmSync(root, { recursive: true, force: true });
     }
   }
 }
@@ -212,6 +375,7 @@ if (process.argv[1]?.endsWith('/bench-check.js')) {
     await main();
   } catch (error) {
     console.error(`bench-check: ${error.message}`);
+    if (error instanceof UsageError) console.error(`\n${optionsText()}`);
     process.exit(1);
   }
 }

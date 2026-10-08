@@ -39,6 +39,7 @@ const BARE_FLAGS = new Set([
   '--verbose-child',
   '--report',
   '--no-report',
+  '--no-environment-warning',
 ]);
 
 function parseRawArgs(argv) {
@@ -245,6 +246,7 @@ function options(argv) {
       (!bare.has('--no-preflight') && mode === 'stable'),
     quietChild: !bare.has('--verbose-child'),
     report: !bare.has('--no-report'),
+    environmentWarning: !bare.has('--no-environment-warning'),
     markdown: values.markdown ?? null,
     cleanupDirs,
   };
@@ -307,6 +309,7 @@ async function main() {
     // and recommend pinning instead of repeating the warning in every child.
     const governor = readCpuGovernor();
     if (
+      config.environmentWarning !== false &&
       warnUnstableGovernor(config.mode, governor) &&
       config.pinCore === null
     ) {

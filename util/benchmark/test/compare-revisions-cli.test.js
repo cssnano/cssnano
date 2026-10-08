@@ -86,3 +86,8 @@ test('CLI rejects a time budget that is not a duration', (t) => {
     /--time-budget must be a duration such as 90s or 5m/v
   );
 });
+
+test('CLI accepts --no-environment-warning', (t) => {
+  const result = runCli(t, '--no-environment-warning');
+  assert.doesNotMatch(result.stderr, /unknown|expected --name=value/v);
+});
