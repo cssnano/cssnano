@@ -11,9 +11,24 @@ pnpm run bench:check --package=postcss-merge-rules --budget=90s
 
 It snapshots the working tree (untracked files included, your index and branch
 untouched), prepares two temporary worktrees, runs each focused case of the
-package, prints one JSON line per case (`verdict`, `direction`, `practical`,
-`ratio`, `intervalPct`, `blocks`), and removes the worktrees.
+package, prints a table (case, ratio, interval, verdict, reason), an overall
+line (`no change detected`, `possible regression: <cases>`, `possible
+improvement: <cases>`, or `incomplete: <cases>`) and, for flagged cases, the
+exact commands to confirm them, then removes the worktrees. Run
+`bench-check.js --help` for every option.
 
+Progress, the per-case budget share and the CPU governor warning (printed once)
+go to stderr, and the pnpm install output goes to a log whose path is shown only
+if installation fails. A reported result also means the base and candidate
+output hashes matched: preflight stops on any difference.
+
+`--json` prints only one JSON line per case on stdout (`verdict`, `direction`,
+`practical`, `ratio`, `intervalPct`, `blocks`, `basis`, `reason`, `outputs`) for
+scripts. `reason` appears for an inconclusive verdict: `requested precision was
+not achieved` needs a larger `--budget`, `process-order interaction cannot be
+ruled out` needs a rerun, and `fewer than minimumBlocks` needs more time.
+
+- `--case=a,b` takes a comma-separated list; a bad name lists the known cases.
 - `--budget=<90s|5m>` is the total time for all cases (default `2m`), shared
   equally between them. Each case runs the minimum 4 blocks, then adds balanced
   pairs while another pair is predicted to fit in its share. Precision reached
