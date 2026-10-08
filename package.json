@@ -49,7 +49,7 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "12.9.1"
+      "version": "12.10.1"
     }
   }
 }
