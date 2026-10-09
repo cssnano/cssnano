@@ -171,8 +171,8 @@ catalogs:
       specifier: ^4.0.2
       version: 4.0.2
     '@mdn/browser-compat-data':
-      specifier: ^8.1.4
-      version: 8.1.4
+      specifier: ^8.1.5
+      version: 8.1.5
     '@webref/css':
       specifier: 8.7.6
       version: 8.7.6
@@ -517,7 +517,7 @@ importers:
     devDependencies:
       '@mdn/browser-compat-data':
         specifier: 'catalog:'
-        version: 8.1.4
+        version: 8.1.5
       '@webref/css':
         specifier: 'catalog:'
         version: 8.7.6(css-tree@3.2.1)
@@ -922,8 +922,8 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@mdn/browser-compat-data@8.1.4':
-    resolution: {integrity: sha512-Cgp3OP3u9x57kT1sZPI115SP5H1IyaBhdDPnvnHRYZ1988kW83wuqcIdcMinLJXlMKOL5Y2cufWHzngh5cVtow==}
+  '@mdn/browser-compat-data@8.1.5':
+    resolution: {integrity: sha512-iNxW5XEJOA29iWbeog/8FX7eI1obR0PWV1SQbJOG9TnyTAqTUxBF5R5/rcz2qQiouCsiAqUVFErcN+gd0Fs3TQ==}
 
   '@napi-rs/wasm-runtime@1.2.4':
     resolution: {integrity: sha512-AJxoUD2/15ESHbvpcyjU274nsAPLuOtPHCk0vKJM5pj//Fg/B1FXNWjPnXTT9PymCYYiHo4zPj0ZomXBKhoy7g==}
@@ -2041,7 +2041,7 @@ snapshots:
 
   '@exodus/bytes@1.16.0': {}
 
-  '@mdn/browser-compat-data@8.1.4': {}
+  '@mdn/browser-compat-data@8.1.5': {}
 
   '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)':
     dependencies:
