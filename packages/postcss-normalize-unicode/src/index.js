@@ -13,8 +13,9 @@ const maxCodePoint = 0x10ffff;
 /**
  * @param {number} start
  * @param {number} end
- * @return {number} number of trailing "?" when [start, end] is an aligned
- *   block of code points, otherwise 0
+ * @return {number} number of trailing "?" wildcards when [start, end] can be
+ *   written as a wildcard range (a power-of-16 size starting at a multiple of
+ *   that size), otherwise 0
  */
 function wildcardMarks(start, end) {
   const size = end - start + 1;
