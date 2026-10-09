@@ -5,4 +5,4 @@
 "cssnano": minor
 ---
 
-feat(postcss-normalize-unicode): merge adjacent, overlapping, and out-of-order unicode-range entries, and emit a wildcard range when they cover an aligned block
+feat(postcss-normalize-unicode): merge adjacent, overlapping, and out-of-order unicode-range entries, and emit a wildcard range when they cover a range expressible with trailing `?` wildcards
