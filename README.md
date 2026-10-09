@@ -42,6 +42,28 @@ For further details check out the [website](https://cssnano.github.io/cssnano):
 
 You can now [try cssnano online](https://cssnano.github.io/cssnano/playground/)!
 
+## Semantic Versioning Policy
+
+The guiding principle is that a page should render the same with the minified CSS as with the original CSS.
+So cssnano should not break a working stylesheet, and should also not fix a broken stylesheet, because it makes it harder for developers to debug the application.
+This matters especially when the stylesheet is only minified for the production build.
+
+### Major releases
+
+A major release indicates that cssnano requires a different runtime or configuration to keep working, or when its output is likely
+to be parsed incorrectly by browsers that were previously supported.
+This includes changes to the supported Node.js versions and incompatible configuration changes.
+
+### Minor releases
+
+This is for releases that might introduce changes to the stylesheet where there were none previously.
+This includes introducing a new minification, for example merging, which can restructure the output, or removing a transformation.
+These changes should not alter browser support for the CSS that cssnano outputs.
+
+### Patch releases
+
+These are bug fixes in existing minifications, or internal changes like refactorings or dependency changes.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
