@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-whitespace",
-  "version": "9.0.6",
+  "version": "9.0.7",
   "description": "Trim whitespace inside and around CSS rules & declarations.",
   "exports": {
     ".": {
