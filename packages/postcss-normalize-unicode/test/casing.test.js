@@ -26,7 +26,7 @@ test(
   'should downcase the unicode-range property/value pair',
   processCSS(
     '@font-face{font-family:test;UNICODE-RANGE:U+07-F}*{font-family:test}',
-    '@font-face{font-family:test;UNICODE-RANGE:u+07-f}*{font-family:test}',
+    '@font-face{font-family:test;UNICODE-RANGE:u+7-f}*{font-family:test}',
     { overrideBrowserslist: ['defaults', 'not ie <=11'] }
   )
 );
@@ -51,7 +51,7 @@ test('should update raw values on cache hits', async () => {
 
 test(
   'should upcase every range in a legacy descriptor list',
-  processCSS(fixture('u+2b00-2bff, u+1e00-1eff'), fixture('U+2b??, U+1e??'), {
+  processCSS(fixture('u+2b00-2bff, u+1e00-1eff'), fixture('U+1e??,U+2b??'), {
     overrideBrowserslist: 'IE 9',
   })
 );

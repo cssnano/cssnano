@@ -138,7 +138,15 @@ describe('CSS processing', () => {
     'should preserve unicode-range descriptors after preset composition',
     withDefaults.processCSS(
       '@font-face{font-family:Example;src:url(example.woff2);unicode-range:U+0100-017F}',
-      '@font-face{font-family:Example;src:url(example.woff2);unicode-range:U+0100-017f}'
+      '@font-face{font-family:Example;src:url(example.woff2);unicode-range:U+100-17f}'
+    )
+  );
+
+  test(
+    'should merge adjacent unicode-range entries after preset composition',
+    withDefaults.processCSS(
+      '@font-face{font-family:Example;src:url(example.woff2);unicode-range:U+0100-017F,U+0180-024F}',
+      '@font-face{font-family:Example;src:url(example.woff2);unicode-range:U+100-24f}'
     )
   );
 
@@ -179,7 +187,7 @@ describe('CSS processing', () => {
     'should lowercase unicode-range prefix for modern browsers after preset composition',
     withBrowserslist.processCSS(
       '@font-face{font-family:Example;src:url(example.woff2);unicode-range:U+0100-017F}',
-      '@font-face{font-family:Example;src:url(example.woff2);unicode-range:u+0100-017f}'
+      '@font-face{font-family:Example;src:url(example.woff2);unicode-range:u+100-17f}'
     )
   );
 

@@ -47,4 +47,11 @@ describe('Convert', () => {
       overrideBrowserslist: ['defaults', 'not ie <=11'],
     })
   );
+
+  test(
+    'should convert a unicode range starting at zero to a bare wildcard',
+    processCSS(fixture('u+0-f'), fixture('u+?'), {
+      overrideBrowserslist: ['defaults', 'not ie <=11'],
+    })
+  );
 });
