@@ -63,7 +63,7 @@ describe('Merge', () => {
   );
 
   test(
-    'should keep non-adjacent ranges separate',
+    'should keep non-adjacent ranges byte-identical because they are already the shortest union',
     passthroughCSS(fixture('u+41,u+43'), modern)
   );
 
@@ -88,17 +88,17 @@ describe('Merge', () => {
   );
 
   test(
-    'should not merge when a wildcard exceeds the U+10FFFF maximum',
+    'should keep a list byte-identical when a wildcard exceeds the U+10FFFF maximum, because the invalid range makes browsers ignore the declaration',
     passthroughCSS(fixture('u+??????,u+1'), modern)
   );
 
   test(
-    'should not merge when a wildcard starts above the U+10FFFF maximum',
+    'should keep a list byte-identical when a wildcard starts above the U+10FFFF maximum, because the invalid range makes browsers ignore the declaration',
     passthroughCSS(fixture('u+1?????,u+1'), modern)
   );
 
   test(
-    'should not merge ranges separated by comments',
+    'should keep a list with comments byte-identical because merging its ranges would move or drop the comments',
     passthroughCSS(fixture('u+41/**/,u+42'), modern)
   );
 
@@ -117,12 +117,12 @@ describe('Merge', () => {
   );
 
   test(
-    'should not merge when a range has its start after its end',
+    'should keep a list byte-identical when a range starts after its end, because the invalid range makes browsers ignore the declaration',
     passthroughCSS(fixture('u+43,u+42-41'), modern)
   );
 
   test(
-    'should not merge ranges that exceed the U+10FFFF maximum',
+    'should keep a list byte-identical when a range ends above the U+10FFFF maximum, because the invalid range makes browsers ignore the declaration',
     passthroughCSS(fixture('u+10fffe,u+110000'), modern)
   );
 
