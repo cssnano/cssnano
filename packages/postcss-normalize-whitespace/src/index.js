@@ -12,6 +12,7 @@ const {
 const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
+const gridRowsPropertyRegex = /^(?:grid|grid-template|grid-template-areas)$/iv;
 const variableFunctions = new Set(['var', 'env', 'constant']);
 const ieHackRegex = /[ \t\n\r\f]*(\\9)[ \t\n\r\f]*/v;
 const whitespaceRegex = /[ \t\n\r\f]/gv;
@@ -102,14 +103,36 @@ function applyReplacements(value, replacements) {
 }
 
 /**
+ * Trim and collapse the spaces and tabs between the names of one grid row.
+ * Rows with a backslash are kept as authored, because the whitespace after an
+ * escape may belong to the escape or to the name. An unclosed string or a
+ * whitespace-only row is also kept.
+ * @param {string} raw
+ * @return {string}
+ */
+function trimGridRow(raw) {
+  const quote = raw[0];
+  if (raw.length < 2 || raw[raw.length - 1] !== quote || raw.includes('\\')) {
+    return raw;
+  }
+  const names = raw
+    .slice(1, -1)
+    .split(/[ \t]+/v)
+    .filter(Boolean);
+  if (!names.length) return raw;
+  return quote + names.join(' ') + quote;
+}
+
+/**
  * Normalize directly from source-backed tokenizer spans. The stack mirrors the
  * legacy walk: math descendants receive special delimiter treatment, while
  * variable functions trim whitespace around the name and comma delimiters.
  *
  * @param {string} value
+ * @param {boolean} trimRows whether top-level strings are grid area rows
  * @return {string}
  */
-function reduceWhitespaces(value) {
+function reduceWhitespaces(value, trimRows) {
   const tokens = [...tokenize({ css: value })].filter(
     (token) => token[0] !== TokenType.EOF
   );
@@ -141,6 +164,13 @@ function reduceWhitespaces(value) {
     }
     if (isClosingToken(type)) {
       stack.pop();
+      continue;
+    }
+    if (trimRows && type === TokenType.String && stack.length === 0) {
+      const row = trimGridRow(token[1]);
+      if (row !== token[1]) {
+        replacements.push([token[2], token[3] + 1, row]);
+      }
       continue;
     }
     if (type !== TokenType.Whitespace) continue;
@@ -216,12 +246,14 @@ function normalizeAfterName(afterName) {
 }
 
 /**
- *
+ * Top-level strings in grid-template-areas, grid-template and grid are area
+ * rows, so their values get a separate cache.
  * @param {import('postcss').Declaration} node
  * @param {Map<string, string>} cache
+ * @param {Map<string, string>} gridRowsCache
  * @return {void}
  */
-function trimDeclaration(node, cache) {
+function trimDeclaration(node, cache, gridRowsCache) {
   // Ensure that !important values do not have any excess whitespace
   if (node.important) {
     node.raws.important = '!important';
@@ -235,16 +267,18 @@ function trimDeclaration(node, cache) {
     rawValue?.value === node.value ? rawValue.raw : node.value
   ).replace(ieHackRegex, '$1');
 
+  const trimRows = gridRowsPropertyRegex.test(node.prop);
+  const valueCache = trimRows ? gridRowsCache : cache;
   let result;
-  if (cache.has(value)) {
-    result = /** @type {string} **/ (cache.get(value));
+  if (valueCache.has(value)) {
+    result = /** @type {string} **/ (valueCache.get(value));
     node.value = result;
   } else {
-    result = reduceWhitespaces(value);
+    result = reduceWhitespaces(value, trimRows);
 
     // Trim whitespace inside functions & dividers
     node.value = result;
-    cache.set(value, result);
+    valueCache.set(value, result);
   }
   if (hasMatchingRaw) {
     node.raws.value = { raw: result, value: result };
@@ -276,6 +310,7 @@ function pluginCreator() {
      */
     OnceExit(css) {
       const declarationCache = new Map();
+      const gridRowsCache = new Map();
 
       css.walk((node) => {
         const { type } = node;
@@ -286,7 +321,7 @@ function pluginCreator() {
 
         if (type === decl) {
           if (!node.prop.startsWith('--')) {
-            trimDeclaration(node, declarationCache);
+            trimDeclaration(node, declarationCache, gridRowsCache);
           } else if (node.value.trim() !== '') {
             // Custom properties skip value normalization, so only the
             // parser-consumed separator run is trimmed.
