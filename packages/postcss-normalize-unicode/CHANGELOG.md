@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.1.0
+
+### Minor Changes
+
+- feat(postcss-normalize-unicode): merge adjacent, overlapping, and out-of-order unicode-range entries, and emit a wildcard range when they cover a range expressible with trailing `?` wildcards
+
 ## 9.0.6
 
 ### Patch Changes

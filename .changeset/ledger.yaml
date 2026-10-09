@@ -161,6 +161,11 @@ cssnano-preset-advanced@9.3.0:
     - proud-pigs-shop
     - quiet-tops-yield
     - wise-pigs-brake
+cssnano-preset-advanced@9.4.0:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - merged-ranges-unite
+    - trim-grid-area-row-padding
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -346,6 +351,11 @@ cssnano-preset-default@9.4.0:
     - proud-pigs-shop
     - quiet-tops-yield
     - wise-pigs-brake
+cssnano-preset-default@9.5.0:
+  dir: packages/cssnano-preset-default
+  intents:
+    - merged-ranges-unite
+    - trim-grid-area-row-padding
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -379,6 +389,10 @@ cssnano-preset-lite@6.0.1:
   dir: packages/cssnano-preset-lite
   intents:
     - blue-paws-crash
+cssnano-preset-lite@6.0.10:
+  dir: packages/cssnano-preset-lite
+  intents:
+    - trim-grid-area-row-padding
 cssnano-preset-lite@6.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -661,6 +675,11 @@ cssnano@9.4.0:
     - proud-pigs-shop
     - quiet-tops-yield
     - wise-pigs-brake
+cssnano@9.5.0:
+  dir: packages/cssnano
+  intents:
+    - merged-ranges-unite
+    - trim-grid-area-row-padding
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -1813,6 +1832,10 @@ postcss-normalize-unicode@9.0.6:
   dir: packages/postcss-normalize-unicode
   intents:
     - lazy-wasps-travel
+postcss-normalize-unicode@9.1.0:
+  dir: packages/postcss-normalize-unicode
+  intents:
+    - merged-ranges-unite
 postcss-normalize-url@8.0.2:
   dir: packages/postcss-normalize-url
   intents:
@@ -1921,6 +1944,10 @@ postcss-normalize-whitespace@9.0.6:
   dir: packages/postcss-normalize-whitespace
   intents:
     - lazy-wasps-travel
+postcss-normalize-whitespace@9.0.7:
+  dir: packages/postcss-normalize-whitespace
+  intents:
+    - trim-grid-area-row-padding
 postcss-ordered-values@8.0.2:
   dir: packages/postcss-ordered-values
   intents:

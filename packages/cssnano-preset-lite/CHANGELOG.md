@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.0.10
+
+### Patch Changes
+
+- fix(postcss-normalize-whitespace): trim and collapse spaces and tabs between the names of each string row in `grid-template-areas`, `grid-template` and `grid`.
+
 ## 6.0.9
 
 ### Patch Changes
