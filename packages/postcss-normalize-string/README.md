@@ -21,7 +21,7 @@ p:after{ content: '\\'string\\' is intact' }
 ### Output
 
 ```css
-p:after{ content:"'string' is intact" }
+p:after{ content: "'string' is intact" }
 ```
 
 ## Usage

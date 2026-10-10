@@ -16,7 +16,7 @@ npm install postcss-normalize-timing-functions --save
 
 ```css
 div {
-    animate: fade 3s cubic-bezier(0.42, 0, 1, 1)
+    animation: fade 3s cubic-bezier(0.42, 0, 1, 1)
 }
 ```
 
@@ -24,7 +24,7 @@ div {
 
 ```css
 div {
-    animate: fade 3s ease-in
+    animation: fade 3s ease-in
 }
 ``` 
 

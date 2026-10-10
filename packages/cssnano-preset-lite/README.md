@@ -41,27 +41,20 @@ If you don't have npm then [check out this installation tutorial](https://npmjs.
 
 If you would like to use the default configuration, then you don't need any additional configuration.
 
-But should you wish to customise this, you can pass an array with the second parameter as the options object to use. For example, to remove all comments:
+But should you wish to customise this, you can pass an array with the second parameter as the options object to use. For example, to remove all comments, add a `.cssnanorc.json` to the directory where you run the build:
 
-```diff
- {
-   "name": "awesome-application",
-+  "cssnano": {
-+    "preset": [
-+      "lite",
-+      {"discardComments": {"removeAll": true}}
-+    ]
-+  }
- }
+```json
+{
+  "preset": ["lite", { "discardComments": { "removeAll": true } }]
+}
 ```
 
-Depending on your usage, the JSON configuration might not work for you, such as in cases where you would like to use options with customisable function parameters.
-For this use case, create use a `cssnano.config.js`. You can then load a preset and export it with your custom parameters:
+JSON cannot express options with customisable function parameters. For this use case, create a `cssnano.config.js` instead. You can then load a preset and export it with your custom parameters:
 
 ```js
-const defaultPreset = require('cssnano-preset-lite');
+const litePreset = require('cssnano-preset-lite');
 
-module.exports = defaultPreset({
+module.exports = litePreset({
   discardComments: {
     remove: (comment) => comment[0] === '@',
   },
